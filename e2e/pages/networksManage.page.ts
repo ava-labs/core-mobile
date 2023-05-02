@@ -25,8 +25,16 @@ class NetworksPage {
     return by.text(networksManage.deleteNetwork)
   }
 
+  get editNetwork() {
+    return by.text(networksManage.editNetwork)
+  }
+
   get ethereumGoerlyNetwork() {
     return by.text(networksManage.ethereumGoerlyNetwork)
+  }
+
+  get ethTokenOnCustomNetwork() {
+    return by.text(networksManage.ethTokenOnCustomNetwork)
   }
 
   get explorerUrl() {
@@ -69,6 +77,10 @@ class NetworksPage {
     return by.id(networksManage.networkInfo)
   }
 
+  get newCustomNetworkName() {
+    return by.text(networksManage.newCustomNetworkName)
+  }
+
   get customTab() {
     return by.text(networksManage.customTab)
   }
@@ -101,6 +113,10 @@ class NetworksPage {
     await Action.tapElementAtIndex(this.dropdown, 0)
   }
 
+  async tapEditNetwork() {
+    await Action.tapElementAtIndex(this.editNetwork, platformIndex)
+  }
+
   async tapFavoritesTab() {
     await Action.tapElementAtIndex(this.favoritesTab, 0)
   }
@@ -115,6 +131,10 @@ class NetworksPage {
 
   async tapNetworkInfo() {
     await Action.tapElementAtIndex(this.networkInfo, 0)
+  }
+
+  async tapNewCustomNetwork() {
+    await Action.tapElementAtIndex(this.newCustomNetworkName, 0)
   }
 
   async tapSaveButton() {
@@ -142,6 +162,15 @@ class NetworksPage {
     await Action.setInputText(
       this.inputTextField,
       networksManage.customNetworkName,
+      1
+    )
+    await Action.tap(this.networkName)
+  }
+
+  async inputNewNetworkName() {
+    await Action.setInputText(
+      this.inputTextField,
+      networksManage.newCustomNetworkName,
       1
     )
     await Action.tap(this.networkName)

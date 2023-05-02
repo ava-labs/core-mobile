@@ -4,7 +4,7 @@
  * @jest-environment ./environment.ts
  */
 import Assert from '../../helpers/assertions'
-import actions from '../../helpers/actions'
+import Actions from '../../helpers/actions'
 import LoginRecoverWallet from '../../helpers/loginRecoverWallet'
 import PortfolioPage from '../../pages/portfolio.page'
 import NetworksManagePage from '../../pages/networksManage.page'
@@ -25,7 +25,7 @@ describe('Change Network', () => {
     await NetworksManagePage.inputChainId()
     await NetworksManagePage.inputNativeTokenSymbol()
     if (
-      (await actions.isVisible(NetworksManagePage.inputTextField, 5)) === false
+      (await Actions.isVisible(NetworksManagePage.inputTextField, 5)) === false
     ) {
       await NetworksManagePage.swipeUp()
     }
@@ -36,16 +36,36 @@ describe('Change Network', () => {
     await Assert.isVisible(NetworksManagePage.customNetwork)
   })
 
+  it('should edit custom network', async () => {
+    await NetworksManagePage.tapNetworkInfo()
+    await NetworksManagePage.tapDropdown()
+    await NetworksManagePage.tapEditNetwork()
+    await NetworksManagePage.inputNewNetworkName()
+    await NetworksManagePage.swipeUp()
+    await NetworksManagePage.tapSaveButton()
+    await NetworksManagePage.tapHeaderBack()
+    await Assert.isVisible(NetworksManagePage.newCustomNetworkName)
+  })
+
   it('should add custom network to favorites', async () => {
     await NetworksManagePage.addBtcNetwork()
     await NetworksManagePage.tapFavoritesTab()
-    await Assert.isVisible(NetworksManagePage.customNetwork)
+    await Assert.isVisible(NetworksManagePage.newCustomNetworkName)
   })
 
   it('should change active network to custom', async () => {
     await NetworksManagePage.tapCustomTab()
-    await NetworksManagePage.tapCustomNetwork()
-    await Assert.isVisible(NetworksManagePage.customNetwork)
+    await NetworksManagePage.tapNewCustomNetwork()
+    await Assert.isVisible(NetworksManagePage.newCustomNetworkName)
+  })
+
+  it('should view balances of custom network', async () => {
+    await PortfolioPage.tapArbitrumNetwork()
+    await Actions.waitForElement(
+      NetworksManagePage.ethTokenOnCustomNetwork,
+      60000
+    )
+    await Assert.isVisible(NetworksManagePage.ethTokenOnCustomNetwork)
   })
 
   it('should delete custom network', async () => {
@@ -56,6 +76,6 @@ describe('Change Network', () => {
     await NetworksManagePage.tapDropdown()
     await NetworksManagePage.tapDeleteNetwork()
     await NetworksManagePage.tapDeleteNetwork()
-    await Assert.isNotVisible(NetworksManagePage.customNetwork)
+    await Assert.isNotVisible(NetworksManagePage.newCustomNetworkName)
   })
 })
