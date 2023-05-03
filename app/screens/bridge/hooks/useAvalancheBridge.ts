@@ -17,6 +17,7 @@ import { useAvalancheProvider } from 'hooks/networkProviderHooks'
 import { useSelector } from 'react-redux'
 import { selectBridgeConfig } from 'store/bridge'
 import { selectActiveAccount } from 'store/account'
+import { selectActiveNetwork } from 'store/network'
 
 /**
  * Hook for when the source is Avalanche
@@ -46,6 +47,7 @@ export function useAvalancheBridge(amount: Big, bridgeFee: Big): BridgeAdapter {
   )
 
   const activeAccount = useSelector(selectActiveAccount)
+  const network = useSelector(selectActiveNetwork)
   const avalancheProvider = useAvalancheProvider()
   const hasEnoughForNetworkFee = useHasEnoughForGas(
     isAvalancheBridge ? activeAccount?.address : undefined,
@@ -91,14 +93,17 @@ export function useAvalancheBridge(amount: Big, bridgeFee: Big): BridgeAdapter {
       amount
     })
 
-    createBridgeTransaction({
-      sourceChain: Blockchain.AVALANCHE,
-      sourceTxHash: result?.hash ?? '',
-      sourceStartedAt: timestamp,
-      targetChain: targetBlockchain,
-      amount,
-      symbol: currentAssetData.symbol
-    })
+    createBridgeTransaction(
+      {
+        sourceChain: Blockchain.AVALANCHE,
+        sourceTxHash: result?.hash ?? '',
+        sourceStartedAt: timestamp,
+        targetChain: targetBlockchain,
+        amount,
+        symbol: currentAssetData.symbol
+      },
+      network
+    )
 
     return result?.hash
   }, [
@@ -107,7 +112,8 @@ export function useAvalancheBridge(amount: Big, bridgeFee: Big): BridgeAdapter {
     currentAssetData,
     setTransactionDetails,
     targetBlockchain,
-    transferAsset
+    transferAsset,
+    network
   ])
 
   return {

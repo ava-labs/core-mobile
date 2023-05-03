@@ -10,8 +10,7 @@ import NetworkDropdown from 'screens/network/NetworkDropdown'
 import TokenAddress from 'components/TokenAddress'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { useSelector } from 'react-redux'
-import { selectActiveNetwork } from 'store/network'
-import { NetworkVMType } from '@avalabs/chains-sdk'
+import { Network, NetworkVMType } from '@avalabs/chains-sdk'
 import { selectActiveAccount } from 'store/account'
 import CarrotSVG from 'components/svg/CarrotSVG'
 import { Row } from 'components/Row'
@@ -20,6 +19,7 @@ type Props = {
   showAddress?: boolean
   showBackButton?: boolean
   testID?: string
+  activeNetwork: Network
 }
 
 type NavigationProp = DrawerScreenProps<
@@ -28,12 +28,13 @@ type NavigationProp = DrawerScreenProps<
 
 const TopNavigationHeader: FC<Props> = ({
   showAddress = false,
-  showBackButton = false
+  showBackButton = false,
+  activeNetwork
 }) => {
   const { theme } = useApplicationContext()
   const navigation = useNavigation<NavigationProp>()
   const activeAccount = useSelector(selectActiveAccount)
-  const activeNetwork = useSelector(selectActiveNetwork)
+
   const address =
     activeNetwork.vmName === NetworkVMType.BITCOIN
       ? activeAccount?.addressBtc
