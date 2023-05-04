@@ -94,6 +94,10 @@ class PortfolioPage {
     return by.id(portfolio.networksDropdown)
   }
 
+  get polygonNetwork() {
+    return by.text(portfolio.polygonNetwork)
+  }
+
   async verifyPorfolioScreen() {
     await Assert.isVisible(this.viewAllBtn)
     await Assert.isVisible(this.favoritesHeader)
@@ -140,6 +144,10 @@ class PortfolioPage {
 
   async tapManageNetworks() {
     await Action.tapElementAtIndex(this.manageNetworks, platformIndex)
+  }
+
+  async tapPolygonNetwork() {
+    await Action.tapElementAtIndex(this.polygonNetwork, 1)
   }
 }
 
