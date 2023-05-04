@@ -70,7 +70,7 @@ const TabNavigator = () => {
     <Tab.Navigator
       screenOptions={{
         ...getCommonBottomTabOptions(theme),
-        header: () => <TopNavigationHeader activeNetwork={activeNetwork} />
+        header: () => <TopNavigationHeader />
       }}>
       <Tab.Screen
         name={AppNavigation.Tabs.Portfolio}
@@ -82,7 +82,6 @@ const TabNavigator = () => {
               <TopNavigationHeader
                 showAddress
                 showBackButton={showBackButton}
-                activeNetwork={activeNetwork}
               />
             )
           },
