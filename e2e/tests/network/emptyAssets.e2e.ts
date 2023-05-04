@@ -4,6 +4,7 @@ import actions from '../../helpers/actions'
 import LoginRecoverWallet from '../../helpers/loginRecoverWallet'
 import PortfolioPage from '../../pages/portfolio.page'
 import NetworksManagePage from '../../pages/networksManage.page'
+import NetworksManageLoc from '../../locators/networksManage.loc'
 import { warmup } from '../../helpers/warmup'
 
 describe('Change Network', () => {
@@ -16,22 +17,32 @@ describe('Change Network', () => {
     await PortfolioPage.tapNetworksDropdown()
     await PortfolioPage.tapManageNetworks()
     await NetworksManagePage.tapAddNetwork()
-    await NetworksManagePage.inputNetworkRpcUrl()
-    await NetworksManagePage.inputNetworkName()
-    await NetworksManagePage.inputChainId()
-    await NetworksManagePage.inputNativeTokenSymbol()
+    await NetworksManagePage.inputNetworkRpcUrl(
+      NetworksManageLoc.polygonCustomRpcUrl
+    )
+    await NetworksManagePage.inputNetworkName(
+      NetworksManageLoc.polygonCustomNetworkName
+    )
+    await NetworksManagePage.inputChainId(
+      NetworksManageLoc.polygonCustomChainID
+    )
+    await NetworksManagePage.inputNativeTokenSymbol(
+      NetworksManageLoc.polygonCustomNativeTokenSymbol
+    )
     if (
       (await actions.isVisible(NetworksManagePage.inputTextField, 5)) === false
     ) {
       await NetworksManagePage.swipeUp()
     }
-    await NetworksManagePage.inputExplorerUrl()
+    await NetworksManagePage.inputExplorerUrl(
+      NetworksManageLoc.polygonCustomExplorerUrl
+    )
     await NetworksManagePage.swipeUp()
     await NetworksManagePage.tapSaveButton()
     await NetworksManagePage.tapCustomTab()
-    await NetworksManagePage.tapCustomNetwork()
+    await NetworksManagePage.tapPolygonCustomNetwork()
 
-    await PortfolioPage.tapArbitrumNetwork()
+    await PortfolioPage.tapPolygonNetwork()
     await Assert.isVisible(PortfolioPage.noAssetsHeader)
     await Assert.isVisible(PortfolioPage.addAssetsMessage)
     await Assert.isVisible(PortfolioPage.addAssetsButton)
