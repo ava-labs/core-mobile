@@ -77,20 +77,24 @@ class NetworksPage {
     return by.id(networksManage.networkInfo)
   }
 
-  get newCustomNetworkName() {
-    return by.text(networksManage.newCustomNetworkName)
+  get arbWrongCustomNetworkName() {
+    return by.text(networksManage.arbWrongCustomNetworkName)
   }
 
   get customTab() {
     return by.text(networksManage.customTab)
   }
 
+  get polygonCustomNetwork() {
+    return by.text(networksManage.polygonCustomNetworkName)
+  }
+
   get saveButton() {
     return by.text(networksManage.saveButton)
   }
 
-  get customNetwork() {
-    return by.text(networksManage.customNetworkName)
+  get arbCustomNetwork() {
+    return by.text(networksManage.arbCustomNetworkName)
   }
 
   async addBtcNetwork() {
@@ -133,78 +137,49 @@ class NetworksPage {
     await Action.tapElementAtIndex(this.networkInfo, 0)
   }
 
-  async tapNewCustomNetwork() {
-    await Action.tapElementAtIndex(this.newCustomNetworkName, 0)
+  async tapPolygonCustomNetwork() {
+    await Action.tapElementAtIndex(this.polygonCustomNetwork, 0)
   }
 
   async tapSaveButton() {
     await Action.tapElementAtIndex(this.saveButton, 0)
   }
 
-  async tapCustomNetwork() {
-    await Action.tapElementAtIndex(this.customNetwork, 0)
+  async tapArbCustomNetwork() {
+    await Action.tapElementAtIndex(this.arbCustomNetwork, 0)
   }
 
   async tapDeleteNetwork() {
     await Action.tapElementAtIndex(this.deleteNetwork, platformIndex)
   }
 
-  async inputNetworkRpcUrl() {
-    await Action.setInputText(
-      this.inputTextField,
-      networksManage.customRpcUrl,
-      0
-    )
+  async inputNetworkRpcUrl(customRpcUrl: string) {
+    await Action.setInputText(this.inputTextField, customRpcUrl, 0)
     await Action.tap(this.networkRpcUrl)
   }
 
-  async inputNetworkName() {
-    await Action.setInputText(
-      this.inputTextField,
-      networksManage.customNetworkName,
-      1
-    )
+  async inputNetworkName(customNetworkName: string) {
+    await Action.setInputText(this.inputTextField, customNetworkName, 1)
     await Action.tap(this.networkName)
   }
 
-  async inputNewNetworkName() {
-    await Action.setInputText(
-      this.inputTextField,
-      networksManage.newCustomNetworkName,
-      1
-    )
-    await Action.tap(this.networkName)
-  }
-
-  async inputChainId() {
-    await Action.setInputText(
-      this.inputTextField,
-      networksManage.customChainID,
-      2
-    )
+  async inputChainId(customChainID: string) {
+    await Action.setInputText(this.inputTextField, customChainID, 2)
     await Action.tap(this.chainID)
   }
 
-  async inputNativeTokenSymbol() {
-    await Action.setInputText(
-      this.inputTextField,
-      networksManage.customNativeTokenSymbol,
-      3
-    )
+  async inputNativeTokenSymbol(customNativeTokenSymbol: string) {
+    await Action.setInputText(this.inputTextField, customNativeTokenSymbol, 3)
     await Action.tap(this.nativeTokenSymbol)
   }
 
-  async inputExplorerUrl() {
-    await Action.setInputText(
-      this.inputTextField,
-      networksManage.customExplorerUrl,
-      5
-    )
+  async inputExplorerUrl(customExplorerUrl: string) {
+    await Action.setInputText(this.inputTextField, customExplorerUrl, 5)
     await Action.tap(this.explorerUrl)
   }
 
   async swipeUp() {
-    await Action.swipeUp(this.inputTextField, 'fast', 0.5, 5)
+    await Action.swipeUp(this.inputTextField, 'fast', 0.5, 4)
   }
 }
 
