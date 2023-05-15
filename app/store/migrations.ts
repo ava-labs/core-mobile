@@ -1,3 +1,4 @@
+import { ChainId } from '@avalabs/chains-sdk'
 import { initialState as watchlistInitialState } from './watchlist'
 import { initialState as posthogInitialState } from './posthog'
 
@@ -35,6 +36,37 @@ export const migrations = {
       posthog: {
         distinctID: posthogInitialState.distinctID,
         userID: state.posthog.userID
+      }
+    }
+  },
+  5: (state: any) => {
+    // migrate BTC and BTC testnet chainIds
+    const updatedFavorites = state.network.favorites.map((chainId: number) => {
+      if (chainId === -1) {
+        return ChainId.BITCOIN
+      }
+
+      if (chainId === -2) {
+        return ChainId.BITCOIN_TESTNET
+      }
+
+      return chainId
+    })
+
+    let updatedActive = state.network.active
+
+    if (updatedActive === -1) {
+      updatedActive = ChainId.BITCOIN
+    } else if (updatedActive === -2) {
+      updatedActive = ChainId.BITCOIN_TESTNET
+    }
+
+    return {
+      ...state,
+      network: {
+        ...state.network,
+        favorites: updatedFavorites,
+        active: updatedActive
       }
     }
   }
