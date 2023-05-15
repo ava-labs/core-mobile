@@ -9,7 +9,9 @@ import { onAppLocked, onAppUnlocked, onLogOut } from 'store/app'
 import { AppStartListening } from 'store/middleware/listener'
 import BridgeService from 'services/bridge/BridgeService'
 import { toggleDeveloperMode } from 'store/settings/advanced'
-import testConfig from 'tests/fixtures/bridgeConfig.json'
+import testConfig from 'tests/fixtures/bridgeConfig'
+import { BridgeConfig } from '@avalabs/bridge-sdk'
+import { assertNotUndefined } from 'utils/assertions'
 import { addBridgeListeners } from './listeners'
 import { bridgeReducer, reducerName, selectBridgeConfig } from './slice'
 
@@ -49,7 +51,8 @@ let store: ReturnType<typeof setupTestStore>
 const getState: any = (storeInstance: typeof store) => storeInstance.getState()
 
 // common tests
-const createBridgeConfig = (version: string) => {
+const createBridgeConfig = (version: string): BridgeConfig => {
+  assertNotUndefined(testConfig.config)
   return {
     ...testConfig,
     config: {
