@@ -29,6 +29,8 @@ import { WatchlistBlacklistTransform } from './transforms/WatchlistBlacklistTran
 import { WalletConnectBlacklistTransform } from './transforms/WalletConnectBlacklistTransform'
 import { AppBlacklistTransform } from './transforms/AppBlacklistTransform'
 
+const VERSION = 5
+
 // list of reducers that don't need to be persisted
 // for nested/partial blacklist, please use transform
 const blacklist = [
@@ -105,7 +107,7 @@ export function configureEncryptedStore(secretKey: string) {
       EncryptionTransform // last!
     ],
     migrate: createMigrate(migrations, { debug: __DEV__ }),
-    version: 4
+    version: VERSION
   }
 
   const persistedReducer = persistReducer(persistConfig, rootReducer)
