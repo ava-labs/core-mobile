@@ -1,29 +1,27 @@
 import {
-  AssetType,
   BIG_ZERO,
   Blockchain,
-  getMinimumTransferAmount,
-  satoshiToBtc,
   useBridgeSDK,
   useHasEnoughForGas
 } from '@avalabs/bridge-sdk'
 import { BridgeAdapter } from 'screens/bridge/hooks/useBridge'
 import { useBridgeContext } from 'contexts/BridgeContext'
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { useSingularAssetBalanceEVM } from 'screens/bridge/hooks/useSingularAssetBalanceEVM'
 import { useAssetBalancesEVM } from 'screens/bridge/hooks/useAssetBalancesEVM'
 import Big from 'big.js'
 import { useAvalancheProvider } from 'hooks/networkProviderHooks'
 import { useSelector } from 'react-redux'
-import { selectBridgeConfig } from 'store/bridge'
 import { selectActiveAccount } from 'store/account'
 
 /**
  * Hook for when the source is Avalanche
  */
-export function useAvalancheBridge(amount: Big, bridgeFee: Big): BridgeAdapter {
-  const bridgeConfig = useSelector(selectBridgeConfig)
-
+export function useAvalancheBridge(
+  amount: Big,
+  bridgeFee: Big,
+  minimum: Big
+): BridgeAdapter {
   const {
     targetBlockchain,
     currentBlockchain,
@@ -53,22 +51,6 @@ export function useAvalancheBridge(amount: Big, bridgeFee: Big): BridgeAdapter {
   )
 
   const maximum = sourceBalance?.balance || BIG_ZERO
-  const minimum = useMemo(() => {
-    if (!bridgeConfig?.config) {
-      return BIG_ZERO
-    }
-    if (currentAssetData?.assetType === AssetType.ERC20) {
-      return bridgeFee.mul(3)
-    } else {
-      return satoshiToBtc(
-        getMinimumTransferAmount(
-          Blockchain.AVALANCHE,
-          bridgeConfig.config,
-          amount.toNumber()
-        )
-      )
-    }
-  }, [amount, bridgeConfig?.config, bridgeFee, currentAssetData?.assetType])
   const receiveAmount = amount.gt(minimum) ? amount.minus(bridgeFee) : BIG_ZERO
 
   const transfer = useCallback(async () => {
@@ -117,7 +99,6 @@ export function useAvalancheBridge(amount: Big, bridgeFee: Big): BridgeAdapter {
     loading,
     receiveAmount,
     maximum,
-    minimum,
     txHash,
     transfer
   }
