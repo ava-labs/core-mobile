@@ -1,8 +1,8 @@
 import Big from 'big.js'
 import {
-  AssetType,
   BIG_ZERO,
   Blockchain,
+  isNativeAsset,
   useBridgeSDK,
   useHasEnoughForGas,
   useMaxTransferAmount,
@@ -22,7 +22,11 @@ import { selectBridgeAppConfig } from 'store/bridge'
 /**
  * Hook for when the bridge source chain is Ethereum
  */
-export function useEthBridge(amount: Big, bridgeFee: Big): BridgeAdapter {
+export function useEthBridge(
+  amount: Big,
+  bridgeFee: Big,
+  minimum: Big
+): BridgeAdapter {
   const {
     currentAsset,
     currentAssetData,
@@ -58,7 +62,6 @@ export function useEthBridge(amount: Big, bridgeFee: Big): BridgeAdapter {
       activeAccount?.address,
       ethereumProvider
     ) || undefined
-  const minimum = bridgeFee?.mul(3)
   const receiveAmount = amount.gt(minimum) ? amount.minus(bridgeFee) : BIG_ZERO
 
   const transfer = useCallback(async () => {
@@ -67,10 +70,9 @@ export function useEthBridge(amount: Big, bridgeFee: Big): BridgeAdapter {
     }
 
     const timestamp = Date.now()
-    const symbol =
-      currentAssetData.assetType === AssetType.NATIVE
-        ? currentAssetData.wrappedAssetSymbol
-        : currentAsset || ''
+    const symbol = isNativeAsset(currentAssetData)
+      ? currentAssetData.wrappedAssetSymbol
+      : currentAsset || ''
 
     //this transfer is part of the Bridge context
     const result = await transferAsset(
@@ -113,7 +115,6 @@ export function useEthBridge(amount: Big, bridgeFee: Big): BridgeAdapter {
     loading,
     receiveAmount,
     maximum,
-    minimum,
     wrapStatus,
     txHash,
     transfer
