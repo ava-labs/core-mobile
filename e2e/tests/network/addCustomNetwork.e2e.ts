@@ -4,10 +4,11 @@
  * @jest-environment ./environment.ts
  */
 import Assert from '../../helpers/assertions'
-import actions from '../../helpers/actions'
+import Actions from '../../helpers/actions'
 import LoginRecoverWallet from '../../helpers/loginRecoverWallet'
 import PortfolioPage from '../../pages/portfolio.page'
 import NetworksManagePage from '../../pages/networksManage.page'
+import NetworksManageLoc from '../../locators/networksManage.loc'
 import { warmup } from '../../helpers/warmup'
 
 describe('Change Network', () => {
@@ -20,32 +21,62 @@ describe('Change Network', () => {
     await PortfolioPage.tapNetworksDropdown()
     await PortfolioPage.tapManageNetworks()
     await NetworksManagePage.tapAddNetwork()
-    await NetworksManagePage.inputNetworkRpcUrl()
-    await NetworksManagePage.inputNetworkName()
-    await NetworksManagePage.inputChainId()
-    await NetworksManagePage.inputNativeTokenSymbol()
+    await NetworksManagePage.inputNetworkRpcUrl(
+      NetworksManageLoc.arbCustomRpcUrl
+    )
+    await NetworksManagePage.inputNetworkName(
+      NetworksManageLoc.arbWrongCustomNetworkName
+    )
+    await NetworksManagePage.inputChainId(NetworksManageLoc.arbCustomChainID)
+    await NetworksManagePage.inputNativeTokenSymbol(
+      NetworksManageLoc.arbCustomNativeTokenSymbol
+    )
     if (
-      (await actions.isVisible(NetworksManagePage.inputTextField, 5)) === false
+      (await Actions.isVisible(NetworksManagePage.inputTextField, 5)) === false
     ) {
       await NetworksManagePage.swipeUp()
     }
-    await NetworksManagePage.inputExplorerUrl()
+    await NetworksManagePage.inputExplorerUrl(
+      NetworksManageLoc.arbCustomExplorerUrl
+    )
     await NetworksManagePage.swipeUp()
     await NetworksManagePage.tapSaveButton()
     await NetworksManagePage.tapCustomTab()
-    await Assert.isVisible(NetworksManagePage.customNetwork)
+    await Assert.isVisible(NetworksManagePage.arbWrongCustomNetworkName)
+  })
+
+  it('should edit custom network', async () => {
+    await NetworksManagePage.tapNetworkInfo()
+    await NetworksManagePage.tapDropdown()
+    await NetworksManagePage.tapEditNetwork()
+    await NetworksManagePage.inputNetworkName(
+      NetworksManageLoc.arbCustomNetworkName
+    )
+    await NetworksManagePage.swipeUp()
+    await NetworksManagePage.tapSaveButton()
+    await NetworksManagePage.tapHeaderBack()
+    await Assert.isVisible(NetworksManagePage.arbCustomNetwork)
   })
 
   it('should add custom network to favorites', async () => {
     await NetworksManagePage.addBtcNetwork()
     await NetworksManagePage.tapFavoritesTab()
-    await Assert.isVisible(NetworksManagePage.customNetwork)
+    await Assert.isVisible(NetworksManagePage.arbCustomNetwork)
   })
 
   it('should change active network to custom', async () => {
     await NetworksManagePage.tapCustomTab()
-    await NetworksManagePage.tapCustomNetwork()
-    await Assert.isVisible(NetworksManagePage.customNetwork)
+    await NetworksManagePage.tapArbCustomNetwork()
+    await Assert.isVisible(NetworksManagePage.arbCustomNetwork)
+  })
+
+  it('should view balances of custom network', async () => {
+    await PortfolioPage.tapArbitrumNetwork()
+    await Actions.waitForElement(
+      NetworksManagePage.ethTokenOnCustomNetwork,
+      60000
+    )
+    await Assert.isVisible(NetworksManagePage.ethTokenOnCustomNetwork)
   })
 
   it('should delete custom network', async () => {
@@ -56,6 +87,6 @@ describe('Change Network', () => {
     await NetworksManagePage.tapDropdown()
     await NetworksManagePage.tapDeleteNetwork()
     await NetworksManagePage.tapDeleteNetwork()
-    await Assert.isNotVisible(NetworksManagePage.customNetwork)
+    await Assert.isNotVisible(NetworksManagePage.arbCustomNetwork)
   })
 })

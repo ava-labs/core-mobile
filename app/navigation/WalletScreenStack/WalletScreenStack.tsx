@@ -316,14 +316,18 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
             ...MainHeaderOptions({
               title: '',
               hideHeaderLeft: false,
-              actionComponent: <NetworkDetailsAction />
+              actionComponent: <NetworkDetailsAction />,
+              headerBackTestID: 'header_back'
             })
           }}
           name={AppNavigation.Wallet.NetworkDetails}
           component={NetworkDetailsScreen}
         />
         <WalletScreenS.Screen
-          options={MainHeaderOptions()}
+          options={MainHeaderOptions({
+            title: '',
+            headerBackTestID: 'header_back'
+          })}
           name={AppNavigation.Wallet.NetworkAddEdit}
           component={NetworkAddEditScreen}
         />

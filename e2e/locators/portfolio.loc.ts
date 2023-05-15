@@ -21,5 +21,6 @@ export default {
   networksDropdownManage: 'network_dropdown__Manage Networks',
   networksDropdown: 'network_dropdown_main',
   noAssetsHeader: 'No assets',
+  polygonNetwork: 'Polygon Mainnet',
   viewAll: 'View All'
 }
