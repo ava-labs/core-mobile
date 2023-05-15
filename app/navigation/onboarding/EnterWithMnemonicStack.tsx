@@ -87,6 +87,7 @@ const LoginWithMnemonicScreen = () => {
   const { navigate, goBack } = useNavigation<LoginNavigationProp>()
   const { capture } = usePostCapture()
   const { userSettingsRepo } = useApplicationContext().repo
+  const { deleteWallet } = useApplicationContext().appHook
 
   useBeforeRemoveListener(
     useCallback(() => {
@@ -98,12 +99,14 @@ const LoginWithMnemonicScreen = () => {
 
   const onEnterWallet = useCallback(
     m => {
+      deleteWallet()
+
       BiometricsSDK.clearWalletKey().then(() => {
         enterWithMnemonicContext.setMnemonic(m)
         navigate(AppNavigation.LoginWithMnemonic.CreatePin)
       })
     },
-    [enterWithMnemonicContext, navigate]
+    [deleteWallet, enterWithMnemonicContext, navigate]
   )
 
   return <HdWalletLogin onEnterWallet={onEnterWallet} onBack={() => goBack()} />
