@@ -199,7 +199,9 @@ class WalletService {
   }
 
   destroy() {
-    this.mnemonic = ''
+    this.mnemonic = undefined
+    this.xpub = undefined
+    this.xpubXP = undefined
   }
 
   /**
