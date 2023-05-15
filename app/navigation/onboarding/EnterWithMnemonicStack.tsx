@@ -15,7 +15,7 @@ import BiometricsSDK from 'utils/BiometricsSDK'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { MainHeaderOptions } from 'navigation/NavUtils'
 import TermsNConditionsModal from 'components/TermsNConditionsModal'
-import { onAppUnlocked, onLogIn, onLogOut } from 'store/app'
+import { onAppUnlocked, onLogIn } from 'store/app'
 import { useDispatch } from 'react-redux'
 import {
   RemoveEvents,
@@ -23,10 +23,6 @@ import {
 } from 'hooks/useBeforeRemoveListener'
 import { usePostCapture } from 'hooks/usePosthogCapture'
 import OwlLoader from 'components/OwlLoader'
-import { resetLoginAttempt } from 'store/security'
-import { useAppNav } from 'useAppNav'
-import { useRepo } from 'Repo'
-import { useWalletSetup } from 'hooks/useWalletSetup'
 import { EnterWithMnemonicScreenProps } from '../types'
 
 export type EnterWithMnemonicStackParamList = {
@@ -91,11 +87,7 @@ const LoginWithMnemonicScreen = () => {
   const { navigate, goBack } = useNavigation<LoginNavigationProp>()
   const { capture } = usePostCapture()
   const { userSettingsRepo } = useApplicationContext().repo
-
-  const dispatch = useDispatch()
-  const appNavHook = useAppNav()
-  const repository = useRepo()
-  const walletSetupHook = useWalletSetup(appNavHook)
+  const { deleteWallet } = useApplicationContext().appHook
 
   useBeforeRemoveListener(
     useCallback(() => {
@@ -107,17 +99,14 @@ const LoginWithMnemonicScreen = () => {
 
   const onEnterWallet = useCallback(
     m => {
-      walletSetupHook.destroyWallet()
-      repository.flush()
-      dispatch(onLogOut())
-      dispatch(resetLoginAttempt())
+      deleteWallet()
 
       BiometricsSDK.clearWalletKey().then(() => {
         enterWithMnemonicContext.setMnemonic(m)
         navigate(AppNavigation.LoginWithMnemonic.CreatePin)
       })
     },
-    [dispatch, enterWithMnemonicContext, navigate, repository, walletSetupHook]
+    [deleteWallet, enterWithMnemonicContext, navigate]
   )
 
   return <HdWalletLogin onEnterWallet={onEnterWallet} onBack={() => goBack()} />
