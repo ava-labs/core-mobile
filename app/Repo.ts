@@ -121,11 +121,11 @@ export function useRepo(): Repo {
     )
 
     const initialViewOnceInfoFromStorage =
-      await StorageTools.loadFromStorageAsObj<ViewOnceInformation[]>(
+      await StorageTools.loadFromStorageAsArray<ViewOnceInformation>(
         VIEW_ONCE_INFORMATION
       )
 
-    setViewOnceInfo(initialViewOnceInfoFromStorage || [])
+    setViewOnceInfo(initialViewOnceInfoFromStorage)
   }
 
   return {
