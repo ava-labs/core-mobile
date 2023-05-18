@@ -11,6 +11,7 @@ import TopNavigationHeader from 'navigation/TopNavigationHeader'
 import { getCommonBottomTabOptions, normalTabButton } from 'navigation/NavUtils'
 import EarnSVG from 'components/svg/EarnSVG'
 import EarnTabView from 'screens/earn/EarnTabView'
+import { usePosthogContext } from 'contexts/PosthogContext'
 
 export type TabNavigatorParamList = {
   [AppNavigation.Tabs.Portfolio]: { showBackButton?: boolean }
@@ -23,6 +24,7 @@ const TAB_ICON_SIZE = 28
 
 const TabNavigator = () => {
   const theme = useApplicationContext().theme
+  const { earnBlocked } = usePosthogContext()
 
   return (
     <Tab.Navigator
@@ -65,19 +67,21 @@ const TabNavigator = () => {
         }}
         component={WatchlistTab}
       />
-      <Tab.Screen
-        name={AppNavigation.Tabs.Earn}
-        options={{
-          tabBarIcon: ({ focused }) =>
-            normalTabButton({
-              theme,
-              routeName: AppNavigation.Tabs.Earn,
-              focused,
-              image: <EarnSVG selected={focused} size={TAB_ICON_SIZE} />
-            })
-        }}
-        component={EarnTabView}
-      />
+      {!earnBlocked && (
+        <Tab.Screen
+          name={AppNavigation.Tabs.Earn}
+          options={{
+            tabBarIcon: ({ focused }) =>
+              normalTabButton({
+                theme,
+                routeName: AppNavigation.Tabs.Earn,
+                focused,
+                image: <EarnSVG selected={focused} size={TAB_ICON_SIZE} />
+              })
+          }}
+          component={EarnTabView}
+        />
+      )}
     </Tab.Navigator>
   )
 }
