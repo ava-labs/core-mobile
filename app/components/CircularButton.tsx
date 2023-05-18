@@ -58,8 +58,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 16,
-    width: 64,
-    height: 64,
+    width: 48,
+    height: 48,
     borderRadius: 50,
     overflow: 'hidden'
   }
