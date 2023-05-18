@@ -9,10 +9,13 @@ import React from 'react'
 import WatchlistTab from 'screens/watchlist/WatchlistTabView'
 import TopNavigationHeader from 'navigation/TopNavigationHeader'
 import { getCommonBottomTabOptions, normalTabButton } from 'navigation/NavUtils'
+import EarnSVG from 'components/svg/EarnSVG'
+import EarnTabView from 'screens/earn/EarnTabView'
 
 export type TabNavigatorParamList = {
   [AppNavigation.Tabs.Portfolio]: { showBackButton?: boolean }
   [AppNavigation.Tabs.Watchlist]: undefined
+  [AppNavigation.Tabs.Earn]: undefined
 }
 
 const Tab = createBottomTabNavigator<TabNavigatorParamList>()
@@ -21,11 +24,6 @@ const TAB_ICON_SIZE = 28
 const TabNavigator = () => {
   const theme = useApplicationContext().theme
 
-  /**
-   * Due to the use of a custom FAB as a tab icon, spacing needed to be manually manipulated
-   * which required the "normal" items to be manually rendered on `options.tabBarIcon` instead of automatically handled
-   * by Tab.Navigator.
-   */
   return (
     <Tab.Navigator
       screenOptions={{
@@ -66,6 +64,19 @@ const TabNavigator = () => {
             })
         }}
         component={WatchlistTab}
+      />
+      <Tab.Screen
+        name={AppNavigation.Tabs.Earn}
+        options={{
+          tabBarIcon: ({ focused }) =>
+            normalTabButton({
+              theme,
+              routeName: AppNavigation.Tabs.Earn,
+              focused,
+              image: <EarnSVG selected={focused} size={TAB_ICON_SIZE} />
+            })
+        }}
+        component={EarnTabView}
       />
     </Tab.Navigator>
   )
