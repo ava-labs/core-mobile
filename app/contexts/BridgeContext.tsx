@@ -21,7 +21,6 @@ import { useTransferAsset } from 'screens/bridge/hooks/useTransferAsset'
 import { PartialBridgeTransaction } from 'screens/bridge/handlers/createBridgeTransaction'
 import { BridgeState } from 'store/bridge/types'
 import { useDispatch, useSelector } from 'react-redux'
-import { selectActiveNetwork } from 'store/network'
 import { selectActiveAccount } from 'store/account'
 import {
   addBridgeTransaction,
@@ -36,6 +35,7 @@ import {
   useEthereumProvider
 } from 'hooks/networkProviderHooks'
 import { isEqual } from 'lodash'
+import { Network } from '@avalabs/chains-sdk'
 
 export enum TransferEventType {
   WRAP_STATUS = 'wrap_status',
@@ -45,7 +45,8 @@ export enum TransferEventType {
 
 interface BridgeContext {
   createBridgeTransaction(
-    tx: PartialBridgeTransaction
+    tx: PartialBridgeTransaction,
+    network: Network
   ): Promise<void | { error: string }>
 
   removeBridgeTransaction(tx: string): Promise<void>
@@ -79,7 +80,6 @@ function LocalBridgeProvider({ children }: { children: ReactNode }) {
   const dispatch = useDispatch()
   const bridgeConfig = useSelector(selectBridgeConfig)
   const config = bridgeConfig?.config
-  const network = useSelector(selectActiveNetwork)
   const activeAccount = useSelector(selectActiveAccount)
   const bridgeTransactions = useSelector(selectBridgeTransactions)
   const hydrationComplete = useSelector(selectIsReady)
@@ -158,7 +158,10 @@ function LocalBridgeProvider({ children }: { children: ReactNode }) {
    * transaction tracking process.
    */
   const createBridgeTransaction = useCallback(
-    async (partialBridgeTransaction: PartialBridgeTransaction) => {
+    async (
+      partialBridgeTransaction: PartialBridgeTransaction,
+      network: Network
+    ) => {
       if (!config || !network || !activeAccount) {
         return Promise.reject('Wallet not ready')
       }
@@ -218,7 +221,6 @@ function LocalBridgeProvider({ children }: { children: ReactNode }) {
       bridgeTransactions,
       config,
       dispatch,
-      network,
       subscribeToTransaction
     ]
   )

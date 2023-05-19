@@ -87,14 +87,17 @@ export function useEthBridge(
       amount
     })
 
-    createBridgeTransaction({
-      sourceChain: Blockchain.ETHEREUM,
-      sourceTxHash: result?.hash ?? '',
-      sourceStartedAt: timestamp,
-      targetChain: Blockchain.AVALANCHE,
-      amount,
-      symbol
-    })
+    createBridgeTransaction(
+      {
+        sourceChain: Blockchain.ETHEREUM,
+        sourceTxHash: result?.hash ?? '',
+        sourceStartedAt: timestamp,
+        targetChain: Blockchain.AVALANCHE,
+        amount,
+        symbol
+      },
+      network
+    )
 
     return result?.hash
   }, [

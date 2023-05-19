@@ -160,7 +160,7 @@ function DropDown<ItemT>({
   /**
    * List with content items
    */
-  function filterContent() {
+  const filterContent = () => {
     return (
       <>
         {blurBackground}
