@@ -119,6 +119,13 @@ export function useRepo(): Repo {
         USER_SETTINGS
       )
     )
+
+    const initialViewOnceInfoFromStorage =
+      await StorageTools.loadFromStorageAsArray<ViewOnceInformation>(
+        VIEW_ONCE_INFORMATION
+      )
+
+    setViewOnceInfo(initialViewOnceInfoFromStorage)
   }
 
   return {
