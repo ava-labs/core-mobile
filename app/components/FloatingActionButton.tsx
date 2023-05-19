@@ -9,6 +9,7 @@ import { Pressable, StyleSheet, View, ViewStyle } from 'react-native'
 import { assertNotUndefined } from 'utils/assertions'
 import CircularButton from 'components/CircularButton'
 import { useApplicationContext } from 'contexts/ApplicationContext'
+import { usePostCapture } from 'hooks/usePosthogCapture'
 
 export type ActionProp = {
   image: React.ReactNode
@@ -36,6 +37,7 @@ const FloatingActionButton = ({
 }: FABProps) => {
   const progress = useSharedValue(0)
   const { theme } = useApplicationContext()
+  const { capture } = usePostCapture()
 
   useEffect(() => {
     if (!expanded) {
@@ -73,11 +75,13 @@ const FloatingActionButton = ({
     // if fab is active (expanded) then we collapse.
     if (expanded) {
       setExpanded(false)
+      capture('FABClosed')
       return
     }
     progress.value = withSpring(1, springConfig)
     setExpanded(true)
-  }, [expanded, progress, setExpanded])
+    capture('FABOpened')
+  }, [capture, expanded, progress, setExpanded])
 
   const wrapperStyle = useMemo(() => {
     return {
