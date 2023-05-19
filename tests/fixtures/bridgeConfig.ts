@@ -125,19 +125,19 @@ const testnetDynamicFeesConfig: BridgeConfig = {
           minimumFeeAmount: '923077',
           maximumFeeAmount: '76923077',
           feePercentage: 25,
-          feeDecimals: 5
+          feePercentageDecimals: 5
         },
         WBTC: {
           minimumFeeAmount: '923077',
           maximumFeeAmount: '76923077',
           feePercentage: 25,
-          feeDecimals: 5
+          feePercentageDecimals: 5
         },
         WETH: {
           minimumFeeAmount: '1500000000000000', // approx. $3
           maximumFeeAmount: '1500000000000000000', // approx. $3000
           feePercentage: 25,
-          feeDecimals: 2
+          feePercentageDecimals: 2
         }
       },
       unwrapFeeApproximation: {
@@ -145,20 +145,20 @@ const testnetDynamicFeesConfig: BridgeConfig = {
           minimumFeeAmount: '5692309',
           maximumFeeAmount: '309692309',
           feePercentage: 1,
-          feeDecimals: 3
+          feePercentageDecimals: 3
         },
         WBTC: {
           minimumFeeAmount: '5692309',
           maximumFeeAmount: '309692309',
           feePercentage: 1,
-          feeDecimals: 3
+          feePercentageDecimals: 3
         },
         WETH: {
           // more expensive than bringing assets to avalanche
           minimumFeeAmount: '6000000000000000', // approx. $12
           maximumFeeAmount: '3000000000000000000', // approx. $6000
           feePercentage: 1,
-          feeDecimals: 1
+          feePercentageDecimals: 1
         }
       },
       useChainlinkAssetPriceFeeds: true,
@@ -252,14 +252,14 @@ const testnetDynamicFeesConfig: BridgeConfig = {
               minimumFeeAmount: '10000', // approx. $3
               maximumFeeAmount: '10000000', // approx. $3000
               feePercentage: 25,
-              feeDecimals: 2
+              feePercentageDecimals: 2
             },
             unwrapFeeEstimate: {
               bridgeToll: {
                 minimumFeeAmount: '40000', // approx. $12
                 maximumFeeAmount: '20000000', // approx. $6000
                 feePercentage: 1,
-                feeDecimals: 1
+                feePercentageDecimals: 1
               },
               estimatedTxFee: {
                 constAmount: 4000,
