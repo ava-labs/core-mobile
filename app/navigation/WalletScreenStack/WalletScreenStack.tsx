@@ -177,7 +177,7 @@ export const SignOutModalScreen = () => {
   const { signOut } = useApplicationContext().appHook
 
   const doSwitchWallet = (): void => {
-    signOut().then()
+    signOut()
   }
 
   return <SignOutModal onConfirm={doSwitchWallet} />

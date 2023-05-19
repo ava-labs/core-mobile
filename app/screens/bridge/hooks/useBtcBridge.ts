@@ -240,14 +240,17 @@ export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
       amount: amountInBtc
     })
 
-    createBridgeTransaction({
-      sourceChain: Blockchain.BITCOIN,
-      sourceTxHash: hash,
-      sourceStartedAt: timestamp,
-      targetChain: Blockchain.AVALANCHE,
-      amount: amountInBtc,
-      symbol
-    })
+    createBridgeTransaction(
+      {
+        sourceChain: Blockchain.BITCOIN,
+        sourceTxHash: hash,
+        sourceStartedAt: timestamp,
+        targetChain: Blockchain.AVALANCHE,
+        amount: amountInBtc,
+        symbol
+      },
+      activeNetwork
+    )
 
     return hash
   }, [

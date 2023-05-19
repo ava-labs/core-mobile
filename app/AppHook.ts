@@ -18,7 +18,8 @@ import { formatCurrency } from 'utils/FormatCurrency'
 export type AppHook = {
   onExit: () => Observable<ExitEvents>
   selectedCurrency: string
-  signOut: () => Promise<void>
+  deleteWallet: () => void
+  signOut: () => void
   currencyFormatter(num: number | string): string
   tokenInCurrencyFormatter(num: number | string): string
 }
@@ -35,13 +36,17 @@ export function useApp(
   const { getSetting } = repository.userSettingsRepo
   const { setAnalyticsConsent } = usePosthogContext()
 
-  const signOut = useCallback(async () => {
+  const deleteWallet = useCallback(() => {
     walletSetupHook.destroyWallet()
     repository.flush()
     dispatch(onLogOut())
     dispatch(resetLoginAttempt())
+  }, [dispatch, repository, walletSetupHook])
+
+  const signOut = useCallback(() => {
+    deleteWallet()
     appNavHook.resetNavToRoot()
-  }, [appNavHook, dispatch, repository, walletSetupHook])
+  }, [appNavHook, deleteWallet])
 
   useEffect(waitForNavigationContainer, [appNavHook.navigation])
   useEffect(watchCoreAnalyticsFlagFx, [getSetting, setAnalyticsConsent])
@@ -81,7 +86,7 @@ export function useApp(
         if (!repository.userSettingsRepo.getSetting('ConsentToTOU&PP')) {
           //User has probably killed app before consent to TOU, so we'll clear all data and
           //return him to onboarding
-          signOut().catch(() => undefined)
+          signOut()
         } else {
           dispatch(setWalletState(WalletState.INACTIVE))
           appNavHook.navigation.current?.navigate(AppNavigation.Root.NoWallet)
@@ -129,6 +134,7 @@ export function useApp(
   }, [selectedCurrency])
 
   return {
+    deleteWallet,
     signOut,
     onExit,
     selectedCurrency,

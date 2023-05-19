@@ -1,5 +1,9 @@
 import { createSelector, createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { BITCOIN_NETWORK, Network } from '@avalabs/chains-sdk'
+import {
+  BITCOIN_NETWORK,
+  ChainId as ChainsSDKChainId,
+  Network
+} from '@avalabs/chains-sdk'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectAllCustomTokens } from 'store/customToken'
 import { LocalTokenWithBalance } from 'store/balance'
@@ -13,14 +17,22 @@ export const defaultNetwork = BITCOIN_NETWORK
 
 export const noActiveNetwork = 0
 
-export const alwaysFavoriteNetworks = [43114, 43113] //Avalanche mainnet, testnet
+export const alwaysFavoriteNetworks = [
+  ChainsSDKChainId.AVALANCHE_MAINNET_ID,
+  ChainsSDKChainId.AVALANCHE_TESTNET_ID
+]
 
 const reducerName = 'network'
 
 const initialState: NetworkState = {
   networks: {},
   customNetworks: {},
-  favorites: [...alwaysFavoriteNetworks, -1, -2, 1], //BTC, BTC testnet, ETH
+  favorites: [
+    ...alwaysFavoriteNetworks,
+    ChainsSDKChainId.BITCOIN,
+    ChainsSDKChainId.BITCOIN_TESTNET,
+    ChainsSDKChainId.ETHEREUM_HOMESTEAD
+  ],
   active: noActiveNetwork
 }
 
