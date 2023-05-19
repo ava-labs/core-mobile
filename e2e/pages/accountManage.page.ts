@@ -14,6 +14,10 @@ class AccountManagePage {
     return by.text(accountManage.addEditAccounts)
   }
 
+  get avaxAddress() {
+    return by.id(accountManage.avaxAddress)
+  }
+
   get doneButton() {
     return by.text(accountManage.doneButton)
   }
@@ -32,6 +36,14 @@ class AccountManagePage {
 
   get secondAccount() {
     return by.text(accountManage.secondAccount)
+  }
+
+  async getFirstAvaxAddress() {
+    return Action.getAttributes(this.avaxAddress, 0)
+  }
+
+  async getSecondAvaxAddress() {
+    return Action.getAttributes(this.avaxAddress, 2)
   }
 
   async setNewAccountName() {

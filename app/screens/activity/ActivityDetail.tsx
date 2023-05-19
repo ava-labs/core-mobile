@@ -132,7 +132,7 @@ function ActivityDetail() {
                 {contact && (
                   <AvaText.Heading3>{contact?.title}</AvaText.Heading3>
                 )}
-                <AvaText.Body1>
+                <AvaText.Body1 testID="address">
                   {truncateAddress(
                     txItem.isSender ? txItem.to : txItem.from
                   ).toLowerCase()}

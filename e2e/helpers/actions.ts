@@ -97,8 +97,8 @@ const waitForElementNotVisible = async (
   await waitFor(element(item)).not.toBeVisible().withTimeout(timeout)
 }
 
-const getAttributes = async (item: any) => {
-  return await element(item).getAttributes()
+const getAttributes = async (item: any, index = 0) => {
+  return await element(item).atIndex(index).getAttributes()
 }
 
 // Not working for some reason, need to fix

@@ -2,6 +2,10 @@ import Actions from '../helpers/actions'
 import Send from '../locators/send.loc'
 
 class SendPage {
+  get addressBook() {
+    return by.id(Send.addressBook)
+  }
+
   get textInputField() {
     return by.id(Send.testInputField)
   }
@@ -18,12 +22,20 @@ class SendPage {
     return by.id(Send.amountField)
   }
 
+  get myAccounts() {
+    return by.text(Send.myAccounts)
+  }
+
   get nextButton() {
     return by.text(Send.nextBtn)
   }
 
   get sendTitle() {
     return by.text(Send.sendTitle)
+  }
+
+  async tapAddressBook() {
+    await Actions.tap(this.addressBook)
   }
 
   async tapSendTitle() {
@@ -36,6 +48,10 @@ class SendPage {
 
   async tapCarrotSVG() {
     await Actions.tap(this.carrotSVG)
+  }
+
+  async tapMyAccounts() {
+    await Actions.tap(this.myAccounts)
   }
 
   async tapSendField() {
