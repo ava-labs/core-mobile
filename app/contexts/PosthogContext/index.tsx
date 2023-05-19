@@ -43,6 +43,7 @@ export interface PosthogContextState {
   bridgeBlocked: boolean
   bridgeBtcBlocked: boolean
   bridgeEthBlocked: boolean
+  earnBlocked: boolean
   sendBlocked: boolean
   sendNftBlockediOS: boolean
   sendNftBlockedAndroid: boolean
@@ -59,6 +60,7 @@ const DefaultFeatureFlagConfig = {
   [FeatureGates.BRIDGE]: true,
   [FeatureGates.BRIDGE_BTC]: true,
   [FeatureGates.BRIDGE_ETH]: true,
+  [FeatureGates.EARN]: false,
   [FeatureGates.SEND]: true,
   [FeatureGates.SEND_NFT_IOS]: true,
   [FeatureGates.SEND_NFT_ANDROID]: true,
@@ -86,6 +88,9 @@ const processFlags = (flags: FeatureFlags) => {
   const sendBlocked =
     !flags[FeatureGates.SEND] || !flags[FeatureGates.EVERYTHING]
 
+  const earnBlocked =
+    !flags[FeatureGates.EARN] || !flags[FeatureGates.EVERYTHING]
+
   const sendNftBlockediOS =
     !flags[FeatureGates.SEND_NFT_IOS] || !flags[FeatureGates.EVERYTHING]
 
@@ -112,6 +117,7 @@ const processFlags = (flags: FeatureFlags) => {
     bridgeBlocked,
     bridgeBtcBlocked,
     bridgeEthBlocked,
+    earnBlocked,
     sendBlocked,
     sendNftBlockediOS,
     sendNftBlockedAndroid,
@@ -149,6 +155,7 @@ export const PosthogContextProvider = ({
     bridgeBlocked,
     bridgeBtcBlocked,
     bridgeEthBlocked,
+    earnBlocked,
     sendBlocked,
     sendNftBlockediOS,
     sendNftBlockedAndroid,
@@ -240,6 +247,7 @@ export const PosthogContextProvider = ({
         bridgeBlocked,
         bridgeBtcBlocked,
         bridgeEthBlocked,
+        earnBlocked,
         sendBlocked,
         sendNftBlockediOS,
         sendNftBlockedAndroid,
