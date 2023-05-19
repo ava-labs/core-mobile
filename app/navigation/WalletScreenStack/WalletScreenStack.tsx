@@ -112,6 +112,9 @@ export type WalletScreenStackParams = {
   [AppNavigation.Wallet.Buy]:
     | NavigatorScreenParams<BuyStackParamList>
     | undefined
+  [AppNavigation.Wallet.Bridge]:
+    | NavigatorScreenParams<BridgeStackParamList>
+    | undefined
   [AppNavigation.Wallet.AddCustomToken]: undefined
   [AppNavigation.Wallet.TokenDetail]: { tokenId: string }
   [AppNavigation.Wallet.OwnedTokenDetail]: { tokenId: string }
@@ -136,7 +139,6 @@ export type WalletScreenStackParams = {
     | undefined
   [AppNavigation.Wallet.Legal]: NavigatorScreenParams<LegalStackParamList>
   [AppNavigation.Bridge.BridgeTransactionStatus]: BridgeTransactionStatusParams
-  [AppNavigation.Wallet.Bridge]: NavigatorScreenParams<BridgeStackParamList>
   [AppNavigation.Wallet.QRCode]: QRCodeParams
   [AppNavigation.Modal.AccountDropDown]: undefined
   [AppNavigation.Modal.AccountBottomSheet]: undefined
