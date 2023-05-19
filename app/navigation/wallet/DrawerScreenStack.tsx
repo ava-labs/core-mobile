@@ -27,6 +27,7 @@ import { useSelector } from 'react-redux'
 import { selectActiveNetwork } from 'store/network'
 import BridgeSVG from 'components/svg/BridgeSVG'
 import { Opacity50 } from 'resources/Constants'
+import { usePostCapture } from 'hooks/usePosthogCapture'
 
 export type DrawerParamList = {
   [AppNavigation.Wallet.Tabs]: NavigatorScreenParams<TabNavigatorParamList>
@@ -74,28 +75,33 @@ const Fab: FC = () => {
   const { setPendingDeepLink } = useDeeplink()
   const activeNetwork = useSelector(selectActiveNetwork)
   const [expanded, setExpanded] = useState(false)
+  const { capture } = usePostCapture()
 
   const actionItems = useMemo(() => {
     const actions: Record<string, ActionProp> = {}
 
     actions.Bridge = {
       image: <BridgeSVG color={theme.background} size={24} />,
-      onPress: () =>
-        isBridgeDisabled
-          ? showSnackBarCustom({
-              component: (
-                <GeneralToast
-                  message={`Bridge not available on ${activeNetwork.chainName}`}
-                />
-              ),
-              duration: 'short'
-            })
-          : navigation.navigate(AppNavigation.Wallet.Bridge)
+      onPress: () => {
+        if (isBridgeDisabled) {
+          showSnackBarCustom({
+            component: (
+              <GeneralToast
+                message={`Bridge not available on ${activeNetwork.chainName}`}
+              />
+            ),
+            duration: 'short'
+          })
+        } else {
+          navigation.navigate(AppNavigation.Wallet.Bridge)
+          capture('FABItemSelected_Bridge')
+        }
+      }
     } as ActionProp
     if (!wcDisabled) {
       actions.WalletConnect = {
         image: <WalletConnectSVG color={theme.background} size={24} />,
-        onPress: () =>
+        onPress: () => {
           navigation.navigate(AppNavigation.Wallet.QRCode, {
             onScanned: uri => {
               setPendingDeepLink({
@@ -105,23 +111,34 @@ const Fab: FC = () => {
               navigation.goBack()
             }
           })
+          capture('FABItemSelected_WalletConnect')
+        }
       } as ActionProp
     }
     if (!swapDisabled) {
       actions.Swap = {
         image: <SwapSVG color={theme.background} size={24} />,
-        onPress: () => navigation.navigate(AppNavigation.Wallet.Swap)
+        onPress: () => {
+          navigation.navigate(AppNavigation.Wallet.Swap)
+          capture('FABItemSelected_Swap')
+        }
       } as ActionProp
     }
     if (!buyDisabled) {
       actions.Buy = {
         image: <BuySVG color={theme.background} size={24} />,
-        onPress: () => navigation.navigate(AppNavigation.Wallet.Buy)
+        onPress: () => {
+          navigation.navigate(AppNavigation.Wallet.Buy)
+          capture('FABItemSelected_Buy')
+        }
       } as ActionProp
     }
     actions.Receive = {
       image: <QRCodeSVG color={theme.background} size={24} />,
-      onPress: () => navigation.navigate(AppNavigation.Wallet.ReceiveTokens)
+      onPress: () => {
+        navigation.navigate(AppNavigation.Wallet.ReceiveTokens)
+        capture('FABItemSelected_Receive')
+      }
     } as ActionProp
 
     actions.Send = {
@@ -137,23 +154,28 @@ const Fab: FC = () => {
           <ArrowSVG rotate={180} color={theme.background} size={17} />
         </View>
       ),
-      onPress: () => navigation.navigate(AppNavigation.Wallet.SendTokens)
+      onPress: () => {
+        navigation.navigate(AppNavigation.Wallet.SendTokens)
+        capture('FABItemSelected_Send')
+      }
     } as ActionProp
 
     return actions
   }, [
     theme.background,
-    buyDisabled,
-    swapDisabled,
     wcDisabled,
-    navigation,
-    setPendingDeepLink,
+    swapDisabled,
+    buyDisabled,
     isBridgeDisabled,
-    activeNetwork.chainName
+    activeNetwork.chainName,
+    navigation,
+    capture,
+    setPendingDeepLink
   ])
 
   function dismiss() {
     setExpanded(false)
+    capture('FABClosed')
   }
 
   const fabStyle = useMemo(() => {
