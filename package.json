@@ -23,19 +23,19 @@
     "postinstall": "node_modules/.bin/patch-package; node_modules/.bin/rn-nodeify --install events,stream,vm,assert,https,http,os --hack"
   },
   "dependencies": {
-    "@avalabs/blockcypher-sdk": "2.8.0-alpha.82",
-    "@avalabs/bridge-sdk": "2.8.0-alpha.82",
-    "@avalabs/chains-sdk": "2.8.0-alpha.82",
-    "@avalabs/coingecko-sdk": "2.8.0-alpha.82",
-    "@avalabs/covalent-sdk": "2.8.0-alpha.82",
-    "@avalabs/etherscan-sdk": "2.8.0-alpha.82",
-    "@avalabs/glacier-sdk": "2.8.0-alpha.82",
-    "@avalabs/paraswap-sdk": "2.8.0-alpha.82",
-    "@avalabs/snowtrace-sdk": "2.8.0-alpha.82",
-    "@avalabs/token-prices-sdk": "2.8.0-alpha.82",
-    "@avalabs/types": "2.8.0-alpha.82",
-    "@avalabs/utils-sdk": "2.8.0-alpha.82",
-    "@avalabs/wallets-sdk": "2.8.0-alpha.82",
+    "@avalabs/blockcypher-sdk": "2.8.0-alpha.96",
+    "@avalabs/bridge-sdk": "2.8.0-alpha.96",
+    "@avalabs/chains-sdk": "2.8.0-alpha.96",
+    "@avalabs/coingecko-sdk": "2.8.0-alpha.96",
+    "@avalabs/covalent-sdk": "2.8.0-alpha.96",
+    "@avalabs/etherscan-sdk": "2.8.0-alpha.96",
+    "@avalabs/glacier-sdk": "2.8.0-alpha.96",
+    "@avalabs/paraswap-sdk": "2.8.0-alpha.96",
+    "@avalabs/snowtrace-sdk": "2.8.0-alpha.96",
+    "@avalabs/token-prices-sdk": "2.8.0-alpha.96",
+    "@avalabs/types": "2.8.0-alpha.96",
+    "@avalabs/utils-sdk": "2.8.0-alpha.96",
+    "@avalabs/wallets-sdk": "2.8.0-alpha.96",
     "@babel/plugin-syntax-object-rest-spread": "7.8.3",
     "@coinbase/cbpay-js": "1.6.0",
     "@ethereumjs/common": "2.6.2",
@@ -260,7 +260,7 @@
     "*.{ts,tsx}": "eslint --fix --max-warnings 0"
   },
   "engines": {
-    "node": ">=14.17.0",
+    "node": ">=18.14.1",
     "yarn": ">=1.22.10"
   },
   "lavamoat": {
@@ -328,5 +328,9 @@
     "_stream_passthrough": "readable-stream/passthrough",
     "stream": "stream-browserify",
     "vm": "vm-browserify"
+  },
+  "volta": {
+    "node": "18.14.1",
+    "yarn": "1.22.10"
   }
 }

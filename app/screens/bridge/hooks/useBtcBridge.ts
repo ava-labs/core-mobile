@@ -6,7 +6,6 @@ import {
   btcToSatoshi,
   getBtcAsset,
   getBtcTransaction,
-  getMinimumTransferAmount,
   satoshiToBtc,
   useBridgeSDK
 } from '@avalabs/bridge-sdk'
@@ -67,7 +66,6 @@ export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
   const [feeRates, setFeeRates] = useState<NetworkFee | null>()
   const [networkFee, setNetworkFee] = useState<Big>(BIG_ZERO)
   const [receiveAmount, setReceiveAmount] = useState<Big>(BIG_ZERO)
-  const [minimum, setMinimum] = useState<Big>(BIG_ZERO)
 
   const loading = !btcBalance || !btcBalanceAvalanche || !networkFee
 
@@ -180,13 +178,6 @@ export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
       setNetworkFee(BIG_ZERO)
       setReceiveAmount(BIG_ZERO)
     }
-
-    const minimumSatoshis = getMinimumTransferAmount(
-      Blockchain.BITCOIN,
-      bridgeConfig,
-      amountInSatoshis
-    )
-    setMinimum(satoshiToBtc(minimumSatoshis))
   }, [
     amountInSatoshis,
     btcAddress,
@@ -249,14 +240,17 @@ export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
       amount: amountInBtc
     })
 
-    createBridgeTransaction({
-      sourceChain: Blockchain.BITCOIN,
-      sourceTxHash: hash,
-      sourceStartedAt: timestamp,
-      targetChain: Blockchain.AVALANCHE,
-      amount: amountInBtc,
-      symbol
-    })
+    createBridgeTransaction(
+      {
+        sourceChain: Blockchain.BITCOIN,
+        sourceTxHash: hash,
+        sourceStartedAt: timestamp,
+        targetChain: Blockchain.AVALANCHE,
+        amount: amountInBtc,
+        symbol
+      },
+      activeNetwork
+    )
 
     return hash
   }, [
@@ -285,7 +279,6 @@ export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
     networkFee,
     receiveAmount,
     maximum,
-    minimum,
     transfer
   }
 }

@@ -21,11 +21,11 @@ import {
   signTypedData,
   SignTypedDataVersion
 } from '@metamask/eth-sig-util'
-import { getEvmProvider } from 'services/network/utils/providerUtils'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { Transaction } from '@sentry/types'
 import { Account } from 'store/account'
 import { RpcMethod } from 'store/walletConnectV2/types'
+import Logger from 'utils/Logger'
 
 class WalletService {
   private mnemonic?: string
@@ -67,13 +67,13 @@ class WalletService {
     }
     const provider = networkService.getProviderForNetwork(network)
 
-    log('btcWallet', now())
+    Logger.info('btcWallet', now())
     const btcWallet = await BitcoinWallet.fromMnemonic(
       this.mnemonic,
       accountIndex,
       provider as BitcoinProviderAbstract
     )
-    log('btcWallet end', now())
+    Logger.info('btcWallet end', now())
     return btcWallet
   }
 
@@ -85,18 +85,16 @@ class WalletService {
       throw new Error('Only EVM networks supported')
     }
     const start = now()
-    log('evmWallet', now() - start)
-    const walletFromMnemonic = getWalletFromMnemonic(
+
+    const wallet = getWalletFromMnemonic(
       this.mnemonic,
       accountIndex,
       DerivationPath.BIP44
     )
 
-    log('evmWallet getWalletFromMnemonic', now() - start)
-    const connectedWallet = walletFromMnemonic.connect(getEvmProvider(network))
-    log('evmWallet end', now() - start)
+    Logger.info('evmWallet getWalletFromMnemonic', now() - start)
 
-    return connectedWallet
+    return wallet
   }
 
   async sign(
@@ -199,7 +197,9 @@ class WalletService {
   }
 
   destroy() {
-    this.mnemonic = ''
+    this.mnemonic = undefined
+    this.xpub = undefined
+    this.xpubXP = undefined
   }
 
   /**
@@ -303,9 +303,3 @@ class WalletService {
 }
 
 export default new WalletService()
-
-function log(message?: unknown, ...optionalParams: unknown[]) {
-  if (__DEV__) {
-    console.log(message, ...optionalParams)
-  }
-}

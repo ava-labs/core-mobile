@@ -135,7 +135,29 @@ workflows:
     - script@1:
         title: Yarn Setup
         inputs:
-        - content: "#!/usr/bin/env bash\n\nstack=`cat /etc/issue`\n\nyarn setup:ci\n\nif [[ $stack == *Ubuntu* ]]; then\n  # on ubuntu, yarn setup command will fail\n  # as patch-package doesn't have write access to the node_modules folder\n  # thus, we need to set write permission manually and rerun yarn\n  \n  # set permission\n  chmod -R 777 node_modules\n\n  yarn setup:ci\nfi"
+        - content: |-
+            #!/usr/bin/env bash
+            # fail if any commands fails
+            set -e
+            # make pipelines' return status equal the last command to exit with a non-zero status, or zero if all commands exit successfully
+            set -o pipefail
+            # debug log
+            set -x
+
+            stack=$( cat /etc/issue )$( echo "" )
+
+            yarn setup:ci
+
+            if [[ $stack == *Ubuntu* ]]; then
+              # on ubuntu, yarn setup command will fail
+              # as patch-package doesn't have write access to the node_modules folder
+              # thus, we need to set write permission manually and rerun yarn
+
+              # set permission
+              chmod -R 777 node_modules
+
+              yarn setup:ci
+            fi
     - save-npm-cache@1: {}
     - script@1:
         title: Download Env Files
