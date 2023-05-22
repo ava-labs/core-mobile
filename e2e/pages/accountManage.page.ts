@@ -1,5 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import Action from '../helpers/actions'
 import accountManage from '../locators/accountManage.loc'
+import { Platform } from '../helpers/constants'
 
 class AccountManagePage {
   get account() {
@@ -39,11 +41,17 @@ class AccountManagePage {
   }
 
   async getFirstAvaxAddress() {
-    return Action.getAttributes(this.avaxAddress, 0)
+    const result: any = await Action.getAttributes(this.avaxAddress, 0)
+    return Action.platform() === Platform.Android
+      ? result.text.toLowerCase()
+      : result.elements[0].text.toLowerCase()
   }
 
   async getSecondAvaxAddress() {
-    return Action.getAttributes(this.avaxAddress, 2)
+    const result: any = await Action.getAttributes(this.avaxAddress, 2)
+    return Action.platform() === Platform.Android
+      ? result.text.toLowerCase()
+      : result.elements[3].text.toLowerCase()
   }
 
   async setNewAccountName() {

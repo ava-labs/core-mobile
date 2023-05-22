@@ -1,5 +1,4 @@
 /* eslint-disable jest/expect-expect */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import Assert from '../../helpers/assertions'
 import LoginRecoverWallet from '../../helpers/loginRecoverWallet'
 import AccountManagePage from '../../pages/accountManage.page'
@@ -25,8 +24,7 @@ describe('Send Avax to another account', () => {
     await AccountManagePage.tapAccountMenu()
     await AccountManagePage.tapAddEditAccounts()
     await AccountManagePage.tapAddAccountButton()
-    const result: any = await AccountManagePage.getSecondAvaxAddress()
-    const secondAccountAddress = result.text.toLowerCase()
+    const secondAccountAddress = await AccountManagePage.getSecondAvaxAddress()
     await AccountManagePage.tapAccountMenu()
     await AccountManagePage.tapDoneButton()
 
@@ -60,8 +58,7 @@ describe('Send Avax to another account', () => {
   it('Should receive USDC on second account', async () => {
     await ActivityTabPage.tapHeaderBack()
     await AccountManagePage.tapAccountMenu()
-    const result: any = await AccountManagePage.getFirstAvaxAddress()
-    const firstAccountAddress = result.text.toLowerCase()
+    const firstAccountAddress = await AccountManagePage.getFirstAvaxAddress()
     await AccountManagePage.tapSecondAccount()
     await BottomTabsPage.tapActivityTab()
     await ActivityTabPage.tapArrowIcon(0)
