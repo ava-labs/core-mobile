@@ -10,7 +10,7 @@ import { UI, useIsUIDisabled } from 'hooks/useIsUIDisabled'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import FloatingActionButton, {
   ActionProp
-} from 'components/FloatingActionButton'
+} from 'components/fab/FloatingActionButton'
 import { useDeeplink } from 'contexts/DeeplinkContext/DeeplinkContext'
 import { Pressable, View, ViewStyle } from 'react-native'
 import ArrowSVG from 'components/svg/ArrowSVG'

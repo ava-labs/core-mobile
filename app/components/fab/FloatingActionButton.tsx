@@ -4,26 +4,12 @@ import Animated, {
   useSharedValue,
   withSpring
 } from 'react-native-reanimated'
-import React, { Dispatch, useCallback, useEffect, useMemo } from 'react'
-import { Pressable, StyleSheet, View, ViewStyle } from 'react-native'
-import { assertNotUndefined } from 'utils/assertions'
-import CircularButton from 'components/CircularButton'
+import React, { useCallback, useEffect, useMemo } from 'react'
+import { Pressable, StyleSheet, ViewStyle } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { usePostCapture } from 'hooks/usePosthogCapture'
-
-export type ActionProp = {
-  image: React.ReactNode
-  onPress: () => void
-}
-
-interface FABProps {
-  actionItems: Record<string, ActionProp>
-  icon: React.ReactNode
-  size?: number
-  resetOnItemPress?: boolean
-  expanded: boolean
-  setExpanded: Dispatch<boolean>
-}
+import { FABProps } from 'components/fab/types'
+import ActionItems from 'components/fab/ActionItems'
 
 const springConfig = { damping: 11.5, stiffness: 95 }
 
@@ -123,42 +109,6 @@ const FloatingActionButton = ({
         <Animated.View style={iconStyle}>{icon}</Animated.View>
       </Pressable>
     </Animated.View>
-  )
-}
-
-const ActionItems = ({
-  items,
-  resetOnItemPress,
-  reset
-}: {
-  items: Record<string, ActionProp>
-  resetOnItemPress: boolean
-  reset: () => void
-}) => {
-  const { theme } = useApplicationContext()
-
-  return (
-    <>
-      {Object.keys(items).map(key => {
-        const value = items[key]
-        assertNotUndefined(value)
-        return (
-          <View key={key} style={{ marginBottom: 10 }}>
-            <CircularButton
-              style={{ backgroundColor: theme.white }}
-              image={value.image}
-              caption={key}
-              onPress={() => {
-                if (resetOnItemPress) {
-                  reset()
-                }
-                value.onPress()
-              }}
-            />
-          </View>
-        )
-      })}
-    </>
   )
 }
 
