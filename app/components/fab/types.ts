@@ -12,4 +12,5 @@ export interface FABProps {
   resetOnItemPress?: boolean
   expanded: boolean
   setExpanded: Dispatch<boolean>
+  isLeftHanded: boolean
 }

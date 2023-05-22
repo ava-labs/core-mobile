@@ -8,9 +8,7 @@ import React, { FC, useMemo, useState } from 'react'
 import { createDrawerNavigator } from '@react-navigation/drawer'
 import { UI, useIsUIDisabled } from 'hooks/useIsUIDisabled'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import FloatingActionButton, {
-  ActionProp
-} from 'components/fab/FloatingActionButton'
+import FloatingActionButton from 'components/fab/FloatingActionButton'
 import { useDeeplink } from 'contexts/DeeplinkContext/DeeplinkContext'
 import { Pressable, View, ViewStyle } from 'react-native'
 import ArrowSVG from 'components/svg/ArrowSVG'
@@ -28,6 +26,8 @@ import { selectActiveNetwork } from 'store/network'
 import BridgeSVG from 'components/svg/BridgeSVG'
 import { Opacity50 } from 'resources/Constants'
 import { usePostCapture } from 'hooks/usePosthogCapture'
+import { selectIsLeftHanded } from 'store/settings/advanced'
+import { ActionProp } from 'components/fab/types'
 
 export type DrawerParamList = {
   [AppNavigation.Wallet.Tabs]: NavigatorScreenParams<TabNavigatorParamList>
@@ -76,6 +76,7 @@ const Fab: FC = () => {
   const activeNetwork = useSelector(selectActiveNetwork)
   const [expanded, setExpanded] = useState(false)
   const { capture } = usePostCapture()
+  const isLeftHanded = useSelector(selectIsLeftHanded)
 
   const actionItems = useMemo(() => {
     const actions: Record<string, ActionProp> = {}
@@ -184,11 +185,11 @@ const Fab: FC = () => {
       width: '100%',
       height: '100%',
       justifyContent: 'flex-end',
-      alignItems: 'flex-end',
+      alignItems: isLeftHanded ? 'flex-start' : 'flex-end',
       paddingBottom: 60,
       backgroundColor: expanded ? theme.colorBg1 + Opacity50 : theme.transparent
     } as ViewStyle
-  }, [expanded, theme.colorBg1, theme.transparent])
+  }, [expanded, isLeftHanded, theme.colorBg1, theme.transparent])
 
   return (
     <Pressable
@@ -196,6 +197,7 @@ const Fab: FC = () => {
       onPress={dismiss}
       style={fabStyle}>
       <FloatingActionButton
+        isLeftHanded={isLeftHanded}
         setExpanded={setExpanded}
         expanded={expanded}
         actionItems={actionItems}

@@ -19,7 +19,8 @@ const FloatingActionButton = ({
   icon,
   size = 48,
   setExpanded,
-  resetOnItemPress = true
+  resetOnItemPress = true,
+  isLeftHanded
 }: FABProps) => {
   const progress = useSharedValue(0)
   const { theme } = useApplicationContext()
@@ -71,12 +72,13 @@ const FloatingActionButton = ({
 
   const wrapperStyle = useMemo(() => {
     return {
-      marginEnd: 16,
-      alignItems: 'flex-end',
+      marginEnd: isLeftHanded ? undefined : 16,
+      marginStart: isLeftHanded ? 16 : undefined,
+      alignItems: isLeftHanded ? 'flex-start' : 'flex-end',
       paddingVertical: 24,
       borderRadius: 70
     } as ViewStyle
-  }, [])
+  }, [isLeftHanded])
 
   const iconStyle = useMemo(() => {
     return [
