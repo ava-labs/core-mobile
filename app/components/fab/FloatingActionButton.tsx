@@ -71,13 +71,12 @@ const FloatingActionButton = ({
 
   const wrapperStyle = useMemo(() => {
     return {
-      alignItems: 'center',
-      width: 100,
-      backgroundColor: expanded ? theme.colorBg2 : undefined,
+      marginEnd: 16,
+      alignItems: 'flex-end',
       paddingVertical: 24,
       borderRadius: 70
     } as ViewStyle
-  }, [expanded, theme.colorBg2])
+  }, [])
 
   const iconStyle = useMemo(() => {
     return [
