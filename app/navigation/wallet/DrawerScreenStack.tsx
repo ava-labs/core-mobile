@@ -81,24 +81,49 @@ const Fab: FC = () => {
   const actionItems = useMemo(() => {
     const actions: Record<string, ActionProp> = {}
 
-    actions.Bridge = {
-      image: <BridgeSVG color={theme.background} size={24} />,
+    actions.Send = {
+      image: (
+        <View
+          testID="tab_navigator__send_button"
+          style={{
+            width: 24,
+            height: 24,
+            justifyContent: 'center',
+            alignItems: 'center'
+          }}>
+          <ArrowSVG rotate={180} color={theme.background} size={17} />
+        </View>
+      ),
       onPress: () => {
-        if (isBridgeDisabled) {
-          showSnackBarCustom({
-            component: (
-              <GeneralToast
-                message={`Bridge not available on ${activeNetwork.chainName}`}
-              />
-            ),
-            duration: 'short'
-          })
-        } else {
-          navigation.navigate(AppNavigation.Wallet.Bridge)
-          capture('FABItemSelected_Bridge')
-        }
+        navigation.navigate(AppNavigation.Wallet.SendTokens)
+        capture('FABItemSelected_Send')
       }
     } as ActionProp
+    actions.Receive = {
+      image: <QRCodeSVG color={theme.background} size={24} />,
+      onPress: () => {
+        navigation.navigate(AppNavigation.Wallet.ReceiveTokens)
+        capture('FABItemSelected_Receive')
+      }
+    } as ActionProp
+    if (!buyDisabled) {
+      actions.Buy = {
+        image: <BuySVG color={theme.background} size={24} />,
+        onPress: () => {
+          navigation.navigate(AppNavigation.Wallet.Buy)
+          capture('FABItemSelected_Buy')
+        }
+      } as ActionProp
+    }
+    if (!swapDisabled) {
+      actions.Swap = {
+        image: <SwapSVG color={theme.background} size={24} />,
+        onPress: () => {
+          navigation.navigate(AppNavigation.Wallet.Swap)
+          capture('FABItemSelected_Swap')
+        }
+      } as ActionProp
+    }
     if (!wcDisabled) {
       actions.WalletConnect = {
         image: <WalletConnectSVG color={theme.background} size={24} />,
@@ -116,48 +141,22 @@ const Fab: FC = () => {
         }
       } as ActionProp
     }
-    if (!swapDisabled) {
-      actions.Swap = {
-        image: <SwapSVG color={theme.background} size={24} />,
-        onPress: () => {
-          navigation.navigate(AppNavigation.Wallet.Swap)
-          capture('FABItemSelected_Swap')
-        }
-      } as ActionProp
-    }
-    if (!buyDisabled) {
-      actions.Buy = {
-        image: <BuySVG color={theme.background} size={24} />,
-        onPress: () => {
-          navigation.navigate(AppNavigation.Wallet.Buy)
-          capture('FABItemSelected_Buy')
-        }
-      } as ActionProp
-    }
-    actions.Receive = {
-      image: <QRCodeSVG color={theme.background} size={24} />,
+    actions.Bridge = {
+      image: <BridgeSVG color={theme.background} size={24} />,
       onPress: () => {
-        navigation.navigate(AppNavigation.Wallet.ReceiveTokens)
-        capture('FABItemSelected_Receive')
-      }
-    } as ActionProp
-
-    actions.Send = {
-      image: (
-        <View
-          testID="tab_navigator__send_button"
-          style={{
-            width: 24,
-            height: 24,
-            justifyContent: 'center',
-            alignItems: 'center'
-          }}>
-          <ArrowSVG rotate={180} color={theme.background} size={17} />
-        </View>
-      ),
-      onPress: () => {
-        navigation.navigate(AppNavigation.Wallet.SendTokens)
-        capture('FABItemSelected_Send')
+        if (isBridgeDisabled) {
+          showSnackBarCustom({
+            component: (
+              <GeneralToast
+                message={`Bridge not available on ${activeNetwork.chainName}`}
+              />
+            ),
+            duration: 'short'
+          })
+        } else {
+          navigation.navigate(AppNavigation.Wallet.Bridge)
+          capture('FABItemSelected_Bridge')
+        }
       }
     } as ActionProp
 
