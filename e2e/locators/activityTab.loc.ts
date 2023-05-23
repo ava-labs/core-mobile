@@ -5,6 +5,8 @@ export default {
   activityDetail: 'activity_detail__amount',
   avaxOutgoingTransactionDetail: '-0.01 AVAX',
   avaxIncomingTransactionDetail: '+0.01 AVAX',
+  ethOutgoingTransactionDetail: '-0.0001 ETH',
+  ethIncomingTransactionDetail: '+0.0001 ETH',
   currentFilter: 'activity_list__current_filter',
   filterOptionBridge: 'activity_list__filter_Bridge',
   filterOptionContractCall: 'activity_list__filter_Contract Call',
