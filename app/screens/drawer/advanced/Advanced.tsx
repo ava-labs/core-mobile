@@ -63,33 +63,35 @@ const Advanced = () => {
           />
         }
       />
-      <AvaListItem.Base
-        titleAlignment="flex-start"
-        title={
-          <Row style={{ alignItems: 'center' }}>
-            <Popable
-              content={
-                <PopableContent message="Move FAB to left screen side." />
-              }
-              position={'bottom'}
-              backgroundColor={theme.colorBg3}
-              style={styles.widthStyle}
-              wrapperStyle={styles.widthStyle}>
-              <Row style={{ alignItems: 'center' }}>
-                <AvaText.Heading3 ellipsizeMode="tail">
-                  I'm left-handed
-                </AvaText.Heading3>
-                <Space x={8} />
-                <InfoSVG />
-              </Row>
-            </Popable>
-          </Row>
-        }
-        background={theme.background}
-        rightComponent={
-          <Switch value={isLeftHanded} onValueChange={onLeftHandedChange} />
-        }
-      />
+      {false && (
+        <AvaListItem.Base
+          titleAlignment="flex-start"
+          title={
+            <Row style={{ alignItems: 'center' }}>
+              <Popable
+                content={
+                  <PopableContent message="Move FAB to left screen side." />
+                }
+                position={'bottom'}
+                backgroundColor={theme.colorBg3}
+                style={styles.widthStyle}
+                wrapperStyle={styles.widthStyle}>
+                <Row style={{ alignItems: 'center' }}>
+                  <AvaText.Heading3 ellipsizeMode="tail">
+                    I'm left-handed
+                  </AvaText.Heading3>
+                  <Space x={8} />
+                  <InfoSVG />
+                </Row>
+              </Popable>
+            </Row>
+          }
+          background={theme.background}
+          rightComponent={
+            <Switch value={isLeftHanded} onValueChange={onLeftHandedChange} />
+          }
+        />
+      )}
     </View>
   )
 }
