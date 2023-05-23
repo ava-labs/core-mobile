@@ -6,6 +6,8 @@ import ActivityTabPage from '../../pages/activityTab.page'
 import ActivityTabLoc from '../../locators/activityTab.loc'
 import ReviewAndSend from '../../pages/reviewAndSend.page'
 import BottomTabsPage from '../../pages/bottomTabs.page'
+import delay from '../../helpers/waits'
+import PortfolioPage from '../../pages/portfolio.page'
 import PlusMenuPage from '../../pages/plusMenu.page'
 import TransactionDetailsPage from '../../pages/transactionDetails.page'
 import SendPage from '../../pages/send.page'
@@ -27,6 +29,7 @@ describe('Send Avax to another account', () => {
     const secondAccountAddress = await AccountManagePage.getSecondAvaxAddress()
     await AccountManagePage.tapAccountMenu()
     await AccountManagePage.tapDoneButton()
+    await PortfolioPage.tapActivityTab()
 
     await BottomTabsPage.tapPlusIcon()
     await PlusMenuPage.tapSendButton()
@@ -40,8 +43,8 @@ describe('Send Avax to another account', () => {
     await SendPage.tapNextButton()
     await ReviewAndSend.tapSendNow()
 
-    await BottomTabsPage.tapActivityTab()
     await actions.waitForElementNotVisible(ReviewAndSend.sendSuccessfulToastMsg)
+    await delay(5000)
     await ActivityTabPage.refreshActivityPage()
     await ActivityTabPage.tapArrowIcon(0)
     const isTransactionSuccessful =
@@ -60,7 +63,7 @@ describe('Send Avax to another account', () => {
     await AccountManagePage.tapAccountMenu()
     const firstAccountAddress = await AccountManagePage.getFirstAvaxAddress()
     await AccountManagePage.tapSecondAccount()
-    await BottomTabsPage.tapActivityTab()
+    await PortfolioPage.tapActivityTab()
     await ActivityTabPage.tapArrowIcon(0)
     const isTransactionSuccessful =
       await TransactionDetailsPage.isDateTextOlderThan(300)

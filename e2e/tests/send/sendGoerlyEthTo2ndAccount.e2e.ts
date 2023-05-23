@@ -41,6 +41,7 @@ describe('Send Goerly Eth to another account', () => {
     const secondAccountAddress = await AccountManagePage.getSecondAvaxAddress()
     await AccountManagePage.tapAccountMenu()
     await AccountManagePage.tapDoneButton()
+    await PortfolioPage.tapActivityTab()
 
     await BottomTabsPage.tapPlusIcon()
     await PlusMenuPage.tapSendButton()
@@ -54,9 +55,8 @@ describe('Send Goerly Eth to another account', () => {
     await SendPage.tapNextButton()
     await ReviewAndSend.tapSendNow()
 
-    await BottomTabsPage.tapActivityTab()
     await actions.waitForElementNotVisible(ReviewAndSend.sendSuccessfulToastMsg)
-    await delay(60000)
+    await delay(40000)
     await ActivityTabPage.refreshActivityPage()
     await ActivityTabPage.tapArrowIcon(0)
     const isTransactionSuccessful =
@@ -75,7 +75,7 @@ describe('Send Goerly Eth to another account', () => {
     await AccountManagePage.tapAccountMenu()
     const firstAccountAddress = await AccountManagePage.getFirstAvaxAddress()
     await AccountManagePage.tapSecondAccount()
-    await BottomTabsPage.tapActivityTab()
+    await PortfolioPage.tapActivityTab()
     await ActivityTabPage.tapArrowIcon(0)
     const isTransactionSuccessful =
       await TransactionDetailsPage.isDateTextOlderThan(300)
