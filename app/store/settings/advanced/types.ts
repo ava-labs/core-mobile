@@ -1,7 +1,9 @@
 export const initialState: AdvancedState = {
-  developerMode: false
+  developerMode: false,
+  isLeftHanded: false
 }
 
 export type AdvancedState = {
   developerMode: boolean
+  isLeftHanded: boolean
 }
