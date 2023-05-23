@@ -6034,6 +6034,17 @@
     "@storybook/core-events" "^6.5.14"
     fast-deep-equal "^2.0.1"
 
+"@storybook/addon-ondevice-backgrounds@6.5.3":
+  version "6.5.3"
+  resolved "https://registry.yarnpkg.com/@storybook/addon-ondevice-backgrounds/-/addon-ondevice-backgrounds-6.5.3.tgz#fe549d549c5251877e711949ef7bad93e7e346bf"
+  integrity sha512-PAod+gm06YDZs4vxmsOHr0mhhrwFaxOz32sVH14H7t+ejDRcp+7EQnhvTk9OshHWQWfYb4jH3QiBj3GIoCpz2Q==
+  dependencies:
+    "@storybook/addons" "^6.5.14"
+    "@storybook/api" "^6.5.14"
+    "@storybook/client-api" "^6.5.14"
+    core-js "^3.0.1"
+    prop-types "^15.7.2"
+
 "@storybook/addon-ondevice-controls@6.5.3":
   version "6.5.3"
   resolved "https://registry.yarnpkg.com/@storybook/addon-ondevice-controls/-/addon-ondevice-controls-6.5.3.tgz#6f1873415278559d522edba89e40fb37d97ac0cf"
@@ -6107,7 +6118,7 @@
     ts-dedent "^2.0.0"
     util-deprecate "^1.0.2"
 
-"@storybook/api@6.5.16":
+"@storybook/api@6.5.16", "@storybook/api@^6.5.14":
   version "6.5.16"
   resolved "https://registry.yarnpkg.com/@storybook/api/-/api-6.5.16.tgz#897915b76de05587fd702951d5d836f708043662"
   integrity sha512-HOsuT8iomqeTMQJrRx5U8nsC7lJTwRr1DhdD0SzlqL4c80S/7uuCy4IZvOt4sYQjOzW5fOo/kamcoBXyLproTA==
