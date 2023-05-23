@@ -2,9 +2,10 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import { assertNotUndefined } from 'utils/assertions'
 import React from 'react'
 import { ActionProp } from 'components/fab/types'
-import AvaButton from 'components/AvaButton'
 import { Row } from 'components/Row'
-import { View } from 'react-native'
+import { Pressable, View } from 'react-native'
+import AvaText from 'components/AvaText'
+import { Space } from 'components/Space'
 
 const ActionItems = ({
   items,
@@ -27,19 +28,28 @@ const ActionItems = ({
         return
       }
       rItems.push(
-        <Row key={key} style={{ marginBottom: 8, alignItems: 'center' }}>
-          {value.image}
-          <AvaButton.TextLarge
-            textColor={theme.colorBg1}
-            onPress={() => {
-              if (resetOnItemPress) {
-                reset()
-              }
-              value.onPress()
+        <Pressable
+          key={key}
+          onPress={() => {
+            if (resetOnItemPress) {
+              reset()
+            }
+            value.onPress()
+          }}>
+          <Row
+            style={{
+              alignItems: 'center',
+              paddingHorizontal: 16,
+              paddingVertical: 12,
+              height: 46
             }}>
-            {key}
-          </AvaButton.TextLarge>
-        </Row>
+            {value.image}
+            <Space x={16} />
+            <AvaText.ButtonLarge color={theme.colorBg1}>
+              {key}
+            </AvaText.ButtonLarge>
+          </Row>
+        </Pressable>
       )
     })
     return rItems
@@ -49,8 +59,7 @@ const ActionItems = ({
     <View
       style={{
         backgroundColor: theme.white,
-        paddingHorizontal: 16,
-        paddingTop: 8,
+        paddingVertical: 8,
         borderRadius: 8,
         marginBottom: 8
       }}>
