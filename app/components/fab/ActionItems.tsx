@@ -17,6 +17,34 @@ const ActionItems = ({
 }) => {
   const { theme } = useApplicationContext()
 
+  const renderItems = () => {
+    const rItems = [] as Element[]
+    Object.keys(items).forEach(key => {
+      const value = items[key]
+      try {
+        assertNotUndefined(value)
+      } catch (e) {
+        return
+      }
+      rItems.push(
+        <Row key={key} style={{ marginBottom: 8, alignItems: 'center' }}>
+          {value.image}
+          <AvaButton.TextLarge
+            textColor={theme.colorBg1}
+            onPress={() => {
+              if (resetOnItemPress) {
+                reset()
+              }
+              value.onPress()
+            }}>
+            {key}
+          </AvaButton.TextLarge>
+        </Row>
+      )
+    })
+    return rItems
+  }
+
   return (
     <View
       style={{
@@ -26,25 +54,7 @@ const ActionItems = ({
         borderRadius: 8,
         marginBottom: 8
       }}>
-      {Object.keys(items).map(key => {
-        const value = items[key]
-        assertNotUndefined(value)
-        return (
-          <Row key={key} style={{ marginBottom: 8, alignItems: 'center' }}>
-            {value.image}
-            <AvaButton.TextLarge
-              textColor={theme.colorBg1}
-              onPress={() => {
-                if (resetOnItemPress) {
-                  reset()
-                }
-                value.onPress()
-              }}>
-              {key}
-            </AvaButton.TextLarge>
-          </Row>
-        )
-      })}
+      {renderItems()}
     </View>
   )
 }
