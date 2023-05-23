@@ -5,8 +5,20 @@ import { Platform } from '../helpers/constants'
 const platformIndex = Action.platform() === Platform.iOS ? 1 : 0
 
 class ActivityTabPage {
+  get address() {
+    return by.id(activityTab.address)
+  }
+
+  get arrowSVG() {
+    return by.id(activityTab.arrowSVG)
+  }
+
   get transaction() {
     return by.text(activityTab.transaction)
+  }
+
+  get activityDetail() {
+    return by.id(activityTab.activityDetail)
   }
 
   get activityListHeader() {
@@ -37,8 +49,8 @@ class ActivityTabPage {
     return by.id(activityTab.bridgeSVG)
   }
 
-  get arrowSVG() {
-    return by.id(activityTab.arrowSVG)
+  get headerBack() {
+    return by.id(activityTab.headerBack)
   }
 
   get linkSVG() {
@@ -59,6 +71,10 @@ class ActivityTabPage {
 
   async tapFilterDropdown() {
     await Action.tap(this.selectFilterDropdown)
+  }
+
+  async tapHeaderBack() {
+    await Action.tapElementAtIndex(this.headerBack, 0)
   }
 
   async tapBridgeFilterOption() {

@@ -5,6 +5,7 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 interface Prop {
   size?: number
   color?: string
+  testID?: string
 }
 
 export default function AddressBookSVG({ color, size = 24 }: Prop) {
@@ -12,7 +13,7 @@ export default function AddressBookSVG({ color, size = 24 }: Prop) {
 
   const iconColor = color ?? context.theme.colorIcon1
   return (
-    <Svg width={size} height={size} viewBox="0 0 24 24">
+    <Svg width={size} height={size} viewBox="0 0 24 24" testID="address_book">
       <G fill={iconColor}>
         <Path
           d="M13.0296 6C13.8613 6 14.5742 6.35299 15.1682 6.88242C15.7029 7.41184 16 8.17647 16 9.00007C16 10.6471 14.6931 12 13.0297 12C11.3663 12 10 10.6471 10 9.00007C10 7.35302 11.3663 6.00014 13.0297 6.00014L13.0296 6ZM14.0989 7.94122C13.8018 7.64705 13.4455 7.52944 13.0296 7.52944C12.1978 7.52944 11.5443 8.17647 11.5443 9.00007C11.5443 9.82366 12.1978 10.4707 13.0296 10.4707C13.8613 10.4707 14.5148 9.82366 14.5148 9.00007C14.5148 8.58829 14.3366 8.23543 14.0989 7.94122V7.94122Z"
