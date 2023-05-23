@@ -34,7 +34,6 @@ const AllTexts = () => {
 
 export default {
   title: 'AvaText',
-  component: AllTexts,
   decorators: [
     Story => (
       <CenterView>
@@ -44,7 +43,7 @@ export default {
   ]
 } as Meta
 
-export const All = {}
+export const All = AllTexts
 
 export const Heading1: ComponentStory<typeof AvaText.Heading1> = args => {
   return <AvaText.Heading1 {...args}>{args.children}</AvaText.Heading1>
