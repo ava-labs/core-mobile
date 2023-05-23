@@ -59,7 +59,6 @@ const TokenAddress: FC<Props> = ({
             size={16}
             logoColor={theme.tokenLogoColor}
             backgroundColor={theme.tokenLogoBg}
-            // testID='ava_logo'
           />
           <Space x={8} />
         </>
