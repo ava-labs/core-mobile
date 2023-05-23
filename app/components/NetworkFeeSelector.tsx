@@ -52,7 +52,7 @@ const NetworkFeeSelector = ({
   gasLimit: number
   onGasPriceChange?(gasPrice: BigNumber, feePreset: FeePreset): void
   onGasLimitChange?(customGasLimit: number): void
-  maxGasPrice: string
+  maxGasPrice?: string
 }) => {
   const { navigate } = useNavigation<NavigationProp>()
   const { theme } = useApplicationContext()
