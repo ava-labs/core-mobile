@@ -2,6 +2,7 @@ export default {
   account: 'Account 1',
   addAccountButton: 'Add Account',
   addEditAccounts: 'Add/Edit Accounts',
+  avaxAddress: 'account_address',
   doneButton: 'Done',
   editAccount: 'Edit',
   newAccountName: 'AvaxAccount',

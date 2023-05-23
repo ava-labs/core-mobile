@@ -7,6 +7,7 @@ interface Props {
   size?: number
   logoColor?: string
   backgroundColor?: string
+  testID?: string
 }
 
 function AvaLogoSVG({
@@ -24,7 +25,8 @@ function AvaLogoSVG({
       width={size}
       height={size}
       viewBox="0 0 102 102"
-      fill="none">
+      fill="none"
+      testID="ava_logo">
       <Circle cx="50.5216" cy="51.2309" r="50.5216" fill={bgColor} />
       <Path
         fillRule="evenodd"

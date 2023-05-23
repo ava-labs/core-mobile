@@ -20,6 +20,7 @@ interface Props {
   showFullAddress?: boolean
   textColor?: string
   copyIconEnd?: boolean
+  testID?: string
 }
 
 const TokenAddress: FC<Props> = ({
@@ -44,7 +45,8 @@ const TokenAddress: FC<Props> = ({
         flexDirection: 'row',
         alignItems: 'center',
         marginRight: 0
-      }}>
+      }}
+      testID="bitcoin">
       {showIcon && isBech32Address(address) && (
         <>
           <BitcoinSVG size={16} />
@@ -89,6 +91,7 @@ type TokenAddressComposedProps = {
   textType: 'Heading' | 'ButtonSmall' | 'ButtonMedium' | 'Body'
   textColor: string
   tokenAddress: string
+  testID?: string
 }
 
 const TokenAddressComposed = ({
@@ -100,7 +103,7 @@ const TokenAddressComposed = ({
   switch (textType) {
     case 'ButtonSmall':
       return (
-        <AvaText.ButtonSmall color={textColor}>
+        <AvaText.ButtonSmall color={textColor} testID="account_address">
           {tokenAddress}
         </AvaText.ButtonSmall>
       )
