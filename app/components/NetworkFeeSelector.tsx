@@ -23,6 +23,7 @@ import { selectActiveNetwork } from 'store/network'
 import { useNativeTokenPrice } from 'hooks/useNativeTokenPrice'
 import { VsCurrencyType } from '@avalabs/coingecko-sdk'
 import { selectSelectedCurrency } from 'store/settings/currency'
+import { calculateGasAndFees } from 'utils/Utils'
 import InputText from './InputText'
 
 export enum FeePreset {
@@ -45,11 +46,13 @@ type NavigationProp = WalletScreenProps<
 const NetworkFeeSelector = ({
   gasLimit,
   onGasPriceChange,
-  onGasLimitChange
+  onGasLimitChange,
+  maxGasPrice
 }: {
   gasLimit: number
   onGasPriceChange?(gasPrice: BigNumber, feePreset: FeePreset): void
   onGasLimitChange?(customGasLimit: number): void
+  maxGasPrice: string
 }) => {
   const { navigate } = useNavigation<NavigationProp>()
   const { theme } = useApplicationContext()
@@ -80,6 +83,13 @@ const NetworkFeeSelector = ({
         return networkFee[FeePresetNetworkFeeMap[selectedPreset]]
     }
   }, [customGasPrice, networkFee, selectedPreset])
+
+  const newFees = calculateGasAndFees({
+    gasPrice: selectedGasPrice,
+    tokenPrice: nativeTokenPrice,
+    tokenDecimals: network?.networkToken.decimals,
+    gasLimit
+  })
 
   const totalFeeBig = useMemo(() => {
     return ethersBigNumberToBig(
@@ -227,6 +237,11 @@ const NetworkFeeSelector = ({
           2
         )}
       </AvaText.Body3>
+      {maxGasPrice && newFees.bnFee.gt(maxGasPrice) && (
+        <AvaText.Body3 color={theme.colorError}>
+          Insufficient balance to cover gas costs. {'\n'}Please add AVAX.
+        </AvaText.Body3>
+      )}
     </>
   )
 }
