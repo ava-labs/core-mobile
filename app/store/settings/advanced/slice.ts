@@ -10,6 +10,9 @@ export const advancedSlice = createSlice({
   reducers: {
     toggleDeveloperMode: state => {
       state.developerMode = !state.developerMode
+    },
+    toggleLeftHanded: state => {
+      state.isLeftHanded = !state.isLeftHanded
     }
   }
 })
@@ -18,8 +21,11 @@ export const advancedSlice = createSlice({
 export const selectIsDeveloperMode = (state: RootState) =>
   state.settings.advanced.developerMode
 
+export const selectIsLeftHanded = (state: RootState) =>
+  state.settings.advanced.isLeftHanded
+
 // actions
-export const { toggleDeveloperMode } = advancedSlice.actions
+export const { toggleDeveloperMode, toggleLeftHanded } = advancedSlice.actions
 
 export const reloadAccounts = createAction(`${reducerName}/reloadAccounts`)
 

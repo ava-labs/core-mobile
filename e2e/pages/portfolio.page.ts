@@ -38,6 +38,10 @@ class PortfolioPage {
     return by.text(portfolio.collectiblesTab)
   }
 
+  get activityTab() {
+    return by.text(portfolio.activityTab)
+  }
+
   get btcNetwork() {
     return by.text(portfolio.btcNetwork)
   }
@@ -104,6 +108,10 @@ class PortfolioPage {
     await Assert.isVisible(this.networksHeader)
     await Assert.isVisible(this.assetsTab)
     await Assert.isVisible(this.colectiblesTab)
+  }
+
+  async tapActivityTab() {
+    await Action.tapElementAtIndex(this.activityTab, 0)
   }
 
   async tapAddToWatchlist() {

@@ -1,4 +1,5 @@
 export default {
+  activityTab: 'Activity',
   addToWatchlist: 'add_svg',
   addAssetsButton: 'Add Assets',
   addAssetsMessage: 'Add assets by clicking the button below.',
