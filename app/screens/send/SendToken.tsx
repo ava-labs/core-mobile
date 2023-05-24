@@ -15,7 +15,11 @@ import { Account } from 'store/account'
 import { useAddressBookLists } from 'components/addressBook/useAddressBookLists'
 import QrScannerAva from 'components/QrScannerAva'
 import QRScanSVG from 'components/svg/QRScanSVG'
-import { TokenWithBalance } from 'store/balance'
+import {
+  TokenType,
+  TokenWithBalance,
+  selectTokensWithBalanceByNetwork
+} from 'store/balance'
 import { useSelector } from 'react-redux'
 import { selectActiveNetwork } from 'store/network'
 import { NetworkVMType } from '@avalabs/chains-sdk'
@@ -67,6 +71,17 @@ const SendToken: FC<Props> = ({
     activeNetwork.vmName === NetworkVMType.EVM
       ? 'Enter 0x Address'
       : 'Enter Bitcoin Address'
+
+  const tokensWBalances = useSelector(
+    selectTokensWithBalanceByNetwork(activeNetwork)
+  )
+
+  const maxGasPrice =
+    token?.type === TokenType.NATIVE && sendAmount
+      ? token.balance.sub(sendAmount.bn).toString()
+      : tokensWBalances
+          .find(t => t.type === TokenType.NATIVE)
+          ?.balance.toString() || '0'
 
   const sendDisabled = !canSubmit || !!(sdkError || sendError)
 
@@ -230,6 +245,7 @@ const SendToken: FC<Props> = ({
               gasLimit={gasLimit ?? 0}
               onGasPriceChange={handleGasPriceChange}
               onGasLimitChange={setCustomGasLimit}
+              maxGasPrice={maxGasPrice}
             />
           </View>
           <FlexSpacer />
