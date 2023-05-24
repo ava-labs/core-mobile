@@ -2,7 +2,7 @@ import React from 'react'
 import { View } from 'react-native'
 import type { ComponentStory, Meta } from '@storybook/react-native'
 import AvaText from 'components/AvaText'
-import CenterView from '../decorators/CenterView'
+import { withCenterView } from '../decorators/withCenterView'
 
 const AllTexts = () => {
   return (
@@ -34,13 +34,7 @@ const AllTexts = () => {
 
 export default {
   title: 'AvaText',
-  decorators: [
-    Story => (
-      <CenterView>
-        <Story />
-      </CenterView>
-    )
-  ]
+  decorators: [withCenterView]
 } as Meta
 
 export const All = AllTexts
