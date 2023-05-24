@@ -20,6 +20,7 @@ global.STORIES = [
 
 import "@storybook/addon-ondevice-controls/register";
 import "@storybook/addon-ondevice-actions/register";
+import "@storybook/addon-ondevice-backgrounds/register";
 
 import { argsEnhancers } from "@storybook/addon-actions/dist/modern/preset/addArgs";
 
@@ -47,7 +48,10 @@ try {
 
 const getStories = () => {
   return {
+    "./storybook/stories/AvaListItem.stories.tsx": require("../storybook/stories/AvaListItem.stories.tsx"),
     "./storybook/stories/AvaText.stories.tsx": require("../storybook/stories/AvaText.stories.tsx"),
+    "./storybook/stories/ConfirmationTracker.stories.tsx": require("../storybook/stories/ConfirmationTracker.stories.tsx"),
+    "./storybook/stories/FeeSelector.stories.tsx": require("../storybook/stories/FeeSelector.stories.tsx"),
   };
 };
 
