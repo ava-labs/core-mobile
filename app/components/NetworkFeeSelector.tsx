@@ -84,12 +84,21 @@ const NetworkFeeSelector = ({
     }
   }, [customGasPrice, networkFee, selectedPreset])
 
-  const newFees = calculateGasAndFees({
-    gasPrice: selectedGasPrice,
-    tokenPrice: nativeTokenPrice,
-    tokenDecimals: network?.networkToken.decimals,
-    gasLimit
-  })
+  const newFees = useMemo(
+    () =>
+      calculateGasAndFees({
+        gasPrice: selectedGasPrice,
+        tokenPrice: nativeTokenPrice,
+        tokenDecimals: network?.networkToken.decimals,
+        gasLimit
+      }),
+    [
+      gasLimit,
+      nativeTokenPrice,
+      network?.networkToken.decimals,
+      selectedGasPrice
+    ]
+  )
 
   const totalFeeBig = useMemo(() => {
     return ethersBigNumberToBig(
