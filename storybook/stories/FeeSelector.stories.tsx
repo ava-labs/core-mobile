@@ -35,17 +35,16 @@ Basic.args = {
 
 export const Editable: ComponentStory<typeof FeeSelector> = ({
   label,
-  selected,
-  placeholder,
-  onSelect
+  placeholder
 }) => {
   const [value, setValue] = useState('20')
+  const [selected, setSelected] = useState(false)
   return (
     <FeeSelector
       editable
       label={label}
       selected={selected}
-      onSelect={onSelect}
+      onSelect={() => setSelected(current => !current)}
       placeholder={placeholder}
       value={value}
       onValueEntered={setValue}
@@ -55,7 +54,6 @@ export const Editable: ComponentStory<typeof FeeSelector> = ({
 
 Editable.args = {
   label: 'Fee',
-  selected: false,
   editable: true,
   placeholder: 'place holder'
 }
