@@ -1,4 +1,3 @@
-import { storiesOf } from '@storybook/react-native'
 import AvaListItem from 'components/AvaListItem'
 import Avatar from 'components/Avatar'
 import AvaText from 'components/AvaText'
@@ -8,18 +7,21 @@ import TokenAddress from 'components/TokenAddress'
 import { Space } from 'components/Space'
 import { Row } from 'components/Row'
 import MarketMovement from 'screens/watchlist/components/MarketMovement'
+import type { ComponentStory, Meta } from '@storybook/react-native'
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
     justifyContent: 'center',
     backgroundColor: 'gray'
   }
 })
 
-storiesOf('AvaListItem', module).add('Examples', () => {
+const BaseDemo = () => {
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView
+      contentContainerStyle={styles.container}
+      style={{ flex: 1, width: '100%' }}>
       <>
         <AvaListItem.Base
           title={'Anna Savranska'}
@@ -34,7 +36,7 @@ storiesOf('AvaListItem', module).add('Examples', () => {
         />
         <Space y={8} />
         <AvaListItem.Base
-          title={'embedInCar = false'}
+          title={'embedInCard = false'}
           rightComponent={
             <TokenAddress
               address={'0x7d269823f20316c3602681f83b7a581828e78717'}
@@ -194,4 +196,37 @@ storiesOf('AvaListItem', module).add('Examples', () => {
       </>
     </ScrollView>
   )
-})
+}
+
+export default {
+  title: 'AvaListItem'
+} as Meta
+
+export const BaseExamples = BaseDemo
+
+export const CurrencyAmount: ComponentStory<
+  typeof AvaListItem.CurrencyAmount
+> = args => {
+  return <AvaListItem.CurrencyAmount {...args} />
+}
+
+CurrencyAmount.args = {
+  value: <AvaText.Heading1 ellipsizeMode={'tail'}>1500000000</AvaText.Heading1>,
+  currency: <AvaText.Body2>USD</AvaText.Body2>,
+  justifyContent: 'center'
+}
+
+CurrencyAmount.argTypes = {
+  justifyContent: {
+    options: ['flex-start', 'flex-end', 'center'],
+    control: { type: 'radio' }
+  },
+  value: {
+    table: {
+      type: {
+        summary: 'React.ReactNode'
+      }
+    },
+    control: null
+  }
+}
