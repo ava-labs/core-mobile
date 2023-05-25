@@ -23,6 +23,7 @@
     "postinstall": "node_modules/.bin/patch-package; node_modules/.bin/rn-nodeify --install events,stream,vm,assert,https,http,os --hack"
   },
   "dependencies": {
+    "@avalabs/avalanchejs-v2": "1.4.0-alpha.6",
     "@avalabs/blockcypher-sdk": "2.8.0-alpha.96",
     "@avalabs/bridge-sdk": "2.8.0-alpha.96",
     "@avalabs/chains-sdk": "2.8.0-alpha.96",

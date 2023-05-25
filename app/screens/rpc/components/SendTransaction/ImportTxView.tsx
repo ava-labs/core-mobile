@@ -4,9 +4,7 @@ import { StyleSheet, View } from 'react-native'
 import { Space } from 'components/Space'
 import { Row } from 'components/Row'
 import Separator from 'components/Separator'
-import { ImportTx } from 'store/walletConnect/handlers/types'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { AvalancheChainStrings } from 'store/walletConnect/handlers/utils/parseAvalancheTx'
 import Card from 'components/Card'
 import AvaToken from 'components/svg/AvaToken'
 import { bigIntToString } from '@avalabs/utils-sdk'
@@ -15,6 +13,8 @@ import { selectSelectedCurrency } from 'store/settings/currency'
 import AvaButton from 'components/AvaButton'
 import CarrotSVG from 'components/svg/CarrotSVG'
 import { getHexStringToBytes } from 'utils/getHexStringToBytes'
+import { Avalanche } from '@avalabs/wallets-sdk'
+import { AvalancheChainStrings } from 'store/walletConnect/handlers/types'
 
 const ImportTxView = ({
   tx,
@@ -22,7 +22,7 @@ const ImportTxView = ({
   hexData,
   toggleActionButtons
 }: {
-  tx: ImportTx
+  tx: Avalanche.ImportTx
   avaxPrice: number
   hexData: string
   toggleActionButtons: (value: boolean) => void

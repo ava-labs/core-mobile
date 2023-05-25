@@ -2,8 +2,8 @@ import { PeerMeta } from 'services/walletconnect/types'
 import { AppListenerEffectAPI } from 'store'
 import { JsonRpcRequest } from '@walletconnect/jsonrpc-types'
 import { RpcError, RpcMethod } from 'store/walletConnectV2'
-import { OutputOwners, TransferableOutput, VM } from '@avalabs/avalanchejs-v2'
-import { GetAssetDescriptionResponse } from '@avalabs/avalanchejs-v2/dist/src/vms/common'
+import { VM } from '@avalabs/avalanchejs-v2'
+import { Avalanche } from '@avalabs/wallets-sdk'
 
 export interface TypedJsonRpcRequest<Method extends string, Params = unknown>
   extends JsonRpcRequest<Params> {
@@ -47,79 +47,14 @@ export type Result<Value, Error> =
 
 export const DEFERRED_RESULT = Symbol()
 
-/**
- * Types for parsed transaction
- */
-export type AvalancheTxType =
-  | AddValidatorTx
-  | AddDelegatorTx
-  | ExportTx
-  | ImportTx
-  | AvalancheBaseTx
-  | UnknownTx
-
-export interface AvalancheTx {
-  type: string
-  chain: VM
-  txFee: bigint
-}
-
-export interface AvalancheBaseTx extends AvalancheTx {
-  type: 'base'
-  chain: 'AVM'
-  outputs: {
-    assetId: string
-    locktime: bigint
-    threshold: bigint
-    amount: bigint
-    assetDescription?: GetAssetDescriptionResponse
-    owners: string[]
-    isAvax: boolean
-  }[]
-  memo?: string
-}
-
-export interface AddValidatorTx extends AvalancheTx {
-  type: 'add_validator'
-  nodeID: string
-  fee: number
-  start: string
-  end: string
-  rewardOwner: OutputOwners
-  stake: bigint
-  stakeOuts: TransferableOutput[]
-}
-
-export interface AddDelegatorTx extends AvalancheTx {
-  type: 'add_delegator'
-  nodeID: string
-  start: string
-  end: string
-  rewardOwner: OutputOwners
-  stake: bigint
-  stakeOuts: TransferableOutput[]
-}
-
-export interface ExportTx extends AvalancheTx {
-  type: 'export'
-  destination: VM
-  amount: bigint
-  exportOuts: TransferableOutput[]
-}
-
-export interface ImportTx extends AvalancheTx {
-  type: 'import'
-  source: VM
-  amount: bigint
-}
-
-export interface UnknownTx extends AvalancheTx {
-  type: 'unknown'
-}
-
 export type SendTransactionApproveData = {
   unsignedTxJson: string
-  txBuffer: Buffer
-  txData: AvalancheTxType
+  txData: Avalanche.TxType
   vm: VM
+}
+
+export enum AvalancheChainStrings {
+  AVM = 'X Chain',
+  PVM = 'P Chain',
+  EVM = 'C Chain'
 }

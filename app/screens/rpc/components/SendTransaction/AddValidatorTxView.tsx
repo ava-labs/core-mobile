@@ -3,7 +3,6 @@ import React from 'react'
 import { StyleSheet, View } from 'react-native'
 import { Space } from 'components/Space'
 import { Row } from 'components/Row'
-import { AddValidatorTx } from 'store/walletConnect/handlers/types'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import Card from 'components/Card'
 import { bigIntToString } from '@avalabs/utils-sdk'
@@ -12,12 +11,13 @@ import Separator from 'components/Separator'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { useSelector } from 'react-redux'
 import moment from 'moment'
+import { Avalanche } from '@avalabs/wallets-sdk'
 
 const AddValidatorTxView = ({
   tx,
   avaxPrice
 }: {
-  tx: AddValidatorTx
+  tx: Avalanche.AddValidatorTx
   avaxPrice: number
 }) => {
   const { theme } = useApplicationContext()

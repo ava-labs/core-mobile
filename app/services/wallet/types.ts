@@ -1,5 +1,6 @@
 import { TransactionRequest } from '@ethersproject/abstract-provider'
 import { BitcoinInputUTXO, BitcoinOutputUTXO } from '@avalabs/wallets-sdk'
+import { UnsignedTx } from '@avalabs/avalanchejs-v2'
 
 export type SignTransactionRequest =
   | TransactionRequest
@@ -12,8 +13,9 @@ export interface BtcTransactionRequest {
 }
 
 export interface AvalancheTransactionRequest {
-  tx: Buffer
-  chain: 'X' | 'P' | 'C'
+  tx: UnsignedTx
+  externalIndices?: number[]
+  internalIndices?: number[]
 }
 
 /**
