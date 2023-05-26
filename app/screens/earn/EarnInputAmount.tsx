@@ -7,6 +7,9 @@ import AvaText from 'components/AvaText'
 import React from 'react'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import BN from 'bn.js'
+import { stringToBN } from '@avalabs/utils-sdk'
+
+const MAX_DIGITS = 7
 
 const EarnInputAmount = ({
   inputAmountBN,
@@ -19,19 +22,28 @@ const EarnInputAmount = ({
 }) => {
   const { theme } = useApplicationContext()
 
+  const interceptAmountChange = (value: { bn: BN; amount: string }) => {
+    const numDigits = value.amount.replace('.', '').length
+    if (numDigits > MAX_DIGITS) {
+      value.amount = value.amount.substring(0, value.amount.length - 1)
+      value.bn = stringToBN(value.amount, denomination)
+    }
+    handleAmountChange?.(value)
+  }
+
   return (
     <Row
       style={{
         alignItems: 'center',
         justifyContent: 'center',
         alignSelf: 'center',
-        width: 250
+        width: 280
       }}>
       <BNInput
         value={inputAmountBN}
         denomination={denomination}
         placeholder={'0.0'}
-        onChange={handleAmountChange}
+        onChange={interceptAmountChange}
         style={{
           margin: 0
         }}
