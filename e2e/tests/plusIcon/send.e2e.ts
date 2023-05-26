@@ -12,6 +12,7 @@ import BottomTabsPage from '../../pages/bottomTabs.page'
 import SendPage from '../../pages/send.page'
 import ReviewAndSend from '../../pages/reviewAndSend.page'
 import ActivityTabPage from '../../pages/activityTab.page'
+import PortfolioPage from '../../pages/portfolio.page'
 import delay from '../../helpers/waits'
 import actions from '../../helpers/actions'
 import transactionDetailsPage from '../../pages/transactionDetails.page'
@@ -33,6 +34,7 @@ describe('Send AVAX', () => {
   it('should navigate to send screen', async () => {
     const recoveryPhrase: string = process.env.E2E_MNEMONIC as string
     await ExistingRecoveryPhrasePage.recoverWallet(recoveryPhrase)
+    await PortfolioPage.tapActivityTab()
     await BottomTabsPage.tapPlusIcon()
     await PlusMenuPage.tapSendButton()
   })
@@ -57,7 +59,6 @@ describe('Send AVAX', () => {
     if (actions.platform() === Platform.iOS) {
       await Assert.isVisible(ReviewAndSend.sendSuccessfulToastMsg)
     }
-    await BottomTabsPage.tapActivityTab()
     await actions.waitForElementNotVisible(ReviewAndSend.sendSuccessfulToastMsg)
     await delay(40000)
     await ActivityTabPage.refreshActivityPage()

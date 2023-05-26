@@ -11,7 +11,7 @@ import NetworksManagePage from '../../pages/networksManage.page'
 import NetworksManageLoc from '../../locators/networksManage.loc'
 import { warmup } from '../../helpers/warmup'
 
-describe('Change Network', () => {
+describe('Add custom network', () => {
   beforeAll(async () => {
     await warmup()
     await LoginRecoverWallet.recoverWalletLogin()

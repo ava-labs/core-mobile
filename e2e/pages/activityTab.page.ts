@@ -37,6 +37,10 @@ class ActivityTabPage {
     return by.id(activityTab.filterOptionContractCall)
   }
 
+  get outgoingFilterOption() {
+    return by.id(activityTab.filterOptionOutgoing)
+  }
+
   get incomingFilterOption() {
     return by.id(activityTab.filterOptionIncoming)
   }
@@ -87,6 +91,10 @@ class ActivityTabPage {
 
   async tapIncomingFilterOption() {
     await Action.tapElementAtIndex(this.incomingFilterOption, platformIndex)
+  }
+
+  async tapOutgingFilterOption() {
+    await Action.tapElementAtIndex(this.outgoingFilterOption, platformIndex)
   }
 
   async tapOutgoingFilterOption() {
