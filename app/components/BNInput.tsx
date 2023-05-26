@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
-import { TextInputProps, View } from 'react-native'
-import InputText from 'components/InputText'
+import { View } from 'react-native'
+import InputText, { InputTextProps } from 'components/InputText'
 import Big from 'big.js'
 import BN from 'bn.js'
 import { bigToBN, bnToBig } from '@avalabs/utils-sdk'
@@ -8,7 +8,7 @@ import { bigToBN, bnToBig } from '@avalabs/utils-sdk'
 Big.PE = 99
 Big.NE = -18
 
-interface BNInputProps extends Omit<TextInputProps, 'value' | 'onChange'> {
+interface BNInputProps extends Omit<InputTextProps, 'text'> {
   value?: BN
   denomination: number
 
