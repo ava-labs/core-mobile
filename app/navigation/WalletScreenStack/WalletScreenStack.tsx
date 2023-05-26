@@ -63,6 +63,9 @@ import LegalStackScreen, {
 import { NetworkDetailsAction } from 'screens/network/NetworkDetailsAction'
 import CaptureDappQR from 'screens/shared/CaptureDappQR'
 import { ChainID } from 'store/network'
+import EarnScreenStack, {
+  EarnStackParamList
+} from 'navigation/wallet/EarnScreenStack'
 import { BridgeStackParamList } from '../wallet/BridgeScreenStack'
 import {
   AddEthereumChainParams,
@@ -123,6 +126,9 @@ export type WalletScreenStackParams = {
   }
   [AppNavigation.Wallet.Swap]:
     | NavigatorScreenParams<SwapStackParamList>
+    | undefined
+  [AppNavigation.Wallet.Earn]:
+    | NavigatorScreenParams<EarnStackParamList>
     | undefined
   [AppNavigation.Wallet.NFTDetails]: NavigatorScreenParams<NFTStackParamList>
   [AppNavigation.Wallet.NFTManage]: undefined
@@ -274,6 +280,13 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
           }}
           name={AppNavigation.Wallet.Swap}
           component={SwapScreenStack}
+        />
+        <WalletScreenS.Screen
+          options={{
+            headerShown: false
+          }}
+          name={AppNavigation.Wallet.Earn}
+          component={EarnScreenStack}
         />
         <WalletScreenS.Screen
           options={{

@@ -12,7 +12,7 @@ import Globe2SVG from 'components/svg/Globe2SVG'
 import AvaButton from 'components/AvaButton'
 import FlexSpacer from 'components/FlexSpacer'
 
-export default function GetStarted() {
+export default function GetStarted({ onNext }: { onNext: () => void }) {
   const { theme } = useApplicationContext()
 
   return (
@@ -60,7 +60,7 @@ export default function GetStarted() {
         <AvaText.Heading6>Secure the Avalanche network.</AvaText.Heading6>
       </Row>
       <FlexSpacer />
-      <AvaButton.PrimaryLarge>Next</AvaButton.PrimaryLarge>
+      <AvaButton.PrimaryLarge onPress={onNext}>Next</AvaButton.PrimaryLarge>
     </View>
   )
 }
