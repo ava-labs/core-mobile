@@ -10,7 +10,7 @@ import { selectSelectedCurrency } from 'store/settings/currency'
 import { selectNativeTokenBalanceForNetworkAndAccount } from 'store/balance'
 import { useNativeTokenPrice } from 'hooks/useNativeTokenPrice'
 import { VsCurrencyType } from '@avalabs/coingecko-sdk'
-import { balanceToDisplayValue, stringToBN } from '@avalabs/utils-sdk'
+import { balanceToDisplayValue } from '@avalabs/utils-sdk'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
 import AvaLogoSVG from 'components/svg/AvaLogoSVG'
@@ -19,6 +19,7 @@ import { BNInput } from 'components/BNInput'
 import OvalTagBg from 'components/OvalTagBg'
 import FlexSpacer from 'components/FlexSpacer'
 import AvaButton from 'components/AvaButton'
+import PercentButtons from 'screens/earn/PercentButtons'
 
 export default function StakingAmount() {
   const { theme } = useApplicationContext()
@@ -94,6 +95,7 @@ export default function StakingAmount() {
           style={{
             margin: 0
           }}
+          autoFocus={true}
           textStyle={{
             fontFamily: 'Inter-Bold',
             fontSize: 48,
@@ -139,53 +141,5 @@ export default function StakingAmount() {
         </Row>
       )}
     </View>
-  )
-}
-
-const AVAX_DECIMAL = 18
-const minStakeAmount = stringToBN('25', AVAX_DECIMAL)
-const p10 = minStakeAmount.mul(new BN(10))
-const p25 = minStakeAmount.mul(new BN(4))
-const p50 = minStakeAmount.mul(new BN(2))
-const p100 = minStakeAmount
-
-const PercentButtons = ({
-  balance,
-  onPercentageSelected
-}: {
-  balance: BN | undefined
-  onPercentageSelected: (factor: number) => void
-}) => {
-  return (
-    <>
-      {balance?.gt(p10) && (
-        <AvaButton.SecondaryLarge
-          style={{ flex: 1, marginHorizontal: 4 }}
-          onPress={() => onPercentageSelected(10)}>
-          10%
-        </AvaButton.SecondaryLarge>
-      )}
-      {balance?.gt(p25) && (
-        <AvaButton.SecondaryLarge
-          style={{ flex: 1, marginHorizontal: 4 }}
-          onPress={() => onPercentageSelected(4)}>
-          25%
-        </AvaButton.SecondaryLarge>
-      )}
-      {balance?.gt(p50) && (
-        <AvaButton.SecondaryLarge
-          style={{ flex: 1, marginHorizontal: 4 }}
-          onPress={() => onPercentageSelected(2)}>
-          50%
-        </AvaButton.SecondaryLarge>
-      )}
-      {balance?.gt(p100) && (
-        <AvaButton.SecondaryLarge
-          style={{ flex: 1, marginHorizontal: 4 }}
-          onPress={() => onPercentageSelected(1)}>
-          Max
-        </AvaButton.SecondaryLarge>
-      )}
-    </>
   )
 }
