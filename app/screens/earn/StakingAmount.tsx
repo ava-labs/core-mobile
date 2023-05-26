@@ -143,7 +143,7 @@ export default function StakingAmount() {
 }
 
 const AVAX_DECIMAL = 18
-const minStakeAmount = stringToBN('0.7', AVAX_DECIMAL)
+const minStakeAmount = stringToBN('25', AVAX_DECIMAL)
 const p10 = minStakeAmount.mul(new BN(10))
 const p25 = minStakeAmount.mul(new BN(4))
 const p50 = minStakeAmount.mul(new BN(2))
