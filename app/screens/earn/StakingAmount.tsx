@@ -13,13 +13,11 @@ import { VsCurrencyType } from '@avalabs/coingecko-sdk'
 import { balanceToDisplayValue } from '@avalabs/utils-sdk'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
-import AvaLogoSVG from 'components/svg/AvaLogoSVG'
 import { Row } from 'components/Row'
-import { BNInput } from 'components/BNInput'
-import OvalTagBg from 'components/OvalTagBg'
 import FlexSpacer from 'components/FlexSpacer'
 import AvaButton from 'components/AvaButton'
 import PercentButtons from 'screens/earn/PercentButtons'
+import EarnInputAmount from 'screens/earn/EarnInputAmount'
 
 export default function StakingAmount() {
   const { theme } = useApplicationContext()
@@ -79,47 +77,11 @@ export default function StakingAmount() {
           {nativeBalance}
         </AvaText.Subtitle1>
       </View>
-
-      <Row
-        style={{
-          alignItems: 'center',
-          justifyContent: 'center',
-          alignSelf: 'center',
-          width: 250
-        }}>
-        <BNInput
-          value={inputAmountBN}
-          denomination={avaxNetwork?.networkToken.decimals ?? 0}
-          placeholder={'0.0'}
-          onChange={handleAmountChange}
-          style={{
-            margin: 0
-          }}
-          autoFocus={true}
-          textStyle={{
-            fontFamily: 'Inter-Bold',
-            fontSize: 48,
-            lineHeight: 56
-          }}
-          backgroundColor={theme.transparent}
-        />
-        <OvalTagBg
-          color={theme.neutral900}
-          style={{
-            paddingHorizontal: 8,
-            paddingVertical: 4
-          }}>
-          <Row style={{ alignItems: 'center' }}>
-            <AvaLogoSVG
-              size={16}
-              logoColor={theme.tokenLogoColor}
-              backgroundColor={theme.tokenLogoBg}
-            />
-            <Space x={4} />
-            <AvaText.ButtonSmall>AVAX</AvaText.ButtonSmall>
-          </Row>
-        </OvalTagBg>
-      </Row>
+      <EarnInputAmount
+        handleAmountChange={handleAmountChange}
+        inputAmountBN={inputAmountBN}
+        denomination={avaxNetwork?.networkToken.decimals ?? 0}
+      />
       <Row style={{ justifyContent: 'center' }}>
         <AvaText.Caption currency textStyle={{ color: theme.white }}>
           {stakeInCurrency}
