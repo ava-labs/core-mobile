@@ -6,6 +6,7 @@ import { bridgeReducer as bridge } from 'store/bridge'
 import { nftsApi } from 'store/nft/api'
 import { migrations } from 'store/migrations'
 import { encryptTransform } from 'redux-persist-transform-encrypt'
+import DevDebuggingConfig from 'utils/debugging/DevDebuggingConfig'
 import { networkReducer as network } from './network'
 import { balanceReducer as balance } from './balance'
 import { appReducer as app, onLogOut, onRehydrationComplete } from './app'
@@ -122,11 +123,15 @@ export function configureEncryptedStore(secretKey: string) {
       })
 
       const middlewares = [
-        listener.middleware,
         ...defaultMiddleWare,
         transactionApi.middleware,
         nftsApi.middleware
       ]
+
+      // when storybook is enabled, no need to set up listeners
+      if (!DevDebuggingConfig.STORYBOOK_ENABLED) {
+        middlewares.unshift(listener.middleware)
+      }
 
       if (__DEV__) {
         const createDebugger = require('redux-flipper').default

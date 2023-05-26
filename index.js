@@ -14,11 +14,13 @@ import { name as appName } from './app.json'
 import DevDebuggingConfig from './app/utils/debugging/DevDebuggingConfig'
 import { server } from './tests/msw/server'
 
-// if (!DevDebuggingConfig.STORYBOOK_ENABLED) {
-AppRegistry.registerComponent(appName, () => ContextApp)
-// } else {
-//   import('./storybook');
-// }
+let AppEntryPoint = ContextApp
+
+if (DevDebuggingConfig.STORYBOOK_ENABLED) {
+  AppEntryPoint = require('./storybook').default
+}
+
+AppRegistry.registerComponent(appName, () => AppEntryPoint)
 
 if (DevDebuggingConfig.API_MOCKING || process.env.API_MOCKING) {
   server.listen()

@@ -1,10 +1,11 @@
-import { storiesOf } from '@storybook/react-native'
 import React, { FC, useEffect, useState } from 'react'
 import { Pressable, StyleSheet, View } from 'react-native'
 import ConfirmationTracker from 'screens/bridge/components/ConfirmationTracker'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
+import type { Meta } from '@storybook/react-native'
+import AvaText from 'components/AvaText'
+import { withCenterView } from '../decorators/withCenterView'
 
 const styles = StyleSheet.create({
   container: {
@@ -15,15 +16,6 @@ const styles = StyleSheet.create({
   }
 })
 
-storiesOf('Confirmation Tracker', module)
-  .add('SingleConfirmation', () => <SingleContainer />)
-  .add('Multiple Confirmations', () => <MultipleContainer />)
-
-/**
- * Use Container if need to access hooks prior to calling component. Otherwise just use component directly. See other
- * component stories for examples.
- * @constructor
- */
 const MultipleContainer: FC = () => {
   const theme = useApplicationContext().theme
   const [testStep, setTestStep] = useState(0)
@@ -95,3 +87,12 @@ const SingleContainer: FC = () => {
     </View>
   )
 }
+
+export default {
+  title: 'ConfirmationTracker',
+  decorators: [withCenterView]
+} as Meta
+
+export const Single = () => <SingleContainer />
+
+export const Multiple = () => <MultipleContainer />
