@@ -146,9 +146,7 @@ workflows:
 
                 stack=$( cat /etc/issue )$( echo "" )
 
-                yarn setup:ci
-
-                if [[ $stack == *"Ubuntu"* ]]; then
+                if [[ $stack == *Ubuntu* ]]; then
                   # on ubuntu, yarn setup command will fail
                   # as patch-package doesn't have write access to the node_modules folder
                   # thus, we need to set write permission manually and rerun yarn
@@ -156,9 +154,10 @@ workflows:
                   # set permission
                   echo 'Setting permissions for node_modules!!!'
                   chmod -R 777 node_modules
-
-                  yarn setup:ci
                 fi
+
+                yarn setup:ci
+
       - save-npm-cache@1: {}
       - script@1:
           title: Download Env Files
