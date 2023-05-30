@@ -157,6 +157,7 @@ workflows:
                     # set permission
                     echo 'Setting permissions for node_modules!!!'
                     sudo chmod 777 /root/.nvm/versions/node/v18.14.1/bin/node
+                    node_modules/.bin/patch-package; node_modules/.bin/rn-nodeify --install events,stream,vm,assert,https,http,os --hack
                     yarn setup:ci
 
                   fi
