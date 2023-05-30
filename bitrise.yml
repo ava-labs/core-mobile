@@ -142,19 +142,25 @@ workflows:
                 # make pipelines' return status equal the last command to exit with a non-zero status, or zero if all commands exit successfully
                 set -o pipefail
                 # debug log
-                set -x
-
+                set -e
                 stack=$( cat /etc/issue )$( echo "" )
 
-                if [[ $stack == *Ubuntu* ]]; then
-                  # on ubuntu, yarn setup command will fail
-                  # as patch-package doesn't have write access to the node_modules folder
-                  # thus, we need to set write permission manually and rerun yarn
+                trap 'catch $? $LINENO' ERR
 
-                  # set permission
-                  echo 'Setting permissions for node_modules!!!'
-                  chmod -R 777 node_modules
-                fi
+                catch() {
+                  echo "Error $1 occurred on $2"
+                  if [[ $stack == *Ubuntu* ]]; then
+                    # on ubuntu, yarn setup command will fail
+                    # as patch-package doesn't have write access to the node_modules folder
+                    # thus, we need to set write permission manually and rerun yarn
+
+                    # set permission
+                    echo 'Setting permissions for node_modules!!!'
+                    chmod -R 777 node_modules
+                    yarn setup:ci
+
+                  fi
+                }
 
                 yarn setup:ci
 
