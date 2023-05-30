@@ -19,9 +19,18 @@ import { BNInput } from 'components/BNInput'
 import OvalTagBg from 'components/OvalTagBg'
 import FlexSpacer from 'components/FlexSpacer'
 import AvaButton from 'components/AvaButton'
+import { useNavigation } from '@react-navigation/native'
+import { EarnScreenProps } from 'navigation/types'
+import AppNavigation from 'navigation/AppNavigation'
+
+type EarnScreenNavProps = EarnScreenProps<
+  typeof AppNavigation.Earn.StakingDuration
+>
 
 export default function StakingAmount() {
   const { theme } = useApplicationContext()
+  const { navigate } = useNavigation<EarnScreenNavProps['navigation']>()
+
   const activeAccount = useSelector(selectActiveAccount)
   const avaxNetwork = useSelector(selectNetwork(ChainId.AVALANCHE_MAINNET_ID))
   const selectedCurrency = useSelector(selectSelectedCurrency)
@@ -128,7 +137,10 @@ export default function StakingAmount() {
       </Row>
       <FlexSpacer />
       {!inputAmountBN.isZero() && (
-        <AvaButton.PrimaryLarge>Next</AvaButton.PrimaryLarge>
+        <AvaButton.PrimaryLarge
+          onPress={() => navigate(AppNavigation.Earn.StakingDuration)}>
+          Next
+        </AvaButton.PrimaryLarge>
       )}
       {inputAmountBN.isZero() && (
         <Row>

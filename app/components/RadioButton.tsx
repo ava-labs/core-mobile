@@ -5,26 +5,41 @@ interface RadioButtonProps {
   onPress: () => void
   selected: boolean
   children: React.ReactNode
+  unselectedColor?: string
+  selectedColor?: string
 }
 
 export const RadioButton: React.FC<RadioButtonProps> = ({
   onPress,
   selected,
-  children
+  children,
+  unselectedColor = '#F8F8FB',
+  selectedColor = '#3AA3FF'
 }) => {
   return (
     <View style={styles.radioButtonContainer}>
       <View
-        style={
-          selected ? styles.radioOuterButton : styles.radioUnselectedOuterButton
-        }>
+        style={[
+          selected ? styles.selectedOuterButton : styles.unselectedOuterButton,
+          {
+            backgroundColor: selected ? selectedColor : unselectedColor,
+            borderColor: selected ? selectedColor : unselectedColor
+          }
+        ]}>
         <Pressable
           onPress={onPress}
           style={{
             ...styles.radioButton,
-            borderColor: selected ? '#3AA3FF' : '#F8F8FB'
+            borderColor: selected ? selectedColor : unselectedColor
           }}>
-          {selected ? <View style={styles.radioButtonIcon} /> : null}
+          {selected ? (
+            <View
+              style={[
+                styles.radioButtonIcon,
+                { backgroundColor: selected ? selectedColor : unselectedColor }
+              ]}
+            />
+          ) : null}
         </Pressable>
       </View>
 
@@ -39,43 +54,35 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginRight: 10
   },
-  radioUnselectedOuterButton: {
-    height: 30,
-    width: 30,
-    backgroundColor: '#F8F8FB',
-    borderRadius: 15,
+  unselectedOuterButton: {
+    height: 25,
+    width: 25,
+    borderRadius: 12.5,
     borderWidth: 1,
-    borderColor: '#F8F8FB',
-    // borderColor: 'red',
     alignItems: 'center',
     justifyContent: 'center'
   },
-  radioOuterButton: {
-    height: 30,
-    width: 30,
-    backgroundColor: '#3AA3FF',
-    borderRadius: 15,
+  selectedOuterButton: {
+    height: 25,
+    width: 25,
+    borderRadius: 12.5,
     borderWidth: 1,
-    // borderColor: '#3AA3FF',
-    // borderColor: 'red',
     alignItems: 'center',
     justifyContent: 'center'
   },
   radioButton: {
-    height: 24,
-    width: 24,
+    height: 20,
+    width: 20,
     backgroundColor: 'black',
-    borderRadius: 12,
+    borderRadius: 10,
     borderWidth: 1,
-    // borderColor: '#3AA3FF',
     alignItems: 'center',
     justifyContent: 'center'
   },
   radioButtonIcon: {
-    height: 14,
-    width: 14,
-    borderRadius: 7,
-    backgroundColor: '#3AA3FF'
+    height: 10,
+    width: 10,
+    borderRadius: 5
   },
   radioButtonText: {
     fontSize: 16,

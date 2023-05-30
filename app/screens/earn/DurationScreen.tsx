@@ -1,17 +1,22 @@
 import React, { useState } from 'react'
-import { ScrollView, View } from 'react-native'
+import { ScrollView, StyleSheet, View, Pressable } from 'react-native'
 import AvaText from 'components/AvaText'
 import { RadioButton } from 'components/RadioButton'
 import AvaButton from 'components/AvaButton'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import InputText from 'components/InputText'
 import { Space } from 'components/Space'
 import InfoSVG from 'components/svg/InfoSVG'
 import { Row } from 'components/Row'
+import CalendarSVG from 'components/svg/CalendarSVG'
+import DateTimePickerModal from 'react-native-modal-datetime-picker'
+import { format } from 'date-fns'
 
 const StakingDuration = () => {
   const [selectedDuration, setSelectedDuration] = useState('')
   const { theme } = useApplicationContext()
+
+  const [isDatePickerVisible, setDatePickerVisibility] = useState(false)
+  const [date, setDate] = useState<Date>()
 
   const durationOptions = [
     { title: '1 Week', subTitle: 'Estimated Rewards: 0.54 AVAX' },
@@ -26,17 +31,37 @@ const StakingDuration = () => {
     title: 'Custom',
     subTitle: 'Enter your desired end date'
   }
+
+  const onRadioSelect = (value: string) => {
+    if (selectedDuration === value) {
+      return setSelectedDuration('')
+    }
+    return setSelectedDuration(value)
+  }
+
+  const showDatePicker = () => {
+    setDatePickerVisibility(true)
+  }
+
+  const hideDatePicker = () => {
+    setDatePickerVisibility(false)
+  }
+
+  const handleDateConfirm = (dateInput: Date) => {
+    setDate(dateInput)
+    hideDatePicker()
+  }
+
   return (
-    <ScrollView
-      contentContainerStyle={{
-        flex: 1,
-        paddingHorizontal: 16,
-        justifyContent: 'space-between'
-      }}>
+    <ScrollView contentContainerStyle={styles.container}>
       <View>
         <AvaText.LargeTitleBold textStyle={{}}>Duration</AvaText.LargeTitleBold>
         <AvaText.Subtitle1
-          textStyle={{ marginTop: 7, color: 'white', marginBottom: 32 }}>
+          textStyle={{
+            marginTop: 7,
+            color: theme.neutral50,
+            marginBottom: 32
+          }}>
           How long would you like to stake?
         </AvaText.Subtitle1>
         {selectedDuration !== 'Custom' ? (
@@ -45,13 +70,13 @@ const StakingDuration = () => {
               return (
                 <View style={{ marginBottom: 24 }} key={item.title}>
                   <RadioButton
-                    onPress={() => setSelectedDuration(item.title)}
+                    onPress={() => onRadioSelect(item.title)}
                     selected={selectedDuration === item.title}>
                     <View style={{ marginLeft: 10 }}>
-                      <AvaText.Body1 textStyle={{ color: '#F8F8FB' }}>
+                      <AvaText.Body1 textStyle={{ color: theme.neutral50 }}>
                         {item.title}
                       </AvaText.Body1>
-                      <AvaText.Caption textStyle={{ color: '#B4B4B7' }}>
+                      <AvaText.Caption textStyle={{ color: theme.neutral50 }}>
                         {item.subTitle}
                       </AvaText.Caption>
                     </View>
@@ -64,13 +89,13 @@ const StakingDuration = () => {
           <>
             <View style={{ marginBottom: 24 }}>
               <RadioButton
-                onPress={() => setSelectedDuration(customOptions.title)}
+                onPress={() => onRadioSelect(customOptions.title)}
                 selected={selectedDuration === customOptions.title}>
                 <View style={{ marginLeft: 10 }}>
-                  <AvaText.Body1 textStyle={{ color: '#F8F8FB' }}>
+                  <AvaText.Body1 textStyle={{ color: theme.neutral50 }}>
                     {customOptions.title}
                   </AvaText.Body1>
-                  <AvaText.Caption textStyle={{ color: '#B4B4B7' }}>
+                  <AvaText.Caption textStyle={{ color: theme.neutral50 }}>
                     {customOptions.subTitle}
                   </AvaText.Caption>
                 </View>
@@ -85,36 +110,68 @@ const StakingDuration = () => {
               <InfoSVG />
             </Row>
 
-            <View style={{ marginHorizontal: -16 }}>
-              <InputText
-                placeholder={'Enter contact name'}
-                text={''}
-                onChangeText={() => console.log('djdjd')}
-              />
-            </View>
-            <AvaText.Caption textStyle={{ color: '#B4B4B7' }}>
+            <Pressable
+              style={{
+                ...styles.dateInput,
+                backgroundColor: theme.neutral850
+              }}
+              onPress={showDatePicker}>
+              <AvaText.Body1 textStyle={{ color: theme.neutral50 }}>
+                {date ? format(date, 'MMMM dd, yyyy') : ' March 22, 2024'}
+              </AvaText.Body1>
+              <View style={styles.qrScan}>
+                <AvaButton.Icon onPress={showDatePicker}>
+                  <CalendarSVG selected={true} />
+                </AvaButton.Icon>
+              </View>
+            </Pressable>
+            <AvaText.Caption textStyle={{ color: theme.neutral300 }}>
               Actual end date will vary depending on options available
             </AvaText.Caption>
+            <View>
+              <DateTimePickerModal
+                isVisible={isDatePickerVisible}
+                mode="date"
+                onConfirm={handleDateConfirm}
+                onCancel={hideDatePicker}
+              />
+            </View>
           </>
         )}
       </View>
 
       <View>
-        <AvaButton.PrimaryLarge
-        // disabled={sendDisabled}
-        // onPress={onNextPress}
-        >
-          Next
-        </AvaButton.PrimaryLarge>
-        <AvaButton.TextLink
-          // disabled={sendDisabled}
-          // onPress={onNextPress}
-          textColor="#3AA3FF">
+        <AvaButton.PrimaryLarge>Next</AvaButton.PrimaryLarge>
+        <AvaButton.TextLink textColor={theme.colorPrimary1}>
           Advanced Set Up
         </AvaButton.TextLink>
       </View>
     </ScrollView>
   )
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    paddingHorizontal: 16,
+    justifyContent: 'space-between'
+  },
+  qrScan: {
+    position: 'absolute',
+    right: 16,
+    justifyContent: 'center',
+    height: '100%'
+  },
+  dateInput: {
+    marginVertical: 8,
+    padding: 16,
+    borderRadius: 8,
+    borderColor: '#58585B',
+    borderWidth: 1,
+    opacity: 50,
+    display: 'flex',
+    justifyContent: 'center'
+  }
+})
 
 export default StakingDuration

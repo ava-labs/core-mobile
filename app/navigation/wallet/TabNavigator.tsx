@@ -11,7 +11,9 @@ import TopNavigationHeader from 'navigation/TopNavigationHeader'
 import { getCommonBottomTabOptions, normalTabButton } from 'navigation/NavUtils'
 import EarnSVG from 'components/svg/EarnSVG'
 import { usePosthogContext } from 'contexts/PosthogContext'
-import { View } from 'react-native'
+import { TouchableOpacity, View } from 'react-native'
+import { useNavigation } from '@react-navigation/native'
+import { EarnScreenProps } from 'navigation/types'
 
 export type TabNavigatorParamList = {
   [AppNavigation.Tabs.Portfolio]: { showBackButton?: boolean }
@@ -22,9 +24,14 @@ export type TabNavigatorParamList = {
 const Tab = createBottomTabNavigator<TabNavigatorParamList>()
 const TAB_ICON_SIZE = 28
 
+type EarnScreenNavProps = EarnScreenProps<
+  typeof AppNavigation.Earn.StakingDuration
+>
+
 const TabNavigator = () => {
   const theme = useApplicationContext().theme
   const { earnBlocked } = usePosthogContext()
+  const { navigate } = useNavigation<EarnScreenNavProps['navigation']>()
 
   return (
     <Tab.Navigator
@@ -77,15 +84,16 @@ const TabNavigator = () => {
                 routeName: AppNavigation.Tabs.Earn,
                 focused,
                 image: <EarnSVG selected={focused} size={TAB_ICON_SIZE} />
-              })
+              }),
+            tabBarButton: props => (
+              <TouchableOpacity
+                {...props}
+                onPress={() => navigate(AppNavigation.Wallet.Earn)}>
+                {props.children}
+              </TouchableOpacity>
+            )
           }}
           component={View}
-          listeners={({ navigation }) => ({
-            tabPress: e => {
-              e.preventDefault()
-              navigation.navigate(AppNavigation.Wallet.Earn)
-            }
-          })}
         />
       )}
     </Tab.Navigator>

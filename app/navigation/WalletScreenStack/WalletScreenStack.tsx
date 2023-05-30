@@ -127,11 +127,11 @@ export type WalletScreenStackParams = {
   [AppNavigation.Wallet.Swap]:
     | NavigatorScreenParams<SwapStackParamList>
     | undefined
+  [AppNavigation.Wallet.NFTDetails]: NavigatorScreenParams<NFTStackParamList>
+  [AppNavigation.Wallet.NFTManage]: undefined
   [AppNavigation.Wallet.Earn]:
     | NavigatorScreenParams<EarnStackParamList>
     | undefined
-  [AppNavigation.Wallet.NFTDetails]: NavigatorScreenParams<NFTStackParamList>
-  [AppNavigation.Wallet.NFTManage]: undefined
   [AppNavigation.Wallet.AddressBook]:
     | NavigatorScreenParams<AddressBookStackParamList>
     | undefined
