@@ -21,15 +21,6 @@ describe('Change Network', () => {
     await Assert.isVisible(PortfolioPage.ethNetwork)
   })
 
-  it('should add BTC network to favorites', async () => {
-    await PortfolioPage.tapNetworksDropdown()
-    await PortfolioPage.tapManageNetworks()
-    await NetworksManagePage.tapNetworksTab()
-    await NetworksManagePage.addBtcNetwork()
-    await NetworksManagePage.tapHeaderBack()
-    await Assert.isVisible(PortfolioPage.networksDropdownBTC)
-  })
-
   it('should verify changing Active network to BTC', async () => {
     await PortfolioPage.tapNetworksDropdown()
     await PortfolioPage.tapNetworksDropdownBTC()

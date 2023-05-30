@@ -4,5 +4,6 @@ export default {
   activityTab: 'navutils_normal_tab_button__activity',
   watchlistTab: 'navutils_normal_tab_button__watchlist',
   bridgeTab: 'navutils_normal_tab_button__bridge',
+  earnTab: 'Earn',
   plusButton: 'add_svg'
 }
