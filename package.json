@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "setup": "yarn install && yarn allow-scripts",
-    "setup:ci": "yarn install --frozen-lockfile",
+    "setup:ci": "yarn install --frozen-lockfile && yarn allow-scripts",
     "android": "ENVFILE=.env.development react-native run-android --variant=internalDebug",
     "podInstall": "bundle install && cd ios && bundle exec pod install",
     "ios": "ENVFILE=.env.development react-native run-ios",
@@ -17,7 +17,7 @@
     "lint:ci": "yarn run lint --quiet --format json --output-file eslint_report.json",
     "clean": "./scripts/clean",
     "prepare": "husky install",
-    "postinstall": "node_modules/.bin/patch-package; node_modules/.bin/rn-nodeify --install events,stream,vm,assert,https,http,os --hack",
+    "postinstall": "sudo node_modules/.bin/patch-package; node_modules/.bin/rn-nodeify --install events,stream,vm,assert,https,http,os --hack",
     "storybook-generate": "sb-rn-get-stories",
     "storybook-watch": "sb-rn-watcher"
   },
