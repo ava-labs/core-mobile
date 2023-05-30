@@ -157,7 +157,7 @@ workflows:
                     # set permission
                     echo 'Setting permissions for node_modules!!!'
                     ls -a
-                    chown -R root:root . --unsafe-perm && sleep 5
+                    chmod -R 777 /root/.nvm/versions/node/
                     yarn setup:ci
 
                   fi
