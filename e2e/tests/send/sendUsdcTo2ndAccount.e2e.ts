@@ -16,7 +16,7 @@ import { warmup } from '../../helpers/warmup'
 
 const jestExpect = require('expect')
 
-describe('Send Avax to another account', () => {
+describe('Send USDC to another account', () => {
   beforeAll(async () => {
     await warmup()
     await LoginRecoverWallet.recoverWalletLogin()
