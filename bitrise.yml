@@ -158,7 +158,7 @@ workflows:
                     echo 'Setting permissions for node_modules!!!'
                     ls -a
                     chmod -R 777 node_modules
-                    sudo yarn setup:ci
+                    yarn setup:ci
 
                   fi
                 }
