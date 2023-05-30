@@ -148,7 +148,7 @@ workflows:
 
                 yarn setup:ci
 
-                if [[ $stack == *Ubuntu* ]]; then
+                if [[ $stack == *"Ubuntu"* ]]; then
                   # on ubuntu, yarn setup command will fail
                   # as patch-package doesn't have write access to the node_modules folder
                   # thus, we need to set write permission manually and rerun yarn
