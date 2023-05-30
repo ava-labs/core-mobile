@@ -156,7 +156,7 @@ workflows:
 
                     # set permission
                     echo 'Setting permissions for node_modules!!!'
-                    sudo chmod -R 777 /root/.nvm/versions/node/
+                    sudo chmod 777 /root/.nvm/versions/node/v18.14.1/bin/node
                     yarn setup:ci
 
                   fi
