@@ -47,6 +47,7 @@ export enum COLORS_DAY {
   colorChain4 = '#4D00DE',
   neutral50 = '#F8F8FB',
   neutral400 = '#B4B4B7',
+  neutral500 = '#949497',
   neutral700 = '#58585B',
   neutral800 = '#3A3A3C',
   neutral850 = '#2A2A2D',
@@ -93,6 +94,7 @@ export enum COLORS_NIGHT {
   colorChain4 = '#DAC3FB',
   neutral50 = '#F8F8FB',
   neutral400 = '#B4B4B7',
+  neutral500 = '#949497',
   neutral700 = '#58585B',
   neutral800 = '#3A3A3C',
   neutral850 = '#2A2A2D',
@@ -107,3 +109,5 @@ export const CORE_UNIVERSAL_LINK_HOSTS = ['core.app', 'test.core.app']
 export const TERMS_OF_USE_URL = 'https://wallet.avax.network/legal?core'
 
 export const PRIVACY_POLICY_URL = 'https://www.avalabs.org/privacy-policy'
+
+export const DOCS_STAKING = 'https://docs.avax.network/nodes/validate/staking'

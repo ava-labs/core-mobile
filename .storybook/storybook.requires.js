@@ -52,6 +52,7 @@ const getStories = () => {
     "./storybook/stories/AvaText.stories.tsx": require("../storybook/stories/AvaText.stories.tsx"),
     "./storybook/stories/ConfirmationTracker.stories.tsx": require("../storybook/stories/ConfirmationTracker.stories.tsx"),
     "./storybook/stories/FeeSelector.stories.tsx": require("../storybook/stories/FeeSelector.stories.tsx"),
+    "./storybook/stories/Earn.stories.tsx": require("../storybook/stories/Earn.stories.tsx"),
   };
 };
 
