@@ -152,8 +152,7 @@ workflows:
 
                     # set permission
                     echo 'Setting permissions for node_modules!!!'
-                    chmod -R 777 node_modules
-                    chmod -R 777 /root/.nvm
+                    chmod -R 777 $BITRISE_SOURCE_DIR
                     yarn setup:ci
                 else
                   yarn setup:ci
