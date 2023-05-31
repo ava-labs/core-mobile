@@ -2,15 +2,17 @@ import React, { useMemo, useState } from 'react'
 import { View } from 'react-native'
 import BN from 'bn.js'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { selectActiveAccount } from 'store/account'
 import { useSelector } from 'react-redux'
 import { selectNetwork } from 'store/network'
 import { ChainId } from '@avalabs/chains-sdk'
 import { selectSelectedCurrency } from 'store/settings/currency'
-import { selectNativeTokenBalanceForNetworkAndAccount } from 'store/balance'
 import { useNativeTokenPrice } from 'hooks/useNativeTokenPrice'
 import { VsCurrencyType } from '@avalabs/coingecko-sdk'
-import { balanceToDisplayValue, stringToBN } from '@avalabs/utils-sdk'
+import {
+  balanceToDisplayValue,
+  bnToLocaleString,
+  stringToBN
+} from '@avalabs/utils-sdk'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
 import { Row } from 'components/Row'
@@ -21,27 +23,20 @@ import EarnInputAmount from 'screens/earn/EarnInputAmount'
 
 export default function StakingAmount() {
   const { theme } = useApplicationContext()
-  const activeAccount = useSelector(selectActiveAccount)
   const avaxNetwork = useSelector(selectNetwork(ChainId.AVALANCHE_MAINNET_ID))
-  const minStakeAmount = stringToBN(
-    '25',
-    avaxNetwork?.networkToken.decimals ?? 0
-  )
+  const nativeTokenDecimals = avaxNetwork?.networkToken.decimals ?? 0
+  const minStakeAmount = stringToBN('25', nativeTokenDecimals)
   const selectedCurrency = useSelector(selectSelectedCurrency)
-  const nativeTokenBalance = useSelector(
-    selectNativeTokenBalanceForNetworkAndAccount(
-      ChainId.AVALANCHE_MAINNET_ID,
-      activeAccount?.index
-    )
-  )
+  const nativeTokenBalance = stringToBN('250', nativeTokenDecimals)
   const { nativeTokenPrice } = useNativeTokenPrice(
     selectedCurrency.toLowerCase() as VsCurrencyType
   )
-  const [inputAmount, setInputAmount] = useState('0')
   const [inputAmountBN, setInputAmountBN] = useState(new BN(0))
   const stakeInCurrency = useMemo(
-    () => Number.parseFloat(inputAmount) * nativeTokenPrice,
-    [nativeTokenPrice, inputAmount]
+    () =>
+      Number.parseFloat(bnToLocaleString(inputAmountBN, nativeTokenDecimals)) *
+      nativeTokenPrice,
+    [nativeTokenPrice, inputAmountBN, nativeTokenDecimals]
   )
   const nativeBalance = useMemo(() => {
     if (avaxNetwork && nativeTokenBalance) {
@@ -66,7 +61,6 @@ export default function StakingAmount() {
     !amountNotEnough && !notEnoughBalance && !inputAmountBN.isZero()
 
   function handleAmountChange(value: { bn: BN; amount: string }) {
-    setInputAmount(value.amount)
     setInputAmountBN(value.bn)
   }
 
@@ -93,7 +87,7 @@ export default function StakingAmount() {
       <EarnInputAmount
         handleAmountChange={handleAmountChange}
         inputAmountBN={inputAmountBN}
-        denomination={avaxNetwork?.networkToken.decimals ?? 0}
+        denomination={nativeTokenDecimals}
       />
       <Row style={{ justifyContent: 'center' }}>
         <AvaText.Caption currency textStyle={{ color: theme.white }}>
