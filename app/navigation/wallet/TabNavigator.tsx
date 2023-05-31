@@ -10,8 +10,8 @@ import WatchlistTab from 'screens/watchlist/WatchlistTabView'
 import TopNavigationHeader from 'navigation/TopNavigationHeader'
 import { getCommonBottomTabOptions, normalTabButton } from 'navigation/NavUtils'
 import EarnSVG from 'components/svg/EarnSVG'
-import EarnTabView from 'screens/earn/EarnTabView'
 import { usePosthogContext } from 'contexts/PosthogContext'
+import { View } from 'react-native'
 
 export type TabNavigatorParamList = {
   [AppNavigation.Tabs.Portfolio]: { showBackButton?: boolean }
@@ -79,7 +79,13 @@ const TabNavigator = () => {
                 image: <EarnSVG selected={focused} size={TAB_ICON_SIZE} />
               })
           }}
-          component={EarnTabView}
+          component={View}
+          listeners={({ navigation }) => ({
+            tabPress: e => {
+              e.preventDefault()
+              navigation.navigate(AppNavigation.Wallet.Earn)
+            }
+          })}
         />
       )}
     </Tab.Navigator>
