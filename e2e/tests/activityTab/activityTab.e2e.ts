@@ -1,9 +1,9 @@
 /* eslint-disable jest/expect-expect */
-import BottomTabsPage from '../../pages/bottomTabs.page'
 import Assert from '../../helpers/assertions'
 import ActivityTabPage from '../../pages/activityTab.page'
 import LoginRecoverWallet from '../../helpers/loginRecoverWallet'
 import TransactionDetailsPage from '../../pages/transactionDetails.page'
+import PortfolioPage from '../../pages/portfolio.page'
 import { warmup } from '../../helpers/warmup'
 
 describe('Activity Tab', () => {
@@ -13,8 +13,7 @@ describe('Activity Tab', () => {
   })
 
   it('should show contract call only in activity list', async () => {
-    await BottomTabsPage.tapActivityTab()
-    await Assert.isVisible(ActivityTabPage.activityListHeader)
+    await PortfolioPage.tapActivityTab()
     await ActivityTabPage.tapFilterDropdown()
     await ActivityTabPage.tapContractCallFilterOption()
     await Assert.isNotVisible(ActivityTabPage.bridgeSVG)
@@ -45,7 +44,16 @@ describe('Activity Tab', () => {
       ActivityTabPage.selectFilterDropdown,
       'Display: Incoming'
     )
-    await ActivityTabPage.tapArrowIcon(1)
+  })
+
+  it('should display outgoing transaction details', async () => {
+    await ActivityTabPage.tapFilterDropdown()
+    await ActivityTabPage.tapOutgingFilterOption()
+    await Assert.hasText(
+      ActivityTabPage.selectFilterDropdown,
+      'Display: Outgoing'
+    )
+    await ActivityTabPage.tapArrowIcon(0)
     await Assert.isVisible(TransactionDetailsPage.status)
     await Assert.isVisible(TransactionDetailsPage.transactionType)
   })
