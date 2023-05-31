@@ -17,7 +17,7 @@
     "lint:ci": "yarn run lint --quiet --format json --output-file eslint_report.json",
     "clean": "./scripts/clean",
     "prepare": "husky install",
-    "postinstall": "",
+    "postinstall": "node_modules/.bin/patch-package; node_modules/.bin/rn-nodeify --install events,stream,vm,assert,https,http,os --hack",
     "storybook-generate": "sb-rn-get-stories",
     "storybook-watch": "sb-rn-watcher"
   },

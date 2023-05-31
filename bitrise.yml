@@ -143,13 +143,9 @@ workflows:
                 set -o pipefail
                 # debug log
                 set -x
-                stack=$( cat /etc/issue )$( echo "" )
+                stack=$( cat /etc/issue )
 
-                trap 'catch $? $LINENO' ERR
-
-                catch() {
-                  echo "Error $1 occurred on $2"
-                  if [[ $stack == *Ubuntu* ]]; then
+                if [[ $stack == *Ubuntu* ]]; then
                     # on ubuntu, yarn setup command will fail
                     # as patch-package doesn't have write access to the node_modules folder
                     # thus, we need to set write permission manually and rerun yarn
@@ -159,11 +155,10 @@ workflows:
                     sudo chmod -R 777 node_modules
                     node_modules/.bin/patch-package; node_modules/.bin/rn-nodeify --install events,stream,vm,assert,https,http,os --hack
                     yarn setup:ci
+                else
+                  yarn setup:ci
 
-                  fi
-                }
-
-                yarn setup:ci
+                fi
 
       - save-npm-cache@1: {}
       - script@1:
