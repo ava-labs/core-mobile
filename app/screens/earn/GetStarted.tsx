@@ -35,6 +35,7 @@ export default function GetStarted({ onNext }: { onNext: () => void }) {
         <Space y={16} />
         <View style={{ paddingHorizontal: 23, alignItems: 'center' }}>
           <AvaText.Heading5>Earn rewards through staking</AvaText.Heading5>
+          <Space y={8} />
           <AvaText.Body2 textStyle={{ textAlign: 'center' }}>
             {
               'Stake your AVAX in the Avalanche Network and earn rewards up to 9% APY.'
