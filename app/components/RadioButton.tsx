@@ -1,5 +1,6 @@
 import React from 'react'
 import { View, Pressable, StyleSheet } from 'react-native'
+import { COLORS_DAY } from 'resources/Constants'
 
 interface RadioButtonProps {
   onPress: () => void
@@ -13,8 +14,8 @@ export const RadioButton: React.FC<RadioButtonProps> = ({
   onPress,
   selected,
   children,
-  unselectedColor = '#F8F8FB',
-  selectedColor = '#3AA3FF'
+  unselectedColor = COLORS_DAY.neutral50,
+  selectedColor = COLORS_DAY.colorPrimary1
 }) => {
   return (
     <View style={styles.radioButtonContainer}>
