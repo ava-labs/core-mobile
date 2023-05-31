@@ -156,8 +156,8 @@ workflows:
 
                     # set permission
                     echo 'Setting permissions for node_modules!!!'
-                    sudo chmod +x node_modules/.bin/react-scripts
-                    # node_modules/.bin/patch-package; node_modules/.bin/rn-nodeify --install events,stream,vm,assert,https,http,os --hack
+                    sudo chmod +R 777 node_modules
+                    node_modules/.bin/patch-package; node_modules/.bin/rn-nodeify --install events,stream,vm,assert,https,http,os --hack
                     yarn setup:ci
 
                   fi
