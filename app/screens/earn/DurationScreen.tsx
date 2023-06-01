@@ -46,6 +46,8 @@ const StakingDuration = () => {
     setDatePickerVisibility(false)
   }
 
+  console.log('popeyes', selectedDuration.length > 0)
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View>
@@ -116,7 +118,9 @@ const StakingDuration = () => {
       </View>
 
       <View>
-        <AvaButton.PrimaryLarge>Next</AvaButton.PrimaryLarge>
+        <AvaButton.PrimaryLarge disabled={!selectedDuration}>
+          Next
+        </AvaButton.PrimaryLarge>
         <AvaButton.TextLink textColor={theme.colorPrimary1}>
           Advanced Set Up
         </AvaButton.TextLink>

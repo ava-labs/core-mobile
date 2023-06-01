@@ -32,6 +32,7 @@ export const Basic: ComponentStory<typeof CalendarInput> = () => {
         isDatePickerVisible={isDatePickerVisible}
         handleDateConfirm={handleDateConfirm}
         setIsDatePickerVisible={toggleDatePickerVisibility}
+        placeHolder=" March 22, 2024"
       />
     </View>
   )
