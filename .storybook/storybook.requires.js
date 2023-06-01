@@ -50,8 +50,10 @@ const getStories = () => {
   return {
     "./storybook/stories/AvaListItem.stories.tsx": require("../storybook/stories/AvaListItem.stories.tsx"),
     "./storybook/stories/AvaText.stories.tsx": require("../storybook/stories/AvaText.stories.tsx"),
+    "./storybook/stories/CalendarInput.stories.tsx": require("../storybook/stories/CalendarInput.stories.tsx"),
     "./storybook/stories/ConfirmationTracker.stories.tsx": require("../storybook/stories/ConfirmationTracker.stories.tsx"),
     "./storybook/stories/FeeSelector.stories.tsx": require("../storybook/stories/FeeSelector.stories.tsx"),
+    "./storybook/stories/RadioButton.stories.tsx": require("../storybook/stories/RadioButton.stories.tsx"),
   };
 };
 

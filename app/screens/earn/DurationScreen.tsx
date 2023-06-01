@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { ScrollView, StyleSheet, View, Pressable } from 'react-native'
+import { ScrollView, StyleSheet, View } from 'react-native'
 import AvaText from 'components/AvaText'
 import { RadioButton } from 'components/RadioButton'
 import AvaButton from 'components/AvaButton'
@@ -7,9 +7,7 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Space } from 'components/Space'
 import InfoSVG from 'components/svg/InfoSVG'
 import { Row } from 'components/Row'
-import CalendarSVG from 'components/svg/CalendarSVG'
-import DateTimePickerModal from 'react-native-modal-datetime-picker'
-import { format } from 'date-fns'
+import { CalendarInput } from 'components/CalendarInput'
 
 const StakingDuration = () => {
   const [selectedDuration, setSelectedDuration] = useState('')
@@ -39,23 +37,19 @@ const StakingDuration = () => {
     return setSelectedDuration(value)
   }
 
-  const showDatePicker = () => {
-    setDatePickerVisibility(true)
-  }
-
-  const hideDatePicker = () => {
-    setDatePickerVisibility(false)
+  const toggleDatePickerVisibility = (value: boolean) => {
+    setDatePickerVisibility(value)
   }
 
   const handleDateConfirm = (dateInput: Date) => {
     setDate(dateInput)
-    hideDatePicker()
+    setDatePickerVisibility(false)
   }
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View>
-        <AvaText.LargeTitleBold textStyle={{}}>Duration</AvaText.LargeTitleBold>
+        <AvaText.LargeTitleBold>Duration</AvaText.LargeTitleBold>
         <AvaText.Subtitle1
           textStyle={{
             marginTop: 7,
@@ -65,26 +59,24 @@ const StakingDuration = () => {
           How long would you like to stake?
         </AvaText.Subtitle1>
         {selectedDuration !== 'Custom' ? (
-          <>
-            {durationOptions.map(item => {
-              return (
-                <View style={{ marginBottom: 24 }} key={item.title}>
-                  <RadioButton
-                    onPress={() => onRadioSelect(item.title)}
-                    selected={selectedDuration === item.title}>
-                    <View style={{ marginLeft: 10 }}>
-                      <AvaText.Body1 textStyle={{ color: theme.neutral50 }}>
-                        {item.title}
-                      </AvaText.Body1>
-                      <AvaText.Caption textStyle={{ color: theme.neutral50 }}>
-                        {item.subTitle}
-                      </AvaText.Caption>
-                    </View>
-                  </RadioButton>
-                </View>
-              )
-            })}
-          </>
+          durationOptions.map(item => {
+            return (
+              <View style={{ marginBottom: 24 }} key={item.title}>
+                <RadioButton
+                  onPress={() => onRadioSelect(item.title)}
+                  selected={selectedDuration === item.title}>
+                  <View style={{ marginLeft: 10 }}>
+                    <AvaText.Body2 textStyle={{ color: theme.neutral50 }}>
+                      {item.title}
+                    </AvaText.Body2>
+                    <AvaText.Caption textStyle={{ color: theme.neutral400 }}>
+                      {item.subTitle}
+                    </AvaText.Caption>
+                  </View>
+                </RadioButton>
+              </View>
+            )
+          })
         ) : (
           <>
             <View style={{ marginBottom: 24 }}>
@@ -103,39 +95,22 @@ const StakingDuration = () => {
             </View>
             <Row style={{ alignItems: 'center' }}>
               <AvaText.Body2
-                textStyle={{ color: theme.colorText1, fontWeight: '600' }}>
+                textStyle={{ color: theme.neutral50, fontWeight: '600' }}>
                 End Date
               </AvaText.Body2>
               <Space x={8} />
               <InfoSVG />
             </Row>
-
-            <Pressable
-              style={{
-                ...styles.dateInput,
-                backgroundColor: theme.neutral850
-              }}
-              onPress={showDatePicker}>
-              <AvaText.Body1 textStyle={{ color: theme.neutral50 }}>
-                {date ? format(date, 'MMMM dd, yyyy') : ' March 22, 2024'}
-              </AvaText.Body1>
-              <View style={styles.qrScan}>
-                <AvaButton.Icon onPress={showDatePicker}>
-                  <CalendarSVG selected={true} />
-                </AvaButton.Icon>
-              </View>
-            </Pressable>
+            <CalendarInput
+              date={date}
+              isDatePickerVisible={isDatePickerVisible}
+              setIsDatePickerVisible={toggleDatePickerVisibility}
+              handleDateConfirm={handleDateConfirm}
+              placeHolder=" March 22, 2024"
+            />
             <AvaText.Caption textStyle={{ color: theme.neutral300 }}>
               Actual end date will vary depending on options available
             </AvaText.Caption>
-            <View>
-              <DateTimePickerModal
-                isVisible={isDatePickerVisible}
-                mode="date"
-                onConfirm={handleDateConfirm}
-                onCancel={hideDatePicker}
-              />
-            </View>
           </>
         )}
       </View>
@@ -155,22 +130,6 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 16,
     justifyContent: 'space-between'
-  },
-  qrScan: {
-    position: 'absolute',
-    right: 16,
-    justifyContent: 'center',
-    height: '100%'
-  },
-  dateInput: {
-    marginVertical: 8,
-    padding: 16,
-    borderRadius: 8,
-    borderColor: '#58585B',
-    borderWidth: 1,
-    opacity: 50,
-    display: 'flex',
-    justifyContent: 'center'
   }
 })
 
