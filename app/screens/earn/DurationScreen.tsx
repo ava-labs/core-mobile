@@ -46,8 +46,6 @@ const StakingDuration = () => {
     setDatePickerVisibility(false)
   }
 
-  console.log('popeyes', selectedDuration.length > 0)
-
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View>
