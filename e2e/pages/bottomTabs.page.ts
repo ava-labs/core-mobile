@@ -27,6 +27,10 @@ class BottomsTabsPage {
     return by.id(bottomTabsLoc.plusButton)
   }
 
+  get earnTab() {
+    return by.text(bottomTabsLoc.earnTab)
+  }
+
   async tapActivityTab() {
     await Actions.tapElementAtIndex(this.activityTab, 1)
   }
@@ -36,7 +40,7 @@ class BottomsTabsPage {
   }
 
   async tapPlusIcon() {
-    await Actions.tapElementAtIndex(this.plusIcon, 1)
+    await Actions.tapElementAtIndex(this.plusIcon, 0)
   }
 
   async tapPortfolioTab() {
@@ -49,9 +53,9 @@ class BottomsTabsPage {
 
   async verifyBottomTabs() {
     await Assert.isVisible(this.portfolioTab)
-    await Assert.isVisible(this.activityTab)
+    await Assert.isVisible(this.plusIcon)
+    // await Assert.isVisible(this.earnTab) Should be activated once Earn feature is developed and no longer on feature flag.
     await Assert.isVisible(this.watchlistTtab)
-    await Assert.isVisible(this.bridgeTab)
     await Assert.isVisible(this.watchlistIcon)
   }
 }

@@ -5,13 +5,13 @@ import PortfolioPage from '../../pages/portfolio.page'
 import ManageTokensPage from '../../pages/manageTokens.page'
 import { warmup } from '../../helpers/warmup'
 
-describe('Change Network', () => {
+describe('Add custom token', () => {
   beforeAll(async () => {
     await warmup()
     await LoginRecoverWallet.recoverWalletLogin()
   })
 
-  it('should add custom network', async () => {
+  it('should add custom token', async () => {
     await PortfolioPage.tapAvaxNetwork()
     await PortfolioPage.tapManageTokens()
     await ManageTokensPage.tapAddcustomToken()

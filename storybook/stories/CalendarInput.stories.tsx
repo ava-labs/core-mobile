@@ -37,10 +37,3 @@ export const Basic: ComponentStory<typeof CalendarInput> = () => {
     </View>
   )
 }
-
-Basic.args = {
-  //   selected: false,
-  //   children: 'Radio Button',
-  //   unselectedColor: 'white',
-  //   selectedColor: 'blue'
-}

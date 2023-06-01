@@ -7,7 +7,6 @@ import { EarnScreenProps } from 'navigation/types'
 import { useNavigation } from '@react-navigation/native'
 import TopNavigationHeader from 'navigation/TopNavigationHeader'
 import StakingDuration from 'screens/earn/DurationScreen'
-// import EarnTabView from 'screens/earn/EarnTabView'
 
 export type EarnStackParamList = {
   [AppNavigation.Earn.GetStarted]: undefined

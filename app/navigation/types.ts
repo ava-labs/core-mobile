@@ -299,6 +299,13 @@ export type SwapScreenProps<T extends keyof SwapStackParamList> =
     WalletScreenProps<keyof WalletScreenStackParams>
   >
 
+/** ROOT -> WALLET -> EARN **/
+export type EarnScreenProps<T extends keyof EarnStackParamList> =
+  CompositeScreenProps<
+    StackScreenProps<EarnStackParamList, T>,
+    WalletScreenProps<keyof WalletScreenStackParams>
+  >
+
 /** ROOT -> WALLET -> NFT DETAILS **/
 export type NFTDetailsScreenProps<T extends keyof NFTStackParamList> =
   CompositeScreenProps<

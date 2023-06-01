@@ -16,13 +16,13 @@ import { warmup } from '../../helpers/warmup'
 
 const jestExpect = require('expect')
 
-describe('Send Goerly Eth to another account', () => {
+describe('Send Eth to another account', () => {
   beforeAll(async () => {
     await warmup()
     await LoginRecoverWallet.recoverWalletLogin()
   })
 
-  it('Should send Goerly Eth to second account', async () => {
+  it('Should send Eth to second account', async () => {
     await PortfolioPage.tapNetworksDropdown()
     await PortfolioPage.tapNetworksDropdownETH()
 
@@ -61,7 +61,7 @@ describe('Send Goerly Eth to another account', () => {
     jestExpect(isTransactionSuccessful).toBe(true)
   })
 
-  it('Should receive Goerly Eth on second account', async () => {
+  it('Should receive Eth on second account', async () => {
     await ActivityTabPage.tapHeaderBack()
     await AccountManagePage.tapAccountMenu()
     const firstAccountAddress = await AccountManagePage.getFirstAvaxAddress()

@@ -111,3 +111,5 @@ export const CORE_UNIVERSAL_LINK_HOSTS = ['core.app', 'test.core.app']
 export const TERMS_OF_USE_URL = 'https://wallet.avax.network/legal?core'
 
 export const PRIVACY_POLICY_URL = 'https://www.avalabs.org/privacy-policy'
+
+export const DOCS_STAKING = 'https://docs.avax.network/nodes/validate/staking'

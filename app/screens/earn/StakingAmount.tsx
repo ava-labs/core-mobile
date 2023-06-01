@@ -2,26 +2,27 @@ import React, { useMemo, useState } from 'react'
 import { View } from 'react-native'
 import BN from 'bn.js'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { selectActiveAccount } from 'store/account'
 import { useSelector } from 'react-redux'
 import { selectNetwork } from 'store/network'
 import { ChainId } from '@avalabs/chains-sdk'
 import { selectSelectedCurrency } from 'store/settings/currency'
-import { selectNativeTokenBalanceForNetworkAndAccount } from 'store/balance'
 import { useNativeTokenPrice } from 'hooks/useNativeTokenPrice'
 import { VsCurrencyType } from '@avalabs/coingecko-sdk'
-import { balanceToDisplayValue, stringToBN } from '@avalabs/utils-sdk'
+import {
+  balanceToDisplayValue,
+  bnToLocaleString,
+  stringToBN
+} from '@avalabs/utils-sdk'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
-import AvaLogoSVG from 'components/svg/AvaLogoSVG'
 import { Row } from 'components/Row'
-import { BNInput } from 'components/BNInput'
-import OvalTagBg from 'components/OvalTagBg'
 import FlexSpacer from 'components/FlexSpacer'
 import AvaButton from 'components/AvaButton'
+import PercentButtons from 'screens/earn/PercentButtons'
+import EarnInputAmount from 'screens/earn/EarnInputAmount'
 import { useNavigation } from '@react-navigation/native'
-import { EarnScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
+import { EarnScreenProps } from 'navigation/types'
 
 type EarnScreenNavProps = EarnScreenProps<
   typeof AppNavigation.Earn.StakingDuration
@@ -31,23 +32,20 @@ export default function StakingAmount() {
   const { theme } = useApplicationContext()
   const { navigate } = useNavigation<EarnScreenNavProps['navigation']>()
 
-  const activeAccount = useSelector(selectActiveAccount)
   const avaxNetwork = useSelector(selectNetwork(ChainId.AVALANCHE_MAINNET_ID))
+  const nativeTokenDecimals = avaxNetwork?.networkToken.decimals ?? 0
+  const minStakeAmount = stringToBN('25', nativeTokenDecimals)
   const selectedCurrency = useSelector(selectSelectedCurrency)
-  const nativeTokenBalance = useSelector(
-    selectNativeTokenBalanceForNetworkAndAccount(
-      ChainId.AVALANCHE_MAINNET_ID,
-      activeAccount?.index
-    )
-  )
+  const nativeTokenBalance = stringToBN('250', nativeTokenDecimals)
   const { nativeTokenPrice } = useNativeTokenPrice(
     selectedCurrency.toLowerCase() as VsCurrencyType
   )
-  const [inputAmount, setInputAmount] = useState('')
   const [inputAmountBN, setInputAmountBN] = useState(new BN(0))
   const stakeInCurrency = useMemo(
-    () => Number.parseFloat(inputAmount) * nativeTokenPrice,
-    [nativeTokenPrice, inputAmount]
+    () =>
+      Number.parseFloat(bnToLocaleString(inputAmountBN, nativeTokenDecimals)) *
+      nativeTokenPrice,
+    [nativeTokenPrice, inputAmountBN, nativeTokenDecimals]
   )
   const nativeBalance = useMemo(() => {
     if (avaxNetwork && nativeTokenBalance) {
@@ -62,8 +60,16 @@ export default function StakingAmount() {
     }
   }, [avaxNetwork, nativeTokenBalance])
 
+  const amountNotEnough =
+    !inputAmountBN.isZero() && inputAmountBN.lt(minStakeAmount)
+
+  const notEnoughBalance =
+    nativeTokenBalance && inputAmountBN.gt(nativeTokenBalance)
+
+  const inputValid =
+    !amountNotEnough && !notEnoughBalance && !inputAmountBN.isZero()
+
   function handleAmountChange(value: { bn: BN; amount: string }) {
-    setInputAmount(value.amount)
     setInputAmountBN(value.bn)
   }
 
@@ -87,46 +93,11 @@ export default function StakingAmount() {
           {nativeBalance}
         </AvaText.Subtitle1>
       </View>
-
-      <Row
-        style={{
-          alignItems: 'center',
-          justifyContent: 'center',
-          alignSelf: 'center',
-          width: 250
-        }}>
-        <BNInput
-          value={inputAmountBN}
-          denomination={avaxNetwork?.networkToken.decimals ?? 0}
-          placeholder={'0.0'}
-          onChange={handleAmountChange}
-          style={{
-            margin: 0
-          }}
-          textStyle={{
-            fontFamily: 'Inter-Bold',
-            fontSize: 48,
-            lineHeight: 56
-          }}
-          backgroundColor={theme.transparent}
-        />
-        <OvalTagBg
-          color={theme.neutral900}
-          style={{
-            paddingHorizontal: 8,
-            paddingVertical: 4
-          }}>
-          <Row style={{ alignItems: 'center' }}>
-            <AvaLogoSVG
-              size={16}
-              logoColor={theme.tokenLogoColor}
-              backgroundColor={theme.tokenLogoBg}
-            />
-            <Space x={4} />
-            <AvaText.ButtonSmall>AVAX</AvaText.ButtonSmall>
-          </Row>
-        </OvalTagBg>
-      </Row>
+      <EarnInputAmount
+        handleAmountChange={handleAmountChange}
+        inputAmountBN={inputAmountBN}
+        denomination={nativeTokenDecimals}
+      />
       <Row style={{ justifyContent: 'center' }}>
         <AvaText.Caption currency textStyle={{ color: theme.white }}>
           {stakeInCurrency}
@@ -135,8 +106,24 @@ export default function StakingAmount() {
           {` ${selectedCurrency}`}
         </AvaText.Caption>
       </Row>
+      <View
+        style={{
+          marginTop: 16,
+          alignItems: 'center'
+        }}>
+        {amountNotEnough && (
+          <AvaText.Body3 color={theme.colorError}>
+            {`Minimum amount to stake is 25 AVAX`}
+          </AvaText.Body3>
+        )}
+        {notEnoughBalance && (
+          <AvaText.Body3 color={theme.colorError}>
+            {`Insufficient balance!`}
+          </AvaText.Body3>
+        )}
+      </View>
       <FlexSpacer />
-      {!inputAmountBN.isZero() && (
+      {inputValid && (
         <AvaButton.PrimaryLarge
           onPress={() => navigate(AppNavigation.Earn.StakingDuration)}>
           Next
@@ -151,53 +138,5 @@ export default function StakingAmount() {
         </Row>
       )}
     </View>
-  )
-}
-
-const AVAX_DECIMAL = 18
-const minStakeAmount = stringToBN('25', AVAX_DECIMAL)
-const p10 = minStakeAmount.mul(new BN(10))
-const p25 = minStakeAmount.mul(new BN(4))
-const p50 = minStakeAmount.mul(new BN(2))
-const p100 = minStakeAmount
-
-const PercentButtons = ({
-  balance,
-  onPercentageSelected
-}: {
-  balance: BN | undefined
-  onPercentageSelected: (factor: number) => void
-}) => {
-  return (
-    <>
-      {balance?.gt(p10) && (
-        <AvaButton.SecondaryLarge
-          style={{ flex: 1, marginHorizontal: 4 }}
-          onPress={() => onPercentageSelected(10)}>
-          10%
-        </AvaButton.SecondaryLarge>
-      )}
-      {balance?.gt(p25) && (
-        <AvaButton.SecondaryLarge
-          style={{ flex: 1, marginHorizontal: 4 }}
-          onPress={() => onPercentageSelected(4)}>
-          25%
-        </AvaButton.SecondaryLarge>
-      )}
-      {balance?.gt(p50) && (
-        <AvaButton.SecondaryLarge
-          style={{ flex: 1, marginHorizontal: 4 }}
-          onPress={() => onPercentageSelected(2)}>
-          50%
-        </AvaButton.SecondaryLarge>
-      )}
-      {balance?.gt(p100) && (
-        <AvaButton.SecondaryLarge
-          style={{ flex: 1, marginHorizontal: 4 }}
-          onPress={() => onPercentageSelected(1)}>
-          Max
-        </AvaButton.SecondaryLarge>
-      )}
-    </>
   )
 }
