@@ -51,8 +51,9 @@ const getStories = () => {
     "./storybook/stories/AvaListItem.stories.tsx": require("../storybook/stories/AvaListItem.stories.tsx"),
     "./storybook/stories/AvaText.stories.tsx": require("../storybook/stories/AvaText.stories.tsx"),
     "./storybook/stories/ConfirmationTracker.stories.tsx": require("../storybook/stories/ConfirmationTracker.stories.tsx"),
-    "./storybook/stories/FeeSelector.stories.tsx": require("../storybook/stories/FeeSelector.stories.tsx"),
     "./storybook/stories/Earn.stories.tsx": require("../storybook/stories/Earn.stories.tsx"),
+    "./storybook/stories/FeeSelector.stories.tsx": require("../storybook/stories/FeeSelector.stories.tsx"),
+    "./storybook/stories/Lotties.stories.tsx": require("../storybook/stories/Lotties.stories.tsx"),
   };
 };
 
