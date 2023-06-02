@@ -20,14 +20,22 @@ import FlexSpacer from 'components/FlexSpacer'
 import AvaButton from 'components/AvaButton'
 import PercentButtons from 'screens/earn/PercentButtons'
 import EarnInputAmount from 'screens/earn/EarnInputAmount'
+import { selectNativeTokenBalanceForNetworkAndAccount } from 'store/balance'
+import { selectActiveAccount } from 'store/account'
 
 export default function StakingAmount() {
   const { theme } = useApplicationContext()
   const avaxNetwork = useSelector(selectNetwork(ChainId.AVALANCHE_MAINNET_ID))
+  const activeAccount = useSelector(selectActiveAccount)
   const nativeTokenDecimals = avaxNetwork?.networkToken.decimals ?? 0
   const minStakeAmount = stringToBN('25', nativeTokenDecimals)
   const selectedCurrency = useSelector(selectSelectedCurrency)
-  const nativeTokenBalance = stringToBN('250', nativeTokenDecimals)
+  const nativeTokenBalance = useSelector(
+    selectNativeTokenBalanceForNetworkAndAccount(
+      ChainId.AVALANCHE_MAINNET_ID,
+      activeAccount?.index
+    )
+  )
   const { nativeTokenPrice } = useNativeTokenPrice(
     selectedCurrency.toLowerCase() as VsCurrencyType
   )
