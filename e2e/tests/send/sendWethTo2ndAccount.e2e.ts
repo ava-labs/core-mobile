@@ -44,7 +44,7 @@ describe('Send WETH to another account', () => {
     await ReviewAndSend.tapSendNow()
 
     await actions.waitForElementNotVisible(ReviewAndSend.sendSuccessfulToastMsg)
-    await delay(10000)
+    await delay(20000)
     await ActivityTabPage.refreshActivityPage()
     await ActivityTabPage.tapArrowIcon(0)
     const isTransactionSuccessful =
