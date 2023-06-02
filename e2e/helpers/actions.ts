@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { element, waitFor } from 'detox'
+import { Page } from '@playwright/test'
 import { Platform } from './constants'
 import Constants from './constants'
 
@@ -159,6 +160,10 @@ const swipeLeft = async (
     .swipe('left', speed, normalizedOffset)
 }
 
+const openPage = async (page: Page, url: string) => {
+  await page.goto(url)
+}
+
 const platform = () => {
   return device.getPlatform()
 }
@@ -178,6 +183,7 @@ export default {
   setColumnToValue,
   setInputText,
   getAndroidAttributesArray,
+  openPage,
   platform,
   isVisible
 }
