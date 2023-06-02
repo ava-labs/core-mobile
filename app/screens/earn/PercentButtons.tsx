@@ -51,12 +51,11 @@ const PercentButtons = ({
     </>
   )
 }
-
 const styles = StyleSheet.create({
   button: {
     flex: 1,
-    marginHorizontal: 4
+    marginHorizontal: 4,
+    paddingHorizontal: 0
   }
 })
-
 export default PercentButtons

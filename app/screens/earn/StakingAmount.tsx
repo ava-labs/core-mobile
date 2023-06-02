@@ -116,7 +116,7 @@ export default function StakingAmount() {
       <FlexSpacer />
       {inputValid && <AvaButton.PrimaryLarge>Next</AvaButton.PrimaryLarge>}
       {inputAmountBN.isZero() && (
-        <Row>
+        <Row style={{ justifyContent: 'space-between' }}>
           <PercentButtons
             balance={nativeTokenBalance}
             onPercentageSelected={setAmount}
