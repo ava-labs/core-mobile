@@ -15,8 +15,10 @@ import ReviewAndSend from '../../pages/reviewAndSend.page'
 import SendPage from '../../pages/send.page'
 import TransactionDetailsPage from '../../pages/transactionDetails.page'
 import { warmup } from '../../helpers/warmup'
+import { Platform } from '../../helpers/constants'
 
 const jestExpect = require('expect')
+const platformIndex = actions.platform() === Platform.iOS ? 1 : 0
 
 describe('Send Goerly Eth to another account', () => {
   beforeAll(async () => {
@@ -31,6 +33,12 @@ describe('Send Goerly Eth to another account', () => {
     await BurgerMenuPage.tapBackbutton()
     await BurgerMenuPage.swipeLeft()
     await PortfolioPage.tapNetworksDropdown()
+    if (
+      (await actions.isVisible(PortfolioPage.manageNetworks, platformIndex)) ===
+      false
+    ) {
+      await PortfolioPage.tapNetworksDropdown()
+    }
     await PortfolioPage.tapManageNetworks()
     await NetworksManagePage.tapNetworksTab()
     await NetworksManagePage.tapEthereumGoerliNetwork()
