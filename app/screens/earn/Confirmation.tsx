@@ -1,5 +1,5 @@
 import React from 'react'
-import { ScrollView, View } from 'react-native'
+import { ScrollView, StyleSheet, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Space } from 'components/Space'
 import AvaText from 'components/AvaText'
@@ -78,7 +78,7 @@ export const Confirmation = () => {
         </Row>
         <Space y={16} />
         <Separator />
-        <View style={{ paddingVertical: 16 }}>
+        <View style={styles.verticalPadding}>
           <Row style={{ justifyContent: 'space-between' }}>
             <AvaText.Body2>Estimated Reward</AvaText.Body2>
             <AvaText.Heading2 textStyle={{ color: theme.colorBgGreen }}>
@@ -104,6 +104,7 @@ export const Confirmation = () => {
               />
             }
             position="right"
+            strictPosition={true}
             style={{ minWidth: 180 }}
             backgroundColor={theme.colorBg3}>
             <PopableLabel label="Time to Unlock" />
@@ -119,10 +120,7 @@ export const Confirmation = () => {
           </Row>
         </View>
         <Separator />
-        <View
-          style={{
-            paddingVertical: 16
-          }}>
+        <View style={styles.verticalPadding}>
           <Row
             style={{
               justifyContent: 'space-between'
@@ -135,6 +133,7 @@ export const Confirmation = () => {
               }
               position="right"
               style={{ minWidth: 150 }}
+              strictPosition={true}
               backgroundColor={theme.colorBg3}>
               <PopableLabel label="Network Fee" />
             </Popable>
@@ -146,10 +145,7 @@ export const Confirmation = () => {
           </AvaText.Body3>
         </View>
         <Separator />
-        <View
-          style={{
-            paddingVertical: 16
-          }}>
+        <View style={styles.verticalPadding}>
           <Row
             style={{
               justifyContent: 'space-between'
@@ -161,6 +157,7 @@ export const Confirmation = () => {
                 />
               }
               position="right"
+              strictPosition={true}
               style={{ minWidth: 150 }}
               backgroundColor={theme.colorBg3}>
               <PopableLabel label="Staking Fee" />
@@ -193,3 +190,9 @@ export const Confirmation = () => {
     </ScrollView>
   )
 }
+
+const styles = StyleSheet.create({
+  verticalPadding: {
+    paddingVertical: 16
+  }
+})

@@ -1,4 +1,5 @@
 import React from 'react'
+import { HeaderBackButton } from '@react-navigation/elements'
 import AppNavigation from 'navigation/AppNavigation'
 import { createStackNavigator } from '@react-navigation/stack'
 import GetStarted from 'screens/earn/GetStarted'
@@ -47,6 +48,9 @@ function EarnScreenStack() {
       <EarnStack.Screen
         name={AppNavigation.Earn.Confirmation}
         component={Confirmation}
+        options={{
+          headerLeft: ConfirmationBackButton
+        }}
       />
       <EarnStack.Screen
         options={{ presentation: 'transparentModal' }}
@@ -66,6 +70,20 @@ const EarnGetStartedScreen = () => {
     navigate(AppNavigation.Earn.StakingAmount)
   }
   return <GetStarted onNext={navToStakingAmount} />
+}
+
+type ConfirmationNavigationProp = EarnScreenProps<
+  typeof AppNavigation.Earn.Confirmation
+>['navigation']
+
+const ConfirmationBackButton = () => {
+  const { navigate } = useNavigation<ConfirmationNavigationProp>()
+
+  return (
+    <HeaderBackButton
+      onPress={() => navigate(AppNavigation.Earn.StakingAmount)}
+    />
+  )
 }
 
 export default React.memo(EarnScreenStack)
