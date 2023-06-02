@@ -22,7 +22,11 @@ type NavigationProp = EarnScreenProps<
 
 export const Confirmation = () => {
   const { theme } = useApplicationContext()
-  const { goBack } = useNavigation<NavigationProp>()
+  const { navigate } = useNavigation<NavigationProp>()
+
+  const cancelStaking = () => {
+    navigate(AppNavigation.Earn.Cancel)
+  }
 
   // TODO: on error, show error message as toast
   // on success, navigate to earn dashboard
@@ -182,7 +186,7 @@ export const Confirmation = () => {
         </AvaText.Caption>
         <AvaButton.PrimaryLarge>Stake Now</AvaButton.PrimaryLarge>
         <Space y={16} />
-        <AvaButton.SecondaryLarge onPress={() => goBack()}>
+        <AvaButton.SecondaryLarge onPress={cancelStaking}>
           Cancel
         </AvaButton.SecondaryLarge>
       </View>
