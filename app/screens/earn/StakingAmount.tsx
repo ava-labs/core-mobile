@@ -87,7 +87,7 @@ export default function StakingAmount() {
       <EarnInputAmount
         handleAmountChange={handleAmountChange}
         inputAmountBN={inputAmountBN}
-        denomination={nativeTokenDecimals}
+        decimals={nativeTokenDecimals}
       />
       <Row style={{ justifyContent: 'center' }}>
         <AvaText.Caption currency textStyle={{ color: theme.white }}>
