@@ -5,10 +5,12 @@ import GetStarted from 'screens/earn/GetStarted'
 import StakingAmount from 'screens/earn/StakingAmount'
 import { EarnScreenProps } from 'navigation/types'
 import { useNavigation } from '@react-navigation/native'
+import { NodeSearch } from 'screens/earn/NodeSearch'
 
 export type EarnStackParamList = {
   [AppNavigation.Earn.GetStarted]: undefined
   [AppNavigation.Earn.StakingAmount]: undefined
+  [AppNavigation.Earn.NodeSearch]: undefined
 }
 
 const EarnStack = createStackNavigator<EarnStackParamList>()
@@ -30,6 +32,13 @@ function EarnScreenStack() {
       <EarnStack.Screen
         name={AppNavigation.Earn.StakingAmount}
         component={StakingAmount}
+      />
+      <EarnStack.Screen
+        name={AppNavigation.Earn.NodeSearch}
+        component={NodeSearch}
+        options={{
+          headerShown: false
+        }}
       />
     </EarnStack.Navigator>
   )
