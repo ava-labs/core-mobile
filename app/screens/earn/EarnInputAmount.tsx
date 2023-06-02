@@ -47,8 +47,7 @@ const EarnInputAmount = ({
       style={{
         alignItems: 'center',
         justifyContent: 'center',
-        alignSelf: 'center',
-        width: 280
+        marginHorizontal: 16
       }}>
       <BNInput
         value={inputAmountBN}
@@ -56,13 +55,15 @@ const EarnInputAmount = ({
         placeholder={'0.0'}
         onChange={interceptAmountChange}
         style={{
-          margin: 0
+          margin: 0,
+          minWidth: isAndroid ? 110 : 0
         }}
         autoFocus={true}
         textStyle={{
           fontFamily: 'Inter-Bold',
           fontSize: 48,
-          lineHeight: 56
+          lineHeight: 56,
+          textAlign: 'right'
         }}
         backgroundColor={theme.transparent}
       />
