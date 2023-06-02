@@ -6,11 +6,13 @@ import StakingAmount from 'screens/earn/StakingAmount'
 import { EarnScreenProps } from 'navigation/types'
 import { useNavigation } from '@react-navigation/native'
 import { NodeSearch } from 'screens/earn/NodeSearch'
+import { Confirmation } from 'screens/earn/Confirmation'
 
 export type EarnStackParamList = {
   [AppNavigation.Earn.GetStarted]: undefined
   [AppNavigation.Earn.StakingAmount]: undefined
   [AppNavigation.Earn.NodeSearch]: undefined
+  [AppNavigation.Earn.Confirmation]: undefined
 }
 
 const EarnStack = createStackNavigator<EarnStackParamList>()
@@ -39,6 +41,10 @@ function EarnScreenStack() {
         options={{
           headerShown: false
         }}
+      />
+      <EarnStack.Screen
+        name={AppNavigation.Earn.Confirmation}
+        component={Confirmation}
       />
     </EarnStack.Navigator>
   )

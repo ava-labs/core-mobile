@@ -7,6 +7,9 @@ import Spinner from 'components/animation/Spinner'
 import { DOCS_HOW_TO_DELEGATE } from 'resources/Constants'
 import Logger from 'utils/Logger'
 import Checkmark from 'components/animation/Checkmark'
+import AppNavigation from 'navigation/AppNavigation'
+import { EarnScreenProps } from 'navigation/types'
+import { useNavigation } from '@react-navigation/native'
 
 const Searching = () => {
   const { theme } = useApplicationContext()
@@ -43,8 +46,17 @@ const Searching = () => {
   )
 }
 
+type NavigationProp = EarnScreenProps<
+  typeof AppNavigation.Earn.NodeSearch
+>['navigation']
+
 const MatchFound = () => {
   const { theme } = useApplicationContext()
+  const { navigate } = useNavigation<NavigationProp>()
+
+  useEffect(() => {
+    setTimeout(() => navigate(AppNavigation.Earn.Confirmation), 2200)
+  })
 
   return (
     <View style={styles.container}>
