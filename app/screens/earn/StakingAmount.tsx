@@ -33,7 +33,10 @@ export default function StakingAmount() {
   const avaxNetwork = useSelector(selectNetwork(chainId))
   const activeAccount = useSelector(selectActiveAccount)
   const nativeTokenDecimals = avaxNetwork?.networkToken.decimals ?? 0
-  const minStakeAmount = stringToBN('25', nativeTokenDecimals)
+  const minStakeAmount = stringToBN(
+    isDeveloperMode ? '1' : '25',
+    nativeTokenDecimals
+  )
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const nativeTokenBalance = useSelector(
     selectNativeTokenBalanceForNetworkAndAccount(chainId, activeAccount?.index)
@@ -129,6 +132,7 @@ export default function StakingAmount() {
       {inputAmountBN.isZero() && (
         <Row style={{ justifyContent: 'space-between' }}>
           <PercentButtons
+            isDeveloperMode={isDeveloperMode}
             balance={nativeTokenBalance}
             onPercentageSelected={setAmount}
           />
