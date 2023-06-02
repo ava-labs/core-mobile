@@ -278,13 +278,6 @@ export type SendTokensScreenProps<T extends keyof SendStackParamList> =
     WalletScreenProps<keyof WalletScreenStackParams>
   >
 
-/** ROOT -> WALLET -> EARN **/
-export type EarnScreenProps<T extends keyof EarnStackParamList> =
-  CompositeScreenProps<
-    StackScreenProps<EarnStackParamList, T>,
-    WalletScreenProps<keyof WalletScreenStackParams>
-  >
-
 /** ROOT -> WALLET -> RECEIVE TOKENS **/
 export type ReceiveTokensScreenProps<T extends keyof ReceiveStackParamList> =
   CompositeScreenProps<
