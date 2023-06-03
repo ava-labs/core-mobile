@@ -22,7 +22,7 @@ export const RadioButton: React.FC<RadioButtonProps> = ({
   const unselectedRadioColor = unselectedColor || theme.neutral50
   const selectedRadioColor = selectedColor || theme.colorPrimary1
 
-  const getRadioButtonStyle = useMemo(() => {
+  const radioButtonStyle = useMemo(() => {
     if (selected) {
       return {
         ...styles.outerButton,
@@ -39,7 +39,7 @@ export const RadioButton: React.FC<RadioButtonProps> = ({
 
   return (
     <View style={styles.radioButtonContainer}>
-      <View style={getRadioButtonStyle}>
+      <View style={radioButtonStyle}>
         <Pressable
           onPress={onPress}
           style={{

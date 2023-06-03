@@ -25,7 +25,7 @@ import AppNavigation from 'navigation/AppNavigation'
 import { EarnScreenProps } from 'navigation/types'
 
 type EarnScreenNavProps = EarnScreenProps<
-  typeof AppNavigation.Earn.StakingDuration
+  typeof AppNavigation.Earn.StakingAmount
 >
 
 export default function StakingAmount() {

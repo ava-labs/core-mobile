@@ -12,8 +12,6 @@ import { CalendarInput } from 'components/CalendarInput'
 const StakingDuration = () => {
   const [selectedDuration, setSelectedDuration] = useState('')
   const { theme } = useApplicationContext()
-
-  const [isDatePickerVisible, setDatePickerVisibility] = useState(false)
   const [date, setDate] = useState<Date>()
 
   const durationOptions = [
@@ -37,13 +35,8 @@ const StakingDuration = () => {
     return setSelectedDuration(value)
   }
 
-  const toggleDatePickerVisibility = (value: boolean) => {
-    setDatePickerVisibility(value)
-  }
-
   const handleDateConfirm = (dateInput: Date) => {
     setDate(dateInput)
-    setDatePickerVisibility(false)
   }
 
   return (
@@ -94,18 +87,16 @@ const StakingDuration = () => {
               </RadioButton>
             </View>
             <Row style={{ alignItems: 'center' }}>
-              <AvaText.Body2
+              <AvaText.Body3
                 textStyle={{ color: theme.neutral50, fontWeight: '600' }}>
                 End Date
-              </AvaText.Body2>
+              </AvaText.Body3>
               <Space x={8} />
               <InfoSVG />
             </Row>
             <CalendarInput
               date={date}
-              isDatePickerVisible={isDatePickerVisible}
-              setIsDatePickerVisible={toggleDatePickerVisibility}
-              handleDateConfirm={handleDateConfirm}
+              onDateSelected={handleDateConfirm}
               placeHolder=" March 22, 2024"
             />
             <AvaText.Caption textStyle={{ color: theme.neutral300 }}>

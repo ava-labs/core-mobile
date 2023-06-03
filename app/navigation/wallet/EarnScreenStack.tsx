@@ -5,7 +5,6 @@ import GetStarted from 'screens/earn/GetStarted'
 import StakingAmount from 'screens/earn/StakingAmount'
 import { EarnScreenProps } from 'navigation/types'
 import { useNavigation } from '@react-navigation/native'
-import TopNavigationHeader from 'navigation/TopNavigationHeader'
 import StakingDuration from 'screens/earn/DurationScreen'
 
 export type EarnStackParamList = {
@@ -37,14 +36,10 @@ function EarnScreenStack() {
       <EarnStack.Screen
         name={AppNavigation.Earn.StakingDuration}
         component={StakingDuration}
-        options={{
-          header: TopNavigation
-        }}
       />
     </EarnStack.Navigator>
   )
 }
-const TopNavigation = () => <TopNavigationHeader showBackButton />
 
 type EarnProps = EarnScreenProps<typeof AppNavigation.Earn.GetStarted>
 

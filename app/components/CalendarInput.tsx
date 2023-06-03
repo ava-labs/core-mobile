@@ -1,29 +1,25 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { StyleSheet, View, Pressable } from 'react-native'
 import AvaText from 'components/AvaText'
 import AvaButton from 'components/AvaButton'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import CalendarSVG from 'components/svg/CalendarSVG'
 import DateTimePickerModal from 'react-native-modal-datetime-picker'
-import { Opacity50 } from 'resources/Constants'
 import { format } from 'date-fns'
 
 interface CalendarInputProps {
-  isDatePickerVisible: boolean
-  setIsDatePickerVisible: (value: boolean) => void
   date: Date | undefined
-  handleDateConfirm: (date: Date) => void
+  onDateSelected: (date: Date) => void
   placeHolder: string
 }
 
 export const CalendarInput: React.FC<CalendarInputProps> = ({
   date,
-  isDatePickerVisible,
-  setIsDatePickerVisible,
-  handleDateConfirm,
+  onDateSelected,
   placeHolder
 }) => {
   const { theme } = useApplicationContext()
+  const [isDatePickerVisible, setIsDatePickerVisible] = useState(false)
   const showDatePicker = () => {
     setIsDatePickerVisible(true)
   }
@@ -32,12 +28,16 @@ export const CalendarInput: React.FC<CalendarInputProps> = ({
     setIsDatePickerVisible(false)
   }
 
+  const handleDateConfirm = (dateInput: Date) => {
+    onDateSelected(dateInput)
+    setIsDatePickerVisible(false)
+  }
+
   return (
     <View>
       <Pressable
         style={{
           ...styles.dateInput,
-          borderColor: theme.neutral700 + Opacity50,
           backgroundColor: theme.neutral900
         }}
         onPress={showDatePicker}>

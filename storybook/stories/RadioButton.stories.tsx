@@ -7,10 +7,7 @@ import { withCenterView } from '../decorators/withCenterView'
 
 export default {
   title: 'RadioButton',
-  decorators: [withCenterView],
-  argTypes: {
-    onPress: { action: 'onPress' }
-  }
+  decorators: [withCenterView]
 } as Meta
 
 export const Basic: ComponentStory<typeof RadioButton> = ({
