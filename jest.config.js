@@ -4,5 +4,6 @@ module.exports = {
   clearMocks: true,
   moduleNameMapper: {
     uuid: require.resolve('uuid')
-  }
+  },
+  testPathIgnorePatterns: ['<rootDir>/e2e/tests/playwright/']
 }
