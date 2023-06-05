@@ -10,7 +10,6 @@ import '@walletconnect/react-native-compat'
 import { AppRegistry } from 'react-native'
 import ContextApp from './app/ContextApp'
 import { name as appName } from './app.json'
-
 import DevDebuggingConfig from './app/utils/debugging/DevDebuggingConfig'
 import { server } from './tests/msw/server'
 
