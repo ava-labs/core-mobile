@@ -41,7 +41,7 @@ export const CalendarInput: React.FC<CalendarInputProps> = ({
           backgroundColor: theme.neutral900
         }}
         onPress={showDatePicker}>
-        <AvaText.Body1 textStyle={{ color: theme.neutral50 }}>
+        <AvaText.Body1 textStyle={{ color: theme.colorText1 }}>
           {date ? format(date, 'MMMM dd, yyyy') : placeHolder}
         </AvaText.Body1>
         <View style={styles.icon}>

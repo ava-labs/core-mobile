@@ -18,7 +18,7 @@ export const RadioButton: React.FC<RadioButtonProps> = ({
   selectedColor
 }) => {
   const { theme } = useApplicationContext()
-  const unselectedRadioColor = unselectedColor || theme.neutral50
+  const unselectedRadioColor = unselectedColor || theme.colorText1
   const selectedRadioColor = selectedColor || theme.colorPrimary1
 
   const radioButtonStyle = useMemo(() => {

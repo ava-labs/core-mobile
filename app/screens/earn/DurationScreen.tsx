@@ -46,7 +46,7 @@ const StakingDuration = () => {
         <AvaText.Subtitle1
           textStyle={{
             marginTop: 7,
-            color: theme.neutral50,
+            color: theme.colorText1,
             marginBottom: 32
           }}>
           How long would you like to stake?
@@ -59,10 +59,10 @@ const StakingDuration = () => {
                   onPress={() => onRadioSelect(item.title)}
                   selected={selectedDuration === item.title}>
                   <View style={{ marginLeft: 10 }}>
-                    <AvaText.Body2 textStyle={{ color: theme.neutral50 }}>
+                    <AvaText.Body2 textStyle={{ color: theme.colorText1 }}>
                       {item.title}
                     </AvaText.Body2>
-                    <AvaText.Caption textStyle={{ color: theme.neutral400 }}>
+                    <AvaText.Caption textStyle={{ color: theme.colorText2 }}>
                       {item.subTitle}
                     </AvaText.Caption>
                   </View>
@@ -77,20 +77,20 @@ const StakingDuration = () => {
                 onPress={() => onRadioSelect(customOptions.title)}
                 selected={selectedDuration === customOptions.title}>
                 <View style={{ marginLeft: 10 }}>
-                  <AvaText.Body1 textStyle={{ color: theme.neutral50 }}>
+                  <AvaText.Body1 textStyle={{ color: theme.colorText1 }}>
                     {customOptions.title}
                   </AvaText.Body1>
-                  <AvaText.Caption textStyle={{ color: theme.neutral50 }}>
+                  <AvaText.Caption textStyle={{ color: theme.colorText1 }}>
                     {customOptions.subTitle}
                   </AvaText.Caption>
                 </View>
               </RadioButton>
             </View>
             <Row style={{ alignItems: 'center' }}>
-              <AvaText.Body3
-                textStyle={{ color: theme.neutral50, fontWeight: '600' }}>
+              <AvaText.Heading3
+                textStyle={{ color: theme.colorText1, fontWeight: '600' }}>
                 End Date
-              </AvaText.Body3>
+              </AvaText.Heading3>
               <Space x={8} />
               <InfoSVG />
             </Row>
@@ -99,7 +99,7 @@ const StakingDuration = () => {
               onDateSelected={handleDateConfirm}
               placeHolder=" March 22, 2024"
             />
-            <AvaText.Caption textStyle={{ color: theme.neutral300 }}>
+            <AvaText.Caption textStyle={{ color: theme.colorText5 }}>
               Actual end date will vary depending on options available
             </AvaText.Caption>
           </>
