@@ -6,7 +6,7 @@
 import Assert from '../../helpers/assertions'
 import LoginRecoverWallet from '../../helpers/loginRecoverWallet'
 import NetworksManagePage from '../../pages/networksManage.page'
-import BurgerMenuPage from '../../pages/burgerMenu.page'
+import BurgerMenuPage from '../../pages/burgerMenu/burgerMenu.page'
 import PortfolioPage from '../../pages/portfolio.page'
 import { warmup } from '../../helpers/warmup'
 

@@ -8,8 +8,9 @@ import Actions from '../../helpers/actions'
 import LoginRecoverWallet from '../../helpers/loginRecoverWallet'
 import BottomTabsPage from '../../pages/bottomTabs.page'
 import BridgeTabPage from '../../pages/bridgeTab.page'
-import BurgerMenuPage from '../../pages/burgerMenu.page'
+import BurgerMenuPage from '../../pages/burgerMenu/burgerMenu.page'
 import { warmup } from '../../helpers/warmup'
+import AdvancedPage from '../../pages/burgerMenu/advanced.page'
 
 describe('Bridge transfer testnet AVAX -> BTC', () => {
   beforeAll(async () => {
@@ -20,7 +21,7 @@ describe('Bridge transfer testnet AVAX -> BTC', () => {
   it('Should verify Transaction Status Items', async () => {
     await BurgerMenuPage.tapBurgerMenuButton()
     await BurgerMenuPage.tapAdvanced()
-    await BurgerMenuPage.switchToTestnet()
+    await AdvancedPage.switchToTestnet()
     await BurgerMenuPage.tapBackbutton()
     await BurgerMenuPage.swipeLeft()
 

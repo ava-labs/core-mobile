@@ -16,6 +16,7 @@ interface Props {
   onSelect: (dapp: Dapp) => void
   onClear: (dapp: Dapp) => void
   selected: boolean
+  testID?: string
 }
 
 export const DappItem = ({
@@ -72,6 +73,7 @@ export const DappItem = ({
         </Row>
       }
       title={peerMeta.name}
+      testID={peerMeta.name}
       rightComponent={
         isEditing ? null : (
           <AvaButton.Base onPress={() => onClear(item)}>

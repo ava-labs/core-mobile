@@ -95,11 +95,15 @@ const SessionProposal = () => {
             Only connect to sites that you trust
           </AvaText.Body2>
           <View style={styles.actionContainer}>
-            <AvaButton.PrimaryMedium onPress={approveAndClose}>
+            <AvaButton.PrimaryMedium
+              onPress={approveAndClose}
+              testID="session_proposal__approve">
               Approve
             </AvaButton.PrimaryMedium>
             <Space y={21} />
-            <AvaButton.SecondaryMedium onPress={rejectAndClose}>
+            <AvaButton.SecondaryMedium
+              onPress={rejectAndClose}
+              testID="session_proposal__reject">
               Reject
             </AvaButton.SecondaryMedium>
           </View>

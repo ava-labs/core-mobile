@@ -6,8 +6,16 @@ class PlusMenuPage {
     return by.id(PlusMenuLoc.send)
   }
 
+  get walletConnectButton() {
+    return by.id(PlusMenuLoc.walletConnectSVG)
+  }
+
   async tapSendButton() {
     await Actions.tap(this.sendButton)
+  }
+
+  async tapWalletConnectButton() {
+    await Actions.tap(this.walletConnectButton)
   }
 }
 
