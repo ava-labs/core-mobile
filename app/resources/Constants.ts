@@ -12,6 +12,7 @@ export const Opacity85 = 'D9'
 export enum COLORS_DAY {
   transparent = '#00000000',
   white = '#ffffff',
+  black = '#000000',
   overlay = '#0000009A',
   background = '#FFFFFF',
   alternateBackground = '#000000',
@@ -31,6 +32,7 @@ export enum COLORS_DAY {
   colorText3 = '#FFFFFF',
   colorText4 = '#6C6C6E',
   colorText5 = '#D8D8DA',
+  colorText6 = '#1A1A1C',
   colorIcon1 = '#000000',
   colorIcon2 = '#6C6C6E',
   colorIcon3 = '#018433',
@@ -60,6 +62,7 @@ export enum COLORS_DAY {
 export enum COLORS_NIGHT {
   transparent = '#00000000',
   white = '#ffffff',
+  black = '#000000',
   overlay = '#0000009A',
   background = '#000000',
   alternateBackground = '#FFFFFF',
@@ -79,6 +82,7 @@ export enum COLORS_NIGHT {
   colorText3 = '#FFFFFF',
   colorText4 = '#6C6C6E',
   colorText5 = '#D8D8DA',
+  colorText6 = '#1A1A1C',
   colorIcon1 = '#FFFFFF',
   colorIcon2 = '#B4B4B7',
   colorIcon3 = '#53C26E',
