@@ -13,7 +13,7 @@ class PlusMenuPage {
   get walletConnectButtonSVG() {
     return by.id(PlusMenuLoc.walletConnectSVG)
   }
-  
+
   get inputTextField() {
     return by.id(PlusMenuLoc.inputTextField)
   }
