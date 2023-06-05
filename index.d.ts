@@ -8,6 +8,7 @@ type ToastType = import('react-native-toast-notifications').ToastType
 declare global {
   // eslint-disable-next-line no-var
   var toast: ToastType
+  const navigator: Navigator
 
   namespace ReactNavigation {
     // eslint-disable-next-line @typescript-eslint/no-empty-interface

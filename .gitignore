@@ -72,3 +72,6 @@ package-lock.json
 
 # detox
 e2e/artifacts/
+/test-results/
+/playwright-report/
+/playwright/.cache/

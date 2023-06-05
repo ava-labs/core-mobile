@@ -16,7 +16,7 @@ describe('Enable Testnet', () => {
     await LoginRecoverWallet.recoverWalletLogin()
   })
 
-  it('Should verify Transaction Status Items', async () => {
+  it('Should verify Avax Network', async () => {
     await BurgerMenuPage.tapBurgerMenuButton()
     await BurgerMenuPage.tapAdvanced()
     await BurgerMenuPage.switchToTestnet()
@@ -24,10 +24,10 @@ describe('Enable Testnet', () => {
     await BurgerMenuPage.swipeLeft()
 
     await PortfolioPage.tapAvaxNetwork()
-    await Assert.isVisible(PortfolioPage.avaxFujiToken)
+    await Assert.isVisible(PortfolioPage.avaxNetwork)
   })
 
-  it('Should verify transaction succeeded', async () => {
+  it('Should verify Bitcoin & Eth Goerly Networks', async () => {
     await PortfolioPage.tapNetworksDropdown()
     await PortfolioPage.tapManageNetworks()
     await NetworksManagePage.tapNetworksTab()
