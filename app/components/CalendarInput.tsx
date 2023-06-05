@@ -46,7 +46,7 @@ export const CalendarInput: React.FC<CalendarInputProps> = ({
         </AvaText.Body1>
         <View style={styles.icon}>
           <AvaButton.Icon onPress={showDatePicker}>
-            <CalendarSVG selected={true} />
+            <CalendarSVG selected={true} size={20} />
           </AvaButton.Icon>
         </View>
       </Pressable>

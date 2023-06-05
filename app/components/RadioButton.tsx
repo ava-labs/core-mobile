@@ -1,7 +1,6 @@
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import React, { useMemo } from 'react'
 import { View, Pressable, StyleSheet } from 'react-native'
-import { COLORS_DAY } from 'resources/Constants'
 
 interface RadioButtonProps {
   onPress: () => void
@@ -15,8 +14,8 @@ export const RadioButton: React.FC<RadioButtonProps> = ({
   onPress,
   selected,
   children,
-  unselectedColor = COLORS_DAY.neutral50,
-  selectedColor = COLORS_DAY.colorPrimary1
+  unselectedColor,
+  selectedColor
 }) => {
   const { theme } = useApplicationContext()
   const unselectedRadioColor = unselectedColor || theme.neutral50
