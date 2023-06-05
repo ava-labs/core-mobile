@@ -119,3 +119,6 @@ export const TERMS_OF_USE_URL = 'https://wallet.avax.network/legal?core'
 export const PRIVACY_POLICY_URL = 'https://www.avalabs.org/privacy-policy'
 
 export const DOCS_STAKING = 'https://docs.avax.network/nodes/validate/staking'
+
+export const DOCS_HOW_TO_DELEGATE =
+  'https://support.avax.network/en/articles/7950590-core-mobile-how-do-i-delegate-with-earn'

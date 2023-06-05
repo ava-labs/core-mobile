@@ -8,11 +8,19 @@ import { Space } from 'components/Space'
 import InfoSVG from 'components/svg/InfoSVG'
 import { Row } from 'components/Row'
 import { CalendarInput } from 'components/CalendarInput'
+import AppNavigation from 'navigation/AppNavigation'
+import { useNavigation } from '@react-navigation/native'
+import { EarnScreenProps } from 'navigation/types'
+
+type EarnScreenNavProps = EarnScreenProps<
+  typeof AppNavigation.Earn.StakingDuration
+>
 
 const StakingDuration = () => {
   const [selectedDuration, setSelectedDuration] = useState('')
   const { theme } = useApplicationContext()
   const [date, setDate] = useState<Date>()
+  const { navigate } = useNavigation<EarnScreenNavProps['navigation']>()
 
   const durationOptions = [
     { title: '1 Week', subTitle: 'Estimated Rewards: 0.54 AVAX' },
@@ -107,7 +115,9 @@ const StakingDuration = () => {
       </View>
 
       <View>
-        <AvaButton.PrimaryLarge disabled={!selectedDuration}>
+        <AvaButton.PrimaryLarge
+          disabled={!selectedDuration}
+          onPress={() => navigate(AppNavigation.Earn.NodeSearch)}>
           Next
         </AvaButton.PrimaryLarge>
         <AvaButton.TextLink textColor={theme.colorPrimary1}>
