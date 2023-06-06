@@ -152,7 +152,7 @@ workflows:
 
                     # set permission
                     echo 'Setting permissions for node_modules!!!'
-                    chown root:root ~/.nvm
+                    chown -R root:root ~/.nvm
                     yarn setup:ci
                 else
                   yarn setup:ci
