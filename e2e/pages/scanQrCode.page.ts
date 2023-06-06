@@ -10,7 +10,7 @@ class ReviewAndSend {
 
   getQrCode() {
     const qrCode = fs.readFileSync(
-      '/Users/tyler.hackett/avalanche-wallet-apps/e2e/qr_codes.txt',
+      'e2e/tests/plusIcon/walletConnect/qr_codes.txt',
       'utf8'
     )
     console.log(JSON.stringify(qrCode) + ' this is the qr code!!!!!!!!!!')

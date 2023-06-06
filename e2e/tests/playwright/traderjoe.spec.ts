@@ -1,10 +1,12 @@
 import { test, expect } from '@playwright/test'
 import actions from '../../helpers/actions'
 import TraderJoePage from '../../pages/traderjoe.page'
+
 const fs = require('fs')
 
 test('check wallet connect button', async ({ page }) => {
   const traderJoePage = new TraderJoePage(page)
+  const context = page.context()
 
   await actions.openPage(traderJoePage.page, traderJoePage.homePage)
   await expect(traderJoePage.connectWalletButtonText).toBeVisible()
@@ -18,12 +20,14 @@ test('check wallet connect button', async ({ page }) => {
   await traderJoePage.clickWalletConnectCode()
   await page.waitForTimeout(1500)
 
+  await context.grantPermissions(['clipboard-read'])
+
   const clipboardValue = await page.evaluate(() => {
     return navigator.clipboard.readText()
   })
 
   fs.writeFile(
-    '/Users/tyler.hackett/avalanche-wallet-apps/e2e/tests/playwright/qr_codes.txt',
+    '../plusIcon/walletConnect/qr_codes.txt',
     clipboardValue,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (err: any) => {

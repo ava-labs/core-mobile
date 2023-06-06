@@ -16,6 +16,7 @@ import SendPage from '../../pages/send.page'
 import TransactionDetailsPage from '../../pages/transactionDetails.page'
 import { warmup } from '../../helpers/warmup'
 import { Platform } from '../../helpers/constants'
+import AdvancedPage from '../../pages/burgerMenu/advanced.page'
 
 const jestExpect = require('expect')
 const platformIndex = actions.platform() === Platform.iOS ? 1 : 0
@@ -29,7 +30,7 @@ describe('Send Goerly Eth to another account', () => {
   it('Should send Goerly Eth to second account', async () => {
     await BurgerMenuPage.tapBurgerMenuButton()
     await BurgerMenuPage.tapAdvanced()
-    await BurgerMenuPage.switchToTestnet()
+    await AdvancedPage.switchToTestnet()
     await BurgerMenuPage.tapBackbutton()
     await BurgerMenuPage.swipeLeft()
     await PortfolioPage.tapNetworksDropdown()

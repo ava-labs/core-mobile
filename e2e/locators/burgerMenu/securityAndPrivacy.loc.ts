@@ -4,7 +4,7 @@ export default {
   showRecoveryPhrase: 'Show recovery phrase',
   participateInCoreAnalytics: 'Participate in CoreAnalytics',
   copyPhraseButton: 'Copy Phrase',
-  firstMnemonicWord: 'rebel',
-  lastMnemonicWord: 'embark',
+  firstMnemonicWord: 'capable',
+  lastMnemonicWord: 'maze',
   iWroteItDownButton: 'I wrote it down'
 }

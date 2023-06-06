@@ -15,7 +15,7 @@ module.exports = {
   testRunner: {
     $0: 'jest',
     args: {
-      config: 'e2e/config.json'
+      config: '~/avalanche-wallet-apps/e2e/config.json'
     }
   },
   devices: {
