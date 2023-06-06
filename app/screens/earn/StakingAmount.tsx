@@ -20,9 +20,18 @@ import FlexSpacer from 'components/FlexSpacer'
 import AvaButton from 'components/AvaButton'
 import PercentButtons from 'screens/earn/PercentButtons'
 import EarnInputAmount from 'screens/earn/EarnInputAmount'
+import { useNavigation } from '@react-navigation/native'
+import AppNavigation from 'navigation/AppNavigation'
+import { EarnScreenProps } from 'navigation/types'
+
+type EarnScreenNavProps = EarnScreenProps<
+  typeof AppNavigation.Earn.StakingAmount
+>
 
 export default function StakingAmount() {
   const { theme } = useApplicationContext()
+  const { navigate } = useNavigation<EarnScreenNavProps['navigation']>()
+
   const avaxNetwork = useSelector(selectNetwork(ChainId.AVALANCHE_MAINNET_ID))
   const nativeTokenDecimals = avaxNetwork?.networkToken.decimals ?? 0
   const minStakeAmount = stringToBN('25', nativeTokenDecimals)
@@ -114,7 +123,12 @@ export default function StakingAmount() {
         )}
       </View>
       <FlexSpacer />
-      {inputValid && <AvaButton.PrimaryLarge>Next</AvaButton.PrimaryLarge>}
+      {inputValid && (
+        <AvaButton.PrimaryLarge
+          onPress={() => navigate(AppNavigation.Earn.StakingDuration)}>
+          Next
+        </AvaButton.PrimaryLarge>
+      )}
       {inputAmountBN.isZero() && (
         <Row>
           <PercentButtons
