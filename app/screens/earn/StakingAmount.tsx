@@ -18,9 +18,17 @@ import EarnInputAmount from 'screens/earn/EarnInputAmount'
 import { useNativeTokenPriceForNetwork } from 'hooks/useNativeTokenPriceForNetwork'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import useStakingParams from 'hooks/useStakingParams'
+import { useNavigation } from '@react-navigation/native'
+import AppNavigation from 'navigation/AppNavigation'
+import { EarnScreenProps } from 'navigation/types'
+
+type EarnScreenNavProps = EarnScreenProps<
+  typeof AppNavigation.Earn.StakingAmount
+>
 
 export default function StakingAmount() {
   const { theme } = useApplicationContext()
+  const { navigate } = useNavigation<EarnScreenNavProps['navigation']>()
   const { minStakeAmount, nativeTokenBalance } = useStakingParams()
 
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
@@ -117,7 +125,12 @@ export default function StakingAmount() {
         )}
       </View>
       <FlexSpacer />
-      {inputValid && <AvaButton.PrimaryLarge>Next</AvaButton.PrimaryLarge>}
+      {inputValid && (
+        <AvaButton.PrimaryLarge
+          onPress={() => navigate(AppNavigation.Earn.StakingDuration)}>
+          Next
+        </AvaButton.PrimaryLarge>
+      )}
       {inputAmountBN.isZero() && (
         <Row style={{ justifyContent: 'space-between' }}>
           <PercentButtons

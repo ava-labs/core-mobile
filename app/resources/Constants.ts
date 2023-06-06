@@ -46,6 +46,7 @@ export enum COLORS_DAY {
   colorChain3 = '#7C1BF21A',
   colorChain4 = '#4D00DE',
   neutral50 = '#F8F8FB',
+  neutral300 = '#D8D8DA',
   neutral400 = '#B4B4B7',
   neutral500 = '#949497',
   neutral700 = '#58585B',
@@ -93,6 +94,7 @@ export enum COLORS_NIGHT {
   colorChain3 = '#934AF61A',
   colorChain4 = '#DAC3FB',
   neutral50 = '#F8F8FB',
+  neutral300 = '#D8D8DA',
   neutral400 = '#B4B4B7',
   neutral500 = '#949497',
   neutral700 = '#58585B',
@@ -111,3 +113,6 @@ export const TERMS_OF_USE_URL = 'https://wallet.avax.network/legal?core'
 export const PRIVACY_POLICY_URL = 'https://www.avalabs.org/privacy-policy'
 
 export const DOCS_STAKING = 'https://docs.avax.network/nodes/validate/staking'
+
+export const DOCS_HOW_TO_DELEGATE =
+  'https://support.avax.network/en/articles/7950590-core-mobile-how-do-i-delegate-with-earn'
