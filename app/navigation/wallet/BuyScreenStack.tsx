@@ -5,7 +5,6 @@ import {
   TransitionPresets
 } from '@react-navigation/stack'
 import AppNavigation from 'navigation/AppNavigation'
-import TopNavigationHeader from 'navigation/TopNavigationHeader'
 import Buy from 'screens/rpc/buy/Buy'
 
 export type BuyStackParamList = {
@@ -17,12 +16,13 @@ const BuyStack = createStackNavigator<BuyStackParamList>()
 const BuyScreenStack = () => {
   const { theme } = useApplicationContext()
 
-  const receiveNavigator = (
+  return (
     <BuyStack.Navigator
       screenOptions={{
         presentation: 'card',
         headerBackTitleVisible: false,
         headerTitleAlign: 'center',
+        title: '',
         headerStyle: {
           elevation: 0,
           shadowOpacity: 0,
@@ -30,20 +30,11 @@ const BuyScreenStack = () => {
         },
         ...TransitionPresets.SlideFromRightIOS
       }}>
-      <BuyStack.Screen
-        name={AppNavigation.Buy.Buy}
-        options={{
-          header: TopNavigation
-        }}
-        component={BuyScreen}
-      />
+      <BuyStack.Screen name={AppNavigation.Buy.Buy} component={BuyScreen} />
     </BuyStack.Navigator>
   )
-
-  return receiveNavigator
 }
 
 const BuyScreen = () => <Buy />
-const TopNavigation = () => <TopNavigationHeader showBackButton />
 
 export default BuyScreenStack
