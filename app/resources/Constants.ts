@@ -30,7 +30,6 @@ export enum COLORS_DAY {
   colorText2 = '#6C6C6E',
   colorText3 = '#FFFFFF',
   colorText4 = '#6C6C6E',
-
   colorIcon1 = '#000000',
   colorIcon2 = '#6C6C6E',
   colorIcon3 = '#018433',
