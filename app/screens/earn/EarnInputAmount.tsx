@@ -4,31 +4,42 @@ import { Row } from 'components/Row'
 import AvaLogoSVG from 'components/svg/AvaLogoSVG'
 import { Space } from 'components/Space'
 import AvaText from 'components/AvaText'
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import BN from 'bn.js'
-import { stringToBN } from '@avalabs/utils-sdk'
-
-const MAX_DIGITS = 7
+import { bnToLocaleString } from '@avalabs/utils-sdk'
+import { Platform } from 'react-native'
+import sanitizeInput from 'screens/earn/sanitizeInput'
 
 const EarnInputAmount = ({
   inputAmountBN,
-  denomination,
+  decimals,
   handleAmountChange
 }: {
   inputAmountBN?: BN
-  denomination: number
+  decimals: number
   handleAmountChange?: (value: { bn: BN; amount: string }) => void
 }) => {
   const { theme } = useApplicationContext()
 
-  const interceptAmountChange = (value: { bn: BN; amount: string }) => {
-    const numDigits = value.amount.replace('.', '').length
-    if (numDigits > MAX_DIGITS) {
-      value.amount = value.amount.substring(0, value.amount.length - 1)
-      value.bn = stringToBN(value.amount, denomination)
+  const isAndroid = Platform.OS === 'android'
+
+  useEffect(() => {
+    const sanitized = sanitizeInput(inputAmountBN, decimals)
+    if (sanitized && inputAmountBN && !sanitized.eq(inputAmountBN)) {
+      handleAmountChange?.({
+        amount: bnToLocaleString(sanitized, decimals),
+        bn: sanitized
+      })
     }
-    handleAmountChange?.(value)
+  }, [decimals, handleAmountChange, inputAmountBN])
+
+  const interceptAmountChange = (value: { bn: BN; amount: string }) => {
+    const sanitized = sanitizeInput(value.bn, decimals) ?? new BN(0)
+    handleAmountChange?.({
+      amount: bnToLocaleString(sanitized, decimals),
+      bn: sanitized
+    })
   }
 
   return (
@@ -36,22 +47,23 @@ const EarnInputAmount = ({
       style={{
         alignItems: 'center',
         justifyContent: 'center',
-        alignSelf: 'center',
-        width: 280
+        marginHorizontal: 16
       }}>
       <BNInput
         value={inputAmountBN}
-        denomination={denomination}
+        denomination={decimals}
         placeholder={'0.0'}
         onChange={interceptAmountChange}
         style={{
-          margin: 0
+          margin: 0,
+          minWidth: isAndroid ? 110 : 0
         }}
         autoFocus={true}
         textStyle={{
           fontFamily: 'Inter-Bold',
           fontSize: 48,
-          lineHeight: 56
+          lineHeight: 56,
+          textAlign: 'right'
         }}
         backgroundColor={theme.transparent}
       />
