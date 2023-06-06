@@ -152,7 +152,7 @@ workflows:
 
                     # set permission
                     echo 'Setting permissions for node_modules!!!'
-                    chmod -R 777 $BITRISE_SOURCE_DIR
+                    chown root:root node_modules
                     yarn setup:ci
                 else
                   yarn setup:ci
