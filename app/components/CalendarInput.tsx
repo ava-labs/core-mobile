@@ -38,7 +38,7 @@ export const CalendarInput: React.FC<CalendarInputProps> = ({
       <Pressable
         style={{
           ...styles.dateInput,
-          backgroundColor: theme.colorText6
+          backgroundColor: theme.colorBg2
         }}
         onPress={showDatePicker}>
         <AvaText.Body1 textStyle={{ color: theme.colorText1 }}>

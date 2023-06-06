@@ -107,7 +107,7 @@ const StakingDuration = () => {
               onDateSelected={handleDateConfirm}
               placeHolder=" March 22, 2024"
             />
-            <AvaText.Caption textStyle={{ color: theme.colorText5 }}>
+            <AvaText.Caption textStyle={{ color: theme.neutral100 }}>
               Actual end date will vary depending on options available
             </AvaText.Caption>
           </>

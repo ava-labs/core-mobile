@@ -43,7 +43,7 @@ export const RadioButton: React.FC<RadioButtonProps> = ({
           onPress={onPress}
           style={{
             ...styles.radioButton,
-            backgroundColor: theme.black,
+            backgroundColor: theme.neutralBlack,
             borderColor: selected ? selectedRadioColor : unselectedRadioColor
           }}>
           {selected ? (
