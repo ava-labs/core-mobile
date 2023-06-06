@@ -209,6 +209,7 @@ const BtnSecondaryLarge: FC<BaseProps> = ({
       disabled={disabled}
       style={[styles.btnSecondaryLarge, style]}>
       <AvaText.ButtonLarge
+        adjustsFontSizeToFit={true}
         textStyle={{
           color: disabled ? theme.colorDisabled : theme.colorText1
         }}>

@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react'
-import { View } from 'react-native'
 import InputText, { InputTextProps } from 'components/InputText'
 import Big from 'big.js'
 import BN from 'bn.js'
@@ -13,6 +12,7 @@ interface BNInputProps extends Omit<InputTextProps, 'text'> {
   denomination: number
 
   onChange?(val: { bn: BN; amount: string }): void
+
   onMax?(): void
 
   isValueLoading?: boolean
@@ -81,16 +81,14 @@ export function BNInput({
   }
 
   return (
-    <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
-      <InputText
-        {..._props}
-        mode={'amount'}
-        keyboardType="numeric"
-        onMax={onMax}
-        onChangeText={onValueChanged}
-        text={valueAsString}
-        loading={isValueLoading}
-      />
-    </View>
+    <InputText
+      {..._props}
+      mode={'amount'}
+      keyboardType="numeric"
+      onMax={onMax}
+      onChangeText={onValueChanged}
+      text={valueAsString}
+      loading={isValueLoading}
+    />
   )
 }
