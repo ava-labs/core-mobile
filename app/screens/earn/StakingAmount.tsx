@@ -7,11 +7,7 @@ import { selectNetwork } from 'store/network'
 import { ChainId } from '@avalabs/chains-sdk'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { VsCurrencyType } from '@avalabs/coingecko-sdk'
-import {
-  balanceToDisplayValue,
-  bnToLocaleString,
-  stringToBN
-} from '@avalabs/utils-sdk'
+import { balanceToDisplayValue, bnToLocaleString } from '@avalabs/utils-sdk'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
 import { Row } from 'components/Row'
@@ -19,28 +15,21 @@ import FlexSpacer from 'components/FlexSpacer'
 import AvaButton from 'components/AvaButton'
 import PercentButtons from 'screens/earn/PercentButtons'
 import EarnInputAmount from 'screens/earn/EarnInputAmount'
-import { selectNativeTokenBalanceForNetworkAndAccount } from 'store/balance'
-import { selectActiveAccount } from 'store/account'
 import { useNativeTokenPriceForNetwork } from 'hooks/useNativeTokenPriceForNetwork'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
+import useStakingParams from 'hooks/useStakingParams'
 
 export default function StakingAmount() {
   const { theme } = useApplicationContext()
+  const { minStakeAmount, nativeTokenBalance } = useStakingParams()
+
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const chainId = isDeveloperMode
     ? ChainId.AVALANCHE_TESTNET_ID
     : ChainId.AVALANCHE_MAINNET_ID
   const avaxNetwork = useSelector(selectNetwork(chainId))
-  const activeAccount = useSelector(selectActiveAccount)
   const nativeTokenDecimals = avaxNetwork?.networkToken.decimals ?? 0
-  const minStakeAmount = stringToBN(
-    isDeveloperMode ? '1' : '25',
-    nativeTokenDecimals
-  )
   const selectedCurrency = useSelector(selectSelectedCurrency)
-  const nativeTokenBalance = useSelector(
-    selectNativeTokenBalanceForNetworkAndAccount(chainId, activeAccount?.index)
-  )
   const { nativeTokenPrice } = useNativeTokenPriceForNetwork(
     avaxNetwork,
     selectedCurrency.toLowerCase() as VsCurrencyType

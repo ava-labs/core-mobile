@@ -6,13 +6,7 @@ import StakingAmount from 'screens/earn/StakingAmount'
 import { EarnScreenProps } from 'navigation/types'
 import { useNavigation } from '@react-navigation/native'
 import NotEnoughAvax from 'screens/earn/NotEnoughAvax'
-import { useSelector } from 'react-redux'
-import { selectNativeTokenBalanceForNetworkAndAccount } from 'store/balance'
-import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { ChainId } from '@avalabs/chains-sdk'
-import { selectActiveAccount } from 'store/account'
-import { stringToBN } from '@avalabs/utils-sdk'
-import { selectNetwork } from 'store/network'
+import useStakingParams from 'hooks/useStakingParams'
 
 export type EarnStackParamList = {
   [AppNavigation.Earn.NotEnoughAvax]: undefined
@@ -52,19 +46,7 @@ type EarnProps = EarnScreenProps<typeof AppNavigation.Earn.GetStarted>
 
 const EarnGetStartedScreen = () => {
   const { navigate, replace } = useNavigation<EarnProps['navigation']>()
-  const activeAccount = useSelector(selectActiveAccount)
-  const isDeveloperMode = useSelector(selectIsDeveloperMode)
-  const chainId = isDeveloperMode
-    ? ChainId.AVALANCHE_TESTNET_ID
-    : ChainId.AVALANCHE_MAINNET_ID
-  const avaxNetwork = useSelector(selectNetwork(chainId))
-  const minStakeAmount = stringToBN(
-    isDeveloperMode ? '1' : '25',
-    avaxNetwork?.networkToken.decimals ?? 18
-  )
-  const nativeTokenBalance = useSelector(
-    selectNativeTokenBalanceForNetworkAndAccount(chainId, activeAccount?.index)
-  )
+  const { nativeTokenBalance, minStakeAmount } = useStakingParams()
 
   useEffect(() => {
     if (nativeTokenBalance && nativeTokenBalance.lt(minStakeAmount)) {
@@ -80,19 +62,7 @@ const EarnGetStartedScreen = () => {
 
 const NotEnoughAvaxScreen = () => {
   const { navigate, replace } = useNavigation<EarnProps['navigation']>()
-  const activeAccount = useSelector(selectActiveAccount)
-  const isDeveloperMode = useSelector(selectIsDeveloperMode)
-  const chainId = isDeveloperMode
-    ? ChainId.AVALANCHE_TESTNET_ID
-    : ChainId.AVALANCHE_MAINNET_ID
-  const avaxNetwork = useSelector(selectNetwork(chainId))
-  const minStakeAmount = stringToBN(
-    isDeveloperMode ? '1' : '25',
-    avaxNetwork?.networkToken.decimals ?? 18
-  )
-  const nativeTokenBalance = useSelector(
-    selectNativeTokenBalanceForNetworkAndAccount(chainId, activeAccount?.index)
-  )
+  const { nativeTokenBalance, minStakeAmount } = useStakingParams()
 
   useEffect(() => {
     if (nativeTokenBalance && nativeTokenBalance.gte(minStakeAmount)) {
