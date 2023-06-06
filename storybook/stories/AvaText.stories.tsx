@@ -12,6 +12,7 @@ const AllTexts = () => {
       <AvaText.Heading3>Heading 3</AvaText.Heading3>
       <AvaText.Heading4>Heading 4</AvaText.Heading4>
       <AvaText.Heading5>Heading 5</AvaText.Heading5>
+      <AvaText.Heading6>Heading 6</AvaText.Heading6>
       <AvaText.Subtitle1 color="white">Subtitle 1</AvaText.Subtitle1>
       <AvaText.Subtitle2 color="white">Subtitle 2</AvaText.Subtitle2>
       <AvaText.Body1>Body 1</AvaText.Body1>
@@ -20,7 +21,7 @@ const AllTexts = () => {
       <AvaText.Body4>Body 4</AvaText.Body4>
       <AvaText.TextLink>Text Link</AvaText.TextLink>
       <AvaText.Tag>Tag</AvaText.Tag>
-      <AvaText.Caption>Caption</AvaText.Caption>
+      <AvaText.Caption color="white">Caption</AvaText.Caption>
       <AvaText.ActivityTotal>Activity Total</AvaText.ActivityTotal>
       <AvaText.ButtonSmall>Button Small</AvaText.ButtonSmall>
       <AvaText.ButtonMedium>Button Medium</AvaText.ButtonMedium>

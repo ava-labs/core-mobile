@@ -16,7 +16,7 @@ import { warmup } from '../../helpers/warmup'
 
 const jestExpect = require('expect')
 
-describe('Send Avax to another account', () => {
+describe('Send WETH to another account', () => {
   beforeAll(async () => {
     await warmup()
     await LoginRecoverWallet.recoverWalletLogin()
@@ -44,7 +44,7 @@ describe('Send Avax to another account', () => {
     await ReviewAndSend.tapSendNow()
 
     await actions.waitForElementNotVisible(ReviewAndSend.sendSuccessfulToastMsg)
-    await delay(5000)
+    await delay(20000)
     await ActivityTabPage.refreshActivityPage()
     await ActivityTabPage.tapArrowIcon(0)
     const isTransactionSuccessful =

@@ -215,6 +215,23 @@ const TextHeading5: FC<AvaTextProps> = ({
   )
 }
 
+const TextHeading6: FC<AvaTextProps> = ({
+  textStyle,
+  children,
+  currency,
+  ...rest
+}) => {
+  const theme = useApplicationContext().theme
+  return (
+    <AvaxTextBase
+      {...rest}
+      currency={currency}
+      style={[styles.heading6, { color: theme.neutral50 }, textStyle]}>
+      {children}
+    </AvaxTextBase>
+  )
+}
+
 const TextSubtitle1: FC<AvaTextProps> = ({
   textStyle,
   color,
@@ -446,6 +463,7 @@ const AvaText = {
   Heading3: TextHeading3,
   Heading4: TextHeading4,
   Heading5: TextHeading5,
+  Heading6: TextHeading6,
   Subtitle1: TextSubtitle1,
   Subtitle2: TextSubtitle2,
   Body1: TextBody1,
@@ -501,6 +519,11 @@ export const styles = StyleSheet.create({
     fontFamily: 'Inter-Bold',
     fontSize: 20,
     lineHeight: 32
+  },
+  heading6: {
+    fontFamily: 'Inter-Bold',
+    fontSize: 16,
+    lineHeight: 24
   },
   subtitle1: {
     fontFamily: 'Inter-SemiBold',

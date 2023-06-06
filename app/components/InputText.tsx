@@ -1,9 +1,9 @@
-import React, { useCallback, useEffect, useState, forwardRef } from 'react'
+import React, { forwardRef, useCallback, useEffect, useState } from 'react'
 import {
   ActivityIndicator,
   Appearance,
-  NativeSyntheticEvent,
   Keyboard,
+  NativeSyntheticEvent,
   StyleProp,
   TextInput,
   TextInputFocusEventData,
@@ -22,7 +22,7 @@ import { Row } from 'components/Row'
 import AvaText from './AvaText'
 import AvaButton from './AvaButton'
 
-type Props = {
+export type InputTextProps = {
   onBlur?: (e: NativeSyntheticEvent<TextInputFocusEventData>) => void
   onChangeText?: (text: string) => void
   editable?: boolean
@@ -57,6 +57,7 @@ type Props = {
   width?: number
   style?: StyleProp<ViewStyle>
   textStyle?: StyleProp<TextStyle>
+  backgroundColor?: string
   loading?: boolean
   paddingVertical?: number
   keyboardWillShow?: () => void
@@ -64,7 +65,7 @@ type Props = {
   testID?: string
 }
 
-const InputText = forwardRef<TextInput, Props>(
+const InputText = forwardRef<TextInput, InputTextProps>(
   (
     {
       text,
@@ -75,6 +76,7 @@ const InputText = forwardRef<TextInput, Props>(
       currency,
       style,
       textStyle,
+      backgroundColor,
       keyboardType,
       editable,
       label,
@@ -210,7 +212,7 @@ const InputText = forwardRef<TextInput, Props>(
                 borderWidth: 1,
                 borderRadius: 8,
                 textAlignVertical: multiline ? 'top' : 'center',
-                backgroundColor: theme.colorBg3 + Opacity50,
+                backgroundColor: backgroundColor || theme.colorBg3 + Opacity50,
                 paddingStart: 16,
                 paddingEnd: loading
                   ? 46

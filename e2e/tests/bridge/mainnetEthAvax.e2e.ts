@@ -9,7 +9,6 @@ import LoginRecoverWallet from '../../helpers/loginRecoverWallet'
 import BottomTabsPage from '../../pages/bottomTabs.page'
 import BridgeTabPage from '../../pages/bridgeTab.page'
 import { warmup } from '../../helpers/warmup'
-import BurgerMenuPage from '../../pages/burgerMenu.page'
 
 describe('Bridge transfer ETH -> AVAX', () => {
   beforeAll(async () => {
@@ -18,12 +17,6 @@ describe('Bridge transfer ETH -> AVAX', () => {
   })
 
   it('Should verify Transaction Status Items', async () => {
-    await BurgerMenuPage.tapBurgerMenuButton()
-    await BurgerMenuPage.tapAdvanced()
-    await BurgerMenuPage.switchToTestnet()
-    await BurgerMenuPage.tapBackbutton()
-    await BurgerMenuPage.swipeLeft()
-
     await BottomTabsPage.tapBridgeTab()
     await BridgeTabPage.tapNetworkDropdown()
     await BridgeTabPage.tapEthereumNetwork()
