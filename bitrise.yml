@@ -153,7 +153,9 @@ workflows:
                     # set permission
                     echo 'Setting permissions for node_modules!!!'
                     chown -R root:root node_modules
-                    yarn setup:ci
+                    yarn install
+                    husky install
+                    node_modules/.bin/patch-package; node_modules/.bin/rn-nodeify --install events,stream,vm,assert,https,http,os --hack
                 else
                   yarn setup:ci
 
