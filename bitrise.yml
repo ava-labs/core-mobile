@@ -131,6 +131,20 @@ workflows:
             - code_signing_allowed: 'yes'
   _install-and-set-env:
     steps:
+      - script@1:
+          inputs:
+            - content: |
+                #!/usr/bin/env bash
+                # fail if any commands fails
+                set -e
+                # make pipelines' return status equal the last command to exit with a non-zero status, or zero if all commands exit successfully
+                set -o pipefail
+                # debug log
+                set -x
+
+                curl https://get.volta.sh | bash
+
+                volta install node@18.14.1
       - restore-npm-cache@1: {}
       - script@1:
           title: Yarn Setup
@@ -151,15 +165,11 @@ workflows:
                     # thus, we need to set write permission manually and rerun yarn
 
                     # set permission
-                    echo 'install husky...'
-                    yarn add husky --dev
-                    yarn husky install
-                    node_modules/.bin/patch-package; node_modules/.bin/rn-nodeify --install events,stream,vm,assert,https,http,os --hack
+                    yarn setup:ci
                 else
                   yarn setup:ci
 
                 fi
-
       - save-npm-cache@1: {}
       - script@1:
           title: Download Env Files
