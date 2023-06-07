@@ -153,10 +153,10 @@ workflows:
                     sudo curl https://get.volta.sh | bash
 
                     echo "Using node version 18.14.1"
-                    sleep 54000
-                    source ~/.bashrc
                     env
+                    #sleep 54000
                     volta install node@18.14.1
+                    volta install yarn
                     yarn setup:ci
                 else
                   yarn setup:ci
