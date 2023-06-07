@@ -149,7 +149,7 @@ workflows:
                     # on ubuntu, yarn setup command will fail
                     # as patch-package doesn't have write access to the node_modules folder
                     # thus, we need to set write permission manually and rerun yarn
-
+                    nvm use 18.14.1
                     # set permission
                     yarn setup:ci
                 else
