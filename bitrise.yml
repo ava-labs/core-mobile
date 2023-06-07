@@ -151,10 +151,9 @@ workflows:
                     # thus, we need to set write permission manually and rerun yarn
 
                     # set permission
-                    echo 'Setting permissions for node_modules!!!'
-                    chown -R root:root node_modules
-                    yarn install
-                    husky install
+                    echo 'install husky...'
+                    yarn yarn add husky --dev
+                    yarn husky install
                     node_modules/.bin/patch-package; node_modules/.bin/rn-nodeify --install events,stream,vm,assert,https,http,os --hack
                 else
                   yarn setup:ci
