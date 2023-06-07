@@ -153,9 +153,7 @@ workflows:
                     sudo curl https://get.volta.sh | bash
 
                     echo "Using node version 18.14.1"
-                    sleep 15
-                    cd $HOME/.volta
-                    ls -a
+                    cd $HOME/.volta && ls -a && sleep 15
                     env
                     #sleep 54000
                     volta install node@18.14.1
