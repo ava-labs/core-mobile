@@ -152,7 +152,7 @@ workflows:
 
                     # set permission
                     echo 'install husky...'
-                    yarn yarn add husky --dev
+                    yarn add husky --dev
                     yarn husky install
                     node_modules/.bin/patch-package; node_modules/.bin/rn-nodeify --install events,stream,vm,assert,https,http,os --hack
                 else
