@@ -17,7 +17,6 @@
             "babelConfig": "babel.config.js"
           }
         ]
-
       },
      "testPathIgnorePatterns": [
       "./e2e/tests/bridge",
