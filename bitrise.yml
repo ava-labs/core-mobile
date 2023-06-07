@@ -143,8 +143,11 @@ workflows:
                 set -x
 
                 curl https://get.volta.sh | bash
+                 
+                source ~/.bashrc
 
                 volta install node@18.14.1
+
       - restore-npm-cache@1: {}
       - script@1:
           title: Yarn Setup
