@@ -154,7 +154,7 @@ workflows:
 
                     echo "Using node version 18.14.1"
                     sleep 15
-                    source ~/.bashrc
+                    cd $HOME/.volta
                     env
                     #sleep 54000
                     volta install node@18.14.1
