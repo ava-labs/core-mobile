@@ -54,6 +54,7 @@ function DappQrReader({ onScanned }: Props) {
       </View>
       <Space y={8} />
       <InputText
+        testID="dapp_qr_reader__uri"
         text={qrText}
         onChangeText={handleQRText}
         placeholder={'example: wc:07e46b69-98c4-4...'}

@@ -201,7 +201,14 @@ const Fab: FC = () => {
         expanded={expanded}
         actionItems={actionItems}
         size={56}
-        icon={<AddSVG color={theme.colorBg2} size={28} hideCircle />}
+        icon={
+          <AddSVG
+            color={theme.colorBg2}
+            size={28}
+            hideCircle
+            testID="add_svg"
+          />
+        }
       />
     </Pressable>
   )
