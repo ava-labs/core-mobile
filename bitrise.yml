@@ -150,13 +150,11 @@ workflows:
                     # as patch-package doesn't have write access to the node_modules folder
                     # thus, we need to set write permission manually and rerun yarn
 
-                    curl https://get.volta.sh | bash
-
-                    export VOLTA_HOME="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.volta" || printf %s "${XDG_CONFIG_HOME}/volta")" 
-                    [ -s "$VOLTA_HOME/volta.sh" ] && \. "$VOLTA_HOME/volta.sh"    
-                    volta install node @18.14.1
+                    sudo curl https://get.volta.sh | bash
 
                     echo "Using node version 18.14.1"
+                    sleep 54000
+                    volta install 18.14.1
                     # set permission
                     yarn setup:ci
                 else
