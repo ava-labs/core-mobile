@@ -131,22 +131,6 @@ workflows:
             - code_signing_allowed: 'yes'
   _install-and-set-env:
     steps:
-      - script@1:
-          inputs:
-            - content: |+
-                #!/usr/bin/env bash
-                # fail if any commands fails
-                set -e
-                # make pipelines' return status equal the last command to exit with a non-zero status, or zero if all commands exit successfully
-                set -o pipefail
-                # debug log
-                set -x
-
-                echo "Install nvm!!!"
-
-                curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
-
-                export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")" [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
       - restore-npm-cache@1: {}
       - script@1:
           title: Yarn Setup
