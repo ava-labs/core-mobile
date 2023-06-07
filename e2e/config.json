@@ -17,9 +17,9 @@
             "babelConfig": "babel.config.js"
           }
         ]
+
       },
      "testPathIgnorePatterns": [
-      "./e2e/tests/bridge",
       "./e2e/tests/plucIcon/walletConnect/traderjoe.e2e.ts",
       "./e2e/tests/send/sendGoerlyEthTo2ndAccount.e2e.ts"
     ]

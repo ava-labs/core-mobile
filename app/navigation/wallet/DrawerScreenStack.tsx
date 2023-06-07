@@ -142,7 +142,11 @@ const Fab: FC = () => {
       } as ActionProp
     }
     actions.Bridge = {
-      image: <BridgeSVG color={theme.background} size={24} />,
+      image: (
+        <View testID="tab_navigator__bridge_button">
+          <BridgeSVG color={theme.background} size={24} />
+        </View>
+      ),
       onPress: () => {
         if (isBridgeDisabled) {
           showSnackBarCustom({

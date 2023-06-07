@@ -1,6 +1,10 @@
 import Actions from '../helpers/actions'
+import Assert from '../helpers/assertions'
 import { Platform } from '../helpers/constants'
 import bridgeTab from '../locators/bridgeTab.loc'
+import BottomTabsPage from '../pages/bottomTabs.page'
+import PlusMenuPage from './plusMenu.page'
+import PortfolioPage from './portfolio.page'
 
 const platformIndex = Actions.platform() === Platform.iOS ? 1 : 0
 const platformIndex2 = Actions.platform() === Platform.iOS ? 2 : 0
@@ -110,7 +114,7 @@ class BridgeTabPage {
     return by.text(bridgeTab.wrappedEther)
   }
 
-  async tapAvalanceNetwork() {
+  async tapAvalancheNetwork() {
     return Actions.tapElementAtIndex(this.avalancheNetwork, platformIndex2)
   }
 
@@ -196,6 +200,52 @@ class BridgeTabPage {
 
   async tapFromtext() {
     await Actions.tap(this.fromText)
+  }
+
+  async switchToNetwork(network: string) {
+    await PortfolioPage.tapActivityTab()
+    await BottomTabsPage.tapPlusIcon()
+    await PlusMenuPage.tapBridgeButton()
+    await this.tapNetworkDropdown()
+    switch (network) {
+      case 'Bitcoin':
+        await this.tapBitcoinNetwork()
+        break
+      case 'Ethereum':
+        await this.tapEthereumNetwork()
+        break
+      case 'Avalanche':
+        await this.tapAvalancheNetwork()
+        break
+    }
+  }
+
+  async verifyBridgeItems(
+    incomingNetwork: Detox.NativeMatcher,
+    outgoingNetwork: Detox.NativeMatcher
+  ) {
+    await Assert.isVisibleNoSync(incomingNetwork)
+    await Assert.isVisibleNoSync(outgoingNetwork)
+    await Assert.isVisibleNoSync(this.sendingAmmount)
+    await Assert.isVisibleNoSync(this.fromText)
+    await Assert.isVisibleNoSync(this.networkFee)
+    await Assert.isVisibleNoSync(this.confirmations)
+    await Assert.isVisibleNoSync(this.toText)
+  }
+
+  async verifyBridgeTransaction(
+    delay: number,
+    completedStatusIncomingNetwork: Detox.NativeMatcher,
+    completedStatusOutgoingNetwork: Detox.NativeMatcher,
+    successfullBridgeTransaction: Detox.NativeMatcher
+  ) {
+    await Actions.waitForElementNoSync(this.closebutton, delay)
+    await Assert.isVisible(completedStatusIncomingNetwork)
+    await Assert.isVisible(completedStatusOutgoingNetwork)
+
+    await this.tapClose()
+    await PortfolioPage.tapActivityTab()
+    await Assert.isVisible(successfullBridgeTransaction)
   }
 }
 

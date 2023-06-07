@@ -1,8 +1,15 @@
 import Action from '../helpers/actions'
+import AccountManagePage from '../pages/accountManage.page'
+import Assert from '../helpers/assertions'
 import activityTab from '../locators/activityTab.loc'
+import delay from '../helpers/waits'
 import { Platform } from '../helpers/constants'
+import ReviewAndSend from '../pages/reviewAndSend.page'
+import PortfolioPage from '../pages/portfolio.page'
+import TransactionDetailsPage from '../pages/transactionDetails.page'
 
 const platformIndex = Action.platform() === Platform.iOS ? 1 : 0
+const jestExpect = require('expect')
 
 class ActivityTabPage {
   get address() {
@@ -103,6 +110,35 @@ class ActivityTabPage {
 
   async tapBridgeIcon() {
     await Action.tapElementAtIndex(this.bridgeSVG, 1)
+  }
+
+  async verifyIncomingTransaction(transactionValue: string) {
+    await AccountManagePage.tapAccountMenu()
+    const firstAccountAddress = await AccountManagePage.getFirstAvaxAddress()
+    await AccountManagePage.tapSecondAccount()
+    await PortfolioPage.tapActivityTab()
+    await this.tapArrowIcon(0)
+    const isTransactionSuccessful =
+      await TransactionDetailsPage.isDateTextOlderThan(300)
+    console.log(isTransactionSuccessful)
+    await Assert.hasText(this.address, firstAccountAddress)
+    await Assert.hasText(this.activityDetail, transactionValue)
+  }
+
+  async verifyOutgoingTransaction(
+    waitTime: number,
+    secondAccountAddress: string,
+    transactionValue: string
+  ) {
+    await Action.waitForElementNotVisible(ReviewAndSend.sendSuccessfulToastMsg)
+    await delay(waitTime)
+    await this.refreshActivityPage()
+    await this.tapArrowIcon(0)
+    const isTransactionSuccessful =
+      await TransactionDetailsPage.isDateTextOlderThan(300)
+    await Assert.hasText(this.address, secondAccountAddress)
+    await Assert.hasText(this.activityDetail, transactionValue)
+    jestExpect(isTransactionSuccessful).toBe(true)
   }
 }
 

@@ -1,4 +1,8 @@
 import Actions from '../helpers/actions'
+import AccountManagePage from '../pages/accountManage.page'
+import BottomTabsPage from '../pages/bottomTabs.page'
+import PlusMenuPage from '../pages/plusMenu.page'
+import ReviewAndSend from '../pages/reviewAndSend.page'
 import Send from '../locators/send.loc'
 
 class SendPage {
@@ -72,6 +76,20 @@ class SendPage {
 
   async enterAmount(amount: string) {
     await Actions.setInputText(this.textInputField, amount, 1)
+  }
+
+  async sendTokenTo2ndAccount(token: string, sendingAmmount: string) {
+    await BottomTabsPage.tapPlusIcon()
+    await PlusMenuPage.tapSendButton()
+    await this.tapAddressBook()
+    await this.tapMyAccounts()
+    await AccountManagePage.tapSecondAccount()
+    await this.tapCarrotSVG()
+    await this.selectToken(token)
+    await this.enterAmount(sendingAmmount)
+    await this.tapSendTitle()
+    await this.tapNextButton()
+    await ReviewAndSend.tapSendNow()
   }
 }
 
