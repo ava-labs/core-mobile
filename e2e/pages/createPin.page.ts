@@ -19,6 +19,14 @@ class CreatePinPage {
     return by.text(createPinLoc.nextBtn)
   }
 
+  get enterYourPinHeader() {
+    return by.text(createPinLoc.enterYourPinHeader)
+  }
+
+  get setNewPinHeader() {
+    return by.text(createPinLoc.setNewPinHeader)
+  }
+
   async tapNumpadZero() {
     await Action.tap(this.numPadZero)
   }

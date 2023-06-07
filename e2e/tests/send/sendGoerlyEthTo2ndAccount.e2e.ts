@@ -5,7 +5,7 @@ import AccountManagePage from '../../pages/accountManage.page'
 import ActivityTabPage from '../../pages/activityTab.page'
 import ActivityTabLoc from '../../locators/activityTab.loc'
 import BottomTabsPage from '../../pages/bottomTabs.page'
-import BurgerMenuPage from '../../pages/burgerMenu.page'
+import BurgerMenuPage from '../../pages/burgerMenu/burgerMenu.page'
 import delay from '../../helpers/waits'
 import LoginRecoverWallet from '../../helpers/loginRecoverWallet'
 import NetworksManagePage from '../../pages/networksManage.page'
@@ -16,6 +16,7 @@ import SendPage from '../../pages/send.page'
 import TransactionDetailsPage from '../../pages/transactionDetails.page'
 import { warmup } from '../../helpers/warmup'
 import { Platform } from '../../helpers/constants'
+import AdvancedPage from '../../pages/burgerMenu/advanced.page'
 
 const jestExpect = require('expect')
 const platformIndex = actions.platform() === Platform.iOS ? 1 : 0
@@ -29,7 +30,7 @@ describe('Send Goerly Eth to another account', () => {
   it('Should send Goerly Eth to second account', async () => {
     await BurgerMenuPage.tapBurgerMenuButton()
     await BurgerMenuPage.tapAdvanced()
-    await BurgerMenuPage.switchToTestnet()
+    await AdvancedPage.switchToTestnet()
     await BurgerMenuPage.tapBackbutton()
     await BurgerMenuPage.swipeLeft()
     await PortfolioPage.tapNetworksDropdown()

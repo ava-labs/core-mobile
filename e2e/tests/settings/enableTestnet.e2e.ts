@@ -6,9 +6,10 @@
 import Assert from '../../helpers/assertions'
 import LoginRecoverWallet from '../../helpers/loginRecoverWallet'
 import NetworksManagePage from '../../pages/networksManage.page'
-import BurgerMenuPage from '../../pages/burgerMenu.page'
+import BurgerMenuPage from '../../pages/burgerMenu/burgerMenu.page'
 import PortfolioPage from '../../pages/portfolio.page'
 import { warmup } from '../../helpers/warmup'
+import AdvancedPage from '../../pages/burgerMenu/advanced.page'
 
 describe('Enable Testnet', () => {
   beforeAll(async () => {
@@ -19,7 +20,7 @@ describe('Enable Testnet', () => {
   it('Should verify Avax Network', async () => {
     await BurgerMenuPage.tapBurgerMenuButton()
     await BurgerMenuPage.tapAdvanced()
-    await BurgerMenuPage.switchToTestnet()
+    await AdvancedPage.switchToTestnet()
     await BurgerMenuPage.tapBackbutton()
     await BurgerMenuPage.swipeLeft()
 

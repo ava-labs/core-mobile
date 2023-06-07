@@ -5,9 +5,10 @@
  */
 import Assert from '../../helpers/assertions'
 import LoginRecoverWallet from '../../helpers/loginRecoverWallet'
-import BurgerMenuPage from '../../pages/burgerMenu.page'
+import BurgerMenuPage from '../../pages/burgerMenu/burgerMenu.page'
 import { warmup } from '../../helpers/warmup'
 import CreatePinPage from '../../pages/createPin.page'
+import SecurityAndPrivacyPage from '../../pages/burgerMenu/securityAndPrivacy.page'
 
 describe('Change Pin', () => {
   beforeAll(async () => {
@@ -18,19 +19,19 @@ describe('Change Pin', () => {
   it('Should set new Pin & verify pin Headers', async () => {
     await BurgerMenuPage.tapBurgerMenuButton()
     await BurgerMenuPage.tapSecurityAndPrivacy()
-    await BurgerMenuPage.tapChangePin()
-    await Assert.isVisible(BurgerMenuPage.enterYourPinHeader)
+    await SecurityAndPrivacyPage.tapChangePin()
+    await Assert.isVisible(CreatePinPage.enterYourPinHeader)
     await CreatePinPage.enterCurrentPin()
-    await Assert.isVisible(BurgerMenuPage.setNewPinHeader)
+    await Assert.isVisible(CreatePinPage.setNewPinHeader)
     await CreatePinPage.createNewPin()
     await Assert.isVisible(BurgerMenuPage.securityAndPrivacy)
   })
 
   it('Should set previous Pin', async () => {
-    await BurgerMenuPage.tapChangePin()
-    await Assert.isVisible(BurgerMenuPage.enterYourPinHeader)
+    await SecurityAndPrivacyPage.tapChangePin()
+    await Assert.isVisible(CreatePinPage.enterYourPinHeader)
     await CreatePinPage.enterNewCurrentPin()
-    await Assert.isVisible(BurgerMenuPage.setNewPinHeader)
+    await Assert.isVisible(CreatePinPage.setNewPinHeader)
     await CreatePinPage.createPin()
     await Assert.isVisible(BurgerMenuPage.securityAndPrivacy)
   })
