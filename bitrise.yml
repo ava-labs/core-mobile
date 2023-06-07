@@ -155,8 +155,8 @@ workflows:
                     echo "Using node version 18.14.1"
                     # sleep 54000
                     source ~/.bashrc
+                    env
                     volta install node@18.14.1
-                    # set permission
                     yarn setup:ci
                 else
                   yarn setup:ci
