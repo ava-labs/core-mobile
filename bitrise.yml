@@ -133,7 +133,7 @@ workflows:
     steps:
       - script@1:
           inputs:
-            - content: |
+            - content: |+
                 #!/usr/bin/env bash
                 # fail if any commands fails
                 set -e
@@ -142,11 +142,11 @@ workflows:
                 # debug log
                 set -x
 
-                curl https://get.volta.sh | bash
-                 
-                source ~/.bashrc
+                curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
 
-                volta install node@18.14.1
+                export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")" [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+
+
 
       - restore-npm-cache@1: {}
       - script@1:
