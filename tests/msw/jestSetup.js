@@ -1,4 +1,4 @@
-import { server } from './nodeServer'
+import { server } from './node/server'
 
 // polyfill "fetch"
 global.fetch = require('node-fetch').default
