@@ -1,4 +1,4 @@
-import React, { FC } from 'react'
+import React, { FC, useEffect } from 'react'
 import { StyleSheet, View } from 'react-native'
 import LottieView from 'lottie-react-native'
 
@@ -9,10 +9,21 @@ interface Props {
 }
 
 const Checkmark: FC<Props> = ({ size = 40 }) => {
+  const lottieRef = React.useRef<LottieView | null>(null)
+
+  // temp workaround for autoplay issue
+  // https://github.com/lottie-react-native/lottie-react-native/issues/832
+  useEffect(() => {
+    setTimeout(() => {
+      lottieRef.current?.play()
+    }, 0)
+  }, [])
+
   return (
     <View style={styles.container}>
       <LottieView
-        autoPlay={true}
+        ref={lottieRef}
+        autoPlay={false}
         loop={false}
         source={animation}
         style={{
