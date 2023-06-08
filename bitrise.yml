@@ -154,10 +154,9 @@ workflows:
 
                     echo "Using node version 18.14.1"
                     cd $HOME/.volta && ls -a && sleep 15
-                    $VOLTA_HOME/bin/volta install node@18.14.1
-                    $VOLTA_HOME/bin/volta install yarn
                     sleep 54000
-
+                    volta install node@18.14.1
+                    volta install yarn
                     yarn setup:ci
                 else
                   yarn setup:ci
