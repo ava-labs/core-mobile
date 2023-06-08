@@ -1,5 +1,8 @@
 import { server } from './nodeServer'
 
+// polyfill "fetch"
+global.fetch = require('node-fetch').default
+
 // establish API mocking before all tests.
 beforeAll(() => {
   server.listen()
