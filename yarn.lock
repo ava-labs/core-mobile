@@ -6622,6 +6622,23 @@
   dependencies:
     defer-to-connect "^2.0.0"
 
+"@tanstack/eslint-plugin-query@5.0.0-alpha.57":
+  version "5.0.0-alpha.57"
+  resolved "https://registry.yarnpkg.com/@tanstack/eslint-plugin-query/-/eslint-plugin-query-5.0.0-alpha.57.tgz#83f2b13ea853d42598903276a11f176bc7c7cebd"
+  integrity sha512-rbeAl8lxSWkLX9OdDT7GngirAYQ+Vul8Xi0KjiphSLqmyqE3ZiBRI1CtnJa1HxxcX510772kv9HJDKUokZrdzw==
+
+"@tanstack/query-core@^5.0.0-alpha.43":
+  version "5.0.0-alpha.56"
+  resolved "https://registry.yarnpkg.com/@tanstack/query-core/-/query-core-5.0.0-alpha.56.tgz#85f5b5593dc486b56bc0c80551533c964ec5c55e"
+  integrity sha512-ccW6f0uM+ulSGJ6qaRy8lJ4JnQWpWzJv3m2iGPz9J5CvA703kerySyQyldFleJ00RVE02cnBtGqe12M2RSCw9w==
+
+"@tanstack/react-query@5.0.0-alpha.57":
+  version "5.0.0-alpha.57"
+  resolved "https://registry.yarnpkg.com/@tanstack/react-query/-/react-query-5.0.0-alpha.57.tgz#1cab31ef79e9c5f8504ed4d6bdee052a8184227d"
+  integrity sha512-XSgzPzvIc0mcoj6us57S4piuH587zxy1NjhPWiWUpmNRFWRR9+DsqFz7SAy5fj6Ekd+l7+YLIHPWwRGeOpuivQ==
+  dependencies:
+    "@tanstack/query-core" "^5.0.0-alpha.43"
+
 "@tootallnate/once@1":
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/@tootallnate/once/-/once-1.1.2.tgz#ccb91445360179a04e7fe6aff78c00ffc1eeaf82"
