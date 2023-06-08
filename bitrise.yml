@@ -142,7 +142,7 @@ workflows:
                 # make pipelines' return status equal the last command to exit with a non-zero status, or zero if all commands exit successfully
                 set -o pipefail
                 # debug log
-                set -x
+                # set -x
                 stack=$( cat /etc/issue )
 
                 if [[ $stack == *Ubuntu* ]]; then
@@ -154,13 +154,13 @@ workflows:
 
                     echo "Using node version 18.14.1"
                     cd $HOME/.volta && ls -a && sleep 15
-                    # sleep 54000
                     $VOLTA_HOME/bin/volta install node@18.14.1
                     $VOLTA_HOME/bin/volta install yarn
+                    sleep 54000
+
                     yarn setup:ci
                 else
                   yarn setup:ci
-
                 fi
       - save-npm-cache@1: {}
       - script@1:
