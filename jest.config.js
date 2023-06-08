@@ -5,5 +5,6 @@ module.exports = {
   moduleNameMapper: {
     uuid: require.resolve('uuid')
   },
-  testPathIgnorePatterns: ['<rootDir>/e2e/tests/playwright/']
+  testPathIgnorePatterns: ['<rootDir>/e2e/tests/playwright/'],
+  setupFilesAfterEnv: ['<rootDir>/src/tests/msw/jestSetup.js']
 }
