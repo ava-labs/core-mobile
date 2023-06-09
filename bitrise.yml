@@ -142,7 +142,7 @@ workflows:
                 # make pipelines' return status equal the last command to exit with a non-zero status, or zero if all commands exit successfully
                 set -o pipefail
                 # debug log
-                # set -x
+                set -x
                 stack=$( cat /etc/issue )
 
                 if [[ $stack == *Ubuntu* ]]; then
@@ -150,12 +150,14 @@ workflows:
                     # as patch-package doesn't have write access to the node_modules folder
                     # thus, we need to set write permission manually and rerun yarn
 
-                    sudo curl https://get.volta.sh | bash
+                    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
+
+                    export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
+                    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 
                     echo "Using node version 18.14.1"
-                    export VOLTA_HOME=$HOME/.volta
                     sleep 54000
-                    volta install node@18.14.1
+                    nvm install v18.14.1
                     #volta install yarn
                     yarn setup:ci
                 else
