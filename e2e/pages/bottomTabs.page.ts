@@ -19,10 +19,6 @@ class BottomsTabsPage {
     return by.id(bottomTabsLoc.watchlistTab)
   }
 
-  get bridgeTab() {
-    return by.id(bottomTabsLoc.bridgeTab)
-  }
-
   get plusIcon() {
     return by.id(bottomTabsLoc.plusButton)
   }
@@ -35,12 +31,8 @@ class BottomsTabsPage {
     await Actions.tapElementAtIndex(this.activityTab, 1)
   }
 
-  async tapBridgeTab() {
-    await Actions.tapElementAtIndex(this.bridgeTab, 1)
-  }
-
   async tapPlusIcon() {
-    await Actions.tapElementAtIndex(this.plusIcon, 1)
+    await Actions.tapElementAtIndex(this.plusIcon, 0)
   }
 
   async tapPortfolioTab() {
