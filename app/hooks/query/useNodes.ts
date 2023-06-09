@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { useSelector } from 'react-redux'
+import EarnService from 'services/earn/EarnService'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { getPvmApi } from 'utils/network/pvm'
 
 // TODO: add filtering logic
 export const useNodes = () => {
@@ -10,7 +10,7 @@ export const useNodes = () => {
   return useQuery({
     queryKey: ['nodes', isDeveloperMode],
     queryFn: async () => {
-      return getPvmApi(isDeveloperMode).getCurrentValidators()
+      return EarnService.getCurrentValidators(isDeveloperMode)
     }
   })
 }
