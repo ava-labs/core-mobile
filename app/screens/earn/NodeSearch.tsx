@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect } from 'react'
 import { Linking, StyleSheet, View } from 'react-native'
 import AvaText from 'components/AvaText'
 import { useApplicationContext } from 'contexts/ApplicationContext'
@@ -10,6 +10,7 @@ import Checkmark from 'components/animation/Checkmark'
 import AppNavigation from 'navigation/AppNavigation'
 import { EarnScreenProps } from 'navigation/types'
 import { useNavigation } from '@react-navigation/native'
+import { useNodes } from 'hooks/query/useNodes'
 
 const Searching = () => {
   const { theme } = useApplicationContext()
@@ -77,15 +78,11 @@ const MatchFound = () => {
 }
 
 export const NodeSearch = () => {
-  const [matchFound, setMatchFound] = useState(false)
+  const { isFetching } = useNodes()
 
-  // TODO: remove this after business logic is added
-  // fake a match found after 3 seconds
-  useEffect(() => {
-    setTimeout(() => setMatchFound(true), 3000)
-  })
+  if (isFetching) return <Searching />
 
-  return matchFound ? <MatchFound /> : <Searching />
+  return <MatchFound />
 }
 
 const styles = StyleSheet.create({

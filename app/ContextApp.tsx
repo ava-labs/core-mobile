@@ -17,6 +17,7 @@ import { EncryptedStoreProvider } from 'contexts/EncryptedStoreProvider'
 import { TopLevelErrorFallback } from 'components/TopLevelErrorFallback'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import FlipperAsyncStorage from 'rn-flipper-async-storage-advanced'
+import { ReactQueryProvider } from 'contexts/ReactQueryProvider'
 
 function setToast(toast: Toast) {
   global.toast = toast
@@ -27,13 +28,15 @@ function setToast(toast: Toast) {
  */
 const ContextProviders: FC = ({ children }) => (
   <EncryptedStoreProvider>
-    <PosthogContextProvider>
-      <ApplicationContextProvider>
-        <DeeplinkContextProvider>
-          <BridgeProvider>{children}</BridgeProvider>
-        </DeeplinkContextProvider>
-      </ApplicationContextProvider>
-    </PosthogContextProvider>
+    <ReactQueryProvider>
+      <PosthogContextProvider>
+        <ApplicationContextProvider>
+          <DeeplinkContextProvider>
+            <BridgeProvider>{children}</BridgeProvider>
+          </DeeplinkContextProvider>
+        </ApplicationContextProvider>
+      </PosthogContextProvider>
+    </ReactQueryProvider>
   </EncryptedStoreProvider>
 )
 

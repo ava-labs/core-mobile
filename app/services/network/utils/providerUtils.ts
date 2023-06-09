@@ -9,7 +9,7 @@ import { BlockCypherProvider, JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
 import Config from 'react-native-config'
 import { PollingConfig } from 'store/balance'
 import { Networks } from 'store/network'
-import { addGlacierAPIKeyIfNeeded } from 'utils/glacierUtils'
+import { addGlacierAPIKeyIfNeeded } from 'utils/network/glacier'
 
 const BLOCKCYPHER_PROXY_URL = `${Config.PROXY_URL}/proxy/blockcypher`
 
