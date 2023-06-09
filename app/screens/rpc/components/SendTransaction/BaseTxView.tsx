@@ -14,15 +14,11 @@ import Separator from 'components/Separator'
 import { truncateAddress } from 'utils/Utils'
 import { Avalanche } from '@avalabs/wallets-sdk'
 import { AvalancheChainStrings } from 'store/walletConnect/handlers/types'
+import { selectAvaxPrice } from 'store/balance'
 
-const BaseTxView = ({
-  tx,
-  avaxPrice
-}: {
-  tx: Avalanche.BaseTx
-  avaxPrice: number
-}) => {
+const BaseTxView = ({ tx }: { tx: Avalanche.BaseTx }) => {
   const { theme } = useApplicationContext()
+  const avaxPrice = useSelector(selectAvaxPrice)
   const { chain, txFee, outputs, memo } = tx
   const { tokenInCurrencyFormatter } = useApplicationContext().appHook
   const selectedCurrency = useSelector(selectSelectedCurrency)

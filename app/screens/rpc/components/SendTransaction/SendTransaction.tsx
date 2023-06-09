@@ -18,6 +18,9 @@ import { useDappConnectionV1 } from 'hooks/useDappConnectionV1'
 import RpcRequestBottomSheet from 'screens/rpc/components/shared/RpcRequestBottomSheet'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import Separator from 'components/Separator'
+import AddSubnetValidatorTxView from './AddSubnetValidatorView'
+import CreateChainTxView from './CreateChainView'
+import CreateSubnetTxView from './CreateSubnetView'
 
 type SendTransactionScreenProps = WalletScreenProps<
   typeof AppNavigation.Modal.SendTransaction
@@ -73,7 +76,6 @@ const SendTransaction = () => {
           <ExportTxView
             tx={data.txData}
             hexData={hexData}
-            avaxPrice={12}
             toggleActionButtons={toggleActionButtons}
           />
         )
@@ -82,23 +84,28 @@ const SendTransaction = () => {
           <ImportTxView
             tx={data.txData}
             hexData={hexData}
-            avaxPrice={12}
             toggleActionButtons={toggleActionButtons}
           />
         )
       case 'base':
-        return <BaseTxView tx={data.txData} avaxPrice={12} />
+        return <BaseTxView tx={data.txData} />
       case 'add_validator':
-        return <AddValidatorTxView tx={data.txData} avaxPrice={12} />
+        return <AddValidatorTxView tx={data.txData} />
       case 'add_delegator':
-        return <AddDelegatorTxView tx={data.txData} avaxPrice={12} />
+        return <AddDelegatorTxView tx={data.txData} />
+      case 'add_subnet_validator':
+        return <AddSubnetValidatorTxView tx={data.txData} />
+      case 'create_chain':
+        return <CreateChainTxView tx={data.txData} />
+      case 'create_subnet':
+        return <CreateSubnetTxView tx={data.txData} />
     }
   }
 
   return (
     <RpcRequestBottomSheet onClose={rejectAndClose}>
       <ScrollView contentContainerStyle={txStyles.scrollView}>
-        <View>{renderSendDetails()}</View>
+        <View style={{ flexGrow: 1 }}>{renderSendDetails()}</View>
         <View>
           {data.txData.type === 'base' && (
             <Separator color={theme.neutral800} />

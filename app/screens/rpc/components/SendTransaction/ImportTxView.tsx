@@ -15,20 +15,20 @@ import CarrotSVG from 'components/svg/CarrotSVG'
 import { getHexStringToBytes } from 'utils/getHexStringToBytes'
 import { Avalanche } from '@avalabs/wallets-sdk'
 import { AvalancheChainStrings } from 'store/walletConnect/handlers/types'
+import { selectAvaxPrice } from 'store/balance'
 
 const ImportTxView = ({
   tx,
-  avaxPrice,
   hexData,
   toggleActionButtons
 }: {
   tx: Avalanche.ImportTx
-  avaxPrice: number
   hexData: string
   toggleActionButtons: (value: boolean) => void
 }) => {
   const { theme } = useApplicationContext()
   const [showData, setShowData] = useState(false)
+  const avaxPrice = useSelector(selectAvaxPrice)
 
   const { amount, chain, source, type, txFee } = tx
   const { tokenInCurrencyFormatter } = useApplicationContext().appHook

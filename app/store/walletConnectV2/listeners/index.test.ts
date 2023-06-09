@@ -34,6 +34,8 @@ jest.mock('react-native/Libraries/Interaction/InteractionManager', () => ({
   runAfterInteractions: (callback: () => void) => callback()
 }))
 
+jest.mock('utils/Logger')
+
 const mockHandle = jest.fn()
 const mockApprove = jest.fn()
 const mockHandler = {

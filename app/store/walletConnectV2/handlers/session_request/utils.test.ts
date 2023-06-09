@@ -46,7 +46,7 @@ describe('isCoreDomain', () => {
       'http://localhost:1234',
       'https://core.app',
       'https://test.core.app',
-      'https://fantastic-goggles-c7f7e3c0.pages.github.io/',
+      'https://ava-labs.github.io/',
       'https://some-feature.core-web.pages.dev'
     ]
 

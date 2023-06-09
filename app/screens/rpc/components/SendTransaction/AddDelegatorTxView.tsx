@@ -12,15 +12,11 @@ import { useSelector } from 'react-redux'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import moment from 'moment'
 import { Avalanche } from '@avalabs/wallets-sdk'
+import { selectAvaxPrice } from 'store/balance'
 
-const AddDelegatorTxView = ({
-  tx,
-  avaxPrice
-}: {
-  tx: Avalanche.AddDelegatorTx
-  avaxPrice: number
-}) => {
+const AddDelegatorTxView = ({ tx }: { tx: Avalanche.AddDelegatorTx }) => {
   const { theme } = useApplicationContext()
+  const avaxPrice = useSelector(selectAvaxPrice)
   const { tokenInCurrencyFormatter, currencyFormatter } =
     useApplicationContext().appHook
   const { nodeID, start, end, stake } = tx
