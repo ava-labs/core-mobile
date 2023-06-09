@@ -23,5 +23,11 @@ module.exports = {
     'react-require',
     'inline-dotenv',
     'react-native-reanimated/plugin'
+  ],
+  overrides: [
+    {
+      include: /node_modules\/@tanstack/,
+      plugins: [['@babel/plugin-transform-private-methods', { loose: true }]]
+    }
   ]
 }
