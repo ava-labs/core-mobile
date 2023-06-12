@@ -39,8 +39,9 @@ import {
   OldTypedData,
   TypedData
 } from 'store/walletConnectV2/handlers/eth_sign/schemas/ethSignTypedData'
-import { SendTransactionApproveData } from 'store/walletConnect/handlers/types'
+import { AvalancheSendTransactionApproveData } from 'store/walletConnect/handlers/types'
 import { AvalancheSendTransactionRpcRequest } from 'store/walletConnect/handlers/avalanche_sendTransaction'
+import { AvalancheSendTransactionRpcRequest as AvalancheSendTransactionRpcRequestV2 } from 'store/walletConnectV2/handlers/avalanche_sendTransaction/avalanche_sendTransaction'
 import { RootScreenStackParamList } from './RootScreenStack'
 import { OnboardingScreenStackParamList } from './OnboardScreenStack'
 import { WelcomeScreenStackParamList } from './onboarding/WelcomeScreenStack'
@@ -125,14 +126,19 @@ export type SignTransactionParams = {
   request: EthSendTransactionRpcRequest
 }
 
-export type SendTransactionParams = {
+export type AvalancheSendTransactionParams = {
   request: AvalancheSendTransactionRpcRequest
-  data: SendTransactionApproveData
+  data: AvalancheSendTransactionApproveData
 }
 
 export type SignTransactionV2Params = {
   request: EthSendTransactionRpcRequestV2
   transaction: TransactionParams
+}
+
+export type AvalancheSendTransactionV2Params = {
+  request: AvalancheSendTransactionRpcRequestV2
+  data: AvalancheSendTransactionApproveData
 }
 
 export type SignMessageParams = {

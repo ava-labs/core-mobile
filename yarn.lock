@@ -28,6 +28,23 @@
     "@scure/base" "1.1.1"
     micro-eth-signer "0.6.0"
 
+"@avalabs/avalanchejs-v2@1.4.0-alpha.8":
+  version "1.4.0-alpha.8"
+  resolved "https://registry.yarnpkg.com/@avalabs/avalanchejs-v2/-/avalanchejs-v2-1.4.0-alpha.8.tgz#8a26257fa1af8dd501b53beb767e3755df1a3a68"
+  integrity sha512-6s8uirNrvqExEqR0SSXGqbHaKJ7fzppfrmeQRrSPST7kuk2ss/z50tifWLtwQMP1YScslGTFPflCoAkah+MZ+A==
+  dependencies:
+    "@noble/hashes" "1.3.0"
+    "@noble/secp256k1" "1.7.1"
+    "@scure/base" "1.1.1"
+    micro-eth-signer "0.6.0"
+
+"@avalabs/blockcypher-sdk@2.8.0-alpha.100":
+  version "2.8.0-alpha.100"
+  resolved "https://registry.yarnpkg.com/@avalabs/blockcypher-sdk/-/blockcypher-sdk-2.8.0-alpha.100.tgz#b6120d975d181c1434582ea3849ec505565a47b9"
+  integrity sha512-R+NDp5aCngzmSb0JZnMh2d0eKziCNcGLkZdqAl4yzXF0x32qk8XvrWCP+yXocTzVW4/gDZOa87zyJ6onSjl7IA==
+  dependencies:
+    "@avalabs/utils-sdk" "2.8.0-alpha.100"
+
 "@avalabs/blockcypher-sdk@2.8.0-alpha.96":
   version "2.8.0-alpha.96"
   resolved "https://registry.yarnpkg.com/@avalabs/blockcypher-sdk/-/blockcypher-sdk-2.8.0-alpha.96.tgz#91de8f7dddc9f4c8c4ca4c0f6a20457ae5ec60d3"
@@ -44,6 +61,13 @@
     "@avalabs/coingecko-sdk" "2.8.0-alpha.96"
     "@avalabs/utils-sdk" "2.8.0-alpha.96"
     "@avalabs/wallets-sdk" "2.8.0-alpha.96"
+
+"@avalabs/chains-sdk@2.8.0-alpha.100":
+  version "2.8.0-alpha.100"
+  resolved "https://registry.yarnpkg.com/@avalabs/chains-sdk/-/chains-sdk-2.8.0-alpha.100.tgz#8526314dad0d2a236b10b7bdf50da5212a64d501"
+  integrity sha512-e6D5D4oU1UoCnoY0qEXOQtsJ3By1SuXRZ7vuLOtN+whdH5TLMzZZ3rQIyIODWvkDxtWsuxucwg0yXFb7t3WSog==
+  dependencies:
+    "@avalabs/utils-sdk" "2.8.0-alpha.100"
 
 "@avalabs/chains-sdk@2.8.0-alpha.96":
   version "2.8.0-alpha.96"
@@ -116,6 +140,14 @@
   resolved "https://registry.yarnpkg.com/@avalabs/types/-/types-2.8.0-alpha.96.tgz#18277d6d98b0751a1c5ea6dc5366cc3c70b1cd1a"
   integrity sha512-onj/8nDhwwI8PEA9m81v4olFxeG+MOVDyDmHCCnUC4ijEDbUmUxHIkxfReCICPB0QloDyXxteOehIKXMqJvKCA==
 
+"@avalabs/utils-sdk@2.8.0-alpha.100":
+  version "2.8.0-alpha.100"
+  resolved "https://registry.yarnpkg.com/@avalabs/utils-sdk/-/utils-sdk-2.8.0-alpha.100.tgz#a01adcb52f0f2c5e7f01e6c9779a86f7c12fc382"
+  integrity sha512-P6S2NTPp0QDTKXz6YKHYH/nqhxAjo0SLEN0MDs308vGIGC2H/rThLIDbP1udnacrjtaowjoOLDCIFPnPxmc7Fg==
+  dependencies:
+    "@avalabs/avalanchejs-v2" "1.4.0-alpha.6"
+    is-ipfs "6.0.2"
+
 "@avalabs/utils-sdk@2.8.0-alpha.96":
   version "2.8.0-alpha.96"
   resolved "https://registry.yarnpkg.com/@avalabs/utils-sdk/-/utils-sdk-2.8.0-alpha.96.tgz#fab10bc80d385e70fd8afcedfbd664a48eeafd9d"
@@ -147,6 +179,29 @@
     ethers "5.7.2"
     hdkey "2.0.1"
     ledger-bitcoin "0.2.0"
+
+"@avalabs/wallets-sdk@file:../avalanche-sdks/packages/wallets-sdk":
+  version "2.8.0-alpha.100"
+  dependencies:
+    "@avalabs/avalanchejs-v2" "1.4.0-alpha.8"
+    "@avalabs/blockcypher-sdk" "2.8.0-alpha.100"
+    "@avalabs/chains-sdk" "2.8.0-alpha.100"
+    "@avalabs/hw-app-avalanche" "0.9.2"
+    "@ledgerhq/hw-app-btc" "10.0.0"
+    "@ledgerhq/hw-app-eth" "6.32.1"
+    "@ledgerhq/hw-transport" "6.28.1"
+    "@obsidiansystems/hw-app-avalanche" "0.2.2"
+    "@openzeppelin/contracts" "4.8.1"
+    bip32 "2.0.6"
+    bip32-path "0.4.2"
+    bip39 "3.0.4"
+    bitcoinjs-lib "5.2.0"
+    coinselect "3.1.13"
+    create-hash "1.2.0"
+    ethers "5.7.2"
+    hdkey "2.0.1"
+    ledger-bitcoin "0.2.0"
+    xss "1.0.13"
 
 "@babel/code-frame@^7.0.0", "@babel/code-frame@^7.10.4", "@babel/code-frame@^7.12.13", "@babel/code-frame@^7.16.7":
   version "7.16.7"
@@ -23669,6 +23724,14 @@ xmlchars@^2.2.0:
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/xmlchars/-/xmlchars-2.2.0.tgz#060fe1bcb7f9c76fe2a17db86a9bc3ab894210cb"
   integrity sha512-JZnDKK8B0RCDw84FNdDAIpZK+JuJw+s7Lz8nksI7SIuU3UXJJslUthsi+uWBUYOwPFwW7W7PRLRfUKpxjtjFCw==
+
+xss@1.0.13:
+  version "1.0.13"
+  resolved "https://registry.yarnpkg.com/xss/-/xss-1.0.13.tgz#6e48f616128b39f366dfadc57411e1eb5b341c6c"
+  integrity sha512-clu7dxTm1e8Mo5fz3n/oW3UCXBfV89xZ72jM8yzo1vR/pIS0w3sgB3XV2H8Vm6zfGnHL0FzvLJPJEBhd86/z4Q==
+  dependencies:
+    commander "^2.20.3"
+    cssfilter "0.0.10"
 
 xss@1.0.14:
   version "1.0.14"

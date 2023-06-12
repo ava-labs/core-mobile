@@ -47,7 +47,7 @@ export type Result<Value, Error> =
 
 export const DEFERRED_RESULT = Symbol()
 
-export type SendTransactionApproveData = {
+export type AvalancheSendTransactionApproveData = {
   unsignedTxJson: string
   txData: Avalanche.TxType
   vm: VM

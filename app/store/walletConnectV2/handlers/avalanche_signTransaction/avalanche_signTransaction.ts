@@ -15,19 +15,17 @@ import { Account, selectActiveAccount } from 'store/account'
 import networkService from 'services/network/NetworkService'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import walletService from 'services/wallet/WalletService'
-import { RpcMethod } from 'store/walletConnectV2'
+import { RpcMethod, SessionRequest } from 'store/walletConnectV2'
 import { VM } from '@avalabs/avalanchejs-v2'
 import * as Sentry from '@sentry/react-native'
 import Logger from 'utils/Logger'
 import { Avalanche } from '@avalabs/wallets-sdk'
 import {
   ApproveResponse,
-  DappRpcRequest,
   DEFERRED_RESULT,
   HandleResponse,
-  RpcRequestHandler,
-  AvalancheSendTransactionApproveData
-} from './types'
+  RpcRequestHandler
+} from '../types'
 
 type AvalancheTxParams = {
   transactionHex: string
@@ -36,7 +34,13 @@ type AvalancheTxParams = {
   internalIndices?: number[]
 }
 
-export type AvalancheSendTransactionRpcRequest = DappRpcRequest<
+export type SendTransactionApproveData = {
+  unsignedTxJson: string
+  txData: Avalanche.TxType
+  vm: VM
+}
+
+export type AvalancheSendTransactionRpcRequest = SessionRequest<
   RpcMethod.AVALANCHE_SEND_TRANSACTION,
   AvalancheTxParams
 >
@@ -45,7 +49,9 @@ class AvalancheSendTransactionHandler
   implements
     RpcRequestHandler<
       AvalancheSendTransactionRpcRequest,
-      AvalancheSendTransactionApproveData
+      never,
+      string,
+      SendTransactionApproveData
     >
 {
   methods = [RpcMethod.AVALANCHE_SEND_TRANSACTION]
@@ -53,11 +59,11 @@ class AvalancheSendTransactionHandler
   handle = async (
     request: AvalancheSendTransactionRpcRequest,
     listenerApi: AppListenerEffectAPI
-  ): HandleResponse => {
+  ): HandleResponse<never> => {
     let unsignedTx: UnsignedTx | EVMUnsignedTx
     const { getState } = listenerApi
     const { transactionHex, chainAlias, externalIndices, internalIndices } =
-      request.payload.params ?? {}
+      request.data.params.request.params ?? {}
 
     if (!transactionHex || !chainAlias) {
       return {
@@ -139,7 +145,7 @@ class AvalancheSendTransactionHandler
       }
     }
 
-    const approveData: AvalancheSendTransactionApproveData = {
+    const approveData: SendTransactionApproveData = {
       unsignedTxJson: JSON.stringify(unsignedTx.toJSON()),
       txData,
       vm
@@ -148,7 +154,7 @@ class AvalancheSendTransactionHandler
     Navigation.navigate({
       name: AppNavigation.Root.Wallet,
       params: {
-        screen: AppNavigation.Modal.AvalancheSendTransaction,
+        screen: AppNavigation.Modal.AvalancheSendTransactionV2,
         params: { request, data: approveData }
       }
     })
@@ -159,17 +165,21 @@ class AvalancheSendTransactionHandler
   approve = async (
     payload: {
       request: AvalancheSendTransactionRpcRequest
-      data: AvalancheSendTransactionApproveData
+      data: SendTransactionApproveData
     },
     listenerApi: AppListenerEffectAPI
-  ): ApproveResponse => {
+  ): ApproveResponse<string> => {
     try {
       const { getState } = listenerApi
       const {
         data: { vm, unsignedTxJson },
         request: {
-          payload: {
-            params: { externalIndices, internalIndices }
+          data: {
+            params: {
+              request: {
+                params: { externalIndices, internalIndices }
+              }
+            }
           }
         }
       } = payload
