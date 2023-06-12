@@ -16,6 +16,8 @@ import { name as appName } from './app.json'
 import DevDebuggingConfig from './app/utils/debugging/DevDebuggingConfig'
 import { server } from './tests/msw/server'
 
+// @noble/secp256k1 uses the webcrypto API by default
+// Overwrite the way it calculates the cache
 secp.utils.hmacSha256 = async (k, ...m) => {
   return Crypto.Hmac('sha256', k, secp.utils.concatBytes(...m)).digest()
 }
