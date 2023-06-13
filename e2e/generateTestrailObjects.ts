@@ -248,8 +248,6 @@ function createNewSubsections(
       console.log(
         `${subsectionName} is a new subsection and was added to the test suite`
       )
-    } else {
-      console.log('Theres probably no subsection to add...')
     }
   })
 }
