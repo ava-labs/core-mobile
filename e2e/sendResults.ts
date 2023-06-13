@@ -68,10 +68,12 @@ export async function prepareResults() {
   const testIdArrayForTestrail = resultsToSendObject.testIdArrayForTestrail
   const casesToAddToRun = resultsToSendObject.casesToAddToRun
 
+  const uniqueCaseIdArray = [...new Set(testIdArrayForTestrail)]
+
   // Payload for testrail to add the casses to the test run before the results are sent
   var testCasesToSend = {
     include_all: false,
-    case_ids: testIdArrayForTestrail
+    case_ids: uniqueCaseIdArray
   }
 
   // If POST_TO_TESTRAIL environment variable set to true the results will be posted to testrail in a test run
