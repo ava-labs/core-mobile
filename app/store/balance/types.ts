@@ -38,6 +38,7 @@ export type TokenWithBalanceERC20 = TokenBalanceData &
   TokenMarketData &
   NetworkContractToken & {
     type: TokenType.ERC20
+    description: string
   }
 
 export type NftTokenWithBalance = TokenBalanceData &
