@@ -35,6 +35,7 @@ import TransactionToast, {
 import BN from 'bn.js'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { usePostCapture } from 'hooks/usePosthogCapture'
+import { SvgUri } from 'react-native-svg'
 
 export interface SendTokenContextState {
   sendToken: TokenWithBalance | undefined
@@ -251,12 +252,23 @@ export const SendTokenContextProvider = ({
       )
     } else {
       return (
-        <Image
-          style={{ width: 57, height: 57 }}
-          source={{
-            uri: sendToken?.logoUri
-          }}
-        />
+        <>
+          {sendToken?.logoUri?.endsWith('.svg') ? (
+            <SvgUri
+              uri={sendToken?.logoUri}
+              style={{ width: 57, height: 57 }}
+              width={57}
+              height={57}
+            />
+          ) : (
+            <Image
+              style={{ width: 57, height: 57 }}
+              source={{
+                uri: sendToken?.logoUri
+              }}
+            />
+          )}
+        </>
       )
     }
   }, [sendToken, theme])

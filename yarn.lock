@@ -53,6 +53,13 @@
     "@avalabs/utils-sdk" "2.8.0-alpha.96"
     "@avalabs/wallets-sdk" "2.8.0-alpha.96"
 
+"@avalabs/chains-sdk@2.8.0-alpha.107":
+  version "2.8.0-alpha.107"
+  resolved "https://registry.yarnpkg.com/@avalabs/chains-sdk/-/chains-sdk-2.8.0-alpha.107.tgz#c55d88f699fd50b339eb49c469563da07debe1e9"
+  integrity sha512-JkzQsA4g4L6AAWyYiMeHcUsEXnlxdRGHPFb7Gqzlfxcl5UoDfEfQv0T3lMUNgstT4oDysU+EGPXNOiDWOyf2nQ==
+  dependencies:
+    "@avalabs/utils-sdk" "2.8.0-alpha.107"
+
 "@avalabs/chains-sdk@2.8.0-alpha.96":
   version "2.8.0-alpha.96"
   resolved "https://registry.yarnpkg.com/@avalabs/chains-sdk/-/chains-sdk-2.8.0-alpha.96.tgz#b159bb3c9d662b7bbee124a98d1c99a55f114750"
@@ -123,6 +130,14 @@
   version "2.8.0-alpha.96"
   resolved "https://registry.yarnpkg.com/@avalabs/types/-/types-2.8.0-alpha.96.tgz#18277d6d98b0751a1c5ea6dc5366cc3c70b1cd1a"
   integrity sha512-onj/8nDhwwI8PEA9m81v4olFxeG+MOVDyDmHCCnUC4ijEDbUmUxHIkxfReCICPB0QloDyXxteOehIKXMqJvKCA==
+
+"@avalabs/utils-sdk@2.8.0-alpha.107":
+  version "2.8.0-alpha.107"
+  resolved "https://registry.yarnpkg.com/@avalabs/utils-sdk/-/utils-sdk-2.8.0-alpha.107.tgz#96ae3e9d19a4bcacbb3395a642468a7309f82fd3"
+  integrity sha512-CesgvqWBgNKn9FVDzs+BFqFGbe5T2H9GeMGeJ4jUg4JXjiVBSyypU6292ZkDm99kYND9WIO4ZCOoh+2U/xh7Xg==
+  dependencies:
+    "@avalabs/avalanchejs-v2" "1.4.0-alpha.6"
+    is-ipfs "6.0.2"
 
 "@avalabs/utils-sdk@2.8.0-alpha.96":
   version "2.8.0-alpha.96"
@@ -20923,10 +20938,10 @@ react-native-svg-charts@5.4.0:
     d3-shape "^1.0.6"
     prop-types "^15.6.0"
 
-react-native-svg@13.8.0:
-  version "13.8.0"
-  resolved "https://registry.yarnpkg.com/react-native-svg/-/react-native-svg-13.8.0.tgz#b6a22cf77f8098f910490a13aeb160a37e182f97"
-  integrity sha512-G8Mx6W86da+vFimZBJvA93POw8yz0fgDS5biy6oIjMWVJVQSDzCyzwO/zY0yuZmCDhKSZzogl5m0wXXvW2OcTA==
+react-native-svg@^13.9.0:
+  version "13.9.0"
+  resolved "https://registry.yarnpkg.com/react-native-svg/-/react-native-svg-13.9.0.tgz#8df8a690dd00362601f074dec5d3a86dd0f99c7f"
+  integrity sha512-Ey18POH0dA0ob/QiwCBVrxIiwflhYuw0P0hBlOHeY4J5cdbs8ngdKHeWC/Kt9+ryP6fNoEQ1PUgPYw2Bs/rp5Q==
   dependencies:
     css-select "^5.1.0"
     css-tree "^1.1.3"
