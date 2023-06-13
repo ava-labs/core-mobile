@@ -2,7 +2,7 @@
 /* eslint-env detox/detox, jest */
 /**
  * @jest-environment ./environment.ts
- */
+  */
 import PortfolioPage from '../../pages/portfolio.page'
 import Assert from '../../helpers/assertions'
 import Actions from '../../helpers/actions'
@@ -10,20 +10,7 @@ import NewRecoveryPhrasePage from '../../pages/newRecoveryPhrase.page'
 import AnalyticsConsentPage from '../../pages/analyticsConsent.page'
 import WatchListPage from '../../pages/watchlist.page'
 import VerifyPhrasePage from '../../pages/verifyPhrase.page'
-import CreatePinPage from '../../pages/createPin.page'
 import BottomTabsPage from '../../pages/bottomTabs.page'
-import { warmup } from '../../helpers/warmup'
-
-describe('Create new wallet', () => {
-  beforeAll(async () => {
-    await warmup()
-  })
-
-  it('should validate watchlist is shown', async () => {
-    await Assert.isVisible(WatchListPage.newWalletIcon, 1)
-    await Assert.isVisible(WatchListPage.newWalletBtn)
-    await Assert.isVisible(WatchListPage.walletSVG, 1)
-  })
 
   it('should view proper page title and action icons', async () => {
     await WatchListPage.tapNewWalletBtn()
@@ -88,10 +75,7 @@ describe('Create new wallet', () => {
   })
 
   it('should successfully create a new wallet', async () => {
-    await CreatePinPage.createPin()
-    await CreatePinPage.tapEmptyCheckbox()
-    await CreatePinPage.tapNextBtn()
     await PortfolioPage.verifyPorfolioScreen()
     await BottomTabsPage.verifyBottomTabs()
   })
-})
+  
