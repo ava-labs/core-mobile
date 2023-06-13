@@ -254,7 +254,9 @@ export const SendTokenContextProvider = ({
         <Image
           style={{ width: 57, height: 57 }}
           source={{
-            uri: `${sendToken?.logoUri}?fm=png&w=57&h=57`
+            uri: sendToken?.logoUri?.endsWith('.svg')
+              ? `${sendToken?.logoUri}?fm=png&w=57&h=57`
+              : sendToken?.logoUri
           }}
         />
       )

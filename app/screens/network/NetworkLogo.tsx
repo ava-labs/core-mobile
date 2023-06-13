@@ -20,7 +20,11 @@ export function NetworkLogo({
 
   return logoUri ? (
     <Image
-      source={{ uri: `${logoUri}?fm=png&w=${size}&h=${size}` }}
+      source={{
+        uri: logoUri?.endsWith('.svg')
+          ? `${logoUri}?fm=png&w=${size}&h=${size}`
+          : logoUri
+      }}
       style={style}
     />
   ) : (
