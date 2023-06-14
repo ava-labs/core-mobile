@@ -527,7 +527,7 @@ workflows:
 
             npm rebuild detox
             ./node_modules/.bin/detox test --configuration ios.internal.release.ci
-  ios-internal-e2e-w-artifacts:
+  ios-interanl-e2e-w-artifacts:
      before_run:
     - _install-and-set-env
     - _set-version
