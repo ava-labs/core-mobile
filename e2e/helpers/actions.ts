@@ -6,8 +6,7 @@ import { Platform } from './constants'
 import Constants from './constants'
 
 const fs = require('fs')
-const filePath =
-  '/Users/artembespalov/Documents/app2/avalanche-wallet-apps/e2e/tests/performance/testResults/allResults.txt'
+const filePath = './e2e/tests/performance/testResults/allResults.txt'
 
 const tap = async (item: Detox.NativeMatcher) => {
   await element(item).tap()
