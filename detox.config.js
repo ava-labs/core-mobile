@@ -126,11 +126,11 @@ module.exports = {
       },
       testRunner: {
         $0: 'jest',
-      args: {
-        testMatch: '**/e2e/tests/**/*.e2e.smoke.ts'
+        args: {
+          testMatch: '**/e2e/tests/**/*.e2e.smoke.ts'
+        }
       }
-    }
-  },
+    },
     'ios.internal.release.ci': {
       device: 'simulator',
       app: 'ios.internal.release.ci',
@@ -166,11 +166,11 @@ module.exports = {
       },
       testRunner: {
         $0: 'jest',
-      args: {
-        testMatch: '**/e2e/tests/**/*.e2e.smoke.ts'
+        args: {
+          testMatch: '**/e2e/tests/**/*.e2e.smoke.ts'
+        }
       }
-    }
-  },
+    },
     'android.internal.release.ci': {
       device: 'emulator_ci',
       app: 'android.internal.release.ci',
