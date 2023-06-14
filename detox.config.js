@@ -158,6 +158,19 @@ module.exports = {
         rootDir: './e2e/artifacts/android'
       }
     },
+    'android.internal.smoke.debug': {
+      device: 'emulator',
+      app: 'android.internal.debug',
+      artifacts: {
+        rootDir: './e2e/artifacts/android'
+      },
+      testRunner: {
+        $0: 'jest',
+      args: {
+        testMatch: '**/e2e/tests/**/*.e2e.smoke.ts'
+      }
+    }
+  },
     'android.internal.release.ci': {
       device: 'emulator_ci',
       app: 'android.internal.release.ci',
