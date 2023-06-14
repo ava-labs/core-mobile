@@ -533,44 +533,44 @@ workflows:
 
             npm rebuild detox
             ./node_modules/.bin/detox test --configuration ios.internal.release.ci
-  ios-interanl-e2e-w-artifacts:
-    before_run:
-      - _install-and-set-env
-      - _set-version
-      - _build-ios-simulator
+  ios-internal-e2e-w-artifacts:
+     before_run:
+    - _install-and-set-env
+    - _set-version
+    - _build-ios-simulator
     envs:
-      - ENVIRONMENT: production
-        opts:
-          is_expand: false
-      - PLATFORM: iOS
-        opts:
-          is_expand: false
-      - IOS_CONFIGURATION: Release
-        opts:
-          is_expand: false
-      - IOS_SCHEME: AvaxWalletInternal
-        opts:
-          is_expand: false
-      - APP_TITLE: Core Mobile Internal
-        opts:
-          is_expand: false
-      - E2E: 'true'
-        opts:
-          is_expand: false
+    - ENVIRONMENT: production
+      opts:
+        is_expand: false
+    - PLATFORM: iOS
+      opts:
+        is_expand: false
+    - IOS_CONFIGURATION: Release
+      opts:
+        is_expand: false
+    - IOS_SCHEME: AvaxWalletInternal
+      opts:
+        is_expand: false
+    - APP_TITLE: Core Mobile Internal
+      opts:
+        is_expand: false
+    - E2E: "true"
+      opts:
+        is_expand: false
     steps:
-      - script@1:
-          title: Detox
-          inputs:
-            - content: |-
-                #!/usr/bin/env bash
-                # fail if any commands fails
-                set -e
+    - script@1:
+        title: Detox
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            # fail if any commands fails
+            set -e
 
-                # make pipelines' return status equal the last command to exit with a non-zero status, or zero if all commands exit successfully
-                set -o pipefail
+            # make pipelines' return status equal the last command to exit with a non-zero status, or zero if all commands exit successfully
+            set -o pipefail
 
-                # debug log
-                set -x
+            # debug log
+            set -x
 
             npm rebuild detox
             ./node_modules/.bin/detox test --configuration ios.internal.release.ci

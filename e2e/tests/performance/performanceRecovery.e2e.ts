@@ -17,7 +17,7 @@ describe('Add existing wallet', () => {
     try {
       const result = await PerformancePage.recoverWallet(recoveryPhrase)
       fs.writeFile(
-        '/Users/artembespalov/Documents/app2/avalanche-wallet-apps/e2e/tests/performance/testResults/tempResults.txt',
+        './e2e/tests/performance/testResults/tempResults.txt',
         result,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (err: any) => {
