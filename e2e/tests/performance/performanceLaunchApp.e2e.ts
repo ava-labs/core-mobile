@@ -12,7 +12,7 @@ it('Should display performance for Launch app', async () => {
   const endTime = await new Date().getTime()
   const result = ((endTime - startTime) / 1000).toString()
   fs.writeFile(
-    '/Users/artembespalov/Documents/app2/avalanche-wallet-apps/e2e/tests/performance/testResults/tempResults.txt',
+    './e2e/tests/performance/testResults/tempResults.txt',
     result,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (err: any) => {

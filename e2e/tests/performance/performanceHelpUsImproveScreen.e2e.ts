@@ -5,7 +5,6 @@
  */
 
 import Actions from '../../helpers/actions'
-// import NewRecoveryPhrasePage from '../../pages/newRecoveryPhrase.page'
 import AnalyticsConsentPage from '../../pages/analyticsConsent.page'
 import WatchListPage from '../../pages/watchlist.page'
 import { warmup } from '../../helpers/warmup'
@@ -24,7 +23,7 @@ describe('Performance Help Us improve Screen', () => {
     const endTime = await new Date().getTime()
     const result = ((endTime - startTime) / 1000).toString()
     fs.writeFile(
-      '/Users/artembespalov/Documents/app2/avalanche-wallet-apps/e2e/tests/performance/testResults/tempResults.txt',
+      './e2e/tests/performance/testResults/tempResults.txt',
       result,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (err: any) => {
