@@ -455,6 +455,8 @@ workflows:
 
             npm rebuild detox
             ./node_modules/.bin/detox test --configuration ios.external.release.ci
+    artifacts:
+    - deploy_path: ./e2e/tests/performance/testResults/allResults.txt
   ios-internal:
     before_run:
     - _install-and-set-env
