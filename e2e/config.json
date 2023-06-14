@@ -22,6 +22,11 @@
       "./e2e/tests/bridge",
       "./e2e/tests/plusIcon/walletConnect/traderjoe.e2e.ts",
       "./e2e/tests/send/sendGoerlyEthTo2ndAccount.e2e.ts",
-      "./e2e/tests/performance"
+      "./e2e/tests/performance",
+      "./e2e/tests/activityTab",
+      "./e2e/tests/network",
+      "./e2e/tests/portfolioTab",
+      "./e2e/tests/send",
+      "./e2e/tests/watchlist"
     ]
 }
