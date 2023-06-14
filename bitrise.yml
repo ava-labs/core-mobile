@@ -314,6 +314,8 @@ workflows:
 
             npm rebuild detox
             QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test --configuration android.external.release.ci --headless
+    artifacts:
+      - deploy_path: ./e2e/tests/performance/testResults/allResults.txt
   android-internal:
     before_run:
     - _install-and-set-env
