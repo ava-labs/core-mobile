@@ -22,6 +22,7 @@
     "storybook-watch": "sb-rn-watcher"
   },
   "dependencies": {
+    "@avalabs/avalanchejs-v2": "1.4.0-alpha.8",
     "@avalabs/blockcypher-sdk": "2.8.0-alpha.107",
     "@avalabs/bridge-sdk": "2.8.0-alpha.107",
     "@avalabs/chains-sdk": "2.8.0-alpha.107",
