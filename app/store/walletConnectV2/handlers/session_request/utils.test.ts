@@ -46,8 +46,8 @@ describe('isCoreDomain', () => {
       'http://localhost:1234',
       'https://core.app',
       'https://test.core.app',
-      'https://fantastic-goggles-c7f7e3c0.pages.github.io/',
-      'https://some-feature.core-web.pages.dev'
+      'https://some-feature.core-web.pages.dev',
+      'https://ava-labs.github.io/extension-avalanche-playground/'
     ]
 
     for (const url of urls) {

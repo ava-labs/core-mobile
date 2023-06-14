@@ -10,7 +10,8 @@ const CORE_WEB_HOSTNAMES = [
 ]
 
 const CORE_WEB_URLS_REGEX = [
-  'https://[a-zA-Z0-9-]+\\.core-web\\.pages\\.dev' // for all https://*.core-web.pages.dev urls
+  'https://[a-zA-Z0-9-]+\\.core-web\\.pages\\.dev', // for all https://*.core-web.pages.dev urls
+  'https://ava-labs.github.io/extension-avalanche-playground'
 ]
 
 export const isCoreMethod = (method: string) =>
