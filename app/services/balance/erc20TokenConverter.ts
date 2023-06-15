@@ -31,7 +31,6 @@ export function convertErc20ToTokenWithBalance(
         contractType: 'ERC-20',
         type: TokenType.ERC20,
         change24: 0,
-        description: '',
         marketCap: 0,
         vol24: 0
       }
