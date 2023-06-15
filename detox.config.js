@@ -115,6 +115,22 @@ module.exports = {
         }
       }
     },
+    'ios.internal.smoke.debug': {
+      device: 'simulator',
+      app: 'ios.internal.debug',
+      artifacts: {
+        rootDir: './e2e/artifacts/ios',
+        plugins: {
+          instruments: 'all'
+        }
+      },
+      testRunner: {
+        $0: 'jest',
+        args: {
+          testMatch: '**/e2e/tests/**/*.e2e.smoke.ts'
+        }
+      }
+    },
     'ios.internal.release.ci': {
       device: 'simulator',
       app: 'ios.internal.release.ci',
@@ -140,6 +156,19 @@ module.exports = {
       app: 'android.internal.debug',
       artifacts: {
         rootDir: './e2e/artifacts/android'
+      }
+    },
+    'android.internal.smoke.debug': {
+      device: 'emulator',
+      app: 'android.internal.debug',
+      artifacts: {
+        rootDir: './e2e/artifacts/android'
+      },
+      testRunner: {
+        $0: 'jest',
+        args: {
+          testMatch: '**/e2e/tests/**/*.e2e.smoke.ts'
+        }
       }
     },
     'android.internal.release.ci': {
