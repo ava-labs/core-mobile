@@ -6,7 +6,7 @@ const CORE_WEB_HOSTNAMES = [
   '127.0.0.1',
   'core.app',
   'test.core.app',
-  'fantastic-goggles-c7f7e3c0.pages.github.io' // internal playground
+  'ava-labs.github.io'
 ]
 
 const CORE_WEB_URLS_REGEX = [
