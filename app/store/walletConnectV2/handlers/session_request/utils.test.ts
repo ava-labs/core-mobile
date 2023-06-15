@@ -47,7 +47,8 @@ describe('isCoreDomain', () => {
       'https://core.app',
       'https://test.core.app',
       'https://some-feature.core-web.pages.dev',
-      'https://ava-labs.github.io/extension-avalanche-playground/'
+      'https://ava-labs.github.io/extension-avalanche-playground/',
+      'https://ava-labs.github.io/ab-cd'
     ]
 
     for (const url of urls) {
@@ -60,7 +61,8 @@ describe('isCoreDomain', () => {
     const urls = [
       'https://google.com',
       'https://traderjoe.xyz',
-      'https://app.uniswap.org'
+      'https://app.uniswap.org',
+      'https://av-la.github.io'
     ]
 
     for (const url of urls) {
