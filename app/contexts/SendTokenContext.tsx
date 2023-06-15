@@ -35,7 +35,7 @@ import TransactionToast, {
 import BN from 'bn.js'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { usePostCapture } from 'hooks/usePosthogCapture'
-import { formatUriImageToPng } from 'utils/Utils'
+import { formatUriImageToPng } from 'utils/Contentful'
 
 export interface SendTokenContextState {
   sendToken: TokenWithBalance | undefined

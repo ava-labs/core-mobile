@@ -1,4 +1,4 @@
-import { formatUriImageToPng } from './Utils'
+import { formatUriImageToPng } from './Contentful'
 
 describe('formatUriImageToPng function', () => {
   it('Uri is a png image should return same uri that is passed in', () => {
