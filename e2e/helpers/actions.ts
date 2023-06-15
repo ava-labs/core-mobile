@@ -209,7 +209,7 @@ const reportUIPerformance = async (
   const currentDateTime = getCurrentDateTime()
   const newValue = `${time
     .toFixed(3)
-    .toString()} sec  ${resultPlatform}  ${testName}  ${status} ${currentDateTime}\n`
+    .toString()}  ${resultPlatform}  ${testName}  ${status}  ${currentDateTime}\n`
 
   let data = ''
 
