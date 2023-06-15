@@ -63,6 +63,10 @@ export const createModals = (WalletScreenS: WalletScreenSType) => {
         component={AvalancheSendTransaction}
       />
       <WalletScreenS.Screen
+        name={AppNavigation.Modal.AvalancheSignTransaction}
+        component={AvalancheSendTransaction}
+      />
+      <WalletScreenS.Screen
         name={AppNavigation.Modal.SignMessage}
         component={SignMessage}
       />
@@ -121,6 +125,10 @@ export const createModals = (WalletScreenS: WalletScreenSType) => {
       />
       <WalletScreenS.Screen
         name={AppNavigation.Modal.AvalancheSendTransactionV2}
+        component={AvalancheSendTransactionV2}
+      />
+      <WalletScreenS.Screen
+        name={AppNavigation.Modal.AvalancheSignTransactionV2}
         component={AvalancheSendTransactionV2}
       />
     </WalletScreenS.Group>

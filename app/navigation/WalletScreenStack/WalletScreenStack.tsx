@@ -72,7 +72,6 @@ import {
   EditGasLimitParams,
   QRCodeParams,
   SelectAccountParams,
-  AvalancheSendTransactionParams,
   SessionProposalParams,
   SignMessageParams,
   SignTransactionParams,
@@ -90,7 +89,10 @@ import {
   BridgeAssetV2Params,
   SignTransactionV2Params,
   BuyCarefullyParams,
-  AvalancheSendTransactionV2Params
+  AvalancheSendTransactionParams,
+  AvalancheSendTransactionV2Params,
+  AvalancheSignTransactionParams,
+  AvalancheSignTransactionV2Params
 } from '../types'
 import AdvancedStackScreen, {
   AdvancedStackParamList
@@ -152,6 +154,7 @@ export type WalletScreenStackParams = {
   [AppNavigation.Modal.BuyCarefully]: BuyCarefullyParams
   [AppNavigation.Modal.SignTransaction]: SignTransactionParams
   [AppNavigation.Modal.AvalancheSendTransaction]: AvalancheSendTransactionParams
+  [AppNavigation.Modal.AvalancheSignTransaction]: AvalancheSignTransactionParams
   [AppNavigation.Modal.SignMessage]: SignMessageParams
   [AppNavigation.Modal.BridgeAsset]: BridgeAssetParams
   [AppNavigation.Modal.AddEthereumChain]: AddEthereumChainParams
@@ -168,6 +171,8 @@ export type WalletScreenStackParams = {
   [AppNavigation.Modal.SignTransactionV2]: SignTransactionV2Params
   [AppNavigation.Modal
     .AvalancheSendTransactionV2]: AvalancheSendTransactionV2Params
+  [AppNavigation.Modal
+    .AvalancheSignTransactionV2]: AvalancheSignTransactionV2Params
 }
 
 const WalletScreenS = createStackNavigator<WalletScreenStackParams>()

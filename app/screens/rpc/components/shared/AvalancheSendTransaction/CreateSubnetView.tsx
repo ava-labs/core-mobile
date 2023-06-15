@@ -32,8 +32,8 @@ const CreateSubnetTxView = ({ tx }: { tx: Avalanche.CreateSubnetTx }) => {
           </AvaText.Caption>
         </Row>
         <Space y={4} />
-        {controlKeys.map(controlKey => (
-          <Row style={styles.rowContainer}>
+        {controlKeys.map((controlKey, i) => (
+          <Row style={styles.rowContainer} key={i}>
             <AvaText.Caption color={theme.colorText1}>
               {controlKey}
             </AvaText.Caption>

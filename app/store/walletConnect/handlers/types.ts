@@ -2,8 +2,6 @@ import { PeerMeta } from 'services/walletconnect/types'
 import { AppListenerEffectAPI } from 'store'
 import { JsonRpcRequest } from '@walletconnect/jsonrpc-types'
 import { RpcError, RpcMethod } from 'store/walletConnectV2'
-import { VM } from '@avalabs/avalanchejs-v2'
-import { Avalanche } from '@avalabs/wallets-sdk'
 
 export interface TypedJsonRpcRequest<Method extends string, Params = unknown>
   extends JsonRpcRequest<Params> {
@@ -46,12 +44,6 @@ export type Result<Value, Error> =
     }
 
 export const DEFERRED_RESULT = Symbol()
-
-export type AvalancheSendTransactionApproveData = {
-  unsignedTxJson: string
-  txData: Avalanche.TxType
-  vm: VM
-}
 
 export enum AvalancheChainStrings {
   AVM = 'X Chain',

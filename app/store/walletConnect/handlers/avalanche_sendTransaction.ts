@@ -25,8 +25,7 @@ import {
   DappRpcRequest,
   DEFERRED_RESULT,
   HandleResponse,
-  RpcRequestHandler,
-  AvalancheSendTransactionApproveData
+  RpcRequestHandler
 } from './types'
 
 type AvalancheTxParams = {
@@ -34,6 +33,12 @@ type AvalancheTxParams = {
   chainAlias: 'X' | 'P' | 'C'
   externalIndices?: number[]
   internalIndices?: number[]
+}
+
+export type AvalancheSendTransactionApproveData = {
+  unsignedTxJson: string
+  txData: Avalanche.Tx
+  vm: VM
 }
 
 export type AvalancheSendTransactionRpcRequest = DappRpcRequest<

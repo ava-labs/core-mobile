@@ -13,6 +13,7 @@ import { avalancheSelectAccountHandler } from './account/avalanche_selectAccount
 import { RpcRequestHandler } from './types'
 import { avalancheSendTransactionHandler } from './avalanche_sendTransaction/avalanche_sendTransaction'
 import { avalancheGetAccountPubKeyHandler } from './avalanche_getAccountPubKey/avalanche_getAccountPubKey'
+import { avalancheSignTransactionHandler } from './avalanche_signTransaction/avalanche_signTransaction'
 
 const handlerMap = [
   avalancheSelectAccountHandler,
@@ -28,6 +29,7 @@ const handlerMap = [
   walletAddEthereumChainHandler,
   walletSwitchEthereumChainHandler,
   avalancheSendTransactionHandler,
+  avalancheSignTransactionHandler,
   avalancheGetAccountPubKeyHandler
 ].reduce((acc, current) => {
   current.methods.forEach(method => {

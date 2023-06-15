@@ -36,7 +36,7 @@ type AvalancheTxParams = {
 
 export type SendTransactionApproveData = {
   unsignedTxJson: string
-  txData: Avalanche.TxType
+  txData: Avalanche.Tx
   vm: VM
 }
 

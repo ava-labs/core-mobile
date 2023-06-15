@@ -16,7 +16,7 @@ import { Account, selectActiveAccount } from 'store/account'
 import networkService from 'services/network/NetworkService'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import walletService from 'services/wallet/WalletService'
-import { RpcMethod, SessionRequest } from 'store/walletConnectV2'
+import { RpcMethod } from 'store/walletConnectV2'
 import { VM } from '@avalabs/avalanchejs-v2'
 import * as Sentry from '@sentry/react-native'
 import Logger from 'utils/Logger'
@@ -24,21 +24,14 @@ import { Avalanche } from '@avalabs/wallets-sdk'
 import {
   ApproveResponse,
   DEFERRED_RESULT,
+  DappRpcRequest,
   HandleResponse,
   RpcRequestHandler
-} from '../types'
+} from './types'
 
 type AvalancheTxParams = {
   transactionHex: string
   chainAlias: 'X' | 'P' | 'C'
-}
-
-type AvalancheSignTransactionResult = {
-  signedTransactionHex: string
-  signatures: {
-    signature: string
-    sigIndices: [number, number]
-  }[]
 }
 
 export type AvalancheSignTransactionApproveData = {
@@ -48,7 +41,7 @@ export type AvalancheSignTransactionApproveData = {
   ownSignatureIndices: [number, number][]
 }
 
-export type AvalancheSignTransactionRpcRequest = SessionRequest<
+export type AvalancheSignTransactionRpcRequest = DappRpcRequest<
   RpcMethod.AVALANCHE_SIGN_TRANSACTION,
   AvalancheTxParams
 >
@@ -57,8 +50,6 @@ class AvalancheSignTransactionHandler
   implements
     RpcRequestHandler<
       AvalancheSignTransactionRpcRequest,
-      never,
-      AvalancheSignTransactionResult,
       AvalancheSignTransactionApproveData
     >
 {
@@ -67,10 +58,9 @@ class AvalancheSignTransactionHandler
   handle = async (
     request: AvalancheSignTransactionRpcRequest,
     listenerApi: AppListenerEffectAPI
-  ): HandleResponse<never> => {
+  ): HandleResponse => {
     const { getState } = listenerApi
-    const { transactionHex, chainAlias } =
-      request.data.params.request.params ?? {}
+    const { transactionHex, chainAlias } = request.payload.params ?? {}
 
     if (!transactionHex || !chainAlias) {
       return {
@@ -80,6 +70,7 @@ class AvalancheSignTransactionHandler
         })
       }
     }
+
     const vm = Avalanche.getVmByChainAlias(chainAlias)
     const txBytes = utils.hexToBuffer(transactionHex)
     const isDevMode = selectIsDeveloperMode(getState())
@@ -99,7 +90,7 @@ class AvalancheSignTransactionHandler
     }
 
     const tx = utils.unpackWithManager(vm, txBytes) as avaxSerial.AvaxTx
-
+    console.log(tx, tx.getInputs())
     try {
       const codecManager = utils.getManagerForVM(vm)
       const signedTx = codecManager.unpack(txBytes, avaxSerial.SignedTx)
@@ -206,7 +197,7 @@ class AvalancheSignTransactionHandler
     Navigation.navigate({
       name: AppNavigation.Root.Wallet,
       params: {
-        screen: AppNavigation.Modal.AvalancheSignTransactionV2,
+        screen: AppNavigation.Modal.AvalancheSignTransaction,
         params: { request, data: approveData }
       }
     })
@@ -220,13 +211,13 @@ class AvalancheSignTransactionHandler
       data: AvalancheSignTransactionApproveData
     },
     listenerApi: AppListenerEffectAPI
-  ): ApproveResponse<AvalancheSignTransactionResult> => {
+  ): ApproveResponse => {
     try {
       const { getState } = listenerApi
       const {
         data: { unsignedTxJson, ownSignatureIndices }
       } = payload
-      // Parse the json into a tx object
+
       const isDevMode = selectIsDeveloperMode(getState())
       const activeAccount = selectActiveAccount(getState())
 

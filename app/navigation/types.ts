@@ -39,9 +39,19 @@ import {
   OldTypedData,
   TypedData
 } from 'store/walletConnectV2/handlers/eth_sign/schemas/ethSignTypedData'
-import { AvalancheSendTransactionApproveData } from 'store/walletConnect/handlers/types'
-import { AvalancheSendTransactionRpcRequest } from 'store/walletConnect/handlers/avalanche_sendTransaction'
+import {
+  AvalancheSendTransactionApproveData,
+  AvalancheSendTransactionRpcRequest
+} from 'store/walletConnect/handlers/avalanche_sendTransaction'
 import { AvalancheSendTransactionRpcRequest as AvalancheSendTransactionRpcRequestV2 } from 'store/walletConnectV2/handlers/avalanche_sendTransaction/avalanche_sendTransaction'
+import {
+  AvalancheSignTransactionApproveData,
+  AvalancheSignTransactionRpcRequest
+} from 'store/walletConnect/handlers/avalanche_signTransaction'
+import {
+  AvalancheSignTransactionApproveData as AvalancheSignTransactionApproveDataV2,
+  AvalancheSignTransactionRpcRequest as AvalancheSignTransactionRpcRequestV2
+} from 'store/walletConnectV2/handlers/avalanche_signTransaction/avalanche_signTransaction'
 import { RootScreenStackParamList } from './RootScreenStack'
 import { OnboardingScreenStackParamList } from './OnboardScreenStack'
 import { WelcomeScreenStackParamList } from './onboarding/WelcomeScreenStack'
@@ -131,6 +141,11 @@ export type AvalancheSendTransactionParams = {
   data: AvalancheSendTransactionApproveData
 }
 
+export type AvalancheSignTransactionParams = {
+  request: AvalancheSignTransactionRpcRequest
+  data: AvalancheSignTransactionApproveData
+}
+
 export type SignTransactionV2Params = {
   request: EthSendTransactionRpcRequestV2
   transaction: TransactionParams
@@ -139,6 +154,11 @@ export type SignTransactionV2Params = {
 export type AvalancheSendTransactionV2Params = {
   request: AvalancheSendTransactionRpcRequestV2
   data: AvalancheSendTransactionApproveData
+}
+
+export type AvalancheSignTransactionV2Params = {
+  request: AvalancheSignTransactionRpcRequestV2
+  data: AvalancheSignTransactionApproveDataV2
 }
 
 export type SignMessageParams = {
