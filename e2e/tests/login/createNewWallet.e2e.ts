@@ -26,11 +26,12 @@ describe('Create new wallet', () => {
   })
 
   it('should view proper page title and action icons', async () => {
-    const startTime = new Date().getTime()
     await WatchListPage.tapNewWalletBtn()
+    const startTime = new Date().getTime()
     await Actions.waitForElement(AnalyticsConsentPage.noThanksBtn)
     const endTime = new Date().getTime()
     await AnalyticsConsentPage.tapNoThanksBtn()
+    const startTime2 = new Date().getTime()
     await Actions.waitForElement(NewRecoveryPhrasePage.iWroteItDownBtn)
     const endTime2 = new Date().getTime()
     await Assert.isVisible(NewRecoveryPhrasePage.mnemonicWord)
@@ -42,7 +43,7 @@ describe('Create new wallet', () => {
       3
     )
     await Actions.reportUIPerformance(
-      endTime,
+      startTime2,
       endTime2,
       'performanceRecoveryPhraseScreen',
       1,
@@ -53,15 +54,15 @@ describe('Create new wallet', () => {
   it('should verify recovery phrase flow', async () => {
     const wordsObject: object =
       await NewRecoveryPhrasePage.mnemonicWordsObject()
-    const startTime = new Date().getTime()
     await NewRecoveryPhrasePage.tapIWroteItDownBtn()
+    const startTime = new Date().getTime()
     await Actions.waitForElement(NewRecoveryPhrasePage.iUnderstandBtn)
     const endTime = new Date().getTime()
     await Assert.isVisible(NewRecoveryPhrasePage.protectFundsModalBackBtn)
     await Assert.isVisible(NewRecoveryPhrasePage.protectFundsModalMsg)
     await Assert.isVisible(NewRecoveryPhrasePage.protectFundsModalTitle)
-    const startTime2 = new Date().getTime()
     await NewRecoveryPhrasePage.tapIUnderstandBtn()
+    const startTime2 = new Date().getTime()
     await Actions.waitForElement(VerifyPhrasePage.verifyPhraseBtn)
     const endTime2 = new Date().getTime()
     const confirmWordsArray = await VerifyPhrasePage.selectWordNumbers(
@@ -80,7 +81,7 @@ describe('Create new wallet', () => {
     await Actions.reportUIPerformance(
       startTime2,
       endTime2,
-      'performanceIUnderstandScreen',
+      'performanceVerifyPhraseScreen',
       1,
       3
     )
