@@ -1,6 +1,7 @@
 import React from 'react'
 import GlobeSVG from 'components/svg/GlobeSVG'
 import { Image, ImageStyle, StyleProp, View } from 'react-native'
+import { formatUriImageToPng } from 'utils/Utils'
 
 /**
  * Displays the network's logo or a globe icon fallback.
@@ -21,9 +22,7 @@ export function NetworkLogo({
   return logoUri ? (
     <Image
       source={{
-        uri: logoUri?.endsWith('.svg')
-          ? `${logoUri}?fm=png&w=${size}&h=${size}`
-          : logoUri
+        uri: formatUriImageToPng(logoUri, size)
       }}
       style={style}
     />

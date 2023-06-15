@@ -35,6 +35,7 @@ import TransactionToast, {
 import BN from 'bn.js'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { usePostCapture } from 'hooks/usePosthogCapture'
+import { formatUriImageToPng } from 'utils/Utils'
 
 export interface SendTokenContextState {
   sendToken: TokenWithBalance | undefined
@@ -253,11 +254,7 @@ export const SendTokenContextProvider = ({
       return (
         <Image
           style={{ width: 57, height: 57 }}
-          source={{
-            uri: sendToken?.logoUri?.endsWith('.svg')
-              ? `${sendToken?.logoUri}?fm=png&w=57&h=57`
-              : sendToken?.logoUri
-          }}
+          source={{ uri: formatUriImageToPng(sendToken?.logoUri ?? '', 57) }}
         />
       )
     }
