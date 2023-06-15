@@ -52,6 +52,7 @@ import {
   AvalancheSignTransactionApproveData as AvalancheSignTransactionApproveDataV2,
   AvalancheSignTransactionRpcRequest as AvalancheSignTransactionRpcRequestV2
 } from 'store/walletConnectV2/handlers/avalanche_signTransaction/avalanche_signTransaction'
+import { EarnStackParamList } from 'navigation/wallet/EarnScreenStack'
 import { RootScreenStackParamList } from './RootScreenStack'
 import { OnboardingScreenStackParamList } from './OnboardScreenStack'
 import { WelcomeScreenStackParamList } from './onboarding/WelcomeScreenStack'
@@ -314,6 +315,13 @@ export type ReceiveTokensScreenProps<T extends keyof ReceiveStackParamList> =
 export type SwapScreenProps<T extends keyof SwapStackParamList> =
   CompositeScreenProps<
     StackScreenProps<SwapStackParamList, T>,
+    WalletScreenProps<keyof WalletScreenStackParams>
+  >
+
+/** ROOT -> WALLET -> EARN **/
+export type EarnScreenProps<T extends keyof EarnStackParamList> =
+  CompositeScreenProps<
+    StackScreenProps<EarnStackParamList, T>,
     WalletScreenProps<keyof WalletScreenStackParams>
   >
 

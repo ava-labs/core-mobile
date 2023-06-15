@@ -54,7 +54,8 @@ enum WalletScreens {
   OwnedTokenDetail = 'WalletScreens.OwnedTokenDetail',
   ActivityDetail = 'WalletScreens.ActivityDetail',
   Bridge = 'WalletScreens.Bridge',
-  QRCode = 'WalletScreens.QRCode'
+  QRCode = 'WalletScreens.QRCode',
+  Earn = 'WalletScreens.Earn'
 }
 
 enum NoWalletScreens {
@@ -77,6 +78,16 @@ enum ReceiveTokensScreens {
 
 enum BuyScreens {
   Buy = 'BuyScreens.Buy'
+}
+
+enum EarnScreens {
+  NotEnoughAvax = 'EarnScreens.NotEnoughAvax',
+  GetStarted = 'EarnScreens.GetStarted',
+  StakingAmount = 'EarnScreens.StakingAmount',
+  StakingDuration = 'EarnScreens.StakingDuration',
+  NodeSearch = 'EarnScreens.NodeSearch',
+  Confirmation = 'EarnScreens.Confirmation',
+  Cancel = 'EarnScreens.Cancel'
 }
 
 enum SwapScreens {
@@ -123,6 +134,7 @@ enum Tabs {
   Swap = 'Swap',
   More = 'More',
   Watchlist = 'Watchlist',
+  Earn = 'Earn',
   Tabs = 'Tabs',
   Fab = 'Fab',
   Bridge = 'Bridge'
@@ -208,7 +220,8 @@ const AppNavigation = {
   Bridge: BridgeScreens,
   Portfolio: PortfolioScreens,
   ReceiveTokens: ReceiveTokensScreens,
-  Buy: BuyScreens
+  Buy: BuyScreens,
+  Earn: EarnScreens
 }
 
 export default AppNavigation

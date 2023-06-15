@@ -1,7 +1,7 @@
 import { NetworkTokenWithBalance, TokenWithBalanceERC20 } from 'store/balance'
 import { Network } from '@avalabs/chains-sdk'
 import { CurrencyCode, Glacier } from '@avalabs/glacier-sdk'
-import { GLACIER_URL } from 'utils/glacierUtils'
+import { GLACIER_URL } from 'utils/network/glacier'
 import { BalanceServiceProvider } from 'services/balance/types'
 import { convertNativeToTokenWithBalance } from 'services/balance/nativeTokenConverter'
 import { convertErc20ToTokenWithBalance } from 'services/balance/erc20TokenConverter'

@@ -54,6 +54,7 @@ function SecurityPrivacy({
         background={theme.background}
         showNavigationArrow
         onPress={onShowConnectedDapps}
+        testID="security_privacy__connected_sites"
       />
       <AvaListItem.Base
         title={'Change PIN'}

@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { element, waitFor } from 'detox'
+import { Page } from '@playwright/test'
 import { Platform } from './constants'
 import Constants from './constants'
 
@@ -97,8 +98,8 @@ const waitForElementNotVisible = async (
   await waitFor(element(item)).not.toBeVisible().withTimeout(timeout)
 }
 
-const getAttributes = async (item: any) => {
-  return await element(item).getAttributes()
+const getAttributes = async (item: any, index = 0) => {
+  return await element(item).atIndex(index).getAttributes()
 }
 
 // Not working for some reason, need to fix
@@ -159,6 +160,10 @@ const swipeLeft = async (
     .swipe('left', speed, normalizedOffset)
 }
 
+const openPage = async (page: Page, url: string) => {
+  await page.goto(url)
+}
+
 const platform = () => {
   return device.getPlatform()
 }
@@ -178,6 +183,7 @@ export default {
   setColumnToValue,
   setInputText,
   getAndroidAttributesArray,
+  openPage,
   platform,
   isVisible
 }

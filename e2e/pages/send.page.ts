@@ -1,7 +1,15 @@
 import Actions from '../helpers/actions'
+import AccountManagePage from '../pages/accountManage.page'
+import BottomTabsPage from '../pages/bottomTabs.page'
+import PlusMenuPage from '../pages/plusMenu.page'
+import ReviewAndSend from '../pages/reviewAndSend.page'
 import Send from '../locators/send.loc'
 
 class SendPage {
+  get addressBook() {
+    return by.id(Send.addressBook)
+  }
+
   get textInputField() {
     return by.id(Send.testInputField)
   }
@@ -18,12 +26,20 @@ class SendPage {
     return by.id(Send.amountField)
   }
 
+  get myAccounts() {
+    return by.text(Send.myAccounts)
+  }
+
   get nextButton() {
     return by.text(Send.nextBtn)
   }
 
   get sendTitle() {
     return by.text(Send.sendTitle)
+  }
+
+  async tapAddressBook() {
+    await Actions.tap(this.addressBook)
   }
 
   async tapSendTitle() {
@@ -36,6 +52,10 @@ class SendPage {
 
   async tapCarrotSVG() {
     await Actions.tap(this.carrotSVG)
+  }
+
+  async tapMyAccounts() {
+    await Actions.tap(this.myAccounts)
   }
 
   async tapSendField() {
@@ -56,6 +76,20 @@ class SendPage {
 
   async enterAmount(amount: string) {
     await Actions.setInputText(this.textInputField, amount, 1)
+  }
+
+  async sendTokenTo2ndAccount(token: string, sendingAmmount: string) {
+    await BottomTabsPage.tapPlusIcon()
+    await PlusMenuPage.tapSendButton()
+    await this.tapAddressBook()
+    await this.tapMyAccounts()
+    await AccountManagePage.tapSecondAccount()
+    await this.tapCarrotSVG()
+    await this.selectToken(token)
+    await this.enterAmount(sendingAmmount)
+    await this.tapSendTitle()
+    await this.tapNextButton()
+    await ReviewAndSend.tapSendNow()
   }
 }
 

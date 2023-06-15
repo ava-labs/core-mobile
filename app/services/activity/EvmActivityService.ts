@@ -1,7 +1,7 @@
 import { getErc20Txs, getNormalTxs } from '@avalabs/etherscan-sdk'
 import { Glacier } from '@avalabs/glacier-sdk'
 import { isEthereumNetwork } from 'services/network/utils/isEthereumNetwork'
-import { GLACIER_URL } from 'utils/glacierUtils'
+import { GLACIER_URL } from 'utils/network/glacier'
 import {
   ActivityResponse,
   GetActivitiesForAddressParams,

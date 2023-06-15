@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { TextInputProps, View } from 'react-native'
-import InputText from 'components/InputText'
+import InputText, { InputTextProps } from 'components/InputText'
 import Big from 'big.js'
 import BN from 'bn.js'
 import { bigToBN, bnToBig } from '@avalabs/utils-sdk'
@@ -8,11 +7,12 @@ import { bigToBN, bnToBig } from '@avalabs/utils-sdk'
 Big.PE = 99
 Big.NE = -18
 
-interface BNInputProps extends Omit<TextInputProps, 'value' | 'onChange'> {
+interface BNInputProps extends Omit<InputTextProps, 'text'> {
   value?: BN
   denomination: number
 
   onChange?(val: { bn: BN; amount: string }): void
+
   onMax?(): void
 
   isValueLoading?: boolean
@@ -81,16 +81,14 @@ export function BNInput({
   }
 
   return (
-    <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
-      <InputText
-        {..._props}
-        mode={'amount'}
-        keyboardType="numeric"
-        onMax={onMax}
-        onChangeText={onValueChanged}
-        text={valueAsString}
-        loading={isValueLoading}
-      />
-    </View>
+    <InputText
+      {..._props}
+      mode={'amount'}
+      keyboardType="numeric"
+      onMax={onMax}
+      onChangeText={onValueChanged}
+      text={valueAsString}
+      loading={isValueLoading}
+    />
   )
 }

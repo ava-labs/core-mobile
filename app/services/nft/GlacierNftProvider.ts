@@ -7,7 +7,7 @@ import {
 import { NftResponse } from 'store/nft'
 import Logger from 'utils/Logger'
 import DevDebuggingConfig from 'utils/debugging/DevDebuggingConfig'
-import { GLACIER_URL } from 'utils/glacierUtils'
+import { GLACIER_URL } from 'utils/network/glacier'
 import { addMissingFields, convertIPFSResolver } from './utils'
 
 const demoAddress = '0x188c30e9a6527f5f0c3f7fe59b72ac7253c62f28'

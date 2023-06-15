@@ -13,10 +13,15 @@ import { Network } from '@avalabs/chains-sdk'
 import { Space } from 'components/Space'
 import { RefreshControl } from 'components/RefreshControl'
 import { NFTItemData } from 'store/nft'
-import { PortfolioScreenProps } from 'navigation/types'
+import {
+  BridgeTransactionStatusParams,
+  PortfolioScreenProps
+} from 'navigation/types'
 import { usePostCapture } from 'hooks/usePosthogCapture'
 import Animated, { FadeInDown, FadeOutUp } from 'react-native-reanimated'
 import { TokensTabHeader } from 'screens/portfolio/home/components/TokensTabHeader'
+import ActivityList from 'screens/shared/ActivityList/ActivityList'
+import { Transaction } from 'store/transaction'
 import InactiveNetworkCard from './components/Cards/InactiveNetworkCard'
 import { PortfolioTokensLoader } from './components/Loaders/PortfolioTokensLoader'
 import PortfolioHeader from './components/PortfolioHeader'
@@ -50,6 +55,9 @@ const Portfolio = () => {
             <NftTab />
           </TabViewAva.Item>
         )}
+        <TabViewAva.Item title={'Activity'}>
+          <ActivityTab />
+        </TabViewAva.Item>
       </TabViewAva>
     </>
   )
@@ -122,6 +130,28 @@ const NftTab = () => {
     <NftListView
       onItemSelected={openNftDetails}
       onManagePressed={openNftManage}
+    />
+  )
+}
+
+const ActivityTab = () => {
+  const { navigate } = useNavigation<PortfolioNavigationProp>()
+
+  const openTransactionDetails = (item: Transaction) => {
+    navigate(AppNavigation.Wallet.ActivityDetail, {
+      tx: item
+    })
+  }
+
+  const openTransactionStatus = (params: BridgeTransactionStatusParams) => {
+    navigate(AppNavigation.Bridge.BridgeTransactionStatus, params)
+  }
+
+  return (
+    <ActivityList
+      embedded
+      openTransactionDetails={openTransactionDetails}
+      openTransactionStatus={openTransactionStatus}
     />
   )
 }

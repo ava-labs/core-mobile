@@ -1,14 +1,10 @@
 /* eslint-disable jest/expect-expect */
-/* eslint-env detox/detox, jest */
-/**
- * @jest-environment ./environment.ts
- */
 import Assert from '../../helpers/assertions'
 import LoginRecoverWallet from '../../helpers/loginRecoverWallet'
 import NetworksManagePage from '../../pages/networksManage.page'
-import BurgerMenuPage from '../../pages/burgerMenu.page'
 import PortfolioPage from '../../pages/portfolio.page'
 import { warmup } from '../../helpers/warmup'
+import AdvancedPage from '../../pages/burgerMenu/advanced.page'
 
 describe('Enable Testnet', () => {
   beforeAll(async () => {
@@ -16,18 +12,13 @@ describe('Enable Testnet', () => {
     await LoginRecoverWallet.recoverWalletLogin()
   })
 
-  it('Should verify Transaction Status Items', async () => {
-    await BurgerMenuPage.tapBurgerMenuButton()
-    await BurgerMenuPage.tapAdvanced()
-    await BurgerMenuPage.switchToTestnet()
-    await BurgerMenuPage.tapBackbutton()
-    await BurgerMenuPage.swipeLeft()
-
+  it('Should verify Avax Network', async () => {
+    await AdvancedPage.switchToTestnet()
     await PortfolioPage.tapAvaxNetwork()
-    await Assert.isVisible(PortfolioPage.avaxFujiToken)
+    await Assert.isVisible(PortfolioPage.avaxNetwork)
   })
 
-  it('Should verify transaction succeeded', async () => {
+  it('Should verify Bitcoin & Eth Goerly Networks', async () => {
     await PortfolioPage.tapNetworksDropdown()
     await PortfolioPage.tapManageNetworks()
     await NetworksManagePage.tapNetworksTab()

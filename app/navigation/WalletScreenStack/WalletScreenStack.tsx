@@ -63,6 +63,9 @@ import LegalStackScreen, {
 import { NetworkDetailsAction } from 'screens/network/NetworkDetailsAction'
 import CaptureDappQR from 'screens/shared/CaptureDappQR'
 import { ChainID } from 'store/network'
+import EarnScreenStack, {
+  EarnStackParamList
+} from 'navigation/wallet/EarnScreenStack'
 import { BridgeStackParamList } from '../wallet/BridgeScreenStack'
 import {
   AddEthereumChainParams,
@@ -115,6 +118,9 @@ export type WalletScreenStackParams = {
   [AppNavigation.Wallet.Buy]:
     | NavigatorScreenParams<BuyStackParamList>
     | undefined
+  [AppNavigation.Wallet.Bridge]:
+    | NavigatorScreenParams<BridgeStackParamList>
+    | undefined
   [AppNavigation.Wallet.AddCustomToken]: undefined
   [AppNavigation.Wallet.TokenDetail]: { tokenId: string }
   [AppNavigation.Wallet.OwnedTokenDetail]: { tokenId: string }
@@ -124,8 +130,14 @@ export type WalletScreenStackParams = {
   [AppNavigation.Wallet.Swap]:
     | NavigatorScreenParams<SwapStackParamList>
     | undefined
+  [AppNavigation.Wallet.Earn]:
+    | NavigatorScreenParams<EarnStackParamList>
+    | undefined
   [AppNavigation.Wallet.NFTDetails]: NavigatorScreenParams<NFTStackParamList>
   [AppNavigation.Wallet.NFTManage]: undefined
+  [AppNavigation.Wallet.Earn]:
+    | NavigatorScreenParams<EarnStackParamList>
+    | undefined
   [AppNavigation.Wallet.AddressBook]:
     | NavigatorScreenParams<AddressBookStackParamList>
     | undefined
@@ -139,7 +151,6 @@ export type WalletScreenStackParams = {
     | undefined
   [AppNavigation.Wallet.Legal]: NavigatorScreenParams<LegalStackParamList>
   [AppNavigation.Bridge.BridgeTransactionStatus]: BridgeTransactionStatusParams
-  [AppNavigation.Wallet.Bridge]: NavigatorScreenParams<BridgeStackParamList>
   [AppNavigation.Wallet.QRCode]: QRCodeParams
   [AppNavigation.Modal.AccountDropDown]: undefined
   [AppNavigation.Modal.AccountBottomSheet]: undefined
@@ -280,6 +291,13 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
           }}
           name={AppNavigation.Wallet.Swap}
           component={SwapScreenStack}
+        />
+        <WalletScreenS.Screen
+          options={{
+            headerShown: false
+          }}
+          name={AppNavigation.Wallet.Earn}
+          component={EarnScreenStack}
         />
         <WalletScreenS.Screen
           options={{

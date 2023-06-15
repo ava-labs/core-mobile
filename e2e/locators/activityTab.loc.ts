@@ -1,13 +1,24 @@
 export default {
+  address: 'address',
   transaction: 'activity_list__Contract Call',
   activityHeader: 'activity_list__header',
+  activityDetail: 'activity_detail__amount',
+  avaxOutgoingTransactionDetail: '-0.0001 AVAX',
+  avaxIncomingTransactionDetail: '+0.0001 AVAX',
+  ethOutgoingTransactionDetail: '-0.0001 ETH',
+  ethIncomingTransactionDetail: '+0.0001 ETH',
   currentFilter: 'activity_list__current_filter',
   filterOptionBridge: 'activity_list__filter_Bridge',
   filterOptionContractCall: 'activity_list__filter_Contract Call',
   filterOptionIncoming: 'activity_list__filter_Incoming',
   filterOptionOutgoing: 'activity_list__filter_Outgoing',
+  headerBack: 'header_back',
   bridgeTransaction: 'bridge_transaction__item',
   bridgeSVG: 'bridge_svg',
   arrowSVG: 'arrow_svg',
-  linkIcon: 'link_svg'
+  linkIcon: 'link_svg',
+  usdcOutgoingTransactionDetail: '-0.0001 USDC',
+  usdcIncomingTransactionDetail: '+0.0001 USDC',
+  wethOutgoingTransactionDetail: '-0.0001 WETH.e',
+  wethIncomingTransactionDetail: '+0.0001 WETH.e'
 }

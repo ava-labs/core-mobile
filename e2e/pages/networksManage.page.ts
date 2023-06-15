@@ -179,7 +179,7 @@ class NetworksPage {
   }
 
   async swipeUp() {
-    await Action.swipeUp(this.inputTextField, 'fast', 0.5, 4)
+    await Action.swipeUp(this.nativeTokenSymbol, 'fast', 0.5, 0)
   }
 }
 

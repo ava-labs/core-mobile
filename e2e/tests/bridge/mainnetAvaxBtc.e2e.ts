@@ -1,12 +1,5 @@
 /* eslint-disable jest/expect-expect */
-/* eslint-env detox/detox, jest */
-/**
- * @jest-environment ./environment.ts
- */
-import Assert from '../../helpers/assertions'
-import Actions from '../../helpers/actions'
 import LoginRecoverWallet from '../../helpers/loginRecoverWallet'
-import BottomTabsPage from '../../pages/bottomTabs.page'
 import BridgeTabPage from '../../pages/bridgeTab.page'
 import { warmup } from '../../helpers/warmup'
 
@@ -17,29 +10,23 @@ describe('Bridge transfer AVAX -> BTC', () => {
   })
 
   it('Should verify Transaction Status Items', async () => {
-    await BottomTabsPage.tapBridgeTab()
-    await BridgeTabPage.tapNetworkDropdown()
-    await BridgeTabPage.tapAvalanceNetwork()
+    await BridgeTabPage.switchToNetwork('Avalanche')
     await BridgeTabPage.tapSelectTokenDropdown()
     await BridgeTabPage.tapBtcToken()
     await BridgeTabPage.inputTokenAmmountAvaxBtc()
     await BridgeTabPage.tapTransferButton()
-
-    await Assert.isVisibleNoSync(BridgeTabPage.avalancheNetwork)
-    await Assert.isVisibleNoSync(BridgeTabPage.bitcoinNetwork)
-    await Assert.isVisibleNoSync(BridgeTabPage.sendingAmmount)
-    await Assert.isVisibleNoSync(BridgeTabPage.fromText)
-    await Assert.isVisibleNoSync(BridgeTabPage.networkFee)
-    await Assert.isVisibleNoSync(BridgeTabPage.confirmations)
-    await Assert.isVisibleNoSync(BridgeTabPage.toText)
+    await BridgeTabPage.verifyBridgeItems(
+      BridgeTabPage.avalancheNetwork,
+      BridgeTabPage.bitcoinNetwork
+    )
   }, 1800000)
 
   it('Should verify transaction succeeded', async () => {
-    await Actions.waitForElementNoSync(BridgeTabPage.closebutton, 1800000)
-    await Assert.isVisible(BridgeTabPage.completedStatusAvax)
-
-    await BridgeTabPage.tapClose()
-    await BottomTabsPage.tapActivityTab()
-    await Assert.isVisible(BridgeTabPage.avaxBtcBridgeTransaction)
+    await BridgeTabPage.verifyBridgeTransaction(
+      1800000,
+      BridgeTabPage.completedStatusAvax,
+      BridgeTabPage.completedStatusAvax,
+      BridgeTabPage.avaxBtcBridgeTransaction
+    )
   }, 1800000)
 })

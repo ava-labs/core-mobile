@@ -12,9 +12,8 @@ import * as secp from '@noble/secp256k1'
 import Crypto from 'react-native-quick-crypto'
 import ContextApp from './app/ContextApp'
 import { name as appName } from './app.json'
-
 import DevDebuggingConfig from './app/utils/debugging/DevDebuggingConfig'
-import { server } from './tests/msw/server'
+import { server } from './tests/msw/native/server'
 
 // @noble/secp256k1 uses the webcrypto API by default
 // Overwrite the way it calculates the cache
@@ -27,6 +26,13 @@ AppRegistry.registerComponent(appName, () => ContextApp)
 // } else {
 //   import('./storybook');
 // }
+let AppEntryPoint = ContextApp
+
+if (DevDebuggingConfig.STORYBOOK_ENABLED) {
+  AppEntryPoint = require('./storybook').default
+}
+
+AppRegistry.registerComponent(appName, () => AppEntryPoint)
 
 if (DevDebuggingConfig.API_MOCKING || process.env.API_MOCKING) {
   server.listen()
