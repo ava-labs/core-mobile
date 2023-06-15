@@ -185,7 +185,8 @@ export function truncateBN(
 }
 
 export const formatUriImageToPng = (uri: string, size: number) => {
-  if (uri.startsWith('https://images.ctfassets.net')) {
+  const allowedUrl = 'https://images.ctfassets.net'
+  if (uri.startsWith(allowedUrl)) {
     return uri?.endsWith('.svg') ? `${uri}?fm=png&w=${size}&h=${size}` : uri
   }
   return uri
