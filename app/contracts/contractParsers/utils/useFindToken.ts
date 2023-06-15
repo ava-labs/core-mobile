@@ -23,7 +23,6 @@ const UNKNOWN_TOKEN = (address: string): TokenWithBalanceERC20 => ({
   symbol: '-',
   balance: new BN(0),
   decimals: 0,
-  description: '',
   priceInCurrency: 0,
   marketCap: 0,
   change24: 0,
