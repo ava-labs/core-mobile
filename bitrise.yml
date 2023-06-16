@@ -158,10 +158,8 @@ workflows:
                     [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 
                     echo "Using node version 18.14.1"
-                    # sleep 54000
                     nvm install 18.14.1
                      
-                    ls -la /root/.nvm/versions/node/v18.14.1/
                     yarn setup:ci
                 else
                   yarn setup:ci
