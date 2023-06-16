@@ -2,12 +2,20 @@ import Actions from '../helpers/actions'
 import PlusMenuLoc from '../locators/plusMenu.loc'
 
 class PlusMenuPage {
+  get bridgeButton() {
+    return by.id(PlusMenuLoc.bridge)
+  }
+
   get connectionURI() {
     return by.text(PlusMenuLoc.connectionURI)
   }
 
   get sendButton() {
     return by.id(PlusMenuLoc.send)
+  }
+
+  get walletConnectButtonSVG() {
+    return by.id(PlusMenuLoc.walletConnectSVG)
   }
 
   get inputTextField() {
@@ -25,6 +33,10 @@ class PlusMenuPage {
   async connectWallet(clipboardValue: string) {
     await Actions.setInputText(this.inputTextField, clipboardValue, 0)
     await Actions.tap(this.connectionURI)
+  }
+
+  async tapBridgeButton() {
+    await Actions.tap(this.bridgeButton)
   }
 
   async tapSendButton() {

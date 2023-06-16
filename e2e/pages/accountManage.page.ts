@@ -40,6 +40,16 @@ class AccountManagePage {
     return by.text(accountManage.secondAccount)
   }
 
+  async createSecondAccount() {
+    await this.tapAccountMenu()
+    await this.tapAddEditAccounts()
+    await this.tapAddAccountButton()
+    const result = await this.getSecondAvaxAddress()
+    await this.tapAccountMenu()
+    await this.tapDoneButton()
+    return result
+  }
+
   async getFirstAvaxAddress() {
     const result: any = await Action.getAttributes(this.avaxAddress, 0)
     return Action.platform() === Platform.Android

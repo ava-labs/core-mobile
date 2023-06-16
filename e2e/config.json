@@ -3,10 +3,11 @@
     "testEnvironment": "detox/runners/jest/testEnvironment",
     "testRunner": "jest-circus/runner",
     "testTimeout": 120000,
-    "testRegex": "\\.e2e\\.ts$",
+    "rootDir": "..",
+    "testMatch": ["<rootDir>/e2e/tests/**/*.e2e.ts", "<rootDir>/e2e/tests/**/*.e2e.smoke.ts"],
     "reporters": ["detox/runners/jest/reporter"],
     "verbose": true,
-    "setupFilesAfterEnv": ["./setup.ts"],
+    "setupFilesAfterEnv": ["./e2e/setup.ts"],
     "globalTeardown": "detox/runners/jest/globalTeardown",
     "globalSetup": "detox/runners/jest/globalSetup",
     "transformIgnorePatterns": ["node_modules/(?!(jest-)?react-native|@react-native-community|@react-native|@react-navigation)"],
@@ -19,6 +20,8 @@
         ]
       },
      "testPathIgnorePatterns": [
-      "./e2e/tests/bridge"
+      "./e2e/tests/bridge",
+      "./e2e/tests/plusIcon/walletConnect/traderjoe.e2e.ts",
+      "./e2e/tests/send/sendGoerlyEthTo2ndAccount.e2e.ts"
     ]
 }

@@ -86,10 +86,15 @@ export const getScreenshotOnFailure = async (imagePath: string) => {
 }
 
 async function splitTestResult(testItem: string | undefined) {
-  const splitTestArrayItem = testItem?.split('should')
+  const shouldTxt = 'should'
+  const regEscape = (v: string) => v.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&')
+  const splitTestArrayItem = testItem?.split(
+    new RegExp(regEscape(shouldTxt), 'ig')
+  )
+  //const splitTestArrayItem = testItem?.split('should')
   if (splitTestArrayItem) {
     const rawSectionName = splitTestArrayItem[0]
-    const testCase = 'should' + splitTestArrayItem[1]
+    const testCase = 'Should' + splitTestArrayItem[1]
     const sectionName = removeTestSectionExtraChars(rawSectionName)
     const trimmedSectionName = sectionName?.trim()
     return { sectionName: trimmedSectionName, testCase }

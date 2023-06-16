@@ -1,10 +1,3 @@
-/**
- * Core X
- *
- * @format
- * @flow strict-local
- */
-
 import React, { useState } from 'react'
 import {
   KeyboardAvoidingView,
@@ -17,10 +10,8 @@ import { NavigationContainer } from '@react-navigation/native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import useDevDebugging from 'utils/debugging/DevDebugging'
 import 'utils/debugging/wdyr'
-import Config from 'react-native-config'
-import * as Sentry from '@sentry/react-native'
-import { DefaultSampleRate } from 'services/sentry/SentryWrapper'
 import { navigationRef } from 'utils/Navigation'
+import SentryService from 'services/sentry/SentryService'
 
 LogBox.ignoreLogs([
   'Require cycle:',
@@ -29,35 +20,7 @@ LogBox.ignoreLogs([
   'Non-serializable'
 ])
 
-//init Sentry
-if (Config.SENTRY_DSN && !__DEV__) {
-  Sentry.init({
-    dsn: Config.SENTRY_DSN,
-    environment: Config.ENVIRONMENT,
-    debug: false,
-    beforeSend: event => {
-      /**
-       * eliminating breadcrumbs. This should eliminate
-       * a massive amount of the data leaks into sentry. If we find that console
-       * is leaking data, suspected that it might, than we can review the leak and
-       * see if we can modify the data before it is recorded. This can be
-       * done in the sentry options beforeBreadcrumbs function.
-       */
-      delete event?.user?.email
-      delete event?.user?.ip_address
-      delete event.contexts?.device?.name
-
-      return event
-    },
-    beforeBreadcrumb: () => {
-      return null
-    },
-    tracesSampler: samplingContext => {
-      return samplingContext.sampleRate ?? DefaultSampleRate
-    },
-    integrations: []
-  })
-}
+SentryService.init()
 
 export default function App() {
   const { configure } = useDevDebugging()

@@ -5,9 +5,10 @@
  */
 import Assert from '../../helpers/assertions'
 import LoginRecoverWallet from '../../helpers/loginRecoverWallet'
-import BurgerMenuPage from '../../pages/burgerMenu.page'
+import BurgerMenuPage from '../../pages/burgerMenu/burgerMenu.page'
 import { warmup } from '../../helpers/warmup'
 import CreatePinPage from '../../pages/createPin.page'
+import SecurityAndPrivacyPage from '../../pages/burgerMenu/securityAndPrivacy.page'
 
 describe('Show Recovery Phrase', () => {
   beforeAll(async () => {
@@ -18,13 +19,13 @@ describe('Show Recovery Phrase', () => {
   it('Should verify first and last word of mnemonic presented', async () => {
     await BurgerMenuPage.tapBurgerMenuButton()
     await BurgerMenuPage.tapSecurityAndPrivacy()
-    await BurgerMenuPage.tapShowRecoveryPhrase()
-    await Assert.isVisible(BurgerMenuPage.enterYourPinHeader)
+    await SecurityAndPrivacyPage.tapShowRecoveryPhrase()
+    await Assert.isVisible(CreatePinPage.enterYourPinHeader)
     await CreatePinPage.enterCurrentPin()
-    await Assert.isVisible(BurgerMenuPage.copyPhraseButton)
-    await Assert.isVisible(BurgerMenuPage.firstMnemonicWord)
-    await Assert.isVisible(BurgerMenuPage.lastMnemonicWord)
-    await BurgerMenuPage.tapIWroteItDownButton()
+    await Assert.isVisible(SecurityAndPrivacyPage.copyPhraseButton)
+    await Assert.isVisible(SecurityAndPrivacyPage.firstMnemonicWord)
+    await Assert.isVisible(SecurityAndPrivacyPage.lastMnemonicWord)
+    await SecurityAndPrivacyPage.tapIWroteItDownButton()
     await Assert.isVisible(BurgerMenuPage.securityAndPrivacy)
   })
 })
