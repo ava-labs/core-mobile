@@ -150,6 +150,8 @@ workflows:
                     # as patch-package doesn't have write access to the node_modules folder
                     # thus, we need to set write permission manually and rerun yarn
 
+                    sudo chown root .
+
                     sudo curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
 
                     export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
@@ -158,7 +160,7 @@ workflows:
                     echo "Using node version 18.14.1"
                     # sleep 54000
                     nvm install 18.14.1
-                    chown root:root -R /root/.nvm/versions/node/v18.14.1/
+                     
                     ls -la /root/.nvm/versions/node/v18.14.1/
                     yarn setup:ci
                 else
