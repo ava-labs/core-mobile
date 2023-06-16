@@ -149,7 +149,7 @@ workflows:
                     # on ubuntu, yarn setup command will fail
                     # as patch-package doesn't have write access to the node_modules folder
                     # thus, we need to set write permission manually and rerun yarn
-
+                    # Bitrise issue link https://support.bitrise.io/hc/en-us/requests/39436?page=1
                     sudo chown root .
 
                     curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
