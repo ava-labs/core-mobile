@@ -1,6 +1,13 @@
 import { NetworkTokenWithBalance, TokenWithBalanceERC20 } from 'store/balance'
 import { Network } from '@avalabs/chains-sdk'
-import { CurrencyCode, Glacier } from '@avalabs/glacier-sdk'
+import {
+  BlockchainId,
+  CurrencyCode,
+  Glacier,
+  ListPChainBalancesResponse,
+  Network as NetworkName,
+  PChainBalance
+} from '@avalabs/glacier-sdk'
 import { GLACIER_URL } from 'utils/network/glacier'
 import { BalanceServiceProvider } from 'services/balance/types'
 import { convertNativeToTokenWithBalance } from 'services/balance/nativeTokenConverter'
@@ -104,6 +111,20 @@ export class GlacierBalanceService implements BalanceServiceProvider {
     } while (nextPageToken)
 
     return tokensWithBalance
+  }
+
+  async getPChainBalance(
+    network: Network,
+    addresses: string[],
+    _sentryTrx?: Transaction
+  ): Promise<PChainBalance> {
+    const response =
+      (await this.glacierSdk.primaryNetwork.getBalancesByAddresses({
+        blockchainId: BlockchainId.P_CHAIN,
+        network: network.isTestnet ? NetworkName.FUJI : NetworkName.MAINNET,
+        addresses: addresses.join(',')
+      })) as ListPChainBalancesResponse
+    return response.balances
   }
 }
 

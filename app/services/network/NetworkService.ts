@@ -15,6 +15,7 @@ import {
 } from '@avalabs/chains-sdk'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { Transaction } from '@sentry/types'
+import { avaxSerial } from '@avalabs/avalanchejs-v2'
 import { getBitcoinProvider, getEvmProvider } from './utils/providerUtils'
 
 class NetworkService {
@@ -56,7 +57,7 @@ class NetworkService {
   }
 
   async sendTransaction(
-    signedTx: string,
+    signedTx: string | avaxSerial.SignedTx,
     network: Network,
     waitToPost = false,
     sentryTrx?: Transaction
@@ -68,16 +69,30 @@ class NetworkService {
           throw new Error('No active network')
         }
         const provider = this.getProviderForNetwork(network)
-        if (provider instanceof JsonRpcBatchInternal) {
+
+        if (
+          signedTx instanceof avaxSerial.SignedTx &&
+          provider instanceof Avalanche.JsonRpcProvider
+        ) {
           if (waitToPost) {
-            const tx = await provider.sendTransaction(signedTx)
-            return (await tx.wait()).transactionHash
+            const tx = await provider.issueTx(signedTx)
+            return tx.txID
           }
-          return (await provider.sendTransaction(signedTx)).hash
+          return (await provider.issueTx(signedTx)).txID
         }
 
-        if (provider instanceof BlockCypherProvider) {
-          return (await provider.issueRawTx(signedTx)).hash
+        if (typeof signedTx === 'string') {
+          if (provider instanceof JsonRpcBatchInternal) {
+            if (waitToPost) {
+              const tx = await provider.sendTransaction(signedTx)
+              return (await tx.wait()).transactionHash
+            }
+            return (await provider.sendTransaction(signedTx)).hash
+          }
+
+          if (provider instanceof BlockCypherProvider) {
+            return (await provider.issueRawTx(signedTx)).hash
+          }
         }
 
         throw new Error('No provider found')

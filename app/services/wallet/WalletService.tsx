@@ -26,6 +26,9 @@ import { Transaction } from '@sentry/types'
 import { Account } from 'store/account'
 import { RpcMethod } from 'store/walletConnectV2/types'
 import Logger from 'utils/Logger'
+import BN from 'bn.js'
+import { exportC } from 'services/wallet/exportC'
+import { importP } from 'services/wallet/importP'
 
 class WalletService {
   private mnemonic?: string
@@ -110,7 +113,6 @@ class WalletService {
         if (!wallet) {
           throw new Error('Signing error, wrong network')
         }
-
         // handle BTC signing
         if ('inputs' in tx) {
           if (!(wallet instanceof BitcoinWallet)) {
@@ -244,7 +246,7 @@ class WalletService {
     }
   }
 
-  private async getWallet(
+  async getWallet(
     accountIndex: number,
     network: Network,
     sentryTrx?: Transaction
@@ -321,6 +323,33 @@ class WalletService {
         chainAlias,
         isChange
       )
+    )
+  }
+
+  /**
+   * @param requiredAmount in nAvax
+   * @param activeAccount
+   * @param isDevMode
+   */
+  async collectTokensForStaking(
+    requiredAmount: BN,
+    activeAccount: Account,
+    isDevMode: boolean
+  ): Promise<boolean> {
+    return (
+      (await exportC({
+        requiredAmount,
+        walletService: this,
+        networkService,
+        activeAccount,
+        isDevMode
+      })) &&
+      (await importP({
+        walletService: this,
+        networkService,
+        activeAccount,
+        isDevMode
+      }))
     )
   }
 }
