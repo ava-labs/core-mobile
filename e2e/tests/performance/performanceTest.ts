@@ -5,14 +5,11 @@ const fs = require('fs')
 
 const testNames = [
   'performanceHelpUsImproveScreen.e2e',
-  'performanceRecovery.e2e',
   'performanceLaunchApp.e2e'
 ]
 
-const filePath =
-  '/Users/artembespalov/Documents/app2/avalanche-wallet-apps/e2e/tests/performance/testResults/results.txt'
-const tempfilePath =
-  '/Users/artembespalov/Documents/app2/avalanche-wallet-apps/e2e/tests/performance/testResults/tempResults.txt'
+const filePath = './e2e/tests/performance/testResults/results.txt'
+const tempfilePath = './e2e/tests/performance/testResults/tempResults.txt'
 
 const platform = process.argv[2] || ''
 const numberOfTests = testNames.length
