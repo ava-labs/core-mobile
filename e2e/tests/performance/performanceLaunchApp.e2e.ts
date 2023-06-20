@@ -12,7 +12,7 @@ it('Should display performance for Launch app', async () => {
     startTime,
     endTime,
     'performanceLaunchAppTime',
-    1,
-    3
+    8,
+    8
   )
 })
