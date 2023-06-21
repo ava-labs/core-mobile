@@ -533,3 +533,5 @@ workflows:
 
                 npm rebuild detox
                 ./node_modules/.bin/detox test --configuration ios.internal.release.ci
+    artifacts:
+      - deploy_path: ./e2e/tests/performance/testResults/allResults.txt
