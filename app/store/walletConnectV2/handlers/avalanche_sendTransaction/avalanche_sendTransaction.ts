@@ -15,7 +15,7 @@ import { Account, selectActiveAccount } from 'store/account'
 import networkService from 'services/network/NetworkService'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import walletService from 'services/wallet/WalletService'
-import { RpcMethod, SessionRequest } from 'store/walletConnectV2'
+import { RpcMethod, SessionRequest } from 'store/walletConnectV2/types'
 import { VM } from '@avalabs/avalanchejs-v2'
 import * as Sentry from '@sentry/react-native'
 import Logger from 'utils/Logger'
@@ -26,8 +26,9 @@ import {
   HandleResponse,
   RpcRequestHandler
 } from '../types'
+import { parseRequestParams } from './utils'
 
-type AvalancheTxParams = {
+export type AvalancheTxParams = {
   transactionHex: string
   chainAlias: 'X' | 'P' | 'C'
   externalIndices?: number[]
@@ -62,10 +63,12 @@ class AvalancheSendTransactionHandler
   ): HandleResponse<never> => {
     let unsignedTx: UnsignedTx | EVMUnsignedTx
     const { getState } = listenerApi
+    const result = parseRequestParams(request.data.params.request.params)
+
     const { transactionHex, chainAlias, externalIndices, internalIndices } =
       request.data.params.request.params ?? {}
 
-    if (!transactionHex || !chainAlias) {
+    if (!result.success || !transactionHex || !chainAlias) {
       return {
         success: false,
         error: ethErrors.rpc.invalidParams({
@@ -73,6 +76,7 @@ class AvalancheSendTransactionHandler
         })
       }
     }
+
     const vm = Avalanche.getVmByChainAlias(chainAlias)
     const txBytes = utils.hexToBuffer(transactionHex)
     const isDevMode = selectIsDeveloperMode(getState())
@@ -207,7 +211,6 @@ class AvalancheSendTransactionHandler
       if (!activeAccount) {
         throw new Error('Unable to submit transaction, no active account.')
       }
-      console.log({ tx: unsignedTx, externalIndices, internalIndices })
       const signedTransactionJson = await walletService.sign(
         {
           tx: unsignedTx,

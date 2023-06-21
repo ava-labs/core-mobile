@@ -4,7 +4,10 @@ export const accountSchema = z.object({
   index: z.number(),
   title: z.string(),
   addressBtc: z.string(),
-  address: z.string()
+  address: z.string(),
+  addressAVM: z.string().optional(),
+  addressPVM: z.string().optional(),
+  addressCoreEth: z.string().optional()
 })
 
 const paramsSchema = z.tuple([z.number().nonnegative()])
