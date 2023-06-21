@@ -17,7 +17,7 @@ export async function exponentialBackoff<T>(
     result = await f()
     backoffPeriodSeconds = Math.pow(2, counter)
     counter++
-  } while (!resultAccepted(result) || counter === maxRetries)
+  } while (!resultAccepted(result) && counter !== maxRetries)
 
   if (counter === maxRetries) {
     throw new Error('Max retry exceeded.')
