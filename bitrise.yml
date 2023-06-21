@@ -143,7 +143,13 @@ workflows:
                 set -o pipefail
                 # debug log
                 set -x
-                stack=$( cat /etc/issue )
+
+                if ! cat /etc/issue 2>/dev/null
+                then
+                yarn setup:ci
+                else 
+                  stack=$( cat /etc/issue )
+                fi
 
                 if [[ $stack == *Ubuntu* ]]; then
                     # on ubuntu, yarn setup command will fail
@@ -161,8 +167,6 @@ workflows:
                     nvm install 18.14.1
                      
                     yarn setup:ci
-                else
-                  yarn setup:ci
                 fi
       - save-npm-cache@1: {}
       - script@1:
