@@ -1,7 +1,16 @@
 import { Avalanche } from '@avalabs/wallets-sdk'
 import { exponentialBackoff } from 'utils/js/exponentialBackoff'
 import Logger from 'utils/Logger'
-import { ImportPParams } from 'services/wallet/types'
+import WalletService from 'services/wallet/WalletService'
+import NetworkService from 'services/network/NetworkService'
+import { Account } from 'store/account'
+
+export type ImportPParams = {
+  walletService: typeof WalletService
+  networkService: typeof NetworkService
+  activeAccount: Account
+  isDevMode: boolean
+}
 
 export async function importP({
   walletService,

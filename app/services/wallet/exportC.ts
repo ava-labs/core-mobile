@@ -3,8 +3,22 @@ import { assertNotUndefined } from 'utils/assertions'
 import { Avalanche } from '@avalabs/wallets-sdk'
 import { exponentialBackoff } from 'utils/js/exponentialBackoff'
 import Logger from 'utils/Logger'
-import { ExportCParams } from 'services/wallet/types'
 import { calculatePChainFee } from 'services/wallet/calculateCrossChainFees'
+import BN from 'bn.js'
+import WalletService from 'services/wallet/WalletService'
+import NetworkService from 'services/network/NetworkService'
+import { Account } from 'store/account'
+
+export type ExportCParams = {
+  /**
+   * in nAvax
+   */
+  requiredAmount: BN
+  walletService: typeof WalletService
+  networkService: typeof NetworkService
+  activeAccount: Account
+  isDevMode: boolean
+}
 
 export async function exportC({
   requiredAmount,
