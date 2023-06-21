@@ -14,6 +14,10 @@ export type ExportCParams = {
   /**
    * in nAvax
    */
+  cChainBalance: BN
+  /**
+   * in nAvax
+   */
   requiredAmount: BN
   walletService: typeof WalletService
   networkService: typeof NetworkService
@@ -22,6 +26,7 @@ export type ExportCParams = {
 }
 
 export async function exportC({
+  cChainBalance,
   requiredAmount,
   walletService,
   networkService,
@@ -47,6 +52,11 @@ export async function exportC({
   const pChainFee = calculatePChainFee()
   const amount = amt + BigInt(pChainFee.toString())
   Logger.trace('amount', amount)
+
+  if (cChainBalance.lt(new BN(amount.toString()))) {
+    throw Error('Not enough balance on C chain')
+  }
+
   const unsignedTxWithFee = await walletService.createExportCTx(
     amount,
     instantFee,

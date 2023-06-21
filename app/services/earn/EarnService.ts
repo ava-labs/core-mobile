@@ -12,17 +12,20 @@ class EarnService {
   }
 
   /**
+   * @param cChainBalance in nAvax
    * @param requiredAmount in nAvax
    * @param activeAccount
    * @param isDevMode
    */
   async collectTokensForStaking(
+    cChainBalance: BN,
     requiredAmount: BN,
     activeAccount: Account,
     isDevMode: boolean
   ): Promise<boolean> {
     return (
       (await exportC({
+        cChainBalance,
         requiredAmount,
         walletService,
         networkService,
