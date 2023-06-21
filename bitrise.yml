@@ -147,6 +147,7 @@ workflows:
                 catch() {
                   echo 'This must be an ios build'
                   yarn setup:ci
+                  exit 0
                 }
                 stack=$( cat /etc/issue )
 
