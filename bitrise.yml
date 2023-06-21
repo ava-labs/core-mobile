@@ -143,6 +143,11 @@ workflows:
                 set -o pipefail
                 # debug log
                 set -x
+                trap 'catch $? $LINENO' EXIT
+                catch() {
+                  echo 'This must be an ios build'
+                  yarn setup:ci
+                }
                 stack=$( cat /etc/issue )
 
                 if [[ $stack == *Ubuntu* ]]; then
