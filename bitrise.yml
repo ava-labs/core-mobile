@@ -146,6 +146,7 @@ workflows:
                 trap 'catch $? $LINENO' EXIT
                 catch() {
                   echo 'This must be an ios build'
+                  echo 'error $1 occurred on $2'
                   yarn setup:ci
                   exit 0
                 }
