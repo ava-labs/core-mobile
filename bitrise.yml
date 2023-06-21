@@ -143,14 +143,19 @@ workflows:
                 set -o pipefail
                 # debug log
                 set -x
-                trap 'catch $? $LINENO' EXIT
-                catch() {
-                  echo 'This must be an ios build'
-                  echo 'error $1 occurred on $2'
-                  yarn setup:ci
-                  exit 0
-                }
-                stack=$( cat /etc/issue )
+                # trap 'catch $?' EXIT
+                # catch() {
+                #   echo 'This must be an ios build'
+                #   echo 'error $1 occurred'
+                #   yarn setup:ci
+                #   exit 0
+                # }
+                if ! cat /etc/issue 2>/dev/null
+                then
+                yarn setup:ci
+                else 
+                  stack=$( cat /etc/issue )
+                fi
 
                 if [[ $stack == *Ubuntu* ]]; then
                     # on ubuntu, yarn setup command will fail
