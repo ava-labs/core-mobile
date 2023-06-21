@@ -11,7 +11,11 @@ import {
   getXpubFromMnemonic
 } from '@avalabs/wallets-sdk'
 import { now } from 'moment'
-import { PubKeyType, SignTransactionRequest } from 'services/wallet/types'
+import {
+  AvalancheTransactionRequest,
+  PubKeyType,
+  SignTransactionRequest
+} from 'services/wallet/types'
 import { Wallet } from 'ethers'
 import networkService from 'services/network/NetworkService'
 import { Network, NetworkVMType } from '@avalabs/chains-sdk'
@@ -29,6 +33,7 @@ import Logger from 'utils/Logger'
 import BN from 'bn.js'
 import { exportC } from 'services/wallet/exportC'
 import { importP } from 'services/wallet/importP'
+import { avaxSerial, UnsignedTx } from '@avalabs/avalanchejs-v2'
 
 class WalletService {
   private mnemonic?: string
@@ -58,7 +63,7 @@ class WalletService {
     this.mnemonic = mnemonic
   }
 
-  async getBtcWallet(
+  private async getBtcWallet(
     accountIndex: number,
     network: Network
   ): Promise<BitcoinWallet> {
@@ -80,7 +85,7 @@ class WalletService {
     return btcWallet
   }
 
-  getEvmWallet(accountIndex: number, network: Network): Wallet {
+  private getEvmWallet(accountIndex: number, network: Network): Wallet {
     if (!this.mnemonic) {
       throw new Error('not initialized')
     }
@@ -121,6 +126,27 @@ class WalletService {
           const signedTx = await wallet.signTx(tx.inputs, tx.outputs)
           return signedTx.toHex()
         }
+        if ('to' in tx) {
+          return await (wallet as Wallet).signTransaction(tx)
+        }
+        throw new Error('Signing error, invalid data')
+      })
+  }
+
+  async signAvaxTx(
+    txRequest: AvalancheTransactionRequest,
+    accountIndex: number,
+    network: Network,
+    sentryTrx?: Transaction
+  ): Promise<avaxSerial.SignedTx> {
+    return SentryWrapper.createSpanFor(sentryTrx)
+      .setContext('svc.wallet.sign')
+      .executeAsync(async () => {
+        const wallet = await this.getWallet(accountIndex, network, sentryTrx)
+        if (!wallet) {
+          throw new Error('Signing error, wrong network')
+        }
+
         // Handle Avalanche signing, X/P/CoreEth
         if ('tx' in tx && wallet instanceof Avalanche.StaticSigner) {
           const sig = await wallet.signTx({
@@ -131,9 +157,7 @@ class WalletService {
 
           return JSON.stringify(sig.toJSON())
         }
-        if ('to' in tx) {
-          return await (wallet as Wallet).signTransaction(tx)
-        }
+
         throw new Error('Signing error, invalid data')
       })
   }
@@ -198,6 +222,58 @@ class WalletService {
     }
   }
 
+  /**
+   * @param amount
+   * @param baseFee in WEI
+   * @param accountIndex
+   * @param avaxXPNetwork
+   * @param destinationChain
+   * @param destinationAddress
+   */
+  async createExportCTx(
+    amount: bigint,
+    baseFee: bigint,
+    accountIndex: number,
+    avaxXPNetwork: Network,
+    destinationChain: 'P' | 'X',
+    destinationAddress: string | undefined
+  ): Promise<UnsignedTx> {
+    const wallet = (await this.getWallet(
+      accountIndex,
+      avaxXPNetwork
+    )) as Avalanche.StaticSigner
+    const nonce = await wallet.getNonce()
+
+    return wallet.exportC(
+      amount,
+      destinationChain,
+      BigInt(nonce),
+      baseFee,
+      destinationAddress
+    )
+  }
+
+  /**
+   * @param accountIndex
+   * @param avaxXPNetwork
+   * @param sourceChain
+   * @param destinationAddress
+   */
+  async createImportPTx(
+    accountIndex: number,
+    avaxXPNetwork: Network,
+    sourceChain: 'C' | 'X',
+    destinationAddress: string | undefined
+  ): Promise<UnsignedTx> {
+    const wallet = (await this.getWallet(
+      accountIndex,
+      avaxXPNetwork
+    )) as Avalanche.StaticSigner
+
+    const utxoSet = await wallet.getAtomicUTXOs('P', sourceChain)
+    return wallet.importP(utxoSet, sourceChain, destinationAddress)
+  }
+
   destroy() {
     this.mnemonic = undefined
     this.xpub = undefined
@@ -246,7 +322,7 @@ class WalletService {
     }
   }
 
-  async getWallet(
+  private async getWallet(
     accountIndex: number,
     network: Network,
     sentryTrx?: Transaction

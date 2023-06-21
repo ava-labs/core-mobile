@@ -4,6 +4,7 @@ import Logger from 'utils/Logger'
 import WalletService from 'services/wallet/WalletService'
 import NetworkService from 'services/network/NetworkService'
 import { Account } from 'store/account'
+import { AvalancheTransactionRequest } from 'services/wallet/types'
 
 export type ImportPParams = {
   walletService: typeof WalletService
@@ -19,17 +20,19 @@ export async function importP({
   isDevMode
 }: ImportPParams): Promise<boolean> {
   const avaxXPNetwork = networkService.getAvalancheNetworkXP(isDevMode)
-  const wallet = (await walletService.getWallet(
+
+  const unsignedTx = await walletService.createImportPTx(
+    activeAccount.index,
+    avaxXPNetwork,
+    'C',
+    activeAccount.addressPVM
+  )
+
+  const signedTx = await walletService.signAvaxTx(
+    { tx: unsignedTx } as AvalancheTransactionRequest,
     activeAccount.index,
     avaxXPNetwork
-  )) as Avalanche.StaticSigner
-  const utxoSet = await wallet.getAtomicUTXOs('P', 'C')
-  const unsignedTx = wallet.importP(utxoSet, 'C', activeAccount.addressPVM)
-  const signedTx = (
-    await wallet.signTx({
-      tx: unsignedTx
-    })
-  ).getSignedTx()
+  )
 
   const txID = await networkService.sendTransaction(
     signedTx,

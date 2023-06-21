@@ -8,6 +8,7 @@ import BN from 'bn.js'
 import WalletService from 'services/wallet/WalletService'
 import NetworkService from 'services/network/NetworkService'
 import { Account } from 'store/account'
+import { AvalancheTransactionRequest } from 'services/wallet/types'
 
 export type ExportCParams = {
   /**
@@ -35,31 +36,31 @@ export async function exportC({
     ]
   assertNotUndefined(cChainNetwork)
 
-  const wallet = (await walletService.getWallet(
-    activeAccount.index,
+  const avaxProvider = networkService.getProviderForNetwork(
     avaxXPNetwork
-  )) as Avalanche.StaticSigner
+  ) as Avalanche.JsonRpcProvider
 
   const amt = BigInt(requiredAmount.toString(10))
-  const nonce = await wallet.getNonce()
-  const baseFee = BigInt(29e9) // 29 nAVAX in WEI for instant speed
+  const baseFee = await avaxProvider.getApiC().getBaseFee() //in WEI
+  const instantFee = baseFee * BigInt(1.2) // Increase by 20% for instant speed
 
   const pChainFee = calculatePChainFee()
-
   const amount = amt + BigInt(pChainFee.toString())
   Logger.trace('amount', amount)
-  const unsignedTxWithFee = wallet.exportC(
+  const unsignedTxWithFee = await walletService.createExportCTx(
     amount,
+    instantFee,
+    activeAccount.index,
+    avaxXPNetwork,
     'P',
-    BigInt(nonce),
-    baseFee,
     activeAccount.addressPVM
   )
-  const signedTxWithFee = (
-    await wallet.signTx({
-      tx: unsignedTxWithFee
-    })
-  ).getSignedTx()
+
+  const signedTxWithFee = await walletService.signAvaxTx(
+    { tx: unsignedTxWithFee } as AvalancheTransactionRequest,
+    activeAccount.index,
+    avaxXPNetwork
+  )
 
   const txID = await networkService.sendTransaction(
     signedTxWithFee,
@@ -67,10 +68,6 @@ export async function exportC({
     true
   )
   Logger.trace('txID', txID)
-
-  const avaxProvider = networkService.getProviderForNetwork(
-    avaxXPNetwork
-  ) as Avalanche.JsonRpcProvider
 
   try {
     await exponentialBackoff(
