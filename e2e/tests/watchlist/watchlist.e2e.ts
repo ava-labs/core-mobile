@@ -26,11 +26,31 @@ describe('Verify Watchlist', () => {
     const recoveryPhrase: string = process.env.E2E_MNEMONIC as string
     await ExistingRecoveryPhrasePage.recoverWallet(recoveryPhrase)
     await BottomTabsPage.tapWatchlistTab()
+    const startTime = new Date().getTime()
+    await Actions.waitForElement(WatchListPage.favoritesTab)
+    const endTime = new Date().getTime()
+    await Actions.reportUIPerformance(
+      startTime,
+      endTime,
+      'performanceWatchlistScreen',
+      1,
+      3
+    )
     await BottomTabsPage.verifyBottomTabs()
   })
 
   it('should navigate to token detail screen', async () => {
     await WatchListPage.tapWatchListToken('btc')
+    const startTime2 = new Date().getTime()
+    await Actions.waitForElement(tokenDetailPage.oneWeekTab)
+    const endTime2 = new Date().getTime()
+    await Actions.reportUIPerformance(
+      startTime2,
+      endTime2,
+      'performanceTokenDetailScreen',
+      1,
+      3
+    )
   })
 
   it('should verify token detail screen', async () => {
