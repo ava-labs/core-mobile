@@ -167,6 +167,8 @@ workflows:
                     nvm install 18.14.1
                      
                     yarn setup:ci
+                else
+                  yarn setup:ci
                 fi
       - save-npm-cache@1: {}
       - script@1:
