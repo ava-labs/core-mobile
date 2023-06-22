@@ -16,7 +16,7 @@ import { Account, selectActiveAccount } from 'store/account'
 import networkService from 'services/network/NetworkService'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import walletService from 'services/wallet/WalletService'
-import { RpcMethod, SessionRequest } from 'store/walletConnectV2'
+import { RpcMethod, SessionRequest } from 'store/walletConnectV2/types'
 import { VM } from '@avalabs/avalanchejs-v2'
 import * as Sentry from '@sentry/react-native'
 import Logger from 'utils/Logger'
@@ -27,8 +27,9 @@ import {
   HandleResponse,
   RpcRequestHandler
 } from '../types'
+import { parseRequestParams } from './utils'
 
-type AvalancheTxParams = {
+export type AvalancheTxParams = {
   transactionHex: string
   chainAlias: 'X' | 'P' | 'C'
 }
@@ -71,8 +72,9 @@ class AvalancheSignTransactionHandler
     const { getState } = listenerApi
     const { transactionHex, chainAlias } =
       request.data.params.request.params ?? {}
+    const parseResult = parseRequestParams(request.data.params.request.params)
 
-    if (!transactionHex || !chainAlias) {
+    if (!parseResult.success) {
       return {
         success: false,
         error: ethErrors.rpc.invalidParams({
