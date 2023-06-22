@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { execSync } from 'child_process'
 import actions from '../../helpers/actions'
 const fs = require('fs')
@@ -13,7 +12,7 @@ const tempfilePath = './e2e/tests/performance/testResults/tempResults.txt'
 
 const platform = process.argv[2] || ''
 const numberOfTests = testNames.length
-const numberOfIterations = 1
+const numberOfIterations = 2
 
 function runDetoxTest(testName: string): number {
   const command = `detox test "${testName}" -c ${platform}.internal.debug`
@@ -29,7 +28,11 @@ function runTests(): void {
   const results: number[] = []
 
   for (let i = 0; i < numberOfTests; i++) {
-    const testName: any = testNames[i]
+    const testName: string | undefined = testNames[i]
+    if (!testName) {
+      console.warn('Skipping undefined testName')
+      continue
+    }
     const testResults: number[] = []
 
     for (let j = 0; j < numberOfIterations; j++) {
