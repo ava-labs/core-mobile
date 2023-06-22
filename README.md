@@ -39,10 +39,6 @@ First install iOS dependencies:
 ```zsh
 yarn podInstall
 ```
-or if you're having trouble on M1 chips:
-```zsh
-yarn podInstallM1
-```
 
 Now you can run the app
 
