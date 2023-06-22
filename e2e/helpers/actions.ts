@@ -6,7 +6,10 @@ import { Platform } from './constants'
 import Constants from './constants'
 
 const fs = require('fs')
-const filePath = './e2e/tests/performance/testResults/allResults.txt'
+const reportUIPerformanceFilePath =
+  './e2e/tests/performance/testResults/allResults.txt'
+const saveUIPerformanceFilePath =
+  './e2e/tests/performance/testResults/tempResults.txt'
 
 const tap = async (item: Detox.NativeMatcher) => {
   await element(item).tap()
@@ -214,7 +217,7 @@ const reportUIPerformance = async (
   let data = ''
 
   try {
-    data = fs.readFileSync(filePath, 'utf8')
+    data = fs.readFileSync(reportUIPerformanceFilePath, 'utf8')
   } catch (err) {
     console.error('Error reading file:', err)
     // continue
@@ -225,13 +228,20 @@ const reportUIPerformance = async (
   const updatedContent = existingLines.concat(newValue).join('\n')
 
   try {
-    fs.writeFileSync(filePath, updatedContent, 'utf8')
+    fs.writeFileSync(reportUIPerformanceFilePath, updatedContent, 'utf8')
     console.log('Value appended to file:', newValue)
   } catch (err) {
     console.error('Error writing file:', err)
   }
 
   console.log('Results saved to file.')
+}
+
+const saveUIPerformance = async (startTime: number, endTime: number) => {
+  const result = ((endTime - startTime) / 1000).toString()
+  fs.writeFile(saveUIPerformanceFilePath, result, (err: any) => {
+    if (err) throw err
+  })
 }
 
 export default {
@@ -253,5 +263,6 @@ export default {
   platform,
   isVisible,
   getCurrentDateTime,
-  reportUIPerformance
+  reportUIPerformance,
+  saveUIPerformance
 }
