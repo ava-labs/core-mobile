@@ -57,6 +57,11 @@ post_install do |installer|
   __apply_Xcode_12_5_M1_post_install_workaround(installer)
 
   installer.pods_project.targets.each do |target|
+    # https://github.com/facebook/react-native/issues/34106#issuecomment-1417685116
+    target.build_configurations.each do |config|
+      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '12.4'
+    end
+
     if flipper_enabled
       # By default, Flipper is enabled only for React-Core Debug configuration
       # The following is needed to have it enabled for the Release configuration
