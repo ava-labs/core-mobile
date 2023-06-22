@@ -8,7 +8,7 @@ import Constants from './constants'
 const fs = require('fs')
 const reportUIPerformanceFilePath =
   './e2e/tests/performance/testResults/allResults.txt'
-const saveUIPerformanceFilePath =
+const tempUIPerformanceFilePath =
   './e2e/tests/performance/testResults/tempResults.txt'
 
 const tap = async (item: Detox.NativeMatcher) => {
@@ -237,9 +237,9 @@ const reportUIPerformance = async (
   console.log('Results saved to file.')
 }
 
-const saveUIPerformance = async (startTime: number, endTime: number) => {
+const saveTempUIPerformance = async (startTime: number, endTime: number) => {
   const result = ((endTime - startTime) / 1000).toString()
-  fs.writeFile(saveUIPerformanceFilePath, result, (err: any) => {
+  fs.writeFile(tempUIPerformanceFilePath, result, (err: any) => {
     if (err) throw err
   })
 }
@@ -264,5 +264,5 @@ export default {
   isVisible,
   getCurrentDateTime,
   reportUIPerformance,
-  saveUIPerformance
+  saveTempUIPerformance
 }

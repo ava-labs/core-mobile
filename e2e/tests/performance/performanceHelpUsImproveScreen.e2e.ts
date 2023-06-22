@@ -19,6 +19,6 @@ describe('Performance Help Us improve Screen', () => {
     const startTime = new Date().getTime()
     await Actions.waitForElementNoSync(AnalyticsConsentPage.noThanksBtn)
     const endTime = new Date().getTime()
-    Actions.saveUIPerformance(startTime, endTime)
+    Actions.saveTempUIPerformance(startTime, endTime)
   })
 })

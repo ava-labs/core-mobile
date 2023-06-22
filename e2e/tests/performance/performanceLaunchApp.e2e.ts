@@ -8,5 +8,5 @@ it('Should display performance for Launch app', async () => {
   await device.launchApp({ permissions: { camera: 'YES' } })
   await Action.waitForElementNoSync(WatchListPage.favoritesTab, 5000)
   const endTime = new Date().getTime()
-  Action.saveUIPerformance(startTime, endTime)
+  Action.saveTempUIPerformance(startTime, endTime)
 })
