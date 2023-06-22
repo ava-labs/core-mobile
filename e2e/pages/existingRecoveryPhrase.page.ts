@@ -47,15 +47,45 @@ class ExistingRecoveryPhrasePage {
   async recoverWallet(recoveryPhrase: string) {
     await WatchlistPage.tapWalletSVG()
     await AnalyticsConsentPage.tapNoThanksBtn()
+    const startTime = new Date().getTime()
+    await Action.waitForElement(this.recoveryPhraseTextInput)
+    const endTime = new Date().getTime()
+    await Action.reportUIPerformance(
+      startTime,
+      endTime,
+      'performanceRecoveryPhraseScreen',
+      1,
+      3
+    )
     await this.verifyExistingRecoveryPhrasePage()
     await this.enterRecoveryPhrase(recoveryPhrase)
     await this.tapSignInBtn()
+    const startTime2 = new Date().getTime()
+    await Action.waitForElement(CreatePinPage.numpadOne)
+    const endTime2 = new Date().getTime()
+    await Action.reportUIPerformance(
+      startTime2,
+      endTime2,
+      'performanceRecoveryCreatePinScreen',
+      1,
+      3
+    )
     for (let i = 0; i < 12; i++) {
       await CreatePinPage.tapNumpadZero()
       await delay(500)
     }
     await CreatePinPage.tapEmptyCheckbox()
     await CreatePinPage.tapNextBtn()
+    const startTime3 = new Date().getTime()
+    await Action.waitForElement(PortfolioPage.colectiblesTab)
+    const endTime3 = new Date().getTime()
+    await Action.reportUIPerformance(
+      startTime3,
+      endTime3,
+      'performancePortfolioScreen',
+      1,
+      3
+    )
     await PortfolioPage.verifyPorfolioScreen()
     await BottomTabsPage.verifyBottomTabs()
   }
