@@ -14,6 +14,7 @@ import {
   selectActiveAccount,
   setActiveAccountIndex
 } from 'store/account'
+import { usePostCapture } from 'hooks/usePosthogCapture'
 
 const Y_START = -400
 
@@ -27,8 +28,10 @@ function AccountDropdown({
   const { goBack } = useNavigation()
   const animTranslateY = useRef(new Animated.Value(Y_START)).current
   const dispatch = useDispatch()
+  const { capture } = usePostCapture()
 
   useEffect(() => {
+    capture('AccountSelectorOpened')
     const compositeAnimation1 = Animated.timing(animTranslateY, {
       toValue: 0,
       duration: 600,
@@ -37,7 +40,7 @@ function AccountDropdown({
     })
     compositeAnimation1.start()
     return () => compositeAnimation1.stop()
-  }, [animTranslateY])
+  }, [animTranslateY, capture])
 
   const animatedDismiss = useCallback(() => {
     const compositeAnimation1 = Animated.timing(animTranslateY, {
