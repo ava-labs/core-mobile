@@ -6,10 +6,8 @@ import { RpcMethod, SessionRequest } from 'store/walletConnectV2'
 import { PubKeyType } from 'services/wallet/types'
 import { HandleResponse, RpcRequestHandler } from '../types'
 
-export type AvalancheGetAccountPubKeyRpcRequest = SessionRequest<
-  RpcMethod.AVALANCHE_GET_ACCOUNT_PUB_KEY,
-  []
->
+export type AvalancheGetAccountPubKeyRpcRequest =
+  SessionRequest<RpcMethod.AVALANCHE_GET_ACCOUNT_PUB_KEY>
 
 class AvalancheGetAccountPubKeyHandler
   implements RpcRequestHandler<AvalancheGetAccountPubKeyRpcRequest, PubKeyType>

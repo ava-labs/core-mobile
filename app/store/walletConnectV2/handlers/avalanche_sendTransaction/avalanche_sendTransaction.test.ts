@@ -112,7 +112,8 @@ describe('app/store/walletConnectV2/handlers/avalanche_sendTransaction/avalanche
     it('returns error if transactionHex was not provided', async () => {
       const request = createRequest()
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ;(request.data.params.request.params.transactionHex as any) = undefined
+      ;((request.data.params.request.params as any).transactionHex as any) =
+        undefined
 
       const result = await avalancheSendTransactionHandler.handle(
         request,
@@ -130,7 +131,8 @@ describe('app/store/walletConnectV2/handlers/avalanche_sendTransaction/avalanche
     it('returns error if chainAlias was not provided', async () => {
       const request = createRequest()
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ;(request.data.params.request.params.chainAlias as any) = undefined
+      ;((request.data.params.request.params as any).chainAlias as any) =
+        undefined
 
       const result = await avalancheSendTransactionHandler.handle(
         request,
