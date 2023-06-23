@@ -74,8 +74,7 @@ export async function exportC({
 
   const txID = await networkService.sendTransaction(
     signedTxWithFee,
-    avaxXPNetwork,
-    true
+    avaxXPNetwork
   )
   Logger.trace('txID', txID)
 

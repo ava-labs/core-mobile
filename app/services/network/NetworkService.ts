@@ -74,10 +74,6 @@ class NetworkService {
           signedTx instanceof avaxSerial.SignedTx &&
           provider instanceof Avalanche.JsonRpcProvider
         ) {
-          if (waitToPost) {
-            const tx = await provider.issueTx(signedTx)
-            return tx.txID
-          }
           return (await provider.issueTx(signedTx)).txID
         }
 

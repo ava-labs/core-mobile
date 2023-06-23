@@ -34,11 +34,7 @@ export async function importP({
     avaxXPNetwork
   )
 
-  const txID = await networkService.sendTransaction(
-    signedTx,
-    avaxXPNetwork,
-    true
-  )
+  const txID = await networkService.sendTransaction(signedTx, avaxXPNetwork)
   Logger.trace('txID', txID)
 
   const avaxProvider = networkService.getProviderForNetwork(
