@@ -88,7 +88,6 @@ class AvalancheSignTransactionHandler
     }
 
     const tx = utils.unpackWithManager(vm, txBytes) as avaxSerial.AvaxTx
-    console.log(tx, tx.getInputs())
     try {
       const codecManager = utils.getManagerForVM(vm)
       const signedTx = codecManager.unpack(txBytes, avaxSerial.SignedTx)
@@ -292,17 +291,17 @@ class AvalancheSignTransactionHandler
       }
     } catch (e) {
       Logger.error(
-        'Unable to approve send transaction request',
+        'Unable to approve sign transaction request',
         JSON.stringify(e)
       )
 
       const message =
         'message' in (e as Error)
           ? (e as Error).message
-          : 'Send transaction error'
+          : 'Sign transaction error'
 
       Sentry.captureException(e, {
-        tags: { dapps: 'sendTransaction' }
+        tags: { dapps: 'signTransaction' }
       })
 
       return {
