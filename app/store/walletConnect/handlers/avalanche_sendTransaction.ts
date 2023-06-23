@@ -2,24 +2,23 @@ import { AppListenerEffectAPI } from 'store'
 import * as Navigation from 'utils/Navigation'
 import AppNavigation from 'navigation/AppNavigation'
 import {
-  AVM,
+  avaxSerial,
   EVM,
   EVMUnsignedTx,
-  PVM,
   UnsignedTx,
-  avaxSerial,
-  utils
+  utils,
+  VM
 } from '@avalabs/avalanchejs-v2'
 import { ethErrors } from 'eth-rpc-errors'
-import { Account, selectActiveAccount } from 'store/account'
+import { selectActiveAccount } from 'store/account'
 import networkService from 'services/network/NetworkService'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import walletService from 'services/wallet/WalletService'
 import { RpcMethod } from 'store/walletConnectV2'
-import { VM } from '@avalabs/avalanchejs-v2'
 import * as Sentry from '@sentry/react-native'
 import Logger from 'utils/Logger'
 import { Avalanche } from '@avalabs/wallets-sdk'
+import { getAddressByVM } from 'store/account/utils'
 import {
   ApproveResponse,
   DappRpcRequest,
@@ -254,20 +253,6 @@ class AvalancheSendTransactionHandler
         })
       }
     }
-  }
-}
-
-function getAddressByVM(vm: VM, account: Account | undefined) {
-  if (!account) {
-    return
-  }
-
-  if (vm === AVM) {
-    return account.addressAVM
-  } else if (vm === PVM) {
-    return account.addressPVM
-  } else if (vm === EVM) {
-    return account.addressCoreEth
   }
 }
 

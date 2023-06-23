@@ -23,7 +23,7 @@ const CreateChainTxView = ({ tx }: { tx: Avalanche.CreateChainTx }) => {
 
   if (showGenesis) {
     return (
-      <View style={{}}>
+      <View>
         <Row style={{ alignItems: 'center' }}>
           <AvaButton.Base onPress={() => setShowGenesis(false)}>
             <CarrotSVG direction={'left'} size={23} />
