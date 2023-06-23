@@ -5,6 +5,12 @@ import { Page } from '@playwright/test'
 import { Platform } from './constants'
 import Constants from './constants'
 
+const fs = require('fs')
+const reportUIPerformanceFilePath =
+  './e2e/tests/performance/testResults/allResults.txt'
+const tempUIPerformanceFilePath =
+  './e2e/tests/performance/testResults/tempResults.txt'
+
 const tap = async (item: Detox.NativeMatcher) => {
   await element(item).tap()
 }
@@ -168,6 +174,76 @@ const platform = () => {
   return device.getPlatform()
 }
 
+const getCurrentDateTime = () => {
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const day = String(now.getDate()).padStart(2, '0')
+  const hours = String(now.getHours()).padStart(2, '0')
+  const minutes = String(now.getMinutes()).padStart(2, '0')
+  const seconds = String(now.getSeconds()).padStart(2, '0')
+
+  const dateTimeString = `${year}-${month}-${day}  ${hours}:${minutes}:${seconds}`
+  return dateTimeString
+}
+
+const reportUIPerformance = async (
+  startTime: number,
+  endTime: number,
+  testName: string,
+  androidMaxTime: number,
+  iOSMaxTime: number
+) => {
+  let resultPlatform
+  let maxTime
+
+  if (platform() === Platform.Android) {
+    resultPlatform = 'Android'
+    maxTime = androidMaxTime
+  } else {
+    resultPlatform = 'iOS'
+    maxTime = iOSMaxTime
+  }
+
+  const time = (endTime - startTime) / 1000
+
+  const status = time > maxTime ? 'fail' : 'pass'
+
+  const currentDateTime = getCurrentDateTime()
+  const newValue = `${time
+    .toFixed(3)
+    .toString()}  ${resultPlatform}  ${testName}  ${status}  ${currentDateTime}\n`
+
+  let data = ''
+
+  try {
+    data = fs.readFileSync(reportUIPerformanceFilePath, 'utf8')
+  } catch (err) {
+    console.error('Error reading file:', err)
+    // continue
+  }
+
+  const existingLines = data.trim().split('\n')
+
+  const updatedContent = existingLines.concat(newValue).join('\n')
+
+  try {
+    fs.writeFileSync(reportUIPerformanceFilePath, updatedContent, 'utf8')
+    console.log('Value appended to file:', newValue)
+  } catch (err) {
+    console.error('Error writing file:', err)
+  }
+
+  console.log('Results saved to file.')
+}
+
+const saveTempUIPerformance = async (startTime: number, endTime: number) => {
+  const result = ((endTime - startTime) / 1000).toString()
+  fs.writeFile(tempUIPerformanceFilePath, result, (err: any) => {
+    if (err) throw err
+  })
+}
+
 export default {
   tap,
   longPress,
@@ -185,5 +261,8 @@ export default {
   getAndroidAttributesArray,
   openPage,
   platform,
-  isVisible
+  isVisible,
+  getCurrentDateTime,
+  reportUIPerformance,
+  saveTempUIPerformance
 }
