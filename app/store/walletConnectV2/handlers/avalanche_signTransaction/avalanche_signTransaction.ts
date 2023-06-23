@@ -47,10 +47,8 @@ export type AvalancheSignTransactionApproveData = {
   ownSignatureIndices: [number, number][]
 }
 
-export type AvalancheSignTransactionRpcRequest = SessionRequest<
-  RpcMethod.AVALANCHE_SIGN_TRANSACTION,
-  AvalancheTxParams
->
+export type AvalancheSignTransactionRpcRequest =
+  SessionRequest<RpcMethod.AVALANCHE_SIGN_TRANSACTION>
 
 class AvalancheSignTransactionHandler
   implements
@@ -68,8 +66,6 @@ class AvalancheSignTransactionHandler
     listenerApi: AppListenerEffectAPI
   ): HandleResponse<never> => {
     const { getState } = listenerApi
-    const { transactionHex, chainAlias } =
-      request.data.params.request.params ?? {}
     const parseResult = parseRequestParams(request.data.params.request.params)
 
     if (!parseResult.success) {
@@ -80,6 +76,8 @@ class AvalancheSignTransactionHandler
         })
       }
     }
+    const { transactionHex, chainAlias } = parseResult.data
+
     const vm = Avalanche.getVmByChainAlias(chainAlias)
     const txBytes = utils.hexToBuffer(transactionHex)
     const isDevMode = selectIsDeveloperMode(getState())

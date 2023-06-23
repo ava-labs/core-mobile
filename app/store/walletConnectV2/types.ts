@@ -7,11 +7,11 @@ export type SessionProposal = {
   method: RpcMethod.SESSION_REQUEST
 }
 
-export type SessionRequest<Method, Params = unknown> = {
+export type SessionRequest<Method> = {
   data: SignClientTypes.BaseEventArgs<{
     request: {
       method: Method
-      params: Params
+      params: unknown
     }
     chainId: string
   }>

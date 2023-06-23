@@ -40,10 +40,8 @@ export type SendTransactionApproveData = {
   vm: VM
 }
 
-export type AvalancheSendTransactionRpcRequest = SessionRequest<
-  RpcMethod.AVALANCHE_SEND_TRANSACTION,
-  AvalancheTxParams
->
+export type AvalancheSendTransactionRpcRequest =
+  SessionRequest<RpcMethod.AVALANCHE_SEND_TRANSACTION>
 
 class AvalancheSendTransactionHandler
   implements
@@ -64,10 +62,7 @@ class AvalancheSendTransactionHandler
     const { getState } = listenerApi
     const result = parseRequestParams(request.data.params.request.params)
 
-    const { transactionHex, chainAlias, externalIndices, internalIndices } =
-      request.data.params.request.params ?? {}
-
-    if (!result.success || !transactionHex || !chainAlias) {
+    if (!result.success) {
       return {
         success: false,
         error: ethErrors.rpc.invalidParams({
@@ -75,6 +70,9 @@ class AvalancheSendTransactionHandler
         })
       }
     }
+
+    const { transactionHex, chainAlias, externalIndices, internalIndices } =
+      result.data
 
     const vm = Avalanche.getVmByChainAlias(chainAlias)
     const txBytes = utils.hexToBuffer(transactionHex)
@@ -174,17 +172,18 @@ class AvalancheSendTransactionHandler
   ): ApproveResponse<string> => {
     try {
       const { getState } = listenerApi
+      const parsedParams = parseRequestParams(
+        payload.request.data.params.request.params
+      )
+
+      if (!parsedParams.success) {
+        throw new Error('Missing mandatory param(s)')
+      }
+
+      const { externalIndices, internalIndices } = parsedParams.data
+
       const {
-        data: { vm, unsignedTxJson },
-        request: {
-          data: {
-            params: {
-              request: {
-                params: { externalIndices, internalIndices }
-              }
-            }
-          }
-        }
+        data: { vm, unsignedTxJson }
       } = payload
       // Parse the json into a tx object
       const unsignedTx =
