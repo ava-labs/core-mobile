@@ -7,11 +7,11 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import Card from 'components/Card'
 import { truncateNodeId } from 'utils/Utils'
 import Separator from 'components/Separator'
-import moment from 'moment'
 import { Avalanche } from '@avalabs/wallets-sdk'
 import { bigIntToString } from '@avalabs/utils-sdk'
 import { selectAvaxPrice } from 'store/balance'
 import { useSelector } from 'react-redux'
+import { format } from 'date-fns'
 
 const AddSubnetValidatorTxView = ({
   tx
@@ -23,10 +23,12 @@ const AddSubnetValidatorTxView = ({
   const avaxPrice = useSelector(selectAvaxPrice)
   const { txFee, nodeID, start, end, subnetID } = tx
   const txFeeNumber = Number(bigIntToString(txFee, 9))
-  const startDate = moment(new Date(parseInt(start) * 1000)).format(
+  const startDate = format(
+    new Date(parseInt(start) * 1000),
     'MMM DD, YYYY, HH:mm A'
   )
-  const endDate = moment(new Date(parseInt(end) * 1000)).format(
+  const endDate = format(
+    new Date(parseInt(end) * 1000),
     'MMM DD, YYYY, HH:mm A'
   )
 

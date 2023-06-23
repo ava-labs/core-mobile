@@ -10,7 +10,7 @@ import { truncateNodeId } from 'utils/Utils'
 import Separator from 'components/Separator'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { useSelector } from 'react-redux'
-import moment from 'moment'
+import { format } from 'date-fns'
 import { Avalanche } from '@avalabs/wallets-sdk'
 import { selectAvaxPrice } from 'store/balance'
 
@@ -20,10 +20,12 @@ const AddValidatorTxView = ({ tx }: { tx: Avalanche.AddValidatorTx }) => {
   const { tokenInCurrencyFormatter, currencyFormatter } =
     useApplicationContext().appHook
   const { nodeID, fee, start, end, stake } = tx
-  const startDate = moment(new Date(parseInt(start) * 1000)).format(
+  const startDate = format(
+    new Date(parseInt(start) * 1000),
     'MMM DD, YYYY, HH:mm A'
   )
-  const endDate = moment(new Date(parseInt(end) * 1000)).format(
+  const endDate = format(
+    new Date(parseInt(end) * 1000),
     'MMM DD, YYYY, HH:mm A'
   )
   const selectedCurrency = useSelector(selectSelectedCurrency)
