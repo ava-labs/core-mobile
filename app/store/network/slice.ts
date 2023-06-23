@@ -9,6 +9,7 @@ import { selectAllCustomTokens } from 'store/customToken'
 import { LocalTokenWithBalance } from 'store/balance'
 import { getLocalTokenId } from 'store/balance/utils'
 import { BN } from 'bn.js'
+import { capture } from 'store/posthog'
 import { RootState } from '../index'
 import { ChainID, NetworkState } from './types'
 import { mergeWithCustomTokens } from './utils'
@@ -50,12 +51,20 @@ export const networkSlice = createSlice({
       const chainId = action.payload
       if (!state.favorites.includes(chainId)) {
         // set favorite
+        capture({
+          event: 'NetworkFavoriteAdded',
+          properties: { network: chainId }
+        })
         state.favorites.push(chainId)
       } else {
         if (alwaysFavoriteNetworks.includes(chainId)) {
           return
         }
         // unset favorite
+        capture({
+          event: 'NetworkFavoriteRemoved',
+          properties: { network: chainId }
+        })
         const newFavorites = state.favorites.filter(id => id !== chainId)
         state.favorites = newFavorites
       }
