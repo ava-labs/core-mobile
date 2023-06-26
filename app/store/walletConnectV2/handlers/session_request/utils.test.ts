@@ -13,7 +13,8 @@ describe('isCoreMethod', () => {
       'avalanche_selectAccount',
       'avalanche_setDeveloperMode',
       'avalanche_updateContact',
-      'avalanche_sendTransaction'
+      'avalanche_sendTransaction',
+      'avalanche_signTransaction'
     ]
 
     for (const method of methods) {

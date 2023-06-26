@@ -52,11 +52,11 @@ describe('avalanche_getAccounts handler', () => {
           {
             index: 0,
             name: 'Account 1',
-            addressAVM: '',
+            addressAVM: 'X-fuji1e0r9s2lf6v9mfqyy6pxrpkar8dm5jxqcvhg99n',
             addressBTC: 'tb1qlzsvluv4cahzz8zzwud40x2hn3zq4c7zak6spw',
             addressC: '0xcA0E993876152ccA6053eeDFC753092c8cE712D0',
-            addressCoreEth: '',
-            addressPVM: '',
+            addressPVM: 'P-fuji1e0r9s2lf6v9mfqyy6pxrpkar8dm5jxqcvhg99n',
+            addressCoreEth: 'C-fuji1y76a8lk4ym3af4u45f7fghuqc6ftfh7l4jsrgz',
             active: true,
             type: 'primary'
           },

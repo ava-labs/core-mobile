@@ -9,28 +9,32 @@ import { ScrollView } from 'react-native-gesture-handler'
 import { WalletScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation, useRoute } from '@react-navigation/native'
-import ExportTxView from 'screens/rpc/components/SendTransaction/ExportTxView'
-import ImportTxView from 'screens/rpc/components/SendTransaction/ImportTxView'
-import BaseTxView from 'screens/rpc/components/SendTransaction/BaseTxView'
-import AddValidatorTxView from 'screens/rpc/components/SendTransaction/AddValidatorTxView'
-import AddDelegatorTxView from 'screens/rpc/components/SendTransaction/AddDelegatorTxView'
-import { useDappConnectionV1 } from 'hooks/useDappConnectionV1'
+import AddDelegatorTxView from 'screens/rpc/components/shared/AvalancheSendTransaction/AddDelegatorTxView'
+import { useDappConnectionV2 } from 'hooks/useDappConnectionV2'
 import RpcRequestBottomSheet from 'screens/rpc/components/shared/RpcRequestBottomSheet'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import Separator from 'components/Separator'
+import ExportTxView from '../shared/AvalancheSendTransaction/ExportTxView'
+import ImportTxView from '../shared/AvalancheSendTransaction/ImportTxView'
+import BaseTxView from '../shared/AvalancheSendTransaction/BaseTxView'
+import AddValidatorTxView from '../shared/AvalancheSendTransaction/AddValidatorTxView'
+import AddSubnetValidatorTxView from '../shared/AvalancheSendTransaction/AddSubnetValidatorView'
+import CreateChainTxView from '../shared/AvalancheSendTransaction/CreateChainView'
+import CreateSubnetTxView from '../shared/AvalancheSendTransaction/CreateSubnetView'
 
-type SendTransactionScreenProps = WalletScreenProps<
-  typeof AppNavigation.Modal.SendTransaction
+type AvalancheSendTransactionV2ScreenProps = WalletScreenProps<
+  typeof AppNavigation.Modal.AvalancheSendTransactionV2
 >
 
-const SendTransaction = () => {
+const AvalancheSendTransactionV2 = () => {
   const { theme } = useApplicationContext()
 
-  const { goBack } = useNavigation<SendTransactionScreenProps['navigation']>()
+  const { goBack } =
+    useNavigation<AvalancheSendTransactionV2ScreenProps['navigation']>()
   const { request, data } =
-    useRoute<SendTransactionScreenProps['route']>().params
+    useRoute<AvalancheSendTransactionV2ScreenProps['route']>().params
   const { onUserApproved: onApprove, onUserRejected: onReject } =
-    useDappConnectionV1()
+    useDappConnectionV2()
 
   const hexData = JSON.parse(data.unsignedTxJson).txBytes
 
@@ -73,7 +77,6 @@ const SendTransaction = () => {
           <ExportTxView
             tx={data.txData}
             hexData={hexData}
-            avaxPrice={12}
             toggleActionButtons={toggleActionButtons}
           />
         )
@@ -82,23 +85,28 @@ const SendTransaction = () => {
           <ImportTxView
             tx={data.txData}
             hexData={hexData}
-            avaxPrice={12}
             toggleActionButtons={toggleActionButtons}
           />
         )
       case 'base':
-        return <BaseTxView tx={data.txData} avaxPrice={12} />
+        return <BaseTxView tx={data.txData} />
       case 'add_validator':
-        return <AddValidatorTxView tx={data.txData} avaxPrice={12} />
+        return <AddValidatorTxView tx={data.txData} />
       case 'add_delegator':
-        return <AddDelegatorTxView tx={data.txData} avaxPrice={12} />
+        return <AddDelegatorTxView tx={data.txData} />
+      case 'add_subnet_validator':
+        return <AddSubnetValidatorTxView tx={data.txData} />
+      case 'create_chain':
+        return <CreateChainTxView tx={data.txData} />
+      case 'create_subnet':
+        return <CreateSubnetTxView tx={data.txData} />
     }
   }
 
   return (
     <RpcRequestBottomSheet onClose={rejectAndClose}>
       <ScrollView contentContainerStyle={txStyles.scrollView}>
-        <View>{renderSendDetails()}</View>
+        <View style={{ flexGrow: 1 }}>{renderSendDetails()}</View>
         <View>
           {data.txData.type === 'base' && (
             <Separator color={theme.neutral800} />
@@ -124,4 +132,4 @@ export const txStyles = StyleSheet.create({
   }
 })
 
-export default SendTransaction
+export default AvalancheSendTransactionV2

@@ -2,7 +2,6 @@
  * @format
  */
 import 'react-native-gesture-handler'
-import './shim'
 import './polyfills'
 import 'react-native-get-random-values'
 import 'react-native-url-polyfill/auto'

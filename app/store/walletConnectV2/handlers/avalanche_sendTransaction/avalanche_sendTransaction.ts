@@ -14,42 +14,42 @@ import { selectActiveAccount } from 'store/account'
 import networkService from 'services/network/NetworkService'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import walletService from 'services/wallet/WalletService'
-import { RpcMethod } from 'store/walletConnectV2'
+import { RpcMethod, SessionRequest } from 'store/walletConnectV2/types'
 import * as Sentry from '@sentry/react-native'
 import Logger from 'utils/Logger'
 import { Avalanche } from '@avalabs/wallets-sdk'
 import { getAddressByVM } from 'store/account/utils'
 import {
   ApproveResponse,
-  DappRpcRequest,
   DEFERRED_RESULT,
   HandleResponse,
   RpcRequestHandler
-} from './types'
+} from '../types'
+import { parseRequestParams } from './utils'
 
-type AvalancheTxParams = {
+export type AvalancheTxParams = {
   transactionHex: string
   chainAlias: 'X' | 'P' | 'C'
   externalIndices?: number[]
   internalIndices?: number[]
 }
 
-export type AvalancheSendTransactionApproveData = {
+export type SendTransactionApproveData = {
   unsignedTxJson: string
   txData: Avalanche.Tx
   vm: VM
 }
 
-export type AvalancheSendTransactionRpcRequest = DappRpcRequest<
-  RpcMethod.AVALANCHE_SEND_TRANSACTION,
-  AvalancheTxParams
->
+export type AvalancheSendTransactionRpcRequest =
+  SessionRequest<RpcMethod.AVALANCHE_SEND_TRANSACTION>
 
 class AvalancheSendTransactionHandler
   implements
     RpcRequestHandler<
       AvalancheSendTransactionRpcRequest,
-      AvalancheSendTransactionApproveData
+      never,
+      string,
+      SendTransactionApproveData
     >
 {
   methods = [RpcMethod.AVALANCHE_SEND_TRANSACTION]
@@ -57,13 +57,12 @@ class AvalancheSendTransactionHandler
   handle = async (
     request: AvalancheSendTransactionRpcRequest,
     listenerApi: AppListenerEffectAPI
-  ): HandleResponse => {
+  ): HandleResponse<never> => {
     let unsignedTx: UnsignedTx | EVMUnsignedTx
     const { getState } = listenerApi
-    const { transactionHex, chainAlias, externalIndices, internalIndices } =
-      request.payload.params ?? {}
+    const result = parseRequestParams(request.data.params.request.params)
 
-    if (!transactionHex || !chainAlias) {
+    if (!result.success) {
       return {
         success: false,
         error: ethErrors.rpc.invalidParams({
@@ -71,6 +70,10 @@ class AvalancheSendTransactionHandler
         })
       }
     }
+
+    const { transactionHex, chainAlias, externalIndices, internalIndices } =
+      result.data
+
     const vm = Avalanche.getVmByChainAlias(chainAlias)
     const txBytes = utils.hexToBuffer(transactionHex)
     const isDevMode = selectIsDeveloperMode(getState())
@@ -143,7 +146,7 @@ class AvalancheSendTransactionHandler
       }
     }
 
-    const approveData: AvalancheSendTransactionApproveData = {
+    const approveData: SendTransactionApproveData = {
       unsignedTxJson: JSON.stringify(unsignedTx.toJSON()),
       txData,
       vm
@@ -152,7 +155,7 @@ class AvalancheSendTransactionHandler
     Navigation.navigate({
       name: AppNavigation.Root.Wallet,
       params: {
-        screen: AppNavigation.Modal.AvalancheSendTransaction,
+        screen: AppNavigation.Modal.AvalancheSendTransactionV2,
         params: { request, data: approveData }
       }
     })
@@ -163,19 +166,24 @@ class AvalancheSendTransactionHandler
   approve = async (
     payload: {
       request: AvalancheSendTransactionRpcRequest
-      data: AvalancheSendTransactionApproveData
+      data: SendTransactionApproveData
     },
     listenerApi: AppListenerEffectAPI
-  ): ApproveResponse => {
+  ): ApproveResponse<string> => {
     try {
       const { getState } = listenerApi
+      const parsedParams = parseRequestParams(
+        payload.request.data.params.request.params
+      )
+
+      if (!parsedParams.success) {
+        throw new Error('Missing mandatory param(s)')
+      }
+
+      const { externalIndices, internalIndices } = parsedParams.data
+
       const {
-        data: { vm, unsignedTxJson },
-        request: {
-          payload: {
-            params: { externalIndices, internalIndices }
-          }
-        }
+        data: { vm, unsignedTxJson }
       } = payload
       // Parse the json into a tx object
       const unsignedTx =
@@ -201,7 +209,6 @@ class AvalancheSendTransactionHandler
       if (!activeAccount) {
         throw new Error('Unable to submit transaction, no active account.')
       }
-
       const signedTransactionJson = await walletService.sign(
         {
           tx: unsignedTx,
@@ -243,7 +250,7 @@ class AvalancheSendTransactionHandler
           : 'Send transaction error'
 
       Sentry.captureException(e, {
-        tags: { dapps: 'sendTransaction' }
+        tags: { dapps: 'sendTransactionV2' }
       })
 
       return {

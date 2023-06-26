@@ -84,7 +84,8 @@ export class TokenService {
       symbol,
       decimals,
       address,
-      contractType: 'ERC-20'
+      contractType: 'ERC-20',
+      chainId: network.chainId
     }
   }
 

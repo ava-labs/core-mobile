@@ -3,38 +3,38 @@ import React from 'react'
 import { StyleSheet, View } from 'react-native'
 import { Space } from 'components/Space'
 import { Row } from 'components/Row'
-import { AddDelegatorTx } from 'store/walletConnect/handlers/types'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import Card from 'components/Card'
-import { bigIntToString } from '@avalabs/utils-sdk'
 import { truncateNodeId } from 'utils/Utils'
 import Separator from 'components/Separator'
+import { Avalanche } from '@avalabs/wallets-sdk'
+import { bigIntToString } from '@avalabs/utils-sdk'
+import { selectAvaxPrice } from 'store/balance'
 import { useSelector } from 'react-redux'
-import { selectSelectedCurrency } from 'store/settings/currency'
-import moment from 'moment'
+import { format } from 'date-fns'
 
-const AddDelegatorTxView = ({
-  tx,
-  avaxPrice
+const AddSubnetValidatorTxView = ({
+  tx
 }: {
-  tx: AddDelegatorTx
-  avaxPrice: number
+  tx: Avalanche.AddSubnetValidatorTx
 }) => {
   const { theme } = useApplicationContext()
-  const { tokenInCurrencyFormatter, currencyFormatter } =
-    useApplicationContext().appHook
-  const { nodeID, start, end, stake } = tx
-  const startDate = moment(new Date(parseInt(start) * 1000)).format(
+  const { currencyFormatter } = useApplicationContext().appHook
+  const avaxPrice = useSelector(selectAvaxPrice)
+  const { txFee, nodeID, start, end, subnetID } = tx
+  const txFeeNumber = Number(bigIntToString(txFee, 9))
+  const startDate = format(
+    new Date(parseInt(start) * 1000),
     'MMM DD, YYYY, HH:mm A'
   )
-  const endDate = moment(new Date(parseInt(end) * 1000)).format(
+  const endDate = format(
+    new Date(parseInt(end) * 1000),
     'MMM DD, YYYY, HH:mm A'
   )
-  const selectedCurrency = useSelector(selectSelectedCurrency)
 
   return (
     <View>
-      <AvaText.Heading4>Approve Add Delegator</AvaText.Heading4>
+      <AvaText.Heading4>Approve Add Subnet Validator</AvaText.Heading4>
       <Space y={28} />
       <AvaText.Body2 color={theme.colorText1} textStyle={{ lineHeight: 20 }}>
         Staking Details
@@ -42,31 +42,22 @@ const AddDelegatorTxView = ({
       <Space y={8} />
       <Card style={styles.cardContainer}>
         <Row style={styles.rowContainer}>
-          <AvaText.Caption color={theme.colorText2}>Node</AvaText.Caption>
+          <AvaText.Caption color={theme.colorText2}>Subnet ID</AvaText.Caption>
         </Row>
         <Space y={4} />
         <Row style={styles.rowContainer}>
           <AvaText.Caption color={theme.colorText1}>
-            {truncateNodeId(nodeID)}
-          </AvaText.Caption>
-        </Row>
-        <Space y={24} />
-        <Row style={styles.rowCenterContainer}>
-          <AvaText.Caption color={theme.colorText1}>
-            Stake Amount
-          </AvaText.Caption>
-          <AvaText.Subtitle2 color={theme.neutral50}>
-            {Number(bigIntToString(stake, 9))} AVAX
-          </AvaText.Subtitle2>
-        </Row>
-        <Row style={styles.currencyContainer}>
-          <AvaText.Caption color={theme.colorText2}>
-            {`${tokenInCurrencyFormatter(
-              Number(bigIntToString(stake, 9)) * avaxPrice
-            )} ${selectedCurrency}`}
+            {truncateNodeId(subnetID, 28)}
           </AvaText.Caption>
         </Row>
         <Space y={8} />
+        <Row style={styles.rowContainer}>
+          <AvaText.Caption color={theme.colorText2}>Node ID</AvaText.Caption>
+        </Row>
+        <Space y={4} />
+        <Row style={styles.rowContainer}>
+          <AvaText.Caption color={theme.colorText1}>{nodeID}</AvaText.Caption>
+        </Row>
         <Separator style={styles.separator} color={theme.neutral800} />
         <Row style={styles.rowCenterContainer}>
           <AvaText.Caption color={theme.colorText1}>Start Date</AvaText.Caption>
@@ -82,6 +73,7 @@ const AddDelegatorTxView = ({
           </AvaText.Subtitle2>
         </Row>
       </Card>
+
       <Space y={24} />
       <AvaText.Body2 color={theme.colorText1} textStyle={{ lineHeight: 20 }}>
         Network Fee
@@ -92,14 +84,14 @@ const AddDelegatorTxView = ({
           <AvaText.Caption color={theme.colorText1}>Fee Amount</AvaText.Caption>
           <View style={styles.feeContainer}>
             <AvaText.Subtitle2 color={theme.neutral50}>
-              0 AVAX
+              {txFeeNumber} AVAX
             </AvaText.Subtitle2>
           </View>
         </Row>
         <Space y={2} />
         <Row style={styles.currencyContainer}>
           <AvaText.Caption color={theme.neutral400}>
-            {currencyFormatter(0)}
+            {currencyFormatter(txFeeNumber * avaxPrice)}
           </AvaText.Caption>
         </Row>
       </Card>
@@ -132,4 +124,4 @@ const styles = StyleSheet.create({
   }
 })
 
-export default AddDelegatorTxView
+export default AddSubnetValidatorTxView

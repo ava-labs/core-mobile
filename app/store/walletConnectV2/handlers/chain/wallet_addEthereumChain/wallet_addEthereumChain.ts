@@ -101,6 +101,7 @@ class WalletAddEthereumChainHandler
       rpcUrl,
       subnetId: '',
       vmId: '',
+      primaryColor: '',
       vmName: NetworkVMType.EVM
     }
 
