@@ -2,7 +2,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import TestRail from '@dlenroc/testrail'
-import getTestLogs, { isSmokeTestRun } from './getResultsFromLogs'
+import getTestLogs, {
+  isSmokeTestRun,
+  testRunTimestamp
+} from './getResultsFromLogs'
 
 const projectId = Number(process.env.TESTRAIL_PROJECT_ID)
 
@@ -466,10 +469,8 @@ export async function createNewTestRunBool(platform: any) {
   }
 }
 
-export const isExistingSmokeTestRun = async (
-  testRunTimestamp: any,
-  platform: any
-) => {
+export const isExistingSmokeTestRun = async (platform: any) => {
+  const timestamp = await testRunTimestamp(platform)
   const yesterday = new Date()
   yesterday.setDate(yesterday.getDate() - 2)
   const yesterdayUTC = Number(yesterday) / 1000
@@ -480,30 +481,28 @@ export const isExistingSmokeTestRun = async (
   const runIDs = []
   for (const run of testRuns) {
     const testRunName = run.name
-    if (
-      testRunName.includes(testRunTimestamp) &&
-      testRunName.includes(platform)
-    ) {
+    if (testRunName.includes(timestamp) && testRunName.includes(platform)) {
       runIDs.push(run.id)
     }
   }
   if (runIDs.length === 0) {
+    console.log('false')
     return false
   } else {
+    console.log(runIDs)
     return runIDs[0]
   }
 }
 
-export const currentRunID = async (platform: any, testRunTimestamp: any) => {
-  const smokeTestRunExists = await isExistingSmokeTestRun(
-    testRunTimestamp,
-    platform
-  )
+export const currentRunID = async (platform: any) => {
+  const smokeTestRunExists = await isExistingSmokeTestRun(platform)
+
+  const timestamp = await testRunTimestamp(platform)
 
   if (await isSmokeTestRun(platform)) {
     if (!smokeTestRunExists) {
       const runID = await createEmptyTestRun(
-        `${platform} smoke test run ${testRunTimestamp}`,
+        `${platform} smoke test run ${timestamp}`,
         `This is a smoke test run on ${platform}`
       )
       return { runID, emptyTestRun: false }
@@ -516,8 +515,8 @@ export const currentRunID = async (platform: any, testRunTimestamp: any) => {
       return { runID: runID, emptyTestRun: true }
     } else {
       const newRunID = await createEmptyTestRun(
-        `android smoke test run`,
-        'This is a smoke test run for android!'
+        `${platform} smoke test run`,
+        `This is a smoke test run for ${platform}!`
       )
       return { runID: newRunID, emptyTestRun: false }
     }

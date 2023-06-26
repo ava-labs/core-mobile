@@ -72,3 +72,14 @@
 0.074  iOS  performanceRecoveryPhraseScreen  pass  2023-06-26  11:44:36
 0.068  iOS  performanceRecoveryCreatePinScreen  pass  2023-06-26  11:44:38
 0.193  iOS  performancePortfolioScreen  pass  2023-06-26  11:44:54
+0.112  iOS  performanceHelpUsImproveScreen  pass  2023-06-26  14:58:34
+0.027  iOS  performanceRecoveryPhraseScreen  pass  2023-06-26  14:58:34
+0.046  iOS  performanceIUnderstandScreen  pass  2023-06-26  14:58:44
+0.126  iOS  performanceVerifyPhraseScreen  pass  2023-06-26  14:58:44
+0.072  iOS  performanceRecoveryPhraseScreen  pass  2023-06-26  14:59:29
+0.159  iOS  performanceRecoveryCreatePinScreen  pass  2023-06-26  14:59:31
+0.075  iOS  performancePortfolioScreen  pass  2023-06-26  14:59:47
+0.035  iOS  performanceHelpUsImproveScreen  pass  2023-06-26  15:03:34
+0.900  iOS  performanceRecoveryPhraseScreen  pass  2023-06-26  15:03:34
+0.023  iOS  performanceIUnderstandScreen  pass  2023-06-26  15:03:42
+0.036  iOS  performanceVerifyPhraseScreen  pass  2023-06-26  15:03:42

@@ -26,7 +26,7 @@ export default async function getTestLogs() {
       const resultFolders: any = await getDirectories(
         `./e2e/artifacts/${folders[i]}`
       )
-      // We want to grab the last folder in the directory and that's what parsed folder is
+
       const parsedResultFolder = resultFolders[resultFolders.length - 1]
       const attachmentFolders = await getDirectories(
         `./e2e/artifacts/${folders[i]}/${parsedResultFolder}`
@@ -60,6 +60,7 @@ export default async function getTestLogs() {
       )
     }
   }
+  console.log(testResults)
   return testResults
 }
 
@@ -124,8 +125,7 @@ export async function isResultPresent(platform: any) {
 
 export async function isSmokeTestRun(platform: any) {
   try {
-    const folders: any = await getDirectories(`./e2e/artifacts/${platform}`)
-    const parsedTestRunName = folders[0].split('.')
+    const parsedTestRunName = await parseTestRun(platform)
     if (parsedTestRunName.includes('smoke')) {
       console.log('Its a smoke test run!!!')
       return true
@@ -139,4 +139,15 @@ export async function isSmokeTestRun(platform: any) {
     )
     return false
   }
+}
+
+export const testRunTimestamp = async (platform: any) => {
+  const testRunFolder = await parseTestRun(platform)
+  return testRunFolder[4]
+}
+
+export async function parseTestRun(platform: any) {
+  const folders: any = await getDirectories(`./e2e/artifacts/${platform}`)
+  const parsedTestRunName = folders[folders.length - 1].split('.')
+  return parsedTestRunName
 }

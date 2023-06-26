@@ -113,7 +113,11 @@ A 'case id' is the permanent test case in our suite, a 'test case id' is a part 
 export default async function sendResults() {
   const preparedFinalResults = await prepareFinalResults()
   const testCasesToSend = preparedFinalResults.testCasesToSend
+  console.log(testCasesToSend)
+  console.log('These are being sent to testrail!!!')
   const resultsToSendToTestrail = preparedFinalResults.resultsToSendToTestrail
+  console.log(resultsToSendToTestrail)
+  console.log('These are the results being sent!!!')
   if (process.env.POST_TO_TESTRAIL) {
     if (
       (await isResultPresent('android')) &&
