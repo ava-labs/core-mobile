@@ -1,6 +1,5 @@
 import '../shim'
 import './read_as_array_buffer_shim'
 import './text_encoding'
-import './noble_secp256k1'
 import 'react-native-get-random-values'
 import 'react-native-url-polyfill/auto'
