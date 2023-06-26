@@ -11,11 +11,7 @@ import {
   getXpubFromMnemonic
 } from '@avalabs/wallets-sdk'
 import { now } from 'moment'
-import {
-  AvalancheTransactionRequest,
-  PubKeyType,
-  SignTransactionRequest
-} from 'services/wallet/types'
+import { PubKeyType, SignTransactionRequest } from 'services/wallet/types'
 import { Wallet } from 'ethers'
 import networkService from 'services/network/NetworkService'
 import { Network, NetworkVMType } from '@avalabs/chains-sdk'
@@ -30,7 +26,7 @@ import { Transaction } from '@sentry/types'
 import { Account } from 'store/account'
 import { RpcMethod } from 'store/walletConnectV2/types'
 import Logger from 'utils/Logger'
-import { avaxSerial, UnsignedTx } from '@avalabs/avalanchejs-v2'
+import { UnsignedTx } from '@avalabs/avalanchejs-v2'
 
 class WalletService {
   private mnemonic?: string
@@ -123,27 +119,6 @@ class WalletService {
           const signedTx = await wallet.signTx(tx.inputs, tx.outputs)
           return signedTx.toHex()
         }
-        if ('to' in tx) {
-          return await (wallet as Wallet).signTransaction(tx)
-        }
-        throw new Error('Signing error, invalid data')
-      })
-  }
-
-  async signAvaxTx(
-    txRequest: AvalancheTransactionRequest,
-    accountIndex: number,
-    network: Network,
-    sentryTrx?: Transaction
-  ): Promise<avaxSerial.SignedTx> {
-    return SentryWrapper.createSpanFor(sentryTrx)
-      .setContext('svc.wallet.sign')
-      .executeAsync(async () => {
-        const wallet = await this.getWallet(accountIndex, network, sentryTrx)
-        if (!wallet) {
-          throw new Error('Signing error, wrong network')
-        }
-
         // Handle Avalanche signing, X/P/CoreEth
         if ('tx' in tx && wallet instanceof Avalanche.StaticSigner) {
           const sig = await wallet.signTx({
@@ -154,7 +129,9 @@ class WalletService {
 
           return JSON.stringify(sig.toJSON())
         }
-
+        if ('to' in tx) {
+          return await (wallet as Wallet).signTransaction(tx)
+        }
         throw new Error('Signing error, invalid data')
       })
   }

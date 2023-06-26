@@ -9,6 +9,7 @@ import WalletService from 'services/wallet/WalletService'
 import NetworkService from 'services/network/NetworkService'
 import { Account } from 'store/account'
 import { AvalancheTransactionRequest } from 'services/wallet/types'
+import { UnsignedTx } from '@avalabs/avalanchejs-v2'
 
 export type ExportCParams = {
   /**
@@ -66,11 +67,12 @@ export async function exportC({
     activeAccount.addressPVM
   )
 
-  const signedTxWithFee = await walletService.signAvaxTx(
+  const signedTxWithFeeJson = await walletService.sign(
     { tx: unsignedTxWithFee } as AvalancheTransactionRequest,
     activeAccount.index,
     avaxXPNetwork
   )
+  const signedTxWithFee = UnsignedTx.fromJSON(signedTxWithFeeJson).getSignedTx()
 
   const txID = await networkService.sendTransaction(
     signedTxWithFee,

@@ -2,7 +2,7 @@ import { Account } from 'store/account'
 import NetworkService from 'services/network/NetworkService'
 import WalletService from 'services/wallet/WalletService'
 import { Avalanche } from '@avalabs/wallets-sdk'
-import { avaxSerial, UnsignedTx } from '@avalabs/avalanchejs-v2'
+import { avaxSerial, EVM, UnsignedTx, utils } from '@avalabs/avalanchejs-v2'
 import { importP } from 'services/earn/importP'
 
 describe('earn/importP', () => {
@@ -32,8 +32,24 @@ describe('earn/importP', () => {
     jest.spyOn(WalletService, 'createImportPTx').mockImplementation(() => {
       return Promise.resolve({} as UnsignedTx)
     })
-    jest.spyOn(WalletService, 'signAvaxTx').mockImplementation(() => {
-      return Promise.resolve({} as avaxSerial.SignedTx)
+    jest.spyOn(WalletService, 'sign').mockImplementation(() => {
+      return Promise.resolve(
+        JSON.stringify({
+          codecId: '0',
+          vm: EVM,
+          txBytes: utils.hexToBuffer('0x00'),
+          utxos: [],
+          addressMaps: {},
+          credentials: []
+        })
+      )
+    })
+    jest.spyOn(UnsignedTx, 'fromJSON').mockImplementation(() => {
+      return {
+        getSignedTx: () => {
+          return {} as avaxSerial.SignedTx
+        }
+      } as UnsignedTx
     })
 
     it('should call walletService.createImportPTx', async () => {
@@ -53,7 +69,7 @@ describe('earn/importP', () => {
         activeAccount: {} as Account,
         isDevMode: false
       })
-      expect(WalletService.signAvaxTx).toHaveBeenCalled()
+      expect(WalletService.sign).toHaveBeenCalled()
     })
 
     it('should call networkService.sendTransaction', async () => {

@@ -4,7 +4,7 @@ import { Account } from 'store/account'
 import NetworkService from 'services/network/NetworkService'
 import WalletService from 'services/wallet/WalletService'
 import { Avalanche } from '@avalabs/wallets-sdk'
-import { avaxSerial, UnsignedTx } from '@avalabs/avalanchejs-v2'
+import { avaxSerial, EVM, UnsignedTx, utils } from '@avalabs/avalanchejs-v2'
 import mockNetworks from 'tests/fixtures/networks.json'
 import { AVALANCHE_XP_NETWORK, Network } from '@avalabs/chains-sdk'
 
@@ -40,8 +40,24 @@ describe('earn/exportC', () => {
     jest.spyOn(WalletService, 'createExportCTx').mockImplementation(() => {
       return Promise.resolve({} as UnsignedTx)
     })
-    jest.spyOn(WalletService, 'signAvaxTx').mockImplementation(() => {
-      return Promise.resolve({} as avaxSerial.SignedTx)
+    jest.spyOn(WalletService, 'sign').mockImplementation(() => {
+      return Promise.resolve(
+        JSON.stringify({
+          codecId: '0',
+          vm: EVM,
+          txBytes: utils.hexToBuffer('0x00'),
+          utxos: [],
+          addressMaps: {},
+          credentials: []
+        })
+      )
+    })
+    jest.spyOn(UnsignedTx, 'fromJSON').mockImplementation(() => {
+      return {
+        getSignedTx: () => {
+          return {} as avaxSerial.SignedTx
+        }
+      } as UnsignedTx
     })
 
     it('should fail if cChainBalance is less than required amount', async () => {
@@ -98,7 +114,7 @@ describe('earn/exportC', () => {
         networkService: NetworkService,
         walletService: WalletService
       })
-      expect(WalletService.signAvaxTx).toHaveBeenCalled()
+      expect(WalletService.sign).toHaveBeenCalled()
       expect(result).toBe(true)
     })
 
