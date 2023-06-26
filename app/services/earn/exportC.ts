@@ -6,10 +6,10 @@ import Logger from 'utils/Logger'
 import { calculatePChainFee } from 'services/earn/calculateCrossChainFees'
 import BN from 'bn.js'
 import WalletService from 'services/wallet/WalletService'
-import NetworkService from 'services/network/NetworkService'
 import { Account } from 'store/account'
 import { AvalancheTransactionRequest } from 'services/wallet/types'
 import { UnsignedTx } from '@avalabs/avalanchejs-v2'
+import NetworkService from 'services/network/NetworkService'
 
 export type ExportCParams = {
   /**
@@ -20,8 +20,6 @@ export type ExportCParams = {
    * in nAvax
    */
   requiredAmount: BN
-  walletService: typeof WalletService
-  networkService: typeof NetworkService
   activeAccount: Account
   isDevMode: boolean
 }
@@ -29,20 +27,18 @@ export type ExportCParams = {
 export async function exportC({
   cChainBalance,
   requiredAmount,
-  walletService,
-  networkService,
   activeAccount,
   isDevMode
 }: ExportCParams): Promise<boolean> {
-  const avaxXPNetwork = networkService.getAvalancheNetworkXP(isDevMode)
-  const chains = await networkService.getNetworks()
+  const avaxXPNetwork = NetworkService.getAvalancheNetworkXP(isDevMode)
+  const chains = await NetworkService.getNetworks()
   const cChainNetwork =
     chains[
       isDevMode ? ChainId.AVALANCHE_TESTNET_ID : ChainId.AVALANCHE_MAINNET_ID
     ]
   assertNotUndefined(cChainNetwork)
 
-  const avaxProvider = networkService.getProviderForNetwork(
+  const avaxProvider = NetworkService.getProviderForNetwork(
     avaxXPNetwork
   ) as Avalanche.JsonRpcProvider
 
@@ -58,7 +54,7 @@ export async function exportC({
     throw Error('Not enough balance on C chain')
   }
 
-  const unsignedTxWithFee = await walletService.createExportCTx(
+  const unsignedTxWithFee = await WalletService.createExportCTx(
     amount,
     instantFee,
     activeAccount.index,
@@ -67,14 +63,14 @@ export async function exportC({
     activeAccount.addressPVM
   )
 
-  const signedTxWithFeeJson = await walletService.sign(
+  const signedTxWithFeeJson = await WalletService.sign(
     { tx: unsignedTxWithFee } as AvalancheTransactionRequest,
     activeAccount.index,
     avaxXPNetwork
   )
   const signedTxWithFee = UnsignedTx.fromJSON(signedTxWithFeeJson).getSignedTx()
 
-  const txID = await networkService.sendTransaction(
+  const txID = await NetworkService.sendTransaction(
     signedTxWithFee,
     avaxXPNetwork
   )

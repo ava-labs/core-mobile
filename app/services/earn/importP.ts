@@ -8,38 +8,34 @@ import { AvalancheTransactionRequest } from 'services/wallet/types'
 import { UnsignedTx } from '@avalabs/avalanchejs-v2'
 
 export type ImportPParams = {
-  walletService: typeof WalletService
-  networkService: typeof NetworkService
   activeAccount: Account
   isDevMode: boolean
 }
 
 export async function importP({
-  walletService,
-  networkService,
   activeAccount,
   isDevMode
 }: ImportPParams): Promise<boolean> {
-  const avaxXPNetwork = networkService.getAvalancheNetworkXP(isDevMode)
+  const avaxXPNetwork = NetworkService.getAvalancheNetworkXP(isDevMode)
 
-  const unsignedTx = await walletService.createImportPTx(
+  const unsignedTx = await WalletService.createImportPTx(
     activeAccount.index,
     avaxXPNetwork,
     'C',
     activeAccount.addressPVM
   )
 
-  const signedTxJson = await walletService.sign(
+  const signedTxJson = await WalletService.sign(
     { tx: unsignedTx } as AvalancheTransactionRequest,
     activeAccount.index,
     avaxXPNetwork
   )
   const signedTx = UnsignedTx.fromJSON(signedTxJson).getSignedTx()
 
-  const txID = await networkService.sendTransaction(signedTx, avaxXPNetwork)
+  const txID = await NetworkService.sendTransaction(signedTx, avaxXPNetwork)
   Logger.trace('txID', txID)
 
-  const avaxProvider = networkService.getProviderForNetwork(
+  const avaxProvider = NetworkService.getProviderForNetwork(
     avaxXPNetwork
   ) as Avalanche.JsonRpcProvider
   try {

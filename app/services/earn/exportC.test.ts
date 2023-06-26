@@ -66,9 +66,7 @@ describe('earn/exportC', () => {
           cChainBalance: new BN(1e9),
           requiredAmount: new BN(1e10),
           isDevMode: false,
-          activeAccount: {} as Account,
-          networkService: NetworkService,
-          walletService: WalletService
+          activeAccount: {} as Account
         })
       }).rejects.toThrow('Not enough balance on C chain')
     })
@@ -78,9 +76,7 @@ describe('earn/exportC', () => {
         cChainBalance: new BN(1e9),
         requiredAmount: new BN(1e8),
         isDevMode: false,
-        activeAccount: {} as Account,
-        networkService: NetworkService,
-        walletService: WalletService
+        activeAccount: {} as Account
       })
       expect(baseFeeMockFn).toHaveBeenCalled()
     })
@@ -90,9 +86,7 @@ describe('earn/exportC', () => {
         cChainBalance: new BN(1e9),
         requiredAmount: new BN(1e8),
         isDevMode: false,
-        activeAccount: {} as Account,
-        networkService: NetworkService,
-        walletService: WalletService
+        activeAccount: {} as Account
       })
       expect(WalletService.createExportCTx).toHaveBeenCalledWith(
         BigInt(101000000),
@@ -110,9 +104,7 @@ describe('earn/exportC', () => {
         cChainBalance: new BN(1e9),
         requiredAmount: new BN(1e8),
         isDevMode: false,
-        activeAccount: {} as Account,
-        networkService: NetworkService,
-        walletService: WalletService
+        activeAccount: {} as Account
       })
       expect(WalletService.sign).toHaveBeenCalled()
       expect(result).toBe(true)
@@ -123,9 +115,7 @@ describe('earn/exportC', () => {
         cChainBalance: new BN(1e9),
         requiredAmount: new BN(1e8),
         isDevMode: false,
-        activeAccount: {} as Account,
-        networkService: NetworkService,
-        walletService: WalletService
+        activeAccount: {} as Account
       })
       expect(NetworkService.sendTransaction).toHaveBeenCalled()
       expect(result).toBe(true)

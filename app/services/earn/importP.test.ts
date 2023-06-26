@@ -54,8 +54,6 @@ describe('earn/importP', () => {
 
     it('should call walletService.createImportPTx', async () => {
       await importP({
-        walletService: WalletService,
-        networkService: NetworkService,
         activeAccount: {} as Account,
         isDevMode: false
       })
@@ -64,8 +62,6 @@ describe('earn/importP', () => {
 
     it('should call walletService.signAvaxTx', async () => {
       await importP({
-        walletService: WalletService,
-        networkService: NetworkService,
         activeAccount: {} as Account,
         isDevMode: false
       })
@@ -74,8 +70,6 @@ describe('earn/importP', () => {
 
     it('should call networkService.sendTransaction', async () => {
       await importP({
-        walletService: WalletService,
-        networkService: NetworkService,
         activeAccount: {} as Account,
         isDevMode: false
       })
