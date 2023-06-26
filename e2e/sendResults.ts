@@ -1,24 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+// @ts-nocheck comment at the top of the file
 /* eslint-disable no-var */
 import * as fs from 'fs'
 import {
   getTestCaseId,
   api,
   createNewTestSectionsAndCases,
-  androidRunID,
-  iosRunID
+  currentRunID
 } from './generateTestrailObjects'
-import getTestLogs from './getResultsFromLogs'
-
-const getAndroidTestRunId = async () => {
-  const androidTestRunID = await androidRunID()
-  return androidTestRunID
-}
-
-const getIosTestRunId = async () => {
-  const iosTestRunID = await iosRunID()
-  return iosTestRunID
-}
+import getTestLogs, { isResultPresent } from './getResultsFromLogs'
 
 async function parseResultsFile() {
   const jsonResultsArray = await getTestLogs()
@@ -56,13 +46,11 @@ async function parseResultsFile() {
       })
     }
   }
+  console.log(casesToAddToRun)
   return { casesToAddToRun, testIdArrayForTestrail }
 }
 
 export async function prepareResults() {
-  const androidTestRunID = await getAndroidTestRunId()
-  const iosTestRunId = await getIosTestRunId()
-
   const resultsToSendObject = await parseResultsFile()
 
   const testIdArrayForTestrail = resultsToSendObject.testIdArrayForTestrail
@@ -76,33 +64,13 @@ export async function prepareResults() {
     case_ids: uniqueCaseIdArray
   }
 
-  // If POST_TO_TESTRAIL environment variable set to true the results will be posted to testrail in a test run
-  if (process.env.POST_TO_TESTRAIL) {
-    if (iosTestRunId.emptyTestRun || androidTestRunID.emptyTestRun) {
-      try {
-        // Takes the array of test cases and adds them to the test run
-        await api.updateRun(Number(androidTestRunID.runID), testCasesToSend)
-        await api.updateRun(Number(iosTestRunId.runID), testCasesToSend)
-        console.log(
-          'Test cases have been sent to the test run...' +
-            testCasesToSend.case_ids
-        )
-      } catch (TestRailException) {
-        console.log(
-          'Invalid test case ids found in ' +
-            testCasesToSend.case_ids +
-            'test cases sent'
-        )
-      }
-    } else {
-      console.log('Updating the existing test case results...')
-    }
-  }
-  return casesToAddToRun
+  return { casesToAddToRun, testCasesToSend }
 }
 
-export default async function sendResults() {
-  const casesToAddToRun = await prepareResults()
+export async function prepareFinalResults() {
+  const preparedResults = await prepareResults()
+  const casesToAddToRun = preparedResults.casesToAddToRun
+  const testCasesToSend = preparedResults.testCasesToSend
   /*/ 
 Creates an array of test case objects from the current test run in testrail. This is done because a 'test case id' in a test run is different than a 'case id'.
 A 'case id' is the permanent test case in our suite, a 'test case id' is a part of the test run only. It can get confusing so please be sure to ask questions if you need help.
@@ -136,36 +104,70 @@ A 'case id' is the permanent test case in our suite, a 'test case id' is a part 
       })
     }
   }
+  return { resultsToSendToTestrail, testCasesToSend }
+}
 
-  // Sends the results to testrail using the resultsToSendToTestrail array if POST_TO_TESTRAIL env variable set to true
+export default async function sendResults() {
+  const preparedFinalResults = await prepareFinalResults()
+  const testCasesToSend = preparedFinalResults.testCasesToSend
+  const resultsToSendToTestrail = preparedFinalResults.resultsToSendToTestrail
+
   if (process.env.POST_TO_TESTRAIL) {
-    await generatePlatformResults(
-      resultsToSendToTestrail,
-      'android',
-      (
-        await getAndroidTestRunId()
-      ).runID
-    )
-    await generatePlatformResults(
-      resultsToSendToTestrail,
-      'ios',
-      (
-        await getIosTestRunId()
-      ).runID
-    )
+    if (
+      (await isResultPresent('android')) &&
+      (await isSmokeTestRunFinished('android'))
+    ) {
+      await generatePlatformResults(
+        testCasesToSend,
+        resultsToSendToTestrail,
+        'android',
+        (
+          await currentRunID('android')
+        ).runID
+      )
+    }
+    if (
+      (await isResultPresent('ios')) &&
+      (await isSmokeTestRunFinished('ios'))
+    ) {
+      await generatePlatformResults(
+        testCasesToSend,
+        resultsToSendToTestrail,
+        'ios',
+        (
+          await currentRunID('ios')
+        ).runID
+      )
+    }
   }
 }
 
 // Updates the results for an existing test run or and empty test run
 async function generatePlatformResults(
-  resultsToSendToTestrail: any[],
-  platform: string,
-  runId?: number
+  testCasesToSend: any,
+  resultsToSendToTestrail: any,
+  platform: any,
+  runId?: any
 ) {
   try {
     const resultArray = resultsToSendToTestrail.filter(
       result => result.platform === platform
     )
+    try {
+      // Takes the array of test cases and adds them to the test run
+      await api.updateRun(Number(runId), testCasesToSend)
+      console.log(
+        'Test cases have been sent to the test run...' +
+          testCasesToSend.case_ids
+      )
+    } catch (TestRailException) {
+      console.log(
+        'Invalid test case ids found in ' +
+          testCasesToSend.case_ids +
+          ' with run id ' +
+          runId
+      )
+    }
 
     for (let i = 0; i < resultArray.length; i++) {
       const resultObject = resultArray[i]
