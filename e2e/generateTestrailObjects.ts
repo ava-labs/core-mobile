@@ -8,11 +8,12 @@ import getTestLogs, {
 } from './getResultsFromLogs'
 
 const projectId = Number(process.env.TESTRAIL_PROJECT_ID)
+const password = String(process.env.TESTRAIL_API_KEY)
 
 export var api = new TestRail({
   host: 'https://avalabs.testrail.net',
   username: 'mobiledevs@avalabs.org',
-  password: 'yE4G2zwYMHMxUOT6MhlH'
+  password: password
 })
 
 export async function createEmptyTestRun(
