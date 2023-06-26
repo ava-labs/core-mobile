@@ -47,7 +47,7 @@ export async function exportC({
 
   const amt = BigInt(requiredAmount.toString(10))
   const baseFee = await avaxProvider.getApiC().getBaseFee() //in WEI
-  const instantFee = baseFee * BigInt(1.2) // Increase by 20% for instant speed
+  const instantFee = baseFee + (baseFee * BigInt(20)) / BigInt(100) // Increase by 20% for instant speed
 
   const pChainFee = calculatePChainFee()
   const amount = amt + BigInt(pChainFee.toString())

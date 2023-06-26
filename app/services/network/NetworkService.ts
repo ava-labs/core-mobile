@@ -61,7 +61,7 @@ class NetworkService {
     network: Network,
     waitToPost = false,
     sentryTrx?: Transaction
-  ) {
+  ): Promise<string> {
     return SentryWrapper.createSpanFor(sentryTrx)
       .setContext('svc.network.send_transaction')
       .executeAsync(async () => {
