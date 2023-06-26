@@ -10,31 +10,23 @@ export const getDirectories = async (source: any) =>
     .map((dirent: { name: any }) => dirent.name)
 
 export default async function getTestLogs() {
-  type TestResult = {
-    sectionName?: string
-    subsection?: string
-    testCase?: string
-    platform?: string
-    testResult?: string
-    failedScreenshot?: string
-  }
   const folders: any = await getDirectories('./e2e/artifacts/')
-  const testResults: Array<TestResult> = []
+  const testResults: any = []
 
   for (let i = 0; i < folders.length; i++) {
     const nonSplitFolders = await getDirectories(
       `./e2e/artifacts/${folders[i]}`
     )
-    const splitFolder: string[] | undefined = nonSplitFolders[0]?.split('.')
+    const splitFolder: any = nonSplitFolders[0]?.split('.')
     const platform = splitFolder
       ? splitFolder[0]
       : console.log('Why is there not splitfolder? ' + nonSplitFolders)
 
     if (splitFolder) {
-      const resultFolders: string[] = await getDirectories(
+      const resultFolders: any = await getDirectories(
         `./e2e/artifacts/${folders[i]}`
       )
-      // We want to grab the last folder in the directory and that's what parsed folder is
+
       const parsedResultFolder = resultFolders[resultFolders.length - 1]
       const attachmentFolders = await getDirectories(
         `./e2e/artifacts/${folders[i]}/${parsedResultFolder}`
@@ -111,7 +103,50 @@ function removeTestSectionExtraChars(testSection: string | undefined) {
   }
 }
 
-export const testDirectory = async () => {
-  const directory = await getDirectories('./e2e/artifacts/ios')
-  return directory[0]
+export async function isResultPresent(platform: any) {
+  try {
+    const resultsFolder = await getDirectories(`./e2e/artifacts/${platform}`)
+    if (resultsFolder.length > 0) {
+      return true
+    } else {
+      console.log(
+        `No results were found for ${platform} so not sending anything to testrail...`
+      )
+      return false
+    }
+  } catch (error) {
+    console.log(
+      `No results folder found for ${platform} so nothing the send to testrail...`
+    )
+    return false
+  }
+}
+
+export async function isSmokeTestRun(platform: any) {
+  try {
+    const parsedTestRunName = await parseTestRun(platform)
+    if (parsedTestRunName.includes('smoke')) {
+      console.log('Its a smoke test run!!!')
+      return true
+    } else {
+      console.log('Its a regression run!!!')
+      return false
+    }
+  } catch (error) {
+    console.log(
+      `No ${platform} folder found so not sending any results to testrail!!!`
+    )
+    return false
+  }
+}
+
+export const testRunTimestamp = async (platform: any) => {
+  const testRunFolder = await parseTestRun(platform)
+  return testRunFolder[4]
+}
+
+export async function parseTestRun(platform: any) {
+  const folders: any = await getDirectories(`./e2e/artifacts/${platform}`)
+  const parsedTestRunName = folders[folders.length - 1].split('.')
+  return parsedTestRunName
 }
