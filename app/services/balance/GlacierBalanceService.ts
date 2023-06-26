@@ -98,7 +98,7 @@ export class GlacierBalanceService implements BalanceServiceProvider {
       })
 
       tokensWithBalance.push(
-        ...convertErc20ToTokenWithBalance(response.erc20TokenBalances)
+        ...convertErc20ToTokenWithBalance(response.erc20TokenBalances, network)
       )
       nextPageToken = response.nextPageToken
     } while (nextPageToken)

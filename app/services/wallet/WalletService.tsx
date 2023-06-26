@@ -121,13 +121,13 @@ class WalletService {
         }
         // Handle Avalanche signing, X/P/CoreEth
         if ('tx' in tx && wallet instanceof Avalanche.StaticSigner) {
-          const sig = await wallet.signTxBuffer({
-            buffer: tx.tx,
-            chain: tx.chain
+          const sig = await wallet.signTx({
+            tx: tx.tx,
+            externalIndices: tx.externalIndices,
+            internalIndices: tx.internalIndices
           })
-          // Wallet can sign with multiple keys, but in our case it will always be one
-          if (!sig[0]) throw new Error('Failed to sign transaction.')
-          return sig[0].toString('hex')
+
+          return JSON.stringify(sig.toJSON())
         }
         if ('to' in tx) {
           return await (wallet as Wallet).signTransaction(tx)
@@ -299,6 +299,29 @@ class WalletService {
     } else {
       throw new Error('Can not find public key for the given index')
     }
+  }
+
+  async getAddressesByIndices(
+    indices: number[],
+    chainAlias: 'X' | 'P',
+    isChange: boolean,
+    isTestnet: boolean
+  ) {
+    const provXP = await networkService.getAvalancheProviderXP(isTestnet)
+
+    if (isChange && chainAlias !== 'X') {
+      return []
+    }
+
+    return indices.map(index =>
+      Avalanche.getAddressFromXpub(
+        this.xpubXP as string,
+        index,
+        provXP,
+        chainAlias,
+        isChange
+      )
+    )
   }
 }
 

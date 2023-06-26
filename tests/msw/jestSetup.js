@@ -14,3 +14,6 @@ afterEach(() => server.resetHandlers())
 
 // clean up after the tests are finished.
 afterAll(() => server.close())
+
+// mock Logger to make console output less noisy
+jest.mock('utils/Logger')

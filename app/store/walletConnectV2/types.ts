@@ -48,7 +48,8 @@ export enum RpcMethod {
   AVALANCHE_SELECT_ACCOUNT = 'avalanche_selectAccount',
   AVALANCHE_SET_DEVELOPER_MODE = 'avalanche_setDeveloperMode',
   AVALANCHE_UPDATE_CONTACT = 'avalanche_updateContact',
-  AVALANCHE_SEND_TRANSACTION = 'avalanche_sendTransaction'
+  AVALANCHE_SEND_TRANSACTION = 'avalanche_sendTransaction',
+  AVALANCHE_SIGN_TRANSACTION = 'avalanche_signTransaction'
 }
 
 export const CORE_ONLY_METHODS = [
@@ -62,7 +63,8 @@ export const CORE_ONLY_METHODS = [
   RpcMethod.AVALANCHE_SELECT_ACCOUNT,
   RpcMethod.AVALANCHE_SET_DEVELOPER_MODE,
   RpcMethod.AVALANCHE_UPDATE_CONTACT,
-  RpcMethod.AVALANCHE_SEND_TRANSACTION
+  RpcMethod.AVALANCHE_SEND_TRANSACTION,
+  RpcMethod.AVALANCHE_SIGN_TRANSACTION
 ]
 
 export type RpcError = EthereumRpcError<string> | EthereumProviderError<string>

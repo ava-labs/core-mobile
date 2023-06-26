@@ -39,8 +39,19 @@ import {
   OldTypedData,
   TypedData
 } from 'store/walletConnectV2/handlers/eth_sign/schemas/ethSignTypedData'
-import { SendTransactionApproveData } from 'store/walletConnect/handlers/types'
-import { AvalancheSendTransactionRpcRequest } from 'store/walletConnect/handlers/avalanche_sendTransaction'
+import {
+  AvalancheSendTransactionApproveData,
+  AvalancheSendTransactionRpcRequest
+} from 'store/walletConnect/handlers/avalanche_sendTransaction'
+import { AvalancheSendTransactionRpcRequest as AvalancheSendTransactionRpcRequestV2 } from 'store/walletConnectV2/handlers/avalanche_sendTransaction/avalanche_sendTransaction'
+import {
+  AvalancheSignTransactionApproveData,
+  AvalancheSignTransactionRpcRequest
+} from 'store/walletConnect/handlers/avalanche_signTransaction'
+import {
+  AvalancheSignTransactionApproveData as AvalancheSignTransactionApproveDataV2,
+  AvalancheSignTransactionRpcRequest as AvalancheSignTransactionRpcRequestV2
+} from 'store/walletConnectV2/handlers/avalanche_signTransaction/avalanche_signTransaction'
 import { EarnStackParamList } from 'navigation/wallet/EarnScreenStack'
 import { RootScreenStackParamList } from './RootScreenStack'
 import { OnboardingScreenStackParamList } from './OnboardScreenStack'
@@ -126,14 +137,29 @@ export type SignTransactionParams = {
   request: EthSendTransactionRpcRequest
 }
 
-export type SendTransactionParams = {
+export type AvalancheSendTransactionParams = {
   request: AvalancheSendTransactionRpcRequest
-  data: SendTransactionApproveData
+  data: AvalancheSendTransactionApproveData
+}
+
+export type AvalancheSignTransactionParams = {
+  request: AvalancheSignTransactionRpcRequest
+  data: AvalancheSignTransactionApproveData
 }
 
 export type SignTransactionV2Params = {
   request: EthSendTransactionRpcRequestV2
   transaction: TransactionParams
+}
+
+export type AvalancheSendTransactionV2Params = {
+  request: AvalancheSendTransactionRpcRequestV2
+  data: AvalancheSendTransactionApproveData
+}
+
+export type AvalancheSignTransactionV2Params = {
+  request: AvalancheSignTransactionRpcRequestV2
+  data: AvalancheSignTransactionApproveDataV2
 }
 
 export type SignMessageParams = {
