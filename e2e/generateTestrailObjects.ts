@@ -444,6 +444,7 @@ export function parseTestName(testName: any) {
   return testCaseObject
 }
 
+// Checks to see if a regression run has been created within the last 24 hours and returns the testrun id if one exists or returns false if none exists
 export async function createNewTestRunBool(platform: any) {
   const yesterday = new Date()
   yesterday.setDate(yesterday.getDate() - 1)
@@ -469,6 +470,7 @@ export async function createNewTestRunBool(platform: any) {
   }
 }
 
+// Gets a list of test runs from testrail and then checks the timestamps in the names and returns false if there are no existing test runs with the timestamp
 export const isExistingSmokeTestRun = async (platform: any) => {
   const timestamp = await testRunTimestamp(platform)
   const yesterday = new Date()
@@ -486,10 +488,8 @@ export const isExistingSmokeTestRun = async (platform: any) => {
     }
   }
   if (runIDs.length === 0) {
-    console.log('false')
     return false
   } else {
-    console.log(runIDs)
     return runIDs[0]
   }
 }
@@ -498,8 +498,9 @@ export const currentRunID = async (platform: any) => {
   const smokeTestRunExists = await isExistingSmokeTestRun(platform)
 
   const timestamp = await testRunTimestamp(platform)
-
+  // Checks if its a smoke test run
   if (await isSmokeTestRun(platform)) {
+    // Checks the folder timestamp against the runs in testrail and if its not found, creates a new test run
     if (!smokeTestRunExists) {
       const runID = await createEmptyTestRun(
         `${platform} smoke test run ${timestamp}`,
@@ -510,6 +511,7 @@ export const currentRunID = async (platform: any) => {
       return { runID: smokeTestRunExists, emptyTestRun: true }
     }
   } else {
+    // This is for regression runs which run on a daily cadence
     var runID = await createNewTestRunBool(platform)
     if (runID) {
       return { runID: runID, emptyTestRun: true }

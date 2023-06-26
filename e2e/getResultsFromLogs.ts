@@ -60,7 +60,6 @@ export default async function getTestLogs() {
       )
     }
   }
-  console.log(testResults)
   return testResults
 }
 

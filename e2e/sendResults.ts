@@ -8,10 +8,7 @@ import {
   createNewTestSectionsAndCases,
   currentRunID
 } from './generateTestrailObjects'
-import getTestLogs, {
-  getDirectories,
-  isResultPresent
-} from './getResultsFromLogs'
+import getTestLogs, { isResultPresent } from './getResultsFromLogs'
 
 async function parseResultsFile() {
   const jsonResultsArray = await getTestLogs()
@@ -113,11 +110,8 @@ A 'case id' is the permanent test case in our suite, a 'test case id' is a part 
 export default async function sendResults() {
   const preparedFinalResults = await prepareFinalResults()
   const testCasesToSend = preparedFinalResults.testCasesToSend
-  console.log(testCasesToSend)
-  console.log('These are being sent to testrail!!!')
   const resultsToSendToTestrail = preparedFinalResults.resultsToSendToTestrail
-  console.log(resultsToSendToTestrail)
-  console.log('These are the results being sent!!!')
+
   if (process.env.POST_TO_TESTRAIL) {
     if (
       (await isResultPresent('android')) &&
@@ -211,26 +205,4 @@ async function generatePlatformResults(
   } catch (error) {
     console.log(error)
   }
-}
-
-// Checks if all the tests have run and returns true once finished. Use this as a workaround for the lack of true 'afterAll' detox/jest hook.
-export const isSmokeTestRunFinished = async (platform?: any) => {
-  const currentTestFolder = await getDirectories(`./e2e/artifacts/${platform}`)
-  // If the number of smoke tests change please update this
-  const testsToRunArray = 3
-
-  if (currentTestFolder.length < testsToRunArray.length) {
-    return false
-  } else {
-    return true
-  }
-}
-
-export async function updateRun() {
-  const content = {
-    case_ids: [1150, 1148],
-    include_all: false
-  }
-  const runDetails = await api.updateRun(3050, content)
-  console.log(runDetails)
 }
