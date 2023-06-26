@@ -301,17 +301,17 @@ class AvalancheSignTransactionHandler
       }
     } catch (e) {
       Logger.error(
-        'Unable to approve send transaction request',
+        'Unable to approve sign transaction request',
         JSON.stringify(e)
       )
 
       const message =
         'message' in (e as Error)
           ? (e as Error).message
-          : 'Send transaction error'
+          : 'Sign transaction error'
 
       Sentry.captureException(e, {
-        tags: { dapps: 'sendTransaction' }
+        tags: { dapps: 'signTransaction' }
       })
 
       return {
