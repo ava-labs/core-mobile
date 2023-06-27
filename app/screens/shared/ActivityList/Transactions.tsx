@@ -21,6 +21,7 @@ import { BridgeTransaction } from '@avalabs/bridge-sdk'
 import { UI, useIsUIDisabled } from 'hooks/useIsUIDisabled'
 import { RefreshControl } from 'components/RefreshControl'
 import AvaList from 'components/AvaList'
+import { usePostCapture } from 'hooks/usePosthogCapture'
 
 const SCREEN_WIDTH = Dimensions.get('window').width
 const BOTTOM_PADDING = SCREEN_WIDTH * 0.3
@@ -70,6 +71,7 @@ const Transactions = ({
   hidePendingBridgeTransactions
 }: Props) => {
   const { openUrl } = useInAppBrowser()
+  const { capture } = usePostCapture()
   const bridgeDisabled = useIsUIDisabled(UI.Bridge)
   const pendingBridgeByTxId = useSelector(selectBridgeTransactions)
   const combinedData = useMemo(() => {
@@ -122,6 +124,7 @@ const Transactions = ({
         key={tx.sourceTxHash}
         item={tx}
         onPress={() => {
+          capture('ActivityCardPendingTransactionStatusShown')
           openTransactionStatus({
             txHash: tx.sourceTxHash || ''
           })
@@ -146,8 +149,10 @@ const Transactions = ({
     } else {
       const onPress = () => {
         if (item.isContractCall || item.isBridge) {
+          capture('ActivityCardLinkClickd')
           openUrl(item.explorerLink)
         } else {
+          capture('ActivityCardDetailShown')
           openTransactionDetails(item)
         }
       }

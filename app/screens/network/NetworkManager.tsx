@@ -83,7 +83,7 @@ export default function NetworkManager({ onShowInfo }: Props) {
   }
 
   function showInfo(chainId: number) {
-    capture('NetworkDetailsClicked', { network: chainId })
+    capture('NetworkDetailsClicked', { chainId })
     onShowInfo(chainId)
   }
 
@@ -104,7 +104,9 @@ export default function NetworkManager({ onShowInfo }: Props) {
         networkName={item.chainName}
         logoUri={item.logoUri}
         isFavorite={isFavorite}
-        onFavorite={() => dispatch(toggleFavorite(item.chainId))}
+        onFavorite={() => {
+          dispatch(toggleFavorite(item.chainId))
+        }}
         onInfo={showInfo}
       />
     )

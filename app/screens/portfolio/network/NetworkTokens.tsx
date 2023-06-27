@@ -52,6 +52,11 @@ const NetworkTokens = () => {
       selectedToken:
         token.type === TokenType.ERC20 ? token.address : token.symbol
     })
+
+    capture('PortfolioTokenSelected', {
+      selectedToken:
+        token.type === TokenType.ERC20 ? token.address : token.symbol
+    })
   }
 
   const manageTokens = () => {

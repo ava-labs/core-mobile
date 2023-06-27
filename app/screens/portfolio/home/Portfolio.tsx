@@ -38,6 +38,9 @@ const Portfolio = () => {
       case 1:
         capture('PortfolioCollectiblesClicked')
         break
+      case 2:
+        capture('PortfolioActivityClicked')
+        break
     }
   }
 
@@ -116,8 +119,10 @@ type PortfolioNavigationProp = PortfolioScreenProps<
 
 const NftTab = () => {
   const { navigate } = useNavigation<PortfolioNavigationProp>()
+  const { capture } = usePostCapture()
 
   const openNftDetails = (item: NFTItemData) => {
+    capture('CollectibleItemClicked', { chainId: item.chainId })
     navigate(AppNavigation.Wallet.NFTDetails, {
       screen: AppNavigation.Nft.Details,
       params: { nft: item }

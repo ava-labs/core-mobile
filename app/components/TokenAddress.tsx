@@ -11,7 +11,6 @@ import BitcoinSVG from 'components/svg/BitcoinSVG'
 import { isBech32Address } from '@avalabs/bridge-sdk'
 import { isAddress } from '@ethersproject/address'
 import AvaLogoSVG from 'components/svg/AvaLogoSVG'
-import { usePostCapture } from 'hooks/usePosthogCapture'
 
 interface Props {
   address: string
@@ -21,6 +20,7 @@ interface Props {
   showFullAddress?: boolean
   textColor?: string
   copyIconEnd?: boolean
+  onCopyAddress?: (address: string) => void
   testID?: string
 }
 
@@ -31,10 +31,10 @@ const TokenAddress: FC<Props> = ({
   hideCopy,
   showIcon,
   textColor,
+  onCopyAddress,
   copyIconEnd
 }) => {
   const theme = useContext(ApplicationContext).theme
-  const { capture } = usePostCapture()
 
   const tokenAddress = showFullAddress ? address : truncateAddress(address)
   const txtColor = textColor ? textColor : theme.colorText1
@@ -42,13 +42,8 @@ const TokenAddress: FC<Props> = ({
   const copyIcon = <CopySVG />
 
   const copyAddressToClipboard = () => {
-    if (isBech32Address(address)) {
-      capture('AccountSelectorBtcAddressCopied')
-    }
-    if (isAddress(address)) {
-      capture('AccountSelectorEthAddressCopied')
-    }
     copyToClipboard(address)
+    onCopyAddress?.(address)
   }
 
   return (
