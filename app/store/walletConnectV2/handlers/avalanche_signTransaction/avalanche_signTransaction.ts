@@ -311,7 +311,7 @@ class AvalancheSignTransactionHandler
           : 'Sign transaction error'
 
       Sentry.captureException(e, {
-        tags: { dapps: 'signTransaction' }
+        tags: { dapps: 'signTransactionV2' }
       })
 
       return {
