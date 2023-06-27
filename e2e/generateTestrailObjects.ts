@@ -2,12 +2,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import TestRail from '@dlenroc/testrail'
-import getTestLogs from './getResultsFromLogs'
+import getTestLogs, {
+  isSmokeTestRun,
+  testRunTimestamp
+} from './getResultsFromLogs'
 
 const projectId = Number(process.env.TESTRAIL_PROJECT_ID)
 const password = String(process.env.TESTRAIL_API_KEY)
 
-export const api = new TestRail({
+export var api = new TestRail({
   host: 'https://avalabs.testrail.net',
   username: 'mobiledevs@avalabs.org',
   password: password
@@ -18,7 +21,7 @@ export async function createEmptyTestRun(
   description: string
 ) {
   const content = {
-    name: testRunName + generateTimestamp(),
+    name: testRunName,
     description: description,
     include_all: false
   }
@@ -430,33 +433,6 @@ export async function getTestRunCases(testRunId: any) {
   return caseTitles
 }
 
-export function generateTimestamp() {
-  const timestamp = Date.now()
-
-  const dateObject = new Date(timestamp)
-  const date = dateObject.getDate()
-  const month = dateObject.getMonth() + 1
-  const year = dateObject.getFullYear()
-  const hours = dateObject.getHours()
-  const minutes = dateObject.getMinutes()
-  const seconds = dateObject.getSeconds()
-
-  // date & time in YYYY-MM-DD format
-  return JSON.stringify(
-    year +
-      '-' +
-      month +
-      '-' +
-      date +
-      ' ' +
-      hours +
-      ':' +
-      minutes +
-      ':' +
-      seconds
-  )
-}
-
 export function parseTestName(testName: any) {
   const specName = testName.substring(testName.lastIndexOf('\\') + 1)
   const splitLine = specName.split('/')
@@ -469,7 +445,8 @@ export function parseTestName(testName: any) {
   return testCaseObject
 }
 
-export async function createNewTestRunBool(platform: string) {
+// Checks to see if a regression run has been created within the last 24 hours and returns the testrun id if one exists or returns false if none exists
+export async function createNewTestRunBool(platform: any) {
   const yesterday = new Date()
   yesterday.setDate(yesterday.getDate() - 1)
   yesterday.setUTCHours(0, 0, 0, 0)
@@ -494,29 +471,58 @@ export async function createNewTestRunBool(platform: string) {
   }
 }
 
-export const androidRunID = async () => {
-  var runID = await createNewTestRunBool('android')
-  if (runID) {
-    return { runID: runID, emptyTestRun: true }
+// Gets a list of test runs from testrail and then checks the timestamps in the names and returns false if there are no existing test runs with the timestamp
+export const isExistingSmokeTestRun = async (platform: any) => {
+  const timestamp = await testRunTimestamp(platform)
+  const yesterday = new Date()
+  yesterday.setDate(yesterday.getDate() - 2)
+  const yesterdayUTC = Number(yesterday) / 1000
+  const content = {
+    created_after: Math.ceil(yesterdayUTC)
+  }
+  const testRuns = await api.getRuns(projectId, content)
+  const runIDs = []
+  for (const run of testRuns) {
+    const testRunName = run.name
+    if (testRunName.includes(timestamp) && testRunName.includes(platform)) {
+      runIDs.push(run.id)
+    }
+  }
+  if (runIDs.length === 0) {
+    return false
   } else {
-    const currentAndroidRunID = await createEmptyTestRun(
-      `android smoke test run ${generateTimestamp()}`,
-      'This is a smoke test run for android!'
-    )
-    return { runID: currentAndroidRunID, emptyTestRun: false }
+    return runIDs[0]
   }
 }
 
-export const iosRunID = async () => {
-  var runID = await createNewTestRunBool('ios')
-  if (runID) {
-    return { runID: runID, emptyTestRun: true }
+export const currentRunID = async (platform: any) => {
+  const smokeTestRunExists = await isExistingSmokeTestRun(platform)
+
+  const timestamp = await testRunTimestamp(platform)
+  // Checks if its a smoke test run
+  if (await isSmokeTestRun(platform)) {
+    // Checks the folder timestamp against the runs in testrail and if its not found, creates a new test run
+    if (!smokeTestRunExists) {
+      const runID = await createEmptyTestRun(
+        `${platform} smoke test run ${timestamp}`,
+        `This is a smoke test run on ${platform}`
+      )
+      return { runID, emptyTestRun: false }
+    } else {
+      return { runID: smokeTestRunExists, emptyTestRun: true }
+    }
   } else {
-    var currentiOSRunID = await createEmptyTestRun(
-      `ios smoke test run ${generateTimestamp()}`,
-      'This is a smoke test run for ios!'
-    )
-    return { runID: currentiOSRunID, emptyTestRun: false }
+    // This is for regression runs which run on a daily cadence
+    var runID = await createNewTestRunBool(platform)
+    if (runID) {
+      return { runID: runID, emptyTestRun: true }
+    } else {
+      const newRunID = await createEmptyTestRun(
+        `${platform} smoke test run`,
+        `This is a smoke test run for ${platform}!`
+      )
+      return { runID: newRunID, emptyTestRun: false }
+    }
   }
 }
 
