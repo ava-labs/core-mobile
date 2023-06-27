@@ -1,11 +1,11 @@
-import { calcReward } from 'hooks/useEarnCalcEstimatedRewards'
 import { Avax, Hour, MainnetParams, MegaAvax } from 'utils/NetworkParams'
 import { bnToBig } from '@avalabs/utils-sdk'
+import EarnService from 'services/earn/EarnService'
 
 describe('calcReward', () => {
     it('should return zero if current supply is max', () => {
       expect(
-        calcReward(
+        EarnService.calcReward(
           bnToBig(Avax.muln(25)),
           7 * 24 * Hour,
           bnToBig(MainnetParams.stakingConfig.RewardConfig.SupplyCap),
@@ -16,7 +16,7 @@ describe('calcReward', () => {
     })
     it('should return non zero if current supply is less than max', () => {
       expect(
-        calcReward(
+        EarnService.calcReward(
           bnToBig(Avax.muln(2000000)),
           7 * 24 * Hour,
           bnToBig(MegaAvax.muln(400)),
