@@ -1,7 +1,7 @@
 import { exponentialBackoff } from 'utils/js/exponentialBackoff'
 
 describe('utils/exponentialBackoff', () => {
-  it('should last 1 second when succeeds on 2rd try', async () => {
+  it('should last 1 second when succeeds on 2nd try', async () => {
     const startTs = new Date().getTime()
     let counter = 0
     const getAndIncrementCounter = async () => {
