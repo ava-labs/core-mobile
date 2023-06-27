@@ -120,10 +120,16 @@ export const SendNFTContextProvider = ({
     if (!activeAccount) {
       setSendStatus('Fail')
       setSendStatusMsg('No active account')
+      capture('NftSendFailed', {
+        errorMessage: 'No active account',
+        chinaId: activeNetwork.chainId
+      })
       return
     }
 
-    capture('SendApproved', { selectedGasFee: selectedFeePreset.toUpperCase() })
+    capture('NftSendApproved', {
+      selectedGasFee: selectedFeePreset.toUpperCase()
+    })
 
     const sendState = {
       address: sendToAddress,
@@ -158,6 +164,7 @@ export const SendNFTContextProvider = ({
         )
         .then(txId => {
           setSendStatus('Success')
+          capture('NftSendSucceeded', { chainId: activeNetwork.chainId })
           showSnackBarCustom({
             component: (
               <TransactionToast
@@ -171,6 +178,10 @@ export const SendNFTContextProvider = ({
         })
         .catch(reason => {
           setSendStatus('Fail')
+          capture('NftSendFailed', {
+            errorMessage: reason?.error?.message,
+            chinaId: activeNetwork.chainId
+          })
           showSnackBarCustom({
             component: (
               <TransactionToast
@@ -234,7 +245,8 @@ export const SendNFTContextProvider = ({
       setCustomGasPrice,
       gasLimit: trueGasLimit,
       setCustomGasLimit,
-      setSelectedFeePreset
+      setSelectedFeePreset,
+      selectedFeePreset
     },
     canSubmit,
     sendStatus,
@@ -268,4 +280,5 @@ export interface Fees {
   gasLimit: number | undefined
   setCustomGasLimit: Dispatch<number>
   setSelectedFeePreset: Dispatch<FeePreset>
+  selectedFeePreset: FeePreset
 }
