@@ -140,7 +140,7 @@ export const NodeCard = ({ data }: { data: NodeValidator }) => {
                 color: theme.neutral50,
                 textAlign: 'right'
               }}>
-              {data.nodeID}
+              {truncateNodeId(data.nodeID, 4)}
             </AvaText.Body2>
           </Row>
           <Row style={styles.rowContainer}>
