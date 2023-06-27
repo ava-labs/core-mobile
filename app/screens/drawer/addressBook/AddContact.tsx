@@ -13,6 +13,7 @@ import { addContact } from 'store/addressBook'
 import { useDispatch } from 'react-redux'
 import { getContactValidationError } from 'screens/drawer/addressBook/utils'
 import { ScrollView } from 'react-native'
+import { usePostCapture } from 'hooks/usePosthogCapture'
 
 type NavigationProp = AddressBookScreenProps<
   typeof AppNavigation.AddressBook.Add
@@ -22,7 +23,7 @@ const AddContact = () => {
   const { goBack } = useNavigation<NavigationProp>()
   const dispatch = useDispatch()
   const { theme } = useApplicationContext()
-
+  const { capture } = usePostCapture()
   const [title, setTitle] = useState('')
   const [address, setAddress] = useState('')
   const [addressBtc, setAddressBtc] = useState('')
@@ -31,13 +32,15 @@ const AddContact = () => {
   const save = useCallback(() => {
     const err = getContactValidationError(title, address, addressBtc)
     if (err) {
+      capture('AddContactFailed')
       setError(err)
       return
     }
     const id = uuidv4()
     dispatch(addContact({ id, title, address, addressBtc }))
+    capture('AddContactSucceeded')
     goBack()
-  }, [address, addressBtc, dispatch, goBack, title])
+  }, [address, addressBtc, capture, dispatch, goBack, title])
 
   return (
     <ScrollView

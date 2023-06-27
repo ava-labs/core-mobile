@@ -3,6 +3,7 @@ import AvaListItem from 'components/AvaListItem'
 import { useNavigation } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
 import { WalletScreenProps } from 'navigation/types'
+import { usePostCapture } from 'hooks/usePosthogCapture'
 
 type NavigationProp = WalletScreenProps<
   typeof AppNavigation.Wallet.Drawer
@@ -10,6 +11,7 @@ type NavigationProp = WalletScreenProps<
 
 const AddressBookItem = () => {
   const navigation = useNavigation<NavigationProp>()
+  const { capture } = usePostCapture()
 
   return (
     <>
@@ -20,6 +22,7 @@ const AddressBookItem = () => {
         showNavigationArrow
         rightComponentVerticalAlignment={'center'}
         onPress={() => {
+          capture('AddContactClicked')
           navigation.navigate(AppNavigation.Wallet.AddressBook)
         }}
       />

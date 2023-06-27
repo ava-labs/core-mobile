@@ -13,20 +13,43 @@ import {
   selectSelectedCurrency,
   setSelectedCurrency
 } from 'store/settings/currency'
-import { useNavigation } from '@react-navigation/native'
+import { useNavigation, useRoute } from '@react-navigation/native'
+import { usePostCapture } from 'hooks/usePosthogCapture'
+import { WalletScreenProps } from 'navigation/types'
+import AppNavigation from 'navigation/AppNavigation'
+
+type ScreenProps = WalletScreenProps<
+  typeof AppNavigation.Wallet.CurrencySelector
+>
 
 const CurrencySelector = () => {
+  const { currencyChangedAnalyticsEventName } =
+    useRoute<ScreenProps['route']>().params
   const navigation = useNavigation()
   const currencies = useSelector(selectCurrencies)
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const dispatch = useDispatch()
+  const { capture } = usePostCapture()
 
   const renderItem = (
     item: ListRenderItemInfo<{ name: string; symbol: string }>
   ) => {
     const currency = item.item
 
+    const handleOnCurrencyChanged = () => {
+      if (
+        currency.symbol.toLocaleUpperCase() !==
+          selectedCurrency.toLocaleUpperCase() &&
+        currencyChangedAnalyticsEventName
+      ) {
+        capture(currencyChangedAnalyticsEventName, {
+          currency: currency.symbol.toLocaleUpperCase()
+        })
+      }
+    }
+
     const onPress = () => {
+      handleOnCurrencyChanged()
       dispatch(setSelectedCurrency(currency.symbol))
       InteractionManager.runAfterInteractions(() => {
         navigation.goBack()

@@ -23,6 +23,7 @@ const keymap: Map<string, PinKeys> = new Map([
 
 type Props = {
   onPinSet: (pin: string) => void
+  onResetPinFailed?: () => void
   isResettingPin?: boolean
 }
 
@@ -30,12 +31,14 @@ type Props = {
  * This screen will prompt user for PIN creation and confirmation, and upon success onPinSet will be called.
  * @param onBack
  * @param onPinSet
+ * @param onResetPinFailed
  * @param isResettingPin
  * @constructor
  */
 export default function CreatePIN({
   onPinSet,
-  isResettingPin
+  isResettingPin,
+  onResetPinFailed
 }: Props): JSX.Element {
   const { theme } = useApplicationContext()
   const {
@@ -46,7 +49,7 @@ export default function CreatePIN({
     chosenPinEntered,
     validPin,
     jiggleAnim
-  } = useCreatePin(isResettingPin)
+  } = useCreatePin(isResettingPin, onResetPinFailed)
 
   useEffect(() => {
     if (validPin) {

@@ -141,7 +141,9 @@ export type WalletScreenStackParams = {
   [AppNavigation.Wallet.AddressBook]:
     | NavigatorScreenParams<AddressBookStackParamList>
     | undefined
-  [AppNavigation.Wallet.CurrencySelector]: undefined
+  [AppNavigation.Wallet.CurrencySelector]: {
+    currencyChangedAnalyticsEventName?: string
+  }
   [AppNavigation.Wallet.NetworkSelector]: undefined
   [AppNavigation.Wallet.NetworkDetails]: NetworkDetailsProps
   [AppNavigation.Wallet.NetworkAddEdit]: AddEditNetworkProps

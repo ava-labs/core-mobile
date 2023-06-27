@@ -16,14 +16,17 @@ import InfoSVG from 'components/svg/InfoSVG'
 import { Row } from 'components/Row'
 import { Space } from 'components/Space'
 import { PopableContent } from 'components/PopableContent'
+import { usePostCapture } from 'hooks/usePosthogCapture'
 
 const Advanced = () => {
   const { theme } = useApplicationContext()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const isLeftHanded = useSelector(selectIsLeftHanded)
   const dispatch = useDispatch()
+  const { capture } = usePostCapture()
 
-  const onTestnetChange = () => {
+  const onTestnetChange = (value: boolean) => {
+    capture(value ? 'DeveloperModeEnabled' : 'DeveloperModeDisabled')
     dispatch(toggleDeveloperMode())
   }
   const onLeftHandedChange = () => {
@@ -58,7 +61,7 @@ const Advanced = () => {
         rightComponent={
           <Switch
             value={isDeveloperMode}
-            onValueChange={onTestnetChange}
+            onValueChange={value => onTestnetChange(value)}
             testID="switch"
           />
         }

@@ -8,9 +8,11 @@ import {
   ApprovedAppMeta
 } from 'store/walletConnect'
 import { DappRpcRequest } from 'store/walletConnect/handlers/types'
+import { usePostCapture } from './usePosthogCapture'
 
 export const useDappConnectionV1 = () => {
   const dispatch = useDispatch()
+  const { capture } = usePostCapture()
 
   const onUserApproved = useCallback(
     (request: DappRpcRequest<string, unknown>, data?: unknown) => {
@@ -40,6 +42,14 @@ export const useDappConnectionV1 = () => {
 
   const killSessions = useCallback(
     async (sessionsToKill: ApprovedAppMeta[]) => {
+      sessionsToKill.forEach(sessionToKill => {
+        capture('ConnectedSiteRemoved', {
+          dAppConnectionType: 'v1',
+          peerId: sessionToKill.peerId,
+          url: sessionToKill.peerMeta?.url ?? null,
+          name: sessionToKill.peerMeta?.name ?? null
+        })
+      })
       dispatch(killSessionsAction(sessionsToKill))
     },
     [dispatch]
