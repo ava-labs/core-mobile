@@ -1,0 +1,219 @@
+import React, { useState } from 'react'
+import { StyleSheet, View } from 'react-native'
+import AvaText from 'components/AvaText'
+import { useApplicationContext } from 'contexts/ApplicationContext'
+
+import AvaLogoSVG from 'components/svg/AvaLogoSVG'
+import {
+  calculateMaxWeight,
+  formatLargeNumber,
+  truncateNodeId
+} from 'utils/Utils'
+import { bnToBig, stringToBN } from '@avalabs/utils-sdk'
+import { Row } from 'components/Row'
+import CollapsibleSection from 'components/CollapsibleSection'
+import CarrotSVG from 'components/svg/CarrotSVG'
+import CopySVG from 'components/svg/CopySVG'
+import AvaButton from 'components/AvaButton'
+import { useNavigation } from '@react-navigation/native'
+import AppNavigation from 'navigation/AppNavigation'
+import { EarnScreenProps } from 'navigation/types'
+import { copyToClipboard } from 'utils/DeviceTools'
+import moment from 'moment'
+import Big from 'big.js'
+import { NodeValidator } from '../SelectNode'
+
+type NavigationProp = EarnScreenProps<
+  typeof AppNavigation.Earn.SelectNode
+>['navigation']
+
+export const NodeCard = ({ data }: { data: NodeValidator }) => {
+  const { theme } = useApplicationContext()
+  const [isCardExpanded, setIsCardExpanded] = useState(false)
+  const { navigate } = useNavigation<NavigationProp>()
+
+  const endDate = moment(new Date(parseInt(data.endTime) * 1000)).format(
+    'MM/DD/YY'
+  )
+
+  const stakeAmount = bnToBig(stringToBN(data.stakeAmount, 0), 9).toNumber()
+
+  const delegatorWeight = bnToBig(
+    stringToBN(data?.delegatorWeight || '0', 0),
+    9
+  ).toNumber()
+  const currentWeight = stakeAmount + delegatorWeight
+
+  const maxWeight = calculateMaxWeight(
+    new Big(3000000),
+    bnToBig(stringToBN(data.stakeAmount, 0), 0)
+  )
+
+  const available = maxWeight.maxWeight.toNumber() - currentWeight
+
+  return (
+    <View
+      style={{
+        backgroundColor: theme.neutral900,
+        borderRadius: 8
+      }}>
+      <CollapsibleSection
+        onExpandedChange={value => setIsCardExpanded(value)}
+        title={
+          <View
+            style={[
+              styles.titleContainer,
+              { backgroundColor: theme.neutral900 }
+            ]}>
+            <View style={styles.titleRowContainer}>
+              <View style={{ marginRight: 16 }}>
+                <AvaLogoSVG
+                  size={32}
+                  logoColor={theme.tokenLogoColor}
+                  backgroundColor={theme.tokenLogoBg}
+                />
+              </View>
+              <View>
+                <AvaButton.TextWithIcon
+                  textStyle={{ textAlign: 'left' }}
+                  onPress={() => copyToClipboard(data.nodeID)}
+                  icon={<CopySVG />}
+                  iconPlacement="right"
+                  text={
+                    <AvaText.Body2 color={theme.colorText1}>
+                      {truncateNodeId(data.nodeID, 4)}
+                    </AvaText.Body2>
+                  }
+                />
+                <AvaText.Caption color={theme.neutral400}>
+                  {`End date: ${endDate}`}
+                </AvaText.Caption>
+              </View>
+              <View style={styles.uptimeContainer}>
+                <AvaText.Subtitle2
+                  color={theme.colorText2}
+                  textStyle={{
+                    textAlign: 'right',
+                    fontSize: 10,
+                    lineHeight: 16,
+                    fontWeight: '500'
+                  }}>
+                  Uptime
+                </AvaText.Subtitle2>
+                <AvaText.Heading6
+                  color={theme.neutralSuccessLight}
+                  textStyle={{ textAlign: 'right' }}>
+                  {`${Number(data.uptime).toFixed(0)}%`}
+                </AvaText.Heading6>
+              </View>
+              <View
+                style={{
+                  justifyContent: 'center'
+                }}>
+                <CarrotSVG
+                  color={theme.neutral50}
+                  direction={isCardExpanded ? 'up' : 'down'}
+                />
+              </View>
+            </View>
+          </View>
+        }
+        collapsibleContainerStyle={{
+          backgroundColor: theme.neutral900,
+          padding: 16,
+          borderBottomLeftRadius: 8,
+          borderBottomRightRadius: 8
+        }}>
+        <View
+          style={[
+            styles.collapseContainer,
+            { borderTopColor: theme.neutral800 }
+          ]}
+        />
+        <View>
+          <Row style={styles.rowContainer}>
+            <AvaText.Caption textStyle={{ color: theme.neutral400 }}>
+              Node ID
+            </AvaText.Caption>
+            <AvaText.Body2
+              textStyle={{
+                color: theme.neutral50,
+                textAlign: 'right'
+              }}>
+              {data.nodeID}
+            </AvaText.Body2>
+          </Row>
+          <Row style={styles.rowContainer}>
+            <AvaText.Caption textStyle={{ color: theme.neutral400 }}>
+              Staking Fee
+            </AvaText.Caption>
+            <AvaText.Body2 textStyle={{ color: theme.neutral50 }}>
+              {`${Number(data.delegationFee).toFixed(0)}%`}
+            </AvaText.Body2>
+          </Row>
+          <Row style={styles.rowContainer}>
+            <AvaText.Caption textStyle={{ color: theme.neutral400 }}>
+              Validator Stake
+            </AvaText.Caption>
+            <AvaText.Body2 textStyle={{ color: theme.neutral50 }}>
+              {formatLargeNumber(
+                bnToBig(stringToBN(data.stakeAmount, 0), 9).toString(),
+                4
+              )}
+            </AvaText.Body2>
+          </Row>
+          <Row style={styles.rowContainer}>
+            <AvaText.Caption textStyle={{ color: theme.neutral400 }}>
+              Available
+            </AvaText.Caption>
+            <AvaText.Body2 textStyle={{ color: theme.neutral50 }}>
+              {formatLargeNumber(available, 4)}
+            </AvaText.Body2>
+          </Row>
+          <Row style={styles.rowContainer}>
+            <AvaText.Caption textStyle={{ color: theme.neutral400 }}>
+              Delegates
+            </AvaText.Caption>
+            <AvaText.Body2 textStyle={{ color: theme.neutral50 }}>
+              {data.delegatorCount}
+            </AvaText.Body2>
+          </Row>
+        </View>
+        <View style={{ marginTop: 19 }}>
+          <AvaButton.PrimaryMedium
+            onPress={() =>
+              navigate(AppNavigation.Earn.Confirmation, {
+                nodeId: data.nodeID
+              })
+            }>
+            Next
+          </AvaButton.PrimaryMedium>
+        </View>
+      </CollapsibleSection>
+    </View>
+  )
+}
+
+const styles = StyleSheet.create({
+  titleContainer: {
+    borderRadius: 8,
+    padding: 16
+  },
+  titleRowContainer: {
+    display: 'flex',
+    flexDirection: 'row'
+  },
+  uptimeContainer: {
+    marginLeft: 50,
+    marginRight: 16
+  },
+  collapseContainer: {
+    borderTopWidth: 1,
+    marginBottom: 11.5,
+    marginTop: 16
+  },
+  rowContainer: {
+    justifyContent: 'space-between',
+    marginBottom: 8
+  }
+})
