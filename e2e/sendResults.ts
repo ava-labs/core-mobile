@@ -46,7 +46,6 @@ async function parseResultsFile() {
       })
     }
   }
-  console.log(casesToAddToRun)
   return { casesToAddToRun, testIdArrayForTestrail }
 }
 
