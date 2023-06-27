@@ -2,8 +2,7 @@ import { calcReward } from 'hooks/useEarnCalcEstimatedRewards'
 import { Avax, Hour, MainnetParams, MegaAvax } from 'utils/NetworkParams'
 import { bnToBig } from '@avalabs/utils-sdk'
 
-describe('hooks/useEarnCalcEstimatedRewards', () => {
-  describe('useEarnCalcEstimatedRewards', () => {
+describe('calcReward', () => {
     it('should return zero if current supply is max', () => {
       expect(
         calcReward(
