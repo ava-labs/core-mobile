@@ -46,7 +46,7 @@ export async function importP({
     )
   } catch (e) {
     Logger.error('exponentialBackoff failed', e)
-    return false
+    throw Error(`Transfer is taking unusually long (import P). txId = ${txID}`)
   }
 
   return true
