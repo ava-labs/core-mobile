@@ -16,6 +16,7 @@ import { AppStartListening } from 'store/middleware/listener'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import Logger, { LogLevel } from 'utils/Logger'
 import { extendAccountProps } from 'store/app/migrations'
+import { capture } from 'store/posthog'
 import {
   onAppLocked,
   onAppUnlocked,
@@ -27,6 +28,8 @@ import {
 } from './slice'
 
 const TIME_TO_LOCK_IN_SECONDS = 5
+
+let appStateRef: AppStateStatus | undefined
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const init = async (action: any, listenerApi: AppListenerEffectAPI) => {
@@ -58,6 +61,7 @@ const listenToAppState = async (listenerApi: AppListenerEffectAPI) => {
   ) => {
     // if app state has changed
     if (nextAppState !== currentAppState) {
+      appStateRef = nextAppState
       // update cached state
       dispatch(setAppState(nextAppState))
 
@@ -66,12 +70,18 @@ const listenToAppState = async (listenerApi: AppListenerEffectAPI) => {
         nextAppState === 'active'
       ) {
         Logger.info('app comes back to foreground')
+        dispatch(capture({ event: 'ApplicationOpened' }))
         dispatch(onForeground())
       } else if (nextAppState === 'background') {
         Logger.info('app goes to background')
         dispatch(onBackground())
       }
     }
+  }
+
+  console.log('handleAppStateChange: ', appStateRef)
+  if (appStateRef === undefined) {
+    dispatch(capture({ event: 'ApplicationOpened' }))
   }
 
   AppState.addEventListener('change', nextAppState => {
