@@ -19,10 +19,18 @@ export const truncateAddress = (address: string, size = 6): string => {
 }
 
 export const truncateNodeId = (nodeId: string, size = 6): string => {
-  const firstChunk = nodeId.substring(0, 'NodeID-'.length + size)
-  const lastChunk = nodeId.substr(-(size / 1.5))
+  if (size <= 0) {
+    return 'NodeID-'
+  }
 
-  return `${firstChunk}...${lastChunk}`
+  const firstChunkLength = 'NodeID-'.length + Math.ceil(size / 2)
+  const firstChunk = nodeId.substring(0, firstChunkLength)
+  const lastChunk = nodeId.slice(firstChunkLength).substr(-Math.floor(size / 2))
+
+  const shouldShowDots =
+    lastChunk && lastChunk.length + firstChunk.length !== nodeId.length
+
+  return `${firstChunk}${shouldShowDots ? '...' : ''}${lastChunk}`
 }
 
 export function formatTokenAmount(amount: Big, denomination = 2): string {

@@ -3,9 +3,7 @@ import React from 'react'
 import { ScrollView, StyleSheet, View } from 'react-native'
 import { Space } from 'components/Space'
 import { Row } from 'components/Row'
-import { AvalancheBaseTx } from 'store/walletConnect/handlers/types'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { AvalancheChainStrings } from 'store/walletConnect/handlers/utils/parseAvalancheTx'
 import Card from 'components/Card'
 import { bigIntToString } from '@avalabs/utils-sdk'
 import { GetAssetDescriptionResponse } from '@avalabs/avalanchejs-v2/dist/src/vms/common'
@@ -14,15 +12,13 @@ import { useSelector } from 'react-redux'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import Separator from 'components/Separator'
 import { truncateAddress } from 'utils/Utils'
+import { Avalanche } from '@avalabs/wallets-sdk'
+import { AvalancheChainStrings } from 'store/walletConnect/handlers/types'
+import { selectAvaxPrice } from 'store/balance'
 
-const BaseTxView = ({
-  tx,
-  avaxPrice
-}: {
-  tx: AvalancheBaseTx
-  avaxPrice: number
-}) => {
+const BaseTxView = ({ tx }: { tx: Avalanche.BaseTx }) => {
   const { theme } = useApplicationContext()
+  const avaxPrice = useSelector(selectAvaxPrice)
   const { chain, txFee, outputs, memo } = tx
   const { tokenInCurrencyFormatter } = useApplicationContext().appHook
   const selectedCurrency = useSelector(selectSelectedCurrency)

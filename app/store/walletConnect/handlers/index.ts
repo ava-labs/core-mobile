@@ -13,6 +13,7 @@ import { walletSwitchEthereumChainHandler } from './wallet_switchEthereumChain'
 import { avalancheBridgeAssetHandler } from './avalanche_bridgeAsset'
 import { avalancheSelectAccountHandler } from './avalanche_selectAccount'
 import { RpcRequestHandler } from './types'
+import { avalancheSignTransactionHandler } from './avalanche_signTransaction'
 
 const handlerMap = [
   avalancheSelectAccountHandler,
@@ -24,6 +25,7 @@ const handlerMap = [
   avalancheGetAccountsHandler,
   avalancheGetContactsHandler,
   avalancheSendTransactionHandler,
+  avalancheSignTransactionHandler,
   ethSendTransactionHandler,
   ethSignHandler,
   sessionRequestHandler,

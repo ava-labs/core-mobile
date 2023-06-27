@@ -157,7 +157,8 @@ enum ModalScreens {
   SelectAccount = 'ModalScreens.SelectAccount',
   BuyCarefully = 'ModalScreens.BuyCarefully',
   SignTransaction = 'ModalScreens.SignTransaction',
-  SendTransaction = 'ModalScreens.SendTransaction',
+  AvalancheSendTransaction = 'ModalScreens.AvalancheSendTransaction',
+  AvalancheSignTransaction = 'ModalScreens.AvalancheSignTransaction',
   SignMessage = 'ModalScreens.SignMessage',
   BridgeAsset = 'ModalScreens.BridgeAsset',
   AddEthereumChain = 'ModalScreens.AddEthereumChain',
@@ -171,7 +172,9 @@ enum ModalScreens {
   AddEthereumChainV2 = 'ModalScreens.AddEthereumChainV2',
   SwitchEthereumChainV2 = 'ModalScreens.SwitchEthereumChainV2',
   BridgeAssetV2 = 'ModalScreens.BridgeAssetV2',
-  SignTransactionV2 = 'ModalScreens.SignTransactionV2'
+  SignTransactionV2 = 'ModalScreens.SignTransactionV2',
+  AvalancheSendTransactionV2 = 'ModalScreens.AvalancheSendTransactionV2',
+  AvalancheSignTransactionV2 = 'ModalScreens.AvalancheSignTransactionV2'
 }
 
 enum SendScreens {

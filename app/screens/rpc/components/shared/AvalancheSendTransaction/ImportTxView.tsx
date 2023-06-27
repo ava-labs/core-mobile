@@ -4,9 +4,7 @@ import { StyleSheet, View } from 'react-native'
 import { Space } from 'components/Space'
 import { Row } from 'components/Row'
 import Separator from 'components/Separator'
-import { ExportTx } from 'store/walletConnect/handlers/types'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { AvalancheChainStrings } from 'store/walletConnect/handlers/utils/parseAvalancheTx'
 import Card from 'components/Card'
 import AvaToken from 'components/svg/AvaToken'
 import { bigIntToString } from '@avalabs/utils-sdk'
@@ -15,22 +13,24 @@ import { selectSelectedCurrency } from 'store/settings/currency'
 import AvaButton from 'components/AvaButton'
 import CarrotSVG from 'components/svg/CarrotSVG'
 import { getHexStringToBytes } from 'utils/getHexStringToBytes'
+import { Avalanche } from '@avalabs/wallets-sdk'
+import { AvalancheChainStrings } from 'store/walletConnect/handlers/types'
+import { selectAvaxPrice } from 'store/balance'
 
-const ExportTxView = ({
+const ImportTxView = ({
   tx,
-  avaxPrice,
   hexData,
   toggleActionButtons
 }: {
-  tx: ExportTx
-  avaxPrice: number
+  tx: Avalanche.ImportTx
   hexData: string
   toggleActionButtons: (value: boolean) => void
 }) => {
   const { theme } = useApplicationContext()
   const [showData, setShowData] = useState(false)
+  const avaxPrice = useSelector(selectAvaxPrice)
 
-  const { amount, chain, destination, type, txFee } = tx
+  const { amount, chain, source, type, txFee } = tx
   const { tokenInCurrencyFormatter } = useApplicationContext().appHook
   const selectedCurrency = useSelector(selectSelectedCurrency)
 
@@ -70,7 +70,7 @@ const ExportTxView = ({
 
   return (
     <View>
-      <AvaText.Heading4>Approve Export</AvaText.Heading4>
+      <AvaText.Heading4>Approve Import</AvaText.Heading4>
       <Space y={24} />
       <Row style={styles.transactionContainer}>
         <AvaText.Body2 color={theme.colorText1} textStyle={{ lineHeight: 32 }}>
@@ -83,7 +83,6 @@ const ExportTxView = ({
           </Row>
         </AvaButton.Base>
       </Row>
-
       <Space y={8} />
       <Card style={styles.cardContainer}>
         <Row style={styles.rowContainer}>
@@ -91,16 +90,16 @@ const ExportTxView = ({
             Source Chain
           </AvaText.Caption>
           <AvaText.Subtitle2 color={theme.colorText1}>
-            Avalanche {AvalancheChainStrings[chain]}
+            Avalanche {AvalancheChainStrings[source]}
           </AvaText.Subtitle2>
         </Row>
         <Space y={8} />
         <Row style={styles.rowContainer}>
           <AvaText.Caption color={theme.colorText1}>
-            Target Chain
+            Destination Chain
           </AvaText.Caption>
           <AvaText.Subtitle2 color={theme.colorText1}>
-            Avalanche {AvalancheChainStrings[destination]}
+            Avalanche {AvalancheChainStrings[chain]}
           </AvaText.Subtitle2>
         </Row>
       </Card>
@@ -112,8 +111,8 @@ const ExportTxView = ({
       <Space y={8} />
       <Card style={styles.cardContainer}>
         <Row style={styles.rowContainer}>
-          <AvaText.Caption color={theme.colorText1}>
-            Transaction Type
+          <AvaText.Caption color={theme.colorText2}>
+            Transaction type
           </AvaText.Caption>
           <AvaText.Subtitle2 color={theme.colorText1}>
             {type ? (type[0] || '').toUpperCase() + type.slice(1) : ''}
@@ -131,18 +130,18 @@ const ExportTxView = ({
               {Number(bigIntToString(amount, 9))} AVAX
             </AvaText.Subtitle2>
             <Space y={2} />
-            <AvaText.Caption color={theme.neutral400}>
+            <AvaText.Body3 color={theme.neutral400}>
               {`${tokenInCurrencyFormatter(
                 Number(bigIntToString(amount, 9)) * avaxPrice
               )} ${selectedCurrency}`}
-            </AvaText.Caption>
+            </AvaText.Body3>
           </View>
         </Row>
       </Card>
 
       <Space y={16} />
       <AvaText.Body2 color={theme.colorText1} textStyle={{ lineHeight: 20 }}>
-        Network fee
+        Network Fee
       </AvaText.Body2>
       <Space y={8} />
       <Card style={styles.cardContainer}>
@@ -186,4 +185,5 @@ const styles = StyleSheet.create({
     padding: 16
   }
 })
-export default ExportTxView
+
+export default ImportTxView

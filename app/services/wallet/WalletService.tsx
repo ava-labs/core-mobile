@@ -26,6 +26,7 @@ import { Transaction } from '@sentry/types'
 import { Account } from 'store/account'
 import { RpcMethod } from 'store/walletConnectV2/types'
 import Logger from 'utils/Logger'
+import { UnsignedTx } from '@avalabs/avalanchejs-v2'
 
 class WalletService {
   private mnemonic?: string
@@ -55,7 +56,7 @@ class WalletService {
     this.mnemonic = mnemonic
   }
 
-  async getBtcWallet(
+  private async getBtcWallet(
     accountIndex: number,
     network: Network
   ): Promise<BitcoinWallet> {
@@ -77,7 +78,7 @@ class WalletService {
     return btcWallet
   }
 
-  getEvmWallet(accountIndex: number, network: Network): Wallet {
+  private getEvmWallet(accountIndex: number, network: Network): Wallet {
     if (!this.mnemonic) {
       throw new Error('not initialized')
     }
@@ -110,7 +111,6 @@ class WalletService {
         if (!wallet) {
           throw new Error('Signing error, wrong network')
         }
-
         // handle BTC signing
         if ('inputs' in tx) {
           if (!(wallet instanceof BitcoinWallet)) {
@@ -121,13 +121,13 @@ class WalletService {
         }
         // Handle Avalanche signing, X/P/CoreEth
         if ('tx' in tx && wallet instanceof Avalanche.StaticSigner) {
-          const sig = await wallet.signTxBuffer({
-            buffer: tx.tx,
-            chain: tx.chain
+          const sig = await wallet.signTx({
+            tx: tx.tx,
+            externalIndices: tx.externalIndices,
+            internalIndices: tx.internalIndices
           })
-          // Wallet can sign with multiple keys, but in our case it will always be one
-          if (!sig[0]) throw new Error('Failed to sign transaction.')
-          return sig[0].toString('hex')
+
+          return JSON.stringify(sig.toJSON())
         }
         if ('to' in tx) {
           return await (wallet as Wallet).signTransaction(tx)
@@ -194,6 +194,58 @@ class WalletService {
     } else {
       throw new Error('no message to sign')
     }
+  }
+
+  /**
+   * @param amount
+   * @param baseFee in WEI
+   * @param accountIndex
+   * @param avaxXPNetwork
+   * @param destinationChain
+   * @param destinationAddress
+   */
+  async createExportCTx(
+    amount: bigint,
+    baseFee: bigint,
+    accountIndex: number,
+    avaxXPNetwork: Network,
+    destinationChain: 'P' | 'X',
+    destinationAddress: string | undefined
+  ): Promise<UnsignedTx> {
+    const wallet = (await this.getWallet(
+      accountIndex,
+      avaxXPNetwork
+    )) as Avalanche.StaticSigner
+    const nonce = await wallet.getNonce()
+
+    return wallet.exportC(
+      amount,
+      destinationChain,
+      BigInt(nonce),
+      baseFee,
+      destinationAddress
+    )
+  }
+
+  /**
+   * @param accountIndex
+   * @param avaxXPNetwork
+   * @param sourceChain
+   * @param destinationAddress
+   */
+  async createImportPTx(
+    accountIndex: number,
+    avaxXPNetwork: Network,
+    sourceChain: 'C' | 'X',
+    destinationAddress: string | undefined
+  ): Promise<UnsignedTx> {
+    const wallet = (await this.getWallet(
+      accountIndex,
+      avaxXPNetwork
+    )) as Avalanche.StaticSigner
+
+    const utxoSet = await wallet.getAtomicUTXOs('P', sourceChain)
+    return wallet.importP(utxoSet, sourceChain, destinationAddress)
   }
 
   destroy() {
@@ -299,6 +351,29 @@ class WalletService {
     } else {
       throw new Error('Can not find public key for the given index')
     }
+  }
+
+  async getAddressesByIndices(
+    indices: number[],
+    chainAlias: 'X' | 'P',
+    isChange: boolean,
+    isTestnet: boolean
+  ) {
+    const provXP = await networkService.getAvalancheProviderXP(isTestnet)
+
+    if (isChange && chainAlias !== 'X') {
+      return []
+    }
+
+    return indices.map(index =>
+      Avalanche.getAddressFromXpub(
+        this.xpubXP as string,
+        index,
+        provXP,
+        chainAlias,
+        isChange
+      )
+    )
   }
 }
 

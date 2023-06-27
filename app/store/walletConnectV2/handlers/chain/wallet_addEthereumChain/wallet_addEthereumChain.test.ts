@@ -1,5 +1,5 @@
 import { ethErrors } from 'eth-rpc-errors'
-import { RpcMethod } from 'store/walletConnectV2'
+import { RpcMethod } from 'store/walletConnectV2/types'
 import mockSession from 'tests/fixtures/walletConnect/session.json'
 import mockNetworks from 'tests/fixtures/networks.json'
 import AppNavigation from 'navigation/AppNavigation'
@@ -208,6 +208,7 @@ describe('wallet_addEthereumChain handler', () => {
             'https://glacier-api.avax.network/proxy/chain-assets/de66c50/non-subnet-chains/1/chain-logo.png'
         },
         platformChainId: '',
+        primaryColor: '',
         rpcUrl: 'https://proxy-api.avax.network/proxy/infura/mainnet',
         subnetId: '',
         vmId: '',
@@ -265,6 +266,7 @@ describe('wallet_addEthereumChain handler', () => {
           logoUri: ''
         },
         platformChainId: '',
+        primaryColor: '',
         rpcUrl: 'https://rpc.sepolia.dev',
         subnetId: '',
         vmId: '',

@@ -2,43 +2,54 @@ import { AppListenerEffectAPI } from 'store'
 import * as Navigation from 'utils/Navigation'
 import AppNavigation from 'navigation/AppNavigation'
 import {
-  AVM,
+  avaxSerial,
   EVM,
   EVMUnsignedTx,
-  PVM,
-  UnsignedTx
+  UnsignedTx,
+  utils,
+  VM
 } from '@avalabs/avalanchejs-v2'
 import { ethErrors } from 'eth-rpc-errors'
-import { Account, selectActiveAccount } from 'store/account'
+import { selectActiveAccount } from 'store/account'
 import networkService from 'services/network/NetworkService'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { parseAvalancheTx } from 'store/walletConnect/handlers/utils/parseAvalancheTx'
 import walletService from 'services/wallet/WalletService'
 import { RpcMethod } from 'store/walletConnectV2'
-import { VM } from '@avalabs/avalanchejs-v2/src/serializable/constants'
 import * as Sentry from '@sentry/react-native'
 import Logger from 'utils/Logger'
+import { Avalanche } from '@avalabs/wallets-sdk'
+import { getAddressByVM } from 'store/account/utils'
 import {
   ApproveResponse,
   DappRpcRequest,
   DEFERRED_RESULT,
   HandleResponse,
-  RpcRequestHandler,
-  SendTransactionApproveData
+  RpcRequestHandler
 } from './types'
 
-type UnsignedTxJson = string
+type AvalancheTxParams = {
+  transactionHex: string
+  chainAlias: 'X' | 'P' | 'C'
+  externalIndices?: number[]
+  internalIndices?: number[]
+}
+
+export type AvalancheSendTransactionApproveData = {
+  unsignedTxJson: string
+  txData: Avalanche.Tx
+  vm: VM
+}
 
 export type AvalancheSendTransactionRpcRequest = DappRpcRequest<
   RpcMethod.AVALANCHE_SEND_TRANSACTION,
-  UnsignedTxJson[]
+  AvalancheTxParams
 >
 
 class AvalancheSendTransactionHandler
   implements
     RpcRequestHandler<
       AvalancheSendTransactionRpcRequest,
-      SendTransactionApproveData
+      AvalancheSendTransactionApproveData
     >
 {
   methods = [RpcMethod.AVALANCHE_SEND_TRANSACTION]
@@ -47,49 +58,93 @@ class AvalancheSendTransactionHandler
     request: AvalancheSendTransactionRpcRequest,
     listenerApi: AppListenerEffectAPI
   ): HandleResponse => {
+    let unsignedTx: UnsignedTx | EVMUnsignedTx
     const { getState } = listenerApi
-    const unsignedTxJson = request.payload.params[0]
+    const { transactionHex, chainAlias, externalIndices, internalIndices } =
+      request.payload.params ?? {}
 
-    if (!unsignedTxJson) {
+    if (!transactionHex || !chainAlias) {
       return {
         success: false,
         error: ethErrors.rpc.invalidParams({
-          message: 'Missing unsigned transaction JSON object'
+          message: 'Missing mandatory param(s)'
         })
       }
     }
-    const unsignedTx = UnsignedTx.fromJSON(unsignedTxJson)
-    const vm = unsignedTx.getVM()
+    const vm = Avalanche.getVmByChainAlias(chainAlias)
+    const txBytes = utils.hexToBuffer(transactionHex)
+    const isDevMode = selectIsDeveloperMode(getState())
+    const provider = await networkService.getAvalancheProviderXP(isDevMode)
     const activeAccount = selectActiveAccount(getState())
     const currentAddress = getAddressByVM(vm, activeAccount)
 
     if (!currentAddress) {
       return {
         success: false,
-        error: ethErrors.rpc.resourceNotFound({
+        error: ethErrors.rpc.invalidRequest({
           message: 'No active account found'
         })
       }
     }
 
-    const isDevMode = selectIsDeveloperMode(getState())
-    const prov = await networkService.getAvalancheProviderXP(isDevMode)
-    const txBuffer = Buffer.from(unsignedTx.toBytes())
-    const txData = await parseAvalancheTx(txBuffer, vm, prov, currentAddress)
+    if (chainAlias === 'C') {
+      unsignedTx = await Avalanche.createAvalancheEvmUnsignedTx({
+        txBytes,
+        vm,
+        provider,
+        fromAddress: currentAddress
+      })
+    } else {
+      const tx = utils.unpackWithManager(vm, txBytes) as avaxSerial.AvaxTx
+
+      const externalAddresses = await walletService.getAddressesByIndices(
+        externalIndices ?? [],
+        chainAlias,
+        false,
+        isDevMode
+      )
+
+      const internalAddresses = await walletService.getAddressesByIndices(
+        internalIndices ?? [],
+        chainAlias,
+        true,
+        isDevMode
+      )
+
+      const fromAddresses = [
+        ...new Set([currentAddress, ...externalAddresses, ...internalAddresses])
+      ]
+
+      const fromAddressBytes = fromAddresses.map(
+        address => utils.parse(address)[2]
+      )
+
+      unsignedTx = await Avalanche.createAvalancheUnsignedTx({
+        tx,
+        vm,
+        provider,
+        fromAddressBytes
+      })
+    }
+
+    const txData = await Avalanche.parseAvalancheTx(
+      unsignedTx.getTx(),
+      provider,
+      currentAddress
+    )
 
     // Throw an error if we can't parse the transaction
     if (txData.type === 'unknown') {
       return {
         success: false,
         error: ethErrors.rpc.internal({
-          message: 'Unable to parse transaction data. Unsupported tx type?'
+          message: 'Unable to parse transaction data. Unsupported tx type'
         })
       }
     }
 
-    const approveData: SendTransactionApproveData = {
-      unsignedTxJson,
-      txBuffer,
+    const approveData: AvalancheSendTransactionApproveData = {
+      unsignedTxJson: JSON.stringify(unsignedTx.toJSON()),
       txData,
       vm
     }
@@ -97,7 +152,7 @@ class AvalancheSendTransactionHandler
     Navigation.navigate({
       name: AppNavigation.Root.Wallet,
       params: {
-        screen: AppNavigation.Modal.SendTransaction,
+        screen: AppNavigation.Modal.AvalancheSendTransaction,
         params: { request, data: approveData }
       }
     })
@@ -108,47 +163,73 @@ class AvalancheSendTransactionHandler
   approve = async (
     payload: {
       request: AvalancheSendTransactionRpcRequest
-      data: SendTransactionApproveData
+      data: AvalancheSendTransactionApproveData
     },
     listenerApi: AppListenerEffectAPI
   ): ApproveResponse => {
     try {
       const { getState } = listenerApi
-      const { txBuffer, vm, unsignedTxJson } = payload.data
+      const {
+        data: { vm, unsignedTxJson },
+        request: {
+          payload: {
+            params: { externalIndices, internalIndices }
+          }
+        }
+      } = payload
+      // Parse the json into a tx object
+      const unsignedTx =
+        vm === EVM
+          ? EVMUnsignedTx.fromJSON(unsignedTxJson)
+          : UnsignedTx.fromJSON(unsignedTxJson)
 
-      // We need to know if transaction is on C or X/P, the generated tx object is slightly different for C
-      // EVM in Avalanche context means the CoreEth layer.
-      const chainAlias = vm === 'EVM' ? 'C' : 'X'
-      // Sign the transaction and return signature
-      const activeAccount = selectActiveAccount(getState())
+      const hasMultipleAddresses =
+        unsignedTx.addressMaps.getAddresses().length > 1
+
+      if (
+        hasMultipleAddresses &&
+        !(externalIndices ?? []).length &&
+        !(internalIndices ?? []).length
+      ) {
+        throw new Error(
+          'Transaction contains multiple addresses, but indices were not provided'
+        )
+      }
+
       const isDevMode = selectIsDeveloperMode(getState())
-      const activeNetwork = networkService.getAvalancheNetworkXP(isDevMode)
+      const activeAccount = selectActiveAccount(getState())
       if (!activeAccount) {
         throw new Error('Unable to submit transaction, no active account.')
       }
-      const sig = await walletService.sign(
+
+      const signedTransactionJson = await walletService.sign(
         {
-          tx: txBuffer,
-          chain: chainAlias
+          tx: unsignedTx,
+          externalIndices,
+          internalIndices
         },
         activeAccount.index,
-        activeNetwork
+        // Must tell it is avalanche network
+        networkService.getAvalancheNetworkXP(isDevMode)
       )
 
-      // Parse the json into a tx object
-      const unsignedTx =
-        chainAlias === 'C'
-          ? EVMUnsignedTx.fromJSON(unsignedTxJson)
-          : UnsignedTx.fromJSON(unsignedTxJson)
-      // Add the signature
-      unsignedTx.addSignature(Buffer.from(sig, 'hex'))
+      const signedTransaction =
+        vm === EVM
+          ? EVMUnsignedTx.fromJSON(signedTransactionJson)
+          : UnsignedTx.fromJSON(signedTransactionJson)
 
-      if (!unsignedTx.hasAllSignatures())
-        throw new Error('Unable to submit transaction, missing signatures.')
+      if (!signedTransaction.hasAllSignatures()) {
+        throw new Error('Signing error, missing signatures.')
+      }
+
+      const signedTransactionHex = Avalanche.signedTxToHex(
+        signedTransaction.getSignedTx()
+      )
 
       // Submit the transaction and return the tx id
-      const prov = await networkService.getAvalancheProviderXP(isDevMode)
-      const result = await prov.issueTx(unsignedTx.getSignedTx())
+      const provider = await networkService.getAvalancheProviderXP(isDevMode)
+      const result = await provider.issueTxHex(signedTransactionHex, vm)
+
       return { success: true, value: result.txID }
     } catch (e) {
       Logger.error(
@@ -172,20 +253,6 @@ class AvalancheSendTransactionHandler
         })
       }
     }
-  }
-}
-
-function getAddressByVM(vm: VM, account: Account | undefined) {
-  if (!account) {
-    return
-  }
-
-  if (vm === AVM) {
-    return account.addressAVM
-  } else if (vm === PVM) {
-    return account.addressPVM
-  } else if (vm === EVM) {
-    return account.addressCoreEth
   }
 }
 
