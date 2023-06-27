@@ -7,19 +7,17 @@ import { importP } from 'services/earn/importP'
 
 describe('earn/importP', () => {
   describe('importP', () => {
-    const baseFeeMockFn = jest.fn().mockReturnValue(BigInt(25))
-    const getAtomicTxStatusMockFn = jest.fn().mockReturnValue({
-      status: 'Accepted'
+    const getTxStatusMockFn = jest.fn().mockReturnValue({
+      status: 'Committed'
     })
     jest.mock('services/network/NetworkService')
     jest
       .spyOn(NetworkService, 'getProviderForNetwork')
       .mockImplementation(() => {
         return {
-          getApiC: () => {
+          getApiP: () => {
             return {
-              getBaseFee: baseFeeMockFn,
-              getAtomicTxStatus: getAtomicTxStatusMockFn
+              getTxStatus: getTxStatusMockFn
             }
           }
         } as unknown as Avalanche.JsonRpcProvider
