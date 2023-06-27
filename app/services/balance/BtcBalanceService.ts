@@ -13,7 +13,6 @@ import NetworkService from 'services/network/NetworkService'
 import { BlockCypherProvider, JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
 import { Transaction } from '@sentry/types'
 import SentryWrapper from 'services/sentry/SentryWrapper'
-import { PChainBalance } from '@avalabs/glacier-sdk'
 
 export class BtcBalanceService implements BalanceServiceProvider {
   async isProviderFor(network: Network): Promise<boolean> {
@@ -77,14 +76,6 @@ export class BtcBalanceService implements BalanceServiceProvider {
           }
         ]
       })
-  }
-
-  getPChainBalance(
-    _network: Network,
-    _addresses: string[],
-    _sentryTrx?: Transaction
-  ): Promise<PChainBalance> {
-    throw new Error('Not provider for this method.')
   }
 }
 

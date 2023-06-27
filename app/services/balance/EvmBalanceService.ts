@@ -25,7 +25,6 @@ import { BalanceServiceProvider } from 'services/balance/types'
 import NetworkService from 'services/network/NetworkService'
 import { Transaction } from '@sentry/types'
 import SentryWrapper from 'services/sentry/SentryWrapper'
-import { PChainBalance } from '@avalabs/glacier-sdk'
 
 const hstABI = require('human-standard-token-abi')
 
@@ -184,14 +183,6 @@ export class EvmBalanceService implements BalanceServiceProvider {
         return result.status === 'fulfilled' ? [...acc, result.value] : acc
       }, [])
     })
-  }
-
-  getPChainBalance(
-    _network: Network,
-    _addresses: string[],
-    _sentryTrx?: Transaction
-  ): Promise<PChainBalance> {
-    throw new Error('Not provider for this method.')
   }
 }
 
