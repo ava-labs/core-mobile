@@ -66,16 +66,43 @@ const AvaButtonIcon: FC<BaseProps> = ({
 }
 
 const TextWithIcon: FC<
-  BaseProps & { icon: ReactNode; text: ReactNode; gap?: number }
-> = ({ style, disabled, onPress, icon, text, gap = 8 }) => {
+  BaseProps & {
+    icon: ReactNode
+    text: ReactNode
+    gap?: number
+    iconPlacement: 'left' | 'right'
+  }
+> = ({
+  style,
+  disabled,
+  onPress,
+  icon,
+  text,
+  gap = 8,
+  iconPlacement = 'left'
+}) => {
   return (
     <AvaButton.Base disabled={disabled} onPress={onPress} style={[style]}>
       <View
-        style={{ flexDirection: 'row', alignItems: 'center', margin: 8 }}
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'flex-end'
+        }}
         testID="textWithIcon">
-        {icon}
-        <Space x={gap} />
-        {text}
+        {iconPlacement === 'left' ? (
+          <>
+            {icon}
+            <Space x={gap} />
+            {text}
+          </>
+        ) : (
+          <>
+            {text}
+            <Space x={gap} />
+            {icon}
+          </>
+        )}
       </View>
     </AvaButton.Base>
   )
