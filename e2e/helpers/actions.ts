@@ -6,6 +6,7 @@ import { Platform } from './constants'
 import Constants from './constants'
 
 const fs = require('fs')
+
 const reportUIPerformanceFilePath =
   './e2e/tests/performance/testResults/allResults.txt'
 const tempUIPerformanceFilePath =
