@@ -90,7 +90,8 @@ const Bridge: FC = () => {
     minimum,
     receiveAmount,
     wrapStatus,
-    transfer
+    transfer,
+    bridgeFee
   } = useBridge()
 
   const {
@@ -241,7 +242,21 @@ const Bridge: FC = () => {
 
       if (error || !hash) {
         console.error(error)
+
+        // do not show the error when the user denied the transfer
+        if (error === 'User declined the transaction') {
+          capture('BridgeTransferRequestUserRejectedError', {
+            sourceBlockchain: currentBlockchain,
+            targetBlockchain,
+            fee: bridgeFee?.toNumber()
+          })
+          return
+        }
         setBridgeError('There was a problem with the transfer.')
+        capture('BridgeTransferRequesttError', {
+          sourceBlockchain: currentBlockchain,
+          targetBlockchain
+        })
         return
       }
 
