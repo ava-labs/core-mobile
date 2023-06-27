@@ -79,7 +79,6 @@ const listenToAppState = async (listenerApi: AppListenerEffectAPI) => {
     }
   }
 
-  console.log('handleAppStateChange: ', appStateRef)
   if (appStateRef === undefined) {
     dispatch(capture({ event: 'ApplicationOpened' }))
   }
