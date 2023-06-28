@@ -141,6 +141,22 @@ module.exports = {
         }
       }
     },
+    'ios.internal.release.smoke.ci': {
+      device: 'simulator',
+      app: 'ios.internal.release.ci',
+      artifacts: {
+        rootDir: './e2e/artifacts/ios',
+        plugins: {
+          instruments: 'all'
+        }
+      },
+      testRunner: {
+        $0: 'jest',
+        args: {
+          testMatch: '**/e2e/tests/**/*.e2e.smoke.ts'
+        }
+      }
+    },
     'ios.external.release.ci': {
       device: 'simulator',
       app: 'ios.external.release.ci',
@@ -148,6 +164,22 @@ module.exports = {
         rootDir: './e2e/artifacts/ios',
         plugins: {
           instruments: 'all'
+        }
+      }
+    },
+    'ios.external.release.smoke.ci': {
+      device: 'simulator',
+      app: 'ios.external.release.ci',
+      artifacts: {
+        rootDir: './e2e/artifacts/ios',
+        plugins: {
+          instruments: 'all'
+        }
+      },
+      testRunner: {
+        $0: 'jest',
+        args: {
+          testMatch: '**/e2e/tests/**/*.e2e.smoke.ts'
         }
       }
     },
@@ -171,6 +203,19 @@ module.exports = {
         }
       }
     },
+    'android.internal.release.smoke.ci': {
+      device: 'emulator_ci',
+      app: 'android.internal.release.ci',
+      artifacts: {
+        rootDir: './e2e/artifacts/android'
+      },
+      testRunner: {
+        $0: 'jest',
+        args: {
+          testMatch: '**/e2e/tests/**/*.e2e.smoke.ts'
+        }
+      }
+    },
     'android.internal.release.ci': {
       device: 'emulator_ci',
       app: 'android.internal.release.ci',
@@ -183,6 +228,19 @@ module.exports = {
       app: 'android.external.release.ci',
       artifacts: {
         rootDir: './e2e/artifacts/android'
+      }
+    },
+    'android.external.release.smoke.ci': {
+      device: 'emulator_ci',
+      app: 'android.external.release.ci',
+      artifacts: {
+        rootDir: './e2e/artifacts/android'
+      },
+      testRunner: {
+        $0: 'jest',
+        args: {
+          testMatch: '**/e2e/tests/**/*.e2e.smoke.ts'
+        }
       }
     },
     'android.internal.e2e': {
