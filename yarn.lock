@@ -20634,6 +20634,13 @@ react-native-argon2@2.0.1:
   resolved "https://registry.yarnpkg.com/react-native-argon2/-/react-native-argon2-2.0.1.tgz#eaa6fb77c76b8c85ad83dfa4507f83ba37285e4b"
   integrity sha512-/iOi0S+VVgS1gQGtQgL4ZxUVS4gz6Lav3bgIbtNmr9KbOunnBYzP6/yBe/XxkbpXvasHDwdQnuppOH/nuOBn7w==
 
+react-native-big-list@1.6.1:
+  version "1.6.1"
+  resolved "https://registry.yarnpkg.com/react-native-big-list/-/react-native-big-list-1.6.1.tgz#617da4adef83d21b1e35c7f07efc4dd0b73e3aed"
+  integrity sha512-ZPv2oJQ5jFHnOH4ibhqHiyIfJnGACOg2GnfIazgnJlK0nI9SX75Mh4NhD4xuNKbtxoBRL4nBdhxVreZosIfEQQ==
+  dependencies:
+    prop-types "^15.8.1"
+
 react-native-camera@4.2.1:
   version "4.2.1"
   resolved "https://registry.yarnpkg.com/react-native-camera/-/react-native-camera-4.2.1.tgz#caf74081f055e89d7e9b0cd5108965d808c60e90"

@@ -1,4 +1,4 @@
-import { FlashList } from '@shopify/flash-list'
+import BigList from 'react-native-big-list'
 import React from 'react'
 import {
   ContentStyle,
@@ -56,7 +56,7 @@ const AvaList = <T,>({
   onEndReached,
   onEndReachedThreshold,
   refreshControl,
-  getItemType,
+  // getItemType,
   estimatedItemSize,
   isDraggable,
   onDragEnd
@@ -74,9 +74,16 @@ const AvaList = <T,>({
       ListEmptyComponent={ListEmptyComponent}
     />
   ) : (
-    <FlashList
+    // @ts-expect-error
+    <BigList
       data={data}
       renderItem={flashRenderItem}
+      onEndReachedThreshold={onEndReachedThreshold}
+      getItemLayout={(_data, index) => ({
+        length: estimatedItemSize,
+        offset: 60 * index,
+        index
+      })}
       ItemSeparatorComponent={ItemSeparatorComponent}
       ListEmptyComponent={ListEmptyComponent}
       refreshing={refreshing}
@@ -85,13 +92,27 @@ const AvaList = <T,>({
       contentContainerStyle={contentContainerStyle}
       keyExtractor={keyExtractor}
       indicatorStyle="white"
-      getItemType={getItemType}
       onEndReached={onEndReached}
-      onEndReachedThreshold={onEndReachedThreshold}
-      estimatedItemSize={estimatedItemSize}
       extraData={extraData}
     />
   )
 }
 
+// ;<FlashList
+//   data={data}
+//   renderItem={flashRenderItem}
+//   ItemSeparatorComponent={ItemSeparatorComponent}
+//   ListEmptyComponent={ListEmptyComponent}
+//   refreshing={refreshing}
+//   onRefresh={onRefresh}
+//   refreshControl={refreshControl}
+//   contentContainerStyle={contentContainerStyle}
+//   keyExtractor={keyExtractor}
+//   indicatorStyle="white"
+//   getItemType={getItemType}
+//   onEndReached={onEndReached}
+//   onEndReachedThreshold={onEndReachedThreshold}
+//   estimatedItemSize={estimatedItemSize}
+//   extraData={extraData}
+// />
 export default AvaList

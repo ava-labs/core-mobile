@@ -43,6 +43,7 @@
     "@lavamoat/preinstall-always-fail": "1.0.0",
     "@metamask/eth-sig-util": "5.0.2",
     "@noble/secp256k1": "1.7.1",
+    "react-native-big-list": "1.6.1",
     "@react-native-async-storage/async-storage": "1.18.1",
     "@react-native-clipboard/clipboard": "1.8.5",
     "@react-native-community/blur": "maxhungry/react-native-blur#a7d77a415a8693d1d49588a04a09970ef26113c1",
