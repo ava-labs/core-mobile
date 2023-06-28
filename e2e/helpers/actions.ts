@@ -6,6 +6,7 @@ import { Platform } from './constants'
 import Constants from './constants'
 
 const fs = require('fs')
+
 const reportUIPerformanceFilePath =
   './e2e/tests/performance/testResults/allResults.txt'
 const tempUIPerformanceFilePath =
@@ -63,8 +64,12 @@ const setInputText = async (
   }
 }
 
-const waitForElement = async (item: Detox.NativeMatcher, timeout = 2000) => {
-  await waitFor(element(item)).toBeVisible().withTimeout(timeout)
+const waitForElement = async (
+  item: Detox.NativeMatcher,
+  timeout = 2000,
+  index = 0
+) => {
+  await waitFor(element(item).atIndex(index)).toBeVisible().withTimeout(timeout)
 }
 
 // waitForElementNoSync function can be used to handle idle timeout error for Android devices, should be used only if Idle timeout error presents
