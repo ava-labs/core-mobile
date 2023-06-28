@@ -149,7 +149,7 @@ const Transactions = ({
     } else {
       const onPress = () => {
         if (item.isContractCall || item.isBridge) {
-          capture('ActivityCardLinkClickd')
+          capture('ActivityCardLinkClicked')
           openUrl(item.explorerLink)
         } else {
           capture('ActivityCardDetailShown')
