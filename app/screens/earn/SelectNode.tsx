@@ -75,9 +75,6 @@ const SelectNode = () => {
           />
         </View>
       </View>
-      {/* <View style={{ flex: 1 }}>
-        <NodeCard data={testData} />
-      </View> */}
       <View style={{ flex: 1 }}>
         <FlatList
           style={styles.nodeList}
@@ -85,7 +82,6 @@ const SelectNode = () => {
           renderItem={renderItem}
           keyExtractor={item => item.nodeID}
           scrollEventThrottle={16}
-          // contentContainerStyle={{ flex: 1 }}
           ItemSeparatorComponent={Separator}
         />
       </View>
