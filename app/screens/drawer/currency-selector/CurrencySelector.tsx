@@ -13,18 +13,10 @@ import {
   selectSelectedCurrency,
   setSelectedCurrency
 } from 'store/settings/currency'
-import { useNavigation, useRoute } from '@react-navigation/native'
+import { useNavigation } from '@react-navigation/native'
 import { usePostCapture } from 'hooks/usePosthogCapture'
-import { WalletScreenProps } from 'navigation/types'
-import AppNavigation from 'navigation/AppNavigation'
-
-type ScreenProps = WalletScreenProps<
-  typeof AppNavigation.Wallet.CurrencySelector
->
 
 const CurrencySelector = () => {
-  const { currencyChangedAnalyticsEventName } =
-    useRoute<ScreenProps['route']>().params
   const navigation = useNavigation()
   const currencies = useSelector(selectCurrencies)
   const selectedCurrency = useSelector(selectSelectedCurrency)
@@ -39,10 +31,9 @@ const CurrencySelector = () => {
     const handleOnCurrencyChanged = () => {
       if (
         currency.symbol.toLocaleUpperCase() !==
-          selectedCurrency.toLocaleUpperCase() &&
-        currencyChangedAnalyticsEventName
+        selectedCurrency.toLocaleUpperCase()
       ) {
-        capture(currencyChangedAnalyticsEventName, {
+        capture('CurrencySettingChanged', {
           currency: currency.symbol.toLocaleUpperCase()
         })
       }

@@ -31,9 +31,7 @@ const CurrencyItem = () => {
         showNavigationArrow
         onPress={() => {
           capture('CurrencySettingClicked')
-          navigation.navigate(AppNavigation.Wallet.CurrencySelector, {
-            currencyChangedAnalyticsEventName: 'CurrencySettingChanged'
-          })
+          navigation.navigate(AppNavigation.Wallet.CurrencySelector)
         }}
       />
     </>
