@@ -241,7 +241,7 @@ const Bridge: FC = () => {
       setIsPending(false)
 
       if (error || !hash) {
-        console.error(error)
+        Logger.error(error)
 
         // do not show the error when the user denied the transfer
         if (error === 'User declined the transaction') {
