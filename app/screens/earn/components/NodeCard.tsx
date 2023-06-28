@@ -1,12 +1,12 @@
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import { StyleSheet, View } from 'react-native'
 import AvaText from 'components/AvaText'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 
-import AvaLogoSVG from 'components/svg/AvaLogoSVG'
 import {
   calculateMaxWeight,
   formatLargeNumber,
+  generateGradient,
   truncateNodeId
 } from 'utils/Utils'
 import { bnToBig, stringToBN } from '@avalabs/utils-sdk'
@@ -21,6 +21,7 @@ import { EarnScreenProps } from 'navigation/types'
 import { copyToClipboard } from 'utils/DeviceTools'
 import moment from 'moment'
 import Big from 'big.js'
+import LinearGradientSVG from 'components/svg/LinearGradientSVG'
 import { NodeValidator } from '../SelectNode'
 
 type NavigationProp = EarnScreenProps<
@@ -51,6 +52,8 @@ export const NodeCard = ({ data }: { data: NodeValidator }) => {
 
   const available = maxWeight.maxWeight.toNumber() - currentWeight
 
+  const gradientColors = useMemo(() => generateGradient(), [])
+
   return (
     <View
       style={{
@@ -66,11 +69,12 @@ export const NodeCard = ({ data }: { data: NodeValidator }) => {
               { backgroundColor: theme.neutral900 }
             ]}>
             <View style={styles.titleRowContainer}>
-              <View style={{ marginRight: 16 }}>
-                <AvaLogoSVG
-                  size={32}
-                  logoColor={theme.tokenLogoColor}
-                  backgroundColor={theme.tokenLogoBg}
+              <View style={styles.gradientContainer}>
+                <LinearGradientSVG
+                  colorFrom={gradientColors.colorFrom}
+                  colorTo={gradientColors.colorTo}
+                  opacityFrom={0.8}
+                  opacityTo={0.3}
                 />
               </View>
               <View>
@@ -198,6 +202,13 @@ const styles = StyleSheet.create({
   titleContainer: {
     borderRadius: 8,
     padding: 16
+  },
+  gradientContainer: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    marginRight: 16,
+    overflow: 'hidden'
   },
   titleRowContainer: {
     display: 'flex',
