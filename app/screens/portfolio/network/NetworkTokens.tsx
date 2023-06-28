@@ -8,9 +8,10 @@ import ZeroState from 'components/ZeroState'
 import AvaButton from 'components/AvaButton'
 import { PortfolioScreenProps } from 'navigation/types'
 import { UI, useIsUIDisabled } from 'hooks/useIsUIDisabled'
-import { LocalTokenWithBalance, TokenType } from 'store/balance'
+import { LocalTokenWithBalance } from 'store/balance'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { usePostCapture } from 'hooks/usePosthogCapture'
+import { getSelectedToken } from 'utils/getSelectedToken'
 import NetworkTokensHeader from './components/NetworkTokensHeader'
 
 type NavigationProp = PortfolioScreenProps<
@@ -49,13 +50,11 @@ const NetworkTokens = () => {
     })
 
     capture('TokenListTokenSelected', {
-      selectedToken:
-        token.type === TokenType.ERC20 ? token.address : token.symbol
+      selectedToken: getSelectedToken(token)
     })
 
     capture('PortfolioTokenSelected', {
-      selectedToken:
-        token.type === TokenType.ERC20 ? token.address : token.symbol
+      selectedToken: getSelectedToken(token)
     })
   }
 
