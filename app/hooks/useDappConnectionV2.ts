@@ -44,14 +44,14 @@ export const useDappConnectionV2 = () => {
     async (sessionsToKill: Session[]) => {
       sessionsToKill.forEach(sessionToKill => {
         capture('ConnectedSiteRemoved', {
-          dAppConnectionType: 'v2',
+          walletConnectVersion: 'v2',
           url: sessionToKill.peer.metadata.url,
           name: sessionToKill.peer.metadata.name
         })
       })
       dispatch(killSessionsAction(sessionsToKill))
     },
-    [dispatch]
+    [capture, dispatch]
   )
 
   return { onUserApproved, onUserRejected, killSessions }
