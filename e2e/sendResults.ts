@@ -46,7 +46,6 @@ async function parseResultsFile() {
       })
     }
   }
-  console.log(casesToAddToRun)
   return { casesToAddToRun, testIdArrayForTestrail }
 }
 
@@ -113,10 +112,7 @@ export default async function sendResults() {
   const resultsToSendToTestrail = preparedFinalResults.resultsToSendToTestrail
 
   if (process.env.POST_TO_TESTRAIL) {
-    if (
-      (await isResultPresent('android')) &&
-      (await isSmokeTestRunFinished('android'))
-    ) {
+    if (await isResultPresent('android')) {
       await generatePlatformResults(
         testCasesToSend,
         resultsToSendToTestrail,
@@ -126,10 +122,7 @@ export default async function sendResults() {
         ).runID
       )
     }
-    if (
-      (await isResultPresent('ios')) &&
-      (await isSmokeTestRunFinished('ios'))
-    ) {
+    if (await isResultPresent('ios')) {
       await generatePlatformResults(
         testCasesToSend,
         resultsToSendToTestrail,
