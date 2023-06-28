@@ -124,7 +124,6 @@ const Transactions = ({
         key={tx.sourceTxHash}
         item={tx}
         onPress={() => {
-          capture('ActivityCardPendingTransactionStatusShown')
           openTransactionStatus({
             txHash: tx.sourceTxHash || ''
           })

@@ -61,7 +61,7 @@ const Advanced = () => {
         rightComponent={
           <Switch
             value={isDeveloperMode}
-            onValueChange={value => onTestnetChange(value)}
+            onValueChange={onTestnetChange}
             testID="switch"
           />
         }
