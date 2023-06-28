@@ -253,7 +253,7 @@ const Bridge: FC = () => {
           return
         }
         setBridgeError('There was a problem with the transfer.')
-        capture('BridgeTransferRequesttError', {
+        capture('BridgeTransferRequestError', {
           sourceBlockchain: currentBlockchain,
           targetBlockchain
         })
