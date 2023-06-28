@@ -29,14 +29,14 @@ import {
 
 const TIME_TO_LOCK_IN_SECONDS = 5
 
-let appStateRef: AppStateStatus | undefined
-
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const init = async (action: any, listenerApi: AppListenerEffectAPI) => {
   const { dispatch } = listenerApi
 
   Logger.setLevel(__DEV__ ? LogLevel.TRACE : LogLevel.ERROR)
 
+  dispatch(capture({ event: 'ApplicationLaunched' }))
+  dispatch(capture({ event: 'ApplicationOpened' }))
   listenToAppState(listenerApi)
 
   if (Platform.OS === 'android') {
@@ -61,7 +61,6 @@ const listenToAppState = async (listenerApi: AppListenerEffectAPI) => {
   ) => {
     // if app state has changed
     if (nextAppState !== currentAppState) {
-      appStateRef = nextAppState
       // update cached state
       dispatch(setAppState(nextAppState))
 
@@ -77,10 +76,6 @@ const listenToAppState = async (listenerApi: AppListenerEffectAPI) => {
         dispatch(onBackground())
       }
     }
-  }
-
-  if (appStateRef === undefined) {
-    dispatch(capture({ event: 'ApplicationOpened' }))
   }
 
   AppState.addEventListener('change', nextAppState => {
