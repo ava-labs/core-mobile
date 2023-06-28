@@ -33,6 +33,7 @@ interface Props<ItemT> {
   disabled?: boolean
   caretIcon?: React.ReactNode
   caretStyle?: StyleProp<ViewStyle>
+  onDropDownToggle?: (isOpen: boolean) => void
   testID?: string
 }
 
@@ -55,6 +56,7 @@ interface OptionsItemInfo<ItemT> {
  * @param style Extra style to pass to Popable
  * @param alignment How should dropdown options be aligned relative to selected option.
  * @param disabled if set to true, dropdown won't show anything
+ * @param onDropDownToggle callback with dropdown open/close status
  */
 function DropDown<ItemT>({
   data,
@@ -67,7 +69,8 @@ function DropDown<ItemT>({
   alignment = 'center',
   disabled,
   caretIcon,
-  caretStyle
+  caretStyle,
+  onDropDownToggle
 }: Props<ItemT>) {
   const theme = useApplicationContext().theme
   const ref = useRef<PopableManager>(null)
@@ -76,6 +79,11 @@ function DropDown<ItemT>({
   const selectionItem = selectedItem
     ? selectionRenderItem(selectedItem)
     : undefined
+
+  const handleOnAction = (visible: boolean) => {
+    setIsFilterOpen(visible)
+    onDropDownToggle?.(visible)
+  }
 
   /**
    * background to be used for items when its visible
@@ -188,7 +196,7 @@ function DropDown<ItemT>({
       ref={ref}
       content={disabled ? <View /> : filterContent()}
       action={'press'}
-      onAction={setIsFilterOpen}
+      onAction={handleOnAction}
       position={'bottom'}
       style={[
         {

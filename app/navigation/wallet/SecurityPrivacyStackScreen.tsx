@@ -12,6 +12,7 @@ import RevealMnemonic from 'navigation/wallet/RevealMnemonic'
 import { QRCodeParams, SecurityPrivacyScreenProps } from 'navigation/types'
 import ConnectedDapps from 'screens/rpc/ConnectedDapps/ConnectedDapps'
 import CaptureDappQR from 'screens/shared/CaptureDappQR'
+import { usePostCapture } from 'hooks/usePosthogCapture'
 
 export type SecurityStackParamList = {
   [AppNavigation.SecurityPrivacy.SecurityPrivacy]: undefined
@@ -85,10 +86,14 @@ type SecurityPrivacyNavigationProp = SecurityPrivacyScreenProps<
 >['navigation']
 
 const SecurityPrivacyScreen = () => {
+  const { capture } = usePostCapture()
   const nav = useNavigation<SecurityPrivacyNavigationProp>()
   return (
     <SecurityPrivacy
-      onChangePin={() => nav.navigate(AppNavigation.SecurityPrivacy.PinChange)}
+      onChangePin={() => {
+        capture('ChangePasswordClicked')
+        nav.navigate(AppNavigation.SecurityPrivacy.PinChange)
+      }}
       onShowRecoveryPhrase={() =>
         nav.navigate(AppNavigation.SecurityPrivacy.ShowRecoveryPhrase)
       }
@@ -96,6 +101,7 @@ const SecurityPrivacyScreen = () => {
         nav.navigate(AppNavigation.SecurityPrivacy.TurnOnBiometrics)
       }
       onShowConnectedDapps={() => {
+        capture('ConnectedSitesClicked')
         nav.navigate(AppNavigation.SecurityPrivacy.DappList)
       }}
     />
@@ -183,12 +189,22 @@ const CreatePinScreen = memo(() => {
   const { onPinCreated } = useApplicationContext().walletSetupHook
   const { mnemonic } = useRoute<CreatePinScreenProps['route']>().params
   const nav = useNavigation<CreatePinScreenProps['navigation']>()
+  const { capture } = usePostCapture()
+
+  const handleOnResetPinFailed = () => {
+    capture('ChangePasswordFailed')
+  }
+
   return (
     <CreatePIN
       onPinSet={pin => {
-        onPinCreated(mnemonic, pin, true).then(() => nav.goBack())
+        onPinCreated(mnemonic, pin, true).then(() => {
+          capture('ChangePasswordSucceeded')
+          nav.goBack()
+        })
       }}
       isResettingPin
+      onResetPinFailed={handleOnResetPinFailed}
     />
   )
 })

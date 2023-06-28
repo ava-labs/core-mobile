@@ -19,6 +19,7 @@ import { setActive } from 'store/network'
 import { selectBalanceTotalInCurrencyForNetworkAndAccount } from 'store/balance'
 import { NetworkLogo } from 'screens/network/NetworkLogo'
 import { selectActiveAccount } from 'store/account'
+import { usePostCapture } from 'hooks/usePosthogCapture'
 
 const windowWidth = Dimensions.get('window').width
 
@@ -32,6 +33,8 @@ type NavigationProp = PortfolioScreenProps<
 
 const InactiveNetworkCard: FC<Props> = ({ network }) => {
   const dispatch = useDispatch()
+  const { capture } = usePostCapture()
+
   const {
     appHook: { currencyFormatter },
     theme
@@ -49,6 +52,9 @@ const InactiveNetworkCard: FC<Props> = ({ network }) => {
   const highlighColor = theme.colorBg3 + Opacity70
 
   const navigateToNetworkTokens = () => {
+    capture('PortfolioSecondaryNetworkClicked', {
+      chainId: network.chainId
+    })
     dispatch(setActive(network.chainId))
     setTimeout(
       () => {

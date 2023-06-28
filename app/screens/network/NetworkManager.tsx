@@ -16,6 +16,7 @@ import ZeroState from 'components/ZeroState'
 import { NetworkListItem } from 'screens/network/NetworkListItem'
 import { Network } from '@avalabs/chains-sdk'
 import { useNavigation } from '@react-navigation/native'
+import { usePostCapture } from 'hooks/usePosthogCapture'
 
 type Props = {
   onShowInfo: (chainId: ChainID) => void
@@ -28,6 +29,7 @@ export default function NetworkManager({ onShowInfo }: Props) {
   const favoriteNetworks = useSelector(selectFavoriteNetworks)
   const dispatch = useDispatch()
   const [searchText, setSearchText] = useState('')
+  const { capture } = usePostCapture()
   const title = 'Networks'
 
   const customNetworkChainIds = useMemo(
@@ -81,6 +83,7 @@ export default function NetworkManager({ onShowInfo }: Props) {
   }
 
   function showInfo(chainId: number) {
+    capture('NetworkDetailsClicked', { chainId })
     onShowInfo(chainId)
   }
 
@@ -101,7 +104,9 @@ export default function NetworkManager({ onShowInfo }: Props) {
         networkName={item.chainName}
         logoUri={item.logoUri}
         isFavorite={isFavorite}
-        onFavorite={() => dispatch(toggleFavorite(item.chainId))}
+        onFavorite={() => {
+          dispatch(toggleFavorite(item.chainId))
+        }}
         onInfo={showInfo}
       />
     )

@@ -1,0 +1,24 @@
+[
+    {
+      "chainId": 1,
+      "address": "0xd44bb6663936CAb1310584A277f7DAa6943d4904",
+      "name": "Winco",
+      "symbol": "WCO",
+      "decimals": 8,
+      "contractType": "ERC-20",
+      "logoUri": "https://assets.coingecko.com/coins/images/3628/thumb/Webp.net-resizeimage_%281%29.png?1547038550",
+      "color": "#e18e00",
+      "type": "ERC20"
+    },
+    {
+      "chainId": 2,
+      "address": "0xd44bb6663936CAb1310584A277f7DAa6943d4903",
+      "name": "Winco",
+      "symbol": "WCO",
+      "decimals": 8,
+      "contractType": "NATIVE",
+      "logoUri": "https://assets.coingecko.com/coins/images/3628/thumb/Webp.net-resizeimage_%281%29.png?1547038550",
+      "color": "#e18e00",
+      "type": "NATIVE"
+    }
+]

@@ -20,6 +20,7 @@ interface Props {
   showFullAddress?: boolean
   textColor?: string
   copyIconEnd?: boolean
+  onCopyAddress?: (address: string) => void
   testID?: string
 }
 
@@ -30,17 +31,24 @@ const TokenAddress: FC<Props> = ({
   hideCopy,
   showIcon,
   textColor,
+  onCopyAddress,
   copyIconEnd
 }) => {
   const theme = useContext(ApplicationContext).theme
+
   const tokenAddress = showFullAddress ? address : truncateAddress(address)
   const txtColor = textColor ? textColor : theme.colorText1
 
   const copyIcon = <CopySVG />
 
+  const copyAddressToClipboard = () => {
+    copyToClipboard(address)
+    onCopyAddress?.(address)
+  }
+
   return (
     <AvaButton.Base
-      onPress={() => (hideCopy ? noop : copyToClipboard(address))}
+      onPress={() => (hideCopy ? noop : copyAddressToClipboard())}
       style={{
         flexDirection: 'row',
         alignItems: 'center',

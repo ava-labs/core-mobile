@@ -18,6 +18,7 @@ import {
 } from 'store/network'
 import { arrayHash } from 'utils/Utils'
 import SettingsCogSVG from 'components/svg/SettingsCogSVG'
+import { usePostCapture } from 'hooks/usePosthogCapture'
 import { NetworkLogo } from './NetworkLogo'
 
 const ManageNetworks = 'Manage networks'
@@ -31,6 +32,7 @@ export default function NetworkDropdown() {
   const activeNetwork = useSelector(selectActiveNetwork)
   const dispatch = useDispatch()
   const { theme } = useApplicationContext()
+  const { capture } = usePostCapture()
   const navigation = useNavigation<NetworkDropdownNavigationProp>()
 
   const data = useMemo(
@@ -73,6 +75,12 @@ export default function NetworkDropdown() {
     />
   )
 
+  const handleOnDropDownToggle = (isOpen: boolean) => {
+    if (isOpen) {
+      capture('NetworkSwitcherOpened')
+    }
+  }
+
   return (
     <View
       style={[
@@ -98,6 +106,7 @@ export default function NetworkDropdown() {
         selectedIndex={selectedNetworkIndex === -1 ? 0 : selectedNetworkIndex}
         onItemSelected={selectedItem => {
           if (selectedItem.name === ManageNetworks) {
+            capture('ManageNetworksClicked')
             navigation.navigate(AppNavigation.Wallet.NetworkSelector)
           } else {
             dispatch(setActive(selectedItem.chainId))
@@ -107,6 +116,7 @@ export default function NetworkDropdown() {
         selectionRenderItem={renderSelection}
         optionsRenderItem={renderOption}
         caretStyle={{ marginRight: 6 }}
+        onDropDownToggle={handleOnDropDownToggle}
       />
     </View>
   )

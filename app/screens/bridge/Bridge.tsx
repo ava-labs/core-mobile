@@ -63,6 +63,8 @@ const sourceBlockchains = [
   Blockchain.ETHEREUM
 ]
 
+const TRANSFER_ERROR = 'There was a problem with the transfer.'
+
 const formatBalance = (balance: Big | undefined) => {
   return balance && formatTokenAmount(balance, 6)
 }
@@ -90,7 +92,8 @@ const Bridge: FC = () => {
     minimum,
     receiveAmount,
     wrapStatus,
-    transfer
+    transfer,
+    bridgeFee
   } = useBridge()
 
   const {
@@ -240,8 +243,22 @@ const Bridge: FC = () => {
       setIsPending(false)
 
       if (error || !hash) {
-        console.error(error)
-        setBridgeError('There was a problem with the transfer.')
+        // do not show the error when the user denied the transfer
+        if (error === 'User declined the transaction') {
+          Logger.error(error)
+          capture('BridgeTransferRequestUserRejectedError', {
+            sourceBlockchain: currentBlockchain,
+            targetBlockchain,
+            fee: bridgeFee?.toNumber()
+          })
+          return
+        }
+        setBridgeError(TRANSFER_ERROR)
+        Logger.error(TRANSFER_ERROR)
+        capture('BridgeTransferRequestError', {
+          sourceBlockchain: currentBlockchain,
+          targetBlockchain
+        })
         return
       }
 

@@ -16,6 +16,7 @@ import { AppStartListening } from 'store/middleware/listener'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import Logger, { LogLevel } from 'utils/Logger'
 import { extendAccountProps } from 'store/app/migrations'
+import { capture } from 'store/posthog'
 import {
   onAppLocked,
   onAppUnlocked,
@@ -34,6 +35,8 @@ const init = async (action: any, listenerApi: AppListenerEffectAPI) => {
 
   Logger.setLevel(__DEV__ ? LogLevel.TRACE : LogLevel.ERROR)
 
+  dispatch(capture({ event: 'ApplicationLaunched' }))
+  dispatch(capture({ event: 'ApplicationOpened' }))
   listenToAppState(listenerApi)
 
   if (Platform.OS === 'android') {
@@ -66,6 +69,7 @@ const listenToAppState = async (listenerApi: AppListenerEffectAPI) => {
         nextAppState === 'active'
       ) {
         Logger.info('app comes back to foreground')
+        dispatch(capture({ event: 'ApplicationOpened' }))
         dispatch(onForeground())
       } else if (nextAppState === 'background') {
         Logger.info('app goes to background')

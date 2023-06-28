@@ -204,7 +204,7 @@ export const PosthogContextProvider = ({
 
   function checkRestartSession() {
     if (timeoutPassed) {
-      capture('$opt_in')
+      capture('AnalyticsEnabled')
     }
   }
 
@@ -232,9 +232,10 @@ export const PosthogContextProvider = ({
     if (analyticsConsent || analyticsConsent === undefined) {
       if (!isAnalyticsEnabled) {
         dispatch(toggleAnalytics(true))
-        capture('$opt_in')
+        capture('AnalyticsEnabled')
       }
     } else {
+      capture('AnalyticsDisabled')
       dispatch(toggleAnalytics(false))
     }
   }
