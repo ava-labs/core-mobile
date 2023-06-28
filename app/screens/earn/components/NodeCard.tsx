@@ -19,9 +19,9 @@ import { useNavigation } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
 import { EarnScreenProps } from 'navigation/types'
 import { copyToClipboard } from 'utils/DeviceTools'
-import moment from 'moment'
 import Big from 'big.js'
 import LinearGradientSVG from 'components/svg/LinearGradientSVG'
+import { format } from 'date-fns'
 import { NodeValidator } from '../SelectNode'
 
 type NavigationProp = EarnScreenProps<
@@ -33,9 +33,7 @@ export const NodeCard = ({ data }: { data: NodeValidator }) => {
   const [isCardExpanded, setIsCardExpanded] = useState(false)
   const { navigate } = useNavigation<NavigationProp>()
 
-  const endDate = moment(new Date(parseInt(data.endTime) * 1000)).format(
-    'MM/DD/YY'
-  )
+  const endDate = format(new Date(parseInt(data.endTime) * 1000), 'MM/dd/yy')
 
   const stakeAmount = bnToBig(stringToBN(data.stakeAmount, 0), 9).toNumber()
 
