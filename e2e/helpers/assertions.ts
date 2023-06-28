@@ -26,8 +26,8 @@ const isVisibleNoSync = async (item: Detox.NativeMatcher, num = 0) => {
   }
 }
 
-const isNotVisible = async (item: Detox.NativeMatcher) => {
-  await expect(element(item)).not.toBeVisible()
+const isNotVisible = async (item: Detox.NativeMatcher, index = 0) => {
+  await expect(element(item).atIndex(index)).not.toBeVisible()
 }
 
 const hasText = async (item: Detox.NativeMatcher, text: string) => {

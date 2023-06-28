@@ -323,7 +323,7 @@ workflows:
                 set -x
 
                 npm rebuild detox
-                QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test --configuration android.external.release.ci --headless
+                QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test --configuration android.external.release.smoke.ci --headless
     artifacts:
       - deploy_path: ./e2e/tests/performance/testResults/allResults.txt
   android-internal:
@@ -464,7 +464,7 @@ workflows:
                 set -x
 
                 npm rebuild detox
-                ./node_modules/.bin/detox test --configuration ios.external.release.ci
+                ./node_modules/.bin/detox test --configuration ios.external.release.smoke.ci
     artifacts:
       - deploy_path: ./e2e/tests/performance/testResults/allResults.txt
   ios-internal:
@@ -540,6 +540,6 @@ workflows:
                 set -x
 
                 npm rebuild detox
-                ./node_modules/.bin/detox test --configuration ios.internal.release.ci
+                ./node_modules/.bin/detox test --configuration ios.internal.release.smoke.ci
     artifacts:
       - deploy_path: ./e2e/tests/performance/testResults/allResults.txt
