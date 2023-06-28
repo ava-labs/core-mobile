@@ -122,7 +122,7 @@ export const SendNFTContextProvider = ({
       setSendStatusMsg('No active account')
       capture('NftSendFailed', {
         errorMessage: 'No active account',
-        chinaId: activeNetwork.chainId
+        chainId: activeNetwork.chainId
       })
       return
     }
@@ -180,7 +180,7 @@ export const SendNFTContextProvider = ({
           setSendStatus('Fail')
           capture('NftSendFailed', {
             errorMessage: reason?.error?.message,
-            chinaId: activeNetwork.chainId
+            chainId: activeNetwork.chainId
           })
           showSnackBarCustom({
             component: (
