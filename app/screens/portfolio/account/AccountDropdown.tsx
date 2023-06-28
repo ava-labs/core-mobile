@@ -32,6 +32,9 @@ function AccountDropdown({
 
   useEffect(() => {
     capture('AccountSelectorOpened')
+  }, [])
+
+  useEffect(() => {
     const compositeAnimation1 = Animated.timing(animTranslateY, {
       toValue: 0,
       duration: 600,
@@ -40,7 +43,7 @@ function AccountDropdown({
     })
     compositeAnimation1.start()
     return () => compositeAnimation1.stop()
-  }, [animTranslateY, capture])
+  }, [animTranslateY])
 
   const animatedDismiss = useCallback(() => {
     const compositeAnimation1 = Animated.timing(animTranslateY, {
