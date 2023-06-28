@@ -14,6 +14,7 @@ import { NetworkLogo } from 'screens/network/NetworkLogo'
 import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList'
 import { selectActiveNetwork } from 'store/network'
 import { selectActiveAccount } from 'store/account'
+import { usePostCapture } from 'hooks/usePosthogCapture'
 import ZeroState from './ZeroState'
 import Tokens from './Tokens'
 
@@ -33,6 +34,7 @@ const ActiveNetworkCard = () => {
     )
   )
   const { navigate } = useNavigation<NavigationProp>()
+  const { capture } = usePostCapture()
   const {
     appHook: { currencyFormatter },
     theme
@@ -40,8 +42,12 @@ const ActiveNetworkCard = () => {
   const cardBgColor = theme.colorBg2 + Opacity85
   const highlighColor = theme.colorBg3 + Opacity70
 
-  const navigateToNetworkTokens = () =>
+  const navigateToNetworkTokens = () => {
+    capture('PortfolioPrimaryNetworkClicked', {
+      chainId: network.chainId
+    })
     navigate(AppNavigation.Portfolio.NetworkTokens)
+  }
 
   const renderHeader = () => {
     const balanceTextColor = theme.colorText3

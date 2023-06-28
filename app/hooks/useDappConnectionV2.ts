@@ -8,9 +8,11 @@ import {
   killSessions as killSessionsAction,
   Request
 } from 'store/walletConnectV2'
+import { usePostCapture } from './usePosthogCapture'
 
 export const useDappConnectionV2 = () => {
   const dispatch = useDispatch()
+  const { capture } = usePostCapture()
 
   const onUserApproved = useCallback(
     (request: Request, data?: unknown) => {
@@ -40,9 +42,16 @@ export const useDappConnectionV2 = () => {
 
   const killSessions = useCallback(
     async (sessionsToKill: Session[]) => {
+      sessionsToKill.forEach(sessionToKill => {
+        capture('ConnectedSiteRemoved', {
+          walletConnectVersion: 'v2',
+          url: sessionToKill.peer.metadata.url,
+          name: sessionToKill.peer.metadata.name
+        })
+      })
       dispatch(killSessionsAction(sessionsToKill))
     },
-    [dispatch]
+    [capture, dispatch]
   )
 
   return { onUserApproved, onUserRejected, killSessions }

@@ -27,7 +27,7 @@ const Buy: FC = () => {
   const onPaySelection = (type: TokenType) => {
     capture(
       type === TokenType.COINBASE
-        ? 'Coinbase PayBuyClicked'
+        ? 'CoinbasePayBuyClicked'
         : 'MoonpayBuyClicked'
     )
     navigation.navigate(AppNavigation.Modal.BuyCarefully, {

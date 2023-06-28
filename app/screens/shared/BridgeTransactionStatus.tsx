@@ -29,6 +29,7 @@ import TransactionToast, {
 } from 'components/toast/TransactionToast'
 import AvaButton from 'components/AvaButton'
 import AppNavigation from 'navigation/AppNavigation'
+import { usePostCapture } from 'hooks/usePosthogCapture'
 
 type Props = {
   txHash: string
@@ -38,6 +39,7 @@ type Props = {
 const BridgeTransactionStatus: FC<Props> = ({ txHash, showHideButton }) => {
   const [toastShown, setToastShown] = useState<boolean>()
   const { bridgeTransactions, removeBridgeTransaction } = useBridgeContext()
+  const { capture } = usePostCapture()
   const [bridgeTransaction, setBridgeTransaction] =
     useState<BridgeTransaction>()
 
@@ -109,6 +111,7 @@ const BridgeTransactionStatus: FC<Props> = ({ txHash, showHideButton }) => {
       if (bridgeTransaction?.complete && !toastShown) {
         removeBridgeTransaction(bridgeTransaction.sourceTxHash)
         setToastShown(true)
+        capture('BridgeTransferRequestSucceeded')
         showSnackBarCustom({
           component: (
             <TransactionToast
@@ -120,7 +123,7 @@ const BridgeTransactionStatus: FC<Props> = ({ txHash, showHideButton }) => {
         })
       }
     },
-    [bridgeTransaction, removeBridgeTransaction, toastShown]
+    [bridgeTransaction, capture, removeBridgeTransaction, toastShown]
   )
 
   useEffect(

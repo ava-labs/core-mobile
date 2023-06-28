@@ -45,7 +45,8 @@ export default function NftSend({
       setCustomGasPrice,
       setSelectedFeePreset,
       setCustomGasLimit,
-      gasLimit
+      gasLimit,
+      selectedFeePreset
     }
   } = useSendNFTContext()
   const activeNetwork = useSelector(selectActiveNetwork)
@@ -95,15 +96,22 @@ export default function NftSend({
         break
     }
     selectContact(item, type)
-    capture('SendContactSelected', { contactSource: source })
+    capture('NftSendContactSelected', {
+      contactSource: source
+    })
   }
 
   const handleGasPriceChange = useCallback(
     (gasPrice1, feePreset) => {
+      if (feePreset !== selectedFeePreset) {
+        capture('NftSendFeeOptionChanged', {
+          modifier: feePreset
+        })
+      }
       setCustomGasPrice(ethersBigNumberToBN(gasPrice1))
       setSelectedFeePreset(feePreset)
     },
-    [setCustomGasPrice, setSelectedFeePreset]
+    [setCustomGasPrice, setSelectedFeePreset, selectedFeePreset, capture]
   )
 
   const handleGasLimitChange = useCallback(
