@@ -142,7 +142,7 @@ export async function isSmokeTestRun(platform: any) {
 
 export const testRunTimestamp = async (platform: any) => {
   const testRunFolder = await parseTestRun(platform)
-  return testRunFolder[4]
+  return testRunFolder[testRunFolder.length - 1]
 }
 
 export async function parseTestRun(platform: any) {

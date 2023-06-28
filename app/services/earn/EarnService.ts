@@ -3,6 +3,9 @@ import BN from 'bn.js'
 import { Account } from 'store/account'
 import { exportC } from 'services/earn/exportC'
 import { importP } from 'services/earn/importP'
+import Big from 'big.js'
+import { FujiParams, MainnetParams } from 'utils/NetworkParams'
+import { bnToBig } from '@avalabs/utils-sdk'
 
 class EarnService {
   getCurrentValidators = (isTestnet: boolean) => {
@@ -33,6 +36,53 @@ class EarnService {
         isDevMode
       }))
     )
+  }
+
+  /**
+   *
+   * @param amount
+   * @param duration in s
+   * @param currentSupply
+   * @param delegationFee in percent
+   * @param isDeveloperMode
+   */
+  calcReward(
+    amount: Big,
+    duration: number,
+    currentSupply: Big,
+    delegationFee: number,
+    isDeveloperMode: boolean
+  ): string {
+    const defPlatformVals = isDeveloperMode ? FujiParams : MainnetParams
+    const minConsumptionRateRatio = new Big(
+      defPlatformVals.stakingConfig.RewardConfig.MinConsumptionRate
+    )
+    const maxConsumptionRateRatio = new Big(
+      defPlatformVals.stakingConfig.RewardConfig.MaxConsumptionRate
+    )
+    const stakingPeriodOverMintingPeriod = new Big(duration).div(
+      new Big(defPlatformVals.stakingConfig.RewardConfig.MintingPeriod)
+    )
+    const effectiveConsumptionRate = minConsumptionRateRatio
+      .mul(new Big(1).minus(stakingPeriodOverMintingPeriod))
+      .add(maxConsumptionRateRatio.mul(stakingPeriodOverMintingPeriod))
+
+    const stakeOverSupply = amount.div(currentSupply)
+    const supplyCap = bnToBig(
+      defPlatformVals.stakingConfig.RewardConfig.SupplyCap
+    )
+    const unmintedSupply = supplyCap.sub(currentSupply)
+    const fullReward = unmintedSupply
+      .mul(stakeOverSupply)
+      .mul(stakingPeriodOverMintingPeriod)
+      .mul(effectiveConsumptionRate)
+
+    const delegationFeeRatio = new Big(delegationFee).div(100)
+    const rewardsMinusDelegationFee = fullReward.mul(
+      new Big(1).minus(delegationFeeRatio)
+    )
+
+    return rewardsMinusDelegationFee.toFixed(0)
   }
 }
 
