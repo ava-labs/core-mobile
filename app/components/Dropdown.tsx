@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import React, { useMemo, useRef, useState } from 'react'
 import {
   Platform,
   Pressable,
@@ -80,9 +80,10 @@ function DropDown<ItemT>({
     ? selectionRenderItem(selectedItem)
     : undefined
 
-  useEffect(() => {
-    onDropDownToggle?.(isFilterOpen)
-  }, [isFilterOpen, onDropDownToggle])
+  const handleOnAction = (visible: boolean) => {
+    setIsFilterOpen(visible)
+    onDropDownToggle?.(visible)
+  }
 
   /**
    * background to be used for items when its visible
@@ -195,7 +196,7 @@ function DropDown<ItemT>({
       ref={ref}
       content={disabled ? <View /> : filterContent()}
       action={'press'}
-      onAction={setIsFilterOpen}
+      onAction={handleOnAction}
       position={'bottom'}
       style={[
         {
