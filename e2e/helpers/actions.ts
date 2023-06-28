@@ -221,11 +221,25 @@ const reportUIPerformance = async (
 
   let data = ''
 
-  try {
-    data = fs.readFileSync(reportUIPerformanceFilePath, 'utf8')
-  } catch (err) {
-    console.error('Error reading file:', err)
-    // continue
+  if (!fs.existsSync(reportUIPerformanceFilePath)) {
+    fs.writeFile(reportUIPerformanceFilePath, '', function (err: any) {
+      if (err) {
+        console.log(err)
+      }
+    })
+    try {
+      data = fs.readFileSync(reportUIPerformanceFilePath, 'utf8')
+    } catch (err) {
+      console.error('Error reading file:', err)
+      // continue
+    }
+  } else {
+    try {
+      data = fs.readFileSync(reportUIPerformanceFilePath, 'utf8')
+    } catch (err) {
+      console.error('Error reading file:', err)
+      // continue
+    }
   }
 
   const existingLines = data.trim().split('\n')
