@@ -76,3 +76,6 @@ e2e/artifacts/
 /playwright-report/
 /playwright/.cache/
 /testResults/
+
+# vscode
+.vscode

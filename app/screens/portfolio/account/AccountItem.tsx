@@ -18,6 +18,7 @@ import {
 } from 'store/balance'
 import ReloadSVG from 'components/svg/ReloadSVG'
 import { ActivityIndicator } from 'components/ActivityIndicator'
+import { usePostCapture } from 'hooks/usePosthogCapture'
 
 type Props = {
   account: Account
@@ -47,7 +48,7 @@ function AccountItem({
   const [editAccount, setEditAccount] = useState(false)
   const [editedAccountTitle, setEditedAccountTitle] = useState(account.title)
   const [showLoader, setShowLoader] = useState(false)
-
+  const { capture } = usePostCapture()
   const dispatch = useDispatch()
 
   const bgColor = useMemo(() => {
@@ -79,6 +80,10 @@ function AccountItem({
     },
     [account.index, dispatch]
   )
+
+  const handleOnCopyAddressAnalytics = (eventName: string) => {
+    capture(eventName)
+  }
 
   const handleLoadBalance = useCallback(() => {
     dispatch(fetchBalanceForAccount({ accountIndex: account.index }))
@@ -154,9 +159,21 @@ function AccountItem({
             )}
           </View>
           <View>
-            <TokenAddress address={account.address} showIcon />
+            <TokenAddress
+              address={account.address}
+              showIcon
+              onCopyAddress={() =>
+                handleOnCopyAddressAnalytics('AccountSelectorEthAddressCopied')
+              }
+            />
             <Space y={6} />
-            <TokenAddress address={account.addressBtc} showIcon />
+            <TokenAddress
+              address={account.addressBtc}
+              showIcon
+              onCopyAddress={() =>
+                handleOnCopyAddressAnalytics('AccountSelectorBtcAddressCopied')
+              }
+            />
           </View>
         </Row>
       </AvaButton.Base>

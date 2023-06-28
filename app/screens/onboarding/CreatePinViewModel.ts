@@ -30,7 +30,10 @@ export type UseCreatePinProps = {
   jiggleAnim: Animated.Value
 }
 
-export function useCreatePin(isResettingPin = false): UseCreatePinProps {
+export function useCreatePin(
+  isResettingPin = false,
+  onResetPinFailed?: () => void
+): UseCreatePinProps {
   const [title, setTitle] = useState('Create Pin')
   const [chosenPin, setChosenPin] = useState('')
   const [confirmedPin, setConfirmedPin] = useState('')
@@ -67,6 +70,7 @@ export function useCreatePin(isResettingPin = false): UseCreatePinProps {
       if (chosenPin === confirmedPin) {
         setValidPin(chosenPin)
       } else {
+        onResetPinFailed?.()
         resetConfirmPinProcess()
         fireJiggleAnimation()
       }
