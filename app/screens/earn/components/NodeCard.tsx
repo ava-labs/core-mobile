@@ -9,7 +9,6 @@ import {
   generateGradient,
   truncateNodeId
 } from 'utils/Utils'
-import { bnToBig, stringToBN } from '@avalabs/utils-sdk'
 import { Row } from 'components/Row'
 import CollapsibleSection from 'components/CollapsibleSection'
 import CarrotSVG from 'components/svg/CarrotSVG'
@@ -35,20 +34,17 @@ export const NodeCard = ({ data }: { data: NodeValidator }) => {
 
   const endDate = format(new Date(parseInt(data.endTime) * 1000), 'MM/dd/yy')
 
-  const stakeAmount = bnToBig(stringToBN(data.stakeAmount, 0), 9).toNumber()
+  const stakeAmount = new Big(data.stakeAmount)
+  const delegatorWeight = new Big(data.delegatorWeight || 0)
+  const currentWeight = stakeAmount.plus(delegatorWeight)
 
-  const delegatorWeight = bnToBig(
-    stringToBN(data?.delegatorWeight || '0', 0),
-    9
-  ).toNumber()
-  const currentWeight = stakeAmount + delegatorWeight
+  const maxWeight = calculateMaxWeight(new Big(3000000e9), stakeAmount)
 
-  const maxWeight = calculateMaxWeight(
-    new Big(3000000),
-    bnToBig(stringToBN(data.stakeAmount, 0), 0)
-  )
+  const validatorStake = stakeAmount.div(Math.pow(10, 9)).toNumber()
 
-  const available = maxWeight.maxWeight.toNumber() - currentWeight
+  const available = maxWeight.maxWeight
+    .minus(currentWeight)
+    .div(Math.pow(10, 9))
 
   const gradientColors = useMemo(() => generateGradient(), [])
 
@@ -158,10 +154,7 @@ export const NodeCard = ({ data }: { data: NodeValidator }) => {
               Validator Stake
             </AvaText.Caption>
             <AvaText.Body2 textStyle={{ color: theme.neutral50 }}>
-              {formatLargeNumber(
-                bnToBig(stringToBN(data.stakeAmount, 0), 9).toString(),
-                4
-              )}
+              {(formatLargeNumber(validatorStake), 4)}
             </AvaText.Body2>
           </Row>
           <Row style={styles.rowContainer}>
@@ -169,7 +162,7 @@ export const NodeCard = ({ data }: { data: NodeValidator }) => {
               Available
             </AvaText.Caption>
             <AvaText.Body2 textStyle={{ color: theme.neutral50 }}>
-              {formatLargeNumber(available, 4)}
+              {formatLargeNumber(available.toNumber(), 4)}
             </AvaText.Body2>
           </Row>
           <Row style={styles.rowContainer}>
