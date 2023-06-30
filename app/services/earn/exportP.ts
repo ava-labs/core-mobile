@@ -60,7 +60,7 @@ export async function exportP({
     await exponentialBackoff(
       () => avaxProvider.getApiP().getTxStatus({ txID }),
       result => result.status === 'Committed',
-      5
+      6
     )
   } catch (e) {
     Logger.error('exponentialBackoff failed', e)

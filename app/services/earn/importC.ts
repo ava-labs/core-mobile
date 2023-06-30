@@ -52,7 +52,7 @@ export async function importC({
     await exponentialBackoff(
       () => avaxProvider.getApiC().getAtomicTxStatus(txID),
       result => result.status === 'Accepted',
-      5
+      6
     )
   } catch (e) {
     Logger.error('exponentialBackoff failed', e)
