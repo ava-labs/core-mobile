@@ -7,26 +7,39 @@ import { Account } from 'store/account'
 import { AvalancheTransactionRequest } from 'services/wallet/types'
 import { UnsignedTx } from '@avalabs/avalanchejs-v2'
 
-export type ImportPParams = {
+export type ImportCParams = {
   activeAccount: Account
   isDevMode: boolean
 }
 
-export async function importP({
+export async function importC({
   activeAccount,
   isDevMode
-}: ImportPParams): Promise<boolean> {
+}: ImportCParams): Promise<boolean> {
   const avaxXPNetwork = NetworkService.getAvalancheNetworkXP(isDevMode)
 
-  const unsignedTx = await WalletService.createImportPTx(
+  const avaxProvider = NetworkService.getProviderForNetwork(
+    avaxXPNetwork
+  ) as Avalanche.JsonRpcProvider
+
+  const baseFee = await avaxProvider.getApiC().getBaseFee() //in WEI
+  const baseFeeNAvax = baseFee / BigInt(1e9)
+  const instantFee = baseFeeNAvax + (baseFeeNAvax * BigInt(20)) / BigInt(100) // Increase by 20% for instant speed
+
+  const unsignedTx = await WalletService.createImportCTx(
     activeAccount.index,
+    instantFee,
     avaxXPNetwork,
-    'C',
-    activeAccount.addressPVM
+    'P',
+    activeAccount.address
   )
 
   const signedTxJson = await WalletService.sign(
-    { tx: unsignedTx } as AvalancheTransactionRequest,
+    {
+      tx: unsignedTx,
+      externalIndices: [],
+      internalIndices: []
+    } as AvalancheTransactionRequest,
     activeAccount.index,
     avaxXPNetwork
   )
@@ -35,13 +48,10 @@ export async function importP({
   const txID = await NetworkService.sendTransaction(signedTx, avaxXPNetwork)
   Logger.trace('txID', txID)
 
-  const avaxProvider = NetworkService.getProviderForNetwork(
-    avaxXPNetwork
-  ) as Avalanche.JsonRpcProvider
   try {
     await exponentialBackoff(
-      () => avaxProvider.getApiP().getTxStatus({ txID }),
-      result => result.status === 'Committed',
+      () => avaxProvider.getApiC().getAtomicTxStatus(txID),
+      result => result.status === 'Accepted',
       6
     )
   } catch (e) {
