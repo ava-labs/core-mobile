@@ -1,6 +1,5 @@
 import React from 'react'
 import { StyleSheet, View } from 'react-native'
-import { ListRenderItemInfo as FlashListRenderItemInfo } from '@shopify/flash-list'
 import WatchListItem from 'screens/watchlist/components/WatchListItem'
 import { useNavigation } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
@@ -19,11 +18,9 @@ import {
   Prices,
   reorderFavorites
 } from 'store/watchlist'
-import AvaList from 'components/AvaList'
-import {
-  DragEndParams,
-  DraggableListRenderItemInfo
-} from 'components/draggableList/types'
+import { DragEndParams } from 'components/draggableList/types'
+import DraggableList from 'components/draggableList/DraggableList'
+import BigList from 'components/BigList'
 import { WatchlistFilter } from '../types'
 
 const getDisplayValue = (
@@ -64,23 +61,16 @@ const WatchList: React.FC<Props> = ({
 
   const keyExtractor = (item: MarketToken) => item.id
 
-  const draggableListItem = (
-    item: DraggableListRenderItemInfo<MarketToken>
-  ) => {
-    return renderItem(item.item)
-  }
-
-  const flashListRenderItem = (item: FlashListRenderItemInfo<MarketToken>) => {
-    return renderItem(item.item)
-  }
-
-  function renderItem(token: MarketToken) {
+  function renderItem(token: MarketToken, index: number) {
     const chartData = charts[token.id] ?? defaultChartData
     const price = prices[token.id] ?? defaultPrice
     const displayValue = getDisplayValue(price, tokenInCurrencyFormatter)
 
+    const isFirstItem = index === 0
+
     return (
       <View style={styles.item} key={token.id}>
+        {!isFirstItem && <SeparatorComponent />}
         <WatchListItem
           token={token}
           chartData={chartData}
@@ -97,37 +87,42 @@ const WatchList: React.FC<Props> = ({
     )
   }
 
+  const EmptyComponent =
+    isShowingFavorites && !isSearching ? (
+      <ZeroState.NoWatchlistFavorites exploreAllTokens={onExploreAllTokens} />
+    ) : (
+      <ZeroState.NoResultsTextual
+        message={
+          'There are no tokens that match your search. Please try again.'
+        }
+      />
+    )
+
+  if (isShowingFavorites) {
+    return (
+      <DraggableList
+        data={tokens || []}
+        keyExtractor={keyExtractor}
+        renderItem={item => renderItem(item.item, item.index)}
+        onDragEnd={(params: DragEndParams<MarketToken>) => {
+          const favIds = params.newListOrder.map(item => item.id)
+          dispatch(reorderFavorites(favIds))
+        }}
+        ListEmptyComponent={EmptyComponent}
+      />
+    )
+  }
+
   return (
-    <AvaList
+    <BigList
       isDraggable={isShowingFavorites}
       data={tokens}
-      flashRenderItem={flashListRenderItem}
-      draggableListItem={draggableListItem}
-      onDragEnd={(params: DragEndParams<MarketToken>) => {
-        const favIds = params.newListOrder.map(item => item.id)
-        dispatch(reorderFavorites(favIds))
-      }}
-      ItemSeparatorComponent={SeparatorComponent}
-      ListEmptyComponent={
-        isShowingFavorites && !isSearching ? (
-          <ZeroState.NoWatchlistFavorites
-            exploreAllTokens={onExploreAllTokens}
-          />
-        ) : (
-          <ZeroState.NoResultsTextual
-            message={
-              'There are no tokens that match your search. Please try again.'
-            }
-          />
-        )
-      }
+      renderItem={item => renderItem(item.item, item.index)}
+      ListEmptyComponent={EmptyComponent}
       refreshing={false}
       onRefresh={() => dispatch(onWatchlistRefresh)}
       keyExtractor={keyExtractor}
       estimatedItemSize={64}
-      extraData={{
-        filterBy
-      }}
     />
   )
 }
