@@ -197,7 +197,7 @@ class WalletService {
   }
 
   /**
-   * @param amount
+   * @param amount in nAvax
    * @param baseFee in WEI
    * @param accountIndex
    * @param avaxXPNetwork
@@ -246,6 +246,59 @@ class WalletService {
 
     const utxoSet = await wallet.getAtomicUTXOs('P', sourceChain)
     return wallet.importP(utxoSet, sourceChain, destinationAddress)
+  }
+
+  /**
+   * @param amount in nAvax
+   * @param accountIndex
+   * @param avaxXPNetwork
+   * @param destinationChain
+   * @param destinationAddress
+   */
+  async createExportPTx(
+    amount: bigint,
+    accountIndex: number,
+    avaxXPNetwork: Network,
+    destinationChain: 'C' | 'X',
+    destinationAddress: string | undefined
+  ): Promise<UnsignedTx> {
+    const wallet = (await this.getWallet(
+      accountIndex,
+      avaxXPNetwork
+    )) as Avalanche.StaticSigner
+
+    const utxoSet = await wallet.getUTXOs('P')
+    return wallet.exportP(amount, utxoSet, destinationChain, destinationAddress)
+  }
+
+  /**
+   * @param accountIndex
+   * @param baseFee in nAvax
+   * @param avaxXPNetwork
+   * @param sourceChain
+   * @param destinationAddress
+   */
+  async createImportCTx(
+    accountIndex: number,
+    baseFee: bigint,
+    avaxXPNetwork: Network,
+    sourceChain: 'P' | 'X',
+    destinationAddress: string | undefined
+  ): Promise<UnsignedTx> {
+    const wallet = (await this.getWallet(
+      accountIndex,
+      avaxXPNetwork
+    )) as Avalanche.StaticSigner
+
+    const utxoSet = await wallet.getAtomicUTXOs('C', sourceChain)
+
+    return wallet.importC(
+      utxoSet,
+      sourceChain,
+      baseFee,
+      undefined,
+      destinationAddress
+    )
   }
 
   destroy() {
