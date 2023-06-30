@@ -167,10 +167,17 @@ export const SendTokenContextProvider = ({
     if (!activeAccount) {
       setSendStatus('Fail')
       setSendStatusMsg('No active account')
+      capture('SendFailed', {
+        errorMessage: 'No active account',
+        chainId: activeNetwork.chainId
+      })
       return
     }
 
-    capture('SendApproved', { selectedGasFee: selectedFeePreset.toUpperCase() })
+    capture('SendApproved', {
+      selectedGasFee: selectedFeePreset.toUpperCase(),
+      chainId: activeNetwork.chainId
+    })
 
     const sendState = {
       address: sendToAddress,
@@ -208,6 +215,7 @@ export const SendTokenContextProvider = ({
         )
         .then(txId => {
           setSendStatus('Success')
+          capture('SendSucceeded', { chainId: activeNetwork.chainId })
           showSnackBarCustom({
             component: (
               <TransactionToast
@@ -223,6 +231,11 @@ export const SendTokenContextProvider = ({
         .catch(reason => {
           const transactionHash =
             reason?.transactionHash ?? reason?.error?.transactionHash
+          capture('SendFailed', {
+            errorMessage: reason?.error?.message,
+            chainId: activeNetwork.chainId
+          })
+
           showSnackBarCustom({
             component: (
               <TransactionToast
@@ -319,7 +332,8 @@ export const SendTokenContextProvider = ({
       setCustomGasPrice,
       gasLimit: trueGasLimit,
       setCustomGasLimit,
-      setSelectedFeePreset
+      setSelectedFeePreset,
+      selectedFeePreset
     },
     tokenLogo,
     canSubmit,
@@ -357,4 +371,5 @@ export interface Fees {
   gasLimit: number | undefined
   setCustomGasLimit: Dispatch<number>
   setSelectedFeePreset: Dispatch<FeePreset>
+  selectedFeePreset: FeePreset
 }

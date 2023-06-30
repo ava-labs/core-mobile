@@ -1,6 +1,12 @@
 import React, { useMemo } from 'react'
-import { Animated, Dimensions, StyleSheet, View } from 'react-native'
-import { ListRenderItemInfo as FlashListRenderItemInfo } from '@shopify/flash-list'
+import {
+  Animated,
+  Dimensions,
+  StyleSheet,
+  View,
+  ListRenderItemInfo,
+  FlatList
+} from 'react-native'
 import AvaText from 'components/AvaText'
 import ActivityListItem from 'screens/activity/ActivityListItem'
 import {
@@ -20,7 +26,7 @@ import ZeroState from 'components/ZeroState'
 import { BridgeTransaction } from '@avalabs/bridge-sdk'
 import { UI, useIsUIDisabled } from 'hooks/useIsUIDisabled'
 import { RefreshControl } from 'components/RefreshControl'
-import AvaList from 'components/AvaList'
+import { usePostCapture } from 'hooks/usePosthogCapture'
 
 const SCREEN_WIDTH = Dimensions.get('window').width
 const BOTTOM_PADDING = SCREEN_WIDTH * 0.3
@@ -70,6 +76,7 @@ const Transactions = ({
   hidePendingBridgeTransactions
 }: Props) => {
   const { openUrl } = useInAppBrowser()
+  const { capture } = usePostCapture()
   const bridgeDisabled = useIsUIDisabled(UI.Bridge)
   const pendingBridgeByTxId = useSelector(selectBridgeTransactions)
   const combinedData = useMemo(() => {
@@ -130,11 +137,7 @@ const Transactions = ({
     )
   }
 
-  const flashRenderItem = ({ item }: FlashListRenderItemInfo<Item>) => {
-    return renderListItem(item)
-  }
-
-  function renderListItem(item: Item) {
+  const renderItem = ({ item }: ListRenderItemInfo<Item>) => {
     // render section header
     if (typeof item === 'string') {
       return renderSectionHeader(item)
@@ -146,8 +149,10 @@ const Transactions = ({
     } else {
       const onPress = () => {
         if (item.isContractCall || item.isBridge) {
+          capture('ActivityCardLinkClicked')
           openUrl(item.explorerLink)
         } else {
+          capture('ActivityCardDetailShown')
           openTransactionDetails(item)
         }
       }
@@ -182,9 +187,9 @@ const Transactions = ({
 
   const renderTransactions = () => {
     return (
-      <AvaList
+      <FlatList
         data={combinedData}
-        flashRenderItem={flashRenderItem}
+        renderItem={renderItem}
         keyExtractor={keyExtractor}
         contentContainerStyle={styles.contentContainer}
         onEndReached={onEndReached}
@@ -193,10 +198,6 @@ const Transactions = ({
         refreshControl={
           <RefreshControl onRefresh={onRefresh} refreshing={isRefreshing} />
         }
-        getItemType={(item: Item) => {
-          return typeof item === 'string' ? 'sectionHeader' : 'row'
-        }}
-        estimatedItemSize={71}
       />
     )
   }
@@ -220,8 +221,7 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    padding: 16,
-    marginRight: 8
+    padding: 16
   }
 })
 
