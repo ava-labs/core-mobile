@@ -68,13 +68,13 @@ const DraggableList = <TItem,>({
   }
 
   function renderItems() {
-    return dataRef.current.map(item => {
+    return dataRef.current.map((item, index) => {
       const itemId = keyExtractor(item)
       return (
         <DraggableItemWrapper
           id={itemId}
           key={itemId}
-          itemView={renderItem({ item })}
+          itemView={renderItem({ item, index })}
           height={ITEM_HEIGHT}
           scrollYShared={scrollY}
           scrollViewOffset={scrollViewOffset}

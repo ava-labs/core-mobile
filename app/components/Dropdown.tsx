@@ -37,7 +37,7 @@ interface Props<ItemT> {
   testID?: string
 }
 
-interface OptionsItemInfo<ItemT> {
+export interface OptionsItemInfo<ItemT> {
   item: ItemT
   testID?: string
 }
