@@ -2,6 +2,7 @@ import React from 'react'
 
 export interface DraggableListRenderItemInfo<ItemT> {
   item: ItemT
+  index: number
 }
 
 export type DraggableRenderItem<TItem> = (

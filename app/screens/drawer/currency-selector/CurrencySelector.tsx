@@ -14,19 +14,33 @@ import {
   setSelectedCurrency
 } from 'store/settings/currency'
 import { useNavigation } from '@react-navigation/native'
+import { usePostCapture } from 'hooks/usePosthogCapture'
 
 const CurrencySelector = () => {
   const navigation = useNavigation()
   const currencies = useSelector(selectCurrencies)
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const dispatch = useDispatch()
+  const { capture } = usePostCapture()
 
   const renderItem = (
     item: ListRenderItemInfo<{ name: string; symbol: string }>
   ) => {
     const currency = item.item
 
+    const handleOnCurrencyChanged = () => {
+      if (
+        currency.symbol.toLocaleUpperCase() !==
+        selectedCurrency.toLocaleUpperCase()
+      ) {
+        capture('CurrencySettingChanged', {
+          currency: currency.symbol.toLocaleUpperCase()
+        })
+      }
+    }
+
     const onPress = () => {
+      handleOnCurrencyChanged()
       dispatch(setSelectedCurrency(currency.symbol))
       InteractionManager.runAfterInteractions(() => {
         navigation.goBack()

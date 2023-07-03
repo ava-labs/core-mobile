@@ -29,6 +29,8 @@ import UniversalTokenSelector from 'components/UniversalTokenSelector'
 import { getMaxValue } from 'utils/Utils'
 import { Amount } from 'screens/swap/SwapView'
 import { usePostCapture } from 'hooks/usePosthogCapture'
+import { BigNumber } from 'ethers'
+import { FeePreset } from '../../components/NetworkFeeSelector'
 
 type Props = {
   onNext: () => void
@@ -59,7 +61,8 @@ const SendToken: FC<Props> = ({
       gasLimit,
       setCustomGasLimit,
       setSelectedFeePreset,
-      setCustomGasPrice
+      setCustomGasPrice,
+      selectedFeePreset
     },
     canSubmit,
     sdkError
@@ -155,11 +158,16 @@ const SendToken: FC<Props> = ({
   }, [sendFeeNative, sendToken, setSendAmount])
 
   const handleGasPriceChange = useCallback(
-    (gasPrice1, feePreset) => {
+    (gasPrice1: BigNumber, feePreset: FeePreset) => {
+      if (feePreset !== selectedFeePreset) {
+        capture('SendFeeOptionChanged', {
+          modifier: feePreset
+        })
+      }
       setCustomGasPrice(ethersBigNumberToBN(gasPrice1))
       setSelectedFeePreset(feePreset)
     },
-    [setCustomGasPrice, setSelectedFeePreset]
+    [capture, selectedFeePreset, setCustomGasPrice, setSelectedFeePreset]
   )
 
   return (

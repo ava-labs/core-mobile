@@ -3,7 +3,7 @@ import { View } from 'react-native'
 import AvaText from 'components/AvaText'
 import { BridgeTransactionStatusParams } from 'navigation/types'
 import { Row } from 'components/Row'
-import DropDown from 'components/Dropdown'
+import DropDown, { OptionsItemInfo } from 'components/Dropdown'
 import { Space } from 'components/Space'
 import { useGetRecentTransactions } from 'store/transaction'
 import { Transaction } from 'store/transaction'
@@ -79,21 +79,30 @@ const ActivityList = ({
   )
 
   const renderFilterDropdown = () => {
+    const renderSelection = (selectedItem: ActivityFilter) => (
+      <SelectionRenderItem text={selectedItem} />
+    )
+
+    const renderOptions = (item: OptionsItemInfo<ActivityFilter>) => (
+      <OptionsRenderItem text={item.item} />
+    )
+
     return (
-      <Row style={{ justifyContent: 'flex-end', paddingHorizontal: 16 }}>
+      <Row
+        style={{
+          justifyContent: 'flex-end',
+          paddingHorizontal: 16,
+          marginTop: 8
+        }}>
         <DropDown
           testID="activity_list__filter_dropdown"
           alignment={'flex-end'}
           width={200}
           data={filterOptions}
           selectedIndex={selectedFilter}
-          selectionRenderItem={selectedItem => (
-            <SelectionRenderItem text={selectedItem} />
-          )}
+          selectionRenderItem={renderSelection}
           onItemSelected={selectedItem => setFilter(selectedItem)}
-          optionsRenderItem={item => {
-            return <OptionsRenderItem text={item.item} />
-          }}
+          optionsRenderItem={renderOptions}
         />
       </Row>
     )

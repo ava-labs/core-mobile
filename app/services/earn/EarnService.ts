@@ -6,6 +6,8 @@ import { importP } from 'services/earn/importP'
 import Big from 'big.js'
 import { FujiParams, MainnetParams } from 'utils/NetworkParams'
 import { bnToBig } from '@avalabs/utils-sdk'
+import { importC } from 'services/earn/importC'
+import { exportP } from 'services/earn/exportP'
 
 class EarnService {
   getCurrentValidators = (isTestnet: boolean) => {
@@ -32,6 +34,32 @@ class EarnService {
         isDevMode
       })) &&
       (await importP({
+        activeAccount,
+        isDevMode
+      }))
+    )
+  }
+
+  /**
+   * @param pChainBalance in nAvax
+   * @param requiredAmount in nAvax
+   * @param activeAccount
+   * @param isDevMode
+   */
+  async claimRewards(
+    pChainBalance: BN,
+    requiredAmount: BN,
+    activeAccount: Account,
+    isDevMode: boolean
+  ): Promise<boolean> {
+    return (
+      (await exportP({
+        pChainBalance,
+        requiredAmount,
+        activeAccount,
+        isDevMode
+      })) &&
+      (await importC({
         activeAccount,
         isDevMode
       }))
