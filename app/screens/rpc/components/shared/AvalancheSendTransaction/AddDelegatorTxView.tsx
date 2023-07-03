@@ -22,11 +22,11 @@ const AddDelegatorTxView = ({ tx }: { tx: Avalanche.AddDelegatorTx }) => {
   const { nodeID, start, end, stake } = tx
   const startDate = format(
     new Date(parseInt(start) * 1000),
-    'MMM DD, YYYY, HH:mm A'
+    'MMM dd, YYYY, HH:mm A'
   )
   const endDate = format(
     new Date(parseInt(end) * 1000),
-    'MMM DD, YYYY, HH:mm A'
+    'MMM dd, YYYY, HH:mm A'
   )
   const selectedCurrency = useSelector(selectSelectedCurrency)
 
