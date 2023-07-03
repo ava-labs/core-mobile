@@ -47,46 +47,48 @@ const SelectNode = () => {
     return <NodeCard data={item} />
   }
 
-  if (isFetching)
-    return (
-      <View style={styles.spinnerContainer}>
-        <Spinner size={77} />
-      </View>
-    )
-
   return (
     <View style={styles.container}>
-      <View>
+      <View style={{ flex: 1 }}>
         <AvaText.LargeTitleBold textStyle={{ marginBottom: 16 }}>
           Select Node
         </AvaText.LargeTitleBold>
-
-        <SearchBar
-          placeholder="Search Node ID"
-          onTextChanged={handleSearch}
-          searchText={searchText}
-        />
-        <View style={styles.dropdownContainer}>
-          <DropDown
-            data={dropdownItems}
-            alignment={'flex-end'}
-            width={200}
-            optionsRenderItem={renderFilterOption}
-            selectedIndex={selectedFilter}
-            selectionRenderItem={renderSelectedFilterOption}
-            onItemSelected={selectedItem => setFilter(selectedItem)}
-          />
-        </View>
-      </View>
-      <View style={{ flex: 1 }}>
-        <FlatList
-          style={styles.nodeList}
-          data={filteredNodes}
-          renderItem={renderItem}
-          keyExtractor={item => item.nodeID}
-          scrollEventThrottle={16}
-          ItemSeparatorComponent={Separator}
-        />
+        {isFetching ? (
+          <View style={styles.spinnerContainer}>
+            <Spinner size={77} />
+          </View>
+        ) : (
+          <>
+            <View>
+              <SearchBar
+                placeholder="Search Node ID"
+                onTextChanged={handleSearch}
+                searchText={searchText}
+              />
+              <View style={styles.dropdownContainer}>
+                <DropDown
+                  data={dropdownItems}
+                  alignment={'flex-end'}
+                  width={200}
+                  optionsRenderItem={renderFilterOption}
+                  selectedIndex={selectedFilter}
+                  selectionRenderItem={renderSelectedFilterOption}
+                  onItemSelected={selectedItem => setFilter(selectedItem)}
+                />
+              </View>
+            </View>
+            <View style={{ flex: 1 }}>
+              <FlatList
+                style={styles.nodeList}
+                data={filteredNodes}
+                renderItem={renderItem}
+                keyExtractor={item => item.nodeID}
+                scrollEventThrottle={16}
+                ItemSeparatorComponent={Separator}
+              />
+            </View>
+          </>
+        )}
       </View>
     </View>
   )
@@ -138,7 +140,8 @@ const styles = StyleSheet.create({
   },
   spinnerContainer: {
     flex: 1,
-    alignItems: 'center'
+    alignItems: 'center',
+    justifyContent: 'center'
   },
   nodeList: {
     flex: 1,

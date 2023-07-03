@@ -21,7 +21,7 @@ const AdvancedStaking = () => {
 
   const [minUptime, setMinUptime] = useState('')
   const [maxFee, setMaxFee] = useState('')
-  const isNextDisabled = !!maxFee || !!minUptime
+  const isNextDisabled = !!maxFee && !!minUptime
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
