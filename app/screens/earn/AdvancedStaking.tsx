@@ -64,7 +64,7 @@ const AdvancedStaking = () => {
               backgroundColor={theme.neutral700}
               onChangeText={text => setMinUptime(text)}
               keyboardType="numeric"
-              style={{ width: '100%', marginLeft: 0 }}
+              style={styles.inputContainer}
             />
             <AvaText.Caption color={theme.neutral300}>
               Enter a value between 1-99%
@@ -98,7 +98,7 @@ const AdvancedStaking = () => {
               backgroundColor={theme.neutral700}
               onChangeText={text => setMaxFee(text)}
               keyboardType="numeric"
-              style={{ width: '100%', marginLeft: 0 }}
+              style={styles.inputContainer}
             />
             <AvaText.Caption color={theme.neutral300}>
               Enter a value between 2-20%
@@ -128,6 +128,10 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 16,
     justifyContent: 'space-between'
+  },
+  inputContainer: {
+    width: '100%',
+    marginLeft: 0
   }
 })
 
