@@ -70,7 +70,7 @@ const TextWithIcon: FC<
     icon: ReactNode
     text: ReactNode
     gap?: number
-    iconPlacement: 'left' | 'right'
+    iconPlacement?: 'left' | 'right'
   }
 > = ({
   style,
