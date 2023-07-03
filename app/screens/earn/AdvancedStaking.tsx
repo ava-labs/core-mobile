@@ -26,90 +26,88 @@ const AdvancedStaking = () => {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View>
-        <AvaText.LargeTitleBold>Fee and Uptime</AvaText.LargeTitleBold>
+        <AvaText.LargeTitleBold>Validator Inputs</AvaText.LargeTitleBold>
         <AvaText.Subtitle1
           textStyle={{
             marginTop: 7,
             color: theme.colorText1,
             marginBottom: 32
           }}>
-          Choose your maximum fee and minimum uptime.
+          Choose the parameters for your desired staking node.
         </AvaText.Subtitle1>
-        <View style={{ marginBottom: 24 }}>
-          <Popable
-            content={
-              <PopableContent
-                backgroundColor={theme.neutral100}
-                textStyle={{ color: theme.neutral900 }}
-                message="This is a validator’s uptime, the minimum threshold for rewards is 80%"
-              />
-            }
-            position={'top'}
-            style={{ minWidth: 200 }}
-            backgroundColor={theme.neutral100}>
-            <PopableLabel
-              label="Minimum Uptime"
-              iconColor={theme.neutral50}
-              textStyle={{
-                color: theme.neutral50,
-                fontWeight: '600',
-                fontSize: 14,
-                marginLeft: 16
-              }}
-            />
-          </Popable>
-          <InputText
-            placeholder={'Enter minimum uptime'}
-            text={minUptime}
-            backgroundColor={theme.neutral700}
-            onChangeText={text => setMinUptime(text)}
-            keyboardType="numeric"
-          />
-          <AvaText.Caption
-            color={theme.neutral300}
-            textStyle={{ marginLeft: 16 }}>
-            Enter a value between 1-99%
-          </AvaText.Caption>
-        </View>
         <View>
-          <Popable
-            content={
-              <PopableContent
-                backgroundColor={theme.neutral100}
-                textStyle={{ color: theme.neutral900 }}
-                message="This is a range set by the protocol."
+          <View style={{ marginBottom: 24 }}>
+            <Popable
+              content={
+                <PopableContent
+                  backgroundColor={theme.neutral100}
+                  textStyle={{ color: theme.neutral900 }}
+                  message="This is a validator’s uptime, the minimum threshold for rewards is 80%"
+                />
+              }
+              position={'top'}
+              style={{ minWidth: 200 }}
+              backgroundColor={theme.neutral100}>
+              <PopableLabel
+                label="Minimum Uptime"
+                iconColor={theme.neutral50}
+                textStyle={{
+                  color: theme.neutral50,
+                  fontWeight: '600',
+                  fontSize: 14
+                }}
               />
-            }
-            position={'top'}
-            style={{ minWidth: 200 }}
-            backgroundColor={theme.neutral100}>
-            <PopableLabel
-              label="Maximum Fee"
-              iconColor={theme.neutral50}
-              textStyle={{
-                color: theme.neutral50,
-                fontWeight: '600',
-                fontSize: 14,
-                marginLeft: 16
-              }}
+            </Popable>
+            <InputText
+              placeholder={'Enter minimum uptime'}
+              text={minUptime}
+              backgroundColor={theme.neutral700}
+              onChangeText={text => setMinUptime(text)}
+              keyboardType="numeric"
+              style={{ width: '100%', marginLeft: 0 }}
             />
-          </Popable>
-          <InputText
-            placeholder={'Enter maximum fee'}
-            text={maxFee}
-            backgroundColor={theme.neutral700}
-            onChangeText={text => setMaxFee(text)}
-            keyboardType="numeric"
-          />
-          <AvaText.Caption
-            color={theme.neutral300}
-            textStyle={{ marginLeft: 16 }}>
-            Enter a value between 2-20%
-          </AvaText.Caption>
+            <AvaText.Caption color={theme.neutral300}>
+              Enter a value between 1-99%
+            </AvaText.Caption>
+          </View>
+          <View>
+            <Popable
+              content={
+                <PopableContent
+                  backgroundColor={theme.neutral100}
+                  textStyle={{ color: theme.neutral900 }}
+                  message="This is a range set by the protocol."
+                />
+              }
+              position={'top'}
+              style={{ minWidth: 200 }}
+              backgroundColor={theme.neutral100}>
+              <PopableLabel
+                label="Maximum Fee"
+                iconColor={theme.neutral50}
+                textStyle={{
+                  color: theme.neutral50,
+                  fontWeight: '600',
+                  fontSize: 14
+                }}
+              />
+            </Popable>
+            <InputText
+              placeholder={'Enter maximum fee'}
+              text={maxFee}
+              backgroundColor={theme.neutral700}
+              onChangeText={text => setMaxFee(text)}
+              keyboardType="numeric"
+              style={{ width: '100%', marginLeft: 0 }}
+            />
+            <AvaText.Caption color={theme.neutral300}>
+              Enter a value between 2-20%
+            </AvaText.Caption>
+          </View>
         </View>
       </View>
 
-      <View>
+      <View style={{ marginBottom: 40 }}>
         <AvaButton.PrimaryLarge
           disabled={!isNextDisabled}
           onPress={() =>

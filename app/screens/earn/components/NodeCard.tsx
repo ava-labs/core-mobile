@@ -63,27 +63,32 @@ export const NodeCard = ({ data }: { data: NodeValidator }) => {
               { backgroundColor: theme.neutral900 }
             ]}>
             <View style={styles.titleRowContainer}>
-              <View style={styles.gradientContainer}>
-                <LinearGradientSVG
-                  colorFrom={gradientColors.colorFrom}
-                  colorTo={gradientColors.colorTo}
-                  opacityFrom={0.8}
-                  opacityTo={0.3}
-                />
+              <View style={styles.iconContainer}>
+                <View style={[styles.gradientContainer]}>
+                  <LinearGradientSVG
+                    colorFrom={gradientColors.colorFrom}
+                    colorTo={gradientColors.colorTo}
+                    opacityFrom={0.8}
+                    opacityTo={0.3}
+                  />
+                </View>
               </View>
-              <View>
+
+              <View style={styles.nodeTextContainer}>
                 <AvaButton.TextWithIcon
                   textStyle={{ textAlign: 'left' }}
                   onPress={() => copyToClipboard(data.nodeID)}
                   icon={<CopySVG />}
                   iconPlacement="right"
                   text={
-                    <AvaText.Body2 color={theme.colorText1}>
+                    <AvaText.Body2 color={theme.neutral50}>
                       {truncateNodeId(data.nodeID, 4)}
                     </AvaText.Body2>
                   }
                 />
-                <AvaText.Caption color={theme.neutral400}>
+                <AvaText.Caption
+                  color={theme.neutral400}
+                  textStyle={{ textAlign: 'left' }}>
                   {`End date: ${endDate}`}
                 </AvaText.Caption>
               </View>
@@ -104,10 +109,7 @@ export const NodeCard = ({ data }: { data: NodeValidator }) => {
                   {`${Number(data.uptime).toFixed(0)}%`}
                 </AvaText.Heading6>
               </View>
-              <View
-                style={{
-                  justifyContent: 'center'
-                }}>
+              <View style={styles.carrotIcon}>
                 <CarrotSVG
                   color={theme.neutral50}
                   direction={isCardExpanded ? 'up' : 'down'}
@@ -203,11 +205,13 @@ const styles = StyleSheet.create({
   },
   titleRowContainer: {
     display: 'flex',
-    flexDirection: 'row'
+    flexDirection: 'row',
+    flex: 1
   },
   uptimeContainer: {
     marginLeft: 50,
-    marginRight: 16
+    marginRight: 16,
+    flex: 0.3
   },
   collapseContainer: {
     borderTopWidth: 1,
@@ -217,5 +221,20 @@ const styles = StyleSheet.create({
   rowContainer: {
     justifyContent: 'space-between',
     marginBottom: 8
+  },
+  nodeTextContainer: {
+    flex: 0.7,
+    justifyContent: 'center',
+    marginLeft: 8
+  },
+  iconContainer: {
+    flex: 0.2,
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  carrotIcon: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    flex: 0.2
   }
 })

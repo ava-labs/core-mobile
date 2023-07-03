@@ -6,6 +6,7 @@ import { useNodes } from 'hooks/query/useNodes'
 import DropDown from 'components/Dropdown'
 import { GetCurrentValidatorsResponse } from '@avalabs/avalanchejs-v2/dist/src/vms/pvm'
 import { Space } from 'components/Space'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Spinner } from '../../../storybook/stories/Lotties.stories'
 import { NodeCard } from './components/NodeCard'
 
@@ -56,7 +57,9 @@ const SelectNode = () => {
   return (
     <View style={styles.container}>
       <View>
-        <AvaText.LargeTitleBold>Select Node</AvaText.LargeTitleBold>
+        <AvaText.LargeTitleBold textStyle={{ marginBottom: 16 }}>
+          Select Node
+        </AvaText.LargeTitleBold>
 
         <SearchBar
           placeholder="Search Node ID"
@@ -119,7 +122,12 @@ const OptionsRenderItem = ({ name }: { name: string }) => {
 }
 
 const SelectionRenderItem = ({ name }: { name: string }) => {
-  return <AvaText.ButtonSmall>Filter: {name}</AvaText.ButtonSmall>
+  const { theme } = useApplicationContext()
+  return (
+    <AvaText.ButtonSmall textStyle={{ color: theme.neutral50 }}>
+      Filter: {name}
+    </AvaText.ButtonSmall>
+  )
 }
 
 const styles = StyleSheet.create({

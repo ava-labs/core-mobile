@@ -86,8 +86,7 @@ const TextWithIcon: FC<
       <View
         style={{
           flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'flex-end'
+          alignItems: 'center'
         }}
         testID="textWithIcon">
         {iconPlacement === 'left' ? (
