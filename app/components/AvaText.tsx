@@ -219,6 +219,7 @@ const TextHeading6: FC<AvaTextProps> = ({
   textStyle,
   children,
   currency,
+  color,
   ...rest
 }) => {
   const theme = useApplicationContext().theme
@@ -226,7 +227,7 @@ const TextHeading6: FC<AvaTextProps> = ({
     <AvaxTextBase
       {...rest}
       currency={currency}
-      style={[styles.heading6, { color: theme.neutral50 }, textStyle]}>
+      style={[styles.heading6, { color: color || theme.neutral50 }, textStyle]}>
       {children}
     </AvaxTextBase>
   )
