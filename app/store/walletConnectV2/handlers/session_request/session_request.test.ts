@@ -27,24 +27,7 @@ const testMethod = 'session_request' as RpcMethod.SESSION_REQUEST
 
 const validRequiredNamespaces = {
   eip155: {
-    methods: [
-      'eth_sendTransaction',
-      'eth_signTypedData_v3',
-      'eth_signTypedData_v4',
-      'eth_signTypedData_v1',
-      'eth_signTypedData',
-      'eth_sign',
-      'personal_sign',
-      'wallet_addEthereumChain',
-      'wallet_switchEthereumChain',
-      'avalanche_getContacts',
-      'avalanche_createContact',
-      'avalanche_removeContact',
-      'avalanche_updateContact',
-      'avalanche_selectAccount',
-      'avalanche_getAccounts',
-      'avalanche_bridgeAsset'
-    ],
+    methods: ['eth_sendTransaction', 'personal_sign'],
     chains: ['eip155:43114', 'eip155:1'],
     events: ['chainChanged', 'accountsChanged'],
     rpcMap: {
@@ -247,7 +230,52 @@ describe('session_request handler', () => {
       }
     })
 
-    it('should return success with correct namespaces', async () => {
+    it('should return success with correct namespaces for a non-Core dApp', async () => {
+      const testSelectedAccounts = [
+        '0xcA0E993876152ccA6053eeDFC753092c8cE712D0',
+        '0xC7E5ffBd7843EdB88cCB2ebaECAa07EC55c65318'
+      ]
+
+      const testRequest = createRequest(
+        validRequiredNamespaces,
+        'https://traderjoe.xyz'
+      )
+
+      const result = await handler.approve({
+        request: testRequest,
+        data: { selectedAccounts: testSelectedAccounts }
+      })
+
+      const expectedNamespaces = {
+        eip155: {
+          // all requested accounts
+          accounts: [
+            'eip155:43114:0xcA0E993876152ccA6053eeDFC753092c8cE712D0',
+            'eip155:43114:0xC7E5ffBd7843EdB88cCB2ebaECAa07EC55c65318',
+            'eip155:1:0xcA0E993876152ccA6053eeDFC753092c8cE712D0',
+            'eip155:1:0xC7E5ffBd7843EdB88cCB2ebaECAa07EC55c65318'
+          ],
+          // all methods we support
+          methods: [
+            'eth_sendTransaction',
+            'eth_signTypedData_v3',
+            'eth_signTypedData_v4',
+            'eth_signTypedData_v1',
+            'eth_signTypedData',
+            'personal_sign',
+            'eth_sign',
+            'wallet_addEthereumChain',
+            'wallet_switchEthereumChain'
+          ],
+          // all requested events
+          events: validRequiredNamespaces.eip155.events
+        }
+      }
+
+      expect(result).toEqual({ success: true, value: expectedNamespaces })
+    })
+
+    it('should return success with correct namespaces for a Core dApp', async () => {
       const testSelectedAccounts = [
         '0xcA0E993876152ccA6053eeDFC753092c8cE712D0',
         '0xC7E5ffBd7843EdB88cCB2ebaECAa07EC55c65318'
@@ -262,13 +290,38 @@ describe('session_request handler', () => {
 
       const expectedNamespaces = {
         eip155: {
+          // all requested accounts
           accounts: [
             'eip155:43114:0xcA0E993876152ccA6053eeDFC753092c8cE712D0',
             'eip155:43114:0xC7E5ffBd7843EdB88cCB2ebaECAa07EC55c65318',
             'eip155:1:0xcA0E993876152ccA6053eeDFC753092c8cE712D0',
             'eip155:1:0xC7E5ffBd7843EdB88cCB2ebaECAa07EC55c65318'
           ],
-          methods: validRequiredNamespaces.eip155.methods,
+          // all methods we support
+          methods: [
+            'eth_sendTransaction',
+            'eth_signTypedData_v3',
+            'eth_signTypedData_v4',
+            'eth_signTypedData_v1',
+            'eth_signTypedData',
+            'personal_sign',
+            'eth_sign',
+            'wallet_addEthereumChain',
+            'wallet_switchEthereumChain',
+            'avalanche_bridgeAsset',
+            'avalanche_createContact',
+            'avalanche_getAccountPubKey',
+            'avalanche_getAccounts',
+            'avalanche_getBridgeState',
+            'avalanche_getContacts',
+            'avalanche_removeContact',
+            'avalanche_selectAccount',
+            'avalanche_setDeveloperMode',
+            'avalanche_updateContact',
+            'avalanche_sendTransaction',
+            'avalanche_signTransaction'
+          ],
+          // all requested events
           events: validRequiredNamespaces.eip155.events
         }
       }
