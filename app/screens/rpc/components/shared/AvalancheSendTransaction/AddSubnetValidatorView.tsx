@@ -25,11 +25,11 @@ const AddSubnetValidatorTxView = ({
   const txFeeNumber = Number(bigIntToString(txFee, 9))
   const startDate = format(
     new Date(parseInt(start) * 1000),
-    'MMM dd, YYYY, HH:mm A'
+    'MMM dd, yyyy, HH:mm a'
   )
   const endDate = format(
     new Date(parseInt(end) * 1000),
-    'MMM dd, YYYY, HH:mm A'
+    'MMM dd, yyyy, HH:mm a'
   )
 
   return (

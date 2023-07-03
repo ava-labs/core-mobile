@@ -22,11 +22,11 @@ const AddValidatorTxView = ({ tx }: { tx: Avalanche.AddValidatorTx }) => {
   const { nodeID, fee, start, end, stake } = tx
   const startDate = format(
     new Date(parseInt(start) * 1000),
-    'MMM dd, YYYY, HH:mm A'
+    'MMM dd, yyyy, HH:mm a'
   )
   const endDate = format(
     new Date(parseInt(end) * 1000),
-    'MMM dd, YYYY, HH:mm A'
+    'MMM dd, yyyy, HH:mm a'
   )
   const selectedCurrency = useSelector(selectSelectedCurrency)
 
