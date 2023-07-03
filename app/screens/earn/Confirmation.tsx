@@ -3,7 +3,7 @@ import { ScrollView, StyleSheet, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Space } from 'components/Space'
 import AvaText from 'components/AvaText'
-import { useNavigation } from '@react-navigation/native'
+import { useNavigation, useRoute } from '@react-navigation/native'
 import DotSVG from 'components/svg/DotSVG'
 import Separator from 'components/Separator'
 import { Row } from 'components/Row'
@@ -15,14 +15,16 @@ import { Popable } from 'react-native-popable'
 import { PopableLabel } from 'components/PopableLabel'
 import AvaLogoSVG from 'components/svg/AvaLogoSVG'
 import { PopableContent } from 'components/PopableContent'
+import { truncateNodeId } from 'utils/Utils'
+import CopySVG from 'components/svg/CopySVG'
+import { copyToClipboard } from 'utils/DeviceTools'
 
-type NavigationProp = EarnScreenProps<
-  typeof AppNavigation.Earn.Confirmation
->['navigation']
+type NavigationProp = EarnScreenProps<typeof AppNavigation.Earn.Confirmation>
 
 export const Confirmation = () => {
   const { theme } = useApplicationContext()
-  const { navigate } = useNavigation<NavigationProp>()
+  const { navigate } = useNavigation<NavigationProp['navigation']>()
+  const { nodeId } = useRoute<NavigationProp['route']>().params
 
   const cancelStaking = () => {
     navigate(AppNavigation.Earn.Cancel)
@@ -120,6 +122,36 @@ export const Confirmation = () => {
           </Row>
         </View>
         <Separator />
+
+        <View style={styles.verticalPadding}>
+          <Row
+            style={{
+              justifyContent: 'space-between'
+            }}>
+            <AvaText.Body2 textStyle={{ textAlign: 'center' }}>
+              Node ID
+            </AvaText.Body2>
+
+            <AvaText.Heading6 textStyle={{ alignSelf: 'flex-end' }}>
+              <AvaButton.TextWithIcon
+                textStyle={{ alignItems: 'flex-end' }}
+                style={{ alignSelf: 'flex-end' }}
+                onPress={() => copyToClipboard(nodeId)}
+                icon={<CopySVG />}
+                iconPlacement="right"
+                text={
+                  <AvaText.Body1
+                    color={theme.colorText1}
+                    textStyle={{ alignSelf: 'flex-end' }}>
+                    {truncateNodeId(nodeId, 4)}
+                  </AvaText.Body1>
+                }
+              />
+            </AvaText.Heading6>
+          </Row>
+        </View>
+        <Separator />
+
         <View style={styles.verticalPadding}>
           <Row
             style={{
