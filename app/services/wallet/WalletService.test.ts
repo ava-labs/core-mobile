@@ -1,7 +1,7 @@
 import { AddDelegatorProps } from 'services/wallet/types'
 import WalletService from 'services/wallet/WalletService'
 import { add, getUnixTime, sub } from 'date-fns'
-import { Utxo } from '@avalabs/avalanchejs-v2/src/serializable/avax/utxo'
+import { Utxo } from '@avalabs/avalanchejs-v2'
 
 describe('WalletService', () => {
   const validNodeId = 'NodeID-23420390293d9j09v'
