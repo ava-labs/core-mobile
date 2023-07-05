@@ -20,6 +20,36 @@ app:
         is_expand: false
 workflows:
   _build-android:
+    _send-test-result-notifcation-slack:
+      steps:
+        - slack@3:
+            inputs:
+              - pretext: '*New $PLATFORM Test Results Available!*'
+              - message: ''
+              - fields: |-
+                  App|${APP_TITLE}
+                  Platform|${PLATFORM}
+                  Version|${APP_VERSION}.${BUILD_NUMBER}
+                  Workflow|${BITRISE_TRIGGERED_WORKFLOW_ID}
+                  Environment|${ENVIRONMENT}
+                  Branch|${BITRISE_GIT_BRANCH}
+                  Commit|${GIT_CLONE_COMMIT_HASH}
+              - title_on_error: $GIT_CLONE_COMMIT_MESSAGE_SUBJECT
+              - message_on_error: ''
+              - icon_url: ''
+              - from_username: ''
+              - timestamp: 'no'
+              - color: '#40BA8E'
+              - footer_icon: ''
+              - from_username_on_error: ''
+              - icon_url_on_error: ''
+              - buttons: |
+                  View App|${BITRISE_APP_URL}
+                  View Build|${BITRISE_BUILD_URL}
+                  Install|${BITRISE_PUBLIC_INSTALL_PAGE_URL}
+              - footer: ''
+              - thumb_url: $BITRISE_PUBLIC_INSTALL_PAGE_QR_CODE_IMAGE_URL
+              - webhook_url: $SLACK_TEST_RESULT_WEBHOOK_URL
     steps:
       - install-missing-android-tools@3:
           inputs:
@@ -190,7 +220,7 @@ workflows:
     steps:
       - slack@3:
           inputs:
-            - pretext: '*New  Build Available!*'
+            - pretext: '*New $PLATFORM Build Available!*'
             - message: ''
             - fields: |-
                 App|${APP_TITLE}
