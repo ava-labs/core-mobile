@@ -190,7 +190,7 @@ workflows:
     steps:
       - slack@3:
           inputs:
-            - pretext: '*New $PLATFORM Build Available!*'
+            - pretext: '*New  Build Available!*'
             - message: ''
             - fields: |-
                 App|${APP_TITLE}
