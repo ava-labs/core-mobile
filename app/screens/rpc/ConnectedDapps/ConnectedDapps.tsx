@@ -28,6 +28,8 @@ import { useDappConnectionV1 } from 'hooks/useDappConnectionV1'
 import { useDeeplink } from 'contexts/DeeplinkContext/DeeplinkContext'
 import { DeepLinkOrigin } from 'contexts/DeeplinkContext/types'
 import { WalletConnectVersions } from 'store/walletConnectV2'
+import { SessionTypes } from '@walletconnect/types'
+import Logger from 'utils/Logger'
 import { Dapp } from './types'
 import { DappItem } from './DappItem'
 interface Props {
@@ -51,8 +53,8 @@ const ConnectedDapps: FC<Props> = ({ goBack }) => {
   const { killSessions: killSessionsV1 } = useDappConnectionV1()
   const { killSessions: killSessionsV2 } = useDappConnectionV2()
   const approvedDappsV1 = useSelector(selectApprovedDApps)
-  const [approvedDappsV2, setApprovedDappsV2] = useState(
-    WalletConnectService.getSessions()
+  const [approvedDappsV2, setApprovedDappsV2] = useState<SessionTypes.Struct[]>(
+    []
   )
 
   const allApprovedDapps = [
@@ -69,8 +71,21 @@ const ConnectedDapps: FC<Props> = ({ goBack }) => {
   ]
 
   useEffect(() => {
+    const getSessions = () => {
+      try {
+        const sessions = WalletConnectService.getSessions()
+        setApprovedDappsV2(sessions)
+      } catch (err) {
+        Logger.error('failed to get sessions', err)
+      }
+    }
+
+    // immediately fetch sessions onMounting
+    // then do it periodically while on this screen
+    getSessions()
+
     const id = setInterval(() => {
-      setApprovedDappsV2(WalletConnectService.getSessions())
+      getSessions()
     }, GET_DAPPS_V2_INTERVAL)
     return () => clearInterval(id)
   }, [])
