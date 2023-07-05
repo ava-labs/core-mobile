@@ -8,6 +8,18 @@ import { FujiParams, MainnetParams } from 'utils/NetworkParams'
 import { bnToBig } from '@avalabs/utils-sdk'
 import { importC } from 'services/earn/importC'
 import { exportP } from 'services/earn/exportP'
+import WalletService from 'services/wallet/WalletService'
+import {
+  AddDelegatorProps,
+  AvalancheTransactionRequest
+} from 'services/wallet/types'
+import NetworkService from 'services/network/NetworkService'
+import { UnsignedTx } from '@avalabs/avalanchejs-v2'
+import Logger from 'utils/Logger'
+import { Avalanche } from '@avalabs/wallets-sdk'
+import { exponentialBackoff } from 'utils/js/exponentialBackoff'
+import { AddDelegatorTransactionProps } from 'services/earn/types'
+import { getUnixTime } from 'date-fns'
 
 class EarnService {
   getCurrentValidators = (isTestnet: boolean) => {
@@ -111,6 +123,57 @@ class EarnService {
     )
 
     return rewardsMinusDelegationFee.toFixed(0)
+  }
+
+  async issueAddDelegatorTransaction({
+    activeAccount,
+    nodeId,
+    stakeAmount,
+    startDate,
+    endDate,
+    isDevMode
+  }: AddDelegatorTransactionProps): Promise<void> {
+    const startDateUnix = getUnixTime(startDate)
+    const endDateUnix = getUnixTime(endDate)
+    const avaxXPNetwork = NetworkService.getAvalancheNetworkXP(isDevMode)
+    const rewardAddress = activeAccount.addressPVM
+    const unsignedTx = await WalletService.createAddDelegatorTx({
+      accountIndex: activeAccount.index,
+      avaxXPNetwork,
+      rewardAddress,
+      nodeId,
+      startDate: startDateUnix,
+      endDate: endDateUnix,
+      stakeAmount,
+      isDevMode
+    } as AddDelegatorProps)
+
+    const signedTxJson = await WalletService.sign(
+      { tx: unsignedTx } as AvalancheTransactionRequest,
+      activeAccount.index,
+      avaxXPNetwork
+    )
+    const signedTx = UnsignedTx.fromJSON(signedTxJson).getSignedTx()
+
+    const txID = await NetworkService.sendTransaction(signedTx, avaxXPNetwork)
+    Logger.trace('txID', txID)
+
+    const avaxProvider = NetworkService.getProviderForNetwork(
+      avaxXPNetwork
+    ) as Avalanche.JsonRpcProvider
+
+    try {
+      await exponentialBackoff(
+        () => avaxProvider.getApiP().getTxStatus({ txID }),
+        result => result.status === 'Committed',
+        6
+      )
+    } catch (e) {
+      Logger.error('exponentialBackoff failed', e)
+      throw Error(
+        `Transfer is taking unusually long (add Delegator). txId = ${txID}`
+      )
+    }
   }
 }
 
