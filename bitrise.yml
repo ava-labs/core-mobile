@@ -355,7 +355,7 @@ workflows:
                 set -x
 
                 npm rebuild detox
-                QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test recoverWallet.e2e.smoke.ts --configuration android.external.release.ci --headless
+                QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test --configuration android.external.release.smoke.ci --headless
   android-internal:
     before_run:
       - _install-and-set-env
