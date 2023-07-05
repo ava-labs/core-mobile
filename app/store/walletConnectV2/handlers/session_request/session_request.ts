@@ -5,7 +5,7 @@ import { AppListenerEffectAPI } from 'store'
 import { ethErrors } from 'eth-rpc-errors'
 import { selectRawNetworks } from 'store/network'
 import { NetworkVMType } from '@avalabs/chains-sdk'
-import { SessionProposal, RpcMethod } from '../../types'
+import { SessionProposal, RpcMethod, CORE_ONLY_METHODS } from '../../types'
 import {
   RpcRequestHandler,
   DEFERRED_RESULT,
@@ -28,6 +28,18 @@ function hasOnlyEIP155<T extends ProposalTypes.RequiredNamespaces>(
     Object.keys(requiredNamespaces).length === 1
   )
 }
+
+const supportedMethods = [
+  RpcMethod.ETH_SEND_TRANSACTION,
+  RpcMethod.SIGN_TYPED_DATA_V3,
+  RpcMethod.SIGN_TYPED_DATA_V4,
+  RpcMethod.SIGN_TYPED_DATA_V1,
+  RpcMethod.SIGN_TYPED_DATA,
+  RpcMethod.PERSONAL_SIGN,
+  RpcMethod.ETH_SIGN,
+  RpcMethod.WALLET_ADD_ETHEREUM_CHAIN,
+  RpcMethod.WALLET_SWITCH_ETHEREUM_CHAIN
+]
 
 class SessionRequestHandler implements RpcRequestHandler<SessionProposal> {
   methods = [RpcMethod.SESSION_REQUEST]
@@ -124,6 +136,12 @@ class SessionRequestHandler implements RpcRequestHandler<SessionProposal> {
 
     const requiredNamespaces = payload.request.data.params.requiredNamespaces
 
+    const dappUrl = payload.request.data.params.proposer.metadata.url
+    const isCoreApp = isCoreDomain(dappUrl)
+    const methods = isCoreApp
+      ? [...supportedMethods, ...CORE_ONLY_METHODS]
+      : supportedMethods
+
     Object.keys(requiredNamespaces).forEach(key => {
       const accounts: string[] = []
       requiredNamespaces[key]?.chains.forEach(chain => {
@@ -131,7 +149,10 @@ class SessionRequestHandler implements RpcRequestHandler<SessionProposal> {
       })
       namespaces[key] = {
         accounts,
-        methods: requiredNamespaces[key]?.methods ?? [],
+        // returning all methods that we support here to allow dApps
+        // that use Wagmi to be able to send/access more rpc methods
+        // by default, Wagmi only requests eth_sendTransaction and personal_sign
+        methods: methods,
         events: requiredNamespaces[key]?.events ?? []
       }
     })

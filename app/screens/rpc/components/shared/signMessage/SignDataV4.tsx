@@ -28,7 +28,7 @@ const SignDataV4: FC<Props> = ({ message }) => {
       if (isValidObject(data)) {
         return (
           <View
-            key={index}
+            key={index.toString()}
             style={{
               flex: 1,
               justifyContent: 'center',
@@ -45,6 +45,7 @@ const SignDataV4: FC<Props> = ({ message }) => {
 
       return (
         <Row
+          key={index.toString()}
           style={{ alignItems: 'center', flexWrap: 'wrap', paddingBottom: 8 }}>
           <AvaText.Body2 color={theme.colorPrimary1}>{key}: </AvaText.Body2>
           <AvaText.Body2 color={'white'} textStyle={{ flexWrap: 'wrap' }}>
