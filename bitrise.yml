@@ -245,7 +245,6 @@ workflows:
                 Install|${BITRISE_PUBLIC_INSTALL_PAGE_URL}
             - footer: ''
             - thumb_url: $BITRISE_PUBLIC_INSTALL_PAGE_QR_CODE_IMAGE_URL
-            - channel: '#avalanche-mobile-qa-notifications'
             - webhook_url: $SLACK_TEST_RESULT_WEBHOOK_URL
   _set-version:
     steps:
