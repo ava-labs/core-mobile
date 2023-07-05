@@ -1,14 +1,16 @@
 import React from 'react'
 import AvaText from 'components/AvaText'
-import { View } from 'react-native'
+import { StyleProp, TextStyle, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 
 export const PopableContent = ({
   message,
-  backgroundColor
+  backgroundColor,
+  textStyle
 }: {
   message: string
   backgroundColor?: string
+  textStyle?: StyleProp<TextStyle>
 }) => {
   const { theme } = useApplicationContext()
 
@@ -19,7 +21,7 @@ export const PopableContent = ({
         backgroundColor: backgroundColor ?? theme.colorBg3,
         borderRadius: 8
       }}>
-      <AvaText.Body3>{message}</AvaText.Body3>
+      <AvaText.Body3 textStyle={textStyle}>{message}</AvaText.Body3>
     </View>
   )
 }

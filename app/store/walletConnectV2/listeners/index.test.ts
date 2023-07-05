@@ -751,6 +751,7 @@ describe('walletConnect - listeners', () => {
           capture({
             event: 'WalletConnectSessionApprovedV2',
             properties: {
+              namespaces: JSON.stringify(mockSession.namespaces),
               requiredNamespaces: JSON.stringify(
                 mockSession.requiredNamespaces
               ),

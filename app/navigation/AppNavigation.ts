@@ -85,6 +85,8 @@ enum EarnScreens {
   GetStarted = 'EarnScreens.GetStarted',
   StakingAmount = 'EarnScreens.StakingAmount',
   StakingDuration = 'EarnScreens.StakingDuration',
+  AdvancedStaking = 'EarnScreens.AdvancedStaking',
+  SelectNode = 'EarnScreens.SelectNode',
   NodeSearch = 'EarnScreens.NodeSearch',
   Confirmation = 'EarnScreens.Confirmation',
   Cancel = 'EarnScreens.Cancel'

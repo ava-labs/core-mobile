@@ -56,7 +56,10 @@ const MatchFound = () => {
   const { navigate } = useNavigation<NavigationProp>()
 
   useEffect(() => {
-    setTimeout(() => navigate(AppNavigation.Earn.Confirmation), 2200)
+    setTimeout(
+      () => navigate(AppNavigation.Earn.Confirmation, { nodeId: '' }),
+      2200
+    )
   })
 
   return (

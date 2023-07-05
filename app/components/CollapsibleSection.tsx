@@ -1,5 +1,5 @@
 import React, { FC, useEffect, useState } from 'react'
-import { Animated, View } from 'react-native'
+import { Animated, StyleProp, View, ViewStyle } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaText from 'components/AvaText'
 import Collapsible from 'react-native-collapsible'
@@ -10,13 +10,17 @@ interface Props {
   title: React.ReactNode | string
   startExpanded?: boolean
   onExpandedChange?: (isExpanded: boolean) => void
+  titleContainerStyle?: StyleProp<ViewStyle>
+  collapsibleContainerStyle?: StyleProp<ViewStyle>
 }
 
 const CollapsibleSection: FC<Props> = ({
   startExpanded = false,
   title,
   children,
-  onExpandedChange
+  onExpandedChange,
+  titleContainerStyle,
+  collapsibleContainerStyle
 }) => {
   const theme = useApplicationContext().theme
   const [expanded, setExpanded] = useState(startExpanded)
@@ -27,23 +31,26 @@ const CollapsibleSection: FC<Props> = ({
       setStartExp(startExpanded)
       setExpanded(startExpanded)
     }
-  })
+  }, [startExp, startExpanded])
 
   useEffect(() => {
     onExpandedChange?.(expanded)
-  }, [expanded])
+  }, [expanded, onExpandedChange])
 
   const getTitle = () => {
     return typeof title === 'string' ? (
       <Animated.View
-        style={{
-          flex: 1,
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          padding: 16,
-          marginRight: 8,
-          backgroundColor: theme.colorBg1
-        }}>
+        style={[
+          {
+            flex: 1,
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            padding: 16,
+            marginRight: 8,
+            backgroundColor: theme.colorBg1
+          },
+          titleContainerStyle
+        ]}>
         <AvaText.Body2>{title}</AvaText.Body2>
         <View
           style={{ transform: [{ rotate: expanded ? '-90deg' : '90deg' }] }}>
@@ -62,7 +69,7 @@ const CollapsibleSection: FC<Props> = ({
     <View>
       <AvaButton.Base onPress={toggleExpanded}>{getTitle()}</AvaButton.Base>
       <Collapsible
-        style={{ backgroundColor: theme.colorBg1 }}
+        style={[{ backgroundColor: theme.colorBg1 }, collapsibleContainerStyle]}
         collapsed={!expanded}>
         {children}
       </Collapsible>
