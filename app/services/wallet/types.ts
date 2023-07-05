@@ -1,6 +1,7 @@
 import { TransactionRequest } from '@ethersproject/abstract-provider'
 import { BitcoinInputUTXO, BitcoinOutputUTXO } from '@avalabs/wallets-sdk'
 import { UnsignedTx } from '@avalabs/avalanchejs-v2'
+import { Network } from '@avalabs/chains-sdk'
 
 export type SignTransactionRequest =
   | TransactionRequest
@@ -29,4 +30,20 @@ export type PubKeyType = {
    * Public keys used for X/P chain are from a different derivation path.
    */
   xp?: string
+}
+
+export type AddDelegatorProps = {
+  accountIndex: number
+  avaxXPNetwork: Network
+  // Id of the node to delegate. starts with “NodeID-”
+  nodeId: string
+  //Amount to be delegated in nAVAX
+  stakeAmount: bigint
+  // The Unix time when the validator starts validating the Primary Network.
+  startDate: bigint
+  // The Unix time when the validator stops validating the Primary Network (and staked AVAX is returned).
+  endDate: bigint
+  // The addresses which will receive the rewards from the delegated stake.
+  rewardAddress: string
+  isDevMode: boolean
 }
