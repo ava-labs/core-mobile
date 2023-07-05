@@ -320,7 +320,8 @@ class WalletService {
       throw Error('Invalid node id: ' + nodeId)
     }
     const oneAvax = BigInt(1e9)
-    if (stakeAmount < (isDevMode ? oneAvax : BigInt(25) * oneAvax)) {
+    const minStakingAmount = isDevMode ? oneAvax : BigInt(25) * oneAvax
+    if (stakeAmount < minStakingAmount) {
       throw Error('Staking amount less than minimum')
     }
     const unixNow = getUnixTime(new Date())
