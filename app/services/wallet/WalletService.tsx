@@ -305,6 +305,7 @@ class WalletService {
       destinationAddress
     )
   }
+
   async createAddDelegatorTx({
     accountIndex,
     avaxXPNetwork,
@@ -314,7 +315,7 @@ class WalletService {
     endDate,
     rewardAddress,
     isDevMode
-  }: AddDelegatorProps) {
+  }: AddDelegatorProps): Promise<UnsignedTx> {
     if (!nodeId.startsWith('NodeID-')) {
       throw Error('Invalid node id: ' + nodeId)
     }
