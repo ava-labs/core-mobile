@@ -350,8 +350,8 @@ class WalletService {
       utxoSet,
       nodeId,
       stakeAmount,
-      startDate,
-      endDate,
+      BigInt(startDate),
+      BigInt(endDate),
       config
     )
   }

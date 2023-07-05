@@ -18,6 +18,8 @@ import { UnsignedTx } from '@avalabs/avalanchejs-v2'
 import Logger from 'utils/Logger'
 import { Avalanche } from '@avalabs/wallets-sdk'
 import { exponentialBackoff } from 'utils/js/exponentialBackoff'
+import { AddDelegatorTransactionProps } from 'services/earn/types'
+import { getUnixTime } from 'date-fns'
 
 class EarnService {
   getCurrentValidators = (isTestnet: boolean) => {
@@ -123,23 +125,16 @@ class EarnService {
     return rewardsMinusDelegationFee.toFixed(0)
   }
 
-  /**
-   *
-   * @param activeAccount
-   * @param nodeId Id of the node to delegate. starts with “NodeID-”
-   * @param stakeAmount Amount to be delegated in nAVAX
-   * @param startDate The Unix time when the validator starts validating the Primary Network.
-   * @param endDate The Unix time when the validator stops validating the Primary Network (and staked AVAX is returned).
-   * @param isDevMode
-   */
-  async issueAddDelegatorTransaction(
-    activeAccount: Account,
-    nodeId: string,
-    stakeAmount: bigint,
-    startDate: bigint,
-    endDate: bigint,
-    isDevMode: boolean
-  ): Promise<void> {
+  async issueAddDelegatorTransaction({
+    activeAccount,
+    nodeId,
+    stakeAmount,
+    startDate,
+    endDate,
+    isDevMode
+  }: AddDelegatorTransactionProps): Promise<void> {
+    const startDateUnix = getUnixTime(startDate)
+    const endDateUnix = getUnixTime(endDate)
     const avaxXPNetwork = NetworkService.getAvalancheNetworkXP(isDevMode)
     const rewardAddress = activeAccount.addressPVM
     const unsignedTx = await WalletService.createAddDelegatorTx({
@@ -147,8 +142,8 @@ class EarnService {
       avaxXPNetwork,
       rewardAddress,
       nodeId,
-      startDate,
-      endDate,
+      startDate: startDateUnix,
+      endDate: endDateUnix,
       stakeAmount,
       isDevMode
     } as AddDelegatorProps)

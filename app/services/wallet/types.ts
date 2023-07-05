@@ -39,10 +39,10 @@ export type AddDelegatorProps = {
   nodeId: string
   //Amount to be delegated in nAVAX
   stakeAmount: bigint
-  // The Unix time when the validator starts validating the Primary Network.
-  startDate: bigint
-  // The Unix time when the validator stops validating the Primary Network (and staked AVAX is returned).
-  endDate: bigint
+  // The Unix time when the delegation starts.
+  startDate: number
+  // The Unix time when the delegation ends.
+  endDate: number
   // The addresses which will receive the rewards from the delegated stake.
   rewardAddress: string
   isDevMode: boolean
