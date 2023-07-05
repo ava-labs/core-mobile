@@ -102,7 +102,7 @@ describe('WalletService', () => {
       }).rejects.toThrow('Reward address must be from P chain')
     })
 
-    it('should return true', async () => {
+    it('should add delegator successfully', async () => {
       const params = {
         nodeId: validNodeId,
         stakeAmount: fujiValidStakeAmount,
