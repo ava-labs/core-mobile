@@ -325,6 +325,7 @@ workflows:
       - _build-android
     after_run:
       - _send-notification-slack
+      - _send-test-result-notifcation-slack
     envs:
       - ENVIRONMENT: production
         opts:
@@ -349,6 +350,8 @@ workflows:
       - _install-and-set-env
       - _set-version
       - _build-android-for-testing
+    after_run:
+      - _send-test-result-notifcation-slack
     envs:
       - ENVIRONMENT: production
         opts:
