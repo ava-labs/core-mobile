@@ -218,9 +218,9 @@ workflows:
             - webhook_url: $SLACK_WEBHOOK_URL
   _send-test-result-notifcation-slack:
     steps:
-      script@1:
-        title: Send Test Results
-        inputs:
+      - script@1:
+          title: Send Test Results
+          inputs:
           - content: |-
               #!/usr/bin/env bash
               # fail if any commands fails
@@ -233,34 +233,6 @@ workflows:
               set -x
 
               curl -X POST -H 'Content-type: application/json' --data '{"MESSAGE":"New Test Results!!!", "PLATFORM": ${PLATFORM}, "APP_VERSION": ${APP_VERSION}, "BUILD_NUMBER": ${BUILD_NUMBER}, "GIT_CLONE_COMMIT_HASH": ${GIT_CLONE_COMMIT_HASH}}' ${SLACK_TEST_RESULT_WEBHOOK_URL}
-      # - slack@3:
-      #     inputs:
-      #       - pretext: '*New $PLATFORM Test Results Available!*'
-      #       - message: ''
-      #       - fields: |-
-      #           App|${APP_TITLE}
-      #           Platform|${PLATFORM}
-      #           Version|${APP_VERSION}.${BUILD_NUMBER}
-      #           Workflow|${BITRISE_TRIGGERED_WORKFLOW_ID}
-      #           Environment|${ENVIRONMENT}
-      #           Branch|${BITRISE_GIT_BRANCH}
-      #           Commit|${GIT_CLONE_COMMIT_HASH}
-      #       - title_on_error: $GIT_CLONE_COMMIT_MESSAGE_SUBJECT
-      #       - message_on_error: ''
-      #       - icon_url: ''
-      #       - from_username: ''
-      #       - timestamp: 'no'
-      #       - color: '#40BA8E'
-      #       - footer_icon: ''
-      #       - from_username_on_error: ''
-      #       - icon_url_on_error: ''
-      #       - buttons: |
-      #           View App|${BITRISE_APP_URL}
-      #           View Build|${BITRISE_BUILD_URL}
-      #           Install|${BITRISE_PUBLIC_INSTALL_PAGE_URL}
-      #       - footer: ''
-      #       - thumb_url: $BITRISE_PUBLIC_INSTALL_PAGE_QR_CODE_IMAGE_URL
-      #       - webhook_url: $SLACK_TEST_RESULT_WEBHOOK_URL
   _set-version:
     steps:
       - script@1:
