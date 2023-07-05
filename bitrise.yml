@@ -218,7 +218,6 @@ workflows:
             - webhook_url: $SLACK_WEBHOOK_URL
   _send-test-result-notifcation-slack:
     steps:
-      script@1:
     - slack@3:
         inputs:
           - pretext: '*New $PLATFORM Test Results Available!*'
@@ -320,10 +319,9 @@ workflows:
     before_run:
       - _install-and-set-env
       - _set-version
-      - _send-test-result-notifcation-slack
-      #- _build-android-for-testing
+      - _build-android-for-testing
     after_run:
-      #- _send-test-result-notifcation-slack
+      - _send-test-result-notifcation-slack
     envs:
       - ENVIRONMENT: production
         opts:
