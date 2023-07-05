@@ -334,7 +334,7 @@ class WalletService {
     if (endDate < getUnixTime(minimalStakeEndDate)) {
       throw Error('Staking duration too short')
     }
-    if (!rewardAddress.startsWith('P-')) {
+    if (!Avalanche.isBech32Address(rewardAddress, true)) {
       throw Error('Reward address must be from P chain')
     }
 
