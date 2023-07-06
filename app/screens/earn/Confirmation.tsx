@@ -191,14 +191,14 @@ export const Confirmation = () => {
               <AvaButton.TextWithIcon
                 textStyle={{ alignItems: 'flex-end' }}
                 style={{ alignSelf: 'flex-end' }}
-                onPress={() => copyToClipboard(nodeId)}
+                onPress={() => copyToClipboard(validator.nodeID)}
                 icon={<CopySVG />}
                 iconPlacement="right"
                 text={
                   <AvaText.Body1
                     color={theme.colorText1}
                     textStyle={{ alignSelf: 'flex-end' }}>
-                    {truncateNodeId(nodeId, 4)}
+                    {truncateNodeId(validator.nodeID, 4)}
                   </AvaText.Body1>
                 }
               />
