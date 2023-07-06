@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { Linking, StyleSheet, Text, View } from 'react-native'
+import { Linking, StyleSheet, View } from 'react-native'
 import AvaText from 'components/AvaText'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Space } from 'components/Space'

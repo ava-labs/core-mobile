@@ -1,13 +1,10 @@
-import { GetCurrentValidatorsResponse } from '@avalabs/avalanchejs-v2/dist/src/vms/pvm'
 import Big from 'big.js'
 import { bnToBig, bnToLocaleString } from '@avalabs/utils-sdk'
 import BN from 'bn.js'
 import { getUnixTime } from 'date-fns'
-import { calculateMaxWeight } from './calculateMaxWeight'
+import { NodeValidators } from 'screens/earn/SelectNode'
 import { getStakingConfig } from './getStakingConfig'
-
-export type Validators = GetCurrentValidatorsResponse['validators']
-export type Validator = GetCurrentValidatorsResponse['validators'][0]
+import { calculateMaxWeight } from './Utils'
 
 const N_AVAX_PER_AVAX = 1_000_000_000
 
@@ -31,7 +28,7 @@ const getAvailableDelegationWeight = (
 }
 
 export const getFilteredValidators = (
-  validators: Validators,
+  validators: NodeValidators,
   stakingAmount: BN,
   isDeveloperMode: boolean,
   stakingDuration: Date,
