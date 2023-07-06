@@ -163,7 +163,14 @@ const StakingDuration = () => {
           }}>
           Next
         </AvaButton.PrimaryLarge>
-        <AvaButton.TextLink textColor={theme.colorPrimary1}>
+        <AvaButton.TextLink
+          textColor={theme.colorPrimary1}
+          onPress={() =>
+            navigate(AppNavigation.Earn.AdvancedStaking, {
+              stakingAmount,
+              stakingDuration: selectedDuration.calculateDuration()
+            })
+          }>
           Advanced Set Up
         </AvaButton.TextLink>
       </View>

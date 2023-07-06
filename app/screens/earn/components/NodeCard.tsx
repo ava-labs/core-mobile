@@ -127,7 +127,8 @@ export const NodeCard = ({
         }
         collapsibleContainerStyle={{
           backgroundColor: theme.neutral900,
-          padding: 16,
+          paddingHorizontal: 16,
+          marginTop: -16,
           borderBottomLeftRadius: 8,
           borderBottomRightRadius: 8
         }}>
