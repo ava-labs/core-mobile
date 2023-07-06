@@ -9,16 +9,15 @@ import { PopableLabel } from 'components/PopableLabel'
 import { PopableContent } from 'components/PopableContent'
 import { EarnScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
-import { useNavigation } from '@react-navigation/native'
+import { useNavigation, useRoute } from '@react-navigation/native'
 
-type NavigationProp = EarnScreenProps<
-  typeof AppNavigation.Earn.SelectNode
->['navigation']
+type NavigationProp = EarnScreenProps<typeof AppNavigation.Earn.AdvancedStaking>
 
 const AdvancedStaking = () => {
   const { theme } = useApplicationContext()
-  const { navigate } = useNavigation<NavigationProp>()
-
+  const { navigate } = useNavigation<NavigationProp['navigation']>()
+  const { stakingAmount, stakingDuration } =
+    useRoute<NavigationProp['route']>().params
   const [minUptime, setMinUptime] = useState('')
   const [maxFee, setMaxFee] = useState('')
   const isNextDisabled = !!maxFee && !!minUptime
@@ -113,7 +112,9 @@ const AdvancedStaking = () => {
           onPress={() =>
             navigate(AppNavigation.Earn.SelectNode, {
               minUptime,
-              maxFee
+              maxFee,
+              stakingAmount,
+              stakingDuration
             })
           }>
           Next

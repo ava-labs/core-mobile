@@ -11,8 +11,8 @@ import AppNavigation from 'navigation/AppNavigation'
 import { EarnScreenProps } from 'navigation/types'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import { useNodes } from 'hooks/query/useNodes'
-import { Validator } from 'utils/getFilteredValidators'
 import { getSimpleSortedValidators } from 'utils/getSortedValidators'
+import { NodeValidator } from './SelectNode'
 
 const Searching = () => {
   const { theme } = useApplicationContext()
@@ -62,7 +62,7 @@ const Searching = () => {
 
 type NavigationProp = EarnScreenProps<typeof AppNavigation.Earn.NodeSearch>
 
-const MatchFound = ({ validator }: { validator: Validator }) => {
+const MatchFound = ({ validator }: { validator: NodeValidator }) => {
   const { theme } = useApplicationContext()
   const { navigate } = useNavigation<NavigationProp['navigation']>()
   const { stakingAmount } = useRoute<NavigationProp['route']>().params

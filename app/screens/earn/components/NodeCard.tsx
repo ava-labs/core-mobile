@@ -21,13 +21,20 @@ import { copyToClipboard } from 'utils/DeviceTools'
 import Big from 'big.js'
 import LinearGradientSVG from 'components/svg/LinearGradientSVG'
 import { format } from 'date-fns'
+import BN from 'bn.js'
 import { NodeValidator } from '../SelectNode'
 
 type NavigationProp = EarnScreenProps<
   typeof AppNavigation.Earn.SelectNode
 >['navigation']
 
-export const NodeCard = ({ data }: { data: NodeValidator }) => {
+export const NodeCard = ({
+  data,
+  stakingAmount
+}: {
+  data: NodeValidator
+  stakingAmount: BN
+}) => {
   const { theme } = useApplicationContext()
   const [isCardExpanded, setIsCardExpanded] = useState(false)
   const { navigate } = useNavigation<NavigationProp>()
@@ -180,7 +187,8 @@ export const NodeCard = ({ data }: { data: NodeValidator }) => {
           <AvaButton.PrimaryMedium
             onPress={() =>
               navigate(AppNavigation.Earn.Confirmation, {
-                nodeId: data.nodeID
+                validator: data,
+                stakingAmount
               })
             }>
             Next

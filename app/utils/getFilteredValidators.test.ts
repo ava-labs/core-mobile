@@ -1,12 +1,12 @@
 import mockNodes from 'tests/fixtures/nodes.json'
 import { stringToBN } from '@avalabs/utils-sdk'
-import { Validators } from './getFilteredValidators'
+import { NodeValidators } from 'screens/earn/SelectNode'
 import { getFilteredValidators } from './getFilteredValidators'
 
 describe('getFilteredValidators function', () => {
   it('should return empty array when the validators input is empty', () => {
     const result = getFilteredValidators(
-      [] as unknown as Validators,
+      [] as unknown as NodeValidators,
       stringToBN('1', 18),
       true,
       new Date('1900-07-05T16:52:40.723Z'),
@@ -16,7 +16,7 @@ describe('getFilteredValidators function', () => {
   })
   it('should return filtered validators that meet the selected uptime', () => {
     const result = getFilteredValidators(
-      mockNodes.result.validators as unknown as Validators,
+      mockNodes.result.validators as unknown as NodeValidators,
       stringToBN('1', 18),
       true,
       new Date('1900-07-05T16:52:40.723Z'),
@@ -27,7 +27,7 @@ describe('getFilteredValidators function', () => {
 
   it('should return filtered validators that meet the selected staking duration', () => {
     const result = getFilteredValidators(
-      mockNodes.result.validators as unknown as Validators,
+      mockNodes.result.validators as unknown as NodeValidators,
       stringToBN('1', 18),
       true,
       new Date('2122-07-05T16:57:10.140Z')
@@ -37,7 +37,7 @@ describe('getFilteredValidators function', () => {
 
   it('should return filtered validators that meet the selected staking amount', () => {
     const result = getFilteredValidators(
-      mockNodes.result.validators as unknown as Validators,
+      mockNodes.result.validators as unknown as NodeValidators,
       stringToBN('100', 18),
       true,
       new Date()

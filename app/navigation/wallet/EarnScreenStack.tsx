@@ -9,24 +9,31 @@ import { useNavigation } from '@react-navigation/native'
 import StakingDuration from 'screens/earn/DurationScreen'
 import { NodeSearch } from 'screens/earn/NodeSearch'
 import AdvancedStaking from 'screens/earn/AdvancedStaking'
-import SelectNode from 'screens/earn/SelectNode'
+import SelectNode, { NodeValidator } from 'screens/earn/SelectNode'
 import { Confirmation } from 'screens/earn/Confirmation'
 import { CancelModal } from 'screens/earn/CancelModal'
 import NotEnoughAvax from 'screens/earn/NotEnoughAvax'
 import useStakingParams from 'hooks/useStakingParams'
 import BN from 'bn.js'
-import { Validator } from 'utils/getFilteredValidators'
 
 export type EarnStackParamList = {
   [AppNavigation.Earn.NotEnoughAvax]: undefined
   [AppNavigation.Earn.GetStarted]: undefined
   [AppNavigation.Earn.StakingAmount]: undefined
   [AppNavigation.Earn.StakingDuration]: { stakingAmount: BN }
-  [AppNavigation.Earn.AdvancedStaking]: undefined
-  [AppNavigation.Earn.SelectNode]: { minUptime: string; maxFee: string }
+  [AppNavigation.Earn.AdvancedStaking]: {
+    stakingDuration: Date
+    stakingAmount: BN
+  }
+  [AppNavigation.Earn.SelectNode]: {
+    minUptime: string
+    maxFee: string
+    stakingDuration: Date
+    stakingAmount: BN
+  }
   [AppNavigation.Earn.NodeSearch]: { stakingDuration: Date; stakingAmount: BN }
   [AppNavigation.Earn.Confirmation]: {
-    validator: Validator
+    validator: NodeValidator
     stakingAmount: BN
   }
   [AppNavigation.Earn.Cancel]: undefined
