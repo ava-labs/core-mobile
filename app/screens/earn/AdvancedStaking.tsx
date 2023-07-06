@@ -10,6 +10,7 @@ import { PopableContent } from 'components/PopableContent'
 import { EarnScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation, useRoute } from '@react-navigation/native'
+import { Opacity50 } from '../../resources/Constants'
 
 type NavigationProp = EarnScreenProps<typeof AppNavigation.Earn.AdvancedStaking>
 
@@ -60,7 +61,7 @@ const AdvancedStaking = () => {
             <InputText
               placeholder={'Enter minimum uptime'}
               text={minUptime}
-              backgroundColor={theme.neutral700}
+              backgroundColor={theme.neutral700 + Opacity50}
               onChangeText={text => setMinUptime(text)}
               keyboardType="numeric"
               style={styles.inputContainer}
@@ -94,7 +95,7 @@ const AdvancedStaking = () => {
             <InputText
               placeholder={'Enter maximum fee'}
               text={maxFee}
-              backgroundColor={theme.neutral700}
+              backgroundColor={theme.neutral700 + Opacity50}
               onChangeText={text => setMaxFee(text)}
               keyboardType="numeric"
               style={styles.inputContainer}
