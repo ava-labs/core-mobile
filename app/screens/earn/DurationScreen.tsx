@@ -69,6 +69,10 @@ const StakingDuration = () => {
   const { navigate } = useNavigation<EarnScreenNavProps['navigation']>()
   const { stakingAmount } = useRoute<EarnScreenNavProps['route']>().params
 
+  const minimumStakeEndDate = isDeveloperMode
+    ? addDays(new Date(), 1)
+    : addWeeks(new Date(), 2)
+
   const onRadioSelect = (durationOption: DurationOption) => {
     if (selectedDuration?.title === durationOption.title) {
       return
@@ -144,6 +148,7 @@ const StakingDuration = () => {
               date={selectedDuration.calculateDuration()}
               onDateSelected={handleDateConfirm}
               placeHolder="Select a date"
+              minimumDate={minimumStakeEndDate}
             />
             <AvaText.Caption textStyle={{ color: theme.neutral300 }}>
               Actual end date will vary depending on options available
