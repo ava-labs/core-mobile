@@ -14,16 +14,21 @@ import { Confirmation } from 'screens/earn/Confirmation'
 import { CancelModal } from 'screens/earn/CancelModal'
 import NotEnoughAvax from 'screens/earn/NotEnoughAvax'
 import useStakingParams from 'hooks/useStakingParams'
+import BN from 'bn.js'
+import { Validator } from 'utils/getFilteredValidators'
 
 export type EarnStackParamList = {
   [AppNavigation.Earn.NotEnoughAvax]: undefined
   [AppNavigation.Earn.GetStarted]: undefined
   [AppNavigation.Earn.StakingAmount]: undefined
-  [AppNavigation.Earn.StakingDuration]: undefined
+  [AppNavigation.Earn.StakingDuration]: { stakingAmount: BN }
   [AppNavigation.Earn.AdvancedStaking]: undefined
   [AppNavigation.Earn.SelectNode]: { minUptime: string; maxFee: string }
-  [AppNavigation.Earn.NodeSearch]: undefined
-  [AppNavigation.Earn.Confirmation]: { nodeId: string }
+  [AppNavigation.Earn.NodeSearch]: { stakingDuration: Date; stakingAmount: BN }
+  [AppNavigation.Earn.Confirmation]: {
+    validator: Validator
+    stakingAmount: BN
+  }
   [AppNavigation.Earn.Cancel]: undefined
 }
 

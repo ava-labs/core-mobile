@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { ScrollView, StyleSheet, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Space } from 'components/Space'
@@ -18,13 +18,58 @@ import { PopableContent } from 'components/PopableContent'
 import { truncateNodeId } from 'utils/Utils'
 import CopySVG from 'components/svg/CopySVG'
 import { copyToClipboard } from 'utils/DeviceTools'
+import { format, fromUnixTime } from 'date-fns'
+import { bnToLocaleString, bnToBig } from '@avalabs/utils-sdk'
+import { useEarnCalcEstimatedRewards } from 'hooks/useEarnCalcEstimatedRewards'
+import { useSelector } from 'react-redux'
+import { selectAvaxPrice } from 'store/balance'
+import { selectSelectedCurrency } from 'store/settings/currency'
+import { getReadableDateDuration } from 'utils/getReadableDateDuration'
+import { BN } from 'bn.js'
+import { selectActiveNetwork } from 'store/network'
 
 type NavigationProp = EarnScreenProps<typeof AppNavigation.Earn.Confirmation>
 
 export const Confirmation = () => {
-  const { theme } = useApplicationContext()
+  const { validator, stakingAmount } =
+    useRoute<NavigationProp['route']>().params
+  const {
+    theme,
+    appHook: { tokenInCurrencyFormatter }
+  } = useApplicationContext()
+  const {
+    networkToken: { symbol }
+  } = useSelector(selectActiveNetwork)
+  const avaxPrice = useSelector(selectAvaxPrice)
+  const selectedCurrency = useSelector(selectSelectedCurrency)
   const { navigate } = useNavigation<NavigationProp['navigation']>()
-  const { nodeId } = useRoute<NavigationProp['route']>().params
+  const endTime = fromUnixTime(Number(validator.endTime))
+  const { data } = useEarnCalcEstimatedRewards({
+    amount: bnToBig(stakingAmount),
+    duration: endTime.getTime() - new Date().getTime(),
+    delegationFee: Number(validator.delegationFee)
+  })
+
+  const { delegationFeeAvax, stakingAmountPrice, stakingAmountAvax } =
+    useMemo(() => {
+      const stakingAmountInAvax = Number(
+        bnToLocaleString(stakingAmount.div(new BN(1e9)))
+      )
+      const delegationFee =
+        (Number(validator.delegationFee) / 100) * stakingAmountInAvax
+      return {
+        stakingAmountAvax: stakingAmountInAvax,
+        stakingAmountPrice: stakingAmountInAvax * avaxPrice,
+        delegationFeeAvax: delegationFee.toFixed(4)
+      }
+    }, [avaxPrice, stakingAmount, validator.delegationFee])
+
+  const { estimatedRewardAmount, estimatedRewardAvax } = useMemo(() => {
+    return {
+      estimatedRewardAvax: data?.estimatedTokenReward ?? 0,
+      estimatedRewardAmount: data?.estimatedRewardAmount ?? 0 * avaxPrice
+    }
+  }, [avaxPrice, data?.estimatedRewardAmount, data?.estimatedTokenReward])
 
   const cancelStaking = () => {
     navigate(AppNavigation.Earn.Cancel)
@@ -71,9 +116,13 @@ export const Confirmation = () => {
             Staked Amount
           </AvaText.Body2>
           <View style={{ alignItems: 'flex-end' }}>
-            <AvaText.Heading1>3.11766 AVAX</AvaText.Heading1>
+            <AvaText.Heading1>
+              {stakingAmountAvax + ' ' + symbol}
+            </AvaText.Heading1>
             <AvaText.Heading3 textStyle={{ color: theme.colorText2 }}>
-              $396.48 USD
+              {`${tokenInCurrencyFormatter(
+                stakingAmountPrice
+              )} ${selectedCurrency}`}
             </AvaText.Heading3>
             <Space x={4} />
           </View>
@@ -84,12 +133,14 @@ export const Confirmation = () => {
           <Row style={{ justifyContent: 'space-between' }}>
             <AvaText.Body2>Estimated Reward</AvaText.Body2>
             <AvaText.Heading2 textStyle={{ color: theme.colorBgGreen }}>
-              1.001 AVAX
+              {estimatedRewardAvax + ' ' + symbol}
             </AvaText.Heading2>
           </Row>
           <AvaText.Body3
             textStyle={{ alignSelf: 'flex-end', color: theme.colorText2 }}>
-            $12.10 USD
+            {`${tokenInCurrencyFormatter(
+              estimatedRewardAmount
+            )} ${selectedCurrency}`}
           </AvaText.Body3>
         </View>
         <Separator />
@@ -117,8 +168,12 @@ export const Confirmation = () => {
               marginTop: 4,
               width: '100%'
             }}>
-            <AvaText.Heading3>5 months 23 days</AvaText.Heading3>
-            <AvaText.Body1>01/04/24 5:00 PM</AvaText.Body1>
+            <AvaText.Heading3>
+              {getReadableDateDuration(endTime)}
+            </AvaText.Heading3>
+            <AvaText.Body1>
+              {format(endTime, 'MM/dd/yy  H:mm aa')}
+            </AvaText.Body1>
           </Row>
         </View>
         <Separator />
@@ -169,12 +224,8 @@ export const Confirmation = () => {
               backgroundColor={theme.colorBg3}>
               <PopableLabel label="Network Fee" />
             </Popable>
-            <AvaText.Heading6>0.0103 AVAX</AvaText.Heading6>
+            <AvaText.Heading6>Not implemented {symbol}</AvaText.Heading6>
           </Row>
-          <AvaText.Body3
-            textStyle={{ color: theme.colorText2, alignSelf: 'flex-end' }}>
-            $12.10 USD
-          </AvaText.Body3>
         </View>
         <Separator />
         <View style={styles.verticalPadding}>
@@ -194,12 +245,10 @@ export const Confirmation = () => {
               backgroundColor={theme.colorBg3}>
               <PopableLabel label="Staking Fee" />
             </Popable>
-            <AvaText.Heading6>0.0103 AVAX</AvaText.Heading6>
+            <AvaText.Heading6>
+              {delegationFeeAvax + ' ' + symbol}
+            </AvaText.Heading6>
           </Row>
-          <AvaText.Body3
-            textStyle={{ color: theme.colorText2, alignSelf: 'flex-end' }}>
-            $12.10 USD
-          </AvaText.Body3>
         </View>
         <FlexSpacer />
         <AvaText.Caption

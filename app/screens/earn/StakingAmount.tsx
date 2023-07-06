@@ -127,7 +127,11 @@ export default function StakingAmount() {
       <FlexSpacer />
       {inputValid && (
         <AvaButton.PrimaryLarge
-          onPress={() => navigate(AppNavigation.Earn.StakingDuration)}>
+          onPress={() => {
+            navigate(AppNavigation.Earn.StakingDuration, {
+              stakingAmount: inputAmountBN
+            })
+          }}>
           Next
         </AvaButton.PrimaryLarge>
       )}
