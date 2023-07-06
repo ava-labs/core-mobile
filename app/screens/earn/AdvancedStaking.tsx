@@ -19,9 +19,12 @@ const AdvancedStaking = () => {
   const { navigate } = useNavigation<NavigationProp['navigation']>()
   const { stakingAmount, stakingDuration } =
     useRoute<NavigationProp['route']>().params
-  const [minUptime, setMinUptime] = useState('')
-  const [maxFee, setMaxFee] = useState('')
-  const isNextDisabled = !!maxFee && !!minUptime
+  const [minUptime, setMinUptime] = useState<string | undefined>(undefined)
+  const [maxFee, setMaxFee] = useState<string | undefined>(undefined)
+  const isMaxFeeValid = !!maxFee && Number(maxFee) >= 2 && Number(maxFee) <= 20
+  const isMinUptimeValid =
+    !!minUptime && Number(minUptime) >= 1 && Number(minUptime) <= 99
+  const isNextDisabled = !isMaxFeeValid || !isMinUptimeValid
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -60,13 +63,14 @@ const AdvancedStaking = () => {
             </Popable>
             <InputText
               placeholder={'Enter minimum uptime'}
-              text={minUptime}
+              text={minUptime ?? ''}
               backgroundColor={theme.neutral700 + Opacity50}
               onChangeText={text => setMinUptime(text)}
               keyboardType="numeric"
               style={styles.inputContainer}
             />
-            <AvaText.Caption color={theme.neutral300}>
+            <AvaText.Caption
+              color={isMinUptimeValid ? theme.neutral300 : theme.colorError}>
               Enter a value between 1-99%
             </AvaText.Caption>
           </View>
@@ -94,13 +98,14 @@ const AdvancedStaking = () => {
             </Popable>
             <InputText
               placeholder={'Enter maximum fee'}
-              text={maxFee}
+              text={maxFee ?? ''}
               backgroundColor={theme.neutral700 + Opacity50}
               onChangeText={text => setMaxFee(text)}
               keyboardType="numeric"
               style={styles.inputContainer}
             />
-            <AvaText.Caption color={theme.neutral300}>
+            <AvaText.Caption
+              color={isMaxFeeValid ? theme.neutral300 : theme.colorError}>
               Enter a value between 2-20%
             </AvaText.Caption>
           </View>
@@ -109,7 +114,7 @@ const AdvancedStaking = () => {
 
       <View style={{ marginBottom: 40 }}>
         <AvaButton.PrimaryLarge
-          disabled={!isNextDisabled}
+          disabled={isNextDisabled}
           onPress={() =>
             navigate(AppNavigation.Earn.SelectNode, {
               minUptime,

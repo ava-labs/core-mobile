@@ -26,10 +26,10 @@ export type EarnStackParamList = {
     stakingAmount: BN
   }
   [AppNavigation.Earn.SelectNode]: {
-    minUptime: string
-    maxFee: string
     stakingDuration: Date
     stakingAmount: BN
+    minUptime?: string
+    maxFee?: string
   }
   [AppNavigation.Earn.NodeSearch]: { stakingDuration: Date; stakingAmount: BN }
   [AppNavigation.Earn.Confirmation]: {
