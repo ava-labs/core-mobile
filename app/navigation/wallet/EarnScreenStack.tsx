@@ -148,13 +148,29 @@ type ConfirmationNavigationProp = EarnScreenProps<
 >['navigation']
 
 const ConfirmationBackButton = () => {
-  const { navigate } = useNavigation<ConfirmationNavigationProp>()
+  const { goBack, getState, navigate } =
+    useNavigation<ConfirmationNavigationProp>()
 
-  return (
-    <HeaderBackButton
-      onPress={() => navigate(AppNavigation.Earn.StakingAmount)}
-    />
-  )
+  const handleGoBack = () => {
+    const navigationState = getState()
+    const previousScreen =
+      navigationState.index >= 2
+        ? navigationState.routes[navigationState.index - 1]
+        : undefined
+
+    if (previousScreen?.name === AppNavigation.Earn.NodeSearch) {
+      const stakingAmount = previousScreen.params?.stakingAmount
+      if (stakingAmount) {
+        return navigate(AppNavigation.Earn.StakingDuration, {
+          stakingAmount
+        })
+      }
+      return navigate(AppNavigation.Earn.StakingAmount)
+    }
+    goBack()
+  }
+
+  return <HeaderBackButton onPress={handleGoBack} />
 }
 
 export default React.memo(EarnScreenStack)
