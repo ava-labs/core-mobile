@@ -9,42 +9,77 @@ import InfoSVG from 'components/svg/InfoSVG'
 import { Row } from 'components/Row'
 import { CalendarInput } from 'components/CalendarInput'
 import AppNavigation from 'navigation/AppNavigation'
-import { useNavigation } from '@react-navigation/native'
+import { useNavigation, useRoute } from '@react-navigation/native'
 import { EarnScreenProps } from 'navigation/types'
+import { addDays, addMonths, addWeeks, addYears } from 'date-fns'
+import { useSelector } from 'react-redux'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 
 type EarnScreenNavProps = EarnScreenProps<
   typeof AppNavigation.Earn.StakingDuration
 >
 
-const StakingDuration = () => {
-  const [selectedDuration, setSelectedDuration] = useState('')
-  const { theme } = useApplicationContext()
-  const [date, setDate] = useState<Date>()
-  const { navigate } = useNavigation<EarnScreenNavProps['navigation']>()
+type DurationOption = {
+  title: string
+  subTitle: string
+  calculateDuration: () => Date
+}
 
-  const durationOptions = [
-    { title: '1 Week', subTitle: 'Estimated Rewards: 0.54 AVAX' },
-    { title: '1 Month', subTitle: 'Estimated Rewards: 1.54 AVAX' },
-    { title: '3 Months', subTitle: 'Estimated Rewards: 3.54 AVAX' },
-    { title: '6 Months', subTitle: 'Estimated Rewards: 6.54 AVAX' },
-    { title: '1 Year', subTitle: 'Estimated Rewards: 12.54 AVAX' },
-    { title: 'Custom', subTitle: 'Enter your desired end date' }
+const StakingDuration = () => {
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
+
+  const durationOptions: DurationOption[] = [
+    {
+      title: '2 Week',
+      subTitle: 'Estimated Rewards: 0.77 AVAX',
+      calculateDuration: () => addWeeks(new Date(), 2)
+    },
+    {
+      title: '1 Month',
+      subTitle: 'Estimated Rewards: 1.54 AVAX',
+      calculateDuration: () => addMonths(new Date(), 1)
+    },
+    {
+      title: '3 Months',
+      subTitle: 'Estimated Rewards: 3.54 AVAX',
+      calculateDuration: () => addMonths(new Date(), 3)
+    },
+    {
+      title: '6 Months',
+      subTitle: 'Estimated Rewards: 6.54 AVAX',
+      calculateDuration: () => addMonths(new Date(), 6)
+    },
+    {
+      title: '1 Year',
+      subTitle: 'Estimated Rewards: 12.54 AVAX',
+      calculateDuration: () => addYears(new Date(), 1)
+    },
+    {
+      title: 'Custom',
+      subTitle: 'Enter your desired end date',
+      calculateDuration: () =>
+        isDeveloperMode ? addDays(new Date(), 1) : addWeeks(new Date(), 2)
+    }
   ]
 
-  const customOptions = {
-    title: 'Custom',
-    subTitle: 'Enter your desired end date'
-  }
+  const [selectedDuration, setSelectedDuration] = useState<DurationOption>(
+    durationOptions[0]!
+  )
+  const { theme } = useApplicationContext()
+  const { navigate } = useNavigation<EarnScreenNavProps['navigation']>()
+  const { stakingAmount } = useRoute<EarnScreenNavProps['route']>().params
 
-  const onRadioSelect = (value: string) => {
-    if (selectedDuration === value) {
-      return setSelectedDuration('')
+  const onRadioSelect = (durationOption: DurationOption) => {
+    if (selectedDuration?.title === durationOption.title) {
+      return
     }
-    return setSelectedDuration(value)
+    setSelectedDuration(durationOption)
   }
 
   const handleDateConfirm = (dateInput: Date) => {
-    setDate(dateInput)
+    setSelectedDuration(prev => {
+      return { ...prev, calculateDuration: () => dateInput }
+    })
   }
 
   return (
@@ -59,13 +94,13 @@ const StakingDuration = () => {
           }}>
           How long would you like to stake?
         </AvaText.Subtitle1>
-        {selectedDuration !== 'Custom' ? (
+        {selectedDuration?.title !== 'Custom' ? (
           durationOptions.map(item => {
             return (
               <View style={{ marginBottom: 24 }} key={item.title}>
                 <RadioButton
-                  onPress={() => onRadioSelect(item.title)}
-                  selected={selectedDuration === item.title}>
+                  onPress={() => onRadioSelect(item)}
+                  selected={selectedDuration?.title === item.title}>
                   <View style={{ marginLeft: 10 }}>
                     <AvaText.Body2 textStyle={{ color: theme.colorText1 }}>
                       {item.title}
@@ -82,14 +117,17 @@ const StakingDuration = () => {
           <>
             <View style={{ marginBottom: 24 }}>
               <RadioButton
-                onPress={() => onRadioSelect(customOptions.title)}
-                selected={selectedDuration === customOptions.title}>
+                onPress={() => {
+                  const firstItem = durationOptions.at(0)
+                  firstItem && onRadioSelect(firstItem)
+                }}
+                selected={true}>
                 <View style={{ marginLeft: 10 }}>
                   <AvaText.Body1 textStyle={{ color: theme.colorText1 }}>
-                    {customOptions.title}
+                    {selectedDuration.title}
                   </AvaText.Body1>
                   <AvaText.Caption textStyle={{ color: theme.colorText1 }}>
-                    {customOptions.subTitle}
+                    {selectedDuration.subTitle}
                   </AvaText.Caption>
                 </View>
               </RadioButton>
@@ -103,9 +141,9 @@ const StakingDuration = () => {
               <InfoSVG />
             </Row>
             <CalendarInput
-              date={date}
+              date={selectedDuration.calculateDuration()}
               onDateSelected={handleDateConfirm}
-              placeHolder=" March 22, 2024"
+              placeHolder="Select a date"
             />
             <AvaText.Caption textStyle={{ color: theme.neutral300 }}>
               Actual end date will vary depending on options available
@@ -116,8 +154,13 @@ const StakingDuration = () => {
 
       <View>
         <AvaButton.PrimaryLarge
-          disabled={!selectedDuration}
-          onPress={() => navigate(AppNavigation.Earn.NodeSearch)}>
+          disabled={selectedDuration.calculateDuration() < new Date()}
+          onPress={() => {
+            navigate(AppNavigation.Earn.NodeSearch, {
+              stakingDuration: selectedDuration.calculateDuration(),
+              stakingAmount
+            })
+          }}>
           Next
         </AvaButton.PrimaryLarge>
         <AvaButton.TextLink textColor={theme.colorPrimary1}>

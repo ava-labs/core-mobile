@@ -5,7 +5,9 @@ import AvaButton from 'components/AvaButton'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import CalendarSVG from 'components/svg/CalendarSVG'
 import DateTimePickerModal from 'react-native-modal-datetime-picker'
-import { format } from 'date-fns'
+import { addDays, addWeeks, format } from 'date-fns'
+import { useSelector } from 'react-redux'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 
 interface CalendarInputProps {
   date: Date | undefined
@@ -18,6 +20,7 @@ export const CalendarInput: React.FC<CalendarInputProps> = ({
   onDateSelected,
   placeHolder
 }) => {
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const { theme } = useApplicationContext()
   const [isDatePickerVisible, setIsDatePickerVisible] = useState(false)
   const showDatePicker = () => {
@@ -32,6 +35,10 @@ export const CalendarInput: React.FC<CalendarInputProps> = ({
     onDateSelected(dateInput)
     setIsDatePickerVisible(false)
   }
+
+  const minimumStakeEndDate = isDeveloperMode
+    ? addDays(new Date(), 1)
+    : addWeeks(new Date(), 2)
 
   return (
     <View>
@@ -57,6 +64,7 @@ export const CalendarInput: React.FC<CalendarInputProps> = ({
           mode="date"
           onConfirm={handleDateConfirm}
           onCancel={hideDatePicker}
+          minimumDate={minimumStakeEndDate}
         />
       </View>
     </View>
