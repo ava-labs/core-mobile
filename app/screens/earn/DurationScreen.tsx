@@ -162,7 +162,7 @@ const StakingDuration = () => {
           disabled={selectedDuration.calculateDuration() < new Date()}
           onPress={() => {
             navigate(AppNavigation.Earn.NodeSearch, {
-              stakingDuration: selectedDuration.calculateDuration(),
+              stakingEndTime: selectedDuration.calculateDuration(),
               stakingAmount
             })
           }}>
@@ -173,7 +173,7 @@ const StakingDuration = () => {
           onPress={() =>
             navigate(AppNavigation.Earn.AdvancedStaking, {
               stakingAmount,
-              stakingDuration: selectedDuration.calculateDuration()
+              stakingEndTime: selectedDuration.calculateDuration()
             })
           }>
           Advanced Set Up

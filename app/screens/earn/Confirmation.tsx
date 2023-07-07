@@ -169,10 +169,10 @@ export const Confirmation = () => {
               width: '100%'
             }}>
             <AvaText.Heading3>
-              {getReadableDateDuration(endTime)}
+              {getReadableDateDuration(validatorEndTime)}
             </AvaText.Heading3>
             <AvaText.Body1>
-              {format(endTime, 'MM/dd/yy  H:mm aa')}
+              {format(validatorEndTime, 'MM/dd/yy  H:mm aa')}
             </AvaText.Body1>
           </Row>
         </View>

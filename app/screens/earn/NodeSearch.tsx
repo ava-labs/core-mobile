@@ -106,24 +106,49 @@ export const NodeSearch = () => {
 
   const { stakingEndTime, stakingAmount } =
     useRoute<NavigationProp['route']>().params
-  const { isFetching, data } = useNodes()
+  const { isFetching, data, error } = useNodes()
 
   if (isFetching) return <Searching />
+  if (error)
+    return (
+      <Text style={{ flex: 1, justifyContent: 'center', alignSelf: 'center' }}>
+        we should render the message with a retry option
+      </Text>
+    )
 
   if (data?.validators && data.validators.length > 0) {
-    const validators = getSimpleSortedValidators(data.validators)
-    const filteredValidators = getFilteredValidators({
-      isDeveloperMode,
-      validators,
-      stakingAmount,
-      stakingEndTime,
-      minUpTime: 98
-    })
-    const sortedValidators = getSimpleSortedValidators(filteredValidators)
-    const matchedValidator = getRandomValidator(sortedValidators)
-    return <MatchFound validator={matchedValidator} />
+    try {
+      const filteredValidators = getFilteredValidators({
+        isDeveloperMode,
+        validators: data?.validators,
+        stakingAmount,
+        stakingEndTime,
+        minUpTime: 98
+      })
+
+      const sortedValidators = getSimpleSortedValidators(filteredValidators)
+      console.log('sortedValidators: ', sortedValidators.length)
+      const matchedValidator = getRandomValidator(sortedValidators)
+      console.log('matchedValidator: ', matchedValidator)
+      return <MatchFound validator={matchedValidator} />
+    } catch {
+      Logger.info(
+        `no node matches filter criteria: stakingAmount:  ${stakingAmount}, stakingEndTime: ${stakingEndTime}, minUpTime: 98%`
+      )
+      // empty state when nothing matches filter
+      return (
+        <Text
+          style={{ flex: 1, justifyContent: 'center', alignSelf: 'center' }}>
+          waiting for design
+        </Text>
+      )
+    }
   }
-  return <Text>waiting for design</Text> // error state when nothing matches filter
+  return (
+    <Text style={{ flex: 1, justifyContent: 'center', alignSelf: 'center' }}>
+      waiting for design
+    </Text>
+  ) // empty state when nothing matches filter
 }
 
 const styles = StyleSheet.create({
