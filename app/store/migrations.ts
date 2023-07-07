@@ -74,15 +74,19 @@ export const migrations = {
   6: async (state: any) => {
     const map = await StorageTools.loadFromStorageAsMap<
       'CoreAnalytics' | 'ConsentToTOU&PP',
-      number | string | boolean | undefined
+      boolean | undefined
     >('USER_SETTINGS')
+
+    const coreAnalytics = map.get('CoreAnalytics')
+    const consentToTOUnPP = Boolean(map.get('ConsentToTOU&PP'))
+
     return {
       ...state,
       settings: {
         ...state.settings,
         securityPrivacy: {
-          coreAnalytics: map.get('CoreAnalytics'),
-          consentToTOUnPP: map.get('ConsentToTOU&PP') ?? false
+          coreAnalytics: coreAnalytics,
+          consentToTOUnPP
         }
       }
     }
