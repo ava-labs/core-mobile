@@ -11,6 +11,9 @@ export const securityPrivacySlice = createSlice({
     setCoreAnalytics: (state, action: PayloadAction<boolean | undefined>) => {
       state.coreAnalytics = action.payload
     },
+    /**
+     * Set Terms of use and Privacy policy consent
+     */
     setTouAndPpConsent: (state, action: PayloadAction<boolean>) => {
       state.consentToTOUnPP = action.payload
     }
@@ -21,6 +24,10 @@ export const securityPrivacySlice = createSlice({
 export const selectCoreAnalyticsConsent = (state: RootState) =>
   state.settings.securityPrivacy.coreAnalytics
 
+/**
+ * Select Terms of use and Privacy policy consent
+ * @param state
+ */
 export const selectTouAndPpConsent = (state: RootState) =>
   state.settings.securityPrivacy.consentToTOUnPP
 
