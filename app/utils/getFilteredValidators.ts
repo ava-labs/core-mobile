@@ -27,6 +27,13 @@ const getAvailableDelegationWeight = (
   return Number(maxWeight.maxDelegation) / N_AVAX_PER_AVAX
 }
 
+type getFilteredValidatorsProps = {
+  validators: NodeValidators
+  stakingAmount: BN
+  isDeveloperMode: boolean
+  stakingEndTime: Date
+  minUpTime: number
+}
 /**
  *
  * @param validators
@@ -36,13 +43,13 @@ const getAvailableDelegationWeight = (
  * @param minUpTime
  * @returns
  */
-export const getFilteredValidators = (
-  validators: NodeValidators,
-  stakingAmount: BN,
-  isDeveloperMode: boolean,
-  stakingEndTime: Date,
+export const getFilteredValidators = ({
+  validators,
+  stakingAmount,
+  isDeveloperMode,
+  stakingEndTime,
   minUpTime = 0
-) => {
+}: getFilteredValidatorsProps) => {
   const stackingEndTimeUnix = getUnixTime(stakingEndTime) // timestamp in seconds
   const stakingAmountNumber = Number(
     bnToLocaleString(stakingAmount.div(new BN(1e9)))
