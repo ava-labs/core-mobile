@@ -9,10 +9,10 @@ import { calculateMaxWeight } from './Utils'
 const N_AVAX_PER_AVAX = 1_000_000_000
 
 const hasMinimumStakingTime = (
-  endTime: number,
-  stakingDuration: number
+  validatorEndTime: number,
+  delegationEndTime: number
 ): boolean => {
-  return endTime > stakingDuration
+  return validatorEndTime > delegationEndTime
 }
 
 const getAvailableDelegationWeight = (
@@ -27,14 +27,23 @@ const getAvailableDelegationWeight = (
   return Number(maxWeight.maxDelegation) / N_AVAX_PER_AVAX
 }
 
+/**
+ *
+ * @param validators
+ * @param stakingAmount  nAVAX with denomination 18
+ * @param isDeveloperMode
+ * @param stakingEndTime
+ * @param minUpTime
+ * @returns
+ */
 export const getFilteredValidators = (
   validators: NodeValidators,
   stakingAmount: BN,
   isDeveloperMode: boolean,
-  stakingDuration: Date,
+  stakingEndTime: Date,
   minUpTime = 0
 ) => {
-  const stackingDurationUnixTime = getUnixTime(stakingDuration)
+  const stackingEndTimeUnix = getUnixTime(stakingEndTime) // timestamp in seconds
   const stakingAmountNumber = Number(
     bnToLocaleString(stakingAmount.div(new BN(1e9)))
   )
@@ -46,7 +55,7 @@ export const getFilteredValidators = (
     )
     return (
       availableDelegationWeight > stakingAmountNumber &&
-      hasMinimumStakingTime(Number(endTime), stackingDurationUnixTime) &&
+      hasMinimumStakingTime(Number(endTime), stackingEndTimeUnix) &&
       Number(uptime) >= minUpTime
     )
   })

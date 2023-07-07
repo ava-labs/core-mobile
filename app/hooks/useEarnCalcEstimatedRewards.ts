@@ -17,6 +17,13 @@ export type useEarnCalcEstimatedRewardsProps = {
   delegationFee: number
 }
 
+/**
+ *
+ * @param amount nAVAX with denomination 18
+ * @param duration
+ * @param delegationFee
+ * @returns
+ */
 export const useEarnCalcEstimatedRewards = ({
   amount,
   duration,

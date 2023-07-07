@@ -22,16 +22,16 @@ export type EarnStackParamList = {
   [AppNavigation.Earn.StakingAmount]: undefined
   [AppNavigation.Earn.StakingDuration]: { stakingAmount: BN }
   [AppNavigation.Earn.AdvancedStaking]: {
-    stakingDuration: Date
+    stakingEndTime: Date
     stakingAmount: BN
   }
   [AppNavigation.Earn.SelectNode]: {
-    stakingDuration: Date
+    stakingEndTime: Date
     stakingAmount: BN
     minUptime?: string
     maxFee?: string
   }
-  [AppNavigation.Earn.NodeSearch]: { stakingDuration: Date; stakingAmount: BN }
+  [AppNavigation.Earn.NodeSearch]: { stakingEndTime: Date; stakingAmount: BN }
   [AppNavigation.Earn.Confirmation]: {
     validator: NodeValidator
     stakingAmount: BN
