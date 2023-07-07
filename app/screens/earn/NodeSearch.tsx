@@ -13,9 +13,9 @@ import { useNavigation, useRoute } from '@react-navigation/native'
 import { useNodes } from 'hooks/query/useNodes'
 import {
   getRandomValidator,
-  getSimpleSortedValidators
-} from 'utils/getSortedValidators'
-import { getFilteredValidators } from 'utils/getFilteredValidators'
+  getSimpleSortedValidators,
+  getFilteredValidators
+} from 'services/earn/utils'
 import { useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { NodeValidator } from './SelectNode'
@@ -127,9 +127,7 @@ export const NodeSearch = () => {
       })
 
       const sortedValidators = getSimpleSortedValidators(filteredValidators)
-      console.log('sortedValidators: ', sortedValidators.length)
       const matchedValidator = getRandomValidator(sortedValidators)
-      console.log('matchedValidator: ', matchedValidator)
       return <MatchFound validator={matchedValidator} />
     } catch {
       Logger.info(

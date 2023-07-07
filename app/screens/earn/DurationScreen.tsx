@@ -22,7 +22,7 @@ type EarnScreenNavProps = EarnScreenProps<
 type DurationOption = {
   title: string
   subTitle: string
-  calculateDuration: () => Date
+  getStakeEndDate: () => Date
 }
 
 const StakingDuration = () => {
@@ -32,32 +32,32 @@ const StakingDuration = () => {
     {
       title: '2 Week',
       subTitle: 'Estimated Rewards: 0.77 AVAX',
-      calculateDuration: () => addWeeks(new Date(), 2)
+      getStakeEndDate: () => addWeeks(new Date(), 2)
     },
     {
       title: '1 Month',
       subTitle: 'Estimated Rewards: 1.54 AVAX',
-      calculateDuration: () => addMonths(new Date(), 1)
+      getStakeEndDate: () => addMonths(new Date(), 1)
     },
     {
       title: '3 Months',
       subTitle: 'Estimated Rewards: 3.54 AVAX',
-      calculateDuration: () => addMonths(new Date(), 3)
+      getStakeEndDate: () => addMonths(new Date(), 3)
     },
     {
       title: '6 Months',
       subTitle: 'Estimated Rewards: 6.54 AVAX',
-      calculateDuration: () => addMonths(new Date(), 6)
+      getStakeEndDate: () => addMonths(new Date(), 6)
     },
     {
       title: '1 Year',
       subTitle: 'Estimated Rewards: 12.54 AVAX',
-      calculateDuration: () => addYears(new Date(), 1)
+      getStakeEndDate: () => addYears(new Date(), 1)
     },
     {
       title: 'Custom',
       subTitle: 'Enter your desired end date',
-      calculateDuration: () =>
+      getStakeEndDate: () =>
         isDeveloperMode ? addDays(new Date(), 1) : addWeeks(new Date(), 2)
     }
   ]
@@ -145,7 +145,7 @@ const StakingDuration = () => {
               <InfoSVG />
             </Row>
             <CalendarInput
-              date={selectedDuration.calculateDuration()}
+              date={selectedDuration.getStakeEndDate()}
               onDateSelected={handleDateConfirm}
               placeHolder="Select a date"
               minimumDate={minimumStakeEndDate}
@@ -160,10 +160,10 @@ const StakingDuration = () => {
 
       <View>
         <AvaButton.PrimaryLarge
-          disabled={selectedDuration.calculateDuration() < new Date()}
+          disabled={selectedDuration.getStakeEndDate() < new Date()}
           onPress={() => {
             navigate(AppNavigation.Earn.NodeSearch, {
-              stakingEndTime: selectedDuration.calculateDuration(),
+              stakingEndTime: selectedDuration.getStakeEndDate(),
               stakingAmount
             })
           }}>
@@ -174,7 +174,7 @@ const StakingDuration = () => {
           onPress={() =>
             navigate(AppNavigation.Earn.AdvancedStaking, {
               stakingAmount,
-              stakingEndTime: selectedDuration.calculateDuration()
+              stakingEndTime: selectedDuration.getStakeEndDate()
             })
           }>
           Advanced Set Up
