@@ -18,7 +18,8 @@ export enum DeepLinkOrigin {
 export const PROTOCOLS = {
   HTTP: 'http',
   HTTPS: 'https',
-  WC: 'wc'
+  WC: 'wc',
+  CORE: 'core'
 }
 
 export const ACTIONS = {
