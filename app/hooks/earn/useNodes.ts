@@ -12,7 +12,7 @@ export const useNodes = () => {
     queryKey: [
       'nodes',
       isDeveloperMode,
-      stakingDuration,
+      stakingEndTime,
       stakingAmount,
       minUpTime
     ],
@@ -22,7 +22,7 @@ export const useNodes = () => {
         result.validators,
         stakingAmount,
         isDeveloperMode,
-        stakingDuration,
+        stakingEndTime,
         minUpTime
       )
       return filteredValidators
