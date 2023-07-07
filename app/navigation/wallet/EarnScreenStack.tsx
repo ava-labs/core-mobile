@@ -9,7 +9,7 @@ import { useNavigation } from '@react-navigation/native'
 import StakingDuration from 'screens/earn/DurationScreen'
 import { NodeSearch } from 'screens/earn/NodeSearch'
 import AdvancedStaking from 'screens/earn/AdvancedStaking'
-import SelectNode, { NodeValidator } from 'screens/earn/SelectNode'
+import SelectNode from 'screens/earn/SelectNode'
 import { Confirmation } from 'screens/earn/Confirmation'
 import { CancelModal } from 'screens/earn/CancelModal'
 import NotEnoughAvax from 'screens/earn/NotEnoughAvax'
@@ -33,7 +33,7 @@ export type EarnStackParamList = {
   }
   [AppNavigation.Earn.NodeSearch]: { stakingEndTime: Date; stakingAmount: BN }
   [AppNavigation.Earn.Confirmation]: {
-    validator: NodeValidator
+    nodeId: string
     stakingAmount: BN
   }
   [AppNavigation.Earn.Cancel]: undefined

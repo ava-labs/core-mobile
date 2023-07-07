@@ -27,12 +27,13 @@ import { selectSelectedCurrency } from 'store/settings/currency'
 import { getReadableDateDuration } from 'utils/getReadableDateDuration'
 import { BN } from 'bn.js'
 import { selectActiveNetwork } from 'store/network'
+import { useGetValidatorByNodeId } from 'hooks/useGetValidatorByNodeId'
 
 type NavigationProp = EarnScreenProps<typeof AppNavigation.Earn.Confirmation>
 
 export const Confirmation = () => {
-  const { validator, stakingAmount } =
-    useRoute<NavigationProp['route']>().params
+  const { nodeId, stakingAmount } = useRoute<NavigationProp['route']>().params
+  const validator = useGetValidatorByNodeId(nodeId)
   const {
     theme,
     appHook: { tokenInCurrencyFormatter }
@@ -43,11 +44,11 @@ export const Confirmation = () => {
   const avaxPrice = useSelector(selectAvaxPrice)
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { navigate } = useNavigation<NavigationProp['navigation']>()
-  const validatorEndTime = fromUnixTime(Number(validator.endTime))
+  const validatorEndTime = fromUnixTime(Number(validator?.endTime))
   const { data } = useEarnCalcEstimatedRewards({
     amount: bnToBig(stakingAmount, decimals),
     duration: validatorEndTime.getTime() - new Date().getTime(),
-    delegationFee: Number(validator.delegationFee)
+    delegationFee: Number(validator?.delegationFee)
   })
 
   const { delegationFeeAvax, stakingAmountPrice, stakingAmountAvax } =
@@ -56,13 +57,13 @@ export const Confirmation = () => {
         bnToLocaleString(stakingAmount.div(new BN(1e9)))
       )
       const delegationFee =
-        (Number(validator.delegationFee) / 100) * stakingAmountInAvax
+        (Number(validator?.delegationFee) / 100) * stakingAmountInAvax
       return {
         stakingAmountAvax: stakingAmountInAvax,
         stakingAmountPrice: stakingAmountInAvax * avaxPrice,
         delegationFeeAvax: delegationFee.toFixed(4)
       }
-    }, [avaxPrice, stakingAmount, validator.delegationFee])
+    }, [avaxPrice, stakingAmount, validator?.delegationFee])
 
   const { estimatedRewardAmount, estimatedRewardAvax } = useMemo(() => {
     return {
@@ -191,14 +192,14 @@ export const Confirmation = () => {
               <AvaButton.TextWithIcon
                 textStyle={{ alignItems: 'flex-end' }}
                 style={{ alignSelf: 'flex-end' }}
-                onPress={() => copyToClipboard(validator.nodeID)}
+                onPress={() => copyToClipboard(validator?.nodeID)}
                 icon={<CopySVG />}
                 iconPlacement="right"
                 text={
                   <AvaText.Body1
                     color={theme.colorText1}
                     textStyle={{ alignSelf: 'flex-end' }}>
-                    {truncateNodeId(validator.nodeID, 4)}
+                    {truncateNodeId(validator?.nodeID ?? '', 4)}
                   </AvaText.Body1>
                 }
               />

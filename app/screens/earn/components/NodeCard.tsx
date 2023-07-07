@@ -188,7 +188,7 @@ export const NodeCard = ({
           <AvaButton.PrimaryMedium
             onPress={() =>
               navigate(AppNavigation.Earn.Confirmation, {
-                validator: data,
+                nodeId: data.nodeID,
                 stakingAmount
               })
             }>

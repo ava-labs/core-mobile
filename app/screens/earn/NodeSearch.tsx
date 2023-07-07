@@ -76,7 +76,7 @@ const MatchFound = ({ validator }: { validator: NodeValidator }) => {
   useEffect(() => {
     const timer = setTimeout(() => {
       navigate(AppNavigation.Earn.Confirmation, {
-        validator,
+        nodeId: validator.nodeID,
         stakingAmount
       })
     }, 2200)
