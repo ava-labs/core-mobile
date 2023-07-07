@@ -30,7 +30,7 @@ import { WatchlistBlacklistTransform } from './transforms/WatchlistBlacklistTran
 import { WalletConnectBlacklistTransform } from './transforms/WalletConnectBlacklistTransform'
 import { AppBlacklistTransform } from './transforms/AppBlacklistTransform'
 
-const VERSION = 5
+const VERSION = 6
 
 // list of reducers that don't need to be persisted
 // for nested/partial blacklist, please use transform
