@@ -3,8 +3,8 @@ import { bnToBig, bnToLocaleString } from '@avalabs/utils-sdk'
 import BN from 'bn.js'
 import { getUnixTime } from 'date-fns'
 import { NodeValidators } from 'screens/earn/SelectNode'
+import { calculateMaxWeight } from 'services/earn/utils'
 import { getStakingConfig } from './getStakingConfig'
-import { calculateMaxWeight } from './Utils'
 
 const N_AVAX_PER_AVAX = 1_000_000_000
 

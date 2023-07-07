@@ -2,13 +2,7 @@ import React, { useState, useMemo } from 'react'
 import { StyleSheet, View } from 'react-native'
 import AvaText from 'components/AvaText'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-
-import {
-  calculateMaxWeight,
-  formatLargeNumber,
-  generateGradient,
-  truncateNodeId
-} from 'utils/Utils'
+import { formatLargeNumber, truncateNodeId } from 'utils/Utils'
 import { Row } from 'components/Row'
 import CollapsibleSection from 'components/CollapsibleSection'
 import CarrotSVG from 'components/svg/CarrotSVG'
@@ -22,6 +16,7 @@ import Big from 'big.js'
 import LinearGradientSVG from 'components/svg/LinearGradientSVG'
 import { format } from 'date-fns'
 import BN from 'bn.js'
+import { calculateMaxWeight, generateGradient } from 'services/earn/utils'
 import { NodeValidator } from '../SelectNode'
 
 type NavigationProp = EarnScreenProps<
