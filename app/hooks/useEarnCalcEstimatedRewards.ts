@@ -20,7 +20,7 @@ export type useEarnCalcEstimatedRewardsProps = {
 /**
  *
  * @param amount nAVAX with denomination 18
- * @param duration
+ * @param duration between current datetime to validator end time
  * @param delegationFee
  * @returns
  */

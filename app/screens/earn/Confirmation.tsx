@@ -38,15 +38,15 @@ export const Confirmation = () => {
     appHook: { tokenInCurrencyFormatter }
   } = useApplicationContext()
   const {
-    networkToken: { symbol }
+    networkToken: { symbol, decimals }
   } = useSelector(selectActiveNetwork)
   const avaxPrice = useSelector(selectAvaxPrice)
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { navigate } = useNavigation<NavigationProp['navigation']>()
-  const endTime = fromUnixTime(Number(validator.endTime))
+  const validatorEndTime = fromUnixTime(Number(validator.endTime))
   const { data } = useEarnCalcEstimatedRewards({
-    amount: bnToBig(stakingAmount),
-    duration: endTime.getTime() - new Date().getTime(),
+    amount: bnToBig(stakingAmount, decimals),
+    duration: validatorEndTime.getTime() - new Date().getTime(),
     delegationFee: Number(validator.delegationFee)
   })
 

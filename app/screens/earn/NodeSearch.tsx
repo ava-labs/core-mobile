@@ -11,7 +11,13 @@ import AppNavigation from 'navigation/AppNavigation'
 import { EarnScreenProps } from 'navigation/types'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import { useNodes } from 'hooks/query/useNodes'
-import { getSimpleSortedValidators } from 'utils/getSortedValidators'
+import {
+  getRandomValidator,
+  getSimpleSortedValidators
+} from 'utils/getSortedValidators'
+import { getFilteredValidators } from 'utils/getFilteredValidators'
+import { useSelector } from 'react-redux'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { NodeValidator } from './SelectNode'
 
 const Searching = () => {
@@ -96,19 +102,26 @@ const MatchFound = ({ validator }: { validator: NodeValidator }) => {
 }
 
 export const NodeSearch = () => {
-  const { stakingDuration, stakingAmount } =
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
+
+  const { stakingEndTime, stakingAmount } =
     useRoute<NavigationProp['route']>().params
-  const { isFetching, data } = useNodes({
-    stakingAmount,
-    stakingDuration,
-    minUpTime: 98
-  })
+  const { isFetching, data } = useNodes()
 
   if (isFetching) return <Searching />
 
-  if (data && data.length > 0) {
-    const validator = getSimpleSortedValidators(data)
-    return <MatchFound validator={validator} />
+  if (data?.validators && data.validators.length > 0) {
+    const validators = getSimpleSortedValidators(data.validators)
+    const filteredValidators = getFilteredValidators({
+      isDeveloperMode,
+      validators,
+      stakingAmount,
+      stakingEndTime,
+      minUpTime: 98
+    })
+    const sortedValidators = getSimpleSortedValidators(filteredValidators)
+    const matchedValidator = getRandomValidator(sortedValidators)
+    return <MatchFound validator={matchedValidator} />
   }
   return <Text>waiting for design</Text> // error state when nothing matches filter
 }
