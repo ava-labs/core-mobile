@@ -1,4 +1,5 @@
 import { ChainId } from '@avalabs/chains-sdk'
+import { initialState as securityPrivacyInitialState } from 'store/settings/securityPrivacy'
 import { initialState as watchlistInitialState } from './watchlist'
 import { initialState as posthogInitialState } from './posthog'
 
@@ -67,6 +68,14 @@ export const migrations = {
         ...state.network,
         favorites: updatedFavorites,
         active: updatedActive
+      }
+    }
+  },
+  6: (state: any) => {
+    return {
+      ...state,
+      settings: {
+        securityPrivacy: securityPrivacyInitialState
       }
     }
   }

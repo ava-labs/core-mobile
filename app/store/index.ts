@@ -77,7 +77,13 @@ const rootReducer = (state: any, action: AnyAction) => {
     // notes: keeping settings and network because watchlist depends on them
     state = {
       app: state.app,
-      settings: state.settings,
+      settings: {
+        ...state.settings,
+        securityPrivacy: {
+          ...state.settings.securityPrivacy,
+          consentToTOUnPP: false //don't keep consent to Terms of use and Privacy policy
+        }
+      },
       network: state.network,
       watchlist: state.watchlist
     }

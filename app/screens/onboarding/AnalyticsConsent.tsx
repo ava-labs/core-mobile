@@ -10,6 +10,8 @@ import CheckmarkSVG from 'components/svg/CheckmarkSVG'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { PRIVACY_POLICY_URL } from 'resources/Constants'
 import { usePostCapture } from 'hooks/usePosthogCapture'
+import { useDispatch } from 'react-redux'
+import { setCoreAnalytics } from 'store/settings/securityPrivacy'
 
 type Props = {
   nextScreen:
@@ -23,7 +25,8 @@ type Props = {
 }
 
 const AnalyticsConsent = ({ onNextScreen, nextScreen }: Props) => {
-  const { theme, repo } = useApplicationContext()
+  const dispatch = useDispatch()
+  const { theme } = useApplicationContext()
   const { capture } = usePostCapture()
 
   function openPrivacyPolicy() {
@@ -32,13 +35,13 @@ const AnalyticsConsent = ({ onNextScreen, nextScreen }: Props) => {
 
   function acceptAnalytics() {
     capture('OnboardingAnalyticsAccepted')
-    repo.userSettingsRepo.setSetting('CoreAnalytics', true)
+    dispatch(setCoreAnalytics(true))
     onNextScreen(nextScreen)
   }
 
   function rejectAnalytics() {
     capture('OnboardingAnalyticsRejected')
-    repo.userSettingsRepo.setSetting('CoreAnalytics', false)
+    dispatch(setCoreAnalytics(false))
     onNextScreen(nextScreen)
   }
 

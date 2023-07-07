@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import StorageTools from 'repository/StorageTools'
 
 /**
@@ -7,7 +7,6 @@ import StorageTools from 'repository/StorageTools'
  *
  * Suffix "_<increasing number>" is for destructive migration of database. In the future, we want gracefully migrate data with no data loss.
  */
-const USER_SETTINGS = 'USER_SETTINGS'
 const VIEW_ONCE_INFORMATION = 'VIEW_ONCE_INFORMATION'
 
 /**
@@ -40,7 +39,6 @@ export type RecentContact = {
   type: AddrBookItemType
 }
 
-export type Setting = 'CoreAnalytics' | 'ConsentToTOU&PP'
 export type SettingValue = number | string | boolean | undefined
 
 export type AddrBookItemType = 'account' | 'contact'
@@ -51,13 +49,6 @@ export type Repo = {
     infoHasBeenShown: (info: ViewOnceInformation) => boolean
     saveViewOnceInformation: (info: ViewOnceInformation[]) => void
   }
-  /**
-   * Store any simple user settings here
-   */
-  userSettingsRepo: {
-    setSetting: (setting: Setting, value: SettingValue) => void
-    getSetting: (setting: Setting) => SettingValue | undefined
-  }
   flush: () => void
   initialized: boolean
 }
@@ -65,9 +56,6 @@ export type Repo = {
 export function useRepo(): Repo {
   const [initialized, setInitialized] = useState(false)
   const [viewOnceInfo, setViewOnceInfo] = useState<ViewOnceInformation[]>([])
-  const [userSettings, setUserSettings] = useState<Map<Setting, SettingValue>>(
-    new Map()
-  )
 
   useEffect(() => {
     ;(async () => {
@@ -75,22 +63,6 @@ export function useRepo(): Repo {
       setInitialized(true)
     })()
   }, [])
-
-  const setSetting = (setting: Setting, value: SettingValue) => {
-    const updatedSettings = new Map(userSettings)
-    updatedSettings.set(setting, value)
-    setUserSettings(updatedSettings)
-    StorageTools.saveMapToStorage(USER_SETTINGS, updatedSettings).catch(
-      reason => console.error(reason)
-    )
-  }
-
-  const getSetting = useCallback(
-    (setting: Setting) => {
-      return userSettings.get(setting)
-    },
-    [userSettings]
-  )
 
   const saveViewOnceInformation = (info: ViewOnceInformation[]) => {
     // we use set so we don't allow duplicates
@@ -109,17 +81,10 @@ export function useRepo(): Repo {
    * Clear hook states
    */
   const flush = () => {
-    setUserSettings(new Map())
     setInitialized(false)
   }
 
   async function loadInitialStatesFromStorage() {
-    setUserSettings(
-      await StorageTools.loadFromStorageAsMap<Setting, SettingValue>(
-        USER_SETTINGS
-      )
-    )
-
     const initialViewOnceInfoFromStorage =
       await StorageTools.loadFromStorageAsArray<ViewOnceInformation>(
         VIEW_ONCE_INFORMATION
@@ -129,10 +94,6 @@ export function useRepo(): Repo {
   }
 
   return {
-    userSettingsRepo: {
-      setSetting,
-      getSetting
-    },
     informationViewOnceRepo: {
       viewOnceInfo: viewOnceInfo,
       saveViewOnceInformation,
