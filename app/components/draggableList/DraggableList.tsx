@@ -1,4 +1,4 @@
-import React, { useMemo, useRef } from 'react'
+import React, { useLayoutEffect, useMemo, useRef } from 'react'
 import DraggableItemWrapper from 'components/draggableList/DraggableItemWrapper'
 import {
   DragEndParams,
@@ -42,6 +42,15 @@ const DraggableList = <TItem,>({
   useMemo(() => {
     dataRef.current = [...data]
   }, [data])
+
+  useLayoutEffect(() => {
+    setTimeout(() => {
+      // @ts-ignore
+      viewRef.current?.measure?.((x, y, width, height, pageX, pageY) => {
+        scrollViewOffset.value = pageY
+      })
+    }, 300)
+  })
 
   positions.value = useMemo(() => {
     return data.reduce<Record<ItemId, ItemPosition>>((acc, item, index) => {
@@ -91,21 +100,10 @@ const DraggableList = <TItem,>({
         ListEmptyComponent
       ) : (
         <Animated.ScrollView
+          key={data.length}
           ref={viewRef}
           onScroll={handleScroll}
-          onLayout={() => {
-            if (viewRef.current) {
-              // @ts-ignore
-              viewRef.current.measure((x, y, width, height, pageX, pageY) => {
-                scrollViewOffset.value = pageY
-              })
-            }
-          }}
           scrollEventThrottle={16}
-          style={{
-            flex: 1,
-            position: 'relative'
-          }}
           contentContainerStyle={{
             height: dataRef.current.length * ITEM_HEIGHT
           }}>
