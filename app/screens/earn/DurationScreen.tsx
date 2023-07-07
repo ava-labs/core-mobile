@@ -149,6 +149,7 @@ const StakingDuration = () => {
               onDateSelected={handleDateConfirm}
               placeHolder="Select a date"
               minimumDate={minimumStakeEndDate}
+              maximumDate={addYears(new Date(), 1)}
             />
             <AvaText.Caption textStyle={{ color: theme.neutral300 }}>
               Actual end date will vary depending on options available
