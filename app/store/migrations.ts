@@ -1,5 +1,5 @@
 import { ChainId } from '@avalabs/chains-sdk'
-import { initialState as securityPrivacyInitialState } from 'store/settings/securityPrivacy'
+import StorageTools from 'repository/StorageTools'
 import { initialState as watchlistInitialState } from './watchlist'
 import { initialState as posthogInitialState } from './posthog'
 
@@ -71,11 +71,19 @@ export const migrations = {
       }
     }
   },
-  6: (state: any) => {
+  6: async (state: any) => {
+    const map = await StorageTools.loadFromStorageAsMap<
+      'CoreAnalytics' | 'ConsentToTOU&PP',
+      number | string | boolean | undefined
+    >('USER_SETTINGS')
     return {
       ...state,
       settings: {
-        securityPrivacy: securityPrivacyInitialState
+        ...state.settings,
+        securityPrivacy: {
+          coreAnalytics: map.get('CoreAnalytics'),
+          consentToTOUnPP: map.get('ConsentToTOU&PP') ?? false
+        }
       }
     }
   }
