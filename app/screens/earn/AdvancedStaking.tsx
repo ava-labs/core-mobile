@@ -17,7 +17,7 @@ type NavigationProp = EarnScreenProps<typeof AppNavigation.Earn.AdvancedStaking>
 const AdvancedStaking = () => {
   const { theme } = useApplicationContext()
   const { navigate } = useNavigation<NavigationProp['navigation']>()
-  const { stakingAmount, stakingDuration } =
+  const { stakingAmount, stakingEndTime } =
     useRoute<NavigationProp['route']>().params
   const [minUptime, setMinUptime] = useState<string | undefined>(undefined)
   const [maxFee, setMaxFee] = useState<string | undefined>(undefined)
@@ -120,7 +120,7 @@ const AdvancedStaking = () => {
               minUptime,
               maxFee,
               stakingAmount,
-              stakingDuration
+              stakingEndTime
             })
           }>
           Next
