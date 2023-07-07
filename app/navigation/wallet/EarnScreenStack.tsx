@@ -79,7 +79,7 @@ function EarnScreenStack() {
         name={AppNavigation.Earn.NodeSearch}
         component={NodeSearch}
         options={{
-          headerShown: false
+          headerLeft: NodeSearchBackButton
         }}
       />
       <EarnStack.Screen
@@ -171,6 +171,15 @@ const ConfirmationBackButton = () => {
   }
 
   return <HeaderBackButton onPress={handleGoBack} />
+}
+
+type NodeSearchNavigationProp = EarnScreenProps<
+  typeof AppNavigation.Earn.NodeSearch
+>['navigation']
+
+const NodeSearchBackButton = () => {
+  const { goBack } = useNavigation<NodeSearchNavigationProp>()
+  return <HeaderBackButton onPress={() => goBack()} />
 }
 
 export default React.memo(EarnScreenStack)

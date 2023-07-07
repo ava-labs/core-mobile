@@ -68,14 +68,13 @@ const MatchFound = ({ validator }: { validator: NodeValidator }) => {
   const { stakingAmount } = useRoute<NavigationProp['route']>().params
 
   useEffect(() => {
-    setTimeout(
-      () =>
-        navigate(AppNavigation.Earn.Confirmation, {
-          validator,
-          stakingAmount
-        }),
-      2200
-    )
+    const timer = setTimeout(() => {
+      navigate(AppNavigation.Earn.Confirmation, {
+        validator,
+        stakingAmount
+      })
+    }, 2200)
+    return () => clearTimeout(timer)
   })
 
   return (
