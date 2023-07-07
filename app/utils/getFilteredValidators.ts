@@ -32,7 +32,7 @@ type getFilteredValidatorsProps = {
   stakingAmount: BN
   isDeveloperMode: boolean
   stakingEndTime: Date
-  minUpTime: number
+  minUpTime?: number
 }
 /**
  *

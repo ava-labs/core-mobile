@@ -26,18 +26,14 @@ const SelectNode = () => {
   const [filter, setFilter] = useState(dropdownItems[0])
   const { stakingAmount } = useRoute<NavigationProp['route']>().params
 
-  const { isFetching, data } = useNodes({
-    stakingAmount,
-    stakingDuration,
-    minUpTime: Number(minUptime)
-  })
+  const { isFetching, data } = useNodes()
 
   const handleSearch = (text: string) => {
     setSearchText(text)
   }
 
   const filteredNodes = useMemo<NodeValidator[] | undefined>(() => {
-    return data?.filter(
+    return data?.validators.filter(
       node => node.nodeID.toLowerCase().search(searchText.toLowerCase()) !== -1
     )
   }, [data, searchText])
