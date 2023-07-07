@@ -208,7 +208,6 @@ function DropDown<ItemT>({
         style
       ]}
       wrapperStyle={{
-        width: width,
         overflow: 'visible'
       }}
       caret={false}
