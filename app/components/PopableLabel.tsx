@@ -7,16 +7,18 @@ import { StyleProp, TextStyle } from 'react-native'
 
 export const PopableLabel = ({
   label,
-  textStyle
+  textStyle,
+  iconColor
 }: {
   label: string
   textStyle?: StyleProp<TextStyle>
+  iconColor?: string
 }) => {
   return (
     <Row style={{ alignItems: 'center' }}>
       <AvaText.Body2 textStyle={textStyle}>{label}</AvaText.Body2>
       <Space x={4} />
-      <InfoSVG />
+      <InfoSVG color={iconColor} />
     </Row>
   )
 }

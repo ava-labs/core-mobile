@@ -11,7 +11,11 @@ import {
   getXpubFromMnemonic
 } from '@avalabs/wallets-sdk'
 import { now } from 'moment'
-import { PubKeyType, SignTransactionRequest } from 'services/wallet/types'
+import {
+  AddDelegatorProps,
+  PubKeyType,
+  SignTransactionRequest
+} from 'services/wallet/types'
 import { Wallet } from 'ethers'
 import networkService from 'services/network/NetworkService'
 import { Network, NetworkVMType } from '@avalabs/chains-sdk'
@@ -27,6 +31,7 @@ import { Account } from 'store/account'
 import { RpcMethod } from 'store/walletConnectV2/types'
 import Logger from 'utils/Logger'
 import { UnsignedTx } from '@avalabs/avalanchejs-v2'
+import { add, getUnixTime } from 'date-fns'
 
 class WalletService {
   private mnemonic?: string
@@ -197,7 +202,7 @@ class WalletService {
   }
 
   /**
-   * @param amount
+   * @param amount in nAvax
    * @param baseFee in WEI
    * @param accountIndex
    * @param avaxXPNetwork
@@ -246,6 +251,113 @@ class WalletService {
 
     const utxoSet = await wallet.getAtomicUTXOs('P', sourceChain)
     return wallet.importP(utxoSet, sourceChain, destinationAddress)
+  }
+
+  /**
+   * @param amount in nAvax
+   * @param accountIndex
+   * @param avaxXPNetwork
+   * @param destinationChain
+   * @param destinationAddress
+   */
+  async createExportPTx(
+    amount: bigint,
+    accountIndex: number,
+    avaxXPNetwork: Network,
+    destinationChain: 'C' | 'X',
+    destinationAddress: string | undefined
+  ): Promise<UnsignedTx> {
+    const wallet = (await this.getWallet(
+      accountIndex,
+      avaxXPNetwork
+    )) as Avalanche.StaticSigner
+
+    const utxoSet = await wallet.getUTXOs('P')
+    return wallet.exportP(amount, utxoSet, destinationChain, destinationAddress)
+  }
+
+  /**
+   * @param accountIndex
+   * @param baseFee in nAvax
+   * @param avaxXPNetwork
+   * @param sourceChain
+   * @param destinationAddress
+   */
+  async createImportCTx(
+    accountIndex: number,
+    baseFee: bigint,
+    avaxXPNetwork: Network,
+    sourceChain: 'P' | 'X',
+    destinationAddress: string | undefined
+  ): Promise<UnsignedTx> {
+    const wallet = (await this.getWallet(
+      accountIndex,
+      avaxXPNetwork
+    )) as Avalanche.StaticSigner
+
+    const utxoSet = await wallet.getAtomicUTXOs('C', sourceChain)
+
+    return wallet.importC(
+      utxoSet,
+      sourceChain,
+      baseFee,
+      undefined,
+      destinationAddress
+    )
+  }
+
+  async createAddDelegatorTx({
+    accountIndex,
+    avaxXPNetwork,
+    nodeId,
+    stakeAmount,
+    startDate,
+    endDate,
+    rewardAddress,
+    isDevMode
+  }: AddDelegatorProps): Promise<UnsignedTx> {
+    if (!nodeId.startsWith('NodeID-')) {
+      throw Error('Invalid node id: ' + nodeId)
+    }
+    const oneAvax = BigInt(1e9)
+    const minStakingAmount = isDevMode ? oneAvax : BigInt(25) * oneAvax
+    if (stakeAmount < minStakingAmount) {
+      throw Error('Staking amount less than minimum')
+    }
+    const unixNow = getUnixTime(new Date())
+    if (unixNow > startDate) {
+      throw Error('Start date must be in future: ' + startDate)
+    }
+    const minimalStakeEndDate = isDevMode
+      ? add(new Date(), { hours: 24 })
+      : add(new Date(), { weeks: 2 })
+    if (endDate < getUnixTime(minimalStakeEndDate)) {
+      throw Error('Staking duration too short')
+    }
+    if (
+      !rewardAddress.startsWith('P-') ||
+      !Avalanche.isBech32Address(rewardAddress, true)
+    ) {
+      throw Error('Reward address must be from P chain')
+    }
+
+    const wallet = (await this.getWallet(
+      accountIndex,
+      avaxXPNetwork
+    )) as Avalanche.StaticSigner
+
+    const utxoSet = await wallet.getUTXOs('P')
+    const config = {
+      rewardAddress
+    }
+    return wallet.addDelegator(
+      utxoSet,
+      nodeId,
+      stakeAmount,
+      BigInt(startDate),
+      BigInt(endDate),
+      config
+    )
   }
 
   destroy() {

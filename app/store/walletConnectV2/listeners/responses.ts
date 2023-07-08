@@ -28,7 +28,10 @@ export const sendRpcResult = async (
       const session = await WalletConnectService.approveSession(approveData)
 
       const { name, url } = session.peer.metadata
+
+      const namespaces = JSON.stringify(session.namespaces)
       const requiredNamespaces = JSON.stringify(session.requiredNamespaces)
+
       const message = `Connected to ${name}`
 
       showSimpleToast(message)
@@ -37,6 +40,7 @@ export const sendRpcResult = async (
         capture({
           event: 'WalletConnectSessionApprovedV2',
           properties: {
+            namespaces,
             requiredNamespaces,
             dappUrl: url
           }

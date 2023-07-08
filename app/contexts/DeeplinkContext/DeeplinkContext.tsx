@@ -15,6 +15,7 @@ import {
   WalletConnectVersions
 } from 'store/walletConnectV2'
 import { selectActiveNetwork } from 'store/network'
+import Logger from 'utils/Logger'
 import { parseWalletConnetLink } from './utils'
 import { DeepLink, DeeplinkContextType, DeepLinkOrigin } from './types'
 
@@ -84,6 +85,8 @@ export const DeeplinkContextProvider = ({
 
         // once we used the url, we can expire it
         expireDeepLink()
+      } else {
+        Logger.info(`${pendingDeepLink.url} is not a wallet connect link`)
       }
     }
   }, [isWalletActive, pendingDeepLink, activeNetwork, expireDeepLink, dispatch])

@@ -340,8 +340,7 @@ const Bridge: FC = () => {
           paddingVertical: 8,
           paddingLeft: 16,
           alignItems: 'center',
-          justifyContent: 'flex-end',
-          flex: 1
+          justifyContent: 'flex-end'
         }}>
         {renderBlockchain(blockchain, 'large')}
       </Row>
@@ -392,21 +391,23 @@ const Bridge: FC = () => {
           title={'From'}
           rightComponentMaxWidth="auto"
           rightComponent={
-            <DropDown
-              width={dropdownWith}
-              data={availableBlockchains}
-              selectedIndex={availableBlockchains.indexOf(currentBlockchain)}
-              onItemSelected={setCurrentBlockchain}
-              optionsRenderItem={item =>
-                renderDropdownItem(item.item, currentBlockchain)
-              }
-              selectionRenderItem={() =>
-                renderFromBlockchain(currentBlockchain)
-              }
-              style={{
-                top: 22
-              }}
-            />
+            <View>
+              <DropDown
+                width={dropdownWith}
+                data={availableBlockchains}
+                selectedIndex={availableBlockchains.indexOf(currentBlockchain)}
+                onItemSelected={setCurrentBlockchain}
+                optionsRenderItem={item =>
+                  renderDropdownItem(item.item, currentBlockchain)
+                }
+                selectionRenderItem={() =>
+                  renderFromBlockchain(currentBlockchain)
+                }
+                style={{
+                  top: 22
+                }}
+              />
+            </View>
           }
         />
       </>

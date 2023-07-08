@@ -8,6 +8,8 @@ import { EarnScreenProps } from 'navigation/types'
 import { useNavigation } from '@react-navigation/native'
 import StakingDuration from 'screens/earn/DurationScreen'
 import { NodeSearch } from 'screens/earn/NodeSearch'
+import AdvancedStaking from 'screens/earn/AdvancedStaking'
+import SelectNode from 'screens/earn/SelectNode'
 import { Confirmation } from 'screens/earn/Confirmation'
 import { CancelModal } from 'screens/earn/CancelModal'
 import NotEnoughAvax from 'screens/earn/NotEnoughAvax'
@@ -18,8 +20,10 @@ export type EarnStackParamList = {
   [AppNavigation.Earn.GetStarted]: undefined
   [AppNavigation.Earn.StakingAmount]: undefined
   [AppNavigation.Earn.StakingDuration]: undefined
+  [AppNavigation.Earn.AdvancedStaking]: undefined
+  [AppNavigation.Earn.SelectNode]: { minUptime: string; maxFee: string }
   [AppNavigation.Earn.NodeSearch]: undefined
-  [AppNavigation.Earn.Confirmation]: undefined
+  [AppNavigation.Earn.Confirmation]: { nodeId: string }
   [AppNavigation.Earn.Cancel]: undefined
 }
 
@@ -42,6 +46,14 @@ function EarnScreenStack() {
       <EarnStack.Screen
         name={AppNavigation.Earn.GetStarted}
         component={EarnGetStartedScreen}
+      />
+      <EarnStack.Screen
+        name={AppNavigation.Earn.AdvancedStaking}
+        component={AdvancedStaking}
+      />
+      <EarnStack.Screen
+        name={AppNavigation.Earn.SelectNode}
+        component={SelectNode}
       />
       <EarnStack.Screen
         name={AppNavigation.Earn.StakingAmount}
@@ -124,13 +136,9 @@ type ConfirmationNavigationProp = EarnScreenProps<
 >['navigation']
 
 const ConfirmationBackButton = () => {
-  const { navigate } = useNavigation<ConfirmationNavigationProp>()
+  const { goBack } = useNavigation<ConfirmationNavigationProp>()
 
-  return (
-    <HeaderBackButton
-      onPress={() => navigate(AppNavigation.Earn.StakingAmount)}
-    />
-  )
+  return <HeaderBackButton onPress={() => goBack()} />
 }
 
 export default React.memo(EarnScreenStack)
