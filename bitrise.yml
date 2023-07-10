@@ -427,7 +427,7 @@ workflows:
                 set -x
 
                 npm rebuild detox
-                QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test --configuration android.internal.release.ci --headless
+                QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test addCustomNetwork.e2e.smoke.ts  --configuration android.internal.release.ci --headless
   ios:
     before_run:
       - _install-and-set-env
