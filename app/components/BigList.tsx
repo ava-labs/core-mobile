@@ -6,15 +6,10 @@ import {
   StyleProp,
   ViewStyle
 } from 'react-native'
-import {
-  DragEndParams,
-  DraggableRenderItem
-} from 'components/draggableList/types'
 
 interface BigListProps<TItem> {
   data: TItem[]
   renderItem: (item: ListRenderItemInfo<TItem>) => React.ReactElement
-  draggableListItem?: DraggableRenderItem<TItem>
   ListEmptyComponent?: React.ComponentType<unknown> | React.ReactElement
   refreshing?: boolean
   onRefresh?: () => void
@@ -24,8 +19,6 @@ interface BigListProps<TItem> {
   onEndReachedThreshold?: number
   refreshControl?: React.ReactElement<RefreshControlProps>
   estimatedItemSize?: number
-  isDraggable?: boolean
-  onDragEnd?: (params: DragEndParams<TItem>) => void
 }
 
 /**

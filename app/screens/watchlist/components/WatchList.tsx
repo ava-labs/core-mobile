@@ -1,5 +1,5 @@
 import React from 'react'
-import { StyleSheet, View } from 'react-native'
+import { Platform, StyleSheet, View } from 'react-native'
 import WatchListItem from 'screens/watchlist/components/WatchListItem'
 import { useNavigation } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
@@ -21,6 +21,7 @@ import {
 import { DragEndParams } from 'components/draggableList/types'
 import DraggableList from 'components/draggableList/DraggableList'
 import BigList from 'components/BigList'
+import FlashList from 'components/FlashList'
 import { WatchlistFilter } from '../types'
 
 const getDisplayValue = (
@@ -113,9 +114,22 @@ const WatchList: React.FC<Props> = ({
     )
   }
 
+  if (Platform.OS === 'ios') {
+    return (
+      <FlashList
+        data={tokens}
+        renderItem={item => renderItem(item.item, item.index)}
+        ListEmptyComponent={EmptyComponent}
+        refreshing={false}
+        onRefresh={() => dispatch(onWatchlistRefresh)}
+        keyExtractor={keyExtractor}
+        estimatedItemSize={64}
+      />
+    )
+  }
+
   return (
     <BigList
-      isDraggable={isShowingFavorites}
       data={tokens}
       renderItem={item => renderItem(item.item, item.index)}
       ListEmptyComponent={EmptyComponent}
