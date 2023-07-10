@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { Linking, StyleSheet, Text, View } from 'react-native'
+import { Linking, StyleSheet, View } from 'react-native'
 import AvaText from 'components/AvaText'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Space } from 'components/Space'
@@ -10,14 +10,8 @@ import Checkmark from 'components/animation/Checkmark'
 import AppNavigation from 'navigation/AppNavigation'
 import { EarnScreenProps } from 'navigation/types'
 import { useNavigation, useRoute } from '@react-navigation/native'
+import { useSearchNode } from 'hooks/earn/useSearchNode'
 import { useNodes } from 'hooks/earn/useNodes'
-import {
-  getRandomValidator,
-  getSimpleSortedValidators,
-  getFilteredValidators
-} from 'services/earn/utils'
-import { useSelector } from 'react-redux'
-import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { NodeValidator } from './SelectNode'
 
 const Searching = () => {
@@ -102,45 +96,19 @@ const MatchFound = ({ validator }: { validator: NodeValidator }) => {
 }
 
 export const NodeSearch = () => {
-  const isDeveloperMode = useSelector(selectIsDeveloperMode)
-
   const { stakingEndTime, stakingAmount } =
     useRoute<NavigationProp['route']>().params
-  const { isFetching, data, error } = useNodes()
+  const { isFetching, error, data } = useNodes()
+  const { validator, error: useSearchNodeError } = useSearchNode({
+    stakingAmount,
+    stakingEndTime,
+    validators: data?.validators
+  })
 
   if (isFetching) return <Searching />
-  if (error)
-    // we should probably render the message with a retry option later
-    return null
-
-  if (data?.validators && data.validators.length > 0) {
-    try {
-      const filteredValidators = getFilteredValidators({
-        isDeveloperMode,
-        validators: data?.validators,
-        stakingAmount,
-        stakingEndTime,
-        minUpTime: 98
-      })
-      if (filteredValidators.length === 0) {
-        throw new Error()
-      }
-      const sortedValidators = getSimpleSortedValidators(filteredValidators)
-      const matchedValidator = getRandomValidator(sortedValidators)
-      return <MatchFound validator={matchedValidator} />
-    } catch {
-      Logger.info(
-        `no node matches filter criteria: stakingAmount:  ${stakingAmount}, stakingEndTime: ${stakingEndTime}, minUpTime: 98%`
-      )
-      // empty state when nothing matches filter
-      return null
-    }
-  }
-  return (
-    <Text style={{ flex: 1, justifyContent: 'center', alignSelf: 'center' }}>
-      waiting for design
-    </Text>
-  ) // empty state when nothing matches filter
+  if (error) return null // todo: render error handling
+  if (useSearchNodeError || !validator) return // todo: render empty state
+  return <MatchFound validator={validator} />
 }
 
 const styles = StyleSheet.create({
