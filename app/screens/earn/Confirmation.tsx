@@ -24,7 +24,7 @@ import { useEarnCalcEstimatedRewards } from 'hooks/earn/useEarnCalcEstimatedRewa
 import { useSelector } from 'react-redux'
 import { selectAvaxPrice } from 'store/balance'
 import { selectSelectedCurrency } from 'store/settings/currency'
-import { getReadableDateDuration } from 'utils/getReadableDateDuration'
+import { getReadableDateDuration } from 'utils/date/getReadableDateDuration'
 import { BN } from 'bn.js'
 import { selectActiveNetwork } from 'store/network'
 import { useGetValidatorByNodeId } from 'hooks/earn/useGetValidatorByNodeId'
