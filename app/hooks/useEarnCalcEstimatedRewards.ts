@@ -34,12 +34,7 @@ export const useEarnCalcEstimatedRewards = ({
 
   return useQuery({
     queryKey: [
-      'nodes',
-      amount,
-      duration,
-      delegationFee,
-      isDeveloperMode,
-      avaxPrice
+      'currentSupply',
     ],
     queryFn: async () => {
       const { supply } = await EarnService.getCurrentSupply(isDeveloperMode)
