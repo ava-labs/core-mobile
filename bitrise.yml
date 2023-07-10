@@ -201,7 +201,7 @@ workflows:
                 Branch|${BITRISE_GIT_BRANCH}
                 Commit|${GIT_CLONE_COMMIT_HASH}
             - title_on_error: $GIT_CLONE_COMMIT_MESSAGE_SUBJECT
-            - message_on_error: 'Build Failed, please check the build log to see if test status.'
+            - message_on_error: 'Build Failed'
             - icon_url: ''
             - from_username: ''
             - timestamp: 'no'
@@ -221,7 +221,7 @@ workflows:
     - slack@3:
         inputs:
           - pretext: '*New $PLATFORM Test Results Available!*'
-          - message: '*New $PLATFORM Test Results Available!*'
+          - message: ''
           - fields: |-
               App|${APP_TITLE}
               Platform|${PLATFORM}
@@ -230,9 +230,9 @@ workflows:
               Environment|${ENVIRONMENT}
               Branch|${BITRISE_GIT_BRANCH}
               Commit|${GIT_CLONE_COMMIT_HASH}
-          - title_on_error: 'Tests failed on $GIT_CLONE_COMMIT_MESSAGE_SUBJECT'
+          - title_on_error: 'Tests failed on commit "$GIT_CLONE_COMMIT_MESSAGE_SUBJECT"'
           - thumb_url_on_error: 'https://tenor.com/view/tommy-boy-what-did-you-do-shocked-gif-14861529'
-          - emoji_on_error: ':doom:gib:'
+          - emoji_on_error: ':doom_gib:'
           - emoji: ':kirby_dance:'
           - thumb_url: 'https://tenor.com/view/chris-farley-tommy-boy-its-go-time-lets-do-it-gif-15258843'
           - from_username: ''
