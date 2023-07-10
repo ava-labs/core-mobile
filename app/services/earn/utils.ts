@@ -9,12 +9,24 @@ import { FujiParams, MainnetParams } from 'utils/NetworkParams'
 export const MAX_VALIDATOR_WEIGHT_FACTOR = 5
 const N_AVAX_PER_AVAX = 1_000_000_000
 
+/**
+ * See https://docs.avax.network/subnets/reference-elastic-subnets-parameters#primary-network-parameters-on-mainnet
+ * for more info on this harcoded parameter.
+ */
 export const getStakingConfig = (isDeveloperMode: boolean) => {
   return isDeveloperMode
     ? FujiParams.stakingConfig
     : MainnetParams.stakingConfig
 }
 
+/**
+ * See https://docs.avax.network/subnets/reference-elastic-subnets-parameters#delegators-weight-checks
+ * for more information on how max validator weight is calculated.
+ * @param maxValidatorStake - Max validator stake for subnet as defined in `stakingConfig`
+ * @param stakeAmount - Stake amount in nAvax
+ * @returns maxWeight - The maximum validator weight in nAvax
+ * @returns maxDelegation - The maximum delegation in nAvax (`maxWeight` - `stakeAmount`)
+ */
 export const calculateMaxWeight = (
   maxValidatorStake: Big,
   stakeAmount: Big
@@ -47,6 +59,13 @@ export const generateGradient = () => {
   return { colorFrom, colorTo }
 }
 
+/**
+ *
+ * @param validatorEndTime
+ * @param delegationEndTime
+ * @returns boolean indicating if the selected delegation end time
+ * is before the validator end time
+ */
 const hasMinimumStakingTime = (
   validatorEndTime: number,
   delegationEndTime: number
@@ -80,7 +99,11 @@ type getFilteredValidatorsProps = {
  * @param isDeveloperMode
  * @param stakingEndTime
  * @param minUpTime
- * @returns
+ * @returns filtered list of validators that match the following filter criteria
+ * - stakingAmount
+ * - stakingEndTime
+ * - minUpTime: minimum validator up time
+ * - weight: has avaialble delegation weight for the validator
  */
 export const getFilteredValidators = ({
   validators,
@@ -89,7 +112,7 @@ export const getFilteredValidators = ({
   stakingEndTime,
   minUpTime = 0
 }: getFilteredValidatorsProps) => {
-  const stackingEndTimeUnix = getUnixTime(stakingEndTime) // timestamp in seconds
+  const stakingEndTimeUnix = getUnixTime(stakingEndTime) // timestamp in seconds
   const stakingAmountNumber = Number(
     bnToLocaleString(stakingAmount.div(new BN(1e9)))
   )
@@ -101,7 +124,7 @@ export const getFilteredValidators = ({
     )
     return (
       availableDelegationWeight > stakingAmountNumber &&
-      hasMinimumStakingTime(Number(endTime), stackingEndTimeUnix) &&
+      hasMinimumStakingTime(Number(endTime), stakingEndTimeUnix) &&
       Number(uptime) >= minUpTime
     )
   })

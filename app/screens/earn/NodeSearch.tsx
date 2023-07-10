@@ -110,11 +110,8 @@ export const NodeSearch = () => {
 
   if (isFetching) return <Searching />
   if (error)
-    return (
-      <Text style={{ flex: 1, justifyContent: 'center', alignSelf: 'center' }}>
-        we should render the message with a retry option
-      </Text>
-    )
+    // we should probably render the message with a retry option later
+    return null
 
   if (data?.validators && data.validators.length > 0) {
     try {
