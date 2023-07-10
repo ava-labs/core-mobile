@@ -21,7 +21,7 @@ import { UI, useIsUIDisabled } from 'hooks/useIsUIDisabled'
 import { RefreshControl } from 'components/RefreshControl'
 import { usePostCapture } from 'hooks/usePosthogCapture'
 import FlashList from 'components/FlashList'
-import { getDayString } from 'utils/getDayString'
+import { getDayString } from 'utils/date/getDayString'
 
 const SCREEN_WIDTH = Dimensions.get('window').width
 const BOTTOM_PADDING = SCREEN_WIDTH * 0.3
