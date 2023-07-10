@@ -52,6 +52,7 @@ export const CalendarInput: React.FC<CalendarInputProps> = ({
       </Pressable>
       <View>
         <DateTimePickerModal
+          display="inline"
           isVisible={isDatePickerVisible}
           mode="date"
           onConfirm={handleDateConfirm}
