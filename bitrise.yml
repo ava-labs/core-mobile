@@ -231,7 +231,7 @@ workflows:
               Branch|${BITRISE_GIT_BRANCH}
               Commit|${GIT_CLONE_COMMIT_HASH}
           - title_on_error: 'Tests failed on commit "$GIT_CLONE_COMMIT_MESSAGE_SUBJECT"'
-          - thumb_url_on_error: '/e2e/assets/tommy-boy-what-did-you-do.gif'
+          - thumb_url_on_error: 'e2e/assets/tommy-boy-what-did-you-do.gif'
           - emoji_on_error: ":alert:"
           - emoji: ":kirby_dance:"
           - thumb_url: 'https://tenor.com/view/chris-farley-tommy-boy-its-go-time-lets-do-it-gif-15258843'
