@@ -10,7 +10,7 @@ import Checkmark from 'components/animation/Checkmark'
 import AppNavigation from 'navigation/AppNavigation'
 import { EarnScreenProps } from 'navigation/types'
 import { useNavigation, useRoute } from '@react-navigation/native'
-import { useNodes } from 'hooks/query/useNodes'
+import { useNodes } from 'hooks/earn/useNodes'
 import {
   getRandomValidator,
   getSimpleSortedValidators,

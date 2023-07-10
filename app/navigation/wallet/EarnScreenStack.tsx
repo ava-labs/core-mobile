@@ -13,7 +13,7 @@ import SelectNode from 'screens/earn/SelectNode'
 import { Confirmation } from 'screens/earn/Confirmation'
 import { CancelModal } from 'screens/earn/CancelModal'
 import NotEnoughAvax from 'screens/earn/NotEnoughAvax'
-import useStakingParams from 'hooks/useStakingParams'
+import useStakingParams from 'hooks/earn/useStakingParams'
 import BN from 'bn.js'
 
 export type EarnStackParamList = {

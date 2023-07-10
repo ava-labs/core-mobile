@@ -20,14 +20,14 @@ import CopySVG from 'components/svg/CopySVG'
 import { copyToClipboard } from 'utils/DeviceTools'
 import { format, fromUnixTime } from 'date-fns'
 import { bnToLocaleString, bnToBig } from '@avalabs/utils-sdk'
-import { useEarnCalcEstimatedRewards } from 'hooks/useEarnCalcEstimatedRewards'
+import { useEarnCalcEstimatedRewards } from 'hooks/earn/useEarnCalcEstimatedRewards'
 import { useSelector } from 'react-redux'
 import { selectAvaxPrice } from 'store/balance'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { getReadableDateDuration } from 'utils/getReadableDateDuration'
 import { BN } from 'bn.js'
 import { selectActiveNetwork } from 'store/network'
-import { useGetValidatorByNodeId } from 'hooks/useGetValidatorByNodeId'
+import { useGetValidatorByNodeId } from 'hooks/earn/useGetValidatorByNodeId'
 
 type NavigationProp = EarnScreenProps<typeof AppNavigation.Earn.Confirmation>
 

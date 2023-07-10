@@ -1,4 +1,4 @@
-import { useNodes } from './query/useNodes'
+import { useNodes } from './useNodes'
 
 export function useGetValidatorByNodeId(nodeId: string) {
   const { data } = useNodes()
