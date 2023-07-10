@@ -153,8 +153,14 @@ const ConfirmationBackButton = () => {
 
   const handleGoBack = () => {
     const navigationState = getState()
+
+    // the navigationState.index represents the current index of the route,
+    // if the index is 1 or greater, meaning there is previous route in the stack,
+    // we will get the previous route by index - 1
+    // otherwise we return undefined and it simply calls goBack which goes back
+    // to last screen in the previous stack
     const previousScreen =
-      navigationState.index >= 2
+      navigationState.index >= 1
         ? navigationState.routes[navigationState.index - 1]
         : undefined
 
