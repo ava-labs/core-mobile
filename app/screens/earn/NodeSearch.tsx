@@ -122,7 +122,9 @@ export const NodeSearch = () => {
         stakingEndTime,
         minUpTime: 98
       })
-
+      if (filteredValidators.length === 0) {
+        throw new Error()
+      }
       const sortedValidators = getSimpleSortedValidators(filteredValidators)
       const matchedValidator = getRandomValidator(sortedValidators)
       return <MatchFound validator={matchedValidator} />
@@ -131,12 +133,7 @@ export const NodeSearch = () => {
         `no node matches filter criteria: stakingAmount:  ${stakingAmount}, stakingEndTime: ${stakingEndTime}, minUpTime: 98%`
       )
       // empty state when nothing matches filter
-      return (
-        <Text
-          style={{ flex: 1, justifyContent: 'center', alignSelf: 'center' }}>
-          waiting for design
-        </Text>
-      )
+      return null
     }
   }
   return (

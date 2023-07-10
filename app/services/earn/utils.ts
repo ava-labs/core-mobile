@@ -1,7 +1,7 @@
 import { bnToBig, bnToLocaleString } from '@avalabs/utils-sdk'
 import Big from 'big.js'
 import BN from 'bn.js'
-import { getUnixTime } from 'date-fns'
+import { add, addYears, getUnixTime } from 'date-fns'
 import { NodeValidator, NodeValidators } from 'screens/earn/SelectNode'
 import { random } from 'lodash'
 import { FujiParams, MainnetParams } from 'utils/NetworkParams'
@@ -17,6 +17,16 @@ export const getStakingConfig = (isDeveloperMode: boolean) => {
   return isDeveloperMode
     ? FujiParams.stakingConfig
     : MainnetParams.stakingConfig
+}
+
+export const getMinimumStakeEndDate = (isDeveloperMode: boolean) => {
+  return isDeveloperMode
+    ? add(new Date(), { hours: 24 })
+    : add(new Date(), { weeks: 2 })
+}
+
+export const getMaximumStakeEndDate = () => {
+  return addYears(new Date(), 1)
 }
 
 /**
