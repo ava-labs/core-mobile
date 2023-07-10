@@ -34,7 +34,7 @@ export const useEarnCalcEstimatedRewards = ({
 
   return useQuery({
     // eslint-disable-next-line @tanstack/query/exhaustive-deps
-    queryKey: ['currentSupply'],
+    queryKey: ['currentSupply', isDeveloperMode],
     queryFn: async () => {
       const { supply } = await EarnService.getCurrentSupply(isDeveloperMode)
       const currentSupply = new Big(supply.toString())
