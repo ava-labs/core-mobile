@@ -78,7 +78,7 @@ export const Confirmation = () => {
 
   // TODO: on error, show error message as toast
   // on success, navigate to earn dashboard
-  return (
+  return validator ? (
     <ScrollView contentContainerStyle={{ minHeight: '100%' }}>
       <AvaText.LargeTitleBold
         textStyle={{ marginHorizontal: 16, marginBottom: 10 }}>
@@ -192,14 +192,14 @@ export const Confirmation = () => {
               <AvaButton.TextWithIcon
                 textStyle={{ alignItems: 'flex-end' }}
                 style={{ alignSelf: 'flex-end' }}
-                onPress={() => copyToClipboard(validator?.nodeID)}
+                onPress={() => copyToClipboard(validator.nodeID)}
                 icon={<CopySVG />}
                 iconPlacement="right"
                 text={
                   <AvaText.Body1
                     color={theme.colorText1}
                     textStyle={{ alignSelf: 'flex-end' }}>
-                    {truncateNodeId(validator?.nodeID ?? '', 4)}
+                    {truncateNodeId(validator.nodeID ?? '', 4)}
                   </AvaText.Body1>
                 }
               />
@@ -270,7 +270,7 @@ export const Confirmation = () => {
         </AvaButton.SecondaryLarge>
       </View>
     </ScrollView>
-  )
+  ) : null
 }
 
 const styles = StyleSheet.create({
