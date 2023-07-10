@@ -170,7 +170,8 @@
     "vm-browserify": "0.0.4",
     "web3": "1.7.1",
     "xss": "1.0.14",
-    "zod": "3.20.2"
+    "zod": "3.20.2",
+    "@shopify/flash-list": "1.4.3"
   },
   "resolutions": {
     "minimist": "1.2.6",
