@@ -1,0 +1,67 @@
+diff --git a/node_modules/redux-persist/lib/createMigrate.js b/node_modules/redux-persist/lib/createMigrate.js
+index ef32d94..1ad0efa 100644
+--- a/node_modules/redux-persist/lib/createMigrate.js
++++ b/node_modules/redux-persist/lib/createMigrate.js
+@@ -9,17 +9,17 @@ function createMigrate(migrations, config) {
+   var _ref = config || {},
+       debug = _ref.debug;
+ 
+-  return function (state, currentVersion) {
++  return async function (state, currentVersion) {
+     if (!state) {
+       if (process.env.NODE_ENV !== 'production' && debug) console.log('redux-persist: no inbound state, skipping migration');
+-      return Promise.resolve(undefined);
++      return undefined;
+     }
+ 
+     var inboundVersion = state._persist && state._persist.version !== undefined ? state._persist.version : _constants.DEFAULT_VERSION;
+ 
+     if (inboundVersion === currentVersion) {
+       if (process.env.NODE_ENV !== 'production' && debug) console.log('redux-persist: versions match, noop migration');
+-      return Promise.resolve(state);
++      return state;
+     }
+ 
+     if (inboundVersion > currentVersion) {
+@@ -36,14 +36,17 @@ function createMigrate(migrations, config) {
+     });
+     if (process.env.NODE_ENV !== 'production' && debug) console.log('redux-persist: migrationKeys', migrationKeys);
+ 
+-    try {
+-      var migratedState = migrationKeys.reduce(function (state, versionKey) {
+-        if (process.env.NODE_ENV !== 'production' && debug) console.log('redux-persist: running migration for versionKey', versionKey);
+-        return migrations[versionKey](state);
+-      }, state);
+-      return Promise.resolve(migratedState);
+-    } catch (err) {
+-      return Promise.reject(err);
++    let migratedState = state
++
++    for (const versionKey of migrationKeys) {
++      if (process.env.NODE_ENV !== 'production' && debug)
++        console.log(
++          'redux-persist: running migration for versionKey',
++          versionKey
++        )
++      migratedState = await migrations[versionKey](migratedState)
+     }
++
++    return migratedState
+   };
+ }
+\ No newline at end of file
+diff --git a/node_modules/redux-persist/types/types.d.ts b/node_modules/redux-persist/types/types.d.ts
+index b3733bc..766f219 100644
+--- a/node_modules/redux-persist/types/types.d.ts
++++ b/node_modules/redux-persist/types/types.d.ts
+@@ -73,7 +73,9 @@ declare module "redux-persist/es/types" {
+   }
+ 
+   interface MigrationManifest {
+-    [key: string]: (state: PersistedState) => PersistedState;
++    [key: string]:
++    | ((state: PersistedState) => PersistedState)
++    | ((state: PersistedState) => Promise<PersistedState>)
+   }
+ 
+   /**

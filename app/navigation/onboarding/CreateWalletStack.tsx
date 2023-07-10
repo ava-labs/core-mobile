@@ -24,6 +24,7 @@ import {
 } from 'hooks/useBeforeRemoveListener'
 import { usePostCapture } from 'hooks/usePosthogCapture'
 import OwlLoader from 'components/OwlLoader'
+import { setCoreAnalytics } from 'store/settings/securityPrivacy'
 import { CreateWalletScreenProps } from '../types'
 
 export type CreateWalletStackParamList = {
@@ -96,13 +97,13 @@ const CreateWalletScreen = () => {
   const createWalletContext = useContext(CreateWalletContext)
   const { navigate } = useNavigation<CreateWalletNavigationProp>()
   const { capture } = usePostCapture()
-  const { userSettingsRepo } = useApplicationContext().repo
+  const dispatch = useDispatch()
 
   useBeforeRemoveListener(
     useCallback(() => {
       capture('OnboardingCancelled')
-      userSettingsRepo.setSetting('CoreAnalytics', undefined)
-    }, [capture, userSettingsRepo]),
+      dispatch(setCoreAnalytics(undefined))
+    }, [capture, dispatch]),
     [RemoveEvents.GO_BACK]
   )
 

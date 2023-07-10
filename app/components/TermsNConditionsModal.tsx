@@ -13,6 +13,8 @@ import {
   useBeforeRemoveListener
 } from 'hooks/useBeforeRemoveListener'
 import { PRIVACY_POLICY_URL, TERMS_OF_USE_URL } from 'resources/Constants'
+import { useDispatch } from 'react-redux'
+import { setTouAndPpConsent } from 'store/settings/securityPrivacy'
 
 interface Props {
   onNext: () => void
@@ -20,10 +22,11 @@ interface Props {
 }
 
 const TermsNConditionsModal = ({ onNext, onReject }: Props) => {
-  const { theme, repo } = useApplicationContext()
+  const { theme } = useApplicationContext()
   const [touChecked, setTouChecked] = useState(false)
   const [ppChecked, setPpChecked] = useState(false)
   const nextBtnEnabled = touChecked && ppChecked
+  const dispatch = useDispatch()
 
   useBeforeRemoveListener(onReject, [RemoveEvents.GO_BACK], true)
 
@@ -32,7 +35,7 @@ const TermsNConditionsModal = ({ onNext, onReject }: Props) => {
   // he would be able to enter app without consent to Terms n Conditions.
   // To prevent this, we set 'ConsentToTOU&PP' to repo and check that on app startup.
   function saveConsentAndProceed() {
-    repo.userSettingsRepo.setSetting('ConsentToTOU&PP', true)
+    dispatch(setTouAndPpConsent(true))
     onNext()
   }
 

@@ -23,6 +23,7 @@ import {
 } from 'hooks/useBeforeRemoveListener'
 import { usePostCapture } from 'hooks/usePosthogCapture'
 import OwlLoader from 'components/OwlLoader'
+import { setCoreAnalytics } from 'store/settings/securityPrivacy'
 import { EnterWithMnemonicScreenProps } from '../types'
 
 export type EnterWithMnemonicStackParamList = {
@@ -86,14 +87,14 @@ const LoginWithMnemonicScreen = () => {
   const enterWithMnemonicContext = useContext(EnterWithMnemonicContext)
   const { navigate, goBack } = useNavigation<LoginNavigationProp>()
   const { capture } = usePostCapture()
-  const { userSettingsRepo } = useApplicationContext().repo
+  const dispatch = useDispatch()
   const { deleteWallet } = useApplicationContext().appHook
 
   useBeforeRemoveListener(
     useCallback(() => {
       capture('OnboardingCancelled')
-      userSettingsRepo.setSetting('CoreAnalytics', undefined)
-    }, [capture, userSettingsRepo]),
+      dispatch(setCoreAnalytics(undefined))
+    }, [capture, dispatch]),
     [RemoveEvents.GO_BACK]
   )
 
