@@ -35,9 +35,7 @@ export const useEarnCalcEstimatedRewards = ({
 
   return useQuery({
     queryKey: ['currentSupply', isDeveloperMode],
-    queryFn: async () => {
-      return await EarnService.getCurrentSupply(isDeveloperMode)
-    },
+    queryFn: async () => EarnService.getCurrentSupply(isDeveloperMode),
     select: ({ supply }: GetCurrentSupplyResponse) => {
       const currentSupply = new Big(supply.toString())
       const rewardStr = EarnService.calcReward(
