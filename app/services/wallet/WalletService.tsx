@@ -31,7 +31,8 @@ import { Account } from 'store/account'
 import { RpcMethod } from 'store/walletConnectV2/types'
 import Logger from 'utils/Logger'
 import { UnsignedTx } from '@avalabs/avalanchejs-v2'
-import { add, getUnixTime } from 'date-fns'
+import { getUnixTime } from 'date-fns'
+import { getMinimumStakeEndDate } from 'services/earn/utils'
 
 class WalletService {
   private mnemonic?: string
@@ -328,9 +329,8 @@ class WalletService {
     if (unixNow > startDate) {
       throw Error('Start date must be in future: ' + startDate)
     }
-    const minimalStakeEndDate = isDevMode
-      ? add(new Date(), { hours: 24 })
-      : add(new Date(), { weeks: 2 })
+    const minimalStakeEndDate = getMinimumStakeEndDate(isDevMode)
+
     if (endDate < getUnixTime(minimalStakeEndDate)) {
       throw Error('Staking duration too short')
     }
