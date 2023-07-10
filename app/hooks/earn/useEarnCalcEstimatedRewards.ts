@@ -5,6 +5,7 @@ import Big from 'big.js'
 import EarnService from 'services/earn/EarnService'
 import { selectAvaxPrice } from 'store/balance'
 import { useQuery } from '@tanstack/react-query'
+import { GetCurrentSupplyResponse } from '@avalabs/avalanchejs-v2/dist/src/vms/pvm'
 
 export type StakingRewards = {
   estimatedTokenReward: BN
@@ -33,12 +34,12 @@ export const useEarnCalcEstimatedRewards = ({
   const avaxPrice = useSelector(selectAvaxPrice)
 
   return useQuery({
-    // eslint-disable-next-line @tanstack/query/exhaustive-deps
     queryKey: ['currentSupply', isDeveloperMode],
     queryFn: async () => {
-      const { supply } = await EarnService.getCurrentSupply(isDeveloperMode)
+      return await EarnService.getCurrentSupply(isDeveloperMode)
+    },
+    select: ({ supply }: GetCurrentSupplyResponse) => {
       const currentSupply = new Big(supply.toString())
-
       const rewardStr = EarnService.calcReward(
         amount,
         duration,
@@ -46,7 +47,6 @@ export const useEarnCalcEstimatedRewards = ({
         delegationFee,
         isDeveloperMode
       )
-
       return {
         estimatedTokenReward: rewardStr,
         estimatedRewardAmount: Number(rewardStr) * avaxPrice
