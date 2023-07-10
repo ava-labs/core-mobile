@@ -14,6 +14,10 @@ import { selectSelectedCurrency } from 'store/settings/currency'
 import { onLogOut, setWalletState, WalletState } from 'store/app'
 import { resetLoginAttempt } from 'store/security'
 import { formatCurrency } from 'utils/FormatCurrency'
+import {
+  selectCoreAnalyticsConsent,
+  selectTouAndPpConsent
+} from 'store/settings/securityPrivacy'
 
 export type AppHook = {
   onExit: () => Observable<ExitEvents>
@@ -33,8 +37,9 @@ export function useApp(
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const [navigationContainerSet, setNavigationContainerSet] = useState(false)
   const [initRouteSet, setInitRouteSet] = useState(false)
-  const { getSetting } = repository.userSettingsRepo
   const { setAnalyticsConsent } = usePosthogContext()
+  const coreAnalyticsConsentSetting = useSelector(selectCoreAnalyticsConsent)
+  const touAndPpConsentSetting = useSelector(selectTouAndPpConsent)
 
   const deleteWallet = useCallback(() => {
     walletSetupHook.destroyWallet()
@@ -49,19 +54,22 @@ export function useApp(
   }, [appNavHook, deleteWallet])
 
   useEffect(waitForNavigationContainer, [appNavHook.navigation])
-  useEffect(watchCoreAnalyticsFlagFx, [getSetting, setAnalyticsConsent])
+  useEffect(watchCoreAnalyticsFlagFx, [
+    coreAnalyticsConsentSetting,
+    setAnalyticsConsent
+  ])
   useEffect(decideInitialRoute, [
     appNavHook,
     dispatch,
     initRouteSet,
     navigationContainerSet,
     repository,
-    signOut
+    signOut,
+    touAndPpConsentSetting
   ])
 
   function watchCoreAnalyticsFlagFx() {
-    const setting = getSetting('CoreAnalytics') as boolean | undefined
-    setAnalyticsConsent(setting)
+    setAnalyticsConsent(coreAnalyticsConsentSetting)
   }
 
   function waitForNavigationContainer() {
@@ -83,7 +91,7 @@ export function useApp(
     setInitRouteSet(true)
     AsyncStorage.getItem(SECURE_ACCESS_SET).then(result => {
       if (result) {
-        if (!repository.userSettingsRepo.getSetting('ConsentToTOU&PP')) {
+        if (!touAndPpConsentSetting) {
           //User has probably killed app before consent to TOU, so we'll clear all data and
           //return him to onboarding
           signOut()
