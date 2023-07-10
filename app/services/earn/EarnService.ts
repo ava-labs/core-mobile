@@ -20,6 +20,7 @@ import { Avalanche } from '@avalabs/wallets-sdk'
 import { exponentialBackoff } from 'utils/js/exponentialBackoff'
 import { AddDelegatorTransactionProps } from 'services/earn/types'
 import { getUnixTime } from 'date-fns'
+import { GetCurrentSupplyResponse } from '@avalabs/avalanchejs-v2/dist/src/vms/pvm'
 
 class EarnService {
   getCurrentValidators = (isTestnet: boolean) => {
@@ -174,6 +175,13 @@ class EarnService {
         `Transfer is taking unusually long (add Delegator). txId = ${txID}`
       )
     }
+  }
+
+  /**
+   * @param isDeveloperMode
+   */
+  getCurrentSupply(isTestnet: boolean): Promise<GetCurrentSupplyResponse> {
+    return getPvmApi(isTestnet).getCurrentSupply()
   }
 }
 

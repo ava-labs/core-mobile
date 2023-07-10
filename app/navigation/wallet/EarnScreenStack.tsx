@@ -13,17 +13,29 @@ import SelectNode from 'screens/earn/SelectNode'
 import { Confirmation } from 'screens/earn/Confirmation'
 import { CancelModal } from 'screens/earn/CancelModal'
 import NotEnoughAvax from 'screens/earn/NotEnoughAvax'
-import useStakingParams from 'hooks/useStakingParams'
+import useStakingParams from 'hooks/earn/useStakingParams'
+import BN from 'bn.js'
 
 export type EarnStackParamList = {
   [AppNavigation.Earn.NotEnoughAvax]: undefined
   [AppNavigation.Earn.GetStarted]: undefined
   [AppNavigation.Earn.StakingAmount]: undefined
-  [AppNavigation.Earn.StakingDuration]: undefined
-  [AppNavigation.Earn.AdvancedStaking]: undefined
-  [AppNavigation.Earn.SelectNode]: { minUptime: string; maxFee: string }
-  [AppNavigation.Earn.NodeSearch]: undefined
-  [AppNavigation.Earn.Confirmation]: { nodeId: string }
+  [AppNavigation.Earn.StakingDuration]: { stakingAmount: BN }
+  [AppNavigation.Earn.AdvancedStaking]: {
+    stakingEndTime: Date
+    stakingAmount: BN
+  }
+  [AppNavigation.Earn.SelectNode]: {
+    stakingEndTime: Date
+    stakingAmount: BN
+    minUptime?: string
+    maxFee?: string
+  }
+  [AppNavigation.Earn.NodeSearch]: { stakingEndTime: Date; stakingAmount: BN }
+  [AppNavigation.Earn.Confirmation]: {
+    nodeId: string
+    stakingAmount: BN
+  }
   [AppNavigation.Earn.Cancel]: undefined
 }
 
@@ -67,7 +79,7 @@ function EarnScreenStack() {
         name={AppNavigation.Earn.NodeSearch}
         component={NodeSearch}
         options={{
-          headerShown: false
+          headerLeft: NodeSearchBackButton
         }}
       />
       <EarnStack.Screen
@@ -136,8 +148,43 @@ type ConfirmationNavigationProp = EarnScreenProps<
 >['navigation']
 
 const ConfirmationBackButton = () => {
-  const { goBack } = useNavigation<ConfirmationNavigationProp>()
+  const { goBack, getState, navigate } =
+    useNavigation<ConfirmationNavigationProp>()
 
+  const handleGoBack = () => {
+    const navigationState = getState()
+
+    // the navigationState.index represents the current index of the route,
+    // if the index is 1 or greater, meaning there is previous route in the stack,
+    // we will get the previous route by index - 1
+    // otherwise we return undefined and it simply calls goBack which goes back
+    // to last screen in the previous stack
+    const previousScreen =
+      navigationState.index >= 1
+        ? navigationState.routes[navigationState.index - 1]
+        : undefined
+
+    if (previousScreen?.name === AppNavigation.Earn.NodeSearch) {
+      const stakingAmount = previousScreen.params?.stakingAmount
+      if (stakingAmount) {
+        return navigate(AppNavigation.Earn.StakingDuration, {
+          stakingAmount
+        })
+      }
+      return navigate(AppNavigation.Earn.StakingAmount)
+    }
+    goBack()
+  }
+
+  return <HeaderBackButton onPress={handleGoBack} />
+}
+
+type NodeSearchNavigationProp = EarnScreenProps<
+  typeof AppNavigation.Earn.NodeSearch
+>['navigation']
+
+const NodeSearchBackButton = () => {
+  const { goBack } = useNavigation<NodeSearchNavigationProp>()
   return <HeaderBackButton onPress={() => goBack()} />
 }
 
