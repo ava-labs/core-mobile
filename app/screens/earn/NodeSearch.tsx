@@ -107,7 +107,7 @@ export const NodeSearch = () => {
 
   if (isFetching) return <Searching />
   if (error) return null // todo: render error handling
-  if (useSearchNodeError || !validator) return // todo: render empty state
+  if (useSearchNodeError || !validator) return null // todo: render empty state
   return <MatchFound validator={validator} />
 }
 
