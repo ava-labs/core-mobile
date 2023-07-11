@@ -2,13 +2,7 @@ import React, { useState, useMemo } from 'react'
 import { StyleSheet, View } from 'react-native'
 import AvaText from 'components/AvaText'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-
-import {
-  calculateMaxWeight,
-  formatLargeNumber,
-  generateGradient,
-  truncateNodeId
-} from 'utils/Utils'
+import { formatLargeNumber, truncateNodeId } from 'utils/Utils'
 import { Row } from 'components/Row'
 import CollapsibleSection from 'components/CollapsibleSection'
 import CarrotSVG from 'components/svg/CarrotSVG'
@@ -21,13 +15,21 @@ import { copyToClipboard } from 'utils/DeviceTools'
 import Big from 'big.js'
 import LinearGradientSVG from 'components/svg/LinearGradientSVG'
 import { format } from 'date-fns'
+import BN from 'bn.js'
+import { calculateMaxWeight, generateGradient } from 'services/earn/utils'
 import { NodeValidator } from '../SelectNode'
 
 type NavigationProp = EarnScreenProps<
   typeof AppNavigation.Earn.SelectNode
 >['navigation']
 
-export const NodeCard = ({ data }: { data: NodeValidator }) => {
+export const NodeCard = ({
+  data,
+  stakingAmount
+}: {
+  data: NodeValidator
+  stakingAmount: BN
+}) => {
   const { theme } = useApplicationContext()
   const [isCardExpanded, setIsCardExpanded] = useState(false)
   const { navigate } = useNavigation<NavigationProp>()
@@ -120,7 +122,8 @@ export const NodeCard = ({ data }: { data: NodeValidator }) => {
         }
         collapsibleContainerStyle={{
           backgroundColor: theme.neutral900,
-          padding: 16,
+          paddingHorizontal: 16,
+          marginTop: -16,
           borderBottomLeftRadius: 8,
           borderBottomRightRadius: 8
         }}>
@@ -180,7 +183,8 @@ export const NodeCard = ({ data }: { data: NodeValidator }) => {
           <AvaButton.PrimaryMedium
             onPress={() =>
               navigate(AppNavigation.Earn.Confirmation, {
-                nodeId: data.nodeID
+                nodeId: data.nodeID,
+                stakingAmount
               })
             }>
             Next

@@ -3,8 +3,9 @@ import actions from '../../helpers/actions'
 const fs = require('fs')
 
 const testNames = [
-  'performanceHelpUsImproveScreen.e2e',
-  'performanceLaunchApp.e2e'
+  'activityTab.e2e.smoke.ts',
+  'createNewWallet.e2e.smoke.ts',
+  'watchlist.e2e.ts'
 ]
 
 const filePath = './e2e/tests/performance/testResults/results.txt'
@@ -12,7 +13,7 @@ const tempfilePath = './e2e/tests/performance/testResults/tempResults.txt'
 
 const platform = process.argv[2] || ''
 const numberOfTests = testNames.length
-const numberOfIterations = 2
+const numberOfIterations = 10
 
 function runDetoxTest(testName: string): number {
   const command = `detox test "${testName}" -c ${platform}.internal.debug`

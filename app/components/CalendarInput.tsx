@@ -11,12 +11,16 @@ interface CalendarInputProps {
   date: Date | undefined
   onDateSelected: (date: Date) => void
   placeHolder: string
+  minimumDate?: Date
+  maximumDate?: Date
 }
 
 export const CalendarInput: React.FC<CalendarInputProps> = ({
   date,
   onDateSelected,
-  placeHolder
+  placeHolder,
+  minimumDate,
+  maximumDate
 }) => {
   const { theme } = useApplicationContext()
   const [isDatePickerVisible, setIsDatePickerVisible] = useState(false)
@@ -52,10 +56,13 @@ export const CalendarInput: React.FC<CalendarInputProps> = ({
       </Pressable>
       <View>
         <DateTimePickerModal
+          display="inline"
           isVisible={isDatePickerVisible}
           mode="date"
           onConfirm={handleDateConfirm}
           onCancel={hideDatePicker}
+          minimumDate={minimumDate}
+          maximumDate={maximumDate}
         />
       </View>
     </View>

@@ -4,18 +4,11 @@ import {
   Dimensions,
   StyleSheet,
   View,
-  ListRenderItemInfo,
-  FlatList
+  FlatList,
+  Platform
 } from 'react-native'
 import AvaText from 'components/AvaText'
 import ActivityListItem from 'screens/activity/ActivityListItem'
-import {
-  endOfToday,
-  endOfYesterday,
-  format,
-  isSameDay,
-  isSameYear
-} from 'date-fns'
 import BridgeTransactionItem from 'screens/bridge/components/BridgeTransactionItem'
 import { BridgeTransactionStatusParams } from 'navigation/types'
 import useInAppBrowser from 'hooks/useInAppBrowser'
@@ -27,26 +20,11 @@ import { BridgeTransaction } from '@avalabs/bridge-sdk'
 import { UI, useIsUIDisabled } from 'hooks/useIsUIDisabled'
 import { RefreshControl } from 'components/RefreshControl'
 import { usePostCapture } from 'hooks/usePosthogCapture'
+import FlashList from 'components/FlashList'
+import { getDayString } from 'utils/date/getDayString'
 
 const SCREEN_WIDTH = Dimensions.get('window').width
 const BOTTOM_PADDING = SCREEN_WIDTH * 0.3
-
-const yesterday = endOfYesterday()
-const today = endOfToday()
-
-const getDayString = (timestamp: number) => {
-  // today
-  if (isSameDay(today, timestamp)) return 'Today'
-
-  // yesterday
-  if (isSameDay(yesterday, timestamp)) return 'Yesterday'
-
-  // if date is within this year, we show month + day
-  if (isSameYear(today, timestamp)) return format(timestamp, 'MMMM do')
-
-  // else we show month + day + year
-  return format(timestamp, 'MMMM d, yyyy')
-}
 
 type Section = {
   title: string
@@ -137,7 +115,7 @@ const Transactions = ({
     )
   }
 
-  const renderItem = ({ item }: ListRenderItemInfo<Item>) => {
+  const renderItem = (item: Item) => {
     // render section header
     if (typeof item === 'string') {
       return renderSectionHeader(item)
@@ -186,10 +164,31 @@ const Transactions = ({
   }
 
   const renderTransactions = () => {
+    if (Platform.OS === 'ios') {
+      return (
+        <FlashList
+          data={combinedData}
+          renderItem={item => renderItem(item.item)}
+          keyExtractor={keyExtractor}
+          contentContainerStyle={styles.contentContainer}
+          onEndReached={onEndReached}
+          onEndReachedThreshold={0.5}
+          ListEmptyComponent={TransactionsZeroState}
+          refreshControl={
+            <RefreshControl onRefresh={onRefresh} refreshing={isRefreshing} />
+          }
+          getItemType={(item: Item) => {
+            return typeof item === 'string' ? 'sectionHeader' : 'row'
+          }}
+          estimatedItemSize={71}
+        />
+      )
+    }
+
     return (
       <FlatList
         data={combinedData}
-        renderItem={renderItem}
+        renderItem={item => renderItem(item.item)}
         keyExtractor={keyExtractor}
         contentContainerStyle={styles.contentContainer}
         onEndReached={onEndReached}

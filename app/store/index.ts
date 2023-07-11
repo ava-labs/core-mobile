@@ -30,7 +30,7 @@ import { WatchlistBlacklistTransform } from './transforms/WatchlistBlacklistTran
 import { WalletConnectBlacklistTransform } from './transforms/WalletConnectBlacklistTransform'
 import { AppBlacklistTransform } from './transforms/AppBlacklistTransform'
 
-const VERSION = 5
+const VERSION = 6
 
 // list of reducers that don't need to be persisted
 // for nested/partial blacklist, please use transform
@@ -77,7 +77,13 @@ const rootReducer = (state: any, action: AnyAction) => {
     // notes: keeping settings and network because watchlist depends on them
     state = {
       app: state.app,
-      settings: state.settings,
+      settings: {
+        ...state.settings,
+        securityPrivacy: {
+          ...state.settings.securityPrivacy,
+          consentToTOUnPP: false //don't keep consent to Terms of use and Privacy policy
+        }
+      },
       network: state.network,
       watchlist: state.watchlist
     }

@@ -9,8 +9,10 @@ import Logger from 'utils/Logger'
 import Checkmark from 'components/animation/Checkmark'
 import AppNavigation from 'navigation/AppNavigation'
 import { EarnScreenProps } from 'navigation/types'
-import { useNavigation } from '@react-navigation/native'
-import { useNodes } from 'hooks/query/useNodes'
+import { useNavigation, useRoute } from '@react-navigation/native'
+import { useSearchNode } from 'hooks/earn/useSearchNode'
+import { useNodes } from 'hooks/earn/useNodes'
+import { NodeValidator } from './SelectNode'
 
 const Searching = () => {
   const { theme } = useApplicationContext()
@@ -33,9 +35,16 @@ const Searching = () => {
           color: theme.colorText1,
           lineHeight: 20
         }}>
-        {
-          'Core will look for a match in the Avalanche Network that meets your selected criteria. '
-        }
+        <AvaText.Body2
+          textStyle={{
+            textAlign: 'center',
+            color: theme.colorText1,
+            lineHeight: 20
+          }}>
+          {`Core will randomly select a validator with 98% uptime and a 2%
+          delegation fee in the Avalanche Network that also matches your
+          criteria. `}
+        </AvaText.Body2>
         <AvaText.Body2
           onPress={goToHowToDelegateDoc}
           textStyle={{ color: theme.colorPrimary1 }}>
@@ -43,30 +52,36 @@ const Searching = () => {
         </AvaText.Body2>
         {'.'}
       </AvaText.Body2>
+      <Space y={24} />
+      <AvaText.Body2 textStyle={{ color: theme.colorText1 }}>
+        To set your own inputs use advanced set up.
+      </AvaText.Body2>
     </View>
   )
 }
 
-type NavigationProp = EarnScreenProps<
-  typeof AppNavigation.Earn.NodeSearch
->['navigation']
+type NavigationProp = EarnScreenProps<typeof AppNavigation.Earn.NodeSearch>
 
-const MatchFound = () => {
+const MatchFound = ({ validator }: { validator: NodeValidator }) => {
   const { theme } = useApplicationContext()
-  const { navigate } = useNavigation<NavigationProp>()
+  const { navigate } = useNavigation<NavigationProp['navigation']>()
+  const { stakingAmount } = useRoute<NavigationProp['route']>().params
 
   useEffect(() => {
-    setTimeout(
-      () => navigate(AppNavigation.Earn.Confirmation, { nodeId: '' }),
-      2200
-    )
+    const timer = setTimeout(() => {
+      navigate(AppNavigation.Earn.Confirmation, {
+        nodeId: validator.nodeID,
+        stakingAmount
+      })
+    }, 2200)
+    return () => clearTimeout(timer)
   })
 
   return (
     <View style={styles.container}>
       <Checkmark size={80} />
       <Space y={24} />
-      <AvaText.Heading5>Match Found!</AvaText.Heading5>
+      <AvaText.Heading5>Search Completed!</AvaText.Heading5>
       <Space y={8} />
       <AvaText.Body2
         textStyle={{
@@ -74,25 +89,33 @@ const MatchFound = () => {
           color: theme.colorText1,
           lineHeight: 20
         }}>
-        {'Core found a match for your criteria.'}
+        {'Core found a match.'}
       </AvaText.Body2>
     </View>
   )
 }
 
 export const NodeSearch = () => {
-  const { isFetching } = useNodes()
+  const { stakingEndTime, stakingAmount } =
+    useRoute<NavigationProp['route']>().params
+  const { isFetching, error, data } = useNodes()
+  const { validator, error: useSearchNodeError } = useSearchNode({
+    stakingAmount,
+    stakingEndTime,
+    validators: data?.validators
+  })
 
   if (isFetching) return <Searching />
-
-  return <MatchFound />
+  if (error) return null // todo: render error handling
+  if (useSearchNodeError || !validator) return null // todo: render empty state
+  return <MatchFound validator={validator} />
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
-    paddingHorizontal: '15%',
+    paddingHorizontal: '5%',
     marginTop: '40%'
   }
 })

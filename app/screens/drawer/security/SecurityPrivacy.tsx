@@ -6,6 +6,11 @@ import BiometricsSDK from 'utils/BiometricsSDK'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { SECURE_ACCESS_SET } from 'resources/Constants'
 import Switch from 'components/Switch'
+import { useDispatch, useSelector } from 'react-redux'
+import {
+  selectCoreAnalyticsConsent,
+  setCoreAnalytics
+} from 'store/settings/securityPrivacy'
 
 function SecurityPrivacy({
   onChangePin,
@@ -19,8 +24,8 @@ function SecurityPrivacy({
   onShowConnectedDapps: () => void
 }) {
   const theme = useApplicationContext().theme
-  const { setSetting, getSetting } =
-    useApplicationContext().repo.userSettingsRepo
+  const dispatch = useDispatch()
+  const coreAnalyticsConsent = useSelector(selectCoreAnalyticsConsent)
   const [isBiometricSwitchEnabled, setIsBiometricSwitchEnabled] =
     useState(false)
   const [isBiometricEnabled, setIsBiometricEnabled] = useState(false)
@@ -44,7 +49,7 @@ function SecurityPrivacy({
   }
 
   const handleAnalyticsSwitchChange = (value: boolean) => {
-    setSetting('CoreAnalytics', value)
+    dispatch(setCoreAnalytics(value))
   }
 
   return (
@@ -85,7 +90,7 @@ function SecurityPrivacy({
         background={theme.background}
         rightComponent={
           <Switch
-            value={getSetting('CoreAnalytics') as boolean}
+            value={coreAnalyticsConsent}
             onValueChange={handleAnalyticsSwitchChange}
           />
         }

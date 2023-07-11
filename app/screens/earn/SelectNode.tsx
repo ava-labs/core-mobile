@@ -2,11 +2,14 @@ import React, { useMemo, useState } from 'react'
 import { FlatList, StyleSheet, View } from 'react-native'
 import AvaText from 'components/AvaText'
 import SearchBar from 'components/SearchBar'
-import { useNodes } from 'hooks/query/useNodes'
+import { useNodes } from 'hooks/earn/useNodes'
 import DropDown from 'components/Dropdown'
 import { GetCurrentValidatorsResponse } from '@avalabs/avalanchejs-v2/dist/src/vms/pvm'
 import { Space } from 'components/Space'
 import { useApplicationContext } from 'contexts/ApplicationContext'
+import { EarnScreenProps } from 'navigation/types'
+import AppNavigation from 'navigation/AppNavigation'
+import { useRoute } from '@react-navigation/native'
 import { Spinner } from '../../../storybook/stories/Lotties.stories'
 import { NodeCard } from './components/NodeCard'
 
@@ -14,10 +17,14 @@ export type NodeValidator = GetCurrentValidatorsResponse['validators'][0] & {
   delegatorCount?: string
   delegatorWeight?: string
 }
+export type NodeValidators = NodeValidator[]
+
+type NavigationProp = EarnScreenProps<typeof AppNavigation.Earn.SelectNode>
 
 const SelectNode = () => {
   const [searchText, setSearchText] = useState('')
   const [filter, setFilter] = useState(dropdownItems[0])
+  const { stakingAmount } = useRoute<NavigationProp['route']>().params
 
   const { isFetching, data } = useNodes()
 
@@ -44,7 +51,7 @@ const SelectNode = () => {
   }
 
   const renderItem = ({ item }: { item: NodeValidator }) => {
-    return <NodeCard data={item} />
+    return <NodeCard data={item} stakingAmount={stakingAmount} />
   }
 
   return (
