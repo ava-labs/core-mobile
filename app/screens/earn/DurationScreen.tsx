@@ -50,10 +50,6 @@ const StakingDuration = () => {
   const isNextDisabled =
     stakeEndTime === undefined || (stakeEndTime && stakeEndTime < new Date())
 
-  const minimumStakeEndDate = isDeveloperMode
-    ? addDays(new Date(), 1)
-    : addWeeks(new Date(), 2)
-
   const onRadioSelect = (durationOption: DurationOption) => {
     if (selectedDuration?.title === durationOption.title) {
       return
