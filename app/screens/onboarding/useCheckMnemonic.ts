@@ -93,7 +93,7 @@ function selectXRandNumbers(numOfNumbers: number, pool: number[]) {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     ;[pool[i], pool[randomIndex]] = [pool[randomIndex]!, pool[i]!] //put it on front of pool
   }
-  return pool.splice(0, numOfNumbers) //first [numOfNumbers] nums are now non-repeating random from pool and won't be duplicated in UI
+  return pool.splice(0, numOfNumbers) //first [numOfNumbers] nums are now non-repeating random from pool and won't be duplicated in UI causing test failures
 }
 
 function selectXRandWordsIncluding(
