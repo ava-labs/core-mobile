@@ -19,11 +19,11 @@ const AdvancedStaking = () => {
   const { navigate } = useNavigation<NavigationProp['navigation']>()
   const { stakingAmount, stakingEndTime } =
     useRoute<NavigationProp['route']>().params
-  const [minUptime, setMinUptime] = useState<string | undefined>(undefined)
+  const [minUpTime, setMinUpTime] = useState<string | undefined>(undefined)
   const [maxFee, setMaxFee] = useState<string | undefined>(undefined)
   const isMaxFeeValid = !!maxFee && Number(maxFee) >= 2 && Number(maxFee) <= 20
   const isMinUptimeValid =
-    !!minUptime && Number(minUptime) >= 1 && Number(minUptime) <= 99
+    !!minUpTime && Number(minUpTime) >= 1 && Number(minUpTime) <= 99
   const isNextDisabled = !isMaxFeeValid || !isMinUptimeValid
 
   return (
@@ -63,9 +63,9 @@ const AdvancedStaking = () => {
             </Popable>
             <InputText
               placeholder={'Enter minimum uptime'}
-              text={minUptime ?? ''}
+              text={minUpTime ?? ''}
               backgroundColor={theme.neutral700 + Opacity50}
-              onChangeText={text => setMinUptime(text)}
+              onChangeText={text => setMinUpTime(text)}
               keyboardType="numeric"
               style={styles.inputContainer}
             />
@@ -117,8 +117,8 @@ const AdvancedStaking = () => {
           disabled={isNextDisabled}
           onPress={() =>
             navigate(AppNavigation.Earn.SelectNode, {
-              minUptime,
-              maxFee,
+              minUpTime: Number(minUpTime),
+              maxFee: Number(maxFee),
               stakingAmount,
               stakingEndTime
             })

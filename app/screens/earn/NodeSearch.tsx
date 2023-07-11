@@ -12,7 +12,7 @@ import { EarnScreenProps } from 'navigation/types'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import { useSearchNode } from 'hooks/earn/useSearchNode'
 import { useNodes } from 'hooks/earn/useNodes'
-import { NodeValidator } from './SelectNode'
+import { NodeValidator } from 'types/earn.types'
 
 const Searching = () => {
   const { theme } = useApplicationContext()

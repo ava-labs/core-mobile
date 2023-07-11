@@ -17,7 +17,7 @@ import LinearGradientSVG from 'components/svg/LinearGradientSVG'
 import { format } from 'date-fns'
 import BN from 'bn.js'
 import { calculateMaxWeight, generateGradient } from 'services/earn/utils'
-import { NodeValidator } from '../SelectNode'
+import { NodeValidator } from 'types/earn.types'
 
 type NavigationProp = EarnScreenProps<
   typeof AppNavigation.Earn.SelectNode

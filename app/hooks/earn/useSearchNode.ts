@@ -7,7 +7,7 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { useSelector } from 'react-redux'
 import BN from 'bn.js'
 import Logger from 'utils/Logger'
-import { NodeValidator, NodeValidators } from 'screens/earn/SelectNode'
+import { NodeValidator, NodeValidators } from 'types/earn.types'
 
 type useSearchNodeProps = {
   stakingAmount: BN
