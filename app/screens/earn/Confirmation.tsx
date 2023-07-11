@@ -76,9 +76,11 @@ export const Confirmation = () => {
     navigate(AppNavigation.Earn.Cancel)
   }
 
+  if (!validator) return null
+
   // TODO: on error, show error message as toast
   // on success, navigate to earn dashboard
-  return validator ? (
+  return (
     <ScrollView contentContainerStyle={{ minHeight: '100%' }}>
       <AvaText.LargeTitleBold
         textStyle={{ marginHorizontal: 16, marginBottom: 10 }}>
@@ -270,7 +272,7 @@ export const Confirmation = () => {
         </AvaButton.SecondaryLarge>
       </View>
     </ScrollView>
-  ) : null
+  )
 }
 
 const styles = StyleSheet.create({
