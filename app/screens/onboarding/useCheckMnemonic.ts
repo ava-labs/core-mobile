@@ -92,7 +92,6 @@ function selectXRandNumbers(numOfNumbers: number, pool: number[]) {
     const randomIndex = Math.floor(Math.random() * (pool.length - i)) + i //pick random from pool
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     ;[pool[i], pool[randomIndex]] = [pool[randomIndex]!, pool[i]!] //put it on front of pool
-    pool.splice(0, 1)
   }
   return pool.splice(0, numOfNumbers) //first [numOfNumbers] nums are now non-repeating random from pool and won't be duplicated
 }
