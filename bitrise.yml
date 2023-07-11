@@ -230,7 +230,7 @@ workflows:
               Branch|${BITRISE_GIT_BRANCH}
               Commit|${GIT_CLONE_COMMIT_HASH}
           - title_on_error: ':alert: Tests failed on commit "$GIT_CLONE_COMMIT_MESSAGE_SUBJECT"'
-          - emoji_on_error: ":alert:"
+          - title_link: 'https://tenor.com/bNFsr.gif'
           - timestamp: 'no'
           - color: '#40BA8E'
           - buttons: |
