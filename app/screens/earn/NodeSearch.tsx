@@ -22,7 +22,6 @@ export const NodeSearch = () => {
   })
 
   if (isFetching) return <Searching />
-  if (error) return <NoMatchFound />
-  if (useSearchNodeError || !validator) return <NoMatchFound />
+  if (error || useSearchNodeError || !validator) return <NoMatchFound />
   return <MatchFound validator={validator} />
 }

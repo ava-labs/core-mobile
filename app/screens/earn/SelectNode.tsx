@@ -18,6 +18,7 @@ import { useAdvancedSearchNodes } from 'hooks/earn/useAdvancedSearchNodes'
 import { HIGH_TO_LOW, advancedFilterDropDownItems } from 'consts/earn.consts'
 import { Spinner } from '../../../storybook/stories/Lotties.stories'
 import { NodeCard } from './components/NodeCard'
+import { NoMatchFound } from './components/NoMatchFound'
 
 type NavigationProp = EarnScreenProps<typeof AppNavigation.Earn.SelectNode>
 
@@ -44,10 +45,6 @@ const SelectNode = () => {
       searchText
     })
 
-  if (isFetching) return null // todo: add Searching with different copy
-  if (error) return null // todo: add error handling
-  if (useAdvancedSearchNodesError || validators.length === 0) return null // todo: add empty state
-
   const handleSearch = (text: string) => {
     setSearchText(text)
   }
@@ -71,6 +68,9 @@ const SelectNode = () => {
   const renderItem = ({ item }: { item: NodeValidator }) => {
     return <NodeCard data={item} stakingAmount={stakingAmount} />
   }
+
+  if (error || useAdvancedSearchNodesError || validators.length === 0)
+    return <NoMatchFound />
 
   return (
     <View style={styles.container}>
