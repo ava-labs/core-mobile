@@ -92,6 +92,7 @@ enum StakeSetupScreens {
   StakingAmount = 'EarnScreens.StakingAmount',
   StakingDuration = 'EarnScreens.StakingDuration',
   AdvancedStaking = 'EarnScreens.AdvancedStaking',
+  StakeDashboard = 'EarnScreens.StakeDashboard',
   SelectNode = 'EarnScreens.SelectNode',
   NodeSearch = 'EarnScreens.NodeSearch',
   Confirmation = 'EarnScreens.Confirmation',
