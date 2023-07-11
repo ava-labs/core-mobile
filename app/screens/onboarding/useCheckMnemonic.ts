@@ -47,8 +47,7 @@ export function useCheckMnemonic(mnemonic: string): UseCheckMnemonicData {
       indices[1] as number,
       3,
       pool,
-      mnemonics,
-      firstWordOptions
+      mnemonics
     )
 
     const thirdWordOptions = selectXRandWordsIncluding(
@@ -93,30 +92,19 @@ function selectXRandNumbers(numOfNumbers: number, pool: number[]) {
     const randomIndex = Math.floor(Math.random() * (pool.length - i)) + i //pick random from pool
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     ;[pool[i], pool[randomIndex]] = [pool[randomIndex]!, pool[i]!] //put it on front of pool
+    pool.splice(0, 1)
   }
-  return pool.slice(0, numOfNumbers) //first [numOfNumbers] nums are now non-repeating random from pool
+  return pool.splice(0, numOfNumbers) //first [numOfNumbers] nums are now non-repeating random from pool and won't be duplicated
 }
 
 function selectXRandWordsIncluding(
   included: number,
   numOfNumbers: number,
   pool: number[],
-  mnemonics: string[],
-  arrayToCompare: string[] = []
+  mnemonics: string[]
 ): string[] {
   const randoms = selectXRandNumbers(numOfNumbers, pool)
   const indexToRandomInject = Math.floor(Math.random() * numOfNumbers)
   randoms[indexToRandomInject] = included
-  const wordIndexMap = randoms.map(wordIndex => mnemonics[wordIndex] as string)
-  if (arrayToCompare.length > 0) {
-    const commonItems = wordIndexMap.filter(item =>
-      arrayToCompare.includes(item)
-    )
-    console.log(JSON.stringify(commonItems + ' this is the common items'))
-    const commonItem = commonItems[0]
-    if (commonItem) {
-      console.log(JSON.stringify(mnemonics.indexOf(commonItem)))
-    }
-  }
-  return wordIndexMap
+  return randoms.map(wordIndex => mnemonics[wordIndex] as string)
 }
