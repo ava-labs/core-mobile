@@ -58,6 +58,7 @@ export const NodeCard = ({
         borderRadius: 8
       }}>
       <CollapsibleSection
+        renderChildrenCollapsed={false}
         onExpandedChange={value => setIsCardExpanded(value)}
         title={
           <View
@@ -152,6 +153,7 @@ export const NodeCard = ({
             <PopableContentWithCaption
               label="Staking Fee"
               message="Fee set and retained by the validator"
+              contentWidth={150}
             />
             <AvaText.Body2 textStyle={{ color: theme.neutral50 }}>
               {`${Number(data.delegationFee).toFixed(0)}%`}
@@ -161,6 +163,7 @@ export const NodeCard = ({
             <PopableContentWithCaption
               label="Validator Stake"
               message="Amount of AVAX staked by the validator"
+              contentWidth={150}
             />
             <AvaText.Body2 textStyle={{ color: theme.neutral50 }}>
               {(formatLargeNumber(validatorStake), 4)}
@@ -170,6 +173,7 @@ export const NodeCard = ({
             <PopableContentWithCaption
               label="Available"
               message="Amount of AVAX the validator can accept"
+              contentWidth={150}
             />
             <AvaText.Body2 textStyle={{ color: theme.neutral50 }}>
               {formatLargeNumber(available.toNumber(), 4)}
@@ -179,6 +183,7 @@ export const NodeCard = ({
             <PopableContentWithCaption
               label="Delegates"
               message="Number of addresses delegating to the validator"
+              contentWidth={150}
             />
             <AvaText.Body2 textStyle={{ color: theme.neutral50 }}>
               {data.delegatorCount}

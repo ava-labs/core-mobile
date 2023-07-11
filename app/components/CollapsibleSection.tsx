@@ -12,6 +12,7 @@ interface Props {
   onExpandedChange?: (isExpanded: boolean) => void
   titleContainerStyle?: StyleProp<ViewStyle>
   collapsibleContainerStyle?: StyleProp<ViewStyle>
+  renderChildrenCollapsed?: boolean
 }
 
 const CollapsibleSection: FC<Props> = ({
@@ -20,7 +21,8 @@ const CollapsibleSection: FC<Props> = ({
   children,
   onExpandedChange,
   titleContainerStyle,
-  collapsibleContainerStyle
+  collapsibleContainerStyle,
+  renderChildrenCollapsed
 }) => {
   const theme = useApplicationContext().theme
   const [expanded, setExpanded] = useState(startExpanded)
@@ -70,6 +72,7 @@ const CollapsibleSection: FC<Props> = ({
       <AvaButton.Base onPress={toggleExpanded}>{getTitle()}</AvaButton.Base>
       <Collapsible
         style={[{ backgroundColor: theme.colorBg1 }, collapsibleContainerStyle]}
+        renderChildrenCollapsed={renderChildrenCollapsed}
         collapsed={!expanded}>
         {children}
       </Collapsible>

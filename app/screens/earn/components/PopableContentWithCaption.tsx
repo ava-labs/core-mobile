@@ -10,11 +10,13 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 export type IPopableContentWithCaption = {
   label: string
   message: string
+  contentWidth?: number
 }
 
 export const PopableContentWithCaption = ({
   label,
-  message
+  message,
+  contentWidth = 110
 }: IPopableContentWithCaption) => {
   const { theme } = useApplicationContext()
 
@@ -22,7 +24,7 @@ export const PopableContentWithCaption = ({
     <Popable
       content={<PopableContent message={message} />}
       position="right"
-      style={{ minWidth: 150 }}
+      style={{ width: contentWidth }}
       strictPosition={true}
       backgroundColor={theme.colorBg3}>
       <Row style={{ alignItems: 'center' }}>

@@ -49,6 +49,7 @@ const AdvancedStaking = () => {
                 />
               }
               position={'right'}
+              strictPosition={true}
               style={{ minWidth: 200 }}
               backgroundColor={theme.neutral100}>
               <PopableLabel
@@ -84,6 +85,7 @@ const AdvancedStaking = () => {
                 />
               }
               position={'right'}
+              strictPosition={true}
               style={{ minWidth: 200 }}
               backgroundColor={theme.neutral100}>
               <PopableLabel
