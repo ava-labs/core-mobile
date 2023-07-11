@@ -135,39 +135,21 @@ workflows:
       - script@1:
           title: Yarn Setup
           inputs:
-            - content: |-
-                #!/usr/bin/env bash
-                # fail if any commands fails
-                set -e
-                # make pipelines' return status equal the last command to exit with a non-zero status, or zero if all commands exit successfully
-                set -o pipefail
-                # debug log
-                set -x
-
-                if ! cat /etc/issue 2>/dev/null
-                then
-                yarn setup:ci
-                else 
-                  stack=$( cat /etc/issue )
-                fi
-
-                if [[ $stack == *Ubuntu* ]]; then
-                    # on ubuntu, yarn setup command will fail
-                    # as patch-package doesn't have write access to the node_modules folder
-                    # thus, we need to set write permission manually and rerun yarn
-                    # Bitrise issue link https://support.bitrise.io/hc/en-us/requests/39436?page=1
-                    sudo chown root .
-
-                    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
-
-                    export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
-                    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-
-                    echo "Using node version 18.14.1"
-                    nvm install 18.14.1
-                     
-                    yarn setup:ci
-                fi
+            - content:
+                "#!/usr/bin/env bash\n# fail if any commands fails\nset -e\n# make
+                pipelines' return status equal the last command to exit with a non-zero
+                status, or zero if all commands exit successfully\nset -o pipefail\n#
+                debug log\nset -x\n\nif ! cat /etc/issue 2>/dev/null\nthen\nyarn setup:ci\nelse
+                \n  stack=$( cat /etc/issue )\nfi\n\nif [[ $stack == *Ubuntu* ]]; then\n
+                \   # on ubuntu, yarn setup command will fail\n    # as patch-package
+                doesn't have write access to the node_modules folder\n    # thus, we need
+                to set write permission manually and rerun yarn\n    # Bitrise issue link
+                https://support.bitrise.io/hc/en-us/requests/39436?page=1\n    sudo chown
+                root .\n\n    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh
+                | bash\n\n    export NVM_DIR=\"$([ -z \"${XDG_CONFIG_HOME-}\" ] && printf
+                %s \"${HOME}/.nvm\" || printf %s \"${XDG_CONFIG_HOME}/nvm\")\"\n    [
+                -s \"$NVM_DIR/nvm.sh\" ] && \\. \"$NVM_DIR/nvm.sh\"\n\n    echo \"Using
+                node version 18.14.1\"\n    nvm install 18.14.1\n     \n    yarn setup:ci\nfi"
       - save-npm-cache@1: {}
       - script@1:
           title: Download Env Files
@@ -219,7 +201,7 @@ workflows:
                 Branch|${BITRISE_GIT_BRANCH}
                 Commit|${GIT_CLONE_COMMIT_HASH}
             - title_on_error: $GIT_CLONE_COMMIT_MESSAGE_SUBJECT
-            - message_on_error: ''
+            - message_on_error: 'Build Failed'
             - icon_url: ''
             - from_username: ''
             - timestamp: 'no'
@@ -234,16 +216,54 @@ workflows:
             - footer: ''
             - thumb_url: $BITRISE_PUBLIC_INSTALL_PAGE_QR_CODE_IMAGE_URL
             - webhook_url: $SLACK_WEBHOOK_URL
+  _send-test-result-notifcation-slack:
+    steps:
+    - slack@3:
+        inputs:
+          - pretext: '*New $PLATFORM Test Results Available!*'
+          - fields: |-
+              App|${APP_TITLE}
+              Platform|${PLATFORM}
+              Version|${APP_VERSION}.${BUILD_NUMBER}
+              Workflow|${BITRISE_TRIGGERED_WORKFLOW_ID}
+              Environment|${ENVIRONMENT}
+              Branch|${BITRISE_GIT_BRANCH}
+              Commit|${GIT_CLONE_COMMIT_HASH}
+          - title: ':kirby_dance: <https://media.tenor.com/jxPq6fvRcEwAAAAd/chris-farley-tommy.gif|Tests have passed on commit "$GIT_CLONE_COMMIT_MESSAGE_SUBJECT">'
+          - title_on_error: ':doom_mad: <https://media.tenor.com/NClbuZnSxSgAAAAC/what-shocked.gif|Tests failed on commit "$GIT_CLONE_COMMIT_MESSAGE_SUBJECT">'
+          - timestamp: 'no'
+          - color: '#40BA8E'
+          - buttons: |
+              View App|${BITRISE_APP_URL}
+              View Build|${BITRISE_BUILD_URL}
+          - webhook_url: $SLACK_TEST_RESULT_WEBHOOK_URL
   _set-version:
     steps:
       - script@1:
           title: Get App Version
           inputs:
-            - content: "#!/usr/bin/env bash\n\n# if branch is a release branch (\"release/2.0.1\" for example), grab version from branch name \n# else if tag is a release candidate tag (\"0.13.1-rc1\" for example), grab version from tag\nif [[ $BITRISE_GIT_BRANCH == *release/* ]]; then\n  arrIN=(${BITRISE_GIT_BRANCH//// })\n  version=${arrIN[1]}\nelif [[ $BITRISE_GIT_TAG =~ \"rc\" ]]; then\n  arrIN=(${BITRISE_GIT_TAG//-/ })\n  version=${arrIN[0]}\nelse\n  # else version will just be 0.0.0\n  version=\"0.0.0\"\nfi\n\nenvman add --key APP_VERSION --value \"${version}\""
+            - content:
+                "#!/usr/bin/env bash\n\n# if branch is a release branch (\"release/2.0.1\"
+                for example), grab version from branch name \n# else if tag is a release
+                candidate tag (\"0.13.1-rc1\" for example), grab version from tag\nif
+                [[ $BITRISE_GIT_BRANCH == *release/* ]]; then\n  arrIN=(${BITRISE_GIT_BRANCH////
+                })\n  version=${arrIN[1]}\nelif [[ $BITRISE_GIT_TAG =~ \"rc\" ]]; then\n
+                \ arrIN=(${BITRISE_GIT_TAG//-/ })\n  version=${arrIN[0]}\nelse\n  # else
+                version will just be 0.0.0\n  version=\"0.0.0\"\nfi\n\nenvman add --key
+                APP_VERSION --value \"${version}\""
       - script@1:
           title: Get Build Number
           inputs:
-            - content: "#!/usr/bin/env bash\n# fail if any commands fails\nset -e\n# make pipelines' return status equal the last command to exit with a non-zero status, or zero if all commands exit successfully\nset -o pipefail\n# debug log\nset -x\n\n# when a pipeline starts, it triggers both iOS and Android workflows\n# in order for iOS and Android to have different build numbers, we increment build number by 1 for Android\nif [ \"$PLATFORM\" = \"iOS\" ]; then\n  buildNumber=$BITRISE_BUILD_NUMBER       \nelse\n  buildNumber=$((BITRISE_BUILD_NUMBER+1))\nfi\n\nenvman add --key BUILD_NUMBER --value \"${buildNumber}\""
+            - content:
+                "#!/usr/bin/env bash\n# fail if any commands fails\nset -e\n# make
+                pipelines' return status equal the last command to exit with a non-zero
+                status, or zero if all commands exit successfully\nset -o pipefail\n#
+                debug log\nset -x\n\n# when a pipeline starts, it triggers both iOS and
+                Android workflows\n# in order for iOS and Android to have different build
+                numbers, we increment build number by 1 for Android\nif [ \"$PLATFORM\"
+                = \"iOS\" ]; then\n  buildNumber=$BITRISE_BUILD_NUMBER       \nelse\n
+                \ buildNumber=$((BITRISE_BUILD_NUMBER+1))\nfi\n\nenvman add --key BUILD_NUMBER
+                --value \"${buildNumber}\""
       - set-ios-info-plist-unified@1:
           title: Set iOS Version
           run_if: '{{enveq "PLATFORM" "iOS"}}'
@@ -266,6 +286,7 @@ workflows:
       - _build-android
     after_run:
       - _send-notification-slack
+      - _send-test-result-notifcation-slack
     envs:
       - ENVIRONMENT: production
         opts:
@@ -290,6 +311,8 @@ workflows:
       - _install-and-set-env
       - _set-version
       - _build-android-for-testing
+    after_run:
+      - _send-test-result-notifcation-slack
     envs:
       - ENVIRONMENT: production
         opts:
@@ -324,8 +347,6 @@ workflows:
 
                 npm rebuild detox
                 QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test --configuration android.external.release.smoke.ci --headless
-    artifacts:
-      - deploy_path: ./e2e/tests/performance/testResults/allResults.txt
   android-internal:
     before_run:
       - _install-and-set-env
@@ -360,6 +381,8 @@ workflows:
       - _install-and-set-env
       - _set-version
       - _build-android-for-testing
+    after_run:
+      - _send-test-result-notifcation-slack
     envs:
       - ENVIRONMENT: production
         opts:
@@ -393,7 +416,7 @@ workflows:
                 set -x
 
                 npm rebuild detox
-                QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test --configuration android.internal.release.ci --headless
+                QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test --configuration android.internal.release.smoke.ci --headless
   ios:
     before_run:
       - _install-and-set-env
@@ -429,6 +452,8 @@ workflows:
       - _install-and-set-env
       - _set-version
       - _build-ios-simulator
+    after_run:
+      - _send-test-result-notifcation-slack
     envs:
       - ENVIRONMENT: production
         opts:
@@ -465,8 +490,6 @@ workflows:
 
                 npm rebuild detox
                 ./node_modules/.bin/detox test --configuration ios.external.release.smoke.ci
-    artifacts:
-      - deploy_path: ./e2e/tests/performance/testResults/allResults.txt
   ios-internal:
     before_run:
       - _install-and-set-env
@@ -505,6 +528,8 @@ workflows:
       - _install-and-set-env
       - _set-version
       - _build-ios-simulator
+    after_run:
+      - _send-test-result-notifcation-slack
     envs:
       - ENVIRONMENT: production
         opts:
@@ -541,5 +566,3 @@ workflows:
 
                 npm rebuild detox
                 ./node_modules/.bin/detox test --configuration ios.internal.release.smoke.ci
-    artifacts:
-      - deploy_path: ./e2e/tests/performance/testResults/allResults.txt
