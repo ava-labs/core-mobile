@@ -230,8 +230,7 @@ workflows:
               Branch|${BITRISE_GIT_BRANCH}
               Commit|${GIT_CLONE_COMMIT_HASH}
           - title: ':kirby_dance: Tests have pass on commit "$GIT_CLONE_COMMIT_MESSAGE_SUBJECT"'
-          - title_on_error: ':alert: Tests failed on commit "$GIT_CLONE_COMMIT_MESSAGE_SUBJECT"'
-          - title_link: 'https://media.tenor.com/NClbuZnSxSgAAAAC/what-shocked.gif'
+          - title_on_error: ':alert: <https://media.tenor.com/NClbuZnSxSgAAAAC/what-shocked.gif|Tests failed on commit "$GIT_CLONE_COMMIT_MESSAGE_SUBJECT">'
           - timestamp: 'no'
           - color: '#40BA8E'
           - buttons: |
@@ -417,7 +416,7 @@ workflows:
                 set -x
 
                 npm rebuild detox
-                QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test addCustomNetwork.e2e.smoke.ts  --configuration android.internal.release.ci --headless
+                QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test recoverWallet.e2e.smoke.ts  --configuration android.internal.release.ci --headless
   ios:
     before_run:
       - _install-and-set-env
