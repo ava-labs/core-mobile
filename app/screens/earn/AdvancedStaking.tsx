@@ -39,7 +39,7 @@ const AdvancedStaking = () => {
           Choose the parameters for your desired staking node.
         </AvaText.Subtitle1>
         <View>
-          <View style={{ marginBottom: 24 }}>
+          <View style={{ marginBottom: 24, alignItems: 'flex-start' }}>
             <Popable
               content={
                 <PopableContent
@@ -48,7 +48,7 @@ const AdvancedStaking = () => {
                   message="This is a validator’s uptime, the minimum threshold for rewards is 80%"
                 />
               }
-              position={'top'}
+              position={'right'}
               style={{ minWidth: 200 }}
               backgroundColor={theme.neutral100}>
               <PopableLabel
@@ -74,7 +74,7 @@ const AdvancedStaking = () => {
               Enter a value between 1-99%
             </AvaText.Caption>
           </View>
-          <View>
+          <View style={{ alignItems: 'flex-start' }}>
             <Popable
               content={
                 <PopableContent
@@ -83,7 +83,7 @@ const AdvancedStaking = () => {
                   message="This is a range set by the protocol."
                 />
               }
-              position={'top'}
+              position={'right'}
               style={{ minWidth: 200 }}
               backgroundColor={theme.neutral100}>
               <PopableLabel
