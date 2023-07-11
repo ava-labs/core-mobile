@@ -230,7 +230,7 @@ workflows:
               Branch|${BITRISE_GIT_BRANCH}
               Commit|${GIT_CLONE_COMMIT_HASH}
           - title: ':kirby_dance: <https://media.tenor.com/jxPq6fvRcEwAAAAd/chris-farley-tommy.gif|Tests have pass on commit "$GIT_CLONE_COMMIT_MESSAGE_SUBJECT">'
-          - title_on_error: ':alert: <https://media.tenor.com/NClbuZnSxSgAAAAC/what-shocked.gif|Tests failed on commit "$GIT_CLONE_COMMIT_MESSAGE_SUBJECT">'
+          - title_on_error: ':doom_mad: <https://media.tenor.com/NClbuZnSxSgAAAAC/what-shocked.gif|Tests failed on commit "$GIT_CLONE_COMMIT_MESSAGE_SUBJECT">'
           - timestamp: 'no'
           - color: '#40BA8E'
           - buttons: |
