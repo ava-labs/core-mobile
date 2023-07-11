@@ -47,7 +47,8 @@ export function useCheckMnemonic(mnemonic: string): UseCheckMnemonicData {
       indices[1] as number,
       3,
       pool,
-      mnemonics
+      mnemonics,
+      firstWordOptions
     )
 
     const thirdWordOptions = selectXRandWordsIncluding(
@@ -100,10 +101,22 @@ function selectXRandWordsIncluding(
   included: number,
   numOfNumbers: number,
   pool: number[],
-  mnemonics: string[]
+  mnemonics: string[],
+  arrayToCompare: string[] = []
 ): string[] {
   const randoms = selectXRandNumbers(numOfNumbers, pool)
   const indexToRandomInject = Math.floor(Math.random() * numOfNumbers)
   randoms[indexToRandomInject] = included
-  return randoms.map(wordIndex => mnemonics[wordIndex] as string)
+  const wordIndexMap = randoms.map(wordIndex => mnemonics[wordIndex] as string)
+  if (arrayToCompare.length > 0) {
+    const commonItems = wordIndexMap.filter(item =>
+      arrayToCompare.includes(item)
+    )
+    console.log(JSON.stringify(commonItems + ' this is the common items'))
+    const commonItem = commonItems[0]
+    if (commonItem) {
+      console.log(JSON.stringify(mnemonics.indexOf(commonItem)))
+    }
+  }
+  return wordIndexMap
 }
