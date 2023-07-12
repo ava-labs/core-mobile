@@ -424,12 +424,19 @@ async function getTestCasesBySection(section_id: number) {
 
 export async function getTestRunCases(testRunId: any) {
   const cases = await api.getTests(testRunId)
-  const caseTitles: { caseTitle: any; testRunCaseId: any }[] = []
-  cases.forEach((testRunCase: { title: any; id: any }) => {
-    const caseTitle = testRunCase.title
-    const testRunCaseId = testRunCase.id
-    caseTitles.push({ caseTitle, testRunCaseId })
-  })
+  const caseTitles: {
+    caseTitle: string
+    testRunCaseId: number
+    result: number
+  }[] = []
+  cases.forEach(
+    (testRunCase: { title: string; id: number; status_id: number }) => {
+      const caseTitle = testRunCase.title
+      const testRunCaseId = testRunCase.id
+      const result = testRunCase.status_id
+      caseTitles.push({ caseTitle, testRunCaseId, result })
+    }
+  )
   return caseTitles
 }
 
