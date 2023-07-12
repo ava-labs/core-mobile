@@ -139,13 +139,13 @@ export const getFilteredValidators = ({
         isDeveloperMode,
         weight
       )
-      return (
-        availableDelegationWeight > stakingAmountNumber &&
+      return availableDelegationWeight > stakingAmountNumber &&
         hasMinimumStakingTime(Number(endTime), stakingEndTimeUnix) &&
         Number(uptime) >= minUpTime &&
-        Number(delegationFee) <= maxFee &&
-        nodeID.includes(searchText ?? '')
-      )
+        nodeID.includes(searchText ?? '') &&
+        maxFee
+        ? Number(delegationFee) <= maxFee
+        : true
     }
   )
   return filtered
@@ -208,8 +208,8 @@ export const getAdvancedSortedValidators = (
       return validators.sort(
         (a, b): number => Number(a.endTime) - Number(b.endTime)
       )
+    case AdvancedSortFilter.UpTimeHighToLow:
     default:
-      // default case: AdvancedSortFilter.UpTimeHighToLow
       return validators.sort(
         (a, b): number => Number(b.uptime) - Number(a.uptime)
       )
