@@ -13,3 +13,14 @@ export const useNodes = () => {
     }
   })
 }
+
+export const useGetBalance = (addresses: string[]) => {
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
+
+  return useQuery({
+    queryKey: ['stakingBalances', isDeveloperMode, addresses],
+    queryFn: async () => {
+      return EarnService.getBalances(isDeveloperMode, addresses)
+    }
+  })
+}
