@@ -138,15 +138,11 @@ export default async function sendResults() {
 export async function isResultExists(caseId: number) {
   const caseDetails = await api.getResults(caseId)
   if (caseDetails.length > 0) {
-    console.log('true')
     return true
   } else {
-    console.log('false')
     return false
   }
 }
-
-isResultExists(717018)
 
 // Updates the results for an existing test run or and empty test run
 async function generatePlatformResults(
