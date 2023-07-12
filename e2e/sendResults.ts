@@ -135,12 +135,18 @@ export default async function sendResults() {
   }
 }
 
-async function checkAttachmentExists(caseId: number) {
+export async function isResultExists(caseId: number) {
   const caseDetails = await api.getResults(caseId)
-  console.log(caseDetails)
+  if (caseDetails.length > 0) {
+    console.log('true')
+    return true
+  } else {
+    console.log('false')
+    return false
+  }
 }
 
-checkAttachmentExists(734584)
+isResultExists(717018)
 
 // Updates the results for an existing test run or and empty test run
 async function generatePlatformResults(
@@ -172,20 +178,19 @@ async function generatePlatformResults(
     for (let i = 0; i < resultArray.length; i++) {
       const resultObject = resultArray[i]
       const statusId = resultObject?.status_id
+      const testCaseId = resultObject?.case_id
+      const isResultsExists = isResultExist(testCaseId)
       const payload = {
         status_id: statusId
       }
 
-      if (resultObject) {
+      if (resultObject && !isResultsExists) {
         const testResult = await api.addResultForCase(
           Number(runId),
           resultObject?.case_id,
           payload
         )
-        if (
-          testResult.status_id === 5 &&
-          testResult.attachment_ids.length === 0
-        ) {
+        if (testResult.status_id === 5) {
           // This is the path to the screenshot for when the test fails
           const failScreenshot = `./e2e/artifacts/${platform}/${resultObject.screenshot}`
           if (failScreenshot) {
