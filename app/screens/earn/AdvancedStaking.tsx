@@ -19,11 +19,11 @@ const AdvancedStaking = () => {
   const { navigate } = useNavigation<NavigationProp['navigation']>()
   const { stakingAmount, stakingEndTime } =
     useRoute<NavigationProp['route']>().params
-  const [minUptime, setMinUptime] = useState<string | undefined>(undefined)
+  const [minUpTime, setMinUpTime] = useState<string | undefined>(undefined)
   const [maxFee, setMaxFee] = useState<string | undefined>(undefined)
   const isMaxFeeValid = !!maxFee && Number(maxFee) >= 2 && Number(maxFee) <= 20
   const isMinUptimeValid =
-    !!minUptime && Number(minUptime) >= 1 && Number(minUptime) <= 99
+    !!minUpTime && Number(minUpTime) >= 1 && Number(minUpTime) <= 99
   const isNextDisabled = !isMaxFeeValid || !isMinUptimeValid
 
   return (
@@ -39,7 +39,7 @@ const AdvancedStaking = () => {
           Choose the parameters for your desired staking node.
         </AvaText.Subtitle1>
         <View>
-          <View style={{ marginBottom: 24 }}>
+          <View style={{ marginBottom: 24, alignItems: 'flex-start' }}>
             <Popable
               content={
                 <PopableContent
@@ -48,7 +48,8 @@ const AdvancedStaking = () => {
                   message="This is a validator’s uptime, the minimum threshold for rewards is 80%"
                 />
               }
-              position={'top'}
+              position={'right'}
+              strictPosition={true}
               style={{ minWidth: 200 }}
               backgroundColor={theme.neutral100}>
               <PopableLabel
@@ -63,9 +64,9 @@ const AdvancedStaking = () => {
             </Popable>
             <InputText
               placeholder={'Enter minimum uptime'}
-              text={minUptime ?? ''}
+              text={minUpTime ?? ''}
               backgroundColor={theme.neutral700 + Opacity50}
-              onChangeText={text => setMinUptime(text)}
+              onChangeText={text => setMinUpTime(text)}
               keyboardType="numeric"
               style={styles.inputContainer}
             />
@@ -74,7 +75,7 @@ const AdvancedStaking = () => {
               Enter a value between 1-99%
             </AvaText.Caption>
           </View>
-          <View>
+          <View style={{ alignItems: 'flex-start' }}>
             <Popable
               content={
                 <PopableContent
@@ -83,7 +84,8 @@ const AdvancedStaking = () => {
                   message="This is a range set by the protocol."
                 />
               }
-              position={'top'}
+              position={'right'}
+              strictPosition={true}
               style={{ minWidth: 200 }}
               backgroundColor={theme.neutral100}>
               <PopableLabel
@@ -117,8 +119,8 @@ const AdvancedStaking = () => {
           disabled={isNextDisabled}
           onPress={() =>
             navigate(AppNavigation.Earn.SelectNode, {
-              minUptime,
-              maxFee,
+              minUpTime: Number(minUpTime),
+              maxFee: Number(maxFee),
               stakingAmount,
               stakingEndTime
             })

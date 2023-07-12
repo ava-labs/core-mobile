@@ -1,58 +1,68 @@
-import React, { useMemo, useState } from 'react'
+import React, { useState } from 'react'
 import { FlatList, StyleSheet, View } from 'react-native'
 import AvaText from 'components/AvaText'
 import SearchBar from 'components/SearchBar'
 import { useNodes } from 'hooks/earn/useNodes'
 import DropDown from 'components/Dropdown'
-import { GetCurrentValidatorsResponse } from '@avalabs/avalanchejs-v2/dist/src/vms/pvm'
 import { Space } from 'components/Space'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { EarnScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
 import { useRoute } from '@react-navigation/native'
+import { NodeValidator, TAdvancedFilterDropDownItems } from 'types/earn'
+import { useAdvancedSearchNodes } from 'hooks/earn/useAdvancedSearchNodes'
+import { UP_TIME_HIGH_TO_LOW, advancedFilterDropDownItems } from 'consts/earn'
 import { Spinner } from '../../../storybook/stories/Lotties.stories'
 import { NodeCard } from './components/NodeCard'
-
-export type NodeValidator = GetCurrentValidatorsResponse['validators'][0] & {
-  delegatorCount?: string
-  delegatorWeight?: string
-}
-export type NodeValidators = NodeValidator[]
+import { NoMatchFound } from './components/NoMatchFound'
 
 type NavigationProp = EarnScreenProps<typeof AppNavigation.Earn.SelectNode>
 
 const SelectNode = () => {
   const [searchText, setSearchText] = useState('')
-  const [filter, setFilter] = useState(dropdownItems[0])
-  const { stakingAmount } = useRoute<NavigationProp['route']>().params
+  const [filter, setFilter] =
+    useState<TAdvancedFilterDropDownItems>(UP_TIME_HIGH_TO_LOW)
+  const { stakingAmount, stakingEndTime, minUpTime, maxFee } =
+    useRoute<NavigationProp['route']>().params
 
-  const { isFetching, data } = useNodes()
+  const { isFetching, data, error } = useNodes()
+  const { validators, error: useAdvancedSearchNodesError } =
+    useAdvancedSearchNodes({
+      validators: data?.validators,
+      stakingAmount,
+      stakingEndTime,
+      minUpTime,
+      maxFee,
+      sortFilter: filter.key,
+      searchText
+    })
 
   const handleSearch = (text: string) => {
     setSearchText(text)
   }
 
-  const filteredNodes = useMemo<NodeValidator[] | undefined>(() => {
-    return data?.validators.filter(
-      node => node.nodeID.toLowerCase().search(searchText.toLowerCase()) !== -1
-    )
-  }, [data, searchText])
-
-  const selectedFilter = dropdownItems.findIndex(
-    option => option.name === filter?.name
+  const selectedFilter = advancedFilterDropDownItems.findIndex(
+    option => option === filter
   )
 
-  const renderFilterOption = ({ item }: { item: { name: string } }) => {
-    return <OptionsRenderItem name={item.name} />
+  const renderFilterOption = ({
+    item
+  }: {
+    item: TAdvancedFilterDropDownItems
+  }) => {
+    return <OptionsRenderItem name={item.key} />
   }
 
-  const renderSelectedFilterOption = (item: { name: string }) => {
-    return <SelectionRenderItem name={item.name} />
+  const renderSelectedFilterOption = (item: TAdvancedFilterDropDownItems) => {
+    return <SelectionRenderItem item={item} />
   }
 
   const renderItem = ({ item }: { item: NodeValidator }) => {
     return <NodeCard data={item} stakingAmount={stakingAmount} />
   }
+
+  if (error || useAdvancedSearchNodesError || validators.length === 0)
+    return <NoMatchFound />
 
   return (
     <View style={styles.container}>
@@ -74,7 +84,7 @@ const SelectNode = () => {
               />
               <View style={styles.dropdownContainer}>
                 <DropDown
-                  data={dropdownItems}
+                  data={advancedFilterDropDownItems}
                   alignment={'flex-end'}
                   width={200}
                   optionsRenderItem={renderFilterOption}
@@ -87,7 +97,7 @@ const SelectNode = () => {
             <View style={{ flex: 1 }}>
               <FlatList
                 style={styles.nodeList}
-                data={filteredNodes}
+                data={validators}
                 renderItem={renderItem}
                 keyExtractor={item => item.nodeID}
                 scrollEventThrottle={16}
@@ -101,25 +111,6 @@ const SelectNode = () => {
   )
 }
 
-const dropdownItems = [
-  { name: 'Uptime: High to Low' },
-  {
-    name: 'Uptime: Low to High'
-  },
-  {
-    name: 'Fee: High to Low'
-  },
-  {
-    name: 'Fee: Low to High'
-  },
-  {
-    name: 'Duration: High to Low'
-  },
-  {
-    name: 'Duration: Low to High'
-  }
-]
-
 const Separator = () => <Space y={16} />
 
 const OptionsRenderItem = ({ name }: { name: string }) => {
@@ -130,11 +121,15 @@ const OptionsRenderItem = ({ name }: { name: string }) => {
   )
 }
 
-const SelectionRenderItem = ({ name }: { name: string }) => {
+const SelectionRenderItem = ({
+  item
+}: {
+  item: TAdvancedFilterDropDownItems
+}) => {
   const { theme } = useApplicationContext()
   return (
     <AvaText.ButtonSmall textStyle={{ color: theme.neutral50 }}>
-      Filter: {name}
+      Sort by: {item.sortByTitle}
     </AvaText.ButtonSmall>
   )
 }

@@ -2,7 +2,7 @@ import { bnToBig, bnToLocaleString } from '@avalabs/utils-sdk'
 import Big from 'big.js'
 import BN from 'bn.js'
 import { add, addYears, getUnixTime } from 'date-fns'
-import { NodeValidator, NodeValidators } from 'screens/earn/SelectNode'
+import { AdvancedSortFilter, NodeValidator, NodeValidators } from 'types/earn'
 import { random } from 'lodash'
 import { FujiParams, MainnetParams } from 'utils/NetworkParams'
 
@@ -101,6 +101,8 @@ type getFilteredValidatorsProps = {
   isDeveloperMode: boolean
   stakingEndTime: Date
   minUpTime?: number
+  maxFee?: number
+  searchText?: string
 }
 /**
  *
@@ -109,6 +111,8 @@ type getFilteredValidatorsProps = {
  * @param isDeveloperMode
  * @param stakingEndTime
  * @param minUpTime
+ * @param maxFee
+ * @param searchText  search text for nodeID
  * @returns filtered list of validators that match the following filter criteria
  * - stakingAmount
  * - stakingEndTime
@@ -120,24 +124,30 @@ export const getFilteredValidators = ({
   stakingAmount,
   isDeveloperMode,
   stakingEndTime,
-  minUpTime = 0
+  minUpTime = 0,
+  maxFee,
+  searchText
 }: getFilteredValidatorsProps) => {
   const stakingEndTimeUnix = getUnixTime(stakingEndTime) // timestamp in seconds
   const stakingAmountNumber = Number(
     bnToLocaleString(stakingAmount.div(new BN(1e9)))
   )
 
-  const filtered = validators.filter(({ endTime, weight, uptime }) => {
-    const availableDelegationWeight = getAvailableDelegationWeight(
-      isDeveloperMode,
-      weight
-    )
-    return (
-      availableDelegationWeight > stakingAmountNumber &&
-      hasMinimumStakingTime(Number(endTime), stakingEndTimeUnix) &&
-      Number(uptime) >= minUpTime
-    )
-  })
+  const filtered = validators.filter(
+    ({ endTime, weight, uptime, delegationFee, nodeID }) => {
+      const availableDelegationWeight = getAvailableDelegationWeight(
+        isDeveloperMode,
+        weight
+      )
+      return (
+        (searchText ? nodeID.includes(searchText) : true) &&
+        availableDelegationWeight > stakingAmountNumber &&
+        hasMinimumStakingTime(Number(endTime), stakingEndTimeUnix) &&
+        Number(uptime) >= minUpTime &&
+        (maxFee ? Number(delegationFee) <= maxFee : true)
+      )
+    }
+  )
   return filtered
 }
 
@@ -165,4 +175,43 @@ export const getRandomValidator = (validators: NodeValidators) => {
   const randomIndex = random(0, endIndex)
   const matchedValidator = validators.at(randomIndex)
   return matchedValidator as NodeValidator
+}
+
+/**
+ *
+ * @param validators,
+ * @param advancedSortFilter filter to sort validators by uptime, fee, or duration
+ * @returns sorted validators
+ */
+export const getAdvancedSortedValidators = (
+  validators: NodeValidators,
+  sortFilter: AdvancedSortFilter
+) => {
+  switch (sortFilter) {
+    case AdvancedSortFilter.UpTimeLowToHigh:
+      return validators.sort(
+        (a, b): number => Number(a.uptime) - Number(b.uptime)
+      )
+    case AdvancedSortFilter.FeeHighToLow:
+      return validators.sort(
+        (a, b): number => Number(b.delegationFee) - Number(a.delegationFee)
+      )
+    case AdvancedSortFilter.FeeLowToHigh:
+      return validators.sort(
+        (a, b): number => Number(a.delegationFee) - Number(b.delegationFee)
+      )
+    case AdvancedSortFilter.DurationHighToLow:
+      return validators.sort(
+        (a, b): number => Number(b.endTime) - Number(a.endTime)
+      )
+    case AdvancedSortFilter.DurationLowToHigh:
+      return validators.sort(
+        (a, b): number => Number(a.endTime) - Number(b.endTime)
+      )
+    case AdvancedSortFilter.UpTimeHighToLow:
+    default:
+      return validators.sort(
+        (a, b): number => Number(b.uptime) - Number(a.uptime)
+      )
+  }
 }

@@ -1,9 +1,10 @@
 import Big from 'big.js'
 import { stringToBN } from '@avalabs/utils-sdk'
-import { NodeValidators } from 'screens/earn/SelectNode'
+import { AdvancedSortFilter, NodeValidators } from 'types/earn'
 import mockValidators from 'tests/fixtures/pvm/validators.json'
 import {
   calculateMaxWeight,
+  getAdvancedSortedValidators,
   getFilteredValidators,
   getRandomValidator,
   getSimpleSortedValidators
@@ -107,5 +108,55 @@ describe('getRandomValidator function', () => {
   it('should return undefined if validators prop is empty', () => {
     const result = getRandomValidator([])
     expect(result).toBe(undefined)
+  })
+})
+
+describe('getAdvancedSortedValidators function', () => {
+  const validators = [
+    { uptime: '50', delegationFee: '10.0000', endTime: '3844249830' },
+    { uptime: '99', delegationFee: '2.0000', endTime: '4844249830' },
+    { uptime: '1', delegationFee: '100.0000', endTime: '2844249830' }
+  ]
+  it('should return sorted validators by uptime high to low', () => {
+    const sorted = getAdvancedSortedValidators(
+      validators as unknown as NodeValidators,
+      AdvancedSortFilter.UpTimeHighToLow
+    )
+    expect(sorted[0]?.uptime).toBe('99')
+  })
+  it('should return sorted validators by uptime low to high', () => {
+    const sorted = getAdvancedSortedValidators(
+      validators as unknown as NodeValidators,
+      AdvancedSortFilter.UpTimeLowToHigh
+    )
+    expect(sorted[0]?.uptime).toBe('1')
+  })
+  it('should return sorted validators by delegation fee high to low', () => {
+    const sorted = getAdvancedSortedValidators(
+      validators as unknown as NodeValidators,
+      AdvancedSortFilter.FeeHighToLow
+    )
+    expect(sorted[0]?.delegationFee).toBe('100.0000')
+  })
+  it('should return sorted validators by delegation fee low to high', () => {
+    const sorted = getAdvancedSortedValidators(
+      validators as unknown as NodeValidators,
+      AdvancedSortFilter.FeeLowToHigh
+    )
+    expect(sorted[0]?.delegationFee).toBe('2.0000')
+  })
+  it('should return sorted validators by duration high to low', () => {
+    const sorted = getAdvancedSortedValidators(
+      validators as unknown as NodeValidators,
+      AdvancedSortFilter.DurationHighToLow
+    )
+    expect(sorted[0]?.endTime).toBe('4844249830')
+  })
+  it('should return sorted validators by duration low to high', () => {
+    const sorted = getAdvancedSortedValidators(
+      validators as unknown as NodeValidators,
+      AdvancedSortFilter.DurationLowToHigh
+    )
+    expect(sorted[0]?.endTime).toBe('2844249830')
   })
 })
