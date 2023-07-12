@@ -5,13 +5,13 @@ import { PixelRatio, StyleSheet, View } from 'react-native'
 import AvaLogoSVG from 'components/svg/AvaLogoSVG'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 
-interface CircularProgressProps {
+interface DonutChartProps {
   availableAmount: number
   stakedAmount: number
   claimableAmount: number
 }
 
-export const DonutChart: FC<CircularProgressProps> = ({
+export const DonutChart: FC<DonutChartProps> = ({
   availableAmount,
   claimableAmount,
   stakedAmount
@@ -56,14 +56,14 @@ export const DonutChart: FC<CircularProgressProps> = ({
         </Path>
         <Path
           path={path}
-          color={theme.pieChartGreenStroke}
+          color={theme.colorSuccess}
           style="stroke"
           strokeJoin="round"
           strokeWidth={strokeWidth}
           strokeCap="round"
           start={stakedPercentage}
           end={1}>
-          <Shadow dx={-1} dy={-1} color={theme.pieChartGreenStroke} blur={3} />
+          <Shadow dx={-1} dy={-1} color={theme.colorSuccess} blur={3} />
         </Path>
       </Canvas>
       <View style={styles.iconContainer}>
