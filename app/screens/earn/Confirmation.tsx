@@ -19,15 +19,15 @@ import { truncateNodeId } from 'utils/Utils'
 import CopySVG from 'components/svg/CopySVG'
 import { copyToClipboard } from 'utils/DeviceTools'
 import { format, fromUnixTime } from 'date-fns'
-import { bnToLocaleString, bnToBig } from '@avalabs/utils-sdk'
 import { useEarnCalcEstimatedRewards } from 'hooks/earn/useEarnCalcEstimatedRewards'
 import { useSelector } from 'react-redux'
 import { selectAvaxPrice } from 'store/balance'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { getReadableDateDuration } from 'utils/date/getReadableDateDuration'
-import { BN } from 'bn.js'
 import { selectActiveNetwork } from 'store/network'
 import { useGetValidatorByNodeId } from 'hooks/earn/useGetValidatorByNodeId'
+import Big from 'big.js'
+import { N_AVAX_PER_AVAX } from 'consts/earn'
 
 type NavigationProp = EarnScreenProps<typeof AppNavigation.Earn.Confirmation>
 
@@ -39,14 +39,14 @@ export const Confirmation = () => {
     appHook: { tokenInCurrencyFormatter }
   } = useApplicationContext()
   const {
-    networkToken: { symbol, decimals }
+    networkToken: { symbol }
   } = useSelector(selectActiveNetwork)
   const avaxPrice = useSelector(selectAvaxPrice)
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { navigate } = useNavigation<NavigationProp['navigation']>()
   const validatorEndTime = fromUnixTime(Number(validator?.endTime))
   const { data } = useEarnCalcEstimatedRewards({
-    amount: bnToBig(stakingAmount, decimals),
+    amount: stakingAmount,
     duration: validatorEndTime.getTime() - new Date().getTime(),
     delegationFee: Number(validator?.delegationFee)
   })
@@ -54,14 +54,14 @@ export const Confirmation = () => {
   const { delegationFeeAvax, stakingAmountPrice, stakingAmountAvax } =
     useMemo(() => {
       const stakingAmountInAvax = Number(
-        bnToLocaleString(stakingAmount.div(new BN(1e9)))
+        stakingAmount.div(new Big(N_AVAX_PER_AVAX))
       )
       const delegationFee =
         (Number(validator?.delegationFee) / 100) * stakingAmountInAvax
       return {
         stakingAmountAvax: stakingAmountInAvax,
         stakingAmountPrice: stakingAmountInAvax * avaxPrice,
-        delegationFeeAvax: delegationFee.toFixed(4)
+        delegationFeeAvax: delegationFee.toLocaleString()
       }
     }, [avaxPrice, stakingAmount, validator?.delegationFee])
 

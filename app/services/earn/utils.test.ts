@@ -1,7 +1,7 @@
 import Big from 'big.js'
-import { stringToBN } from '@avalabs/utils-sdk'
 import { AdvancedSortFilter, NodeValidators } from 'types/earn'
 import mockValidators from 'tests/fixtures/pvm/validators.json'
+import { N_AVAX_PER_AVAX } from 'consts/earn'
 import {
   calculateMaxWeight,
   getAdvancedSortedValidators,
@@ -42,7 +42,7 @@ describe('getFilteredValidators function', () => {
   it('should return empty array when the validators input is empty', () => {
     const result = getFilteredValidators({
       validators: [] as unknown as NodeValidators,
-      stakingAmount: stringToBN('1', 18),
+      stakingAmount: new Big(N_AVAX_PER_AVAX),
       isDeveloperMode: true,
       stakingEndTime: new Date('1900-07-05T16:52:40.723Z'),
       minUpTime: 99.9999
@@ -52,7 +52,7 @@ describe('getFilteredValidators function', () => {
   it('should return filtered validators that meet the selected uptime', () => {
     const result = getFilteredValidators({
       validators: mockValidators.validators as unknown as NodeValidators,
-      stakingAmount: stringToBN('1', 18),
+      stakingAmount: new Big(N_AVAX_PER_AVAX),
       isDeveloperMode: true,
       stakingEndTime: new Date('1900-07-05T16:52:40.723Z'),
       minUpTime: 99.9999
@@ -63,7 +63,7 @@ describe('getFilteredValidators function', () => {
   it('should return filtered validators that meet the selected staking duration', () => {
     const result = getFilteredValidators({
       validators: mockValidators.validators as unknown as NodeValidators,
-      stakingAmount: stringToBN('1', 18),
+      stakingAmount: new Big(N_AVAX_PER_AVAX),
       isDeveloperMode: true,
       stakingEndTime: new Date('2122-07-05T16:57:10.140Z')
     })
@@ -73,7 +73,7 @@ describe('getFilteredValidators function', () => {
   it('should return filtered validators that meet the selected staking amount', () => {
     const result = getFilteredValidators({
       validators: mockValidators.validators as unknown as NodeValidators,
-      stakingAmount: stringToBN('100', 18),
+      stakingAmount: new Big(100 * N_AVAX_PER_AVAX),
       isDeveloperMode: true,
       stakingEndTime: new Date()
     })

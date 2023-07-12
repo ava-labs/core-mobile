@@ -1,4 +1,3 @@
-import BN from 'bn.js'
 import { useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import Big from 'big.js'
@@ -6,11 +5,6 @@ import EarnService from 'services/earn/EarnService'
 import { selectAvaxPrice } from 'store/balance'
 import { useQuery } from '@tanstack/react-query'
 import { GetCurrentSupplyResponse } from '@avalabs/avalanchejs-v2/dist/src/vms/pvm'
-
-export type StakingRewards = {
-  estimatedTokenReward: BN
-  estimatedRewardAmount: number
-}
 
 export type useEarnCalcEstimatedRewardsProps = {
   amount: Big
@@ -20,7 +14,7 @@ export type useEarnCalcEstimatedRewardsProps = {
 
 /**
  *
- * @param amount nAVAX with denomination 18
+ * @param amount nAVAX
  * @param duration between current datetime to validator end time
  * @param delegationFee
  * @returns

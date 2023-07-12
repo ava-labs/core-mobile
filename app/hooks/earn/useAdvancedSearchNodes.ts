@@ -1,4 +1,4 @@
-import BN from 'bn.js'
+import Big from 'big.js'
 import { useSelector } from 'react-redux'
 import {
   getAdvancedSortedValidators,
@@ -9,7 +9,7 @@ import { AdvancedSortFilter, NodeValidators } from 'types/earn'
 import Logger from 'utils/Logger'
 
 export type useAdvancedSearchNodesProps = {
-  stakingAmount: BN
+  stakingAmount: Big
   stakingEndTime: Date
   minUpTime?: number
   maxFee?: number
@@ -18,6 +18,17 @@ export type useAdvancedSearchNodesProps = {
   searchText?: string
 }
 
+/**
+ *
+ * @param stakingAmount filter by staking amount
+ * @param stakingEndTime filter by staking end time
+ * @param minUpTime filter by minimum up time
+ * @param maxFee filter by max delegation fee
+ * @param validators list of validators to filter from
+ * @param sortFilter sort by upTime, delegation fee, or duration
+ * @param searchText search by nodeID
+ * @returns filtered & sorted validators and error
+ */
 export const useAdvancedSearchNodes = ({
   stakingAmount,
   stakingEndTime,

@@ -15,7 +15,6 @@ import { copyToClipboard } from 'utils/DeviceTools'
 import Big from 'big.js'
 import LinearGradientSVG from 'components/svg/LinearGradientSVG'
 import { format } from 'date-fns'
-import BN from 'bn.js'
 import { calculateMaxWeight, generateGradient } from 'services/earn/utils'
 import { NodeValidator } from 'types/earn'
 import { PopableContentWithCaption } from './PopableContentWithCaption'
@@ -29,7 +28,7 @@ export const NodeCard = ({
   stakingAmount
 }: {
   data: NodeValidator
-  stakingAmount: BN
+  stakingAmount: Big
 }) => {
   const { theme } = useApplicationContext()
   const [isCardExpanded, setIsCardExpanded] = useState(false)
