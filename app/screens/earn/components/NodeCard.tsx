@@ -17,7 +17,8 @@ import LinearGradientSVG from 'components/svg/LinearGradientSVG'
 import { format } from 'date-fns'
 import BN from 'bn.js'
 import { calculateMaxWeight, generateGradient } from 'services/earn/utils'
-import { NodeValidator } from '../SelectNode'
+import { NodeValidator } from 'types/earn'
+import { PopableContentWithCaption } from './PopableContentWithCaption'
 
 type NavigationProp = EarnScreenProps<
   typeof AppNavigation.Earn.SelectNode
@@ -135,9 +136,10 @@ export const NodeCard = ({
         />
         <View>
           <Row style={styles.rowContainer}>
-            <AvaText.Caption textStyle={{ color: theme.neutral400 }}>
-              Node ID
-            </AvaText.Caption>
+            <PopableContentWithCaption
+              label="Node ID"
+              message="ID of the node"
+            />
             <AvaText.Body2
               textStyle={{
                 color: theme.neutral50,
@@ -147,33 +149,41 @@ export const NodeCard = ({
             </AvaText.Body2>
           </Row>
           <Row style={styles.rowContainer}>
-            <AvaText.Caption textStyle={{ color: theme.neutral400 }}>
-              Staking Fee
-            </AvaText.Caption>
+            <PopableContentWithCaption
+              label="Staking Fee"
+              message="Fee set and retained by the validator"
+              contentWidth={150}
+            />
             <AvaText.Body2 textStyle={{ color: theme.neutral50 }}>
               {`${Number(data.delegationFee).toFixed(0)}%`}
             </AvaText.Body2>
           </Row>
           <Row style={styles.rowContainer}>
-            <AvaText.Caption textStyle={{ color: theme.neutral400 }}>
-              Validator Stake
-            </AvaText.Caption>
+            <PopableContentWithCaption
+              label="Validator Stake"
+              message="Amount of AVAX staked by the validator"
+              contentWidth={150}
+            />
             <AvaText.Body2 textStyle={{ color: theme.neutral50 }}>
               {(formatLargeNumber(validatorStake), 4)}
             </AvaText.Body2>
           </Row>
           <Row style={styles.rowContainer}>
-            <AvaText.Caption textStyle={{ color: theme.neutral400 }}>
-              Available
-            </AvaText.Caption>
+            <PopableContentWithCaption
+              label="Available"
+              message="Amount of AVAX the validator can accept"
+              contentWidth={150}
+            />
             <AvaText.Body2 textStyle={{ color: theme.neutral50 }}>
               {formatLargeNumber(available.toNumber(), 4)}
             </AvaText.Body2>
           </Row>
           <Row style={styles.rowContainer}>
-            <AvaText.Caption textStyle={{ color: theme.neutral400 }}>
-              Delegates
-            </AvaText.Caption>
+            <PopableContentWithCaption
+              label="Delegates"
+              message="Number of addresses delegating to the validator"
+              contentWidth={150}
+            />
             <AvaText.Body2 textStyle={{ color: theme.neutral50 }}>
               {data.delegatorCount}
             </AvaText.Body2>
