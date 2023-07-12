@@ -144,8 +144,6 @@ export async function isResultExistsInTestrail(runID: number, caseId: number) {
   }
 }
 
-isResultExistsInTestrail(3247, 1134)
-
 // Updates the results for an existing test run or and empty test run
 async function generatePlatformResults(
   testCasesToSend: any,
