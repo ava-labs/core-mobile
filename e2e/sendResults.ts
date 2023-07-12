@@ -135,14 +135,16 @@ export default async function sendResults() {
   }
 }
 
-export async function isResultExists(caseId: number) {
-  const caseDetails = await api.getResults(caseId)
+export async function isResultExistsInTestrail(runID: number, caseId: number) {
+  const caseDetails = await api.getResultsForCase(runID, caseId)
   if (caseDetails.length > 0) {
     return true
   } else {
     return false
   }
 }
+
+isResultExistsInTestrail(3247, 1134)
 
 // Updates the results for an existing test run or and empty test run
 async function generatePlatformResults(
@@ -175,7 +177,7 @@ async function generatePlatformResults(
       const resultObject = resultArray[i]
       const statusId = resultObject?.status_id
       const testCaseId = resultObject?.case_id
-      const isResultsExists = isResultExist(testCaseId)
+      const isResultsExists = isResultExist(Number(runId), testCaseId)
       const payload = {
         status_id: statusId
       }
