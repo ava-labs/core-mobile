@@ -125,7 +125,7 @@ export const getFilteredValidators = ({
   isDeveloperMode,
   stakingEndTime,
   minUpTime = 0,
-  maxFee = 100,
+  maxFee,
   searchText
 }: getFilteredValidatorsProps) => {
   const stakingEndTimeUnix = getUnixTime(stakingEndTime) // timestamp in seconds
