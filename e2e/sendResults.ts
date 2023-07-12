@@ -111,7 +111,7 @@ export default async function sendResults() {
   const testCasesToSend = preparedFinalResults.testCasesToSend
   const resultsToSendToTestrail = preparedFinalResults.resultsToSendToTestrail
 
-  if (process.env.POST_TO_TESTRAIL) {
+  if (process.env.POST_TO_TESTRAIL === 'true') {
     if (await isResultPresent('android')) {
       await generatePlatformResults(
         testCasesToSend,
