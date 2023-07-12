@@ -2,11 +2,7 @@ import { bnToBig, bnToLocaleString } from '@avalabs/utils-sdk'
 import Big from 'big.js'
 import BN from 'bn.js'
 import { add, addYears, getUnixTime } from 'date-fns'
-import {
-  AdvancedSortFilter,
-  NodeValidator,
-  NodeValidators
-} from 'types/earn.types'
+import { AdvancedSortFilter, NodeValidator, NodeValidators } from 'types/earn'
 import { random } from 'lodash'
 import { FujiParams, MainnetParams } from 'utils/NetworkParams'
 
@@ -129,7 +125,7 @@ export const getFilteredValidators = ({
   isDeveloperMode,
   stakingEndTime,
   minUpTime = 0,
-  maxFee = 20,
+  maxFee = 100,
   searchText
 }: getFilteredValidatorsProps) => {
   const stakingEndTimeUnix = getUnixTime(stakingEndTime) // timestamp in seconds
@@ -192,10 +188,6 @@ export const getAdvancedSortedValidators = (
   sortFilter: AdvancedSortFilter
 ) => {
   switch (sortFilter) {
-    case AdvancedSortFilter.UpTimeHighToLow:
-      return validators.sort(
-        (a, b): number => Number(b.uptime) - Number(a.uptime)
-      )
     case AdvancedSortFilter.UpTimeLowToHigh:
       return validators.sort(
         (a, b): number => Number(a.uptime) - Number(b.uptime)
@@ -215,6 +207,11 @@ export const getAdvancedSortedValidators = (
     case AdvancedSortFilter.DurationLowToHigh:
       return validators.sort(
         (a, b): number => Number(a.endTime) - Number(b.endTime)
+      )
+    default:
+      // default case: AdvancedSortFilter.UpTimeHighToLow
+      return validators.sort(
+        (a, b): number => Number(b.uptime) - Number(a.uptime)
       )
   }
 }

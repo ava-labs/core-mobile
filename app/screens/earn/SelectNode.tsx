@@ -9,13 +9,9 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import { EarnScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
 import { useRoute } from '@react-navigation/native'
-import {
-  AdvancedSortFilter,
-  NodeValidator,
-  TAdvancedFilterDropDownItems
-} from 'types/earn.types'
+import { NodeValidator, TAdvancedFilterDropDownItems } from 'types/earn'
 import { useAdvancedSearchNodes } from 'hooks/earn/useAdvancedSearchNodes'
-import { HIGH_TO_LOW, advancedFilterDropDownItems } from 'consts/earn.consts'
+import { UP_TIME_HIGH_TO_LOW, advancedFilterDropDownItems } from 'consts/earn'
 import { Spinner } from '../../../storybook/stories/Lotties.stories'
 import { NodeCard } from './components/NodeCard'
 import { NoMatchFound } from './components/NoMatchFound'
@@ -24,12 +20,8 @@ type NavigationProp = EarnScreenProps<typeof AppNavigation.Earn.SelectNode>
 
 const SelectNode = () => {
   const [searchText, setSearchText] = useState('')
-  const [filter, setFilter] = useState<TAdvancedFilterDropDownItems>(
-    advancedFilterDropDownItems[0] ?? {
-      key: AdvancedSortFilter.UpTimeHighToLow,
-      sortByTitle: HIGH_TO_LOW
-    }
-  )
+  const [filter, setFilter] =
+    useState<TAdvancedFilterDropDownItems>(UP_TIME_HIGH_TO_LOW)
   const { stakingAmount, stakingEndTime, minUpTime, maxFee } =
     useRoute<NavigationProp['route']>().params
 

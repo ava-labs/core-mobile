@@ -1,6 +1,6 @@
 import Big from 'big.js'
 import { stringToBN } from '@avalabs/utils-sdk'
-import { AdvancedSortFilter, NodeValidators } from 'types/earn.types'
+import { AdvancedSortFilter, NodeValidators } from 'types/earn'
 import mockValidators from 'tests/fixtures/pvm/validators.json'
 import {
   calculateMaxWeight,

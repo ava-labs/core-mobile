@@ -7,7 +7,7 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { useSelector } from 'react-redux'
 import BN from 'bn.js'
 import Logger from 'utils/Logger'
-import { NodeValidator, NodeValidators } from 'types/earn.types'
+import { NodeValidator, NodeValidators } from 'types/earn'
 
 type useSearchNodeProps = {
   stakingAmount: BN
@@ -24,6 +24,7 @@ export const useSearchNode = ({
   const noMatchError = new Error(
     `no node matches filter criteria: stakingAmount:  ${stakingAmount}, stakingEndTime: ${stakingEndTime}, minUpTime: 98%`
   )
+  const noValidatorsError = new Error(`no validators found.`)
 
   if (validators && validators.length >= 0) {
     const filteredValidators = getFilteredValidators({
@@ -41,6 +42,6 @@ export const useSearchNode = ({
     const matchedValidator = getRandomValidator(sortedValidators)
     return { validator: matchedValidator, error: undefined }
   }
-  Logger.info(noMatchError.message)
-  return { validator: undefined, error: noMatchError }
+  Logger.info(noValidatorsError.message)
+  return { validator: undefined, error: noValidatorsError }
 }

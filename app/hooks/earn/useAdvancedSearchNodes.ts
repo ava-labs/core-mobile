@@ -5,7 +5,7 @@ import {
   getFilteredValidators
 } from 'services/earn/utils'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { AdvancedSortFilter, NodeValidators } from 'types/earn.types'
+import { AdvancedSortFilter, NodeValidators } from 'types/earn'
 import Logger from 'utils/Logger'
 
 export type useAdvancedSearchNodesProps = {
@@ -29,8 +29,9 @@ export const useAdvancedSearchNodes = ({
 }: useAdvancedSearchNodesProps) => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const noMatchError = new Error(
-    `no node matches filter criteria: stakingAmount:  ${stakingAmount}, stakingEndTime: ${stakingEndTime}, minUpTime: 98%`
+    `no node matches filter criteria: stakingAmount:  ${stakingAmount}, stakingEndTime: ${stakingEndTime}, minUpTime: ${minUpTime}`
   )
+  const noValidatorsError = new Error(`no validators found.`)
 
   if (validators && validators.length >= 0) {
     const filteredValidators = getFilteredValidators({
@@ -52,6 +53,6 @@ export const useAdvancedSearchNodes = ({
     )
     return { validators: sortedValidators, error: undefined }
   }
-  Logger.info(noMatchError.message)
-  return { validators: [], error: noMatchError }
+  Logger.info(noValidatorsError.message)
+  return { validators: [], error: noValidatorsError }
 }
