@@ -22,7 +22,7 @@ const CollapsibleSection: FC<Props> = ({
   onExpandedChange,
   titleContainerStyle,
   collapsibleContainerStyle,
-  renderChildrenCollapsed
+  renderChildrenCollapsed = false
 }) => {
   const theme = useApplicationContext().theme
   const [expanded, setExpanded] = useState(startExpanded)

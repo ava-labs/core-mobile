@@ -58,7 +58,6 @@ export const NodeCard = ({
         borderRadius: 8
       }}>
       <CollapsibleSection
-        renderChildrenCollapsed={false}
         onExpandedChange={value => setIsCardExpanded(value)}
         title={
           <View
