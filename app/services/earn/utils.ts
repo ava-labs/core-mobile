@@ -139,11 +139,13 @@ export const getFilteredValidators = ({
         isDeveloperMode,
         weight
       )
-      return availableDelegationWeight > stakingAmountNumber &&
-        hasMinimumStakingTime(Number(endTime), stakingEndTimeUnix) &&
-        Number(uptime) >= minUpTime &&
-        nodeID.includes(searchText ?? '') &&
-        maxFee
+      return searchText
+        ? nodeID.includes(searchText)
+        : true &&
+          availableDelegationWeight > stakingAmountNumber &&
+          hasMinimumStakingTime(Number(endTime), stakingEndTimeUnix) &&
+          Number(uptime) >= minUpTime &&
+          maxFee
         ? Number(delegationFee) <= maxFee
         : true
     }
