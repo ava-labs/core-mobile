@@ -133,12 +133,12 @@ export default async function sendResults() {
         'ios',
         runID
       )
-      writeRunIdToTextFile(runID)
+      writeRunIdToTextFile(`${runID}`)
     }
   }
 }
 
-export async function writeRunIdToTextFile(runId: number) {
+export async function writeRunIdToTextFile(runId: string) {
   fs.writeFile('e2e/testrailRunId.txt', runId, err => {
     if (err) throw err
   })
