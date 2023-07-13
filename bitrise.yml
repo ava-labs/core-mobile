@@ -568,8 +568,12 @@ workflows:
                 npm rebuild detox
                 ./node_modules/.bin/detox test --configuration ios.internal.release.smoke.ci
 
-                envman add --key TESTRAIL_RUN --value $TESTRAIL_RUN_ID
+                txt_file='e2e/testrailRunId.txt'
+
+                run_id=$(head -n 1 txt_file)
+
+                envman add --key TESTRAIL_RUN --value run_id
 
                 echo $TESTRAIL_RUN_ID
-                echo $TESTRAIL_RUN
+                
 
