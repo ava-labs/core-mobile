@@ -111,7 +111,7 @@ export default async function sendResults() {
   const testCasesToSend = preparedFinalResults.testCasesToSend
   const resultsToSendToTestrail = preparedFinalResults.resultsToSendToTestrail
 
-  if (process.env.POST_TO_TESTRAIL) {
+  if (process.env.POST_TO_TESTRAIL === 'true') {
     if (await isResultPresent('android')) {
       await generatePlatformResults(
         testCasesToSend,
@@ -132,6 +132,17 @@ export default async function sendResults() {
         ).runID
       )
     }
+  }
+}
+
+// Todo: Write a check for a different result and if the existing result differs from the result being sent update the result in testrail
+// Checks to see if a result already exists in testrail
+export async function isResultExistsInTestrail(runID: number, caseId: number) {
+  const caseDetails = await api.getResultsForCase(runID, caseId)
+  if (caseDetails.length > 0) {
+    return true
+  } else {
+    return false
   }
 }
 
@@ -164,10 +175,17 @@ async function generatePlatformResults(
 
     for (let i = 0; i < resultArray.length; i++) {
       const resultObject = resultArray[i]
+      const statusId = resultObject?.status_id
+      const testCaseId = resultObject?.case_id
+      const isResultsExists = await isResultExistsInTestrail(
+        Number(runId),
+        testCaseId
+      )
       const payload = {
-        status_id: resultObject?.status_id
+        status_id: statusId
       }
-      if (resultObject) {
+
+      if (resultObject && !isResultsExists) {
         const testResult = await api.addResultForCase(
           Number(runId),
           resultObject?.case_id,
@@ -189,10 +207,6 @@ async function generatePlatformResults(
             console.log(`${attachmentID.attachment_id} is the attachment ID...`)
           }
         }
-      } else {
-        console.log(
-          'result object is null so no results were sent to testrail!!!'
-        )
       }
     }
   } catch (error) {
