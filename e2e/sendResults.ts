@@ -113,16 +113,18 @@ export default async function sendResults() {
 
   if (process.env.POST_TO_TESTRAIL === 'true') {
     if (await isResultPresent('android')) {
+      const runID = (await currentRunID('android')).runID
+      process.TESTRAIL_RUN_ID = runID
       await generatePlatformResults(
         testCasesToSend,
         resultsToSendToTestrail,
         'android',
-        (
-          await currentRunID('android')
-        ).runID
+        runID
       )
     }
     if (await isResultPresent('ios')) {
+      const runID = (await currentRunID('ios')).runID
+      process.TESTRAIL_RUN_ID = runID
       await generatePlatformResults(
         testCasesToSend,
         resultsToSendToTestrail,
