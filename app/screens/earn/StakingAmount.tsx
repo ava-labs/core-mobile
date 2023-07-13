@@ -7,7 +7,11 @@ import { selectNetwork } from 'store/network'
 import { ChainId } from '@avalabs/chains-sdk'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { VsCurrencyType } from '@avalabs/coingecko-sdk'
-import { balanceToDisplayValue, bnToLocaleString } from '@avalabs/utils-sdk'
+import {
+  balanceToDisplayValue,
+  bnToBig,
+  bnToLocaleString
+} from '@avalabs/utils-sdk'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
 import { Row } from 'components/Row'
@@ -21,6 +25,7 @@ import useStakingParams from 'hooks/earn/useStakingParams'
 import { useNavigation } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
 import { EarnScreenProps } from 'navigation/types'
+import { NANO_AVAX_DENOMINATION } from 'utils/NetworkParams'
 
 type EarnScreenNavProps = EarnScreenProps<
   typeof AppNavigation.Earn.StakingAmount
@@ -129,7 +134,7 @@ export default function StakingAmount() {
         <AvaButton.PrimaryLarge
           onPress={() => {
             navigate(AppNavigation.Earn.StakingDuration, {
-              stakingAmount: inputAmountBN
+              stakingAmount: bnToBig(inputAmountBN, NANO_AVAX_DENOMINATION)
             })
           }}>
           Next

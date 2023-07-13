@@ -5,12 +5,12 @@ import {
 } from 'services/earn/utils'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { useSelector } from 'react-redux'
-import BN from 'bn.js'
 import Logger from 'utils/Logger'
 import { NodeValidator, NodeValidators } from 'types/earn'
+import Big from 'big.js'
 
 type useSearchNodeProps = {
-  stakingAmount: BN
+  stakingAmount: Big
   stakingEndTime: Date
   validators?: NodeValidators
 }

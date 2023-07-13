@@ -1,12 +1,19 @@
 import BN from 'bn.js'
 
-const NanoAvax = new BN(1)
-const MicroAvax = NanoAvax.muln(1000)
+const NanoAvax = new BN(1) // 1_000_000_000 (9)
+const MicroAvax = NanoAvax.muln(1000) // 1_000_000_000_000 (12)
 // const Schmeckle = MicroAvax.muln(49).add(NanoAvax.muln(463))
-const MilliAvax = MicroAvax.muln(1000)
-export const Avax = MilliAvax.muln(1000)
-const KiloAvax = Avax.muln(1000)
-export const MegaAvax = KiloAvax.muln(1000)
+const MilliAvax = MicroAvax.muln(1000) // 1_000_000_000_000_000 (15)
+export const Avax = MilliAvax.muln(1000) // 1_000_000_000_000_000_000 (18)
+const KiloAvax = Avax.muln(1000) // 1_000_000_000_000_000_000_000 (21)
+export const MegaAvax = KiloAvax.muln(1000) // 1_000_000_000_000_000_000_000_000 (24)
+
+export const NANO_AVAX_DENOMINATION = 9
+export const MICRO_AVAX_DENOMINATION = 12
+export const MILLI_AVAX_DENOMINATION = 15
+export const AVAX_DENOMINATION = 18
+export const KILO_AVAX_DENOMINATION = 21
+export const MEGA_AVAX_DENOMINATION = 24
 
 export const Hour = 3600
 

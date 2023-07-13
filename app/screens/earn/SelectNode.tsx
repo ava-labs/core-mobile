@@ -61,8 +61,16 @@ const SelectNode = () => {
     return <NodeCard data={item} stakingAmount={stakingAmount} />
   }
 
-  if (error || useAdvancedSearchNodesError || validators.length === 0)
+  if (isFetching)
+    return (
+      <View style={styles.spinnerContainer}>
+        <Spinner size={77} />
+      </View>
+    )
+
+  if (error || useAdvancedSearchNodesError || validators.length === 0) {
     return <NoMatchFound />
+  }
 
   return (
     <View style={styles.container}>
@@ -70,42 +78,36 @@ const SelectNode = () => {
         <AvaText.LargeTitleBold textStyle={{ marginBottom: 16 }}>
           Select Node
         </AvaText.LargeTitleBold>
-        {isFetching ? (
-          <View style={styles.spinnerContainer}>
-            <Spinner size={77} />
+        <>
+          <View>
+            <SearchBar
+              placeholder="Search Node ID"
+              onTextChanged={handleSearch}
+              searchText={searchText}
+            />
+            <View style={styles.dropdownContainer}>
+              <DropDown
+                data={advancedFilterDropDownItems}
+                alignment={'flex-end'}
+                width={200}
+                optionsRenderItem={renderFilterOption}
+                selectedIndex={selectedFilter}
+                selectionRenderItem={renderSelectedFilterOption}
+                onItemSelected={selectedItem => setFilter(selectedItem)}
+              />
+            </View>
           </View>
-        ) : (
-          <>
-            <View>
-              <SearchBar
-                placeholder="Search Node ID"
-                onTextChanged={handleSearch}
-                searchText={searchText}
-              />
-              <View style={styles.dropdownContainer}>
-                <DropDown
-                  data={advancedFilterDropDownItems}
-                  alignment={'flex-end'}
-                  width={200}
-                  optionsRenderItem={renderFilterOption}
-                  selectedIndex={selectedFilter}
-                  selectionRenderItem={renderSelectedFilterOption}
-                  onItemSelected={selectedItem => setFilter(selectedItem)}
-                />
-              </View>
-            </View>
-            <View style={{ flex: 1 }}>
-              <FlatList
-                style={styles.nodeList}
-                data={validators}
-                renderItem={renderItem}
-                keyExtractor={item => item.nodeID}
-                scrollEventThrottle={16}
-                ItemSeparatorComponent={Separator}
-              />
-            </View>
-          </>
-        )}
+          <View style={{ flex: 1 }}>
+            <FlatList
+              style={styles.nodeList}
+              data={validators}
+              renderItem={renderItem}
+              keyExtractor={item => item.nodeID}
+              scrollEventThrottle={16}
+              ItemSeparatorComponent={Separator}
+            />
+          </View>
+        </>
       </View>
     </View>
   )
