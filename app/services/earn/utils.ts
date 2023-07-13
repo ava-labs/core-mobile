@@ -1,13 +1,10 @@
-import { bnToBig, bnToLocaleString } from '@avalabs/utils-sdk'
+import { bnToBig } from '@avalabs/utils-sdk'
 import Big from 'big.js'
-import BN from 'bn.js'
 import { add, addYears, getUnixTime } from 'date-fns'
 import { AdvancedSortFilter, NodeValidator, NodeValidators } from 'types/earn'
 import { random } from 'lodash'
 import { FujiParams, MainnetParams } from 'utils/NetworkParams'
-
-export const MAX_VALIDATOR_WEIGHT_FACTOR = 5
-const N_AVAX_PER_AVAX = 1_000_000_000
+import { MAX_VALIDATOR_WEIGHT_FACTOR } from 'consts/earn'
 
 /**
  * See https://docs.avax.network/subnets/reference-elastic-subnets-parameters#primary-network-parameters-on-mainnet
@@ -92,12 +89,12 @@ const getAvailableDelegationWeight = (
     bnToBig(maxValidatorStake),
     new Big(weight)
   )
-  return Number(maxWeight.maxDelegation) / N_AVAX_PER_AVAX
+  return maxWeight.maxDelegation
 }
 
 type getFilteredValidatorsProps = {
   validators: NodeValidators
-  stakingAmount: BN
+  stakingAmount: Big
   isDeveloperMode: boolean
   stakingEndTime: Date
   minUpTime?: number
@@ -106,12 +103,12 @@ type getFilteredValidatorsProps = {
 }
 /**
  *
- * @param validators
- * @param stakingAmount  nAVAX with denomination 18
+ * @param validators  list of validators to filter from
+ * @param stakingAmount  nAVAX
  * @param isDeveloperMode
- * @param stakingEndTime
- * @param minUpTime
- * @param maxFee
+ * @param stakingEndTime stake end time to filter by
+ * @param minUpTime minimum up time to filter by
+ * @param maxFee maximum delegation fee to filter by
  * @param searchText  search text for nodeID
  * @returns filtered list of validators that match the following filter criteria
  * - stakingAmount
@@ -129,9 +126,6 @@ export const getFilteredValidators = ({
   searchText
 }: getFilteredValidatorsProps) => {
   const stakingEndTimeUnix = getUnixTime(stakingEndTime) // timestamp in seconds
-  const stakingAmountNumber = Number(
-    bnToLocaleString(stakingAmount.div(new BN(1e9)))
-  )
 
   const filtered = validators.filter(
     ({ endTime, weight, uptime, delegationFee, nodeID }) => {
@@ -141,7 +135,7 @@ export const getFilteredValidators = ({
       )
       return (
         (searchText ? nodeID.includes(searchText) : true) &&
-        availableDelegationWeight > stakingAmountNumber &&
+        availableDelegationWeight.toNumber() > stakingAmount.toNumber() &&
         hasMinimumStakingTime(Number(endTime), stakingEndTimeUnix) &&
         Number(uptime) >= minUpTime &&
         (maxFee ? Number(delegationFee) <= maxFee : true)

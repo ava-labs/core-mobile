@@ -191,3 +191,7 @@ export function truncateBN(
   const truncated = big.round(roundDecimals, Big.roundDown)
   return bigToBN(truncated, denomination)
 }
+
+export function isZeroBig(value: Big): boolean {
+  return value.eq(new Big(0))
+}
