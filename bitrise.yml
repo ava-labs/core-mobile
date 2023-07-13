@@ -491,8 +491,6 @@ workflows:
 
                 npm rebuild detox
                 ./node_modules/.bin/detox test --configuration ios.external.release.smoke.ci
-
-                envman add --key TESTRAIL_RUN --value $TESTRAIL_RUN_ID
   ios-internal:
     before_run:
       - _install-and-set-env
@@ -569,3 +567,6 @@ workflows:
 
                 npm rebuild detox
                 ./node_modules/.bin/detox test --configuration ios.internal.release.smoke.ci
+
+                envman add --key TESTRAIL_RUN --value $TESTRAIL_RUN_ID
+
