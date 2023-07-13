@@ -3,6 +3,10 @@ import { StyleSheet, View } from 'react-native'
 import AvaText from 'components/AvaText'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import DotSVG from 'components/svg/DotSVG'
+import AvaButton from 'components/AvaButton'
+import AppNavigation from 'navigation/AppNavigation'
+import { EarnScreenProps } from 'navigation/types'
+import { useNavigation } from '@react-navigation/native'
 import { StakeTypeEnum } from '../StakeDashboard'
 import { getStakePrimaryColor } from '../utils'
 import { CircularProgress } from './CircularProgress'
@@ -11,11 +15,16 @@ interface BalanceProps {
   stakingData: Record<string, { type: StakeTypeEnum; amount: number }>
 }
 
+type EarnScreenNavProps = EarnScreenProps<
+  typeof AppNavigation.Earn.StakeDashboard
+>
+
 export const Balance: React.FC<BalanceProps> = ({ stakingData }) => {
   const { theme } = useApplicationContext()
+  const { navigate } = useNavigation<EarnScreenNavProps['navigation']>()
 
   return (
-    <>
+    <View style={{ marginBottom: 24 }}>
       <View style={styles.stakeDetailsContainer}>
         <CircularProgress data={stakingData} />
         <View style={{ marginLeft: 24 }}>
@@ -48,7 +57,11 @@ export const Balance: React.FC<BalanceProps> = ({ stakingData }) => {
           })}
         </View>
       </View>
-    </>
+      <AvaButton.PrimaryLarge
+        onPress={() => navigate(AppNavigation.Earn.StakingAmount)}>
+        Stake More
+      </AvaButton.PrimaryLarge>
+    </View>
   )
 }
 
