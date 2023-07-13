@@ -571,8 +571,5 @@ workflows:
                 RUN_ID=$(head -n 1 ./e2e/testrailRunId.txt)
 
                 envman add --key TESTRAIL_RUN --value $RUN_ID
-
-                echo this is the test run id
-                echo $TESTRAIL_RUN_ID
                 
 
