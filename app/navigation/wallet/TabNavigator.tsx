@@ -16,7 +16,7 @@ import EarnScreenStack from './EarnScreenStack'
 export type TabNavigatorParamList = {
   [AppNavigation.Tabs.Portfolio]: { showBackButton?: boolean }
   [AppNavigation.Tabs.Watchlist]: undefined
-  [AppNavigation.Tabs.Stake]: undefined
+  [AppNavigation.Tabs.Earn]: undefined
 }
 
 const Tab = createBottomTabNavigator<TabNavigatorParamList>()
@@ -77,7 +77,7 @@ const TabNavigator = () => {
       />
       {!earnBlocked && (
         <Tab.Screen
-          name={AppNavigation.Tabs.Stake}
+          name={AppNavigation.Tabs.Earn}
           options={{
             header: () => {
               return (
@@ -90,7 +90,7 @@ const TabNavigator = () => {
             tabBarIcon: ({ focused }) =>
               normalTabButton({
                 theme,
-                routeName: AppNavigation.Tabs.Stake,
+                routeName: AppNavigation.Tabs.Earn,
                 focused,
                 image: <EarnSVG selected={focused} size={TAB_ICON_SIZE} />
               })

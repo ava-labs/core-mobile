@@ -8,8 +8,9 @@ export const useGetBalance = (network: Network, addresses: string[]) => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
 
   return useQuery({
-    enabled: addresses.length > 0,
     queryKey: ['stakingBalances', isDeveloperMode, network, addresses],
-    queryFn: async () => EarnService.getPChainBalance(network, addresses)
+    queryFn: async () => {
+      return EarnService.getPChainBalance(network, addresses)
+    }
   })
 }
