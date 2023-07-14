@@ -4,11 +4,11 @@ import { Canvas, Path, Shadow, Skia } from '@shopify/react-native-skia'
 import { PixelRatio, StyleSheet, View } from 'react-native'
 import AvaLogoSVG from 'components/svg/AvaLogoSVG'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { StakeTypeEnum } from '../StakeDashboard'
+import { StakingBalanceType } from 'services/earn/types'
 import { getStakePrimaryColor, getStakeShadowColor } from '../utils'
 
 interface CircularProgressProps {
-  data: Record<string, { type: StakeTypeEnum; amount: number }>
+  data: StakingBalanceType[]
 }
 
 export const CircularProgress: FC<CircularProgressProps> = ({ data }) => {
@@ -20,8 +20,6 @@ export const CircularProgress: FC<CircularProgressProps> = ({ data }) => {
   const innerRadius = radius - strokeWidth - shadowWidth / 2
   const path = Skia.Path.Make()
   path.addCircle(radius, radius, innerRadius)
-
-  const dataArray = Object.values(data)
 
   let start = 0
   let end = 0
@@ -35,7 +33,7 @@ export const CircularProgress: FC<CircularProgressProps> = ({ data }) => {
   return (
     <View style={styles.container}>
       <Canvas style={styles.chartContainer}>
-        {dataArray.map((item, index) => {
+        {data.map((item, index) => {
           const strokeColor = getStakePrimaryColor(item.type, theme)
           const shadowColor = getStakeShadowColor(item.type, theme)
           const amountPercent = item.amount / total
@@ -44,7 +42,7 @@ export const CircularProgress: FC<CircularProgressProps> = ({ data }) => {
           end = end + Number(amountPercent.toFixed(2))
 
           if (index !== 0) {
-            const startPercent = (dataArray[index - 1]?.amount || 0) / total
+            const startPercent = (data[index - 1]?.amount || 0) / total
             start = start + Number(startPercent.toFixed(2))
           }
 
