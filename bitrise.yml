@@ -418,6 +418,9 @@ workflows:
 
                 npm rebuild detox
                 QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test --configuration android.internal.release.smoke.ci --headless
+                RUN_ID=$(head -n 1 ./e2e/testrailRunId.txt)
+
+                envman add --key TESTRAIL_RUN --value $RUN_ID
   ios:
     before_run:
       - _install-and-set-env
