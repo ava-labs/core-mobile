@@ -35,37 +35,44 @@ export type DurationOption = {
   stakeDurationValue: number
 }
 
+export const ONE_DAY = {
+  title: '1 Day',
+  subTitle: 'Estimated Rewards: 0.77 AVAX Mocked!!!',
+  stakeDurationFormat: StakeDurationFormat.Day,
+  stakeDurationValue: 1
+}
+
 export const TWO_WEEKS = {
   title: '2 Week',
-  subTitle: 'Estimated Rewards: 0.77 AVAX',
+  subTitle: 'Estimated Rewards: 0.77 AVAX Mocked!!!',
   stakeDurationFormat: StakeDurationFormat.Week,
   stakeDurationValue: 2
 }
 
 export const ONE_MONTH = {
   title: '1 Month',
-  subTitle: 'Estimated Rewards: 1.54 AVAX',
+  subTitle: 'Estimated Rewards: 1.54 AVAX Mocked!!!',
   stakeDurationFormat: StakeDurationFormat.Month,
   stakeDurationValue: 1
 }
 
 export const THREE_MONTHS = {
   title: '3 Months',
-  subTitle: 'Estimated Rewards: 3.54 AVAX',
+  subTitle: 'Estimated Rewards: 3.54 AVAX Mocked!!!',
   stakeDurationFormat: StakeDurationFormat.Month,
   stakeDurationValue: 3
 }
 
 export const SIX_MONTHS = {
   title: '6 Months',
-  subTitle: 'Estimated Rewards: 6.54 AVAX',
+  subTitle: 'Estimated Rewards: 6.54 AVAX Mocked!!!',
   stakeDurationFormat: StakeDurationFormat.Month,
   stakeDurationValue: 6
 }
 
 export const ONE_YEAR = {
   title: '1 Year',
-  subTitle: 'Estimated Rewards: 12.54 AVAX',
+  subTitle: 'Estimated Rewards: 12.54 AVAX Mocked!!!',
   stakeDurationFormat: StakeDurationFormat.Year,
   stakeDurationValue: 1
 }
@@ -77,8 +84,16 @@ export const CUSTOM = {
   stakeDurationValue: 14
 }
 
-export const DURATION_OPTIONS: DurationOption[] = [
+export const DURATION_OPTIONS_MAINNET: DurationOption[] = [
   TWO_WEEKS,
+  ONE_MONTH,
+  THREE_MONTHS,
+  SIX_MONTHS,
+  ONE_YEAR,
+  CUSTOM
+]
+export const DURATION_OPTIONS_FUJI: DurationOption[] = [
+  ONE_DAY,
   ONE_MONTH,
   THREE_MONTHS,
   SIX_MONTHS,

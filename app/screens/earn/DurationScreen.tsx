@@ -19,10 +19,12 @@ import {
 } from 'services/earn/utils'
 import {
   CUSTOM,
-  DURATION_OPTIONS,
+  DURATION_OPTIONS_MAINNET,
   DurationOption,
   TWO_WEEKS,
-  getStakeEndDate
+  getStakeEndDate,
+  ONE_DAY,
+  DURATION_OPTIONS_FUJI
 } from 'services/earn/getStakeEndDate'
 
 type EarnScreenNavProps = EarnScreenProps<
@@ -32,12 +34,13 @@ type EarnScreenNavProps = EarnScreenProps<
 const StakingDuration = () => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
 
+  const minDelegationTime = isDeveloperMode ? ONE_DAY : TWO_WEEKS
   const [selectedDuration, setSelectedDuration] =
-    useState<DurationOption>(TWO_WEEKS)
+    useState<DurationOption>(minDelegationTime)
   const [stakeEndTime, setStakeEndTime] = useState<Date>(
     getStakeEndDate(
-      TWO_WEEKS.stakeDurationFormat,
-      TWO_WEEKS.stakeDurationValue,
+      minDelegationTime.stakeDurationFormat,
+      minDelegationTime.stakeDurationValue,
       isDeveloperMode
     )
   )
@@ -86,6 +89,9 @@ const StakingDuration = () => {
     }
   }
 
+  const durationOptions = isDeveloperMode
+    ? DURATION_OPTIONS_FUJI
+    : DURATION_OPTIONS_MAINNET
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View>
@@ -99,7 +105,7 @@ const StakingDuration = () => {
           How long would you like to stake?
         </AvaText.Subtitle1>
         {selectedDuration?.title !== 'Custom' ? (
-          DURATION_OPTIONS.map(item => {
+          durationOptions.map(item => {
             return (
               <View style={{ marginBottom: 24 }} key={item.title}>
                 <RadioButton
@@ -122,7 +128,7 @@ const StakingDuration = () => {
             <View style={{ marginBottom: 24 }}>
               <RadioButton
                 onPress={() => {
-                  const firstItem = DURATION_OPTIONS.at(0)
+                  const firstItem = durationOptions.at(0)
                   firstItem && onRadioSelect(firstItem)
                 }}
                 selected={true}>
