@@ -15,13 +15,15 @@ type NavigationProp = EarnScreenProps<typeof AppNavigation.Earn.NodeSearch>
 export const MatchFound = ({ validator }: { validator: NodeValidator }) => {
   const { theme } = useApplicationContext()
   const { navigate } = useNavigation<NavigationProp['navigation']>()
-  const { stakingAmount } = useRoute<NavigationProp['route']>().params
+  const { stakingAmount, stakingEndTime } =
+    useRoute<NavigationProp['route']>().params
 
   useEffect(() => {
     const timer = setTimeout(() => {
       navigate(AppNavigation.Earn.Confirmation, {
         nodeId: validator.nodeID,
-        stakingAmount
+        stakingAmount,
+        stakingEndTime
       })
     }, 2200)
     return () => clearTimeout(timer)

@@ -38,6 +38,7 @@ export type EarnStackParamList = {
   [AppNavigation.Earn.Confirmation]: {
     nodeId: string
     stakingAmount: BigIntNavax
+    stakingEndTime: Date
   }
   [AppNavigation.Earn.Cancel]: undefined
 }

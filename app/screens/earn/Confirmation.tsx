@@ -18,7 +18,7 @@ import { PopableContent } from 'components/PopableContent'
 import { truncateNodeId } from 'utils/Utils'
 import CopySVG from 'components/svg/CopySVG'
 import { copyToClipboard } from 'utils/DeviceTools'
-import { format, fromUnixTime } from 'date-fns'
+import { format } from 'date-fns'
 import { useEarnCalcEstimatedRewards } from 'hooks/earn/useEarnCalcEstimatedRewards'
 import { useSelector } from 'react-redux'
 import { selectAvaxPrice } from 'store/balance'
@@ -34,7 +34,8 @@ import { BigAvax } from 'types/denominations'
 type NavigationProp = EarnScreenProps<typeof AppNavigation.Earn.Confirmation>
 
 export const Confirmation = () => {
-  const { nodeId, stakingAmount } = useRoute<NavigationProp['route']>().params
+  const { nodeId, stakingAmount, stakingEndTime } =
+    useRoute<NavigationProp['route']>().params
   const validator = useGetValidatorByNodeId(nodeId) as NodeValidator
   const {
     theme,
@@ -45,19 +46,15 @@ export const Confirmation = () => {
   const avaxPrice = useSelector(selectAvaxPrice)
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { navigate } = useNavigation<NavigationProp['navigation']>()
-  const validatorEndTime = fromUnixTime(Number(validator?.endTime))
   const { data } = useEarnCalcEstimatedRewards({
     amount: stakingAmount,
-    duration: validatorEndTime.getTime() - new Date().getTime(),
+    duration: (stakingEndTime.getTime() - new Date().getTime()) / 1e3,
     delegationFee: Number(validator?.delegationFee)
   })
 
   const { delegationFeeAvax, stakingAmountPrice, stakingAmountAvax } =
     useMemo(() => {
-      const stakingAmountInAvax = bigintToBig(
-        stakingAmount,
-        activeNetwork.networkToken.decimals
-      )
+      const stakingAmountInAvax: BigAvax = bigintToBig(stakingAmount, 9)
       const delegationFee = new Big(validator?.delegationFee)
         .div(100)
         .mul(stakingAmountInAvax)
@@ -66,12 +63,7 @@ export const Confirmation = () => {
         stakingAmountPrice: stakingAmountInAvax.mul(avaxPrice).toFixed(2), //price is in [currency] so we round to 2 decimals
         delegationFeeAvax: delegationFee
       }
-    }, [
-      activeNetwork.networkToken.decimals,
-      avaxPrice,
-      stakingAmount,
-      validator?.delegationFee
-    ])
+    }, [avaxPrice, stakingAmount, validator?.delegationFee])
 
   const { estimatedReward, estimatedRewardInCurrency } = useMemo(() => {
     return {
@@ -180,10 +172,10 @@ export const Confirmation = () => {
               width: '100%'
             }}>
             <AvaText.Heading3>
-              {getReadableDateDuration(validatorEndTime)}
+              {getReadableDateDuration(stakingEndTime)}
             </AvaText.Heading3>
             <AvaText.Body1>
-              {format(validatorEndTime, 'MM/dd/yy  H:mm aa')}
+              {format(stakingEndTime, 'MM/dd/yy  H:mm aa')}
             </AvaText.Body1>
           </Row>
         </View>
