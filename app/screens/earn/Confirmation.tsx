@@ -29,6 +29,7 @@ import { useGetValidatorByNodeId } from 'hooks/earn/useGetValidatorByNodeId'
 import Big from 'big.js'
 import { bigintToBig } from 'utils/bigNumbers/bigintToBig'
 import { NodeValidator } from 'types/earn'
+import { BigAvax } from 'types/denominations'
 
 type NavigationProp = EarnScreenProps<typeof AppNavigation.Earn.Confirmation>
 
@@ -72,12 +73,12 @@ export const Confirmation = () => {
       validator?.delegationFee
     ])
 
-  const { estimatedRewardAmount, estimatedRewardAvax } = useMemo(() => {
+  const { estimatedReward, estimatedRewardInCurrency } = useMemo(() => {
     return {
-      estimatedRewardAvax: data?.estimatedTokenReward ?? 0,
-      estimatedRewardAmount: data?.estimatedRewardAmount ?? 0 * avaxPrice
+      estimatedReward: data?.estimatedTokenReward ?? (Big(0) as BigAvax),
+      estimatedRewardInCurrency: data?.estimatedRewardInCurrency ?? '0'
     }
-  }, [avaxPrice, data?.estimatedRewardAmount, data?.estimatedTokenReward])
+  }, [data?.estimatedRewardInCurrency, data?.estimatedTokenReward])
 
   const cancelStaking = () => {
     navigate(AppNavigation.Earn.Cancel)
@@ -143,13 +144,13 @@ export const Confirmation = () => {
           <Row style={{ justifyContent: 'space-between' }}>
             <AvaText.Body2>Estimated Reward</AvaText.Body2>
             <AvaText.Heading2 textStyle={{ color: theme.colorBgGreen }}>
-              {estimatedRewardAvax + ' ' + tokenSymbol}
+              {estimatedReward + ' ' + tokenSymbol}
             </AvaText.Heading2>
           </Row>
           <AvaText.Body3
             textStyle={{ alignSelf: 'flex-end', color: theme.colorText2 }}>
             {`${tokenInCurrencyFormatter(
-              estimatedRewardAmount
+              estimatedRewardInCurrency
             )} ${selectedCurrency}`}
           </AvaText.Body3>
         </View>

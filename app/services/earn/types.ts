@@ -12,3 +12,5 @@ export type AddDelegatorTransactionProps = {
   endDate: Date
   isDevMode: boolean
 }
+
+export type UnixTimeMs = number

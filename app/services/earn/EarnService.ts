@@ -4,7 +4,11 @@ import { Account } from 'store/account'
 import { exportC } from 'services/earn/exportC'
 import { importP } from 'services/earn/importP'
 import Big from 'big.js'
-import { FujiParams, MainnetParams } from 'utils/NetworkParams'
+import {
+  FujiParams,
+  MainnetParams,
+  NANO_AVAX_DENOMINATION
+} from 'utils/NetworkParams'
 import { importC } from 'services/earn/importC'
 import { exportP } from 'services/earn/exportP'
 import WalletService from 'services/wallet/WalletService'
@@ -20,9 +24,10 @@ import { exponentialBackoff } from 'utils/js/exponentialBackoff'
 import { AddDelegatorTransactionProps } from 'services/earn/types'
 import { getUnixTime } from 'date-fns'
 import { GetCurrentSupplyResponse } from '@avalabs/avalanchejs-v2/dist/src/vms/pvm'
-import { BigIntNavax } from 'types/denominations'
+import { BigIntNavax, BigNavax } from 'types/denominations'
 import { bnToBigint } from 'utils/bigNumbers/bnToBigint'
 import { bigintToBig } from 'utils/bigNumbers/bigintToBig'
+import { bigToBigint } from 'utils/bigNumbers/bigToBigint'
 
 class EarnService {
   getCurrentValidators = (isTestnet: boolean) => {
@@ -95,7 +100,7 @@ class EarnService {
     currentSupply: BigIntNavax,
     delegationFee: number,
     isDeveloperMode: boolean
-  ): string {
+  ): BigIntNavax {
     const defPlatformVals = isDeveloperMode ? FujiParams : MainnetParams
     const minConsumptionRateRatio = new Big(
       defPlatformVals.stakingConfig.RewardConfig.MinConsumptionRate
@@ -110,24 +115,26 @@ class EarnService {
       .mul(new Big(1).minus(stakingPeriodOverMintingPeriod))
       .add(maxConsumptionRateRatio.mul(stakingPeriodOverMintingPeriod))
 
-    const stakeOverSupply = bigintToBig(amount, 0).div(
-      bigintToBig(currentSupply, 0)
+    const stakeOverSupply = bigintToBig(amount, NANO_AVAX_DENOMINATION).div(
+      bigintToBig(currentSupply, NANO_AVAX_DENOMINATION)
     )
-    const supplyCap = bnToBigint(
+    const supplyCap: BigIntNavax = bnToBigint(
       defPlatformVals.stakingConfig.RewardConfig.SupplyCap
     )
-    const unmintedSupply = new Big((supplyCap - currentSupply).toString())
-    const fullReward = unmintedSupply
+    const unmintedSupply: BigNavax = new Big(
+      (BigInt(supplyCap) - BigInt(currentSupply)).toString()
+    )
+    const fullReward: BigNavax = unmintedSupply
       .mul(stakeOverSupply)
       .mul(stakingPeriodOverMintingPeriod)
       .mul(effectiveConsumptionRate)
 
     const delegationFeeRatio = new Big(delegationFee).div(100)
-    const rewardsMinusDelegationFee = fullReward.mul(
+    const rewardsMinusDelegationFee: BigNavax = fullReward.mul(
       new Big(1).minus(delegationFeeRatio)
     )
 
-    return rewardsMinusDelegationFee.toFixed(0)
+    return bigToBigint(rewardsMinusDelegationFee, 0) //discard fractions
   }
 
   async issueAddDelegatorTransaction({
