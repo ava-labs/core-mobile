@@ -7,12 +7,12 @@ import AvaButton from 'components/AvaButton'
 import AppNavigation from 'navigation/AppNavigation'
 import { EarnScreenProps } from 'navigation/types'
 import { useNavigation } from '@react-navigation/native'
-import { StakeTypeEnum } from '../StakeDashboard'
+import { StakingBalanceType } from 'services/earn/types'
 import { getStakePrimaryColor } from '../utils'
 import { CircularProgress } from './CircularProgress'
 
 interface BalanceProps {
-  stakingData: Record<string, { type: StakeTypeEnum; amount: number }>
+  stakingData: StakingBalanceType[]
 }
 
 type EarnScreenNavProps = EarnScreenProps<
@@ -23,39 +23,43 @@ export const Balance: React.FC<BalanceProps> = ({ stakingData }) => {
   const { theme } = useApplicationContext()
   const { navigate } = useNavigation<EarnScreenNavProps['navigation']>()
 
+  const renderStakingBalance = () => (
+    <View style={{ marginLeft: 24 }}>
+      {stakingData.map(item => {
+        const iconColor = getStakePrimaryColor(item.type, theme)
+        return (
+          <View key={item.type}>
+            <View style={styles.rowContainer}>
+              <DotSVG fillColor={iconColor} size={16} />
+              <View style={styles.textRowContainer}>
+                <AvaText.Subtitle2
+                  textStyle={{
+                    color: theme.neutral50,
+                    lineHeight: 24.5,
+                    marginHorizontal: 8
+                  }}>
+                  {`${item.amount} AVAX`}
+                </AvaText.Subtitle2>
+                <AvaText.Caption
+                  textStyle={{
+                    color: theme.neutral400,
+                    lineHeight: 19.92
+                  }}>
+                  {item.type}
+                </AvaText.Caption>
+              </View>
+            </View>
+          </View>
+        )
+      })}
+    </View>
+  )
+
   return (
     <View style={{ marginBottom: 24 }}>
       <View style={styles.stakeDetailsContainer}>
         <CircularProgress data={stakingData} />
-        <View style={{ marginLeft: 24 }}>
-          {Object.values(stakingData).map(item => {
-            const iconColor = getStakePrimaryColor(item.type, theme)
-            return (
-              <View key={item.type}>
-                <View style={styles.rowContainer}>
-                  <DotSVG fillColor={iconColor} size={16} />
-                  <View style={styles.textRowContainer}>
-                    <AvaText.Subtitle2
-                      textStyle={{
-                        color: theme.neutral50,
-                        lineHeight: 24.5,
-                        marginHorizontal: 8
-                      }}>
-                      {`${item.amount} AVAX`}
-                    </AvaText.Subtitle2>
-                    <AvaText.Caption
-                      textStyle={{
-                        color: theme.neutral400,
-                        lineHeight: 19.92
-                      }}>
-                      {item.type}
-                    </AvaText.Caption>
-                  </View>
-                </View>
-              </View>
-            )
-          })}
-        </View>
+        {renderStakingBalance()}
       </View>
       <AvaButton.PrimaryLarge
         onPress={() => navigate(AppNavigation.Earn.StakingAmount)}>
