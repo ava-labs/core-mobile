@@ -9,6 +9,7 @@ import {
   currentRunID
 } from './generateTestrailObjects'
 import getTestLogs, { isResultPresent } from './getResultsFromLogs'
+const fs = require('fs')
 
 async function parseResultsFile() {
   const jsonResultsArray = await getTestLogs()
@@ -113,26 +114,32 @@ export default async function sendResults() {
 
   if (process.env.POST_TO_TESTRAIL === 'true') {
     if (await isResultPresent('android')) {
+      const runID = (await currentRunID('android')).runID
       await generatePlatformResults(
         testCasesToSend,
         resultsToSendToTestrail,
         'android',
-        (
-          await currentRunID('android')
-        ).runID
+        runID
       )
+      writeRunIdToTextFile(`${runID}`)
     }
     if (await isResultPresent('ios')) {
+      const runID = (await currentRunID('ios')).runID
       await generatePlatformResults(
         testCasesToSend,
         resultsToSendToTestrail,
         'ios',
-        (
-          await currentRunID('ios')
-        ).runID
+        runID
       )
+      writeRunIdToTextFile(`${runID}`)
     }
   }
+}
+
+export async function writeRunIdToTextFile(runId: string) {
+  fs.writeFile('e2e/testrailRunId.txt', runId, err => {
+    if (err) throw err
+  })
 }
 
 // Todo: Write a check for a different result and if the existing result differs from the result being sent update the result in testrail
