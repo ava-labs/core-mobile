@@ -12,7 +12,7 @@ import { getStakePrimaryColor } from '../utils'
 import { CircularProgress } from './CircularProgress'
 
 interface BalanceProps {
-  stakingData: StakingBalanceType[]
+  stakingData: Record<string, { type: StakeTypeEnum; amount: number }>
 }
 
 type EarnScreenNavProps = EarnScreenProps<
@@ -91,7 +91,35 @@ export const Balance: React.FC<BalanceProps> = ({ stakingData }) => {
     <View style={{ marginBottom: 24 }}>
       <View style={styles.stakeDetailsContainer}>
         <CircularProgress data={stakingData} />
-        {renderStakingBalance()}
+        <View style={{ marginLeft: 24 }}>
+          {Object.values(stakingData).map(item => {
+            const iconColor = getStakePrimaryColor(item.type, theme)
+            return (
+              <View key={item.type}>
+                <View style={styles.rowContainer}>
+                  <DotSVG fillColor={iconColor} size={16} />
+                  <View style={styles.textRowContainer}>
+                    <AvaText.Subtitle2
+                      textStyle={{
+                        color: theme.neutral50,
+                        lineHeight: 24.5,
+                        marginHorizontal: 8
+                      }}>
+                      {`${item.amount} AVAX`}
+                    </AvaText.Subtitle2>
+                    <AvaText.Caption
+                      textStyle={{
+                        color: theme.neutral400,
+                        lineHeight: 19.92
+                      }}>
+                      {item.type}
+                    </AvaText.Caption>
+                  </View>
+                </View>
+              </View>
+            )
+          })}
+        </View>
       </View>
       {stakingAmount && stakingAmount > 0
         ? renderStakeAndClaimButton()

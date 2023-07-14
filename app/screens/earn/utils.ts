@@ -1,7 +1,7 @@
 import { AppTheme } from 'contexts/ApplicationContext'
-import { StakeTypeEnum } from 'services/earn/types'
+import { StakeTypeEnum } from './StakeDashboard'
 
-export const getStakePrimaryColor = (type: StakeTypeEnum, theme: AppTheme) => {
+export const getStakePrimaryColor = (type: string, theme: AppTheme) => {
   switch (type) {
     case StakeTypeEnum.Available:
       return theme.blueDark
@@ -12,7 +12,7 @@ export const getStakePrimaryColor = (type: StakeTypeEnum, theme: AppTheme) => {
   }
 }
 
-export const getStakeShadowColor = (type: StakeTypeEnum, theme: AppTheme) => {
+export const getStakeShadowColor = (type: string, theme: AppTheme) => {
   switch (type) {
     case StakeTypeEnum.Available:
       return theme.colorPrimary1
