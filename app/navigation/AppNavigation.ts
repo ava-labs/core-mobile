@@ -143,7 +143,7 @@ enum Tabs {
   Swap = 'Swap',
   More = 'More',
   Watchlist = 'Watchlist',
-  Earn = 'Earn',
+  Stake = 'Stake',
   Tabs = 'Tabs',
   Fab = 'Fab',
   Bridge = 'Bridge'
