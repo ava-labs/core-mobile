@@ -20,7 +20,7 @@ describe('EarnService', () => {
           2,
           true
         )
-      ).toEqual('0')
+      ).toEqual(0n)
     })
     it('should return non zero if current supply is less than max', () => {
       expect(
@@ -31,7 +31,7 @@ describe('EarnService', () => {
           2,
           true
         )
-      ).toEqual('3018657459186')
+      ).toEqual(3018657459186n)
     })
   })
 })
