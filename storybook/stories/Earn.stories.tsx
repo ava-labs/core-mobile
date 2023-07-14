@@ -8,4 +8,4 @@ export default {
   decorators: [withCenterView]
 } as Meta
 
-export const AmountInput = () => <EarnInputAmount decimals={18} />
+export const AmountInput = () => <EarnInputAmount decimals={9} />

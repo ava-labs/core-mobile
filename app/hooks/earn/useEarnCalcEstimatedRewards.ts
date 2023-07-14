@@ -1,13 +1,13 @@
 import { useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
-import Big from 'big.js'
 import EarnService from 'services/earn/EarnService'
 import { selectAvaxPrice } from 'store/balance'
 import { useQuery } from '@tanstack/react-query'
 import { GetCurrentSupplyResponse } from '@avalabs/avalanchejs-v2/dist/src/vms/pvm'
+import { BigIntNavax } from 'types/denominations'
 
 export type useEarnCalcEstimatedRewardsProps = {
-  amount: Big
+  amount: BigIntNavax
   duration: number
   delegationFee: number
 }
@@ -30,8 +30,7 @@ export const useEarnCalcEstimatedRewards = ({
   return useQuery({
     queryKey: ['currentSupply', isDeveloperMode],
     queryFn: async () => EarnService.getCurrentSupply(isDeveloperMode),
-    select: ({ supply }: GetCurrentSupplyResponse) => {
-      const currentSupply = new Big(supply.toString())
+    select: ({ supply: currentSupply }: GetCurrentSupplyResponse) => {
       const rewardStr = EarnService.calcReward(
         amount,
         duration,

@@ -14,30 +14,30 @@ import { Confirmation } from 'screens/earn/Confirmation'
 import { CancelModal } from 'screens/earn/CancelModal'
 import NotEnoughAvax from 'screens/earn/NotEnoughAvax'
 import useStakingParams from 'hooks/earn/useStakingParams'
-import Big from 'big.js'
+import { BigIntNavax } from 'types/denominations'
 
 export type EarnStackParamList = {
   [AppNavigation.Earn.NotEnoughAvax]: undefined
   [AppNavigation.Earn.GetStarted]: undefined
   [AppNavigation.Earn.StakingAmount]: undefined
-  [AppNavigation.Earn.StakingDuration]: { stakingAmount: Big }
+  [AppNavigation.Earn.StakingDuration]: { stakingAmount: BigIntNavax }
   [AppNavigation.Earn.AdvancedStaking]: {
     stakingEndTime: Date
-    stakingAmount: Big
+    stakingAmount: BigIntNavax
   }
   [AppNavigation.Earn.SelectNode]: {
     stakingEndTime: Date
-    stakingAmount: Big
+    stakingAmount: BigIntNavax
     minUpTime?: number
     maxFee?: number
   }
   [AppNavigation.Earn.NodeSearch]: {
     stakingEndTime: Date
-    stakingAmount: Big
+    stakingAmount: BigIntNavax
   }
   [AppNavigation.Earn.Confirmation]: {
     nodeId: string
-    stakingAmount: Big
+    stakingAmount: BigIntNavax
   }
   [AppNavigation.Earn.Cancel]: undefined
 }
@@ -108,7 +108,7 @@ const EarnGetStartedScreen = () => {
   const { nativeTokenBalance, minStakeAmount } = useStakingParams()
 
   useEffect(() => {
-    if (nativeTokenBalance && nativeTokenBalance.lt(minStakeAmount)) {
+    if (nativeTokenBalance && nativeTokenBalance < minStakeAmount) {
       replace(AppNavigation.Earn.NotEnoughAvax)
     }
   }, [minStakeAmount, nativeTokenBalance, replace])
@@ -124,7 +124,7 @@ const NotEnoughAvaxScreen = () => {
   const { nativeTokenBalance, minStakeAmount } = useStakingParams()
 
   useEffect(() => {
-    if (nativeTokenBalance && nativeTokenBalance.gte(minStakeAmount)) {
+    if (nativeTokenBalance && nativeTokenBalance >= minStakeAmount) {
       replace(AppNavigation.Earn.GetStarted)
     }
   }, [minStakeAmount, nativeTokenBalance, replace])
@@ -160,7 +160,7 @@ const ConfirmationBackButton = () => {
     // the navigationState.index represents the current index of the route,
     // if the index is 1 or greater, meaning there is previous route in the stack,
     // we will get the previous route by index - 1
-    // otherwise we return undefined and it simply calls goBack which goes back
+    // otherwise we return undefined, and it simply calls goBack which goes back
     // to last screen in the previous stack
     const previousScreen =
       navigationState.index >= 1

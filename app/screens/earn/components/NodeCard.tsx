@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react'
+import React, { useMemo, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 import AvaText from 'components/AvaText'
 import { useApplicationContext } from 'contexts/ApplicationContext'
@@ -12,11 +12,12 @@ import { useNavigation } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
 import { EarnScreenProps } from 'navigation/types'
 import { copyToClipboard } from 'utils/DeviceTools'
-import Big from 'big.js'
 import LinearGradientSVG from 'components/svg/LinearGradientSVG'
 import { format } from 'date-fns'
 import { calculateMaxWeight, generateGradient } from 'services/earn/utils'
 import { NodeValidator } from 'types/earn'
+import { BigIntNavax } from 'types/denominations'
+import { bigintToBig } from 'utils/bigNumbers/bigintToBig'
 import { PopableContentWithCaption } from './PopableContentWithCaption'
 
 type NavigationProp = EarnScreenProps<
@@ -28,7 +29,7 @@ export const NodeCard = ({
   stakingAmount
 }: {
   data: NodeValidator
-  stakingAmount: Big
+  stakingAmount: BigIntNavax
 }) => {
   const { theme } = useApplicationContext()
   const [isCardExpanded, setIsCardExpanded] = useState(false)
@@ -36,17 +37,15 @@ export const NodeCard = ({
 
   const endDate = format(new Date(parseInt(data.endTime) * 1000), 'MM/dd/yy')
 
-  const stakeAmount = new Big(data.stakeAmount)
-  const delegatorWeight = new Big(data.delegatorWeight || 0)
-  const currentWeight = stakeAmount.plus(delegatorWeight)
+  const stakeAmount = BigInt(data.stakeAmount)
+  const delegatorWeight = BigInt(data.delegatorWeight || 0)
+  const currentWeight: BigIntNavax = stakeAmount + delegatorWeight
 
-  const maxWeight = calculateMaxWeight(new Big(3000000e9), stakeAmount)
+  const maxWeight = calculateMaxWeight(BigInt(3000000e9), stakeAmount)
 
-  const validatorStake = stakeAmount.div(Math.pow(10, 9)).toNumber()
+  const validatorStake = bigintToBig(stakeAmount, 9).toFixed(2)
 
-  const available = maxWeight.maxWeight
-    .minus(currentWeight)
-    .div(Math.pow(10, 9))
+  const available = bigintToBig(maxWeight.maxWeight - currentWeight, 9)
 
   const gradientColors = useMemo(() => generateGradient(), [])
 
@@ -164,7 +163,7 @@ export const NodeCard = ({
               contentWidth={150}
             />
             <AvaText.Body2 textStyle={{ color: theme.neutral50 }}>
-              {(formatLargeNumber(validatorStake), 4)}
+              {formatLargeNumber(validatorStake, 4)}
             </AvaText.Body2>
           </Row>
           <Row style={styles.rowContainer}>
@@ -174,7 +173,7 @@ export const NodeCard = ({
               contentWidth={150}
             />
             <AvaText.Body2 textStyle={{ color: theme.neutral50 }}>
-              {formatLargeNumber(available.toNumber(), 4)}
+              {formatLargeNumber(available.toString(), 4)}
             </AvaText.Body2>
           </Row>
           <Row style={styles.rowContainer}>

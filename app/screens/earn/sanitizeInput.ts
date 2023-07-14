@@ -1,15 +1,21 @@
 import BN from 'bn.js'
-import { bnToLocaleString, stringToBN } from '@avalabs/utils-sdk'
+import { bnToLocaleString } from '@avalabs/utils-sdk'
+import { stringToBigint } from 'utils/bigNumbers/stringToBigint'
+
 const MAX_DIGITS = 7
 
 export default function sanitizeInput(
-  input: BN | undefined,
+  input: bigint | undefined,
   denomination: number
-): BN | undefined {
+): bigint | undefined {
   if (!input) {
     return input
   }
-  const stringAmount = bnToLocaleString(input, denomination).replaceAll(',', '')
+  const inputBN = new BN(input.toString())
+  const stringAmount = bnToLocaleString(inputBN, denomination).replaceAll(
+    ',',
+    ''
+  )
   const numDigits = stringAmount.replace('.', '').length
   const extraDigits = numDigits - MAX_DIGITS
   if (extraDigits > 0) {
@@ -18,7 +24,7 @@ export default function sanitizeInput(
     const decimals = split[1] ?? ''
     const trimmedDecimals = decimals.slice(0, -extraDigits)
     const trimmed = `${whole}${trimmedDecimals && '.'}${trimmedDecimals}`
-    return stringToBN(trimmed, denomination)
+    return stringToBigint(trimmed, denomination)
   }
   return input
 }

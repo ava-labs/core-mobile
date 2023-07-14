@@ -1,4 +1,3 @@
-import { BNInput } from 'components/BNInput'
 import OvalTagBg from 'components/OvalTagBg'
 import { Row } from 'components/Row'
 import AvaLogoSVG from 'components/svg/AvaLogoSVG'
@@ -10,35 +9,41 @@ import BN from 'bn.js'
 import { bnToLocaleString } from '@avalabs/utils-sdk'
 import { Platform } from 'react-native'
 import sanitizeInput from 'screens/earn/sanitizeInput'
+import { AmountChange } from 'screens/earn/types'
+import { BigIntNavax, DenominationNavax } from 'types/denominations'
+import { BigintInput } from 'components/BigintInput'
 
 const EarnInputAmount = ({
-  inputAmountBN,
+  inputAmount,
   decimals,
   handleAmountChange
 }: {
-  inputAmountBN?: BN
-  decimals: number
-  handleAmountChange?: (value: { bn: BN; amount: string }) => void
+  inputAmount?: BigIntNavax
+  decimals: DenominationNavax
+  handleAmountChange?: (change: AmountChange) => void
 }) => {
   const { theme } = useApplicationContext()
 
   const isAndroid = Platform.OS === 'android'
 
   useEffect(() => {
-    const sanitized = sanitizeInput(inputAmountBN, decimals)
-    if (sanitized && inputAmountBN && !sanitized.eq(inputAmountBN)) {
+    const sanitized: BigIntNavax | undefined = sanitizeInput(
+      inputAmount,
+      decimals
+    )
+    if (sanitized && inputAmount && sanitized !== inputAmount) {
       handleAmountChange?.({
-        amount: bnToLocaleString(sanitized, decimals),
-        bn: sanitized
+        amountString: bnToLocaleString(new BN(sanitized.toString()), decimals),
+        amount: sanitized
       })
     }
-  }, [decimals, handleAmountChange, inputAmountBN])
+  }, [decimals, handleAmountChange, inputAmount])
 
-  const interceptAmountChange = (value: { bn: BN; amount: string }) => {
-    const sanitized = sanitizeInput(value.bn, decimals) ?? new BN(0)
+  const interceptAmountChange = (value: AmountChange) => {
+    const sanitized: BigIntNavax = sanitizeInput(value.amount, decimals) ?? 0n
     handleAmountChange?.({
-      amount: bnToLocaleString(sanitized, decimals),
-      bn: sanitized
+      amountString: bnToLocaleString(new BN(sanitized.toString()), decimals),
+      amount: sanitized
     })
   }
 
@@ -49,8 +54,8 @@ const EarnInputAmount = ({
         justifyContent: 'center',
         marginHorizontal: 16
       }}>
-      <BNInput
-        value={inputAmountBN}
+      <BigintInput
+        value={inputAmount}
         denomination={decimals}
         placeholder={'0.0'}
         onChange={interceptAmountChange}

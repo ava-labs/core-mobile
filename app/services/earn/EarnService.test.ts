@@ -1,6 +1,6 @@
 import testValidators from 'tests/fixtures/pvm/validators.json'
-import { bnToBig } from '@avalabs/utils-sdk'
 import { Avax, Hour, MainnetParams, MegaAvax } from 'utils/NetworkParams'
+import { bnToBigint } from 'utils/bigNumbers/bnToBigint'
 import EarnService from './EarnService'
 
 describe('EarnService', () => {
@@ -14,9 +14,9 @@ describe('EarnService', () => {
     it('should return zero if current supply is max', () => {
       expect(
         EarnService.calcReward(
-          bnToBig(Avax.muln(25)),
+          bnToBigint(Avax.muln(25)),
           7 * 24 * Hour,
-          bnToBig(MainnetParams.stakingConfig.RewardConfig.SupplyCap),
+          bnToBigint(MainnetParams.stakingConfig.RewardConfig.SupplyCap),
           2,
           true
         )
@@ -25,9 +25,9 @@ describe('EarnService', () => {
     it('should return non zero if current supply is less than max', () => {
       expect(
         EarnService.calcReward(
-          bnToBig(Avax.muln(2000000)),
+          bnToBigint(Avax.muln(2000000)),
           7 * 24 * Hour,
-          bnToBig(MegaAvax.muln(400)),
+          bnToBigint(MegaAvax.muln(400)),
           2,
           true
         )

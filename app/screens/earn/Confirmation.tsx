@@ -27,20 +27,20 @@ import { getReadableDateDuration } from 'utils/date/getReadableDateDuration'
 import { selectActiveNetwork } from 'store/network'
 import { useGetValidatorByNodeId } from 'hooks/earn/useGetValidatorByNodeId'
 import Big from 'big.js'
-import { N_AVAX_PER_AVAX } from 'consts/earn'
+import { bigintToBig } from 'utils/bigNumbers/bigintToBig'
+import { NodeValidator } from 'types/earn'
 
 type NavigationProp = EarnScreenProps<typeof AppNavigation.Earn.Confirmation>
 
 export const Confirmation = () => {
   const { nodeId, stakingAmount } = useRoute<NavigationProp['route']>().params
-  const validator = useGetValidatorByNodeId(nodeId)
+  const validator = useGetValidatorByNodeId(nodeId) as NodeValidator
   const {
     theme,
     appHook: { tokenInCurrencyFormatter }
   } = useApplicationContext()
-  const {
-    networkToken: { symbol }
-  } = useSelector(selectActiveNetwork)
+  const activeNetwork = useSelector(selectActiveNetwork)
+  const tokenSymbol = activeNetwork.networkToken.symbol
   const avaxPrice = useSelector(selectAvaxPrice)
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { navigate } = useNavigation<NavigationProp['navigation']>()
@@ -53,17 +53,24 @@ export const Confirmation = () => {
 
   const { delegationFeeAvax, stakingAmountPrice, stakingAmountAvax } =
     useMemo(() => {
-      const stakingAmountInAvax = Number(
-        stakingAmount.div(new Big(N_AVAX_PER_AVAX))
+      const stakingAmountInAvax = bigintToBig(
+        stakingAmount,
+        activeNetwork.networkToken.decimals
       )
-      const delegationFee =
-        (Number(validator?.delegationFee) / 100) * stakingAmountInAvax
+      const delegationFee = new Big(validator?.delegationFee)
+        .div(100)
+        .mul(stakingAmountInAvax)
       return {
         stakingAmountAvax: stakingAmountInAvax,
-        stakingAmountPrice: stakingAmountInAvax * avaxPrice,
-        delegationFeeAvax: delegationFee.toLocaleString()
+        stakingAmountPrice: stakingAmountInAvax.mul(avaxPrice).toFixed(2), //price is in [currency] so we round to 2 decimals
+        delegationFeeAvax: delegationFee
       }
-    }, [avaxPrice, stakingAmount, validator?.delegationFee])
+    }, [
+      activeNetwork.networkToken.decimals,
+      avaxPrice,
+      stakingAmount,
+      validator?.delegationFee
+    ])
 
   const { estimatedRewardAmount, estimatedRewardAvax } = useMemo(() => {
     return {
@@ -120,7 +127,7 @@ export const Confirmation = () => {
           </AvaText.Body2>
           <View style={{ alignItems: 'flex-end' }}>
             <AvaText.Heading1>
-              {stakingAmountAvax + ' ' + symbol}
+              {stakingAmountAvax + ' ' + tokenSymbol}
             </AvaText.Heading1>
             <AvaText.Heading3 textStyle={{ color: theme.colorText2 }}>
               {`${tokenInCurrencyFormatter(
@@ -136,7 +143,7 @@ export const Confirmation = () => {
           <Row style={{ justifyContent: 'space-between' }}>
             <AvaText.Body2>Estimated Reward</AvaText.Body2>
             <AvaText.Heading2 textStyle={{ color: theme.colorBgGreen }}>
-              {estimatedRewardAvax + ' ' + symbol}
+              {estimatedRewardAvax + ' ' + tokenSymbol}
             </AvaText.Heading2>
           </Row>
           <AvaText.Body3
@@ -227,7 +234,7 @@ export const Confirmation = () => {
               backgroundColor={theme.colorBg3}>
               <PopableLabel label="Network Fee" />
             </Popable>
-            <AvaText.Heading6>Not implemented {symbol}</AvaText.Heading6>
+            <AvaText.Heading6>Not implemented {tokenSymbol}</AvaText.Heading6>
           </Row>
         </View>
         <Separator />
@@ -249,7 +256,7 @@ export const Confirmation = () => {
               <PopableLabel label="Staking Fee" />
             </Popable>
             <AvaText.Heading6>
-              {delegationFeeAvax + ' ' + symbol}
+              {delegationFeeAvax + ' ' + tokenSymbol}
             </AvaText.Heading6>
           </Row>
         </View>

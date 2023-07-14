@@ -1,4 +1,3 @@
-import Big from 'big.js'
 import { useSelector } from 'react-redux'
 import {
   getAdvancedSortedValidators,
@@ -7,9 +6,10 @@ import {
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { AdvancedSortFilter, NodeValidators } from 'types/earn'
 import Logger from 'utils/Logger'
+import { BigIntNavax } from 'types/denominations'
 
 export type useAdvancedSearchNodesProps = {
-  stakingAmount: Big
+  stakingAmount: BigIntNavax
   stakingEndTime: Date
   minUpTime?: number
   maxFee?: number

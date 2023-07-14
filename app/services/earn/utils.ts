@@ -1,10 +1,10 @@
-import { bnToBig } from '@avalabs/utils-sdk'
-import Big from 'big.js'
 import { add, addYears, getUnixTime } from 'date-fns'
 import { AdvancedSortFilter, NodeValidator, NodeValidators } from 'types/earn'
 import { random } from 'lodash'
 import { FujiParams, MainnetParams } from 'utils/NetworkParams'
 import { MAX_VALIDATOR_WEIGHT_FACTOR } from 'consts/earn'
+import { BigIntNavax } from 'types/denominations'
+import { bnToBigint } from 'utils/bigNumbers/bnToBigint'
 
 /**
  * See https://docs.avax.network/subnets/reference-elastic-subnets-parameters#primary-network-parameters-on-mainnet
@@ -35,15 +35,14 @@ export const getMaximumStakeEndDate = () => {
  * @returns maxDelegation - The maximum delegation in nAvax (`maxWeight` - `stakeAmount`)
  */
 export const calculateMaxWeight = (
-  maxValidatorStake: Big,
-  stakeAmount: Big
-): { maxWeight: Big; maxDelegation: Big } => {
-  const stakeWeight = stakeAmount.mul(MAX_VALIDATOR_WEIGHT_FACTOR)
-  const maxValidatorStakeBig = new Big(maxValidatorStake.valueOf())
-  const maxWeight = stakeWeight.lt(maxValidatorStakeBig)
-    ? stakeWeight
-    : maxValidatorStakeBig
-  const maxDelegation = maxWeight.sub(stakeAmount)
+  maxValidatorStake: BigIntNavax,
+  stakeAmount: BigIntNavax
+): { maxWeight: BigIntNavax; maxDelegation: BigIntNavax } => {
+  const stakeWeight = stakeAmount * MAX_VALIDATOR_WEIGHT_FACTOR
+  const maxValidatorStakeBig = BigInt(maxValidatorStake.valueOf())
+  const maxWeight =
+    stakeWeight < maxValidatorStakeBig ? stakeWeight : maxValidatorStakeBig
+  const maxDelegation = maxWeight - stakeAmount
 
   return {
     maxWeight,
@@ -84,17 +83,16 @@ const getAvailableDelegationWeight = (
   isDeveloperMode: boolean,
   weight: string
 ) => {
-  const maxValidatorStake = getStakingConfig(isDeveloperMode).MaxValidatorStake
-  const maxWeight = calculateMaxWeight(
-    bnToBig(maxValidatorStake),
-    new Big(weight)
+  const maxValidatorStake = bnToBigint(
+    getStakingConfig(isDeveloperMode).MaxValidatorStake
   )
+  const maxWeight = calculateMaxWeight(maxValidatorStake, BigInt(weight))
   return maxWeight.maxDelegation
 }
 
 type getFilteredValidatorsProps = {
   validators: NodeValidators
-  stakingAmount: Big
+  stakingAmount: BigIntNavax
   isDeveloperMode: boolean
   stakingEndTime: Date
   minUpTime?: number
@@ -135,7 +133,7 @@ export const getFilteredValidators = ({
       )
       return (
         (searchText ? nodeID.includes(searchText) : true) &&
-        availableDelegationWeight.toNumber() > stakingAmount.toNumber() &&
+        availableDelegationWeight > stakingAmount &&
         hasMinimumStakingTime(Number(endTime), stakingEndTimeUnix) &&
         Number(uptime) >= minUpTime &&
         (maxFee ? Number(delegationFee) <= maxFee : true)

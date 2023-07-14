@@ -1,5 +1,6 @@
 import BN from 'bn.js'
 
+//TODO: convert to bigint
 const NanoAvax = new BN(1) // 1_000_000_000 (9)
 const MicroAvax = NanoAvax.muln(1000) // 1_000_000_000_000 (12)
 // const Schmeckle = MicroAvax.muln(49).add(NanoAvax.muln(463))

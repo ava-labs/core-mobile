@@ -5,7 +5,6 @@ import { exportC } from 'services/earn/exportC'
 import { importP } from 'services/earn/importP'
 import Big from 'big.js'
 import { FujiParams, MainnetParams } from 'utils/NetworkParams'
-import { bnToBig } from '@avalabs/utils-sdk'
 import { importC } from 'services/earn/importC'
 import { exportP } from 'services/earn/exportP'
 import WalletService from 'services/wallet/WalletService'
@@ -21,6 +20,9 @@ import { exponentialBackoff } from 'utils/js/exponentialBackoff'
 import { AddDelegatorTransactionProps } from 'services/earn/types'
 import { getUnixTime } from 'date-fns'
 import { GetCurrentSupplyResponse } from '@avalabs/avalanchejs-v2/dist/src/vms/pvm'
+import { BigIntNavax } from 'types/denominations'
+import { bnToBigint } from 'utils/bigNumbers/bnToBigint'
+import { bigintToBig } from 'utils/bigNumbers/bigintToBig'
 
 class EarnService {
   getCurrentValidators = (isTestnet: boolean) => {
@@ -88,9 +90,9 @@ class EarnService {
    * @param isDeveloperMode
    */
   calcReward(
-    amount: Big,
+    amount: BigIntNavax,
     duration: number,
-    currentSupply: Big,
+    currentSupply: BigIntNavax,
     delegationFee: number,
     isDeveloperMode: boolean
   ): string {
@@ -108,11 +110,13 @@ class EarnService {
       .mul(new Big(1).minus(stakingPeriodOverMintingPeriod))
       .add(maxConsumptionRateRatio.mul(stakingPeriodOverMintingPeriod))
 
-    const stakeOverSupply = amount.div(currentSupply)
-    const supplyCap = bnToBig(
+    const stakeOverSupply = bigintToBig(amount, 0).div(
+      bigintToBig(currentSupply, 0)
+    )
+    const supplyCap = bnToBigint(
       defPlatformVals.stakingConfig.RewardConfig.SupplyCap
     )
-    const unmintedSupply = supplyCap.sub(currentSupply)
+    const unmintedSupply = new Big((supplyCap - currentSupply).toString())
     const fullReward = unmintedSupply
       .mul(stakeOverSupply)
       .mul(stakingPeriodOverMintingPeriod)
