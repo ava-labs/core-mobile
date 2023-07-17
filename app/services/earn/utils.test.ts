@@ -77,7 +77,7 @@ describe('getFilteredValidators function', () => {
       isDeveloperMode: true,
       stakingEndTime: new Date()
     })
-    expect(result.length).toBe(31)
+    expect(result.length).toBe(30)
   })
 })
 
