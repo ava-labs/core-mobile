@@ -11,8 +11,8 @@ import AppNavigation from 'navigation/AppNavigation'
 import { useRoute } from '@react-navigation/native'
 import { NodeValidator, TAdvancedFilterDropDownItems } from 'types/earn'
 import { useAdvancedSearchNodes } from 'hooks/earn/useAdvancedSearchNodes'
-import { UP_TIME_HIGH_TO_LOW, advancedFilterDropDownItems } from 'consts/earn'
-import { Spinner } from '../../../storybook/stories/Lotties.stories'
+import { advancedFilterDropDownItems, UP_TIME_HIGH_TO_LOW } from 'consts/earn'
+import Spinner from 'components/animation/Spinner'
 import { NodeCard } from './components/NodeCard'
 import { NoMatchFound } from './components/NoMatchFound'
 
@@ -58,7 +58,13 @@ const SelectNode = () => {
   }
 
   const renderItem = ({ item }: { item: NodeValidator }) => {
-    return <NodeCard data={item} stakingAmount={stakingAmount} />
+    return (
+      <NodeCard
+        data={item}
+        stakingAmount={stakingAmount}
+        stakingEndTime={stakingEndTime}
+      />
+    )
   }
 
   if (isFetching)

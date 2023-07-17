@@ -26,10 +26,12 @@ type NavigationProp = EarnScreenProps<
 
 export const NodeCard = ({
   data,
-  stakingAmount
+  stakingAmount,
+  stakingEndTime
 }: {
   data: NodeValidator
   stakingAmount: BigIntNavax
+  stakingEndTime: Date
 }) => {
   const { theme } = useApplicationContext()
   const [isCardExpanded, setIsCardExpanded] = useState(false)
@@ -192,7 +194,8 @@ export const NodeCard = ({
             onPress={() =>
               navigate(AppNavigation.Earn.Confirmation, {
                 nodeId: data.nodeID,
-                stakingAmount
+                stakingAmount,
+                stakingEndTime
               })
             }>
             Next
