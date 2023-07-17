@@ -16,10 +16,19 @@ export const getStakingConfig = (isDeveloperMode: boolean) => {
     : MainnetParams.stakingConfig
 }
 
-export const getMinimumStakeEndDate = (isDeveloperMode: boolean) => {
+export const getMinimumStakeDurationMs = (isDeveloperMode: boolean) => {
+  const oneDay = 24 * 60 * 60 * 1000
+  const twoWeeks = 14 * 24 * 60 * 60 * 1000
+  return isDeveloperMode ? oneDay : twoWeeks
+}
+
+export const getMinimumStakeEndTime = (
+  isDeveloperMode: boolean,
+  stakeStartTime: Date
+) => {
   return isDeveloperMode
-    ? add(new Date(), { hours: 24 })
-    : add(new Date(), { weeks: 2 })
+    ? add(stakeStartTime, { hours: 24 })
+    : add(stakeStartTime, { weeks: 2 })
 }
 
 export const getMaximumStakeEndDate = () => {

@@ -15,7 +15,7 @@ import { useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import {
   getMaximumStakeEndDate,
-  getMinimumStakeEndDate
+  getMinimumStakeEndTime
 } from 'services/earn/utils'
 import {
   CUSTOM,
@@ -51,7 +51,10 @@ const StakingDuration = () => {
   const { theme } = useApplicationContext()
   const { navigate } = useNavigation<EarnScreenNavProps['navigation']>()
   const { stakingAmount } = useRoute<EarnScreenNavProps['route']>().params
-  const minimumStakeEndDate = getMinimumStakeEndDate(isDeveloperMode)
+  const minimumStakeEndDate = getMinimumStakeEndTime(
+    isDeveloperMode,
+    new Date()
+  )
   const maximumStakeEndDate = getMaximumStakeEndDate()
   const isNextDisabled =
     stakeEndTime === undefined || (stakeEndTime && stakeEndTime < new Date())

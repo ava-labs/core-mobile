@@ -1,6 +1,6 @@
 import { addDays, addMonths, addWeeks, addYears } from 'date-fns'
 import { UnixTimeMs } from 'services/earn/types'
-import { getMinimumStakeEndDate } from './utils'
+import { getMinimumStakeEndTime } from './utils'
 
 export const getStakeEndDate = (
   stakeDurationFormat: StakeDurationFormat,
@@ -17,7 +17,7 @@ export const getStakeEndDate = (
     case StakeDurationFormat.Year:
       return addYears(new Date(), stakeDurationValue)
     case StakeDurationFormat.Custom:
-      return getMinimumStakeEndDate(isDeveloperMode)
+      return getMinimumStakeEndTime(isDeveloperMode, new Date())
   }
 }
 export const getStakeDuration = (
@@ -42,7 +42,10 @@ export const getStakeDuration = (
         addYears(new Date(), stakeDurationValue).getTime() - currentTimeUnix
       )
     case StakeDurationFormat.Custom:
-      return getMinimumStakeEndDate(isDeveloperMode).getTime() - currentTimeUnix
+      return (
+        getMinimumStakeEndTime(isDeveloperMode, new Date()).getTime() -
+        currentTimeUnix
+      )
   }
 }
 
