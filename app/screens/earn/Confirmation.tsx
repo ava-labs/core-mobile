@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { ScrollView, StyleSheet, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Space } from 'components/Space'
@@ -21,7 +21,10 @@ import { copyToClipboard } from 'utils/DeviceTools'
 import { addMinutes, format } from 'date-fns'
 import { useEarnCalcEstimatedRewards } from 'hooks/earn/useEarnCalcEstimatedRewards'
 import { useSelector } from 'react-redux'
-import { selectAvaxPrice } from 'store/balance'
+import {
+  selectAvaxPrice,
+  selectNativeTokenBalanceForNetworkAndAccount
+} from 'store/balance'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { getReadableDateDuration } from 'utils/date/getReadableDateDuration'
 import { selectActiveNetwork } from 'store/network'
@@ -32,9 +35,11 @@ import { selectActiveAccount } from 'store/account'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { getMinimumStakeDurationMs } from 'services/earn/utils'
 import { bigintToBig } from 'utils/bigNumbers/bigintToBig'
-import { BigAvax } from 'types/denominations'
+import { BigAvax, BigIntNavax } from 'types/denominations'
 import Big from 'big.js'
-import Logger from 'utils/Logger'
+import { bnToBigint } from 'utils/bigNumbers/bnToBigint'
+import { BN } from 'bn.js'
+import { useMutation } from '@tanstack/react-query'
 
 type NavigationProp = EarnScreenProps<typeof AppNavigation.Earn.Confirmation>
 
@@ -48,6 +53,15 @@ export const Confirmation = () => {
   } = useApplicationContext()
   const activeNetwork = useSelector(selectActiveNetwork)
   const activeAccount = useSelector(selectActiveAccount)
+  const cChainBalance = useSelector(
+    selectNativeTokenBalanceForNetworkAndAccount(
+      activeNetwork.chainId,
+      activeAccount?.index
+    )
+  )
+  const cChainBalanceNAvax: BigIntNavax =
+    bnToBigint(cChainBalance || new BN(0)) / BigInt(1e9) //TODO: make function for converting between denominations
+
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const tokenSymbol = activeNetwork.networkToken.symbol
   const avaxPrice = useSelector(selectAvaxPrice)
@@ -58,19 +72,21 @@ export const Confirmation = () => {
   const stakingAmountPrice = stakingAmountInAvax.mul(avaxPrice).toFixed(2) //price is in [currency] so we round to 2 decimals
   const [now, setNow] = useState(new Date())
   const minStakeDurationMs = getMinimumStakeDurationMs(isDeveloperMode)
+  //minStartTime - 1 minute after submitting
   const minStartTime = useMemo(() => {
-    return addMinutes(now, 5)
+    return addMinutes(now, 1)
   }, [now])
   const trueStakingEndTime = useMemo(() => {
-    //check if stake duration is less than minimum, and adjust if necessarry
+    //check if stake duration is less than minimum, and adjust if necessary
+    // this could happen if user selects minimal stake duration but is too long on confirmation screen
     if (
       stakingEndTime.getTime() - minStakeDurationMs <
       minStartTime.getTime()
     ) {
       return new Date(minStartTime.getTime() + minStakeDurationMs)
-    } else {
-      return stakingEndTime
     }
+
+    return stakingEndTime
   }, [minStakeDurationMs, minStartTime, stakingEndTime])
 
   const { data } = useEarnCalcEstimatedRewards({
@@ -101,31 +117,33 @@ export const Confirmation = () => {
     navigate(AppNavigation.Earn.Cancel)
   }
 
-  const submitStake = useCallback(() => {
-    if (!activeAccount) {
-      return
+  const issueDelegationMutation = useMutation({
+    mutationFn: () => {
+      if (!activeAccount) {
+        return Promise.reject('no active account')
+      }
+
+      return EarnService.collectTokensForStaking({
+        activeAccount,
+        cChainBalance: cChainBalanceNAvax,
+        isDevMode: isDeveloperMode,
+        requiredAmount: stakingAmount
+      }).then(successfullyCollected => {
+        if (successfullyCollected) {
+          return EarnService.issueAddDelegatorTransaction({
+            activeAccount,
+            endDate: trueStakingEndTime,
+            isDevMode: isDeveloperMode,
+            nodeId,
+            stakeAmount: stakingAmount,
+            startDate: minStartTime
+          })
+        } else {
+          throw Error('Something went wrong')
+        }
+      })
     }
-
-    //TODO: collect tokens for staking
-
-    EarnService.issueAddDelegatorTransaction({
-      activeAccount,
-      endDate: trueStakingEndTime,
-      isDevMode: isDeveloperMode,
-      nodeId,
-      stakeAmount: stakingAmount,
-      startDate: minStartTime
-    })
-      .then(value => Logger.trace('------> value', value))
-      .catch(reason => Logger.error('------> reason', reason))
-  }, [
-    activeAccount,
-    isDeveloperMode,
-    minStartTime,
-    nodeId,
-    stakingAmount,
-    trueStakingEndTime
-  ])
+  })
 
   if (!validator) return null
 
@@ -316,7 +334,9 @@ export const Confirmation = () => {
           By selecting "Stake Now" you will lock your funds for the set duration
           of time.
         </AvaText.Caption>
-        <AvaButton.PrimaryLarge onPress={submitStake}>
+        <AvaButton.PrimaryLarge
+          onPress={() => issueDelegationMutation.mutate()}
+          disabled={issueDelegationMutation.isPending}>
           Stake Now
         </AvaButton.PrimaryLarge>
         <Space y={16} />

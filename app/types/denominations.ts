@@ -16,6 +16,7 @@ export type BigNavax = Flavor<Big, 'NanoAvax'>
 export type BigAvax = Flavor<Big, 'Avax'>
 
 export type BNNavax = Flavor<BN, 'NanoAvax'>
+export type BNWeiAvax = Flavor<BN, 'WeiAvax'>
 
 export type StringAvax = Flavor<string, 'Avax'>
 
