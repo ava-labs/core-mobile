@@ -22,7 +22,7 @@ import { useNavigation } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
 import { EarnScreenProps } from 'navigation/types'
 import { bigintToBig } from 'utils/bigNumbers/bigintToBig'
-import { BigIntNavax } from 'types/denominations'
+import { BigIntAvax, BigIntNavax } from 'types/denominations'
 import { AmountChange } from 'screens/earn/types'
 
 type EarnScreenNavProps = EarnScreenProps<
@@ -37,6 +37,7 @@ export default function StakingAmount() {
     ? BigInt(nativeTokenBalance) / BigInt(1e9)
     : undefined
   const minstakeAmountNavax: BigIntNavax = minStakeAmount / BigInt(1e9)
+  const minStakeAmountAvax: BigIntAvax = minstakeAmountNavax / BigInt(1e9)
 
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const chainId = isDeveloperMode
@@ -122,7 +123,7 @@ export default function StakingAmount() {
         }}>
         {amountNotEnough && (
           <AvaText.Body3 color={theme.colorError}>
-            {`Minimum amount to stake is 25 AVAX`}
+            {`Minimum amount to stake is ${minStakeAmountAvax} AVAX`}
           </AvaText.Body3>
         )}
         {notEnoughBalance && (
