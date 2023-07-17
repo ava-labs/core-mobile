@@ -21,7 +21,10 @@ import { UnsignedTx } from '@avalabs/avalanchejs-v2'
 import Logger from 'utils/Logger'
 import { Avalanche } from '@avalabs/wallets-sdk'
 import { exponentialBackoff } from 'utils/js/exponentialBackoff'
-import { AddDelegatorTransactionProps } from 'services/earn/types'
+import {
+  AddDelegatorTransactionProps,
+  CollectTokensForStakingParams
+} from 'services/earn/types'
 import { getUnixTime } from 'date-fns'
 import { GetCurrentSupplyResponse } from '@avalabs/avalanchejs-v2/dist/src/vms/pvm'
 import { BigIntNavax, BigNavax } from 'types/denominations'
@@ -35,17 +38,14 @@ class EarnService {
   }
 
   /**
-   * @param cChainBalance in nAvax
-   * @param requiredAmount in nAvax
-   * @param activeAccount
-   * @param isDevMode
+   * Transfers required amount from C chain to P chain
    */
-  async collectTokensForStaking(
-    cChainBalance: BN,
-    requiredAmount: BN,
-    activeAccount: Account,
-    isDevMode: boolean
-  ): Promise<boolean> {
+  async collectTokensForStaking({
+    cChainBalance,
+    requiredAmount,
+    activeAccount,
+    isDevMode
+  }: CollectTokensForStakingParams): Promise<boolean> {
     return (
       (await exportC({
         cChainBalance,
