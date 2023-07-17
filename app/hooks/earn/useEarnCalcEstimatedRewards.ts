@@ -7,10 +7,11 @@ import { GetCurrentSupplyResponse } from '@avalabs/avalanchejs-v2/dist/src/vms/p
 import { BigAvax, BigIntNavax } from 'types/denominations'
 import Big from 'big.js'
 import { bigintToBig } from 'utils/bigNumbers/bigintToBig'
+import { Seconds } from 'types/siUnits'
 
 export type useEarnCalcEstimatedRewardsProps = {
   amount: BigIntNavax
-  duration: number
+  duration: Seconds
   delegationFee: number
 }
 

@@ -29,6 +29,7 @@ import {
 } from 'services/earn/getStakeEndDate'
 import { useEarnCalcEstimatedRewards } from 'hooks/earn/useEarnCalcEstimatedRewards'
 import { BigIntNavax } from 'types/denominations'
+import { Seconds } from 'types/siUnits'
 
 type EarnScreenNavProps = EarnScreenProps<
   typeof AppNavigation.Earn.StakingDuration
@@ -204,7 +205,7 @@ const DurationOptionItem = ({
     item.stakeDurationValue,
     isDeveloperMode
   )
-  const stakeDurationUnixSec = stakeDurationUnixMs / 1e3
+  const stakeDurationUnixSec = Seconds(stakeDurationUnixMs / 1e3) //TODO: make util fn for transforming from one unit to another
   const { data } = useEarnCalcEstimatedRewards({
     amount: stakeAmount,
     duration: stakeDurationUnixSec,

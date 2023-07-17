@@ -40,6 +40,7 @@ import Big from 'big.js'
 import { bnToBigint } from 'utils/bigNumbers/bnToBigint'
 import { BN } from 'bn.js'
 import { useMutation } from '@tanstack/react-query'
+import { Seconds } from 'types/siUnits'
 
 type NavigationProp = EarnScreenProps<typeof AppNavigation.Earn.Confirmation>
 
@@ -91,7 +92,7 @@ export const Confirmation = () => {
 
   const { data } = useEarnCalcEstimatedRewards({
     amount: stakingAmount,
-    duration: (stakingEndTime.getTime() - new Date().getTime()) / 1e3,
+    duration: Seconds((trueStakingEndTime.getTime() - now.getTime()) / 1e3),
     delegationFee: Number(validator?.delegationFee)
   })
   const estimatedTokenReward: BigAvax = data?.estimatedTokenReward ?? Big(0)

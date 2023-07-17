@@ -1,11 +1,6 @@
 import BN from 'bn.js'
 import Big from 'big.js'
-
-interface Flavoring<FlavorT> {
-  _type?: FlavorT
-}
-
-export type Flavor<T, FlavorT> = T & Flavoring<FlavorT>
+import { Flavor } from 'types/flavor'
 
 //AVAX denominated with 18 decimal points, used for EVM
 export type BigIntWeiAvax = Flavor<bigint, 'WeiAvax'>
