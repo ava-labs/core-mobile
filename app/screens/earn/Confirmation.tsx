@@ -41,6 +41,10 @@ import { bnToBigint } from 'utils/bigNumbers/bnToBigint'
 import { BN } from 'bn.js'
 import { useMutation } from '@tanstack/react-query'
 import { Seconds } from 'types/siUnits'
+import { showSnackBarCustom } from 'components/Snackbar'
+import TransactionToast, {
+  TransactionToastType
+} from 'components/toast/TransactionToast'
 
 type NavigationProp = EarnScreenProps<typeof AppNavigation.Earn.Confirmation>
 
@@ -67,7 +71,7 @@ export const Confirmation = () => {
   const tokenSymbol = activeNetwork.networkToken.symbol
   const avaxPrice = useSelector(selectAvaxPrice)
   const selectedCurrency = useSelector(selectSelectedCurrency)
-  const { navigate } = useNavigation<NavigationProp['navigation']>()
+  const { navigate, getParent } = useNavigation<NavigationProp['navigation']>()
 
   const stakingAmountInAvax: BigAvax = bigintToBig(stakingAmount, 9)
   const stakingAmountPrice = stakingAmountInAvax.mul(avaxPrice).toFixed(2) //price is in [currency] so we round to 2 decimals
@@ -145,6 +149,29 @@ export const Confirmation = () => {
       })
     }
   })
+
+  //dismiss earn flow after successfully issued stake tx and show snack
+  useEffect(() => {
+    if (issueDelegationMutation.isSuccess && issueDelegationMutation.data) {
+      const txHash = issueDelegationMutation.data
+      showSnackBarCustom({
+        component: (
+          <TransactionToast
+            message={'Staking successful!'}
+            type={TransactionToastType.SUCCESS}
+            txHash={txHash}
+          />
+        ),
+        duration: 'long'
+      })
+
+      getParent()?.goBack()
+    }
+  }, [
+    getParent,
+    issueDelegationMutation.data,
+    issueDelegationMutation.isSuccess
+  ])
 
   if (!validator) return null
 
