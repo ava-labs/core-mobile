@@ -1,5 +1,4 @@
 import { exportC } from 'services/earn/exportC'
-import { BN } from 'bn.js'
 import { Account } from 'store/account'
 import NetworkService from 'services/network/NetworkService'
 import WalletService from 'services/wallet/WalletService'
@@ -63,8 +62,8 @@ describe('earn/exportC', () => {
     it('should fail if cChainBalance is less than required amount', async () => {
       await expect(async () => {
         await exportC({
-          cChainBalance: new BN(1e9),
-          requiredAmount: new BN(1e10),
+          cChainBalance: BigInt(1e9),
+          requiredAmount: BigInt(1e10),
           isDevMode: false,
           activeAccount: {} as Account
         })
@@ -73,8 +72,8 @@ describe('earn/exportC', () => {
 
     it('should call avaxProvider.getApiC().getBaseFee()', async () => {
       await exportC({
-        cChainBalance: new BN(1e9),
-        requiredAmount: new BN(1e8),
+        cChainBalance: BigInt(1e9),
+        requiredAmount: BigInt(1e8),
         isDevMode: false,
         activeAccount: {} as Account
       })
@@ -83,8 +82,8 @@ describe('earn/exportC', () => {
 
     it('should call walletService.createExportCTx', async () => {
       const result = await exportC({
-        cChainBalance: new BN(1e9),
-        requiredAmount: new BN(1e8),
+        cChainBalance: BigInt(1e9),
+        requiredAmount: BigInt(1e8),
         isDevMode: false,
         activeAccount: {} as Account
       })
@@ -101,8 +100,8 @@ describe('earn/exportC', () => {
 
     it('should call walletService.signAvaxTx', async () => {
       const result = await exportC({
-        cChainBalance: new BN(1e9),
-        requiredAmount: new BN(1e8),
+        cChainBalance: BigInt(1e9),
+        requiredAmount: BigInt(1e8),
         isDevMode: false,
         activeAccount: {} as Account
       })
@@ -112,8 +111,8 @@ describe('earn/exportC', () => {
 
     it('should call networkService.sendTransaction', async () => {
       const result = await exportC({
-        cChainBalance: new BN(1e9),
-        requiredAmount: new BN(1e8),
+        cChainBalance: BigInt(1e9),
+        requiredAmount: BigInt(1e8),
         isDevMode: false,
         activeAccount: {} as Account
       })
