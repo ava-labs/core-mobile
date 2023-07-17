@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { ScrollView, StyleSheet, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Space } from 'components/Space'
@@ -18,7 +18,7 @@ import { PopableContent } from 'components/PopableContent'
 import { truncateNodeId } from 'utils/Utils'
 import CopySVG from 'components/svg/CopySVG'
 import { copyToClipboard } from 'utils/DeviceTools'
-import { format } from 'date-fns'
+import { addMinutes, format } from 'date-fns'
 import { useEarnCalcEstimatedRewards } from 'hooks/earn/useEarnCalcEstimatedRewards'
 import { useSelector } from 'react-redux'
 import { selectAvaxPrice } from 'store/balance'
@@ -26,10 +26,15 @@ import { selectSelectedCurrency } from 'store/settings/currency'
 import { getReadableDateDuration } from 'utils/date/getReadableDateDuration'
 import { selectActiveNetwork } from 'store/network'
 import { useGetValidatorByNodeId } from 'hooks/earn/useGetValidatorByNodeId'
-import Big from 'big.js'
-import { bigintToBig } from 'utils/bigNumbers/bigintToBig'
 import { NodeValidator } from 'types/earn'
+import EarnService from 'services/earn/EarnService'
+import { selectActiveAccount } from 'store/account'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { getMinimumStakeDurationMs } from 'services/earn/utils'
+import { bigintToBig } from 'utils/bigNumbers/bigintToBig'
 import { BigAvax } from 'types/denominations'
+import Big from 'big.js'
+import Logger from 'utils/Logger'
 
 type NavigationProp = EarnScreenProps<typeof AppNavigation.Earn.Confirmation>
 
@@ -42,39 +47,85 @@ export const Confirmation = () => {
     appHook: { tokenInCurrencyFormatter }
   } = useApplicationContext()
   const activeNetwork = useSelector(selectActiveNetwork)
+  const activeAccount = useSelector(selectActiveAccount)
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const tokenSymbol = activeNetwork.networkToken.symbol
   const avaxPrice = useSelector(selectAvaxPrice)
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { navigate } = useNavigation<NavigationProp['navigation']>()
+
+  const stakingAmountInAvax: BigAvax = bigintToBig(stakingAmount, 9)
+  const stakingAmountPrice = stakingAmountInAvax.mul(avaxPrice).toFixed(2) //price is in [currency] so we round to 2 decimals
+  const [now, setNow] = useState(new Date())
+  const minStakeDurationMs = getMinimumStakeDurationMs(isDeveloperMode)
+  const minStartTime = useMemo(() => {
+    return addMinutes(now, 5)
+  }, [now])
+  const trueStakingEndTime = useMemo(() => {
+    //check if stake duration is less than minimum, and adjust if necessarry
+    if (
+      stakingEndTime.getTime() - minStakeDurationMs <
+      minStartTime.getTime()
+    ) {
+      return new Date(minStartTime.getTime() + minStakeDurationMs)
+    } else {
+      return stakingEndTime
+    }
+  }, [minStakeDurationMs, minStartTime, stakingEndTime])
+
   const { data } = useEarnCalcEstimatedRewards({
     amount: stakingAmount,
     duration: (stakingEndTime.getTime() - new Date().getTime()) / 1e3,
     delegationFee: Number(validator?.delegationFee)
   })
+  const estimatedTokenReward: BigAvax = data?.estimatedTokenReward ?? Big(0)
+  const estimatedRewardInCurrency: string =
+    data?.estimatedRewardInCurrency ?? '0'
 
-  const { delegationFeeAvax, stakingAmountPrice, stakingAmountAvax } =
-    useMemo(() => {
-      const stakingAmountInAvax: BigAvax = bigintToBig(stakingAmount, 9)
-      const delegationFee = new Big(validator?.delegationFee)
-        .div(100)
-        .mul(stakingAmountInAvax)
-      return {
-        stakingAmountAvax: stakingAmountInAvax,
-        stakingAmountPrice: stakingAmountInAvax.mul(avaxPrice).toFixed(2), //price is in [currency] so we round to 2 decimals
-        delegationFeeAvax: delegationFee
-      }
-    }, [avaxPrice, stakingAmount, validator?.delegationFee])
+  const delegationFee: BigAvax = useMemo(() => {
+    return estimatedTokenReward.mul(Number(validator?.delegationFee)).div(100)
+  }, [estimatedTokenReward, validator?.delegationFee])
 
-  const { estimatedReward, estimatedRewardInCurrency } = useMemo(() => {
-    return {
-      estimatedReward: data?.estimatedTokenReward ?? (Big(0) as BigAvax),
-      estimatedRewardInCurrency: data?.estimatedRewardInCurrency ?? '0'
+  // ticker - update "now" variable every 10s
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      setNow(new Date())
+    }, 10000)
+
+    return () => {
+      clearInterval(intervalId)
     }
-  }, [data?.estimatedRewardInCurrency, data?.estimatedTokenReward])
+  }, [])
 
   const cancelStaking = () => {
     navigate(AppNavigation.Earn.Cancel)
   }
+
+  const submitStake = useCallback(() => {
+    if (!activeAccount) {
+      return
+    }
+
+    //TODO: collect tokens for staking
+
+    EarnService.issueAddDelegatorTransaction({
+      activeAccount,
+      endDate: trueStakingEndTime,
+      isDevMode: isDeveloperMode,
+      nodeId,
+      stakeAmount: stakingAmount,
+      startDate: minStartTime
+    })
+      .then(value => Logger.trace('------> value', value))
+      .catch(reason => Logger.error('------> reason', reason))
+  }, [
+    activeAccount,
+    isDeveloperMode,
+    minStartTime,
+    nodeId,
+    stakingAmount,
+    trueStakingEndTime
+  ])
 
   if (!validator) return null
 
@@ -120,7 +171,7 @@ export const Confirmation = () => {
           </AvaText.Body2>
           <View style={{ alignItems: 'flex-end' }}>
             <AvaText.Heading1>
-              {stakingAmountAvax + ' ' + tokenSymbol}
+              {stakingAmountInAvax + ' ' + tokenSymbol}
             </AvaText.Heading1>
             <AvaText.Heading3 textStyle={{ color: theme.colorText2 }}>
               {`${tokenInCurrencyFormatter(
@@ -136,7 +187,7 @@ export const Confirmation = () => {
           <Row style={{ justifyContent: 'space-between' }}>
             <AvaText.Body2>Estimated Reward</AvaText.Body2>
             <AvaText.Heading2 textStyle={{ color: theme.colorBgGreen }}>
-              {estimatedReward + ' ' + tokenSymbol}
+              {estimatedTokenReward + ' ' + tokenSymbol}
             </AvaText.Heading2>
           </Row>
           <AvaText.Body3
@@ -172,10 +223,10 @@ export const Confirmation = () => {
               width: '100%'
             }}>
             <AvaText.Heading3>
-              {getReadableDateDuration(stakingEndTime)}
+              {getReadableDateDuration(trueStakingEndTime)}
             </AvaText.Heading3>
             <AvaText.Body1>
-              {format(stakingEndTime, 'MM/dd/yy  H:mm aa')}
+              {format(trueStakingEndTime, 'MM/dd/yy  H:mm aa')}
             </AvaText.Body1>
           </Row>
         </View>
@@ -249,7 +300,7 @@ export const Confirmation = () => {
               <PopableLabel label="Staking Fee" />
             </Popable>
             <AvaText.Heading6>
-              {delegationFeeAvax + ' ' + tokenSymbol}
+              {delegationFee + ' ' + tokenSymbol}
             </AvaText.Heading6>
           </Row>
         </View>
@@ -265,7 +316,9 @@ export const Confirmation = () => {
           By selecting "Stake Now" you will lock your funds for the set duration
           of time.
         </AvaText.Caption>
-        <AvaButton.PrimaryLarge>Stake Now</AvaButton.PrimaryLarge>
+        <AvaButton.PrimaryLarge onPress={submitStake}>
+          Stake Now
+        </AvaButton.PrimaryLarge>
         <Space y={16} />
         <AvaButton.SecondaryLarge onPress={cancelStaking}>
           Cancel
