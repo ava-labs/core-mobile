@@ -144,7 +144,7 @@ class EarnService {
     startDate,
     endDate,
     isDevMode
-  }: AddDelegatorTransactionProps): Promise<void> {
+  }: AddDelegatorTransactionProps): Promise<string> {
     const startDateUnix = getUnixTime(startDate)
     const endDateUnix = getUnixTime(endDate)
     const avaxXPNetwork = NetworkService.getAvalancheNetworkXP(isDevMode)
@@ -186,6 +186,7 @@ class EarnService {
         `Transfer is taking unusually long (add Delegator). txId = ${txID}`
       )
     }
+    return txID
   }
 
   /**
