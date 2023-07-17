@@ -2,17 +2,25 @@ import BN from 'bn.js'
 import Big from 'big.js'
 import { Flavor } from 'types/flavor'
 
+enum Denomination {
+  'WeiAvax' = 'WeiAvax',
+  'NanoAvax' = 'NanoAvax',
+  'Avax' = 'Avax'
+}
+
+export type DenominationFlavor<T, D extends Denomination> = Flavor<T, D>
+
 //AVAX denominated with 18 decimal points, used for EVM
-export type BigIntWeiAvax = Flavor<bigint, 'WeiAvax'>
-export type BigIntNAvax = Flavor<bigint, 'NanoAvax'>
-export type BigIntAvax = Flavor<bigint, 'Avax'>
+export type BigIntWeiAvax = DenominationFlavor<bigint, Denomination.WeiAvax>
+export type BigIntNAvax = DenominationFlavor<bigint, Denomination.NanoAvax>
+export type BigIntAvax = DenominationFlavor<bigint, Denomination.Avax>
 
-export type BigNAvax = Flavor<Big, 'NanoAvax'>
-export type BigAvax = Flavor<Big, 'Avax'>
+export type BigNAvax = DenominationFlavor<Big, Denomination.NanoAvax>
+export type BigAvax = DenominationFlavor<Big, Denomination.Avax>
 
-export type BNNAvax = Flavor<BN, 'NanoAvax'>
-export type BNWeiAvax = Flavor<BN, 'WeiAvax'>
+export type BNNAvax = DenominationFlavor<BN, Denomination.NanoAvax>
+export type BNWeiAvax = DenominationFlavor<BN, Denomination.WeiAvax>
 
-export type StringAvax = Flavor<string, 'Avax'>
+export type StringAvax = DenominationFlavor<string, Denomination.Avax>
 
-export type DenominationNAvax = Flavor<9, 'NanoAvax'>
+export type DenominationNAvax = DenominationFlavor<9, Denomination.NanoAvax>
