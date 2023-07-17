@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { ScrollView, StyleSheet, View } from 'react-native'
+import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Space } from 'components/Space'
 import AvaText from 'components/AvaText'
@@ -335,15 +335,21 @@ export const Confirmation = () => {
           By selecting "Stake Now" you will lock your funds for the set duration
           of time.
         </AvaText.Caption>
-        <AvaButton.PrimaryLarge
-          onPress={() => issueDelegationMutation.mutate()}
-          disabled={issueDelegationMutation.isPending}>
-          Stake Now
-        </AvaButton.PrimaryLarge>
-        <Space y={16} />
-        <AvaButton.SecondaryLarge onPress={cancelStaking}>
-          Cancel
-        </AvaButton.SecondaryLarge>
+        {!issueDelegationMutation.isPending && (
+          <>
+            <AvaButton.PrimaryLarge
+              onPress={() => issueDelegationMutation.mutate()}>
+              Stake Now
+            </AvaButton.PrimaryLarge>
+            <Space y={16} />
+            <AvaButton.SecondaryLarge onPress={cancelStaking}>
+              Cancel
+            </AvaButton.SecondaryLarge>
+          </>
+        )}
+        {issueDelegationMutation.isPending && (
+          <ActivityIndicator size={'large'} />
+        )}
       </View>
     </ScrollView>
   )
