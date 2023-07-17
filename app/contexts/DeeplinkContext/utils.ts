@@ -11,8 +11,16 @@ import { ACTIONS, PROTOCOLS } from './types'
  * - core://wc?uri=wc%3Ab08d4b7be6bd25662c5922faadf82ff94d525af4282e0bdc9a78ae2ed9e086ec%402%3Frelay-protocol%3Dirn%26symKey%3Da33be37bb809cfbfbc788a54649bfbf1baa8cdbfe2fe21657fb51ef1bc7ab1fb
  */
 export const parseWalletConnetLink = (rawUrl: string) => {
-  const url = new URL(rawUrl)
+  console.log(JSON.stringify(rawUrl + ' ths is the rawURL!!!'))
+  let url
+  try {
+    url = new URL(rawUrl)
+  } catch (e) {
+    return undefined
+  }
   const protocol = url.protocol.replace(':', '')
+
+  console.log(JSON.stringify(protocol) + ' this is the protocol!!!')
 
   switch (protocol) {
     case PROTOCOLS.WC: {
