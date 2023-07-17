@@ -1,7 +1,7 @@
 import AvaButton from 'components/AvaButton'
 import React from 'react'
 import { StyleSheet } from 'react-native'
-import { BigIntNavax, BigIntWeiAvax } from 'types/denominations'
+import { BigIntNAvax, BigIntWeiAvax } from 'types/denominations'
 
 const PercentButtons = ({
   balance,
@@ -12,7 +12,7 @@ const PercentButtons = ({
   onPercentageSelected: (factor: number) => void
   isDeveloperMode: boolean
 }) => {
-  const minStakeAmount: BigIntNavax = BigInt(isDeveloperMode ? 1e9 : 25e9)
+  const minStakeAmount: BigIntNAvax = BigInt(isDeveloperMode ? 1e9 : 25e9)
   const p10 = minStakeAmount * 10n
   const p25 = minStakeAmount * 4n
   const p50 = minStakeAmount * 2n

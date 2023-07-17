@@ -3,7 +3,7 @@ import { AdvancedSortFilter, NodeValidator, NodeValidators } from 'types/earn'
 import { random } from 'lodash'
 import { FujiParams, MainnetParams } from 'utils/NetworkParams'
 import { MAX_VALIDATOR_WEIGHT_FACTOR } from 'consts/earn'
-import { BigIntNavax } from 'types/denominations'
+import { BigIntNAvax } from 'types/denominations'
 import { bnToBigint } from 'utils/bigNumbers/bnToBigint'
 
 /**
@@ -44,9 +44,9 @@ export const getMaximumStakeEndDate = () => {
  * @returns maxDelegation - The maximum delegation in nAvax (`maxWeight` - `stakeAmount`)
  */
 export const calculateMaxWeight = (
-  maxValidatorStake: BigIntNavax,
-  stakeAmount: BigIntNavax
-): { maxWeight: BigIntNavax; maxDelegation: BigIntNavax } => {
+  maxValidatorStake: BigIntNAvax,
+  stakeAmount: BigIntNAvax
+): { maxWeight: BigIntNAvax; maxDelegation: BigIntNAvax } => {
   const stakeWeight = stakeAmount * MAX_VALIDATOR_WEIGHT_FACTOR
   const maxValidatorStakeBig = BigInt(maxValidatorStake.valueOf())
   const maxWeight =
@@ -101,7 +101,7 @@ const getAvailableDelegationWeight = (
 
 type getFilteredValidatorsProps = {
   validators: NodeValidators
-  stakingAmount: BigIntNavax
+  stakingAmount: BigIntNAvax
   isDeveloperMode: boolean
   stakingEndTime: Date
   minUpTime?: number

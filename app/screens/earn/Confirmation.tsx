@@ -35,7 +35,7 @@ import { selectActiveAccount } from 'store/account'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { getMinimumStakeDurationMs } from 'services/earn/utils'
 import { bigintToBig } from 'utils/bigNumbers/bigintToBig'
-import { BigAvax, BigIntNavax } from 'types/denominations'
+import { BigAvax, BigIntNAvax } from 'types/denominations'
 import Big from 'big.js'
 import { bnToBigint } from 'utils/bigNumbers/bnToBigint'
 import { BN } from 'bn.js'
@@ -60,7 +60,7 @@ export const Confirmation = () => {
       activeAccount?.index
     )
   )
-  const cChainBalanceNAvax: BigIntNavax =
+  const cChainBalanceNAvax: BigIntNAvax =
     bnToBigint(cChainBalance || new BN(0)) / BigInt(1e9) //TODO: make function for converting between denominations
 
   const isDeveloperMode = useSelector(selectIsDeveloperMode)

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import InputText, { InputTextProps } from 'components/InputText'
 import Big from 'big.js'
-import { BigIntNavax } from 'types/denominations'
+import { BigIntNAvax } from 'types/denominations'
 import { bigintToBig } from 'utils/bigNumbers/bigintToBig'
 import { AmountChange } from 'screens/earn/types'
 import { bigToBigint } from 'utils/bigNumbers/bigToBigint'
@@ -10,7 +10,7 @@ Big.PE = 99
 Big.NE = -18
 
 interface BNInputProps extends Omit<InputTextProps, 'text'> {
-  value?: BigIntNavax
+  value?: BigIntNAvax
   denomination: number
 
   onChange?(change: AmountChange): void

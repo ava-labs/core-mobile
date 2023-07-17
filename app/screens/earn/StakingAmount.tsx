@@ -22,7 +22,7 @@ import { useNavigation } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
 import { EarnScreenProps } from 'navigation/types'
 import { bigintToBig } from 'utils/bigNumbers/bigintToBig'
-import { BigIntAvax, BigIntNavax } from 'types/denominations'
+import { BigIntAvax, BigIntNAvax } from 'types/denominations'
 import { AmountChange } from 'screens/earn/types'
 
 type EarnScreenNavProps = EarnScreenProps<
@@ -33,10 +33,10 @@ export default function StakingAmount() {
   const { theme } = useApplicationContext()
   const { navigate } = useNavigation<EarnScreenNavProps['navigation']>()
   const { minStakeAmount, nativeTokenBalance } = useStakingParams()
-  const nativeTokenBalanceNavax: BigIntNavax | undefined = nativeTokenBalance
+  const nativeTokenBalanceNavax: BigIntNAvax | undefined = nativeTokenBalance
     ? BigInt(nativeTokenBalance) / BigInt(1e9)
     : undefined
-  const minstakeAmountNavax: BigIntNavax = minStakeAmount / BigInt(1e9)
+  const minstakeAmountNavax: BigIntNAvax = minStakeAmount / BigInt(1e9)
   const minStakeAmountAvax: BigIntAvax = minstakeAmountNavax / BigInt(1e9)
 
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
@@ -50,7 +50,7 @@ export default function StakingAmount() {
     avaxNetwork,
     selectedCurrency.toLowerCase() as VsCurrencyType
   )
-  const [inputAmount, setInputAmount] = useState<BigIntNavax>(0n)
+  const [inputAmount, setInputAmount] = useState<BigIntNAvax>(0n)
   const stakeInCurrency = useMemo(
     () =>
       bigintToBig(inputAmount, nativeTokenDecimals)

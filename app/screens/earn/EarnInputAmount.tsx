@@ -10,7 +10,7 @@ import { bnToLocaleString } from '@avalabs/utils-sdk'
 import { Platform } from 'react-native'
 import sanitizeInput from 'screens/earn/sanitizeInput'
 import { AmountChange } from 'screens/earn/types'
-import { BigIntNavax, DenominationNavax } from 'types/denominations'
+import { BigIntNAvax, DenominationNAvax } from 'types/denominations'
 import { BigintInput } from 'components/BigintInput'
 
 const EarnInputAmount = ({
@@ -18,8 +18,8 @@ const EarnInputAmount = ({
   decimals,
   handleAmountChange
 }: {
-  inputAmount?: BigIntNavax
-  decimals: DenominationNavax
+  inputAmount?: BigIntNAvax
+  decimals: DenominationNAvax
   handleAmountChange?: (change: AmountChange) => void
 }) => {
   const { theme } = useApplicationContext()
@@ -27,7 +27,7 @@ const EarnInputAmount = ({
   const isAndroid = Platform.OS === 'android'
 
   useEffect(() => {
-    const sanitized: BigIntNavax | undefined = sanitizeInput(
+    const sanitized: BigIntNAvax | undefined = sanitizeInput(
       inputAmount,
       decimals
     )
@@ -40,7 +40,7 @@ const EarnInputAmount = ({
   }, [decimals, handleAmountChange, inputAmount])
 
   const interceptAmountChange = (value: AmountChange) => {
-    const sanitized: BigIntNavax = sanitizeInput(value.amount, decimals) ?? 0n
+    const sanitized: BigIntNAvax = sanitizeInput(value.amount, decimals) ?? 0n
     handleAmountChange?.({
       amountString: bnToLocaleString(new BN(sanitized.toString()), decimals),
       amount: sanitized

@@ -1,5 +1,5 @@
 import { Account } from 'store/account'
-import { BigIntNavax } from 'types/denominations'
+import { BigIntNAvax } from 'types/denominations'
 
 export type AddDelegatorTransactionProps = {
   activeAccount: Account
@@ -17,8 +17,8 @@ export type AddDelegatorTransactionProps = {
 export type UnixTimeMs = number
 
 export type CollectTokensForStakingParams = {
-  cChainBalance: BigIntNavax
-  requiredAmount: BigIntNavax
+  cChainBalance: BigIntNAvax
+  requiredAmount: BigIntNAvax
   activeAccount: Account
   isDevMode: boolean
 }

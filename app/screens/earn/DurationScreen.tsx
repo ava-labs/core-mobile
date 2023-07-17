@@ -28,7 +28,7 @@ import {
   TWO_WEEKS
 } from 'services/earn/getStakeEndDate'
 import { useEarnCalcEstimatedRewards } from 'hooks/earn/useEarnCalcEstimatedRewards'
-import { BigIntNavax } from 'types/denominations'
+import { BigIntNAvax } from 'types/denominations'
 import { Seconds } from 'types/siUnits'
 
 type EarnScreenNavProps = EarnScreenProps<
@@ -96,7 +96,7 @@ const StakingDuration = () => {
     }
   }
 
-  const renderDurationOptions = (stakeAmount: BigIntNavax) => {
+  const renderDurationOptions = (stakeAmount: BigIntNAvax) => {
     const durationOptions = isDeveloperMode
       ? DURATION_OPTIONS_FUJI
       : DURATION_OPTIONS_MAINNET
@@ -193,7 +193,7 @@ const DurationOptionItem = ({
   onRadioSelect,
   isSelected
 }: {
-  stakeAmount: BigIntNavax
+  stakeAmount: BigIntNAvax
   item: DurationOption
   isDeveloperMode: boolean
   onRadioSelect: (item: DurationOption) => void

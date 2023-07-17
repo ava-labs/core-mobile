@@ -1,6 +1,6 @@
 import { avaxSerial, UnsignedTx } from '@avalabs/avalanchejs-v2'
 import BN from 'bn.js'
-import { BigIntNavax } from 'types/denominations'
+import { BigIntNAvax } from 'types/denominations'
 
 /**
  * https://docs.avax.network/quickstart/transaction-fees#atomic-transaction-fees
@@ -26,6 +26,6 @@ export function calculateCChainFee(
 /**
  * https://docs.avax.network/quickstart/transaction-fees#fee-schedule
  */
-export function calculatePChainFee(): BigIntNavax {
+export function calculatePChainFee(): BigIntNAvax {
   return BigInt(0.001e9)
 }

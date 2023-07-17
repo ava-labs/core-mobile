@@ -14,30 +14,30 @@ import { Confirmation } from 'screens/earn/Confirmation'
 import { CancelModal } from 'screens/earn/CancelModal'
 import NotEnoughAvax from 'screens/earn/NotEnoughAvax'
 import useStakingParams from 'hooks/earn/useStakingParams'
-import { BigIntNavax } from 'types/denominations'
+import { BigIntNAvax } from 'types/denominations'
 
 export type EarnStackParamList = {
   [AppNavigation.Earn.NotEnoughAvax]: undefined
   [AppNavigation.Earn.GetStarted]: undefined
   [AppNavigation.Earn.StakingAmount]: undefined
-  [AppNavigation.Earn.StakingDuration]: { stakingAmount: BigIntNavax }
+  [AppNavigation.Earn.StakingDuration]: { stakingAmount: BigIntNAvax }
   [AppNavigation.Earn.AdvancedStaking]: {
     stakingEndTime: Date
-    stakingAmount: BigIntNavax
+    stakingAmount: BigIntNAvax
   }
   [AppNavigation.Earn.SelectNode]: {
     stakingEndTime: Date
-    stakingAmount: BigIntNavax
+    stakingAmount: BigIntNAvax
     minUpTime?: number
     maxFee?: number
   }
   [AppNavigation.Earn.NodeSearch]: {
     stakingEndTime: Date
-    stakingAmount: BigIntNavax
+    stakingAmount: BigIntNAvax
   }
   [AppNavigation.Earn.Confirmation]: {
     nodeId: string
-    stakingAmount: BigIntNavax
+    stakingAmount: BigIntNAvax
     stakingEndTime: Date
   }
   [AppNavigation.Earn.Cancel]: undefined

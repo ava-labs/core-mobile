@@ -27,7 +27,7 @@ import {
 } from 'services/earn/types'
 import { getUnixTime } from 'date-fns'
 import { GetCurrentSupplyResponse } from '@avalabs/avalanchejs-v2/dist/src/vms/pvm'
-import { BigIntNavax, BigNavax } from 'types/denominations'
+import { BigIntNAvax, BigNAvax } from 'types/denominations'
 import { bnToBigint } from 'utils/bigNumbers/bnToBigint'
 import { bigintToBig } from 'utils/bigNumbers/bigintToBig'
 import { bigToBigint } from 'utils/bigNumbers/bigToBigint'
@@ -95,12 +95,12 @@ class EarnService {
    * @param isDeveloperMode
    */
   calcReward(
-    amount: BigIntNavax,
+    amount: BigIntNAvax,
     duration: number,
-    currentSupply: BigIntNavax,
+    currentSupply: BigIntNAvax,
     delegationFee: number,
     isDeveloperMode: boolean
-  ): BigIntNavax {
+  ): BigIntNAvax {
     const defPlatformVals = isDeveloperMode ? FujiParams : MainnetParams
     const minConsumptionRateRatio = new Big(
       defPlatformVals.stakingConfig.RewardConfig.MinConsumptionRate
@@ -118,19 +118,19 @@ class EarnService {
     const stakeOverSupply = bigintToBig(amount, NANO_AVAX_DENOMINATION).div(
       bigintToBig(currentSupply, NANO_AVAX_DENOMINATION)
     )
-    const supplyCap: BigIntNavax = bnToBigint(
+    const supplyCap: BigIntNAvax = bnToBigint(
       defPlatformVals.stakingConfig.RewardConfig.SupplyCap
     )
-    const unmintedSupply: BigNavax = new Big(
+    const unmintedSupply: BigNAvax = new Big(
       (BigInt(supplyCap) - BigInt(currentSupply)).toString()
     )
-    const fullReward: BigNavax = unmintedSupply
+    const fullReward: BigNAvax = unmintedSupply
       .mul(stakeOverSupply)
       .mul(stakingPeriodOverMintingPeriod)
       .mul(effectiveConsumptionRate)
 
     const delegationFeeRatio = new Big(delegationFee).div(100)
-    const rewardsMinusDelegationFee: BigNavax = fullReward.mul(
+    const rewardsMinusDelegationFee: BigNAvax = fullReward.mul(
       new Big(1).minus(delegationFeeRatio)
     )
 

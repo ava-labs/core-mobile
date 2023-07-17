@@ -9,11 +9,11 @@ import { Account } from 'store/account'
 import { AvalancheTransactionRequest } from 'services/wallet/types'
 import { UnsignedTx } from '@avalabs/avalanchejs-v2'
 import NetworkService from 'services/network/NetworkService'
-import { BigIntNavax, BigIntWeiAvax } from 'types/denominations'
+import { BigIntNAvax, BigIntWeiAvax } from 'types/denominations'
 
 export type ExportCParams = {
-  cChainBalance: BigIntNavax
-  requiredAmount: BigIntNavax
+  cChainBalance: BigIntNAvax
+  requiredAmount: BigIntNAvax
   activeAccount: Account
   isDevMode: boolean
 }
@@ -40,7 +40,7 @@ export async function exportC({
   const instantFee = baseFee + (baseFee * BigInt(20)) / BigInt(100) // Increase by 20% for instant speed
 
   const pChainFee = calculatePChainFee()
-  const amount: BigIntNavax = requiredAmount + pChainFee
+  const amount: BigIntNAvax = requiredAmount + pChainFee
 
   if (cChainBalance < amount) {
     throw Error('Not enough balance on C chain')

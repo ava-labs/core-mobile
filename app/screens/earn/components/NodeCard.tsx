@@ -16,7 +16,7 @@ import LinearGradientSVG from 'components/svg/LinearGradientSVG'
 import { format } from 'date-fns'
 import { calculateMaxWeight, generateGradient } from 'services/earn/utils'
 import { NodeValidator } from 'types/earn'
-import { BigIntNavax } from 'types/denominations'
+import { BigIntNAvax } from 'types/denominations'
 import { bigintToBig } from 'utils/bigNumbers/bigintToBig'
 import { PopableContentWithCaption } from './PopableContentWithCaption'
 
@@ -30,7 +30,7 @@ export const NodeCard = ({
   stakingEndTime
 }: {
   data: NodeValidator
-  stakingAmount: BigIntNavax
+  stakingAmount: BigIntNAvax
   stakingEndTime: Date
 }) => {
   const { theme } = useApplicationContext()
@@ -41,7 +41,7 @@ export const NodeCard = ({
 
   const stakeAmount = BigInt(data.stakeAmount)
   const delegatorWeight = BigInt(data.delegatorWeight || 0)
-  const currentWeight: BigIntNavax = stakeAmount + delegatorWeight
+  const currentWeight: BigIntNAvax = stakeAmount + delegatorWeight
 
   const maxWeight = calculateMaxWeight(BigInt(3000000e9), stakeAmount)
 

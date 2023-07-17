@@ -4,13 +4,13 @@ import EarnService from 'services/earn/EarnService'
 import { selectAvaxPrice } from 'store/balance'
 import { useQuery } from '@tanstack/react-query'
 import { GetCurrentSupplyResponse } from '@avalabs/avalanchejs-v2/dist/src/vms/pvm'
-import { BigAvax, BigIntNavax } from 'types/denominations'
+import { BigAvax, BigIntNAvax } from 'types/denominations'
 import Big from 'big.js'
 import { bigintToBig } from 'utils/bigNumbers/bigintToBig'
 import { Seconds } from 'types/siUnits'
 
 export type useEarnCalcEstimatedRewardsProps = {
-  amount: BigIntNavax
+  amount: BigIntNAvax
   duration: Seconds
   delegationFee: number
 }

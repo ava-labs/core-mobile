@@ -1,6 +1,6 @@
-import { BigIntNavax, StringAvax } from 'types/denominations'
+import { BigIntNAvax, StringAvax } from 'types/denominations'
 
 export type AmountChange = {
-  amount: BigIntNavax
+  amount: BigIntNAvax
   amountString: StringAvax
 }
