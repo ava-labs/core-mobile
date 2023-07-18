@@ -10,7 +10,7 @@ import { Row } from 'components/Row'
 import AvaButton from 'components/AvaButton'
 import FlexSpacer from 'components/FlexSpacer'
 import AppNavigation from 'navigation/AppNavigation'
-import { EarnScreenProps } from 'navigation/types'
+import { StakeSetupScreenProps } from 'navigation/types'
 import { Popable } from 'react-native-popable'
 import { PopableLabel } from 'components/PopableLabel'
 import AvaLogoSVG from 'components/svg/AvaLogoSVG'
@@ -29,10 +29,12 @@ import { useGetValidatorByNodeId } from 'hooks/earn/useGetValidatorByNodeId'
 import Big from 'big.js'
 import { N_AVAX_PER_AVAX } from 'consts/earn'
 
-type NavigationProp = EarnScreenProps<typeof AppNavigation.Earn.Confirmation>
+type ScreenProps = StakeSetupScreenProps<
+  typeof AppNavigation.StakeSetup.Confirmation
+>
 
 export const Confirmation = () => {
-  const { nodeId, stakingAmount } = useRoute<NavigationProp['route']>().params
+  const { nodeId, stakingAmount } = useRoute<ScreenProps['route']>().params
   const validator = useGetValidatorByNodeId(nodeId)
   const {
     theme,
@@ -43,7 +45,7 @@ export const Confirmation = () => {
   } = useSelector(selectActiveNetwork)
   const avaxPrice = useSelector(selectAvaxPrice)
   const selectedCurrency = useSelector(selectSelectedCurrency)
-  const { navigate } = useNavigation<NavigationProp['navigation']>()
+  const { navigate } = useNavigation<ScreenProps['navigation']>()
   const validatorEndTime = fromUnixTime(Number(validator?.endTime))
   const { data } = useEarnCalcEstimatedRewards({
     amount: stakingAmount,
@@ -73,7 +75,7 @@ export const Confirmation = () => {
   }, [avaxPrice, data?.estimatedRewardAmount, data?.estimatedTokenReward])
 
   const cancelStaking = () => {
-    navigate(AppNavigation.Earn.Cancel)
+    navigate(AppNavigation.StakeSetup.Cancel)
   }
 
   if (!validator) return null

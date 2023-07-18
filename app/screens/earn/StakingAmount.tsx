@@ -24,16 +24,16 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 import useStakingParams from 'hooks/earn/useStakingParams'
 import { useNavigation } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
-import { EarnScreenProps } from 'navigation/types'
+import { StakeSetupScreenProps } from 'navigation/types'
 import { NANO_AVAX_DENOMINATION } from 'utils/NetworkParams'
 
-type EarnScreenNavProps = EarnScreenProps<
-  typeof AppNavigation.Earn.StakingAmount
+type ScreenProps = StakeSetupScreenProps<
+  typeof AppNavigation.StakeSetup.StakingAmount
 >
 
 export default function StakingAmount() {
   const { theme } = useApplicationContext()
-  const { navigate } = useNavigation<EarnScreenNavProps['navigation']>()
+  const { navigate } = useNavigation<ScreenProps['navigation']>()
   const { minStakeAmount, nativeTokenBalance } = useStakingParams()
 
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
@@ -133,7 +133,7 @@ export default function StakingAmount() {
       {inputValid && (
         <AvaButton.PrimaryLarge
           onPress={() => {
-            navigate(AppNavigation.Earn.StakingDuration, {
+            navigate(AppNavigation.StakeSetup.StakingDuration, {
               stakingAmount: bnToBig(inputAmountBN, NANO_AVAX_DENOMINATION)
             })
           }}>
