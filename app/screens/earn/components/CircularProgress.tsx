@@ -73,12 +73,10 @@ export const CircularProgress: FC<CircularProgressProps> = ({ data }) => {
 const styles = StyleSheet.create({
   container: {
     justifyContent: 'center',
-    alignItems: 'center',
-    flex: 1
+    alignItems: 'center'
   },
   iconContainer: {
-    position: 'absolute',
-    textAlignVertical: 'center'
+    position: 'absolute'
   },
   chartContainer: {
     height: 80,

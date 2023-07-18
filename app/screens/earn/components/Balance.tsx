@@ -71,8 +71,9 @@ export const Balance: React.FC<BalanceProps> = ({ stakingData }) => {
 const styles = StyleSheet.create({
   stakeDetailsContainer: {
     flexDirection: 'row',
-    marginVertical: 24,
-    marginHorizontal: 40
+    marginTop: 24,
+    marginBottom: 32,
+    marginHorizontal: 24
   },
   rowContainer: { flexDirection: 'row', alignItems: 'center' },
   textRowContainer: {
@@ -81,7 +82,6 @@ const styles = StyleSheet.create({
     marginBottom: 4
   },
   dot: {
-    marginLeft: 8,
     width: 16,
     height: 16,
     borderRadius: 8
