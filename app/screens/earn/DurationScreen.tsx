@@ -5,7 +5,6 @@ import { RadioButton } from 'components/RadioButton'
 import AvaButton from 'components/AvaButton'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Space } from 'components/Space'
-import InfoSVG from 'components/svg/InfoSVG'
 import { Row } from 'components/Row'
 import { CalendarInput } from 'components/CalendarInput'
 import AppNavigation from 'navigation/AppNavigation'
@@ -139,10 +138,9 @@ const StakingDuration = () => {
             <Row style={{ alignItems: 'center' }}>
               <AvaText.Heading3
                 textStyle={{ color: theme.colorText1, fontWeight: '600' }}>
-                End Date
+                Approximate End Date
               </AvaText.Heading3>
               <Space x={8} />
-              <InfoSVG />
             </Row>
             <CalendarInput
               date={stakeEndTime}
@@ -177,7 +175,6 @@ const StakingDuration = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: 16,
     justifyContent: 'space-between'
   }
 })
