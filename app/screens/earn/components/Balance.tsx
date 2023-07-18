@@ -2,7 +2,6 @@ import React from 'react'
 import { StyleSheet, View } from 'react-native'
 import AvaText from 'components/AvaText'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import DotSVG from 'components/svg/DotSVG'
 import AvaButton from 'components/AvaButton'
 import AppNavigation from 'navigation/AppNavigation'
 import { EarnScreenProps } from 'navigation/types'
@@ -30,7 +29,7 @@ export const Balance: React.FC<BalanceProps> = ({ stakingData }) => {
         return (
           <View key={item.type}>
             <View style={styles.rowContainer}>
-              <DotSVG fillColor={iconColor} size={16} />
+              <View style={[styles.dot, { backgroundColor: iconColor }]} />
               <View style={styles.textRowContainer}>
                 <AvaText.Subtitle2
                   textStyle={{
@@ -80,5 +79,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-end',
     marginBottom: 4
+  },
+  dot: {
+    marginLeft: 8,
+    width: 16,
+    height: 16,
+    borderRadius: 8
   }
 })
