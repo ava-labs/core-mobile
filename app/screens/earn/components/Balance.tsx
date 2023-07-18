@@ -7,6 +7,7 @@ import AppNavigation from 'navigation/AppNavigation'
 import { EarnScreenProps } from 'navigation/types'
 import { useNavigation } from '@react-navigation/native'
 import { StakingBalanceType } from 'services/earn/types'
+import { Space } from 'components/Space'
 import { getStakePrimaryColor } from '../utils'
 import { CircularProgress } from './CircularProgress'
 
@@ -22,13 +23,18 @@ export const Balance: React.FC<BalanceProps> = ({ stakingData }) => {
   const { theme } = useApplicationContext()
   const { navigate } = useNavigation<EarnScreenNavProps['navigation']>()
 
+  const stakingAmount = stakingData.find(
+    data => data.type === 'Claimable'
+  )?.amount
+
   const renderStakingBalance = () => (
     <View style={{ marginLeft: 24 }}>
-      {stakingData.map(item => {
+      {stakingData.map((item, index) => {
         const iconColor = getStakePrimaryColor(item.type, theme)
         return (
           <View key={item.type}>
-            <View style={styles.rowContainer}>
+            <View
+              style={[styles.rowContainer, { marginTop: index === 0 ? 0 : 8 }]}>
               <View style={[styles.dot, { backgroundColor: iconColor }]} />
               <View style={styles.textRowContainer}>
                 <AvaText.Subtitle2
@@ -54,16 +60,42 @@ export const Balance: React.FC<BalanceProps> = ({ stakingData }) => {
     </View>
   )
 
+  const renderStakeButton = () => (
+    <AvaButton.PrimaryLarge
+      onPress={() => navigate(AppNavigation.Earn.StakingAmount)}>
+      Stake
+    </AvaButton.PrimaryLarge>
+  )
+
+  const renderStakeAndClaimButton = () => (
+    <View
+      style={{
+        flexDirection: 'row',
+        justifyContent: 'space-between'
+      }}>
+      <AvaButton.SecondaryLarge
+        style={{ flex: 1 }}
+        onPress={() => navigate(AppNavigation.Earn.StakingAmount)}>
+        Stake
+      </AvaButton.SecondaryLarge>
+      <Space x={16} />
+      <AvaButton.SecondaryLarge
+        style={{ flex: 1 }}
+        onPress={() => navigate(AppNavigation.Earn.StakingAmount)}>
+        Claim
+      </AvaButton.SecondaryLarge>
+    </View>
+  )
+
   return (
     <View style={{ marginBottom: 24 }}>
       <View style={styles.stakeDetailsContainer}>
         <CircularProgress data={stakingData} />
         {renderStakingBalance()}
       </View>
-      <AvaButton.PrimaryLarge
-        onPress={() => navigate(AppNavigation.Earn.StakingAmount)}>
-        Stake More
-      </AvaButton.PrimaryLarge>
+      {stakingAmount && stakingAmount > 0
+        ? renderStakeAndClaimButton()
+        : renderStakeButton()}
     </View>
   )
 }
@@ -71,15 +103,19 @@ export const Balance: React.FC<BalanceProps> = ({ stakingData }) => {
 const styles = StyleSheet.create({
   stakeDetailsContainer: {
     flexDirection: 'row',
+    alignItems: 'center',
     marginTop: 24,
     marginBottom: 32,
     marginHorizontal: 24
   },
-  rowContainer: { flexDirection: 'row', alignItems: 'center' },
+  rowContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8
+  },
   textRowContainer: {
     flexDirection: 'row',
-    alignItems: 'flex-end',
-    marginBottom: 4
+    alignItems: 'center'
   },
   dot: {
     width: 16,

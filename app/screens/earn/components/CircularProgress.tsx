@@ -13,10 +13,11 @@ interface CircularProgressProps {
 
 export const CircularProgress: FC<CircularProgressProps> = ({ data }) => {
   const { theme } = useApplicationContext()
-  const radius = PixelRatio.roundToNearestPixel(40)
+  const radius = PixelRatio.roundToNearestPixel(48)
   const strokeWidth = 5
+  const shadowWidth = 8
 
-  const innerRadius = radius - strokeWidth / 2
+  const innerRadius = radius - strokeWidth - shadowWidth / 2
   const path = Skia.Path.Make()
   path.addCircle(radius, radius, innerRadius)
 
@@ -35,7 +36,7 @@ export const CircularProgress: FC<CircularProgressProps> = ({ data }) => {
           const shadowColor = getStakeShadowColor(item.type, theme)
           const amountPercent = item.amount / total
 
-          // This will calculate the the start and end of each section of the the circular path
+          // This will calculate the start and end of each section of the the circular path
           end = end + Number(amountPercent.toFixed(2))
 
           if (index !== 0) {
@@ -54,7 +55,13 @@ export const CircularProgress: FC<CircularProgressProps> = ({ data }) => {
               strokeCap="round"
               start={index === 0 ? 0 : start}
               end={end}>
-              <Shadow dx={-1} dy={-1} color={shadowColor} blur={3} />
+              <Shadow
+                dx={-1}
+                dy={-1}
+                color={shadowColor}
+                blur={shadowWidth / 2}
+              />
+              <Shadow dx={0.5} dy={0.5} color={theme.neutralBlack} blur={1} />
             </Path>
           )
         })}
@@ -79,7 +86,7 @@ const styles = StyleSheet.create({
     position: 'absolute'
   },
   chartContainer: {
-    height: 80,
-    width: 80
+    height: 96,
+    width: 96
   }
 })
