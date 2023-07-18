@@ -36,6 +36,7 @@ import {
 } from 'hooks/networkProviderHooks'
 import { isEqual } from 'lodash'
 import { Network } from '@avalabs/chains-sdk'
+import Logger from 'utils/Logger'
 
 export enum TransferEventType {
   WRAP_STATUS = 'wrap_status',
@@ -127,7 +128,7 @@ function LocalBridgeProvider({ children }: { children: ReactNode }) {
             subscription
           )
         } catch (e) {
-          console.log(e)
+          Logger.error('failed to subscribe to transaction', e)
         }
       }
     },
