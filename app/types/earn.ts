@@ -19,3 +19,8 @@ export type TAdvancedFilterDropDownItems = {
   key: AdvancedSortFilter
   sortByTitle: string
 }
+
+export enum StakeStatus {
+  Ongoing = 'Ongoing',
+  Completed = 'Completed'
+}
