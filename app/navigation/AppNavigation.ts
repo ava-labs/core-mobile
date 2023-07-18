@@ -89,7 +89,8 @@ enum EarnScreens {
   SelectNode = 'EarnScreens.SelectNode',
   NodeSearch = 'EarnScreens.NodeSearch',
   Confirmation = 'EarnScreens.Confirmation',
-  Cancel = 'EarnScreens.Cancel'
+  Cancel = 'EarnScreens.Cancel',
+  StakeDetails = 'EarnScreens.StakeDetails'
 }
 
 enum SwapScreens {

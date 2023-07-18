@@ -11,7 +11,7 @@ import TopNavigationHeader from 'navigation/TopNavigationHeader'
 import { getCommonBottomTabOptions, normalTabButton } from 'navigation/NavUtils'
 import EarnSVG from 'components/svg/EarnSVG'
 import { usePosthogContext } from 'contexts/PosthogContext'
-import { View } from 'react-native'
+import { StakeDashboard } from 'screens/earn/StakeDashboard'
 
 export type TabNavigatorParamList = {
   [AppNavigation.Tabs.Portfolio]: { showBackButton?: boolean }
@@ -57,6 +57,14 @@ const TabNavigator = () => {
       <Tab.Screen
         name={AppNavigation.Tabs.Watchlist}
         options={{
+          header: () => {
+            return (
+              <TopNavigationHeader
+                showAccountSelector={false}
+                showNetworkSelector={false}
+              />
+            )
+          },
           tabBarIcon: ({ focused }) =>
             normalTabButton({
               theme,
@@ -71,6 +79,14 @@ const TabNavigator = () => {
         <Tab.Screen
           name={AppNavigation.Tabs.Earn}
           options={{
+            header: () => {
+              return (
+                <TopNavigationHeader
+                  showAccountSelector={false}
+                  showNetworkSelector={false}
+                />
+              )
+            },
             tabBarIcon: ({ focused }) =>
               normalTabButton({
                 theme,
@@ -79,13 +95,7 @@ const TabNavigator = () => {
                 image: <EarnSVG selected={focused} size={TAB_ICON_SIZE} />
               })
           }}
-          component={View}
-          listeners={({ navigation }) => ({
-            tabPress: e => {
-              e.preventDefault()
-              navigation.navigate(AppNavigation.Wallet.Earn)
-            }
-          })}
+          component={StakeDashboard}
         />
       )}
     </Tab.Navigator>

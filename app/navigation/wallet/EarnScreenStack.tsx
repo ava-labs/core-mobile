@@ -15,6 +15,7 @@ import { CancelModal } from 'screens/earn/CancelModal'
 import NotEnoughAvax from 'screens/earn/NotEnoughAvax'
 import useStakingParams from 'hooks/earn/useStakingParams'
 import Big from 'big.js'
+import StakeDetails from 'screens/earn/StakeDetails'
 
 export type EarnStackParamList = {
   [AppNavigation.Earn.NotEnoughAvax]: undefined
@@ -40,6 +41,10 @@ export type EarnStackParamList = {
     stakingAmount: Big
   }
   [AppNavigation.Earn.Cancel]: undefined
+  [AppNavigation.Earn.StakeDetails]: {
+    txHash: string
+    stakeTitle: string
+  }
 }
 
 const EarnStack = createStackNavigator<EarnStackParamList>()
@@ -96,6 +101,10 @@ function EarnScreenStack() {
         options={{ presentation: 'transparentModal' }}
         name={AppNavigation.Earn.Cancel}
         component={CancelModal}
+      />
+      <EarnStack.Screen
+        name={AppNavigation.Earn.StakeDetails}
+        component={StakeDetails}
       />
     </EarnStack.Navigator>
   )
