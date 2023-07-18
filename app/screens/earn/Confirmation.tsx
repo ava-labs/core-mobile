@@ -32,7 +32,7 @@ import { getMinimumStakeDurationMs } from 'services/earn/utils'
 import { bigintToBig } from 'utils/bigNumbers/bigintToBig'
 import { BigAvax } from 'types/denominations'
 import Big from 'big.js'
-import { Seconds } from 'types/siUnits'
+import { convertToSeconds, MilliSeconds } from 'types/siUnits'
 import { useIssueDelegation } from 'hooks/earn/useIssueDelegation'
 import { showSnackBarCustom } from 'components/Snackbar'
 import TransactionToast, {
@@ -81,7 +81,9 @@ export const Confirmation = () => {
 
   const { data } = useEarnCalcEstimatedRewards({
     amount: stakingAmount,
-    duration: Seconds((trueStakingEndTime.getTime() - now.getTime()) / 1e3),
+    duration: convertToSeconds(
+      BigInt(trueStakingEndTime.getTime() - now.getTime()) as MilliSeconds
+    ),
     delegationFee: Number(validator?.delegationFee)
   })
   const estimatedTokenReward: BigAvax = data?.estimatedTokenReward ?? Big(0)

@@ -31,6 +31,7 @@ import { BigIntNAvax, BigNAvax } from 'types/denominations'
 import { bnToBigint } from 'utils/bigNumbers/bnToBigint'
 import { bigintToBig } from 'utils/bigNumbers/bigintToBig'
 import { bigToBigint } from 'utils/bigNumbers/bigToBigint'
+import { Seconds } from 'types/siUnits'
 
 class EarnService {
   getCurrentValidators = (isTestnet: boolean) => {
@@ -96,7 +97,7 @@ class EarnService {
    */
   calcReward(
     amount: BigIntNAvax,
-    duration: number,
+    duration: Seconds,
     currentSupply: BigIntNAvax,
     delegationFee: number,
     isDeveloperMode: boolean
@@ -108,7 +109,7 @@ class EarnService {
     const maxConsumptionRateRatio = new Big(
       defPlatformVals.stakingConfig.RewardConfig.MaxConsumptionRate
     )
-    const stakingPeriodOverMintingPeriod = new Big(duration).div(
+    const stakingPeriodOverMintingPeriod = new Big(duration.toString()).div(
       new Big(defPlatformVals.stakingConfig.RewardConfig.MintingPeriod)
     )
     const effectiveConsumptionRate = minConsumptionRateRatio
