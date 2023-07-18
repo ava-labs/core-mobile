@@ -17,6 +17,7 @@ import { getCardHighLightColor } from 'utils/color/getCardHighLightColor'
 import { useNavigation } from '@react-navigation/native'
 import { TabsScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
+import { estimatesTooltipText } from 'consts/earn'
 import { StatusChip } from './StatusChip'
 
 type BaseProps = {
@@ -104,13 +105,7 @@ export const StakeCard = (props: Props) => {
             <Space y={8} />
             <Row style={{ justifyContent: 'space-between' }}>
               <Popable
-                content={
-                  <PopableContent
-                    message={
-                      'Estimates are provided for informational purposes only, without any representation, warranty or guarantee, and do not represent any assurance that you will achieve the same results.'
-                    }
-                  />
-                }
+                content={<PopableContent message={estimatesTooltipText} />}
                 position="top"
                 strictPosition={true}
                 style={{ minWidth: 240 }}

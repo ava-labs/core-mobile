@@ -23,6 +23,7 @@ import { getReadableDateDuration } from 'utils/date/getReadableDateDuration'
 import { humanize } from 'utils/string/humanize'
 import { RewardType } from '@avalabs/glacier-sdk'
 import { isOnGoing } from 'utils/earn/status'
+import { estimatesTooltipText } from 'consts/earn'
 import { StatusChip } from './components/StatusChip'
 import { StakeProgress } from './components/StakeProgress'
 
@@ -86,13 +87,7 @@ const StakeDetails = () => {
       <>
         <Row style={styles.row}>
           <Popable
-            content={
-              <PopableContent
-                message={
-                  'Estimates are provided for informational purposes only, without any representation, warranty or guarantee, and do not represent any assurance that you will achieve the same results.'
-                }
-              />
-            }
+            content={<PopableContent message={estimatesTooltipText} />}
             position="right"
             strictPosition={true}
             style={{ minWidth: 200 }}
