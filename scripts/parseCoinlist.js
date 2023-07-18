@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 // TODO: remove this script once glacier returns coingecko id for each contract token
 const fs = require('fs')
 
@@ -36,6 +37,7 @@ fs.readFile('../coinlistRaw.json', 'utf8', (err, dataRaw) => {
       assetsPath + 'coinByAddress.json',
       JSON.stringify(coinByAddress),
       'utf8',
+      // eslint-disable-next-line no-shadow
       err => {
         if (err) {
           console.log(`Error writing file: ${err}`)

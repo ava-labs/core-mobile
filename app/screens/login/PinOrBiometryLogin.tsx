@@ -21,6 +21,7 @@ import ReAnimated, {
   useSharedValue,
   withTiming
 } from 'react-native-reanimated'
+import Logger from 'utils/Logger'
 import {
   MnemonicLoaded,
   NothingToLoad,
@@ -121,7 +122,7 @@ export default function PinOrBiometryLogin({
             //do nothing
           }
         },
-        error: err => console.log(err.message)
+        error: err => Logger.error('failed to check biometric', err)
       })
     })
 

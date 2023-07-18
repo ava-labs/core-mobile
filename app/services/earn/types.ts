@@ -12,3 +12,8 @@ export type AddDelegatorTransactionProps = {
   endDate: Date
   isDevMode: boolean
 }
+
+export type GetAllStakesParams = {
+  isTestnet: boolean
+  addresses: string[]
+}

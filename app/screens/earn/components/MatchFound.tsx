@@ -2,7 +2,7 @@ import React from 'react'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AppNavigation from 'navigation/AppNavigation'
-import { EarnScreenProps } from 'navigation/types'
+import { StakeSetupScreenProps } from 'navigation/types'
 import { useEffect } from 'react'
 import { NodeValidator } from 'types/earn'
 import AvaText from 'components/AvaText'
@@ -10,16 +10,18 @@ import Checkmark from 'components/animation/Checkmark'
 import { StyleSheet, View } from 'react-native'
 import { Space } from 'components/Space'
 
-type NavigationProp = EarnScreenProps<typeof AppNavigation.Earn.NodeSearch>
+type ScreenProps = StakeSetupScreenProps<
+  typeof AppNavigation.StakeSetup.NodeSearch
+>
 
 export const MatchFound = ({ validator }: { validator: NodeValidator }) => {
   const { theme } = useApplicationContext()
-  const { navigate } = useNavigation<NavigationProp['navigation']>()
-  const { stakingAmount } = useRoute<NavigationProp['route']>().params
+  const { navigate } = useNavigation<ScreenProps['navigation']>()
+  const { stakingAmount } = useRoute<ScreenProps['route']>().params
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      navigate(AppNavigation.Earn.Confirmation, {
+      navigate(AppNavigation.StakeSetup.Confirmation, {
         nodeId: validator.nodeID,
         stakingAmount
       })
