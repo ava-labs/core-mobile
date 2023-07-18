@@ -4,7 +4,7 @@ import { useStakes } from './useStakes'
 export const usePastStakes = () => {
   const { data, isFetching, refetch, isRefetching } = useStakes()
 
-  if (!data) return { stakes: [], isFetching }
+  if (!data) return { stakes: [], isFetching, refetch, isRefetching }
 
   const now = new Date()
 
