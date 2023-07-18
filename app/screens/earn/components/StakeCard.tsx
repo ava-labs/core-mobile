@@ -15,7 +15,7 @@ import { useNAvaxToAvax } from 'hooks/useNAvaxToAvax'
 import { StakeStatus } from 'types/earn'
 import { getCardHighLightColor } from 'utils/color/getCardHighLightColor'
 import { useNavigation } from '@react-navigation/native'
-import { EarnScreenProps } from 'navigation/types'
+import { TabsScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
 import { StatusChip } from './StatusChip'
 
@@ -38,8 +38,8 @@ type CompletedProps = BaseProps & {
 
 type Props = OnGoingProps | CompletedProps
 
-type NavigationProp = EarnScreenProps<
-  typeof AppNavigation.Earn.StakeDashboard
+type NavigationProp = TabsScreenProps<
+  typeof AppNavigation.Tabs.Earn
 >['navigation']
 
 export const StakeCard = (props: Props) => {
