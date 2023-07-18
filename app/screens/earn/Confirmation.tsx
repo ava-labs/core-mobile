@@ -21,26 +21,19 @@ import { copyToClipboard } from 'utils/DeviceTools'
 import { addMinutes, format } from 'date-fns'
 import { useEarnCalcEstimatedRewards } from 'hooks/earn/useEarnCalcEstimatedRewards'
 import { useSelector } from 'react-redux'
-import {
-  selectAvaxPrice,
-  selectNativeTokenBalanceForNetworkAndAccount
-} from 'store/balance'
+import { selectAvaxPrice } from 'store/balance'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { getReadableDateDuration } from 'utils/date/getReadableDateDuration'
 import { selectActiveNetwork } from 'store/network'
 import { useGetValidatorByNodeId } from 'hooks/earn/useGetValidatorByNodeId'
 import { NodeValidator } from 'types/earn'
-import EarnService from 'services/earn/EarnService'
-import { selectActiveAccount } from 'store/account'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { getMinimumStakeDurationMs } from 'services/earn/utils'
 import { bigintToBig } from 'utils/bigNumbers/bigintToBig'
-import { BigAvax, BigIntNAvax } from 'types/denominations'
+import { BigAvax } from 'types/denominations'
 import Big from 'big.js'
-import { bnToBigint } from 'utils/bigNumbers/bnToBigint'
-import { BN } from 'bn.js'
-import { useMutation } from '@tanstack/react-query'
 import { Seconds } from 'types/siUnits'
+import { useIssueDelegation } from 'hooks/earn/useIssueDelegation'
 import { showSnackBarCustom } from 'components/Snackbar'
 import TransactionToast, {
   TransactionToastType
@@ -57,15 +50,7 @@ export const Confirmation = () => {
     appHook: { tokenInCurrencyFormatter }
   } = useApplicationContext()
   const activeNetwork = useSelector(selectActiveNetwork)
-  const activeAccount = useSelector(selectActiveAccount)
-  const cChainBalance = useSelector(
-    selectNativeTokenBalanceForNetworkAndAccount(
-      activeNetwork.chainId,
-      activeAccount?.index
-    )
-  )
-  const cChainBalanceNAvax: BigIntNAvax =
-    bnToBigint(cChainBalance || new BN(0)) / BigInt(1e9) //TODO: make function for converting between denominations
+  const { issueDelegationMutation } = useIssueDelegation(onDelegationSuccess)
 
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const tokenSymbol = activeNetwork.networkToken.symbol
@@ -122,56 +107,28 @@ export const Confirmation = () => {
     navigate(AppNavigation.Earn.Cancel)
   }
 
-  const issueDelegationMutation = useMutation({
-    mutationFn: () => {
-      if (!activeAccount) {
-        return Promise.reject('no active account')
-      }
+  const issueDelegation = () => {
+    issueDelegationMutation.mutate({
+      stakingAmount: stakingAmount,
+      startDate: minStartTime,
+      endDate: trueStakingEndTime,
+      nodeId
+    })
+  }
 
-      return EarnService.collectTokensForStaking({
-        activeAccount,
-        cChainBalance: cChainBalanceNAvax,
-        isDevMode: isDeveloperMode,
-        requiredAmount: stakingAmount
-      }).then(successfullyCollected => {
-        if (successfullyCollected) {
-          return EarnService.issueAddDelegatorTransaction({
-            activeAccount,
-            endDate: trueStakingEndTime,
-            isDevMode: isDeveloperMode,
-            nodeId,
-            stakeAmount: stakingAmount,
-            startDate: minStartTime
-          })
-        } else {
-          throw Error('Something went wrong')
-        }
-      })
-    }
-  })
-
-  //dismiss earn flow after successfully issued stake tx and show snack
-  useEffect(() => {
-    if (issueDelegationMutation.isSuccess && issueDelegationMutation.data) {
-      const txHash = issueDelegationMutation.data
-      showSnackBarCustom({
-        component: (
-          <TransactionToast
-            message={'Staking successful!'}
-            type={TransactionToastType.SUCCESS}
-            txHash={txHash}
-          />
-        ),
-        duration: 'long'
-      })
-
-      getParent()?.goBack()
-    }
-  }, [
-    getParent,
-    issueDelegationMutation.data,
-    issueDelegationMutation.isSuccess
-  ])
+  function onDelegationSuccess(txHash: string) {
+    showSnackBarCustom({
+      component: (
+        <TransactionToast
+          message={'Staking successful!'}
+          type={TransactionToastType.SUCCESS}
+          txHash={txHash}
+        />
+      ),
+      duration: 'long'
+    })
+    getParent()?.goBack()
+  }
 
   if (!validator) return null
 
@@ -364,8 +321,7 @@ export const Confirmation = () => {
         </AvaText.Caption>
         {!issueDelegationMutation.isPending && (
           <>
-            <AvaButton.PrimaryLarge
-              onPress={() => issueDelegationMutation.mutate()}>
+            <AvaButton.PrimaryLarge onPress={issueDelegation}>
               Stake Now
             </AvaButton.PrimaryLarge>
             <Space y={16} />
