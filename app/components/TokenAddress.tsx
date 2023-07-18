@@ -12,9 +12,11 @@ import { isBech32Address } from '@avalabs/bridge-sdk'
 import { isAddress } from '@ethersproject/address'
 import AvaLogoSVG from 'components/svg/AvaLogoSVG'
 
+type TextType = 'Heading' | 'ButtonSmall' | 'ButtonMedium' | 'Body1' | 'Body2'
+
 interface Props {
   address: string
-  textType?: 'Heading' | 'ButtonSmall' | 'ButtonMedium' | 'Body'
+  textType?: TextType
   hideCopy?: boolean
   showIcon?: boolean
   showFullAddress?: boolean
@@ -86,7 +88,7 @@ const TokenAddress: FC<Props> = ({
       {hideCopy ||
         (copyIconEnd && (
           <>
-            <Space x={8} />
+            <Space x={4} />
             {copyIcon}
           </>
         ))}
@@ -96,7 +98,7 @@ const TokenAddress: FC<Props> = ({
 
 type TokenAddressComposedProps = {
   showFullAddress: boolean | undefined
-  textType: 'Heading' | 'ButtonSmall' | 'ButtonMedium' | 'Body'
+  textType: TextType
   textColor: string
   tokenAddress: string
   testID?: string
@@ -131,7 +133,9 @@ const TokenAddressComposed = ({
           {tokenAddress}
         </AvaText.Heading3>
       )
-    case 'Body':
+    case 'Body1':
+      return <AvaText.Body1 color={textColor}>{tokenAddress}</AvaText.Body1>
+    case 'Body2':
       return <AvaText.Body2 color={textColor}>{tokenAddress}</AvaText.Body2>
   }
 

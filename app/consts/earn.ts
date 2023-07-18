@@ -44,3 +44,6 @@ export const advancedFilterDropDownItems: TAdvancedFilterDropDownItems[] = [
   DURATION_HIGH_TO_LOW,
   DURATION_LOW_TO_HIGH
 ]
+
+export const estimatesTooltipText =
+  'Estimates are provided for informational purposes only, without any representation, warranty or guarantee, and do not represent any assurance that you will achieve the same results.'

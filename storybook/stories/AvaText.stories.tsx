@@ -22,6 +22,7 @@ const AllTexts = () => {
       <AvaText.TextLink>Text Link</AvaText.TextLink>
       <AvaText.Tag>Tag</AvaText.Tag>
       <AvaText.Caption color="white">Caption</AvaText.Caption>
+      <AvaText.Overline>Overline</AvaText.Overline>
       <AvaText.ActivityTotal>Activity Total</AvaText.ActivityTotal>
       <AvaText.ButtonSmall>Button Small</AvaText.ButtonSmall>
       <AvaText.ButtonMedium>Button Medium</AvaText.ButtonMedium>

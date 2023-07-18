@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { withBackgrounds } from '@storybook/addon-ondevice-backgrounds';
+import { NavigationContainer } from '@react-navigation/native'
 import { EncryptedStoreProvider } from '../app/contexts/EncryptedStoreProvider'
 import { ApplicationContextProvider } from '../app/contexts/ApplicationContext'
 import { PosthogContextProvider } from '../app/contexts/PosthogContext'
@@ -26,7 +27,9 @@ const withProviders = (Story) => (
   <EncryptedStoreProvider>
     <PosthogContextProvider>
       <ApplicationContextProvider>
-        <Story />
+        <NavigationContainer>
+          <Story />
+        </NavigationContainer>
       </ApplicationContextProvider>
     </PosthogContextProvider>
   </EncryptedStoreProvider>

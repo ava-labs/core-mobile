@@ -18,16 +18,33 @@ import { UnsignedTx } from '@avalabs/avalanchejs-v2'
 import Logger from 'utils/Logger'
 import { Avalanche } from '@avalabs/wallets-sdk'
 import { exponentialBackoff } from 'utils/js/exponentialBackoff'
-import { AddDelegatorTransactionProps } from 'services/earn/types'
+import {
+  AddDelegatorTransactionProps,
+  GetAllStakesParams
+} from 'services/earn/types'
 import { getUnixTime } from 'date-fns'
 import { GetCurrentSupplyResponse } from '@avalabs/avalanchejs-v2/dist/src/vms/pvm'
+import {
+  BlockchainId,
+  Network,
+  PChainTransaction,
+  PChainTransactionType,
+  SortOrder
+} from '@avalabs/glacier-sdk'
+import { glacierSdk } from 'utils/network/glacier'
 
 class EarnService {
+  /**
+   * Get all available nodes
+   * @param isTestnet is testnet mode enabled
+   */
   getCurrentValidators = (isTestnet: boolean) => {
     return getPvmApi(isTestnet).getCurrentValidators()
   }
 
   /**
+   * Collect tokens for staking by moving Avax from C to P-chain
+   *
    * @param cChainBalance in nAvax
    * @param requiredAmount in nAvax
    * @param activeAccount
@@ -54,6 +71,8 @@ class EarnService {
   }
 
   /**
+   * Collect staking rewards by moving Avax from P to C-chain
+   *
    * @param pChainBalance in nAvax
    * @param requiredAmount in nAvax
    * @param activeAccount
@@ -178,10 +197,46 @@ class EarnService {
   }
 
   /**
+   * Retrieve the upper bound on the number of tokens that exist in P-chain
+   * This is an upper bound because it does not account for burnt tokens, including transaction fees.
+   *
    * @param isDeveloperMode
    */
   getCurrentSupply(isTestnet: boolean): Promise<GetCurrentSupplyResponse> {
     return getPvmApi(isTestnet).getCurrentSupply()
+  }
+
+  /**
+   * Retrieve all stakes for given addresses on P chain
+   *
+   * @param isTestnet
+   * @param addresses
+   */
+  getAllStakes = async ({ isTestnet, addresses }: GetAllStakesParams) => {
+    const addressesStr = addresses.join(',')
+    let pageToken: string | undefined
+    const transactions: PChainTransaction[] = []
+
+    do {
+      const response =
+        await glacierSdk.primaryNetwork.listLatestPrimaryNetworkTransactions({
+          network: isTestnet ? Network.FUJI : Network.MAINNET,
+          blockchainId: BlockchainId.P_CHAIN,
+          addresses: addressesStr,
+          pageSize: 100,
+          sortOrder: SortOrder.DESC,
+          pageToken
+        })
+
+      pageToken = response.nextPageToken
+      transactions.push(...(response.transactions as PChainTransaction[]))
+    } while (pageToken)
+    const stakes = transactions.filter(
+      transaction =>
+        transaction.txType === PChainTransactionType.ADD_DELEGATOR_TX
+    )
+
+    return stakes
   }
 }
 

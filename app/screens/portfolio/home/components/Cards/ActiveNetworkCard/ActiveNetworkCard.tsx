@@ -4,7 +4,7 @@ import { StyleSheet, Text, TouchableHighlight, View } from 'react-native'
 import { selectBalanceTotalInCurrencyForNetworkAndAccount } from 'store/balance'
 import AvaText from 'components/AvaText'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { Opacity20, Opacity70, Opacity85 } from 'resources/Constants'
+import { Opacity20, Opacity85 } from 'resources/Constants'
 import Separator from 'components/Separator'
 import { Space } from 'components/Space'
 import AppNavigation from 'navigation/AppNavigation'
@@ -15,6 +15,7 @@ import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList
 import { selectActiveNetwork } from 'store/network'
 import { selectActiveAccount } from 'store/account'
 import { usePostCapture } from 'hooks/usePosthogCapture'
+import { getCardHighLightColor } from 'utils/color/getCardHighLightColor'
 import ZeroState from './ZeroState'
 import Tokens from './Tokens'
 
@@ -40,7 +41,7 @@ const ActiveNetworkCard = () => {
     theme
   } = useApplicationContext()
   const cardBgColor = theme.colorBg2 + Opacity85
-  const highlighColor = theme.colorBg3 + Opacity70
+  const highlighColor = getCardHighLightColor(theme)
 
   const navigateToNetworkTokens = () => {
     capture('PortfolioPrimaryNetworkClicked', {
