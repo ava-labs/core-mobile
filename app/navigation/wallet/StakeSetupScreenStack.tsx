@@ -47,20 +47,20 @@ const Stack = createStackNavigator<StakeSetupStackParamList>()
 function StakeSetupScreenStack() {
   return (
     <Stack.Navigator
-      screenOptions={{
-        presentation: 'card',
-        headerShown: true,
-        title: '',
-        headerBackTitleVisible: false,
-        headerTitleAlign: 'center'
+      screenOptions={() => {
+        return {
+          headerShown: true,
+          headerLeft: BackButton,
+          title: ''
+        }
       }}>
-      <Stack.Screen
-        name={AppNavigation.StakeSetup.NotEnoughAvax}
-        component={NotEnoughAvaxScreen}
-      />
       <Stack.Screen
         name={AppNavigation.StakeSetup.GetStarted}
         component={EarnGetStartedScreen}
+      />
+      <Stack.Screen
+        name={AppNavigation.StakeSetup.NotEnoughAvax}
+        component={NotEnoughAvaxScreen}
       />
       <Stack.Screen
         name={AppNavigation.StakeSetup.AdvancedStaking}
@@ -81,9 +81,6 @@ function StakeSetupScreenStack() {
       <Stack.Screen
         name={AppNavigation.StakeSetup.NodeSearch}
         component={NodeSearch}
-        options={{
-          headerLeft: NodeSearchBackButton
-        }}
       />
       <Stack.Screen
         name={AppNavigation.StakeSetup.Confirmation}
@@ -181,16 +178,14 @@ const ConfirmationBackButton = () => {
     goBack()
   }
 
-  return <HeaderBackButton onPress={handleGoBack} />
+  return <HeaderBackButton onPress={handleGoBack} style={backButtonStyle} />
 }
 
-type NodeSearchNavigationProp = StakeSetupScreenProps<
-  typeof AppNavigation.StakeSetup.NodeSearch
->['navigation']
-
-const NodeSearchBackButton = () => {
-  const { goBack } = useNavigation<NodeSearchNavigationProp>()
-  return <HeaderBackButton onPress={() => goBack()} />
+const BackButton = () => {
+  const { goBack } = useNavigation()
+  return <HeaderBackButton onPress={goBack} style={backButtonStyle} />
 }
+
+const backButtonStyle = { marginLeft: 8 }
 
 export default React.memo(StakeSetupScreenStack)

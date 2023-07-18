@@ -35,6 +35,7 @@ function EarnScreenStack() {
       />
       <EarnStack.Screen
         name={AppNavigation.Earn.StakeSetup}
+        options={{ headerShown: false }}
         component={StakeSetupScreenStack}
       />
       <EarnStack.Screen
