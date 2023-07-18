@@ -1,6 +1,7 @@
 import testValidators from 'tests/fixtures/pvm/validators.json'
 import { Avax, Hour, MainnetParams, MegaAvax } from 'utils/NetworkParams'
 import { bnToBigint } from 'utils/bigNumbers/bnToBigint'
+import { Seconds } from 'types/siUnits'
 import EarnService from './EarnService'
 
 describe('EarnService', () => {
@@ -15,7 +16,7 @@ describe('EarnService', () => {
       expect(
         EarnService.calcReward(
           bnToBigint(Avax.muln(25)),
-          7 * 24 * Hour,
+          Seconds(7 * 24 * Hour),
           bnToBigint(MainnetParams.stakingConfig.RewardConfig.SupplyCap),
           2,
           true
@@ -26,7 +27,7 @@ describe('EarnService', () => {
       expect(
         EarnService.calcReward(
           bnToBigint(Avax.muln(2000000)),
-          7 * 24 * Hour,
+          Seconds(7 * 24 * Hour),
           bnToBigint(MegaAvax.muln(400)),
           2,
           true
