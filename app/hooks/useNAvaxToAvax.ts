@@ -3,6 +3,7 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import { useSelector } from 'react-redux'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { round } from 'lodash'
+import { selectAvaxPrice } from 'store/balance'
 
 const convertNAvaxToAvaxAndCurrency = (
   value: string | undefined,
@@ -20,13 +21,13 @@ const convertNAvaxToAvaxAndCurrency = (
   }
 }
 
+// a hook to convert a nAvax amount to Avax and the current currency
 export const useNAvaxToAvax = () => {
   const {
     appHook: { tokenInCurrencyFormatter }
   } = useApplicationContext()
 
-  //const avaxPrice = useSelector(selectAvaxPrice)
-  const avaxPrice = 13
+  const avaxPrice = useSelector(selectAvaxPrice)
   const selectedCurrency = useSelector(selectSelectedCurrency)
 
   const nAvaxToAvax = (valueInNAvax: string | undefined, rounded = false) => {
