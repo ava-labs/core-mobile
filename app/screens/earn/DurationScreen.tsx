@@ -15,15 +15,21 @@ import { useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import {
   getMaximumStakeEndDate,
-  getMinimumStakeEndDate
+  getMinimumStakeEndTime
 } from 'services/earn/utils'
 import {
   CUSTOM,
-  DURATION_OPTIONS,
+  DURATION_OPTIONS_FUJI,
+  DURATION_OPTIONS_MAINNET,
   DurationOption,
-  TWO_WEEKS,
-  getStakeEndDate
+  getStakeDuration,
+  getStakeEndDate,
+  ONE_DAY,
+  TWO_WEEKS
 } from 'services/earn/getStakeEndDate'
+import { useEarnCalcEstimatedRewards } from 'hooks/earn/useEarnCalcEstimatedRewards'
+import { BigIntNAvax } from 'types/denominations'
+import { convertToSeconds, MilliSeconds } from 'types/siUnits'
 
 type ScreenProps = StakeSetupScreenProps<
   typeof AppNavigation.StakeSetup.StakingDuration
@@ -32,12 +38,13 @@ type ScreenProps = StakeSetupScreenProps<
 const StakingDuration = () => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
 
+  const minDelegationTime = isDeveloperMode ? ONE_DAY : TWO_WEEKS
   const [selectedDuration, setSelectedDuration] =
-    useState<DurationOption>(TWO_WEEKS)
+    useState<DurationOption>(minDelegationTime)
   const [stakeEndTime, setStakeEndTime] = useState<Date>(
     getStakeEndDate(
-      TWO_WEEKS.stakeDurationFormat,
-      TWO_WEEKS.stakeDurationValue,
+      minDelegationTime.stakeDurationFormat,
+      minDelegationTime.stakeDurationValue,
       isDeveloperMode
     )
   )
@@ -45,7 +52,10 @@ const StakingDuration = () => {
   const { theme } = useApplicationContext()
   const { navigate } = useNavigation<ScreenProps['navigation']>()
   const { stakingAmount } = useRoute<ScreenProps['route']>().params
-  const minimumStakeEndDate = getMinimumStakeEndDate(isDeveloperMode)
+  const minimumStakeEndDate = getMinimumStakeEndTime(
+    isDeveloperMode,
+    new Date()
+  )
   const maximumStakeEndDate = getMaximumStakeEndDate()
   const isNextDisabled =
     stakeEndTime === undefined || (stakeEndTime && stakeEndTime < new Date())
@@ -86,6 +96,25 @@ const StakingDuration = () => {
     }
   }
 
+  const renderDurationOptions = (stakeAmount: BigIntNAvax) => {
+    const durationOptions = isDeveloperMode
+      ? DURATION_OPTIONS_FUJI
+      : DURATION_OPTIONS_MAINNET
+
+    return durationOptions.map(item => {
+      return (
+        <DurationOptionItem
+          key={item.title}
+          stakeAmount={stakeAmount}
+          item={item}
+          isDeveloperMode={isDeveloperMode}
+          isSelected={selectedDuration?.title === item.title}
+          onRadioSelect={onRadioSelect}
+        />
+      )
+    })
+  }
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View>
@@ -99,30 +128,13 @@ const StakingDuration = () => {
           How long would you like to stake?
         </AvaText.Subtitle1>
         {selectedDuration?.title !== 'Custom' ? (
-          DURATION_OPTIONS.map(item => {
-            return (
-              <View style={{ marginBottom: 24 }} key={item.title}>
-                <RadioButton
-                  onPress={() => onRadioSelect(item)}
-                  selected={selectedDuration?.title === item.title}>
-                  <View style={{ marginLeft: 10 }}>
-                    <AvaText.Body2 textStyle={{ color: theme.colorText1 }}>
-                      {item.title}
-                    </AvaText.Body2>
-                    <AvaText.Caption textStyle={{ color: theme.colorText2 }}>
-                      {item.subTitle}
-                    </AvaText.Caption>
-                  </View>
-                </RadioButton>
-              </View>
-            )
-          })
+          renderDurationOptions(stakingAmount)
         ) : (
           <>
             <View style={{ marginBottom: 24 }}>
               <RadioButton
                 onPress={() => {
-                  const firstItem = DURATION_OPTIONS.at(0)
+                  const firstItem = selectedDuration
                   firstItem && onRadioSelect(firstItem)
                 }}
                 selected={true}>
@@ -171,6 +183,51 @@ const StakingDuration = () => {
         </AvaButton.TextLink>
       </View>
     </ScrollView>
+  )
+}
+
+const DurationOptionItem = ({
+  stakeAmount,
+  item,
+  isDeveloperMode,
+  onRadioSelect,
+  isSelected
+}: {
+  stakeAmount: BigIntNAvax
+  item: DurationOption
+  isDeveloperMode: boolean
+  onRadioSelect: (item: DurationOption) => void
+  isSelected: boolean
+}) => {
+  const { theme } = useApplicationContext()
+  const stakeDurationUnixMs = getStakeDuration(
+    item.stakeDurationFormat,
+    item.stakeDurationValue,
+    isDeveloperMode
+  )
+  const stakeDurationUnixSec = convertToSeconds(
+    BigInt(stakeDurationUnixMs) as MilliSeconds
+  )
+  const { data } = useEarnCalcEstimatedRewards({
+    amount: stakeAmount,
+    duration: stakeDurationUnixSec,
+    delegationFee: 2
+  })
+
+  return (
+    <View style={{ marginBottom: 24 }} key={item.title}>
+      <RadioButton onPress={() => onRadioSelect(item)} selected={isSelected}>
+        <View style={{ marginLeft: 10 }}>
+          <AvaText.Body2 textStyle={{ color: theme.colorText1 }}>
+            {item.title}
+          </AvaText.Body2>
+          <AvaText.Caption textStyle={{ color: theme.colorText2 }}>
+            Estimated Rewards: {data?.estimatedTokenReward?.toString() || '0'}{' '}
+            AVAX
+          </AvaText.Caption>
+        </View>
+      </RadioButton>
+    </View>
   )
 }
 
