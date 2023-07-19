@@ -100,24 +100,29 @@ export const Balance: React.FC<BalanceProps> = ({ stakingData }) => {
   )
 
   return (
-    <View style={{ marginBottom: 24 }}>
-      <View style={styles.stakeDetailsContainer}>
-        <CircularProgress data={stakingData} />
-        {renderStakingBalance()}
+    <View style={styles.stakeDetailsContainer}>
+      <View style={{ marginBottom: 24 }}>
+        <View style={styles.balanceContainer}>
+          <CircularProgress data={stakingData} />
+          {renderStakingBalance()}
+        </View>
       </View>
-      {stakingAmount && stakingAmount > 0
-        ? renderStakeAndClaimButton()
-        : renderStakeButton()}
+      <View>
+        {stakingAmount && stakingAmount > 0
+          ? renderStakeAndClaimButton()
+          : renderStakeButton()}
+      </View>
     </View>
   )
 }
 
 const styles = StyleSheet.create({
   stakeDetailsContainer: {
+    marginVertical: 24
+  },
+  balanceContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 24,
-    marginBottom: 32,
     marginHorizontal: 24
   },
   rowContainer: {
