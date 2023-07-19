@@ -56,8 +56,9 @@ export enum COLORS_DAY {
   neutral900 = '#1A1A1C',
   neutralBlack = '#000000',
   neutralSuccessLight = '#74CD88',
-
-  warningMain = '#FFA425'
+  warningMain = '#FFA425',
+  blueDark = '#0A84FF',
+  blueLight = '#6AC0FF'
 }
 
 export enum COLORS_NIGHT {
@@ -108,8 +109,9 @@ export enum COLORS_NIGHT {
   neutral900 = '#1A1A1C',
   neutralBlack = '#000000',
   neutralSuccessLight = '#74CD88',
-
-  warningMain = '#FFA425'
+  warningMain = '#FFA425',
+  blueDark = '#0A84FF',
+  blueLight = '#6AC0FF'
 }
 
 export const SECURE_ACCESS_SET = 'secureAccessSet'

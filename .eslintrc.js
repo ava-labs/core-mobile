@@ -24,6 +24,7 @@ module.exports = {
     'detox'
   ],
   rules: {
+    'no-console': 2,
     radix: 'off', // parseInt should not have radix when parsing a value that can be number or hex
     'react-hooks/exhaustive-deps': 1,
     'react-native/no-inline-styles': 'off',

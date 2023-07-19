@@ -6,6 +6,7 @@ import {
   StyleProp,
   ViewStyle
 } from 'react-native'
+import { RefreshControl } from './RefreshControl'
 
 interface BigListProps<TItem> {
   data: TItem[]
@@ -34,23 +35,27 @@ const BigList = <T,>({
   contentContainerStyle,
   onEndReached,
   onEndReachedThreshold,
-  refreshControl,
   estimatedItemSize = 0
 }: BigListProps<T>) => {
+  const hasRefreshProps =
+    typeof onRefresh === 'function' && typeof refreshing === 'boolean'
+
   return (
     <RNBigList
       data={data}
       renderItem={renderItem}
       onEndReachedThreshold={onEndReachedThreshold}
       ListEmptyComponent={ListEmptyComponent}
-      refreshing={refreshing}
-      onRefresh={onRefresh}
-      refreshControl={refreshControl}
       contentContainerStyle={contentContainerStyle}
       keyExtractor={keyExtractor}
       indicatorStyle="white"
       onEndReached={onEndReached}
       itemHeight={estimatedItemSize}
+      refreshControl={
+        hasRefreshProps ? (
+          <RefreshControl onRefresh={onRefresh} refreshing={refreshing} />
+        ) : undefined
+      }
     />
   )
 }

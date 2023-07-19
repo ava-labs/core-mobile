@@ -7,18 +7,20 @@ import InputText from 'components/InputText'
 import { Popable } from 'react-native-popable'
 import { PopableLabel } from 'components/PopableLabel'
 import { PopableContent } from 'components/PopableContent'
-import { EarnScreenProps } from 'navigation/types'
+import { StakeSetupScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import { Opacity50 } from '../../resources/Constants'
 
-type NavigationProp = EarnScreenProps<typeof AppNavigation.Earn.AdvancedStaking>
+type ScreenProps = StakeSetupScreenProps<
+  typeof AppNavigation.StakeSetup.AdvancedStaking
+>
 
 const AdvancedStaking = () => {
   const { theme } = useApplicationContext()
-  const { navigate } = useNavigation<NavigationProp['navigation']>()
+  const { navigate } = useNavigation<ScreenProps['navigation']>()
   const { stakingAmount, stakingEndTime } =
-    useRoute<NavigationProp['route']>().params
+    useRoute<ScreenProps['route']>().params
   const [minUpTime, setMinUpTime] = useState<string | undefined>(undefined)
   const [maxFee, setMaxFee] = useState<string | undefined>(undefined)
   const isMaxFeeValid = !!maxFee && Number(maxFee) >= 2 && Number(maxFee) <= 20
@@ -118,7 +120,7 @@ const AdvancedStaking = () => {
         <AvaButton.PrimaryLarge
           disabled={isNextDisabled}
           onPress={() =>
-            navigate(AppNavigation.Earn.SelectNode, {
+            navigate(AppNavigation.StakeSetup.SelectNode, {
               minUpTime: Number(minUpTime),
               maxFee: Number(maxFee),
               stakingAmount,

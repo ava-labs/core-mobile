@@ -22,3 +22,8 @@ export type CollectTokensForStakingParams = {
   activeAccount: Account
   isDevMode: boolean
 }
+
+export type GetAllStakesParams = {
+  isTestnet: boolean
+  addresses: string[]
+}

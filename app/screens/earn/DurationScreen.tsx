@@ -10,7 +10,7 @@ import { Row } from 'components/Row'
 import { CalendarInput } from 'components/CalendarInput'
 import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation, useRoute } from '@react-navigation/native'
-import { EarnScreenProps } from 'navigation/types'
+import { StakeSetupScreenProps } from 'navigation/types'
 import { useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import {
@@ -31,8 +31,8 @@ import { useEarnCalcEstimatedRewards } from 'hooks/earn/useEarnCalcEstimatedRewa
 import { BigIntNAvax } from 'types/denominations'
 import { convertToSeconds, MilliSeconds } from 'types/siUnits'
 
-type EarnScreenNavProps = EarnScreenProps<
-  typeof AppNavigation.Earn.StakingDuration
+type ScreenProps = StakeSetupScreenProps<
+  typeof AppNavigation.StakeSetup.StakingDuration
 >
 
 const StakingDuration = () => {
@@ -50,8 +50,8 @@ const StakingDuration = () => {
   )
 
   const { theme } = useApplicationContext()
-  const { navigate } = useNavigation<EarnScreenNavProps['navigation']>()
-  const { stakingAmount } = useRoute<EarnScreenNavProps['route']>().params
+  const { navigate } = useNavigation<ScreenProps['navigation']>()
+  const { stakingAmount } = useRoute<ScreenProps['route']>().params
   const minimumStakeEndDate = getMinimumStakeEndTime(
     isDeveloperMode,
     new Date()
@@ -80,7 +80,7 @@ const StakingDuration = () => {
 
   const navigateToNodeSearch = () => {
     if (stakeEndTime) {
-      navigate(AppNavigation.Earn.NodeSearch, {
+      navigate(AppNavigation.StakeSetup.NodeSearch, {
         stakingAmount,
         stakingEndTime: stakeEndTime
       })
@@ -89,7 +89,7 @@ const StakingDuration = () => {
 
   const navigateToAdvancedStaking = () => {
     if (stakeEndTime) {
-      navigate(AppNavigation.Earn.AdvancedStaking, {
+      navigate(AppNavigation.StakeSetup.AdvancedStaking, {
         stakingAmount,
         stakingEndTime: stakeEndTime
       })

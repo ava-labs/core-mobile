@@ -10,7 +10,7 @@ import { Row } from 'components/Row'
 import AvaButton from 'components/AvaButton'
 import FlexSpacer from 'components/FlexSpacer'
 import AppNavigation from 'navigation/AppNavigation'
-import { EarnScreenProps } from 'navigation/types'
+import { StakeSetupScreenProps } from 'navigation/types'
 import { Popable } from 'react-native-popable'
 import { PopableLabel } from 'components/PopableLabel'
 import AvaLogoSVG from 'components/svg/AvaLogoSVG'
@@ -39,11 +39,13 @@ import TransactionToast, {
   TransactionToastType
 } from 'components/toast/TransactionToast'
 
-type NavigationProp = EarnScreenProps<typeof AppNavigation.Earn.Confirmation>
+type ScreenProps = StakeSetupScreenProps<
+  typeof AppNavigation.StakeSetup.Confirmation
+>
 
 export const Confirmation = () => {
   const { nodeId, stakingAmount, stakingEndTime } =
-    useRoute<NavigationProp['route']>().params
+    useRoute<ScreenProps['route']>().params
   const validator = useGetValidatorByNodeId(nodeId) as NodeValidator
   const {
     theme,
@@ -56,7 +58,7 @@ export const Confirmation = () => {
   const tokenSymbol = activeNetwork.networkToken.symbol
   const avaxPrice = useSelector(selectAvaxPrice)
   const selectedCurrency = useSelector(selectSelectedCurrency)
-  const { navigate, getParent } = useNavigation<NavigationProp['navigation']>()
+  const { navigate, getParent } = useNavigation<ScreenProps['navigation']>()
 
   const stakingAmountInAvax: BigAvax = bigintToBig(stakingAmount, 9)
   const stakingAmountPrice = stakingAmountInAvax.mul(avaxPrice).toFixed(2) //price is in [currency] so we round to 2 decimals
@@ -106,7 +108,7 @@ export const Confirmation = () => {
   }, [])
 
   const cancelStaking = () => {
-    navigate(AppNavigation.Earn.Cancel)
+    navigate(AppNavigation.StakeSetup.Cancel)
   }
 
   const issueDelegation = () => {

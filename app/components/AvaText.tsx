@@ -185,6 +185,7 @@ const TextHeading4: FC<AvaTextProps> = ({
   textStyle,
   children,
   currency,
+  color,
   ...rest
 }) => {
   const theme = useApplicationContext().theme
@@ -192,7 +193,7 @@ const TextHeading4: FC<AvaTextProps> = ({
     <AvaxTextBase
       {...rest}
       currency={currency}
-      style={[styles.heading4, { color: theme.neutral50 }, textStyle]}>
+      style={[styles.heading4, { color: color || theme.neutral50 }, textStyle]}>
       {children}
     </AvaxTextBase>
   )
@@ -455,6 +456,17 @@ const ActivityTotal: FC<AvaTextProps> = ({ textStyle, children, ...rest }) => {
   )
 }
 
+const Overline: FC<AvaTextProps> = ({ textStyle, children, ...rest }) => {
+  const theme = useApplicationContext().theme
+  return (
+    <AvaxTextBase
+      style={[styles.overline, { color: theme.colorText2 }, textStyle]}
+      {...rest}>
+      {children}
+    </AvaxTextBase>
+  )
+}
+
 const AvaText = {
   ExtraLargeTitle: ExtraLargeTitle,
   LargeTitleBold: LargeTitleBold,
@@ -477,7 +489,8 @@ const AvaText = {
   ButtonSmall: TextButtonSmall,
   Caption: TextCaption,
   ActivityTotal: ActivityTotal, //this font configuration is not named in design at the time of writing
-  Tag: TextTag
+  Tag: TextTag,
+  Overline: Overline
 }
 
 export const styles = StyleSheet.create({
@@ -590,6 +603,11 @@ export const styles = StyleSheet.create({
     fontFamily: 'Inter-Regular',
     fontSize: 12,
     lineHeight: 15
+  },
+  overline: {
+    fontFamily: 'Inter-Regular',
+    fontSize: 10,
+    lineHeight: 16
   }
 })
 

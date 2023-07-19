@@ -20,18 +20,18 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 import useStakingParams from 'hooks/earn/useStakingParams'
 import { useNavigation } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
-import { EarnScreenProps } from 'navigation/types'
+import { StakeSetupScreenProps } from 'navigation/types'
 import { bigintToBig } from 'utils/bigNumbers/bigintToBig'
 import { BigIntAvax, BigIntNAvax } from 'types/denominations'
 import { AmountChange } from 'screens/earn/types'
 
-type EarnScreenNavProps = EarnScreenProps<
-  typeof AppNavigation.Earn.StakingAmount
+type ScreenProps = StakeSetupScreenProps<
+  typeof AppNavigation.StakeSetup.StakingAmount
 >
 
 export default function StakingAmount() {
   const { theme } = useApplicationContext()
-  const { navigate } = useNavigation<EarnScreenNavProps['navigation']>()
+  const { navigate } = useNavigation<ScreenProps['navigation']>()
   const { minStakeAmount, nativeTokenBalance } = useStakingParams()
   const nativeTokenBalanceNavax: BigIntNAvax | undefined = nativeTokenBalance
     ? BigInt(nativeTokenBalance) / BigInt(1e9)
@@ -136,7 +136,7 @@ export default function StakingAmount() {
       {inputValid && (
         <AvaButton.PrimaryLarge
           onPress={() => {
-            navigate(AppNavigation.Earn.StakingDuration, {
+            navigate(AppNavigation.StakeSetup.StakingDuration, {
               stakingAmount: inputAmount
             })
           }}>

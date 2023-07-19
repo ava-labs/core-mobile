@@ -10,7 +10,7 @@ import CopySVG from 'components/svg/CopySVG'
 import AvaButton from 'components/AvaButton'
 import { useNavigation } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
-import { EarnScreenProps } from 'navigation/types'
+import { StakeSetupScreenProps } from 'navigation/types'
 import { copyToClipboard } from 'utils/DeviceTools'
 import LinearGradientSVG from 'components/svg/LinearGradientSVG'
 import { format } from 'date-fns'
@@ -20,8 +20,8 @@ import { BigIntNAvax } from 'types/denominations'
 import { bigintToBig } from 'utils/bigNumbers/bigintToBig'
 import { PopableContentWithCaption } from './PopableContentWithCaption'
 
-type NavigationProp = EarnScreenProps<
-  typeof AppNavigation.Earn.SelectNode
+type NavigationProp = StakeSetupScreenProps<
+  typeof AppNavigation.StakeSetup.SelectNode
 >['navigation']
 
 export const NodeCard = ({
@@ -192,7 +192,7 @@ export const NodeCard = ({
         <View style={{ marginTop: 19 }}>
           <AvaButton.PrimaryMedium
             onPress={() =>
-              navigate(AppNavigation.Earn.Confirmation, {
+              navigate(AppNavigation.StakeSetup.Confirmation, {
                 nodeId: data.nodeID,
                 stakingAmount,
                 stakingEndTime
