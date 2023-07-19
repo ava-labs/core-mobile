@@ -1,15 +1,20 @@
 import { useQuery } from '@tanstack/react-query'
+import GlacierBalanceService from 'services/balance/GlacierBalanceService'
 import { useSelector } from 'react-redux'
-import EarnService from 'services/earn/EarnService'
-import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { Network } from '@avalabs/chains-sdk'
+import { selectActiveNetwork } from 'store/network'
+import { selectActiveAccount } from 'store/account'
 
-export const useGetBalance = (network: Network, addresses: string[]) => {
-  const isDeveloperMode = useSelector(selectIsDeveloperMode)
+export const useGetBalance = () => {
+  const addressPVM = useSelector(selectActiveAccount)?.addressPVM
+  const network = useSelector(selectActiveNetwork)
 
   return useQuery({
-    enabled: addresses.length > 0,
-    queryKey: ['stakingBalances', isDeveloperMode, network, addresses],
-    queryFn: async () => EarnService.getPChainBalance(network, addresses)
+    enabled: !!addressPVM,
+    queryKey: ['stakingBalances', network, addressPVM],
+    queryFn: async () =>
+      GlacierBalanceService.getPChainBalance(
+        network,
+        addressPVM ? [addressPVM] : []
+      )
   })
 }

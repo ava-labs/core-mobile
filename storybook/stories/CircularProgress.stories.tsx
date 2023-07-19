@@ -5,7 +5,7 @@ import { StakeTypeEnum } from 'services/earn/types'
 import { withCenterView } from '../decorators/withCenterView'
 
 export default {
-  title: 'CircularProgress',
+  title: 'Earn/CircularProgress',
   decorators: [withCenterView]
 } as Meta
 

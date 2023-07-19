@@ -1,4 +1,4 @@
-import React, { FC } from 'react'
+import React, { FC, useMemo } from 'react'
 
 import { Canvas, Path, Shadow, Skia } from '@shopify/react-native-skia'
 import { PixelRatio, StyleSheet, View } from 'react-native'
@@ -23,10 +23,12 @@ export const CircularProgress: FC<CircularProgressProps> = ({ data }) => {
 
   let start = 0
   let end = 0
-  const total = data.reduce((item, acc) => {
-    item += acc.amount
-    return item
-  }, 0)
+  const total = useMemo(() => {
+    return data.reduce((item, acc) => {
+      item += acc.amount
+      return item
+    }, 0)
+  }, [data])
 
   return (
     <View style={styles.container}>
