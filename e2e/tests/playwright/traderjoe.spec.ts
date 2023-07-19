@@ -4,27 +4,19 @@ import TraderJoePage from '../../pages/traderjoe.page'
 
 test('check wallet connect button', async ({ page }) => {
   const traderJoePage = new TraderJoePage(page)
-  const context = page.context()
 
   await actions.openPage(traderJoePage.page, traderJoePage.homePage)
   await expect(traderJoePage.connectWalletButtonText).toBeVisible()
-  await page.waitForTimeout(1000)
   await traderJoePage.clickConnectWalletButton()
-  await page.waitForTimeout(1000)
+  await expect(traderJoePage.walletConnectButton).toBeVisible()
   await traderJoePage.clickWalletConnectButton()
-  await page.waitForTimeout(1000)
+  await expect(traderJoePage.oldWalletConnectModal).toBeVisible()
   await traderJoePage.clickOldWalletConnectModal()
-  await page.waitForTimeout(1000)
-  await traderJoePage.clickWalletConnectCode()
-  await page.waitForTimeout(1500)
+  const qrUri = await traderJoePage.qrUriValue()
 
-  await context.grantPermissions(['clipboard-read'])
+  if (qrUri) {
+    await actions.writeQrCodeToFile(qrUri)
+  }
 
-  const clipboardValue = await page.evaluate(() => {
-    return navigator.clipboard.readText()
-  })
-
-  await actions.writeQrCodeToFile(clipboardValue)
-
-  console.log('Clipboard value:', clipboardValue)
+  console.log('Clipboard value:', qrUri)
 })

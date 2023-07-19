@@ -7,11 +7,9 @@ test('check wallet connect button', async ({ page }) => {
 
   await actions.openPage(uniswapPage.page, uniswapPage.uniswapHomePage)
   await expect(uniswapPage.connectWalletBtn).toBeVisible()
-  await page.waitForTimeout(1000)
   await uniswapPage.clickConnectBtn()
-  await page.waitForTimeout(1000)
+  await expect(uniswapPage.walletConnectBtn).toBeVisible()
   await uniswapPage.clickWalletConnectBtn()
-  await page.waitForTimeout(1000)
   const qrCode = await uniswapPage.qrCodeUri()
 
   if (qrCode) {
