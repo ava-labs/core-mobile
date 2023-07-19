@@ -15,7 +15,7 @@ test('check wallet connect button', async ({ page }) => {
   const qrCode = await uniswapPage.qrCodeUri()
 
   if (qrCode) {
-    actions.writeQrCodeToFile({ uniswap: qrCode })
+    await actions.writeQrCodeToFile(qrCode)
   }
   console.log('Clipboard value:', qrCode)
 })

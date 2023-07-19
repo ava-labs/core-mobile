@@ -2,8 +2,6 @@ import { test, expect } from '@playwright/test'
 import actions from '../../helpers/actions'
 import TraderJoePage from '../../pages/traderjoe.page'
 
-const fs = require('fs')
-
 test('check wallet connect button', async ({ page }) => {
   const traderJoePage = new TraderJoePage(page)
   const context = page.context()
@@ -26,14 +24,7 @@ test('check wallet connect button', async ({ page }) => {
     return navigator.clipboard.readText()
   })
 
-  fs.writeFile(
-    '../plusIcon/walletConnect/qr_codes.txt',
-    clipboardValue,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (err: any) => {
-      if (err) throw err
-    }
-  )
+  await actions.writeQrCodeToFile(clipboardValue)
 
   console.log('Clipboard value:', clipboardValue)
 })
