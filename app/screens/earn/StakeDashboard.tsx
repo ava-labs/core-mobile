@@ -9,7 +9,7 @@ import useStakingParams from 'hooks/earn/useStakingParams'
 import { balanceToDisplayValue } from '@avalabs/utils-sdk'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { ChainId } from '@avalabs/chains-sdk'
-import { useGetBalance } from 'hooks/earn/useGetBalance'
+import { useGetPChainBalance } from 'hooks/earn/useGetPChainBalance'
 import { StakeTypeEnum } from 'services/earn/types'
 import Logger from 'utils/Logger'
 import { round } from 'lodash'
@@ -19,7 +19,7 @@ import { StakeTabs } from './StakeTabs'
 export const StakeDashboard = () => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
 
-  const { isFetching, data, error, fetchStatus } = useGetBalance()
+  const { isFetching, data, error, fetchStatus } = useGetPChainBalance()
 
   const { nativeTokenBalance } = useStakingParams()
 
@@ -76,7 +76,7 @@ export const StakeDashboard = () => {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <View style={{ paddingHorizontal: 16 }}>
+      <View>
         <AvaText.LargeTitleBold>Stake</AvaText.LargeTitleBold>
       </View>
       <Balance stakingData={stakingData} />
@@ -89,7 +89,8 @@ export const StakeDashboard = () => {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1
+    flex: 1,
+    marginHorizontal: 16
   },
   spinnerContainer: {
     flex: 1,
