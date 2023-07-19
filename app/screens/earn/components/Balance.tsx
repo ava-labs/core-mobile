@@ -28,7 +28,7 @@ export const Balance: React.FC<BalanceProps> = ({ stakingData }) => {
   )?.amount
 
   const renderStakingBalance = () => (
-    <View style={{ marginLeft: 24 }}>
+    <View style={{ marginHorizontal: 16 }}>
       {stakingData.map((item, index) => {
         const iconColor = getStakePrimaryColor(item.type, theme)
         return (
