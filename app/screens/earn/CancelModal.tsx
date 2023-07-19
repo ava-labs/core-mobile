@@ -1,10 +1,9 @@
 import React, { useCallback } from 'react'
 import { useNavigation } from '@react-navigation/native'
 import WarningModal from 'components/WarningModal'
-import { noop } from '@avalabs/utils-sdk'
 
 export const CancelModal = () => {
-  const { goBack, canGoBack } = useNavigation()
+  const { goBack, canGoBack, getParent } = useNavigation()
 
   const onClose = useCallback(() => {
     if (canGoBack()) {
@@ -12,14 +11,17 @@ export const CancelModal = () => {
     }
   }, [canGoBack, goBack])
 
-  // TODO: navigate/reset to Dashboard on cancel
+  const onCancel = useCallback(() => {
+    getParent()?.goBack()
+  }, [getParent])
+
   return (
     <WarningModal
       title={'Cancel Staking Setup?'}
       message={'Your staking setup will not go through if you close now.'}
       actionText={'Cancel'}
       dismissText={'Back'}
-      onAction={noop}
+      onAction={onCancel}
       onDismiss={onClose}
     />
   )

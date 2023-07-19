@@ -17,13 +17,15 @@ type ScreenProps = StakeSetupScreenProps<
 export const MatchFound = ({ validator }: { validator: NodeValidator }) => {
   const { theme } = useApplicationContext()
   const { navigate } = useNavigation<ScreenProps['navigation']>()
-  const { stakingAmount } = useRoute<ScreenProps['route']>().params
+  const { stakingAmount, stakingEndTime } =
+    useRoute<ScreenProps['route']>().params
 
   useEffect(() => {
     const timer = setTimeout(() => {
       navigate(AppNavigation.StakeSetup.Confirmation, {
         nodeId: validator.nodeID,
-        stakingAmount
+        stakingAmount,
+        stakingEndTime
       })
     }, 2200)
     return () => clearTimeout(timer)

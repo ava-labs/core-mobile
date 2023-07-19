@@ -1,14 +1,17 @@
 import { useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
-import Big from 'big.js'
 import EarnService from 'services/earn/EarnService'
 import { selectAvaxPrice } from 'store/balance'
 import { useQuery } from '@tanstack/react-query'
 import { GetCurrentSupplyResponse } from '@avalabs/avalanchejs-v2/dist/src/vms/pvm'
+import { BigAvax, BigIntNAvax } from 'types/denominations'
+import Big from 'big.js'
+import { bigintToBig } from 'utils/bigNumbers/bigintToBig'
+import { Seconds } from 'types/siUnits'
 
 export type useEarnCalcEstimatedRewardsProps = {
-  amount: Big
-  duration: number
+  amount: BigIntNAvax
+  duration: Seconds
   delegationFee: number
 }
 
@@ -30,9 +33,8 @@ export const useEarnCalcEstimatedRewards = ({
   return useQuery({
     queryKey: ['currentSupply', isDeveloperMode],
     queryFn: async () => EarnService.getCurrentSupply(isDeveloperMode),
-    select: ({ supply }: GetCurrentSupplyResponse) => {
-      const currentSupply = new Big(supply.toString())
-      const rewardStr = EarnService.calcReward(
+    select: ({ supply: currentSupply }: GetCurrentSupplyResponse) => {
+      const reward = EarnService.calcReward(
         amount,
         duration,
         currentSupply,
@@ -40,8 +42,10 @@ export const useEarnCalcEstimatedRewards = ({
         isDeveloperMode
       )
       return {
-        estimatedTokenReward: rewardStr,
-        estimatedRewardAmount: Number(rewardStr) * avaxPrice
+        estimatedTokenReward: bigintToBig(reward, 9) as BigAvax,
+        estimatedRewardInCurrency: bigintToBig(reward, 9)
+          .mul(Big(avaxPrice))
+          .toFixed(2)
       }
     }
   })

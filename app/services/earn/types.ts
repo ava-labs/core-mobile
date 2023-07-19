@@ -1,4 +1,5 @@
 import { Account } from 'store/account'
+import { BigIntNAvax } from 'types/denominations'
 
 export type AddDelegatorTransactionProps = {
   activeAccount: Account
@@ -10,6 +11,15 @@ export type AddDelegatorTransactionProps = {
   startDate: Date
   // The Date time when the delegation ends.
   endDate: Date
+  isDevMode: boolean
+}
+
+export type UnixTimeMs = number
+
+export type CollectTokensForStakingParams = {
+  cChainBalance: BigIntNAvax
+  requiredAmount: BigIntNAvax
+  activeAccount: Account
   isDevMode: boolean
 }
 

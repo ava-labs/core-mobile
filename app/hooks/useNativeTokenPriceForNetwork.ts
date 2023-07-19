@@ -7,6 +7,12 @@ import { useSelector } from 'react-redux'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { Network } from '@avalabs/chains-sdk'
 
+/**
+ *
+ * @param network
+ * @param customCurrency
+ * @return nativeTokenPrice in AVAX
+ */
 export function useNativeTokenPriceForNetwork(
   network: Network | undefined,
   customCurrency?: VsCurrencyType

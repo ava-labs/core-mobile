@@ -7,11 +7,7 @@ import { selectNetwork } from 'store/network'
 import { ChainId } from '@avalabs/chains-sdk'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { VsCurrencyType } from '@avalabs/coingecko-sdk'
-import {
-  balanceToDisplayValue,
-  bnToBig,
-  bnToLocaleString
-} from '@avalabs/utils-sdk'
+import { balanceToDisplayValue } from '@avalabs/utils-sdk'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
 import { Row } from 'components/Row'
@@ -25,7 +21,9 @@ import useStakingParams from 'hooks/earn/useStakingParams'
 import { useNavigation } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
 import { StakeSetupScreenProps } from 'navigation/types'
-import { NANO_AVAX_DENOMINATION } from 'utils/NetworkParams'
+import { bigintToBig } from 'utils/bigNumbers/bigintToBig'
+import { BigIntAvax, BigIntNAvax } from 'types/denominations'
+import { AmountChange } from 'screens/earn/types'
 
 type ScreenProps = StakeSetupScreenProps<
   typeof AppNavigation.StakeSetup.StakingAmount
@@ -35,30 +33,36 @@ export default function StakingAmount() {
   const { theme } = useApplicationContext()
   const { navigate } = useNavigation<ScreenProps['navigation']>()
   const { minStakeAmount, nativeTokenBalance } = useStakingParams()
+  const nativeTokenBalanceNavax: BigIntNAvax | undefined = nativeTokenBalance
+    ? BigInt(nativeTokenBalance) / BigInt(1e9)
+    : undefined
+  const minstakeAmountNavax: BigIntNAvax = minStakeAmount / BigInt(1e9)
+  const minStakeAmountAvax: BigIntAvax = minstakeAmountNavax / BigInt(1e9)
 
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const chainId = isDeveloperMode
     ? ChainId.AVALANCHE_TESTNET_ID
     : ChainId.AVALANCHE_MAINNET_ID
   const avaxNetwork = useSelector(selectNetwork(chainId))
-  const nativeTokenDecimals = avaxNetwork?.networkToken.decimals ?? 0
+  const nativeTokenDecimals = 9
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { nativeTokenPrice } = useNativeTokenPriceForNetwork(
     avaxNetwork,
     selectedCurrency.toLowerCase() as VsCurrencyType
   )
-  const [inputAmountBN, setInputAmountBN] = useState(new BN(0))
+  const [inputAmount, setInputAmount] = useState<BigIntNAvax>(0n)
   const stakeInCurrency = useMemo(
     () =>
-      Number.parseFloat(bnToLocaleString(inputAmountBN, nativeTokenDecimals)) *
-      nativeTokenPrice,
-    [nativeTokenPrice, inputAmountBN, nativeTokenDecimals]
+      bigintToBig(inputAmount, nativeTokenDecimals)
+        .mul(nativeTokenPrice)
+        .toFixed(2),
+    [nativeTokenPrice, inputAmount, nativeTokenDecimals]
   )
   const nativeBalance = useMemo(() => {
     if (avaxNetwork && nativeTokenBalance) {
       return (
         balanceToDisplayValue(
-          nativeTokenBalance,
+          new BN(nativeTokenBalance.toString()),
           avaxNetwork.networkToken.decimals
         ) + ' AVAX'
       )
@@ -68,21 +72,20 @@ export default function StakingAmount() {
   }, [avaxNetwork, nativeTokenBalance])
 
   const amountNotEnough =
-    !inputAmountBN.isZero() && inputAmountBN.lt(minStakeAmount)
+    inputAmount !== 0n && inputAmount < minstakeAmountNavax
 
   const notEnoughBalance =
-    nativeTokenBalance && inputAmountBN.gt(nativeTokenBalance)
+    nativeTokenBalanceNavax && inputAmount > nativeTokenBalanceNavax
 
-  const inputValid =
-    !amountNotEnough && !notEnoughBalance && !inputAmountBN.isZero()
+  const inputValid = !amountNotEnough && !notEnoughBalance && inputAmount !== 0n
 
-  function handleAmountChange(value: { bn: BN; amount: string }) {
-    setInputAmountBN(value.bn)
+  function handleAmountChange(change: AmountChange) {
+    setInputAmount(change.amount)
   }
 
   function setAmount(factor: number) {
-    if (nativeTokenBalance) {
-      setInputAmountBN(nativeTokenBalance.div(new BN(factor)))
+    if (nativeTokenBalanceNavax) {
+      setInputAmount(BigInt(nativeTokenBalanceNavax) / BigInt(factor))
     }
   }
 
@@ -102,7 +105,7 @@ export default function StakingAmount() {
       </View>
       <EarnInputAmount
         handleAmountChange={handleAmountChange}
-        inputAmountBN={inputAmountBN}
+        inputAmount={inputAmount}
         decimals={nativeTokenDecimals}
       />
       <Row style={{ justifyContent: 'center' }}>
@@ -120,7 +123,7 @@ export default function StakingAmount() {
         }}>
         {amountNotEnough && (
           <AvaText.Body3 color={theme.colorError}>
-            {`Minimum amount to stake is 25 AVAX`}
+            {`Minimum amount to stake is ${minStakeAmountAvax} AVAX`}
           </AvaText.Body3>
         )}
         {notEnoughBalance && (
@@ -134,13 +137,13 @@ export default function StakingAmount() {
         <AvaButton.PrimaryLarge
           onPress={() => {
             navigate(AppNavigation.StakeSetup.StakingDuration, {
-              stakingAmount: bnToBig(inputAmountBN, NANO_AVAX_DENOMINATION)
+              stakingAmount: inputAmount
             })
           }}>
           Next
         </AvaButton.PrimaryLarge>
       )}
-      {inputAmountBN.isZero() && (
+      {inputAmount === 0n && (
         <Row style={{ justifyContent: 'space-between' }}>
           <PercentButtons
             isDeveloperMode={isDeveloperMode}

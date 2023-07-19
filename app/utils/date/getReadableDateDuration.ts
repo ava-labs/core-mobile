@@ -25,6 +25,5 @@ export const getReadableDateDuration = (date: Date) => {
   if (differenceInHours(date, currentDate) < 24) {
     format = ['hours', 'minutes']
   }
-
   return formatDuration(duration, { format })
 }
