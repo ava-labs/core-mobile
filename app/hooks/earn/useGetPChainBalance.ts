@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 
-export const useGetBalance = () => {
+export const useGetPChainBalance = () => {
   const addressPVM = useSelector(selectActiveAccount)?.addressPVM
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
 
