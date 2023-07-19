@@ -1,6 +1,6 @@
 import { AdvancedSortFilter, TAdvancedFilterDropDownItems } from 'types/earn'
 
-export const MAX_VALIDATOR_WEIGHT_FACTOR = 5
+export const MAX_VALIDATOR_WEIGHT_FACTOR = 5n
 export const N_AVAX_PER_AVAX = 1_000_000_000
 
 export const HIGH_TO_LOW = 'High to Low'

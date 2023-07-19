@@ -14,30 +14,31 @@ import { Confirmation } from 'screens/earn/Confirmation'
 import { CancelModal } from 'screens/earn/CancelModal'
 import NotEnoughAvax from 'screens/earn/NotEnoughAvax'
 import useStakingParams from 'hooks/earn/useStakingParams'
-import Big from 'big.js'
+import { BigIntNAvax } from 'types/denominations'
 
 export type StakeSetupStackParamList = {
   [AppNavigation.StakeSetup.NotEnoughAvax]: undefined
   [AppNavigation.StakeSetup.GetStarted]: undefined
   [AppNavigation.StakeSetup.StakingAmount]: undefined
-  [AppNavigation.StakeSetup.StakingDuration]: { stakingAmount: Big }
+  [AppNavigation.StakeSetup.StakingDuration]: { stakingAmount: BigIntNAvax }
   [AppNavigation.StakeSetup.AdvancedStaking]: {
     stakingEndTime: Date
-    stakingAmount: Big
+    stakingAmount: BigIntNAvax
   }
   [AppNavigation.StakeSetup.SelectNode]: {
     stakingEndTime: Date
-    stakingAmount: Big
+    stakingAmount: BigIntNAvax
     minUpTime?: number
     maxFee?: number
   }
   [AppNavigation.StakeSetup.NodeSearch]: {
     stakingEndTime: Date
-    stakingAmount: Big
+    stakingAmount: BigIntNAvax
   }
   [AppNavigation.StakeSetup.Confirmation]: {
     nodeId: string
-    stakingAmount: Big
+    stakingAmount: BigIntNAvax
+    stakingEndTime: Date
   }
   [AppNavigation.StakeSetup.Cancel]: undefined
 }
@@ -107,7 +108,7 @@ const EarnGetStartedScreen = () => {
   const { nativeTokenBalance, minStakeAmount } = useStakingParams()
 
   useEffect(() => {
-    if (nativeTokenBalance && nativeTokenBalance.lt(minStakeAmount)) {
+    if (nativeTokenBalance && nativeTokenBalance < minStakeAmount) {
       replace(AppNavigation.StakeSetup.NotEnoughAvax)
     }
   }, [minStakeAmount, nativeTokenBalance, replace])
@@ -123,7 +124,7 @@ const NotEnoughAvaxScreen = () => {
   const { nativeTokenBalance, minStakeAmount } = useStakingParams()
 
   useEffect(() => {
-    if (nativeTokenBalance && nativeTokenBalance.gte(minStakeAmount)) {
+    if (nativeTokenBalance && nativeTokenBalance >= minStakeAmount) {
       replace(AppNavigation.StakeSetup.GetStarted)
     }
   }, [minStakeAmount, nativeTokenBalance, replace])
