@@ -13,6 +13,7 @@ import { useGetPChainBalance } from 'hooks/earn/useGetPChainBalance'
 import { StakeTypeEnum } from 'services/earn/types'
 import Logger from 'utils/Logger'
 import { round } from 'lodash'
+import { BN } from 'bn.js'
 import { Balance } from './components/Balance'
 import { StakeTabs } from './StakeTabs'
 
@@ -31,7 +32,7 @@ export const StakeDashboard = () => {
   const nativeBalance = useMemo(() => {
     if (avaxNetwork && nativeTokenBalance) {
       return balanceToDisplayValue(
-        nativeTokenBalance,
+        new BN(nativeTokenBalance.toString()),
         avaxNetwork.networkToken.decimals
       )
     } else {
