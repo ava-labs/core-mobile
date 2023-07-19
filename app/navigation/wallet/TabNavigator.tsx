@@ -29,8 +29,7 @@ const TabNavigator = () => {
   return (
     <Tab.Navigator
       screenOptions={{
-        ...getCommonBottomTabOptions(theme),
-        header: () => <TopNavigationHeader />
+        ...getCommonBottomTabOptions(theme)
       }}>
       <Tab.Screen
         name={AppNavigation.Tabs.Portfolio}
@@ -79,14 +78,7 @@ const TabNavigator = () => {
         <Tab.Screen
           name={AppNavigation.Tabs.Stake}
           options={{
-            header: () => {
-              return (
-                <TopNavigationHeader
-                  showAccountSelector={false}
-                  showNetworkSelector={false}
-                />
-              )
-            },
+            headerShown: false,
             tabBarIcon: ({ focused }) =>
               normalTabButton({
                 theme,
