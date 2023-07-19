@@ -3,12 +3,11 @@ import { Network } from '@avalabs/chains-sdk'
 import {
   BlockchainId,
   CurrencyCode,
-  Glacier,
   ListPChainBalancesResponse,
   Network as NetworkName,
   PChainBalance
 } from '@avalabs/glacier-sdk'
-import { GLACIER_URL } from 'utils/network/glacier'
+import { glacierSdk } from 'utils/network/glacier'
 import { BalanceServiceProvider } from 'services/balance/types'
 import { convertNativeToTokenWithBalance } from 'services/balance/nativeTokenConverter'
 import { convertErc20ToTokenWithBalance } from 'services/balance/erc20TokenConverter'
@@ -17,14 +16,12 @@ import { Transaction } from '@sentry/types'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 
 export class GlacierBalanceService implements BalanceServiceProvider {
-  private glacierSdk = new Glacier({ BASE: GLACIER_URL })
-
   async isProviderFor(network: Network): Promise<boolean> {
     const isHealthy = await this.isHealthy()
     if (!isHealthy) {
       return false
     }
-    const supportedChainsResp = await this.glacierSdk.evm.supportedChains()
+    const supportedChainsResp = await glacierSdk.evm.supportedChains()
     const chainInfos = supportedChainsResp.chains
     const chains = chainInfos.map(chain => chain.chainId)
     return chains.some(value => value === network.chainId.toString())
@@ -60,7 +57,7 @@ export class GlacierBalanceService implements BalanceServiceProvider {
 
   private async isHealthy() {
     try {
-      const healthStatus = await this.glacierSdk.healthCheck.healthCheck()
+      const healthStatus = await glacierSdk.healthCheck.healthCheck()
       const status = healthStatus?.status?.toString()
       return status === 'ok'
     } catch (e) {
@@ -74,7 +71,7 @@ export class GlacierBalanceService implements BalanceServiceProvider {
     address: string,
     selectedCurrency: string
   ): Promise<NetworkTokenWithBalance> {
-    return this.glacierSdk.evm
+    return glacierSdk.evm
       .getNativeBalance({
         chainId: network.chainId.toString(),
         address,
@@ -95,7 +92,7 @@ export class GlacierBalanceService implements BalanceServiceProvider {
      */
     let nextPageToken: string | undefined
     do {
-      const response = await this.glacierSdk.evm.listErc20Balances({
+      const response = await glacierSdk.evm.listErc20Balances({
         chainId: network.chainId.toString(),
         address,
         currency: selectedCurrency.toLocaleLowerCase() as CurrencyCode,
@@ -114,14 +111,14 @@ export class GlacierBalanceService implements BalanceServiceProvider {
   }
 
   async getPChainBalance(
-    network: Network,
+    isDeveloperMode: boolean,
     addresses: string[],
     _sentryTrx?: Transaction
   ): Promise<PChainBalance> {
-    return this.glacierSdk.primaryNetwork
+    return glacierSdk.primaryNetwork
       .getBalancesByAddresses({
         blockchainId: BlockchainId.P_CHAIN,
-        network: network.isTestnet ? NetworkName.FUJI : NetworkName.MAINNET,
+        network: isDeveloperMode ? NetworkName.FUJI : NetworkName.MAINNET,
         addresses: addresses.join(',')
       })
       .then(value => (value as ListPChainBalancesResponse).balances)

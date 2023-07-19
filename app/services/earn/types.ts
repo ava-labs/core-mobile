@@ -27,3 +27,10 @@ export type GetAllStakesParams = {
   isTestnet: boolean
   addresses: string[]
 }
+export enum StakeTypeEnum {
+  Available = 'Available',
+  Staked = 'Staked',
+  Claimable = 'Claimable'
+}
+
+export type StakingBalanceType = { type: StakeTypeEnum; amount: number }

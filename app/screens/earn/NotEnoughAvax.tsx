@@ -29,7 +29,7 @@ export default function NotEnoughAvax({
 
   return (
     <View style={{ padding: 16, flex: 1 }}>
-      <AvaText.LargeTitleBold>Earn</AvaText.LargeTitleBold>
+      <AvaText.LargeTitleBold>Stake</AvaText.LargeTitleBold>
       <View style={{ alignItems: 'center' }}>
         <Space y={47} />
         <AvaLogoSVG

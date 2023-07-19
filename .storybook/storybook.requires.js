@@ -53,6 +53,7 @@ const getStories = () => {
     "./storybook/stories/CalendarInput.stories.tsx": require("../storybook/stories/CalendarInput.stories.tsx"),
     "./storybook/stories/ConfirmationTracker.stories.tsx": require("../storybook/stories/ConfirmationTracker.stories.tsx"),
     "./storybook/stories/earn/AmountInput.stories.tsx": require("../storybook/stories/earn/AmountInput.stories.tsx"),
+    "./storybook/stories/earn/CircularProgress.stories.tsx": require("../storybook/stories/earn/CircularProgress.stories.tsx"),
     "./storybook/stories/earn/StakeCard.stories.tsx": require("../storybook/stories/earn/StakeCard.stories.tsx"),
     "./storybook/stories/earn/StakeProgress.stories.tsx": require("../storybook/stories/earn/StakeProgress.stories.tsx"),
     "./storybook/stories/earn/StatusChip.stories.tsx": require("../storybook/stories/earn/StatusChip.stories.tsx"),

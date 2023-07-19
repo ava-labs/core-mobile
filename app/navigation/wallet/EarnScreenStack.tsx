@@ -4,6 +4,7 @@ import { createStackNavigator } from '@react-navigation/stack'
 import { NavigatorScreenParams } from '@react-navigation/native'
 import StakeDetails from 'screens/earn/StakeDetails'
 import { StakeDashboard } from 'screens/earn/StakeDashboard'
+import TopNavigationHeader from 'navigation/TopNavigationHeader'
 import StakeSetupScreenStack, {
   StakeSetupStackParamList
 } from './StakeSetupScreenStack'
@@ -30,7 +31,9 @@ function EarnScreenStack() {
       }}>
       <EarnStack.Screen
         name={AppNavigation.Earn.StakeDashboard}
-        options={{ headerShown: false }}
+        options={{
+          header: NavigationHeader
+        }}
         component={StakeDashboard}
       />
       <EarnStack.Screen
@@ -45,5 +48,12 @@ function EarnScreenStack() {
     </EarnStack.Navigator>
   )
 }
+
+const NavigationHeader = () => (
+  <TopNavigationHeader
+    showAccountSelector={false}
+    showNetworkSelector={false}
+  />
+)
 
 export default React.memo(EarnScreenStack)
