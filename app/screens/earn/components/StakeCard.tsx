@@ -40,7 +40,7 @@ type CompletedProps = BaseProps & {
 type Props = OnGoingProps | CompletedProps
 
 type NavigationProp = TabsScreenProps<
-  typeof AppNavigation.Tabs.Earn
+  typeof AppNavigation.Tabs.Stake
 >['navigation']
 
 export const StakeCard = (props: Props) => {
@@ -211,7 +211,6 @@ export const StakeCard = (props: Props) => {
 const styles = StyleSheet.create({
   container: {
     padding: 16,
-    marginHorizontal: 16,
     borderRadius: 8,
     marginVertical: 8
   }

@@ -19,6 +19,6 @@ export const getStakeShadowColor = (type: StakeTypeEnum, theme: AppTheme) => {
     case StakeTypeEnum.Claimable:
       return theme.colorSuccess
     default:
-      return theme.pieChartWhiteStroke
+      return theme.white
   }
 }
