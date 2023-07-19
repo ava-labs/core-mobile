@@ -114,14 +114,14 @@ export class GlacierBalanceService implements BalanceServiceProvider {
   }
 
   async getPChainBalance(
-    network: Network,
+    isDeveloperMode: boolean,
     addresses: string[],
     _sentryTrx?: Transaction
   ): Promise<PChainBalance> {
     return this.glacierSdk.primaryNetwork
       .getBalancesByAddresses({
         blockchainId: BlockchainId.P_CHAIN,
-        network: network.isTestnet ? NetworkName.FUJI : NetworkName.MAINNET,
+        network: isDeveloperMode ? NetworkName.FUJI : NetworkName.MAINNET,
         addresses: addresses.join(',')
       })
       .then(value => (value as ListPChainBalancesResponse).balances)

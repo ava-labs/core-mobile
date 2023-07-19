@@ -1,19 +1,19 @@
 import { useQuery } from '@tanstack/react-query'
 import GlacierBalanceService from 'services/balance/GlacierBalanceService'
 import { useSelector } from 'react-redux'
-import { selectActiveNetwork } from 'store/network'
 import { selectActiveAccount } from 'store/account'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 
 export const useGetBalance = () => {
   const addressPVM = useSelector(selectActiveAccount)?.addressPVM
-  const network = useSelector(selectActiveNetwork)
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
 
   return useQuery({
     enabled: !!addressPVM,
-    queryKey: ['stakingBalances', network, addressPVM],
+    queryKey: ['pChainBalance', isDeveloperMode, addressPVM],
     queryFn: async () =>
       GlacierBalanceService.getPChainBalance(
-        network,
+        isDeveloperMode,
         addressPVM ? [addressPVM] : []
       )
   })

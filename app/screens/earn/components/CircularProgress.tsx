@@ -7,19 +7,19 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import { StakingBalanceType } from 'services/earn/types'
 import { getStakePrimaryColor, getStakeShadowColor } from '../utils'
 
+const radius = PixelRatio.roundToNearestPixel(48)
+const strokeWidth = 5
+const shadowWidth = 8
+const innerRadius = radius - strokeWidth - shadowWidth / 2
+const path = Skia.Path.Make()
+path.addCircle(radius, radius, innerRadius)
+
 interface CircularProgressProps {
   data: StakingBalanceType[]
 }
 
 export const CircularProgress: FC<CircularProgressProps> = ({ data }) => {
   const { theme } = useApplicationContext()
-  const radius = PixelRatio.roundToNearestPixel(48)
-  const strokeWidth = 5
-  const shadowWidth = 8
-
-  const innerRadius = radius - strokeWidth - shadowWidth / 2
-  const path = Skia.Path.Make()
-  path.addCircle(radius, radius, innerRadius)
 
   let start = 0
   let end = 0
