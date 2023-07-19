@@ -10,12 +10,20 @@ class ConnectToSite {
     return by.id(connectToSiteLoc.rejectBtn)
   }
 
+  get selectAccountsDropdown() {
+    return by.text(connectToSiteLoc.selectAccountDropdown)
+  }
+
   async tapApproveBtn() {
     await Action.tap(this.approveBtn)
   }
 
   async tapRejectBtn() {
     await Action.tapElementAtIndex(this.rejectBtn, 0)
+  }
+
+  async tapSelectAccountsDropdown() {
+    await Action.tapElementAtIndex(this.selectAccountsDropdown, 0)
   }
 }
 

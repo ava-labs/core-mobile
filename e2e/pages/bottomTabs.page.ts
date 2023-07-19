@@ -32,7 +32,7 @@ class BottomsTabsPage {
   }
 
   async tapPlusIcon() {
-    await Actions.tapElementAtIndex(this.plusIcon, 0)
+    await Actions.tapElementAtIndex(this.plusIcon, 1)
   }
 
   async tapPortfolioTab() {
