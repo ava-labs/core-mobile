@@ -81,7 +81,7 @@ export const Balance: React.FC<BalanceProps> = ({ stakingData }) => {
         style={{ flex: 1 }}
         onPress={() =>
           navigate(AppNavigation.Earn.StakeSetup, {
-            screen: AppNavigation.StakeSetup.StakingAmount
+            screen: AppNavigation.StakeSetup.GetStarted
           })
         }>
         Stake
@@ -89,11 +89,9 @@ export const Balance: React.FC<BalanceProps> = ({ stakingData }) => {
       <Space x={16} />
       <AvaButton.SecondaryLarge
         style={{ flex: 1 }}
-        onPress={() =>
-          navigate(AppNavigation.Earn.StakeSetup, {
-            screen: AppNavigation.StakeSetup.StakingAmount
-          })
-        }>
+        onPress={() => {
+          // to be implemented
+        }}>
         Claim
       </AvaButton.SecondaryLarge>
     </View>
