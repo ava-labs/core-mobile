@@ -15,7 +15,7 @@ import Assert from '../../../helpers/assertions'
 import ConnectedSitesPage from '../../../pages/connectedSites.page'
 import actions from '../../../helpers/actions'
 
-describe('Connect to traderjoexyz using WalletConnect', () => {
+describe('Connect to dApp using WalletConnect', () => {
   beforeAll(async () => {
     await warmup()
     await LoginRecoverWallet.recoverWalletLogin()
@@ -27,7 +27,7 @@ describe('Connect to traderjoexyz using WalletConnect', () => {
     await PlusMenuPage.tapWalletConnectButton()
   })
 
-  it('should connect to traderjoexyz', async () => {
+  it('should connect to dApp', async () => {
     await ScanQrCodePage.enterQrCode()
     await ConnectToSitePage.tapSelectAccountsDropdown()
     await ConnectedSitesPage.tapSelectAllChkBox()
