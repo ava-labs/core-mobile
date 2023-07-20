@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useRef, useState } from 'react'
 import { StyleSheet, View, Pressable } from 'react-native'
 import AvaText from 'components/AvaText'
 import AvaButton from 'components/AvaButton'
@@ -15,6 +15,8 @@ interface CalendarInputProps {
   maximumDate?: Date
 }
 
+const EmptyComponent = () => null
+
 export const CalendarInput: React.FC<CalendarInputProps> = ({
   date,
   onDateSelected,
@@ -23,13 +25,11 @@ export const CalendarInput: React.FC<CalendarInputProps> = ({
   maximumDate
 }) => {
   const { theme } = useApplicationContext()
+  const positionRef = useRef<View>(null)
+  const [position, setPosition] = useState(0)
   const [isDatePickerVisible, setIsDatePickerVisible] = useState(false)
   const showDatePicker = () => {
     setIsDatePickerVisible(true)
-  }
-
-  const hideDatePicker = () => {
-    setIsDatePickerVisible(false)
   }
 
   const handleDateConfirm = (dateInput: Date) => {
@@ -37,8 +37,18 @@ export const CalendarInput: React.FC<CalendarInputProps> = ({
     setIsDatePickerVisible(false)
   }
 
+  const handleCancel = () => {
+    setIsDatePickerVisible(false)
+  }
+
+  const handlOnLayout = () => {
+    positionRef.current?.measure((x, y, width, height, pageX, pageY) => {
+      setPosition(pageY + height)
+    })
+  }
+
   return (
-    <View>
+    <View onLayout={handlOnLayout} ref={positionRef}>
       <Pressable
         style={{
           ...styles.dateInput,
@@ -60,9 +70,23 @@ export const CalendarInput: React.FC<CalendarInputProps> = ({
           isVisible={isDatePickerVisible}
           mode="date"
           onConfirm={handleDateConfirm}
-          onCancel={hideDatePicker}
+          onCancel={handleCancel}
+          onChange={handleDateConfirm}
           minimumDate={minimumDate}
           maximumDate={maximumDate}
+          themeVariant="dark"
+          accentColor={theme.colorPrimary1}
+          pickerStyleIOS={{ backgroundColor: theme.neutral900 }}
+          customCancelButtonIOS={EmptyComponent}
+          customConfirmButtonIOS={EmptyComponent}
+          modalStyleIOS={{
+            width: '100%',
+            margin: 0,
+            justifyContent: 'flex-start',
+            marginTop: position,
+            paddingHorizontal: 16
+          }}
+          backdropStyleIOS={{ backgroundColor: 'transparent' }}
         />
       </View>
     </View>

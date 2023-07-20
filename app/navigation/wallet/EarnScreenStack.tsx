@@ -27,7 +27,11 @@ function EarnScreenStack() {
       screenOptions={{
         headerShown: true,
         title: '',
-        headerBackTitleVisible: false
+        headerBackTitleVisible: false,
+        headerTitleAlign: 'center',
+        headerLeftContainerStyle: {
+          paddingLeft: 8
+        }
       }}>
       <EarnStack.Screen
         name={AppNavigation.Earn.StakeDashboard}
