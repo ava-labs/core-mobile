@@ -6,7 +6,7 @@ for cmd in "${cmds[@]}"; do
     $cmd
     echo "${cmd} finished"
     echo "Now running the detox test..."
-    node_modules/.bin/detox test traderjoe.e2e.ts --configuration ios.internal.debug
+    node_modules/.bin/detox test dappIntegrations.e2e.ts --configuration ios.internal.debug
     echo "Detox test finished!!!"
 done
 
