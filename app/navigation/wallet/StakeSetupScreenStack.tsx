@@ -125,15 +125,19 @@ type NotEnoughAvaxScreenProps = StakeSetupScreenProps<
 >
 
 const NotEnoughAvaxScreen = () => {
-  const { navigate } = useNavigation<NotEnoughAvaxScreenProps['navigation']>()
+  const { navigate, getParent } =
+    useNavigation<NotEnoughAvaxScreenProps['navigation']>()
 
   const navToBuy = () => {
+    getParent()?.goBack()
     navigate(AppNavigation.Wallet.Buy)
   }
   const navToReceive = () => {
+    getParent()?.goBack()
     navigate(AppNavigation.Wallet.ReceiveTokens)
   }
   const navToSwap = () => {
+    getParent()?.goBack()
     navigate(AppNavigation.Wallet.Swap)
   }
   return (
