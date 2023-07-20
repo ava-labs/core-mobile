@@ -91,7 +91,15 @@ const AvatarBase: FC<Props> = ({
       }
 
       if (logoUri?.endsWith('svg')) {
-        return <SvgUri uri={logoUri} style={style} width={size} height={size} />
+        return (
+          <SvgUri
+            uri={logoUri}
+            style={style}
+            width={size}
+            height={size}
+            testID="avatar__svg_uri"
+          />
+        )
       }
 
       // adding a white background by default
@@ -104,6 +112,7 @@ const AvatarBase: FC<Props> = ({
           onError={() => {
             setFailedToLoad(true)
           }}
+          testID="avatar__logo_avatar"
         />
       )
     }
@@ -145,7 +154,7 @@ const TokenAvatar: FC<TokenAvatarProps> = ({ name, symbol, logoUri, size }) => {
 }
 
 const CustomAvatar: FC<Props> = props => {
-  return <AvatarBase {...props} />
+  return <AvatarBase {...props} testID="avatar__custom_avatar" />
 }
 
 const Avatar = {

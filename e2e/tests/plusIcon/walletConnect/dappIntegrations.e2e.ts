@@ -35,7 +35,7 @@ describe('Connect to traderjoexyz using WalletConnect', () => {
     await BurgerMenuPage.tapBurgerMenuButton()
     await BurgerMenuPage.tapSecurityAndPrivacy()
     await SecurityAndPrivacyPage.tapConnectedSites()
-    await Assert.isVisible(ConnectedSitesPage.traderJoe)
+    await Assert.isVisible(ConnectedSitesPage.dappAvatar)
     await ConnectedSitesPage.tapManageBtn()
     await ConnectedSitesPage.tapSelectAllChkBox()
     await ConnectedSitesPage.tapDeleteBtn()
