@@ -1,4 +1,4 @@
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useSelector } from 'react-redux'
 import EarnService from 'services/earn/EarnService'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
@@ -11,6 +11,7 @@ import BigIntConverter from 'types/converters/BigIntConverter'
 import TypeConverter from 'types/converters/TypeConverter'
 
 export const useIssueDelegation = (onSuccess: (txId: string) => void) => {
+  const queryClient = useQueryClient()
   const activeNetwork = useSelector(selectActiveNetwork)
   const activeAccount = useSelector(selectActiveAccount)
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
@@ -27,6 +28,8 @@ export const useIssueDelegation = (onSuccess: (txId: string) => void) => {
   const cChainBalanceNAvax: BigIntNAvax = BigIntConverter.weiToNAvax(
     cChainBalanceBigIntWei
   )
+
+  const pAddress = activeAccount?.addressPVM ?? ''
 
   const issueDelegationMutation = useMutation({
     mutationFn: (data: {
@@ -59,7 +62,18 @@ export const useIssueDelegation = (onSuccess: (txId: string) => void) => {
         }
       })
     },
-    onSuccess: onSuccess
+    onSuccess: txId => {
+      // refetch stakes for the current p address and developer mode
+      // adding a 2 second delay since glacier will have some delay
+      setTimeout(() => {
+        queryClient.invalidateQueries({
+          queryKey: ['stakes', isDeveloperMode, pAddress]
+        })
+      }, 2000)
+
+      // handle UI success state
+      onSuccess(txId)
+    }
   })
 
   return {
