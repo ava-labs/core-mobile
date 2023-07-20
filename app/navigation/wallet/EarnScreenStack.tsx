@@ -52,7 +52,10 @@ function EarnScreenStack() {
         headerShown: true,
         title: '',
         headerBackTitleVisible: false,
-        headerTitleAlign: 'center'
+        headerTitleAlign: 'center',
+        headerLeftContainerStyle: {
+          paddingLeft: 8
+        }
       }}>
       <EarnStack.Screen
         name={AppNavigation.Earn.NotEnoughAvax}
