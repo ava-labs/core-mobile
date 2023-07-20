@@ -34,6 +34,10 @@ export const CalendarInput: React.FC<CalendarInputProps> = ({
     setIsDatePickerVisible(false)
   }
 
+  const handleCancel = () => {
+    setIsDatePickerVisible(false)
+  }
+
   const EmptyComponent = () => null
 
   const handlOnLayout = () => {
@@ -64,13 +68,13 @@ export const CalendarInput: React.FC<CalendarInputProps> = ({
           display="inline"
           isVisible={isDatePickerVisible}
           mode="date"
-          onConfirm={() => null}
-          onCancel={() => null}
+          onConfirm={handleDateConfirm}
+          onCancel={handleCancel}
           onChange={handleDateConfirm}
           minimumDate={minimumDate}
           maximumDate={maximumDate}
-          themeVariant="dark"
-          accentColor={theme.colorPrimary1}
+          themeVariant="light"
+          accentColor={theme.alternateBackground}
           pickerStyleIOS={{ backgroundColor: theme.neutral900 }}
           customCancelButtonIOS={EmptyComponent}
           customConfirmButtonIOS={EmptyComponent}
