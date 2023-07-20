@@ -64,9 +64,13 @@ export const useIssueDelegation = (onSuccess: (txId: string) => void) => {
     },
     onSuccess: txId => {
       // refetch stakes for the current p address and developer mode
-      queryClient.invalidateQueries({
-        queryKey: ['stakes', isDeveloperMode, pAddress]
-      })
+      // adding a 2 second delay since glacier will have some delay
+      setTimeout(() => {
+        queryClient.invalidateQueries({
+          queryKey: ['stakes', isDeveloperMode, pAddress]
+        })
+      }, 2000)
+
       // handle UI success state
       onSuccess(txId)
     }
