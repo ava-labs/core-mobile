@@ -60,7 +60,7 @@ export const StakeDashboard = () => {
     9
   )
   const stakedAmount = round(
-    Big(data.lockedStaked[0]?.amount || 0)
+    Big(data.unlockedStaked[0]?.amount || 0)
       .div(Math.pow(10, 9))
       .toNumber(),
     9
