@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import { HeaderBackButton } from '@react-navigation/elements'
 import AppNavigation from 'navigation/AppNavigation'
 import { createStackNavigator } from '@react-navigation/stack'
@@ -57,7 +57,7 @@ function StakeSetupScreenStack() {
       }}>
       <Stack.Screen
         name={AppNavigation.StakeSetup.GetStarted}
-        component={EarnGetStartedScreen}
+        component={GetStartedScreen}
       />
       <Stack.Screen
         name={AppNavigation.StakeSetup.NotEnoughAvax}
@@ -99,35 +99,34 @@ function StakeSetupScreenStack() {
   )
 }
 
-type EarnProps = StakeSetupScreenProps<
+type GetStartedScreenProps = StakeSetupScreenProps<
   typeof AppNavigation.StakeSetup.GetStarted
 >
 
-const EarnGetStartedScreen = () => {
-  const { navigate, replace } = useNavigation<EarnProps['navigation']>()
+const GetStartedScreen = () => {
+  const { navigate } = useNavigation<GetStartedScreenProps['navigation']>()
   const { nativeTokenBalance, minStakeAmount } = useStakingParams()
 
-  useEffect(() => {
-    if (nativeTokenBalance && nativeTokenBalance < minStakeAmount) {
-      replace(AppNavigation.StakeSetup.NotEnoughAvax)
-    }
-  }, [minStakeAmount, nativeTokenBalance, replace])
-
   const navToStakingAmount = () => {
-    navigate(AppNavigation.StakeSetup.StakingAmount)
+    const notEnoughAvax =
+      nativeTokenBalance && nativeTokenBalance < minStakeAmount
+
+    if (notEnoughAvax) {
+      navigate(AppNavigation.StakeSetup.NotEnoughAvax)
+    } else {
+      navigate(AppNavigation.StakeSetup.StakingAmount)
+    }
   }
   return <GetStarted onNext={navToStakingAmount} />
 }
 
-const NotEnoughAvaxScreen = () => {
-  const { navigate, replace } = useNavigation<EarnProps['navigation']>()
-  const { nativeTokenBalance, minStakeAmount } = useStakingParams()
+type NotEnoughAvaxScreenProps = StakeSetupScreenProps<
+  typeof AppNavigation.StakeSetup.NotEnoughAvax
+>
 
-  useEffect(() => {
-    if (nativeTokenBalance && nativeTokenBalance >= minStakeAmount) {
-      replace(AppNavigation.StakeSetup.GetStarted)
-    }
-  }, [minStakeAmount, nativeTokenBalance, replace])
+const NotEnoughAvaxScreen = () => {
+  const { navigate } = useNavigation<NotEnoughAvaxScreenProps['navigation']>()
+
   const navToBuy = () => {
     navigate(AppNavigation.Wallet.Buy)
   }
