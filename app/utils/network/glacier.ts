@@ -1,11 +1,11 @@
+import { Glacier } from '@avalabs/glacier-sdk'
 import Config from 'react-native-config'
 
 if (!Config.GLACIER_URL) throw Error('GLACIER_URL ENV is missing')
 
-/**
- * After constructing a full URL make sure to call `addGlacierAPIKeyIfNeeded`.
- */
 export const GLACIER_URL = Config.GLACIER_URL
+
+export const glacierSdk = new Glacier({ BASE: Config.GLACIER_URL })
 
 // RPC urls returned in the token list are always using the production URL
 const knownHosts = ['glacier-api.avax.network', 'proxy-api.avax.network']

@@ -70,6 +70,7 @@ import { AddressBookStackParamList } from './wallet/AddressBookStack'
 import { SecurityStackParamList } from './wallet/SecurityPrivacyStackScreen'
 import { BridgeStackParamList } from './wallet/BridgeScreenStack'
 import { PortfolioStackParamList } from './wallet/PortfolioScreenStack'
+import { StakeSetupStackParamList } from './wallet/StakeSetupScreenStack'
 
 export type { RootScreenStackParamList }
 
@@ -323,6 +324,13 @@ export type EarnScreenProps<T extends keyof EarnStackParamList> =
   CompositeScreenProps<
     StackScreenProps<EarnStackParamList, T>,
     WalletScreenProps<keyof WalletScreenStackParams>
+  >
+
+/** ROOT -> WALLET -> EARN -> STAKE SETUP **/
+export type StakeSetupScreenProps<T extends keyof StakeSetupStackParamList> =
+  CompositeScreenProps<
+    StackScreenProps<StakeSetupStackParamList, T>,
+    EarnScreenProps<keyof EarnStackParamList>
   >
 
 /** ROOT -> WALLET -> NFT DETAILS **/

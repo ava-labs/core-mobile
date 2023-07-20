@@ -19,6 +19,8 @@ import { selectActiveNetwork } from 'store/network'
 type Props = {
   showAddress?: boolean
   showBackButton?: boolean
+  showAccountSelector?: boolean
+  showNetworkSelector?: boolean
   testID?: string
 }
 
@@ -28,6 +30,8 @@ type NavigationProp = DrawerScreenProps<
 
 const TopNavigationHeader: FC<Props> = ({
   showAddress = false,
+  showAccountSelector = true,
+  showNetworkSelector = true,
   showBackButton = false
 }) => {
   const { theme } = useApplicationContext()
@@ -77,6 +81,24 @@ const TopNavigationHeader: FC<Props> = ({
       </AvaButton.Icon>
     )
   }
+
+  const renderAccountSelector = () => (
+    <View
+      style={{
+        zIndex: 1,
+        flex: 1,
+        maxWidth: 200,
+        alignItems: 'center'
+      }}>
+      <HeaderAccountSelector
+        direction="down"
+        onPressed={() =>
+          navigation.navigate(AppNavigation.Modal.AccountDropDown)
+        }
+      />
+    </View>
+  )
+
   return (
     <View>
       <Row
@@ -87,21 +109,8 @@ const TopNavigationHeader: FC<Props> = ({
           justifyContent: 'space-between'
         }}>
         {renderLeftButton()}
-        <View
-          style={{
-            zIndex: 1,
-            flex: 1,
-            maxWidth: 200,
-            alignItems: 'center'
-          }}>
-          <HeaderAccountSelector
-            direction="down"
-            onPressed={() =>
-              navigation.navigate(AppNavigation.Modal.AccountDropDown)
-            }
-          />
-        </View>
-        <NetworkDropdown />
+        {showAccountSelector && renderAccountSelector()}
+        {showNetworkSelector && <NetworkDropdown />}
       </Row>
       {renderAddress()}
     </View>

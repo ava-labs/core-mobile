@@ -1,11 +1,11 @@
 import React from 'react'
 import type { Meta } from '@storybook/react-native'
 import EarnInputAmount from 'screens/earn/EarnInputAmount'
-import { withCenterView } from '../decorators/withCenterView'
+import { withCenterView } from '../../decorators/withCenterView'
 
 export default {
-  title: 'Earn',
+  title: 'Earn/AmountInput',
   decorators: [withCenterView]
 } as Meta
 
-export const AmountInput = () => <EarnInputAmount decimals={18} />
+export const Default = () => <EarnInputAmount decimals={9} />

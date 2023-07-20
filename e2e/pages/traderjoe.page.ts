@@ -32,6 +32,14 @@ class TraderJoePage {
     return this.page.getByRole('button', { name: 'MetaMask' })
   }
 
+  get qrUri() {
+    return this.page.locator('wcm-qrcode')
+  }
+
+  async qrUriValue() {
+    return await this.qrUri.getAttribute('uri')
+  }
+
   async clickConnectWalletButton() {
     await this.connectWalletButton.click()
   }

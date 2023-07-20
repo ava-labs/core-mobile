@@ -6,24 +6,26 @@ import { useNodes } from 'hooks/earn/useNodes'
 import DropDown from 'components/Dropdown'
 import { Space } from 'components/Space'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { EarnScreenProps } from 'navigation/types'
+import { StakeSetupScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
 import { useRoute } from '@react-navigation/native'
 import { NodeValidator, TAdvancedFilterDropDownItems } from 'types/earn'
 import { useAdvancedSearchNodes } from 'hooks/earn/useAdvancedSearchNodes'
-import { UP_TIME_HIGH_TO_LOW, advancedFilterDropDownItems } from 'consts/earn'
-import { Spinner } from '../../../storybook/stories/Lotties.stories'
+import { advancedFilterDropDownItems, UP_TIME_HIGH_TO_LOW } from 'consts/earn'
+import Spinner from 'components/animation/Spinner'
 import { NodeCard } from './components/NodeCard'
 import { NoMatchFound } from './components/NoMatchFound'
 
-type NavigationProp = EarnScreenProps<typeof AppNavigation.Earn.SelectNode>
+type ScreenProps = StakeSetupScreenProps<
+  typeof AppNavigation.StakeSetup.SelectNode
+>
 
 const SelectNode = () => {
   const [searchText, setSearchText] = useState('')
   const [filter, setFilter] =
     useState<TAdvancedFilterDropDownItems>(UP_TIME_HIGH_TO_LOW)
   const { stakingAmount, stakingEndTime, minUpTime, maxFee } =
-    useRoute<NavigationProp['route']>().params
+    useRoute<ScreenProps['route']>().params
 
   const { isFetching, data, error } = useNodes()
   const { validators, error: useAdvancedSearchNodesError } =
@@ -58,7 +60,13 @@ const SelectNode = () => {
   }
 
   const renderItem = ({ item }: { item: NodeValidator }) => {
-    return <NodeCard data={item} stakingAmount={stakingAmount} />
+    return (
+      <NodeCard
+        data={item}
+        stakingAmount={stakingAmount}
+        stakingEndTime={stakingEndTime}
+      />
+    )
   }
 
   if (isFetching)

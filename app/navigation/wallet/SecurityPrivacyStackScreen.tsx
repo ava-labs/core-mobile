@@ -13,6 +13,7 @@ import { QRCodeParams, SecurityPrivacyScreenProps } from 'navigation/types'
 import ConnectedDapps from 'screens/rpc/ConnectedDapps/ConnectedDapps'
 import CaptureDappQR from 'screens/shared/CaptureDappQR'
 import { usePostCapture } from 'hooks/usePosthogCapture'
+import Logger from 'utils/Logger'
 
 export type SecurityStackParamList = {
   [AppNavigation.SecurityPrivacy.SecurityPrivacy]: undefined
@@ -136,7 +137,7 @@ const PinOrBiometryLoginForPassChange = memo(() => {
       onLoginSuccess={mnemonic => {
         nav.replace(AppNavigation.SecurityPrivacy.CreatePin, { mnemonic })
       }}
-      onSignInWithRecoveryPhrase={() => console.log('onSignIn')}
+      onSignInWithRecoveryPhrase={() => Logger.info('onSignIn')}
       isResettingPin
     />
   )
@@ -154,7 +155,7 @@ const PinOrBiometryLoginForRecoveryReveal = memo(() => {
       onLoginSuccess={mnemonic => {
         nav.replace(AppNavigation.SecurityPrivacy.RecoveryPhrase, { mnemonic })
       }}
-      onSignInWithRecoveryPhrase={() => console.log('onSignIn')}
+      onSignInWithRecoveryPhrase={() => Logger.info('onSignIn')}
       hideLoginWithMnemonic
       isResettingPin
     />
@@ -175,7 +176,7 @@ const PinForBiometryEnable = memo(() => {
           nav.navigate(AppNavigation.SecurityPrivacy.SecurityPrivacy)
         )
       }}
-      onSignInWithRecoveryPhrase={() => console.log('onSignIn')}
+      onSignInWithRecoveryPhrase={() => Logger.info('onSignIn')}
       isResettingPin
     />
   )

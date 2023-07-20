@@ -4,7 +4,6 @@ import { element, waitFor } from 'detox'
 import { Page } from '@playwright/test'
 import { Platform } from './constants'
 import Constants from './constants'
-
 const fs = require('fs')
 
 const reportUIPerformanceFilePath =
@@ -249,6 +248,16 @@ const saveTempUIPerformance = async (startTime: number, endTime: number) => {
   })
 }
 
+async function writeQrCodeToFile(clipboardValue: string) {
+  fs.writeFile(
+    './e2e/tests/playwright/qr_codes.txt',
+    clipboardValue,
+    (err: any) => {
+      if (err) throw err
+    }
+  )
+}
+
 export default {
   tap,
   longPress,
@@ -269,5 +278,6 @@ export default {
   isVisible,
   getCurrentDateTime,
   reportUIPerformance,
-  saveTempUIPerformance
+  saveTempUIPerformance,
+  writeQrCodeToFile
 }

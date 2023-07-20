@@ -81,6 +81,12 @@ enum BuyScreens {
 }
 
 enum EarnScreens {
+  StakeDashboard = 'EarnScreens.StakeDashboard',
+  StakeDetails = 'EarnScreens.StakeDetails',
+  StakeSetup = 'EarnScreens.StakeSetup'
+}
+
+enum StakeSetupScreens {
   NotEnoughAvax = 'EarnScreens.NotEnoughAvax',
   GetStarted = 'EarnScreens.GetStarted',
   StakingAmount = 'EarnScreens.StakingAmount',
@@ -136,7 +142,7 @@ enum Tabs {
   Swap = 'Swap',
   More = 'More',
   Watchlist = 'Watchlist',
-  Earn = 'Earn',
+  Stake = 'Stake',
   Tabs = 'Tabs',
   Fab = 'Fab',
   Bridge = 'Bridge'
@@ -223,7 +229,8 @@ const AppNavigation = {
   Portfolio: PortfolioScreens,
   ReceiveTokens: ReceiveTokensScreens,
   Buy: BuyScreens,
-  Earn: EarnScreens
+  Earn: EarnScreens,
+  StakeSetup: StakeSetupScreens
 }
 
 export default AppNavigation

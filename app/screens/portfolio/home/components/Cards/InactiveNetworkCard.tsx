@@ -9,7 +9,7 @@ import {
 } from 'react-native'
 import AvaText from 'components/AvaText'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { Opacity70, Opacity85 } from 'resources/Constants'
+import { Opacity85 } from 'resources/Constants'
 import { Space } from 'components/Space'
 import { PortfolioScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
@@ -20,6 +20,7 @@ import { selectBalanceTotalInCurrencyForNetworkAndAccount } from 'store/balance'
 import { NetworkLogo } from 'screens/network/NetworkLogo'
 import { selectActiveAccount } from 'store/account'
 import { usePostCapture } from 'hooks/usePosthogCapture'
+import { getCardHighLightColor } from 'utils/color/getCardHighLightColor'
 
 const windowWidth = Dimensions.get('window').width
 
@@ -49,7 +50,7 @@ const InactiveNetworkCard: FC<Props> = ({ network }) => {
   )
 
   const cardBgColor = theme.colorBg2 + Opacity85
-  const highlighColor = theme.colorBg3 + Opacity70
+  const highlighColor = getCardHighLightColor(theme)
 
   const navigateToNetworkTokens = () => {
     capture('PortfolioSecondaryNetworkClicked', {

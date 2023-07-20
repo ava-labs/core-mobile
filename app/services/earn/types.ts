@@ -1,4 +1,5 @@
 import { Account } from 'store/account'
+import { BigIntNAvax } from 'types/denominations'
 
 export type AddDelegatorTransactionProps = {
   activeAccount: Account
@@ -12,3 +13,24 @@ export type AddDelegatorTransactionProps = {
   endDate: Date
   isDevMode: boolean
 }
+
+export type UnixTimeMs = number
+
+export type CollectTokensForStakingParams = {
+  cChainBalance: BigIntNAvax
+  requiredAmount: BigIntNAvax
+  activeAccount: Account
+  isDevMode: boolean
+}
+
+export type GetAllStakesParams = {
+  isTestnet: boolean
+  addresses: string[]
+}
+export enum StakeTypeEnum {
+  Available = 'Available',
+  Staked = 'Staked',
+  Claimable = 'Claimable'
+}
+
+export type StakingBalanceType = { type: StakeTypeEnum; amount: number }

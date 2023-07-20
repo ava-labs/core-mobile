@@ -140,7 +140,7 @@ const TabViewAva: TabViewAvaFC = ({
               return renderCustomLabel?.(route?.title ?? '', focused, color)
             }}
             indicatorStyle={{
-              backgroundColor: theme.alternateBackground,
+              backgroundColor: theme.colorPrimary1,
               height: 2
             }}
             renderTabBarItem={tabBarItem}
@@ -152,7 +152,7 @@ const TabViewAva: TabViewAvaFC = ({
       renderCustomLabel,
       routes.length,
       tabBarItem,
-      theme.alternateBackground,
+      theme.colorPrimary1,
       theme.transparent
     ]
   )

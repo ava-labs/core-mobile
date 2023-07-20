@@ -2,22 +2,22 @@ import React from 'react'
 import { useNavigation } from '@react-navigation/native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AppNavigation from 'navigation/AppNavigation'
-import { EarnScreenProps } from 'navigation/types'
+import { StakeSetupScreenProps } from 'navigation/types'
 import AvaText from 'components/AvaText'
 import { StyleSheet, View } from 'react-native'
 import { Space } from 'components/Space'
 import InfoSVG from 'components/svg/InfoSVG'
 import AvaButton from 'components/AvaButton'
 
-type NavigationProp = EarnScreenProps<
-  typeof AppNavigation.Earn.NodeSearch
+type NavigationProp = StakeSetupScreenProps<
+  typeof AppNavigation.StakeSetup.NodeSearch
 >['navigation']
 
 export const NoMatchFound = () => {
   const { theme } = useApplicationContext()
   const { navigate, popToTop, goBack } = useNavigation<NavigationProp>()
 
-  const handleStartOver = () => navigate(AppNavigation.Earn.StakingAmount)
+  const handleStartOver = () => navigate(AppNavigation.StakeSetup.StakingAmount)
 
   const handleCanel = () => {
     popToTop()
