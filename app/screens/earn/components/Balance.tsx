@@ -28,8 +28,11 @@ export const Balance: React.FC<BalanceProps> = ({ stakingData }) => {
   )?.amount
 
   const goToGetStarted = () => {
-    navigate(AppNavigation.Earn.StakeSetup, {
-      screen: AppNavigation.StakeSetup.GetStarted
+    navigate(AppNavigation.Wallet.Earn, {
+      screen: AppNavigation.Earn.StakeSetup,
+      params: {
+        screen: AppNavigation.StakeSetup.GetStarted
+      }
     })
   }
 
