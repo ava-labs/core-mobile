@@ -2,8 +2,7 @@
 
 cmds=('npx playwright test e2e/tests/playwright/traderjoe.spec.ts' 'npx playwright test e2e/tests/playwright/uniswap.spec.ts')
 for cmd in "${cmds[@]}"; do
-    pwd
-    echo "Running ${cmd}"
+    echo "Running ${cmd}..."
     $cmd
     echo "${cmd} finished"
     echo "Now running the detox test..."
