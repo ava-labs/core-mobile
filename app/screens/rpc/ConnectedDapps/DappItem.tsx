@@ -69,7 +69,11 @@ export const DappItem = ({
               <Space x={16} />
             </>
           )}
-          <Avatar.Custom name={peerMeta.name} logoUri={getIconUrl()} />
+          <Avatar.Custom
+            name={peerMeta.name}
+            logoUri={getIconUrl()}
+            testID="dapp_item__avatar"
+          />
         </Row>
       }
       title={peerMeta.name}
