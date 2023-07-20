@@ -9,11 +9,7 @@ class ReviewAndSend {
   }
 
   getQrCode() {
-    const qrCode = fs.readFileSync(
-      'e2e/tests/plusIcon/walletConnect/qr_codes.txt',
-      'utf8'
-    )
-    console.log(JSON.stringify(qrCode) + ' this is the qr code!!!!!!!!!!')
+    const qrCode = fs.readFileSync('e2e/tests/playwright/qr_codes.txt', 'utf8')
     return qrCode
   }
 

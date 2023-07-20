@@ -2,8 +2,8 @@ import Actions from '../helpers/actions'
 import connectedSitesLoc from '../locators/connectedSites.loc'
 
 class ConnectedSites {
-  get traderJoe() {
-    return by.text(connectedSitesLoc.traderJoe)
+  get dappAvatar() {
+    return by.id(connectedSitesLoc.dappAvatar)
   }
 
   get manageBtn() {

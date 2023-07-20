@@ -13,28 +13,36 @@ import BurgerMenuPage from '../../../pages/burgerMenu/burgerMenu.page'
 import SecurityAndPrivacyPage from '../../../pages/securityAndPrivacy.page'
 import Assert from '../../../helpers/assertions'
 import ConnectedSitesPage from '../../../pages/connectedSites.page'
+import actions from '../../../helpers/actions'
 
-describe('Connect to traderjoexyz using WalletConnect', () => {
+describe('Connect to dApp using WalletConnect', () => {
   beforeAll(async () => {
     await warmup()
     await LoginRecoverWallet.recoverWalletLogin()
   })
 
   it('should navigate to wallet connect screen', async () => {
+    await actions.waitForElement(BottomTabsPage.plusIcon, 10, 1)
     await BottomTabsPage.tapPlusIcon()
     await PlusMenuPage.tapWalletConnectButton()
   })
 
-  it('should connect to traderjoexyz', async () => {
+  it('should connect to dApp', async () => {
     await ScanQrCodePage.enterQrCode()
+    await ConnectToSitePage.tapSelectAccountsDropdown()
+    await ConnectedSitesPage.tapSelectAllChkBox()
     await ConnectToSitePage.tapApproveBtn()
     await BurgerMenuPage.tapBurgerMenuButton()
     await BurgerMenuPage.tapSecurityAndPrivacy()
     await SecurityAndPrivacyPage.tapConnectedSites()
-    await Assert.isVisible(ConnectedSitesPage.traderJoe)
+    await Assert.isVisible(ConnectedSitesPage.dappAvatar)
     await ConnectedSitesPage.tapManageBtn()
     await ConnectedSitesPage.tapSelectAllChkBox()
     await ConnectedSitesPage.tapDeleteBtn()
     await Assert.isVisible(ConnectedSitesPage.noConnectedSitesText)
+  })
+
+  afterAll(async () => {
+    actions.writeQrCodeToFile('')
   })
 })
