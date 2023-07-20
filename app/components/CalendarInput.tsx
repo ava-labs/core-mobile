@@ -73,8 +73,8 @@ export const CalendarInput: React.FC<CalendarInputProps> = ({
           onChange={handleDateConfirm}
           minimumDate={minimumDate}
           maximumDate={maximumDate}
-          themeVariant="light"
-          accentColor={theme.alternateBackground}
+          themeVariant="dark"
+          accentColor={theme.colorPrimary1}
           pickerStyleIOS={{ backgroundColor: theme.neutral900 }}
           customCancelButtonIOS={EmptyComponent}
           customConfirmButtonIOS={EmptyComponent}
@@ -82,7 +82,8 @@ export const CalendarInput: React.FC<CalendarInputProps> = ({
             width: '100%',
             margin: 0,
             justifyContent: 'flex-start',
-            marginTop: position
+            marginTop: position,
+            paddingHorizontal: 16
           }}
           backdropStyleIOS={{ backgroundColor: 'transparent' }}
         />
