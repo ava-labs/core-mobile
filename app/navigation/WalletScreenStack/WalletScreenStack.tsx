@@ -66,6 +66,9 @@ import { ChainID } from 'store/network'
 import EarnScreenStack, {
   EarnStackParamList
 } from 'navigation/wallet/EarnScreenStack'
+import StakeSetupScreenStack, {
+  StakeSetupStackParamList
+} from 'navigation/wallet/StakeSetupScreenStack'
 import { BridgeStackParamList } from '../wallet/BridgeScreenStack'
 import {
   AddEthereumChainParams,
@@ -133,11 +136,11 @@ export type WalletScreenStackParams = {
   [AppNavigation.Wallet.Earn]:
     | NavigatorScreenParams<EarnStackParamList>
     | undefined
+  [AppNavigation.Wallet.StakeSetup]:
+    | NavigatorScreenParams<StakeSetupStackParamList>
+    | undefined
   [AppNavigation.Wallet.NFTDetails]: NavigatorScreenParams<NFTStackParamList>
   [AppNavigation.Wallet.NFTManage]: undefined
-  [AppNavigation.Wallet.Earn]:
-    | NavigatorScreenParams<EarnStackParamList>
-    | undefined
   [AppNavigation.Wallet.AddressBook]:
     | NavigatorScreenParams<AddressBookStackParamList>
     | undefined
@@ -298,6 +301,13 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
           }}
           name={AppNavigation.Wallet.Earn}
           component={EarnScreenStack}
+        />
+        <WalletScreenS.Screen
+          options={{
+            headerShown: false
+          }}
+          name={AppNavigation.Wallet.StakeSetup}
+          component={StakeSetupScreenStack}
         />
         <WalletScreenS.Screen
           options={{

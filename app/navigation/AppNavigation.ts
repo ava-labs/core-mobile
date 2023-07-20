@@ -55,7 +55,8 @@ enum WalletScreens {
   ActivityDetail = 'WalletScreens.ActivityDetail',
   Bridge = 'WalletScreens.Bridge',
   QRCode = 'WalletScreens.QRCode',
-  Earn = 'WalletScreens.Earn'
+  Earn = 'WalletScreens.Earn',
+  StakeSetup = 'WalletScreens.StakeSetup'
 }
 
 enum NoWalletScreens {

@@ -63,7 +63,7 @@ export const Balance: React.FC<BalanceProps> = ({ stakingData }) => {
   const renderStakeButton = () => (
     <AvaButton.PrimaryLarge
       onPress={() =>
-        navigate(AppNavigation.Earn.StakeSetup, {
+        navigate(AppNavigation.Wallet.StakeSetup, {
           screen: AppNavigation.StakeSetup.StakingAmount
         })
       }>
@@ -80,7 +80,7 @@ export const Balance: React.FC<BalanceProps> = ({ stakingData }) => {
       <AvaButton.SecondaryLarge
         style={{ flex: 1 }}
         onPress={() =>
-          navigate(AppNavigation.Earn.StakeSetup, {
+          navigate(AppNavigation.Wallet.StakeSetup, {
             screen: AppNavigation.StakeSetup.StakingAmount
           })
         }>
@@ -90,7 +90,7 @@ export const Balance: React.FC<BalanceProps> = ({ stakingData }) => {
       <AvaButton.SecondaryLarge
         style={{ flex: 1 }}
         onPress={() =>
-          navigate(AppNavigation.Earn.StakeSetup, {
+          navigate(AppNavigation.Wallet.StakeSetup, {
             screen: AppNavigation.StakeSetup.StakingAmount
           })
         }>

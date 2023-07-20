@@ -1,18 +1,12 @@
 import React from 'react'
 import AppNavigation from 'navigation/AppNavigation'
 import { createStackNavigator } from '@react-navigation/stack'
-import { NavigatorScreenParams } from '@react-navigation/native'
 import StakeDetails from 'screens/earn/StakeDetails'
 import { StakeDashboard } from 'screens/earn/StakeDashboard'
 import TopNavigationHeader from 'navigation/TopNavigationHeader'
-import StakeSetupScreenStack, {
-  StakeSetupStackParamList
-} from './StakeSetupScreenStack'
 
 export type EarnStackParamList = {
   [AppNavigation.Earn.StakeDashboard]: undefined
-  [AppNavigation.Earn
-    .StakeSetup]: NavigatorScreenParams<StakeSetupStackParamList>
   [AppNavigation.Earn.StakeDetails]: {
     txHash: string
     stakeTitle: string
@@ -35,11 +29,6 @@ function EarnScreenStack() {
           header: NavigationHeader
         }}
         component={StakeDashboard}
-      />
-      <EarnStack.Screen
-        name={AppNavigation.Earn.StakeSetup}
-        options={{ headerShown: false }}
-        component={StakeSetupScreenStack}
       />
       <EarnStack.Screen
         name={AppNavigation.Earn.StakeDetails}
