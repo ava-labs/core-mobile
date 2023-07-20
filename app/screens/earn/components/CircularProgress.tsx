@@ -39,12 +39,14 @@ export const CircularProgress: FC<CircularProgressProps> = ({ data }) => {
           const amountPercent = item.amount / total
 
           // This will calculate the start and end of each section of the the circular path
-          end = end + Number(amountPercent.toFixed(2))
-
           if (index !== 0) {
             const startPercent = (data[index - 1]?.amount || 0) / total
             start = start + Number(startPercent.toFixed(2))
           }
+          end = end + Number(amountPercent.toFixed(2))
+
+          const startPath = isNaN(start) ? 0 : start
+          const endPath = isNaN(end) ? 0 : end
 
           return (
             <Path
@@ -55,8 +57,8 @@ export const CircularProgress: FC<CircularProgressProps> = ({ data }) => {
               strokeJoin="round"
               strokeWidth={strokeWidth}
               strokeCap="round"
-              start={index === 0 ? 0 : start}
-              end={end}>
+              start={index === 0 ? 0 : startPath}
+              end={endPath}>
               <Shadow
                 dx={-1}
                 dy={-1}
