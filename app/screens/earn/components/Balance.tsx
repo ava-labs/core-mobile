@@ -52,7 +52,7 @@ export const Balance: React.FC<BalanceProps> = ({ stakingData }) => {
                     lineHeight: 24.5,
                     marginHorizontal: 8
                   }}>
-                  {`${item.amount} AVAX`}
+                  {`${isNaN(item.amount) ? 0 : item.amount} AVAX`}
                 </AvaText.Subtitle2>
                 <AvaText.Caption
                   textStyle={{
