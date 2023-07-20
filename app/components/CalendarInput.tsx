@@ -15,6 +15,8 @@ interface CalendarInputProps {
   maximumDate?: Date
 }
 
+const EmptyComponent = () => null
+
 export const CalendarInput: React.FC<CalendarInputProps> = ({
   date,
   onDateSelected,
@@ -38,8 +40,6 @@ export const CalendarInput: React.FC<CalendarInputProps> = ({
   const handleCancel = () => {
     setIsDatePickerVisible(false)
   }
-
-  const EmptyComponent = () => null
 
   const handlOnLayout = () => {
     positionRef.current?.measure((x, y, width, height, pageX, pageY) => {
