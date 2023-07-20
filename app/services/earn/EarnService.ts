@@ -240,6 +240,7 @@ class EarnService {
       pageToken = response.nextPageToken
       transactions.push(...(response.transactions as PChainTransaction[]))
     } while (pageToken)
+
     const stakes = transactions.filter(
       transaction =>
         transaction.txType === PChainTransactionType.ADD_DELEGATOR_TX
