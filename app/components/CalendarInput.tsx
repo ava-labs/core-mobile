@@ -6,6 +6,7 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import CalendarSVG from 'components/svg/CalendarSVG'
 import DateTimePickerModal from 'react-native-modal-datetime-picker'
 import { format } from 'date-fns'
+
 interface CalendarInputProps {
   date: Date | undefined
   onDateSelected: (date: Date) => void
