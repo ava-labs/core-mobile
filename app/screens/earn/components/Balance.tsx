@@ -27,6 +27,12 @@ export const Balance: React.FC<BalanceProps> = ({ stakingData }) => {
     data => data.type === 'Claimable'
   )?.amount
 
+  const goToGetStarted = () => {
+    navigate(AppNavigation.Earn.StakeSetup, {
+      screen: AppNavigation.StakeSetup.GetStarted
+    })
+  }
+
   const renderStakingBalance = () => (
     <View style={{ marginHorizontal: 16 }}>
       {stakingData.map((item, index) => {
@@ -61,12 +67,7 @@ export const Balance: React.FC<BalanceProps> = ({ stakingData }) => {
   )
 
   const renderStakeButton = () => (
-    <AvaButton.PrimaryLarge
-      onPress={() =>
-        navigate(AppNavigation.Earn.StakeSetup, {
-          screen: AppNavigation.StakeSetup.StakingAmount
-        })
-      }>
+    <AvaButton.PrimaryLarge onPress={goToGetStarted}>
       Stake
     </AvaButton.PrimaryLarge>
   )
@@ -77,13 +78,7 @@ export const Balance: React.FC<BalanceProps> = ({ stakingData }) => {
         flexDirection: 'row',
         justifyContent: 'space-between'
       }}>
-      <AvaButton.SecondaryLarge
-        style={{ flex: 1 }}
-        onPress={() =>
-          navigate(AppNavigation.Earn.StakeSetup, {
-            screen: AppNavigation.StakeSetup.GetStarted
-          })
-        }>
+      <AvaButton.SecondaryLarge style={{ flex: 1 }} onPress={goToGetStarted}>
         Stake
       </AvaButton.SecondaryLarge>
       <Space x={16} />
