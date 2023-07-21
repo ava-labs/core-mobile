@@ -68,10 +68,12 @@ const AdvancedStaking = () => {
         </AvaText.Subtitle1>
         <View>
           <View style={{ marginBottom: 24 }}>
-            <PopableComponent
-              label="Minimum Uptime"
-              message="This is a validator’s uptime, the minimum threshold for rewards is 80%"
-            />
+            <View style={{ alignSelf: 'flex-start' }}>
+              <PopableComponent
+                label="Minimum Uptime"
+                message="This is a validator’s uptime, the minimum threshold for rewards is 80%"
+              />
+            </View>
             <FormInputText
               control={control}
               name={'minUpTime'}
@@ -86,10 +88,12 @@ const AdvancedStaking = () => {
             </AvaText.Caption>
           </View>
           <View>
-            <PopableComponent
-              label="Maximum Fee"
-              message="This is a range set by the protocol."
-            />
+            <View style={{ alignSelf: 'flex-start' }}>
+              <PopableComponent
+                label="Maximum Fee"
+                message="This is a range set by the protocol."
+              />
+            </View>
             <FormInputText
               control={control}
               name={'maxFee'}
@@ -105,7 +109,6 @@ const AdvancedStaking = () => {
           </View>
         </View>
       </View>
-
       <View style={{ marginBottom: 40 }}>
         <AvaButton.PrimaryLarge
           disabled={!isEmpty(errors)}
