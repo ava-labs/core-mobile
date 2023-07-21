@@ -14,6 +14,18 @@ class ConnectToSite {
     return by.text(connectToSiteLoc.selectAccountDropdown)
   }
 
+  get plusIcon() {
+    return by.id(connectToSiteLoc.plusButton)
+  }
+
+  async tapPlusIcon() {
+    if (Action.platform() === 'ios') {
+      await Action.tapElementAtIndex(this.plusIcon, 1)
+    } else {
+      await Action.tapElementAtIndex(this.plusIcon, 0)
+    }
+  }
+
   async tapApproveBtn() {
     await Action.tap(this.approveBtn)
   }
