@@ -10,7 +10,7 @@ import { StakeSetupScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useForm } from 'react-hook-form'
+import { FieldValues, useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { FormInputText } from 'components/form/FormInputText'
 import { isEmpty } from 'lodash'
@@ -40,12 +40,13 @@ const AdvancedStaking = () => {
   const {
     control,
     handleSubmit,
-    formState: { errors }
+    formState: { errors },
+    getValues
   } = useForm({
     resolver: zodResolver(schema),
     mode: 'onChange'
   })
-  const onSubmit = (data: any) => {
+  const onSubmit = (data: FieldValues) => {
     navigate(AppNavigation.StakeSetup.SelectNode, {
       minUpTime: Number(data.minUpTime),
       maxFee: Number(data.maxFee),
@@ -53,6 +54,8 @@ const AdvancedStaking = () => {
       stakingEndTime
     })
   }
+  const isDisabled =
+    !isEmpty(errors) || (!getValues('minUpTime') && !getValues('maxFee'))
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -111,7 +114,7 @@ const AdvancedStaking = () => {
       </View>
       <View style={{ marginBottom: 40 }}>
         <AvaButton.PrimaryLarge
-          disabled={!isEmpty(errors)}
+          disabled={isDisabled}
           onPress={handleSubmit(onSubmit)}>
           Next
         </AvaButton.PrimaryLarge>
