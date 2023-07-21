@@ -40,8 +40,7 @@ const AdvancedStaking = () => {
   const {
     control,
     handleSubmit,
-    formState: { errors },
-    getValues
+    formState: { errors }
   } = useForm({
     resolver: zodResolver(schema),
     mode: 'onChange'
@@ -54,8 +53,8 @@ const AdvancedStaking = () => {
       stakingEndTime
     })
   }
-  const isDisabled =
-    !isEmpty(errors) || (!getValues('minUpTime') && !getValues('maxFee'))
+
+  const isDisabled = !isEmpty(errors)
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
