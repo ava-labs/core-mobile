@@ -67,7 +67,7 @@ export const useIssueDelegation = (onSuccess: (txId: string) => void) => {
       })
     },
     onSuccess: txId => {
-      revalidateQueries({
+      refetchQueries({
         isDeveloperMode,
         queryClient,
         pAddress,
@@ -94,7 +94,7 @@ export const useIssueDelegation = (onSuccess: (txId: string) => void) => {
  * @param selectedCurrency
  */
 
-export const revalidateQueries = ({
+export const refetchQueries = ({
   queryClient,
   isDeveloperMode,
   pAddress,
