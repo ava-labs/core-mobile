@@ -10,11 +10,16 @@ import { StakeSetupScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { FieldValues, useForm } from 'react-hook-form'
+import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { FormInputText } from 'components/form/FormInputText'
 import { isEmpty } from 'lodash'
 import { Opacity50 } from '../../resources/Constants'
+
+type TFormProps = {
+  minUpTime: string
+  maxFee: string
+}
 
 const schema = z.object({
   minUpTime: z
@@ -45,7 +50,7 @@ const AdvancedStaking = () => {
     resolver: zodResolver(schema),
     mode: 'onChange'
   })
-  const onSubmit = (data: FieldValues) => {
+  const onSubmit = (data: TFormProps) => {
     navigate(AppNavigation.StakeSetup.SelectNode, {
       minUpTime: Number(data.minUpTime),
       maxFee: Number(data.maxFee),

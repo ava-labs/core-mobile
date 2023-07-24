@@ -13,7 +13,7 @@ export interface IFormInputText
   control?: ControllerProps<FieldValues>['control']
   name: string
   rules?: Omit<
-    RegisterOptions<FieldValues, 'firstName'>,
+    RegisterOptions<FieldValues>,
     'valueAsNumber' | 'valueAsDate' | 'setValueAs' | 'disabled'
   >
   errorText?: string | FieldError | Merge<FieldError, FieldErrorsImpl>
