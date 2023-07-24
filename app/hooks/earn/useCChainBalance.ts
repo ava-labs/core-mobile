@@ -4,8 +4,7 @@ import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectSelectedCurrency } from 'store/settings/currency'
-
-const POLLING_INTERVAL = 10000 // 10 seconds
+import { refetchIntervals } from 'consts/earn'
 
 export const useCChainBalance = () => {
   const addressC = useSelector(selectActiveAccount)?.address ?? ''
@@ -13,7 +12,7 @@ export const useCChainBalance = () => {
   const selectedCurrency = useSelector(selectSelectedCurrency)
 
   return useQuery({
-    refetchInterval: POLLING_INTERVAL,
+    refetchInterval: refetchIntervals.balance,
     enabled: Boolean(addressC),
     queryKey: ['cChainBalance', isDeveloperMode, addressC, selectedCurrency],
     queryFn: async () =>
