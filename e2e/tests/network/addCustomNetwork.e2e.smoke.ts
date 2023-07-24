@@ -25,7 +25,7 @@ describe('Add custom network', () => {
     await Actions.reportUIPerformance(
       startTime,
       endTime,
-      'networksDropdownScreen',
+      'NetworksDropdownScreen',
       1,
       3
     )
@@ -38,7 +38,7 @@ describe('Add custom network', () => {
     await Actions.reportUIPerformance(
       startTime2,
       endTime2,
-      'addNetworkScreen',
+      'AddNetworkScreen',
       1,
       3
     )
