@@ -5,7 +5,6 @@ import { FujiParams, MainnetParams } from 'utils/NetworkParams'
 import { MAX_VALIDATOR_WEIGHT_FACTOR } from 'consts/earn'
 import { BigIntNAvax } from 'types/denominations'
 import { bnToBigint } from 'utils/bigNumbers/bnToBigint'
-import { QueryClient } from '@tanstack/query-core'
 
 /**
  * See https://docs.avax.network/subnets/reference-elastic-subnets-parameters#primary-network-parameters-on-mainnet
@@ -216,40 +215,4 @@ export const getAdvancedSortedValidators = (
         (a, b): number => Number(b.uptime) - Number(a.uptime)
       )
   }
-}
-
-/**
- * refetch stakes for the current p address, pChainBalance and cChainBalance
- * adding a 2 second delay since glacier will have some delay
- * @param queryClient
- * @param isDeveloperMode
- * @param pAddress
- * @param cAddress
- * @param selectedCurrency
- */
-
-export const revalidateQueries = ({
-  queryClient,
-  isDeveloperMode,
-  pAddress,
-  cAddress,
-  selectedCurrency
-}: {
-  queryClient: QueryClient
-  isDeveloperMode: boolean
-  pAddress: string
-  cAddress: string
-  selectedCurrency: string
-}) => {
-  setTimeout(() => {
-    queryClient.invalidateQueries({
-      queryKey: ['stakes', isDeveloperMode, pAddress]
-    })
-    queryClient.invalidateQueries({
-      queryKey: ['pChainBalance', isDeveloperMode, pAddress]
-    })
-    queryClient.invalidateQueries({
-      queryKey: ['cChainBalance', isDeveloperMode, cAddress, selectedCurrency]
-    })
-  }, 2000)
 }

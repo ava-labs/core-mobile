@@ -10,7 +10,7 @@ import { selectActiveNetwork } from 'store/network'
 import BigIntConverter from 'types/converters/BigIntConverter'
 import TypeConverter from 'types/converters/TypeConverter'
 import { selectSelectedCurrency } from 'store/settings/currency'
-import { revalidateQueries } from 'services/earn/utils'
+import { QueryClient } from '@tanstack/query-core'
 
 export const useIssueDelegation = (onSuccess: (txId: string) => void) => {
   const queryClient = useQueryClient()
@@ -82,4 +82,40 @@ export const useIssueDelegation = (onSuccess: (txId: string) => void) => {
   return {
     issueDelegationMutation
   }
+}
+
+/**
+ * refetch stakes as well as c + p balances with 2 second delay
+ * since glacier will have some delay
+ * @param queryClient
+ * @param isDeveloperMode
+ * @param pAddress
+ * @param cAddress
+ * @param selectedCurrency
+ */
+
+export const revalidateQueries = ({
+  queryClient,
+  isDeveloperMode,
+  pAddress,
+  cAddress,
+  selectedCurrency
+}: {
+  queryClient: QueryClient
+  isDeveloperMode: boolean
+  pAddress: string
+  cAddress: string
+  selectedCurrency: string
+}) => {
+  setTimeout(() => {
+    queryClient.invalidateQueries({
+      queryKey: ['stakes', isDeveloperMode, pAddress]
+    })
+    queryClient.invalidateQueries({
+      queryKey: ['pChainBalance', isDeveloperMode, pAddress]
+    })
+    queryClient.invalidateQueries({
+      queryKey: ['cChainBalance', isDeveloperMode, cAddress, selectedCurrency]
+    })
+  }, 2000)
 }
