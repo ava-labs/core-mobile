@@ -16,8 +16,8 @@ type ScreenProps = StakeSetupScreenProps<
 
 enum BalanceStates {
   UNKNOWN = 'unknown', // we don't have any data yet to determine
-  INSUFFICIENT = 'INSUFFICIENT', // not enough to cover minimum stake amount + fees
-  SUFFICIENT = 'SUFFICIENT' // // enough to cover minimum stake amount + fees
+  INSUFFICIENT = 'insufficient', // not enough to cover minimum stake amount + fees
+  SUFFICIENT = 'sufficient' // // enough to cover minimum stake amount + fees
 }
 
 const SmartStakeAmount = () => {
