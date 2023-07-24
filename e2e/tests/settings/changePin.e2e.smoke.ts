@@ -4,6 +4,7 @@
  * @jest-environment ./environment.ts
  */
 import Assert from '../../helpers/assertions'
+import Actions from '../../helpers/actions'
 import LoginRecoverWallet from '../../helpers/loginRecoverWallet'
 import BurgerMenuPage from '../../pages/burgerMenu/burgerMenu.page'
 import { warmup } from '../../helpers/warmup'
@@ -19,6 +20,16 @@ describe('Change Pin', () => {
   it('Should set new Pin & verify pin Headers', async () => {
     await BurgerMenuPage.tapBurgerMenuButton()
     await BurgerMenuPage.tapSecurityAndPrivacy()
+    const startTime = new Date().getTime()
+    await Actions.waitForElement(SecurityAndPrivacyPage.changePin)
+    const endTime = new Date().getTime()
+    await Actions.reportUIPerformance(
+      startTime,
+      endTime,
+      'Security&PrivacyScreen',
+      1,
+      3
+    )
     await SecurityAndPrivacyPage.tapChangePin()
     await Assert.isVisible(CreatePinPage.enterYourPinHeader)
     await CreatePinPage.enterCurrentPin()

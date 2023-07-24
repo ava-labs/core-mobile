@@ -22,6 +22,16 @@ describe('Change Currency', () => {
   it('Should verify changing currency to EUR', async () => {
     await BurgerMenuPage.tapBurgerMenuButton()
     await BurgerMenuPage.tapCurrency()
+    const startTime = new Date().getTime()
+    await Actions.waitForElement(CurrencyPage.euroCurrency)
+    const endTime = new Date().getTime()
+    await Actions.reportUIPerformance(
+      startTime,
+      endTime,
+      'CurrencyPageScreen',
+      1,
+      3
+    )
     await CurrencyPage.tapEuroCurrency()
     await Assert.isVisible(CurrencyPage.euroSign, platformIndex)
     await BurgerMenuPage.swipeLeft()
