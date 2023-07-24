@@ -14,7 +14,8 @@ import { Confirmation } from 'screens/earn/Confirmation'
 import { CancelModal } from 'screens/earn/CancelModal'
 import NotEnoughAvax from 'screens/earn/NotEnoughAvax'
 import useStakingParams from 'hooks/earn/useStakingParams'
-import { BigIntNAvax } from 'types/denominations'
+import { BigIntNAvax, BigIntWeiAvax } from 'types/denominations'
+import { useCChainBalance } from 'hooks/earn/useCChainBalance'
 
 export type StakeSetupStackParamList = {
   [AppNavigation.StakeSetup.NotEnoughAvax]: undefined
@@ -105,11 +106,14 @@ type GetStartedScreenProps = StakeSetupScreenProps<
 
 const GetStartedScreen = () => {
   const { navigate } = useNavigation<GetStartedScreenProps['navigation']>()
-  const { nativeTokenBalance, minStakeAmount } = useStakingParams()
+  const { minStakeAmount } = useStakingParams()
+  const cChainBalance = useCChainBalance()
 
   const navToStakingAmount = () => {
-    const notEnoughAvax =
-      nativeTokenBalance && nativeTokenBalance < minStakeAmount
+    const availableAvax = BigInt(
+      cChainBalance.data?.balance ?? '0'
+    ) as BigIntWeiAvax
+    const notEnoughAvax = availableAvax < minStakeAmount
 
     if (notEnoughAvax) {
       navigate(AppNavigation.StakeSetup.NotEnoughAvax)
