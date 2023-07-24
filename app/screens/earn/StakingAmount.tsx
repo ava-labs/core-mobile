@@ -26,7 +26,7 @@ import { useCChainBalance } from 'hooks/earn/useCChainBalance'
 import { useWeiAvaxToAvax } from 'hooks/conversion/useWeiAvaxToAvax'
 
 type ScreenProps = StakeSetupScreenProps<
-  typeof AppNavigation.StakeSetup.StakingAmount
+  typeof AppNavigation.StakeSetup.SmartStakeAmount
 >
 
 export default function StakingAmount() {
