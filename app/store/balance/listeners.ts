@@ -7,8 +7,8 @@ import {
   Account,
   selectAccounts,
   selectActiveAccount,
-  setAccount,
-  setAccounts
+  setAccounts,
+  setActiveAccountIndex
 } from 'store/account'
 import { onAppLocked, onAppUnlocked, onLogOut } from 'store/app'
 import { addCustomToken } from 'store/customToken'
@@ -242,7 +242,7 @@ export const addBalanceListeners = (startListening: AppStartListening) => {
     matcher: isAnyOf(
       setSelectedCurrency,
       setAccounts,
-      setAccount,
+      setActiveAccountIndex,
       addCustomToken,
       setNetworks
     ),
