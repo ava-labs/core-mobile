@@ -69,10 +69,16 @@ export const StakeDashboard = () => {
   const stakingData = [
     {
       type: StakeTypeEnum.Available,
-      amount: availableAmount
+      amount: isNaN(availableAmount) ? 0 : availableAmount
     },
-    { type: StakeTypeEnum.Staked, amount: stakedAmount },
-    { type: StakeTypeEnum.Claimable, amount: claimableAmount }
+    {
+      type: StakeTypeEnum.Staked,
+      amount: isNaN(stakedAmount) ? 0 : stakedAmount
+    },
+    {
+      type: StakeTypeEnum.Claimable,
+      amount: isNaN(claimableAmount) ? 0 : claimableAmount
+    }
   ]
 
   return (
