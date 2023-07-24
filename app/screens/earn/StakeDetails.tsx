@@ -50,7 +50,11 @@ const StakeDetails = () => {
 
     setOptions({
       // eslint-disable-next-line react/no-unstable-nested-components
-      headerRight: () => <StatusChip status={status} />
+      headerRight: () => (
+        <View style={styles.statusChip}>
+          <StatusChip status={status} />
+        </View>
+      )
     })
   }, [isActive, setOptions])
 
@@ -239,7 +243,8 @@ const styles = StyleSheet.create({
   },
   line: {
     marginVertical: 16
-  }
+  },
+  statusChip: { marginRight: 16 }
 })
 
 export default StakeDetails
