@@ -17,9 +17,8 @@ import { selectAvaxPrice } from 'store/balance'
 const AddDelegatorTxView = ({ tx }: { tx: Avalanche.AddDelegatorTx }) => {
   const { theme } = useApplicationContext()
   const avaxPrice = useSelector(selectAvaxPrice)
-  const { tokenInCurrencyFormatter, currencyFormatter } =
-    useApplicationContext().appHook
-  const { nodeID, start, end, stake } = tx
+  const { tokenInCurrencyFormatter } = useApplicationContext().appHook
+  const { nodeID, start, end, stake, txFee } = tx
   const startDate = format(
     new Date(parseInt(start) * 1000),
     'MMM dd, yyyy, HH:mm a'
@@ -90,14 +89,16 @@ const AddDelegatorTxView = ({ tx }: { tx: Avalanche.AddDelegatorTx }) => {
           <AvaText.Caption color={theme.colorText1}>Fee Amount</AvaText.Caption>
           <View style={styles.feeContainer}>
             <AvaText.Subtitle2 color={theme.neutral50}>
-              0 AVAX
+              {Number(bigIntToString(txFee, 9))} AVAX
             </AvaText.Subtitle2>
           </View>
         </Row>
         <Space y={2} />
         <Row style={styles.currencyContainer}>
           <AvaText.Caption color={theme.neutral400}>
-            {currencyFormatter(0)}
+            {`${tokenInCurrencyFormatter(
+              Number(bigIntToString(txFee, 9)) * avaxPrice
+            )} ${selectedCurrency}`}
           </AvaText.Caption>
         </Row>
       </Card>
