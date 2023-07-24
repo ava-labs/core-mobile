@@ -21,7 +21,7 @@ export class GlacierBalanceService implements BalanceServiceProvider {
     if (!isHealthy) {
       return false
     }
-    const supportedChainsResp = await glacierSdk.evm.supportedChains()
+    const supportedChainsResp = await glacierSdk.evm.supportedChains({})
     const chainInfos = supportedChainsResp.chains
     const chains = chainInfos.map(chain => chain.chainId)
     return chains.some(value => value === network.chainId.toString())

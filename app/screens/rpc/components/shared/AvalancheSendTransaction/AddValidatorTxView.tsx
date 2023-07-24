@@ -19,7 +19,7 @@ const AddValidatorTxView = ({ tx }: { tx: Avalanche.AddValidatorTx }) => {
   const avaxPrice = useSelector(selectAvaxPrice)
   const { tokenInCurrencyFormatter, currencyFormatter } =
     useApplicationContext().appHook
-  const { nodeID, fee, start, end, stake } = tx
+  const { nodeID, delegationFee, start, end, stake } = tx
   const startDate = format(
     new Date(parseInt(start) * 1000),
     'MMM dd, yyyy, HH:mm a'
@@ -70,7 +70,7 @@ const AddValidatorTxView = ({ tx }: { tx: Avalanche.AddValidatorTx }) => {
             Delegation Fee
           </AvaText.Caption>
           <AvaText.Caption color={theme.colorText1}>
-            {fee / 10000} %
+            {delegationFee / 10000} %
           </AvaText.Caption>
         </Row>
         <Separator style={styles.separator} color={theme.neutral800} />
