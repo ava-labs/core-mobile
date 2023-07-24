@@ -50,6 +50,7 @@ export type InputTextProps = {
   keyboardType?: 'numeric'
   // shows popover info if provided
   popOverInfoText?: string | React.ReactElement
+  popOverPosition?: 'left' | 'right' | 'top' | 'bottom'
   autoFocus?: boolean
   selectTextOnFocus?: boolean | undefined
   text: string
@@ -81,6 +82,7 @@ const InputText = forwardRef<TextInput, InputTextProps>(
       editable,
       label,
       popOverInfoText,
+      popOverPosition,
       mode = 'default',
       onMax,
       width,
@@ -176,6 +178,7 @@ const InputText = forwardRef<TextInput, InputTextProps>(
         {label && (
           <Label
             popOverInfoText={popOverInfoText}
+            popOverPosition={popOverPosition}
             label={label}
             backgroundColor={context.theme.colorBg3}
           />
@@ -303,10 +306,12 @@ function ConfirmBtn({ onPress }: { onPress?: () => void }) {
 
 const Label = ({
   popOverInfoText,
+  popOverPosition,
   label,
   backgroundColor
 }: {
   popOverInfoText?: string | React.ReactElement
+  popOverPosition?: 'left' | 'right' | 'top' | 'bottom'
   label?: string
   backgroundColor: string
 }) => {
@@ -315,7 +320,7 @@ const Label = ({
       {popOverInfoText ? (
         <Popable
           content={popOverInfoText}
-          position={'right'}
+          position={popOverPosition ?? 'right'}
           style={{ minWidth: 200 }}
           backgroundColor={backgroundColor}>
           <Row style={{ alignItems: 'center' }}>
