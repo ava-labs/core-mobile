@@ -3,8 +3,10 @@ import { AdvancedSortFilter, NodeValidator, NodeValidators } from 'types/earn'
 import { random } from 'lodash'
 import { FujiParams, MainnetParams } from 'utils/NetworkParams'
 import { MAX_VALIDATOR_WEIGHT_FACTOR } from 'consts/earn'
-import { BigIntNAvax } from 'types/denominations'
+import { BigIntNAvax, BigIntWeiAvax } from 'types/denominations'
 import { bnToBigint } from 'utils/bigNumbers/bnToBigint'
+import NetworkService from 'services/network/NetworkService'
+import { Avalanche } from '@avalabs/wallets-sdk'
 
 /**
  * See https://docs.avax.network/subnets/reference-elastic-subnets-parameters#primary-network-parameters-on-mainnet
@@ -215,4 +217,22 @@ export const getAdvancedSortedValidators = (
         (a, b): number => Number(b.uptime) - Number(a.uptime)
       )
   }
+}
+
+export default async function getDelegationNetworkFee({
+  isDevMode,
+  isReStake
+}: {
+  isDevMode: boolean
+  isReStake?: boolean
+}): Promise<BigIntWeiAvax> {
+  const avaxXPNetwork = NetworkService.getAvalancheNetworkXP(isDevMode)
+  const avaxProvider = NetworkService.getProviderForNetwork(
+    avaxXPNetwork
+  ) as Avalanche.JsonRpcProvider
+
+  const baseFee: BigIntWeiAvax = await avaxProvider.getApiC().getBaseFee()
+  const instantFee = baseFee + (baseFee * BigInt(20)) / BigInt(100) // Increase by 20% for instant speed
+
+  return isReStake ? 0n : instantFee
 }

@@ -28,9 +28,11 @@ import { selectActiveNetwork } from 'store/network'
 import { useGetValidatorByNodeId } from 'hooks/earn/useGetValidatorByNodeId'
 import { NodeValidator } from 'types/earn'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { getMinimumStakeDurationMs } from 'services/earn/utils'
+import getDelegationNetworkFee, {
+  getMinimumStakeDurationMs
+} from 'services/earn/utils'
 import { bigintToBig } from 'utils/bigNumbers/bigintToBig'
-import { BigAvax } from 'types/denominations'
+import { BigAvax, BigIntWeiAvax } from 'types/denominations'
 import Big from 'big.js'
 import { convertToSeconds, MilliSeconds } from 'types/siUnits'
 import { useIssueDelegation } from 'hooks/earn/useIssueDelegation'
@@ -95,6 +97,15 @@ export const Confirmation = () => {
   const delegationFee: BigAvax = useMemo(() => {
     return estimatedTokenReward.mul(Number(validator?.delegationFee)).div(100)
   }, [estimatedTokenReward, validator?.delegationFee])
+
+  const [networkFee, setNetworkFee] = useState(0n as BigIntWeiAvax)
+  const networkFeeInAvax = bigintToBig(networkFee, 18)
+
+  useEffect(() => {
+    getDelegationNetworkFee({ isDevMode: isDeveloperMode }).then(value => {
+      setNetworkFee(value)
+    })
+  }, [isDeveloperMode])
 
   // ticker - update "now" variable every 10s
   useEffect(() => {
@@ -285,7 +296,9 @@ export const Confirmation = () => {
               backgroundColor={theme.colorBg3}>
               <PopableLabel label="Network Fee" />
             </Popable>
-            <AvaText.Heading6>Not implemented {tokenSymbol}</AvaText.Heading6>
+            <AvaText.Heading6>
+              {networkFeeInAvax.toFixed(9)} {tokenSymbol}
+            </AvaText.Heading6>
           </Row>
         </View>
         <Separator />

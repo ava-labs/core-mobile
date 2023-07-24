@@ -1,7 +1,7 @@
 import { AdvancedSortFilter, NodeValidators } from 'types/earn'
 import mockValidators from 'tests/fixtures/pvm/validators.json'
 import { N_AVAX_PER_AVAX } from 'consts/earn'
-import {
+import getDelegationNetworkFee, {
   calculateMaxWeight,
   getAdvancedSortedValidators,
   getFilteredValidators,
@@ -157,5 +157,22 @@ describe('getAdvancedSortedValidators function', () => {
       AdvancedSortFilter.DurationLowToHigh
     )
     expect(sorted[0]?.endTime).toBe('2844249830')
+  })
+})
+
+describe('getDelegationNetworkFee function', () => {
+  it('should return EvmAvax(0) if isReStake flag is on', async () => {
+    const actual = await getDelegationNetworkFee({
+      isDevMode: true,
+      isReStake: true
+    })
+    expect(actual).toEqual(0n)
+  })
+  it('should return between 24 an 34 nAvax', async () => {
+    const actual = await getDelegationNetworkFee({
+      isDevMode: true
+    })
+    expect(actual > 24e9).toBe(true)
+    expect(actual < 34e9).toBe(true)
   })
 })

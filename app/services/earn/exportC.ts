@@ -9,7 +9,8 @@ import { Account } from 'store/account'
 import { AvalancheTransactionRequest } from 'services/wallet/types'
 import { UnsignedTx } from '@avalabs/avalanchejs-v2'
 import NetworkService from 'services/network/NetworkService'
-import { BigIntNAvax, BigIntWeiAvax } from 'types/denominations'
+import { BigIntNAvax } from 'types/denominations'
+import getDelegationNetworkFee from 'services/earn/utils'
 
 export type ExportCParams = {
   cChainBalance: BigIntNAvax
@@ -36,8 +37,7 @@ export async function exportC({
     avaxXPNetwork
   ) as Avalanche.JsonRpcProvider
 
-  const baseFee: BigIntWeiAvax = await avaxProvider.getApiC().getBaseFee()
-  const instantFee = baseFee + (baseFee * BigInt(20)) / BigInt(100) // Increase by 20% for instant speed
+  const networkFee = await getDelegationNetworkFee({ isDevMode })
 
   const pChainFee = calculatePChainFee()
   const amount: BigIntNAvax = requiredAmount + pChainFee
@@ -48,7 +48,7 @@ export async function exportC({
 
   const unsignedTxWithFee = await WalletService.createExportCTx(
     amount,
-    instantFee,
+    networkFee,
     activeAccount.index,
     avaxXPNetwork,
     'P',
