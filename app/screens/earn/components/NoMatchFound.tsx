@@ -17,7 +17,8 @@ export const NoMatchFound = () => {
   const { theme } = useApplicationContext()
   const { navigate, popToTop, goBack } = useNavigation<NavigationProp>()
 
-  const handleStartOver = () => navigate(AppNavigation.StakeSetup.StakingAmount)
+  const handleStartOver = () =>
+    navigate(AppNavigation.StakeSetup.SmartStakeAmount)
 
   const handleCanel = () => {
     popToTop()
