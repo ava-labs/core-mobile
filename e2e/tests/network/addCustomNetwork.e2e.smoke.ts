@@ -19,8 +19,29 @@ describe('Add custom network', () => {
 
   it('should add custom network', async () => {
     await PortfolioPage.tapNetworksDropdown()
+    const startTime = new Date().getTime()
+    await Actions.waitForElement(PortfolioPage.manageNetworks)
+    const endTime = new Date().getTime()
+    await Actions.reportUIPerformance(
+      startTime,
+      endTime,
+      'NetworksDropdownScreen',
+      1,
+      3
+    )
     await PortfolioPage.tapManageNetworks()
+    //Should Check manage Networks element for Favorites screen
     await NetworksManagePage.tapAddNetwork()
+    const startTime2 = new Date().getTime()
+    await Actions.waitForElement(NetworksManagePage.networkRpcUrl)
+    const endTime2 = new Date().getTime()
+    await Actions.reportUIPerformance(
+      startTime2,
+      endTime2,
+      'AddNetworkScreen',
+      1,
+      3
+    )
     await NetworksManagePage.inputNetworkRpcUrl(
       NetworksManageLoc.arbCustomRpcUrl
     )
