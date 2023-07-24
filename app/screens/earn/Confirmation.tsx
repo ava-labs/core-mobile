@@ -28,7 +28,8 @@ import { selectActiveNetwork } from 'store/network'
 import { useGetValidatorByNodeId } from 'hooks/earn/useGetValidatorByNodeId'
 import { NodeValidator } from 'types/earn'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
-import getDelegationNetworkFee, {
+import {
+  getDelegationNetworkFee,
   getMinimumStakeDurationMs
 } from 'services/earn/utils'
 import { bigintToBig } from 'utils/bigNumbers/bigintToBig'

@@ -1,9 +1,10 @@
 import { AdvancedSortFilter, NodeValidators } from 'types/earn'
 import mockValidators from 'tests/fixtures/pvm/validators.json'
 import { N_AVAX_PER_AVAX } from 'consts/earn'
-import getDelegationNetworkFee, {
+import {
   calculateMaxWeight,
   getAdvancedSortedValidators,
+  getDelegationNetworkFee,
   getFilteredValidators,
   getRandomValidator,
   getSimpleSortedValidators
@@ -172,7 +173,7 @@ describe('getDelegationNetworkFee function', () => {
     const actual = await getDelegationNetworkFee({
       isDevMode: true
     })
-    expect(actual > 24e9).toBe(true)
-    expect(actual < 34e9).toBe(true)
+    expect(actual > 1000024e9).toBe(true) //> 0.001000024 AVAX
+    expect(actual < 1000034e9).toBe(true) //< 0.001000034 AVAX
   })
 })

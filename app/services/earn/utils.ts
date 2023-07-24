@@ -219,13 +219,23 @@ export const getAdvancedSortedValidators = (
   }
 }
 
-export default async function getDelegationNetworkFee({
+export async function getDelegationNetworkFee({
   isDevMode,
   isReStake
 }: {
   isDevMode: boolean
   isReStake?: boolean
 }): Promise<BigIntWeiAvax> {
+  return isReStake ? 0n : (await getExportCFee(isDevMode)) + getImportPFee()
+}
+
+export function getImportPFee(): BigIntWeiAvax {
+  return BigInt(1e15) //0.001 AVAX from https://docs.avax.network/quickstart/transaction-fees
+}
+
+export async function getExportCFee(
+  isDevMode: boolean
+): Promise<BigIntWeiAvax> {
   const avaxXPNetwork = NetworkService.getAvalancheNetworkXP(isDevMode)
   const avaxProvider = NetworkService.getProviderForNetwork(
     avaxXPNetwork
@@ -233,6 +243,5 @@ export default async function getDelegationNetworkFee({
 
   const baseFee: BigIntWeiAvax = await avaxProvider.getApiC().getBaseFee()
   const instantFee = baseFee + (baseFee * BigInt(20)) / BigInt(100) // Increase by 20% for instant speed
-
-  return isReStake ? 0n : instantFee
+  return instantFee
 }
