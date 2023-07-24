@@ -21,7 +21,7 @@ describe('Activity Tab', () => {
     await actions.reportUIPerformance(
       startTime,
       endTime,
-      'performanceActivityPageScreen',
+      'ActivityPageScreen',
       1,
       3
     )
@@ -33,7 +33,7 @@ describe('Activity Tab', () => {
     await actions.reportUIPerformance(
       startTime2,
       endTime2,
-      'performanceContractFiltering',
+      'ContractFiltering',
       1,
       3
     )
@@ -56,7 +56,7 @@ describe('Activity Tab', () => {
     await actions.reportUIPerformance(
       startTime,
       endTime,
-      'performanceBridgeFiltering',
+      'BridgeFiltering',
       1,
       3
     )
@@ -79,7 +79,7 @@ describe('Activity Tab', () => {
     await actions.reportUIPerformance(
       startTime,
       endTime,
-      'performanceIncomingFiltering',
+      'IncomingFiltering',
       1,
       3
     )
@@ -98,7 +98,7 @@ describe('Activity Tab', () => {
     await actions.reportUIPerformance(
       startTime,
       endTime,
-      'performanceOutgoingFiltering',
+      'OutgoingFiltering',
       1,
       3
     )

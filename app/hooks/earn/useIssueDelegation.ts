@@ -9,12 +9,15 @@ import { selectActiveAccount } from 'store/account'
 import { selectActiveNetwork } from 'store/network'
 import BigIntConverter from 'types/converters/BigIntConverter'
 import TypeConverter from 'types/converters/TypeConverter'
+import { selectSelectedCurrency } from 'store/settings/currency'
+import { QueryClient } from '@tanstack/query-core'
 
 export const useIssueDelegation = (onSuccess: (txId: string) => void) => {
   const queryClient = useQueryClient()
   const activeNetwork = useSelector(selectActiveNetwork)
   const activeAccount = useSelector(selectActiveAccount)
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
+  const selectedCurrency = useSelector(selectSelectedCurrency)
 
   const cChainBalanceWei = useSelector(
     selectNativeTokenBalanceForNetworkAndAccount(
@@ -30,6 +33,7 @@ export const useIssueDelegation = (onSuccess: (txId: string) => void) => {
   )
 
   const pAddress = activeAccount?.addressPVM ?? ''
+  const cAddress = activeAccount?.address ?? ''
 
   const issueDelegationMutation = useMutation({
     mutationFn: (data: {
@@ -63,14 +67,13 @@ export const useIssueDelegation = (onSuccess: (txId: string) => void) => {
       })
     },
     onSuccess: txId => {
-      // refetch stakes for the current p address and developer mode
-      // adding a 2 second delay since glacier will have some delay
-      setTimeout(() => {
-        queryClient.invalidateQueries({
-          queryKey: ['stakes', isDeveloperMode, pAddress]
-        })
-      }, 2000)
-
+      refetchQueries({
+        isDeveloperMode,
+        queryClient,
+        pAddress,
+        cAddress,
+        selectedCurrency
+      })
       // handle UI success state
       onSuccess(txId)
     }
@@ -79,4 +82,40 @@ export const useIssueDelegation = (onSuccess: (txId: string) => void) => {
   return {
     issueDelegationMutation
   }
+}
+
+/**
+ * refetch stakes as well as c + p balances with 2 second delay
+ * since glacier will have some delay
+ * @param queryClient
+ * @param isDeveloperMode
+ * @param pAddress
+ * @param cAddress
+ * @param selectedCurrency
+ */
+
+export const refetchQueries = ({
+  queryClient,
+  isDeveloperMode,
+  pAddress,
+  cAddress,
+  selectedCurrency
+}: {
+  queryClient: QueryClient
+  isDeveloperMode: boolean
+  pAddress: string
+  cAddress: string
+  selectedCurrency: string
+}) => {
+  setTimeout(() => {
+    queryClient.invalidateQueries({
+      queryKey: ['stakes', isDeveloperMode, pAddress]
+    })
+    queryClient.invalidateQueries({
+      queryKey: ['pChainBalance', isDeveloperMode, pAddress]
+    })
+    queryClient.invalidateQueries({
+      queryKey: ['cChainBalance', isDeveloperMode, cAddress, selectedCurrency]
+    })
+  }, 2000)
 }

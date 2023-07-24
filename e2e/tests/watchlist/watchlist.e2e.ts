@@ -32,7 +32,7 @@ describe('Verify Watchlist', () => {
     await Actions.reportUIPerformance(
       startTime,
       endTime,
-      'performanceWatchlistScreen',
+      'WatchlistScreen',
       1,
       3
     )
@@ -47,7 +47,7 @@ describe('Verify Watchlist', () => {
     await Actions.reportUIPerformance(
       startTime2,
       endTime2,
-      'performanceTokenDetailScreen',
+      'TokenDetailScreen',
       1,
       3
     )

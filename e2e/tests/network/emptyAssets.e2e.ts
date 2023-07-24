@@ -43,6 +43,16 @@ describe('Empty Assets', () => {
     await NetworksManagePage.tapPolygonCustomNetwork()
 
     await PortfolioPage.tapPolygonNetwork()
+    const startTime = new Date().getTime()
+    await actions.waitForElement(PortfolioPage.noAssetsHeader)
+    const endTime = new Date().getTime()
+    await actions.reportUIPerformance(
+      startTime,
+      endTime,
+      'EmptyAssetsScreen',
+      1,
+      3
+    )
     await Assert.isVisible(PortfolioPage.noAssetsHeader)
     await Assert.isVisible(PortfolioPage.addAssetsMessage)
     await Assert.isVisible(PortfolioPage.addAssetsButton)
