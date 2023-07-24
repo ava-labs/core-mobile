@@ -7,9 +7,14 @@ import { StakeStatus } from 'types/earn'
 import { zeroPad } from 'utils/string/zeroPad'
 import { StakeCard } from './StakeCard'
 import { NoActiveStakes } from './ZeroState'
+import { StakeListLoader } from './StakeListLoader'
 
 export const ActiveStakes = () => {
-  const { stakes, refetch, isRefetching } = useActiveStakes()
+  const { stakes, refetch, isRefetching, isLoading } = useActiveStakes()
+
+  if (isLoading) {
+    return <StakeListLoader />
+  }
 
   const keyExtractor = (item: PChainTransaction) => item.txHash
 

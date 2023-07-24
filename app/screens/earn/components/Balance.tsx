@@ -1,30 +1,88 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { StyleSheet, View } from 'react-native'
 import AvaText from 'components/AvaText'
+import { useSelector } from 'react-redux'
+import { selectNetwork } from 'store/network'
+import Big from 'big.js'
+import useStakingParams from 'hooks/earn/useStakingParams'
+import { balanceToDisplayValue } from '@avalabs/utils-sdk'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { ChainId } from '@avalabs/chains-sdk'
+import { useGetPChainBalance } from 'hooks/earn/useGetPChainBalance'
+import { StakeTypeEnum } from 'services/earn/types'
+import { round } from 'lodash'
+import { BN } from 'bn.js'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaButton from 'components/AvaButton'
 import AppNavigation from 'navigation/AppNavigation'
 import { EarnScreenProps } from 'navigation/types'
 import { useNavigation } from '@react-navigation/native'
-import { StakingBalanceType } from 'services/earn/types'
 import { Space } from 'components/Space'
+import { selectIsLoadingBalances } from 'store/balance'
 import { getStakePrimaryColor } from '../utils'
 import { CircularProgress } from './CircularProgress'
+import { BalanceLoader } from './BalanceLoader'
 
-interface BalanceProps {
-  stakingData: StakingBalanceType[]
-}
+type ScreenProps = EarnScreenProps<typeof AppNavigation.Earn.StakeDashboard>
 
-type EarnScreenNavProps = EarnScreenProps<
-  typeof AppNavigation.Earn.StakeDashboard
->
-
-export const Balance: React.FC<BalanceProps> = ({ stakingData }) => {
+export const Balance = () => {
   const { theme } = useApplicationContext()
-  const { navigate } = useNavigation<EarnScreenNavProps['navigation']>()
+  const { navigate } = useNavigation<ScreenProps['navigation']>()
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
+  const { isLoading: isLoadingPBalances, data, error } = useGetPChainBalance()
+  const { nativeTokenBalance } = useStakingParams()
+  const isLoadingCBalance = useSelector(selectIsLoadingBalances)
+
+  const chainId = isDeveloperMode
+    ? ChainId.AVALANCHE_TESTNET_ID
+    : ChainId.AVALANCHE_MAINNET_ID
+  const avaxNetwork = useSelector(selectNetwork(chainId))
+
+  const nativeBalance = useMemo(() => {
+    if (avaxNetwork && nativeTokenBalance) {
+      return balanceToDisplayValue(
+        new BN(nativeTokenBalance.toString()),
+        avaxNetwork.networkToken.decimals
+      )
+    } else {
+      return 0
+    }
+  }, [avaxNetwork, nativeTokenBalance])
+
+  const shouldShowLoader = isLoadingCBalance || isLoadingPBalances
+
+  if (shouldShowLoader) {
+    return <BalanceLoader />
+  }
+
+  if (error || !data) return null
+
+  const availableAmount = round(Number(nativeBalance), 9)
+
+  const claimableAmount = round(
+    Big(data.unlockedUnstaked[0]?.amount || 0)
+      .div(Math.pow(10, 9))
+      .toNumber(),
+    9
+  )
+  const stakedAmount = round(
+    Big(data.unlockedStaked[0]?.amount || 0)
+      .div(Math.pow(10, 9))
+      .toNumber(),
+    9
+  )
+
+  const stakingData = [
+    {
+      type: StakeTypeEnum.Available,
+      amount: availableAmount
+    },
+    { type: StakeTypeEnum.Staked, amount: stakedAmount },
+    { type: StakeTypeEnum.Claimable, amount: claimableAmount }
+  ]
 
   const stakingAmount = stakingData.find(
-    data => data.type === 'Claimable'
+    item => item.type === 'Claimable'
   )?.amount
 
   const goToGetStarted = () => {
@@ -113,6 +171,11 @@ export const Balance: React.FC<BalanceProps> = ({ stakingData }) => {
 }
 
 const styles = StyleSheet.create({
+  spinnerContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
   stakeDetailsContainer: {
     marginVertical: 24
   },
