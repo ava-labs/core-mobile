@@ -40,7 +40,7 @@ const AdvancedStaking = () => {
   const {
     control,
     handleSubmit,
-    formState: { errors }
+    formState: { errors, dirtyFields }
   } = useForm({
     resolver: zodResolver(schema),
     mode: 'onChange'
@@ -54,7 +54,10 @@ const AdvancedStaking = () => {
     })
   }
 
-  const isDisabled = !isEmpty(errors)
+  const isDisabled =
+    !isEmpty(errors) ||
+    dirtyFields.minUpTime === undefined ||
+    dirtyFields.maxFee === undefined
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
