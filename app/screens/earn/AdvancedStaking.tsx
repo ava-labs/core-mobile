@@ -46,9 +46,13 @@ const AdvancedStaking = () => {
     control,
     handleSubmit,
     formState: { errors, dirtyFields }
-  } = useForm({
+  } = useForm<TFormProps>({
     resolver: zodResolver(schema),
-    mode: 'onChange'
+    mode: 'onChange',
+    defaultValues: {
+      minUpTime: '',
+      maxFee: ''
+    }
   })
   const onSubmit = (data: TFormProps) => {
     navigate(AppNavigation.StakeSetup.SelectNode, {
