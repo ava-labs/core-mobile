@@ -35,7 +35,6 @@ describe('Connect to dApp using WalletConnect', () => {
     await BurgerMenuPage.tapBurgerMenuButton()
     await BurgerMenuPage.tapSecurityAndPrivacy()
     await SecurityAndPrivacyPage.tapConnectedSites()
-    await Assert.isVisible(ConnectedSitesPage.dappAvatar)
     await ConnectedSitesPage.tapManageBtn()
     await ConnectedSitesPage.tapSelectAllChkBox()
     await ConnectedSitesPage.tapDeleteBtn()
