@@ -26,7 +26,7 @@ export const PopableContentWithCaption = ({
       position="right"
       style={{ width: contentWidth }}
       strictPosition={true}
-      backgroundColor={theme.colorBg3}>
+      backgroundColor={theme.neutral100}>
       <Row style={{ alignItems: 'center' }}>
         <AvaText.Caption textStyle={{ color: theme.neutral400 }}>
           {label}

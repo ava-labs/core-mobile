@@ -184,6 +184,7 @@ export type WalletScreenStackParams = {
     .AvalancheSendTransactionV2]: AvalancheSendTransactionV2Params
   [AppNavigation.Modal
     .AvalancheSignTransactionV2]: AvalancheSignTransactionV2Params
+  [AppNavigation.Modal.StakeDisclaimer]: undefined
 }
 
 const WalletScreenS = createStackNavigator<WalletScreenStackParams>()

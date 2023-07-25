@@ -1,7 +1,7 @@
 import React from 'react'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Linking, StyleSheet, View } from 'react-native'
-import { DOCS_HOW_TO_DELEGATE } from 'resources/Constants'
+import { DOCS_STAKING } from 'resources/Constants'
 import Logger from 'utils/Logger'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
@@ -11,8 +11,8 @@ export const Searching = () => {
   const { theme } = useApplicationContext()
 
   const goToHowToDelegateDoc = () => {
-    Linking.openURL(DOCS_HOW_TO_DELEGATE).catch(e => {
-      Logger.error(`failed to open ${DOCS_HOW_TO_DELEGATE}`, e)
+    Linking.openURL(DOCS_STAKING).catch(e => {
+      Logger.error(`failed to open ${DOCS_STAKING}`, e)
     })
   }
 
