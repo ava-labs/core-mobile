@@ -1,5 +1,5 @@
-import { useQuery } from '@tanstack/react-query'
 import { refetchIntervals } from 'consts/earn'
+import { useRefreshableQuery } from 'hooks/query/useRefreshableQuery'
 import { useSelector } from 'react-redux'
 import EarnService from 'services/earn/EarnService'
 import { selectActiveAccount } from 'store/account'
@@ -10,7 +10,7 @@ export const useStakes = () => {
   const account = useSelector(selectActiveAccount)
   const pAddress = account?.addressPVM ?? ''
 
-  return useQuery({
+  return useRefreshableQuery({
     refetchInterval: refetchIntervals.stakes,
     enabled: Boolean(pAddress),
     queryKey: ['stakes', isDeveloperMode, pAddress],
