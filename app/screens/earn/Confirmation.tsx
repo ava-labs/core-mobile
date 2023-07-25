@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { StyleSheet, View } from 'react-native'
+import { Linking, StyleSheet, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Space } from 'components/Space'
 import AvaText from 'components/AvaText'
@@ -33,6 +33,9 @@ import TransactionToast, {
   TransactionToastType
 } from 'components/toast/TransactionToast'
 import { Avax } from 'types/Avax'
+import Logger from 'utils/Logger'
+import { DOCS_STAKING } from 'resources/Constants'
+import QuestionSVG from 'components/svg/QuestionSVG'
 import { ConfirmScreen } from './components/ConfirmScreen'
 
 type ScreenProps = StakeSetupScreenProps<
@@ -83,13 +86,17 @@ export const Confirmation = () => {
     ),
     delegationFee: Number(validator?.delegationFee)
   })
-  const estimatedTokenReward = data?.estimatedTokenReward ?? Avax.fromBase(0)
   const estimatedRewardInCurrency: string =
     data?.estimatedRewardInCurrency ?? '0'
 
   const delegationFee = useMemo(() => {
-    return estimatedTokenReward.mul(validator?.delegationFee || 0).div(100)
-  }, [estimatedTokenReward, validator?.delegationFee])
+    if (
+      data?.estimatedTokenReward === undefined &&
+      validator?.delegationFee === undefined
+    )
+      return undefined
+    return data.estimatedTokenReward.mul(validator.delegationFee).div(100)
+  }, [data?.estimatedTokenReward, validator?.delegationFee])
 
   // ticker - update "now" variable every 10s
   useEffect(() => {
@@ -129,6 +136,91 @@ export const Confirmation = () => {
     getParent()?.goBack()
   }
 
+  const handleReadMore = () => {
+    Linking.openURL(DOCS_STAKING).catch(e => {
+      Logger.error(DOCS_STAKING, e)
+    })
+  }
+
+  const renderPopoverInfoText = (message: string) => (
+    <View
+      style={{
+        marginHorizontal: 8,
+        marginVertical: 4,
+        backgroundColor: theme.neutral100
+      }}>
+      <AvaText.Caption textStyle={{ color: theme.neutral900 }}>
+        {message}
+      </AvaText.Caption>
+    </View>
+  )
+
+  const renderEstimatedRewardPopoverInfoText = () => (
+    <View
+      style={{
+        marginHorizontal: 8,
+        marginVertical: 4,
+        backgroundColor: theme.neutral100
+      }}>
+      <AvaText.Caption textStyle={{ color: theme.neutral900 }}>
+        Estimates are provided for informational purposes only, without any
+        representation, warranty or guarantee, and do not represent any
+        assurance that you will achieve the same results.
+      </AvaText.Caption>
+      <Space y={16} />
+      <AvaText.Caption
+        textStyle={{ color: theme.blueDark, fontWeight: '600' }}
+        onPress={handleReadMore}>
+        Read More
+      </AvaText.Caption>
+    </View>
+  )
+
+  const renderUnableToEstimate = () => (
+    <Popable
+      content={PopableContent({
+        message: 'Unable to estimate due to network conditions'
+      })}
+      position="top"
+      strictPosition={true}
+      style={{ minWidth: 218 }}
+      backgroundColor={theme.neutral100}>
+      <PopableLabel
+        label="Unable to Estimate"
+        textStyle={{ color: theme.white }}
+        icon={<QuestionSVG color={theme.neutral50} />}
+      />
+    </Popable>
+  )
+
+  const renderEstimatedReward = () => {
+    if (data?.estimatedTokenReward) {
+      return (
+        <View style={{ flexDirection: 'column' }}>
+          <AvaText.Heading2 textStyle={{ color: theme.colorBgGreen }}>
+            {data.estimatedTokenReward + ' ' + tokenSymbol}
+          </AvaText.Heading2>
+          <AvaText.Body3
+            textStyle={{ alignSelf: 'flex-end', color: theme.colorText2 }}>
+            {`${tokenInCurrencyFormatter(
+              estimatedRewardInCurrency
+            )} ${selectedCurrency}`}
+          </AvaText.Body3>
+        </View>
+      )
+    }
+    return renderUnableToEstimate()
+  }
+
+  const renderStakingFee = () => {
+    if (delegationFee) {
+      return (
+        <AvaText.Heading6>{delegationFee + ' ' + tokenSymbol}</AvaText.Heading6>
+      )
+    }
+    return renderUnableToEstimate()
+  }
+
   if (!validator) return null
 
   // TODO: on error, show error message as toast
@@ -150,7 +242,7 @@ export const Confirmation = () => {
         </AvaText.Body2>
         <View style={{ alignItems: 'flex-end' }}>
           <AvaText.Heading1>
-            {stakingAmount.toString() + ' ' + tokenSymbol}
+            {stakingAmountInAvax + ' ' + tokenSymbol}
           </AvaText.Heading1>
           <AvaText.Heading3 textStyle={{ color: theme.colorText2 }}>
             {`${tokenInCurrencyFormatter(
@@ -164,17 +256,15 @@ export const Confirmation = () => {
       <Separator />
       <View style={styles.verticalPadding}>
         <Row style={{ justifyContent: 'space-between' }}>
-          <AvaText.Body2>Estimated Reward</AvaText.Body2>
-          <AvaText.Heading2 textStyle={{ color: theme.colorBgGreen }}>
-            {estimatedTokenReward.toDisplay() + ' ' + tokenSymbol}
-          </AvaText.Heading2>
+          <Popable
+            content={renderEstimatedRewardPopoverInfoText()}
+            position="top"
+            style={{ minWidth: 150 }}
+            backgroundColor={theme.neutral100}>
+            <PopableLabel label="Estimated Reward" />
+          </Popable>
+          {renderEstimatedReward()}
         </Row>
-        <AvaText.Body3
-          textStyle={{ alignSelf: 'flex-end', color: theme.colorText2 }}>
-          {`${tokenInCurrencyFormatter(
-            estimatedRewardInCurrency
-          )} ${selectedCurrency}`}
-        </AvaText.Body3>
       </View>
       <Separator />
       <View
@@ -184,15 +274,13 @@ export const Confirmation = () => {
           alignItems: 'flex-start'
         }}>
         <Popable
-          content={
-            <PopableContent
-              message={'AVAX will be locked and unclaimable until this time'}
-            />
-          }
+          content={renderPopoverInfoText(
+            'AVAX will be locked and unusable until this time'
+          )}
           position="right"
           strictPosition={true}
           style={{ minWidth: 180 }}
-          backgroundColor={theme.colorBg3}>
+          backgroundColor={theme.neutral100}>
           <PopableLabel label="Time to Unlock" />
         </Popable>
         <Row
@@ -246,13 +334,13 @@ export const Confirmation = () => {
             justifyContent: 'space-between'
           }}>
           <Popable
-            content={
-              <PopableContent message={'Fee paid to execute the transaction'} />
-            }
+            content={renderPopoverInfoText(
+              'Fee paid to the network to execute the transaction'
+            )}
             position="right"
-            style={{ minWidth: 150 }}
+            style={{ minWidth: 200 }}
             strictPosition={true}
-            backgroundColor={theme.colorBg3}>
+            backgroundColor={theme.neutral100}>
             <PopableLabel label="Network Fee" />
           </Popable>
           <AvaText.Heading6>Not implemented {tokenSymbol}</AvaText.Heading6>
@@ -273,12 +361,10 @@ export const Confirmation = () => {
             position="right"
             strictPosition={true}
             style={{ minWidth: 150 }}
-            backgroundColor={theme.colorBg3}>
+            backgroundColor={theme.neutral100}>
             <PopableLabel label="Staking Fee" />
           </Popable>
-          <AvaText.Heading6>
-            {delegationFee.toDisplay() + ' ' + tokenSymbol}
-          </AvaText.Heading6>
+          {renderStakingFee()}
         </Row>
       </View>
     </ConfirmScreen>
