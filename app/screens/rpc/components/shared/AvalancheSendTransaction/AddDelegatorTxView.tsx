@@ -13,6 +13,7 @@ import { selectSelectedCurrency } from 'store/settings/currency'
 import { format } from 'date-fns'
 import { Avalanche } from '@avalabs/wallets-sdk'
 import { selectAvaxPrice } from 'store/balance'
+import TxFee from './components/TxFee'
 
 const AddDelegatorTxView = ({ tx }: { tx: Avalanche.AddDelegatorTx }) => {
   const { theme } = useApplicationContext()
@@ -80,28 +81,7 @@ const AddDelegatorTxView = ({ tx }: { tx: Avalanche.AddDelegatorTx }) => {
         </Row>
       </Card>
       <Space y={24} />
-      <AvaText.Body2 color={theme.colorText1} textStyle={{ lineHeight: 20 }}>
-        Network Fee
-      </AvaText.Body2>
-      <Space y={8} />
-      <Card style={styles.cardContainer}>
-        <Row style={styles.rowCenterContainer}>
-          <AvaText.Caption color={theme.colorText1}>Fee Amount</AvaText.Caption>
-          <View style={styles.feeContainer}>
-            <AvaText.Subtitle2 color={theme.neutral50}>
-              {Number(bigIntToString(txFee, 9))} AVAX
-            </AvaText.Subtitle2>
-          </View>
-        </Row>
-        <Space y={2} />
-        <Row style={styles.currencyContainer}>
-          <AvaText.Caption color={theme.neutral400}>
-            {`${tokenInCurrencyFormatter(
-              Number(bigIntToString(txFee, 9)) * avaxPrice
-            )} ${selectedCurrency}`}
-          </AvaText.Caption>
-        </Row>
-      </Card>
+      <TxFee txFee={txFee} />
     </View>
   )
 }
@@ -116,12 +96,6 @@ const styles = StyleSheet.create({
   },
   separator: {
     marginVertical: 16
-  },
-  innerRow: {
-    alignItems: 'center'
-  },
-  feeContainer: {
-    alignItems: 'flex-end'
   },
   currencyContainer: {
     justifyContent: 'flex-end'
