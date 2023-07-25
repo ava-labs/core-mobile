@@ -92,7 +92,7 @@ class SendPage {
     )
     await PlusMenuPage.tapSendButton()
     const startTime2 = new Date().getTime()
-    await Actions.waitForElement(this.amountField)
+    await Actions.waitForElement(this.addressBook)
     const endTime2 = new Date().getTime()
     await Actions.reportUIPerformance(
       startTime2,
