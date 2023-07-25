@@ -87,9 +87,8 @@ enum EarnScreens {
 }
 
 enum StakeSetupScreens {
-  NotEnoughAvax = 'EarnScreens.NotEnoughAvax',
   GetStarted = 'EarnScreens.GetStarted',
-  StakingAmount = 'EarnScreens.StakingAmount',
+  SmartStakeAmount = 'EarnScreens.SmartStakeAmount',
   StakingDuration = 'EarnScreens.StakingDuration',
   AdvancedStaking = 'EarnScreens.AdvancedStaking',
   SelectNode = 'EarnScreens.SelectNode',

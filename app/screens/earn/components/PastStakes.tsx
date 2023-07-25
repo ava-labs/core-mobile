@@ -7,9 +7,14 @@ import { zeroPad } from 'utils/string/zeroPad'
 import { usePastStakes } from 'hooks/earn/usePastStakes'
 import { StakeCard } from './StakeCard'
 import { NoPastStakes } from './ZeroState'
+import { StakeListLoader } from './StakeListLoader'
 
 export const PastStakes = () => {
-  const { stakes, refetch, isRefetching } = usePastStakes()
+  const { stakes, refetch, isRefetching, isLoading } = usePastStakes()
+
+  if (isLoading) {
+    return <StakeListLoader />
+  }
 
   const keyExtractor = (item: PChainTransaction) => item.txHash
 

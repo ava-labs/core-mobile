@@ -47,3 +47,8 @@ export const advancedFilterDropDownItems: TAdvancedFilterDropDownItems[] = [
 
 export const estimatesTooltipText =
   'Estimates are provided for informational purposes only, without any representation, warranty or guarantee, and do not represent any assurance that you will achieve the same results.'
+
+export const refetchIntervals = {
+  balance: 10000, // 10 seconds
+  stakes: 30000 // 30 seconds
+}

@@ -171,7 +171,9 @@
     "web3": "1.7.1",
     "xss": "1.0.14",
     "zod": "3.20.2",
-    "@shopify/flash-list": "1.4.3"
+    "@shopify/flash-list": "1.4.3",
+    "react-hook-form": "7.45.1",
+    "@hookform/resolvers": "2.6.0"
   },
   "resolutions": {
     "minimist": "1.2.6",

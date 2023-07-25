@@ -3,7 +3,6 @@ import { HeaderBackButton } from '@react-navigation/elements'
 import AppNavigation from 'navigation/AppNavigation'
 import { createStackNavigator } from '@react-navigation/stack'
 import GetStarted from 'screens/earn/GetStarted'
-import StakingAmount from 'screens/earn/StakingAmount'
 import { StakeSetupScreenProps } from 'navigation/types'
 import { useNavigation } from '@react-navigation/native'
 import StakingDuration from 'screens/earn/DurationScreen'
@@ -12,14 +11,12 @@ import AdvancedStaking from 'screens/earn/AdvancedStaking'
 import SelectNode from 'screens/earn/SelectNode'
 import { Confirmation } from 'screens/earn/Confirmation'
 import { CancelModal } from 'screens/earn/CancelModal'
-import NotEnoughAvax from 'screens/earn/NotEnoughAvax'
-import useStakingParams from 'hooks/earn/useStakingParams'
+import SmartStakeAmount from 'screens/earn/SmartStakeAmount'
 import { BigIntNAvax } from 'types/denominations'
 
 export type StakeSetupStackParamList = {
-  [AppNavigation.StakeSetup.NotEnoughAvax]: undefined
   [AppNavigation.StakeSetup.GetStarted]: undefined
-  [AppNavigation.StakeSetup.StakingAmount]: undefined
+  [AppNavigation.StakeSetup.SmartStakeAmount]: undefined
   [AppNavigation.StakeSetup.StakingDuration]: { stakingAmount: BigIntNAvax }
   [AppNavigation.StakeSetup.AdvancedStaking]: {
     stakingEndTime: Date
@@ -60,8 +57,8 @@ function StakeSetupScreenStack() {
         component={GetStartedScreen}
       />
       <Stack.Screen
-        name={AppNavigation.StakeSetup.NotEnoughAvax}
-        component={NotEnoughAvaxScreen}
+        name={AppNavigation.StakeSetup.SmartStakeAmount}
+        component={SmartStakeAmount}
       />
       <Stack.Screen
         name={AppNavigation.StakeSetup.AdvancedStaking}
@@ -70,10 +67,6 @@ function StakeSetupScreenStack() {
       <Stack.Screen
         name={AppNavigation.StakeSetup.SelectNode}
         component={SelectNode}
-      />
-      <Stack.Screen
-        name={AppNavigation.StakeSetup.StakingAmount}
-        component={StakingAmount}
       />
       <Stack.Screen
         name={AppNavigation.StakeSetup.StakingDuration}
@@ -105,48 +98,12 @@ type GetStartedScreenProps = StakeSetupScreenProps<
 
 const GetStartedScreen = () => {
   const { navigate } = useNavigation<GetStartedScreenProps['navigation']>()
-  const { nativeTokenBalance, minStakeAmount } = useStakingParams()
 
-  const navToStakingAmount = () => {
-    const notEnoughAvax =
-      nativeTokenBalance && nativeTokenBalance < minStakeAmount
-
-    if (notEnoughAvax) {
-      navigate(AppNavigation.StakeSetup.NotEnoughAvax)
-    } else {
-      navigate(AppNavigation.StakeSetup.StakingAmount)
-    }
+  const navToSmartStakeAmount = () => {
+    navigate(AppNavigation.StakeSetup.SmartStakeAmount)
   }
-  return <GetStarted onNext={navToStakingAmount} />
-}
 
-type NotEnoughAvaxScreenProps = StakeSetupScreenProps<
-  typeof AppNavigation.StakeSetup.NotEnoughAvax
->
-
-const NotEnoughAvaxScreen = () => {
-  const { navigate, getParent } =
-    useNavigation<NotEnoughAvaxScreenProps['navigation']>()
-
-  const navToBuy = () => {
-    getParent()?.goBack()
-    navigate(AppNavigation.Wallet.Buy)
-  }
-  const navToReceive = () => {
-    getParent()?.goBack()
-    navigate(AppNavigation.Wallet.ReceiveTokens)
-  }
-  const navToSwap = () => {
-    getParent()?.goBack()
-    navigate(AppNavigation.Wallet.Swap)
-  }
-  return (
-    <NotEnoughAvax
-      onBuyAvax={navToBuy}
-      onReceive={navToReceive}
-      onSwap={navToSwap}
-    />
-  )
+  return <GetStarted onNext={navToSmartStakeAmount} />
 }
 
 type ConfirmationNavigationProp = StakeSetupScreenProps<
@@ -177,7 +134,7 @@ const ConfirmationBackButton = () => {
           stakingAmount
         })
       }
-      return navigate(AppNavigation.StakeSetup.StakingAmount)
+      return navigate(AppNavigation.StakeSetup.SmartStakeAmount)
     }
     goBack()
   }

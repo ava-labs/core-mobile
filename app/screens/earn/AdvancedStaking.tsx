@@ -1,16 +1,36 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { ScrollView, StyleSheet, View } from 'react-native'
 import AvaText from 'components/AvaText'
 import AvaButton from 'components/AvaButton'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import InputText from 'components/InputText'
 import { Popable } from 'react-native-popable'
 import { PopableLabel } from 'components/PopableLabel'
 import { PopableContent } from 'components/PopableContent'
 import { StakeSetupScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation, useRoute } from '@react-navigation/native'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useForm } from 'react-hook-form'
+import { z } from 'zod'
+import { FormInputText } from 'components/form/FormInputText'
+import { isEmpty } from 'lodash'
 import { Opacity50 } from '../../resources/Constants'
+
+type TFormProps = {
+  minUpTime: string
+  maxFee: string
+}
+
+const schema = z.object({
+  minUpTime: z
+    .string()
+    .transform(Number)
+    .pipe(z.number().positive().int().gte(1).lte(99)),
+  maxFee: z
+    .string()
+    .transform(Number)
+    .pipe(z.number().positive().int().gte(2).lte(20))
+})
 
 type ScreenProps = StakeSetupScreenProps<
   typeof AppNavigation.StakeSetup.AdvancedStaking
@@ -21,12 +41,32 @@ const AdvancedStaking = () => {
   const { navigate } = useNavigation<ScreenProps['navigation']>()
   const { stakingAmount, stakingEndTime } =
     useRoute<ScreenProps['route']>().params
-  const [minUpTime, setMinUpTime] = useState<string | undefined>(undefined)
-  const [maxFee, setMaxFee] = useState<string | undefined>(undefined)
-  const isMaxFeeValid = !!maxFee && Number(maxFee) >= 2 && Number(maxFee) <= 20
-  const isMinUptimeValid =
-    !!minUpTime && Number(minUpTime) >= 1 && Number(minUpTime) <= 99
-  const isNextDisabled = !isMaxFeeValid || !isMinUptimeValid
+
+  const {
+    control,
+    handleSubmit,
+    formState: { errors, dirtyFields }
+  } = useForm<TFormProps>({
+    resolver: zodResolver(schema),
+    mode: 'onChange',
+    defaultValues: {
+      minUpTime: '',
+      maxFee: ''
+    }
+  })
+  const onSubmit = (data: TFormProps) => {
+    navigate(AppNavigation.StakeSetup.SelectNode, {
+      minUpTime: Number(data.minUpTime),
+      maxFee: Number(data.maxFee),
+      stakingAmount,
+      stakingEndTime
+    })
+  }
+
+  const isDisabled =
+    !isEmpty(errors) ||
+    dirtyFields.minUpTime === undefined ||
+    dirtyFields.maxFee === undefined
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -41,96 +81,90 @@ const AdvancedStaking = () => {
           Choose the parameters for your desired staking node.
         </AvaText.Subtitle1>
         <View>
-          <View style={{ marginBottom: 24, alignItems: 'flex-start' }}>
-            <Popable
-              content={
-                <PopableContent
-                  backgroundColor={theme.neutral100}
-                  textStyle={{ color: theme.neutral900 }}
-                  message="This is a validator’s uptime, the minimum threshold for rewards is 80%"
-                />
-              }
-              position={'right'}
-              strictPosition={true}
-              style={{ minWidth: 200 }}
-              backgroundColor={theme.neutral100}>
-              <PopableLabel
+          <View style={{ marginBottom: 24 }}>
+            <View style={{ alignSelf: 'flex-start' }}>
+              <PopableComponent
                 label="Minimum Uptime"
-                iconColor={theme.neutral50}
-                textStyle={{
-                  color: theme.neutral50,
-                  fontWeight: '600',
-                  fontSize: 14
-                }}
+                message="This is a validator’s uptime, the minimum threshold for rewards is 80%"
               />
-            </Popable>
-            <InputText
-              placeholder={'Enter minimum uptime'}
-              text={minUpTime ?? ''}
+            </View>
+            <FormInputText
+              control={control}
+              name={'minUpTime'}
+              placeholder="Enter minimum uptime"
               backgroundColor={theme.neutral700 + Opacity50}
-              onChangeText={text => setMinUpTime(text)}
               keyboardType="numeric"
               style={styles.inputContainer}
             />
             <AvaText.Caption
-              color={isMinUptimeValid ? theme.neutral300 : theme.colorError}>
+              color={errors.minUpTime ? theme.colorError : theme.neutral300}>
               Enter a value between 1-99%
             </AvaText.Caption>
           </View>
-          <View style={{ alignItems: 'flex-start' }}>
-            <Popable
-              content={
-                <PopableContent
-                  backgroundColor={theme.neutral100}
-                  textStyle={{ color: theme.neutral900 }}
-                  message="This is a range set by the protocol."
-                />
-              }
-              position={'right'}
-              strictPosition={true}
-              style={{ minWidth: 200 }}
-              backgroundColor={theme.neutral100}>
-              <PopableLabel
+          <View>
+            <View style={{ alignSelf: 'flex-start' }}>
+              <PopableComponent
                 label="Maximum Fee"
-                iconColor={theme.neutral50}
-                textStyle={{
-                  color: theme.neutral50,
-                  fontWeight: '600',
-                  fontSize: 14
-                }}
+                message="This is a range set by the protocol."
               />
-            </Popable>
-            <InputText
-              placeholder={'Enter maximum fee'}
-              text={maxFee ?? ''}
+            </View>
+            <FormInputText
+              control={control}
+              name={'maxFee'}
+              placeholder="Enter maximum fee"
               backgroundColor={theme.neutral700 + Opacity50}
-              onChangeText={text => setMaxFee(text)}
               keyboardType="numeric"
               style={styles.inputContainer}
             />
             <AvaText.Caption
-              color={isMaxFeeValid ? theme.neutral300 : theme.colorError}>
+              color={errors.maxFee ? theme.colorError : theme.neutral300}>
               Enter a value between 2-20%
             </AvaText.Caption>
           </View>
         </View>
       </View>
-
       <View style={{ marginBottom: 40 }}>
         <AvaButton.PrimaryLarge
-          disabled={isNextDisabled}
-          onPress={() =>
-            navigate(AppNavigation.StakeSetup.SelectNode, {
-              minUpTime: Number(minUpTime),
-              maxFee: Number(maxFee),
-              stakingAmount,
-              stakingEndTime
-            })
-          }>
+          disabled={isDisabled}
+          onPress={handleSubmit(onSubmit)}>
           Next
         </AvaButton.PrimaryLarge>
       </View>
     </ScrollView>
+  )
+}
+
+const PopableComponent = ({
+  label,
+  message
+}: {
+  label: string
+  message: string
+}) => {
+  const { theme } = useApplicationContext()
+
+  return (
+    <Popable
+      content={
+        <PopableContent
+          backgroundColor={theme.neutral100}
+          textStyle={{ color: theme.neutral900 }}
+          message={message}
+        />
+      }
+      position={'top'}
+      style={{ minWidth: 200 }}
+      backgroundColor={theme.neutral100}>
+      <PopableLabel
+        label={label}
+        iconColor={theme.neutral50}
+        textStyle={{
+          color: theme.neutral50,
+          fontWeight: '600',
+          fontSize: 14
+        }}
+      />
+    </Popable>
   )
 }
 

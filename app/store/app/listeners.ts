@@ -17,6 +17,7 @@ import BiometricsSDK from 'utils/BiometricsSDK'
 import Logger, { LogLevel } from 'utils/Logger'
 import { extendAccountProps } from 'store/app/migrations'
 import { capture } from 'store/posthog'
+import DeviceInfo from 'react-native-device-info'
 import {
   onAppLocked,
   onAppUnlocked,
@@ -35,7 +36,13 @@ const init = async (action: any, listenerApi: AppListenerEffectAPI) => {
 
   Logger.setLevel(__DEV__ ? LogLevel.TRACE : LogLevel.ERROR)
 
-  dispatch(capture({ event: 'ApplicationLaunched' }))
+  const fontScale = await DeviceInfo.getFontScale()
+  dispatch(
+    capture({
+      event: 'ApplicationLaunched',
+      properties: { FontScale: fontScale }
+    })
+  )
   dispatch(capture({ event: 'ApplicationOpened' }))
   listenToAppState(listenerApi)
 

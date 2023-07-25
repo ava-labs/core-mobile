@@ -1,9 +1,10 @@
 import { NetworkTokenWithBalance, TokenWithBalanceERC20 } from 'store/balance'
-import { Network } from '@avalabs/chains-sdk'
+import { ChainId, Network } from '@avalabs/chains-sdk'
 import {
   BlockchainId,
   CurrencyCode,
   ListPChainBalancesResponse,
+  NativeTokenBalance,
   Network as NetworkName,
   PChainBalance
 } from '@avalabs/glacier-sdk'
@@ -22,8 +23,10 @@ export class GlacierBalanceService implements BalanceServiceProvider {
       return false
     }
     const supportedChainsResp = await glacierSdk.evm.supportedChains({})
+
     const chainInfos = supportedChainsResp.chains
     const chains = chainInfos.map(chain => chain.chainId)
+
     return chains.some(value => value === network.chainId.toString())
   }
 
@@ -66,19 +69,30 @@ export class GlacierBalanceService implements BalanceServiceProvider {
     }
   }
 
+  private getNativeBalance(
+    chainId: string,
+    address: string,
+    selectedCurrency: string
+  ) {
+    return glacierSdk.evm
+      .getNativeBalance({
+        chainId,
+        address,
+        currency: selectedCurrency.toLocaleLowerCase() as CurrencyCode
+      })
+      .then(res => res.nativeTokenBalance)
+  }
+
   private getNativeTokenBalanceForNetwork(
     network: Network,
     address: string,
     selectedCurrency: string
   ): Promise<NetworkTokenWithBalance> {
-    return glacierSdk.evm
-      .getNativeBalance({
-        chainId: network.chainId.toString(),
-        address,
-        currency: selectedCurrency.toLocaleLowerCase() as CurrencyCode
-      })
-      .then(res => res.nativeTokenBalance)
-      .then(balance => convertNativeToTokenWithBalance(balance))
+    return this.getNativeBalance(
+      network.chainId.toString(),
+      address,
+      selectedCurrency
+    ).then(balance => convertNativeToTokenWithBalance(balance))
   }
 
   private async getErc20BalanceForNetwork(
@@ -122,6 +136,18 @@ export class GlacierBalanceService implements BalanceServiceProvider {
         addresses: addresses.join(',')
       })
       .then(value => (value as ListPChainBalancesResponse).balances)
+  }
+
+  async getCChainBalance(
+    isDeveloperMode: boolean,
+    address: string,
+    selectedCurrency: string
+  ): Promise<NativeTokenBalance> {
+    const chainId = isDeveloperMode
+      ? ChainId.AVALANCHE_TESTNET_ID
+      : ChainId.AVALANCHE_MAINNET_ID
+
+    return this.getNativeBalance(chainId.toString(), address, selectedCurrency)
   }
 }
 

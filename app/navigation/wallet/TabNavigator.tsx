@@ -31,7 +31,9 @@ const useIsEarnDashboardEnabled = () => {
   const [isEarnDashboardEnabled, setIsEarnDashboardEnabled] = useState(true)
 
   useEffect(() => {
-    const hasStakes = Boolean(stakes && stakes.length > 0)
+    if (!stakes) return
+
+    const hasStakes = stakes.length > 0
     setIsEarnDashboardEnabled(hasStakes ? true : false)
   }, [stakes])
 

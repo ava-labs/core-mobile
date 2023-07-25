@@ -11,13 +11,14 @@ import { PopableContent } from 'components/PopableContent'
 import { PopableLabel } from 'components/PopableLabel'
 import { format, fromUnixTime } from 'date-fns'
 import { getReadableDateDuration } from 'utils/date/getReadableDateDuration'
-import { useNAvaxToAvax } from 'hooks/useNAvaxToAvax'
+import { useNAvaxToAvax } from 'hooks/conversion/useNAvaxToAvax'
 import { StakeStatus } from 'types/earn'
 import { getCardHighLightColor } from 'utils/color/getCardHighLightColor'
 import { useNavigation } from '@react-navigation/native'
 import { TabsScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
 import { estimatesTooltipText } from 'consts/earn'
+import { useCChainBalance } from 'hooks/earn/useCChainBalance'
 import { StatusChip } from './StatusChip'
 
 type BaseProps = {
@@ -45,7 +46,9 @@ type NavigationProp = TabsScreenProps<
 
 export const StakeCard = (props: Props) => {
   const { theme } = useApplicationContext()
+  const cChainBalance = useCChainBalance()
   const nAvaxToAvax = useNAvaxToAvax()
+  const avaxPrice = cChainBalance.data?.price?.value
   const navigation = useNavigation<NavigationProp>()
   const { txHash, status, title, stakeAmount } = props
 
@@ -76,12 +79,16 @@ export const StakeCard = (props: Props) => {
   }
 
   const renderContents = () => {
-    const [stakeAmountInAvax, stakeAmountInCurrency] = nAvaxToAvax(stakeAmount)
+    const [stakeAmountInAvax, stakeAmountInCurrency] = nAvaxToAvax(
+      stakeAmount,
+      avaxPrice
+    )
 
     switch (status) {
       case StakeStatus.Ongoing: {
         const [estimatedRewardInAvax, estimatedRewardInCurrency] = nAvaxToAvax(
           props.estimatedReward,
+          avaxPrice,
           true
         )
 
@@ -131,6 +138,7 @@ export const StakeCard = (props: Props) => {
           : 'N/A'
         const [rewardAmountInAvax, rewardAmountInCurrency] = nAvaxToAvax(
           props.rewardAmount,
+          avaxPrice,
           true
         )
 
