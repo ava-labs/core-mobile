@@ -38,14 +38,14 @@ describe('Create new wallet', () => {
     await Actions.reportUIPerformance(
       startTime,
       endTime,
-      'performanceHelpUsImproveScreen',
+      'HelpUsImproveScreen',
       1,
       3
     )
     await Actions.reportUIPerformance(
       startTime2,
       endTime2,
-      'performanceRecoveryPhraseScreen',
+      'RecoveryPhraseScreen',
       1,
       3
     )
@@ -74,14 +74,14 @@ describe('Create new wallet', () => {
     await Actions.reportUIPerformance(
       startTime,
       endTime,
-      'performanceIUnderstandScreen',
+      'IUnderstandScreen',
       1,
       3
     )
     await Actions.reportUIPerformance(
       startTime2,
       endTime2,
-      'performanceVerifyPhraseScreen',
+      'VerifyPhraseScreen',
       1,
       3
     )

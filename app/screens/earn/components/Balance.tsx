@@ -1,24 +1,18 @@
-import React, { useMemo } from 'react'
+import React from 'react'
 import { StyleSheet, View } from 'react-native'
 import AvaText from 'components/AvaText'
-import { useSelector } from 'react-redux'
-import { selectNetwork } from 'store/network'
 import Big from 'big.js'
-import useStakingParams from 'hooks/earn/useStakingParams'
-import { balanceToDisplayValue } from '@avalabs/utils-sdk'
-import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { ChainId } from '@avalabs/chains-sdk'
-import { useGetPChainBalance } from 'hooks/earn/useGetPChainBalance'
+import { usePChainBalance } from 'hooks/earn/usePChainBalance'
 import { StakeTypeEnum } from 'services/earn/types'
 import { round } from 'lodash'
-import { BN } from 'bn.js'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaButton from 'components/AvaButton'
 import AppNavigation from 'navigation/AppNavigation'
 import { EarnScreenProps } from 'navigation/types'
 import { useNavigation } from '@react-navigation/native'
 import { Space } from 'components/Space'
-import { selectIsLoadingBalances } from 'store/balance'
+import { useCChainBalance } from 'hooks/earn/useCChainBalance'
+import { useWeiAvaxToAvax } from 'hooks/conversion/useWeiAvaxToAvax'
 import { getStakePrimaryColor } from '../utils'
 import { CircularProgress } from './CircularProgress'
 import { BalanceLoader } from './BalanceLoader'
@@ -28,45 +22,39 @@ type ScreenProps = EarnScreenProps<typeof AppNavigation.Earn.StakeDashboard>
 export const Balance = () => {
   const { theme } = useApplicationContext()
   const { navigate } = useNavigation<ScreenProps['navigation']>()
-  const isDeveloperMode = useSelector(selectIsDeveloperMode)
-  const { isLoading: isLoadingPBalances, data, error } = useGetPChainBalance()
-  const { nativeTokenBalance } = useStakingParams()
-  const isLoadingCBalance = useSelector(selectIsLoadingBalances)
+  const pChainBalance = usePChainBalance()
+  const cChainBalance = useCChainBalance()
+  const weiAvaxToAvax = useWeiAvaxToAvax()
 
-  const chainId = isDeveloperMode
-    ? ChainId.AVALANCHE_TESTNET_ID
-    : ChainId.AVALANCHE_MAINNET_ID
-  const avaxNetwork = useSelector(selectNetwork(chainId))
-
-  const nativeBalance = useMemo(() => {
-    if (avaxNetwork && nativeTokenBalance) {
-      return balanceToDisplayValue(
-        new BN(nativeTokenBalance.toString()),
-        avaxNetwork.networkToken.decimals
-      )
-    } else {
-      return 0
-    }
-  }, [avaxNetwork, nativeTokenBalance])
-
-  const shouldShowLoader = isLoadingCBalance || isLoadingPBalances
+  const shouldShowLoader = cChainBalance.isLoading || pChainBalance.isLoading
 
   if (shouldShowLoader) {
     return <BalanceLoader />
   }
 
-  if (error || !data) return null
+  const shouldShowError =
+    cChainBalance.error ||
+    !cChainBalance.data ||
+    pChainBalance.error ||
+    !pChainBalance.data
 
-  const availableAmount = round(Number(nativeBalance), 9)
+  if (shouldShowError) return null
+
+  const [availableAvax] = weiAvaxToAvax(
+    cChainBalance.data.balance,
+    cChainBalance.data.price?.value
+  )
+
+  const availableAmount = round(availableAvax, 9)
 
   const claimableAmount = round(
-    Big(data.unlockedUnstaked[0]?.amount || 0)
+    Big(pChainBalance.data.unlockedUnstaked[0]?.amount || 0)
       .div(Math.pow(10, 9))
       .toNumber(),
     9
   )
   const stakedAmount = round(
-    Big(data.unlockedStaked[0]?.amount || 0)
+    Big(pChainBalance.data.unlockedStaked[0]?.amount || 0)
       .div(Math.pow(10, 9))
       .toNumber(),
     9
@@ -75,10 +63,16 @@ export const Balance = () => {
   const stakingData = [
     {
       type: StakeTypeEnum.Available,
-      amount: availableAmount
+      amount: isNaN(availableAmount) ? 0 : availableAmount
     },
-    { type: StakeTypeEnum.Staked, amount: stakedAmount },
-    { type: StakeTypeEnum.Claimable, amount: claimableAmount }
+    {
+      type: StakeTypeEnum.Staked,
+      amount: isNaN(stakedAmount) ? 0 : stakedAmount
+    },
+    {
+      type: StakeTypeEnum.Claimable,
+      amount: isNaN(claimableAmount) ? 0 : claimableAmount
+    }
   ]
 
   const stakingAmount = stakingData.find(

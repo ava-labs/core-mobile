@@ -3,17 +3,16 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import { useSelector } from 'react-redux'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { round } from 'lodash'
-import { selectAvaxPrice } from 'store/balance'
 
-const convertNAvaxToAvaxAndCurrency = (
+const convert = (
   value: string | undefined,
-  currencyPrice: number,
+  avaxPrice: number | undefined,
   rounded: boolean
 ) => {
   const amountInNAvax = value ?? '0'
-  const rawAmountInAvax = new Big(amountInNAvax).div(1e9).toNumber()
+  const rawAmountInAvax = new Big(amountInNAvax).div(1e18).toNumber()
   const amountInAvax = rounded ? round(rawAmountInAvax, 5) : rawAmountInAvax
-  const amountInCurrency = amountInAvax * currencyPrice
+  const amountInCurrency = amountInAvax * (avaxPrice ?? 0)
 
   return {
     amountInAvax,
@@ -21,18 +20,21 @@ const convertNAvaxToAvaxAndCurrency = (
   }
 }
 
-// a hook to convert a nAvax amount to Avax and the current currency
-export const useNAvaxToAvax = () => {
+// a hook to convert a wei Avax amount to Avax and the current currency
+export const useWeiAvaxToAvax = () => {
   const {
     appHook: { tokenInCurrencyFormatter }
   } = useApplicationContext()
 
-  const avaxPrice = useSelector(selectAvaxPrice)
   const selectedCurrency = useSelector(selectSelectedCurrency)
 
-  const nAvaxToAvax = (valueInNAvax: string | undefined, rounded = false) => {
-    const { amountInAvax, amountInCurrency } = convertNAvaxToAvaxAndCurrency(
-      valueInNAvax,
+  const weiAvaxToAvax = (
+    valueInWeiAvax: string | undefined,
+    avaxPrice: number | undefined,
+    rounded = false
+  ): [number, string] => {
+    const { amountInAvax, amountInCurrency } = convert(
+      valueInWeiAvax,
       avaxPrice,
       rounded
     )
@@ -44,5 +46,5 @@ export const useNAvaxToAvax = () => {
     return [amountInAvax, formattedAmountInCurrency]
   }
 
-  return nAvaxToAvax
+  return weiAvaxToAvax
 }

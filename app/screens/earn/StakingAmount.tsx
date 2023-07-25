@@ -1,13 +1,11 @@
 import React, { useMemo, useState } from 'react'
 import { View } from 'react-native'
-import BN from 'bn.js'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { useSelector } from 'react-redux'
 import { selectNetwork } from 'store/network'
 import { ChainId } from '@avalabs/chains-sdk'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { VsCurrencyType } from '@avalabs/coingecko-sdk'
-import { balanceToDisplayValue } from '@avalabs/utils-sdk'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
 import { Row } from 'components/Row'
@@ -22,20 +20,29 @@ import { useNavigation } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
 import { StakeSetupScreenProps } from 'navigation/types'
 import { bigintToBig } from 'utils/bigNumbers/bigintToBig'
-import { BigIntAvax, BigIntNAvax } from 'types/denominations'
+import { BigIntAvax, BigIntNAvax, BigIntWeiAvax } from 'types/denominations'
 import { AmountChange } from 'screens/earn/types'
+import { useCChainBalance } from 'hooks/earn/useCChainBalance'
+import { useWeiAvaxToAvax } from 'hooks/conversion/useWeiAvaxToAvax'
 
 type ScreenProps = StakeSetupScreenProps<
-  typeof AppNavigation.StakeSetup.StakingAmount
+  typeof AppNavigation.StakeSetup.SmartStakeAmount
 >
 
 export default function StakingAmount() {
   const { theme } = useApplicationContext()
   const { navigate } = useNavigation<ScreenProps['navigation']>()
-  const { minStakeAmount, nativeTokenBalance } = useStakingParams()
-  const nativeTokenBalanceNavax: BigIntNAvax | undefined = nativeTokenBalance
-    ? BigInt(nativeTokenBalance) / BigInt(1e9)
+  const { minStakeAmount } = useStakingParams()
+  const cChainBalance = useCChainBalance()
+  const weiAvaxToAvax = useWeiAvaxToAvax()
+  const nativeTokenBalanceWeiAvax = cChainBalance?.data?.balance
+    ? (BigInt(cChainBalance.data.balance) as BigIntWeiAvax)
     : undefined
+
+  const nativeTokenBalanceNavax: BigIntNAvax | undefined =
+    nativeTokenBalanceWeiAvax
+      ? BigInt(nativeTokenBalanceWeiAvax) / BigInt(1e9)
+      : undefined
   const minstakeAmountNavax: BigIntNAvax = minStakeAmount / BigInt(1e9)
   const minStakeAmountAvax: BigIntAvax = minstakeAmountNavax / BigInt(1e9)
 
@@ -58,18 +65,11 @@ export default function StakingAmount() {
         .toFixed(2),
     [nativeTokenPrice, inputAmount, nativeTokenDecimals]
   )
-  const nativeBalance = useMemo(() => {
-    if (avaxNetwork && nativeTokenBalance) {
-      return (
-        balanceToDisplayValue(
-          new BN(nativeTokenBalance.toString()),
-          avaxNetwork.networkToken.decimals
-        ) + ' AVAX'
-      )
-    } else {
-      return '- AVAX'
-    }
-  }, [avaxNetwork, nativeTokenBalance])
+
+  const [nativeBalance] = weiAvaxToAvax(
+    cChainBalance?.data?.balance,
+    nativeTokenPrice
+  )
 
   const amountNotEnough =
     inputAmount !== 0n && inputAmount < minstakeAmountNavax
@@ -100,7 +100,7 @@ export default function StakingAmount() {
       <View style={{ alignItems: 'center' }}>
         <AvaText.Subtitle1 color={theme.neutral500}>
           Balance:
-          {nativeBalance}
+          {' ' + nativeBalance + ' AVAX'}
         </AvaText.Subtitle1>
       </View>
       <EarnInputAmount
@@ -147,7 +147,7 @@ export default function StakingAmount() {
         <Row style={{ justifyContent: 'space-between' }}>
           <PercentButtons
             isDeveloperMode={isDeveloperMode}
-            balance={nativeTokenBalance}
+            balance={nativeTokenBalanceWeiAvax}
             onPercentageSelected={setAmount}
           />
         </Row>

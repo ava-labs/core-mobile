@@ -1,10 +1,9 @@
 import { useQuery } from '@tanstack/react-query'
+import { refetchIntervals } from 'consts/earn'
 import { useSelector } from 'react-redux'
 import EarnService from 'services/earn/EarnService'
 import { selectActiveAccount } from 'store/account'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
-
-const POLLING_INTERVAL = 30000 // 30 seconds
 
 export const useStakes = () => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
@@ -12,7 +11,7 @@ export const useStakes = () => {
   const pAddress = account?.addressPVM ?? ''
 
   return useQuery({
-    refetchInterval: POLLING_INTERVAL,
+    refetchInterval: refetchIntervals.stakes,
     enabled: Boolean(pAddress),
     queryKey: ['stakes', isDeveloperMode, pAddress],
     queryFn: () =>

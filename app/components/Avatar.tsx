@@ -97,7 +97,7 @@ const AvatarBase: FC<Props> = ({
             style={style}
             width={size}
             height={size}
-            testID="avatar__svg_uri"
+            testID="avatar__logo_avatar"
           />
         )
       }

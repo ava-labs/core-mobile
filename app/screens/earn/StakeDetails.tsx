@@ -17,13 +17,14 @@ import { PopableContent } from 'components/PopableContent'
 import { Popable } from 'react-native-popable'
 import { ScrollView } from 'react-native-gesture-handler'
 import { useStake } from 'hooks/earn/useStake'
-import { useNAvaxToAvax } from 'hooks/useNAvaxToAvax'
+import { useNAvaxToAvax } from 'hooks/conversion/useNAvaxToAvax'
 import { format, fromUnixTime } from 'date-fns'
 import { getReadableDateDuration } from 'utils/date/getReadableDateDuration'
 import { humanize } from 'utils/string/humanize'
 import { RewardType } from '@avalabs/glacier-sdk'
 import { isOnGoing } from 'utils/earn/status'
 import { estimatesTooltipText } from 'consts/earn'
+import { useCChainBalance } from 'hooks/earn/useCChainBalance'
 import { StatusChip } from './components/StatusChip'
 import { StakeProgress } from './components/StakeProgress'
 
@@ -36,7 +37,9 @@ const StakeDetails = () => {
     params: { txHash, stakeTitle }
   } = useRoute<ScreenProps['route']>()
   const stake = useStake(txHash)
+  const cChainBalance = useCChainBalance()
   const nAvaxToAvax = useNAvaxToAvax()
+  const avaxPrice = cChainBalance.data?.price?.value
 
   const isActive = useMemo(() => {
     if (!stake) return false
@@ -84,6 +87,7 @@ const StakeDetails = () => {
     const remainingTime = humanize(getReadableDateDuration(endDate))
     const [estimatedRewardInAvax, estimatedRewardInCurrency] = nAvaxToAvax(
       stake.estimatedReward,
+      avaxPrice,
       true
     )
 
@@ -135,6 +139,7 @@ const StakeDetails = () => {
     const rewardAmount = rewardUtxo?.amount
     const [rewardAmountInAvax, rewardAmountInCurrency] = nAvaxToAvax(
       rewardAmount,
+      avaxPrice,
       true
     )
 
@@ -182,7 +187,10 @@ const StakeDetails = () => {
   }
   const renderBody = () => {
     const stakeAmount = stake.amountStaked?.[0]?.amount
-    const [stakeAmountInAvax, stakeAmountInCurrency] = nAvaxToAvax(stakeAmount)
+    const [stakeAmountInAvax, stakeAmountInCurrency] = nAvaxToAvax(
+      stakeAmount,
+      avaxPrice
+    )
 
     return (
       <View>

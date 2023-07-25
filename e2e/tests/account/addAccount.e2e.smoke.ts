@@ -1,5 +1,6 @@
 /* eslint-disable jest/expect-expect */
 import Assert from '../../helpers/assertions'
+import Actions from '../../helpers/actions'
 import LoginRecoverWallet from '../../helpers/loginRecoverWallet'
 import AccountManagePage from '../../pages/accountManage.page'
 import actions from '../../helpers/actions'
@@ -13,9 +14,29 @@ describe('Add and edit accounts', () => {
 
   it('should add second account', async () => {
     await AccountManagePage.tapAccountMenu()
+    const startTime = new Date().getTime()
+    await Actions.waitForElement(AccountManagePage.addEditAccount)
+    const endTime = new Date().getTime()
+    await Actions.reportUIPerformance(
+      startTime,
+      endTime,
+      'AccountMenuScreen',
+      1,
+      3
+    )
     await AccountManagePage.tapAddEditAccounts()
     await AccountManagePage.tapAddAccountButton()
+    const startTime2 = new Date().getTime()
+    await Actions.waitForElement(AccountManagePage.secondAccount)
+    const endTime2 = new Date().getTime()
     await Assert.isVisible(AccountManagePage.secondAccount)
+    await Actions.reportUIPerformance(
+      startTime2,
+      endTime2,
+      'AddSecondAccountFlow',
+      1,
+      3
+    )
   })
 
   it('should edit first account', async () => {
