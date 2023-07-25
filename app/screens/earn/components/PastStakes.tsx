@@ -10,7 +10,7 @@ import { NoPastStakes } from './ZeroState'
 import { StakeListLoader } from './StakeListLoader'
 
 export const PastStakes = () => {
-  const { stakes, refetch, isRefetching, isLoading } = usePastStakes()
+  const { stakes, pullToRefresh, isRefreshing, isLoading } = usePastStakes()
 
   if (isLoading) {
     return <StakeListLoader />
@@ -48,8 +48,8 @@ export const PastStakes = () => {
       data={stakes}
       renderItem={renderItem}
       ListEmptyComponent={NoPastStakes}
-      refreshing={isRefetching}
-      onRefresh={refetch}
+      refreshing={isRefreshing}
+      onRefresh={pullToRefresh}
       keyExtractor={keyExtractor}
       estimatedItemSize={233}
       contentContainerStyle={styles.cardContainer}
