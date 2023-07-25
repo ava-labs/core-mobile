@@ -10,7 +10,7 @@ import { NoActiveStakes } from './ZeroState'
 import { StakeListLoader } from './StakeListLoader'
 
 export const ActiveStakes = () => {
-  const { stakes, refetch, isRefetching, isLoading } = useActiveStakes()
+  const { stakes, pullToRefresh, isRefreshing, isLoading } = useActiveStakes()
 
   if (isLoading) {
     return <StakeListLoader />
@@ -45,8 +45,8 @@ export const ActiveStakes = () => {
       data={stakes}
       renderItem={renderItem}
       ListEmptyComponent={NoActiveStakes}
-      refreshing={isRefetching}
-      onRefresh={refetch}
+      refreshing={isRefreshing}
+      onRefresh={pullToRefresh}
       keyExtractor={keyExtractor}
       estimatedItemSize={201}
       contentContainerStyle={styles.cardContainer}
