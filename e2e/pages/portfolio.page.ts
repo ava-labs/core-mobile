@@ -147,7 +147,11 @@ class PortfolioPage {
   }
 
   async tapNetworksDropdownAVAX() {
-    await Action.tapElementAtIndex(this.networksDropdownAVAX, 0)
+    if (Action.platform() === 'ios') {
+      await Action.tapElementAtIndex(this.networksDropdownAVAX, 1)
+    } else {
+      await Action.tapElementAtIndex(this.networksDropdownAVAX, 0)
+    }
   }
 
   async tapManageNetworks() {
