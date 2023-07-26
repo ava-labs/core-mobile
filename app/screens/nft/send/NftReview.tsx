@@ -126,7 +126,7 @@ export default function NftReview({ onSuccess }: NftReviewScreenProps) {
             }
             position={'right'}
             style={{ minWidth: 200 }}
-            backgroundColor={theme.colorBg3}>
+            backgroundColor={theme.neutral100}>
             <PopableLabel label="Network Fee" />
           </Popable>
           <AvaText.Heading2 currency>{fees.sendFeeInCurrency}</AvaText.Heading2>

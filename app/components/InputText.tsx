@@ -180,7 +180,7 @@ const InputText = forwardRef<TextInput, InputTextProps>(
             popOverInfoText={popOverInfoText}
             popOverPosition={popOverPosition}
             label={label}
-            backgroundColor={context.theme.colorBg3}
+            backgroundColor={context.theme.neutral100}
           />
         )}
         <View

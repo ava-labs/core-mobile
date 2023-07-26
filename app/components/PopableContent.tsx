@@ -18,10 +18,12 @@ export const PopableContent = ({
     <View
       style={{
         padding: 8,
-        backgroundColor: backgroundColor ?? theme.colorBg3,
-        borderRadius: 8
+        backgroundColor: backgroundColor ?? theme.neutral100,
+        borderRadius: 4
       }}>
-      <AvaText.Body3 textStyle={textStyle}>{message}</AvaText.Body3>
+      <AvaText.Body3 textStyle={[{ color: theme.neutral900 }, textStyle]}>
+        {message}
+      </AvaText.Body3>
     </View>
   )
 }

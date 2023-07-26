@@ -27,6 +27,7 @@ import SwitchEthereumChainV2 from 'screens/rpc/components/v2/SwitchEthereumChain
 import BuyCarefully from 'screens/rpc/buy/BuyCarefully'
 import AvalancheSendTransaction from 'screens/rpc/components/v1/AvalancheSendTransaction'
 import AvalancheSendTransactionV2 from 'screens/rpc/components/v2/AvalancheSendTransaction'
+import { DisclaimerBottomSheet } from 'screens/earn/components/DisclaimerBottomSheet'
 import { SignOutModalScreen, WalletScreenSType } from './WalletScreenStack'
 
 export const createModals = (WalletScreenS: WalletScreenSType) => {
@@ -164,6 +165,10 @@ export const createModals = (WalletScreenS: WalletScreenSType) => {
         name={AppNavigation.Modal.EditGasLimit}
         component={EditGasLimit}
       />
+      <WalletScreenS.Screen
+        name={AppNavigation.Modal.StakeDisclaimer}
+        component={StakeDisclaimer}
+      />
     </WalletScreenS.Group>
   )
 }
@@ -201,4 +206,14 @@ const EditGasLimit = () => {
       gasPrice={params.gasPrice}
     />
   )
+}
+
+type StakeDisclaimerScreenProps = WalletScreenProps<
+  typeof AppNavigation.Modal.StakeDisclaimer
+>
+
+const StakeDisclaimer = () => {
+  const { goBack } = useNavigation<StakeDisclaimerScreenProps['navigation']>()
+
+  return <DisclaimerBottomSheet onClose={goBack} />
 }

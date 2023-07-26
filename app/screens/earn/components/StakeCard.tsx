@@ -116,7 +116,7 @@ export const StakeCard = (props: Props) => {
                 position="top"
                 strictPosition={true}
                 style={{ minWidth: 240 }}
-                backgroundColor={theme.colorBg3}>
+                backgroundColor={theme.neutral100}>
                 <PopableLabel
                   label="Estimated Rewards"
                   textStyle={{ lineHeight: 24, color: theme.colorText1 }}

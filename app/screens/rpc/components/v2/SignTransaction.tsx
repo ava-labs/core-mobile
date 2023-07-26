@@ -306,7 +306,7 @@ const SignTransaction = () => {
             content={netFeeInfoMessage}
             position={'right'}
             style={{ minWidth: 200 }}
-            backgroundColor={theme.colorBg3}>
+            backgroundColor={theme.neutral100}>
             <PopableLabel
               label="Network Fee"
               textStyle={{ lineHeight: 24, color: theme.white }}
