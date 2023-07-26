@@ -180,7 +180,7 @@ class AvalancheSignTransactionHandler
 
     // get display data for the UI
     const txData = await Avalanche.parseAvalancheTx(
-      unsignedTx.getTx(),
+      unsignedTx,
       provider,
       currentAddress
     )

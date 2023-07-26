@@ -310,9 +310,7 @@ describe('app/store/walletConnectV2/handlers/avalanche_signTransaction/avalanche
       )
       expect(unsignedTxMock.getSigIndices).toHaveBeenCalled()
       expect(Avalanche.parseAvalancheTx).toHaveBeenCalledWith(
-        {
-          foo: 'bar'
-        },
+        unsignedTxMock,
         providerMock,
         mockAccounts[0].addressAVM
       )
@@ -465,9 +463,7 @@ describe('app/store/walletConnectV2/handlers/avalanche_signTransaction/avalanche
       )
       expect(unsignedTxMock.getSigIndices).toHaveBeenCalled()
       expect(Avalanche.parseAvalancheTx).toHaveBeenCalledWith(
-        {
-          foo: 'bar'
-        },
+        unsignedTxMock,
         providerMock,
         mockAccounts[0].addressAVM
       )

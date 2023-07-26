@@ -16,6 +16,7 @@ import { getHexStringToBytes } from 'utils/getHexStringToBytes'
 import { Avalanche } from '@avalabs/wallets-sdk'
 import { AvalancheChainStrings } from 'store/walletConnect/handlers/types'
 import { selectAvaxPrice } from 'store/balance'
+import TxFee from './components/TxFee'
 
 const ExportTxView = ({
   tx,
@@ -141,26 +142,7 @@ const ExportTxView = ({
       </Card>
 
       <Space y={16} />
-      <AvaText.Body2 color={theme.colorText1} textStyle={{ lineHeight: 20 }}>
-        Network fee
-      </AvaText.Body2>
-      <Space y={8} />
-      <Card style={styles.cardContainer}>
-        <Row style={styles.rowContainer}>
-          <AvaText.Caption color={theme.colorText1}>Fee Amount</AvaText.Caption>
-          <View style={styles.feeContainer}>
-            <AvaText.Subtitle2 color={theme.neutral50}>
-              {Number(bigIntToString(txFee, 9))} AVAX
-            </AvaText.Subtitle2>
-            <Space y={2} />
-            <AvaText.Caption color={theme.neutral400}>
-              {`${tokenInCurrencyFormatter(
-                Number(bigIntToString(txFee, 9)) * avaxPrice
-              )} ${selectedCurrency}`}
-            </AvaText.Caption>
-          </View>
-        </Row>
-      </Card>
+      <TxFee txFee={txFee} />
     </View>
   )
 }

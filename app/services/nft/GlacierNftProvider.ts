@@ -17,7 +17,7 @@ export class GlacierNftProvider implements NftProvider {
     if (!isHealthy) {
       return false
     }
-    const supportedChainsResp = await glacierSdk.evm.supportedChains()
+    const supportedChainsResp = await glacierSdk.evm.supportedChains({})
     const chainInfos = supportedChainsResp.chains
     const chains = chainInfos.map(chain => chain.chainId)
     return chains.some(value => value === chainId.toString())
