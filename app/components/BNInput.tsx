@@ -4,9 +4,6 @@ import Big from 'big.js'
 import BN from 'bn.js'
 import { bigToBN, bnToBig } from '@avalabs/utils-sdk'
 
-Big.PE = 99
-Big.NE = -18
-
 interface BNInputProps extends Omit<InputTextProps, 'text'> {
   value?: BN
   denomination: number

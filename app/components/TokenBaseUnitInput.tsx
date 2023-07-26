@@ -1,22 +1,21 @@
 import React, { useEffect, useState } from 'react'
 import InputText, { InputTextProps } from 'components/InputText'
-import Big from 'big.js'
 import { TokenBaseUnit } from 'types/TokenBaseUnit'
 import { AcceptedTypes } from 'types/BaseAvax'
 
-Big.PE = 99
-Big.NE = -18
 interface TokenBaseUnitProps<T extends TokenBaseUnit<T>>
   extends Omit<InputTextProps, 'text'> {
   value?: T
   denomination: number
-  // Used to construct concrete class, extender of TokenBaseUnit
-  baseUnitConstructor: new (value: AcceptedTypes, maxDecimals: number) => T
-  onChange?(amount: T): void
-  onMax?(): void
   isValueLoading?: boolean
   hideErrorMessage?: boolean
   testID?: string
+  // Used to construct concrete class, extender of TokenBaseUnit
+  baseUnitConstructor: new (value: AcceptedTypes, maxDecimals: number) => T
+
+  onChange?(amount: T): void
+
+  onMax?(): void
 }
 
 /**
