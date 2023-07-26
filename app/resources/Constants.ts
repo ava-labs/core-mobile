@@ -74,7 +74,7 @@ export enum COLORS_NIGHT {
   logoBgColor = '#FFFFFF',
   buttonRipple = '#3A3A3C',
 
-  //From design system :
+  //From design system:
   colorPrimary1 = '#3AA3FF',
   colorError = '#F34333',
   colorSuccess = '#53C26E',
