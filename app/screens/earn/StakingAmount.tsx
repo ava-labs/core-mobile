@@ -19,7 +19,6 @@ import useStakingParams from 'hooks/earn/useStakingParams'
 import { useNavigation } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
 import { StakeSetupScreenProps } from 'navigation/types'
-import { AmountChange } from 'screens/earn/types'
 import { BaseAvax } from 'types/BaseAvax'
 import { useCChainBalance } from 'hooks/earn/useCChainBalance'
 
@@ -65,8 +64,8 @@ export default function StakingAmount() {
   const inputValid =
     !amountNotEnough && !notEnoughBalance && !inputAmount.isZero()
 
-  function handleAmountChange(change: AmountChange<BaseAvax>) {
-    setInputAmount(change.amount)
+  function handleAmountChange(amount: BaseAvax) {
+    setInputAmount(amount)
   }
 
   function setAmount(factor: number) {
