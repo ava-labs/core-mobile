@@ -4,10 +4,6 @@ import { bigToBigint } from 'utils/bigNumbers/bigToBigint'
 
 export type AcceptedTypes = BigSource | BN | bigint
 
-export interface TokenBaseInterface {
-  add(value: AcceptedTypes | TokenBaseInterface): TokenBaseInterface
-}
-
 /**
  * TokenBaseUnit abstracts units in which crypto tokens are represented.
  * It holds value of token in Big type in normal numeric representation (as opposed to exponential or any other).
