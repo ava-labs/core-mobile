@@ -131,7 +131,7 @@ class AvalancheSendTransactionHandler
     }
 
     const txData = await Avalanche.parseAvalancheTx(
-      unsignedTx.getTx(),
+      unsignedTx,
       provider,
       currentAddress
     )

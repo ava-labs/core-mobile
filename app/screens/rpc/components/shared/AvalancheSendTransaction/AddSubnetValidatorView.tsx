@@ -8,10 +8,8 @@ import Card from 'components/Card'
 import { truncateNodeId } from 'utils/Utils'
 import Separator from 'components/Separator'
 import { Avalanche } from '@avalabs/wallets-sdk'
-import { bigIntToString } from '@avalabs/utils-sdk'
-import { selectAvaxPrice } from 'store/balance'
-import { useSelector } from 'react-redux'
 import { format } from 'date-fns'
+import TxFee from './components/TxFee'
 
 const AddSubnetValidatorTxView = ({
   tx
@@ -19,10 +17,7 @@ const AddSubnetValidatorTxView = ({
   tx: Avalanche.AddSubnetValidatorTx
 }) => {
   const { theme } = useApplicationContext()
-  const { currencyFormatter } = useApplicationContext().appHook
-  const avaxPrice = useSelector(selectAvaxPrice)
   const { txFee, nodeID, start, end, subnetID } = tx
-  const txFeeNumber = Number(bigIntToString(txFee, 9))
   const startDate = format(
     new Date(parseInt(start) * 1000),
     'MMM dd, yyyy, HH:mm a'
@@ -75,26 +70,7 @@ const AddSubnetValidatorTxView = ({
       </Card>
 
       <Space y={24} />
-      <AvaText.Body2 color={theme.colorText1} textStyle={{ lineHeight: 20 }}>
-        Network Fee
-      </AvaText.Body2>
-      <Space y={8} />
-      <Card style={styles.cardContainer}>
-        <Row style={styles.rowCenterContainer}>
-          <AvaText.Caption color={theme.colorText1}>Fee Amount</AvaText.Caption>
-          <View style={styles.feeContainer}>
-            <AvaText.Subtitle2 color={theme.neutral50}>
-              {txFeeNumber} AVAX
-            </AvaText.Subtitle2>
-          </View>
-        </Row>
-        <Space y={2} />
-        <Row style={styles.currencyContainer}>
-          <AvaText.Caption color={theme.neutral400}>
-            {currencyFormatter(txFeeNumber * avaxPrice)}
-          </AvaText.Caption>
-        </Row>
-      </Card>
+      <TxFee txFee={txFee} />
     </View>
   )
 }
@@ -109,15 +85,6 @@ const styles = StyleSheet.create({
   },
   separator: {
     marginVertical: 16
-  },
-  innerRow: {
-    alignItems: 'center'
-  },
-  feeContainer: {
-    alignItems: 'flex-end'
-  },
-  currencyContainer: {
-    justifyContent: 'flex-end'
   },
   cardContainer: {
     padding: 16

@@ -7,18 +7,13 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import Card from 'components/Card'
 import Separator from 'components/Separator'
 import { Avalanche } from '@avalabs/wallets-sdk'
-import { bigIntToString } from '@avalabs/utils-sdk'
-import { selectAvaxPrice } from 'store/balance'
-import { useSelector } from 'react-redux'
 import AvaButton from 'components/AvaButton'
 import CarrotSVG from 'components/svg/CarrotSVG'
+import TxFee from './components/TxFee'
 
 const CreateChainTxView = ({ tx }: { tx: Avalanche.CreateChainTx }) => {
   const { theme } = useApplicationContext()
-  const { currencyFormatter } = useApplicationContext().appHook
-  const avaxPrice = useSelector(selectAvaxPrice)
   const { txFee, chainID, chainName, vmID, genesisData } = tx
-  const txFeeNumber = Number(bigIntToString(txFee, 9))
   const [showGenesis, setShowGenesis] = useState<boolean>(false)
 
   if (showGenesis) {
@@ -106,26 +101,7 @@ const CreateChainTxView = ({ tx }: { tx: Avalanche.CreateChainTx }) => {
       </Card>
 
       <Space y={24} />
-      <AvaText.Body2 color={theme.colorText1} textStyle={{ lineHeight: 20 }}>
-        Network Fee
-      </AvaText.Body2>
-      <Space y={8} />
-      <Card style={styles.cardContainer}>
-        <Row style={styles.rowCenterContainer}>
-          <AvaText.Caption color={theme.colorText1}>Fee Amount</AvaText.Caption>
-          <View style={styles.feeContainer}>
-            <AvaText.Subtitle2 color={theme.neutral50}>
-              {txFeeNumber} AVAX
-            </AvaText.Subtitle2>
-          </View>
-        </Row>
-        <Space y={2} />
-        <Row style={styles.currencyContainer}>
-          <AvaText.Caption color={theme.neutral400}>
-            {currencyFormatter(txFeeNumber * avaxPrice)}
-          </AvaText.Caption>
-        </Row>
-      </Card>
+      <TxFee txFee={txFee} />
     </View>
   )
 }
@@ -134,21 +110,8 @@ const styles = StyleSheet.create({
   rowContainer: {
     justifyContent: 'space-between'
   },
-  rowCenterContainer: {
-    justifyContent: 'space-between',
-    alignItems: 'center'
-  },
   separator: {
     marginVertical: 16
-  },
-  innerRow: {
-    alignItems: 'center'
-  },
-  feeContainer: {
-    alignItems: 'flex-end'
-  },
-  currencyContainer: {
-    justifyContent: 'flex-end'
   },
   cardContainer: {
     padding: 16
