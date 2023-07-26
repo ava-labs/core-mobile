@@ -25,15 +25,12 @@ export interface TokenBaseInterface {
 export abstract class TokenBaseUnit<T extends TokenBaseUnit<T>> {
   protected readonly value: Big
   protected readonly maxDecimals: number
-  protected readonly childConstructor: new (
-    value: AcceptedTypes,
-    maxDecimals: number
-  ) => T
+  protected readonly childConstructor: new (value: AcceptedTypes) => T
 
   protected constructor(
     value: AcceptedTypes,
     maxDecimals: number,
-    ctor: new (v: AcceptedTypes, m: number) => T
+    ctor: new (v: AcceptedTypes) => T
   ) {
     this.value = TokenBaseUnit.toBig(value)
     this.maxDecimals = maxDecimals
@@ -124,6 +121,6 @@ export abstract class TokenBaseUnit<T extends TokenBaseUnit<T>> {
   }
 
   private cloneWithValue(value: Big): T {
-    return new this.childConstructor(value, this.maxDecimals)
+    return new this.childConstructor(value)
   }
 }
