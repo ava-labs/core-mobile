@@ -1,5 +1,5 @@
 import { Account } from 'store/account'
-import { BigIntNAvax } from 'types/denominations'
+import { Avax } from 'types/Avax'
 
 export type AddDelegatorTransactionProps = {
   activeAccount: Account
@@ -17,8 +17,8 @@ export type AddDelegatorTransactionProps = {
 export type UnixTimeMs = number
 
 export type CollectTokensForStakingParams = {
-  cChainBalance: BigIntNAvax
-  requiredAmount: BigIntNAvax
+  cChainBalance: Avax
+  requiredAmount: Avax
   activeAccount: Account
   isDevMode: boolean
 }
@@ -27,6 +27,7 @@ export type GetAllStakesParams = {
   isTestnet: boolean
   addresses: string[]
 }
+
 export enum StakeTypeEnum {
   Available = 'Available',
   Staked = 'Staked',

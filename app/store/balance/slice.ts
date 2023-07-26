@@ -5,7 +5,7 @@ import { selectActiveNetwork, selectIsTestnet } from 'store/network'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import BN from 'bn.js'
 import { Network } from '@avalabs/chains-sdk'
-import { BNWeiAvax } from 'types/denominations'
+import { Avax } from 'types/Avax'
 import {
   Balance,
   Balances,
@@ -197,7 +197,7 @@ export const selectNativeTokenBalanceForNetworkAndAccount =
       balanceForNetworkAndAccount?.tokens ?? []
     )?.find(token => token.type === TokenType.NATIVE)
 
-    return nativeToken?.balance as BNWeiAvax
+    return Avax.fromWei(nativeToken?.balance ?? 0)
   }
 
 export const selectBalanceTotalForNetwork =

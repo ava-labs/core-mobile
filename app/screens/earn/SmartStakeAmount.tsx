@@ -4,9 +4,9 @@ import useStakingParams from 'hooks/earn/useStakingParams'
 import AppNavigation from 'navigation/AppNavigation'
 import { StakeSetupScreenProps } from 'navigation/types'
 import React, { useEffect, useState } from 'react'
-import { BigIntWeiAvax } from 'types/denominations'
 import { StyleSheet, View } from 'react-native'
 import Spinner from 'components/animation/Spinner'
+import { Avax } from 'types/Avax'
 import NotEnoughAvax from './NotEnoughAvax'
 import StakingAmount from './StakingAmount'
 
@@ -28,8 +28,8 @@ const SmartStakeAmount = () => {
 
   useEffect(() => {
     if (cChainBalance.data?.balance) {
-      const availableAvax = BigInt(cChainBalance.data.balance) as BigIntWeiAvax
-      const notEnoughAvax = availableAvax < minStakeAmount
+      const availableAvax = Avax.fromWei(cChainBalance.data.balance)
+      const notEnoughAvax = availableAvax.lt(minStakeAmount)
 
       if (notEnoughAvax) {
         setBalanceState(BalanceStates.INSUFFICIENT)

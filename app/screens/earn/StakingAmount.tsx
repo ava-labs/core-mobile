@@ -19,11 +19,8 @@ import useStakingParams from 'hooks/earn/useStakingParams'
 import { useNavigation } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
 import { StakeSetupScreenProps } from 'navigation/types'
-import { bigintToBig } from 'utils/bigNumbers/bigintToBig'
-import { BigIntAvax, BigIntNAvax, BigIntWeiAvax } from 'types/denominations'
-import { AmountChange } from 'screens/earn/types'
+import { Avax } from 'types/Avax'
 import { useCChainBalance } from 'hooks/earn/useCChainBalance'
-import { useWeiAvaxToAvax } from 'hooks/conversion/useWeiAvaxToAvax'
 
 type ScreenProps = StakeSetupScreenProps<
   typeof AppNavigation.StakeSetup.SmartStakeAmount
@@ -34,17 +31,6 @@ export default function StakingAmount() {
   const { navigate } = useNavigation<ScreenProps['navigation']>()
   const { minStakeAmount } = useStakingParams()
   const cChainBalance = useCChainBalance()
-  const weiAvaxToAvax = useWeiAvaxToAvax()
-  const nativeTokenBalanceWeiAvax = cChainBalance?.data?.balance
-    ? (BigInt(cChainBalance.data.balance) as BigIntWeiAvax)
-    : undefined
-
-  const nativeTokenBalanceNavax: BigIntNAvax | undefined =
-    nativeTokenBalanceWeiAvax
-      ? BigInt(nativeTokenBalanceWeiAvax) / BigInt(1e9)
-      : undefined
-  const minstakeAmountNavax: BigIntNAvax = minStakeAmount / BigInt(1e9)
-  const minStakeAmountAvax: BigIntAvax = minstakeAmountNavax / BigInt(1e9)
 
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const chainId = isDeveloperMode
@@ -57,35 +43,29 @@ export default function StakingAmount() {
     avaxNetwork,
     selectedCurrency.toLowerCase() as VsCurrencyType
   )
-  const [inputAmount, setInputAmount] = useState<BigIntNAvax>(0n)
+  const [inputAmount, setInputAmount] = useState(Avax.fromBase(0))
   const stakeInCurrency = useMemo(
-    () =>
-      bigintToBig(inputAmount, nativeTokenDecimals)
-        .mul(nativeTokenPrice)
-        .toFixed(2),
-    [nativeTokenPrice, inputAmount, nativeTokenDecimals]
+    () => inputAmount.mul(nativeTokenPrice).toFixed(2),
+    [inputAmount, nativeTokenPrice]
   )
 
-  const [nativeBalance] = weiAvaxToAvax(
-    cChainBalance?.data?.balance,
-    nativeTokenPrice
-  )
+  const nativeTokenBalance = Avax.fromWei(cChainBalance?.data?.balance || 0)
 
-  const amountNotEnough =
-    inputAmount !== 0n && inputAmount < minstakeAmountNavax
+  const amountNotEnough = !inputAmount.isZero() && inputAmount < minStakeAmount
 
   const notEnoughBalance =
-    nativeTokenBalanceNavax && inputAmount > nativeTokenBalanceNavax
+    nativeTokenBalance && inputAmount.gt(nativeTokenBalance)
 
-  const inputValid = !amountNotEnough && !notEnoughBalance && inputAmount !== 0n
+  const inputValid =
+    !amountNotEnough && !notEnoughBalance && !inputAmount.isZero()
 
-  function handleAmountChange(change: AmountChange) {
-    setInputAmount(change.amount)
+  function handleAmountChange(amount: Avax) {
+    setInputAmount(amount)
   }
 
   function setAmount(factor: number) {
-    if (nativeTokenBalanceNavax) {
-      setInputAmount(BigInt(nativeTokenBalanceNavax) / BigInt(factor))
+    if (nativeTokenBalance) {
+      setInputAmount(nativeTokenBalance.div(factor))
     }
   }
 
@@ -100,7 +80,7 @@ export default function StakingAmount() {
       <View style={{ alignItems: 'center' }}>
         <AvaText.Subtitle1 color={theme.neutral500}>
           Balance:
-          {' ' + nativeBalance + ' AVAX'}
+          {' ' + nativeTokenBalance.toDisplay() + ' AVAX'}
         </AvaText.Subtitle1>
       </View>
       <EarnInputAmount
@@ -123,7 +103,7 @@ export default function StakingAmount() {
         }}>
         {amountNotEnough && (
           <AvaText.Body3 color={theme.colorError}>
-            {`Minimum amount to stake is ${minStakeAmountAvax} AVAX`}
+            {`Minimum amount to stake is ${minStakeAmount.toString()} AVAX`}
           </AvaText.Body3>
         )}
         {notEnoughBalance && (
@@ -143,11 +123,11 @@ export default function StakingAmount() {
           Next
         </AvaButton.PrimaryLarge>
       )}
-      {inputAmount === 0n && (
+      {inputAmount.isZero() && (
         <Row style={{ justifyContent: 'space-between' }}>
           <PercentButtons
             isDeveloperMode={isDeveloperMode}
-            balance={nativeTokenBalanceWeiAvax}
+            balance={nativeTokenBalance}
             onPercentageSelected={setAmount}
           />
         </Row>

@@ -16,8 +16,7 @@ import LinearGradientSVG from 'components/svg/LinearGradientSVG'
 import { format } from 'date-fns'
 import { calculateMaxWeight, generateGradient } from 'services/earn/utils'
 import { NodeValidator } from 'types/earn'
-import { BigIntNAvax } from 'types/denominations'
-import { bigintToBig } from 'utils/bigNumbers/bigintToBig'
+import { Avax } from 'types/Avax'
 import { PopableContentWithCaption } from './PopableContentWithCaption'
 
 type NavigationProp = StakeSetupScreenProps<
@@ -30,7 +29,7 @@ export const NodeCard = ({
   stakingEndTime
 }: {
   data: NodeValidator
-  stakingAmount: BigIntNAvax
+  stakingAmount: Avax
   stakingEndTime: Date
 }) => {
   const { theme } = useApplicationContext()
@@ -39,15 +38,15 @@ export const NodeCard = ({
 
   const endDate = format(new Date(parseInt(data.endTime) * 1000), 'MM/dd/yy')
 
-  const stakeAmount = BigInt(data.stakeAmount)
-  const delegatorWeight = BigInt(data.delegatorWeight || 0)
-  const currentWeight: BigIntNAvax = stakeAmount + delegatorWeight
+  const stakeAmount = Avax.fromNanoAvax(data.stakeAmount)
+  const delegatorWeight = Avax.fromNanoAvax(data.delegatorWeight || 0)
+  const currentWeight = stakeAmount.add(delegatorWeight)
 
-  const maxWeight = calculateMaxWeight(BigInt(3000000e9), stakeAmount)
+  const maxWeight = calculateMaxWeight(Avax.fromBase(3_000_000), stakeAmount)
 
-  const validatorStake = bigintToBig(stakeAmount, 9).toFixed(2)
+  const validatorStake = stakeAmount.toString()
 
-  const available = bigintToBig(maxWeight.maxWeight - currentWeight, 9)
+  const available = maxWeight.maxWeight.sub(currentWeight)
 
   const gradientColors = useMemo(() => generateGradient(), [])
 
