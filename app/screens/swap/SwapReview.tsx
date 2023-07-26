@@ -141,7 +141,7 @@ const SwapReview = ({ onCancel, onBackToParent }: Props) => {
             content={'Quotes are refreshed to reflect current market prices'}
             position={'left'}
             style={{ minWidth: 200 }}
-            backgroundColor={theme.colorBg3}>
+            backgroundColor={theme.neutral100}>
             <Row
               style={{
                 backgroundColor: theme.colorBg2,

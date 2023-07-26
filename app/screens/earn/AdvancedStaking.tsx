@@ -1,5 +1,5 @@
 import React from 'react'
-import { ScrollView, StyleSheet, View } from 'react-native'
+import { ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native'
 import AvaText from 'components/AvaText'
 import AvaButton from 'components/AvaButton'
 import { useApplicationContext } from 'contexts/ApplicationContext'
@@ -37,6 +37,7 @@ type ScreenProps = StakeSetupScreenProps<
 >
 
 const AdvancedStaking = () => {
+  const width = useWindowDimensions().width
   const { theme } = useApplicationContext()
   const { navigate } = useNavigation<ScreenProps['navigation']>()
   const { stakingAmount, stakingEndTime } =
@@ -82,10 +83,11 @@ const AdvancedStaking = () => {
         </AvaText.Subtitle1>
         <View>
           <View style={{ marginBottom: 24 }}>
-            <View style={{ alignSelf: 'flex-start' }}>
+            <View style={{ alignSelf: 'flex-start', width: width / 2 }}>
               <PopableComponent
                 label="Minimum Uptime"
                 message="This is a validator’s uptime, the minimum threshold for rewards is 80%"
+                minWidth={187}
               />
             </View>
             <FormInputText
@@ -102,10 +104,14 @@ const AdvancedStaking = () => {
             </AvaText.Caption>
           </View>
           <View>
-            <View style={{ alignSelf: 'flex-start' }}>
+            <View
+              style={{
+                alignSelf: 'flex-start'
+              }}>
               <PopableComponent
-                label="Maximum Fee"
+                label="Maximum Delegation Fee"
                 message="This is a range set by the protocol."
+                minWidth={141}
               />
             </View>
             <FormInputText
@@ -136,24 +142,20 @@ const AdvancedStaking = () => {
 
 const PopableComponent = ({
   label,
-  message
+  message,
+  minWidth
 }: {
   label: string
   message: string
+  minWidth: number
 }) => {
   const { theme } = useApplicationContext()
 
   return (
     <Popable
-      content={
-        <PopableContent
-          backgroundColor={theme.neutral100}
-          textStyle={{ color: theme.neutral900 }}
-          message={message}
-        />
-      }
+      content={<PopableContent message={message} />}
       position={'top'}
-      style={{ minWidth: 200 }}
+      style={{ minWidth }}
       backgroundColor={theme.neutral100}>
       <PopableLabel
         label={label}

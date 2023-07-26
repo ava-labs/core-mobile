@@ -99,7 +99,7 @@ const StakeDetails = () => {
             position="right"
             strictPosition={true}
             style={{ minWidth: 200 }}
-            backgroundColor={theme.colorBg3}>
+            backgroundColor={theme.neutral100}>
             <PopableLabel
               label="Estimated Rewards"
               textStyle={{ lineHeight: 24, color: theme.colorText1 }}

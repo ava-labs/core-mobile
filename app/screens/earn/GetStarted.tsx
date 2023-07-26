@@ -5,28 +5,40 @@ import AvaLogoSVG from 'components/svg/AvaLogoSVG'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Space } from 'components/Space'
 import { Row } from 'components/Row'
-import EarnSVG from 'components/svg/EarnSVG'
 import Separator from 'components/Separator'
-import CalendarSVG from 'components/svg/CalendarSVG'
+import Calendar2SVG from 'components/svg/Calendar2SVG'
 import Globe2SVG from 'components/svg/Globe2SVG'
 import AvaButton from 'components/AvaButton'
-import FlexSpacer from 'components/FlexSpacer'
 import { DOCS_STAKING } from 'resources/Constants'
 import Logger from 'utils/Logger'
+import CircularPlusSVG from 'components/svg/CircularPlusSVG'
+import { StakeSetupScreenProps } from 'navigation/types'
+import AppNavigation from 'navigation/AppNavigation'
+import { useNavigation } from '@react-navigation/core'
+
+type ScreenProps = StakeSetupScreenProps<
+  typeof AppNavigation.StakeSetup.GetStarted
+>['navigation']
 
 export default function GetStarted({ onNext }: { onNext: () => void }) {
   const { theme } = useApplicationContext()
+  const { navigate } = useNavigation<ScreenProps>()
 
   function goToStakingDocs() {
     Linking.openURL(DOCS_STAKING).catch(e => {
       Logger.error(DOCS_STAKING, e)
     })
   }
+
+  const goToDisclaimer = () => {
+    navigate(AppNavigation.Modal.StakeDisclaimer)
+  }
+
   return (
     <View style={{ padding: 16, flex: 1 }}>
       <AvaText.LargeTitleBold>Get Started</AvaText.LargeTitleBold>
+      <Space y={31} />
       <View style={{ alignItems: 'center' }}>
-        <Space y={47} />
         <AvaLogoSVG
           size={56}
           backgroundColor={theme.tokenLogoBg}
@@ -34,18 +46,20 @@ export default function GetStarted({ onNext }: { onNext: () => void }) {
         />
         <Space y={16} />
         <View style={{ paddingHorizontal: 23, alignItems: 'center' }}>
-          <AvaText.Heading5>Earn rewards through staking</AvaText.Heading5>
+          <AvaText.Heading5>Stake your AVAX, get rewards</AvaText.Heading5>
           <Space y={8} />
           <AvaText.Body2 textStyle={{ textAlign: 'center' }}>
             {
-              'Stake your AVAX in the Avalanche Network and earn rewards up to 9% APY.'
+              'Use Core to delegate your AVAX to nodes in the Avalanche network and receive rewards.'
             }
           </AvaText.Body2>
           <Row
             style={{
               alignItems: 'center'
             }}>
-            <AvaText.Body2>{'Learn more about staking '}</AvaText.Body2>
+            <AvaText.Body2>
+              {' Learn more about how staking works '}
+            </AvaText.Body2>
             <AvaButton.TextLink
               onPress={goToStakingDocs}
               textColor={theme.colorPrimary1}
@@ -54,27 +68,18 @@ export default function GetStarted({ onNext }: { onNext: () => void }) {
               }}>
               here
             </AvaButton.TextLink>
+            <AvaText.Body2>{'.'}</AvaText.Body2>
           </Row>
         </View>
       </View>
       <Space y={40} />
       <Row style={{ alignItems: 'center' }}>
         <View style={[styles.circular, { backgroundColor: theme.colorBg2 }]}>
-          <EarnSVG selected={true} />
+          <Calendar2SVG />
         </View>
         <Space x={16} />
         <View style={{ flex: 1 }}>
-          <AvaText.Heading6>Earn yield on your AVAX tokens.</AvaText.Heading6>
-        </View>
-      </Row>
-      <Separator style={{ marginLeft: 64, marginVertical: 14 }} />
-      <Row style={{ alignItems: 'center' }}>
-        <View style={[styles.circular, { backgroundColor: theme.colorBg2 }]}>
-          <CalendarSVG selected={true} />
-        </View>
-        <Space x={16} />
-        <View style={{ flex: 1 }}>
-          <AvaText.Heading6>Choose your desired timeline.</AvaText.Heading6>
+          <AvaText.Heading6>Choose your desired timeline</AvaText.Heading6>
         </View>
       </Row>
       <Separator style={{ marginLeft: 64, marginVertical: 14 }} />
@@ -84,11 +89,33 @@ export default function GetStarted({ onNext }: { onNext: () => void }) {
         </View>
         <Space x={16} />
         <View style={{ flex: 1 }}>
-          <AvaText.Heading6>Secure the Avalanche network.</AvaText.Heading6>
+          <AvaText.Heading6>Secure the Avalanche network</AvaText.Heading6>
         </View>
       </Row>
-      <FlexSpacer />
+      <Separator style={{ marginLeft: 64, marginVertical: 14 }} />
+      <Row style={{ alignItems: 'center' }}>
+        <View style={[styles.circular, { backgroundColor: theme.colorBg2 }]}>
+          <CircularPlusSVG />
+        </View>
+        <Space x={16} />
+        <View style={{ flex: 1 }}>
+          <AvaText.Heading6>Receive your staking rewards</AvaText.Heading6>
+        </View>
+      </Row>
+      <Space y={40} />
       <AvaButton.PrimaryLarge onPress={onNext}>Next</AvaButton.PrimaryLarge>
+      <Space y={16} />
+      <View style={{ marginHorizontal: 16 }}>
+        <AvaText.Overline textStyle={{ textAlign: 'center' }}>
+          <AvaText.TextLink
+            textStyle={{ fontSize: 10, lineHeight: 16 }}
+            onPress={goToDisclaimer}>
+            Disclaimer
+          </AvaText.TextLink>
+          : Delegating is a feature of Avalanche’s staking mechanism that allows
+          token holders to participate...
+        </AvaText.Overline>
+      </View>
     </View>
   )
 }

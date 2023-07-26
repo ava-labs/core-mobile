@@ -74,7 +74,7 @@ export default function StakingAmount() {
       <AvaText.LargeTitleBold>Staking Amount</AvaText.LargeTitleBold>
       <Space y={7} />
       <AvaText.Subtitle1 color={theme.neutral50}>
-        How much would you like to stake?
+        How many AVAX would you like to stake?
       </AvaText.Subtitle1>
       <Space y={40} />
       <View style={{ alignItems: 'center' }}>
