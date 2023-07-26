@@ -135,7 +135,7 @@ export default function ReviewSend({ onSuccess }: { onSuccess: () => void }) {
             }
             position={'right'}
             style={{ minWidth: 200 }}
-            backgroundColor={theme.colorBg3}>
+            backgroundColor={theme.neutral100}>
             <PopableLabel label="Network Fee" />
           </Popable>
           <AvaText.Heading2 testID="review_and_send__network_fee" currency>

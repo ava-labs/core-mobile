@@ -157,7 +157,7 @@ const NetworkFeeSelector = ({
             }
             position={'right'}
             style={{ minWidth: 200 }}
-            backgroundColor={theme.colorBg3}>
+            backgroundColor={theme.neutral100}>
             <Row style={{ alignItems: 'center' }}>
               <AvaText.Body2>Network Fee</AvaText.Body2>
               <Space x={4} />
