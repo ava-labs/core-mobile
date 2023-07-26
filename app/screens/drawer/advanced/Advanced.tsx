@@ -44,9 +44,9 @@ const Advanced = () => {
                 <PopableContent message="Testnet mode changes the interface to allow you to interact with supported testnets." />
               }
               position={'bottom'}
-              backgroundColor={theme.colorBg3}
               style={styles.widthStyle}
-              wrapperStyle={styles.widthStyle}>
+              wrapperStyle={styles.widthStyle}
+              backgroundColor={theme.neutral100}>
               <Row style={{ alignItems: 'center' }}>
                 <AvaText.Heading3 ellipsizeMode="tail">
                   Testnet Mode
@@ -76,9 +76,9 @@ const Advanced = () => {
                   <PopableContent message="Move FAB to left screen side." />
                 }
                 position={'bottom'}
-                backgroundColor={theme.colorBg3}
                 style={styles.widthStyle}
-                wrapperStyle={styles.widthStyle}>
+                wrapperStyle={styles.widthStyle}
+                backgroundColor={theme.neutral100}>
                 <Row style={{ alignItems: 'center' }}>
                   <AvaText.Heading3 ellipsizeMode="tail">
                     I'm left-handed
