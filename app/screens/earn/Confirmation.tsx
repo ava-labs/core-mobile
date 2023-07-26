@@ -32,7 +32,7 @@ import { showSnackBarCustom } from 'components/Snackbar'
 import TransactionToast, {
   TransactionToastType
 } from 'components/toast/TransactionToast'
-import { BaseAvax } from 'types/BaseAvax'
+import { Avax } from 'types/Avax'
 import { ConfirmScreen } from './components/ConfirmScreen'
 
 type ScreenProps = StakeSetupScreenProps<
@@ -83,8 +83,7 @@ export const Confirmation = () => {
     ),
     delegationFee: Number(validator?.delegationFee)
   })
-  const estimatedTokenReward =
-    data?.estimatedTokenReward ?? BaseAvax.fromBase(0)
+  const estimatedTokenReward = data?.estimatedTokenReward ?? Avax.fromBase(0)
   const estimatedRewardInCurrency: string =
     data?.estimatedRewardInCurrency ?? '0'
 

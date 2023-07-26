@@ -1,6 +1,6 @@
 import { AdvancedSortFilter, NodeValidators } from 'types/earn'
 import mockValidators from 'tests/fixtures/pvm/validators.json'
-import { BaseAvax } from 'types/BaseAvax'
+import { Avax } from 'types/Avax'
 import {
   calculateMaxWeight,
   getAdvancedSortedValidators,
@@ -11,12 +11,12 @@ import {
 
 describe('calculateMaxWeight', () => {
   it('returns the correct maxWeight and maxDelegation', () => {
-    const maxValidatorStake = BaseAvax.fromBase(3000000)
-    const stakeAmount = BaseAvax.fromNanoAvax('1900264376785214')
+    const maxValidatorStake = Avax.fromBase(3000000)
+    const stakeAmount = Avax.fromNanoAvax('1900264376785214')
 
     const expectedMaxWeight = {
-      maxDelegation: BaseAvax.fromNanoAvax('1099735623214786'),
-      maxWeight: BaseAvax.fromBase(3000000)
+      maxDelegation: Avax.fromNanoAvax('1099735623214786'),
+      maxWeight: Avax.fromBase(3000000)
     }
     expect(calculateMaxWeight(maxValidatorStake, stakeAmount)).toStrictEqual(
       expectedMaxWeight
@@ -24,12 +24,12 @@ describe('calculateMaxWeight', () => {
   })
 
   it('returns the correct maxWeight when stakeWeight is less than maxValidatorStake', () => {
-    const maxValidatorStake = BaseAvax.fromBase(2000000)
-    const stakeAmount = BaseAvax.fromNanoAvax('4376785214')
+    const maxValidatorStake = Avax.fromBase(2000000)
+    const stakeAmount = Avax.fromNanoAvax('4376785214')
 
     const expectedMaxWeight = {
-      maxDelegation: BaseAvax.fromNanoAvax('17507140856'),
-      maxWeight: BaseAvax.fromNanoAvax('21883926070')
+      maxDelegation: Avax.fromNanoAvax('17507140856'),
+      maxWeight: Avax.fromNanoAvax('21883926070')
     }
     expect(calculateMaxWeight(maxValidatorStake, stakeAmount)).toStrictEqual(
       expectedMaxWeight
@@ -41,7 +41,7 @@ describe('getFilteredValidators function', () => {
   it('should return empty array when the validators input is empty', () => {
     const result = getFilteredValidators({
       validators: [] as unknown as NodeValidators,
-      stakingAmount: BaseAvax.fromBase(1),
+      stakingAmount: Avax.fromBase(1),
       isDeveloperMode: true,
       stakingEndTime: new Date('1900-07-05T16:52:40.723Z'),
       minUpTime: 99.9999
@@ -51,7 +51,7 @@ describe('getFilteredValidators function', () => {
   it('should return filtered validators that meet the selected uptime', () => {
     const result = getFilteredValidators({
       validators: mockValidators.validators as unknown as NodeValidators,
-      stakingAmount: BaseAvax.fromBase(1),
+      stakingAmount: Avax.fromBase(1),
       isDeveloperMode: true,
       stakingEndTime: new Date('1900-07-05T16:52:40.723Z'),
       minUpTime: 99.9999
@@ -62,7 +62,7 @@ describe('getFilteredValidators function', () => {
   it('should return filtered validators that meet the selected staking duration', () => {
     const result = getFilteredValidators({
       validators: mockValidators.validators as unknown as NodeValidators,
-      stakingAmount: BaseAvax.fromBase(1),
+      stakingAmount: Avax.fromBase(1),
       isDeveloperMode: true,
       stakingEndTime: new Date('2122-07-05T16:57:10.140Z')
     })
@@ -72,7 +72,7 @@ describe('getFilteredValidators function', () => {
   it('should return filtered validators that meet the selected staking amount', () => {
     const result = getFilteredValidators({
       validators: mockValidators.validators as unknown as NodeValidators,
-      stakingAmount: BaseAvax.fromBase(100),
+      stakingAmount: Avax.fromBase(100),
       isDeveloperMode: true,
       stakingEndTime: new Date()
     })

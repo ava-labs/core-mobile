@@ -3,7 +3,7 @@ import { AdvancedSortFilter, NodeValidator, NodeValidators } from 'types/earn'
 import { random } from 'lodash'
 import { FujiParams, MainnetParams } from 'utils/NetworkParams'
 import { MAX_VALIDATOR_WEIGHT_FACTOR } from 'consts/earn'
-import { BaseAvax } from 'types/BaseAvax'
+import { Avax } from 'types/Avax'
 
 /**
  * See https://docs.avax.network/subnets/reference-elastic-subnets-parameters#primary-network-parameters-on-mainnet
@@ -43,9 +43,9 @@ export const getMaximumStakeEndDate = () => {
  * @returns maxDelegation - The maximum delegation in nAvax (`maxWeight` - `stakeAmount`)
  */
 export const calculateMaxWeight = (
-  maxValidatorStake: BaseAvax,
-  stakeAmount: BaseAvax
-): { maxWeight: BaseAvax; maxDelegation: BaseAvax } => {
+  maxValidatorStake: Avax,
+  stakeAmount: Avax
+): { maxWeight: Avax; maxDelegation: Avax } => {
   const stakeWeight = stakeAmount.mul(MAX_VALIDATOR_WEIGHT_FACTOR)
   const maxWeight = stakeWeight.lt(maxValidatorStake)
     ? stakeWeight
@@ -89,9 +89,9 @@ const hasMinimumStakingTime = (
 
 const getAvailableDelegationWeight = (
   isDeveloperMode: boolean,
-  weight: BaseAvax
-): BaseAvax => {
-  const maxValidatorStake = BaseAvax.fromNanoAvax(
+  weight: Avax
+): Avax => {
+  const maxValidatorStake = Avax.fromNanoAvax(
     getStakingConfig(isDeveloperMode).MaxValidatorStake
   )
   const maxWeight = calculateMaxWeight(maxValidatorStake, weight)
@@ -100,7 +100,7 @@ const getAvailableDelegationWeight = (
 
 type getFilteredValidatorsProps = {
   validators: NodeValidators
-  stakingAmount: BaseAvax
+  stakingAmount: Avax
   isDeveloperMode: boolean
   stakingEndTime: Date
   minUpTime?: number
@@ -137,7 +137,7 @@ export const getFilteredValidators = ({
     ({ endTime, weight, uptime, delegationFee, nodeID }) => {
       const availableDelegationWeight = getAvailableDelegationWeight(
         isDeveloperMode,
-        BaseAvax.fromNanoAvax(weight)
+        Avax.fromNanoAvax(weight)
       )
       return (
         (searchText ? nodeID.includes(searchText) : true) &&

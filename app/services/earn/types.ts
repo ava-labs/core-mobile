@@ -1,5 +1,5 @@
 import { Account } from 'store/account'
-import { BaseAvax } from 'types/BaseAvax'
+import { Avax } from 'types/Avax'
 
 export type AddDelegatorTransactionProps = {
   activeAccount: Account
@@ -17,8 +17,8 @@ export type AddDelegatorTransactionProps = {
 export type UnixTimeMs = number
 
 export type CollectTokensForStakingParams = {
-  cChainBalance: BaseAvax
-  requiredAmount: BaseAvax
+  cChainBalance: Avax
+  requiredAmount: Avax
   activeAccount: Account
   isDevMode: boolean
 }

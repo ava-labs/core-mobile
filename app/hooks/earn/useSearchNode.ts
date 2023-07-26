@@ -7,10 +7,10 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { useSelector } from 'react-redux'
 import Logger from 'utils/Logger'
 import { NodeValidator, NodeValidators } from 'types/earn'
-import { BaseAvax } from 'types/BaseAvax'
+import { Avax } from 'types/Avax'
 
 type useSearchNodeProps = {
-  stakingAmount: BaseAvax
+  stakingAmount: Avax
   stakingEndTime: Date
   validators?: NodeValidators
 }

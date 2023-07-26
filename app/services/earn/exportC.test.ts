@@ -6,7 +6,7 @@ import { Avalanche } from '@avalabs/wallets-sdk'
 import { avaxSerial, EVM, UnsignedTx, utils } from '@avalabs/avalanchejs-v2'
 import mockNetworks from 'tests/fixtures/networks.json'
 import { AVALANCHE_XP_NETWORK, Network } from '@avalabs/chains-sdk'
-import { BaseAvax } from 'types/BaseAvax'
+import { Avax } from 'types/Avax'
 
 describe('earn/exportC', () => {
   describe('exportC', () => {
@@ -63,8 +63,8 @@ describe('earn/exportC', () => {
     it('should fail if cChainBalance is less than required amount', async () => {
       await expect(async () => {
         await exportC({
-          cChainBalance: BaseAvax.fromBase(1),
-          requiredAmount: BaseAvax.fromBase(10),
+          cChainBalance: Avax.fromBase(1),
+          requiredAmount: Avax.fromBase(10),
           isDevMode: false,
           activeAccount: {} as Account
         })
@@ -73,8 +73,8 @@ describe('earn/exportC', () => {
 
     it('should call avaxProvider.getApiC().getBaseFee()', async () => {
       await exportC({
-        cChainBalance: BaseAvax.fromBase(1),
-        requiredAmount: BaseAvax.fromBase(0.1),
+        cChainBalance: Avax.fromBase(1),
+        requiredAmount: Avax.fromBase(0.1),
         isDevMode: false,
         activeAccount: {} as Account
       })
@@ -83,14 +83,14 @@ describe('earn/exportC', () => {
 
     it('should call walletService.createExportCTx', async () => {
       const result = await exportC({
-        cChainBalance: BaseAvax.fromBase(1),
-        requiredAmount: BaseAvax.fromBase(0.1),
+        cChainBalance: Avax.fromBase(1),
+        requiredAmount: Avax.fromBase(0.1),
         isDevMode: false,
         activeAccount: {} as Account
       })
       expect(WalletService.createExportCTx).toHaveBeenCalledWith(
-        BaseAvax.fromBase('0.101'),
-        BaseAvax.fromNanoAvax(30),
+        Avax.fromBase('0.101'),
+        Avax.fromNanoAvax(30),
         undefined,
         AVALANCHE_XP_NETWORK,
         'P',
@@ -101,8 +101,8 @@ describe('earn/exportC', () => {
 
     it('should call walletService.signAvaxTx', async () => {
       const result = await exportC({
-        cChainBalance: BaseAvax.fromBase(1),
-        requiredAmount: BaseAvax.fromBase(0.1),
+        cChainBalance: Avax.fromBase(1),
+        requiredAmount: Avax.fromBase(0.1),
         isDevMode: false,
         activeAccount: {} as Account
       })
@@ -112,8 +112,8 @@ describe('earn/exportC', () => {
 
     it('should call networkService.sendTransaction', async () => {
       const result = await exportC({
-        cChainBalance: BaseAvax.fromBase(1),
-        requiredAmount: BaseAvax.fromBase(0.1),
+        cChainBalance: Avax.fromBase(1),
+        requiredAmount: Avax.fromBase(0.1),
         isDevMode: false,
         activeAccount: {} as Account
       })

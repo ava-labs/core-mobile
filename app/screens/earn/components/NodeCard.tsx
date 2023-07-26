@@ -16,7 +16,7 @@ import LinearGradientSVG from 'components/svg/LinearGradientSVG'
 import { format } from 'date-fns'
 import { calculateMaxWeight, generateGradient } from 'services/earn/utils'
 import { NodeValidator } from 'types/earn'
-import { BaseAvax } from 'types/BaseAvax'
+import { Avax } from 'types/Avax'
 import { PopableContentWithCaption } from './PopableContentWithCaption'
 
 type NavigationProp = StakeSetupScreenProps<
@@ -29,7 +29,7 @@ export const NodeCard = ({
   stakingEndTime
 }: {
   data: NodeValidator
-  stakingAmount: BaseAvax
+  stakingAmount: Avax
   stakingEndTime: Date
 }) => {
   const { theme } = useApplicationContext()
@@ -38,14 +38,11 @@ export const NodeCard = ({
 
   const endDate = format(new Date(parseInt(data.endTime) * 1000), 'MM/dd/yy')
 
-  const stakeAmount = BaseAvax.fromNanoAvax(data.stakeAmount)
-  const delegatorWeight = BaseAvax.fromNanoAvax(data.delegatorWeight || 0)
+  const stakeAmount = Avax.fromNanoAvax(data.stakeAmount)
+  const delegatorWeight = Avax.fromNanoAvax(data.delegatorWeight || 0)
   const currentWeight = stakeAmount.add(delegatorWeight)
 
-  const maxWeight = calculateMaxWeight(
-    BaseAvax.fromBase(3_000_000),
-    stakeAmount
-  )
+  const maxWeight = calculateMaxWeight(Avax.fromBase(3_000_000), stakeAmount)
 
   const validatorStake = stakeAmount.toString()
 

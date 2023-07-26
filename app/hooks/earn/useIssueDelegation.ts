@@ -7,7 +7,7 @@ import { selectActiveAccount } from 'store/account'
 import { selectActiveNetwork } from 'store/network'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { QueryClient } from '@tanstack/query-core'
-import { BaseAvax } from 'types/BaseAvax'
+import { Avax } from 'types/Avax'
 
 export const useIssueDelegation = (onSuccess: (txId: string) => void) => {
   const queryClient = useQueryClient()
@@ -29,7 +29,7 @@ export const useIssueDelegation = (onSuccess: (txId: string) => void) => {
   const issueDelegationMutation = useMutation({
     mutationFn: (data: {
       nodeId: string
-      stakingAmount: BaseAvax
+      stakingAmount: Avax
       startDate: Date
       endDate: Date
     }) => {
@@ -39,7 +39,7 @@ export const useIssueDelegation = (onSuccess: (txId: string) => void) => {
 
       return EarnService.collectTokensForStaking({
         activeAccount,
-        cChainBalance: cChainBalance || BaseAvax.fromBase(0),
+        cChainBalance: cChainBalance || Avax.fromBase(0),
         isDevMode: isDeveloperMode,
         requiredAmount: data.stakingAmount
       }).then(successfullyCollected => {

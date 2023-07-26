@@ -19,7 +19,7 @@ import useStakingParams from 'hooks/earn/useStakingParams'
 import { useNavigation } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
 import { StakeSetupScreenProps } from 'navigation/types'
-import { BaseAvax } from 'types/BaseAvax'
+import { Avax } from 'types/Avax'
 import { useCChainBalance } from 'hooks/earn/useCChainBalance'
 
 type ScreenProps = StakeSetupScreenProps<
@@ -43,13 +43,13 @@ export default function StakingAmount() {
     avaxNetwork,
     selectedCurrency.toLowerCase() as VsCurrencyType
   )
-  const [inputAmount, setInputAmount] = useState(BaseAvax.fromBase(0))
+  const [inputAmount, setInputAmount] = useState(Avax.fromBase(0))
   const stakeInCurrency = useMemo(
     () => inputAmount.mul(nativeTokenPrice).toFixed(2),
     [inputAmount, nativeTokenPrice]
   )
 
-  const nativeTokenBalance = BaseAvax.fromWei(cChainBalance?.data?.balance || 0)
+  const nativeTokenBalance = Avax.fromWei(cChainBalance?.data?.balance || 0)
 
   const amountNotEnough = !inputAmount.isZero() && inputAmount < minStakeAmount
 
@@ -59,7 +59,7 @@ export default function StakingAmount() {
   const inputValid =
     !amountNotEnough && !notEnoughBalance && !inputAmount.isZero()
 
-  function handleAmountChange(amount: BaseAvax) {
+  function handleAmountChange(amount: Avax) {
     setInputAmount(amount)
   }
 

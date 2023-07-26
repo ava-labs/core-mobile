@@ -12,29 +12,29 @@ import SelectNode from 'screens/earn/SelectNode'
 import { Confirmation } from 'screens/earn/Confirmation'
 import { CancelModal } from 'screens/earn/CancelModal'
 import SmartStakeAmount from 'screens/earn/SmartStakeAmount'
-import { BaseAvax } from 'types/BaseAvax'
+import { Avax } from 'types/Avax'
 
 export type StakeSetupStackParamList = {
   [AppNavigation.StakeSetup.GetStarted]: undefined
   [AppNavigation.StakeSetup.SmartStakeAmount]: undefined
-  [AppNavigation.StakeSetup.StakingDuration]: { stakingAmount: BaseAvax }
+  [AppNavigation.StakeSetup.StakingDuration]: { stakingAmount: Avax }
   [AppNavigation.StakeSetup.AdvancedStaking]: {
     stakingEndTime: Date
-    stakingAmount: BaseAvax
+    stakingAmount: Avax
   }
   [AppNavigation.StakeSetup.SelectNode]: {
     stakingEndTime: Date
-    stakingAmount: BaseAvax
+    stakingAmount: Avax
     minUpTime?: number
     maxFee?: number
   }
   [AppNavigation.StakeSetup.NodeSearch]: {
     stakingEndTime: Date
-    stakingAmount: BaseAvax
+    stakingAmount: Avax
   }
   [AppNavigation.StakeSetup.Confirmation]: {
     nodeId: string
-    stakingAmount: BaseAvax
+    stakingAmount: Avax
     stakingEndTime: Date
   }
   [AppNavigation.StakeSetup.Cancel]: undefined

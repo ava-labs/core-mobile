@@ -1,6 +1,6 @@
 import { avaxSerial, UnsignedTx } from '@avalabs/avalanchejs-v2'
 import BN from 'bn.js'
-import { BaseAvax } from 'types/BaseAvax'
+import { Avax } from 'types/Avax'
 
 /**
  * https://docs.avax.network/quickstart/transaction-fees#atomic-transaction-fees
@@ -26,6 +26,6 @@ export function calculateCChainFee(
 /**
  * https://docs.avax.network/quickstart/transaction-fees#fee-schedule
  */
-export function calculatePChainFee(): BaseAvax {
-  return BaseAvax.fromBase(0.001)
+export function calculatePChainFee(): Avax {
+  return Avax.fromBase(0.001)
 }

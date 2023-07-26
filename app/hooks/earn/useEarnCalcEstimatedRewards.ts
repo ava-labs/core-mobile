@@ -5,10 +5,10 @@ import { selectAvaxPrice } from 'store/balance'
 import { useQuery } from '@tanstack/react-query'
 import { GetCurrentSupplyResponse } from '@avalabs/avalanchejs-v2/dist/src/vms/pvm'
 import { Seconds } from 'types/siUnits'
-import { BaseAvax } from 'types/BaseAvax'
+import { Avax } from 'types/Avax'
 
 export type useEarnCalcEstimatedRewardsProps = {
-  amount: BaseAvax
+  amount: Avax
   duration: Seconds
   delegationFee: number
 }
@@ -35,7 +35,7 @@ export const useEarnCalcEstimatedRewards = ({
       const reward = EarnService.calcReward(
         amount,
         duration,
-        BaseAvax.fromNanoAvax(currentSupply),
+        Avax.fromNanoAvax(currentSupply),
         delegationFee,
         isDeveloperMode
       )

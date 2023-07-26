@@ -33,7 +33,7 @@ import Logger from 'utils/Logger'
 import { UnsignedTx } from '@avalabs/avalanchejs-v2'
 import { fromUnixTime, getUnixTime } from 'date-fns'
 import { getMinimumStakeEndTime } from 'services/earn/utils'
-import { BaseAvax } from 'types/BaseAvax'
+import { Avax } from 'types/Avax'
 
 class WalletService {
   private mnemonic?: string
@@ -204,8 +204,8 @@ class WalletService {
   }
 
   async createExportCTx(
-    amount: BaseAvax,
-    baseFee: BaseAvax,
+    amount: Avax,
+    baseFee: Avax,
     accountIndex: number,
     avaxXPNetwork: Network,
     destinationChain: 'P' | 'X',

@@ -9,16 +9,16 @@ import { Platform } from 'react-native'
 import { DenominationNAvax } from 'types/denominations'
 import limitInput from 'screens/earn/limitInput'
 import { TokenBaseUnitInput } from 'components/TokenBaseUnitInput'
-import { BaseAvax } from 'types/BaseAvax'
+import { Avax } from 'types/Avax'
 
 const EarnInputAmount = ({
   inputAmount,
   decimals,
   handleAmountChange
 }: {
-  inputAmount?: BaseAvax
+  inputAmount?: Avax
   decimals: DenominationNAvax
-  handleAmountChange?: (amount: BaseAvax) => void
+  handleAmountChange?: (amount: Avax) => void
 }) => {
   const { theme } = useApplicationContext()
 
@@ -31,8 +31,8 @@ const EarnInputAmount = ({
     }
   }, [decimals, handleAmountChange, inputAmount])
 
-  const interceptAmountChange = (amount: BaseAvax) => {
-    const sanitized = limitInput(amount) ?? BaseAvax.fromBase(0)
+  const interceptAmountChange = (amount: Avax) => {
+    const sanitized = limitInput(amount) ?? Avax.fromBase(0)
     handleAmountChange?.(sanitized)
   }
 
@@ -45,7 +45,7 @@ const EarnInputAmount = ({
       }}>
       <TokenBaseUnitInput
         value={inputAmount}
-        baseUnitConstructor={BaseAvax}
+        baseUnitConstructor={Avax}
         denomination={decimals}
         placeholder={'0.0'}
         onChange={interceptAmountChange}

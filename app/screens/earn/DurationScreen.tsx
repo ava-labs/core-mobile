@@ -28,7 +28,7 @@ import {
 } from 'services/earn/getStakeEndDate'
 import { useEarnCalcEstimatedRewards } from 'hooks/earn/useEarnCalcEstimatedRewards'
 import { convertToSeconds, MilliSeconds } from 'types/siUnits'
-import { BaseAvax } from 'types/BaseAvax'
+import { Avax } from 'types/Avax'
 
 type ScreenProps = StakeSetupScreenProps<
   typeof AppNavigation.StakeSetup.StakingDuration
@@ -95,7 +95,7 @@ const StakingDuration = () => {
     }
   }
 
-  const renderDurationOptions = (stakeAmount: BaseAvax) => {
+  const renderDurationOptions = (stakeAmount: Avax) => {
     const durationOptions = isDeveloperMode
       ? DURATION_OPTIONS_FUJI
       : DURATION_OPTIONS_MAINNET
@@ -191,7 +191,7 @@ const DurationOptionItem = ({
   onRadioSelect,
   isSelected
 }: {
-  stakeAmount: BaseAvax
+  stakeAmount: Avax
   item: DurationOption
   isDeveloperMode: boolean
   onRadioSelect: (item: DurationOption) => void

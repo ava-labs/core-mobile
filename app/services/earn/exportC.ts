@@ -9,11 +9,11 @@ import { Account } from 'store/account'
 import { AvalancheTransactionRequest } from 'services/wallet/types'
 import { UnsignedTx } from '@avalabs/avalanchejs-v2'
 import NetworkService from 'services/network/NetworkService'
-import { BaseAvax } from 'types/BaseAvax'
+import { Avax } from 'types/Avax'
 
 export type ExportCParams = {
-  cChainBalance: BaseAvax
-  requiredAmount: BaseAvax
+  cChainBalance: Avax
+  requiredAmount: Avax
   activeAccount: Account
   isDevMode: boolean
 }
@@ -36,7 +36,7 @@ export async function exportC({
     avaxXPNetwork
   ) as Avalanche.JsonRpcProvider
 
-  const baseFee = BaseAvax.fromWei(await avaxProvider.getApiC().getBaseFee())
+  const baseFee = Avax.fromWei(await avaxProvider.getApiC().getBaseFee())
   const instantFee = baseFee.add(baseFee.mul(0.2)) // Increase by 20% for instant speed
 
   const pChainFee = calculatePChainFee()

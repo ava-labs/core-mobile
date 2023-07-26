@@ -33,7 +33,7 @@ import {
   SortOrder
 } from '@avalabs/glacier-sdk'
 import { glacierSdk } from 'utils/network/glacier'
-import { BaseAvax } from 'types/BaseAvax'
+import { Avax } from 'types/Avax'
 
 class EarnService {
   /**
@@ -104,12 +104,12 @@ class EarnService {
    * @param isDeveloperMode
    */
   calcReward(
-    amount: BaseAvax,
+    amount: Avax,
     duration: Seconds,
-    currentSupply: BaseAvax,
+    currentSupply: Avax,
     delegationFee: number,
     isDeveloperMode: boolean
-  ): BaseAvax {
+  ): Avax {
     const defPlatformVals = isDeveloperMode ? FujiParams : MainnetParams
     const minConsumptionRateRatio = new Big(
       defPlatformVals.stakingConfig.RewardConfig.MinConsumptionRate
@@ -125,7 +125,7 @@ class EarnService {
       .add(maxConsumptionRateRatio.mul(stakingPeriodOverMintingPeriod))
 
     const stakeOverSupply = amount.div(currentSupply)
-    const supplyCap = BaseAvax.fromNanoAvax(
+    const supplyCap = Avax.fromNanoAvax(
       defPlatformVals.stakingConfig.RewardConfig.SupplyCap
     )
     const unmintedSupply = supplyCap.sub(currentSupply)

@@ -6,10 +6,10 @@ import {
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { AdvancedSortFilter, NodeValidators } from 'types/earn'
 import Logger from 'utils/Logger'
-import { BaseAvax } from 'types/BaseAvax'
+import { Avax } from 'types/Avax'
 
 export type useAdvancedSearchNodesProps = {
-  stakingAmount: BaseAvax
+  stakingAmount: Avax
   stakingEndTime: Date
   minUpTime?: number
   maxFee?: number
