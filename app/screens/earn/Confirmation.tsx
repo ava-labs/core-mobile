@@ -29,15 +29,13 @@ import { useGetValidatorByNodeId } from 'hooks/earn/useGetValidatorByNodeId'
 import { NodeValidator } from 'types/earn'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { getMinimumStakeDurationMs } from 'services/earn/utils'
-import { bigintToBig } from 'utils/bigNumbers/bigintToBig'
-import { BigAvax } from 'types/denominations'
-import Big from 'big.js'
 import { convertToSeconds, MilliSeconds } from 'types/siUnits'
 import { useIssueDelegation } from 'hooks/earn/useIssueDelegation'
 import { showSnackBarCustom } from 'components/Snackbar'
 import TransactionToast, {
   TransactionToastType
 } from 'components/toast/TransactionToast'
+import { BaseAvax } from 'types/BaseAvax'
 
 type ScreenProps = StakeSetupScreenProps<
   typeof AppNavigation.StakeSetup.Confirmation
@@ -60,8 +58,7 @@ export const Confirmation = () => {
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { navigate, getParent } = useNavigation<ScreenProps['navigation']>()
 
-  const stakingAmountInAvax: BigAvax = bigintToBig(stakingAmount, 9)
-  const stakingAmountPrice = stakingAmountInAvax.mul(avaxPrice).toFixed(2) //price is in [currency] so we round to 2 decimals
+  const stakingAmountPrice = stakingAmount.mul(avaxPrice).toFixed(2) //price is in [currency] so we round to 2 decimals
   const [now, setNow] = useState(new Date())
   const minStakeDurationMs = getMinimumStakeDurationMs(isDeveloperMode)
   //minStartTime - 1 minute after submitting
@@ -88,12 +85,13 @@ export const Confirmation = () => {
     ),
     delegationFee: Number(validator?.delegationFee)
   })
-  const estimatedTokenReward: BigAvax = data?.estimatedTokenReward ?? Big(0)
+  const estimatedTokenReward =
+    data?.estimatedTokenReward ?? BaseAvax.fromBase(0)
   const estimatedRewardInCurrency: string =
     data?.estimatedRewardInCurrency ?? '0'
 
-  const delegationFee: BigAvax = useMemo(() => {
-    return estimatedTokenReward.mul(Number(validator?.delegationFee)).div(100)
+  const delegationFee = useMemo(() => {
+    return estimatedTokenReward.mul(validator?.delegationFee || 0).div(100)
   }, [estimatedTokenReward, validator?.delegationFee])
 
   // ticker - update "now" variable every 10s
@@ -113,7 +111,7 @@ export const Confirmation = () => {
 
   const issueDelegation = () => {
     issueDelegationMutation.mutate({
-      stakingAmount: stakingAmount,
+      stakingAmount,
       startDate: minStartTime,
       endDate: trueStakingEndTime,
       nodeId
@@ -178,7 +176,7 @@ export const Confirmation = () => {
           </AvaText.Body2>
           <View style={{ alignItems: 'flex-end' }}>
             <AvaText.Heading1>
-              {stakingAmountInAvax + ' ' + tokenSymbol}
+              {stakingAmount.toString() + ' ' + tokenSymbol}
             </AvaText.Heading1>
             <AvaText.Heading3 textStyle={{ color: theme.colorText2 }}>
               {`${tokenInCurrencyFormatter(
@@ -194,7 +192,7 @@ export const Confirmation = () => {
           <Row style={{ justifyContent: 'space-between' }}>
             <AvaText.Body2>Estimated Reward</AvaText.Body2>
             <AvaText.Heading2 textStyle={{ color: theme.colorBgGreen }}>
-              {estimatedTokenReward + ' ' + tokenSymbol}
+              {estimatedTokenReward.toDisplay() + ' ' + tokenSymbol}
             </AvaText.Heading2>
           </Row>
           <AvaText.Body3
@@ -307,7 +305,7 @@ export const Confirmation = () => {
               <PopableLabel label="Staking Fee" />
             </Popable>
             <AvaText.Heading6>
-              {delegationFee + ' ' + tokenSymbol}
+              {delegationFee.toDisplay() + ' ' + tokenSymbol}
             </AvaText.Heading6>
           </Row>
         </View>

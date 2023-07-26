@@ -2,15 +2,12 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useSelector } from 'react-redux'
 import EarnService from 'services/earn/EarnService'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { BigIntNAvax, BigIntWeiAvax } from 'types/denominations'
-import { BN } from 'bn.js'
 import { selectNativeTokenBalanceForNetworkAndAccount } from 'store/balance'
 import { selectActiveAccount } from 'store/account'
 import { selectActiveNetwork } from 'store/network'
-import BigIntConverter from 'types/converters/BigIntConverter'
-import TypeConverter from 'types/converters/TypeConverter'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { QueryClient } from '@tanstack/query-core'
+import { BaseAvax } from 'types/BaseAvax'
 
 export const useIssueDelegation = (onSuccess: (txId: string) => void) => {
   const queryClient = useQueryClient()
@@ -19,17 +16,11 @@ export const useIssueDelegation = (onSuccess: (txId: string) => void) => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const selectedCurrency = useSelector(selectSelectedCurrency)
 
-  const cChainBalanceWei = useSelector(
+  const cChainBalance = useSelector(
     selectNativeTokenBalanceForNetworkAndAccount(
       activeNetwork.chainId,
       activeAccount?.index
     )
-  )
-  const cChainBalanceBigIntWei = TypeConverter.bnToBigInt(
-    cChainBalanceWei || new BN(0)
-  ) as BigIntWeiAvax
-  const cChainBalanceNAvax: BigIntNAvax = BigIntConverter.weiToNAvax(
-    cChainBalanceBigIntWei
   )
 
   const pAddress = activeAccount?.addressPVM ?? ''
@@ -38,7 +29,7 @@ export const useIssueDelegation = (onSuccess: (txId: string) => void) => {
   const issueDelegationMutation = useMutation({
     mutationFn: (data: {
       nodeId: string
-      stakingAmount: BigIntNAvax
+      stakingAmount: BaseAvax
       startDate: Date
       endDate: Date
     }) => {
@@ -48,7 +39,7 @@ export const useIssueDelegation = (onSuccess: (txId: string) => void) => {
 
       return EarnService.collectTokensForStaking({
         activeAccount,
-        cChainBalance: cChainBalanceNAvax,
+        cChainBalance: cChainBalance || BaseAvax.fromBase(0),
         isDevMode: isDeveloperMode,
         requiredAmount: data.stakingAmount
       }).then(successfullyCollected => {
@@ -58,7 +49,7 @@ export const useIssueDelegation = (onSuccess: (txId: string) => void) => {
             endDate: data.endDate,
             isDevMode: isDeveloperMode,
             nodeId: data.nodeId,
-            stakeAmount: data.stakingAmount,
+            stakeAmount: data.stakingAmount.toSubUnit(),
             startDate: data.startDate
           })
         } else {

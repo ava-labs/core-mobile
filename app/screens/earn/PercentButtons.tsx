@@ -1,47 +1,47 @@
 import AvaButton from 'components/AvaButton'
 import React from 'react'
 import { StyleSheet } from 'react-native'
-import { BigIntNAvax, BigIntWeiAvax } from 'types/denominations'
+import { BaseAvax } from 'types/BaseAvax'
 
 const PercentButtons = ({
   balance,
   onPercentageSelected,
   isDeveloperMode
 }: {
-  balance: BigIntWeiAvax | undefined
+  balance: BaseAvax | undefined
   onPercentageSelected: (factor: number) => void
   isDeveloperMode: boolean
 }) => {
-  const minStakeAmount: BigIntNAvax = BigInt(isDeveloperMode ? 1e9 : 25e9)
-  const p10 = minStakeAmount * 10n
-  const p25 = minStakeAmount * 4n
-  const p50 = minStakeAmount * 2n
+  const minStakeAmount = BaseAvax.fromBase(isDeveloperMode ? 1 : 25)
+  const p10 = minStakeAmount.mul(10)
+  const p25 = minStakeAmount.mul(4)
+  const p50 = minStakeAmount.mul(2)
   const p100 = minStakeAmount
 
   return (
     <>
-      {balance && balance > p10 && (
+      {balance && balance.gt(p10) && (
         <AvaButton.SecondaryLarge
           style={styles.button}
           onPress={() => onPercentageSelected(10)}>
           10%
         </AvaButton.SecondaryLarge>
       )}
-      {balance && balance > p25 && (
+      {balance && balance.gt(p25) && (
         <AvaButton.SecondaryLarge
           style={styles.button}
           onPress={() => onPercentageSelected(4)}>
           25%
         </AvaButton.SecondaryLarge>
       )}
-      {balance && balance > p50 && (
+      {balance && balance.gt(p50) && (
         <AvaButton.SecondaryLarge
           style={styles.button}
           onPress={() => onPercentageSelected(2)}>
           50%
         </AvaButton.SecondaryLarge>
       )}
-      {balance && balance > p100 && (
+      {balance && balance.gt(p100) && (
         <AvaButton.SecondaryLarge
           style={styles.button}
           onPress={() => onPercentageSelected(1)}>

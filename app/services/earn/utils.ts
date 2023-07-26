@@ -3,8 +3,7 @@ import { AdvancedSortFilter, NodeValidator, NodeValidators } from 'types/earn'
 import { random } from 'lodash'
 import { FujiParams, MainnetParams } from 'utils/NetworkParams'
 import { MAX_VALIDATOR_WEIGHT_FACTOR } from 'consts/earn'
-import { BigIntNAvax } from 'types/denominations'
-import { bnToBigint } from 'utils/bigNumbers/bnToBigint'
+import { BaseAvax } from 'types/BaseAvax'
 
 /**
  * See https://docs.avax.network/subnets/reference-elastic-subnets-parameters#primary-network-parameters-on-mainnet
@@ -44,14 +43,14 @@ export const getMaximumStakeEndDate = () => {
  * @returns maxDelegation - The maximum delegation in nAvax (`maxWeight` - `stakeAmount`)
  */
 export const calculateMaxWeight = (
-  maxValidatorStake: BigIntNAvax,
-  stakeAmount: BigIntNAvax
-): { maxWeight: BigIntNAvax; maxDelegation: BigIntNAvax } => {
-  const stakeWeight = stakeAmount * MAX_VALIDATOR_WEIGHT_FACTOR
-  const maxValidatorStakeBig = BigInt(maxValidatorStake.valueOf())
-  const maxWeight =
-    stakeWeight < maxValidatorStakeBig ? stakeWeight : maxValidatorStakeBig
-  const maxDelegation = maxWeight - stakeAmount
+  maxValidatorStake: BaseAvax,
+  stakeAmount: BaseAvax
+): { maxWeight: BaseAvax; maxDelegation: BaseAvax } => {
+  const stakeWeight = stakeAmount.mul(MAX_VALIDATOR_WEIGHT_FACTOR)
+  const maxWeight = stakeWeight.lt(maxValidatorStake)
+    ? stakeWeight
+    : maxValidatorStake
+  const maxDelegation = maxWeight.sub(stakeAmount)
 
   return {
     maxWeight,
@@ -90,18 +89,18 @@ const hasMinimumStakingTime = (
 
 const getAvailableDelegationWeight = (
   isDeveloperMode: boolean,
-  weight: string
-) => {
-  const maxValidatorStake = bnToBigint(
+  weight: BaseAvax
+): BaseAvax => {
+  const maxValidatorStake = BaseAvax.fromNanoAvax(
     getStakingConfig(isDeveloperMode).MaxValidatorStake
   )
-  const maxWeight = calculateMaxWeight(maxValidatorStake, BigInt(weight))
+  const maxWeight = calculateMaxWeight(maxValidatorStake, weight)
   return maxWeight.maxDelegation
 }
 
 type getFilteredValidatorsProps = {
   validators: NodeValidators
-  stakingAmount: BigIntNAvax
+  stakingAmount: BaseAvax
   isDeveloperMode: boolean
   stakingEndTime: Date
   minUpTime?: number
@@ -138,7 +137,7 @@ export const getFilteredValidators = ({
     ({ endTime, weight, uptime, delegationFee, nodeID }) => {
       const availableDelegationWeight = getAvailableDelegationWeight(
         isDeveloperMode,
-        weight
+        BaseAvax.fromNanoAvax(weight)
       )
       return (
         (searchText ? nodeID.includes(searchText) : true) &&

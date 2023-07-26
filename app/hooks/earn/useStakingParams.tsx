@@ -1,14 +1,16 @@
 import { useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { BigIntWeiAvax } from 'types/denominations'
+import { BaseAvax } from 'types/BaseAvax'
 
 export interface StakeParamsHook {
-  minStakeAmount: BigIntWeiAvax
+  minStakeAmount: BaseAvax
 }
 
 export default function useStakingParams(): StakeParamsHook {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
-  const minStakeAmount = isDeveloperMode ? BigInt(1e18) : BigInt(25e18)
+  const minStakeAmount = isDeveloperMode
+    ? BaseAvax.fromBase(1)
+    : BaseAvax.fromBase(25)
 
   return {
     minStakeAmount

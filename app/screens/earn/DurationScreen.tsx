@@ -27,8 +27,8 @@ import {
   TWO_WEEKS
 } from 'services/earn/getStakeEndDate'
 import { useEarnCalcEstimatedRewards } from 'hooks/earn/useEarnCalcEstimatedRewards'
-import { BigIntNAvax } from 'types/denominations'
 import { convertToSeconds, MilliSeconds } from 'types/siUnits'
+import { BaseAvax } from 'types/BaseAvax'
 
 type ScreenProps = StakeSetupScreenProps<
   typeof AppNavigation.StakeSetup.StakingDuration
@@ -95,7 +95,7 @@ const StakingDuration = () => {
     }
   }
 
-  const renderDurationOptions = (stakeAmount: BigIntNAvax) => {
+  const renderDurationOptions = (stakeAmount: BaseAvax) => {
     const durationOptions = isDeveloperMode
       ? DURATION_OPTIONS_FUJI
       : DURATION_OPTIONS_MAINNET
@@ -191,7 +191,7 @@ const DurationOptionItem = ({
   onRadioSelect,
   isSelected
 }: {
-  stakeAmount: BigIntNAvax
+  stakeAmount: BaseAvax
   item: DurationOption
   isDeveloperMode: boolean
   onRadioSelect: (item: DurationOption) => void
@@ -220,7 +220,7 @@ const DurationOptionItem = ({
             {item.title}
           </AvaText.Body2>
           <AvaText.Caption textStyle={{ color: theme.colorText2 }}>
-            Estimated Rewards: {data?.estimatedTokenReward?.toString() || '0'}{' '}
+            Estimated Rewards: {data?.estimatedTokenReward?.toDisplay() || '0'}{' '}
             AVAX
           </AvaText.Caption>
         </View>
