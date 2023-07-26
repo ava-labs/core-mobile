@@ -8,6 +8,20 @@ export interface TokenBaseInterface {
   add(value: AcceptedTypes | TokenBaseInterface): TokenBaseInterface
 }
 
+/**
+ * TokenBaseUnit abstracts units in which crypto tokens are represented.
+ * It holds value of token in Big type in normal numeric representation (as opposed to exponential or any other).
+ * It also holds maxDecimals value which denotes smallest possible denomination for that token.
+ *
+ * For example, minimal denomination of Eth is Wei where 1 Wei = 1e-18 Eth, which means maxDecimals is 18.
+ * Another example is Avax and nAvax where 1 nAvax = 1e-9 Avax, therefore maxDecimals is 9.
+ *
+ * Constructor of this class accepts constructor of child class as argument so that we can do immutable operations
+ * and return correct type from those operations.
+ *
+ * For example, doing tokenBaseUnit.add(1) won't change tokenBaseUnit's value but rather create new object with same
+ * type as tokenBaseUnit.
+ */
 export abstract class TokenBaseUnit<T extends TokenBaseUnit<T>> {
   protected readonly value: Big
   protected readonly maxDecimals: number
