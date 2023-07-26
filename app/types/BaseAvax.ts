@@ -1,8 +1,6 @@
 import BN from 'bn.js'
-import Big, { BigSource } from 'big.js'
-import { TokenBaseUnit } from 'types/TokenBaseUnit'
-
-export type AcceptedTypes = BigSource | BN | bigint
+import Big from 'big.js'
+import { AcceptedTypes, TokenBaseUnit } from 'types/TokenBaseUnit'
 
 export class BaseAvax extends TokenBaseUnit<BaseAvax> {
   constructor(value: AcceptedTypes) {

@@ -13,35 +13,34 @@ const PercentButtons = ({
   isDeveloperMode: boolean
 }) => {
   const minStakeAmount = BaseAvax.fromBase(isDeveloperMode ? 1 : 25)
-  const p10 = minStakeAmount.mul(10)
-  const p25 = minStakeAmount.mul(4)
-  const p50 = minStakeAmount.mul(2)
-  const p100 = minStakeAmount
-
+  const canStake10Percent = balance && balance.gt(minStakeAmount.mul(10))
+  const canStake25Percent = balance && balance.gt(minStakeAmount.mul(4))
+  const canStake50Percent = balance && balance.gt(minStakeAmount.mul(2))
+  const canStake100Percent = balance && balance.gt(minStakeAmount)
   return (
     <>
-      {balance && balance.gt(p10) && (
+      {canStake10Percent && (
         <AvaButton.SecondaryLarge
           style={styles.button}
           onPress={() => onPercentageSelected(10)}>
           10%
         </AvaButton.SecondaryLarge>
       )}
-      {balance && balance.gt(p25) && (
+      {canStake25Percent && (
         <AvaButton.SecondaryLarge
           style={styles.button}
           onPress={() => onPercentageSelected(4)}>
           25%
         </AvaButton.SecondaryLarge>
       )}
-      {balance && balance.gt(p50) && (
+      {canStake50Percent && (
         <AvaButton.SecondaryLarge
           style={styles.button}
           onPress={() => onPercentageSelected(2)}>
           50%
         </AvaButton.SecondaryLarge>
       )}
-      {balance && balance.gt(p100) && (
+      {canStake100Percent && (
         <AvaButton.SecondaryLarge
           style={styles.button}
           onPress={() => onPercentageSelected(1)}>

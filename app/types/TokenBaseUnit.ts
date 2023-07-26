@@ -26,11 +26,11 @@ export abstract class TokenBaseUnit<T extends TokenBaseUnit<T>> {
   protected constructor(
     value: AcceptedTypes,
     maxDecimals: number,
-    ctor: new (v: AcceptedTypes) => T
+    childConstructor: new (v: AcceptedTypes) => T
   ) {
     this.value = TokenBaseUnit.toBig(value)
     this.maxDecimals = maxDecimals
-    this.childConstructor = ctor
+    this.childConstructor = childConstructor
   }
 
   add(value: TokenBaseUnit<T> | AcceptedTypes): T {

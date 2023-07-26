@@ -6,7 +6,7 @@ export default function limitInput<T extends TokenBaseUnit<T>>(
   input: T | undefined
 ): T | undefined {
   if (!input) {
-    return input
+    return undefined
   }
 
   const stringAmount = input.toString().replaceAll(',', '')
