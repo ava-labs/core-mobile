@@ -7,7 +7,6 @@ import {
   ONE_DAY,
   TWO_WEEKS
 } from 'services/earn/getStakeEndDate'
-import { BigIntNAvax } from 'types/denominations'
 import { MilliSeconds, convertToSeconds } from 'types/siUnits'
 import { View } from 'react-native'
 import { RadioButton } from 'components/RadioButton'
@@ -22,6 +21,7 @@ import {
 import { useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { differenceInMilliseconds } from 'date-fns'
+import { Avax } from 'types/Avax'
 
 export const CustomDurationOptionItem = ({
   stakeAmount,
@@ -29,7 +29,7 @@ export const CustomDurationOptionItem = ({
   onRadioSelect,
   handleDateConfirm
 }: {
-  stakeAmount: BigIntNAvax
+  stakeAmount: Avax
   stakeEndTime: Date
   onRadioSelect: (item: DurationOption) => void
   handleDateConfirm: (dateInput: Date) => void
@@ -70,7 +70,7 @@ export const CustomDurationOptionItem = ({
             </AvaText.Body1>
             <AvaText.Caption textStyle={{ color: theme.colorText1 }}>
               {`Estimated Rewards: ${
-                data?.estimatedTokenReward?.toString() || '0'
+                data?.estimatedTokenReward?.toDisplay() || '0'
               } AVAX`}
             </AvaText.Caption>
           </View>
