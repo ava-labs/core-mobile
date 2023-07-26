@@ -30,7 +30,7 @@ export default function StakingAmount() {
   const { theme } = useApplicationContext()
   const { navigate } = useNavigation<ScreenProps['navigation']>()
   const { minStakeAmount } = useStakingParams()
-  const nativeTokenBalance = useCChainBalance()
+  const cChainBalance = useCChainBalance()
 
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const chainId = isDeveloperMode
@@ -48,13 +48,8 @@ export default function StakingAmount() {
     () => inputAmount.mul(nativeTokenPrice).toFixed(2),
     [inputAmount, nativeTokenPrice]
   )
-  const nativeBalance = useMemo(() => {
-    if (avaxNetwork && nativeTokenBalance) {
-      return nativeTokenBalance.toDisplay() + ' AVAX'
-    } else {
-      return '- AVAX'
-    }
-  }, [avaxNetwork, nativeTokenBalance])
+
+  const nativeTokenBalance = BaseAvax.fromWei(cChainBalance?.data?.balance || 0)
 
   const amountNotEnough = !inputAmount.isZero() && inputAmount < minStakeAmount
 
@@ -85,7 +80,7 @@ export default function StakingAmount() {
       <View style={{ alignItems: 'center' }}>
         <AvaText.Subtitle1 color={theme.neutral500}>
           Balance:
-          {' ' + nativeBalance + ' AVAX'}
+          {' ' + nativeTokenBalance.toDisplay() + ' AVAX'}
         </AvaText.Subtitle1>
       </View>
       <EarnInputAmount
