@@ -28,7 +28,7 @@ const SmartStakeAmount = () => {
 
   useEffect(() => {
     if (cChainBalance.data?.balance) {
-      const availableAvax = BaseAvax.fromWei(cChainBalance.data?.balance)
+      const availableAvax = BaseAvax.fromWei(cChainBalance.data.balance)
       const notEnoughAvax = availableAvax.lt(minStakeAmount)
 
       if (notEnoughAvax) {
