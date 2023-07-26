@@ -94,7 +94,7 @@ const SwapTransactionDetail: FC<SwapTransactionDetailProps> = ({
           position={'top'}
           strictPosition={true}
           style={{ minWidth: 300, marginBottom: review ? 0 : -32 }}
-          backgroundColor={theme.colorBg3}>
+          backgroundColor={theme.neutral100}>
           <PopableLabel
             label="Slippage tolerance"
             textStyle={{ color: theme.white }}
@@ -132,7 +132,7 @@ const SwapTransactionDetail: FC<SwapTransactionDetailProps> = ({
               position={'right'}
               strictPosition={true}
               style={{ minWidth: 180 }}
-              backgroundColor={theme.colorBg3}>
+              backgroundColor={theme.neutral100}>
               <PopableLabel
                 label="Network Fee"
                 textStyle={{ color: theme.white }}

@@ -48,7 +48,7 @@ function DappQrReader({ onScanned }: Props) {
           })}
           position={'right'}
           style={{ minWidth: 200 }}
-          backgroundColor={theme.colorBg3}>
+          backgroundColor={theme.neutral100}>
           <PopableLabel label={'Connection URI'} />
         </Popable>
       </View>

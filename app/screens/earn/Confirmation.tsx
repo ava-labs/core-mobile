@@ -32,7 +32,6 @@ import { showSnackBarCustom } from 'components/Snackbar'
 import TransactionToast, {
   TransactionToastType
 } from 'components/toast/TransactionToast'
-import { Avax } from 'types/Avax'
 import Logger from 'utils/Logger'
 import { DOCS_STAKING } from 'resources/Constants'
 import QuestionSVG from 'components/svg/QuestionSVG'
@@ -198,7 +197,7 @@ export const Confirmation = () => {
       return (
         <View style={{ flexDirection: 'column' }}>
           <AvaText.Heading2 textStyle={{ color: theme.colorBgGreen }}>
-            {data.estimatedTokenReward + ' ' + tokenSymbol}
+            {data.estimatedTokenReward.toDisplay() + ' ' + tokenSymbol}
           </AvaText.Heading2>
           <AvaText.Body3
             textStyle={{ alignSelf: 'flex-end', color: theme.colorText2 }}>
@@ -215,7 +214,9 @@ export const Confirmation = () => {
   const renderStakingFee = () => {
     if (delegationFee) {
       return (
-        <AvaText.Heading6>{delegationFee + ' ' + tokenSymbol}</AvaText.Heading6>
+        <AvaText.Heading6>
+          {delegationFee.toDisplay() + ' ' + tokenSymbol}
+        </AvaText.Heading6>
       )
     }
     return renderUnableToEstimate()
@@ -242,7 +243,7 @@ export const Confirmation = () => {
         </AvaText.Body2>
         <View style={{ alignItems: 'flex-end' }}>
           <AvaText.Heading1>
-            {stakingAmountInAvax + ' ' + tokenSymbol}
+            {stakingAmount.toString() + ' ' + tokenSymbol}
           </AvaText.Heading1>
           <AvaText.Heading3 textStyle={{ color: theme.colorText2 }}>
             {`${tokenInCurrencyFormatter(
