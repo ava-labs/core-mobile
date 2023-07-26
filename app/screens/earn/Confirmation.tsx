@@ -94,7 +94,7 @@ export const Confirmation = () => {
       validator?.delegationFee === undefined
     )
       return undefined
-    return data.estimatedTokenReward.mul(validator.delegationFee).div(100)
+    return data?.estimatedTokenReward.mul(validator.delegationFee).div(100)
   }, [data?.estimatedTokenReward, validator?.delegationFee])
 
   // ticker - update "now" variable every 10s

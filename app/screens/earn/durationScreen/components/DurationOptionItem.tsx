@@ -48,7 +48,7 @@ export const DurationOptionItem = ({
           <AvaText.Caption textStyle={{ color: theme.colorText2 }}>
             {item.title !== 'Custom'
               ? `Estimated Rewards: ${
-                  data?.estimatedTokenReward?.toString() || '0'
+                  data?.estimatedTokenReward?.toDisplay() || '0'
                 } AVAX`
               : 'Enter your desired end date'}
           </AvaText.Caption>
