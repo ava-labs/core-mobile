@@ -1,24 +1,16 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import { View } from 'react-native'
 import AvaText from 'components/AvaText'
 import SwitchSVG from 'components/svg/SwitchSVG'
 import { Space } from 'components/Space'
 import AvaButton from 'components/AvaButton'
-import { selectActiveNetwork, setActive } from 'store/network'
+import { setActive } from 'store/network'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { useDispatch, useSelector } from 'react-redux'
 import { ChainId } from '@avalabs/chains-sdk'
-import { EarnScreenProps } from 'navigation/types'
-import AppNavigation from 'navigation/AppNavigation'
-import { useNavigation } from '@react-navigation/native'
-
-type ScreenProps = EarnScreenProps<typeof AppNavigation.Earn.StakeDashboard>
 
 export const WrongNetwork = () => {
-  const { navigate } = useNavigation<ScreenProps['navigation']>()
-
   const dispatch = useDispatch()
-  const network = useSelector(selectActiveNetwork)
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const avalancheChainId = isDeveloperMode
     ? ChainId.AVALANCHE_TESTNET_ID
@@ -28,16 +20,11 @@ export const WrongNetwork = () => {
     dispatch(setActive(avalancheChainId))
   }
 
-  useEffect(() => {
-    if (network.chainId === avalancheChainId) {
-      navigate(AppNavigation.Earn.StakeDashboard)
-    }
-  }, [avalancheChainId, navigate, network])
-
   return (
     <View style={{ padding: 16, flex: 1 }}>
       <AvaText.LargeTitleBold>Stake</AvaText.LargeTitleBold>
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+      <View style={{ flex: 1, alignItems: 'center' }}>
+        <Space y={80} />
         <SwitchSVG />
         <Space y={24} />
         <AvaText.Heading5>Switch Network to Stake</AvaText.Heading5>
