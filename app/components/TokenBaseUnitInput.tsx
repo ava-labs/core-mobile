@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import InputText, { InputTextProps } from 'components/InputText'
-import { TokenBaseUnit } from 'types/TokenBaseUnit'
-import { AcceptedTypes } from 'types/BaseAvax'
+import { AcceptedTypes, TokenBaseUnit } from 'types/TokenBaseUnit'
 
 interface TokenBaseUnitProps<T extends TokenBaseUnit<T>>
   extends Omit<InputTextProps, 'text'> {
