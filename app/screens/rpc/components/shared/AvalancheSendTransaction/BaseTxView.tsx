@@ -1,27 +1,21 @@
 import AvaText from 'components/AvaText'
 import React from 'react'
-import { ScrollView, StyleSheet, View } from 'react-native'
+import { ScrollView, StyleSheet } from 'react-native'
 import { Space } from 'components/Space'
 import { Row } from 'components/Row'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import Card from 'components/Card'
 import { bigIntToString } from '@avalabs/utils-sdk'
 import { GetAssetDescriptionResponse } from '@avalabs/avalanchejs-v2/dist/src/vms/common'
-
-import { useSelector } from 'react-redux'
-import { selectSelectedCurrency } from 'store/settings/currency'
 import Separator from 'components/Separator'
 import { truncateAddress } from 'utils/Utils'
 import { Avalanche } from '@avalabs/wallets-sdk'
 import { AvalancheChainStrings } from 'store/walletConnect/handlers/types'
-import { selectAvaxPrice } from 'store/balance'
+import TxFee from './components/TxFee'
 
 const BaseTxView = ({ tx }: { tx: Avalanche.BaseTx }) => {
   const { theme } = useApplicationContext()
-  const avaxPrice = useSelector(selectAvaxPrice)
   const { chain, txFee, outputs, memo } = tx
-  const { tokenInCurrencyFormatter } = useApplicationContext().appHook
-  const selectedCurrency = useSelector(selectSelectedCurrency)
 
   const renderOutputCard = (output: {
     assetId: string
@@ -93,26 +87,7 @@ const BaseTxView = ({ tx }: { tx: Avalanche.BaseTx }) => {
       <Space y={8} />
       {outputs.map(output => renderOutputCard(output))}
       <Space y={16} />
-      <AvaText.Body2 color={theme.colorText1} textStyle={{ lineHeight: 20 }}>
-        Network fee
-      </AvaText.Body2>
-      <Space y={8} />
-      <Card style={styles.cardContainer}>
-        <Row style={styles.rowContainer}>
-          <AvaText.Caption color={theme.colorText1}>Fee Amount</AvaText.Caption>
-          <View style={styles.feeContainer}>
-            <AvaText.Subtitle2 color={theme.white}>
-              {Number(bigIntToString(txFee, 9))} AVAX
-            </AvaText.Subtitle2>
-            <Space y={2} />
-            <AvaText.Caption color={theme.colorText2}>
-              {`${tokenInCurrencyFormatter(
-                Number(bigIntToString(txFee, 9)) * avaxPrice
-              )} ${selectedCurrency}`}
-            </AvaText.Caption>
-          </View>
-        </Row>
-      </Card>
+      <TxFee txFee={txFee} />
       <Space y={16} />
       <AvaText.Body2 color={theme.colorText1}>Memo</AvaText.Body2>
       <Space y={8} />
@@ -129,12 +104,6 @@ const styles = StyleSheet.create({
   },
   separator: {
     marginVertical: 16
-  },
-  innerRow: {
-    alignItems: 'center'
-  },
-  feeContainer: {
-    alignItems: 'flex-end'
   },
   cardContainer: {
     padding: 16

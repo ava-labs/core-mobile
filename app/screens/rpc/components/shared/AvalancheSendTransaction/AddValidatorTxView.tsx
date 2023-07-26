@@ -13,13 +13,13 @@ import { useSelector } from 'react-redux'
 import { format } from 'date-fns'
 import { Avalanche } from '@avalabs/wallets-sdk'
 import { selectAvaxPrice } from 'store/balance'
+import TxFee from './components/TxFee'
 
 const AddValidatorTxView = ({ tx }: { tx: Avalanche.AddValidatorTx }) => {
   const { theme } = useApplicationContext()
   const avaxPrice = useSelector(selectAvaxPrice)
-  const { tokenInCurrencyFormatter, currencyFormatter } =
-    useApplicationContext().appHook
-  const { nodeID, fee, start, end, stake } = tx
+  const { tokenInCurrencyFormatter } = useApplicationContext().appHook
+  const { nodeID, delegationFee, start, end, stake, txFee } = tx
   const startDate = format(
     new Date(parseInt(start) * 1000),
     'MMM dd, yyyy, HH:mm a'
@@ -70,7 +70,7 @@ const AddValidatorTxView = ({ tx }: { tx: Avalanche.AddValidatorTx }) => {
             Delegation Fee
           </AvaText.Caption>
           <AvaText.Caption color={theme.colorText1}>
-            {fee / 10000} %
+            {delegationFee / 10000} %
           </AvaText.Caption>
         </Row>
         <Separator style={styles.separator} color={theme.neutral800} />
@@ -90,26 +90,7 @@ const AddValidatorTxView = ({ tx }: { tx: Avalanche.AddValidatorTx }) => {
       </Card>
 
       <Space y={24} />
-      <AvaText.Body2 color={theme.colorText1} textStyle={{ lineHeight: 20 }}>
-        Network Fee
-      </AvaText.Body2>
-      <Space y={8} />
-      <Card style={styles.cardContainer}>
-        <Row style={styles.rowCenterContainer}>
-          <AvaText.Caption color={theme.colorText1}>Fee Amount</AvaText.Caption>
-          <View style={styles.feeContainer}>
-            <AvaText.Subtitle2 color={theme.neutral50}>
-              0 AVAX
-            </AvaText.Subtitle2>
-          </View>
-        </Row>
-        <Space y={2} />
-        <Row style={styles.currencyContainer}>
-          <AvaText.Caption color={theme.neutral400}>
-            {currencyFormatter(0)}
-          </AvaText.Caption>
-        </Row>
-      </Card>
+      <TxFee txFee={txFee} />
     </View>
   )
 }
@@ -124,12 +105,6 @@ const styles = StyleSheet.create({
   },
   separator: {
     marginVertical: 16
-  },
-  innerRow: {
-    alignItems: 'center'
-  },
-  feeContainer: {
-    alignItems: 'flex-end'
   },
   currencyContainer: {
     justifyContent: 'flex-end'
