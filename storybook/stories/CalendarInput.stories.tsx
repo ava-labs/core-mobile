@@ -11,6 +11,7 @@ export default {
 
 export const Basic: ComponentStory<typeof CalendarInput> = () => {
   const [date, setDate] = useState<Date>()
+  const [isDatePickerVisible, setIsDatePickerVisible] = useState(false)
 
   const onDateSelected = (dateInput: Date) => {
     setDate(dateInput)
@@ -22,6 +23,8 @@ export const Basic: ComponentStory<typeof CalendarInput> = () => {
         date={date}
         onDateSelected={onDateSelected}
         placeHolder="March 22, 2024"
+        isDatePickerVisible={isDatePickerVisible}
+        setIsDatePickerVisible={setIsDatePickerVisible}
       />
     </View>
   )

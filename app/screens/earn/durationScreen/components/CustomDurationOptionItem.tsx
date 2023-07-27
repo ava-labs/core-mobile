@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { useEarnCalcEstimatedRewards } from 'hooks/earn/useEarnCalcEstimatedRewards'
 import {
@@ -35,6 +35,7 @@ export const CustomDurationOptionItem = ({
   handleDateConfirm: (dateInput: Date) => void
 }) => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
+  const [isDatePickerVisible, setIsDatePickerVisible] = useState(false)
 
   const { theme } = useApplicationContext()
   const minDelegationTime = isDeveloperMode ? ONE_DAY : TWO_WEEKS
@@ -57,7 +58,10 @@ export const CustomDurationOptionItem = ({
   })
 
   return (
-    <>
+    <View
+      style={{
+        opacity: isDatePickerVisible ? 0.3 : 1
+      }}>
       <View style={{ marginBottom: 24 }}>
         <RadioButton
           onPress={() => {
@@ -86,6 +90,8 @@ export const CustomDurationOptionItem = ({
       <CalendarInput
         date={stakeEndTime}
         onDateSelected={handleDateConfirm}
+        isDatePickerVisible={isDatePickerVisible}
+        setIsDatePickerVisible={setIsDatePickerVisible}
         placeHolder="Select a date"
         minimumDate={minimumStakeEndDate}
         maximumDate={maximumStakeEndDate}
@@ -93,6 +99,6 @@ export const CustomDurationOptionItem = ({
       <AvaText.Caption textStyle={{ color: theme.neutral300 }}>
         Actual end date will vary depending on options available
       </AvaText.Caption>
-    </>
+    </View>
   )
 }

@@ -15,6 +15,7 @@ import CircularPlusSVG from 'components/svg/CircularPlusSVG'
 import { StakeSetupScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation } from '@react-navigation/core'
+import { ScrollView } from 'react-native-gesture-handler'
 
 type ScreenProps = StakeSetupScreenProps<
   typeof AppNavigation.StakeSetup.GetStarted
@@ -35,7 +36,10 @@ export default function GetStarted({ onNext }: { onNext: () => void }) {
   }
 
   return (
-    <View style={{ padding: 16, flex: 1 }}>
+    <ScrollView
+      contentContainerStyle={{
+        paddingHorizontal: 16
+      }}>
       <AvaText.LargeTitleBold>Get Started</AvaText.LargeTitleBold>
       <Space y={31} />
       <View style={{ alignItems: 'center' }}>
@@ -105,7 +109,7 @@ export default function GetStarted({ onNext }: { onNext: () => void }) {
       <Space y={40} />
       <AvaButton.PrimaryLarge onPress={onNext}>Next</AvaButton.PrimaryLarge>
       <Space y={16} />
-      <View style={{ marginHorizontal: 16 }}>
+      <View style={{ marginHorizontal: 16, marginBottom: 32 }}>
         <AvaText.Overline textStyle={{ textAlign: 'center' }}>
           <AvaText.TextLink
             textStyle={{ fontSize: 10, lineHeight: 16 }}
@@ -116,7 +120,7 @@ export default function GetStarted({ onNext }: { onNext: () => void }) {
           token holders to participate...
         </AvaText.Overline>
       </View>
-    </View>
+    </ScrollView>
   )
 }
 

@@ -15,7 +15,7 @@ import { PopableContent } from 'components/PopableContent'
 import { truncateNodeId } from 'utils/Utils'
 import CopySVG from 'components/svg/CopySVG'
 import { copyToClipboard } from 'utils/DeviceTools'
-import { addMinutes, format } from 'date-fns'
+import { addMinutes, format, fromUnixTime } from 'date-fns'
 import { useEarnCalcEstimatedRewards } from 'hooks/earn/useEarnCalcEstimatedRewards'
 import { useSelector } from 'react-redux'
 import { selectAvaxPrice } from 'store/balance'
@@ -74,9 +74,14 @@ export const Confirmation = () => {
     ) {
       return new Date(minStartTime.getTime() + minStakeDurationMs)
     }
-
+    // check if stake duration is more than validator's end time,
+    // use validator's end time if it is
+    const validatorEndTime = fromUnixTime(Number(validator?.endTime))
+    if (stakingEndTime > validatorEndTime) {
+      return validatorEndTime
+    }
     return stakingEndTime
-  }, [minStakeDurationMs, minStartTime, stakingEndTime])
+  }, [minStakeDurationMs, minStartTime, stakingEndTime, validator?.endTime])
 
   const { data } = useEarnCalcEstimatedRewards({
     amount: stakingAmount,
