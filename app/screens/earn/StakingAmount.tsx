@@ -21,6 +21,9 @@ import AppNavigation from 'navigation/AppNavigation'
 import { StakeSetupScreenProps } from 'navigation/types'
 import { Avax } from 'types/Avax'
 import { useCChainBalance } from 'hooks/earn/useCChainBalance'
+import { useEstimateStakingFee } from 'hooks/earn/useEstimateStakingFee'
+import { useGetClaimableBalance } from 'hooks/earn/useGetClaimableBalance'
+import { ActivityIndicator } from 'components/ActivityIndicator'
 
 type ScreenProps = StakeSetupScreenProps<
   typeof AppNavigation.StakeSetup.SmartStakeAmount
@@ -31,6 +34,8 @@ export default function StakingAmount() {
   const { navigate } = useNavigation<ScreenProps['navigation']>()
   const { minStakeAmount } = useStakingParams()
   const cChainBalance = useCChainBalance()
+  const fetchingBalance = cChainBalance?.data?.balance === undefined
+  const claimableBalance = useGetClaimableBalance()
 
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const chainId = isDeveloperMode
@@ -49,12 +54,16 @@ export default function StakingAmount() {
     [inputAmount, nativeTokenPrice]
   )
 
-  const nativeTokenBalance = Avax.fromWei(cChainBalance?.data?.balance || 0)
+  const estimatedStakingFee = useEstimateStakingFee(inputAmount)
+  const cChainBalanceAvax = Avax.fromWei(cChainBalance?.data?.balance || 0)
+  const cumulativeBalance = cChainBalanceAvax.add(claimableBalance || 0)
+  const availableBalance = cumulativeBalance.sub(estimatedStakingFee || 0)
+  const estimatedStakingFeeForMax = useEstimateStakingFee(cumulativeBalance)
 
-  const amountNotEnough = !inputAmount.isZero() && inputAmount < minStakeAmount
+  const amountNotEnough =
+    !inputAmount.isZero() && inputAmount.lt(minStakeAmount)
 
-  const notEnoughBalance =
-    nativeTokenBalance && inputAmount.gt(nativeTokenBalance)
+  const notEnoughBalance = inputAmount.gt(availableBalance)
 
   const inputValid =
     !amountNotEnough && !notEnoughBalance && !inputAmount.isZero()
@@ -64,8 +73,10 @@ export default function StakingAmount() {
   }
 
   function setAmount(factor: number) {
-    if (nativeTokenBalance) {
-      setInputAmount(nativeTokenBalance.div(factor))
+    if (factor === 1) {
+      setInputAmount(availableBalance.sub(estimatedStakingFeeForMax || 0))
+    } else {
+      setInputAmount(availableBalance.div(factor))
     }
   }
 
@@ -77,12 +88,17 @@ export default function StakingAmount() {
         How many AVAX would you like to stake?
       </AvaText.Subtitle1>
       <Space y={40} />
-      <View style={{ alignItems: 'center' }}>
-        <AvaText.Subtitle1 color={theme.neutral500}>
-          Balance:
-          {' ' + nativeTokenBalance.toDisplay() + ' AVAX'}
-        </AvaText.Subtitle1>
-      </View>
+      {fetchingBalance && <ActivityIndicator size="small" />}
+      {!fetchingBalance && (
+        <>
+          <View style={{ alignItems: 'center' }}>
+            <AvaText.Subtitle1 color={theme.neutral500}>
+              Balance:
+              {' ' + cumulativeBalance.toDisplay() + ' AVAX'}
+            </AvaText.Subtitle1>
+          </View>
+        </>
+      )}
       <EarnInputAmount
         handleAmountChange={handleAmountChange}
         inputAmount={inputAmount}
@@ -96,6 +112,19 @@ export default function StakingAmount() {
           {` ${selectedCurrency}`}
         </AvaText.Caption>
       </Row>
+      {!estimatedStakingFee?.isZero() && (
+        <>
+          <Space y={7} />
+          <Row style={{ justifyContent: 'center' }}>
+            <AvaText.Caption textStyle={{ color: theme.white }}>
+              {`Fee: `}
+            </AvaText.Caption>
+            <AvaText.Caption textStyle={{ color: theme.white }}>
+              {estimatedStakingFee?.toDisplay() + ` AVAX`}
+            </AvaText.Caption>
+          </Row>
+        </>
+      )}
       <View
         style={{
           marginTop: 16,
@@ -127,7 +156,7 @@ export default function StakingAmount() {
         <Row style={{ justifyContent: 'space-between' }}>
           <PercentButtons
             isDeveloperMode={isDeveloperMode}
-            balance={nativeTokenBalance}
+            balance={cChainBalanceAvax}
             onPercentageSelected={setAmount}
           />
         </Row>
