@@ -6,6 +6,7 @@ import NetworkService from 'services/network/NetworkService'
 import { Account } from 'store/account'
 import { AvalancheTransactionRequest } from 'services/wallet/types'
 import { UnsignedTx } from '@avalabs/avalanchejs-v2'
+import { maxTransactionStatusCheckRetries } from './utils'
 
 export type ImportPParams = {
   activeAccount: Account
@@ -16,6 +17,8 @@ export async function importP({
   activeAccount,
   isDevMode
 }: ImportPParams): Promise<boolean> {
+  Logger.info('importing P started')
+
   const avaxXPNetwork = NetworkService.getAvalancheNetworkXP(isDevMode)
 
   const unsignedTx = await WalletService.createImportPTx(
@@ -42,12 +45,13 @@ export async function importP({
     await exponentialBackoff(
       () => avaxProvider.getApiP().getTxStatus({ txID }),
       result => result.status === 'Committed',
-      6
+      maxTransactionStatusCheckRetries
     )
   } catch (e) {
     Logger.error('exponentialBackoff failed', e)
     throw Error(`Transfer is taking unusually long (import P). txId = ${txID}`)
   }
 
+  Logger.info('importing P ended')
   return true
 }
