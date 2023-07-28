@@ -7,6 +7,7 @@ import React, { useEffect, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 import Spinner from 'components/animation/Spinner'
 import { Avax } from 'types/Avax'
+import { useGetClaimableBalance } from 'hooks/earn/useGetClaimableBalance'
 import NotEnoughAvax from './NotEnoughAvax'
 import StakingAmount from './StakingAmount'
 
@@ -25,10 +26,13 @@ const SmartStakeAmount = () => {
   const { minStakeAmount } = useStakingParams()
   const cChainBalance = useCChainBalance()
   const [balanceState, setBalanceState] = useState(BalanceStates.UNKNOWN)
+  const claimableBalance = useGetClaimableBalance()
 
   useEffect(() => {
     if (cChainBalance.data?.balance) {
-      const availableAvax = Avax.fromWei(cChainBalance.data.balance)
+      const availableAvax = Avax.fromWei(cChainBalance.data.balance).add(
+        claimableBalance ?? 0
+      )
       const notEnoughAvax = availableAvax.lt(minStakeAmount)
 
       if (notEnoughAvax) {
@@ -37,7 +41,7 @@ const SmartStakeAmount = () => {
         setBalanceState(BalanceStates.SUFFICIENT)
       }
     }
-  }, [cChainBalance?.data?.balance, minStakeAmount])
+  }, [cChainBalance?.data?.balance, minStakeAmount, claimableBalance])
 
   const renderNotEnoughAvax = () => {
     const navToBuy = () => {
