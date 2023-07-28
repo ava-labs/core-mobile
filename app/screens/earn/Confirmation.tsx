@@ -35,6 +35,7 @@ import TransactionToast, {
 import Logger from 'utils/Logger'
 import { DOCS_STAKING } from 'resources/Constants'
 import QuestionSVG from 'components/svg/QuestionSVG'
+import { useGetClaimableBalance } from 'hooks/earn/useGetClaimableBalance'
 import { ConfirmScreen } from './components/ConfirmScreen'
 
 type ScreenProps = StakeSetupScreenProps<
@@ -51,6 +52,7 @@ export const Confirmation = () => {
   } = useApplicationContext()
   const activeNetwork = useSelector(selectActiveNetwork)
   const { issueDelegationMutation } = useIssueDelegation(onDelegationSuccess)
+  const claimableBalance = useGetClaimableBalance()
 
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const tokenSymbol = activeNetwork.networkToken.symbol
@@ -113,11 +115,15 @@ export const Confirmation = () => {
   }
 
   const issueDelegation = () => {
+    if (!claimableBalance) {
+      return
+    }
     issueDelegationMutation.mutate({
       stakingAmount,
       startDate: minStartTime,
       endDate: trueStakingEndTime,
-      nodeId
+      nodeId,
+      claimableBalance
     })
   }
 
