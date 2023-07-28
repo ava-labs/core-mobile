@@ -83,7 +83,8 @@ enum BuyScreens {
 enum EarnScreens {
   StakeDashboard = 'EarnScreens.StakeDashboard',
   StakeDetails = 'EarnScreens.StakeDetails',
-  StakeSetup = 'EarnScreens.StakeSetup'
+  StakeSetup = 'EarnScreens.StakeSetup',
+  ClaimRewards = 'EarnScreens.ClaimRewards'
 }
 
 enum StakeSetupScreens {
