@@ -45,19 +45,19 @@ export const Balance = () => {
     cChainBalance.data.price?.value
   )
 
-  const availableAmount = round(availableAvax, 9)
+  const availableAmount = round(availableAvax, 4)
 
   const claimableAmount = round(
     Big(pChainBalance.data.unlockedUnstaked[0]?.amount || 0)
       .div(Math.pow(10, 9))
       .toNumber(),
-    9
+    4
   )
   const stakedAmount = round(
     Big(pChainBalance.data.unlockedStaked[0]?.amount || 0)
       .div(Math.pow(10, 9))
       .toNumber(),
-    9
+    4
   )
 
   const stakingData = [

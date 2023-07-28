@@ -1,12 +1,15 @@
 import { AdvancedSortFilter, NodeValidators } from 'types/earn'
 import mockValidators from 'tests/fixtures/pvm/validators.json'
 import { Avax } from 'types/Avax'
+import { addDays, addYears } from 'date-fns'
 import {
   calculateMaxWeight,
   getAdvancedSortedValidators,
   getFilteredValidators,
   getRandomValidator,
-  getSimpleSortedValidators
+  getSimpleSortedValidators,
+  getSortedValidatorsByEndTime,
+  isEndTimeOverOneYear
 } from './utils'
 
 describe('calculateMaxWeight', () => {
@@ -157,5 +160,39 @@ describe('getAdvancedSortedValidators function', () => {
       AdvancedSortFilter.DurationLowToHigh
     )
     expect(sorted[0]?.endTime).toBe('2844249830')
+  })
+})
+
+describe('isEndTimeOverOneYear', () => {
+  it('returns true if end time if more than one year from now', () => {
+    const overOneYearFromNow = addYears(new Date(), 2)
+    const result = isEndTimeOverOneYear(overOneYearFromNow)
+    expect(result).toBeTruthy()
+  })
+  it('returns true if end time if exactly one year from now', () => {
+    const oneYearFromNow = addYears(new Date(), 1)
+    const result = isEndTimeOverOneYear(oneYearFromNow)
+    expect(result).toBeTruthy()
+  })
+  it('returns false if end time if less than one year from now', () => {
+    const lessThanOneYearFromNow = addDays(new Date(), 364)
+    const result = isEndTimeOverOneYear(lessThanOneYearFromNow)
+    expect(result).toBeFalsy()
+  })
+})
+
+describe('getSortedValidatorsByEndTime', () => {
+  const validators = [
+    { uptime: '50', delegationFee: '10.0000', endTime: '3844249830' },
+    { uptime: '99', delegationFee: '2.0000', endTime: '4844249830' },
+    { uptime: '1', delegationFee: '100.0000', endTime: '2844249830' }
+  ]
+  it('returns sorted validator sort descending by end time', () => {
+    const result = getSortedValidatorsByEndTime(validators as NodeValidators)
+    expect(result[0]?.endTime).toEqual('4844249830')
+  })
+  it('returns empty array when input is empty array', () => {
+    const result = getSortedValidatorsByEndTime([])
+    expect(result).toEqual([])
   })
 })

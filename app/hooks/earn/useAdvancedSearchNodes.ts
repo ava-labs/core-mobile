@@ -1,7 +1,9 @@
 import { useSelector } from 'react-redux'
 import {
   getAdvancedSortedValidators,
-  getFilteredValidators
+  getFilteredValidators,
+  getSortedValidatorsByEndTime,
+  isEndTimeOverOneYear as isOverOneYear
 } from 'services/earn/utils'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { AdvancedSortFilter, NodeValidators } from 'types/earn'
@@ -39,6 +41,7 @@ export const useAdvancedSearchNodes = ({
   searchText
 }: useAdvancedSearchNodesProps) => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
+  const isEndTimeOverOneYear = isOverOneYear(stakingEndTime)
   const noMatchError = new Error(
     `no node matches filter criteria: stakingAmount:  ${stakingAmount}, stakingEndTime: ${stakingEndTime}, minUpTime: ${minUpTime}`
   )
@@ -52,14 +55,23 @@ export const useAdvancedSearchNodes = ({
       stakingEndTime,
       minUpTime,
       maxFee,
-      searchText
+      searchText,
+      isEndTimeOverOneYear
     })
     if (filteredValidators.length === 0) {
       Logger.info(noMatchError.message)
       return { validators: [], error: noMatchError }
     }
+
+    // show only the top 5 validators with longest staking end time
+    let matchedValidators = filteredValidators
+    if (isEndTimeOverOneYear) {
+      const sorted = getSortedValidatorsByEndTime(filteredValidators)
+      matchedValidators = sorted.slice(0, 5)
+    }
+
     const sortedValidators = getAdvancedSortedValidators(
-      filteredValidators,
+      matchedValidators,
       sortFilter ?? AdvancedSortFilter.UpTimeHighToLow
     )
     return { validators: sortedValidators, error: undefined }
