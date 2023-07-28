@@ -6,7 +6,8 @@ import { MAX_VALIDATOR_WEIGHT_FACTOR } from 'consts/earn'
 import { Avax } from 'types/Avax'
 
 // the max num of times we should check transaction status
-export const maxTransactionStatusCheckRetries = 10
+// 7 means ~ 2 minutes
+export const maxTransactionStatusCheckRetries = 7
 
 /**
  * See https://docs.avax.network/subnets/reference-elastic-subnets-parameters#primary-network-parameters-on-mainnet

@@ -106,7 +106,7 @@ const ClaimRewards = () => {
           position="right"
           strictPosition={true}
           style={{ minWidth: 180 }}
-          backgroundColor={theme.colorBg3}>
+          backgroundColor={theme.neutral100}>
           <PopableLabel label="Network Fee" />
         </Popable>
         {renderFees()}
