@@ -34,6 +34,7 @@ import { UnsignedTx } from '@avalabs/avalanchejs-v2'
 import { fromUnixTime, getUnixTime } from 'date-fns'
 import { getMinimumStakeEndTime } from 'services/earn/utils'
 import { Avax } from 'types/Avax'
+import { bnToBigint } from 'utils/bigNumbers/bnToBigint'
 
 class WalletService {
   private mnemonic?: string
@@ -221,7 +222,7 @@ class WalletService {
       amount.toSubUnit(),
       destinationChain,
       BigInt(nonce),
-      baseFee.toSubUnit(),
+      bnToBigint(baseFee.toWei()),
       destinationAddress
     )
   }
