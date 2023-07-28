@@ -10,6 +10,8 @@ export const useTimeElapsed = (enabled: boolean, targetTime: number) => {
       id = setTimeout(() => {
         setTargetTimeReached(true)
       }, targetTime)
+    } else {
+      setTargetTimeReached(false)
     }
 
     return () => {
