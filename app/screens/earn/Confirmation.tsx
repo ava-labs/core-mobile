@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useMemo } from 'react'
 import { Linking, StyleSheet, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Space } from 'components/Space'
@@ -38,6 +38,8 @@ import TransactionToast, {
 } from 'components/toast/TransactionToast'
 import Logger from 'utils/Logger'
 import { DOCS_STAKING } from 'resources/Constants'
+import QuestionSVG from 'components/svg/QuestionSVG'
+import { useRefreshedCurrenDate } from 'hooks/earn/useRefreshedCurrenDate'
 import { ConfirmScreen } from './components/ConfirmScreen'
 import UnableToEstimate from './components/UnableToEstimate'
 
@@ -75,7 +77,7 @@ export const Confirmation = () => {
   const { navigate, getParent } = useNavigation<ScreenProps['navigation']>()
 
   const stakingAmountPrice = stakingAmount.mul(avaxPrice).toFixed(2) //price is in [currency] so we round to 2 decimals
-  const [now, setNow] = useState(new Date())
+  const now = useRefreshedCurrenDate() // ticker - update "now" variable every 10s
   const minStakeDurationMs = getMinimumStakeDurationMs(isDeveloperMode)
   //minStartTime - 1 minute after submitting
   const minStartTime = useMemo(() => {
@@ -117,17 +119,6 @@ export const Confirmation = () => {
       return undefined
     return data?.estimatedTokenReward.mul(validator.delegationFee).div(100)
   }, [data?.estimatedTokenReward, validator?.delegationFee])
-
-  // ticker - update "now" variable every 10s
-  useEffect(() => {
-    const intervalId = setInterval(() => {
-      setNow(new Date())
-    }, 10000)
-
-    return () => {
-      clearInterval(intervalId)
-    }
-  }, [])
 
   const cancelStaking = () => {
     navigate(AppNavigation.StakeSetup.Cancel)
