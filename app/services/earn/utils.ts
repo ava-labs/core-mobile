@@ -5,6 +5,9 @@ import { FujiParams, MainnetParams } from 'utils/NetworkParams'
 import { MAX_VALIDATOR_WEIGHT_FACTOR } from 'consts/earn'
 import { Avax } from 'types/Avax'
 
+// the max num of times we should check transaction status
+export const maxTransactionStatusCheckRetries = 10
+
 /**
  * See https://docs.avax.network/subnets/reference-elastic-subnets-parameters#primary-network-parameters-on-mainnet
  * for more info on this harcoded parameter.

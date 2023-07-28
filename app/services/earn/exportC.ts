@@ -10,6 +10,7 @@ import { AvalancheTransactionRequest } from 'services/wallet/types'
 import { UnsignedTx } from '@avalabs/avalanchejs-v2'
 import NetworkService from 'services/network/NetworkService'
 import { Avax } from 'types/Avax'
+import { maxTransactionStatusCheckRetries } from './utils'
 
 export type ExportCParams = {
   cChainBalance: Avax
@@ -24,6 +25,8 @@ export async function exportC({
   activeAccount,
   isDevMode
 }: ExportCParams): Promise<boolean> {
+  Logger.info('exporting C started')
+
   const avaxXPNetwork = NetworkService.getAvalancheNetworkXP(isDevMode)
   const chains = await NetworkService.getNetworks()
   const cChainNetwork =
@@ -72,12 +75,13 @@ export async function exportC({
     await exponentialBackoff(
       () => avaxProvider.getApiC().getAtomicTxStatus(txID),
       result => result.status === 'Accepted',
-      6
+      maxTransactionStatusCheckRetries
     )
   } catch (e) {
     Logger.error('exponentialBackoff failed', e)
     throw Error(`Transfer is taking unusually long (export C). txId = ${txID}`)
   }
 
+  Logger.info('exporting C ended')
   return true
 }

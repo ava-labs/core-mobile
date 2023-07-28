@@ -7,6 +7,7 @@ import { Account } from 'store/account'
 import { AvalancheTransactionRequest } from 'services/wallet/types'
 import { UnsignedTx } from '@avalabs/avalanchejs-v2'
 import NetworkService from 'services/network/NetworkService'
+import { maxTransactionStatusCheckRetries } from './utils'
 
 export type ExportPParams = {
   /**
@@ -27,6 +28,8 @@ export async function exportP({
   activeAccount,
   isDevMode
 }: ExportPParams): Promise<boolean> {
+  Logger.info('exporting P started')
+
   if (pChainBalance.lt(requiredAmount)) {
     throw Error('Not enough balance on P chain')
   }
@@ -60,12 +63,13 @@ export async function exportP({
     await exponentialBackoff(
       () => avaxProvider.getApiP().getTxStatus({ txID }),
       result => result.status === 'Committed',
-      6
+      maxTransactionStatusCheckRetries
     )
   } catch (e) {
     Logger.error('exponentialBackoff failed', e)
     throw Error(`Transfer is taking unusually long (export P). txId = ${txID}`)
   }
 
+  Logger.info('exporting P ended')
   return true
 }
