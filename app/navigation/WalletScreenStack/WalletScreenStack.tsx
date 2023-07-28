@@ -65,7 +65,7 @@ import CaptureDappQR from 'screens/shared/CaptureDappQR'
 import { ChainID } from 'store/network'
 import EarnScreenStack, {
   EarnStackParamList
-} from 'navigation/wallet/EarnScreenStack'
+} from 'navigation/wallet/EarnScreenStack/EarnScreenStack'
 import { BridgeStackParamList } from '../wallet/BridgeScreenStack'
 import {
   AddEthereumChainParams,

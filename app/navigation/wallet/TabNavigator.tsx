@@ -12,7 +12,7 @@ import { getCommonBottomTabOptions, normalTabButton } from 'navigation/NavUtils'
 import EarnSVG from 'components/svg/EarnSVG'
 import { usePosthogContext } from 'contexts/PosthogContext'
 import { useStakes } from 'hooks/earn/useStakes'
-import EarnScreenStack from './EarnScreenStack'
+import EarnScreenStack from './EarnScreenStack/EarnScreenStack'
 
 export type TabNavigatorParamList = {
   [AppNavigation.Tabs.Portfolio]: { showBackButton?: boolean }
