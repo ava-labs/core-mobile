@@ -26,6 +26,7 @@ import ERC721 from '@openzeppelin/contracts/build/contracts/ERC721.json'
 import ERC1155 from '@openzeppelin/contracts/build/contracts/ERC1155.json'
 import { isAddress } from '@ethersproject/address'
 import SentryWrapper from 'services/sentry/SentryWrapper'
+import Logger from 'utils/Logger'
 
 export class SendServiceEVM implements SendServiceHelper {
   private readonly networkProvider: JsonRpcBatchInternal
@@ -153,7 +154,7 @@ export class SendServiceEVM implements SendServiceHelper {
       error &&
       !(error as Error).toString().includes('insufficient funds for gas')
     ) {
-      console.error(error)
+      Logger.error('failed to get gas limit', error)
     }
     // add 20% padding to ensure the tx will be accepted
     return Math.round((gasLimit?.toNumber() || 0) * 1.2)

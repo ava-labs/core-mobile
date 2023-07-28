@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /*
  * from https://www.30secondsofcode.org/js/s/pipe-async-functions
  * Performs left-to-right function composition for asynchronous functions.

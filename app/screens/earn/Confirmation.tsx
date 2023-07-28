@@ -32,18 +32,22 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { getMinimumStakeDurationMs } from 'services/earn/utils'
 import { convertToSeconds, MilliSeconds } from 'types/siUnits'
 import { useIssueDelegation } from 'hooks/earn/useIssueDelegation'
-import { showSnackBarCustom } from 'components/Snackbar'
+import { showSimpleToast, showSnackBarCustom } from 'components/Snackbar'
 import TransactionToast, {
   TransactionToastType
 } from 'components/toast/TransactionToast'
 import Logger from 'utils/Logger'
 import { DOCS_STAKING } from 'resources/Constants'
-import QuestionSVG from 'components/svg/QuestionSVG'
 import { ConfirmScreen } from './components/ConfirmScreen'
+import UnableToEstimate from './components/UnableToEstimate'
 
 type ScreenProps = StakeSetupScreenProps<
   typeof AppNavigation.StakeSetup.Confirmation
 >
+
+const onDelegationError = (error: Error) => {
+  showSimpleToast(error.message)
+}
 
 export const Confirmation = () => {
   const { nodeId, stakingAmount, stakingEndTime } =
@@ -59,7 +63,10 @@ export const Confirmation = () => {
     appHook: { tokenInCurrencyFormatter }
   } = useApplicationContext()
   const activeNetwork = useSelector(selectActiveNetwork)
-  const { issueDelegationMutation } = useIssueDelegation(onDelegationSuccess)
+  const { issueDelegationMutation } = useIssueDelegation(
+    onDelegationSuccess,
+    onDelegationError
+  )
 
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const tokenSymbol = activeNetwork.networkToken.symbol
@@ -189,23 +196,6 @@ export const Confirmation = () => {
     </View>
   )
 
-  const renderUnableToEstimate = () => (
-    <Popable
-      content={PopableContent({
-        message: 'Unable to estimate due to network conditions'
-      })}
-      position="top"
-      strictPosition={true}
-      style={{ minWidth: 218 }}
-      backgroundColor={theme.neutral100}>
-      <PopableLabel
-        label="Unable to Estimate"
-        textStyle={{ color: theme.white }}
-        icon={<QuestionSVG color={theme.neutral50} />}
-      />
-    </Popable>
-  )
-
   const renderEstimatedReward = () => {
     if (data?.estimatedTokenReward) {
       return (
@@ -222,7 +212,7 @@ export const Confirmation = () => {
         </View>
       )
     }
-    return renderUnableToEstimate()
+    return <UnableToEstimate />
   }
 
   const renderStakingFee = () => {
@@ -233,7 +223,7 @@ export const Confirmation = () => {
         </AvaText.Heading6>
       )
     }
-    return renderUnableToEstimate()
+    return <UnableToEstimate />
   }
 
   if (!validator) return null

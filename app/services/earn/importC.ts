@@ -6,6 +6,7 @@ import NetworkService from 'services/network/NetworkService'
 import { Account } from 'store/account'
 import { AvalancheTransactionRequest } from 'services/wallet/types'
 import { UnsignedTx } from '@avalabs/avalanchejs-v2'
+import { Avax } from 'types/Avax'
 
 export type ImportCParams = {
   activeAccount: Account
@@ -23,8 +24,8 @@ export async function importC({
   ) as Avalanche.JsonRpcProvider
 
   const baseFee = await avaxProvider.getApiC().getBaseFee() //in WEI
-  const baseFeeNAvax = baseFee / BigInt(1e9)
-  const instantFee = baseFeeNAvax + (baseFeeNAvax * BigInt(20)) / BigInt(100) // Increase by 20% for instant speed
+  const baseFeeAvax = Avax.fromWei(baseFee)
+  const instantFee = baseFeeAvax.add(baseFeeAvax.mul(0.2)).toSubUnit() // Increase by 20% for instant speed
 
   const unsignedTx = await WalletService.createImportCTx(
     activeAccount.index,
