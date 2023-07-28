@@ -34,6 +34,10 @@ export default function StakingAmount() {
   const { navigate } = useNavigation<ScreenProps['navigation']>()
   const { minStakeAmount } = useStakingParams()
   const cChainBalance = useCChainBalance()
+  const cChainBalanceAvax = useMemo(
+    () => Avax.fromWei(cChainBalance?.data?.balance || 0),
+    [cChainBalance?.data?.balance]
+  )
   const fetchingBalance = cChainBalance?.data?.balance === undefined
   const claimableBalance = useGetClaimableBalance()
 
@@ -55,9 +59,14 @@ export default function StakingAmount() {
   )
 
   const estimatedStakingFee = useEstimateStakingFee(inputAmount)
-  const cChainBalanceAvax = Avax.fromWei(cChainBalance?.data?.balance || 0)
-  const cumulativeBalance = cChainBalanceAvax.add(claimableBalance || 0)
-  const availableBalance = cumulativeBalance.sub(estimatedStakingFee || 0)
+  const cumulativeBalance = useMemo(
+    () => cChainBalanceAvax.add(claimableBalance || 0),
+    [cChainBalanceAvax, claimableBalance]
+  )
+  const availableBalance = useMemo(
+    () => cumulativeBalance.sub(estimatedStakingFee || 0),
+    [cumulativeBalance, estimatedStakingFee]
+  )
   const estimatedStakingFeeForMax = useEstimateStakingFee(cumulativeBalance)
 
   const amountNotEnough =
