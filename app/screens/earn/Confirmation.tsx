@@ -28,7 +28,7 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { getMinimumStakeDurationMs } from 'services/earn/utils'
 import { convertToSeconds, MilliSeconds } from 'types/siUnits'
 import { useIssueDelegation } from 'hooks/earn/useIssueDelegation'
-import { showSnackBarCustom } from 'components/Snackbar'
+import { showSimpleToast, showSnackBarCustom } from 'components/Snackbar'
 import TransactionToast, {
   TransactionToastType
 } from 'components/toast/TransactionToast'
@@ -41,6 +41,10 @@ type ScreenProps = StakeSetupScreenProps<
   typeof AppNavigation.StakeSetup.Confirmation
 >
 
+const onDelegationError = (error: Error) => {
+  showSimpleToast(error.message)
+}
+
 export const Confirmation = () => {
   const { nodeId, stakingAmount, stakingEndTime } =
     useRoute<ScreenProps['route']>().params
@@ -50,7 +54,10 @@ export const Confirmation = () => {
     appHook: { tokenInCurrencyFormatter }
   } = useApplicationContext()
   const activeNetwork = useSelector(selectActiveNetwork)
-  const { issueDelegationMutation } = useIssueDelegation(onDelegationSuccess)
+  const { issueDelegationMutation } = useIssueDelegation(
+    onDelegationSuccess,
+    onDelegationError
+  )
 
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const tokenSymbol = activeNetwork.networkToken.symbol
