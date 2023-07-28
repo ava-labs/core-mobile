@@ -13,6 +13,7 @@ const useDevDebugging = () => {
     LogBox.ignoreLogs(LOGBOX_IGNORED_WARNINGS)
     LogBox.ignoreAllLogs(LOGBOX_DISABLED)
     // @ts-ignore
+    // eslint-disable-next-line no-console
     console.reportErrorsAsExceptions = REDSCREEN_DISABLED
   }
 

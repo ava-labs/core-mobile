@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import StorageTools from 'repository/StorageTools'
+import Logger from 'utils/Logger'
 
 /**
  * Currently we support only one wallet, with multiple accounts.
@@ -69,7 +70,7 @@ export function useRepo(): Repo {
     const infoSet = [...new Set(info)]
     setViewOnceInfo(infoSet)
     StorageTools.saveToStorage(VIEW_ONCE_INFORMATION, infoSet).catch(error =>
-      console.error(error)
+      Logger.error('failed to save to storage', error)
     )
   }
 

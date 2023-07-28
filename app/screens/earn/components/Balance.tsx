@@ -77,9 +77,7 @@ export const Balance = () => {
   }
 
   const goToClaimRewards = () => {
-    navigate(AppNavigation.Wallet.Earn, {
-      screen: AppNavigation.Earn.ClaimRewards
-    })
+    // to be implemented
   }
 
   const renderStakingBalance = () => (
