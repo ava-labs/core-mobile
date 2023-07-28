@@ -1,8 +1,6 @@
 import React from 'react'
-import BottomSheet, { BottomSheetBackdrop } from '@gorhom/bottom-sheet'
 import { useNavigation, useRoute } from '@react-navigation/native'
-import TabViewBackground from 'components/TabViewBackground'
-import AvaxSheetHandle from 'components/AvaxSheetHandle'
+import { BottomSheet } from 'components/BottomSheet'
 import AvaText from 'components/AvaText'
 import BridgeTokenSelector, {
   SelectTokenMode
@@ -14,8 +12,6 @@ type RouteProp = BridgeScreenProps<
   typeof AppNavigation.Modal.BridgeSelectToken
 >['route']
 
-const snapPoints = ['90%']
-
 function BridgeSelectTokenBottomSheet(): JSX.Element {
   const { goBack } = useNavigation()
   const { params } = useRoute<RouteProp>()
@@ -26,25 +22,16 @@ function BridgeSelectTokenBottomSheet(): JSX.Element {
   }
 
   return (
-    <BottomSheet
-      backdropComponent={BottomSheetBackdrop}
-      handleComponent={AvaxSheetHandle}
-      animateOnMount
-      enablePanDownToClose
-      snapPoints={snapPoints}
-      backgroundComponent={TabViewBackground}
-      onClose={goBack}>
-      <>
-        <AvaText.LargeTitleBold textStyle={{ marginHorizontal: 16 }}>
-          Select Token
-        </AvaText.LargeTitleBold>
-        <BridgeTokenSelector
-          onTokenSelected={onTokenSelected}
-          bridgeTokenList={params.bridgeTokenList ?? []}
-          selectMode={SelectTokenMode.TRANSFER}
-          horizontalMargin={0}
-        />
-      </>
+    <BottomSheet>
+      <AvaText.LargeTitleBold textStyle={{ marginHorizontal: 16 }}>
+        Select Token
+      </AvaText.LargeTitleBold>
+      <BridgeTokenSelector
+        onTokenSelected={onTokenSelected}
+        bridgeTokenList={params.bridgeTokenList ?? []}
+        selectMode={SelectTokenMode.TRANSFER}
+        horizontalMargin={0}
+      />
     </BottomSheet>
   )
 }

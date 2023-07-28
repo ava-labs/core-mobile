@@ -3,21 +3,22 @@ import { UnixTimeMs } from 'services/earn/types'
 import { getMinimumStakeEndTime } from './utils'
 
 export const getStakeEndDate = (
+  curentDate: Date,
   stakeDurationFormat: StakeDurationFormat,
   stakeDurationValue: number,
   isDeveloperMode: boolean
 ) => {
   switch (stakeDurationFormat) {
     case StakeDurationFormat.Day:
-      return addDays(new Date(), stakeDurationValue)
+      return addDays(curentDate, stakeDurationValue)
     case StakeDurationFormat.Week:
-      return addWeeks(new Date(), stakeDurationValue)
+      return addWeeks(curentDate, stakeDurationValue)
     case StakeDurationFormat.Month:
-      return addMonths(new Date(), stakeDurationValue)
+      return addMonths(curentDate, stakeDurationValue)
     case StakeDurationFormat.Year:
-      return addYears(new Date(), stakeDurationValue)
+      return addYears(curentDate, stakeDurationValue)
     case StakeDurationFormat.Custom:
-      return getMinimumStakeEndTime(isDeveloperMode, new Date())
+      return getMinimumStakeEndTime(isDeveloperMode, curentDate)
   }
 }
 export const getStakeDuration = (
@@ -25,25 +26,28 @@ export const getStakeDuration = (
   stakeDurationValue: number,
   isDeveloperMode: boolean
 ): UnixTimeMs => {
-  const currentTimeUnix = new Date().getTime()
+  const currentTime = new Date()
+  const currentTimeUnix = currentTime.getTime()
   switch (stakeDurationFormat) {
     case StakeDurationFormat.Day:
-      return addDays(new Date(), stakeDurationValue).getTime() - currentTimeUnix
+      return (
+        addDays(currentTime, stakeDurationValue).getTime() - currentTimeUnix
+      )
     case StakeDurationFormat.Week:
       return (
-        addWeeks(new Date(), stakeDurationValue).getTime() - currentTimeUnix
+        addWeeks(currentTime, stakeDurationValue).getTime() - currentTimeUnix
       )
     case StakeDurationFormat.Month:
       return (
-        addMonths(new Date(), stakeDurationValue).getTime() - currentTimeUnix
+        addMonths(currentTime, stakeDurationValue).getTime() - currentTimeUnix
       )
     case StakeDurationFormat.Year:
       return (
-        addYears(new Date(), stakeDurationValue).getTime() - currentTimeUnix
+        addYears(currentTime, stakeDurationValue).getTime() - currentTimeUnix
       )
     case StakeDurationFormat.Custom:
       return (
-        getMinimumStakeEndTime(isDeveloperMode, new Date()).getTime() -
+        getMinimumStakeEndTime(isDeveloperMode, currentTime).getTime() -
         currentTimeUnix
       )
   }
