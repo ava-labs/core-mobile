@@ -1,5 +1,4 @@
 import { avaxSerial, UnsignedTx } from '@avalabs/avalanchejs-v2'
-import BN from 'bn.js'
 import { Avax } from 'types/Avax'
 
 /**
@@ -10,17 +9,16 @@ import { Avax } from 'types/Avax'
  * @return Fee in nAvax
  */
 export function calculateCChainFee(
-  baseFee: bigint,
+  baseFee: Avax,
   unsignedTx: UnsignedTx,
   signedTx: avaxSerial.SignedTx
-): BN {
-  const baseFeeNAvax = new BN(baseFee.toString()).div(new BN(1e9))
-  const usedGas = new BN(
-    1 * unsignedTx.toBytes().length +
-      1000 * signedTx.getAllSignatures().length +
-      10000
-  )
-  return usedGas.mul(baseFeeNAvax)
+): Avax {
+  const usedGas =
+    BigInt(unsignedTx.toBytes().length) +
+    BigInt(1000 * signedTx.getAllSignatures().length) +
+    10000n
+
+  return baseFee.mul(usedGas)
 }
 
 /**
