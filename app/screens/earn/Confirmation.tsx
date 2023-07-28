@@ -3,7 +3,11 @@ import { Linking, StyleSheet, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Space } from 'components/Space'
 import AvaText from 'components/AvaText'
-import { useNavigation, useRoute } from '@react-navigation/native'
+import {
+  useNavigation,
+  useNavigationState,
+  useRoute
+} from '@react-navigation/native'
 import Separator from 'components/Separator'
 import { Row } from 'components/Row'
 import AvaButton from 'components/AvaButton'
@@ -44,6 +48,11 @@ type ScreenProps = StakeSetupScreenProps<
 export const Confirmation = () => {
   const { nodeId, stakingAmount, stakingEndTime } =
     useRoute<ScreenProps['route']>().params
+  const previousRoute = useNavigationState(
+    state => state.routes[state.index - 1]
+  )
+  const isComingFromSelectNode =
+    previousRoute && previousRoute.name === AppNavigation.StakeSetup.SelectNode
   const validator = useGetValidatorByNodeId(nodeId) as NodeValidator
   const {
     theme,
@@ -239,8 +248,7 @@ export const Confirmation = () => {
       header="Confirm Staking"
       confirmBtnTitle="Stake Now"
       cancelBtnTitle="Cancel"
-      disclaimer='By selecting "Stake Now" you will lock your funds for the set
-    duration of time.'>
+      disclaimer="By selecting “Stake Now”, you will lock your AVAX for the staking duration you selected.">
       <Space y={4} />
       <Row style={{ justifyContent: 'space-between' }}>
         <AvaText.Body2 textStyle={{ textAlign: 'center', marginTop: 3 }}>
@@ -305,33 +313,35 @@ export const Confirmation = () => {
       </View>
       <Separator />
 
-      <View style={styles.verticalPadding}>
-        <Row
-          style={{
-            justifyContent: 'space-between'
-          }}>
-          <AvaText.Body2 textStyle={{ textAlign: 'center' }}>
-            Node ID
-          </AvaText.Body2>
+      {isComingFromSelectNode && (
+        <View style={styles.verticalPadding}>
+          <Row
+            style={{
+              justifyContent: 'space-between'
+            }}>
+            <AvaText.Body2 textStyle={{ textAlign: 'center' }}>
+              Node ID
+            </AvaText.Body2>
 
-          <AvaText.Heading6 textStyle={{ alignSelf: 'flex-end' }}>
-            <AvaButton.TextWithIcon
-              textStyle={{ alignItems: 'flex-end' }}
-              style={{ alignSelf: 'flex-end' }}
-              onPress={() => copyToClipboard(validator.nodeID)}
-              icon={<CopySVG />}
-              iconPlacement="right"
-              text={
-                <AvaText.Body1
-                  color={theme.colorText1}
-                  textStyle={{ alignSelf: 'flex-end' }}>
-                  {truncateNodeId(validator.nodeID ?? '', 4)}
-                </AvaText.Body1>
-              }
-            />
-          </AvaText.Heading6>
-        </Row>
-      </View>
+            <AvaText.Heading6 textStyle={{ alignSelf: 'flex-end' }}>
+              <AvaButton.TextWithIcon
+                textStyle={{ alignItems: 'flex-end' }}
+                style={{ alignSelf: 'flex-end' }}
+                onPress={() => copyToClipboard(validator.nodeID)}
+                icon={<CopySVG />}
+                iconPlacement="right"
+                text={
+                  <AvaText.Body1
+                    color={theme.colorText1}
+                    textStyle={{ alignSelf: 'flex-end' }}>
+                    {truncateNodeId(validator.nodeID ?? '', 4)}
+                  </AvaText.Body1>
+                }
+              />
+            </AvaText.Heading6>
+          </Row>
+        </View>
+      )}
       <Separator />
 
       <View style={styles.verticalPadding}>
@@ -361,7 +371,7 @@ export const Confirmation = () => {
           <Popable
             content={
               <PopableContent
-                message={'Transaction fee paid to the validator'}
+                message={'Fee set and retained by the validator'}
               />
             }
             position="right"
