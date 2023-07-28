@@ -36,6 +36,7 @@ import Logger from 'utils/Logger'
 import { DOCS_STAKING } from 'resources/Constants'
 import QuestionSVG from 'components/svg/QuestionSVG'
 import { useGetClaimableBalance } from 'hooks/earn/useGetClaimableBalance'
+import { useEstimateStakingFee } from 'hooks/earn/useEstimateStakingFee'
 import { ConfirmScreen } from './components/ConfirmScreen'
 
 type ScreenProps = StakeSetupScreenProps<
@@ -89,6 +90,8 @@ export const Confirmation = () => {
   })
   const estimatedRewardInCurrency: string =
     data?.estimatedRewardInCurrency ?? '0'
+
+  const stakingFee = useEstimateStakingFee(stakingAmount)
 
   const delegationFee = useMemo(() => {
     if (
@@ -350,7 +353,9 @@ export const Confirmation = () => {
             backgroundColor={theme.neutral100}>
             <PopableLabel label="Network Fee" />
           </Popable>
-          <AvaText.Heading6>Not implemented {tokenSymbol}</AvaText.Heading6>
+          <AvaText.Heading6>
+            {stakingFee?.toDisplay() || 0} {tokenSymbol}
+          </AvaText.Heading6>
         </Row>
       </View>
       <Separator />
