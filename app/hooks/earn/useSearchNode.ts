@@ -1,7 +1,8 @@
 import {
   getFilteredValidators,
   getRandomValidator,
-  getSimpleSortedValidators
+  getSimpleSortedValidators,
+  isEndTimeOverOneYear as isOverOneYear
 } from 'services/earn/utils'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { useSelector } from 'react-redux'
@@ -21,6 +22,7 @@ export const useSearchNode = ({
   validators
 }: useSearchNodeProps): { validator?: NodeValidator; error?: Error } => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
+  const isEndTimeOverOneYear = isOverOneYear(stakingEndTime)
   const noMatchError = new Error(
     `no node matches filter criteria: stakingAmount:  ${stakingAmount}, stakingEndTime: ${stakingEndTime}, minUpTime: 98%`
   )
@@ -32,14 +34,21 @@ export const useSearchNode = ({
       validators,
       stakingAmount,
       stakingEndTime,
-      minUpTime: 98
+      minUpTime: 98,
+      isEndTimeOverOneYear
     })
     if (filteredValidators.length === 0) {
       Logger.info(noMatchError.message)
       return { validator: undefined, error: noMatchError }
     }
-    const sortedValidators = getSimpleSortedValidators(filteredValidators)
-    const matchedValidator = getRandomValidator(sortedValidators)
+    const sortedValidators = getSimpleSortedValidators(
+      filteredValidators,
+      isEndTimeOverOneYear
+    )
+    const matchedValidator = getRandomValidator(
+      sortedValidators,
+      isEndTimeOverOneYear
+    )
     return { validator: matchedValidator, error: undefined }
   }
   Logger.info(noValidatorsError.message)

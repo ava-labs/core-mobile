@@ -3,7 +3,11 @@ import { Linking, StyleSheet, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Space } from 'components/Space'
 import AvaText from 'components/AvaText'
-import { useNavigation, useRoute } from '@react-navigation/native'
+import {
+  useNavigation,
+  useNavigationState,
+  useRoute
+} from '@react-navigation/native'
 import Separator from 'components/Separator'
 import { Row } from 'components/Row'
 import AvaButton from 'components/AvaButton'
@@ -15,7 +19,7 @@ import { PopableContent } from 'components/PopableContent'
 import { truncateNodeId } from 'utils/Utils'
 import CopySVG from 'components/svg/CopySVG'
 import { copyToClipboard } from 'utils/DeviceTools'
-import { addMinutes, format } from 'date-fns'
+import { addMinutes, format, fromUnixTime } from 'date-fns'
 import { useEarnCalcEstimatedRewards } from 'hooks/earn/useEarnCalcEstimatedRewards'
 import { useSelector } from 'react-redux'
 import { selectAvaxPrice } from 'store/balance'
@@ -28,31 +32,43 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { getMinimumStakeDurationMs } from 'services/earn/utils'
 import { convertToSeconds, MilliSeconds } from 'types/siUnits'
 import { useIssueDelegation } from 'hooks/earn/useIssueDelegation'
-import { showSnackBarCustom } from 'components/Snackbar'
+import { showSimpleToast, showSnackBarCustom } from 'components/Snackbar'
 import TransactionToast, {
   TransactionToastType
 } from 'components/toast/TransactionToast'
 import Logger from 'utils/Logger'
 import { DOCS_STAKING } from 'resources/Constants'
-import QuestionSVG from 'components/svg/QuestionSVG'
-import { useGetClaimableBalance } from 'hooks/earn/useGetClaimableBalance'
 import { useEstimateStakingFee } from 'hooks/earn/useEstimateStakingFee'
+import { useGetClaimableBalance } from 'hooks/earn/useGetClaimableBalance'
 import { ConfirmScreen } from './components/ConfirmScreen'
+import UnableToEstimate from './components/UnableToEstimate'
 
 type ScreenProps = StakeSetupScreenProps<
   typeof AppNavigation.StakeSetup.Confirmation
 >
 
+const onDelegationError = (error: Error) => {
+  showSimpleToast(error.message)
+}
+
 export const Confirmation = () => {
   const { nodeId, stakingAmount, stakingEndTime } =
     useRoute<ScreenProps['route']>().params
+  const previousRoute = useNavigationState(
+    state => state.routes[state.index - 1]
+  )
+  const isComingFromSelectNode =
+    previousRoute && previousRoute.name === AppNavigation.StakeSetup.SelectNode
   const validator = useGetValidatorByNodeId(nodeId) as NodeValidator
   const {
     theme,
     appHook: { tokenInCurrencyFormatter }
   } = useApplicationContext()
   const activeNetwork = useSelector(selectActiveNetwork)
-  const { issueDelegationMutation } = useIssueDelegation(onDelegationSuccess)
+  const { issueDelegationMutation } = useIssueDelegation(
+    onDelegationSuccess,
+    onDelegationError
+  )
   const claimableBalance = useGetClaimableBalance()
 
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
@@ -77,9 +93,14 @@ export const Confirmation = () => {
     ) {
       return new Date(minStartTime.getTime() + minStakeDurationMs)
     }
-
+    // check if stake duration is more than validator's end time,
+    // use validator's end time if it is
+    const validatorEndTime = fromUnixTime(Number(validator?.endTime))
+    if (stakingEndTime > validatorEndTime) {
+      return validatorEndTime
+    }
     return stakingEndTime
-  }, [minStakeDurationMs, minStartTime, stakingEndTime])
+  }, [minStakeDurationMs, minStartTime, stakingEndTime, validator?.endTime])
 
   const { data } = useEarnCalcEstimatedRewards({
     amount: stakingAmount,
@@ -184,23 +205,6 @@ export const Confirmation = () => {
     </View>
   )
 
-  const renderUnableToEstimate = () => (
-    <Popable
-      content={PopableContent({
-        message: 'Unable to estimate due to network conditions'
-      })}
-      position="top"
-      strictPosition={true}
-      style={{ minWidth: 218 }}
-      backgroundColor={theme.neutral100}>
-      <PopableLabel
-        label="Unable to Estimate"
-        textStyle={{ color: theme.white }}
-        icon={<QuestionSVG color={theme.neutral50} />}
-      />
-    </Popable>
-  )
-
   const renderEstimatedReward = () => {
     if (data?.estimatedTokenReward) {
       return (
@@ -217,7 +221,7 @@ export const Confirmation = () => {
         </View>
       )
     }
-    return renderUnableToEstimate()
+    return <UnableToEstimate />
   }
 
   const renderStakingFee = () => {
@@ -228,7 +232,7 @@ export const Confirmation = () => {
         </AvaText.Heading6>
       )
     }
-    return renderUnableToEstimate()
+    return <UnableToEstimate />
   }
 
   if (!validator) return null
@@ -243,8 +247,7 @@ export const Confirmation = () => {
       header="Confirm Staking"
       confirmBtnTitle="Stake Now"
       cancelBtnTitle="Cancel"
-      disclaimer='By selecting "Stake Now" you will lock your funds for the set
-    duration of time.'>
+      disclaimer="By selecting “Stake Now”, you will lock your AVAX for the staking duration you selected.">
       <Space y={4} />
       <Row style={{ justifyContent: 'space-between' }}>
         <AvaText.Body2 textStyle={{ textAlign: 'center', marginTop: 3 }}>
@@ -309,33 +312,35 @@ export const Confirmation = () => {
       </View>
       <Separator />
 
-      <View style={styles.verticalPadding}>
-        <Row
-          style={{
-            justifyContent: 'space-between'
-          }}>
-          <AvaText.Body2 textStyle={{ textAlign: 'center' }}>
-            Node ID
-          </AvaText.Body2>
+      {isComingFromSelectNode && (
+        <View style={styles.verticalPadding}>
+          <Row
+            style={{
+              justifyContent: 'space-between'
+            }}>
+            <AvaText.Body2 textStyle={{ textAlign: 'center' }}>
+              Node ID
+            </AvaText.Body2>
 
-          <AvaText.Heading6 textStyle={{ alignSelf: 'flex-end' }}>
-            <AvaButton.TextWithIcon
-              textStyle={{ alignItems: 'flex-end' }}
-              style={{ alignSelf: 'flex-end' }}
-              onPress={() => copyToClipboard(validator.nodeID)}
-              icon={<CopySVG />}
-              iconPlacement="right"
-              text={
-                <AvaText.Body1
-                  color={theme.colorText1}
-                  textStyle={{ alignSelf: 'flex-end' }}>
-                  {truncateNodeId(validator.nodeID ?? '', 4)}
-                </AvaText.Body1>
-              }
-            />
-          </AvaText.Heading6>
-        </Row>
-      </View>
+            <AvaText.Heading6 textStyle={{ alignSelf: 'flex-end' }}>
+              <AvaButton.TextWithIcon
+                textStyle={{ alignItems: 'flex-end' }}
+                style={{ alignSelf: 'flex-end' }}
+                onPress={() => copyToClipboard(validator.nodeID)}
+                icon={<CopySVG />}
+                iconPlacement="right"
+                text={
+                  <AvaText.Body1
+                    color={theme.colorText1}
+                    textStyle={{ alignSelf: 'flex-end' }}>
+                    {truncateNodeId(validator.nodeID ?? '', 4)}
+                  </AvaText.Body1>
+                }
+              />
+            </AvaText.Heading6>
+          </Row>
+        </View>
+      )}
       <Separator />
 
       <View style={styles.verticalPadding}>
@@ -367,7 +372,7 @@ export const Confirmation = () => {
           <Popable
             content={
               <PopableContent
-                message={'Transaction fee paid to the validator'}
+                message={'Fee set and retained by the validator'}
               />
             }
             position="right"

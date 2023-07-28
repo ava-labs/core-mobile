@@ -17,14 +17,13 @@ import { PopableContent } from 'components/PopableContent'
 import { Popable } from 'react-native-popable'
 import { ScrollView } from 'react-native-gesture-handler'
 import { useStake } from 'hooks/earn/useStake'
-import { useNAvaxToAvax } from 'hooks/conversion/useNAvaxToAvax'
+import { useNAvaxFormatter } from 'hooks/formatter/useNAvaxFormatter'
 import { format, fromUnixTime } from 'date-fns'
 import { getReadableDateDuration } from 'utils/date/getReadableDateDuration'
 import { humanize } from 'utils/string/humanize'
 import { RewardType } from '@avalabs/glacier-sdk'
 import { isOnGoing } from 'utils/earn/status'
 import { estimatesTooltipText } from 'consts/earn'
-import { useCChainBalance } from 'hooks/earn/useCChainBalance'
 import { StatusChip } from './components/StatusChip'
 import { StakeProgress } from './components/StakeProgress'
 
@@ -37,9 +36,7 @@ const StakeDetails = () => {
     params: { txHash, stakeTitle }
   } = useRoute<ScreenProps['route']>()
   const stake = useStake(txHash)
-  const cChainBalance = useCChainBalance()
-  const nAvaxToAvax = useNAvaxToAvax()
-  const avaxPrice = cChainBalance.data?.price?.value
+  const nAvaxFormatter = useNAvaxFormatter()
 
   const isActive = useMemo(() => {
     if (!stake) return false
@@ -85,9 +82,8 @@ const StakeDetails = () => {
   const renderActiveDetails = () => {
     const formattedEndDate = format(endDate, 'LLLL d, yyyy, H:mm aa')
     const remainingTime = humanize(getReadableDateDuration(endDate))
-    const [estimatedRewardInAvax, estimatedRewardInCurrency] = nAvaxToAvax(
+    const [estimatedRewardInAvax, estimatedRewardInCurrency] = nAvaxFormatter(
       stake.estimatedReward,
-      avaxPrice,
       true
     )
 
@@ -137,9 +133,8 @@ const StakeDetails = () => {
     )
     const rewardUtxoTxHash = rewardUtxo?.txHash
     const rewardAmount = rewardUtxo?.amount
-    const [rewardAmountInAvax, rewardAmountInCurrency] = nAvaxToAvax(
+    const [rewardAmountInAvax, rewardAmountInCurrency] = nAvaxFormatter(
       rewardAmount,
-      avaxPrice,
       true
     )
 
@@ -187,9 +182,9 @@ const StakeDetails = () => {
   }
   const renderBody = () => {
     const stakeAmount = stake.amountStaked?.[0]?.amount
-    const [stakeAmountInAvax, stakeAmountInCurrency] = nAvaxToAvax(
+    const [stakeAmountInAvax, stakeAmountInCurrency] = nAvaxFormatter(
       stakeAmount,
-      avaxPrice
+      true
     )
 
     return (

@@ -2,27 +2,24 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useSelector } from 'react-redux'
 import EarnService from 'services/earn/EarnService'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { selectNativeTokenBalanceForNetworkAndAccount } from 'store/balance'
 import { selectActiveAccount } from 'store/account'
-import { selectActiveNetwork } from 'store/network'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { QueryClient } from '@tanstack/query-core'
 import { Avax } from 'types/Avax'
 import { calculateAmountForCrossChainTransfer } from 'hooks/earn/useGetAmountForCrossChainTransfer'
+import Logger from 'utils/Logger'
+import { useCChainBalance } from './useCChainBalance'
 
-export const useIssueDelegation = (onSuccess: (txId: string) => void) => {
+export const useIssueDelegation = (
+  onSuccess: (txId: string) => void,
+  onError: (error: Error) => void
+) => {
   const queryClient = useQueryClient()
-  const activeNetwork = useSelector(selectActiveNetwork)
   const activeAccount = useSelector(selectActiveAccount)
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const selectedCurrency = useSelector(selectSelectedCurrency)
-
-  const cChainBalance = useSelector(
-    selectNativeTokenBalanceForNetworkAndAccount(
-      activeNetwork.chainId,
-      activeAccount?.index
-    )
-  )
+  const { data: cChainBalanceRes } = useCChainBalance()
+  const cChainBalance = Avax.fromWei(cChainBalanceRes?.balance ?? 0)
 
   const pAddress = activeAccount?.addressPVM ?? ''
   const cAddress = activeAccount?.address ?? ''
@@ -46,7 +43,7 @@ export const useIssueDelegation = (onSuccess: (txId: string) => void) => {
 
       return EarnService.collectTokensForStaking({
         activeAccount,
-        cChainBalance: cChainBalance || Avax.fromBase(0),
+        cChainBalance: cChainBalance,
         isDevMode: isDeveloperMode,
         requiredAmount: cChainRequiredAmount
       }).then(successfullyCollected => {
@@ -74,6 +71,10 @@ export const useIssueDelegation = (onSuccess: (txId: string) => void) => {
       })
       // handle UI success state
       onSuccess(txId)
+    },
+    onError: error => {
+      Logger.error('delegation failed', error)
+      onError(error)
     }
   })
 
