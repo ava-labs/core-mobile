@@ -22,7 +22,7 @@ import InfoSVG from 'components/svg/InfoSVG'
 import { Popable } from 'react-native-popable'
 import Logger from 'utils/Logger'
 import { DOCS_STAKING } from 'resources/Constants'
-import { useRefreshedCurrenDate } from 'hooks/earn/useRefreshedCurrenDate'
+import { useNow } from 'hooks/useNow'
 import { CustomDurationOptionItem } from './components/CustomDurationOptionItem'
 import { DurationOptionItem } from './components/DurationOptionItem'
 
@@ -32,7 +32,7 @@ type ScreenProps = StakeSetupScreenProps<
 
 export const StakingDuration = () => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
-  const currentDate = useRefreshedCurrenDate()
+  const currentDate = useNow()
   const minDelegationTime = isDeveloperMode ? ONE_DAY : TWO_WEEKS
   const [selectedDuration, setSelectedDuration] =
     useState<DurationOption>(minDelegationTime)

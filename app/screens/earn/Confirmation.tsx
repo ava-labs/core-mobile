@@ -38,7 +38,7 @@ import TransactionToast, {
 } from 'components/toast/TransactionToast'
 import Logger from 'utils/Logger'
 import { DOCS_STAKING } from 'resources/Constants'
-import { useRefreshedCurrenDate } from 'hooks/earn/useRefreshedCurrenDate'
+import { useNow } from 'hooks/useNow'
 import { ConfirmScreen } from './components/ConfirmScreen'
 import UnableToEstimate from './components/UnableToEstimate'
 
@@ -76,7 +76,7 @@ export const Confirmation = () => {
   const { navigate, getParent } = useNavigation<ScreenProps['navigation']>()
 
   const stakingAmountPrice = stakingAmount.mul(avaxPrice).toFixed(2) //price is in [currency] so we round to 2 decimals
-  const now = useRefreshedCurrenDate() // ticker - update "now" variable every 10s
+  const now = useNow() // ticker - update "now" variable every 10s
   const minStakeDurationMs = getMinimumStakeDurationMs(isDeveloperMode)
   //minStartTime - 1 minute after submitting
   const minStartTime = useMemo(() => {

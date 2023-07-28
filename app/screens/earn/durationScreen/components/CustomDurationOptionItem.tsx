@@ -22,7 +22,7 @@ import { useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { differenceInMilliseconds } from 'date-fns'
 import { Avax } from 'types/Avax'
-import { useRefreshedCurrenDate } from 'hooks/earn/useRefreshedCurrenDate'
+import { useNow } from 'hooks/useNow'
 
 export const CustomDurationOptionItem = ({
   stakeAmount,
@@ -37,7 +37,7 @@ export const CustomDurationOptionItem = ({
 }) => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const [isDatePickerVisible, setIsDatePickerVisible] = useState(false)
-  const currentDate = useRefreshedCurrenDate()
+  const currentDate = useNow()
   const { theme } = useApplicationContext()
   const minDelegationTime = isDeveloperMode ? ONE_DAY : TWO_WEEKS
 
