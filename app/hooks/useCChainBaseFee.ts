@@ -20,6 +20,8 @@ export const useCChainBaseFee = () => {
   ) as Avalanche.JsonRpcProvider
 
   return useQuery({
+    // no need to retry failed request as we are already doing interval fetching
+    retry: false,
     refetchInterval: REFETCH_INTERVAL,
     queryKey: ['cChainBaseFee', isDeveloperMode],
     queryFn: () => {
