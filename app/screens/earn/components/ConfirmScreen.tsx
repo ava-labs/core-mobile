@@ -63,8 +63,7 @@ export const ConfirmScreen = ({
                 color: theme.colorText2
               }
             ]}>
-            By selecting "Stake Now" you will lock your funds for the set
-            duration of time.
+            {disclaimer}
           </AvaText.Caption>
         )}
         {isConfirming ? (
@@ -108,6 +107,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginHorizontal: '15%',
     marginTop: 14,
-    marginBottom: 24
+    marginBottom: 24,
+    lineHeight: 20
   }
 })
