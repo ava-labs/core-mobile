@@ -22,6 +22,10 @@ export class Avax extends TokenBaseUnit<Avax> {
   }
 
   toWei(): BN {
-    return new BN(this.value.mul(Big(10).pow(18)).toFixed(0))
+    return new BN(this.value.mul(Big(10).pow(18)).toFixed())
+  }
+
+  toNano(): BN {
+    return new BN(this.value.mul(Big(10).pow(9)).toFixed())
   }
 }

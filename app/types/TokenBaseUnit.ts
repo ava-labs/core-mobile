@@ -69,10 +69,12 @@ export abstract class TokenBaseUnit<T extends TokenBaseUnit<T>> {
     return this.value.toFixed(dp, rm)
   }
 
-  toDisplay(): string {
+  toDisplay(roundDp?: number): string {
     const wholeDigits = this.value.round(0).toString().length
     if (this.maxDecimals > wholeDigits) {
-      return this.value.toFixed(this.maxDecimals - wholeDigits, Big.roundHalfUp)
+      return roundDp
+        ? this.value.round(roundDp).toFixed()
+        : this.value.toFixed(this.maxDecimals - wholeDigits, Big.roundHalfUp)
     }
     return this.value.toFixed(0, Big.roundHalfUp)
   }
@@ -113,7 +115,6 @@ export abstract class TokenBaseUnit<T extends TokenBaseUnit<T>> {
         }
         return value.value
     }
-    throw Error('Not valid type')
   }
 
   private cloneWithValue(value: Big): T {
