@@ -21,9 +21,11 @@ import AppNavigation from 'navigation/AppNavigation'
 import { StakeSetupScreenProps } from 'navigation/types'
 import { Avax } from 'types/Avax'
 import { useCChainBalance } from 'hooks/earn/useCChainBalance'
-import { useEstimateStakingFee } from 'hooks/earn/useEstimateStakingFee'
 import { useGetClaimableBalance } from 'hooks/earn/useGetClaimableBalance'
 import { ActivityIndicator } from 'components/ActivityIndicator'
+import { PopableContent } from 'components/PopableContent'
+import { PopableLabel } from 'components/PopableLabel'
+import { Popable } from 'react-native-popable'
 
 type ScreenProps = StakeSetupScreenProps<
   typeof AppNavigation.StakeSetup.SmartStakeAmount
@@ -58,21 +60,14 @@ export default function StakingAmount() {
     [inputAmount, nativeTokenPrice]
   )
 
-  const estimatedStakingFee = useEstimateStakingFee(inputAmount)
   const cumulativeBalance = useMemo(
     () => cChainBalanceAvax.add(claimableBalance || 0),
     [cChainBalanceAvax, claimableBalance]
   )
-  const availableBalance = useMemo(
-    () => cumulativeBalance.sub(estimatedStakingFee || 0),
-    [cumulativeBalance, estimatedStakingFee]
-  )
-  const estimatedStakingFeeForMax = useEstimateStakingFee(cumulativeBalance)
-
   const amountNotEnough =
     !inputAmount.isZero() && inputAmount.lt(minStakeAmount)
 
-  const notEnoughBalance = inputAmount.gt(availableBalance)
+  const notEnoughBalance = inputAmount.gt(cumulativeBalance)
 
   const inputValid =
     !amountNotEnough && !notEnoughBalance && !inputAmount.isZero()
@@ -82,11 +77,22 @@ export default function StakingAmount() {
   }
 
   function setAmount(factor: number) {
-    if (factor === 1) {
-      setInputAmount(availableBalance.sub(estimatedStakingFeeForMax || 0))
-    } else {
-      setInputAmount(availableBalance.div(factor))
-    }
+    setInputAmount(cumulativeBalance.div(factor))
+  }
+
+  const renderBalanceInfo = () => {
+    return (
+      <Popable
+        content={PopableContent({
+          message: 'Final staking amount may be slightly lower due to fees'
+        })}
+        position="top"
+        strictPosition={true}
+        style={{ minWidth: 218 }}
+        backgroundColor={theme.neutral100}>
+        <PopableLabel label="" textStyle={{ color: theme.white }} />
+      </Popable>
+    )
   }
 
   return (
@@ -100,14 +106,16 @@ export default function StakingAmount() {
       {fetchingBalance && <ActivityIndicator size="small" />}
       {!fetchingBalance && (
         <>
-          <View style={{ alignItems: 'center' }}>
+          <Row style={{ justifyContent: 'center' }}>
             <AvaText.Subtitle1 color={theme.neutral500}>
               Balance:
               {' ' + cumulativeBalance.toDisplay() + ' AVAX'}
             </AvaText.Subtitle1>
-          </View>
+            {renderBalanceInfo()}
+          </Row>
         </>
       )}
+      <Space y={40} />
       <EarnInputAmount
         handleAmountChange={handleAmountChange}
         inputAmount={inputAmount}
@@ -121,19 +129,6 @@ export default function StakingAmount() {
           {` ${selectedCurrency}`}
         </AvaText.Caption>
       </Row>
-      {!estimatedStakingFee?.isZero() && (
-        <>
-          <Space y={7} />
-          <Row style={{ justifyContent: 'center' }}>
-            <AvaText.Caption textStyle={{ color: theme.white }}>
-              {`Fee: `}
-            </AvaText.Caption>
-            <AvaText.Caption textStyle={{ color: theme.white }}>
-              {estimatedStakingFee?.toDisplay() + ` AVAX`}
-            </AvaText.Caption>
-          </Row>
-        </>
-      )}
       <View
         style={{
           marginTop: 16,
