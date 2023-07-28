@@ -1,0 +1,21 @@
+import { useEffect, useState } from 'react'
+
+export const useTimeElapsed = (enabled: boolean, targetTime: number) => {
+  const [targetTimeReached, setTargetTimeReached] = useState(false)
+
+  useEffect(() => {
+    let id: NodeJS.Timeout | undefined
+
+    if (enabled) {
+      id = setTimeout(() => {
+        setTargetTimeReached(true)
+      }, targetTime)
+    }
+
+    return () => {
+      id && clearTimeout(id)
+    }
+  }, [enabled, targetTime])
+
+  return targetTimeReached
+}
