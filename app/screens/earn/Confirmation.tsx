@@ -77,7 +77,10 @@ export const Confirmation = () => {
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { navigate, getParent } = useNavigation<ScreenProps['navigation']>()
 
-  const stakingAmountPrice = stakingAmount.mul(avaxPrice).toFixed(2) //price is in [currency] so we round to 2 decimals
+  const networkFee = useEstimateStakingFee(stakingAmount)
+  const deductedStakingAmount = stakingAmount.sub(networkFee ?? 0)
+
+  const stakingAmountPrice = deductedStakingAmount.mul(avaxPrice).toFixed(2) //price is in [currency] so we round to 2 decimals
   const [now, setNow] = useState(new Date())
   const minStakeDurationMs = getMinimumStakeDurationMs(isDeveloperMode)
   //minStartTime - 1 minute after submitting
@@ -103,7 +106,7 @@ export const Confirmation = () => {
   }, [minStakeDurationMs, minStartTime, stakingEndTime, validator?.endTime])
 
   const { data } = useEarnCalcEstimatedRewards({
-    amount: stakingAmount,
+    amount: deductedStakingAmount,
     duration: convertToSeconds(
       BigInt(trueStakingEndTime.getTime() - now.getTime()) as MilliSeconds
     ),
@@ -111,8 +114,6 @@ export const Confirmation = () => {
   })
   const estimatedRewardInCurrency: string =
     data?.estimatedRewardInCurrency ?? '0'
-
-  const stakingFee = useEstimateStakingFee(stakingAmount)
 
   const delegationFee = useMemo(() => {
     if (
@@ -143,7 +144,7 @@ export const Confirmation = () => {
       return
     }
     issueDelegationMutation.mutate({
-      stakingAmount,
+      stakingAmount: deductedStakingAmount,
       startDate: minStartTime,
       endDate: trueStakingEndTime,
       nodeId,
@@ -255,7 +256,7 @@ export const Confirmation = () => {
         </AvaText.Body2>
         <View style={{ alignItems: 'flex-end' }}>
           <AvaText.Heading1>
-            {stakingAmount.toString() + ' ' + tokenSymbol}
+            {deductedStakingAmount.toString() + ' ' + tokenSymbol}
           </AvaText.Heading1>
           <AvaText.Heading3 textStyle={{ color: theme.colorText2 }}>
             {`${tokenInCurrencyFormatter(
@@ -359,7 +360,7 @@ export const Confirmation = () => {
             <PopableLabel label="Network Fee" />
           </Popable>
           <AvaText.Heading6>
-            {stakingFee?.toDisplay() || 0} {tokenSymbol}
+            {networkFee?.toDisplay() || 0} {tokenSymbol}
           </AvaText.Heading6>
         </Row>
       </View>
