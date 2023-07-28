@@ -38,7 +38,6 @@ import TransactionToast, {
 } from 'components/toast/TransactionToast'
 import Logger from 'utils/Logger'
 import { DOCS_STAKING } from 'resources/Constants'
-import QuestionSVG from 'components/svg/QuestionSVG'
 import { useRefreshedCurrenDate } from 'hooks/earn/useRefreshedCurrenDate'
 import { ConfirmScreen } from './components/ConfirmScreen'
 import UnableToEstimate from './components/UnableToEstimate'
