@@ -1,11 +1,11 @@
-import { useEffect, useState } from 'react'
-import { from, timer } from 'rxjs'
-import { concatMap } from 'rxjs/operators'
 import { getInstance } from 'services/token/TokenService'
 import { VsCurrencyType } from '@avalabs/coingecko-sdk'
 import { useSelector } from 'react-redux'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { Network } from '@avalabs/chains-sdk'
+import { useQuery } from '@tanstack/react-query'
+
+const REFETCH_INTERVAL = 10000 // 10 seconds
 
 /**
  *
@@ -13,43 +13,27 @@ import { Network } from '@avalabs/chains-sdk'
  * @param customCurrency
  * @return nativeTokenPrice in AVAX
  */
-export function useNativeTokenPriceForNetwork(
+export const useNativeTokenPriceForNetwork = (
   network: Network | undefined,
   customCurrency?: VsCurrencyType
-) {
-  const [nativeTokenPrice, setNativeTokenPrice] = useState(0)
+): { nativeTokenPrice: number } => {
   const selectedCurrency = useSelector(selectSelectedCurrency) as VsCurrencyType
   const currency = customCurrency ?? (selectedCurrency as VsCurrencyType)
 
-  useEffect(refreshPriceFx, [
-    network?.pricingProviders?.coingecko.nativeTokenId,
-    currency
-  ])
+  const nativeTokenId = network?.pricingProviders?.coingecko.nativeTokenId ?? ''
 
-  function refreshPriceFx() {
-    const tokenService = getInstance()
-
-    const TEN_SECONDS = 10000
-    const subscription = timer(0, TEN_SECONDS)
-      .pipe(
-        concatMap(() => {
-          return from(
-            tokenService.getPriceWithMarketDataByCoinId(
-              network?.pricingProviders?.coingecko.nativeTokenId ?? '',
-              currency
-            )
-          )
-        })
+  const { data } = useQuery({
+    refetchInterval: REFETCH_INTERVAL,
+    enabled: Boolean(nativeTokenId),
+    queryKey: ['nativeTokenPrice', nativeTokenId, currency],
+    queryFn: async () => {
+      const tokenService = getInstance()
+      return tokenService.getPriceWithMarketDataByCoinId(
+        nativeTokenId,
+        currency
       )
-      .subscribe({
-        next: value => {
-          setNativeTokenPrice(value.price)
-        }
-      })
-    return () => subscription.unsubscribe()
-  }
+    }
+  })
 
-  return {
-    nativeTokenPrice
-  }
+  return { nativeTokenPrice: data?.price ?? 0 }
 }
