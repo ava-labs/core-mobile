@@ -34,8 +34,8 @@ import TransactionToast, {
 } from 'components/toast/TransactionToast'
 import Logger from 'utils/Logger'
 import { DOCS_STAKING } from 'resources/Constants'
-import QuestionSVG from 'components/svg/QuestionSVG'
 import { ConfirmScreen } from './components/ConfirmScreen'
+import UnableToEstimate from './components/UnableToEstimate'
 
 type ScreenProps = StakeSetupScreenProps<
   typeof AppNavigation.StakeSetup.Confirmation
@@ -180,23 +180,6 @@ export const Confirmation = () => {
     </View>
   )
 
-  const renderUnableToEstimate = () => (
-    <Popable
-      content={PopableContent({
-        message: 'Unable to estimate due to network conditions'
-      })}
-      position="top"
-      strictPosition={true}
-      style={{ minWidth: 218 }}
-      backgroundColor={theme.neutral100}>
-      <PopableLabel
-        label="Unable to Estimate"
-        textStyle={{ color: theme.white }}
-        icon={<QuestionSVG color={theme.neutral50} />}
-      />
-    </Popable>
-  )
-
   const renderEstimatedReward = () => {
     if (data?.estimatedTokenReward) {
       return (
@@ -213,7 +196,7 @@ export const Confirmation = () => {
         </View>
       )
     }
-    return renderUnableToEstimate()
+    return <UnableToEstimate />
   }
 
   const renderStakingFee = () => {
@@ -224,7 +207,7 @@ export const Confirmation = () => {
         </AvaText.Heading6>
       )
     }
-    return renderUnableToEstimate()
+    return <UnableToEstimate />
   }
 
   if (!validator) return null
