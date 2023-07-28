@@ -22,6 +22,7 @@ import { useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { differenceInMilliseconds } from 'date-fns'
 import { Avax } from 'types/Avax'
+import { useNow } from 'hooks/useNow'
 
 export const CustomDurationOptionItem = ({
   stakeAmount,
@@ -36,17 +37,20 @@ export const CustomDurationOptionItem = ({
 }) => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const [isDatePickerVisible, setIsDatePickerVisible] = useState(false)
-
+  const currentDate = useNow()
   const { theme } = useApplicationContext()
   const minDelegationTime = isDeveloperMode ? ONE_DAY : TWO_WEEKS
 
   const minimumStakeEndDate = getMinimumStakeEndTime(
     isDeveloperMode,
-    new Date()
+    currentDate
   )
   const maximumStakeEndDate = getMaximumStakeEndDate()
 
-  const stakeDurationUnixMs = differenceInMilliseconds(stakeEndTime, new Date())
+  const stakeDurationUnixMs = differenceInMilliseconds(
+    stakeEndTime,
+    currentDate
+  )
 
   const stakeDurationUnixSec = convertToSeconds(
     BigInt(stakeDurationUnixMs) as MilliSeconds
