@@ -106,7 +106,7 @@ export default function StakingAmount() {
       {fetchingBalance && <ActivityIndicator size="small" />}
       {!fetchingBalance && (
         <>
-          <Row style={{ justifyContent: 'center' }}>
+          <Row style={{ justifyContent: 'center', alignItems: 'center' }}>
             <AvaText.Subtitle1 color={theme.neutral500}>
               Balance:
               {' ' + cumulativeBalance.toDisplay() + ' AVAX'}
