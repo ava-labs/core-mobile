@@ -1,9 +1,10 @@
-import React, { useMemo } from 'react'
+import React, { useMemo, useEffect } from 'react'
 import { Linking, StyleSheet, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Space } from 'components/Space'
 import AvaText from 'components/AvaText'
 import {
+  useIsFocused,
   useNavigation,
   useNavigationState,
   useRoute
@@ -41,6 +42,9 @@ import { DOCS_STAKING } from 'resources/Constants'
 import { useEstimateStakingFees } from 'hooks/earn/useEstimateStakingFees'
 import { useGetClaimableBalance } from 'hooks/earn/useGetClaimableBalance'
 import { useNow } from 'hooks/time/useNow'
+import { useTimeElapsed } from 'hooks/time/useTimeElapsed'
+import { timeToShowNetworkFeeError } from 'consts/earn'
+import Spinner from 'components/animation/Spinner'
 import { ConfirmScreen } from './components/ConfirmScreen'
 import UnableToEstimate from './components/UnableToEstimate'
 
@@ -53,6 +57,7 @@ const onDelegationError = (error: Error) => {
 }
 
 export const Confirmation = () => {
+  const isFocused = useIsFocused()
   const { nodeId, stakingAmount, stakingEndTime } =
     useRoute<ScreenProps['route']>().params
   const previousRoute = useNavigationState(
@@ -71,25 +76,23 @@ export const Confirmation = () => {
     onDelegationError
   )
   const claimableBalance = useGetClaimableBalance()
-
+  const now = useNow()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const tokenSymbol = activeNetwork.networkToken.symbol
   const avaxPrice = useSelector(selectAvaxPrice)
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { navigate, getParent } = useNavigation<ScreenProps['navigation']>()
+  const networkFees = useEstimateStakingFees(stakingAmount)
 
-  const networkFee = useEstimateStakingFees(stakingAmount)
-  const deductedStakingAmount = stakingAmount.sub(networkFee ?? 0)
-
+  const deductedStakingAmount = stakingAmount.sub(networkFees ?? 0)
   const stakingAmountPrice = deductedStakingAmount.mul(avaxPrice).toFixed(2) //price is in [currency] so we round to 2 decimals
-  const now = useNow() // ticker - update "now" variable every 10s
   const minStakeDurationMs = getMinimumStakeDurationMs(isDeveloperMode)
-  //minStartTime - 1 minute after submitting
+  // minStartTime - 1 minute after submitting
   const minStartTime = useMemo(() => {
     return addMinutes(now, 1)
   }, [now])
   const trueStakingEndTime = useMemo(() => {
-    //check if stake duration is less than minimum, and adjust if necessary
+    // check if stake duration is less than minimum, and adjust if necessary
     // this could happen if user selects minimal stake duration but is too long on confirmation screen
     if (
       stakingEndTime.getTime() - minStakeDurationMs <
@@ -124,6 +127,18 @@ export const Confirmation = () => {
       return undefined
     return data?.estimatedTokenReward.mul(validator.delegationFee).div(100)
   }, [data?.estimatedTokenReward, validator?.delegationFee])
+
+  const unableToGetNetworkFees = networkFees === undefined
+  const showNetworkFeeError = useTimeElapsed(
+    isFocused && unableToGetNetworkFees, // re-enable this checking whenever this screen is focused
+    timeToShowNetworkFeeError
+  )
+
+  useEffect(() => {
+    if (showNetworkFeeError) {
+      navigate(AppNavigation.Earn.FeeUnavailable)
+    }
+  }, [navigate, showNetworkFeeError])
 
   const cancelStaking = () => {
     navigate(AppNavigation.StakeSetup.Cancel)
@@ -227,14 +242,15 @@ export const Confirmation = () => {
   }
 
   const renderNetworkFee = () => {
-    if (networkFee) {
-      return (
-        <AvaText.Heading6>
-          {networkFee.toDisplay()} {tokenSymbol}
-        </AvaText.Heading6>
-      )
+    if (unableToGetNetworkFees) {
+      return <Spinner size={22} />
     }
-    return <UnableToEstimate />
+
+    return (
+      <AvaText.Heading6>
+        {networkFees.toDisplay()} {tokenSymbol}
+      </AvaText.Heading6>
+    )
   }
 
   if (!validator) return null

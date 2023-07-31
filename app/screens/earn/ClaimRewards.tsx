@@ -21,6 +21,7 @@ import { useClaimFees } from 'hooks/earn/useClaimFees'
 import { useAvaxFormatter } from 'hooks/formatter/useAvaxFormatter'
 import { useTimeElapsed } from 'hooks/time/useTimeElapsed'
 import Spinner from 'components/animation/Spinner'
+import { timeToShowNetworkFeeError } from 'consts/earn'
 import { ConfirmScreen } from './components/ConfirmScreen'
 
 type ScreenProps = EarnScreenProps<typeof AppNavigation.Earn.ClaimRewards>
@@ -28,8 +29,6 @@ type ScreenProps = EarnScreenProps<typeof AppNavigation.Earn.ClaimRewards>
 const onClaimError = (error: Error) => {
   showSimpleToast(error.message)
 }
-
-const timeToShowFeeError = 20000 // 20 seconds
 
 const ClaimRewards = () => {
   const { theme } = useApplicationContext()
@@ -44,7 +43,7 @@ const ClaimRewards = () => {
   const unableToGetFees = totalFees === undefined
   const showFeeError = useTimeElapsed(
     isFocused && unableToGetFees, // re-enable this checking whenever this screen is focused
-    timeToShowFeeError
+    timeToShowNetworkFeeError
   )
 
   useEffect(() => {
