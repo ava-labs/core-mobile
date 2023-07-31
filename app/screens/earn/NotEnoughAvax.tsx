@@ -1,14 +1,11 @@
 import React from 'react'
-import { Linking, View } from 'react-native'
+import { View } from 'react-native'
 import AvaText from 'components/AvaText'
-import AvaLogoSVG from 'components/svg/AvaLogoSVG'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Space } from 'components/Space'
 import { Row } from 'components/Row'
 import AvaButton from 'components/AvaButton'
-import FlexSpacer from 'components/FlexSpacer'
-import { DOCS_STAKING } from 'resources/Constants'
-import Logger from 'utils/Logger'
+import InfoSVG from 'components/svg/InfoSVG'
 
 export default function NotEnoughAvax({
   onBuyAvax,
@@ -21,63 +18,36 @@ export default function NotEnoughAvax({
 }) {
   const { theme } = useApplicationContext()
 
-  function goToStakingDocs() {
-    Linking.openURL(DOCS_STAKING).catch(e => {
-      Logger.error(DOCS_STAKING, e)
-    })
-  }
-
   return (
     <View style={{ padding: 16, flex: 1 }}>
       <AvaText.LargeTitleBold>Stake</AvaText.LargeTitleBold>
       <View style={{ alignItems: 'center' }}>
-        <Space y={47} />
-        <AvaLogoSVG
-          size={56}
-          backgroundColor={theme.tokenLogoBg}
-          logoColor={theme.tokenLogoColor}
-        />
-        <Space y={16} />
+        <Space y={80} />
+        <InfoSVG size={56} color={theme.white} />
+        <Space y={24} />
         <View style={{ paddingHorizontal: 23, alignItems: 'center' }}>
           <AvaText.Heading5>You don’t have enough AVAX!</AvaText.Heading5>
           <Space y={8} />
-          <AvaText.Body2 textStyle={{ textAlign: 'center' }}>
-            {
-              'Buy or Swap AVAX to begin staking. Staking your AVAX in the Avalanche Network allows you to earn up to 10% APY.\n'
-            }
+          <AvaText.Body2 textStyle={{ textAlign: 'center', lineHeight: 20 }}>
+            {'Buy or Swap AVAX to begin staking.'}
           </AvaText.Body2>
-          <Row
-            style={{
-              alignItems: 'center'
-            }}>
-            <AvaText.Body2>{'Not sure where to begin? '}</AvaText.Body2>
-            <AvaButton.TextLink
-              onPress={goToStakingDocs}
-              textColor={theme.colorPrimary1}
-              style={{
-                paddingHorizontal: 0
-              }}>
-              Read more.
-            </AvaButton.TextLink>
-          </Row>
         </View>
       </View>
-
-      <FlexSpacer />
+      <Space y={24} />
+      <AvaButton.PrimaryLarge onPress={onSwap}>
+        Swap AVAX
+      </AvaButton.PrimaryLarge>
+      <Space y={16} />
       <Row>
         <AvaButton.SecondaryLarge
-          onPress={onBuyAvax}
+          onPress={onReceive}
           style={{ flex: 1, marginRight: 16 }}>
+          Receive AVAX
+        </AvaButton.SecondaryLarge>
+        <AvaButton.SecondaryLarge onPress={onBuyAvax} style={{ flex: 1 }}>
           Buy AVAX
         </AvaButton.SecondaryLarge>
-        <AvaButton.SecondaryLarge onPress={onSwap} style={{ flex: 1 }}>
-          Swap AVAX
-        </AvaButton.SecondaryLarge>
       </Row>
-      <Space y={16} />
-      <AvaButton.SecondaryLarge onPress={onReceive}>
-        Receive AVAX
-      </AvaButton.SecondaryLarge>
     </View>
   )
 }

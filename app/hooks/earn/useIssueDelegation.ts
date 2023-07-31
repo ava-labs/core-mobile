@@ -2,35 +2,23 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useSelector } from 'react-redux'
 import EarnService from 'services/earn/EarnService'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { BigIntNAvax, BigIntWeiAvax } from 'types/denominations'
-import { BN } from 'bn.js'
-import { selectNativeTokenBalanceForNetworkAndAccount } from 'store/balance'
 import { selectActiveAccount } from 'store/account'
-import { selectActiveNetwork } from 'store/network'
-import BigIntConverter from 'types/converters/BigIntConverter'
-import TypeConverter from 'types/converters/TypeConverter'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { QueryClient } from '@tanstack/query-core'
+import { Avax } from 'types/Avax'
+import Logger from 'utils/Logger'
+import { useCChainBalance } from './useCChainBalance'
 
-export const useIssueDelegation = (onSuccess: (txId: string) => void) => {
+export const useIssueDelegation = (
+  onSuccess: (txId: string) => void,
+  onError: (error: Error) => void
+) => {
   const queryClient = useQueryClient()
-  const activeNetwork = useSelector(selectActiveNetwork)
   const activeAccount = useSelector(selectActiveAccount)
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const selectedCurrency = useSelector(selectSelectedCurrency)
-
-  const cChainBalanceWei = useSelector(
-    selectNativeTokenBalanceForNetworkAndAccount(
-      activeNetwork.chainId,
-      activeAccount?.index
-    )
-  )
-  const cChainBalanceBigIntWei = TypeConverter.bnToBigInt(
-    cChainBalanceWei || new BN(0)
-  ) as BigIntWeiAvax
-  const cChainBalanceNAvax: BigIntNAvax = BigIntConverter.weiToNAvax(
-    cChainBalanceBigIntWei
-  )
+  const { data: cChainBalanceRes } = useCChainBalance()
+  const cChainBalance = Avax.fromWei(cChainBalanceRes?.balance ?? 0)
 
   const pAddress = activeAccount?.addressPVM ?? ''
   const cAddress = activeAccount?.address ?? ''
@@ -38,7 +26,7 @@ export const useIssueDelegation = (onSuccess: (txId: string) => void) => {
   const issueDelegationMutation = useMutation({
     mutationFn: (data: {
       nodeId: string
-      stakingAmount: BigIntNAvax
+      stakingAmount: Avax
       startDate: Date
       endDate: Date
     }) => {
@@ -48,7 +36,7 @@ export const useIssueDelegation = (onSuccess: (txId: string) => void) => {
 
       return EarnService.collectTokensForStaking({
         activeAccount,
-        cChainBalance: cChainBalanceNAvax,
+        cChainBalance: cChainBalance,
         isDevMode: isDeveloperMode,
         requiredAmount: data.stakingAmount
       }).then(successfullyCollected => {
@@ -58,7 +46,7 @@ export const useIssueDelegation = (onSuccess: (txId: string) => void) => {
             endDate: data.endDate,
             isDevMode: isDeveloperMode,
             nodeId: data.nodeId,
-            stakeAmount: data.stakingAmount,
+            stakeAmount: data.stakingAmount.toSubUnit(),
             startDate: data.startDate
           })
         } else {
@@ -76,6 +64,10 @@ export const useIssueDelegation = (onSuccess: (txId: string) => void) => {
       })
       // handle UI success state
       onSuccess(txId)
+    },
+    onError: error => {
+      Logger.error('delegation failed', error)
+      onError(error)
     }
   })
 

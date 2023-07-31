@@ -16,6 +16,7 @@ type Props = {
   disclaimer?: string
   confirmBtnTitle: string
   cancelBtnTitle: string
+  confirmBtnDisabled?: boolean
   children?: React.ReactNode
 }
 
@@ -27,6 +28,7 @@ export const ConfirmScreen = ({
   disclaimer,
   confirmBtnTitle,
   cancelBtnTitle,
+  confirmBtnDisabled = false,
   children
 }: Props) => {
   const { theme } = useApplicationContext()
@@ -63,15 +65,16 @@ export const ConfirmScreen = ({
                 color: theme.colorText2
               }
             ]}>
-            By selecting "Stake Now" you will lock your funds for the set
-            duration of time.
+            {disclaimer}
           </AvaText.Caption>
         )}
         {isConfirming ? (
           <ActivityIndicator size={'large'} />
         ) : (
           <>
-            <AvaButton.PrimaryLarge onPress={onConfirm}>
+            <AvaButton.PrimaryLarge
+              onPress={onConfirm}
+              disabled={confirmBtnDisabled}>
               {confirmBtnTitle}
             </AvaButton.PrimaryLarge>
             <Space y={16} />
@@ -108,6 +111,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginHorizontal: '15%',
     marginTop: 14,
-    marginBottom: 24
+    marginBottom: 24,
+    lineHeight: 20
   }
 })

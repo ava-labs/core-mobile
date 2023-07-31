@@ -65,7 +65,7 @@ import CaptureDappQR from 'screens/shared/CaptureDappQR'
 import { ChainID } from 'store/network'
 import EarnScreenStack, {
   EarnStackParamList
-} from 'navigation/wallet/EarnScreenStack'
+} from 'navigation/wallet/EarnScreenStack/EarnScreenStack'
 import { BridgeStackParamList } from '../wallet/BridgeScreenStack'
 import {
   AddEthereumChainParams,
@@ -184,6 +184,7 @@ export type WalletScreenStackParams = {
     .AvalancheSendTransactionV2]: AvalancheSendTransactionV2Params
   [AppNavigation.Modal
     .AvalancheSignTransactionV2]: AvalancheSignTransactionV2Params
+  [AppNavigation.Modal.StakeDisclaimer]: undefined
 }
 
 const WalletScreenS = createStackNavigator<WalletScreenStackParams>()

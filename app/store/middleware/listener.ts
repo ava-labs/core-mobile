@@ -16,12 +16,16 @@ import { addWatchlistListeners } from 'store/watchlist/listeners'
 import { addNftListeners } from 'store/nft/listeners'
 import { addWCListeners as addWCListenersV1 } from 'store/walletConnect/listeners'
 import { addWCListeners as addWCListenersV2 } from 'store/walletConnectV2/listeners'
+import Logger from 'utils/Logger'
 
 export type AppStartListening = TypedStartListening<RootState, AppDispatch>
 export type AppAddListener = TypedAddListener<RootState, AppDispatch>
 
 const listener = createListenerMiddleware({
-  onError: (error, errorInfo) => console.error(error, errorInfo)
+  onError: (error, errorInfo) => {
+    Logger.error('redux listener error', error)
+    Logger.info('redux listener errorInfo', errorInfo)
+  }
 })
 
 const startListening = listener.startListening as AppStartListening

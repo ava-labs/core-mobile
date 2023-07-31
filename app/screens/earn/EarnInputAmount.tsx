@@ -5,46 +5,35 @@ import { Space } from 'components/Space'
 import AvaText from 'components/AvaText'
 import React, { useEffect } from 'react'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import BN from 'bn.js'
-import { bnToLocaleString } from '@avalabs/utils-sdk'
 import { Platform } from 'react-native'
-import sanitizeInput from 'screens/earn/sanitizeInput'
-import { AmountChange } from 'screens/earn/types'
-import { BigIntNAvax, DenominationNAvax } from 'types/denominations'
-import { BigintInput } from 'components/BigintInput'
+import { DenominationNAvax } from 'types/denominations'
+import limitInput from 'screens/earn/limitInput'
+import { TokenBaseUnitInput } from 'components/TokenBaseUnitInput'
+import { Avax } from 'types/Avax'
 
 const EarnInputAmount = ({
   inputAmount,
   decimals,
   handleAmountChange
 }: {
-  inputAmount?: BigIntNAvax
+  inputAmount?: Avax
   decimals: DenominationNAvax
-  handleAmountChange?: (change: AmountChange) => void
+  handleAmountChange?: (amount: Avax) => void
 }) => {
   const { theme } = useApplicationContext()
 
   const isAndroid = Platform.OS === 'android'
 
   useEffect(() => {
-    const sanitized: BigIntNAvax | undefined = sanitizeInput(
-      inputAmount,
-      decimals
-    )
-    if (sanitized && inputAmount && sanitized !== inputAmount) {
-      handleAmountChange?.({
-        amountString: bnToLocaleString(new BN(sanitized.toString()), decimals),
-        amount: sanitized
-      })
+    const sanitized = limitInput(inputAmount)
+    if (sanitized && inputAmount && !sanitized.eq(inputAmount)) {
+      handleAmountChange?.(sanitized)
     }
   }, [decimals, handleAmountChange, inputAmount])
 
-  const interceptAmountChange = (value: AmountChange) => {
-    const sanitized: BigIntNAvax = sanitizeInput(value.amount, decimals) ?? 0n
-    handleAmountChange?.({
-      amountString: bnToLocaleString(new BN(sanitized.toString()), decimals),
-      amount: sanitized
-    })
+  const interceptAmountChange = (amount: Avax) => {
+    const sanitized = limitInput(amount) ?? Avax.fromBase(0)
+    handleAmountChange?.(sanitized)
   }
 
   return (
@@ -54,8 +43,9 @@ const EarnInputAmount = ({
         justifyContent: 'center',
         marginHorizontal: 16
       }}>
-      <BigintInput
+      <TokenBaseUnitInput
         value={inputAmount}
+        baseUnitConstructor={Avax}
         denomination={decimals}
         placeholder={'0.0'}
         onChange={interceptAmountChange}

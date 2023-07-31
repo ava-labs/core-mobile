@@ -1,10 +1,13 @@
-import { add, addYears, getUnixTime } from 'date-fns'
+import { add, addYears, getUnixTime, isSameDay } from 'date-fns'
 import { AdvancedSortFilter, NodeValidator, NodeValidators } from 'types/earn'
 import { random } from 'lodash'
 import { FujiParams, MainnetParams } from 'utils/NetworkParams'
 import { MAX_VALIDATOR_WEIGHT_FACTOR } from 'consts/earn'
-import { BigIntNAvax } from 'types/denominations'
-import { bnToBigint } from 'utils/bigNumbers/bnToBigint'
+import { Avax } from 'types/Avax'
+
+// the max num of times we should check transaction status
+// 7 means ~ 2 minutes
+export const maxTransactionStatusCheckRetries = 7
 
 /**
  * See https://docs.avax.network/subnets/reference-elastic-subnets-parameters#primary-network-parameters-on-mainnet
@@ -44,14 +47,14 @@ export const getMaximumStakeEndDate = () => {
  * @returns maxDelegation - The maximum delegation in nAvax (`maxWeight` - `stakeAmount`)
  */
 export const calculateMaxWeight = (
-  maxValidatorStake: BigIntNAvax,
-  stakeAmount: BigIntNAvax
-): { maxWeight: BigIntNAvax; maxDelegation: BigIntNAvax } => {
-  const stakeWeight = stakeAmount * MAX_VALIDATOR_WEIGHT_FACTOR
-  const maxValidatorStakeBig = BigInt(maxValidatorStake.valueOf())
-  const maxWeight =
-    stakeWeight < maxValidatorStakeBig ? stakeWeight : maxValidatorStakeBig
-  const maxDelegation = maxWeight - stakeAmount
+  maxValidatorStake: Avax,
+  stakeAmount: Avax
+): { maxWeight: Avax; maxDelegation: Avax } => {
+  const stakeWeight = stakeAmount.mul(MAX_VALIDATOR_WEIGHT_FACTOR)
+  const maxWeight = stakeWeight.lt(maxValidatorStake)
+    ? stakeWeight
+    : maxValidatorStake
+  const maxDelegation = maxWeight.sub(stakeAmount)
 
   return {
     maxWeight,
@@ -90,23 +93,24 @@ const hasMinimumStakingTime = (
 
 const getAvailableDelegationWeight = (
   isDeveloperMode: boolean,
-  weight: string
-) => {
-  const maxValidatorStake = bnToBigint(
+  weight: Avax
+): Avax => {
+  const maxValidatorStake = Avax.fromNanoAvax(
     getStakingConfig(isDeveloperMode).MaxValidatorStake
   )
-  const maxWeight = calculateMaxWeight(maxValidatorStake, BigInt(weight))
+  const maxWeight = calculateMaxWeight(maxValidatorStake, weight)
   return maxWeight.maxDelegation
 }
 
 type getFilteredValidatorsProps = {
   validators: NodeValidators
-  stakingAmount: BigIntNAvax
+  stakingAmount: Avax
   isDeveloperMode: boolean
   stakingEndTime: Date
   minUpTime?: number
   maxFee?: number
   searchText?: string
+  isEndTimeOverOneYear?: boolean
 }
 /**
  *
@@ -117,6 +121,7 @@ type getFilteredValidatorsProps = {
  * @param minUpTime minimum up time to filter by
  * @param maxFee maximum delegation fee to filter by
  * @param searchText  search text for nodeID
+ * @param isEndTimeOverOneYear  boolean indicating if the stake end time is over one year
  * @returns filtered list of validators that match the following filter criteria
  * - stakingAmount
  * - stakingEndTime
@@ -130,7 +135,8 @@ export const getFilteredValidators = ({
   stakingEndTime,
   minUpTime = 0,
   maxFee,
-  searchText
+  searchText,
+  isEndTimeOverOneYear = false
 }: getFilteredValidatorsProps) => {
   const stakingEndTimeUnix = getUnixTime(stakingEndTime) // timestamp in seconds
 
@@ -138,12 +144,21 @@ export const getFilteredValidators = ({
     ({ endTime, weight, uptime, delegationFee, nodeID }) => {
       const availableDelegationWeight = getAvailableDelegationWeight(
         isDeveloperMode,
-        weight
+        Avax.fromNanoAvax(weight)
       )
+      const filterByMinimumStakingTime = () => {
+        if (isEndTimeOverOneYear) {
+          // if chosen duration is over one year,
+          // then we don't need to check for minimum staking time
+          return true
+        }
+        return hasMinimumStakingTime(Number(endTime), stakingEndTimeUnix)
+      }
+
       return (
         (searchText ? nodeID.includes(searchText) : true) &&
         availableDelegationWeight > stakingAmount &&
-        hasMinimumStakingTime(Number(endTime), stakingEndTimeUnix) &&
+        filterByMinimumStakingTime() &&
         Number(uptime) >= minUpTime &&
         (maxFee ? Number(delegationFee) <= maxFee : true)
       )
@@ -155,23 +170,37 @@ export const getFilteredValidators = ({
 /**
  *
  * @param validators input to sort by staking uptime and delegation fee,
+ * @param isEndTimeOverOneYear boolean indicating if the stake end time is over one year
  * @returns sorted validators
  */
-export const getSimpleSortedValidators = (validators: NodeValidators) => {
-  return validators.sort((a, b): number => {
-    return (
+export const getSimpleSortedValidators = (
+  validators: NodeValidators,
+  isEndTimeOverOneYear = false
+) => {
+  if (isEndTimeOverOneYear) {
+    return getSortedValidatorsByEndTime(validators)
+  }
+  return validators.sort(
+    (a, b): number =>
       Number(b.uptime) - Number(a.uptime) ||
       Number(b.delegationFee) - Number(a.delegationFee)
-    )
-  })
+  )
 }
 
 /**
  *
  * @param validators input to take random item from,
+ * @param isEndTimeOverOneYear boolean indicating if the stake end time is over one year
  * @returns random item from either top 5 items in the array or all of the items in the array
  */
-export const getRandomValidator = (validators: NodeValidators) => {
+export const getRandomValidator = (
+  validators: NodeValidators,
+  isEndTimeOverOneYear = false
+) => {
+  if (isEndTimeOverOneYear) {
+    // get the first item in the array sorted by end time
+    return validators.at(0) as NodeValidator
+  }
   const endIndex = validators.length >= 5 ? 4 : validators.length - 1
   const randomIndex = random(0, endIndex)
   const matchedValidator = validators.at(randomIndex)
@@ -215,4 +244,17 @@ export const getAdvancedSortedValidators = (
         (a, b): number => Number(b.uptime) - Number(a.uptime)
       )
   }
+}
+
+export const isEndTimeOverOneYear = (stakingEndTime: Date) => {
+  return (
+    stakingEndTime >= addYears(new Date(), 1) ||
+    isSameDay(stakingEndTime, addYears(new Date(), 1))
+  )
+}
+
+export const getSortedValidatorsByEndTime = (validators: NodeValidators) => {
+  return validators.sort(
+    (a, b): number => Number(b.endTime) - Number(a.endTime)
+  )
 }

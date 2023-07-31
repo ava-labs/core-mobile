@@ -1,0 +1,1 @@
+export { StakingDuration } from './DurationScreen'

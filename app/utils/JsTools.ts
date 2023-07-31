@@ -1,8 +1,10 @@
+import Logger from './Logger'
+
 export function mustValue<T>(func: () => T, failValue: T) {
   try {
     return func()
   } catch (e) {
-    console.warn('mustValue', e)
+    Logger.error('mustValue', e)
     return failValue
   }
 }

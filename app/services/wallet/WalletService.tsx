@@ -33,6 +33,8 @@ import Logger from 'utils/Logger'
 import { UnsignedTx } from '@avalabs/avalanchejs-v2'
 import { fromUnixTime, getUnixTime } from 'date-fns'
 import { getMinimumStakeEndTime } from 'services/earn/utils'
+import { Avax } from 'types/Avax'
+import { bnToBigint } from 'utils/bigNumbers/bnToBigint'
 
 class WalletService {
   private mnemonic?: string
@@ -202,17 +204,9 @@ class WalletService {
     }
   }
 
-  /**
-   * @param amount in nAvax
-   * @param baseFee in WEI
-   * @param accountIndex
-   * @param avaxXPNetwork
-   * @param destinationChain
-   * @param destinationAddress
-   */
   async createExportCTx(
-    amount: bigint,
-    baseFee: bigint,
+    amount: Avax,
+    baseFee: Avax,
     accountIndex: number,
     avaxXPNetwork: Network,
     destinationChain: 'P' | 'X',
@@ -225,10 +219,10 @@ class WalletService {
     const nonce = await wallet.getNonce()
 
     return wallet.exportC(
-      amount,
+      amount.toSubUnit(),
       destinationChain,
       BigInt(nonce),
-      baseFee,
+      bnToBigint(baseFee.toWei()),
       destinationAddress
     )
   }

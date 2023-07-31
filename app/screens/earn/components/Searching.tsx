@@ -1,7 +1,7 @@
 import React from 'react'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Linking, StyleSheet, View } from 'react-native'
-import { DOCS_HOW_TO_DELEGATE } from 'resources/Constants'
+import { DOCS_STAKING } from 'resources/Constants'
 import Logger from 'utils/Logger'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
@@ -11,8 +11,8 @@ export const Searching = () => {
   const { theme } = useApplicationContext()
 
   const goToHowToDelegateDoc = () => {
-    Linking.openURL(DOCS_HOW_TO_DELEGATE).catch(e => {
-      Logger.error(`failed to open ${DOCS_HOW_TO_DELEGATE}`, e)
+    Linking.openURL(DOCS_STAKING).catch(e => {
+      Logger.error(`failed to open ${DOCS_STAKING}`, e)
     })
   }
 
@@ -31,17 +31,17 @@ export const Searching = () => {
         <AvaText.Body2
           textStyle={{
             textAlign: 'center',
-            color: theme.colorText1,
+            color: theme.neutral50,
             lineHeight: 20
           }}>
-          {`Core will randomly select a validator with 98% uptime and a 2%
-            delegation fee in the Avalanche Network that also matches your
-            criteria. `}
+          Core will randomly select a validator with 98% uptime and a 2%
+          delegation fee in the Avalanche Network that also matches your
+          criteria.
         </AvaText.Body2>
         <AvaText.Body2
           onPress={goToHowToDelegateDoc}
           textStyle={{ color: theme.colorPrimary1 }}>
-          Learn more
+          {' Learn more'}
         </AvaText.Body2>
         {'.'}
       </AvaText.Body2>

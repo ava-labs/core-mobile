@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import Logger from 'utils/Logger'
 
 class StorageTools {
   static async loadFromStorageAsMap<K, V>(key: string) {
@@ -19,7 +20,7 @@ class StorageTools {
   static async saveMapToStorage<K, V>(key: string, map: Map<K, V>) {
     const stringified = JSON.stringify([...map])
     if (stringified === undefined) {
-      console.error('Could not stringify: ', map)
+      Logger.error('Could not stringify: ', map)
     } else {
       await AsyncStorage.setItem(key, stringified)
     }
@@ -28,7 +29,7 @@ class StorageTools {
   static async saveToStorage<T>(key: string, obj: T | T[]) {
     const stringified = JSON.stringify(obj)
     if (stringified === undefined) {
-      console.error('Could not stringify: ', obj)
+      Logger.error('Could not stringify: ', obj)
     } else {
       await AsyncStorage.setItem(key, stringified)
     }

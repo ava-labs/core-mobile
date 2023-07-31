@@ -11,14 +11,13 @@ import { PopableContent } from 'components/PopableContent'
 import { PopableLabel } from 'components/PopableLabel'
 import { format, fromUnixTime } from 'date-fns'
 import { getReadableDateDuration } from 'utils/date/getReadableDateDuration'
-import { useNAvaxToAvax } from 'hooks/conversion/useNAvaxToAvax'
+import { useNAvaxFormatter } from 'hooks/formatter/useNAvaxFormatter'
 import { StakeStatus } from 'types/earn'
 import { getCardHighLightColor } from 'utils/color/getCardHighLightColor'
 import { useNavigation } from '@react-navigation/native'
 import { TabsScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
 import { estimatesTooltipText } from 'consts/earn'
-import { useCChainBalance } from 'hooks/earn/useCChainBalance'
 import { StatusChip } from './StatusChip'
 
 type BaseProps = {
@@ -46,9 +45,7 @@ type NavigationProp = TabsScreenProps<
 
 export const StakeCard = (props: Props) => {
   const { theme } = useApplicationContext()
-  const cChainBalance = useCChainBalance()
-  const nAvaxToAvax = useNAvaxToAvax()
-  const avaxPrice = cChainBalance.data?.price?.value
+  const nAvaxFormatter = useNAvaxFormatter()
   const navigation = useNavigation<NavigationProp>()
   const { txHash, status, title, stakeAmount } = props
 
@@ -79,18 +76,15 @@ export const StakeCard = (props: Props) => {
   }
 
   const renderContents = () => {
-    const [stakeAmountInAvax, stakeAmountInCurrency] = nAvaxToAvax(
+    const [stakeAmountInAvax, stakeAmountInCurrency] = nAvaxFormatter(
       stakeAmount,
-      avaxPrice
+      true
     )
 
     switch (status) {
       case StakeStatus.Ongoing: {
-        const [estimatedRewardInAvax, estimatedRewardInCurrency] = nAvaxToAvax(
-          props.estimatedReward,
-          avaxPrice,
-          true
-        )
+        const [estimatedRewardInAvax, estimatedRewardInCurrency] =
+          nAvaxFormatter(props.estimatedReward, true)
 
         return (
           <>
@@ -116,7 +110,7 @@ export const StakeCard = (props: Props) => {
                 position="top"
                 strictPosition={true}
                 style={{ minWidth: 240 }}
-                backgroundColor={theme.colorBg3}>
+                backgroundColor={theme.neutral100}>
                 <PopableLabel
                   label="Estimated Rewards"
                   textStyle={{ lineHeight: 24, color: theme.colorText1 }}
@@ -136,9 +130,8 @@ export const StakeCard = (props: Props) => {
         const endDate = props.endTimestamp
           ? format(fromUnixTime(props.endTimestamp), 'MM/dd/yyyy')
           : 'N/A'
-        const [rewardAmountInAvax, rewardAmountInCurrency] = nAvaxToAvax(
+        const [rewardAmountInAvax, rewardAmountInCurrency] = nAvaxFormatter(
           props.rewardAmount,
-          avaxPrice,
           true
         )
 

@@ -83,7 +83,8 @@ enum BuyScreens {
 enum EarnScreens {
   StakeDashboard = 'EarnScreens.StakeDashboard',
   StakeDetails = 'EarnScreens.StakeDetails',
-  StakeSetup = 'EarnScreens.StakeSetup'
+  StakeSetup = 'EarnScreens.StakeSetup',
+  ClaimRewards = 'EarnScreens.ClaimRewards'
 }
 
 enum StakeSetupScreens {
@@ -179,7 +180,8 @@ enum ModalScreens {
   BridgeAssetV2 = 'ModalScreens.BridgeAssetV2',
   SignTransactionV2 = 'ModalScreens.SignTransactionV2',
   AvalancheSendTransactionV2 = 'ModalScreens.AvalancheSendTransactionV2',
-  AvalancheSignTransactionV2 = 'ModalScreens.AvalancheSignTransactionV2'
+  AvalancheSignTransactionV2 = 'ModalScreens.AvalancheSignTransactionV2',
+  StakeDisclaimer = 'ModalScreens.StakeDisclaimer'
 }
 
 enum SendScreens {

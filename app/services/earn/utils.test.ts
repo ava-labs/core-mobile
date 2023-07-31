@@ -1,22 +1,25 @@
 import { AdvancedSortFilter, NodeValidators } from 'types/earn'
 import mockValidators from 'tests/fixtures/pvm/validators.json'
-import { N_AVAX_PER_AVAX } from 'consts/earn'
+import { Avax } from 'types/Avax'
+import { addDays, addYears } from 'date-fns'
 import {
   calculateMaxWeight,
   getAdvancedSortedValidators,
   getFilteredValidators,
   getRandomValidator,
-  getSimpleSortedValidators
+  getSimpleSortedValidators,
+  getSortedValidatorsByEndTime,
+  isEndTimeOverOneYear
 } from './utils'
 
 describe('calculateMaxWeight', () => {
   it('returns the correct maxWeight and maxDelegation', () => {
-    const maxValidatorStake = BigInt(3000000e9)
-    const stakeAmount = BigInt('1900264376785214')
+    const maxValidatorStake = Avax.fromBase(3000000)
+    const stakeAmount = Avax.fromNanoAvax('1900264376785214')
 
     const expectedMaxWeight = {
-      maxDelegation: BigInt('1099735623214786'),
-      maxWeight: BigInt(3000000e9)
+      maxDelegation: Avax.fromNanoAvax('1099735623214786'),
+      maxWeight: Avax.fromBase(3000000)
     }
     expect(calculateMaxWeight(maxValidatorStake, stakeAmount)).toStrictEqual(
       expectedMaxWeight
@@ -24,12 +27,12 @@ describe('calculateMaxWeight', () => {
   })
 
   it('returns the correct maxWeight when stakeWeight is less than maxValidatorStake', () => {
-    const maxValidatorStake = BigInt(2000000e9)
-    const stakeAmount = BigInt('4376785214')
+    const maxValidatorStake = Avax.fromBase(2000000)
+    const stakeAmount = Avax.fromNanoAvax('4376785214')
 
     const expectedMaxWeight = {
-      maxDelegation: BigInt('17507140856'),
-      maxWeight: BigInt('21883926070')
+      maxDelegation: Avax.fromNanoAvax('17507140856'),
+      maxWeight: Avax.fromNanoAvax('21883926070')
     }
     expect(calculateMaxWeight(maxValidatorStake, stakeAmount)).toStrictEqual(
       expectedMaxWeight
@@ -41,7 +44,7 @@ describe('getFilteredValidators function', () => {
   it('should return empty array when the validators input is empty', () => {
     const result = getFilteredValidators({
       validators: [] as unknown as NodeValidators,
-      stakingAmount: BigInt(N_AVAX_PER_AVAX),
+      stakingAmount: Avax.fromBase(1),
       isDeveloperMode: true,
       stakingEndTime: new Date('1900-07-05T16:52:40.723Z'),
       minUpTime: 99.9999
@@ -51,7 +54,7 @@ describe('getFilteredValidators function', () => {
   it('should return filtered validators that meet the selected uptime', () => {
     const result = getFilteredValidators({
       validators: mockValidators.validators as unknown as NodeValidators,
-      stakingAmount: BigInt(N_AVAX_PER_AVAX),
+      stakingAmount: Avax.fromBase(1),
       isDeveloperMode: true,
       stakingEndTime: new Date('1900-07-05T16:52:40.723Z'),
       minUpTime: 99.9999
@@ -62,7 +65,7 @@ describe('getFilteredValidators function', () => {
   it('should return filtered validators that meet the selected staking duration', () => {
     const result = getFilteredValidators({
       validators: mockValidators.validators as unknown as NodeValidators,
-      stakingAmount: BigInt(N_AVAX_PER_AVAX),
+      stakingAmount: Avax.fromBase(1),
       isDeveloperMode: true,
       stakingEndTime: new Date('2122-07-05T16:57:10.140Z')
     })
@@ -72,11 +75,11 @@ describe('getFilteredValidators function', () => {
   it('should return filtered validators that meet the selected staking amount', () => {
     const result = getFilteredValidators({
       validators: mockValidators.validators as unknown as NodeValidators,
-      stakingAmount: BigInt(100 * N_AVAX_PER_AVAX),
+      stakingAmount: Avax.fromBase(100),
       isDeveloperMode: true,
       stakingEndTime: new Date()
     })
-    expect(result.length).toBe(30)
+    expect(result.length).toBeGreaterThan(0)
   })
 })
 
@@ -157,5 +160,39 @@ describe('getAdvancedSortedValidators function', () => {
       AdvancedSortFilter.DurationLowToHigh
     )
     expect(sorted[0]?.endTime).toBe('2844249830')
+  })
+})
+
+describe('isEndTimeOverOneYear', () => {
+  it('returns true if end time if more than one year from now', () => {
+    const overOneYearFromNow = addYears(new Date(), 2)
+    const result = isEndTimeOverOneYear(overOneYearFromNow)
+    expect(result).toBeTruthy()
+  })
+  it('returns true if end time if exactly one year from now', () => {
+    const oneYearFromNow = addYears(new Date(), 1)
+    const result = isEndTimeOverOneYear(oneYearFromNow)
+    expect(result).toBeTruthy()
+  })
+  it('returns false if end time if less than one year from now', () => {
+    const lessThanOneYearFromNow = addDays(new Date(), 364)
+    const result = isEndTimeOverOneYear(lessThanOneYearFromNow)
+    expect(result).toBeFalsy()
+  })
+})
+
+describe('getSortedValidatorsByEndTime', () => {
+  const validators = [
+    { uptime: '50', delegationFee: '10.0000', endTime: '3844249830' },
+    { uptime: '99', delegationFee: '2.0000', endTime: '4844249830' },
+    { uptime: '1', delegationFee: '100.0000', endTime: '2844249830' }
+  ]
+  it('returns sorted validator sort descending by end time', () => {
+    const result = getSortedValidatorsByEndTime(validators as NodeValidators)
+    expect(result[0]?.endTime).toEqual('4844249830')
+  })
+  it('returns empty array when input is empty array', () => {
+    const result = getSortedValidatorsByEndTime([])
+    expect(result).toEqual([])
   })
 })

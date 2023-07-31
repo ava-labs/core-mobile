@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react'
-import { StyleSheet, View, Pressable } from 'react-native'
+import { StyleSheet, View, Pressable, Platform } from 'react-native'
 import AvaText from 'components/AvaText'
 import AvaButton from 'components/AvaButton'
 import { useApplicationContext } from 'contexts/ApplicationContext'
@@ -10,6 +10,8 @@ import { format } from 'date-fns'
 interface CalendarInputProps {
   date: Date | undefined
   onDateSelected: (date: Date) => void
+  setIsDatePickerVisible: (value: boolean) => void
+  isDatePickerVisible: boolean
   placeHolder: string
   minimumDate?: Date
   maximumDate?: Date
@@ -20,6 +22,8 @@ const EmptyComponent = () => null
 export const CalendarInput: React.FC<CalendarInputProps> = ({
   date,
   onDateSelected,
+  setIsDatePickerVisible,
+  isDatePickerVisible,
   placeHolder,
   minimumDate,
   maximumDate
@@ -27,14 +31,18 @@ export const CalendarInput: React.FC<CalendarInputProps> = ({
   const { theme } = useApplicationContext()
   const positionRef = useRef<View>(null)
   const [position, setPosition] = useState(0)
-  const [isDatePickerVisible, setIsDatePickerVisible] = useState(false)
-  const showDatePicker = () => {
-    setIsDatePickerVisible(true)
-  }
 
   const handleDateConfirm = (dateInput: Date) => {
     onDateSelected(dateInput)
-    setIsDatePickerVisible(false)
+
+    if (Platform.OS === 'android') {
+      // we don't show confirm/cancel button for iOS by design,
+      // so we only need to disable the date picker for android
+      setIsDatePickerVisible(false)
+    }
+  }
+  const showDatePicker = () => {
+    setIsDatePickerVisible(true)
   }
 
   const handleCancel = () => {

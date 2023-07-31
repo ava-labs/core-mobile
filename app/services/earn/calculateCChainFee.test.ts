@@ -1,5 +1,6 @@
 import { calculateCChainFee } from 'services/earn/calculateCrossChainFees'
 import { avaxSerial, UnsignedTx } from '@avalabs/avalanchejs-v2'
+import { Avax } from 'types/Avax'
 
 describe('earn/calculateCChainFee', () => {
   describe('calculateCChainFee', () => {
@@ -15,22 +16,22 @@ describe('earn/calculateCChainFee', () => {
       toBytes: () => ['']
     } as unknown as UnsignedTx
 
-    it('should result 330030 for single byte with base fee 30nAvax', async () => {
+    it('should result 0.00033003 for single byte with base fee 30nAvax', async () => {
       const result = calculateCChainFee(
-        BigInt(30e9),
+        Avax.fromNanoAvax(30),
         unsignedTxMock,
         unsignedTxMock.getSignedTx()
       )
-      expect('330030').toBe(result.toString())
+      expect(result.toString()).toBe('0.00033003')
     })
 
-    it('should result 495045 for single byte with base fee 45nAvax', async () => {
+    it('should result 0.000495045 for single byte with base fee 45nAvax', async () => {
       const result = calculateCChainFee(
-        BigInt(45e9),
+        Avax.fromNanoAvax(45),
         unsignedTxMock,
         unsignedTxMock.getSignedTx()
       )
-      expect('495045').toBe(result.toString())
+      expect(result.toString()).toBe('0.000495045')
     })
   })
 })

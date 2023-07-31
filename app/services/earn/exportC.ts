@@ -9,11 +9,12 @@ import { Account } from 'store/account'
 import { AvalancheTransactionRequest } from 'services/wallet/types'
 import { UnsignedTx } from '@avalabs/avalanchejs-v2'
 import NetworkService from 'services/network/NetworkService'
-import { BigIntNAvax, BigIntWeiAvax } from 'types/denominations'
+import { Avax } from 'types/Avax'
+import { maxTransactionStatusCheckRetries } from './utils'
 
 export type ExportCParams = {
-  cChainBalance: BigIntNAvax
-  requiredAmount: BigIntNAvax
+  cChainBalance: Avax
+  requiredAmount: Avax
   activeAccount: Account
   isDevMode: boolean
 }
@@ -24,6 +25,8 @@ export async function exportC({
   activeAccount,
   isDevMode
 }: ExportCParams): Promise<boolean> {
+  Logger.info('exporting C started')
+
   const avaxXPNetwork = NetworkService.getAvalancheNetworkXP(isDevMode)
   const chains = await NetworkService.getNetworks()
   const cChainNetwork =
@@ -36,11 +39,11 @@ export async function exportC({
     avaxXPNetwork
   ) as Avalanche.JsonRpcProvider
 
-  const baseFee: BigIntWeiAvax = await avaxProvider.getApiC().getBaseFee()
-  const instantFee = baseFee + (baseFee * BigInt(20)) / BigInt(100) // Increase by 20% for instant speed
+  const baseFee = Avax.fromWei(await avaxProvider.getApiC().getBaseFee())
+  const instantFee = baseFee.add(baseFee.mul(0.2)) // Increase by 20% for instant speed
 
   const pChainFee = calculatePChainFee()
-  const amount: BigIntNAvax = requiredAmount + pChainFee
+  const amount = requiredAmount.add(pChainFee)
 
   if (cChainBalance < amount) {
     throw Error('Not enough balance on C chain')
@@ -72,12 +75,13 @@ export async function exportC({
     await exponentialBackoff(
       () => avaxProvider.getApiC().getAtomicTxStatus(txID),
       result => result.status === 'Accepted',
-      6
+      maxTransactionStatusCheckRetries
     )
   } catch (e) {
     Logger.error('exponentialBackoff failed', e)
     throw Error(`Transfer is taking unusually long (export C). txId = ${txID}`)
   }
 
+  Logger.info('exporting C ended')
   return true
 }

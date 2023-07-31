@@ -6,6 +6,8 @@ import NetworkService from 'services/network/NetworkService'
 import { Account } from 'store/account'
 import { AvalancheTransactionRequest } from 'services/wallet/types'
 import { UnsignedTx } from '@avalabs/avalanchejs-v2'
+import { Avax } from 'types/Avax'
+import { maxTransactionStatusCheckRetries } from './utils'
 
 export type ImportCParams = {
   activeAccount: Account
@@ -16,6 +18,8 @@ export async function importC({
   activeAccount,
   isDevMode
 }: ImportCParams): Promise<boolean> {
+  Logger.info('importing C started')
+
   const avaxXPNetwork = NetworkService.getAvalancheNetworkXP(isDevMode)
 
   const avaxProvider = NetworkService.getProviderForNetwork(
@@ -23,8 +27,8 @@ export async function importC({
   ) as Avalanche.JsonRpcProvider
 
   const baseFee = await avaxProvider.getApiC().getBaseFee() //in WEI
-  const baseFeeNAvax = baseFee / BigInt(1e9)
-  const instantFee = baseFeeNAvax + (baseFeeNAvax * BigInt(20)) / BigInt(100) // Increase by 20% for instant speed
+  const baseFeeAvax = Avax.fromWei(baseFee)
+  const instantFee = baseFeeAvax.add(baseFeeAvax.mul(0.2)).toSubUnit() // Increase by 20% for instant speed
 
   const unsignedTx = await WalletService.createImportCTx(
     activeAccount.index,
@@ -52,12 +56,13 @@ export async function importC({
     await exponentialBackoff(
       () => avaxProvider.getApiC().getAtomicTxStatus(txID),
       result => result.status === 'Accepted',
-      6
+      maxTransactionStatusCheckRetries
     )
   } catch (e) {
     Logger.error('exponentialBackoff failed', e)
     throw Error(`Transfer is taking unusually long (import P). txId = ${txID}`)
   }
 
+  Logger.info('importing C ended')
   return true
 }
