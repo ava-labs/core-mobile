@@ -13,7 +13,7 @@ class CommonElsPage {
   }
 
   get walletConnectBtn() {
-    return this.page.getByText(commonEls.walletConnectBtn)
+    return this.page.getByText(commonEls.walletConnectBtn).first()
   }
 
   get w3mWalletUri() {
