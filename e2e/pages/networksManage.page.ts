@@ -187,7 +187,7 @@ class NetworksPage {
   }
 
   async swipeUp() {
-    await Action.swipeUp(this.bitcoinTestnet, 'slow', 0.5, 0)
+    await Action.swipeUp(this.nativeTokenSymbol, 'fast', 0.5, 0)
   }
 }
 
