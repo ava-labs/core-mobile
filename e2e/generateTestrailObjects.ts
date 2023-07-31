@@ -519,17 +519,21 @@ export const currentRunID = async (platform: any) => {
       return { runID: smokeTestRunExists, emptyTestRun: true }
     }
   } else {
-    // This is for regression runs which run on a daily cadence
-    var runID = await createNewTestRunBool(platform)
-    if (runID) {
-      return { runID: runID, emptyTestRun: true }
-    } else {
-      const newRunID = await createEmptyTestRun(
-        `${platform} smoke test run`,
-        `This is a smoke test run for ${platform}!`
-      )
-      return { runID: newRunID, emptyTestRun: false }
-    }
+    console.log(
+      'This is a local run and regression test run logic has not been implemented yet!!!'
+    )
+    //   // This is for regression runs which run on a daily cadence
+    //   var runID = await createNewTestRunBool(platform)
+    //   if (runID) {
+    //     return { runID: runID, emptyTestRun: true }
+    //   } else {
+    //     const newRunID = await createEmptyTestRun(
+    //       `${platform} smoke test run`,
+    //       `This is a smoke test run for ${platform}!`
+    //     )
+    //     return { runID: newRunID, emptyTestRun: false }
+    //   }
+    // }
   }
 }
 
