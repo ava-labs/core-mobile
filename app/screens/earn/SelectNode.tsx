@@ -13,6 +13,7 @@ import { NodeValidator, TAdvancedFilterDropDownItems } from 'types/earn'
 import { useAdvancedSearchNodes } from 'hooks/earn/useAdvancedSearchNodes'
 import { advancedFilterDropDownItems, UP_TIME_HIGH_TO_LOW } from 'consts/earn'
 import Spinner from 'components/animation/Spinner'
+import ZeroState from 'components/ZeroState'
 import { NodeCard } from './components/NodeCard'
 import { NoMatchFound } from './components/NoMatchFound'
 
@@ -76,7 +77,10 @@ const SelectNode = () => {
       </View>
     )
 
-  if (error || useAdvancedSearchNodesError || validators.length === 0) {
+  if (
+    (error || useAdvancedSearchNodesError || validators.length === 0) &&
+    searchText.length === 0
+  ) {
     return <NoMatchFound />
   }
 
@@ -113,6 +117,13 @@ const SelectNode = () => {
               keyExtractor={item => item.nodeID}
               scrollEventThrottle={16}
               ItemSeparatorComponent={Separator}
+              ListEmptyComponent={
+                <ZeroState.NoResultsTextual
+                  message={
+                    'There are no nodes that match your search.  Please try again.'
+                  }
+                />
+              }
             />
           </View>
         </>
