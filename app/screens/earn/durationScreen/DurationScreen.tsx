@@ -22,6 +22,7 @@ import InfoSVG from 'components/svg/InfoSVG'
 import { Popable } from 'react-native-popable'
 import Logger from 'utils/Logger'
 import { DOCS_STAKING } from 'resources/Constants'
+import { useNow } from 'hooks/useNow'
 import { CustomDurationOptionItem } from './components/CustomDurationOptionItem'
 import { DurationOptionItem } from './components/DurationOptionItem'
 
@@ -31,18 +32,18 @@ type ScreenProps = StakeSetupScreenProps<
 
 export const StakingDuration = () => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
-
+  const currentDate = useNow()
   const minDelegationTime = isDeveloperMode ? ONE_DAY : TWO_WEEKS
   const [selectedDuration, setSelectedDuration] =
     useState<DurationOption>(minDelegationTime)
   const [stakeEndTime, setStakeEndTime] = useState<Date>(
     getStakeEndDate(
+      currentDate,
       minDelegationTime.stakeDurationFormat,
       minDelegationTime.stakeDurationValue,
       isDeveloperMode
     )
   )
-
   const { theme } = useApplicationContext()
   const { navigate } = useNavigation<ScreenProps['navigation']>()
   const { stakingAmount } = useRoute<ScreenProps['route']>().params
@@ -54,6 +55,7 @@ export const StakingDuration = () => {
       if (durationOption.title === 'Custom') {
         setSelectedDuration(minDelegationTime)
         const calculatedStakeEndTime = getStakeEndDate(
+          currentDate,
           minDelegationTime.stakeDurationFormat,
           minDelegationTime.stakeDurationValue,
           isDeveloperMode
@@ -65,6 +67,7 @@ export const StakingDuration = () => {
 
     setSelectedDuration(durationOption)
     const calculatedStakeEndTime = getStakeEndDate(
+      currentDate,
       durationOption.stakeDurationFormat,
       durationOption.stakeDurationValue,
       isDeveloperMode

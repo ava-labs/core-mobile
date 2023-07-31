@@ -16,6 +16,7 @@ type Props = {
   disclaimer?: string
   confirmBtnTitle: string
   cancelBtnTitle: string
+  confirmBtnDisabled?: boolean
   children?: React.ReactNode
 }
 
@@ -27,6 +28,7 @@ export const ConfirmScreen = ({
   disclaimer,
   confirmBtnTitle,
   cancelBtnTitle,
+  confirmBtnDisabled = false,
   children
 }: Props) => {
   const { theme } = useApplicationContext()
@@ -70,7 +72,9 @@ export const ConfirmScreen = ({
           <ActivityIndicator size={'large'} />
         ) : (
           <>
-            <AvaButton.PrimaryLarge onPress={onConfirm}>
+            <AvaButton.PrimaryLarge
+              onPress={onConfirm}
+              disabled={confirmBtnDisabled}>
               {confirmBtnTitle}
             </AvaButton.PrimaryLarge>
             <Space y={16} />
