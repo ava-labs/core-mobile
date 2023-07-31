@@ -76,7 +76,10 @@ const SelectNode = () => {
       </View>
     )
 
-  if (error || useAdvancedSearchNodesError || validators.length === 0) {
+  if (
+    (error || useAdvancedSearchNodesError || validators.length === 0) &&
+    searchText.length === 0
+  ) {
     return <NoMatchFound />
   }
 
