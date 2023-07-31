@@ -226,6 +226,17 @@ export const Confirmation = () => {
     return <UnableToEstimate />
   }
 
+  const renderNetworkFee = () => {
+    if (networkFee) {
+      return (
+        <AvaText.Heading6>
+          {networkFee.toDisplay()} {tokenSymbol}
+        </AvaText.Heading6>
+      )
+    }
+    return <UnableToEstimate />
+  }
+
   if (!validator) return null
 
   // TODO: on error, show error message as toast
@@ -349,9 +360,7 @@ export const Confirmation = () => {
             backgroundColor={theme.neutral100}>
             <PopableLabel label="Network Fee" />
           </Popable>
-          <AvaText.Heading6>
-            {networkFee?.toDisplay() || 0} {tokenSymbol}
-          </AvaText.Heading6>
+          {renderNetworkFee()}
         </Row>
       </View>
       <Separator />

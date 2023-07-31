@@ -90,7 +90,7 @@ export default function StakingAmount() {
         strictPosition={true}
         style={{ minWidth: 218 }}
         backgroundColor={theme.neutral100}>
-        <PopableLabel label="" textStyle={{ color: theme.white }} />
+        <PopableLabel label="" />
       </Popable>
     )
   }
