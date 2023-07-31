@@ -120,7 +120,11 @@ export default function NetworkManager({ onShowInfo }: Props) {
       <AvaText.LargeTitleBold textStyle={{ marginHorizontal: 16 }}>
         {title}
       </AvaText.LargeTitleBold>
-      <SearchBar onTextChanged={setSearchText} searchText={searchText} />
+      <SearchBar
+        onTextChanged={setSearchText}
+        searchText={searchText}
+        testID="network_manager__search_input"
+      />
       <TabViewAva renderCustomLabel={renderCustomLabel}>
         <TabViewAva.Item title="Favorites">
           <FlatList

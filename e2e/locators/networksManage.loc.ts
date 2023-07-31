@@ -29,5 +29,6 @@ export default {
   networkRpcUrl: 'Network RPC URL',
   networksTab: 'Networks',
   networkInfo: 'info_svg',
-  saveButton: 'Save'
+  saveButton: 'Save',
+  searchBar: 'network_manager__search_input'
 }
