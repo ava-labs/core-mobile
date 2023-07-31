@@ -22,7 +22,6 @@ import { useAvaxFormatter } from 'hooks/formatter/useAvaxFormatter'
 import { useTimeElapsed } from 'hooks/time/useTimeElapsed'
 import Spinner from 'components/animation/Spinner'
 import { ConfirmScreen } from './components/ConfirmScreen'
-import UnableToEstimate from './components/UnableToEstimate'
 
 type ScreenProps = EarnScreenProps<typeof AppNavigation.Earn.ClaimRewards>
 
@@ -37,7 +36,7 @@ const ClaimRewards = () => {
   const { navigate, goBack } = useNavigation<ScreenProps['navigation']>()
   const activeNetwork = useSelector(selectActiveNetwork)
   const { data } = usePChainBalance()
-  const { totalFees, isFetchingBaseFee } = useClaimFees()
+  const { totalFees } = useClaimFees()
   const nAvaxFormatter = useNAvaxFormatter()
   const avaxFormatter = useAvaxFormatter()
   const claimRewardsMutation = useClaimRewards(goBack, onClaimError)
@@ -67,7 +66,7 @@ const ClaimRewards = () => {
 
   const renderFees = () => {
     if (unableToGetFees) {
-      return isFetchingBaseFee ? <Spinner size={22} /> : <UnableToEstimate />
+      return <Spinner size={22} />
     }
 
     return (

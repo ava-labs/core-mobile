@@ -40,7 +40,7 @@ import Logger from 'utils/Logger'
 import { DOCS_STAKING } from 'resources/Constants'
 import { useEstimateStakingFees } from 'hooks/earn/useEstimateStakingFees'
 import { useGetClaimableBalance } from 'hooks/earn/useGetClaimableBalance'
-import { useNow } from 'hooks/useNow'
+import { useNow } from 'hooks/time/useNow'
 import { ConfirmScreen } from './components/ConfirmScreen'
 import UnableToEstimate from './components/UnableToEstimate'
 

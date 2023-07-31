@@ -76,5 +76,5 @@ export const useClaimFees = () => {
     })
   }, [activeAccount, isDevMode, cChainBaseFee?.data])
 
-  return { totalFees, exportPFee, isFetchingBaseFee: cChainBaseFee.isFetching }
+  return { totalFees, exportPFee }
 }
