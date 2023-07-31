@@ -32,6 +32,7 @@ interface Props extends Omit<TextInputProps, 'value' | 'onChangeText'> {
   hideBottomNav?: boolean
   useDebounce?: boolean
   debounceMillis?: number
+  testID?: string
 }
 
 const SCREEN_WIDTH = Dimensions.get('window').width
@@ -157,6 +158,7 @@ const SearchBar: FC<Props> = ({
         ]}>
         <SearchSVG size={32} hideBorder />
         <TextInput
+          testID="search_bar__search"
           autoCorrect={false}
           autoComplete="off"
           autoCapitalize="none"
