@@ -38,6 +38,8 @@ import TransactionToast, {
 } from 'components/toast/TransactionToast'
 import Logger from 'utils/Logger'
 import { DOCS_STAKING } from 'resources/Constants'
+import { useEstimateStakingFees } from 'hooks/earn/useEstimateStakingFees'
+import { useGetClaimableBalance } from 'hooks/earn/useGetClaimableBalance'
 import { useNow } from 'hooks/useNow'
 import { ConfirmScreen } from './components/ConfirmScreen'
 import UnableToEstimate from './components/UnableToEstimate'
@@ -68,6 +70,7 @@ export const Confirmation = () => {
     onDelegationSuccess,
     onDelegationError
   )
+  const claimableBalance = useGetClaimableBalance()
 
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const tokenSymbol = activeNetwork.networkToken.symbol
@@ -75,7 +78,10 @@ export const Confirmation = () => {
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { navigate, getParent } = useNavigation<ScreenProps['navigation']>()
 
-  const stakingAmountPrice = stakingAmount.mul(avaxPrice).toFixed(2) //price is in [currency] so we round to 2 decimals
+  const networkFee = useEstimateStakingFees(stakingAmount)
+  const deductedStakingAmount = stakingAmount.sub(networkFee ?? 0)
+
+  const stakingAmountPrice = deductedStakingAmount.mul(avaxPrice).toFixed(2) //price is in [currency] so we round to 2 decimals
   const now = useNow() // ticker - update "now" variable every 10s
   const minStakeDurationMs = getMinimumStakeDurationMs(isDeveloperMode)
   //minStartTime - 1 minute after submitting
@@ -101,7 +107,7 @@ export const Confirmation = () => {
   }, [minStakeDurationMs, minStartTime, stakingEndTime, validator?.endTime])
 
   const { data } = useEarnCalcEstimatedRewards({
-    amount: stakingAmount,
+    amount: deductedStakingAmount,
     duration: convertToSeconds(
       BigInt(trueStakingEndTime.getTime() - now.getTime()) as MilliSeconds
     ),
@@ -124,11 +130,15 @@ export const Confirmation = () => {
   }
 
   const issueDelegation = () => {
+    if (!claimableBalance) {
+      return
+    }
     issueDelegationMutation.mutate({
-      stakingAmount,
+      stakingAmount: deductedStakingAmount,
       startDate: minStartTime,
       endDate: trueStakingEndTime,
-      nodeId
+      nodeId,
+      claimableBalance
     })
   }
 
@@ -216,6 +226,17 @@ export const Confirmation = () => {
     return <UnableToEstimate />
   }
 
+  const renderNetworkFee = () => {
+    if (networkFee) {
+      return (
+        <AvaText.Heading6>
+          {networkFee.toDisplay()} {tokenSymbol}
+        </AvaText.Heading6>
+      )
+    }
+    return <UnableToEstimate />
+  }
+
   if (!validator) return null
 
   // TODO: on error, show error message as toast
@@ -236,7 +257,7 @@ export const Confirmation = () => {
         </AvaText.Body2>
         <View style={{ alignItems: 'flex-end' }}>
           <AvaText.Heading1>
-            {stakingAmount.toString() + ' ' + tokenSymbol}
+            {deductedStakingAmount.toString() + ' ' + tokenSymbol}
           </AvaText.Heading1>
           <AvaText.Heading3 textStyle={{ color: theme.colorText2 }}>
             {`${tokenInCurrencyFormatter(
@@ -339,7 +360,7 @@ export const Confirmation = () => {
             backgroundColor={theme.neutral100}>
             <PopableLabel label="Network Fee" />
           </Popable>
-          <AvaText.Heading6>Not implemented {tokenSymbol}</AvaText.Heading6>
+          {renderNetworkFee()}
         </Row>
       </View>
       <Separator />
