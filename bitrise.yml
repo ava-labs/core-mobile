@@ -194,13 +194,20 @@ workflows:
 
                 # Check if the value is not empty (found in .env.development)
                 if [ -n "$feature_flags_key" ]; then
-                    # Update the value of POSTHOG_FEATURE_FLAGS_KEY in the .env file
-                    sed -i "s/^POSTHOG_FEATURE_FLAGS_KEY=.*/POSTHOG_FEATURE_FLAGS_KEY=$feature_flags_key/" .env
+                    # Create a temporary file for the in-place edit
+                    temp_file=$(mktemp)
+
+                    # Replace the value of POSTHOG_FEATURE_FLAGS_KEY in the .env file and save it in the temporary file
+                    sed "s/^POSTHOG_FEATURE_FLAGS_KEY=.*/POSTHOG_FEATURE_FLAGS_KEY=$feature_flags_key/" .env > "$temp_file"
+
+                    # Replace the original .env file with the modified temporary file
+                    mv "$temp_file" .env
+
                     echo "Updated POSTHOG_FEATURE_FLAGS_KEY in .env"
                 else
                     echo "POSTHOG_FEATURE_FLAGS_KEY not found in .env.development or is empty."
                 fi
-
+                
             fi
   _send-notification-slack:
     steps:
