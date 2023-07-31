@@ -367,6 +367,9 @@ workflows:
     - APP_TITLE: Core Mobile Internal
       opts:
         is_expand: false
+    - USE_TEST_FEATURE_FLAGS: "true"
+      opts:
+        is_expand: false
     steps:
     - deploy-to-bitrise-io@2: {}
     - create-install-page-qr-code@1: {}
@@ -397,6 +400,9 @@ workflows:
       opts:
         is_expand: false
     - E2E: "true"
+      opts:
+        is_expand: false
+    - USE_TEST_FEATURE_FLAGS: "true"
       opts:
         is_expand: false
     steps:
@@ -519,6 +525,9 @@ workflows:
     - APP_TITLE: Core Mobile Internal
       opts:
         is_expand: false
+    - USE_TEST_FEATURE_FLAGS: "true"
+      opts:
+        is_expand: false
     steps:
     - deploy-to-itunesconnect-application-loader@1:
         inputs:
@@ -550,6 +559,9 @@ workflows:
       opts:
         is_expand: false
     - E2E: "true"
+      opts:
+        is_expand: false
+    - USE_TEST_FEATURE_FLAGS: "true"
       opts:
         is_expand: false
     steps:
