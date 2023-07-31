@@ -4,6 +4,7 @@ cmds=(
 'npx playwright test e2e/tests/playwright/traderjoe.spec.ts' 
 'npx playwright test e2e/tests/playwright/uniswap.spec.ts'
 'npx playwright test e2e/tests/playwright/oasis.spec.ts'
+'npx playwright test e2e/tests/playwright/core.spec.ts --headed --project='firefox''
 )
 for cmd in "${cmds[@]}"; do
     echo "Running ${cmd}..."
