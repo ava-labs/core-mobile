@@ -2,6 +2,9 @@ import { Avax } from 'types/Avax'
 import { useGetClaimableBalance } from 'hooks/earn/useGetClaimableBalance'
 import { useMemo } from 'react'
 
+/**
+ * Wrapper hook for calculateAmountForCrossChainTransfer
+ */
 export const useGetAmountForCrossChainTransfer = (
   stakingAmount: Avax
 ): Avax | undefined => {
@@ -16,6 +19,9 @@ export const useGetAmountForCrossChainTransfer = (
   return amountForCrossChainTransfer
 }
 
+/**
+ * Calculates how much Avax we need to transfer from C to P
+ */
 export const calculateAmountForCrossChainTransfer = (
   stakingAmount: Avax,
   claimableBalance: Avax

@@ -1,6 +1,6 @@
 import { Avax } from 'types/Avax'
 import { useGetAmountForCrossChainTransfer } from 'hooks/earn/useGetAmountForCrossChainTransfer'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   calculateCChainFee,
   calculatePChainFee
@@ -8,17 +8,17 @@ import {
 import { UnsignedTx } from '@avalabs/avalanchejs-v2'
 import { useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { Avalanche } from '@avalabs/wallets-sdk'
 import NetworkService from 'services/network/NetworkService'
 import { selectActiveAccount } from 'store/account'
 import WalletService from 'services/wallet/WalletService'
 import { AvalancheTransactionRequest } from 'services/wallet/types'
 import Logger from 'utils/Logger'
+import { useCChainBaseFee } from 'hooks/useCChainBaseFee'
 
 /**
  * useEstimateStakingFee estimates fee by making dummy Export C transaction and
  * then using calculateCChainFee. However, this will happen only if there is
- * some amount to be transfered from C to P chain, which is determined by
+ * some amount to be transferred from C to P chain, which is determined by
  * using useGetAmountForCrossChainTransfer.
  */
 export const useEstimateStakingFee = (
@@ -29,21 +29,17 @@ export const useEstimateStakingFee = (
   const activeAccount = useSelector(selectActiveAccount)
   const amountForCrossChainTransfer =
     useGetAmountForCrossChainTransfer(stakingAmount)
-  const [baseFee, setBaseFee] = useState<Avax | undefined>(undefined)
   const [estimatedStakingFee, setEstimatedStakingFee] = useState<
     Avax | undefined
   >(undefined)
-
-  useEffect(() => {
-    //poll base fee from network
-    const avaxProvider = NetworkService.getProviderForNetwork(
-      avaxXPNetwork
-    ) as Avalanche.JsonRpcProvider
-    avaxProvider
-      .getApiC()
-      .getBaseFee()
-      .then(value => setBaseFee(Avax.fromWei(value)))
-  }, [avaxXPNetwork])
+  const cChainBaseFeeWei = useCChainBaseFee()
+  const baseFee = useMemo(
+    () =>
+      cChainBaseFeeWei.data !== undefined
+        ? Avax.fromWei(cChainBaseFeeWei.data)
+        : undefined,
+    [cChainBaseFeeWei.data]
+  )
 
   useEffect(() => {
     const calculateEstimatedStakingFee = async () => {
