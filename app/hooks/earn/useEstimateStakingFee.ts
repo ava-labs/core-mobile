@@ -15,6 +15,12 @@ import WalletService from 'services/wallet/WalletService'
 import { AvalancheTransactionRequest } from 'services/wallet/types'
 import Logger from 'utils/Logger'
 
+/**
+ * useEstimateStakingFee estimates fee by making dummy Export C transaction and
+ * then using calculateCChainFee. However, this will happen only if there is
+ * some amount to be transfered from C to P chain, which is determined by
+ * using useGetAmountForCrossChainTransfer.
+ */
 export const useEstimateStakingFee = (
   stakingAmount: Avax
 ): Avax | undefined => {
