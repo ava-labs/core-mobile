@@ -191,7 +191,6 @@ async function generatePlatformResults(
       const payload = {
         status_id: statusId
       }
-
       if (resultObject && !isResultsExists) {
         const testResult = await api.addResultForCase(
           Number(runId),

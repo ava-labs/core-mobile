@@ -21,6 +21,11 @@ import AppNavigation from 'navigation/AppNavigation'
 import { StakeSetupScreenProps } from 'navigation/types'
 import { Avax } from 'types/Avax'
 import { useCChainBalance } from 'hooks/earn/useCChainBalance'
+import { useGetClaimableBalance } from 'hooks/earn/useGetClaimableBalance'
+import { ActivityIndicator } from 'components/ActivityIndicator'
+import { PopableContent } from 'components/PopableContent'
+import { PopableLabel } from 'components/PopableLabel'
+import { Popable } from 'react-native-popable'
 
 type ScreenProps = StakeSetupScreenProps<
   typeof AppNavigation.StakeSetup.SmartStakeAmount
@@ -31,6 +36,12 @@ export default function StakingAmount() {
   const { navigate } = useNavigation<ScreenProps['navigation']>()
   const { minStakeAmount } = useStakingParams()
   const cChainBalance = useCChainBalance()
+  const cChainBalanceAvax = useMemo(
+    () => Avax.fromWei(cChainBalance?.data?.balance || 0),
+    [cChainBalance?.data?.balance]
+  )
+  const fetchingBalance = cChainBalance?.data?.balance === undefined
+  const claimableBalance = useGetClaimableBalance()
 
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const chainId = isDeveloperMode
@@ -49,12 +60,14 @@ export default function StakingAmount() {
     [inputAmount, nativeTokenPrice]
   )
 
-  const nativeTokenBalance = Avax.fromWei(cChainBalance?.data?.balance || 0)
+  const cumulativeBalance = useMemo(
+    () => cChainBalanceAvax.add(claimableBalance || 0),
+    [cChainBalanceAvax, claimableBalance]
+  )
+  const amountNotEnough =
+    !inputAmount.isZero() && inputAmount.lt(minStakeAmount)
 
-  const amountNotEnough = !inputAmount.isZero() && inputAmount < minStakeAmount
-
-  const notEnoughBalance =
-    nativeTokenBalance && inputAmount.gt(nativeTokenBalance)
+  const notEnoughBalance = inputAmount.gt(cumulativeBalance)
 
   const inputValid =
     !amountNotEnough && !notEnoughBalance && !inputAmount.isZero()
@@ -64,9 +77,22 @@ export default function StakingAmount() {
   }
 
   function setAmount(factor: number) {
-    if (nativeTokenBalance) {
-      setInputAmount(nativeTokenBalance.div(factor))
-    }
+    setInputAmount(cumulativeBalance.div(factor))
+  }
+
+  const renderBalanceInfo = () => {
+    return (
+      <Popable
+        content={PopableContent({
+          message: 'Final staking amount may be slightly lower due to fees'
+        })}
+        position="top"
+        strictPosition={true}
+        style={{ minWidth: 218 }}
+        backgroundColor={theme.neutral100}>
+        <PopableLabel label="" />
+      </Popable>
+    )
   }
 
   return (
@@ -77,12 +103,19 @@ export default function StakingAmount() {
         How many AVAX would you like to stake?
       </AvaText.Subtitle1>
       <Space y={40} />
-      <View style={{ alignItems: 'center' }}>
-        <AvaText.Subtitle1 color={theme.neutral500}>
-          Balance:
-          {' ' + nativeTokenBalance.toDisplay() + ' AVAX'}
-        </AvaText.Subtitle1>
-      </View>
+      {fetchingBalance && <ActivityIndicator size="small" />}
+      {!fetchingBalance && (
+        <>
+          <Row style={{ justifyContent: 'center', alignItems: 'center' }}>
+            <AvaText.Subtitle1 color={theme.neutral500}>
+              Balance:
+              {' ' + cumulativeBalance.toDisplay() + ' AVAX'}
+            </AvaText.Subtitle1>
+            {renderBalanceInfo()}
+          </Row>
+        </>
+      )}
+      <Space y={40} />
       <EarnInputAmount
         handleAmountChange={handleAmountChange}
         inputAmount={inputAmount}
@@ -127,7 +160,7 @@ export default function StakingAmount() {
         <Row style={{ justifyContent: 'space-between' }}>
           <PercentButtons
             isDeveloperMode={isDeveloperMode}
-            balance={nativeTokenBalance}
+            balance={cumulativeBalance}
             onPercentageSelected={setAmount}
           />
         </Row>
