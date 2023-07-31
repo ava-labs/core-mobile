@@ -15,6 +15,8 @@ import { AvalancheTransactionRequest } from 'services/wallet/types'
 import Logger from 'utils/Logger'
 import { useCChainBaseFee } from 'hooks/useCChainBaseFee'
 
+const importFee = calculatePChainFee()
+
 /**
  * useEstimateStakingFee estimates fee by making dummy Export C transaction and
  * then using calculateCChainFee. However, this will happen only if there is
@@ -60,8 +62,7 @@ export const useEstimateStakingFees = (
         return
       }
 
-      const importFee = calculatePChainFee() //we need to include import fee
-      const totalAmount = amountForCrossChainTransfer.add(importFee)
+      const totalAmount = amountForCrossChainTransfer.add(importFee) //we need to include import fee
       const instantFee = baseFee.add(baseFee.mul(0.2)) // Increase by 20% for instant speed
 
       const unsignedTx = await WalletService.createExportCTx(

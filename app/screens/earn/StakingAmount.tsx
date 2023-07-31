@@ -160,7 +160,7 @@ export default function StakingAmount() {
         <Row style={{ justifyContent: 'space-between' }}>
           <PercentButtons
             isDeveloperMode={isDeveloperMode}
-            balance={cChainBalanceAvax}
+            balance={cumulativeBalance}
             onPercentageSelected={setAmount}
           />
         </Row>
