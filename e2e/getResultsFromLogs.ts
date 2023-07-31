@@ -1,13 +1,28 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { readdir } from 'fs/promises'
 require('ts-node').register()
-// import * as fs from 'fs'
-// import path from 'path'
+const fs = require('fs').promises
+const path = require('path')
 
 export const getDirectories = async (source: any) =>
   (await readdir(source, { withFileTypes: true }))
     .filter((dirent: { isDirectory: () => any }) => dirent.isDirectory())
     .map((dirent: { name: any }) => dirent.name)
+
+async function readdirChronoSorted(dirpath: any, order: any) {
+  order = order || 1
+  const files = await fs.readdir(dirpath)
+  const stats = await Promise.all(
+    files.map((filename: any) =>
+      fs
+        .stat(path.join(dirpath, filename))
+        .then((stat: { mtime: any }) => ({ filename, mtime: stat.mtime }))
+    )
+  )
+  return stats
+    .sort((a, b) => order * (b.mtime.getTime() - a.mtime.getTime()))
+    .map(stat => stat.filename)
+}
 
 export default async function getTestLogs() {
   const folders: any = await getDirectories('./e2e/artifacts/')
@@ -23,8 +38,9 @@ export default async function getTestLogs() {
       : console.log('Why is there not splitfolder? ' + nonSplitFolders)
 
     if (splitFolder) {
-      const resultFolders: any = await getDirectories(
-        `./e2e/artifacts/${folders[i]}`
+      const resultFolders: any = await readdirChronoSorted(
+        `./e2e/artifacts/${folders[i]}`,
+        -1
       )
 
       const parsedResultFolder = resultFolders[resultFolders.length - 1]
