@@ -53,6 +53,10 @@ class EarnService {
     activeAccount,
     isDevMode
   }: CollectTokensForStakingParams): Promise<boolean> {
+    if (requiredAmount.isZero()) {
+      Logger.info('no need to cross chain')
+      return true
+    }
     return (
       (await exportC({
         cChainBalance,
