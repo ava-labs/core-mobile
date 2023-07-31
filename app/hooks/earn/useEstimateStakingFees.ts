@@ -21,7 +21,7 @@ import { useCChainBaseFee } from 'hooks/useCChainBaseFee'
  * some amount to be transferred from C to P chain, which is determined by
  * using useGetAmountForCrossChainTransfer.
  */
-export const useEstimateStakingFee = (
+export const useEstimateStakingFees = (
   stakingAmount: Avax
 ): Avax | undefined => {
   const isDevMode = useSelector(selectIsDeveloperMode)

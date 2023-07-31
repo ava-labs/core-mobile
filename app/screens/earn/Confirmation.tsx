@@ -38,7 +38,7 @@ import TransactionToast, {
 } from 'components/toast/TransactionToast'
 import Logger from 'utils/Logger'
 import { DOCS_STAKING } from 'resources/Constants'
-import { useEstimateStakingFee } from 'hooks/earn/useEstimateStakingFee'
+import { useEstimateStakingFees } from 'hooks/earn/useEstimateStakingFees'
 import { useGetClaimableBalance } from 'hooks/earn/useGetClaimableBalance'
 import { useNow } from 'hooks/useNow'
 import { ConfirmScreen } from './components/ConfirmScreen'
@@ -78,7 +78,7 @@ export const Confirmation = () => {
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { navigate, getParent } = useNavigation<ScreenProps['navigation']>()
 
-  const networkFee = useEstimateStakingFee(stakingAmount)
+  const networkFee = useEstimateStakingFees(stakingAmount)
   const deductedStakingAmount = stakingAmount.sub(networkFee ?? 0)
 
   const stakingAmountPrice = deductedStakingAmount.mul(avaxPrice).toFixed(2) //price is in [currency] so we round to 2 decimals

@@ -8,7 +8,7 @@ import { StyleSheet, View } from 'react-native'
 import Spinner from 'components/animation/Spinner'
 import { Avax } from 'types/Avax'
 import { useGetClaimableBalance } from 'hooks/earn/useGetClaimableBalance'
-import { useEstimateStakingFee } from 'hooks/earn/useEstimateStakingFee'
+import { useEstimateStakingFees } from 'hooks/earn/useEstimateStakingFees'
 import NotEnoughAvax from './NotEnoughAvax'
 import StakingAmount from './StakingAmount'
 
@@ -28,7 +28,7 @@ const SmartStakeAmount = () => {
   const cChainBalance = useCChainBalance()
   const [balanceState, setBalanceState] = useState(BalanceStates.UNKNOWN)
   const claimableBalance = useGetClaimableBalance()
-  const networkFees = useEstimateStakingFee(minStakeAmount)
+  const networkFees = useEstimateStakingFees(minStakeAmount)
 
   useEffect(() => {
     if (cChainBalance.data?.balance) {
