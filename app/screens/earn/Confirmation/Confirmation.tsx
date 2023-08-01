@@ -263,7 +263,8 @@ export const Confirmation = () => {
       header="Confirm Staking"
       confirmBtnTitle="Stake Now"
       cancelBtnTitle="Cancel"
-      disclaimer="By selecting “Stake Now”, you will lock your AVAX for the staking duration you selected.">
+      disclaimer="By selecting “Stake Now”, you will lock your AVAX for the staking duration you selected."
+      confirmBtnDisabled={unableToGetNetworkFees}>
       <Space y={4} />
       {renderStakedAmount()}
       <Space y={16} />
