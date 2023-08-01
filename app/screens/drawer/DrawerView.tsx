@@ -15,6 +15,7 @@ import AddressBookItem from 'screens/drawer/components/AddressBookItem'
 import { Row } from 'components/Row'
 import AdvancedItem from 'screens/drawer/components/AdvancedItem'
 import DrawerLogo from 'screens/drawer/components/DrawerLogo'
+import NotificationsItem from 'screens/drawer/components/NotificationsItem'
 
 const DrawerView = () => {
   const context = useApplicationContext()
@@ -56,6 +57,7 @@ const Main = () => {
         <AddressBookItem />
         <CurrencyItem />
         <AdvancedItem />
+        <NotificationsItem />
         <Separator style={{ marginHorizontal: 16 }} />
         <SecurityItem />
         <LegalItem />
