@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { FlatList, StyleSheet, View } from 'react-native'
+import { FlatList, Platform, StyleSheet, UIManager, View } from 'react-native'
 import AvaText from 'components/AvaText'
 import SearchBar from 'components/SearchBar'
 import { useNodes } from 'hooks/earn/useNodes'
@@ -19,6 +19,10 @@ import { NoMatchFound } from './components/NoMatchFound'
 type ScreenProps = StakeSetupScreenProps<
   typeof AppNavigation.StakeSetup.SelectNode
 >
+
+Platform.OS === 'android' &&
+  UIManager.setLayoutAnimationEnabledExperimental &&
+  UIManager.setLayoutAnimationEnabledExperimental(false)
 
 const SelectNode = () => {
   const [searchText, setSearchText] = useState('')
