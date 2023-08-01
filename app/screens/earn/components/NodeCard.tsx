@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react'
-import { StyleSheet, View } from 'react-native'
+import { Platform, StyleSheet, UIManager, View } from 'react-native'
 import AvaText from 'components/AvaText'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { formatLargeNumber, truncateNodeId } from 'utils/Utils'
@@ -22,6 +22,10 @@ import { PopableContentWithCaption } from './PopableContentWithCaption'
 type NavigationProp = StakeSetupScreenProps<
   typeof AppNavigation.StakeSetup.SelectNode
 >['navigation']
+
+Platform.OS === 'android' &&
+  UIManager.setLayoutAnimationEnabledExperimental &&
+  UIManager.setLayoutAnimationEnabledExperimental(false)
 
 export const NodeCard = ({
   data,
