@@ -7,7 +7,7 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 const REFETCH_INTERVAL = 10000 // 10 seconds
 
 /**
- * a query to fetch c chain base fee
+ * a query to fetch c chain base fee (in wei)
  *
  * more info about base fee here:
  * https://docs.avax.network/quickstart/transaction-fees#c-chain-fees
@@ -20,6 +20,8 @@ export const useCChainBaseFee = () => {
   ) as Avalanche.JsonRpcProvider
 
   return useQuery({
+    // no need to retry failed request as we are already doing interval fetching
+    retry: false,
     refetchInterval: REFETCH_INTERVAL,
     queryKey: ['cChainBaseFee', isDeveloperMode],
     queryFn: () => {

@@ -6,6 +6,7 @@ import { selectActiveAccount } from 'store/account'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { QueryClient } from '@tanstack/query-core'
 import { Avax } from 'types/Avax'
+import { calculateAmountForCrossChainTransfer } from 'hooks/earn/useGetAmountForCrossChainTransfer'
 import Logger from 'utils/Logger'
 import { useCChainBalance } from './useCChainBalance'
 
@@ -29,16 +30,22 @@ export const useIssueDelegation = (
       stakingAmount: Avax
       startDate: Date
       endDate: Date
+      claimableBalance: Avax
     }) => {
       if (!activeAccount) {
         return Promise.reject('no active account')
       }
 
+      const cChainRequiredAmount = calculateAmountForCrossChainTransfer(
+        data.stakingAmount,
+        data.claimableBalance
+      )
+
       return EarnService.collectTokensForStaking({
         activeAccount,
         cChainBalance: cChainBalance,
         isDevMode: isDeveloperMode,
-        requiredAmount: data.stakingAmount
+        requiredAmount: cChainRequiredAmount
       }).then(successfullyCollected => {
         if (successfullyCollected) {
           return EarnService.issueAddDelegatorTransaction({

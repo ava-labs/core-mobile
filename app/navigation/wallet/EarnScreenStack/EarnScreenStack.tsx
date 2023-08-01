@@ -6,6 +6,7 @@ import StakeDetails from 'screens/earn/StakeDetails'
 import { StakeDashboard } from 'screens/earn/StakeDashboard'
 import TopNavigationHeader from 'navigation/TopNavigationHeader'
 import ClaimRewards from 'screens/earn/ClaimRewards'
+import { FeeUnavailableModal } from 'screens/earn/FeeUnavailableModal'
 import StakeSetupScreenStack, {
   StakeSetupStackParamList
 } from './StakeSetupScreenStack'
@@ -19,6 +20,7 @@ export type EarnStackParamList = {
     stakeTitle: string
   }
   [AppNavigation.Earn.ClaimRewards]: undefined
+  [AppNavigation.Earn.FeeUnavailable]: undefined
 }
 
 const EarnStack = createStackNavigator<EarnStackParamList>()
@@ -54,6 +56,12 @@ function EarnScreenStack() {
       <EarnStack.Screen
         name={AppNavigation.Earn.ClaimRewards}
         component={ClaimRewards}
+      />
+
+      <EarnStack.Screen
+        options={{ presentation: 'transparentModal' }}
+        name={AppNavigation.Earn.FeeUnavailable}
+        component={FeeUnavailableModal}
       />
     </EarnStack.Navigator>
   )

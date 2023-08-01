@@ -97,6 +97,10 @@ class NetworksPage {
     return by.text(networksManage.arbCustomNetworkName)
   }
 
+  get searchBar() {
+    return by.id(networksManage.searchBar)
+  }
+
   async addBtcNetwork() {
     await Action.tapElementAtIndex(this.favoriteNetwork, 0)
   }
@@ -176,6 +180,10 @@ class NetworksPage {
   async inputExplorerUrl(customExplorerUrl: string) {
     await Action.setInputText(this.inputTextField, customExplorerUrl, 5)
     await Action.tap(this.explorerUrl)
+  }
+
+  async searchNetworks(network: string) {
+    await Action.setInputText(this.searchBar, network, 0)
   }
 
   async swipeUp() {

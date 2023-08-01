@@ -22,7 +22,7 @@ import InfoSVG from 'components/svg/InfoSVG'
 import { Popable } from 'react-native-popable'
 import Logger from 'utils/Logger'
 import { DOCS_STAKING } from 'resources/Constants'
-import { useNow } from 'hooks/useNow'
+import { useNow } from 'hooks/time/useNow'
 import { CustomDurationOptionItem } from './components/CustomDurationOptionItem'
 import { DurationOptionItem } from './components/DurationOptionItem'
 
