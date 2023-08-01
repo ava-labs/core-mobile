@@ -14,9 +14,14 @@ import { StakeSetupScreenProps } from 'navigation/types'
 import { copyToClipboard } from 'utils/DeviceTools'
 import LinearGradientSVG from 'components/svg/LinearGradientSVG'
 import { format } from 'date-fns'
-import { calculateMaxWeight, generateGradient } from 'services/earn/utils'
+import {
+  generateGradient,
+  getAvailableDelegationWeight
+} from 'services/earn/utils'
 import { NodeValidator } from 'types/earn'
 import { Avax } from 'types/Avax'
+import { useSelector } from 'react-redux'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { PopableContentWithCaption } from './PopableContentWithCaption'
 
 type NavigationProp = StakeSetupScreenProps<
@@ -35,18 +40,17 @@ export const NodeCard = ({
   const { theme } = useApplicationContext()
   const [isCardExpanded, setIsCardExpanded] = useState(false)
   const { navigate } = useNavigation<NavigationProp>()
-
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const endDate = format(new Date(parseInt(data.endTime) * 1000), 'MM/dd/yy')
 
-  const stakeAmount = Avax.fromNanoAvax(data.stakeAmount)
-  const delegatorWeight = Avax.fromNanoAvax(data.delegatorWeight || 0)
-  const currentWeight = stakeAmount.add(delegatorWeight)
+  const validatorWeight = Avax.fromNanoAvax(data.weight)
+  const delegatorWeight = Avax.fromNanoAvax(data.delegatorWeight)
 
-  const maxWeight = calculateMaxWeight(Avax.fromBase(3_000_000), stakeAmount)
-
-  const validatorStake = stakeAmount.toString()
-
-  const available = maxWeight.maxWeight.sub(currentWeight)
+  const availableDelegationWeight = getAvailableDelegationWeight(
+    isDeveloperMode,
+    validatorWeight,
+    delegatorWeight
+  )
 
   const gradientColors = useMemo(() => generateGradient(), [])
 
@@ -164,7 +168,7 @@ export const NodeCard = ({
               contentWidth={150}
             />
             <AvaText.Body2 textStyle={{ color: theme.neutral50 }}>
-              {formatLargeNumber(validatorStake, 4)}
+              {formatLargeNumber(validatorWeight.toString(), 4)}
             </AvaText.Body2>
           </Row>
           <Row style={styles.rowContainer}>
@@ -174,7 +178,7 @@ export const NodeCard = ({
               contentWidth={150}
             />
             <AvaText.Body2 textStyle={{ color: theme.neutral50 }}>
-              {formatLargeNumber(available.toString(), 4)}
+              {formatLargeNumber(availableDelegationWeight.toString(), 4)}
             </AvaText.Body2>
           </Row>
           <Row style={styles.rowContainer}>
@@ -224,7 +228,7 @@ const styles = StyleSheet.create({
   },
   uptimeContainer: {
     marginLeft: 50,
-    marginRight: 16,
+    marginRight: 0,
     flex: 0.3
   },
   collapseContainer: {

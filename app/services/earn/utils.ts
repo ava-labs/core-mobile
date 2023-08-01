@@ -39,27 +39,24 @@ export const getMaximumStakeEndDate = () => {
 }
 
 /**
+ * Calculates the maximum weight (validator's owned stake plus delegator stake) of a validator
+ *
  * See https://docs.avax.network/subnets/reference-elastic-subnets-parameters#delegators-weight-checks
  * for more information on how max validator weight is calculated.
  * @param maxValidatorStake - Max validator stake for subnet as defined in `stakingConfig`
- * @param stakeAmount - Stake amount in nAvax
- * @returns maxWeight - The maximum validator weight in nAvax
- * @returns maxDelegation - The maximum delegation in nAvax (`maxWeight` - `stakeAmount`)
+ * @param validatorWeight weight of validator (validator's owned stake only) in nAvax
+ * @returns the maximum weight in nAvax
  */
 export const calculateMaxWeight = (
   maxValidatorStake: Avax,
-  stakeAmount: Avax
-): { maxWeight: Avax; maxDelegation: Avax } => {
-  const stakeWeight = stakeAmount.mul(MAX_VALIDATOR_WEIGHT_FACTOR)
+  validatorWeight: Avax
+): Avax => {
+  const stakeWeight = validatorWeight.mul(MAX_VALIDATOR_WEIGHT_FACTOR)
   const maxWeight = stakeWeight.lt(maxValidatorStake)
     ? stakeWeight
     : maxValidatorStake
-  const maxDelegation = maxWeight.sub(stakeAmount)
 
-  return {
-    maxWeight,
-    maxDelegation
-  }
+  return maxWeight
 }
 
 export const randomColor = () => {
@@ -91,15 +88,27 @@ const hasMinimumStakingTime = (
   return validatorEndTime > delegationEndTime
 }
 
-const getAvailableDelegationWeight = (
+/**
+ * Calculates the total amount of AVAX that can still be delegated to the validator.
+ *
+ * See https://docs.avax.network/subnets/reference-elastic-subnets-parameters#delegators-weight-checks
+ * for more information on how max validator weight is calculated.
+ * @param isDeveloperMode
+ * @param validatorWeight weight of validator (validator's owned stake only) in nAvax
+ * @param delegatorWeight weight of deligator (delegator stake) in nAvax
+ * @returns the available delegation weight in nAvax
+ */
+export const getAvailableDelegationWeight = (
   isDeveloperMode: boolean,
-  weight: Avax
+  validatorWeight: Avax,
+  delegatorWeight: Avax
 ): Avax => {
   const maxValidatorStake = Avax.fromNanoAvax(
     getStakingConfig(isDeveloperMode).MaxValidatorStake
   )
-  const maxWeight = calculateMaxWeight(maxValidatorStake, weight)
-  return maxWeight.maxDelegation
+  const maxWeight = calculateMaxWeight(maxValidatorStake, validatorWeight)
+
+  return maxWeight.sub(validatorWeight).sub(delegatorWeight)
 }
 
 type getFilteredValidatorsProps = {
@@ -142,10 +151,11 @@ export const getFilteredValidators = ({
   const stakingEndTimeUnix = getUnixTime(stakingEndTime) // timestamp in seconds
 
   const filtered = validators.filter(
-    ({ endTime, weight, uptime, delegationFee, nodeID }) => {
+    ({ endTime, weight, uptime, delegationFee, delegatorWeight, nodeID }) => {
       const availableDelegationWeight = getAvailableDelegationWeight(
         isDeveloperMode,
-        Avax.fromNanoAvax(weight)
+        Avax.fromNanoAvax(weight),
+        Avax.fromNanoAvax(delegatorWeight)
       )
       const filterByMinimumStakingTime = () => {
         if (isEndTimeOverOneYear) {
@@ -160,7 +170,7 @@ export const getFilteredValidators = ({
         (lowerCasedSearchText
           ? nodeID.toLocaleLowerCase().includes(lowerCasedSearchText)
           : true) &&
-        availableDelegationWeight > stakingAmount &&
+        availableDelegationWeight.gt(stakingAmount) &&
         filterByMinimumStakingTime() &&
         Number(uptime) >= minUpTime &&
         (maxFee ? Number(delegationFee) <= maxFee : true)
