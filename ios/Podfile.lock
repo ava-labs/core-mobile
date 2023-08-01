@@ -458,6 +458,11 @@ PODS:
     - React-Core
   - RNLocalize (2.2.6):
     - React-Core
+  - RNNotifee (7.8.0):
+    - React-Core
+    - RNNotifee/NotifeeCore (= 7.8.0)
+  - RNNotifee/NotifeeCore (7.8.0):
+    - React-Core
   - RNOS (1.2.6):
     - React
   - RNPermissions (3.6.0):
@@ -610,6 +615,7 @@ DEPENDENCIES:
   - RNInAppBrowser (from `../node_modules/react-native-inappbrowser-reborn`)
   - RNKeychain (from `../node_modules/react-native-keychain`)
   - RNLocalize (from `../node_modules/react-native-localize`)
+  - "RNNotifee (from `../node_modules/@notifee/react-native`)"
   - RNOS (from `../node_modules/react-native-os`)
   - RNPermissions (from `../node_modules/react-native-permissions`)
   - RNReactNativeHapticFeedback (from `../node_modules/react-native-haptic-feedback`)
@@ -782,6 +788,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-keychain"
   RNLocalize:
     :path: "../node_modules/react-native-localize"
+  RNNotifee:
+    :path: "../node_modules/@notifee/react-native"
   RNOS:
     :path: "../node_modules/react-native-os"
   RNPermissions:
@@ -888,6 +896,7 @@ SPEC CHECKSUMS:
   RNInAppBrowser: e36d6935517101ccba0e875bac8ad7b0cb655364
   RNKeychain: ff836453cba46938e0e9e4c22e43d43fa2c90333
   RNLocalize: d4b8af4e442d4bcca54e68fc687a2129b4d71a81
+  RNNotifee: f3c01b391dd8e98e67f539f9a35a9cbcd3bae744
   RNOS: 6f2f9a70895bbbfbdad7196abd952e7b01d45027
   RNPermissions: de7b7c3fe1680d974ac7a85e3e97aa539c0e68ea
   RNReactNativeHapticFeedback: afa5bf2794aecbb2dba2525329253da0d66656df
