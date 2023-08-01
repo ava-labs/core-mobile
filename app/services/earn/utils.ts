@@ -138,6 +138,7 @@ export const getFilteredValidators = ({
   searchText,
   isEndTimeOverOneYear = false
 }: getFilteredValidatorsProps) => {
+  const lowerCasedSearchText = searchText?.toLocaleLowerCase()
   const stakingEndTimeUnix = getUnixTime(stakingEndTime) // timestamp in seconds
 
   const filtered = validators.filter(
@@ -156,7 +157,9 @@ export const getFilteredValidators = ({
       }
 
       return (
-        (searchText ? nodeID.includes(searchText) : true) &&
+        (lowerCasedSearchText
+          ? nodeID.toLocaleLowerCase().includes(lowerCasedSearchText)
+          : true) &&
         availableDelegationWeight > stakingAmount &&
         filterByMinimumStakingTime() &&
         Number(uptime) >= minUpTime &&
