@@ -5,13 +5,15 @@ import { Avax } from 'types/Avax'
 export const useGetClaimableBalance = (): Avax | undefined => {
   const pChainBalance = usePChainBalance()
   const pChainBalanceNAvax = pChainBalance.data?.unlockedUnstaked[0]?.amount
+  const hasErrors = pChainBalance.error || !pChainBalance.data
+  const dataReady = !pChainBalance.isLoading && !hasErrors
 
   const claimableBalance = useMemo(() => {
-    if (pChainBalanceNAvax) {
-      return Avax.fromNanoAvax(pChainBalanceNAvax)
+    if (dataReady) {
+      return Avax.fromNanoAvax(pChainBalanceNAvax || 0)
     }
     return undefined
-  }, [pChainBalanceNAvax])
+  }, [dataReady, pChainBalanceNAvax])
 
   return claimableBalance
 }
