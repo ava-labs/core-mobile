@@ -28,6 +28,8 @@ const emptyArr: Transaction[] = []
  *    it will auto refetch if cached data is stale (after 60 seconds of being unused)
  *  - while the component is in focus,
  *    trigger a refetch when certain events occur (for ex, a pending bridge transaction finishes)
+ *  - refetch transactions whenever the app is switched from another screen to portfolio screen
+ *    except from react-native-tab-view screens
  */
 export const useGetRecentTransactions = () => {
   const dispatch = useDispatch()
@@ -67,6 +69,12 @@ export const useGetRecentTransactions = () => {
 
       return unsubscribe
     }, [dispatch, refetch])
+  )
+
+  useFocusEffect(
+    useCallback(() => {
+      refetch()
+    }, [refetch])
   )
 
   const refresh = useCallback(() => {
