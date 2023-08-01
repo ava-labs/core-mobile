@@ -22,7 +22,7 @@ import { useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { differenceInMilliseconds } from 'date-fns'
 import { Avax } from 'types/Avax'
-import { useNow } from 'hooks/useNow'
+import { useNow } from 'hooks/time/useNow'
 
 export const CustomDurationOptionItem = ({
   stakeAmount,

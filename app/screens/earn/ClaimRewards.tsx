@@ -1,10 +1,10 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { EarnScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { usePChainBalance } from 'hooks/earn/usePChainBalance'
-import { useNavigation } from '@react-navigation/native'
+import { useIsFocused, useNavigation } from '@react-navigation/native'
 import Separator from 'components/Separator'
 import AvaText from 'components/AvaText'
 import { Popable } from 'react-native-popable'
@@ -19,8 +19,10 @@ import { useClaimRewards } from 'hooks/earn/useClaimRewards'
 import { showSimpleToast } from 'components/Snackbar'
 import { useClaimFees } from 'hooks/earn/useClaimFees'
 import { useAvaxFormatter } from 'hooks/formatter/useAvaxFormatter'
+import { useTimeElapsed } from 'hooks/time/useTimeElapsed'
+import Spinner from 'components/animation/Spinner'
+import { timeToShowNetworkFeeError } from 'consts/earn'
 import { ConfirmScreen } from './components/ConfirmScreen'
-import UnableToEstimate from './components/UnableToEstimate'
 
 type ScreenProps = EarnScreenProps<typeof AppNavigation.Earn.ClaimRewards>
 
@@ -30,15 +32,25 @@ const onClaimError = (error: Error) => {
 
 const ClaimRewards = () => {
   const { theme } = useApplicationContext()
-  const { goBack } = useNavigation<ScreenProps['navigation']>()
+  const { navigate, goBack } = useNavigation<ScreenProps['navigation']>()
   const activeNetwork = useSelector(selectActiveNetwork)
   const { data } = usePChainBalance()
   const { totalFees } = useClaimFees()
   const nAvaxFormatter = useNAvaxFormatter()
   const avaxFormatter = useAvaxFormatter()
   const claimRewardsMutation = useClaimRewards(goBack, onClaimError)
-
+  const isFocused = useIsFocused()
   const unableToGetFees = totalFees === undefined
+  const showFeeError = useTimeElapsed(
+    isFocused && unableToGetFees, // re-enable this checking whenever this screen is focused
+    timeToShowNetworkFeeError
+  )
+
+  useEffect(() => {
+    if (showFeeError) {
+      navigate(AppNavigation.Earn.FeeUnavailable)
+    }
+  }, [navigate, showFeeError])
 
   if (!data) return null
 
@@ -52,7 +64,9 @@ const ClaimRewards = () => {
   const [feesInAvax, feesInCurrency] = avaxFormatter(totalFees)
 
   const renderFees = () => {
-    if (unableToGetFees) return <UnableToEstimate />
+    if (unableToGetFees) {
+      return <Spinner size={22} />
+    }
 
     return (
       <View

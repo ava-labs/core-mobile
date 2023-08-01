@@ -1,9 +1,10 @@
-import React, { useMemo } from 'react'
+import React, { useMemo, useEffect } from 'react'
 import { Linking, StyleSheet, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Space } from 'components/Space'
 import AvaText from 'components/AvaText'
 import {
+  useIsFocused,
   useNavigation,
   useNavigationState,
   useRoute
@@ -19,18 +20,12 @@ import { PopableContent } from 'components/PopableContent'
 import { truncateNodeId } from 'utils/Utils'
 import CopySVG from 'components/svg/CopySVG'
 import { copyToClipboard } from 'utils/DeviceTools'
-import { addMinutes, format, fromUnixTime } from 'date-fns'
+import { format } from 'date-fns'
 import { useEarnCalcEstimatedRewards } from 'hooks/earn/useEarnCalcEstimatedRewards'
 import { useSelector } from 'react-redux'
-import { selectAvaxPrice } from 'store/balance'
-import { selectSelectedCurrency } from 'store/settings/currency'
 import { getReadableDateDuration } from 'utils/date/getReadableDateDuration'
 import { selectActiveNetwork } from 'store/network'
 import { useGetValidatorByNodeId } from 'hooks/earn/useGetValidatorByNodeId'
-import { NodeValidator } from 'types/earn'
-import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { getMinimumStakeDurationMs } from 'services/earn/utils'
-import { convertToSeconds, MilliSeconds } from 'types/siUnits'
 import { useIssueDelegation } from 'hooks/earn/useIssueDelegation'
 import { showSimpleToast, showSnackBarCustom } from 'components/Snackbar'
 import TransactionToast, {
@@ -40,9 +35,13 @@ import Logger from 'utils/Logger'
 import { DOCS_STAKING } from 'resources/Constants'
 import { useEstimateStakingFees } from 'hooks/earn/useEstimateStakingFees'
 import { useGetClaimableBalance } from 'hooks/earn/useGetClaimableBalance'
-import { useNow } from 'hooks/useNow'
-import { ConfirmScreen } from './components/ConfirmScreen'
-import UnableToEstimate from './components/UnableToEstimate'
+import { useTimeElapsed } from 'hooks/time/useTimeElapsed'
+import { timeToShowNetworkFeeError } from 'consts/earn'
+import Spinner from 'components/animation/Spinner'
+import { useAvaxFormatter } from 'hooks/formatter/useAvaxFormatter'
+import { ConfirmScreen } from '../components/ConfirmScreen'
+import UnableToEstimate from '../components/UnableToEstimate'
+import { useValidateStakingEndTime } from './useValidateStakingEndTime'
 
 type ScreenProps = StakeSetupScreenProps<
   typeof AppNavigation.StakeSetup.Confirmation
@@ -53,6 +52,9 @@ const onDelegationError = (error: Error) => {
 }
 
 export const Confirmation = () => {
+  const avaxFormatter = useAvaxFormatter()
+  const isFocused = useIsFocused()
+  const { navigate, getParent } = useNavigation<ScreenProps['navigation']>()
   const { nodeId, stakingAmount, stakingEndTime } =
     useRoute<ScreenProps['route']>().params
   const previousRoute = useNavigationState(
@@ -60,69 +62,49 @@ export const Confirmation = () => {
   )
   const isComingFromSelectNode =
     previousRoute && previousRoute.name === AppNavigation.StakeSetup.SelectNode
-  const validator = useGetValidatorByNodeId(nodeId) as NodeValidator
-  const {
-    theme,
-    appHook: { tokenInCurrencyFormatter }
-  } = useApplicationContext()
+  const validator = useGetValidatorByNodeId(nodeId)
+  const { theme } = useApplicationContext()
   const activeNetwork = useSelector(selectActiveNetwork)
+  const tokenSymbol = activeNetwork.networkToken.symbol
   const { issueDelegationMutation } = useIssueDelegation(
     onDelegationSuccess,
     onDelegationError
   )
   const claimableBalance = useGetClaimableBalance()
 
-  const isDeveloperMode = useSelector(selectIsDeveloperMode)
-  const tokenSymbol = activeNetwork.networkToken.symbol
-  const avaxPrice = useSelector(selectAvaxPrice)
-  const selectedCurrency = useSelector(selectSelectedCurrency)
-  const { navigate, getParent } = useNavigation<ScreenProps['navigation']>()
+  const networkFees = useEstimateStakingFees(stakingAmount)
 
-  const networkFee = useEstimateStakingFees(stakingAmount)
-  const deductedStakingAmount = stakingAmount.sub(networkFee ?? 0)
+  const deductedStakingAmount = stakingAmount.sub(networkFees ?? 0)
 
-  const stakingAmountPrice = deductedStakingAmount.mul(avaxPrice).toFixed(2) //price is in [currency] so we round to 2 decimals
-  const now = useNow() // ticker - update "now" variable every 10s
-  const minStakeDurationMs = getMinimumStakeDurationMs(isDeveloperMode)
-  //minStartTime - 1 minute after submitting
-  const minStartTime = useMemo(() => {
-    return addMinutes(now, 1)
-  }, [now])
-  const trueStakingEndTime = useMemo(() => {
-    //check if stake duration is less than minimum, and adjust if necessary
-    // this could happen if user selects minimal stake duration but is too long on confirmation screen
-    if (
-      stakingEndTime.getTime() - minStakeDurationMs <
-      minStartTime.getTime()
-    ) {
-      return new Date(minStartTime.getTime() + minStakeDurationMs)
-    }
-    // check if stake duration is more than validator's end time,
-    // use validator's end time if it is
-    const validatorEndTime = fromUnixTime(Number(validator?.endTime))
-    if (stakingEndTime > validatorEndTime) {
-      return validatorEndTime
-    }
-    return stakingEndTime
-  }, [minStakeDurationMs, minStartTime, stakingEndTime, validator?.endTime])
+  const { minStartTime, validatedStakingEndTime, validatedStakingDuration } =
+    useValidateStakingEndTime(stakingEndTime, validator?.endTime ?? '')
 
   const { data } = useEarnCalcEstimatedRewards({
     amount: deductedStakingAmount,
-    duration: convertToSeconds(
-      BigInt(trueStakingEndTime.getTime() - now.getTime()) as MilliSeconds
-    ),
+    duration: validatedStakingDuration,
     delegationFee: Number(validator?.delegationFee)
   })
-  const estimatedRewardInCurrency: string =
-    data?.estimatedRewardInCurrency ?? '0'
+
+  const unableToGetNetworkFees = networkFees === undefined
+  const showNetworkFeeError = useTimeElapsed(
+    isFocused && unableToGetNetworkFees, // re-enable this checking whenever this screen is focused
+    timeToShowNetworkFeeError
+  )
+
+  useEffect(() => {
+    if (showNetworkFeeError) {
+      navigate(AppNavigation.Earn.FeeUnavailable)
+    }
+  }, [navigate, showNetworkFeeError])
 
   const delegationFee = useMemo(() => {
     if (
-      data?.estimatedTokenReward === undefined &&
+      data?.estimatedTokenReward === undefined ||
       validator?.delegationFee === undefined
     )
       return undefined
-    return data?.estimatedTokenReward.mul(validator.delegationFee).div(100)
+
+    return data.estimatedTokenReward.mul(validator.delegationFee).div(100)
   }, [data?.estimatedTokenReward, validator?.delegationFee])
 
   const cancelStaking = () => {
@@ -136,7 +118,7 @@ export const Confirmation = () => {
     issueDelegationMutation.mutate({
       stakingAmount: deductedStakingAmount,
       startDate: minStartTime,
-      endDate: trueStakingEndTime,
+      endDate: validatedStakingEndTime,
       nodeId,
       claimableBalance
     })
@@ -196,30 +178,59 @@ export const Confirmation = () => {
     </View>
   )
 
+  const renderStakedAmount = () => {
+    const [stakingAmountInAvax, stakingAmountInCurrency] = avaxFormatter(
+      deductedStakingAmount,
+      true
+    )
+
+    return (
+      <Row style={{ justifyContent: 'space-between' }}>
+        <AvaText.Body2 textStyle={{ textAlign: 'center', marginTop: 3 }}>
+          Staked Amount
+        </AvaText.Body2>
+        <View style={{ alignItems: 'flex-end' }}>
+          <AvaText.Heading1>
+            {stakingAmountInAvax + ' ' + tokenSymbol}
+          </AvaText.Heading1>
+          <AvaText.Heading3 textStyle={{ color: theme.colorText2 }}>
+            {stakingAmountInCurrency}
+          </AvaText.Heading3>
+          <Space x={4} />
+        </View>
+      </Row>
+    )
+  }
+
   const renderEstimatedReward = () => {
     if (data?.estimatedTokenReward) {
+      const [estimatedRewardInAvax, estimatedRewardInCurrency] = avaxFormatter(
+        data.estimatedTokenReward,
+        true
+      )
+
       return (
         <View style={{ flexDirection: 'column' }}>
           <AvaText.Heading2 textStyle={{ color: theme.colorBgGreen }}>
-            {data.estimatedTokenReward.toDisplay() + ' ' + tokenSymbol}
+            {estimatedRewardInAvax + ' ' + tokenSymbol}
           </AvaText.Heading2>
           <AvaText.Body3
             textStyle={{ alignSelf: 'flex-end', color: theme.colorText2 }}>
-            {`${tokenInCurrencyFormatter(
-              estimatedRewardInCurrency
-            )} ${selectedCurrency}`}
+            {estimatedRewardInCurrency}
           </AvaText.Body3>
         </View>
       )
     }
+
     return <UnableToEstimate />
   }
 
   const renderStakingFee = () => {
     if (delegationFee) {
+      const [delegationFeeInAvax] = avaxFormatter(delegationFee, true)
       return (
         <AvaText.Heading6>
-          {delegationFee.toDisplay() + ' ' + tokenSymbol}
+          {delegationFeeInAvax + ' ' + tokenSymbol}
         </AvaText.Heading6>
       )
     }
@@ -227,14 +238,17 @@ export const Confirmation = () => {
   }
 
   const renderNetworkFee = () => {
-    if (networkFee) {
-      return (
-        <AvaText.Heading6>
-          {networkFee.toDisplay()} {tokenSymbol}
-        </AvaText.Heading6>
-      )
+    if (unableToGetNetworkFees) {
+      return <Spinner size={22} />
     }
-    return <UnableToEstimate />
+
+    const [networkFeesInAvax] = avaxFormatter(networkFees, true)
+
+    return (
+      <AvaText.Heading6>
+        {networkFeesInAvax + ' ' + tokenSymbol}
+      </AvaText.Heading6>
+    )
   }
 
   if (!validator) return null
@@ -251,22 +265,7 @@ export const Confirmation = () => {
       cancelBtnTitle="Cancel"
       disclaimer="By selecting “Stake Now”, you will lock your AVAX for the staking duration you selected.">
       <Space y={4} />
-      <Row style={{ justifyContent: 'space-between' }}>
-        <AvaText.Body2 textStyle={{ textAlign: 'center', marginTop: 3 }}>
-          Staked Amount
-        </AvaText.Body2>
-        <View style={{ alignItems: 'flex-end' }}>
-          <AvaText.Heading1>
-            {deductedStakingAmount.toString() + ' ' + tokenSymbol}
-          </AvaText.Heading1>
-          <AvaText.Heading3 textStyle={{ color: theme.colorText2 }}>
-            {`${tokenInCurrencyFormatter(
-              stakingAmountPrice
-            )} ${selectedCurrency}`}
-          </AvaText.Heading3>
-          <Space x={4} />
-        </View>
-      </Row>
+      {renderStakedAmount()}
       <Space y={16} />
       <Separator />
       <View style={styles.verticalPadding}>
@@ -305,10 +304,10 @@ export const Confirmation = () => {
             width: '100%'
           }}>
           <AvaText.Heading3>
-            {getReadableDateDuration(trueStakingEndTime)}
+            {getReadableDateDuration(validatedStakingEndTime)}
           </AvaText.Heading3>
           <AvaText.Body1>
-            {format(trueStakingEndTime, 'MM/dd/yy  H:mm aa')}
+            {format(validatedStakingEndTime, 'MM/dd/yy  H:mm aa')}
           </AvaText.Body1>
         </Row>
       </View>

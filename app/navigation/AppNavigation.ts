@@ -84,18 +84,19 @@ enum EarnScreens {
   StakeDashboard = 'EarnScreens.StakeDashboard',
   StakeDetails = 'EarnScreens.StakeDetails',
   StakeSetup = 'EarnScreens.StakeSetup',
-  ClaimRewards = 'EarnScreens.ClaimRewards'
+  ClaimRewards = 'EarnScreens.ClaimRewards',
+  FeeUnavailable = 'EarnScreens.FeeUnavailable'
 }
 
 enum StakeSetupScreens {
-  GetStarted = 'EarnScreens.GetStarted',
-  SmartStakeAmount = 'EarnScreens.SmartStakeAmount',
-  StakingDuration = 'EarnScreens.StakingDuration',
-  AdvancedStaking = 'EarnScreens.AdvancedStaking',
-  SelectNode = 'EarnScreens.SelectNode',
-  NodeSearch = 'EarnScreens.NodeSearch',
-  Confirmation = 'EarnScreens.Confirmation',
-  Cancel = 'EarnScreens.Cancel'
+  GetStarted = 'StakeSetupScreens.GetStarted',
+  SmartStakeAmount = 'StakeSetupScreens.SmartStakeAmount',
+  StakingDuration = 'StakeSetupScreens.StakingDuration',
+  AdvancedStaking = 'StakeSetupScreens.AdvancedStaking',
+  SelectNode = 'StakeSetupScreens.SelectNode',
+  NodeSearch = 'StakeSetupScreens.NodeSearch',
+  Confirmation = 'StakeSetupScreens.Confirmation',
+  Cancel = 'StakeSetupScreens.Cancel'
 }
 
 enum SwapScreens {
