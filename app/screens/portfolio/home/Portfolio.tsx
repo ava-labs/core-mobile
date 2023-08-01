@@ -1,6 +1,6 @@
 import React from 'react'
 import { ListRenderItemInfo, Platform } from 'react-native'
-import { useNavigation } from '@react-navigation/native'
+import { useNavigation, useRoute } from '@react-navigation/native'
 import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList'
 import AppNavigation from 'navigation/AppNavigation'
 import AvaText from 'components/AvaText'
@@ -22,23 +22,31 @@ import Animated, { FadeInDown, FadeOutUp } from 'react-native-reanimated'
 import { TokensTabHeader } from 'screens/portfolio/home/components/TokensTabHeader'
 import ActivityList from 'screens/shared/ActivityList/ActivityList'
 import { Transaction } from 'store/transaction'
+import { PortfolioTabs } from 'consts/portfolio'
 import InactiveNetworkCard from './components/Cards/InactiveNetworkCard'
 import { PortfolioTokensLoader } from './components/Loaders/PortfolioTokensLoader'
 import PortfolioHeader from './components/PortfolioHeader'
 
+type PortfolioNavigationProp = PortfolioScreenProps<
+  typeof AppNavigation.Portfolio.Portfolio
+>
+
 const Portfolio = () => {
+  const { params } = useRoute<PortfolioNavigationProp['route']>()
+  const { setParams } = useNavigation<PortfolioNavigationProp['navigation']>()
+
   const collectiblesDisabled = useIsUIDisabled(UI.Collectibles)
   const { capture } = usePostCapture()
 
   function capturePosthogEvents(tabIndex: number) {
     switch (tabIndex) {
-      case 0:
+      case PortfolioTabs.Portfolio:
         capture('PortfolioAssetsClicked')
         break
-      case 1:
+      case PortfolioTabs.NFT:
         capture('PortfolioCollectiblesClicked')
         break
-      case 2:
+      case PortfolioTabs.Activity:
         capture('PortfolioActivityClicked')
         break
     }
@@ -48,7 +56,11 @@ const Portfolio = () => {
     <>
       <PortfolioHeader />
       <TabViewAva
-        onTabIndexChange={tabIndex => capturePosthogEvents(tabIndex)}
+        currentTabIndex={params?.tabIndex}
+        onTabIndexChange={tabIndex => {
+          setParams({ tabIndex })
+          capturePosthogEvents(tabIndex)
+        }}
         renderCustomLabel={renderCustomLabel}>
         <TabViewAva.Item title={'Assets'}>
           <TokensTab />
@@ -113,12 +125,8 @@ const TokensTab = () => {
   )
 }
 
-type PortfolioNavigationProp = PortfolioScreenProps<
-  typeof AppNavigation.Portfolio.Portfolio
->['navigation']
-
 const NftTab = () => {
-  const { navigate } = useNavigation<PortfolioNavigationProp>()
+  const { navigate } = useNavigation<PortfolioNavigationProp['navigation']>()
   const { capture } = usePostCapture()
 
   const openNftDetails = (item: NFTItemData) => {
@@ -140,7 +148,7 @@ const NftTab = () => {
 }
 
 const ActivityTab = () => {
-  const { navigate } = useNavigation<PortfolioNavigationProp>()
+  const { navigate } = useNavigation<PortfolioNavigationProp['navigation']>()
 
   const openTransactionDetails = (item: Transaction) => {
     navigate(AppNavigation.Wallet.ActivityDetail, {

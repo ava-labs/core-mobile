@@ -4,11 +4,12 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaText from 'components/AvaText'
 import LinkSVG from 'components/svg/LinkSVG'
 import AvaButton from 'components/AvaButton'
-import useInAppBrowser from 'hooks/useInAppBrowser'
-import { getExplorerAddressByNetwork } from 'utils/ExplorerUtils'
 import ClearSVG from 'components/svg/ClearSVG'
 import { useSelector } from 'react-redux'
 import { selectActiveNetwork } from 'store/network'
+import { navigate } from 'utils/Navigation'
+import AppNavigation from 'navigation/AppNavigation'
+import { PortfolioTabs } from 'consts/portfolio'
 
 const WINDOW_WIDTH = Dimensions.get('window').width
 
@@ -36,7 +37,7 @@ const SimpleToast = ({
   return <AvaText.ButtonLarge color={color}>{message}</AvaText.ButtonLarge>
 }
 
-const ToastWithExplorerLink = ({
+const ToastWithViewActivity = ({
   txHash,
   message,
   color
@@ -47,10 +48,14 @@ const ToastWithExplorerLink = ({
 }) => {
   const theme = useApplicationContext().theme
   const network = useSelector(selectActiveNetwork)
-  const { openUrl } = useInAppBrowser()
 
-  const openExplorerLink = () => {
-    openUrl(getExplorerAddressByNetwork(network, txHash))
+  const openActivityTab = () => {
+    navigate({
+      // @ts-ignore
+      name: AppNavigation.Portfolio.Portfolio,
+      // @ts-ignore
+      params: { tabIndex: PortfolioTabs.Activity }
+    })
     dismissToast()
   }
 
@@ -60,11 +65,9 @@ const ToastWithExplorerLink = ({
         {message}
       </AvaText.ButtonSmall>
       {!!txHash && network && (
-        <AvaText.ButtonLarge
-          color={theme.colorText1}
-          onPress={openExplorerLink}>
-          {'View in Explorer  '}
-          <Pressable onPress={openExplorerLink}>
+        <AvaText.ButtonLarge color={theme.colorText1} onPress={openActivityTab}>
+          {'View in Activity  '}
+          <Pressable onPress={openActivityTab}>
             <LinkSVG color={theme.colorText1} />
           </Pressable>
         </AvaText.ButtonLarge>
@@ -85,7 +88,7 @@ const Error = ({ txHash, message }: { txHash?: string; message: string }) => {
   if (!txHash) return <SimpleToast message={message} color={theme.colorError} />
 
   return (
-    <ToastWithExplorerLink
+    <ToastWithViewActivity
       txHash={txHash}
       message={message}
       color={theme.colorError}
@@ -100,7 +103,7 @@ const Success = ({ txHash, message }: { txHash?: string; message: string }) => {
     return <SimpleToast message={message} color={theme.colorSuccess} />
 
   return (
-    <ToastWithExplorerLink
+    <ToastWithViewActivity
       txHash={txHash}
       message={message}
       color={theme.colorSuccess}
