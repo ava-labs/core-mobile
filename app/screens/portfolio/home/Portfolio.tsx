@@ -40,7 +40,7 @@ const Portfolio = () => {
 
   function capturePosthogEvents(tabIndex: number) {
     switch (tabIndex) {
-      case PortfolioTabs.Portfolio:
+      case PortfolioTabs.Tokens:
         capture('PortfolioAssetsClicked')
         break
       case PortfolioTabs.NFT:

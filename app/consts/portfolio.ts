@@ -1,5 +1,5 @@
 export enum PortfolioTabs {
-  Portfolio,
+  Tokens,
   NFT,
   Activity
 }
