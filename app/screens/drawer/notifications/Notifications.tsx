@@ -58,7 +58,7 @@ function EarnToggle({ enabled }: { enabled: boolean }) {
   return (
     <AvaListItem.Base
       disabled={!enabled}
-      title={'Earn'}
+      title={'Stake'}
       subtitle={'Staking Complete'}
       background={theme.background}
       rightComponent={<Switch value={checked} onValueChange={onChange} />}
