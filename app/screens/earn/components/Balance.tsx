@@ -12,8 +12,11 @@ import { Space } from 'components/Space'
 import { useCChainBalance } from 'hooks/earn/useCChainBalance'
 import { useWeiAvaxFormatter } from 'hooks/formatter/useWeiAvaxFormatter'
 import { useNAvaxFormatter } from 'hooks/formatter/useNAvaxFormatter'
-import { useSelector } from 'react-redux'
-import { selectPromptForEarnNotifications } from 'store/notifications'
+import { useDispatch, useSelector } from 'react-redux'
+import {
+  selectPromptForEarnNotifications,
+  setPromptForEarnNotifications
+} from 'store/notifications'
 import { getStakePrimaryColor } from '../utils'
 import { CircularProgress } from './CircularProgress'
 import { BalanceLoader } from './BalanceLoader'
@@ -21,6 +24,7 @@ import { BalanceLoader } from './BalanceLoader'
 type ScreenProps = EarnScreenProps<typeof AppNavigation.Earn.StakeDashboard>
 
 export const Balance = () => {
+  const dispatch = useDispatch()
   const { theme } = useApplicationContext()
   const { navigate } = useNavigation<ScreenProps['navigation']>()
   const pChainBalance = usePChainBalance()
@@ -33,6 +37,7 @@ export const Balance = () => {
 
   if (shouldPromptForEarnNotifications) {
     navigate(AppNavigation.Earn.EarnNotificationsPrompt)
+    dispatch(setPromptForEarnNotifications(false))
   }
 
   const shouldShowLoader = cChainBalance.isLoading || pChainBalance.isLoading

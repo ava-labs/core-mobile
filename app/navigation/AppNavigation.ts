@@ -87,7 +87,8 @@ enum EarnScreens {
   StakeSetup = 'EarnScreens.StakeSetup',
   ClaimRewards = 'EarnScreens.ClaimRewards',
   FeeUnavailable = 'EarnScreens.FeeUnavailable',
-  EarnNotificationsPrompt = 'EarnScreens.EarnNotificationsPrompt'
+  EarnNotificationsPrompt = 'EarnScreens.EarnNotificationsPrompt',
+  EarnNotificationsUnAuthorized = 'EarnScreens.EarnNotificationsUnAuthorized'
 }
 
 enum StakeSetupScreens {

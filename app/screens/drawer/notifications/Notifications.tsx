@@ -7,7 +7,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
 import AvaButton from 'components/AvaButton'
-import notifee from '@notifee/react-native'
+import notifee, { AuthorizationStatus } from '@notifee/react-native'
 import { selectAppState } from 'store/app'
 import {
   selectNotificationsEarn,
@@ -20,7 +20,10 @@ const Notifications = () => {
 
   useEffect(() => {
     notifee.getNotificationSettings().then(nSettings => {
-      setNotificationsAllowed(nSettings.authorizationStatus === 1)
+      setNotificationsAllowed(
+        nSettings.authorizationStatus === AuthorizationStatus.AUTHORIZED ||
+          nSettings.authorizationStatus === AuthorizationStatus.PROVISIONAL
+      )
     })
   }, [appState]) //switching to system settings and coming back must re-initiate settings check
 
