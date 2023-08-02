@@ -12,6 +12,7 @@ import { balanceReducer as balance } from './balance'
 import { appReducer as app, onLogOut, onRehydrationComplete } from './app'
 import { listener } from './middleware/listener'
 import { accountsReducer as account } from './account'
+import { notificationsReducer as notifications } from './notifications'
 import { watchlistReducer as watchlist } from './watchlist'
 import { portfolioReducer as portfolio } from './portfolio'
 import { customTokenReducer as customToken } from './customToken'
@@ -48,6 +49,7 @@ const combinedReducer = combineReducers({
   network,
   balance,
   account,
+  notifications,
   networkFee,
   addressBook,
   bridge,

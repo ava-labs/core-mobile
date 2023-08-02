@@ -66,6 +66,9 @@ import { ChainID } from 'store/network'
 import EarnScreenStack, {
   EarnStackParamList
 } from 'navigation/wallet/EarnScreenStack/EarnScreenStack'
+import NotificationsStackScreen, {
+  NotificationsStackParamList
+} from 'navigation/wallet/NotificationsStackScreen'
 import { BridgeStackParamList } from '../wallet/BridgeScreenStack'
 import {
   AddEthereumChainParams,
@@ -135,9 +138,6 @@ export type WalletScreenStackParams = {
     | undefined
   [AppNavigation.Wallet.NFTDetails]: NavigatorScreenParams<NFTStackParamList>
   [AppNavigation.Wallet.NFTManage]: undefined
-  [AppNavigation.Wallet.Earn]:
-    | NavigatorScreenParams<EarnStackParamList>
-    | undefined
   [AppNavigation.Wallet.AddressBook]:
     | NavigatorScreenParams<AddressBookStackParamList>
     | undefined
@@ -146,6 +146,8 @@ export type WalletScreenStackParams = {
   [AppNavigation.Wallet.NetworkDetails]: NetworkDetailsProps
   [AppNavigation.Wallet.NetworkAddEdit]: AddEditNetworkProps
   [AppNavigation.Wallet.Advanced]: NavigatorScreenParams<AdvancedStackParamList>
+  [AppNavigation.Wallet
+    .Notifications]: NavigatorScreenParams<NotificationsStackParamList>
   [AppNavigation.Wallet.SecurityPrivacy]:
     | NavigatorScreenParams<SecurityStackParamList>
     | undefined
@@ -361,6 +363,10 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
         <WalletScreenS.Screen
           name={AppNavigation.Wallet.Advanced}
           component={AdvancedStackScreen}
+        />
+        <WalletScreenS.Screen
+          name={AppNavigation.Wallet.Notifications}
+          component={NotificationsStackScreen}
         />
         <WalletScreenS.Screen
           name={AppNavigation.Wallet.SecurityPrivacy}

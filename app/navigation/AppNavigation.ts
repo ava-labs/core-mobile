@@ -55,7 +55,8 @@ enum WalletScreens {
   ActivityDetail = 'WalletScreens.ActivityDetail',
   Bridge = 'WalletScreens.Bridge',
   QRCode = 'WalletScreens.QRCode',
-  Earn = 'WalletScreens.Earn'
+  Earn = 'WalletScreens.Earn',
+  Notifications = 'WalletScreens.Notifications'
 }
 
 enum NoWalletScreens {
@@ -85,7 +86,8 @@ enum EarnScreens {
   StakeDetails = 'EarnScreens.StakeDetails',
   StakeSetup = 'EarnScreens.StakeSetup',
   ClaimRewards = 'EarnScreens.ClaimRewards',
-  FeeUnavailable = 'EarnScreens.FeeUnavailable'
+  FeeUnavailable = 'EarnScreens.FeeUnavailable',
+  EarnNotificationsPrompt = 'EarnScreens.EarnNotificationsPrompt'
 }
 
 enum StakeSetupScreens {
@@ -97,6 +99,10 @@ enum StakeSetupScreens {
   NodeSearch = 'StakeSetupScreens.NodeSearch',
   Confirmation = 'StakeSetupScreens.Confirmation',
   Cancel = 'StakeSetupScreens.Cancel'
+}
+
+enum NotificationsScreens {
+  Notifications = 'NotificationsScreens.Notifications'
 }
 
 enum SwapScreens {
@@ -232,7 +238,8 @@ const AppNavigation = {
   ReceiveTokens: ReceiveTokensScreens,
   Buy: BuyScreens,
   Earn: EarnScreens,
-  StakeSetup: StakeSetupScreens
+  StakeSetup: StakeSetupScreens,
+  Notifications: NotificationsScreens
 }
 
 export default AppNavigation
