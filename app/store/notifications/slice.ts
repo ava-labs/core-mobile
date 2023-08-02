@@ -1,11 +1,12 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { createAction, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from 'store/index'
 import { NotificationsState } from 'store/notifications/types'
 
 const reducerName = 'notifications'
 
 const initialState = {
-  earn: false
+  earnNotificationsEnabled: false,
+  promptForEarnNotifications: undefined
 } as NotificationsState
 
 const notificationsSlice = createSlice({
@@ -13,15 +14,27 @@ const notificationsSlice = createSlice({
   initialState,
   reducers: {
     setNotificationsEarn: (state, action: PayloadAction<boolean>) => {
-      state.earn = action.payload
+      state.earnNotificationsEnabled = action.payload
+    },
+    setPromptForEarnNotifications: (state, action: PayloadAction<boolean>) => {
+      state.promptForEarnNotifications = action.payload
     }
   }
 })
 
 // selectors
 export const selectNotificationsEarn = (state: RootState) =>
-  state.notifications.earn
+  state.notifications.earnNotificationsEnabled
 
-export const { setNotificationsEarn } = notificationsSlice.actions
+export const selectPromptForEarnNotifications = (state: RootState) =>
+  state.notifications.promptForEarnNotifications
+
+//actions
+export const { setNotificationsEarn, setPromptForEarnNotifications } =
+  notificationsSlice.actions
+
+export const delegationSuccess = createAction(
+  `${reducerName}/delegationSuccess`
+)
 
 export const notificationsReducer = notificationsSlice.reducer

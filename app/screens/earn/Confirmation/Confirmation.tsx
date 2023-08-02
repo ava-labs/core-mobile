@@ -22,7 +22,7 @@ import CopySVG from 'components/svg/CopySVG'
 import { copyToClipboard } from 'utils/DeviceTools'
 import { format } from 'date-fns'
 import { useEarnCalcEstimatedRewards } from 'hooks/earn/useEarnCalcEstimatedRewards'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { getReadableDateDuration } from 'utils/date/getReadableDateDuration'
 import { selectActiveNetwork } from 'store/network'
 import { useGetValidatorByNodeId } from 'hooks/earn/useGetValidatorByNodeId'
@@ -39,6 +39,7 @@ import { useTimeElapsed } from 'hooks/time/useTimeElapsed'
 import { timeToShowNetworkFeeError } from 'consts/earn'
 import Spinner from 'components/animation/Spinner'
 import { useAvaxFormatter } from 'hooks/formatter/useAvaxFormatter'
+import { delegationSuccess } from 'store/notifications'
 import { ConfirmScreen } from '../components/ConfirmScreen'
 import UnableToEstimate from '../components/UnableToEstimate'
 import { useValidateStakingEndTime } from './useValidateStakingEndTime'
@@ -52,6 +53,7 @@ const onDelegationError = (error: Error) => {
 }
 
 export const Confirmation = () => {
+  const dispatch = useDispatch()
   const avaxFormatter = useAvaxFormatter()
   const isFocused = useIsFocused()
   const { navigate, getParent } = useNavigation<ScreenProps['navigation']>()
@@ -135,6 +137,7 @@ export const Confirmation = () => {
       ),
       duration: 'long'
     })
+    dispatch(delegationSuccess)
     getParent()?.goBack()
   }
 

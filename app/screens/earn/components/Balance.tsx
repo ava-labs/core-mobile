@@ -12,6 +12,8 @@ import { Space } from 'components/Space'
 import { useCChainBalance } from 'hooks/earn/useCChainBalance'
 import { useWeiAvaxFormatter } from 'hooks/formatter/useWeiAvaxFormatter'
 import { useNAvaxFormatter } from 'hooks/formatter/useNAvaxFormatter'
+import { useSelector } from 'react-redux'
+import { selectPromptForEarnNotifications } from 'store/notifications'
 import { getStakePrimaryColor } from '../utils'
 import { CircularProgress } from './CircularProgress'
 import { BalanceLoader } from './BalanceLoader'
@@ -25,6 +27,13 @@ export const Balance = () => {
   const cChainBalance = useCChainBalance()
   const weiAvaxFormatter = useWeiAvaxFormatter()
   const nAvaxFormatter = useNAvaxFormatter()
+  const shouldPromptForEarnNotifications = useSelector(
+    selectPromptForEarnNotifications
+  )
+
+  if (shouldPromptForEarnNotifications) {
+    navigate(AppNavigation.Earn.EarnNotificationsPrompt)
+  }
 
   const shouldShowLoader = cChainBalance.isLoading || pChainBalance.isLoading
 

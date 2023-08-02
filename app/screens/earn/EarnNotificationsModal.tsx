@@ -1,0 +1,39 @@
+import React, { useCallback } from 'react'
+import { useNavigation } from '@react-navigation/native'
+import WarningModal from 'components/WarningModal'
+import { useDispatch } from 'react-redux'
+import {
+  setNotificationsEarn,
+  setPromptForEarnNotifications
+} from 'store/notifications'
+
+export const EarnNotificationsModal = () => {
+  const dispatch = useDispatch()
+  const { goBack, canGoBack, getParent } = useNavigation()
+
+  const onTurnOnNotifications = useCallback(() => {
+    dispatch(setNotificationsEarn(true))
+    dispatch(setPromptForEarnNotifications(false))
+    if (canGoBack()) {
+      goBack()
+    }
+  }, [canGoBack, dispatch, goBack])
+
+  const onLater = useCallback(() => {
+    dispatch(setPromptForEarnNotifications(false))
+    getParent()?.goBack()
+  }, [dispatch, getParent])
+
+  return (
+    <WarningModal
+      title={'Turn on Notifications?'}
+      message={
+        'You will be notified when staking is complete. You can change your preference in settings.'
+      }
+      actionText={'Turn on Notifications'}
+      dismissText={'Not Now'}
+      onAction={onTurnOnNotifications}
+      onDismiss={onLater}
+    />
+  )
+}

@@ -1,3 +1,4 @@
 export type NotificationsState = {
-  earn: boolean
+  earnNotificationsEnabled: boolean
+  promptForEarnNotifications: boolean | undefined
 }
