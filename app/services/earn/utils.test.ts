@@ -125,7 +125,7 @@ describe('getFilteredValidators function', () => {
       validators: mockValidators.validators as unknown as NodeValidators,
       stakingAmount: Avax.fromBase(150),
       isDeveloperMode: true,
-      stakingEndTime: new Date()
+      stakingEndTime: new Date('2023-08-01T16:57:10.140Z')
     })
     expect(result.length).toBe(25)
   })
