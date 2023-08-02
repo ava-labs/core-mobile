@@ -42,7 +42,10 @@ export const EarnNotificationsModal = () => {
         return true
       case AuthorizationStatus.NOT_DETERMINED:
         settings = await notifee.requestPermission()
-        return settings.authorizationStatus === AuthorizationStatus.AUTHORIZED
+        return (
+          settings.authorizationStatus === AuthorizationStatus.AUTHORIZED ||
+          settings.authorizationStatus === AuthorizationStatus.PROVISIONAL
+        )
       case AuthorizationStatus.DENIED:
         return false
     }
