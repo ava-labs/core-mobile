@@ -11,7 +11,7 @@ import notifee from '@notifee/react-native'
 import { selectAppState } from 'store/app'
 import {
   selectNotificationsEarn,
-  setNotificationsEarn
+  setEarnNotificationsEnabled
 } from 'store/notifications'
 import NotificationsService from 'services/notifications/NotificationsService'
 
@@ -52,7 +52,7 @@ function EarnToggle({ enabled }: { enabled: boolean }) {
   const dispatch = useDispatch()
 
   function onChange(value: boolean) {
-    dispatch(setNotificationsEarn(value))
+    dispatch(setEarnNotificationsEnabled(value))
   }
 
   return (

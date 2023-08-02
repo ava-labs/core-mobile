@@ -2,7 +2,7 @@ import React, { useCallback } from 'react'
 import { useNavigation } from '@react-navigation/native'
 import WarningModal from 'components/WarningModal'
 import { useDispatch } from 'react-redux'
-import { setNotificationsEarn } from 'store/notifications'
+import { setEarnNotificationsEnabled } from 'store/notifications'
 import { EarnScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
 import NotificationsService from 'services/notifications/NotificationsService'
@@ -17,7 +17,7 @@ export const EarnNotificationsModal = () => {
     useNavigation<ScreenProps['navigation']>()
 
   const onTurnOnNotifications = useCallback(() => {
-    dispatch(setNotificationsEarn(true))
+    dispatch(setEarnNotificationsEnabled(true))
     if (canGoBack()) {
       goBack()
     }

@@ -13,7 +13,7 @@ const notificationsSlice = createSlice({
   name: reducerName,
   initialState,
   reducers: {
-    setNotificationsEarn: (state, action: PayloadAction<boolean>) => {
+    setEarnNotificationsEnabled: (state, action: PayloadAction<boolean>) => {
       state.earnNotificationsEnabled = action.payload
     },
     setPromptForEarnNotifications: (state, action: PayloadAction<boolean>) => {
@@ -30,7 +30,7 @@ export const selectPromptForEarnNotifications = (state: RootState) =>
   state.notifications.promptForEarnNotifications
 
 //actions
-export const { setNotificationsEarn, setPromptForEarnNotifications } =
+export const { setEarnNotificationsEnabled, setPromptForEarnNotifications } =
   notificationsSlice.actions
 
 export const delegationSuccess = createAction(
