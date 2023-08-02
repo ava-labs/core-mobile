@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Linking, View } from 'react-native'
+import { Linking, Platform, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaListItem from 'components/AvaListItem'
 import Switch from 'components/Switch'
@@ -28,7 +28,11 @@ const Notifications = () => {
   }, [appState]) //switching to system settings and coming back must re-initiate settings check
 
   function enterSettings() {
-    Linking.openSettings()
+    if (Platform.OS === 'ios') {
+      Linking.openSettings()
+    } else {
+      notifee.openNotificationSettings()
+    }
   }
 
   return (

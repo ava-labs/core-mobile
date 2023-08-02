@@ -3,11 +3,13 @@ import { useNavigation } from '@react-navigation/native'
 import WarningModal from 'components/WarningModal'
 
 export const EarnNotificationsUnAuthorizedModal = () => {
-  const { getParent } = useNavigation()
+  const { goBack, canGoBack } = useNavigation()
 
   const onOk = useCallback(() => {
-    getParent()?.goBack()
-  }, [getParent])
+    if (canGoBack()) {
+      goBack()
+    }
+  }, [canGoBack, goBack])
 
   return (
     <WarningModal

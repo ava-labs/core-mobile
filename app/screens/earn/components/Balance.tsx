@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { StyleSheet, View } from 'react-native'
 import AvaText from 'components/AvaText'
 import { usePChainBalance } from 'hooks/earn/usePChainBalance'
@@ -35,10 +35,12 @@ export const Balance = () => {
     selectPromptForEarnNotifications
   )
 
-  if (shouldPromptForEarnNotifications) {
-    navigate(AppNavigation.Earn.EarnNotificationsPrompt)
-    dispatch(setPromptForEarnNotifications(false))
-  }
+  useEffect(() => {
+    if (shouldPromptForEarnNotifications) {
+      dispatch(setPromptForEarnNotifications(false))
+      navigate(AppNavigation.Earn.EarnNotificationsPrompt)
+    }
+  }, [dispatch, navigate, shouldPromptForEarnNotifications])
 
   const shouldShowLoader = cChainBalance.isLoading || pChainBalance.isLoading
 

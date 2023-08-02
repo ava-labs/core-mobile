@@ -13,7 +13,7 @@ type ScreenProps = EarnScreenProps<
 
 export const EarnNotificationsModal = () => {
   const dispatch = useDispatch()
-  const { goBack, canGoBack, getParent, navigate } =
+  const { goBack, canGoBack, navigate } =
     useNavigation<ScreenProps['navigation']>()
 
   const onTurnOnNotifications = useCallback(() => {
@@ -29,8 +29,10 @@ export const EarnNotificationsModal = () => {
   }, [canGoBack, dispatch, goBack, navigate])
 
   const onLater = useCallback(() => {
-    getParent()?.goBack()
-  }, [getParent])
+    if (canGoBack()) {
+      goBack()
+    }
+  }, [canGoBack, goBack])
 
   async function hasPermissions(): Promise<boolean> {
     let settings = await notifee.getNotificationSettings()
