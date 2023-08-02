@@ -13,8 +13,7 @@ type ScreenProps = EarnScreenProps<
 
 export const EarnNotificationsModal = () => {
   const dispatch = useDispatch()
-  const { goBack, canGoBack, navigate } =
-    useNavigation<ScreenProps['navigation']>()
+  const { goBack, canGoBack } = useNavigation<ScreenProps['navigation']>()
 
   const onTurnOnNotifications = useCallback(() => {
     dispatch(setNotifyStakingComplete(true))
@@ -23,10 +22,10 @@ export const EarnNotificationsModal = () => {
     }
     NotificationsService.getPermission(true).then(value => {
       if (value === 'denied') {
-        navigate(AppNavigation.Earn.EarnNotificationsUnAuthorized)
+        NotificationsService.openSystemSettings()
       }
     })
-  }, [canGoBack, dispatch, goBack, navigate])
+  }, [canGoBack, dispatch, goBack])
 
   const onLater = useCallback(() => {
     if (canGoBack()) {

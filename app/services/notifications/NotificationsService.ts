@@ -1,4 +1,5 @@
 import notifee, { AuthorizationStatus } from '@notifee/react-native'
+import { Linking, Platform } from 'react-native'
 
 class NotificationsService {
   /**
@@ -24,6 +25,14 @@ class NotificationsService {
         return 'undetermined'
       case AuthorizationStatus.DENIED:
         return 'denied'
+    }
+  }
+
+  openSystemSettings() {
+    if (Platform.OS === 'ios') {
+      Linking.openSettings()
+    } else {
+      notifee.openNotificationSettings()
     }
   }
 }

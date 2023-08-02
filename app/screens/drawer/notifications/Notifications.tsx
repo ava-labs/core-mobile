@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Linking, Platform, View } from 'react-native'
+import { View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaListItem from 'components/AvaListItem'
 import Switch from 'components/Switch'
@@ -7,7 +7,6 @@ import { useDispatch, useSelector } from 'react-redux'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
 import AvaButton from 'components/AvaButton'
-import notifee from '@notifee/react-native'
 import { selectAppState } from 'store/app'
 import {
   selectNotifyStakingComplete,
@@ -28,11 +27,7 @@ const Notifications = () => {
   }, [appState]) //switching to system settings and coming back must re-initiate settings check
 
   function enterSettings() {
-    if (Platform.OS === 'ios') {
-      Linking.openSettings()
-    } else {
-      notifee.openNotificationSettings()
-    }
+    NotificationsService.openSystemSettings()
   }
 
   return (
