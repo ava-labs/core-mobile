@@ -39,7 +39,7 @@ import { useTimeElapsed } from 'hooks/time/useTimeElapsed'
 import { timeToShowNetworkFeeError } from 'consts/earn'
 import Spinner from 'components/animation/Spinner'
 import { useAvaxFormatter } from 'hooks/formatter/useAvaxFormatter'
-import { delegationSuccess } from 'store/notifications'
+import { maybePromptEarnNotification } from 'store/notifications'
 import { ConfirmScreen } from '../components/ConfirmScreen'
 import UnableToEstimate from '../components/UnableToEstimate'
 import { useValidateStakingEndTime } from './useValidateStakingEndTime'
@@ -137,8 +137,8 @@ export const Confirmation = () => {
       ),
       duration: 'long'
     })
-    dispatch(delegationSuccess)
     getParent()?.goBack()
+    dispatch(maybePromptEarnNotification)
   }
 
   const handleReadMore = () => {

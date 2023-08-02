@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import { StyleSheet, View } from 'react-native'
 import AvaText from 'components/AvaText'
 import { usePChainBalance } from 'hooks/earn/usePChainBalance'
@@ -12,11 +12,6 @@ import { Space } from 'components/Space'
 import { useCChainBalance } from 'hooks/earn/useCChainBalance'
 import { useWeiAvaxFormatter } from 'hooks/formatter/useWeiAvaxFormatter'
 import { useNAvaxFormatter } from 'hooks/formatter/useNAvaxFormatter'
-import { useDispatch, useSelector } from 'react-redux'
-import {
-  selectPromptForEarnNotifications,
-  setPromptForEarnNotifications
-} from 'store/notifications'
 import { getStakePrimaryColor } from '../utils'
 import { CircularProgress } from './CircularProgress'
 import { BalanceLoader } from './BalanceLoader'
@@ -24,23 +19,12 @@ import { BalanceLoader } from './BalanceLoader'
 type ScreenProps = EarnScreenProps<typeof AppNavigation.Earn.StakeDashboard>
 
 export const Balance = () => {
-  const dispatch = useDispatch()
   const { theme } = useApplicationContext()
   const { navigate } = useNavigation<ScreenProps['navigation']>()
   const pChainBalance = usePChainBalance()
   const cChainBalance = useCChainBalance()
   const weiAvaxFormatter = useWeiAvaxFormatter()
   const nAvaxFormatter = useNAvaxFormatter()
-  const shouldPromptForEarnNotifications = useSelector(
-    selectPromptForEarnNotifications
-  )
-
-  useEffect(() => {
-    if (shouldPromptForEarnNotifications) {
-      dispatch(setPromptForEarnNotifications(false))
-      navigate(AppNavigation.Earn.EarnNotificationsPrompt)
-    }
-  }, [dispatch, navigate, shouldPromptForEarnNotifications])
 
   const shouldShowLoader = cChainBalance.isLoading || pChainBalance.isLoading
 

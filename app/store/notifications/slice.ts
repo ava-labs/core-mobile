@@ -6,7 +6,7 @@ const reducerName = 'notifications'
 
 const initialState = {
   earnNotificationsEnabled: false,
-  promptForEarnNotifications: undefined
+  hasPromptedAfterFirstDelegation: false
 } as NotificationsState
 
 const notificationsSlice = createSlice({
@@ -16,8 +16,11 @@ const notificationsSlice = createSlice({
     setEarnNotificationsEnabled: (state, action: PayloadAction<boolean>) => {
       state.earnNotificationsEnabled = action.payload
     },
-    setPromptForEarnNotifications: (state, action: PayloadAction<boolean>) => {
-      state.promptForEarnNotifications = action.payload
+    setHasPromptedAfterFirstDelegation: (
+      state,
+      action: PayloadAction<boolean>
+    ) => {
+      state.hasPromptedAfterFirstDelegation = action.payload
     }
   }
 })
@@ -26,15 +29,17 @@ const notificationsSlice = createSlice({
 export const selectNotificationsEarn = (state: RootState) =>
   state.notifications.earnNotificationsEnabled
 
-export const selectPromptForEarnNotifications = (state: RootState) =>
-  state.notifications.promptForEarnNotifications
+export const selectHasPromptedAfterFirstDelegation = (state: RootState) =>
+  state.notifications.hasPromptedAfterFirstDelegation
 
 //actions
-export const { setEarnNotificationsEnabled, setPromptForEarnNotifications } =
-  notificationsSlice.actions
+export const {
+  setEarnNotificationsEnabled,
+  setHasPromptedAfterFirstDelegation
+} = notificationsSlice.actions
 
-export const delegationSuccess = createAction(
-  `${reducerName}/delegationSuccess`
+export const maybePromptEarnNotification = createAction(
+  `${reducerName}/maybePromptEarnNotification`
 )
 
 export const notificationsReducer = notificationsSlice.reducer
