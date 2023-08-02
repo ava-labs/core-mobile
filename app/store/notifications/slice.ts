@@ -5,7 +5,7 @@ import { NotificationsState } from 'store/notifications/types'
 const reducerName = 'notifications'
 
 const initialState = {
-  earnNotificationsEnabled: false,
+  notifyStakingComplete: false,
   hasPromptedAfterFirstDelegation: false
 } as NotificationsState
 
@@ -13,8 +13,8 @@ const notificationsSlice = createSlice({
   name: reducerName,
   initialState,
   reducers: {
-    setEarnNotificationsEnabled: (state, action: PayloadAction<boolean>) => {
-      state.earnNotificationsEnabled = action.payload
+    setNotifyStakingComplete: (state, action: PayloadAction<boolean>) => {
+      state.notifyStakingComplete = action.payload
     },
     setHasPromptedAfterFirstDelegation: (
       state,
@@ -26,17 +26,15 @@ const notificationsSlice = createSlice({
 })
 
 // selectors
-export const selectNotificationsEarn = (state: RootState) =>
-  state.notifications.earnNotificationsEnabled
+export const selectNotifyStakingComplete = (state: RootState) =>
+  state.notifications.notifyStakingComplete
 
 export const selectHasPromptedAfterFirstDelegation = (state: RootState) =>
   state.notifications.hasPromptedAfterFirstDelegation
 
 //actions
-export const {
-  setEarnNotificationsEnabled,
-  setHasPromptedAfterFirstDelegation
-} = notificationsSlice.actions
+export const { setNotifyStakingComplete, setHasPromptedAfterFirstDelegation } =
+  notificationsSlice.actions
 
 export const maybePromptEarnNotification = createAction(
   `${reducerName}/maybePromptEarnNotification`

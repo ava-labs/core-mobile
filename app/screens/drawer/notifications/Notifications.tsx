@@ -10,8 +10,8 @@ import AvaButton from 'components/AvaButton'
 import notifee from '@notifee/react-native'
 import { selectAppState } from 'store/app'
 import {
-  selectNotificationsEarn,
-  setEarnNotificationsEnabled
+  selectNotifyStakingComplete,
+  setNotifyStakingComplete
 } from 'store/notifications'
 import NotificationsService from 'services/notifications/NotificationsService'
 
@@ -47,12 +47,12 @@ const Notifications = () => {
 
 function EarnToggle({ enabled }: { enabled: boolean }) {
   const { theme } = useApplicationContext()
-  const earnChecked = useSelector(selectNotificationsEarn)
+  const earnChecked = useSelector(selectNotifyStakingComplete)
   const checked = enabled && earnChecked
   const dispatch = useDispatch()
 
   function onChange(value: boolean) {
-    dispatch(setEarnNotificationsEnabled(value))
+    dispatch(setNotifyStakingComplete(value))
   }
 
   return (

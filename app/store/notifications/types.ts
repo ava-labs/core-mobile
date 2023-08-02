@@ -1,4 +1,4 @@
 export type NotificationsState = {
-  earnNotificationsEnabled: boolean
+  notifyStakingComplete: boolean
   hasPromptedAfterFirstDelegation: boolean
 }
