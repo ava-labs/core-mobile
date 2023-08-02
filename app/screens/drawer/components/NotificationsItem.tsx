@@ -13,18 +13,16 @@ export default function NotificationsItem() {
   const navigation = useNavigation<NavigationProp>()
 
   return (
-    <>
-      <AvaListItem.Base
-        testID="notifications_item__settings_button"
-        title={'Notifications'}
-        leftComponent={null}
-        rightComponent={<CarrotSVG />}
-        onPress={() => {
-          navigation.navigate(AppNavigation.Wallet.Notifications, {
-            screen: AppNavigation.Notifications.Notifications
-          })
-        }}
-      />
-    </>
+    <AvaListItem.Base
+      testID="notifications_item__settings_button"
+      title={'Notifications'}
+      leftComponent={null}
+      rightComponent={<CarrotSVG />}
+      onPress={() => {
+        navigation.navigate(AppNavigation.Wallet.Notifications, {
+          screen: AppNavigation.Notifications.Notifications
+        })
+      }}
+    />
   )
 }
