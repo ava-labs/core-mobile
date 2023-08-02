@@ -3,9 +3,9 @@ import { useNavigation } from '@react-navigation/native'
 import WarningModal from 'components/WarningModal'
 import { useDispatch } from 'react-redux'
 import { setNotificationsEarn } from 'store/notifications'
-import notifee, { AuthorizationStatus } from '@notifee/react-native'
 import { EarnScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
+import NotificationsService from 'services/notifications/NotificationsService'
 
 type ScreenProps = EarnScreenProps<
   typeof AppNavigation.Earn.EarnNotificationsPrompt
@@ -21,8 +21,8 @@ export const EarnNotificationsModal = () => {
     if (canGoBack()) {
       goBack()
     }
-    hasPermissions().then(value => {
-      if (!value) {
+    NotificationsService.getPermission(true).then(value => {
+      if (value === 'denied') {
         navigate(AppNavigation.Earn.EarnNotificationsUnAuthorized)
       }
     })
@@ -33,23 +33,6 @@ export const EarnNotificationsModal = () => {
       goBack()
     }
   }, [canGoBack, goBack])
-
-  async function hasPermissions(): Promise<boolean> {
-    let settings = await notifee.getNotificationSettings()
-    switch (settings.authorizationStatus) {
-      case AuthorizationStatus.AUTHORIZED:
-      case AuthorizationStatus.PROVISIONAL:
-        return true
-      case AuthorizationStatus.NOT_DETERMINED:
-        settings = await notifee.requestPermission()
-        return (
-          settings.authorizationStatus === AuthorizationStatus.AUTHORIZED ||
-          settings.authorizationStatus === AuthorizationStatus.PROVISIONAL
-        )
-      case AuthorizationStatus.DENIED:
-        return false
-    }
-  }
 
   return (
     <WarningModal

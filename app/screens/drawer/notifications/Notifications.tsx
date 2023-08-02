@@ -7,24 +7,24 @@ import { useDispatch, useSelector } from 'react-redux'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
 import AvaButton from 'components/AvaButton'
-import notifee, { AuthorizationStatus } from '@notifee/react-native'
+import notifee from '@notifee/react-native'
 import { selectAppState } from 'store/app'
 import {
   selectNotificationsEarn,
   setNotificationsEarn
 } from 'store/notifications'
+import NotificationsService from 'services/notifications/NotificationsService'
 
 const Notifications = () => {
   const [notificationsAllowed, setNotificationsAllowed] = useState(false)
   const appState = useSelector(selectAppState)
 
   useEffect(() => {
-    notifee.getNotificationSettings().then(nSettings => {
-      setNotificationsAllowed(
-        nSettings.authorizationStatus === AuthorizationStatus.AUTHORIZED ||
-          nSettings.authorizationStatus === AuthorizationStatus.PROVISIONAL
-      )
-    })
+    if (appState === 'active') {
+      NotificationsService.getPermission().then(permission => {
+        setNotificationsAllowed(permission === 'authorized')
+      })
+    }
   }, [appState]) //switching to system settings and coming back must re-initiate settings check
 
   function enterSettings() {
