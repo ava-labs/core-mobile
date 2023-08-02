@@ -3,7 +3,8 @@ import {
   KeyboardAvoidingView,
   LogBox,
   Platform,
-  SafeAreaView
+  SafeAreaView,
+  UIManager
 } from 'react-native'
 import RootScreenStack from 'navigation/RootScreenStack'
 import { NavigationContainer } from '@react-navigation/native'
@@ -21,6 +22,10 @@ LogBox.ignoreLogs([
 ])
 
 SentryService.init()
+
+Platform.OS === 'android' &&
+  UIManager.setLayoutAnimationEnabledExperimental &&
+  UIManager.setLayoutAnimationEnabledExperimental(false)
 
 export default function App() {
   const { configure } = useDevDebugging()
