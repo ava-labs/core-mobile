@@ -1,36 +1,28 @@
 import notifee, {
   AndroidChannel,
-  AuthorizationStatus,
-  NotificationSettings
+  AuthorizationStatus
 } from '@notifee/react-native'
 import { Linking, Platform } from 'react-native'
 
 class NotificationsService {
-  /**
-   * Tries to get permission from user if NOT_DETERMINED (iOS) or DENIED (Android)
-   * then returns authorized or denied
-   */
-  async getPermission(withPrompt = false): Promise<'authorized' | 'denied'> {
-    let settings = await notifee.getNotificationSettings()
+  async readPermission(): Promise<'authorized' | 'denied'> {
+    const settings = await notifee.getNotificationSettings()
     switch (settings.authorizationStatus) {
       case AuthorizationStatus.AUTHORIZED:
       case AuthorizationStatus.PROVISIONAL:
         return 'authorized'
       case AuthorizationStatus.NOT_DETERMINED:
       case AuthorizationStatus.DENIED:
-        if (
-          withPrompt &&
-          NotificationsService.shouldAskForPermission(settings)
-        ) {
-          settings = await notifee.requestPermission()
-          return settings.authorizationStatus ===
-            AuthorizationStatus.AUTHORIZED ||
-            settings.authorizationStatus === AuthorizationStatus.PROVISIONAL
-            ? 'authorized'
-            : 'denied'
-        }
         return 'denied'
     }
+  }
+
+  async requestPermission() {
+    const settings = await notifee.requestPermission()
+    return settings.authorizationStatus === AuthorizationStatus.AUTHORIZED ||
+      settings.authorizationStatus === AuthorizationStatus.PROVISIONAL
+      ? 'authorized'
+      : 'denied'
   }
 
   openSystemSettings() {
@@ -46,14 +38,6 @@ class NotificationsService {
    */
   createChannel(channel: AndroidChannel): Promise<string> {
     return notifee.createChannel(channel)
-  }
-
-  private static shouldAskForPermission(settings: NotificationSettings) {
-    if (Platform.OS === 'ios') {
-      return settings.authorizationStatus === AuthorizationStatus.NOT_DETERMINED
-    } else {
-      return settings.authorizationStatus === AuthorizationStatus.DENIED
-    }
   }
 }
 

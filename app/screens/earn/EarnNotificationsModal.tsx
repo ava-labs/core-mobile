@@ -22,7 +22,7 @@ export const EarnNotificationsModal = () => {
       goBack()
     }
     NotificationsService.createChannel(stakeCompleteChannel)
-      .then(() => NotificationsService.getPermission(true))
+      .then(() => NotificationsService.requestPermission())
       .then(permission => {
         if (permission !== 'authorized') {
           NotificationsService.openSystemSettings()

@@ -21,7 +21,7 @@ const Notifications = () => {
 
   useEffect(() => {
     if (appState === 'active') {
-      NotificationsService.getPermission().then(permission => {
+      NotificationsService.readPermission().then(permission => {
         setNotificationsAllowed(permission === 'authorized')
       })
     }
@@ -29,7 +29,7 @@ const Notifications = () => {
 
   function enterSettings() {
     NotificationsService.createChannel(stakeCompleteChannel)
-      .then(() => NotificationsService.getPermission(true))
+      .then(() => NotificationsService.requestPermission())
       .then(permission => {
         if (permission !== 'authorized') {
           NotificationsService.openSystemSettings()
