@@ -32,9 +32,11 @@ const TIME_TO_LOCK_IN_SECONDS = 5
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const init = async (action: any, listenerApi: AppListenerEffectAPI) => {
-  const { dispatch } = listenerApi
-
   Logger.setLevel(__DEV__ ? LogLevel.TRACE : LogLevel.ERROR)
+  const { dispatch } = listenerApi
+  const state = listenerApi.getState()
+  const isWalletActive = selectWalletState(state) === WalletState.ACTIVE
+  isWalletActive && dispatch(setWalletState(WalletState.INACTIVE))
 
   const fontScale = await DeviceInfo.getFontScale()
   dispatch(

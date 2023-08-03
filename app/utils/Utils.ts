@@ -195,3 +195,14 @@ export function truncateBN(
 export function isZeroBig(value: Big): boolean {
   return value.eq(new Big(0))
 }
+
+export const asyncTimeout = (
+  handler: () => Promise<unknown>,
+  timeout: number
+) => {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      handler().then(resolve).catch(reject)
+    }, timeout)
+  })
+}

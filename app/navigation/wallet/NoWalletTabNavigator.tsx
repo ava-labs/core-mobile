@@ -67,7 +67,7 @@ const NoWalletTabNavigator = () => {
   const { pendingDeepLink } = useDeeplink()
 
   useEffect(() => {
-    if (pendingDeepLink) {
+    if (pendingDeepLink && walletState === WalletState.NONEXISTENT) {
       showSnackBarCustom({
         component: (
           <GeneralToast
@@ -77,7 +77,7 @@ const NoWalletTabNavigator = () => {
         duration: 'short'
       })
     }
-  }, [pendingDeepLink])
+  }, [pendingDeepLink, walletState])
   /**
    * Due to the use of a custom FAB as a tab icon, spacing needed to be manually manipulated
    * which required the "normal" items to be manually rendered on `options.tabBarIcon` instead of automatically handled
