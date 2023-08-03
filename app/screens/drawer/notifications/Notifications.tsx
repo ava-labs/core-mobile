@@ -13,6 +13,7 @@ import {
   setNotifyStakingComplete
 } from 'store/notifications'
 import NotificationsService from 'services/notifications/NotificationsService'
+import { stakeCompleteChannel } from 'services/notifications/channels'
 
 const Notifications = () => {
   const [notificationsAllowed, setNotificationsAllowed] = useState(false)
@@ -27,7 +28,13 @@ const Notifications = () => {
   }, [appState]) //switching to system settings and coming back must re-initiate settings check
 
   function enterSettings() {
-    NotificationsService.openSystemSettings()
+    NotificationsService.createChannel(stakeCompleteChannel)
+      .then(() => NotificationsService.getPermission(true))
+      .then(permission => {
+        if (permission !== 'authorized') {
+          NotificationsService.openSystemSettings()
+        }
+      })
   }
 
   return (

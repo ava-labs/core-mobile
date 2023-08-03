@@ -6,6 +6,7 @@ import { setNotifyStakingComplete } from 'store/notifications'
 import { EarnScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
 import NotificationsService from 'services/notifications/NotificationsService'
+import { stakeCompleteChannel } from 'services/notifications/channels'
 
 type ScreenProps = EarnScreenProps<
   typeof AppNavigation.Earn.EarnNotificationsPrompt
@@ -20,11 +21,13 @@ export const EarnNotificationsModal = () => {
     if (canGoBack()) {
       goBack()
     }
-    NotificationsService.getPermission(true).then(value => {
-      if (value === 'denied') {
-        NotificationsService.openSystemSettings()
-      }
-    })
+    NotificationsService.createChannel(stakeCompleteChannel)
+      .then(() => NotificationsService.getPermission(true))
+      .then(permission => {
+        if (permission !== 'authorized') {
+          NotificationsService.openSystemSettings()
+        }
+      })
   }, [canGoBack, dispatch, goBack])
 
   const onLater = useCallback(() => {
