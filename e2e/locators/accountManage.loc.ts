@@ -7,5 +7,6 @@ export default {
   editAccount: 'Edit',
   newAccountName: 'AvaxAccount',
   saveNewAccountName: 'Save',
-  secondAccount: 'Account 2'
+  secondAccount: 'Account 2',
+  fourthaccount: 'Account 4'
 }

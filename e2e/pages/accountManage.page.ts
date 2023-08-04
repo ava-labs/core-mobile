@@ -40,6 +40,10 @@ class AccountManagePage {
     return by.text(accountManage.secondAccount)
   }
 
+  get fourthAccount() {
+    return by.text(accountManage.fourthaccount)
+  }
+
   async createSecondAccount() {
     await this.tapAccountMenu()
     await this.tapAddEditAccounts()
