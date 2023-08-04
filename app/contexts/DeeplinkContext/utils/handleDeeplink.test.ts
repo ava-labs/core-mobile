@@ -1,6 +1,6 @@
 import crypto from 'crypto'
 import * as utils from 'services/earn/utils'
-import { handleDeeplink } from './utils'
+import { handleDeeplink } from './handleDeeplink'
 
 const mockDispatch = jest.fn()
 const mockNavigateToClaimRewards = jest.fn()

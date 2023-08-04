@@ -16,15 +16,12 @@ import { selectActiveNetwork } from 'store/network'
 import { useNAvaxFormatter } from 'hooks/formatter/useNAvaxFormatter'
 import { Space } from 'components/Space'
 import { useClaimRewards } from 'hooks/earn/useClaimRewards'
-import { showSimpleToast, showSnackBarCustom } from 'components/Snackbar'
+import { showSimpleToast } from 'components/Snackbar'
 import { useClaimFees } from 'hooks/earn/useClaimFees'
 import { useAvaxFormatter } from 'hooks/formatter/useAvaxFormatter'
 import { useTimeElapsed } from 'hooks/time/useTimeElapsed'
 import Spinner from 'components/animation/Spinner'
 import { timeToShowNetworkFeeError } from 'consts/earn'
-import TransactionToast, {
-  TransactionToastType
-} from 'components/toast/TransactionToast'
 import { ConfirmScreen } from './components/ConfirmScreen'
 
 type ScreenProps = EarnScreenProps<typeof AppNavigation.Earn.ClaimRewards>
@@ -57,19 +54,8 @@ const ClaimRewards = () => {
   }, [navigate, showFeeError])
 
   useEffect(() => {
-    if (data?.unlockedUnstaked[0]?.amount === undefined) {
-      if (canGoBack()) {
-        goBack()
-      }
-      showSnackBarCustom({
-        component: (
-          <TransactionToast
-            message={`Nothing to claim`}
-            type={TransactionToastType.ERROR}
-          />
-        ),
-        duration: 'short'
-      })
+    if (data?.unlockedUnstaked[0]?.amount === undefined && canGoBack()) {
+      goBack()
     }
   }, [navigate, goBack, canGoBack, data?.unlockedUnstaked])
 

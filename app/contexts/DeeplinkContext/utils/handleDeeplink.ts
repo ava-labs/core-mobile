@@ -8,7 +8,7 @@ import {
 } from 'store/walletConnectV2'
 import Logger from 'utils/Logger'
 import { navigateToClaimRewards } from 'services/earn/utils'
-import { ACTIONS, PROTOCOLS } from './types'
+import { ACTIONS, PROTOCOLS } from '../types'
 
 export const handleDeeplink = (
   rawUrl: string,

@@ -9,7 +9,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { selectWalletState, WalletState } from 'store/app'
 import { noop } from '@avalabs/utils-sdk'
 import { Linking } from 'react-native'
-import { handleDeeplink } from './utils'
+import { handleDeeplink } from './utils/handleDeeplink'
 import { DeepLink, DeeplinkContextType, DeepLinkOrigin } from './types'
 
 const DeeplinkContext = createContext<DeeplinkContextType>({
