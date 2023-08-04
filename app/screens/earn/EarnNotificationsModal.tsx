@@ -1,33 +1,24 @@
 import React, { useCallback } from 'react'
 import { useNavigation } from '@react-navigation/native'
 import WarningModal from 'components/WarningModal'
-import { useDispatch } from 'react-redux'
-import { setNotifyStakingComplete } from 'store/notifications'
 import { EarnScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
-import NotificationsService from 'services/notifications/NotificationsService'
-import { stakeCompleteChannel } from 'services/notifications/channels'
+import { useDispatch } from 'react-redux'
+import { turnOnNotificationsFor } from 'store/notifications'
 
 type ScreenProps = EarnScreenProps<
   typeof AppNavigation.Earn.EarnNotificationsPrompt
 >
 
 export const EarnNotificationsModal = () => {
-  const dispatch = useDispatch()
   const { goBack, canGoBack } = useNavigation<ScreenProps['navigation']>()
+  const dispatch = useDispatch()
 
   const onTurnOnNotifications = useCallback(() => {
-    dispatch(setNotifyStakingComplete(true))
+    dispatch(turnOnNotificationsFor({ channelId: 'stakeComplete' }))
     if (canGoBack()) {
       goBack()
     }
-    NotificationsService.createChannel(stakeCompleteChannel)
-      .then(() => NotificationsService.requestPermission())
-      .then(permission => {
-        if (permission !== 'authorized') {
-          NotificationsService.openSystemSettings()
-        }
-      })
   }, [canGoBack, dispatch, goBack])
 
   const onLater = useCallback(() => {

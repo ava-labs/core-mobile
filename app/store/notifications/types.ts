@@ -1,4 +1,6 @@
+import { ChannelId } from 'services/notifications/channels'
+
 export type NotificationsState = {
-  notifyStakingComplete: boolean
+  notificationSubscriptions: Record<ChannelId, boolean>
   hasPromptedAfterFirstDelegation: boolean
 }

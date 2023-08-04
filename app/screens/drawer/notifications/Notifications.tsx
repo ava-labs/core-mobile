@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { Key, useCallback, useEffect, useState } from 'react'
 import { View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaListItem from 'components/AvaListItem'
@@ -9,67 +9,97 @@ import { Space } from 'components/Space'
 import AvaButton from 'components/AvaButton'
 import { selectAppState } from 'store/app'
 import {
-  selectNotifyStakingComplete,
-  setNotifyStakingComplete
+  selectNotificationSubscription,
+  turnOffNotificationsFor,
+  turnOnNotificationsFor
 } from 'store/notifications'
 import NotificationsService from 'services/notifications/NotificationsService'
-import { stakeCompleteChannel } from 'services/notifications/channels'
+import {
+  AvaxAndroidChannel,
+  ChannelId,
+  getAllChannels
+} from 'services/notifications/channels'
 
 const Notifications = () => {
-  const [notificationsAllowed, setNotificationsAllowed] = useState(false)
+  const [showAllowPushNotificationsCard, setShowAllowPushNotificationsCard] =
+    useState(false)
+  const [blockedChannels, setBlockedChannels] = useState(
+    new Map<ChannelId | 'all', boolean>()
+  )
   const appState = useSelector(selectAppState)
 
   useEffect(() => {
     if (appState === 'active') {
-      NotificationsService.readPermission().then(permission => {
-        setNotificationsAllowed(permission === 'authorized')
+      NotificationsService.getBlockedNotifications().then(value => {
+        setShowAllowPushNotificationsCard(value.size === 0)
+        setBlockedChannels(value)
       })
     }
   }, [appState]) //switching to system settings and coming back must re-initiate settings check
 
-  function enterSettings() {
-    NotificationsService.createChannel(stakeCompleteChannel)
-      .then(() => NotificationsService.requestPermission())
-      .then(permission => {
-        if (permission !== 'authorized') {
-          NotificationsService.openSystemSettings()
-        }
-      })
-  }
+  const renderNotificationToggles = useCallback(() => {
+    return getAllChannels().map(ch => {
+      return (
+        <NotificationToggle
+          key={ch.id}
+          channel={ch}
+          isSystemDisabled={
+            blockedChannels.has(ch.id) || blockedChannels.has('all')
+          }
+        />
+      )
+    })
+  }, [blockedChannels])
 
   return (
     <View style={{ marginTop: 20 }}>
-      {!notificationsAllowed && (
-        <Notification onEnterSettings={enterSettings} />
-      )}
-      <EarnToggle enabled={notificationsAllowed} />
+      {!showAllowPushNotificationsCard && <AllowPushNotificationsCard />}
+      {renderNotificationToggles()}
     </View>
   )
 }
 
-function EarnToggle({ enabled }: { enabled: boolean }) {
+function NotificationToggle({
+  key,
+  channel,
+  isSystemDisabled
+}: {
+  key: Key | null | undefined
+  channel: AvaxAndroidChannel
+  isSystemDisabled: boolean
+}) {
   const { theme } = useApplicationContext()
-  const earnChecked = useSelector(selectNotifyStakingComplete)
-  const checked = enabled && earnChecked
+  const inAppEnabled = useSelector(selectNotificationSubscription(channel.id))
+  const checked = !isSystemDisabled && inAppEnabled
   const dispatch = useDispatch()
 
-  function onChange(value: boolean) {
-    dispatch(setNotifyStakingComplete(value))
+  function onChange(isChecked: boolean) {
+    if (isChecked) {
+      dispatch(turnOnNotificationsFor({ channelId: channel.id }))
+    } else {
+      dispatch(turnOffNotificationsFor({ channelId: channel.id }))
+    }
   }
 
   return (
     <AvaListItem.Base
-      disabled={!enabled}
-      title={'Stake'}
-      subtitle={'Staking Complete'}
+      key={key}
+      disabled={isSystemDisabled}
+      title={channel.title}
+      subtitle={channel.subtitle}
       background={theme.background}
       rightComponent={<Switch value={checked} onValueChange={onChange} />}
     />
   )
 }
 
-function Notification({ onEnterSettings }: { onEnterSettings: () => void }) {
+function AllowPushNotificationsCard() {
   const { theme } = useApplicationContext()
+
+  function onEnterSettings() {
+    NotificationsService.getAllPermissions()
+  }
+
   return (
     <View
       style={{
