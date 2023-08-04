@@ -23,7 +23,17 @@ describe('Add and edit accounts', () => {
     await Actions.waitForElement(AccountManagePage.fourthAccount)
     await AccountManagePage.tapDoneButton()
     await BottomTabsPage.tapStakeTab()
+    const startTime = new Date().getTime()
+    await Actions.waitForElement(GetStartedScreenPage.getStartedTitle)
+    const endTime = new Date().getTime()
     await GetStartedScreenPage.verifyGetStartedScreenItems()
+    await Actions.reportUIPerformance(
+      startTime,
+      endTime,
+      'StakeGetStartedScreen',
+      1,
+      3
+    )
   })
 
   it('should verify Disclamer Text on Mainnet', async () => {
