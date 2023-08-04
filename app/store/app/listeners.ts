@@ -35,6 +35,8 @@ const init = async (action: any, listenerApi: AppListenerEffectAPI) => {
   Logger.setLevel(__DEV__ ? LogLevel.TRACE : LogLevel.ERROR)
   const { dispatch } = listenerApi
   const state = listenerApi.getState()
+
+  // check wallet state during app launch, if it's active, reset it to inactive
   const isWalletActive = selectWalletState(state) === WalletState.ACTIVE
   isWalletActive && dispatch(setWalletState(WalletState.INACTIVE))
 

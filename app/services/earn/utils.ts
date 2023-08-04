@@ -6,7 +6,6 @@ import { MAX_VALIDATOR_WEIGHT_FACTOR } from 'consts/earn'
 import { Avax } from 'types/Avax'
 import * as Navigation from 'utils/Navigation'
 import AppNavigation from 'navigation/AppNavigation'
-import { asyncTimeout } from 'utils/Utils'
 import Logger from 'utils/Logger'
 
 // the max num of times we should check transaction status
@@ -277,8 +276,8 @@ export const getSortedValidatorsByEndTime = (validators: NodeValidators) => {
 }
 
 export const navigateToClaimRewards = async () => {
-  Logger.info('navigating to claim rewards')
-  asyncTimeout(async () => {
+  setTimeout(async () => {
+    Logger.info('navigating to claim rewards')
     Navigation.navigate({
       // @ts-ignore
       name: AppNavigation.Tabs.Stake
