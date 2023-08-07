@@ -23,6 +23,7 @@ import { useTimeElapsed } from 'hooks/time/useTimeElapsed'
 import Spinner from 'components/animation/Spinner'
 import { timeToShowNetworkFeeError } from 'consts/earn'
 import { ConfirmScreen } from './components/ConfirmScreen'
+import { EmptyClaimRewards } from './EmptyClaimRewards'
 
 type ScreenProps = EarnScreenProps<typeof AppNavigation.Earn.ClaimRewards>
 
@@ -32,8 +33,7 @@ const onClaimError = (error: Error) => {
 
 const ClaimRewards = () => {
   const { theme } = useApplicationContext()
-  const { navigate, goBack, canGoBack } =
-    useNavigation<ScreenProps['navigation']>()
+  const { navigate, goBack } = useNavigation<ScreenProps['navigation']>()
   const activeNetwork = useSelector(selectActiveNetwork)
   const { data } = usePChainBalance()
   const { totalFees } = useClaimFees()
@@ -53,13 +53,9 @@ const ClaimRewards = () => {
     }
   }, [navigate, showFeeError])
 
-  useEffect(() => {
-    if (data?.unlockedUnstaked[0]?.amount === undefined && canGoBack()) {
-      goBack()
-    }
-  }, [navigate, goBack, canGoBack, data?.unlockedUnstaked])
-
-  if (!data) return null
+  if (!data || data?.unlockedUnstaked[0]?.amount === undefined) {
+    return <EmptyClaimRewards />
+  }
 
   const tokenSymbol = activeNetwork.networkToken.symbol
 
