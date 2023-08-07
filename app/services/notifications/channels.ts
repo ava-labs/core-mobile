@@ -9,8 +9,12 @@ export interface AvaxAndroidChannel extends AndroidChannel {
   blocked: boolean
 }
 
-const notificationChannels = {
-  stakeCompleteChannel: {
+/**
+ * This is "database" of all notification channels we are supporting.
+ * It should be immutable so use getAllChannels function to get cloned items.
+ */
+const notificationChannels = [
+  {
     id: 'stakeComplete',
     name: 'Staking Complete',
     lights: false,
@@ -19,6 +23,10 @@ const notificationChannels = {
     title: 'Stake',
     subtitle: 'Staking Complete'
   } as AvaxAndroidChannel
-}
+]
 
-export const getAllChannels = () => Object.values(notificationChannels)
+/**
+ * Clones notificationChannels to keep its immutability
+ */
+export const getAllChannels = () =>
+  notificationChannels.map(ch => Object.assign({}, ch))
