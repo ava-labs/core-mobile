@@ -284,7 +284,11 @@ export const navigateToClaimRewards = async () => {
     })
     Navigation.navigate({
       // @ts-ignore
-      name: AppNavigation.Earn.ClaimRewards
+      name: AppNavigation.Wallet.Earn,
+      params: {
+        // @ts-ignore
+        screen: AppNavigation.Earn.ClaimRewards
+      }
     })
   }, 1000)
 }
