@@ -36,7 +36,7 @@ class NotificationsService {
       promises.push(notifee.createChannel(channel))
     })
     await Promise.allSettled(promises)
-    const permission = await NotificationsService.requestPermission()
+    const permission = await this.requestPermission()
     const blockedNotifications = await this.getBlockedNotifications()
     if (permission !== 'authorized' || blockedNotifications.size !== 0) {
       this.openSystemSettings()
@@ -51,7 +51,7 @@ class NotificationsService {
     }
   }
 
-  private static async requestPermission() {
+  private async requestPermission() {
     const settings = await notifee.requestPermission()
     return settings.authorizationStatus === AuthorizationStatus.AUTHORIZED ||
       settings.authorizationStatus === AuthorizationStatus.PROVISIONAL
