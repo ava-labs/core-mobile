@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+
+cmds=(
+'npx playwright test e2e/tests/playwright/traderjoe.spec.ts --project='chromium'' 
+'npx playwright test e2e/tests/playwright/uniswap.spec.ts --project='chromium''
+'npx playwright test e2e/tests/playwright/oasis.spec.ts --project='chromium''
+'npx playwright test e2e/tests/playwright/core.spec.ts --project='firefox''
+)
+
+read -p "Did you start your emulator or simulator? (y/n)" reply
+case $reply in 
+    y) echo "Fantastic, you get a gold star!!!";;
+    n) echo "Please start your emulator or simulator and try again"; exit;;
+    *) echo "invalid option"; exit;;
+esac
+
+read -p $'Which dApp tests would you like to run? \n1)ios \n2)android\n' answer
+case $answer in 
+    1)  echo "Running iOS dApp tests..."
+        for cmd in "${cmds[@]}"; do
+                    echo "Running ${cmd}..."
+                    $cmd
+                    echo "${cmd} finished"
+                    echo "Now running the iOS detox test..."
+                    node_modules/.bin/detox test dappIntegrations.e2e.ts --configuration ios.internal.debug 
+                done;;
+    2)  echo "Running Android dApp tests..."
+        for cmd in "${cmds[@]}"; do
+                    echo "Running ${cmd}..."
+                    $cmd
+                    echo "${cmd} finished"
+                    echo "Now running the android detox test..."
+                    node_modules/.bin/detox test dappIntegrations.e2e.ts --configuration android.internal.debug 
+                done;;
+
+    *) echo "invalid option"; exit;;
+esac
+
+
+
