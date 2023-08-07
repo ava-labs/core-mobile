@@ -64,7 +64,7 @@ function NotificationToggle({
   channel,
   isSystemDisabled
 }: {
-  key: Key | null | undefined
+  key: Key
   channel: AvaxAndroidChannel
   isSystemDisabled: boolean
 }) {
