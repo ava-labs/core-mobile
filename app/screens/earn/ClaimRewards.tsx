@@ -65,7 +65,7 @@ const ClaimRewards = () => {
     true
   )
 
-  const [feesInAvax, feesInCurrency] = avaxFormatter(totalFees)
+  const [feesInAvax, feesInCurrency] = avaxFormatter(totalFees, true)
 
   const handleGoBack = () => {
     if (onBack) {

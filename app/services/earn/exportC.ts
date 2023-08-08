@@ -40,7 +40,7 @@ export async function exportC({
   ) as Avalanche.JsonRpcProvider
 
   const baseFee = Avax.fromWei(await avaxProvider.getApiC().getBaseFee())
-  const instantFee = baseFee.add(baseFee.mul(0.2)) // Increase by 20% for instant speed
+  const instantBaseFee = WalletService.getInstantBaseFee(baseFee)
 
   const pChainFee = calculatePChainFee()
   const amount = requiredAmount.add(pChainFee)
@@ -49,14 +49,14 @@ export async function exportC({
     throw Error('Not enough balance on C chain')
   }
 
-  const unsignedTxWithFee = await WalletService.createExportCTx(
+  const unsignedTxWithFee = await WalletService.createExportCTx({
     amount,
-    instantFee,
-    activeAccount.index,
+    baseFee: instantBaseFee,
+    accountIndex: activeAccount.index,
     avaxXPNetwork,
-    'P',
-    activeAccount.addressPVM
-  )
+    destinationChain: 'P',
+    destinationAddress: activeAccount.addressPVM
+  })
 
   const signedTxWithFeeJson = await WalletService.sign(
     { tx: unsignedTxWithFee } as AvalancheTransactionRequest,

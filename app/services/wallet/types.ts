@@ -2,6 +2,7 @@ import { TransactionRequest } from '@ethersproject/abstract-provider'
 import { BitcoinInputUTXO, BitcoinOutputUTXO } from '@avalabs/wallets-sdk'
 import { UnsignedTx } from '@avalabs/avalanchejs-v2'
 import { Network } from '@avalabs/chains-sdk'
+import { Avax } from 'types/Avax'
 
 export type SignTransactionRequest =
   | TransactionRequest
@@ -46,4 +47,32 @@ export type AddDelegatorProps = {
   // The addresses which will receive the rewards from the delegated stake.
   rewardAddress: string
   isDevMode: boolean
+  shouldValidateBurnedAmount?: boolean
+}
+
+export interface CommonAvalancheTxParamsBase {
+  accountIndex: number
+  avaxXPNetwork: Network
+  destinationAddress: string | undefined
+  shouldValidateBurnedAmount?: boolean
+}
+
+export type CreateExportCTxParams = CommonAvalancheTxParamsBase & {
+  amount: Avax
+  baseFee: Avax
+  destinationChain: 'P' | 'X'
+}
+
+export type CreateImportPTxParams = CommonAvalancheTxParamsBase & {
+  sourceChain: 'C' | 'X'
+}
+
+export type CreateExportPTxParams = CommonAvalancheTxParamsBase & {
+  amount: bigint
+  destinationChain: 'C' | 'X'
+}
+
+export type CreateImportCTxParams = CommonAvalancheTxParamsBase & {
+  baseFee: Avax
+  sourceChain: 'P' | 'X'
 }

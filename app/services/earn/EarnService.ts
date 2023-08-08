@@ -1,5 +1,4 @@
 import { getPvmApi } from 'utils/network/pvm'
-import BN from 'bn.js'
 import { Account } from 'store/account'
 import { exportC } from 'services/earn/exportC'
 import { importP } from 'services/earn/importP'
@@ -74,14 +73,14 @@ class EarnService {
   /**
    * Collect staking rewards by moving Avax from P to C-chain
    *
-   * @param pChainBalance in nAvax
-   * @param requiredAmount in nAvax
+   * @param pChainBalance
+   * @param requiredAmount
    * @param activeAccount
    * @param isDevMode
    */
   async claimRewards(
-    pChainBalance: BN,
-    requiredAmount: BN,
+    pChainBalance: Avax,
+    requiredAmount: Avax,
     activeAccount: Account,
     isDevMode: boolean
   ): Promise<boolean> {

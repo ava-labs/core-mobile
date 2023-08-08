@@ -21,12 +21,12 @@ export async function importP({
 
   const avaxXPNetwork = NetworkService.getAvalancheNetworkXP(isDevMode)
 
-  const unsignedTx = await WalletService.createImportPTx(
-    activeAccount.index,
+  const unsignedTx = await WalletService.createImportPTx({
+    accountIndex: activeAccount.index,
     avaxXPNetwork,
-    'C',
-    activeAccount.addressPVM
-  )
+    sourceChain: 'C',
+    destinationAddress: activeAccount.addressPVM
+  })
 
   const signedTxJson = await WalletService.sign(
     { tx: unsignedTx } as AvalancheTransactionRequest,
