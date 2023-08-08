@@ -2,7 +2,10 @@ import { AppStartListening } from 'store/middleware/listener'
 import { AppListenerEffectAPI } from 'store'
 import AppNavigation from 'navigation/AppNavigation'
 import * as Navigation from 'utils/Navigation'
-import { ChannelId, getAllChannels } from 'services/notifications/channels'
+import {
+  ChannelId,
+  notificationChannels
+} from 'services/notifications/channels'
 import notifee from '@notifee/react-native'
 import NotificationsService from 'services/notifications/NotificationsService'
 import {
@@ -33,7 +36,7 @@ const handleTurnOnNotificationsFor = async (
   channelId: ChannelId
 ) => {
   listenerApi.dispatch(setNotificationSubscriptions([channelId, true]))
-  const channelToCreate = getAllChannels().find(ch => ch.id === channelId)
+  const channelToCreate = notificationChannels.find(ch => ch.id === channelId)
   if (channelToCreate) {
     await notifee.createChannel(channelToCreate)
   }

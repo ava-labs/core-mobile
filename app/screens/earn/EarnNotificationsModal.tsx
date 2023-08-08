@@ -5,6 +5,7 @@ import { EarnScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
 import { useDispatch } from 'react-redux'
 import { turnOnNotificationsFor } from 'store/notifications'
+import { ChannelId } from 'services/notifications/channels'
 
 type ScreenProps = EarnScreenProps<
   typeof AppNavigation.Earn.EarnNotificationsPrompt
@@ -15,7 +16,7 @@ export const EarnNotificationsModal = () => {
   const dispatch = useDispatch()
 
   const onTurnOnNotifications = useCallback(() => {
-    dispatch(turnOnNotificationsFor({ channelId: 'stakeComplete' }))
+    dispatch(turnOnNotificationsFor({ channelId: ChannelId.STAKING_COMPLETE }))
     if (canGoBack()) {
       goBack()
     }

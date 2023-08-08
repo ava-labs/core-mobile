@@ -17,7 +17,7 @@ import NotificationsService from 'services/notifications/NotificationsService'
 import {
   AvaxAndroidChannel,
   ChannelId,
-  getAllChannels
+  notificationChannels
 } from 'services/notifications/channels'
 
 const Notifications = () => {
@@ -38,7 +38,7 @@ const Notifications = () => {
   }, [appState]) //switching to system settings and coming back must re-initiate settings check
 
   const renderNotificationToggles = useCallback(() => {
-    return getAllChannels().map(ch => {
+    return notificationChannels.map(ch => {
       return (
         <NotificationToggle
           key={ch.id}

@@ -1,6 +1,9 @@
 import notifee, { AuthorizationStatus } from '@notifee/react-native'
 import { Linking, Platform } from 'react-native'
-import { ChannelId, getAllChannels } from 'services/notifications/channels'
+import {
+  ChannelId,
+  notificationChannels
+} from 'services/notifications/channels'
 
 class NotificationsService {
   /**
@@ -32,7 +35,7 @@ class NotificationsService {
    */
   async getAllPermissions() {
     const promises = [] as Promise<string>[]
-    getAllChannels().forEach(channel => {
+    notificationChannels.forEach(channel => {
       promises.push(notifee.createChannel(channel))
     })
     await Promise.allSettled(promises)
