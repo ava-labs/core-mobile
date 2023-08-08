@@ -4,6 +4,9 @@ import { random } from 'lodash'
 import { FujiParams, MainnetParams } from 'utils/NetworkParams'
 import { MAX_VALIDATOR_WEIGHT_FACTOR } from 'consts/earn'
 import { Avax } from 'types/Avax'
+import * as Navigation from 'utils/Navigation'
+import AppNavigation from 'navigation/AppNavigation'
+import Logger from 'utils/Logger'
 
 // the max num of times we should check transaction status
 // 7 means ~ 2 minutes
@@ -270,4 +273,26 @@ export const getSortedValidatorsByEndTime = (validators: NodeValidators) => {
   return validators.sort(
     (a, b): number => Number(b.endTime) - Number(a.endTime)
   )
+}
+
+export const navigateToClaimRewards = async () => {
+  setTimeout(async () => {
+    Logger.info('navigating to claim rewards')
+    Navigation.navigate({
+      name: AppNavigation.Root.Wallet,
+      params: {
+        screen: AppNavigation.Wallet.Earn,
+        params: {
+          screen: AppNavigation.Earn.ClaimRewards,
+          params: {
+            onBack: () =>
+              Navigation.navigate({
+                //@ts-ignore
+                name: AppNavigation.Tabs.Stake
+              })
+          }
+        }
+      }
+    })
+  }, 1000)
 }
