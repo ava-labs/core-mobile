@@ -3,12 +3,21 @@ import { AppListenerEffectAPI } from 'store'
 import AppNavigation from 'navigation/AppNavigation'
 import * as Navigation from 'utils/Navigation'
 import {
+  ChannelId,
+  notificationChannels
+} from 'services/notifications/channels'
+import notifee from '@notifee/react-native'
+import NotificationsService from 'services/notifications/NotificationsService'
+import {
   maybePromptEarnNotification,
   selectHasPromptedAfterFirstDelegation,
-  setHasPromptedAfterFirstDelegation
+  setHasPromptedAfterFirstDelegation,
+  setNotificationSubscriptions,
+  turnOffNotificationsFor,
+  turnOnNotificationsFor
 } from './slice'
 
-const maybePromptEarnNotificationEffect = async (
+const handleMaybePromptEarnNotification = async (
   action: ReturnType<typeof maybePromptEarnNotification>,
   listenerApi: AppListenerEffectAPI
 ) => {
@@ -22,11 +31,48 @@ const maybePromptEarnNotificationEffect = async (
   }
 }
 
+const handleTurnOnNotificationsFor = async (
+  listenerApi: AppListenerEffectAPI,
+  channelId: ChannelId
+) => {
+  listenerApi.dispatch(setNotificationSubscriptions([channelId, true]))
+  const channelToCreate = notificationChannels.find(ch => ch.id === channelId)
+  if (channelToCreate) {
+    await notifee.createChannel(channelToCreate)
+  }
+  const blockedNotifications =
+    await NotificationsService.getBlockedNotifications()
+  if (blockedNotifications.has('all') || blockedNotifications.has(channelId)) {
+    NotificationsService.openSystemSettings()
+  }
+}
+
+const handleTurnOffNotificationsFor = async (
+  listenerApi: AppListenerEffectAPI,
+  channelId: ChannelId
+) => {
+  listenerApi.dispatch(setNotificationSubscriptions([channelId, false]))
+}
+
 export const addNotificationsListeners = (
   startListening: AppStartListening
 ) => {
   startListening({
     actionCreator: maybePromptEarnNotification,
-    effect: maybePromptEarnNotificationEffect
+    effect: handleMaybePromptEarnNotification
+  })
+
+  startListening({
+    actionCreator: turnOnNotificationsFor,
+    effect: async (action, listenerApi) => {
+      await handleTurnOnNotificationsFor(listenerApi, action.payload.channelId)
+    }
+  })
+
+  startListening({
+    actionCreator: turnOffNotificationsFor,
+    effect: async (action, listenerApi) => {
+      await handleTurnOffNotificationsFor(listenerApi, action.payload.channelId)
+    }
   })
 }

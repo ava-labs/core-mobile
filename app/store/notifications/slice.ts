@@ -1,11 +1,12 @@
 import { createAction, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from 'store/index'
 import { NotificationsState } from 'store/notifications/types'
+import { ChannelId } from 'services/notifications/channels'
 
 const reducerName = 'notifications'
 
 const initialState = {
-  notifyStakingComplete: false,
+  notificationSubscriptions: {},
   hasPromptedAfterFirstDelegation: false
 } as NotificationsState
 
@@ -13,8 +14,11 @@ const notificationsSlice = createSlice({
   name: reducerName,
   initialState,
   reducers: {
-    setNotifyStakingComplete: (state, action: PayloadAction<boolean>) => {
-      state.notifyStakingComplete = action.payload
+    setNotificationSubscriptions: (
+      state,
+      action: PayloadAction<[ChannelId, boolean]>
+    ) => {
+      state.notificationSubscriptions[action.payload[0]] = action.payload[1]
     },
     setHasPromptedAfterFirstDelegation: (
       state,
@@ -26,18 +30,29 @@ const notificationsSlice = createSlice({
 })
 
 // selectors
-export const selectNotifyStakingComplete = (state: RootState) =>
-  state.notifications.notifyStakingComplete
+export const selectNotificationSubscription =
+  (channelId: ChannelId) => (state: RootState) =>
+    state.notifications.notificationSubscriptions[channelId]
 
 export const selectHasPromptedAfterFirstDelegation = (state: RootState) =>
   state.notifications.hasPromptedAfterFirstDelegation
 
 //actions
-export const { setNotifyStakingComplete, setHasPromptedAfterFirstDelegation } =
-  notificationsSlice.actions
+export const {
+  setNotificationSubscriptions,
+  setHasPromptedAfterFirstDelegation
+} = notificationsSlice.actions
 
 export const maybePromptEarnNotification = createAction(
   `${reducerName}/maybePromptEarnNotification`
+)
+
+export const turnOnNotificationsFor = createAction<{ channelId: ChannelId }>(
+  `${reducerName}/turnOnNotificationsFor`
+)
+
+export const turnOffNotificationsFor = createAction<{ channelId: ChannelId }>(
+  `${reducerName}/turnOffNotificationsFor`
 )
 
 export const notificationsReducer = notificationsSlice.reducer
