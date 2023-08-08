@@ -1,23 +1,17 @@
 import { Avalanche } from '@avalabs/wallets-sdk'
 import { exponentialBackoff } from 'utils/js/exponentialBackoff'
 import Logger from 'utils/Logger'
-import BN from 'bn.js'
 import WalletService from 'services/wallet/WalletService'
 import { Account } from 'store/account'
 import { AvalancheTransactionRequest } from 'services/wallet/types'
 import { UnsignedTx } from '@avalabs/avalanchejs-v2'
 import NetworkService from 'services/network/NetworkService'
+import { Avax } from 'types/Avax'
 import { maxTransactionStatusCheckRetries } from './utils'
 
 export type ExportPParams = {
-  /**
-   * in nAvax
-   */
-  pChainBalance: BN
-  /**
-   * in nAvax
-   */
-  requiredAmount: BN
+  pChainBalance: Avax
+  requiredAmount: Avax
   activeAccount: Account
   isDevMode: boolean
 }
@@ -35,15 +29,13 @@ export async function exportP({
   }
   const avaxXPNetwork = NetworkService.getAvalancheNetworkXP(isDevMode)
 
-  const amount = BigInt(requiredAmount.toString(10))
-
-  const unsignedTx = await WalletService.createExportPTx(
-    amount,
-    activeAccount.index,
+  const unsignedTx = await WalletService.createExportPTx({
+    amount: requiredAmount.toSubUnit(),
+    accountIndex: activeAccount.index,
     avaxXPNetwork,
-    'C',
-    activeAccount.addressCoreEth
-  )
+    destinationChain: 'C',
+    destinationAddress: activeAccount.addressCoreEth
+  })
 
   const signedTxJson = await WalletService.sign(
     { tx: unsignedTx } as AvalancheTransactionRequest,
