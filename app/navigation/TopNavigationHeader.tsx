@@ -22,6 +22,7 @@ type Props = {
   showAccountSelector?: boolean
   showNetworkSelector?: boolean
   testID?: string
+  onBack?: () => void
 }
 
 type NavigationProp = DrawerScreenProps<
@@ -32,7 +33,8 @@ const TopNavigationHeader: FC<Props> = ({
   showAddress = false,
   showAccountSelector = true,
   showNetworkSelector = true,
-  showBackButton = false
+  showBackButton = false,
+  onBack
 }) => {
   const { theme } = useApplicationContext()
   const navigation = useNavigation<NavigationProp>()
@@ -60,9 +62,17 @@ const TopNavigationHeader: FC<Props> = ({
 
   const renderLeftButton = () => {
     if (showBackButton) {
+      const handleOnBack = () => {
+        if (onBack) {
+          onBack()
+        } else {
+          navigation.goBack()
+        }
+      }
+
       return (
         <AvaButton.Icon
-          onPress={navigation.goBack}
+          onPress={handleOnBack}
           style={{
             paddingLeft: -5,
             paddingRight: 48,
