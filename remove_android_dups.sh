@@ -6,23 +6,23 @@
 
 echo 'Deleting duplicate v8 files from android build...'
 
-if [ -d "/node_modules/react-native-v8/android/build/jniLibs/v8/jni/armeabi-v7a" ]; then 
+if [ -d "../../node_modules/react-native-v8/android/build/jniLibs/v8/jni/armeabi-v7a" ]; then 
     echo 'Deleting armeabi-v7a'
-    rm -rf /node_modules/react-native-v8/android/build/jniLibs/v8/jni/armeabi-v7a
+    rm -rf ../../node_modules/react-native-v8/android/build/jniLibs/v8/jni/armeabi-v7a
 else 
     echo 'armeabi-v7a does not exist'
 fi
 
-if [ -d "/node_modules/react-native-v8/android/build/jniLibs/v8/jni/x86" ]; then
+if [ -d "../../node_modules/react-native-v8/android/build/jniLibs/v8/jni/x86" ]; then
     echo 'Deleting x86'
-    rm -rf /node_modules/react-native-v8/android/build/jniLibs/v8/jni/x86
+    rm -rf ../../node_modules/react-native-v8/android/build/jniLibs/v8/jni/x86
 else 
     echo 'x86 does not exist'
 fi
 
-if [ -d "/node_modules/react-native-v8/android/build/jniLibs/v8/jni/x86_64" ]; then
+if [ -d "../../node_modules/react-native-v8/android/build/jniLibs/v8/jni/x86_64" ]; then
     echo 'Deleting x86_64'
-    rm -rf /node_modules/react-native-v8/android/build/jniLibs/v8/jni/x86_64
+    rm -rf ../../node_modules/react-native-v8/android/build/jniLibs/v8/jni/x86_64
 else 
     echo 'x86_64 does not exist'
 fi
