@@ -17,7 +17,7 @@ import {
 } from 'navigation/types'
 import WatchlistTabView from 'screens/watchlist/WatchlistTabView'
 import { useSelector } from 'react-redux'
-import { selectWalletState, WalletState } from 'store/app'
+import { selectIsLocked, selectWalletState, WalletState } from 'store/app'
 import {
   BOTTOM_BAR_HEIGHT,
   getCommonBottomTabOptions,
@@ -65,9 +65,11 @@ const NoWalletTabNavigator = () => {
   const tabsNavigation = useNavigation<NavigationProp>()
   const walletState = useSelector(selectWalletState)
   const { pendingDeepLink } = useDeeplink()
+  const isLocked = useSelector(selectIsLocked)
+  const appNavHook = useApplicationContext().appNavHook
 
   useEffect(() => {
-    if (pendingDeepLink) {
+    if (pendingDeepLink && walletState === WalletState.NONEXISTENT) {
       showSnackBarCustom({
         component: (
           <GeneralToast
@@ -77,7 +79,93 @@ const NoWalletTabNavigator = () => {
         duration: 'short'
       })
     }
-  }, [pendingDeepLink])
+
+    if (
+      pendingDeepLink &&
+      isLocked &&
+      walletState !== WalletState.NONEXISTENT
+    ) {
+      appNavHook?.navigation?.current?.navigate(
+        AppNavigation.NoWallet.Welcome,
+        { screen: AppNavigation.Onboard.Login }
+      )
+    }
+  }, [appNavHook?.navigation, isLocked, pendingDeepLink, walletState])
+
+  const renderNonExistentWalletTab = () => (
+    <>
+      <Tab.Screen
+        name={AppNavigation.NoWalletTabs.NewWallet}
+        component={WatchlistTabView}
+        options={{
+          tabBarIcon: ({ focused }) =>
+            normalTabButton({
+              testID: 'no_wallet_tab_navigator__create_new_wallet_button',
+              theme,
+              routeName: AppNavigation.NoWalletTabs.NewWallet,
+              focused,
+              image: <CreateNewWalletPlusSVG size={TAB_ICON_SIZE} bold />
+            })
+        }}
+        listeners={() => ({
+          tabPress: e => {
+            e.preventDefault()
+            capture('NewWalletTabClicked')
+            drawerNavigation.navigate(AppNavigation.NoWallet.Welcome, {
+              screen: AppNavigation.Onboard.AnalyticsConsent,
+              params: {
+                nextScreen: AppNavigation.Onboard.CreateWalletStack
+              }
+            })
+          }
+        })}
+      />
+      <Tab.Screen
+        name={AppNavigation.NoWalletTabs.ExistingWallet}
+        component={DummyComponent}
+        options={{
+          tabBarIcon: () =>
+            normalTabButton({
+              testID: 'no_wallet_tab_navigator__recover_wallet_button',
+              theme,
+              routeName: AppNavigation.NoWalletTabs.ExistingWallet,
+              focused: true,
+              image: <WalletSVG size={TAB_ICON_SIZE} />
+            })
+        }}
+        listeners={() => ({
+          tabPress: e => {
+            e.preventDefault()
+            capture('ExistingWalletTabClicked')
+            drawerNavigation.navigate(AppNavigation.NoWallet.Welcome, {
+              screen: AppNavigation.Onboard.AnalyticsConsent,
+              params: {
+                nextScreen: AppNavigation.Onboard.EnterWithMnemonicStack
+              }
+            })
+          }
+        })}
+      />
+    </>
+  )
+
+  const renderExistentWalletTab = () => {
+    return (
+      <>
+        <Tab.Screen
+          name={AppNavigation.NoWalletTabs.EnterWallet}
+          component={WatchlistTabView}
+          options={{
+            tabBarStyle: {
+              height: BOTTOM_BAR_HEIGHT + 10 // add a bit more space since this is for a big button
+            },
+            tabBarButton: EnterWalletButton
+          }}
+        />
+        {/* {pendingDeepLink && isLocked && <PinScreen />} */}
+      </>
+    )
+  }
   /**
    * Due to the use of a custom FAB as a tab icon, spacing needed to be manually manipulated
    * which required the "normal" items to be manually rendered on `options.tabBarIcon` instead of automatically handled
@@ -89,73 +177,9 @@ const NoWalletTabNavigator = () => {
         ...getCommonBottomTabOptions(theme),
         header: props => header(props, tabsNavigation)
       })}>
-      {walletState !== WalletState.NONEXISTENT ? (
-        <Tab.Screen
-          name={AppNavigation.NoWalletTabs.EnterWallet}
-          component={WatchlistTabView}
-          options={{
-            tabBarStyle: {
-              height: BOTTOM_BAR_HEIGHT + 10 // add a bit more space since this is for a big button
-            },
-            tabBarButton: EnterWalletButton
-          }}
-        />
-      ) : (
-        <>
-          <Tab.Screen
-            name={AppNavigation.NoWalletTabs.NewWallet}
-            component={WatchlistTabView}
-            options={{
-              tabBarIcon: ({ focused }) =>
-                normalTabButton({
-                  testID: 'no_wallet_tab_navigator__create_new_wallet_button',
-                  theme,
-                  routeName: AppNavigation.NoWalletTabs.NewWallet,
-                  focused,
-                  image: <CreateNewWalletPlusSVG size={TAB_ICON_SIZE} bold />
-                })
-            }}
-            listeners={() => ({
-              tabPress: e => {
-                e.preventDefault()
-                capture('NewWalletTabClicked')
-                drawerNavigation.navigate(AppNavigation.NoWallet.Welcome, {
-                  screen: AppNavigation.Onboard.AnalyticsConsent,
-                  params: {
-                    nextScreen: AppNavigation.Onboard.CreateWalletStack
-                  }
-                })
-              }
-            })}
-          />
-          <Tab.Screen
-            name={AppNavigation.NoWalletTabs.ExistingWallet}
-            component={DummyComponent}
-            options={{
-              tabBarIcon: () =>
-                normalTabButton({
-                  testID: 'no_wallet_tab_navigator__recover_wallet_button',
-                  theme,
-                  routeName: AppNavigation.NoWalletTabs.ExistingWallet,
-                  focused: true,
-                  image: <WalletSVG size={TAB_ICON_SIZE} />
-                })
-            }}
-            listeners={() => ({
-              tabPress: e => {
-                e.preventDefault()
-                capture('ExistingWalletTabClicked')
-                drawerNavigation.navigate(AppNavigation.NoWallet.Welcome, {
-                  screen: AppNavigation.Onboard.AnalyticsConsent,
-                  params: {
-                    nextScreen: AppNavigation.Onboard.EnterWithMnemonicStack
-                  }
-                })
-              }
-            })}
-          />
-        </>
-      )}
+      {walletState !== WalletState.NONEXISTENT
+        ? renderExistentWalletTab()
+        : renderNonExistentWalletTab()}
     </Tab.Navigator>
   )
 }

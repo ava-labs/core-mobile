@@ -9,14 +9,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { selectWalletState, WalletState } from 'store/app'
 import { noop } from '@avalabs/utils-sdk'
 import { Linking } from 'react-native'
-import { newSession as newSessionV1 } from 'store/walletConnect'
-import {
-  newSession as newSessionV2,
-  WalletConnectVersions
-} from 'store/walletConnectV2'
-import { selectActiveNetwork } from 'store/network'
-import Logger from 'utils/Logger'
-import { parseWalletConnetLink } from './utils'
+import { handleDeeplink } from './utils/handleDeeplink'
 import { DeepLink, DeeplinkContextType, DeepLinkOrigin } from './types'
 
 const DeeplinkContext = createContext<DeeplinkContextType>({
@@ -30,7 +23,6 @@ export const DeeplinkContextProvider = ({
   children: React.ReactNode
 }) => {
   const dispatch = useDispatch()
-  const activeNetwork = useSelector(selectActiveNetwork)
   const walletState = useSelector(selectWalletState)
   const isWalletActive = walletState === WalletState.ACTIVE
 
@@ -70,26 +62,11 @@ export const DeeplinkContextProvider = ({
    *****************************************************************************/
   useEffect(() => {
     if (pendingDeepLink && isWalletActive) {
-      const result = parseWalletConnetLink(pendingDeepLink.url)
-
-      if (result) {
-        // link is a valid wallet connect uri
-        const { version, uri } = result
-        const versionStr = version.toString()
-
-        if (versionStr === WalletConnectVersions.V1) {
-          dispatch(newSessionV1(uri))
-        } else if (versionStr === WalletConnectVersions.V2) {
-          dispatch(newSessionV2(uri))
-        }
-
-        // once we used the url, we can expire it
-        expireDeepLink()
-      } else {
-        Logger.info(`${pendingDeepLink.url} is not a wallet connect link`)
-      }
+      handleDeeplink(pendingDeepLink.url, dispatch)
+      // once we used the url, we can expire it
+      expireDeepLink()
     }
-  }, [isWalletActive, pendingDeepLink, activeNetwork, expireDeepLink, dispatch])
+  }, [isWalletActive, pendingDeepLink, expireDeepLink, dispatch])
 
   return (
     <DeeplinkContext.Provider

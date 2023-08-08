@@ -8,6 +8,8 @@ import TopNavigationHeader from 'navigation/TopNavigationHeader'
 import ClaimRewards from 'screens/earn/ClaimRewards'
 import { FeeUnavailableModal } from 'screens/earn/FeeUnavailableModal'
 import { EarnNotificationsModal } from 'screens/earn/EarnNotificationsModal'
+import * as Navigation from 'utils/Navigation'
+import { noop } from '@avalabs/utils-sdk'
 import StakeSetupScreenStack, {
   StakeSetupStackParamList
 } from './StakeSetupScreenStack'
@@ -20,7 +22,7 @@ export type EarnStackParamList = {
     txHash: string
     stakeTitle: string
   }
-  [AppNavigation.Earn.ClaimRewards]: undefined
+  [AppNavigation.Earn.ClaimRewards]?: { onBack?: () => void }
   [AppNavigation.Earn.FeeUnavailable]: undefined
   [AppNavigation.Earn.EarnNotificationsPrompt]: undefined
 }
@@ -42,7 +44,7 @@ function EarnScreenStack() {
       <EarnStack.Screen
         name={AppNavigation.Earn.StakeDashboard}
         options={{
-          header: NavigationHeader
+          header: () => renderNavigationHeader({})
         }}
         component={StakeDashboard}
       />
@@ -56,6 +58,18 @@ function EarnScreenStack() {
         component={StakeDetails}
       />
       <EarnStack.Screen
+        options={{
+          header: () =>
+            renderNavigationHeader({
+              showBackButton: true,
+              onBack: () => {
+                Navigation.navigate({
+                  // @ts-ignore
+                  name: AppNavigation.Tabs.Stake
+                })
+              }
+            })
+        }}
         name={AppNavigation.Earn.ClaimRewards}
         component={ClaimRewards}
       />
@@ -75,10 +89,18 @@ function EarnScreenStack() {
   )
 }
 
-const NavigationHeader = () => (
+const renderNavigationHeader = ({
+  showBackButton = false,
+  onBack = noop
+}: {
+  showBackButton?: boolean
+  onBack?: () => void
+}) => (
   <TopNavigationHeader
     showAccountSelector={false}
     showNetworkSelector={false}
+    showBackButton={showBackButton}
+    onBack={onBack}
   />
 )
 

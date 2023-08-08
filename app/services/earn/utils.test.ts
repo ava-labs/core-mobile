@@ -2,6 +2,7 @@ import { AdvancedSortFilter, NodeValidators } from 'types/earn'
 import mockValidators from 'tests/fixtures/pvm/validators.json'
 import { Avax } from 'types/Avax'
 import { addDays, addYears } from 'date-fns'
+import * as Navigation from 'utils/Navigation'
 import {
   calculateMaxWeight,
   getAvailableDelegationWeight,
@@ -10,7 +11,8 @@ import {
   getRandomValidator,
   getSimpleSortedValidators,
   getSortedValidatorsByEndTime,
-  isEndTimeOverOneYear
+  isEndTimeOverOneYear,
+  navigateToClaimRewards
 } from './utils'
 
 describe('calculateMaxWeight', () => {
@@ -242,5 +244,31 @@ describe('getSortedValidatorsByEndTime', () => {
   it('returns empty array when input is empty array', () => {
     const result = getSortedValidatorsByEndTime([])
     expect(result).toEqual([])
+  })
+})
+
+describe('navigateToClaimRewards', () => {
+  const mockNavigate = jest.fn()
+  jest.useFakeTimers()
+  jest.spyOn(Navigation, 'navigate').mockImplementation(mockNavigate)
+
+  it('should have been navigated to claim rewards screen', () => {
+    navigateToClaimRewards()
+    jest.runAllTimers()
+    expect(mockNavigate).toHaveBeenLastCalledWith({
+      name: expect.anything(),
+      params: {
+        screen: 'WalletScreens.Earn',
+        params: {
+          screen: 'EarnScreens.ClaimRewards',
+          params: expect.anything()
+        }
+      }
+    })
+  })
+  it('should not have called navigate before timeout', () => {
+    navigateToClaimRewards()
+    jest.advanceTimersByTime(500)
+    expect(mockNavigate).not.toHaveBeenCalled()
   })
 })
