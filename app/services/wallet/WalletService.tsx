@@ -132,6 +132,7 @@ class WalletService {
       throw new Error('Wrong network')
     }
 
+    Logger.info('validating burned amount')
     const avalancheProvider = networkService.getProviderForNetwork(
       network
     ) as Avalanche.JsonRpcProvider
@@ -147,6 +148,8 @@ class WalletService {
       Logger.error(`Excessive burn amount. Expected ${txFee} nAvax.`)
       throw Error('Excessive burn amount')
     }
+
+    Logger.info('burned amount is valid')
   }
 
   async sign(
