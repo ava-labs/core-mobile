@@ -44,13 +44,16 @@ export const useClaimFees = () => {
 
       const instantBaseFee = WalletService.getInstantBaseFee(baseFee)
 
-      const unsignedTx = await WalletService.createImportCTx(
-        activeAccount.index,
-        instantBaseFee,
+      const unsignedTx = await WalletService.createImportCTx({
+        accountIndex: activeAccount.index,
+        baseFee: instantBaseFee,
         avaxXPNetwork,
-        'P',
-        activeAccount.address
-      )
+        sourceChain: 'P',
+        destinationAddress: activeAccount.address,
+        // we only need to validate burned amount
+        // when the actual submission happens
+        shouldValidateBurnedAmount: false
+      })
 
       const signedTxJson = await WalletService.sign(
         { tx: unsignedTx } as AvalancheTransactionRequest,

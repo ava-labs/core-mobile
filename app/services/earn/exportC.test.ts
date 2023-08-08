@@ -88,14 +88,14 @@ describe('earn/exportC', () => {
         isDevMode: false,
         activeAccount: {} as Account
       })
-      expect(WalletService.createExportCTx).toHaveBeenCalledWith(
-        Avax.fromBase('0.101'),
-        Avax.fromNanoAvax(30),
-        undefined,
-        AVALANCHE_XP_NETWORK,
-        'P',
-        undefined
-      )
+      expect(WalletService.createExportCTx).toHaveBeenCalledWith({
+        amount: Avax.fromBase('0.101'),
+        baseFee: Avax.fromNanoAvax(30),
+        accountIndex: undefined,
+        avaxXPNetwork: AVALANCHE_XP_NETWORK,
+        destinationChain: 'P',
+        destinationAddress: undefined
+      })
       expect(result).toBe(true)
     })
 

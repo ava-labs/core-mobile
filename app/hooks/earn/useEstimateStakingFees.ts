@@ -65,14 +65,18 @@ export const useEstimateStakingFees = (
       const totalAmount = amountForCrossChainTransfer.add(importFee) // we need to include import fee
       const instantBaseFee = WalletService.getInstantBaseFee(baseFee)
 
-      const unsignedTx = await WalletService.createExportCTx(
-        totalAmount,
-        instantBaseFee,
-        activeAccount.index,
+      const unsignedTx = await WalletService.createExportCTx({
+        amount: totalAmount,
+        baseFee: instantBaseFee,
+        accountIndex: activeAccount.index,
         avaxXPNetwork,
-        'P',
-        activeAccount.addressPVM
-      )
+        destinationChain: 'P',
+        destinationAddress: activeAccount.addressPVM,
+        // we only need to validate burned amount
+        // when the actual submission happens
+        shouldValidateBurnedAmount: false
+      })
+
       const signedTxJson = await WalletService.sign(
         { tx: unsignedTx } as AvalancheTransactionRequest,
         activeAccount.index,

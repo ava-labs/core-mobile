@@ -76,13 +76,13 @@ describe('earn/exportP', () => {
         isDevMode: false,
         activeAccount: {} as Account
       })
-      expect(WalletService.createExportPTx).toHaveBeenCalledWith(
-        BigInt(10000000000),
-        undefined,
-        AVALANCHE_XP_NETWORK,
-        'C',
-        undefined
-      )
+      expect(WalletService.createExportPTx).toHaveBeenCalledWith({
+        amount: BigInt(10000000000),
+        accountIndex: undefined,
+        avaxXPNetwork: AVALANCHE_XP_NETWORK,
+        destinationChain: 'C',
+        destinationAddress: undefined
+      })
       expect(result).toBe(true)
     })
 

@@ -59,13 +59,13 @@ describe('earn/importC', () => {
         activeAccount: {} as Account,
         isDevMode: false
       })
-      expect(WalletService.createImportCTx).toHaveBeenCalledWith(
-        undefined,
-        Avax.fromBase(0.0003), // 0.0003 AVAX
-        AVALANCHE_XP_NETWORK,
-        'P',
-        undefined
-      )
+      expect(WalletService.createImportCTx).toHaveBeenCalledWith({
+        accountIndex: undefined,
+        baseFee: Avax.fromBase(0.0003),
+        avaxXPNetwork: AVALANCHE_XP_NETWORK,
+        sourceChain: 'P',
+        destinationAddress: undefined
+      })
     })
 
     it('should call walletService.signAvaxTx', async () => {

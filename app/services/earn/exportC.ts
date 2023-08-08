@@ -49,14 +49,14 @@ export async function exportC({
     throw Error('Not enough balance on C chain')
   }
 
-  const unsignedTxWithFee = await WalletService.createExportCTx(
+  const unsignedTxWithFee = await WalletService.createExportCTx({
     amount,
-    instantBaseFee,
-    activeAccount.index,
+    baseFee: instantBaseFee,
+    accountIndex: activeAccount.index,
     avaxXPNetwork,
-    'P',
-    activeAccount.addressPVM
-  )
+    destinationChain: 'P',
+    destinationAddress: activeAccount.addressPVM
+  })
 
   const signedTxWithFeeJson = await WalletService.sign(
     { tx: unsignedTxWithFee } as AvalancheTransactionRequest,

@@ -30,13 +30,13 @@ export async function importC({
   const baseFeeAvax = Avax.fromWei(baseFee)
   const instantBaseFee = WalletService.getInstantBaseFee(baseFeeAvax)
 
-  const unsignedTx = await WalletService.createImportCTx(
-    activeAccount.index,
-    instantBaseFee,
+  const unsignedTx = await WalletService.createImportCTx({
+    accountIndex: activeAccount.index,
+    baseFee: instantBaseFee,
     avaxXPNetwork,
-    'P',
-    activeAccount.address
-  )
+    sourceChain: 'P',
+    destinationAddress: activeAccount.address
+  })
 
   const signedTxJson = await WalletService.sign(
     {

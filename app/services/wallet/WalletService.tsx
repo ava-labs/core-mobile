@@ -13,6 +13,10 @@ import {
 import { now } from 'moment'
 import {
   AddDelegatorProps,
+  CreateExportCTxParams,
+  CreateExportPTxParams,
+  CreateImportCTxParams,
+  CreateImportPTxParams,
   PubKeyType,
   SignTransactionRequest
 } from 'services/wallet/types'
@@ -248,14 +252,15 @@ class WalletService {
     return instantFee
   }
 
-  async createExportCTx(
-    amount: Avax,
-    baseFee: Avax,
-    accountIndex: number,
-    avaxXPNetwork: Network,
-    destinationChain: 'P' | 'X',
-    destinationAddress: string | undefined
-  ): Promise<UnsignedTx> {
+  async createExportCTx({
+    amount,
+    baseFee,
+    accountIndex,
+    avaxXPNetwork,
+    destinationChain,
+    destinationAddress,
+    shouldValidateBurnedAmount = true
+  }: CreateExportCTxParams): Promise<UnsignedTx> {
     const wallet = (await this.getWallet(
       accountIndex,
       avaxXPNetwork
@@ -270,11 +275,12 @@ class WalletService {
       destinationAddress
     )
 
-    this.validateAvalancheFee({
-      network: avaxXPNetwork,
-      unsignedTx,
-      evmBaseFee: baseFee
-    })
+    shouldValidateBurnedAmount &&
+      this.validateAvalancheFee({
+        network: avaxXPNetwork,
+        unsignedTx,
+        evmBaseFee: baseFee
+      })
 
     return unsignedTx
   }
@@ -285,12 +291,13 @@ class WalletService {
    * @param sourceChain
    * @param destinationAddress
    */
-  async createImportPTx(
-    accountIndex: number,
-    avaxXPNetwork: Network,
-    sourceChain: 'C' | 'X',
-    destinationAddress: string | undefined
-  ): Promise<UnsignedTx> {
+  async createImportPTx({
+    accountIndex,
+    avaxXPNetwork,
+    sourceChain,
+    destinationAddress,
+    shouldValidateBurnedAmount = true
+  }: CreateImportPTxParams): Promise<UnsignedTx> {
     const wallet = (await this.getWallet(
       accountIndex,
       avaxXPNetwork
@@ -300,10 +307,11 @@ class WalletService {
 
     const unsignedTx = wallet.importP(utxoSet, sourceChain, destinationAddress)
 
-    this.validateAvalancheFee({
-      network: avaxXPNetwork,
-      unsignedTx
-    })
+    shouldValidateBurnedAmount &&
+      this.validateAvalancheFee({
+        network: avaxXPNetwork,
+        unsignedTx
+      })
 
     return unsignedTx
   }
@@ -315,13 +323,14 @@ class WalletService {
    * @param destinationChain
    * @param destinationAddress
    */
-  async createExportPTx(
-    amount: bigint,
-    accountIndex: number,
-    avaxXPNetwork: Network,
-    destinationChain: 'C' | 'X',
-    destinationAddress: string | undefined
-  ): Promise<UnsignedTx> {
+  async createExportPTx({
+    amount,
+    accountIndex,
+    avaxXPNetwork,
+    destinationChain,
+    destinationAddress,
+    shouldValidateBurnedAmount = true
+  }: CreateExportPTxParams): Promise<UnsignedTx> {
     const wallet = (await this.getWallet(
       accountIndex,
       avaxXPNetwork
@@ -336,10 +345,11 @@ class WalletService {
       destinationAddress
     )
 
-    this.validateAvalancheFee({
-      network: avaxXPNetwork,
-      unsignedTx
-    })
+    shouldValidateBurnedAmount &&
+      this.validateAvalancheFee({
+        network: avaxXPNetwork,
+        unsignedTx
+      })
 
     return unsignedTx
   }
@@ -351,13 +361,14 @@ class WalletService {
    * @param sourceChain
    * @param destinationAddress
    */
-  async createImportCTx(
-    accountIndex: number,
-    baseFee: Avax,
-    avaxXPNetwork: Network,
-    sourceChain: 'P' | 'X',
-    destinationAddress: string | undefined
-  ): Promise<UnsignedTx> {
+  async createImportCTx({
+    accountIndex,
+    baseFee,
+    avaxXPNetwork,
+    sourceChain,
+    destinationAddress,
+    shouldValidateBurnedAmount = true
+  }: CreateImportCTxParams): Promise<UnsignedTx> {
     const wallet = (await this.getWallet(
       accountIndex,
       avaxXPNetwork
@@ -373,11 +384,12 @@ class WalletService {
       destinationAddress
     )
 
-    this.validateAvalancheFee({
-      network: avaxXPNetwork,
-      unsignedTx,
-      evmBaseFee: baseFee
-    })
+    shouldValidateBurnedAmount &&
+      this.validateAvalancheFee({
+        network: avaxXPNetwork,
+        unsignedTx,
+        evmBaseFee: baseFee
+      })
 
     return unsignedTx
   }
@@ -390,7 +402,8 @@ class WalletService {
     startDate,
     endDate,
     rewardAddress,
-    isDevMode
+    isDevMode,
+    shouldValidateBurnedAmount = true
   }: AddDelegatorProps): Promise<UnsignedTx> {
     if (!nodeId.startsWith('NodeID-')) {
       throw Error('Invalid node id: ' + nodeId)
@@ -440,10 +453,11 @@ class WalletService {
       config
     )
 
-    this.validateAvalancheFee({
-      network,
-      unsignedTx
-    })
+    shouldValidateBurnedAmount &&
+      this.validateAvalancheFee({
+        network,
+        unsignedTx
+      })
 
     return unsignedTx
   }

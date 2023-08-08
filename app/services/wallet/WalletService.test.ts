@@ -33,17 +33,24 @@ describe('WalletService', () => {
       getUTXOs: getUTXOsMock,
       addDelegator: addDelegatorMock
     })
-    jest.mock('services/wallet/WalletService')
 
-    jest // @ts-ignore
-      .spyOn(WalletService, 'getWallet')
-      // @ts-ignore
-      .mockImplementation(() => mockWallet())
+    beforeAll(() => {
+      jest.mock('services/wallet/WalletService')
 
-    jest // @ts-ignore
-      .spyOn(WalletService, 'validateAvalancheFee')
-      // @ts-ignore
-      .mockImplementation(mockValidateFee)
+      jest // @ts-ignore
+        .spyOn(WalletService, 'getWallet')
+        // @ts-ignore
+        .mockImplementation(() => mockWallet())
+
+      jest // @ts-ignore
+        .spyOn(WalletService, 'validateAvalancheFee')
+        // @ts-ignore
+        .mockImplementation(mockValidateFee)
+    })
+
+    beforeEach(() => {
+      mockValidateFee.mockReset()
+    })
 
     it('should throw if Node ID is invalid', async () => {
       const params = {
@@ -141,6 +148,27 @@ describe('WalletService', () => {
       await expect(async () => {
         await WalletService.createAddDelegatorTx(params)
       }).rejects.toThrow('test fee validation error')
+    })
+
+    it('should not throw if failed to validate fee when shouldValidateBurnedAmount is false', async () => {
+      const params = {
+        avaxXPNetwork: network,
+        nodeId: validNodeId,
+        stakeAmount: fujiValidStakeAmount,
+        startDate: validStartDate,
+        endDate: validEndDateFuji,
+        rewardAddress: validRewardAddress,
+        isDevMode: true,
+        shouldValidateBurnedAmount: false
+      } as AddDelegatorProps
+
+      mockValidateFee.mockImplementationOnce(() => {
+        throw new Error('test fee validation error')
+      })
+
+      await expect(async () => {
+        await WalletService.createAddDelegatorTx(params)
+      }).not.toThrow('test fee validation error')
     })
 
     it('should create delegator tx successfully', async () => {
