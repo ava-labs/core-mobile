@@ -45,7 +45,7 @@ export async function exportC({
   const pChainFee = calculatePChainFee()
   const amount = requiredAmount.add(pChainFee)
 
-  if (cChainBalance < amount) {
+  if (cChainBalance.lt(amount)) {
     throw Error('Not enough balance on C chain')
   }
 
