@@ -50,38 +50,29 @@ export type AddDelegatorProps = {
   shouldValidateBurnedAmount?: boolean
 }
 
-export type CreateExportCTxParams = {
+export interface CommonAvalancheTxParamsBase {
+  accountIndex: number
+  avaxXPNetwork: Network
+  destinationAddress: string | undefined
+  shouldValidateBurnedAmount?: boolean
+}
+
+export type CreateExportCTxParams = CommonAvalancheTxParamsBase & {
   amount: Avax
   baseFee: Avax
-  accountIndex: number
-  avaxXPNetwork: Network
   destinationChain: 'P' | 'X'
-  destinationAddress: string | undefined
-  shouldValidateBurnedAmount?: boolean
 }
 
-export type CreateImportPTxParams = {
-  accountIndex: number
-  avaxXPNetwork: Network
+export type CreateImportPTxParams = CommonAvalancheTxParamsBase & {
   sourceChain: 'C' | 'X'
-  destinationAddress: string | undefined
-  shouldValidateBurnedAmount?: boolean
 }
 
-export type CreateExportPTxParams = {
+export type CreateExportPTxParams = CommonAvalancheTxParamsBase & {
   amount: bigint
-  accountIndex: number
-  avaxXPNetwork: Network
   destinationChain: 'C' | 'X'
-  destinationAddress: string | undefined
-  shouldValidateBurnedAmount?: boolean
 }
 
-export type CreateImportCTxParams = {
-  accountIndex: number
+export type CreateImportCTxParams = CommonAvalancheTxParamsBase & {
   baseFee: Avax
-  avaxXPNetwork: Network
   sourceChain: 'P' | 'X'
-  destinationAddress: string | undefined
-  shouldValidateBurnedAmount?: boolean
 }
