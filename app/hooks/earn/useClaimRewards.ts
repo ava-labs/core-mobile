@@ -54,8 +54,8 @@ export const useClaimRewards = (
       Logger.info(`transfering ${amountToTransfer.toDisplay()} from P to C`)
 
       return EarnService.claimRewards(
-        totalClaimable.toNano(),
-        amountToTransfer.toNano(),
+        totalClaimable,
+        amountToTransfer,
         activeAccount,
         isDeveloperMode
       )

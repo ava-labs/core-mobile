@@ -17,20 +17,12 @@ describe('earn/calculateCChainFee', () => {
     } as unknown as UnsignedTx
 
     it('should result 0.00033003 for single byte with base fee 30nAvax', async () => {
-      const result = calculateCChainFee(
-        Avax.fromNanoAvax(30),
-        unsignedTxMock,
-        unsignedTxMock.getSignedTx()
-      )
+      const result = calculateCChainFee(Avax.fromNanoAvax(30), unsignedTxMock)
       expect(result.toString()).toBe('0.00033003')
     })
 
     it('should result 0.000495045 for single byte with base fee 45nAvax', async () => {
-      const result = calculateCChainFee(
-        Avax.fromNanoAvax(45),
-        unsignedTxMock,
-        unsignedTxMock.getSignedTx()
-      )
+      const result = calculateCChainFee(Avax.fromNanoAvax(45), unsignedTxMock)
       expect(result.toString()).toBe('0.000495045')
     })
   })
