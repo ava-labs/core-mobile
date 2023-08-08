@@ -40,7 +40,7 @@ export async function exportC({
   ) as Avalanche.JsonRpcProvider
 
   const baseFee = Avax.fromWei(await avaxProvider.getApiC().getBaseFee())
-  const instantFee = baseFee.add(baseFee.mul(0.2)) // Increase by 20% for instant speed
+  const instantBaseFee = WalletService.getInstantBaseFee(baseFee)
 
   const pChainFee = calculatePChainFee()
   const amount = requiredAmount.add(pChainFee)
@@ -51,7 +51,7 @@ export async function exportC({
 
   const unsignedTxWithFee = await WalletService.createExportCTx(
     amount,
-    instantFee,
+    instantBaseFee,
     activeAccount.index,
     avaxXPNetwork,
     'P',

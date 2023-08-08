@@ -5,6 +5,7 @@ import { Avalanche } from '@avalabs/wallets-sdk'
 import { avaxSerial, EVM, UnsignedTx, utils } from '@avalabs/avalanchejs-v2'
 import { importC } from 'services/earn/importC'
 import { AVALANCHE_XP_NETWORK } from '@avalabs/chains-sdk'
+import { Avax } from 'types/Avax'
 
 describe('earn/importC', () => {
   describe('importC', () => {
@@ -60,7 +61,7 @@ describe('earn/importC', () => {
       })
       expect(WalletService.createImportCTx).toHaveBeenCalledWith(
         undefined,
-        BigInt(300000), // 0.0003 AVAX
+        Avax.fromBase(0.0003), // 0.0003 AVAX
         AVALANCHE_XP_NETWORK,
         'P',
         undefined

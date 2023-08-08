@@ -62,12 +62,12 @@ export const useEstimateStakingFees = (
         return
       }
 
-      const totalAmount = amountForCrossChainTransfer.add(importFee) //we need to include import fee
-      const instantFee = baseFee.add(baseFee.mul(0.2)) // Increase by 20% for instant speed
+      const totalAmount = amountForCrossChainTransfer.add(importFee) // we need to include import fee
+      const instantBaseFee = WalletService.getInstantBaseFee(baseFee)
 
       const unsignedTx = await WalletService.createExportCTx(
         totalAmount,
-        instantFee,
+        instantBaseFee,
         activeAccount.index,
         avaxXPNetwork,
         'P',
@@ -79,7 +79,7 @@ export const useEstimateStakingFees = (
         avaxXPNetwork
       )
       const signedTx = UnsignedTx.fromJSON(signedTxJson).getSignedTx()
-      const exportFee = calculateCChainFee(instantFee, unsignedTx, signedTx)
+      const exportFee = calculateCChainFee(instantBaseFee, unsignedTx, signedTx)
       setEstimatedStakingFee(exportFee.add(importFee))
     }
     calculateEstimatedStakingFee().catch(reason => Logger.error(reason))

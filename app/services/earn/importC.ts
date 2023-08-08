@@ -28,11 +28,11 @@ export async function importC({
 
   const baseFee = await avaxProvider.getApiC().getBaseFee() //in WEI
   const baseFeeAvax = Avax.fromWei(baseFee)
-  const instantFee = baseFeeAvax.add(baseFeeAvax.mul(0.2)).toSubUnit() // Increase by 20% for instant speed
+  const instantBaseFee = WalletService.getInstantBaseFee(baseFeeAvax)
 
   const unsignedTx = await WalletService.createImportCTx(
     activeAccount.index,
-    instantFee,
+    instantBaseFee,
     avaxXPNetwork,
     'P',
     activeAccount.address

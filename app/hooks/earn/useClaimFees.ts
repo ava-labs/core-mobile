@@ -42,11 +42,11 @@ export const useClaimFees = () => {
 
       const avaxXPNetwork = NetworkService.getAvalancheNetworkXP(isDevMode)
 
-      const instantBaseFee = baseFee.add(baseFee.mul(0.2)) // Increase by 20% for instant speed
+      const instantBaseFee = WalletService.getInstantBaseFee(baseFee)
 
       const unsignedTx = await WalletService.createImportCTx(
         activeAccount.index,
-        instantBaseFee.toSubUnit(),
+        instantBaseFee,
         avaxXPNetwork,
         'P',
         activeAccount.address
