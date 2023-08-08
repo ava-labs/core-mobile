@@ -252,16 +252,18 @@ describe('navigateToClaimRewards', () => {
   jest.useFakeTimers()
   jest.spyOn(Navigation, 'navigate').mockImplementation(mockNavigate)
 
-  it('should have called navigate twice', () => {
-    navigateToClaimRewards()
-    jest.runAllTimers()
-    expect(mockNavigate).toHaveBeenCalledTimes(2)
-  })
-  it('should navigate to claim rewards screen at last', () => {
+  it('should have been navigated to claim rewards screen', () => {
     navigateToClaimRewards()
     jest.runAllTimers()
     expect(mockNavigate).toHaveBeenLastCalledWith({
-      name: 'EarnScreens.ClaimRewards'
+      name: expect.anything(),
+      params: {
+        screen: 'WalletScreens.Earn',
+        params: {
+          screen: 'EarnScreens.ClaimRewards',
+          params: expect.anything()
+        }
+      }
     })
   })
   it('should not have called navigate before timeout', () => {

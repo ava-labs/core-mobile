@@ -4,7 +4,7 @@ import { EarnScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { usePChainBalance } from 'hooks/earn/usePChainBalance'
-import { useIsFocused, useNavigation } from '@react-navigation/native'
+import { useIsFocused, useNavigation, useRoute } from '@react-navigation/native'
 import Separator from 'components/Separator'
 import AvaText from 'components/AvaText'
 import { Popable } from 'react-native-popable'
@@ -34,6 +34,7 @@ const onClaimError = (error: Error) => {
 const ClaimRewards = () => {
   const { theme } = useApplicationContext()
   const { navigate, goBack } = useNavigation<ScreenProps['navigation']>()
+  const onBack = useRoute<ScreenProps['route']>().params?.onBack
   const activeNetwork = useSelector(selectActiveNetwork)
   const { data } = usePChainBalance()
   const { totalFees } = useClaimFees()
@@ -66,6 +67,14 @@ const ClaimRewards = () => {
 
   const [feesInAvax, feesInCurrency] = avaxFormatter(totalFees)
 
+  const handleGoBack = () => {
+    if (onBack) {
+      onBack()
+    } else {
+      goBack()
+    }
+  }
+
   const renderFees = () => {
     if (unableToGetFees) {
       return <Spinner size={22} />
@@ -90,7 +99,7 @@ const ClaimRewards = () => {
       onConfirm={() => {
         claimRewardsMutation.mutate()
       }}
-      onCancel={goBack}
+      onCancel={handleGoBack}
       header="Claim Rewards"
       confirmBtnTitle="Claim Now"
       cancelBtnTitle="Cancel"

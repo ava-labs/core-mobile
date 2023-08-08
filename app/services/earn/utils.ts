@@ -279,15 +279,19 @@ export const navigateToClaimRewards = async () => {
   setTimeout(async () => {
     Logger.info('navigating to claim rewards')
     Navigation.navigate({
-      // @ts-ignore
-      name: AppNavigation.Tabs.Stake
-    })
-    Navigation.navigate({
-      // @ts-ignore
-      name: AppNavigation.Wallet.Earn,
+      name: AppNavigation.Root.Wallet,
       params: {
-        // @ts-ignore
-        screen: AppNavigation.Earn.ClaimRewards
+        screen: AppNavigation.Wallet.Earn,
+        params: {
+          screen: AppNavigation.Earn.ClaimRewards,
+          params: {
+            onBack: () =>
+              Navigation.navigate({
+                //@ts-ignore
+                name: AppNavigation.Tabs.Stake
+              })
+          }
+        }
       }
     })
   }, 1000)
