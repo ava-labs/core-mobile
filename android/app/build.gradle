@@ -303,6 +303,18 @@ task copyDownloadableDepsToLibs(type: Copy) {
     into 'libs'
 }
 
+task deleteDuplicateDependencies(type: Delete) {
+    doLast {
+        exec {
+            commandLine '../../remove_android_dups.sh'
+        }
+    }
+}
+
+tasks.named('build') {
+    dependsOn 'deleteDuplicateDependencies'
+}
+
 apply from: file("../../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesAppBuildGradle(project)
 
 def isNewArchitectureEnabled() {
