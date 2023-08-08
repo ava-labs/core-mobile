@@ -4,13 +4,11 @@ import {
   calculateCChainFee,
   calculatePChainFee
 } from 'services/earn/calculateCrossChainFees'
-import { UnsignedTx } from '@avalabs/avalanchejs-v2'
 import { useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import NetworkService from 'services/network/NetworkService'
 import { selectActiveAccount } from 'store/account'
 import WalletService from 'services/wallet/WalletService'
-import { AvalancheTransactionRequest } from 'services/wallet/types'
 import Logger from 'utils/Logger'
 import { useCChainBaseFee } from 'hooks/useCChainBaseFee'
 
@@ -55,19 +53,7 @@ export const useClaimFees = () => {
         shouldValidateBurnedAmount: false
       })
 
-      const signedTxJson = await WalletService.sign(
-        { tx: unsignedTx } as AvalancheTransactionRequest,
-        activeAccount.index,
-        avaxXPNetwork
-      )
-
-      const signedTx = UnsignedTx.fromJSON(signedTxJson).getSignedTx()
-
-      const importCFee = calculateCChainFee(
-        instantBaseFee,
-        unsignedTx,
-        signedTx
-      )
+      const importCFee = calculateCChainFee(instantBaseFee, unsignedTx)
 
       Logger.info('importCFee', importCFee.toDisplay())
       Logger.info('exportPFee', exportPFee.toDisplay())
