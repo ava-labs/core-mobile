@@ -1,4 +1,4 @@
-import React, { Key, useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaListItem from 'components/AvaListItem'
@@ -60,11 +60,9 @@ const Notifications = () => {
 }
 
 function NotificationToggle({
-  key,
   channel,
   isSystemDisabled
 }: {
-  key: Key
   channel: AvaxAndroidChannel
   isSystemDisabled: boolean
 }) {
@@ -83,7 +81,6 @@ function NotificationToggle({
 
   return (
     <AvaListItem.Base
-      key={key}
       disabled={isSystemDisabled}
       title={channel.title}
       subtitle={channel.subtitle}
