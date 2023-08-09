@@ -10,6 +10,8 @@ cmds=(
 'npx playwright test e2e/tests/playwright/benqi.spec.ts --project='chromium''
 'npx playwright test e2e/tests/playwright/opensea.spec.ts --project='firefox''
 'npx playwright test e2e/tests/playwright/pangolin.spec.ts --project='chromium''
+'npx playwright test e2e/tests/playwright/multichain.spec.ts --project='chromium''
+
 # yieldyak is not connecting and is even inconsistent in extension. will revisit later.
 # 'npx playwright test e2e/tests/playwright/yieldyak.spec.ts --project='chromium''
 )
