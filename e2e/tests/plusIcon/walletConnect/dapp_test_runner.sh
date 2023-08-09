@@ -5,6 +5,10 @@ cmds=(
 'npx playwright test e2e/tests/playwright/uniswap.spec.ts --project='chromium''
 'npx playwright test e2e/tests/playwright/oasis.spec.ts --project='chromium''
 'npx playwright test e2e/tests/playwright/core.spec.ts --project='firefox''
+# gmx is not connecting and is even inconsistent in extension. will revisit later.
+# 'npx playwright test e2e/tests/playwright/gmx.spec.ts --project='chromium''
+'npx playwright test e2e/tests/playwright/benqi.spec.ts --project='chromium''
+'npx playwright test e2e/tests/playwright/opensea.spec.ts --project='firefox''
 )
 
 read -p "Did you start your emulator or simulator? (y/n)" reply
