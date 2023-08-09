@@ -9,7 +9,7 @@ class CommonElsPage {
   }
 
   get connectWalletBtn() {
-    return this.page.getByText(commonEls.connectWallet)
+    return this.page.getByText(commonEls.connectWallet).first()
   }
 
   get walletConnectBtn() {
@@ -36,8 +36,12 @@ class CommonElsPage {
     await this.connectWalletBtn.click()
   }
 
-  async clickWalletConnectBtn() {
-    await this.walletConnectBtn.click()
+  // Some sites have multiple wallet connect buttons so adjust the index as needed in order to click the correct one
+  async clickWalletConnectBtn(index = 0) {
+    const walletConnectBtn = this.page.locator(
+      `text=WalletConnect >> nth=${index}`
+    )
+    await walletConnectBtn.click()
   }
 }
 
