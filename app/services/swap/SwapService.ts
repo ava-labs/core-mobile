@@ -13,7 +13,7 @@ import Web3 from 'web3'
 import { Account } from 'store/account'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { Transaction as SentryTransaction } from '@sentry/types'
-import { exponentialBackoff } from 'utils/js/exponentialBackoff'
+import { retry } from 'utils/js/retry'
 
 const NETWORK_UNSUPPORTED_ERROR = new Error(
   'Fuji network is not supported by Paraswap'
@@ -65,10 +65,11 @@ class SwapService {
           )
         }
 
-        return await exponentialBackoff(
-          optimalRates,
-          result => (result as APIError).message !== 'Server too busy'
-        )
+        return await retry({
+          operation: optimalRates,
+          isSuccess: result =>
+            (result as APIError).message !== 'Server too busy'
+        })
       })
   }
 
