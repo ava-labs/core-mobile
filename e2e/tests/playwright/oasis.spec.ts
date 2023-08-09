@@ -12,8 +12,8 @@ test('check wallet connect button', async ({ page }) => {
   await commonEls.clickConnectWalletBtn()
   await expect(commonEls.walletConnectBtn).toBeVisible()
   await commonEls.clickWalletConnectBtn()
-  await expect(commonEls.w3mWalletUri).toBeVisible()
-  const qrUri = await commonEls.qrUriValue('w3m')
+  await expect(commonEls.wcmWalletUri).toBeVisible()
+  const qrUri = await commonEls.qrUriValue('wcm')
 
   if (qrUri) {
     await actions.writeQrCodeToFile(qrUri)
