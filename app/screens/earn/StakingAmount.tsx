@@ -26,12 +26,14 @@ import { ActivityIndicator } from 'components/ActivityIndicator'
 import { PopableContent } from 'components/PopableContent'
 import { PopableLabel } from 'components/PopableLabel'
 import { Popable } from 'react-native-popable'
+import { useAvaxFormatter } from 'hooks/formatter/useAvaxFormatter'
 
 type ScreenProps = StakeSetupScreenProps<
   typeof AppNavigation.StakeSetup.SmartStakeAmount
 >
 
 export default function StakingAmount() {
+  const avaxFormatter = useAvaxFormatter()
   const { theme } = useApplicationContext()
   const { navigate } = useNavigation<ScreenProps['navigation']>()
   const { minStakeAmount } = useStakingParams()
@@ -72,6 +74,8 @@ export default function StakingAmount() {
   const inputValid =
     !amountNotEnough && !notEnoughBalance && !inputAmount.isZero()
 
+  const [balanceInAvax] = avaxFormatter(cumulativeBalance, true)
+
   function handleAmountChange(amount: Avax) {
     setInputAmount(amount)
   }
@@ -109,7 +113,7 @@ export default function StakingAmount() {
           <Row style={{ justifyContent: 'center', alignItems: 'center' }}>
             <AvaText.Subtitle1 color={theme.neutral500}>
               Balance:
-              {' ' + cumulativeBalance.toDisplay() + ' AVAX'}
+              {' ' + balanceInAvax + ' AVAX'}
             </AvaText.Subtitle1>
             {renderBalanceInfo()}
           </Row>
