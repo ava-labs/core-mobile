@@ -1,5 +1,5 @@
 import { Avalanche } from '@avalabs/wallets-sdk'
-import { exponentialBackoff } from 'utils/js/exponentialBackoff'
+import { retry } from 'utils/js/retry'
 import Logger from 'utils/Logger'
 import WalletService from 'services/wallet/WalletService'
 import NetworkService from 'services/network/NetworkService'
@@ -53,14 +53,14 @@ export async function importC({
   Logger.trace('txID', txID)
 
   try {
-    await exponentialBackoff(
-      () => avaxProvider.getApiC().getAtomicTxStatus(txID),
-      result => result.status === 'Accepted',
-      maxTransactionStatusCheckRetries
-    )
+    await retry({
+      operation: () => avaxProvider.getApiC().getAtomicTxStatus(txID),
+      isSuccess: result => result.status === 'Accepted',
+      maxRetries: maxTransactionStatusCheckRetries
+    })
   } catch (e) {
-    Logger.error('exponentialBackoff failed', e)
-    throw Error(`Transfer is taking unusually long (import P). txId = ${txID}`)
+    Logger.error('importC failed', e)
+    throw Error(`Import C failed. txId = ${txID}. ${e}`)
   }
 
   Logger.info('importing C ended')

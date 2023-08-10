@@ -15,7 +15,7 @@ import NetworkService from 'services/network/NetworkService'
 import { UnsignedTx } from '@avalabs/avalanchejs-v2'
 import Logger from 'utils/Logger'
 import { Avalanche } from '@avalabs/wallets-sdk'
-import { exponentialBackoff } from 'utils/js/exponentialBackoff'
+import { retry } from 'utils/js/retry'
 import {
   AddDelegatorTransactionProps,
   CollectTokensForStakingParams,
@@ -33,6 +33,7 @@ import {
 } from '@avalabs/glacier-sdk'
 import { glacierSdk } from 'utils/network/glacier'
 import { Avax } from 'types/Avax'
+import { maxTransactionStatusCheckRetries } from './utils'
 
 class EarnService {
   /**
@@ -179,16 +180,14 @@ class EarnService {
     ) as Avalanche.JsonRpcProvider
 
     try {
-      await exponentialBackoff(
-        () => avaxProvider.getApiP().getTxStatus({ txID }),
-        result => result.status === 'Committed',
-        6
-      )
+      await retry({
+        operation: () => avaxProvider.getApiP().getTxStatus({ txID }),
+        isSuccess: result => result.status === 'Committed',
+        maxRetries: maxTransactionStatusCheckRetries
+      })
     } catch (e) {
-      Logger.error('exponentialBackoff failed', e)
-      throw Error(
-        `Transfer is taking unusually long (add Delegator). txId = ${txID}`
-      )
+      Logger.error('issueAddDelegatorTransaction failed', e)
+      throw Error(`AddDelegator failed. txId = ${txID}. ${e}`)
     }
     return txID
   }
