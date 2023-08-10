@@ -20,19 +20,9 @@ describe('Connect to dApp using WalletConnect', () => {
   beforeAll(async () => {
     await warmup()
     await LoginRecoverWallet.recoverWalletLogin()
-
     await PortfolioPage.tapNetworksDropdown()
     await PortfolioPage.tapNetworksDropdownETH()
-    const startTime = new Date().getTime()
     await actions.waitForElement(PortfolioPage.ethNetwork)
-    const endTime = new Date().getTime()
-    await actions.reportUIPerformance(
-      startTime,
-      endTime,
-      'SwitchToEthereumFlow',
-      1,
-      3
-    )
   })
 
   it('should navigate to wallet connect screen', async () => {

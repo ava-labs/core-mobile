@@ -19,6 +19,8 @@ eth_cmds=(
     'npx playwright test e2e/tests/playwright/uniswap.spec.ts --project='chromium''
     'npx playwright test e2e/tests/playwright/oasis.spec.ts --project='chromium''
     'npx playwright test e2e/tests/playwright/core.spec.ts --project='firefox''
+    'npx playwright test e2e/tests/playwright/stakeLido.spec.ts --project='chromium''
+    'npx playwright test e2e/tests/playwright/aave.spec.ts --project='chromium''
 )
 
 read -p "Did you start your emulator or simulator? (y/n)" reply
