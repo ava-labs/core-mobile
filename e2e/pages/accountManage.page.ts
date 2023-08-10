@@ -54,6 +54,15 @@ class AccountManagePage {
     return result
   }
 
+  async createAccount(accountNumber: number) {
+    await this.tapAccountMenu()
+    await this.tapAddEditAccounts()
+    for (let i = 0; i < accountNumber - 1; i++) {
+      await this.tapAddAccountButton()
+    }
+    await this.tapDoneButton()
+  }
+
   async getFirstAvaxAddress() {
     const result: any = await Action.getAttributes(this.avaxAddress, 0)
     return Action.platform() === Platform.Android
