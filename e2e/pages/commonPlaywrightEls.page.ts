@@ -20,7 +20,7 @@ class CommonElsPage {
   }
 
   get wcmWalletUri() {
-    return this.page.locator(commonEls.wcmUri)
+    return this.page.locator(commonEls.wcmUri).first()
   }
 
   get connectToAWalletBtn() {
