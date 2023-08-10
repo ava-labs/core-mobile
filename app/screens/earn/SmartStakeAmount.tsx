@@ -23,7 +23,7 @@ enum BalanceStates {
 }
 
 const SmartStakeAmount = () => {
-  const { navigate, getParent } = useNavigation<ScreenProps['navigation']>()
+  const { navigate } = useNavigation<ScreenProps['navigation']>()
   const { minStakeAmount } = useStakingParams()
   const cChainBalance = useCChainBalance()
   const [balanceState, setBalanceState] = useState(BalanceStates.UNKNOWN)
@@ -52,15 +52,12 @@ const SmartStakeAmount = () => {
 
   const renderNotEnoughAvax = () => {
     const navToBuy = () => {
-      getParent()?.goBack()
       navigate(AppNavigation.Wallet.Buy)
     }
     const navToReceive = () => {
-      getParent()?.goBack()
       navigate(AppNavigation.Wallet.ReceiveTokens)
     }
     const navToSwap = () => {
-      getParent()?.goBack()
       navigate(AppNavigation.Wallet.Swap)
     }
 
