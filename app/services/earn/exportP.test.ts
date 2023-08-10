@@ -1,4 +1,3 @@
-import { BN } from 'bn.js'
 import { Account } from 'store/account'
 import NetworkService from 'services/network/NetworkService'
 import WalletService from 'services/wallet/WalletService'
@@ -7,6 +6,7 @@ import { avaxSerial, EVM, UnsignedTx, utils } from '@avalabs/avalanchejs-v2'
 import mockNetworks from 'tests/fixtures/networks.json'
 import { AVALANCHE_XP_NETWORK, Network } from '@avalabs/chains-sdk'
 import { exportP } from 'services/earn/exportP'
+import { Avax } from 'types/Avax'
 
 describe('earn/exportP', () => {
   describe('exportP', () => {
@@ -61,8 +61,8 @@ describe('earn/exportP', () => {
     it('should fail if pChainBalance is less than required amount', async () => {
       await expect(async () => {
         await exportP({
-          pChainBalance: new BN(1e9),
-          requiredAmount: new BN(1e10),
+          pChainBalance: Avax.fromBase(12),
+          requiredAmount: Avax.fromBase(13),
           isDevMode: false,
           activeAccount: {} as Account
         })
@@ -71,25 +71,25 @@ describe('earn/exportP', () => {
 
     it('should call walletService.createExportPTx', async () => {
       const result = await exportP({
-        pChainBalance: new BN(1e9),
-        requiredAmount: new BN(1e8),
+        pChainBalance: Avax.fromBase(12),
+        requiredAmount: Avax.fromBase(10),
         isDevMode: false,
         activeAccount: {} as Account
       })
-      expect(WalletService.createExportPTx).toHaveBeenCalledWith(
-        BigInt(100000000),
-        undefined,
-        AVALANCHE_XP_NETWORK,
-        'C',
-        undefined
-      )
+      expect(WalletService.createExportPTx).toHaveBeenCalledWith({
+        amount: BigInt(10000000000),
+        accountIndex: undefined,
+        avaxXPNetwork: AVALANCHE_XP_NETWORK,
+        destinationChain: 'C',
+        destinationAddress: undefined
+      })
       expect(result).toBe(true)
     })
 
     it('should call walletService.signAvaxTx', async () => {
       const result = await exportP({
-        pChainBalance: new BN(1e9),
-        requiredAmount: new BN(1e8),
+        pChainBalance: Avax.fromBase(12),
+        requiredAmount: Avax.fromBase(10),
         isDevMode: false,
         activeAccount: {} as Account
       })
@@ -99,8 +99,8 @@ describe('earn/exportP', () => {
 
     it('should call networkService.sendTransaction', async () => {
       const result = await exportP({
-        pChainBalance: new BN(1e9),
-        requiredAmount: new BN(1e8),
+        pChainBalance: Avax.fromBase(12),
+        requiredAmount: Avax.fromBase(10),
         isDevMode: false,
         activeAccount: {} as Account
       })

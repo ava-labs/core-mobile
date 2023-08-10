@@ -22,6 +22,11 @@ export const PROTOCOLS = {
   CORE: 'core'
 }
 
+export enum StakeActions {
+  StakeComplete = 'stakecomplete'
+}
+
 export const ACTIONS = {
-  WC: 'wc'
+  WC: 'wc',
+  StakeComplete: StakeActions.StakeComplete
 }

@@ -1,7 +1,7 @@
 import { ChainId } from '@avalabs/chains-sdk'
 import { assertNotUndefined } from 'utils/assertions'
 import { Avalanche } from '@avalabs/wallets-sdk'
-import { exponentialBackoff } from 'utils/js/exponentialBackoff'
+import { retry } from 'utils/js/retry'
 import Logger from 'utils/Logger'
 import { calculatePChainFee } from 'services/earn/calculateCrossChainFees'
 import WalletService from 'services/wallet/WalletService'
@@ -40,23 +40,23 @@ export async function exportC({
   ) as Avalanche.JsonRpcProvider
 
   const baseFee = Avax.fromWei(await avaxProvider.getApiC().getBaseFee())
-  const instantFee = baseFee.add(baseFee.mul(0.2)) // Increase by 20% for instant speed
+  const instantBaseFee = WalletService.getInstantBaseFee(baseFee)
 
   const pChainFee = calculatePChainFee()
   const amount = requiredAmount.add(pChainFee)
 
-  if (cChainBalance < amount) {
+  if (cChainBalance.lt(amount)) {
     throw Error('Not enough balance on C chain')
   }
 
-  const unsignedTxWithFee = await WalletService.createExportCTx(
+  const unsignedTxWithFee = await WalletService.createExportCTx({
     amount,
-    instantFee,
-    activeAccount.index,
+    baseFee: instantBaseFee,
+    accountIndex: activeAccount.index,
     avaxXPNetwork,
-    'P',
-    activeAccount.addressPVM
-  )
+    destinationChain: 'P',
+    destinationAddress: activeAccount.addressPVM
+  })
 
   const signedTxWithFeeJson = await WalletService.sign(
     { tx: unsignedTxWithFee } as AvalancheTransactionRequest,
@@ -72,14 +72,14 @@ export async function exportC({
   Logger.trace('txID', txID)
 
   try {
-    await exponentialBackoff(
-      () => avaxProvider.getApiC().getAtomicTxStatus(txID),
-      result => result.status === 'Accepted',
-      maxTransactionStatusCheckRetries
-    )
+    await retry({
+      operation: () => avaxProvider.getApiC().getAtomicTxStatus(txID),
+      isSuccess: result => result.status === 'Accepted',
+      maxRetries: maxTransactionStatusCheckRetries
+    })
   } catch (e) {
-    Logger.error('exponentialBackoff failed', e)
-    throw Error(`Transfer is taking unusually long (export C). txId = ${txID}`)
+    Logger.error('exportC failed', e)
+    throw Error(`Export C failed. txId = ${txID}. ${e}`)
   }
 
   Logger.info('exporting C ended')

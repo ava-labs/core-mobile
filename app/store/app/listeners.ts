@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import { isAnyOf } from '@reduxjs/toolkit'
+import { Action, isAnyOf } from '@reduxjs/toolkit'
 import { differenceInSeconds } from 'date-fns'
 import { AppState, AppStateStatus, Platform } from 'react-native'
 import { AppListenerEffectAPI } from 'store'
@@ -30,11 +30,14 @@ import {
 
 const TIME_TO_LOCK_IN_SECONDS = 5
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const init = async (action: any, listenerApi: AppListenerEffectAPI) => {
-  const { dispatch } = listenerApi
-
+const init = async (_: Action, listenerApi: AppListenerEffectAPI) => {
   Logger.setLevel(__DEV__ ? LogLevel.TRACE : LogLevel.ERROR)
+  const { dispatch } = listenerApi
+  const state = listenerApi.getState()
+
+  // check wallet state during app launch, if it's active, reset it to inactive
+  const isWalletActive = selectWalletState(state) === WalletState.ACTIVE
+  isWalletActive && dispatch(setWalletState(WalletState.INACTIVE))
 
   const fontScale = await DeviceInfo.getFontScale()
   dispatch(
@@ -53,7 +56,7 @@ const init = async (action: any, listenerApi: AppListenerEffectAPI) => {
 }
 
 const applyVersionMigrations = async (
-  action: unknown,
+  _: Action,
   listenerApi: AppListenerEffectAPI
 ) => {
   extendAccountProps(listenerApi)
@@ -92,8 +95,7 @@ const listenToAppState = async (listenerApi: AppListenerEffectAPI) => {
   })
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const lockApp = async (action: any, listenerApi: AppListenerEffectAPI) => {
+const lockApp = async (_: Action, listenerApi: AppListenerEffectAPI) => {
   const { dispatch, condition } = listenerApi
   const state = listenerApi.getState()
   const walletState = selectWalletState(state)
@@ -127,8 +129,7 @@ const lockApp = async (action: any, listenerApi: AppListenerEffectAPI) => {
 }
 
 const setStateToUnlocked = async (
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  action: any,
+  _: Action,
   listenerApi: AppListenerEffectAPI
 ) => {
   const dispatch = listenerApi.dispatch
@@ -136,8 +137,7 @@ const setStateToUnlocked = async (
   dispatch(setWalletState(WalletState.ACTIVE))
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const clearData = async (action: any, listenerApi: AppListenerEffectAPI) => {
+const clearData = async (_: Action, listenerApi: AppListenerEffectAPI) => {
   const { dispatch } = listenerApi
   dispatch(setWalletState(WalletState.NONEXISTENT))
   await BiometricsSDK.clearWalletKey()

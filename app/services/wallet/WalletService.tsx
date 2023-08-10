@@ -13,6 +13,10 @@ import {
 import { now } from 'moment'
 import {
   AddDelegatorProps,
+  CreateExportCTxParams,
+  CreateExportPTxParams,
+  CreateImportCTxParams,
+  CreateImportPTxParams,
   PubKeyType,
   SignTransactionRequest
 } from 'services/wallet/types'
@@ -30,11 +34,17 @@ import { Transaction } from '@sentry/types'
 import { Account } from 'store/account'
 import { RpcMethod } from 'store/walletConnectV2/types'
 import Logger from 'utils/Logger'
-import { UnsignedTx } from '@avalabs/avalanchejs-v2'
+import { UnsignedTx, utils } from '@avalabs/avalanchejs-v2'
 import { fromUnixTime, getUnixTime } from 'date-fns'
 import { getMinimumStakeEndTime } from 'services/earn/utils'
 import { Avax } from 'types/Avax'
 import { bnToBigint } from 'utils/bigNumbers/bnToBigint'
+
+// Tolerate 50% buffer for burn amount for EVM transactions
+const EVM_FEE_TOLERANCE = 50
+
+// We increase C chain base fee by 20% for instant speed
+const BASE_FEE_MULTIPLIER = 0.2
 
 class WalletService {
   private mnemonic?: string
@@ -104,6 +114,42 @@ class WalletService {
     Logger.info('evmWallet getWalletFromMnemonic', now() - start)
 
     return wallet
+  }
+
+  private validateAvalancheFee({
+    network,
+    unsignedTx,
+    evmBaseFee
+  }: {
+    network: Network
+    unsignedTx: UnsignedTx
+    evmBaseFee?: Avax
+  }): void {
+    if (
+      network.vmName !== NetworkVMType.AVM &&
+      network.vmName !== NetworkVMType.PVM
+    ) {
+      throw new Error('Wrong network')
+    }
+
+    Logger.info('validating burned amount')
+    const avalancheProvider = networkService.getProviderForNetwork(
+      network
+    ) as Avalanche.JsonRpcProvider
+
+    const { isValid, txFee } = utils.validateBurnedAmount({
+      unsignedTx,
+      context: avalancheProvider.getContext(),
+      evmBaseFee: evmBaseFee?.toSubUnit(),
+      evmFeeTolerance: EVM_FEE_TOLERANCE
+    })
+
+    if (!isValid) {
+      Logger.error(`Excessive burn amount. Expected ${txFee} nAvax.`)
+      throw Error('Excessive burn amount')
+    }
+
+    Logger.info('burned amount is valid')
   }
 
   async sign(
@@ -204,27 +250,42 @@ class WalletService {
     }
   }
 
-  async createExportCTx(
-    amount: Avax,
-    baseFee: Avax,
-    accountIndex: number,
-    avaxXPNetwork: Network,
-    destinationChain: 'P' | 'X',
-    destinationAddress: string | undefined
-  ): Promise<UnsignedTx> {
+  getInstantBaseFee(baseFee: Avax): Avax {
+    const instantFee = baseFee.add(baseFee.mul(BASE_FEE_MULTIPLIER))
+    return instantFee
+  }
+
+  async createExportCTx({
+    amount,
+    baseFee,
+    accountIndex,
+    avaxXPNetwork,
+    destinationChain,
+    destinationAddress,
+    shouldValidateBurnedAmount = true
+  }: CreateExportCTxParams): Promise<UnsignedTx> {
     const wallet = (await this.getWallet(
       accountIndex,
       avaxXPNetwork
     )) as Avalanche.StaticSigner
     const nonce = await wallet.getNonce()
 
-    return wallet.exportC(
+    const unsignedTx = wallet.exportC(
       amount.toSubUnit(),
       destinationChain,
       BigInt(nonce),
       bnToBigint(baseFee.toWei()),
       destinationAddress
     )
+
+    shouldValidateBurnedAmount &&
+      this.validateAvalancheFee({
+        network: avaxXPNetwork,
+        unsignedTx,
+        evmBaseFee: baseFee
+      })
+
+    return unsignedTx
   }
 
   /**
@@ -233,19 +294,29 @@ class WalletService {
    * @param sourceChain
    * @param destinationAddress
    */
-  async createImportPTx(
-    accountIndex: number,
-    avaxXPNetwork: Network,
-    sourceChain: 'C' | 'X',
-    destinationAddress: string | undefined
-  ): Promise<UnsignedTx> {
+  async createImportPTx({
+    accountIndex,
+    avaxXPNetwork,
+    sourceChain,
+    destinationAddress,
+    shouldValidateBurnedAmount = true
+  }: CreateImportPTxParams): Promise<UnsignedTx> {
     const wallet = (await this.getWallet(
       accountIndex,
       avaxXPNetwork
     )) as Avalanche.StaticSigner
 
     const utxoSet = await wallet.getAtomicUTXOs('P', sourceChain)
-    return wallet.importP(utxoSet, sourceChain, destinationAddress)
+
+    const unsignedTx = wallet.importP(utxoSet, sourceChain, destinationAddress)
+
+    shouldValidateBurnedAmount &&
+      this.validateAvalancheFee({
+        network: avaxXPNetwork,
+        unsignedTx
+      })
+
+    return unsignedTx
   }
 
   /**
@@ -255,36 +326,52 @@ class WalletService {
    * @param destinationChain
    * @param destinationAddress
    */
-  async createExportPTx(
-    amount: bigint,
-    accountIndex: number,
-    avaxXPNetwork: Network,
-    destinationChain: 'C' | 'X',
-    destinationAddress: string | undefined
-  ): Promise<UnsignedTx> {
+  async createExportPTx({
+    amount,
+    accountIndex,
+    avaxXPNetwork,
+    destinationChain,
+    destinationAddress,
+    shouldValidateBurnedAmount = true
+  }: CreateExportPTxParams): Promise<UnsignedTx> {
     const wallet = (await this.getWallet(
       accountIndex,
       avaxXPNetwork
     )) as Avalanche.StaticSigner
 
     const utxoSet = await wallet.getUTXOs('P')
-    return wallet.exportP(amount, utxoSet, destinationChain, destinationAddress)
+
+    const unsignedTx = wallet.exportP(
+      amount,
+      utxoSet,
+      destinationChain,
+      destinationAddress
+    )
+
+    shouldValidateBurnedAmount &&
+      this.validateAvalancheFee({
+        network: avaxXPNetwork,
+        unsignedTx
+      })
+
+    return unsignedTx
   }
 
   /**
    * @param accountIndex
-   * @param baseFee in nAvax
+   * @param baseFee
    * @param avaxXPNetwork
    * @param sourceChain
    * @param destinationAddress
    */
-  async createImportCTx(
-    accountIndex: number,
-    baseFee: bigint,
-    avaxXPNetwork: Network,
-    sourceChain: 'P' | 'X',
-    destinationAddress: string | undefined
-  ): Promise<UnsignedTx> {
+  async createImportCTx({
+    accountIndex,
+    baseFee,
+    avaxXPNetwork,
+    sourceChain,
+    destinationAddress,
+    shouldValidateBurnedAmount = true
+  }: CreateImportCTxParams): Promise<UnsignedTx> {
     const wallet = (await this.getWallet(
       accountIndex,
       avaxXPNetwork
@@ -292,13 +379,22 @@ class WalletService {
 
     const utxoSet = await wallet.getAtomicUTXOs('C', sourceChain)
 
-    return wallet.importC(
+    const unsignedTx = wallet.importC(
       utxoSet,
       sourceChain,
-      baseFee,
+      baseFee.toSubUnit(),
       undefined,
       destinationAddress
     )
+
+    shouldValidateBurnedAmount &&
+      this.validateAvalancheFee({
+        network: avaxXPNetwork,
+        unsignedTx,
+        evmBaseFee: baseFee
+      })
+
+    return unsignedTx
   }
 
   async createAddDelegatorTx({
@@ -309,7 +405,8 @@ class WalletService {
     startDate,
     endDate,
     rewardAddress,
-    isDevMode
+    isDevMode,
+    shouldValidateBurnedAmount = true
   }: AddDelegatorProps): Promise<UnsignedTx> {
     if (!nodeId.startsWith('NodeID-')) {
       throw Error('Invalid node id: ' + nodeId)
@@ -347,7 +444,10 @@ class WalletService {
     const config = {
       rewardAddress
     }
-    return wallet.addDelegator(
+
+    const network = networkService.getAvalancheNetworkXP(isDevMode)
+
+    const unsignedTx = wallet.addDelegator(
       utxoSet,
       nodeId,
       stakeAmount,
@@ -355,6 +455,14 @@ class WalletService {
       BigInt(endDate),
       config
     )
+
+    shouldValidateBurnedAmount &&
+      this.validateAvalancheFee({
+        network,
+        unsignedTx
+      })
+
+    return unsignedTx
   }
 
   destroy() {

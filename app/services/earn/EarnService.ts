@@ -1,5 +1,4 @@
 import { getPvmApi } from 'utils/network/pvm'
-import BN from 'bn.js'
 import { Account } from 'store/account'
 import { exportC } from 'services/earn/exportC'
 import { importP } from 'services/earn/importP'
@@ -16,7 +15,7 @@ import NetworkService from 'services/network/NetworkService'
 import { UnsignedTx } from '@avalabs/avalanchejs-v2'
 import Logger from 'utils/Logger'
 import { Avalanche } from '@avalabs/wallets-sdk'
-import { exponentialBackoff } from 'utils/js/exponentialBackoff'
+import { retry } from 'utils/js/retry'
 import {
   AddDelegatorTransactionProps,
   CollectTokensForStakingParams,
@@ -34,6 +33,7 @@ import {
 } from '@avalabs/glacier-sdk'
 import { glacierSdk } from 'utils/network/glacier'
 import { Avax } from 'types/Avax'
+import { maxTransactionStatusCheckRetries } from './utils'
 
 class EarnService {
   /**
@@ -74,14 +74,14 @@ class EarnService {
   /**
    * Collect staking rewards by moving Avax from P to C-chain
    *
-   * @param pChainBalance in nAvax
-   * @param requiredAmount in nAvax
+   * @param pChainBalance
+   * @param requiredAmount
    * @param activeAccount
    * @param isDevMode
    */
   async claimRewards(
-    pChainBalance: BN,
-    requiredAmount: BN,
+    pChainBalance: Avax,
+    requiredAmount: Avax,
     activeAccount: Account,
     isDevMode: boolean
   ): Promise<boolean> {
@@ -180,16 +180,14 @@ class EarnService {
     ) as Avalanche.JsonRpcProvider
 
     try {
-      await exponentialBackoff(
-        () => avaxProvider.getApiP().getTxStatus({ txID }),
-        result => result.status === 'Committed',
-        6
-      )
+      await retry({
+        operation: () => avaxProvider.getApiP().getTxStatus({ txID }),
+        isSuccess: result => result.status === 'Committed',
+        maxRetries: maxTransactionStatusCheckRetries
+      })
     } catch (e) {
-      Logger.error('exponentialBackoff failed', e)
-      throw Error(
-        `Transfer is taking unusually long (add Delegator). txId = ${txID}`
-      )
+      Logger.error('issueAddDelegatorTransaction failed', e)
+      throw Error(`AddDelegator failed. txId = ${txID}. ${e}`)
     }
     return txID
   }

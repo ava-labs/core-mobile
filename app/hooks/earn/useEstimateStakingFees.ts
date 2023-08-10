@@ -5,13 +5,11 @@ import {
   calculateCChainFee,
   calculatePChainFee
 } from 'services/earn/calculateCrossChainFees'
-import { UnsignedTx } from '@avalabs/avalanchejs-v2'
 import { useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import NetworkService from 'services/network/NetworkService'
 import { selectActiveAccount } from 'store/account'
 import WalletService from 'services/wallet/WalletService'
-import { AvalancheTransactionRequest } from 'services/wallet/types'
 import Logger from 'utils/Logger'
 import { useCChainBaseFee } from 'hooks/useCChainBaseFee'
 
@@ -62,24 +60,22 @@ export const useEstimateStakingFees = (
         return
       }
 
-      const totalAmount = amountForCrossChainTransfer.add(importFee) //we need to include import fee
-      const instantFee = baseFee.add(baseFee.mul(0.2)) // Increase by 20% for instant speed
+      const totalAmount = amountForCrossChainTransfer.add(importFee) // we need to include import fee
+      const instantBaseFee = WalletService.getInstantBaseFee(baseFee)
 
-      const unsignedTx = await WalletService.createExportCTx(
-        totalAmount,
-        instantFee,
-        activeAccount.index,
+      const unsignedTx = await WalletService.createExportCTx({
+        amount: totalAmount,
+        baseFee: instantBaseFee,
+        accountIndex: activeAccount.index,
         avaxXPNetwork,
-        'P',
-        activeAccount.addressPVM
-      )
-      const signedTxJson = await WalletService.sign(
-        { tx: unsignedTx } as AvalancheTransactionRequest,
-        activeAccount.index,
-        avaxXPNetwork
-      )
-      const signedTx = UnsignedTx.fromJSON(signedTxJson).getSignedTx()
-      const exportFee = calculateCChainFee(instantFee, unsignedTx, signedTx)
+        destinationChain: 'P',
+        destinationAddress: activeAccount.addressPVM,
+        // we only need to validate burned amount
+        // when the actual submission happens
+        shouldValidateBurnedAmount: false
+      })
+
+      const exportFee = calculateCChainFee(instantBaseFee, unsignedTx)
       setEstimatedStakingFee(exportFee.add(importFee))
     }
     calculateEstimatedStakingFee().catch(reason => Logger.error(reason))
