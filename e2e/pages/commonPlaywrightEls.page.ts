@@ -1,6 +1,5 @@
 import { Page } from '@playwright/test'
 import commonEls from '../locators/commonPlaywrightEls.loc'
-
 class CommonElsPage {
   page: Page
 
