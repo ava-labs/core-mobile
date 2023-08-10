@@ -141,7 +141,7 @@ export default function StakingAmount() {
         )}
         {notEnoughBalance && (
           <AvaText.Body3 color={theme.colorError}>
-            {`Insufficient balance!`}
+            {`Insufficient balance`}
           </AvaText.Body3>
         )}
       </View>
