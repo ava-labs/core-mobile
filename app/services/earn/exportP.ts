@@ -1,5 +1,5 @@
 import { Avalanche } from '@avalabs/wallets-sdk'
-import { exponentialBackoff } from 'utils/js/exponentialBackoff'
+import { retry } from 'utils/js/retry'
 import Logger from 'utils/Logger'
 import WalletService from 'services/wallet/WalletService'
 import { Account } from 'store/account'
@@ -52,14 +52,14 @@ export async function exportP({
   ) as Avalanche.JsonRpcProvider
 
   try {
-    await exponentialBackoff(
-      () => avaxProvider.getApiP().getTxStatus({ txID }),
-      result => result.status === 'Committed',
-      maxTransactionStatusCheckRetries
-    )
+    await retry({
+      operation: () => avaxProvider.getApiP().getTxStatus({ txID }),
+      isSuccess: result => result.status === 'Committed',
+      maxRetries: maxTransactionStatusCheckRetries
+    })
   } catch (e) {
-    Logger.error('exponentialBackoff failed', e)
-    throw Error(`Transfer is taking unusually long (export P). txId = ${txID}`)
+    Logger.error('exportP failed', e)
+    throw Error(`Export P failed. txId = ${txID}. ${e}`)
   }
 
   Logger.info('exporting P ended')
