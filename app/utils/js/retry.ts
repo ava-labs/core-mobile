@@ -41,9 +41,8 @@ export const retry = async <T>({
     if (retries > 0) {
       Logger.info(`retry in ${backoffPeriodSeconds} seconds`)
       Logger.info(`retry count: ${retries}`)
+      await delay(backoffPeriodSeconds * 1000)
     }
-
-    await delay(backoffPeriodSeconds * 1000)
 
     try {
       const result = await operation()
