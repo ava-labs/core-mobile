@@ -23,8 +23,8 @@ class BottomsTabsPage {
     return by.id(bottomTabsLoc.plusButton)
   }
 
-  get earnTab() {
-    return by.text(bottomTabsLoc.earnTab)
+  get stakeTab() {
+    return by.id(bottomTabsLoc.stakeTab)
   }
 
   async tapActivityTab() {
@@ -37,6 +37,10 @@ class BottomsTabsPage {
 
   async tapPortfolioTab() {
     await Actions.tapElementAtIndex(this.portfolioTab, 1)
+  }
+
+  async tapStakeTab() {
+    await Actions.tapElementAtIndex(this.stakeTab, 1)
   }
 
   async tapWatchlistTab() {

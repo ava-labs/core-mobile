@@ -40,6 +40,10 @@ class AccountManagePage {
     return by.text(accountManage.secondAccount)
   }
 
+  get fourthAccount() {
+    return by.text(accountManage.fourthaccount)
+  }
+
   async createSecondAccount() {
     await this.tapAccountMenu()
     await this.tapAddEditAccounts()
@@ -48,6 +52,15 @@ class AccountManagePage {
     await this.tapAccountMenu()
     await this.tapDoneButton()
     return result
+  }
+
+  async createAccount(accountNumber: number) {
+    await this.tapAccountMenu()
+    await this.tapAddEditAccounts()
+    for (let i = 0; i < accountNumber - 1; i++) {
+      await this.tapAddAccountButton()
+    }
+    await this.tapDoneButton()
   }
 
   async getFirstAvaxAddress() {

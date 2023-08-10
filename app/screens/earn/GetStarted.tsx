@@ -1,5 +1,5 @@
 import React from 'react'
-import { Linking, StyleSheet, View } from 'react-native'
+import { Linking, Pressable, StyleSheet, View } from 'react-native'
 import AvaText from 'components/AvaText'
 import AvaLogoSVG from 'components/svg/AvaLogoSVG'
 import { useApplicationContext } from 'contexts/ApplicationContext'
@@ -109,17 +109,21 @@ export default function GetStarted({ onNext }: { onNext: () => void }) {
       <Space y={40} />
       <AvaButton.PrimaryLarge onPress={onNext}>Next</AvaButton.PrimaryLarge>
       <Space y={16} />
-      <View style={{ marginHorizontal: 16, marginBottom: 32 }}>
+      <Pressable
+        style={{ marginHorizontal: 16, marginBottom: 32 }}
+        onPress={goToDisclaimer}
+        accessibilityRole="button">
         <AvaText.Overline textStyle={{ textAlign: 'center' }}>
           <AvaText.TextLink
             textStyle={{ fontSize: 10, lineHeight: 16 }}
-            onPress={goToDisclaimer}>
+            onPress={goToDisclaimer}
+            accessible={true}>
             Disclaimer
           </AvaText.TextLink>
-          : Delegating is a feature of Avalanche’s staking mechanism that allows
+          : Delegating is a feature of Avalanche's staking mechanism that allows
           token holders to participate...
         </AvaText.Overline>
-      </View>
+      </Pressable>
     </ScrollView>
   )
 }
