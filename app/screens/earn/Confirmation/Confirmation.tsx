@@ -20,7 +20,7 @@ import { PopableContent } from 'components/PopableContent'
 import { truncateNodeId } from 'utils/Utils'
 import CopySVG from 'components/svg/CopySVG'
 import { copyToClipboard } from 'utils/DeviceTools'
-import { format } from 'date-fns'
+import { format, getUnixTime } from 'date-fns'
 import { useEarnCalcEstimatedRewards } from 'hooks/earn/useEarnCalcEstimatedRewards'
 import { useDispatch, useSelector } from 'react-redux'
 import { getReadableDateDuration } from 'utils/date/getReadableDateDuration'
@@ -39,7 +39,10 @@ import { useTimeElapsed } from 'hooks/time/useTimeElapsed'
 import { timeToShowNetworkFeeError } from 'consts/earn'
 import Spinner from 'components/animation/Spinner'
 import { useAvaxFormatter } from 'hooks/formatter/useAvaxFormatter'
-import { maybePromptEarnNotification } from 'store/notifications'
+import {
+  maybePromptEarnNotification,
+  createStakingCompleteNotificationTriggers
+} from 'store/notifications'
 import { ConfirmScreen } from '../components/ConfirmScreen'
 import UnableToEstimate from '../components/UnableToEstimate'
 import { useValidateStakingEndTime } from './useValidateStakingEndTime'
@@ -139,6 +142,11 @@ export const Confirmation = () => {
     })
     getParent()?.goBack()
     dispatch(maybePromptEarnNotification)
+    dispatch(
+      createStakingCompleteNotificationTriggers([
+        { nodeId, endTimestamp: getUnixTime(validatedStakingEndTime) }
+      ])
+    )
   }
 
   const handleReadMore = () => {

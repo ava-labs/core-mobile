@@ -9,6 +9,11 @@ import { useDispatch, useSelector } from 'react-redux'
 import { selectWalletState, WalletState } from 'store/app'
 import { noop } from '@avalabs/utils-sdk'
 import { Linking } from 'react-native'
+import NotificationsService from 'services/notifications/NotificationsService'
+import {
+  selectIsDeveloperMode,
+  toggleDeveloperMode
+} from 'store/settings/advanced'
 import { handleDeeplink } from './utils/handleDeeplink'
 import { DeepLink, DeeplinkContextType, DeepLinkOrigin } from './types'
 
@@ -25,12 +30,22 @@ export const DeeplinkContextProvider = ({
   const dispatch = useDispatch()
   const walletState = useSelector(selectWalletState)
   const isWalletActive = walletState === WalletState.ACTIVE
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
 
   const [pendingDeepLink, setPendingDeepLink] = useState<DeepLink>()
 
   const expireDeepLink = useCallback(() => {
     setPendingDeepLink(undefined)
   }, [])
+
+  const handleNotificationCallback = useCallback(
+    (url: string, origin: DeepLinkOrigin, isDevMode = false) =>
+      () => {
+        isDevMode && dispatch(toggleDeveloperMode)
+        setPendingDeepLink({ url, origin })
+      },
+    [dispatch]
+  )
 
   /******************************************************************************
    * Start listeners that will receive the deep link url
@@ -52,10 +67,38 @@ export const DeeplinkContextProvider = ({
 
     checkInitialUrl()
 
+    const unsubscribeForegroundEvent = NotificationsService.onForegroundEvent(
+      async ({ type, detail }) => {
+        await NotificationsService.handleNotificationEvent({
+          type,
+          detail,
+          callback: handleNotificationCallback
+        })
+      }
+    )
+
+    NotificationsService.onBackgroundEvent(async ({ type, detail }) => {
+      await NotificationsService.handleNotificationEvent({
+        type,
+        detail,
+        callback: handleNotificationCallback
+      })
+    })
+
+    NotificationsService.getInitialNotification().then(async event => {
+      if (event?.notification?.data?.url)
+        handleNotificationCallback(
+          event.notification.data.url as string,
+          DeepLinkOrigin.ORIGIN_NOTIFICATION,
+          isDeveloperMode
+        )
+    })
+
     return () => {
       listener.remove()
+      unsubscribeForegroundEvent()
     }
-  }, [])
+  }, [handleNotificationCallback, isDeveloperMode])
 
   /******************************************************************************
    * Process deep link if there is one pending and app is unlocked
