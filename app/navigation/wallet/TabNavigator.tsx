@@ -5,13 +5,17 @@ import WatchlistSVG from 'components/svg/WatchlistSVG'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import PortfolioStackScreen from 'navigation/wallet/PortfolioScreenStack'
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import WatchlistTab from 'screens/watchlist/WatchlistTabView'
 import TopNavigationHeader from 'navigation/TopNavigationHeader'
 import { getCommonBottomTabOptions, normalTabButton } from 'navigation/NavUtils'
 import EarnSVG from 'components/svg/EarnSVG'
 import { usePosthogContext } from 'contexts/PosthogContext'
 import { useStakes } from 'hooks/earn/useStakes'
+import { useDispatch } from 'react-redux'
+import { createStakingCompleteNotificationTriggers } from 'store/notifications'
+import { PChainTransaction } from '@avalabs/glacier-sdk'
+import { isOnGoing } from 'utils/earn/status'
 import EarnScreenStack from './EarnScreenStack/EarnScreenStack'
 
 export type TabNavigatorParamList = {
@@ -28,14 +32,36 @@ const TAB_ICON_SIZE = 28
 // when there are no stakes, we direct users to Stake Setup flow
 const useIsEarnDashboardEnabled = () => {
   const { data: stakes } = useStakes()
+  const dispatch = useDispatch()
   const [isEarnDashboardEnabled, setIsEarnDashboardEnabled] = useState(true)
+
+  const createNotificationTriggers = useCallback(
+    (transactions: PChainTransaction[]) => () => {
+      const now = new Date()
+      const notificationTriggerData = transactions
+        .filter(transaction => isOnGoing(transaction, now))
+        .map(transaction => {
+          return {
+            nodeId: transaction.nodeId,
+            endTimestamp: transaction.endTimestamp
+          }
+        })
+      dispatch(
+        createStakingCompleteNotificationTriggers(notificationTriggerData)
+      )
+    },
+    [dispatch]
+  )
 
   useEffect(() => {
     if (!stakes) return
 
     const hasStakes = stakes.length > 0
-    setIsEarnDashboardEnabled(hasStakes ? true : false)
-  }, [stakes])
+    if (hasStakes) {
+      setIsEarnDashboardEnabled(true)
+      createNotificationTriggers(stakes)
+    }
+  }, [createNotificationTriggers, dispatch, stakes])
 
   return { isEarnDashboardEnabled }
 }

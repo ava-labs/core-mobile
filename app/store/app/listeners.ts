@@ -18,6 +18,7 @@ import Logger, { LogLevel } from 'utils/Logger'
 import { extendAccountProps } from 'store/app/migrations'
 import { capture } from 'store/posthog'
 import DeviceInfo from 'react-native-device-info'
+import NotificationsService from 'services/notifications/NotificationsService'
 import {
   onAppLocked,
   onAppUnlocked,
@@ -47,6 +48,7 @@ const init = async (_: Action, listenerApi: AppListenerEffectAPI) => {
     })
   )
   dispatch(capture({ event: 'ApplicationOpened' }))
+  NotificationsService.setBadgeCount(0) // if user opens the app, reset badge count
   listenToAppState(listenerApi)
 
   if (Platform.OS === 'android') {
