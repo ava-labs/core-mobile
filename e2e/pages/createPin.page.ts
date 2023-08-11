@@ -1,9 +1,8 @@
 import createPinLoc from '../locators/createPin.loc'
 import Action from '../helpers/actions'
-import delay from '../helpers/waits'
 
 class CreatePinPage {
-  get numPadZero() {
+  get numpadZero() {
     return by.id(createPinLoc.numPadZero)
   }
 
@@ -28,7 +27,7 @@ class CreatePinPage {
   }
 
   async tapNumpadZero() {
-    await element(this.numPadZero).multiTap(6)
+    await element(this.numpadZero).multiTap(6)
   }
 
   async tapNumpadOne() {
@@ -45,31 +44,19 @@ class CreatePinPage {
   }
 
   async createPin() {
-    for (let i = 0; i < 12; i++) {
-      await this.tapNumpadZero()
-      await delay(500)
-    }
+    await element(this.numpadZero).multiTap(6)
   }
 
   async createNewPin() {
-    for (let i = 0; i < 12; i++) {
-      await this.tapNumpadOne()
-      await delay(500)
-    }
+    await element(this.numpadOne).multiTap(6)
   }
 
   async enterNewCurrentPin() {
-    for (let i = 0; i < 6; i++) {
-      await this.tapNumpadOne()
-      await delay(500)
-    }
+    await element(this.numpadOne).multiTap(6)
   }
 
   async enterCurrentPin() {
-    for (let i = 0; i < 6; i++) {
-      await this.tapNumpadZero()
-      await delay(500)
-    }
+    await element(this.numpadZero).multiTap(6)
   }
 }
 

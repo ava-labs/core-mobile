@@ -35,6 +35,7 @@ describe('Change Pin', () => {
     await CreatePinPage.enterCurrentPin()
     await Assert.isVisible(CreatePinPage.setNewPinHeader)
     await CreatePinPage.createNewPin()
+    await CreatePinPage.createNewPin()
     await Assert.isVisible(BurgerMenuPage.securityAndPrivacy)
   })
 
@@ -43,6 +44,7 @@ describe('Change Pin', () => {
     await Assert.isVisible(CreatePinPage.enterYourPinHeader)
     await CreatePinPage.enterNewCurrentPin()
     await Assert.isVisible(CreatePinPage.setNewPinHeader)
+    await CreatePinPage.createPin()
     await CreatePinPage.createPin()
     await Assert.isVisible(BurgerMenuPage.securityAndPrivacy)
   })
