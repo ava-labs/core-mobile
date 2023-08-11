@@ -1,6 +1,5 @@
 import { Page } from '@playwright/test'
 import commonEls from '../locators/commonPlaywrightEls.loc'
-
 class CommonElsPage {
   page: Page
 
@@ -21,7 +20,7 @@ class CommonElsPage {
   }
 
   get wcmWalletUri() {
-    return this.page.locator(commonEls.wcmUri)
+    return this.page.locator(commonEls.wcmUri).first()
   }
 
   get connectToAWalletBtn() {
