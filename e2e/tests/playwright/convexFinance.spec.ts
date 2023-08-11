@@ -1,18 +1,21 @@
 import { test, expect } from '@playwright/test'
 import actions from '../../helpers/actions'
 import CommonPlaywrightPage from '../../pages/commonPlaywrightEls.page'
-import AavePage from '../../pages/aave.page'
+import ConvexFinancePage from '../../pages/convexFinance.page'
 
 test('check wallet connect button', async ({ page }) => {
   const commonEls = new CommonPlaywrightPage(page)
-  const aavePage = new AavePage(page)
+  const convexFinancePage = new ConvexFinancePage(page)
 
-  await actions.openPage(aavePage.page, aavePage.aaveHomepage)
+  await actions.openPage(
+    convexFinancePage.page,
+    convexFinancePage.convexFinanceHomepage
+  )
   await expect(commonEls.connectWalletBtn).toBeVisible()
   await commonEls.clickConnectWalletBtn()
-  await expect(commonEls.walletConnectBtn).toBeVisible()
-  await commonEls.clickWalletConnectBtn(1)
-  await expect(commonEls.wcmWalletUri).toBeVisible({ timeout: 1000000 })
+  await expect(convexFinancePage.walletConnectV2Btn).toBeVisible()
+  await convexFinancePage.clickWalletConnectV2Btn()
+  await expect(commonEls.wcmWalletUri).toBeVisible()
   const qrUri = await commonEls.qrUriValue('wcm')
 
   if (qrUri) {
