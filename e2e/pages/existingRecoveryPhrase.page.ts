@@ -1,7 +1,6 @@
 import recoveryPhraseLoc from '../locators/existingRecoveryPhrase.loc'
 import Action from '../helpers/actions'
 import Assert from '../helpers/assertions'
-import delay from '../helpers/waits'
 import WatchlistPage from './watchlist.page'
 import AnalyticsConsentPage from './analyticsConsent.page'
 import CreatePinPage from './createPin.page'
@@ -70,10 +69,8 @@ class ExistingRecoveryPhrasePage {
       1,
       3
     )
-    for (let i = 0; i < 12; i++) {
-      await CreatePinPage.tapNumpadZero()
-      await delay(500)
-    }
+    await CreatePinPage.tapNumpadZero()
+    await CreatePinPage.tapNumpadZero()
     await CreatePinPage.tapEmptyCheckbox()
     await CreatePinPage.tapNextBtn()
     const startTime3 = new Date().getTime()

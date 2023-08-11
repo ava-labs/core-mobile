@@ -28,7 +28,7 @@ class CreatePinPage {
   }
 
   async tapNumpadZero() {
-    await Action.tap(this.numPadZero)
+    await element(this.numPadZero).multiTap(6)
   }
 
   async tapNumpadOne() {
