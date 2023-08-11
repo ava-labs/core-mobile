@@ -23,6 +23,7 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { differenceInMilliseconds } from 'date-fns'
 import { Avax } from 'types/Avax'
 import { useNow } from 'hooks/time/useNow'
+import { useAvaxFormatter } from 'hooks/formatter/useAvaxFormatter'
 
 export const CustomDurationOptionItem = ({
   stakeAmount,
@@ -35,6 +36,7 @@ export const CustomDurationOptionItem = ({
   onRadioSelect: (item: DurationOption) => void
   handleDateConfirm: (dateInput: Date) => void
 }) => {
+  const avaxFormatter = useAvaxFormatter()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const [isDatePickerVisible, setIsDatePickerVisible] = useState(false)
   const currentDate = useNow()
@@ -61,6 +63,11 @@ export const CustomDurationOptionItem = ({
     delegationFee: 2
   })
 
+  const [estimatedRewardsInAvax] = avaxFormatter(
+    data?.estimatedTokenReward,
+    true
+  )
+
   return (
     <View
       style={{
@@ -77,9 +84,7 @@ export const CustomDurationOptionItem = ({
               {CUSTOM.title}
             </AvaText.Body1>
             <AvaText.Caption textStyle={{ color: theme.colorText1 }}>
-              {`Estimated Rewards: ${
-                data?.estimatedTokenReward?.toDisplay() || '0'
-              } AVAX`}
+              {`Estimated Rewards: ${estimatedRewardsInAvax} AVAX`}
             </AvaText.Caption>
           </View>
         </RadioButton>
