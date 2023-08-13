@@ -7,6 +7,7 @@ import { Account } from 'store/account'
 import { AvalancheTransactionRequest } from 'services/wallet/types'
 import { UnsignedTx } from '@avalabs/avalanchejs-v2'
 import { Avax } from 'types/Avax'
+import { EarnError } from 'hooks/earn/errors'
 import { maxTransactionStatusCheckRetries } from './utils'
 
 export type ImportCParams = {
@@ -49,7 +50,22 @@ export async function importC({
   )
   const signedTx = UnsignedTx.fromJSON(signedTxJson).getSignedTx()
 
-  const txID = await NetworkService.sendTransaction(signedTx, avaxXPNetwork)
+  let txID: string
+  try {
+    txID = await retry({
+      operation: () => NetworkService.sendTransaction(signedTx, avaxXPNetwork),
+      isSuccess: result => result !== '',
+      maxRetries: maxTransactionStatusCheckRetries
+    })
+  } catch (e) {
+    Logger.error('ISSUE_IMPORT_FAIL', e)
+    throw new EarnError({
+      name: 'ISSUE_IMPORT_FAIL',
+      message: 'Sending import transaction failed ',
+      cause: e
+    })
+  }
+
   Logger.trace('txID', txID)
 
   try {
@@ -60,9 +76,13 @@ export async function importC({
     })
   } catch (e) {
     Logger.error('importC failed', e)
-    throw Error(`Import C failed. txId = ${txID}. ${e}`)
+    throw new EarnError({
+      name: 'CONFIRM_IMPORT_FAIL',
+      message: 'Import did not finish',
+      cause: e
+    })
   }
 
-  Logger.info('importing C ended')
+  Logger.info('importing C finished')
   return true
 }

@@ -7,6 +7,7 @@ import { AvalancheTransactionRequest } from 'services/wallet/types'
 import { UnsignedTx } from '@avalabs/avalanchejs-v2'
 import NetworkService from 'services/network/NetworkService'
 import { Avax } from 'types/Avax'
+import { EarnError } from 'hooks/earn/errors'
 import { maxTransactionStatusCheckRetries } from './utils'
 
 export type ExportPParams = {
@@ -59,7 +60,11 @@ export async function exportP({
     })
   } catch (e) {
     Logger.error('exportP failed', e)
-    throw Error(`Export P failed. txId = ${txID}. ${e}`)
+    throw new EarnError({
+      name: 'CONFIRM_EXPORT_FAIL',
+      message: 'Export did not finish',
+      cause: e
+    })
   }
 
   Logger.info('exporting P ended')
