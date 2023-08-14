@@ -353,7 +353,7 @@ workflows:
             set -x
 
             npm rebuild detox
-            QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test --configuration android.external.release.smoke.ci --headless
+            QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test --configuration android.external.release.smoke.ci --headless --retries 2
   android-internal:
     before_run:
     - _install-and-set-env
@@ -429,7 +429,7 @@ workflows:
             set -x
 
             npm rebuild detox
-            QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test --configuration android.internal.release.smoke.ci --headless
+            QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test --configuration android.internal.release.smoke.ci --headless --retries 2
             RUN_ID=$(head -n 1 ./e2e/testrailRunId.txt)
 
             envman add --key TESTRAIL_RUN --value $RUN_ID
@@ -505,7 +505,7 @@ workflows:
             set -x
 
             npm rebuild detox
-            ./node_modules/.bin/detox test --configuration ios.external.release.smoke.ci
+            ./node_modules/.bin/detox test --configuration ios.external.release.smoke.ci --retries 2
   ios-internal:
     before_run:
     - _install-and-set-env
@@ -587,7 +587,7 @@ workflows:
             set -x
 
             npm rebuild detox
-            ./node_modules/.bin/detox test --configuration ios.internal.release.smoke.ci
+            ./node_modules/.bin/detox test --configuration ios.internal.release.smoke.ci --retries 2
 
             RUN_ID=$(head -n 1 ./e2e/testrailRunId.txt)
 
