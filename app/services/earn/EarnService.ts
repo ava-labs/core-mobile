@@ -1,7 +1,7 @@
 import { getPvmApi } from 'utils/network/pvm'
 import { Account } from 'store/account'
 import { exportC } from 'services/earn/exportC'
-import { importP } from 'services/earn/importP'
+import { importP, importPWithBalanceCheck } from 'services/earn/importP'
 import Big from 'big.js'
 import { FujiParams, MainnetParams } from 'utils/NetworkParams'
 import { importC } from 'services/earn/importC'
@@ -19,7 +19,8 @@ import { retry } from 'utils/js/retry'
 import {
   AddDelegatorTransactionProps,
   CollectTokensForStakingParams,
-  GetAllStakesParams
+  GetAllStakesParams,
+  RecoveryEvents
 } from 'services/earn/types'
 import { getUnixTime } from 'date-fns'
 import { GetCurrentSupplyResponse } from '@avalabs/avalanchejs-v2/dist/src/vms/pvm'
@@ -33,6 +34,7 @@ import {
 } from '@avalabs/glacier-sdk'
 import { glacierSdk } from 'utils/network/glacier'
 import { Avax } from 'types/Avax'
+import { Signal } from 'micro-signals'
 import { maxTransactionStatusCheckRetries } from './utils'
 
 class EarnService {
@@ -42,6 +44,46 @@ class EarnService {
    */
   getCurrentValidators = (isTestnet: boolean) => {
     return getPvmApi(isTestnet).getCurrentValidators()
+  }
+
+  /**
+   * Checks if there are any stuck atomic UTXOs and tries to import them.
+   * You can pass Signal object to get events about progress of operation.
+   * See {@link RecoveryEvents} for details on events.
+   */
+  async importAnyStuckFunds({
+    activeAccount,
+    isDevMode,
+    progressEvents
+  }: {
+    activeAccount: Account
+    isDevMode: boolean
+    progressEvents?: Signal<RecoveryEvents>
+  }): Promise<void> {
+    const avaxXPNetwork = NetworkService.getAvalancheNetworkXP(isDevMode)
+    const { pChainUtxo, cChainUtxo } = await WalletService.getAtomicUTXOs({
+      accountIndex: activeAccount.index,
+      avaxXPNetwork
+    })
+    if (pChainUtxo.getUTXOs().length !== 0) {
+      progressEvents?.dispatch(RecoveryEvents.ImportPStart)
+      await importPWithBalanceCheck({ activeAccount, isDevMode })
+      progressEvents?.dispatch(RecoveryEvents.ImportPFinish)
+    }
+
+    if (cChainUtxo.getUTXOs().length !== 0) {
+      progressEvents?.dispatch(RecoveryEvents.ImportCStart)
+      await retry({
+        operation: async () =>
+          importC({
+            activeAccount,
+            isDevMode
+          }),
+        isSuccess: result => result,
+        maxRetries: maxTransactionStatusCheckRetries
+      })
+      progressEvents?.dispatch(RecoveryEvents.ImportCFinish)
+    }
   }
 
   /**
@@ -195,8 +237,6 @@ class EarnService {
   /**
    * Retrieve the upper bound on the number of tokens that exist in P-chain
    * This is an upper bound because it does not account for burnt tokens, including transaction fees.
-   *
-   * @param isDeveloperMode
    */
   getCurrentSupply(isTestnet: boolean): Promise<GetCurrentSupplyResponse> {
     return getPvmApi(isTestnet).getCurrentSupply()
