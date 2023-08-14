@@ -43,12 +43,20 @@ class CreatePinPage {
     await Action.tapElementAtIndex(this.emptyCheckBox, 0)
   }
 
-  async createPin() {
+  async tapNumpadZero6Times() {
     await element(this.numpadZero).multiTap(6)
   }
 
+  async createPin() {
+    for (let i = 0; i < 2; i++) {
+      await this.tapNumpadZero6Times()
+    }
+  }
+
   async createNewPin() {
-    await element(this.numpadOne).multiTap(6)
+    for (let i = 0; i < 2; i++) {
+      await element(this.numpadOne).multiTap(6)
+    }
   }
 
   async enterNewCurrentPin() {
