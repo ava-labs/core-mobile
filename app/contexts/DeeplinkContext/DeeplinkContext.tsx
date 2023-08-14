@@ -39,11 +39,10 @@ export const DeeplinkContextProvider = ({
   }, [])
 
   const handleNotificationCallback = useCallback(
-    (url: string, origin: DeepLinkOrigin, isDevMode = false) =>
-      () => {
-        isDevMode && dispatch(toggleDeveloperMode)
-        setPendingDeepLink({ url, origin })
-      },
+    (url: string, origin: DeepLinkOrigin, isDevMode = false) => {
+      isDevMode && dispatch(toggleDeveloperMode)
+      setPendingDeepLink({ url, origin })
+    },
     [dispatch]
   )
 
