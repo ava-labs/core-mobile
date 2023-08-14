@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import EarnService from 'services/earn/EarnService'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectActiveAccount } from 'store/account'
@@ -8,12 +8,17 @@ import { QueryClient } from '@tanstack/query-core'
 import { Avax } from 'types/Avax'
 import { calculateAmountForCrossChainTransfer } from 'hooks/earn/useGetAmountForCrossChainTransfer'
 import Logger from 'utils/Logger'
+import { EarnError } from 'hooks/earn/errors'
+import GlacierBalanceService from 'services/balance/GlacierBalanceService'
+import { setAtomicImportFailed } from 'store/earn'
 import { useCChainBalance } from './useCChainBalance'
 
 export const useIssueDelegation = (
   onSuccess: (txId: string) => void,
-  onError: (error: Error) => void
+  onError: (error: Error) => void,
+  onFundsStuck: (error: Error) => void
 ) => {
+  const dispatch = useDispatch()
   const queryClient = useQueryClient()
   const activeAccount = useSelector(selectActiveAccount)
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
@@ -30,36 +35,58 @@ export const useIssueDelegation = (
       stakingAmount: Avax
       startDate: Date
       endDate: Date
-      claimableBalance: Avax
     }) => {
       if (!activeAccount) {
         return Promise.reject('no active account')
       }
 
-      const cChainRequiredAmount = calculateAmountForCrossChainTransfer(
-        data.stakingAmount,
-        data.claimableBalance
-      )
-
-      return EarnService.collectTokensForStaking({
+      Logger.trace('importAnyStuckFunds...')
+      return EarnService.importAnyStuckFunds({
         activeAccount,
-        cChainBalance: cChainBalance,
-        isDevMode: isDeveloperMode,
-        requiredAmount: cChainRequiredAmount
-      }).then(successfullyCollected => {
-        if (successfullyCollected) {
-          return EarnService.issueAddDelegatorTransaction({
-            activeAccount,
-            endDate: data.endDate,
-            isDevMode: isDeveloperMode,
-            nodeId: data.nodeId,
-            stakeAmount: data.stakingAmount.toSubUnit(),
-            startDate: data.startDate
-          })
-        } else {
-          throw Error('Something went wrong')
-        }
+        isDevMode: isDeveloperMode
       })
+        .then(() => {
+          Logger.trace('getPChainBalance...')
+          const addressPVM = activeAccount.addressPVM
+          return GlacierBalanceService.getPChainBalance(
+            isDeveloperMode,
+            addressPVM ? [addressPVM] : []
+          )
+        })
+        .then(pChainBalance => {
+          const pChainBalanceNAvax = pChainBalance.unlockedUnstaked[0]?.amount
+          const claimableBalance = Avax.fromNanoAvax(pChainBalanceNAvax ?? 0)
+          Logger.trace('getPChainBalance: ', claimableBalance.toDisplay())
+          const cChainRequiredAmount = calculateAmountForCrossChainTransfer(
+            data.stakingAmount,
+            claimableBalance
+          )
+          Logger.trace(
+            'cChainRequiredAmount: ',
+            cChainRequiredAmount.toDisplay()
+          )
+          Logger.trace('collectTokensForStaking...')
+          return EarnService.collectTokensForStaking({
+            activeAccount,
+            cChainBalance: cChainBalance,
+            isDevMode: isDeveloperMode,
+            requiredAmount: cChainRequiredAmount
+          })
+        })
+        .then(successfullyCollected => {
+          if (successfullyCollected) {
+            return EarnService.issueAddDelegatorTransaction({
+              activeAccount,
+              endDate: data.endDate,
+              isDevMode: isDeveloperMode,
+              nodeId: data.nodeId,
+              stakeAmount: data.stakingAmount.toSubUnit(),
+              startDate: data.startDate
+            })
+          } else {
+            throw Error('Something went wrong')
+          }
+        })
     },
     onSuccess: txId => {
       refetchQueries({
@@ -74,7 +101,18 @@ export const useIssueDelegation = (
     },
     onError: error => {
       Logger.error('delegation failed', error)
-      onError(error)
+      if (error instanceof EarnError) {
+        switch (error.name) {
+          case 'CONFIRM_EXPORT_FAIL':
+          case 'ISSUE_IMPORT_FAIL':
+          case 'CONFIRM_IMPORT_FAIL':
+            dispatch(setAtomicImportFailed(true))
+            onFundsStuck(error)
+            break
+        }
+      } else {
+        onError(error)
+      }
     }
   })
 
