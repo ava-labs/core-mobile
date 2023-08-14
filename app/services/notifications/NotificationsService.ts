@@ -8,7 +8,7 @@ import notifee, {
   EventDetail
 } from '@notifee/react-native'
 import { DeepLinkOrigin } from 'contexts/DeeplinkContext/types'
-import { fromUnixTime, isPast } from 'date-fns'
+import { addSeconds, fromUnixTime, isPast } from 'date-fns'
 import { Linking, Platform } from 'react-native'
 import {
   ChannelId,
@@ -92,10 +92,11 @@ class NotificationsService {
     channelId: ChannelId
     isDeveloperMode?: boolean
   }) => {
+    const time = addSeconds(new Date(), 10).getTime()
     // Create a time-based trigger
     const trigger: TimestampTrigger = {
       type: TriggerType.TIMESTAMP,
-      timestamp: timestamp / 1000 // convert to seconds
+      timestamp: time // convert to seconds
     }
 
     const channel = notificationChannels.find(ch => ch.id === channelId)
@@ -111,11 +112,11 @@ class NotificationsService {
           url: 'core://stakecomplete',
           isDeveloperMode: isDeveloperMode.toString()
         },
-        ios: {
-          badgeCount: 1
-        },
+        // ios: {
+        //   badgeCount: 1
+        // },
         android: {
-          badgeCount: 1,
+          // badgeCount: 1,
           channelId: channel.id,
           pressAction: {
             id: 'open-claim-rewards',
@@ -141,6 +142,7 @@ class NotificationsService {
     triggerData: stakeCompleteTriggerData[],
     isDeveloperMode?: boolean
   ) => {
+    console.log('updateStakeCompleteNotificationTriggers')
     await this.cleanupNotificationTriggers()
 
     triggerData.forEach(async data => {
@@ -220,6 +222,7 @@ class NotificationsService {
       isDeveloperMode: boolean
     ) => void
   }) => {
+    console.log('handleNotificationEvent', type, detail)
     switch (type) {
       case EventType.DELIVERED:
         this.incrementBadgeCount(1)
@@ -241,7 +244,7 @@ class NotificationsService {
       const timestamp = fromUnixTime(
         (pending.trigger as TimestampTrigger).timestamp
       )
-      if (isPast(timestamp) && pending.notification?.id) {
+      if (pending.notification?.id) {
         await notifee.cancelTriggerNotification(pending.notification.id)
       }
     })
