@@ -8,6 +8,7 @@ import {
 } from 'services/notifications/channels'
 import notifee from '@notifee/react-native'
 import NotificationsService from 'services/notifications/NotificationsService'
+import { onAppUnlocked } from 'store/app'
 import {
   createStakingCompleteNotificationTriggers,
   maybePromptEarnNotification,
@@ -79,6 +80,10 @@ const handleCreateStakingCompleteTriggers = async (
   )
 }
 
+const handleResetNotificationBadgeCount = async () => {
+  await NotificationsService.setBadgeCount(0)
+}
+
 export const addNotificationsListeners = (
   startListening: AppStartListening
 ) => {
@@ -106,5 +111,10 @@ export const addNotificationsListeners = (
     effect: async (action, listenerApi) => {
       await handleCreateStakingCompleteTriggers(listenerApi, action.payload)
     }
+  })
+
+  startListening({
+    actionCreator: onAppUnlocked,
+    effect: handleResetNotificationBadgeCount
   })
 }
