@@ -54,7 +54,9 @@ class CreatePinPage {
   }
 
   async createNewPin() {
-    await element(this.numpadOne).multiTap(6)
+    for (let i = 0; i < 2; i++) {
+      await element(this.numpadOne).multiTap(6)
+    }
   }
 
   async enterNewCurrentPin() {
