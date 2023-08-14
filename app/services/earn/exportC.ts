@@ -25,7 +25,7 @@ export async function exportC({
   requiredAmount,
   activeAccount,
   isDevMode
-}: ExportCParams): Promise<boolean> {
+}: ExportCParams): Promise<void> {
   Logger.info('exporting C started')
 
   const avaxXPNetwork = NetworkService.getAvalancheNetworkXP(isDevMode)
@@ -88,5 +88,4 @@ export async function exportC({
   }
 
   Logger.info('exporting C ended')
-  return true
 }

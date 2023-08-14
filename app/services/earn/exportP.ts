@@ -22,7 +22,7 @@ export async function exportP({
   requiredAmount,
   activeAccount,
   isDevMode
-}: ExportPParams): Promise<boolean> {
+}: ExportPParams): Promise<void> {
   Logger.info('exporting P started')
 
   if (pChainBalance.lt(requiredAmount)) {
@@ -68,5 +68,4 @@ export async function exportP({
   }
 
   Logger.info('exporting P ended')
-  return true
 }

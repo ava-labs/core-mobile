@@ -73,20 +73,16 @@ export const useIssueDelegation = (
             requiredAmount: cChainRequiredAmount
           })
         })
-        .then(successfullyCollected => {
-          if (successfullyCollected) {
-            return EarnService.issueAddDelegatorTransaction({
-              activeAccount,
-              endDate: data.endDate,
-              isDevMode: isDeveloperMode,
-              nodeId: data.nodeId,
-              stakeAmount: data.stakingAmount.toSubUnit(),
-              startDate: data.startDate
-            })
-          } else {
-            throw Error('Something went wrong')
-          }
-        })
+        .then(() =>
+          EarnService.issueAddDelegatorTransaction({
+            activeAccount,
+            endDate: data.endDate,
+            isDevMode: isDeveloperMode,
+            nodeId: data.nodeId,
+            stakeAmount: data.stakingAmount.toSubUnit(),
+            startDate: data.startDate
+          })
+        )
     },
     onSuccess: txId => {
       refetchQueries({

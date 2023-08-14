@@ -18,7 +18,7 @@ export type ImportCParams = {
 export async function importC({
   activeAccount,
   isDevMode
-}: ImportCParams): Promise<boolean> {
+}: ImportCParams): Promise<void> {
   Logger.info('importing C started')
 
   const avaxXPNetwork = NetworkService.getAvalancheNetworkXP(isDevMode)
@@ -84,5 +84,4 @@ export async function importC({
   }
 
   Logger.info('importing C finished')
-  return true
 }

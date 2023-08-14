@@ -79,7 +79,7 @@ class EarnService {
             activeAccount,
             isDevMode
           }),
-        isSuccess: result => result,
+        isSuccess: () => true,
         maxRetries: maxTransactionStatusCheckRetries
       })
       progressEvents?.dispatch(RecoveryEvents.ImportCFinish)
@@ -94,28 +94,26 @@ class EarnService {
     requiredAmount,
     activeAccount,
     isDevMode
-  }: CollectTokensForStakingParams): Promise<boolean> {
+  }: CollectTokensForStakingParams): Promise<void> {
     if (requiredAmount.isZero()) {
       Logger.info('no need to cross chain')
-      return true
+      return
     }
-    return (
-      (await exportC({
-        cChainBalance,
-        requiredAmount,
-        activeAccount,
-        isDevMode
-      })) &&
-      (await retry({
-        operation: async () =>
-          importP({
-            activeAccount,
-            isDevMode
-          }),
-        isSuccess: result => result,
-        maxRetries: maxTransactionStatusCheckRetries
-      }))
-    )
+    await exportC({
+      cChainBalance,
+      requiredAmount,
+      activeAccount,
+      isDevMode
+    })
+    await retry({
+      operation: async () =>
+        importP({
+          activeAccount,
+          isDevMode
+        }),
+      isSuccess: () => true,
+      maxRetries: maxTransactionStatusCheckRetries
+    })
   }
 
   /**
@@ -131,19 +129,17 @@ class EarnService {
     requiredAmount: Avax,
     activeAccount: Account,
     isDevMode: boolean
-  ): Promise<boolean> {
-    return (
-      (await exportP({
-        pChainBalance,
-        requiredAmount,
-        activeAccount,
-        isDevMode
-      })) &&
-      (await importC({
-        activeAccount,
-        isDevMode
-      }))
-    )
+  ): Promise<void> {
+    await exportP({
+      pChainBalance,
+      requiredAmount,
+      activeAccount,
+      isDevMode
+    })
+    await importC({
+      activeAccount,
+      isDevMode
+    })
   }
 
   /**

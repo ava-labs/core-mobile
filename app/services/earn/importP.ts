@@ -18,7 +18,7 @@ export type ImportPParams = {
 export async function importP({
   activeAccount,
   isDevMode
-}: ImportPParams): Promise<boolean> {
+}: ImportPParams): Promise<void> {
   Logger.info('importing P started')
 
   const avaxXPNetwork = NetworkService.getAvalancheNetworkXP(isDevMode)
@@ -74,7 +74,6 @@ export async function importP({
   }
 
   Logger.info('importing P finished')
-  return true
 }
 
 /**
@@ -100,7 +99,7 @@ export async function importPWithBalanceCheck({
         activeAccount,
         isDevMode
       }),
-    isSuccess: result => result,
+    isSuccess: () => true,
     maxRetries: maxTransactionStatusCheckRetries
   })
 
