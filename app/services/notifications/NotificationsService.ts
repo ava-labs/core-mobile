@@ -4,7 +4,6 @@ import notifee, {
   TriggerNotification,
   TriggerType,
   Event,
-  RepeatFrequency,
   EventType,
   EventDetail
 } from '@notifee/react-native'
@@ -99,8 +98,7 @@ class NotificationsService {
     // Create a time-based trigger
     const trigger: TimestampTrigger = {
       type: TriggerType.TIMESTAMP,
-      timestamp: timestamp / 1000, // convert to seconds
-      repeatFrequency: RepeatFrequency.DAILY
+      timestamp: timestamp / 1000 // convert to seconds
     }
 
     const channel = notificationChannels.find(ch => ch.id === channelId)
@@ -173,11 +171,11 @@ class NotificationsService {
   }
 
   incrementBadgeCount = async (incrementBy?: number) => {
-    notifee.incrementBadgeCount(incrementBy).then(() => notifee.getBadgeCount())
+    notifee.incrementBadgeCount(incrementBy)
   }
 
   decrementBadgeCount = async (decrementBy?: number) => {
-    notifee.decrementBadgeCount(decrementBy).then(() => notifee.getBadgeCount())
+    notifee.decrementBadgeCount(decrementBy)
   }
 
   setBadgeCount = async (count: number) => {
