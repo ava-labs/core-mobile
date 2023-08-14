@@ -106,9 +106,14 @@ class EarnService {
         activeAccount,
         isDevMode
       })) &&
-      (await importP({
-        activeAccount,
-        isDevMode
+      (await retry({
+        operation: async () =>
+          importP({
+            activeAccount,
+            isDevMode
+          }),
+        isSuccess: result => result,
+        maxRetries: maxTransactionStatusCheckRetries
       }))
     )
   }
