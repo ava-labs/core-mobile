@@ -36,7 +36,7 @@ const useIsEarnDashboardEnabled = () => {
   const [isEarnDashboardEnabled, setIsEarnDashboardEnabled] = useState(true)
 
   const createNotificationTriggers = useCallback(
-    (transactions: PChainTransaction[]) => () => {
+    (transactions: PChainTransaction[]) => {
       const now = new Date()
       const notificationTriggerData = transactions
         .filter(transaction => isOnGoing(transaction, now))
