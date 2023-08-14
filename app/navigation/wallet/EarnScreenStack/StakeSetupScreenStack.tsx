@@ -13,6 +13,7 @@ import { Confirmation } from 'screens/earn/Confirmation/Confirmation'
 import { CancelModal } from 'screens/earn/CancelModal'
 import SmartStakeAmount from 'screens/earn/SmartStakeAmount'
 import { Avax } from 'types/Avax'
+import { FundsStuckModal } from 'screens/earn/FundsStuckModal'
 
 export type StakeSetupStackParamList = {
   [AppNavigation.StakeSetup.GetStarted]: undefined
@@ -38,6 +39,9 @@ export type StakeSetupStackParamList = {
     stakingEndTime: Date
   }
   [AppNavigation.StakeSetup.Cancel]: undefined
+  [AppNavigation.StakeSetup.FundsStuck]: {
+    onTryAgain: () => void
+  }
 }
 
 const Stack = createStackNavigator<StakeSetupStackParamList>()
@@ -87,6 +91,11 @@ function StakeSetupScreenStack() {
         options={{ presentation: 'transparentModal' }}
         name={AppNavigation.StakeSetup.Cancel}
         component={CancelModal}
+      />
+      <Stack.Screen
+        options={{ presentation: 'transparentModal' }}
+        name={AppNavigation.StakeSetup.FundsStuck}
+        component={FundsStuckModal}
       />
     </Stack.Navigator>
   )

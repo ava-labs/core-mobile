@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import { Linking, StyleSheet, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Space } from 'components/Space'
@@ -70,10 +70,10 @@ export const Confirmation = () => {
   const tokenSymbol = activeNetwork.networkToken.symbol
   const { issueDelegationMutation } = useIssueDelegation(
     onDelegationSuccess,
-    onDelegationError
+    onDelegationError,
+    onFundsStuck
   )
   const claimableBalance = useGetClaimableBalance()
-
   const networkFees = useEstimateStakingFees(stakingAmount)
 
   const deductedStakingAmount = stakingAmount.sub(networkFees ?? 0)
@@ -113,6 +113,12 @@ export const Confirmation = () => {
     navigate(AppNavigation.StakeSetup.Cancel)
   }
 
+  function onFundsStuck() {
+    navigate(AppNavigation.StakeSetup.FundsStuck, {
+      onTryAgain: () => issueDelegation()
+    })
+  }
+
   const issueDelegation = () => {
     if (!claimableBalance) {
       return
@@ -121,8 +127,7 @@ export const Confirmation = () => {
       stakingAmount: deductedStakingAmount,
       startDate: minStartTime,
       endDate: validatedStakingEndTime,
-      nodeId,
-      claimableBalance
+      nodeId
     })
   }
 
