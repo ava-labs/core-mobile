@@ -1,5 +1,5 @@
 import { Avalanche } from '@avalabs/wallets-sdk'
-import { retry } from 'utils/js/retry'
+import { retry, RetryBackoffPolicy } from 'utils/js/retry'
 import Logger from 'utils/Logger'
 import WalletService from 'services/wallet/WalletService'
 import NetworkService from 'services/network/NetworkService'
@@ -7,6 +7,7 @@ import { Account } from 'store/account'
 import { AvalancheTransactionRequest } from 'services/wallet/types'
 import { UnsignedTx } from '@avalabs/avalanchejs-v2'
 import { EarnError } from 'hooks/earn/errors'
+import GlacierBalanceService from 'services/balance/GlacierBalanceService'
 import { maxTransactionStatusCheckRetries } from './utils'
 
 export type ImportPParams = {
@@ -74,4 +75,46 @@ export async function importP({
 
   Logger.info('importing P finished')
   return true
+}
+
+/**
+ * Makes import P with check if P chain balance changed thus ensuring imported balance is immediately available.
+ */
+export async function importPWithBalanceCheck({
+  activeAccount,
+  isDevMode
+}: ImportPParams): Promise<void> {
+  //get P balance now then compare it later to check if balance changed after import
+  const balanceBeforeImport = (
+    await GlacierBalanceService.getPChainBalance(
+      isDevMode,
+      activeAccount.addressPVM ? [activeAccount.addressPVM] : []
+    )
+  ).unlockedUnstaked[0]?.amount
+
+  Logger.trace('balanceBeforeImport', balanceBeforeImport)
+
+  await retry({
+    operation: async () =>
+      importP({
+        activeAccount,
+        isDevMode
+      }),
+    isSuccess: result => result,
+    maxRetries: maxTransactionStatusCheckRetries
+  })
+
+  await retry({
+    operation: async () =>
+      GlacierBalanceService.getPChainBalance(
+        isDevMode,
+        activeAccount.addressPVM ? [activeAccount.addressPVM] : []
+      ),
+    isSuccess: pChainBalance => {
+      const balanceAfterImport = pChainBalance.unlockedUnstaked[0]?.amount
+      return balanceAfterImport !== balanceBeforeImport
+    },
+    maxRetries: maxTransactionStatusCheckRetries,
+    backoffPolicy: RetryBackoffPolicy.getConstant(1)
+  })
 }
