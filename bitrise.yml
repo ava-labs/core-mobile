@@ -578,7 +578,7 @@ workflows:
             set -x
 
             npm rebuild detox
-            ./node_modules/.bin/detox test --configuration ios.internal.release.smoke.ci --retries 2 ; test_result=$?
+            ./node_modules/.bin/detox test --configuration ios.internal.release.smoke.ci; test_result=$?
             
             RUN_ID=$(head -n 1 ./e2e/testrailRunId.txt) 
             
