@@ -43,14 +43,6 @@ class NotificationsService {
     }, new Map<ChannelId, boolean>())
   }
 
-  async isStakeCompletedNotificationEnabled() {
-    const blockedNotifications = await this.getBlockedNotifications()
-    return (
-      !blockedNotifications.get('all') &&
-      !blockedNotifications.get(ChannelId.STAKING_COMPLETE)
-    )
-  }
-
   /**
    * Tries to pull up system prompt for allowing notifications, if that doesn't
    * work opens system settings
@@ -85,13 +77,13 @@ class NotificationsService {
   }
 
   createNotificationTrigger = async ({
-    nodeId,
+    txHash,
     timestamp,
     channelId,
     isDeveloperMode = false
   }: {
-    nodeId: string
-    timestamp: number // unix timestamp *seconds
+    txHash: string
+    timestamp: number // unix timestamp *milliseconds
     channelId: ChannelId
     isDeveloperMode?: boolean
   }) => {
@@ -107,7 +99,7 @@ class NotificationsService {
     // Create a trigger notification
     await notifee.createTriggerNotification(
       {
-        id: nodeId, // use to look up if the stake notifiaction already exists
+        id: txHash, // use to look up if the stake notifiaction already exists
         title: channel.title,
         body: channel.subtitle,
         data: {
@@ -147,12 +139,12 @@ class NotificationsService {
     await this.cleanupNotificationTriggers()
 
     triggerData.forEach(async data => {
-      if (data.nodeId && data.endTimestamp) {
-        const trigger = await this.getNotificationTriggerById(data.nodeId)
+      if (data.txHash && data.endTimestamp) {
+        const trigger = await this.getNotificationTriggerById(data.txHash)
         if (!trigger) {
           // create notification trigger
           await this.createNotificationTrigger({
-            nodeId: data.nodeId,
+            txHash: data.txHash,
             timestamp: data.endTimestamp,
             channelId: ChannelId.STAKING_COMPLETE,
             isDeveloperMode

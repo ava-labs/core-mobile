@@ -8,5 +8,5 @@ export type NotificationsState = {
 
 export type stakeCompleteTriggerData = Pick<
   PChainTransaction,
-  'nodeId' | 'endTimestamp'
+  'endTimestamp' | 'txHash'
 >

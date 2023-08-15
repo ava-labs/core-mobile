@@ -153,7 +153,7 @@ export const Confirmation = () => {
     dispatch(maybePromptEarnNotification)
     dispatch(
       createStakingCompleteNotificationTriggers([
-        { nodeId, endTimestamp: getUnixTime(validatedStakingEndTime) }
+        { txHash, endTimestamp: getUnixTime(validatedStakingEndTime) }
       ])
     )
   }
