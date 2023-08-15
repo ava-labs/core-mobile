@@ -24,7 +24,7 @@ describe('Add and edit accounts', () => {
       1,
       3
     )
-    //await AccountManagePage.tapAddEditAccounts()
+    await AccountManagePage.tapAddEditAccounts()
     await AccountManagePage.tapAddAccountButton()
     const startTime2 = new Date().getTime()
     await Actions.waitForElement(AccountManagePage.secondAccount)

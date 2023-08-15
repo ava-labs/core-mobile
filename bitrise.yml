@@ -209,25 +209,6 @@ workflows:
                 fi
                 
             fi
-  _get_testrail_run_id:
-    steps:
-    - script@1:
-        title: Get TestRail Run ID
-        inputs:
-        - content: |-
-            #!/usr/bin/env bash
-            # fail if any commands fails
-            set -e
-            # make pipelines' return status equal the last command to exit with a non-zero status, or zero if all commands exit successfully
-            set -o pipefail
-            # debug log
-            set -x
-
-            # get the testrail run id from the testrail run id file
-            
-            RUN_ID=$(head -n 1 ./e2e/testrailRunId.txt) 
-            
-            envman add --key TESTRAIL_RUN --value $RUN_ID
   _send-notification-slack:
     steps:
     - slack@3:
@@ -568,7 +549,6 @@ workflows:
     - _set-version
     - _build-ios-simulator
     after_run:
-    - _get_testrail_run_id
     - _send-test-result-notifcation-slack
     envs:
     - ENVIRONMENT: production
@@ -598,7 +578,7 @@ workflows:
         inputs:
         - content: |-
             #!/usr/bin/env bash
-            set -e
+
             # make pipelines' return status equal the last command to exit with a non-zero status, or zero if all commands exit successfully
             set -o pipefail
 
@@ -606,4 +586,12 @@ workflows:
             set -x
 
             npm rebuild detox
-            ./node_modules/.bin/detox test --configuration ios.internal.release.smoke.ci --retries 1
+            ./node_modules/.bin/detox test --configuration ios.internal.release.smoke.ci --retries 1; test_result=$?
+            
+            RUN_ID=$(head -n 1 ./e2e/testrailRunId.txt) 
+            
+            envman add --key TESTRAIL_RUN --value $RUN_ID
+
+            if ((test_result != 0)); then
+              exit 1
+            fi
