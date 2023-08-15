@@ -1,5 +1,4 @@
 import React from 'react'
-import { HeaderBackButton } from '@react-navigation/elements'
 import AppNavigation from 'navigation/AppNavigation'
 import { createStackNavigator } from '@react-navigation/stack'
 import GetStarted from 'screens/earn/GetStarted'
@@ -13,6 +12,7 @@ import { Confirmation } from 'screens/earn/Confirmation/Confirmation'
 import { CancelModal } from 'screens/earn/CancelModal'
 import SmartStakeAmount from 'screens/earn/SmartStakeAmount'
 import { Avax } from 'types/Avax'
+import { BackButton } from 'components/BackButton'
 
 export type StakeSetupStackParamList = {
   [AppNavigation.StakeSetup.GetStarted]: undefined
@@ -138,15 +138,7 @@ const ConfirmationBackButton = () => {
     }
     goBack()
   }
-
-  return <HeaderBackButton onPress={handleGoBack} style={backButtonStyle} />
+  return <BackButton onPress={handleGoBack} />
 }
-
-const BackButton = () => {
-  const { goBack } = useNavigation()
-  return <HeaderBackButton onPress={goBack} style={backButtonStyle} />
-}
-
-const backButtonStyle = { marginLeft: 8 }
 
 export default React.memo(StakeSetupScreenStack)
