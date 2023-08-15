@@ -571,7 +571,6 @@ workflows:
         - content: |-
             #!/usr/bin/env bash
 
-            set -e
             # make pipelines' return status equal the last command to exit with a non-zero status, or zero if all commands exit successfully
             set -o pipefail
 
@@ -579,4 +578,12 @@ workflows:
             set -x
 
             npm rebuild detox
-            ./node_modules/.bin/detox test --configuration ios.internal.release.smoke.ci --retries 2 && RUN_ID=$(head -n 1 ./e2e/testrailRunId.txt) && envman add --key TESTRAIL_RUN --value $RUN_ID
+            ./node_modules/.bin/detox test --configuration ios.internal.release.smoke.ci --retries 2 ; test_result=$?
+            
+            RUN_ID=$(head -n 1 ./e2e/testrailRunId.txt) 
+            
+            envman add --key TESTRAIL_RUN --value $RUN_ID
+
+            if ((test_result != 0)); then
+              exit 1
+            fi
