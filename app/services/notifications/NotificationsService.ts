@@ -264,6 +264,18 @@ class NotificationsService {
   getInitialNotification = async () => {
     return notifee.getInitialNotification()
   }
+
+  isStakeCompleteNotificationBlocked = async () => {
+    const blockedNotifications = await this.getBlockedNotifications()
+    return (
+      blockedNotifications.get('all') ||
+      blockedNotifications.get(ChannelId.STAKING_COMPLETE)
+    )
+  }
+
+  cancelAllNotifications = async () => {
+    await notifee.cancelAllNotifications()
+  }
 }
 
 export default new NotificationsService()

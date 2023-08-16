@@ -8,7 +8,8 @@ import {
 } from 'services/notifications/channels'
 import notifee from '@notifee/react-native'
 import NotificationsService from 'services/notifications/NotificationsService'
-import { onAppUnlocked } from 'store/app'
+import { onAppLocked, onAppUnlocked } from 'store/app'
+import { Action, isAnyOf } from '@reduxjs/toolkit'
 import {
   scheduleStakingCompleteNotifications,
   maybePromptEarnNotification,
@@ -84,6 +85,23 @@ const handleResetNotificationBadgeCount = async () => {
   await NotificationsService.setBadgeCount(0)
 }
 
+const handleNotificationCleanup = async (
+  _: Action,
+  listenerApi: AppListenerEffectAPI
+) => {
+  const state = listenerApi.getState()
+  const isStakeCompleteNotificationEnabled =
+    state.notifications.notificationSubscriptions[ChannelId.STAKING_COMPLETE]
+  const isStakeCompleteNotificationBlocked =
+    await NotificationsService.isStakeCompleteNotificationBlocked()
+  if (
+    isStakeCompleteNotificationBlocked ||
+    !isStakeCompleteNotificationEnabled
+  ) {
+    await NotificationsService.cancelAllNotifications()
+  }
+}
+
 export const addNotificationsListeners = (
   startListening: AppStartListening
 ) => {
@@ -119,5 +137,10 @@ export const addNotificationsListeners = (
   startListening({
     actionCreator: onAppUnlocked,
     effect: handleResetNotificationBadgeCount
+  })
+
+  startListening({
+    matcher: isAnyOf(onAppUnlocked, onAppLocked),
+    effect: handleNotificationCleanup
   })
 }
