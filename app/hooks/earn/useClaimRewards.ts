@@ -7,6 +7,7 @@ import { selectSelectedCurrency } from 'store/settings/currency'
 import { QueryClient } from '@tanstack/query-core'
 import { Avax } from 'types/Avax'
 import Logger from 'utils/Logger'
+import { FundsStuckError } from 'hooks/earn/errors'
 import { usePChainBalance } from './usePChainBalance'
 import { useClaimFees } from './useClaimFees'
 
@@ -19,7 +20,8 @@ import { useClaimFees } from './useClaimFees'
  */
 export const useClaimRewards = (
   onSuccess: () => void,
-  onError: (error: Error) => void
+  onError: (error: Error) => void,
+  onFundsStuck: (error: Error) => void
 ) => {
   const queryClient = useQueryClient()
   const activeAccount = useSelector(selectActiveAccount)
@@ -73,7 +75,11 @@ export const useClaimRewards = (
     },
     onError: error => {
       Logger.error('claim failed', error)
-      onError(error)
+      if (error instanceof FundsStuckError) {
+        onFundsStuck(error)
+      } else {
+        onError(error)
+      }
     }
   })
 }
