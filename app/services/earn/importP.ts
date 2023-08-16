@@ -114,6 +114,6 @@ export async function importPWithBalanceCheck({
       return balanceAfterImport !== balanceBeforeImport
     },
     maxRetries: maxTransactionStatusCheckRetries,
-    backoffPolicy: RetryBackoffPolicy.getConstant(1)
+    backoffPolicy: RetryBackoffPolicy.constant(1)
   })
 }

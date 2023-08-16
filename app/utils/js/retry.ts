@@ -34,7 +34,7 @@ export const retry = async <T>({
   operation,
   isSuccess,
   maxRetries = DEFAULT_MAX_RETRIES,
-  backoffPolicy = RetryBackoffPolicy.exponential
+  backoffPolicy = RetryBackoffPolicy.exponential()
 }: RetryParams<T>): Promise<T> => {
   let backoffPeriodSeconds = 0
   let retries = 0
@@ -73,11 +73,12 @@ export const retry = async <T>({
 type RetryBackoffPolicyInterface = (retryIndex: number) => number
 
 export class RetryBackoffPolicy {
-  static exponential(retryIndex: number): number {
-    return Math.pow(2, retryIndex)
+  static exponential(): RetryBackoffPolicyInterface {
+    return (retryIndex: number): number => {
+      return Math.pow(2, retryIndex)
+    }
   }
-
-  static getConstant(secondsToDelay: number): RetryBackoffPolicyInterface {
+  static constant(secondsToDelay: number): RetryBackoffPolicyInterface {
     return (_: number): number => {
       return secondsToDelay
     }
