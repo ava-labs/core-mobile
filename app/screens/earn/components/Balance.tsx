@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { View } from 'react-native'
 import { usePChainBalance } from 'hooks/earn/usePChainBalance'
 import { RecoveryEvents, StakeTypeEnum } from 'services/earn/types'
@@ -11,16 +11,11 @@ import { Space } from 'components/Space'
 import { useCChainBalance } from 'hooks/earn/useCChainBalance'
 import { useWeiAvaxFormatter } from 'hooks/formatter/useWeiAvaxFormatter'
 import { useNAvaxFormatter } from 'hooks/formatter/useNAvaxFormatter'
-import { useSelector } from 'react-redux'
-import { selectActiveAccount } from 'store/account'
-import { selectIsDeveloperMode } from 'store/settings/advanced'
-import EarnService from 'services/earn/EarnService'
 import { BalanceItem } from 'screens/earn/components/BalanceItem'
 import { PopableLabel } from 'components/PopableLabel'
 import { Row } from 'components/Row'
 import { Popable } from 'react-native-popable'
-import Logger from 'utils/Logger'
-import { useNow } from 'hooks/time/useNow'
+import { useImportAnyStuckFunds } from 'services/earn/useImportAnyStuckFunds'
 import { getStakePrimaryColor } from '../utils'
 import { BalanceLoader } from './BalanceLoader'
 import { CircularProgress } from './CircularProgress'
@@ -36,12 +31,11 @@ export const Balance = () => {
   const nAvaxFormatter = useNAvaxFormatter()
   const shouldShowLoader = cChainBalance.isLoading || pChainBalance.isLoading
 
-  const activeAccount = useSelector(selectActiveAccount)
-  const isDevMode = useSelector(selectIsDeveloperMode)
   const [recoveryState, setRecoveryState] = useState(RecoveryEvents.Idle)
   const [startPeriodicLostFundsCheck, setStartPeriodicLostFundsCheck] =
     useState(false)
-  const ticker = useNow()
+
+  useImportAnyStuckFunds(startPeriodicLostFundsCheck, handleRecoveryEvent)
 
   function handleRecoveryEvent(payload: RecoveryEvents) {
     setRecoveryState(payload)
@@ -53,16 +47,6 @@ export const Balance = () => {
       setStartPeriodicLostFundsCheck(false)
     }
   })
-
-  useEffect(() => {
-    if (startPeriodicLostFundsCheck && activeAccount && ticker) {
-      EarnService.importAnyStuckFunds({
-        activeAccount,
-        isDevMode,
-        progressEvents: handleRecoveryEvent
-      }).catch(reason => Logger.error('importAnyStuckFunds failed', reason))
-    }
-  }, [activeAccount, isDevMode, startPeriodicLostFundsCheck, ticker])
 
   if (shouldShowLoader) {
     return <BalanceLoader />
