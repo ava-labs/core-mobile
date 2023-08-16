@@ -75,14 +75,9 @@ class EarnService {
 
     if (cChainUtxo.getUTXOs().length !== 0) {
       progressEvents?.(RecoveryEvents.ImportCStart)
-      await retry({
-        operation: async () =>
-          importC({
-            activeAccount,
-            isDevMode
-          }),
-        isSuccess: () => true,
-        maxRetries: maxTransactionStatusCheckRetries
+      await importC({
+        activeAccount,
+        isDevMode
       })
       progressEvents?.(RecoveryEvents.ImportCFinish)
     }
@@ -108,14 +103,9 @@ class EarnService {
       activeAccount,
       isDevMode
     })
-    await retry({
-      operation: async () =>
-        importP({
-          activeAccount,
-          isDevMode
-        }),
-      isSuccess: () => true,
-      maxRetries: maxTransactionStatusCheckRetries
+    await importP({
+      activeAccount,
+      isDevMode
     })
   }
 
@@ -139,14 +129,9 @@ class EarnService {
       activeAccount,
       isDevMode
     })
-    await retry({
-      operation: async () =>
-        importC({
-          activeAccount,
-          isDevMode
-        }),
-      isSuccess: () => true,
-      maxRetries: maxTransactionStatusCheckRetries
+    await importC({
+      activeAccount,
+      isDevMode
     })
   }
 

@@ -98,14 +98,9 @@ export async function importPWithBalanceCheck({
 
   Logger.trace('balanceBeforeImport', balanceBeforeImport)
 
-  await retry({
-    operation: async () =>
-      importP({
-        activeAccount,
-        isDevMode
-      }),
-    isSuccess: () => true,
-    maxRetries: maxTransactionStatusCheckRetries
+  await importP({
+    activeAccount,
+    isDevMode
   })
 
   await retry({
