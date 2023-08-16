@@ -13,10 +13,10 @@ export const FundsStuckModal = () => {
   const { onTryAgain } = useRoute<RouteProp>().params
 
   const onAction = useCallback(() => {
+    onTryAgain()
     if (canGoBack()) {
       goBack()
     }
-    onTryAgain()
   }, [canGoBack, goBack, onTryAgain])
 
   const onCancel = useCallback(() => {
