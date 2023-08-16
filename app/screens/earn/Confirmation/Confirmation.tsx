@@ -126,13 +126,12 @@ export const Confirmation = () => {
     })
   }
 
-  function onDelegationSuccess(txHash: string) {
+  function onDelegationSuccess() {
     showSnackBarCustom({
       component: (
         <TransactionToast
           message={'Staking successful!'}
           type={TransactionToastType.SUCCESS}
-          txHash={txHash}
         />
       ),
       duration: 'long'
