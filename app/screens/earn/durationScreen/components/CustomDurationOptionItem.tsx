@@ -7,7 +7,7 @@ import {
   ONE_DAY,
   TWO_WEEKS
 } from 'services/earn/getStakeEndDate'
-import { MilliSeconds, convertToSeconds } from 'types/siUnits'
+import { convertToSeconds, MilliSeconds } from 'types/siUnits'
 import { View } from 'react-native'
 import { RadioButton } from 'components/RadioButton'
 import AvaText from 'components/AvaText'
