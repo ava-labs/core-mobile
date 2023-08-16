@@ -27,7 +27,7 @@ export const MatchFound = ({ validator }: { validator: NodeValidator }) => {
         stakingAmount,
         stakingEndTime
       })
-    }, 2200)
+    }, 3000)
     return () => clearTimeout(timer)
   })
 
