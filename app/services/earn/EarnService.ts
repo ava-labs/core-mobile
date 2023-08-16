@@ -34,6 +34,7 @@ import {
 } from '@avalabs/glacier-sdk'
 import { glacierSdk } from 'utils/network/glacier'
 import { Avax } from 'types/Avax'
+import { EarnError } from 'hooks/earn/errors'
 import { maxTransactionStatusCheckRetries } from './utils'
 
 class EarnService {
@@ -59,6 +60,7 @@ class EarnService {
     isDevMode: boolean
     progressEvents?: (events: RecoveryEvents) => void
   }): Promise<void> {
+    Logger.trace('Start importAnyStuckFunds')
     const avaxXPNetwork = NetworkService.getAvalancheNetworkXP(isDevMode)
     const { pChainUtxo, cChainUtxo } = await WalletService.getAtomicUTXOs({
       accountIndex: activeAccount.index,
@@ -83,6 +85,7 @@ class EarnService {
       })
       progressEvents?.(RecoveryEvents.ImportCFinish)
     }
+    Logger.trace('ImportAnyStuckFunds finished')
   }
 
   /**
@@ -103,6 +106,10 @@ class EarnService {
       requiredAmount,
       activeAccount,
       isDevMode
+    })
+    throw new EarnError({
+      name: 'CONFIRM_EXPORT_FAIL',
+      message: 'Export did not finish'
     })
     await retry({
       operation: async () =>

@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 import EarnService from 'services/earn/EarnService'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectActiveAccount } from 'store/account'
@@ -7,7 +7,6 @@ import { selectSelectedCurrency } from 'store/settings/currency'
 import { QueryClient } from '@tanstack/query-core'
 import { Avax } from 'types/Avax'
 import Logger from 'utils/Logger'
-import { setAtomicImportFailed } from 'store/earn'
 import { EarnError } from 'hooks/earn/errors'
 import { usePChainBalance } from './usePChainBalance'
 import { useClaimFees } from './useClaimFees'
@@ -24,7 +23,6 @@ export const useClaimRewards = (
   onError: (error: Error) => void,
   onFundsStuck: (error: Error) => void
 ) => {
-  const dispatch = useDispatch()
   const queryClient = useQueryClient()
   const activeAccount = useSelector(selectActiveAccount)
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
@@ -82,7 +80,6 @@ export const useClaimRewards = (
           case 'CONFIRM_EXPORT_FAIL':
           case 'ISSUE_IMPORT_FAIL':
           case 'CONFIRM_IMPORT_FAIL':
-            dispatch(setAtomicImportFailed(true))
             onFundsStuck(error)
             break
         }

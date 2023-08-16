@@ -6,12 +6,12 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaButton from 'components/AvaButton'
 import AppNavigation from 'navigation/AppNavigation'
 import { EarnScreenProps } from 'navigation/types'
-import { useNavigation } from '@react-navigation/native'
+import { useFocusEffect, useNavigation } from '@react-navigation/native'
 import { Space } from 'components/Space'
 import { useCChainBalance } from 'hooks/earn/useCChainBalance'
 import { useWeiAvaxFormatter } from 'hooks/formatter/useWeiAvaxFormatter'
 import { useNAvaxFormatter } from 'hooks/formatter/useNAvaxFormatter'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import EarnService from 'services/earn/EarnService'
@@ -19,8 +19,8 @@ import { BalanceItem } from 'screens/earn/components/BalanceItem'
 import { PopableLabel } from 'components/PopableLabel'
 import { Row } from 'components/Row'
 import { Popable } from 'react-native-popable'
-import { selectAtomicImportFailed, setAtomicImportFailed } from 'store/earn'
 import Logger from 'utils/Logger'
+import { useNow } from 'hooks/time/useNow'
 import { getStakePrimaryColor } from '../utils'
 import { BalanceLoader } from './BalanceLoader'
 import { CircularProgress } from './CircularProgress'
@@ -30,44 +30,39 @@ type ScreenProps = EarnScreenProps<typeof AppNavigation.Earn.StakeDashboard>
 export const Balance = () => {
   const { theme } = useApplicationContext()
   const { navigate } = useNavigation<ScreenProps['navigation']>()
-  const dispatch = useDispatch()
   const pChainBalance = usePChainBalance()
   const cChainBalance = useCChainBalance()
   const weiAvaxFormatter = useWeiAvaxFormatter()
   const nAvaxFormatter = useNAvaxFormatter()
   const shouldShowLoader = cChainBalance.isLoading || pChainBalance.isLoading
-  const atomicImportFailed = useSelector(selectAtomicImportFailed)
 
   const activeAccount = useSelector(selectActiveAccount)
   const isDevMode = useSelector(selectIsDeveloperMode)
-  const [importingStuckFunds, setImportingStuckFunds] = useState(false)
   const [recoveryState, setRecoveryState] = useState(RecoveryEvents.Idle)
+  const [startPeriodicLostFundsCheck, setStartPeriodicLostFundsCheck] =
+    useState(false)
+  const ticker = useNow()
 
   function handleRecoveryEvent(payload: RecoveryEvents) {
     setRecoveryState(payload)
   }
 
+  useFocusEffect(() => {
+    setStartPeriodicLostFundsCheck(true)
+    return () => {
+      setStartPeriodicLostFundsCheck(false)
+    }
+  })
+
   useEffect(() => {
-    if (atomicImportFailed && activeAccount && !importingStuckFunds) {
-      setImportingStuckFunds(true)
+    if (startPeriodicLostFundsCheck && activeAccount && ticker) {
       EarnService.importAnyStuckFunds({
         activeAccount,
         isDevMode,
         progressEvents: handleRecoveryEvent
-      })
-        .then(() => {
-          dispatch(setAtomicImportFailed(false))
-        })
-        .catch(reason => Logger.error('importAnyStuckFunds failed', reason))
-        .finally(() => setImportingStuckFunds(false))
+      }).catch(reason => Logger.error('importAnyStuckFunds failed', reason))
     }
-  }, [
-    atomicImportFailed,
-    activeAccount,
-    importingStuckFunds,
-    isDevMode,
-    dispatch
-  ])
+  }, [activeAccount, isDevMode, startPeriodicLostFundsCheck, ticker])
 
   if (shouldShowLoader) {
     return <BalanceLoader />
