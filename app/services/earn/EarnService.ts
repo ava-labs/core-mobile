@@ -34,7 +34,6 @@ import {
 } from '@avalabs/glacier-sdk'
 import { glacierSdk } from 'utils/network/glacier'
 import { Avax } from 'types/Avax'
-import { Signal } from 'micro-signals'
 import { maxTransactionStatusCheckRetries } from './utils'
 
 class EarnService {
@@ -58,7 +57,7 @@ class EarnService {
   }: {
     activeAccount: Account
     isDevMode: boolean
-    progressEvents?: Signal<RecoveryEvents>
+    progressEvents?: (events: RecoveryEvents) => void
   }): Promise<void> {
     const avaxXPNetwork = NetworkService.getAvalancheNetworkXP(isDevMode)
     const { pChainUtxo, cChainUtxo } = await WalletService.getAtomicUTXOs({
@@ -66,13 +65,13 @@ class EarnService {
       avaxXPNetwork
     })
     if (pChainUtxo.getUTXOs().length !== 0) {
-      progressEvents?.dispatch(RecoveryEvents.ImportPStart)
+      progressEvents?.(RecoveryEvents.ImportPStart)
       await importPWithBalanceCheck({ activeAccount, isDevMode })
-      progressEvents?.dispatch(RecoveryEvents.ImportPFinish)
+      progressEvents?.(RecoveryEvents.ImportPFinish)
     }
 
     if (cChainUtxo.getUTXOs().length !== 0) {
-      progressEvents?.dispatch(RecoveryEvents.ImportCStart)
+      progressEvents?.(RecoveryEvents.ImportCStart)
       await retry({
         operation: async () =>
           importC({
@@ -82,7 +81,7 @@ class EarnService {
         isSuccess: () => true,
         maxRetries: maxTransactionStatusCheckRetries
       })
-      progressEvents?.dispatch(RecoveryEvents.ImportCFinish)
+      progressEvents?.(RecoveryEvents.ImportCFinish)
     }
   }
 

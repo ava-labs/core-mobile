@@ -14,7 +14,6 @@ import { useNAvaxFormatter } from 'hooks/formatter/useNAvaxFormatter'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { Signal } from 'micro-signals'
 import EarnService from 'services/earn/EarnService'
 import { BalanceItem } from 'screens/earn/components/BalanceItem'
 import { PopableLabel } from 'components/PopableLabel'
@@ -28,7 +27,6 @@ import { CircularProgress } from './CircularProgress'
 
 type ScreenProps = EarnScreenProps<typeof AppNavigation.Earn.StakeDashboard>
 
-const recoveryEvents = new Signal<RecoveryEvents>()
 export const Balance = () => {
   const { theme } = useApplicationContext()
   const { navigate } = useNavigation<ScreenProps['navigation']>()
@@ -50,19 +48,12 @@ export const Balance = () => {
   }
 
   useEffect(() => {
-    recoveryEvents.add(handleRecoveryEvent)
-    return () => {
-      recoveryEvents.remove(handleRecoveryEvent)
-    }
-  }, [])
-
-  useEffect(() => {
     if (atomicImportFailed && activeAccount && !importingStuckFunds) {
       setImportingStuckFunds(true)
       EarnService.importAnyStuckFunds({
         activeAccount,
         isDevMode,
-        progressEvents: recoveryEvents
+        progressEvents: handleRecoveryEvent
       })
         .then(() => {
           dispatch(setAtomicImportFailed(false))
