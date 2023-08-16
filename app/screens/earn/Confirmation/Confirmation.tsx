@@ -44,6 +44,7 @@ import {
   scheduleStakingCompleteNotifications
 } from 'store/notifications'
 import useStakingParams from 'hooks/earn/useStakingParams'
+import { selectActiveAccount } from 'store/account'
 import { ConfirmScreen } from '../components/ConfirmScreen'
 import UnableToEstimate from '../components/UnableToEstimate'
 import { useValidateStakingEndTime } from './useValidateStakingEndTime'
@@ -100,6 +101,7 @@ export const Confirmation = () => {
     isFocused && unableToGetNetworkFees, // re-enable this checking whenever this screen is focused
     timeToShowNetworkFeeError
   )
+  const activeAccount = useSelector(selectActiveAccount)
 
   useEffect(() => {
     if (showNetworkFeeError) {
@@ -153,7 +155,11 @@ export const Confirmation = () => {
     dispatch(maybePromptEarnNotification)
     dispatch(
       scheduleStakingCompleteNotifications([
-        { txHash, endTimestamp: getUnixTime(validatedStakingEndTime) }
+        {
+          txHash,
+          endTimestamp: getUnixTime(validatedStakingEndTime),
+          accountIndex: activeAccount?.index
+        }
       ])
     )
   }

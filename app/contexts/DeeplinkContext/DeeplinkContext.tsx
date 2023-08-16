@@ -14,8 +14,14 @@ import {
   selectIsDeveloperMode,
   toggleDeveloperMode
 } from 'store/settings/advanced'
+import { setActiveAccountIndex } from 'store/account'
 import { handleDeeplink } from './utils/handleDeeplink'
-import { DeepLink, DeeplinkContextType, DeepLinkOrigin } from './types'
+import {
+  DeepLink,
+  DeeplinkContextType,
+  DeepLinkOrigin,
+  NotificationCallbackProps
+} from './types'
 
 const DeeplinkContext = createContext<DeeplinkContextType>({
   pendingDeepLink: undefined,
@@ -39,11 +45,17 @@ export const DeeplinkContextProvider = ({
   }, [])
 
   const handleNotificationCallback = useCallback(
-    (url: string, origin: DeepLinkOrigin, isDevMode = false) => {
-      isDevMode && dispatch(toggleDeveloperMode)
+    ({ url, accountIndex, origin, isDevMode }: NotificationCallbackProps) => {
+      isDevMode !== isDeveloperMode &&
+        setTimeout(() => {
+          dispatch(toggleDeveloperMode())
+        }, 500)
+      setTimeout(() => {
+        dispatch(setActiveAccountIndex(accountIndex))
+      }, 500)
       setPendingDeepLink({ url, origin })
     },
-    [dispatch]
+    [dispatch, isDeveloperMode]
   )
 
   /******************************************************************************
@@ -86,11 +98,12 @@ export const DeeplinkContextProvider = ({
 
     NotificationsService.getInitialNotification().then(async event => {
       if (event?.notification?.data?.url)
-        handleNotificationCallback(
-          event.notification.data.url as string,
-          DeepLinkOrigin.ORIGIN_NOTIFICATION,
-          isDeveloperMode
-        )
+        handleNotificationCallback({
+          url: event.notification.data.url as string,
+          accountIndex: event.notification.data.accountIndex as number,
+          origin: DeepLinkOrigin.ORIGIN_NOTIFICATION,
+          isDevMode: isDeveloperMode
+        })
     })
 
     return () => {

@@ -31,3 +31,10 @@ export const ACTIONS = {
   WC: 'wc',
   StakeComplete: StakeActions.StakeComplete
 }
+
+export interface NotificationCallbackProps {
+  url: string
+  accountIndex: number
+  origin: DeepLinkOrigin
+  isDevMode: boolean
+}

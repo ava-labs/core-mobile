@@ -68,7 +68,7 @@ const handleTurnOffNotificationsFor = async (
   listenerApi.dispatch(setNotificationSubscriptions([channelId, false]))
 }
 
-const handleCreateStakingCompleteTriggers = async (
+const handleScheduleStakingCompleteNotifications = async (
   listenerApi: AppListenerEffectAPI,
   stakeCompleteNotification: StakeCompleteNotification[]
 ) => {
@@ -109,7 +109,10 @@ export const addNotificationsListeners = (
   startListening({
     actionCreator: scheduleStakingCompleteNotifications,
     effect: async (action, listenerApi) => {
-      await handleCreateStakingCompleteTriggers(listenerApi, action.payload)
+      await handleScheduleStakingCompleteNotifications(
+        listenerApi,
+        action.payload
+      )
     }
   })
 

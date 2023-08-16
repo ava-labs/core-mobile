@@ -9,4 +9,6 @@ export type NotificationsState = {
 export type StakeCompleteNotification = Pick<
   PChainTransaction,
   'endTimestamp' | 'txHash'
->
+> & {
+  accountIndex?: number
+}

@@ -7,7 +7,10 @@ import notifee, {
   EventType,
   EventDetail
 } from '@notifee/react-native'
-import { DeepLinkOrigin } from 'contexts/DeeplinkContext/types'
+import {
+  DeepLinkOrigin,
+  NotificationCallbackProps
+} from 'contexts/DeeplinkContext/types'
 import { fromUnixTime, isPast } from 'date-fns'
 import { Linking, Platform } from 'react-native'
 import {
@@ -86,11 +89,13 @@ class NotificationsService {
     txHash,
     timestamp,
     channelId,
+    accountIndex,
     isDeveloperMode = false
   }: {
     txHash: string
-    timestamp: number // unix timestamp *milliseconds
+    timestamp: number // unix timestamp in milliseconds
     channelId: ChannelId
+    accountIndex?: number
     isDeveloperMode?: boolean
   }) => {
     // Create a time-based trigger
@@ -113,7 +118,8 @@ class NotificationsService {
         body: channel.subtitle,
         data: {
           url: STAKE_COMPELETE_DEEPLINK_URL,
-          isDeveloperMode: isDeveloperMode.toString()
+          isDeveloperMode: isDeveloperMode.toString(),
+          accountIndex: accountIndex ?? 0
         },
         ios: {
           badgeCount: 1
@@ -142,18 +148,19 @@ class NotificationsService {
   }
 
   updateStakeCompleteNotification = async (
-    triggerData: StakeCompleteNotification[],
+    notificationData: StakeCompleteNotification[],
     isDeveloperMode?: boolean
   ) => {
     await this.cleanupNotifications()
 
-    triggerData.forEach(async data => {
+    notificationData.forEach(async data => {
       if (data.txHash && data.endTimestamp) {
         const trigger = await this.getNotificationTriggerById(data.txHash)
         if (!trigger) {
           // create notification trigger
           await this.scheduleNotification({
             txHash: data.txHash,
+            accountIndex: data.accountIndex,
             timestamp: data.endTimestamp,
             channelId: ChannelId.STAKING_COMPLETE,
             isDeveloperMode
@@ -193,11 +200,12 @@ class NotificationsService {
     callback
   }: {
     detail: EventDetail
-    callback?: (
-      url: string,
-      origin: DeepLinkOrigin,
-      isDeveloperMode: boolean
-    ) => void
+    callback?: ({
+      url,
+      accountIndex,
+      origin,
+      isDevMode
+    }: NotificationCallbackProps) => void
   }) => {
     this.decrementBadgeCount(1)
     if (detail?.notification?.id) {
@@ -205,11 +213,12 @@ class NotificationsService {
     }
 
     if (detail?.notification?.data?.url) {
-      callback?.(
-        detail.notification.data.url as string,
-        DeepLinkOrigin.ORIGIN_NOTIFICATION,
-        Boolean(detail?.notification?.data?.isDeveloperMode) ?? false
-      )
+      callback?.({
+        url: detail.notification.data.url as string,
+        accountIndex: detail.notification.data.accountIndex as number,
+        origin: DeepLinkOrigin.ORIGIN_NOTIFICATION,
+        isDevMode: Boolean(detail?.notification?.data?.isDeveloperMode) ?? false
+      })
     }
   }
 
@@ -218,11 +227,12 @@ class NotificationsService {
     detail,
     callback
   }: Event & {
-    callback?: (
-      url: string,
-      origin: DeepLinkOrigin,
-      isDeveloperMode: boolean
-    ) => void
+    callback?: ({
+      url,
+      accountIndex,
+      origin,
+      isDevMode
+    }: NotificationCallbackProps) => void
   }) => {
     switch (type) {
       case EventType.DELIVERED:
