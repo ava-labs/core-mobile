@@ -26,7 +26,7 @@ describe('earn/exportP', () => {
         } as unknown as Avalanche.JsonRpcProvider
       })
     jest.spyOn(NetworkService, 'sendTransaction').mockImplementation(() => {
-      return Promise.resolve('')
+      return Promise.resolve('mockTxHash')
     })
     jest.spyOn(NetworkService, 'getNetworks').mockImplementation(() => {
       return Promise.resolve(
