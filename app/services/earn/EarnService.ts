@@ -34,7 +34,6 @@ import {
 } from '@avalabs/glacier-sdk'
 import { glacierSdk } from 'utils/network/glacier'
 import { Avax } from 'types/Avax'
-import { EarnError } from 'hooks/earn/errors'
 import { maxTransactionStatusCheckRetries } from './utils'
 
 class EarnService {
@@ -50,6 +49,8 @@ class EarnService {
    * Checks if there are any stuck atomic UTXOs and tries to import them.
    * You can pass Signal object to get events about progress of operation.
    * See {@link RecoveryEvents} for details on events.
+   * Also see {@link https://ava-labs.atlassian.net/wiki/spaces/EN/pages/2372141084/Cross+chain+retry+logic}
+   * for additional explanation.
    */
   async importAnyStuckFunds({
     activeAccount,
@@ -106,10 +107,6 @@ class EarnService {
       requiredAmount,
       activeAccount,
       isDevMode
-    })
-    throw new EarnError({
-      name: 'CONFIRM_EXPORT_FAIL',
-      message: 'Export did not finish'
     })
     await retry({
       operation: async () =>
