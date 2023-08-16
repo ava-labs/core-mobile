@@ -6,7 +6,7 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaButton from 'components/AvaButton'
 import AppNavigation from 'navigation/AppNavigation'
 import { EarnScreenProps } from 'navigation/types'
-import { useFocusEffect, useNavigation } from '@react-navigation/native'
+import { useIsFocused, useNavigation } from '@react-navigation/native'
 import { Space } from 'components/Space'
 import { useCChainBalance } from 'hooks/earn/useCChainBalance'
 import { useWeiAvaxFormatter } from 'hooks/formatter/useWeiAvaxFormatter'
@@ -32,21 +32,12 @@ export const Balance = () => {
   const shouldShowLoader = cChainBalance.isLoading || pChainBalance.isLoading
 
   const [recoveryState, setRecoveryState] = useState(RecoveryEvents.Idle)
-  const [startPeriodicLostFundsCheck, setStartPeriodicLostFundsCheck] =
-    useState(false)
-
-  useImportAnyStuckFunds(startPeriodicLostFundsCheck, handleRecoveryEvent)
+  const isFocused = useIsFocused()
+  useImportAnyStuckFunds(isFocused, handleRecoveryEvent)
 
   function handleRecoveryEvent(payload: RecoveryEvents) {
     setRecoveryState(payload)
   }
-
-  useFocusEffect(() => {
-    setStartPeriodicLostFundsCheck(true)
-    return () => {
-      setStartPeriodicLostFundsCheck(false)
-    }
-  })
 
   if (shouldShowLoader) {
     return <BalanceLoader />
