@@ -47,7 +47,7 @@ class EarnService {
 
   /**
    * Checks if there are any stuck atomic UTXOs and tries to import them.
-   * You can pass Signal object to get events about progress of operation.
+   * You can pass callback to get events about progress of operation.
    * See {@link RecoveryEvents} for details on events.
    * Also see {@link https://ava-labs.atlassian.net/wiki/spaces/EN/pages/2372141084/Cross+chain+retry+logic}
    * for additional explanation.
