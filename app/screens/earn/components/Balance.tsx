@@ -1,20 +1,24 @@
-import React from 'react'
-import { StyleSheet, View } from 'react-native'
-import AvaText from 'components/AvaText'
+import React, { useState } from 'react'
+import { View } from 'react-native'
 import { usePChainBalance } from 'hooks/earn/usePChainBalance'
-import { StakeTypeEnum } from 'services/earn/types'
+import { RecoveryEvents, StakeTypeEnum } from 'services/earn/types'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaButton from 'components/AvaButton'
 import AppNavigation from 'navigation/AppNavigation'
 import { EarnScreenProps } from 'navigation/types'
-import { useNavigation } from '@react-navigation/native'
+import { useIsFocused, useNavigation } from '@react-navigation/native'
 import { Space } from 'components/Space'
 import { useCChainBalance } from 'hooks/earn/useCChainBalance'
 import { useWeiAvaxFormatter } from 'hooks/formatter/useWeiAvaxFormatter'
 import { useNAvaxFormatter } from 'hooks/formatter/useNAvaxFormatter'
+import { BalanceItem } from 'screens/earn/components/BalanceItem'
+import { PopableLabel } from 'components/PopableLabel'
+import { Row } from 'components/Row'
+import { Popable } from 'react-native-popable'
+import { useImportAnyStuckFunds } from 'hooks/earn/useImportAnyStuckFunds'
 import { getStakePrimaryColor } from '../utils'
-import { CircularProgress } from './CircularProgress'
 import { BalanceLoader } from './BalanceLoader'
+import { CircularProgress } from './CircularProgress'
 
 type ScreenProps = EarnScreenProps<typeof AppNavigation.Earn.StakeDashboard>
 
@@ -25,8 +29,11 @@ export const Balance = () => {
   const cChainBalance = useCChainBalance()
   const weiAvaxFormatter = useWeiAvaxFormatter()
   const nAvaxFormatter = useNAvaxFormatter()
-
   const shouldShowLoader = cChainBalance.isLoading || pChainBalance.isLoading
+
+  const [recoveryState, setRecoveryState] = useState(RecoveryEvents.Idle)
+  const isFocused = useIsFocused()
+  useImportAnyStuckFunds(isFocused, setRecoveryState)
 
   if (shouldShowLoader) {
     return <BalanceLoader />
@@ -82,39 +89,6 @@ export const Balance = () => {
     })
   }
 
-  const renderStakingBalance = () => (
-    <View style={{ marginHorizontal: 16 }}>
-      {stakingData.map((item, index) => {
-        const iconColor = getStakePrimaryColor(item.type, theme)
-        return (
-          <View key={item.type}>
-            <View
-              style={[styles.rowContainer, { marginTop: index === 0 ? 0 : 8 }]}>
-              <View style={[styles.dot, { backgroundColor: iconColor }]} />
-              <View style={styles.textRowContainer}>
-                <AvaText.Subtitle2
-                  textStyle={{
-                    color: theme.neutral50,
-                    lineHeight: 24.5,
-                    marginHorizontal: 8
-                  }}>
-                  {`${item.amount} AVAX`}
-                </AvaText.Subtitle2>
-                <AvaText.Caption
-                  textStyle={{
-                    color: theme.neutral400,
-                    lineHeight: 19.92
-                  }}>
-                  {item.type}
-                </AvaText.Caption>
-              </View>
-            </View>
-          </View>
-        )
-      })}
-    </View>
-  )
-
   const renderStakeButton = () => (
     <AvaButton.PrimaryLarge onPress={goToGetStarted}>
       Stake
@@ -138,12 +112,43 @@ export const Balance = () => {
   )
 
   return (
-    <View style={styles.stakeDetailsContainer}>
+    <View style={{ marginVertical: 24 }}>
       <View style={{ marginBottom: 24 }}>
-        <View style={styles.balanceContainer}>
+        <Row style={{ marginHorizontal: 24 }}>
           <CircularProgress data={stakingData} />
-          {renderStakingBalance()}
-        </View>
+          <View
+            style={{
+              marginStart: 24,
+              justifyContent: 'space-between',
+              marginVertical: 4
+            }}>
+            <BalanceItem
+              balanceType={StakeTypeEnum.Available}
+              iconColor={getStakePrimaryColor(StakeTypeEnum.Available, theme)}
+              balance={availableAvax}
+              poppableItem={
+                recoveryState === RecoveryEvents.ImportCStart && (
+                  <InaccurateBalancePoppable />
+                )
+              }
+            />
+            <BalanceItem
+              balanceType={StakeTypeEnum.Staked}
+              iconColor={getStakePrimaryColor(StakeTypeEnum.Staked, theme)}
+              balance={stakedAvax}
+            />
+            <BalanceItem
+              balanceType={StakeTypeEnum.Claimable}
+              iconColor={getStakePrimaryColor(StakeTypeEnum.Claimable, theme)}
+              balance={claimableAvax}
+              poppableItem={
+                recoveryState === RecoveryEvents.ImportPStart && (
+                  <InaccurateBalancePoppable />
+                )
+              }
+            />
+          </View>
+        </Row>
       </View>
       <View>
         {Number(claimableAvax) > 0
@@ -154,32 +159,17 @@ export const Balance = () => {
   )
 }
 
-const styles = StyleSheet.create({
-  spinnerContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center'
-  },
-  stakeDetailsContainer: {
-    marginVertical: 24
-  },
-  balanceContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginHorizontal: 24
-  },
-  rowContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 8
-  },
-  textRowContainer: {
-    flexDirection: 'row',
-    alignItems: 'center'
-  },
-  dot: {
-    width: 16,
-    height: 16,
-    borderRadius: 8
-  }
-})
+function InaccurateBalancePoppable() {
+  const { theme } = useApplicationContext()
+
+  return (
+    <Popable
+      content={'Balance may be inaccurate due to network issues'}
+      position="top"
+      style={{ minWidth: 200 }}
+      strictPosition={true}
+      backgroundColor={theme.neutral100}>
+      <PopableLabel label="" />
+    </Popable>
+  )
+}

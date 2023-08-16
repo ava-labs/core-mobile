@@ -10,6 +10,7 @@ import { AvalancheTransactionRequest } from 'services/wallet/types'
 import { UnsignedTx } from '@avalabs/avalanchejs-v2'
 import NetworkService from 'services/network/NetworkService'
 import { Avax } from 'types/Avax'
+import { FundsStuckError } from 'hooks/earn/errors'
 import { maxTransactionStatusCheckRetries } from './utils'
 
 export type ExportCParams = {
@@ -24,7 +25,7 @@ export async function exportC({
   requiredAmount,
   activeAccount,
   isDevMode
-}: ExportCParams): Promise<boolean> {
+}: ExportCParams): Promise<void> {
   Logger.info('exporting C started')
 
   const avaxXPNetwork = NetworkService.getAvalancheNetworkXP(isDevMode)
@@ -79,9 +80,12 @@ export async function exportC({
     })
   } catch (e) {
     Logger.error('exportC failed', e)
-    throw Error(`Export C failed. txId = ${txID}. ${e}`)
+    throw new FundsStuckError({
+      name: 'CONFIRM_EXPORT_FAIL',
+      message: 'Export did not finish',
+      cause: e
+    })
   }
 
   Logger.info('exporting C ended')
-  return true
 }

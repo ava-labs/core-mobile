@@ -8,11 +8,15 @@ import { QueryClient } from '@tanstack/query-core'
 import { Avax } from 'types/Avax'
 import { calculateAmountForCrossChainTransfer } from 'hooks/earn/useGetAmountForCrossChainTransfer'
 import Logger from 'utils/Logger'
+import { FundsStuckError } from 'hooks/earn/errors'
+import GlacierBalanceService from 'services/balance/GlacierBalanceService'
+import { assertNotUndefined } from 'utils/assertions'
 import { useCChainBalance } from './useCChainBalance'
 
 export const useIssueDelegation = (
   onSuccess: () => void,
-  onError: (error: Error) => void
+  onError: (error: Error) => void,
+  onFundsStuck: (error: Error) => void
 ) => {
   const queryClient = useQueryClient()
   const activeAccount = useSelector(selectActiveAccount)
@@ -25,40 +29,51 @@ export const useIssueDelegation = (
   const cAddress = activeAccount?.address ?? ''
 
   const issueDelegationMutation = useMutation({
-    mutationFn: (data: {
+    mutationFn: async (data: {
       nodeId: string
       stakingAmount: Avax
       startDate: Date
       endDate: Date
-      claimableBalance: Avax
     }) => {
       if (!activeAccount) {
         return Promise.reject('no active account')
       }
 
+      Logger.trace('importAnyStuckFunds...')
+      await EarnService.importAnyStuckFunds({
+        activeAccount,
+        isDevMode: isDeveloperMode
+      })
+      Logger.trace('getPChainBalance...')
+      const addressPVM = activeAccount.addressPVM
+      assertNotUndefined(addressPVM)
+
+      const pChainBalance = await GlacierBalanceService.getPChainBalance(
+        isDeveloperMode,
+        [addressPVM]
+      )
+      const pChainBalanceNAvax = pChainBalance.unlockedUnstaked[0]?.amount
+      const claimableBalance = Avax.fromNanoAvax(pChainBalanceNAvax ?? 0)
+      Logger.trace('getPChainBalance: ', claimableBalance.toDisplay())
       const cChainRequiredAmount = calculateAmountForCrossChainTransfer(
         data.stakingAmount,
-        data.claimableBalance
+        claimableBalance
       )
-
-      return EarnService.collectTokensForStaking({
+      Logger.trace('cChainRequiredAmount: ', cChainRequiredAmount.toDisplay())
+      Logger.trace('collectTokensForStaking...')
+      await EarnService.collectTokensForStaking({
         activeAccount,
         cChainBalance: cChainBalance,
         isDevMode: isDeveloperMode,
         requiredAmount: cChainRequiredAmount
-      }).then(successfullyCollected => {
-        if (successfullyCollected) {
-          return EarnService.issueAddDelegatorTransaction({
-            activeAccount,
-            endDate: data.endDate,
-            isDevMode: isDeveloperMode,
-            nodeId: data.nodeId,
-            stakeAmount: data.stakingAmount.toSubUnit(),
-            startDate: data.startDate
-          })
-        } else {
-          throw Error('Something went wrong')
-        }
+      })
+      return EarnService.issueAddDelegatorTransaction({
+        activeAccount,
+        endDate: data.endDate,
+        isDevMode: isDeveloperMode,
+        nodeId: data.nodeId,
+        stakeAmount: data.stakingAmount.toSubUnit(),
+        startDate: data.startDate
       })
     },
     onSuccess: () => {
@@ -74,7 +89,11 @@ export const useIssueDelegation = (
     },
     onError: error => {
       Logger.error('delegation failed', error)
-      onError(error)
+      if (error instanceof FundsStuckError) {
+        onFundsStuck(error)
+      } else {
+        onError(error)
+      }
     }
   })
 
