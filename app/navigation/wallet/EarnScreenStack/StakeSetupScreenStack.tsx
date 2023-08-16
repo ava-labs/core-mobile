@@ -13,6 +13,7 @@ import { Confirmation } from 'screens/earn/Confirmation/Confirmation'
 import { CancelModal } from 'screens/earn/CancelModal'
 import SmartStakeAmount from 'screens/earn/SmartStakeAmount'
 import { Avax } from 'types/Avax'
+import { FundsStuckModal } from 'screens/earn/FundsStuckModal'
 
 export type StakeSetupStackParamList = {
   [AppNavigation.StakeSetup.GetStarted]: undefined
@@ -38,6 +39,9 @@ export type StakeSetupStackParamList = {
     stakingEndTime: Date
   }
   [AppNavigation.StakeSetup.Cancel]: undefined
+  [AppNavigation.StakeSetup.FundsStuck]: {
+    onTryAgain: () => void
+  }
 }
 
 const Stack = createStackNavigator<StakeSetupStackParamList>()
@@ -88,6 +92,11 @@ function StakeSetupScreenStack() {
         name={AppNavigation.StakeSetup.Cancel}
         component={CancelModal}
       />
+      <Stack.Screen
+        options={{ presentation: 'transparentModal' }}
+        name={AppNavigation.StakeSetup.FundsStuck}
+        component={FundsStuckModal}
+      />
     </Stack.Navigator>
   )
 }
@@ -110,6 +119,10 @@ type ConfirmationNavigationProp = StakeSetupScreenProps<
   typeof AppNavigation.StakeSetup.Confirmation
 >['navigation']
 
+type NodeSearchRouteProp = StakeSetupScreenProps<
+  typeof AppNavigation.StakeSetup.NodeSearch
+>['route']
+
 const ConfirmationBackButton = () => {
   const { goBack, getState, navigate } =
     useNavigation<ConfirmationNavigationProp>()
@@ -128,7 +141,8 @@ const ConfirmationBackButton = () => {
         : undefined
 
     if (previousScreen?.name === AppNavigation.StakeSetup.NodeSearch) {
-      const stakingAmount = previousScreen.params?.stakingAmount
+      const stakingAmount = (previousScreen as NodeSearchRouteProp).params
+        ?.stakingAmount
       if (stakingAmount) {
         return navigate(AppNavigation.StakeSetup.StakingDuration, {
           stakingAmount

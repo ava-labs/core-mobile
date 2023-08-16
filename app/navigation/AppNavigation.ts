@@ -87,7 +87,8 @@ enum EarnScreens {
   StakeSetup = 'EarnScreens.StakeSetup',
   ClaimRewards = 'EarnScreens.ClaimRewards',
   FeeUnavailable = 'EarnScreens.FeeUnavailable',
-  EarnNotificationsPrompt = 'EarnScreens.EarnNotificationsPrompt'
+  EarnNotificationsPrompt = 'EarnScreens.EarnNotificationsPrompt',
+  FundsStuck = 'EarnScreens.FundsStuck'
 }
 
 enum StakeSetupScreens {
@@ -98,7 +99,8 @@ enum StakeSetupScreens {
   SelectNode = 'StakeSetupScreens.SelectNode',
   NodeSearch = 'StakeSetupScreens.NodeSearch',
   Confirmation = 'StakeSetupScreens.Confirmation',
-  Cancel = 'StakeSetupScreens.Cancel'
+  Cancel = 'StakeSetupScreens.Cancel',
+  FundsStuck = 'StakeSetupScreens.FundsStuck'
 }
 
 enum NotificationsScreens {

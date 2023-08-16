@@ -288,12 +288,6 @@ class WalletService {
     return unsignedTx
   }
 
-  /**
-   * @param accountIndex
-   * @param avaxXPNetwork
-   * @param sourceChain
-   * @param destinationAddress
-   */
   async createImportPTx({
     accountIndex,
     avaxXPNetwork,
@@ -591,6 +585,33 @@ class WalletService {
         isChange
       )
     )
+  }
+
+  /**
+   * Get atomic transactions that are in VM memory.
+   */
+  async getAtomicUTXOs({
+    accountIndex,
+    avaxXPNetwork
+  }: {
+    accountIndex: number
+    avaxXPNetwork: Network
+  }): Promise<{
+    pChainUtxo: utils.UtxoSet
+    cChainUtxo: utils.UtxoSet
+  }> {
+    const wallet = (await this.getWallet(
+      accountIndex,
+      avaxXPNetwork
+    )) as Avalanche.StaticSigner
+
+    const pChainUtxo = await wallet.getAtomicUTXOs('P', 'C')
+    const cChainUtxo = await wallet.getAtomicUTXOs('C', 'P')
+
+    return {
+      pChainUtxo,
+      cChainUtxo
+    }
   }
 }
 
