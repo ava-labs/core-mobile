@@ -8,7 +8,7 @@ import { QueryClient } from '@tanstack/query-core'
 import { Avax } from 'types/Avax'
 import { calculateAmountForCrossChainTransfer } from 'hooks/earn/useGetAmountForCrossChainTransfer'
 import Logger from 'utils/Logger'
-import { EarnError } from 'hooks/earn/errors'
+import { FundsStuckError } from 'hooks/earn/errors'
 import GlacierBalanceService from 'services/balance/GlacierBalanceService'
 import { useCChainBalance } from './useCChainBalance'
 
@@ -86,14 +86,8 @@ export const useIssueDelegation = (
     },
     onError: error => {
       Logger.error('delegation failed', error)
-      if (error instanceof EarnError) {
-        switch (error.name) {
-          case 'CONFIRM_EXPORT_FAIL':
-          case 'ISSUE_IMPORT_FAIL':
-          case 'CONFIRM_IMPORT_FAIL':
-            onFundsStuck(error)
-            break
-        }
+      if (error instanceof FundsStuckError) {
+        onFundsStuck(error)
       } else {
         onError(error)
       }

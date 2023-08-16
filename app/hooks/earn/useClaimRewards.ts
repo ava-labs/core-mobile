@@ -7,7 +7,7 @@ import { selectSelectedCurrency } from 'store/settings/currency'
 import { QueryClient } from '@tanstack/query-core'
 import { Avax } from 'types/Avax'
 import Logger from 'utils/Logger'
-import { EarnError } from 'hooks/earn/errors'
+import { FundsStuckError } from 'hooks/earn/errors'
 import { usePChainBalance } from './usePChainBalance'
 import { useClaimFees } from './useClaimFees'
 
@@ -75,14 +75,8 @@ export const useClaimRewards = (
     },
     onError: error => {
       Logger.error('claim failed', error)
-      if (error instanceof EarnError) {
-        switch (error.name) {
-          case 'CONFIRM_EXPORT_FAIL':
-          case 'ISSUE_IMPORT_FAIL':
-          case 'CONFIRM_IMPORT_FAIL':
-            onFundsStuck(error)
-            break
-        }
+      if (error instanceof FundsStuckError) {
+        onFundsStuck(error)
       } else {
         onError(error)
       }

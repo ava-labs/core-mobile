@@ -10,7 +10,7 @@ import { AvalancheTransactionRequest } from 'services/wallet/types'
 import { UnsignedTx } from '@avalabs/avalanchejs-v2'
 import NetworkService from 'services/network/NetworkService'
 import { Avax } from 'types/Avax'
-import { EarnError } from 'hooks/earn/errors'
+import { FundsStuckError } from 'hooks/earn/errors'
 import { maxTransactionStatusCheckRetries } from './utils'
 
 export type ExportCParams = {
@@ -80,7 +80,7 @@ export async function exportC({
     })
   } catch (e) {
     Logger.error('exportC failed', e)
-    throw new EarnError({
+    throw new FundsStuckError({
       name: 'CONFIRM_EXPORT_FAIL',
       message: 'Export did not finish',
       cause: e

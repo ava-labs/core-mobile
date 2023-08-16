@@ -1,8 +1,8 @@
 import { ErrorBase } from 'errors/ErrorBase'
 
-type ErrorName =
+type FundsStuckErrorName =
   | 'CONFIRM_EXPORT_FAIL'
   | 'ISSUE_IMPORT_FAIL'
   | 'CONFIRM_IMPORT_FAIL'
 
-export class EarnError extends ErrorBase<ErrorName> {}
+export class FundsStuckError extends ErrorBase<FundsStuckErrorName> {}

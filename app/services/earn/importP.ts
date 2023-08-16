@@ -6,7 +6,7 @@ import NetworkService from 'services/network/NetworkService'
 import { Account } from 'store/account'
 import { AvalancheTransactionRequest } from 'services/wallet/types'
 import { UnsignedTx } from '@avalabs/avalanchejs-v2'
-import { EarnError } from 'hooks/earn/errors'
+import { FundsStuckError } from 'hooks/earn/errors'
 import GlacierBalanceService from 'services/balance/GlacierBalanceService'
 import { maxTransactionStatusCheckRetries } from './utils'
 
@@ -46,7 +46,7 @@ export async function importP({
     })
   } catch (e) {
     Logger.error('ISSUE_IMPORT_FAIL', e)
-    throw new EarnError({
+    throw new FundsStuckError({
       name: 'ISSUE_IMPORT_FAIL',
       message: 'Sending import transaction failed ',
       cause: e
@@ -66,7 +66,7 @@ export async function importP({
     })
   } catch (e) {
     Logger.error('importP failed', e)
-    throw new EarnError({
+    throw new FundsStuckError({
       name: 'CONFIRM_IMPORT_FAIL',
       message: 'Import did not finish',
       cause: e
