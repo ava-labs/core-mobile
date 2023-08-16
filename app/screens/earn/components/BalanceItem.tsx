@@ -8,7 +8,7 @@ export type BalanceItemProps = {
   balanceType: string
   iconColor: string
   balance: string
-  poppableItem?: Element
+  poppableItem?: React.ReactNode
 }
 
 export const BalanceItem = ({
