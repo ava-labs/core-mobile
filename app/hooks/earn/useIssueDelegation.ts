@@ -30,7 +30,7 @@ export const useIssueDelegation = (
   const cAddress = activeAccount?.address ?? ''
 
   const issueDelegationMutation = useMutation({
-    mutationFn: (data: {
+    mutationFn: async (data: {
       nodeId: string
       stakingAmount: Avax
       startDate: Date
@@ -41,48 +41,39 @@ export const useIssueDelegation = (
       }
 
       Logger.trace('importAnyStuckFunds...')
-      return EarnService.importAnyStuckFunds({
+      await EarnService.importAnyStuckFunds({
         activeAccount,
         isDevMode: isDeveloperMode
       })
-        .then(() => {
-          Logger.trace('getPChainBalance...')
-          const addressPVM = activeAccount.addressPVM
-          return GlacierBalanceService.getPChainBalance(
-            isDeveloperMode,
-            addressPVM ? [addressPVM] : []
-          )
-        })
-        .then(pChainBalance => {
-          const pChainBalanceNAvax = pChainBalance.unlockedUnstaked[0]?.amount
-          const claimableBalance = Avax.fromNanoAvax(pChainBalanceNAvax ?? 0)
-          Logger.trace('getPChainBalance: ', claimableBalance.toDisplay())
-          const cChainRequiredAmount = calculateAmountForCrossChainTransfer(
-            data.stakingAmount,
-            claimableBalance
-          )
-          Logger.trace(
-            'cChainRequiredAmount: ',
-            cChainRequiredAmount.toDisplay()
-          )
-          Logger.trace('collectTokensForStaking...')
-          return EarnService.collectTokensForStaking({
-            activeAccount,
-            cChainBalance: cChainBalance,
-            isDevMode: isDeveloperMode,
-            requiredAmount: cChainRequiredAmount
-          })
-        })
-        .then(() =>
-          EarnService.issueAddDelegatorTransaction({
-            activeAccount,
-            endDate: data.endDate,
-            isDevMode: isDeveloperMode,
-            nodeId: data.nodeId,
-            stakeAmount: data.stakingAmount.toSubUnit(),
-            startDate: data.startDate
-          })
-        )
+      Logger.trace('getPChainBalance...')
+      const addressPVM = activeAccount.addressPVM
+      const pChainBalance = await GlacierBalanceService.getPChainBalance(
+        isDeveloperMode,
+        addressPVM ? [addressPVM] : []
+      )
+      const pChainBalanceNAvax = pChainBalance.unlockedUnstaked[0]?.amount
+      const claimableBalance = Avax.fromNanoAvax(pChainBalanceNAvax ?? 0)
+      Logger.trace('getPChainBalance: ', claimableBalance.toDisplay())
+      const cChainRequiredAmount = calculateAmountForCrossChainTransfer(
+        data.stakingAmount,
+        claimableBalance
+      )
+      Logger.trace('cChainRequiredAmount: ', cChainRequiredAmount.toDisplay())
+      Logger.trace('collectTokensForStaking...')
+      await EarnService.collectTokensForStaking({
+        activeAccount,
+        cChainBalance: cChainBalance,
+        isDevMode: isDeveloperMode,
+        requiredAmount: cChainRequiredAmount
+      })
+      return EarnService.issueAddDelegatorTransaction({
+        activeAccount,
+        endDate: data.endDate,
+        isDevMode: isDeveloperMode,
+        nodeId: data.nodeId,
+        stakeAmount: data.stakingAmount.toSubUnit(),
+        startDate: data.startDate
+      })
     },
     onSuccess: txId => {
       refetchQueries({
