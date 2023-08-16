@@ -10,6 +10,7 @@ import { calculateAmountForCrossChainTransfer } from 'hooks/earn/useGetAmountFor
 import Logger from 'utils/Logger'
 import { FundsStuckError } from 'hooks/earn/errors'
 import GlacierBalanceService from 'services/balance/GlacierBalanceService'
+import { assertNotUndefined } from 'utils/assertions'
 import { useCChainBalance } from './useCChainBalance'
 
 export const useIssueDelegation = (
@@ -45,9 +46,11 @@ export const useIssueDelegation = (
       })
       Logger.trace('getPChainBalance...')
       const addressPVM = activeAccount.addressPVM
+      assertNotUndefined(addressPVM)
+
       const pChainBalance = await GlacierBalanceService.getPChainBalance(
         isDeveloperMode,
-        addressPVM ? [addressPVM] : []
+        [addressPVM]
       )
       const pChainBalanceNAvax = pChainBalance.unlockedUnstaked[0]?.amount
       const claimableBalance = Avax.fromNanoAvax(pChainBalanceNAvax ?? 0)
