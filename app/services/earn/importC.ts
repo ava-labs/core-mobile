@@ -8,7 +8,10 @@ import { AvalancheTransactionRequest } from 'services/wallet/types'
 import { UnsignedTx } from '@avalabs/avalanchejs-v2'
 import { Avax } from 'types/Avax'
 import { FundsStuckError } from 'hooks/earn/errors'
-import { maxTransactionStatusCheckRetries } from './utils'
+import {
+  maxTransactionCreationRetries,
+  maxTransactionStatusCheckRetries
+} from './utils'
 
 export type ImportCParams = {
   activeAccount: Account
@@ -55,7 +58,7 @@ export async function importC({
     txID = await retry({
       operation: () => NetworkService.sendTransaction(signedTx, avaxXPNetwork),
       isSuccess: result => result !== '',
-      maxRetries: maxTransactionStatusCheckRetries
+      maxRetries: maxTransactionCreationRetries
     })
   } catch (e) {
     Logger.error('ISSUE_IMPORT_FAIL', e)

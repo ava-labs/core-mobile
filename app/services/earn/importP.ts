@@ -8,7 +8,12 @@ import { AvalancheTransactionRequest } from 'services/wallet/types'
 import { UnsignedTx } from '@avalabs/avalanchejs-v2'
 import { FundsStuckError } from 'hooks/earn/errors'
 import GlacierBalanceService from 'services/balance/GlacierBalanceService'
-import { maxTransactionStatusCheckRetries } from './utils'
+import { assertNotUndefined } from 'utils/assertions'
+import {
+  maxBalanceCheckRetries,
+  maxTransactionCreationRetries,
+  maxTransactionStatusCheckRetries
+} from './utils'
 
 export type ImportPParams = {
   activeAccount: Account
@@ -42,7 +47,7 @@ export async function importP({
     txID = await retry({
       operation: () => NetworkService.sendTransaction(signedTx, avaxXPNetwork),
       isSuccess: result => result !== '',
-      maxRetries: maxTransactionStatusCheckRetries
+      maxRetries: maxTransactionCreationRetries
     })
   } catch (e) {
     Logger.error('ISSUE_IMPORT_FAIL', e)
@@ -84,11 +89,11 @@ export async function importPWithBalanceCheck({
   isDevMode
 }: ImportPParams): Promise<void> {
   //get P balance now then compare it later to check if balance changed after import
+  const addressPVM = activeAccount.addressPVM
+  assertNotUndefined(addressPVM)
+
   const balanceBeforeImport = (
-    await GlacierBalanceService.getPChainBalance(
-      isDevMode,
-      activeAccount.addressPVM ? [activeAccount.addressPVM] : []
-    )
+    await GlacierBalanceService.getPChainBalance(isDevMode, [addressPVM])
   ).unlockedUnstaked[0]?.amount
 
   Logger.trace('balanceBeforeImport', balanceBeforeImport)
@@ -105,15 +110,12 @@ export async function importPWithBalanceCheck({
 
   await retry({
     operation: async () =>
-      GlacierBalanceService.getPChainBalance(
-        isDevMode,
-        activeAccount.addressPVM ? [activeAccount.addressPVM] : []
-      ),
+      GlacierBalanceService.getPChainBalance(isDevMode, [addressPVM]),
     isSuccess: pChainBalance => {
       const balanceAfterImport = pChainBalance.unlockedUnstaked[0]?.amount
       return balanceAfterImport !== balanceBeforeImport
     },
-    maxRetries: maxTransactionStatusCheckRetries,
+    maxRetries: maxBalanceCheckRetries,
     backoffPolicy: RetryBackoffPolicy.constant(1)
   })
 }

@@ -11,6 +11,8 @@ import Logger from 'utils/Logger'
 // the max num of times we should check transaction status
 // 7 means ~ 2 minutes
 export const maxTransactionStatusCheckRetries = 7
+export const maxTransactionCreationRetries = 5
+export const maxBalanceCheckRetries = 10
 
 /**
  * See https://docs.avax.network/subnets/reference-elastic-subnets-parameters#primary-network-parameters-on-mainnet
