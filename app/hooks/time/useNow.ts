@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Seconds } from 'types/siUnits'
 
-export const useNow = (refreshInterval: Seconds = Seconds(10)) => {
+const tenSeconds = Seconds(10)
+export const useNow = (refreshInterval: Seconds = tenSeconds) => {
   const [now, setNow] = useState(new Date())
 
   useEffect(() => {
