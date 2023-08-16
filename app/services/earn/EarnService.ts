@@ -139,9 +139,14 @@ class EarnService {
       activeAccount,
       isDevMode
     })
-    await importC({
-      activeAccount,
-      isDevMode
+    await retry({
+      operation: async () =>
+        importC({
+          activeAccount,
+          isDevMode
+        }),
+      isSuccess: () => true,
+      maxRetries: maxTransactionStatusCheckRetries
     })
   }
 
