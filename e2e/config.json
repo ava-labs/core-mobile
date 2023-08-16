@@ -25,4 +25,4 @@
       "./e2e/tests/send/sendGoerlyEthTo2ndAccount.e2e.ts",
       "./e2e/tests/send/sendEthTo2ndAccount.e2e.ts"
     ]
-}
+  }
