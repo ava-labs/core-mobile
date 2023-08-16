@@ -23,12 +23,8 @@ export const useImportAnyStuckFunds = (
     retry: false,
     enabled,
     refetchInterval: REFETCH_INTERVAL,
-    queryKey: [
-      'ImportAnyStuckFunds',
-      activeAccount,
-      isDevMode,
-      handleRecoveryEvent
-    ],
+    // eslint-disable-next-line @tanstack/query/exhaustive-deps
+    queryKey: ['ImportAnyStuckFunds', activeAccount, isDevMode],
     queryFn: async () => {
       assertNotUndefined(activeAccount)
       await EarnService.importAnyStuckFunds({

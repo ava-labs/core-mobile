@@ -33,11 +33,7 @@ export const Balance = () => {
 
   const [recoveryState, setRecoveryState] = useState(RecoveryEvents.Idle)
   const isFocused = useIsFocused()
-  useImportAnyStuckFunds(isFocused, handleRecoveryEvent)
-
-  function handleRecoveryEvent(payload: RecoveryEvents) {
-    setRecoveryState(payload)
-  }
+  useImportAnyStuckFunds(isFocused, setRecoveryState)
 
   if (shouldShowLoader) {
     return <BalanceLoader />
