@@ -119,6 +119,10 @@ type ConfirmationNavigationProp = StakeSetupScreenProps<
   typeof AppNavigation.StakeSetup.Confirmation
 >['navigation']
 
+type NodeSearchRouteProp = StakeSetupScreenProps<
+  typeof AppNavigation.StakeSetup.NodeSearch
+>['route']
+
 const ConfirmationBackButton = () => {
   const { goBack, getState, navigate } =
     useNavigation<ConfirmationNavigationProp>()
@@ -137,7 +141,8 @@ const ConfirmationBackButton = () => {
         : undefined
 
     if (previousScreen?.name === AppNavigation.StakeSetup.NodeSearch) {
-      const stakingAmount = previousScreen.params?.stakingAmount
+      const stakingAmount = (previousScreen as NodeSearchRouteProp).params
+        ?.stakingAmount
       if (stakingAmount) {
         return navigate(AppNavigation.StakeSetup.StakingDuration, {
           stakingAmount
