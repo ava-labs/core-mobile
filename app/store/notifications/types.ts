@@ -6,7 +6,7 @@ export type NotificationsState = {
   hasPromptedAfterFirstDelegation: boolean
 }
 
-export type stakeCompleteTriggerData = Pick<
+export type StakeCompleteNotification = Pick<
   PChainTransaction,
   'endTimestamp' | 'txHash'
 >

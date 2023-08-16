@@ -10,7 +10,7 @@ import notifee from '@notifee/react-native'
 import NotificationsService from 'services/notifications/NotificationsService'
 import { onAppUnlocked } from 'store/app'
 import {
-  createStakingCompleteNotificationTriggers,
+  scheduleStakingCompleteNotifications,
   maybePromptEarnNotification,
   selectHasPromptedAfterFirstDelegation,
   selectNotificationSubscription,
@@ -19,7 +19,7 @@ import {
   turnOffNotificationsFor,
   turnOnNotificationsFor
 } from './slice'
-import { stakeCompleteTriggerData } from './types'
+import { StakeCompleteNotification } from './types'
 
 const handleMaybePromptEarnNotification = async (
   action: ReturnType<typeof maybePromptEarnNotification>,
@@ -70,12 +70,12 @@ const handleTurnOffNotificationsFor = async (
 
 const handleCreateStakingCompleteTriggers = async (
   listenerApi: AppListenerEffectAPI,
-  notificationTriggerData: stakeCompleteTriggerData[]
+  stakeCompleteNotification: StakeCompleteNotification[]
 ) => {
   const state = listenerApi.getState()
   const isDeveloperMode = state.settings.advanced.developerMode
-  await NotificationsService.updateStakeCompleteNotificationTriggers(
-    notificationTriggerData,
+  await NotificationsService.updateStakeCompleteNotification(
+    stakeCompleteNotification,
     isDeveloperMode
   )
 }
@@ -107,7 +107,7 @@ export const addNotificationsListeners = (
   })
 
   startListening({
-    actionCreator: createStakingCompleteNotificationTriggers,
+    actionCreator: scheduleStakingCompleteNotifications,
     effect: async (action, listenerApi) => {
       await handleCreateStakingCompleteTriggers(listenerApi, action.payload)
     }

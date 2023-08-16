@@ -2,23 +2,23 @@ import notifee, { EventDetail, EventType } from '@notifee/react-native'
 import { ChannelId } from './channels'
 import NotificationsService from './NotificationsService'
 
-describe('createNotificationTrigger', () => {
+describe('scheduleNotification', () => {
   it('should have called createTriggerNotification', async () => {
     const mockNotification = {
-      nodeId: 'testNodeId',
+      txHash: 'testNodeId',
       timestamp: 123456789,
       channelId: ChannelId.STAKING_COMPLETE
     }
-    await NotificationsService.createNotificationTrigger(mockNotification)
+    await NotificationsService.scheduleNotification(mockNotification)
     expect(notifee.createTriggerNotification).toHaveBeenCalled()
   })
   it('should not have called createTriggerNotification without correct channelId', async () => {
     const mockNotification = {
-      nodeId: 'testNodeId',
+      txHash: 'testNodeId',
       timestamp: 123456789,
       channelId: 'testChannelId' as ChannelId
     }
-    await NotificationsService.createNotificationTrigger(mockNotification)
+    await NotificationsService.scheduleNotification(mockNotification)
     expect(notifee.createTriggerNotification).not.toHaveBeenCalled()
   })
 })

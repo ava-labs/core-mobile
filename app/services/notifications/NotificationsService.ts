@@ -14,7 +14,13 @@ import {
   ChannelId,
   notificationChannels
 } from 'services/notifications/channels'
-import { stakeCompleteTriggerData } from 'store/notifications'
+import { StakeCompleteNotification } from 'store/notifications'
+import Logger from 'utils/Logger'
+import {
+  LAUNCH_ACTIVITY,
+  OPEN_CLAIM_REWARDS,
+  STAKE_COMPELETE_DEEPLINK_URL
+} from './constants'
 
 class NotificationsService {
   /**
@@ -76,7 +82,7 @@ class NotificationsService {
       : 'denied'
   }
 
-  createNotificationTrigger = async ({
+  scheduleNotification = async ({
     txHash,
     timestamp,
     channelId,
@@ -94,16 +100,19 @@ class NotificationsService {
     }
 
     const channel = notificationChannels.find(ch => ch.id === channelId)
-    if (!channel) return
+    if (!channel) {
+      Logger.error(`ChannelId '${channelId}' is not supported.`)
+      return
+    }
 
     // Create a trigger notification
     await notifee.createTriggerNotification(
       {
-        id: txHash, // use to look up if the stake notifiaction already exists
+        id: txHash, // use to look up if the stake notification already exists
         title: channel.title,
         body: channel.subtitle,
         data: {
-          url: 'core://stakecomplete',
+          url: STAKE_COMPELETE_DEEPLINK_URL,
           isDeveloperMode: isDeveloperMode.toString()
         },
         ios: {
@@ -113,8 +122,8 @@ class NotificationsService {
           badgeCount: 1,
           channelId: channel.id,
           pressAction: {
-            id: 'open-claim-rewards',
-            launchActivity: 'com.avaxwallet.MainActivity'
+            id: OPEN_CLAIM_REWARDS,
+            launchActivity: LAUNCH_ACTIVITY
           }
         }
       },
@@ -132,18 +141,18 @@ class NotificationsService {
     )
   }
 
-  updateStakeCompleteNotificationTriggers = async (
-    triggerData: stakeCompleteTriggerData[],
+  updateStakeCompleteNotification = async (
+    triggerData: StakeCompleteNotification[],
     isDeveloperMode?: boolean
   ) => {
-    await this.cleanupNotificationTriggers()
+    await this.cleanupNotifications()
 
     triggerData.forEach(async data => {
       if (data.txHash && data.endTimestamp) {
         const trigger = await this.getNotificationTriggerById(data.txHash)
         if (!trigger) {
           // create notification trigger
-          await this.createNotificationTrigger({
+          await this.scheduleNotification({
             txHash: data.txHash,
             timestamp: data.endTimestamp,
             channelId: ChannelId.STAKING_COMPLETE,
@@ -225,12 +234,10 @@ class NotificationsService {
           callback
         })
         break
-      default:
-        break
     }
   }
 
-  cleanupNotificationTriggers = async () => {
+  cleanupNotifications = async () => {
     const pendings = await notifee.getTriggerNotifications()
     pendings.forEach(async pending => {
       const timestamp = fromUnixTime(

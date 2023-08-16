@@ -2,7 +2,7 @@ import { createAction, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from 'store/index'
 import {
   NotificationsState,
-  stakeCompleteTriggerData
+  StakeCompleteNotification
 } from 'store/notifications/types'
 import { ChannelId } from 'services/notifications/channels'
 
@@ -58,8 +58,8 @@ export const turnOffNotificationsFor = createAction<{ channelId: ChannelId }>(
   `${reducerName}/turnOffNotificationsFor`
 )
 
-export const createStakingCompleteNotificationTriggers = createAction<
-  stakeCompleteTriggerData[]
->(`${reducerName}/createStakingCompleteNotificationTriggers`)
+export const scheduleStakingCompleteNotifications = createAction<
+  StakeCompleteNotification[]
+>(`${reducerName}/scheduleStakingCompleteNotifications`)
 
 export const notificationsReducer = notificationsSlice.reducer

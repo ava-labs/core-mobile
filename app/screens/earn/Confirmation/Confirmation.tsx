@@ -41,7 +41,7 @@ import Spinner from 'components/animation/Spinner'
 import { useAvaxFormatter } from 'hooks/formatter/useAvaxFormatter'
 import {
   maybePromptEarnNotification,
-  createStakingCompleteNotificationTriggers
+  scheduleStakingCompleteNotifications
 } from 'store/notifications'
 import useStakingParams from 'hooks/earn/useStakingParams'
 import { ConfirmScreen } from '../components/ConfirmScreen'
@@ -152,7 +152,7 @@ export const Confirmation = () => {
     getParent()?.goBack()
     dispatch(maybePromptEarnNotification)
     dispatch(
-      createStakingCompleteNotificationTriggers([
+      scheduleStakingCompleteNotifications([
         { txHash, endTimestamp: getUnixTime(validatedStakingEndTime) }
       ])
     )
