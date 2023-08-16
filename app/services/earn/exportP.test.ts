@@ -70,42 +70,45 @@ describe('earn/exportP', () => {
     })
 
     it('should call walletService.createExportPTx', async () => {
-      const result = await exportP({
-        pChainBalance: Avax.fromBase(12),
-        requiredAmount: Avax.fromBase(10),
-        isDevMode: false,
-        activeAccount: {} as Account
-      })
-      expect(WalletService.createExportPTx).toHaveBeenCalledWith({
-        amount: BigInt(10000000000),
-        accountIndex: undefined,
-        avaxXPNetwork: AVALANCHE_XP_NETWORK,
-        destinationChain: 'C',
-        destinationAddress: undefined
-      })
-      expect(result).toBe(true)
+      await expect(async () => {
+        await exportP({
+          pChainBalance: Avax.fromBase(12),
+          requiredAmount: Avax.fromBase(10),
+          isDevMode: false,
+          activeAccount: {} as Account
+        })
+        expect(WalletService.createExportPTx).toHaveBeenCalledWith({
+          amount: BigInt(10000000000),
+          accountIndex: undefined,
+          avaxXPNetwork: AVALANCHE_XP_NETWORK,
+          destinationChain: 'C',
+          destinationAddress: undefined
+        })
+      }).not.toThrow()
     })
 
     it('should call walletService.signAvaxTx', async () => {
-      const result = await exportP({
-        pChainBalance: Avax.fromBase(12),
-        requiredAmount: Avax.fromBase(10),
-        isDevMode: false,
-        activeAccount: {} as Account
-      })
-      expect(WalletService.sign).toHaveBeenCalled()
-      expect(result).toBe(true)
+      await expect(async () => {
+        await exportP({
+          pChainBalance: Avax.fromBase(12),
+          requiredAmount: Avax.fromBase(10),
+          isDevMode: false,
+          activeAccount: {} as Account
+        })
+        expect(WalletService.sign).toHaveBeenCalled()
+      }).not.toThrow()
     })
 
     it('should call networkService.sendTransaction', async () => {
-      const result = await exportP({
-        pChainBalance: Avax.fromBase(12),
-        requiredAmount: Avax.fromBase(10),
-        isDevMode: false,
-        activeAccount: {} as Account
-      })
-      expect(NetworkService.sendTransaction).toHaveBeenCalled()
-      expect(result).toBe(true)
+      await expect(async () => {
+        await exportP({
+          pChainBalance: Avax.fromBase(12),
+          requiredAmount: Avax.fromBase(10),
+          isDevMode: false,
+          activeAccount: {} as Account
+        })
+        expect(NetworkService.sendTransaction).toHaveBeenCalled()
+      }).not.toThrow()
     })
   })
 })

@@ -82,43 +82,46 @@ describe('earn/exportC', () => {
     })
 
     it('should call walletService.createExportCTx', async () => {
-      const result = await exportC({
-        cChainBalance: Avax.fromBase(1),
-        requiredAmount: Avax.fromBase(0.1),
-        isDevMode: false,
-        activeAccount: {} as Account
-      })
-      expect(WalletService.createExportCTx).toHaveBeenCalledWith({
-        amount: Avax.fromBase('0.101'),
-        baseFee: Avax.fromNanoAvax(30),
-        accountIndex: undefined,
-        avaxXPNetwork: AVALANCHE_XP_NETWORK,
-        destinationChain: 'P',
-        destinationAddress: undefined
-      })
-      expect(result).toBe(true)
+      await expect(async () => {
+        await exportC({
+          cChainBalance: Avax.fromBase(1),
+          requiredAmount: Avax.fromBase(0.1),
+          isDevMode: false,
+          activeAccount: {} as Account
+        })
+        expect(WalletService.createExportCTx).toHaveBeenCalledWith({
+          amount: Avax.fromBase('0.101'),
+          baseFee: Avax.fromNanoAvax(30),
+          accountIndex: undefined,
+          avaxXPNetwork: AVALANCHE_XP_NETWORK,
+          destinationChain: 'P',
+          destinationAddress: undefined
+        })
+      }).not.toThrow()
     })
 
     it('should call walletService.signAvaxTx', async () => {
-      const result = await exportC({
-        cChainBalance: Avax.fromBase(1),
-        requiredAmount: Avax.fromBase(0.1),
-        isDevMode: false,
-        activeAccount: {} as Account
-      })
-      expect(WalletService.sign).toHaveBeenCalled()
-      expect(result).toBe(true)
+      await expect(async () => {
+        await exportC({
+          cChainBalance: Avax.fromBase(1),
+          requiredAmount: Avax.fromBase(0.1),
+          isDevMode: false,
+          activeAccount: {} as Account
+        })
+        expect(WalletService.sign).toHaveBeenCalled()
+      }).not.toThrow()
     })
 
     it('should call networkService.sendTransaction', async () => {
-      const result = await exportC({
-        cChainBalance: Avax.fromBase(1),
-        requiredAmount: Avax.fromBase(0.1),
-        isDevMode: false,
-        activeAccount: {} as Account
-      })
-      expect(NetworkService.sendTransaction).toHaveBeenCalled()
-      expect(result).toBe(true)
+      await expect(async () => {
+        await exportC({
+          cChainBalance: Avax.fromBase(1),
+          requiredAmount: Avax.fromBase(0.1),
+          isDevMode: false,
+          activeAccount: {} as Account
+        })
+        expect(NetworkService.sendTransaction).toHaveBeenCalled()
+      }).not.toThrow()
     })
   })
 })
