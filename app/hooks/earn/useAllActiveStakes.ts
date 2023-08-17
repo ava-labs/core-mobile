@@ -23,7 +23,7 @@ export const useAllActiveStakes = () => {
             }
             return result
           }, [] as string[])
-          const tranformedTransactions = await getTransaformedTransactions(
+          const tranformedTransactions = await getTransformedTransactions(
             firstQueryParams,
             isDeveloperMode
           )
@@ -40,7 +40,7 @@ export const useAllActiveStakes = () => {
             false,
             oppositeIsDeveloperMode
           )
-          const tranformedTransactions = await getTransaformedTransactions(
+          const tranformedTransactions = await getTransformedTransactions(
             secondQueryParams,
             oppositeIsDeveloperMode
           )
@@ -51,7 +51,7 @@ export const useAllActiveStakes = () => {
   })
 }
 
-const getTransaformedTransactions = async (
+const getTransformedTransactions = async (
   addresses: string[],
   isTestnet: boolean
 ) => {
