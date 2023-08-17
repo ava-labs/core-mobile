@@ -6,6 +6,7 @@ import { Space } from 'components/Space'
 import { Row } from 'components/Row'
 import AvaButton from 'components/AvaButton'
 import InfoSVG from 'components/svg/InfoSVG'
+import { UI, useIsUIDisabled } from 'hooks/useIsUIDisabled'
 
 export default function NotEnoughAvax({
   onBuyAvax,
@@ -17,6 +18,8 @@ export default function NotEnoughAvax({
   onReceive: () => void
 }) {
   const { theme } = useApplicationContext()
+  const buyDisabled = useIsUIDisabled(UI.Buy)
+  const swapDisabled = useIsUIDisabled(UI.Swap)
 
   return (
     <View style={{ padding: 16, flex: 1 }}>
@@ -34,19 +37,24 @@ export default function NotEnoughAvax({
         </View>
       </View>
       <Space y={24} />
-      <AvaButton.PrimaryLarge onPress={onSwap}>
-        Swap AVAX
-      </AvaButton.PrimaryLarge>
+      {!swapDisabled && (
+        <AvaButton.PrimaryLarge onPress={onSwap}>
+          Swap AVAX
+        </AvaButton.PrimaryLarge>
+      )}
       <Space y={16} />
       <Row>
-        <AvaButton.SecondaryLarge
-          onPress={onReceive}
-          style={{ flex: 1, marginRight: 16 }}>
+        <AvaButton.SecondaryLarge onPress={onReceive} style={{ flex: 1 }}>
           Receive AVAX
         </AvaButton.SecondaryLarge>
-        <AvaButton.SecondaryLarge onPress={onBuyAvax} style={{ flex: 1 }}>
-          Buy AVAX
-        </AvaButton.SecondaryLarge>
+        {!buyDisabled && (
+          <>
+            <Space y={16} />
+            <AvaButton.SecondaryLarge onPress={onBuyAvax} style={{ flex: 1 }}>
+              Buy AVAX
+            </AvaButton.SecondaryLarge>
+          </>
+        )}
       </Row>
     </View>
   )
