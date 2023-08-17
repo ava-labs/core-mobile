@@ -143,7 +143,7 @@ export const Confirmation = () => {
     })
   }
 
-  function onDelegationSuccess() {
+  function onDelegationSuccess(txHash: string) {
     showSnackBarCustom({
       component: (
         <TransactionToast
