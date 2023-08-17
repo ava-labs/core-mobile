@@ -10,6 +10,7 @@ import { FeeUnavailableModal } from 'screens/earn/FeeUnavailableModal'
 import { EarnNotificationsModal } from 'screens/earn/EarnNotificationsModal'
 import * as Navigation from 'utils/Navigation'
 import { noop } from '@avalabs/utils-sdk'
+import { FundsStuckModal } from 'screens/earn/FundsStuckModal'
 import StakeSetupScreenStack, {
   StakeSetupStackParamList
 } from './StakeSetupScreenStack'
@@ -25,6 +26,9 @@ export type EarnStackParamList = {
   [AppNavigation.Earn.ClaimRewards]?: { onBack?: () => void }
   [AppNavigation.Earn.FeeUnavailable]: undefined
   [AppNavigation.Earn.EarnNotificationsPrompt]: undefined
+  [AppNavigation.Earn.FundsStuck]: {
+    onTryAgain: () => void
+  }
 }
 
 const EarnStack = createStackNavigator<EarnStackParamList>()
@@ -84,6 +88,11 @@ function EarnScreenStack() {
         options={{ presentation: 'transparentModal' }}
         name={AppNavigation.Earn.EarnNotificationsPrompt}
         component={EarnNotificationsModal}
+      />
+      <EarnStack.Screen
+        options={{ presentation: 'transparentModal' }}
+        name={AppNavigation.Earn.FundsStuck}
+        component={FundsStuckModal}
       />
     </EarnStack.Navigator>
   )
