@@ -61,58 +61,60 @@ export enum StakeDurationFormat {
   Custom = 'Custom'
 }
 
+export enum StakeDurationTitle {
+  ONE_DAY = '1 Day',
+  TWO_WEEKS = '2 Weeks',
+  ONE_MONTH = '1 Month',
+  THREE_MONTHS = '3 Months',
+  SIX_MONTHS = '6 Months',
+  ONE_YEAR = '1 Year',
+  CUSTOM = 'Custom'
+}
+
 export type DurationOption = {
   title: string
-  subTitle: string
   stakeDurationFormat: StakeDurationFormat
   stakeDurationValue: number
 }
 
 export const ONE_DAY = {
-  title: '1 Day',
-  subTitle: 'Estimated Rewards: 0.77 AVAX Mocked!!!',
+  title: StakeDurationTitle.ONE_DAY,
   stakeDurationFormat: StakeDurationFormat.Day,
   stakeDurationValue: 1
 }
 
 export const TWO_WEEKS = {
-  title: '2 Week',
-  subTitle: 'Estimated Rewards: 0.77 AVAX Mocked!!!',
+  title: StakeDurationTitle.TWO_WEEKS,
   stakeDurationFormat: StakeDurationFormat.Week,
   stakeDurationValue: 2
 }
 
 export const ONE_MONTH = {
-  title: '1 Month',
-  subTitle: 'Estimated Rewards: 1.54 AVAX Mocked!!!',
+  title: StakeDurationTitle.ONE_MONTH,
   stakeDurationFormat: StakeDurationFormat.Month,
   stakeDurationValue: 1
 }
 
 export const THREE_MONTHS = {
-  title: '3 Months',
-  subTitle: 'Estimated Rewards: 3.54 AVAX Mocked!!!',
+  title: StakeDurationTitle.THREE_MONTHS,
   stakeDurationFormat: StakeDurationFormat.Month,
   stakeDurationValue: 3
 }
 
 export const SIX_MONTHS = {
-  title: '6 Months',
-  subTitle: 'Estimated Rewards: 6.54 AVAX Mocked!!!',
+  title: StakeDurationTitle.SIX_MONTHS,
   stakeDurationFormat: StakeDurationFormat.Month,
   stakeDurationValue: 6
 }
 
 export const ONE_YEAR = {
-  title: '1 Year',
-  subTitle: 'Estimated Rewards: 12.54 AVAX Mocked!!!',
+  title: StakeDurationTitle.ONE_YEAR,
   stakeDurationFormat: StakeDurationFormat.Year,
   stakeDurationValue: 1
 }
 
 export const CUSTOM = {
-  title: 'Custom',
-  subTitle: 'Enter your desired end date',
+  title: StakeDurationTitle.CUSTOM,
   stakeDurationFormat: StakeDurationFormat.Custom,
   stakeDurationValue: 14
 }
