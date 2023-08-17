@@ -114,6 +114,7 @@ async function splitTestResult(testItem: string | undefined) {
     return { sectionName: trimmedSectionName, testCase }
   }
 }
+splitTestResult('✓ Activity Tab should display incoming transaction details(3)')
 
 function removeTestSectionExtraChars(testSection: string | undefined) {
   if (testSection) {
