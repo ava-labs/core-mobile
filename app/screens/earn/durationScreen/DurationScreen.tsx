@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useCallback, useLayoutEffect, useState } from 'react'
 import { Linking, ScrollView, StyleSheet, View } from 'react-native'
 import AvaText from 'components/AvaText'
 import AvaButton from 'components/AvaButton'
@@ -16,6 +16,7 @@ import {
   DurationOption,
   getStakeEndDate,
   ONE_DAY,
+  StakeDurationTitle,
   TWO_WEEKS
 } from 'services/earn/getStakeEndDate'
 import InfoSVG from 'components/svg/InfoSVG'
@@ -23,6 +24,7 @@ import { Popable } from 'react-native-popable'
 import Logger from 'utils/Logger'
 import { DOCS_STAKING } from 'resources/Constants'
 import { useNow } from 'hooks/time/useNow'
+import { BackButton } from 'components/BackButton'
 import { CustomDurationOptionItem } from './components/CustomDurationOptionItem'
 import { DurationOptionItem } from './components/DurationOptionItem'
 
@@ -45,22 +47,41 @@ export const StakingDuration = () => {
     )
   )
   const { theme } = useApplicationContext()
-  const { navigate } = useNavigation<ScreenProps['navigation']>()
+  const { navigate, setOptions, goBack } =
+    useNavigation<ScreenProps['navigation']>()
   const { stakingAmount } = useRoute<ScreenProps['route']>().params
   const isNextDisabled =
     stakeEndTime === undefined || (stakeEndTime && stakeEndTime < new Date())
 
+  const selectMinDuration = useCallback(() => {
+    setSelectedDuration(minDelegationTime)
+    const calculatedStakeEndTime = getStakeEndDate(
+      currentDate,
+      minDelegationTime.stakeDurationFormat,
+      minDelegationTime.stakeDurationValue,
+      isDeveloperMode
+    )
+    setStakeEndTime(calculatedStakeEndTime)
+  }, [currentDate, isDeveloperMode, minDelegationTime])
+
+  useLayoutEffect(() => {
+    const isCustomSelected =
+      selectedDuration.title === StakeDurationTitle.CUSTOM
+
+    const customGoBack = () => {
+      isCustomSelected ? selectMinDuration() : goBack()
+    }
+
+    setOptions({
+      // eslint-disable-next-line react/no-unstable-nested-components
+      headerLeft: () => <BackButton onPress={customGoBack} />
+    })
+  }, [goBack, selectMinDuration, selectedDuration.title, setOptions])
+
   const onRadioSelect = (durationOption: DurationOption) => {
     if (selectedDuration?.title === durationOption.title) {
-      if (durationOption.title === 'Custom') {
-        setSelectedDuration(minDelegationTime)
-        const calculatedStakeEndTime = getStakeEndDate(
-          currentDate,
-          minDelegationTime.stakeDurationFormat,
-          minDelegationTime.stakeDurationValue,
-          isDeveloperMode
-        )
-        setStakeEndTime(calculatedStakeEndTime)
+      if (durationOption.title === StakeDurationTitle.CUSTOM) {
+        selectMinDuration()
       }
       return
     }
@@ -197,7 +218,7 @@ export const StakingDuration = () => {
           }}>
           How long would you like to stake?
         </AvaText.Subtitle1>
-        {selectedDuration?.title !== 'Custom'
+        {selectedDuration?.title !== StakeDurationTitle.CUSTOM
           ? renderDurationOptions()
           : renderCustomOption()}
       </View>
