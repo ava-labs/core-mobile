@@ -20,12 +20,12 @@ export const NodeSearch = () => {
     stakingEndTime,
     validators: data?.validators
   })
-  const [isShowtime, setIsShowTime] = useState(true)
+  const [isShowSearching, setIsShowSearching] = useState(true)
   setTimeout(() => {
-    setIsShowTime(false)
+    setIsShowSearching(false)
   }, 3000)
 
-  if (isShowtime || isFetching) return <Searching />
+  if (isShowSearching || isFetching) return <Searching />
   if (error || useSearchNodeError || !validator) return <NoMatchFound />
   return <MatchFound validator={validator} />
 }
