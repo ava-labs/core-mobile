@@ -8,25 +8,28 @@ import {
 class NotificationsService {
   /**
    * Returns all notification channels that are blocked on system level.
-   * If notifications are blocked for whole app then it returns only one record
-   * "all":true
+   * If notifications are blocked for whole app then it returns all channels.
    * Map is used for optimization purposes.
    */
-  async getBlockedNotifications(): Promise<Map<'all' | ChannelId, boolean>> {
+  async getBlockedNotifications(): Promise<Map<ChannelId, boolean>> {
     const settings = await notifee.getNotificationSettings()
+    const channels = await notifee.getChannels()
+
     switch (settings.authorizationStatus) {
       case AuthorizationStatus.NOT_DETERMINED:
       case AuthorizationStatus.DENIED:
-        return new Map<'all' | ChannelId, boolean>([['all', true]])
+        return notificationChannels.reduce((map, next) => {
+          map.set(next.id as ChannelId, true)
+          return map
+        }, new Map<ChannelId, boolean>())
     }
 
-    const channels = await notifee.getChannels()
     return channels.reduce((map, next) => {
       if (next.blocked) {
         map.set(next.id as ChannelId, true)
       }
       return map
-    }, new Map<ChannelId | 'all', boolean>())
+    }, new Map<ChannelId, boolean>())
   }
 
   /**
