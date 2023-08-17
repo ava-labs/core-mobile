@@ -61,33 +61,20 @@ export const DeeplinkContextProvider = ({
   /******************************************************************************
    * Start listeners that will receive the deep link url
    *****************************************************************************/
-  NotificationsService.getInitialNotification().then(async event => {
-    if (event?.notification?.data?.url)
-      handleNotificationCallback({
-        url: String(event.notification.data.url),
-        accountIndex: Number(event.notification.data.accountIndex),
-        origin: DeepLinkOrigin.ORIGIN_NOTIFICATION,
-        isDevMode: isDeveloperMode
-      })
-  })
+  useEffect(() => {
+    NotificationsService.getInitialNotification().then(async event => {
+      if (event?.notification?.data?.url)
+        handleNotificationCallback({
+          url: String(event.notification.data.url),
+          accountIndex: Number(event.notification.data.accountIndex),
+          origin: DeepLinkOrigin.ORIGIN_NOTIFICATION,
+          isDevMode: isDeveloperMode
+        })
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   useEffect(() => {
-    // triggered if app is running
-    const listener = Linking.addEventListener('url', ({ url }) => {
-      setPendingDeepLink({ url, origin: DeepLinkOrigin.ORIGIN_DEEPLINK })
-    })
-
-    async function checkInitialUrl() {
-      // initial URL (when app comes from cold start)
-      const url = await Linking.getInitialURL()
-
-      if (url) {
-        setPendingDeepLink({ url, origin: DeepLinkOrigin.ORIGIN_DEEPLINK })
-      }
-    }
-
-    checkInitialUrl()
-
     const unsubscribeForegroundEvent = NotificationsService.onForegroundEvent(
       async ({ type, detail }) => {
         await NotificationsService.handleNotificationEvent({
@@ -107,10 +94,31 @@ export const DeeplinkContextProvider = ({
     })
 
     return () => {
-      listener.remove()
       unsubscribeForegroundEvent()
     }
   }, [handleNotificationCallback])
+
+  useEffect(() => {
+    // triggered if app is running
+    const listener = Linking.addEventListener('url', ({ url }) => {
+      setPendingDeepLink({ url, origin: DeepLinkOrigin.ORIGIN_DEEPLINK })
+    })
+
+    async function checkInitialUrl() {
+      // initial URL (when app comes from cold start)
+      const url = await Linking.getInitialURL()
+
+      if (url) {
+        setPendingDeepLink({ url, origin: DeepLinkOrigin.ORIGIN_DEEPLINK })
+      }
+    }
+
+    checkInitialUrl()
+
+    return () => {
+      listener.remove()
+    }
+  }, [])
 
   /******************************************************************************
    * Process deep link if there is one pending and app is unlocked

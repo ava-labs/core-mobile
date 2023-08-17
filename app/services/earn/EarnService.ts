@@ -309,8 +309,8 @@ class EarnService {
         oppositeIsDeveloperMode
       )
 
-      const tranformedTransactions = firstTransactions
-        .concat(secondTransactions)
+      const tranformedTransactions = (firstTransactions ?? [])
+        .concat(secondTransactions ?? [])
         .map(transaction => {
           return {
             txHash: transaction.txHash,
@@ -322,7 +322,6 @@ class EarnService {
       return tranformedTransactions
     } catch (error) {
       Logger.error('getTransformedStakesForAllAccounts failed: ', error)
-      throw Error('Something went wrong')
     }
   }
 }

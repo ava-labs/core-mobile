@@ -334,6 +334,6 @@ export const getTransformedTransactions = async (
     return transformedTransactions
   } catch (error) {
     Logger.error('getTransformedTransactions failed: ', error)
-    throw Error('Something went wrong')
+    throw error
   }
 }
