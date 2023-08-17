@@ -42,7 +42,7 @@ const handleTurnOnNotificationsFor = async (
   }
   const blockedNotifications =
     await NotificationsService.getBlockedNotifications()
-  if (blockedNotifications.has('all') || blockedNotifications.has(channelId)) {
+  if (blockedNotifications.has(channelId)) {
     NotificationsService.openSystemSettings()
   }
 }
