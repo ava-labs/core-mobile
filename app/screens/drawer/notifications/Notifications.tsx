@@ -10,6 +10,7 @@ import AvaButton from 'components/AvaButton'
 import { selectAppState } from 'store/app'
 import {
   selectNotificationSubscription,
+  setNotificationSubscriptions,
   turnOffNotificationsFor,
   turnOnNotificationsFor
 } from 'store/notifications'
@@ -90,8 +91,12 @@ function NotificationToggle({
 
 function AllowPushNotificationsCard() {
   const { theme } = useApplicationContext()
+  const dispatch = useDispatch()
 
   function onEnterSettings() {
+    notificationChannels.forEach(channel => {
+      dispatch(setNotificationSubscriptions([channel.id, true]))
+    })
     NotificationsService.getAllPermissions()
   }
 

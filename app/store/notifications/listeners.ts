@@ -11,6 +11,7 @@ import NotificationsService from 'services/notifications/NotificationsService'
 import {
   maybePromptEarnNotification,
   selectHasPromptedAfterFirstDelegation,
+  selectNotificationSubscription,
   setHasPromptedAfterFirstDelegation,
   setNotificationSubscriptions,
   turnOffNotificationsFor,
@@ -21,10 +22,20 @@ const handleMaybePromptEarnNotification = async (
   action: ReturnType<typeof maybePromptEarnNotification>,
   listenerApi: AppListenerEffectAPI
 ) => {
+  const blockedNotifications =
+    await NotificationsService.getBlockedNotifications()
   const state = listenerApi.getState()
+  const isSubscribedToStakingComplete = selectNotificationSubscription(
+    ChannelId.STAKING_COMPLETE
+  )(state)
+
   const hasPromptedAfterFirstDelegation =
     selectHasPromptedAfterFirstDelegation(state)
-  if (!hasPromptedAfterFirstDelegation) {
+  if (
+    !hasPromptedAfterFirstDelegation &&
+    (!isSubscribedToStakingComplete ||
+      blockedNotifications.has(ChannelId.STAKING_COMPLETE))
+  ) {
     // @ts-ignore
     Navigation.navigate(AppNavigation.Earn.EarnNotificationsPrompt)
     listenerApi.dispatch(setHasPromptedAfterFirstDelegation(true))
