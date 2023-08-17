@@ -40,6 +40,7 @@ import { timeToShowNetworkFeeError } from 'consts/earn'
 import Spinner from 'components/animation/Spinner'
 import { useAvaxFormatter } from 'hooks/formatter/useAvaxFormatter'
 import { maybePromptEarnNotification } from 'store/notifications'
+import useStakingParams from 'hooks/earn/useStakingParams'
 import { ConfirmScreen } from '../components/ConfirmScreen'
 import UnableToEstimate from '../components/UnableToEstimate'
 import { useValidateStakingEndTime } from './useValidateStakingEndTime'
@@ -54,6 +55,7 @@ const onDelegationError = (error: Error) => {
 
 export const Confirmation = () => {
   const dispatch = useDispatch()
+  const { minStakeAmount } = useStakingParams()
   const avaxFormatter = useAvaxFormatter()
   const isFocused = useIsFocused()
   const { navigate, getParent } = useNavigation<ScreenProps['navigation']>()
@@ -76,7 +78,10 @@ export const Confirmation = () => {
   const claimableBalance = useGetClaimableBalance()
   const networkFees = useEstimateStakingFees(stakingAmount)
 
-  const deductedStakingAmount = stakingAmount.sub(networkFees ?? 0)
+  let deductedStakingAmount = stakingAmount.sub(networkFees ?? 0)
+  if (deductedStakingAmount.lt(minStakeAmount)) {
+    deductedStakingAmount = stakingAmount
+  }
 
   const { minStartTime, validatedStakingEndTime, validatedStakingDuration } =
     useValidateStakingEndTime(stakingEndTime, validator?.endTime ?? '')
