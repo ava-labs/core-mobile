@@ -21,6 +21,10 @@ import {
   notificationChannels
 } from 'services/notifications/channels'
 
+/**
+ * Conceptual description of notification handling works can be found here
+ * https://ava-labs.atlassian.net/wiki/spaces/EN/pages/2372927490/Managing+Notifications
+ */
 const Notifications = () => {
   const [showAllowPushNotificationsCard, setShowAllowPushNotificationsCard] =
     useState(false)
