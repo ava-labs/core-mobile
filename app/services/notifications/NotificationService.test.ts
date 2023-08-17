@@ -3,7 +3,7 @@ import { ChannelId } from './channels'
 import NotificationsService from './NotificationsService'
 
 describe('scheduleNotification', () => {
-  it('should have called createTriggerNotification', async () => {
+  it('should have scheduled notification', async () => {
     const mockNotification = {
       txHash: 'testNodeId',
       timestamp: 123456789,
@@ -12,7 +12,7 @@ describe('scheduleNotification', () => {
     await NotificationsService.scheduleNotification(mockNotification)
     expect(notifee.createTriggerNotification).toHaveBeenCalled()
   })
-  it('should not have called createTriggerNotification without correct channelId', async () => {
+  it('should not have scheduled notification without correct channelId', async () => {
     const mockNotification = {
       txHash: 'testNodeId',
       timestamp: 123456789,

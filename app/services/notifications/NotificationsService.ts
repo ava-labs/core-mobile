@@ -21,7 +21,7 @@ import { StakeCompleteNotification } from 'store/notifications'
 import Logger from 'utils/Logger'
 import {
   LAUNCH_ACTIVITY,
-  OPEN_CLAIM_REWARDS,
+  OPEN_CLAIM_REWARDS_PRESS_ACTION_ID,
   STAKE_COMPELETE_DEEPLINK_URL
 } from './constants'
 
@@ -128,7 +128,7 @@ class NotificationsService {
           badgeCount: 1,
           channelId: channel.id,
           pressAction: {
-            id: OPEN_CLAIM_REWARDS,
+            id: OPEN_CLAIM_REWARDS_PRESS_ACTION_ID,
             launchActivity: LAUNCH_ACTIVITY
           }
         }
@@ -238,7 +238,7 @@ class NotificationsService {
         this.incrementBadgeCount(1)
         break
       case EventType.PRESS:
-        await this.handleNotificationPress({
+        this.handleNotificationPress({
           detail,
           callback
         })

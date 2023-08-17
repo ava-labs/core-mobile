@@ -99,8 +99,8 @@ export const DeeplinkContextProvider = ({
     NotificationsService.getInitialNotification().then(async event => {
       if (event?.notification?.data?.url)
         handleNotificationCallback({
-          url: event.notification.data.url as string,
-          accountIndex: event.notification.data.accountIndex as number,
+          url: String(event.notification.data.url),
+          accountIndex: Number(event.notification.data.accountIndex),
           origin: DeepLinkOrigin.ORIGIN_NOTIFICATION,
           isDevMode: isDeveloperMode
         })
