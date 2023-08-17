@@ -14,18 +14,18 @@ type RouteProp = StakeSetupScreenProps<
 
 export const NodeSearch = () => {
   const { stakingEndTime, stakingAmount } = useRoute<RouteProp>().params
-  const { error, data } = useNodes()
+  const { isFetching, error, data } = useNodes()
   const { validator, error: useSearchNodeError } = useSearchNode({
     stakingAmount,
     stakingEndTime,
     validators: data?.validators
   })
-  const [isFetching, setIsFetching] = useState(true)
+  const [isShowtime, setIsShowTime] = useState(true)
   setTimeout(() => {
-    setIsFetching(false)
-  }, 4000)
+    setIsShowTime(false)
+  }, 3000)
 
-  if (isFetching) return <Searching />
+  if (isShowtime || isFetching) return <Searching />
   if (error || useSearchNodeError || !validator) return <NoMatchFound />
   return <MatchFound validator={validator} />
 }
