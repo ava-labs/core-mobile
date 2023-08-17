@@ -1,7 +1,11 @@
 import React from 'react'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { useEarnCalcEstimatedRewards } from 'hooks/earn/useEarnCalcEstimatedRewards'
-import { DurationOption, getStakeDuration } from 'services/earn/getStakeEndDate'
+import {
+  DurationOption,
+  StakeDurationTitle,
+  getStakeDuration
+} from 'services/earn/getStakeEndDate'
 import { MilliSeconds, convertToSeconds } from 'types/siUnits'
 import { View } from 'react-native'
 import { RadioButton } from 'components/RadioButton'
@@ -53,7 +57,7 @@ export const DurationOptionItem = ({
             {item.title}
           </AvaText.Body2>
           <AvaText.Caption textStyle={{ color: theme.colorText2 }}>
-            {item.title !== 'Custom'
+            {item.title !== StakeDurationTitle.CUSTOM
               ? `Estimated Rewards: ${estimatedRewardsInAvax} AVAX`
               : 'Enter your desired end date'}
           </AvaText.Caption>
