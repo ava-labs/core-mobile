@@ -1,5 +1,5 @@
 import { getPvmApi } from 'utils/network/pvm'
-import { Account } from 'store/account'
+import { Account, AccountCollection } from 'store/account'
 import { exportC } from 'services/earn/exportC'
 import { importP, importPWithBalanceCheck } from 'services/earn/importP'
 import Big from 'big.js'
@@ -34,7 +34,10 @@ import {
 } from '@avalabs/glacier-sdk'
 import { glacierSdk } from 'utils/network/glacier'
 import { Avax } from 'types/Avax'
-import { maxTransactionStatusCheckRetries } from './utils'
+import {
+  getTransformedTransactions,
+  maxTransactionStatusCheckRetries
+} from './utils'
 
 class EarnService {
   /**
@@ -268,6 +271,54 @@ class EarnService {
     )
 
     return stakes
+  }
+
+  getTransformedStakesForAllAccounts = async ({
+    isDeveloperMode,
+    accounts
+  }: {
+    isDeveloperMode: boolean
+    accounts: AccountCollection
+  }) => {
+    const oppositeIsDeveloperMode = !isDeveloperMode
+    const accountsArray = Object.values(accounts)
+
+    const firstQueryParams = accountsArray.reduce((result, account) => {
+      if (account.addressPVM) {
+        result.push(account.addressPVM)
+      }
+      return result
+    }, [] as string[])
+
+    const firstTransactions = await getTransformedTransactions(
+      firstQueryParams,
+      isDeveloperMode
+    )
+
+    const indices = accountsArray.map(acc => acc.index)
+    const secondQueryParams = await WalletService.getAddressesByIndices(
+      indices,
+      'P',
+      false,
+      oppositeIsDeveloperMode
+    )
+
+    const secondTransactions = await getTransformedTransactions(
+      secondQueryParams,
+      oppositeIsDeveloperMode
+    )
+
+    const tranformedTransactions = firstTransactions
+      .concat(secondTransactions)
+      .map(transaction => {
+        return {
+          txHash: transaction.txHash,
+          endTimestamp: transaction.endTimestamp,
+          accountIndex: Number(transaction.index),
+          isDeveloperMode: transaction.isDeveloperMode
+        }
+      })
+    return tranformedTransactions
   }
 }
 
