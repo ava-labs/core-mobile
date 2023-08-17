@@ -9,6 +9,7 @@ import { EarnScreenProps } from 'navigation/types'
 import { useIsFocused, useNavigation } from '@react-navigation/native'
 import { Space } from 'components/Space'
 import { useCChainBalance } from 'hooks/earn/useCChainBalance'
+import { useAvaxFormatter } from 'hooks/formatter/useAvaxFormatter'
 import { useWeiAvaxFormatter } from 'hooks/formatter/useWeiAvaxFormatter'
 import { useNAvaxFormatter } from 'hooks/formatter/useNAvaxFormatter'
 import { BalanceItem } from 'screens/earn/components/BalanceItem'
@@ -16,6 +17,7 @@ import { PopableLabel } from 'components/PopableLabel'
 import { Row } from 'components/Row'
 import { Popable } from 'react-native-popable'
 import { useImportAnyStuckFunds } from 'hooks/earn/useImportAnyStuckFunds'
+import { Avax } from 'types/Avax'
 import { getStakePrimaryColor } from '../utils'
 import { BalanceLoader } from './BalanceLoader'
 import { CircularProgress } from './CircularProgress'
@@ -27,6 +29,7 @@ export const Balance = () => {
   const { navigate } = useNavigation<ScreenProps['navigation']>()
   const pChainBalance = usePChainBalance()
   const cChainBalance = useCChainBalance()
+  const avaxFormatter = useAvaxFormatter()
   const weiAvaxFormatter = useWeiAvaxFormatter()
   const nAvaxFormatter = useNAvaxFormatter()
   const shouldShowLoader = cChainBalance.isLoading || pChainBalance.isLoading
@@ -47,30 +50,35 @@ export const Balance = () => {
 
   if (shouldShowError) return null
 
-  const [availableAvax] = weiAvaxFormatter(cChainBalance.data.balance, true)
+  const [availableInAvax] = weiAvaxFormatter(cChainBalance.data.balance, true)
 
-  const [claimableAvax] = nAvaxFormatter(
+  const [claimableInAvax] = nAvaxFormatter(
     pChainBalance.data.unlockedUnstaked[0]?.amount,
     true
   )
 
-  const [stakedAvax] = nAvaxFormatter(
-    pChainBalance.data.unlockedStaked[0]?.amount,
-    true
+  const stakedAvax = Avax.fromNanoAvax(
+    pChainBalance.data.unlockedStaked[0]?.amount ?? '0'
   )
+  const pendingStakedAvax = Avax.fromNanoAvax(
+    pChainBalance.data.pendingStaked[0]?.amount ?? '0'
+  )
+  const totalStakedAvax = stakedAvax.add(pendingStakedAvax)
+
+  const [totalStakedInAvax] = avaxFormatter(totalStakedAvax, true)
 
   const stakingData = [
     {
       type: StakeTypeEnum.Available,
-      amount: Number(availableAvax)
+      amount: Number(availableInAvax)
     },
     {
       type: StakeTypeEnum.Staked,
-      amount: Number(stakedAvax)
+      amount: Number(totalStakedInAvax)
     },
     {
       type: StakeTypeEnum.Claimable,
-      amount: Number(claimableAvax)
+      amount: Number(claimableInAvax)
     }
   ]
 
@@ -125,7 +133,7 @@ export const Balance = () => {
             <BalanceItem
               balanceType={StakeTypeEnum.Available}
               iconColor={getStakePrimaryColor(StakeTypeEnum.Available, theme)}
-              balance={availableAvax}
+              balance={availableInAvax}
               poppableItem={
                 recoveryState === RecoveryEvents.ImportCStart && (
                   <InaccurateBalancePoppable />
@@ -135,12 +143,12 @@ export const Balance = () => {
             <BalanceItem
               balanceType={StakeTypeEnum.Staked}
               iconColor={getStakePrimaryColor(StakeTypeEnum.Staked, theme)}
-              balance={stakedAvax}
+              balance={totalStakedInAvax}
             />
             <BalanceItem
               balanceType={StakeTypeEnum.Claimable}
               iconColor={getStakePrimaryColor(StakeTypeEnum.Claimable, theme)}
-              balance={claimableAvax}
+              balance={claimableInAvax}
               poppableItem={
                 recoveryState === RecoveryEvents.ImportPStart && (
                   <InaccurateBalancePoppable />
@@ -151,7 +159,7 @@ export const Balance = () => {
         </Row>
       </View>
       <View>
-        {Number(claimableAvax) > 0
+        {Number(claimableInAvax) > 0
           ? renderStakeAndClaimButton()
           : renderStakeButton()}
       </View>
