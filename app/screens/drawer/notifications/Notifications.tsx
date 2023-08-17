@@ -10,6 +10,7 @@ import AvaButton from 'components/AvaButton'
 import { selectAppState } from 'store/app'
 import {
   selectNotificationSubscription,
+  setNotificationSubscriptions,
   turnOffNotificationsFor,
   turnOnNotificationsFor
 } from 'store/notifications'
@@ -20,18 +21,22 @@ import {
   notificationChannels
 } from 'services/notifications/channels'
 
+/**
+ * Conceptual description of notification handling works can be found here
+ * https://ava-labs.atlassian.net/wiki/spaces/EN/pages/2372927490/Managing+Notifications
+ */
 const Notifications = () => {
   const [showAllowPushNotificationsCard, setShowAllowPushNotificationsCard] =
     useState(false)
   const [blockedChannels, setBlockedChannels] = useState(
-    new Map<ChannelId | 'all', boolean>()
+    new Map<ChannelId, boolean>()
   )
   const appState = useSelector(selectAppState)
 
   useEffect(() => {
     if (appState === 'active') {
       NotificationsService.getBlockedNotifications().then(value => {
-        setShowAllowPushNotificationsCard(value.size === 0)
+        setShowAllowPushNotificationsCard(value.size !== 0)
         setBlockedChannels(value)
       })
     }
@@ -43,9 +48,7 @@ const Notifications = () => {
         <NotificationToggle
           key={ch.id}
           channel={ch}
-          isSystemDisabled={
-            blockedChannels.has(ch.id) || blockedChannels.has('all')
-          }
+          isSystemDisabled={blockedChannels.has(ch.id)}
         />
       )
     })
@@ -53,7 +56,7 @@ const Notifications = () => {
 
   return (
     <View style={{ marginTop: 20 }}>
-      {!showAllowPushNotificationsCard && <AllowPushNotificationsCard />}
+      {showAllowPushNotificationsCard && <AllowPushNotificationsCard />}
       {renderNotificationToggles()}
     </View>
   )
@@ -92,8 +95,12 @@ function NotificationToggle({
 
 function AllowPushNotificationsCard() {
   const { theme } = useApplicationContext()
+  const dispatch = useDispatch()
 
   function onEnterSettings() {
+    notificationChannels.forEach(channel => {
+      dispatch(setNotificationSubscriptions([channel.id, true]))
+    })
     NotificationsService.getAllPermissions()
   }
 
