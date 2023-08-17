@@ -148,8 +148,7 @@ class NotificationsService {
   }
 
   updateStakeCompleteNotification = async (
-    notificationData: StakeCompleteNotification[],
-    isDeveloperMode?: boolean
+    notificationData: StakeCompleteNotification[]
   ) => {
     await this.cleanupNotifications()
 
@@ -163,7 +162,7 @@ class NotificationsService {
             accountIndex: data.accountIndex,
             timestamp: data.endTimestamp,
             channelId: ChannelId.STAKING_COMPLETE,
-            isDeveloperMode
+            isDeveloperMode: data.isDeveloperMode
           })
         }
       }
@@ -267,10 +266,7 @@ class NotificationsService {
 
   isStakeCompleteNotificationBlocked = async () => {
     const blockedNotifications = await this.getBlockedNotifications()
-    return (
-      blockedNotifications.get('all') ||
-      blockedNotifications.get(ChannelId.STAKING_COMPLETE)
-    )
+    return blockedNotifications.get(ChannelId.STAKING_COMPLETE)
   }
 
   cancelAllNotifications = async () => {

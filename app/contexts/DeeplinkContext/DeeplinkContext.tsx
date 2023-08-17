@@ -49,7 +49,7 @@ export const DeeplinkContextProvider = ({
       isDevMode !== isDeveloperMode &&
         setTimeout(() => {
           dispatch(toggleDeveloperMode())
-        }, 500)
+        }, 1000)
       setTimeout(() => {
         dispatch(setActiveAccountIndex(accountIndex))
       }, 500)

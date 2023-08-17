@@ -70,14 +70,11 @@ const handleTurnOffNotificationsFor = async (
 }
 
 const handleScheduleStakingCompleteNotifications = async (
-  listenerApi: AppListenerEffectAPI,
+  _: AppListenerEffectAPI,
   stakeCompleteNotification: StakeCompleteNotification[]
 ) => {
-  const state = listenerApi.getState()
-  const isDeveloperMode = state.settings.advanced.developerMode
   await NotificationsService.updateStakeCompleteNotification(
-    stakeCompleteNotification,
-    isDeveloperMode
+    stakeCompleteNotification
   )
 }
 

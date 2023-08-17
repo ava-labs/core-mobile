@@ -11,4 +11,5 @@ export type StakeCompleteNotification = Pick<
   'endTimestamp' | 'txHash'
 > & {
   accountIndex?: number
+  isDeveloperMode?: boolean
 }

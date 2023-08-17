@@ -45,6 +45,7 @@ import {
 } from 'store/notifications'
 import useStakingParams from 'hooks/earn/useStakingParams'
 import { selectActiveAccount } from 'store/account'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { ConfirmScreen } from '../components/ConfirmScreen'
 import UnableToEstimate from '../components/UnableToEstimate'
 import { useValidateStakingEndTime } from './useValidateStakingEndTime'
@@ -61,6 +62,7 @@ export const Confirmation = () => {
   const dispatch = useDispatch()
   const { minStakeAmount } = useStakingParams()
   const avaxFormatter = useAvaxFormatter()
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const isFocused = useIsFocused()
   const { navigate, getParent } = useNavigation<ScreenProps['navigation']>()
   const { nodeId, stakingAmount, stakingEndTime } =
@@ -158,7 +160,8 @@ export const Confirmation = () => {
         {
           txHash,
           endTimestamp: getUnixTime(validatedStakingEndTime),
-          accountIndex: activeAccount?.index
+          accountIndex: activeAccount?.index,
+          isDeveloperMode
         }
       ])
     )
