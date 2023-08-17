@@ -222,7 +222,11 @@ export const Confirmation = () => {
       )
 
       return (
-        <View style={{ flexDirection: 'column' }}>
+        <View
+          style={{
+            flexDirection: 'column',
+            marginTop: -19
+          }}>
           <AvaText.Heading2 textStyle={{ color: theme.colorBgGreen }}>
             {estimatedRewardInAvax + ' ' + tokenSymbol}
           </AvaText.Heading2>
@@ -282,14 +286,16 @@ export const Confirmation = () => {
       <Space y={16} />
       <Separator />
       <View style={styles.verticalPadding}>
-        <Row style={{ justifyContent: 'space-between' }}>
+        <Row>
           <Popable
             content={renderEstimatedRewardPopoverInfoText()}
             position="top"
-            style={{ minWidth: 150 }}
+            style={{ minWidth: 275 }}
             backgroundColor={theme.neutral100}>
             <PopableLabel label="Estimated Reward" />
           </Popable>
+        </Row>
+        <Row style={{ justifyContent: 'flex-end' }}>
           {renderEstimatedReward()}
         </Row>
       </View>
@@ -304,8 +310,7 @@ export const Confirmation = () => {
           content={renderPopoverInfoText(
             'AVAX will be locked and unusable until this time'
           )}
-          position="right"
-          strictPosition={true}
+          position="top"
           style={{ minWidth: 180 }}
           backgroundColor={theme.neutral100}>
           <PopableLabel label="Time to Unlock" />
