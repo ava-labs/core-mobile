@@ -8,6 +8,7 @@ export interface DeeplinkContextType {
 export interface DeepLink {
   url: string
   origin: DeepLinkOrigin
+  callback?: () => void
 }
 
 export enum DeepLinkOrigin {

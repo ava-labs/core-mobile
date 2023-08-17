@@ -95,6 +95,7 @@ const handleScheduleNotificationsForAllAccounts = async (
   listenerApi: AppListenerEffectAPI
 ) => {
   const notificationDisabled = await isStakeCompleteNotificationDisabled()
+
   if (notificationDisabled) {
     Logger.info(
       'user has disabled either in-app notification or system-level notification, no notification will be scheduled'
@@ -112,9 +113,11 @@ const handleScheduleNotificationsForAllAccounts = async (
         isDeveloperMode,
         accounts
       })
-    await NotificationsService.updateStakeCompleteNotification(
-      tranformedTransactions
-    )
+    if (tranformedTransactions && tranformedTransactions.length > 0) {
+      await NotificationsService.updateStakeCompleteNotification(
+        tranformedTransactions
+      )
+    }
   }, 5000)
 }
 

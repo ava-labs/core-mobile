@@ -46,14 +46,11 @@ export const DeeplinkContextProvider = ({
 
   const handleNotificationCallback = useCallback(
     ({ url, accountIndex, origin, isDevMode }: NotificationCallbackProps) => {
-      isDevMode !== isDeveloperMode &&
-        setTimeout(() => {
-          dispatch(toggleDeveloperMode())
-        }, 1000)
-      setTimeout(() => {
+      const runCallback = () => {
+        isDevMode !== isDeveloperMode && dispatch(toggleDeveloperMode())
         dispatch(setActiveAccountIndex(accountIndex))
-      }, 500)
-      setPendingDeepLink({ url, origin })
+      }
+      setPendingDeepLink({ url, origin, callback: runCallback })
     },
     [dispatch, isDeveloperMode]
   )
@@ -125,9 +122,11 @@ export const DeeplinkContextProvider = ({
    *****************************************************************************/
   useEffect(() => {
     if (pendingDeepLink && isWalletActive) {
-      handleDeeplink(pendingDeepLink.url, dispatch)
-      // once we used the url, we can expire it
-      expireDeepLink()
+      setTimeout(() => {
+        handleDeeplink(pendingDeepLink, dispatch)
+        // once we used the url, we can expire it
+        expireDeepLink()
+      }, 1000)
     }
   }, [isWalletActive, pendingDeepLink, expireDeepLink, dispatch])
 
