@@ -153,19 +153,21 @@ class NotificationsService {
     await this.cleanupNotifications()
 
     notificationData.forEach(async data => {
-      if (data.txHash && data.endTimestamp) {
-        const trigger = await this.getNotificationTriggerById(data.txHash)
-        if (!trigger) {
-          // create notification trigger
-          await this.scheduleNotification({
-            txHash: data.txHash,
-            accountIndex: data.accountIndex,
-            timestamp: data.endTimestamp,
-            channelId: ChannelId.STAKING_COMPLETE,
-            isDeveloperMode: data.isDeveloperMode
-          })
+      setTimeout(async () => {
+        if (data.txHash && data.endTimestamp) {
+          const trigger = await this.getNotificationTriggerById(data.txHash)
+          if (!trigger) {
+            // create notification trigger
+            await this.scheduleNotification({
+              txHash: data.txHash,
+              accountIndex: data.accountIndex,
+              timestamp: data.endTimestamp,
+              channelId: ChannelId.STAKING_COMPLETE,
+              isDeveloperMode: data.isDeveloperMode
+            })
+          }
         }
-      }
+      }, 500)
     })
   }
 

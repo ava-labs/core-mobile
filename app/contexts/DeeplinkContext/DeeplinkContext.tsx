@@ -61,6 +61,16 @@ export const DeeplinkContextProvider = ({
   /******************************************************************************
    * Start listeners that will receive the deep link url
    *****************************************************************************/
+  NotificationsService.getInitialNotification().then(async event => {
+    if (event?.notification?.data?.url)
+      handleNotificationCallback({
+        url: String(event.notification.data.url),
+        accountIndex: Number(event.notification.data.accountIndex),
+        origin: DeepLinkOrigin.ORIGIN_NOTIFICATION,
+        isDevMode: isDeveloperMode
+      })
+  })
+
   useEffect(() => {
     // triggered if app is running
     const listener = Linking.addEventListener('url', ({ url }) => {
@@ -96,21 +106,11 @@ export const DeeplinkContextProvider = ({
       })
     })
 
-    NotificationsService.getInitialNotification().then(async event => {
-      if (event?.notification?.data?.url)
-        handleNotificationCallback({
-          url: String(event.notification.data.url),
-          accountIndex: Number(event.notification.data.accountIndex),
-          origin: DeepLinkOrigin.ORIGIN_NOTIFICATION,
-          isDevMode: isDeveloperMode
-        })
-    })
-
     return () => {
       listener.remove()
       unsubscribeForegroundEvent()
     }
-  }, [handleNotificationCallback, isDeveloperMode])
+  }, [handleNotificationCallback])
 
   /******************************************************************************
    * Process deep link if there is one pending and app is unlocked

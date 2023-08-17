@@ -305,30 +305,35 @@ export const getTransformedTransactions = async (
   addresses: string[],
   isTestnet: boolean
 ) => {
-  const stakes = await EarnService.getAllStakes({
-    isTestnet,
-    addresses
-  })
+  try {
+    const stakes = await EarnService.getAllStakes({
+      isTestnet,
+      addresses
+    })
 
-  const now = new Date()
-  const activeStakes =
-    stakes?.filter(transaction => isOnGoing(transaction, now)) ?? []
+    const now = new Date()
+    const activeStakes =
+      stakes?.filter(transaction => isOnGoing(transaction, now)) ?? []
 
-  const transformedTransactions = activeStakes.map(transaction => {
-    const pAddr = transaction.emittedUtxos.find(utxo => utxo.staked === true)
-      ?.addresses[0]
-    const matchedPAddress = addresses
-      .map((addr, index) => {
-        return { addr, index }
-      })
-      .find(mapped => {
-        return mapped.addr === `P-${pAddr}`
-      })
-    return {
-      ...transaction,
-      index: matchedPAddress?.index ?? 0,
-      isDeveloperMode: isTestnet
-    }
-  })
-  return transformedTransactions
+    const transformedTransactions = activeStakes.map(transaction => {
+      const pAddr = transaction.emittedUtxos.find(utxo => utxo.staked === true)
+        ?.addresses[0]
+      const matchedPAddress = addresses
+        .map((addr, index) => {
+          return { addr, index }
+        })
+        .find(mapped => {
+          return mapped.addr === `P-${pAddr}`
+        })
+      return {
+        ...transaction,
+        index: matchedPAddress?.index ?? 0,
+        isDeveloperMode: isTestnet
+      }
+    })
+    return transformedTransactions
+  } catch (error) {
+    Logger.error('getTransformedTransactions failed: ', error)
+    throw Error('Something went wrong')
+  }
 }

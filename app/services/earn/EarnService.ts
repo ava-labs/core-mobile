@@ -283,42 +283,47 @@ class EarnService {
     const oppositeIsDeveloperMode = !isDeveloperMode
     const accountsArray = Object.values(accounts)
 
-    const firstQueryParams = accountsArray.reduce((result, account) => {
-      if (account.addressPVM) {
-        result.push(account.addressPVM)
-      }
-      return result
-    }, [] as string[])
-
-    const firstTransactions = await getTransformedTransactions(
-      firstQueryParams,
-      isDeveloperMode
-    )
-
-    const indices = accountsArray.map(acc => acc.index)
-    const secondQueryParams = await WalletService.getAddressesByIndices(
-      indices,
-      'P',
-      false,
-      oppositeIsDeveloperMode
-    )
-
-    const secondTransactions = await getTransformedTransactions(
-      secondQueryParams,
-      oppositeIsDeveloperMode
-    )
-
-    const tranformedTransactions = firstTransactions
-      .concat(secondTransactions)
-      .map(transaction => {
-        return {
-          txHash: transaction.txHash,
-          endTimestamp: transaction.endTimestamp,
-          accountIndex: Number(transaction.index),
-          isDeveloperMode: transaction.isDeveloperMode
+    try {
+      const firstQueryParams = accountsArray.reduce((result, account) => {
+        if (account.addressPVM) {
+          result.push(account.addressPVM)
         }
-      })
-    return tranformedTransactions
+        return result
+      }, [] as string[])
+
+      const firstTransactions = await getTransformedTransactions(
+        firstQueryParams,
+        isDeveloperMode
+      )
+
+      const indices = accountsArray.map(acc => acc.index)
+      const secondQueryParams = await WalletService.getAddressesByIndices(
+        indices,
+        'P',
+        false,
+        oppositeIsDeveloperMode
+      )
+
+      const secondTransactions = await getTransformedTransactions(
+        secondQueryParams,
+        oppositeIsDeveloperMode
+      )
+
+      const tranformedTransactions = firstTransactions
+        .concat(secondTransactions)
+        .map(transaction => {
+          return {
+            txHash: transaction.txHash,
+            endTimestamp: transaction.endTimestamp,
+            accountIndex: Number(transaction.index),
+            isDeveloperMode: transaction.isDeveloperMode
+          }
+        })
+      return tranformedTransactions
+    } catch (error) {
+      Logger.error('getTransformedStakesForAllAccounts failed: ', error)
+      throw Error('Something went wrong')
+    }
   }
 }
 

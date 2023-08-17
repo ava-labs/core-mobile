@@ -11,6 +11,9 @@ import NotificationsService from 'services/notifications/NotificationsService'
 import { onAppUnlocked } from 'store/app'
 import { Action } from '@reduxjs/toolkit'
 import EarnService from 'services/earn/EarnService'
+import Logger from 'utils/Logger'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { selectAccounts } from 'store/account'
 import {
   scheduleStakingCompleteNotifications,
   maybePromptEarnNotification,
@@ -71,13 +74,16 @@ const handleTurnOffNotificationsFor = async (
 }
 
 const handleScheduleStakingCompleteNotifications = async (
-  listenerApi: AppListenerEffectAPI,
+  _: AppListenerEffectAPI,
   stakeCompleteNotification: StakeCompleteNotification[]
 ) => {
-  const notificationDisabled = await isStakeCompleteNotificationDisabled(
-    listenerApi
-  )
-  if (notificationDisabled) return
+  const notificationDisabled = await isStakeCompleteNotificationDisabled()
+  if (notificationDisabled) {
+    Logger.info(
+      'user has disabled either in-app notification or system-level notification, no notification will be scheduled'
+    )
+    return
+  }
 
   await NotificationsService.updateStakeCompleteNotification(
     stakeCompleteNotification
@@ -88,15 +94,18 @@ const handleScheduleNotificationsForAllAccounts = async (
   _: Action,
   listenerApi: AppListenerEffectAPI
 ) => {
-  const notificationDisabled = await isStakeCompleteNotificationDisabled(
-    listenerApi
-  )
-  if (notificationDisabled) return
+  const notificationDisabled = await isStakeCompleteNotificationDisabled()
+  if (notificationDisabled) {
+    Logger.info(
+      'user has disabled either in-app notification or system-level notification, no notification will be scheduled'
+    )
+    return
+  }
 
   setTimeout(async () => {
     const state = listenerApi.getState()
-    const isDeveloperMode = state.settings.advanced.developerMode
-    const accounts = state.account.accounts
+    const isDeveloperMode = selectIsDeveloperMode(state)
+    const accounts = selectAccounts(state)
 
     const tranformedTransactions =
       await EarnService.getTransformedStakesForAllAccounts({
@@ -109,25 +118,21 @@ const handleScheduleNotificationsForAllAccounts = async (
   }, 5000)
 }
 
-const handleNotificationCleanup = async (
-  _: Action,
-  listenerApi: AppListenerEffectAPI
-) => {
+const handleNotificationCleanup = async () => {
   await NotificationsService.setBadgeCount(0)
-  const notificationDisabled = await isStakeCompleteNotificationDisabled(
-    listenerApi
-  )
+  const notificationDisabled = await isStakeCompleteNotificationDisabled()
   if (notificationDisabled) {
+    Logger.info(
+      'user has disabled either in-app notification or system-level notification, cancel all pending notifications.'
+    )
     await NotificationsService.cancelAllNotifications()
   }
 }
 
-const isStakeCompleteNotificationDisabled = async (
-  listenerApi: AppListenerEffectAPI
-) => {
-  const state = listenerApi.getState()
-  const isSystemChannelNotificationEnabled =
-    state.notifications.notificationSubscriptions[ChannelId.STAKING_COMPLETE]
+const isStakeCompleteNotificationDisabled = async () => {
+  const isSystemChannelNotificationEnabled = selectNotificationSubscription(
+    ChannelId.STAKING_COMPLETE
+  )
   const isInAppStakeCompleteNotificationBlocked =
     await NotificationsService.isStakeCompleteNotificationBlocked()
   return (
