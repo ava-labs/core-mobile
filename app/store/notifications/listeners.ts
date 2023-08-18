@@ -78,6 +78,7 @@ const handleScheduleStakingCompleteNotifications = async (
   listenerApi: AppListenerEffectAPI,
   stakeCompleteNotification: StakeCompleteNotification[]
 ) => {
+  // todo: add posthog FF
   const notificationDisabled = await isStakeCompleteNotificationDisabled(
     listenerApi
   )
@@ -97,6 +98,7 @@ const handleScheduleNotificationsForAllAccounts = async (
   _: Action,
   listenerApi: AppListenerEffectAPI
 ) => {
+  // todo: add posthog FF
   const notificationDisabled = await isStakeCompleteNotificationDisabled(
     listenerApi
   )
@@ -127,6 +129,7 @@ const handleScheduleNotificationsForAllAccounts = async (
 }
 
 const handleNotificationCleanup = async (listenerApi: AppListenerEffectAPI) => {
+  // todo: add posthog FF
   await NotificationsService.setBadgeCount(0)
   const notificationDisabled = await isStakeCompleteNotificationDisabled(
     listenerApi

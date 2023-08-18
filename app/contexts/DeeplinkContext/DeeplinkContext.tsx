@@ -15,6 +15,8 @@ import {
   toggleDeveloperMode
 } from 'store/settings/advanced'
 import { setActiveAccountIndex } from 'store/account'
+import Logger from 'utils/Logger'
+import { usePosthogContext } from 'contexts/PosthogContext'
 import { handleDeeplink } from './utils/handleDeeplink'
 import {
   DeepLink,
@@ -37,6 +39,7 @@ export const DeeplinkContextProvider = ({
   const walletState = useSelector(selectWalletState)
   const isWalletActive = walletState === WalletState.ACTIVE
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
+  const { earnBlocked } = usePosthogContext()
 
   const [pendingDeepLink, setPendingDeepLink] = useState<DeepLink>()
 
@@ -59,19 +62,27 @@ export const DeeplinkContextProvider = ({
    * Start listeners that will receive the deep link url
    *****************************************************************************/
   useEffect(() => {
-    NotificationsService.getInitialNotification().then(async event => {
-      if (event?.notification?.data?.url)
-        handleNotificationCallback({
-          url: String(event.notification.data.url),
-          accountIndex: Number(event.notification.data.accountIndex),
-          origin: DeepLinkOrigin.ORIGIN_NOTIFICATION,
-          isDevMode: isDeveloperMode
-        })
-    })
+    if (earnBlocked) return
+
+    NotificationsService.getInitialNotification()
+      .then(async event => {
+        if (event?.notification?.data?.url)
+          handleNotificationCallback({
+            url: String(event.notification.data.url),
+            accountIndex: Number(event.notification.data.accountIndex),
+            origin: DeepLinkOrigin.ORIGIN_NOTIFICATION,
+            isDevMode: isDeveloperMode
+          })
+      })
+      .catch(e => {
+        Logger.error('Error getting initial notification:', e)
+      })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [earnBlocked])
 
   useEffect(() => {
+    if (earnBlocked) return
+
     const unsubscribeForegroundEvent = NotificationsService.onForegroundEvent(
       async ({ type, detail }) => {
         await NotificationsService.handleNotificationEvent({
@@ -93,7 +104,7 @@ export const DeeplinkContextProvider = ({
     return () => {
       unsubscribeForegroundEvent()
     }
-  }, [handleNotificationCallback])
+  }, [handleNotificationCallback, earnBlocked])
 
   useEffect(() => {
     // triggered if app is running
