@@ -1,8 +1,8 @@
 import {
   FeatureGates,
   FeatureVars,
-  PostHogDecideResponse,
-  FeatureFlags
+  FeatureFlags,
+  PostHogDecideResponse
 } from './types'
 
 const allowedKeys: (FeatureGates | FeatureVars)[] = [
