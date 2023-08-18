@@ -187,7 +187,8 @@ export const addNotificationsListeners = (
 
   startListening({
     actionCreator: onAppUnlocked,
-    effect: handleNotificationCleanup
+    effect: async (_, listenerApi) =>
+      await handleNotificationCleanup(listenerApi)
   })
 
   startListening({
