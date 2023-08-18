@@ -15,7 +15,7 @@ import NetworkService from 'services/network/NetworkService'
 import { UnsignedTx } from '@avalabs/avalanchejs-v2'
 import Logger from 'utils/Logger'
 import { Avalanche } from '@avalabs/wallets-sdk'
-import { retry } from 'utils/js/retry'
+import { retry, RetryBackoffPolicy } from 'utils/js/retry'
 import {
   AddDelegatorTransactionProps,
   CollectTokensForStakingParams,
@@ -36,6 +36,7 @@ import { glacierSdk } from 'utils/network/glacier'
 import { Avax } from 'types/Avax'
 import {
   getTransformedTransactions,
+  maxGetAtomicUTXOsRetries,
   maxTransactionStatusCheckRetries
 } from './utils'
 
@@ -66,10 +67,22 @@ class EarnService {
   }): Promise<void> {
     Logger.trace('Start importAnyStuckFunds')
     const avaxXPNetwork = NetworkService.getAvalancheNetworkXP(isDevMode)
-    const { pChainUtxo, cChainUtxo } = await WalletService.getAtomicUTXOs({
-      accountIndex: activeAccount.index,
-      avaxXPNetwork
+
+    const { pChainUtxo, cChainUtxo } = await retry({
+      operation: retryIndex => {
+        if (retryIndex !== 0) {
+          progressEvents?.(RecoveryEvents.GetAtomicUTXOsFailIng)
+        }
+        return WalletService.getAtomicUTXOs({
+          accountIndex: activeAccount.index,
+          avaxXPNetwork
+        })
+      },
+      isSuccess: result => !!result.pChainUtxo && !!result.cChainUtxo,
+      maxRetries: maxGetAtomicUTXOsRetries,
+      backoffPolicy: RetryBackoffPolicy.constant(2)
     })
+    progressEvents?.(RecoveryEvents.Idle)
     if (pChainUtxo.getUTXOs().length !== 0) {
       progressEvents?.(RecoveryEvents.ImportPStart)
       await importPWithBalanceCheck({ activeAccount, isDevMode })
