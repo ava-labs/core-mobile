@@ -71,13 +71,16 @@ const handleTurnOffNotificationsFor = async (
   channelId: ChannelId
 ) => {
   listenerApi.dispatch(setNotificationSubscriptions([channelId, false]))
+  handleNotificationCleanup(listenerApi)
 }
 
 const handleScheduleStakingCompleteNotifications = async (
-  _: AppListenerEffectAPI,
+  listenerApi: AppListenerEffectAPI,
   stakeCompleteNotification: StakeCompleteNotification[]
 ) => {
-  const notificationDisabled = await isStakeCompleteNotificationDisabled()
+  const notificationDisabled = await isStakeCompleteNotificationDisabled(
+    listenerApi
+  )
   if (notificationDisabled) {
     Logger.info(
       'user has disabled either in-app notification or system-level notification, no notification will be scheduled'
@@ -94,7 +97,9 @@ const handleScheduleNotificationsForAllAccounts = async (
   _: Action,
   listenerApi: AppListenerEffectAPI
 ) => {
-  const notificationDisabled = await isStakeCompleteNotificationDisabled()
+  const notificationDisabled = await isStakeCompleteNotificationDisabled(
+    listenerApi
+  )
 
   if (notificationDisabled) {
     Logger.info(
@@ -121,9 +126,11 @@ const handleScheduleNotificationsForAllAccounts = async (
   }, 5000)
 }
 
-const handleNotificationCleanup = async () => {
+const handleNotificationCleanup = async (listenerApi: AppListenerEffectAPI) => {
   await NotificationsService.setBadgeCount(0)
-  const notificationDisabled = await isStakeCompleteNotificationDisabled()
+  const notificationDisabled = await isStakeCompleteNotificationDisabled(
+    listenerApi
+  )
   if (notificationDisabled) {
     Logger.info(
       'user has disabled either in-app notification or system-level notification, cancel all pending notifications.'
@@ -132,16 +139,18 @@ const handleNotificationCleanup = async () => {
   }
 }
 
-const isStakeCompleteNotificationDisabled = async () => {
-  const isSystemChannelNotificationEnabled = selectNotificationSubscription(
+const isStakeCompleteNotificationDisabled = async (
+  listenerApi: AppListenerEffectAPI
+) => {
+  const state = listenerApi.getState()
+
+  const isInAppNotificationEnabled = selectNotificationSubscription(
     ChannelId.STAKING_COMPLETE
-  )
-  const isInAppStakeCompleteNotificationBlocked =
+  )(state)
+
+  const isSystemStakeCompleteNotificationBlocked =
     await NotificationsService.isStakeCompleteNotificationBlocked()
-  return (
-    isInAppStakeCompleteNotificationBlocked ||
-    !isSystemChannelNotificationEnabled
-  )
+  return !isInAppNotificationEnabled || isSystemStakeCompleteNotificationBlocked
 }
 
 export const addNotificationsListeners = (
@@ -178,7 +187,8 @@ export const addNotificationsListeners = (
 
   startListening({
     actionCreator: onAppUnlocked,
-    effect: handleNotificationCleanup
+    effect: async (_, listenerApi) =>
+      await handleNotificationCleanup(listenerApi)
   })
 
   startListening({
