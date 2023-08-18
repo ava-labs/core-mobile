@@ -87,7 +87,7 @@ class NotificationsService {
 
   scheduleNotification = async ({
     txHash,
-    timestamp,
+    timestamp: unixTimestamp,
     channelId,
     accountIndex,
     isDeveloperMode = false
@@ -98,10 +98,11 @@ class NotificationsService {
     accountIndex?: number
     isDeveloperMode?: boolean
   }) => {
+    const timestamp = fromUnixTime(unixTimestamp).getTime()
     // Create a time-based trigger
     const trigger: TimestampTrigger = {
       type: TriggerType.TIMESTAMP,
-      timestamp: timestamp / 1000 // convert to seconds
+      timestamp
     }
 
     const channel = notificationChannels.find(ch => ch.id === channelId)
