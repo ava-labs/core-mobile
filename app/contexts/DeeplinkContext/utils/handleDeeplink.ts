@@ -8,11 +8,13 @@ import {
 } from 'store/walletConnectV2'
 import Logger from 'utils/Logger'
 import { navigateToClaimRewards } from 'services/earn/utils'
+import { ProcessedFeatureFlags } from 'store/posthog'
 import { ACTIONS, DeepLink, PROTOCOLS } from '../types'
 
 export const handleDeeplink = (
   deeplink: DeepLink,
-  dispatch: Dispatch<AnyAction>
+  dispatch: Dispatch<AnyAction>,
+  processedFeatureFlags: ProcessedFeatureFlags
 ): void => {
   let url
   try {
@@ -57,6 +59,7 @@ export const handleDeeplink = (
           break
         }
         case ACTIONS.StakeComplete: {
+          if (processedFeatureFlags.earnBlocked) return
           deeplink.callback?.()
           navigateToClaimRewards()
           break

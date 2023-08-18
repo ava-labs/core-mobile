@@ -28,6 +28,34 @@ export const selectUserID = (state: RootState) => state.posthog.userID
 export const selectDistinctID = (state: RootState) => state.posthog.distinctID
 export const selectIsAnalyticsEnabled = (state: RootState) =>
   state.posthog.isAnalyticsEnabled
+export const selectFeatureFlags = (state: RootState) => {
+  const swapBlocked = selectIsSwapBlocked(state)
+  const bridgeBlocked = selectIsBridgeBlocked(state)
+  const bridgeBtcBlocked = selectIsBridgeBtcBlocked(state)
+  const bridgeEthBlocked = selectIsBridgeEthBlocked(state)
+  const earnBlocked = selectIsEarnBlocked(state)
+  const sendBlocked = selectIsSendBlocked(state)
+  const sendNftBlockediOS = selectIsSendNftBlockediOS(state)
+  const sendNftBlockedAndroid = selectIsSendNftBlockedAndroid(state)
+  const eventsBlocked = selectIsEventsBlocked(state)
+  const sentrySampleRate = selectSentrySampleRate(state)
+  const coinbasePayBlocked = selectIsCoinbasePayBlocked(state)
+  const useCoinGeckoPro = selectUseCoinGeckoPro(state)
+  return {
+    swapBlocked,
+    bridgeBlocked,
+    bridgeBtcBlocked,
+    bridgeEthBlocked,
+    earnBlocked,
+    sendBlocked,
+    sendNftBlockediOS,
+    sendNftBlockedAndroid,
+    eventsBlocked,
+    sentrySampleRate,
+    coinbasePayBlocked,
+    useCoinGeckoPro
+  }
+}
 
 export const selectIsSwapBlocked = (state: RootState) => {
   const { featureFlags } = state.posthog
@@ -71,6 +99,11 @@ export const selectIsEarnBlocked = (state: RootState) => {
   return (
     !featureFlags[FeatureGates.EARN] || !featureFlags[FeatureGates.EVERYTHING]
   )
+}
+
+export const selectIsNotificationBlocked = (state: RootState) => {
+  // in the future, other feature required notifications should go here
+  return selectIsEarnBlocked(state)
 }
 
 export const selectIsSendNftBlockediOS = (state: RootState) => {

@@ -14,6 +14,7 @@ import EarnService from 'services/earn/EarnService'
 import Logger from 'utils/Logger'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectAccounts } from 'store/account'
+import { selectIsEarnBlocked } from 'store/posthog'
 import {
   scheduleStakingCompleteNotifications,
   maybePromptEarnNotification,
@@ -78,7 +79,10 @@ const handleScheduleStakingCompleteNotifications = async (
   listenerApi: AppListenerEffectAPI,
   stakeCompleteNotification: StakeCompleteNotification[]
 ) => {
-  // todo: add posthog FF
+  const state = listenerApi.getState()
+  const isEarnBlocked = selectIsEarnBlocked(state)
+  if (isEarnBlocked) return
+
   const notificationDisabled = await isStakeCompleteNotificationDisabled(
     listenerApi
   )
@@ -98,7 +102,10 @@ const handleScheduleNotificationsForAllAccounts = async (
   _: Action,
   listenerApi: AppListenerEffectAPI
 ) => {
-  // todo: add posthog FF
+  const state = listenerApi.getState()
+  const isEarnBlocked = selectIsEarnBlocked(state)
+  if (isEarnBlocked) return
+
   const notificationDisabled = await isStakeCompleteNotificationDisabled(
     listenerApi
   )
@@ -111,7 +118,6 @@ const handleScheduleNotificationsForAllAccounts = async (
   }
 
   setTimeout(async () => {
-    const state = listenerApi.getState()
     const isDeveloperMode = selectIsDeveloperMode(state)
     const accounts = selectAccounts(state)
 
@@ -129,7 +135,10 @@ const handleScheduleNotificationsForAllAccounts = async (
 }
 
 const handleNotificationCleanup = async (listenerApi: AppListenerEffectAPI) => {
-  // todo: add posthog FF
+  const state = listenerApi.getState()
+  const isEarnBlocked = selectIsEarnBlocked(state)
+  if (isEarnBlocked) return
+
   await NotificationsService.setBadgeCount(0)
   const notificationDisabled = await isStakeCompleteNotificationDisabled(
     listenerApi
