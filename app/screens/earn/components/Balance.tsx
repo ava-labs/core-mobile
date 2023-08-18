@@ -18,6 +18,7 @@ import { Row } from 'components/Row'
 import { Popable } from 'react-native-popable'
 import { useImportAnyStuckFunds } from 'hooks/earn/useImportAnyStuckFunds'
 import { Avax } from 'types/Avax'
+import { PopableContent } from 'components/PopableContent'
 import { getStakePrimaryColor } from '../utils'
 import { BalanceLoader } from './BalanceLoader'
 import { CircularProgress } from './CircularProgress'
@@ -135,9 +136,10 @@ export const Balance = () => {
               iconColor={getStakePrimaryColor(StakeTypeEnum.Available, theme)}
               balance={availableInAvax}
               poppableItem={
-                recoveryState === RecoveryEvents.ImportCStart && (
-                  <InaccurateBalancePoppable />
-                )
+                [
+                  RecoveryEvents.ImportCStart,
+                  RecoveryEvents.GetAtomicUTXOsFailIng
+                ].includes(recoveryState) && <InaccurateBalancePoppable />
               }
             />
             <BalanceItem
@@ -150,9 +152,10 @@ export const Balance = () => {
               iconColor={getStakePrimaryColor(StakeTypeEnum.Claimable, theme)}
               balance={claimableInAvax}
               poppableItem={
-                recoveryState === RecoveryEvents.ImportPStart && (
-                  <InaccurateBalancePoppable />
-                )
+                [
+                  RecoveryEvents.ImportPStart,
+                  RecoveryEvents.GetAtomicUTXOsFailIng
+                ].includes(recoveryState) && <InaccurateBalancePoppable />
               }
             />
           </View>
@@ -172,7 +175,11 @@ function InaccurateBalancePoppable() {
 
   return (
     <Popable
-      content={'Balance may be inaccurate due to network issues'}
+      content={
+        <PopableContent
+          message={'Balance may be inaccurate due to network issues'}
+        />
+      }
       position="top"
       style={{ minWidth: 200 }}
       strictPosition={true}
