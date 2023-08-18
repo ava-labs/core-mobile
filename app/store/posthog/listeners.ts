@@ -14,7 +14,7 @@ import { AppListenerEffectAPI } from 'store'
 import { Action } from '@reduxjs/toolkit'
 import { JsonMap } from './types'
 
-const FEATURE_FLAGS_FETCH_INTERVAL = 10000 // 1 minute
+const FEATURE_FLAGS_FETCH_INTERVAL = 60000 // 1 minute
 
 export const posthogCapture = ({
   distinctId,
