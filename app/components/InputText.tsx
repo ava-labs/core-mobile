@@ -28,7 +28,7 @@ export type InputTextProps = {
   editable?: boolean
   multiline?: boolean
   minHeight?: number
-  maxLength?: number | undefined
+  maxLength?: number
   onSubmit?: () => void
   onMax?: () => void
   onConfirm?: (text: string) => void
