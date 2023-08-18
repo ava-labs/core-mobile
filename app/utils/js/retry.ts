@@ -4,7 +4,7 @@ import Logger from 'utils/Logger'
 const DEFAULT_MAX_RETRIES = 10
 
 type RetryParams<T> = {
-  operation: () => Promise<T>
+  operation: (retryIndex: number) => Promise<T>
   isSuccess: (result: T) => boolean
   maxRetries?: number
   backoffPolicy?: RetryBackoffPolicyInterface
@@ -48,7 +48,7 @@ export const retry = async <T>({
     }
 
     try {
-      const result = await operation()
+      const result = await operation(retries)
 
       if (isSuccess(result)) {
         return result
