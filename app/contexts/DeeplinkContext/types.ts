@@ -8,11 +8,13 @@ export interface DeeplinkContextType {
 export interface DeepLink {
   url: string
   origin: DeepLinkOrigin
+  callback?: () => void
 }
 
 export enum DeepLinkOrigin {
   ORIGIN_DEEPLINK = 'deeplink',
-  ORIGIN_QR_CODE = 'qr-code'
+  ORIGIN_QR_CODE = 'qr-code',
+  ORIGIN_NOTIFICATION = 'notification'
 }
 
 export const PROTOCOLS = {
@@ -29,4 +31,11 @@ export enum StakeActions {
 export const ACTIONS = {
   WC: 'wc',
   StakeComplete: StakeActions.StakeComplete
+}
+
+export interface NotificationCallbackProps {
+  url: string
+  accountIndex: number
+  origin: DeepLinkOrigin
+  isDevMode: boolean
 }

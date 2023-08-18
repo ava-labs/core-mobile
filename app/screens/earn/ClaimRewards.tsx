@@ -58,7 +58,11 @@ const ClaimRewards = () => {
     }
   }, [navigate, showFeeError])
 
-  if (!data || data?.unlockedUnstaked[0]?.amount === undefined) {
+  if (!data) {
+    return null
+  }
+
+  if (data.unlockedUnstaked[0]?.amount === undefined) {
     return <EmptyClaimRewards />
   }
 

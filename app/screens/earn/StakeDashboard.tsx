@@ -10,6 +10,7 @@ import { WrongNetwork } from './WrongNetwork'
 
 export const StakeDashboard = () => {
   const network = useSelector(selectActiveNetwork)
+
   const isAvalancheNetork = [
     ChainId.AVALANCHE_TESTNET_ID,
     ChainId.AVALANCHE_MAINNET_ID

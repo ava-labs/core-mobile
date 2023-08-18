@@ -15,7 +15,8 @@ module.exports = {
         '@react-native',
         'react-native',
         'data-uri-to-buffer',
-        'formdata-polyfill'
+        'formdata-polyfill',
+        '@notifee/react-native'
       ].join('|') +
       ')'
   ]
