@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import AppNavigation from 'navigation/AppNavigation'
 import { StakeSetupScreenProps } from 'navigation/types'
 import { useRoute } from '@react-navigation/native'
@@ -20,8 +20,12 @@ export const NodeSearch = () => {
     stakingEndTime,
     validators: data?.validators
   })
+  const [isShowSearching, setIsShowSearching] = useState(true)
+  setTimeout(() => {
+    setIsShowSearching(false)
+  }, 3000)
 
-  if (isFetching) return <Searching />
+  if (isShowSearching || isFetching) return <Searching />
   if (error || useSearchNodeError || !validator) return <NoMatchFound />
   return <MatchFound validator={validator} />
 }

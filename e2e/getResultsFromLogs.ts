@@ -103,11 +103,18 @@ async function splitTestResult(testItem: string | undefined) {
   if (splitTestArrayItem) {
     const rawSectionName = splitTestArrayItem[0]
     const testCase = 'Should' + splitTestArrayItem[1]
+    if (testCase.includes('(')) {
+      const splitTestCase = testCase.split('(')
+      const rejoinedString = splitTestCase[0]
+      const trimmedTestCase = rejoinedString?.trim()
+      return { sectionName: rawSectionName, testCase: trimmedTestCase }
+    }
     const sectionName = removeTestSectionExtraChars(rawSectionName)
     const trimmedSectionName = sectionName?.trim()
     return { sectionName: trimmedSectionName, testCase }
   }
 }
+splitTestResult('✓ Activity Tab should display incoming transaction details(3)')
 
 function removeTestSectionExtraChars(testSection: string | undefined) {
   if (testSection) {
