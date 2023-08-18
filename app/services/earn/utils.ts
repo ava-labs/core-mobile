@@ -15,6 +15,7 @@ import EarnService from './EarnService'
 export const maxTransactionStatusCheckRetries = 7
 export const maxTransactionCreationRetries = 5
 export const maxBalanceCheckRetries = 10
+export const maxGetAtomicUTXOsRetries = 10
 
 /**
  * See https://docs.avax.network/subnets/reference-elastic-subnets-parameters#primary-network-parameters-on-mainnet

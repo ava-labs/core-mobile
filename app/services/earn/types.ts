@@ -53,5 +53,9 @@ export enum RecoveryEvents {
   /**
    * Operation finished importing C chain
    */
-  ImportCFinish
+  ImportCFinish,
+  /**
+   * We cannot obtain atomic UTXOs for some reason
+   */
+  GetAtomicUTXOsFailIng
 }
