@@ -15,17 +15,15 @@ import {
   turnOnNotificationsFor
 } from 'store/notifications'
 import NotificationsService from 'services/notifications/NotificationsService'
-import {
-  AvaxAndroidChannel,
-  ChannelId,
-  notificationChannels
-} from 'services/notifications/channels'
+import { AvaxAndroidChannel, ChannelId } from 'services/notifications/channels'
+import useNotificationChannels from 'services/notifications/useNotificationChannels'
 
 /**
  * Conceptual description of notification handling works can be found here
  * https://ava-labs.atlassian.net/wiki/spaces/EN/pages/2372927490/Managing+Notifications
  */
 const Notifications = () => {
+  const channels = useNotificationChannels()
   const [showAllowPushNotificationsCard, setShowAllowPushNotificationsCard] =
     useState(false)
   const [blockedChannels, setBlockedChannels] = useState(
@@ -43,7 +41,7 @@ const Notifications = () => {
   }, [appState]) //switching to system settings and coming back must re-initiate settings check
 
   const renderNotificationToggles = useCallback(() => {
-    return notificationChannels.map(ch => {
+    return channels.map(ch => {
       return (
         <NotificationToggle
           key={ch.id}
@@ -52,7 +50,7 @@ const Notifications = () => {
         />
       )
     })
-  }, [blockedChannels])
+  }, [blockedChannels, channels])
 
   return (
     <View style={{ marginTop: 20 }}>
@@ -96,9 +94,10 @@ function NotificationToggle({
 function AllowPushNotificationsCard() {
   const { theme } = useApplicationContext()
   const dispatch = useDispatch()
+  const channels = useNotificationChannels()
 
   function onEnterSettings() {
-    notificationChannels.forEach(channel => {
+    channels.forEach(channel => {
       dispatch(setNotificationSubscriptions([channel.id, true]))
     })
     NotificationsService.getAllPermissions()

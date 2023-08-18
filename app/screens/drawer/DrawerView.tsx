@@ -16,6 +16,7 @@ import { Row } from 'components/Row'
 import AdvancedItem from 'screens/drawer/components/AdvancedItem'
 import DrawerLogo from 'screens/drawer/components/DrawerLogo'
 import NotificationsItem from 'screens/drawer/components/NotificationsItem'
+import useNotificationChannels from 'services/notifications/useNotificationChannels'
 
 const DrawerView = () => {
   const context = useApplicationContext()
@@ -48,6 +49,8 @@ const DrawerView = () => {
 }
 
 const Main = () => {
+  const channels = useNotificationChannels()
+
   return (
     <View
       style={{
@@ -57,7 +60,7 @@ const Main = () => {
         <AddressBookItem />
         <CurrencyItem />
         <AdvancedItem />
-        <NotificationsItem />
+        {channels.length > 0 && <NotificationsItem />}
         <Separator style={{ marginHorizontal: 16 }} />
         <SecurityItem />
         <LegalItem />
