@@ -1,15 +1,21 @@
 import { AppStartListening } from 'store/middleware/listener'
-import { onLogOut } from 'store/app'
+import { onLogOut, onRehydrationComplete } from 'store/app'
 import {
   capture,
   regenerateUserId,
+  setFeatureFlags,
   selectUserID,
   selectDistinctID,
   selectIsAnalyticsEnabled
 } from 'store/posthog/slice'
 import Logger from 'utils/Logger'
 import PostHogService from 'services/posthog/PostHogService'
+import { AppListenerEffectAPI } from 'store'
+import { Action } from '@reduxjs/toolkit'
 import { JsonMap } from './types'
+import { sanitizeFeatureFlags } from './utils'
+
+const FEATURE_FLAGS_FETCH_INTERVAL = 10000 // 1 minute
 
 export const posthogCapture = ({
   distinctId,
@@ -24,6 +30,28 @@ export const posthogCapture = ({
 }) => {
   Logger.info(`posthog capture: ${event}`, properties)
   return PostHogService.capture(event, distinctId, posthogUserId, properties)
+}
+
+const fetchFeatureFlagsPeriodically = async (
+  _: Action,
+  listenerApi: AppListenerEffectAPI
+) => {
+  const { dispatch } = listenerApi
+
+  async function fetchFeatureFlags() {
+    Logger.info('fetching feature flags')
+    const featureFlags = await PostHogService.fetchFeatureFlags()
+    const sanitizeFlags = sanitizeFeatureFlags(featureFlags)
+    sanitizeFlags && dispatch(setFeatureFlags(sanitizeFlags))
+    Logger.info('feature flags', sanitizeFlags)
+  }
+
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    await listenerApi.pause(fetchFeatureFlags())
+
+    await listenerApi.delay(FEATURE_FLAGS_FETCH_INTERVAL)
+  }
 }
 
 export const addPosthogListeners = (startListening: AppStartListening) => {
@@ -47,5 +75,10 @@ export const addPosthogListeners = (startListening: AppStartListening) => {
         posthogCapture({ distinctId, posthogUserId, event, properties })
       }
     }
+  })
+
+  startListening({
+    actionCreator: onRehydrationComplete,
+    effect: fetchFeatureFlagsPeriodically
   })
 }

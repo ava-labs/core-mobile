@@ -5,6 +5,18 @@ import { getPosthogDeviceInfo } from './utils'
 
 const PostHogCaptureUrl = `${Config.POSTHOG_URL}/capture/`
 
+const PostHogDecideUrl = `${Config.POSTHOG_URL}/decide?v=2`
+const PostHogDecideFetchOptions = {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    api_key: Config.POSTHOG_FEATURE_FLAGS_KEY,
+    distinct_id: ''
+  })
+}
+
 class PostHogService {
   async capture(
     eventName: string,
@@ -41,6 +53,21 @@ class PostHogService {
       .catch(error => {
         Logger.error('failed to capture PostHog event', error)
       })
+  }
+
+  async fetchFeatureFlags() {
+    try {
+      const response = await fetch(PostHogDecideUrl, PostHogDecideFetchOptions)
+
+      if (!response.ok) {
+        throw new Error('Something went wrong')
+      }
+
+      return response.json()
+    } catch (e) {
+      Logger.error('failed to fetch feature flags', e)
+      return {}
+    }
   }
 }
 
