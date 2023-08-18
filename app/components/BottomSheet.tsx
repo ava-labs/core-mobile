@@ -32,7 +32,7 @@ export const BottomSheet: FC<BottomSheetProps> = ({
   children
 }) => {
   const { goBack } = useNavigation()
-  const defaultSnapPoints = ['95%']
+  const defaultSnapPoints = ['94%']
 
   const renderBottomSheetBackdrop = useCallback(props => {
     return (
