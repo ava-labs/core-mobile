@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { DdRum } from '@datadog/mobile-react-native'
 import { Dimensions, ScrollView, StyleSheet, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaListItem from 'components/AvaListItem'
@@ -37,6 +38,14 @@ const CHART_THICKNESS = 4
 type ScreenProps = WalletScreenProps<typeof AppNavigation.Wallet.TokenDetail>
 
 const TokenDetail = () => {
+  useEffect(() => {
+    DdRum.startView('TokenDetail', 'TokenDetail', {}, Date.now())
+
+    return () => {
+      DdRum.stopView('TokenDetail', {}, Date.now())
+    }
+  }, [])
+
   const {
     theme,
     appHook: { tokenInCurrencyFormatter, currencyFormatter }

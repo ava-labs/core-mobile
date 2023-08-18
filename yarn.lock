@@ -3279,6 +3279,11 @@
   resolved "https://registry.yarnpkg.com/@csstools/selector-specificity/-/selector-specificity-2.0.2.tgz#1bfafe4b7ed0f3e4105837e056e0a89b108ebe36"
   integrity sha512-IkpVW/ehM1hWKln4fCA3NzJU8KwD+kIOvPZA4cqxoJHtE21CCzjyp+Kxbu0i5I4tBNOlXPL9mjwnWlL0VEG4Fg==
 
+"@datadog/mobile-react-native@1.8.2":
+  version "1.8.2"
+  resolved "https://registry.yarnpkg.com/@datadog/mobile-react-native/-/mobile-react-native-1.8.2.tgz#66dad6619d8a692a2487284a5fdb5cea7930d789"
+  integrity sha512-DO+jQKVUk7FGstDA/VoMwgpZ43dReMxiDMr8SRDwA2mMJXxyo8Nc6ZNiN7gS7r/uIt4oFbPQtOFT5MsW2NDCYg==
+
 "@dlenroc/testrail@1.7.2":
   version "1.7.2"
   resolved "https://registry.yarnpkg.com/@dlenroc/testrail/-/testrail-1.7.2.tgz#f36d0d9463a8b04020273269caefe005303ebdcd"

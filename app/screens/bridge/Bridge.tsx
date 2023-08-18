@@ -1,4 +1,5 @@
 import React, { FC, useCallback, useEffect, useMemo, useState } from 'react'
+import { DdRum } from '@datadog/mobile-react-native'
 import { Alert, Dimensions, Pressable, StyleSheet, View } from 'react-native'
 import { Space } from 'components/Space'
 import AvaText from 'components/AvaText'
@@ -74,6 +75,14 @@ type NavigationProp = BridgeScreenProps<
 >['navigation']
 
 const Bridge: FC = () => {
+  useEffect(() => {
+    DdRum.startView('BridgeScreen', 'BridgeScreen', {}, Date.now())
+
+    return () => {
+      DdRum.stopView('BridgeScreen', {}, Date.now())
+    }
+  }, [])
+
   const navigation = useNavigation<NavigationProp>()
   const theme = useApplicationContext().theme
   const { capture } = usePostCapture()

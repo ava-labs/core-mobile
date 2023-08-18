@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { Pressable, StyleSheet, View } from 'react-native'
 import AvaText from 'components/AvaText'
 import AvaListItem from 'components/AvaListItem'
+import { DdRum } from '@datadog/mobile-react-native'
 import LinkSVG from 'components/svg/LinkSVG'
 import moment from 'moment'
 import { useApplicationContext } from 'contexts/ApplicationContext'
@@ -26,6 +27,19 @@ type RouteProp = WalletScreenProps<
 >['route']
 
 function ActivityDetail() {
+  useEffect(() => {
+    DdRum.startView(
+      'ActivityDetailScreen',
+      'ActivityDetailScreen',
+      {},
+      Date.now()
+    )
+
+    return () => {
+      DdRum.stopView('ActivityDetailScreen', {}, Date.now())
+    }
+  }, [])
+
   const theme = useApplicationContext().theme
   const network = useSelector(selectActiveNetwork)
   const contacts = useSelector(selectContacts)

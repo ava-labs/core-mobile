@@ -1,5 +1,6 @@
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { View } from 'react-native'
+import { DdRum } from '@datadog/mobile-react-native'
 import AvaText from 'components/AvaText'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import TabViewAva from 'components/TabViewAva'
@@ -25,6 +26,14 @@ const CustomLabel: React.FC<{ focused: boolean; title: string }> = ({
 }
 
 export default function WatchlistTab() {
+  useEffect(() => {
+    DdRum.startView('WatchlistTabView', 'WatchlistTabView', {}, Date.now())
+
+    return () => {
+      DdRum.stopView('WatchlistTabView', {}, Date.now())
+    }
+  }, [])
+
   const isWatchlistFavoritesEmpty = useSelector(selectWatchlistFavoritesIsEmpty)
   const [searchText, setSearchText] = useState('')
   const [tabIndex, setTabIndex] = useState(isWatchlistFavoritesEmpty ? 1 : 0)

@@ -1,7 +1,8 @@
-import React, { FC } from 'react'
+import React, { FC, useEffect } from 'react'
 import { View, Dimensions } from 'react-native'
 import AvaListItem from 'components/AvaListItem'
 import AvaText from 'components/AvaText'
+import { DdRum } from '@datadog/mobile-react-native'
 import MovementIndicator from 'components/MovementIndicator'
 import { truncateAddress } from 'utils/Utils'
 import { Transaction } from 'store/transaction'
@@ -17,6 +18,14 @@ type Props = {
 }
 
 const ActivityListItem: FC<Props> = ({ tx, onPress }) => {
+  useEffect(() => {
+    DdRum.startView('ActivityListItem', 'ActivityListItem', {}, Date.now())
+
+    return () => {
+      DdRum.stopView('ActivityListItem', {}, Date.now())
+    }
+  }, [])
+
   const { theme } = useApplicationContext()
   const title = tx.isContractCall ? 'Contract Call' : tx.token?.name ?? ''
 

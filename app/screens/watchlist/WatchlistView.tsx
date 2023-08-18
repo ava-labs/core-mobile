@@ -1,4 +1,5 @@
-import React, { Dispatch, useMemo, useState } from 'react'
+import React, { Dispatch, useEffect, useMemo, useState } from 'react'
+import { DdRum } from '@datadog/mobile-react-native'
 import { StyleSheet, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import Dropdown from 'components/Dropdown'
@@ -58,6 +59,14 @@ const renderPriceFilterSelection = (selectedItem: WatchlistFilter) => (
 )
 
 const WatchlistView: React.FC<Props> = ({ searchText }) => {
+  useEffect(() => {
+    DdRum.startView('WatchlistView', 'WatchlistView', {}, Date.now())
+
+    return () => {
+      DdRum.stopView('WatchlistView', {}, Date.now())
+    }
+  }, [])
+
   const tokens = useFocusedSelector(selectWatchlistTokens)
   const prices = useFocusedSelector(selectWatchlistPrices)
   const charts = useFocusedSelector(selectWatchlistCharts)

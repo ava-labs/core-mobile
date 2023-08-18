@@ -1,10 +1,11 @@
-import React, { Dispatch } from 'react'
+import React, { Dispatch, useEffect } from 'react'
 import {
   selectWatchlistCharts,
   selectWatchlistFavorites,
   selectWatchlistPrices,
   selectWatchlistTokens
 } from 'store/watchlist'
+import { DdRum } from '@datadog/mobile-react-native'
 import { useFocusedSelector } from 'utils/performance/useFocusedSelector'
 import { WatchListLoader } from 'screens/watchlist/components/WatchListLoader'
 import { WatchlistFilter } from 'screens/watchlist/types'
@@ -16,6 +17,19 @@ interface Props {
 }
 
 const FavoriteWatchlistView: React.FC<Props> = ({ onTabIndexChanged }) => {
+  useEffect(() => {
+    DdRum.startView(
+      'FavoriteWatchlistView',
+      'FavoriteWatchlistView',
+      {},
+      Date.now()
+    )
+
+    return () => {
+      DdRum.stopView('FavoriteWatchlistView', {}, Date.now())
+    }
+  }, [])
+
   const favorites = useFocusedSelector(selectWatchlistFavorites)
   const tokens = useFocusedSelector(selectWatchlistTokens)
   const prices = useFocusedSelector(selectWatchlistPrices)

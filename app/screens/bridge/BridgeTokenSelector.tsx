@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { ListRenderItemInfo, View } from 'react-native'
 import Loader from 'components/Loader'
 import { Space } from 'components/Space'
@@ -11,6 +11,7 @@ import SearchBar from 'components/SearchBar'
 
 import { BottomSheetFlatList } from '@gorhom/bottom-sheet'
 import { AssetBalance } from 'screens/bridge/utils/types'
+import { DdRum } from '@datadog/mobile-react-native'
 import { usePostCapture } from 'hooks/usePosthogCapture'
 
 const DEFAULT_HORIZONTAL_MARGIN = 16
@@ -33,6 +34,19 @@ function BridgeTokenSelector({
   bridgeTokenList,
   horizontalMargin = DEFAULT_HORIZONTAL_MARGIN
 }: TokenSelectorProps) {
+  useEffect(() => {
+    DdRum.startView(
+      'BridgeTokenSelectorScreen',
+      'BridgeTokenSelectorScreen',
+      {},
+      Date.now()
+    )
+
+    return () => {
+      DdRum.stopView('BridgeTokenSelectorScreen', {}, Date.now())
+    }
+  }, [])
+
   const [searchText, setSearchText] = useState('')
   const tokenInfoData = useTokenInfoContext()
   const { capture } = usePostCapture()

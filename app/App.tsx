@@ -6,6 +6,8 @@ import {
   SafeAreaView,
   UIManager
 } from 'react-native'
+import { DatadogProvider, DdSdkReactNative } from '@datadog/mobile-react-native'
+import DataDogConfig from 'utils/DataDogConfig'
 import RootScreenStack from 'navigation/RootScreenStack'
 import { NavigationContainer } from '@react-navigation/native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
@@ -13,6 +15,10 @@ import useDevDebugging from 'utils/debugging/DevDebugging'
 import 'utils/debugging/wdyr'
 import { navigationRef } from 'utils/Navigation'
 import SentryService from 'services/sentry/SentryService'
+
+const config = DataDogConfig
+
+DdSdkReactNative.initialize(config)
 
 LogBox.ignoreLogs([
   'Require cycle:',
@@ -38,20 +44,22 @@ export default function App() {
   const [backgroundStyle] = useState(context.appBackgroundStyle)
 
   return (
-    <SafeAreaView style={backgroundStyle}>
-      <KeyboardAvoidingView
-        enabled={context.keyboardAvoidingViewEnabled}
-        style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-        <NavigationContainer
-          theme={context.navContainerTheme}
-          ref={ref => {
-            context.appNavHook.navigation.current = ref
-            navigationRef.current = ref
-          }}>
-          <RootScreenStack />
-        </NavigationContainer>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+    <DatadogProvider configuration={config}>
+      <SafeAreaView style={backgroundStyle}>
+        <KeyboardAvoidingView
+          enabled={context.keyboardAvoidingViewEnabled}
+          style={{ flex: 1 }}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+          <NavigationContainer
+            theme={context.navContainerTheme}
+            ref={ref => {
+              context.appNavHook.navigation.current = ref
+              navigationRef.current = ref
+            }}>
+            <RootScreenStack />
+          </NavigationContainer>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+    </DatadogProvider>
   )
 }
