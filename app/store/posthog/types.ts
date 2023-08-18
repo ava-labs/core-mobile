@@ -39,3 +39,17 @@ export interface JsonMap {
   [key: string]: JsonValue
   [index: number]: JsonValue
 }
+
+export type ProcessedFeatureFlags = {
+  swapBlocked: boolean
+  bridgeBlocked: boolean
+  bridgeBtcBlocked: boolean
+  bridgeEthBlocked: boolean
+  earnBlocked: boolean
+  sendBlocked: boolean
+  sendNftBlockediOS: boolean
+  sendNftBlockedAndroid: boolean
+  sentrySampleRate: number
+  coinbasePayBlocked: boolean
+  useCoinGeckoPro: boolean
+}

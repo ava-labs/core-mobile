@@ -20,6 +20,7 @@ import {
   ChannelId,
   notificationChannels
 } from 'services/notifications/channels'
+import { selectIsEarnBlocked } from 'store/posthog'
 
 /**
  * Conceptual description of notification handling works can be found here
@@ -32,6 +33,7 @@ const Notifications = () => {
     new Map<ChannelId, boolean>()
   )
   const appState = useSelector(selectAppState)
+  const isEarnBlocked = useSelector(selectIsEarnBlocked)
 
   useEffect(() => {
     if (appState === 'active') {
@@ -57,7 +59,7 @@ const Notifications = () => {
   return (
     <View style={{ marginTop: 20 }}>
       {showAllowPushNotificationsCard && <AllowPushNotificationsCard />}
-      {renderNotificationToggles()}
+      {!isEarnBlocked && renderNotificationToggles()}
     </View>
   )
 }
