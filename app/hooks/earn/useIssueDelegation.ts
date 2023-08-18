@@ -14,7 +14,7 @@ import { assertNotUndefined } from 'utils/assertions'
 import { useCChainBalance } from './useCChainBalance'
 
 export const useIssueDelegation = (
-  onSuccess: () => void,
+  onSuccess: (txId: string) => void,
   onError: (error: Error) => void,
   onFundsStuck: (error: Error) => void
 ) => {
@@ -76,7 +76,7 @@ export const useIssueDelegation = (
         startDate: data.startDate
       })
     },
-    onSuccess: () => {
+    onSuccess: txId => {
       refetchQueries({
         isDeveloperMode,
         queryClient,
@@ -85,7 +85,7 @@ export const useIssueDelegation = (
         selectedCurrency
       })
       // handle UI success state
-      onSuccess()
+      onSuccess(txId)
     },
     onError: error => {
       Logger.error('delegation failed', error)

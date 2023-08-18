@@ -7,6 +7,8 @@ import { Avax } from 'types/Avax'
 import * as Navigation from 'utils/Navigation'
 import AppNavigation from 'navigation/AppNavigation'
 import Logger from 'utils/Logger'
+import { isOnGoing } from 'utils/earn/status'
+import EarnService from './EarnService'
 
 // the max num of times we should check transaction status
 // 7 means ~ 2 minutes
@@ -297,4 +299,41 @@ export const navigateToClaimRewards = async () => {
       }
     })
   }, 1000)
+}
+
+export const getTransformedTransactions = async (
+  addresses: string[],
+  isTestnet: boolean
+) => {
+  try {
+    const stakes = await EarnService.getAllStakes({
+      isTestnet,
+      addresses
+    })
+
+    const now = new Date()
+    const activeStakes =
+      stakes?.filter(transaction => isOnGoing(transaction, now)) ?? []
+
+    const transformedTransactions = activeStakes.map(transaction => {
+      const pAddr = transaction.emittedUtxos.find(utxo => utxo.staked === true)
+        ?.addresses[0]
+      const matchedPAddress = addresses
+        .map((addr, index) => {
+          return { addr, index }
+        })
+        .find(mapped => {
+          return mapped.addr === `P-${pAddr}`
+        })
+      return {
+        ...transaction,
+        index: matchedPAddress?.index ?? 0,
+        isDeveloperMode: isTestnet
+      }
+    })
+    return transformedTransactions
+  } catch (error) {
+    Logger.error('getTransformedTransactions failed: ', error)
+    throw error
+  }
 }
