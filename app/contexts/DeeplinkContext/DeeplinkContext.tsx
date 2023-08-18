@@ -15,6 +15,8 @@ import {
   toggleDeveloperMode
 } from 'store/settings/advanced'
 import { setActiveAccountIndex } from 'store/account'
+import Logger from 'utils/Logger'
+import { selectFeatureFlags, selectIsNotificationBlocked } from 'store/posthog'
 import { handleDeeplink } from './utils/handleDeeplink'
 import {
   DeepLink,
@@ -37,7 +39,8 @@ export const DeeplinkContextProvider = ({
   const walletState = useSelector(selectWalletState)
   const isWalletActive = walletState === WalletState.ACTIVE
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
-
+  const isNotificationBlocked = useSelector(selectIsNotificationBlocked)
+  const processedFeatureFlags = useSelector(selectFeatureFlags)
   const [pendingDeepLink, setPendingDeepLink] = useState<DeepLink>()
 
   const expireDeepLink = useCallback(() => {
@@ -50,7 +53,11 @@ export const DeeplinkContextProvider = ({
         isDevMode !== isDeveloperMode && dispatch(toggleDeveloperMode())
         dispatch(setActiveAccountIndex(accountIndex))
       }
-      setPendingDeepLink({ url, origin, callback: runCallback })
+      setPendingDeepLink({
+        url,
+        origin,
+        callback: runCallback
+      })
     },
     [dispatch, isDeveloperMode]
   )
@@ -59,19 +66,26 @@ export const DeeplinkContextProvider = ({
    * Start listeners that will receive the deep link url
    *****************************************************************************/
   useEffect(() => {
-    NotificationsService.getInitialNotification().then(async event => {
-      if (event?.notification?.data?.url)
-        handleNotificationCallback({
-          url: String(event.notification.data.url),
-          accountIndex: Number(event.notification.data.accountIndex),
-          origin: DeepLinkOrigin.ORIGIN_NOTIFICATION,
-          isDevMode: isDeveloperMode
-        })
-    })
+    if (isNotificationBlocked) return
+    NotificationsService.getInitialNotification()
+      .then(async event => {
+        if (event?.notification?.data?.url)
+          handleNotificationCallback({
+            url: String(event.notification.data.url),
+            accountIndex: Number(event.notification.data.accountIndex),
+            origin: DeepLinkOrigin.ORIGIN_NOTIFICATION,
+            isDevMode: isDeveloperMode
+          })
+      })
+      .catch(e => {
+        Logger.error('Error getting initial notification:', e)
+      })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [isNotificationBlocked])
 
   useEffect(() => {
+    if (isNotificationBlocked) return
+
     const unsubscribeForegroundEvent = NotificationsService.onForegroundEvent(
       async ({ type, detail }) => {
         await NotificationsService.handleNotificationEvent({
@@ -93,12 +107,15 @@ export const DeeplinkContextProvider = ({
     return () => {
       unsubscribeForegroundEvent()
     }
-  }, [handleNotificationCallback])
+  }, [handleNotificationCallback, isNotificationBlocked])
 
   useEffect(() => {
     // triggered if app is running
     const listener = Linking.addEventListener('url', ({ url }) => {
-      setPendingDeepLink({ url, origin: DeepLinkOrigin.ORIGIN_DEEPLINK })
+      setPendingDeepLink({
+        url,
+        origin: DeepLinkOrigin.ORIGIN_DEEPLINK
+      })
     })
 
     async function checkInitialUrl() {
@@ -106,7 +123,10 @@ export const DeeplinkContextProvider = ({
       const url = await Linking.getInitialURL()
 
       if (url) {
-        setPendingDeepLink({ url, origin: DeepLinkOrigin.ORIGIN_DEEPLINK })
+        setPendingDeepLink({
+          url,
+          origin: DeepLinkOrigin.ORIGIN_DEEPLINK
+        })
       }
     }
 
@@ -123,12 +143,18 @@ export const DeeplinkContextProvider = ({
   useEffect(() => {
     if (pendingDeepLink && isWalletActive) {
       setTimeout(() => {
-        handleDeeplink(pendingDeepLink, dispatch)
+        handleDeeplink(pendingDeepLink, dispatch, processedFeatureFlags)
         // once we used the url, we can expire it
         expireDeepLink()
       }, 1000)
     }
-  }, [isWalletActive, pendingDeepLink, expireDeepLink, dispatch])
+  }, [
+    isWalletActive,
+    pendingDeepLink,
+    expireDeepLink,
+    dispatch,
+    processedFeatureFlags
+  ])
 
   return (
     <DeeplinkContext.Provider
