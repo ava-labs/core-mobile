@@ -1,4 +1,4 @@
-import { sanitizeFeatureFlags } from './utils'
+import { sanitizeFeatureFlags } from './sanitizeFeatureFlags'
 
 describe('app/contexts/posthogUtils.ts', () => {
   describe('sanitizeFeatureFlags', () => {

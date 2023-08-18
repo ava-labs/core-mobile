@@ -1,13 +1,8 @@
 import { createAction, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from 'store'
 import { v4 as uuidv4 } from 'uuid'
-import {
-  FeatureFlags,
-  FeatureGates,
-  FeatureVars,
-  initialState,
-  JsonMap
-} from './types'
+import { FeatureGates, FeatureFlags, FeatureVars } from 'services/posthog/types'
+import { initialState, JsonMap } from './types'
 
 const reducerName = 'posthog'
 

@@ -1,7 +1,8 @@
 import Config from 'react-native-config'
-import { JsonMap } from 'store/posthog'
+import { JsonMap } from 'store/posthog/types'
 import Logger from 'utils/Logger'
 import { getPosthogDeviceInfo } from './utils'
+import { sanitizeFeatureFlags } from './sanitizeFeatureFlags'
 
 const PostHogCaptureUrl = `${Config.POSTHOG_URL}/capture/`
 
@@ -57,16 +58,20 @@ class PostHogService {
 
   async fetchFeatureFlags() {
     try {
+      Logger.info('fetching feature flags')
       const response = await fetch(PostHogDecideUrl, PostHogDecideFetchOptions)
 
       if (!response.ok) {
         throw new Error('Something went wrong')
       }
 
-      return response.json()
+      const responseJson = await response.json()
+      const featureFlags = sanitizeFeatureFlags(responseJson)
+      Logger.info('feature flags', featureFlags)
+
+      return featureFlags
     } catch (e) {
       Logger.error('failed to fetch feature flags', e)
-      return {}
     }
   }
 }

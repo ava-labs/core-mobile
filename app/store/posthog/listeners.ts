@@ -13,7 +13,6 @@ import PostHogService from 'services/posthog/PostHogService'
 import { AppListenerEffectAPI } from 'store'
 import { Action } from '@reduxjs/toolkit'
 import { JsonMap } from './types'
-import { sanitizeFeatureFlags } from './utils'
 
 const FEATURE_FLAGS_FETCH_INTERVAL = 10000 // 1 minute
 
@@ -39,11 +38,8 @@ const fetchFeatureFlagsPeriodically = async (
   const { dispatch } = listenerApi
 
   async function fetchFeatureFlags() {
-    Logger.info('fetching feature flags')
     const featureFlags = await PostHogService.fetchFeatureFlags()
-    const sanitizeFlags = sanitizeFeatureFlags(featureFlags)
-    sanitizeFlags && dispatch(setFeatureFlags(sanitizeFlags))
-    Logger.info('feature flags', sanitizeFlags)
+    featureFlags && dispatch(setFeatureFlags(featureFlags))
   }
 
   // eslint-disable-next-line no-constant-condition
