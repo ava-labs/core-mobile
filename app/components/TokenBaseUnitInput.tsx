@@ -5,7 +5,7 @@ import { AcceptedTypes, TokenBaseUnit } from 'types/TokenBaseUnit'
 interface TokenBaseUnitProps<T extends TokenBaseUnit<T>>
   extends Omit<InputTextProps, 'text'> {
   value?: T
-  denomination: number
+  maxDecimals: number
   isValueLoading?: boolean
   hideErrorMessage?: boolean
   testID?: string
@@ -25,7 +25,7 @@ interface TokenBaseUnitProps<T extends TokenBaseUnit<T>>
  */
 export function TokenBaseUnitInput<T extends TokenBaseUnit<T>>({
   value,
-  denomination,
+  maxDecimals,
   baseUnitConstructor,
   onChange,
   onMax,
@@ -35,12 +35,13 @@ export function TokenBaseUnitInput<T extends TokenBaseUnit<T>>({
 }: TokenBaseUnitProps<T>) {
   const sanitizedValue = value && value.isZero() ? undefined : value
   const [baseValueString, setBaseValueString] = useState('')
+  const [maxLength, setMaxLength] = useState<number | undefined>(undefined)
 
   useEffect(updateValueStrFx, [baseValueString, sanitizedValue])
 
   const onValueChanged = (rawValue: string) => {
     if (!rawValue) {
-      onChange?.(new baseUnitConstructor(0, denomination))
+      onChange?.(new baseUnitConstructor(0, maxDecimals))
       setBaseValueString('')
       return
     }
@@ -48,14 +49,19 @@ export function TokenBaseUnitInput<T extends TokenBaseUnit<T>>({
 
     /**
      * Split the input and make sure the right side never exceeds
-     * the denomination length
+     * the maxDecimals length
      */
-    const [, endValue] = changedValue.includes('.')
+    const [frontValue, endValue] = changedValue.includes('.')
       ? changedValue.split('.')
       : [changedValue, null]
-    if (!endValue || endValue.length <= denomination) {
+    if (!endValue || endValue.length <= maxDecimals) {
+      //setting maxLength to TextInput prevents flickering, see https://reactnative.dev/docs/textinput#value
+      setMaxLength(frontValue.length + '.'.length + maxDecimals)
+
       setBaseValueString(changedValue)
-      onChange?.(new baseUnitConstructor(changedValue, denomination))
+      onChange?.(new baseUnitConstructor(changedValue, maxDecimals))
+    } else {
+      setMaxLength(undefined)
     }
   }
 
@@ -74,6 +80,7 @@ export function TokenBaseUnitInput<T extends TokenBaseUnit<T>>({
     <InputText
       {..._props}
       mode={'amount'}
+      maxLength={maxLength}
       keyboardType="numeric"
       onMax={onMax}
       onChangeText={onValueChanged}

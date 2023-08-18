@@ -28,6 +28,7 @@ export type InputTextProps = {
   editable?: boolean
   multiline?: boolean
   minHeight?: number
+  maxLength?: number | undefined
   onSubmit?: () => void
   onMax?: () => void
   onConfirm?: (text: string) => void
@@ -87,6 +88,7 @@ const InputText = forwardRef<TextInput, InputTextProps>(
       onMax,
       width,
       minHeight,
+      maxLength,
       placeholder,
       loading,
       multiline,
@@ -190,6 +192,7 @@ const InputText = forwardRef<TextInput, InputTextProps>(
             }
           ]}>
           <TextInput
+            maxLength={maxLength}
             testID="input_text"
             keyboardAppearance={Appearance.getColorScheme() || 'default'}
             ref={ref}
