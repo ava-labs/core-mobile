@@ -21,3 +21,16 @@ export default function limitInput<T extends TokenBaseUnit<T>>(
   }
   return input
 }
+
+export function getMaxDecimals<T extends TokenBaseUnit<T>>(
+  input: T | undefined
+): number | undefined {
+  if (!input) {
+    return undefined
+  }
+  const stringAmount = input.toString().replaceAll(',', '')
+  const [whole] = stringAmount.split('.')
+  const maxDecimals = MAX_DIGITS - (whole?.length ?? 0)
+  if (maxDecimals < 0) return 0
+  return maxDecimals
+}
