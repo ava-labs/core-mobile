@@ -287,8 +287,6 @@ export const Confirmation = () => {
 
   if (!validator) return null
 
-  // TODO: on error, show error message as toast
-  // on success, navigate to earn dashboard
   return (
     <ConfirmScreen
       isConfirming={issueDelegationMutation.isPending}
