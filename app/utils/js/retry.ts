@@ -8,6 +8,7 @@ type RetryParams<T> = {
   isSuccess: (result: T) => boolean
   maxRetries?: number
   backoffPolicy?: RetryBackoffPolicyInterface
+  timeout?: number
 }
 
 /*
@@ -34,7 +35,8 @@ export const retry = async <T>({
   operation,
   isSuccess,
   maxRetries = DEFAULT_MAX_RETRIES,
-  backoffPolicy = RetryBackoffPolicy.exponential()
+  backoffPolicy = RetryBackoffPolicy.exponential(),
+  timeout = 5000
 }: RetryParams<T>): Promise<T> => {
   let backoffPeriodSeconds = 0
   let retries = 0
@@ -47,8 +49,35 @@ export const retry = async <T>({
       await delay(backoffPeriodSeconds * 1000)
     }
 
+    const runningTimeout = (function () {
+      let timer: NodeJS.Timer | null = null
+      const promise = new Promise(function (resolve, reject) {
+        timer = setTimeout(() => {
+          if (timer == null) {
+            return
+          }
+          timer = null
+
+          reject('Retry: Timeout')
+        }, timeout)
+      })
+
+      const cancel = function () {
+        if (timer == null) {
+          return
+        }
+        clearTimeout(timer)
+        timer = null
+      }
+
+      return { promise, cancel }
+    })()
+
     try {
-      const result = await operation(retries)
+      const result = (await Promise.race([
+        runningTimeout.promise,
+        operation(retries)
+      ])) as T
 
       if (isSuccess(result)) {
         return result
@@ -57,6 +86,8 @@ export const retry = async <T>({
       // when the operation throws an error, we still retry
       lastError = err
       Logger.error('operation failed', err)
+    } finally {
+      runningTimeout.cancel()
     }
 
     backoffPeriodSeconds = backoffPolicy(retries)
