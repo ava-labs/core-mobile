@@ -77,7 +77,7 @@ class NotificationsService {
     }
   }
 
-  private async requestPermission() {
+  async requestPermission() {
     const settings = await notifee.requestPermission()
     return settings.authorizationStatus === AuthorizationStatus.AUTHORIZED ||
       settings.authorizationStatus === AuthorizationStatus.PROVISIONAL
