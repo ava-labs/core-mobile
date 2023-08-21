@@ -8,9 +8,19 @@ import { setActive } from 'store/network'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { useDispatch, useSelector } from 'react-redux'
 import { ChainId } from '@avalabs/chains-sdk'
+import AppNavigation from 'navigation/AppNavigation'
+import { EarnScreenProps } from 'navigation/types'
+import { useNavigation } from '@react-navigation/native'
+import { useIsEarnDashboardEnabled } from 'hooks/earn/useIsEarnDashboardEnabled'
+
+type ScreenProps = EarnScreenProps<
+  typeof AppNavigation.Earn.WrongNetwork
+>['navigation']
 
 export const WrongNetwork = () => {
   const dispatch = useDispatch()
+  const { navigate, replace } = useNavigation<ScreenProps>()
+  const { isEarnDashboardEnabled } = useIsEarnDashboardEnabled()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const avalancheChainId = isDeveloperMode
     ? ChainId.AVALANCHE_TESTNET_ID
@@ -18,6 +28,18 @@ export const WrongNetwork = () => {
 
   const onSwitchNetwork = () => {
     dispatch(setActive(avalancheChainId))
+
+    if (isEarnDashboardEnabled) {
+      // @ts-ignore
+      navigate(AppNavigation.Tabs.Stake)
+      return
+    }
+    replace(AppNavigation.Wallet.Earn, {
+      screen: AppNavigation.Earn.StakeSetup,
+      params: {
+        screen: AppNavigation.StakeSetup.GetStarted
+      }
+    })
   }
 
   return (
