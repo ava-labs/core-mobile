@@ -5,7 +5,8 @@ import notifee, {
   TriggerType,
   Event,
   EventType,
-  EventDetail
+  EventDetail,
+  AndroidChannel
 } from '@notifee/react-native'
 import {
   DeepLinkOrigin,
@@ -274,6 +275,10 @@ class NotificationsService {
 
   cancelAllNotifications = async () => {
     await notifee.cancelAllNotifications()
+  }
+
+  createChannel = async (channel: AndroidChannel): Promise<string> => {
+    return notifee.createChannel(channel)
   }
 }
 
