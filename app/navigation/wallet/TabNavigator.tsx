@@ -5,13 +5,14 @@ import WatchlistSVG from 'components/svg/WatchlistSVG'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import PortfolioStackScreen from 'navigation/wallet/PortfolioScreenStack'
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import WatchlistTab from 'screens/watchlist/WatchlistTabView'
 import TopNavigationHeader from 'navigation/TopNavigationHeader'
 import { getCommonBottomTabOptions, normalTabButton } from 'navigation/NavUtils'
 import EarnSVG from 'components/svg/EarnSVG'
 import { usePosthogContext } from 'contexts/PosthogContext'
-import { useStakes } from 'hooks/earn/useStakes'
+import { useIsAvalancheNetwork } from 'hooks/useIsAvalancheNetwork'
+import { useIsEarnDashboardEnabled } from 'hooks/earn/useIsEarnDashboardEnabled'
 import EarnScreenStack from './EarnScreenStack/EarnScreenStack'
 
 export type TabNavigatorParamList = {
@@ -23,31 +24,14 @@ export type TabNavigatorParamList = {
 const Tab = createBottomTabNavigator<TabNavigatorParamList>()
 const TAB_ICON_SIZE = 28
 
-// a hook to determine whether the Earn Dashboard should be displayed
-// when there are stakes (either active or completed), we display the Dashboard
-// when there are no stakes, we direct users to Stake Setup flow
-const useIsEarnDashboardEnabled = () => {
-  const { data: stakes } = useStakes()
-  const [isEarnDashboardEnabled, setIsEarnDashboardEnabled] = useState(true)
-
-  useEffect(() => {
-    if (!stakes) return
-
-    const hasStakes = stakes.length > 0
-    setIsEarnDashboardEnabled(hasStakes ? true : false)
-  }, [stakes])
-
-  return { isEarnDashboardEnabled }
-}
-
 const TabNavigator = () => {
   const theme = useApplicationContext().theme
   const { earnBlocked } = usePosthogContext()
   const { isEarnDashboardEnabled } = useIsEarnDashboardEnabled()
+  const isAvalancheNetork = useIsAvalancheNetwork()
 
   const renderEarnTab = () => {
     if (earnBlocked) return null
-
     return (
       <Tab.Screen
         name={AppNavigation.Tabs.Stake}
@@ -64,6 +48,14 @@ const TabNavigator = () => {
         component={EarnScreenStack}
         listeners={({ navigation }) => ({
           tabPress: e => {
+            if (!isAvalancheNetork) {
+              e.preventDefault()
+              navigation.navigate(AppNavigation.Wallet.Earn, {
+                screen: AppNavigation.Earn.WrongNetwork
+              })
+              return
+            }
+
             if (!isEarnDashboardEnabled) {
               e.preventDefault()
               navigation.navigate(AppNavigation.Wallet.Earn, {
