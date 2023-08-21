@@ -241,8 +241,7 @@ export const Confirmation = () => {
       return (
         <View
           style={{
-            flexDirection: 'column',
-            maxHeight: 20
+            flexDirection: 'column'
           }}>
           <AvaText.Heading2
             textStyle={{ color: theme.colorBgGreen, marginTop: -19 }}>
@@ -302,16 +301,14 @@ export const Confirmation = () => {
       <Space y={16} />
       <Separator />
       <View style={styles.verticalPadding}>
-        <Row>
+        <Row style={{ justifyContent: 'space-between' }}>
           <Popable
             content={renderEstimatedRewardPopoverInfoText()}
-            position="top"
-            style={{ minWidth: 275, marginLeft: 65 }}
+            position="right"
+            style={{ minWidth: 180 }}
             backgroundColor={theme.neutral100}>
             <PopableLabel label="Estimated Reward" />
           </Popable>
-        </Row>
-        <Row style={{ justifyContent: 'flex-end' }}>
           {renderEstimatedReward()}
         </Row>
       </View>
