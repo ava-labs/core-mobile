@@ -2,6 +2,7 @@
 import stakeScreenLoc from '../../locators/Stake/stakeScreen.loc'
 import Assert from '../../helpers/assertions'
 import Actions from '../../helpers/actions'
+import { Platform } from '../../helpers/constants'
 
 class StakePage {
   get avaLogo() {
@@ -72,9 +73,11 @@ class StakePage {
     await Assert.isVisible(this.stakeTitle)
     await Assert.isVisible(this.notEnoughAvaxTitle)
     await Assert.isVisible(this.notEnoughAvaxDescription)
-    await Assert.isVisible(this.swapAvaxButton)
     await Assert.isVisible(this.recieveAvaxButton)
-    await Assert.isVisible(this.buyAvaxButton)
+    if (Actions.platform() === Platform.Android) {
+      await Assert.isVisible(this.swapAvaxButton)
+      await Assert.isVisible(this.buyAvaxButton)
+    }
   }
 
   async verifySwitchNetworkScreenItems() {
