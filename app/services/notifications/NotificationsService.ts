@@ -57,7 +57,7 @@ class NotificationsService {
    * Tries to pull up system prompt for allowing notifications, if that doesn't
    * work opens system settings
    */
-  async getAllPermissions() {
+  async getAllPermissions(shouldOpenSettings = true) {
     const promises = [] as Promise<string>[]
     notificationChannels.forEach(channel => {
       promises.push(this.createChannel(channel))
@@ -66,8 +66,9 @@ class NotificationsService {
     const permission = await this.requestPermission()
     const blockedNotifications = await this.getBlockedNotifications()
     if (permission !== 'authorized' || blockedNotifications.size !== 0) {
-      this.openSystemSettings()
+      shouldOpenSettings && this.openSystemSettings()
     }
+    return { permission, blockedNotifications }
   }
 
   openSystemSettings() {
