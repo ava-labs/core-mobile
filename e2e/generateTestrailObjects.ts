@@ -418,9 +418,29 @@ async function getTestCasesBySection(section_id: number) {
     // console.log(tCtitle)
     tcArray.push({ testCaseTitle, sectionID })
   })
-  // console.log(tcArray)
   return tcArray
 }
+
+//getTestCasesBySection(518)
+
+export async function deleteEmptyTestSections() {
+  const sections = await api.getSections(projectId)
+  sections.forEach(async function (section: { name: any; id: any }) {
+    const sectionName = section.name
+    const sectionID = section.id
+    try {
+      const cases = await getTestCasesBySection(sectionID)
+      if (cases.length === 0) {
+        console.log(sectionName + ' is empty and will be deleted!!!')
+        await api.deleteSection(sectionID)
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  })
+}
+// only run this if a mistake was made and emtpy sections were created
+// deleteEmptyTestSections()
 
 export async function getTestRunCases(testRunId: any) {
   const cases = await api.getTests(testRunId)
