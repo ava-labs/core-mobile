@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo } from 'react'
-import { Linking, StyleSheet, View } from 'react-native'
+import React, { useCallback, useEffect, useMemo } from 'react'
+import { BackHandler, Linking, StyleSheet, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Space } from 'components/Space'
 import AvaText from 'components/AvaText'
@@ -65,7 +65,7 @@ export const Confirmation = () => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const isFocused = useIsFocused()
   const { navigate, getParent } = useNavigation<ScreenProps['navigation']>()
-  const { nodeId, stakingAmount, stakingEndTime } =
+  const { nodeId, stakingAmount, stakingEndTime, onBack } =
     useRoute<ScreenProps['route']>().params
   const previousRoute = useNavigationState(
     state => state.routes[state.index - 1]
@@ -104,6 +104,19 @@ export const Confirmation = () => {
     timeToShowNetworkFeeError
   )
   const activeAccount = useSelector(selectActiveAccount)
+
+  const handleOnBack = useCallback(() => {
+    onBack?.()
+    return true
+  }, [onBack])
+
+  useEffect(() => {
+    const backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      handleOnBack
+    )
+    return () => backHandler.remove()
+  }, [onBack, handleOnBack])
 
   useEffect(() => {
     if (showNetworkFeeError) {
