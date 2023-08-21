@@ -17,6 +17,8 @@ import {
 import { setActiveAccountIndex } from 'store/account'
 import Logger from 'utils/Logger'
 import { selectFeatureFlags, selectIsNotificationBlocked } from 'store/posthog'
+import { setActive } from 'store/network'
+import { ChainId } from '@avalabs/chains-sdk'
 import { handleDeeplink } from './utils/handleDeeplink'
 import {
   DeepLink,
@@ -50,7 +52,12 @@ export const DeeplinkContextProvider = ({
   const handleNotificationCallback = useCallback(
     ({ url, accountIndex, origin, isDevMode }: NotificationCallbackProps) => {
       const runCallback = () => {
+        const avalancheChainId = isDevMode
+          ? ChainId.AVALANCHE_TESTNET_ID
+          : ChainId.AVALANCHE_MAINNET_ID
+
         isDevMode !== isDeveloperMode && dispatch(toggleDeveloperMode())
+        dispatch(setActive(avalancheChainId))
         dispatch(setActiveAccountIndex(accountIndex))
       }
       setPendingDeepLink({

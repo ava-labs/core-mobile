@@ -11,7 +11,7 @@ import { EarnNotificationsModal } from 'screens/earn/EarnNotificationsModal'
 import * as Navigation from 'utils/Navigation'
 import { noop } from '@avalabs/utils-sdk'
 import { FundsStuckModal } from 'screens/earn/FundsStuckModal'
-import { useIsAvalanceNetwork } from 'hooks/useIsAvalancheNetwork'
+import { useIsAvalancheNetwork } from 'hooks/useIsAvalancheNetwork'
 import { WrongNetwork } from 'screens/earn/WrongNetwork'
 import StakeSetupScreenStack, {
   StakeSetupStackParamList
@@ -37,7 +37,7 @@ export type EarnStackParamList = {
 const EarnStack = createStackNavigator<EarnStackParamList>()
 
 function EarnScreenStack() {
-  const isAvalancheNetork = useIsAvalanceNetwork()
+  const isAvalancheNetork = useIsAvalancheNetwork()
 
   const renderEarnStack = () => {
     if (!isAvalancheNetork) {

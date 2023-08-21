@@ -2,7 +2,7 @@ import { ChainId } from '@avalabs/chains-sdk'
 import { useSelector } from 'react-redux'
 import { selectActiveNetwork } from 'store/network'
 
-export const useIsAvalanceNetwork = () => {
+export const useIsAvalancheNetwork = () => {
   const network = useSelector(selectActiveNetwork)
 
   const isAvalancheNetork = [
