@@ -11,7 +11,6 @@ import CreatePIN from 'screens/onboarding/CreatePIN'
 import BiometricLogin from 'screens/onboarding/BiometricLogin'
 import HdWalletLogin from 'screens/login/HdWalletLogin'
 import { createStackNavigator } from '@react-navigation/stack'
-import BiometricsSDK from 'utils/BiometricsSDK'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { MainHeaderOptions } from 'navigation/NavUtils'
 import TermsNConditionsModal from 'components/TermsNConditionsModal'
@@ -88,7 +87,6 @@ const LoginWithMnemonicScreen = () => {
   const { navigate, goBack } = useNavigation<LoginNavigationProp>()
   const { capture } = usePostCapture()
   const dispatch = useDispatch()
-  const { deleteWallet } = useApplicationContext().appHook
 
   useBeforeRemoveListener(
     useCallback(() => {
@@ -100,14 +98,10 @@ const LoginWithMnemonicScreen = () => {
 
   const onEnterWallet = useCallback(
     m => {
-      deleteWallet()
-
-      BiometricsSDK.clearWalletKey().then(() => {
-        enterWithMnemonicContext.setMnemonic(m)
-        navigate(AppNavigation.LoginWithMnemonic.CreatePin)
-      })
+      enterWithMnemonicContext.setMnemonic(m)
+      navigate(AppNavigation.LoginWithMnemonic.CreatePin)
     },
-    [deleteWallet, enterWithMnemonicContext, navigate]
+    [enterWithMnemonicContext, navigate]
   )
 
   return <HdWalletLogin onEnterWallet={onEnterWallet} onBack={() => goBack()} />
