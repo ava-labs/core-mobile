@@ -1,5 +1,6 @@
+import { isAnyOf } from '@reduxjs/toolkit'
 import { AppStartListening } from 'store/middleware/listener'
-import { onLogOut, onRehydrationComplete } from 'store/app'
+import { onLogIn, onLogOut, onRehydrationComplete } from 'store/app'
 import {
   capture,
   regenerateUserId,
@@ -35,7 +36,7 @@ const fetchFeatureFlagsPeriodically = async (
   _: Action,
   listenerApi: AppListenerEffectAPI
 ) => {
-  const { dispatch } = listenerApi
+  const { condition, dispatch } = listenerApi
 
   async function fetchFeatureFlags() {
     const featureFlags = await PostHogService.fetchFeatureFlags()
@@ -46,7 +47,10 @@ const fetchFeatureFlagsPeriodically = async (
   while (true) {
     await listenerApi.pause(fetchFeatureFlags())
 
-    await listenerApi.delay(FEATURE_FLAGS_FETCH_INTERVAL)
+    await Promise.race([
+      condition(isAnyOf(onLogIn)),
+      listenerApi.delay(FEATURE_FLAGS_FETCH_INTERVAL)
+    ])
   }
 }
 
