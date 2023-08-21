@@ -60,7 +60,7 @@ class NotificationsService {
   async getAllPermissions() {
     const promises = [] as Promise<string>[]
     notificationChannels.forEach(channel => {
-      promises.push(notifee.createChannel(channel))
+      promises.push(this.createChannel(channel))
     })
     await Promise.allSettled(promises)
     const permission = await this.requestPermission()
@@ -160,6 +160,9 @@ class NotificationsService {
           const trigger = await this.getNotificationTriggerById(data.txHash)
           if (!trigger) {
             // create notification trigger
+            Logger.info(
+              `creating staking complete notification for tx: ${data.txHash}`
+            )
             await this.scheduleNotification({
               txHash: data.txHash,
               accountIndex: data.accountIndex,

@@ -11,7 +11,7 @@ import { handleMaybePromptEarnNotification } from './handleMaybePromptEarnNotifi
 import { handleNotificationCleanup } from './handleNotificationCleanup'
 import { handleTurnOnNotificationsFor } from './handleTurnOnNotificationsFor'
 import { handleTurnOffNotificationsFor } from './handleTurnOffNotificationsFor'
-import { handleScheduleStakingCompleteNotificationsPeriodically } from './handleScheduleStakingCompleteNotificationsPeriodically'
+import { scheduleNotificationsForActiveStakesPeriodically } from './scheduleNotificationsForActiveStakesPeriodically'
 
 export const addNotificationsListeners = (
   startListening: AppStartListening
@@ -53,6 +53,6 @@ export const addNotificationsListeners = (
 
   startListening({
     actionCreator: onAppUnlocked,
-    effect: handleScheduleStakingCompleteNotificationsPeriodically
+    effect: scheduleNotificationsForActiveStakesPeriodically
   })
 }
