@@ -67,7 +67,6 @@ describe('Change Network', () => {
   it('should remove BTC network from favorites', async () => {
     await PortfolioPage.tapNetworksDropdown()
     await PortfolioPage.tapManageNetworks()
-    await NetworksManagePage.tapNetworksTab()
     await NetworksManagePage.addBtcNetwork()
     await NetworksManagePage.tapHeaderBack()
     await PortfolioPage.tapNetworksDropdown()
