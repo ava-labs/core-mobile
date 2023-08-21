@@ -95,13 +95,6 @@ function EarnScreenStack() {
         component={FundsStuckModal}
       />
       <EarnStack.Screen
-        options={{
-          header: () =>
-            renderNavigationHeader({
-              showBackButton: true,
-              onBack: () => Navigation.goBack()
-            })
-        }}
         name={AppNavigation.Earn.WrongNetwork}
         component={WrongNetwork}
       />
