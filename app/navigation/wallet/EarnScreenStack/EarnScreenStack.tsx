@@ -95,6 +95,7 @@ function EarnScreenStack() {
         component={FundsStuckModal}
       />
       <EarnStack.Screen
+        options={{ presentation: 'transparentModal' }}
         name={AppNavigation.Earn.WrongNetwork}
         component={WrongNetwork}
       />
