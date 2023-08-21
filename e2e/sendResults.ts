@@ -212,7 +212,7 @@ async function generatePlatformResults(
           if (failScreenshot) {
             const failedPayload = {
               name: 'failed.png',
-              value: fs.createReadStream(failScreenshot)
+              value: await fs.createReadStream(failScreenshot)
             }
             // Attaches the screenshot to the corressponding case in the test run
             const attachmentID = await api.addAttachmentToResult(
