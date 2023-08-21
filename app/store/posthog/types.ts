@@ -14,7 +14,7 @@ const DefaultFeatureFlagConfig = {
   [FeatureGates.SEND_NFT_ANDROID]: true,
   [FeatureVars.SENTRY_SAMPLE_RATE]: '10', // 10% of events/errors
   [FeatureGates.BUY_COINBASE_PAY]: true,
-  [FeatureGates.USE_COINGECKO_PRO]: false
+  [FeatureGates.USE_COINGECKO_PRO]: true
 }
 
 export const initialState = {
