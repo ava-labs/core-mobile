@@ -34,6 +34,7 @@ import {
 } from '@avalabs/glacier-sdk'
 import { glacierSdk } from 'utils/network/glacier'
 import { Avax } from 'types/Avax'
+import { getInfoApi } from 'utils/network/info'
 import {
   getTransformedTransactions,
   maxGetAtomicUTXOsRetries,
@@ -338,6 +339,14 @@ class EarnService {
     } catch (error) {
       Logger.error('getTransformedStakesForAllAccounts failed: ', error)
     }
+  }
+
+  /**
+   * Get a description of peer connections.
+   * @param nodeIds
+   */
+  getPeers = (nodeIds: string[], isTestnet: boolean) => {
+    return getInfoApi(isTestnet).peers(nodeIds)
   }
 }
 
