@@ -21,7 +21,7 @@ export const EarnNotificationsModal = () => {
       await NotificationsService.getAllPermissions(false)
     if (
       permission === 'authorized' &&
-      blockedNotifications.get(ChannelId.STAKING_COMPLETE) === false
+      blockedNotifications.get(ChannelId.STAKING_COMPLETE) !== true
     ) {
       dispatch(
         turnOnNotificationsFor({ channelId: ChannelId.STAKING_COMPLETE })
