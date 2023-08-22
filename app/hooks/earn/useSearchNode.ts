@@ -28,7 +28,7 @@ export const useSearchNode = ({
   )
   const noValidatorsError = new Error(`no validators found.`)
 
-  if (validators && validators.length >= 0) {
+  if (validators && validators.length > 0) {
     const filteredValidators = getFilteredValidators({
       isDeveloperMode,
       validators,

@@ -1,4 +1,11 @@
-import { add, addYears, getUnixTime, isSameDay } from 'date-fns'
+import {
+  add,
+  addYears,
+  fromUnixTime,
+  getUnixTime,
+  isSameDay,
+  subDays
+} from 'date-fns'
 import { AdvancedSortFilter, NodeValidator, NodeValidators } from 'types/earn'
 import { random } from 'lodash'
 import { FujiParams, MainnetParams } from 'utils/NetworkParams'
@@ -159,7 +166,16 @@ export const getFilteredValidators = ({
   const stakingEndTimeUnix = getUnixTime(stakingEndTime) // timestamp in seconds
 
   const filtered = validators.filter(
-    ({ endTime, weight, uptime, delegationFee, delegatorWeight, nodeID }) => {
+    ({
+      endTime,
+      weight,
+      uptime,
+      delegationFee,
+      delegatorWeight,
+      nodeID,
+      connected,
+      startTime
+    }) => {
       const availableDelegationWeight = getAvailableDelegationWeight(
         isDeveloperMode,
         Avax.fromNanoAvax(weight),
@@ -181,7 +197,9 @@ export const getFilteredValidators = ({
         availableDelegationWeight.gt(stakingAmount) &&
         filterByMinimumStakingTime() &&
         Number(uptime) >= minUpTime &&
-        (maxFee ? Number(delegationFee) <= maxFee : true)
+        (maxFee ? Number(delegationFee) <= maxFee : true) &&
+        connected === true &&
+        fromUnixTime(Number(startTime)) <= subDays(new Date(), 7)
       )
     }
   )
