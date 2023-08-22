@@ -35,6 +35,7 @@ import {
 import { glacierSdk } from 'utils/network/glacier'
 import { Avax } from 'types/Avax'
 import { getInfoApi } from 'utils/network/info'
+import { Peer } from '@avalabs/avalanchejs-v2/dist/src/info/model'
 import {
   getTransformedTransactions,
   maxGetAtomicUTXOsRetries,
@@ -345,7 +346,11 @@ class EarnService {
    * Get a description of peer connections.
    * @param nodeIds
    */
-  getPeers = (nodeIds: string[], isTestnet: boolean) => {
+  getPeers = (
+    nodeIds: string[],
+    isTestnet: boolean
+  ): Promise<{ numPeers: string; peers: Peer[] }> => {
+    // @ts-ignore
     return getInfoApi(isTestnet).peers(nodeIds)
   }
 }

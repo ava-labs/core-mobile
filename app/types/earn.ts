@@ -3,6 +3,7 @@ import { GetCurrentValidatorsResponse } from '@avalabs/avalanchejs-v2/dist/src/v
 export type NodeValidator = GetCurrentValidatorsResponse['validators'][0] & {
   delegatorCount?: string
   delegatorWeight?: string
+  version?: string
 }
 export type NodeValidators = NodeValidator[]
 

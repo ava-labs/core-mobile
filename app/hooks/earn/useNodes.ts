@@ -9,7 +9,26 @@ export const useNodes = () => {
   return useQuery({
     queryKey: ['nodes', isDeveloperMode],
     queryFn: async () => {
-      return EarnService.getCurrentValidators(isDeveloperMode)
+      const validatorsData = await EarnService.getCurrentValidators(
+        isDeveloperMode
+      )
+      const nodeIds = validatorsData.validators.map(
+        validator => validator.nodeID
+      )
+      const peersData = await EarnService.getPeers(nodeIds, isDeveloperMode)
+      return { validators: validatorsData.validators, peers: peersData.peers }
+    },
+    select: ({ validators, peers }) => {
+      const nodesWithVersion = validators.map(validator => {
+        const peer = peers.find(p => {
+          return p.nodeID === validator.nodeID
+        })
+        return {
+          ...validator,
+          version: peer?.version
+        }
+      })
+      return nodesWithVersion
     }
   })
 }

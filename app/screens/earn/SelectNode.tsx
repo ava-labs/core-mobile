@@ -31,7 +31,7 @@ const SelectNode = () => {
   const { isFetching, data, error } = useNodes()
   const { validators, error: useAdvancedSearchNodesError } =
     useAdvancedSearchNodes({
-      validators: data?.validators,
+      validators: data,
       stakingAmount,
       stakingEndTime,
       minUpTime,

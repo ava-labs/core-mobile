@@ -18,7 +18,7 @@ export const NodeSearch = () => {
   const { validator, error: useSearchNodeError } = useSearchNode({
     stakingAmount,
     stakingEndTime,
-    validators: data?.validators
+    validators: data
   })
   const [isShowSearching, setIsShowSearching] = useState(true)
   setTimeout(() => {
