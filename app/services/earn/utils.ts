@@ -222,7 +222,7 @@ export const getSimpleSortedValidators = (
   }
   return validators.sort(
     (a, b): number =>
-      compareVersion(b.version, a.version) ||
+      comparePeerVersion(b.version, a.version) ||
       Number(b.uptime) - Number(a.uptime) ||
       Number(b.delegationFee) - Number(a.delegationFee)
   )
@@ -359,8 +359,8 @@ export const getTransformedTransactions = async (
   }
 }
 
-const compareVersion = (first?: string, second?: string) => {
-  const v1 = valid(first?.split('/')[1]) ?? '0'
-  const v2 = valid(second?.split('/')[1]) ?? '0'
+export const comparePeerVersion = (first?: string, second?: string) => {
+  const v1 = valid(first?.split('/')[1]) ?? '0.0.0'
+  const v2 = valid(second?.split('/')[1]) ?? '0.0.0'
   return compare(v1, v2)
 }
