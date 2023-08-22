@@ -17,11 +17,7 @@ import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import sendService from 'services/send/SendService'
 import { SendState } from 'services/send/types'
-import {
-  bnToBig,
-  bnToEthersBigNumber,
-  bnToLocaleString
-} from '@avalabs/utils-sdk'
+import { bnToBig, bnToLocaleString } from '@avalabs/utils-sdk'
 import { useNativeTokenPrice } from 'hooks/useNativeTokenPrice'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { useApplicationContext } from 'contexts/ApplicationContext'
@@ -36,6 +32,7 @@ import BN from 'bn.js'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { usePostCapture } from 'hooks/usePosthogCapture'
 import { formatUriImageToPng } from 'utils/Contentful'
+import { bnToBigint } from 'utils/bigNumbers/bnToBigint'
 
 export interface SendTokenContextState {
   sendToken: TokenWithBalance | undefined
@@ -111,7 +108,7 @@ export const SendTokenContextProvider = ({
   )
   const [customGasPrice, setCustomGasPrice] = useState(new BN(0))
   const customGasPriceBig = useMemo(
-    () => bnToEthersBigNumber(customGasPrice),
+    () => bnToBigint(customGasPrice),
     [customGasPrice]
   )
 

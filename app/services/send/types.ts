@@ -1,5 +1,4 @@
 import BN from 'bn.js'
-import { BigNumber } from 'ethers'
 import { TokenWithBalance } from 'store/balance'
 import { SignTransactionRequest } from 'services/wallet/types'
 import { Transaction } from '@sentry/types'
@@ -24,7 +23,7 @@ export interface SendState<T extends TokenWithBalance = TokenWithBalance> {
   address?: string
   error?: SendError
   sendFee?: BN
-  gasPrice?: BigNumber
+  gasPrice?: bigint
   gasLimit?: number
   canSubmit?: boolean
   token?: T

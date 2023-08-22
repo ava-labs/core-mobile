@@ -5,10 +5,9 @@ import {
   TransactionDisplayValues
 } from 'screens/rpc/util/types'
 import { parseDisplayValues } from 'screens/rpc/util/parseDisplayValues'
-import { TransactionDescription } from '@ethersproject/abi'
 import { FindToken } from 'contracts/contractParsers/utils/useFindToken'
 import { Network } from '@avalabs/chains-sdk'
-import { ethers } from 'ethers'
+import { Result, TransactionDescription } from 'ethers'
 import { TransactionParams } from 'store/walletConnectV2/handlers/eth_sendTransaction/utils'
 
 export async function approveTxHandler(
@@ -22,7 +21,7 @@ export async function approveTxHandler(
    * Data is the values sent to the above contract and this is the instructions on how to
    * execute
    */
-  data: ethers.utils.Result,
+  data: Result,
   props: DisplayValueParserProps,
   description?: TransactionDescription
 ): Promise<TransactionDisplayValues> {

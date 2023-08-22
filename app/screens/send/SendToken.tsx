@@ -24,12 +24,12 @@ import { useSelector } from 'react-redux'
 import { selectActiveNetwork } from 'store/network'
 import { NetworkVMType } from '@avalabs/chains-sdk'
 import NetworkFeeSelector from 'components/NetworkFeeSelector'
-import { bnToLocaleString, ethersBigNumberToBN } from '@avalabs/utils-sdk'
+import { bnToLocaleString } from '@avalabs/utils-sdk'
 import UniversalTokenSelector from 'components/UniversalTokenSelector'
 import { getMaxValue } from 'utils/Utils'
 import { Amount } from 'screens/swap/SwapView'
 import { usePostCapture } from 'hooks/usePosthogCapture'
-import { BigNumber } from 'ethers'
+import { BN } from 'bn.js'
 import { FeePreset } from '../../components/NetworkFeeSelector'
 
 type Props = {
@@ -158,13 +158,13 @@ const SendToken: FC<Props> = ({
   }, [sendFeeNative, sendToken, setSendAmount])
 
   const handleGasPriceChange = useCallback(
-    (gasPrice1: BigNumber, feePreset: FeePreset) => {
+    (gasPrice1: bigint, feePreset: FeePreset) => {
       if (feePreset !== selectedFeePreset) {
         capture('SendFeeOptionChanged', {
           modifier: feePreset
         })
       }
-      setCustomGasPrice(ethersBigNumberToBN(gasPrice1))
+      setCustomGasPrice(new BN(gasPrice1.toString()))
       setSelectedFeePreset(feePreset)
     },
     [capture, selectedFeePreset, setCustomGasPrice, setSelectedFeePreset]

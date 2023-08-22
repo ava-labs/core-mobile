@@ -1,7 +1,7 @@
 import { Network, NetworkVMType } from '@avalabs/chains-sdk'
 import { NetworkFee } from 'services/networkFee/types'
 import Big from 'big.js'
-import { BigNumber, BigNumberish } from 'ethers'
+import { BigNumberish } from 'ethers'
 import { isSwimmer } from 'services/network/utils/isSwimmerNetwork'
 import { isEthereumNetwork } from 'services/network/utils/isEthereumNetwork'
 import {
@@ -13,17 +13,17 @@ class NetworkFeeService {
   async getNetworkFee(network: Network): Promise<NetworkFee | null> {
     if (network.vmName === NetworkVMType.EVM) {
       const provider = getEvmProvider(network)
-      const price = await provider.getGasPrice()
-      const bigPrice = new Big(price.toString())
+      const price = await provider.getFeeData()
+      const bigPrice = new Big(price.gasPrice?.toString() || '0')
       const unit = isEthereumNetwork(network) ? 'gWEI' : 'nAVAX'
 
       return {
         displayDecimals: 9,
         nativeTokenDecimals: 18,
         unit,
-        low: price,
-        medium: BigNumber.from(bigPrice.mul(1.05).toFixed(0)),
-        high: BigNumber.from(bigPrice.mul(1.15).toFixed(0)),
+        low: price.gasPrice ?? 0n,
+        medium: BigInt(bigPrice.mul(1.05).toFixed(0)),
+        high: BigInt(bigPrice.mul(1.15).toFixed(0)),
         isFixedFee: isSwimmer(network),
         nativeTokenSymbol: network.networkToken.symbol
       }
@@ -34,9 +34,9 @@ class NetworkFeeService {
         displayDecimals: 0, // display btc fees in satoshi
         nativeTokenDecimals: 8,
         unit: 'satoshi',
-        low: BigNumber.from(rates.low),
-        medium: BigNumber.from(rates.medium),
-        high: BigNumber.from(rates.high),
+        low: BigInt(rates.low),
+        medium: BigInt(rates.medium),
+        high: BigInt(rates.high),
         isFixedFee: isSwimmer(network),
         nativeTokenSymbol: network.networkToken.symbol
       }
@@ -62,7 +62,7 @@ class NetworkFeeService {
     const provider = getEvmProvider(network)
     const nonce = await provider.getTransactionCount(from)
 
-    return (
+    return Number(
       await provider.estimateGas({
         from,
         to,
@@ -70,7 +70,7 @@ class NetworkFeeService {
         data,
         value
       })
-    ).toNumber()
+    )
   }
 }
 

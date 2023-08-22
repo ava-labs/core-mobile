@@ -1,13 +1,12 @@
 import React from 'react'
 import { BottomSheet } from 'components/BottomSheet'
 import EditFees from 'components/EditFees'
-import { BigNumber } from 'ethers'
 
 type Props = {
   onClose?: () => void
   onSave: (newGasLimit: number) => void
   gasLimit: number
-  gasPrice: BigNumber
+  gasPrice: bigint
 }
 
 const EditGasLimitBottomSheet: React.FC<Props> = ({

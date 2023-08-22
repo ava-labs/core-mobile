@@ -1,8 +1,7 @@
-import { BigNumber } from 'ethers'
 import { TransactionParams } from 'store/walletConnectV2/handlers/eth_sendTransaction/utils'
 
 export async function txToCustomEvmTx(
-  networkFee: BigNumber,
+  networkFee: bigint,
   txParams: TransactionParams
 ) {
   if (!txParams) {
@@ -11,7 +10,7 @@ export async function txToCustomEvmTx(
 
   const { gas, to, from, data, value, gasPrice } = txParams
 
-  const sureGasPrice = BigNumber.from(gasPrice ?? networkFee)
+  const sureGasPrice = BigInt(gasPrice ?? networkFee)
 
   if (!gas || !sureGasPrice) {
     throw new Error('Gas or gas estimate is malformed')

@@ -4,7 +4,7 @@ import {
   fetchTokenBalances,
   getBtcAsset
 } from '@avalabs/bridge-sdk'
-import { JsonRpcProvider } from '@ethersproject/providers'
+import { JsonRpcProvider } from 'ethers'
 import Big from 'big.js'
 import balanceService from 'services/balance/BalanceService'
 import { BITCOIN_NETWORK, BITCOIN_TEST_NETWORK } from '@avalabs/chains-sdk'
