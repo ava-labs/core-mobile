@@ -50,9 +50,10 @@ export const maybePromptEarnNotification = createAction(
   `${reducerName}/maybePromptEarnNotification`
 )
 
-export const turnOnNotificationsFor = createAction<{ channelId: ChannelId }>(
-  `${reducerName}/turnOnNotificationsFor`
-)
+export const turnOnNotificationsFor = createAction<{
+  channelId: ChannelId
+  shouldOpenSettings?: boolean
+}>(`${reducerName}/turnOnNotificationsFor`)
 
 export const turnOffNotificationsFor = createAction<{ channelId: ChannelId }>(
   `${reducerName}/turnOffNotificationsFor`
