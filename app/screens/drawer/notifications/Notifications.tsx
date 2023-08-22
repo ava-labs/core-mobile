@@ -82,13 +82,13 @@ function NotificationToggle({
     const { permission } = await NotificationsService.getAllPermissions(false)
     if (permission !== 'authorized') {
       Logger.error('Notifications permission not granted')
+      return
     }
 
     if (isChecked) {
       dispatch(
         turnOnNotificationsFor({
-          channelId: channel.id,
-          shouldOpenSettings: false
+          channelId: channel.id
         })
       )
     } else {

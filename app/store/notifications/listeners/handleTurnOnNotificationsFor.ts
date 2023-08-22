@@ -8,10 +8,7 @@ import { setNotificationSubscriptions } from '../slice'
 
 export const handleTurnOnNotificationsFor = async (
   listenerApi: AppListenerEffectAPI,
-  {
-    channelId,
-    shouldOpenSettings = true
-  }: { channelId: ChannelId; shouldOpenSettings?: boolean }
+  channelId: ChannelId
 ) => {
   listenerApi.dispatch(setNotificationSubscriptions([channelId, true]))
   const channelToCreate = notificationChannels.find(ch => ch.id === channelId)
@@ -20,7 +17,7 @@ export const handleTurnOnNotificationsFor = async (
   }
   const blockedNotifications =
     await NotificationsService.getBlockedNotifications()
-  if (blockedNotifications.has(channelId) && shouldOpenSettings) {
+  if (blockedNotifications.has(channelId)) {
     NotificationsService.openSystemSettings()
   }
 }
