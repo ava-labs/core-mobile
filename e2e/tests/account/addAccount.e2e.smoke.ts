@@ -27,9 +27,9 @@ describe('Add and edit accounts', () => {
     await AccountManagePage.tapAddEditAccounts()
     await AccountManagePage.tapAddAccountButton()
     const startTime2 = new Date().getTime()
-    await Actions.waitForElement(AccountManagePage.secondAccount)
+    await AccountManagePage.tapDoneButton()
+    await Actions.waitForElement(AccountManagePage.secondAccount, 10000)
     const endTime2 = new Date().getTime()
-    await Assert.isVisible(AccountManagePage.secondAccount)
     await Actions.reportUIPerformance(
       startTime2,
       endTime2,
@@ -40,6 +40,8 @@ describe('Add and edit accounts', () => {
   })
 
   it('should edit first account', async () => {
+    await AccountManagePage.tap2ndAccountMenu()
+    await AccountManagePage.tapAddEditAccounts()
     await AccountManagePage.tapEditAccount()
     await AccountManagePage.setNewAccountName()
     await AccountManagePage.tapSaveNewAccountName()
