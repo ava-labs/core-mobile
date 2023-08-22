@@ -15,6 +15,7 @@ import * as Navigation from 'utils/Navigation'
 import AppNavigation from 'navigation/AppNavigation'
 import Logger from 'utils/Logger'
 import { isOnGoing } from 'utils/earn/status'
+import { valid, compare } from 'semver'
 import EarnService from './EarnService'
 
 // the max num of times we should check transaction status
@@ -221,6 +222,7 @@ export const getSimpleSortedValidators = (
   }
   return validators.sort(
     (a, b): number =>
+      compareVersion(b.version, a.version) ||
       Number(b.uptime) - Number(a.uptime) ||
       Number(b.delegationFee) - Number(a.delegationFee)
   )
@@ -355,4 +357,10 @@ export const getTransformedTransactions = async (
     Logger.error('getTransformedTransactions failed: ', error)
     throw error
   }
+}
+
+const compareVersion = (first?: string, second?: string) => {
+  const v1 = valid(first?.split('/')[1]) ?? '0'
+  const v2 = valid(second?.split('/')[1]) ?? '0'
+  return compare(v1, v2)
 }
