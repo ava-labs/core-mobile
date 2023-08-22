@@ -191,6 +191,14 @@ export const NodeCard = ({
               {data.delegatorCount}
             </AvaText.Body2>
           </Row>
+          <Row style={styles.rowContainer}>
+            <AvaText.Caption textStyle={{ color: theme.neutral400 }}>
+              {'Version'}
+            </AvaText.Caption>
+            <AvaText.Body2 textStyle={{ color: theme.neutral50 }}>
+              {data.version ?? 'N/A'}
+            </AvaText.Body2>
+          </Row>
         </View>
         <View style={{ marginTop: 19 }}>
           <AvaButton.PrimaryMedium

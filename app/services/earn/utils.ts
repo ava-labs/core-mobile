@@ -279,6 +279,14 @@ export const getAdvancedSortedValidators = (
       return validators.sort(
         (a, b): number => Number(a.endTime) - Number(b.endTime)
       )
+    case AdvancedSortFilter.VersionHighToLow:
+      return validators.sort((a, b): number =>
+        comparePeerVersion(b.version, a.version)
+      )
+    case AdvancedSortFilter.VersionLowToHigh:
+      return validators.sort(
+        (a, b): number => comparePeerVersion(a.version, b.version) || 0
+      )
     case AdvancedSortFilter.UpTimeHighToLow:
     default:
       return validators.sort(

@@ -13,7 +13,9 @@ export enum AdvancedSortFilter {
   FeeHighToLow = 'Fee: High to Low',
   FeeLowToHigh = 'Fee: Low to High',
   DurationHighToLow = 'Duration: High to Low',
-  DurationLowToHigh = 'Duration: Low to High'
+  DurationLowToHigh = 'Duration: Low to High',
+  VersionHighToLow = 'Version: High to Low',
+  VersionLowToHigh = 'Version: Low to High'
 }
 
 export type TAdvancedFilterDropDownItems = {
