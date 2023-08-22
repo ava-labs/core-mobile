@@ -55,23 +55,10 @@ workflows:
         inputs:
         - gradlew_path: $ANDROID_PROJECT_LOCATION/gradlew
     - restore-gradle-cache@1: {}
-    - script@1:
+    - script-runner@0:
         title: Fix Android Env Vars
         inputs:
-        - content: |-
-            #!/usr/bin/env bash
-            # fail if any commands fails
-            set -e
-            # make pipelines' return status equal the last command to exit with a non-zero status, or zero if all commands exit successfully
-            set -o pipefail
-            # debug log
-            set -x
-
-            # write your script here
-            # without this fix, we can't start emulator due to this error
-            # "Could not find the Qt platform plugin "offscreen" in "/opt/android-sdk-linux/emulator/lib64/qt/plugins"
-            # "Available platform plugins are: xcb."
-            envman add --key QT_QPA_PLATFORM --value xcb
+        - file_path: scripts/bitrise/fixAndroidEnvVars.sh
     - avd-manager@1.2:
         inputs:
         - api_level: "28"
@@ -135,77 +122,23 @@ workflows:
     - nvm@1:
         inputs:
         - node_version: 18.14.1
-    - script@1:
+    - script-runner@0:
         title: Yarn Setup
         inputs:
-        - content: "#!/usr/bin/env bash\n# fail if any commands fails\nset -e\n# make
-            pipelines' return status equal the last command to exit with a non-zero
-            status, or zero if all commands exit successfully\nset -o pipefail\n#
-            debug log\nset -x\n\nif ! cat /etc/issue 2>/dev/null\nthen\nyarn setup:ci\nelse
-            \n  stack=$( cat /etc/issue )\nfi\n\nif [[ $stack == *Ubuntu* ]]; then\n
-            \   # on ubuntu, yarn setup command will fail\n    # as patch-package
-            doesn't have write access to the node_modules folder\n    # thus, we need
-            to set write permission manually and rerun yarn\n    # Bitrise issue link
-            https://support.bitrise.io/hc/en-us/requests/39436?page=1\n    sudo chown
-            root .\n\n    yarn setup:ci\nfi"
+        - file_path: scripts/bitrise/yarnSetup.sh
     - save-npm-cache@1: {}
-    - script@1:
+    - script-runner@0:
         title: Download Env Files
         inputs:
-        - content: |-
-            #!/usr/bin/env bash
-            # fail if any commands fails
-            set -e
-            # make pipelines' return status equal the last command to exit with a non-zero status, or zero if all commands exit successfully
-            set -o pipefail
-            # debug log
-            set -x
-
-            # download
-            curl -Lfo "$BITRISE_SOURCE_DIR/resource.zip" "$BITRISEIO_ENV_FILES_URL"
-
-            # unzip
-            unzip -u "$BITRISE_SOURCE_DIR/resource" -d "$BITRISE_SOURCE_DIR"
-    - script@1:
+        - file_path: scripts/bitrise/downloadEnvFiles.sh
+    - script-runner@0:
         title: Set Env
         inputs:
-        - working_dir: $WORKDIR
-        - content: |-
-            #!/usr/bin/env bash
-            set -ex
-
-            # grab the correct env file based on ENVIRONMENT and E2E env vars
-            if [ "$ENVIRONMENT" = "production" ]; then
-                if [ "$E2E" = "true" ]; then
-                    cp .env.production.e2e .env
-                else
-                    cp .env.production .env
-                fi
-            elif [ "$ENVIRONMENT" = "development" ]; then
-                cp .env.development .env
-            else
-                cp .env.production .env
-            fi
-    - script@1:
+        - file_path: scripts/bitrise/setEnv.sh
+    - script-runner@0:
         title: Override Feature Flags Key
         inputs:
-        - content: "#!/usr/bin/env bash\n# fail if any commands fails\nset -e\n# make
-            pipelines' return status equal the last command to exit with a non-zero
-            status, or zero if all commands exit successfully\nset -o pipefail\n#
-            debug log\nset -x\n\n# Check if the environment variable USE_POSTHOG_TEST_FEATURE_FLAGS
-            is set to \"true\"\nif [ \"$USE_TEST_FEATURE_FLAGS\" = \"true\" ]; then\n\n
-            \   # Read the value of POSTHOG_FEATURE_FLAGS_KEY from .env.development
-            file\n    feature_flags_key=$(grep '^POSTHOG_FEATURE_FLAGS_KEY=' .env.development
-            | cut -d '=' -f2)\n\n    # Check if the value is not empty (found in .env.development)\n
-            \   if [ -n \"$feature_flags_key\" ]; then\n        # Create a temporary
-            file for the in-place edit\n        temp_file=$(mktemp)\n\n        # Replace
-            the value of POSTHOG_FEATURE_FLAGS_KEY in the .env file and save it in
-            the temporary file\n        sed \"s/^POSTHOG_FEATURE_FLAGS_KEY=.*/POSTHOG_FEATURE_FLAGS_KEY=$feature_flags_key/\"
-            .env > \"$temp_file\"\n\n        # Replace the original .env file with
-            the modified temporary file\n        mv \"$temp_file\" .env\n\n        echo
-            \"Updated POSTHOG_FEATURE_FLAGS_KEY in .env\"\n    else\n        echo
-            \"POSTHOG_FEATURE_FLAGS_KEY not found in .env.development or is empty.\"\n
-            \   fi\n    \nfi"
+        - file_path: scripts/bitrise/overrideFeatureFlagsKey.sh
   _send-notification-slack:
     steps:
     - slack@3:
@@ -262,29 +195,14 @@ workflows:
         - webhook_url: $SLACK_TEST_RESULT_WEBHOOK_URL
   _set-version:
     steps:
-    - script@1:
+    - script-runner@0:
         title: Get App Version
         inputs:
-        - content: "#!/usr/bin/env bash\n\n# if branch is a release branch (\"release/2.0.1\"
-            for example), grab version from branch name \n# else if tag is a release
-            candidate tag (\"0.13.1-rc1\" for example), grab version from tag\nif
-            [[ $BITRISE_GIT_BRANCH == *release/* ]]; then\n  arrIN=(${BITRISE_GIT_BRANCH////
-            })\n  version=${arrIN[1]}\nelif [[ $BITRISE_GIT_TAG =~ \"rc\" ]]; then\n
-            \ arrIN=(${BITRISE_GIT_TAG//-/ })\n  version=${arrIN[0]}\nelse\n  # else
-            version will just be 0.0.0\n  version=\"0.0.0\"\nfi\n\nenvman add --key
-            APP_VERSION --value \"${version}\""
-    - script@1:
+        - file_path: scripts/bitrise/getAppVersion.sh
+    - script-runner@0:
         title: Get Build Number
         inputs:
-        - content: "#!/usr/bin/env bash\n# fail if any commands fails\nset -e\n# make
-            pipelines' return status equal the last command to exit with a non-zero
-            status, or zero if all commands exit successfully\nset -o pipefail\n#
-            debug log\nset -x\n\n# when a pipeline starts, it triggers both iOS and
-            Android workflows\n# in order for iOS and Android to have different build
-            numbers, we increment build number by 1 for Android\nif [ \"$PLATFORM\"
-            = \"iOS\" ]; then\n  buildNumber=$BITRISE_BUILD_NUMBER       \nelse\n
-            \ buildNumber=$((BITRISE_BUILD_NUMBER+1))\nfi\n\nenvman add --key BUILD_NUMBER
-            --value \"${buildNumber}\""
+        - file_path: scripts/bitrise/getBuildNumber.sh
     - set-ios-info-plist-unified@1:
         title: Set iOS Version
         run_if: '{{enveq "PLATFORM" "iOS"}}'
@@ -352,22 +270,10 @@ workflows:
         is_expand: false
     steps:
     - wait-for-android-emulator@1: {}
-    - script@1:
+    - script-runner@0:
         title: Detox
         inputs:
-        - content: |-
-            #!/usr/bin/env bash
-            # fail if any commands fails
-            set -e
-
-            # make pipelines' return status equal the last command to exit with a non-zero status, or zero if all commands exit successfully
-            set -o pipefail
-
-            # debug log
-            set -x
-
-            npm rebuild detox
-            QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test --configuration android.external.release.smoke.ci --headless --retries 2
+        - file_path: scripts/bitrise/detox/androidE2e.sh
   android-internal:
     before_run:
     - _install-and-set-env
@@ -428,16 +334,10 @@ workflows:
         is_expand: false
     steps:
     - wait-for-android-emulator@1: {}
-    - script@1:
+    - script-runner@0:
         title: Detox
         inputs:
-        - content: "#!/usr/bin/env bash\n\n# make pipelines' return status equal the
-            last command to exit with a non-zero status, or zero if all commands exit
-            successfully\nset -o pipefail\n\n# debug log\nset -x\n\nnpm rebuild detox\nQT_QPA_PLATFORM=xcb;
-            ./node_modules/.bin/detox test --configuration android.internal.release.smoke.ci
-            --headless --retries 1; test_result=$?\n\nRUN_ID=$(head -n 1 ./e2e/testrailRunId.txt)
-            \n\nenvman add --key TESTRAIL_RUN --value $RUN_ID\n\nif ((test_result
-            != 0)); then\n  exit 1\nfi"
+        - file_path: scripts/bitrise/detox/androidInternalE2e.sh
   ios:
     before_run:
     - _install-and-set-env
@@ -495,20 +395,10 @@ workflows:
       opts:
         is_expand: false
     steps:
-    - script@1:
+    - script-runner@0:
         title: Detox
         inputs:
-        - content: |-
-            #!/usr/bin/env bash
-
-            # make pipelines' return status equal the last command to exit with a non-zero status, or zero if all commands exit successfully
-            set -o pipefail
-
-            # debug log
-            set -x
-
-            npm rebuild detox
-            ./node_modules/.bin/detox test --configuration ios.external.release.smoke.ci --retries 2
+        - file_path: scripts/bitrise/detox/iosE2e.sh
   ios-internal:
     before_run:
     - _install-and-set-env
@@ -575,12 +465,7 @@ workflows:
       opts:
         is_expand: false
     steps:
-    - script@1:
+    - script-runner@0:
         title: Detox
         inputs:
-        - content: "#!/usr/bin/env bash\n\n# make pipelines' return status equal the
-            last command to exit with a non-zero status, or zero if all commands exit
-            successfully\nset -o pipefail\n\n# debug log\nset -x\n\nnpm rebuild detox\n./node_modules/.bin/detox
-            test --configuration ios.internal.release.smoke.ci --retries 1; test_result=$?\n\nRUN_ID=$(head
-            -n 1 ./e2e/testrailRunId.txt) \n\nenvman add --key TESTRAIL_RUN --value
-            $RUN_ID\n\nif ((test_result != 0)); then\n  exit 1\nfi"
+        - file_path: scripts/bitrise/detox/iosInternalE2e.sh
