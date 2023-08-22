@@ -256,8 +256,7 @@ export const Confirmation = () => {
           style={{
             flexDirection: 'column'
           }}>
-          <AvaText.Heading2
-            textStyle={{ color: theme.colorBgGreen, marginTop: -19 }}>
+          <AvaText.Heading2 textStyle={{ color: theme.colorBgGreen }}>
             {estimatedRewardInAvax + ' ' + tokenSymbol}
           </AvaText.Heading2>
           <AvaText.Body3

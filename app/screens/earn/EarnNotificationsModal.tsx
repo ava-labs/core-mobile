@@ -6,6 +6,7 @@ import AppNavigation from 'navigation/AppNavigation'
 import { useDispatch } from 'react-redux'
 import { turnOnNotificationsFor } from 'store/notifications'
 import { ChannelId } from 'services/notifications/channels'
+import NotificationsService from 'services/notifications/NotificationsService'
 
 type ScreenProps = EarnScreenProps<
   typeof AppNavigation.Earn.EarnNotificationsPrompt
@@ -15,8 +16,17 @@ export const EarnNotificationsModal = () => {
   const { goBack, canGoBack } = useNavigation<ScreenProps['navigation']>()
   const dispatch = useDispatch()
 
-  const onTurnOnNotifications = useCallback(() => {
-    dispatch(turnOnNotificationsFor({ channelId: ChannelId.STAKING_COMPLETE }))
+  const onTurnOnNotifications = useCallback(async () => {
+    const { permission, blockedNotifications } =
+      await NotificationsService.getAllPermissions(false)
+    if (
+      permission === 'authorized' &&
+      blockedNotifications.get(ChannelId.STAKING_COMPLETE) !== true
+    ) {
+      dispatch(
+        turnOnNotificationsFor({ channelId: ChannelId.STAKING_COMPLETE })
+      )
+    }
     if (canGoBack()) {
       goBack()
     }
