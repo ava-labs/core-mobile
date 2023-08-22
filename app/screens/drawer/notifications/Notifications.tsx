@@ -21,6 +21,7 @@ import {
   notificationChannels
 } from 'services/notifications/channels'
 import { selectIsEarnBlocked } from 'store/posthog'
+import Logger from 'utils/Logger'
 
 /**
  * Conceptual description of notification handling works can be found here
@@ -76,9 +77,20 @@ function NotificationToggle({
   const checked = !isSystemDisabled && inAppEnabled
   const dispatch = useDispatch()
 
-  function onChange(isChecked: boolean) {
+  async function onChange(isChecked: boolean) {
+    // before we change the state, we need to check if the system settings allow us to do so
+    const { permission } = await NotificationsService.getAllPermissions(false)
+    if (permission !== 'authorized') {
+      Logger.error('Notifications permission not granted')
+      return
+    }
+
     if (isChecked) {
-      dispatch(turnOnNotificationsFor({ channelId: channel.id }))
+      dispatch(
+        turnOnNotificationsFor({
+          channelId: channel.id
+        })
+      )
     } else {
       dispatch(turnOffNotificationsFor({ channelId: channel.id }))
     }
