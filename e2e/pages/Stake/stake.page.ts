@@ -13,8 +13,16 @@ class StakePage {
     return by.text(stakeScreenLoc.availableAvaxText)
   }
 
+  get balanceTooltip() {
+    return by.id(stakeScreenLoc.balanceTooltip)
+  }
+
   get stakedAvaxText() {
     return by.text(stakeScreenLoc.stakedAvaxText)
+  }
+
+  get confirmationTitle() {
+    return by.text(stakeScreenLoc.confirmationTitle)
   }
 
   get claimableAvaxText() {
@@ -25,12 +33,24 @@ class StakePage {
     return by.text(stakeScreenLoc.stakeTitle)
   }
 
-  get stakeButton() {
-    return by.id(stakeScreenLoc.stakeButton)
+  get stakePrimaryButton() {
+    return by.id(stakeScreenLoc.stakeButtonPrimary)
+  }
+
+  get stakeSecondaryButton() {
+    return by.id(stakeScreenLoc.stakeButtonSecondary)
+  }
+
+  get stakingAmountTitle() {
+    return by.text(stakeScreenLoc.stakingAmountTitle)
   }
 
   get stakeButtonText() {
     return by.text(stakeScreenLoc.stakeButtonText)
+  }
+
+  get stakeNow() {
+    return by.id(stakeScreenLoc.stakeNow)
   }
 
   get notEnoughAvaxTitle() {
@@ -39,6 +59,22 @@ class StakePage {
 
   get notEnoughAvaxDescription() {
     return by.text(stakeScreenLoc.notEnoughAvaxDescription)
+  }
+
+  get notNowButton() {
+    return by.id(stakeScreenLoc.notNowButton)
+  }
+
+  get newStakeTimeRemaining() {
+    return by.text(stakeScreenLoc.newStakeTimeRemaining)
+  }
+
+  get nextButton() {
+    return by.id(stakeScreenLoc.nextButton)
+  }
+
+  get inputAmount() {
+    return by.id(stakeScreenLoc.inputAmount)
   }
 
   get swapAvaxButton() {
@@ -91,13 +127,51 @@ class StakePage {
     await Actions.tap(this.switchNetworkButton)
   }
 
+  async tapBalanceTooltip() {
+    await Actions.tapElementAtIndex(this.balanceTooltip, 0)
+  }
+
+  async tapStakeButton() {
+    if ((await Actions.isVisible(this.stakeSecondaryButton, 0)) === false) {
+      await Actions.tapElementAtIndex(this.stakePrimaryButton, 0)
+    } else {
+      await Actions.tapElementAtIndex(this.stakeSecondaryButton, 0)
+    }
+  }
+
+  async tapStakeNow() {
+    await Actions.tapElementAtIndex(this.stakeNow, 0)
+  }
+
+  async tapNextButton() {
+    await Actions.tapElementAtIndex(this.nextButton, 0)
+  }
+
+  async tapNotNowButton() {
+    await Actions.tapElementAtIndex(this.notNowButton, 0)
+  }
+
+  async inputStakingAmount(amount: string) {
+    await Actions.setInputText(this.inputAmount, amount)
+    // if (Actions.platform() === Platform.Android){
+    //   await this.tapBalanceTooltip()
+    //   await this.tapBalanceTooltip()
+    // } else {
+    await Actions.tap(this.stakingAmountTitle)
+    // }
+  }
+
   async verifyStakeTopItems() {
     await Assert.isVisible(this.availableAvaxText)
     await Assert.isVisible(this.stakedAvaxText)
     await Assert.isVisible(this.claimableAvaxText)
-    await Assert.isVisible(this.stakeButton)
     await Assert.isVisible(this.stakeButtonText, 1)
     await Assert.isVisible(this.avaLogo)
+    if ((await Actions.isVisible(this.stakeSecondaryButton, 0)) === false) {
+      await Assert.isVisible(this.stakePrimaryButton)
+    } else {
+      await Assert.isVisible(this.stakeSecondaryButton)
+    }
   }
 }
 

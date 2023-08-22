@@ -1,11 +1,14 @@
 export default {
   availableAvaxText: 'Available',
   avaLogo: 'ava_logo',
+  balanceTooltip: 'info_svg',
   stakedAvaxText: 'Staked',
+  confirmationTitle: 'Confirm Staking',
   claimableAvaxText: 'Claimable',
   stakeTitle: 'Stake',
   notEnoughAvaxTitle: 'You don’t have enough AVAX!',
   notEnoughAvaxDescription: 'Buy or Swap AVAX to begin staking.',
+  nextButton: 'btnPrimary',
   swapAvaxButton: 'Swap AVAX',
   recieveAvaxButton: 'Receive AVAX',
   buyAvaxButton: 'Buy AVAX',
@@ -14,6 +17,12 @@ export default {
     'Staking is only available on the Avalanche Network. Please switch networks to continue.',
   switchNetworkButton: 'btnPrimary',
   switchNetworkButtonText: 'Switch to Avalanche Network',
-  stakeButton: 'btnPrimary',
-  stakeButtonText: 'Stake'
+  stakeButtonPrimary: 'btnPrimary',
+  stakeButtonSecondary: 'btnSecondary',
+  stakeButtonText: 'Stake',
+  stakeNow: 'btnPrimary',
+  stakingAmountTitle: 'Staking Amount',
+  inputAmount: 'input_text',
+  notNowButton: 'btnText',
+  newStakeTimeRemaining: '1 day remaining'
 }
