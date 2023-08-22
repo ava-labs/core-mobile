@@ -93,6 +93,10 @@ class AccountManagePage {
     await Action.tapElementAtIndex(this.account, 0)
   }
 
+  async tap2ndAccountMenu() {
+    await Action.tapElementAtIndex(this.secondAccount, 0)
+  }
+
   async tapDoneButton() {
     await Action.tapElementAtIndex(this.doneButton, 0)
   }
