@@ -1,7 +1,7 @@
 import { resolve } from '@avalabs/utils-sdk'
 import { JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
 import BN from 'bn.js'
-import { Contract, TransactionRequest } from 'ethers'
+import { Contract, TransactionRequest, isAddress } from 'ethers'
 import ERC20 from '@openzeppelin/contracts/build/contracts/ERC20.json'
 import {
   GetTransactionRequestParams,
@@ -19,7 +19,6 @@ import {
 } from 'store/balance'
 import ERC721 from '@openzeppelin/contracts/build/contracts/ERC721.json'
 import ERC1155 from '@openzeppelin/contracts/build/contracts/ERC1155.json'
-import { isAddress } from '@ethersproject/address'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import Logger from 'utils/Logger'
 

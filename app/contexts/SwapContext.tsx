@@ -29,7 +29,6 @@ import WalletService from 'services/wallet/WalletService'
 import { performSwap } from '@avalabs/paraswap-sdk'
 import { selectActiveNetwork } from 'store/network'
 import { selectActiveAccount } from 'store/account'
-import { TransactionRequest } from 'ethers'
 
 export type SwapStatus = 'Idle' | 'Preparing' | 'Swapping' | 'Success' | 'Fail'
 
@@ -208,11 +207,7 @@ export const SwapContextProvider = ({ children }: { children: ReactNode }) => {
           transactionSend: signedTx =>
             NetworkService.sendTransaction(signedTx, activeNetwork),
           transactionSign: tx =>
-            WalletService.sign(
-              tx as TransactionRequest,
-              activeAccount.index,
-              activeNetwork
-            ),
+            WalletService.sign(tx, activeAccount.index, activeNetwork),
           userAddress: activeAccount.address,
           networkGasPrice: networkFee.low
         })

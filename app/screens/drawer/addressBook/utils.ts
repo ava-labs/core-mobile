@@ -1,4 +1,4 @@
-import { isAddress } from '@ethersproject/address'
+import { isAddress } from 'ethers'
 import { isBech32Address } from '@avalabs/bridge-sdk'
 import { Share, ShareContent, ShareOptions } from 'react-native'
 

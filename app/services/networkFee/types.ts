@@ -9,17 +9,3 @@ export interface NetworkFee {
   isFixedFee: boolean
   nativeTokenSymbol: string
 }
-
-export type SerializedNetworkFee = Omit<
-  NetworkFee,
-  'low' | 'medium' | 'high'
-> & {
-  low: { type: 'BigInt'; hex: string }
-  medium: { type: 'BigInt'; hex: string }
-  high: { type: 'BigInt'; hex: string }
-  isFixedFee: boolean
-  nativeTokenSymbol: string
-  unit: string
-  displayDecimals: number
-  nativeTokenDecimals: number
-}
