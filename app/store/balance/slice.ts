@@ -1,4 +1,9 @@
-import { createAction, createSlice, PayloadAction } from '@reduxjs/toolkit'
+import {
+  createAction,
+  createSelector,
+  createSlice,
+  PayloadAction
+} from '@reduxjs/toolkit'
 import { RootState } from 'store'
 import { selectActiveAccount } from 'store/account'
 import { selectActiveNetwork, selectIsTestnet } from 'store/network'
@@ -186,12 +191,24 @@ export const selectBalanceTotalInCurrencyForNetworkAndAccount =
     return totalInCurrency
   }
 
-export const selectNativeTokenBalanceForNetworkAndAccount =
-  (chainId: number, accountIndex: number | undefined) => (state: RootState) => {
-    if (accountIndex === undefined) return undefined
+const _selectAllBalances = (state: RootState) => state.balance.balances
 
-    const key = getKey(chainId, accountIndex)
-    const balanceForNetworkAndAccount = state.balance.balances[key]
+const _selectBalanceKeyForNetworkAndAccount = (
+  _state: RootState,
+  chainId: number,
+  accountIndex: number | undefined
+) => {
+  if (accountIndex === undefined) return undefined
+
+  return getKey(chainId, accountIndex)
+}
+
+export const selectNativeTokenBalanceForNetworkAndAccount = createSelector(
+  [_selectAllBalances, _selectBalanceKeyForNetworkAndAccount],
+  (allBalances, key) => {
+    if (key === undefined) return undefined
+
+    const balanceForNetworkAndAccount = allBalances[key]
 
     const nativeToken = Object.values(
       balanceForNetworkAndAccount?.tokens ?? []
@@ -199,6 +216,7 @@ export const selectNativeTokenBalanceForNetworkAndAccount =
 
     return Avax.fromWei(nativeToken?.balance ?? 0)
   }
+)
 
 export const selectBalanceTotalForNetwork =
   (chainId: number) => (state: RootState) => {
