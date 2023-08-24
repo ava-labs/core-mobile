@@ -10,7 +10,6 @@ import { selectActiveNetwork, selectIsTestnet } from 'store/network'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import BN from 'bn.js'
 import { Network } from '@avalabs/chains-sdk'
-import { Avax } from 'types/Avax'
 import {
   Balance,
   Balances,
@@ -206,7 +205,7 @@ const _selectBalanceKeyForNetworkAndAccount = (
 export const selectNativeTokenBalanceForNetworkAndAccount = createSelector(
   [_selectAllBalances, _selectBalanceKeyForNetworkAndAccount],
   (allBalances, key) => {
-    if (key === undefined) return undefined
+    if (key === undefined) return BN_ZERO
 
     const balanceForNetworkAndAccount = allBalances[key]
 
@@ -214,7 +213,7 @@ export const selectNativeTokenBalanceForNetworkAndAccount = createSelector(
       balanceForNetworkAndAccount?.tokens ?? []
     )?.find(token => token.type === TokenType.NATIVE)
 
-    return Avax.fromWei(nativeToken?.balance ?? 0)
+    return nativeToken?.balance ?? BN_ZERO
   }
 )
 
