@@ -6,12 +6,12 @@ set -o pipefail
 # debug log
 set -x
 
+.e2e/test_counter.sh
+
 npm rebuild detox
 ./node_modules/.bin/detox test --configuration ios.internal.release.smoke.ci --retries 1; test_result=$?
 
 RUN_ID=$(head -n 1 ./e2e/testrailRunId.txt) 
-
-ts-node ./e2e/sendResults.ts
 
 envman add --key TESTRAIL_RUN --value $RUN_ID
 

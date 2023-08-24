@@ -24,6 +24,34 @@ async function readdirChronoSorted(dirpath: any, order: any) {
     .map(stat => stat.filename)
 }
 
+export async function checkForRetries() {
+  const platformFolder = await getDirectories(`./e2e/artifacts/`)
+  const testFolders = platformFolder[0]
+  const testResultFolder = testFolders[0]
+  const testResults = await getDirectories(testResultFolder)
+  const testCountIncrease = []
+  testResults.forEach((element: any) => {
+    if (element.includes('(')) {
+      testCountIncrease.push(element)
+    }
+  })
+  const testCount = fs.readFileSync('./e2e/test_count.txt', 'utf8')
+  const textLines = testCount.split('\n')
+  if (!textLines.includes('Added test retries')) {
+    const increaseTestCount = parseInt(testCount) + testCountIncrease.length - 1
+    fs.writeFile('./e2e/test_count.txt', `${increaseTestCount}`, (err: any) => {
+      if (err) throw err
+    })
+    fs.appendFile('./e2e/test_count.txt', `Added test retries`, (err: any) => {
+      if (err) throw err
+    })
+    return increaseTestCount
+  } else {
+    console.log('Test count has already been increased for retries')
+    return null
+  }
+}
+
 export default async function getTestLogs() {
   const folders: any = await getDirectories('./e2e/artifacts/')
   const testResults: any = []
