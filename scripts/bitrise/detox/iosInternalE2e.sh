@@ -11,7 +11,7 @@ npm rebuild detox
 
 RUN_ID=$(head -n 1 ./e2e/testrailRunId.txt) 
 
-node ./e2e/sendResults.ts
+ts-node ./e2e/sendResults.ts
 
 envman add --key TESTRAIL_RUN --value $RUN_ID
 

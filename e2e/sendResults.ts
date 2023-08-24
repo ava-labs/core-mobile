@@ -224,3 +224,5 @@ async function generatePlatformResults(
     console.log(error)
   }
 }
+
+sendResults()
