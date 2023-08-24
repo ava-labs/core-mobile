@@ -13,6 +13,8 @@ RUN_ID=$(head -n 1 ./e2e/testrailRunId.txt)
 
 envman add --key TESTRAIL_RUN --value $RUN_ID
 
+node ./e2e/sendResults.ts
+
 if ((test_result != 0)); then
   exit 1
 fi
