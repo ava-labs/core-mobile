@@ -6,7 +6,7 @@ set -o pipefail
 # debug log
 set -x
 
-.e2e/ios_smoke_test_counter.sh
+./e2e/ios_smoke_test_counter.sh
 
 npm rebuild detox
 ./node_modules/.bin/detox test --configuration ios.internal.release.smoke.ci --retries 1; test_result=$?

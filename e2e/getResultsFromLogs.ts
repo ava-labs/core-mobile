@@ -31,24 +31,23 @@ export async function checkForRetries() {
   const testResults = await getDirectories(testResultFolder)
   const testCountIncrease = []
   testResults.forEach((element: any) => {
-    if (element.includes('(')) {
+    if (element.includes('✗')) {
       testCountIncrease.push(element)
     }
   })
   const testCount = fs.readFileSync('./e2e/test_count.txt', 'utf8')
   const textLines = testCount.split('\n')
-  if (!textLines.includes('Added test retries')) {
-    const increaseTestCount = parseInt(testCount) + testCountIncrease.length - 1
-    fs.writeFile('./e2e/test_count.txt', `${increaseTestCount}`, (err: any) => {
-      if (err) throw err
-    })
-    fs.appendFile('./e2e/test_count.txt', `Added test retries`, (err: any) => {
-      if (err) throw err
-    })
+  if (
+    !textLines.includes('Added test retries') &&
+    testCountIncrease.length > 0
+  ) {
+    const increaseTestCount = parseInt(textLines[0]) + testCountIncrease.length
+    fs.writeFileSync('./e2e/test_count.txt', `${increaseTestCount}`)
+    fs.appendFileSync('./e2e/test_count.txt', `Added test retries`)
     return increaseTestCount
   } else {
     console.log('Test count has already been increased for retries')
-    return null
+    return 0
   }
 }
 
