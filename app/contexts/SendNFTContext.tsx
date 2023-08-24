@@ -219,7 +219,7 @@ export const SendNFTContextProvider = ({
         activeNetwork,
         activeAccount,
         selectedCurrency,
-        new BN(nativeTokenBalance?.toSubUnit().toString() ?? 0)
+        nativeTokenBalance?.toWei() ?? new BN(0)
       )
       .then(state => {
         setGasLimit(state.gasLimit ?? 0)
