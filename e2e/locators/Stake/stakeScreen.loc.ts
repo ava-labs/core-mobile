@@ -1,7 +1,9 @@
 export default {
   availableAvaxText: 'Available',
   avaLogo: 'ava_logo',
+  avaxText: 'AVAX',
   balanceTooltip: 'info_svg',
+  balanceTooltipText: 'Final staking amount may be slightly lower due to fees',
   stakedAvaxText: 'Staked',
   confirmationTitle: 'Confirm Staking',
   claimableAvaxText: 'Claimable',
@@ -22,7 +24,13 @@ export default {
   stakeButtonText: 'Stake',
   stakeNow: 'btnPrimary',
   stakingAmountTitle: 'Staking Amount',
+  stakingAmountDescription: 'How many AVAX would you like to stake?',
   inputAmount: 'input_text',
   notNowButton: 'btnText',
-  newStakeTimeRemaining: '1 day remaining'
+  newStakeTimeRemaining: '1 day remaining',
+  usdText: 'USD',
+  tenPercentText: '10%',
+  twentyFivePercentText: '25%',
+  fiftyPercentText: '50%',
+  maxText: 'Max'
 }
