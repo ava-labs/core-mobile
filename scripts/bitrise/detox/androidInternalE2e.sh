@@ -7,7 +7,7 @@ set -o pipefail
 set -x
 
 npm rebuild detox
-QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test --maxWorkers 3 --configuration android.internal.release.smoke.ci --headless --retries 1; test_result=$?
+QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test --configuration android.internal.release.smoke.ci --headless --retries 1; test_result=$?
 
 RUN_ID=$(head -n 1 ./e2e/testrailRunId.txt) 
 
