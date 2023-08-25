@@ -27,6 +27,7 @@ import BN from 'bn.js'
 import { InteractionManager } from 'react-native'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { usePostCapture } from 'hooks/usePosthogCapture'
+import { RootState } from 'store'
 
 export interface SendNFTContextState {
   sendToken: NFTItemData
@@ -57,8 +58,9 @@ export const SendNFTContextProvider = ({
   const activeAccount = useSelector(selectActiveAccount)
   const activeNetwork = useSelector(selectActiveNetwork)
   const selectedCurrency = useSelector(selectSelectedCurrency)
-  const nativeTokenBalance = useSelector(
+  const nativeTokenBalance = useSelector((state: RootState) =>
     selectNativeTokenBalanceForNetworkAndAccount(
+      state,
       activeNetwork.chainId,
       activeAccount?.index
     )
@@ -205,6 +207,7 @@ export const SendNFTContextProvider = ({
       setCanSubmit(false)
       return
     }
+
     sendService
       .validateStateAndCalculateFees(
         {
@@ -216,7 +219,7 @@ export const SendNFTContextProvider = ({
         activeNetwork,
         activeAccount,
         selectedCurrency,
-        new BN(nativeTokenBalance?.toSubUnit().toString() ?? 0)
+        nativeTokenBalance
       )
       .then(state => {
         setGasLimit(state.gasLimit ?? 0)

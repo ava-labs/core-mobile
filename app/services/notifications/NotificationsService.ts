@@ -65,8 +65,11 @@ class NotificationsService {
     await Promise.allSettled(promises)
     const permission = await this.requestPermission()
     const blockedNotifications = await this.getBlockedNotifications()
-    if (permission !== 'authorized' || blockedNotifications.size !== 0) {
-      shouldOpenSettings && this.openSystemSettings()
+    if (
+      (permission !== 'authorized' || blockedNotifications.size !== 0) &&
+      shouldOpenSettings
+    ) {
+      this.openSystemSettings()
     }
     return { permission, blockedNotifications }
   }
