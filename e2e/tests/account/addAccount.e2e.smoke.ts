@@ -40,7 +40,7 @@ describe('Add and edit accounts', () => {
   })
 
   it('should edit first account', async () => {
-    //await AccountManagePage.tap2ndAccountMenu()
+    await AccountManagePage.tap2ndAccountMenu()
     await AccountManagePage.tapAddEditAccounts()
     await AccountManagePage.tapEditAccount()
     await AccountManagePage.setNewAccountName()
