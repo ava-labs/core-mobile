@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { readdir } from 'fs/promises'
 require('ts-node').register()
-const fs = require('fs').promises
+const fsPromises = require('fs').promises
 const path = require('path')
 
 export const getDirectories = async (source: any) =>
@@ -11,10 +11,10 @@ export const getDirectories = async (source: any) =>
 
 async function readdirChronoSorted(dirpath: any, order: any) {
   order = order || 1
-  const files = await fs.readdir(dirpath)
+  const files = await fsPromises.readdir(dirpath)
   const stats = await Promise.all(
     files.map((filename: any) =>
-      fs
+      fsPromises
         .stat(path.join(dirpath, filename))
         .then((stat: { mtime: any }) => ({ filename, mtime: stat.mtime }))
     )
@@ -22,33 +22,6 @@ async function readdirChronoSorted(dirpath: any, order: any) {
   return stats
     .sort((a, b) => order * (b.mtime.getTime() - a.mtime.getTime()))
     .map(stat => stat.filename)
-}
-
-export async function checkForRetries() {
-  const platformFolder = await getDirectories(`./e2e/artifacts/`)
-  const testFolders = platformFolder[0]
-  const testResultFolder = testFolders[0]
-  const testResults = await getDirectories(testResultFolder)
-  const testCountIncrease = []
-  testResults.forEach((element: any) => {
-    if (element.includes('✗')) {
-      testCountIncrease.push(element)
-    }
-  })
-  const testCount = fs.readFileSync('./e2e/test_count.txt', 'utf8')
-  const textLines = testCount.split('\n')
-  if (
-    !textLines.includes('Added test retries') &&
-    testCountIncrease.length > 0
-  ) {
-    const increaseTestCount = parseInt(textLines[0]) + testCountIncrease.length
-    fs.writeFileSync('./e2e/test_count.txt', `${increaseTestCount}`)
-    fs.appendFileSync('./e2e/test_count.txt', `Added test retries`)
-    return increaseTestCount
-  } else {
-    console.log('Test count has already been increased for retries')
-    return 0
-  }
 }
 
 export default async function getTestLogs() {
