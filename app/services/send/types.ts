@@ -70,7 +70,7 @@ export interface SendServiceHelper {
 export type GetTransactionRequestParams = SendServiceFuncParams
 
 export type ValidateStateAndCalculateFeesParams = SendServiceFuncParams & {
-  nativeTokenBalance?: BN
+  nativeTokenBalance?: BN // in wei
 }
 
 type SendServiceFuncParams = {

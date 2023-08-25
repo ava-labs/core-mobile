@@ -14,7 +14,6 @@ import { AddrBookItemType, Contact } from 'Repo'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Row } from 'components/Row'
 import { useSendNFTContext } from 'contexts/SendNFTContext'
-import { Opacity85 } from 'resources/Constants'
 import { Account } from 'store/account'
 import { NFTItemData } from 'store/nft'
 import NetworkFeeSelector from 'components/NetworkFeeSelector'
@@ -162,7 +161,6 @@ export default function NftSend({
         <>
           <AvaText.Heading3>Collectible</AvaText.Heading3>
           <CollectibleItem nft={nft} />
-          <Space y={8} />
           <NetworkFeeSelector
             gasLimit={gasLimit ?? 0}
             onGasPriceChange={handleGasPriceChange}
@@ -188,35 +186,43 @@ export default function NftSend({
 
 const CollectibleItem = ({ nft }: { nft: NFTItemData }) => {
   const { theme } = useApplicationContext()
+
   return (
     <View
       style={[
         styles.collectibleItem,
         {
-          backgroundColor: theme.colorBg2 + Opacity85
+          backgroundColor: theme.colorBg2
         }
       ]}>
       <Row>
-        {nft.isSvg ? (
-          <View style={{ alignItems: 'center' }}>
-            <SvgXml
-              xml={nft.metadata.imageUri ?? null}
+        <View style={{ borderRadius: 8 }}>
+          {nft.isSvg ? (
+            <View style={{ alignItems: 'center' }}>
+              <SvgXml
+                xml={nft.metadata.imageUri ?? null}
+                width={80}
+                height={80 * nft.aspect}
+              />
+            </View>
+          ) : (
+            <Image
+              style={styles.nftImage}
+              source={{ uri: nft.metadata.imageUri }}
               width={80}
-              height={80 * nft.aspect}
+              height={80}
             />
-          </View>
-        ) : (
-          <Image
-            style={styles.nftImage}
-            source={{ uri: nft.metadata.imageUri }}
-            width={80}
-            height={80}
-          />
-        )}
+          )}
+        </View>
         <Space x={16} />
-        <AvaText.Body2 textStyle={{ flex: 1 }}>
-          {nft.metadata.name}
-        </AvaText.Body2>
+        <View style={{ flex: 1 }}>
+          <AvaText.Heading5 numberOfLines={1} ellipsizeMode="tail">
+            #{nft.tokenId}
+          </AvaText.Heading5>
+          <AvaText.Heading6 numberOfLines={1} ellipsizeMode="tail">
+            {nft.metadata.name}
+          </AvaText.Heading6>
+        </View>
       </Row>
     </View>
   )
@@ -228,7 +234,7 @@ const styles = StyleSheet.create({
     minHeight: '100%'
   },
   collectibleItem: {
-    marginVertical: 4,
+    marginVertical: 16,
     borderRadius: 8,
     padding: 16
   },
