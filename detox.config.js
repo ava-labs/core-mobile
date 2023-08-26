@@ -127,7 +127,7 @@ module.exports = {
       testRunner: {
         $0: 'jest',
         args: {
-          testMatch: '**/e2e/tests/**/*.e2e.smoke.ts'
+          config: 'e2e/smoke_test_config.json'
         }
       }
     },
@@ -153,7 +153,7 @@ module.exports = {
       testRunner: {
         $0: 'jest',
         args: {
-          testMatch: '**/e2e/tests/**/*.e2e.smoke.ts'
+          config: 'e2e/smoke_test_config.json'
         }
       }
     },
@@ -179,7 +179,7 @@ module.exports = {
       testRunner: {
         $0: 'jest',
         args: {
-          testMatch: '**/e2e/tests/**/*.e2e.smoke.ts'
+          config: './e2e/smoke_test_config.json'
         }
       }
     },
@@ -199,7 +199,7 @@ module.exports = {
       testRunner: {
         $0: 'jest',
         args: {
-          testMatch: '**/e2e/tests/**/*.e2e.smoke.ts'
+          config: 'e2e/smoke_test_config.json'
         }
       }
     },
@@ -212,7 +212,7 @@ module.exports = {
       testRunner: {
         $0: 'jest',
         args: {
-          testMatch: '**/e2e/tests/**/*.e2e.smoke.ts'
+          config: 'e2e/smoke_test_config.json'
         }
       }
     },
@@ -239,7 +239,7 @@ module.exports = {
       testRunner: {
         $0: 'jest',
         args: {
-          testMatch: '**/e2e/tests/**/*.e2e.smoke.ts'
+          config: 'e2e/smoke_test_config.json'
         }
       }
     },

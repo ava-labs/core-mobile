@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { readdir } from 'fs/promises'
 require('ts-node').register()
-const fs = require('fs').promises
+const fsPromises = require('fs').promises
 const path = require('path')
 
 export const getDirectories = async (source: any) =>
@@ -11,10 +11,10 @@ export const getDirectories = async (source: any) =>
 
 async function readdirChronoSorted(dirpath: any, order: any) {
   order = order || 1
-  const files = await fs.readdir(dirpath)
+  const files = await fsPromises.readdir(dirpath)
   const stats = await Promise.all(
     files.map((filename: any) =>
-      fs
+      fsPromises
         .stat(path.join(dirpath, filename))
         .then((stat: { mtime: any }) => ({ filename, mtime: stat.mtime }))
     )
