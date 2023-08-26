@@ -7,4 +7,4 @@ set -o pipefail
 set -x
 
 npm rebuild detox
-./node_modules/.bin/detox test --configuration ios.external.release.smoke.ci --retries 2
+./node_modules/.bin/detox test --maxWorkers 3 --configuration ios.external.release.smoke.ci --retries 2

@@ -144,14 +144,10 @@ export async function writeRunIdToTextFile(runId: string) {
 
 // Todo: Write a check for a different result and if the existing result differs from the result being sent update the result in testrail
 // Checks to see if a result already exists in testrail
-export async function isResultExistsInTestrail(
-  runID: number,
-  caseId: number,
-  statusId: number
-) {
+export async function isResultExistsInTestrail(runID: number, caseId: number) {
   const caseDetails = await api.getResultsForCase(runID, caseId)
   if (caseDetails.length > 0) {
-    if (caseDetails[0].status_id !== statusId) {
+    if (caseDetails[0].status_id === 5 && caseDetails.length < 2) {
       return false
     } else {
       return true
