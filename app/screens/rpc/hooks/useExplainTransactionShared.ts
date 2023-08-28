@@ -192,13 +192,13 @@ export const useExplainTransactionShared = (args: Args) => {
         try {
           gasLimit = await (txParams.gas
             ? BigNumber.from(txParams.gas).toNumber()
-            : networkFeeService.estimateGasLimit(
-                txParams.from,
-                txParams.to,
-                txParams.data ?? '',
-                txParams.value,
+            : networkFeeService.estimateGasLimit({
+                from: txParams.from,
+                to: txParams.to,
+                data: txParams.data,
+                value: txParams.value,
                 network
-              ))
+              }))
         } catch (e) {
           Logger.error('failed to calculate gas limit', e)
           throw Error('Unable to calculate gas limit')

@@ -44,13 +44,19 @@ class NetworkFeeService {
     return null
   }
 
-  async estimateGasLimit(
-    from: string,
-    to: string,
-    data: string,
-    value: BigNumberish,
+  async estimateGasLimit({
+    from,
+    to,
+    data,
+    value,
+    network
+  }: {
+    from: string
+    to: string
+    data?: string
+    value?: BigNumberish
     network: Network
-  ): Promise<number | null> {
+  }): Promise<number | null> {
     if (network.vmName !== NetworkVMType.EVM) return null
 
     const provider = getEvmProvider(network)
