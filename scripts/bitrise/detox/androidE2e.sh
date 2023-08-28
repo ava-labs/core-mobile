@@ -9,4 +9,4 @@ set -o pipefail
 set -x
 
 npm rebuild detox
-QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test --maxWorkers 3 --configuration android.external.release.smoke.ci --headless --retries 2
+QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test --configuration android.external.release.smoke.ci --headless --retries 1
