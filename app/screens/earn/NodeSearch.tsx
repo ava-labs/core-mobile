@@ -3,7 +3,7 @@ import AppNavigation from 'navigation/AppNavigation'
 import { StakeSetupScreenProps } from 'navigation/types'
 import { useRoute } from '@react-navigation/native'
 import { useSearchNode } from 'hooks/earn/useSearchNode'
-import { useNodes } from 'hooks/earn/useNodes'
+import { useNodesWithVersion } from 'hooks/earn/useNodesWithVersion'
 import { MatchFound } from './components/MatchFound'
 import { Searching } from './components/Searching'
 import { NoMatchFound } from './components/NoMatchFound'
@@ -14,7 +14,7 @@ type RouteProp = StakeSetupScreenProps<
 
 export const NodeSearch = () => {
   const { stakingEndTime, stakingAmount } = useRoute<RouteProp>().params
-  const { isFetching, error, data } = useNodes()
+  const { isFetching, error, data } = useNodesWithVersion()
   const { validator, error: useSearchNodeError } = useSearchNode({
     stakingAmount,
     stakingEndTime,

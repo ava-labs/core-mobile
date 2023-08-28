@@ -2,7 +2,6 @@ import React, { useState } from 'react'
 import { FlatList, StyleSheet, View } from 'react-native'
 import AvaText from 'components/AvaText'
 import SearchBar from 'components/SearchBar'
-import { useNodes } from 'hooks/earn/useNodes'
 import DropDown from 'components/Dropdown'
 import { Space } from 'components/Space'
 import { useApplicationContext } from 'contexts/ApplicationContext'
@@ -14,6 +13,7 @@ import { useAdvancedSearchNodes } from 'hooks/earn/useAdvancedSearchNodes'
 import { advancedFilterDropDownItems, UP_TIME_HIGH_TO_LOW } from 'consts/earn'
 import Spinner from 'components/animation/Spinner'
 import ZeroState from 'components/ZeroState'
+import { useNodesWithVersion } from 'hooks/earn/useNodesWithVersion'
 import { NodeCard } from './components/NodeCard'
 import { NoMatchFound } from './components/NoMatchFound'
 
@@ -28,7 +28,7 @@ const SelectNode = () => {
   const { stakingAmount, stakingEndTime, minUpTime, maxFee } =
     useRoute<ScreenProps['route']>().params
 
-  const { isFetching, data, error } = useNodes()
+  const { isFetching, data, error } = useNodesWithVersion()
   const { validators, error: useAdvancedSearchNodesError } =
     useAdvancedSearchNodes({
       validators: data,
