@@ -159,7 +159,8 @@
     "vm-browserify": "0.0.4",
     "web3": "1.7.1",
     "xss": "1.0.14",
-    "zod": "3.20.2"
+    "zod": "3.20.2",
+    "rxjs": "7.5.6"
   },
   "resolutions": {
     "minimist": "1.2.6",
@@ -168,7 +169,9 @@
     "plist": "3.0.5",
     "ansi-regex": "4.1.1",
     "ansi-styles": "3.2.1",
-    "node-fetch": "2.6.7"
+    "node-fetch": "2.6.7",
+    "@types/react": "17.0.44",
+    "@types/react-dom": "18.0.6"
   },
   "devDependencies": {
     "@babel/core": "7.14.3",
