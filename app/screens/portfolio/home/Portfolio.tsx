@@ -61,6 +61,7 @@ const Portfolio = () => {
       <PortfolioHeader />
       <TabViewAva
         currentTabIndex={params?.tabIndex}
+        showBottomSeparator={true}
         onTabIndexChange={tabIndex => {
           setParams({ tabIndex })
           capturePosthogEvents(tabIndex)
@@ -183,7 +184,11 @@ const DeFiTab = () => {
 }
 
 const renderCustomLabel = (title: string, selected: boolean, color: string) => {
-  return <AvaText.Heading3 textStyle={{ color }}>{title}</AvaText.Heading3>
+  return (
+    <AvaText.Heading3 textStyle={{ color }} ellipsizeMode="tail">
+      {title}
+    </AvaText.Heading3>
+  )
 }
 
 export default Portfolio
