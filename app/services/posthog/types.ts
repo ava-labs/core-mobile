@@ -9,7 +9,6 @@ export enum FeatureGates {
   SEND = 'send-feature',
   SEND_NFT_IOS = 'send-nft-ios-feature',
   SEND_NFT_ANDROID = 'send-nft-android-feature',
-  USE_FLATLIST_ANDROID = 'use-flatlist-android',
   BUY_COINBASE_PAY = 'buy-feature-coinbase',
   USE_COINGECKO_PRO = 'use-coingecko-pro'
 }

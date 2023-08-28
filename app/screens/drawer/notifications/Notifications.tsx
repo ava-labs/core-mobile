@@ -10,6 +10,7 @@ import AvaButton from 'components/AvaButton'
 import { selectAppState } from 'store/app'
 import {
   selectNotificationSubscription,
+  setNotificationSubscriptions,
   turnOffNotificationsFor,
   turnOnNotificationsFor
 } from 'store/notifications'
@@ -19,19 +20,26 @@ import {
   ChannelId,
   notificationChannels
 } from 'services/notifications/channels'
+import { selectIsEarnBlocked } from 'store/posthog'
+import Logger from 'utils/Logger'
 
+/**
+ * Conceptual description of notification handling works can be found here
+ * https://ava-labs.atlassian.net/wiki/spaces/EN/pages/2372927490/Managing+Notifications
+ */
 const Notifications = () => {
   const [showAllowPushNotificationsCard, setShowAllowPushNotificationsCard] =
     useState(false)
   const [blockedChannels, setBlockedChannels] = useState(
-    new Map<ChannelId | 'all', boolean>()
+    new Map<ChannelId, boolean>()
   )
   const appState = useSelector(selectAppState)
+  const isEarnBlocked = useSelector(selectIsEarnBlocked)
 
   useEffect(() => {
     if (appState === 'active') {
       NotificationsService.getBlockedNotifications().then(value => {
-        setShowAllowPushNotificationsCard(value.size === 0)
+        setShowAllowPushNotificationsCard(value.size !== 0)
         setBlockedChannels(value)
       })
     }
@@ -43,9 +51,7 @@ const Notifications = () => {
         <NotificationToggle
           key={ch.id}
           channel={ch}
-          isSystemDisabled={
-            blockedChannels.has(ch.id) || blockedChannels.has('all')
-          }
+          isSystemDisabled={blockedChannels.has(ch.id)}
         />
       )
     })
@@ -53,8 +59,8 @@ const Notifications = () => {
 
   return (
     <View style={{ marginTop: 20 }}>
-      {!showAllowPushNotificationsCard && <AllowPushNotificationsCard />}
-      {renderNotificationToggles()}
+      {showAllowPushNotificationsCard && <AllowPushNotificationsCard />}
+      {!isEarnBlocked && renderNotificationToggles()}
     </View>
   )
 }
@@ -71,9 +77,20 @@ function NotificationToggle({
   const checked = !isSystemDisabled && inAppEnabled
   const dispatch = useDispatch()
 
-  function onChange(isChecked: boolean) {
+  async function onChange(isChecked: boolean) {
+    // before we change the state, we need to check if the system settings allow us to do so
+    const { permission } = await NotificationsService.getAllPermissions(false)
+    if (permission !== 'authorized') {
+      Logger.error('Notifications permission not granted')
+      return
+    }
+
     if (isChecked) {
-      dispatch(turnOnNotificationsFor({ channelId: channel.id }))
+      dispatch(
+        turnOnNotificationsFor({
+          channelId: channel.id
+        })
+      )
     } else {
       dispatch(turnOffNotificationsFor({ channelId: channel.id }))
     }
@@ -92,8 +109,12 @@ function NotificationToggle({
 
 function AllowPushNotificationsCard() {
   const { theme } = useApplicationContext()
+  const dispatch = useDispatch()
 
   function onEnterSettings() {
+    notificationChannels.forEach(channel => {
+      dispatch(setNotificationSubscriptions([channel.id, true]))
+    })
     NotificationsService.getAllPermissions()
   }
 

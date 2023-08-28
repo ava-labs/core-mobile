@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { readdir } from 'fs/promises'
 require('ts-node').register()
-const fs = require('fs').promises
+const fsPromises = require('fs').promises
 const path = require('path')
 
 export const getDirectories = async (source: any) =>
@@ -11,10 +11,10 @@ export const getDirectories = async (source: any) =>
 
 async function readdirChronoSorted(dirpath: any, order: any) {
   order = order || 1
-  const files = await fs.readdir(dirpath)
+  const files = await fsPromises.readdir(dirpath)
   const stats = await Promise.all(
     files.map((filename: any) =>
-      fs
+      fsPromises
         .stat(path.join(dirpath, filename))
         .then((stat: { mtime: any }) => ({ filename, mtime: stat.mtime }))
     )
@@ -103,6 +103,14 @@ async function splitTestResult(testItem: string | undefined) {
   if (splitTestArrayItem) {
     const rawSectionName = splitTestArrayItem[0]
     const testCase = 'Should' + splitTestArrayItem[1]
+    if (testCase.includes('(')) {
+      const splitTestCase = testCase.split('(')
+      const rejoinedString = splitTestCase[0]
+      const trimmedTestCase = rejoinedString?.trim()
+      const sectionName = removeTestSectionExtraChars(rawSectionName)
+      const trimmedSectionName = sectionName?.trim()
+      return { sectionName: trimmedSectionName, testCase: trimmedTestCase }
+    }
     const sectionName = removeTestSectionExtraChars(rawSectionName)
     const trimmedSectionName = sectionName?.trim()
     return { sectionName: trimmedSectionName, testCase }

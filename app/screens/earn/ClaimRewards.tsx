@@ -40,7 +40,11 @@ const ClaimRewards = () => {
   const { totalFees } = useClaimFees()
   const nAvaxFormatter = useNAvaxFormatter()
   const avaxFormatter = useAvaxFormatter()
-  const claimRewardsMutation = useClaimRewards(goBack, onClaimError)
+  const claimRewardsMutation = useClaimRewards(
+    goBack,
+    onClaimError,
+    onFundsStuck
+  )
   const isFocused = useIsFocused()
   const unableToGetFees = totalFees === undefined
   const showFeeError = useTimeElapsed(
@@ -54,7 +58,11 @@ const ClaimRewards = () => {
     }
   }, [navigate, showFeeError])
 
-  if (!data || data?.unlockedUnstaked[0]?.amount === undefined) {
+  if (!data) {
+    return null
+  }
+
+  if (data.unlockedUnstaked[0]?.amount === undefined) {
     return <EmptyClaimRewards />
   }
 
@@ -93,12 +101,20 @@ const ClaimRewards = () => {
     )
   }
 
+  function onFundsStuck() {
+    navigate(AppNavigation.Earn.FundsStuck, {
+      onTryAgain: () => issueClaimRewards()
+    })
+  }
+
+  const issueClaimRewards = () => {
+    claimRewardsMutation.mutate()
+  }
+
   return (
     <ConfirmScreen
       isConfirming={claimRewardsMutation.isPending}
-      onConfirm={() => {
-        claimRewardsMutation.mutate()
-      }}
+      onConfirm={issueClaimRewards}
       onCancel={handleGoBack}
       header="Claim Rewards"
       confirmBtnTitle="Claim Now"

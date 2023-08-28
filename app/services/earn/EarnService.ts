@@ -1,7 +1,7 @@
 import { getPvmApi } from 'utils/network/pvm'
-import { Account } from 'store/account'
+import { Account, AccountCollection } from 'store/account'
 import { exportC } from 'services/earn/exportC'
-import { importP } from 'services/earn/importP'
+import { importP, importPWithBalanceCheck } from 'services/earn/importP'
 import Big from 'big.js'
 import { FujiParams, MainnetParams } from 'utils/NetworkParams'
 import { importC } from 'services/earn/importC'
@@ -15,11 +15,12 @@ import NetworkService from 'services/network/NetworkService'
 import { UnsignedTx } from '@avalabs/avalanchejs-v2'
 import Logger from 'utils/Logger'
 import { Avalanche } from '@avalabs/wallets-sdk'
-import { retry } from 'utils/js/retry'
+import { retry, RetryBackoffPolicy } from 'utils/js/retry'
 import {
   AddDelegatorTransactionProps,
   CollectTokensForStakingParams,
-  GetAllStakesParams
+  GetAllStakesParams,
+  RecoveryEvents
 } from 'services/earn/types'
 import { getUnixTime } from 'date-fns'
 import { GetCurrentSupplyResponse } from '@avalabs/avalanchejs-v2/dist/src/vms/pvm'
@@ -33,7 +34,11 @@ import {
 } from '@avalabs/glacier-sdk'
 import { glacierSdk } from 'utils/network/glacier'
 import { Avax } from 'types/Avax'
-import { maxTransactionStatusCheckRetries } from './utils'
+import {
+  getTransformedTransactions,
+  maxGetAtomicUTXOsRetries,
+  maxTransactionStatusCheckRetries
+} from './utils'
 
 class EarnService {
   /**
@@ -45,6 +50,57 @@ class EarnService {
   }
 
   /**
+   * Checks if there are any stuck atomic UTXOs and tries to import them.
+   * You can pass callback to get events about progress of operation.
+   * See {@link RecoveryEvents} for details on events.
+   * Also see {@link https://ava-labs.atlassian.net/wiki/spaces/EN/pages/2372141084/Cross+chain+retry+logic}
+   * for additional explanation.
+   */
+  async importAnyStuckFunds({
+    activeAccount,
+    isDevMode,
+    progressEvents
+  }: {
+    activeAccount: Account
+    isDevMode: boolean
+    progressEvents?: (events: RecoveryEvents) => void
+  }): Promise<void> {
+    Logger.trace('Start importAnyStuckFunds')
+    const avaxXPNetwork = NetworkService.getAvalancheNetworkXP(isDevMode)
+
+    const { pChainUtxo, cChainUtxo } = await retry({
+      operation: retryIndex => {
+        if (retryIndex !== 0) {
+          progressEvents?.(RecoveryEvents.GetAtomicUTXOsFailIng)
+        }
+        return WalletService.getAtomicUTXOs({
+          accountIndex: activeAccount.index,
+          avaxXPNetwork
+        })
+      },
+      isSuccess: result => !!result.pChainUtxo && !!result.cChainUtxo,
+      maxRetries: maxGetAtomicUTXOsRetries,
+      backoffPolicy: RetryBackoffPolicy.constant(2)
+    })
+    progressEvents?.(RecoveryEvents.Idle)
+    if (pChainUtxo.getUTXOs().length !== 0) {
+      progressEvents?.(RecoveryEvents.ImportPStart)
+      await importPWithBalanceCheck({ activeAccount, isDevMode })
+      progressEvents?.(RecoveryEvents.ImportPFinish)
+    }
+
+    if (cChainUtxo.getUTXOs().length !== 0) {
+      progressEvents?.(RecoveryEvents.ImportCStart)
+      await importC({
+        activeAccount,
+        isDevMode
+      })
+      progressEvents?.(RecoveryEvents.ImportCFinish)
+    }
+    Logger.trace('ImportAnyStuckFunds finished')
+  }
+
+  /**
    * Collect tokens for staking by moving Avax from C to P-chain
    */
   async collectTokensForStaking({
@@ -52,23 +108,21 @@ class EarnService {
     requiredAmount,
     activeAccount,
     isDevMode
-  }: CollectTokensForStakingParams): Promise<boolean> {
+  }: CollectTokensForStakingParams): Promise<void> {
     if (requiredAmount.isZero()) {
       Logger.info('no need to cross chain')
-      return true
+      return
     }
-    return (
-      (await exportC({
-        cChainBalance,
-        requiredAmount,
-        activeAccount,
-        isDevMode
-      })) &&
-      (await importP({
-        activeAccount,
-        isDevMode
-      }))
-    )
+    await exportC({
+      cChainBalance,
+      requiredAmount,
+      activeAccount,
+      isDevMode
+    })
+    await importP({
+      activeAccount,
+      isDevMode
+    })
   }
 
   /**
@@ -84,19 +138,17 @@ class EarnService {
     requiredAmount: Avax,
     activeAccount: Account,
     isDevMode: boolean
-  ): Promise<boolean> {
-    return (
-      (await exportP({
-        pChainBalance,
-        requiredAmount,
-        activeAccount,
-        isDevMode
-      })) &&
-      (await importC({
-        activeAccount,
-        isDevMode
-      }))
-    )
+  ): Promise<void> {
+    await exportP({
+      pChainBalance,
+      requiredAmount,
+      activeAccount,
+      isDevMode
+    })
+    await importC({
+      activeAccount,
+      isDevMode
+    })
   }
 
   /**
@@ -195,8 +247,6 @@ class EarnService {
   /**
    * Retrieve the upper bound on the number of tokens that exist in P-chain
    * This is an upper bound because it does not account for burnt tokens, including transaction fees.
-   *
-   * @param isDeveloperMode
    */
   getCurrentSupply(isTestnet: boolean): Promise<GetCurrentSupplyResponse> {
     return getPvmApi(isTestnet).getCurrentSupply()
@@ -234,6 +284,58 @@ class EarnService {
     )
 
     return stakes
+  }
+
+  getTransformedStakesForAllAccounts = async ({
+    isDeveloperMode,
+    accounts
+  }: {
+    isDeveloperMode: boolean
+    accounts: AccountCollection
+  }) => {
+    const oppositeIsDeveloperMode = !isDeveloperMode
+    const accountsArray = Object.values(accounts)
+
+    try {
+      const firstQueryParams = accountsArray.reduce((result, account) => {
+        if (account.addressPVM) {
+          result.push(account.addressPVM)
+        }
+        return result
+      }, [] as string[])
+
+      const firstTransactions = await getTransformedTransactions(
+        firstQueryParams,
+        isDeveloperMode
+      )
+
+      const indices = accountsArray.map(acc => acc.index)
+      const secondQueryParams = await WalletService.getAddressesByIndices(
+        indices,
+        'P',
+        false,
+        oppositeIsDeveloperMode
+      )
+
+      const secondTransactions = await getTransformedTransactions(
+        secondQueryParams,
+        oppositeIsDeveloperMode
+      )
+
+      const tranformedTransactions = (firstTransactions ?? [])
+        .concat(secondTransactions ?? [])
+        .map(transaction => {
+          return {
+            txHash: transaction.txHash,
+            endTimestamp: transaction.endTimestamp,
+            accountIndex: Number(transaction.index),
+            isDeveloperMode: transaction.isDeveloperMode
+          }
+        })
+      return tranformedTransactions
+    } catch (error) {
+      Logger.error('getTransformedStakesForAllAccounts failed: ', error)
+    }
   }
 }
 

@@ -147,7 +147,11 @@ export async function writeRunIdToTextFile(runId: string) {
 export async function isResultExistsInTestrail(runID: number, caseId: number) {
   const caseDetails = await api.getResultsForCase(runID, caseId)
   if (caseDetails.length > 0) {
-    return true
+    if (caseDetails[0].status_id === 5 && caseDetails.length < 2) {
+      return false
+    } else {
+      return true
+    }
   } else {
     return false
   }
@@ -186,7 +190,8 @@ async function generatePlatformResults(
       const testCaseId = resultObject?.case_id
       const isResultsExists = await isResultExistsInTestrail(
         Number(runId),
-        testCaseId
+        testCaseId,
+        statusId
       )
       const payload = {
         status_id: statusId
@@ -203,7 +208,7 @@ async function generatePlatformResults(
           if (failScreenshot) {
             const failedPayload = {
               name: 'failed.png',
-              value: fs.createReadStream(failScreenshot)
+              value: await fs.createReadStream(failScreenshot)
             }
             // Attaches the screenshot to the corressponding case in the test run
             const attachmentID = await api.addAttachmentToResult(

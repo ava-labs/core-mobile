@@ -1,6 +1,7 @@
 /**
  * @format
  */
+import { Text, TextInput } from 'react-native'
 import 'react-native-gesture-handler'
 import './polyfills'
 import 'react-native-get-random-values'
@@ -13,9 +14,23 @@ import { name as appName } from './app.json'
 import DevDebuggingConfig from './app/utils/debugging/DevDebuggingConfig'
 import { server } from './tests/msw/native/server'
 
-//set Big properties globally to not use exponential notation
+// set Big properties globally to not use exponential notation
 Big.PE = 99
 Big.NE = -18
+
+/**
+ * disable font scaling to prevent broken UI
+ *
+ * notes:
+ * - we only disable it for the Text and TextInput components
+ * - for native components (Alert, Dialog, DatePicker,...), it's okay
+ *   to let them scale their text since they have been well tested
+ */
+Text.defaultProps = Text.defaultProps || {}
+Text.defaultProps.allowFontScaling = false
+
+TextInput.defaultProps = TextInput.defaultProps || {}
+TextInput.defaultProps.allowFontScaling = false
 
 let AppEntryPoint = ContextApp
 

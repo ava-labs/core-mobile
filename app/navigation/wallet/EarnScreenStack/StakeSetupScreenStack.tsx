@@ -1,5 +1,4 @@
 import React from 'react'
-import { HeaderBackButton } from '@react-navigation/elements'
 import AppNavigation from 'navigation/AppNavigation'
 import { createStackNavigator } from '@react-navigation/stack'
 import GetStarted from 'screens/earn/GetStarted'
@@ -13,6 +12,9 @@ import { Confirmation } from 'screens/earn/Confirmation/Confirmation'
 import { CancelModal } from 'screens/earn/CancelModal'
 import SmartStakeAmount from 'screens/earn/SmartStakeAmount'
 import { Avax } from 'types/Avax'
+import { BackButton } from 'components/BackButton'
+import { FundsStuckModal } from 'screens/earn/FundsStuckModal'
+import { handleStakeConfirmationGoBack } from 'utils/earn/handleStakeConfirmationGoBack'
 
 export type StakeSetupStackParamList = {
   [AppNavigation.StakeSetup.GetStarted]: undefined
@@ -36,8 +38,12 @@ export type StakeSetupStackParamList = {
     nodeId: string
     stakingAmount: Avax
     stakingEndTime: Date
+    onBack?: () => void
   }
   [AppNavigation.StakeSetup.Cancel]: undefined
+  [AppNavigation.StakeSetup.FundsStuck]: {
+    onTryAgain: () => void
+  }
 }
 
 const Stack = createStackNavigator<StakeSetupStackParamList>()
@@ -88,6 +94,11 @@ function StakeSetupScreenStack() {
         name={AppNavigation.StakeSetup.Cancel}
         component={CancelModal}
       />
+      <Stack.Screen
+        options={{ presentation: 'transparentModal' }}
+        name={AppNavigation.StakeSetup.FundsStuck}
+        component={FundsStuckModal}
+      />
     </Stack.Navigator>
   )
 }
@@ -111,42 +122,12 @@ type ConfirmationNavigationProp = StakeSetupScreenProps<
 >['navigation']
 
 const ConfirmationBackButton = () => {
-  const { goBack, getState, navigate } =
-    useNavigation<ConfirmationNavigationProp>()
+  const navigation = useNavigation<ConfirmationNavigationProp>()
 
-  const handleGoBack = () => {
-    const navigationState = getState()
-
-    // the navigationState.index represents the current index of the route,
-    // if the index is 1 or greater, meaning there is previous route in the stack,
-    // we will get the previous route by index - 1
-    // otherwise we return undefined and it simply calls goBack which goes back
-    // to last screen in the previous stack
-    const previousScreen =
-      navigationState.index >= 1
-        ? navigationState.routes[navigationState.index - 1]
-        : undefined
-
-    if (previousScreen?.name === AppNavigation.StakeSetup.NodeSearch) {
-      const stakingAmount = previousScreen.params?.stakingAmount
-      if (stakingAmount) {
-        return navigate(AppNavigation.StakeSetup.StakingDuration, {
-          stakingAmount
-        })
-      }
-      return navigate(AppNavigation.StakeSetup.SmartStakeAmount)
-    }
-    goBack()
+  const onPress = () => {
+    handleStakeConfirmationGoBack(navigation)
   }
-
-  return <HeaderBackButton onPress={handleGoBack} style={backButtonStyle} />
+  return <BackButton onPress={onPress} />
 }
-
-const BackButton = () => {
-  const { goBack } = useNavigation()
-  return <HeaderBackButton onPress={goBack} style={backButtonStyle} />
-}
-
-const backButtonStyle = { marginLeft: 8 }
 
 export default React.memo(StakeSetupScreenStack)

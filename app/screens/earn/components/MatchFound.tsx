@@ -9,6 +9,7 @@ import AvaText from 'components/AvaText'
 import Checkmark from 'components/animation/Checkmark'
 import { StyleSheet, View } from 'react-native'
 import { Space } from 'components/Space'
+import { handleStakeConfirmationGoBack } from 'utils/earn/handleStakeConfirmationGoBack'
 
 type ScreenProps = StakeSetupScreenProps<
   typeof AppNavigation.StakeSetup.NodeSearch
@@ -16,16 +17,21 @@ type ScreenProps = StakeSetupScreenProps<
 
 export const MatchFound = ({ validator }: { validator: NodeValidator }) => {
   const { theme } = useApplicationContext()
-  const { navigate } = useNavigation<ScreenProps['navigation']>()
+  const navigation = useNavigation<ScreenProps['navigation']>()
   const { stakingAmount, stakingEndTime } =
     useRoute<ScreenProps['route']>().params
 
+  const handleOnBack = () => {
+    handleStakeConfirmationGoBack(navigation)
+  }
+
   useEffect(() => {
     const timer = setTimeout(() => {
-      navigate(AppNavigation.StakeSetup.Confirmation, {
+      navigation.navigate(AppNavigation.StakeSetup.Confirmation, {
         nodeId: validator.nodeID,
         stakingAmount,
-        stakingEndTime
+        stakingEndTime,
+        onBack: handleOnBack
       })
     }, 2200)
     return () => clearTimeout(timer)

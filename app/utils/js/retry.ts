@@ -4,23 +4,25 @@ import Logger from 'utils/Logger'
 const DEFAULT_MAX_RETRIES = 10
 
 type RetryParams<T> = {
-  operation: () => Promise<T>
+  operation: (retryIndex: number) => Promise<T>
   isSuccess: (result: T) => boolean
   maxRetries?: number
+  backoffPolicy?: RetryBackoffPolicyInterface
 }
 
 /*
- * Retries an operation with exponential backoff.
+ * Retries an operation with defined backoff policy.
  *
  * @param operation - The operation to retry.
  * @param isSuccess - The predicate to check if the operation succeeded.
  * @param maxRetries - The maximum number of retries.
+ * @param backoffPolicy - Function to generate delay time based on current retry count.
  *
  * @returns The result of the operation.
  * @throws An error if the operation fails after the maximum number of retries.
  *
  * @example
- *   const result = await retryWithExponentialBackoff(
+ *   const result = await retry(
  *     async () => {
  *       const response = await fetch('https://example.com')
  *       return response.json()
@@ -31,7 +33,8 @@ type RetryParams<T> = {
 export const retry = async <T>({
   operation,
   isSuccess,
-  maxRetries = DEFAULT_MAX_RETRIES
+  maxRetries = DEFAULT_MAX_RETRIES,
+  backoffPolicy = RetryBackoffPolicy.exponential()
 }: RetryParams<T>): Promise<T> => {
   let backoffPeriodSeconds = 0
   let retries = 0
@@ -45,7 +48,7 @@ export const retry = async <T>({
     }
 
     try {
-      const result = await operation()
+      const result = await operation(retries)
 
       if (isSuccess(result)) {
         return result
@@ -56,7 +59,7 @@ export const retry = async <T>({
       Logger.error('operation failed', err)
     }
 
-    backoffPeriodSeconds = Math.pow(2, retries)
+    backoffPeriodSeconds = backoffPolicy(retries)
     retries++
   }
 
@@ -65,4 +68,19 @@ export const retry = async <T>({
     : 'Max retry exceeded.'
 
   throw new Error(errorMessage)
+}
+
+type RetryBackoffPolicyInterface = (retryIndex: number) => number
+
+export class RetryBackoffPolicy {
+  static exponential(): RetryBackoffPolicyInterface {
+    return (retryIndex: number): number => {
+      return Math.pow(2, retryIndex)
+    }
+  }
+  static constant(secondsToDelay: number): RetryBackoffPolicyInterface {
+    return (_: number): number => {
+      return secondsToDelay
+    }
+  }
 }

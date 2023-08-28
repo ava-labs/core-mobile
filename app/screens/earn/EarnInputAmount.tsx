@@ -3,11 +3,11 @@ import { Row } from 'components/Row'
 import AvaLogoSVG from 'components/svg/AvaLogoSVG'
 import { Space } from 'components/Space'
 import AvaText from 'components/AvaText'
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Platform } from 'react-native'
 import { DenominationNAvax } from 'types/denominations'
-import limitInput from 'screens/earn/limitInput'
+import limitInput, { getMaxDecimals } from 'screens/earn/limitInput'
 import { TokenBaseUnitInput } from 'components/TokenBaseUnitInput'
 import { Avax } from 'types/Avax'
 
@@ -21,6 +21,7 @@ const EarnInputAmount = ({
   handleAmountChange?: (amount: Avax) => void
 }) => {
   const { theme } = useApplicationContext()
+  const [maxDecimals, setMaxDecimals] = useState(decimals.valueOf())
 
   const isAndroid = Platform.OS === 'android'
 
@@ -30,6 +31,10 @@ const EarnInputAmount = ({
       handleAmountChange?.(sanitized)
     }
   }, [decimals, handleAmountChange, inputAmount])
+
+  useEffect(() => {
+    setMaxDecimals(getMaxDecimals(inputAmount) ?? decimals.valueOf())
+  }, [decimals, inputAmount])
 
   const interceptAmountChange = (amount: Avax) => {
     const sanitized = limitInput(amount) ?? Avax.fromBase(0)
@@ -46,7 +51,7 @@ const EarnInputAmount = ({
       <TokenBaseUnitInput
         value={inputAmount}
         baseUnitConstructor={Avax}
-        denomination={decimals}
+        maxDecimals={maxDecimals}
         placeholder={'0.0'}
         onChange={interceptAmountChange}
         style={{

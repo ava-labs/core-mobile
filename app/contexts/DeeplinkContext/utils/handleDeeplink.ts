@@ -8,15 +8,17 @@ import {
 } from 'store/walletConnectV2'
 import Logger from 'utils/Logger'
 import { navigateToClaimRewards } from 'services/earn/utils'
-import { ACTIONS, PROTOCOLS } from '../types'
+import { ProcessedFeatureFlags } from 'store/posthog'
+import { ACTIONS, DeepLink, PROTOCOLS } from '../types'
 
 export const handleDeeplink = (
-  rawUrl: string,
-  dispatch: Dispatch<AnyAction>
+  deeplink: DeepLink,
+  dispatch: Dispatch<AnyAction>,
+  processedFeatureFlags: ProcessedFeatureFlags
 ): void => {
   let url
   try {
-    url = new URL(rawUrl)
+    url = new URL(deeplink.url)
   } catch (e) {
     return
   }
@@ -37,7 +39,7 @@ export const handleDeeplink = (
             const { version } = parseUri(uri)
             dispatchWalletConnectSession(version, uri, dispatch)
           } else {
-            Logger.info(`${rawUrl} is not a wallet connect link`)
+            Logger.info(`${deeplink.url} is not a wallet connect link`)
           }
         }
       }
@@ -52,11 +54,13 @@ export const handleDeeplink = (
             const { version } = parseUri(uri)
             dispatchWalletConnectSession(version, uri, dispatch)
           } else {
-            Logger.info(`${rawUrl} is not a wallet connect link`)
+            Logger.info(`${deeplink.url} is not a wallet connect link`)
           }
           break
         }
         case ACTIONS.StakeComplete: {
+          if (processedFeatureFlags.earnBlocked) return
+          deeplink.callback?.()
           navigateToClaimRewards()
           break
         }

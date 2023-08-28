@@ -23,7 +23,7 @@ describe('earn/importP', () => {
         } as unknown as Avalanche.JsonRpcProvider
       })
     jest.spyOn(NetworkService, 'sendTransaction').mockImplementation(() => {
-      return Promise.resolve('')
+      return Promise.resolve('mockTxHash')
     })
 
     jest.mock('services/wallet/WalletService')

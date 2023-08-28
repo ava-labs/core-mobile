@@ -35,3 +35,27 @@ export enum StakeTypeEnum {
 }
 
 export type StakingBalanceType = { type: StakeTypeEnum; amount: number }
+
+export enum RecoveryEvents {
+  Idle,
+  /**
+   * Operation is about to start importing P chain
+   */
+  ImportPStart,
+  /**
+   * Operation finished importing P chain
+   */
+  ImportPFinish,
+  /**
+   * Operation is about to start importing C chain
+   */
+  ImportCStart,
+  /**
+   * Operation finished importing C chain
+   */
+  ImportCFinish,
+  /**
+   * We cannot obtain atomic UTXOs for some reason
+   */
+  GetAtomicUTXOsFailIng
+}

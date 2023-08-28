@@ -1,5 +1,5 @@
-import React, { useMemo, useEffect } from 'react'
-import { Linking, StyleSheet, View } from 'react-native'
+import React, { useCallback, useEffect, useMemo } from 'react'
+import { BackHandler, Linking, StyleSheet, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Space } from 'components/Space'
 import AvaText from 'components/AvaText'
@@ -20,7 +20,7 @@ import { PopableContent } from 'components/PopableContent'
 import { truncateNodeId } from 'utils/Utils'
 import CopySVG from 'components/svg/CopySVG'
 import { copyToClipboard } from 'utils/DeviceTools'
-import { format } from 'date-fns'
+import { format, getUnixTime } from 'date-fns'
 import { useEarnCalcEstimatedRewards } from 'hooks/earn/useEarnCalcEstimatedRewards'
 import { useDispatch, useSelector } from 'react-redux'
 import { getReadableDateDuration } from 'utils/date/getReadableDateDuration'
@@ -39,7 +39,13 @@ import { useTimeElapsed } from 'hooks/time/useTimeElapsed'
 import { timeToShowNetworkFeeError } from 'consts/earn'
 import Spinner from 'components/animation/Spinner'
 import { useAvaxFormatter } from 'hooks/formatter/useAvaxFormatter'
-import { maybePromptEarnNotification } from 'store/notifications'
+import {
+  maybePromptEarnNotification,
+  scheduleStakingCompleteNotifications
+} from 'store/notifications'
+import useStakingParams from 'hooks/earn/useStakingParams'
+import { selectActiveAccount } from 'store/account'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { ConfirmScreen } from '../components/ConfirmScreen'
 import UnableToEstimate from '../components/UnableToEstimate'
 import { useValidateStakingEndTime } from './useValidateStakingEndTime'
@@ -54,10 +60,12 @@ const onDelegationError = (error: Error) => {
 
 export const Confirmation = () => {
   const dispatch = useDispatch()
+  const { minStakeAmount } = useStakingParams()
   const avaxFormatter = useAvaxFormatter()
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const isFocused = useIsFocused()
   const { navigate, getParent } = useNavigation<ScreenProps['navigation']>()
-  const { nodeId, stakingAmount, stakingEndTime } =
+  const { nodeId, stakingAmount, stakingEndTime, onBack } =
     useRoute<ScreenProps['route']>().params
   const previousRoute = useNavigationState(
     state => state.routes[state.index - 1]
@@ -70,13 +78,16 @@ export const Confirmation = () => {
   const tokenSymbol = activeNetwork.networkToken.symbol
   const { issueDelegationMutation } = useIssueDelegation(
     onDelegationSuccess,
-    onDelegationError
+    onDelegationError,
+    onFundsStuck
   )
   const claimableBalance = useGetClaimableBalance()
-
   const networkFees = useEstimateStakingFees(stakingAmount)
 
-  const deductedStakingAmount = stakingAmount.sub(networkFees ?? 0)
+  let deductedStakingAmount = stakingAmount.sub(networkFees ?? 0)
+  if (deductedStakingAmount.lt(minStakeAmount)) {
+    deductedStakingAmount = stakingAmount
+  }
 
   const { minStartTime, validatedStakingEndTime, validatedStakingDuration } =
     useValidateStakingEndTime(stakingEndTime, validator?.endTime ?? '')
@@ -92,6 +103,20 @@ export const Confirmation = () => {
     isFocused && unableToGetNetworkFees, // re-enable this checking whenever this screen is focused
     timeToShowNetworkFeeError
   )
+  const activeAccount = useSelector(selectActiveAccount)
+
+  const handleOnBack = useCallback(() => {
+    onBack?.()
+    return true
+  }, [onBack])
+
+  useEffect(() => {
+    const backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      handleOnBack
+    )
+    return () => backHandler.remove()
+  }, [onBack, handleOnBack])
 
   useEffect(() => {
     if (showNetworkFeeError) {
@@ -113,6 +138,12 @@ export const Confirmation = () => {
     navigate(AppNavigation.StakeSetup.Cancel)
   }
 
+  function onFundsStuck() {
+    navigate(AppNavigation.StakeSetup.FundsStuck, {
+      onTryAgain: () => issueDelegation()
+    })
+  }
+
   const issueDelegation = () => {
     if (!claimableBalance) {
       return
@@ -121,8 +152,7 @@ export const Confirmation = () => {
       stakingAmount: deductedStakingAmount,
       startDate: minStartTime,
       endDate: validatedStakingEndTime,
-      nodeId,
-      claimableBalance
+      nodeId
     })
   }
 
@@ -132,13 +162,22 @@ export const Confirmation = () => {
         <TransactionToast
           message={'Staking successful!'}
           type={TransactionToastType.SUCCESS}
-          txHash={txHash}
         />
       ),
       duration: 'long'
     })
     getParent()?.goBack()
     dispatch(maybePromptEarnNotification)
+    dispatch(
+      scheduleStakingCompleteNotifications([
+        {
+          txHash,
+          endTimestamp: getUnixTime(validatedStakingEndTime),
+          accountIndex: activeAccount?.index,
+          isDeveloperMode
+        }
+      ])
+    )
   }
 
   const handleReadMore = () => {
@@ -213,7 +252,10 @@ export const Confirmation = () => {
       )
 
       return (
-        <View style={{ flexDirection: 'column' }}>
+        <View
+          style={{
+            flexDirection: 'column'
+          }}>
           <AvaText.Heading2 textStyle={{ color: theme.colorBgGreen }}>
             {estimatedRewardInAvax + ' ' + tokenSymbol}
           </AvaText.Heading2>
@@ -256,8 +298,6 @@ export const Confirmation = () => {
 
   if (!validator) return null
 
-  // TODO: on error, show error message as toast
-  // on success, navigate to earn dashboard
   return (
     <ConfirmScreen
       isConfirming={issueDelegationMutation.isPending}
@@ -276,8 +316,8 @@ export const Confirmation = () => {
         <Row style={{ justifyContent: 'space-between' }}>
           <Popable
             content={renderEstimatedRewardPopoverInfoText()}
-            position="top"
-            style={{ minWidth: 150 }}
+            position="right"
+            style={{ minWidth: 180 }}
             backgroundColor={theme.neutral100}>
             <PopableLabel label="Estimated Reward" />
           </Popable>

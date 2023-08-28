@@ -1,5 +1,6 @@
 /* eslint-disable jest/expect-expect */
 import Actions from '../../helpers/actions'
+import AccountManagePage from '../../pages/accountManage.page'
 import LoginRecoverWallet from '../../helpers/loginRecoverWallet'
 import BottomTabsPage from '../../pages/bottomTabs.page'
 import { warmup } from '../../helpers/warmup'
@@ -32,5 +33,15 @@ describe('Add and edit accounts', () => {
   it('should verify switching on Avax network for staking', async () => {
     await StakePage.tapSwitchNetworkButton()
     await StakePage.verifyStakeTopItems()
+  })
+
+  it('should verify wrong network screen (no stakes mainnet)', async () => {
+    await BottomTabsPage.tapPortfolioTab()
+    await AccountManagePage.createAccount(4)
+    await PortfolioPage.tapNetworksDropdown()
+    await PortfolioPage.tapNetworksDropdownETH()
+    await BottomTabsPage.tapStakeTab()
+    await Actions.waitForElement(StakePage.switchNetworkTitle)
+    await StakePage.verifySwitchNetworkScreenItems()
   })
 })

@@ -162,7 +162,6 @@ const NoWalletTabNavigator = () => {
             tabBarButton: EnterWalletButton
           }}
         />
-        {/* {pendingDeepLink && isLocked && <PinScreen />} */}
       </>
     )
   }
