@@ -334,6 +334,8 @@ PODS:
     - React-Core
   - react-native-performance (4.0.0):
     - React-Core
+  - react-native-quick-base64 (2.0.5):
+    - React-Core
   - react-native-quick-crypto (0.4.6):
     - OpenSSL-Universal
     - React
@@ -574,6 +576,7 @@ DEPENDENCIES:
   - "react-native-netinfo (from `../node_modules/@react-native-community/netinfo`)"
   - react-native-pager-view (from `../node_modules/react-native-pager-view`)
   - react-native-performance (from `../node_modules/react-native-performance`)
+  - react-native-quick-base64 (from `../node_modules/react-native-quick-base64`)
   - react-native-quick-crypto (from `../node_modules/react-native-quick-crypto`)
   - react-native-restart (from `../node_modules/react-native-restart`)
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
@@ -709,6 +712,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-pager-view"
   react-native-performance:
     :path: "../node_modules/react-native-performance"
+  react-native-quick-base64:
+    :path: "../node_modules/react-native-quick-base64"
   react-native-quick-crypto:
     :path: "../node_modules/react-native-quick-crypto"
   react-native-restart:
@@ -846,6 +851,7 @@ SPEC CHECKSUMS:
   react-native-netinfo: ccbe1085dffd16592791d550189772e13bf479e2
   react-native-pager-view: da490aa1f902c9a5aeecf0909cc975ad0e92e53e
   react-native-performance: 224bd53e6a835fda4353302cf891d088a0af7406
+  react-native-quick-base64: e657e9197e61b60a9dec49807843052b830da254
   react-native-quick-crypto: e7ac378e827bfab02db29092ff204f13adc60c7c
   react-native-restart: 45c8dca02491980f2958595333cbccd6877cb57e
   react-native-safe-area-context: b8979f5eda6ed5903d4dbc885be3846ea3daa753
