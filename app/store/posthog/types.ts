@@ -1,7 +1,7 @@
 import { FeatureFlags, FeatureGates, FeatureVars } from 'services/posthog/types'
 import { v4 as uuidv4 } from 'uuid'
 
-const DefaultFeatureFlagConfig = {
+export const DefaultFeatureFlagConfig = {
   [FeatureGates.EVERYTHING]: true,
   [FeatureGates.EVENTS]: true,
   [FeatureGates.SWAP]: true,

@@ -1,7 +1,10 @@
 import { ChainId } from '@avalabs/chains-sdk'
 import StorageTools from 'repository/StorageTools'
 import { initialState as watchlistInitialState } from './watchlist'
-import { initialState as posthogInitialState } from './posthog'
+import {
+  DefaultFeatureFlagConfig,
+  initialState as posthogInitialState
+} from './posthog'
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export const migrations = {
@@ -90,5 +93,18 @@ export const migrations = {
         }
       }
     }
+  },
+  7: (state: any) => {
+    if (state.posthog.featureFlags === undefined) {
+      return {
+        ...state,
+        posthog: {
+          ...state.posthog,
+          featureFlags: DefaultFeatureFlagConfig
+        }
+      }
+    }
+
+    return state
   }
 }
