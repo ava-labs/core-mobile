@@ -272,7 +272,7 @@ workflows:
     - script-runner@0:
         title: Detox
         inputs:
-        - file_path: scripts/bitrise/detox/androidE2e.sh
+        - file_path: scripts/bitrise/detox/androidInternalE2e.sh
   android-internal:
     before_run:
     - _install-and-set-env
