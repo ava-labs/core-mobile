@@ -7,13 +7,12 @@ import InputText from 'components/InputText'
 import { Popable } from 'react-native-popable'
 import NetworkFeeSelector, { FeePreset } from 'components/NetworkFeeSelector'
 import { Row } from 'components/Row'
-import { BigNumber } from 'ethers'
 import Big from 'big.js'
 import { PopableContent } from 'components/PopableContent'
 import { PopableLabel } from 'components/PopableLabel'
-import { ethersBigNumberToBig } from '@avalabs/utils-sdk'
 import { useSelector } from 'react-redux'
 import { selectNetworkFee } from 'store/networkFee'
+import { bigintToBig } from 'utils/bigNumbers/bigintToBig'
 
 const isSlippageValid = (value: string) => {
   if (
@@ -33,10 +32,10 @@ interface SwapTransactionDetailProps {
   toTokenSymbol?: string
   rate: number
   walletFee?: number
-  onGasChange?: (gasPrice: BigNumber, feeType: FeePreset) => void
+  onGasChange?: (gasPrice: bigint, feeType: FeePreset) => void
   onGasLimitChange?: (gasLimit: number) => void
   gasLimit: number
-  gasPrice: BigNumber
+  gasPrice: bigint
   slippage: number
   setSlippage?: (slippage: number) => void
   selectedGasFee?: FeePreset
@@ -65,7 +64,7 @@ const SwapTransactionDetail: FC<SwapTransactionDetailProps> = ({
 
   const netFeeInfoMessage = (
     <PopableContent
-      message={`Gas limit: ${gasLimit} \nGas price: ${ethersBigNumberToBig(
+      message={`Gas limit: ${gasLimit} \nGas price: ${bigintToBig(
         gasPrice,
         networkFee.displayDecimals
       ).toFixed(0)} nAVAX`}

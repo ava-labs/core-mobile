@@ -5,7 +5,6 @@ import mockNetworks from 'tests/fixtures/networks.json'
 import BN from 'bn.js'
 import glacierTokenList from 'tests/fixtures/glacierTokenList.json'
 import { convertNativeToTokenWithBalance } from 'services/balance/nativeTokenConverter'
-import { BigNumber } from 'ethers'
 import { TokenType } from 'store/balance'
 import { JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
 import { SendErrorMessage, SendState } from './types'
@@ -14,7 +13,7 @@ jest
   .spyOn(JsonRpcBatchInternal.prototype, 'estimateGas')
   .mockImplementation(_ => {
     return new Promise(resolve => {
-      resolve(BigNumber.from(10))
+      resolve(10n)
     })
   })
 
@@ -36,7 +35,7 @@ describe('validateStateAndCalculateFees', () => {
     const sendState = {
       token: token,
       address: mockActiveAccount.address,
-      gasPrice: BigNumber.from(1),
+      gasPrice: 1n,
       gasLimit: 1
     } as SendState
 
@@ -65,7 +64,7 @@ describe('validateStateAndCalculateFees', () => {
     it('should fail for missing network fee', async () => {
       const newState = await serviceToTest.validateStateAndCalculateFees({
         ...params,
-        sendState: { ...sendState, gasPrice: BigNumber.from(0) }
+        sendState: { ...sendState, gasPrice: 0n }
       })
 
       expect(newState.canSubmit).toBe(false)
@@ -96,7 +95,7 @@ describe('validateStateAndCalculateFees', () => {
     const sendState = {
       token: token,
       address: mockActiveAccount.address,
-      gasPrice: BigNumber.from(1),
+      gasPrice: 1n,
       gasLimit: 1,
       amount: new BN(10)
     } as SendState
@@ -126,7 +125,7 @@ describe('validateStateAndCalculateFees', () => {
     it('should fail for missing network fee', async () => {
       const newState = await serviceToTest.validateStateAndCalculateFees({
         ...params,
-        sendState: { ...params.sendState, gasPrice: BigNumber.from(0) }
+        sendState: { ...params.sendState, gasPrice: 0n }
       })
 
       expect(newState.canSubmit).toBe(false)

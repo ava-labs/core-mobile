@@ -24,7 +24,7 @@ async function getTransactionsFromGlacier({
   pageSize,
   criticalConfig
 }: GetActivitiesForAddressParams): Promise<ActivityResponse> {
-  const response = await glacierSdk.evm.listTransactions({
+  const response = await glacierSdk.evmTransactions.listTransactions({
     chainId: network.chainId.toString(),
     address,
     pageToken: nextPageToken,

@@ -17,7 +17,7 @@ export class GlacierNftProvider implements NftProvider {
     if (!isHealthy) {
       return false
     }
-    const supportedChainsResp = await glacierSdk.evm.supportedChains({})
+    const supportedChainsResp = await glacierSdk.evmChains.supportedChains({})
     const chainInfos = supportedChainsResp.chains
     const chains = chainInfos.map(chain => chain.chainId)
     return chains.some(value => value === chainId.toString())
@@ -36,7 +36,7 @@ export class GlacierNftProvider implements NftProvider {
 
     let erc721BalancesRequest: Promise<ListErc721BalancesResponse> | undefined
     if (pageToken?.erc721 !== '') {
-      erc721BalancesRequest = glacierSdk.evm.listErc721Balances({
+      erc721BalancesRequest = glacierSdk.evmBalances.listErc721Balances({
         chainId: chainId.toString(),
         address: DevDebuggingConfig.SHOW_DEMO_NFTS ? demoAddress : address,
         // glacier has a cap on page size of 100
@@ -47,7 +47,7 @@ export class GlacierNftProvider implements NftProvider {
 
     let erc1155BalancesRequest: Promise<ListErc1155BalancesResponse> | undefined
     if (pageToken?.erc1155 !== '') {
-      erc1155BalancesRequest = glacierSdk.evm.listErc1155Balances({
+      erc1155BalancesRequest = glacierSdk.evmBalances.listErc1155Balances({
         chainId: chainId.toString(),
         address: DevDebuggingConfig.SHOW_DEMO_NFTS ? demoAddress : address,
         // glacier has a cap on page size of 100

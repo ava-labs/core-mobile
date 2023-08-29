@@ -70,9 +70,9 @@ export class TokenService {
     const contract = new ethers.Contract(address, ERC20.abi, provider)
 
     const contractCalls = await Promise.all([
-      contract.name(),
-      contract.symbol(),
-      contract.decimals()
+      contract.name?.(),
+      contract.symbol?.(),
+      contract.decimals?.()
     ])
     // Purify the values for XSS protection
     const name = xss(contractCalls[0])
