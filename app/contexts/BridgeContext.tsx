@@ -16,7 +16,6 @@ import {
   WrapStatus
 } from '@avalabs/bridge-sdk'
 import Big from 'big.js'
-import { TransactionResponse } from '@ethersproject/abstract-provider'
 import { useTransferAsset } from 'screens/bridge/hooks/useTransferAsset'
 import { PartialBridgeTransaction } from 'screens/bridge/handlers/createBridgeTransaction'
 import { BridgeState } from 'store/bridge/types'
@@ -37,6 +36,7 @@ import {
 import { isEqual } from 'lodash'
 import { Network } from '@avalabs/chains-sdk'
 import Logger from 'utils/Logger'
+import { TransactionResponse } from 'ethers'
 
 export enum TransferEventType {
   WRAP_STATUS = 'wrap_status',

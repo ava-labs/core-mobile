@@ -1,11 +1,6 @@
-import { ethers } from 'ethers'
+import { InfuraProvider, ethers } from 'ethers'
 import { BlockCypherProvider, JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
-import { InfuraProvider } from '@ethersproject/providers'
-import {
-  balanceToDisplayValue,
-  bigToBN,
-  ethersBigNumberToBig
-} from '@avalabs/utils-sdk'
+import { balanceToDisplayValue, bigToBN } from '@avalabs/utils-sdk'
 import {
   NetworkTokenWithBalance,
   TokenType,
@@ -25,8 +20,8 @@ import { BalanceServiceProvider } from 'services/balance/types'
 import NetworkService from 'services/network/NetworkService'
 import { Transaction } from '@sentry/types'
 import SentryWrapper from 'services/sentry/SentryWrapper'
-
-const hstABI = require('human-standard-token-abi')
+import ERC20 from '@openzeppelin/contracts/build/contracts/ERC20.json'
+import { bigintToBig } from 'utils/bigNumbers/bigintToBig'
 
 type Provider = JsonRpcBatchInternal | InfuraProvider
 
@@ -96,7 +91,7 @@ export class EvmBalanceService implements BalanceServiceProvider {
     const nativeTokenId =
       network.pricingProviders?.coingecko?.nativeTokenId ?? ''
 
-    const balanceEthersBig = await provider.getBalance(userAddress)
+    const balanceBigInt = await provider.getBalance(userAddress)
 
     const {
       price: priceInCurrency,
@@ -108,7 +103,7 @@ export class EvmBalanceService implements BalanceServiceProvider {
       currency as VsCurrencyType
     )
 
-    const balanceBig = ethersBigNumberToBig(balanceEthersBig, tokenDecimals)
+    const balanceBig = bigintToBig(balanceBigInt, tokenDecimals)
     const balanceNum = balanceBig.toNumber()
     const balance = bigToBN(balanceBig, tokenDecimals)
     const balanceDisplayValue = balanceToDisplayValue(balance, tokenDecimals)
@@ -147,9 +142,9 @@ export class EvmBalanceService implements BalanceServiceProvider {
           tokenPriceDict[token.address.toLowerCase()]?.[
             currency as VsCurrencyType
           ]
-        const contract = new ethers.Contract(token.address, hstABI, provider)
-        const balanceEthersBig = await contract.balanceOf(userAddress)
-        const balanceBig = ethersBigNumberToBig(balanceEthersBig, tokenDecimals)
+        const contract = new ethers.Contract(token.address, ERC20.abi, provider)
+        const balanceBigInt = await contract.balanceOf?.(userAddress)
+        const balanceBig = bigintToBig(balanceBigInt, tokenDecimals)
         const balance = bigToBN(balanceBig, tokenDecimals)
         const priceUSD = tokenPrice?.price ?? 0
         const marketCap = tokenPrice?.marketCap ?? 0

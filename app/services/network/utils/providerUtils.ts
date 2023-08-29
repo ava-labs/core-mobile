@@ -6,6 +6,7 @@ import {
   NetworkVMType
 } from '@avalabs/chains-sdk'
 import { BlockCypherProvider, JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
+import { Network as EthersNetwork } from 'ethers'
 import Config from 'react-native-config'
 import { PollingConfig } from 'store/balance'
 import { Networks } from 'store/network'
@@ -29,11 +30,10 @@ export function getEvmProvider(network: Network) {
 
   const multiContractAddress = network.utilityAddresses?.multicall
   const rpcUrl = network.rpcUrl
-  const chainId = network.chainId
   const provider = new JsonRpcBatchInternal(
     { maxCalls: 40, multiContractAddress },
     addGlacierAPIKeyIfNeeded(rpcUrl),
-    chainId
+    new EthersNetwork(network.chainName, network.chainId)
   )
 
   provider.pollingInterval = PollingConfig.activeNetwork

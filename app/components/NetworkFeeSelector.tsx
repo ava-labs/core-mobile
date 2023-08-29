@@ -11,11 +11,9 @@ import { Popable } from 'react-native-popable'
 import PoppableGasAndLimit from 'components/PoppableGasAndLimit'
 import { useDispatch, useSelector } from 'react-redux'
 import { fetchNetworkFee, selectNetworkFee } from 'store/networkFee'
-import { BigNumber } from 'ethers'
 import { NetworkVMType } from '@avalabs/chains-sdk'
 import { useNavigation } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
-import { bigToEthersBigNumber, ethersBigNumberToBig } from '@avalabs/utils-sdk'
 import Big from 'big.js'
 import InfoSVG from 'components/svg/InfoSVG'
 import { WalletScreenProps } from 'navigation/types'
@@ -24,6 +22,8 @@ import { useNativeTokenPrice } from 'hooks/useNativeTokenPrice'
 import { VsCurrencyType } from '@avalabs/coingecko-sdk'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { calculateGasAndFees } from 'utils/Utils'
+import { bigintToBig } from 'utils/bigNumbers/bigintToBig'
+import { bigToBigint } from 'utils/bigNumbers/bigToBigint'
 import InputText from './InputText'
 
 export enum FeePreset {
@@ -50,7 +50,7 @@ const NetworkFeeSelector = ({
   maxGasPrice
 }: {
   gasLimit: number
-  onGasPriceChange?(gasPrice: BigNumber, feePreset: FeePreset): void
+  onGasPriceChange?(gasPrice: bigint, feePreset: FeePreset): void
   onGasLimitChange?(customGasLimit: number): void
   maxGasPrice?: string
 }) => {
@@ -65,7 +65,7 @@ const NetworkFeeSelector = ({
   )
   const isBtcNetwork = network.vmName === NetworkVMType.BITCOIN
   const [selectedPreset, setSelectedPreset] = useState(FeePreset.Instant)
-  const [customGasPrice, setCustomGasPrice] = useState<BigNumber>()
+  const [customGasPrice, setCustomGasPrice] = useState<bigint>()
 
   // customGasPrice init value.
   // NetworkFee is not immediately available hence the useEffect
@@ -75,10 +75,10 @@ const NetworkFeeSelector = ({
     }
   }, [networkFee.low, customGasPrice])
 
-  const selectedGasPrice = useMemo(() => {
+  const selectedGasPrice: bigint = useMemo(() => {
     switch (selectedPreset) {
       case FeePreset.Custom:
-        return customGasPrice || BigNumber.from(0)
+        return customGasPrice || 0n
       default:
         return networkFee[FeePresetNetworkFeeMap[selectedPreset]]
     }
@@ -101,8 +101,8 @@ const NetworkFeeSelector = ({
   )
 
   const totalFeeBig = useMemo(() => {
-    return ethersBigNumberToBig(
-      selectedGasPrice?.mul(gasLimit),
+    return bigintToBig(
+      (selectedGasPrice || 0n) * BigInt(gasLimit),
       networkFee.nativeTokenDecimals
     )
   }, [gasLimit, networkFee.nativeTokenDecimals, selectedGasPrice])
@@ -122,8 +122,8 @@ const NetworkFeeSelector = ({
   }
 
   const convertFeeToUnit = useCallback(
-    (value: BigNumber) =>
-      ethersBigNumberToBig(value, networkFee.displayDecimals).toFixed(0),
+    (value: bigint) =>
+      bigintToBig(value, networkFee.displayDecimals).toFixed(0),
     [networkFee.displayDecimals]
   )
 
@@ -215,16 +215,13 @@ const NetworkFeeSelector = ({
               placeholder={displayGasValues[FeePreset.Normal]}
               value={
                 selectedPreset !== FeePreset.Custom &&
-                (!customGasPrice || customGasPrice.isZero())
+                (!customGasPrice || customGasPrice === 0n)
                   ? displayGasValues[FeePreset.Normal]
                   : displayGasValues[FeePreset.Custom]
               }
               onValueEntered={value =>
                 setCustomGasPrice(
-                  bigToEthersBigNumber(
-                    new Big(value || 0),
-                    networkFee.displayDecimals
-                  )
+                  bigToBigint(new Big(value || 0), networkFee.displayDecimals)
                 )
               }
             />
@@ -246,7 +243,7 @@ const NetworkFeeSelector = ({
           2
         )}
       </AvaText.Body3>
-      {maxGasPrice && newFees.bnFee.gt(maxGasPrice) && (
+      {maxGasPrice && newFees.bnFee > BigInt(maxGasPrice) && (
         <AvaText.Body3 color={theme.colorError}>
           Insufficient balance to cover gas costs. {'\n'}Please add AVAX.
         </AvaText.Body3>

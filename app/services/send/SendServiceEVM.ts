@@ -1,12 +1,7 @@
-import {
-  bnToEthersBigNumber,
-  ethersBigNumberToBN,
-  resolve
-} from '@avalabs/utils-sdk'
+import { resolve } from '@avalabs/utils-sdk'
 import { JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
-import { TransactionRequest } from '@ethersproject/providers'
 import BN from 'bn.js'
-import { BigNumber, Contract } from 'ethers'
+import { Contract, TransactionRequest, isAddress } from 'ethers'
 import ERC20 from '@openzeppelin/contracts/build/contracts/ERC20.json'
 import {
   GetTransactionRequestParams,
@@ -24,7 +19,6 @@ import {
 } from 'store/balance'
 import ERC721 from '@openzeppelin/contracts/build/contracts/ERC721.json'
 import ERC1155 from '@openzeppelin/contracts/build/contracts/ERC1155.json'
-import { isAddress } from '@ethersproject/address'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import Logger from 'utils/Logger'
 
@@ -53,7 +47,7 @@ export class SendServiceEVM implements SendServiceHelper {
 
         const gasLimit = await this.getGasLimit(sendState)
         const sendFee = gasPrice
-          ? new BN(gasLimit).mul(ethersBigNumberToBN(gasPrice))
+          ? new BN(gasLimit).mul(new BN(gasPrice.toString()))
           : undefined
         const maxAmount =
           token.type === TokenType.NATIVE
@@ -82,7 +76,7 @@ export class SendServiceEVM implements SendServiceHelper {
             SendErrorMessage.INVALID_ADDRESS
           )
 
-        if (!gasPrice || gasPrice.isZero())
+        if (!gasPrice || gasPrice === 0n)
           return SendServiceEVM.getErrorState(
             newState,
             SendErrorMessage.INVALID_NETWORK_FEE
@@ -157,7 +151,7 @@ export class SendServiceEVM implements SendServiceHelper {
       Logger.error('failed to get gas limit', error)
     }
     // add 20% padding to ensure the tx will be accepted
-    return Math.round((gasLimit?.toNumber() || 0) * 1.2)
+    return Math.round(Number(gasLimit || 0) * 1.2)
   }
 
   private static getErrorState(
@@ -202,7 +196,7 @@ export class SendServiceEVM implements SendServiceHelper {
     return {
       from: this.fromAddress,
       to: sendState.address,
-      value: bnToEthersBigNumber(sendState.amount || new BN(0))
+      value: BigInt(sendState.amount?.toString() || 0n)
     }
   }
 
@@ -216,12 +210,11 @@ export class SendServiceEVM implements SendServiceHelper {
       ERC20.abi,
       this.networkProvider
     )
-    const populatedTransaction = await contract.populateTransaction?.transfer?.(
-      sendState.address,
-      sendState.amount
-        ? bnToEthersBigNumber(sendState.amount)
-        : BigNumber.from(0)
-    )
+    const populatedTransaction =
+      await contract?.transfer?.populateTransaction?.(
+        sendState.address,
+        sendState.amount ? BigInt(sendState.amount.toString()) : 0n
+      )
     return {
       ...populatedTransaction, // only includes `to` and `data`
       from: this.fromAddress
@@ -236,9 +229,13 @@ export class SendServiceEVM implements SendServiceHelper {
       ERC721.abi,
       this.networkProvider
     )
-    const populatedTransaction = await contract.populateTransaction?.[
+    const populatedTransaction = await contract?.[
       'safeTransferFrom(address,address,uint256)'
-    ]?.(this.fromAddress, sendState.address, sendState.token?.tokenId)
+    ]?.populateTransaction?.(
+      this.fromAddress,
+      sendState.address,
+      sendState.token?.tokenId
+    )
     return {
       ...populatedTransaction, // only includes `to` and `data`
       from: this.fromAddress
@@ -254,9 +251,15 @@ export class SendServiceEVM implements SendServiceHelper {
       this.networkProvider
     )
 
-    const populatedTransaction = await contract.populateTransaction[
+    const populatedTransaction = await contract[
       'safeTransferFrom(address,address,uint256,uint256,bytes)'
-    ]?.(this.fromAddress, sendState.address, sendState.token?.tokenId, 1, [])
+    ]?.populateTransaction?.(
+      this.fromAddress,
+      sendState.address,
+      sendState.token?.tokenId,
+      1,
+      []
+    )
     const unsignedTx: TransactionRequest = {
       ...populatedTransaction,
       from: this.fromAddress

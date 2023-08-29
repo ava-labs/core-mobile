@@ -5,7 +5,11 @@ import Config from 'react-native-config'
 import { GetAddressBalanceV2Item } from '@avalabs/covalent-sdk'
 import Logger from 'utils/Logger'
 import DevDebuggingConfig from 'utils/debugging/DevDebuggingConfig'
-import { ErcType, NftTokenMetadataStatus } from '@avalabs/glacier-sdk'
+import {
+  Erc1155TokenBalance,
+  Erc721TokenBalance,
+  NftTokenMetadataStatus
+} from '@avalabs/glacier-sdk'
 import { addMissingFields, convertIPFSResolver } from './utils'
 
 const demoAddress = 'demo.eth'
@@ -78,10 +82,10 @@ export class CovalentNftProvider implements NftProvider {
     return nftCollections.nft_data.map(value => {
       return {
         ercType: (value.supports_erc.includes('erc1155')
-          ? ErcType.ERC_1155
+          ? Erc1155TokenBalance.ercType
           : // Typing from the SDK has the ercType properties mixed up
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            ErcType.ERC_721) as any,
+            Erc721TokenBalance.ercType) as any,
         metadata: {
           indexStatus: NftTokenMetadataStatus.INDEXED,
           name: value.external_data.name,

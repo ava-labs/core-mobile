@@ -265,14 +265,16 @@ class EarnService {
 
     do {
       const response =
-        await glacierSdk.primaryNetwork.listLatestPrimaryNetworkTransactions({
-          network: isTestnet ? Network.FUJI : Network.MAINNET,
-          blockchainId: BlockchainId.P_CHAIN,
-          addresses: addressesStr,
-          pageSize: 100,
-          sortOrder: SortOrder.DESC,
-          pageToken
-        })
+        await glacierSdk.primaryNetworkTransactions.listLatestPrimaryNetworkTransactions(
+          {
+            network: isTestnet ? Network.FUJI : Network.MAINNET,
+            blockchainId: BlockchainId.P_CHAIN,
+            addresses: addressesStr,
+            pageSize: 100,
+            sortOrder: SortOrder.DESC,
+            pageToken
+          }
+        )
 
       pageToken = response.nextPageToken
       transactions.push(...(response.transactions as PChainTransaction[]))

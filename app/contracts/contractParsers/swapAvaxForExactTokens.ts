@@ -1,4 +1,3 @@
-import { BigNumber } from 'ethers'
 import { parseDisplayValues } from 'screens/rpc/util/parseDisplayValues'
 import { bigToLocaleString, bnToBig, hexToBN } from '@avalabs/utils-sdk'
 import {
@@ -17,8 +16,8 @@ export interface SwapAVAXForExactTokensData {
   /**
    * Depending on function call one of these amounts will be truthy
    */
-  amountOutMin: BigNumber
-  amountOut: BigNumber
+  amountOutMin: bigint
+  amountOut: bigint
   contractCall: ContractCall.SWAP_EXACT_TOKENS_FOR_TOKENS
   deadline: string
   path: string[]
@@ -56,7 +55,7 @@ export async function swapAVAXForTokens(
     data.path[data.path.length - 1]?.toLowerCase() ?? ''
   )
   const lastTokenAmountBN = hexToBN(
-    (data.amountOut || data.amountOutMin).toHexString()
+    (data.amountOut || data.amountOutMin).toString(16)
   )
   const amountValue = bigToLocaleString(
     bnToBig(lastTokenAmountBN, lastTokenInPath?.decimals),
