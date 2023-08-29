@@ -3,7 +3,7 @@ import { usePeers } from './usePeers'
 
 export const useNodesWithVersion = () => {
   const { data: nodes, error: useNodesError } = useNodes()
-  const { data, isFetching, error } = usePeers(nodes?.validators ?? [])
+  const { data, isFetching, error } = usePeers()
 
   if (useNodesError) {
     return {
