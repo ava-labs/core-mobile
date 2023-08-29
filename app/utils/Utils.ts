@@ -1,15 +1,14 @@
 import Big from 'big.js'
-import { BigNumber } from 'ethers'
 import {
   bigToBN,
   bigToLocaleString,
   bnToBig,
-  ethersBigNumberToBig,
   stringToBN
 } from '@avalabs/utils-sdk'
 import { TokenType, TokenWithBalance } from 'store/balance'
 import { APIError } from 'paraswap'
 import BN from 'bn.js'
+import { bigintToBig } from './bigNumbers/bigintToBig'
 
 export const truncateAddress = (address: string, size = 6): string => {
   const firstChunk = address.substring(0, size)
@@ -127,10 +126,10 @@ export function titleToInitials(title: string) {
 }
 
 export type GasAndFees = {
-  gasPrice: BigNumber
+  gasPrice: bigint
   gasLimit: number
   fee: string
-  bnFee: BigNumber
+  bnFee: bigint
   feeInCurrency: number
 }
 
@@ -140,13 +139,13 @@ export function calculateGasAndFees({
   tokenDecimals = 18,
   gasLimit
 }: {
-  gasPrice: BigNumber
+  gasPrice: bigint
   tokenPrice: number
   tokenDecimals?: number
   gasLimit?: number | string
 }): GasAndFees {
-  const bnFee = gasLimit ? gasPrice.mul(gasLimit) : gasPrice
-  const fee = bigToLocaleString(ethersBigNumberToBig(bnFee, tokenDecimals), 8)
+  const bnFee = gasLimit ? gasPrice * BigInt(gasLimit) : gasPrice
+  const fee = bigToLocaleString(bigintToBig(bnFee, tokenDecimals), 8)
   return {
     gasPrice: gasPrice,
     gasLimit: Number(gasLimit) || 0,

@@ -1,5 +1,4 @@
 import { ethErrors } from 'eth-rpc-errors'
-import { BigNumber } from 'ethers'
 import { RpcMethod } from 'store/walletConnectV2'
 import mockSession from 'tests/fixtures/walletConnect/session.json'
 import mockAccounts from 'tests/fixtures/accounts.json'
@@ -262,7 +261,7 @@ describe('eth_sendTransaction handler', () => {
           chainId: mockNetwork.chainId,
           data: undefined,
           gasLimit: 100,
-          gasPrice: BigNumber.from(testData.txParams.gasPrice),
+          gasPrice: BigInt(testData.txParams.gasPrice),
           to: testData.txParams.to,
           value: testData.txParams.value
         },
@@ -308,7 +307,7 @@ describe('eth_sendTransaction handler', () => {
           chainId: mockNetwork.chainId,
           data: undefined,
           gasLimit: 100,
-          gasPrice: BigNumber.from(testData.txParams.gasPrice),
+          gasPrice: BigInt(testData.txParams.gasPrice),
           to: testData.txParams.to,
           value: testData.txParams.value
         },

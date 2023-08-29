@@ -70,7 +70,7 @@ export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
   const loading = !btcBalance || !btcBalanceAvalanche || !networkFee
 
   const feeRate = useMemo(() => {
-    return feeRates?.high.toNumber() || 0
+    return Number(feeRates?.high || 0)
   }, [feeRates])
 
   const maximum = useMemo(() => {

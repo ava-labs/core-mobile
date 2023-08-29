@@ -6,7 +6,6 @@ import AvaButton from 'components/AvaButton'
 import React, { useState } from 'react'
 import FlexSpacer from 'components/FlexSpacer'
 import { Row } from 'components/Row'
-import { BigNumber } from 'ethers'
 import { useNativeTokenPrice } from 'hooks/useNativeTokenPrice'
 import { calculateGasAndFees } from 'utils/Utils'
 import { useSelector } from 'react-redux'
@@ -14,7 +13,7 @@ import { selectActiveNetwork } from 'store/network'
 import { PopableContent } from './PopableContent'
 
 interface EditFeesProps {
-  gasPrice: BigNumber
+  gasPrice: bigint
   gasLimit: number
   onSave: (newGasLimit: number) => void
   onClose?: () => void

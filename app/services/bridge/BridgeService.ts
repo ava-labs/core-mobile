@@ -10,7 +10,6 @@ import {
   transferAsset as transferAssetSDK
 } from '@avalabs/bridge-sdk'
 import Big from 'big.js'
-import { TransactionResponse } from '@ethersproject/providers'
 import { Account } from 'store/account'
 import WalletService from 'services/wallet/WalletService'
 import { blockchainToNetwork } from 'screens/bridge/utils/bridgeUtils'
@@ -21,6 +20,7 @@ import {
 } from 'services/network/utils/providerUtils'
 import { noop } from '@avalabs/utils-sdk'
 import { Networks } from 'store/network'
+import { TransactionResponse } from 'ethers'
 
 type TransferAssetParams = {
   currentBlockchain: Blockchain

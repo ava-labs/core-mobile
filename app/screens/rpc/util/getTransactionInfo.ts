@@ -1,17 +1,15 @@
-import * as ethers from 'ethers'
 import { ChainId, Network } from '@avalabs/chains-sdk'
-import { Interface } from 'ethers/lib/utils'
 import ERC20 from '@openzeppelin/contracts/build/contracts/ERC20.json'
 import {
   ContractSourceCodeResponse,
   getABIForContract,
   getSourceForContract
 } from '@avalabs/snowtrace-sdk'
-import { TransactionDescription } from '@ethersproject/abi'
 import Logger from 'utils/Logger'
+import { Interface, TransactionDescription } from 'ethers'
 
 export function isTxDescriptionError(
-  desc: ethers.utils.TransactionDescription | { error: string }
+  desc: TransactionDescription | { error: string }
 ): desc is { error: string } {
   // eslint-disable-next-line no-prototype-builtins
   return !!desc && desc.hasOwnProperty('error')
@@ -20,20 +18,25 @@ export function isTxDescriptionError(
 function parseDataWithABI(
   data: string,
   value: string,
-  contractInterface: ethers.ethers.utils.Interface
-) {
+  contractInterface: Interface
+):
+  | TransactionDescription
+  | {
+      error: string
+    } {
   try {
-    return contractInterface.parseTransaction({
+    const txDescription = contractInterface.parseTransaction({
       data: data,
       value: value
     })
+    return txDescription ? txDescription : { error: 'error decoding with abi' }
   } catch (e) {
     return { error: 'error decoding with abi' }
   }
 }
 
 export function isTransactionDescriptionError(
-  description: ethers.utils.TransactionDescription | { error: string }
+  description: TransactionDescription | { error: string }
 ) {
   return !!description && !('error' in description)
 }

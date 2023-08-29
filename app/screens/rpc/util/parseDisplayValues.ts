@@ -1,9 +1,9 @@
-import * as ethers from 'ethers'
 import { bigToLocaleString, bnToBig, hexToBN } from '@avalabs/utils-sdk'
 import { DisplayValueParserProps } from 'screens/rpc/util/types'
 import { calculateGasAndFees } from 'utils/Utils'
 import { Network } from '@avalabs/chains-sdk'
 import { TransactionParams } from 'store/walletConnectV2/handlers/eth_sendTransaction/utils'
+import { TransactionDescription } from 'ethers'
 
 export function isTxParams(
   params: Partial<TransactionParams>
@@ -15,10 +15,10 @@ export function parseDisplayValues(
   network: Network,
   txParams: TransactionParams,
   props: DisplayValueParserProps,
-  description?: ethers.utils.TransactionDescription
+  description?: TransactionDescription
 ) {
   const tokenDecimals = network.networkToken.decimals
-  const name = description?.name ?? description?.functionFragment?.name
+  const name = description?.name ?? description?.fragment?.name
   let displayValue = ''
   if (description?.args?.amount) {
     const big = bnToBig(
@@ -27,10 +27,7 @@ export function parseDisplayValues(
     )
     displayValue = `${bigToLocaleString(big, tokenDecimals)}`
   } else if (description?.value) {
-    const big = bnToBig(
-      hexToBN(description.value?.toHexString()),
-      tokenDecimals
-    )
+    const big = bnToBig(hexToBN(description.value?.toString(16)), tokenDecimals)
     displayValue = `${bigToLocaleString(big, tokenDecimals)}`
   }
 
