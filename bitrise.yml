@@ -18,20 +18,6 @@ app:
   - APP_TITLE: Core Mobile
     opts:
       is_expand: false
-pipelines:
-  ui_test_parallel:
-    stages:
-    - build_tests: { }
-    - run_tests: { }
-stages:
-  build_tests:
-    workflows:
-      - _build-android-for-testing: { }
-  run_tests:
-    workflows:
-      - ui_test_pixel_4_api_30_1: { }
-      - ui_test_pixel_4_api_30_2: { }
-      - ui_test_pixel_4_api_30_3: { }
 workflows:
   _build-android:
     steps:
@@ -380,10 +366,14 @@ workflows:
         - track: internal
         - service_account_json_key_path: $BITRISEIO_AVALABS_GOOGLE_PLAY_SERVICE_ACCOUNT_JSON_KEY_URL
   android-internal-e2e:
+    
     before_run:
     - _install-and-set-env
     - _set-version
     - _build-android-for-testing
+    - ui_test_pixel_4_api_30_1
+    - ui_test_pixel_4_api_30_2
+    - ui_test_pixel_4_api_30_3
     after_run:
     - _send-test-result-notifcation-slack
     envs:
