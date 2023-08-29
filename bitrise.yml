@@ -18,6 +18,20 @@ app:
   - APP_TITLE: Core Mobile
     opts:
       is_expand: false
+pipelines:
+  ui_test_parallel:
+    stages:
+    - build_tests: { }
+    - run_tests: { }
+stages:
+  build_tests:
+    workflows:
+      - _build-android-for-testing: { }
+  run_tests:
+    workflows:
+      - ui_test_pixel_4_api_30_1: { }
+      - ui_test_pixel_4_api_30_2: { }
+      - ui_test_pixel_4_api_30_3: { }
 workflows:
   _build-android:
     steps:
@@ -50,6 +64,25 @@ workflows:
         - private_key_password: $ANDROID_KEY_PASSWORD
         - keystore_url: $BITRISEIO_ANDROID_KEY_STORE_URL
   _build-android-for-testing:
+    envs:
+    - ENVIRONMENT: production
+      opts:
+        is_expand: false
+    - PLATFORM: Android
+      opts:
+        is_expand: false
+    - ANDROID_BUILD_VARIANT: internalE2e
+      opts:
+        is_expand: false
+    - APP_TITLE: Core Mobile Internal
+      opts:
+        is_expand: false
+    - E2E: "true"
+      opts:
+        is_expand: false
+    - USE_TEST_FEATURE_FLAGS: "true"
+      opts:
+        is_expand: false
     steps:
     - install-missing-android-tools@3:
         inputs:
@@ -59,15 +92,6 @@ workflows:
         title: Fix Android Env Vars
         inputs:
         - file_path: scripts/bitrise/fixAndroidEnvVars.sh
-    - avd-manager@1.2:
-        inputs:
-        - api_level: "28"
-        - emulator_id: emulator-5554
-        - emulator_channel: "0"
-        - create_command_flags: --sdcard 512M
-        - tag: default
-        - abi: x86_64
-        - profile: pixel_4
     - android-build-for-ui-testing@0:
         inputs:
         - module: $ANDROID_MODULE
@@ -84,6 +108,56 @@ workflows:
         - keystore_password: $ANDROID_STORE_PASSWORD
         - keystore_alias: $ANDROID_KEY_ALIAS
         - private_key_password: $ANDROID_KEY_PASSWORD
+    - deploy-to-bitrise-io@2: 
+        inputs:
+        - pipeline_intermediate_files: |-
+            $BITRISE_APK_PATH:BITRISE_APK_PATH
+            $BITRISE_TEST_APK_PATH:BITRISE_TEST_APK_PATH
+  ui_test_pixel_4_api_30_1:
+    envs:
+      - AVD_ID: pixel_4_api_30
+        opts:
+          is_expand: false
+    before_run:
+      - _pull_apks
+    after_run:
+      - _run_tests
+  ui_test_pixel_4_api_30_2:
+    envs:
+      - AVD_ID: pixel_4_api_30
+        opts:
+          is_expand: false
+    before_run:
+      - _pull_apks
+    after_run:
+      - _run_tests
+  ui_test_pixel_4_api_30_3:
+    envs:
+      - AVD_ID: pixel_4_api_30
+        opts:
+          is_expand: false
+    before_run:
+      - _pull_apks
+    after_run:
+      - _run_tests
+  _run_tests:
+    steps:
+    - avd-manager@1:
+        inputs:
+        - profile: $EMULATOR_PROFILE
+    - wait-for-android-emulator@1: {}
+    - script-runner@0:
+        title: Detox UI Tests
+        inputs:
+        - file_path: scripts/bitrise/detox/androidInternalE2e.sh
+  _pull_apks:
+    steps:
+      - pull-intermediate-files@1:
+          inputs:
+            - source_paths: $BITRISE_TEST_APK_PATH
+            - destination_path: $BITRISE_SOURCE_DIR
+            - is_expand: false
+    
   _build-ios:
     steps:
     - restore-cocoapods-cache@1: {}
@@ -331,12 +405,6 @@ workflows:
     - USE_TEST_FEATURE_FLAGS: "true"
       opts:
         is_expand: false
-    steps:
-    - wait-for-android-emulator@1: {}
-    - script-runner@0:
-        title: Detox
-        inputs:
-        - file_path: scripts/bitrise/detox/androidInternalE2e.sh
   ios:
     before_run:
     - _install-and-set-env
