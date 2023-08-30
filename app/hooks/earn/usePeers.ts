@@ -8,8 +8,7 @@ export const usePeers = () => {
 
   return useQuery({
     queryKey: ['peers', isDeveloperMode],
-    queryFn: async () => {
-      return await EarnService.getPeers(isDeveloperMode)
-    }
+    queryFn: () => EarnService.getPeers(isDeveloperMode)
+
   })
 }
