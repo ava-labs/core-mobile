@@ -145,6 +145,13 @@ export const selectUseCoinGeckoPro = (state: RootState) => {
   )
 }
 
+export const selectIsDeFiBlocked = (state: RootState) => {
+  const { featureFlags } = state.posthog
+  return (
+    !featureFlags[FeatureGates.DEFI] || !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
 export const selectSentrySampleRate = (state: RootState) => {
   const { featureFlags } = state.posthog
   return (
