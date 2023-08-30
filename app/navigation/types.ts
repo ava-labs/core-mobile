@@ -2,7 +2,6 @@ import type { CompositeScreenProps } from '@react-navigation/native'
 import { StackScreenProps } from '@react-navigation/stack'
 import { BottomTabScreenProps } from '@react-navigation/bottom-tabs'
 import { DrawerScreenProps as RNDrawerScreenProps } from '@react-navigation/drawer'
-import { BigNumber } from 'ethers'
 import { TokenWithBalance } from 'store/balance'
 import {
   NoWalletDrawerParamList,
@@ -86,7 +85,7 @@ export type BridgeTransactionStatusParams = {
 export type EditGasLimitParams = {
   onSave: (newGasLimit: number) => void
   gasLimit: number
-  gasPrice: BigNumber
+  gasPrice: bigint
 }
 
 export type SessionProposalParams = {

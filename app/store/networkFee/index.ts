@@ -1,7 +1,6 @@
 import { createAction, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from 'store/index'
 import { AppStartListening } from 'store/middleware/listener'
-import { BigNumber } from 'ethers'
 import networkFeeService from 'services/networkFee/NetworkFeeService'
 import { selectActiveNetwork } from 'store/network'
 import { NetworkFee } from 'services/networkFee/types'
@@ -11,9 +10,9 @@ const reducerName = 'networkFee'
 
 const initialState = {
   networkFee: {
-    low: BigNumber.from(0),
-    medium: BigNumber.from(0),
-    high: BigNumber.from(0),
+    low: 0n,
+    medium: 0n,
+    high: 0n,
     displayDecimals: 0,
     nativeTokenDecimals: 0,
     unit: '',

@@ -1,14 +1,13 @@
-import * as ethers from 'ethers'
-import { BigNumber } from 'ethers'
 import BN from 'bn.js'
 import { NetworkTokenWithBalance, TokenWithBalance } from 'store/balance'
 import { Network } from '@avalabs/chains-sdk'
 import { FindToken } from 'contracts/contractParsers/utils/useFindToken'
 import { PeerMeta } from 'services/walletconnectv2/types'
 import { TransactionParams } from 'store/walletConnectV2/handlers/eth_sendTransaction/utils'
+import { TransactionDescription } from 'ethers'
 
 export interface DisplayValueParserProps {
-  gasPrice: BigNumber
+  gasPrice: bigint
   avaxToken: NetworkTokenWithBalance
   avaxPrice: number
   erc20Tokens: TokenWithBalance[]
@@ -17,15 +16,15 @@ export interface DisplayValueParserProps {
 export interface TransactionDisplayValues {
   fromAddress?: string
   toAddress?: string
-  gasPrice?: BigNumber
+  gasPrice?: bigint
   contractType?: ContractCall
   gasLimit?: number
   fee?: string
   feeInCurrency?: number
   site?: PeerMeta | null | undefined
-  description?: ethers.utils.TransactionDescription
+  description?: TransactionDescription
   displayValue?: string
-  bnFee?: BigNumber
+  bnFee?: bigint
   [key: string]: any // eslint-disable-line @typescript-eslint/no-explicit-any
 }
 
@@ -53,7 +52,7 @@ export type ContractParserHandler = (
   request: TransactionParams,
   data: any, // eslint-disable-line @typescript-eslint/no-explicit-any
   props: DisplayValueParserProps,
-  txDetails?: ethers.utils.TransactionDescription
+  txDetails?: TransactionDescription
 ) => Promise<TransactionDisplayValues>
 export type ContractParser = [ContractCall, ContractParserHandler]
 

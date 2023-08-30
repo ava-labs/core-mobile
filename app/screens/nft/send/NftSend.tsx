@@ -20,9 +20,9 @@ import NetworkFeeSelector from 'components/NetworkFeeSelector'
 import { useSelector } from 'react-redux'
 import { selectActiveNetwork } from 'store/network'
 import { NetworkVMType } from '@avalabs/chains-sdk'
-import { ethersBigNumberToBN } from '@avalabs/utils-sdk'
 import { SvgXml } from 'react-native-svg'
 import { usePostCapture } from 'hooks/usePosthogCapture'
+import { BN } from 'bn.js'
 
 export type NftSendScreenProps = {
   onNext: () => void
@@ -107,7 +107,7 @@ export default function NftSend({
           modifier: feePreset
         })
       }
-      setCustomGasPrice(ethersBigNumberToBN(gasPrice1))
+      setCustomGasPrice(new BN(gasPrice1.toString()))
       setSelectedFeePreset(feePreset)
     },
     [setCustomGasPrice, setSelectedFeePreset, selectedFeePreset, capture]
