@@ -136,6 +136,9 @@ const TabViewAva: TabViewAvaFC = ({
               backgroundColor: theme.transparent,
               marginHorizontal: 16
             }}
+            contentContainerStyle={{
+              marginBottom: 8
+            }}
             renderLabel={({ route, focused, color }) => {
               return renderCustomLabel?.(route?.title ?? '', focused, color)
             }}
@@ -145,6 +148,12 @@ const TabViewAva: TabViewAvaFC = ({
             }}
             renderTabBarItem={tabBarItem}
           />
+          <View
+            style={{
+              height: 1,
+              backgroundColor: theme.colorStroke
+            }}
+          />
         </View>
       )
     },
@@ -153,6 +162,7 @@ const TabViewAva: TabViewAvaFC = ({
       routes.length,
       tabBarItem,
       theme.colorPrimary1,
+      theme.colorStroke,
       theme.transparent
     ]
   )
