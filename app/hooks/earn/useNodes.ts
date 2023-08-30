@@ -8,8 +8,6 @@ export const useNodes = () => {
 
   return useQuery({
     queryKey: ['nodes', isDeveloperMode],
-    queryFn: async () => {
-      return await EarnService.getCurrentValidators(isDeveloperMode)
-    }
+    queryFn: () => EarnService.getCurrentValidators(isDeveloperMode)
   })
 }
