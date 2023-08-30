@@ -61,7 +61,6 @@ const Portfolio = () => {
       <PortfolioHeader />
       <TabViewAva
         currentTabIndex={params?.tabIndex}
-        showBottomSeparator={true}
         onTabIndexChange={tabIndex => {
           setParams({ tabIndex })
           capturePosthogEvents(tabIndex)

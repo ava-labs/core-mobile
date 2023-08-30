@@ -35,7 +35,6 @@ type TabViewAvaFC = FC<{
   testID?: string
   onTabIndexChange?: (tabIndex: number) => void
   lazy?: boolean
-  showBottomSeparator?: boolean
 }> & { Item: FC<TabViewAvaItemProps> }
 
 /**
@@ -46,7 +45,6 @@ const TabViewAva: TabViewAvaFC = ({
   currentTabIndex = 0,
   onTabIndexChange,
   lazy = true,
-  showBottomSeparator = false,
   children
 }) => {
   const [currentIndex, setCurrentIndex] = useState(currentTabIndex)
@@ -139,7 +137,7 @@ const TabViewAva: TabViewAvaFC = ({
               marginHorizontal: 16
             }}
             contentContainerStyle={{
-              marginBottom: showBottomSeparator ? 8 : 0
+              marginBottom: 8
             }}
             renderLabel={({ route, focused, color }) => {
               return renderCustomLabel?.(route?.title ?? '', focused, color)
@@ -150,21 +148,18 @@ const TabViewAva: TabViewAvaFC = ({
             }}
             renderTabBarItem={tabBarItem}
           />
-          {showBottomSeparator && (
-            <View
-              style={{
-                height: 1,
-                backgroundColor: theme.colorStroke
-              }}
-            />
-          )}
+          <View
+            style={{
+              height: 1,
+              backgroundColor: theme.colorStroke
+            }}
+          />
         </View>
       )
     },
     [
       renderCustomLabel,
       routes.length,
-      showBottomSeparator,
       tabBarItem,
       theme.colorPrimary1,
       theme.colorStroke,
