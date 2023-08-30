@@ -9,6 +9,7 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { AdvancedSortFilter, NodeValidators } from 'types/earn'
 import Logger from 'utils/Logger'
 import { Avax } from 'types/Avax'
+import { usePeers } from './usePeers'
 
 export type useAdvancedSearchNodesProps = {
   stakingAmount: Avax
@@ -40,6 +41,8 @@ export const useAdvancedSearchNodes = ({
   sortFilter,
   searchText
 }: useAdvancedSearchNodesProps) => {
+  const { data: peers } = usePeers()
+
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const isEndTimeOverOneYear = isOverOneYear(stakingEndTime)
   const noMatchError = new Error(
@@ -72,9 +75,10 @@ export const useAdvancedSearchNodes = ({
 
     const sortedValidators = getAdvancedSortedValidators(
       matchedValidators,
-      sortFilter ?? AdvancedSortFilter.UpTimeHighToLow
+      sortFilter ?? AdvancedSortFilter.UpTimeHighToLow,
+      peers
     )
-    return { validators: sortedValidators, error: undefined }
+    return { validators: sortedValidators ?? [], error: undefined }
   }
   Logger.info(noValidatorsError.message)
   return { validators: [], error: noValidatorsError }

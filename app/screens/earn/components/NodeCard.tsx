@@ -22,6 +22,7 @@ import { NodeValidator } from 'types/earn'
 import { Avax } from 'types/Avax'
 import { useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { usePeers } from 'hooks/earn/usePeers'
 import { PopableContentWithCaption } from './PopableContentWithCaption'
 
 type NavigationProp = StakeSetupScreenProps<
@@ -53,6 +54,7 @@ export const NodeCard = ({
   )
 
   const gradientColors = useMemo(() => generateGradient(), [])
+  const { data: peers } = usePeers()
 
   return (
     <View
@@ -196,7 +198,7 @@ export const NodeCard = ({
               {'Version'}
             </AvaText.Caption>
             <AvaText.Body2 textStyle={{ color: theme.neutral50 }}>
-              {data.version ?? 'N/A'}
+              {peers?.[data.nodeID]?.version ?? 'N/A'}
             </AvaText.Body2>
           </Row>
         </View>

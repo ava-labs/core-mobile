@@ -13,7 +13,7 @@ import { useAdvancedSearchNodes } from 'hooks/earn/useAdvancedSearchNodes'
 import { advancedFilterDropDownItems, UP_TIME_HIGH_TO_LOW } from 'consts/earn'
 import Spinner from 'components/animation/Spinner'
 import ZeroState from 'components/ZeroState'
-import { useNodesWithVersion } from 'hooks/earn/useNodesWithVersion'
+import { useNodes } from 'hooks/earn/useNodes'
 import { NodeCard } from './components/NodeCard'
 import { NoMatchFound } from './components/NoMatchFound'
 
@@ -28,10 +28,10 @@ const SelectNode = () => {
   const { stakingAmount, stakingEndTime, minUpTime, maxFee } =
     useRoute<ScreenProps['route']>().params
 
-  const { isFetching, data, error } = useNodesWithVersion()
+  const { isFetching, data, error } = useNodes()
   const { validators, error: useAdvancedSearchNodesError } =
     useAdvancedSearchNodes({
-      validators: data,
+      validators: data?.validators,
       stakingAmount,
       stakingEndTime,
       minUpTime,

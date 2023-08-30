@@ -16,6 +16,7 @@ import AppNavigation from 'navigation/AppNavigation'
 import Logger from 'utils/Logger'
 import { isOnGoing } from 'utils/earn/status'
 import { valid, compare } from 'semver'
+import { Peer } from '@avalabs/avalanchejs-v2/dist/src/info/model'
 import EarnService from './EarnService'
 
 // the max num of times we should check transaction status
@@ -211,10 +212,12 @@ export const getFilteredValidators = ({
  *
  * @param validators input to sort by staking uptime and delegation fee,
  * @param isEndTimeOverOneYear boolean indicating if the stake end time is over one year
+ * @param peers Record of <string, peers> to sort by version
  * @returns sorted validators
  */
 export const getSimpleSortedValidators = (
   validators: NodeValidators,
+  peers?: Record<string, Peer>,
   isEndTimeOverOneYear = false
 ) => {
   if (isEndTimeOverOneYear) {
@@ -222,7 +225,11 @@ export const getSimpleSortedValidators = (
   }
   return validators.sort(
     (a, b): number =>
-      comparePeerVersion(b.version, a.version) ||
+      (peers &&
+        comparePeerVersion(
+          peers[b.nodeID]?.version,
+          peers[a.nodeID]?.version
+        )) ||
       Number(b.uptime) - Number(a.uptime) ||
       Number(b.delegationFee) - Number(a.delegationFee)
   )
@@ -252,11 +259,13 @@ export const getRandomValidator = (
  *
  * @param validators,
  * @param advancedSortFilter filter to sort validators by uptime, fee, or duration
+ * @param peers Record of <string, peers> to sort by version
  * @returns sorted validators
  */
 export const getAdvancedSortedValidators = (
   validators: NodeValidators,
-  sortFilter: AdvancedSortFilter
+  sortFilter: AdvancedSortFilter,
+  peers?: Record<string, Peer>
 ) => {
   switch (sortFilter) {
     case AdvancedSortFilter.UpTimeLowToHigh:
@@ -280,12 +289,22 @@ export const getAdvancedSortedValidators = (
         (a, b): number => Number(a.endTime) - Number(b.endTime)
       )
     case AdvancedSortFilter.VersionHighToLow:
-      return validators.sort((a, b): number =>
-        comparePeerVersion(b.version, a.version)
+      return (
+        peers &&
+        validators.sort((a, b): number =>
+          comparePeerVersion(peers[b.nodeID]?.version, peers[a.nodeID]?.version)
+        )
       )
     case AdvancedSortFilter.VersionLowToHigh:
-      return validators.sort(
-        (a, b): number => comparePeerVersion(a.version, b.version) || 0
+      return (
+        peers &&
+        validators.sort(
+          (a, b): number =>
+            comparePeerVersion(
+              peers[a.nodeID]?.version,
+              peers[b.nodeID]?.version
+            ) || 0
+        )
       )
     case AdvancedSortFilter.UpTimeHighToLow:
     default:

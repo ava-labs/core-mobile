@@ -9,6 +9,7 @@ import { useSelector } from 'react-redux'
 import Logger from 'utils/Logger'
 import { NodeValidator, NodeValidators } from 'types/earn'
 import { Avax } from 'types/Avax'
+import { usePeers } from './usePeers'
 
 type useSearchNodeProps = {
   stakingAmount: Avax
@@ -21,6 +22,8 @@ export const useSearchNode = ({
   stakingEndTime,
   validators
 }: useSearchNodeProps): { validator?: NodeValidator; error?: Error } => {
+  const { data: peers } = usePeers()
+
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const isEndTimeOverOneYear = isOverOneYear(stakingEndTime)
   const noMatchError = new Error(
@@ -43,6 +46,7 @@ export const useSearchNode = ({
     }
     const sortedValidators = getSimpleSortedValidators(
       filteredValidators,
+      peers,
       isEndTimeOverOneYear
     )
     const matchedValidator = getRandomValidator(
