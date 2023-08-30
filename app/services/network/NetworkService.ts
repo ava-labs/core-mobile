@@ -80,10 +80,11 @@ class NetworkService {
         if (typeof signedTx === 'string') {
           if (provider instanceof JsonRpcBatchInternal) {
             if (waitToPost) {
-              const tx = await provider.sendTransaction(signedTx)
-              return (await tx.wait()).transactionHash
+              const tx = await provider.broadcastTransaction(signedTx)
+              await tx.wait()
+              return tx.hash
             }
-            return (await provider.sendTransaction(signedTx)).hash
+            return (await provider.broadcastTransaction(signedTx)).hash
           }
 
           if (provider instanceof BlockCypherProvider) {

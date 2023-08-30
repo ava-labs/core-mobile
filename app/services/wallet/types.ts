@@ -1,4 +1,4 @@
-import { TransactionRequest } from '@ethersproject/abstract-provider'
+import { TransactionRequest } from 'ethers'
 import { BitcoinInputUTXO, BitcoinOutputUTXO } from '@avalabs/wallets-sdk'
 import { UnsignedTx } from '@avalabs/avalanchejs-v2'
 import { Network } from '@avalabs/chains-sdk'

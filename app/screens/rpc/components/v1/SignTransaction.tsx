@@ -32,7 +32,6 @@ import TransactionToast, {
 } from 'components/toast/TransactionToast'
 import { PopableContent } from 'components/PopableContent'
 import { PopableLabel } from 'components/PopableLabel'
-import { BigNumber } from 'ethers'
 import { ScrollView } from 'react-native-gesture-handler'
 import { TransactionError } from 'services/network/types'
 import { WalletScreenProps } from 'navigation/types'
@@ -136,7 +135,7 @@ const SignTransaction = () => {
     getExplorerAddressByNetwork(activeNetwork, requestResult)
 
   const handleGasPriceChange = useCallback(
-    (gasPrice: BigNumber, feePreset: FeePreset) => {
+    (gasPrice: bigint, feePreset: FeePreset) => {
       setCustomFee(gasPrice, feePreset, displayData?.gasLimit ?? 0)
     },
     [displayData?.gasLimit, setCustomFee]
@@ -144,11 +143,7 @@ const SignTransaction = () => {
 
   const handleGasLimitChange = useCallback(
     (customGasLimit: number) => {
-      setCustomFee(
-        displayData?.gasPrice ?? BigNumber.from(0),
-        selectedGasFee,
-        customGasLimit
-      )
+      setCustomFee(displayData?.gasPrice ?? 0n, selectedGasFee, customGasLimit)
     },
     [displayData?.gasPrice, selectedGasFee, setCustomFee]
   )

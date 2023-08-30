@@ -1,5 +1,4 @@
 import { ethErrors } from 'eth-rpc-errors'
-import { BigNumber } from 'ethers'
 import { RpcMethod } from 'store/walletConnectV2'
 import mockSession from 'tests/fixtures/walletConnect/session.json'
 import mockAccounts from 'tests/fixtures/accounts.json'
@@ -156,8 +155,7 @@ describe('eth_sendTransaction handler', () => {
         [null],
         [
           {
-            from: '0xcA0E993876152ccA6053eeDFC753092c8cE712D0',
-            to: '0xC7E5ffBd7843EdB88cCB2ebaECAa07EC55c65318'
+            from: '0xcA0E993876152ccA6053eeDFC753092c8cE712D0'
           }
         ],
         [
@@ -202,8 +200,7 @@ describe('eth_sendTransaction handler', () => {
         {},
         {
           txParams: {
-            from: '0xcA0E993876152ccA6053eeDFC753092c8cE712D0',
-            to: '0xC7E5ffBd7843EdB88cCB2ebaECAa07EC55c65318'
+            from: '0xcA0E993876152ccA6053eeDFC753092c8cE712D0'
           }
         }
       ]
@@ -264,7 +261,7 @@ describe('eth_sendTransaction handler', () => {
           chainId: mockNetwork.chainId,
           data: undefined,
           gasLimit: 100,
-          gasPrice: BigNumber.from(testData.txParams.gasPrice),
+          gasPrice: BigInt(testData.txParams.gasPrice),
           to: testData.txParams.to,
           value: testData.txParams.value
         },
@@ -310,7 +307,7 @@ describe('eth_sendTransaction handler', () => {
           chainId: mockNetwork.chainId,
           data: undefined,
           gasLimit: 100,
-          gasPrice: BigNumber.from(testData.txParams.gasPrice),
+          gasPrice: BigInt(testData.txParams.gasPrice),
           to: testData.txParams.to,
           value: testData.txParams.value
         },

@@ -1,4 +1,3 @@
-import { BigNumber } from 'ethers'
 import {
   AddLiquidityDisplayData,
   ContractCall,
@@ -6,17 +5,18 @@ import {
   DisplayValueParserProps,
   LiquidityPoolToken
 } from 'screens/rpc/util/types'
-import { bigToLocaleString, ethersBigNumberToBig } from '@avalabs/utils-sdk'
+import { bigToLocaleString } from '@avalabs/utils-sdk'
 import { parseDisplayValues } from 'screens/rpc/util/parseDisplayValues'
 import { Network } from '@avalabs/chains-sdk'
 import { TransactionParams } from 'store/walletConnectV2/handlers/eth_sendTransaction/utils'
+import { bigintToBig } from 'utils/bigNumbers/bigintToBig'
 import { FindToken } from './utils/useFindToken'
 
 export interface AddLiquidityData {
-  amountAMin: BigNumber
-  amountADesired: BigNumber
-  amountBMin: BigNumber
-  amountBDesired: BigNumber
+  amountAMin: bigint
+  amountADesired: bigint
+  amountBMin: bigint
+  amountBDesired: bigint
   contractCall: ContractCall.ADD_LIQUIDITY
   deadline: string
   tokenA: string
@@ -42,7 +42,7 @@ export async function addLiquidityAvaxHandler(
   const tokenB = await findToken(data.tokenB.toLowerCase())
 
   const firstTokenAmountDepositedDisplayValue = bigToLocaleString(
-    ethersBigNumberToBig(data.amountADesired, tokenA.decimals),
+    bigintToBig(data.amountADesired, tokenA.decimals),
     4
   )
   const tokenA_AmountUSDValue =
@@ -57,7 +57,7 @@ export async function addLiquidityAvaxHandler(
   }
 
   const secondTokenAmountDepositedDisplayValue = bigToLocaleString(
-    ethersBigNumberToBig(data.amountBDesired, tokenB.decimals),
+    bigintToBig(data.amountBDesired, tokenB.decimals),
     4
   )
   const tokenB_AmountUSDValue =

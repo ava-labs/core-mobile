@@ -4,7 +4,7 @@ import {
   Transaction,
   TransactionDisplayValues
 } from 'screens/rpc/util/types'
-import { BigNumber, ethers } from 'ethers'
+import { MaxUint256, Result, TransactionDescription } from 'ethers'
 import { FeePreset } from 'components/NetworkFeeSelector'
 import { calculateGasAndFees } from 'utils/Utils'
 import { useNativeTokenPrice } from 'hooks/useNativeTokenPrice'
@@ -59,7 +59,7 @@ export const useExplainTransactionShared = (args: Args) => {
 
   const [customGas, setCustomGas] = useState<{
     gasLimit: number
-    gasPrice: BigNumber
+    gasPrice: bigint
   } | null>(null)
   const [defaultSpendLimit, setDefaultSpendLimit] = useState<BN>()
 
@@ -71,7 +71,7 @@ export const useExplainTransactionShared = (args: Args) => {
   )
 
   const setCustomFee = useCallback(
-    (gasPrice: BigNumber, modifier: FeePreset, gasLimit: number) => {
+    (gasPrice: bigint, modifier: FeePreset, gasLimit: number) => {
       setCustomGas({ gasLimit, gasPrice })
       setSelectedGasFee(modifier)
       const feeDisplayValues = calculateGasAndFees({
@@ -90,7 +90,7 @@ export const useExplainTransactionShared = (args: Args) => {
           txParams: {
             ...currentTransaction.txParams,
             gasLimit: feeDisplayValues.gasLimit,
-            gasPrice: feeDisplayValues.gasPrice.toHexString() // test this
+            gasPrice: feeDisplayValues.gasPrice.toString(16) // test this
           }
         }
 
@@ -114,7 +114,7 @@ export const useExplainTransactionShared = (args: Args) => {
             limitType: Limit.UNLIMITED,
             value: undefined
           })
-          limitAmount = ethers.constants.MaxUint256.toHexString()
+          limitAmount = MaxUint256.toString(16)
         } else if (customSpendData.limitType === Limit.DEFAULT) {
           const bn = defaultSpendLimit || new BN(0)
           setCustomSpendLimit({
@@ -180,7 +180,7 @@ export const useExplainTransactionShared = (args: Args) => {
         // These are the default props we'll feed into the display parser later on
         // @ts-ignore
         const displayValueProps: DisplayValueParserProps = {
-          gasPrice: networkFees?.low || BigNumber.from(0),
+          gasPrice: networkFees?.low || 0n,
           avaxPrice: tokenPrice || 0, // prince in currency
           avaxToken: avaxToken as NetworkTokenWithBalance,
           erc20Tokens: tokensWithBalance ?? [],
@@ -191,14 +191,14 @@ export const useExplainTransactionShared = (args: Args) => {
         let gasLimit: number | null
         try {
           gasLimit = await (txParams.gas
-            ? BigNumber.from(txParams.gas).toNumber()
-            : networkFeeService.estimateGasLimit(
-                txParams.from,
-                txParams.to,
-                txParams.data ?? '',
-                txParams.value,
+            ? Number(txParams.gas)
+            : networkFeeService.estimateGasLimit({
+                from: txParams.from,
+                to: txParams.to,
+                data: txParams.data,
+                value: txParams.value,
                 network
-              ))
+              }))
         } catch (e) {
           Logger.error('failed to calculate gas limit', e)
           throw Error('Unable to calculate gas limit')
@@ -210,8 +210,8 @@ export const useExplainTransactionShared = (args: Args) => {
           : txParams
 
         let functionName = ''
-        let decodedData: ethers.utils.Result | undefined
-        let description: ethers.utils.TransactionDescription | undefined
+        let decodedData: Result | undefined
+        let description: TransactionDescription | undefined
 
         if (!isTxDescriptionError(txDescription)) {
           // only include the description if it's free of errors
@@ -221,8 +221,7 @@ export const useExplainTransactionShared = (args: Args) => {
           decodedData = txDescription.args
 
           // Get function name. Try normalized name otherwise look into functionFragment
-          functionName =
-            txDescription?.name ?? txDescription?.functionFragment?.name
+          functionName = txDescription?.name ?? txDescription?.fragment?.name
         }
 
         // Get parser based on function name

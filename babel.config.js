@@ -26,7 +26,7 @@ module.exports = {
   ],
   overrides: [
     {
-      include: /node_modules\/@tanstack/,
+      include: /node_modules\/(@tanstack|ethers)/,
       plugins: [['@babel/plugin-transform-private-methods', { loose: true }]]
     }
   ]

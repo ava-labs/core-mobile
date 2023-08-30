@@ -1,4 +1,3 @@
-import { BigNumber } from 'ethers'
 import {
   AddLiquidityDisplayData,
   ContractCall,
@@ -13,10 +12,10 @@ import { Network } from '@avalabs/chains-sdk'
 import { TransactionParams } from 'store/walletConnectV2/handlers/eth_sendTransaction/utils'
 
 export interface AddLiquidityData {
-  amountAMin: BigNumber
-  amountADesired: BigNumber
-  amountBMin: BigNumber
-  amountBDesired: BigNumber
+  amountAMin: bigint
+  amountADesired: bigint
+  amountBMin: bigint
+  amountBDesired: bigint
   contractCall: ContractCall.ADD_LIQUIDITY
   deadline: string
   tokenA: string
@@ -42,7 +41,7 @@ export async function addLiquidityHandler(
   const tokenB = await findToken(data.tokenB.toLowerCase())
 
   const firstTokenAmountDepositedDisplayValue = bigToLocaleString(
-    bnToBig(hexToBN(data.amountADesired.toHexString()), tokenA.decimals),
+    bnToBig(hexToBN(data.amountADesired.toString(16)), tokenA.decimals),
     4
   )
   const tokenA_AmountUSDValue =

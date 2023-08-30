@@ -9,7 +9,7 @@ import AvaButton from 'components/AvaButton'
 import { noop } from 'rxjs'
 import BitcoinSVG from 'components/svg/BitcoinSVG'
 import { isBech32Address } from '@avalabs/bridge-sdk'
-import { isAddress } from '@ethersproject/address'
+import { isAddress } from 'ethers'
 import AvaLogoSVG from 'components/svg/AvaLogoSVG'
 
 type TextType = 'Heading' | 'ButtonSmall' | 'ButtonMedium' | 'Body1' | 'Body2'
@@ -137,9 +137,9 @@ const TokenAddressComposed = ({
       return <AvaText.Body1 color={textColor}>{tokenAddress}</AvaText.Body1>
     case 'Body2':
       return <AvaText.Body2 color={textColor}>{tokenAddress}</AvaText.Body2>
+    default:
+      return null
   }
-
-  return null
 }
 
 export default TokenAddress
