@@ -35,13 +35,25 @@ export const DURATION_LOW_TO_HIGH = {
   sortByTitle: LOW_TO_HIGH
 }
 
+export const VERSION_HIGH_TO_LOW = {
+  key: AdvancedSortFilter.VersionHighToLow,
+  sortByTitle: HIGH_TO_LOW
+}
+
+export const VERSION_LOW_TO_HIGH = {
+  key: AdvancedSortFilter.VersionLowToHigh,
+  sortByTitle: LOW_TO_HIGH
+}
+
 export const advancedFilterDropDownItems: TAdvancedFilterDropDownItems[] = [
   UP_TIME_HIGH_TO_LOW,
   UP_TIME_LOW_TO_HIGH,
   FEE_HIGH_TO_LOW,
   FEE_LOW_TO_HIGH,
   DURATION_HIGH_TO_LOW,
-  DURATION_LOW_TO_HIGH
+  DURATION_LOW_TO_HIGH,
+  VERSION_HIGH_TO_LOW,
+  VERSION_LOW_TO_HIGH
 ]
 
 export const estimatesTooltipText =

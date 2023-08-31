@@ -1,4 +1,11 @@
-import { add, addYears, getUnixTime, isSameDay } from 'date-fns'
+import {
+  add,
+  addYears,
+  fromUnixTime,
+  getUnixTime,
+  isSameDay,
+  subDays
+} from 'date-fns'
 import { AdvancedSortFilter, NodeValidator, NodeValidators } from 'types/earn'
 import { random } from 'lodash'
 import { FujiParams, MainnetParams } from 'utils/NetworkParams'
@@ -8,6 +15,8 @@ import * as Navigation from 'utils/Navigation'
 import AppNavigation from 'navigation/AppNavigation'
 import Logger from 'utils/Logger'
 import { isOnGoing } from 'utils/earn/status'
+import { valid, compare } from 'semver'
+import { Peer } from '@avalabs/avalanchejs-v2/dist/src/info/model'
 import EarnService from './EarnService'
 
 // the max num of times we should check transaction status
@@ -159,7 +168,16 @@ export const getFilteredValidators = ({
   const stakingEndTimeUnix = getUnixTime(stakingEndTime) // timestamp in seconds
 
   const filtered = validators.filter(
-    ({ endTime, weight, uptime, delegationFee, delegatorWeight, nodeID }) => {
+    ({
+      endTime,
+      weight,
+      uptime,
+      delegationFee,
+      delegatorWeight,
+      nodeID,
+      connected,
+      startTime
+    }) => {
       const availableDelegationWeight = getAvailableDelegationWeight(
         isDeveloperMode,
         Avax.fromNanoAvax(weight),
@@ -181,7 +199,9 @@ export const getFilteredValidators = ({
         availableDelegationWeight.gt(stakingAmount) &&
         filterByMinimumStakingTime() &&
         Number(uptime) >= minUpTime &&
-        (maxFee ? Number(delegationFee) <= maxFee : true)
+        (maxFee ? Number(delegationFee) <= maxFee : true) &&
+        connected === true &&
+        fromUnixTime(Number(startTime)) <= subDays(new Date(), 7)
       )
     }
   )
@@ -192,19 +212,27 @@ export const getFilteredValidators = ({
  *
  * @param validators input to sort by staking uptime and delegation fee,
  * @param isEndTimeOverOneYear boolean indicating if the stake end time is over one year
+ * @param peers Record of <string, peers> to sort by version
  * @returns sorted validators
  */
 export const getSimpleSortedValidators = (
   validators: NodeValidators,
+  peers?: Record<string, Peer>,
   isEndTimeOverOneYear = false
 ) => {
   if (isEndTimeOverOneYear) {
     return getSortedValidatorsByEndTime(validators)
   }
-  return validators.sort(
+  return [...validators].sort(
     (a, b): number =>
       Number(b.uptime) - Number(a.uptime) ||
-      Number(b.delegationFee) - Number(a.delegationFee)
+      Number(b.delegationFee) - Number(a.delegationFee) ||
+      (peers === undefined
+        ? 0
+        : comparePeerVersion(
+            peers[b.nodeID]?.version,
+            peers[a.nodeID]?.version
+          ))
   )
 }
 
@@ -232,36 +260,49 @@ export const getRandomValidator = (
  *
  * @param validators,
  * @param advancedSortFilter filter to sort validators by uptime, fee, or duration
+ * @param peers Record of <string, peers> to sort by version
  * @returns sorted validators
  */
 export const getAdvancedSortedValidators = (
   validators: NodeValidators,
-  sortFilter: AdvancedSortFilter
+  sortFilter: AdvancedSortFilter,
+  peers?: Record<string, Peer>
 ) => {
+  const clonedValidators = [...validators]
   switch (sortFilter) {
     case AdvancedSortFilter.UpTimeLowToHigh:
-      return validators.sort(
+      return clonedValidators.sort(
         (a, b): number => Number(a.uptime) - Number(b.uptime)
       )
     case AdvancedSortFilter.FeeHighToLow:
-      return validators.sort(
+      return clonedValidators.sort(
         (a, b): number => Number(b.delegationFee) - Number(a.delegationFee)
       )
     case AdvancedSortFilter.FeeLowToHigh:
-      return validators.sort(
+      return clonedValidators.sort(
         (a, b): number => Number(a.delegationFee) - Number(b.delegationFee)
       )
     case AdvancedSortFilter.DurationHighToLow:
-      return validators.sort(
+      return clonedValidators.sort(
         (a, b): number => Number(b.endTime) - Number(a.endTime)
       )
     case AdvancedSortFilter.DurationLowToHigh:
-      return validators.sort(
+      return clonedValidators.sort(
         (a, b): number => Number(a.endTime) - Number(b.endTime)
+      )
+    case AdvancedSortFilter.VersionHighToLow:
+      if (peers === undefined) return clonedValidators
+      return clonedValidators.sort((a, b): number =>
+        comparePeerVersion(peers[b.nodeID]?.version, peers[a.nodeID]?.version)
+      )
+    case AdvancedSortFilter.VersionLowToHigh:
+      if (peers === undefined) return clonedValidators
+      return clonedValidators.sort((a, b): number =>
+        comparePeerVersion(peers[a.nodeID]?.version, peers[b.nodeID]?.version)
       )
     case AdvancedSortFilter.UpTimeHighToLow:
     default:
-      return validators.sort(
+      return clonedValidators.sort(
         (a, b): number => Number(b.uptime) - Number(a.uptime)
       )
   }
@@ -337,4 +378,10 @@ export const getTransformedTransactions = async (
     Logger.error('getTransformedTransactions failed: ', error)
     throw error
   }
+}
+
+export const comparePeerVersion = (first?: string, second?: string) => {
+  const v1 = valid(first?.split('/')[1]) ?? '0.0.0'
+  const v2 = valid(second?.split('/')[1]) ?? '0.0.0'
+  return compare(v1, v2)
 }

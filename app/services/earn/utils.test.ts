@@ -12,7 +12,8 @@ import {
   getSimpleSortedValidators,
   getSortedValidatorsByEndTime,
   isEndTimeOverOneYear,
-  navigateToClaimRewards
+  navigateToClaimRewards,
+  comparePeerVersion
 } from './utils'
 
 describe('calculateMaxWeight', () => {
@@ -174,42 +175,42 @@ describe('getAdvancedSortedValidators function', () => {
       validators as unknown as NodeValidators,
       AdvancedSortFilter.UpTimeHighToLow
     )
-    expect(sorted[0]?.uptime).toBe('99')
+    expect(sorted?.[0]?.uptime).toBe('99')
   })
   it('should return sorted validators by uptime low to high', () => {
     const sorted = getAdvancedSortedValidators(
       validators as unknown as NodeValidators,
       AdvancedSortFilter.UpTimeLowToHigh
     )
-    expect(sorted[0]?.uptime).toBe('1')
+    expect(sorted?.[0]?.uptime).toBe('1')
   })
   it('should return sorted validators by delegation fee high to low', () => {
     const sorted = getAdvancedSortedValidators(
       validators as unknown as NodeValidators,
       AdvancedSortFilter.FeeHighToLow
     )
-    expect(sorted[0]?.delegationFee).toBe('100.0000')
+    expect(sorted?.[0]?.delegationFee).toBe('100.0000')
   })
   it('should return sorted validators by delegation fee low to high', () => {
     const sorted = getAdvancedSortedValidators(
       validators as unknown as NodeValidators,
       AdvancedSortFilter.FeeLowToHigh
     )
-    expect(sorted[0]?.delegationFee).toBe('2.0000')
+    expect(sorted?.[0]?.delegationFee).toBe('2.0000')
   })
   it('should return sorted validators by duration high to low', () => {
     const sorted = getAdvancedSortedValidators(
       validators as unknown as NodeValidators,
       AdvancedSortFilter.DurationHighToLow
     )
-    expect(sorted[0]?.endTime).toBe('4844249830')
+    expect(sorted?.[0]?.endTime).toBe('4844249830')
   })
   it('should return sorted validators by duration low to high', () => {
     const sorted = getAdvancedSortedValidators(
       validators as unknown as NodeValidators,
       AdvancedSortFilter.DurationLowToHigh
     )
-    expect(sorted[0]?.endTime).toBe('2844249830')
+    expect(sorted?.[0]?.endTime).toBe('2844249830')
   })
 })
 
@@ -270,5 +271,44 @@ describe('navigateToClaimRewards', () => {
     navigateToClaimRewards()
     jest.advanceTimersByTime(500)
     expect(mockNavigate).not.toHaveBeenCalled()
+  })
+})
+
+describe('comparePeerVersion', () => {
+  it('should return 1 if first version is greater than second version', () => {
+    const result = comparePeerVersion('avalanche/1.0.3', 'avalanche/0.0.1')
+    expect(result).toBe(1)
+  })
+  it('should return -1 if second version if greater than first version', () => {
+    const result = comparePeerVersion('avalanche/0.9.0', 'avalanche/1.0.1')
+    expect(result).toBe(-1)
+  })
+  it('should return 0 if second version if same as first version', () => {
+    const result = comparePeerVersion('avalanche/0.9.0', 'avalanche/0.9.0')
+    expect(result).toBe(0)
+  })
+  it('should return 0 if both versions contain incorrect version', () => {
+    const result = comparePeerVersion('avalanche/0.9', 'avalanche/0.0')
+    expect(result).toBe(0)
+  })
+  it('should return 1 if second version is invalid', () => {
+    const result = comparePeerVersion('avalanche/0.9.0', 'avalanche/0.0')
+    expect(result).toBe(1)
+  })
+  it('should return -1 if first version is invalid', () => {
+    const result = comparePeerVersion('avalanche/0.9', 'avalanche/0.0.1')
+    expect(result).toBe(-1)
+  })
+  it('should return 0 if both versions are invalid', () => {
+    const result = comparePeerVersion('avalanche', 'avalanche/')
+    expect(result).toBe(0)
+  })
+  it('should return 0 if both versions are undefined', () => {
+    const result = comparePeerVersion(undefined, undefined)
+    expect(result).toBe(0)
+  })
+  it('should return -1 if first versions is undefined', () => {
+    const result = comparePeerVersion(undefined, 'avalanche/0.9.0')
+    expect(result).toBe(-1)
   })
 })
