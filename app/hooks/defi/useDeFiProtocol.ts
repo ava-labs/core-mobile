@@ -9,6 +9,7 @@ export const useDeFiProtocol = (protocolId: string) => {
   const addressC = useSelector(selectActiveAccount)?.address ?? ''
 
   return useQuery({
+    enabled: !!addressC && !!protocolId,
     queryKey: ['deFiProtocol', addressC, protocolId],
     queryFn: () => DeFiService.getDeFiProtocol(addressC, protocolId),
     select: data => convertSnakeToCamel(data) as DeFiProtocol
