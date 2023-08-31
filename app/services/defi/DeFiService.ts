@@ -3,7 +3,7 @@ import {
   DeFiProtocolObject,
   DeFiSimpleProtocolObject,
   DeFiChainObject
-} from './models'
+} from './debankTypes'
 import { DeFiSimpleProtocol } from './types'
 import { CHAIN_LIST, PROTOCOL, SIMPLE_PROTOCOL_LIST } from './constants'
 
