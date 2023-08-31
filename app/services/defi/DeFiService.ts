@@ -1,5 +1,4 @@
 import Config from 'react-native-config'
-import Logger from 'utils/Logger'
 import {
   DeFiProtocolObject,
   DeFiSimpleProtocolObject,
@@ -26,16 +25,11 @@ class DeFiService {
   async getSupportedChainList(): Promise<DeFiChainObject[]> {
     const chainListUrl = `${this.baseUrl}/${CHAIN_LIST}`
 
-    try {
-      const supportedChainList = await fetch(chainListUrl, {
-        headers: this.headers
-      })
-      const jsonRes = (await supportedChainList.json()) as DeFiChainObject[]
-      return jsonRes
-    } catch (e) {
-      Logger.error('getSupportedChainList failed', e)
-      throw Error(`getSupportedChainList failed. ${e}`)
-    }
+    const supportedChainList = await fetch(chainListUrl, {
+      headers: this.headers
+    })
+    const jsonRes = (await supportedChainList.json()) as DeFiChainObject[]
+    return jsonRes
   }
 
   async getDeFiProtocol(
@@ -48,17 +42,12 @@ class DeFiService {
       protocol_id: protocolId
     })
 
-    try {
-      const urlWithQueryParam = `${userProtocolUrl}?${params}`
-      const userProtocolList = await fetch(urlWithQueryParam, {
-        headers: this.headers
-      })
-      const jsonRes = (await userProtocolList.json()) as DeFiProtocolObject
-      return jsonRes
-    } catch (e) {
-      Logger.error('getUserProtocol failed', e)
-      throw Error(`getUserProtocol failed. ${e}`)
-    }
+    const urlWithQueryParam = `${userProtocolUrl}?${params}`
+    const userProtocolList = await fetch(urlWithQueryParam, {
+      headers: this.headers
+    })
+    const jsonRes = (await userProtocolList.json()) as DeFiProtocolObject
+    return jsonRes
   }
 
   async getDeFiProtocolList(
@@ -69,18 +58,13 @@ class DeFiService {
       id: userAddress
     })
 
-    try {
-      const urlWithQueryParam = `${userProtocolListUrl}?${params}`
-      const userProtocolList = await fetch(urlWithQueryParam, {
-        headers: this.headers
-      })
-      const jsonRes =
-        (await userProtocolList.json()) as DeFiSimpleProtocolObject[]
-      return jsonRes
-    } catch (e) {
-      Logger.error('getUserProtocolList failed', e)
-      throw Error(`getUserProtocolList failed. ${e}`)
-    }
+    const urlWithQueryParam = `${userProtocolListUrl}?${params}`
+    const userProtocolList = await fetch(urlWithQueryParam, {
+      headers: this.headers
+    })
+    const jsonRes =
+      (await userProtocolList.json()) as DeFiSimpleProtocolObject[]
+    return jsonRes
   }
 
   sortSimpleProtocols(protocols: DeFiSimpleProtocol[]): DeFiSimpleProtocol[] {
