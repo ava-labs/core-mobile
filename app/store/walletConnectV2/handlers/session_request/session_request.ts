@@ -66,7 +66,10 @@ class SessionRequestHandler implements RpcRequestHandler<SessionProposal> {
     const eip155NameSpace = requiredNamespaces.eip155
     const supportedNetworks = selectRawNetworks(state)
 
-    if (eip155NameSpace.chains.length === 0) {
+    if (
+      eip155NameSpace.chains === undefined ||
+      eip155NameSpace.chains.length === 0
+    ) {
       return {
         success: false,
         error: ethErrors.rpc.invalidParams({
@@ -144,7 +147,7 @@ class SessionRequestHandler implements RpcRequestHandler<SessionProposal> {
 
     Object.keys(requiredNamespaces).forEach(key => {
       const accounts: string[] = []
-      requiredNamespaces[key]?.chains.forEach(chain => {
+      requiredNamespaces[key]?.chains?.forEach(chain => {
         selectedAccounts.forEach(acc => accounts.push(`${chain}:${acc}`))
       })
       namespaces[key] = {

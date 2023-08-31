@@ -64,6 +64,13 @@ const createRequest = (
             name: 'Core'
           }
         }
+      },
+      verifyContext: {
+        verified: {
+          origin: '',
+          validation: 'UNKNOWN' as 'UNKNOWN' | 'VALID' | 'INVALID',
+          verifyUrl: ''
+        }
       }
     }
   }
