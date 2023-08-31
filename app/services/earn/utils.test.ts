@@ -287,7 +287,7 @@ describe('comparePeerVersion', () => {
     const result = comparePeerVersion('avalanche/0.9.0', 'avalanche/0.9.0')
     expect(result).toBe(0)
   })
-  it('should return 0 if both versions are invalid', () => {
+  it('should return 0 if both versions contain incorrect version', () => {
     const result = comparePeerVersion('avalanche/0.9', 'avalanche/0.0')
     expect(result).toBe(0)
   })
@@ -299,8 +299,16 @@ describe('comparePeerVersion', () => {
     const result = comparePeerVersion('avalanche/0.9', 'avalanche/0.0.1')
     expect(result).toBe(-1)
   })
-  it('should return 0 if both versions are undefined', () => {
+  it('should return 0 if both versions are invalid', () => {
     const result = comparePeerVersion('avalanche', 'avalanche/')
     expect(result).toBe(0)
+  })
+  it('should return 0 if both versions are undefined', () => {
+    const result = comparePeerVersion(undefined, undefined)
+    expect(result).toBe(0)
+  })
+  it('should return -1 if first versions is undefined', () => {
+    const result = comparePeerVersion(undefined, 'avalanche/0.9.0')
+    expect(result).toBe(-1)
   })
 })

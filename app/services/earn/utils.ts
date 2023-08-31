@@ -225,13 +225,9 @@ export const getSimpleSortedValidators = (
   }
   return validators.sort(
     (a, b): number =>
-      (peers &&
-        comparePeerVersion(
-          peers[b.nodeID]?.version,
-          peers[a.nodeID]?.version
-        )) ||
       Number(b.uptime) - Number(a.uptime) ||
-      Number(b.delegationFee) - Number(a.delegationFee)
+      Number(b.delegationFee) - Number(a.delegationFee) ||
+      comparePeerVersion(peers?.[b.nodeID]?.version, peers?.[a.nodeID]?.version)
   )
 }
 
@@ -267,48 +263,46 @@ export const getAdvancedSortedValidators = (
   sortFilter: AdvancedSortFilter,
   peers?: Record<string, Peer>
 ) => {
+  const clonedValidators = [...validators]
   switch (sortFilter) {
     case AdvancedSortFilter.UpTimeLowToHigh:
-      return validators.sort(
+      return clonedValidators.sort(
         (a, b): number => Number(a.uptime) - Number(b.uptime)
       )
     case AdvancedSortFilter.FeeHighToLow:
-      return validators.sort(
+      return clonedValidators.sort(
         (a, b): number => Number(b.delegationFee) - Number(a.delegationFee)
       )
     case AdvancedSortFilter.FeeLowToHigh:
-      return validators.sort(
+      return clonedValidators.sort(
         (a, b): number => Number(a.delegationFee) - Number(b.delegationFee)
       )
     case AdvancedSortFilter.DurationHighToLow:
-      return validators.sort(
+      return clonedValidators.sort(
         (a, b): number => Number(b.endTime) - Number(a.endTime)
       )
     case AdvancedSortFilter.DurationLowToHigh:
-      return validators.sort(
+      return clonedValidators.sort(
         (a, b): number => Number(a.endTime) - Number(b.endTime)
       )
     case AdvancedSortFilter.VersionHighToLow:
-      return (
-        peers &&
-        validators.sort((a, b): number =>
-          comparePeerVersion(peers[b.nodeID]?.version, peers[a.nodeID]?.version)
+      return clonedValidators.sort((a, b): number =>
+        comparePeerVersion(
+          peers?.[b.nodeID]?.version,
+          peers?.[a.nodeID]?.version
         )
       )
     case AdvancedSortFilter.VersionLowToHigh:
-      return (
-        peers &&
-        validators.sort(
-          (a, b): number =>
-            comparePeerVersion(
-              peers[a.nodeID]?.version,
-              peers[b.nodeID]?.version
-            ) || 0
-        )
+      return clonedValidators.sort(
+        (a, b): number =>
+          comparePeerVersion(
+            peers?.[a.nodeID]?.version,
+            peers?.[b.nodeID]?.version
+          ) || 0
       )
     case AdvancedSortFilter.UpTimeHighToLow:
     default:
-      return validators.sort(
+      return clonedValidators.sort(
         (a, b): number => Number(b.uptime) - Number(a.uptime)
       )
   }
