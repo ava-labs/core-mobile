@@ -7,17 +7,15 @@ import {
 import { DeFiSimpleProtocol } from './types'
 import { CHAIN_LIST, PROTOCOL, SIMPLE_PROTOCOL_LIST } from './constants'
 
-if (!Config.DEBANK_URL) throw Error('DEBANK_URL ENV is missing')
-if (!Config.DEBANK_API_KEY) throw Error('DEBANK_API_KEY ENV is missing')
+if (!Config.PROXY_URL) throw Error('PROXY_URL is missing')
 
 class DeFiService {
   private baseUrl: string
   private headers: Record<string, string>
 
   constructor() {
-    this.baseUrl = Config.DEBANK_URL ?? ''
+    this.baseUrl = Config.PROXY_URL + '/proxy/debank/v1'
     this.headers = {
-      AccessKey: Config.DEBANK_API_KEY ?? '',
       'Content-Type': 'application/json'
     }
   }
