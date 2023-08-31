@@ -223,11 +223,16 @@ export const getSimpleSortedValidators = (
   if (isEndTimeOverOneYear) {
     return getSortedValidatorsByEndTime(validators)
   }
-  return validators.sort(
+  return [...validators].sort(
     (a, b): number =>
       Number(b.uptime) - Number(a.uptime) ||
       Number(b.delegationFee) - Number(a.delegationFee) ||
-      comparePeerVersion(peers?.[b.nodeID]?.version, peers?.[a.nodeID]?.version)
+      (peers === undefined
+        ? 0
+        : comparePeerVersion(
+            peers[b.nodeID]?.version,
+            peers[a.nodeID]?.version
+          ))
   )
 }
 
@@ -286,18 +291,17 @@ export const getAdvancedSortedValidators = (
         (a, b): number => Number(a.endTime) - Number(b.endTime)
       )
     case AdvancedSortFilter.VersionHighToLow:
+      if (peers === undefined) return clonedValidators
       return clonedValidators.sort((a, b): number =>
-        comparePeerVersion(
-          peers?.[b.nodeID]?.version,
-          peers?.[a.nodeID]?.version
-        )
+        comparePeerVersion(peers[b.nodeID]?.version, peers[a.nodeID]?.version)
       )
     case AdvancedSortFilter.VersionLowToHigh:
+      if (peers === undefined) return clonedValidators
       return clonedValidators.sort(
         (a, b): number =>
           comparePeerVersion(
-            peers?.[a.nodeID]?.version,
-            peers?.[b.nodeID]?.version
+            peers[a.nodeID]?.version,
+            peers[b.nodeID]?.version
           ) || 0
       )
     case AdvancedSortFilter.UpTimeHighToLow:
