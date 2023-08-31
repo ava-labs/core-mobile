@@ -297,12 +297,8 @@ export const getAdvancedSortedValidators = (
       )
     case AdvancedSortFilter.VersionLowToHigh:
       if (peers === undefined) return clonedValidators
-      return clonedValidators.sort(
-        (a, b): number =>
-          comparePeerVersion(
-            peers[a.nodeID]?.version,
-            peers[b.nodeID]?.version
-          ) || 0
+      return clonedValidators.sort((a, b): number =>
+        comparePeerVersion(peers[a.nodeID]?.version, peers[b.nodeID]?.version)
       )
     case AdvancedSortFilter.UpTimeHighToLow:
     default:
