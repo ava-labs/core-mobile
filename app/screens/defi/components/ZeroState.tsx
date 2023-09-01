@@ -21,7 +21,7 @@ export const ZeroState = ({
           <AvaText.Heading5>No DeFi Transactions</AvaText.Heading5>
           <Space y={8} />
           <AvaText.Body2 textStyle={{ textAlign: 'center', lineHeight: 20 }}>
-            {'Discover top dapps on Avalanche now.'}
+            {'Discover top dApps on Avalanche now.'}
           </AvaText.Body2>
         </View>
       </View>
