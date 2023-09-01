@@ -24,6 +24,7 @@ import ActivityList from 'screens/shared/ActivityList/ActivityList'
 import { Transaction } from 'store/transaction'
 import { PortfolioTabs } from 'consts/portfolio'
 import { selectIsDeFiBlocked } from 'store/posthog'
+import { DeFiProtocolList } from 'screens/defi/DeFiProtocolList'
 import InactiveNetworkCard from './components/Cards/InactiveNetworkCard'
 import { PortfolioTokensLoader } from './components/Loaders/PortfolioTokensLoader'
 import PortfolioHeader from './components/PortfolioHeader'
@@ -179,7 +180,7 @@ const ActivityTab = () => {
 }
 
 const DeFiTab = () => {
-  return null
+  return <DeFiProtocolList />
 }
 
 const renderCustomLabel = (title: string, selected: boolean, color: string) => {
