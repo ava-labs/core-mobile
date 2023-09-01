@@ -20,10 +20,7 @@ export const DeFiProtocolList = () => {
     appHook: { currencyFormatter }
   } = useApplicationContext()
   const { data: chainList } = useDeFiChainList()
-
-  const { data, isLoading, error } = useDeFiProtocolList(
-    '0x9026a229b535ecf0162dfe48fdeb3c75f7b2a7ae'
-  )
+  const { data, isLoading, error } = useDeFiProtocolList()
 
   const memoizedData = React.useMemo(() => {
     if (!data) return []
