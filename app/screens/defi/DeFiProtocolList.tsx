@@ -10,6 +10,7 @@ import LinkSVG from 'components/svg/LinkSVG'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Space } from 'components/Space'
 import { useDeFiChainList } from 'hooks/useDeFi/useDeFiChainList'
+import AvaButton from 'components/AvaButton'
 import { ErrorState } from './components/ErrorState'
 import { ZeroState } from './components/ZeroState'
 
@@ -20,12 +21,12 @@ export const DeFiProtocolList = () => {
   } = useApplicationContext()
   const { data: chainList } = useDeFiChainList()
 
-  const { data, isFetching, error } = useDeFiProtocolList(
+  const { data, isLoading, error } = useDeFiProtocolList(
     '0x9026a229b535ecf0162dfe48fdeb3c75f7b2a7ae'
   )
 
   const memoizedData = React.useMemo(() => {
-    if (!data) return undefined
+    if (!data) return []
     return DeFiService.sortSimpleProtocols(data)
   }, [data])
 
@@ -37,9 +38,9 @@ export const DeFiProtocolList = () => {
     Linking.openURL('https://core.app/discover/')
   }
 
-  if (isFetching) return <PortfolioDeFiHomeLoader />
+  if (isLoading) return <PortfolioDeFiHomeLoader />
   if (error) return <ErrorState />
-  if (memoizedData === undefined || memoizedData.length === 0)
+  if (memoizedData.length === 0)
     return <ZeroState onExploreEcosystem={handleExploreEcosystem} />
 
   const renderItem = ({ item }: { item: DeFiSimpleProtocol }) => {
@@ -77,7 +78,7 @@ export const DeFiProtocolList = () => {
     }
 
     return (
-      <Pressable onPress={handleGoToDetail}>
+      <AvaButton.Base onPress={handleGoToDetail}>
         <Card
           key={item.id}
           style={{
@@ -103,7 +104,7 @@ export const DeFiProtocolList = () => {
             </Pressable>
           </View>
         </Card>
-      </Pressable>
+      </AvaButton.Base>
     )
   }
 
