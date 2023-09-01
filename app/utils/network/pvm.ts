@@ -1,8 +1,8 @@
 import { pvm } from '@avalabs/avalanchejs-v2'
-
-const AVALANCHE_MAINNET_API_URL = 'https://api.avax.network'
-
-const AVALANCHE_TESTNET_API_URL = 'https://api.avax-test.network'
+import {
+  AVALANCHE_MAINNET_API_URL,
+  AVALANCHE_TESTNET_API_URL
+} from './constants'
 
 export const getPvmApi = (isTestnet: boolean): pvm.PVMApi =>
   new pvm.PVMApi(
