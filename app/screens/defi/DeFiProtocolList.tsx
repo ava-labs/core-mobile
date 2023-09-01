@@ -9,6 +9,7 @@ import AvaText from 'components/AvaText'
 import LinkSVG from 'components/svg/LinkSVG'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Space } from 'components/Space'
+import { useDeFiChainList } from 'hooks/useDeFi/useDeFiChainList'
 import { ErrorState } from './components/ErrorState'
 import { ZeroState } from './components/ZeroState'
 
@@ -17,6 +18,7 @@ export const DeFiProtocolList = () => {
     theme,
     appHook: { currencyFormatter }
   } = useApplicationContext()
+  const { data: chainList } = useDeFiChainList()
 
   const { data, isFetching, error } = useDeFiProtocolList(
     '0x9026a229b535ecf0162dfe48fdeb3c75f7b2a7ae'
@@ -42,6 +44,37 @@ export const DeFiProtocolList = () => {
 
   const renderItem = ({ item }: { item: DeFiSimpleProtocol }) => {
     const netUsdValue = currencyFormatter(item.netUsdValue)
+    const networkLogo = chainList?.[item.chain]?.logoUrl
+
+    const renderLogo = () => {
+      return (
+        <View>
+          <Image
+            source={{ uri: item.logoUrl }}
+            style={{
+              width: 40,
+              height: 40,
+              marginRight: 16,
+              borderRadius: 20
+            }}
+          />
+          {networkLogo && (
+            <Image
+              source={{ uri: networkLogo }}
+              style={{
+                width: 12,
+                height: 12,
+                marginRight: 16,
+                borderRadius: 6,
+                position: 'absolute',
+                bottom: 0,
+                right: 0
+              }}
+            />
+          )}
+        </View>
+      )
+    }
 
     return (
       <Pressable onPress={handleGoToDetail}>
@@ -55,10 +88,7 @@ export const DeFiProtocolList = () => {
             justifyContent: 'space-between'
           }}>
           <View style={{ flexDirection: 'row' }}>
-            <Image
-              source={{ uri: item.logoUrl }}
-              style={{ width: 40, height: 40, marginRight: 16 }}
-            />
+            {renderLogo()}
             <AvaText.Heading5>{item.name}</AvaText.Heading5>
           </View>
           <View>
@@ -82,7 +112,7 @@ export const DeFiProtocolList = () => {
       data={memoizedData}
       renderItem={renderItem}
       keyExtractor={item => item.id}
-      contentContainerStyle={{ paddingHorizontal: 16, marginTop: 16 }}
+      contentContainerStyle={{ padding: 16 }}
     />
   )
 }
