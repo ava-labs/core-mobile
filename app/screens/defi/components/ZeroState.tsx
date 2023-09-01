@@ -7,9 +7,9 @@ import AvaButton from 'components/AvaButton'
 import LinkSVG from 'components/svg/LinkSVG'
 
 export const ZeroState = ({
-  onExporeEcosystem
+  onExploreEcosystem
 }: {
-  onExporeEcosystem?: () => void
+  onExploreEcosystem?: () => void
 }) => {
   const { theme } = useApplicationContext()
 
@@ -26,7 +26,7 @@ export const ZeroState = ({
         </View>
       </View>
       <Space y={24} />
-      <AvaButton.PrimaryLarge onPress={onExporeEcosystem}>
+      <AvaButton.PrimaryLarge onPress={onExploreEcosystem}>
         <LinkSVG color={theme.logoColor} />
         <Space x={8} />
         Explore Ecosystem

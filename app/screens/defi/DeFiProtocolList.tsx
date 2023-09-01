@@ -18,7 +18,7 @@ export const DeFiProtocolList = () => {
     appHook: { currencyFormatter }
   } = useApplicationContext()
 
-  const { data, isLoading, error } = useDeFiProtocolList(
+  const { data, isFetching, error } = useDeFiProtocolList(
     '0x9026a229b535ecf0162dfe48fdeb3c75f7b2a7ae'
   )
 
@@ -31,14 +31,14 @@ export const DeFiProtocolList = () => {
     Alert.alert('Not Implemented')
   }
 
-  const handleExporeEcosystem = () => {
+  const handleExploreEcosystem = () => {
     Linking.openURL('https://core.app/discover/')
   }
 
-  if (isLoading) return <PortfolioDeFiHomeLoader />
+  if (isFetching) return <PortfolioDeFiHomeLoader />
   if (error) return <ErrorState />
-  if (data === undefined)
-    return <ZeroState onExporeEcosystem={handleExporeEcosystem} />
+  if (memoizedData === undefined || memoizedData.length === 0)
+    return <ZeroState onExploreEcosystem={handleExploreEcosystem} />
 
   const renderItem = ({ item }: { item: DeFiSimpleProtocol }) => {
     const netUsdValue = currencyFormatter(item.netUsdValue)
@@ -62,7 +62,7 @@ export const DeFiProtocolList = () => {
             <AvaText.Heading5>{item.name}</AvaText.Heading5>
           </View>
           <View>
-            <Pressable onPress={handleExporeEcosystem}>
+            <Pressable onPress={handleExploreEcosystem}>
               <View style={{ alignItems: 'flex-end' }}>
                 <AvaText.Body2 color={theme.neutral50}>
                   {netUsdValue}
