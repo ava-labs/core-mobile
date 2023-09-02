@@ -64,8 +64,8 @@ module.exports = {
     },
     'android.internal.release.ci': {
       type: 'android.apk',
-      binaryPath: ANDROID_APK_PATH,
-      testBinaryPath: ANDROID_TEST_APK_PATH
+      binaryPath: process.env.BITRISE_APK_PATH,
+      testBinaryPath: process.env.BITRISE_TEST_APK_PATH
     },
     'android.external.release.ci': {
       type: 'android.apk',
