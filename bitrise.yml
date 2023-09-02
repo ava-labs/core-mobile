@@ -124,9 +124,7 @@ workflows:
     steps:
     - pull-intermediate-files@1:
         inputs:
-        - artifact_sources: |-
-            BITRISE_APK_PATH
-            BITRISE_TEST_APK_PATH
+        - artifact_sources: .*
   _build-ios:
     steps:
     - restore-cocoapods-cache@1: {}
