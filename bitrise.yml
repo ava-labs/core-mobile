@@ -107,15 +107,15 @@ workflows:
     - _run_android_tests
   _run_android_tests:
     steps:
-      - script@1:
-          is_always_run: true
-          title: Sleep
-          timeout: 120000
-          inputs:
-          - content: |-
-              #!/bin/bash
-              echo "sleeping for 9999999 seconds"
-              sleep 9999999
+      # - script@1:
+      #     is_always_run: true
+      #     title: Sleep
+      #     timeout: 120000
+      #     inputs:
+      #     - content: |-
+      #         #!/bin/bash
+      #         echo "sleeping for 9999999 seconds"
+      #         sleep 9999999
       - script-runner@0:
           title: Detox
           inputs:
