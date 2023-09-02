@@ -108,6 +108,9 @@ workflows:
     - _run_android_tests
   _run_android_tests:
     steps:
+      - yarn@0.0.8:
+          inputs:
+          - command: start
       - script-runner@0:
           title: Detox
           inputs:
