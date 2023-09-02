@@ -59,15 +59,15 @@ workflows:
         title: Fix Android Env Vars
         inputs:
         - file_path: scripts/bitrise/fixAndroidEnvVars.sh
-    - avd-manager@1.2:
-        inputs:
-        - api_level: "28"
-        - emulator_id: emulator-5554
-        - emulator_channel: "0"
-        - create_command_flags: --sdcard 512M
-        - tag: default
-        - abi: x86_64
-        - profile: pixel_4
+    # - avd-manager@1.2:
+    #     inputs:
+    #     - api_level: "28"
+    #     - emulator_id: emulator-5554
+    #     - emulator_channel: "0"
+    #     - create_command_flags: --sdcard 512M
+    #     - tag: default
+    #     - abi: x86_64
+    #     - profile: pixel_4
     - android-build-for-ui-testing@0:
         inputs:
         - module: $ANDROID_MODULE
@@ -84,6 +84,49 @@ workflows:
         - keystore_password: $ANDROID_STORE_PASSWORD
         - keystore_alias: $ANDROID_KEY_ALIAS
         - private_key_password: $ANDROID_KEY_PASSWORD
+    - deploy-to-bitrise-io@2: 
+        inputs:
+        - pipeline_intermediate_files: |-
+            $BITRISE_APK_PATH:BITRISE_APK_PATH
+            $BITRISE_TEST_APK_PATH:BITRISE_TEST_APK_PATH	           
+  ui_test_on_pixel_4:
+    steps:
+    - avd-manager@1.2:
+        inputs:
+        - api_level: "28"
+        - emulator_id: emulator-5554
+        - emulator_channel: "0"
+        - create_command_flags: --sdcard 512M
+        - tag: default
+        - abi: x86_64
+        - profile: pixel_4
+    before_run:
+    - _install-and-set-env
+    - _pull_apks
+    after_run:
+    - _run_android_tests
+  _run_android_tests:
+    steps:
+      - script@1:
+          is_always_run: true
+          title: Sleep
+          timeout: 120000
+          inputs:
+          - content: |-
+              #!/bin/bash
+              echo "sleeping for 9999999 seconds"
+              sleep 9999999
+      - script-runner@0:
+          title: Detox
+          inputs:
+            - file_path: scripts/bitrise/detox/androidInternalE2e.sh
+  _pull_apks:
+    steps:
+    - pull-intermediate-files@1:
+        inputs:
+        - artifact_sources: |-
+            BITRISE_APK_PATH
+            BITRISE_TEST_APK_PATH
   _build-ios:
     steps:
     - restore-cocoapods-cache@1: {}
@@ -310,8 +353,6 @@ workflows:
     - _install-and-set-env
     - _set-version
     - _build-android-for-testing
-    after_run:
-    - _send-test-result-notifcation-slack
     envs:
     - ENVIRONMENT: production
       opts:
@@ -331,12 +372,6 @@ workflows:
     - USE_TEST_FEATURE_FLAGS: "true"
       opts:
         is_expand: false
-    steps:
-    - wait-for-android-emulator@1: {}
-    - script-runner@0:
-        title: Detox
-        inputs:
-        - file_path: scripts/bitrise/detox/androidInternalE2e.sh
   ios:
     before_run:
     - _install-and-set-env
