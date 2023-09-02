@@ -6,7 +6,7 @@ set -o pipefail
 # debug log
 set -x
 
-# yarn start &
+yarn start &
 
 npm rebuild detox
 QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test --configuration android.internal.release.smoke.ci --headless --retries 1; test_result=$?
