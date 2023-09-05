@@ -6,7 +6,7 @@ set -o pipefail
 # debug log
 set -x
 
-./node_modules/.bin/ts-node ./e2e/createAndroidTestRun.ts
+./node_modules/.bin/ts-node -e 'require ("./e2e/generateTestrailObjects").createAndroidTestRun();'
 
 RUN_ID=$(head -n 1 ./e2e/testrailRunID.txt) 
 

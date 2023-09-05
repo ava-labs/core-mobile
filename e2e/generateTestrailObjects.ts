@@ -6,6 +6,7 @@ import getTestLogs, {
   isSmokeTestRun,
   testRunTimestamp
 } from './getResultsFromLogs'
+const fs = require('fs')
 
 const projectId = Number(process.env.TESTRAIL_PROJECT_ID)
 const password = String(process.env.TESTRAIL_API_KEY)
@@ -585,4 +586,22 @@ export async function compareTestCaseArrays(
     .concat(casesInRun.filter((x: any) => !casesToBeAdded.includes(x)))
 
   return difference
+}
+
+export async function createAndroidTestRun() {
+  const timestamp = generateUtcTimestamp()
+  const runID = createEmptyTestRun('Android', timestamp)
+  writeRunIdToTextFile(`${runID}`)
+  return runID
+}
+
+export async function writeRunIdToTextFile(runId: string) {
+  fs.writeFile('./e2e/testrailRunID.txt', runId, (err: any) => {
+    if (err) throw err
+  })
+}
+
+export function generateUtcTimestamp() {
+  const utcDate = new Date().getUTCDate().toString()
+  return utcDate
 }
