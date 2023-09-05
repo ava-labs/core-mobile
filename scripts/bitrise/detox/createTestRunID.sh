@@ -8,6 +8,6 @@ set -x
 
 ts-node ./e2e/createTestRunID.ts
 
-RUN_ID=$(head -n 1 ./e2e/testrailRunId.txt) 
+RUN_ID=$(head -n 1 ./e2e/testrailRunID.txt) 
 
 envman add --key TESTRAIL_RUN --value $RUN_ID
