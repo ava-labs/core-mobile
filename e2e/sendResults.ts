@@ -114,14 +114,13 @@ export default async function sendResults() {
 
   if (process.env.POST_TO_TESTRAIL === 'true') {
     if (await isResultPresent('android')) {
-      const runID = (await currentRunID('android')).runID
+      const runID = process.env.TESTRAIL_RUN
       await generatePlatformResults(
         testCasesToSend,
         resultsToSendToTestrail,
         'android',
         runID
       )
-      writeRunIdToTextFile(`${runID}`)
     }
     if (await isResultPresent('ios')) {
       const runID = (await currentRunID('ios')).runID
@@ -131,15 +130,8 @@ export default async function sendResults() {
         'ios',
         runID
       )
-      writeRunIdToTextFile(`${runID}`)
     }
   }
-}
-
-export async function writeRunIdToTextFile(runId: string) {
-  fs.writeFile('e2e/testrailRunId.txt', runId, err => {
-    if (err) throw err
-  })
 }
 
 // Todo: Write a check for a different result and if the existing result differs from the result being sent update the result in testrail

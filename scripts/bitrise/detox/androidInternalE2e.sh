@@ -11,10 +11,6 @@ yarn start &
 npm rebuild detox
 QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test recoverWallet.e2e.smoke.ts  --configuration android.internal.release.smoke.ci --headless --retries 1; test_result=$?
 
-RUN_ID=$(head -n 1 ./e2e/testrailRunId.txt) 
-
-envman add --key TESTRAIL_RUN --value $RUN_ID
-
 if ((test_result != 0)); then
   exit 1
 fi

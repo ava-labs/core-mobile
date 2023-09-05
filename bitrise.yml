@@ -49,7 +49,9 @@ workflows:
         - keystore_alias: $ANDROID_KEY_ALIAS
         - private_key_password: $ANDROID_KEY_PASSWORD
         - keystore_url: $BITRISEIO_ANDROID_KEY_STORE_URL
-  _build-android-for-testing:
+  _build-android-for-testing: 
+    after_run:
+    - _create_android_test_run
     steps:
     - install-missing-android-tools@3:
         inputs:
@@ -88,13 +90,10 @@ workflows:
         inputs:
         - pipeline_intermediate_files: |-
             $BITRISE_DEPLOY_DIR/app-internal-e2e-bitrise-signed.apk:BITRISE_APK_PATH
-            $BITRISE_DEPLOY_DIR/app-internal-e2e-androidTest-bitrise-signed.apk:BITRISE_TEST_APK_PATH	           
+            $BITRISE_DEPLOY_DIR/app-internal-e2e-androidTest-bitrise-signed.apk:BITRISE_TEST_APK_PATH	
   ui_test_on_pixel_4:
     envs:
-    - UPDATE_TESTRAIL_CASES: "true"
-      opts:
-        is_expand: false
-    - POST_TO_TESTRAIL: "true"
+    - TESTRAIL_RUN: $TESTRAIL_RUN 
       opts:
         is_expand: false
     - ENVIRONMENT: production
@@ -142,6 +141,12 @@ workflows:
     - pull-intermediate-files@1:
         inputs:
         - artifact_sources: .*
+  _create_android_test_run:
+    steps:
+    - script-runner@0:
+        title: Create Test Run
+        inputs:
+        - file_path: scripts/bitrise/createTestRun.sh
   _build-ios:
     steps:
     - restore-cocoapods-cache@1: {}
