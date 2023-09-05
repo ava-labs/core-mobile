@@ -9,6 +9,7 @@ export default {
   durationDescription: 'How long would you like to stake?',
   nextButton: 'btnPrimary',
   oneDayText: '1 Day',
+  twoWeeksText: '2 Weeks',
   oneMonthText: '1 Month',
   threeMonthsText: '3 Months',
   sixMonthsText: '6 Months',
