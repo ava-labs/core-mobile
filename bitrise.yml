@@ -362,6 +362,12 @@ workflows:
     - USE_TEST_FEATURE_FLAGS: "true"
       opts:
         is_expand: false
+    - UPDATE_TESTRAIL_CASES: "true"
+      opts:
+        is_expand: false
+    - POST_TO_TESTRAIL: "true"
+      opts:
+        is_expand: false
   ios:
     before_run:
     - _install-and-set-env
