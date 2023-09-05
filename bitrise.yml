@@ -146,7 +146,7 @@ workflows:
     - script-runner@0:
         title: Create Test Run
         inputs:
-        - file_path: scripts/bitrise/createTestRun.sh
+        - file_path: e2e/createTestRunID.sh
   _build-ios:
     steps:
     - restore-cocoapods-cache@1: {}
