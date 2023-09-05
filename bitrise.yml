@@ -90,6 +90,31 @@ workflows:
             $BITRISE_DEPLOY_DIR/app-internal-e2e-bitrise-signed.apk:BITRISE_APK_PATH
             $BITRISE_DEPLOY_DIR/app-internal-e2e-androidTest-bitrise-signed.apk:BITRISE_TEST_APK_PATH	           
   ui_test_on_pixel_4:
+    envs:
+    - UPDATE_TESTRAIL_CASES: "true"
+      opts:
+        is_expand: false
+    - POST_TO_TESTRAIL: "true"
+      opts:
+        is_expand: false
+    - ENVIRONMENT: production
+      opts:
+        is_expand: false
+    - PLATFORM: Android
+      opts:
+        is_expand: false
+    - ANDROID_BUILD_VARIANT: internalE2e
+      opts:
+        is_expand: false
+    - APP_TITLE: Core Mobile Internal
+      opts:
+        is_expand: false
+    - E2E: "true"
+      opts:
+        is_expand: false
+    - USE_TEST_FEATURE_FLAGS: "true"
+      opts:
+        is_expand: false
     steps:
     - avd-manager@1.2:
         inputs:
@@ -360,12 +385,6 @@ workflows:
       opts:
         is_expand: false
     - USE_TEST_FEATURE_FLAGS: "true"
-      opts:
-        is_expand: false
-    - UPDATE_TESTRAIL_CASES: "true"
-      opts:
-        is_expand: false
-    - POST_TO_TESTRAIL: "true"
       opts:
         is_expand: false
   ios:
