@@ -13,6 +13,7 @@ import Card from 'components/Card'
 import AvaText from 'components/AvaText'
 import Separator from 'components/Separator'
 import { useDeFiChainList } from 'hooks/defi/useDeFiChainList'
+import { ScrollView } from 'react-native-gesture-handler'
 import { ProtocolDetailsErrorState } from './components/ProtocolDetailsErrorState'
 import { ProtocolLogo } from './components/ProtocolLogo'
 import { NetworkLogo } from './components/NetworkLogo'
@@ -98,8 +99,10 @@ export const DeFiProtocolDetails = () => {
   return (
     <View style={styles.container}>
       <Card style={styles.card}>
-        {renderCardHeader()}
-        <Separator style={{ marginTop: 16 }} />
+        <ScrollView>
+          {renderCardHeader()}
+          <Separator style={{ marginTop: 16 }} />
+        </ScrollView>
       </Card>
       <AvaButton.PrimaryLarge onPress={goToProtocolPage}>
         <LinkSVG color={theme.logoColor} />
