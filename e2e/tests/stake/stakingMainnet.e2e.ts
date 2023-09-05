@@ -1,8 +1,6 @@
 /* eslint-disable jest/expect-expect */
 
 import Actions from '../../helpers/actions'
-import Assert from '../../helpers/assertions'
-// import AdvancedPage from '../../pages/burgerMenu/advanced.page'
 import ConfirmStakingPage from '../../pages/Stake/confirmStaking.page'
 import LoginRecoverWallet from '../../helpers/loginRecoverWallet'
 import BottomTabsPage from '../../pages/bottomTabs.page'
@@ -11,7 +9,7 @@ import { warmup } from '../../helpers/warmup'
 import GetStartedScreenPage from '../../pages/Stake/getStartedScreen.page'
 import StakePage from '../../pages/Stake/stake.page'
 
-describe('Add and edit accounts', () => {
+describe('Stake: mainnet flow', () => {
   beforeAll(async () => {
     await warmup()
     await LoginRecoverWallet.recoverWalletLogin()
@@ -23,7 +21,6 @@ describe('Add and edit accounts', () => {
     await GetStartedScreenPage.tapNextButton()
     await StakePage.verifyStakingAmountScreenItems()
     await StakePage.inputStakingAmount('25')
-    await Assert.isVisible(StakePage.nextButton)
     await StakePage.tapNextButton()
   })
 
@@ -35,10 +32,5 @@ describe('Add and edit accounts', () => {
   it('should verify confirm staking screen items on mainnet', async () => {
     await Actions.waitForElement(StakePage.avaLogo, 15000, 0)
     await ConfirmStakingPage.verifyConfirmStakingScreenItems()
-    // await StakePage.tapStakeNow()
-    // await Actions.waitForElement(StakePage.notNowButton, 25000, 0)
-    // await StakePage.tapNotNowButton()
-    // await Actions.waitForElement(StakePage.newStakeTimeRemaining, 15000, 0)
-    // await Assert.isVisible(StakePage.newStakeTimeRemaining)
   })
 })

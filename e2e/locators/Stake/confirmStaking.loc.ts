@@ -1,7 +1,7 @@
 export default {
   confirmStakingTitle: 'Confirm Staking',
   confirmStakingDescription:
-    'By selecting "Stake Now", you will lock your AVAX for the staking duration you selected',
+    'By selecting “Stake Now”, you will lock your AVAX for the staking duration you selected.',
   avaLogo: 'ava_logo',
   networkFeeItem: 'network_fee',
   networkFeeText: 'Network Fee',
@@ -9,5 +9,7 @@ export default {
   stakingFeeText: 'Staking Fee',
   timeToUnlockText: 'Time to Unlock',
   estimatedRewardText: 'Estimated Reward',
-  stakedAmnountText: 'Staked Amount'
+  stakedAmnountText: 'Staked Amount',
+  stakeNowButtonText: 'Stake Now',
+  cancelButtonText: 'Cancel'
 }

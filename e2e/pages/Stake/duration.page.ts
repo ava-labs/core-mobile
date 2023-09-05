@@ -78,7 +78,7 @@ class DurationPage {
     await Assert.isVisible(this.nextButton, 0)
     devnet === true
       ? await Assert.isVisible(this.oneDayText)
-      : await Assert.isNotVisible(this.twoWeeksText)
+      : await Assert.isVisible(this.twoWeeksText)
     await Assert.isVisible(this.oneMonthText)
     await Assert.isVisible(this.threeMonthsText)
     await Assert.isVisible(this.sixMonthsText)
@@ -87,7 +87,6 @@ class DurationPage {
     await Assert.isVisible(this.customDescription)
     await Assert.isVisible(this.disclaimerTooltip)
     await Assert.isVisible(this.advancedSetup)
-    //Add tooltip verification test
   }
 }
 
