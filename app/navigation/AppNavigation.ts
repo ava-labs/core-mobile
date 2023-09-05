@@ -216,7 +216,8 @@ enum BridgeScreens {
 
 enum PortfolioScreens {
   Portfolio = 'PortfolioScreens.Portfolio',
-  NetworkTokens = 'PortfolioScreens.NetworkTokens'
+  NetworkTokens = 'PortfolioScreens.NetworkTokens',
+  DeFiProtocol = 'PortfolioScreens.DeFiProtocol'
 }
 
 const AppNavigation = {
