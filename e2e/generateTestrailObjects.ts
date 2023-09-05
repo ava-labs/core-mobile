@@ -600,9 +600,9 @@ export async function createAndroidTestRun() {
   const newApi = new TestRail({
     host: 'https://avalabs.testrail.net',
     username: 'mobiledevs@avalabs.org',
-    password: password
+    password: 'yE4G2zwYMHMxUOT6MhlH'
   })
-  console.log(password + ' this is the password')
+
   try {
     const testRun = await newApi.addRun(projectId, content)
     console.log(
