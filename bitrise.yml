@@ -50,7 +50,7 @@ workflows:
         - private_key_password: $ANDROID_KEY_PASSWORD
         - keystore_url: $BITRISEIO_ANDROID_KEY_STORE_URL
   _build-android-for-testing: 
-    after_run:
+    before_run:
     - _create_android_test_run
     steps:
     - install-missing-android-tools@3:
