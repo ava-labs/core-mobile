@@ -72,8 +72,6 @@ workflows:
     - USE_TEST_FEATURE_FLAGS: "true"
       opts:
         is_expand: false
-    before_run:
-    - _create_android_test_run
     steps:
     - install-missing-android-tools@3:
         inputs:
@@ -92,6 +90,10 @@ workflows:
     #     - tag: default
     #     - abi: x86_64
     #     - profile: pixel_4
+    - script-runner@0:
+        title: Create Test Run
+        inputs:
+        - file_path: e2e/createTestRunID.sh
     - android-build-for-ui-testing@0:
         inputs:
         - module: $ANDROID_MODULE
