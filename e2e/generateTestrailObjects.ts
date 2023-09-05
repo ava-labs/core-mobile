@@ -7,6 +7,7 @@ import getTestLogs, {
   testRunTimestamp
 } from './getResultsFromLogs'
 const fs = require('fs')
+export {}
 
 const projectId = Number(process.env.TESTRAIL_PROJECT_ID)
 const password = String(process.env.TESTRAIL_API_KEY)
