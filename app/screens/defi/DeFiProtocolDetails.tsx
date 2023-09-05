@@ -98,8 +98,10 @@ export const DeFiProtocolDetails = () => {
   return (
     <View style={styles.container}>
       <Card style={styles.card}>
-        {renderCardHeader()}
-        <Separator style={{ marginTop: 16 }} />
+        <ScrollView>
+          {renderCardHeader()}
+          <Separator style={{ marginTop: 16 }} />
+        </ScrollView>
       </Card>
       <AvaButton.PrimaryLarge onPress={goToProtocolPage}>
         <LinkSVG color={theme.logoColor} />
