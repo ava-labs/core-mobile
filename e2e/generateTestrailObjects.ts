@@ -7,7 +7,6 @@ import getTestLogs, {
   testRunTimestamp
 } from './getResultsFromLogs'
 const fs = require('fs')
-export {}
 
 const projectId = Number(process.env.TESTRAIL_PROJECT_ID)
 const password = String(process.env.TESTRAIL_API_KEY)
@@ -591,13 +590,13 @@ export async function compareTestCaseArrays(
 
 export async function createAndroidTestRun() {
   const timestamp = generateUtcTimestamp()
-  const runID = createEmptyTestRun('Android', timestamp)
+  const runID = await createEmptyTestRun('Android', timestamp)
   writeRunIdToTextFile(`${runID}`)
   return runID
 }
 
 export async function writeRunIdToTextFile(runId: string) {
-  fs.writeFile('./e2e/testrailRunID.txt', runId, (err: any) => {
+  await fs.writeFile('./e2e/testrailRunID.txt', runId, (err: any) => {
     if (err) throw err
   })
 }
