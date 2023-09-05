@@ -16,6 +16,10 @@ class StakePage {
     return by.text(stakeScreenLoc.availableAvaxText)
   }
 
+  get availableBalance() {
+    return by.id(stakeScreenLoc.availableBalance)
+  }
+
   get balanceTooltip() {
     return by.id(stakeScreenLoc.balanceTooltip)
   }
@@ -136,6 +140,16 @@ class StakePage {
     return by.text(stakeScreenLoc.maxText)
   }
 
+  async availableBalanceToNumber() {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const availableBalance: any = await Actions.getAttributes(
+      this.availableBalance
+    )
+    const text = await availableBalance.text
+    const numericValue = parseFloat(text.match(/[\d.]+/)[0])
+    return numericValue
+  }
+
   async verifyStakeScreenItems() {
     await Assert.isVisible(this.stakeTitle)
     await Assert.isVisible(this.notEnoughAvaxTitle)
@@ -204,21 +218,20 @@ class StakePage {
   }
 
   async verifyStakingAmountScreenItems() {
+    const availableBalance = await this.availableBalanceToNumber()
     await Assert.isVisible(this.stakingAmountTitle)
     await Assert.isVisible(this.stakingAmountDescription)
     await Assert.isVisible(this.avaLogo)
     await Assert.isVisible(this.avaxText)
     await Assert.isVisible(this.inputAmount)
     await Assert.isVisible(this.balanceTooltip)
-    await Assert.isVisible(this.tenpercentTextbutton)
-    await Assert.isVisible(this.twentyfivepercentTextbutton)
-    await Assert.isVisible(this.fiftypercentTextbutton)
-    await Assert.isVisible(this.maxTextbutton)
-
-    // Add tooltip text verification test
-    await Assert.isVisible(this.tenpercentTextbutton)
-    await Assert.isVisible(this.twentyfivepercentTextbutton)
-    await Assert.isVisible(this.fiftypercentTextbutton)
+    if (availableBalance >= 250) {
+      await Assert.isVisible(this.tenpercentTextbutton)
+    } else if (availableBalance >= 100) {
+      await Assert.isVisible(this.twentyfivepercentTextbutton)
+    } else if (availableBalance >= 50) {
+      await Assert.isVisible(this.fiftypercentTextbutton)
+    }
     await Assert.isVisible(this.maxTextbutton)
   }
 }

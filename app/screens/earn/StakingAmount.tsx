@@ -111,7 +111,9 @@ export default function StakingAmount() {
       {!fetchingBalance && (
         <>
           <Row style={{ justifyContent: 'center', alignItems: 'center' }}>
-            <AvaText.Subtitle1 color={theme.neutral500}>
+            <AvaText.Subtitle1
+              color={theme.neutral500}
+              testID="available_balance">
               Balance:
               {' ' + balanceInAvax + ' AVAX'}
             </AvaText.Subtitle1>

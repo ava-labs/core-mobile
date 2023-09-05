@@ -7,7 +7,7 @@ import AccountManagePage from '../../pages/accountManage.page'
 import { warmup } from '../../helpers/warmup'
 import GetStartedScreenPage from '../../pages/Stake/getStartedScreen.page'
 
-describe('Add and edit accounts', () => {
+describe('Stake: get started screen', () => {
   beforeAll(async () => {
     await warmup()
     await LoginRecoverWallet.recoverWalletLogin()

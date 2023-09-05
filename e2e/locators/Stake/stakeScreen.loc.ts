@@ -2,6 +2,7 @@ export default {
   availableAvaxText: 'Available',
   avaLogo: 'ava_logo',
   avaxText: 'AVAX',
+  availableBalance: 'available_balance',
   balanceTooltip: 'info_svg',
   balanceTooltipText: 'Final staking amount may be slightly lower due to fees',
   stakedAvaxText: 'Staked',
