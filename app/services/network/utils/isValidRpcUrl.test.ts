@@ -1,4 +1,5 @@
 import { JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
+import { Network } from 'ethers'
 import { isValidRPCUrl } from './isValidRpcUrl'
 
 const mockGetNetwork = jest.fn()
@@ -19,7 +20,7 @@ describe('app/services/network/utils/isValidRpcUrl', () => {
     expect(JsonRpcBatchInternal).toHaveBeenCalledWith(
       { maxCalls: 40 },
       'https://someurl.example',
-      1
+      new Network('', 1)
     )
   })
 
@@ -29,7 +30,7 @@ describe('app/services/network/utils/isValidRpcUrl', () => {
     expect(JsonRpcBatchInternal).toHaveBeenCalledWith(
       { maxCalls: 40 },
       'https://someurl.example',
-      1
+      new Network('', 1)
     )
   })
 
@@ -39,7 +40,7 @@ describe('app/services/network/utils/isValidRpcUrl', () => {
     expect(JsonRpcBatchInternal).toHaveBeenCalledWith(
       { maxCalls: 40 },
       'https://someurl.example',
-      1
+      new Network('', 1)
     )
   })
 })

@@ -23,6 +23,8 @@ import { TokensTabHeader } from 'screens/portfolio/home/components/TokensTabHead
 import ActivityList from 'screens/shared/ActivityList/ActivityList'
 import { Transaction } from 'store/transaction'
 import { PortfolioTabs } from 'consts/portfolio'
+import { selectIsDeFiBlocked } from 'store/posthog'
+import { DeFiProtocolList } from 'screens/defi/DeFiProtocolList'
 import InactiveNetworkCard from './components/Cards/InactiveNetworkCard'
 import { PortfolioTokensLoader } from './components/Loaders/PortfolioTokensLoader'
 import PortfolioHeader from './components/PortfolioHeader'
@@ -36,6 +38,7 @@ const Portfolio = () => {
   const { setParams } = useNavigation<PortfolioNavigationProp['navigation']>()
 
   const collectiblesDisabled = useIsUIDisabled(UI.Collectibles)
+  const defiBlocked = useSelector(selectIsDeFiBlocked)
   const { capture } = usePostCapture()
 
   function capturePosthogEvents(tabIndex: number) {
@@ -49,6 +52,8 @@ const Portfolio = () => {
       case PortfolioTabs.Activity:
         capture('PortfolioActivityClicked')
         break
+      case PortfolioTabs.DeFi:
+        capture('PortfolioDeFiClicked')
     }
   }
 
@@ -73,6 +78,11 @@ const Portfolio = () => {
         <TabViewAva.Item title={'Activity'}>
           <ActivityTab />
         </TabViewAva.Item>
+        {!defiBlocked && (
+          <TabViewAva.Item title={'DeFi'}>
+            <DeFiTab />
+          </TabViewAva.Item>
+        )}
       </TabViewAva>
     </>
   )
@@ -169,8 +179,16 @@ const ActivityTab = () => {
   )
 }
 
+const DeFiTab = () => {
+  return <DeFiProtocolList />
+}
+
 const renderCustomLabel = (title: string, selected: boolean, color: string) => {
-  return <AvaText.Heading3 textStyle={{ color }}>{title}</AvaText.Heading3>
+  return (
+    <AvaText.Heading3 textStyle={{ color }} ellipsizeMode="tail">
+      {title}
+    </AvaText.Heading3>
+  )
 }
 
 export default Portfolio

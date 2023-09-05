@@ -34,6 +34,8 @@ import {
 } from '@avalabs/glacier-sdk'
 import { glacierSdk } from 'utils/network/glacier'
 import { Avax } from 'types/Avax'
+import { getInfoApi } from 'utils/network/info'
+import { GetPeersResponse } from '@avalabs/avalanchejs-v2/dist/src/info/model'
 import {
   getTransformedTransactions,
   maxGetAtomicUTXOsRetries,
@@ -265,14 +267,16 @@ class EarnService {
 
     do {
       const response =
-        await glacierSdk.primaryNetwork.listLatestPrimaryNetworkTransactions({
-          network: isTestnet ? Network.FUJI : Network.MAINNET,
-          blockchainId: BlockchainId.P_CHAIN,
-          addresses: addressesStr,
-          pageSize: 100,
-          sortOrder: SortOrder.DESC,
-          pageToken
-        })
+        await glacierSdk.primaryNetworkTransactions.listLatestPrimaryNetworkTransactions(
+          {
+            network: isTestnet ? Network.FUJI : Network.MAINNET,
+            blockchainId: BlockchainId.P_CHAIN,
+            addresses: addressesStr,
+            pageSize: 100,
+            sortOrder: SortOrder.DESC,
+            pageToken
+          }
+        )
 
       pageToken = response.nextPageToken
       transactions.push(...(response.transactions as PChainTransaction[]))
@@ -336,6 +340,17 @@ class EarnService {
     } catch (error) {
       Logger.error('getTransformedStakesForAllAccounts failed: ', error)
     }
+  }
+
+  /**
+   * Get a description of peer connections.
+   * @param nodeIds
+   */
+  getPeers = (
+    isTestnet: boolean,
+    nodeIds?: string[]
+  ): Promise<GetPeersResponse> => {
+    return getInfoApi(isTestnet).peers(nodeIds)
   }
 }
 

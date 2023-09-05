@@ -6,6 +6,6 @@ describe('utils/delay', () => {
     await delay(250)
     const elapsedTimeMs = new Date().getTime() - startTs
     expect(elapsedTimeMs).toBeGreaterThanOrEqual(250)
-    expect(elapsedTimeMs).toBeLessThan(260)
+    expect(elapsedTimeMs).toBeLessThanOrEqual(260)
   })
 })

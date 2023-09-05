@@ -1,5 +1,5 @@
 import { useDispatch, useSelector } from 'react-redux'
-import { isAddress } from '@ethersproject/address'
+import { isAddress } from 'ethers'
 import { selectActiveNetwork, selectNetworkContractTokens } from 'store/network'
 import { getInstance } from 'services/token/TokenService'
 import { addCustomToken as addCustomTokenAction } from 'store/customToken'

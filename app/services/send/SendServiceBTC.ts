@@ -33,7 +33,7 @@ class SendServiceBTC implements SendServiceHelper {
       .setContext('svc.send.btc.get_trx_request')
       .executeAsync(async () => {
         const { address: toAddress, amount } = sendState
-        const feeRate = sendState.gasPrice?.toNumber()
+        const feeRate = Number(sendState.gasPrice)
         const provider = getBitcoinProvider(!isMainnet)
         const { utxos } = await this.getBalance(
           isMainnet,
@@ -67,7 +67,7 @@ class SendServiceBTC implements SendServiceHelper {
       .setContext('svc.send.btc.validate_and_calc_fees')
       .executeAsync(async () => {
         const { amount, address: toAddress } = sendState
-        const feeRate = sendState.gasPrice?.toNumber()
+        const feeRate = Number(sendState.gasPrice)
         const amountInSatoshis = amount?.toNumber() || 0
         const { utxos } = await this.getBalance(
           isMainnet,

@@ -28,7 +28,6 @@ import FlexSpacer from 'components/FlexSpacer'
 import { Popable } from 'react-native-popable'
 import { PopableContent } from 'components/PopableContent'
 import { PopableLabel } from 'components/PopableLabel'
-import { BigNumber } from 'ethers'
 import { ScrollView } from 'react-native-gesture-handler'
 import { WalletScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
@@ -138,7 +137,7 @@ const SignTransaction = () => {
     getExplorerAddressByNetwork(network, requestResult)
 
   const handleGasPriceChange = useCallback(
-    (gasPrice: BigNumber, feePreset: FeePreset) => {
+    (gasPrice: bigint, feePreset: FeePreset) => {
       setCustomFee(gasPrice, feePreset, displayData?.gasLimit ?? 0)
     },
     [displayData?.gasLimit, setCustomFee]
@@ -146,11 +145,7 @@ const SignTransaction = () => {
 
   const handleGasLimitChange = useCallback(
     (customGasLimit: number) => {
-      setCustomFee(
-        displayData?.gasPrice ?? BigNumber.from(0),
-        selectedGasFee,
-        customGasLimit
-      )
+      setCustomFee(displayData?.gasPrice ?? 0n, selectedGasFee, customGasLimit)
     },
     [displayData?.gasPrice, selectedGasFee, setCustomFee]
   )

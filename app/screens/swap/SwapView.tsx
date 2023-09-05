@@ -18,7 +18,6 @@ import {
 } from 'store/balance'
 import { useSelector } from 'react-redux'
 import { SwapSide } from 'paraswap-core'
-import { BigNumber } from 'ethers'
 import BN from 'bn.js'
 import { FeePreset } from 'components/NetworkFeeSelector'
 import UniversalTokenSelector from 'components/UniversalTokenSelector'
@@ -26,7 +25,7 @@ import SwapTransactionDetail from 'screens/swap/components/SwapTransactionDetail
 import { calculateRate } from 'swap/utils'
 import { selectNetworkFee } from 'store/networkFee'
 import { calculateGasAndFees, getMaxValue, truncateBN } from 'utils/Utils'
-import { bnToLocaleString, ethersBigNumberToBN } from '@avalabs/utils-sdk'
+import { bnToLocaleString } from '@avalabs/utils-sdk'
 import { usePostCapture } from 'hooks/usePosthogCapture'
 import { selectActiveNetwork } from 'store/network'
 
@@ -164,7 +163,7 @@ export default function SwapView() {
   }
 
   const onGasChange = useCallback(
-    (price: BigNumber, feeType: FeePreset) => {
+    (price: bigint, feeType: FeePreset) => {
       setGasPrice(price)
       setSelectedGasFee(feeType)
     },
@@ -224,9 +223,9 @@ export default function SwapView() {
           setLocalError(error)
         } else if (optRate) {
           const limit = customGasLimit || parseInt(optRate.gasCost)
-          const feeBig = gasPrice.mul(limit)
+          const feeBig = gasPrice * BigInt(limit)
           const feeString = bnToLocaleString(
-            ethersBigNumberToBN(feeBig),
+            new BN(feeBig.toString()),
             fromToken?.decimals
           )
           let maxBn = getMaxValue(fromToken, feeString)
