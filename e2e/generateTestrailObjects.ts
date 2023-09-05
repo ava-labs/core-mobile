@@ -602,7 +602,7 @@ export async function createAndroidTestRun() {
     username: 'mobiledevs@avalabs.org',
     password: password
   })
-  console.log(password)
+  console.log(password + ' this is the password')
   try {
     const testRun = await newApi.addRun(projectId, content)
     console.log(
