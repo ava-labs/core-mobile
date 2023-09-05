@@ -56,7 +56,8 @@ enum WalletScreens {
   Bridge = 'WalletScreens.Bridge',
   QRCode = 'WalletScreens.QRCode',
   Earn = 'WalletScreens.Earn',
-  Notifications = 'WalletScreens.Notifications'
+  Notifications = 'WalletScreens.Notifications',
+  DeFiProtocolDetails = 'WalletScreens.DeFiProtocolDetails'
 }
 
 enum NoWalletScreens {
@@ -215,7 +216,8 @@ enum BridgeScreens {
 
 enum PortfolioScreens {
   Portfolio = 'PortfolioScreens.Portfolio',
-  NetworkTokens = 'PortfolioScreens.NetworkTokens'
+  NetworkTokens = 'PortfolioScreens.NetworkTokens',
+  DeFiProtocol = 'PortfolioScreens.DeFiProtocol'
 }
 
 const AppNavigation = {

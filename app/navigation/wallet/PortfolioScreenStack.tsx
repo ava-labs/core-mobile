@@ -8,6 +8,7 @@ import { PortfolioTabs } from 'consts/portfolio'
 export type PortfolioStackParamList = {
   [AppNavigation.Portfolio.Portfolio]: { tabIndex?: PortfolioTabs }
   [AppNavigation.Portfolio.NetworkTokens]: undefined
+  [AppNavigation.Portfolio.DeFiProtocol]: undefined
 }
 
 const PortfolioStack = createStackNavigator<PortfolioStackParamList>()
