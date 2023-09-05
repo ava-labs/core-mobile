@@ -1,7 +1,8 @@
 {
     "relay": {
-      "protocol": "irn"
+        "protocol": "irn"
     },
+    "pairingTopic": "3c74583111ab5e006b03cbb0f252c667686e9fc01e675dff90aa8b18ec435feb",
     "namespaces": {
       "eip155": {
         "accounts": [
@@ -32,6 +33,7 @@
         ]
       }
     },
+    "optionalNamespaces": {},
     "requiredNamespaces": {
       "eip155": {
         "methods": [
