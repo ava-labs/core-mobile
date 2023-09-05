@@ -15,10 +15,7 @@ export async function writeRunIdToTextFile(runId: string) {
 }
 
 export function generateUtcTimestamp() {
-  const date = new Date()
-  const utcDate = new Date(
-    date.getTime() + date.getTimezoneOffset() * 60000
-  ).toISOString()
+  const utcDate = new Date().getUTCDate().toString()
   return utcDate
 }
 
