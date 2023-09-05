@@ -6,7 +6,7 @@ set -o pipefail
 # debug log
 set -x
 
-./node_modules/.bin/ts-node ./e2e/createAndroidTestRunID.ts
+./node_modules/.bin/ts-node createAndroidTestRun.ts
 
 RUN_ID=$(head -n 1 ./e2e/testrailRunID.txt) 
 
