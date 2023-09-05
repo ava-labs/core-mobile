@@ -590,9 +590,25 @@ export async function compareTestCaseArrays(
 
 export async function createAndroidTestRun() {
   const timestamp = generateUtcTimestamp()
-  const runID = await createEmptyTestRun('Android', timestamp)
-  writeRunIdToTextFile(`${runID}`)
-  return runID
+  const testRunName = 'Android smoke test run' + ' ' + timestamp
+  const description = 'This is a smoke test run for Android!'
+  const content = {
+    name: testRunName,
+    description: description,
+    include_all: false
+  }
+  try {
+    const testRun = await api.addRun(projectId, content)
+    console.log(
+      `The test run "${testRunName}" with id ${testRun.id} has been successfully created in TestRail...`
+    )
+    const testRunId = testRun.id
+    writeRunIdToTextFile(`${testRunId}`)
+    return testRunId
+  } catch (error) {
+    console.error('Test run was not created!!!')
+    console.log(error)
+  }
 }
 
 export async function writeRunIdToTextFile(runId: string) {
