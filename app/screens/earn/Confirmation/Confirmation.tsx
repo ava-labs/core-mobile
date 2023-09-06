@@ -290,7 +290,7 @@ export const Confirmation = () => {
     const [networkFeesInAvax] = avaxFormatter(networkFees, true)
 
     return (
-      <AvaText.Heading6>
+      <AvaText.Heading6 testID="network_fee">
         {networkFeesInAvax + ' ' + tokenSymbol}
       </AvaText.Heading6>
     )
