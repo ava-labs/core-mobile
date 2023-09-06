@@ -4,7 +4,7 @@ import portfolio from '../locators/portfolio.loc'
 import { Platform } from '../helpers/constants'
 
 const platformIndex = Action.platform() === Platform.iOS ? 1 : 0
-const platformIndex2 = Action.platform() === Platform.iOS ? 0 : 2
+const platformIndex2 = Action.platform() === Platform.iOS ? 0 : 1
 class PortfolioPage {
   get addToWatchlist() {
     return by.id(portfolio.addToWatchlist)
