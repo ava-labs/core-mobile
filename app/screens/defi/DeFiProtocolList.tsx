@@ -1,6 +1,6 @@
 import { useDeFiProtocolList } from 'hooks/defi/useDeFiProtocolList'
 import React from 'react'
-import { FlatList, Linking, View } from 'react-native'
+import { FlatList, View } from 'react-native'
 import DeFiService from 'services/defi/DeFiService'
 import Card from 'components/Card'
 import { DeFiSimpleProtocol } from 'services/defi/types'
@@ -14,6 +14,7 @@ import AvaButton from 'components/AvaButton'
 import { PortfolioScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation } from '@react-navigation/native'
+import { openURL } from 'utils/openURL'
 import { ErrorState } from './components/ErrorState'
 import { ZeroState } from './components/ZeroState'
 import { ProtocolLogo } from './components/ProtocolLogo'
@@ -45,12 +46,11 @@ export const DeFiProtocolList = () => {
   }
 
   const goToProtocolPage = async (siteUrl?: string) => {
-    const canOpenUrl = await Linking.canOpenURL(siteUrl ?? '')
-    siteUrl && canOpenUrl && Linking.openURL(siteUrl)
+    openURL(siteUrl)
   }
 
   const handleExploreEcosystem = () => {
-    Linking.openURL('https://core.app/discover/')
+    openURL('https://core.app/discover/')
   }
 
   if (isLoading) return <PortfolioDeFiHomeLoader />

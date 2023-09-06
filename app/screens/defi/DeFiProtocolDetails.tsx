@@ -6,13 +6,14 @@ import { useDeFiProtocol } from 'hooks/defi/useDeFiProtocol'
 import AppNavigation from 'navigation/AppNavigation'
 import { WalletScreenProps } from 'navigation/types'
 import React, { useCallback, useMemo } from 'react'
-import { Linking, StyleSheet, View } from 'react-native'
+import { StyleSheet, View } from 'react-native'
 import LinkSVG from 'components/svg/LinkSVG'
 import { Space } from 'components/Space'
 import Card from 'components/Card'
 import AvaText from 'components/AvaText'
 import Separator from 'components/Separator'
 import { useDeFiChainList } from 'hooks/defi/useDeFiChainList'
+import { openURL } from 'utils/openURL'
 import { ProtocolDetailsErrorState } from './components/ProtocolDetailsErrorState'
 import { ProtocolLogo } from './components/ProtocolLogo'
 import { NetworkLogo } from './components/NetworkLogo'
@@ -36,8 +37,7 @@ export const DeFiProtocolDetails = () => {
   }, [chainList, data?.chain])
 
   const goToProtocolPage = useCallback(async () => {
-    const canOpenUrl = await Linking.canOpenURL(data?.siteUrl ?? '')
-    data?.siteUrl && canOpenUrl && Linking.openURL(data.siteUrl)
+    openURL(data?.siteUrl)
   }, [data?.siteUrl])
 
   const calculateTotalValueOfProtocolItems = useCallback(() => {
