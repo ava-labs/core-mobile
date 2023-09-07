@@ -28,7 +28,8 @@ export const DeFiProtocolDetails = () => {
     appHook: { currencyFormatter }
   } = useApplicationContext()
   const protocolId = useRoute<ScreenProps['route']>().params.protocolId
-  const { data, isLoading, error } = useDeFiProtocol(protocolId)
+  const { data, isLoading, error, isPaused, isSuccess } =
+    useDeFiProtocol(protocolId)
   const { data: chainList } = useDeFiChainList()
 
   const memoizedChain = useMemo(() => {
@@ -56,7 +57,7 @@ export const DeFiProtocolDetails = () => {
       </View>
     )
   }
-  if (error) return <ProtocolDetailsErrorState />
+  if (error || (isPaused && !isSuccess)) return <ProtocolDetailsErrorState />
 
   const renderCardHeader = () => {
     return (
