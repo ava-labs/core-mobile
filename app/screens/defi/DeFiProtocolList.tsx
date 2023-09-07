@@ -66,8 +66,6 @@ export const DeFiProtocolList = () => {
   if (error || (isPaused && !isSuccess)) {
     return <ErrorState />
   }
-  if (memoizedData.length === 0)
-    return <ZeroState onExploreEcosystem={handleExploreEcosystem} />
 
   const renderItem = ({ item }: { item: DeFiSimpleProtocol }) => {
     const netUsdValue = currencyFormatter(item.netUsdValue)
@@ -130,6 +128,9 @@ export const DeFiProtocolList = () => {
       refreshing={isRefreshing}
       onRefresh={pullToRefresh}
       estimatedItemSize={80}
+      ListEmptyComponent={
+        <ZeroState onExploreEcosystem={handleExploreEcosystem} />
+      }
     />
   )
 }
