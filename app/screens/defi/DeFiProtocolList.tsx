@@ -1,6 +1,6 @@
 import { useDeFiProtocolList } from 'hooks/defi/useDeFiProtocolList'
 import React from 'react'
-import { FlatList, View } from 'react-native'
+import { View } from 'react-native'
 import DeFiService from 'services/defi/DeFiService'
 import Card from 'components/Card'
 import { DeFiSimpleProtocol } from 'services/defi/types'
@@ -15,6 +15,7 @@ import { PortfolioScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation } from '@react-navigation/native'
 import { openURL } from 'utils/openURL'
+import BigList from 'components/BigList'
 import { ErrorState } from './components/ErrorState'
 import { ZeroState } from './components/ZeroState'
 import { ProtocolLogo } from './components/ProtocolLogo'
@@ -31,7 +32,15 @@ export const DeFiProtocolList = () => {
     appHook: { currencyFormatter }
   } = useApplicationContext()
   const { data: chainList } = useDeFiChainList()
-  const { data, isLoading, error, isPaused, isSuccess } = useDeFiProtocolList()
+  const {
+    data,
+    isLoading,
+    error,
+    pullToRefresh,
+    isRefreshing,
+    isPaused,
+    isSuccess
+  } = useDeFiProtocolList()
 
   const memoizedData = React.useMemo(() => {
     if (!data) return []
@@ -87,13 +96,12 @@ export const DeFiProtocolList = () => {
         <Card
           key={item.id}
           style={{
-            marginBottom: 8,
             padding: 16,
             flexDirection: 'row',
             alignItems: 'center',
             justifyContent: 'space-between'
           }}>
-          <View style={{ flexDirection: 'row' }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             {renderLogo()}
             <AvaText.Heading5>{item.name}</AvaText.Heading5>
           </View>
@@ -114,11 +122,14 @@ export const DeFiProtocolList = () => {
   }
 
   return (
-    <FlatList
+    <BigList
       data={memoizedData}
       renderItem={renderItem}
       keyExtractor={item => item.id}
       contentContainerStyle={{ padding: 16 }}
+      refreshing={isRefreshing}
+      onRefresh={pullToRefresh}
+      estimatedItemSize={80}
     />
   )
 }
