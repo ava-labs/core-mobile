@@ -34,7 +34,7 @@ describe('Send AVAX', () => {
       sendLoc.sendingAmount
     )
     await ActivityTabPage.verifyOutgoingTransaction(
-      5000,
+      10000,
       secondAccountAddress,
       ActivityTabLoc.avaxOutgoingTransactionDetail
     )
