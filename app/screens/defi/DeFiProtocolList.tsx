@@ -31,7 +31,7 @@ export const DeFiProtocolList = () => {
     appHook: { currencyFormatter }
   } = useApplicationContext()
   const { data: chainList } = useDeFiChainList()
-  const { data, isLoading, error, isPaused } = useDeFiProtocolList()
+  const { data, isLoading, error, isPaused, isSuccess } = useDeFiProtocolList()
 
   const memoizedData = React.useMemo(() => {
     if (!data) return []
@@ -54,7 +54,9 @@ export const DeFiProtocolList = () => {
   }
 
   if (isLoading) return <PortfolioDeFiHomeLoader />
-  if (error || isPaused) return <ErrorState />
+  if (error || (isPaused && !isSuccess)) {
+    return <ErrorState />
+  }
   if (memoizedData.length === 0)
     return <ZeroState onExploreEcosystem={handleExploreEcosystem} />
 
