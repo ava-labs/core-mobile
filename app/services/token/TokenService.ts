@@ -29,6 +29,7 @@ import xss from 'xss'
 import Config from 'react-native-config'
 import { HttpClient } from '@avalabs/utils-sdk'
 import Logger from 'utils/Logger'
+import promiseWithTimeout, { timeoutError } from 'utils/js/promiseWithTimeout'
 import { ChartData, GetMarketsParams, PriceWithMarketData } from './types'
 import { transformContractMarketChartResponse } from './utils'
 
@@ -69,11 +70,22 @@ export class TokenService {
 
     const contract = new ethers.Contract(address, ERC20.abi, provider)
 
-    const contractCalls = await Promise.all([
-      contract.name?.(),
-      contract.symbol?.(),
-      contract.decimals?.()
-    ])
+    let contractCalls
+    try {
+      contractCalls = await promiseWithTimeout(
+        Promise.all([
+          contract.name?.(),
+          contract.symbol?.(),
+          contract.decimals?.()
+        ]),
+        2000
+      )
+    } catch (e) {
+      if (e === timeoutError) {
+        throw new Error('Invalid token address')
+      }
+      throw e
+    }
     // Purify the values for XSS protection
     const name = xss(contractCalls[0])
     const symbol = xss(contractCalls[1])
