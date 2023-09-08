@@ -1,4 +1,6 @@
-export const timeoutError = Symbol()
+import { ErrorBase } from 'errors/ErrorBase'
+
+export class TimeoutError extends ErrorBase<'TIMEOUT_ERROR'> {}
 
 /**
  * If param **promise** does not resolve within **ms** this promise will throw **timeoutError**.
@@ -15,7 +17,15 @@ export default function promiseWithTimeout<T>(
   return Promise.race([
     promise,
     new Promise<T>(
-      (_r, reject) => (timer = setTimeout(reject, ms, timeoutError))
+      (_r, reject) =>
+        (timer = setTimeout(
+          reject,
+          ms,
+          new TimeoutError({
+            message: 'Promise timed out!',
+            name: 'TIMEOUT_ERROR'
+          })
+        ))
     )
   ]).finally(() => timer && clearTimeout(timer))
 }
