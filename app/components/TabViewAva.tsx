@@ -58,7 +58,9 @@ const TabViewAva: TabViewAvaFC = ({
     () =>
       childrenArray.map((child, index) => {
         const title =
-          React.isValidElement(child) && child.props.title
+          React.isValidElement(child) &&
+          typeof child.props.title === 'string' &&
+          child.props.title.length > 0
             ? child.props.title
             : index.toString()
 
