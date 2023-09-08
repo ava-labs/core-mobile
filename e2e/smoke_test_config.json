@@ -22,6 +22,7 @@
     "./e2e/tests/bridge",
     "./e2e/tests/plusIcon/walletConnect/traderjoe.e2e.ts",
     "./e2e/tests/send/sendGoerlyEthTo2ndAccount.e2e.ts",
-    "./e2e/tests/send/sendEthTo2ndAccount.e2e.ts"
+    "./e2e/tests/send/sendEthTo2ndAccount.e2e.ts",
+    "./e2e/tests/send/addCustomToken.smoke.e2e.ts"
   ]
 }
