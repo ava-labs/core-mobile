@@ -1,6 +1,7 @@
 import Config from 'react-native-config'
 import { JsonMap } from 'store/posthog/types'
 import Logger from 'utils/Logger'
+import DeviceInfoService from 'services/deviceInfo/DeviceInfoService'
 import { getPosthogDeviceInfo } from './utils'
 import { sanitizeFeatureFlags } from './sanitizeFeatureFlags'
 
@@ -37,6 +38,7 @@ class PostHogService {
         timestamp: Date.now().toString(),
         ip: '',
         distinct_id: distinctId,
+        $set: { app_version: `${DeviceInfoService.getAppVersion()}` },
         properties: {
           ...deviceInfo,
           ...properties,
