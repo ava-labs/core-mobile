@@ -38,7 +38,6 @@ class PostHogService {
         timestamp: Date.now().toString(),
         ip: '',
         distinct_id: distinctId,
-        $set: { app_version: `${DeviceInfoService.getAppVersion()}` },
         properties: {
           ...deviceInfo,
           ...properties,
@@ -47,6 +46,33 @@ class PostHogService {
       })
     }
     fetch(PostHogCaptureUrl, PostHogCaptureFetchOptions)
+      .then(response => {
+        if (response.ok) {
+          return response.json()
+        }
+        throw new Error('Something went wrong')
+      })
+      .catch(error => {
+        Logger.error('failed to capture PostHog event', error)
+      })
+  }
+
+  async identifyUserAppVersion(distinctId: string, eventName: string) {
+    const PostHogIdentifyFetchOptions = {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        api_key: Config.POSTHOG_FEATURE_FLAGS_KEY,
+        event: eventName,
+        timestamp: Date.now().toString(),
+        ip: '',
+        distinct_id: distinctId,
+        $set: { $app_version: DeviceInfoService.getAppVersion() }
+      })
+    }
+    fetch(PostHogCaptureUrl, PostHogIdentifyFetchOptions)
       .then(response => {
         if (response.ok) {
           return response.json()

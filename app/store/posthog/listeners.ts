@@ -81,4 +81,14 @@ export const addPosthogListeners = (startListening: AppStartListening) => {
     actionCreator: onRehydrationComplete,
     effect: fetchFeatureFlagsPeriodically
   })
+
+  startListening({
+    actionCreator: onRehydrationComplete,
+    effect: async (action, api) => {
+      const state = api.getState()
+      const distinctId = selectDistinctID(state)
+      const eventName = '$identify'
+      PostHogService.identifyUserAppVersion(distinctId, eventName)
+    }
+  })
 }
