@@ -40,6 +40,10 @@ class DurationPage {
     return by.text(DurationScreenLoc.oneDayText)
   }
 
+  get twoWeeksText() {
+    return by.text(DurationScreenLoc.twoWeeksText)
+  }
+
   get oneMonthText() {
     return by.text(DurationScreenLoc.oneMonthText)
   }
@@ -68,11 +72,13 @@ class DurationPage {
     await Actions.tap(this.disclaimerTooltip)
   }
 
-  async verifyDurationScreenItems() {
+  async verifyDurationScreenItems(devnet: boolean) {
     await Assert.isVisible(this.durationTitle)
     await Assert.isVisible(this.durationDescription)
     await Assert.isVisible(this.nextButton, 0)
-    await Assert.isVisible(this.oneDayText)
+    devnet === true
+      ? await Assert.isVisible(this.oneDayText)
+      : await Assert.isVisible(this.twoWeeksText)
     await Assert.isVisible(this.oneMonthText)
     await Assert.isVisible(this.threeMonthsText)
     await Assert.isVisible(this.sixMonthsText)
@@ -81,7 +87,6 @@ class DurationPage {
     await Assert.isVisible(this.customDescription)
     await Assert.isVisible(this.disclaimerTooltip)
     await Assert.isVisible(this.advancedSetup)
-    //Add tooltip verification test
   }
 }
 

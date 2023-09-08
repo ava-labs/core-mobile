@@ -7,7 +7,7 @@ import { warmup } from '../../helpers/warmup'
 import PortfolioPage from '../../pages/portfolio.page'
 import StakePage from '../../pages/Stake/stake.page'
 
-describe('Add and edit accounts', () => {
+describe('Stake: wrong network', () => {
   beforeAll(async () => {
     await warmup()
     await LoginRecoverWallet.recoverWalletLogin()
