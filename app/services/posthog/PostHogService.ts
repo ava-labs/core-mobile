@@ -57,7 +57,7 @@ class PostHogService {
       })
   }
 
-  async identifyUserAppVersion(distinctId: string, eventName: string) {
+  async identifyUser(distinctId: string) {
     const PostHogIdentifyFetchOptions = {
       method: 'POST',
       headers: {
@@ -65,7 +65,7 @@ class PostHogService {
       },
       body: JSON.stringify({
         api_key: Config.POSTHOG_FEATURE_FLAGS_KEY,
-        event: eventName,
+        event: '$identify',
         timestamp: Date.now().toString(),
         ip: '',
         distinct_id: distinctId,
@@ -80,7 +80,7 @@ class PostHogService {
         throw new Error('Something went wrong')
       })
       .catch(error => {
-        Logger.error('failed to capture PostHog event', error)
+        Logger.error('failed to capture PostHog identify event', error)
       })
   }
 

@@ -87,8 +87,7 @@ export const addPosthogListeners = (startListening: AppStartListening) => {
     effect: async (action, api) => {
       const state = api.getState()
       const distinctId = selectDistinctID(state)
-      const eventName = '$identify'
-      PostHogService.identifyUserAppVersion(distinctId, eventName)
+      PostHogService.identifyUser(distinctId)
     }
   })
 }
