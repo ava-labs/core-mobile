@@ -2,6 +2,7 @@
 
 import { element, waitFor } from 'detox'
 import { Page } from '@playwright/test'
+import Action from '../helpers/actions'
 import { Platform } from './constants'
 import Constants from './constants'
 const fs = require('fs')
@@ -10,6 +11,19 @@ const reportUIPerformanceFilePath =
   './e2e/tests/performance/testResults/allResults.txt'
 const tempUIPerformanceFilePath =
   './e2e/tests/performance/testResults/tempResults.txt'
+
+const balanceToNumber = async (balance: Detox.NativeMatcher, index = 0) => {
+  const availableBalance: any = await getAttributes(balance, index)
+
+  // console.log('result', await availableBalance[2].text.match(/[\d.]+/)[0])
+  console.log('result', await availableBalance[2])
+  // let text:any
+  return Action.platform() === Platform.iOS
+    ? parseFloat(await availableBalance.elements[index].text.match(/[\d.]+/)[0])
+    : parseFloat(await availableBalance.text.match(/[\d.]+/)[0])
+  // const numericValue = parseFloat(text.match(/[\d.]+/)[0])
+  // return numericValue
+}
 
 const tap = async (item: Detox.NativeMatcher) => {
   await element(item).tap()
@@ -259,6 +273,7 @@ async function writeQrCodeToFile(clipboardValue: string) {
 }
 
 export default {
+  balanceToNumber,
   tap,
   longPress,
   waitForElement,
