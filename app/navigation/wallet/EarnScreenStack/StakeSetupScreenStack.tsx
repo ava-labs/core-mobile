@@ -15,6 +15,7 @@ import { Avax } from 'types/Avax'
 import { BackButton } from 'components/BackButton'
 import { FundsStuckModal } from 'screens/earn/FundsStuckModal'
 import { handleStakeConfirmationGoBack } from 'utils/earn/handleStakeConfirmationGoBack'
+import { usePostCapture } from 'hooks/usePosthogCapture'
 
 export type StakeSetupStackParamList = {
   [AppNavigation.StakeSetup.GetStarted]: undefined
@@ -23,6 +24,7 @@ export type StakeSetupStackParamList = {
   [AppNavigation.StakeSetup.AdvancedStaking]: {
     stakingEndTime: Date
     stakingAmount: Avax
+    selectedDuration: string
   }
   [AppNavigation.StakeSetup.SelectNode]: {
     stakingEndTime: Date
@@ -109,8 +111,10 @@ type GetStartedScreenProps = StakeSetupScreenProps<
 
 const GetStartedScreen = () => {
   const { navigate } = useNavigation<GetStartedScreenProps['navigation']>()
+  const { capture } = usePostCapture()
 
   const navToSmartStakeAmount = () => {
+    capture('StakeOpenEnterAmount')
     navigate(AppNavigation.StakeSetup.SmartStakeAmount)
   }
 
