@@ -58,7 +58,7 @@ export default function GetStarted({ onNext }: { onNext: () => void }) {
           <Space y={8} />
           <AvaText.Body2 textStyle={{ textAlign: 'center' }}>
             {
-              'Use Core to delegate your AVAX to nodes in the Avalanche network and receive rewards.'
+              'Use Core to stake your AVAX by delegating to Avalanche and receive rewards.'
             }
           </AvaText.Body2>
           <Row
