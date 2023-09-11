@@ -25,6 +25,7 @@ import Logger from 'utils/Logger'
 import { DOCS_STAKING } from 'resources/Constants'
 import { useNow } from 'hooks/time/useNow'
 import { BackButton } from 'components/BackButton'
+import { usePostCapture } from 'hooks/usePosthogCapture'
 import { CustomDurationOptionItem } from './components/CustomDurationOptionItem'
 import { DurationOptionItem } from './components/DurationOptionItem'
 
@@ -33,6 +34,7 @@ type ScreenProps = StakeSetupScreenProps<
 >
 
 export const StakingDuration = () => {
+  const { capture } = usePostCapture()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const currentDate = useNow()
   const minDelegationTime = isDeveloperMode ? ONE_DAY : TWO_WEEKS
@@ -103,6 +105,10 @@ export const StakingDuration = () => {
 
   const navigateToNodeSearch = () => {
     if (stakeEndTime) {
+      capture('StakeStartNodeSearch', {
+        duration: selectedDuration.title,
+        from: 'DurationScreen'
+      })
       navigate(AppNavigation.StakeSetup.NodeSearch, {
         stakingAmount,
         stakingEndTime: stakeEndTime
@@ -112,14 +118,17 @@ export const StakingDuration = () => {
 
   const navigateToAdvancedStaking = () => {
     if (stakeEndTime) {
+      capture('StakeSelectAdvancedStaking')
       navigate(AppNavigation.StakeSetup.AdvancedStaking, {
         stakingAmount,
-        stakingEndTime: stakeEndTime
+        stakingEndTime: stakeEndTime,
+        selectedDuration: selectedDuration.title
       })
     }
   }
 
   const handleReadMore = () => {
+    capture('StakeOpenStakingDocs', { from: 'DurationScreen' })
     Linking.openURL(DOCS_STAKING).catch(e => {
       Logger.error(DOCS_STAKING, e)
     })
