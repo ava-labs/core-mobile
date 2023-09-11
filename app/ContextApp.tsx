@@ -18,6 +18,7 @@ import { TopLevelErrorFallback } from 'components/TopLevelErrorFallback'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import FlipperAsyncStorage from 'rn-flipper-async-storage-advanced'
 import { ReactQueryProvider } from 'contexts/ReactQueryProvider'
+import SentryService from 'services/sentry/SentryService'
 
 function setToast(toast: Toast) {
   global.toast = toast
@@ -40,28 +41,26 @@ const ContextProviders: FC = ({ children }) => (
   </EncryptedStoreProvider>
 )
 
-const ContextApp = () => {
-  return (
-    <Sentry.ErrorBoundary fallback={<TopLevelErrorFallback />}>
-      <StatusBar barStyle={'light-content'} backgroundColor="black" />
-      {__DEV__ && <FlipperAsyncStorage />}
-      <ContextProviders>
-        <JailBrokenCheck>
-          <GestureHandlerRootView style={{ flex: 1 }}>
-            <App />
-          </GestureHandlerRootView>
-        </JailBrokenCheck>
-        <Toast
-          ref={ref => {
-            ref && setToast(ref)
-          }}
-          offsetTop={30}
-          normalColor={'00FFFFFF'}
-        />
-      </ContextProviders>
-    </Sentry.ErrorBoundary>
-  )
-}
+const ContextApp = () => (
+  <>
+    <StatusBar barStyle={'light-content'} backgroundColor="black" />
+    {__DEV__ && <FlipperAsyncStorage />}
+    <ContextProviders>
+      <JailBrokenCheck>
+        <GestureHandlerRootView style={{ flex: 1 }}>
+          <App />
+        </GestureHandlerRootView>
+      </JailBrokenCheck>
+      <Toast
+        ref={ref => {
+          ref && setToast(ref)
+        }}
+        offsetTop={30}
+        normalColor={'00FFFFFF'}
+      />
+    </ContextProviders>
+  </>
+)
 
 const JailBrokenCheck: FC = ({ children }) => {
   const [showJailBroken, setShowJailBroken] = useState(false)
@@ -79,4 +78,12 @@ const JailBrokenCheck: FC = ({ children }) => {
   return <>{children}</>
 }
 
-export default Sentry.wrap(ContextApp)
+const SentryErrorBoundedContextApp = () => (
+  <Sentry.ErrorBoundary fallback={<TopLevelErrorFallback />}>
+    <ContextApp />
+  </Sentry.ErrorBoundary>
+)
+
+export default SentryService.isAvailable
+  ? Sentry.wrap(SentryErrorBoundedContextApp)
+  : ContextApp
