@@ -152,6 +152,14 @@ export const selectIsDeFiBlocked = (state: RootState) => {
   )
 }
 
+export const selectIsTestFeatureBlocked = (state: RootState) => {
+  const { featureFlags } = state.posthog
+  return (
+    !featureFlags[FeatureGates.TEST_FEATURE] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
 export const selectSentrySampleRate = (state: RootState) => {
   const { featureFlags } = state.posthog
   return (

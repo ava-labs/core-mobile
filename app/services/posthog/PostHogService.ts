@@ -8,15 +8,18 @@ import { sanitizeFeatureFlags } from './sanitizeFeatureFlags'
 const PostHogCaptureUrl = `${Config.POSTHOG_URL}/capture/`
 
 const PostHogDecideUrl = `${Config.POSTHOG_URL}/decide?v=2`
-const PostHogDecideFetchOptions = {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json'
-  },
-  body: JSON.stringify({
-    api_key: Config.POSTHOG_FEATURE_FLAGS_KEY,
-    distinct_id: ''
-  })
+const PostHogDecideFetchOptions = (distinctId: string) => {
+  return {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      api_key: Config.POSTHOT_FEATURE_FLAGS_KEY,
+      distinct_id: distinctId,
+      app_version: DeviceInfoService.getAppVersion()
+    })
+  }
 }
 
 class PostHogService {
@@ -84,10 +87,13 @@ class PostHogService {
       })
   }
 
-  async fetchFeatureFlags() {
+  async fetchFeatureFlags(distinctId: string) {
     try {
       Logger.info('fetching feature flags')
-      const response = await fetch(PostHogDecideUrl, PostHogDecideFetchOptions)
+      const response = await fetch(
+        PostHogDecideUrl,
+        PostHogDecideFetchOptions(distinctId)
+      )
 
       if (!response.ok) {
         throw new Error('Something went wrong')
