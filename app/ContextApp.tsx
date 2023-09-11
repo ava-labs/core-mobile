@@ -41,26 +41,28 @@ const ContextProviders: FC = ({ children }) => (
   </EncryptedStoreProvider>
 )
 
-const ContextApp = () => (
-  <Sentry.ErrorBoundary fallback={<TopLevelErrorFallback />}>
-    <StatusBar barStyle={'light-content'} backgroundColor="black" />
-    {__DEV__ && <FlipperAsyncStorage />}
-    <ContextProviders>
-      <JailBrokenCheck>
-        <GestureHandlerRootView style={{ flex: 1 }}>
-          <App />
-        </GestureHandlerRootView>
-      </JailBrokenCheck>
-      <Toast
-        ref={ref => {
-          ref && setToast(ref)
-        }}
-        offsetTop={30}
-        normalColor={'00FFFFFF'}
-      />
-    </ContextProviders>
-  </Sentry.ErrorBoundary>
-)
+const ContextApp = () => {
+  return (
+    <Sentry.ErrorBoundary fallback={<TopLevelErrorFallback />}>
+      <StatusBar barStyle={'light-content'} backgroundColor="black" />
+      {__DEV__ && <FlipperAsyncStorage />}
+      <ContextProviders>
+        <JailBrokenCheck>
+          <GestureHandlerRootView style={{ flex: 1 }}>
+            <App />
+          </GestureHandlerRootView>
+        </JailBrokenCheck>
+        <Toast
+          ref={ref => {
+            ref && setToast(ref)
+          }}
+          offsetTop={30}
+          normalColor={'00FFFFFF'}
+        />
+      </ContextProviders>
+    </Sentry.ErrorBoundary>
+  )
+}
 
 const JailBrokenCheck: FC = ({ children }) => {
   const [showJailBroken, setShowJailBroken] = useState(false)
