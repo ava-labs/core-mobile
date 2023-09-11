@@ -32,10 +32,11 @@ export const posthogCapture = ({
 
 const fetchFeatureFlagsPeriodically = async (
   _: Action,
-  listenerApi: AppListenerEffectAPI,
-  distinctId: string
+  listenerApi: AppListenerEffectAPI
 ) => {
   const { condition, dispatch } = listenerApi
+
+  const distinctId = selectDistinctID(listenerApi.getState())
 
   async function fetchFeatureFlags() {
     const featureFlags = await PostHogService.fetchFeatureFlags(distinctId)
@@ -51,6 +52,14 @@ const fetchFeatureFlagsPeriodically = async (
       listenerApi.delay(FEATURE_FLAGS_FETCH_INTERVAL)
     ])
   }
+}
+
+const posthogIdentifyUser = async (
+  _: Action,
+  listenerApi: AppListenerEffectAPI
+) => {
+  const distinctId = selectDistinctID(listenerApi.getState())
+  await PostHogService.identifyUser(distinctId)
 }
 
 export const addPosthogListeners = (startListening: AppStartListening) => {
@@ -78,19 +87,11 @@ export const addPosthogListeners = (startListening: AppStartListening) => {
 
   startListening({
     actionCreator: onRehydrationComplete,
-    effect: async (action, api) => {
-      const state = api.getState()
-      const distinctId = selectDistinctID(state)
-      await fetchFeatureFlagsPeriodically(action, api, distinctId)
-    }
+    effect: fetchFeatureFlagsPeriodically
   })
 
   startListening({
     actionCreator: onRehydrationComplete,
-    effect: async (action, api) => {
-      const state = api.getState()
-      const distinctId = selectDistinctID(state)
-      await PostHogService.identifyUser(distinctId)
-    }
+    effect: posthogIdentifyUser
   })
 }

@@ -67,12 +67,14 @@ class PostHogService {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        api_key: Config.POSTHOG_FEATURE_FLAGS_KEY,
+        api_key: Config.FEATURE_FLAGS_KEY,
         event: '$identify',
         timestamp: Date.now().toString(),
         ip: '',
         distinct_id: distinctId,
-        $set: { $app_version: DeviceInfoService.getAppVersion() }
+        $set: {
+          $app_version: DeviceInfoService.getAppVersion()
+        }
       })
     }
     fetch(PostHogCaptureUrl, PostHogIdentifyFetchOptions)
