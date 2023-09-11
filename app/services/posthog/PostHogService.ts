@@ -8,7 +8,7 @@ import { sanitizeFeatureFlags } from './sanitizeFeatureFlags'
 const PostHogCaptureUrl = `${Config.POSTHOG_URL}/capture/`
 
 const PostHogDecideUrl = `${Config.POSTHOG_URL}/decide?v=2`
-const PostHogDecideFetchOptions = (distinctId: string) => {
+const generatePostHogDecideFetchOptions = (distinctId: string) => {
   return {
     method: 'POST',
     headers: {
@@ -92,7 +92,7 @@ class PostHogService {
       Logger.info('fetching feature flags')
       const response = await fetch(
         PostHogDecideUrl,
-        PostHogDecideFetchOptions(distinctId)
+        generatePostHogDecideFetchOptions(distinctId)
       )
 
       if (!response.ok) {
