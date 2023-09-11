@@ -42,7 +42,7 @@ const ContextProviders: FC = ({ children }) => (
 )
 
 const ContextApp = () => (
-  <>
+  <Sentry.ErrorBoundary fallback={<TopLevelErrorFallback />}>
     <StatusBar barStyle={'light-content'} backgroundColor="black" />
     {__DEV__ && <FlipperAsyncStorage />}
     <ContextProviders>
@@ -59,7 +59,7 @@ const ContextApp = () => (
         normalColor={'00FFFFFF'}
       />
     </ContextProviders>
-  </>
+  </Sentry.ErrorBoundary>
 )
 
 const JailBrokenCheck: FC = ({ children }) => {
@@ -78,12 +78,4 @@ const JailBrokenCheck: FC = ({ children }) => {
   return <>{children}</>
 }
 
-const SentryErrorBoundedContextApp = () => (
-  <Sentry.ErrorBoundary fallback={<TopLevelErrorFallback />}>
-    <ContextApp />
-  </Sentry.ErrorBoundary>
-)
-
-export default SentryService.isAvailable
-  ? Sentry.wrap(SentryErrorBoundedContextApp)
-  : ContextApp
+export default SentryService.isAvailable ? Sentry.wrap(ContextApp) : ContextApp
