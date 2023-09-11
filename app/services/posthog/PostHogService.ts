@@ -67,7 +67,7 @@ class PostHogService {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        api_key: Config.FEATURE_FLAGS_KEY,
+        api_key: Config.POSTHOT_FEATURE_FLAGS_KEY,
         event: '$identify',
         timestamp: Date.now().toString(),
         ip: '',
