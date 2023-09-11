@@ -103,7 +103,8 @@ class PostHogService {
 
       const responseJson = await response.json()
       const featureFlags = sanitizeFeatureFlags(responseJson)
-      Logger.info('feature flags', featureFlags)
+
+      Logger.info('fetched feature flags', featureFlags)
 
       return featureFlags
     } catch (e) {
