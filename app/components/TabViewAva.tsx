@@ -59,8 +59,7 @@ const TabViewAva: TabViewAvaFC = ({
       childrenArray.map((child, index) => {
         const title =
           React.isValidElement(child) &&
-          typeof child.props.title === 'string' &&
-          child.props.title.length > 0
+          child.type.displayName === TabViewAvaItemDisplayName
             ? child.props.title
             : index.toString()
 
@@ -176,5 +175,8 @@ const TabViewAva: TabViewAvaFC = ({
 }
 
 TabViewAva.Item = ({ children }) => <>{children}</>
+
+const TabViewAvaItemDisplayName = 'TabViewAva.Item'
+TabViewAva.Item.displayName = TabViewAvaItemDisplayName
 
 export default TabViewAva
