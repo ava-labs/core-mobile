@@ -7,7 +7,7 @@ import { Space } from 'components/Space'
 import { ScrollView } from 'react-native-gesture-handler'
 import { withCenterView } from '../decorators/withCenterView'
 
-const imageUrl = 'https://picsum.photos/200'
+const IMAGE_URL = 'https://picsum.photos/200'
 
 export default {
   title: 'Stacked Images',
@@ -20,7 +20,7 @@ const Stacked = (flexDirection: 'row' | 'column') => {
       <AvaText.Heading1>Default</AvaText.Heading1>
       <Space y={16} />
       <StackedImages
-        imageUrls={[imageUrl, imageUrl, imageUrl]}
+        imageUrls={[IMAGE_URL, IMAGE_URL, IMAGE_URL]}
         flexDirection={flexDirection}
       />
       <Space y={16} />
@@ -28,7 +28,7 @@ const Stacked = (flexDirection: 'row' | 'column') => {
       <AvaText.Heading1>Custom Size</AvaText.Heading1>
       <Space y={16} />
       <StackedImages
-        imageUrls={[imageUrl, imageUrl, imageUrl]}
+        imageUrls={[IMAGE_URL, IMAGE_URL, IMAGE_URL]}
         flexDirection={flexDirection}
         size={100}
       />
@@ -38,7 +38,7 @@ const Stacked = (flexDirection: 'row' | 'column') => {
       <AvaText.Heading1>Custom margin</AvaText.Heading1>
       <Space y={16} />
       <StackedImages
-        imageUrls={[imageUrl, imageUrl, imageUrl]}
+        imageUrls={[IMAGE_URL, IMAGE_URL, IMAGE_URL]}
         flexDirection={flexDirection}
         size={100}
         stackMarginRatio={0.7}
@@ -49,7 +49,7 @@ const Stacked = (flexDirection: 'row' | 'column') => {
       <AvaText.Heading1>Custom borderRadius</AvaText.Heading1>
       <Space y={16} />
       <StackedImages
-        imageUrls={[imageUrl, imageUrl, imageUrl]}
+        imageUrls={[IMAGE_URL, IMAGE_URL, IMAGE_URL]}
         flexDirection={flexDirection}
         size={100}
         borderRadius={0}
