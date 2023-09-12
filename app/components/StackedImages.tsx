@@ -2,12 +2,12 @@ import React from 'react'
 import { Image } from 'react-native'
 import { Row } from './Row'
 
-export interface StackedImagesProps {
+interface StackedImagesProps {
   imageUrls: string[]
   size?: number
   borderRadius?: number
   flexDirection?: 'row' | 'column'
-  stackMargin?: number
+  stackMarginRatio?: number
 }
 
 export const StackedImages = ({
@@ -15,13 +15,13 @@ export const StackedImages = ({
   size = 24,
   borderRadius = size / 2,
   flexDirection = 'row',
-  stackMargin = 0.4
+  stackMarginRatio = 0.4
 }: StackedImagesProps) => {
   const stackedMargin = (index: number) => {
     if (index === 0) return undefined
     return flexDirection === 'row'
-      ? { marginLeft: -size * stackMargin }
-      : { marginTop: -size * stackMargin }
+      ? { marginLeft: -size * stackMarginRatio }
+      : { marginTop: -size * stackMarginRatio }
   }
 
   return (

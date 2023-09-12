@@ -7,6 +7,8 @@ import { Space } from 'components/Space'
 import { ScrollView } from 'react-native-gesture-handler'
 import { withCenterView } from '../decorators/withCenterView'
 
+const imageUrl = 'https://picsum.photos/200'
+
 export default {
   title: 'Stacked Images',
   decorators: [withCenterView]
@@ -18,11 +20,7 @@ const Stacked = (flexDirection: 'row' | 'column') => {
       <AvaText.Heading1>Default</AvaText.Heading1>
       <Space y={16} />
       <StackedImages
-        imageUrls={[
-          'https://picsum.photos/200',
-          'https://picsum.photos/200',
-          'https://picsum.photos/200'
-        ]}
+        imageUrls={[imageUrl, imageUrl, imageUrl]}
         flexDirection={flexDirection}
       />
       <Space y={16} />
@@ -30,11 +28,7 @@ const Stacked = (flexDirection: 'row' | 'column') => {
       <AvaText.Heading1>Custom Size</AvaText.Heading1>
       <Space y={16} />
       <StackedImages
-        imageUrls={[
-          'https://picsum.photos/200',
-          'https://picsum.photos/200',
-          'https://picsum.photos/200'
-        ]}
+        imageUrls={[imageUrl, imageUrl, imageUrl]}
         flexDirection={flexDirection}
         size={100}
       />
@@ -44,14 +38,10 @@ const Stacked = (flexDirection: 'row' | 'column') => {
       <AvaText.Heading1>Custom margin</AvaText.Heading1>
       <Space y={16} />
       <StackedImages
-        imageUrls={[
-          'https://picsum.photos/200',
-          'https://picsum.photos/200',
-          'https://picsum.photos/200'
-        ]}
+        imageUrls={[imageUrl, imageUrl, imageUrl]}
         flexDirection={flexDirection}
         size={100}
-        stackMargin={0.7}
+        stackMarginRatio={0.7}
       />
 
       <Space y={16} />
@@ -59,11 +49,7 @@ const Stacked = (flexDirection: 'row' | 'column') => {
       <AvaText.Heading1>Custom borderRadius</AvaText.Heading1>
       <Space y={16} />
       <StackedImages
-        imageUrls={[
-          'https://picsum.photos/200',
-          'https://picsum.photos/200',
-          'https://picsum.photos/200'
-        ]}
+        imageUrls={[imageUrl, imageUrl, imageUrl]}
         flexDirection={flexDirection}
         size={100}
         borderRadius={0}
