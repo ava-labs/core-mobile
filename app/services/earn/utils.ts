@@ -14,7 +14,6 @@ import { Avax } from 'types/Avax'
 import * as Navigation from 'utils/Navigation'
 import AppNavigation from 'navigation/AppNavigation'
 import Logger from 'utils/Logger'
-import { isOnGoing } from 'utils/earn/status'
 import { valid, compare } from 'semver'
 import { Peer } from '@avalabs/avalanchejs-v2/dist/src/info/model'
 import EarnService from './EarnService'
@@ -353,11 +352,7 @@ export const getTransformedTransactions = async (
       addresses
     })
 
-    const now = new Date()
-    const activeStakes =
-      stakes?.filter(transaction => isOnGoing(transaction, now)) ?? []
-
-    const transformedTransactions = activeStakes.map(transaction => {
+    const transformedTransactions = stakes.map(transaction => {
       const pAddr = transaction.emittedUtxos.find(utxo => utxo.staked === true)
         ?.addresses[0]
       const matchedPAddress = addresses

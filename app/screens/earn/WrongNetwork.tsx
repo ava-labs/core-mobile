@@ -12,12 +12,14 @@ import AppNavigation from 'navigation/AppNavigation'
 import { EarnScreenProps } from 'navigation/types'
 import { useNavigation } from '@react-navigation/native'
 import { useIsEarnDashboardEnabled } from 'hooks/earn/useIsEarnDashboardEnabled'
+import { usePostCapture } from 'hooks/usePosthogCapture'
 
 type ScreenProps = EarnScreenProps<
   typeof AppNavigation.Earn.WrongNetwork
 >['navigation']
 
 export const WrongNetwork = () => {
+  const { capture } = usePostCapture()
   const dispatch = useDispatch()
   const { navigate, replace } = useNavigation<ScreenProps>()
   const { isEarnDashboardEnabled } = useIsEarnDashboardEnabled()
@@ -34,6 +36,7 @@ export const WrongNetwork = () => {
       navigate(AppNavigation.Tabs.Stake)
       return
     }
+    capture('StakeBegin', { from: 'WrongNetworkScreen' })
     replace(AppNavigation.Wallet.Earn, {
       screen: AppNavigation.Earn.StakeSetup,
       params: {

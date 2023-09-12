@@ -27,12 +27,14 @@ import { PopableContent } from 'components/PopableContent'
 import { PopableLabel } from 'components/PopableLabel'
 import { Popable } from 'react-native-popable'
 import { useAvaxFormatter } from 'hooks/formatter/useAvaxFormatter'
+import { usePostCapture } from 'hooks/usePosthogCapture'
 
 type ScreenProps = StakeSetupScreenProps<
   typeof AppNavigation.StakeSetup.SmartStakeAmount
 >
 
 export default function StakingAmount() {
+  const { capture } = usePostCapture()
   const avaxFormatter = useAvaxFormatter()
   const { theme } = useApplicationContext()
   const { navigate } = useNavigation<ScreenProps['navigation']>()
@@ -81,6 +83,7 @@ export default function StakingAmount() {
   }
 
   function setAmount(factor: number) {
+    capture('StakeUseAmountPercentage', { percent: (100 / factor).toString() })
     setInputAmount(cumulativeBalance.div(factor))
   }
 
@@ -155,6 +158,7 @@ export default function StakingAmount() {
       {inputValid && (
         <AvaButton.PrimaryLarge
           onPress={() => {
+            capture('StakeOpenDurationSelect')
             navigate(AppNavigation.StakeSetup.StakingDuration, {
               stakingAmount: inputAmount
             })

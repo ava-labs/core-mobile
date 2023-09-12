@@ -36,6 +36,7 @@ import { glacierSdk } from 'utils/network/glacier'
 import { Avax } from 'types/Avax'
 import { getInfoApi } from 'utils/network/info'
 import { GetPeersResponse } from '@avalabs/avalanchejs-v2/dist/src/info/model'
+import { isOnGoing } from 'utils/earn/status'
 import {
   getTransformedTransactions,
   maxGetAtomicUTXOsRetries,
@@ -326,17 +327,19 @@ class EarnService {
         oppositeIsDeveloperMode
       )
 
-      const tranformedTransactions = (firstTransactions ?? [])
+      const now = new Date()
+      const transformedTransactions = (firstTransactions ?? [])
         .concat(secondTransactions ?? [])
         .map(transaction => {
           return {
             txHash: transaction.txHash,
             endTimestamp: transaction.endTimestamp,
             accountIndex: Number(transaction.index),
-            isDeveloperMode: transaction.isDeveloperMode
+            isDeveloperMode: transaction.isDeveloperMode,
+            isOnGoing: isOnGoing(transaction, now)
           }
         })
-      return tranformedTransactions
+      return transformedTransactions
     } catch (error) {
       Logger.error('getTransformedStakesForAllAccounts failed: ', error)
     }
