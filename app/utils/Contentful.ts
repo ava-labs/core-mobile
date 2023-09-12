@@ -1,7 +1,13 @@
+import { PixelRatio } from 'react-native'
+
 export const formatUriImageToPng = (uri: string, size: number) => {
   const allowedUrl = 'https://images.ctfassets.net'
   if (uri.startsWith(allowedUrl)) {
-    return uri?.endsWith('.svg') ? `${uri}?fm=png&w=${size}&h=${size}` : uri
+    const sizeInPixel = size * PixelRatio.get()
+
+    return uri?.endsWith('.svg')
+      ? `${uri}?fm=png&w=${sizeInPixel}&h=${sizeInPixel}`
+      : uri
   }
   return uri
 }
