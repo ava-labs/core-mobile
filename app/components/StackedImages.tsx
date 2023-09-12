@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useCallback } from 'react'
 import { Image } from 'react-native'
 import { Row } from './Row'
 
@@ -17,12 +17,15 @@ export const StackedImages = ({
   flexDirection = 'row',
   stackMarginRatio = 0.4
 }: StackedImagesProps) => {
-  const stackedMargin = (index: number) => {
-    if (index === 0) return undefined
-    return flexDirection === 'row'
-      ? { marginLeft: -size * stackMarginRatio }
-      : { marginTop: -size * stackMarginRatio }
-  }
+  const stackedMargin = useCallback(
+    (index: number) => {
+      if (index === 0) return undefined
+      return flexDirection === 'row'
+        ? { marginLeft: -size * stackMarginRatio }
+        : { marginTop: -size * stackMarginRatio }
+    },
+    [flexDirection, size, stackMarginRatio]
+  )
 
   return (
     <Row
