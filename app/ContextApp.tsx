@@ -18,6 +18,7 @@ import { TopLevelErrorFallback } from 'components/TopLevelErrorFallback'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import FlipperAsyncStorage from 'rn-flipper-async-storage-advanced'
 import { ReactQueryProvider } from 'contexts/ReactQueryProvider'
+import SentryService from 'services/sentry/SentryService'
 
 function setToast(toast: Toast) {
   global.toast = toast
@@ -79,4 +80,4 @@ const JailBrokenCheck: FC = ({ children }) => {
   return <>{children}</>
 }
 
-export default Sentry.wrap(ContextApp)
+export default SentryService.isAvailable ? Sentry.wrap(ContextApp) : ContextApp
