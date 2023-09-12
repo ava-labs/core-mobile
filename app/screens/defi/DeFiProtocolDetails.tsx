@@ -15,12 +15,12 @@ import Separator from 'components/Separator'
 import { useDeFiChainList } from 'hooks/defi/useDeFiChainList'
 import { openURL } from 'utils/openURL'
 import { ScrollView } from 'react-native-gesture-handler'
-import { DeFiPortfolioItem } from 'services/defi/types'
 import { ProtocolDetailsErrorState } from './components/ProtocolDetailsErrorState'
 import { ProtocolLogo } from './components/ProtocolLogo'
 import { NetworkLogo } from './components/NetworkLogo'
 import { mapPortfolioItems } from './utils'
 import { DeFiPortfolioItemGroup } from './components/DeFiPortfolioItemGroup'
+import { ZeroState } from './components/ZeroState'
 
 type ScreenProps = WalletScreenProps<
   typeof AppNavigation.Wallet.DeFiProtocolDetails
@@ -54,14 +54,13 @@ export const DeFiProtocolDetails = () => {
     return currencyFormatter(totalValue)
   }, [currencyFormatter, data?.portfolioItemList])
 
-  if (isLoading) {
-    return (
-      <View style={styles.spinnerContainer}>
-        <Spinner size={77} />
-      </View>
-    )
-  }
-  if (error || (isPaused && !isSuccess)) return <ProtocolDetailsErrorState />
+  const renderPortfolioItemList = useCallback(() => {
+    if (!data?.portfolioItemList) return []
+    const portfolioItemGroups = mapPortfolioItems(data.portfolioItemList)
+    return portfolioItemGroups.map(group => {
+      return <DeFiPortfolioItemGroup key={group.name} group={group} />
+    })
+  }, [data?.portfolioItemList])
 
   const renderCardHeader = () => {
     return (
@@ -100,21 +99,22 @@ export const DeFiProtocolDetails = () => {
     )
   }
 
-  const renderPortfolioItemList = (items: DeFiPortfolioItem[]) => {
-    const portfolioItemGroups = mapPortfolioItems(items)
-    return portfolioItemGroups.map(group => {
-      return <DeFiPortfolioItemGroup key={group.name} group={group} />
-    })
+  if (isLoading) {
+    return (
+      <View style={styles.spinnerContainer}>
+        <Spinner size={77} />
+      </View>
+    )
   }
+  if (error || (isPaused && !isSuccess)) return <ProtocolDetailsErrorState />
+  if (!data) return <ZeroState />
 
   return (
     <View style={styles.container}>
       <Card style={styles.card}>
         {renderCardHeader()}
         <Separator style={{ marginTop: 16 }} />
-        <ScrollView>
-          {renderPortfolioItemList(data?.portfolioItemList ?? [])}
-        </ScrollView>
+        <ScrollView>{renderPortfolioItemList()}</ScrollView>
       </Card>
       <AvaButton.PrimaryLarge onPress={goToProtocolPage}>
         <LinkSVG color={theme.logoColor} />
