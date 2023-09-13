@@ -1,4 +1,4 @@
-import React, { FC, useCallback, useMemo } from 'react'
+import React, { FC, useCallback, useEffect, useMemo, useState } from 'react'
 import {
   NavigationState,
   SceneRendererProps,
@@ -47,12 +47,16 @@ const TabViewAva: TabViewAvaFC = ({
   lazy = true,
   children
 }) => {
+  const [currentIndex, setCurrentIndex] = useState(currentTabIndex)
   const theme = useApplicationContext().theme
 
   const childrenArray = useMemo(
     () => React.Children.toArray(children),
     [children]
   )
+  useEffect(() => {
+    setCurrentIndex(currentTabIndex)
+  }, [currentTabIndex])
   // https://github.com/satya164/react-native-tab-view#tabview-props
   const routes = useMemo(
     () =>
@@ -73,8 +77,8 @@ const TabViewAva: TabViewAvaFC = ({
   )
 
   const navState = useMemo(() => {
-    return { index: currentTabIndex, routes }
-  }, [currentTabIndex, routes])
+    return { index: currentIndex, routes }
+  }, [currentIndex, routes])
 
   const scenes = useCallback(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -86,6 +90,7 @@ const TabViewAva: TabViewAvaFC = ({
 
   const handleIndexChange = useCallback(
     (index: number) => {
+      setCurrentIndex(index)
       onTabIndexChange?.(index)
     },
     [onTabIndexChange]
