@@ -11,7 +11,6 @@ import LinkSVG from 'components/svg/LinkSVG'
 import { Space } from 'components/Space'
 import Card from 'components/Card'
 import AvaText from 'components/AvaText'
-import Separator from 'components/Separator'
 import { useDeFiChainList } from 'hooks/defi/useDeFiChainList'
 import { openURL } from 'utils/openURL'
 import { ScrollView } from 'react-native-gesture-handler'
@@ -113,7 +112,6 @@ export const DeFiProtocolDetails = () => {
     <View style={styles.container}>
       <Card style={styles.card}>
         {renderCardHeader()}
-        <Separator style={{ marginTop: 16 }} />
         <ScrollView>{renderPortfolioItemList()}</ScrollView>
       </Card>
       <AvaButton.PrimaryLarge onPress={goToProtocolPage}>
