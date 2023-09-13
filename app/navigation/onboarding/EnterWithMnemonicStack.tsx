@@ -14,8 +14,13 @@ import { createStackNavigator } from '@react-navigation/stack'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { MainHeaderOptions } from 'navigation/NavUtils'
 import TermsNConditionsModal from 'components/TermsNConditionsModal'
-import { onAppUnlocked, onLogIn } from 'store/app'
-import { useDispatch } from 'react-redux'
+import {
+  onAppUnlocked,
+  onLogIn,
+  selectWalletState,
+  WalletState
+} from 'store/app'
+import { useDispatch, useSelector } from 'react-redux'
 import {
   RemoveEvents,
   useBeforeRemoveListener
@@ -87,6 +92,9 @@ const LoginWithMnemonicScreen = () => {
   const { navigate, goBack } = useNavigation<LoginNavigationProp>()
   const { capture } = usePostCapture()
   const dispatch = useDispatch()
+  const { deleteWallet } = useApplicationContext().appHook
+  const walletState = useSelector(selectWalletState)
+  const isWalletExisted = walletState !== WalletState.NONEXISTENT
 
   useBeforeRemoveListener(
     useCallback(() => {
@@ -98,10 +106,15 @@ const LoginWithMnemonicScreen = () => {
 
   const onEnterWallet = useCallback(
     m => {
+      // if a wallet already existed, we want to clear out
+      // existing data first before entering with this new wallet
+      if (isWalletExisted) {
+        deleteWallet()
+      }
       enterWithMnemonicContext.setMnemonic(m)
       navigate(AppNavigation.LoginWithMnemonic.CreatePin)
     },
-    [enterWithMnemonicContext, navigate]
+    [isWalletExisted, enterWithMnemonicContext, navigate, deleteWallet]
   )
 
   return <HdWalletLogin onEnterWallet={onEnterWallet} onBack={() => goBack()} />
