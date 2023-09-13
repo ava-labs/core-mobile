@@ -54,7 +54,7 @@ export const DeFiProtocolDetails = () => {
     return currencyFormatter(totalValue)
   }, [currencyFormatter, data?.portfolioItemList])
 
-  const renderPortfolioItemList = useCallback(() => {
+  const renderPortfolioItemList = useMemo(() => {
     if (!data?.portfolioItemList) return []
     const portfolioItemGroups = mapPortfolioItems(data.portfolioItemList)
     return portfolioItemGroups.map(group => {
@@ -107,14 +107,15 @@ export const DeFiProtocolDetails = () => {
     )
   }
   if (error || (isPaused && !isSuccess)) return <ProtocolDetailsErrorState />
-  if (!data) return <ZeroState />
+  if (!data || !data?.portfolioItemList || data.portfolioItemList.length === 0)
+    return <ZeroState />
 
   return (
     <View style={styles.container}>
       <Card style={styles.card}>
         {renderCardHeader()}
         <Separator style={{ marginTop: 16 }} />
-        <ScrollView>{renderPortfolioItemList()}</ScrollView>
+        <ScrollView>{renderPortfolioItemList}</ScrollView>
       </Card>
       <AvaButton.PrimaryLarge onPress={goToProtocolPage}>
         <LinkSVG color={theme.logoColor} />
