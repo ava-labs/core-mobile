@@ -1,4 +1,4 @@
-import React, { FC, useEffect, useLayoutEffect, useState } from 'react'
+import React, { FC, useEffect, useLayoutEffect, useMemo, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaText from 'components/AvaText'
@@ -30,6 +30,7 @@ import TransactionToast, {
 import AvaButton from 'components/AvaButton'
 import AppNavigation from 'navigation/AppNavigation'
 import { usePostCapture } from 'hooks/usePosthogCapture'
+import { BITCOIN_NETWORK } from '@avalabs/chains-sdk'
 
 type Props = {
   txHash: string
@@ -43,9 +44,24 @@ const BridgeTransactionStatus: FC<Props> = ({ txHash, showHideButton }) => {
   const [bridgeTransaction, setBridgeTransaction] =
     useState<BridgeTransaction>()
 
-  const tokenInfo = useSelector(
+  const _tokenInfo = useSelector(
     selectTokenInfo(bridgeTransaction?.symbol ?? '')
   )
+
+  const tokenInfo = useMemo(() => {
+    if (_tokenInfo)
+      return { symbol: _tokenInfo.symbol, logoUri: _tokenInfo.logoUri }
+
+    if (bridgeTransaction?.symbol === BITCOIN_NETWORK.networkToken.symbol) {
+      return {
+        symbol: BITCOIN_NETWORK.networkToken.symbol,
+        logoUri: BITCOIN_NETWORK.networkToken.logoUri
+      }
+    }
+
+    return undefined
+  }, [_tokenInfo, bridgeTransaction])
+
   const { theme, appHook } = useApplicationContext()
   const { selectedCurrency, currencyFormatter } = appHook
   const { navigate, getParent, dispatch, setOptions } = useNavigation()
