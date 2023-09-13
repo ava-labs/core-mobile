@@ -6,7 +6,7 @@ import { Opacity10 } from 'resources/Constants'
 import EthereumSvg from 'components/svg/Ethereum'
 import BitcoinSVG from 'components/svg/BitcoinSVG'
 import { TokenSymbol } from 'store/network'
-import { SvgUri } from 'react-native-svg'
+import { formatUriImageToPng } from 'utils/Contentful'
 import FastImage from 'react-native-fast-image'
 import AvaText from './AvaText'
 
@@ -92,11 +92,11 @@ const AvatarBase: FC<Props> = ({
 
       if (logoUri?.endsWith('svg')) {
         return (
-          <SvgUri
-            uri={logoUri}
+          <FastImage
+            source={{
+              uri: formatUriImageToPng(logoUri, size)
+            }}
             style={style}
-            width={size}
-            height={size}
             testID="avatar__logo_avatar"
           />
         )
