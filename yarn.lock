@@ -21964,7 +21964,7 @@ react-native-svg-charts@5.4.0:
     d3-shape "^1.0.6"
     prop-types "^15.6.0"
 
-react-native-svg-transformer@^1.1.0:
+react-native-svg-transformer@1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/react-native-svg-transformer/-/react-native-svg-transformer-1.1.0.tgz#2032bc766e20533af8aec81df49c218f08d4dbbd"
   integrity sha512-I/yIxryg7FH5DKAvKHL0VsOfARHPkXdgIl0AUhndWpQzUYgpFs+kJcCP7XoZR+gn0t36JE+q9f4x3p/arZFx5g==
