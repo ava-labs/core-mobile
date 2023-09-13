@@ -13,10 +13,7 @@ export const useDeFiProtocolList = () => {
     refetchInterval: refetchIntervals.deFiProtocolList,
     enabled: !!addressC,
     queryKey: ['deFiProtocolList', addressC],
-    queryFn: () =>
-      DeFiService.getDeFiProtocolList(
-        '0x9026a229b535ecf0162dfe48fdeb3c75f7b2a7ae'
-      ),
+    queryFn: () => DeFiService.getDeFiProtocolList(addressC),
     select: data => convertSnakeToCamel(data) as DeFiSimpleProtocol[]
   })
 }
