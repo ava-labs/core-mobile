@@ -19,7 +19,7 @@ export const DeFiPortfolioInsurance: FC<Props> = ({ items }) => {
       {items.map((item, index) => {
         return (
           <Row
-            key={`defi-lending-${index}`}
+            key={`defi-insurance-${index}`}
             style={{ justifyContent: 'space-between', marginTop: 8 }}>
             <AvaText.Body2>{item.description}</AvaText.Body2>
             <AvaText.Body2>{item.netUsdValue}</AvaText.Body2>
