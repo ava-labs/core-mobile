@@ -8,10 +8,12 @@ import {
   DefiInsuranceBuyerItem,
   DefiItem,
   DefiItemGroup,
-  DefiLendingItem
+  DefiLendingItem,
+  DefiPerpetualItem
 } from 'services/defi/types'
 import { DeFiPortfolioLending } from './DeFiPortfolioLending'
 import { DeFiPortfolioInsurance } from './DeFiPortfolioInsurance'
+import { DeFiPortfolioPerpetual } from './DeFiPortfolioPerpetual'
 
 interface Props {
   group: DefiItemGroup
@@ -54,6 +56,13 @@ const renderGroupItem = (type: DeFiProtocolDetailTypes, items: DefiItem[]) => {
         <DeFiPortfolioInsurance
           key={type}
           items={items as DefiInsuranceBuyerItem[]}
+        />
+      )
+    case DeFiProtocolDetailTypes.PERPETUALS:
+      return (
+        <DeFiPortfolioPerpetual
+          key={type}
+          items={items as DefiPerpetualItem[]}
         />
       )
     default:
