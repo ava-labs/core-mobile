@@ -6,8 +6,9 @@ import { Opacity10 } from 'resources/Constants'
 import EthereumSvg from 'components/svg/Ethereum'
 import BitcoinSVG from 'components/svg/BitcoinSVG'
 import { TokenSymbol } from 'store/network'
-import { formatUriImageToPng } from 'utils/Contentful'
+import { formatUriImageToPng, isContentfulImageUri } from 'utils/Contentful'
 import FastImage from 'react-native-fast-image'
+import { SvgUri } from 'react-native-svg'
 import AvaText from './AvaText'
 
 interface Props {
@@ -91,15 +92,27 @@ const AvatarBase: FC<Props> = ({
       }
 
       if (logoUri?.endsWith('svg')) {
-        return (
-          <FastImage
-            source={{
-              uri: formatUriImageToPng(logoUri, size)
-            }}
-            style={style}
-            testID="avatar__logo_avatar"
-          />
-        )
+        if (isContentfulImageUri(logoUri)) {
+          return (
+            <FastImage
+              source={{
+                uri: formatUriImageToPng(logoUri, size)
+              }}
+              style={style}
+              testID="avatar__logo_avatar"
+            />
+          )
+        } else {
+          return (
+            <SvgUri
+              uri={logoUri}
+              style={style}
+              width={size}
+              height={size}
+              testID="avatar__logo_avatar"
+            />
+          )
+        }
       }
 
       // adding a white background by default
