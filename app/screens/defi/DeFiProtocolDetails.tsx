@@ -15,8 +15,7 @@ import Separator from 'components/Separator'
 import { useDeFiChainList } from 'hooks/defi/useDeFiChainList'
 import { openURL } from 'utils/openURL'
 import { ScrollView } from 'react-native-gesture-handler'
-import { useSelectedExchangeRate } from 'hooks/defi/useSelectedExchangeRate'
-import { formatCurrency } from 'utils/FormatCurrency'
+import { useExchangedAmount } from 'hooks/defi/useExchangedAmount'
 import { ProtocolDetailsErrorState } from './components/ProtocolDetailsErrorState'
 import { ProtocolLogo } from './components/ProtocolLogo'
 import { NetworkLogo } from './components/NetworkLogo'
@@ -33,7 +32,7 @@ export const DeFiProtocolDetails = () => {
     theme,
     appHook: { currencyFormatter }
   } = useApplicationContext()
-  const exchangeRate = useSelectedExchangeRate()
+  const getAmount = useExchangedAmount()
 
   const protocolId = useRoute<ScreenProps['route']>().params.protocolId
   const { data, isLoading, error, isPaused, isSuccess } =
@@ -55,11 +54,8 @@ export const DeFiProtocolDetails = () => {
       (total, { stats }) => total + stats.netUsdValue,
       0
     )
-    // if the exchange rate is not available, we show the value in USD
-    return exchangeRate
-      ? currencyFormatter(totalValue * exchangeRate)
-      : formatCurrency(totalValue, 'USD', false)
-  }, [currencyFormatter, data?.portfolioItemList, exchangeRate])
+    return getAmount(totalValue)
+  }, [currencyFormatter, data?.portfolioItemList, getAmount])
 
   const portfolioItemList = useMemo(() => {
     if (!data?.portfolioItemList) return []

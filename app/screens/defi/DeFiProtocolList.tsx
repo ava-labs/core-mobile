@@ -15,8 +15,7 @@ import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation } from '@react-navigation/native'
 import { openURL } from 'utils/openURL'
 import BigList from 'components/BigList'
-import { formatCurrency } from 'utils/FormatCurrency'
-import { useSelectedExchangeRate } from 'hooks/defi/useSelectedExchangeRate'
+import { useExchangedAmount } from 'hooks/defi/useExchangedAmount'
 import DeFiService from 'services/defi/DeFiService'
 import { ErrorState } from './components/ErrorState'
 import { ZeroState } from './components/ZeroState'
@@ -30,10 +29,7 @@ type ScreenProps = PortfolioScreenProps<
 export const DeFiProtocolList = () => {
   const { navigate } = useNavigation<ScreenProps>()
 
-  const {
-    theme,
-    appHook: { currencyFormatter }
-  } = useApplicationContext()
+  const { theme } = useApplicationContext()
   const { data: chainList } = useDeFiChainList()
   const {
     data,
@@ -50,7 +46,7 @@ export const DeFiProtocolList = () => {
     return DeFiService.sortSimpleProtocols(data)
   }, [data])
 
-  const exchangeRate = useSelectedExchangeRate()
+  const getAmount = useExchangedAmount()
 
   const handleGoToDetail = (protocolId: string) => {
     navigate({
@@ -73,10 +69,7 @@ export const DeFiProtocolList = () => {
   }
 
   const renderItem = ({ item }: { item: DeFiSimpleProtocol }) => {
-    // if the exchange rate is not available, we show the value in USD
-    const netUsdValue = exchangeRate
-      ? currencyFormatter(item.netUsdValue * exchangeRate)
-      : formatCurrency(item.netUsdValue, 'USD', false)
+    const netUsdValue = getAmount(item.netUsdValue)
     const networkLogo = chainList?.[item.chain]?.logoUrl
     const protocolId = item.id
 

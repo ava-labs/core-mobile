@@ -5,6 +5,7 @@ import { DeFiProtocol } from 'services/defi/types'
 import { selectActiveAccount } from 'store/account'
 import { convertSnakeToCamel } from 'utils/convertSnakeToCamel'
 import { refetchIntervals } from 'services/defi/constants'
+import { REACT_QUERY_KEYS } from 'consts/reactQueryKeys'
 
 export const useDeFiProtocol = (protocolId: string) => {
   const addressC = useSelector(selectActiveAccount)?.address ?? ''
@@ -12,7 +13,7 @@ export const useDeFiProtocol = (protocolId: string) => {
   return useRefreshableQuery({
     refetchInterval: refetchIntervals.deFiProtocol,
     enabled: !!addressC && !!protocolId,
-    queryKey: ['deFiProtocol', addressC, protocolId],
+    queryKey: [REACT_QUERY_KEYS.DEFI_PROTOCOL, addressC, protocolId],
     queryFn: () => DeFiService.getDeFiProtocol(addressC, protocolId),
     select: data => convertSnakeToCamel(data) as DeFiProtocol
   })
