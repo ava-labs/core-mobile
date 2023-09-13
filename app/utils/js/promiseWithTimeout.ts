@@ -6,6 +6,7 @@ export class TimeoutError extends ErrorBase<'TIMEOUT_ERROR'> {}
  * If param **promise** does not resolve within **ms** this promise will throw **timeoutError**.
  * You can catch error thrown in try catch block and check against **timeoutError** if throw was
  * because of timeout or coming from wrapped **promise**
+ *
  * @param promise Promise to race against
  * @param ms Timeout in milliseconds
  */
