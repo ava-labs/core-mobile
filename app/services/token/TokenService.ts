@@ -35,6 +35,7 @@ import { transformContractMarketChartResponse } from './utils'
 
 const coingeckoBasicClient = getBasicCoingeckoHttp()
 const coingeckoProClient = getProCoingeckoHttp()
+const CONTRACT_CALLS_TIMEOUT = 10000
 
 export class TokenService {
   private client: HttpClient
@@ -78,7 +79,7 @@ export class TokenService {
           contract.symbol?.(),
           contract.decimals?.()
         ]),
-        2000
+        CONTRACT_CALLS_TIMEOUT
       )
     } catch (e) {
       if (e instanceof TimeoutError) {
