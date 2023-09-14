@@ -97,6 +97,15 @@ const NetworkTokens = () => {
     navigate(AppNavigation.Bridge.BridgeTransactionStatus, statusParams)
   }
 
+  function capturePosthogEvents(tabIndex: number) {
+    switch (tabIndex) {
+      case NetworkTokensTabs.Activity:
+        // capture event only for the activity tab with old event name, by request from product
+        capture('PortfolioActivityClicked')
+        break
+    }
+  }
+
   const renderTabViewLabel = (
     title: string,
     selected: boolean,
@@ -210,6 +219,7 @@ const NetworkTokens = () => {
         currentTabIndex={params?.tabIndex}
         onTabIndexChange={tabIndex => {
           setParams({ tabIndex })
+          capturePosthogEvents(tabIndex)
         }}>
         <TabViewAva.Item title={TabLabel.Tokens}>
           {renderTokenTab()}
