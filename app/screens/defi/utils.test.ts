@@ -1,5 +1,5 @@
 import { DeFiPortfolioItem } from 'services/defi/types'
-import MOCK_DATA from 'tests/fixtures/protocolDetailsData.json'
+import MOCK_DATA from 'tests/fixtures/defi/protocolDetailsData.json'
 import { mapPortfolioItems } from './utils'
 
 describe('mapPortfolioItems', () => {

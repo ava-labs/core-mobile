@@ -39,6 +39,9 @@ abstract_target 'common' do
   permissions_path = '../node_modules/react-native-permissions/ios'
   pod 'Permission-Camera', :path => "#{permissions_path}/Camera"
 
+  # specify OpenSSL version explicitly due to https://github.com/margelo/react-native-quick-crypto/issues/189
+  pod "OpenSSL-Universal", "1.1.1100"
+
   target 'AvaxWallet' do
   end
   

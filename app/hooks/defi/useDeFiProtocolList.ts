@@ -1,3 +1,4 @@
+import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { useRefreshableQuery } from 'hooks/query/useRefreshableQuery'
 import { useSelector } from 'react-redux'
 import DeFiService from 'services/defi/DeFiService'
@@ -12,7 +13,7 @@ export const useDeFiProtocolList = () => {
   return useRefreshableQuery({
     refetchInterval: refetchIntervals.deFiProtocolList,
     enabled: !!addressC,
-    queryKey: ['deFiProtocolList', addressC],
+    queryKey: [ReactQueryKeys.DEFI_PROTOCOL_LIST, addressC],
     queryFn: () => DeFiService.getDeFiProtocolList(addressC),
     select: data => convertSnakeToCamel(data) as DeFiSimpleProtocol[]
   })

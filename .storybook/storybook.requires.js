@@ -64,6 +64,7 @@ const getStories = () => {
     "./storybook/stories/FeeSelector.stories.tsx": require("../storybook/stories/FeeSelector.stories.tsx"),
     "./storybook/stories/Lotties.stories.tsx": require("../storybook/stories/Lotties.stories.tsx"),
     "./storybook/stories/RadioButton.stories.tsx": require("../storybook/stories/RadioButton.stories.tsx"),
+    "./storybook/stories/StackedImages.stories.tsx": require("../storybook/stories/StackedImages.stories.tsx"),
     "./storybook/stories/SVGs.stories.tsx": require("../storybook/stories/SVGs.stories.tsx"),
   };
 };
