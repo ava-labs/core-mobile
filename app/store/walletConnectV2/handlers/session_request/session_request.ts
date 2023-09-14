@@ -147,10 +147,14 @@ class SessionRequestHandler implements RpcRequestHandler<SessionProposal> {
 
     Object.keys(requiredNamespaces).forEach(key => {
       const accounts: string[] = []
-      requiredNamespaces[key]?.chains?.forEach(chain => {
+      const chains: string[] = requiredNamespaces[key]?.chains ?? []
+
+      chains.forEach(chain => {
         selectedAccounts.forEach(acc => accounts.push(`${chain}:${acc}`))
       })
+
       namespaces[key] = {
+        chains,
         accounts,
         // returning all methods that we support here to allow dApps
         // that use Wagmi to be able to send/access more rpc methods
