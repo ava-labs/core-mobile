@@ -5,13 +5,14 @@ import React from 'react'
 import { Row } from 'components/Row'
 import { View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
+import { COLORS_DAY } from 'resources/Constants'
 
 interface Props {
   items: DefiPerpetualItem[]
 }
 
 const pNLtextColor = (value: number) => {
-  return value > 0 ? '#53C26E' : '#F34333'
+  return value > 0 ? COLORS_DAY.colorSuccess : COLORS_DAY.colorError
 }
 
 export const DeFiPortfolioPerpetual: FC<Props> = ({ items }) => {
@@ -40,7 +41,7 @@ export const DeFiPortfolioPerpetual: FC<Props> = ({ items }) => {
                 </AvaText.Body2>
                 <AvaText.Body2>{currencyFormatter(netUsdValue)}</AvaText.Body2>
               </Row>
-              <Row style={{ justifyContent: 'space-between', marginTop: 4 }}>
+              <Row style={{ justifyContent: 'space-between', marginTop: 2 }}>
                 <View style={{ marginTop: 2 }}>
                   <AvaText.Body2>PnL</AvaText.Body2>
                 </View>
