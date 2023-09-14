@@ -45,12 +45,10 @@ export const DeFiPortfolioPerpetual: FC<Props> = ({ items }) => {
                 {'\n'}
                 {'PnL'}
               </AvaText.Body2>
-              <AvaText.Body2 currency={true}>
+              <AvaText.Body2>
                 {currencyFormatter(roundValueTwoDecimals(netUsdValue))}
                 {'\n'}
-                <AvaText.Body2
-                  color={pNLtextColor(profitUsdValue)}
-                  currency={true}>
+                <AvaText.Body2 color={pNLtextColor(profitUsdValue)}>
                   {currencyFormatter(roundValueTwoDecimals(profitUsdValue))}
                 </AvaText.Body2>
               </AvaText.Body2>
