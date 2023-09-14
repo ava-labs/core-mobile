@@ -24,7 +24,7 @@ export const ProtocolDetailsErrorState = () => {
         <InfoSVG size={56} color={theme.white} />
         <Space y={24} />
         <View style={{ alignItems: 'center' }}>
-          <AvaText.Heading5>Something went wrong</AvaText.Heading5>
+          <AvaText.Heading5>Data Unavailable!</AvaText.Heading5>
           <Space y={24} />
           <AvaButton.PrimaryLarge onPress={goBack}>Back</AvaButton.PrimaryLarge>
         </View>

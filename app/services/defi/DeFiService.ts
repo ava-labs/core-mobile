@@ -4,8 +4,13 @@ import {
   DeFiSimpleProtocolObject,
   DeFiChainObject
 } from './debankTypes'
-import { DeFiSimpleProtocol } from './types'
-import { CHAIN_LIST, PROTOCOL, SIMPLE_PROTOCOL_LIST } from './constants'
+import { DeFiSimpleProtocol, ExchangeRate } from './types'
+import {
+  CHAIN_LIST,
+  CURRENCY_EXCHANGE_RATES_URL,
+  PROTOCOL,
+  SIMPLE_PROTOCOL_LIST
+} from './constants'
 
 if (!Config.PROXY_URL) throw Error('PROXY_URL is missing')
 
@@ -61,6 +66,12 @@ class DeFiService {
     return [...protocols].sort(
       ({ netUsdValue: valueA }, { netUsdValue: valueB }) => valueB - valueA
     )
+  }
+
+  async getExchangeRates() {
+    const response = await fetch(CURRENCY_EXCHANGE_RATES_URL)
+    const exchangeRate = (await response.json()) as ExchangeRate
+    return exchangeRate
   }
 }
 

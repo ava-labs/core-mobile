@@ -11,12 +11,16 @@ import LinkSVG from 'components/svg/LinkSVG'
 import { Space } from 'components/Space'
 import Card from 'components/Card'
 import AvaText from 'components/AvaText'
-import Separator from 'components/Separator'
 import { useDeFiChainList } from 'hooks/defi/useDeFiChainList'
 import { openURL } from 'utils/openURL'
+import { ScrollView } from 'react-native-gesture-handler'
+import { useExchangedAmount } from 'hooks/defi/useExchangedAmount'
 import { ProtocolDetailsErrorState } from './components/ProtocolDetailsErrorState'
 import { ProtocolLogo } from './components/ProtocolLogo'
 import { NetworkLogo } from './components/NetworkLogo'
+import { mapPortfolioItems } from './utils'
+import { DeFiPortfolioItemGroup } from './components/DeFiPortfolioItemGroup'
+import { ZeroState } from './components/ZeroState'
 
 type ScreenProps = WalletScreenProps<
   typeof AppNavigation.Wallet.DeFiProtocolDetails
@@ -27,6 +31,8 @@ export const DeFiProtocolDetails = () => {
     theme,
     appHook: { currencyFormatter }
   } = useApplicationContext()
+  const getAmount = useExchangedAmount()
+
   const protocolId = useRoute<ScreenProps['route']>().params.protocolId
   const { data, isLoading, error, isPaused, isSuccess } =
     useDeFiProtocol(protocolId)
@@ -47,17 +53,16 @@ export const DeFiProtocolDetails = () => {
       (total, { stats }) => total + stats.netUsdValue,
       0
     )
-    return currencyFormatter(totalValue)
-  }, [currencyFormatter, data?.portfolioItemList])
+    return getAmount(totalValue)
+  }, [currencyFormatter, data?.portfolioItemList, getAmount])
 
-  if (isLoading) {
-    return (
-      <View style={styles.spinnerContainer}>
-        <Spinner size={77} />
-      </View>
-    )
-  }
-  if (error || (isPaused && !isSuccess)) return <ProtocolDetailsErrorState />
+  const portfolioItemList = useMemo(() => {
+    if (!data?.portfolioItemList) return []
+    const portfolioItemGroups = mapPortfolioItems(data.portfolioItemList)
+    return portfolioItemGroups.map(group => {
+      return <DeFiPortfolioItemGroup key={group.name} group={group} />
+    })
+  }, [data?.portfolioItemList])
 
   const renderCardHeader = () => {
     return (
@@ -96,11 +101,22 @@ export const DeFiProtocolDetails = () => {
     )
   }
 
+  if (isLoading) {
+    return (
+      <View style={styles.spinnerContainer}>
+        <Spinner size={77} />
+      </View>
+    )
+  }
+  if (error || (isPaused && !isSuccess)) return <ProtocolDetailsErrorState />
+  if (!data || !data?.portfolioItemList || data.portfolioItemList.length === 0)
+    return <ZeroState skipBodyText />
+
   return (
     <View style={styles.container}>
       <Card style={styles.card}>
         {renderCardHeader()}
-        <Separator style={{ marginTop: 16 }} />
+        <ScrollView>{portfolioItemList}</ScrollView>
       </Card>
       <AvaButton.PrimaryLarge onPress={goToProtocolPage}>
         <LinkSVG color={theme.logoColor} />
