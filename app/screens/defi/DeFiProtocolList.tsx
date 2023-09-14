@@ -75,12 +75,11 @@ export const DeFiProtocolList = () => {
 
     const renderLogo = () => {
       return (
-        <View>
+        <View style={{ marginRight: 16 }}>
           <ProtocolLogo uri={item.logoUrl} />
           <NetworkLogo
             uri={networkLogo}
             style={{
-              marginRight: 16,
               position: 'absolute',
               bottom: 0,
               right: 0
@@ -100,9 +99,13 @@ export const DeFiProtocolList = () => {
             alignItems: 'center',
             justifyContent: 'space-between'
           }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
             {renderLogo()}
-            <AvaText.Heading5>{item.name}</AvaText.Heading5>
+            <View style={{ flex: 1, marginRight: 8 }}>
+              <AvaText.Heading5 numberOfLines={1} ellipsizeMode="tail">
+                {item.name}
+              </AvaText.Heading5>
+            </View>
           </View>
           <View>
             <AvaButton.Base onPress={() => goToProtocolPage(item.siteUrl)}>
