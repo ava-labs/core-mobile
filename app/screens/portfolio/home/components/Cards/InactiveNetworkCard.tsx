@@ -1,7 +1,8 @@
-import React, { FC } from 'react'
+import React, { FC, useState } from 'react'
 import { Network } from '@avalabs/chains-sdk'
 import {
   Dimensions,
+  LayoutRectangle,
   Platform,
   StyleSheet,
   TouchableHighlight,
@@ -21,6 +22,8 @@ import { NetworkLogo } from 'screens/network/NetworkLogo'
 import { selectActiveAccount } from 'store/account'
 import { usePostCapture } from 'hooks/usePosthogCapture'
 import { getCardHighLightColor } from 'utils/color/getCardHighLightColor'
+import Badge from 'components/Badge'
+import usePendingBridgeTransactions from 'screens/bridge/hooks/usePendingBridgeTransactions'
 
 const windowWidth = Dimensions.get('window').width
 
@@ -51,6 +54,9 @@ const InactiveNetworkCard: FC<Props> = ({ network }) => {
 
   const cardBgColor = theme.colorBg2 + Opacity85
   const highlighColor = getCardHighLightColor(theme)
+  const pendingBridgeTxs = usePendingBridgeTransactions(network)
+  const [activityTabBadgeLayout, setActivityTabBadgeLayout] =
+    useState<LayoutRectangle>()
 
   const navigateToNetworkTokens = () => {
     capture('PortfolioSecondaryNetworkClicked', {
@@ -71,7 +77,32 @@ const InactiveNetworkCard: FC<Props> = ({ network }) => {
 
     return (
       <View style={styles.headerContainer}>
-        <NetworkLogo logoUri={network.logoUri} size={40} style={styles.icon} />
+        <View>
+          <NetworkLogo
+            logoUri={network.logoUri}
+            size={40}
+            style={styles.icon}
+          />
+          {pendingBridgeTxs.length > 0 && (
+            <Badge
+              text={pendingBridgeTxs.length.toString()}
+              style={{
+                position: 'absolute',
+                top: activityTabBadgeLayout
+                  ? -activityTabBadgeLayout.height / 2 + 3
+                  : undefined,
+                right: activityTabBadgeLayout
+                  ? -activityTabBadgeLayout.width / 2 + 3
+                  : undefined,
+                borderColor: theme.colorBg2,
+                borderWidth: 2
+              }}
+              onLayout={layout => {
+                setActivityTabBadgeLayout(layout)
+              }}
+            />
+          )}
+        </View>
         <View style={styles.headerTextContainer}>
           <AvaText.TextLink
             ellipsizeMode={'tail'}

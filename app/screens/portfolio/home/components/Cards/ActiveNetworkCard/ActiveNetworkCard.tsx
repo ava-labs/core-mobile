@@ -1,6 +1,12 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useSelector } from 'react-redux'
-import { StyleSheet, Text, TouchableHighlight, View } from 'react-native'
+import {
+  LayoutRectangle,
+  StyleSheet,
+  Text,
+  TouchableHighlight,
+  View
+} from 'react-native'
 import { selectBalanceTotalInCurrencyForNetworkAndAccount } from 'store/balance'
 import AvaText from 'components/AvaText'
 import { useApplicationContext } from 'contexts/ApplicationContext'
@@ -16,6 +22,8 @@ import { selectActiveNetwork } from 'store/network'
 import { selectActiveAccount } from 'store/account'
 import { usePostCapture } from 'hooks/usePosthogCapture'
 import { getCardHighLightColor } from 'utils/color/getCardHighLightColor'
+import usePendingBridgeTransactions from 'screens/bridge/hooks/usePendingBridgeTransactions'
+import Badge from 'components/Badge'
 import ZeroState from './ZeroState'
 import Tokens from './Tokens'
 
@@ -42,6 +50,9 @@ const ActiveNetworkCard = () => {
   } = useApplicationContext()
   const cardBgColor = theme.colorBg2 + Opacity85
   const highlighColor = getCardHighLightColor(theme)
+  const pendingBridgeTxs = usePendingBridgeTransactions(network)
+  const [activityTabBadgeLayout, setActivityTabBadgeLayout] =
+    useState<LayoutRectangle>()
 
   const navigateToNetworkTokens = () => {
     capture('PortfolioPrimaryNetworkClicked', {
@@ -58,11 +69,32 @@ const ActiveNetworkCard = () => {
 
     return (
       <View style={styles.headerContainer}>
-        <NetworkLogo
-          logoUri={network.logoUri}
-          size={40}
-          style={styles.bigIcon}
-        />
+        <View>
+          <NetworkLogo
+            logoUri={network.logoUri}
+            size={40}
+            style={styles.bigIcon}
+          />
+          {pendingBridgeTxs.length > 0 && (
+            <Badge
+              text={pendingBridgeTxs.length.toString()}
+              style={{
+                position: 'absolute',
+                top: activityTabBadgeLayout
+                  ? -activityTabBadgeLayout.height / 2 + 3
+                  : undefined,
+                right: activityTabBadgeLayout
+                  ? -activityTabBadgeLayout.width / 2 + 3
+                  : undefined,
+                borderColor: theme.colorBg2,
+                borderWidth: 2
+              }}
+              onLayout={layout => {
+                setActivityTabBadgeLayout(layout)
+              }}
+            />
+          )}
+        </View>
         <View style={styles.headerTextContainer}>
           <AvaText.Heading2 ellipsizeMode={'tail'} numberOfLines={2}>
             {network.chainName}
