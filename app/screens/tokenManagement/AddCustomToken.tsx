@@ -20,7 +20,7 @@ const AddCustomToken: FC = () => {
   const showSuccess = useCallback(() => {
     ShowSnackBar('Added!')
     goBack()
-  }, [])
+  }, [goBack])
 
   const { tokenAddress, setTokenAddress, errorMessage, token, addCustomToken } =
     useAddCustomToken(showSuccess)
