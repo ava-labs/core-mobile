@@ -7,9 +7,11 @@ import AvaButton from 'components/AvaButton'
 import LinkSVG from 'components/svg/LinkSVG'
 
 export const ZeroState = ({
-  onExploreEcosystem
+  onExploreEcosystem,
+  skipBodyText = false
 }: {
   onExploreEcosystem?: () => void
+  skipBodyText?: boolean
 }) => {
   const { theme } = useApplicationContext()
 
@@ -19,10 +21,15 @@ export const ZeroState = ({
         <Space y={96} />
         <View style={{ alignItems: 'center' }}>
           <AvaText.Heading5>No DeFi Transactions</AvaText.Heading5>
-          <Space y={8} />
-          <AvaText.Body2 textStyle={{ textAlign: 'center', lineHeight: 20 }}>
-            {'Discover top dApps on Avalanche now.'}
-          </AvaText.Body2>
+          {!skipBodyText && (
+            <>
+              <Space y={8} />
+              <AvaText.Body2
+                textStyle={{ textAlign: 'center', lineHeight: 20 }}>
+                {'Discover top dApps on Avalanche now.'}
+              </AvaText.Body2>
+            </>
+          )}
         </View>
       </View>
       <Space y={24} />

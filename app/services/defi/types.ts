@@ -186,3 +186,8 @@ export interface DefiPerpetualItem extends BaseDefiItem {
   profitUsdValue: number
   netUsdValue: number
 }
+
+export type ExchangeRate = {
+  date: string
+  usd: Record<string, number>
+}
