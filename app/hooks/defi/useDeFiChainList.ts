@@ -1,11 +1,12 @@
 import { useQuery } from '@tanstack/react-query'
+import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import DeFiService from 'services/defi/DeFiService'
 import { DeFiChain } from 'services/defi/types'
 import { convertSnakeToCamel } from 'utils/convertSnakeToCamel'
 
 export const useDeFiChainList = () => {
   return useQuery({
-    queryKey: ['deFiChainList'],
+    queryKey: [ReactQueryKeys.DEFI_CHAIN_LIST],
     queryFn: () => DeFiService.getSupportedChainList(),
     select: data => {
       const convertedData = convertSnakeToCamel(data) as DeFiChain[]
