@@ -120,3 +120,69 @@ export type DeFiPortfolioItem = {
     liquidationPrice?: DeFiToken
   }
 }
+
+interface BaseDefiItem {
+  type: DeFiProtocolDetailTypes
+  name: string
+  netUsdValue: number
+}
+
+// Represents a singular DeFi investment
+export type DefiItem =
+  | DefiCommonItem
+  | DefiLendingItem
+  | DefiVestingItem
+  | DefiRewardItem
+  | DefiPerpetualItem
+  | DefiInsuranceBuyerItem
+
+// Groups DefiItems under one name (e.g. 'Lending', 'Liquidity Pool')
+export type DefiItemGroup = {
+  name: string
+  items: DefiItem[]
+  totalUsdValue: number
+}
+
+export interface DefiCommonItem extends BaseDefiItem {
+  type: DeFiProtocolDetailTypes.COMMON
+  supplyTokens?: DeFiToken[]
+  rewardTokens?: DeFiToken[]
+}
+
+export interface DefiLendingItem extends BaseDefiItem {
+  type: DeFiProtocolDetailTypes.LENDING
+  healthRate?: number
+  supplyTokens?: DeFiToken[]
+  borrowTokens?: DeFiToken[]
+  rewardTokens?: DeFiToken[]
+}
+
+export interface DefiVestingItem extends BaseDefiItem {
+  type: DeFiProtocolDetailTypes.VESTING
+  token: DeFiToken & {
+    claimableAmount?: number
+  }
+  dailyUnlockAmount?: number
+  endAt?: number
+}
+
+export interface DefiRewardItem extends BaseDefiItem {
+  type: DeFiProtocolDetailTypes.REWARD
+  tokens?: DeFiToken[]
+}
+
+interface DefiInsuranceItem extends BaseDefiItem {
+  expiredAt: number
+  description: string
+}
+export interface DefiInsuranceBuyerItem extends DefiInsuranceItem {
+  type: DeFiProtocolDetailTypes.INSURANCE_BUYER
+}
+
+export interface DefiPerpetualItem extends BaseDefiItem {
+  type: DeFiProtocolDetailTypes.PERPETUALS
+  positionToken: DeFiToken
+  marginToken: DeFiToken
+  profitUsdValue: number
+  netUsdValue: number
+}
