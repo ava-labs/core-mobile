@@ -14,8 +14,6 @@ import {
 import { DeFiPortfolioLending } from './DeFiPortfolioLending'
 import { DeFiPortfolioInsurance } from './DeFiPortfolioInsurance'
 import { DeFiPortfolioPerpetual } from './DeFiPortfolioPerpetual'
-
-
 interface Props {
   group: DefiItemGroup
 }
