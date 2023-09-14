@@ -10,10 +10,6 @@ interface Props {
   items: DefiPerpetualItem[]
 }
 
-const roundValueTwoDecimals = (value: number) => {
-  return (Math.round(value * 100) / 100).toFixed(2)
-}
-
 const pNLtextColor = (value: number) => {
   return value > 0 ? '#53C26E' : '#F34333'
 }
@@ -42,16 +38,14 @@ export const DeFiPortfolioPerpetual: FC<Props> = ({ items }) => {
                 <AvaText.Body2>
                   {positionToken.symbol}/{marginToken.symbol}
                 </AvaText.Body2>
-                <AvaText.Body2>
-                  {currencyFormatter(roundValueTwoDecimals(netUsdValue))}
-                </AvaText.Body2>
+                <AvaText.Body2>{currencyFormatter(netUsdValue)}</AvaText.Body2>
               </Row>
               <Row style={{ justifyContent: 'space-between', marginTop: 4 }}>
                 <View style={{ marginTop: 2 }}>
                   <AvaText.Body2>PnL</AvaText.Body2>
                 </View>
                 <AvaText.Body2 color={pNLtextColor(profitUsdValue)}>
-                  {currencyFormatter(roundValueTwoDecimals(profitUsdValue))}
+                  {currencyFormatter(profitUsdValue)}
                 </AvaText.Body2>
               </Row>
             </View>
