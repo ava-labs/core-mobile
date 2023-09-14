@@ -7,12 +7,15 @@ import { View } from 'react-native'
 import { Popable } from 'react-native-popable'
 import { PopableContent } from 'components/PopableContent'
 import { PopableLabel } from 'components/PopableLabel'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 
 interface Props {
   items: DefiInsuranceBuyerItem[]
 }
 
 export const DeFiPortfolioInsurance: FC<Props> = ({ items }) => {
+  const { currencyFormatter } = useApplicationContext().appHook
+
   return (
     <View style={{ marginTop: 8 }}>
       <Row style={{ justifyContent: 'space-between', marginTop: 8 }}>
@@ -39,7 +42,7 @@ export const DeFiPortfolioInsurance: FC<Props> = ({ items }) => {
                 }
               />
             </Popable>
-            <AvaText.Body2>{item.netUsdValue}</AvaText.Body2>
+            <AvaText.Body2>{currencyFormatter(item.netUsdValue)}</AvaText.Body2>
           </Row>
         )
       })}
