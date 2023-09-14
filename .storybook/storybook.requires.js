@@ -53,6 +53,7 @@ const getStories = () => {
     "./storybook/stories/BottomSheet.stories.tsx": require("../storybook/stories/BottomSheet.stories.tsx"),
     "./storybook/stories/CalendarInput.stories.tsx": require("../storybook/stories/CalendarInput.stories.tsx"),
     "./storybook/stories/ConfirmationTracker.stories.tsx": require("../storybook/stories/ConfirmationTracker.stories.tsx"),
+    "./storybook/stories/defi/DeFiPortfolioPerpetual.stories.tsx": require("../storybook/stories/defi/DeFiPortfolioPerpetual.stories.tsx"),
     "./storybook/stories/earn/AmountInput.stories.tsx": require("../storybook/stories/earn/AmountInput.stories.tsx"),
     "./storybook/stories/earn/CircularProgress.stories.tsx": require("../storybook/stories/earn/CircularProgress.stories.tsx"),
     "./storybook/stories/earn/ConfirmScreen.stories.tsx": require("../storybook/stories/earn/ConfirmScreen.stories.tsx"),

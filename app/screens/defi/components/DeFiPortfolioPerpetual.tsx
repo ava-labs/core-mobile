@@ -20,13 +20,13 @@ const pNLtextColor = (value: number) => {
 
 export const DeFiPortfolioPerpetual: FC<Props> = ({ items }) => {
   const { currencyFormatter } = useApplicationContext().appHook
+
   return (
     <View style={{ marginTop: 8 }}>
       <Row
         style={{
           justifyContent: 'space-between',
-          marginTop: 8,
-          marginRight: 8
+          marginTop: 4
         }}>
         <AvaText.Body1>Token Pair</AvaText.Body1>
         <AvaText.Body1>Value</AvaText.Body1>
@@ -37,22 +37,24 @@ export const DeFiPortfolioPerpetual: FC<Props> = ({ items }) => {
           index
         ) => {
           return (
-            <Row
-              key={`defi-perpetual-${index}`}
-              style={{ justifyContent: 'space-between', marginTop: 8 }}>
-              <AvaText.Body2>
-                {positionToken.symbol}/{marginToken.symbol}
-                {'\n'}
-                {'PnL'}
-              </AvaText.Body2>
-              <AvaText.Body2>
-                {currencyFormatter(roundValueTwoDecimals(netUsdValue))}
-                {'\n'}
+            <View key={`defi-perpetual-${index}`}>
+              <Row style={{ justifyContent: 'space-between', marginTop: 4 }}>
+                <AvaText.Body2>
+                  {positionToken.symbol}/{marginToken.symbol}
+                </AvaText.Body2>
+                <AvaText.Body2>
+                  {currencyFormatter(roundValueTwoDecimals(netUsdValue))}
+                </AvaText.Body2>
+              </Row>
+              <Row style={{ justifyContent: 'space-between', marginTop: 4 }}>
+                <View style={{ marginTop: 2 }}>
+                  <AvaText.Body2>PnL</AvaText.Body2>
+                </View>
                 <AvaText.Body2 color={pNLtextColor(profitUsdValue)}>
                   {currencyFormatter(roundValueTwoDecimals(profitUsdValue))}
                 </AvaText.Body2>
-              </AvaText.Body2>
-            </Row>
+              </Row>
+            </View>
           )
         }
       )}
