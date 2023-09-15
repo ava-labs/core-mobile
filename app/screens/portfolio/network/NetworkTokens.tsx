@@ -1,10 +1,5 @@
-import React, { useEffect, useState } from 'react'
-import {
-  FlatList,
-  LayoutRectangle,
-  ListRenderItemInfo,
-  View
-} from 'react-native'
+import React, { useEffect } from 'react'
+import { FlatList, ListRenderItemInfo, View } from 'react-native'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList'
 import AppNavigation from 'navigation/AppNavigation'
@@ -24,10 +19,10 @@ import TabViewAva from 'components/TabViewAva'
 import AvaText from 'components/AvaText'
 import ActivityList from 'screens/shared/ActivityList/ActivityList'
 import { Transaction } from 'store/transaction'
-import Badge from 'components/Badge'
 import usePendingBridgeTransactions from 'screens/bridge/hooks/usePendingBridgeTransactions'
 import { selectActiveNetwork } from 'store/network'
 import { useSelector } from 'react-redux'
+import TopRightBadge from 'components/TopRightBadge'
 import NetworkTokensHeader from './components/NetworkTokensHeader'
 
 type NavigationProp = PortfolioScreenProps<
@@ -49,8 +44,6 @@ const NetworkTokens = () => {
 
   const manageDisabled = useIsUIDisabled(UI.ManageTokens)
   const manageBtnColor = theme.colorPrimary1
-  const [activityTabBadgeLayout, setActivityTabBadgeLayout] =
-    useState<LayoutRectangle>()
 
   const activeNetwork = useSelector(selectActiveNetwork)
   const pendingBridgeTxs = usePendingBridgeTransactions(activeNetwork)
@@ -117,22 +110,13 @@ const NetworkTokens = () => {
           {title}
         </AvaText.Heading3>
         {title === TabLabel.Activity && pendingBridgeTxs.length > 0 && (
-          <Badge
+          <TopRightBadge
             text={pendingBridgeTxs.length.toString()}
             style={{
-              position: 'absolute',
-              top: activityTabBadgeLayout
-                ? -activityTabBadgeLayout.height / 2 + 4
-                : undefined,
-              right: activityTabBadgeLayout
-                ? -activityTabBadgeLayout.width / 2 - 4
-                : undefined,
               borderColor: theme.background,
               borderWidth: 2
             }}
-            onLayout={layout => {
-              setActivityTabBadgeLayout(layout)
-            }}
+            offset={{ x: 4, y: -4 }}
           />
         )}
       </View>
