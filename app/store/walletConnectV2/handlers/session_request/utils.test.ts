@@ -76,7 +76,9 @@ describe('isCoreDomain', () => {
       'https://traderjoe.xyz',
       'https://app.uniswap.org',
       'https://av-la.github.io',
-      'chrome-extension://dnoiacbfkodekidupaiagaljpbhaedmd/popup.html#/home'
+      'chrome-extension://dnoiacbfkodekidupaiagaljpbhaedmd/popup.html#/home', // wrong extension id
+      'https://dnoiacbfkodekgkjbpoagaljpbhaedmd/popup.html#/home', // wrong protocol
+      'http://dnoiacbfkodekgkjbpoagaljpbhaedmd/popup.html#/home' // wrong protocol
     ]
 
     for (const url of urls) {

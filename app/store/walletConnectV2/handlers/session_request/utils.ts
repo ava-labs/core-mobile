@@ -30,12 +30,14 @@ export const isCoreMethod = (method: string) =>
   CORE_ONLY_METHODS.includes(method as RpcMethod)
 
 export const isCoreDomain = (url: string) => {
-  const hostname = new URL(url).hostname
+  const { hostname, protocol } = new URL(url)
+  const isCoreExt =
+    CORE_EXT_HOSTNAMES.includes(hostname) && protocol === 'chrome-extension:'
 
   return (
     CORE_WEB_HOSTNAMES.includes(hostname) ||
-    CORE_EXT_HOSTNAMES.includes(hostname) ||
-    CORE_WEB_URLS_REGEX.some(regex => new RegExp(regex).test(url))
+    CORE_WEB_URLS_REGEX.some(regex => new RegExp(regex).test(url)) ||
+    isCoreExt
   )
 }
 
