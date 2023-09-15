@@ -467,6 +467,17 @@ const Overline: FC<AvaTextProps> = ({ textStyle, children, ...rest }) => {
   )
 }
 
+const InputLabel: FC<AvaTextProps> = ({ textStyle, children, ...rest }) => {
+  const theme = useApplicationContext().theme
+  return (
+    <AvaxTextBase
+      style={[styles.inputLabel, { color: theme.neutral50 }, textStyle]}
+      {...rest}>
+      {children}
+    </AvaxTextBase>
+  )
+}
+
 const AvaText = {
   ExtraLargeTitle: ExtraLargeTitle,
   LargeTitleBold: LargeTitleBold,
@@ -490,7 +501,8 @@ const AvaText = {
   Caption: TextCaption,
   ActivityTotal: ActivityTotal, //this font configuration is not named in design at the time of writing
   Tag: TextTag,
-  Overline: Overline
+  Overline: Overline,
+  InputLabel
 }
 
 export const styles = StyleSheet.create({
@@ -607,6 +619,11 @@ export const styles = StyleSheet.create({
   overline: {
     fontFamily: 'Inter-Regular',
     fontSize: 10,
+    lineHeight: 16
+  },
+  inputLabel: {
+    fontFamily: 'Inter-SemiBold',
+    fontSize: 14,
     lineHeight: 16
   }
 })
