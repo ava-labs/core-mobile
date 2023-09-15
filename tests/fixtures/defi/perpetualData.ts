@@ -1,6 +1,8 @@
-export const perpData: object = [
+import { DeFiProtocolDetailTypes, DefiPerpetualItem } from 'services/defi/types'
+
+export const perpData: DefiPerpetualItem[] = [
   {
-    type: 'perpetuals',
+    type: DeFiProtocolDetailTypes.PERPETUALS,
     name: 'Perpetuals',
     positionToken: {
       id: '0xac80096d53c5965d9432592d28687c521472b9eb',
@@ -10,7 +12,7 @@ export const perpData: object = [
       displaySymbol: null,
       optimizedSymbol: 'muxAVAX',
       decimals: 18,
-      logoUrl: null,
+      logoUrl: '',
       protocolId: '',
       price: 16.6295011,
       isVerified: true,
@@ -41,7 +43,7 @@ export const perpData: object = [
     netUsdValue: 28386.547185810392
   },
   {
-    type: 'perpetuals',
+    type: DeFiProtocolDetailTypes.PERPETUALS,
     name: 'Perpetuals',
     positionToken: {
       id: '0xac80096d53c5965d9432592d28687c521472b9eb',
@@ -51,7 +53,7 @@ export const perpData: object = [
       displaySymbol: null,
       optimizedSymbol: 'muxAVAX',
       decimals: 18,
-      logoUrl: null,
+      logoUrl: '',
       protocolId: '',
       price: 16.6295011,
       isVerified: true,

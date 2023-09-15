@@ -18,6 +18,16 @@ export const DeFiPortfolioPerpetual: FC<Props> = ({ items }) => {
     return value > 0 ? theme.colorSuccess : theme.colorError
   }
 
+  const addSpaceWithOperator = (value: string) => {
+    const currencyValue = currencyFormatter(value)
+    const numberValue = Number(currencyValue.replace('$', '').replace(',', ''))
+    const addSpaceCondition =
+      numberValue < 0
+        ? currencyValue.replace('-', '- ')
+        : '+ '.concat(currencyValue)
+    return addSpaceCondition
+  }
+
   return (
     <View style={{ marginTop: 8 }}>
       <Row
@@ -43,14 +53,14 @@ export const DeFiPortfolioPerpetual: FC<Props> = ({ items }) => {
                   {currencyFormatter(netUsdValue)}
                 </AvaText.Body2>
               </Row>
-              <Row style={{ justifyContent: 'space-between', marginTop: 1 }}>
-                <View style={{ marginTop: 2 }}>
+              <Row style={{ justifyContent: 'space-between', marginTop: 4 }}>
+                <View>
                   <AvaText.Caption color={theme.neutral400}>
                     PnL
                   </AvaText.Caption>
                 </View>
                 <AvaText.Caption color={pNLtextColor(profitUsdValue)}>
-                  {currencyFormatter(profitUsdValue)}
+                  {addSpaceWithOperator(profitUsdValue.toString())}
                 </AvaText.Caption>
               </Row>
             </View>
