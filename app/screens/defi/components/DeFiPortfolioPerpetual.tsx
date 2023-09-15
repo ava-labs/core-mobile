@@ -5,18 +5,18 @@ import React from 'react'
 import { Row } from 'components/Row'
 import { View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { COLORS_DAY } from 'resources/Constants'
 
 interface Props {
   items: DefiPerpetualItem[]
 }
 
-const pNLtextColor = (value: number) => {
-  return value > 0 ? COLORS_DAY.colorSuccess : COLORS_DAY.colorError
-}
-
 export const DeFiPortfolioPerpetual: FC<Props> = ({ items }) => {
   const { currencyFormatter } = useApplicationContext().appHook
+  const { theme } = useApplicationContext()
+
+  const pNLtextColor = (value: number) => {
+    return value > 0 ? theme.colorSuccess : theme.colorError
+  }
 
   return (
     <View style={{ marginTop: 8 }}>
