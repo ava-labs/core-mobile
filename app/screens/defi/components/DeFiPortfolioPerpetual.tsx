@@ -15,7 +15,7 @@ export const DeFiPortfolioPerpetual: FC<Props> = ({ items }) => {
   const { currencyFormatter } = useApplicationContext().appHook
   const { theme } = useApplicationContext()
 
-  const addSpaceWithOperator = (value: string) => {
+  const addSpaceWithOperator = (value: number) => {
     const currencyValue = currencyFormatter(value)
     const numberValue = Number(currencyValue.replace('$', '').replace(',', ''))
     const addSpaceCondition =
@@ -24,11 +24,6 @@ export const DeFiPortfolioPerpetual: FC<Props> = ({ items }) => {
         : '+ '.concat(currencyValue)
     return addSpaceCondition
   }
-
-  const pnLColors = (value: number) => {
-    return profitLossColors(theme, value)
-  }
-
   return (
     <View style={{ marginTop: 8 }}>
       <Row
@@ -60,8 +55,9 @@ export const DeFiPortfolioPerpetual: FC<Props> = ({ items }) => {
                     PnL
                   </AvaText.Caption>
                 </View>
-                <AvaText.Caption color={pnLColors(profitUsdValue)}>
-                  {addSpaceWithOperator(profitUsdValue.toString())}
+                <AvaText.Caption
+                  color={profitLossColors(theme, profitUsdValue)}>
+                  {addSpaceWithOperator(profitUsdValue)}
                 </AvaText.Caption>
               </Row>
             </View>
