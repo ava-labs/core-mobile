@@ -2,7 +2,8 @@ enum Root {
   Wallet = 'Stacks.Wallet',
   Onboard = 'Stacks.Onboard',
   Welcome = 'Stacks.Welcome',
-  NoWallet = 'Stacks.NoWallet'
+  NoWallet = 'Stacks.NoWallet',
+  CopyPhraseWarning = 'Stacks.CopyPhraseWarning'
 }
 
 enum OnboardScreens {
