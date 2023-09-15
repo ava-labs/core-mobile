@@ -57,7 +57,8 @@ enum WalletScreens {
   QRCode = 'WalletScreens.QRCode',
   Earn = 'WalletScreens.Earn',
   Notifications = 'WalletScreens.Notifications',
-  DeFiProtocolDetails = 'WalletScreens.DeFiProtocolDetails'
+  DeFiProtocolDetails = 'WalletScreens.DeFiProtocolDetails',
+  SendFeedback = 'WalletScreens.SendFeedback'
 }
 
 enum NoWalletScreens {
@@ -145,6 +146,10 @@ enum LegalScreens {
 enum AdvancedScreens {
   Advanced = 'AdvancedScreens.Advanced',
   DappConnectModal = 'AdvancedScreens.DappConnectModal'
+}
+
+enum SendFeedbackScreens {
+  SendFeedback = 'SendFeedbackScreens.SendFeedback'
 }
 
 enum Tabs {
@@ -243,7 +248,8 @@ const AppNavigation = {
   Buy: BuyScreens,
   Earn: EarnScreens,
   StakeSetup: StakeSetupScreens,
-  Notifications: NotificationsScreens
+  Notifications: NotificationsScreens,
+  SendFeedback: SendFeedbackScreens
 }
 
 export default AppNavigation
