@@ -121,35 +121,35 @@ export type DeFiPortfolioItem = {
   }
 }
 
-interface BaseDefiItem {
+interface BaseDeFiItem {
   type: DeFiProtocolDetailTypes
   name: string
   netUsdValue: number
 }
 
 // Represents a singular DeFi investment
-export type DefiItem =
-  | DefiCommonItem
-  | DefiLendingItem
-  | DefiVestingItem
-  | DefiRewardItem
-  | DefiPerpetualItem
-  | DefiInsuranceBuyerItem
+export type DeFiItem =
+  | DeFiCommonItem
+  | DeFiLendingItem
+  | DeFiVestingItem
+  | DeFiRewardItem
+  | DeFiPerpetualItem
+  | DeFiInsuranceBuyerItem
 
-// Groups DefiItems under one name (e.g. 'Lending', 'Liquidity Pool')
-export type DefiItemGroup = {
+// Groups DeFiItems under one name (e.g. 'Lending', 'Liquidity Pool')
+export type DeFiItemGroup = {
   name: string
-  items: DefiItem[]
+  items: DeFiItem[]
   totalUsdValue: number
 }
 
-export interface DefiCommonItem extends BaseDefiItem {
+export interface DeFiCommonItem extends BaseDeFiItem {
   type: DeFiProtocolDetailTypes.COMMON
   supplyTokens?: DeFiToken[]
   rewardTokens?: DeFiToken[]
 }
 
-export interface DefiLendingItem extends BaseDefiItem {
+export interface DeFiLendingItem extends BaseDeFiItem {
   type: DeFiProtocolDetailTypes.LENDING
   healthRate?: number
   supplyTokens?: DeFiToken[]
@@ -157,7 +157,7 @@ export interface DefiLendingItem extends BaseDefiItem {
   rewardTokens?: DeFiToken[]
 }
 
-export interface DefiVestingItem extends BaseDefiItem {
+export interface DeFiVestingItem extends BaseDeFiItem {
   type: DeFiProtocolDetailTypes.VESTING
   token: DeFiToken & {
     claimableAmount?: number
@@ -166,20 +166,20 @@ export interface DefiVestingItem extends BaseDefiItem {
   endAt?: number
 }
 
-export interface DefiRewardItem extends BaseDefiItem {
+export interface DeFiRewardItem extends BaseDeFiItem {
   type: DeFiProtocolDetailTypes.REWARD
   tokens?: DeFiToken[]
 }
 
-interface DefiInsuranceItem extends BaseDefiItem {
+interface DeFiInsuranceItem extends BaseDeFiItem {
   expiredAt: number
   description: string
 }
-export interface DefiInsuranceBuyerItem extends DefiInsuranceItem {
+export interface DeFiInsuranceBuyerItem extends DeFiInsuranceItem {
   type: DeFiProtocolDetailTypes.INSURANCE_BUYER
 }
 
-export interface DefiPerpetualItem extends BaseDefiItem {
+export interface DeFiPerpetualItem extends BaseDeFiItem {
   type: DeFiProtocolDetailTypes.PERPETUALS
   positionToken: DeFiToken
   marginToken: DeFiToken

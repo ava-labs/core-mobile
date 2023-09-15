@@ -5,16 +5,16 @@ import React, { FC, useMemo } from 'react'
 import { View } from 'react-native'
 import {
   DeFiProtocolDetailTypes,
-  DefiCommonItem,
-  DefiItem,
-  DefiItemGroup,
-  DefiLendingItem
+  DeFiCommonItem,
+  DeFiItem,
+  DeFiItemGroup,
+  DeFiLendingItem
 } from 'services/defi/types'
 import { DeFiPortfolioLending } from './DeFiPortfolioLending'
 import { DeFiPortfolioCommon } from './DeFiPortfolioCommon'
 
 interface Props {
-  group: DefiItemGroup
+  group: DeFiItemGroup
 }
 
 export const DeFiPortfolioItemGroup: FC<Props> = ({ group }) => {
@@ -28,7 +28,7 @@ export const DeFiPortfolioItemGroup: FC<Props> = ({ group }) => {
           grouped[item.type].push(item)
         }
         return grouped
-      }, {} as Record<DeFiProtocolDetailTypes, DefiItem[]>),
+      }, {} as Record<DeFiProtocolDetailTypes, DeFiItem[]>),
     [group]
   )
 
@@ -51,21 +51,21 @@ export const DeFiPortfolioItemGroup: FC<Props> = ({ group }) => {
 interface GroupItemProps {
   type: DeFiProtocolDetailTypes
   header: string
-  items: DefiItem[]
+  items: DeFiItem[]
 }
 
 const renderGroupItem = ({ type, items, header }: GroupItemProps) => {
   switch (type) {
     case DeFiProtocolDetailTypes.LENDING:
       return (
-        <DeFiPortfolioLending key={type} items={items as DefiLendingItem[]} />
+        <DeFiPortfolioLending key={type} items={items as DeFiLendingItem[]} />
       )
     case DeFiProtocolDetailTypes.COMMON:
     default:
       return (
         <DeFiPortfolioCommon
           key={type}
-          items={items as DefiCommonItem[]}
+          items={items as DeFiCommonItem[]}
           header={header}
         />
       )

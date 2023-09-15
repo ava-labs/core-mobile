@@ -2,7 +2,7 @@ import AvaText from 'components/AvaText'
 import { Row } from 'components/Row'
 import React from 'react'
 import { View } from 'react-native'
-import { DefiCommonItem } from 'services/defi/types'
+import { DeFiCommonItem } from 'services/defi/types'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { DeFiCommonRow } from './DeFiCommonRow'
 
@@ -11,7 +11,7 @@ const MAX_TOKEN_COUNT = 3
 
 type Props = {
   header: string
-  items: DefiCommonItem[]
+  items: DeFiCommonItem[]
 }
 
 export const DeFiPortfolioCommon = ({ items, header }: Props) => {
