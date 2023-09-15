@@ -23,7 +23,7 @@ export const DeFiLendingSection = ({ headers, tokens }: SectionProps) => {
           flexDirection: 'row'
         }}>
         {headers.map(header => (
-          <AvaText.Body1 key={header}>{header}</AvaText.Body1>
+          <AvaText.InputLabel key={header}>{header}</AvaText.InputLabel>
         ))}
       </View>
 
