@@ -1,6 +1,6 @@
-import { DeFiProtocolDetailTypes, DefiPerpetualItem } from 'services/defi/types'
+import { DeFiProtocolDetailTypes, DeFiPerpetualItem } from 'services/defi/types'
 
-export const perpData: DefiPerpetualItem[] = [
+export const perpData: DeFiPerpetualItem[] = [
   {
     type: DeFiProtocolDetailTypes.PERPETUALS,
     name: 'Perpetuals',
