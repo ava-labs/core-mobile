@@ -49,7 +49,17 @@ describe('isCoreDomain', () => {
       'https://test.core.app',
       'https://some-feature.core-web.pages.dev',
       'https://ava-labs.github.io/extension-avalanche-playground/',
-      'https://ava-labs.github.io/ab-cd',
+      'https://ava-labs.github.io/ab-cd'
+    ]
+
+    for (const url of urls) {
+      const result = isCoreDomain(url)
+      expect(result).toEqual(true)
+    }
+  })
+  
+  it('should return true if URL is a Core Extension url', () => {
+    const urls = [
       'chrome-extension://agoakfejjabomempkjlepdflaleeobhb/popup.html#/home',
       'chrome-extension://dnoiacbfkodekgkjbpoagaljpbhaedmd/popup.html#/home'
     ]
@@ -60,12 +70,13 @@ describe('isCoreDomain', () => {
     }
   })
 
-  it('should return false if domain is not a Core domain', () => {
+  it('should return false if domain is not a Core domain nor a Core Extension URL', () => {
     const urls = [
       'https://google.com',
       'https://traderjoe.xyz',
       'https://app.uniswap.org',
-      'https://av-la.github.io'
+      'https://av-la.github.io',
+      'chrome-extension://dnoiacbfkodekidupaiagaljpbhaedmd/popup.html#/home'
     ]
 
     for (const url of urls) {
