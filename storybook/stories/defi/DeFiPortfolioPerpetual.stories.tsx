@@ -7,7 +7,7 @@ import Card from 'components/Card'
 import { withCenterView } from '../../decorators/withCenterView'
 
 export default {
-  title: 'DeFiPortfolioPerpetual',
+  title: 'DeFi/PortfolioPerpetual',
   decorators: [withCenterView]
 } as Meta
 
