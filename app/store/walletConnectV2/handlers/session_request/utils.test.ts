@@ -57,7 +57,7 @@ describe('isCoreDomain', () => {
       expect(result).toEqual(true)
     }
   })
-  
+
   it('should return true if URL is a Core Extension url', () => {
     const urls = [
       'chrome-extension://agoakfejjabomempkjlepdflaleeobhb/popup.html#/home',
