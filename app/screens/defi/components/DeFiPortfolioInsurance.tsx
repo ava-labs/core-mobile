@@ -1,6 +1,6 @@
 import AvaText from 'components/AvaText'
 import { FC } from 'react'
-import { DefiInsuranceBuyerItem } from 'services/defi/types'
+import { DeFiInsuranceBuyerItem } from 'services/defi/types'
 import React from 'react'
 import { Row } from 'components/Row'
 import { View } from 'react-native'
@@ -10,7 +10,7 @@ import { PopableLabel } from 'components/PopableLabel'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 
 interface Props {
-  items: DefiInsuranceBuyerItem[]
+  items: DeFiInsuranceBuyerItem[]
 }
 
 export const DeFiPortfolioInsurance: FC<Props> = ({ items }) => {
