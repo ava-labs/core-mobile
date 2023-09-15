@@ -4,6 +4,7 @@ import { DeFiToken } from 'services/defi/types'
 import React from 'react'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Row } from 'components/Row'
+import { useExchangedAmount } from 'hooks/defi/useExchangedAmount'
 
 type SectionProps = {
   headers: string[]
@@ -11,10 +12,9 @@ type SectionProps = {
 }
 
 export const DeFiLendingSection = ({ headers, tokens }: SectionProps) => {
-  const {
-    theme,
-    appHook: { currencyFormatter }
-  } = useApplicationContext()
+  const { theme } = useApplicationContext()
+  const getAmount = useExchangedAmount()
+
   return (
     <View style={{ marginTop: 16 }}>
       <Row
@@ -47,7 +47,7 @@ export const DeFiLendingSection = ({ headers, tokens }: SectionProps) => {
             </View>
           </Row>
           <AvaText.Caption color={theme.neutral50}>
-            {currencyFormatter(token.amount * token.price)}
+            {getAmount(token.amount * token.price)}
           </AvaText.Caption>
         </Row>
       ))}

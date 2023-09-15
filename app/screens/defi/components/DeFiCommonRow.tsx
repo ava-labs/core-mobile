@@ -2,6 +2,7 @@ import AvaText from 'components/AvaText'
 import { Row } from 'components/Row'
 import { StackedImages } from 'components/StackedImages'
 import { useApplicationContext } from 'contexts/ApplicationContext'
+import { useExchangedAmount } from 'hooks/defi/useExchangedAmount'
 import React from 'react'
 import { View } from 'react-native'
 import { DeFiToken } from 'services/defi/types'
@@ -23,10 +24,8 @@ export const DeFiCommonRow = ({
   maxTokenCount = 3,
   imageSize = 16
 }: Props) => {
-  const {
-    theme,
-    appHook: { currencyFormatter }
-  } = useApplicationContext()
+  const { theme } = useApplicationContext()
+  const getAmount = useExchangedAmount()
 
   const hasRewards = rewardTokens.length > 0
   const rewardedValue = rewardTokens.reduce(
@@ -71,7 +70,7 @@ export const DeFiCommonRow = ({
             color={theme.neutral50}
             numberOfLines={1}
             ellipsizeMode="tail">
-            {currencyFormatter(suppliedValue)}
+            {getAmount(suppliedValue)}
           </AvaText.Body2>
         </Row>
       </Row>
@@ -84,7 +83,7 @@ export const DeFiCommonRow = ({
           }}>
           <AvaText.Caption color={theme.neutral400}>Rewards</AvaText.Caption>
           <AvaText.Caption color={theme.neutral400}>
-            {currencyFormatter(rewardedValue)}
+            {getAmount(rewardedValue)}
           </AvaText.Caption>
         </Row>
       )}
