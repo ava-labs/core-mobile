@@ -5,6 +5,7 @@ import React, { FC, useMemo } from 'react'
 import { View } from 'react-native'
 import {
   DeFiProtocolDetailTypes,
+  DeFiCommonItem
   DefiInsuranceBuyerItem,
   DefiItem,
   DefiItemGroup,
@@ -14,11 +15,14 @@ import {
 import { DeFiPortfolioLending } from './DeFiPortfolioLending'
 import { DeFiPortfolioInsurance } from './DeFiPortfolioInsurance'
 import { DeFiPortfolioPerpetual } from './DeFiPortfolioPerpetual'
+import { DeFiPortfolioCommon } from './DeFiPortfolioCommon'
+
 interface Props {
-  group: DefiItemGroup
+  group: DeFiItemGroup
 }
 
 export const DeFiPortfolioItemGroup: FC<Props> = ({ group }) => {
+  const header = group.name === 'Rewards' ? 'Pool' : 'Supplied'
   const itemsByType = useMemo(
     () =>
       group.items.reduce((grouped, item) => {
@@ -28,7 +32,7 @@ export const DeFiPortfolioItemGroup: FC<Props> = ({ group }) => {
           grouped[item.type].push(item)
         }
         return grouped
-      }, {} as Record<DeFiProtocolDetailTypes, DefiItem[]>),
+      }, {} as Record<DeFiProtocolDetailTypes, DeFiItem[]>),
     [group]
   )
 
@@ -38,17 +42,27 @@ export const DeFiPortfolioItemGroup: FC<Props> = ({ group }) => {
       <Space y={16} />
       <AvaText.Heading6>{group.name}</AvaText.Heading6>
       {Object.entries(itemsByType).map(([type, items]) => {
-        return renderGroupItem(type as DeFiProtocolDetailTypes, items)
+        return renderGroupItem({
+          type: type as DeFiProtocolDetailTypes,
+          items,
+          header
+        })
       })}
     </View>
   )
 }
 
-const renderGroupItem = (type: DeFiProtocolDetailTypes, items: DefiItem[]) => {
+interface GroupItemProps {
+  type: DeFiProtocolDetailTypes
+  header: string
+  items: DeFiItem[]
+}
+
+const renderGroupItem = ({ type, items, header }: GroupItemProps) => {
   switch (type) {
     case DeFiProtocolDetailTypes.LENDING:
       return (
-        <DeFiPortfolioLending key={type} items={items as DefiLendingItem[]} />
+        <DeFiPortfolioLending key={type} items={items as DeFiLendingItem[]} />
       )
     case DeFiProtocolDetailTypes.INSURANCE_BUYER:
       return (
@@ -64,7 +78,14 @@ const renderGroupItem = (type: DeFiProtocolDetailTypes, items: DefiItem[]) => {
           items={items as DefiPerpetualItem[]}
         />
       )
+    case DeFiProtocolDetailTypes.COMMON:
     default:
-      return null
+      return (
+        <DeFiPortfolioCommon
+          key={type}
+          items={items as DeFiCommonItem[]}
+          header={header}
+        />
+      )
   }
 }

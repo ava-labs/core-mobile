@@ -1,10 +1,10 @@
 import React from 'react'
 import { View } from 'react-native'
-import { DefiLendingItem } from 'services/defi/types'
+import { DeFiLendingItem } from 'services/defi/types'
 import { DeFiLendingSection } from './DeFiLendingSection'
 
 type Props = {
-  items: DefiLendingItem[]
+  items: DeFiLendingItem[]
 }
 
 export const DeFiPortfolioLending = ({ items }: Props) => {
