@@ -56,7 +56,8 @@ const NetworkTokensHeader = () => {
 
 const styles = StyleSheet.create({
   container: {
-    marginHorizontal: 16
+    marginHorizontal: 16,
+    marginBottom: 16
   },
   networkContainer: {
     alignItems: 'center',

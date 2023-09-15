@@ -9,7 +9,7 @@ import { useSelector } from 'react-redux'
 import { selectActiveNetwork } from 'store/network'
 import { navigate } from 'utils/Navigation'
 import AppNavigation from 'navigation/AppNavigation'
-import { PortfolioTabs } from 'consts/portfolio'
+import { NetworkTokensTabs } from 'screens/portfolio/network/NetworkTokens'
 
 const WINDOW_WIDTH = Dimensions.get('window').width
 
@@ -52,9 +52,9 @@ const ToastWithViewActivity = ({
   const openActivityTab = () => {
     navigate({
       // @ts-ignore
-      name: AppNavigation.Portfolio.Portfolio,
+      name: AppNavigation.Portfolio.NetworkTokens,
       // @ts-ignore
-      params: { tabIndex: PortfolioTabs.Activity }
+      params: { tabIndex: NetworkTokensTabs.Activity }
     })
     dismissToast()
   }
