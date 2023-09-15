@@ -3,7 +3,8 @@ import type { Meta } from '@storybook/react-native'
 import { ZeroState } from 'screens/defi/components/ZeroState'
 
 export default {
-  title: 'DeFi'
+  title: 'DeFi/ZeroState'
 } as Meta
 
-export const ZeroStateSkipBodyText = () => <ZeroState skipBodyText />
+export const Default = () => <ZeroState />
+export const SkipBodyText = () => <ZeroState skipBodyText />

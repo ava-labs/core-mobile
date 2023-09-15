@@ -5,11 +5,11 @@ import Card from 'components/Card'
 import { withCenterView } from '../../decorators/withCenterView'
 
 export default {
-  title: 'DeFi',
+  title: 'DeFi/DeFiPortfolioHeader',
   decorators: [withCenterView]
 } as Meta
 
-export const DeFiPortfolioHeader = () => (
+export const Default = () => (
   <Card style={{ padding: 16, width: '100%' }}>
     <MemoizedDeFiPortfolioHeader
       logoUrl="https://static.debank.com/image/project/logo_url/prisma/6ac2a38555deaf89a6f1eb04eee5d9dd.png"
