@@ -4,6 +4,8 @@ import CarrotSVG from 'components/svg/CarrotSVG'
 import { WalletScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation } from '@react-navigation/native'
+import SettingsCogSVG from 'components/svg/SettingsCogSVG'
+import { View } from 'react-native'
 
 type NavigationProp = WalletScreenProps<
   typeof AppNavigation.Wallet.Drawer
@@ -12,13 +14,21 @@ type NavigationProp = WalletScreenProps<
 export default function AdvancedItem() {
   const navigation = useNavigation<NavigationProp>()
 
+  const icon = () => {
+    return (
+      <View style={{ marginRight: -8 }}>
+        <SettingsCogSVG />
+      </View>
+    )
+  }
+
   return (
     <>
       <AvaListItem.Base
         testID="advanced_item__settings_button"
         title={'Advanced'}
-        leftComponent={null}
         rightComponent={<CarrotSVG />}
+        leftComponent={icon()}
         onPress={() => {
           navigation.navigate(AppNavigation.Wallet.Advanced, {
             screen: AppNavigation.Advanced.Advanced
