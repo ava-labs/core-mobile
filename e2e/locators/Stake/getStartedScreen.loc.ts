@@ -2,7 +2,7 @@ export default {
   getStartedTitle: 'Get Started',
   getStartedSubTitle: 'Stake your AVAX, get rewards',
   getStartedDescription:
-    'Use Core to delegate your AVAX to nodes in the Avalanche network and receive rewards.',
+    'Use Core to stake your AVAX by delegating to Avalanche and receive rewards.',
   getStartedSubDescription: ' Learn more about how staking works ',
   getStartedItem1: 'Choose your desired timeline',
   getStartedItem2: 'Secure the Avalanche network',
