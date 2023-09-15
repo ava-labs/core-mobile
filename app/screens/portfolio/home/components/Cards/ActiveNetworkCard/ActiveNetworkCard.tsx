@@ -16,6 +16,8 @@ import { selectActiveNetwork } from 'store/network'
 import { selectActiveAccount } from 'store/account'
 import { usePostCapture } from 'hooks/usePosthogCapture'
 import { getCardHighLightColor } from 'utils/color/getCardHighLightColor'
+import usePendingBridgeTransactions from 'screens/bridge/hooks/usePendingBridgeTransactions'
+import TopRightBadge from 'components/TopRightBadge'
 import ZeroState from './ZeroState'
 import Tokens from './Tokens'
 
@@ -42,6 +44,7 @@ const ActiveNetworkCard = () => {
   } = useApplicationContext()
   const cardBgColor = theme.colorBg2 + Opacity85
   const highlighColor = getCardHighLightColor(theme)
+  const pendingBridgeTxs = usePendingBridgeTransactions(network)
 
   const navigateToNetworkTokens = () => {
     capture('PortfolioPrimaryNetworkClicked', {
@@ -58,11 +61,23 @@ const ActiveNetworkCard = () => {
 
     return (
       <View style={styles.headerContainer}>
-        <NetworkLogo
-          logoUri={network.logoUri}
-          size={40}
-          style={styles.bigIcon}
-        />
+        <View>
+          <NetworkLogo
+            logoUri={network.logoUri}
+            size={40}
+            style={styles.bigIcon}
+          />
+          {pendingBridgeTxs.length > 0 && (
+            <TopRightBadge
+              text={pendingBridgeTxs.length.toString()}
+              style={{
+                borderColor: theme.colorBg2,
+                borderWidth: 2
+              }}
+              offset={{ x: 3, y: 3 }}
+            />
+          )}
+        </View>
         <View style={styles.headerTextContainer}>
           <AvaText.Heading2 ellipsizeMode={'tail'} numberOfLines={2}>
             {network.chainName}
