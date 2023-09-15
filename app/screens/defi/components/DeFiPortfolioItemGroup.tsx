@@ -5,12 +5,12 @@ import React, { FC, useMemo } from 'react'
 import { View } from 'react-native'
 import {
   DeFiProtocolDetailTypes,
-  DeFiCommonItem
-  DefiInsuranceBuyerItem,
-  DefiItem,
-  DefiItemGroup,
-  DefiLendingItem,
-  DefiPerpetualItem
+  DeFiCommonItem,
+  DeFiInsuranceBuyerItem,
+  DeFiItem,
+  DeFiItemGroup,
+  DeFiLendingItem,
+  DeFiPerpetualItem
 } from 'services/defi/types'
 import { DeFiPortfolioLending } from './DeFiPortfolioLending'
 import { DeFiPortfolioInsurance } from './DeFiPortfolioInsurance'
@@ -68,14 +68,14 @@ const renderGroupItem = ({ type, items, header }: GroupItemProps) => {
       return (
         <DeFiPortfolioInsurance
           key={type}
-          items={items as DefiInsuranceBuyerItem[]}
+          items={items as DeFiInsuranceBuyerItem[]}
         />
       )
     case DeFiProtocolDetailTypes.PERPETUALS:
       return (
         <DeFiPortfolioPerpetual
           key={type}
-          items={items as DefiPerpetualItem[]}
+          items={items as DeFiPerpetualItem[]}
         />
       )
     case DeFiProtocolDetailTypes.COMMON:
