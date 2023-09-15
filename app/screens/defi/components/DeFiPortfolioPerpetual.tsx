@@ -1,13 +1,13 @@
 import AvaText from 'components/AvaText'
 import { FC } from 'react'
-import { DefiPerpetualItem } from 'services/defi/types'
+import { DeFiPerpetualItem } from 'services/defi/types'
 import React from 'react'
 import { Row } from 'components/Row'
 import { View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 
 interface Props {
-  items: DefiPerpetualItem[]
+  items: DeFiPerpetualItem[]
 }
 
 const pNLtextColor = (value: number) => {
