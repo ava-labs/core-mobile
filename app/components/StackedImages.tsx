@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react'
-import { Image } from 'react-native'
+import { Image, ImageStyle, StyleProp } from 'react-native'
 import { Row } from './Row'
 
 interface StackedImagesProps {
@@ -8,6 +8,7 @@ interface StackedImagesProps {
   borderRadius?: number
   flexDirection?: 'row' | 'column'
   stackMarginRatio?: number
+  style?: StyleProp<ImageStyle>
 }
 
 export const StackedImages = ({
@@ -15,7 +16,8 @@ export const StackedImages = ({
   size = 24,
   borderRadius = size / 2,
   flexDirection = 'row',
-  stackMarginRatio = 0.4
+  stackMarginRatio = 0.4,
+  style
 }: StackedImagesProps) => {
   const stackedMargin = useCallback(
     (index: number) => {
@@ -28,10 +30,7 @@ export const StackedImages = ({
   )
 
   return (
-    <Row
-      style={{
-        flexDirection
-      }}>
+    <Row style={{ flexDirection }}>
       {imageUrls.map((uri, index) => {
         return (
           <Image
@@ -42,7 +41,8 @@ export const StackedImages = ({
                 height: size,
                 borderRadius
               },
-              stackedMargin(index)
+              stackedMargin(index),
+              style
             ]}
             key={index}
           />
