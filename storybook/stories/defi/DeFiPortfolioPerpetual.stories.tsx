@@ -4,10 +4,11 @@ import { DeFiPortfolioPerpetual } from 'screens/defi/components/DeFiPortfolioPer
 import { perpData } from 'tests/fixtures/defi/perpetualData'
 import Card from 'components/Card'
 import { withCenterView } from '../../decorators/withCenterView'
+import { withCard } from '../../decorators/withCard'
 
 export default {
   title: 'DeFi/PortfolioPerpetual',
-  decorators: [withCenterView]
+  decorators: [withCard, withCenterView]
 } as Meta
 
 export const Basic: ComponentStory<typeof DeFiPortfolioPerpetual> = () => {

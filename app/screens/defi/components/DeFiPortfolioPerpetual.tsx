@@ -1,22 +1,19 @@
 import AvaText from 'components/AvaText'
 import { FC } from 'react'
-import { DefiPerpetualItem } from 'services/defi/types'
+import { DeFiPerpetualItem } from 'services/defi/types'
 import React from 'react'
 import { Row } from 'components/Row'
 import { View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
+import { profitLossColors } from 'screens/defi/utils'
 
 interface Props {
-  items: DefiPerpetualItem[]
+  items: DeFiPerpetualItem[]
 }
 
 export const DeFiPortfolioPerpetual: FC<Props> = ({ items }) => {
   const { currencyFormatter } = useApplicationContext().appHook
   const { theme } = useApplicationContext()
-
-  const pNLtextColor = (value: number) => {
-    return value > 0 ? theme.colorSuccess : theme.colorError
-  }
 
   const addSpaceWithOperator = (value: string) => {
     const currencyValue = currencyFormatter(value)
@@ -26,6 +23,10 @@ export const DeFiPortfolioPerpetual: FC<Props> = ({ items }) => {
         ? currencyValue.replace('-', '- ')
         : '+ '.concat(currencyValue)
     return addSpaceCondition
+  }
+
+  const pnLColors = (value: number) => {
+    return profitLossColors(theme, value)
   }
 
   return (
@@ -59,7 +60,7 @@ export const DeFiPortfolioPerpetual: FC<Props> = ({ items }) => {
                     PnL
                   </AvaText.Caption>
                 </View>
-                <AvaText.Caption color={pNLtextColor(profitUsdValue)}>
+                <AvaText.Caption color={pnLColors(profitUsdValue)}>
                   {addSpaceWithOperator(profitUsdValue.toString())}
                 </AvaText.Caption>
               </Row>

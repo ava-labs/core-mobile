@@ -1,3 +1,4 @@
+import { AppTheme } from 'contexts/ApplicationContext'
 import {
   DeFiPortfolioItem,
   DeFiProtocolDetailTypes,
@@ -147,4 +148,9 @@ const mapCommonItem = (item: DeFiPortfolioItem): DeFiCommonItem => {
 
 const sortItems = (items: DeFiItem[]): DeFiItem[] => {
   return [...items].sort(({ netUsdValue: a }, { netUsdValue: b }) => b - a)
+}
+
+export const profitLossColors = (theme: AppTheme, value: number) => {
+  const coloredValue = value > 0 ? theme.colorSuccess : theme.colorError
+  return coloredValue.toString()
 }
