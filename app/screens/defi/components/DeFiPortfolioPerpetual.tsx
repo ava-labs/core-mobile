@@ -35,8 +35,8 @@ export const DeFiPortfolioPerpetual: FC<Props> = ({ items }) => {
           justifyContent: 'space-between',
           marginTop: 8
         }}>
-        <AvaText.Body1>Token Pair</AvaText.Body1>
-        <AvaText.Body1>Value</AvaText.Body1>
+        <AvaText.InputLabel>Token Pair</AvaText.InputLabel>
+        <AvaText.InputLabel>Value</AvaText.InputLabel>
       </Row>
       {items.map(
         (
