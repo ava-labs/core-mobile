@@ -50,6 +50,14 @@
   rootViewController.view = rootView;
   self.window.rootViewController = rootViewController;
   [self.window makeKeyAndVisible];
+  
+  if ([rootView isKindOfClass:[RCTRootView class]]) {
+    RCTRootView *rctRootView = (RCTRootView *)rootView;
+    UIStoryboard *sb = [UIStoryboard storyboardWithName:@"LaunchScreen" bundle:nil];
+    UIViewController *vc = [sb instantiateInitialViewController];
+    rctRootView.loadingView = vc.view;
+  }
+  
   return YES;
 }
 
