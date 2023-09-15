@@ -48,7 +48,11 @@ export const DeFiCommonRow = ({
     <View style={{ marginTop: index === 0 ? 8 : 16 }}>
       <Row style={{ justifyContent: 'space-between', width: '100%' }}>
         <Row style={{ width: tokenWidth }}>
-          <StackedImages imageUrls={maxDisplayedTokens} size={imageSize} />
+          <StackedImages
+            imageUrls={maxDisplayedTokens}
+            size={imageSize}
+            style={{ borderColor: theme.colorBg2, borderWidth: 2 }}
+          />
         </Row>
         <Row
           style={{

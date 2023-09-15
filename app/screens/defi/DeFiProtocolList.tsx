@@ -79,10 +79,13 @@ export const DeFiProtocolList = () => {
           <ProtocolLogo uri={item.logoUrl} />
           <NetworkLogo
             uri={networkLogo}
+            size={16}
             style={{
               position: 'absolute',
-              bottom: 0,
-              right: 0
+              bottom: -2,
+              right: -2,
+              borderColor: theme.colorBg2,
+              borderWidth: 2
             }}
           />
         </View>

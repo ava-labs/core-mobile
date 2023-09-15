@@ -3,10 +3,9 @@ import { Row } from 'components/Row'
 import React from 'react'
 import { View } from 'react-native'
 import { DeFiCommonItem } from 'services/defi/types'
-import { useApplicationContext } from 'contexts/ApplicationContext'
 import { DeFiCommonRow } from './DeFiCommonRow'
 
-const IMAGE_SIZE = 16
+const IMAGE_SIZE = 20
 const MAX_TOKEN_COUNT = 3
 
 type Props = {
@@ -15,8 +14,6 @@ type Props = {
 }
 
 export const DeFiPortfolioCommon = ({ items, header }: Props) => {
-  const { theme } = useApplicationContext()
-
   const tokenCount = Math.max(
     ...items.map(item => item?.supplyTokens?.length ?? 0)
   )
@@ -28,12 +25,8 @@ export const DeFiPortfolioCommon = ({ items, header }: Props) => {
   return (
     <View style={{ marginTop: 16 }}>
       <Row style={{ justifyContent: 'space-between' }}>
-        <AvaText.ActivityTotal color={theme.neutral50}>
-          {header}
-        </AvaText.ActivityTotal>
-        <AvaText.ActivityTotal color={theme.neutral50}>
-          Value
-        </AvaText.ActivityTotal>
+        <AvaText.InputLabel>{header}</AvaText.InputLabel>
+        <AvaText.InputLabel>Value</AvaText.InputLabel>
       </Row>
       <View>
         {items.map(({ supplyTokens = [], rewardTokens = [] }, index) => (

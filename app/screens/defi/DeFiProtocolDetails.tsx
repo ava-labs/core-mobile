@@ -18,7 +18,7 @@ import { ProtocolDetailsErrorState } from './components/ProtocolDetailsErrorStat
 import { mapPortfolioItems } from './utils'
 import { DeFiPortfolioItemGroup } from './components/DeFiPortfolioItemGroup'
 import { ZeroState } from './components/ZeroState'
-import { MemoizedDeFiPortfolioHeader } from './components/DeFiPortfolioHeader'
+import { DeFiPortfolioHeader } from './components/DeFiPortfolioHeader'
 
 type ScreenProps = WalletScreenProps<
   typeof AppNavigation.Wallet.DeFiProtocolDetails
@@ -76,7 +76,7 @@ export const DeFiProtocolDetails = () => {
   return (
     <View style={styles.container}>
       <Card style={styles.card}>
-        <MemoizedDeFiPortfolioHeader
+        <DeFiPortfolioHeader
           logoUrl={data.logoUrl}
           name={data.name}
           chainLogoUrl={memoizedChain?.logoUrl}

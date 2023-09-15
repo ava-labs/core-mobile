@@ -1,4 +1,4 @@
-import React, { memo } from 'react'
+import React from 'react'
 import { View } from 'react-native'
 import AvaButton from 'components/AvaButton'
 import AvaText from 'components/AvaText'
@@ -18,7 +18,7 @@ interface Props {
   totalValueOfProtocolItems?: string
 }
 
-const DeFiPortfolioHeader = ({
+export const DeFiPortfolioHeader = ({
   logoUrl,
   name,
   chainLogoUrl,
@@ -66,5 +66,3 @@ const DeFiPortfolioHeader = ({
     </Row>
   )
 }
-
-export const MemoizedDeFiPortfolioHeader = memo(DeFiPortfolioHeader)
