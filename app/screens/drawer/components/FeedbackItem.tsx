@@ -1,36 +1,29 @@
 import React from 'react'
 import AvaListItem from 'components/AvaListItem'
+import { usePostCapture } from 'hooks/usePosthogCapture'
 import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation } from '@react-navigation/native'
 import { WalletScreenProps } from 'navigation/types'
-import LockSVG from 'components/svg/LockSVG'
-import { View } from 'react-native'
 
 type NavigationProp = WalletScreenProps<
   typeof AppNavigation.Wallet.Drawer
 >['navigation']
 
-const SecurityItem = () => {
+const FeedbackItem = () => {
   const navigation = useNavigation<NavigationProp>()
-
-  const icon = () => {
-    return (
-      <View style={{ marginRight: -8 }}>
-        <LockSVG />
-      </View>
-    )
-  }
+  const { capture } = usePostCapture()
 
   return (
     <AvaListItem.Base
-      title={'Security & Privacy'}
+      testID="feedback_item__send_feedback_button"
+      title={'Send Feedback'}
       showNavigationArrow
-      leftComponent={icon()}
       onPress={() => {
-        navigation.navigate(AppNavigation.Wallet.SecurityPrivacy)
+        capture('sendFeedbackClicked')
+        navigation.navigate(AppNavigation.Wallet.SendFeedback)
       }}
     />
   )
 }
 
-export default SecurityItem
+export default FeedbackItem
