@@ -49,7 +49,9 @@ describe('isCoreDomain', () => {
       'https://test.core.app',
       'https://some-feature.core-web.pages.dev',
       'https://ava-labs.github.io/extension-avalanche-playground/',
-      'https://ava-labs.github.io/ab-cd'
+      'https://ava-labs.github.io/ab-cd',
+      'chrome-extension://agoakfejjabomempkjlepdflaleeobhb/popup.html#/home',
+      'chrome-extension://dnoiacbfkodekgkjbpoagaljpbhaedmd/popup.html#/home'
     ]
 
     for (const url of urls) {
