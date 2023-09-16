@@ -152,5 +152,5 @@ const sortItems = (items: DeFiItem[]): DeFiItem[] => {
 
 export const profitLossColors = (theme: AppTheme, value: number) => {
   const coloredValue = value > 0 ? theme.colorSuccess : theme.colorError
-  return coloredValue.toString()
+  return coloredValue
 }

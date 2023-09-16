@@ -25,7 +25,7 @@ export const DeFiPortfolioPerpetual: FC<Props> = ({ items }) => {
     return addSpaceCondition
   }
   return (
-    <View style={{ marginTop: 8 }}>
+    <View style={{ marginTop: 8, marginBottom: 8 }}>
       <Row
         style={{
           justifyContent: 'space-between',
