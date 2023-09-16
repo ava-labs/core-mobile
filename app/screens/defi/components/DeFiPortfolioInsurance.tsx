@@ -15,35 +15,61 @@ interface Props {
 
 export const DeFiPortfolioInsurance: FC<Props> = ({ items }) => {
   const { currencyFormatter } = useApplicationContext().appHook
+  const { theme } = useApplicationContext()
 
   return (
     <View style={{ marginTop: 8 }}>
-      <Row style={{ justifyContent: 'space-between', marginTop: 8 }}>
-        <AvaText.Body1>Description</AvaText.Body1>
-        <AvaText.Body1>Value</AvaText.Body1>
+      <Row
+        style={{
+          justifyContent: 'space-between',
+          marginTop: 8
+        }}>
+        <AvaText.InputLabel>Description</AvaText.InputLabel>
+        <AvaText.InputLabel>Value</AvaText.InputLabel>
       </Row>
       {items.map((item, index) => {
         const description = item.description
-        const maxDescriptionLength = 30
         return (
-          <Row
+          <View
             key={`defi-insurance-${index}`}
-            style={{ justifyContent: 'space-between', marginTop: 8 }}>
-            <Popable
-              content={<PopableContent message={description} />}
-              style={{ width: '30%' }}
-              position="right"
-              strictPosition={true}>
-              <PopableLabel
-                label={
-                  description.length > maxDescriptionLength
-                    ? description.substring(0, maxDescriptionLength - 3) + '...'
-                    : description
+            style={{
+              flexDirection: 'row',
+              width: '100%',
+              marginTop: 8,
+              justifyContent: 'space-between'
+            }}>
+            <Row
+              style={{
+                flex: 1,
+                marginRight: 10,
+                maxWidth: '80%'
+              }}>
+              <Popable
+                content={
+                  <View style={{ backgroundColor: theme.neutral100 }}>
+                    <AvaText.Body4
+                      textStyle={{
+                        fontWeight: '500',
+                        fontSize: 12,
+                        color: theme.neutral900,
+                        margin: 4
+                      }}>
+                      {description}
+                    </AvaText.Body4>
+                  </View>
                 }
-              />
-            </Popable>
-            <AvaText.Body2>{currencyFormatter(item.netUsdValue)}</AvaText.Body2>
-          </Row>
+                position="top">
+                <AvaText.Body2 ellipsizeMode="tail">
+                  {item.description}
+                </AvaText.Body2>
+              </Popable>
+            </Row>
+            <Row>
+              <AvaText.Body2>
+                {currencyFormatter(item.netUsdValue)}
+              </AvaText.Body2>
+            </Row>
+          </View>
         )
       })}
     </View>

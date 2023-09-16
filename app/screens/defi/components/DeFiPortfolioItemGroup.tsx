@@ -7,6 +7,7 @@ import {
   DeFiProtocolDetailTypes,
   DeFiInsuranceBuyerItem,
   DeFiCommonItem,
+  DeFiInsuranceBuyerItem,
   DeFiItem,
   DeFiItemGroup,
   DeFiLendingItem,
