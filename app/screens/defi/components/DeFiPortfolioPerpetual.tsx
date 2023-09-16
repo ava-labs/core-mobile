@@ -59,7 +59,6 @@ export const DeFiPortfolioPerpetual: FC<Props> = ({ items }) => {
                   color={profitLossColors(theme, profitUsdValue)}>
                   {addSpaceWithOperator(profitUsdValue)}
                 </AvaText.Caption>
-
               </Row>
             </View>
           )

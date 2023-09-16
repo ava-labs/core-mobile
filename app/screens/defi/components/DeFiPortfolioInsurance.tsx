@@ -5,8 +5,6 @@ import React from 'react'
 import { Row } from 'components/Row'
 import { View } from 'react-native'
 import { Popable } from 'react-native-popable'
-import { PopableContent } from 'components/PopableContent'
-import { PopableLabel } from 'components/PopableLabel'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 
 interface Props {
