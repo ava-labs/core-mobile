@@ -53,6 +53,7 @@ const getStories = () => {
     "./storybook/stories/BottomSheet.stories.tsx": require("../storybook/stories/BottomSheet.stories.tsx"),
     "./storybook/stories/CalendarInput.stories.tsx": require("../storybook/stories/CalendarInput.stories.tsx"),
     "./storybook/stories/ConfirmationTracker.stories.tsx": require("../storybook/stories/ConfirmationTracker.stories.tsx"),
+    "./storybook/stories/defi/DeFiPortfolioPerpetual.stories.tsx": require("../storybook/stories/defi/DeFiPortfolioPerpetual.stories.tsx"),
     "./storybook/stories/defi/DeFiPortfolioCommon.stories.tsx": require("../storybook/stories/defi/DeFiPortfolioCommon.stories.tsx"),
     "./storybook/stories/defi/DeFiPortfolioHeader.stories.tsx": require("../storybook/stories/defi/DeFiPortfolioHeader.stories.tsx"),
     "./storybook/stories/defi/DeFiPortfolioLending.stories.tsx": require("../storybook/stories/defi/DeFiPortfolioLending.stories.tsx"),

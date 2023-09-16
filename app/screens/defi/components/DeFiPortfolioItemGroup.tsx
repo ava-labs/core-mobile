@@ -5,12 +5,16 @@ import React, { FC, useMemo } from 'react'
 import { View } from 'react-native'
 import {
   DeFiProtocolDetailTypes,
+  DeFiInsuranceBuyerItem,
   DeFiCommonItem,
   DeFiItem,
   DeFiItemGroup,
-  DeFiLendingItem
+  DeFiLendingItem,
+  DeFiPerpetualItem
 } from 'services/defi/types'
 import { DeFiPortfolioLending } from './DeFiPortfolioLending'
+import { DeFiPortfolioInsurance } from './DeFiPortfolioInsurance'
+import { DeFiPortfolioPerpetual } from './DeFiPortfolioPerpetual'
 import { DeFiPortfolioCommon } from './DeFiPortfolioCommon'
 
 interface Props {
@@ -59,6 +63,20 @@ const renderGroupItem = ({ type, items, header }: GroupItemProps) => {
     case DeFiProtocolDetailTypes.LENDING:
       return (
         <DeFiPortfolioLending key={type} items={items as DeFiLendingItem[]} />
+      )
+    case DeFiProtocolDetailTypes.INSURANCE_BUYER:
+      return (
+        <DeFiPortfolioInsurance
+          key={type}
+          items={items as DeFiInsuranceBuyerItem[]}
+        />
+      )
+    case DeFiProtocolDetailTypes.PERPETUALS:
+      return (
+        <DeFiPortfolioPerpetual
+          key={type}
+          items={items as DeFiPerpetualItem[]}
+        />
       )
     case DeFiProtocolDetailTypes.COMMON:
     default:
