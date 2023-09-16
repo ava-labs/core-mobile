@@ -5,8 +5,8 @@ import React, { FC, useMemo } from 'react'
 import { View } from 'react-native'
 import {
   DeFiProtocolDetailTypes,
-  DeFiCommonItem,
   DeFiInsuranceBuyerItem,
+  DeFiCommonItem,
   DeFiItem,
   DeFiItemGroup,
   DeFiLendingItem,

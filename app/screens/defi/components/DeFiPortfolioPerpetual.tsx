@@ -5,27 +5,34 @@ import React from 'react'
 import { Row } from 'components/Row'
 import { View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
+import { profitLossColors } from 'screens/defi/utils'
 
 interface Props {
   items: DeFiPerpetualItem[]
 }
 
-const pNLtextColor = (value: number) => {
-  return value > 0 ? '#53C26E' : '#F34333'
-}
-
 export const DeFiPortfolioPerpetual: FC<Props> = ({ items }) => {
   const { currencyFormatter } = useApplicationContext().appHook
+  const { theme } = useApplicationContext()
 
+  const addSpaceWithOperator = (value: number) => {
+    const currencyValue = currencyFormatter(value)
+    const numberValue = Number(currencyValue.replace('$', '').replace(',', ''))
+    const addSpaceCondition =
+      numberValue < 0
+        ? currencyValue.replace('-', '- ')
+        : '+ '.concat(currencyValue)
+    return addSpaceCondition
+  }
   return (
-    <View style={{ marginTop: 8 }}>
+    <View style={{ marginTop: 8, marginBottom: 8 }}>
       <Row
         style={{
           justifyContent: 'space-between',
-          marginTop: 4
+          marginTop: 8
         }}>
-        <AvaText.Body1>Token Pair</AvaText.Body1>
-        <AvaText.Body1>Value</AvaText.Body1>
+        <AvaText.InputLabel>Token Pair</AvaText.InputLabel>
+        <AvaText.InputLabel>Value</AvaText.InputLabel>
       </Row>
       {items.map(
         (
@@ -34,19 +41,24 @@ export const DeFiPortfolioPerpetual: FC<Props> = ({ items }) => {
         ) => {
           return (
             <View key={`defi-perpetual-${index}`}>
-              <Row style={{ justifyContent: 'space-between', marginTop: 4 }}>
-                <AvaText.Body2>
+              <Row style={{ justifyContent: 'space-between', marginTop: 8 }}>
+                <AvaText.Body2 color={theme.neutral50}>
                   {positionToken.symbol}/{marginToken.symbol}
                 </AvaText.Body2>
-                <AvaText.Body2>{currencyFormatter(netUsdValue)}</AvaText.Body2>
+                <AvaText.Body2 color={theme.neutral50}>
+                  {currencyFormatter(netUsdValue)}
+                </AvaText.Body2>
               </Row>
               <Row style={{ justifyContent: 'space-between', marginTop: 4 }}>
-                <View style={{ marginTop: 2 }}>
-                  <AvaText.Body2>PnL</AvaText.Body2>
+                <View>
+                  <AvaText.Caption color={theme.neutral400}>
+                    PnL
+                  </AvaText.Caption>
                 </View>
-                <AvaText.Body2 color={pNLtextColor(profitUsdValue)}>
-                  {currencyFormatter(profitUsdValue)}
-                </AvaText.Body2>
+                <AvaText.Caption
+                  color={profitLossColors(theme, profitUsdValue)}>
+                  {addSpaceWithOperator(profitUsdValue)}
+                </AvaText.Caption>
               </Row>
             </View>
           )
