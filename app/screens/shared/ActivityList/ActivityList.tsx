@@ -107,7 +107,6 @@ const ActivityList = ({
         onRefresh={refresh}
         openTransactionDetails={openTransactionDetails}
         openTransactionStatus={openTransactionStatus}
-        hidePendingBridgeTransactions={false}
       />
     )
   }

@@ -40,7 +40,6 @@ interface Props {
   data: Transaction[]
   openTransactionDetails: (item: Transaction) => void
   openTransactionStatus: (params: BridgeTransactionStatusParams) => void
-  hidePendingBridgeTransactions: boolean
   testID?: string
 }
 
@@ -50,8 +49,7 @@ const Transactions = ({
   onEndReached,
   data,
   openTransactionDetails,
-  openTransactionStatus,
-  hidePendingBridgeTransactions
+  openTransactionStatus
 }: Props) => {
   const { openUrl } = useInAppBrowser()
   const { capture } = usePostCapture()
@@ -65,11 +63,7 @@ const Transactions = ({
     )
 
     // add pending bridge transactions
-    if (
-      !hidePendingBridgeTransactions &&
-      !bridgeDisabled &&
-      pendingBridgeTransactions.length > 0
-    )
+    if (!bridgeDisabled && pendingBridgeTransactions.length > 0)
       allSections.push({ title: 'Pending', data: pendingBridgeTransactions })
 
     // add all other transactions
@@ -99,7 +93,7 @@ const Transactions = ({
     }
 
     return flatListData
-  }, [bridgeDisabled, data, hidePendingBridgeTransactions, pendingBridgeByTxId])
+  }, [bridgeDisabled, data, pendingBridgeByTxId])
 
   const renderPendingBridgeTransaction = (tx: BridgeTransaction) => {
     return (
