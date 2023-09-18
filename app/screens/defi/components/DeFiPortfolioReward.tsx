@@ -4,6 +4,7 @@ import { DeFiRewardItem } from 'services/defi/types'
 import { Row } from 'components/Row'
 import { View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
+import { useExchangedAmount } from 'hooks/defi/useExchangedAmount'
 
 type Props = {
   items: DeFiRewardItem[]
@@ -11,7 +12,7 @@ type Props = {
 
 export const DeFiPortfolioReward = ({ items }: Props) => {
   const { theme } = useApplicationContext()
-  const { currencyFormatter } = useApplicationContext().appHook
+  const getAmount = useExchangedAmount()
 
   return (
     <View style={{ marginTop: 8, maxWidth: '100%' }}>
@@ -41,7 +42,7 @@ export const DeFiPortfolioReward = ({ items }: Props) => {
             </Row>
             <Row>
               <AvaText.Body2 color={theme.neutral50}>
-                {currencyFormatter(netUsdValue)}
+                {getAmount(netUsdValue)}
               </AvaText.Body2>
             </Row>
           </View>

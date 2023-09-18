@@ -57,6 +57,7 @@ const getStories = () => {
     "./storybook/stories/defi/DeFiPortfolioCommon.stories.tsx": require("../storybook/stories/defi/DeFiPortfolioCommon.stories.tsx"),
     "./storybook/stories/defi/DeFiPortfolioHeader.stories.tsx": require("../storybook/stories/defi/DeFiPortfolioHeader.stories.tsx"),
     "./storybook/stories/defi/DeFiPortfolioLending.stories.tsx": require("../storybook/stories/defi/DeFiPortfolioLending.stories.tsx"),
+    "./storybook/stories/defi/DeFiPortfolioReward.stories.tsx": require("../storybook/stories/defi/DeFiPortfolioReward.stories.tsx"),
     "./storybook/stories/defi/ErrorState.stories.tsx": require("../storybook/stories/defi/ErrorState.stories.tsx"),
     "./storybook/stories/defi/ZeroState.stories.tsx": require("../storybook/stories/defi/ZeroState.stories.tsx"),
     "./storybook/stories/earn/AmountInput.stories.tsx": require("../storybook/stories/earn/AmountInput.stories.tsx"),
