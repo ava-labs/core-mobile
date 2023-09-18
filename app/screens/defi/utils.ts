@@ -1,20 +1,21 @@
+import { AppTheme } from 'contexts/ApplicationContext'
 import {
   DeFiPortfolioItem,
   DeFiProtocolDetailTypes,
   DeFiToken,
-  DefiInsuranceBuyerItem,
-  DefiItem,
-  DefiItemGroup,
-  DefiLendingItem,
-  DefiPerpetualItem,
-  DefiRewardItem,
-  DefiVestingItem,
-  DefiCommonItem
-} from '../../services/defi/types'
+  DeFiInsuranceBuyerItem,
+  DeFiItem,
+  DeFiItemGroup,
+  DeFiLendingItem,
+  DeFiPerpetualItem,
+  DeFiRewardItem,
+  DeFiVestingItem,
+  DeFiCommonItem
+} from 'services/defi/types'
 
 export const mapPortfolioItems = (
   items: DeFiPortfolioItem[]
-): DefiItemGroup[] => {
+): DeFiItemGroup[] => {
   const groupItems = items
     .map(item => {
       // DeBank may return multiple detail types with the last one being the most accurate in their estimation.
@@ -50,13 +51,13 @@ export const mapPortfolioItems = (
           return null
       }
     })
-    .filter(Boolean) as DefiItem[] // Filter-out the nullish items.
+    .filter(Boolean) as DeFiItem[] // Filter-out the nullish items.
 
   // sort items by netUsdValue
   const sortedItems = sortItems(groupItems)
 
   const groupedByName = sortedItems.reduce(
-    (groups: Record<string, DefiItemGroup>, item: DefiItem) => {
+    (groups: Record<string, DeFiItemGroup>, item: DeFiItem) => {
       const group = groups[item.name] ?? {
         name: item.name,
         totalUsdValue: 0,
@@ -69,12 +70,12 @@ export const mapPortfolioItems = (
       }
       return groups
     },
-    {} as Record<string, DefiItemGroup>
+    {} as Record<string, DeFiItemGroup>
   )
   return Object.values(groupedByName)
 }
 
-const mapRewardItem = (item: DeFiPortfolioItem): DefiRewardItem => {
+const mapRewardItem = (item: DeFiPortfolioItem): DeFiRewardItem => {
   return {
     name: item.name,
     type: DeFiProtocolDetailTypes.REWARD,
@@ -83,7 +84,7 @@ const mapRewardItem = (item: DeFiPortfolioItem): DefiRewardItem => {
   }
 }
 
-const mapPerpetualItem = (item: DeFiPortfolioItem): DefiPerpetualItem => {
+const mapPerpetualItem = (item: DeFiPortfolioItem): DeFiPerpetualItem => {
   return {
     type: DeFiProtocolDetailTypes.PERPETUALS,
     name: item.name,
@@ -96,7 +97,7 @@ const mapPerpetualItem = (item: DeFiPortfolioItem): DefiPerpetualItem => {
   }
 }
 
-const mapInsuranceItem = (item: DeFiPortfolioItem): DefiInsuranceBuyerItem => {
+const mapInsuranceItem = (item: DeFiPortfolioItem): DeFiInsuranceBuyerItem => {
   return {
     type: DeFiProtocolDetailTypes.INSURANCE_BUYER,
     name: item.name,
@@ -108,7 +109,7 @@ const mapInsuranceItem = (item: DeFiPortfolioItem): DefiInsuranceBuyerItem => {
   }
 }
 
-const mapVestingItem = (item: DeFiPortfolioItem): DefiVestingItem => {
+const mapVestingItem = (item: DeFiPortfolioItem): DeFiVestingItem => {
   const token = item.detail.token as DeFiToken
 
   return {
@@ -123,7 +124,7 @@ const mapVestingItem = (item: DeFiPortfolioItem): DefiVestingItem => {
   }
 }
 
-const mapLendingItem = (item: DeFiPortfolioItem): DefiLendingItem => {
+const mapLendingItem = (item: DeFiPortfolioItem): DeFiLendingItem => {
   return {
     name: item.name,
     type: DeFiProtocolDetailTypes.LENDING,
@@ -135,7 +136,7 @@ const mapLendingItem = (item: DeFiPortfolioItem): DefiLendingItem => {
   }
 }
 
-const mapCommonItem = (item: DeFiPortfolioItem): DefiCommonItem => {
+const mapCommonItem = (item: DeFiPortfolioItem): DeFiCommonItem => {
   return {
     name: item.name,
     type: DeFiProtocolDetailTypes.COMMON,
@@ -145,6 +146,11 @@ const mapCommonItem = (item: DeFiPortfolioItem): DefiCommonItem => {
   }
 }
 
-const sortItems = (items: DefiItem[]): DefiItem[] => {
+const sortItems = (items: DeFiItem[]): DeFiItem[] => {
   return [...items].sort(({ netUsdValue: a }, { netUsdValue: b }) => b - a)
+}
+
+export const profitLossColors = (theme: AppTheme, value: number) => {
+  const coloredValue = value > 0 ? theme.colorSuccess : theme.colorError
+  return coloredValue
 }

@@ -48,8 +48,17 @@
   self.window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
   UIViewController *rootViewController = [UIViewController new];
   rootViewController.view = rootView;
+  rootViewController.view.backgroundColor = [UIColor blackColor];
   self.window.rootViewController = rootViewController;
   [self.window makeKeyAndVisible];
+  
+  if ([rootView isKindOfClass:[RCTRootView class]]) {
+    RCTRootView *rctRootView = (RCTRootView *)rootView;
+    UIStoryboard *sb = [UIStoryboard storyboardWithName:@"LaunchScreen" bundle:nil];
+    UIViewController *vc = [sb instantiateInitialViewController];
+    rctRootView.loadingView = vc.view;
+  }
+  
   return YES;
 }
 

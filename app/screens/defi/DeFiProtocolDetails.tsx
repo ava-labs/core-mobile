@@ -10,17 +10,15 @@ import { StyleSheet, View } from 'react-native'
 import LinkSVG from 'components/svg/LinkSVG'
 import { Space } from 'components/Space'
 import Card from 'components/Card'
-import AvaText from 'components/AvaText'
 import { useDeFiChainList } from 'hooks/defi/useDeFiChainList'
 import { openURL } from 'utils/openURL'
 import { ScrollView } from 'react-native-gesture-handler'
 import { useExchangedAmount } from 'hooks/defi/useExchangedAmount'
 import { ProtocolDetailsErrorState } from './components/ProtocolDetailsErrorState'
-import { ProtocolLogo } from './components/ProtocolLogo'
-import { NetworkLogo } from './components/NetworkLogo'
 import { mapPortfolioItems } from './utils'
 import { DeFiPortfolioItemGroup } from './components/DeFiPortfolioItemGroup'
 import { ZeroState } from './components/ZeroState'
+import { DeFiPortfolioHeader } from './components/DeFiPortfolioHeader'
 
 type ScreenProps = WalletScreenProps<
   typeof AppNavigation.Wallet.DeFiProtocolDetails
@@ -47,7 +45,7 @@ export const DeFiProtocolDetails = () => {
     openURL(data?.siteUrl)
   }, [data?.siteUrl])
 
-  const calculateTotalValueOfProtocolItems = useCallback(() => {
+  const calculatedTotalValueOfProtocolItems = useMemo(() => {
     if (!data?.portfolioItemList) return currencyFormatter(0)
     const totalValue = data?.portfolioItemList.reduce(
       (total, { stats }) => total + stats.netUsdValue,
@@ -64,43 +62,6 @@ export const DeFiProtocolDetails = () => {
     })
   }, [data?.portfolioItemList])
 
-  const renderCardHeader = () => {
-    return (
-      <View style={styles.headerContainer}>
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <ProtocolLogo size={48} uri={data?.logoUrl} />
-          <View style={{}}>
-            <AvaText.Heading5>{data?.name ?? ''}</AvaText.Heading5>
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center'
-              }}>
-              <NetworkLogo
-                uri={memoizedChain?.logoUrl}
-                style={{
-                  marginRight: 6
-                }}
-              />
-              <AvaText.Body1 color={theme.neutral400}>
-                {memoizedChain?.name ?? ''}
-              </AvaText.Body1>
-            </View>
-          </View>
-        </View>
-        <AvaButton.Base onPress={goToProtocolPage}>
-          <View style={{ alignItems: 'flex-end' }}>
-            <AvaText.Body2 color={theme.neutral50}>
-              {calculateTotalValueOfProtocolItems()}
-            </AvaText.Body2>
-            <Space y={6} />
-            <LinkSVG color={theme.white} />
-          </View>
-        </AvaButton.Base>
-      </View>
-    )
-  }
-
   if (isLoading) {
     return (
       <View style={styles.spinnerContainer}>
@@ -115,7 +76,14 @@ export const DeFiProtocolDetails = () => {
   return (
     <View style={styles.container}>
       <Card style={styles.card}>
-        {renderCardHeader()}
+        <DeFiPortfolioHeader
+          logoUrl={data.logoUrl}
+          name={data.name}
+          chainLogoUrl={memoizedChain?.logoUrl}
+          chainName={memoizedChain?.name}
+          goToProtocolPage={goToProtocolPage}
+          totalValueOfProtocolItems={calculatedTotalValueOfProtocolItems}
+        />
         <ScrollView>{portfolioItemList}</ScrollView>
       </Card>
       <AvaButton.PrimaryLarge onPress={goToProtocolPage}>

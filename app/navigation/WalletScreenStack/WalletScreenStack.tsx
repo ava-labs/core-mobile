@@ -70,6 +70,7 @@ import NotificationsStackScreen, {
   NotificationsStackParamList
 } from 'navigation/wallet/NotificationsStackScreen'
 import { DeFiProtocolDetails } from 'screens/defi/DeFiProtocolDetails'
+import SendFeedbackStackScreen from 'navigation/wallet/SendFeedbackStackScreen'
 import { BridgeStackParamList } from '../wallet/BridgeScreenStack'
 import {
   AddEthereumChainParams,
@@ -147,6 +148,7 @@ export type WalletScreenStackParams = {
   [AppNavigation.Wallet.NetworkDetails]: NetworkDetailsProps
   [AppNavigation.Wallet.NetworkAddEdit]: AddEditNetworkProps
   [AppNavigation.Wallet.Advanced]: NavigatorScreenParams<AdvancedStackParamList>
+  [AppNavigation.Wallet.SendFeedback]: undefined
   [AppNavigation.Wallet
     .Notifications]: NavigatorScreenParams<NotificationsStackParamList>
   [AppNavigation.Wallet.SecurityPrivacy]:
@@ -369,6 +371,10 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
         <WalletScreenS.Screen
           name={AppNavigation.Wallet.Notifications}
           component={NotificationsStackScreen}
+        />
+        <WalletScreenS.Screen
+          name={AppNavigation.Wallet.SendFeedback}
+          component={SendFeedbackStackScreen}
         />
         <WalletScreenS.Screen
           name={AppNavigation.Wallet.SecurityPrivacy}
