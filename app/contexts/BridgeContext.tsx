@@ -37,6 +37,11 @@ import { isEqual } from 'lodash'
 import { Network } from '@avalabs/chains-sdk'
 import Logger from 'utils/Logger'
 import { TransactionResponse } from 'ethers'
+import { showSnackBarCustom } from 'components/Snackbar'
+import { usePostCapture } from 'hooks/usePosthogCapture'
+import TransactionToast, {
+  TransactionToastType
+} from 'components/toast/TransactionToast'
 
 export enum TransferEventType {
   WRAP_STATUS = 'wrap_status',
@@ -49,8 +54,6 @@ interface BridgeContext {
     tx: PartialBridgeTransaction,
     network: Network
   ): Promise<void | { error: string }>
-
-  removeBridgeTransaction(tx: string): Promise<void>
 
   bridgeTransactions: BridgeState['bridgeTransactions']
   transferAsset: (
@@ -89,6 +92,7 @@ function LocalBridgeProvider({ children }: { children: ReactNode }) {
   const bitcoinProvider = useBitcoinProvider()
   const avalancheProvider = useAvalancheProvider()
   const { bridgeConfig: bridgeConfigSDK, setBridgeConfig } = useBridgeSDK()
+  const { capture } = usePostCapture()
 
   useEffect(() => {
     // sync bridge config in bridge sdk with ours
@@ -115,8 +119,25 @@ function LocalBridgeProvider({ children }: { children: ReactNode }) {
         try {
           const subscription = trackBridgeTransaction({
             bridgeTransaction: trackedTransaction,
-            onBridgeTransactionUpdate: (tx: BridgeTransaction) =>
-              dispatch(addBridgeTransaction(tx)),
+            onBridgeTransactionUpdate: (tx: BridgeTransaction) => {
+              if (tx.complete) {
+                dispatch(popBridgeTransaction(tx.sourceTxHash))
+
+                capture('BridgeTransferRequestSucceeded')
+
+                showSnackBarCustom({
+                  component: (
+                    <TransactionToast
+                      message={'Bridge Successful'}
+                      type={TransactionToastType.SUCCESS}
+                    />
+                  ),
+                  duration: 'short'
+                })
+              } else {
+                dispatch(addBridgeTransaction(tx))
+              }
+            },
             config,
             avalancheProvider,
             ethereumProvider,
@@ -132,7 +153,14 @@ function LocalBridgeProvider({ children }: { children: ReactNode }) {
         }
       }
     },
-    [avalancheProvider, bitcoinProvider, config, dispatch, ethereumProvider]
+    [
+      avalancheProvider,
+      bitcoinProvider,
+      config,
+      dispatch,
+      ethereumProvider,
+      capture
+    ]
   )
 
   const transferAsset = useCallback(
@@ -226,13 +254,6 @@ function LocalBridgeProvider({ children }: { children: ReactNode }) {
     ]
   )
 
-  const removeBridgeTransaction = useCallback(
-    async (sourceHash: string) => {
-      dispatch(popBridgeTransaction(sourceHash))
-    },
-    [dispatch]
-  )
-
   // load pending txs from storage
   useEffect(() => {
     if (Object.values(bridgeTransactions).length > 0) {
@@ -247,7 +268,6 @@ function LocalBridgeProvider({ children }: { children: ReactNode }) {
       value={{
         bridgeTransactions,
         createBridgeTransaction,
-        removeBridgeTransaction,
         transferAsset
       }}>
       {children}

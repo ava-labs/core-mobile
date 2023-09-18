@@ -23,13 +23,8 @@ import Logger from 'utils/Logger'
 import { useSelector } from 'react-redux'
 import { selectTokenInfo } from 'store/network'
 import { getBlockchainDisplayName } from 'screens/bridge/utils/bridgeUtils'
-import { showSnackBarCustom } from 'components/Snackbar'
-import TransactionToast, {
-  TransactionToastType
-} from 'components/toast/TransactionToast'
 import AvaButton from 'components/AvaButton'
 import AppNavigation from 'navigation/AppNavigation'
-import { usePostCapture } from 'hooks/usePosthogCapture'
 import { BITCOIN_NETWORK } from '@avalabs/chains-sdk'
 
 type Props = {
@@ -38,9 +33,7 @@ type Props = {
 }
 
 const BridgeTransactionStatus: FC<Props> = ({ txHash, showHideButton }) => {
-  const [toastShown, setToastShown] = useState<boolean>()
-  const { bridgeTransactions, removeBridgeTransaction } = useBridgeContext()
-  const { capture } = usePostCapture()
+  const { bridgeTransactions } = useBridgeContext()
   const [bridgeTransaction, setBridgeTransaction] =
     useState<BridgeTransaction>()
 
@@ -120,26 +113,6 @@ const BridgeTransactionStatus: FC<Props> = ({ txHash, showHideButton }) => {
         setBridgeTransaction(bridgeTransactions[txHash])
     },
     [bridgeTransactions, txHash]
-  )
-
-  useEffect(
-    function showToastOnComplete() {
-      if (bridgeTransaction?.complete && !toastShown) {
-        removeBridgeTransaction(bridgeTransaction.sourceTxHash)
-        setToastShown(true)
-        capture('BridgeTransferRequestSucceeded')
-        showSnackBarCustom({
-          component: (
-            <TransactionToast
-              message={'Bridge Successful'}
-              type={TransactionToastType.SUCCESS}
-            />
-          ),
-          duration: 'short'
-        })
-      }
-    },
-    [bridgeTransaction, capture, removeBridgeTransaction, toastShown]
   )
 
   useEffect(
