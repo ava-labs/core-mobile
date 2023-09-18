@@ -130,6 +130,7 @@ function LocalBridgeProvider({ children }: { children: ReactNode }) {
                     <TransactionToast
                       message={'Bridge Successful'}
                       type={TransactionToastType.SUCCESS}
+                      txHash={tx.sourceTxHash}
                     />
                   ),
                   duration: 'short'
