@@ -15,7 +15,6 @@ export const ProtocolLogo = ({
       style={{
         width: size,
         height: size,
-        marginRight: 16,
         borderRadius: size / 2
       }}
     />
