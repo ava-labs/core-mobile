@@ -3,7 +3,8 @@ import React, {
   ReactNode,
   useCallback,
   useContext,
-  useEffect
+  useEffect,
+  useRef
 } from 'react'
 import {
   Asset,
@@ -93,6 +94,7 @@ function LocalBridgeProvider({ children }: { children: ReactNode }) {
   const avalancheProvider = useAvalancheProvider()
   const { bridgeConfig: bridgeConfigSDK, setBridgeConfig } = useBridgeSDK()
   const { capture } = usePostCapture()
+  const isToastVisible = useRef<boolean>()
 
   useEffect(() => {
     // sync bridge config in bridge sdk with ours
@@ -122,19 +124,25 @@ function LocalBridgeProvider({ children }: { children: ReactNode }) {
             onBridgeTransactionUpdate: (tx: BridgeTransaction) => {
               if (tx.complete) {
                 dispatch(popBridgeTransaction(tx.sourceTxHash))
-
                 capture('BridgeTransferRequestSucceeded')
 
-                showSnackBarCustom({
-                  component: (
-                    <TransactionToast
-                      message={'Bridge Successful'}
-                      type={TransactionToastType.SUCCESS}
-                      txHash={tx.sourceTxHash}
-                    />
-                  ),
-                  duration: 'short'
-                })
+                if (!isToastVisible.current) {
+                  isToastVisible.current = true
+
+                  showSnackBarCustom({
+                    component: (
+                      <TransactionToast
+                        message={'Bridge Successful'}
+                        type={TransactionToastType.SUCCESS}
+                        txHash={tx.sourceTxHash}
+                      />
+                    ),
+                    duration: 'short',
+                    onClose: () => {
+                      isToastVisible.current = false
+                    }
+                  })
+                }
               } else {
                 dispatch(addBridgeTransaction(tx))
               }
