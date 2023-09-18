@@ -188,7 +188,6 @@ const NetworkTokens = () => {
   const renderActivityTab = () => {
     return (
       <ActivityList
-        embedded
         openTransactionDetails={openTransactionDetails}
         openTransactionStatus={openTransactionStatus}
       />
