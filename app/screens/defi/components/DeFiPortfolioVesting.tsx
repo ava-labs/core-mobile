@@ -62,7 +62,7 @@ export const DeFiPortfolioVesting = ({ items }: Props) => {
                     color={theme.neutral50}
                     numberOfLines={1}
                     ellipsizeMode="tail">
-                    {getAmount(netUsdValue)}
+                    {getAmount(netUsdValue, 'compact')}
                   </AvaText.Body2>
                 </Row>
               </Row>

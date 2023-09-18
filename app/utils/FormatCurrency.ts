@@ -6,17 +6,28 @@
  *   <amount> <symbol>
  *   e.g. 10 CHF
  */
+import { NotationTypes } from 'consts/FormatNumberTypes'
 import memoize from 'lodash/memoize'
 
-export function formatCurrency(
-  amount: number,
-  currency: string,
+interface FormatCurrencyProps {
+  amount: number
+  currency: string
   boostSmallNumberPrecision: boolean
-) {
-  const formatter =
-    boostSmallNumberPrecision && amount < 1
-      ? getSmallNumberCurrencyNumberFormat(currency)
-      : getCurrencyNumberFormat(currency)
+  notation?: NotationTypes
+}
+
+export function formatCurrency({
+  amount,
+  currency,
+  boostSmallNumberPrecision,
+  notation
+}: FormatCurrencyProps) {
+  const formatter = selectCurrencyFormat({
+    amount,
+    currency,
+    boostSmallNumberPrecision,
+    notation
+  })
   const parts = formatter.formatToParts(amount)
   // match "CHF 10"
   if (parts[0]?.value === currency) {
@@ -39,10 +50,7 @@ export function formatCurrency(
 const getCurrencyNumberFormat = memoize(
   (currency: string) =>
     new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: currency,
-      currencyDisplay: 'symbol', // the extension uses 'narrowSymbol'
-      minimumFractionDigits: 2,
+      ...commonNumberFormat(currency),
       maximumFractionDigits: 2
     })
 )
@@ -50,10 +58,41 @@ const getCurrencyNumberFormat = memoize(
 const getSmallNumberCurrencyNumberFormat = memoize(
   (currency: string) =>
     new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: currency,
-      currencyDisplay: 'symbol', // the extension uses 'narrowSymbol'
-      minimumFractionDigits: 2,
+      ...commonNumberFormat(currency),
       maximumFractionDigits: 8
     })
 )
+
+const getCompactCurrencyNumberFormat = memoize(
+  (currency: string) =>
+    new Intl.NumberFormat('en-US', {
+      ...commonNumberFormat(currency),
+      maximumFractionDigits: 2,
+      notation: 'compact'
+    })
+)
+
+const commonNumberFormat = (
+  currency: string
+): Partial<Intl.NumberFormatOptions> => {
+  return {
+    style: 'currency',
+    currency,
+    currencyDisplay: 'symbol', // the extension uses 'narrowSymbol'
+    minimumFractionDigits: 2
+  }
+}
+
+const selectCurrencyFormat = ({
+  amount,
+  currency,
+  boostSmallNumberPrecision,
+  notation
+}: FormatCurrencyProps) => {
+  if (notation === 'compact') {
+    return getCompactCurrencyNumberFormat(currency)
+  }
+  return boostSmallNumberPrecision && amount < 1
+    ? getSmallNumberCurrencyNumberFormat(currency)
+    : getCurrencyNumberFormat(currency)
+}
