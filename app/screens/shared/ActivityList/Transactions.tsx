@@ -22,6 +22,7 @@ import { RefreshControl } from 'components/RefreshControl'
 import { usePostCapture } from 'hooks/usePosthogCapture'
 import FlashList from 'components/FlashList'
 import { getDayString } from 'utils/date/getDayString'
+import { isPendingBridgeTransaction } from 'screens/bridge/utils/bridgeUtils'
 
 const SCREEN_WIDTH = Dimensions.get('window').width
 const BOTTOM_PADDING = SCREEN_WIDTH * 0.3
@@ -116,7 +117,7 @@ const Transactions = ({
     }
 
     // render row
-    if ('addressBTC' in item) {
+    if (isPendingBridgeTransaction(item)) {
       return renderPendingBridgeTransaction(item)
     } else {
       const onPress = () => {
@@ -152,7 +153,7 @@ const Transactions = ({
   const keyExtractor = (item: string | Transaction | BridgeTransaction) => {
     if (typeof item === 'string') return item
 
-    if ('addressBTC' in item) return `pending-${item.sourceTxHash}`
+    if (isPendingBridgeTransaction(item)) return `pending-${item.sourceTxHash}`
 
     return item.hash
   }
