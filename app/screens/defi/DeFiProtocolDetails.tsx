@@ -113,6 +113,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center'
   },
   card: {
+    flex: 1,
     marginTop: 16,
     marginBottom: 24,
     padding: 16
