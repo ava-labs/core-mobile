@@ -10,7 +10,7 @@ import { StackedImages } from 'components/StackedImages'
 type Props = {
   items: DeFiRewardItem[]
 }
-
+const MAX_TOKEN_COUNT = 3
 export const DeFiPortfolioReward = ({ items }: Props) => {
   const { theme } = useApplicationContext()
   const getAmount = useExchangedAmount()
@@ -23,7 +23,9 @@ export const DeFiPortfolioReward = ({ items }: Props) => {
       </Row>
       {items.map(({ tokens, netUsdValue }, index) => {
         const symbols = tokens?.map(({ symbol }) => symbol).join(' + ')
-        const logos = tokens?.slice(0, 3).map(({ logoUrl }) => logoUrl)
+        const logos = tokens
+          ?.slice(0, MAX_TOKEN_COUNT)
+          .map(({ logoUrl }) => logoUrl)
         return (
           <View
             key={`defi-rewards-${index}`}

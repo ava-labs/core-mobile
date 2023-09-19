@@ -12,6 +12,8 @@ interface Props {
   items: DeFiPerpetualItem[]
 }
 
+const IMAGE_SIZE = 20
+
 export const DeFiPortfolioPerpetual: FC<Props> = ({ items }) => {
   const { currencyFormatter } = useApplicationContext().appHook
   const { theme } = useApplicationContext()
@@ -40,13 +42,14 @@ export const DeFiPortfolioPerpetual: FC<Props> = ({ items }) => {
           { marginToken, positionToken, profitUsdValue, netUsdValue },
           index
         ) => {
+          const tokenWidth = IMAGE_SIZE * 2
           return (
             <View key={`defi-perpetual-${index}`}>
               <Row style={{ justifyContent: 'space-between', marginTop: 8 }}>
-                <Row style={{ width: 16, marginRight: 8 }}>
+                <Row>
                   <StackedImages
                     imageUrls={[positionToken.logoUrl, marginToken.logoUrl]}
-                    size={20}
+                    size={IMAGE_SIZE}
                     style={{ borderColor: theme.colorBg2, borderWidth: 2 }}
                   />
                 </Row>
@@ -60,7 +63,7 @@ export const DeFiPortfolioPerpetual: FC<Props> = ({ items }) => {
                 </AvaText.Body2>
               </Row>
               <Row style={{ justifyContent: 'space-between', marginTop: 4 }}>
-                <View style={{ marginLeft: 32, marginBottom: 8 }}>
+                <View style={{ marginLeft: tokenWidth, marginBottom: 8 }}>
                   <AvaText.Caption color={theme.neutral400}>
                     PnL
                   </AvaText.Caption>
