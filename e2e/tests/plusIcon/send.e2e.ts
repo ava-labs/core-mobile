@@ -28,6 +28,7 @@ describe('Send AVAX', () => {
 
   it('should successfully navigate to send and review screen', async () => {
     const secondAccountAddress = await AccountManagePage.createSecondAccount()
+    await PortfolioPage.tapAvaxNetwork()
     await PortfolioPage.tapActivityTab()
     await SendPage.sendTokenTo2ndAccount(
       sendLoc.avaxToken,

@@ -19,6 +19,7 @@ describe('Send Eth to another account', () => {
     await PortfolioPage.tapNetworksDropdownETH()
 
     const secondAccountAddress = await AccountManagePage.createSecondAccount()
+    await PortfolioPage.tapEthNetwork()
     await PortfolioPage.tapActivityTab()
     await SendPage.sendTokenTo2ndAccount(
       sendLoc.ethToken,
