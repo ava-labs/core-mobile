@@ -14,6 +14,7 @@ import { useDeFiChainList } from 'hooks/defi/useDeFiChainList'
 import { openURL } from 'utils/openURL'
 import { ScrollView } from 'react-native-gesture-handler'
 import { useExchangedAmount } from 'hooks/defi/useExchangedAmount'
+import Separator from 'components/Separator'
 import { ProtocolDetailsErrorState } from './components/ProtocolDetailsErrorState'
 import { mapPortfolioItems } from './utils'
 import { DeFiPortfolioItemGroup } from './components/DeFiPortfolioItemGroup'
@@ -65,10 +66,14 @@ export const DeFiProtocolDetails = () => {
   const renderCardContent = () => {
     if (!data?.portfolioItemList || data.portfolioItemList.length === 0) {
       return (
-        <ZeroState
-          bodyText="No data has been found. Go back to 
-  DeFi portfolio."
-        />
+        <>
+          <Separator style={{ marginTop: 16 }} />
+          <ZeroState
+            bodyText="No data has been found. Go back to 
+          DeFi portfolio."
+            style={{ marginVertical: 48 }}
+          />
+        </>
       )
     }
     return <ScrollView>{portfolioItemList}</ScrollView>
@@ -107,11 +112,13 @@ export const DeFiProtocolDetails = () => {
         />
         {renderCardContent()}
       </Card>
-      <AvaButton.PrimaryLarge onPress={goToProtocolPage}>
-        <LinkSVG color={theme.logoColor} />
-        <Space x={8} />
-        {`Go to ${data?.name ?? protocolId}`}
-      </AvaButton.PrimaryLarge>
+      <View style={{ marginBottom: 41 }}>
+        <AvaButton.PrimaryLarge onPress={goToProtocolPage}>
+          <LinkSVG color={theme.logoColor} />
+          <Space x={8} />
+          {`Go to ${data?.name ?? protocolId}`}
+        </AvaButton.PrimaryLarge>
+      </View>
     </View>
   )
 }
@@ -120,13 +127,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: 16,
-    marginBottom: 41,
     justifyContent: 'space-between'
-  },
-  headerContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center'
   },
   spinnerContainer: {
     flex: 1,
@@ -134,7 +135,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center'
   },
   card: {
-    flex: 1,
+    flexShrink: 1,
     marginTop: 16,
     marginBottom: 24,
     padding: 16
