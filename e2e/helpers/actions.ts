@@ -11,6 +11,12 @@ const reportUIPerformanceFilePath =
 const tempUIPerformanceFilePath =
   './e2e/tests/performance/testResults/tempResults.txt'
 
+const balanceToNumber = async (balance: Detox.NativeMatcher, index = 0) => {
+  //currently works only with android
+  const availableBalance: any = await getAttributes(balance, index)
+  return parseFloat(await availableBalance.text.match(/[\d.]+/)[0])
+}
+
 const tap = async (item: Detox.NativeMatcher) => {
   await element(item).tap()
 }
@@ -259,6 +265,7 @@ async function writeQrCodeToFile(clipboardValue: string) {
 }
 
 export default {
+  balanceToNumber,
   tap,
   longPress,
   waitForElement,

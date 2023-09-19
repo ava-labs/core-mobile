@@ -48,4 +48,8 @@ describe('Stake: testnet flow', () => {
     await Actions.waitForElement(StakePage.newStakeTimeRemaining, 15000, 0)
     await Assert.isVisible(StakePage.newStakeTimeRemaining)
   })
+
+  it('should verify active staking items', async () => {
+    await StakePage.verifyActiveTabItems()
+  })
 })
