@@ -19,6 +19,7 @@ import { Popable } from 'react-native-popable'
 import { useImportAnyStuckFunds } from 'hooks/earn/useImportAnyStuckFunds'
 import { Avax } from 'types/Avax'
 import { PopableContent } from 'components/PopableContent'
+import { usePostCapture } from 'hooks/usePosthogCapture'
 import { getStakePrimaryColor } from '../utils'
 import { BalanceLoader } from './BalanceLoader'
 import { CircularProgress } from './CircularProgress'
@@ -26,6 +27,7 @@ import { CircularProgress } from './CircularProgress'
 type ScreenProps = EarnScreenProps<typeof AppNavigation.Earn.StakeDashboard>
 
 export const Balance = () => {
+  const { capture } = usePostCapture()
   const { theme } = useApplicationContext()
   const { navigate } = useNavigation<ScreenProps['navigation']>()
   const pChainBalance = usePChainBalance()
@@ -84,6 +86,7 @@ export const Balance = () => {
   ]
 
   const goToGetStarted = () => {
+    capture('StakeBegin', { from: 'BalanceScreen' })
     navigate(AppNavigation.Wallet.Earn, {
       screen: AppNavigation.Earn.StakeSetup,
       params: {
@@ -93,6 +96,7 @@ export const Balance = () => {
   }
 
   const goToClaimRewards = () => {
+    capture('StakeClaim')
     navigate(AppNavigation.Wallet.Earn, {
       screen: AppNavigation.Earn.ClaimRewards
     })

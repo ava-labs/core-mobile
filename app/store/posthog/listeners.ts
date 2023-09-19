@@ -9,7 +9,6 @@ import {
   selectDistinctID,
   selectIsAnalyticsEnabled
 } from 'store/posthog/slice'
-import Logger from 'utils/Logger'
 import PostHogService from 'services/posthog/PostHogService'
 import { AppListenerEffectAPI } from 'store'
 import { Action } from '@reduxjs/toolkit'
@@ -28,7 +27,6 @@ export const posthogCapture = ({
   event: string
   properties?: JsonMap
 }) => {
-  Logger.info(`posthog capture: ${event}`, properties)
   return PostHogService.capture(event, distinctId, posthogUserId, properties)
 }
 
@@ -38,8 +36,10 @@ const fetchFeatureFlagsPeriodically = async (
 ) => {
   const { condition, dispatch } = listenerApi
 
+  const distinctId = selectDistinctID(listenerApi.getState())
+
   async function fetchFeatureFlags() {
-    const featureFlags = await PostHogService.fetchFeatureFlags()
+    const featureFlags = await PostHogService.fetchFeatureFlags(distinctId)
     featureFlags && dispatch(setFeatureFlags(featureFlags))
   }
 
@@ -52,6 +52,14 @@ const fetchFeatureFlagsPeriodically = async (
       listenerApi.delay(FEATURE_FLAGS_FETCH_INTERVAL)
     ])
   }
+}
+
+const posthogIdentifyUser = async (
+  _: Action,
+  listenerApi: AppListenerEffectAPI
+) => {
+  const distinctId = selectDistinctID(listenerApi.getState())
+  await PostHogService.identifyUser(distinctId)
 }
 
 export const addPosthogListeners = (startListening: AppStartListening) => {
@@ -80,5 +88,10 @@ export const addPosthogListeners = (startListening: AppStartListening) => {
   startListening({
     actionCreator: onRehydrationComplete,
     effect: fetchFeatureFlagsPeriodically
+  })
+
+  startListening({
+    actionCreator: onRehydrationComplete,
+    effect: posthogIdentifyUser
   })
 }

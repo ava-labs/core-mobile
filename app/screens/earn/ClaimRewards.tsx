@@ -22,16 +22,14 @@ import { useAvaxFormatter } from 'hooks/formatter/useAvaxFormatter'
 import { useTimeElapsed } from 'hooks/time/useTimeElapsed'
 import Spinner from 'components/animation/Spinner'
 import { timeToShowNetworkFeeError } from 'consts/earn'
+import { usePostCapture } from 'hooks/usePosthogCapture'
 import { ConfirmScreen } from './components/ConfirmScreen'
 import { EmptyClaimRewards } from './EmptyClaimRewards'
 
 type ScreenProps = EarnScreenProps<typeof AppNavigation.Earn.ClaimRewards>
 
-const onClaimError = (error: Error) => {
-  showSimpleToast(error.message)
-}
-
 const ClaimRewards = () => {
+  const { capture } = usePostCapture()
   const { theme } = useApplicationContext()
   const { navigate, goBack } = useNavigation<ScreenProps['navigation']>()
   const onBack = useRoute<ScreenProps['route']>().params?.onBack
@@ -41,7 +39,7 @@ const ClaimRewards = () => {
   const nAvaxFormatter = useNAvaxFormatter()
   const avaxFormatter = useAvaxFormatter()
   const claimRewardsMutation = useClaimRewards(
-    goBack,
+    onClaimSuccess,
     onClaimError,
     onFundsStuck
   )
@@ -75,7 +73,8 @@ const ClaimRewards = () => {
 
   const [feesInAvax, feesInCurrency] = avaxFormatter(totalFees, true)
 
-  const handleGoBack = () => {
+  const cancelClaim = () => {
+    capture('StakeCancelClaim')
     if (onBack) {
       onBack()
     } else {
@@ -112,14 +111,25 @@ const ClaimRewards = () => {
   }
 
   const issueClaimRewards = () => {
+    capture('StakeIssueClaim')
     claimRewardsMutation.mutate()
+  }
+
+  function onClaimSuccess() {
+    capture('StakeClaimSuccess')
+    goBack()
+  }
+
+  function onClaimError(error: Error) {
+    capture('StakeClaimFail')
+    showSimpleToast(error.message)
   }
 
   return (
     <ConfirmScreen
       isConfirming={claimRewardsMutation.isPending}
       onConfirm={issueClaimRewards}
-      onCancel={handleGoBack}
+      onCancel={cancelClaim}
       header="Claim Rewards"
       confirmBtnTitle="Claim Now"
       cancelBtnTitle="Cancel"

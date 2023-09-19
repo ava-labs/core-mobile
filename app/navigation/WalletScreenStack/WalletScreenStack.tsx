@@ -69,6 +69,8 @@ import EarnScreenStack, {
 import NotificationsStackScreen, {
   NotificationsStackParamList
 } from 'navigation/wallet/NotificationsStackScreen'
+import { DeFiProtocolDetails } from 'screens/defi/DeFiProtocolDetails'
+import SendFeedbackStackScreen from 'navigation/wallet/SendFeedbackStackScreen'
 import { BridgeStackParamList } from '../wallet/BridgeScreenStack'
 import {
   AddEthereumChainParams,
@@ -146,6 +148,7 @@ export type WalletScreenStackParams = {
   [AppNavigation.Wallet.NetworkDetails]: NetworkDetailsProps
   [AppNavigation.Wallet.NetworkAddEdit]: AddEditNetworkProps
   [AppNavigation.Wallet.Advanced]: NavigatorScreenParams<AdvancedStackParamList>
+  [AppNavigation.Wallet.SendFeedback]: undefined
   [AppNavigation.Wallet
     .Notifications]: NavigatorScreenParams<NotificationsStackParamList>
   [AppNavigation.Wallet.SecurityPrivacy]:
@@ -187,6 +190,7 @@ export type WalletScreenStackParams = {
   [AppNavigation.Modal
     .AvalancheSignTransactionV2]: AvalancheSignTransactionV2Params
   [AppNavigation.Modal.StakeDisclaimer]: undefined
+  [AppNavigation.Wallet.DeFiProtocolDetails]: { protocolId: string }
 }
 
 const WalletScreenS = createStackNavigator<WalletScreenStackParams>()
@@ -369,6 +373,10 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
           component={NotificationsStackScreen}
         />
         <WalletScreenS.Screen
+          name={AppNavigation.Wallet.SendFeedback}
+          component={SendFeedbackStackScreen}
+        />
+        <WalletScreenS.Screen
           name={AppNavigation.Wallet.SecurityPrivacy}
           component={SecurityPrivacyStackScreen}
         />
@@ -393,6 +401,11 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
           }}
           name={AppNavigation.Wallet.QRCode}
           component={CaptureDappQR}
+        />
+        <WalletScreenS.Screen
+          options={MainHeaderOptions()}
+          name={AppNavigation.Wallet.DeFiProtocolDetails}
+          component={DeFiProtocolDetails}
         />
         {createModals(WalletScreenS)}
       </WalletScreenS.Navigator>

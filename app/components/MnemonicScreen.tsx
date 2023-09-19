@@ -8,14 +8,22 @@ import AvaButton from 'components/AvaButton'
 import CopySVG from 'components/svg/CopySVG'
 import { copyToClipboard } from 'utils/DeviceTools'
 import { Opacity30 } from 'resources/Constants'
+import AppNavigation from 'navigation/AppNavigation'
+import { useNavigation } from '@react-navigation/native'
+import { RootStackScreenProps } from 'navigation/types'
 
 type Props = {
   mnemonic: string
   testID?: string
 }
 
+type CreateWalletNavigationProp = RootStackScreenProps<
+  typeof AppNavigation.Root.CopyPhraseWarning
+>['navigation']
+
 export default function MnemonicScreen({ mnemonic }: Props) {
   const { theme, isDarkMode } = useApplicationContext()
+  const { navigate } = useNavigation<CreateWalletNavigationProp>()
 
   const mnemonics = () => {
     const mnemonicColumns: Element[][] = [[], [], []]
@@ -36,6 +44,14 @@ export default function MnemonicScreen({ mnemonic }: Props) {
         <View style={styles.mnemonicColumn}>{mnemonicColumns[2]}</View>
       </>
     )
+  }
+
+  function handleCopyPhrase() {
+    navigate(AppNavigation.Root.CopyPhraseWarning, {
+      copy: () => {
+        copyToClipboard(mnemonic)
+      }
+    })
   }
 
   return (
@@ -66,7 +82,7 @@ export default function MnemonicScreen({ mnemonic }: Props) {
       <View style={{ alignSelf: 'flex-end', marginTop: 16 }}>
         <AvaButton.TextWithIcon
           disabled={!mnemonic}
-          onPress={() => copyToClipboard(mnemonic)}
+          onPress={handleCopyPhrase}
           icon={<CopySVG />}
           testID="mnemonic_screen__copy_phrase_button"
           text={

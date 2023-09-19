@@ -9,6 +9,19 @@ const CORE_WEB_HOSTNAMES = [
   'ava-labs.github.io' // internal playground
 ]
 
+/**
+ * Core - Browser Extension ids
+ * When parsed with URL(...), the browser ID is recognized as "hostname".
+ * For example, this:
+ *   new URL('chrome-extension://agoakfejjabomempkjlepdflaleeobhb/popup.html#/home')
+ * results in:
+ *   URL({ hostname: 'agoakfejjabomempkjlepdflaleeobhb', ... })
+ */
+const CORE_EXT_HOSTNAMES = [
+  'agoakfejjabomempkjlepdflaleeobhb', // production build
+  'dnoiacbfkodekgkjbpoagaljpbhaedmd' // blue build
+]
+
 const CORE_WEB_URLS_REGEX = [
   'https://[a-zA-Z0-9-]+\\.core-web\\.pages\\.dev' // for all https://*.core-web.pages.dev urls
 ]
@@ -17,11 +30,14 @@ export const isCoreMethod = (method: string) =>
   CORE_ONLY_METHODS.includes(method as RpcMethod)
 
 export const isCoreDomain = (url: string) => {
-  const hostname = new URL(url).hostname
+  const { hostname, protocol } = new URL(url)
+  const isCoreExt =
+    CORE_EXT_HOSTNAMES.includes(hostname) && protocol === 'chrome-extension:'
 
   return (
     CORE_WEB_HOSTNAMES.includes(hostname) ||
-    CORE_WEB_URLS_REGEX.some(regex => new RegExp(regex).test(url))
+    CORE_WEB_URLS_REGEX.some(regex => new RegExp(regex).test(url)) ||
+    isCoreExt
   )
 }
 

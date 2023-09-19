@@ -53,6 +53,14 @@ const getStories = () => {
     "./storybook/stories/BottomSheet.stories.tsx": require("../storybook/stories/BottomSheet.stories.tsx"),
     "./storybook/stories/CalendarInput.stories.tsx": require("../storybook/stories/CalendarInput.stories.tsx"),
     "./storybook/stories/ConfirmationTracker.stories.tsx": require("../storybook/stories/ConfirmationTracker.stories.tsx"),
+    "./storybook/stories/defi/DeFiPortfolioCommon.stories.tsx": require("../storybook/stories/defi/DeFiPortfolioCommon.stories.tsx"),
+    "./storybook/stories/defi/DeFiPortfolioHeader.stories.tsx": require("../storybook/stories/defi/DeFiPortfolioHeader.stories.tsx"),
+    "./storybook/stories/defi/DeFiPortfolioLending.stories.tsx": require("../storybook/stories/defi/DeFiPortfolioLending.stories.tsx"),
+    "./storybook/stories/defi/DeFiPortfolioReward.stories.tsx": require("../storybook/stories/defi/DeFiPortfolioReward.stories.tsx"),
+    "./storybook/stories/defi/DeFiPortfolioPerpetual.stories.tsx": require("../storybook/stories/defi/DeFiPortfolioPerpetual.stories.tsx"),
+    "./storybook/stories/defi/DeFiPortfolioVesting.stories.tsx": require("../storybook/stories/defi/DeFiPortfolioVesting.stories.tsx"),
+    "./storybook/stories/defi/ErrorState.stories.tsx": require("../storybook/stories/defi/ErrorState.stories.tsx"),
+    "./storybook/stories/defi/ZeroState.stories.tsx": require("../storybook/stories/defi/ZeroState.stories.tsx"),
     "./storybook/stories/earn/AmountInput.stories.tsx": require("../storybook/stories/earn/AmountInput.stories.tsx"),
     "./storybook/stories/earn/CircularProgress.stories.tsx": require("../storybook/stories/earn/CircularProgress.stories.tsx"),
     "./storybook/stories/earn/ConfirmScreen.stories.tsx": require("../storybook/stories/earn/ConfirmScreen.stories.tsx"),
@@ -63,6 +71,7 @@ const getStories = () => {
     "./storybook/stories/FeeSelector.stories.tsx": require("../storybook/stories/FeeSelector.stories.tsx"),
     "./storybook/stories/Lotties.stories.tsx": require("../storybook/stories/Lotties.stories.tsx"),
     "./storybook/stories/RadioButton.stories.tsx": require("../storybook/stories/RadioButton.stories.tsx"),
+    "./storybook/stories/StackedImages.stories.tsx": require("../storybook/stories/StackedImages.stories.tsx"),
     "./storybook/stories/SVGs.stories.tsx": require("../storybook/stories/SVGs.stories.tsx"),
   };
 };

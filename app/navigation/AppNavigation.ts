@@ -2,7 +2,8 @@ enum Root {
   Wallet = 'Stacks.Wallet',
   Onboard = 'Stacks.Onboard',
   Welcome = 'Stacks.Welcome',
-  NoWallet = 'Stacks.NoWallet'
+  NoWallet = 'Stacks.NoWallet',
+  CopyPhraseWarning = 'Stacks.CopyPhraseWarning'
 }
 
 enum OnboardScreens {
@@ -56,7 +57,9 @@ enum WalletScreens {
   Bridge = 'WalletScreens.Bridge',
   QRCode = 'WalletScreens.QRCode',
   Earn = 'WalletScreens.Earn',
-  Notifications = 'WalletScreens.Notifications'
+  Notifications = 'WalletScreens.Notifications',
+  DeFiProtocolDetails = 'WalletScreens.DeFiProtocolDetails',
+  SendFeedback = 'WalletScreens.SendFeedback'
 }
 
 enum NoWalletScreens {
@@ -144,6 +147,10 @@ enum LegalScreens {
 enum AdvancedScreens {
   Advanced = 'AdvancedScreens.Advanced',
   DappConnectModal = 'AdvancedScreens.DappConnectModal'
+}
+
+enum SendFeedbackScreens {
+  SendFeedback = 'SendFeedbackScreens.SendFeedback'
 }
 
 enum Tabs {
@@ -242,7 +249,8 @@ const AppNavigation = {
   Buy: BuyScreens,
   Earn: EarnScreens,
   StakeSetup: StakeSetupScreens,
-  Notifications: NotificationsScreens
+  Notifications: NotificationsScreens,
+  SendFeedback: SendFeedbackScreens
 }
 
 export default AppNavigation

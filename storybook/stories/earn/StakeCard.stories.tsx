@@ -2,9 +2,11 @@ import React from 'react'
 import type { Meta } from '@storybook/react-native'
 import { StakeCard } from 'screens/earn/components/StakeCard'
 import { StakeStatus } from 'types/earn'
+import { withProviders } from '../../decorators/withProviders'
 
 export default {
-  title: 'Earn/StakeCard'
+  title: 'Earn/StakeCard',
+  decorators: [withProviders]
 } as Meta
 
 export const Ongoing = () => (

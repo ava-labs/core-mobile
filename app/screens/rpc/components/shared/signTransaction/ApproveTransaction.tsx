@@ -51,7 +51,11 @@ export function ApproveTransaction({
 
   const fiatValue = isUnlimited
     ? `${UNLIMITED_SPEND_LIMIT_LABEL} ${selectedCurrency}`
-    : formatCurrency(Number(limitValueAmount), selectedCurrency, true)
+    : formatCurrency({
+        amount: Number(limitValueAmount),
+        currency: selectedCurrency,
+        boostSmallNumberPrecision: true
+      })
 
   return (
     <>

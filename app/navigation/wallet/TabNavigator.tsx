@@ -13,6 +13,7 @@ import EarnSVG from 'components/svg/EarnSVG'
 import { usePosthogContext } from 'contexts/PosthogContext'
 import { useIsAvalancheNetwork } from 'hooks/useIsAvalancheNetwork'
 import { useIsEarnDashboardEnabled } from 'hooks/earn/useIsEarnDashboardEnabled'
+import { usePostCapture } from 'hooks/usePosthogCapture'
 import EarnScreenStack from './EarnScreenStack/EarnScreenStack'
 
 export type TabNavigatorParamList = {
@@ -29,6 +30,7 @@ const TabNavigator = () => {
   const { earnBlocked } = usePosthogContext()
   const { isEarnDashboardEnabled } = useIsEarnDashboardEnabled()
   const isAvalancheNetork = useIsAvalancheNetwork()
+  const { capture } = usePostCapture()
 
   const renderEarnTab = () => {
     if (earnBlocked) return null
@@ -56,6 +58,7 @@ const TabNavigator = () => {
               return
             }
 
+            capture('StakeOpened')
             if (!isEarnDashboardEnabled) {
               e.preventDefault()
               navigation.navigate(AppNavigation.Wallet.Earn, {

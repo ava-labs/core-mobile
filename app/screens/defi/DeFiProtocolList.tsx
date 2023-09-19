@@ -1,7 +1,6 @@
 import { useDeFiProtocolList } from 'hooks/defi/useDeFiProtocolList'
 import React from 'react'
-import { FlatList, Image, Linking, View, Pressable, Alert } from 'react-native'
-import DeFiService from 'services/defi/DeFiService'
+import { View } from 'react-native'
 import Card from 'components/Card'
 import { DeFiSimpleProtocol } from 'services/defi/types'
 import { PortfolioDeFiHomeLoader } from 'screens/portfolio/home/components/Loaders/PortfolioDeFiHomeLoader'
@@ -11,86 +10,108 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Space } from 'components/Space'
 import { useDeFiChainList } from 'hooks/defi/useDeFiChainList'
 import AvaButton from 'components/AvaButton'
+import { PortfolioScreenProps } from 'navigation/types'
+import AppNavigation from 'navigation/AppNavigation'
+import { useNavigation } from '@react-navigation/native'
+import { openURL } from 'utils/openURL'
+import BigList from 'components/BigList'
+import { useExchangedAmount } from 'hooks/defi/useExchangedAmount'
+import DeFiService from 'services/defi/DeFiService'
 import { ErrorState } from './components/ErrorState'
 import { ZeroState } from './components/ZeroState'
+import { ProtocolLogo } from './components/ProtocolLogo'
+import { NetworkLogo } from './components/NetworkLogo'
+
+type ScreenProps = PortfolioScreenProps<
+  typeof AppNavigation.Portfolio.Portfolio
+>['navigation']
 
 export const DeFiProtocolList = () => {
-  const {
-    theme,
-    appHook: { currencyFormatter }
-  } = useApplicationContext()
+  const { navigate } = useNavigation<ScreenProps>()
+
+  const { theme } = useApplicationContext()
   const { data: chainList } = useDeFiChainList()
-  const { data, isLoading, error } = useDeFiProtocolList()
+  const {
+    data,
+    isLoading,
+    error,
+    pullToRefresh,
+    isRefreshing,
+    isPaused,
+    isSuccess
+  } = useDeFiProtocolList()
 
   const memoizedData = React.useMemo(() => {
     if (!data) return []
     return DeFiService.sortSimpleProtocols(data)
   }, [data])
 
-  const handleGoToDetail = () => {
-    Alert.alert('Not Implemented')
+  const getAmount = useExchangedAmount()
+
+  const handleGoToDetail = (protocolId: string) => {
+    navigate({
+      name: AppNavigation.Wallet.DeFiProtocolDetails,
+      params: { protocolId }
+    })
+  }
+
+  const goToProtocolPage = async (siteUrl?: string) => {
+    openURL(siteUrl)
   }
 
   const handleExploreEcosystem = () => {
-    Linking.openURL('https://core.app/discover/')
+    openURL('https://core.app/discover/')
   }
 
   if (isLoading) return <PortfolioDeFiHomeLoader />
-  if (error) return <ErrorState />
-  if (memoizedData.length === 0)
-    return <ZeroState onExploreEcosystem={handleExploreEcosystem} />
+  if (error || (isPaused && !isSuccess)) {
+    return <ErrorState />
+  }
 
   const renderItem = ({ item }: { item: DeFiSimpleProtocol }) => {
-    const netUsdValue = currencyFormatter(item.netUsdValue)
+    const netUsdValue = getAmount(item.netUsdValue, 'compact')
     const networkLogo = chainList?.[item.chain]?.logoUrl
+    const protocolId = item.id
 
     const renderLogo = () => {
       return (
-        <View>
-          <Image
-            source={{ uri: item.logoUrl }}
+        <View style={{ marginRight: 16 }}>
+          <ProtocolLogo uri={item.logoUrl} />
+          <NetworkLogo
+            uri={networkLogo}
+            size={16}
             style={{
-              width: 40,
-              height: 40,
-              marginRight: 16,
-              borderRadius: 20
+              position: 'absolute',
+              bottom: -2,
+              right: -2,
+              borderColor: theme.colorBg2,
+              borderWidth: 2
             }}
           />
-          {networkLogo && (
-            <Image
-              source={{ uri: networkLogo }}
-              style={{
-                width: 12,
-                height: 12,
-                marginRight: 16,
-                borderRadius: 6,
-                position: 'absolute',
-                bottom: 0,
-                right: 0
-              }}
-            />
-          )}
         </View>
       )
     }
 
     return (
-      <AvaButton.Base onPress={handleGoToDetail}>
+      <AvaButton.Base onPress={() => handleGoToDetail(protocolId)}>
         <Card
           key={item.id}
           style={{
-            marginBottom: 8,
             padding: 16,
             flexDirection: 'row',
             alignItems: 'center',
             justifyContent: 'space-between'
           }}>
-          <View style={{ flexDirection: 'row' }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
             {renderLogo()}
-            <AvaText.Heading5>{item.name}</AvaText.Heading5>
+            <View style={{ flex: 1, marginRight: 8 }}>
+              <AvaText.Heading5 numberOfLines={1} ellipsizeMode="tail">
+                {item.name}
+              </AvaText.Heading5>
+            </View>
           </View>
           <View>
-            <Pressable onPress={handleExploreEcosystem}>
+            <AvaButton.Base onPress={() => goToProtocolPage(item.siteUrl)}>
               <View style={{ alignItems: 'flex-end' }}>
                 <AvaText.Body2 color={theme.neutral50}>
                   {netUsdValue}
@@ -98,7 +119,7 @@ export const DeFiProtocolList = () => {
                 <Space y={6} />
                 <LinkSVG color={theme.white} />
               </View>
-            </Pressable>
+            </AvaButton.Base>
           </View>
         </Card>
       </AvaButton.Base>
@@ -106,11 +127,17 @@ export const DeFiProtocolList = () => {
   }
 
   return (
-    <FlatList
+    <BigList
       data={memoizedData}
       renderItem={renderItem}
       keyExtractor={item => item.id}
       contentContainerStyle={{ padding: 16 }}
+      refreshing={isRefreshing}
+      onRefresh={pullToRefresh}
+      estimatedItemSize={80}
+      ListEmptyComponent={
+        <ZeroState onExploreEcosystem={handleExploreEcosystem} />
+      }
     />
   )
 }

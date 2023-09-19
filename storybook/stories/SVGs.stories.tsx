@@ -16,7 +16,7 @@ import AvaToken from 'components/svg/AvaToken'
 import BitcoinSVG from 'components/svg/BitcoinSVG'
 import BridgeSVG from 'components/svg/BridgeSVG'
 import BuySVG from 'components/svg/BuySVG'
-import BridgeToggleSVG from 'components/svg/BridgeToggleSVG'
+import BridgeToggleIcon from 'assets/icons/BridgeToggleIcon.svg'
 import Calendar2SVG from 'components/svg/Calendar2SVG'
 import CalendarSVG from 'components/svg/CalendarSVG'
 import CandleChartSVG from 'components/svg/CandleChartSVG'
@@ -122,7 +122,7 @@ export const SVGList = () => {
       <IconContainer children={<BitcoinSVG />} name="Bitcoin" />
       <IconContainer children={<BridgeSVG color="white" />} name="Bridge" />
       <IconContainer
-        children={<BridgeToggleSVG color="white" />}
+        children={<BridgeToggleIcon color="white" />}
         name="Bridge Toggle"
       />
       <IconContainer children={<BuySVG />} name="Buy" />
