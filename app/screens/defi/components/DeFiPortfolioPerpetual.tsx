@@ -6,6 +6,7 @@ import { Row } from 'components/Row'
 import { View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { profitLossColors } from 'screens/defi/utils'
+import { StackedImages } from 'components/StackedImages'
 
 interface Props {
   items: DeFiPerpetualItem[]
@@ -42,15 +43,24 @@ export const DeFiPortfolioPerpetual: FC<Props> = ({ items }) => {
           return (
             <View key={`defi-perpetual-${index}`}>
               <Row style={{ justifyContent: 'space-between', marginTop: 8 }}>
-                <AvaText.Body2 color={theme.neutral50}>
-                  {positionToken.symbol}/{marginToken.symbol}
-                </AvaText.Body2>
+                <Row style={{ width: 16, marginRight: 8 }}>
+                  <StackedImages
+                    imageUrls={[positionToken.logoUrl, marginToken.logoUrl]}
+                    size={16}
+                    style={{ borderColor: theme.colorBg2, borderWidth: 2 }}
+                  />
+                </Row>
+                <Row style={{ flex: 1, marginHorizontal: 8 }}>
+                  <AvaText.Body2 color={theme.neutral50}>
+                    {positionToken.symbol}/{marginToken.symbol}
+                  </AvaText.Body2>
+                </Row>
                 <AvaText.Body2 color={theme.neutral50}>
                   {currencyFormatter(netUsdValue)}
                 </AvaText.Body2>
               </Row>
               <Row style={{ justifyContent: 'space-between', marginTop: 4 }}>
-                <View>
+                <View style={{ marginLeft: 32, marginBottom: 8 }}>
                   <AvaText.Caption color={theme.neutral400}>
                     PnL
                   </AvaText.Caption>
