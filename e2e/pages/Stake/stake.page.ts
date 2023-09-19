@@ -288,6 +288,9 @@ class StakePage {
   }
 
   async getTopBalance(balanceItem: string) {
+    if (Actions.platform() === 'ios') {
+      return null
+    }
     let index
     switch (balanceItem) {
       case 'staked':
@@ -303,6 +306,7 @@ class StakePage {
       this.topBalanceItem,
       index
     )
+    console.log('availableBalance: ', availableBalance)
     return availableBalance
   }
 

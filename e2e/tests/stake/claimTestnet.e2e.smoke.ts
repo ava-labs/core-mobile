@@ -10,6 +10,7 @@ import { warmup } from '../../helpers/warmup'
 import StakePage from '../../pages/Stake/stake.page'
 import ClaimPage from '../../pages/Stake/claim.page'
 
+const jestExpect = require('expect')
 const platformIndex = Actions.platform() === Platform.iOS ? 1 : 2
 
 describe('Stake: testnet flow', () => {
@@ -20,9 +21,7 @@ describe('Stake: testnet flow', () => {
 
   it('should claim & verify claim screen items on testnet', async () => {
     await BottomTabsPage.tapPortfolioTab()
-    // await AccountManagePage.createAccount(2)
     await AdvancedPage.switchToTestnet()
-
     await BottomTabsPage.tapStakeTab()
     if (
       (await Actions.isVisible(
@@ -30,7 +29,12 @@ describe('Stake: testnet flow', () => {
         platformIndex
       )) === false
     ) {
-      return
+      if (Actions.platform() === Platform.Android) {
+        const zeroClaimableBalance = await StakePage.getTopBalance('claimable')
+        jestExpect(zeroClaimableBalance).toBe(0)
+      } else {
+        return
+      }
     } else {
       const claimableBalance = await StakePage.getTopBalance('claimable')
       await Actions.tapElementAtIndex(
@@ -40,7 +44,11 @@ describe('Stake: testnet flow', () => {
       await ClaimPage.verifyClaimRewardsScreenItems(claimableBalance)
       await ClaimPage.tapClaimNowButton()
       await Actions.waitForElement(StakePage.stakePrimaryButton, 25000, 0)
-      Assert.isVisible(StakePage.stakePrimaryButton)
+      await Assert.isVisible(StakePage.stakePrimaryButton)
+      if (Actions.platform() === Platform.Android) {
+        const newClaimableBalance = await StakePage.getTopBalance('claimable')
+        jestExpect(newClaimableBalance).toBe(0)
+      }
     }
   })
 })

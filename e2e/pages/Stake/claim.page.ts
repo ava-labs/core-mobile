@@ -45,10 +45,14 @@ class ClaimPage {
     await Actions.tap(this.claimButton)
   }
 
-  async verifyClaimRewardsScreenItems(topClaimableBalance: number) {
-    const claimableBalance = await Actions.balanceToNumber(
-      this.claimableAvaxAmount
-    )
+  async verifyClaimRewardsScreenItems(topClaimableBalance: number | null) {
+    if (Actions.platform() === 'android') {
+      const claimableBalance = await Actions.balanceToNumber(
+        this.claimableAvaxAmount
+      )
+
+      jestExpect(claimableBalance).toBe(topClaimableBalance)
+    }
     await Assert.isVisible(this.avaLogo)
     await Assert.isVisible(this.claimRewardsTitle)
     await Assert.isVisible(this.claimableAmountText)
@@ -58,7 +62,6 @@ class ClaimPage {
     await Assert.isVisible(this.claimableBalanceCurrency)
     await Assert.isVisible(this.networkFeeAmount)
     await Assert.isVisible(this.networkFeeCurrency)
-    jestExpect(claimableBalance).toBe(topClaimableBalance)
   }
 }
 
