@@ -84,10 +84,11 @@ export const DeFiProtocolDetails = () => {
   if (error || (isPaused && !isSuccess)) return <ProtocolDetailsErrorState />
   if (!data) {
     return (
-      <Card style={styles.card}>
+      <Card style={{ margin: 16 }}>
         <ZeroState
           bodyText="No data has been found. Go back to 
-        DeFi portfolio."
+    DeFi portfolio."
+          style={{ paddingVertical: 48 }}
         />
       </Card>
     )
