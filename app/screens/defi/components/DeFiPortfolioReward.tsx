@@ -23,7 +23,7 @@ export const DeFiPortfolioReward = ({ items }: Props) => {
       </Row>
       {items.map(({ tokens, netUsdValue }, index) => {
         const symbols = tokens?.map(({ symbol }) => symbol).join(' + ')
-        const logos = tokens?.slice(0, 2).map(({ logoUrl }) => logoUrl)
+        const logos = tokens?.slice(0, 3).map(({ logoUrl }) => logoUrl)
         return (
           <View
             key={`defi-rewards-${index}`}
@@ -32,7 +32,7 @@ export const DeFiPortfolioReward = ({ items }: Props) => {
               flexDirection: 'row',
               justifyContent: 'space-between'
             }}>
-            <Row style={{ width: 16, marginRight: 8 }}>
+            <Row style={{ marginRight: 8 }}>
               <StackedImages
                 imageUrls={logos?.filter(Boolean) || []}
                 size={20}
@@ -43,8 +43,7 @@ export const DeFiPortfolioReward = ({ items }: Props) => {
               style={{
                 flex: 1,
                 marginRight: 10,
-                maxWidth: '70%',
-                marginLeft: 16
+                maxWidth: '70%'
               }}>
               <AvaText.Body2 ellipsizeMode="tail" color={theme.neutral50}>
                 {symbols}
