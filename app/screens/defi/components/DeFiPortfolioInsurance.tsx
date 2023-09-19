@@ -6,14 +6,15 @@ import { Row } from 'components/Row'
 import { View } from 'react-native'
 import { Popable } from 'react-native-popable'
 import { useApplicationContext } from 'contexts/ApplicationContext'
+import { useExchangedAmount } from 'hooks/defi/useExchangedAmount'
 
 interface Props {
   items: DeFiInsuranceBuyerItem[]
 }
 
 export const DeFiPortfolioInsurance: FC<Props> = ({ items }) => {
-  const { currencyFormatter } = useApplicationContext().appHook
   const { theme } = useApplicationContext()
+  const getAmount = useExchangedAmount()
 
   return (
     <View style={{ marginTop: 8 }}>
@@ -63,9 +64,7 @@ export const DeFiPortfolioInsurance: FC<Props> = ({ items }) => {
               </Popable>
             </Row>
             <Row>
-              <AvaText.Body2>
-                {currencyFormatter(item.netUsdValue)}
-              </AvaText.Body2>
+              <AvaText.Body2>{getAmount(item.netUsdValue)}</AvaText.Body2>
             </Row>
           </View>
         )
