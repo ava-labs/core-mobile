@@ -46,7 +46,7 @@ export const DeFiPortfolioPerpetual: FC<Props> = ({ items }) => {
                 <Row style={{ width: 16, marginRight: 8 }}>
                   <StackedImages
                     imageUrls={[positionToken.logoUrl, marginToken.logoUrl]}
-                    size={16}
+                    size={20}
                     style={{ borderColor: theme.colorBg2, borderWidth: 2 }}
                   />
                 </Row>
