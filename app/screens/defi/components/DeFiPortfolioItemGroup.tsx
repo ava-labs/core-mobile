@@ -10,12 +10,14 @@ import {
   DeFiItem,
   DeFiItemGroup,
   DeFiLendingItem,
-  DeFiPerpetualItem
+  DeFiPerpetualItem,
+  DeFiRewardItem
 } from 'services/defi/types'
 import { DeFiPortfolioLending } from './DeFiPortfolioLending'
 import { DeFiPortfolioInsurance } from './DeFiPortfolioInsurance'
 import { DeFiPortfolioPerpetual } from './DeFiPortfolioPerpetual'
 import { DeFiPortfolioCommon } from './DeFiPortfolioCommon'
+import { DeFiPortfolioReward } from './DeFiPortfolioReward'
 
 interface Props {
   group: DeFiItemGroup
@@ -86,6 +88,10 @@ const renderGroupItem = ({ type, items, header }: GroupItemProps) => {
           items={items as DeFiCommonItem[]}
           header={header}
         />
+      )
+    case DeFiProtocolDetailTypes.REWARD:
+      return (
+        <DeFiPortfolioReward key={type} items={items as DeFiRewardItem[]} />
       )
   }
 }
