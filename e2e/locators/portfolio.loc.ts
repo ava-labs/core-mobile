@@ -12,6 +12,7 @@ export default {
   btcNetwork: 'Bitcoin',
   collectiblesTab: 'Collectibles',
   ethNetwork: 'Ethereum',
+  ethGoerlyNetwork: 'Ethereum Goerli',
   favoritesHeader: 'Favorites',
   manageNetworks: 'Manage networks',
   manageTokens: 'Manage',
