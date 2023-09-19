@@ -1,5 +1,4 @@
-export type NotationTypes =
-  | 'standard'
-  | 'scientific'
-  | 'engineering'
-  | 'compact'
+export type NotationTypes = Pick<
+  Intl.NumberFormatOptions,
+  'notation'
+>['notation']
