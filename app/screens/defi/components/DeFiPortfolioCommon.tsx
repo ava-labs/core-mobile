@@ -3,10 +3,8 @@ import { Row } from 'components/Row'
 import React from 'react'
 import { View } from 'react-native'
 import { DeFiCommonItem } from 'services/defi/types'
+import { IMAGE_SIZE, MAX_TOKEN_COUNT } from '../const'
 import { DeFiCommonRow } from './DeFiCommonRow'
-
-const IMAGE_SIZE = 20
-const MAX_TOKEN_COUNT = 3
 
 type Props = {
   header: string

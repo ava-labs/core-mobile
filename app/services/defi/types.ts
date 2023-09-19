@@ -89,6 +89,7 @@ interface DeFiInsuranceItem extends BaseDeFiItem {
   expiredAt: number
   description: string
 }
+
 export interface DeFiInsuranceBuyerItem extends DeFiInsuranceItem {
   type: DeFiProtocolDetailTypes.INSURANCE_BUYER
 }

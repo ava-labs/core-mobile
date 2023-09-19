@@ -136,7 +136,10 @@ export const DeFiProtocolList = () => {
       onRefresh={pullToRefresh}
       estimatedItemSize={80}
       ListEmptyComponent={
-        <ZeroState onExploreEcosystem={handleExploreEcosystem} />
+        <ZeroState
+          onExploreEcosystem={handleExploreEcosystem}
+          bodyText="Discover top dApps on Avalanche now."
+        />
       }
     />
   )

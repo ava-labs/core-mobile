@@ -62,6 +62,18 @@ export const DeFiProtocolDetails = () => {
     })
   }, [data?.portfolioItemList])
 
+  const renderCardContent = () => {
+    if (!data?.portfolioItemList || data.portfolioItemList.length === 0) {
+      return (
+        <ZeroState
+          bodyText="No data has been found. Go back to 
+  DeFi portfolio."
+        />
+      )
+    }
+    return <ScrollView>{portfolioItemList}</ScrollView>
+  }
+
   if (isLoading) {
     return (
       <View style={styles.spinnerContainer}>
@@ -70,8 +82,16 @@ export const DeFiProtocolDetails = () => {
     )
   }
   if (error || (isPaused && !isSuccess)) return <ProtocolDetailsErrorState />
-  if (!data || !data?.portfolioItemList || data.portfolioItemList.length === 0)
-    return <ZeroState skipBodyText />
+  if (!data) {
+    return (
+      <Card style={styles.card}>
+        <ZeroState
+          bodyText="No data has been found. Go back to 
+        DeFi portfolio."
+        />
+      </Card>
+    )
+  }
 
   return (
     <View style={styles.container}>
@@ -84,7 +104,7 @@ export const DeFiProtocolDetails = () => {
           goToProtocolPage={goToProtocolPage}
           totalValueOfProtocolItems={calculatedTotalValueOfProtocolItems}
         />
-        <ScrollView>{portfolioItemList}</ScrollView>
+        {renderCardContent()}
       </Card>
       <AvaButton.PrimaryLarge onPress={goToProtocolPage}>
         <LinkSVG color={theme.logoColor} />

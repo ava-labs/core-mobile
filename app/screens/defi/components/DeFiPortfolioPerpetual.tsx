@@ -7,26 +7,26 @@ import { View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { profitLossColors } from 'screens/defi/utils'
 import { StackedImages } from 'components/StackedImages'
+import { useExchangedAmount } from 'hooks/defi/useExchangedAmount'
+import { IMAGE_SIZE } from '../const'
+
+const tokenWidth = IMAGE_SIZE * 2
 
 interface Props {
   items: DeFiPerpetualItem[]
 }
 
-const IMAGE_SIZE = 20
-
 export const DeFiPortfolioPerpetual: FC<Props> = ({ items }) => {
-  const { currencyFormatter } = useApplicationContext().appHook
   const { theme } = useApplicationContext()
+  const getAmount = useExchangedAmount()
 
   const addSpaceWithOperator = (value: number) => {
-    const currencyValue = currencyFormatter(value)
-    const numberValue = Number(currencyValue.replace('$', '').replace(',', ''))
+    const pnlAmount = getAmount(value, 'compact')
     const addSpaceCondition =
-      numberValue < 0
-        ? currencyValue.replace('-', '- ')
-        : '+ '.concat(currencyValue)
+      value < 0 ? pnlAmount.replace('-', '- ') : '+ '.concat(pnlAmount)
     return addSpaceCondition
   }
+
   return (
     <View style={{ marginTop: 8, marginBottom: 8 }}>
       <Row
@@ -42,13 +42,15 @@ export const DeFiPortfolioPerpetual: FC<Props> = ({ items }) => {
           { marginToken, positionToken, profitUsdValue, netUsdValue },
           index
         ) => {
-          const tokenWidth = IMAGE_SIZE * 2
+          const imageUrls = [positionToken.logoUrl, marginToken.logoUrl].filter(
+            Boolean
+          ) as string[]
           return (
             <View key={`defi-perpetual-${index}`}>
               <Row style={{ justifyContent: 'space-between', marginTop: 8 }}>
                 <Row>
                   <StackedImages
-                    imageUrls={[positionToken.logoUrl, marginToken.logoUrl]}
+                    imageUrls={imageUrls}
                     size={IMAGE_SIZE}
                     style={{ borderColor: theme.colorBg2, borderWidth: 2 }}
                   />
@@ -59,7 +61,7 @@ export const DeFiPortfolioPerpetual: FC<Props> = ({ items }) => {
                   </AvaText.Body2>
                 </Row>
                 <AvaText.Body2 color={theme.neutral50}>
-                  {currencyFormatter(netUsdValue)}
+                  {getAmount(netUsdValue, 'compact')}
                 </AvaText.Body2>
               </Row>
               <Row style={{ justifyContent: 'space-between', marginTop: 4 }}>
