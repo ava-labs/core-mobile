@@ -47,7 +47,7 @@ export const DeFiLendingSection = ({ headers, tokens }: SectionProps) => {
             </View>
           </Row>
           <AvaText.Caption color={theme.neutral50}>
-            {getAmount(token.amount * token.price)}
+            {getAmount(token.amount * token.price, 'compact')}
           </AvaText.Caption>
         </Row>
       ))}

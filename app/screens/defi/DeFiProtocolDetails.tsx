@@ -51,7 +51,7 @@ export const DeFiProtocolDetails = () => {
       (total, { stats }) => total + stats.netUsdValue,
       0
     )
-    return getAmount(totalValue)
+    return getAmount(totalValue, 'compact')
   }, [currencyFormatter, data?.portfolioItemList, getAmount])
 
   const portfolioItemList = useMemo(() => {
