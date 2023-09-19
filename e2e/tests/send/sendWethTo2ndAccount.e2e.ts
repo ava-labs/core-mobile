@@ -16,6 +16,7 @@ describe('Send WETH to another account', () => {
 
   it('Should send WETH to second account', async () => {
     const secondAccountAddress = await AccountManagePage.createSecondAccount()
+    await PortfolioPage.tapAvaxNetwork()
     await PortfolioPage.tapActivityTab()
     await SendPage.sendTokenTo2ndAccount(
       sendLoc.wethToken,
