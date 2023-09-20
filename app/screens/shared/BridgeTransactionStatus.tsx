@@ -208,7 +208,6 @@ const BridgeTransactionStatus: FC<Props> = ({ txHash, showHideButton }) => {
             requiredConfirmationCount={
               bridgeTransaction.requiredConfirmationCount
             }
-            complete={bridgeTransaction.complete}
             startTime={bridgeTransaction.sourceStartedAt}
             endTime={bridgeTransaction.targetStartedAt}
             confirmationCount={bridgeTransaction.confirmationCount}
@@ -235,7 +234,6 @@ const BridgeTransactionStatus: FC<Props> = ({ txHash, showHideButton }) => {
             requiredConfirmationCount={
               1 // On avalanche, we just need 1 confirmation
             }
-            complete={bridgeTransaction.complete}
             confirmationCount={bridgeTransaction.complete ? 1 : 0}
           />
         )}

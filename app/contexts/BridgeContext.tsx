@@ -122,6 +122,10 @@ function LocalBridgeProvider({ children }: { children: ReactNode }) {
           const subscription = trackBridgeTransaction({
             bridgeTransaction: trackedTransaction,
             onBridgeTransactionUpdate: (tx: BridgeTransaction) => {
+              // Update the transaction, even if it's complete
+              // (we want to keep the tx up to date, because some Component(i.e. BridgeTransactionStatus) has local state that depends on it)
+              dispatch(addBridgeTransaction(tx))
+
               if (tx.complete) {
                 dispatch(popBridgeTransaction(tx.sourceTxHash))
                 capture('BridgeTransferRequestSucceeded')
@@ -143,8 +147,6 @@ function LocalBridgeProvider({ children }: { children: ReactNode }) {
                     }
                   })
                 }
-              } else {
-                dispatch(addBridgeTransaction(tx))
               }
             },
             config,
