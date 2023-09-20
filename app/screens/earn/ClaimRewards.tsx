@@ -93,9 +93,13 @@ const ClaimRewards = () => {
           alignItems: 'flex-end',
           marginTop: -4
         }}>
-        <AvaText.Heading6>{feesInAvax} AVAX</AvaText.Heading6>
+        <AvaText.Heading6 testID="network_fee">
+          {feesInAvax} AVAX
+        </AvaText.Heading6>
         <Space y={4} />
-        <AvaText.Body3 color={theme.colorText2}>{feesInCurrency}</AvaText.Body3>
+        <AvaText.Body3 testID="network_fee_currency" color={theme.colorText2}>
+          {feesInCurrency}
+        </AvaText.Body3>
       </View>
     )
   }
@@ -133,13 +137,16 @@ const ClaimRewards = () => {
       <View style={styles.verticalPadding}>
         <Row style={{ justifyContent: 'space-between' }}>
           <AvaText.Body2>Claimable Amount</AvaText.Body2>
-          <AvaText.Heading1 textStyle={{ marginTop: -2 }}>
+          <AvaText.Heading1
+            textStyle={{ marginTop: -2 }}
+            testID="claimable_balance">
             {claimableAmountInAvax + ' ' + tokenSymbol}
           </AvaText.Heading1>
         </Row>
         <Space y={4} />
         <AvaText.Heading3
-          textStyle={{ alignSelf: 'flex-end', color: theme.colorText2 }}>
+          textStyle={{ alignSelf: 'flex-end', color: theme.colorText2 }}
+          testID="claimable_balance_currency">
           {claimableAmountInCurrency}
         </AvaText.Heading3>
       </View>
