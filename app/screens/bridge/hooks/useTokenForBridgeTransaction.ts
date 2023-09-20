@@ -18,12 +18,10 @@ export function useTokenForBridgeTransaction(
       : ChainId.AVALANCHE_MAINNET_ID
   const tokens = useSelector(selectNetworkContractTokens(chainId))
 
-  const tokenInfo = useMemo(() => {
-    const selectedToken = tokens.find(
-      token => token.symbol === bridgeTransaction?.symbol
-    )
+  const tokenForBridgeTransaction = useMemo(() => {
+    const token = tokens.find(t => t.symbol === bridgeTransaction?.symbol)
 
-    if (selectedToken) return selectedToken
+    if (token) return token
 
     if (bridgeTransaction?.symbol === BITCOIN_NETWORK.networkToken.symbol) {
       return BITCOIN_NETWORK.networkToken
@@ -32,7 +30,5 @@ export function useTokenForBridgeTransaction(
     return undefined
   }, [tokens, bridgeTransaction])
 
-  if (!bridgeTransaction) return undefined
-
-  return tokenInfo
+  return tokenForBridgeTransaction
 }
