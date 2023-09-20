@@ -15,7 +15,7 @@ export const ErrorState = () => {
         <InfoSVG size={56} color={theme.white} />
         <Space y={24} />
         <View style={{ alignItems: 'center' }}>
-          <AvaText.Heading5>Data Unavailable!</AvaText.Heading5>
+          <AvaText.Heading5>Data Unavailable</AvaText.Heading5>
           <Space y={8} />
           <AvaText.Body2 textStyle={{ textAlign: 'center', lineHeight: 20 }}>
             {'Data currently unavailable, check back later.'}

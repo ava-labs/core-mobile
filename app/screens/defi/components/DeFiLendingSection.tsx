@@ -14,6 +14,11 @@ type SectionProps = {
 export const DeFiLendingSection = ({ headers, tokens }: SectionProps) => {
   const { theme } = useApplicationContext()
   const getAmount = useExchangedAmount()
+  const amountTextColor = headers.includes('Borrowed')
+    ? theme.colorError
+    : theme.neutral50
+
+  const numberSign = headers.includes('Borrowed') ? '- ' : ''
 
   return (
     <View style={{ marginTop: 16 }}>
@@ -42,11 +47,12 @@ export const DeFiLendingSection = ({ headers, tokens }: SectionProps) => {
                 color={theme.neutral50}
                 numberOfLines={1}
                 ellipsizeMode="tail">
-                {token.name}
+                {token.symbol}
               </AvaText.Body2>
             </View>
           </Row>
-          <AvaText.Caption color={theme.neutral50}>
+          <AvaText.Caption color={amountTextColor}>
+            {numberSign}
             {getAmount(token.amount * token.price, 'compact')}
           </AvaText.Caption>
         </Row>
