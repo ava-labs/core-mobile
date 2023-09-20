@@ -50,6 +50,10 @@ class PortfolioPage {
     return by.text(portfolio.ethNetwork)
   }
 
+  get ethGoerlyNetwork() {
+    return by.text(portfolio.ethGoerlyNetwork)
+  }
+
   get assetsTab() {
     return by.text(portfolio.assetsTab)
   }
@@ -128,6 +132,14 @@ class PortfolioPage {
 
   async tapBtcFavoriteToken() {
     await Action.tapElementAtIndex(this.btcTokenItem, 0)
+  }
+
+  async tapEthNetwork() {
+    await Action.tapElementAtIndex(this.ethNetwork, 1)
+  }
+
+  async tapEthGoerlyNetwork() {
+    await Action.tapElementAtIndex(this.ethGoerlyNetwork, 1)
   }
 
   async tapManageTokens() {

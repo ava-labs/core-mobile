@@ -29,7 +29,7 @@ export const BalanceItem = ({
           lineHeight: 24.5,
           marginHorizontal: 8
         }}
-        testID="available_balance">
+        testID="balance_item">
         {`${balance} AVAX`}
       </AvaText.Subtitle2>
       <AvaText.Caption

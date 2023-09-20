@@ -14,6 +14,7 @@ import { useDeFiChainList } from 'hooks/defi/useDeFiChainList'
 import { openURL } from 'utils/openURL'
 import { ScrollView } from 'react-native-gesture-handler'
 import { useExchangedAmount } from 'hooks/defi/useExchangedAmount'
+import Separator from 'components/Separator'
 import { ProtocolDetailsErrorState } from './components/ProtocolDetailsErrorState'
 import { mapPortfolioItems } from './utils'
 import { DeFiPortfolioItemGroup } from './components/DeFiPortfolioItemGroup'
@@ -51,7 +52,7 @@ export const DeFiProtocolDetails = () => {
       (total, { stats }) => total + stats.netUsdValue,
       0
     )
-    return getAmount(totalValue)
+    return getAmount(totalValue, 'compact')
   }, [currencyFormatter, data?.portfolioItemList, getAmount])
 
   const portfolioItemList = useMemo(() => {
@@ -62,6 +63,22 @@ export const DeFiProtocolDetails = () => {
     })
   }, [data?.portfolioItemList])
 
+  const renderCardContent = () => {
+    if (!data?.portfolioItemList || data.portfolioItemList.length === 0) {
+      return (
+        <>
+          <Separator style={{ marginTop: 16 }} />
+          <ZeroState
+            bodyText="No data has been found. Go back to 
+          DeFi portfolio."
+            style={{ marginVertical: 48 }}
+          />
+        </>
+      )
+    }
+    return <ScrollView>{portfolioItemList}</ScrollView>
+  }
+
   if (isLoading) {
     return (
       <View style={styles.spinnerContainer}>
@@ -70,8 +87,17 @@ export const DeFiProtocolDetails = () => {
     )
   }
   if (error || (isPaused && !isSuccess)) return <ProtocolDetailsErrorState />
-  if (!data || !data?.portfolioItemList || data.portfolioItemList.length === 0)
-    return <ZeroState skipBodyText />
+  if (!data) {
+    return (
+      <Card style={{ margin: 16 }}>
+        <ZeroState
+          bodyText="No data has been found. Go back to 
+    DeFi portfolio."
+          style={{ paddingVertical: 48 }}
+        />
+      </Card>
+    )
+  }
 
   return (
     <View style={styles.container}>
@@ -84,13 +110,15 @@ export const DeFiProtocolDetails = () => {
           goToProtocolPage={goToProtocolPage}
           totalValueOfProtocolItems={calculatedTotalValueOfProtocolItems}
         />
-        <ScrollView>{portfolioItemList}</ScrollView>
+        {renderCardContent()}
       </Card>
-      <AvaButton.PrimaryLarge onPress={goToProtocolPage}>
-        <LinkSVG color={theme.logoColor} />
-        <Space x={8} />
-        {`Go to ${data?.name ?? protocolId}`}
-      </AvaButton.PrimaryLarge>
+      <View style={{ marginBottom: 41 }}>
+        <AvaButton.PrimaryLarge onPress={goToProtocolPage}>
+          <LinkSVG color={theme.logoColor} />
+          <Space x={8} />
+          {`Go to ${data?.name ?? protocolId}`}
+        </AvaButton.PrimaryLarge>
+      </View>
     </View>
   )
 }
@@ -99,13 +127,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: 16,
-    marginBottom: 41,
     justifyContent: 'space-between'
-  },
-  headerContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center'
   },
   spinnerContainer: {
     flex: 1,
@@ -113,6 +135,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center'
   },
   card: {
+    flexShrink: 1,
     marginTop: 16,
     marginBottom: 24,
     padding: 16

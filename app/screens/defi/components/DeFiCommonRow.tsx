@@ -39,6 +39,7 @@ export const DeFiCommonRow = ({
   const maxDisplayedTokens = supplyTokens
     .slice(0, maxTokenCount)
     .map(token => token.logoUrl)
+    .filter(Boolean) as string[]
   const symbols = supplyTokens
     .slice(0, maxTokenCount)
     .map(({ symbol }) => symbol)
@@ -74,7 +75,7 @@ export const DeFiCommonRow = ({
             color={theme.neutral50}
             numberOfLines={1}
             ellipsizeMode="tail">
-            {getAmount(suppliedValue)}
+            {getAmount(suppliedValue, 'compact')}
           </AvaText.Body2>
         </Row>
       </Row>
@@ -87,7 +88,7 @@ export const DeFiCommonRow = ({
           }}>
           <AvaText.Caption color={theme.neutral400}>Rewards</AvaText.Caption>
           <AvaText.Caption color={theme.neutral400}>
-            {getAmount(rewardedValue)}
+            {getAmount(rewardedValue, 'compact')}
           </AvaText.Caption>
         </Row>
       )}

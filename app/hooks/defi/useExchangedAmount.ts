@@ -3,6 +3,7 @@ import { selectSelectedCurrency } from 'store/settings/currency'
 import { formatCurrency } from 'utils/FormatCurrency'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { useCallback } from 'react'
+import { NotationTypes } from 'consts/FormatNumberTypes'
 import { useExchangeRates } from './useExchangeRates'
 
 export const useExchangedAmount = () => {
@@ -14,11 +15,16 @@ export const useExchangedAmount = () => {
   const exchangeRate = data?.usd?.[selectedCurrency.toLowerCase()]
 
   const getAmount = useCallback(
-    (amount: number) => {
+    (amount: number, notation?: NotationTypes) => {
       // if the exchange rate is not available, we show the value in USD
       return exchangeRate
-        ? currencyFormatter(amount * exchangeRate)
-        : formatCurrency(amount, 'USD', false)
+        ? currencyFormatter(amount * exchangeRate, notation)
+        : formatCurrency({
+            amount,
+            currency: 'USD',
+            boostSmallNumberPrecision: false,
+            notation
+          })
     },
     [currencyFormatter, exchangeRate]
   )

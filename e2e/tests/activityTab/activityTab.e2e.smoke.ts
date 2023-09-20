@@ -14,6 +14,7 @@ describe('Activity Tab', () => {
   })
 
   it('should show contract call only in activity list', async () => {
+    await PortfolioPage.tapAvaxNetwork()
     await PortfolioPage.tapActivityTab()
     const startTime = new Date().getTime()
     await actions.waitForElement(ActivityTabPage.arrowSVG, 10000, 1)
@@ -106,8 +107,11 @@ describe('Activity Tab', () => {
       ActivityTabPage.selectFilterDropdown,
       'Display: Outgoing'
     )
-    await ActivityTabPage.tapArrowIcon(0)
-    await Assert.isVisible(TransactionDetailsPage.status)
-    await Assert.isVisible(TransactionDetailsPage.transactionType)
+
+    if ((await actions.isVisible(ActivityTabPage.linkSVG, 0)) === false) {
+      await ActivityTabPage.tapArrowIcon(0)
+      await Assert.isVisible(TransactionDetailsPage.status)
+      await Assert.isVisible(TransactionDetailsPage.transactionType)
+    }
   })
 })

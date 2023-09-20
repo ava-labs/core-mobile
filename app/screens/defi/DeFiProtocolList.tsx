@@ -69,7 +69,7 @@ export const DeFiProtocolList = () => {
   }
 
   const renderItem = ({ item }: { item: DeFiSimpleProtocol }) => {
-    const netUsdValue = getAmount(item.netUsdValue)
+    const netUsdValue = getAmount(item.netUsdValue, 'compact')
     const networkLogo = chainList?.[item.chain]?.logoUrl
     const protocolId = item.id
 
@@ -136,7 +136,11 @@ export const DeFiProtocolList = () => {
       onRefresh={pullToRefresh}
       estimatedItemSize={80}
       ListEmptyComponent={
-        <ZeroState onExploreEcosystem={handleExploreEcosystem} />
+        <ZeroState
+          onExploreEcosystem={handleExploreEcosystem}
+          bodyText="Discover top dApps on Avalanche now."
+          style={{ marginTop: 96 }}
+        />
       }
     />
   )
