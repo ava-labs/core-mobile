@@ -13,7 +13,6 @@ interface Props {
   paddingHorizontal?: number
   confirmationCount: number
   requiredConfirmationCount: number
-  complete: boolean
   startTime?: number
   endTime?: number
   started: boolean
