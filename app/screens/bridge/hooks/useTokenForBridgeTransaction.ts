@@ -4,7 +4,7 @@ import { useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import { selectNetworkContractTokens } from 'store/network'
 
-export function useBridgeTransactionTokenInfo(
+export function useTokenForBridgeTransaction(
   bridgeTransaction: BridgeTransaction | undefined,
   isTestnet: boolean
 ) {
@@ -23,14 +23,10 @@ export function useBridgeTransactionTokenInfo(
       token => token.symbol === bridgeTransaction?.symbol
     )
 
-    if (selectedToken)
-      return { symbol: selectedToken.symbol, logoUri: selectedToken.logoUri }
+    if (selectedToken) return selectedToken
 
     if (bridgeTransaction?.symbol === BITCOIN_NETWORK.networkToken.symbol) {
-      return {
-        symbol: BITCOIN_NETWORK.networkToken.symbol,
-        logoUri: BITCOIN_NETWORK.networkToken.logoUri
-      }
+      return BITCOIN_NETWORK.networkToken
     }
 
     return undefined

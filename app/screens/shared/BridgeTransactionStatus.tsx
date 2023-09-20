@@ -25,7 +25,7 @@ import { selectActiveNetwork } from 'store/network'
 import { getBlockchainDisplayName } from 'screens/bridge/utils/bridgeUtils'
 import AvaButton from 'components/AvaButton'
 import AppNavigation from 'navigation/AppNavigation'
-import { useBridgeTransactionTokenInfo } from 'screens/bridge/hooks/useBridgeTransactionTokenInfo'
+import { useTokenForBridgeTransaction } from 'screens/bridge/hooks/useTokenForBridgeTransaction'
 
 type Props = {
   txHash: string
@@ -38,7 +38,7 @@ const BridgeTransactionStatus: FC<Props> = ({ txHash, showHideButton }) => {
     useState<BridgeTransaction>()
 
   const network = useSelector(selectActiveNetwork)
-  const tokenInfo = useBridgeTransactionTokenInfo(
+  const tokenInfo = useTokenForBridgeTransaction(
     bridgeTransaction,
     network.isTestnet === true
   )
