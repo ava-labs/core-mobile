@@ -12,16 +12,11 @@ export const DEFI_LENDING_ITEMS: DeFiLendingItem[] = [
         chain: 'avax',
         name: 'Avalanche',
         symbol: 'AVAX',
-        displaySymbol: null,
-        optimizedSymbol: 'AVAX',
         decimals: 18,
         logoUrl:
           'https://static.debank.com/image/avax_token/logo_url/avax/0b9c84359c84d6bdd5bfda9c2d4c4a82.png',
         protocolId: '',
         price: 9.29,
-        isVerified: true,
-        isCore: true,
-        isWallet: true,
         timeAt: 1,
         amount: 0.11000544666972234
       }
@@ -32,16 +27,11 @@ export const DEFI_LENDING_ITEMS: DeFiLendingItem[] = [
         chain: 'avax',
         name: 'Avalanche',
         symbol: 'AVAX',
-        displaySymbol: null,
-        optimizedSymbol: 'AVAX',
         decimals: 18,
         logoUrl:
           'https://static.debank.com/image/avax_token/logo_url/avax/0b9c84359c84d6bdd5bfda9c2d4c4a82.png',
         protocolId: '',
         price: 9.29,
-        isVerified: true,
-        isCore: true,
-        isWallet: true,
         timeAt: 1,
         amount: 0.001329959970084932
       }

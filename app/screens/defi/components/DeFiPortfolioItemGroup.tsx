@@ -15,7 +15,7 @@ import {
   DeFiVestingItem
 } from 'services/defi/types'
 import { DeFiPortfolioLending } from './DeFiPortfolioLending'
-import { DeFiPortfolioInsurance } from './DeFiPortfolioInsurance'
+import { DeFiPortfolioInsuranceBuyer } from './DeFiPortfolioInsuranceBuyer'
 import { DeFiPortfolioPerpetual } from './DeFiPortfolioPerpetual'
 import { DeFiPortfolioCommon } from './DeFiPortfolioCommon'
 import { DeFiPortfolioReward } from './DeFiPortfolioReward'
@@ -70,7 +70,7 @@ const renderGroupItem = ({ type, items, header }: GroupItemProps) => {
       )
     case DeFiProtocolDetailTypes.INSURANCE_BUYER:
       return (
-        <DeFiPortfolioInsurance
+        <DeFiPortfolioInsuranceBuyer
           key={type}
           items={items as DeFiInsuranceBuyerItem[]}
         />

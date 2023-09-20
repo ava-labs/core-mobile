@@ -6,11 +6,12 @@ import { View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { useExchangedAmount } from 'hooks/defi/useExchangedAmount'
 import { StackedImages } from 'components/StackedImages'
+import { IMAGE_SIZE, MAX_TOKEN_COUNT } from '../const'
 
 type Props = {
   items: DeFiRewardItem[]
 }
-const MAX_TOKEN_COUNT = 3
+
 export const DeFiPortfolioReward = ({ items }: Props) => {
   const { theme } = useApplicationContext()
   const getAmount = useExchangedAmount()
@@ -22,10 +23,15 @@ export const DeFiPortfolioReward = ({ items }: Props) => {
         <AvaText.InputLabel>Value</AvaText.InputLabel>
       </Row>
       {items.map(({ tokens, netUsdValue }, index) => {
-        const symbols = tokens?.map(({ symbol }) => symbol).join(' + ')
+        const symbols = tokens
+          ?.slice(0, MAX_TOKEN_COUNT)
+          .map(({ symbol }) => symbol)
+          .join(' + ')
         const logos = tokens
           ?.slice(0, MAX_TOKEN_COUNT)
           .map(({ logoUrl }) => logoUrl)
+          .filter(Boolean) as string[]
+
         return (
           <View
             key={`defi-rewards-${index}`}
@@ -36,8 +42,8 @@ export const DeFiPortfolioReward = ({ items }: Props) => {
             }}>
             <Row style={{ marginRight: 8 }}>
               <StackedImages
-                imageUrls={logos?.filter(Boolean) || []}
-                size={20}
+                imageUrls={logos}
+                size={IMAGE_SIZE}
                 style={{ borderColor: theme.colorBg2, borderWidth: 2 }}
               />
             </Row>
