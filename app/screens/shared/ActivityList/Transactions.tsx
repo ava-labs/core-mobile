@@ -22,6 +22,7 @@ import { RefreshControl } from 'components/RefreshControl'
 import { usePostCapture } from 'hooks/usePosthogCapture'
 import FlashList from 'components/FlashList'
 import { getDayString } from 'utils/date/getDayString'
+import { isPendingBridgeTransaction } from 'screens/bridge/utils/bridgeUtils'
 
 const SCREEN_WIDTH = Dimensions.get('window').width
 const BOTTOM_PADDING = SCREEN_WIDTH * 0.3
@@ -40,7 +41,6 @@ interface Props {
   data: Transaction[]
   openTransactionDetails: (item: Transaction) => void
   openTransactionStatus: (params: BridgeTransactionStatusParams) => void
-  hidePendingBridgeTransactions: boolean
   testID?: string
 }
 
@@ -50,8 +50,7 @@ const Transactions = ({
   onEndReached,
   data,
   openTransactionDetails,
-  openTransactionStatus,
-  hidePendingBridgeTransactions
+  openTransactionStatus
 }: Props) => {
   const { openUrl } = useInAppBrowser()
   const { capture } = usePostCapture()
@@ -65,11 +64,7 @@ const Transactions = ({
     )
 
     // add pending bridge transactions
-    if (
-      !hidePendingBridgeTransactions &&
-      !bridgeDisabled &&
-      pendingBridgeTransactions.length > 0
-    )
+    if (!bridgeDisabled && pendingBridgeTransactions.length > 0)
       allSections.push({ title: 'Pending', data: pendingBridgeTransactions })
 
     // add all other transactions
@@ -99,7 +94,7 @@ const Transactions = ({
     }
 
     return flatListData
-  }, [bridgeDisabled, data, hidePendingBridgeTransactions, pendingBridgeByTxId])
+  }, [bridgeDisabled, data, pendingBridgeByTxId])
 
   const renderPendingBridgeTransaction = (tx: BridgeTransaction) => {
     return (
@@ -122,7 +117,7 @@ const Transactions = ({
     }
 
     // render row
-    if ('addressBTC' in item) {
+    if (isPendingBridgeTransaction(item)) {
       return renderPendingBridgeTransaction(item)
     } else {
       const onPress = () => {
@@ -158,7 +153,7 @@ const Transactions = ({
   const keyExtractor = (item: string | Transaction | BridgeTransaction) => {
     if (typeof item === 'string') return item
 
-    if ('addressBTC' in item) return `pending-${item.sourceTxHash}`
+    if (isPendingBridgeTransaction(item)) return `pending-${item.sourceTxHash}`
 
     return item.hash
   }
