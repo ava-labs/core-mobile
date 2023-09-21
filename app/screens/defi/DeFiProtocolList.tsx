@@ -67,6 +67,15 @@ export const DeFiProtocolList = () => {
   if (error || (isPaused && !isSuccess)) {
     return <ErrorState />
   }
+  if (!memoizedData || memoizedData.length === 0) {
+    return (
+      <ZeroState
+        onExploreEcosystem={handleExploreEcosystem}
+        bodyText="Discover top dApps on Avalanche now."
+        styles={{ marginTop: 96 }}
+      />
+    )
+  }
 
   const renderItem = ({ item }: { item: DeFiSimpleProtocol }) => {
     const netUsdValue = getAmount(item.netUsdValue, 'compact')
@@ -135,13 +144,6 @@ export const DeFiProtocolList = () => {
       refreshing={isRefreshing}
       onRefresh={pullToRefresh}
       estimatedItemSize={80}
-      ListEmptyComponent={
-        <ZeroState
-          onExploreEcosystem={handleExploreEcosystem}
-          bodyText="Discover top dApps on Avalanche now."
-          styles={{ marginTop: 96 }}
-        />
-      }
     />
   )
 }
