@@ -71,7 +71,7 @@ export const DeFiProtocolDetails = () => {
           <ZeroState
             bodyText="No data has been found. Go back to 
           DeFi portfolio."
-            style={{ marginVertical: 48 }}
+            styles={{ marginVertical: 48 }}
           />
         </>
       )
@@ -93,7 +93,7 @@ export const DeFiProtocolDetails = () => {
         <ZeroState
           bodyText="No data has been found. Go back to 
     DeFi portfolio."
-          style={{ paddingVertical: 48 }}
+          styles={{ paddingVertical: 48 }}
         />
       </Card>
     )
