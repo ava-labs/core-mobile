@@ -1,7 +1,6 @@
-import React, { FC, useEffect } from 'react'
+import React, { FC } from 'react'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { BridgeTransaction } from '@avalabs/bridge-sdk'
-import { ShowSnackBar } from 'components/Snackbar'
 import AvaText from 'components/AvaText'
 import AvaListItem from 'components/AvaListItem'
 import BridgeSVG from 'components/svg/BridgeSVG'
@@ -10,7 +9,6 @@ import { StyleSheet, View } from 'react-native'
 import Spinner from 'components/animation/Spinner'
 import LinkSVG from 'components/svg/LinkSVG'
 import { Space } from 'components/Space'
-import { useBridgeContext } from 'contexts/BridgeContext'
 import { isPendingBridgeTransaction } from 'screens/bridge/utils/bridgeUtils'
 import { useBlockchainNames } from 'screens/activity/hooks/useBlockchainNames'
 import { Transaction } from 'store/transaction'
@@ -26,15 +24,7 @@ const BridgeTransactionItem: FC<BridgeTransactionItemProps> = ({
 }) => {
   const pending = isPendingBridgeTransaction(item)
   const theme = useApplicationContext().theme
-  const { removeBridgeTransaction } = useBridgeContext()
   const { sourceBlockchain, targetBlockchain } = useBlockchainNames(item)
-
-  useEffect(() => {
-    if (pending && item.complete) {
-      ShowSnackBar(`You have received ${item.amount} ${item.symbol}`)
-      removeBridgeTransaction(item.sourceTxHash).then()
-    }
-  }, [item, pending, removeBridgeTransaction])
 
   return (
     <AvaListItem.Base

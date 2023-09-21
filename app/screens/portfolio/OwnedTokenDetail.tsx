@@ -116,7 +116,6 @@ const OwnedTokenDetail: FC = () => {
       <View style={{ marginHorizontal: -16, flex: 1 }}>
         <ActivityList
           tokenSymbolFilter={token?.symbol}
-          embedded
           openTransactionDetails={openTransactionDetails}
           openTransactionStatus={openTransactionStatus}
         />

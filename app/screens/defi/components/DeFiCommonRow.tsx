@@ -39,6 +39,7 @@ export const DeFiCommonRow = ({
   const maxDisplayedTokens = supplyTokens
     .slice(0, maxTokenCount)
     .map(token => token.logoUrl)
+    .filter(Boolean) as string[]
   const symbols = supplyTokens
     .slice(0, maxTokenCount)
     .map(({ symbol }) => symbol)
