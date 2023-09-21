@@ -165,14 +165,14 @@ export const selectInactiveNetworks = createSelector(
 )
 
 // get the list of contract tokens for the active network
-export const selectNetworkContractTokens = (state: RootState) => {
+export const selectActiveNetworkContractTokens = (state: RootState) => {
   const network = selectActiveNetwork(state)
   return network.tokens ?? []
 }
 
 // get token info for a contract token of the active network
 export const selectTokenInfo = (symbol: string) => (state: RootState) => {
-  const tokens = selectNetworkContractTokens(state)
+  const tokens = selectActiveNetworkContractTokens(state)
   return tokens.find(token => token.symbol === symbol)
 }
 
@@ -222,6 +222,13 @@ export const selectNetwork = (chainId: number) => (state: RootState) => {
   const allNetworks = selectRawNetworks(state)
   return allNetworks[chainId]
 }
+
+// get the list of contract tokens for the network by chainId
+export const selectNetworkContractTokens =
+  (chainId: number) => (state: RootState) => {
+    const network = selectNetwork(chainId)(state)
+    return network?.tokens ?? []
+  }
 
 export const {
   setNetworks,
