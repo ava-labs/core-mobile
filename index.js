@@ -41,7 +41,9 @@ if (DevDebuggingConfig.STORYBOOK_ENABLED) {
 AppRegistry.registerComponent(appName, () => AppEntryPoint)
 
 if (DevDebuggingConfig.API_MOCKING || process.env.API_MOCKING) {
-  server.listen()
+  server.listen({
+    onUnhandledRequest: 'bypass'
+  })
 }
 
 if (process.env.PERF_ENABLED) {
