@@ -70,6 +70,7 @@ const getStories = () => {
     "./storybook/stories/earn/StatusChip.stories.tsx": require("../storybook/stories/earn/StatusChip.stories.tsx"),
     "./storybook/stories/earn/ZeroState.stories.tsx": require("../storybook/stories/earn/ZeroState.stories.tsx"),
     "./storybook/stories/FeeSelector.stories.tsx": require("../storybook/stories/FeeSelector.stories.tsx"),
+    "./storybook/stories/JailbrokenWarning.stories.tsx": require("../storybook/stories/JailbrokenWarning.stories.tsx"),
     "./storybook/stories/Lotties.stories.tsx": require("../storybook/stories/Lotties.stories.tsx"),
     "./storybook/stories/RadioButton.stories.tsx": require("../storybook/stories/RadioButton.stories.tsx"),
     "./storybook/stories/StackedImages.stories.tsx": require("../storybook/stories/StackedImages.stories.tsx"),
