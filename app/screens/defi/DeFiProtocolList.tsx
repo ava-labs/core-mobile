@@ -139,7 +139,7 @@ export const DeFiProtocolList = () => {
         <ZeroState
           onExploreEcosystem={handleExploreEcosystem}
           bodyText="Discover top dApps on Avalanche now."
-          style={{ marginTop: 96 }}
+          styles={{ marginTop: 96 }}
         />
       }
     />
