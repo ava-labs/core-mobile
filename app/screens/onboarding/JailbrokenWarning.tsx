@@ -19,7 +19,7 @@ export default function JailbrokenWarning({
       ]}>
       <View style={styles.logoContainer}>
         <View style={styles.logo}>
-          <AvaText.Heading1>
+          <AvaText.Heading1 textStyle={styles.text}>
             This device is jailbroken, using a jailbroken or rooted device could
             expose your keys and mnemonics to malicious applications.
           </AvaText.Heading1>
@@ -43,5 +43,8 @@ const styles = StyleSheet.create({
   logo: {
     display: 'flex',
     alignItems: 'center'
+  },
+  text: {
+    textAlign: 'center'
   }
 })
