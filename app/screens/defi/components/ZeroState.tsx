@@ -18,7 +18,7 @@ export const ZeroState = ({
   const { theme } = useApplicationContext()
 
   return (
-    <View style={[{ alignItems: 'center' }, styles]}>
+    <View style={[{ marginHorizontal: 39, alignItems: 'center' }, styles]}>
       <View style={{ alignItems: 'center' }}>
         <View style={{ alignItems: 'center' }}>
           <AvaText.Heading5>No DeFi Transactions</AvaText.Heading5>
