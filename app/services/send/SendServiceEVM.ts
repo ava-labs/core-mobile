@@ -1,8 +1,7 @@
 import { resolve } from '@avalabs/utils-sdk'
 import { JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
 import BN from 'bn.js'
-import { Contract, TransactionRequest, isAddress } from 'ethers'
-import ERC20 from '@openzeppelin/contracts/build/contracts/ERC20.json'
+import { TransactionRequest, isAddress } from 'ethers'
 import {
   GetTransactionRequestParams,
   SendErrorMessage,
@@ -17,10 +16,13 @@ import {
   TokenWithBalanceERC20,
   NftTokenWithBalance
 } from 'store/balance'
-import ERC721 from '@openzeppelin/contracts/build/contracts/ERC721.json'
-import ERC1155 from '@openzeppelin/contracts/build/contracts/ERC1155.json'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import Logger from 'utils/Logger'
+import {
+  ERC1155__factory,
+  ERC20__factory,
+  ERC721__factory
+} from 'contracts/openzeppelin'
 
 export class SendServiceEVM implements SendServiceHelper {
   private readonly networkProvider: JsonRpcBatchInternal
@@ -205,16 +207,14 @@ export class SendServiceEVM implements SendServiceHelper {
   ): Promise<TransactionRequest> {
     if (!sendState.address)
       throw new Error('Cannot create transaction without an address')
-    const contract = new Contract(
+    const erc20 = ERC20__factory.connect(
       sendState.token?.address || '',
-      ERC20.abi,
       this.networkProvider
     )
-    const populatedTransaction =
-      await contract?.transfer?.populateTransaction?.(
-        sendState.address,
-        sendState.amount ? BigInt(sendState.amount.toString()) : 0n
-      )
+    const populatedTransaction = await erc20.transfer.populateTransaction(
+      sendState.address,
+      sendState.amount ? BigInt(sendState.amount.toString()) : 0n
+    )
     return {
       ...populatedTransaction, // only includes `to` and `data`
       from: this.fromAddress
@@ -224,17 +224,16 @@ export class SendServiceEVM implements SendServiceHelper {
   private async getUnsignedTxERC721(
     sendState: SendState<NftTokenWithBalance>
   ): Promise<TransactionRequest> {
-    const contract = new Contract(
+    const erc721 = ERC721__factory.connect(
       sendState.token?.address || '',
-      ERC721.abi,
       this.networkProvider
     )
-    const populatedTransaction = await contract?.[
+    const populatedTransaction = await erc721[
       'safeTransferFrom(address,address,uint256)'
-    ]?.populateTransaction?.(
+    ].populateTransaction(
       this.fromAddress,
-      sendState.address,
-      sendState.token?.tokenId
+      sendState.address || '',
+      sendState.token?.tokenId || ''
     )
     return {
       ...populatedTransaction, // only includes `to` and `data`
@@ -245,21 +244,19 @@ export class SendServiceEVM implements SendServiceHelper {
   private async getUnsignedTxERC1155(
     sendState: SendState<NftTokenWithBalance>
   ): Promise<TransactionRequest> {
-    const contract = new Contract(
+    const erc1155 = ERC1155__factory.connect(
       sendState.token?.address || '',
-      ERC1155.abi,
       this.networkProvider
     )
 
-    const populatedTransaction = await contract[
-      'safeTransferFrom(address,address,uint256,uint256,bytes)'
-    ]?.populateTransaction?.(
-      this.fromAddress,
-      sendState.address,
-      sendState.token?.tokenId,
-      1,
-      '0x'
-    )
+    const populatedTransaction =
+      await erc1155.safeTransferFrom.populateTransaction(
+        this.fromAddress,
+        sendState.address || '',
+        sendState.token?.tokenId || '',
+        1,
+        '0x'
+      )
 
     const unsignedTx: TransactionRequest = {
       ...populatedTransaction, // only includes `to` and `data`
