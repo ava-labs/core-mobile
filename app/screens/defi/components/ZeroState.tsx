@@ -9,16 +9,16 @@ import LinkSVG from 'components/svg/LinkSVG'
 export const ZeroState = ({
   onExploreEcosystem,
   bodyText,
-  style
+  styles
 }: {
   onExploreEcosystem?: () => void
   bodyText?: string
-  style?: StyleProp<ViewStyle>
+  styles?: StyleProp<ViewStyle>
 }) => {
   const { theme } = useApplicationContext()
 
   return (
-    <View style={[{ marginHorizontal: 39, alignItems: 'center' }, style]}>
+    <View style={[{ alignItems: 'center' }, styles]}>
       <View style={{ alignItems: 'center' }}>
         <View style={{ alignItems: 'center' }}>
           <AvaText.Heading5>No DeFi Transactions</AvaText.Heading5>
