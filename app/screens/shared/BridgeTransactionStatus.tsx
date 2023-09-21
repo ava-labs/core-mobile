@@ -1,4 +1,4 @@
-import React, { FC, useEffect, useLayoutEffect, useMemo, useState } from 'react'
+import React, { FC, useEffect, useLayoutEffect, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaText from 'components/AvaText'
@@ -21,11 +21,11 @@ import { VsCurrencyType } from '@avalabs/coingecko-sdk'
 import { useNavigation } from '@react-navigation/native'
 import Logger from 'utils/Logger'
 import { useSelector } from 'react-redux'
-import { selectTokenInfo } from 'store/network'
+import { selectActiveNetwork } from 'store/network'
 import { getBlockchainDisplayName } from 'screens/bridge/utils/bridgeUtils'
 import AvaButton from 'components/AvaButton'
 import AppNavigation from 'navigation/AppNavigation'
-import { BITCOIN_NETWORK } from '@avalabs/chains-sdk'
+import { useTokenForBridgeTransaction } from 'screens/bridge/hooks/useTokenForBridgeTransaction'
 
 type Props = {
   txHash: string
@@ -37,23 +37,11 @@ const BridgeTransactionStatus: FC<Props> = ({ txHash, showHideButton }) => {
   const [bridgeTransaction, setBridgeTransaction] =
     useState<BridgeTransaction>()
 
-  const _tokenInfo = useSelector(
-    selectTokenInfo(bridgeTransaction?.symbol ?? '')
+  const network = useSelector(selectActiveNetwork)
+  const tokenInfo = useTokenForBridgeTransaction(
+    bridgeTransaction,
+    network.isTestnet === true
   )
-
-  const tokenInfo = useMemo(() => {
-    if (_tokenInfo)
-      return { symbol: _tokenInfo.symbol, logoUri: _tokenInfo.logoUri }
-
-    if (bridgeTransaction?.symbol === BITCOIN_NETWORK.networkToken.symbol) {
-      return {
-        symbol: BITCOIN_NETWORK.networkToken.symbol,
-        logoUri: BITCOIN_NETWORK.networkToken.logoUri
-      }
-    }
-
-    return undefined
-  }, [_tokenInfo, bridgeTransaction])
 
   const { theme, appHook } = useApplicationContext()
   const { selectedCurrency, currencyFormatter } = appHook
