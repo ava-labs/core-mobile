@@ -8,14 +8,21 @@ export function useTokenForBridgeTransaction(
   bridgeTransaction: BridgeTransaction | undefined,
   isTestnet: boolean
 ) {
-  const chainId =
-    bridgeTransaction?.sourceChain === Blockchain.BITCOIN
-      ? isTestnet
-        ? ChainId.BITCOIN_TESTNET
-        : ChainId.BITCOIN
-      : isTestnet
-      ? ChainId.AVALANCHE_TESTNET_ID
-      : ChainId.AVALANCHE_MAINNET_ID
+  const chainId = useMemo(() => {
+    switch (bridgeTransaction?.sourceChain) {
+      case Blockchain.BITCOIN:
+        return isTestnet ? ChainId.BITCOIN_TESTNET : ChainId.BITCOIN
+      case Blockchain.ETHEREUM:
+        // ETHEREUM_GOERLI doesn't have contract tokens, so always use ETHEREUM_HOMESTEAD chainid.
+        return ChainId.ETHEREUM_HOMESTEAD
+      case Blockchain.AVALANCHE:
+      default:
+        return isTestnet
+          ? ChainId.AVALANCHE_TESTNET_ID
+          : ChainId.AVALANCHE_MAINNET_ID
+    }
+  }, [bridgeTransaction, isTestnet])
+
   const tokens = useSelector(selectNetworkContractTokens(chainId))
 
   const tokenForBridgeTransaction = useMemo(() => {
