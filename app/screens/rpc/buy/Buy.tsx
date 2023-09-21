@@ -11,8 +11,8 @@ import { useNavigation } from '@react-navigation/native'
 import { usePostCapture } from 'hooks/usePosthogCapture'
 import { TokenType } from './BuyCarefully'
 
-const MoonPayLogo = require('./moonpay-icon.png')
-const CoinbaseLogo = require('./coinbase.png')
+const MoonPayLogo = require('assets/icons/moonpay-icon.png')
+const CoinbaseLogo = require('assets/icons/coinbase.png')
 
 type NavigationProp = WalletScreenProps<
   typeof AppNavigation.Modal.SelectToken

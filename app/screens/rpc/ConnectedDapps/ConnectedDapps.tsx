@@ -19,12 +19,9 @@ import { SecurityPrivacyScreenProps } from 'navigation/types'
 import AvaText from 'components/AvaText'
 import { Checkbox } from 'components/Checkbox'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { useSelector } from 'react-redux'
-import { ApprovedAppMeta, selectApprovedDApps } from 'store/walletConnect'
 import WalletConnectService from 'services/walletconnectv2/WalletConnectService'
 import { Session } from 'services/walletconnectv2/types'
 import { useDappConnectionV2 } from 'hooks/useDappConnectionV2'
-import { useDappConnectionV1 } from 'hooks/useDappConnectionV1'
 import { useDeeplink } from 'contexts/DeeplinkContext/DeeplinkContext'
 import { DeepLinkOrigin } from 'contexts/DeeplinkContext/types'
 import { WalletConnectVersions } from 'store/walletConnectV2'
@@ -50,19 +47,12 @@ const ConnectedDapps: FC<Props> = ({ goBack }) => {
   const navigation = useNavigation<NavigationProp>()
   const theme = useApplicationContext().theme
 
-  const { killSessions: killSessionsV1 } = useDappConnectionV1()
   const { killSessions: killSessionsV2 } = useDappConnectionV2()
-  const approvedDappsV1 = useSelector(selectApprovedDApps)
   const [approvedDappsV2, setApprovedDappsV2] = useState<SessionTypes.Struct[]>(
     []
   )
 
   const allApprovedDapps = [
-    ...approvedDappsV1.map<Dapp>(dapp => ({
-      id: dapp.peerId,
-      dapp,
-      version: WalletConnectVersions.V1
-    })),
     ...approvedDappsV2.map<Dapp>(dapp => ({
       id: dapp.topic,
       dapp: dapp,
@@ -125,17 +115,10 @@ const ConnectedDapps: FC<Props> = ({ goBack }) => {
   }, [getHeaderTitle, navigation])
 
   async function handleDelete() {
-    const dappsV2ToRemove: Session[] = [],
-      dappsV1ToRemove: ApprovedAppMeta[] = []
+    const dappsV2ToRemove: Session[] = []
 
     for (const item of dappsToRemove) {
-      if (item.version === WalletConnectVersions.V2) {
-        dappsV2ToRemove.push(item.dapp)
-      }
-
-      if (item.version === WalletConnectVersions.V1) {
-        dappsV1ToRemove.push(item.dapp)
-      }
+      dappsV2ToRemove.push(item.dapp)
     }
 
     setIsEditing(false)
@@ -147,8 +130,6 @@ const ConnectedDapps: FC<Props> = ({ goBack }) => {
         dappsV2ToRemove.some(dappToRemove => dappToRemove.topic !== dapp.topic)
       )
     )
-
-    killSessionsV1(dappsV1ToRemove)
   }
 
   function handleSelect(item: Dapp) {
@@ -188,14 +169,10 @@ const ConnectedDapps: FC<Props> = ({ goBack }) => {
   }
 
   const handleClear = async (item: Dapp) => {
-    if (item.version === WalletConnectVersions.V1) {
-      killSessionsV1([item.dapp])
-    } else {
-      killSessionsV2([item.dapp])
-      setApprovedDappsV2(dapps =>
-        dapps.filter(dapp => dapp.topic !== item.dapp.topic)
-      )
-    }
+    killSessionsV2([item.dapp])
+    setApprovedDappsV2(dapps =>
+      dapps.filter(dapp => dapp.topic !== item.dapp.topic)
+    )
   }
 
   const renderItem = (item: ListRenderItemInfo<Dapp>) => {
