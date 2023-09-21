@@ -79,3 +79,6 @@ e2e/artifacts/
 
 # vscode
 .vscode
+
+# generated openzeppelin contract types
+app/contracts/openzeppelin
