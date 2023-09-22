@@ -20,6 +20,8 @@ import {
 
 const UPDATE_SESSION_TIMEOUT = 15000
 
+const LOG_LEVEL = __DEV__ ? 'error' : 'silent'
+
 if (!Config.WALLET_CONNECT_PROJECT_ID) {
   throw Error(
     'WALLET_CONNECT_PROJECT_ID is missing. Please check your env file.'
@@ -41,7 +43,7 @@ class WalletConnectService {
   init = async (callbacks: WalletConnectCallbacks) => {
     // after init, WC will auto restore sessions
     const core = new Core({
-      logger: 'fatal',
+      logger: LOG_LEVEL,
       projectId: Config.WALLET_CONNECT_PROJECT_ID
     })
 
