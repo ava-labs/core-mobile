@@ -64,11 +64,13 @@ export const sendRpcResult = async (
       const address = selectActiveAccount(state)?.address
       const { chainId } = selectActiveNetwork(state)
       address &&
-        setTimeout(
-          () =>
-            WalletConnectService.updateSession({ session, chainId, address }),
-          UPDATE_SESSION_DELAY
-        )
+        setTimeout(() => {
+          WalletConnectService.updateSessionWithTimeout({
+            session,
+            chainId,
+            address
+          })
+        }, UPDATE_SESSION_DELAY)
     } catch (e) {
       Logger.error('Unable to approve session proposal', e)
       showDappToastError(

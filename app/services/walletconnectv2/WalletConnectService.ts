@@ -226,6 +226,30 @@ class WalletConnectService {
     })
   }
 
+  updateSessionWithTimeout = async ({
+    session,
+    chainId,
+    address
+  }: {
+    session: SessionTypes.Struct
+    chainId: number
+    address: string
+  }) => {
+    // if dapp is not online, updateSession will be stuck for a long time
+    // we are using promiseWithTimeout here to exit early when that happens
+    const promise = promiseWithTimeout(
+      this.updateSession({ session, chainId, address }),
+      UPDATE_SESSION_TIMEOUT
+    ).catch(e => {
+      Logger.error(
+        `unable to update WC session '${session.peer.metadata.name}'`,
+        e
+      )
+    })
+
+    return promise
+  }
+
   updateSessions = async ({
     chainId,
     address
@@ -241,18 +265,11 @@ class WalletConnectService {
     const promises: Promise<void>[] = []
 
     this.getSessions().forEach(session => {
-      // if dapp is not online, updateSession will be stuck for a long time
-      // we are using promiseWithTimeout here to exit early when that happens
-      const promise = promiseWithTimeout(
-        this.updateSession({ session, chainId, address }),
-        UPDATE_SESSION_TIMEOUT
-      ).catch(e => {
-        Logger.error(
-          `unable to update WC session '${session.peer.metadata.name}'`,
-          e
-        )
+      const promise = this.updateSessionWithTimeout({
+        session,
+        chainId,
+        address
       })
-
       promises.push(promise)
     })
 
