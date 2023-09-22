@@ -64,6 +64,13 @@ const createRequest = (
             name: 'Core'
           }
         }
+      },
+      verifyContext: {
+        verified: {
+          origin: '',
+          validation: 'UNKNOWN' as 'UNKNOWN' | 'VALID' | 'INVALID',
+          verifyUrl: ''
+        }
       }
     }
   }
@@ -72,7 +79,10 @@ const createRequest = (
 const testApproveInvalidData = async (data: unknown) => {
   const testRequest = createRequest(validRequiredNamespaces)
 
-  const result = await handler.approve({ request: testRequest, data })
+  const result = await handler.approve({
+    request: testRequest,
+    data
+  })
 
   expect(result).toEqual({
     success: false,
@@ -236,6 +246,8 @@ describe('session_request handler', () => {
         '0xC7E5ffBd7843EdB88cCB2ebaECAa07EC55c65318'
       ]
 
+      const testApprovedChainIds = [43114, 1]
+
       const testRequest = createRequest(
         validRequiredNamespaces,
         'https://traderjoe.xyz'
@@ -243,7 +255,10 @@ describe('session_request handler', () => {
 
       const result = await handler.approve({
         request: testRequest,
-        data: { selectedAccounts: testSelectedAccounts }
+        data: {
+          selectedAccounts: testSelectedAccounts,
+          approvedChainIds: testApprovedChainIds
+        }
       })
 
       const expectedNamespaces = {
@@ -255,6 +270,7 @@ describe('session_request handler', () => {
             'eip155:1:0xcA0E993876152ccA6053eeDFC753092c8cE712D0',
             'eip155:1:0xC7E5ffBd7843EdB88cCB2ebaECAa07EC55c65318'
           ],
+          chains: ['eip155:43114', 'eip155:1'],
           // all methods we support
           methods: [
             'eth_sendTransaction',
@@ -281,11 +297,16 @@ describe('session_request handler', () => {
         '0xC7E5ffBd7843EdB88cCB2ebaECAa07EC55c65318'
       ]
 
+      const testApprovedChainIds = [43114, 1]
+
       const testRequest = createRequest(validRequiredNamespaces)
 
       const result = await handler.approve({
         request: testRequest,
-        data: { selectedAccounts: testSelectedAccounts }
+        data: {
+          selectedAccounts: testSelectedAccounts,
+          approvedChainIds: testApprovedChainIds
+        }
       })
 
       const expectedNamespaces = {
@@ -297,6 +318,7 @@ describe('session_request handler', () => {
             'eip155:1:0xcA0E993876152ccA6053eeDFC753092c8cE712D0',
             'eip155:1:0xC7E5ffBd7843EdB88cCB2ebaECAa07EC55c65318'
           ],
+          chains: ['eip155:43114', 'eip155:1'],
           // all methods we support
           methods: [
             'eth_sendTransaction',

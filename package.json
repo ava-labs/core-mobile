@@ -17,7 +17,7 @@
     "lint:ci": "yarn run lint --quiet --format json --output-file eslint_report.json",
     "clean": "./scripts/clean",
     "prepare": "husky install",
-    "postinstall": "node_modules/.bin/patch-package; node_modules/.bin/rn-nodeify --install events,stream,vm,assert,https,http,os --hack; yarn run types:openzeppelin",
+    "postinstall": "node_modules/.bin/patch-package; node_modules/.bin/rn-nodeify --install events,stream,vm,assert,https,http,os,zlib --hack; yarn run types:openzeppelin",
     "storybook-generate": "sb-rn-get-stories",
     "storybook-watch": "sb-rn-watcher",
     "types:openzeppelin": "typechain --target=ethers-v6 --out-dir app/contracts/openzeppelin ./node_modules/@openzeppelin/contracts/build/contracts/ERC20.json ./node_modules/@openzeppelin/contracts/build/contracts/ERC721.json ./node_modules/@openzeppelin/contracts/build/contracts/ERC1155.json"
@@ -66,15 +66,16 @@
     "@tanstack/react-query": "5.0.0-alpha.57",
     "@tradle/react-native-http": "2.0.1",
     "@walletconnect/client": "1.8.0",
-    "@walletconnect/legacy-types": "2.0.0-rc.0",
-    "@walletconnect/react-native-compat": "2.3.2",
-    "@walletconnect/sign-client": "2.3.2",
-    "@walletconnect/types": "2.3.2",
-    "@walletconnect/utils": "2.3.2",
+    "@walletconnect/legacy-types": "2.0.0",
+    "@walletconnect/react-native-compat": "2.10.1",
+    "@walletconnect/web3wallet": "1.9.0",
+    "@walletconnect/types": "2.10.1",
+    "@walletconnect/utils": "2.10.1",
     "base-64": "1.0.0",
     "big.js": "6.1.1",
     "bip39": "3.0.4",
     "bn.js": "5.2.0",
+    "browserify-zlib": "0.2.0",
     "buffer": "4.9.2",
     "camelcase-keys": "7.0.2",
     "crypto-browserify": "3.12.0",
@@ -82,7 +83,7 @@
     "deprecated-react-native-prop-types": "2.3.0",
     "eth-rpc-errors": "4.0.3",
     "ethers": "6.7.1",
-    "events": "1.1.1",
+    "events": "3.3.0",
     "https-browserify": "0.0.1",
     "jail-monkey": "2.6.0",
     "jimp": "0.22.10",
@@ -152,7 +153,6 @@
     "rn-flipper-async-storage-advanced": "1.0.4",
     "rn-nodeify": "10.3.0",
     "rxjs": "7.5.6",
-    "semver": "7.5.4",
     "stream-browserify": "1.0.0",
     "text-encoding": "0.7.0",
     "type-fest": "4.3.1",
@@ -163,7 +163,8 @@
     "vm-browserify": "0.0.4",
     "web3": "1.7.1",
     "xss": "1.0.14",
-    "zod": "3.20.2"
+    "zod": "3.20.2",
+    "semver": "7.5.4"
   },
   "resolutions": {
     "minimist": "1.2.6",
@@ -174,16 +175,18 @@
     "ansi-styles": "3.2.1",
     "node-fetch": "2.6.7",
     "@types/react": "17.0.44",
-    "@types/react-dom": "18.0.6"
+    "@types/react-dom": "18.0.6",
+    "rxjs": "7.5.6"
   },
   "devDependencies": {
-    "@babel/core": "7.14.3",
-    "@babel/plugin-proposal-nullish-coalescing-operator": "7.16.7",
+    "@babel/core": "7.22.11",
+    "@babel/plugin-proposal-nullish-coalescing-operator": "7.18.6",
     "@babel/plugin-syntax-object-rest-spread": "7.8.3",
     "@babel/plugin-transform-export-namespace-from": "7.22.11",
-    "@babel/plugin-transform-private-methods": "7.22.3",
-    "@babel/preset-typescript": "7.18.6",
-    "@babel/runtime": "7.14.0",
+    "@babel/plugin-transform-private-methods": "7.22.5",
+    "@babel/preset-env": "7.22.14",
+    "@babel/preset-typescript": "7.22.11",
+    "@babel/runtime": "7.22.11",
     "@dlenroc/testrail": "1.7.2",
     "@lavamoat/allow-scripts": "2.0.3",
     "@playwright/test": "1.34.3",
@@ -308,7 +311,8 @@
     "_stream_duplex": "readable-stream/duplex",
     "_stream_passthrough": "readable-stream/passthrough",
     "stream": "stream-browserify",
-    "vm": "vm-browserify"
+    "vm": "vm-browserify",
+    "zlib": "browserify-zlib"
   },
   "browser": {
     "http": "@tradle/react-native-http",
@@ -320,7 +324,8 @@
     "_stream_duplex": "readable-stream/duplex",
     "_stream_passthrough": "readable-stream/passthrough",
     "stream": "stream-browserify",
-    "vm": "vm-browserify"
+    "vm": "vm-browserify",
+    "zlib": "browserify-zlib"
   },
   "volta": {
     "node": "18.14.1",

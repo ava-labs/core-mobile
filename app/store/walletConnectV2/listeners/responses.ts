@@ -5,6 +5,9 @@ import { ethErrors } from 'eth-rpc-errors'
 import { capture } from 'store/posthog'
 import { showSimpleToast, showDappToastError } from 'components/Snackbar'
 import Logger from 'utils/Logger'
+import { selectActiveAccount } from 'store/account'
+import { selectActiveNetwork } from 'store/network'
+import { UPDATE_SESSION_DELAY } from 'consts/walletConnect'
 import { onSendRpcError, onSendRpcResult } from '../slice'
 import { isSessionProposal } from './utils'
 
@@ -13,7 +16,7 @@ export const sendRpcResult = async (
   listenerApi: AppListenerEffectAPI
 ) => {
   const { request, result } = action.payload
-  const { dispatch } = listenerApi
+  const { dispatch, getState } = listenerApi
 
   if (isSessionProposal(request)) {
     const relayProtocol = request.data.params.relays[0]?.protocol
@@ -31,6 +34,7 @@ export const sendRpcResult = async (
 
       const namespaces = JSON.stringify(session.namespaces)
       const requiredNamespaces = JSON.stringify(session.requiredNamespaces)
+      const optionalNamespaces = JSON.stringify(session.optionalNamespaces)
 
       const message = `Connected to ${name}`
 
@@ -42,10 +46,31 @@ export const sendRpcResult = async (
           properties: {
             namespaces,
             requiredNamespaces,
+            optionalNamespaces,
             dappUrl: url
           }
         })
       )
+
+      /**
+       * update session with active chainId and address for 2 reasons
+       * 1/ let dapps stay in sync with wallet. this is crucial for dapps that use wagmi.
+       * 2/ allow namespaces' methods and events of dapps to be updated to the one we specify above.
+       *    wagmi has a bug where it doesn't update the methods and events of dapps on session approval.
+       *
+       * notes: the delay is to allow dapps to settle down after session approval. wallet connect se sdk also does the same.
+       */
+      const state = getState()
+      const address = selectActiveAccount(state)?.address
+      const { chainId } = selectActiveNetwork(state)
+      address &&
+        setTimeout(() => {
+          WalletConnectService.updateSessionWithTimeout({
+            session,
+            chainId,
+            address
+          })
+        }, UPDATE_SESSION_DELAY)
     } catch (e) {
       Logger.error('Unable to approve session proposal', e)
       showDappToastError(

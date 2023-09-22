@@ -12,3 +12,10 @@ TypeError: Cannot convert undefined or null to object
     at Object.<anonymous> (/Users/vagrant/git/node_modules/jest-cli/node_modules/jest-snapshot/node_modules/@babel/highlight/node_modules/chalk/index.js:82:28)
 ```
 
+### "rxjs": "7.5.6"
+
+in NftFullScreen we have a type error related to rxjs
+
+```
+ Type 'import("node_modules/react-native-sensors/node_modules/rxjs/dist/types/internal/Observable").Observable<import("react-native-sensors").OrientationData>' is not assignable to type 'import("node_modules/rxjs/dist/types/internal/Observable").Observable<import("react-native-sensors").OrientationData>'
+ ```
