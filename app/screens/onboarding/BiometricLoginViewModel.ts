@@ -1,51 +1,41 @@
 import { useEffect, useState } from 'react'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import { BIOMETRY_TYPE, UserCredentials } from 'react-native-keychain'
+import Logger from 'utils/Logger'
+import FingerprintSVG from 'components/svg/FingerprintSVG'
+import FaceIdSVG from 'components/svg/FaceIdSVG'
 
 interface BiometricLoginTypes {
   biometryType: string
   storeMnemonicWithBiometric: () => Promise<boolean | UserCredentials>
-  fingerprintIcon: any
+  fingerprintIcon: Element | undefined
 }
 
-export function useBiometricLogin(
-  m: string,
-  isDarkMode: boolean
-): BiometricLoginTypes {
+export function useBiometricLogin(m: string): BiometricLoginTypes {
   const [mnemonic] = useState(m)
   const [biometryType, setBiometryType] = useState<string>('')
-  const [fingerprintIcon, setFingerprintIcon] = useState<any>()
+  const [fingerprintIcon, setFingerprintIcon] = useState<Element>()
 
   useEffect(() => {
-    BiometricsSDK.getBiometryType().then(value => {
-      setBiometryType(value?.toString() ?? '')
-    })
+    BiometricsSDK.getBiometryType()
+      .then(value => {
+        setBiometryType(value?.toString() ?? '')
+      })
+      .catch(reason => Logger.error(reason))
   }, [])
 
   useEffect(() => {
     switch (biometryType) {
       case BIOMETRY_TYPE.FINGERPRINT:
       case BIOMETRY_TYPE.TOUCH_ID:
-        setFingerprintIcon(
-          isDarkMode
-            ? require('assets/icons/fingerprint_dark.png')
-            : require('assets/icons/fingerprint_light.png')
-        )
+        setFingerprintIcon(FingerprintSVG)
         break
       case BIOMETRY_TYPE.FACE:
       case BIOMETRY_TYPE.FACE_ID:
-        setFingerprintIcon(
-          isDarkMode
-            ? require('assets/icons/face_id_dark.png')
-            : require('assets/icons/face_id_light.png')
-        )
+        setFingerprintIcon(FaceIdSVG)
         break
       case BIOMETRY_TYPE.IRIS:
-        setFingerprintIcon(
-          isDarkMode
-            ? require('assets/icons/face_id_dark.png')
-            : require('assets/icons/face_id_light.png')
-        )
+        setFingerprintIcon(FaceIdSVG)
         //todo add correct icon
         break
     }

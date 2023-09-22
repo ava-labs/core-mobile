@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { ActivityIndicator, Alert, Image, StyleSheet, View } from 'react-native'
-import { useApplicationContext } from 'contexts/ApplicationContext'
+import { ActivityIndicator, Alert, StyleSheet, View } from 'react-native'
 import { Space } from 'components/Space'
 import AvaText from 'components/AvaText'
 import AvaButton from 'components/AvaButton'
@@ -16,12 +15,10 @@ type Props = {
 export default function BiometricLogin(
   props: Props | Readonly<Props>
 ): JSX.Element {
-  const context = useApplicationContext()
-
   const [confirmedUseBiometry, setConfirmedUseBiometry] = useState(false)
 
   const { biometryType, storeMnemonicWithBiometric, fingerprintIcon } =
-    useBiometricLogin(props.mnemonic, context.isDarkMode)
+    useBiometricLogin(props.mnemonic)
 
   const formattedBiometryType = humanize(biometryType)
 
@@ -45,15 +42,7 @@ export default function BiometricLogin(
   return (
     <View style={styles.verticalLayout}>
       <View style={styles.centerLayout}>
-        <Image
-          source={fingerprintIcon}
-          style={[
-            {
-              width: 120,
-              height: 120
-            }
-          ]}
-        />
+        {fingerprintIcon}
         <Space y={90} />
         <AvaText.Heading1>{formattedBiometryType}</AvaText.Heading1>
         <Space y={8} />
