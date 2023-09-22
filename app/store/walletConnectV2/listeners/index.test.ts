@@ -757,6 +757,9 @@ describe('walletConnect - listeners', () => {
               requiredNamespaces: JSON.stringify(
                 mockSession.requiredNamespaces
               ),
+              optionalNamespaces: JSON.stringify(
+                mockSession.optionalNamespaces
+              ),
               dappUrl: 'http://127.0.0.1:5173'
             }
           })
