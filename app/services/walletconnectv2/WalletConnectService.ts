@@ -9,7 +9,7 @@ import { assertNotUndefined } from 'utils/assertions'
 import Logger from 'utils/Logger'
 import { EVM_IDENTIFIER } from 'consts/walletConnect'
 import promiseWithTimeout from 'utils/js/promiseWithTimeout'
-import { isBitcoinNetwork } from 'utils/network/isBitcoinNetwork'
+import { isBitcoinChainId } from 'utils/network/isBitcoinNetwork'
 import { CLIENT_METADATA, WalletConnectCallbacks } from './types'
 import {
   addNamespaceToChain,
@@ -157,7 +157,7 @@ class WalletConnectService {
     chainId: number
     address: string
   }) => {
-    if (isBitcoinNetwork(chainId)) {
+    if (isBitcoinChainId(chainId)) {
       Logger.info('skip updating WC session for bitcoin network')
       return
     }
@@ -218,7 +218,7 @@ class WalletConnectService {
     chainId: number
     address: string
   }) => {
-    if (isBitcoinNetwork(chainId)) {
+    if (isBitcoinChainId(chainId)) {
       Logger.info('skip updating WC sessions for bitcoin network')
       return
     }
