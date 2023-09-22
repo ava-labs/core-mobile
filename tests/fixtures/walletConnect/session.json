@@ -9,6 +9,10 @@
           "eip155:43113:0xC7E5ffBd7843EdB88cCB2ebaECAa07EC55c65318",
           "eip155:43114:0xcA0E993876152ccA6053eeDFC753092c8cE712D0"
         ],
+        "chains": [
+          "eip155:43113",
+          "eip155:43114"
+        ],
         "methods": [
           "eth_sendTransaction",
           "eth_signTypedData_v3",
