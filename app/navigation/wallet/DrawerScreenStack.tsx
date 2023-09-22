@@ -100,7 +100,18 @@ const Fab: FC = () => {
       }
     } as ActionProp
     actions.Receive = {
-      image: <QRCodeSVG color={theme.background} size={24} />,
+      image: (
+        <View
+          testID="tab_navigator__receive_button"
+          style={{
+            width: 24,
+            height: 24,
+            justifyContent: 'center',
+            alignItems: 'center'
+          }}>
+          <QRCodeSVG color={theme.background} size={24} />
+        </View>
+      ),
       onPress: () => {
         navigation.navigate(AppNavigation.Wallet.ReceiveTokens)
         capture('FABItemSelected_Receive')
@@ -108,7 +119,18 @@ const Fab: FC = () => {
     } as ActionProp
     if (!buyDisabled) {
       actions.Buy = {
-        image: <BuySVG color={theme.background} size={24} />,
+        image: (
+          <View
+            testID="tab_navigator__buy_button"
+            style={{
+              width: 24,
+              height: 24,
+              justifyContent: 'center',
+              alignItems: 'center'
+            }}>
+            <BuySVG color={theme.background} size={24} />
+          </View>
+        ),
         onPress: () => {
           navigation.navigate(AppNavigation.Wallet.Buy)
           capture('FABItemSelected_Buy')
@@ -117,7 +139,18 @@ const Fab: FC = () => {
     }
     if (!swapDisabled) {
       actions.Swap = {
-        image: <SwapSVG color={theme.background} size={24} />,
+        image: (
+          <View
+            testID="tab_navigator__swap_button"
+            style={{
+              width: 24,
+              height: 24,
+              justifyContent: 'center',
+              alignItems: 'center'
+            }}>
+            <SwapSVG color={theme.background} size={24} />
+          </View>
+        ),
         onPress: () => {
           navigation.navigate(AppNavigation.Wallet.Swap)
           capture('FABItemSelected_Swap')

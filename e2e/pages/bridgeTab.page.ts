@@ -203,7 +203,6 @@ class BridgeTabPage {
   }
 
   async switchToNetwork(network: string) {
-    await PortfolioPage.tapAvaxNetwork()
     await BottomTabsPage.tapPlusIcon()
     await PlusMenuPage.tapBridgeButton()
     await this.tapNetworkDropdown()
