@@ -1,12 +1,12 @@
 /* eslint-disable jest/expect-expect */
-import AccountManagePage from '../../pages/accountManage.page'
-import ActivityTabPage from '../../pages/activityTab.page'
-import ActivityTabLoc from '../../locators/activityTab.loc'
-import LoginRecoverWallet from '../../helpers/loginRecoverWallet'
-import PortfolioPage from '../../pages/portfolio.page'
-import SendPage from '../../pages/send.page'
-import sendLoc from '../../locators/send.loc'
-import { warmup } from '../../helpers/warmup'
+import AccountManagePage from '../../../pages/accountManage.page'
+import ActivityTabPage from '../../../pages/activityTab.page'
+import ActivityTabLoc from '../../../locators/activityTab.loc'
+import LoginRecoverWallet from '../../../helpers/loginRecoverWallet'
+import PortfolioPage from '../../../pages/portfolio.page'
+import SendPage from '../../../pages/send.page'
+import sendLoc from '../../../locators/send.loc'
+import { warmup } from '../../../helpers/warmup'
 
 describe('Send Eth to another account', () => {
   beforeAll(async () => {
@@ -15,16 +15,15 @@ describe('Send Eth to another account', () => {
   })
 
   it('Should send Eth to second account', async () => {
+    const secondAccountAddress = await AccountManagePage.createSecondAccount()
     await PortfolioPage.tapNetworksDropdown()
     await PortfolioPage.tapNetworksDropdownETH()
-
-    const secondAccountAddress = await AccountManagePage.createSecondAccount()
-    await PortfolioPage.tapEthNetwork()
-    await PortfolioPage.tapActivityTab()
     await SendPage.sendTokenTo2ndAccount(
       sendLoc.ethToken,
       sendLoc.sendingAmount
     )
+    await PortfolioPage.tapEthNetwork()
+    await PortfolioPage.tapActivityTab()
     await ActivityTabPage.verifyOutgoingTransaction(
       60000,
       secondAccountAddress,
