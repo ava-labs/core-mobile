@@ -1,6 +1,9 @@
 import { useDispatch, useSelector } from 'react-redux'
 import { isAddress } from 'ethers'
-import { selectActiveNetwork, selectNetworkContractTokens } from 'store/network'
+import {
+  selectActiveNetwork,
+  selectActiveNetworkContractTokens
+} from 'store/network'
 import { getInstance } from 'services/token/TokenService'
 import { addCustomToken as addCustomTokenAction } from 'store/customToken'
 import { useState, useEffect } from 'react'
@@ -43,7 +46,7 @@ const useAddCustomToken = (callback: () => void) => {
   const [errorMessage, setErrorMessage] = useState<string>()
   const [token, setToken] = useState<NetworkContractToken>()
   const network = useSelector(selectActiveNetwork)
-  const tokens = useSelector(selectNetworkContractTokens)
+  const tokens = useSelector(selectActiveNetworkContractTokens)
   const dispatch = useDispatch()
   const chainId = network.chainId
   const { capture } = usePostCapture()
