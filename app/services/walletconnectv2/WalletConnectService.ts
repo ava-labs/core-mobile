@@ -1,11 +1,24 @@
-import SignClient from '@walletconnect/sign-client'
+import { Core } from '@walletconnect/core'
+import { SessionTypes } from '@walletconnect/types'
+import { Web3Wallet, IWeb3Wallet } from '@walletconnect/web3wallet'
 import { EngineTypes } from '@walletconnect/types'
 import { getSdkError } from '@walletconnect/utils'
 import Config from 'react-native-config'
 import { RpcError } from 'store/walletConnectV2'
 import { assertNotUndefined } from 'utils/assertions'
 import Logger from 'utils/Logger'
+import { EVM_IDENTIFIER } from 'consts/walletConnect'
+import promiseWithTimeout from 'utils/js/promiseWithTimeout'
+import { isBitcoinNetwork } from 'utils/network/isBitcoinNetwork'
 import { CLIENT_METADATA, WalletConnectCallbacks } from './types'
+import {
+  addNamespaceToChain,
+  addNamespaceToAddress,
+  chainAlreadyInSession,
+  addressAlreadyInSession
+} from './utils'
+
+const UPDATE_SESSION_TIMEOUT = 15000
 
 if (!Config.WALLET_CONNECT_PROJECT_ID) {
   throw Error(
@@ -14,68 +27,77 @@ if (!Config.WALLET_CONNECT_PROJECT_ID) {
 }
 
 class WalletConnectService {
-  private _signClient: SignClient | undefined
+  #client: IWeb3Wallet | undefined
 
-  private get signClient() {
-    assertNotUndefined(this._signClient)
-    return this._signClient
+  private get client() {
+    assertNotUndefined(this.#client)
+    return this.#client
   }
 
-  private set signClient(client: SignClient) {
-    this._signClient = client
+  private set client(client: IWeb3Wallet) {
+    this.#client = client
   }
 
   init = async (callbacks: WalletConnectCallbacks) => {
     // after init, WC will auto restore sessions
-    this.signClient = await SignClient.init({
-      projectId: Config.WALLET_CONNECT_PROJECT_ID,
+    const core = new Core({
+      logger: 'fatal',
+      projectId: Config.WALLET_CONNECT_PROJECT_ID
+    })
+
+    this.client = await Web3Wallet.init({
+      core,
       metadata: CLIENT_METADATA
     })
 
-    this.signClient.on('session_proposal', requestEvent => {
+    this.client.on('session_proposal', requestEvent => {
       callbacks.onSessionProposal(requestEvent)
     })
 
-    this.signClient.on('session_request', requestEvent => {
+    this.client.on('session_request', requestEvent => {
       const requestSession = this.getSession(requestEvent.topic)
-      callbacks.onSessionRequest(requestEvent, requestSession)
+      requestSession && callbacks.onSessionRequest(requestEvent, requestSession)
     })
 
-    this.signClient.on('session_delete', requestEvent => {
+    this.client.on('session_delete', requestEvent => {
       const requestSession = this.getSession(requestEvent.topic)
-      callbacks.onDisconnect(requestSession.peer.metadata)
+      requestSession && callbacks.onDisconnect(requestSession.peer.metadata)
+    })
+  }
+
+  pair = async (uri: string) => {
+    await this.client.pair({ uri })
+  }
+
+  getSessions = (): SessionTypes.Struct[] => {
+    return Object.values(this.client.getActiveSessions())
+  }
+
+  getSession = (topic: string): SessionTypes.Struct | undefined => {
+    return this.client.getActiveSessions()?.[topic]
+  }
+
+  approveSession = async ({
+    id,
+    relayProtocol,
+    namespaces
+  }: Pick<
+    EngineTypes.ApproveParams,
+    'id' | 'relayProtocol' | 'namespaces'
+  >) => {
+    const session = await this.client.approveSession({
+      id,
+      relayProtocol,
+      namespaces
     })
 
-    this.signClient.on('session_event', requestEvent => {
-      Logger.info('wc v2 session_event', requestEvent)
-    })
-
-    this.signClient.on('session_update', requestEvent =>
-      Logger.info('wc v2 session_update', requestEvent)
-    )
-  }
-
-  pair = (uri: string) => {
-    return this.signClient.core.pairing.pair({ uri })
-  }
-
-  getSessions = () => {
-    return this.signClient.session.values
-  }
-
-  getSession = (topic: string) => {
-    return this.signClient.session.get(topic)
-  }
-
-  approveSession = async (params: EngineTypes.ApproveParams) => {
-    const { acknowledged } = await this.signClient.approve(params)
-    return acknowledged()
+    return session
   }
 
   rejectSession = async (id: number) => {
-    return this.signClient.reject({
+    await this.client.rejectSession({
       id,
-      reason: getSdkError('USER_REJECTED')
+      reason: getSdkError('USER_REJECTED_METHODS')
     })
   }
 
@@ -84,16 +106,9 @@ class WalletConnectService {
     requestId: number,
     result: unknown
   ) => {
-    const response = {
-      id: requestId,
-      jsonrpc: '2.0',
-      result
-    }
+    const response = { id: requestId, result, jsonrpc: '2.0' }
 
-    return this.signClient.respond({
-      topic,
-      response
-    })
+    await this.client.respondSessionRequest({ topic, response })
   }
 
   rejectRequest = async (topic: string, requestId: number, error: RpcError) => {
@@ -103,14 +118,11 @@ class WalletConnectService {
       error
     }
 
-    return this.signClient.respond({
-      topic,
-      response
-    })
+    await this.client.respondSessionRequest({ topic, response })
   }
 
   killSession = async (topic: string) => {
-    return this.signClient.disconnect({
+    await this.client.disconnectSession({
       topic,
       reason: getSdkError('USER_DISCONNECTED')
     })
@@ -119,7 +131,7 @@ class WalletConnectService {
   killAllSessions = async () => {
     const promises: Promise<void>[] = []
 
-    this.signClient.session.values.forEach(session => {
+    this.getSessions().forEach(session => {
       promises.push(this.killSession(session.topic))
     })
 
@@ -134,6 +146,102 @@ class WalletConnectService {
     }
 
     return Promise.allSettled(promises)
+  }
+
+  updateSession = async ({
+    session,
+    chainId,
+    address
+  }: {
+    session: SessionTypes.Struct
+    chainId: number
+    address: string
+  }) => {
+    if (isBitcoinNetwork(chainId)) {
+      Logger.info('skip updating WC session for bitcoin network')
+      return
+    }
+
+    Logger.info(
+      `updating WC session '${session.peer.metadata.name}' with chainId ${chainId} and address ${address}`
+    )
+    const topic = session.topic
+    const formattedChain = addNamespaceToChain(chainId)
+    const formattedAddress = addNamespaceToAddress(address, chainId)
+
+    const namespaces = session.namespaces[EVM_IDENTIFIER]
+
+    if (namespaces === undefined) return
+
+    if (!chainAlreadyInSession(session, chainId)) {
+      namespaces.chains?.push(formattedChain)
+    }
+
+    if (!addressAlreadyInSession(session, formattedAddress)) {
+      namespaces.accounts.push(formattedAddress)
+    }
+
+    // check if dapp is online first
+    await this.client.engine.signClient.ping({ topic })
+
+    await this.client.updateSession({
+      topic,
+      namespaces: {
+        [EVM_IDENTIFIER]: namespaces
+      }
+    })
+
+    // emitting events
+    await this.client.emitSessionEvent({
+      topic,
+      event: {
+        name: 'chainChanged',
+        data: chainId
+      },
+      chainId: formattedChain
+    })
+
+    await this.client.emitSessionEvent({
+      topic,
+      event: {
+        name: 'accountsChanged',
+        data: [formattedAddress]
+      },
+      chainId: formattedChain
+    })
+  }
+
+  updateSessions = async ({
+    chainId,
+    address
+  }: {
+    chainId: number
+    address: string
+  }) => {
+    if (isBitcoinNetwork(chainId)) {
+      Logger.info('skip updating WC sessions for bitcoin network')
+      return
+    }
+
+    const promises: Promise<void>[] = []
+
+    this.getSessions().forEach(session => {
+      // if dapp is not online, updateSession will be stuck for a long time
+      // we are using promiseWithTimeout here to exit early when that happens
+      const promise = promiseWithTimeout(
+        this.updateSession({ session, chainId, address }),
+        UPDATE_SESSION_TIMEOUT
+      ).catch(e => {
+        Logger.error(
+          `unable to update WC session '${session.peer.metadata.name}'`,
+          e
+        )
+      })
+
+      promises.push(promise)
+    })
+
+    await Promise.allSettled(promises)
   }
 }
 
