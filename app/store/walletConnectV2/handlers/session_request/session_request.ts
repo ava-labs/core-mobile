@@ -3,8 +3,10 @@ import AppNavigation from 'navigation/AppNavigation'
 import { ProposalTypes, SessionTypes } from '@walletconnect/types'
 import { AppListenerEffectAPI } from 'store'
 import { ethErrors } from 'eth-rpc-errors'
-import { selectRawNetworks } from 'store/network'
-import { NetworkVMType } from '@avalabs/chains-sdk'
+import { selectActiveNetwork, selectRawNetworks } from 'store/network'
+import { EVM_IDENTIFIER } from 'consts/walletConnect'
+import { addNamespaceToChain } from 'services/walletconnectv2/utils'
+import { normalizeNamespaces } from '@walletconnect/utils'
 import { SessionProposal, RpcMethod, CORE_ONLY_METHODS } from '../../types'
 import {
   RpcRequestHandler,
@@ -12,21 +14,25 @@ import {
   HandleResponse,
   ApproveResponse
 } from '../types'
-import { isCoreDomain, isCoreMethod, parseApproveData } from './utils'
+import {
+  isCoreDomain,
+  isCoreMethod,
+  isNetworkSupported,
+  parseApproveData
+} from './utils'
+
+const DEFAULT_EVENTS = ['chainChanged', 'accountsChanged']
 
 interface OnlyEIP155Namespaces {
-  eip155: ProposalTypes.BaseRequiredNamespace
+  [EVM_IDENTIFIER]: ProposalTypes.BaseRequiredNamespace
 }
 
 function hasOnlyEIP155<T extends ProposalTypes.RequiredNamespaces>(
-  requiredNamespaces: T
-): requiredNamespaces is T & OnlyEIP155Namespaces {
-  const eip155NameSpace = requiredNamespaces.eip155
+  namespaces: T
+): namespaces is T & OnlyEIP155Namespaces {
+  const eip155NameSpace = namespaces[EVM_IDENTIFIER]
 
-  return (
-    eip155NameSpace !== undefined &&
-    Object.keys(requiredNamespaces).length === 1
-  )
+  return eip155NameSpace !== undefined && Object.keys(namespaces).length === 1
 }
 
 const supportedMethods = [
@@ -44,16 +50,71 @@ const supportedMethods = [
 class SessionRequestHandler implements RpcRequestHandler<SessionProposal> {
   methods = [RpcMethod.SESSION_REQUEST]
 
+  private getApprovedMethods = (dappUrl: string) => {
+    const isCoreApp = isCoreDomain(dappUrl)
+
+    // approve all methods that we support here to allow dApps
+    // that use Wagmi to be able to send/access more rpc methods
+    // by default, Wagmi only requests eth_sendTransaction and personal_sign
+    const approvedMethods = isCoreApp
+      ? [...supportedMethods, ...CORE_ONLY_METHODS]
+      : supportedMethods
+
+    return approvedMethods
+  }
+
+  private getApprovedEvents = (
+    requiredNamespaces: ProposalTypes.RequiredNamespaces
+  ) => {
+    return [
+      ...new Set([
+        ...DEFAULT_EVENTS,
+        ...(requiredNamespaces[EVM_IDENTIFIER]?.events ?? [])
+      ])
+    ]
+  }
+
+  private getApprovedChainIds = (approvedChains: number[]) => {
+    return approvedChains
+  }
+
+  private getApprovedAccounts = (
+    selectedAccounts: string[],
+    approvedChains: string[]
+  ) => {
+    const approvedAccounts: string[] = []
+
+    approvedChains.forEach(chain => {
+      selectedAccounts.forEach(acc => approvedAccounts.push(`${chain}:${acc}`))
+    })
+
+    return approvedAccounts
+  }
+
   handle = async (
     request: SessionProposal,
     listenerApi: AppListenerEffectAPI
   ): HandleResponse => {
     const state = listenerApi.getState()
     const { params } = request.data
-    const { proposer, requiredNamespaces } = params
+    const { proposer, requiredNamespaces, optionalNamespaces } = params
+
+    let normalizedRequired = normalizeNamespaces(requiredNamespaces)
+    const normalizedOptional = normalizeNamespaces(optionalNamespaces)
+
+    if (Object.keys(normalizedRequired).length === 0) {
+      const { chainId } = selectActiveNetwork(state)
+      normalizedRequired = {
+        [EVM_IDENTIFIER]: {
+          chains: [addNamespaceToChain(chainId)],
+          methods: [],
+          events: []
+        }
+      }
+    }
 
     // make sure only eip155 namespace is requested
-    if (!hasOnlyEIP155(requiredNamespaces)) {
+    if (!hasOnlyEIP155(normalizedRequired)) {
       return {
         success: false,
         error: ethErrors.rpc.invalidParams({
@@ -62,14 +123,12 @@ class SessionRequestHandler implements RpcRequestHandler<SessionProposal> {
       }
     }
 
-    // make sure we support all the eip155 networks requested
-    const eip155NameSpace = requiredNamespaces.eip155
+    const eip155NameSpace = normalizedRequired[EVM_IDENTIFIER]
     const supportedNetworks = selectRawNetworks(state)
 
-    if (
-      eip155NameSpace.chains === undefined ||
-      eip155NameSpace.chains.length === 0
-    ) {
+    const requiredChains = eip155NameSpace.chains
+
+    if (requiredChains === undefined || requiredChains.length === 0) {
       return {
         success: false,
         error: ethErrors.rpc.invalidParams({
@@ -78,11 +137,11 @@ class SessionRequestHandler implements RpcRequestHandler<SessionProposal> {
       }
     }
 
-    for (const chain of eip155NameSpace.chains) {
+    // make sure we support all the required eip155 networks requested
+    for (const chain of requiredChains) {
       const chainId = chain.split(':')[1] ?? ''
-      const network = supportedNetworks[Number(chainId)]
 
-      if (!network || network.vmName !== NetworkVMType.EVM) {
+      if (!isNetworkSupported(supportedNetworks, Number(chainId))) {
         return {
           success: false,
           error: ethErrors.rpc.invalidParams({
@@ -91,6 +150,21 @@ class SessionRequestHandler implements RpcRequestHandler<SessionProposal> {
         }
       }
     }
+
+    // also add optional chains (if available and only for chains that are supported)
+    // to the list of chains to approve
+    const optionalChains = (
+      normalizedOptional[EVM_IDENTIFIER]?.chains ?? []
+    ).filter(chain => {
+      const chainId = chain.split(':')[1] ?? ''
+      return isNetworkSupported(supportedNetworks, Number(chainId))
+    })
+
+    // list of chain IDs to approve
+    const chainIds = [...requiredChains, ...optionalChains]
+      ?.map(chain => chain.split(':')[1])
+      ?.filter((chainId): chainId is string => !!chainId)
+      ?.map(chainId => Number(chainId))
 
     // make sure Core methods are only requested by either Core Web, Internal Playground or Localhost
     const dappUrl = proposer.metadata.url
@@ -104,11 +178,6 @@ class SessionRequestHandler implements RpcRequestHandler<SessionProposal> {
         })
       }
     }
-
-    const chainIds = eip155NameSpace.chains
-      ?.map(chain => chain.split(':')[1])
-      ?.filter((chainId): chainId is string => !!chainId)
-      ?.map(chainId => Number(chainId))
 
     Navigation.navigate({
       name: AppNavigation.Root.Wallet,
@@ -134,37 +203,31 @@ class SessionRequestHandler implements RpcRequestHandler<SessionProposal> {
       }
     }
 
-    const selectedAccounts = result.data.selectedAccounts
-    const namespaces: SessionTypes.Namespaces = {}
-
     const requiredNamespaces = payload.request.data.params.requiredNamespaces
 
     const dappUrl = payload.request.data.params.proposer.metadata.url
-    const isCoreApp = isCoreDomain(dappUrl)
-    const methods = isCoreApp
-      ? [...supportedMethods, ...CORE_ONLY_METHODS]
-      : supportedMethods
+    const methods = this.getApprovedMethods(dappUrl)
 
-    Object.keys(requiredNamespaces).forEach(key => {
-      const accounts: string[] = []
-      const chains: string[] = requiredNamespaces[key]?.chains ?? []
+    const events = this.getApprovedEvents(requiredNamespaces)
 
-      chains.forEach(chain => {
-        selectedAccounts.forEach(acc => accounts.push(`${chain}:${acc}`))
-      })
+    const approvedChainIds = result.data.approvedChainIds
+    const chains =
+      this.getApprovedChainIds(approvedChainIds).map(addNamespaceToChain)
 
-      namespaces[key] = {
+    const selectedAccounts = result.data.selectedAccounts
+    const accounts = this.getApprovedAccounts(selectedAccounts, chains)
+
+    const namespaces: SessionTypes.Namespaces = {
+      [EVM_IDENTIFIER]: {
         chains,
         accounts,
-        // returning all methods that we support here to allow dApps
-        // that use Wagmi to be able to send/access more rpc methods
-        // by default, Wagmi only requests eth_sendTransaction and personal_sign
-        methods: methods,
-        events: requiredNamespaces[key]?.events ?? []
+        methods,
+        events
       }
-    })
+    }
 
     return { success: true, value: namespaces }
   }
 }
+
 export const sessionRequestHandler = new SessionRequestHandler()
