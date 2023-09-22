@@ -1,3 +1,5 @@
+import { NetworkVMType } from '@avalabs/chains-sdk'
+import { Networks } from 'store/network/types'
 import { CORE_ONLY_METHODS, RpcMethod } from 'store/walletConnectV2/types'
 import { z } from 'zod'
 
@@ -30,19 +32,38 @@ export const isCoreMethod = (method: string) =>
   CORE_ONLY_METHODS.includes(method as RpcMethod)
 
 export const isCoreDomain = (url: string) => {
-  const { hostname, protocol } = new URL(url)
+  let hostname = ''
+  let protocol = ''
+
+  try {
+    const urlObj = new URL(url)
+    hostname = urlObj.hostname
+    protocol = urlObj.protocol
+  } catch (e) {
+    return false
+  }
+
   const isCoreExt =
     CORE_EXT_HOSTNAMES.includes(hostname) && protocol === 'chrome-extension:'
 
-  return (
+  const isCoreWeb =
     CORE_WEB_HOSTNAMES.includes(hostname) ||
-    CORE_WEB_URLS_REGEX.some(regex => new RegExp(regex).test(url)) ||
-    isCoreExt
-  )
+    CORE_WEB_URLS_REGEX.some(regex => new RegExp(regex).test(url))
+
+  return isCoreWeb || isCoreExt
+}
+
+export const isNetworkSupported = (
+  supportedNetworks: Networks,
+  chainId: number
+) => {
+  const network = supportedNetworks[Number(chainId)]
+  return Boolean(network && network.vmName === NetworkVMType.EVM)
 }
 
 const approveDataSchema = z.object({
-  selectedAccounts: z.array(z.string()).nonempty()
+  selectedAccounts: z.array(z.string()).nonempty(),
+  approvedChainIds: z.array(z.number()).nonempty()
 })
 
 export const parseApproveData = (data: unknown) => {
