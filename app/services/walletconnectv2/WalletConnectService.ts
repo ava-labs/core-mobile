@@ -66,7 +66,22 @@ class WalletConnectService {
   }
 
   pair = async (uri: string) => {
-    await this.client.pair({ uri })
+    try {
+      await this.client.pair({ uri, activatePairing: true })
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        error.message.toLowerCase().includes('pairing already exists')
+      ) {
+        Logger.info(
+          'pairing already exists, wc will reuse it automatically to prompt a new session'
+        )
+        return
+      }
+
+      // rethrow for all other errors
+      throw error
+    }
   }
 
   getSessions = (): SessionTypes.Struct[] => {
