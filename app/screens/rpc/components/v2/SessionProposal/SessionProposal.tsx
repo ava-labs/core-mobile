@@ -56,9 +56,9 @@ const SessionProposal = () => {
   }, [goBack, onReject, request])
 
   const approveAndClose = useCallback(() => {
-    onApprove(request, { selectedAccounts })
+    onApprove(request, { selectedAccounts, approvedChainIds: chainIds })
     goBack()
-  }, [goBack, onApprove, request, selectedAccounts])
+  }, [goBack, onApprove, request, selectedAccounts, chainIds])
 
   const onSelect = (address: string) => {
     if (!selectedAccounts.includes(address))

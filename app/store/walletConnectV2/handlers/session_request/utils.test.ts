@@ -86,4 +86,13 @@ describe('isCoreDomain', () => {
       expect(result).toEqual(false)
     }
   })
+
+  it('should return false if url is invalid', () => {
+    const urls = ['app.pangolin.exchange']
+
+    for (const url of urls) {
+      const result = isCoreDomain(url)
+      expect(result).toEqual(false)
+    }
+  })
 })

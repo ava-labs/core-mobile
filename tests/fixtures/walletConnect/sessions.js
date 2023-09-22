@@ -27,6 +27,7 @@ export default [
         events: ['chainChanged', 'accountsChanged']
       }
     },
+    optionalNamespaces: {},
     requiredNamespaces: {
       eip155: {
         methods: [
@@ -54,6 +55,8 @@ export default [
     controller:
       'b9be2434be130743ceac605609101209325144585eea617c1bc56bc1d2821c2c',
     expiry: 1677971173,
+    pairingTopic:
+      '3c74583111ab5e006b03cbb0f252c667686e9fc01e675dff90aa8b18ec435feb',
     topic: '3a094bf511357e0f48ff266f0b8d5b846fd3f7de4bd0824d976fdf4c5279b261',
     acknowledged: true,
     self: {
@@ -107,6 +110,7 @@ export default [
         events: ['chainChanged', 'accountsChanged']
       }
     },
+    optionalNamespaces: {},
     requiredNamespaces: {
       eip155: {
         methods: [
@@ -134,6 +138,8 @@ export default [
     controller:
       'b9be2434be130743ceac605609101209325144585eea617c1bc56bc1d2821c2c',
     expiry: 1677971173,
+    pairingTopic:
+      '4d74583111ab5e006b03cbb0f252c667686e9fc01e675dff90aa8b18ec435feb',
     topic: 'b9be2434be130743ceac605609101209325144585eea617c1bc56bc1d2821c2c',
     acknowledged: true,
     self: {
