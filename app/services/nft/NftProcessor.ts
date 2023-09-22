@@ -2,6 +2,7 @@ import { Image } from 'react-native'
 import { NFTItemData, NFTItemExternalData } from 'store/nft'
 import { HttpClient } from '@avalabs/utils-sdk'
 import { NftTokenMetadataStatus } from '@avalabs/glacier-sdk'
+import Logger from 'utils/Logger'
 import { convertIPFSResolver, getTokenUri, isErc721 } from './utils'
 
 export class NftProcessor {
@@ -19,13 +20,18 @@ export class NftProcessor {
       } else {
         const imageUrl = convertIPFSResolver(imageData)
         if (imageUrl.endsWith('.svg')) {
-          fetch(imageUrl).then(rsp => {
-            rsp.text().then(svg => {
-              const trimmed = this.removeSvgNamespace(svg)
-              const aspect = this.extractSvgAspect(trimmed) ?? 1
-              resolve([trimmed, aspect, true])
+          fetch(imageUrl)
+            .then(rsp => {
+              rsp
+                .text()
+                .then(svg => {
+                  const trimmed = this.removeSvgNamespace(svg)
+                  const aspect = this.extractSvgAspect(trimmed) ?? 1
+                  resolve([trimmed, aspect, true])
+                })
+                .catch(reason => Logger.error(reason))
             })
-          })
+            .catch(reason => Logger.error(reason))
         } else if (imageUrl.endsWith('.mp4')) {
           // we don't support mp4 yet
           resolve(['', 1, false])

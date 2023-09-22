@@ -28,6 +28,7 @@ import {
 import { usePostCapture } from 'hooks/usePosthogCapture'
 import OwlLoader from 'components/OwlLoader'
 import { setCoreAnalytics } from 'store/settings/securityPrivacy'
+import Logger from 'utils/Logger'
 import { EnterWithMnemonicScreenProps } from '../types'
 
 export type EnterWithMnemonicStackParamList = {
@@ -145,6 +146,7 @@ const CreatePinScreen = () => {
               break
           }
         })
+        .catch(reason => Logger.error(reason))
     }
   }
   return <CreatePIN onPinSet={onPinSet} />
@@ -188,6 +190,7 @@ const TermsNConditionsModalScreen = () => {
               dispatch(onLogIn())
               dispatch(onAppUnlocked())
             })
+            .catch(reason => Logger.error(reason))
         }, 300)
       }}
       onReject={() => signOut()}

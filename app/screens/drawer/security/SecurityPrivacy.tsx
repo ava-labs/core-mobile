@@ -11,6 +11,7 @@ import {
   selectCoreAnalyticsConsent,
   setCoreAnalytics
 } from 'store/settings/securityPrivacy'
+import Logger from 'utils/Logger'
 
 function SecurityPrivacy({
   onChangePin,
@@ -31,12 +32,17 @@ function SecurityPrivacy({
   const [isBiometricEnabled, setIsBiometricEnabled] = useState(false)
 
   useEffect(() => {
-    BiometricsSDK.canUseBiometry().then((biometryAvailable: boolean) => {
-      setIsBiometricEnabled(biometryAvailable)
-    })
-    AsyncStorage.getItem(SECURE_ACCESS_SET).then(type => {
-      setIsBiometricSwitchEnabled(type === 'BIO')
-    })
+    BiometricsSDK.canUseBiometry()
+      .then((biometryAvailable: boolean) => {
+        setIsBiometricEnabled(biometryAvailable)
+      })
+      .catch(reason => Logger.error(reason))
+
+    AsyncStorage.getItem(SECURE_ACCESS_SET)
+      .then(type => {
+        setIsBiometricSwitchEnabled(type === 'BIO')
+      })
+      .catch(reason => Logger.error(reason))
   }, [])
 
   const handleSwitchChange = (value: boolean) => {

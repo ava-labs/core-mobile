@@ -172,9 +172,11 @@ const PinForBiometryEnable = memo(() => {
   return (
     <PinOrBiometryLogin
       onLoginSuccess={mnemonic => {
-        BiometricsSDK.storeWalletWithBiometry(mnemonic).then(() =>
-          nav.navigate(AppNavigation.SecurityPrivacy.SecurityPrivacy)
-        )
+        BiometricsSDK.storeWalletWithBiometry(mnemonic)
+          .then(() =>
+            nav.navigate(AppNavigation.SecurityPrivacy.SecurityPrivacy)
+          )
+          .catch(reason => Logger.error(reason))
       }}
       onSignInWithRecoveryPhrase={() => Logger.info('onSignIn')}
       isResettingPin
@@ -199,10 +201,12 @@ const CreatePinScreen = memo(() => {
   return (
     <CreatePIN
       onPinSet={pin => {
-        onPinCreated(mnemonic, pin, true).then(() => {
-          capture('ChangePasswordSucceeded')
-          nav.goBack()
-        })
+        onPinCreated(mnemonic, pin, true)
+          .then(() => {
+            capture('ChangePasswordSucceeded')
+            nav.goBack()
+          })
+          .catch(reason => Logger.error(reason))
       }}
       isResettingPin
       onResetPinFailed={handleOnResetPinFailed}

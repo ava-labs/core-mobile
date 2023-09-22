@@ -12,6 +12,7 @@ import AnalyticsConsent from 'screens/onboarding/AnalyticsConsent'
 import { MainHeaderOptions } from 'navigation/NavUtils'
 import { useDispatch } from 'react-redux'
 import { onAppUnlocked } from 'store/app'
+import Logger from 'utils/Logger'
 import { WelcomeScreenProps } from '../types'
 import CreateWalletStack, {
   CreateWalletStackParamList
@@ -70,9 +71,11 @@ const LoginWithPinOrBiometryScreen = () => {
         context.appNavHook.resetNavToEnterMnemonic()
       }
       onLoginSuccess={mnemonic => {
-        enterWallet(mnemonic).then(() => {
-          dispatch(onAppUnlocked())
-        })
+        enterWallet(mnemonic)
+          .then(() => {
+            dispatch(onAppUnlocked())
+          })
+          .catch(reason => Logger.error(reason))
       }}
     />
   )

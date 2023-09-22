@@ -28,6 +28,7 @@ import { calculateGasAndFees, getMaxValue, truncateBN } from 'utils/Utils'
 import { bnToLocaleString } from '@avalabs/utils-sdk'
 import { usePostCapture } from 'hooks/usePosthogCapture'
 import { selectActiveNetwork } from 'store/network'
+import Logger from 'utils/Logger'
 
 type NavigationProp = SwapScreenProps<
   typeof AppNavigation.Swap.Swap
@@ -246,6 +247,7 @@ export default function SwapView() {
       .finally(() => {
         setIsCalculatingMax(false)
       })
+      .catch(reason => Logger.error(reason))
   }, [fromToken, getOptimalRateForAmount, setDestination, setAmount, gasPrice])
 
   return (

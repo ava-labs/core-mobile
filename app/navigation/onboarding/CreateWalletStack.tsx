@@ -25,6 +25,7 @@ import {
 import { usePostCapture } from 'hooks/usePosthogCapture'
 import OwlLoader from 'components/OwlLoader'
 import { setCoreAnalytics } from 'store/settings/securityPrivacy'
+import Logger from 'utils/Logger'
 import { CreateWalletScreenProps } from '../types'
 
 export type CreateWalletStackParamList = {
@@ -190,6 +191,7 @@ const CreatePinScreen = () => {
             break
         }
       })
+      .catch(reason => Logger.error(reason))
   }
 
   return <CreatePIN onPinSet={onPinSet} />
@@ -226,10 +228,13 @@ const TermsNConditionsModalScreen = () => {
         navigate(AppNavigation.CreateWallet.Loader)
         setTimeout(() => {
           // signing in with a brand new wallet
-          walletSetupHook.enterWallet(createWalletContext.mnemonic).then(() => {
-            dispatch(onLogIn())
-            dispatch(onAppUnlocked())
-          })
+          walletSetupHook
+            .enterWallet(createWalletContext.mnemonic)
+            .then(() => {
+              dispatch(onLogIn())
+              dispatch(onAppUnlocked())
+            })
+            .catch(reason => Logger.error(reason))
         }, 300)
       }}
       onReject={() => signOut()}

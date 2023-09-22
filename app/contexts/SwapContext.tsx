@@ -243,6 +243,7 @@ export const SwapContextProvider = ({ children }: { children: ReactNode }) => {
         .finally(() => {
           SentryWrapper.finish(sentryTrx)
         })
+        .catch(reason => Logger.error(reason))
     })
   }
 

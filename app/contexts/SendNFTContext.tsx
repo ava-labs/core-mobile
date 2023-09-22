@@ -29,6 +29,7 @@ import SentryWrapper from 'services/sentry/SentryWrapper'
 import { usePostCapture } from 'hooks/usePosthogCapture'
 import { RootState } from 'store'
 import { bnToBigint } from 'utils/bigNumbers/bnToBigint'
+import Logger from 'utils/Logger'
 
 export interface SendNFTContextState {
   sendToken: NFTItemData
@@ -228,6 +229,7 @@ export const SendNFTContextProvider = ({
         setError(state.error ? state.error.message : undefined)
         setCanSubmit(state.canSubmit ?? false)
       })
+      .catch(reason => Logger.error(reason))
   }
 
   const state: SendNFTContextState = {
