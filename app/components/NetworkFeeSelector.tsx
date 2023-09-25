@@ -9,21 +9,21 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Opacity50 } from 'resources/Constants'
 import { Popable } from 'react-native-popable'
 import PoppableGasAndLimit from 'components/PoppableGasAndLimit'
-import { useDispatch, useSelector } from 'react-redux'
-import { fetchNetworkFee, selectNetworkFee } from 'store/networkFee'
+import { useSelector } from 'react-redux'
 import { NetworkVMType } from '@avalabs/chains-sdk'
 import { useNavigation } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
 import Big from 'big.js'
 import InfoSVG from 'components/svg/InfoSVG'
 import { WalletScreenProps } from 'navigation/types'
-import { selectActiveNetwork } from 'store/network'
+import { selectActiveNetwork, selectNetwork } from 'store/network'
 import { useNativeTokenPrice } from 'hooks/useNativeTokenPrice'
 import { VsCurrencyType } from '@avalabs/coingecko-sdk'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { calculateGasAndFees } from 'utils/Utils'
 import { bigintToBig } from 'utils/bigNumbers/bigintToBig'
 import { bigToBigint } from 'utils/bigNumbers/bigToBigint'
+import { useNetworkFee } from 'hooks/useNetworkFee'
 import InputText from './InputText'
 
 export enum FeePreset {
@@ -44,11 +44,13 @@ type NavigationProp = WalletScreenProps<
 >['navigation']
 
 const NetworkFeeSelector = ({
+  chainId,
   gasLimit,
   onGasPriceChange,
   onGasLimitChange,
   maxGasPrice
 }: {
+  chainId?: number
   gasLimit: number
   onGasPriceChange?(gasPrice: bigint, feePreset: FeePreset): void
   onGasLimitChange?(customGasLimit: number): void
@@ -56,8 +58,8 @@ const NetworkFeeSelector = ({
 }) => {
   const { navigate } = useNavigation<NavigationProp>()
   const { theme } = useApplicationContext()
-  const networkFee = useSelector(selectNetworkFee)
-  const dispatch = useDispatch()
+  const requestedNetwork = useSelector(selectNetwork(chainId))
+  const { data: networkFee } = useNetworkFee(requestedNetwork)
   const network = useSelector(selectActiveNetwork)
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { nativeTokenPrice } = useNativeTokenPrice(
@@ -110,12 +112,6 @@ const NetworkFeeSelector = ({
   useEffect(() => {
     onGasPriceChange?.(selectedGasPrice, selectedPreset)
   }, [selectedGasPrice, selectedPreset, networkFee.low, onGasPriceChange])
-
-  useEffect(fetchNetworkGasPrices, [dispatch])
-
-  function fetchNetworkGasPrices() {
-    dispatch(fetchNetworkFee)
-  }
 
   function handleGasLimitChange(newGasLimit: number) {
     onGasLimitChange?.(newGasLimit)
