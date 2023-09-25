@@ -502,8 +502,6 @@ PODS:
     - Sentry/HybridSDK (= 8.10.0)
   - RNSVG (13.8.0):
     - React-Core
-  - RNVectorIcons (8.1.0):
-    - React-Core
   - SDWebImage (5.11.1):
     - SDWebImage/Core (= 5.11.1)
   - SDWebImage/Core (5.11.1)
@@ -618,7 +616,6 @@ DEPENDENCIES:
   - RNSensors (from `../node_modules/react-native-sensors`)
   - "RNSentry (from `../node_modules/@sentry/react-native`)"
   - RNSVG (from `../node_modules/react-native-svg`)
-  - RNVectorIcons (from `../node_modules/react-native-vector-icons`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
 SPEC REPOS:
@@ -797,8 +794,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@sentry/react-native"
   RNSVG:
     :path: "../node_modules/react-native-svg"
-  RNVectorIcons:
-    :path: "../node_modules/react-native-vector-icons"
   Yoga:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
@@ -894,7 +889,6 @@ SPEC CHECKSUMS:
   RNSensors: e74c8bd9606400c1048ab67af7f41eb2091cb2fc
   RNSentry: 0a1daa8ee81e2776f977ae8c66e67c8d85587828
   RNSVG: c1e76b81c76cdcd34b4e1188852892dc280eb902
-  RNVectorIcons: 31cebfcf94e8cf8686eb5303ae0357da64d7a5a4
   SDWebImage: a7f831e1a65eb5e285e3fb046a23fcfbf08e696d
   SDWebImageWebPCoder: 908b83b6adda48effe7667cd2b7f78c897e5111d
   Sentry: 71cd4427146ac56eab6e70401ac7a24384c3d3b5
