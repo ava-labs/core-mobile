@@ -10,7 +10,7 @@ import { GetAssetDescriptionResponse } from '@avalabs/avalanchejs-v2/dist/src/vm
 import Separator from 'components/Separator'
 import { truncateAddress } from 'utils/Utils'
 import { Avalanche } from '@avalabs/wallets-sdk'
-import { AvalancheChainStrings } from 'store/walletConnect/handlers/types'
+import { AvalancheChainStrings } from 'store/walletConnectV2/handlers/types'
 import TxFee from './components/TxFee'
 
 const BaseTxView = ({ tx }: { tx: Avalanche.BaseTx }) => {

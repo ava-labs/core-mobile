@@ -7,7 +7,6 @@ import Avatar from 'components/Avatar'
 import { Checkbox } from 'components/Checkbox'
 import { Row } from 'components/Row'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { WalletConnectVersions } from 'store/walletConnectV2'
 import { Dapp } from './types'
 
 interface Props {
@@ -29,18 +28,6 @@ export const DappItem = ({
   const theme = useApplicationContext().theme
 
   const peerMeta = useMemo(() => {
-    if (item.version === WalletConnectVersions.V1) {
-      if (!item.dapp.peerMeta)
-        return {
-          name: '',
-          description: '',
-          url: '',
-          icons: []
-        }
-
-      return item.dapp.peerMeta
-    }
-
     return item.dapp.peer.metadata
   }, [item])
 
