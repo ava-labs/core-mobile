@@ -240,10 +240,10 @@ export const SwapContextProvider = ({ children }: { children: ReactNode }) => {
             })
           }
         })
+        .catch(Logger.error)
         .finally(() => {
           SentryWrapper.finish(sentryTrx)
         })
-        .catch(Logger.error)
     })
   }
 
