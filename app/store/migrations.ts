@@ -106,5 +106,9 @@ export const migrations = {
     }
 
     return state
+  },
+  8: (state: any) => {
+    delete state.walletConnect
+    return state
   }
 }

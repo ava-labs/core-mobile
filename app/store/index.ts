@@ -24,14 +24,12 @@ import { addressBookReducer as addressBook } from './addressBook'
 import settings from './settings'
 import swap from './swap'
 import { transactionApi } from './transaction'
-import { walletConnectReducer as walletConnect } from './walletConnect'
 import { walletConnectReducer as walletConnectV2 } from './walletConnectV2'
 import { BridgeBlacklistTransform } from './transforms/BridgeBlacklistTransform'
 import { WatchlistBlacklistTransform } from './transforms/WatchlistBlacklistTransform'
-import { WalletConnectBlacklistTransform } from './transforms/WalletConnectBlacklistTransform'
 import { AppBlacklistTransform } from './transforms/AppBlacklistTransform'
 
-const VERSION = 7
+const VERSION = 8
 
 // list of reducers that don't need to be persisted
 // for nested/partial blacklist, please use transform
@@ -58,7 +56,6 @@ const combinedReducer = combineReducers({
   swap,
   nft,
   security,
-  walletConnect,
   walletConnectV2,
 
   // user preferences
@@ -112,7 +109,6 @@ export function configureEncryptedStore(secretKey: string) {
       AppBlacklistTransform,
       BridgeBlacklistTransform,
       WatchlistBlacklistTransform,
-      WalletConnectBlacklistTransform,
       EncryptionTransform // last!
     ],
     migrate: createMigrate(migrations, { debug: __DEV__ }),

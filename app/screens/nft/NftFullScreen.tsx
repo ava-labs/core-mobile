@@ -85,8 +85,8 @@ export default function NftFullScreen() {
       )
       .subscribe(value => {
         setSensorData({
-          pitch: isNaN(value.pitch) ? 0 : value.pitch,
-          roll: isNaN(value.roll) ? 0 : value.roll
+          pitch: Number.isNaN(value.pitch) ? 0 : value.pitch,
+          roll: Number.isNaN(value.roll) ? 0 : value.roll
         })
       })
 

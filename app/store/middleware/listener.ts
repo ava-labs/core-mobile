@@ -14,7 +14,6 @@ import { addBridgeListeners } from 'store/bridge/listeners'
 import { addPosthogListeners } from 'store/posthog/listeners'
 import { addWatchlistListeners } from 'store/watchlist/listeners'
 import { addNftListeners } from 'store/nft/listeners'
-import { addWCListeners as addWCListenersV1 } from 'store/walletConnect/listeners'
 import { addWCListeners as addWCListenersV2 } from 'store/walletConnectV2/listeners'
 import Logger from 'utils/Logger'
 import { addNotificationsListeners } from 'store/notifications/listeners/listeners'
@@ -48,8 +47,6 @@ addNetworkFeeListeners(startListening)
 addPosthogListeners(startListening)
 
 addWatchlistListeners(startListening)
-
-addWCListenersV1(startListening)
 
 addWCListenersV2(startListening)
 
