@@ -53,7 +53,7 @@ const ConnectedDapps: FC<Props> = ({ goBack }) => {
   )
 
   const allApprovedDapps = [
-    ...approvedDappsV2.map<Dapp>(dapp => ({
+    approvedDappsV2.map<Dapp>(dapp => ({
       id: dapp.topic,
       dapp: dapp,
       version: WalletConnectVersions.V2

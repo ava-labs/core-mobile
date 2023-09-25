@@ -21,6 +21,8 @@ import { DisclaimerBottomSheet } from 'screens/earn/components/DisclaimerBottomS
 import { SignOutModalScreen, WalletScreenSType } from './WalletScreenStack'
 
 export const createModals = (WalletScreenS: WalletScreenSType) => {
+  /* we have to disable gesture here so bottom sheet swipe down gesture
+      doesn't conflict with react navigation swipe down */
   const walletConnectV2Modals = (
     <WalletScreenS.Group screenOptions={{ gestureEnabled: false }}>
       <WalletScreenS.Screen
@@ -42,10 +44,6 @@ export const createModals = (WalletScreenS: WalletScreenSType) => {
       <WalletScreenS.Screen
         name={AppNavigation.Modal.SelectAccountV2}
         component={SelectAccountV2}
-      />
-      <WalletScreenS.Screen
-        name={AppNavigation.Modal.BuyCarefully}
-        component={BuyCarefully}
       />
       <WalletScreenS.Screen
         name={AppNavigation.Modal.AddEthereumChainV2}
@@ -106,6 +104,10 @@ export const createModals = (WalletScreenS: WalletScreenSType) => {
       <WalletScreenS.Screen
         name={AppNavigation.Modal.StakeDisclaimer}
         component={StakeDisclaimer}
+      />
+      <WalletScreenS.Screen
+        name={AppNavigation.Modal.BuyCarefully}
+        component={BuyCarefully}
       />
     </WalletScreenS.Group>
   )
