@@ -1,14 +1,13 @@
 import { CORE_UNIVERSAL_LINK_HOSTS } from 'resources/Constants'
-import { parseUri } from '@walletconnect/utils'
 import { AnyAction, Dispatch } from '@reduxjs/toolkit'
-import { newSession as newSessionV1 } from 'store/walletConnect'
 import {
-  newSession as newSessionV2,
-  WalletConnectVersions
+  WalletConnectVersions,
+  newSession as newSessionV2
 } from 'store/walletConnectV2'
 import Logger from 'utils/Logger'
 import { navigateToClaimRewards } from 'services/earn/utils'
 import { ProcessedFeatureFlags } from 'store/posthog'
+import { parseUri } from '@walletconnect/utils'
 import { ACTIONS, DeepLink, PROTOCOLS } from '../types'
 
 export const handleDeeplink = (
@@ -88,7 +87,7 @@ const dispatchWalletConnectSession = (
   // link is a valid wallet connect uri
   const versionStr = version.toString()
   if (versionStr === WalletConnectVersions.V1) {
-    dispatch(newSessionV1(uri))
+    Logger.info('WalletConnectV1 is not supported')
   } else if (versionStr === WalletConnectVersions.V2) {
     dispatch(newSessionV2(uri))
   }
