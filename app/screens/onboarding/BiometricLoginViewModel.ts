@@ -17,7 +17,7 @@ export function useBiometricLogin(m: string): BiometricLoginTypes {
       .then(value => {
         setBiometryType(value?.toString() ?? '')
       })
-      .catch(reason => Logger.error(reason))
+      .catch(Logger.error)
   }, [])
 
   const storeMnemonicWithBiometric = () => {

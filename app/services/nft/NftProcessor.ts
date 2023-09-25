@@ -29,9 +29,9 @@ export class NftProcessor {
                   const aspect = this.extractSvgAspect(trimmed) ?? 1
                   resolve([trimmed, aspect, true])
                 })
-                .catch(reason => Logger.error(reason))
+                .catch(Logger.error)
             })
-            .catch(reason => Logger.error(reason))
+            .catch(Logger.error)
         } else if (imageUrl.endsWith('.mp4')) {
           // we don't support mp4 yet
           resolve(['', 1, false])

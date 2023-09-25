@@ -191,7 +191,7 @@ const CreatePinScreen = () => {
             break
         }
       })
-      .catch(reason => Logger.error(reason))
+      .catch(Logger.error)
   }
 
   return <CreatePIN onPinSet={onPinSet} />
@@ -234,7 +234,7 @@ const TermsNConditionsModalScreen = () => {
               dispatch(onLogIn())
               dispatch(onAppUnlocked())
             })
-            .catch(reason => Logger.error(reason))
+            .catch(Logger.error)
         }, 300)
       }}
       onReject={() => signOut()}

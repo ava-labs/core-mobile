@@ -43,7 +43,7 @@ const Notifications = () => {
           setShowAllowPushNotificationsCard(value.size !== 0)
           setBlockedChannels(value)
         })
-        .catch(reason => Logger.error(reason))
+        .catch(Logger.error)
     }
   }, [appState]) //switching to system settings and coming back must re-initiate settings check
 

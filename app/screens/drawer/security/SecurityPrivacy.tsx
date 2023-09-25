@@ -36,13 +36,13 @@ function SecurityPrivacy({
       .then((biometryAvailable: boolean) => {
         setIsBiometricEnabled(biometryAvailable)
       })
-      .catch(reason => Logger.error(reason))
+      .catch(Logger.error)
 
     AsyncStorage.getItem(SECURE_ACCESS_SET)
       .then(type => {
         setIsBiometricSwitchEnabled(type === 'BIO')
       })
-      .catch(reason => Logger.error(reason))
+      .catch(Logger.error)
   }, [])
 
   const handleSwitchChange = (value: boolean) => {

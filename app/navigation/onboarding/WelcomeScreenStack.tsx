@@ -75,7 +75,7 @@ const LoginWithPinOrBiometryScreen = () => {
           .then(() => {
             dispatch(onAppUnlocked())
           })
-          .catch(reason => Logger.error(reason))
+          .catch(Logger.error)
       }}
     />
   )

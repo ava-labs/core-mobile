@@ -247,7 +247,7 @@ export default function SwapView() {
       .finally(() => {
         setIsCalculatingMax(false)
       })
-      .catch(reason => Logger.error(reason))
+      .catch(Logger.error)
   }, [fromToken, getOptimalRateForAmount, setDestination, setAmount, gasPrice])
 
   return (

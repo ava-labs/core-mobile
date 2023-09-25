@@ -229,7 +229,7 @@ export const SendNFTContextProvider = ({
         setError(state.error ? state.error.message : undefined)
         setCanSubmit(state.canSubmit ?? false)
       })
-      .catch(reason => Logger.error(reason))
+      .catch(Logger.error)
   }
 
   const state: SendNFTContextState = {

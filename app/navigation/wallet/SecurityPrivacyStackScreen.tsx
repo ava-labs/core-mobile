@@ -176,7 +176,7 @@ const PinForBiometryEnable = memo(() => {
           .then(() =>
             nav.navigate(AppNavigation.SecurityPrivacy.SecurityPrivacy)
           )
-          .catch(reason => Logger.error(reason))
+          .catch(Logger.error)
       }}
       onSignInWithRecoveryPhrase={() => Logger.info('onSignIn')}
       isResettingPin
@@ -206,7 +206,7 @@ const CreatePinScreen = memo(() => {
             capture('ChangePasswordSucceeded')
             nav.goBack()
           })
-          .catch(reason => Logger.error(reason))
+          .catch(Logger.error)
       }}
       isResettingPin
       onResetPinFailed={handleOnResetPinFailed}
