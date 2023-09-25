@@ -1,9 +1,12 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { ActivityIndicator, Alert, StyleSheet, View } from 'react-native'
 import { Space } from 'components/Space'
 import AvaText from 'components/AvaText'
 import AvaButton from 'components/AvaButton'
 import { humanize } from 'utils/string/humanize'
+import { BIOMETRY_TYPE } from 'react-native-keychain'
+import FingerprintSVG from 'components/svg/FingerprintSVG'
+import FaceIdSVG from 'components/svg/FaceIdSVG'
 import { useBiometricLogin } from './BiometricLoginViewModel'
 
 type Props = {
@@ -17,8 +20,23 @@ export default function BiometricLogin(
 ): JSX.Element {
   const [confirmedUseBiometry, setConfirmedUseBiometry] = useState(false)
 
-  const { biometryType, storeMnemonicWithBiometric, fingerprintIcon } =
-    useBiometricLogin(props.mnemonic)
+  const { biometryType, storeMnemonicWithBiometric } = useBiometricLogin(
+    props.mnemonic
+  )
+
+  const icon = useMemo(() => {
+    switch (biometryType) {
+      case BIOMETRY_TYPE.FINGERPRINT:
+      case BIOMETRY_TYPE.TOUCH_ID:
+        return <FingerprintSVG />
+      case BIOMETRY_TYPE.FACE:
+      case BIOMETRY_TYPE.FACE_ID:
+        return <FaceIdSVG />
+      case BIOMETRY_TYPE.IRIS:
+        return <FaceIdSVG />
+      //todo add correct icon
+    }
+  }, [biometryType])
 
   const formattedBiometryType = humanize(biometryType)
 
@@ -42,7 +60,7 @@ export default function BiometricLogin(
   return (
     <View style={styles.verticalLayout}>
       <View style={styles.centerLayout}>
-        {fingerprintIcon}
+        {icon}
         <Space y={90} />
         <AvaText.Heading1>{formattedBiometryType}</AvaText.Heading1>
         <Space y={8} />
