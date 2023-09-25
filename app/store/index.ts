@@ -29,7 +29,7 @@ import { BridgeBlacklistTransform } from './transforms/BridgeBlacklistTransform'
 import { WatchlistBlacklistTransform } from './transforms/WatchlistBlacklistTransform'
 import { AppBlacklistTransform } from './transforms/AppBlacklistTransform'
 
-const VERSION = 7
+const VERSION = 8
 
 // list of reducers that don't need to be persisted
 // for nested/partial blacklist, please use transform
