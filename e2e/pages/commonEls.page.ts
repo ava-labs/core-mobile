@@ -10,12 +10,20 @@ class CommonElsPage {
     return by.id(commonEls.inputTextField)
   }
 
+  get simpleToastMsg() {
+    return by.id(commonEls.simpleToastMsg)
+  }
+
   async tapBackButton() {
     await Actions.tap(this.backButton)
   }
 
   async enterTextInput(index: number, inputText: string) {
     await Actions.setInputText(this.inputTextField, inputText, index)
+  }
+
+  async waitForToastMsgGone() {
+    await Actions.waitForElementNotVisible(this.simpleToastMsg)
   }
 }
 
