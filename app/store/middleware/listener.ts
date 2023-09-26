@@ -9,7 +9,6 @@ import { addAppListeners } from 'store/app/listeners'
 import { addBalanceListeners } from 'store/balance/listeners'
 import { addAccountListeners } from 'store/account/listeners'
 import { addNetworkListeners } from 'store/network/listeners'
-import { addNetworkFeeListeners } from 'store/networkFee/index'
 import { addBridgeListeners } from 'store/bridge/listeners'
 import { addPosthogListeners } from 'store/posthog/listeners'
 import { addWatchlistListeners } from 'store/watchlist/listeners'
@@ -41,8 +40,6 @@ addNetworkListeners(startListening)
 addNftListeners(startListening)
 
 addBridgeListeners(startListening)
-
-addNetworkFeeListeners(startListening)
 
 addPosthogListeners(startListening)
 

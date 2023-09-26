@@ -68,6 +68,7 @@ export type BridgeTransactionStatusParams = {
 }
 
 export type EditGasLimitParams = {
+  network: Network
   onSave: (newGasLimit: number) => void
   gasLimit: number
   gasPrice: bigint

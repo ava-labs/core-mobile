@@ -80,6 +80,14 @@ const _selectCustomNetworks = (state: RootState) => state.network.customNetworks
 
 export const selectRawNetworks = (state: RootState) => state.network.networks
 
+// get all networks, including custom networks
+export const selectAllNetworks = createSelector(
+  [selectRawNetworks, _selectCustomNetworks],
+  (networks, customNetworks) => {
+    return { ...networks, ...customNetworks }
+  }
+)
+
 export const selectNetworks = createSelector(
   [
     selectRawNetworks,
@@ -218,10 +226,14 @@ export const selectSomeNetworks =
       .filter((network): network is Network => !!network)
   }
 
-export const selectNetwork = (chainId: number) => (state: RootState) => {
-  const allNetworks = selectRawNetworks(state)
-  return allNetworks[chainId]
-}
+export const selectNetwork =
+  (chainId: number | undefined) =>
+  (state: RootState): Network | undefined => {
+    if (!chainId) return undefined
+
+    const allNetworks = selectAllNetworks(state)
+    return allNetworks[chainId]
+  }
 
 // get the list of contract tokens for the network by chainId
 export const selectNetworkContractTokens =
