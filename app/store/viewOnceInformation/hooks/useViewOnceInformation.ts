@@ -1,11 +1,10 @@
 import { useDispatch, useSelector } from 'react-redux'
+import { ViewOnceInformation, ViewOnceInformationKey } from '../types'
 import {
   resetViewOnceInformation,
   selectViewOnceInformation,
-  setViewOnceInformation,
-  ViewOnceInformationKey,
-  ViewOnceInformation
-} from '../'
+  setViewOnceInformation
+} from '../slice'
 
 /**
  * ViewOnceInformation is used by views that needs to display something for the 1st time one.
