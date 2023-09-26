@@ -6,9 +6,10 @@ import mockNetworks from 'tests/fixtures/networks.json'
 import AppNavigation from 'navigation/AppNavigation'
 import * as Navigation from 'utils/Navigation'
 import * as Sentry from '@sentry/react-native'
-import { fetchNetworkFee } from 'store/networkFee'
 import WalletService from 'services/wallet/WalletService'
 import NetworkService from 'services/network/NetworkService'
+import { prefetchNetworkFee } from 'hooks/useNetworkFee'
+import { selectNetwork } from 'store/network'
 import { updateRequestStatus } from '../../slice'
 import { ethSendTransactionHandler as handler } from './eth_sendTransaction'
 
@@ -31,6 +32,26 @@ jest
   .spyOn(NetworkService, 'sendTransaction')
   .mockImplementation(mockSendTransaction)
 
+jest.mock('hooks/useNetworkFee', () => {
+  const actual = jest.requireActual('hooks/useNetworkFee')
+  return {
+    ...actual,
+    prefetchNetworkFee: jest.fn()
+  }
+})
+
+const mockNetwork = mockNetworks[43114]
+jest.mock('store/network', () => {
+  const actual = jest.requireActual('store/network')
+  return {
+    ...actual,
+    selectNetwork: jest.fn()
+  }
+})
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mockSelectNetwork = selectNetwork as jest.MockedFunction<any>
+mockSelectNetwork.mockImplementation(() => () => mockNetwork)
+
 const mockSelectAccountByAddress = jest.fn()
 const mockAccount = mockAccounts[0]
 jest.mock('store/account', () => {
@@ -41,25 +62,6 @@ jest.mock('store/account', () => {
   }
 })
 mockSelectAccountByAddress.mockImplementation(() => mockAccount)
-
-const mockSelectNetwork = jest.fn()
-const mockNetwork = mockNetworks[43114]
-jest.mock('store/network', () => {
-  const actual = jest.requireActual('store/network')
-  return {
-    ...actual,
-    selectNetwork: () => mockSelectNetwork
-  }
-})
-mockSelectNetwork.mockImplementation(() => mockNetwork)
-
-jest.mock('store/networkFee', () => {
-  const actual = jest.requireActual('store/networkFee')
-  return {
-    ...actual,
-    selectNetworkFee: () => jest.fn()
-  }
-})
 
 const mockCaptureException = jest.fn()
 jest.spyOn(Sentry, 'captureException').mockImplementation(mockCaptureException)
@@ -175,7 +177,11 @@ describe('eth_sendTransaction handler', () => {
 
       const result = await handler.handle(testRequest, mockListenerApi)
 
-      expect(mockDispatch).toHaveBeenCalledWith(fetchNetworkFee())
+      expect(mockSelectNetwork).toHaveBeenCalledWith(
+        Number(testRequest.data.params.chainId.split(':')[1])
+      )
+
+      expect(prefetchNetworkFee).toHaveBeenCalledWith(mockNetwork)
 
       expect(mockNavigate).toHaveBeenCalledWith({
         name: AppNavigation.Root.Wallet,
@@ -211,7 +217,7 @@ describe('eth_sendTransaction handler', () => {
     })
 
     it('should return error when requested network does not exist', async () => {
-      mockSelectNetwork.mockImplementationOnce(() => undefined)
+      mockSelectNetwork.mockImplementationOnce(() => () => undefined)
 
       const testRequest = createRequest(testParams)
 
