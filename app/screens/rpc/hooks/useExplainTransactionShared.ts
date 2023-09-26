@@ -7,7 +7,6 @@ import {
 import { MaxUint256, Result, TransactionDescription } from 'ethers'
 import { FeePreset } from 'components/NetworkFeeSelector'
 import { calculateGasAndFees } from 'utils/Utils'
-import { useNativeTokenPrice } from 'hooks/useNativeTokenPrice'
 import { bnToLocaleString, hexToBN } from '@avalabs/utils-sdk'
 import {
   getTxInfo,
@@ -18,20 +17,19 @@ import {
   isTxParams,
   parseDisplayValues
 } from 'screens/rpc/util/parseDisplayValues'
-import networkFeeService from 'services/networkFee/NetworkFeeService'
+import NetworkFeeService from 'services/networkFee/NetworkFeeService'
 import ERC20 from '@openzeppelin/contracts/build/contracts/ERC20.json'
 import Web3 from 'web3'
 import { Limit, SpendLimit } from 'components/EditSpendLimit'
 import Logger from 'utils/Logger'
-import { useSelector } from 'react-redux'
-import { NetworkTokenWithBalance, selectTokensWithBalance } from 'store/balance'
-import { selectNetworkFee } from 'store/networkFee'
-import { selectNetworks } from 'store/network'
-import { ChainId, Network } from '@avalabs/chains-sdk'
+import { NetworkTokenWithBalance } from 'store/balance'
+import { Network } from '@avalabs/chains-sdk'
 import { useFindToken } from 'contracts/contractParsers/utils/useFindToken'
 import BN from 'bn.js'
 import { CoreTypes } from '@walletconnect/types'
 import { TransactionParams } from 'store/walletConnectV2/handlers/eth_sendTransaction/utils'
+import { useNetworkFee } from 'hooks/useNetworkFee'
+import { useNativeTokenPriceForNetwork } from 'hooks/useNativeTokenPriceForNetwork'
 
 export const UNLIMITED_SPEND_LIMIT_LABEL = 'Unlimited'
 
@@ -44,16 +42,11 @@ type Args = {
 
 export const useExplainTransactionShared = (args: Args) => {
   const { network, txParams, peerMeta, onError } = args
-  const networkFees = useSelector(selectNetworkFee)
-  const { nativeTokenPrice: tokenPrice } = useNativeTokenPrice()
-  const allNetworks = useSelector(selectNetworks)
-  const avaxToken = (
-    network?.isTestnet
-      ? allNetworks[ChainId.AVALANCHE_TESTNET_ID]
-      : allNetworks[ChainId.AVALANCHE_MAINNET_ID]
-  )?.networkToken
-  const tokensWithBalance = useSelector(selectTokensWithBalance)
-  const findToken = useFindToken()
+  const { data: networkFees } = useNetworkFee(network)
+  const { nativeTokenPrice: tokenPrice } =
+    useNativeTokenPriceForNetwork(network)
+  const token = network?.networkToken
+  const findToken = useFindToken(network)
 
   const [transaction, setTransaction] = useState<Transaction | null>(null)
 
@@ -178,12 +171,10 @@ export const useExplainTransactionShared = (args: Args) => {
 
       if (txParams && isTxParams(txParams)) {
         // These are the default props we'll feed into the display parser later on
-        // @ts-ignore
         const displayValueProps: DisplayValueParserProps = {
-          gasPrice: networkFees?.low || 0n,
-          avaxPrice: tokenPrice || 0, // prince in currency
-          avaxToken: avaxToken as NetworkTokenWithBalance,
-          erc20Tokens: tokensWithBalance ?? [],
+          gasPrice: networkFees.low,
+          tokenPrice, // price in currency
+          token: token as NetworkTokenWithBalance,
           site: peerMeta
         }
 
@@ -192,7 +183,7 @@ export const useExplainTransactionShared = (args: Args) => {
         try {
           gasLimit = await (txParams.gas
             ? Number(txParams.gas)
-            : networkFeeService.estimateGasLimit({
+            : NetworkFeeService.estimateGasLimit({
                 from: txParams.from,
                 to: txParams.to,
                 data: txParams.data,
@@ -287,12 +278,11 @@ export const useExplainTransactionShared = (args: Args) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     network,
-    avaxToken,
+    token,
     findToken,
     networkFees,
     peerMeta,
     tokenPrice,
-    tokensWithBalance,
     txParams,
     onError
   ])
@@ -320,7 +310,7 @@ export const useExplainTransactionShared = (args: Args) => {
   const displayData: TransactionDisplayValues = useMemo(() => {
     const data = {
       ...transaction?.displayValues,
-      ...(transaction?.txParams ? { txParams: transaction?.txParams } : {}),
+      ...(transaction?.txParams ? { txParams: transaction.txParams } : {}),
       ...feeDisplayValues
     }
 

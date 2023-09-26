@@ -19,7 +19,6 @@ import { customTokenReducer as customToken } from './customToken'
 import { securityReducer as security } from './security'
 import { posthogReducer as posthog } from './posthog'
 import { nftReducer as nft } from './nft'
-import networkFee from './networkFee'
 import { addressBookReducer as addressBook } from './addressBook'
 import settings from './settings'
 import swap from './swap'
@@ -35,7 +34,6 @@ const VERSION = 8
 // for nested/partial blacklist, please use transform
 const blacklist = [
   'balance',
-  'networkFee',
   'swap',
   'walletConnectV2',
   transactionApi.reducerPath,
@@ -48,7 +46,6 @@ const combinedReducer = combineReducers({
   balance,
   account,
   notifications,
-  networkFee,
   addressBook,
   bridge,
   customToken,

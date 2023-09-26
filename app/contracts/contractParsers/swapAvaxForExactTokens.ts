@@ -41,9 +41,9 @@ export async function swapAVAXForTokens(
   const avaxAmountInBN = request.value ? hexToBN(request.value) : new BN(0)
   const amountAvaxValue = bigToLocaleString(bnToBig(avaxAmountInBN, 18), 4)
   const amountAvaxCurrency =
-    (Number(props.avaxPrice) * Number(amountAvaxValue)).toFixed(2) ?? ''
+    (Number(props.tokenPrice) * Number(amountAvaxValue)).toFixed(2) ?? ''
   const avaxToken: erc20PathToken = {
-    ...props.avaxToken,
+    ...props.token,
     amountIn: {
       bn: avaxAmountInBN,
       value: amountAvaxValue

@@ -69,13 +69,13 @@ export async function swapTokensForAvax(
   const amountAvaxValue = bigToLocaleString(bnToBig(avaxAmountInBN, 18), 4)
 
   const avaxToken = {
-    ...props.avaxToken,
+    ...props.token,
     amountOut: {
       bn: avaxAmountInBN,
       value: amountAvaxValue
     },
     amountUSDValue:
-      (Number(props.avaxPrice) * Number(amountAvaxValue)).toFixed(2) ?? ''
+      (Number(props.tokenPrice) * Number(amountAvaxValue)).toFixed(2) ?? ''
   }
 
   const result = {

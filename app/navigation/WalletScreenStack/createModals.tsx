@@ -144,6 +144,7 @@ const EditGasLimit = () => {
       onSave={onSave}
       gasLimit={params.gasLimit}
       gasPrice={params.gasPrice}
+      network={params.network}
     />
   )
 }

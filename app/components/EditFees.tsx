@@ -6,13 +6,13 @@ import AvaButton from 'components/AvaButton'
 import React, { useState } from 'react'
 import FlexSpacer from 'components/FlexSpacer'
 import { Row } from 'components/Row'
-import { useNativeTokenPrice } from 'hooks/useNativeTokenPrice'
 import { calculateGasAndFees } from 'utils/Utils'
-import { useSelector } from 'react-redux'
-import { selectActiveNetwork } from 'store/network'
+import { Network } from '@avalabs/chains-sdk'
+import { useNativeTokenPriceForNetwork } from 'hooks/useNativeTokenPriceForNetwork'
 import { PopableContent } from './PopableContent'
 
 interface EditFeesProps {
+  network: Network
   gasPrice: bigint
   gasLimit: number
   onSave: (newGasLimit: number) => void
@@ -23,10 +23,15 @@ const gasLimitInfoInfoMessage = (
   <PopableContent message="Gas limit is the maximum units of gas you are willing to use." />
 )
 
-const EditFees = ({ gasPrice, gasLimit, onSave, onClose }: EditFeesProps) => {
+const EditFees = ({
+  network,
+  gasPrice,
+  gasLimit,
+  onSave,
+  onClose
+}: EditFeesProps) => {
   const [newGasLimit, setNewGasLimit] = useState(gasLimit)
-  const tokenPrice = useNativeTokenPrice().nativeTokenPrice
-  const network = useSelector(selectActiveNetwork)
+  const tokenPrice = useNativeTokenPriceForNetwork(network).nativeTokenPrice
   const [feeError, setFeeError] = useState('')
   const [newFees, setNewFees] = useState<
     ReturnType<typeof calculateGasAndFees>

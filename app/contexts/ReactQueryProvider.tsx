@@ -10,7 +10,7 @@ import { onlineManager } from '@tanstack/react-query'
 import { AppState, AppStateStatus } from 'react-native'
 
 const queryCache = new QueryCache()
-const queryClient = new QueryClient({
+export const queryClient = new QueryClient({
   queryCache: queryCache,
   defaultOptions: {
     queries: {

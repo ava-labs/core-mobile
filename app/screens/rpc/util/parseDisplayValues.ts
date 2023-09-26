@@ -41,7 +41,7 @@ export function parseDisplayValues(
     ...calculateGasAndFees({
       gasPrice: props.gasPrice,
       gasLimit: txParams.gas,
-      tokenPrice: props.avaxPrice,
+      tokenPrice: props.tokenPrice,
       tokenDecimals
     }),
     site: props.site,
