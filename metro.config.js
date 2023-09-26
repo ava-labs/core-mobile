@@ -17,6 +17,7 @@ module.exports = (async () => {
       // sbmodern is needed for storybook
       resolverMainFields: ['sbmodern', 'react-native', 'browser', 'main'],
       extraNodeModules: {
+        // this is for any modules that use require('crypto')
         crypto: require.resolve('react-native-quick-crypto')
       },
       resolveRequest: (context, moduleName, platform) => {
