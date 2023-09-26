@@ -9,7 +9,7 @@ export const warmup = async () => {
 
   // if we are running Android e2e on Bitrise, we also need to handle the Jailbroken overlay
   if (Boolean(process.env.E2E) && Action.platform() === Platform.Android) {
-    await Assert.isVisible(by.text('Jailbroken'))
+    await Assert.isVisible(by.text('jailbroken'))
     await Action.tap(by.text('Ok'))
   }
 
