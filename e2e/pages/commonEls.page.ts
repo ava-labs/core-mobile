@@ -14,6 +14,10 @@ class CommonElsPage {
     return by.id(commonEls.simpleToastMsg)
   }
 
+  get jailbrokenWarning() {
+    return by.id(commonEls.jailbrokenWarning)
+  }
+
   async tapBackButton() {
     await Actions.tap(this.backButton)
   }
@@ -24,6 +28,10 @@ class CommonElsPage {
 
   async waitForToastMsgGone() {
     await Actions.waitForElementNotVisible(this.simpleToastMsg)
+  }
+
+  async waitForJailbrokenWarning() {
+    await Actions.waitForElement(this.jailbrokenWarning)
   }
 }
 
