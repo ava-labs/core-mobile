@@ -13,7 +13,10 @@ import { useTokenDetail } from 'screens/watchlist/useTokenDetail'
 import SparklineChart from 'components/SparklineChart/SparklineChart'
 import { Row } from 'components/Row'
 import MarketMovement from 'screens/watchlist/components/MarketMovement'
-import { ViewOnceInformation } from 'Repo'
+import {
+  ViewOnceInformationKey,
+  useViewOnceInformation
+} from 'store/viewOnceInformation'
 import TokenAddress from 'components/TokenAddress'
 import AppNavigation from 'navigation/AppNavigation'
 import { formatLargeCurrency, formatLargeNumber } from 'utils/Utils'
@@ -41,8 +44,7 @@ const TokenDetail = () => {
     theme,
     appHook: { tokenInCurrencyFormatter, currencyFormatter }
   } = useApplicationContext()
-  const { saveViewOnceInformation, infoHasBeenShown, viewOnceInfo } =
-    useApplicationContext().repo.informationViewOnceRepo
+  const { saveViewOnceInformation, infoHasBeenShown } = useViewOnceInformation()
   const [showChartInstruction, setShowChartInstruction] = useState(false)
   const tokenId = useRoute<ScreenProps['route']>().params.tokenId
   const buyDisabled = useIsUIDisabled(UI.Buy)
@@ -111,15 +113,11 @@ const TokenDetail = () => {
   )
 
   useEffect(() => {
-    if (!infoHasBeenShown(ViewOnceInformation.CHART_INTERACTION)) {
+    if (!infoHasBeenShown(ViewOnceInformationKey.CHART_INTERACTION)) {
       setShowChartInstruction(true)
-      saveViewOnceInformation([
-        ...viewOnceInfo,
-        ViewOnceInformation.CHART_INTERACTION
-      ])
+      saveViewOnceInformation(ViewOnceInformationKey.CHART_INTERACTION)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [infoHasBeenShown, saveViewOnceInformation])
 
   const onTabChanged = useCallback(
     (index: number) => {

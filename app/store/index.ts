@@ -20,6 +20,7 @@ import { securityReducer as security } from './security'
 import { posthogReducer as posthog } from './posthog'
 import { nftReducer as nft } from './nft'
 import { addressBookReducer as addressBook } from './addressBook'
+import { viewOnceInformationReducer as viewOnceInformation } from './viewOnceInformation'
 import settings from './settings'
 import swap from './swap'
 import { transactionApi } from './transaction'
@@ -54,6 +55,7 @@ const combinedReducer = combineReducers({
   nft,
   security,
   walletConnectV2,
+  viewOnceInformation,
 
   // user preferences
   settings,
