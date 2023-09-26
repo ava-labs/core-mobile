@@ -400,6 +400,7 @@ const SignTransaction = () => {
         </View>
         {!requestResult && displayData?.gasPrice && (
           <NetworkFeeSelector
+            chainId={chainId}
             gasLimit={displayData?.gasLimit ?? 0}
             onGasPriceChange={handleGasPriceChange}
             onGasLimitChange={handleGasLimitChange}
