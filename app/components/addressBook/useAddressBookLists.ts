@@ -1,8 +1,12 @@
 import { useState } from 'react'
-import { AddrBookItemType, Contact, RecentContact } from 'Repo'
 import { Account } from 'store/account'
 import { useDispatch } from 'react-redux'
-import { addRecentContact } from 'store/addressBook'
+import {
+  AddrBookItemType,
+  Contact,
+  RecentContact,
+  addRecentContact
+} from 'store/addressBook'
 
 export function useAddressBookLists() {
   const dispatch = useDispatch()
