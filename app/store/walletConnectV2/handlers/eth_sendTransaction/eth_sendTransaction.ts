@@ -141,7 +141,7 @@ class EthSendTransactionHandler
       const transactionHash = await NetworkService.sendTransaction(
         signedTx,
         network,
-        true
+        false
       )
 
       dispatch(
