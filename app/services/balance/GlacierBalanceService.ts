@@ -52,7 +52,8 @@ export class GlacierBalanceService implements BalanceServiceProvider {
             }
             return results
           })
-          .catch(() => {
+          .catch(reason => {
+            Logger.error(reason)
             return []
           })
       })
