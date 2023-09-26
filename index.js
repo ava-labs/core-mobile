@@ -2,11 +2,7 @@
  * @format
  */
 import { Text, TextInput } from 'react-native'
-import 'react-native-gesture-handler'
 import './polyfills'
-import 'react-native-get-random-values'
-import 'react-native-url-polyfill/auto'
-import '@walletconnect/react-native-compat'
 import { AppRegistry } from 'react-native'
 import Big from 'big.js'
 import ContextApp from './app/ContextApp'
