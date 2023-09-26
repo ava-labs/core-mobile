@@ -35,3 +35,9 @@ Android implementation of `getColorFromURL` will crash when facing urls with `ip
 ### pino+7.11.0.patch
 
 Calling pino({ level: 'error' }) will throw an error `Cannot assign to read only property 'error' of object`. The patch just replaces Object.create with Object.assign. Pino is the logger of Wallet Connect V2.
+
+### @walletconnect+react-native-compat+2.10.1.patch
+
+commenting out "react-native-get-random-values" as we already use getRandomValues from "react-native-quick-crypto"
+
+commenting out import "react-native-url-polyfill/auto" as we already import it ourselves
