@@ -50,7 +50,7 @@ const NetworkFeeSelector = ({
   onGasLimitChange,
   maxGasPrice
 }: {
-  chainId?: string
+  chainId?: number
   gasLimit: number
   onGasPriceChange?(gasPrice: bigint, feePreset: FeePreset): void
   onGasLimitChange?(customGasLimit: number): void
@@ -59,7 +59,7 @@ const NetworkFeeSelector = ({
   const { navigate } = useNavigation<NavigationProp>()
   const { theme } = useApplicationContext()
   const activeNetwork = useSelector(selectActiveNetwork)
-  const requestedNetwork = useSelector(selectNetwork(Number(chainId)))
+  const requestedNetwork = useSelector(selectNetwork(chainId))
   const network = chainId ? requestedNetwork : activeNetwork
   const { data: networkFee } = useNetworkFee(network)
 
