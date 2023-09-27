@@ -30,13 +30,13 @@ module.exports = {
     'react-hooks/exhaustive-deps': 1,
     'react-native/no-inline-styles': 'off',
     'promise/catch-or-return': ['error', { allowFinally: true }],
+    '@typescript-eslint/explicit-function-return-type': 'warn',
     '@typescript-eslint/explicit-module-boundary-types': 'off',
     '@typescript-eslint/no-non-null-assertion': 1,
     '@typescript-eslint/ban-ts-comment': 'off',
     eqeqeq: 2,
     '@typescript-eslint/no-var-requires': 0,
     '@typescript-eslint/no-explicit-any': 1,
-    '@typescript-eslint/explicit-function-return-type': 'error',
     '@typescript-eslint/no-unused-vars': [
       2,
       {
