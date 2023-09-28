@@ -2,7 +2,6 @@ import React, { createContext, useContext, useState } from 'react'
 import { COLORS_DAY, COLORS_NIGHT } from 'resources/Constants'
 import type { Theme } from '@react-navigation/native'
 import { AppHook, useApp } from 'AppHook'
-import { Repo, useRepo } from 'Repo'
 import { AppNavHook, useAppNav } from 'useAppNav'
 import { useWalletSetup, WalletSetupHook } from 'hooks/useWalletSetup'
 
@@ -18,7 +17,6 @@ export interface ApplicationContextState {
   keyboardAvoidingViewEnabled: boolean
   setKeyboardAvoidingViewEnabled: (value: boolean) => void
   appHook: AppHook
-  repo: Repo
   appNavHook: AppNavHook
   walletSetupHook: WalletSetupHook
 }
@@ -55,9 +53,8 @@ export const ApplicationContextProvider = ({
   children: React.ReactNode
 }) => {
   const appNavHook = useAppNav()
-  const repository = useRepo()
   const walletSetupHook = useWalletSetup(appNavHook)
-  const appHook = useApp(appNavHook, walletSetupHook, repository)
+  const appHook = useApp(appNavHook, walletSetupHook)
 
   const isDarkMode = true // useState(Appearance.getColorScheme() === 'dark');
   const [theme] = useState(isDarkMode ? COLORS_NIGHT : COLORS_DAY)
@@ -107,7 +104,6 @@ export const ApplicationContextProvider = ({
     keyboardAvoidingViewEnabled,
     setKeyboardAvoidingViewEnabled,
     appHook,
-    repo: repository,
     appNavHook,
     walletSetupHook
   }

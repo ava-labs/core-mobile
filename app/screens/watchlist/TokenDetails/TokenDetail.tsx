@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { FC, useCallback, useMemo } from 'react'
 import { Dimensions, ScrollView, StyleSheet, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaListItem from 'components/AvaListItem'
@@ -13,7 +13,11 @@ import { useTokenDetail } from 'screens/watchlist/useTokenDetail'
 import SparklineChart from 'components/SparklineChart/SparklineChart'
 import { Row } from 'components/Row'
 import MarketMovement from 'screens/watchlist/components/MarketMovement'
-import { ViewOnceInformation } from 'Repo'
+import {
+  ViewOnceKey,
+  selectHasBeenViewedOnce,
+  setViewOnce
+} from 'store/viewOnce'
 import TokenAddress from 'components/TokenAddress'
 import AppNavigation from 'navigation/AppNavigation'
 import { formatLargeCurrency, formatLargeNumber } from 'utils/Utils'
@@ -25,6 +29,7 @@ import { format } from 'date-fns'
 import { StarButton } from 'components/StarButton'
 import { AnimatedText } from 'components/AnimatedText'
 import Delay from 'components/Delay'
+import { useDispatch, useSelector } from 'react-redux'
 import { DataItem } from './DataItem'
 import { Overlay } from './Overlay'
 
@@ -36,14 +41,15 @@ const CHART_THICKNESS = 4
 
 type ScreenProps = WalletScreenProps<typeof AppNavigation.Wallet.TokenDetail>
 
-const TokenDetail = () => {
+const TokenDetail: FC = () => {
   const {
     theme,
     appHook: { tokenInCurrencyFormatter, currencyFormatter }
   } = useApplicationContext()
-  const { saveViewOnceInformation, infoHasBeenShown, viewOnceInfo } =
-    useApplicationContext().repo.informationViewOnceRepo
-  const [showChartInstruction, setShowChartInstruction] = useState(false)
+  const hasBeenViewedChart = useSelector(
+    selectHasBeenViewedOnce(ViewOnceKey.CHART_INTERACTION)
+  )
+  const dispatch = useDispatch()
   const tokenId = useRoute<ScreenProps['route']>().params.tokenId
   const buyDisabled = useIsUIDisabled(UI.Buy)
 
@@ -91,11 +97,11 @@ const TokenDetail = () => {
     animatedDate.value = 'Price'
   }, [animatedPrice, animatedDate, priceInCurrency, tokenInCurrencyFormatter])
 
-  const openTwitter = () => {
+  const openTwitter = (): void => {
     twitterHandle && openUrl(`https://twitter.com/${twitterHandle}`)
   }
 
-  const openWebsite = () => {
+  const openWebsite = (): void => {
     if (urlHostname) {
       openUrl('https://' + urlHostname)
     }
@@ -109,17 +115,6 @@ const TokenDetail = () => {
     },
     [currencyFormatter]
   )
-
-  useEffect(() => {
-    if (!infoHasBeenShown(ViewOnceInformation.CHART_INTERACTION)) {
-      setShowChartInstruction(true)
-      saveViewOnceInformation([
-        ...viewOnceInfo,
-        ViewOnceInformation.CHART_INTERACTION
-      ])
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
 
   const onTabChanged = useCallback(
     (index: number) => {
@@ -138,7 +133,9 @@ const TokenDetail = () => {
     [changeChartDays]
   )
 
-  const onInstructionRead = () => setShowChartInstruction(false)
+  const onInstructionRead = (): void => {
+    dispatch(setViewOnce(ViewOnceKey.CHART_INTERACTION))
+  }
 
   const AnimatedDate = useMemo(
     () => (
@@ -222,7 +219,7 @@ const TokenDetail = () => {
           </View>
           <Overlay
             chartData={chartData}
-            shouldShowInstruction={showChartInstruction}
+            shouldShowInstruction={!hasBeenViewedChart}
             onInstructionRead={onInstructionRead}
           />
         </View>

@@ -4,7 +4,6 @@ import { BackHandler } from 'react-native'
 import { useCallback, useEffect, useMemo } from 'react'
 import { WalletSetupHook } from 'hooks/useWalletSetup'
 import { AppNavHook } from 'useAppNav'
-import { Repo } from 'Repo'
 import { usePosthogContext } from 'contexts/PosthogContext'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectSelectedCurrency } from 'store/settings/currency'
@@ -25,8 +24,7 @@ export type AppHook = {
 
 export function useApp(
   appNavHook: AppNavHook,
-  walletSetupHook: WalletSetupHook,
-  repository: Repo
+  walletSetupHook: WalletSetupHook
 ): AppHook {
   const dispatch = useDispatch()
   const selectedCurrency = useSelector(selectSelectedCurrency)
@@ -35,10 +33,9 @@ export function useApp(
 
   const deleteWallet = useCallback(() => {
     walletSetupHook.destroyWallet()
-    repository.flush()
     dispatch(onLogOut())
     dispatch(resetLoginAttempt())
-  }, [dispatch, repository, walletSetupHook])
+  }, [dispatch, walletSetupHook])
 
   const signOut = useCallback(() => {
     deleteWallet()

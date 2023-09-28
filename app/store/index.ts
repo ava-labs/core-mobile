@@ -20,6 +20,7 @@ import { securityReducer as security } from './security'
 import { posthogReducer as posthog } from './posthog'
 import { nftReducer as nft } from './nft'
 import { addressBookReducer as addressBook } from './addressBook'
+import { viewOnceReducer as viewOnce } from './viewOnce'
 import settings from './settings'
 import swap from './swap'
 import { transactionApi } from './transaction'
@@ -54,6 +55,7 @@ const combinedReducer = combineReducers({
   nft,
   security,
   walletConnectV2,
+  viewOnce,
 
   // user preferences
   settings,
@@ -65,7 +67,7 @@ const combinedReducer = combineReducers({
   [nftsApi.reducerPath]: nftsApi.reducer
 })
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-function-return-type
 const rootReducer = (state: any, action: AnyAction) => {
   if (action.type === onLogOut.type) {
     // reset state
@@ -88,6 +90,7 @@ const rootReducer = (state: any, action: AnyAction) => {
   return combinedReducer(state, action)
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export function configureEncryptedStore(secretKey: string) {
   // If this transform fails to decrypt or parse then it will log a warning and
   // return `undefined`, which will cause the redux state to be reset.

@@ -6,9 +6,8 @@ import AddressBookItem from 'components/addressBook/AddressBookItem'
 import { useNavigation } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
 import { AddressBookScreenProps } from 'navigation/types'
-import { Contact } from 'Repo'
 import { useSelector } from 'react-redux'
-import { selectContacts } from 'store/addressBook'
+import { Contact, selectContacts } from 'store/addressBook'
 import ZeroState from 'components/ZeroState'
 
 type NavigationProp = AddressBookScreenProps<

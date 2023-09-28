@@ -7,13 +7,13 @@ import {
 } from 'hooks/useBeforeRemoveListener'
 import { titleToInitials } from 'utils/Utils'
 import BlockchainCircle from 'components/BlockchainCircle'
-import { Contact } from 'Repo'
 import CheckBoxEmptySVG from 'components/svg/CheckBoxEmptySVG'
 import CheckBoxSVG from 'components/svg/CheckBoxSVG'
 import { Row } from 'components/Row'
 import { View } from 'react-native'
 import { Space } from 'components/Space'
 import AvaButton from 'components/AvaButton'
+import { Contact } from 'store/addressBook'
 
 interface Props {
   contact: Contact
