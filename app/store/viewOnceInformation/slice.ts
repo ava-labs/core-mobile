@@ -6,7 +6,7 @@ import {
   ViewOnceObjectType
 } from './types'
 
-const initialState: ViewOnceInformationState = {
+export const initialState: ViewOnceInformationState = {
   data: {} as ViewOnceObjectType
 }
 
