@@ -1,7 +1,5 @@
 #!/bin/bash
 
-sudo apt-get install jq
-
 TIMESTAMP=$(date +%s)
 
 TEST_RUN_NAME="Android Smoke Test run $TIMESTAMP"
@@ -15,6 +13,10 @@ TEST_RUN_DETAILS=$(curl -H "Content-Type: application/json" \
 -d "$JSON_DATA" \
 -X POST "https://avalabs.testrail.net/index.php?/api/v2/add_run/$TESTRAIL_PROJECT_ID")
 
+echo "Test run details: $TEST_RUN_DETAILS"
+
 TESTRAIL_RUN_ID="$TEST_RUN_DETAILS" | jq -r '.id'
 
-envman add --key TESTRAIL_RUN --value $TESTRAIL_RUN_ID
+echo "Created test run with id: $TESTRAIL_RUN_ID"
+
+envman add --key TESTRAIL_RUN --value "$TESTRAIL_RUN_ID"
