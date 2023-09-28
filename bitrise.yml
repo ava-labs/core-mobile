@@ -90,6 +90,10 @@ workflows:
     #     - tag: default
     #     - abi: x86_64
     #     - profile: pixel_4
+    - script-runner@0:
+        title: Create Test Run
+        inputs:
+        - file_path: scripts/bitrise/detox/createAndroidTestRun.sh
     - android-build-for-ui-testing@0:
         inputs:
         - module: $ANDROID_MODULE
@@ -106,10 +110,6 @@ workflows:
         - keystore_password: $ANDROID_STORE_PASSWORD
         - keystore_alias: $ANDROID_KEY_ALIAS
         - private_key_password: $ANDROID_KEY_PASSWORD
-    - script-runner@0:
-        title: Create Test Run
-        inputs:
-        - file_path: scripts/bitrise/detox/createAndroidTestRun.sh
     - deploy-to-bitrise-io@2: 
         inputs:
         - pipeline_intermediate_files: |-
@@ -414,7 +414,7 @@ workflows:
     - _set-version
     - _build-android-for-testing
     envs:
-    - ENVIRONMENT: production
+    - ENVIRONMENT: development
       opts:
         is_expand: false
     - PLATFORM: Android
