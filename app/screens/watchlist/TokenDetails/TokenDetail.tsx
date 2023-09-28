@@ -13,7 +13,11 @@ import { useTokenDetail } from 'screens/watchlist/useTokenDetail'
 import SparklineChart from 'components/SparklineChart/SparklineChart'
 import { Row } from 'components/Row'
 import MarketMovement from 'screens/watchlist/components/MarketMovement'
-import { ViewOnceKey } from 'store/viewOnce'
+import {
+  ViewOnceKey,
+  selectHasBeenViewedOnce,
+  setViewOnce
+} from 'store/viewOnce'
 import TokenAddress from 'components/TokenAddress'
 import AppNavigation from 'navigation/AppNavigation'
 import { formatLargeCurrency, formatLargeNumber } from 'utils/Utils'
@@ -25,7 +29,7 @@ import { format } from 'date-fns'
 import { StarButton } from 'components/StarButton'
 import { AnimatedText } from 'components/AnimatedText'
 import Delay from 'components/Delay'
-import { useViewOnce } from 'hooks/useViewOnce'
+import { useDispatch, useSelector } from 'react-redux'
 import { DataItem } from './DataItem'
 import { Overlay } from './Overlay'
 
@@ -42,7 +46,10 @@ const TokenDetail: FC = () => {
     theme,
     appHook: { tokenInCurrencyFormatter, currencyFormatter }
   } = useApplicationContext()
-  const { view, hasBeenViewed } = useViewOnce()
+  const hasBeenViewedChart = useSelector(
+    selectHasBeenViewedOnce(ViewOnceKey.CHART_INTERACTION)
+  )
+  const dispatch = useDispatch()
   const tokenId = useRoute<ScreenProps['route']>().params.tokenId
   const buyDisabled = useIsUIDisabled(UI.Buy)
 
@@ -127,7 +134,7 @@ const TokenDetail: FC = () => {
   )
 
   const onInstructionRead = (): void => {
-    view(ViewOnceKey.CHART_INTERACTION)
+    dispatch(setViewOnce(ViewOnceKey.CHART_INTERACTION))
   }
 
   const AnimatedDate = useMemo(
@@ -212,9 +219,7 @@ const TokenDetail: FC = () => {
           </View>
           <Overlay
             chartData={chartData}
-            shouldShowInstruction={
-              !hasBeenViewed(ViewOnceKey.CHART_INTERACTION)
-            }
+            shouldShowInstruction={!hasBeenViewedChart}
             onInstructionRead={onInstructionRead}
           />
         </View>

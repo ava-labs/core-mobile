@@ -20,4 +20,11 @@ describe('viewOnce reducer', () => {
       }
     })
   })
+
+  it('should not update state with an invalid key', () => {
+    const invalidKey = -1234235
+    const state = reducer(initialState, setViewOnce(invalidKey as ViewOnceKey))
+
+    expect(state).toStrictEqual(initialState)
+  })
 })

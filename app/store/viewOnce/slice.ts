@@ -11,14 +11,18 @@ const viewOnceSlice = createSlice({
   initialState,
   reducers: {
     setViewOnce: (state, action: PayloadAction<ViewOnceKey>) => {
-      state.data[action.payload] = true
+      if (action.payload in ViewOnceKey) {
+        state.data[action.payload] = true
+      }
     }
   }
 })
 
 // selectors
-export const selectViewOnce = (state: RootState): ViewOnceObjectType =>
-  state.viewOnce.data
+export const selectHasBeenViewedOnce =
+  (key: ViewOnceKey) =>
+  (state: RootState): boolean =>
+    state.viewOnce.data[key] === true
 
 // actions
 export const { setViewOnce } = viewOnceSlice.actions
