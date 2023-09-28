@@ -11,7 +11,7 @@ const viewOnceSlice = createSlice({
   initialState,
   reducers: {
     setViewOnce: (state, action: PayloadAction<ViewOnceKey>) => {
-      if (action.payload in ViewOnceKey) {
+      if (Object.values(ViewOnceKey).includes(action.payload)) {
         state.data[action.payload] = true
       }
     }
