@@ -54,7 +54,7 @@ workflows:
     - TESTRAIL_RUN: $TESTRAIL_RUN 
       opts:
         is_expand: false
-    - ENVIRONMENT: production
+    - ENVIRONMENT: development
       opts:
         is_expand: false
     - PLATFORM: Android
