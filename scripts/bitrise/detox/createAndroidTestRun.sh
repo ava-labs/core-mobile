@@ -1,5 +1,7 @@
 #!/bin/bash
 
+sudo apt-get install jq
+
 TIMESTAMP=$(date +%s)
 
 TEST_RUN_NAME="Android Smoke Test run $TIMESTAMP"
