@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/explicit-function-return-type */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { element, waitFor } from 'detox'
@@ -109,9 +110,12 @@ const waitForElementNoSync = async (
 
 const waitForElementNotVisible = async (
   item: Detox.NativeMatcher,
-  timeout = 20000
+  timeout = 20000,
+  index = 0
 ) => {
-  await waitFor(element(item)).not.toBeVisible().withTimeout(timeout)
+  await waitFor(element(item).atIndex(index))
+    .not.toBeVisible()
+    .withTimeout(timeout)
 }
 
 const getAttributes = async (item: any, index = 0) => {

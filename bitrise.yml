@@ -93,7 +93,7 @@ workflows:
     - script-runner@0:
         title: Create Test Run
         inputs:
-        - file_path: e2e/createTestRunID.sh
+        - file_path: scripts/bitrise/detix/createAndroidTestRun.sh
     - android-build-for-ui-testing@0:
         inputs:
         - module: $ANDROID_MODULE
