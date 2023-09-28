@@ -7,7 +7,6 @@ import AvaButton from 'components/AvaButton'
 import AddressBookSVG from 'components/svg/AddressBookSVG'
 import FlexSpacer from 'components/FlexSpacer'
 import { useSendTokenContext } from 'contexts/SendTokenContext'
-import { AddrBookItemType, Contact } from 'Repo'
 import AddressBookLists, {
   AddressBookSource
 } from 'components/addressBook/AddressBookLists'
@@ -30,6 +29,7 @@ import { getMaxValue } from 'utils/Utils'
 import { Amount } from 'screens/swap/SwapView'
 import { usePostCapture } from 'hooks/usePosthogCapture'
 import { BN } from 'bn.js'
+import { AddrBookItemType, Contact } from 'store/addressBook'
 import { FeePreset } from '../../components/NetworkFeeSelector'
 
 type Props = {
