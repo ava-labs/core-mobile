@@ -1,6 +1,4 @@
 #!/bin/bash
-require 'jq'
-require 'date'
 
 TIMESTAMP=$(date +%s)
 
