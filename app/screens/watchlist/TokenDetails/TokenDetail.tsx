@@ -1,4 +1,4 @@
-import React, { FC, useCallback, useEffect, useMemo, useState } from 'react'
+import React, { FC, useCallback, useMemo } from 'react'
 import { Dimensions, ScrollView, StyleSheet, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaListItem from 'components/AvaListItem'
@@ -43,7 +43,6 @@ const TokenDetail: FC = () => {
     appHook: { tokenInCurrencyFormatter, currencyFormatter }
   } = useApplicationContext()
   const { view, hasBeenViewed } = useViewOnce()
-  const [showChartInstruction, setShowChartInstruction] = useState(false)
   const tokenId = useRoute<ScreenProps['route']>().params.tokenId
   const buyDisabled = useIsUIDisabled(UI.Buy)
 
@@ -110,13 +109,6 @@ const TokenDetail: FC = () => {
     [currencyFormatter]
   )
 
-  useEffect(() => {
-    if (!hasBeenViewed(ViewOnceKey.CHART_INTERACTION)) {
-      setShowChartInstruction(true)
-      view(ViewOnceKey.CHART_INTERACTION)
-    }
-  }, [hasBeenViewed, view])
-
   const onTabChanged = useCallback(
     (index: number) => {
       changeChartDays(
@@ -134,7 +126,9 @@ const TokenDetail: FC = () => {
     [changeChartDays]
   )
 
-  const onInstructionRead = (): void => setShowChartInstruction(false)
+  const onInstructionRead = (): void => {
+    view(ViewOnceKey.CHART_INTERACTION)
+  }
 
   const AnimatedDate = useMemo(
     () => (
@@ -218,7 +212,9 @@ const TokenDetail: FC = () => {
           </View>
           <Overlay
             chartData={chartData}
-            shouldShowInstruction={showChartInstruction}
+            shouldShowInstruction={
+              !hasBeenViewed(ViewOnceKey.CHART_INTERACTION)
+            }
             onInstructionRead={onInstructionRead}
           />
         </View>
