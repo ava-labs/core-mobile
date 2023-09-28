@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { FC, useCallback, useEffect, useMemo, useState } from 'react'
 import { Dimensions, ScrollView, StyleSheet, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaListItem from 'components/AvaListItem'
@@ -13,10 +13,7 @@ import { useTokenDetail } from 'screens/watchlist/useTokenDetail'
 import SparklineChart from 'components/SparklineChart/SparklineChart'
 import { Row } from 'components/Row'
 import MarketMovement from 'screens/watchlist/components/MarketMovement'
-import {
-  ViewOnceInformationKey,
-  useViewOnceInformation
-} from 'store/viewOnceInformation'
+import { ViewOnceInformationKey } from 'store/viewOnceInformation'
 import TokenAddress from 'components/TokenAddress'
 import AppNavigation from 'navigation/AppNavigation'
 import { formatLargeCurrency, formatLargeNumber } from 'utils/Utils'
@@ -28,6 +25,7 @@ import { format } from 'date-fns'
 import { StarButton } from 'components/StarButton'
 import { AnimatedText } from 'components/AnimatedText'
 import Delay from 'components/Delay'
+import { useViewOnceInformation } from 'hooks/useViewOnceInformation'
 import { DataItem } from './DataItem'
 import { Overlay } from './Overlay'
 
@@ -39,12 +37,12 @@ const CHART_THICKNESS = 4
 
 type ScreenProps = WalletScreenProps<typeof AppNavigation.Wallet.TokenDetail>
 
-const TokenDetail = () => {
+const TokenDetail: FC = () => {
   const {
     theme,
     appHook: { tokenInCurrencyFormatter, currencyFormatter }
   } = useApplicationContext()
-  const { saveViewOnceInformation, infoHasBeenShown } = useViewOnceInformation()
+  const { view, hasBeenViewed } = useViewOnceInformation()
   const [showChartInstruction, setShowChartInstruction] = useState(false)
   const tokenId = useRoute<ScreenProps['route']>().params.tokenId
   const buyDisabled = useIsUIDisabled(UI.Buy)
@@ -93,11 +91,11 @@ const TokenDetail = () => {
     animatedDate.value = 'Price'
   }, [animatedPrice, animatedDate, priceInCurrency, tokenInCurrencyFormatter])
 
-  const openTwitter = () => {
+  const openTwitter = (): void => {
     twitterHandle && openUrl(`https://twitter.com/${twitterHandle}`)
   }
 
-  const openWebsite = () => {
+  const openWebsite = (): void => {
     if (urlHostname) {
       openUrl('https://' + urlHostname)
     }
@@ -113,11 +111,11 @@ const TokenDetail = () => {
   )
 
   useEffect(() => {
-    if (!infoHasBeenShown(ViewOnceInformationKey.CHART_INTERACTION)) {
+    if (!hasBeenViewed(ViewOnceInformationKey.CHART_INTERACTION)) {
       setShowChartInstruction(true)
-      saveViewOnceInformation(ViewOnceInformationKey.CHART_INTERACTION)
+      view(ViewOnceInformationKey.CHART_INTERACTION)
     }
-  }, [infoHasBeenShown, saveViewOnceInformation])
+  }, [hasBeenViewed, view])
 
   const onTabChanged = useCallback(
     (index: number) => {
@@ -136,7 +134,7 @@ const TokenDetail = () => {
     [changeChartDays]
   )
 
-  const onInstructionRead = () => setShowChartInstruction(false)
+  const onInstructionRead = (): void => setShowChartInstruction(false)
 
   const AnimatedDate = useMemo(
     () => (

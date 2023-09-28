@@ -1,1 +1,0 @@
-export { useViewOnceInformation } from './useViewOnceInformation'

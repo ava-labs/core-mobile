@@ -2,12 +2,15 @@ export enum ViewOnceInformationKey {
   CHART_INTERACTION
 }
 
+export type ViewOnceObjectType = {
+  [key in ViewOnceInformationKey]: boolean
+}
+
 export type ViewOnceInformationState = {
-  items: ViewOnceInformationKey[]
+  data: ViewOnceObjectType
 }
 
 export type ViewOnceInformation = {
-  infoHasBeenShown: (key: ViewOnceInformationKey) => boolean
-  saveViewOnceInformation: (key: ViewOnceInformationKey) => void
-  reset: () => void
+  hasBeenViewed: (key: ViewOnceInformationKey) => boolean
+  view: (key: ViewOnceInformationKey) => void
 }

@@ -1,34 +1,34 @@
-import { createSlice } from '@reduxjs/toolkit'
+import { PayloadAction, createSlice } from '@reduxjs/toolkit'
 import { RootState } from 'store'
-import { ViewOnceInformationState } from './types'
+import {
+  ViewOnceInformationKey,
+  ViewOnceInformationState,
+  ViewOnceObjectType
+} from './types'
 
 const initialState: ViewOnceInformationState = {
-  items: []
+  data: {} as ViewOnceObjectType
 }
 
 const viewOnceInformationSlice = createSlice({
   name: 'viewOnceInformation',
   initialState,
   reducers: {
-    setViewOnceInformation: (state, action) => {
-      // we use set so we don't allow duplicates
-      const newInfo = new Set(state.items)
-      newInfo.add(action.payload)
-
-      state.items = [...newInfo]
-    },
-    resetViewOnceInformation: state => {
-      state.items = []
+    setViewOnceInformation: (
+      state,
+      action: PayloadAction<ViewOnceInformationKey>
+    ) => {
+      state.data[action.payload] = true
     }
   }
 })
 
 // selectors
-export const selectViewOnceInformation = (state: RootState) =>
-  state.viewOnceInformation.items
+export const selectViewOnceInformation = (
+  state: RootState
+): ViewOnceObjectType => state.viewOnceInformation.data
 
 // actions
-export const { setViewOnceInformation, resetViewOnceInformation } =
-  viewOnceInformationSlice.actions
+export const { setViewOnceInformation } = viewOnceInformationSlice.actions
 
 export const viewOnceInformationReducer = viewOnceInformationSlice.reducer

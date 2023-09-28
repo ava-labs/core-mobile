@@ -1,10 +1,12 @@
 import { useDispatch, useSelector } from 'react-redux'
-import { ViewOnceInformation, ViewOnceInformationKey } from '../types'
 import {
-  resetViewOnceInformation,
+  ViewOnceInformation,
+  ViewOnceInformationKey
+} from 'store/viewOnceInformation/types'
+import {
   selectViewOnceInformation,
   setViewOnceInformation
-} from '../slice'
+} from 'store/viewOnceInformation/slice'
 
 /**
  * ViewOnceInformation is used by views that needs to display something for the 1st time one.
@@ -13,7 +15,7 @@ import {
  * The enum below can be used to add several items. Check is done simply by retrieving the
  * array and see if it includes the desired item, OR a convenience function:
  *
- * infoHasBeenShown: (key: ViewOnceInformationKey) => boolean;
+ * hasBeenViewed: (key: ViewOnceInformationKey) => boolean;
  *
  * will return true/false by passing the emum you want to check.
  */
@@ -22,17 +24,13 @@ export const useViewOnceInformation = (): ViewOnceInformation => {
   const viewOnceInfo = useSelector(selectViewOnceInformation)
   const dispatch = useDispatch()
 
-  const saveViewOnceInformation = (key: ViewOnceInformationKey) => {
+  const view = (key: ViewOnceInformationKey): void => {
     dispatch(setViewOnceInformation(key))
   }
 
-  const infoHasBeenShown = (key: ViewOnceInformationKey) => {
-    return viewOnceInfo.includes(key)
+  const hasBeenViewed = (key: ViewOnceInformationKey): boolean => {
+    return viewOnceInfo[key] === true
   }
 
-  const reset = () => {
-    dispatch(resetViewOnceInformation())
-  }
-
-  return { saveViewOnceInformation, infoHasBeenShown, reset }
+  return { view, hasBeenViewed }
 }
