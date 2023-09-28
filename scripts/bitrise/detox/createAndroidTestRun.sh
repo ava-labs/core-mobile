@@ -7,8 +7,8 @@ TEST_RUN_NAME="Android Smoke Test run $TIMESTAMP"
 echo 'Creating new android test run...'
 
 JSON_DATA=$(jq -n \ 
-            --arg test_name "$TEST_RUN_NAME" '{name: $test_name}'
-            --arg all_tcs_bool "false" '{include_all: $all_tcs_bool}')
+            --arg test_name "$TEST_RUN_NAME" \
+            --arg all_tcs_bool "false")
 
 TEST_RUN_DETAILS=$(curl -H "Content-Type: application/json" \
 -u "mobiledevs@avalabs.org:$TESTRAIL_API_KEY" \
