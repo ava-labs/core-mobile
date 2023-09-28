@@ -37,7 +37,7 @@ class NetworkFeeService {
         low: BigInt(rates.low),
         medium: BigInt(rates.medium),
         high: BigInt(rates.high),
-        isFixedFee: isSwimmer(network),
+        isFixedFee: false,
         nativeTokenSymbol: network.networkToken.symbol
       }
     }

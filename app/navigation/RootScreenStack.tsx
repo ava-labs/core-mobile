@@ -1,11 +1,15 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import {
   OnboardingScreenStackParamList,
   OnboardScreenStack
 } from 'navigation/OnboardScreenStack'
 import { createStackNavigator } from '@react-navigation/stack'
-import { Alert } from 'react-native'
-import { NavigatorScreenParams } from '@react-navigation/native'
+import { Alert, Vibration } from 'react-native'
+import {
+  NavigatorScreenParams,
+  useNavigation,
+  useRoute
+} from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
 import WalletScreenStack, {
   WalletScreenStackParams
@@ -19,6 +23,8 @@ import {
 import { useSelector } from 'react-redux'
 import { selectIsLocked } from 'store/app'
 import { useBgDetect } from 'navigation/useBgDetect'
+import { RootStackScreenProps } from 'navigation/types'
+import WarningModal from 'components/WarningModal'
 import { PrivacyScreen } from './wallet/PrivacyScreen'
 import { PinScreen } from './wallet/PinScreen'
 
@@ -28,6 +34,9 @@ export type RootScreenStackParamList = {
   [AppNavigation.Root.Wallet]: NavigatorScreenParams<WalletScreenStackParams>
   [AppNavigation.Root
     .NoWallet]: NavigatorScreenParams<NoWalletScreenStackParams>
+  [AppNavigation.Root.CopyPhraseWarning]: {
+    copy: () => void
+  }
 }
 
 const onOk = (value: ShowExitPrompt): void => {
@@ -114,7 +123,49 @@ const RootScreenStack = () => {
           presentation: 'card'
         }}
       />
+      <RootStack.Screen
+        options={{ presentation: 'transparentModal' }}
+        name={AppNavigation.Root.CopyPhraseWarning}
+        component={CopyPhraseWarningModal}
+      />
     </RootStack.Navigator>
+  )
+}
+
+type CopyPhraseWarningNavigationProp = RootStackScreenProps<
+  typeof AppNavigation.Root.CopyPhraseWarning
+>
+
+const CopyPhraseWarningModal = () => {
+  const { goBack } =
+    useNavigation<CopyPhraseWarningNavigationProp['navigation']>()
+  const { params } = useRoute<CopyPhraseWarningNavigationProp['route']>()
+
+  useEffect(() => {
+    Vibration.vibrate()
+  }, [])
+
+  const onCopy = () => {
+    goBack()
+    params.copy()
+  }
+
+  const onCancel = () => {
+    goBack()
+  }
+
+  return (
+    <WarningModal
+      title={'Security Warning'}
+      message={
+        'Copying your phrase can expose it to other apps on your device. It is best to write down your phrase instead.'
+      }
+      actionText={'Copy Anyway'}
+      dismissText={'Cancel'}
+      onAction={onCopy}
+      onDismiss={onCancel}
+      testID="create_wallet_stack__copy_phrase_modal"
+    />
   )
 }
 

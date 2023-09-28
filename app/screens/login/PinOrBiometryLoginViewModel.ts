@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useRef, useCallback, useEffect, useState } from 'react'
 import BiometricsSDK, { KeystoreConfig } from 'utils/BiometricsSDK'
 import { UserCredentials } from 'react-native-keychain'
 import { PinKeys } from 'screens/onboarding/PinKey'
@@ -72,7 +72,7 @@ export function usePinOrBiometryLogin(): {
   const [time, setTime] = useState(0)
   const [resetInterval, setResetInterval] = useState(0)
   const [timeRemaining, setTimeRemaining] = useState('00:00')
-  let timerId: NodeJS.Timer | undefined
+  const timerId = useRef<NodeJS.Timeout | undefined>(undefined)
 
   useEffect(() => {
     setPinDots(getPinDots(enteredPin))
@@ -83,21 +83,6 @@ export function usePinOrBiometryLogin(): {
     setTimeRemaining(formatTimer(resetInterval - (time % resetInterval)))
     Logger.info(`time: ${time}`)
   }, [time, resetInterval])
-
-  // we start the timer when the keyboard is disabled
-  // and stop when it's enabled & we have a timerId
-  useEffect(() => {
-    if (disableKeypad) {
-      timerId = setInterval(() => {
-        setTime(t => t + 1)
-        checkLoginAttempt()
-      }, 1000)
-    }
-    return () => {
-      // setTime(0)
-      timerId && clearInterval(timerId)
-    }
-  }, [disableKeypad])
 
   const checkLoginAttempt = useCallback(
     (manualInterval?: number) => {
@@ -123,6 +108,21 @@ export function usePinOrBiometryLogin(): {
     [loginAttempt, resetInterval]
   )
 
+  // we start the timer when the keyboard is disabled
+  // and stop when it's enabled & we have a timerId
+  useEffect(() => {
+    if (disableKeypad) {
+      timerId.current = setInterval(() => {
+        setTime(t => t + 1)
+        checkLoginAttempt()
+      }, 1000)
+    }
+    return () => {
+      // setTime(0)
+      timerId.current && clearInterval(timerId.current)
+    }
+  }, [checkLoginAttempt, disableKeypad])
+
   // triggered everytime there's login attempt,
   // but we only care if it's over the 5th try
   useEffect(() => {
@@ -131,7 +131,7 @@ export function usePinOrBiometryLogin(): {
       setResetInterval(interval)
       checkLoginAttempt(interval)
     }
-  }, [loginAttempt, setResetInterval, getTimoutForAttempt])
+  }, [loginAttempt, setResetInterval, checkLoginAttempt])
 
   // 1 time check to set things up
   // used for when the app gets killed, and
@@ -149,7 +149,13 @@ export function usePinOrBiometryLogin(): {
         setTime(secondsPassed)
       }
     }
-  }, [setTime, setResetInterval])
+  }, [
+    setTime,
+    setResetInterval,
+    loginAttempt.count,
+    loginAttempt.timestamp,
+    time
+  ])
 
   const alertBadDta = useCallback(
     () =>

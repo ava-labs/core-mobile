@@ -34,9 +34,14 @@ const hasText = async (item: Detox.NativeMatcher, text: string) => {
   await expect(element(item)).toHaveText(text)
 }
 
+const hasValue = async (item: Detox.NativeMatcher, value: string) => {
+  await expect(element(item)).toHaveValue(value)
+}
+
 export default {
   isVisible,
   isVisibleNoSync,
   isNotVisible,
-  hasText
+  hasText,
+  hasValue
 }

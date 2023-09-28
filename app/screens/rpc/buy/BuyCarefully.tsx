@@ -10,8 +10,8 @@ import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import BuyPrompt from './BuyPrompt'
 
-const CoinbaseLogo = require('./coinbase.png')
-const MoonPayLogo = require('./moonpay-icon.png')
+const MoonPayLogo = require('assets/icons/moonpay-icon.png')
+const CoinbaseLogo = require('assets/icons/coinbase.png')
 
 type BuyCarefullyScreenProps = WalletScreenProps<
   typeof AppNavigation.Modal.BuyCarefully

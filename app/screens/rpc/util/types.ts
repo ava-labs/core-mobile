@@ -8,11 +8,11 @@ import { TransactionDescription } from 'ethers'
 
 export interface DisplayValueParserProps {
   gasPrice: bigint
-  avaxToken: NetworkTokenWithBalance
-  avaxPrice: number
-  erc20Tokens: TokenWithBalance[]
+  token: NetworkTokenWithBalance
+  tokenPrice: number
   site?: PeerMeta | null | undefined
 }
+
 export interface TransactionDisplayValues {
   fromAddress?: string
   toAddress?: string

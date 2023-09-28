@@ -23,11 +23,12 @@ import { FeePreset } from 'components/NetworkFeeSelector'
 import UniversalTokenSelector from 'components/UniversalTokenSelector'
 import SwapTransactionDetail from 'screens/swap/components/SwapTransactionDetails'
 import { calculateRate } from 'swap/utils'
-import { selectNetworkFee } from 'store/networkFee'
 import { calculateGasAndFees, getMaxValue, truncateBN } from 'utils/Utils'
 import { bnToLocaleString } from '@avalabs/utils-sdk'
 import { usePostCapture } from 'hooks/usePosthogCapture'
 import { selectActiveNetwork } from 'store/network'
+import { useNetworkFee } from 'hooks/useNetworkFee'
+import Logger from 'utils/Logger'
 
 type NavigationProp = SwapScreenProps<
   typeof AppNavigation.Swap.Swap
@@ -43,7 +44,7 @@ export default function SwapView() {
   const { theme } = useApplicationContext()
   const { navigate } = useNavigation<NavigationProp>()
   const activeNetwork = useSelector(selectActiveNetwork)
-  const networkFee = useSelector(selectNetworkFee)
+  const { data: networkFee } = useNetworkFee()
   const tokensWithBalance = useSelector(selectTokensWithBalance)
   const tokensWithZeroBalance = useSelector(selectTokensWithZeroBalance)
   const avaxPrice = useSelector(selectAvaxPrice)
@@ -243,6 +244,7 @@ export default function SwapView() {
           }
         }
       })
+      .catch(Logger.error)
       .finally(() => {
         setIsCalculatingMax(false)
       })

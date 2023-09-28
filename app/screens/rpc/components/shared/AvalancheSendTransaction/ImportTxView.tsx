@@ -14,7 +14,7 @@ import AvaButton from 'components/AvaButton'
 import CarrotSVG from 'components/svg/CarrotSVG'
 import { getHexStringToBytes } from 'utils/getHexStringToBytes'
 import { Avalanche } from '@avalabs/wallets-sdk'
-import { AvalancheChainStrings } from 'store/walletConnect/handlers/types'
+import { AvalancheChainStrings } from 'store/walletConnectV2/handlers/types'
 import { selectAvaxPrice } from 'store/balance'
 import TxFee from './components/TxFee'
 

@@ -18,6 +18,7 @@ import DrawerLogo from 'screens/drawer/components/DrawerLogo'
 import NotificationsItem from 'screens/drawer/components/NotificationsItem'
 import { useSelector } from 'react-redux'
 import { selectIsNotificationBlocked } from 'store/posthog'
+import FeedbackItem from 'screens/drawer/components/FeedbackItem'
 
 const DrawerView = () => {
   const context = useApplicationContext()
@@ -62,8 +63,9 @@ const Main = () => {
         <CurrencyItem />
         <AdvancedItem />
         {!isNotificationBlocked && <NotificationsItem />}
-        <Separator style={{ marginHorizontal: 16 }} />
         <SecurityItem />
+        <Separator style={{ marginHorizontal: 16 }} />
+        <FeedbackItem />
         <LegalItem />
         <HelpItem />
       </ScrollView>

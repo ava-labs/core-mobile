@@ -33,6 +33,7 @@ import SentryWrapper from 'services/sentry/SentryWrapper'
 import { usePostCapture } from 'hooks/usePosthogCapture'
 import { formatUriImageToPng } from 'utils/Contentful'
 import { bnToBigint } from 'utils/bigNumbers/bnToBigint'
+import Logger from 'utils/Logger'
 
 export interface SendTokenContextState {
   sendToken: TokenWithBalance | undefined
@@ -300,6 +301,7 @@ export const SendTokenContextProvider = ({
         setError(state.error ? state.error.message : undefined)
         setCanSubmit(state.canSubmit ?? false)
       })
+      .catch(Logger.error)
   }
 
   const state: SendTokenContextState = {

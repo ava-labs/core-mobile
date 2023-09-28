@@ -2,10 +2,18 @@ import Config from 'react-native-config'
 import {
   DeFiProtocolObject,
   DeFiSimpleProtocolObject,
-  DeFiChainObject
+  DeFiChainObject,
+  DeFiSimpleProtocolSchema,
+  DeFiChainSchema,
+  DeFiProtocolSchema
 } from './debankTypes'
-import { DeFiSimpleProtocol } from './types'
-import { CHAIN_LIST, PROTOCOL, SIMPLE_PROTOCOL_LIST } from './constants'
+import { DeFiSimpleProtocol, ExchangeRate, ExchangeRateSchema } from './types'
+import {
+  CHAIN_LIST,
+  CURRENCY_EXCHANGE_RATES_URL,
+  PROTOCOL,
+  SIMPLE_PROTOCOL_LIST
+} from './constants'
 
 if (!Config.PROXY_URL) throw Error('PROXY_URL is missing')
 
@@ -22,8 +30,8 @@ class DeFiService {
     const supportedChainList = await fetch(chainListUrl, {
       headers
     })
-    const jsonRes = (await supportedChainList.json()) as DeFiChainObject[]
-    return jsonRes
+    const json = await supportedChainList.json()
+    return DeFiChainSchema.array().parse(json)
   }
 
   async getDeFiProtocol(
@@ -38,8 +46,8 @@ class DeFiService {
     const userProtocolList = await fetch(urlWithQueryParam, {
       headers
     })
-    const jsonRes = (await userProtocolList.json()) as DeFiProtocolObject
-    return jsonRes
+    const json = await userProtocolList.json()
+    return DeFiProtocolSchema.parse(json)
   }
 
   async getDeFiProtocolList(
@@ -52,15 +60,20 @@ class DeFiService {
     const userProtocolList = await fetch(urlWithQueryParam, {
       headers
     })
-    const jsonRes =
-      (await userProtocolList.json()) as DeFiSimpleProtocolObject[]
-    return jsonRes
+    const json = await userProtocolList.json()
+    return DeFiSimpleProtocolSchema.array().parse(json)
   }
 
   sortSimpleProtocols(protocols: DeFiSimpleProtocol[]): DeFiSimpleProtocol[] {
     return [...protocols].sort(
       ({ netUsdValue: valueA }, { netUsdValue: valueB }) => valueB - valueA
     )
+  }
+
+  async getExchangeRates(): Promise<ExchangeRate> {
+    const response = await fetch(CURRENCY_EXCHANGE_RATES_URL)
+    const json = await response.json()
+    return ExchangeRateSchema.parse(json)
   }
 }
 

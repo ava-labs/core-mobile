@@ -2,11 +2,7 @@
  * @format
  */
 import { Text, TextInput } from 'react-native'
-import 'react-native-gesture-handler'
 import './polyfills'
-import 'react-native-get-random-values'
-import 'react-native-url-polyfill/auto'
-import '@walletconnect/react-native-compat'
 import { AppRegistry } from 'react-native'
 import Big from 'big.js'
 import ContextApp from './app/ContextApp'
@@ -41,7 +37,9 @@ if (DevDebuggingConfig.STORYBOOK_ENABLED) {
 AppRegistry.registerComponent(appName, () => AppEntryPoint)
 
 if (DevDebuggingConfig.API_MOCKING || process.env.API_MOCKING) {
-  server.listen()
+  server.listen({
+    onUnhandledRequest: 'bypass'
+  })
 }
 
 if (process.env.PERF_ENABLED) {

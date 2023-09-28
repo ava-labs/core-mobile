@@ -38,10 +38,12 @@ const Notifications = () => {
 
   useEffect(() => {
     if (appState === 'active') {
-      NotificationsService.getBlockedNotifications().then(value => {
-        setShowAllowPushNotificationsCard(value.size !== 0)
-        setBlockedChannels(value)
-      })
+      NotificationsService.getBlockedNotifications()
+        .then(value => {
+          setShowAllowPushNotificationsCard(value.size !== 0)
+          setBlockedChannels(value)
+        })
+        .catch(Logger.error)
     }
   }, [appState]) //switching to system settings and coming back must re-initiate settings check
 

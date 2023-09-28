@@ -23,10 +23,14 @@
  *     }
  *   }
  * }
+ *
+ * Notes:
+ * If you don't want to enforce name(s) of the error,
+ * when extending this class, you can just do ErrorBase<string>.
+ * The error will then use the constructor name as the error name.
  */
 export class ErrorBase<T extends string> extends Error {
-  name: T
-  message: string
+  name: string
   cause: unknown
 
   constructor({
@@ -34,13 +38,12 @@ export class ErrorBase<T extends string> extends Error {
     message,
     cause
   }: {
-    name: T
+    name?: T
     message: string
     cause?: unknown
   }) {
-    super()
-    this.name = name
-    this.message = message
+    super(message)
+    this.name = name ?? this.constructor.name
     this.cause = cause
   }
 }

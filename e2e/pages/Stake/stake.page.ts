@@ -4,6 +4,58 @@ import Actions from '../../helpers/actions'
 import { Platform } from '../../helpers/constants'
 
 class StakePage {
+  get activeTab() {
+    return by.text(stakeScreenLoc.activeTab)
+  }
+
+  get historyTab() {
+    return by.text(stakeScreenLoc.historyTab)
+  }
+
+  get amountStakedText() {
+    return by.text(stakeScreenLoc.amountStakedText)
+  }
+
+  get earnedRewardsText() {
+    return by.text(stakeScreenLoc.earnedRewardsText)
+  }
+
+  get endDateText() {
+    return by.text(stakeScreenLoc.endDateText)
+  }
+
+  get doneButtonText() {
+    return by.text(stakeScreenLoc.doneButtonText)
+  }
+
+  get firstStakeText() {
+    return by.text(stakeScreenLoc.firstStakeText)
+  }
+
+  get stakedAmountText() {
+    return by.text(stakeScreenLoc.stakedAmountText)
+  }
+
+  get earnSvg() {
+    return by.id(stakeScreenLoc.earnSvg)
+  }
+
+  get estimatedRewardsText() {
+    return by.text(stakeScreenLoc.estimatedRewardsText)
+  }
+
+  get estimatedRewardsTooltip() {
+    return by.id(stakeScreenLoc.estimatedRewardsTooltip)
+  }
+
+  get noActiveStakesTitle() {
+    return by.text(stakeScreenLoc.noActiveStakesTitle)
+  }
+
+  get noActiveStakesDescription() {
+    return by.text(stakeScreenLoc.noActiveStakesDescription)
+  }
+
   get avaLogo() {
     return by.id(stakeScreenLoc.avaLogo)
   }
@@ -14,6 +66,14 @@ class StakePage {
 
   get availableAvaxText() {
     return by.text(stakeScreenLoc.availableAvaxText)
+  }
+
+  get availableBalance() {
+    return by.id(stakeScreenLoc.availableBalance)
+  }
+
+  get topBalanceItem() {
+    return by.id(stakeScreenLoc.topBalanceItem)
   }
 
   get balanceTooltip() {
@@ -136,6 +196,10 @@ class StakePage {
     return by.text(stakeScreenLoc.maxText)
   }
 
+  async tapHistoryTab() {
+    await Actions.tap(this.historyTab)
+  }
+
   async verifyStakeScreenItems() {
     await Assert.isVisible(this.stakeTitle)
     await Assert.isVisible(this.notEnoughAvaxTitle)
@@ -204,22 +268,68 @@ class StakePage {
   }
 
   async verifyStakingAmountScreenItems() {
+    const availableBalance = await Actions.balanceToNumber(
+      this.availableBalance
+    )
     await Assert.isVisible(this.stakingAmountTitle)
     await Assert.isVisible(this.stakingAmountDescription)
     await Assert.isVisible(this.avaLogo)
     await Assert.isVisible(this.avaxText)
     await Assert.isVisible(this.inputAmount)
     await Assert.isVisible(this.balanceTooltip)
-    await Assert.isVisible(this.tenpercentTextbutton)
-    await Assert.isVisible(this.twentyfivepercentTextbutton)
-    await Assert.isVisible(this.fiftypercentTextbutton)
+    if (availableBalance >= 250) {
+      await Assert.isVisible(this.tenpercentTextbutton)
+    } else if (availableBalance >= 100) {
+      await Assert.isVisible(this.twentyfivepercentTextbutton)
+    } else if (availableBalance >= 50) {
+      await Assert.isVisible(this.fiftypercentTextbutton)
+    }
     await Assert.isVisible(this.maxTextbutton)
+  }
 
-    // Add tooltip text verification test
-    await Assert.isVisible(this.tenpercentTextbutton)
-    await Assert.isVisible(this.twentyfivepercentTextbutton)
-    await Assert.isVisible(this.fiftypercentTextbutton)
-    await Assert.isVisible(this.maxTextbutton)
+  async getTopBalance(balanceItem: string) {
+    if (Actions.platform() === 'ios') {
+      return null
+    }
+    let index
+    switch (balanceItem) {
+      case 'staked':
+        index = 1
+        break
+      case 'claimable':
+        index = 2
+        break
+      default:
+        index = 0
+    }
+    const availableBalance = await Actions.balanceToNumber(
+      this.topBalanceItem,
+      index
+    )
+    console.log('availableBalance: ', availableBalance)
+    return availableBalance
+  }
+
+  async verifyHistoryTabItems() {
+    await Assert.isVisible(this.amountStakedText)
+    await Assert.isVisible(this.earnedRewardsText)
+    await Assert.isVisible(this.endDateText)
+    await Assert.isVisible(this.firstStakeText)
+    //Add more items with testID's (date, amount, rewards, icons)
+  }
+
+  async verifyActiveTabItems() {
+    await Assert.isVisible(this.stakedAmountText)
+    await Assert.isVisible(this.estimatedRewardsText)
+    await Assert.isVisible(this.estimatedRewardsTooltip)
+    await Assert.isVisible(this.firstStakeText)
+    //Add more items with testID's (date, amount, rewards)
+  }
+
+  async verifyNoActiveStakesScreenItems() {
+    await Assert.isVisible(this.noActiveStakesTitle)
+    await Assert.isVisible(this.noActiveStakesDescription)
+    await Assert.isVisible(this.earnSvg)
   }
 }
 

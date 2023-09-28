@@ -17,7 +17,9 @@ export const useNativeTokenPriceForNetwork = (
   network: Network | undefined,
   customCurrency?: VsCurrencyType
 ): { nativeTokenPrice: number } => {
-  const selectedCurrency = useSelector(selectSelectedCurrency) as VsCurrencyType
+  const selectedCurrency = useSelector(
+    selectSelectedCurrency
+  ).toLowerCase() as VsCurrencyType
   const currency = customCurrency ?? (selectedCurrency as VsCurrencyType)
 
   const nativeTokenId = network?.pricingProviders?.coingecko.nativeTokenId ?? ''

@@ -27,14 +27,12 @@ const filterOptions = [
 ]
 
 interface Props {
-  embedded?: boolean
   tokenSymbolFilter?: string
   openTransactionDetails: (item: Transaction) => void
   openTransactionStatus: (params: BridgeTransactionStatusParams) => void
 }
 
 const ActivityList = ({
-  embedded,
   tokenSymbolFilter,
   openTransactionDetails,
   openTransactionStatus
@@ -68,14 +66,6 @@ const ActivityList = ({
             : true
         }),
     [transactions, tokenSymbolFilter, filter]
-  )
-
-  const renderHeader = () => (
-    <AvaText.LargeTitleBold
-      textStyle={{ marginHorizontal: 16 }}
-      testID="activity_list__header">
-      Activity
-    </AvaText.LargeTitleBold>
   )
 
   const renderFilterDropdown = () => {
@@ -117,7 +107,6 @@ const ActivityList = ({
         onRefresh={refresh}
         openTransactionDetails={openTransactionDetails}
         openTransactionStatus={openTransactionStatus}
-        hidePendingBridgeTransactions={Boolean(embedded)} // only show pending bridge transactions in the Activity Tab
       />
     )
   }
@@ -132,7 +121,6 @@ const ActivityList = ({
 
   return (
     <View style={{ flex: 1 }}>
-      {!embedded && renderHeader()}
       {renderFilterDropdown()}
       <Space y={10} />
       {renderContents()}

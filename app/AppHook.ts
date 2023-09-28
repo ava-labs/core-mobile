@@ -12,13 +12,14 @@ import { onLogOut } from 'store/app'
 import { resetLoginAttempt } from 'store/security'
 import { formatCurrency } from 'utils/FormatCurrency'
 import { selectCoreAnalyticsConsent } from 'store/settings/securityPrivacy'
+import { NotationTypes } from 'consts/FormatNumberTypes'
 
 export type AppHook = {
   onExit: () => Observable<ExitEvents>
   selectedCurrency: string
   deleteWallet: () => void
   signOut: () => void
-  currencyFormatter(num: number | string): string
+  currencyFormatter(num: number | string, notation?: NotationTypes): string
   tokenInCurrencyFormatter(num: number | string): string
 }
 
@@ -79,14 +80,27 @@ export function useApp(
    * Localized currency formatter
    */
   const currencyFormatter = useMemo(() => {
-    return (amount: number) => formatCurrency(amount, selectedCurrency, false)
+    return (amount: number, notation?: NotationTypes) => {
+      return formatCurrency({
+        amount,
+        currency: selectedCurrency,
+        boostSmallNumberPrecision: false,
+        notation
+      })
+    }
   }, [selectedCurrency])
 
   /**
    * When displaying token value in currency we keep max 8 fraction digits
    */
   const tokenInCurrencyFormatter = useMemo(() => {
-    return (amount: number) => formatCurrency(amount, selectedCurrency, true)
+    return (amount: number, notation?: NotationTypes) =>
+      formatCurrency({
+        amount,
+        currency: selectedCurrency,
+        boostSmallNumberPrecision: true,
+        notation
+      })
   }, [selectedCurrency])
 
   return {
