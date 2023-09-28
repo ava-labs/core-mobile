@@ -1,17 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { combineReducers } from 'redux'
-import {
-  AnyAction,
-  configureStore,
-  EnhancedStore,
-  ListenerEffectAPI
-} from '@reduxjs/toolkit'
-import {
-  createMigrate,
-  Persistor,
-  persistReducer,
-  persistStore
-} from 'redux-persist'
+import { AnyAction, configureStore, ListenerEffectAPI } from '@reduxjs/toolkit'
+import { createMigrate, persistReducer, persistStore } from 'redux-persist'
 import { bridgeReducer as bridge } from 'store/bridge'
 import { nftsApi } from 'store/nft/api'
 import { migrations } from 'store/migrations'
@@ -100,10 +90,8 @@ const rootReducer = (state: any, action: AnyAction) => {
   return combinedReducer(state, action)
 }
 
-export function configureEncryptedStore(secretKey: string): {
-  store: EnhancedStore
-  persistor: Persistor
-} {
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+export function configureEncryptedStore(secretKey: string) {
   // If this transform fails to decrypt or parse then it will log a warning and
   // return `undefined`, which will cause the redux state to be reset.
   const EncryptionTransform = encryptTransform<
