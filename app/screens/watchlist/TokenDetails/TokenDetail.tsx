@@ -13,7 +13,7 @@ import { useTokenDetail } from 'screens/watchlist/useTokenDetail'
 import SparklineChart from 'components/SparklineChart/SparklineChart'
 import { Row } from 'components/Row'
 import MarketMovement from 'screens/watchlist/components/MarketMovement'
-import { ViewOnceInformationKey } from 'store/viewOnceInformation'
+import { ViewOnceKey } from 'store/viewOnce'
 import TokenAddress from 'components/TokenAddress'
 import AppNavigation from 'navigation/AppNavigation'
 import { formatLargeCurrency, formatLargeNumber } from 'utils/Utils'
@@ -25,7 +25,7 @@ import { format } from 'date-fns'
 import { StarButton } from 'components/StarButton'
 import { AnimatedText } from 'components/AnimatedText'
 import Delay from 'components/Delay'
-import { useViewOnceInformation } from 'hooks/useViewOnceInformation'
+import { useViewOnce } from 'hooks/useViewOnce'
 import { DataItem } from './DataItem'
 import { Overlay } from './Overlay'
 
@@ -42,7 +42,7 @@ const TokenDetail: FC = () => {
     theme,
     appHook: { tokenInCurrencyFormatter, currencyFormatter }
   } = useApplicationContext()
-  const { view, hasBeenViewed } = useViewOnceInformation()
+  const { view, hasBeenViewed } = useViewOnce()
   const [showChartInstruction, setShowChartInstruction] = useState(false)
   const tokenId = useRoute<ScreenProps['route']>().params.tokenId
   const buyDisabled = useIsUIDisabled(UI.Buy)
@@ -111,9 +111,9 @@ const TokenDetail: FC = () => {
   )
 
   useEffect(() => {
-    if (!hasBeenViewed(ViewOnceInformationKey.CHART_INTERACTION)) {
+    if (!hasBeenViewed(ViewOnceKey.CHART_INTERACTION)) {
       setShowChartInstruction(true)
-      view(ViewOnceInformationKey.CHART_INTERACTION)
+      view(ViewOnceKey.CHART_INTERACTION)
     }
   }, [hasBeenViewed, view])
 
