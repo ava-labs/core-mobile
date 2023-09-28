@@ -1,5 +1,5 @@
 import { useDispatch, useSelector } from 'react-redux'
-import { ViewOnce, ViewOnceKey } from 'store/viewOnce/types'
+import { ViewOnceKey } from 'store/viewOnce/types'
 import { selectViewOnce, setViewOnce } from 'store/viewOnce/slice'
 
 /**
@@ -13,6 +13,11 @@ import { selectViewOnce, setViewOnce } from 'store/viewOnce/slice'
  *
  * will return true/false by passing the emum you want to check.
  */
+
+type ViewOnce = {
+  hasBeenViewed: (key: ViewOnceKey) => boolean
+  view: (key: ViewOnceKey) => void
+}
 
 export const useViewOnce = (): ViewOnce => {
   const viewOnce = useSelector(selectViewOnce)

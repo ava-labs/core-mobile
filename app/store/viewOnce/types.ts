@@ -9,8 +9,3 @@ export type ViewOnceObjectType = {
 export type ViewOnceState = {
   data: ViewOnceObjectType
 }
-
-export type ViewOnce = {
-  hasBeenViewed: (key: ViewOnceKey) => boolean
-  view: (key: ViewOnceKey) => void
-}
