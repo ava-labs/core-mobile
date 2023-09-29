@@ -10,24 +10,36 @@ import { useState, useEffect } from 'react'
 import { Network, NetworkContractToken } from '@avalabs/chains-sdk'
 import { usePostCapture } from 'hooks/usePosthogCapture'
 
+enum AddressValidationStatus {
+  Valid,
+  TooShort,
+  AlreadyExists,
+  Invalid
+}
+
 const validateAddress = (
   tokenAddress: string,
   tokens: NetworkContractToken[]
-) => {
-  if (!tokenAddress || !isAddress(tokenAddress)) {
-    throw 'Invalid ERC-20 token address.'
+): AddressValidationStatus => {
+  if (tokenAddress.length <= 10) {
+    return AddressValidationStatus.TooShort
   }
 
-  const tokenAlreadyExists = tokens.some(
-    token => token.address === tokenAddress
-  )
-
-  if (tokenAlreadyExists) {
-    throw 'Token already exists in the wallet.'
+  if (!isAddress(tokenAddress)) {
+    return AddressValidationStatus.Invalid
   }
+
+  if (tokens.some(token => token.address === tokenAddress)) {
+    return AddressValidationStatus.AlreadyExists
+  }
+
+  return AddressValidationStatus.Valid
 }
 
-const fetchTokenData = async (network: Network, tokenAddress: string) => {
+const fetchTokenData = async (
+  network: Network,
+  tokenAddress: string
+): Promise<NetworkContractToken> => {
   const tokenService = getInstance()
   const networkContractToken = await tokenService.getTokenData(
     tokenAddress,
@@ -41,9 +53,17 @@ const fetchTokenData = async (network: Network, tokenAddress: string) => {
   return networkContractToken
 }
 
-const useAddCustomToken = (callback: () => void) => {
+type CustomToken = {
+  tokenAddress: string
+  setTokenAddress: (tokenAddress: string) => void
+  errorMessage: string
+  token: NetworkContractToken | undefined
+  addCustomToken: () => void
+}
+
+const useAddCustomToken = (callback: () => void): CustomToken => {
   const [tokenAddress, setTokenAddress] = useState('')
-  const [errorMessage, setErrorMessage] = useState<string>()
+  const [errorMessage, setErrorMessage] = useState('')
   const [token, setToken] = useState<NetworkContractToken>()
   const network = useSelector(selectActiveNetwork)
   const tokens = useSelector(selectActiveNetworkContractTokens)
@@ -55,24 +75,28 @@ const useAddCustomToken = (callback: () => void) => {
     setErrorMessage('')
     setToken(undefined)
 
-    try {
-      validateAddress(tokenAddress, tokens)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (e: any) {
-      // only start showing validation error after a certain length
-      if (tokenAddress.length > 10) {
-        setErrorMessage(e)
-      }
+    const validationStatus = validateAddress(tokenAddress, tokens)
+    switch (validationStatus) {
+      case AddressValidationStatus.Invalid:
+        setErrorMessage('Invalid ERC-20 token address.')
+        break
+      case AddressValidationStatus.AlreadyExists:
+      case AddressValidationStatus.Valid:
+        if (validationStatus === AddressValidationStatus.AlreadyExists) {
+          setErrorMessage('Token already exists in the wallet.')
+        }
 
-      return
+        fetchTokenData(network, tokenAddress)
+          .then(setToken)
+          .catch(err => setErrorMessage(err.toString()))
+        break
+      case AddressValidationStatus.TooShort:
+        // do not show error message for too short addresses
+        break
     }
-
-    fetchTokenData(network, tokenAddress)
-      .then(setToken)
-      .catch(err => setErrorMessage(err.toString()))
   }, [network, tokenAddress, tokens])
 
-  const addCustomToken = async () => {
+  const addCustomToken = (): void => {
     if (token) {
       dispatch(addCustomTokenAction({ chainId, token }))
       setTokenAddress('')
