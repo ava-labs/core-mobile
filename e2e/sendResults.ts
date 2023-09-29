@@ -221,5 +221,5 @@ async function generatePlatformResults(
 }
 
 export function printRunId() {
-  console.log('The run id is ' + process.env.TESTRAIL_RUN)
+  console.log('The run id is ' + process.env.TESTRAIL_RUN_ID)
 }
