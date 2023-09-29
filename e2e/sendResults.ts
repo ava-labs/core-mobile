@@ -120,7 +120,7 @@ export default async function sendResults() {
         testCasesToSend,
         resultsToSendToTestrail,
         'android',
-        runID
+        Number(runID)
       )
     }
     // if (await isResultPresent('ios')) {
@@ -155,7 +155,7 @@ async function generatePlatformResults(
   testCasesToSend: any,
   resultsToSendToTestrail: any,
   platform: any,
-  runId?: any
+  runId?: number
 ) {
   try {
     const resultArray = resultsToSendToTestrail.filter(
