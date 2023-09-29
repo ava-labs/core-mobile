@@ -15,28 +15,28 @@ export var api = new TestRail({
   password: password
 })
 
-export async function createEmptyTestRun(
-  testRunName: string,
-  description: string
-) {
-  const content = {
-    name: testRunName,
-    description: description,
-    include_all: false
-  }
+// export async function createEmptyTestRun(
+//   testRunName: string,
+//   description: string
+// ) {
+//   const content = {
+//     name: testRunName,
+//     description: description,
+//     include_all: false
+//   }
 
-  try {
-    const testRun = await api.addRun(projectId, content)
-    console.log(
-      `The test run "${testRunName}" with id ${testRun.id} has been successfully created in TestRail...`
-    )
-    const testRunId = testRun.id
-    return testRunId
-  } catch (error) {
-    console.error('Test run was not created!!!')
-    console.log(error)
-  }
-}
+//   try {
+//     const testRun = await api.addRun(projectId, content)
+//     console.log(
+//       `The test run "${testRunName}" with id ${testRun.id} has been successfully created in TestRail...`
+//     )
+//     const testRunId = testRun.id
+//     return testRunId
+//   } catch (error) {
+//     console.error('Test run was not created!!!')
+//     console.log(error)
+//   }
+// }
 
 export async function getRunIdFromName() {
   const todaysDate = new Date()
