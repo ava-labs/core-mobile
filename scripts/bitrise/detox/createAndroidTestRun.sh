@@ -17,7 +17,7 @@ echo "JSON data: $JSON_DATA"
 TEST_RUN_DETAILS=$(curl -H "Content-Type: application/json" \
 -u "mobiledevs@avalabs.org:$TESTRAIL_API_KEY" \
 -d "${JSON_DATA}" \
--X POST "https://avalabs.testrail.net/index.php?/api/v2/add_run/$TESTRAIL_PROJECT_ID")
+-X POST "https://avalabs.testrail.net/index.php?/api/v2/add_run/3")
 
 echo "Test run details: $TEST_RUN_DETAILS"
 
