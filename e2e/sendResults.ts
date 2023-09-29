@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/explicit-function-return-type */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // @ts-nocheck comment at the top of the file
 /* eslint-disable no-var */
@@ -5,8 +6,8 @@ import * as fs from 'fs'
 import {
   getTestCaseId,
   api,
-  createNewTestSectionsAndCases,
-  currentRunID
+  createNewTestSectionsAndCases
+  //currentRunID
 } from './generateTestrailObjects'
 import getTestLogs, { isResultPresent } from './getResultsFromLogs'
 const fs = require('fs')
@@ -122,15 +123,15 @@ export default async function sendResults() {
         runID
       )
     }
-    if (await isResultPresent('ios')) {
-      const runID = (await currentRunID('ios')).runID
-      await generatePlatformResults(
-        testCasesToSend,
-        resultsToSendToTestrail,
-        'ios',
-        runID
-      )
-    }
+    // if (await isResultPresent('ios')) {
+    //   const runID = (await currentRunID('ios')).runID
+    //   await generatePlatformResults(
+    //     testCasesToSend,
+    //     resultsToSendToTestrail,
+    //     'ios',
+    //     runID
+    //   )
+    // }
   }
 }
 
