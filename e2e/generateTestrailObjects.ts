@@ -586,34 +586,34 @@ export async function compareTestCaseArrays(
   return difference
 }
 
-export async function createAndroidTestRun() {
-  const timestamp = generateUtcTimestamp()
-  const testRunName = 'Android smoke test run' + ' ' + timestamp
-  const description = 'This is a smoke test run for Android!'
-  const content = {
-    name: testRunName,
-    description: description,
-    include_all: false
-  }
-  const newApi = new TestRail({
-    host: 'https://avalabs.testrail.net',
-    username: 'mobiledevs@avalabs.org',
-    password: 'yE4G2zwYMHMxUOT6MhlH'
-  })
+// export async function createAndroidTestRun() {
+//   const timestamp = generateUtcTimestamp()
+//   const testRunName = 'Android smoke test run' + ' ' + timestamp
+//   const description = 'This is a smoke test run for Android!'
+//   const content = {
+//     name: testRunName,
+//     description: description,
+//     include_all: false
+//   }
+//   const newApi = new TestRail({
+//     host: 'https://avalabs.testrail.net',
+//     username: 'mobiledevs@avalabs.org',
+//     password: 'yE4G2zwYMHMxUOT6MhlH'
+//   })
 
-  try {
-    const testRun = await newApi.addRun(projectId, content)
-    console.log(
-      `The test run "${testRunName}" with id ${testRun.id} has been successfully created in TestRail...`
-    )
-    const testRunId = testRun.id
-    writeRunIdToTextFile(`${testRunId}`)
-    return testRunId
-  } catch (error) {
-    console.error('Test run was not created!!!')
-    console.log(error)
-  }
-}
+//   try {
+//     const testRun = await newApi.addRun(projectId, content)
+//     console.log(
+//       `The test run "${testRunName}" with id ${testRun.id} has been successfully created in TestRail...`
+//     )
+//     const testRunId = testRun.id
+//     writeRunIdToTextFile(`${testRunId}`)
+//     return testRunId
+//   } catch (error) {
+//     console.error('Test run was not created!!!')
+//     console.log(error)
+//   }
+// }
 
 export async function writeRunIdToTextFile(runId: string) {
   await fs.writeFile('./e2e/testrailRunID.txt', runId, (err: any) => {
