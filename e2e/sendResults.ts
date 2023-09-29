@@ -157,6 +157,7 @@ async function generatePlatformResults(
   platform: any,
   runId?: number
 ) {
+  printRunId()
   try {
     const resultArray = resultsToSendToTestrail.filter(
       result => result.platform === platform
@@ -216,4 +217,8 @@ async function generatePlatformResults(
   } catch (error) {
     console.log(error)
   }
+}
+
+export function printRunId() {
+  console.log('The run id is ' + process.env.TESTRAIL_RUN)
 }
