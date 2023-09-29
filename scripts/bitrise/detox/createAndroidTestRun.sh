@@ -23,6 +23,8 @@ echo "Test run details: $TEST_RUN_DETAILS"
 
 TESTRAIL_RUN_ID=$(jq -r ".id" <<< "$TEST_RUN_DETAILS")
 
+echo "Test run id: $TESTRAIL_RUN_ID"
+
 envman add --key TESTRAIL_RUN --value $TESTRAIL_RUN_ID
 
 echo "Created test run with id: $TESTRAIL_RUN"
