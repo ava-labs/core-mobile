@@ -115,7 +115,7 @@ export default async function sendResults() {
 
   if (process.env.POST_TO_TESTRAIL === 'true') {
     if (await isResultPresent('android')) {
-      const runID = process.env.TESTRAIL_RUN
+      const runID = process.env.TESTRAIL_RUN_ID
       console.log('The run id is ' + runID)
       await generatePlatformResults(
         testCasesToSend,
