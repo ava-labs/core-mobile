@@ -625,5 +625,3 @@ export function generateUtcTimestamp() {
   const utcDate = new Date().getUTCDate().toString()
   return utcDate
 }
-
-createAndroidTestRun()
