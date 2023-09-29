@@ -1,5 +1,6 @@
 import * as Crypto from 'crypto'
 import { createTransform } from 'redux-persist'
+import { encryptTransform } from 'redux-persist-transform-encrypt'
 import { RawRootState } from 'store'
 import Logger from 'utils/Logger'
 import {
@@ -47,13 +48,29 @@ export const AesGcmEncryptTransform = (secretKey: string) =>
         authTag: cipher.getAuthTag().valueOf()
       } as AesGcmStoreType
     },
+
     // transform state after it gets rehydrated
-    (outboundState: AesGcmStoreType) => {
-      if (!('ciphertext' in outboundState)) {
-        Logger.trace(
-          '------> This is unencrypted db, will encrypt on next store'
+    (outboundState: AesGcmStoreType, key, rawState) => {
+      //We need to check if this is the state encrypted with  AES-CBC algorithm
+      const maybeAesCbcEncrypted = outboundState as unknown
+      if (typeof maybeAesCbcEncrypted === 'string') {
+        Logger.info(
+          'Rehydrated state is encrypted with old algorithm, decrypt it with redux-persist-transform-encrypt'
         )
-        return outboundState as unknown as RawRootState
+        const encryptionTransform = encryptTransform<
+          RawRootState,
+          RawRootState,
+          RawRootState
+        >({
+          secretKey
+        })
+        return encryptionTransform.out(maybeAesCbcEncrypted, key, rawState)
+      }
+
+      //Make sure we have right object here
+      if (!('ciphertext' in outboundState)) {
+        Logger.error('Unknown state, expecting AesGcmStoreType')
+        throw new Error('Unknown state, expecting AesGcmStoreType')
       }
 
       const iv = Buffer.from(outboundState.iv)
