@@ -1,14 +1,18 @@
 #!/bin/bash
 
+set -e
+
 TIMESTAMP=$(date +%s)
 
 TEST_RUN_NAME="Android Smoke Test run $TIMESTAMP"
 
 echo 'Creating new android test run...'
 
-JSON_DATA=$(jq --null-input \ 
-            --arg test_name "$TEST_RUN_NAME" \
-            --arg all_tcs_bool "false") \
+JSON_DATA=$(jq -n --arg test_name "$TEST_RUN_NAME" \
+            '{name: $test_name, include_all: false}'
+) 
+
+echo "JSON data: $JSON_DATA"
 
 TEST_RUN_DETAILS=$(curl -H "Content-Type: application/json" \
 -u "mobiledevs@avalabs.org:$TESTRAIL_API_KEY" \
@@ -17,8 +21,8 @@ TEST_RUN_DETAILS=$(curl -H "Content-Type: application/json" \
 
 echo "Test run details: $TEST_RUN_DETAILS"
 
-TESTRAIL_RUN_ID="$TEST_RUN_DETAILS" | jq -r '.id'
+TESTRAIL_RUN_ID=$(jq -r ".id" <<< "$TEST_RUN_DETAILS")
 
 echo "Created test run with id: $TESTRAIL_RUN_ID"
 
-#envman add --key TESTRAIL_RUN --value "$TESTRAIL_RUN_ID"
+envman add --key TESTRAIL_RUN --value "$TESTRAIL_RUN_ID"
