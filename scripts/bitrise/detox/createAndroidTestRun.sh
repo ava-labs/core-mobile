@@ -27,5 +27,5 @@ echo "Test run id: $TESTRAIL_RUN_ID"
 
 envman add --key TESTRAIL_RUN --value $TESTRAIL_RUN_ID
 
-echo "Created test run with id: $TESTRAIL_RUN"
+echo $("Created test run with id: {$TESTRAIL_RUN}")
 
