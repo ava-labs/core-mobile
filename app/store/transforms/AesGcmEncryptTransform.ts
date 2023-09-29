@@ -8,7 +8,7 @@ import {
   serializeReduxState
 } from 'store/utils/seralization'
 
-type AesGcmStoreType = {
+export type AesGcmStoreType = {
   iv: Uint8Array
   ciphertext: string
   authTag: Uint8Array
