@@ -6,6 +6,7 @@ import Logger from 'utils/Logger'
 type AesGcmStoreType = {
   iv: Uint8Array
   ciphertext: string
+  authTag: Uint8Array
 }
 const ALGORITHM = 'aes-256-gcm'
 const ENCRYPT_OUTPUT_ENCODING = 'base64'
@@ -17,19 +18,27 @@ export const AesGcmEncryptTransform = (secretKey: string) =>
     (inboundState: RawRootState) => {
       // The iv must never be reused with a given key.
       const iv = Crypto.randomBytes(16)
-      const key = Crypto.createHash('sha256').update(secretKey, 'utf8').digest()
 
-      const cipher = Crypto.createCipheriv(ALGORITHM, key, iv)
-
-      let ciphertext = cipher.update(
-        JSON.stringify(inboundState),
-        'utf8',
-        ENCRYPT_OUTPUT_ENCODING
+      const cipher = Crypto.createCipheriv(
+        ALGORITHM,
+        Buffer.from(secretKey, 'hex'),
+        iv
       )
-      ciphertext += cipher.final(ENCRYPT_OUTPUT_ENCODING)
+
+      const ciphertext = Buffer.concat([
+        cipher.update(
+          JSON.stringify(inboundState, (key, value) =>
+            typeof value === 'bigint' ? 'bigint' + value.toString() : value
+          ),
+          'utf8'
+        ),
+        cipher.final()
+      ]).toString(ENCRYPT_OUTPUT_ENCODING)
+
       return {
         iv: iv.valueOf(),
-        ciphertext
+        ciphertext,
+        authTag: cipher.getAuthTag().valueOf()
       } as AesGcmStoreType
     },
     // transform state after it gets rehydrated
@@ -41,19 +50,24 @@ export const AesGcmEncryptTransform = (secretKey: string) =>
         return outboundState as unknown as RawRootState
       }
 
-      const key = Crypto.createHash('sha256').update(secretKey, 'utf8').digest()
-
       const iv = Buffer.from(outboundState.iv)
-      const decipher = Crypto.createDecipheriv(ALGORITHM, key, iv)
-
-      let cleartext = decipher.update(
-        outboundState.ciphertext,
-        DECRYPT_INPUT_ENCODING,
-        'utf8'
+      const decipher = Crypto.createDecipheriv(
+        ALGORITHM,
+        Buffer.from(secretKey, 'hex'),
+        iv
       )
-      cleartext += decipher.final('utf8')
+      decipher.setAuthTag(Buffer.from(outboundState.authTag))
 
-      return JSON.parse(cleartext)
+      const cleartext = Buffer.concat([
+        decipher.update(outboundState.ciphertext, DECRYPT_INPUT_ENCODING),
+        decipher.final()
+      ]).toString()
+
+      return JSON.parse(cleartext, (key, value) =>
+        typeof value === 'string' && value.startsWith('bigint')
+          ? BigInt(value.substring('bigint'.length))
+          : value
+      )
     },
     {}
   )
