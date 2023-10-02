@@ -27,12 +27,23 @@ const SECRET_KEY_ENCODING = 'hex'
  */
 export const AesGcmEncryptTransform: (
   secretKey: string
-) => Transform<RawRootState, AesGcmStoreType, RawRootState, RawRootState> = (
-  secretKey: string
-) =>
-  createTransform<RawRootState, AesGcmStoreType, RawRootState, RawRootState>(
-    // transform state before it gets serialized and persisted
-    (inboundState: RawRootState) => {
+) => Transform<
+  RawRootState | undefined,
+  AesGcmStoreType | undefined,
+  RawRootState,
+  RawRootState
+> = (secretKey: string) =>
+  createTransform<
+    RawRootState | undefined,
+    AesGcmStoreType | undefined,
+    RawRootState,
+    RawRootState
+  >(
+    // transform state before it gets persisted
+    (inboundState: RawRootState | undefined) => {
+      if (!inboundState) {
+        return undefined
+      }
       // The iv must never be reused with a given key. It doesn't need to be secret, only random.
       const iv = Crypto.randomBytes(16)
 
@@ -55,7 +66,7 @@ export const AesGcmEncryptTransform: (
     },
 
     // transform state after it gets rehydrated
-    (outboundState: AesGcmStoreType, key, rawState) => {
+    (outboundState: AesGcmStoreType | undefined, key, rawState) => {
       //We need to check if this is the state encrypted with  AES-CBC algorithm
       const maybeAesCbcEncrypted = outboundState as unknown
       if (typeof maybeAesCbcEncrypted === 'string') {
@@ -72,10 +83,13 @@ export const AesGcmEncryptTransform: (
         return encryptionTransform.out(maybeAesCbcEncrypted, key, rawState)
       }
 
+      if (!outboundState) {
+        return undefined
+      }
       //Make sure we have right object here
       if (!('ciphertext' in outboundState)) {
         Logger.error('Unknown state, expecting AesGcmStoreType')
-        throw new Error('Unknown state, expecting AesGcmStoreType')
+        return undefined
       }
 
       const iv = Buffer.from(outboundState.iv)
@@ -95,7 +109,7 @@ export const AesGcmEncryptTransform: (
         return deserializeReduxState(cleartext)
       } catch (e) {
         Logger.error('Failed to decipher', e)
-        throw e
+        return undefined
       }
     },
     {}

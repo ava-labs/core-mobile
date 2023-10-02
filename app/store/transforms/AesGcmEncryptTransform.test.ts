@@ -147,15 +147,30 @@ describe('AesGcmEncryptTransform functions', () => {
     expect(decrypted).toEqual(state)
   })
 
-  it('should fail decrypting if state is object but not AesGcmStoreType', async () => {
+  it('should return undefined on decrypting if state is object but not AesGcmStoreType', async () => {
     const state = { test: 'test' }
     const transform = AesGcmEncryptTransform(secretKey)
-    await expect(async () => {
-      transform.out(
-        state as unknown as AesGcmStoreType,
-        'app',
-        {} as unknown as RawRootState
-      )
-    }).rejects.toThrow('Unknown state, expecting AesGcmStoreType')
+    const result = transform.out(
+      state as unknown as AesGcmStoreType,
+      'app',
+      {} as unknown as RawRootState
+    )
+    expect(result).toBeUndefined()
+  })
+
+  it('should return undefined on decrypting if state is undefined', async () => {
+    const transform = AesGcmEncryptTransform(secretKey)
+    const result = transform.out(
+      undefined,
+      'app',
+      {} as unknown as RawRootState
+    )
+    expect(result).toBeUndefined()
+  })
+
+  it('should return undefined on encrypting if state is undefined', async () => {
+    const transform = AesGcmEncryptTransform(secretKey)
+    const result = transform.in(undefined, 'app', {} as unknown as RawRootState)
+    expect(result).toBeUndefined()
   })
 })
