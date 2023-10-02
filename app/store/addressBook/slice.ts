@@ -1,7 +1,11 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from 'store/index'
-import { Contact, RecentContact, UID } from 'Repo'
-import { AddressBookState } from 'store/addressBook/types'
+import {
+  AddressBookState,
+  Contact,
+  RecentContact,
+  UID
+} from 'store/addressBook/types'
 
 const reducerName = 'addressBook'
 

@@ -12,7 +12,7 @@ import AddressBookSVG from 'components/svg/AddressBookSVG'
 import AddressBookItem from 'components/addressBook/AddressBookItem'
 import { Contact as SharedContact } from '@avalabs/types'
 import RpcRequestBottomSheet from 'screens/rpc/components/shared/RpcRequestBottomSheet'
-import { Contact } from 'Repo'
+import { Contact } from 'store/addressBook'
 
 type Props = {
   onReject: () => void

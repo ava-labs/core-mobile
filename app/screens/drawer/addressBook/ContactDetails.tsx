@@ -7,7 +7,6 @@ import BlockchainCircle from 'components/BlockchainCircle'
 import ContactInput from 'screens/drawer/addressBook/components/ContactInput'
 import FlexSpacer from 'components/FlexSpacer'
 import { Space } from 'components/Space'
-import { Contact } from 'Repo'
 import TokenAddress from 'components/TokenAddress'
 import TextFieldBg from 'components/styling/TextFieldBg'
 import { titleToInitials } from 'utils/Utils'
@@ -15,6 +14,7 @@ import { Row } from 'components/Row'
 import ShareSVG from 'components/svg/ShareSVG'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { shareContact } from 'screens/drawer/addressBook/utils'
+import { Contact } from 'store/addressBook'
 
 const ContactDetails = ({
   contact,
