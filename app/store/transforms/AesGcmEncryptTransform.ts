@@ -7,6 +7,7 @@ import {
   deserializeReduxState,
   serializeReduxState
 } from 'store/utils/seralization'
+import { Transform } from 'redux-persist/es/types'
 
 export type AesGcmStoreType = {
   iv: Uint8Array
@@ -24,7 +25,11 @@ const SECRET_KEY_ENCODING = 'hex'
  * Since users of previous versions of our app might already have redux store encrypted with AES-CBC algorithm
  * we this function makes sure that that kind of store is decrypted with redux-persist-transform-encrypt library.
  */
-export const AesGcmEncryptTransform = (secretKey: string) =>
+export const AesGcmEncryptTransform: (
+  secretKey: string
+) => Transform<RawRootState, AesGcmStoreType, RawRootState, RawRootState> = (
+  secretKey: string
+) =>
   createTransform<RawRootState, AesGcmStoreType, RawRootState, RawRootState>(
     // transform state before it gets serialized and persisted
     (inboundState: RawRootState) => {
@@ -81,12 +86,17 @@ export const AesGcmEncryptTransform = (secretKey: string) =>
       )
       decipher.setAuthTag(Buffer.from(outboundState.authTag))
 
-      const cleartext = Buffer.concat([
-        decipher.update(outboundState.ciphertext, DECRYPT_INPUT_ENCODING),
-        decipher.final()
-      ]).toString()
+      try {
+        const cleartext = Buffer.concat([
+          decipher.update(outboundState.ciphertext, DECRYPT_INPUT_ENCODING),
+          decipher.final()
+        ]).toString()
 
-      return deserializeReduxState(cleartext)
+        return deserializeReduxState(cleartext)
+      } catch (e) {
+        Logger.error('Failed to decipher', e)
+        throw e
+      }
     },
     {}
   )
