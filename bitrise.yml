@@ -95,7 +95,7 @@ workflows:
         inputs:
         - file_path: scripts/bitrise/detox/createAndroidTestRun.sh
         - variables: |-
-            TESTRAIL_RUN_ID
+            TESTRAIL_RUN_ID=$TESTRAIL_RUN_ID
     - android-build-for-ui-testing@0:
         inputs:
         - module: $ANDROID_MODULE
