@@ -212,7 +212,8 @@ module.exports = {
       testRunner: {
         $0: 'jest',
         args: {
-          config: 'e2e/smoke_test_config.json'
+          config: 'e2e/smoke_test_config.json',
+          _: [process.env.TESTS_TO_RUN]
         }
       }
     },
