@@ -9,6 +9,7 @@ import { addCustomToken as addCustomTokenAction } from 'store/customToken'
 import { useState, useEffect } from 'react'
 import { Network, NetworkContractToken } from '@avalabs/chains-sdk'
 import { usePostCapture } from 'hooks/usePosthogCapture'
+import Logger from 'utils/Logger'
 
 enum AddressValidationStatus {
   Valid,
@@ -78,7 +79,7 @@ const useAddCustomToken = (callback: () => void): CustomToken => {
     const validationStatus = validateAddress(tokenAddress, tokens)
     switch (validationStatus) {
       case AddressValidationStatus.Invalid:
-        setErrorMessage('Invalid ERC-20 token address.')
+        setErrorMessage('Not a valid ERC-20 token address.')
         break
       case AddressValidationStatus.AlreadyExists:
       case AddressValidationStatus.Valid:
@@ -88,7 +89,10 @@ const useAddCustomToken = (callback: () => void): CustomToken => {
 
         fetchTokenData(network, tokenAddress)
           .then(setToken)
-          .catch(err => setErrorMessage(err.toString()))
+          .catch(err => {
+            setErrorMessage('Not a valid ERC-20 token address.')
+            Logger.error(err)
+          })
         break
       case AddressValidationStatus.TooShort:
         // do not show error message for too short addresses
