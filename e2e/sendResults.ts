@@ -6,8 +6,8 @@ import * as fs from 'fs'
 import {
   getTestCaseId,
   api,
-  createNewTestSectionsAndCases
-  //currentRunID
+  createNewTestSectionsAndCases,
+  getTestCasesFromRun
 } from './generateTestrailObjects'
 import getTestLogs, { isResultPresent } from './getResultsFromLogs'
 const fs = require('fs')
