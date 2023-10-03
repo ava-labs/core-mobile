@@ -4882,11 +4882,6 @@
   resolved "https://registry.yarnpkg.com/@ts-rest/core/-/core-3.30.2.tgz#4ce8c7864a22817abb2067041d63f8a68f7c1bc8"
   integrity sha512-XPqKbHSPIk3piMGVJiutmwRhFjIkXqnu1ya5zhGOCGVkkMnguprr7VY4g+Tsks6rxeK6DoYoPoD5+LNymkfUYw==
 
-"@ts-rest/react-query@^3.30.2":
-  version "3.30.2"
-  resolved "https://registry.yarnpkg.com/@ts-rest/react-query/-/react-query-3.30.2.tgz#55c533384587bd5f74d43d63ffb89d032a2922d2"
-  integrity sha512-bkFKSF8b7OSb38/HCdz0CMbEQ/xsHNYxLGaqxSem6t6ORUxYjHPBPqhlqqjVfC0sbx6apsaBbnP17UjcYlH15Q==
-
 "@tsconfig/node10@^1.0.7":
   version "1.0.9"
   resolved "https://registry.yarnpkg.com/@tsconfig/node10/-/node10-1.0.9.tgz#df4907fc07a886922637b15e02d4cebc4c0021b2"
