@@ -2,6 +2,7 @@ import Big from 'big.js'
 import { BridgeAdapter } from 'screens/bridge/hooks/useBridge'
 import {
   BIG_ZERO,
+  BitcoinConfigAsset,
   Blockchain,
   btcToSatoshi,
   getBtcAsset,
@@ -15,11 +16,6 @@ import { getBtcBalance } from 'screens/bridge/hooks/getBtcBalance'
 import { AssetBalance } from 'screens/bridge/utils/types'
 import { BitcoinInputUTXO, getMaxTransferAmount } from '@avalabs/wallets-sdk'
 import { NetworkFee } from 'services/networkFee/types'
-import {
-  BITCOIN_NETWORK,
-  BITCOIN_TEST_NETWORK,
-  ChainId
-} from '@avalabs/chains-sdk'
 import networkFeeService from 'services/networkFee/NetworkFeeService'
 import walletService from 'services/wallet/WalletService'
 import { resolve } from '@avalabs/utils-sdk'
@@ -32,8 +28,11 @@ import { selectActiveNetwork, selectNetworks } from 'store/network'
 import Logger from 'utils/Logger'
 import { selectBridgeAppConfig } from 'store/bridge'
 import { selectActiveAccount } from 'store/account'
+import {
+  getAvalancheNetwork,
+  getBitcoinNetwork
+} from 'services/network/utils/providerUtils'
 
-// eslint-disable-next-line sonarjs/cognitive-complexity
 export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
   const activeNetwork = useSelector(selectActiveNetwork)
   const activeAccount = useSelector(selectActiveAccount)
@@ -49,17 +48,15 @@ export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
   const isDeveloperMode = activeNetwork.isTestnet
   const btcAddress = activeAccount?.addressBtc
   const allNetworks = useSelector(selectNetworks)
+  const avalancheNetwork = getAvalancheNetwork(allNetworks, isDeveloperMode)
   const avalancheTokens = useSelector(
-    selectTokensWithBalanceByNetwork(
-      isDeveloperMode
-        ? allNetworks[ChainId.AVALANCHE_TESTNET_ID]
-        : allNetworks[ChainId.AVALANCHE_MAINNET_ID]
-    )
+    selectTokensWithBalanceByNetwork(avalancheNetwork)
   )
 
-  const isBitcoinBridge =
-    currentBlockchain === Blockchain.BITCOIN ||
-    targetBlockchain === Blockchain.BITCOIN
+  const isBitcoinBridge = getIsBitcoinBridge(
+    currentBlockchain,
+    targetBlockchain
+  )
 
   const [btcBalance, setBtcBalance] = useState<AssetBalance>()
   const [btcBalanceAvalanche, setBtcBalanceAvalanche] = useState<AssetBalance>()
@@ -87,22 +84,13 @@ export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
 
   const amountInSatoshis = btcToSatoshi(amountInBtc)
   const btcAsset = bridgeConfig && getBtcAsset(bridgeConfig)
-  const assetsWithBalances = btcAsset
-    ? [
-        {
-          symbol: btcAsset.symbol,
-          asset: btcAsset,
-          balance: btcBalance?.balance
-        }
-      ]
-    : []
+  const assetsWithBalances = getBtcAssetWithBalances(btcAsset, btcBalance)
 
   useEffect(() => {
     async function loadRateFees(): Promise<void> {
       if (isBitcoinBridge) {
-        const rates = await networkFeeService.getNetworkFee(
-          activeNetwork.isTestnet ? BITCOIN_TEST_NETWORK : BITCOIN_NETWORK
-        )
+        const bitcoinNetwork = getBitcoinNetwork(activeNetwork.isTestnet)
+        const rates = await networkFeeService.getNetworkFee(bitcoinNetwork)
         setFeeRates(rates)
       }
     }
@@ -203,9 +191,7 @@ export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
     ) {
       return Promise.reject()
     }
-    const bitcoinNetwork = isDeveloperMode
-      ? BITCOIN_TEST_NETWORK
-      : BITCOIN_NETWORK
+    const bitcoinNetwork = getBitcoinNetwork(isDeveloperMode)
 
     const timestamp = Date.now()
     const symbol = currentAsset || ''
@@ -226,10 +212,7 @@ export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
     )
 
     if (error || !signedTx) {
-      const errMsg =
-        typeof error === 'object' && error !== null
-          ? error.toString()
-          : 'Unexpected error'
+      const errMsg = getErrorMessage(error)
       Logger.error('failed to transfer', errMsg)
       return Promise.reject(errMsg)
     }
@@ -282,4 +265,36 @@ export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
     maximum,
     transfer
   }
+}
+
+const getErrorMessage = (error: unknown): string => {
+  return typeof error === 'object' && error !== null
+    ? error.toString()
+    : 'Unexpected error'
+}
+
+const getIsBitcoinBridge = (
+  currentBlockchain: Blockchain,
+  targetBlockchain: Blockchain
+): boolean => {
+  return (
+    currentBlockchain === Blockchain.BITCOIN ||
+    targetBlockchain === Blockchain.BITCOIN
+  )
+}
+
+const getBtcAssetWithBalances = (
+  btcAsset?: BitcoinConfigAsset,
+  btcBalance?: AssetBalance
+): AssetBalance[] => {
+  if (!btcAsset) {
+    return []
+  }
+  return [
+    {
+      symbol: btcAsset.symbol,
+      asset: btcAsset,
+      balance: btcBalance?.balance
+    }
+  ]
 }

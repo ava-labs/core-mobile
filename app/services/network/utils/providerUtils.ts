@@ -68,9 +68,7 @@ export function getAvalancheNetwork(
     : networks[ChainId.AVALANCHE_MAINNET_ID]
 }
 
-export function getBitcoinNetwork(
-  isTest: boolean | undefined
-): Network | undefined {
+export function getBitcoinNetwork(isTest: boolean | undefined): Network {
   return isTest ? BITCOIN_TEST_NETWORK : BITCOIN_NETWORK
 }
 
