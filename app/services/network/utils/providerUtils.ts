@@ -24,7 +24,7 @@ export function getBitcoinProvider(
   )
 }
 
-export function getEvmProvider(network: Network) {
+export function getEvmProvider(network: Network): JsonRpcBatchInternal {
   if (network.vmName !== NetworkVMType.EVM)
     throw new Error(`Cannot get provider for network type: ${network.vmName}`)
 

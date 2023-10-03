@@ -11,6 +11,7 @@ export function isTxParams(
   return !!(params.to && params.from)
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export function parseDisplayValues(
   network: Network,
   txParams: TransactionParams,
