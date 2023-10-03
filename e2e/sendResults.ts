@@ -156,8 +156,8 @@ export async function isResultExistsInTestrail(runID: number, caseId: number) {
 // Updates the results for an existing test run or and empty test run
 async function generatePlatformResults(
   testCasesToSend: any,
-  resultsToSendToTestrail: any,
-  platform: any,
+  resultsToSendToTestrail: [],
+  platform: string,
   runId?: number
 ) {
   printRunId()
@@ -167,7 +167,11 @@ async function generatePlatformResults(
     )
     try {
       const existingTestCases = await getTestCasesFromRun(runId)
-      resultArray.concat(existingTestCases)
+      // Add already existing test cases to the test cases to send
+      existingTestCases.forEach((testCase: any) => {
+        testCasesToSend.case_ids.push(testCase.case_id)
+      })
+      testCasesToSend.concat(existingTestCases)
       // Takes the array of test cases and adds them to the test run
       await api.updateRun(Number(runId), testCasesToSend)
       console.log(
