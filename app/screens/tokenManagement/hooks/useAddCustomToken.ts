@@ -78,7 +78,7 @@ const useAddCustomToken = (callback: () => void): CustomToken => {
     const validationStatus = validateAddress(tokenAddress, tokens)
     switch (validationStatus) {
       case AddressValidationStatus.Invalid:
-        setErrorMessage('Invalid ERC-20 token address.')
+        setErrorMessage('Not a valid ERC-20 token address.')
         break
       case AddressValidationStatus.AlreadyExists:
       case AddressValidationStatus.Valid:
@@ -88,7 +88,7 @@ const useAddCustomToken = (callback: () => void): CustomToken => {
 
         fetchTokenData(network, tokenAddress)
           .then(setToken)
-          .catch(err => setErrorMessage(err.toString()))
+          .catch(_ => setErrorMessage('Not a valid ERC-20 token address.'))
         break
       case AddressValidationStatus.TooShort:
         // do not show error message for too short addresses
