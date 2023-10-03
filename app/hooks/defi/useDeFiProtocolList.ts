@@ -1,7 +1,7 @@
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { useRefreshableQuery } from 'hooks/query/useRefreshableQuery'
 import { useSelector } from 'react-redux'
-import { defiClient } from 'services/defi/client'
+import { apiClient } from 'services/defi/apiClient'
 import { refetchIntervals } from 'services/defi/constants'
 import { DeFiSimpleProtocolCamelCase } from 'services/defi/types'
 import { selectActiveAccount } from 'store/account'
@@ -14,7 +14,7 @@ export const useDeFiProtocolList = () => {
     refetchInterval: refetchIntervals.deFiProtocolList,
     enabled: !!addressC,
     queryKey: [ReactQueryKeys.DEFI_PROTOCOL_LIST, addressC],
-    queryFn: () => defiClient.getDeFiProtocolList({ query: { id: addressC } }),
+    queryFn: () => apiClient.getDeFiProtocolList({ query: { id: addressC } }),
     select: data => {
       return DeFiSimpleProtocolCamelCase.array().parse(data.body)
     }

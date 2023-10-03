@@ -1,13 +1,13 @@
 import { useQuery } from '@tanstack/react-query'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
-import { defiClient } from 'services/defi/client'
+import { apiClient } from 'services/defi/apiClient'
 import { DeFiChain, DeFiChainCamelCase } from 'services/defi/types'
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export const useDeFiChainList = () => {
   return useQuery({
     queryKey: [ReactQueryKeys.DEFI_CHAIN_LIST],
-    queryFn: () => defiClient.getSupportedChainList(),
+    queryFn: () => apiClient.getSupportedChainList(),
     select: data => {
       const convertedData = DeFiChainCamelCase.array().parse(data.body)
       return convertedData.reduce(

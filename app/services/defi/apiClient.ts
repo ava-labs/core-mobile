@@ -47,7 +47,7 @@ const contract = c.router(
   }
 )
 
-export const defiClient = initClient(contract, {
+export const apiClient = initClient(contract, {
   baseUrl: Config.PROXY_URL,
   baseHeaders: {
     'Content-Type': 'application/json'
