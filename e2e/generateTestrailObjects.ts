@@ -536,6 +536,7 @@ export const currentRunID = async (platform: any) => {
         `${platform} smoke test run ${timestamp}`,
         `This is a smoke test run on ${platform}`
       )
+      writeRunIdToTextFile(`${runID}`)
       return { runID, emptyTestRun: false }
     } else {
       return { runID: smokeTestRunExists, emptyTestRun: true }

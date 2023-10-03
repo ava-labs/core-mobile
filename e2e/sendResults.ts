@@ -127,6 +127,7 @@ export default async function sendResults() {
     }
     if (await isResultPresent('ios')) {
       const runID = (await currentRunID('ios')).runID
+      console.log('The run id is ' + runID)
       await generatePlatformResults(
         testCasesToSend,
         resultsToSendToTestrail,
