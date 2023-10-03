@@ -7,7 +7,8 @@ import {
   getTestCaseId,
   api,
   createNewTestSectionsAndCases,
-  getTestCasesFromRun
+  getTestCasesFromRun,
+  currentRunID
 } from './generateTestrailObjects'
 import getTestLogs, { isResultPresent } from './getResultsFromLogs'
 const fs = require('fs')
@@ -124,15 +125,15 @@ export default async function sendResults() {
         Number(runID)
       )
     }
-    // if (await isResultPresent('ios')) {
-    //   const runID = (await currentRunID('ios')).runID
-    //   await generatePlatformResults(
-    //     testCasesToSend,
-    //     resultsToSendToTestrail,
-    //     'ios',
-    //     runID
-    //   )
-    // }
+    if (await isResultPresent('ios')) {
+      const runID = (await currentRunID('ios')).runID
+      await generatePlatformResults(
+        testCasesToSend,
+        resultsToSendToTestrail,
+        'ios',
+        runID
+      )
+    }
   }
 }
 
@@ -150,8 +151,6 @@ export async function isResultExistsInTestrail(runID: number, caseId: number) {
     return false
   }
 }
-
-// TODO add a check to see if the test case already exists in the test run and don't overwrite it if it does by getting a list of test cases in the test run and comparing it to the test case id being sent and adding them back in with the next update
 
 // Updates the results for an existing test run or and empty test run
 async function generatePlatformResults(

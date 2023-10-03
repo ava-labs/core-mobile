@@ -22,3 +22,5 @@ envman add --key TESTS_TWO --value "$testCnt2"
 envman add --key TESTS_THREE --value "$testCnt3"
 envman add --key ALL_TESTS --value "$TESTS_TO_BE_RUN"
 
+
+

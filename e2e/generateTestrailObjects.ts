@@ -3,7 +3,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import TestRail from '@dlenroc/testrail'
-import getTestLogs, { testRunTimestamp } from './getResultsFromLogs'
+import getTestLogs, {
+  isSmokeTestRun,
+  testRunTimestamp
+} from './getResultsFromLogs'
 const fs = require('fs')
 
 const projectId = Number(process.env.TESTRAIL_PROJECT_ID)
@@ -15,28 +18,28 @@ export var api = new TestRail({
   password: password
 })
 
-// export async function createEmptyTestRun(
-//   testRunName: string,
-//   description: string
-// ) {
-//   const content = {
-//     name: testRunName,
-//     description: description,
-//     include_all: false
-//   }
+export async function createEmptyTestRun(
+  testRunName: string,
+  description: string
+) {
+  const content = {
+    name: testRunName,
+    description: description,
+    include_all: false
+  }
 
-//   try {
-//     const testRun = await api.addRun(projectId, content)
-//     console.log(
-//       `The test run "${testRunName}" with id ${testRun.id} has been successfully created in TestRail...`
-//     )
-//     const testRunId = testRun.id
-//     return testRunId
-//   } catch (error) {
-//     console.error('Test run was not created!!!')
-//     console.log(error)
-//   }
-// }
+  try {
+    const testRun = await api.addRun(projectId, content)
+    console.log(
+      `The test run "${testRunName}" with id ${testRun.id} has been successfully created in TestRail...`
+    )
+    const testRunId = testRun.id
+    return testRunId
+  } catch (error) {
+    console.error('Test run was not created!!!')
+    console.log(error)
+  }
+}
 
 export async function getRunIdFromName() {
   const todaysDate = new Date()
@@ -521,40 +524,40 @@ export const isExistingSmokeTestRun = async (platform: any) => {
   }
 }
 
-// export const currentRunID = async (platform: any) => {
-//   const smokeTestRunExists = await isExistingSmokeTestRun(platform)
+export const currentRunID = async (platform: any) => {
+  const smokeTestRunExists = await isExistingSmokeTestRun(platform)
 
-//   const timestamp = await testRunTimestamp(platform)
-//   // Checks if its a smoke test run
-//   if (await isSmokeTestRun(platform)) {
-//     // Checks the folder timestamp against the runs in testrail and if its not found, creates a new test run
-//     if (!smokeTestRunExists) {
-//       const runID = await createEmptyTestRun(
-//         `${platform} smoke test run ${timestamp}`,
-//         `This is a smoke test run on ${platform}`
-//       )
-//       return { runID, emptyTestRun: false }
-//     } else {
-//       return { runID: smokeTestRunExists, emptyTestRun: true }
-//     }
-//   } else {
-//     console.log(
-//       'This is a local run and regression test run logic has not been implemented yet!!!'
-//     )
-//     //   // This is for regression runs which run on a daily cadence
-//     //   var runID = await createNewTestRunBool(platform)
-//     //   if (runID) {
-//     //     return { runID: runID, emptyTestRun: true }
-//     //   } else {
-//     //     const newRunID = await createEmptyTestRun(
-//     //       `${platform} smoke test run`,
-//     //       `This is a smoke test run for ${platform}!`
-//     //     )
-//     //     return { runID: newRunID, emptyTestRun: false }
-//     //   }
-//     // }
-//   }
-// }
+  const timestamp = await testRunTimestamp(platform)
+  // Checks if its a smoke test run
+  if (await isSmokeTestRun(platform)) {
+    // Checks the folder timestamp against the runs in testrail and if its not found, creates a new test run
+    if (!smokeTestRunExists) {
+      const runID = await createEmptyTestRun(
+        `${platform} smoke test run ${timestamp}`,
+        `This is a smoke test run on ${platform}`
+      )
+      return { runID, emptyTestRun: false }
+    } else {
+      return { runID: smokeTestRunExists, emptyTestRun: true }
+    }
+  } else {
+    console.log(
+      'This is a local run and regression test run logic has not been implemented yet!!!'
+    )
+    //   // This is for regression runs which run on a daily cadence
+    //   var runID = await createNewTestRunBool(platform)
+    //   if (runID) {
+    //     return { runID: runID, emptyTestRun: true }
+    //   } else {
+    //     const newRunID = await createEmptyTestRun(
+    //       `${platform} smoke test run`,
+    //       `This is a smoke test run for ${platform}!`
+    //     )
+    //     return { runID: newRunID, emptyTestRun: false }
+    //   }
+    // }
+  }
+}
 
 export function getUniqueListBy(arr: any, key: string) {
   return [
@@ -592,34 +595,34 @@ export async function compareTestCaseArrays(
   return difference
 }
 
-// export async function createAndroidTestRun() {
-//   const timestamp = generateUtcTimestamp()
-//   const testRunName = 'Android smoke test run' + ' ' + timestamp
-//   const description = 'This is a smoke test run for Android!'
-//   const content = {
-//     name: testRunName,
-//     description: description,
-//     include_all: false
-//   }
-//   const newApi = new TestRail({
-//     host: 'https://avalabs.testrail.net',
-//     username: 'mobiledevs@avalabs.org',
-//     password: 'yE4G2zwYMHMxUOT6MhlH'
-//   })
+export async function createAndroidTestRun() {
+  const timestamp = generateUtcTimestamp()
+  const testRunName = 'Android smoke test run' + ' ' + timestamp
+  const description = 'This is a smoke test run for Android!'
+  const content = {
+    name: testRunName,
+    description: description,
+    include_all: false
+  }
+  const newApi = new TestRail({
+    host: 'https://avalabs.testrail.net',
+    username: 'mobiledevs@avalabs.org',
+    password: 'yE4G2zwYMHMxUOT6MhlH'
+  })
 
-//   try {
-//     const testRun = await newApi.addRun(projectId, content)
-//     console.log(
-//       `The test run "${testRunName}" with id ${testRun.id} has been successfully created in TestRail...`
-//     )
-//     const testRunId = testRun.id
-//     writeRunIdToTextFile(`${testRunId}`)
-//     return testRunId
-//   } catch (error) {
-//     console.error('Test run was not created!!!')
-//     console.log(error)
-//   }
-// }
+  try {
+    const testRun = await newApi.addRun(projectId, content)
+    console.log(
+      `The test run "${testRunName}" with id ${testRun.id} has been successfully created in TestRail...`
+    )
+    const testRunId = testRun.id
+    writeRunIdToTextFile(`${testRunId}`)
+    return testRunId
+  } catch (error) {
+    console.error('Test run was not created!!!')
+    console.log(error)
+  }
+}
 
 export async function writeRunIdToTextFile(runId: string) {
   await fs.writeFile('./e2e/testrailRunID.txt', runId, (err: any) => {
