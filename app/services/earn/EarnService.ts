@@ -283,12 +283,10 @@ class EarnService {
       transactions.push(...(response.transactions as PChainTransaction[]))
     } while (pageToken)
 
-    const stakes = transactions.filter(
+    return transactions.filter(
       transaction =>
         transaction.txType === PChainTransactionType.ADD_DELEGATOR_TX
     )
-
-    return stakes
   }
 
   getTransformedStakesForAllAccounts = async ({
@@ -328,7 +326,7 @@ class EarnService {
       )
 
       const now = new Date()
-      const transformedTransactions = (firstTransactions ?? [])
+      return (firstTransactions ?? [])
         .concat(secondTransactions ?? [])
         .map(transaction => {
           return {
@@ -339,7 +337,6 @@ class EarnService {
             isOnGoing: isOnGoing(transaction, now)
           }
         })
-      return transformedTransactions
     } catch (error) {
       Logger.error('getTransformedStakesForAllAccounts failed: ', error)
     }

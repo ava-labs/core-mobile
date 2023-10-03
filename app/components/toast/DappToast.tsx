@@ -18,21 +18,20 @@ interface Props {
   type: DappToastTypes
 }
 
-const dismissToast = (toastId?: string) => {
+const dismissToast = (toastId?: string): void => {
   toastId ? global?.toast?.hide(toastId) : global?.toast.hideAll()
 }
 
 const DappToast: FC<Props> = ({ toastId, message, type, dappName }) => {
   const theme = useApplicationContext().theme
 
-  const renderContent = () => {
-    switch (type) {
-      case DappToastTypes.ERROR:
-        return <Error dappName={dappName} message={message} />
+  const renderContent = (): JSX.Element | undefined => {
+    if (type === DappToastTypes.ERROR) {
+      return <Error dappName={dappName} message={message} />
     }
   }
 
-  const hideToast = () => dismissToast(toastId)
+  const hideToast = (): void => dismissToast(toastId)
 
   const style = {
     backgroundColor: theme.neutral850,
@@ -60,7 +59,7 @@ const Error = ({
 }: {
   dappName: string
   message: string
-}) => {
+}): JSX.Element => {
   const theme = useApplicationContext().theme
 
   return (

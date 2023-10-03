@@ -78,7 +78,7 @@ export const useExplainTransactionShared = (args: Args) => {
       setTransaction(currentTransaction => {
         if (currentTransaction === null) return null
 
-        const updatedTransaction = {
+        return {
           ...currentTransaction,
           txParams: {
             ...currentTransaction.txParams,
@@ -86,8 +86,6 @@ export const useExplainTransactionShared = (args: Args) => {
             gasPrice: feeDisplayValues.gasPrice.toString(16) // test this
           }
         }
-
-        return updatedTransaction
       })
     },
     [tokenPrice, network?.networkToken?.decimals]
@@ -156,6 +154,7 @@ export const useExplainTransactionShared = (args: Args) => {
   /******************************************************************************
    * Load transaction information
    *****************************************************************************/
+  // eslint-disable-next-line sonarjs/cognitive-complexity
   useEffect(() => {
     // TODO: determine why loadTx render multiple times on Token Spend Approval
     async function loadTx() {

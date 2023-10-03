@@ -22,13 +22,7 @@ import ReAnimated, {
   withTiming
 } from 'react-native-reanimated'
 import Logger from 'utils/Logger'
-import {
-  MnemonicLoaded,
-  NothingToLoad,
-  PrivateKeyLoaded,
-  usePinOrBiometryLogin,
-  WalletLoadingResults
-} from './PinOrBiometryLoginViewModel'
+import { usePinOrBiometryLogin } from './PinOrBiometryLoginViewModel'
 
 const keymap: Map<string, PinKeys> = new Map([
   ['1', PinKeys.Key1],
@@ -112,16 +106,6 @@ export default function PinOrBiometryLogin({
     // check if if the login is biometric
     InteractionManager.runAfterInteractions(() => {
       sub = promptForWalletLoadingIfExists().subscribe({
-        next: (value: WalletLoadingResults) => {
-          if (value instanceof MnemonicLoaded) {
-            // do nothing. We only rely on `setMnemonic` being called
-            // and the useEffect being triggered.
-          } else if (value instanceof PrivateKeyLoaded) {
-            // props.onEnterSingletonWallet(value.privateKey)
-          } else if (value instanceof NothingToLoad) {
-            //do nothing
-          }
-        },
         error: err => Logger.error('failed to check biometric', err)
       })
     })
@@ -154,7 +138,7 @@ export default function PinOrBiometryLogin({
     return dots
   }
 
-  const keyboard = () => {
+  const keyboard = (): Element[] => {
     const keys: Element[] = []
     '123456789 0<'.split('').forEach((value, key) => {
       keys.push(

@@ -11,7 +11,9 @@ export enum FeatureGates {
   SEND_NFT_ANDROID = 'send-nft-android-feature',
   BUY_COINBASE_PAY = 'buy-feature-coinbase',
   USE_COINGECKO_PRO = 'use-coingecko-pro',
-  DEFI = 'defi-feature'
+  DEFI = 'defi-feature',
+  LEFT_FAB = 'left-fab-feature',
+  DARK_MODE = 'dark-mode-feature'
 }
 
 export enum FeatureVars {

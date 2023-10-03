@@ -78,13 +78,11 @@ export async function swapTokensForAvax(
       (Number(props.tokenPrice) * Number(amountAvaxValue)).toFixed(2) ?? ''
   }
 
-  const result = {
+  return {
     path: [tokenSwapped, avaxToken],
     contractType: ContractCall.SWAP_EXACT_TOKENS_FOR_TOKENS,
     ...parseDisplayValues(network, request, props)
   }
-
-  return result
 }
 
 export const SwapExactTokensForAvaxParser: ContractParser = [

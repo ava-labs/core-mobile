@@ -34,8 +34,6 @@ export function useSingularAssetBalanceEVM(
   const activeAccount = useSelector(selectActiveAccount)
   const ethereumProvider = useEthereumProvider()
 
-  // const refetchInterval = useInterval(BALANCE_REFRESH_INTERVAL);
-
   // TODO update this when adding support for /convert
   const showDeprecated = false
 
@@ -57,7 +55,7 @@ export function useSingularAssetBalanceEVM(
       return
     }
 
-    async function getBalances() {
+    async function getBalances(): Promise<void> {
       if (!asset || !activeAccount || !ethereumProvider) return
 
       const balance = await getEthereumBalance(
@@ -69,24 +67,15 @@ export function useSingularAssetBalanceEVM(
 
       setEthBalance(balance)
     }
-
     getBalances()
-  }, [
-    activeAccount,
-    asset,
-    ethereumProvider,
-    source,
-    showDeprecated
-    // // refetchInterval is here to ensure the balance is updated periodically
-    // refetchInterval,
-  ])
+  }, [activeAccount, asset, ethereumProvider, source, showDeprecated])
 
-  const balance =
-    source === Blockchain.AVALANCHE
-      ? avalancheBalance
-      : source === Blockchain.ETHEREUM
-      ? ethBalance
-      : undefined
+  let balance: Big | undefined
+  if (source === Blockchain.AVALANCHE) {
+    balance = avalancheBalance
+  } else if (source === Blockchain.ETHEREUM) {
+    balance = ethBalance
+  }
 
   return asset && ({ symbol: asset.symbol, asset, balance } as AssetBalance)
 }

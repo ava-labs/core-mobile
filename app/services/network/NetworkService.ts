@@ -24,13 +24,11 @@ class NetworkService {
 
     delete erc20Networks[ChainId.AVALANCHE_LOCAL_ID]
 
-    const networks = {
+    return {
       ...erc20Networks,
       [ChainId.BITCOIN]: BITCOIN_NETWORK,
       [ChainId.BITCOIN_TESTNET]: BITCOIN_TEST_NETWORK
     }
-
-    return networks
   }
 
   getProviderForNetwork(

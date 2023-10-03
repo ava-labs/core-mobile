@@ -33,6 +33,7 @@ import Logger from 'utils/Logger'
 import { selectBridgeAppConfig } from 'store/bridge'
 import { selectActiveAccount } from 'store/account'
 
+// eslint-disable-next-line sonarjs/cognitive-complexity
 export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
   const activeNetwork = useSelector(selectActiveNetwork)
   const activeAccount = useSelector(selectActiveAccount)
@@ -97,7 +98,7 @@ export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
     : []
 
   useEffect(() => {
-    async function loadRateFees() {
+    async function loadRateFees(): Promise<void> {
       if (isBitcoinBridge) {
         const rates = await networkFeeService.getNetworkFee(
           activeNetwork.isTestnet ? BITCOIN_TEST_NETWORK : BITCOIN_NETWORK
@@ -110,7 +111,7 @@ export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
   }, [activeNetwork.isTestnet, isBitcoinBridge])
 
   useEffect(() => {
-    async function loadBalances() {
+    async function loadBalances(): Promise<void> {
       if (isBitcoinBridge && btcAsset && btcAddress) {
         const token = await getBtcBalance(
           !activeNetwork.isTestnet,
