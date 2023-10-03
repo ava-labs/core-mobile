@@ -6,13 +6,16 @@ import { useCallback } from 'react'
 import { NotationTypes } from 'consts/FormatNumberTypes'
 import { useExchangeRates } from './useExchangeRates'
 
-export const useExchangedAmount = () => {
+export const useExchangedAmount = (): ((
+  amount: number,
+  notation?: NotationTypes
+) => string) => {
   const {
     appHook: { currencyFormatter }
   } = useApplicationContext()
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { data } = useExchangeRates()
-  const exchangeRate = data?.usd?.[selectedCurrency.toLowerCase()]
+  const exchangeRate = data?.body.usd?.[selectedCurrency.toLowerCase()]
 
   const getAmount = useCallback(
     (amount: number, notation?: NotationTypes) => {

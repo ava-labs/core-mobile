@@ -1,5 +1,5 @@
 import { useDeFiProtocolList } from 'hooks/defi/useDeFiProtocolList'
-import React from 'react'
+import React, { FC } from 'react'
 import { View } from 'react-native'
 import Card from 'components/Card'
 import { DeFiSimpleProtocol } from 'services/defi/types'
@@ -16,7 +16,6 @@ import { useNavigation } from '@react-navigation/native'
 import { openURL } from 'utils/openURL'
 import BigList from 'components/BigList'
 import { useExchangedAmount } from 'hooks/defi/useExchangedAmount'
-import DeFiService from 'services/defi/DeFiService'
 import { ErrorState } from './components/ErrorState'
 import { ZeroState } from './components/ZeroState'
 import { ProtocolLogo } from './components/ProtocolLogo'
@@ -26,7 +25,7 @@ type ScreenProps = PortfolioScreenProps<
   typeof AppNavigation.Portfolio.Portfolio
 >['navigation']
 
-export const DeFiProtocolList = () => {
+export const DeFiProtocolList: FC = () => {
   const { navigate } = useNavigation<ScreenProps>()
 
   const { theme } = useApplicationContext()
@@ -43,23 +42,25 @@ export const DeFiProtocolList = () => {
 
   const memoizedData = React.useMemo(() => {
     if (!data) return []
-    return DeFiService.sortSimpleProtocols(data)
+    return data.sort(
+      ({ netUsdValue: valueA }, { netUsdValue: valueB }) => valueB - valueA
+    )
   }, [data])
 
   const getAmount = useExchangedAmount()
 
-  const handleGoToDetail = (protocolId: string) => {
+  const handleGoToDetail = (protocolId: string): void => {
     navigate({
       name: AppNavigation.Wallet.DeFiProtocolDetails,
       params: { protocolId }
     })
   }
 
-  const goToProtocolPage = async (siteUrl?: string) => {
+  const goToProtocolPage = (siteUrl?: string): void => {
     openURL(siteUrl)
   }
 
-  const handleExploreEcosystem = () => {
+  const handleExploreEcosystem = (): void => {
     openURL('https://core.app/discover/')
   }
 
@@ -68,12 +69,16 @@ export const DeFiProtocolList = () => {
     return <ErrorState />
   }
 
-  const renderItem = ({ item }: { item: DeFiSimpleProtocol }) => {
+  const renderItem = ({
+    item
+  }: {
+    item: DeFiSimpleProtocol
+  }): React.ReactElement => {
     const netUsdValue = getAmount(item.netUsdValue, 'compact')
     const networkLogo = chainList?.[item.chain]?.logoUrl
     const protocolId = item.id
 
-    const renderLogo = () => {
+    const renderLogo = (): React.ReactElement => {
       return (
         <View style={{ marginRight: 16 }}>
           <ProtocolLogo uri={item.logoUrl} />
