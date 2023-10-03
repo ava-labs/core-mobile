@@ -151,6 +151,8 @@ export async function isResultExistsInTestrail(runID: number, caseId: number) {
   }
 }
 
+// TODO add a check to see if the test case already exists in the test run and don't overwrite it if it does by getting a list of test cases in the test run and comparing it to the test case id being sent and adding them back in with the next update
+
 // Updates the results for an existing test run or and empty test run
 async function generatePlatformResults(
   testCasesToSend: any,
@@ -164,6 +166,8 @@ async function generatePlatformResults(
       result => result.platform === platform
     )
     try {
+      const existingTestCases = await getTestCasesFromRun(runId)
+      resultArray.concat(existingTestCases)
       // Takes the array of test cases and adds them to the test run
       await api.updateRun(Number(runId), testCasesToSend)
       console.log(

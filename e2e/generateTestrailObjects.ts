@@ -564,14 +564,20 @@ export function getUniqueListBy(arr: any, key: string) {
   ]
 }
 
-export async function getTestCasesFromRun(runId: number) {
+export async function getTestCasesFromRun(runId: number): Promise<object[]> {
   const casesObject = await api.getTests(runId)
   const titleArray = []
   for (const testCase of casesObject) {
     const testCaseName = testCase.title
     const testResult = testCase.status_id
-    titleArray.push({ title: testCaseName, statusId: testResult })
+    const caseId = testCase.case_id
+    titleArray.push({
+      case_id: caseId,
+      title: testCaseName,
+      status_id: testResult
+    })
   }
+  console.log(titleArray)
   return titleArray
 }
 
