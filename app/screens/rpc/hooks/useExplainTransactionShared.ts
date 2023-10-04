@@ -155,6 +155,7 @@ export const useExplainTransactionShared = (args: Args) => {
   /******************************************************************************
    * Load transaction information
    *****************************************************************************/
+  // eslint-disable-next-line sonarjs/cognitive-complexity
   useEffect(() => {
     // TODO: determine why loadTx render multiple times on Token Spend Approval
     async function loadTx(): Promise<void> {

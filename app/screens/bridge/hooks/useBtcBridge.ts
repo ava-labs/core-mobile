@@ -33,6 +33,7 @@ import {
   getBitcoinNetwork
 } from 'services/network/utils/providerUtils'
 
+// eslint-disable-next-line sonarjs/cognitive-complexity
 export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
   const activeNetwork = useSelector(selectActiveNetwork)
   const activeAccount = useSelector(selectActiveAccount)
