@@ -1,7 +1,7 @@
 import {
-  AesGcmEncryptTransform,
-  AesGcmStoreType
-} from 'store/transforms/AesGcmEncryptTransform'
+  EncryptThenMacTransform,
+  EncryptThenMacStoreType
+} from 'store/transforms/EncryptThenMacTransform'
 import { AppState, WalletState } from 'store/app'
 import { BalanceState, QueryStatus } from 'store/balance'
 import { ChannelId } from 'services/notifications/channels'
@@ -117,9 +117,9 @@ const initialState = {
 const secretKey =
   '037f948ec4fc19c751a8508744626399768efc81d07e2b9dd5ad298196328efa'
 
-describe('AesGcmEncryptTransform functions', () => {
+describe('EncryptThenMacTransform functions', () => {
   it('should decode to same encoded object', () => {
-    const transform = AesGcmEncryptTransform(secretKey)
+    const transform = EncryptThenMacTransform(secretKey)
     const encoded = transform.in(initialState, 'app', initialState)
     expect(encoded).not.toEqual(initialState)
 
@@ -138,9 +138,9 @@ describe('AesGcmEncryptTransform functions', () => {
     })
     const stateEncrypted = reduxPersistTransformEncrypt.in(state, 'test', state)
 
-    const transform = AesGcmEncryptTransform(secretKey)
+    const transform = EncryptThenMacTransform(secretKey)
     const decrypted = transform.out(
-      stateEncrypted as unknown as AesGcmStoreType,
+      stateEncrypted as unknown as EncryptThenMacStoreType,
       'app',
       {} as unknown as RawRootState
     )
@@ -149,9 +149,9 @@ describe('AesGcmEncryptTransform functions', () => {
 
   it('should return undefined on decrypting if state is object but not AesGcmStoreType', async () => {
     const state = { test: 'test' }
-    const transform = AesGcmEncryptTransform(secretKey)
+    const transform = EncryptThenMacTransform(secretKey)
     const result = transform.out(
-      state as unknown as AesGcmStoreType,
+      state as unknown as EncryptThenMacStoreType,
       'app',
       {} as unknown as RawRootState
     )
@@ -159,7 +159,7 @@ describe('AesGcmEncryptTransform functions', () => {
   })
 
   it('should return undefined on decrypting if state is undefined', async () => {
-    const transform = AesGcmEncryptTransform(secretKey)
+    const transform = EncryptThenMacTransform(secretKey)
     const result = transform.out(
       undefined,
       'app',
@@ -169,7 +169,7 @@ describe('AesGcmEncryptTransform functions', () => {
   })
 
   it('should return undefined on encrypting if state is undefined', async () => {
-    const transform = AesGcmEncryptTransform(secretKey)
+    const transform = EncryptThenMacTransform(secretKey)
     const result = transform.in(undefined, 'app', {} as unknown as RawRootState)
     expect(result).toBeUndefined()
   })

@@ -6,7 +6,7 @@ import { bridgeReducer as bridge } from 'store/bridge'
 import { nftsApi } from 'store/nft/api'
 import { migrations } from 'store/migrations'
 import DevDebuggingConfig from 'utils/debugging/DevDebuggingConfig'
-import { AesGcmEncryptTransform } from 'store/transforms/AesGcmEncryptTransform'
+import { EncryptThenMacTransform } from 'store/transforms/EncryptThenMacTransform'
 import { networkReducer as network } from './network'
 import { balanceReducer as balance } from './balance'
 import { appReducer as app, onLogOut, onRehydrationComplete } from './app'
@@ -101,7 +101,7 @@ export function configureEncryptedStore(secretKey: string) {
       AppBlacklistTransform,
       BridgeBlacklistTransform,
       WatchlistBlacklistTransform,
-      AesGcmEncryptTransform(secretKey) // last!
+      EncryptThenMacTransform(secretKey) // last!
     ],
     migrate: createMigrate(migrations, { debug: __DEV__ }),
     version: VERSION
