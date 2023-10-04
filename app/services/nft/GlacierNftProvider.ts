@@ -95,18 +95,22 @@ export class GlacierNftProvider implements NftProvider {
       resp => resp.status !== 'fulfilled' || !!resp.value?.nextPageToken
     )
 
+    const erc721NextPageToken =
+      responses[0].status === 'fulfilled'
+        ? responses[0].value?.nextPageToken
+        : pageToken?.erc721 // reload the same page next time
+
+    const erc1155NextPageToken =
+      responses[1].status === 'fulfilled'
+        ? responses[1].value?.nextPageToken
+        : pageToken?.erc1155 // reload the same page next time
+
     return {
       nfts: fullNftData,
       nextPageToken: hasMore
         ? {
-            erc721:
-              responses[0].status === 'fulfilled'
-                ? responses[0].value?.nextPageToken
-                : pageToken?.erc721, // reload the same page next time
-            erc1155:
-              responses[1].status === 'fulfilled'
-                ? responses[1].value?.nextPageToken
-                : pageToken?.erc1155
+            erc721: erc721NextPageToken,
+            erc1155: erc1155NextPageToken
           }
         : ''
     }

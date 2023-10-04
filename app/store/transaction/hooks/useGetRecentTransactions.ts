@@ -58,7 +58,7 @@ export const useGetRecentTransactions = () => {
   useFocusEffect(
     // @ts-ignore: unsubscribe from redux addListener has incorrect type
     useCallback(() => {
-      const unsubscribe = dispatch(
+      return dispatch(
         addAppListener({
           matcher: REFETCH_EVENTS,
           effect: () => {
@@ -66,8 +66,6 @@ export const useGetRecentTransactions = () => {
           }
         })
       )
-
-      return unsubscribe
     }, [dispatch, refetch])
   )
 

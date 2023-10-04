@@ -12,63 +12,63 @@ function isEmpty(obj) {
 fs.readFile('../coinlistRaw.json', 'utf8', (err, dataRaw) => {
   if (err) {
     console.log(`Error reading file from disk: ${err}`)
-  } else {
-    const data = JSON.parse(dataRaw)
+    return
+  }
 
-    const coinByAddress = {}
-    data.forEach(item => {
-      if (!isEmpty(item.platforms)) {
-        for (const platform in item.platforms) {
-          if (
-            item.platforms[platform] &&
-            !coinByAddress[item.platforms[platform]]
-          ) {
-            coinByAddress[item.platforms[platform]] = {
-              id: item.id,
-              symbol: item.symbol,
-              name: item.name
-            }
+  const data = JSON.parse(dataRaw)
+  const coinByAddress = {}
+  data.forEach(item => {
+    if (!isEmpty(item.platforms)) {
+      for (const platform in item.platforms) {
+        if (
+          item.platforms[platform] &&
+          !coinByAddress[item.platforms[platform]]
+        ) {
+          coinByAddress[item.platforms[platform]] = {
+            id: item.id,
+            symbol: item.symbol,
+            name: item.name
           }
         }
       }
-    })
+    }
+  })
 
-    fs.writeFile(
-      assetsPath + 'coinByAddress.json',
-      JSON.stringify(coinByAddress),
-      'utf8',
-      // eslint-disable-next-line no-shadow
-      err => {
-        if (err) {
-          console.log(`Error writing file: ${err}`)
-        } else {
-          console.log(`File is written successfully!`)
-        }
+  fs.writeFile(
+    assetsPath + 'coinByAddress.json',
+    JSON.stringify(coinByAddress),
+    'utf8',
+    // eslint-disable-next-line no-shadow
+    err => {
+      if (err) {
+        console.log(`Error writing file: ${err}`)
+      } else {
+        console.log(`File is written successfully!`)
       }
-    )
+    }
+  )
 
-    // const coinBySymbol = {}
-    // data.forEach(item => {
-    //   if (!coinBySymbol[item.symbol]) {
-    //     coinBySymbol[item.symbol] = {
-    //       id: item.id,
-    //       symbol: item.symbol,
-    //       name: item.name
-    //     }
-    //   }
-    // })
+  // const coinBySymbol = {}
+  // data.forEach(item => {
+  //   if (!coinBySymbol[item.symbol]) {
+  //     coinBySymbol[item.symbol] = {
+  //       id: item.id,
+  //       symbol: item.symbol,
+  //       name: item.name
+  //     }
+  //   }
+  // })
 
-    // fs.writeFile(
-    //   assetsPath + 'coinBySymbol.json',
-    //   JSON.stringify(coinBySymbol),
-    //   'utf8',
-    //   err => {
-    //     if (err) {
-    //       console.log(`Error writing file: ${err}`)
-    //     } else {
-    //       console.log(`File is written successfully!`)
-    //     }
-    //   }
-    // )
-  }
+  // fs.writeFile(
+  //   assetsPath + 'coinBySymbol.json',
+  //   JSON.stringify(coinBySymbol),
+  //   'utf8',
+  //   err => {
+  //     if (err) {
+  //       console.log(`Error writing file: ${err}`)
+  //     } else {
+  //       console.log(`File is written successfully!`)
+  //     }
+  //   }
+  // )
 })

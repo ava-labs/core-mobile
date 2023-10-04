@@ -17,7 +17,7 @@ const ReceiveStack = createStackNavigator<ReceiveStackParamList>()
 const ReceiveScreenStack = () => {
   const { theme } = useApplicationContext()
 
-  const receiveNavigator = (
+  return (
     <ReceiveStack.Navigator
       screenOptions={{
         presentation: 'card',
@@ -39,8 +39,6 @@ const ReceiveScreenStack = () => {
       />
     </ReceiveStack.Navigator>
   )
-
-  return receiveNavigator
 }
 
 const ReceiveTokenScreen = () => <ReceiveToken embedded={false} />

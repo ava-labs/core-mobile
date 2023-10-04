@@ -25,7 +25,7 @@ export function useTokenForBridgeTransaction(
 
   const tokens = useSelector(selectNetworkContractTokens(chainId))
 
-  const tokenForBridgeTransaction = useMemo(() => {
+  return useMemo(() => {
     const token = tokens.find(t => t.symbol === bridgeTransaction?.symbol)
 
     if (token) return token
@@ -36,6 +36,4 @@ export function useTokenForBridgeTransaction(
 
     return undefined
   }, [tokens, bridgeTransaction])
-
-  return tokenForBridgeTransaction
 }

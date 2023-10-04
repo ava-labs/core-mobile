@@ -87,7 +87,8 @@ export function formatLargeCurrency(currencyNum: string, digits = 2) {
   }
 
   const newAmount = formatLargeNumber(amount.replace(/,/g, ''), digits)
-  return `${negative || ''}${symbol || ''}${newAmount}${code ? ` ${code}` : ''}`
+  const codeString = code ? ` ${code}` : ''
+  return `${negative || ''}${symbol || ''}${newAmount}${codeString}`
 }
 
 export const formatTimer = (time: number) =>

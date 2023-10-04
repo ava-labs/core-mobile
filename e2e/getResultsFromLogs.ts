@@ -4,12 +4,12 @@ require('ts-node').register()
 const fsPromises = require('fs').promises
 const path = require('path')
 
-export const getDirectories = async (source: any) =>
+export const getDirectories = async (source: any): Promise<any[]> =>
   (await readdir(source, { withFileTypes: true }))
     .filter((dirent: { isDirectory: () => any }) => dirent.isDirectory())
     .map((dirent: { name: any }) => dirent.name)
 
-async function readdirChronoSorted(dirpath: any, order: any) {
+async function readdirChronoSorted(dirpath: any, order: any): Promise<any[]> {
   order = order || 1
   const files = await fsPromises.readdir(dirpath)
   const stats = await Promise.all(
@@ -24,62 +24,62 @@ async function readdirChronoSorted(dirpath: any, order: any) {
     .map(stat => stat.filename)
 }
 
-export default async function getTestLogs() {
-  const folders: any = await getDirectories('./e2e/artifacts/')
-  const testResults: any = []
+export default async function getTestLogs(): Promise<
+  {
+    sectionName?: string
+    testCase?: string
+    subsection?: string
+    platform?: string
+  }[]
+> {
+  const folders = await getDirectories('./e2e/artifacts/')
+  const testResults = []
 
   for (let i = 0; i < folders.length; i++) {
     const nonSplitFolders = await getDirectories(
       `./e2e/artifacts/${folders[i]}`
     )
-    const splitFolder: any = nonSplitFolders[0]?.split('.')
-    const platform = splitFolder
-      ? splitFolder[0]
-      : console.log('Why is there not splitfolder? ' + nonSplitFolders)
-
-    if (splitFolder) {
-      const resultFolders: any = await readdirChronoSorted(
-        `./e2e/artifacts/${folders[i]}`,
-        -1
-      )
-
-      const parsedResultFolder = resultFolders[resultFolders.length - 1]
-      const attachmentFolders = await getDirectories(
-        `./e2e/artifacts/${folders[i]}/${parsedResultFolder}`
-      )
-      for (const result of attachmentFolders) {
-        const splitTestFolder = await splitTestResult(result)
-        if (result?.includes('✓')) {
-          const testResult = 'passed'
-          if (splitTestFolder) {
-            Object.assign(splitTestFolder, {
-              testResult: testResult,
-              platform: platform
-            })
-            testResults.push(splitTestFolder)
-          }
-        } else if (result?.includes('✗')) {
-          const testResult = 'failed'
-          if (splitTestFolder) {
-            Object.assign(splitTestFolder, {
-              testResult: testResult,
-              platform: platform,
-              failedScreenshot: `${parsedResultFolder}/${result}/testDone.png`
-            })
-            testResults.push(splitTestFolder)
-          }
-        }
-      }
-    } else {
+    const splitFolder = nonSplitFolders[0]?.split('.')
+    if (!splitFolder) {
+      console.log('Why is there not splitfolder? ' + nonSplitFolders)
       console.log(
         'There may not be a folder for android or ios yet. Dont worry about this!'
       )
+      return []
+    }
+    const platform = splitFolder[0]
+    const resultFolders = await readdirChronoSorted(
+      `./e2e/artifacts/${folders[i]}`,
+      -1
+    )
+
+    const parsedResultFolder = resultFolders[resultFolders.length - 1]
+    const attachmentFolders = await getDirectories(
+      `./e2e/artifacts/${folders[i]}/${parsedResultFolder}`
+    )
+    for (const result of attachmentFolders) {
+      const splitTestFolder = await splitTestResult(result)
+      const testResult = result?.includes('✓') ? 'passed' : 'failed'
+      const failedScreenshot =
+        testResult === 'failed'
+          ? `${parsedResultFolder}/${result}/testDone.png`
+          : undefined
+      if (splitTestFolder) {
+        Object.assign(splitTestFolder, {
+          testResult: testResult,
+          platform: platform,
+          failedScreenshot
+        })
+        testResults.push(splitTestFolder)
+      }
     }
   }
   return testResults
 }
 
-export const getScreenshotOnFailure = async (imagePath: string) => {
+export const getScreenshotOnFailure = async (
+  imagePath: string
+): Promise<string | undefined> => {
   const failedTestFolders = await getDirectories(imagePath)
   const testFolder = failedTestFolders[0]
   const firstFailedTestFolder = await getDirectories(
@@ -93,9 +93,16 @@ export const getScreenshotOnFailure = async (imagePath: string) => {
   }
 }
 
-async function splitTestResult(testItem: string | undefined) {
+async function splitTestResult(testItem: string | undefined): Promise<
+  | {
+      sectionName: string | undefined
+      testCase: string | undefined
+    }
+  | undefined
+> {
   const shouldTxt = 'should'
-  const regEscape = (v: string) => v.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&')
+  const regEscape = (v: string): string =>
+    v.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&')
   const splitTestArrayItem = testItem?.split(
     new RegExp(regEscape(shouldTxt), 'ig')
   )
@@ -117,17 +124,18 @@ async function splitTestResult(testItem: string | undefined) {
   }
 }
 
-function removeTestSectionExtraChars(testSection: string | undefined) {
+function removeTestSectionExtraChars(
+  testSection: string | undefined
+): string | undefined {
   if (testSection) {
     const splitTestSection = testSection.split(' ')
-    const rejoinedString = splitTestSection.slice(1).join(' ')
-    return rejoinedString
+    return splitTestSection.slice(1).join(' ')
   } else {
     console.log('Test section is undefined, something went wrong!!!')
   }
 }
 
-export async function isResultPresent(platform: any) {
+export async function isResultPresent(platform: any): Promise<boolean> {
   try {
     const resultsFolder = await getDirectories(`./e2e/artifacts/${platform}`)
     if (resultsFolder.length > 0) {
@@ -146,7 +154,7 @@ export async function isResultPresent(platform: any) {
   }
 }
 
-export async function isSmokeTestRun(platform: any) {
+export async function isSmokeTestRun(platform: any): Promise<boolean> {
   try {
     const parsedTestRunName = await parseTestRun(platform)
     if (parsedTestRunName.includes('smoke')) {
@@ -164,13 +172,12 @@ export async function isSmokeTestRun(platform: any) {
   }
 }
 
-export const testRunTimestamp = async (platform: any) => {
+export const testRunTimestamp = async (platform: any): Promise<any> => {
   const testRunFolder = await parseTestRun(platform)
   return testRunFolder[testRunFolder.length - 1]
 }
 
-export async function parseTestRun(platform: any) {
+export async function parseTestRun(platform: any): Promise<any> {
   const folders: any = await getDirectories(`./e2e/artifacts/${platform}`)
-  const parsedTestRunName = folders[folders.length - 1].split('.')
-  return parsedTestRunName
+  return folders[folders.length - 1].split('.')
 }

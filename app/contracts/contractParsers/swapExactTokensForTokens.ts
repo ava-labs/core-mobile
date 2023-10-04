@@ -101,13 +101,11 @@ export async function swapTokensForTokens(
     })
   )
 
-  const result = {
+  return {
     path,
     contractType: ContractCall.SWAP_EXACT_TOKENS_FOR_TOKENS,
     ...parseDisplayValues(network, request, props)
   }
-
-  return result
 }
 
 export const SwapExactTokensForTokenParser: ContractParser = [
