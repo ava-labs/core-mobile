@@ -5,7 +5,12 @@ import { PinKeys } from 'screens/onboarding/PinKey'
 import { asyncScheduler, Observable, of, timer } from 'rxjs'
 import { catchError, concatMap, map } from 'rxjs/operators'
 import { Alert, Animated } from 'react-native'
-import { decrypt, NoSaltError } from 'utils/EncryptionHelper'
+import {
+  decrypt,
+  encrypt,
+  InvalidVersionError,
+  NoSaltError
+} from 'utils/EncryptionHelper'
 import { useJigglyPinIndicator } from 'utils/JigglyPinIndicatorHook'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { useDispatch, useSelector } from 'react-redux'
@@ -35,7 +40,7 @@ const keymap: Map<PinKeys, string> = new Map([
   [PinKeys.Key0, '0']
 ])
 
-function getTimoutForAttempt(attempt: number) {
+function getTimoutForAttempt(attempt: number): 0 | 60 | 300 | 900 | 3600 {
   if (attempt === 6) {
     return 60 // 1 minute
   } else if (attempt === 7) {
@@ -157,7 +162,7 @@ export function usePinOrBiometryLogin(): {
     time
   ])
 
-  const alertBadDta = useCallback(
+  const alertBadData = useCallback(
     () =>
       Alert.alert(
         'Data is not encrypted correctly',
@@ -174,27 +179,43 @@ export function usePinOrBiometryLogin(): {
     []
   )
 
-  function resetConfirmPinProcess() {
+  function resetConfirmPinProcess(): void {
     setEnteredPin('')
     setPinEntered(false)
     setMnemonic(undefined)
   }
 
   useEffect(() => {
-    async function checkPinEntered() {
+    async function checkPinEntered(): Promise<void> {
       if (pinEntered) {
         try {
           const credentials =
             (await BiometricsSDK.loadWalletWithPin()) as UserCredentials
-          const data = await decrypt(credentials.password, enteredPin)
+
+          const { data, version } = await decrypt(
+            credentials.password,
+            enteredPin
+          )
+
+          if (version === 1) {
+            // data was encrypted using version 1 config
+            // we need to re-encrypt it using version 2 config
+            // and store it again
+            const encryptedData = await encrypt(data, enteredPin)
+            await BiometricsSDK.storeWalletWithPin(encryptedData, false)
+          }
+
           setMnemonic(data)
           dispatch(resetLoginAttempt())
         } catch (err) {
-          if (
+          Logger.error('Error decrypting data', err)
+
+          const isInvalidPin =
             err instanceof Error &&
             (err?.message?.includes('BAD_DECRYPT') || // Android
               err?.message?.includes('Decrypt failed')) // iOS
-          ) {
+
+          if (isInvalidPin) {
             dispatch(
               setLoginAttempt({
                 count: loginAttempt.count + 1,
@@ -203,10 +224,11 @@ export function usePinOrBiometryLogin(): {
             )
             resetConfirmPinProcess()
             fireJiggleAnimation()
-          }
-
-          if (err instanceof NoSaltError) {
-            alertBadDta()
+          } else if (
+            err instanceof NoSaltError ||
+            err instanceof InvalidVersionError
+          ) {
+            alertBadData()
           }
         }
       }
