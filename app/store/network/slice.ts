@@ -219,7 +219,7 @@ export const selectAllNetworkTokensAsLocal = (
 
 export const selectSomeNetworks =
   (chainIds: number[]) => (state: RootState) => {
-    const allNetworks = selectRawNetworks(state)
+    const allNetworks = selectAllNetworks(state)
 
     return chainIds
       .map(id => allNetworks[id])
