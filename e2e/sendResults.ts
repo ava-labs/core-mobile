@@ -153,22 +153,22 @@ export async function isResultExistsInTestrail(runID: number, caseId: number) {
   }
 }
 
-// Updates the results for an existing test run or and empty test run
+// Updates the results for an existing test run or an empty test run
 async function generatePlatformResults(
   testCasesToSend: any,
   resultsToSendToTestrail: [],
   platform: string,
   runId?: number
 ) {
-  printRunId()
   try {
     const resultArray = resultsToSendToTestrail.filter(
       result => result.platform === platform
     )
     try {
       const existingTestCases = await getTestCasesFromRun(runId)
+      // Adds the existing test case results to the results array so they are not overwritten in testrail when using the updateRun endpoint
       resultArray.concat(existingTestCases)
-      // Add already existing test cases to the test cases to send
+      // Add already existing test cases to the testCasesToSend array
       if (existingTestCases.length > 0) {
         existingTestCases.forEach((testCase: any) => {
           testCasesToSend.case_ids.push(testCase.case_id)
@@ -228,8 +228,4 @@ async function generatePlatformResults(
   } catch (error) {
     console.log(error)
   }
-}
-
-export function printRunId() {
-  console.log('The run id is ' + process.env.TESTRAIL_RUN_ID)
 }
