@@ -40,6 +40,7 @@ type Args = {
   onError: (error?: string) => void
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export const useExplainTransactionShared = (args: Args) => {
   const { network, txParams, peerMeta, onError } = args
   const { data: networkFees } = useNetworkFee(network)
@@ -248,7 +249,7 @@ export const useExplainTransactionShared = (args: Args) => {
     }
 
     loadTx().catch(err => {
-      onError(err?.error || err.messager)
+      onError(err?.error || err.message)
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [

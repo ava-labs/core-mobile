@@ -45,10 +45,12 @@ export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
     currentBlockchain,
     targetBlockchain
   } = useBridgeSDK()
-  const isDeveloperMode = activeNetwork.isTestnet
   const btcAddress = activeAccount?.addressBtc
   const allNetworks = useSelector(selectNetworks)
-  const avalancheNetwork = getAvalancheNetwork(allNetworks, isDeveloperMode)
+  const avalancheNetwork = getAvalancheNetwork(
+    allNetworks,
+    activeNetwork.isTestnet
+  )
   const avalancheTokens = useSelector(
     selectTokensWithBalanceByNetwork(avalancheNetwork)
   )
@@ -139,7 +141,6 @@ export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
     activeNetwork,
     avalancheTokens,
     btcAsset,
-    isDeveloperMode,
     currency
   ])
 
@@ -191,7 +192,7 @@ export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
     ) {
       return Promise.reject()
     }
-    const bitcoinNetwork = getBitcoinNetwork(isDeveloperMode)
+    const bitcoinNetwork = getBitcoinNetwork(activeNetwork.isTestnet)
 
     const timestamp = Date.now()
     const symbol = currentAsset || ''
@@ -246,7 +247,6 @@ export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
     activeNetwork,
     amountInSatoshis,
     feeRate,
-    isDeveloperMode,
     currentAsset,
     setTransactionDetails,
     amountInBtc,
