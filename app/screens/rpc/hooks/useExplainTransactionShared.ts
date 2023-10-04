@@ -180,12 +180,12 @@ export const useExplainTransactionShared = (args: Args) => {
 
       if (txParams.gas) {
         gasLimit = Number(txParams.gas)
+      } else {
+        gasLimit = await getEstimatedGasLimit(txParams, network).catch(e => {
+          Logger.error('failed to calculate gas limit', e)
+          throw Error('Unable to calculate gas limit')
+        })
       }
-      gasLimit = await getEstimatedGasLimit(txParams, network).catch(e => {
-        Logger.error('failed to calculate gas limit', e)
-        throw Error('Unable to calculate gas limit')
-      })
-
       // create txParams that includes gasLimit
       const txParamsWithGasLimit = getTxParamsWithGasLimit(gasLimit, txParams)
 
