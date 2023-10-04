@@ -1,5 +1,5 @@
 import React, { FC, useEffect } from 'react'
-import { View } from 'react-native'
+import { Linking, View, useWindowDimensions } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaListItem from 'components/AvaListItem'
 import { Row } from 'components/Row'
@@ -8,8 +8,18 @@ import OvalTagBg from 'components/OvalTagBg'
 import CheckmarkSVG from 'components/svg/CheckmarkSVG'
 import ConfirmationTracker from 'screens/bridge/components/ConfirmationTracker'
 import { useStopwatch } from 'react-timer-hook'
+import { Blockchain } from '@avalabs/bridge-sdk'
+import InfoSVG from 'components/svg/InfoSVG'
+import { Space } from 'components/Space'
+import { Popable, usePopable } from 'react-native-popable'
+import { DOCS_BTC_TO_BTCB_FAQ } from 'resources/Constants'
+import Logger from 'utils/Logger'
+import { selectBridgeAppConfig } from 'store/bridge'
+import { useSelector } from 'react-redux'
 
 interface Props {
+  sourceChain?: Blockchain
+  targetChain?: Blockchain
   paddingHorizontal?: number
   confirmationCount: number
   requiredConfirmationCount: number
@@ -29,17 +39,27 @@ const padTimeElapsed = (startTime: number, endTime?: number): Date => {
 }
 
 function ElapsedTimer({
+  sourceChain,
+  targetChain,
   startTime,
   endTime
 }: {
+  sourceChain?: Blockchain
+  targetChain?: Blockchain
   startTime: number
   endTime?: number
-}) {
+}): JSX.Element {
   const theme = useApplicationContext().theme
   const { hours, minutes, seconds, reset } = useStopwatch({
     autoStart: !endTime,
     offsetTimestamp: padTimeElapsed(startTime, endTime)
   })
+
+  const handleOpenFaq = (): void => {
+    Linking.openURL(DOCS_BTC_TO_BTCB_FAQ).catch(e => {
+      Logger.error(`failed to open ${DOCS_BTC_TO_BTCB_FAQ}`, e)
+    })
+  }
 
   // Stop the timer when we know the endTime
   useEffect(() => {
@@ -57,8 +77,12 @@ function ElapsedTimer({
     minimumIntegerDigits: 2
   })
   const displayedHours = hours > 0 ? hours.toLocaleString('en-US') : undefined
-
   const complete = !!endTime
+
+  const showInfoIcon =
+    !complete &&
+    sourceChain === Blockchain.AVALANCHE &&
+    targetChain === Blockchain.BITCOIN
 
   return (
     <OvalTagBg
@@ -68,23 +92,26 @@ function ElapsedTimer({
         paddingVertical: 4,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: complete ? theme.colorSuccess : theme.colorBg3
+        backgroundColor: complete ? theme.colorSuccess : theme.colorBg3,
+        flexDirection: 'row'
       }}>
-      <AvaText.ButtonSmall textStyle={{ color: theme.colorText1 }}>
+      <AvaText.ButtonSmall
+        textStyle={{
+          color: theme.colorText1
+        }}>
         {displayedHours && `${displayedHours}:`}
         {displayedMinutes}:{displayedSeconds}
-        {complete && (
-          <>
-            {' '}
-            <CheckmarkSVG color={theme.white} size={10} />
-          </>
-        )}
       </AvaText.ButtonSmall>
+      <Space x={4} />
+      {showInfoIcon && <PopableInfo openFaq={handleOpenFaq} />}
+      {complete && <CheckmarkSVG color={theme.white} size={10} />}
     </OvalTagBg>
   )
 }
 
 const BridgeConfirmations: FC<Props> = ({
+  sourceChain,
+  targetChain,
   confirmationCount,
   requiredConfirmationCount,
   startTime,
@@ -107,7 +134,12 @@ const BridgeConfirmations: FC<Props> = ({
               /{requiredConfirmationCount}
             </AvaText.Heading3>
             {startTime && (
-              <ElapsedTimer startTime={startTime} endTime={endTime} />
+              <ElapsedTimer
+                startTime={startTime}
+                endTime={endTime}
+                sourceChain={sourceChain}
+                targetChain={targetChain}
+              />
             )}
           </Row>
         }
@@ -124,6 +156,53 @@ const BridgeConfirmations: FC<Props> = ({
         />
       </View>
     </View>
+  )
+}
+
+const PopableInfo = ({ openFaq }: { openFaq: () => void }): JSX.Element => {
+  const theme = useApplicationContext().theme
+  const width = useWindowDimensions().width
+  const config = useSelector(selectBridgeAppConfig)
+  const [ref, { hide }] = usePopable()
+
+  const handleOnPress = (): void => {
+    openFaq()
+    hide()
+  }
+
+  const offboardDelaySeconds = config?.criticalBitcoin.offboardDelaySeconds
+    ? Math.floor(config.criticalBitcoin.offboardDelaySeconds / 3600)
+    : 12
+
+  const renderPopoverInfoText = (): JSX.Element => (
+    <View
+      style={{
+        marginHorizontal: 8,
+        marginVertical: 4,
+        backgroundColor: theme.neutral100
+      }}>
+      <AvaText.Caption textStyle={{ color: theme.neutral900 }}>
+        {`Bridging from Avalanche to Bitcoin takes approximately ${offboardDelaySeconds} hours. Please see the `}
+        <AvaText.Caption
+          textStyle={{ color: theme.blueDark, fontWeight: '600' }}
+          onPress={handleOnPress}>
+          FAQ
+        </AvaText.Caption>
+        {' for additional info.'}
+      </AvaText.Caption>
+      <Space y={16} />
+    </View>
+  )
+
+  return (
+    <Popable
+      ref={ref}
+      content={renderPopoverInfoText()}
+      position={'top'}
+      style={{ minWidth: width / 2 }}
+      backgroundColor={theme.neutral100}>
+      <InfoSVG color={theme.white} size={10} />
+    </Popable>
   )
 }
 
