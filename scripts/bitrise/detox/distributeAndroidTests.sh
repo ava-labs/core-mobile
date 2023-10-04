@@ -9,8 +9,6 @@ IFS=$'\n' read -r -d '' -a array <<< "$TESTS_TO_BE_RUN"
 # Returns the number of elements in the array
 testCnt="${#array[@]}"
 
-all_tests="${array[@]}"
-
 # Split the tests into 3 groups and uses awk in case the number of tests is not divisible by 3
 firstThird=$(awk "BEGIN { print ($testCnt / 3) }")
 roundedFirstThird=$(awk "BEGIN {print int($firstThird)}")
@@ -26,7 +24,3 @@ testCnt3="${array[@]:$secondThird:$roundedFirstThird}"
 envman add --key TESTS_ONE --value "$testCnt1"
 envman add --key TESTS_TWO --value "$testCnt2"
 envman add --key TESTS_THREE --value "$testCnt3"
-envman add --key ALL_TESTS --value "$TESTS_TO_BE_RUN"
-
-
-
