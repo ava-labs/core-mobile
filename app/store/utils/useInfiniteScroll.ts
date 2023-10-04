@@ -29,7 +29,7 @@ export const useInfiniteScroll = <
 
   const queryResponse = useQuery({
     nextPageToken: pageToken,
-    ...(queryParams && queryParams)
+    ...queryParams
   } as QueryArg)
   const queryResponseData = queryResponse.data
 
@@ -65,19 +65,20 @@ export const useInfiniteScroll = <
   }, [dataKey, queryResponseData])
 
   useEffect(() => {
-    if (Array.isArray(data)) {
-      if (pageToken === undefined) {
-        setCombinedData(data)
-      } else {
-        // combine data and remove duplicates
-        setCombinedData(previousData => {
-          return [...new Set([...previousData, ...data])]
-        })
-      }
+    if (!Array.isArray(data)) {
+      return
     }
+    if (pageToken === undefined) {
+      setCombinedData(data)
+      return
+    }
+    // combine data and remove duplicates
+    setCombinedData(previousData => {
+      return [...new Set([...previousData, ...data])]
+    })
   }, [data, pageToken])
 
-  const fetchNext = () => {
+  const fetchNext = (): void => {
     if (hasMore && !isFetching) {
       setPageToken(nextPageToken)
     }
@@ -91,11 +92,11 @@ export const useInfiniteScroll = <
   const isFirstPage = pageToken === undefined
   const isFetchingNext = isFetching && pageToken !== undefined
 
-  const isRefreshing = queryResponse
-    ? !queryResponse.isLoading &&
-      queryResponse.isFetching &&
-      pageToken === undefined
-    : false
+  const isRefreshing =
+    queryResponse &&
+    !queryResponse.isLoading &&
+    queryResponse.isFetching &&
+    pageToken === undefined
 
   return {
     data: combinedData,

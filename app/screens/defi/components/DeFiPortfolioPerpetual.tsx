@@ -22,9 +22,7 @@ export const DeFiPortfolioPerpetual: FC<Props> = ({ items }) => {
 
   const addSpaceWithOperator = (value: number) => {
     const pnlAmount = getAmount(value, 'compact')
-    const addSpaceCondition =
-      value < 0 ? pnlAmount.replace('-', '- ') : '+ '.concat(pnlAmount)
-    return addSpaceCondition
+    return value < 0 ? pnlAmount.replace('-', '- ') : '+ '.concat(pnlAmount)
   }
 
   return (

@@ -40,7 +40,7 @@ export const BalanceItem = ({
         }}>
         {balanceType}
       </AvaText.Caption>
-      {poppableItem && poppableItem}
+      {!!poppableItem && poppableItem}
     </Row>
   )
 }

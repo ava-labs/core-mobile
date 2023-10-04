@@ -78,12 +78,10 @@ export function useSearchableTokenList(
       filters.push(containSearchText(searchText))
     }
 
-    const filteredTokens = filters.reduce(
+    return filters.reduce(
       (tokens, filter) => tokens.filter(filter),
       mergedTokens
     )
-
-    return filteredTokens
   }, [hideZeroBalance, hideBlacklist, searchText, mergedTokens, tokenBlacklist])
 
   // 3. sort tokens by amount

@@ -46,30 +46,52 @@ export const handleDeeplink = (
     }
     case PROTOCOLS.CORE: {
       const action = url.host
-      switch (action) {
-        case ACTIONS.WC: {
-          const uri = url.searchParams.get('uri')
-          if (uri) {
-            const { version } = parseUri(uri)
-            dispatchWalletConnectSession(version, uri, dispatch)
-          } else {
-            Logger.info(`${deeplink.url} is not a wallet connect link`)
-          }
-          break
-        }
-        case ACTIONS.StakeComplete: {
-          if (processedFeatureFlags.earnBlocked) return
-          deeplink.callback?.()
-          navigateToClaimRewards()
-          break
-        }
-        default:
-          break
-      }
+      handleWalletConnectActions({
+        action,
+        url,
+        deeplink,
+        dispatch,
+        processedFeatureFlags
+      })
       break
     }
     default:
       return
+  }
+}
+
+const handleWalletConnectActions = ({
+  action,
+  url,
+  dispatch,
+  deeplink,
+  processedFeatureFlags
+}: {
+  action: string
+  url: URL
+  dispatch: Dispatch<AnyAction>
+  deeplink: DeepLink
+  processedFeatureFlags: ProcessedFeatureFlags
+}): void => {
+  switch (action) {
+    case ACTIONS.WC: {
+      const uri = url.searchParams.get('uri')
+      if (uri) {
+        const { version } = parseUri(uri)
+        dispatchWalletConnectSession(version, uri, dispatch)
+      } else {
+        Logger.info(`${deeplink.url} is not a wallet connect link`)
+      }
+      break
+    }
+    case ACTIONS.StakeComplete: {
+      if (processedFeatureFlags.earnBlocked) return
+      deeplink.callback?.()
+      navigateToClaimRewards()
+      break
+    }
+    default:
+      break
   }
 }
 
@@ -83,7 +105,7 @@ const dispatchWalletConnectSession = (
   version: number,
   uri: string,
   dispatch: Dispatch<AnyAction>
-) => {
+): void => {
   // link is a valid wallet connect uri
   const versionStr = version.toString()
   if (versionStr === WalletConnectVersions.V1) {

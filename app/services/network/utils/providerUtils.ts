@@ -63,10 +63,9 @@ export function getAvalancheNetwork(
   networks: Networks,
   isTest: boolean | undefined
 ): Network | undefined {
-  const network = isTest
+  return isTest
     ? networks[ChainId.AVALANCHE_TESTNET_ID]
     : networks[ChainId.AVALANCHE_MAINNET_ID]
-  return network
 }
 
 export function getBitcoinNetwork(
@@ -79,8 +78,7 @@ export function getEthereumNetwork(
   networks: Networks,
   isTest: boolean | undefined
 ): Network | undefined {
-  const network = isTest
+  return isTest
     ? networks[ChainId.ETHEREUM_TEST_GOERLY]
     : networks[ChainId.ETHEREUM_HOMESTEAD]
-  return network
 }

@@ -68,11 +68,7 @@ export const calculateMaxWeight = (
   validatorWeight: Avax
 ): Avax => {
   const stakeWeight = validatorWeight.mul(MAX_VALIDATOR_WEIGHT_FACTOR)
-  const maxWeight = stakeWeight.lt(maxValidatorStake)
-    ? stakeWeight
-    : maxValidatorStake
-
-  return maxWeight
+  return stakeWeight.lt(maxValidatorStake) ? stakeWeight : maxValidatorStake
 }
 
 export const randomColor = () => {
@@ -166,7 +162,7 @@ export const getFilteredValidators = ({
   const lowerCasedSearchText = searchText?.toLocaleLowerCase()
   const stakingEndTimeUnix = getUnixTime(stakingEndTime) // timestamp in seconds
 
-  const filtered = validators.filter(
+  return validators.filter(
     ({
       endTime,
       weight,
@@ -204,7 +200,6 @@ export const getFilteredValidators = ({
       )
     }
   )
-  return filtered
 }
 
 /**
@@ -352,7 +347,7 @@ export const getTransformedTransactions = async (
       addresses
     })
 
-    const transformedTransactions = stakes.map(transaction => {
+    return stakes.map(transaction => {
       const pAddr = transaction.emittedUtxos.find(utxo => utxo.staked === true)
         ?.addresses[0]
       const matchedPAddress = addresses
@@ -368,7 +363,6 @@ export const getTransformedTransactions = async (
         isDeveloperMode: isTestnet
       }
     })
-    return transformedTransactions
   } catch (error) {
     Logger.error('getTransformedTransactions failed: ', error)
     throw error
