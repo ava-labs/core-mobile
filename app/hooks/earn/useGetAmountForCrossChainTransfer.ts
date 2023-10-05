@@ -10,13 +10,12 @@ export const useGetAmountForCrossChainTransfer = (
 ): Avax | undefined => {
   const claimableBalance = useGetClaimableBalance()
 
-  const amountForCrossChainTransfer = useMemo(() => {
+  return useMemo(() => {
     if (claimableBalance === undefined) {
       return undefined
     }
     return calculateAmountForCrossChainTransfer(stakingAmount, claimableBalance)
   }, [claimableBalance, stakingAmount])
-  return amountForCrossChainTransfer
 }
 
 /**

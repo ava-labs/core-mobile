@@ -22,6 +22,14 @@ import { Row } from 'components/Row'
 import AvaText from './AvaText'
 import AvaButton from './AvaButton'
 
+type Mode =
+  | 'default'
+  | 'private'
+  | 'amount'
+  | 'confirmEntry'
+  | 'percentage'
+  | 'currency'
+
 export type InputTextProps = {
   onBlur?: (e: NativeSyntheticEvent<TextInputFocusEventData>) => void
   onChangeText?: (text: string) => void
@@ -40,13 +48,7 @@ export type InputTextProps = {
   // Shows error message and error color border
   errorText?: string
   // Private - Hides input, shows toggle button to show input, neon color border. Will disable multiline.
-  mode?:
-    | 'default'
-    | 'private'
-    | 'amount'
-    | 'confirmEntry'
-    | 'percentage'
-    | 'currency'
+  mode?: Mode
   // Set keyboard type (numeric, text)
   keyboardType?: 'numeric'
   // shows popover info if provided
@@ -131,7 +133,7 @@ const InputText = forwardRef<TextInput, InputTextProps>(
       onSubmit?.()
     }
     const onClear = (): void => {
-      onTextChanged?.('')
+      onTextChanged && onTextChanged('')
     }
     const onToggleShowInput = (): void => {
       setShowInput(!showInput)
@@ -145,7 +147,7 @@ const InputText = forwardRef<TextInput, InputTextProps>(
       [onBlur]
     )
 
-    const handleFocus = () => {
+    const handleFocus = (): void => {
       // set cursor at end of text
       setSelection({ start: text.length })
 
@@ -167,9 +169,8 @@ const InputText = forwardRef<TextInput, InputTextProps>(
           if (numOfDots === 0) {
             numOfDots++
             return substring
-          } else {
-            return ''
           }
+          return ''
         })
       }
       onChangeText?.(txt)
@@ -186,11 +187,9 @@ const InputText = forwardRef<TextInput, InputTextProps>(
           />
         )}
         <View
-          style={[
-            {
-              justifyContent: 'center'
-            }
-          ]}>
+          style={{
+            justifyContent: 'center'
+          }}>
           <TextInput
             maxLength={maxLength}
             testID="input_text"
@@ -208,7 +207,7 @@ const InputText = forwardRef<TextInput, InputTextProps>(
             editable={editable !== false}
             keyboardType={keyboardType}
             selectTextOnFocus={selectTextOnFocus}
-            multiline={multiline && mode === 'default' ? multiline : false}
+            multiline={multiline && mode === 'default'}
             style={[
               {
                 minHeight: minHeight,
@@ -220,19 +219,11 @@ const InputText = forwardRef<TextInput, InputTextProps>(
                 textAlignVertical: multiline ? 'top' : 'center',
                 backgroundColor: backgroundColor || theme.colorBg3 + Opacity50,
                 paddingStart: 16,
-                paddingEnd: loading
-                  ? 46
-                  : mode === 'private'
-                  ? 80
-                  : mode === 'amount' && !onMax
-                  ? 16
-                  : mode === 'currency'
-                  ? 50
-                  : 46,
+                paddingEnd: paddingEnd(loading, mode, onMax),
                 paddingTop: paddingVertical,
                 paddingBottom: paddingVertical,
                 fontFamily: 'Inter-Regular',
-                width: width
+                width
               },
               textStyle
             ]}
@@ -267,7 +258,7 @@ const InputText = forwardRef<TextInput, InputTextProps>(
 
         {helperText && <HelperText helperText={helperText} />}
 
-        {(errorText || false) && (
+        {errorText && (
           <ErrorText color={theme.colorError} errorText={errorText} />
         )}
       </View>
@@ -275,7 +266,27 @@ const InputText = forwardRef<TextInput, InputTextProps>(
   }
 )
 
-function MaxBtn({ onPress }: { onPress?: () => void }) {
+const paddingEnd = (
+  loading?: boolean,
+  mode?: Mode,
+  onMax?: () => void
+): number => {
+  if (loading) {
+    return 46
+  }
+  if (mode === 'private') {
+    return 80
+  }
+  if (mode === 'amount' && !onMax) {
+    return 16
+  }
+  if (mode === 'currency') {
+    return 50
+  }
+  return 46
+}
+
+function MaxBtn({ onPress }: { onPress?: () => void }): JSX.Element {
   return (
     <View
       style={[
@@ -291,7 +302,7 @@ function MaxBtn({ onPress }: { onPress?: () => void }) {
   )
 }
 
-function ConfirmBtn({ onPress }: { onPress?: () => void }) {
+function ConfirmBtn({ onPress }: { onPress?: () => void }): JSX.Element {
   return (
     <View
       style={[
@@ -317,7 +328,7 @@ const Label = ({
   popOverPosition?: 'left' | 'right' | 'top' | 'bottom'
   label?: string
   backgroundColor: string
-}) => {
+}): JSX.Element => {
   return (
     <View style={{ alignSelf: 'baseline' }}>
       {popOverInfoText ? (
@@ -346,7 +357,7 @@ const ClearBtn = ({
 }: {
   onClear: () => void
   color: string
-}) => {
+}): JSX.Element => {
   return (
     <View
       style={[
@@ -362,7 +373,7 @@ const ClearBtn = ({
   )
 }
 
-const Percent = () => {
+const Percent = (): JSX.Element => {
   return (
     <View
       style={[
@@ -377,7 +388,7 @@ const Percent = () => {
   )
 }
 
-const Currency = ({ currency }: { currency?: string }) => {
+const Currency = ({ currency }: { currency?: string }): JSX.Element => {
   return (
     <View
       style={[
@@ -398,7 +409,7 @@ const ShowPassBtn = ({
 }: {
   onToggleShowInput: () => void
   toggleShowText: string
-}) => {
+}): JSX.Element => {
   return (
     <View
       style={[
@@ -418,7 +429,7 @@ const HelperText = ({
   helperText
 }: {
   helperText?: string | React.ReactNode
-}) => {
+}): JSX.Element => {
   return (
     <>
       <Space y={5} />
@@ -441,7 +452,7 @@ const ErrorText = ({
 }: {
   errorText: string | undefined
   color: string
-}) => {
+}): JSX.Element => {
   return (
     <>
       <View style={{ height: 4 }} />

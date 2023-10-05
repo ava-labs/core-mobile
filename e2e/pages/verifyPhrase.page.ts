@@ -95,10 +95,7 @@ class VerifyPhrasePage {
         if (i === 0) {
           await element(by.text(word)).atIndex(0).tap()
           await delay(500)
-        } else if (i === 1) {
-          await element(by.text(word)).atIndex(1).tap()
-          await delay(500)
-        } else if (i === 2) {
+        } else if (i === 1 || i === 2) {
           await element(by.text(word)).atIndex(1).tap()
           await delay(500)
         }

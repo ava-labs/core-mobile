@@ -3,7 +3,7 @@ import AppNavigation from 'navigation/AppNavigation'
 import { ProposalTypes, SessionTypes } from '@walletconnect/types'
 import { AppListenerEffectAPI } from 'store'
 import { ethErrors } from 'eth-rpc-errors'
-import { selectActiveNetwork, selectRawNetworks } from 'store/network'
+import { selectActiveNetwork, selectAllNetworks } from 'store/network'
 import { EVM_IDENTIFIER } from 'consts/walletConnect'
 import { addNamespaceToChain } from 'services/walletconnectv2/utils'
 import { normalizeNamespaces } from '@walletconnect/utils'
@@ -50,22 +50,20 @@ const supportedMethods = [
 class SessionRequestHandler implements RpcRequestHandler<SessionProposal> {
   methods = [RpcMethod.SESSION_REQUEST]
 
-  private getApprovedMethods = (dappUrl: string) => {
+  private getApprovedMethods = (dappUrl: string): RpcMethod[] => {
     const isCoreApp = isCoreDomain(dappUrl)
 
     // approve all methods that we support here to allow dApps
     // that use Wagmi to be able to send/access more rpc methods
     // by default, Wagmi only requests eth_sendTransaction and personal_sign
-    const approvedMethods = isCoreApp
+    return isCoreApp
       ? [...supportedMethods, ...CORE_ONLY_METHODS]
       : supportedMethods
-
-    return approvedMethods
   }
 
   private getApprovedEvents = (
     requiredNamespaces: ProposalTypes.RequiredNamespaces
-  ) => {
+  ): string[] => {
     return [
       ...new Set([
         ...DEFAULT_EVENTS,
@@ -74,14 +72,14 @@ class SessionRequestHandler implements RpcRequestHandler<SessionProposal> {
     ]
   }
 
-  private getApprovedChainIds = (approvedChains: number[]) => {
+  private getApprovedChainIds = (approvedChains: number[]): number[] => {
     return approvedChains
   }
 
   private getApprovedAccounts = (
     selectedAccounts: string[],
     approvedChains: string[]
-  ) => {
+  ): string[] => {
     const approvedAccounts: string[] = []
 
     approvedChains.forEach(chain => {
@@ -124,7 +122,7 @@ class SessionRequestHandler implements RpcRequestHandler<SessionProposal> {
     }
 
     const eip155NameSpace = normalizedRequired[EVM_IDENTIFIER]
-    const supportedNetworks = selectRawNetworks(state)
+    const supportedNetworks = selectAllNetworks(state)
 
     const requiredChains = eip155NameSpace.chains
 

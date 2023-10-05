@@ -14,7 +14,7 @@ export const useExchangedAmount = () => {
   const { data } = useExchangeRates()
   const exchangeRate = data?.usd?.[selectedCurrency.toLowerCase()]
 
-  const getAmount = useCallback(
+  return useCallback(
     (amount: number, notation?: NotationTypes) => {
       // if the exchange rate is not available, we show the value in USD
       return exchangeRate
@@ -28,5 +28,4 @@ export const useExchangedAmount = () => {
     },
     [currencyFormatter, exchangeRate]
   )
-  return getAmount
 }

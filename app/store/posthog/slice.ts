@@ -2,7 +2,7 @@ import { createAction, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from 'store'
 import { v4 as uuidv4 } from 'uuid'
 import { FeatureGates, FeatureFlags, FeatureVars } from 'services/posthog/types'
-import { initialState, JsonMap } from './types'
+import { initialState, JsonMap, ProcessedFeatureFlags } from './types'
 
 const reducerName = 'posthog'
 
@@ -24,11 +24,12 @@ export const posthogSlice = createSlice({
 })
 
 // selectors
-export const selectUserID = (state: RootState) => state.posthog.userID
-export const selectDistinctID = (state: RootState) => state.posthog.distinctID
-export const selectIsAnalyticsEnabled = (state: RootState) =>
+export const selectUserID = (state: RootState): string => state.posthog.userID
+export const selectDistinctID = (state: RootState): string =>
+  state.posthog.distinctID
+export const selectIsAnalyticsEnabled = (state: RootState): boolean =>
   state.posthog.isAnalyticsEnabled
-export const selectFeatureFlags = (state: RootState) => {
+export const selectFeatureFlags = (state: RootState): ProcessedFeatureFlags => {
   const swapBlocked = selectIsSwapBlocked(state)
   const bridgeBlocked = selectIsBridgeBlocked(state)
   const bridgeBtcBlocked = selectIsBridgeBtcBlocked(state)
@@ -41,6 +42,9 @@ export const selectFeatureFlags = (state: RootState) => {
   const sentrySampleRate = selectSentrySampleRate(state)
   const coinbasePayBlocked = selectIsCoinbasePayBlocked(state)
   const useCoinGeckoPro = selectUseCoinGeckoPro(state)
+  const defiBlocked = selectIsDeFiBlocked(state)
+  const leftFab = selectUseLeftFab(state)
+  const darkMode = selectUseDarkMode(state)
   return {
     swapBlocked,
     bridgeBlocked,
@@ -53,25 +57,28 @@ export const selectFeatureFlags = (state: RootState) => {
     eventsBlocked,
     sentrySampleRate,
     coinbasePayBlocked,
-    useCoinGeckoPro
+    useCoinGeckoPro,
+    defiBlocked,
+    leftFab,
+    darkMode
   }
 }
 
-export const selectIsSwapBlocked = (state: RootState) => {
+export const selectIsSwapBlocked = (state: RootState): boolean => {
   const { featureFlags } = state.posthog
   return (
     !featureFlags[FeatureGates.SWAP] || !featureFlags[FeatureGates.EVERYTHING]
   )
 }
 
-export const selectIsBridgeBlocked = (state: RootState) => {
+export const selectIsBridgeBlocked = (state: RootState): boolean => {
   const { featureFlags } = state.posthog
   return (
     !featureFlags[FeatureGates.BRIDGE] || !featureFlags[FeatureGates.EVERYTHING]
   )
 }
 
-export const selectIsBridgeBtcBlocked = (state: RootState) => {
+export const selectIsBridgeBtcBlocked = (state: RootState): boolean => {
   const { featureFlags } = state.posthog
   return (
     !featureFlags[FeatureGates.BRIDGE_BTC] ||
@@ -79,7 +86,7 @@ export const selectIsBridgeBtcBlocked = (state: RootState) => {
   )
 }
 
-export const selectIsBridgeEthBlocked = (state: RootState) => {
+export const selectIsBridgeEthBlocked = (state: RootState): boolean => {
   const { featureFlags } = state.posthog
   return (
     !featureFlags[FeatureGates.BRIDGE_ETH] ||
@@ -87,26 +94,26 @@ export const selectIsBridgeEthBlocked = (state: RootState) => {
   )
 }
 
-export const selectIsSendBlocked = (state: RootState) => {
+export const selectIsSendBlocked = (state: RootState): boolean => {
   const { featureFlags } = state.posthog
   return (
     !featureFlags[FeatureGates.SEND] || !featureFlags[FeatureGates.EVERYTHING]
   )
 }
 
-export const selectIsEarnBlocked = (state: RootState) => {
+export const selectIsEarnBlocked = (state: RootState): boolean => {
   const { featureFlags } = state.posthog
   return (
     !featureFlags[FeatureGates.EARN] || !featureFlags[FeatureGates.EVERYTHING]
   )
 }
 
-export const selectIsNotificationBlocked = (state: RootState) => {
+export const selectIsNotificationBlocked = (state: RootState): boolean => {
   // in the future, other feature required notifications should go here
   return selectIsEarnBlocked(state)
 }
 
-export const selectIsSendNftBlockediOS = (state: RootState) => {
+export const selectIsSendNftBlockediOS = (state: RootState): boolean => {
   const { featureFlags } = state.posthog
   return (
     !featureFlags[FeatureGates.SEND_NFT_IOS] ||
@@ -114,7 +121,7 @@ export const selectIsSendNftBlockediOS = (state: RootState) => {
   )
 }
 
-export const selectIsSendNftBlockedAndroid = (state: RootState) => {
+export const selectIsSendNftBlockedAndroid = (state: RootState): boolean => {
   const { featureFlags } = state.posthog
   return (
     !featureFlags[FeatureGates.SEND_NFT_ANDROID] ||
@@ -122,14 +129,14 @@ export const selectIsSendNftBlockedAndroid = (state: RootState) => {
   )
 }
 
-export const selectIsEventsBlocked = (state: RootState) => {
+export const selectIsEventsBlocked = (state: RootState): boolean => {
   const { featureFlags } = state.posthog
   return (
     !featureFlags[FeatureGates.EVENTS] || !featureFlags[FeatureGates.EVERYTHING]
   )
 }
 
-export const selectIsCoinbasePayBlocked = (state: RootState) => {
+export const selectIsCoinbasePayBlocked = (state: RootState): boolean => {
   const { featureFlags } = state.posthog
   return (
     !featureFlags[FeatureGates.BUY_COINBASE_PAY] ||
@@ -137,7 +144,7 @@ export const selectIsCoinbasePayBlocked = (state: RootState) => {
   )
 }
 
-export const selectUseCoinGeckoPro = (state: RootState) => {
+export const selectUseCoinGeckoPro = (state: RootState): boolean => {
   const { featureFlags } = state.posthog
   return (
     Boolean(featureFlags[FeatureGates.USE_COINGECKO_PRO]) ||
@@ -145,18 +152,34 @@ export const selectUseCoinGeckoPro = (state: RootState) => {
   )
 }
 
-export const selectIsDeFiBlocked = (state: RootState) => {
+export const selectIsDeFiBlocked = (state: RootState): boolean => {
   const { featureFlags } = state.posthog
   return (
     !featureFlags[FeatureGates.DEFI] || !featureFlags[FeatureGates.EVERYTHING]
   )
 }
 
-export const selectSentrySampleRate = (state: RootState) => {
+export const selectSentrySampleRate = (state: RootState): number => {
   const { featureFlags } = state.posthog
   return (
     parseInt((featureFlags[FeatureVars.SENTRY_SAMPLE_RATE] as string) ?? '0') /
     100
+  )
+}
+
+export const selectUseLeftFab = (state: RootState): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    Boolean(featureFlags[FeatureGates.LEFT_FAB]) ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
+export const selectUseDarkMode = (state: RootState): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    Boolean(featureFlags[FeatureGates.DARK_MODE]) ||
+    !featureFlags[FeatureGates.EVERYTHING]
   )
 }
 

@@ -33,8 +33,7 @@ export async function createEmptyTestRun(
     console.log(
       `The test run "${testRunName}" with id ${testRun.id} has been successfully created in TestRail...`
     )
-    const testRunId = testRun.id
-    return testRunId
+    return testRun.id
   } catch (error) {
     console.error('Test run was not created!!!')
     console.log(error)
@@ -113,11 +112,6 @@ export async function sectionsAndCases() {
 
     testCaseSectionsAndCases.push(testCaseObject)
   }
-  // console.log(
-  //   JSON.stringify(testCaseSectionsAndCases) +
-  //     ' this is testCaseSectionsAndCases'
-  // )
-
   return testCaseSectionsAndCases
 }
 
@@ -470,8 +464,7 @@ export function parseTestName(testName: any) {
   const testCaseNotSplit = splitLine.slice(-1)[0]
   const testCase: string = testCaseNotSplit.split('.').slice(0)[0]
 
-  const testCaseObject = { sectionName, subsection, testCase }
-  return testCaseObject
+  return { sectionName, subsection, testCase }
 }
 
 // Checks to see if a regression run has been created within the last 24 hours and returns the testrun id if one exists or returns false if none exists
@@ -589,11 +582,9 @@ export async function compareTestCaseArrays(
   casesToBeAdded: any,
   casesInRun: any
 ) {
-  const difference = casesToBeAdded
+  return casesToBeAdded
     .filter((x: any) => !casesInRun.includes(x))
     .concat(casesInRun.filter((x: any) => !casesToBeAdded.includes(x)))
-
-  return difference
 }
 
 export async function writeRunIdToTextFile(runId: string) {

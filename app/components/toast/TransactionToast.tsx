@@ -33,7 +33,7 @@ const SimpleToast = ({
 }: {
   message: string
   color: string
-}) => {
+}): JSX.Element => {
   return <AvaText.ButtonLarge color={color}>{message}</AvaText.ButtonLarge>
 }
 
@@ -45,11 +45,11 @@ const ToastWithViewActivity = ({
   txHash: string
   message: string
   color: string
-}) => {
+}): JSX.Element => {
   const theme = useApplicationContext().theme
   const network = useSelector(selectActiveNetwork)
 
-  const openActivityTab = () => {
+  const openActivityTab = (): void => {
     navigate({
       // @ts-ignore
       name: AppNavigation.Portfolio.NetworkTokens,
@@ -76,13 +76,19 @@ const ToastWithViewActivity = ({
   )
 }
 
-const Pending = ({ message }: { message: string }) => {
+const Pending = ({ message }: { message: string }): JSX.Element => {
   const theme = useApplicationContext().theme
 
   return <SimpleToast message={message} color={theme.colorText1} />
 }
 
-const Error = ({ txHash, message }: { txHash?: string; message: string }) => {
+const Error = ({
+  txHash,
+  message
+}: {
+  txHash?: string
+  message: string
+}): JSX.Element => {
   const theme = useApplicationContext().theme
 
   if (!txHash) return <SimpleToast message={message} color={theme.colorError} />
@@ -96,7 +102,13 @@ const Error = ({ txHash, message }: { txHash?: string; message: string }) => {
   )
 }
 
-const Success = ({ txHash, message }: { txHash?: string; message: string }) => {
+const Success = ({
+  txHash,
+  message
+}: {
+  txHash?: string
+  message: string
+}): JSX.Element => {
   const theme = useApplicationContext().theme
 
   if (!txHash)
@@ -111,17 +123,20 @@ const Success = ({ txHash, message }: { txHash?: string; message: string }) => {
   )
 }
 
-const dismissToast = (toastId?: string) => {
+const dismissToast = (toastId?: string): void => {
   toastId ? global?.toast?.hide(toastId) : global?.toast.hideAll()
 }
 
-const getToastHeight = (type: TransactionToastType, txHash?: string) => {
-  if (txHash) {
-    if (
-      type === TransactionToastType.ERROR ||
-      type === TransactionToastType.SUCCESS
-    )
-      return 76
+const getToastHeight = (
+  type: TransactionToastType,
+  txHash?: string
+): number | undefined => {
+  if (
+    txHash &&
+    (type === TransactionToastType.ERROR ||
+      type === TransactionToastType.SUCCESS)
+  ) {
+    return 76
   }
 
   return undefined
@@ -130,7 +145,7 @@ const getToastHeight = (type: TransactionToastType, txHash?: string) => {
 const TransactionToast: FC<Props> = ({ message, toastId, type, txHash }) => {
   const theme = useApplicationContext().theme
 
-  const renderContent = () => {
+  const renderContent = (): JSX.Element => {
     switch (type) {
       case TransactionToastType.PENDING:
         return <Pending message={message} />
@@ -141,7 +156,7 @@ const TransactionToast: FC<Props> = ({ message, toastId, type, txHash }) => {
     }
   }
 
-  const hideToast = () => dismissToast(toastId)
+  const hideToast = (): void => dismissToast(toastId)
 
   const style = {
     backgroundColor: theme.neutral850,
