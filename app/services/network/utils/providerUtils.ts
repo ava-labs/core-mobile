@@ -24,7 +24,7 @@ export function getBitcoinProvider(
   )
 }
 
-export function getEvmProvider(network: Network) {
+export function getEvmProvider(network: Network): JsonRpcBatchInternal {
   if (network.vmName !== NetworkVMType.EVM)
     throw new Error(`Cannot get provider for network type: ${network.vmName}`)
 
@@ -68,9 +68,7 @@ export function getAvalancheNetwork(
     : networks[ChainId.AVALANCHE_MAINNET_ID]
 }
 
-export function getBitcoinNetwork(
-  isTest: boolean | undefined
-): Network | undefined {
+export function getBitcoinNetwork(isTest: boolean | undefined): Network {
   return isTest ? BITCOIN_TEST_NETWORK : BITCOIN_NETWORK
 }
 
