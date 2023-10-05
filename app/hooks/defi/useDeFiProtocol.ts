@@ -14,10 +14,7 @@ export const useDeFiProtocol = (protocolId: string) => {
     refetchInterval: refetchIntervals.deFiProtocol,
     enabled: !!addressC && !!protocolId,
     queryKey: [ReactQueryKeys.DEFI_PROTOCOL, addressC, protocolId],
-    queryFn: () =>
-      DeFiService.getDeFiProtocol({
-        queries: { id: addressC, protocol_id: protocolId }
-      }),
+    queryFn: () => DeFiService.getDeFiProtocol(addressC, protocolId),
     select: data => DeFiProtocolCamelCase.parse(data)
   })
 }
