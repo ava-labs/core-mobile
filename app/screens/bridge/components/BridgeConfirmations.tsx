@@ -16,6 +16,7 @@ import { DOCS_BTC_TO_BTCB_FAQ } from 'resources/Constants'
 import Logger from 'utils/Logger'
 import { selectBridgeAppConfig } from 'store/bridge'
 import { useSelector } from 'react-redux'
+import { getFormattedDistance } from 'utils/date/getFormattedDistance'
 
 interface Props {
   sourceChain?: Blockchain
@@ -168,9 +169,9 @@ const PopableInfo = ({ openFaq }: { openFaq: () => void }): JSX.Element => {
     hide()
   }
 
-  const offboardDelaySeconds = config?.criticalBitcoin.offboardDelaySeconds
-    ? Math.floor(config.criticalBitcoin.offboardDelaySeconds / 3600)
-    : 12
+  const offboardDelayDuration = config?.criticalBitcoin.offboardDelaySeconds
+    ? getFormattedDistance(config.criticalBitcoin.offboardDelaySeconds)
+    : '12 hours'
 
   const renderPopoverInfoText = (): JSX.Element => (
     <View
@@ -180,7 +181,7 @@ const PopableInfo = ({ openFaq }: { openFaq: () => void }): JSX.Element => {
         backgroundColor: theme.neutral100
       }}>
       <AvaText.Caption textStyle={{ color: theme.neutral900 }}>
-        {`Bridging from Avalanche to Bitcoin takes approximately ${offboardDelaySeconds} hours. Please see the `}
+        {`Bridging from Avalanche to Bitcoin takes approximately ${offboardDelayDuration}. Please see the `}
         <AvaText.Caption
           textStyle={{ color: theme.blueDark, fontWeight: '600' }}
           onPress={handleOnPress}>
