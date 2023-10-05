@@ -12,7 +12,7 @@ describe('Add existing metamask wallet', () => {
   })
 
   it('should successfully add an existing metamask wallet', async () => {
-    const recoveryPhrase: string = process.env.E2E_METAMASK as string
+    const recoveryPhrase: string = process.env.E2E_METAMASK_MNEMONIC as string
     await ExistingRecoveryPhrasePage.recoverWallet(recoveryPhrase)
   })
 })
