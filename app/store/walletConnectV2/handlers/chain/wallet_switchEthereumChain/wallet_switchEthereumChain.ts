@@ -104,7 +104,6 @@ class WalletSwitchEthereumChainHandler
     }
 
     const data = result.data
-
     const state = getState()
     const isDeveloperMode = selectIsDeveloperMode(state)
 

@@ -5,8 +5,11 @@ import mockNetworks from 'tests/fixtures/networks.json'
 import AppNavigation from 'navigation/AppNavigation'
 import * as Navigation from 'utils/Navigation'
 import { setActive } from 'store/network'
+import {
+  selectIsDeveloperMode,
+  toggleDeveloperMode
+} from 'store/settings/advanced'
 import { walletSwitchEthereumChainHandler as handler } from './wallet_switchEthereumChain'
-
 const mockActiveNetwork = mockNetworks[43114]
 
 jest.mock('store/network', () => {
@@ -14,7 +17,15 @@ jest.mock('store/network', () => {
   return {
     ...actual,
     selectActiveNetwork: () => mockActiveNetwork,
-    selectNetworks: () => mockNetworks
+    selectAllNetworks: () => mockNetworks
+  }
+})
+
+jest.mock('store/settings/advanced', () => {
+  const actual = jest.requireActual('store/settings/advanced')
+  return {
+    ...actual,
+    selectIsDeveloperMode: jest.fn()
   }
 })
 
@@ -142,13 +153,25 @@ describe('wallet_switchEthereumChain handler', () => {
         success: false,
         error: ethErrors.provider.custom({
           code: 4902,
-          message: `Unrecognized chain ID "0x134343242134324". Try adding the chain using ${RpcMethod.WALLET_ADD_ETHEREUM_CHAIN} first.`
+          message: `Unrecognized chain ID "${Number(
+            // eslint-disable-next-line @typescript-eslint/no-loss-of-precision
+            0x134343242134324
+          )}". Try adding the chain using ${
+            RpcMethod.WALLET_ADD_ETHEREUM_CHAIN
+          } first.`
         })
       })
     })
   })
 
   describe('approve', () => {
+    beforeEach(() => {
+      const mockSelectIsDeveloperMode =
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        selectIsDeveloperMode as jest.MockedFunction<any>
+      mockSelectIsDeveloperMode.mockImplementation(() => false)
+    })
+
     // eslint-disable-next-line jest/expect-expect
     it('should return error when approve data is invalid', async () => {
       const invalidDataScenarios = [null, {}, { network: null }]
@@ -192,6 +215,50 @@ describe('wallet_switchEthereumChain handler', () => {
         },
         mockListenerApi
       )
+
+      expect(mockDispatch).not.toHaveBeenCalledWith(toggleDeveloperMode())
+
+      expect(mockDispatch).toHaveBeenCalledWith(
+        setActive(expectedNetwork.chainId)
+      )
+
+      expect(result).toEqual({ success: true, value: null })
+    })
+
+    it('should set requested network to active, toggle dev mode and return success', async () => {
+      const testRequest = createRequest([{ chainId: '0x0xaa36a7' }])
+
+      const expectedNetwork = {
+        chainId: 11155111,
+        chainName: 'Sepolia',
+        description: '',
+        explorerUrl: 'https://sepolia.etherscan.io',
+        isTestnet: true,
+        mainnetChainId: 0,
+        logoUri: '',
+        networkToken: {
+          symbol: 'SEP',
+          name: 'SEP',
+          description: '',
+          decimals: 18,
+          logoUri: ''
+        },
+        platformChainId: '',
+        rpcUrl: 'https://rpc.sepolia.dev',
+        subnetId: '',
+        vmId: '',
+        vmName: 'EVM'
+      }
+
+      const result = await handler.approve(
+        {
+          request: testRequest,
+          data: { network: expectedNetwork }
+        },
+        mockListenerApi
+      )
+
+      expect(mockDispatch).toHaveBeenCalledWith(toggleDeveloperMode())
 
       expect(mockDispatch).toHaveBeenCalledWith(
         setActive(expectedNetwork.chainId)
