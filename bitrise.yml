@@ -119,7 +119,7 @@ workflows:
         - pipeline_intermediate_files: |-
             $BITRISE_DEPLOY_DIR/app-internal-e2e-bitrise-signed.apk:BITRISE_APK_PATH
             $BITRISE_DEPLOY_DIR/app-internal-e2e-androidTest-bitrise-signed.apk:BITRISE_TEST_APK_PATH	
-  ui_test_on_pixel_4_one:
+  ui-test-on-pixel4:
     envs:
     - TESTS_TO_RUN: $TESTS_TO_RUN_GROUP_1
       opts:
@@ -148,7 +148,7 @@ workflows:
     steps:
     - avd-manager@1.2:
         inputs:
-        - api_level: "28"
+        - api_level: "30"
         - emulator_id: emulator-5554
         - emulator_channel: "0"
         - create_command_flags: --sdcard 512M
@@ -161,7 +161,7 @@ workflows:
     - _pull_app_files
     after_run:
     - _run_android_tests
-  ui_test_on_pixel_4_two:
+  ui-test-pixel3:
     envs:
     - TESTS_TO_RUN: $TESTS_TO_RUN_GROUP_2
       opts:
@@ -196,14 +196,14 @@ workflows:
         - create_command_flags: --sdcard 512M
         - tag: default
         - abi: x86_64
-        - profile: pixel_4
+        - profile: pixel_3
     - wait-for-android-emulator@1: {}
     before_run:
     - _install-and-set-env
     - _pull_app_files
     after_run:
     - _run_android_tests
-  ui_test_on_pixel_4_three:
+  ui-test-on-pixel5:
     envs:
     - TESTS_TO_RUN: $TESTS_TO_RUN_GROUP_3
       opts:
@@ -232,13 +232,13 @@ workflows:
     steps:
     - avd-manager@1.2:
         inputs:
-        - api_level: "28"
+        - api_level: "26"
         - emulator_id: emulator-5554
         - emulator_channel: "0"
         - create_command_flags: --sdcard 512M
         - tag: default
         - abi: x86_64
-        - profile: pixel_4
+        - profile: pixel_5
     - wait-for-android-emulator@1: {}
     before_run:
     - _install-and-set-env
