@@ -161,7 +161,7 @@ workflows:
     - _pull_app_files
     after_run:
     - _run_android_tests
-  ui-test-pixel3:
+  ui-test-on-pixel3:
     envs:
     - TESTS_TO_RUN: $TESTS_TO_RUN_GROUP_2
       opts:
