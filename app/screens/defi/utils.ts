@@ -146,10 +146,12 @@ const mapCommonItem = (item: DeFiPortfolioItem): DeFiCommonItem => {
   }
 }
 
-const sortItems = (items: DeFiItem[]): DeFiItem[] => {
+export const sortItems = <T extends { netUsdValue: number }>(
+  items: T[]
+): T[] => {
   return [...items].sort(({ netUsdValue: a }, { netUsdValue: b }) => b - a)
 }
 
-export const profitLossColors = (theme: AppTheme, value: number) => {
+export const profitLossColors = (theme: AppTheme, value: number): string => {
   return value > 0 ? theme.colorSuccess : theme.colorError
 }
