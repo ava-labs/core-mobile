@@ -228,7 +228,8 @@ const testnetDynamicFeesConfig: BridgeConfig = {
       walletAddresses: {
         avalanche: '0x1acc0bc039f4e594bbc65160726813c0223fb2bf',
         btc: 'tb1q7zjeqmrq9pq4u2v3ett9rfhd9r3nprh0cpr2lc'
-      }
+      },
+      offboardDelaySeconds: 300
     },
     nonCriticalBitcoin: {
       networkInfo: {
