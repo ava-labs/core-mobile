@@ -16,9 +16,15 @@ export function NetworkLogo({
   size: number
   style?: StyleProp<ImageStyle>
   testID?: string
-}) {
-  style = [{ borderRadius: size / 2, width: size, height: size }, style]
-
+}): JSX.Element {
+  style = [
+    {
+      borderRadius: size / 2,
+      width: size,
+      height: size
+    },
+    style
+  ]
   return logoUri ? (
     <Image
       source={{
@@ -28,7 +34,7 @@ export function NetworkLogo({
     />
   ) : (
     <View style={style}>
-      <GlobeSVG height={size} testID="network_logo__globe_svg" />
+      <GlobeSVG height={'100%'} testID="network_logo__globe_svg" />
     </View>
   )
 }

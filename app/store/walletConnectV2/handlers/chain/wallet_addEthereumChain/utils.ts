@@ -13,7 +13,8 @@ const chainInfoSchema = z.object({
       decimals: z.number()
     })
     .optional(),
-  rpcUrls: z.array(z.string()).optional()
+  rpcUrls: z.array(z.string()).optional(),
+  isTestnet: z.boolean().optional()
 })
 
 const paramsSchema = z.tuple([chainInfoSchema])
@@ -23,10 +24,12 @@ const approveDataSchema = z.object({
   isExisting: z.boolean()
 })
 
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export const parseRequestParams = (params: unknown) => {
   return paramsSchema.safeParse(params)
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export const parseApproveData = (data: unknown) => {
   return approveDataSchema.safeParse(data)
 }

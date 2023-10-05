@@ -73,6 +73,12 @@ module.exports = {
         jest: true,
         'jest/globals': true
       }
+    },
+    {
+      files: ['*.test.ts', '*.e2e.smoke.ts', '*.e2e.ts'],
+      rules: {
+        '@typescript-eslint/explicit-function-return-type': ['off']
+      }
     }
   ]
 }
