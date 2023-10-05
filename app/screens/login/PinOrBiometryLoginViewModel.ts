@@ -187,49 +187,51 @@ export function usePinOrBiometryLogin(): {
 
   useEffect(() => {
     async function checkPinEntered(): Promise<void> {
-      if (pinEntered) {
-        try {
-          const credentials =
-            (await BiometricsSDK.loadWalletWithPin()) as UserCredentials
+      if (!pinEntered) {
+        return
+      }
 
-          const { data, version } = await decrypt(
-            credentials.password,
-            enteredPin
+      try {
+        const credentials =
+          (await BiometricsSDK.loadWalletWithPin()) as UserCredentials
+
+        const { data, version } = await decrypt(
+          credentials.password,
+          enteredPin
+        )
+
+        if (version === 1) {
+          // data was encrypted using version 1 config
+          // we need to re-encrypt it using version 2 config
+          // and store it again
+          const encryptedData = await encrypt(data, enteredPin)
+          await BiometricsSDK.storeWalletWithPin(encryptedData, false)
+        }
+
+        setMnemonic(data)
+        dispatch(resetLoginAttempt())
+      } catch (err) {
+        Logger.error('Error decrypting data', err)
+
+        const isInvalidPin =
+          err instanceof Error &&
+          (err?.message?.includes('BAD_DECRYPT') || // Android
+            err?.message?.includes('Decrypt failed')) // iOS
+
+        if (isInvalidPin) {
+          dispatch(
+            setLoginAttempt({
+              count: loginAttempt.count + 1,
+              timestamp: Date.now()
+            })
           )
-
-          if (version === 1) {
-            // data was encrypted using version 1 config
-            // we need to re-encrypt it using version 2 config
-            // and store it again
-            const encryptedData = await encrypt(data, enteredPin)
-            await BiometricsSDK.storeWalletWithPin(encryptedData, false)
-          }
-
-          setMnemonic(data)
-          dispatch(resetLoginAttempt())
-        } catch (err) {
-          Logger.error('Error decrypting data', err)
-
-          const isInvalidPin =
-            err instanceof Error &&
-            (err?.message?.includes('BAD_DECRYPT') || // Android
-              err?.message?.includes('Decrypt failed')) // iOS
-
-          if (isInvalidPin) {
-            dispatch(
-              setLoginAttempt({
-                count: loginAttempt.count + 1,
-                timestamp: Date.now()
-              })
-            )
-            resetConfirmPinProcess()
-            fireJiggleAnimation()
-          } else if (
-            err instanceof NoSaltError ||
-            err instanceof InvalidVersionError
-          ) {
-            alertBadData()
-          }
+          resetConfirmPinProcess()
+          fireJiggleAnimation()
+        } else if (
+          err instanceof NoSaltError ||
+          err instanceof InvalidVersionError
+        ) {
+          alertBadData()
         }
       }
     }
