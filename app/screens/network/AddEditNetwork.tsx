@@ -13,7 +13,7 @@ import AvaText from 'components/AvaText'
 import FlexSpacer from 'components/FlexSpacer'
 import { Network, NetworkVMType } from '@avalabs/chains-sdk'
 import InputText from 'components/InputText'
-import { addCustomNetwork, selectNetworks } from 'store/network'
+import { addCustomNetwork, selectAllNetworks } from 'store/network'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 
 export type AddEditNetworkProps = {
@@ -35,10 +35,10 @@ export default function AddEditNetwork({
   mode,
   network,
   onClose
-}: AddEditNetworkProps) {
+}: AddEditNetworkProps): JSX.Element {
   const dispatch = useDispatch()
   const isTestnet = useSelector(selectIsDeveloperMode)
-  const allNetworks = useSelector(selectNetworks)
+  const allNetworks = useSelector(selectAllNetworks)
 
   const [rpcUrl, setRpcUrl] = useState(network?.rpcUrl ?? '')
   const [networkName, setNetworkName] = useState(network?.chainName ?? '')
@@ -59,7 +59,7 @@ export default function AddEditNetwork({
   }, errorsInitialState)
   const [showErrors, setShowErrors] = useState(false)
 
-  function getError(error: keyof typeof _errors) {
+  function getError(error: keyof typeof _errors): string {
     if (!showErrors) return ''
     return _errors[error]
   }
@@ -71,7 +71,7 @@ export default function AddEditNetwork({
     []
   )
 
-  function hasErrors() {
+  function hasErrors(): boolean {
     return Object.values(_errors).some(e => e)
   }
 
@@ -87,7 +87,7 @@ export default function AddEditNetwork({
     setError
   ])
 
-  function validateInputs() {
+  function validateInputs(): void {
     _dispatchErrors('reset')
     if (!rpcUrl) {
       setError('rpcUrl', 'Required')
@@ -121,7 +121,7 @@ export default function AddEditNetwork({
     }
   }
 
-  const save = () => {
+  const save = (): void => {
     setShowErrors(true)
     if (hasErrors()) return
 
@@ -217,7 +217,7 @@ function DetailItem({
   value: string
   onChange: (value: string) => void
   error?: string
-}) {
+}): JSX.Element {
   return (
     <InputText
       label={title}
