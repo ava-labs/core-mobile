@@ -51,10 +51,10 @@ workflows:
         - keystore_url: $BITRISEIO_ANDROID_KEY_STORE_URL
   _build-android-for-testing: 
     envs:
-    - TESTRAIL_RUN: $TESTRAIL_RUN 
+    - TESTRAIL_RUN: $TESTRAIL_RUN_ID
       opts:
         is_expand: false
-    - ENVIRONMENT: development
+    - ENVIRONMENT: production
       opts:
         is_expand: false
     - PLATFORM: Android
@@ -81,15 +81,6 @@ workflows:
         title: Fix Android Env Vars
         inputs:
         - file_path: scripts/bitrise/fixAndroidEnvVars.sh
-    # - avd-manager@1.2:
-    #     inputs:
-    #     - api_level: "28"
-    #     - emulator_id: emulator-5554
-    #     - emulator_channel: "0"
-    #     - create_command_flags: --sdcard 512M
-    #     - tag: default
-    #     - abi: x86_64
-    #     - profile: pixel_4
     - script-runner@0:
         title: Create Test Run
         inputs:
@@ -167,7 +158,7 @@ workflows:
     - wait-for-android-emulator@1: {}
     before_run:
     - _install-and-set-env
-    - _pull_apks
+    - _pull_app_files
     after_run:
     - _run_android_tests
   ui_test_on_pixel_4_two:
@@ -209,7 +200,7 @@ workflows:
     - wait-for-android-emulator@1: {}
     before_run:
     - _install-and-set-env
-    - _pull_apks
+    - _pull_app_files
     after_run:
     - _run_android_tests
   ui_test_on_pixel_4_three:
@@ -251,7 +242,7 @@ workflows:
     - wait-for-android-emulator@1: {}
     before_run:
     - _install-and-set-env
-    - _pull_apks
+    - _pull_app_files
     after_run:
     - _run_android_tests
   _run_android_tests:
@@ -260,7 +251,7 @@ workflows:
           title: Detox
           inputs:
             - file_path: scripts/bitrise/detox/androidInternalE2e.sh
-  _pull_apks:
+  _pull_app_files:
     steps:
     - pull-intermediate-files@1:
         inputs:
@@ -297,6 +288,10 @@ workflows:
         - configuration: $IOS_CONFIGURATION
         - project_path: $IOS_PROJECT_PATH
         - code_signing_allowed: "yes"
+    - deploy-to-bitrise-io@2: 
+        inputs:
+        - pipeline_intermediate_files: |-
+            $BITRISE_APP_DIR_PATH:BITRISE_APP_DIR_PATH
   _install-and-set-env:
     before_run:
     - _install-node-18
@@ -630,6 +625,32 @@ workflows:
     - _install-and-set-env
     - _set-version
     - _build-ios-simulator
+    envs:
+    - ENVIRONMENT: production
+      opts:
+        is_expand: false
+    - PLATFORM: iOS
+      opts:
+        is_expand: false
+    - IOS_CONFIGURATION: Release
+      opts:
+        is_expand: false
+    - IOS_SCHEME: AvaxWalletInternal
+      opts:
+        is_expand: false
+    - APP_TITLE: Core Mobile Internal
+      opts:
+        is_expand: false
+    - E2E: "true"
+      opts:
+        is_expand: false
+    - USE_TEST_FEATURE_FLAGS: "true"
+      opts:
+        is_expand: false
+  ios-internal-e2e-testing:
+    before_run:
+    - _set-version
+    - _pull_app_files
     after_run:
     - _send-test-result-notifcation-slack
     envs:
