@@ -649,6 +649,7 @@ workflows:
         is_expand: false
   ios-internal-e2e-testing:
     before_run:
+    - _install-and-set-env
     - _set-version
     - _pull_app_files
     after_run:
