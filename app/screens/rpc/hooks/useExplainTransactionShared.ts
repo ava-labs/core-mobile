@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
+  ContractCall,
   DisplayValueParserProps,
   Transaction,
   TransactionDisplayValues
@@ -33,6 +34,20 @@ import { useNativeTokenPriceForNetwork } from 'hooks/useNativeTokenPriceForNetwo
 
 export const UNLIMITED_SPEND_LIMIT_LABEL = 'Unlimited'
 
+interface ExplainTransactionSharedTypes {
+  setSpendLimit: (customSpendData: SpendLimit) => void
+  contractType: ContractCall | undefined
+  selectedGasFee: FeePreset
+  displayData: TransactionDisplayValues
+  setCustomFee: (
+    gasPrice: bigint,
+    modifier: FeePreset,
+    gasLimit: number
+  ) => void
+  transaction: Transaction | null
+  customSpendLimit: SpendLimit
+}
+
 type Args = {
   txParams: TransactionParams | undefined
   network: Network | undefined
@@ -40,8 +55,9 @@ type Args = {
   onError: (error?: string) => void
 }
 
-// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-export const useExplainTransactionShared = (args: Args) => {
+export const useExplainTransactionShared = (
+  args: Args
+): ExplainTransactionSharedTypes => {
   const { network, txParams, peerMeta, onError } = args
   const { data: networkFees } = useNetworkFee(network)
   const { nativeTokenPrice: tokenPrice } =
@@ -155,7 +171,6 @@ export const useExplainTransactionShared = (args: Args) => {
   /******************************************************************************
    * Load transaction information
    *****************************************************************************/
-  // eslint-disable-next-line sonarjs/cognitive-complexity
   useEffect(() => {
     // TODO: determine why loadTx render multiple times on Token Spend Approval
     async function loadTx(): Promise<void> {
