@@ -20,7 +20,7 @@ import { ErrorState } from './components/ErrorState'
 import { ZeroState } from './components/ZeroState'
 import { ProtocolLogo } from './components/ProtocolLogo'
 import { NetworkLogo } from './components/NetworkLogo'
-import { sortItems } from './utils'
+import { sortDeFiItems } from './utils'
 
 type ScreenProps = PortfolioScreenProps<
   typeof AppNavigation.Portfolio.Portfolio
@@ -43,7 +43,7 @@ export const DeFiProtocolList: FC = () => {
 
   const memoizedData = React.useMemo(() => {
     if (!data) return []
-    return sortItems(data)
+    return sortDeFiItems(data)
   }, [data])
 
   const getAmount = useExchangedAmount()
