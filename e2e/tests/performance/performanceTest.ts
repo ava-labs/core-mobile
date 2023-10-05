@@ -20,14 +20,10 @@ function runDetoxTest(testName: string): number {
   execSync(command)
 
   const output = fs.readFileSync(tempfilePath, 'utf8').trim()
-  const time = parseFloat(output)
-
-  return time
+  return parseFloat(output)
 }
 
 function runTests(): void {
-  const results: number[] = []
-
   for (let i = 0; i < numberOfTests; i++) {
     const testName: string | undefined = testNames[i]
     if (!testName) {
@@ -69,8 +65,6 @@ function runTests(): void {
     } catch (err) {
       console.error('Error writing file:', err)
     }
-
-    results.push(...testResults)
   }
 
   console.log('Results saved to file.')

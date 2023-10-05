@@ -57,9 +57,7 @@ function AccountItem({
         ? context.theme.colorBg3
         : context.theme.colorBg2
     } else {
-      return context.isDarkMode
-        ? context.theme.colorBg2
-        : context.theme.colorBg2
+      return context.theme.colorBg2
     }
   }, [
     context.isDarkMode,

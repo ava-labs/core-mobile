@@ -9,7 +9,8 @@ module.exports = {
     'plugin:jest/recommended',
     'plugin:react-hooks/recommended',
     'plugin:prettier/recommended',
-    'plugin:@tanstack/eslint-plugin-query/recommended'
+    'plugin:@tanstack/eslint-plugin-query/recommended',
+    'plugin:sonarjs/recommended'
   ],
   ignorePatterns: ['node_modules', 'dist', 'shim.js'],
   plugins: [
@@ -22,7 +23,8 @@ module.exports = {
     'jest',
     'import',
     'detox',
-    'promise'
+    'promise',
+    'sonarjs'
   ],
   rules: {
     'no-console': 2,
@@ -60,7 +62,8 @@ module.exports = {
           'index'
         ]
       }
-    ]
+    ],
+    'sonarjs/no-duplicate-string': 0
   },
   overrides: [
     {

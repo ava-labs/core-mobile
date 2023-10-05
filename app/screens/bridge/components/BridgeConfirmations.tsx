@@ -33,9 +33,7 @@ const padTimeElapsed = (startTime: number, endTime?: number): Date => {
 
   const now = Date.now()
   const diff = (endTime || now) - startTime
-  const offset = new Date(now + diff)
-
-  return offset
+  return new Date(now + diff)
 }
 
 function ElapsedTimer({

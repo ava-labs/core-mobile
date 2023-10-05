@@ -93,8 +93,7 @@ class NewRecoveryPhrasePage {
     const mnemonicMapped = mnemonicWordIndexArray.map(item => ({
       [item.mnemonicNum]: item.mnemonicWord
     }))
-    const mnemonicObject = Object.assign({}, ...mnemonicMapped)
-    return mnemonicObject
+    return Object.assign({}, ...mnemonicMapped)
   }
 }
 export default new NewRecoveryPhrasePage()

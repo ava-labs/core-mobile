@@ -220,7 +220,7 @@ const SignTransaction = () => {
           site={displayData.site}
           spendLimit={customSpendLimit}
           token={displayData?.tokenToBeApproved}
-          onClose={() => setShowCustomSpendLimit(!showCustomSpendLimit)}
+          onClose={() => setShowCustomSpendLimit(false)}
           setSpendLimit={setSpendLimit}
           requestedApprovalLimit={requestedApprovalLimit}
         />

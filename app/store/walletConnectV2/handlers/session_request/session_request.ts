@@ -56,11 +56,9 @@ class SessionRequestHandler implements RpcRequestHandler<SessionProposal> {
     // approve all methods that we support here to allow dApps
     // that use Wagmi to be able to send/access more rpc methods
     // by default, Wagmi only requests eth_sendTransaction and personal_sign
-    const approvedMethods = isCoreApp
+    return isCoreApp
       ? [...supportedMethods, ...CORE_ONLY_METHODS]
       : supportedMethods
-
-    return approvedMethods
   }
 
   private getApprovedEvents = (
