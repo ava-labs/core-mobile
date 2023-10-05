@@ -594,6 +594,5 @@ export async function writeRunIdToTextFile(runId: string) {
 }
 
 export function generateUtcTimestamp() {
-  const utcDate = new Date().getUTCDate().toString()
-  return utcDate
+  return new Date().getUTCDate().toString()
 }
