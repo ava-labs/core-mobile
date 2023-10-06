@@ -2,8 +2,8 @@ import { useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import EarnService from 'services/earn/EarnService'
 import { selectAvaxPrice } from 'store/balance'
-import { useQuery } from '@tanstack/react-query'
-import { GetCurrentSupplyResponse } from '@avalabs/avalanchejs-v2/dist/src/vms/pvm'
+import { UseQueryResult, useQuery } from '@tanstack/react-query'
+import { GetCurrentSupplyResponse } from '@avalabs/avalanchejs-v2/dist/vms/pvm'
 import { Seconds } from 'types/siUnits'
 import { Avax } from 'types/Avax'
 
@@ -24,7 +24,13 @@ export const useEarnCalcEstimatedRewards = ({
   amount,
   duration,
   delegationFee
-}: useEarnCalcEstimatedRewardsProps) => {
+}: useEarnCalcEstimatedRewardsProps): UseQueryResult<
+  {
+    estimatedTokenReward: Avax
+    estimatedRewardInCurrency: string
+  },
+  Error
+> => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const avaxPrice = useSelector(selectAvaxPrice)
 
