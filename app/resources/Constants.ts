@@ -130,3 +130,6 @@ export const DOCS_DELEGATING =
 
 export const DOCS_HOW_TO_DELEGATE =
   'https://support.avax.network/en/articles/7950590-core-mobile-how-do-i-delegate-with-earn'
+
+export const DOCS_BTC_TO_BTCB_FAQ =
+  'https://support.avax.network/en/articles/6325230-avalanche-bridge-faq-for-converting-btc-to-btc-b'

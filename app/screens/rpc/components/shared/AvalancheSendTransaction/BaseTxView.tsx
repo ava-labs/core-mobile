@@ -6,14 +6,14 @@ import { Row } from 'components/Row'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import Card from 'components/Card'
 import { bigIntToString } from '@avalabs/utils-sdk'
-import { GetAssetDescriptionResponse } from '@avalabs/avalanchejs-v2/dist/src/vms/common'
+import { GetAssetDescriptionResponse } from '@avalabs/avalanchejs-v2/dist/vms/common'
 import Separator from 'components/Separator'
 import { truncateAddress } from 'utils/Utils'
 import { Avalanche } from '@avalabs/wallets-sdk'
 import { AvalancheChainStrings } from 'store/walletConnectV2/handlers/types'
 import TxFee from './components/TxFee'
 
-const BaseTxView = ({ tx }: { tx: Avalanche.BaseTx }) => {
+const BaseTxView = ({ tx }: { tx: Avalanche.BaseTx }): JSX.Element => {
   const { theme } = useApplicationContext()
   const { chain, txFee, outputs, memo } = tx
 
@@ -25,7 +25,7 @@ const BaseTxView = ({ tx }: { tx: Avalanche.BaseTx }) => {
     assetDescription?: GetAssetDescriptionResponse
     owners: string[]
     isAvax: boolean
-  }) => {
+  }): JSX.Element => {
     return (
       <Card key={output.assetId} style={styles.balanceCardContainer}>
         {output.owners.map(address => (

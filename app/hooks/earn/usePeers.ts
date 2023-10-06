@@ -1,10 +1,10 @@
-import { Peer } from '@avalabs/avalanchejs-v2/dist/src/info/model'
-import { useQuery } from '@tanstack/react-query'
+import { Peer } from '@avalabs/avalanchejs-v2/dist/info/model'
+import { UseQueryResult, useQuery } from '@tanstack/react-query'
 import { useSelector } from 'react-redux'
 import EarnService from 'services/earn/EarnService'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 
-export const usePeers = () => {
+export const usePeers = (): UseQueryResult<Record<string, Peer>, Error> => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
 
   return useQuery({
