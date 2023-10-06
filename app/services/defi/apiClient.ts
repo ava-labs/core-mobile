@@ -23,7 +23,7 @@ export const defiApiClient = new Zodios(
     },
     {
       method: 'get',
-      path: 'user/protocol',
+      path: '/user/protocol',
       parameters: [
         { name: 'id', type: 'Query', schema: z.string() },
         { name: 'protocol_id', type: 'Query', schema: z.string() }
@@ -33,7 +33,7 @@ export const defiApiClient = new Zodios(
     },
     {
       method: 'get',
-      path: 'user/all_simple_protocol_list',
+      path: '/user/all_simple_protocol_list',
       parameters: [{ name: 'id', type: 'Query', schema: z.string() }],
       alias: 'getDeFiProtocolList',
       response: z.array(DeFiSimpleProtocolSchema)
