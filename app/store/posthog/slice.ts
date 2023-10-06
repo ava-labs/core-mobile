@@ -144,6 +144,14 @@ export const selectIsCoinbasePayBlocked = (state: RootState): boolean => {
   )
 }
 
+export const selectIsBrowserBlocked = (state: RootState): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    !featureFlags[FeatureGates.BROWSER] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
 export const selectUseCoinGeckoPro = (state: RootState): boolean => {
   const { featureFlags } = state.posthog
   return (
