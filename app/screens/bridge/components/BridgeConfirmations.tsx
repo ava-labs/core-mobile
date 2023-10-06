@@ -101,9 +101,18 @@ function ElapsedTimer({
         {displayedHours && `${displayedHours}:`}
         {displayedMinutes}:{displayedSeconds}
       </AvaText.ButtonSmall>
-      <Space x={4} />
-      {showInfoIcon && <PopableInfo openFaq={handleOpenFaq} />}
-      {complete && <CheckmarkSVG color={theme.white} size={10} />}
+      {showInfoIcon && (
+        <>
+          <Space x={4} />
+          <PopableInfo openFaq={handleOpenFaq} />
+        </>
+      )}
+      {complete && (
+        <>
+          <Space x={4} />
+          <CheckmarkSVG color={theme.white} size={10} />
+        </>
+      )}
     </OvalTagBg>
   )
 }
