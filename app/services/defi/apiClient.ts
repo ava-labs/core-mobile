@@ -6,12 +6,13 @@ import {
   DeFiProtocolSchema,
   DeFiSimpleProtocolSchema
 } from './debankTypes'
+import { ExchangeRateSchema } from './types'
 
 if (!Config.PROXY_URL) throw Error('PROXY_URL is missing')
 
 const baseUrl = Config.PROXY_URL + '/proxy/debank/v1'
 
-export const apiClient = new Zodios(
+export const defiApiClient = new Zodios(
   baseUrl,
   [
     {
@@ -46,3 +47,16 @@ export const apiClient = new Zodios(
     }
   }
 )
+
+// We're only loading exchange rates for USD at the moment.
+const CURRENCY_EXCHANGE_RATES_URL =
+  'https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/latest/currencies/usd.min.json'
+
+export const exchangeRateApiClient = new Zodios(CURRENCY_EXCHANGE_RATES_URL, [
+  {
+    method: 'get',
+    path: '',
+    alias: 'getExchangeRates',
+    response: ExchangeRateSchema
+  }
+])
