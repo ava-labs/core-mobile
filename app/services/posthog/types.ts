@@ -12,6 +12,7 @@ export enum FeatureGates {
   BUY_COINBASE_PAY = 'buy-feature-coinbase',
   USE_COINGECKO_PRO = 'use-coingecko-pro',
   DEFI = 'defi-feature',
+  BROWSER = 'browser-feature',
   LEFT_FAB = 'left-fab-feature',
   DARK_MODE = 'dark-mode-feature'
 }

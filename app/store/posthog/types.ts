@@ -16,6 +16,7 @@ export const DefaultFeatureFlagConfig = {
   [FeatureGates.BUY_COINBASE_PAY]: true,
   [FeatureGates.USE_COINGECKO_PRO]: true,
   [FeatureGates.DEFI]: true,
+  [FeatureGates.BROWSER]: false,
   [FeatureGates.LEFT_FAB]: false,
   [FeatureGates.DARK_MODE]: false
 }
