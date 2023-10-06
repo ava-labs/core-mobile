@@ -223,6 +223,14 @@ const PChainTransaction = z
     stakingTxHash: z.string().optional()
   })
   .passthrough()
+const XChainTransactionType = z.enum([
+  'BaseTx',
+  'CreateAssetTx',
+  'OperationTx',
+  'ImportTx',
+  'ExportTx',
+  'UNKNOWN'
+])
 const Asset = z
   .object({
     assetId: z.string(),
@@ -276,7 +284,7 @@ const XChainNonLinearTransaction = z
     txHash: z.string(),
     chainFormat: z.enum(['non-linear', 'linear']),
     timestamp: z.number(),
-    txType: z.string(),
+    txType: XChainTransactionType,
     memo: z.string(),
     consumedUtxos: z.array(Utxo),
     emittedUtxos: z.array(Utxo),
@@ -293,7 +301,7 @@ const XChainLinearTransaction = z
     txHash: z.string(),
     chainFormat: z.enum(['non-linear', 'linear']),
     timestamp: z.number(),
-    txType: z.string(),
+    txType: XChainTransactionType,
     memo: z.string(),
     consumedUtxos: z.array(Utxo),
     emittedUtxos: z.array(Utxo),
@@ -771,6 +779,36 @@ const ListDelegatorDetailsResponse = z
         PendingDelegatorDetails
       ])
     )
+  })
+  .passthrough()
+const EventType = z.literal('address_activity')
+const AddressActivityMetadata = z
+  .object({ address: z.string(), topic0: z.string().optional() })
+  .passthrough()
+const RegisterWebhookRequest = z
+  .object({
+    url: z.string(),
+    chainId: z.string(),
+    eventType: EventType,
+    metadata: AddressActivityMetadata
+  })
+  .passthrough()
+const WebhookStatusType = z.enum(['active', 'inactive'])
+const WebhookResponse = z
+  .object({
+    id: z.string(),
+    eventType: EventType,
+    metadata: AddressActivityMetadata,
+    url: z.string(),
+    chainId: z.string(),
+    status: WebhookStatusType,
+    createdAt: z.number()
+  })
+  .passthrough()
+const ListWebhooksResponse = z
+  .object({
+    nextPageToken: z.string().optional(),
+    webhooks: z.array(WebhookResponse)
   })
   .passthrough()
 const CurrencyCode = z.enum([
@@ -1433,6 +1471,7 @@ export const schemas = {
   PChainUtxo,
   PChainAsset,
   PChainTransaction,
+  XChainTransactionType,
   Asset,
   UtxoCredential,
   Utxo,
@@ -1495,6 +1534,12 @@ export const schemas = {
   ActiveDelegatorDetails,
   PendingDelegatorDetails,
   ListDelegatorDetailsResponse,
+  EventType,
+  AddressActivityMetadata,
+  RegisterWebhookRequest,
+  WebhookStatusType,
+  WebhookResponse,
+  ListWebhooksResponse,
   CurrencyCode,
   Money,
   NativeTokenBalance,
@@ -1563,6 +1608,7 @@ const endpoints = makeApi([
   {
     method: 'get',
     path: '/v1/chains',
+    alias: 'supportedChains',
     description: `Lists the supported EVM-compatible chains. Filterable by network.`,
     requestFormat: 'json',
     parameters: [
@@ -1577,6 +1623,7 @@ const endpoints = makeApi([
   {
     method: 'get',
     path: '/v1/chains/:chainId',
+    alias: 'getChainInfo',
     description: `Gets chain information for the EVM-compatible chain if supported by the api.`,
     requestFormat: 'json',
     parameters: [
@@ -1591,6 +1638,7 @@ const endpoints = makeApi([
   {
     method: 'get',
     path: '/v1/chains/:chainId/addresses/:address',
+    alias: 'getContractMetadata',
     description: `Gets metadata about the contract at the given address.`,
     requestFormat: 'json',
     parameters: [
@@ -1615,6 +1663,7 @@ const endpoints = makeApi([
   {
     method: 'get',
     path: '/v1/chains/:chainId/addresses/:address/balances:getNative',
+    alias: 'getNativeBalance',
     description: `Gets native token balance of a wallet address.
 
 Balance at a given block can be retrieved with the &#x60;blockNumber&#x60; parameter.`,
@@ -1663,6 +1712,7 @@ Balance at a given block can be retrieved with the &#x60;blockNumber&#x60; param
   {
     method: 'get',
     path: '/v1/chains/:chainId/addresses/:address/balances:listCollectibles',
+    alias: 'listCollectibleBalances',
     description: `Lists ERC-721 and ERC-1155 token balances of a wallet address.
 
 Balance for a specific contract can be retrieved with the &#x60;contractAddress&#x60; parameter.`,
@@ -1699,6 +1749,7 @@ Balance for a specific contract can be retrieved with the &#x60;contractAddress&
   {
     method: 'get',
     path: '/v1/chains/:chainId/addresses/:address/balances:listErc1155',
+    alias: 'listErc1155Balances',
     description: `Lists ERC-1155 token balances of a wallet address.
 
 Balance at a given block can be retrieved with the &#x60;blockNumber&#x60; parameter.
@@ -1742,6 +1793,7 @@ Balance for a specific contract can be retrieved with the &#x60;contractAddress&
   {
     method: 'get',
     path: '/v1/chains/:chainId/addresses/:address/balances:listErc20',
+    alias: 'listErc20Balances',
     description: `Lists ERC-20 token balances of a wallet address.
 
 Balance at a given block can be retrieved with the &#x60;blockNumber&#x60; parameter.
@@ -1807,6 +1859,7 @@ Balance for specific contracts can be retrieved with the &#x60;contractAddresses
   {
     method: 'get',
     path: '/v1/chains/:chainId/addresses/:address/balances:listErc721',
+    alias: 'listErc721Balances',
     description: `Lists ERC-721 token balances of a wallet address.
 
 Balance for a specific contract can be retrieved with the &#x60;contractAddress&#x60; parameter.`,
@@ -1843,6 +1896,7 @@ Balance for a specific contract can be retrieved with the &#x60;contractAddress&
   {
     method: 'get',
     path: '/v1/chains/:chainId/addresses/:address/transactions',
+    alias: 'listTransactions',
     description: `Returns a list of transactions where the given wallet address had an on-chain interaction for the given chain. The ERC-20 transfers, ERC-721 transfers, ERC-1155, and internal transactions returned are only those where the input address had an interaction. Specifically, those lists only inlcude entries where the input address was the sender (&#x60;from&#x60; field) or the receiver (&#x60;to&#x60; field) for the sub-transaction. Therefore the transactions returned from this list may not be complete representations of the on-chain data. For a complete view of a transaction use the &#x60;/chains/:chainId/transactions/:txHash&#x60; endpoint.
 
 Filterable by block ranges.`,
@@ -1889,6 +1943,7 @@ Filterable by block ranges.`,
   {
     method: 'get',
     path: '/v1/chains/:chainId/addresses/:address/transactions:listErc1155',
+    alias: 'listErc1155Transactions',
     description: `Lists ERC-1155 transfers for an address. Filterable by block range.`,
     requestFormat: 'json',
     parameters: [
@@ -1928,6 +1983,7 @@ Filterable by block ranges.`,
   {
     method: 'get',
     path: '/v1/chains/:chainId/addresses/:address/transactions:listErc20',
+    alias: 'listErc20Transactions',
     description: `Lists ERC-20 transfers for an address. Filterable by block range.`,
     requestFormat: 'json',
     parameters: [
@@ -1967,6 +2023,7 @@ Filterable by block ranges.`,
   {
     method: 'get',
     path: '/v1/chains/:chainId/addresses/:address/transactions:listErc721',
+    alias: 'listErc721Transactions',
     description: `Lists ERC-721 transfers for an address. Filterable by block range.`,
     requestFormat: 'json',
     parameters: [
@@ -2006,6 +2063,7 @@ Filterable by block ranges.`,
   {
     method: 'get',
     path: '/v1/chains/:chainId/addresses/:address/transactions:listInternals',
+    alias: 'listInternalTransactions',
     description: `Returns a list of internal transactions for an address and chain. Filterable by block range.
 
 Note that the internal transactions list only contains &#x60;CALL&#x60; or &#x60;CALLCODE&#x60; transactions with a non-zero value and &#x60;CREATE&#x60;/&#x60;CREATE2&#x60; transactions. To get a complete list of internal transactions use the &#x60;debug_&#x60; prefixed RPC methods on an archive node.`,
@@ -2047,6 +2105,7 @@ Note that the internal transactions list only contains &#x60;CALL&#x60; or &#x60
   {
     method: 'get',
     path: '/v1/chains/:chainId/addresses/:address/transactions:listNative',
+    alias: 'listNativeTransactions',
     description: `Lists native transactions for an address. Filterable by block range.`,
     requestFormat: 'json',
     parameters: [
@@ -2086,6 +2145,7 @@ Note that the internal transactions list only contains &#x60;CALL&#x60; or &#x60
   {
     method: 'get',
     path: '/v1/chains/:chainId/blocks',
+    alias: 'getLatestBlocks',
     description: `Lists the latest indexed blocks on the EVM-compatible chain sorted in descending order by block timestamp.`,
     requestFormat: 'json',
     parameters: [
@@ -2110,6 +2170,7 @@ Note that the internal transactions list only contains &#x60;CALL&#x60; or &#x60
   {
     method: 'get',
     path: '/v1/chains/:chainId/blocks/:blockId',
+    alias: 'getBlock',
     description: `Gets the details of an individual block on the EVM-compatible chain.`,
     requestFormat: 'json',
     parameters: [
@@ -2129,6 +2190,7 @@ Note that the internal transactions list only contains &#x60;CALL&#x60; or &#x60
   {
     method: 'get',
     path: '/v1/chains/:chainId/blocks/:blockId/transactions',
+    alias: 'getTransactionsForBlock',
     description: `Lists the transactions that occured in a given block.`,
     requestFormat: 'json',
     parameters: [
@@ -2148,6 +2210,7 @@ Note that the internal transactions list only contains &#x60;CALL&#x60; or &#x60
   {
     method: 'patch',
     path: '/v1/chains/:chainId/contracts/:address',
+    alias: 'updateContractInfo',
     description: `Update contract information. Updates will be reviewed by the Ava Labs team before they are published.`,
     requestFormat: 'json',
     parameters: [
@@ -2172,6 +2235,7 @@ Note that the internal transactions list only contains &#x60;CALL&#x60; or &#x60
   {
     method: 'get',
     path: '/v1/chains/:chainId/contracts/:address/deployments',
+    alias: 'listContractDeployments',
     description: `Lists all contracts deployed by the given address.`,
     requestFormat: 'json',
     parameters: [
@@ -2201,6 +2265,7 @@ Note that the internal transactions list only contains &#x60;CALL&#x60; or &#x60
   {
     method: 'get',
     path: '/v1/chains/:chainId/contracts/:address/transactions:getDeployment',
+    alias: 'getDeploymentTransaction',
     description: `If the address is a smart contract, returns the transaction in which it was deployed.`,
     requestFormat: 'json',
     parameters: [
@@ -2242,6 +2307,7 @@ Note that the internal transactions list only contains &#x60;CALL&#x60; or &#x60
   {
     method: 'get',
     path: '/v1/chains/:chainId/nfts/collections/:address/tokens',
+    alias: 'listTokens',
     description: `Lists tokens for an NFT contract.`,
     requestFormat: 'json',
     parameters: [
@@ -2271,6 +2337,7 @@ Note that the internal transactions list only contains &#x60;CALL&#x60; or &#x60
   {
     method: 'get',
     path: '/v1/chains/:chainId/nfts/collections/:address/tokens/:tokenId',
+    alias: 'getTokenDetails',
     description: `Gets token details for a specific token of an NFT contract.`,
     requestFormat: 'json',
     parameters: [
@@ -2295,6 +2362,7 @@ Note that the internal transactions list only contains &#x60;CALL&#x60; or &#x60
   {
     method: 'post',
     path: '/v1/chains/:chainId/nfts/collections/:address/tokens/:tokenId:reindex',
+    alias: 'reindexNft',
     description: `Triggers reindexing of token metadata for an NFT token. Reindexing can only be called once per hour for each NFT token.`,
     requestFormat: 'json',
     parameters: [
@@ -2319,6 +2387,7 @@ Note that the internal transactions list only contains &#x60;CALL&#x60; or &#x60
   {
     method: 'get',
     path: '/v1/chains/:chainId/tokens/:address/transfers',
+    alias: 'listTransfers',
     description: `Lists ERC transfers for an ERC-20, ERC-721, or ERC-1155 contract address.`,
     requestFormat: 'json',
     parameters: [
@@ -2358,6 +2427,7 @@ Note that the internal transactions list only contains &#x60;CALL&#x60; or &#x60
   {
     method: 'get',
     path: '/v1/chains/:chainId/transactions',
+    alias: 'listLatestTransactions',
     description: `Lists the latest transactions. Filterable by status.`,
     requestFormat: 'json',
     parameters: [
@@ -2387,6 +2457,7 @@ Note that the internal transactions list only contains &#x60;CALL&#x60; or &#x60
   {
     method: 'get',
     path: '/v1/chains/:chainId/transactions/:txHash',
+    alias: 'getTransaction',
     description: `Gets the details of a single transaction.`,
     requestFormat: 'json',
     parameters: [
@@ -2406,6 +2477,7 @@ Note that the internal transactions list only contains &#x60;CALL&#x60; or &#x60
   {
     method: 'get',
     path: '/v1/health-check',
+    alias: 'health-check',
     requestFormat: 'json',
     response: z
       .object({
@@ -2435,12 +2507,14 @@ Note that the internal transactions list only contains &#x60;CALL&#x60; or &#x60
   {
     method: 'post',
     path: '/v1/media/uploadImage',
+    alias: 'MediaController_uploadImage',
     requestFormat: 'json',
     response: z.void()
   },
   {
     method: 'get',
     path: '/v1/networks/:network',
+    alias: 'getNetworkDetails',
     description: `Gets network details such as validator and delegator stats.`,
     requestFormat: 'json',
     parameters: [
@@ -2455,6 +2529,7 @@ Note that the internal transactions list only contains &#x60;CALL&#x60; or &#x60
   {
     method: 'get',
     path: '/v1/networks/:network/addresses:listChainIds',
+    alias: 'getChainIdsForAddresses',
     description: `Returns Primary Network chains that each address has touched in the form of an address mapped array. If an address has had any on-chain interaction for a chain, that chain&#x27;s chain id will be returned.`,
     requestFormat: 'json',
     parameters: [
@@ -2474,6 +2549,7 @@ Note that the internal transactions list only contains &#x60;CALL&#x60; or &#x60
   {
     method: 'get',
     path: '/v1/networks/:network/blockchains',
+    alias: 'listBlockchains',
     description: `Lists all blockchains registered on the network.`,
     requestFormat: 'json',
     parameters: [
@@ -2503,6 +2579,7 @@ Note that the internal transactions list only contains &#x60;CALL&#x60; or &#x60
   {
     method: 'get',
     path: '/v1/networks/:network/blockchains/:blockchainId/assets/:assetId',
+    alias: 'getAssetDetails',
     description: `Gets asset details corresponding to the given asset id on the X-Chain.`,
     requestFormat: 'json',
     parameters: [
@@ -2531,6 +2608,7 @@ Note that the internal transactions list only contains &#x60;CALL&#x60; or &#x60
   {
     method: 'get',
     path: '/v1/networks/:network/blockchains/:blockchainId/assets/:assetId/transactions',
+    alias: 'listAssetTransactions',
     description: `Lists asset transactions corresponding to the given asset id on the X-Chain.`,
     requestFormat: 'json',
     parameters: [
@@ -2584,6 +2662,7 @@ Note that the internal transactions list only contains &#x60;CALL&#x60; or &#x60
   {
     method: 'get',
     path: '/v1/networks/:network/blockchains/:blockchainId/balances',
+    alias: 'getBalancesByAddresses',
     description: `Gets primary network balances for one of the Primary Network chains for the supplied addresses.
 
 C-Chain balances returned are only the shared atomic memory balance. For EVM balance, use the &#x60;/v1/chains/:chainId/addresses/:addressId/balances:getNative&#x60; endpoint.`,
@@ -2628,6 +2707,7 @@ C-Chain balances returned are only the shared atomic memory balance. For EVM bal
   {
     method: 'get',
     path: '/v1/networks/:network/blockchains/:blockchainId/blocks',
+    alias: 'listLatestPrimaryNetworkBlocks',
     description: `Lists latest blocks on one of the Primary Network chains.`,
     requestFormat: 'json',
     parameters: [
@@ -2666,6 +2746,7 @@ C-Chain balances returned are only the shared atomic memory balance. For EVM bal
   {
     method: 'get',
     path: '/v1/networks/:network/blockchains/:blockchainId/blocks/:blockId',
+    alias: 'getBlockById',
     description: `Gets a block by block height or block hash on one of the Primary Network chains.`,
     requestFormat: 'json',
     parameters: [
@@ -2699,6 +2780,7 @@ C-Chain balances returned are only the shared atomic memory balance. For EVM bal
   {
     method: 'get',
     path: '/v1/networks/:network/blockchains/:blockchainId/nodes/:nodeId/blocks',
+    alias: 'listPrimaryNetworkBlocksByNodeId',
     description: `Lists the latest blocks proposed by a given NodeID on one of the Primary Network chains.`,
     requestFormat: 'json',
     parameters: [
@@ -2742,6 +2824,7 @@ C-Chain balances returned are only the shared atomic memory balance. For EVM bal
   {
     method: 'get',
     path: '/v1/networks/:network/blockchains/:blockchainId/transactions',
+    alias: 'listLatestPrimaryNetworkTransactions',
     description: `Lists the latest transactions on one of the Primary Network chains.
 
 Transactions are filterable by addresses.
@@ -2813,6 +2896,7 @@ Given that each transaction may return a large number of UTXO objects, bounded o
   {
     method: 'get',
     path: '/v1/networks/:network/blockchains/:blockchainId/transactions:listStaking',
+    alias: 'listActivePrimaryNetworkStakingTransactions',
     description: `Lists active staking transactions on the P-Chain for the supplied addresses.`,
     requestFormat: 'json',
     parameters: [
@@ -2867,6 +2951,7 @@ Given that each transaction may return a large number of UTXO objects, bounded o
   {
     method: 'get',
     path: '/v1/networks/:network/blockchains/:blockchainId/transactions/:txHash',
+    alias: 'getTxByHash',
     description: `Gets the details of a single transaction on one of the Primary Network chains.`,
     requestFormat: 'json',
     parameters: [
@@ -2906,6 +2991,7 @@ Given that each transaction may return a large number of UTXO objects, bounded o
   {
     method: 'get',
     path: '/v1/networks/:network/blockchains/:blockchainId/utxos',
+    alias: 'getUtxosByAddresses',
     description: `Lists UTXOs on one of the Primary Network chains for the supplied addresses.`,
     requestFormat: 'json',
     parameters: [
@@ -2964,6 +3050,7 @@ Given that each transaction may return a large number of UTXO objects, bounded o
   {
     method: 'get',
     path: '/v1/networks/:network/blockchains/:blockchainId/vertices',
+    alias: 'listLatestXChainVertices',
     description: `Lists latest vertices on the X-Chain.`,
     requestFormat: 'json',
     parameters: [
@@ -2997,6 +3084,7 @@ Given that each transaction may return a large number of UTXO objects, bounded o
   {
     method: 'get',
     path: '/v1/networks/:network/blockchains/:blockchainId/vertices:listByHeight',
+    alias: 'getVertexByHeight',
     description: `Lists vertices at the given vertex height on the X-Chain.`,
     requestFormat: 'json',
     parameters: [
@@ -3040,6 +3128,7 @@ Given that each transaction may return a large number of UTXO objects, bounded o
   {
     method: 'get',
     path: '/v1/networks/:network/blockchains/:blockchainId/vertices/:vertexHash',
+    alias: 'getVertexByHash',
     description: `Gets a single vertex on the X-Chain.`,
     requestFormat: 'json',
     parameters: [
@@ -3068,6 +3157,7 @@ Given that each transaction may return a large number of UTXO objects, bounded o
   {
     method: 'get',
     path: '/v1/networks/:network/delegators',
+    alias: 'listDelegators',
     description: `Lists details for delegators.`,
     requestFormat: 'json',
     parameters: [
@@ -3112,6 +3202,7 @@ Given that each transaction may return a large number of UTXO objects, bounded o
   {
     method: 'get',
     path: '/v1/networks/:network/rewards',
+    alias: 'listHistoricalPrimaryNetworkRewards',
     description: `Lists historical rewards on the Primary Network for the supplied addresses.`,
     requestFormat: 'json',
     parameters: [
@@ -3151,6 +3242,7 @@ Given that each transaction may return a large number of UTXO objects, bounded o
   {
     method: 'get',
     path: '/v1/networks/:network/rewards:listPending',
+    alias: 'listPendingPrimaryNetworkRewards',
     description: `Lists pending rewards on the Primary Network for the supplied addresses.`,
     requestFormat: 'json',
     parameters: [
@@ -3190,6 +3282,7 @@ Given that each transaction may return a large number of UTXO objects, bounded o
   {
     method: 'get',
     path: '/v1/networks/:network/subnets',
+    alias: 'listSubnets',
     description: `Lists all subnets registered on the network.`,
     requestFormat: 'json',
     parameters: [
@@ -3219,6 +3312,7 @@ Given that each transaction may return a large number of UTXO objects, bounded o
   {
     method: 'get',
     path: '/v1/networks/:network/validators',
+    alias: 'listValidators',
     description: `Lists details for validators. By default, returns details for all validators. Filterable by validator node ids and minimum delegation capacity.`,
     requestFormat: 'json',
     parameters: [
@@ -3293,6 +3387,7 @@ Given that each transaction may return a large number of UTXO objects, bounded o
   {
     method: 'get',
     path: '/v1/networks/:network/validators/:nodeId',
+    alias: 'getSingleValidatorDetails',
     description: `List validator details for a single validator.  Filterable by validation status.`,
     requestFormat: 'json',
     parameters: [
@@ -3332,6 +3427,7 @@ Given that each transaction may return a large number of UTXO objects, bounded o
   {
     method: 'get',
     path: '/v1/operations/:operationId',
+    alias: 'getOperationResult',
     description: `Gets operation details for the given operation id.`,
     requestFormat: 'json',
     parameters: [
@@ -3346,6 +3442,7 @@ Given that each transaction may return a large number of UTXO objects, bounded o
   {
     method: 'post',
     path: '/v1/operations/transactions:export',
+    alias: 'postTransactionExportJob',
     description: `Trigger a transaction export operation with given parameters.
 
 The transaction export operation runs asynchronously in the background. The status of the job can be retrieved from the &#x60;/v1/operations/:operationId&#x60; endpoint using the &#x60;operationId&#x60; returned from this endpoint.`,
@@ -3358,6 +3455,46 @@ The transaction export operation runs asynchronously in the background. The stat
       }
     ],
     response: OperationStatusResponse
+  },
+  {
+    method: 'post',
+    path: '/v1/webhooks',
+    alias: 'registerWebhook',
+    description: `Registers a new webhook.`,
+    requestFormat: 'json',
+    parameters: [
+      {
+        name: 'body',
+        type: 'Body',
+        schema: RegisterWebhookRequest
+      }
+    ],
+    response: WebhookResponse
+  },
+  {
+    method: 'get',
+    path: '/v1/webhooks',
+    alias: 'listWebhooks',
+    description: `Lists webhooks for the user.`,
+    requestFormat: 'json',
+    parameters: [
+      {
+        name: 'pageSize',
+        type: 'Query',
+        schema: z.number().int().gte(1).lte(100).optional().default(10)
+      },
+      {
+        name: 'pageToken',
+        type: 'Query',
+        schema: z.string().optional()
+      },
+      {
+        name: 'status',
+        type: 'Query',
+        schema: z.enum(['active', 'inactive']).optional()
+      }
+    ],
+    response: ListWebhooksResponse
   }
 ])
 

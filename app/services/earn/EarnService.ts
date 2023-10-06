@@ -275,9 +275,8 @@ class EarnService {
     const transactions: PChainTransaction[] = []
 
     do {
-      const response = await glacierApiClient.get(
-        '/v1/networks/:network/blockchains/:blockchainId/transactions',
-        {
+      const response =
+        await glacierApiClient.listLatestPrimaryNetworkTransactions({
           params: {
             network: isTestnet ? Network.FUJI : Network.MAINNET,
             blockchainId: BlockchainId.P_CHAIN
@@ -288,8 +287,7 @@ class EarnService {
             sortOrder: SortOrder.DESC,
             pageToken
           }
-        }
-      )
+        })
       pageToken = response.nextPageToken
       transactions.push(...(response.transactions as PChainTransaction[]))
     } while (pageToken)
