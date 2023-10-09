@@ -3,6 +3,7 @@ import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import DeFiService from 'services/defi/DeFiService'
 import { DeFiChain, DeFiChainCamelCase } from 'services/defi/types'
 
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export const useDeFiChainList = () => {
   return useQuery({
     queryKey: [ReactQueryKeys.DEFI_CHAIN_LIST],

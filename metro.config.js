@@ -31,6 +31,36 @@ module.exports = (async () => {
             platform
           )
         }
+        if (moduleName.startsWith('@ledgerhq/domain-service')) {
+          return context.resolveRequest(
+            context,
+            moduleName.replace(
+              '@ledgerhq/domain-service',
+              '@ledgerhq/domain-service/lib-es'
+            ),
+            platform
+          )
+        }
+        if (moduleName.startsWith('@ledgerhq/evm-tools')) {
+          return context.resolveRequest(
+            context,
+            moduleName.replace(
+              '@ledgerhq/evm-tools',
+              '@ledgerhq/evm-tools/lib-es'
+            ),
+            platform
+          )
+        }
+        if (moduleName.startsWith('@ledgerhq/live-network')) {
+          return context.resolveRequest(
+            context,
+            moduleName.replace(
+              '@ledgerhq/live-network',
+              '@ledgerhq/live-network/lib-es'
+            ),
+            platform
+          )
+        }
         // Optionally, chain to the standard Metro resolver.
         return context.resolveRequest(context, moduleName, platform)
       },

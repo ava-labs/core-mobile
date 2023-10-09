@@ -6,6 +6,7 @@ import { refetchIntervals } from 'services/defi/constants'
 import { DeFiSimpleProtocolCamelCase } from 'services/defi/types'
 import { selectActiveAccount } from 'store/account'
 
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export const useDeFiProtocolList = () => {
   const addressC = useSelector(selectActiveAccount)?.address ?? ''
 

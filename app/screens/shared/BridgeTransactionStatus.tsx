@@ -223,6 +223,8 @@ const BridgeTransactionStatus: FC<Props> = ({ txHash, showHideButton }) => {
               1 // On avalanche, we just need 1 confirmation
             }
             confirmationCount={bridgeTransaction.complete ? 1 : 0}
+            sourceChain={bridgeTransaction.sourceChain}
+            targetChain={bridgeTransaction.targetChain}
           />
         )}
       </View>

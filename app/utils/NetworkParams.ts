@@ -26,7 +26,7 @@ type RewardConfig = {
   //SupplyCap in nAVAX
   SupplyCap: BN
 }
-type StakingConfig = {
+export type StakingConfig = {
   // Staking uptime requirements
   UptimeRequirement: number
   // Minimum stake, in nAVAX, required to validate the primary network

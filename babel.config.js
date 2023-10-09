@@ -23,6 +23,7 @@ module.exports = {
     'react-require',
     'inline-dotenv',
     'react-native-reanimated/plugin',
+    '@babel/plugin-transform-class-static-block',
     '@babel/plugin-transform-export-namespace-from'
   ],
   overrides: [
