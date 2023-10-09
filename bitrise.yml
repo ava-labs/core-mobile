@@ -119,7 +119,7 @@ workflows:
         - pipeline_intermediate_files: |-
             $BITRISE_DEPLOY_DIR/app-internal-e2e-bitrise-signed.apk:BITRISE_APK_PATH
             $BITRISE_DEPLOY_DIR/app-internal-e2e-androidTest-bitrise-signed.apk:BITRISE_TEST_APK_PATH	
-  ui-test-on-pixel4:
+  android-internal-e2e-run-pixel4:
     envs:
     - TESTS_TO_RUN: $TESTS_TO_RUN_GROUP_1
       opts:
@@ -161,7 +161,7 @@ workflows:
     - _pull_app_files
     after_run:
     - _run_android_tests
-  ui-test-on-pixel3:
+  android-internal-e2e-run-pixel3:
     envs:
     - TESTS_TO_RUN: $TESTS_TO_RUN_GROUP_2
       opts:
@@ -203,7 +203,7 @@ workflows:
     - _pull_app_files
     after_run:
     - _run_android_tests
-  ui-test-on-pixel5:
+  android-internal-e2e-run-pixel5:
     envs:
     - TESTS_TO_RUN: $TESTS_TO_RUN_GROUP_3
       opts:
