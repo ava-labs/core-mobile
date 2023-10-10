@@ -648,6 +648,14 @@ workflows:
     - USE_TEST_FEATURE_FLAGS: "true"
       opts:
         is_expand: false
+    steps:
+    - build-router-start@0:
+        inputs:
+        - workflows: |-
+            ios-internal-e2e-run-pixel4
+            ios-internal-e2e-run-pixel3
+            ios-internal-e2e-run-pixel5
+
   ios-internal-e2e-run:
     before_run:
     - _install-and-set-env
