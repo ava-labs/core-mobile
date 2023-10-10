@@ -95,6 +95,14 @@ enum EarnScreens {
   WrongNetwork = 'EarnScrens.WrongNetwork'
 }
 
+enum BrowserScreens {
+  Intro = 'BrowserScreens.Intro',
+  TabView = 'BrowserScreens.TabView',
+  TabsList = 'BrowserScreens.TabsList',
+  History = 'BrowserScreens.History',
+  AreYousSure = 'BrowserScreens.AreYousSure'
+}
+
 enum StakeSetupScreens {
   GetStarted = 'StakeSetupScreens.GetStarted',
   SmartStakeAmount = 'StakeSetupScreens.SmartStakeAmount',
@@ -160,6 +168,7 @@ enum Tabs {
   More = 'More',
   Watchlist = 'Watchlist',
   Stake = 'Stake',
+  Browser = 'Browser',
   Tabs = 'Tabs',
   Fab = 'Fab',
   Bridge = 'Bridge'
@@ -236,6 +245,7 @@ const AppNavigation = {
   ReceiveTokens: ReceiveTokensScreens,
   Buy: BuyScreens,
   Earn: EarnScreens,
+  Browser: BrowserScreens,
   StakeSetup: StakeSetupScreens,
   Notifications: NotificationsScreens,
   SendFeedback: SendFeedbackScreens

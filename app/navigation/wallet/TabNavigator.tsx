@@ -14,25 +14,28 @@ import { usePosthogContext } from 'contexts/PosthogContext'
 import { useIsAvalancheNetwork } from 'hooks/useIsAvalancheNetwork'
 import { useIsEarnDashboardEnabled } from 'hooks/earn/useIsEarnDashboardEnabled'
 import { usePostCapture } from 'hooks/usePosthogCapture'
+import BrowserSVG from 'components/svg/BrowserSVG'
+import BrowserScreenStack from 'navigation/wallet/BrowserScreenStack'
 import EarnScreenStack from './EarnScreenStack/EarnScreenStack'
 
 export type TabNavigatorParamList = {
   [AppNavigation.Tabs.Portfolio]: { showBackButton?: boolean }
   [AppNavigation.Tabs.Watchlist]: undefined
   [AppNavigation.Tabs.Stake]: undefined
+  [AppNavigation.Tabs.Browser]: undefined
 }
 
 const Tab = createBottomTabNavigator<TabNavigatorParamList>()
 const TAB_ICON_SIZE = 28
 
-const TabNavigator = () => {
+const TabNavigator: () => JSX.Element = () => {
   const theme = useApplicationContext().theme
   const { earnBlocked } = usePosthogContext()
   const { isEarnDashboardEnabled } = useIsEarnDashboardEnabled()
-  const isAvalancheNetork = useIsAvalancheNetwork()
+  const isAvalancheNetwork = useIsAvalancheNetwork()
   const { capture } = usePostCapture()
 
-  const renderEarnTab = () => {
+  const renderEarnTab: () => null | JSX.Element = () => {
     if (earnBlocked) return null
     return (
       <Tab.Screen
@@ -50,7 +53,7 @@ const TabNavigator = () => {
         component={EarnScreenStack}
         listeners={({ navigation }) => ({
           tabPress: e => {
-            if (!isAvalancheNetork) {
+            if (!isAvalancheNetwork) {
               e.preventDefault()
               navigation.navigate(AppNavigation.Wallet.Earn, {
                 screen: AppNavigation.Earn.WrongNetwork
@@ -120,6 +123,29 @@ const TabNavigator = () => {
         component={WatchlistTab}
       />
       {renderEarnTab()}
+      <Tab.Screen
+        name={AppNavigation.Tabs.Browser}
+        options={{
+          header: () => {
+            return (
+              <TopNavigationHeader
+                showMenu={false}
+                showBackButton={false}
+                showAccountSelector={true}
+                showNetworkSelector={false}
+              />
+            )
+          },
+          tabBarIcon: ({ focused }) =>
+            normalTabButton({
+              theme,
+              routeName: AppNavigation.Tabs.Browser,
+              focused,
+              image: <BrowserSVG selected={focused} size={TAB_ICON_SIZE} />
+            })
+        }}
+        component={BrowserScreenStack}
+      />
     </Tab.Navigator>
   )
 }
