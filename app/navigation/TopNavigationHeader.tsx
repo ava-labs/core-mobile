@@ -21,6 +21,7 @@ type Props = {
   showBackButton?: boolean
   showAccountSelector?: boolean
   showNetworkSelector?: boolean
+  showMenu?: boolean
   testID?: string
   onBack?: () => void
 }
@@ -34,6 +35,7 @@ const TopNavigationHeader: FC<Props> = ({
   showAccountSelector = true,
   showNetworkSelector = true,
   showBackButton = false,
+  showMenu = true,
   onBack
 }) => {
   const { theme } = useApplicationContext()
@@ -46,7 +48,7 @@ const TopNavigationHeader: FC<Props> = ({
       ? activeAccount?.addressBtc
       : activeAccount?.address
 
-  const renderAddress = () => {
+  const renderAddress: () => null | JSX.Element = () => {
     if (!showAddress) return null
 
     return (
@@ -60,9 +62,9 @@ const TopNavigationHeader: FC<Props> = ({
     )
   }
 
-  const renderLeftButton = () => {
+  const renderLeftButton: () => JSX.Element | boolean = () => {
     if (showBackButton) {
-      const handleOnBack = () => {
+      const handleOnBack: () => void = () => {
         if (onBack) {
           onBack()
         } else {
@@ -81,18 +83,19 @@ const TopNavigationHeader: FC<Props> = ({
           <CarrotSVG direction="left" size={24} />
         </AvaButton.Icon>
       )
+    } else if (showMenu) {
+      return (
+        <AvaButton.Icon
+          onPress={navigation.openDrawer}
+          style={{ marginRight: 32 }}>
+          <MenuSVG />
+        </AvaButton.Icon>
+      )
     }
-
-    return (
-      <AvaButton.Icon
-        onPress={navigation.openDrawer}
-        style={{ marginRight: 32 }}>
-        <MenuSVG />
-      </AvaButton.Icon>
-    )
+    return false
   }
 
-  const renderAccountSelector = () => (
+  const renderAccountSelector: () => JSX.Element = () => (
     <View
       style={{
         zIndex: 1,
@@ -116,11 +119,11 @@ const TopNavigationHeader: FC<Props> = ({
           paddingLeft: 8,
           paddingRight: 16,
           alignItems: 'center',
-          justifyContent: 'space-between'
+          justifyContent: 'space-between' //for this to work we need to add empty views if necessary
         }}>
-        {renderLeftButton()}
+        {renderLeftButton() || <View />}
         {showAccountSelector && renderAccountSelector()}
-        {showNetworkSelector && <NetworkDropdown />}
+        {(showNetworkSelector && <NetworkDropdown />) || <View />}
       </Row>
       {renderAddress()}
     </View>
