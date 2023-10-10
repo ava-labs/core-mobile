@@ -652,10 +652,10 @@ workflows:
     - build-router-start@0:
         inputs:
         - workflows: |-
-            ios-internal-e2e-run-pixel4
-            ios-internal-e2e-run-pixel3
-            ios-internal-e2e-run-pixel5
-
+            ios-internal-e2e-run
+        - build-router-wait@0:
+            inputs:
+            - access_token: $BITRISE_PERSONAL_ACCESS_TOKEN
   ios-internal-e2e-run:
     before_run:
     - _install-and-set-env
