@@ -647,7 +647,7 @@ workflows:
     - USE_TEST_FEATURE_FLAGS: "true"
       opts:
         is_expand: false
-  ios-internal-e2e-testing:
+  ios-internal-e2e-run:
     before_run:
     - _install-and-set-env
     - _set-version
