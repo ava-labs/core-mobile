@@ -655,7 +655,7 @@ workflows:
             ios-internal-e2e-run
         - build-router-wait@0:
             inputs:
-            - access_token: $BITRISE_PERSONAL_ACCESS_TOKEN
+            - access_token: $BITRISE_ACCESS_TOKEN
   ios-internal-e2e-run:
     before_run:
     - _install-and-set-env
