@@ -100,7 +100,7 @@ enum BrowserScreens {
   TabView = 'BrowserScreens.TabView',
   TabsList = 'BrowserScreens.TabsList',
   History = 'BrowserScreens.History',
-  AreYousSure = 'BrowserScreens.AreYousSure'
+  AreYouSure = 'BrowserScreens.AreYouSure'
 }
 
 enum StakeSetupScreens {

@@ -12,7 +12,7 @@ export type BrowserStackParamList = {
   [AppNavigation.Browser.TabView]: undefined
   [AppNavigation.Browser.TabsList]: undefined
   [AppNavigation.Browser.History]: undefined
-  [AppNavigation.Browser.AreYousSure]: undefined
+  [AppNavigation.Browser.AreYouSure]: undefined
 }
 
 const BrowserStack = createStackNavigator<BrowserStackParamList>()
@@ -47,7 +47,7 @@ function BrowserScreenStack(): JSX.Element {
         component={HistoryStub}
       />
       <BrowserStack.Screen
-        name={AppNavigation.Browser.AreYousSure}
+        name={AppNavigation.Browser.AreYouSure}
         options={{ presentation: 'transparentModal' }}
         component={AreYouSureModal}
       />

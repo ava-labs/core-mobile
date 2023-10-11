@@ -62,7 +62,7 @@ const TopNavigationHeader: FC<Props> = ({
     )
   }
 
-  const renderLeftButton: () => JSX.Element | boolean = () => {
+  const renderLeftButton: () => JSX.Element | null = () => {
     if (showBackButton) {
       const handleOnBack: () => void = () => {
         if (onBack) {
@@ -92,7 +92,7 @@ const TopNavigationHeader: FC<Props> = ({
         </AvaButton.Icon>
       )
     }
-    return false
+    return null
   }
 
   const renderAccountSelector: () => JSX.Element = () => (
