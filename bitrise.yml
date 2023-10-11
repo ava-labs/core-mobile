@@ -651,11 +651,12 @@ workflows:
     steps:
     - build-router-start@0:
         inputs:
+        - access_token: $BITRISE_ACCESS_TOKEN
         - workflows: |-
             ios-internal-e2e-run
-        - build-router-wait@0:
-            inputs:
-            - access_token: $BITRISE_ACCESS_TOKEN
+    - build-router-wait@0:
+        inputs:
+        - access_token: $BITRISE_ACCESS_TOKEN
   ios-internal-e2e-run:
     before_run:
     - _install-and-set-env
