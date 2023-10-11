@@ -137,12 +137,11 @@ const isVisible = async (
   item: Detox.NativeMatcher,
   index: number
 ): Promise<boolean> => {
-  const result = await waitFor(element(item).atIndex(index))
+  return await waitFor(element(item).atIndex(index))
     .toBeVisible()
     .withTimeout(2000)
     .then(() => true)
     .catch(() => false)
-  return result
 }
 
 const swipeUp = async (
@@ -193,8 +192,7 @@ const getCurrentDateTime = () => {
   const minutes = String(now.getMinutes()).padStart(2, '0')
   const seconds = String(now.getSeconds()).padStart(2, '0')
 
-  const dateTimeString = `${year}-${month}-${day}  ${hours}:${minutes}:${seconds}`
-  return dateTimeString
+  return `${year}-${month}-${day}  ${hours}:${minutes}:${seconds}`
 }
 
 const reportUIPerformance = async (

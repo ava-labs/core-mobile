@@ -10,20 +10,16 @@ import { Row } from 'components/Row'
 import Big from 'big.js'
 import { PopableContent } from 'components/PopableContent'
 import { PopableLabel } from 'components/PopableLabel'
-import { useSelector } from 'react-redux'
-import { selectNetworkFee } from 'store/networkFee'
 import { bigintToBig } from 'utils/bigNumbers/bigintToBig'
+import { useNetworkFee } from 'hooks/useNetworkFee'
 
-const isSlippageValid = (value: string) => {
-  if (
+const isSlippageValid = (value: string): boolean => {
+  return Boolean(
     (parseFloat(value) >= 0 &&
       parseFloat(value) <= 100 &&
       value?.length <= 4) ||
-    !value
-  ) {
-    return true
-  }
-  return false
+      !value
+  )
 }
 
 interface SwapTransactionDetailProps {
@@ -60,7 +56,7 @@ const SwapTransactionDetail: FC<SwapTransactionDetailProps> = ({
   setSlippage
 }) => {
   const { theme } = useApplicationContext()
-  const networkFee = useSelector(selectNetworkFee)
+  const { data: networkFee } = useNetworkFee()
 
   const netFeeInfoMessage = (
     <PopableContent

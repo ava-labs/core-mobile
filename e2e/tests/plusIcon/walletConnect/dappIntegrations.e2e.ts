@@ -14,6 +14,7 @@ import SecurityAndPrivacyPage from '../../../pages/securityAndPrivacy.page'
 import Assert from '../../../helpers/assertions'
 import ConnectedSitesPage from '../../../pages/connectedSites.page'
 import actions from '../../../helpers/actions'
+import CommonElsPage from '../../../pages/commonEls.page'
 
 describe('Connect to dApp using WalletConnect', () => {
   beforeAll(async () => {
@@ -34,6 +35,7 @@ describe('Connect to dApp using WalletConnect', () => {
     await ConnectToSitePage.tapApproveBtn()
     await BurgerMenuPage.tapBurgerMenuButton()
     await BurgerMenuPage.tapSecurityAndPrivacy()
+    await CommonElsPage.waitForToastMsgGone()
     await SecurityAndPrivacyPage.tapConnectedSites()
     await ConnectedSitesPage.tapManageBtn()
     await ConnectedSitesPage.tapSelectAllChkBox()

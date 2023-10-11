@@ -8,14 +8,15 @@ import {
 } from 'date-fns'
 import { AdvancedSortFilter, NodeValidator, NodeValidators } from 'types/earn'
 import { random } from 'lodash'
-import { FujiParams, MainnetParams } from 'utils/NetworkParams'
+import { FujiParams, MainnetParams, StakingConfig } from 'utils/NetworkParams'
 import { MAX_VALIDATOR_WEIGHT_FACTOR } from 'consts/earn'
 import { Avax } from 'types/Avax'
 import * as Navigation from 'utils/Navigation'
 import AppNavigation from 'navigation/AppNavigation'
 import Logger from 'utils/Logger'
 import { valid, compare } from 'semver'
-import { Peer } from '@avalabs/avalanchejs-v2/dist/src/info/model'
+import { Peer } from '@avalabs/avalanchejs-v2/dist/info/model'
+import { PChainTransaction } from '@avalabs/glacier-sdk'
 import EarnService from './EarnService'
 
 // the max num of times we should check transaction status
@@ -29,13 +30,13 @@ export const maxGetAtomicUTXOsRetries = 10
  * See https://docs.avax.network/subnets/reference-elastic-subnets-parameters#primary-network-parameters-on-mainnet
  * for more info on this harcoded parameter.
  */
-export const getStakingConfig = (isDeveloperMode: boolean) => {
+export const getStakingConfig = (isDeveloperMode: boolean): StakingConfig => {
   return isDeveloperMode
     ? FujiParams.stakingConfig
     : MainnetParams.stakingConfig
 }
 
-export const getMinimumStakeDurationMs = (isDeveloperMode: boolean) => {
+export const getMinimumStakeDurationMs = (isDeveloperMode: boolean): number => {
   const oneDay = 24 * 60 * 60 * 1000
   const twoWeeks = 14 * 24 * 60 * 60 * 1000
   return isDeveloperMode ? oneDay : twoWeeks
@@ -44,13 +45,13 @@ export const getMinimumStakeDurationMs = (isDeveloperMode: boolean) => {
 export const getMinimumStakeEndTime = (
   isDeveloperMode: boolean,
   stakeStartTime: Date
-) => {
+): Date => {
   return isDeveloperMode
     ? add(stakeStartTime, { hours: 24 })
     : add(stakeStartTime, { weeks: 2 })
 }
 
-export const getMaximumStakeEndDate = () => {
+export const getMaximumStakeEndDate = (): Date => {
   return addYears(new Date(), 1)
 }
 
@@ -68,14 +69,10 @@ export const calculateMaxWeight = (
   validatorWeight: Avax
 ): Avax => {
   const stakeWeight = validatorWeight.mul(MAX_VALIDATOR_WEIGHT_FACTOR)
-  const maxWeight = stakeWeight.lt(maxValidatorStake)
-    ? stakeWeight
-    : maxValidatorStake
-
-  return maxWeight
+  return stakeWeight.lt(maxValidatorStake) ? stakeWeight : maxValidatorStake
 }
 
-export const randomColor = () => {
+export const randomColor = (): string => {
   const hexString = '0123456789abcdef'
   let hexCode = '#'
   for (let i = 0; i < 6; i++) {
@@ -84,7 +81,10 @@ export const randomColor = () => {
   return hexCode
 }
 
-export const generateGradient = () => {
+export const generateGradient = (): {
+  colorFrom: string
+  colorTo: string
+} => {
   const colorFrom = randomColor()
   const colorTo = randomColor()
   return { colorFrom, colorTo }
@@ -162,11 +162,11 @@ export const getFilteredValidators = ({
   maxFee,
   searchText,
   isEndTimeOverOneYear = false
-}: getFilteredValidatorsProps) => {
+}: getFilteredValidatorsProps): NodeValidators => {
   const lowerCasedSearchText = searchText?.toLocaleLowerCase()
   const stakingEndTimeUnix = getUnixTime(stakingEndTime) // timestamp in seconds
 
-  const filtered = validators.filter(
+  return validators.filter(
     ({
       endTime,
       weight,
@@ -182,7 +182,7 @@ export const getFilteredValidators = ({
         Avax.fromNanoAvax(weight),
         Avax.fromNanoAvax(delegatorWeight)
       )
-      const filterByMinimumStakingTime = () => {
+      const filterByMinimumStakingTime = (): boolean => {
         if (isEndTimeOverOneYear) {
           // if chosen duration is over one year,
           // then we don't need to check for minimum staking time
@@ -204,7 +204,6 @@ export const getFilteredValidators = ({
       )
     }
   )
-  return filtered
 }
 
 /**
@@ -218,7 +217,7 @@ export const getSimpleSortedValidators = (
   validators: NodeValidators,
   peers?: Record<string, Peer>,
   isEndTimeOverOneYear = false
-) => {
+): NodeValidators => {
   if (isEndTimeOverOneYear) {
     return getSortedValidatorsByEndTime(validators)
   }
@@ -244,7 +243,7 @@ export const getSimpleSortedValidators = (
 export const getRandomValidator = (
   validators: NodeValidators,
   isEndTimeOverOneYear = false
-) => {
+): NodeValidator => {
   if (isEndTimeOverOneYear) {
     // get the first item in the array sorted by end time
     return validators.at(0) as NodeValidator
@@ -266,7 +265,7 @@ export const getAdvancedSortedValidators = (
   validators: NodeValidators,
   sortFilter: AdvancedSortFilter,
   peers?: Record<string, Peer>
-) => {
+): NodeValidators => {
   const clonedValidators = [...validators]
   switch (sortFilter) {
     case AdvancedSortFilter.UpTimeLowToHigh:
@@ -307,20 +306,22 @@ export const getAdvancedSortedValidators = (
   }
 }
 
-export const isEndTimeOverOneYear = (stakingEndTime: Date) => {
+export const isEndTimeOverOneYear = (stakingEndTime: Date): boolean => {
   return (
     stakingEndTime >= addYears(new Date(), 1) ||
     isSameDay(stakingEndTime, addYears(new Date(), 1))
   )
 }
 
-export const getSortedValidatorsByEndTime = (validators: NodeValidators) => {
+export const getSortedValidatorsByEndTime = (
+  validators: NodeValidators
+): NodeValidators => {
   return validators.sort(
     (a, b): number => Number(b.endTime) - Number(a.endTime)
   )
 }
 
-export const navigateToClaimRewards = async () => {
+export const navigateToClaimRewards = async (): Promise<void> => {
   setTimeout(async () => {
     Logger.info('navigating to claim rewards')
     Navigation.navigate({
@@ -345,14 +346,16 @@ export const navigateToClaimRewards = async () => {
 export const getTransformedTransactions = async (
   addresses: string[],
   isTestnet: boolean
-) => {
+): Promise<
+  (PChainTransaction & { index: number; isDeveloperMode: boolean })[]
+> => {
   try {
     const stakes = await EarnService.getAllStakes({
       isTestnet,
       addresses
     })
 
-    const transformedTransactions = stakes.map(transaction => {
+    return stakes.map(transaction => {
       const pAddr = transaction.emittedUtxos.find(utxo => utxo.staked === true)
         ?.addresses[0]
       const matchedPAddress = addresses
@@ -368,14 +371,16 @@ export const getTransformedTransactions = async (
         isDeveloperMode: isTestnet
       }
     })
-    return transformedTransactions
   } catch (error) {
     Logger.error('getTransformedTransactions failed: ', error)
     throw error
   }
 }
 
-export const comparePeerVersion = (first?: string, second?: string) => {
+export const comparePeerVersion = (
+  first?: string,
+  second?: string
+): 0 | 1 | -1 => {
   const v1 = valid(first?.split('/')[1]) ?? '0.0.0'
   const v2 = valid(second?.split('/')[1]) ?? '0.0.0'
   return compare(v1, v2)

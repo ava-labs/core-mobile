@@ -9,8 +9,7 @@ class ReviewAndSend {
   }
 
   getQrCode() {
-    const qrCode = fs.readFileSync('e2e/tests/playwright/qr_codes.txt', 'utf8')
-    return qrCode
+    return fs.readFileSync('e2e/tests/playwright/qr_codes.txt', 'utf8')
   }
 
   async enterQrCode() {

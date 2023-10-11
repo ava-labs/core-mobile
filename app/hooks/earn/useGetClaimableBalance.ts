@@ -8,12 +8,10 @@ export const useGetClaimableBalance = (): Avax | undefined => {
   const hasErrors = pChainBalance.error || !pChainBalance.data
   const dataReady = !pChainBalance.isLoading && !hasErrors
 
-  const claimableBalance = useMemo(() => {
+  return useMemo(() => {
     if (dataReady) {
       return Avax.fromNanoAvax(pChainBalanceNAvax || 0)
     }
     return undefined
   }, [dataReady, pChainBalanceNAvax])
-
-  return claimableBalance
 }

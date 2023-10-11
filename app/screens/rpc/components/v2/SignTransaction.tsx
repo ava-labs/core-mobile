@@ -56,8 +56,8 @@ const SignTransaction = () => {
     useDappConnectionV2()
 
   const requestStatus = useSelector(selectRequestStatus(request.data.id))
-  const chainId = request.data.params.chainId.split(':')[1]
-  const network = useSelector(selectNetwork(Number(chainId)))
+  const chainId = Number(request.data.params.chainId.split(':')[1])
+  const network = useSelector(selectNetwork(chainId))
 
   const { openUrl } = useInAppBrowser()
   const theme = useApplicationContext().theme
@@ -165,7 +165,7 @@ const SignTransaction = () => {
           <AvaText.Body2 color={theme.colorText1}>Network:</AvaText.Body2>
           <Row>
             <NetworkLogo
-              key={network.chainId}
+              key={network.chainId.toString()}
               logoUri={network.logoUri}
               size={24}
               style={{ marginRight: 8 }}
@@ -220,7 +220,7 @@ const SignTransaction = () => {
           site={displayData.site}
           spendLimit={customSpendLimit}
           token={displayData?.tokenToBeApproved}
-          onClose={() => setShowCustomSpendLimit(!showCustomSpendLimit)}
+          onClose={() => setShowCustomSpendLimit(false)}
           setSpendLimit={setSpendLimit}
           requestedApprovalLimit={requestedApprovalLimit}
         />
@@ -400,6 +400,7 @@ const SignTransaction = () => {
         </View>
         {!requestResult && displayData?.gasPrice && (
           <NetworkFeeSelector
+            chainId={chainId}
             gasLimit={displayData?.gasLimit ?? 0}
             onGasPriceChange={handleGasPriceChange}
             onGasLimitChange={handleGasLimitChange}

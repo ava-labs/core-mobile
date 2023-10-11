@@ -23,7 +23,10 @@ import {
   RecoveryEvents
 } from 'services/earn/types'
 import { getUnixTime } from 'date-fns'
-import { GetCurrentSupplyResponse } from '@avalabs/avalanchejs-v2/dist/src/vms/pvm'
+import {
+  GetCurrentSupplyResponse,
+  GetCurrentValidatorsResponse
+} from '@avalabs/avalanchejs-v2/dist/vms/pvm'
 import { Seconds } from 'types/siUnits'
 import {
   BlockchainId,
@@ -35,7 +38,7 @@ import {
 import { glacierSdk } from 'utils/network/glacier'
 import { Avax } from 'types/Avax'
 import { getInfoApi } from 'utils/network/info'
-import { GetPeersResponse } from '@avalabs/avalanchejs-v2/dist/src/info/model'
+import { GetPeersResponse } from '@avalabs/avalanchejs-v2/dist/info/model'
 import { isOnGoing } from 'utils/earn/status'
 import {
   getTransformedTransactions,
@@ -48,7 +51,9 @@ class EarnService {
    * Get all available nodes
    * @param isTestnet is testnet mode enabled
    */
-  getCurrentValidators = (isTestnet: boolean) => {
+  getCurrentValidators = (
+    isTestnet: boolean
+  ): Promise<GetCurrentValidatorsResponse> => {
     return getPvmApi(isTestnet).getCurrentValidators()
   }
 
@@ -261,7 +266,10 @@ class EarnService {
    * @param isTestnet
    * @param addresses
    */
-  getAllStakes = async ({ isTestnet, addresses }: GetAllStakesParams) => {
+  getAllStakes = async ({
+    isTestnet,
+    addresses
+  }: GetAllStakesParams): Promise<PChainTransaction[]> => {
     const addressesStr = addresses.join(',')
     let pageToken: string | undefined
     const transactions: PChainTransaction[] = []
@@ -283,12 +291,10 @@ class EarnService {
       transactions.push(...(response.transactions as PChainTransaction[]))
     } while (pageToken)
 
-    const stakes = transactions.filter(
+    return transactions.filter(
       transaction =>
         transaction.txType === PChainTransactionType.ADD_DELEGATOR_TX
     )
-
-    return stakes
   }
 
   getTransformedStakesForAllAccounts = async ({
@@ -297,7 +303,16 @@ class EarnService {
   }: {
     isDeveloperMode: boolean
     accounts: AccountCollection
-  }) => {
+  }): Promise<
+    | {
+        txHash: string
+        endTimestamp: number | undefined
+        accountIndex: number
+        isDeveloperMode: boolean
+        isOnGoing: boolean
+      }[]
+    | undefined
+  > => {
     const oppositeIsDeveloperMode = !isDeveloperMode
     const accountsArray = Object.values(accounts)
 
@@ -328,7 +343,7 @@ class EarnService {
       )
 
       const now = new Date()
-      const transformedTransactions = (firstTransactions ?? [])
+      return (firstTransactions ?? [])
         .concat(secondTransactions ?? [])
         .map(transaction => {
           return {
@@ -339,7 +354,6 @@ class EarnService {
             isOnGoing: isOnGoing(transaction, now)
           }
         })
-      return transformedTransactions
     } catch (error) {
       Logger.error('getTransformedStakesForAllAccounts failed: ', error)
     }

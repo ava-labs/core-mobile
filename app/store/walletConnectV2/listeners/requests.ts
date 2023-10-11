@@ -42,7 +42,7 @@ export const processRequest = async (
   const requestId = request.data.id
   const handler = handlerMap.get(method)
 
-  Logger.info(`processing request ${requestId}`)
+  Logger.info('processing request', request)
 
   if (!handler) {
     Logger.error(`RPC method ${method} not supported`)
@@ -95,11 +95,11 @@ export const processRequest = async (
 
   // result is DEFERRED_RESULT
   // this means we are displaying a prompt and are waiting for the user to approve
-  Logger.info(`asking user for approval for request ${requestId}`)
+  Logger.info('asking user to approve request', request)
   const [action] = await take(isRequestApprovedOrRejected(requestId))
 
   if (onRequestRejected.match(action)) {
-    Logger.info(`user rejected request ${requestId}`)
+    Logger.info('user rejected request', request)
     dispatch(
       onSendRpcError({
         request,
@@ -107,7 +107,7 @@ export const processRequest = async (
       })
     )
   } else {
-    Logger.info(`user approved request ${requestId}`)
+    Logger.info('user approved request', request)
     if (handler.approve) {
       const approveResponse = await handler.approve(
         { ...action.payload },

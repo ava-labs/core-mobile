@@ -1,7 +1,7 @@
 import DeviceInfoService from 'services/deviceInfo/DeviceInfoService'
 
 export const getPosthogDeviceInfo = async () => {
-  const deviceInfo = {
+  return {
     $app_build: DeviceInfoService.getAppBuild(),
     $app_name: DeviceInfoService.getAppName(),
     $app_version: DeviceInfoService.getAppVersion(),
@@ -16,6 +16,4 @@ export const getPosthogDeviceInfo = async () => {
     $os_version: await DeviceInfoService.getOperatingSystemVersion(),
     $timezone: DeviceInfoService.getTimezone()
   }
-
-  return deviceInfo
 }

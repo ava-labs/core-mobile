@@ -22,7 +22,7 @@ import {
   onRequestApproved,
   onRequestRejected
 } from '../slice'
-import { RpcMethod } from '../types'
+import { Request, RpcMethod } from '../types'
 import handlerMap from '../handlers'
 import { DEFERRED_RESULT } from '../handlers/types'
 import { addWCListeners } from './index'
@@ -652,6 +652,8 @@ describe('walletConnect - listeners', () => {
             id: 1678303290160528,
             pairingTopic:
               '73af283605154f5a8643286042e6671df51a180ecebc88d6715a7b86cfae5fb3',
+            topic:
+              '3a094bf511357e0f48ff266f0b8d5b846fd3f7de4bd0824d976fdf4c5279b261',
             expiry: 1678303596,
             requiredNamespaces: {
               eip155: {
@@ -695,7 +697,7 @@ describe('walletConnect - listeners', () => {
             }
           }
         }
-      }
+      } as unknown as Request
 
       beforeEach(() => {
         mockHandle.mockImplementation(async () => {
@@ -754,6 +756,9 @@ describe('walletConnect - listeners', () => {
               namespaces: JSON.stringify(mockSession.namespaces),
               requiredNamespaces: JSON.stringify(
                 mockSession.requiredNamespaces
+              ),
+              optionalNamespaces: JSON.stringify(
+                mockSession.optionalNamespaces
               ),
               dappUrl: 'http://127.0.0.1:5173'
             }

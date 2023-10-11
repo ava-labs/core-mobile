@@ -8,7 +8,8 @@ cmds=(
     'npx playwright test e2e/tests/playwright/benqi.spec.ts --project='chromium''
     'npx playwright test e2e/tests/playwright/opensea.spec.ts --project='firefox''
     'npx playwright test e2e/tests/playwright/pangolin.spec.ts --project='chromium''
-    'npx playwright test e2e/tests/playwright/multichain.spec.ts --project='chromium''
+    # Multichain is using wallet connect v1 and is not compatible with the new wallet connect v2.  need to revisit later.
+    # 'npx playwright test e2e/tests/playwright/multichain.spec.ts --project='chromium''
     # yieldyak and gmx are not connecting and is even inconsistent in extension. will revisit later.
     # 'npx playwright test e2e/tests/playwright/yieldyak.spec.ts --project='chromium''
     # 'npx playwright test e2e/tests/playwright/gmx.spec.ts --project='chromium''

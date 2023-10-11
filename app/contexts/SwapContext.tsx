@@ -23,12 +23,12 @@ import SentryWrapper from 'services/sentry/SentryWrapper'
 import { humanizeSwapErrors } from 'localization/errors'
 import { useAvalancheProvider } from 'hooks/networkProviderHooks'
 import { useSelector } from 'react-redux'
-import { selectNetworkFee } from 'store/networkFee'
 import NetworkService from 'services/network/NetworkService'
 import WalletService from 'services/wallet/WalletService'
 import { performSwap } from '@avalabs/paraswap-sdk'
 import { selectActiveNetwork } from 'store/network'
 import { selectActiveAccount } from 'store/account'
+import { useNetworkFee } from 'hooks/useNetworkFee'
 
 export type SwapStatus = 'Idle' | 'Preparing' | 'Swapping' | 'Success' | 'Fail'
 
@@ -84,7 +84,7 @@ export const SwapContextProvider = ({ children }: { children: ReactNode }) => {
   const activeAccount = useSelector(selectActiveAccount)
   const activeNetwork = useSelector(selectActiveNetwork)
   const avalancheProvider = useAvalancheProvider()
-  const networkFee = useSelector(selectNetworkFee)
+  const { data: networkFee } = useNetworkFee()
   const [fromToken, setFromToken] = useState<TokenWithBalance>()
   const [toToken, setToToken] = useState<TokenWithBalance>()
   const [optimalRate, setOptimalRate] = useState<OptimalRate>()
@@ -240,6 +240,7 @@ export const SwapContextProvider = ({ children }: { children: ReactNode }) => {
             })
           }
         })
+        .catch(Logger.error)
         .finally(() => {
           SentryWrapper.finish(sentryTrx)
         })

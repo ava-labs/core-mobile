@@ -78,7 +78,7 @@ export const useEstimateStakingFees = (
       const exportFee = calculateCChainFee(instantBaseFee, unsignedTx)
       setEstimatedStakingFee(exportFee.add(importFee))
     }
-    calculateEstimatedStakingFee().catch(reason => Logger.error(reason))
+    calculateEstimatedStakingFee().catch(Logger.error)
   }, [activeAccount, amountForCrossChainTransfer, avaxXPNetwork, baseFee])
 
   return estimatedStakingFee

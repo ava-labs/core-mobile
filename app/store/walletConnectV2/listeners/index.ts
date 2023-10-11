@@ -1,6 +1,8 @@
 import { isAnyOf } from '@reduxjs/toolkit'
 import { onLogIn, onLogOut, onRehydrationComplete } from 'store/app'
 import { AppStartListening } from 'store/middleware/listener'
+import { setActive } from 'store/network'
+import { setActiveAccountIndex } from 'store/account'
 import {
   killSessions,
   newSession,
@@ -14,7 +16,9 @@ import {
   killSomeSessions,
   handleDisconnect,
   startSession,
-  initWalletConnect
+  initWalletConnect,
+  handleNetworkChange,
+  handleAccountChange
 } from './sessions'
 import { processRequest } from './requests'
 import { sendRpcResult, sendRpcError } from './responses'
@@ -48,6 +52,15 @@ export const addWCListeners = (startListening: AppStartListening) => {
     effect: handleDisconnect
   })
 
+  startListening({
+    actionCreator: setActive,
+    effect: handleNetworkChange
+  })
+
+  startListening({
+    actionCreator: setActiveAccountIndex,
+    effect: handleAccountChange
+  })
   // /**************************
   //  * RPC REQUEST LISTENERS *
   //  *************************/

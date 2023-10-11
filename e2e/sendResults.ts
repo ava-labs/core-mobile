@@ -147,11 +147,7 @@ export async function writeRunIdToTextFile(runId: string) {
 export async function isResultExistsInTestrail(runID: number, caseId: number) {
   const caseDetails = await api.getResultsForCase(runID, caseId)
   if (caseDetails.length > 0) {
-    if (caseDetails[0].status_id === 5 && caseDetails.length < 2) {
-      return false
-    } else {
-      return true
-    }
+    return !(caseDetails[0].status_id === 5 && caseDetails.length < 2)
   } else {
     return false
   }
@@ -190,8 +186,7 @@ async function generatePlatformResults(
       const testCaseId = resultObject?.case_id
       const isResultsExists = await isResultExistsInTestrail(
         Number(runId),
-        testCaseId,
-        statusId
+        testCaseId
       )
       const payload = {
         status_id: statusId

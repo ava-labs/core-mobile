@@ -1,11 +1,16 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useRef, useCallback, useEffect, useState } from 'react'
 import BiometricsSDK, { KeystoreConfig } from 'utils/BiometricsSDK'
 import { UserCredentials } from 'react-native-keychain'
 import { PinKeys } from 'screens/onboarding/PinKey'
 import { asyncScheduler, Observable, of, timer } from 'rxjs'
 import { catchError, concatMap, map } from 'rxjs/operators'
 import { Alert, Animated } from 'react-native'
-import { decrypt, NoSaltError } from 'utils/EncryptionHelper'
+import {
+  decrypt,
+  encrypt,
+  InvalidVersionError,
+  NoSaltError
+} from 'utils/EncryptionHelper'
 import { useJigglyPinIndicator } from 'utils/JigglyPinIndicatorHook'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { useDispatch, useSelector } from 'react-redux'
@@ -35,7 +40,7 @@ const keymap: Map<PinKeys, string> = new Map([
   [PinKeys.Key0, '0']
 ])
 
-function getTimoutForAttempt(attempt: number) {
+function getTimoutForAttempt(attempt: number): 0 | 60 | 300 | 900 | 3600 {
   if (attempt === 6) {
     return 60 // 1 minute
   } else if (attempt === 7) {
@@ -72,7 +77,7 @@ export function usePinOrBiometryLogin(): {
   const [time, setTime] = useState(0)
   const [resetInterval, setResetInterval] = useState(0)
   const [timeRemaining, setTimeRemaining] = useState('00:00')
-  let timerId: NodeJS.Timer | undefined
+  const timerId = useRef<NodeJS.Timeout | undefined>(undefined)
 
   useEffect(() => {
     setPinDots(getPinDots(enteredPin))
@@ -83,21 +88,6 @@ export function usePinOrBiometryLogin(): {
     setTimeRemaining(formatTimer(resetInterval - (time % resetInterval)))
     Logger.info(`time: ${time}`)
   }, [time, resetInterval])
-
-  // we start the timer when the keyboard is disabled
-  // and stop when it's enabled & we have a timerId
-  useEffect(() => {
-    if (disableKeypad) {
-      timerId = setInterval(() => {
-        setTime(t => t + 1)
-        checkLoginAttempt()
-      }, 1000)
-    }
-    return () => {
-      // setTime(0)
-      timerId && clearInterval(timerId)
-    }
-  }, [disableKeypad])
 
   const checkLoginAttempt = useCallback(
     (manualInterval?: number) => {
@@ -123,6 +113,21 @@ export function usePinOrBiometryLogin(): {
     [loginAttempt, resetInterval]
   )
 
+  // we start the timer when the keyboard is disabled
+  // and stop when it's enabled & we have a timerId
+  useEffect(() => {
+    if (disableKeypad) {
+      timerId.current = setInterval(() => {
+        setTime(t => t + 1)
+        checkLoginAttempt()
+      }, 1000)
+    }
+    return () => {
+      // setTime(0)
+      timerId.current && clearInterval(timerId.current)
+    }
+  }, [checkLoginAttempt, disableKeypad])
+
   // triggered everytime there's login attempt,
   // but we only care if it's over the 5th try
   useEffect(() => {
@@ -131,7 +136,7 @@ export function usePinOrBiometryLogin(): {
       setResetInterval(interval)
       checkLoginAttempt(interval)
     }
-  }, [loginAttempt, setResetInterval, getTimoutForAttempt])
+  }, [loginAttempt, setResetInterval, checkLoginAttempt])
 
   // 1 time check to set things up
   // used for when the app gets killed, and
@@ -149,9 +154,15 @@ export function usePinOrBiometryLogin(): {
         setTime(secondsPassed)
       }
     }
-  }, [setTime, setResetInterval])
+  }, [
+    setTime,
+    setResetInterval,
+    loginAttempt.count,
+    loginAttempt.timestamp,
+    time
+  ])
 
-  const alertBadDta = useCallback(
+  const alertBadData = useCallback(
     () =>
       Alert.alert(
         'Data is not encrypted correctly',
@@ -168,40 +179,59 @@ export function usePinOrBiometryLogin(): {
     []
   )
 
-  function resetConfirmPinProcess() {
+  function resetConfirmPinProcess(): void {
     setEnteredPin('')
     setPinEntered(false)
     setMnemonic(undefined)
   }
 
   useEffect(() => {
-    async function checkPinEntered() {
-      if (pinEntered) {
-        try {
-          const credentials =
-            (await BiometricsSDK.loadWalletWithPin()) as UserCredentials
-          const data = await decrypt(credentials.password, enteredPin)
-          setMnemonic(data)
-          dispatch(resetLoginAttempt())
-        } catch (err) {
-          if (
-            err instanceof Error &&
-            (err?.message?.includes('BAD_DECRYPT') || // Android
-              err?.message?.includes('Decrypt failed')) // iOS
-          ) {
-            dispatch(
-              setLoginAttempt({
-                count: loginAttempt.count + 1,
-                timestamp: Date.now()
-              })
-            )
-            resetConfirmPinProcess()
-            fireJiggleAnimation()
-          }
+    async function checkPinEntered(): Promise<void> {
+      if (!pinEntered) {
+        return
+      }
 
-          if (err instanceof NoSaltError) {
-            alertBadDta()
-          }
+      try {
+        const credentials =
+          (await BiometricsSDK.loadWalletWithPin()) as UserCredentials
+
+        const { data, version } = await decrypt(
+          credentials.password,
+          enteredPin
+        )
+
+        if (version === 1) {
+          // data was encrypted using version 1 config
+          // we need to re-encrypt it using version 2 config
+          // and store it again
+          const encryptedData = await encrypt(data, enteredPin)
+          await BiometricsSDK.storeWalletWithPin(encryptedData, false)
+        }
+
+        setMnemonic(data)
+        dispatch(resetLoginAttempt())
+      } catch (err) {
+        Logger.error('Error decrypting data', err)
+
+        const isInvalidPin =
+          err instanceof Error &&
+          (err?.message?.includes('BAD_DECRYPT') || // Android
+            err?.message?.includes('Decrypt failed')) // iOS
+
+        if (isInvalidPin) {
+          dispatch(
+            setLoginAttempt({
+              count: loginAttempt.count + 1,
+              timestamp: Date.now()
+            })
+          )
+          resetConfirmPinProcess()
+          fireJiggleAnimation()
+        } else if (
+          err instanceof NoSaltError ||
+          err instanceof InvalidVersionError
+        ) {
+          alertBadData()
         }
       }
     }

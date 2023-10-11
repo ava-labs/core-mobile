@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
+  ContractCall,
   DisplayValueParserProps,
   Transaction,
   TransactionDisplayValues
@@ -7,7 +8,6 @@ import {
 import { MaxUint256, Result, TransactionDescription } from 'ethers'
 import { FeePreset } from 'components/NetworkFeeSelector'
 import { calculateGasAndFees } from 'utils/Utils'
-import { useNativeTokenPrice } from 'hooks/useNativeTokenPrice'
 import { bnToLocaleString, hexToBN } from '@avalabs/utils-sdk'
 import {
   getTxInfo,
@@ -18,22 +18,35 @@ import {
   isTxParams,
   parseDisplayValues
 } from 'screens/rpc/util/parseDisplayValues'
-import networkFeeService from 'services/networkFee/NetworkFeeService'
+import NetworkFeeService from 'services/networkFee/NetworkFeeService'
 import ERC20 from '@openzeppelin/contracts/build/contracts/ERC20.json'
 import Web3 from 'web3'
 import { Limit, SpendLimit } from 'components/EditSpendLimit'
 import Logger from 'utils/Logger'
-import { useSelector } from 'react-redux'
-import { NetworkTokenWithBalance, selectTokensWithBalance } from 'store/balance'
-import { selectNetworkFee } from 'store/networkFee'
-import { selectNetworks } from 'store/network'
-import { ChainId, Network } from '@avalabs/chains-sdk'
+import { NetworkTokenWithBalance } from 'store/balance'
+import { Network } from '@avalabs/chains-sdk'
 import { useFindToken } from 'contracts/contractParsers/utils/useFindToken'
 import BN from 'bn.js'
 import { CoreTypes } from '@walletconnect/types'
 import { TransactionParams } from 'store/walletConnectV2/handlers/eth_sendTransaction/utils'
+import { useNetworkFee } from 'hooks/useNetworkFee'
+import { useNativeTokenPriceForNetwork } from 'hooks/useNativeTokenPriceForNetwork'
 
 export const UNLIMITED_SPEND_LIMIT_LABEL = 'Unlimited'
+
+interface ExplainTransactionSharedTypes {
+  setSpendLimit: (customSpendData: SpendLimit) => void
+  contractType: ContractCall | undefined
+  selectedGasFee: FeePreset
+  displayData: TransactionDisplayValues
+  setCustomFee: (
+    gasPrice: bigint,
+    modifier: FeePreset,
+    gasLimit: number
+  ) => void
+  transaction: Transaction | null
+  customSpendLimit: SpendLimit
+}
 
 type Args = {
   txParams: TransactionParams | undefined
@@ -42,18 +55,15 @@ type Args = {
   onError: (error?: string) => void
 }
 
-export const useExplainTransactionShared = (args: Args) => {
+export const useExplainTransactionShared = (
+  args: Args
+): ExplainTransactionSharedTypes => {
   const { network, txParams, peerMeta, onError } = args
-  const networkFees = useSelector(selectNetworkFee)
-  const { nativeTokenPrice: tokenPrice } = useNativeTokenPrice()
-  const allNetworks = useSelector(selectNetworks)
-  const avaxToken = (
-    network?.isTestnet
-      ? allNetworks[ChainId.AVALANCHE_TESTNET_ID]
-      : allNetworks[ChainId.AVALANCHE_MAINNET_ID]
-  )?.networkToken
-  const tokensWithBalance = useSelector(selectTokensWithBalance)
-  const findToken = useFindToken()
+  const { data: networkFees } = useNetworkFee(network)
+  const { nativeTokenPrice: tokenPrice } =
+    useNativeTokenPriceForNetwork(network)
+  const token = network?.networkToken
+  const findToken = useFindToken(network)
 
   const [transaction, setTransaction] = useState<Transaction | null>(null)
 
@@ -85,7 +95,7 @@ export const useExplainTransactionShared = (args: Args) => {
       setTransaction(currentTransaction => {
         if (currentTransaction === null) return null
 
-        const updatedTransaction = {
+        return {
           ...currentTransaction,
           txParams: {
             ...currentTransaction.txParams,
@@ -93,8 +103,6 @@ export const useExplainTransactionShared = (args: Args) => {
             gasPrice: feeDisplayValues.gasPrice.toString(16) // test this
           }
         }
-
-        return updatedTransaction
       })
     },
     [tokenPrice, network?.networkToken?.decimals]
@@ -165,120 +173,95 @@ export const useExplainTransactionShared = (args: Args) => {
    *****************************************************************************/
   useEffect(() => {
     // TODO: determine why loadTx render multiple times on Token Spend Approval
-    async function loadTx() {
+    async function loadTx(): Promise<void> {
       if (!network) throw Error('Invalid network')
 
       // Get transaction description from ABIs
-      const txDescription = await getTxInfo(
-        txParams?.to?.toLocaleLowerCase() ?? '',
-        txParams?.data ?? '',
-        txParams?.value ?? '',
-        network
-      )
+      const txDescription = await getTxDescription(network, txParams)
 
-      if (txParams && isTxParams(txParams)) {
-        // These are the default props we'll feed into the display parser later on
-        // @ts-ignore
-        const displayValueProps: DisplayValueParserProps = {
-          gasPrice: networkFees?.low || 0n,
-          avaxPrice: tokenPrice || 0, // prince in currency
-          avaxToken: avaxToken as NetworkTokenWithBalance,
-          erc20Tokens: tokensWithBalance ?? [],
-          site: peerMeta
-        }
+      if (!txParams || !isTxParams(txParams)) {
+        throw Error('Invalid transaction params')
+      }
 
-        // some requests will have a missing gasLimit so we need to ensure it's there
-        let gasLimit: number | null
-        try {
-          gasLimit = await (txParams.gas
-            ? Number(txParams.gas)
-            : networkFeeService.estimateGasLimit({
-                from: txParams.from,
-                to: txParams.to,
-                data: txParams.data,
-                value: txParams.value,
-                network
-              }))
-        } catch (e) {
+      // These are the default props we'll feed into the display parser later on
+      const displayValueProps: DisplayValueParserProps = {
+        gasPrice: networkFees.low,
+        tokenPrice, // price in currency
+        token: token as NetworkTokenWithBalance,
+        site: peerMeta
+      }
+
+      // some requests will have a missing gasLimit so we need to ensure it's there
+      let gasLimit: number | null
+
+      if (txParams.gas) {
+        gasLimit = Number(txParams.gas)
+      } else {
+        gasLimit = await getEstimatedGasLimit(txParams, network).catch(e => {
           Logger.error('failed to calculate gas limit', e)
           throw Error('Unable to calculate gas limit')
-        }
-
-        // create txParams that includes gasLimit
-        const txParamsWithGasLimit = gasLimit
-          ? { ...txParams, gas: gasLimit }
-          : txParams
-
-        let functionName = ''
-        let decodedData: Result | undefined
-        let description: TransactionDescription | undefined
-
-        if (!isTxDescriptionError(txDescription)) {
-          // only include the description if it's free of errors
-          description = txDescription
-
-          // Get decoded transaction data
-          decodedData = txDescription.args
-
-          // Get function name. Try normalized name otherwise look into functionFragment
-          functionName = txDescription?.name ?? txDescription?.fragment?.name
-        }
-
-        // Get parser based on function name
-        const parser = contractParserMap.get(functionName)
-
-        // this is the simplified display values which
-        // will be used to on the views.
-        // uses a custom parser if there is one, otherwise
-        // uses `parseDisplayValues` as a generic parser.
-        let displayValues: TransactionDisplayValues
-        try {
-          displayValues = parser
-            ? await parser(
-                findToken,
-                network,
-                txParamsWithGasLimit,
-                decodedData,
-                displayValueProps,
-                description
-              )
-            : parseDisplayValues(
-                network,
-                txParamsWithGasLimit,
-                displayValueProps,
-                description
-              )
-        } catch (err) {
-          Logger.error('failed to parse transaction', err)
-          displayValues = parseDisplayValues(
-            network,
-            txParamsWithGasLimit,
-            displayValueProps,
-            description
-          )
-        }
-
-        const defaultLimitBN = hexToBN(displayValues.approveData?.limit ?? '0')
-        if (!defaultSpendLimit) {
-          setDefaultSpendLimit(defaultLimitBN)
-
-          setCustomSpendLimit({
-            limitType: Limit.DEFAULT,
-            value: {
-              bn: defaultLimitBN,
-              amount: bnToLocaleString(
-                defaultLimitBN,
-                displayValues.tokenToBeApproved?.decimals
-              )
-            }
-          })
-        }
-
-        setTransaction({
-          txParams: txParamsWithGasLimit,
-          displayValues: displayValues
         })
       }
+      // create txParams that includes gasLimit
+      const txParamsWithGasLimit = getTxParamsWithGasLimit(gasLimit, txParams)
+
+      const { functionName, decodedData, description } =
+        extractParamsForContractParser(txDescription)
+
+      // Get parser based on function name
+      const parser = contractParserMap.get(functionName)
+
+      // this is the simplified display values which
+      // will be used to on the views.
+      // uses a custom parser if there is one, otherwise
+      // uses `parseDisplayValues` as a generic parser.
+      let displayValues: TransactionDisplayValues
+      try {
+        displayValues = parser
+          ? await parser(
+              findToken,
+              network,
+              txParamsWithGasLimit,
+              decodedData,
+              displayValueProps,
+              description
+            )
+          : parseDisplayValues(
+              network,
+              txParamsWithGasLimit,
+              displayValueProps,
+              description
+            )
+      } catch (err) {
+        Logger.error('failed to parse transaction', err)
+        displayValues = parseDisplayValues(
+          network,
+          txParamsWithGasLimit,
+          displayValueProps,
+          description
+        )
+      }
+
+      const defaultLimitBN = getDefaultLimitBN(displayValues)
+      if (!defaultSpendLimit) {
+        setDefaultSpendLimit(defaultLimitBN)
+
+        setCustomSpendLimit({
+          limitType: Limit.DEFAULT,
+          value: {
+            bn: defaultLimitBN,
+            amount: bnToLocaleString(
+              defaultLimitBN,
+              displayValues.tokenToBeApproved?.decimals
+            )
+          }
+        })
+      }
+
+      setTransaction({
+        txParams: txParamsWithGasLimit,
+        displayValues: displayValues
+      })
     }
 
     loadTx().catch(err => {
@@ -287,12 +270,11 @@ export const useExplainTransactionShared = (args: Args) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     network,
-    avaxToken,
+    token,
     findToken,
     networkFees,
     peerMeta,
     tokenPrice,
-    tokensWithBalance,
     txParams,
     onError
   ])
@@ -320,7 +302,7 @@ export const useExplainTransactionShared = (args: Args) => {
   const displayData: TransactionDisplayValues = useMemo(() => {
     const data = {
       ...transaction?.displayValues,
-      ...(transaction?.txParams ? { txParams: transaction?.txParams } : {}),
+      ...(transaction?.txParams ? { txParams: transaction.txParams } : {}),
       ...feeDisplayValues
     }
 
@@ -338,4 +320,70 @@ export const useExplainTransactionShared = (args: Args) => {
     customSpendLimit,
     selectedGasFee
   }
+}
+
+const getDefaultLimitBN = (displayValues: TransactionDisplayValues): BN => {
+  return hexToBN(displayValues.approveData?.limit ?? '0')
+}
+
+const getTxDescription = async (
+  network: Network,
+  txParams?: TransactionParams
+): Promise<
+  | TransactionDescription
+  | {
+      error: string
+    }
+> => {
+  return await getTxInfo(
+    txParams?.to?.toLocaleLowerCase() ?? '',
+    txParams?.data ?? '',
+    txParams?.value ?? '',
+    network
+  )
+}
+
+const getFunctionName = (txDescription: TransactionDescription): string => {
+  return txDescription?.name ?? txDescription?.fragment?.name ?? ''
+}
+
+const getTxParamsWithGasLimit = (
+  gasLimit: number | null,
+  txParams: TransactionParams
+): TransactionParams => {
+  return gasLimit ? { ...txParams, gas: gasLimit } : txParams
+}
+
+const extractParamsForContractParser = (
+  txDescription:
+    | TransactionDescription
+    | {
+        error: string
+      }
+): {
+  functionName: string
+  description?: TransactionDescription
+  decodedData?: Result
+} => {
+  if (!isTxDescriptionError(txDescription)) {
+    return {
+      decodedData: txDescription.args,
+      description: txDescription,
+      functionName: getFunctionName(txDescription)
+    }
+  }
+  return { decodedData: undefined, description: undefined, functionName: '' }
+}
+
+const getEstimatedGasLimit = (
+  txParams: TransactionParams,
+  network: Network
+): Promise<number | null> => {
+  return NetworkFeeService.estimateGasLimit({
+    from: txParams.from,
+    to: txParams.to,
+    data: txParams.data,
+    value: txParams.value,
+    network
+  })
 }

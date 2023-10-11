@@ -37,7 +37,7 @@ const disabledUIs: Partial<Record<UI, number[]>> = {
   [UI.WalletConnect]: [] // empty array means this feature shouldn't be disabled on any network
 }
 
-export const useIsUIDisabled = (ui: UI) => {
+export const useIsUIDisabled = (ui: UI): boolean => {
   const { chainId } = useSelector(selectActiveNetwork)
 
   //keep this on top of this list
@@ -50,9 +50,5 @@ export const useIsUIDisabled = (ui: UI) => {
   }
 
   const disabled = disabledUIs[ui]
-  if (disabled && !disabled.includes(chainId)) {
-    return false
-  }
-
-  return true
+  return !(disabled && !disabled.includes(chainId))
 }

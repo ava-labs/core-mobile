@@ -17,6 +17,7 @@ module.exports = (async () => {
       // sbmodern is needed for storybook
       resolverMainFields: ['sbmodern', 'react-native', 'browser', 'main'],
       extraNodeModules: {
+        // this is for any modules that use require('crypto')
         crypto: require.resolve('react-native-quick-crypto')
       },
       resolveRequest: (context, moduleName, platform) => {
@@ -26,6 +27,36 @@ module.exports = (async () => {
             moduleName.replace(
               '@ledgerhq/cryptoassets',
               '@ledgerhq/cryptoassets/lib-es'
+            ),
+            platform
+          )
+        }
+        if (moduleName.startsWith('@ledgerhq/domain-service')) {
+          return context.resolveRequest(
+            context,
+            moduleName.replace(
+              '@ledgerhq/domain-service',
+              '@ledgerhq/domain-service/lib-es'
+            ),
+            platform
+          )
+        }
+        if (moduleName.startsWith('@ledgerhq/evm-tools')) {
+          return context.resolveRequest(
+            context,
+            moduleName.replace(
+              '@ledgerhq/evm-tools',
+              '@ledgerhq/evm-tools/lib-es'
+            ),
+            platform
+          )
+        }
+        if (moduleName.startsWith('@ledgerhq/live-network')) {
+          return context.resolveRequest(
+            context,
+            moduleName.replace(
+              '@ledgerhq/live-network',
+              '@ledgerhq/live-network/lib-es'
             ),
             platform
           )

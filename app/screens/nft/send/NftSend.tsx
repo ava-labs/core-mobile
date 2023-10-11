@@ -10,7 +10,6 @@ import AddressBookLists, {
 } from 'components/addressBook/AddressBookLists'
 import FlexSpacer from 'components/FlexSpacer'
 import { useAddressBookLists } from 'components/addressBook/useAddressBookLists'
-import { AddrBookItemType, Contact } from 'Repo'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Row } from 'components/Row'
 import { useSendNFTContext } from 'contexts/SendNFTContext'
@@ -23,6 +22,7 @@ import { NetworkVMType } from '@avalabs/chains-sdk'
 import { SvgXml } from 'react-native-svg'
 import { usePostCapture } from 'hooks/usePosthogCapture'
 import { BN } from 'bn.js'
+import { AddrBookItemType, Contact } from 'store/addressBook'
 
 export type NftSendScreenProps = {
   onNext: () => void

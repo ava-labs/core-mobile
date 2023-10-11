@@ -7,6 +7,10 @@ import * as networkUtils from 'services/network/utils/isValidRpcUrl'
 import * as Navigation from 'utils/Navigation'
 import { setActive, addCustomNetwork } from 'store/network'
 import { NetworkVMType } from '@avalabs/chains-sdk'
+import {
+  selectIsDeveloperMode,
+  toggleDeveloperMode
+} from 'store/settings/advanced'
 import { walletAddEthereumChainHandler as handler } from './wallet_addEthereumChain'
 
 const mockIsValidRPCUrl = jest.fn()
@@ -20,7 +24,15 @@ jest.mock('store/network', () => {
   return {
     ...actual,
     selectActiveNetwork: () => mockActiveNetwork,
-    selectNetworks: () => mockNetworks
+    selectAllNetworks: () => mockNetworks
+  }
+})
+
+jest.mock('store/settings/advanced', () => {
+  const actual = jest.requireActual('store/settings/advanced')
+  return {
+    ...actual,
+    selectIsDeveloperMode: jest.fn()
   }
 })
 
@@ -290,6 +302,13 @@ describe('wallet_addEthereumChain handler', () => {
   })
 
   describe('approve', () => {
+    beforeEach(() => {
+      const mockSelectIsDeveloperMode =
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        selectIsDeveloperMode as jest.MockedFunction<any>
+      mockSelectIsDeveloperMode.mockImplementation(() => false)
+    })
+
     // eslint-disable-next-line jest/expect-expect
     it('should return error when approve data is invalid', async () => {
       const invalidDataScenarios = [
@@ -339,6 +358,7 @@ describe('wallet_addEthereumChain handler', () => {
 
       expect(mockDispatch).toHaveBeenCalledWith(addCustomNetwork(testNetwork))
       expect(mockDispatch).toHaveBeenCalledWith(setActive(testNetwork.chainId))
+      expect(mockDispatch).not.toHaveBeenCalledWith(toggleDeveloperMode())
 
       expect(result).toEqual({ success: true, value: null })
     })
@@ -380,6 +400,49 @@ describe('wallet_addEthereumChain handler', () => {
         addCustomNetwork(testNetwork)
       )
       expect(mockDispatch).toHaveBeenCalledWith(setActive(testNetwork.chainId))
+      expect(mockDispatch).not.toHaveBeenCalledWith(toggleDeveloperMode())
+
+      expect(result).toEqual({ success: true, value: null })
+    })
+
+    it('should set custom network to active, toggle dev mode and return success', async () => {
+      const testRequest = createRequest([sepoliaMainnetInfo])
+
+      const testNetwork = {
+        chainId: 11155111,
+        chainName: 'Sepolia',
+        description: '',
+        explorerUrl: 'https://sepolia.etherscan.io',
+        isTestnet: true,
+        logoUri: '',
+        mainnetChainId: 0,
+        networkToken: {
+          symbol: 'SEP',
+          name: 'SEP',
+          description: '',
+          decimals: 18,
+          logoUri: ''
+        },
+        platformChainId: '',
+        rpcUrl: 'https://rpc.sepolia.dev',
+        subnetId: '',
+        vmId: '',
+        vmName: 'EVM' as NetworkVMType
+      }
+
+      const result = await handler.approve(
+        {
+          request: testRequest,
+          data: { network: testNetwork, isExisting: true }
+        },
+        mockListenerApi
+      )
+
+      expect(mockDispatch).not.toHaveBeenCalledWith(
+        addCustomNetwork(testNetwork)
+      )
+      expect(mockDispatch).toHaveBeenCalledWith(setActive(testNetwork.chainId))
+      expect(mockDispatch).toHaveBeenCalledWith(toggleDeveloperMode())
 
       expect(result).toEqual({ success: true, value: null })
     })

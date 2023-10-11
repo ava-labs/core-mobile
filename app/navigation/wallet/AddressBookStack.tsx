@@ -13,9 +13,9 @@ import AddContact from 'screens/drawer/addressBook/AddContact'
 import ContactDetails from 'screens/drawer/addressBook/ContactDetails'
 import AvaText from 'components/AvaText'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { Contact } from 'Repo'
 import { useDispatch, useSelector } from 'react-redux'
 import {
+  Contact,
   removeContact,
   saveEditingContact,
   selectContact,

@@ -70,13 +70,11 @@ export async function addLiquidityHandler(
     amountCurrencyValue: tokenB_AmountUSDValue
   }
 
-  const result = {
+  return {
     poolTokens: [firstToken, secondToken],
     contractType: ContractCall.ADD_LIQUIDITY,
     ...parseDisplayValues(network, request, props)
   }
-
-  return result
 }
 
 export const AddLiquidityParser: ContractParser = [
