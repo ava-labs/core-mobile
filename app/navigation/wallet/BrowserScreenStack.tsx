@@ -30,11 +30,6 @@ function BrowserScreenStack(): JSX.Element {
         }
       }}>
       <BrowserStack.Screen
-        name={AppNavigation.Browser.Intro}
-        options={{ headerShown: false }}
-        component={IntroStub}
-      />
-      <BrowserStack.Screen
         name={AppNavigation.Browser.TabView}
         options={{ headerShown: false }}
         component={TabViewStub}
@@ -55,6 +50,11 @@ function BrowserScreenStack(): JSX.Element {
         name={AppNavigation.Browser.AreYousSure}
         options={{ presentation: 'transparentModal' }}
         component={AreYouSureModal}
+      />
+      <BrowserStack.Screen
+        name={AppNavigation.Browser.Intro}
+        options={{ headerShown: false }}
+        component={IntroStub}
       />
     </BrowserStack.Navigator>
   )
