@@ -26,6 +26,14 @@ class CreatePinPage {
     return by.text(createPinLoc.setNewPinHeader)
   }
 
+  get signInWithRecoveryPhraseBtn() {
+    return by.id(createPinLoc.signInWithRecoveryPhraseBtn)
+  }
+
+  async tapSignInWithRecoveryPhraseBtn() {
+    await Action.tap(this.signInWithRecoveryPhraseBtn)
+  }
+
   async tapNumpadZero() {
     await element(this.numpadZero).multiTap(6)
   }
