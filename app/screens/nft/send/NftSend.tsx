@@ -216,10 +216,16 @@ const CollectibleItem = ({ nft }: { nft: NFTItemData }) => {
         </View>
         <Space x={16} />
         <View style={{ flex: 1 }}>
-          <AvaText.Heading5 numberOfLines={1} ellipsizeMode="tail">
+          <AvaText.Heading5
+            testID="NftTokenID"
+            numberOfLines={1}
+            ellipsizeMode="tail">
             #{nft.tokenId}
           </AvaText.Heading5>
-          <AvaText.Heading6 numberOfLines={1} ellipsizeMode="tail">
+          <AvaText.Heading6
+            testID="NftTokenName"
+            numberOfLines={1}
+            ellipsizeMode="tail">
             {nft.metadata.name}
           </AvaText.Heading6>
         </View>
