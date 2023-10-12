@@ -109,6 +109,10 @@ class AccountManagePage {
     await Action.tapElementAtIndex(this.saveNewAccountName, 0)
   }
 
+  async tapFirstAccount() {
+    await Action.tapElementAtIndex(this.account, 0)
+  }
+
   async tapSecondAccount() {
     await Action.tapElementAtIndex(this.secondAccount, 0)
   }

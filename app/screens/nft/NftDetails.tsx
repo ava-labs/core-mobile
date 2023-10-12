@@ -56,7 +56,7 @@ export default function NftDetails({
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <AvaText.Heading1>
+      <AvaText.Heading1 testID="NftTokenTitle">
         {item.metadata.name} #{item.tokenId}
       </AvaText.Heading1>
       <AvaButton.Base
