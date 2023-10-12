@@ -29,7 +29,7 @@ const ReceiveToken: FC<Props> = memo(props => {
     capture('ReceivePageVisited')
   }, [capture])
 
-  const receiveAddress = () => {
+  const receiveAddress = (): string => {
     switch (chainId) {
       case ChainId.BITCOIN:
       case ChainId.BITCOIN_TESTNET:
@@ -60,6 +60,7 @@ const ReceiveToken: FC<Props> = memo(props => {
         <Space y={52} />
         <View style={{ alignSelf: 'center' }}>
           <AvaxQACode
+            testID="receive_token_qr_code"
             sizePercentage={0.7}
             address={receiveAddress()}
             token={networkToken.symbol}
@@ -68,7 +69,9 @@ const ReceiveToken: FC<Props> = memo(props => {
         </View>
         <Space y={47} />
         <View style={styles.networkContainer}>
-          <AvaText.Heading3>{activeNetwork.chainName} Address</AvaText.Heading3>
+          <AvaText.Heading3 testID="network_chain_name">
+            {activeNetwork.chainName} Address
+          </AvaText.Heading3>
         </View>
         <View
           style={[
@@ -76,6 +79,7 @@ const ReceiveToken: FC<Props> = memo(props => {
             { backgroundColor: theme.colorBg2 }
           ]}>
           <TokenAddress
+            testID="receive_token_address"
             address={receiveAddress()}
             showFullAddress
             textType={'ButtonMedium'}
