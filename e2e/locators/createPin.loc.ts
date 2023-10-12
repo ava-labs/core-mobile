@@ -6,5 +6,6 @@ export default {
   enterYourPinHeader: 'Enter your pin',
   setNewPinHeader: 'Set new pin',
   firstMnemonicWord: 'rebel',
-  lastMnemonicWord: 'embark'
+  lastMnemonicWord: 'embark',
+  signInWithRecoveryPhraseBtn: 'btnTextMedium'
 }
