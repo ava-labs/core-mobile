@@ -9,14 +9,11 @@ import ExistingRecoveryPhrasePage from '../../pages/existingRecoveryPhrase.page'
 import WatchListPage from '../../pages/watchlist.page'
 import PortfolioPage from '../../pages/portfolio.page'
 import BottomTabsPage from '../../pages/bottomTabs.page'
+import delay from '../../helpers/waits'
 
 describe('Unlock app with recovery phrase', () => {
   beforeAll(async () => {
     await warmup()
-  })
-
-  beforeEach(async () => {
-    await device.reloadReactNative()
   })
 
   it('should successfully add an existing wallet', async () => {
@@ -25,6 +22,11 @@ describe('Unlock app with recovery phrase', () => {
   })
 
   it('should successfully unlock app with recovery phrase', async () => {
+    await device.reloadReactNative()
+    if (device.getPlatform() === 'android') {
+      await delay(5000)
+      await device.launchApp({ newInstance: false })
+    }
     await WatchListPage.tapEnterWalletBtn()
     await CreatePinPage.tapSignInWithRecoveryPhraseBtn()
     const recoveryPhrase: string = process.env.E2E_MNEMONIC as string
