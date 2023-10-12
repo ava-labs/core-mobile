@@ -45,6 +45,7 @@ type Props = {
   onLoginSuccess: (mnemonic: string) => void
   isResettingPin?: boolean
   hideLoginWithMnemonic?: boolean
+  testID?: string
 }
 
 /**
@@ -196,7 +197,9 @@ export default function PinOrBiometryLogin({
           <View style={styles.keyboard}>{keyboard()}</View>
           {isResettingPin || hideLoginWithMnemonic || (
             <>
-              <AvaButton.TextMedium onPress={onSignInWithRecoveryPhrase}>
+              <AvaButton.TextMedium
+                onPress={onSignInWithRecoveryPhrase}
+                testID="pin_or_biometry_login__signin_w_recovery">
                 Sign In with recovery phrase
               </AvaButton.TextMedium>
               <Space y={16} />
