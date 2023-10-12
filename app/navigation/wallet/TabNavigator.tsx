@@ -36,7 +36,7 @@ const TAB_ICON_SIZE = 28
 
 const TabNavigator: () => JSX.Element = () => {
   const theme = useApplicationContext().theme
-  const { earnBlocked } = usePosthogContext()
+  const { earnBlocked, browserBlocked } = usePosthogContext()
   const { isEarnDashboardEnabled } = useIsEarnDashboardEnabled()
   const isAvalancheNetwork = useIsAvalancheNetwork()
   const { capture } = usePostCapture()
@@ -76,6 +76,51 @@ const TabNavigator: () => JSX.Element = () => {
               e.preventDefault()
               navigation.navigate(AppNavigation.Wallet.Earn, {
                 screen: AppNavigation.Earn.StakeSetup
+              })
+            }
+          }
+        })}
+      />
+    )
+  }
+
+  function renderBrowserTab(): JSX.Element | null {
+    if (browserBlocked) {
+      return null
+    }
+    return (
+      <Tab.Screen
+        name={AppNavigation.Tabs.Browser}
+        options={{
+          header: () => {
+            return (
+              <TopNavigationHeader
+                showMenu={false}
+                showBackButton={false}
+                showAccountSelector={true}
+                showNetworkSelector={false}
+              />
+            )
+          },
+          tabBarIcon: ({ focused }) =>
+            normalTabButton({
+              theme,
+              routeName: AppNavigation.Tabs.Browser,
+              focused,
+              image: <BrowserSVG selected={focused} size={TAB_ICON_SIZE} />
+            })
+        }}
+        component={BrowserScreenStack}
+        listeners={({ navigation }) => ({
+          tabPress: _ => {
+            if (!hasBeenViewedBrowser) {
+              dispatch(setViewOnce(ViewOnceKey.BROWSER_INTERACTION))
+              navigation.navigate(AppNavigation.Tabs.Browser, {
+                screen: AppNavigation.Browser.Intro
+              })
+            } else {
+              navigation.navigate(AppNavigation.Tabs.Browser, {
+                screen: AppNavigation.Browser.TabView
               })
             }
           }
@@ -133,43 +178,7 @@ const TabNavigator: () => JSX.Element = () => {
         component={WatchlistTab}
       />
       {renderEarnTab()}
-      <Tab.Screen
-        name={AppNavigation.Tabs.Browser}
-        options={{
-          header: () => {
-            return (
-              <TopNavigationHeader
-                showMenu={false}
-                showBackButton={false}
-                showAccountSelector={true}
-                showNetworkSelector={false}
-              />
-            )
-          },
-          tabBarIcon: ({ focused }) =>
-            normalTabButton({
-              theme,
-              routeName: AppNavigation.Tabs.Browser,
-              focused,
-              image: <BrowserSVG selected={focused} size={TAB_ICON_SIZE} />
-            })
-        }}
-        component={BrowserScreenStack}
-        listeners={({ navigation }) => ({
-          tabPress: _ => {
-            if (!hasBeenViewedBrowser) {
-              dispatch(setViewOnce(ViewOnceKey.BROWSER_INTERACTION))
-              navigation.navigate(AppNavigation.Tabs.Browser, {
-                screen: AppNavigation.Browser.Intro
-              })
-            } else {
-              navigation.navigate(AppNavigation.Tabs.Browser, {
-                screen: AppNavigation.Browser.TabView
-              })
-            }
-          }
-        })}
-      />
+      {renderBrowserTab()}
     </Tab.Navigator>
   )
 }
