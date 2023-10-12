@@ -139,7 +139,7 @@ class PortfolioPage {
   }
 
   async tapCollectiblesTab() {
-    await Action.tapElementAtIndex(this.collectiublesTab, 0)
+    await Action.tapElementAtIndex(this.collectiblesTab, 0)
   }
 
   async tapEthNetwork() {
