@@ -35,7 +35,7 @@ const TokenAddress: FC<Props> = ({
   textColor,
   onCopyAddress,
   copyIconEnd
-}) => {
+}): JSX.Element => {
   const theme = useContext(ApplicationContext).theme
 
   const tokenAddress = showFullAddress ? address : truncateAddress(address)
@@ -43,7 +43,7 @@ const TokenAddress: FC<Props> = ({
 
   const copyIcon = <CopySVG />
 
-  const copyAddressToClipboard = () => {
+  const copyAddressToClipboard = (): void => {
     copyToClipboard(address)
     onCopyAddress?.(address)
   }
@@ -56,7 +56,7 @@ const TokenAddress: FC<Props> = ({
         alignItems: 'center',
         marginRight: 0
       }}
-      testID="bitcoin">
+      testID="receive_token_address">
       {showIcon && isBech32Address(address) && (
         <>
           <BitcoinSVG size={16} />
@@ -109,7 +109,7 @@ const TokenAddressComposed = ({
   textType,
   textColor,
   tokenAddress
-}: TokenAddressComposedProps) => {
+}: TokenAddressComposedProps): JSX.Element | null => {
   switch (textType) {
     case 'ButtonSmall':
       return (

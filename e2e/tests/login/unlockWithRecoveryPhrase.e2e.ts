@@ -23,6 +23,7 @@ describe('Unlock app with recovery phrase', () => {
 
   it('should successfully unlock app with recovery phrase', async () => {
     await device.reloadReactNative()
+    // This is a workaround for the issue with Android where the app is not launched after reloadReactNative. Does nothing if app is launched.
     if (device.getPlatform() === 'android') {
       await delay(5000)
       await device.launchApp({ newInstance: false })
