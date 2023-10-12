@@ -38,7 +38,7 @@ class PortfolioPage {
     return by.text(portfolio.collectiblesTab)
   }
 
-  get collectiublesTab() {
+  get collectiblesTab() {
     return by.text(portfolio.collectiublesTab)
   }
 
