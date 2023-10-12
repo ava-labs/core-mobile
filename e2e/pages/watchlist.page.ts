@@ -35,6 +35,14 @@ class WatchListPage {
     return by.id(`watchlist_item__btc`)
   }
 
+  get enterWalletBtn() {
+    return by.id(watchlist.enterWalletBtn)
+  }
+
+  async tapEnterWalletBtn() {
+    await Action.tap(this.enterWalletBtn)
+  }
+
   async tapAllTab() {
     await Action.tap(this.allTab)
   }
