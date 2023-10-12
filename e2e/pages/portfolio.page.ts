@@ -39,7 +39,7 @@ class PortfolioPage {
   }
 
   get collectiblesTab() {
-    return by.text(portfolio.collectiublesTab)
+    return by.text(portfolio.collectiblesTab)
   }
 
   get activityTab() {
