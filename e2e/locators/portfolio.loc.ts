@@ -11,7 +11,6 @@ export default {
   assetsTab: 'Assets',
   btcTokenItem: 'BTC',
   btcNetwork: 'Bitcoin',
-  collectiblesTab: 'Collectibles',
   ethNetwork: 'Ethereum',
   ethGoerlyNetwork: 'Ethereum Goerli',
   favoritesHeader: 'Favorites',
