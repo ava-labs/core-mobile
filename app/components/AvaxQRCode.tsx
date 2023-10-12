@@ -13,6 +13,7 @@ interface Props {
   sizePercentage?: number
   token?: string
   label?: string
+  testID?: string
 }
 
 const { width: screenWidth } = Dimensions.get('window')
@@ -32,7 +33,7 @@ const AvaxQRCode: FC<Props> = ({
   const qrTokenSize = qrCodeSize * 0.3
   const circularTextSize = (qrTokenSize * 100) / 40
 
-  const qrToken = () => {
+  const qrToken = (): JSX.Element => {
     switch (token) {
       case TokenSymbol.BTC:
         return (
