@@ -75,7 +75,14 @@ module.exports = {
       }
     },
     {
-      files: ['*.test.ts', '*.e2e.smoke.ts', '*.e2e.ts', '*.page.ts', '*.spec.ts', '*.loc.ts'],
+      files: [
+        '*.test.ts', 
+        '*.e2e.smoke.ts', 
+        '*.e2e.ts', 
+        '*.page.ts', 
+        '*.spec.ts', 
+        '*.loc.ts'
+      ],
       rules: {
         '@typescript-eslint/explicit-function-return-type': ['off']
       }
