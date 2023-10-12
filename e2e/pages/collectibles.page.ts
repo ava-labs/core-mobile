@@ -44,6 +44,14 @@ class CollectiblesPage {
     return by.text(Collectibles.collectibleText)
   }
 
+  get customFeeButton() {
+    return by.text(Collectibles.customFeeButton)
+  }
+
+  get customFeeInput() {
+    return by.id(Collectibles.customFeeInput)
+  }
+
   get nftlogo() {
     return by.id(Collectibles.nftlogo)
   }
@@ -100,8 +108,20 @@ class CollectiblesPage {
     return by.text(Collectibles.propertiesTitle)
   }
 
+  get warningAddressRequired() {
+    return by.text(Collectibles.warningAddressRequired)
+  }
+
+  get warningInsufficientFee() {
+    return by.text(Collectibles.warningInsufficientFee)
+  }
+
   async tapAddressBook() {
     await Action.tapElementAtIndex(this.addressBook, 0)
+  }
+
+  async tapCustomFeeButton() {
+    await Action.tapElementAtIndex(this.customFeeButton, 0)
   }
 
   async tapGridItem() {
@@ -192,6 +212,11 @@ class CollectiblesPage {
     await this.verifySendNftItems()
     await this.tapSendNowButton()
     return result
+  }
+
+  async inputCustomFee() {
+    await Action.setInputText(this.customFeeInput, '25000000', 1)
+    await Action.tap(this.sendTitle)
   }
 }
 
