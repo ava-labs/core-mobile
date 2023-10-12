@@ -4,6 +4,8 @@ export default {
   addressInput: 'input_text',
   addressBook: 'address_book',
   cancelButton: 'btnSecondary',
+  customFeeButton: 'Custom',
+  customFeeInput: 'input_text',
   myAccounts: 'My Accounts',
   nextButton: 'btnPrimary',
   nftTokenId: 'NftTokenID',
@@ -20,5 +22,7 @@ export default {
   networkFeeText: 'Network Fee',
   sendTitle: 'Send',
   collectibleText: 'Collectible',
-  nftlogo: 'avatar__logo_avatar'
+  nftlogo: 'avatar__logo_avatar',
+  warningAddressRequired: 'Address required',
+  warningInsufficientFee: 'Insufficient balance for fee.'
 }
