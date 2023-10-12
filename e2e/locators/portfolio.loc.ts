@@ -1,5 +1,6 @@
 export default {
   activityTab: 'Activity',
+  collectiblesTab: 'Collectibles',
   addToWatchlist: 'add_svg',
   addAssetsButton: 'Add Assets',
   addAssetsMessage: 'Add assets by clicking the button below.',
@@ -10,7 +11,6 @@ export default {
   assetsTab: 'Assets',
   btcTokenItem: 'BTC',
   btcNetwork: 'Bitcoin',
-  collectiblesTab: 'Collectibles',
   ethNetwork: 'Ethereum',
   ethGoerlyNetwork: 'Ethereum Goerli',
   favoritesHeader: 'Favorites',

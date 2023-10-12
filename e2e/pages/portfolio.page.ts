@@ -38,6 +38,10 @@ class PortfolioPage {
     return by.text(portfolio.collectiblesTab)
   }
 
+  get collectiblesTab() {
+    return by.text(portfolio.collectiblesTab)
+  }
+
   get activityTab() {
     return by.text(portfolio.activityTab)
   }
@@ -132,6 +136,10 @@ class PortfolioPage {
 
   async tapBtcFavoriteToken() {
     await Action.tapElementAtIndex(this.btcTokenItem, 0)
+  }
+
+  async tapCollectiblesTab() {
+    await Action.tapElementAtIndex(this.collectiblesTab, 0)
   }
 
   async tapEthNetwork() {

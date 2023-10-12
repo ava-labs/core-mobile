@@ -53,7 +53,8 @@ export const GridItem = React.memo(
         onPress={() => onItemSelected(item)}
         style={{
           margin: GRID_ITEM_MARGIN
-        }}>
+        }}
+        testID="baseGridItem">
         {!item.metadata.imageUri || imgLoadFailed ? (
           <ErrorFallback item={item} />
         ) : item.isSvg ? (
