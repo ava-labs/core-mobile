@@ -22,16 +22,14 @@ import { useAvaxFormatter } from 'hooks/formatter/useAvaxFormatter'
 import { useTimeElapsed } from 'hooks/time/useTimeElapsed'
 import Spinner from 'components/animation/Spinner'
 import { timeToShowNetworkFeeError } from 'consts/earn'
+import { usePostCapture } from 'hooks/usePosthogCapture'
 import { ConfirmScreen } from './components/ConfirmScreen'
 import { EmptyClaimRewards } from './EmptyClaimRewards'
 
 type ScreenProps = EarnScreenProps<typeof AppNavigation.Earn.ClaimRewards>
 
-const onClaimError = (error: Error) => {
-  showSimpleToast(error.message)
-}
-
 const ClaimRewards = () => {
+  const { capture } = usePostCapture()
   const { theme } = useApplicationContext()
   const { navigate, goBack } = useNavigation<ScreenProps['navigation']>()
   const onBack = useRoute<ScreenProps['route']>().params?.onBack
@@ -41,7 +39,7 @@ const ClaimRewards = () => {
   const nAvaxFormatter = useNAvaxFormatter()
   const avaxFormatter = useAvaxFormatter()
   const claimRewardsMutation = useClaimRewards(
-    goBack,
+    onClaimSuccess,
     onClaimError,
     onFundsStuck
   )
@@ -75,7 +73,8 @@ const ClaimRewards = () => {
 
   const [feesInAvax, feesInCurrency] = avaxFormatter(totalFees, true)
 
-  const handleGoBack = () => {
+  const cancelClaim = () => {
+    capture('StakeCancelClaim')
     if (onBack) {
       onBack()
     } else {
@@ -94,9 +93,13 @@ const ClaimRewards = () => {
           alignItems: 'flex-end',
           marginTop: -4
         }}>
-        <AvaText.Heading6>{feesInAvax} AVAX</AvaText.Heading6>
+        <AvaText.Heading6 testID="network_fee">
+          {feesInAvax} AVAX
+        </AvaText.Heading6>
         <Space y={4} />
-        <AvaText.Body3 color={theme.colorText2}>{feesInCurrency}</AvaText.Body3>
+        <AvaText.Body3 testID="network_fee_currency" color={theme.colorText2}>
+          {feesInCurrency}
+        </AvaText.Body3>
       </View>
     )
   }
@@ -108,14 +111,25 @@ const ClaimRewards = () => {
   }
 
   const issueClaimRewards = () => {
+    capture('StakeIssueClaim')
     claimRewardsMutation.mutate()
+  }
+
+  function onClaimSuccess() {
+    capture('StakeClaimSuccess')
+    goBack()
+  }
+
+  function onClaimError(error: Error) {
+    capture('StakeClaimFail')
+    showSimpleToast(error.message)
   }
 
   return (
     <ConfirmScreen
       isConfirming={claimRewardsMutation.isPending}
       onConfirm={issueClaimRewards}
-      onCancel={handleGoBack}
+      onCancel={cancelClaim}
       header="Claim Rewards"
       confirmBtnTitle="Claim Now"
       cancelBtnTitle="Cancel"
@@ -123,13 +137,16 @@ const ClaimRewards = () => {
       <View style={styles.verticalPadding}>
         <Row style={{ justifyContent: 'space-between' }}>
           <AvaText.Body2>Claimable Amount</AvaText.Body2>
-          <AvaText.Heading1 textStyle={{ marginTop: -2 }}>
+          <AvaText.Heading1
+            textStyle={{ marginTop: -2 }}
+            testID="claimable_balance">
             {claimableAmountInAvax + ' ' + tokenSymbol}
           </AvaText.Heading1>
         </Row>
         <Space y={4} />
         <AvaText.Heading3
-          textStyle={{ alignSelf: 'flex-end', color: theme.colorText2 }}>
+          textStyle={{ alignSelf: 'flex-end', color: theme.colorText2 }}
+          testID="claimable_balance_currency">
           {claimableAmountInCurrency}
         </AvaText.Heading3>
       </View>

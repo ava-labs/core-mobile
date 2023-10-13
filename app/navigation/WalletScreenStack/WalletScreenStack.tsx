@@ -69,21 +69,14 @@ import EarnScreenStack, {
 import NotificationsStackScreen, {
   NotificationsStackParamList
 } from 'navigation/wallet/NotificationsStackScreen'
+import { DeFiProtocolDetails } from 'screens/defi/DeFiProtocolDetails'
+import SendFeedbackStackScreen from 'navigation/wallet/SendFeedbackStackScreen'
 import { BridgeStackParamList } from '../wallet/BridgeScreenStack'
 import {
-  AddEthereumChainParams,
-  BridgeAssetParams,
   BridgeTransactionStatusParams,
-  CreateRemoveContactParams,
   EditGasLimitParams,
   QRCodeParams,
-  SelectAccountParams,
-  SessionProposalParams,
-  SignMessageParams,
-  SignTransactionParams,
-  SwitchEthereumChainParams,
   TokenSelectParams,
-  UpdateContactParams,
   WalletScreenProps,
   SignMessageV2Params,
   SessionProposalV2Params,
@@ -95,9 +88,7 @@ import {
   BridgeAssetV2Params,
   SignTransactionV2Params,
   BuyCarefullyParams,
-  AvalancheSendTransactionParams,
   AvalancheSendTransactionV2Params,
-  AvalancheSignTransactionParams,
   AvalancheSignTransactionV2Params
 } from '../types'
 import AdvancedStackScreen, {
@@ -146,6 +137,7 @@ export type WalletScreenStackParams = {
   [AppNavigation.Wallet.NetworkDetails]: NetworkDetailsProps
   [AppNavigation.Wallet.NetworkAddEdit]: AddEditNetworkProps
   [AppNavigation.Wallet.Advanced]: NavigatorScreenParams<AdvancedStackParamList>
+  [AppNavigation.Wallet.SendFeedback]: undefined
   [AppNavigation.Wallet
     .Notifications]: NavigatorScreenParams<NotificationsStackParamList>
   [AppNavigation.Wallet.SecurityPrivacy]:
@@ -159,19 +151,7 @@ export type WalletScreenStackParams = {
   [AppNavigation.Modal.SignOut]: undefined
   [AppNavigation.Modal.SelectToken]: TokenSelectParams
   [AppNavigation.Modal.EditGasLimit]: EditGasLimitParams
-  // rpc prompts for wallet connect v1
-  [AppNavigation.Modal.SessionProposal]: SessionProposalParams
-  [AppNavigation.Modal.CreateRemoveContact]: CreateRemoveContactParams
-  [AppNavigation.Modal.UpdateContact]: UpdateContactParams
-  [AppNavigation.Modal.SelectAccount]: SelectAccountParams
   [AppNavigation.Modal.BuyCarefully]: BuyCarefullyParams
-  [AppNavigation.Modal.SignTransaction]: SignTransactionParams
-  [AppNavigation.Modal.AvalancheSendTransaction]: AvalancheSendTransactionParams
-  [AppNavigation.Modal.AvalancheSignTransaction]: AvalancheSignTransactionParams
-  [AppNavigation.Modal.SignMessage]: SignMessageParams
-  [AppNavigation.Modal.BridgeAsset]: BridgeAssetParams
-  [AppNavigation.Modal.AddEthereumChain]: AddEthereumChainParams
-  [AppNavigation.Modal.SwitchEthereumChain]: SwitchEthereumChainParams
   // rpc prompts for wallet connect v2
   [AppNavigation.Modal.SessionProposalV2]: SessionProposalV2Params
   [AppNavigation.Modal.SignMessageV2]: SignMessageV2Params
@@ -187,6 +167,7 @@ export type WalletScreenStackParams = {
   [AppNavigation.Modal
     .AvalancheSignTransactionV2]: AvalancheSignTransactionV2Params
   [AppNavigation.Modal.StakeDisclaimer]: undefined
+  [AppNavigation.Wallet.DeFiProtocolDetails]: { protocolId: string }
 }
 
 const WalletScreenS = createStackNavigator<WalletScreenStackParams>()
@@ -369,6 +350,10 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
           component={NotificationsStackScreen}
         />
         <WalletScreenS.Screen
+          name={AppNavigation.Wallet.SendFeedback}
+          component={SendFeedbackStackScreen}
+        />
+        <WalletScreenS.Screen
           name={AppNavigation.Wallet.SecurityPrivacy}
           component={SecurityPrivacyStackScreen}
         />
@@ -393,6 +378,11 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
           }}
           name={AppNavigation.Wallet.QRCode}
           component={CaptureDappQR}
+        />
+        <WalletScreenS.Screen
+          options={MainHeaderOptions()}
+          name={AppNavigation.Wallet.DeFiProtocolDetails}
+          component={DeFiProtocolDetails}
         />
         {createModals(WalletScreenS)}
       </WalletScreenS.Navigator>

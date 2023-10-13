@@ -26,7 +26,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0177",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -56,7 +56,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0000",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -86,7 +86,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0000",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -146,7 +146,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "10.0000",
       "uptime": "0.0127",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -176,7 +176,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0227",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -506,7 +506,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "68.4665",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -566,7 +566,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0141",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -596,7 +596,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.5907",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -626,7 +626,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0177",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -656,7 +656,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0177",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -686,7 +686,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0177",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -716,7 +716,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0158",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -746,7 +746,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.1126",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -836,7 +836,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "5.8842",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -866,7 +866,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.1130",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -896,7 +896,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "1.5443",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -926,7 +926,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0125",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -956,7 +956,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0133",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "2",
       "delegatorWeight": "4000000000"
     },
@@ -986,7 +986,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "68.7956",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -1016,7 +1016,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "5.0000",
       "uptime": "0.0148",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -1046,7 +1046,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "3.0000",
       "uptime": "0.0129",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -1106,7 +1106,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.1429",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -1136,7 +1136,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "19.5683",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -1166,7 +1166,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0125",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -1196,7 +1196,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "39.3298",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -1226,7 +1226,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0158",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -1286,7 +1286,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0218",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -1316,7 +1316,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "1.1275",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -1346,7 +1346,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "43.2262",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -1376,7 +1376,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "43.1860",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -1406,7 +1406,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "43.1860",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -1436,7 +1436,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "43.1823",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -1466,7 +1466,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "43.1797",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -1496,7 +1496,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0385",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -1526,7 +1526,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0446",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -1586,7 +1586,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0345",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -1616,7 +1616,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "58.4055",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -1646,7 +1646,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.1172",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -1676,7 +1676,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "100.0000",
       "uptime": "0.0244",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -1706,7 +1706,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0199",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -1736,7 +1736,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "1.5432",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -1766,7 +1766,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "13.8126",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -1916,7 +1916,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0147",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -2006,7 +2006,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.1197",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -2096,7 +2096,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "4.1727",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -2126,7 +2126,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.1199",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -2246,7 +2246,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "85.6062",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -2276,7 +2276,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0388",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -2336,7 +2336,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0000",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -2396,7 +2396,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "11.5303",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -2426,7 +2426,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.5585",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -2456,7 +2456,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0144",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -2516,7 +2516,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "84.1418",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -2546,7 +2546,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0241",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -2696,7 +2696,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "16.9692",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -2756,7 +2756,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0389",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -2816,7 +2816,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.1187",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -2846,7 +2846,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.7610",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -2906,7 +2906,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0133",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -2936,7 +2936,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0133",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -2966,7 +2966,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0133",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -2996,7 +2996,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0133",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -3026,7 +3026,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0133",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -3056,7 +3056,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0133",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -3086,7 +3086,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "17.9686",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -3116,7 +3116,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "55.7135",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -3346,7 +3346,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0135",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -3376,7 +3376,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0135",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -3466,7 +3466,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "10.0000",
       "uptime": "0.1201",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -3526,7 +3526,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "4.2906",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -3586,7 +3586,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0146",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -3676,7 +3676,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.1214",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -3736,7 +3736,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.1523",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -3856,7 +3856,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "1.3961",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -3886,7 +3886,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.1499",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -3946,7 +3946,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0170",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -4036,7 +4036,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0181",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -4066,7 +4066,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0181",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -4096,7 +4096,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "5.5457",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -4186,7 +4186,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "99.3221",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -4216,7 +4216,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "4.2022",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -4246,7 +4246,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "4.1936",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -4306,7 +4306,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0315",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -4336,7 +4336,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "84.1419",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -4366,7 +4366,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "1.2292",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -4396,7 +4396,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "36.2315",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -4426,7 +4426,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "36.2335",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -4456,7 +4456,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0311",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -4486,7 +4486,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.4402",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -4516,7 +4516,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "1.1033",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -4546,7 +4546,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0174",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -4726,7 +4726,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.1302",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -4756,7 +4756,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.1303",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -4786,7 +4786,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "66.6831",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -4816,7 +4816,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "46.8559",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -4846,7 +4846,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "46.9295",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -4876,7 +4876,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "44.9626",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -4906,7 +4906,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "19.4473",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -4996,7 +4996,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0136",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -5026,7 +5026,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.1321",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -5056,7 +5056,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.1321",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -5086,7 +5086,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "10.0947",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -5116,7 +5116,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "10.1273",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -5146,7 +5146,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "10.1943",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -5176,7 +5176,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0210",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -5206,7 +5206,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.1349",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -5416,7 +5416,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "10.6781",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -5446,7 +5446,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "10.3485",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -5476,7 +5476,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "5.0000",
       "uptime": "0.0368",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -5506,7 +5506,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "4.4167",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -5536,7 +5536,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "3.0000",
       "uptime": "60.3895",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -5596,7 +5596,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "2.9991",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -5626,7 +5626,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.5165",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -5686,7 +5686,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0217",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -5746,7 +5746,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "47.4225",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -5776,7 +5776,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "57.9307",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -5806,7 +5806,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "87.6810",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -5836,7 +5836,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "16.5244",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -5866,7 +5866,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.9918",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -5896,7 +5896,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "10.0000",
       "uptime": "0.0351",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -5926,7 +5926,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "67.6530",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -5956,7 +5956,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.1449",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -5986,7 +5986,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.1460",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -6016,7 +6016,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.1460",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -6106,7 +6106,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "67.0625",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -6166,7 +6166,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "66.6754",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -6226,7 +6226,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0360",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -6256,7 +6256,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0360",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -6286,7 +6286,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0360",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -6316,7 +6316,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0362",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -6346,7 +6346,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0362",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -6376,7 +6376,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0362",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -6406,7 +6406,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0362",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -6436,7 +6436,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0362",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -6496,7 +6496,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0362",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -6526,7 +6526,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0362",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -6556,7 +6556,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.1535",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -6586,7 +6586,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0362",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -6616,7 +6616,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0362",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -6736,7 +6736,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0194",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -6826,7 +6826,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "94.9518",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -6856,7 +6856,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0453",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -6886,7 +6886,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0486",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -6916,7 +6916,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.8352",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -6976,7 +6976,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0131",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -7006,7 +7006,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0131",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -7036,7 +7036,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0131",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -7066,7 +7066,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0131",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -7096,7 +7096,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0133",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -7126,7 +7126,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0133",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -7186,7 +7186,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0133",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -7216,7 +7216,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0135",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -7246,7 +7246,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "38.2530",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -7276,7 +7276,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0138",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -7306,7 +7306,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.4353",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -7366,7 +7366,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "100.0000",
       "uptime": "0.0151",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -7396,7 +7396,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0322",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -7426,7 +7426,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0323",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -7456,7 +7456,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0170",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -7486,7 +7486,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0170",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -7516,7 +7516,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0194",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -7546,7 +7546,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0181",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -7576,7 +7576,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.6007",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -7606,7 +7606,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.3812",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -7636,7 +7636,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.5940",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -7666,7 +7666,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "61.6042",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -7696,7 +7696,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.1755",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -7726,7 +7726,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0378",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -7756,7 +7756,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "61.5748",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -7816,7 +7816,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0171",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -7846,7 +7846,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0200",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -7906,7 +7906,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0340",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -8056,7 +8056,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "20.0000",
       "uptime": "0.0148",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -8116,7 +8116,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0349",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -8146,7 +8146,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0350",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -8176,7 +8176,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "10.0000",
       "uptime": "23.3262",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -8356,7 +8356,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0357",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -8386,7 +8386,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0347",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -8416,7 +8416,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0421",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -8446,7 +8446,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "15.1264",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -8506,7 +8506,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "55.8060",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -8536,7 +8536,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "55.1611",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -8566,7 +8566,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "54.6367",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -8596,7 +8596,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "3.0000",
       "uptime": "0.0393",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -8626,7 +8626,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.2500",
       "uptime": "0.0427",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -8716,7 +8716,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "27.7886",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -8776,7 +8776,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "17.0086",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -8806,7 +8806,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "10.0000",
       "uptime": "0.1092",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "1",
       "delegatorWeight": "1000000000"
     },
@@ -8866,7 +8866,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "48.6203",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -8896,7 +8896,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0364",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -8926,7 +8926,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0364",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -8956,7 +8956,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "46.5054",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -9046,7 +9046,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0370",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -9076,7 +9076,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "47.4434",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -9136,7 +9136,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "36.3830",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -9166,7 +9166,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "56.4978",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -9256,7 +9256,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "20.1346",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -9316,7 +9316,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0391",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -9376,7 +9376,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0191",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -9526,7 +9526,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "42.6917",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -9556,7 +9556,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0133",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -9586,7 +9586,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0133",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -9616,7 +9616,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0397",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -9676,7 +9676,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0396",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -9706,7 +9706,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.4060",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -9766,7 +9766,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "37.4763",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -9796,7 +9796,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "63.8038",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "1",
       "delegatorWeight": "1200000000"
     },
@@ -9826,7 +9826,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0181",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -9856,7 +9856,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0181",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -9916,7 +9916,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "8.0000",
       "uptime": "0.0419",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -9946,7 +9946,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0418",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "1",
       "delegatorWeight": "2000000000"
     },
@@ -10036,7 +10036,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0419",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -10066,7 +10066,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0425",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -10096,7 +10096,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0438",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -10126,7 +10126,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0439",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -10186,7 +10186,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "14.7221",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -10216,7 +10216,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0170",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -10246,7 +10246,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "67.8587",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -10336,7 +10336,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0174",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -10366,7 +10366,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "14.4997",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -10396,7 +10396,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0176",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -10516,7 +10516,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0178",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -10576,7 +10576,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "25.1491",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -10606,7 +10606,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "67.4734",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -10636,7 +10636,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.2121",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -10666,7 +10666,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.7685",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -10786,7 +10786,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0189",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -10906,7 +10906,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0184",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -10936,7 +10936,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "19.3934",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -10966,7 +10966,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0176",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -10996,7 +10996,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "9.8347",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -11026,7 +11026,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "9.8337",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -11056,7 +11056,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "9.8320",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -11086,7 +11086,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0307",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -11116,7 +11116,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0429",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -11146,7 +11146,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.6540",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -11176,7 +11176,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0124",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -11206,7 +11206,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.4281",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -11236,7 +11236,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "58.5830",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -11266,7 +11266,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "58.5813",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -11296,7 +11296,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "58.5818",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -11416,7 +11416,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "1.9606",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -11476,7 +11476,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "1.2553",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -11536,7 +11536,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.6685",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -11566,7 +11566,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.9433",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -11596,7 +11596,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "14.7995",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -11626,7 +11626,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "1.6280",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -11656,7 +11656,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "9.4295",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -11686,7 +11686,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0131",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -11716,7 +11716,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0131",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -11746,7 +11746,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0131",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -11776,7 +11776,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0140",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -11806,7 +11806,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.8655",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -11836,7 +11836,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "1.3759",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -11866,7 +11866,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0154",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -11896,7 +11896,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0142",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -11956,7 +11956,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "37.4483",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -12136,7 +12136,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0129",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -12346,7 +12346,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0145",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -12496,7 +12496,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0176",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -12616,7 +12616,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0177",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -12646,7 +12646,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "62.8035",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -12766,7 +12766,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.5666",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -12796,7 +12796,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "9.3779",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -13006,7 +13006,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "15.6265",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -13036,7 +13036,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0228",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -13066,7 +13066,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0232",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -13096,7 +13096,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.9300",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -13126,7 +13126,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "8.1220",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -13156,7 +13156,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "15.7315",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -13186,7 +13186,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0256",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -13216,7 +13216,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "4.8719",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -13246,7 +13246,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0280",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -13306,7 +13306,7 @@
       "accruedDelegateeReward": "5090",
       "delegationFee": "2.0000",
       "uptime": "68.6346",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -13456,7 +13456,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "63.7263",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -13486,7 +13486,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "59.6267",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -13606,7 +13606,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "0.0116",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -13696,7 +13696,7 @@
       "accruedDelegateeReward": "45719",
       "delegationFee": "2.0000",
       "uptime": "0.0147",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },
@@ -13756,7 +13756,7 @@
       "accruedDelegateeReward": "0",
       "delegationFee": "2.0000",
       "uptime": "18.1438",
-      "connected": false,
+      "connected": true,
       "delegatorCount": "0",
       "delegatorWeight": "0"
     },

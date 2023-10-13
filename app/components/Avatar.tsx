@@ -7,6 +7,7 @@ import EthereumSvg from 'components/svg/Ethereum'
 import BitcoinSVG from 'components/svg/BitcoinSVG'
 import { TokenSymbol } from 'store/network'
 import { SvgUri } from 'react-native-svg'
+import { formatUriImageToPng, isContentfulImageUri } from 'utils/Contentful'
 import FastImage from 'react-native-fast-image'
 import AvaText from './AvaText'
 
@@ -35,6 +36,38 @@ const AvatarBase: FC<Props> = ({
     (logoUri.startsWith('http') || logoUri.startsWith('https')) &&
     !failedToLoad
 
+  const renderSVG = useCallback(
+    (uri: string): JSX.Element => {
+      const style = {
+        borderRadius: size / 2,
+        width: size,
+        height: size
+      }
+
+      if (isContentfulImageUri(uri)) {
+        return (
+          <FastImage
+            source={{
+              uri: formatUriImageToPng(uri, size)
+            }}
+            style={style}
+            testID="avatar__logo_avatar"
+          />
+        )
+      }
+      return (
+        <SvgUri
+          uri={uri}
+          style={style}
+          width={size}
+          height={size}
+          testID="avatar__logo_avatar"
+        />
+      )
+    },
+    [size]
+  )
+
   const tokenLogo = useCallback(() => {
     // if AVAX, return our own logo
     if (symbol === TokenSymbol.AVAX || symbol === 'FAU') {
@@ -51,9 +84,9 @@ const AvatarBase: FC<Props> = ({
       return <BitcoinSVG size={size} />
     }
 
-    // if ERC20 or invalid URL, return token initials
-    if (!hasValidLogoUri) {
+    const renderTokenInitials = (): JSX.Element => {
       const names = (name ?? '').split(' ')
+
       const initials =
         names.length > 1
           ? names[0]?.substring(0, 1) ??
@@ -66,9 +99,7 @@ const AvatarBase: FC<Props> = ({
           style={[
             styles.initials,
             {
-              backgroundColor: circleColor
-                ? circleColor
-                : theme.colorStroke2 + Opacity10,
+              backgroundColor: circleColor ?? theme.colorStroke2 + Opacity10,
               width: size,
               height: size
             },
@@ -82,24 +113,11 @@ const AvatarBase: FC<Props> = ({
           </AvaText.Body1>
         </View>
       )
-      // if TokenWithBalance and valid URI get load it.
-    } else {
-      const style = {
-        borderRadius: size / 2,
-        width: size,
-        height: size
-      }
+    }
 
+    const renderTokenLogo = (): JSX.Element => {
       if (logoUri?.endsWith('svg')) {
-        return (
-          <SvgUri
-            uri={logoUri}
-            style={style}
-            width={size}
-            height={size}
-            testID="avatar__logo_avatar"
-          />
-        )
+        return renderSVG(logoUri)
       }
 
       // adding a white background by default
@@ -107,7 +125,14 @@ const AvatarBase: FC<Props> = ({
       // for example https://assets.coingecko.com/coins/images/13423/large/frax_share.png?1608478989
       return (
         <FastImage
-          style={[{ backgroundColor: 'white' }, style]}
+          style={[
+            { backgroundColor: 'white' },
+            {
+              borderRadius: size / 2,
+              width: size,
+              height: size
+            }
+          ]}
           source={{ uri: logoUri }}
           onError={() => {
             setFailedToLoad(true)
@@ -116,11 +141,16 @@ const AvatarBase: FC<Props> = ({
         />
       )
     }
+
+    // if ERC20 or invalid URL, return token initials
+    // if TokenWithBalance and valid URI get load it.
+    return hasValidLogoUri ? renderTokenLogo() : renderTokenInitials()
   }, [
     circleColor,
     hasValidLogoUri,
     logoUri,
     name,
+    renderSVG,
     showBorder,
     size,
     symbol,

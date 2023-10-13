@@ -22,11 +22,13 @@ module.exports = {
     ],
     'react-require',
     'inline-dotenv',
-    'react-native-reanimated/plugin'
+    'react-native-reanimated/plugin',
+    '@babel/plugin-transform-class-static-block',
+    '@babel/plugin-transform-export-namespace-from'
   ],
   overrides: [
     {
-      include: /node_modules\/@tanstack/,
+      include: /node_modules\/(@tanstack|ethers)/,
       plugins: [['@babel/plugin-transform-private-methods', { loose: true }]]
     }
   ]

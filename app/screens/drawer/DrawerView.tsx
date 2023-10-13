@@ -17,12 +17,14 @@ import AdvancedItem from 'screens/drawer/components/AdvancedItem'
 import DrawerLogo from 'screens/drawer/components/DrawerLogo'
 import NotificationsItem from 'screens/drawer/components/NotificationsItem'
 import { useSelector } from 'react-redux'
-import { selectIsNotificationBlocked } from 'store/posthog'
+import { selectIsNotificationBlocked, selectUseDarkMode } from 'store/posthog'
+import FeedbackItem from 'screens/drawer/components/FeedbackItem'
 
-const DrawerView = () => {
+const DrawerView = (): JSX.Element => {
   const context = useApplicationContext()
+  const enableDarkMode = useSelector(selectUseDarkMode)
 
-  function toggleDarkLightMode() {
+  function toggleDarkLightMode(): void {
     Alert.alert('Toggle dark/light mode')
   }
 
@@ -30,7 +32,7 @@ const DrawerView = () => {
     <Row style={styles.headerContainer}>
       <DrawerLogo />
       {/* hiding mode toggle until it's implemented */}
-      {true || (
+      {enableDarkMode && (
         <Pressable
           style={styles.darkLightModeContainer}
           onPress={toggleDarkLightMode}>
@@ -49,7 +51,7 @@ const DrawerView = () => {
   )
 }
 
-const Main = () => {
+const Main = (): JSX.Element => {
   const isNotificationBlocked = useSelector(selectIsNotificationBlocked)
 
   return (
@@ -62,8 +64,9 @@ const Main = () => {
         <CurrencyItem />
         <AdvancedItem />
         {!isNotificationBlocked && <NotificationsItem />}
-        <Separator style={{ marginHorizontal: 16 }} />
         <SecurityItem />
+        <Separator style={{ marginHorizontal: 16 }} />
+        <FeedbackItem />
         <LegalItem />
         <HelpItem />
       </ScrollView>

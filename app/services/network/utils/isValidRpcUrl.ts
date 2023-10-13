@@ -1,4 +1,5 @@
 import { JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
+import { Network } from 'ethers'
 
 export async function isValidRPCUrl(
   chainId: number,
@@ -9,12 +10,12 @@ export async function isValidRPCUrl(
       maxCalls: 40
     },
     url,
-    chainId
+    new Network('', chainId)
   )
 
   try {
     const detectedNetwork = await provider.getNetwork()
-    return detectedNetwork.chainId === chainId
+    return detectedNetwork.chainId === BigInt(chainId)
   } catch (e) {
     return false
   }

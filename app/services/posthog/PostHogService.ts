@@ -1,21 +1,25 @@
 import Config from 'react-native-config'
 import { JsonMap } from 'store/posthog/types'
 import Logger from 'utils/Logger'
+import DeviceInfoService from 'services/deviceInfo/DeviceInfoService'
 import { getPosthogDeviceInfo } from './utils'
 import { sanitizeFeatureFlags } from './sanitizeFeatureFlags'
 
 const PostHogCaptureUrl = `${Config.POSTHOG_URL}/capture/`
 
 const PostHogDecideUrl = `${Config.POSTHOG_URL}/decide?v=2`
-const PostHogDecideFetchOptions = {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json'
-  },
-  body: JSON.stringify({
-    api_key: Config.POSTHOG_FEATURE_FLAGS_KEY,
-    distinct_id: ''
-  })
+const generatePostHogDecideFetchOptions = (distinctId: string) => {
+  return {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      api_key: Config.POSTHOG_FEATURE_FLAGS_KEY,
+      distinct_id: distinctId,
+      app_version: DeviceInfoService.getAppVersion()
+    })
+  }
 }
 
 class PostHogService {
@@ -56,10 +60,42 @@ class PostHogService {
       })
   }
 
-  async fetchFeatureFlags() {
+  async identifyUser(distinctId: string) {
+    const PostHogIdentifyFetchOptions = {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        api_key: Config.POSTHOG_FEATURE_FLAGS_KEY,
+        event: '$identify',
+        timestamp: Date.now().toString(),
+        ip: '',
+        distinct_id: distinctId,
+        $set: {
+          $app_version: DeviceInfoService.getAppVersion()
+        }
+      })
+    }
+    fetch(PostHogCaptureUrl, PostHogIdentifyFetchOptions)
+      .then(response => {
+        if (response.ok) {
+          return response.json()
+        }
+        throw new Error('Something went wrong')
+      })
+      .catch(error => {
+        Logger.error('failed to capture PostHog identify event', error)
+      })
+  }
+
+  async fetchFeatureFlags(distinctId: string) {
     try {
       Logger.info('fetching feature flags')
-      const response = await fetch(PostHogDecideUrl, PostHogDecideFetchOptions)
+      const response = await fetch(
+        PostHogDecideUrl,
+        generatePostHogDecideFetchOptions(distinctId)
+      )
 
       if (!response.ok) {
         throw new Error('Something went wrong')
@@ -67,7 +103,8 @@ class PostHogService {
 
       const responseJson = await response.json()
       const featureFlags = sanitizeFeatureFlags(responseJson)
-      Logger.info('feature flags', featureFlags)
+
+      Logger.info('fetched feature flags', featureFlags)
 
       return featureFlags
     } catch (e) {

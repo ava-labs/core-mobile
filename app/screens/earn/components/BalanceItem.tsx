@@ -9,6 +9,7 @@ export type BalanceItemProps = {
   iconColor: string
   balance: string
   poppableItem?: React.ReactNode
+  testID?: string
 }
 
 export const BalanceItem = ({
@@ -27,7 +28,8 @@ export const BalanceItem = ({
           color: theme.neutral50,
           lineHeight: 24.5,
           marginHorizontal: 8
-        }}>
+        }}
+        testID="balance_item">
         {`${balance} AVAX`}
       </AvaText.Subtitle2>
       <AvaText.Caption
@@ -38,7 +40,7 @@ export const BalanceItem = ({
         }}>
         {balanceType}
       </AvaText.Caption>
-      {poppableItem && poppableItem}
+      {!!poppableItem && poppableItem}
     </Row>
   )
 }

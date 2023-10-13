@@ -19,25 +19,22 @@ import { customTokenReducer as customToken } from './customToken'
 import { securityReducer as security } from './security'
 import { posthogReducer as posthog } from './posthog'
 import { nftReducer as nft } from './nft'
-import networkFee from './networkFee'
 import { addressBookReducer as addressBook } from './addressBook'
+import { viewOnceReducer as viewOnce } from './viewOnce'
 import settings from './settings'
 import swap from './swap'
 import { transactionApi } from './transaction'
-import { walletConnectReducer as walletConnect } from './walletConnect'
 import { walletConnectReducer as walletConnectV2 } from './walletConnectV2'
 import { BridgeBlacklistTransform } from './transforms/BridgeBlacklistTransform'
 import { WatchlistBlacklistTransform } from './transforms/WatchlistBlacklistTransform'
-import { WalletConnectBlacklistTransform } from './transforms/WalletConnectBlacklistTransform'
 import { AppBlacklistTransform } from './transforms/AppBlacklistTransform'
 
-const VERSION = 7
+const VERSION = 8
 
 // list of reducers that don't need to be persisted
 // for nested/partial blacklist, please use transform
 const blacklist = [
   'balance',
-  'networkFee',
   'swap',
   'walletConnectV2',
   transactionApi.reducerPath,
@@ -50,7 +47,6 @@ const combinedReducer = combineReducers({
   balance,
   account,
   notifications,
-  networkFee,
   addressBook,
   bridge,
   customToken,
@@ -58,8 +54,8 @@ const combinedReducer = combineReducers({
   swap,
   nft,
   security,
-  walletConnect,
   walletConnectV2,
+  viewOnce,
 
   // user preferences
   settings,
@@ -71,7 +67,7 @@ const combinedReducer = combineReducers({
   [nftsApi.reducerPath]: nftsApi.reducer
 })
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-function-return-type
 const rootReducer = (state: any, action: AnyAction) => {
   if (action.type === onLogOut.type) {
     // reset state
@@ -94,6 +90,7 @@ const rootReducer = (state: any, action: AnyAction) => {
   return combinedReducer(state, action)
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export function configureEncryptedStore(secretKey: string) {
   // If this transform fails to decrypt or parse then it will log a warning and
   // return `undefined`, which will cause the redux state to be reset.
@@ -112,7 +109,6 @@ export function configureEncryptedStore(secretKey: string) {
       AppBlacklistTransform,
       BridgeBlacklistTransform,
       WatchlistBlacklistTransform,
-      WalletConnectBlacklistTransform,
       EncryptionTransform // last!
     ],
     migrate: createMigrate(migrations, { debug: __DEV__ }),

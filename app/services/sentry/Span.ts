@@ -1,5 +1,4 @@
 import { SpanContext } from '@sentry/types/types/span'
-import { SpanStatus } from '@sentry/tracing'
 import { Transaction } from '@sentry/types'
 import { OpName } from 'services/sentry/types'
 
@@ -33,11 +32,10 @@ export class Span {
     const span = this.transaction?.startChild(this.spanContext)
     try {
       const result = await f()
-      // Do something
-      span?.setStatus(SpanStatus.Ok)
+      span?.setStatus('ok')
       return result
     } catch (err) {
-      span?.setStatus(SpanStatus.UnknownError)
+      span?.setStatus('unknown_error')
       throw err
     } finally {
       span?.finish()

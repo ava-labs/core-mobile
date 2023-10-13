@@ -1,14 +1,13 @@
 import { CORE_UNIVERSAL_LINK_HOSTS } from 'resources/Constants'
-import { parseUri } from '@walletconnect/utils'
 import { AnyAction, Dispatch } from '@reduxjs/toolkit'
-import { newSession as newSessionV1 } from 'store/walletConnect'
 import {
-  newSession as newSessionV2,
-  WalletConnectVersions
+  WalletConnectVersions,
+  newSession as newSessionV2
 } from 'store/walletConnectV2'
 import Logger from 'utils/Logger'
 import { navigateToClaimRewards } from 'services/earn/utils'
 import { ProcessedFeatureFlags } from 'store/posthog'
+import { parseUri } from '@walletconnect/utils'
 import { ACTIONS, DeepLink, PROTOCOLS } from '../types'
 
 export const handleDeeplink = (
@@ -47,30 +46,52 @@ export const handleDeeplink = (
     }
     case PROTOCOLS.CORE: {
       const action = url.host
-      switch (action) {
-        case ACTIONS.WC: {
-          const uri = url.searchParams.get('uri')
-          if (uri) {
-            const { version } = parseUri(uri)
-            dispatchWalletConnectSession(version, uri, dispatch)
-          } else {
-            Logger.info(`${deeplink.url} is not a wallet connect link`)
-          }
-          break
-        }
-        case ACTIONS.StakeComplete: {
-          if (processedFeatureFlags.earnBlocked) return
-          deeplink.callback?.()
-          navigateToClaimRewards()
-          break
-        }
-        default:
-          break
-      }
+      handleWalletConnectActions({
+        action,
+        url,
+        deeplink,
+        dispatch,
+        processedFeatureFlags
+      })
       break
     }
     default:
       return
+  }
+}
+
+const handleWalletConnectActions = ({
+  action,
+  url,
+  dispatch,
+  deeplink,
+  processedFeatureFlags
+}: {
+  action: string
+  url: URL
+  dispatch: Dispatch<AnyAction>
+  deeplink: DeepLink
+  processedFeatureFlags: ProcessedFeatureFlags
+}): void => {
+  switch (action) {
+    case ACTIONS.WC: {
+      const uri = url.searchParams.get('uri')
+      if (uri) {
+        const { version } = parseUri(uri)
+        dispatchWalletConnectSession(version, uri, dispatch)
+      } else {
+        Logger.info(`${deeplink.url} is not a wallet connect link`)
+      }
+      break
+    }
+    case ACTIONS.StakeComplete: {
+      if (processedFeatureFlags.earnBlocked) return
+      deeplink.callback?.()
+      navigateToClaimRewards()
+      break
+    }
+    default:
+      break
   }
 }
 
@@ -84,11 +105,11 @@ const dispatchWalletConnectSession = (
   version: number,
   uri: string,
   dispatch: Dispatch<AnyAction>
-) => {
+): void => {
   // link is a valid wallet connect uri
   const versionStr = version.toString()
   if (versionStr === WalletConnectVersions.V1) {
-    dispatch(newSessionV1(uri))
+    Logger.info('WalletConnectV1 is not supported')
   } else if (versionStr === WalletConnectVersions.V2) {
     dispatch(newSessionV2(uri))
   }

@@ -1,4 +1,3 @@
-import { BigNumber } from 'ethers'
 import { parseDisplayValues } from 'screens/rpc/util/parseDisplayValues'
 import { bigToLocaleString, bnToBig, hexToBN } from '@avalabs/utils-sdk'
 import {
@@ -12,13 +11,13 @@ import { TransactionParams } from 'store/walletConnectV2/handlers/eth_sendTransa
 import { FindToken } from './utils/useFindToken'
 
 export interface SwapExactTokensForAVAXData {
-  amountInMin: BigNumber
-  amountIn: BigNumber
-  amountInMax: BigNumber
+  amountInMin: bigint
+  amountIn: bigint
+  amountInMax: bigint
 
-  amountOutMin: BigNumber
-  amountOut: BigNumber
-  amountOutMax: BigNumber
+  amountOutMin: bigint
+  amountOut: bigint
+  amountOutMax: bigint
 
   contractCall: ContractCall.SWAP_EXACT_TOKENS_FOR_TOKENS
   deadline: string
@@ -43,7 +42,7 @@ export async function swapTokensForAvax(
   const firstTokenInPath = await findToken(data.path[0]?.toLowerCase() ?? '')
 
   const lastTokenAmountBN = hexToBN(
-    (data.amountInMin || data.amountIn || data.amountInMax).toHexString()
+    (data.amountInMin || data.amountIn || data.amountInMax).toString(16)
   )
 
   const amountValue = bigToLocaleString(
@@ -65,27 +64,25 @@ export async function swapTokensForAvax(
   }
 
   const avaxAmountInBN = hexToBN(
-    (data.amountOutMin || data.amountOut || data.amountOutMax).toHexString()
+    (data.amountOutMin || data.amountOut || data.amountOutMax).toString(16)
   )
   const amountAvaxValue = bigToLocaleString(bnToBig(avaxAmountInBN, 18), 4)
 
   const avaxToken = {
-    ...props.avaxToken,
+    ...props.token,
     amountOut: {
       bn: avaxAmountInBN,
       value: amountAvaxValue
     },
     amountUSDValue:
-      (Number(props.avaxPrice) * Number(amountAvaxValue)).toFixed(2) ?? ''
+      (Number(props.tokenPrice) * Number(amountAvaxValue)).toFixed(2) ?? ''
   }
 
-  const result = {
+  return {
     path: [tokenSwapped, avaxToken],
     contractType: ContractCall.SWAP_EXACT_TOKENS_FOR_TOKENS,
     ...parseDisplayValues(network, request, props)
   }
-
-  return result
 }
 
 export const SwapExactTokensForAvaxParser: ContractParser = [

@@ -5,12 +5,16 @@ import { AppListenerEffectAPI } from 'store'
 import {
   addCustomNetwork,
   selectActiveNetwork,
-  selectNetworks,
+  selectAllNetworks,
   setActive
 } from 'store/network'
 import * as Navigation from 'utils/Navigation'
 import AppNavigation from 'navigation/AppNavigation'
 import Logger from 'utils/Logger'
+import {
+  selectIsDeveloperMode,
+  toggleDeveloperMode
+} from 'store/settings/advanced'
 import { RpcMethod, SessionRequest } from '../../../types'
 import {
   ApproveResponse,
@@ -48,12 +52,10 @@ class WalletAddEthereumChainHandler
 
     const requestedChain = result.data[0]
 
-    const chains = selectNetworks(store)
+    const chains = selectAllNetworks(store)
     const currentActiveNetwork = selectActiveNetwork(store)
-    const supportedChainIds = Object.keys(chains ?? {})
     const requestedChainId = Number(requestedChain.chainId)
-    const chainRequestedIsSupported =
-      requestedChain && supportedChainIds.includes(requestedChainId.toString())
+
     const isSameNetwork = requestedChainId === currentActiveNetwork?.chainId
 
     if (isSameNetwork) {
@@ -82,12 +84,17 @@ class WalletAddEthereumChainHandler
       }
     }
 
+    // use the requested chain's isTestnet value or fall back to the current active network's
+    const isTestnet = requestedChain.isTestnet
+      ? requestedChain.isTestnet
+      : Boolean(currentActiveNetwork.isTestnet)
+
     const customNetwork: Network = {
       chainId: requestedChainId,
       chainName: requestedChain.chainName || '',
       description: '',
       explorerUrl: requestedChain.blockExplorerUrls?.[0] || '',
-      isTestnet: false,
+      isTestnet,
       logoUri: requestedChain.iconUrls?.[0] || '',
       mainnetChainId: 0,
       networkToken: {
@@ -104,6 +111,10 @@ class WalletAddEthereumChainHandler
       primaryColor: '',
       vmName: NetworkVMType.EVM
     }
+
+    const supportedChainIds = Object.keys(chains ?? {})
+    const chainRequestedIsSupported =
+      requestedChain && supportedChainIds.includes(requestedChainId.toString())
 
     if (chainRequestedIsSupported) {
       Navigation.navigate({
@@ -145,7 +156,7 @@ class WalletAddEthereumChainHandler
     payload: { request: WalletAddEthereumChainRpcRequest; data?: unknown },
     listenerApi: AppListenerEffectAPI
   ): ApproveResponse => {
-    const { dispatch } = listenerApi
+    const { dispatch, getState } = listenerApi
 
     const result = parseApproveData(payload.data)
 
@@ -162,7 +173,19 @@ class WalletAddEthereumChainHandler
       dispatch(addCustomNetwork(data.network))
     }
 
-    dispatch(setActive(data.network.chainId))
+    const state = getState()
+    const isDeveloperMode = selectIsDeveloperMode(state)
+
+    // validate network against the current developer mode
+    const chainId = data.network.chainId
+    const isTestnet = Boolean(data.network?.isTestnet)
+
+    // switch to correct dev mode
+    if (isTestnet !== isDeveloperMode) {
+      dispatch(toggleDeveloperMode())
+    }
+
+    dispatch(setActive(chainId))
 
     return { success: true, value: null }
   }

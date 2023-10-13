@@ -11,7 +11,7 @@ import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import { selectActiveNetwork } from 'store/network'
 import { NFTItemData } from 'store/nft'
-import { bnToEthersBigNumber, bnToLocaleString } from '@avalabs/utils-sdk'
+import { bnToLocaleString } from '@avalabs/utils-sdk'
 import { FeePreset } from 'components/NetworkFeeSelector'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { selectNativeTokenBalanceForNetworkAndAccount } from 'store/balance'
@@ -28,6 +28,8 @@ import { InteractionManager } from 'react-native'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { usePostCapture } from 'hooks/usePosthogCapture'
 import { RootState } from 'store'
+import { bnToBigint } from 'utils/bigNumbers/bnToBigint'
+import Logger from 'utils/Logger'
 
 export interface SendNFTContextState {
   sendToken: NFTItemData
@@ -99,7 +101,7 @@ export const SendNFTContextProvider = ({
   )
   const [customGasPrice, setCustomGasPrice] = useState(new BN(0))
   const customGasPriceBig = useMemo(
-    () => bnToEthersBigNumber(customGasPrice),
+    () => bnToBigint(customGasPrice),
     [customGasPrice]
   )
   const [sendStatus, setSendStatus] = useState<SendStatus>('Idle')
@@ -227,6 +229,7 @@ export const SendNFTContextProvider = ({
         setError(state.error ? state.error.message : undefined)
         setCanSubmit(state.canSubmit ?? false)
       })
+      .catch(Logger.error)
   }
 
   const state: SendNFTContextState = {

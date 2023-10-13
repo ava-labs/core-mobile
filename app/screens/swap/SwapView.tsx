@@ -18,17 +18,17 @@ import {
 } from 'store/balance'
 import { useSelector } from 'react-redux'
 import { SwapSide } from 'paraswap-core'
-import { BigNumber } from 'ethers'
 import BN from 'bn.js'
 import { FeePreset } from 'components/NetworkFeeSelector'
 import UniversalTokenSelector from 'components/UniversalTokenSelector'
 import SwapTransactionDetail from 'screens/swap/components/SwapTransactionDetails'
 import { calculateRate } from 'swap/utils'
-import { selectNetworkFee } from 'store/networkFee'
 import { calculateGasAndFees, getMaxValue, truncateBN } from 'utils/Utils'
-import { bnToLocaleString, ethersBigNumberToBN } from '@avalabs/utils-sdk'
+import { bnToLocaleString } from '@avalabs/utils-sdk'
 import { usePostCapture } from 'hooks/usePosthogCapture'
 import { selectActiveNetwork } from 'store/network'
+import { useNetworkFee } from 'hooks/useNetworkFee'
+import Logger from 'utils/Logger'
 
 type NavigationProp = SwapScreenProps<
   typeof AppNavigation.Swap.Swap
@@ -44,7 +44,7 @@ export default function SwapView() {
   const { theme } = useApplicationContext()
   const { navigate } = useNavigation<NavigationProp>()
   const activeNetwork = useSelector(selectActiveNetwork)
-  const networkFee = useSelector(selectNetworkFee)
+  const { data: networkFee } = useNetworkFee()
   const tokensWithBalance = useSelector(selectTokensWithBalance)
   const tokensWithZeroBalance = useSelector(selectTokensWithZeroBalance)
   const avaxPrice = useSelector(selectAvaxPrice)
@@ -164,7 +164,7 @@ export default function SwapView() {
   }
 
   const onGasChange = useCallback(
-    (price: BigNumber, feeType: FeePreset) => {
+    (price: bigint, feeType: FeePreset) => {
       setGasPrice(price)
       setSelectedGasFee(feeType)
     },
@@ -224,9 +224,9 @@ export default function SwapView() {
           setLocalError(error)
         } else if (optRate) {
           const limit = customGasLimit || parseInt(optRate.gasCost)
-          const feeBig = gasPrice.mul(limit)
+          const feeBig = gasPrice * BigInt(limit)
           const feeString = bnToLocaleString(
-            ethersBigNumberToBN(feeBig),
+            new BN(feeBig.toString()),
             fromToken?.decimals
           )
           let maxBn = getMaxValue(fromToken, feeString)
@@ -244,6 +244,7 @@ export default function SwapView() {
           }
         }
       })
+      .catch(Logger.error)
       .finally(() => {
         setIsCalculatingMax(false)
       })

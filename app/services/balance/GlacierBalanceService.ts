@@ -22,7 +22,7 @@ export class GlacierBalanceService implements BalanceServiceProvider {
     if (!isHealthy) {
       return false
     }
-    const supportedChainsResp = await glacierSdk.evm.supportedChains({})
+    const supportedChainsResp = await glacierSdk.evmChains.supportedChains({})
 
     const chainInfos = supportedChainsResp.chains
     const chains = chainInfos.map(chain => chain.chainId)
@@ -52,7 +52,8 @@ export class GlacierBalanceService implements BalanceServiceProvider {
             }
             return results
           })
-          .catch(() => {
+          .catch(reason => {
+            Logger.error(reason)
             return []
           })
       })
@@ -74,7 +75,7 @@ export class GlacierBalanceService implements BalanceServiceProvider {
     address: string,
     selectedCurrency: string
   ) {
-    return glacierSdk.evm
+    return glacierSdk.evmBalances
       .getNativeBalance({
         chainId,
         address,
@@ -106,7 +107,7 @@ export class GlacierBalanceService implements BalanceServiceProvider {
      */
     let nextPageToken: string | undefined
     do {
-      const response = await glacierSdk.evm.listErc20Balances({
+      const response = await glacierSdk.evmBalances.listErc20Balances({
         chainId: network.chainId.toString(),
         address,
         currency: selectedCurrency.toLocaleLowerCase() as CurrencyCode,
@@ -129,7 +130,7 @@ export class GlacierBalanceService implements BalanceServiceProvider {
     addresses: string[],
     _sentryTrx?: Transaction
   ): Promise<PChainBalance> {
-    return glacierSdk.primaryNetwork
+    return glacierSdk.primaryNetworkBalances
       .getBalancesByAddresses({
         blockchainId: BlockchainId.P_CHAIN,
         network: isDeveloperMode ? NetworkName.FUJI : NetworkName.MAINNET,

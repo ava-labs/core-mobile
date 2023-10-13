@@ -15,7 +15,7 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import { NFTItemData, NFTItemExternalDataAttribute } from 'store/nft'
 import { SvgXml } from 'react-native-svg'
 import { truncateAddress } from '@avalabs/utils-sdk'
-import { isAddress } from '@ethersproject/address'
+import { isAddress } from 'ethers'
 import { usePosthogContext } from 'contexts/PosthogContext'
 import { isErc1155 } from 'services/nft/utils'
 import OvalTagBg from 'components/OvalTagBg'
@@ -56,7 +56,7 @@ export default function NftDetails({
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <AvaText.Heading1>
+      <AvaText.Heading1 testID="NftTokenTitle">
         {item.metadata.name} #{item.tokenId}
       </AvaText.Heading1>
       <AvaButton.Base

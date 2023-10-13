@@ -2,7 +2,8 @@ import { createSelector, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import {
   BITCOIN_NETWORK,
   ChainId as ChainsSDKChainId,
-  Network
+  Network,
+  NetworkContractToken
 } from '@avalabs/chains-sdk'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectAllCustomTokens } from 'store/customToken'
@@ -10,7 +11,7 @@ import { LocalTokenWithBalance } from 'store/balance'
 import { getLocalTokenId } from 'store/balance/utils'
 import { BN } from 'bn.js'
 import { RootState } from '../index'
-import { ChainID, NetworkState } from './types'
+import { ChainID, Networks, NetworkState } from './types'
 import { mergeWithCustomTokens } from './utils'
 
 export const defaultNetwork = BITCOIN_NETWORK
@@ -72,13 +73,23 @@ export const networkSlice = createSlice({
 })
 
 // selectors
-const selectActiveChainId = (state: RootState) => state.network.active
+const selectActiveChainId = (state: RootState): number => state.network.active
 
-const selectFavorites = (state: RootState) => state.network.favorites
+const selectFavorites = (state: RootState): number[] => state.network.favorites
 
-const _selectCustomNetworks = (state: RootState) => state.network.customNetworks
+const _selectCustomNetworks = (state: RootState): Networks =>
+  state.network.customNetworks
 
-export const selectRawNetworks = (state: RootState) => state.network.networks
+export const selectRawNetworks = (state: RootState): Networks =>
+  state.network.networks
+
+// get all networks, including custom networks
+export const selectAllNetworks = createSelector(
+  [selectRawNetworks, _selectCustomNetworks],
+  (networks, customNetworks) => {
+    return { ...networks, ...customNetworks }
+  }
+)
 
 export const selectNetworks = createSelector(
   [
@@ -165,19 +176,21 @@ export const selectInactiveNetworks = createSelector(
 )
 
 // get the list of contract tokens for the active network
-export const selectNetworkContractTokens = (state: RootState) => {
+export const selectActiveNetworkContractTokens = (
+  state: RootState
+): NetworkContractToken[] => {
   const network = selectActiveNetwork(state)
   return network.tokens ?? []
 }
 
 // get token info for a contract token of the active network
 export const selectTokenInfo = (symbol: string) => (state: RootState) => {
-  const tokens = selectNetworkContractTokens(state)
+  const tokens = selectActiveNetworkContractTokens(state)
   return tokens.find(token => token.symbol === symbol)
 }
 
 export const selectIsTestnet = (chainId: number) => (state: RootState) => {
-  const networks = selectRawNetworks(state)
+  const networks = selectAllNetworks(state)
   const network = networks[chainId]
   return network?.isTestnet
 }
@@ -211,17 +224,28 @@ export const selectAllNetworkTokensAsLocal = (
 
 export const selectSomeNetworks =
   (chainIds: number[]) => (state: RootState) => {
-    const allNetworks = selectRawNetworks(state)
+    const allNetworks = selectAllNetworks(state)
 
     return chainIds
       .map(id => allNetworks[id])
       .filter((network): network is Network => !!network)
   }
 
-export const selectNetwork = (chainId: number) => (state: RootState) => {
-  const allNetworks = selectRawNetworks(state)
-  return allNetworks[chainId]
-}
+export const selectNetwork =
+  (chainId: number | undefined) =>
+  (state: RootState): Network | undefined => {
+    if (!chainId) return undefined
+
+    const allNetworks = selectAllNetworks(state)
+    return allNetworks[chainId]
+  }
+
+// get the list of contract tokens for the network by chainId
+export const selectNetworkContractTokens =
+  (chainId: number) => (state: RootState) => {
+    const network = selectNetwork(chainId)(state)
+    return network?.tokens ?? []
+  }
 
 export const {
   setNetworks,

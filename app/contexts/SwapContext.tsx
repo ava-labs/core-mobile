@@ -11,7 +11,6 @@ import { getSwapRate, getTokenAddress } from 'swap/getSwapRate'
 import { SwapSide } from 'paraswap'
 import { OptimalRate } from 'paraswap-core'
 import { TokenWithBalance } from 'store/balance'
-import { BigNumber } from 'ethers'
 import Logger from 'utils/Logger'
 import { showSnackBarCustom } from 'components/Snackbar'
 import TransactionToast, {
@@ -24,13 +23,12 @@ import SentryWrapper from 'services/sentry/SentryWrapper'
 import { humanizeSwapErrors } from 'localization/errors'
 import { useAvalancheProvider } from 'hooks/networkProviderHooks'
 import { useSelector } from 'react-redux'
-import { selectNetworkFee } from 'store/networkFee'
 import NetworkService from 'services/network/NetworkService'
 import WalletService from 'services/wallet/WalletService'
 import { performSwap } from '@avalabs/paraswap-sdk'
 import { selectActiveNetwork } from 'store/network'
 import { selectActiveAccount } from 'store/account'
-import { TransactionRequest } from '@ethersproject/providers'
+import { useNetworkFee } from 'hooks/useNetworkFee'
 
 export type SwapStatus = 'Idle' | 'Preparing' | 'Swapping' | 'Success' | 'Fail'
 
@@ -41,7 +39,7 @@ export type SwapParams = {
   isDestTokenNative: boolean
   priceRoute: OptimalRate
   swapGasLimit: number
-  swapGasPrice: BigNumber
+  swapGasPrice: bigint
   swapSlippage: number
 }
 
@@ -53,8 +51,8 @@ export interface SwapContextState {
   optimalRate?: OptimalRate
   refresh: () => void
   swap(params: SwapParams): void
-  gasPrice: BigNumber
-  setGasPrice: Dispatch<BigNumber>
+  gasPrice: bigint
+  setGasPrice: Dispatch<bigint>
   gasLimit: number
   setCustomGasLimit: Dispatch<number>
   slippage: number
@@ -86,7 +84,7 @@ export const SwapContextProvider = ({ children }: { children: ReactNode }) => {
   const activeAccount = useSelector(selectActiveAccount)
   const activeNetwork = useSelector(selectActiveNetwork)
   const avalancheProvider = useAvalancheProvider()
-  const networkFee = useSelector(selectNetworkFee)
+  const { data: networkFee } = useNetworkFee()
   const [fromToken, setFromToken] = useState<TokenWithBalance>()
   const [toToken, setToToken] = useState<TokenWithBalance>()
   const [optimalRate, setOptimalRate] = useState<OptimalRate>()
@@ -96,7 +94,7 @@ export const SwapContextProvider = ({ children }: { children: ReactNode }) => {
     undefined
   )
   const trueGasLimit = customGasLimit || gasLimit
-  const [gasPrice, setGasPrice] = useState<BigNumber>(BigNumber.from(0))
+  const [gasPrice, setGasPrice] = useState<bigint>(0n)
   const [slippage, setSlippage] = useState<number>(1)
   const [destination, setDestination] = useState<SwapSide>(SwapSide.SELL)
   const [swapStatus, setSwapStatus] = useState<SwapStatus>('Idle')
@@ -209,11 +207,7 @@ export const SwapContextProvider = ({ children }: { children: ReactNode }) => {
           transactionSend: signedTx =>
             NetworkService.sendTransaction(signedTx, activeNetwork),
           transactionSign: tx =>
-            WalletService.sign(
-              tx as TransactionRequest,
-              activeAccount.index,
-              activeNetwork
-            ),
+            WalletService.sign(tx, activeAccount.index, activeNetwork),
           userAddress: activeAccount.address,
           networkGasPrice: networkFee.low
         })
@@ -246,6 +240,7 @@ export const SwapContextProvider = ({ children }: { children: ReactNode }) => {
             })
           }
         })
+        .catch(Logger.error)
         .finally(() => {
           SentryWrapper.finish(sentryTrx)
         })

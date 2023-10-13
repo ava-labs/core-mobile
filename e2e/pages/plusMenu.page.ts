@@ -14,6 +14,10 @@ class PlusMenuPage {
     return by.id(PlusMenuLoc.send)
   }
 
+  get swapButton() {
+    return by.id(PlusMenuLoc.swap)
+  }
+
   get walletConnectButtonSVG() {
     return by.id(PlusMenuLoc.walletConnectSVG)
   }
@@ -30,6 +34,14 @@ class PlusMenuPage {
     return by.text(PlusMenuLoc.walletConnectButton)
   }
 
+  get receiveButton() {
+    return by.id(PlusMenuLoc.receive)
+  }
+
+  async tapReceiveButton() {
+    await Actions.tap(this.receiveButton)
+  }
+
   async connectWallet(clipboardValue: string) {
     await Actions.setInputText(this.inputTextField, clipboardValue, 0)
     await Actions.tap(this.connectionURI)
@@ -41,6 +53,10 @@ class PlusMenuPage {
 
   async tapSendButton() {
     await Actions.tap(this.sendButton)
+  }
+
+  async tapSwapButton() {
+    await Actions.tap(this.swapButton)
   }
 
   async tapWalletConnectButton() {

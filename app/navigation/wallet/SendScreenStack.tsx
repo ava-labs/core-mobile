@@ -8,10 +8,10 @@ import { SendTokenContextProvider } from 'contexts/SendTokenContext'
 import { SendTokensScreenProps } from 'navigation/types'
 import { usePosthogContext } from 'contexts/PosthogContext'
 import FeatureBlocked from 'screens/posthog/FeatureBlocked'
-import { Contact } from 'Repo'
 import { TokenWithBalance } from 'store/balance'
 import { SubHeaderOptions } from 'navigation/NavUtils'
 import { usePostCapture } from 'hooks/usePosthogCapture'
+import { Contact } from 'store/addressBook'
 
 export type SendStackParamList = {
   [AppNavigation.Send.Send]:

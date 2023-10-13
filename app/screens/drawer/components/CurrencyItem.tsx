@@ -6,6 +6,8 @@ import { useNavigation } from '@react-navigation/native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { WalletScreenProps } from 'navigation/types'
 import { usePostCapture } from 'hooks/usePosthogCapture'
+import MoneySVG from 'components/svg/MoneySVG'
+import { View } from 'react-native'
 
 type NavigationProp = WalletScreenProps<
   typeof AppNavigation.Wallet.Drawer
@@ -21,6 +23,14 @@ const CurrencyItem = () => {
     </AvaText.Body2>
   )
 
+  const icon = () => {
+    return (
+      <View style={{ marginRight: -8 }}>
+        <MoneySVG />
+      </View>
+    )
+  }
+
   return (
     <>
       <AvaListItem.Base
@@ -28,6 +38,7 @@ const CurrencyItem = () => {
         titleAlignment={'flex-start'}
         rightComponent={currency()}
         rightComponentVerticalAlignment={'center'}
+        leftComponent={icon()}
         showNavigationArrow
         onPress={() => {
           capture('CurrencySettingClicked')

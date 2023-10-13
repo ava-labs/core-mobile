@@ -1,8 +1,8 @@
 import { Contact as SharedContact } from '@avalabs/types'
-import { Contact } from 'Repo'
 import { z } from 'zod'
-import { isAddress } from '@ethersproject/address'
+import { isAddress } from 'ethers'
 import { isBech32Address } from '@avalabs/bridge-sdk'
+import { Contact } from 'store/addressBook'
 
 export const sharedContactSchema = z.object({
   name: z.string().min(1),

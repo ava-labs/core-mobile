@@ -46,6 +46,7 @@ import {
 import useStakingParams from 'hooks/earn/useStakingParams'
 import { selectActiveAccount } from 'store/account'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { usePostCapture } from 'hooks/usePosthogCapture'
 import { ConfirmScreen } from '../components/ConfirmScreen'
 import UnableToEstimate from '../components/UnableToEstimate'
 import { useValidateStakingEndTime } from './useValidateStakingEndTime'
@@ -54,11 +55,8 @@ type ScreenProps = StakeSetupScreenProps<
   typeof AppNavigation.StakeSetup.Confirmation
 >
 
-const onDelegationError = (error: Error) => {
-  showSimpleToast(error.message)
-}
-
 export const Confirmation = () => {
+  const { capture } = usePostCapture()
   const dispatch = useDispatch()
   const { minStakeAmount } = useStakingParams()
   const avaxFormatter = useAvaxFormatter()
@@ -135,6 +133,7 @@ export const Confirmation = () => {
   }, [data?.estimatedTokenReward, validator?.delegationFee])
 
   const cancelStaking = () => {
+    capture('StakeCancelStaking', { from: 'ConfirmationScreen' })
     navigate(AppNavigation.StakeSetup.Cancel)
   }
 
@@ -148,6 +147,7 @@ export const Confirmation = () => {
     if (!claimableBalance) {
       return
     }
+    capture('StakeIssueDelegation')
     issueDelegationMutation.mutate({
       stakingAmount: deductedStakingAmount,
       startDate: minStartTime,
@@ -157,6 +157,7 @@ export const Confirmation = () => {
   }
 
   function onDelegationSuccess(txHash: string) {
+    capture('StakeDelegationSuccess')
     showSnackBarCustom({
       component: (
         <TransactionToast
@@ -178,6 +179,11 @@ export const Confirmation = () => {
         }
       ])
     )
+  }
+
+  function onDelegationError(error: Error) {
+    capture('StakeDelegationFail')
+    showSimpleToast(error.message)
   }
 
   const handleReadMore = () => {
@@ -290,7 +296,7 @@ export const Confirmation = () => {
     const [networkFeesInAvax] = avaxFormatter(networkFees, true)
 
     return (
-      <AvaText.Heading6>
+      <AvaText.Heading6 testID="network_fee">
         {networkFeesInAvax + ' ' + tokenSymbol}
       </AvaText.Heading6>
     )

@@ -1,4 +1,3 @@
-import { BigNumber } from 'ethers'
 import { bigToLocaleString, bnToBig, hexToBN } from '@avalabs/utils-sdk'
 import {
   ContractCall,
@@ -13,13 +12,13 @@ import { TransactionParams } from 'store/walletConnectV2/handlers/eth_sendTransa
 import { FindToken } from './utils/useFindToken'
 
 export interface SwapExactTokensForTokenData {
-  amountInMin: BigNumber
-  amountIn: BigNumber
-  amountInMax: BigNumber
+  amountInMin: bigint
+  amountIn: bigint
+  amountInMax: bigint
 
-  amountOutMin: BigNumber
-  amountOut: BigNumber
-  amountOutMax: BigNumber
+  amountOutMin: bigint
+  amountOut: bigint
+  amountOutMax: bigint
 
   contractCall: ContractCall.SWAP_EXACT_TOKENS_FOR_TOKENS
   deadline: string
@@ -52,9 +51,9 @@ export async function swapTokensForTokens(
         pathToken.address.toLowerCase() === firstTokenInPath?.toLowerCase() &&
         pathToken.decimals
       ) {
-        const amount: BigNumber =
+        const amount: bigint =
           data.amountInMin || data.amountIn || data.amountInMax
-        const bn = hexToBN(amount.toHexString())
+        const bn = hexToBN(amount.toString(16))
         const amountValue = bigToLocaleString(
           bnToBig(bn, pathToken.decimals),
           4
@@ -79,7 +78,7 @@ export async function swapTokensForTokens(
         pathToken.decimals
       ) {
         const amount = data.amountOutMin || data.amountOut || data.amountOutMax
-        const bn = hexToBN(amount.toHexString())
+        const bn = hexToBN(amount.toString(16))
         const amountValue = bigToLocaleString(
           bnToBig(bn, pathToken.decimals),
           4
@@ -102,13 +101,11 @@ export async function swapTokensForTokens(
     })
   )
 
-  const result = {
+  return {
     path,
     contractType: ContractCall.SWAP_EXACT_TOKENS_FOR_TOKENS,
     ...parseDisplayValues(network, request, props)
   }
-
-  return result
 }
 
 export const SwapExactTokensForTokenParser: ContractParser = [

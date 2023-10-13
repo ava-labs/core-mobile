@@ -6,6 +6,7 @@ import {
   NetworkVMType
 } from '@avalabs/chains-sdk'
 import { BlockCypherProvider, JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
+import { Network as EthersNetwork } from 'ethers'
 import Config from 'react-native-config'
 import { PollingConfig } from 'store/balance'
 import { Networks } from 'store/network'
@@ -23,17 +24,16 @@ export function getBitcoinProvider(
   )
 }
 
-export function getEvmProvider(network: Network) {
+export function getEvmProvider(network: Network): JsonRpcBatchInternal {
   if (network.vmName !== NetworkVMType.EVM)
     throw new Error(`Cannot get provider for network type: ${network.vmName}`)
 
   const multiContractAddress = network.utilityAddresses?.multicall
   const rpcUrl = network.rpcUrl
-  const chainId = network.chainId
   const provider = new JsonRpcBatchInternal(
     { maxCalls: 40, multiContractAddress },
     addGlacierAPIKeyIfNeeded(rpcUrl),
-    chainId
+    new EthersNetwork(network.chainName, network.chainId)
   )
 
   provider.pollingInterval = PollingConfig.activeNetwork
@@ -63,15 +63,12 @@ export function getAvalancheNetwork(
   networks: Networks,
   isTest: boolean | undefined
 ): Network | undefined {
-  const network = isTest
+  return isTest
     ? networks[ChainId.AVALANCHE_TESTNET_ID]
     : networks[ChainId.AVALANCHE_MAINNET_ID]
-  return network
 }
 
-export function getBitcoinNetwork(
-  isTest: boolean | undefined
-): Network | undefined {
+export function getBitcoinNetwork(isTest: boolean | undefined): Network {
   return isTest ? BITCOIN_TEST_NETWORK : BITCOIN_NETWORK
 }
 
@@ -79,8 +76,7 @@ export function getEthereumNetwork(
   networks: Networks,
   isTest: boolean | undefined
 ): Network | undefined {
-  const network = isTest
+  return isTest
     ? networks[ChainId.ETHEREUM_TEST_GOERLY]
     : networks[ChainId.ETHEREUM_HOMESTEAD]
-  return network
 }

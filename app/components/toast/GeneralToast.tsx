@@ -9,9 +9,10 @@ const WINDOW_WIDTH = Dimensions.get('window').width
 interface Props {
   message: string
   toastId?: string
+  testID?: string
 }
 
-const GeneralToast: FC<Props> = ({ message, toastId }) => {
+const GeneralToast: FC<Props> = ({ message, toastId, testID }) => {
   const theme = useApplicationContext().theme
 
   function dismissToast() {
@@ -34,6 +35,7 @@ const GeneralToast: FC<Props> = ({ message, toastId }) => {
       }}>
       {
         <AvaText.ButtonLarge
+          testID={testID}
           color={theme.colorText1}
           textStyle={{ textAlign: 'center' }}>
           {message}

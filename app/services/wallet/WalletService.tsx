@@ -20,7 +20,7 @@ import {
   PubKeyType,
   SignTransactionRequest
 } from 'services/wallet/types'
-import { Wallet } from 'ethers'
+import { BaseWallet } from 'ethers'
 import networkService from 'services/network/NetworkService'
 import { Network, NetworkVMType } from '@avalabs/chains-sdk'
 import { networks } from 'bitcoinjs-lib'
@@ -96,7 +96,7 @@ class WalletService {
     return btcWallet
   }
 
-  private getEvmWallet(accountIndex: number, network: Network): Wallet {
+  private getEvmWallet(accountIndex: number, network: Network): BaseWallet {
     if (!this.mnemonic) {
       throw new Error('not initialized')
     }
@@ -184,7 +184,7 @@ class WalletService {
           return JSON.stringify(sig.toJSON())
         }
         if ('to' in tx) {
-          return await (wallet as Wallet).signTransaction(tx)
+          return await (wallet as BaseWallet).signTransaction(tx)
         }
         throw new Error('Signing error, invalid data')
       })
@@ -198,7 +198,7 @@ class WalletService {
     network: Network
   ) {
     const wallet = await this.getWallet(accountIndex, network)
-    if (!wallet || !(wallet instanceof Wallet)) {
+    if (!wallet || !(wallet instanceof BaseWallet)) {
       throw new Error(
         wallet
           ? `this function not supported on your wallet`
@@ -251,8 +251,7 @@ class WalletService {
   }
 
   getInstantBaseFee(baseFee: Avax): Avax {
-    const instantFee = baseFee.add(baseFee.mul(BASE_FEE_MULTIPLIER))
-    return instantFee
+    return baseFee.add(baseFee.mul(BASE_FEE_MULTIPLIER))
   }
 
   async createExportCTx({
@@ -511,7 +510,7 @@ class WalletService {
     accountIndex: number,
     network: Network,
     sentryTrx?: Transaction
-  ): Promise<Wallet | BitcoinWallet | Avalanche.StaticSigner | undefined> {
+  ): Promise<BaseWallet | BitcoinWallet | Avalanche.StaticSigner | undefined> {
     const provider = networkService.getProviderForNetwork(network)
     return SentryWrapper.createSpanFor(sentryTrx)
       .setContext('svc.wallet.get_wallet')

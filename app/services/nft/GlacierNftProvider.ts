@@ -17,7 +17,7 @@ export class GlacierNftProvider implements NftProvider {
     if (!isHealthy) {
       return false
     }
-    const supportedChainsResp = await glacierSdk.evm.supportedChains({})
+    const supportedChainsResp = await glacierSdk.evmChains.supportedChains({})
     const chainInfos = supportedChainsResp.chains
     const chains = chainInfos.map(chain => chain.chainId)
     return chains.some(value => value === chainId.toString())
@@ -36,7 +36,7 @@ export class GlacierNftProvider implements NftProvider {
 
     let erc721BalancesRequest: Promise<ListErc721BalancesResponse> | undefined
     if (pageToken?.erc721 !== '') {
-      erc721BalancesRequest = glacierSdk.evm.listErc721Balances({
+      erc721BalancesRequest = glacierSdk.evmBalances.listErc721Balances({
         chainId: chainId.toString(),
         address: DevDebuggingConfig.SHOW_DEMO_NFTS ? demoAddress : address,
         // glacier has a cap on page size of 100
@@ -47,7 +47,7 @@ export class GlacierNftProvider implements NftProvider {
 
     let erc1155BalancesRequest: Promise<ListErc1155BalancesResponse> | undefined
     if (pageToken?.erc1155 !== '') {
-      erc1155BalancesRequest = glacierSdk.evm.listErc1155Balances({
+      erc1155BalancesRequest = glacierSdk.evmBalances.listErc1155Balances({
         chainId: chainId.toString(),
         address: DevDebuggingConfig.SHOW_DEMO_NFTS ? demoAddress : address,
         // glacier has a cap on page size of 100
@@ -95,18 +95,22 @@ export class GlacierNftProvider implements NftProvider {
       resp => resp.status !== 'fulfilled' || !!resp.value?.nextPageToken
     )
 
+    const erc721NextPageToken =
+      responses[0].status === 'fulfilled'
+        ? responses[0].value?.nextPageToken
+        : pageToken?.erc721 // reload the same page next time
+
+    const erc1155NextPageToken =
+      responses[1].status === 'fulfilled'
+        ? responses[1].value?.nextPageToken
+        : pageToken?.erc1155 // reload the same page next time
+
     return {
       nfts: fullNftData,
       nextPageToken: hasMore
         ? {
-            erc721:
-              responses[0].status === 'fulfilled'
-                ? responses[0].value?.nextPageToken
-                : pageToken?.erc721, // reload the same page next time
-            erc1155:
-              responses[1].status === 'fulfilled'
-                ? responses[1].value?.nextPageToken
-                : pageToken?.erc1155
+            erc721: erc721NextPageToken,
+            erc1155: erc1155NextPageToken
           }
         : ''
     }

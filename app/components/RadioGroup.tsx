@@ -32,21 +32,22 @@ const RadioGroup: FC<RadioGroupProps> = ({
         color: selected === child.key ? theme.colorBg2 : theme.colorIcon2
       })
 
+      const leftRadius = index === 0 ? 4 : 0
+      const rightRadius = index === React.Children.count(children) - 1 ? 4 : 0
+
       return (
         <AvaButton.Base
           key={index}
           onPress={() => {
-            setSelected(child.key!.toString())
+            child.key && setSelected(child.key.toString())
           }}
           style={[
             styles.button,
             {
-              borderTopLeftRadius: index === 0 ? 4 : 0,
-              borderBottomLeftRadius: index === 0 ? 4 : 0,
-              borderTopRightRadius:
-                index === React.Children.count(children) - 1 ? 4 : 0,
-              borderBottomRightRadius:
-                index === React.Children.count(children) - 1 ? 4 : 0,
+              borderTopLeftRadius: leftRadius,
+              borderBottomLeftRadius: leftRadius,
+              borderTopRightRadius: rightRadius,
+              borderBottomRightRadius: rightRadius,
               backgroundColor:
                 selected === child.key ? theme.colorIcon1 : theme.colorBg3
             }
@@ -55,7 +56,14 @@ const RadioGroup: FC<RadioGroupProps> = ({
         </AvaButton.Base>
       )
     })
-  }, [children, selected])
+  }, [
+    children,
+    selected,
+    theme.colorBg2,
+    theme.colorBg3,
+    theme.colorIcon1,
+    theme.colorIcon2
+  ])
 
   return <Row>{wrapped}</Row>
 }

@@ -4,7 +4,6 @@ import { BackHandler } from 'react-native'
 import { useCallback, useEffect, useMemo } from 'react'
 import { WalletSetupHook } from 'hooks/useWalletSetup'
 import { AppNavHook } from 'useAppNav'
-import { Repo } from 'Repo'
 import { usePosthogContext } from 'contexts/PosthogContext'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectSelectedCurrency } from 'store/settings/currency'
@@ -12,20 +11,20 @@ import { onLogOut } from 'store/app'
 import { resetLoginAttempt } from 'store/security'
 import { formatCurrency } from 'utils/FormatCurrency'
 import { selectCoreAnalyticsConsent } from 'store/settings/securityPrivacy'
+import { NotationTypes } from 'consts/FormatNumberTypes'
 
 export type AppHook = {
   onExit: () => Observable<ExitEvents>
   selectedCurrency: string
   deleteWallet: () => void
   signOut: () => void
-  currencyFormatter(num: number | string): string
+  currencyFormatter(num: number | string, notation?: NotationTypes): string
   tokenInCurrencyFormatter(num: number | string): string
 }
 
 export function useApp(
   appNavHook: AppNavHook,
-  walletSetupHook: WalletSetupHook,
-  repository: Repo
+  walletSetupHook: WalletSetupHook
 ): AppHook {
   const dispatch = useDispatch()
   const selectedCurrency = useSelector(selectSelectedCurrency)
@@ -34,10 +33,9 @@ export function useApp(
 
   const deleteWallet = useCallback(() => {
     walletSetupHook.destroyWallet()
-    repository.flush()
     dispatch(onLogOut())
     dispatch(resetLoginAttempt())
-  }, [dispatch, repository, walletSetupHook])
+  }, [dispatch, walletSetupHook])
 
   const signOut = useCallback(() => {
     deleteWallet()
@@ -79,14 +77,27 @@ export function useApp(
    * Localized currency formatter
    */
   const currencyFormatter = useMemo(() => {
-    return (amount: number) => formatCurrency(amount, selectedCurrency, false)
+    return (amount: number, notation?: NotationTypes) => {
+      return formatCurrency({
+        amount,
+        currency: selectedCurrency,
+        boostSmallNumberPrecision: false,
+        notation
+      })
+    }
   }, [selectedCurrency])
 
   /**
    * When displaying token value in currency we keep max 8 fraction digits
    */
   const tokenInCurrencyFormatter = useMemo(() => {
-    return (amount: number) => formatCurrency(amount, selectedCurrency, true)
+    return (amount: number, notation?: NotationTypes) =>
+      formatCurrency({
+        amount,
+        currency: selectedCurrency,
+        boostSmallNumberPrecision: true,
+        notation
+      })
   }, [selectedCurrency])
 
   return {

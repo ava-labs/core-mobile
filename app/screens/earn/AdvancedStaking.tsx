@@ -1,5 +1,5 @@
 import React from 'react'
-import { ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native'
+import { ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native'
 import AvaText from 'components/AvaText'
 import AvaButton from 'components/AvaButton'
 import { useApplicationContext } from 'contexts/ApplicationContext'
@@ -14,6 +14,7 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { FormInputText } from 'components/form/FormInputText'
 import { isEmpty } from 'lodash'
+import { usePostCapture } from 'hooks/usePosthogCapture'
 import { Opacity50 } from '../../resources/Constants'
 
 type TFormProps = {
@@ -37,10 +38,11 @@ type ScreenProps = StakeSetupScreenProps<
 >
 
 const AdvancedStaking = () => {
+  const { capture } = usePostCapture()
   const width = useWindowDimensions().width
   const { theme } = useApplicationContext()
   const { navigate } = useNavigation<ScreenProps['navigation']>()
-  const { stakingAmount, stakingEndTime } =
+  const { stakingAmount, stakingEndTime, selectedDuration } =
     useRoute<ScreenProps['route']>().params
 
   const {
@@ -56,6 +58,10 @@ const AdvancedStaking = () => {
     }
   })
   const onSubmit = (data: TFormProps) => {
+    capture('StakeStartNodeSearch', {
+      from: 'AdvancedStakingScreen',
+      duration: selectedDuration
+    })
     navigate(AppNavigation.StakeSetup.SelectNode, {
       minUpTime: Number(data.minUpTime),
       maxFee: Number(data.maxFee),

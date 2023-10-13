@@ -3,11 +3,16 @@ import { FlatList, View } from 'react-native'
 import ZeroState from 'components/ZeroState'
 import TabViewAva from 'components/TabViewAva'
 import AvaText from 'components/AvaText'
-import { AccountId, AddrBookItemType, Contact } from 'Repo'
 import AddressBookItem from 'components/addressBook/AddressBookItem'
 import { useSelector } from 'react-redux'
 import { Account, selectAccounts } from 'store/account'
-import { selectContacts, selectRecentContacts } from 'store/addressBook'
+import {
+  AccountId,
+  AddrBookItemType,
+  Contact,
+  selectContacts,
+  selectRecentContacts
+} from 'store/addressBook'
 import { selectActiveNetwork } from 'store/network'
 import { Network, NetworkVMType } from '@avalabs/chains-sdk'
 

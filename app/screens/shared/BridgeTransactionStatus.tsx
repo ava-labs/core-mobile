@@ -21,15 +21,11 @@ import { VsCurrencyType } from '@avalabs/coingecko-sdk'
 import { useNavigation } from '@react-navigation/native'
 import Logger from 'utils/Logger'
 import { useSelector } from 'react-redux'
-import { selectTokenInfo } from 'store/network'
+import { selectActiveNetwork } from 'store/network'
 import { getBlockchainDisplayName } from 'screens/bridge/utils/bridgeUtils'
-import { showSnackBarCustom } from 'components/Snackbar'
-import TransactionToast, {
-  TransactionToastType
-} from 'components/toast/TransactionToast'
 import AvaButton from 'components/AvaButton'
 import AppNavigation from 'navigation/AppNavigation'
-import { usePostCapture } from 'hooks/usePosthogCapture'
+import { useTokenForBridgeTransaction } from 'screens/bridge/hooks/useTokenForBridgeTransaction'
 
 type Props = {
   txHash: string
@@ -37,15 +33,16 @@ type Props = {
 }
 
 const BridgeTransactionStatus: FC<Props> = ({ txHash, showHideButton }) => {
-  const [toastShown, setToastShown] = useState<boolean>()
-  const { bridgeTransactions, removeBridgeTransaction } = useBridgeContext()
-  const { capture } = usePostCapture()
+  const { bridgeTransactions } = useBridgeContext()
   const [bridgeTransaction, setBridgeTransaction] =
     useState<BridgeTransaction>()
 
-  const tokenInfo = useSelector(
-    selectTokenInfo(bridgeTransaction?.symbol ?? '')
+  const network = useSelector(selectActiveNetwork)
+  const tokenInfo = useTokenForBridgeTransaction(
+    bridgeTransaction,
+    network.isTestnet === true
   )
+
   const { theme, appHook } = useApplicationContext()
   const { selectedCurrency, currencyFormatter } = appHook
   const { navigate, getParent, dispatch, setOptions } = useNavigation()
@@ -104,26 +101,6 @@ const BridgeTransactionStatus: FC<Props> = ({ txHash, showHideButton }) => {
         setBridgeTransaction(bridgeTransactions[txHash])
     },
     [bridgeTransactions, txHash]
-  )
-
-  useEffect(
-    function showToastOnComplete() {
-      if (bridgeTransaction?.complete && !toastShown) {
-        removeBridgeTransaction(bridgeTransaction.sourceTxHash)
-        setToastShown(true)
-        capture('BridgeTransferRequestSucceeded')
-        showSnackBarCustom({
-          component: (
-            <TransactionToast
-              message={'Bridge Successful'}
-              type={TransactionToastType.SUCCESS}
-            />
-          ),
-          duration: 'short'
-        })
-      }
-    },
-    [bridgeTransaction, capture, removeBridgeTransaction, toastShown]
   )
 
   useEffect(
@@ -219,7 +196,6 @@ const BridgeTransactionStatus: FC<Props> = ({ txHash, showHideButton }) => {
             requiredConfirmationCount={
               bridgeTransaction.requiredConfirmationCount
             }
-            complete={bridgeTransaction.complete}
             startTime={bridgeTransaction.sourceStartedAt}
             endTime={bridgeTransaction.targetStartedAt}
             confirmationCount={bridgeTransaction.confirmationCount}
@@ -246,8 +222,9 @@ const BridgeTransactionStatus: FC<Props> = ({ txHash, showHideButton }) => {
             requiredConfirmationCount={
               1 // On avalanche, we just need 1 confirmation
             }
-            complete={bridgeTransaction.complete}
             confirmationCount={bridgeTransaction.complete ? 1 : 0}
+            sourceChain={bridgeTransaction.sourceChain}
+            targetChain={bridgeTransaction.targetChain}
           />
         )}
       </View>

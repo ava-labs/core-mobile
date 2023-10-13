@@ -54,18 +54,18 @@ const TabViewAva: TabViewAvaFC = ({
     () => React.Children.toArray(children),
     [children]
   )
-
   useEffect(() => {
     setCurrentIndex(currentTabIndex)
   }, [currentTabIndex])
-
   // https://github.com/satya164/react-native-tab-view#tabview-props
   const routes = useMemo(
     () =>
       childrenArray.map((child, index) => {
-        const isValidChild =
-          React.isValidElement(child) && child.type === TabViewAva.Item
-        const title = isValidChild ? child.props.title : index.toString()
+        const title =
+          React.isValidElement(child) &&
+          (child.type as FC).displayName === TabViewAvaItemDisplayName
+            ? child.props.title
+            : index.toString()
 
         return {
           key: title,
@@ -136,6 +136,9 @@ const TabViewAva: TabViewAvaFC = ({
               backgroundColor: theme.transparent,
               marginHorizontal: 16
             }}
+            contentContainerStyle={{
+              marginBottom: 8
+            }}
             renderLabel={({ route, focused, color }) => {
               return renderCustomLabel?.(route?.title ?? '', focused, color)
             }}
@@ -145,6 +148,12 @@ const TabViewAva: TabViewAvaFC = ({
             }}
             renderTabBarItem={tabBarItem}
           />
+          <View
+            style={{
+              height: 1,
+              backgroundColor: theme.colorStroke
+            }}
+          />
         </View>
       )
     },
@@ -153,6 +162,7 @@ const TabViewAva: TabViewAvaFC = ({
       routes.length,
       tabBarItem,
       theme.colorPrimary1,
+      theme.colorStroke,
       theme.transparent
     ]
   )
@@ -170,5 +180,8 @@ const TabViewAva: TabViewAvaFC = ({
 }
 
 TabViewAva.Item = ({ children }) => <>{children}</>
+
+const TabViewAvaItemDisplayName = 'TabViewAva.Item'
+TabViewAva.Item.displayName = TabViewAvaItemDisplayName
 
 export default TabViewAva

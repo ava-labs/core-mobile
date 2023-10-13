@@ -1,6 +1,6 @@
 import { Action } from '@reduxjs/toolkit'
 import { AppListenerEffectAPI } from 'store'
-import { selectIsEarnBlocked } from 'store/posthog'
+import { capture as captureAction, selectIsEarnBlocked } from 'store/posthog'
 import Logger from 'utils/Logger'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectAccounts } from 'store/account'
@@ -77,16 +77,34 @@ const scheduleNotificationsForActiveStakes = async (
     const accounts = selectAccounts(state)
 
     Logger.info('fetching stakes for all accounts')
-    const tranformedTransactions =
+    const transformedTransactions =
       await EarnService.getTransformedStakesForAllAccounts({
         isDeveloperMode,
         accounts
       })
 
-    if (tranformedTransactions && tranformedTransactions.length > 0) {
+    const onGoingTransactions =
+      transformedTransactions?.filter(value => value.isOnGoing) ?? []
+
+    const totalStakes = transformedTransactions?.length ?? 0
+    const activeStakes = onGoingTransactions.length
+    const historyStakes = totalStakes - activeStakes
+
+    listenerApi.dispatch(
+      captureAction({
+        event: 'StakeCountStakes',
+        properties: {
+          active: activeStakes,
+          history: historyStakes,
+          total: totalStakes
+        }
+      })
+    )
+
+    if (onGoingTransactions && onGoingTransactions.length > 0) {
       Logger.info('updating staking complete notifications')
       await NotificationsService.updateStakeCompleteNotification(
-        tranformedTransactions
+        onGoingTransactions
       )
     }
   }, 5000)

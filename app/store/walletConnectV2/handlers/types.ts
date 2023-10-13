@@ -37,3 +37,9 @@ export type Result<Value, Error> =
     }
 
 export const DEFERRED_RESULT = Symbol()
+
+export enum AvalancheChainStrings {
+  AVM = 'X Chain',
+  PVM = 'P Chain',
+  EVM = 'C Chain'
+}

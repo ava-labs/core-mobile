@@ -1,6 +1,7 @@
 import Action from '../helpers/actions'
 import networksManage from '../locators/networksManage.loc'
 import { Platform } from '../helpers/constants'
+import PortfolioPage from './portfolio.page'
 
 const platformIndex = Action.platform() === Platform.iOS ? 1 : 0
 
@@ -188,6 +189,22 @@ class NetworksPage {
 
   async swipeUp() {
     await Action.swipeUp(this.nativeTokenSymbol, 'fast', 0.5, 0)
+  }
+
+  async switchToEthereumGoerliNetwork() {
+    await PortfolioPage.tapNetworksDropdown()
+    if (
+      (await Action.isVisible(PortfolioPage.manageNetworks, platformIndex)) ===
+      false
+    ) {
+      await PortfolioPage.tapNetworksDropdown()
+    }
+    await PortfolioPage.tapManageNetworks()
+    await this.tapNetworksTab()
+    if ((await Action.isVisible(this.ethereumGoerlyNetwork, 0)) === false) {
+      await Action.swipeUp(this.bitcoinTestnet, 'slow', 0.5, 0)
+    }
+    await this.tapEthereumGoerliNetwork()
   }
 }
 

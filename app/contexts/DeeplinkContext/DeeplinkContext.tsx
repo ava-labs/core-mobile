@@ -36,7 +36,7 @@ export const DeeplinkContextProvider = ({
   children
 }: {
   children: React.ReactNode
-}) => {
+}): JSX.Element => {
   const dispatch = useDispatch()
   const walletState = useSelector(selectWalletState)
   const isWalletActive = walletState === WalletState.ACTIVE
@@ -51,7 +51,7 @@ export const DeeplinkContextProvider = ({
 
   const handleNotificationCallback = useCallback(
     ({ url, accountIndex, origin, isDevMode }: NotificationCallbackProps) => {
-      const runCallback = () => {
+      const runCallback = (): void => {
         const avalancheChainId = isDevMode
           ? ChainId.AVALANCHE_TESTNET_ID
           : ChainId.AVALANCHE_MAINNET_ID
@@ -125,7 +125,7 @@ export const DeeplinkContextProvider = ({
       })
     })
 
-    async function checkInitialUrl() {
+    async function checkInitialUrl(): Promise<void> {
       // initial URL (when app comes from cold start)
       const url = await Linking.getInitialURL()
 
@@ -174,4 +174,5 @@ export const DeeplinkContextProvider = ({
   )
 }
 
-export const useDeeplink = () => useContext(DeeplinkContext)
+export const useDeeplink = (): DeeplinkContextType =>
+  useContext(DeeplinkContext)

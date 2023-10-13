@@ -6,6 +6,7 @@ import Keychain, {
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { SECURE_ACCESS_SET } from 'resources/Constants'
 import { Platform } from 'react-native'
+import Logger from './Logger'
 
 const SERVICE_KEY = 'sec-storage-service'
 const SERVICE_KEY_BIO = 'sec-storage-service-bio'
@@ -49,7 +50,7 @@ class BiometricsSDK {
    * some time on firs run so we call this function
    * early and mask it with splash for smoother UX
    */
-  async warmup() {
+  async warmup(): Promise<void> {
     await Keychain.getAllGenericPasswordServices()
   }
 
@@ -61,7 +62,10 @@ class BiometricsSDK {
     }
   }
 
-  async storeWalletWithPin(walletMnemonic: string, isResetting = false) {
+  async storeWalletWithPin(
+    walletMnemonic: string,
+    isResetting = false
+  ): Promise<false | Keychain.Result> {
     // if the user is not resetting the pin
     // we mark it as using PIN type. The other two cases are:
     // - User already option is already PIN and is simply changing it
@@ -87,11 +91,8 @@ class BiometricsSDK {
    * Emits boolean true if everything ok, or throws Error if something whent wrong.
    * @param key - mnemonic to store
    */
-  async storeWalletWithBiometry(key: string) {
+  async storeWalletWithBiometry(key: string): Promise<boolean> {
     await AsyncStorage.setItem(SECURE_ACCESS_SET, 'BIO')
-    // reset keystore because we're changing from PIN to BIO
-    // await Keychain.resetGenericPassword({service: SERVICE_KEY_BIO});
-
     // try to store with biometry
     try {
       await Keychain.setGenericPassword(
@@ -99,8 +100,10 @@ class BiometricsSDK {
         key,
         KeystoreConfig.KEYSTORE_BIO_OPTIONS
       )
-      return this.loadWalletKey(KeystoreConfig.KEYSTORE_BIO_OPTIONS)
+
+      return true
     } catch (e) {
+      Logger.error('failed to store with biometry', e)
       // case something goes wrong with biometrics, use use the fallback, which defaults to device code
       try {
         await Keychain.setGenericPassword(
@@ -108,9 +111,10 @@ class BiometricsSDK {
           key,
           KeystoreConfig.KEYCHAIN_FALLBACK_OPTIONS
         )
-        return Promise.resolve(true)
+        return true
       } catch (ex) {
-        return Promise.reject(false)
+        Logger.error('failed to store with device code fallback', e)
+        return false
       }
     }
   }
@@ -119,7 +123,7 @@ class BiometricsSDK {
     return Keychain.getGenericPassword(options)
   }
 
-  async clearWalletKey() {
+  async clearAllWalletKeys(): Promise<void> {
     return Keychain.resetGenericPassword(
       KeystoreConfig.KEYSTORE_PASSCODE_OPTIONS
     )
@@ -127,15 +131,16 @@ class BiometricsSDK {
         Keychain.resetGenericPassword(KeystoreConfig.KEYSTORE_BIO_OPTIONS)
       )
       .then(() => AsyncStorage.removeItem(SECURE_ACCESS_SET))
+      .catch(Logger.error)
   }
 
-  async canUseBiometry() {
+  async canUseBiometry(): Promise<boolean> {
     return getSupportedBiometryType().then(value => {
       return value !== null
     })
   }
 
-  async getBiometryType() {
+  async getBiometryType(): Promise<Keychain.BIOMETRY_TYPE | null> {
     return getSupportedBiometryType()
   }
 }

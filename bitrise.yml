@@ -117,11 +117,10 @@ workflows:
         - project_path: $IOS_PROJECT_PATH
         - code_signing_allowed: "yes"
   _install-and-set-env:
+    before_run:
+    - _install-node-18
     steps:
     - restore-npm-cache@1: {}
-    - nvm@1:
-        inputs:
-        - node_version: 18.14.1
     - script-runner@0:
         title: Yarn Setup
         inputs:
@@ -139,6 +138,23 @@ workflows:
         title: Override Feature Flags Key
         inputs:
         - file_path: scripts/bitrise/overrideFeatureFlagsKey.sh
+  _install-node-18:
+    steps:
+    - restore-cache@1:
+        title: Restore Node 18 Cache
+        inputs:
+        - key: node-18-{{ .OS }}-{{ .Arch }}
+    - nvm@1:
+        inputs:
+        - node_version: 18.14.1
+    - save-cache@1:
+        title: Save Node 18 Cache
+        inputs:
+        - paths: |-
+            /Users/vagrant/.nvm/*
+            /root/.nvm/*
+        - is_key_unique: "true"
+        - key: node-18-{{ .OS }}-{{ .Arch }}
   _send-notification-slack:
     steps:
     - slack@3:
@@ -225,7 +241,6 @@ workflows:
     - _build-android
     after_run:
     - _send-notification-slack
-    - _send-test-result-notifcation-slack
     envs:
     - ENVIRONMENT: production
       opts:
@@ -273,7 +288,7 @@ workflows:
     - script-runner@0:
         title: Detox
         inputs:
-        - file_path: scripts/bitrise/detox/androidE2e.sh
+        - file_path: scripts/bitrise/detox/androidInternalE2e.sh
   android-internal:
     before_run:
     - _install-and-set-env

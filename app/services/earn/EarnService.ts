@@ -23,7 +23,10 @@ import {
   RecoveryEvents
 } from 'services/earn/types'
 import { getUnixTime } from 'date-fns'
-import { GetCurrentSupplyResponse } from '@avalabs/avalanchejs-v2/dist/src/vms/pvm'
+import {
+  GetCurrentSupplyResponse,
+  GetCurrentValidatorsResponse
+} from '@avalabs/avalanchejs-v2/dist/vms/pvm'
 import { Seconds } from 'types/siUnits'
 import {
   BlockchainId,
@@ -34,6 +37,9 @@ import {
 } from '@avalabs/glacier-sdk'
 import { glacierSdk } from 'utils/network/glacier'
 import { Avax } from 'types/Avax'
+import { getInfoApi } from 'utils/network/info'
+import { GetPeersResponse } from '@avalabs/avalanchejs-v2/dist/info/model'
+import { isOnGoing } from 'utils/earn/status'
 import {
   getTransformedTransactions,
   maxGetAtomicUTXOsRetries,
@@ -45,7 +51,9 @@ class EarnService {
    * Get all available nodes
    * @param isTestnet is testnet mode enabled
    */
-  getCurrentValidators = (isTestnet: boolean) => {
+  getCurrentValidators = (
+    isTestnet: boolean
+  ): Promise<GetCurrentValidatorsResponse> => {
     return getPvmApi(isTestnet).getCurrentValidators()
   }
 
@@ -258,32 +266,35 @@ class EarnService {
    * @param isTestnet
    * @param addresses
    */
-  getAllStakes = async ({ isTestnet, addresses }: GetAllStakesParams) => {
+  getAllStakes = async ({
+    isTestnet,
+    addresses
+  }: GetAllStakesParams): Promise<PChainTransaction[]> => {
     const addressesStr = addresses.join(',')
     let pageToken: string | undefined
     const transactions: PChainTransaction[] = []
 
     do {
       const response =
-        await glacierSdk.primaryNetwork.listLatestPrimaryNetworkTransactions({
-          network: isTestnet ? Network.FUJI : Network.MAINNET,
-          blockchainId: BlockchainId.P_CHAIN,
-          addresses: addressesStr,
-          pageSize: 100,
-          sortOrder: SortOrder.DESC,
-          pageToken
-        })
+        await glacierSdk.primaryNetworkTransactions.listLatestPrimaryNetworkTransactions(
+          {
+            network: isTestnet ? Network.FUJI : Network.MAINNET,
+            blockchainId: BlockchainId.P_CHAIN,
+            addresses: addressesStr,
+            pageSize: 100,
+            sortOrder: SortOrder.DESC,
+            pageToken
+          }
+        )
 
       pageToken = response.nextPageToken
       transactions.push(...(response.transactions as PChainTransaction[]))
     } while (pageToken)
 
-    const stakes = transactions.filter(
+    return transactions.filter(
       transaction =>
         transaction.txType === PChainTransactionType.ADD_DELEGATOR_TX
     )
-
-    return stakes
   }
 
   getTransformedStakesForAllAccounts = async ({
@@ -292,7 +303,16 @@ class EarnService {
   }: {
     isDeveloperMode: boolean
     accounts: AccountCollection
-  }) => {
+  }): Promise<
+    | {
+        txHash: string
+        endTimestamp: number | undefined
+        accountIndex: number
+        isDeveloperMode: boolean
+        isOnGoing: boolean
+      }[]
+    | undefined
+  > => {
     const oppositeIsDeveloperMode = !isDeveloperMode
     const accountsArray = Object.values(accounts)
 
@@ -322,20 +342,32 @@ class EarnService {
         oppositeIsDeveloperMode
       )
 
-      const tranformedTransactions = (firstTransactions ?? [])
+      const now = new Date()
+      return (firstTransactions ?? [])
         .concat(secondTransactions ?? [])
         .map(transaction => {
           return {
             txHash: transaction.txHash,
             endTimestamp: transaction.endTimestamp,
             accountIndex: Number(transaction.index),
-            isDeveloperMode: transaction.isDeveloperMode
+            isDeveloperMode: transaction.isDeveloperMode,
+            isOnGoing: isOnGoing(transaction, now)
           }
         })
-      return tranformedTransactions
     } catch (error) {
       Logger.error('getTransformedStakesForAllAccounts failed: ', error)
     }
+  }
+
+  /**
+   * Get a description of peer connections.
+   * @param nodeIds
+   */
+  getPeers = (
+    isTestnet: boolean,
+    nodeIds?: string[]
+  ): Promise<GetPeersResponse> => {
+    return getInfoApi(isTestnet).peers(nodeIds)
   }
 }
 

@@ -23,6 +23,7 @@ type showCustomProps = {
   duration: 'short' | 'long' | 'infinite'
   placement?: 'top' | 'bottom'
   id?: string
+  onClose?: () => void
 }
 
 export const showDappToastError = (message: string, dappName: string) => {
@@ -40,7 +41,7 @@ export const showDappToastError = (message: string, dappName: string) => {
 
 export const showSimpleToast = (message: string, id?: string) => {
   showSnackBarCustom({
-    component: <GeneralToast message={message} />,
+    component: <GeneralToast message={message} testID="simple_toast_msg" />,
     duration: 'short',
     id
   })
@@ -50,7 +51,8 @@ export function showSnackBarCustom({
   component,
   duration,
   placement = 'top',
-  id
+  id,
+  onClose
 }: showCustomProps) {
   const toastOptions = {
     type: 'transaction',
@@ -64,7 +66,8 @@ export function showSnackBarCustom({
         ? LENGTH_INFINITE
         : duration === 'long'
         ? LENGTH_LONG
-        : LENGTH_SHORT
+        : LENGTH_SHORT,
+    onClose: onClose
   } as ToastOptions
   if (id) {
     // there's bug in react-native-toast-notifications which overwrites id if you pass id: undefined

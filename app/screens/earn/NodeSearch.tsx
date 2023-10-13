@@ -15,6 +15,7 @@ type RouteProp = StakeSetupScreenProps<
 export const NodeSearch = () => {
   const { stakingEndTime, stakingAmount } = useRoute<RouteProp>().params
   const { isFetching, error, data } = useNodes()
+
   const { validator, error: useSearchNodeError } = useSearchNode({
     stakingAmount,
     stakingEndTime,

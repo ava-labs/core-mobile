@@ -10,7 +10,6 @@ import AddressBookLists, {
 } from 'components/addressBook/AddressBookLists'
 import FlexSpacer from 'components/FlexSpacer'
 import { useAddressBookLists } from 'components/addressBook/useAddressBookLists'
-import { AddrBookItemType, Contact } from 'Repo'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Row } from 'components/Row'
 import { useSendNFTContext } from 'contexts/SendNFTContext'
@@ -20,9 +19,10 @@ import NetworkFeeSelector from 'components/NetworkFeeSelector'
 import { useSelector } from 'react-redux'
 import { selectActiveNetwork } from 'store/network'
 import { NetworkVMType } from '@avalabs/chains-sdk'
-import { ethersBigNumberToBN } from '@avalabs/utils-sdk'
 import { SvgXml } from 'react-native-svg'
 import { usePostCapture } from 'hooks/usePosthogCapture'
+import { BN } from 'bn.js'
+import { AddrBookItemType, Contact } from 'store/addressBook'
 
 export type NftSendScreenProps = {
   onNext: () => void
@@ -107,7 +107,7 @@ export default function NftSend({
           modifier: feePreset
         })
       }
-      setCustomGasPrice(ethersBigNumberToBN(gasPrice1))
+      setCustomGasPrice(new BN(gasPrice1.toString()))
       setSelectedFeePreset(feePreset)
     },
     [setCustomGasPrice, setSelectedFeePreset, selectedFeePreset, capture]
@@ -216,10 +216,16 @@ const CollectibleItem = ({ nft }: { nft: NFTItemData }) => {
         </View>
         <Space x={16} />
         <View style={{ flex: 1 }}>
-          <AvaText.Heading5 numberOfLines={1} ellipsizeMode="tail">
+          <AvaText.Heading5
+            testID="NftTokenID"
+            numberOfLines={1}
+            ellipsizeMode="tail">
             #{nft.tokenId}
           </AvaText.Heading5>
-          <AvaText.Heading6 numberOfLines={1} ellipsizeMode="tail">
+          <AvaText.Heading6
+            testID="NftTokenName"
+            numberOfLines={1}
+            ellipsizeMode="tail">
             {nft.metadata.name}
           </AvaText.Heading6>
         </View>

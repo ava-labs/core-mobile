@@ -3,7 +3,6 @@ import { getEvmProvider } from 'services/network/utils/providerUtils'
 import WalletService from 'services/wallet/WalletService'
 import NetworkService from 'services/network/NetworkService'
 import { AppListenerEffectAPI } from 'store'
-import { selectNetworkFee, fetchNetworkFee } from 'store/networkFee'
 import * as Navigation from 'utils/Navigation'
 import AppNavigation from 'navigation/AppNavigation'
 import Logger from 'utils/Logger'
@@ -11,6 +10,9 @@ import { ethErrors } from 'eth-rpc-errors'
 import * as Sentry from '@sentry/react-native'
 import { selectNetwork } from 'store/network'
 import { selectAccountByAddress } from 'store/account'
+import { queryClient } from 'contexts/ReactQueryProvider'
+import { NetworkFee } from 'services/networkFee/types'
+import { getQueryKey, prefetchNetworkFee } from 'hooks/useNetworkFee'
 import { updateRequestStatus } from '../../slice'
 import { RpcMethod, SessionRequest } from '../../types'
 import {
@@ -24,6 +26,9 @@ import { parseApproveData, parseRequestParams } from './utils'
 export type EthSendTransactionRpcRequest =
   SessionRequest<RpcMethod.ETH_SEND_TRANSACTION>
 
+const getChainIdFromRequest = (request: EthSendTransactionRpcRequest) =>
+  request.data.params.chainId.split(':')[1]
+
 class EthSendTransactionHandler
   implements RpcRequestHandler<EthSendTransactionRpcRequest>
 {
@@ -33,7 +38,6 @@ class EthSendTransactionHandler
     request: EthSendTransactionRpcRequest,
     listenerApi: AppListenerEffectAPI
   ): HandleResponse => {
-    const { dispatch } = listenerApi
     const { params } = request.data.params.request
     const result = parseRequestParams(params)
 
@@ -47,13 +51,15 @@ class EthSendTransactionHandler
       }
     }
 
-    const transaction = result.data[0]
+    // pre-fetch network fees for tx parsing and approval screen
+    const state = listenerApi.getState()
+    const chainId = getChainIdFromRequest(request)
+    const requestedNetwork = selectNetwork(Number(chainId))(state)
+    prefetchNetworkFee(requestedNetwork)
 
     // TODO CP-4894 decode transaction data here instead of in SignTransaction component/useExplainTransaction hook
 
-    // fetch network fees for tx parsing and approval screen
-    dispatch(fetchNetworkFee())
-
+    const transaction = result.data[0]
     Navigation.navigate({
       name: AppNavigation.Root.Wallet,
       params: {
@@ -77,7 +83,6 @@ class EthSendTransactionHandler
   ): ApproveResponse => {
     const { dispatch, getState } = listenerApi
     const state = getState()
-    const networkFees = selectNetworkFee(state)
 
     const result = parseApproveData(payload.data)
 
@@ -90,7 +95,7 @@ class EthSendTransactionHandler
     }
 
     const request = payload.request
-    const chainId = request.data.params.chainId.split(':')[1]
+    const chainId = getChainIdFromRequest(request)
     const params = result.data.txParams
     const address = params.from
 
@@ -113,7 +118,11 @@ class EthSendTransactionHandler
     const nonce = await getEvmProvider(network).getTransactionCount(params.from)
 
     try {
-      const evmParams = await txToCustomEvmTx(networkFees.low, params)
+      const networkFees = queryClient.getQueryData<NetworkFee>(
+        getQueryKey(network)
+      )
+
+      const evmParams = await txToCustomEvmTx(networkFees?.low ?? 0n, params)
 
       const signedTx = await WalletService.sign(
         {
@@ -132,7 +141,7 @@ class EthSendTransactionHandler
       const transactionHash = await NetworkService.sendTransaction(
         signedTx,
         network,
-        true
+        false
       )
 
       dispatch(
@@ -144,7 +153,7 @@ class EthSendTransactionHandler
 
       return { success: true, value: transactionHash }
     } catch (e) {
-      Logger.error('Unable to approve transaction request', JSON.stringify(e))
+      Logger.error('Unable to approve transaction request', e)
 
       const error = ethErrors.rpc.internal<string>(
         'Unable to approve transaction request'

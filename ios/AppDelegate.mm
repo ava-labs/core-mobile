@@ -48,8 +48,17 @@
   self.window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
   UIViewController *rootViewController = [UIViewController new];
   rootViewController.view = rootView;
+  rootViewController.view.backgroundColor = [UIColor blackColor];
   self.window.rootViewController = rootViewController;
   [self.window makeKeyAndVisible];
+  
+  if ([rootView isKindOfClass:[RCTRootView class]]) {
+    RCTRootView *rctRootView = (RCTRootView *)rootView;
+    UIStoryboard *sb = [UIStoryboard storyboardWithName:@"LaunchScreen" bundle:nil];
+    UIViewController *vc = [sb instantiateInitialViewController];
+    rctRootView.loadingView = vc.view;
+  }
+  
   return YES;
 }
 
@@ -74,7 +83,9 @@
 - (NSURL *)sourceURLForBridge:(RCTBridge *)bridge
 {
 #if DEBUG
-  return [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:@"index"];
+  // replace [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:@"index"]; with the statement below
+  // in order for sourcemap to work with Safari debugging
+  return [NSURL URLWithString:[[[[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:@"index"] absoluteString] stringByAppendingString:@"&inlineSourceMap=true" ]];
 #else
   return [[NSBundle mainBundle] URLForResource:@"main" withExtension:@"jsbundle"];
 #endif

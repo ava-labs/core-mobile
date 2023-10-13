@@ -13,16 +13,13 @@ import { Network } from '@avalabs/chains-sdk'
 import { Space } from 'components/Space'
 import { RefreshControl } from 'components/RefreshControl'
 import { NFTItemData } from 'store/nft'
-import {
-  BridgeTransactionStatusParams,
-  PortfolioScreenProps
-} from 'navigation/types'
+import { PortfolioScreenProps } from 'navigation/types'
 import { usePostCapture } from 'hooks/usePosthogCapture'
 import Animated, { FadeInDown, FadeOutUp } from 'react-native-reanimated'
 import { TokensTabHeader } from 'screens/portfolio/home/components/TokensTabHeader'
-import ActivityList from 'screens/shared/ActivityList/ActivityList'
-import { Transaction } from 'store/transaction'
 import { PortfolioTabs } from 'consts/portfolio'
+import { selectIsDeFiBlocked } from 'store/posthog'
+import { DeFiProtocolList } from 'screens/defi/DeFiProtocolList'
 import InactiveNetworkCard from './components/Cards/InactiveNetworkCard'
 import { PortfolioTokensLoader } from './components/Loaders/PortfolioTokensLoader'
 import PortfolioHeader from './components/PortfolioHeader'
@@ -36,6 +33,7 @@ const Portfolio = () => {
   const { setParams } = useNavigation<PortfolioNavigationProp['navigation']>()
 
   const collectiblesDisabled = useIsUIDisabled(UI.Collectibles)
+  const defiBlocked = useSelector(selectIsDeFiBlocked)
   const { capture } = usePostCapture()
 
   function capturePosthogEvents(tabIndex: number) {
@@ -46,9 +44,8 @@ const Portfolio = () => {
       case PortfolioTabs.NFT:
         capture('PortfolioCollectiblesClicked')
         break
-      case PortfolioTabs.Activity:
-        capture('PortfolioActivityClicked')
-        break
+      case PortfolioTabs.DeFi:
+        capture('PortfolioDeFiClicked')
     }
   }
 
@@ -70,9 +67,11 @@ const Portfolio = () => {
             <NftTab />
           </TabViewAva.Item>
         )}
-        <TabViewAva.Item title={'Activity'}>
-          <ActivityTab />
-        </TabViewAva.Item>
+        {!defiBlocked && (
+          <TabViewAva.Item title={'DeFi'}>
+            <DeFiTab />
+          </TabViewAva.Item>
+        )}
       </TabViewAva>
     </>
   )
@@ -147,30 +146,16 @@ const NftTab = () => {
   )
 }
 
-const ActivityTab = () => {
-  const { navigate } = useNavigation<PortfolioNavigationProp['navigation']>()
-
-  const openTransactionDetails = (item: Transaction) => {
-    navigate(AppNavigation.Wallet.ActivityDetail, {
-      tx: item
-    })
-  }
-
-  const openTransactionStatus = (params: BridgeTransactionStatusParams) => {
-    navigate(AppNavigation.Bridge.BridgeTransactionStatus, params)
-  }
-
-  return (
-    <ActivityList
-      embedded
-      openTransactionDetails={openTransactionDetails}
-      openTransactionStatus={openTransactionStatus}
-    />
-  )
+const DeFiTab = () => {
+  return <DeFiProtocolList />
 }
 
 const renderCustomLabel = (title: string, selected: boolean, color: string) => {
-  return <AvaText.Heading3 textStyle={{ color }}>{title}</AvaText.Heading3>
+  return (
+    <AvaText.Heading3 textStyle={{ color }} ellipsizeMode="tail">
+      {title}
+    </AvaText.Heading3>
+  )
 }
 
 export default Portfolio

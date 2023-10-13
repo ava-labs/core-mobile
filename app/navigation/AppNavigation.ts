@@ -2,7 +2,8 @@ enum Root {
   Wallet = 'Stacks.Wallet',
   Onboard = 'Stacks.Onboard',
   Welcome = 'Stacks.Welcome',
-  NoWallet = 'Stacks.NoWallet'
+  NoWallet = 'Stacks.NoWallet',
+  CopyPhraseWarning = 'Stacks.CopyPhraseWarning'
 }
 
 enum OnboardScreens {
@@ -56,7 +57,9 @@ enum WalletScreens {
   Bridge = 'WalletScreens.Bridge',
   QRCode = 'WalletScreens.QRCode',
   Earn = 'WalletScreens.Earn',
-  Notifications = 'WalletScreens.Notifications'
+  Notifications = 'WalletScreens.Notifications',
+  DeFiProtocolDetails = 'WalletScreens.DeFiProtocolDetails',
+  SendFeedback = 'WalletScreens.SendFeedback'
 }
 
 enum NoWalletScreens {
@@ -146,6 +149,10 @@ enum AdvancedScreens {
   DappConnectModal = 'AdvancedScreens.DappConnectModal'
 }
 
+enum SendFeedbackScreens {
+  SendFeedback = 'SendFeedbackScreens.SendFeedback'
+}
+
 enum Tabs {
   Portfolio = 'Portfolio',
   Activity = 'Activity',
@@ -166,19 +173,7 @@ enum ModalScreens {
   SelectToken = 'ModalScreens.SelectToken',
   EditGasLimit = 'ModalScreens.EditGasLimit',
   BridgeSelectToken = 'ModalScreens.BridgeSelectToken',
-  // rpc prompts for wallet connect v1
-  SessionProposal = 'ModalScreens.SessionProposal',
-  CreateRemoveContact = 'ModalScreens.CreateRemoveContact',
-  UpdateContact = 'ModalScreens.UpdateContact',
-  SelectAccount = 'ModalScreens.SelectAccount',
   BuyCarefully = 'ModalScreens.BuyCarefully',
-  SignTransaction = 'ModalScreens.SignTransaction',
-  AvalancheSendTransaction = 'ModalScreens.AvalancheSendTransaction',
-  AvalancheSignTransaction = 'ModalScreens.AvalancheSignTransaction',
-  SignMessage = 'ModalScreens.SignMessage',
-  BridgeAsset = 'ModalScreens.BridgeAsset',
-  AddEthereumChain = 'ModalScreens.AddEthereumChain',
-  SwitchEthereumChain = 'ModalScreens.SwitchEthereumChain',
   // rpc prompts for wallet connect v2
   SessionProposalV2 = 'ModalScreens.SessionProposalV2',
   SignMessageV2 = 'ModalScreens.SignMessageV2',
@@ -242,7 +237,8 @@ const AppNavigation = {
   Buy: BuyScreens,
   Earn: EarnScreens,
   StakeSetup: StakeSetupScreens,
-  Notifications: NotificationsScreens
+  Notifications: NotificationsScreens,
+  SendFeedback: SendFeedbackScreens
 }
 
 export default AppNavigation

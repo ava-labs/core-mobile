@@ -17,11 +17,13 @@ import { Row } from 'components/Row'
 import { Space } from 'components/Space'
 import { PopableContent } from 'components/PopableContent'
 import { usePostCapture } from 'hooks/usePosthogCapture'
+import { selectUseLeftFab } from 'store/posthog'
 
 const Advanced = () => {
   const { theme } = useApplicationContext()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const isLeftHanded = useSelector(selectIsLeftHanded)
+  const useLeftFab = useSelector(selectUseLeftFab)
   const dispatch = useDispatch()
   const { capture } = usePostCapture()
 
@@ -66,7 +68,7 @@ const Advanced = () => {
           />
         }
       />
-      {false && (
+      {useLeftFab && (
         <AvaListItem.Base
           titleAlignment="flex-start"
           title={

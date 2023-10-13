@@ -4,7 +4,7 @@ import portfolio from '../locators/portfolio.loc'
 import { Platform } from '../helpers/constants'
 
 const platformIndex = Action.platform() === Platform.iOS ? 1 : 0
-const platformIndex2 = Action.platform() === Platform.iOS ? 0 : 2
+const platformIndex2 = Action.platform() === Platform.iOS ? 0 : 1
 class PortfolioPage {
   get addToWatchlist() {
     return by.id(portfolio.addToWatchlist)
@@ -38,6 +38,10 @@ class PortfolioPage {
     return by.text(portfolio.collectiblesTab)
   }
 
+  get collectiblesTab() {
+    return by.text(portfolio.collectiblesTab)
+  }
+
   get activityTab() {
     return by.text(portfolio.activityTab)
   }
@@ -48,6 +52,10 @@ class PortfolioPage {
 
   get ethNetwork() {
     return by.text(portfolio.ethNetwork)
+  }
+
+  get ethGoerlyNetwork() {
+    return by.text(portfolio.ethGoerlyNetwork)
   }
 
   get assetsTab() {
@@ -128,6 +136,18 @@ class PortfolioPage {
 
   async tapBtcFavoriteToken() {
     await Action.tapElementAtIndex(this.btcTokenItem, 0)
+  }
+
+  async tapCollectiblesTab() {
+    await Action.tapElementAtIndex(this.collectiblesTab, 0)
+  }
+
+  async tapEthNetwork() {
+    await Action.tapElementAtIndex(this.ethNetwork, 1)
+  }
+
+  async tapEthGoerlyNetwork() {
+    await Action.tapElementAtIndex(this.ethGoerlyNetwork, 1)
   }
 
   async tapManageTokens() {

@@ -24,13 +24,11 @@ class NetworkService {
 
     delete erc20Networks[ChainId.AVALANCHE_LOCAL_ID]
 
-    const networks = {
+    return {
       ...erc20Networks,
       [ChainId.BITCOIN]: BITCOIN_NETWORK,
       [ChainId.BITCOIN_TESTNET]: BITCOIN_TEST_NETWORK
     }
-
-    return networks
   }
 
   getProviderForNetwork(
@@ -80,10 +78,11 @@ class NetworkService {
         if (typeof signedTx === 'string') {
           if (provider instanceof JsonRpcBatchInternal) {
             if (waitToPost) {
-              const tx = await provider.sendTransaction(signedTx)
-              return (await tx.wait()).transactionHash
+              const tx = await provider.broadcastTransaction(signedTx)
+              await tx.wait()
+              return tx.hash
             }
-            return (await provider.sendTransaction(signedTx)).hash
+            return (await provider.broadcastTransaction(signedTx)).hash
           }
 
           if (provider instanceof BlockCypherProvider) {

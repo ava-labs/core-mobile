@@ -4,7 +4,7 @@ import { Alert, Dimensions, Pressable, StyleSheet, View } from 'react-native'
 import { Space } from 'components/Space'
 import AvaText from 'components/AvaText'
 import AvaButton from 'components/AvaButton'
-import BridgeToggleSVG from 'components/svg/BridgeToggleSVG'
+import BridgeToggleIcon from 'assets/icons/BridgeToggleIcon.svg'
 import AvaListItem from 'components/AvaListItem'
 import DropDown from 'components/Dropdown'
 import { Row } from 'components/Row'
@@ -570,7 +570,7 @@ const Bridge: FC = () => {
           styles.toggleButton,
           { backgroundColor: theme.alternateBackground }
         ]}>
-        <BridgeToggleSVG />
+        <BridgeToggleIcon color={theme.background} />
       </AvaButton.Base>
     )
   }

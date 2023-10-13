@@ -1,9 +1,17 @@
 import { ethErrors } from 'eth-rpc-errors'
 import { AppListenerEffectAPI } from 'store'
-import { selectActiveNetwork, selectNetworks, setActive } from 'store/network'
+import {
+  selectActiveNetwork,
+  selectAllNetworks,
+  setActive
+} from 'store/network'
 import * as Navigation from 'utils/Navigation'
 import AppNavigation from 'navigation/AppNavigation'
 import Logger from 'utils/Logger'
+import {
+  selectIsDeveloperMode,
+  toggleDeveloperMode
+} from 'store/settings/advanced'
 import { RpcMethod, SessionRequest } from '../../../types'
 import {
   ApproveResponse,
@@ -40,8 +48,10 @@ class WalletSwitchEthereumChainHandler
       }
     }
 
-    const targetChainID = result.data[0].chainId // chain ID is hex with 0x prefix
-    const networks = selectNetworks(store)
+    const targetChainIDInHex = result.data[0].chainId // chain ID is hex with 0x prefix
+    const targetChainID = Number(targetChainIDInHex)
+    const networks = selectAllNetworks(store)
+
     const supportedNetwork = networks[Number(targetChainID)]
     const currentActiveNetwork = selectActiveNetwork(store)
 
@@ -82,7 +92,7 @@ class WalletSwitchEthereumChainHandler
     },
     listenerApi: AppListenerEffectAPI
   ): ApproveResponse => {
-    const { dispatch } = listenerApi
+    const { dispatch, getState } = listenerApi
 
     const result = parseApproveData(payload.data)
 
@@ -94,8 +104,19 @@ class WalletSwitchEthereumChainHandler
     }
 
     const data = result.data
+    const state = getState()
+    const isDeveloperMode = selectIsDeveloperMode(state)
 
-    dispatch(setActive(data.network.chainId))
+    // validate network against the current developer mode
+    const chainId = data.network.chainId
+    const isTestnet = Boolean(data.network?.isTestnet)
+
+    // switch to correct dev mode
+    if (isTestnet !== isDeveloperMode) {
+      dispatch(toggleDeveloperMode())
+    }
+
+    dispatch(setActive(chainId))
 
     return { success: true, value: null }
   }
