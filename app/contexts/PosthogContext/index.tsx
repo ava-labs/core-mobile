@@ -16,6 +16,7 @@ import {
   selectIsBridgeBlocked,
   selectIsBridgeBtcBlocked,
   selectIsBridgeEthBlocked,
+  selectIsBrowserBlocked,
   selectIsCoinbasePayBlocked,
   selectIsEarnBlocked,
   selectIsEventsBlocked,
@@ -40,6 +41,7 @@ export interface PosthogContextState {
   bridgeBtcBlocked: boolean
   bridgeEthBlocked: boolean
   earnBlocked: boolean
+  browserBlocked: boolean
   sendBlocked: boolean
   sendNftBlockediOS: boolean
   sendNftBlockedAndroid: boolean
@@ -52,7 +54,7 @@ export const PosthogContextProvider = ({
   children
 }: {
   children: ReactNode
-}) => {
+}): JSX.Element => {
   const dispatch = useDispatch()
   const { capture } = usePostCapture()
   const isAnalyticsEnabled = useSelector(selectIsAnalyticsEnabled)
@@ -70,6 +72,7 @@ export const PosthogContextProvider = ({
   const sentrySampleRate = useSelector(selectSentrySampleRate)
   const coinbasePayBlocked = useSelector(selectIsCoinbasePayBlocked)
   const useCoinGeckoPro = useSelector(selectUseCoinGeckoPro)
+  const browserBlocked = useSelector(selectIsBrowserBlocked)
 
   const { timeoutPassed } = useAppBackgroundTracker({
     timeoutMs: 30 * 60 * 1000,
@@ -100,7 +103,7 @@ export const PosthogContextProvider = ({
 
   useEffect(checkRestartSession, [capture, timeoutPassed])
 
-  function checkRestartSession() {
+  function checkRestartSession(): void {
     if (timeoutPassed) {
       capture('AnalyticsEnabled')
     }
@@ -111,7 +114,7 @@ export const PosthogContextProvider = ({
    * After that user either consents or not and according to it we collect or not
    * events.
    */
-  function setEventsLogging() {
+  function setEventsLogging(): void {
     if (eventsBlocked) {
       dispatch(toggleAnalytics(false))
       return
@@ -141,13 +144,14 @@ export const PosthogContextProvider = ({
         sendNftBlockedAndroid,
         sentrySampleRate,
         coinbasePayBlocked,
-        useCoinGeckoPro
+        useCoinGeckoPro,
+        browserBlocked
       }}>
       {children}
     </PosthogContext.Provider>
   )
 }
 
-export function usePosthogContext() {
+export function usePosthogContext(): PosthogContextState {
   return useContext(PosthogContext)
 }

@@ -1,5 +1,6 @@
 export enum ViewOnceKey {
-  CHART_INTERACTION
+  CHART_INTERACTION,
+  BROWSER_INTERACTION
 }
 
 export type ViewOnceObjectType = {
