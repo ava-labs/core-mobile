@@ -39,7 +39,7 @@ import { Avax } from 'types/Avax'
 import { getInfoApi } from 'utils/network/info'
 import { GetPeersResponse } from '@avalabs/avalanchejs-v2/dist/info/model'
 import { isOnGoing } from 'utils/earn/status'
-import { glacierApiClient } from 'utils/network/glacier'
+import { glacierApi } from 'utils/network/glacier'
 import {
   getTransformedTransactions,
   maxGetAtomicUTXOsRetries,
@@ -275,19 +275,18 @@ class EarnService {
     const transactions: PChainTransaction[] = []
 
     do {
-      const response =
-        await glacierApiClient.listLatestPrimaryNetworkTransactions({
-          params: {
-            network: isTestnet ? Network.FUJI : Network.MAINNET,
-            blockchainId: BlockchainId.P_CHAIN
-          },
-          queries: {
-            addresses: addressesStr,
-            pageSize: 100,
-            sortOrder: SortOrder.DESC,
-            pageToken
-          }
-        })
+      const response = await glacierApi.listLatestPrimaryNetworkTransactions({
+        params: {
+          network: isTestnet ? Network.FUJI : Network.MAINNET,
+          blockchainId: BlockchainId.P_CHAIN
+        },
+        queries: {
+          addresses: addressesStr,
+          pageSize: 100,
+          sortOrder: SortOrder.DESC,
+          pageToken
+        }
+      })
       pageToken = response.nextPageToken
       transactions.push(...(response.transactions as PChainTransaction[]))
     } while (pageToken)

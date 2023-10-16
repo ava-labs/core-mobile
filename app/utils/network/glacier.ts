@@ -27,4 +27,4 @@ export function addGlacierAPIKeyIfNeeded(url: string): string {
   return url
 }
 
-export const glacierApiClient = createApiClient(GLACIER_URL)
+export const glacierApi = createApiClient(GLACIER_URL)
