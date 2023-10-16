@@ -1,5 +1,6 @@
 import { Glacier } from '@avalabs/glacier-sdk'
 import Config from 'react-native-config'
+import { createApiClient } from './glacierApi.client'
 
 if (!Config.GLACIER_URL) throw Error('GLACIER_URL ENV is missing')
 
@@ -25,3 +26,5 @@ export function addGlacierAPIKeyIfNeeded(url: string): string {
 
   return url
 }
+
+export const glacierApi = createApiClient(GLACIER_URL)
