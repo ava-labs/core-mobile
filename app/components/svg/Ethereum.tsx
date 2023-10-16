@@ -6,9 +6,14 @@ interface Prop {
   absolutePosition?: boolean
 }
 
-function EthereumSvg({ size = 41, absolutePosition = false, ...props }: Prop) {
+function EthereumSvg({
+  size = 41,
+  absolutePosition = false,
+  ...props
+}: Prop): JSX.Element {
   return (
     <Svg
+      testID="ethereum_svg"
       style={[{ flexShrink: 0 }, absolutePosition && { position: 'absolute' }]}
       width={size}
       height={size}
