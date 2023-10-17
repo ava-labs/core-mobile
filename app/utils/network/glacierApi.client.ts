@@ -542,6 +542,7 @@ const GetPrimaryNetworkBlockResponse = z
     txCount: z.number(),
     transactions: z.array(z.string()),
     blockSizeBytes: z.number(),
+    currentSupply: z.string().optional(),
     proposerDetails: ProposerDetails.optional()
   })
   .passthrough()
@@ -555,6 +556,7 @@ const PrimaryNetworkBlock = z
     txCount: z.number(),
     transactions: z.array(z.string()),
     blockSizeBytes: z.number(),
+    currentSupply: z.string().optional(),
     proposerDetails: ProposerDetails.optional()
   })
   .passthrough()
@@ -3495,6 +3497,21 @@ The transaction export operation runs asynchronously in the background. The stat
       }
     ],
     response: ListWebhooksResponse
+  },
+  {
+    method: 'delete',
+    path: '/v1/webhooks/:id',
+    alias: 'deactivateWebhook',
+    description: `Deactivates a webhook by ID.`,
+    requestFormat: 'json',
+    parameters: [
+      {
+        name: 'id',
+        type: 'Path',
+        schema: z.string()
+      }
+    ],
+    response: WebhookResponse
   }
 ])
 
