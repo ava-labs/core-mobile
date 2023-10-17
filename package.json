@@ -17,10 +17,11 @@
     "lint:ci": "yarn run lint --quiet --format json --output-file eslint_report.json",
     "clean": "./scripts/clean",
     "prepare": "husky install",
-    "postinstall": "node_modules/.bin/patch-package; node_modules/.bin/rn-nodeify --install events,stream,vm,assert,https,http,os,zlib --hack; yarn run types:openzeppelin",
+    "postinstall": "node_modules/.bin/patch-package; node_modules/.bin/rn-nodeify --install events,stream,vm,assert,https,http,os,zlib --hack; yarn run gen:contracts",
     "storybook-generate": "sb-rn-get-stories",
     "storybook-watch": "sb-rn-watcher",
-    "types:openzeppelin": "typechain --target=ethers-v6 --out-dir app/contracts/openzeppelin ./node_modules/@openzeppelin/contracts/build/contracts/ERC20.json ./node_modules/@openzeppelin/contracts/build/contracts/ERC721.json ./node_modules/@openzeppelin/contracts/build/contracts/ERC1155.json"
+    "gen:contracts": "typechain --target=ethers-v6 --out-dir app/contracts/openzeppelin ./node_modules/@openzeppelin/contracts/build/contracts/ERC20.json ./node_modules/@openzeppelin/contracts/build/contracts/ERC721.json ./node_modules/@openzeppelin/contracts/build/contracts/ERC1155.json",
+    "gen:glacierApi": "pnpx openapi-zod-client 'https://glacier-api-dev.avax.network/api-json' -o './app/utils/network/glacierApi.client.ts'"
   },
   "dependencies": {
     "@avalabs/avalanchejs-v2": "1.4.0-alpha.20",
