@@ -9,8 +9,8 @@ interface Prop {
 
 const RocketSVG = ({
   color = '#fff',
-  width = 40,
-  height = 32
+  width = 24,
+  height = 24
 }: Prop): JSX.Element => (
   <Svg width={width} height={height} fill="none">
     <Path
