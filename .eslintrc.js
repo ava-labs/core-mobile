@@ -65,7 +65,7 @@ module.exports = {
       }
     ],
     'sonarjs/no-duplicate-string': 0,
-    'avalanche-wallet-apps/no-direct-bn-big-comparison-operator': 'error'
+    'avalanche-wallet-apps/no-direct-avax-comparison-operator': 'error'
   },
   overrides: [
     {

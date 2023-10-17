@@ -7,7 +7,7 @@ const rule = {
         type: 'problem',
         schema: [],
         messages: {
-            noBnBigComparisons: 'Avoid using {{operator}} with {{symbol}} types. Use respective methods instead.'
+            noDirectAvaxComparisonOperator: 'Avoid using {{operator}} with {{symbol}} types. Use respective methods instead.'
         }
     },
     create: context => {
@@ -19,13 +19,13 @@ const rule = {
                 if (['<', '>', '==', '!='].includes(expr.operator)) {
                     const { symbol: { escapedName: leftTypeSymbolName } } = checker.getTypeAtLocation(services.esTreeNodeToTSNodeMap.get(expr.left));
                     const { symbol: { escapedName: rightTypeSymbolName } } = checker.getTypeAtLocation(services.esTreeNodeToTSNodeMap.get(expr.left));
-                    const isBNorBig = (symbolName) => ['BN', 'Big'].includes(symbolName);
+                    const isAvax = (symbolName) => symbolName === 'Avax';
                     if (leftTypeSymbolName &&
                         rightTypeSymbolName &&
-                        (isBNorBig(leftTypeSymbolName) || isBNorBig(rightTypeSymbolName))) {
+                        (isAvax(leftTypeSymbolName) || isAvax(rightTypeSymbolName))) {
                         return context.report({
                             node,
-                            messageId: 'noBnBigComparisons',
+                            messageId: 'noDirectAvaxComparisonOperator',
                             data: {
                                 operator: expr.operator,
                                 symbol: leftTypeSymbolName

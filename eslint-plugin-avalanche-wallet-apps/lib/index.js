@@ -1,8 +1,8 @@
 "use strict";
-const noDirectBNBigComparisonOperator_1 = require("./rules/noDirectBNBigComparisonOperator");
-const config = {
+Object.defineProperty(exports, "__esModule", { value: true });
+const noDirectAvaxComparisonOperator_1 = require("./rules/noDirectAvaxComparisonOperator");
+module.exports = {
     rules: {
-        'no-direct-bn-big-comparison-operator': noDirectBNBigComparisonOperator_1.default
+        'no-direct-avax-comparison-operator': noDirectAvaxComparisonOperator_1.default
     }
 };
-module.exports = config;

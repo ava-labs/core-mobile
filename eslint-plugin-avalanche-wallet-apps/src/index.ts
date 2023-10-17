@@ -1,9 +1,7 @@
-import noDirectBNBigComparisonOperator from './rules/noDirectBNBigComparisonOperator'
+import noDirectAvaxComparisonOperator from './rules/noDirectAvaxComparisonOperator'
 
-const config = {
+module.exports = {
   rules: {
-    'no-direct-bn-big-comparison-operator': noDirectBNBigComparisonOperator
+    'no-direct-avax-comparison-operator': noDirectAvaxComparisonOperator
   }
 }
-
-export = config

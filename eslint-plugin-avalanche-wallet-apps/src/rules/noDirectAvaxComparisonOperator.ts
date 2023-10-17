@@ -1,12 +1,12 @@
 import { TSESLint, ESLintUtils, TSESTree } from '@typescript-eslint/utils'
 
-const rule: TSESLint.RuleModule<'noBnBigComparisons'> = {
+const rule: TSESLint.RuleModule<'noDirectAvaxComparisonOperator'> = {
   defaultOptions: [],
   meta: {
     type: 'problem',
     schema: [],
     messages: {
-      noBnBigComparisons:
+      noDirectAvaxComparisonOperator:
         'Avoid using {{operator}} with {{symbol}} types. Use respective methods instead.'
     }
   },
@@ -29,17 +29,16 @@ const rule: TSESLint.RuleModule<'noBnBigComparisons'> = {
             services.esTreeNodeToTSNodeMap.get(expr.left)
           )
 
-          const isBNorBig = (symbolName: string): boolean =>
-            ['BN', 'Big'].includes(symbolName)
+          const isAvax = (symbolName: string): boolean => symbolName === 'Avax'
 
           if (
             leftTypeSymbolName &&
             rightTypeSymbolName &&
-            (isBNorBig(leftTypeSymbolName) || isBNorBig(rightTypeSymbolName))
+            (isAvax(leftTypeSymbolName) || isAvax(rightTypeSymbolName))
           ) {
             return context.report({
               node,
-              messageId: 'noBnBigComparisons',
+              messageId: 'noDirectAvaxComparisonOperator',
               data: {
                 operator: expr.operator,
                 symbol: leftTypeSymbolName
