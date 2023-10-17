@@ -24,7 +24,8 @@ module.exports = {
     'import',
     'detox',
     'promise',
-    'sonarjs'
+    'sonarjs',
+    'avalanche-wallet-apps'
   ],
   rules: {
     'no-console': 2,
@@ -63,7 +64,8 @@ module.exports = {
         ]
       }
     ],
-    'sonarjs/no-duplicate-string': 0
+    'sonarjs/no-duplicate-string': 0,
+    'avalanche-wallet-apps/no-direct-bn-big-comparison-operator': 'error'
   },
   overrides: [
     {
@@ -86,6 +88,18 @@ module.exports = {
       ],
       rules: {
         '@typescript-eslint/explicit-function-return-type': ['off']
+      }
+    },
+    {
+      files: ['*.ts', '*.tsx'],
+      parserOptions: {
+        project: ['./tsconfig.json']
+      }
+    },
+    {
+      files: ['**/eslint-plugin-avalanche-wallet-apps/lib/**/*.js'],
+      rules: {
+        'prettier/prettier': ['off']
       }
     }
   ]
