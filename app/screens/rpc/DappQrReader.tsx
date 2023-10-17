@@ -4,16 +4,14 @@ import React, { useCallback, useState } from 'react'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaText from 'components/AvaText'
 import QrScannerAva from 'components/QrScannerAva'
-import { Popable } from 'react-native-popable'
 import { Space } from 'components/Space'
-import { PopableContent } from 'components/PopableContent'
-import { PopableLabel } from 'components/PopableLabel'
+import { Tooltip } from 'components/Tooltip'
 
 type Props = {
   onScanned: (qrText: string) => void
 }
 
-function DappQrReader({ onScanned }: Props) {
+function DappQrReader({ onScanned }: Props): JSX.Element {
   const theme = useApplicationContext().theme
   const [qrText, setQrText] = useState<string>('')
   const [showMaskOverQR, setShowMaskOverQR] = useState(false)
@@ -42,15 +40,12 @@ function DappQrReader({ onScanned }: Props) {
         />
       )}
       <View style={{ alignSelf: 'baseline', marginLeft: 14 }}>
-        <Popable
-          content={PopableContent({
-            message: `Use this to manually connect`
-          })}
-          position={'right'}
-          style={{ minWidth: 200 }}
-          backgroundColor={theme.neutral100}>
-          <PopableLabel label={'Connection URI'} />
-        </Popable>
+        <Tooltip
+          content={'Use this to manually connect'}
+          children={'Connection URI'}
+          style={{ width: 200 }}
+          position="right"
+        />
       </View>
       <Space y={8} />
       <InputText
