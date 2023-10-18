@@ -107,6 +107,7 @@ export const StakeCard = (props: Props): JSX.Element => {
                 content={estimatesTooltipText}
                 children={'Estimated Rewards'}
                 style={{ width: 240 }}
+                textStyle={{ lineHeight: 20 }}
               />
               <View style={{ alignItems: 'flex-end' }}>
                 <AvaText.Heading6 color={theme.colorBgGreen}>

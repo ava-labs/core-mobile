@@ -1,23 +1,24 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect } from 'react'
 import { PopableContent } from 'components/PopableContent'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import {
   AppState,
   AppStateStatus,
-  Pressable,
   StyleProp,
+  TextStyle,
   View,
   ViewStyle
 } from 'react-native'
 import InfoSVG from 'components/svg/InfoSVG'
 import { Space } from 'components/Space'
 import AvaText from 'components/AvaText'
-import { Popable, usePopable, PopableProps } from '../popover'
-
+import { Popable, usePopable, PopableProps } from 'react-native-popable'
+import { Row } from 'components/Row'
 interface Props {
   iconColor?: string
   icon?: JSX.Element
   containerStyle?: StyleProp<ViewStyle>
+  textStyle?: StyleProp<TextStyle>
 }
 
 export const Tooltip = ({
@@ -28,35 +29,28 @@ export const Tooltip = ({
   position,
   backgroundColor,
   containerStyle,
+  textStyle,
+  hitslop = { left: 15, right: 15, top: 15, bottom: 15 },
   style
 }: Props & PopableProps): JSX.Element => {
   const { theme } = useApplicationContext()
   const { ref, show, hide } = usePopable()
-  const [visible, setVisible] = useState(false)
-
-  const handleOnPress = (): void => {
-    if (visible) {
-      hide()
-      setVisible(false)
-    } else {
-      show()
-      setVisible(true)
-    }
-  }
 
   const handleOnAction = (isVisible: boolean): void => {
     if (isVisible) {
       show()
-      setVisible(true)
     } else {
       hide()
-      setVisible(false)
     }
   }
 
   const renderChildren = (): JSX.Element => {
     if (children && typeof children === 'string') {
-      return <AvaText.Body2 color={theme.colorText1}>{children}</AvaText.Body2>
+      return (
+        <AvaText.Body2 textStyle={textStyle} color={theme.colorText1}>
+          {children}
+        </AvaText.Body2>
+      )
     }
     return children as JSX.Element
   }
@@ -65,7 +59,6 @@ export const Tooltip = ({
     (status: AppStateStatus): void => {
       if (status === 'inactive') {
         hide()
-        setVisible(false)
       }
     },
     [hide]
@@ -87,16 +80,16 @@ export const Tooltip = ({
 
   return (
     <View style={containerStyle}>
-      <Pressable
+      <Row
         style={{
-          flexDirection: 'row',
           alignItems: 'center'
-        }}
-        onPress={handleOnPress}>
+        }}>
         {renderChildren()}
         <Space x={4} />
         <Popable
           ref={ref}
+          hitslop={hitslop}
+          strictPosition
           onAction={handleOnAction}
           content={renderContent()}
           position={position}
@@ -104,7 +97,7 @@ export const Tooltip = ({
           backgroundColor={backgroundColor ?? theme.neutral100}>
           {icon ?? <InfoSVG color={iconColor} />}
         </Popable>
-      </Pressable>
+      </Row>
     </View>
   )
 }
