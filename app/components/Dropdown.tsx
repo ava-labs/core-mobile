@@ -71,7 +71,7 @@ function DropDown<ItemT>({
   caretIcon,
   caretStyle,
   onDropDownToggle
-}: Props<ItemT>) {
+}: Props<ItemT>): JSX.Element {
   const theme = useApplicationContext().theme
   const ref = useRef<PopableManager>(null)
   const [isFilterOpen, setIsFilterOpen] = useState(false)
@@ -80,7 +80,7 @@ function DropDown<ItemT>({
     ? selectionRenderItem(selectedItem)
     : undefined
 
-  const handleOnAction = (visible: boolean) => {
+  const handleOnAction = (visible: boolean): void => {
     setIsFilterOpen(visible)
     onDropDownToggle?.(visible)
   }
@@ -122,7 +122,7 @@ function DropDown<ItemT>({
    * Used when no custom rendering is passed
    * @param item
    */
-  const renderItem = (item: ItemT) => {
+  const renderItem = (item: ItemT): JSX.Element => {
     return (
       <AvaButton.Base
         onPress={() => {
@@ -150,7 +150,7 @@ function DropDown<ItemT>({
    * so to capture the manual dismissal of popable
    * @param item
    */
-  const renderCustomItem = (item: ItemT) => {
+  const renderCustomItem = (item: ItemT): JSX.Element => {
     return (
       <Pressable
         onPress={() => {
@@ -168,7 +168,7 @@ function DropDown<ItemT>({
   /**
    * List with content items
    */
-  const filterContent = () => {
+  const filterContent = (): JSX.Element => {
     return (
       <>
         {blurBackground}

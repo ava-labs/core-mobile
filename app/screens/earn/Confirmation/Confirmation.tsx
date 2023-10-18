@@ -14,9 +14,6 @@ import { Row } from 'components/Row'
 import AvaButton from 'components/AvaButton'
 import AppNavigation from 'navigation/AppNavigation'
 import { StakeSetupScreenProps } from 'navigation/types'
-import { Popable } from 'react-native-popable'
-import { PopableLabel } from 'components/PopableLabel'
-import { PopableContent } from 'components/PopableContent'
 import { truncateNodeId } from 'utils/Utils'
 import CopySVG from 'components/svg/CopySVG'
 import { copyToClipboard } from 'utils/DeviceTools'
@@ -47,6 +44,7 @@ import useStakingParams from 'hooks/earn/useStakingParams'
 import { selectActiveAccount } from 'store/account'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { usePostCapture } from 'hooks/usePosthogCapture'
+import { Tooltip } from 'components/Tooltip'
 import { ConfirmScreen } from '../components/ConfirmScreen'
 import UnableToEstimate from '../components/UnableToEstimate'
 import { useValidateStakingEndTime } from './useValidateStakingEndTime'
@@ -55,7 +53,7 @@ type ScreenProps = StakeSetupScreenProps<
   typeof AppNavigation.StakeSetup.Confirmation
 >
 
-export const Confirmation = () => {
+export const Confirmation = (): JSX.Element | null => {
   const { capture } = usePostCapture()
   const dispatch = useDispatch()
   const { minStakeAmount } = useStakingParams()
@@ -132,18 +130,18 @@ export const Confirmation = () => {
     return data.estimatedTokenReward.mul(validator.delegationFee).div(100)
   }, [data?.estimatedTokenReward, validator?.delegationFee])
 
-  const cancelStaking = () => {
+  const cancelStaking = (): void => {
     capture('StakeCancelStaking', { from: 'ConfirmationScreen' })
     navigate(AppNavigation.StakeSetup.Cancel)
   }
 
-  function onFundsStuck() {
+  function onFundsStuck(): void {
     navigate(AppNavigation.StakeSetup.FundsStuck, {
       onTryAgain: () => issueDelegation()
     })
   }
 
-  const issueDelegation = () => {
+  const issueDelegation = (): void => {
     if (!claimableBalance) {
       return
     }
@@ -156,7 +154,7 @@ export const Confirmation = () => {
     })
   }
 
-  function onDelegationSuccess(txHash: string) {
+  function onDelegationSuccess(txHash: string): void {
     capture('StakeDelegationSuccess')
     showSnackBarCustom({
       component: (
@@ -181,18 +179,18 @@ export const Confirmation = () => {
     )
   }
 
-  function onDelegationError(error: Error) {
+  function onDelegationError(error: Error): void {
     capture('StakeDelegationFail')
     showSimpleToast(error.message)
   }
 
-  const handleReadMore = () => {
+  const handleReadMore = (): void => {
     Linking.openURL(DOCS_STAKING).catch(e => {
       Logger.error(DOCS_STAKING, e)
     })
   }
 
-  const renderPopoverInfoText = (message: string) => (
+  const renderPopoverInfoText = (message: string): JSX.Element => (
     <View
       style={{
         marginHorizontal: 8,
@@ -205,7 +203,7 @@ export const Confirmation = () => {
     </View>
   )
 
-  const renderEstimatedRewardPopoverInfoText = () => (
+  const renderEstimatedRewardPopoverInfoText = (): JSX.Element => (
     <View
       style={{
         marginHorizontal: 8,
@@ -226,7 +224,7 @@ export const Confirmation = () => {
     </View>
   )
 
-  const renderStakedAmount = () => {
+  const renderStakedAmount = (): JSX.Element => {
     const [stakingAmountInAvax, stakingAmountInCurrency] = avaxFormatter(
       deductedStakingAmount,
       true
@@ -250,7 +248,7 @@ export const Confirmation = () => {
     )
   }
 
-  const renderEstimatedReward = () => {
+  const renderEstimatedReward = (): JSX.Element => {
     if (data?.estimatedTokenReward) {
       const [estimatedRewardInAvax, estimatedRewardInCurrency] = avaxFormatter(
         data.estimatedTokenReward,
@@ -276,7 +274,7 @@ export const Confirmation = () => {
     return <UnableToEstimate />
   }
 
-  const renderStakingFee = () => {
+  const renderStakingFee = (): JSX.Element => {
     if (delegationFee) {
       const [delegationFeeInAvax] = avaxFormatter(delegationFee, true)
       return (
@@ -288,7 +286,7 @@ export const Confirmation = () => {
     return <UnableToEstimate />
   }
 
-  const renderNetworkFee = () => {
+  const renderNetworkFee = (): JSX.Element => {
     if (unableToGetNetworkFees) {
       return <Spinner size={22} />
     }
@@ -320,13 +318,12 @@ export const Confirmation = () => {
       <Separator />
       <View style={styles.verticalPadding}>
         <Row style={{ justifyContent: 'space-between' }}>
-          <Popable
+          <Tooltip
             content={renderEstimatedRewardPopoverInfoText()}
             position="right"
-            style={{ minWidth: 180 }}
-            backgroundColor={theme.neutral100}>
-            <PopableLabel label="Estimated Reward" />
-          </Popable>
+            style={{ width: 180 }}>
+            Estimated Reward
+          </Tooltip>
           {renderEstimatedReward()}
         </Row>
       </View>
@@ -337,16 +334,14 @@ export const Confirmation = () => {
           justifyContent: 'center',
           alignItems: 'flex-start'
         }}>
-        <Popable
+        <Tooltip
           content={renderPopoverInfoText(
             'AVAX will be locked and unusable until this time'
           )}
           position="right"
-          strictPosition={true}
-          style={{ minWidth: 180 }}
-          backgroundColor={theme.neutral100}>
-          <PopableLabel label="Time to Unlock" />
-        </Popable>
+          style={{ width: 180 }}>
+          Time to Unlock
+        </Tooltip>
         <Row
           style={{
             justifyContent: 'space-between',
@@ -399,16 +394,14 @@ export const Confirmation = () => {
           style={{
             justifyContent: 'space-between'
           }}>
-          <Popable
+          <Tooltip
             content={renderPopoverInfoText(
               'Fee paid to the network to execute the transaction'
             )}
             position="right"
-            style={{ minWidth: 200 }}
-            strictPosition={true}
-            backgroundColor={theme.neutral100}>
-            <PopableLabel label="Network Fee" />
-          </Popable>
+            style={{ width: 200 }}>
+            Network Fee
+          </Tooltip>
           {renderNetworkFee()}
         </Row>
       </View>
@@ -418,18 +411,12 @@ export const Confirmation = () => {
           style={{
             justifyContent: 'space-between'
           }}>
-          <Popable
-            content={
-              <PopableContent
-                message={'Fee set and retained by the validator'}
-              />
-            }
+          <Tooltip
+            content="Fee set and retained by the validator"
             position="right"
-            strictPosition={true}
-            style={{ minWidth: 150 }}
-            backgroundColor={theme.neutral100}>
-            <PopableLabel label="Staking Fee" />
-          </Popable>
+            style={{ width: 150 }}>
+            Staking Fee
+          </Tooltip>
           {renderStakingFee()}
         </Row>
       </View>

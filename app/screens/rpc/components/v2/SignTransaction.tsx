@@ -25,9 +25,6 @@ import CarrotSVG from 'components/svg/CarrotSVG'
 import { getExplorerAddressByNetwork } from 'utils/ExplorerUtils'
 import useInAppBrowser from 'hooks/useInAppBrowser'
 import FlexSpacer from 'components/FlexSpacer'
-import { Popable } from 'react-native-popable'
-import { PopableContent } from 'components/PopableContent'
-import { PopableLabel } from 'components/PopableLabel'
 import { ScrollView } from 'react-native-gesture-handler'
 import { WalletScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
@@ -39,6 +36,7 @@ import { selectNetwork } from 'store/network'
 import { NetworkLogo } from 'screens/network/NetworkLogo'
 import { isAddressApproved } from 'store/walletConnectV2/handlers/eth_sign/utils/isAddressApproved'
 import { hexToBN } from '@avalabs/utils-sdk'
+import { Tooltip } from 'components/Tooltip'
 import RpcRequestBottomSheet from '../shared/RpcRequestBottomSheet'
 
 const defaultErrMessage = 'Transaction failed'
@@ -47,7 +45,7 @@ type SignTransactionScreenProps = WalletScreenProps<
   typeof AppNavigation.Modal.SignTransactionV2
 >
 
-const SignTransaction = () => {
+const SignTransaction = (): JSX.Element => {
   const { goBack } = useNavigation<SignTransactionScreenProps['navigation']>()
   const { request, transaction: txParams } =
     useRoute<SignTransactionScreenProps['route']>().params
@@ -150,13 +148,9 @@ const SignTransaction = () => {
     [displayData?.gasPrice, selectedGasFee, setCustomFee]
   )
 
-  const netFeeInfoMessage = (
-    <PopableContent
-      message={`Gas limit: ${displayData?.gasLimit} \nGas price: ${displayData?.fee} nAVAX`}
-    />
-  )
+  const netFeeInfoMessage = `Gas limit: ${displayData?.gasLimit} \nGas price: ${displayData?.fee} nAVAX`
 
-  const renderNetwork = () => {
+  const renderNetwork = (): JSX.Element | undefined => {
     if (!network) return
 
     return (
@@ -228,14 +222,14 @@ const SignTransaction = () => {
     )
   }
 
-  const onHandleApprove = () => {
+  const onHandleApprove = (): void => {
     if (transaction) {
       setSubmitting(true)
       onApprove(request, { txParams: transaction.txParams })
     }
   }
 
-  const txTitle = () => {
+  const txTitle = (): string => {
     switch (contractType) {
       case ContractCall.APPROVE:
         return 'Token Spend Approval'
@@ -249,7 +243,7 @@ const SignTransaction = () => {
     }
   }
 
-  const renderTransactionInfo = () => {
+  const renderTransactionInfo = (): JSX.Element => {
     return (
       <>
         {(contractType === ContractCall.APPROVE && (
@@ -292,21 +286,18 @@ const SignTransaction = () => {
     )
   }
 
-  const renderTransactionResult = (transactionHash: string) => {
+  const renderTransactionResult = (transactionHash: string): JSX.Element => {
     return (
       <>
         <Space y={16} />
         <Row style={{ justifyContent: 'space-between' }}>
-          <Popable
+          <Tooltip
             content={netFeeInfoMessage}
             position={'right'}
-            style={{ minWidth: 200 }}
-            backgroundColor={theme.neutral100}>
-            <PopableLabel
-              label="Network Fee"
-              textStyle={{ lineHeight: 24, color: theme.white }}
-            />
-          </Popable>
+            style={{ width: 200 }}
+            textStyle={{ lineHeight: 24, color: theme.white }}>
+            Network Fee
+          </Tooltip>
           <View
             style={{
               alignItems: 'flex-end'
@@ -343,7 +334,7 @@ const SignTransaction = () => {
     )
   }
 
-  const renderApproveRejectButtons = () => {
+  const renderApproveRejectButtons = (): JSX.Element => {
     return (
       <>
         <FlexSpacer />

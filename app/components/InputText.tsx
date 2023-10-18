@@ -16,11 +16,11 @@ import { Opacity50 } from 'resources/Constants'
 import ClearInputSVG from 'components/svg/ClearInputSVG'
 import { Space } from 'components/Space'
 import CheckmarkSVG from 'components/svg/CheckmarkSVG'
-import { Popable } from 'react-native-popable'
-import InfoSVG from 'components/svg/InfoSVG'
 import { Row } from 'components/Row'
 import AvaText from './AvaText'
 import AvaButton from './AvaButton'
+import { Tooltip } from './Tooltip'
+import InfoSVG from './svg/InfoSVG'
 
 type Mode =
   | 'default'
@@ -332,17 +332,18 @@ const Label = ({
   return (
     <View style={{ alignSelf: 'baseline' }}>
       {popOverInfoText ? (
-        <Popable
+        <Tooltip
           content={popOverInfoText}
           position={popOverPosition ?? 'right'}
-          style={{ minWidth: 200 }}
-          backgroundColor={backgroundColor}>
+          style={{ width: 200 }}
+          backgroundColor={backgroundColor}
+          isLabelPopable>
           <Row style={{ alignItems: 'center' }}>
             <AvaText.Body2>{label ?? ''}</AvaText.Body2>
             <Space x={6} />
             <InfoSVG size={14} />
           </Row>
-        </Popable>
+        </Tooltip>
       ) : (
         <AvaText.Body2>{label ?? ''}</AvaText.Body2>
       )}
