@@ -11,10 +11,7 @@ import { DatadogProvider, DdSdkReactNative } from '@datadog/mobile-react-native'
 import DataDogConfig from 'utils/DataDogConfig'
 import RootScreenStack from 'navigation/RootScreenStack'
 import { NavigationContainer } from '@react-navigation/native'
-import {
-  ApplicationContextState,
-  useApplicationContext
-} from 'contexts/ApplicationContext'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 import useDevDebugging from 'utils/debugging/DevDebugging'
 import 'utils/debugging/wdyr'
 import { navigationRef } from 'utils/Navigation'
@@ -38,13 +35,13 @@ Platform.OS === 'android' &&
   UIManager.setLayoutAnimationEnabledExperimental(false)
 
 export default function App(): JSX.Element {
-  const { configure }: { configure: () => void } = useDevDebugging()
-  const isProduction: boolean = process.env.NODE_ENV === 'production'
+  const { configure } = useDevDebugging()
+  const isProduction = process.env.NODE_ENV === 'production'
   if (!isProduction) {
     configure()
   }
 
-  const context: ApplicationContextState = useApplicationContext()
+  const context = useApplicationContext()
   const [backgroundStyle] = useState(context.appBackgroundStyle)
 
   return (
