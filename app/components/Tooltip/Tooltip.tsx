@@ -44,7 +44,7 @@ export const Tooltip = ({
     }
   }
 
-  const renderChildren = (): JSX.Element => {
+  const renderChildren = (): string | JSX.Element => {
     if (children && typeof children === 'string') {
       return (
         <AvaText.Body2 textStyle={textStyle} color={theme.colorText1}>
