@@ -21,6 +21,7 @@ const DataDogConfig = new DatadogProviderConfiguration(
 
 DataDogConfig.site = DD_SITE
 DataDogConfig.nativeCrashReportEnabled = true
+DataDogConfig.nativeViewTracking = true
 DataDogConfig.sessionSamplingRate = 80
 DataDogConfig.resourceTracingSamplingRate = 80
 DataDogConfig.version = BUILD_NUMBER
