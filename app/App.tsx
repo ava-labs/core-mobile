@@ -58,7 +58,7 @@ export default function App(): JSX.Element {
               navigationRef.current = ref
             }}
             onReady={() => {
-              if (process.env.ENVIRONMENT === 'development') {
+              if (process.env.DD_RUMNAVIGATIONTRACKING === 'true') {
                 DdRumReactNavigationTracking.startTrackingViews(
                   navigationRef.current
                 )
