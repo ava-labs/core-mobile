@@ -1,5 +1,5 @@
 import React, { FC, useEffect } from 'react'
-import { Linking, View, useWindowDimensions } from 'react-native'
+import { Linking, StyleSheet, View, useWindowDimensions } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaListItem from 'components/AvaListItem'
 import { Row } from 'components/Row'
@@ -83,37 +83,40 @@ function ElapsedTimer({
     sourceChain === Blockchain.AVALANCHE &&
     targetChain === Blockchain.BITCOIN
 
-  return (
-    <OvalTagBg
-      style={{
-        borderRadius: 50,
-        paddingHorizontal: 6,
-        paddingVertical: 4,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: complete ? theme.colorSuccess : theme.colorBg3,
-        flexDirection: 'row'
-      }}>
-      <AvaText.ButtonSmall
-        textStyle={{
-          color: theme.colorText1
+  const renderOvalTagBg = (): JSX.Element => {
+    return (
+      <OvalTagBg
+        style={{
+          ...styles.ovalTagBg,
+          backgroundColor: complete ? theme.colorSuccess : theme.colorBg3
         }}>
-        {displayedHours && `${displayedHours}:`}
-        {displayedMinutes}:{displayedSeconds}
-      </AvaText.ButtonSmall>
-      {showInfoIcon && (
-        <>
-          <Space x={4} />
-          <PopableInfo openFaq={handleOpenFaq} />
-        </>
-      )}
-      {complete && (
-        <>
-          <Space x={4} />
-          <CheckmarkSVG color={theme.white} size={10} />
-        </>
-      )}
-    </OvalTagBg>
+        <AvaText.ButtonSmall
+          textStyle={{
+            color: theme.colorText1
+          }}>
+          {displayedHours && `${displayedHours}:`}
+          {displayedMinutes}:{displayedSeconds}
+        </AvaText.ButtonSmall>
+        {showInfoIcon && (
+          <>
+            <Space x={4} />
+            <InfoSVG color={theme.white} size={10} />
+          </>
+        )}
+        {complete && (
+          <>
+            <Space x={4} />
+            <CheckmarkSVG color={theme.white} size={10} />
+          </>
+        )}
+      </OvalTagBg>
+    )
+  }
+
+  return showInfoIcon ? (
+    <PopableInfo openFaq={handleOpenFaq}>{renderOvalTagBg()}</PopableInfo>
+  ) : (
+    renderOvalTagBg()
   )
 }
 
@@ -167,7 +170,13 @@ const BridgeConfirmations: FC<Props> = ({
   )
 }
 
-const PopableInfo = ({ openFaq }: { openFaq: () => void }): JSX.Element => {
+const PopableInfo = ({
+  openFaq,
+  children
+}: {
+  openFaq: () => void
+  children: JSX.Element
+}): JSX.Element => {
   const theme = useApplicationContext().theme
   const width = useWindowDimensions().width
   const config = useSelector(selectBridgeAppConfig)
@@ -209,9 +218,20 @@ const PopableInfo = ({ openFaq }: { openFaq: () => void }): JSX.Element => {
       position={'top'}
       style={{ minWidth: width / 2 }}
       backgroundColor={theme.neutral100}>
-      <InfoSVG color={theme.white} size={10} />
+      {children}
     </Popable>
   )
 }
+
+const styles = StyleSheet.create({
+  ovalTagBg: {
+    borderRadius: 50,
+    paddingHorizontal: 6,
+    paddingVertical: 4,
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexDirection: 'row'
+  }
+})
 
 export default BridgeConfirmations

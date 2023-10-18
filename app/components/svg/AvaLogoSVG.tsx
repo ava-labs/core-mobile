@@ -15,7 +15,7 @@ function AvaLogoSVG({
   size = 102,
   logoColor,
   backgroundColor
-}: Props) {
+}: Props): JSX.Element {
   const { theme } = useApplicationContext()
   const lgColor = logoColor ?? theme.logoColor
   const bgColor = backgroundColor ?? theme.logoBgColor
