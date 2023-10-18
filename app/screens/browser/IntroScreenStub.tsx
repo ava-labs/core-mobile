@@ -1,184 +1,235 @@
 import React from 'react'
-import { ImageBackground, View } from 'react-native'
-import AvaText from 'components/AvaText'
+import { Dimensions, View } from 'react-native'
 import AvaButton from 'components/AvaButton'
-import BrowserScreenStack from 'navigation/wallet/BrowserScreenStack'
-import SearchSVG from 'components/svg/SearchSVG'
-import { Space } from 'components/Space'
-import WalletConnectSVG from 'components/svg/WalletConnectSVG'
-import { useApplicationContext } from 'contexts/ApplicationContext'
-import OwlSVG from 'components/svg/OwlSVG'
-import RocketSVG from 'components/svg/RocketSVG'
-import LinearGradientSVG from 'components/svg/LinearGradientSVG'
+
+import {
+  Canvas,
+  Rect,
+  LinearGradient,
+  vec,
+  Group,
+  Image,
+  useImage,
+  rrect,
+  rect,
+  Box,
+  Mask,
+  Text,
+  useFont
+} from '@shopify/react-native-skia'
 
 // const WINDOW_WIDTH = Dimensions.get('window').width
 // const WINDOW_HEIGHT = Dimensions.get('window').height
 
-const FROM_COLOR = '#000000'
-const TOO_COLOR = '#007AFF'
+const TOO_COLOR = '#000000'
+const FROM_COLOR = '#007AFF'
 
-export default function IntroScreenStub({
-  shouldShowInstruction,
-  onInstructionRead
-}: {
-  shouldShowInstruction: boolean
-  onInstructionRead: () => void
-}): JSX.Element {
-  const context = useApplicationContext()
+const { height, width } = Dimensions.get('screen')
 
-  if (shouldShowInstruction) {
-    return (
-      <View>
-        <View
-          style={{
-            paddingTop: 92,
-            paddingHorizontal: 16
-          }}>
-          <View style={{}}>
-            <LinearGradientSVG
-              colorFrom={TOO_COLOR}
-              colorTo={FROM_COLOR}
-              orientation="vertical"
-              opacityFrom={0.67}
-              opacityTo={0.1}
-              loop={false}
-              borderRadius={8}
-              overflow="hidden"
-              opacity={0.8}
-            />
-          </View>
-        </View>
+const BlueBackground = (): JSX.Element => {
+  return (
+    <Box box={rrect(rect(0, 0, 387, 640), 8, 8)}>
+      <LinearGradient
+        start={vec(height, 0)}
+        end={vec(0, width)}
+        colors={[FROM_COLOR, TOO_COLOR]}
+      />
+    </Box>
+  )
+}
 
-        <View
-          style={{
-            paddingTop: 308,
-            position: 'absolute',
-            flexDirection: 'row',
-            alignContent: 'center',
-            paddingLeft: 16
-          }}>
-          <View
-            style={{
-              position: 'absolute',
-              paddingTop: 43,
-              paddingHorizontal: 16
-            }}>
-            <LinearGradientSVG
-              colorFrom={'#1A1A1C'}
-              colorTo={'#1A1A1C'}
-              orientation="vertical"
-              opacityFrom={1}
-              opacityTo={0.1}
-              loop={false}
-              overflow="hidden"
-              opacity={0.8}
-            />
-            <View
-              style={{
-                marginTop: -99
-              }}>
-              <ImageBackground
-                source={require('assets/icons/browser_intro_screen_logos.png')}
-                style={{
-                  width: 358,
-                  height: 246,
-                  borderRadius: 8,
-                  overflow: 'hidden'
-                }}>
-                <LinearGradientSVG
-                  colorFrom={'#1A1A1C'}
-                  colorTo={'#1A1A1C'}
-                  orientation="vertical"
-                  opacityFrom={0.1}
-                  opacityTo={0.9}
-                  loop={false}
-                  overflow="hidden"
-                  opacity={0.9}
-                />
-              </ImageBackground>
-            </View>
-          </View>
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-            <AvaText.Heading3
-              textStyle={{
-                fontSize: 34,
-                paddingVertical: 0,
-                lineHeight: 44,
-                fontWeight: '700',
-                paddingLeft: 32,
-                paddingRight: 61,
-                paddingBottom: 24
-              }}>
-              How to use the Core browser...
-            </AvaText.Heading3>
-            <View
-              style={{
-                paddingLeft: 30,
-                paddingTop: 16,
-                flexDirection: 'row'
-              }}>
-              <SearchSVG color={context.theme.neutral50} hideBorder />
-              <AvaText.Heading6 textStyle={{ width: 259, lineHeight: 24 }}>
-                Search for a website or browse suggested apps
-              </AvaText.Heading6>
-            </View>
-            <View
-              style={{
-                flexDirection: 'row',
-                paddingLeft: 32,
-                paddingVertical: 16
-              }}>
-              <WalletConnectSVG size={24} color={context.theme.neutral50} />
-              <Space x={16} />
-              <AvaText.Heading6 textStyle={{ width: 259, lineHeight: 24 }}>
-                Connect your wallet to interact with dapps
-              </AvaText.Heading6>
-            </View>
-            <View
-              style={{
-                paddingLeft: 32,
-                flexDirection: 'row',
-                alignItems: 'center'
-              }}>
-              <OwlSVG width={23} height={18} />
-              <Space x={16} />
-              <AvaText.Heading6
-                textStyle={{
-                  width: 259,
-                  lineHeight: 24
-                }}>
-                Find Core and tap "Connect"
-              </AvaText.Heading6>
-            </View>
-            <View
-              style={{
-                paddingLeft: 32,
-                flexDirection: 'row',
-                paddingTop: 16,
-                alignItems: 'center'
-              }}>
-              <RocketSVG width={24} height={24} />
-              <Space x={16} />
-              <AvaText.Heading6 textStyle={{ width: 259, lineHeight: 24 }}>
-                Conquer the cryptoverse!
-              </AvaText.Heading6>
-            </View>
-            <View
-              style={{
-                height: 20,
-                paddingTop: 32,
-                paddingHorizontal: 16,
-                flexGrow: 1
-              }}>
-              <AvaButton.PrimaryLarge onPress={onInstructionRead}>
-                Get started!
-              </AvaButton.PrimaryLarge>
-            </View>
-          </View>
-        </View>
-      </View>
-    )
-  } else {
-    return <BrowserScreenStack />
+const TokenImageWithGradient = (): JSX.Element => {
+  const image = useImage(require('assets/icons/browser_intro_screen_logos.jpg'))
+  return (
+    <Mask
+      mask={
+        <Rect x={0} y={0} height={height / 2} width={width}>
+          <LinearGradient
+            start={vec(0, 0)}
+            end={vec(0, height / 3)}
+            colors={['white', 'transparent']}
+          />
+        </Rect>
+      }>
+      {image && (
+        <Image image={image} x={-150} y={-220} width={685} height={623} />
+      )}
+    </Mask>
+  )
+}
+
+const HowToUseTheCoreBrowser = (): JSX.Element | null => {
+  const font = useFont(require('assets/fonts/Inter-SemiBold.ttf'), 34)
+  if (!font) {
+    return null
   }
+  return (
+    <Group>
+      <Text x={16} y={255} text="How to use the" font={font} color={'white'} />
+      <Text x={16} y={295} text="Core browser..." font={font} color={'white'} />
+    </Group>
+  )
+}
+
+const SearchIcon = (): JSX.Element | null => {
+  const image = useImage(require('assets/icons/search_dark.png'))
+  if (!image) {
+    return null
+  }
+  return (
+    <Image image={image} fit="contain" x={16} y={315} width={24} height={24} />
+  )
+}
+
+const SearchText = (): JSX.Element | null => {
+  const smallFont = useFont(require('assets/fonts/Inter-SemiBold.ttf'), 16)
+
+  if (!smallFont) {
+    return null
+  }
+  return (
+    <Group>
+      <Text
+        x={48}
+        y={330}
+        text="Search for a website or browse"
+        font={smallFont}
+        color={'white'}
+      />
+      <Text
+        x={48}
+        y={350}
+        text="suggested apps"
+        font={smallFont}
+        color={'white'}
+      />
+    </Group>
+  )
+}
+
+const WalletConnectIcon = (): JSX.Element | null => {
+  const image = useImage(require('assets/icons/wallet_connect.png'))
+  if (!image) {
+    return null
+  }
+  return <Image image={image} x={16} y={371} width={24} height={24} />
+}
+
+const WalletConnectText = (): JSX.Element | null => {
+  const smallFont = useFont(require('assets/fonts/Inter-SemiBold.ttf'), 16)
+
+  if (!smallFont) {
+    return null
+  }
+  return (
+    <Group>
+      <Text
+        x={48}
+        y={388}
+        text="On the website find “Connect”"
+        font={smallFont}
+        color={'white'}
+      />
+      <Text
+        x={48}
+        y={409}
+        text="then tap Wallet Connect"
+        font={smallFont}
+        color={'white'}
+      />
+    </Group>
+  )
+}
+
+const CoreOwlIcon = (): JSX.Element | null => {
+  const image = useImage(require('assets/icons/core_owl.png'))
+  if (!image) {
+    return null
+  }
+  return <Image image={image} x={16} y={426} width={24} height={24} />
+}
+
+const CoreOwlText = (): JSX.Element | null => {
+  const smallFont = useFont(require('assets/fonts/Inter-SemiBold.ttf'), 16)
+
+  if (!smallFont) {
+    return null
+  }
+  return (
+    <Group>
+      <Text
+        x={48}
+        y={443}
+        text="Find Core and tap “Connect”"
+        font={smallFont}
+        color={'white'}
+      />
+    </Group>
+  )
+}
+
+const RocketIcon = (): JSX.Element | null => {
+  const image = useImage(require('assets/icons/rocket_launch.png'))
+  if (!image) {
+    return null
+  }
+  return <Image image={image} x={16} y={460} width={24} height={24} />
+}
+
+const RocketText = (): JSX.Element | null => {
+  const smallFont = useFont(require('assets/fonts/Inter-SemiBold.ttf'), 16)
+
+  if (!smallFont) {
+    return null
+  }
+  return (
+    <Group>
+      <Text
+        x={48}
+        y={476}
+        text="Conquer the cryptoverse!"
+        font={smallFont}
+        color={'white'}
+      />
+    </Group>
+  )
+}
+
+export default function IntroScreen(): JSX.Element | null {
+  return (
+    <View style={{ flex: 1 }}>
+      <Canvas
+        style={{
+          flex: 1,
+          marginLeft: 16,
+          marginTop: 70,
+          marginRight: 16,
+          marginBottom: 80
+        }}>
+        <Group>
+          <BlueBackground />
+          <TokenImageWithGradient />
+        </Group>
+        <HowToUseTheCoreBrowser />
+        <SearchIcon />
+        <SearchText />
+        <WalletConnectIcon />
+        <WalletConnectText />
+        <CoreOwlIcon />
+        <CoreOwlText />
+        <RocketIcon />
+        <RocketText />
+      </Canvas>
+      <View
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 32,
+          paddingBottom: 130,
+          width: '80%'
+        }}>
+        <AvaButton.PrimaryLarge>Get started!</AvaButton.PrimaryLarge>
+      </View>
+    </View>
+  )
 }
