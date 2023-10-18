@@ -44,7 +44,7 @@ export const Tooltip = ({
     }
   }
 
-  const renderChildren = (): JSX.Element => {
+  const renderChildren = (): string | JSX.Element => {
     if (children && typeof children === 'string') {
       return (
         <AvaText.Body2 textStyle={textStyle} color={theme.colorText1}>
@@ -52,7 +52,7 @@ export const Tooltip = ({
         </AvaText.Body2>
       )
     }
-    return children as JSX.Element
+    return children
   }
 
   const onAppStateChange = useCallback(
@@ -71,11 +71,11 @@ export const Tooltip = ({
     }
   }, [onAppStateChange])
 
-  const renderContent = (): JSX.Element => {
+  const renderContent = (): string | JSX.Element => {
     if (content && typeof content === 'string') {
       return <PopableContent message={content} />
     }
-    return content as JSX.Element
+    return content
   }
 
   return (
