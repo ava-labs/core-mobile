@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { DdRumReactNavigationTracking } from '@datadog/mobile-react-navigation'
 import {
   KeyboardAvoidingView,
   LogBox,
@@ -6,13 +7,22 @@ import {
   SafeAreaView,
   UIManager
 } from 'react-native'
+import { DatadogProvider, DdSdkReactNative } from '@datadog/mobile-react-native'
+import DataDogConfig from 'utils/DataDogConfig'
 import RootScreenStack from 'navigation/RootScreenStack'
 import { NavigationContainer } from '@react-navigation/native'
-import { useApplicationContext } from 'contexts/ApplicationContext'
+import {
+  ApplicationContextState,
+  useApplicationContext
+} from 'contexts/ApplicationContext'
 import useDevDebugging from 'utils/debugging/DevDebugging'
 import 'utils/debugging/wdyr'
 import { navigationRef } from 'utils/Navigation'
 import SentryService from 'services/sentry/SentryService'
+
+const config = DataDogConfig
+
+DdSdkReactNative.initialize(config)
 
 LogBox.ignoreLogs([
   'Require cycle:',
@@ -27,31 +37,40 @@ Platform.OS === 'android' &&
   UIManager.setLayoutAnimationEnabledExperimental &&
   UIManager.setLayoutAnimationEnabledExperimental(false)
 
-export default function App() {
-  const { configure } = useDevDebugging()
-  const isProduction = process.env.NODE_ENV === 'production'
+export default function App(): JSX.Element {
+  const { configure }: { configure: () => void } = useDevDebugging()
+  const isProduction: boolean = process.env.NODE_ENV === 'production'
   if (!isProduction) {
     configure()
   }
 
-  const context = useApplicationContext()
+  const context: ApplicationContextState = useApplicationContext()
   const [backgroundStyle] = useState(context.appBackgroundStyle)
 
   return (
-    <SafeAreaView style={backgroundStyle}>
-      <KeyboardAvoidingView
-        enabled={context.keyboardAvoidingViewEnabled}
-        style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-        <NavigationContainer
-          theme={context.navContainerTheme}
-          ref={ref => {
-            context.appNavHook.navigation.current = ref
-            navigationRef.current = ref
-          }}>
-          <RootScreenStack />
-        </NavigationContainer>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+    <DatadogProvider configuration={config}>
+      <SafeAreaView style={backgroundStyle}>
+        <KeyboardAvoidingView
+          enabled={context.keyboardAvoidingViewEnabled}
+          style={{ flex: 1 }}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+          <NavigationContainer
+            theme={context.navContainerTheme}
+            ref={ref => {
+              context.appNavHook.navigation.current = ref
+              navigationRef.current = ref
+            }}
+            onReady={() => {
+              if (process.env.ENVIRONMENT === 'development') {
+                DdRumReactNavigationTracking.startTrackingViews(
+                  navigationRef.current
+                )
+              }
+            }}>
+            <RootScreenStack />
+          </NavigationContainer>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+    </DatadogProvider>
   )
 }

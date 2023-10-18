@@ -1680,6 +1680,16 @@
   resolved "https://registry.yarnpkg.com/@csstools/selector-specificity/-/selector-specificity-2.2.0.tgz#2cbcf822bf3764c9658c4d2e568bd0c0cb748016"
   integrity sha512-+OJ9konv95ClSTOJCmMZqpd5+YGsB2S+x6w3E1oaM8UuR5j8nTNHYSz8c9BEPGDOCMQYIEEGlVPj/VY64iTbGw==
 
+"@datadog/mobile-react-native@1.8.5":
+  version "1.8.5"
+  resolved "https://registry.yarnpkg.com/@datadog/mobile-react-native/-/mobile-react-native-1.8.5.tgz#502ad87f16d8750a61606194fa56f0d9ae01137c"
+  integrity sha512-vIfbDiJ+FDeXAdeU6eiNHrNSPL3CmOfdGAd7VNCh614o8SFrf/5z6vpslFPCRxwr0tvmeXWvYF73rADFUeTiYA==
+
+"@datadog/mobile-react-navigation@1.8.5":
+  version "1.8.5"
+  resolved "https://registry.yarnpkg.com/@datadog/mobile-react-navigation/-/mobile-react-navigation-1.8.5.tgz#38aeb0d76257b5a1718660f5c44309d5342326ac"
+  integrity sha512-7xXKrygHLZzf/mW7/4T481dPesZbDCYvpsCZ/vmVURgfW4txAgOKiZGCelJjG6hiI0kcfKO9W7LXZ6BpA+2zVw==
+
 "@dlenroc/testrail@1.7.2":
   version "1.7.2"
   resolved "https://registry.yarnpkg.com/@dlenroc/testrail/-/testrail-1.7.2.tgz#f36d0d9463a8b04020273269caefe005303ebdcd"
