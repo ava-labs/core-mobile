@@ -10,6 +10,7 @@ interface Prop {
   opacityTo?: number
   borderRadius?: number
   overflow?: 'hidden' | 'visible'
+  opacity?: number
 }
 
 function LinearGradientSVG({
@@ -20,7 +21,8 @@ function LinearGradientSVG({
   opacityFrom = 1,
   opacityTo = 1,
   overflow = 'hidden',
-  borderRadius = 0
+  borderRadius = 0,
+  opacity = 1
 }: Prop): JSX.Element {
   const endPoint =
     orientation === 'horizontal' ? { x: 1, y: 0 } : { x: 0, y: 1 }
@@ -30,7 +32,11 @@ function LinearGradientSVG({
       height="100%"
       viewBox="0 0 24 24"
       preserveAspectRatio={'none'}
-      style={{ borderRadius: borderRadius, overflow: overflow }}>
+      style={{
+        borderRadius: borderRadius,
+        overflow: overflow,
+        opacity: opacity
+      }}>
       <Defs>
         {loop ? (
           <LinearGradient
