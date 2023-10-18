@@ -42,10 +42,10 @@ function DappQrReader({ onScanned }: Props): JSX.Element {
       <View style={{ alignSelf: 'baseline', marginLeft: 14 }}>
         <Tooltip
           content={'Use this to manually connect'}
-          children={'Connection URI'}
           style={{ width: 200 }}
-          position="right"
-        />
+          position="right">
+          Connection URI
+        </Tooltip>
       </View>
       <Space y={8} />
       <InputText
