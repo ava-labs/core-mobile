@@ -41,7 +41,9 @@ export const EncryptThenMacTransform: (
     RawRootState
   >(
     // transform state before it gets persisted
-    (inboundState: RawRootState | undefined) => {
+    (inboundState: RawRootState | undefined, key) => {
+      const startTime = performance.now()
+
       if (!inboundState) {
         return undefined
       }
@@ -61,6 +63,10 @@ export const EncryptThenMacTransform: (
 
       const mac = getMac(secretKey, ciphertext)
 
+      const endTime = performance.now()
+      const timeDifference = endTime - startTime
+      Logger.screen(`Inbound ${String(key)}: ${timeDifference}`)
+
       return {
         iv: iv.valueOf(),
         ciphertext,
@@ -70,6 +76,7 @@ export const EncryptThenMacTransform: (
 
     // transform state after it gets rehydrated
     (outboundState: EncryptThenMacStoreType | undefined, key, rawState) => {
+      const startTime = performance.now()
       //We need to check if this is the state encrypted with  AES-CBC algorithm
       const maybeAesCbcEncrypted = outboundState as unknown
       if (typeof maybeAesCbcEncrypted === 'string') {
@@ -112,6 +119,10 @@ export const EncryptThenMacTransform: (
           decipher.update(outboundState.ciphertext, DECRYPT_INPUT_ENCODING),
           decipher.final()
         ]).toString()
+
+        const endTime = performance.now()
+        const timeDifference = endTime - startTime
+        Logger.screen(`Outbound ${String(key)}: ${timeDifference}`)
 
         return deserializeReduxState(cleartext)
       } catch (e) {
