@@ -3,9 +3,5 @@ node_modules/
 npm-debug.log
 yarn-error.log
 
-# yarn
-.yarn/cache
-.yarn/install-state.gz
-
 # eslint
 eslint_report.json

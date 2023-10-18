@@ -1,0 +1,33 @@
+{
+  "name": "@avalabs/eslint-config-mobile",
+  "version": "0.0.0",
+  "description": "shared eslint config for all avalabs mobile projects",
+  "main": "index.js",
+  "scripts": {
+    "setup": "yarn install && yarn allow-scripts",
+    "setup:ci": "yarn install --frozen-lockfile && yarn allow-scripts",
+    "lint": "eslint .",
+    "lint:ci": "yarn run lint --quiet --format json --output-file eslint_report.json"
+  },
+  "devDependencies": {
+    "@lavamoat/allow-scripts": "2.0.3",
+    "@react-native-community/eslint-config": "3.0.3",
+    "@tanstack/eslint-plugin-query": "5.0.0",
+    "@typescript-eslint/eslint-plugin": "5.62.0",
+    "@typescript-eslint/parser": "5.62.0",
+    "eslint": "8.50.0",
+    "eslint-config-prettier": "8.5.0",
+    "eslint-plugin-detox": "1.0.0",
+    "eslint-plugin-import": "2.26.0",
+    "eslint-plugin-prettier": "4.2.1",
+    "eslint-plugin-promise": "6.1.1",
+    "eslint-plugin-react-hooks": "4.6.0",
+    "eslint-plugin-sonarjs": "0.21.0",
+    "prettier": "2.6.2",
+    "typescript": "4.7.4"
+  },
+  "peerDependencies": {
+    "eslint": "8.50.0",
+    "typescript": "4.7.4"
+  }
+}

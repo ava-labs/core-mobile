@@ -77,8 +77,5 @@ e2e/artifacts/
 /playwright/.cache/
 /testResults/
 
-# vscode
-.vscode
-
 # generated openzeppelin contract types
 app/contracts/openzeppelin
