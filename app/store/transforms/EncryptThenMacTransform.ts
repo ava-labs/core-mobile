@@ -9,7 +9,15 @@ import {
 } from 'store/utils/seralization'
 import { Transform } from 'redux-persist/es/types'
 
-export type EncryptThenMacStoreType = {
+type VersionedStore = EncryptThenMacStoreType & {
+  /**
+   * Used for versioning if there will be any future changes
+   * in format/algorithm of persisted store.
+   */
+  version: number
+}
+
+type EncryptThenMacStoreType = {
   iv: Uint8Array
   ciphertext: string
   mac: string
@@ -30,13 +38,13 @@ export const EncryptThenMacTransform: (
   secretKey: string
 ) => Transform<
   RawRootState | undefined,
-  EncryptThenMacStoreType | undefined,
+  VersionedStore | undefined,
   RawRootState,
   RawRootState
 > = (secretKey: string) =>
   createTransform<
     RawRootState | undefined,
-    EncryptThenMacStoreType | undefined,
+    VersionedStore | undefined,
     RawRootState,
     RawRootState
   >(
@@ -70,12 +78,13 @@ export const EncryptThenMacTransform: (
       return {
         iv: iv.valueOf(),
         ciphertext,
-        mac
-      } as EncryptThenMacStoreType
+        mac,
+        version: 1
+      } as VersionedStore
     },
 
     // transform state after it gets rehydrated
-    (outboundState: EncryptThenMacStoreType | undefined, key, rawState) => {
+    (outboundState: VersionedStore | undefined, key, rawState) => {
       const startTime = performance.now()
       //We need to check if this is the state encrypted with  AES-CBC algorithm
       const maybeAesCbcEncrypted = outboundState as unknown
