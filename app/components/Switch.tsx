@@ -11,7 +11,7 @@ const Switch: FC<SwitchProps> = ({ value, disabled, ...rest }) => {
       value={value}
       disabled={disabled}
       thumbColor={theme.white}
-      trackColor={{ false: theme.colorPrimary1, true: theme.colorPrimary1 }}
+      trackColor={{ false: theme.colorBg2, true: theme.colorPrimary1 }}
       ios_backgroundColor={theme.colorBg2}
     />
   )
