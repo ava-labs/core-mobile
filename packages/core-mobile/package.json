@@ -2,8 +2,7 @@
   "name": "@avalabs/core-mobile",
   "private": true,
   "scripts": {
-    "setup": "yarn install && yarn allow-scripts",
-    "setup:ci": "yarn install --frozen-lockfile && yarn allow-scripts",
+    "setup": "yarn allow-scripts",
     "android": "ENVFILE=.env.development react-native run-android --variant=internalDebug",
     "podInstall": "bundle install && cd ios && bundle exec pod install",
     "ios": "ENVFILE=.env.development react-native run-ios",

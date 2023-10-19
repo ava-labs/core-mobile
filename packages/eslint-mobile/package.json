@@ -1,10 +1,8 @@
 {
   "name": "@avalabs/eslint-config-mobile",
-  "description": "shared eslint config for all avalabs mobile projects",
   "main": "index.js",
   "scripts": {
-    "setup": "yarn install && yarn allow-scripts",
-    "setup:ci": "yarn install --frozen-lockfile && yarn allow-scripts",
+    "setup": "yarn allow-scripts",
     "lint": "eslint .",
     "lint:ci": "yarn run lint --quiet --format json --output-file eslint_report.json",
     "tsc": ""
