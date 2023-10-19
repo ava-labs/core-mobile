@@ -28,7 +28,7 @@ const { height, width } = Dimensions.get('screen')
 
 const BlueBackground = (): JSX.Element => {
   return (
-    <Box box={rrect(rect(0, 0, 387, 640), 8, 8)}>
+    <Box box={rrect(rect(0, 0, 358, 640), 8, 8)}>
       <LinearGradient
         start={vec(1300, 0)}
         end={vec(width + 200, height)}
@@ -65,8 +65,8 @@ const HowToUseTheCoreBrowser = (): JSX.Element | null => {
   }
   return (
     <Group>
-      <Text x={16} y={243} text="How to use the" font={font} color={'white'} />
-      <Text x={16} y={285} text="Core browser..." font={font} color={'white'} />
+      <Text x={16} y={250} text="How to use the" font={font} color={'white'} />
+      <Text x={16} y={292} text="Core browser..." font={font} color={'white'} />
     </Group>
   )
 }
@@ -77,12 +77,12 @@ const SearchIcon = (): JSX.Element | null => {
     return null
   }
   return (
-    <Image image={image} fit="contain" x={16} y={320} width={24} height={24} />
+    <Image image={image} fit="contain" x={16} y={328} width={24} height={24} />
   )
 }
 
 const SearchText = (): JSX.Element | null => {
-  const smallFont = useFont(require('assets/fonts/Inter-SemiBold.ttf'), 16)
+  const smallFont = useFont(require('assets/fonts/Inter-Bold.ttf'), 16)
 
   if (!smallFont) {
     return null
@@ -91,14 +91,14 @@ const SearchText = (): JSX.Element | null => {
     <Group>
       <Text
         x={55}
-        y={335}
+        y={345}
         text="Search for a website or browse"
         font={smallFont}
         color={'white'}
       />
       <Text
         x={55}
-        y={358}
+        y={369}
         text="suggested apps"
         font={smallFont}
         color={'white'}
@@ -112,11 +112,11 @@ const WalletConnectIcon = (): JSX.Element | null => {
   if (!image) {
     return null
   }
-  return <Image image={image} x={16} y={377} width={24} height={24} />
+  return <Image image={image} x={16} y={391} width={24} height={24} />
 }
 
 const WalletConnectText = (): JSX.Element | null => {
-  const smallFont = useFont(require('assets/fonts/Inter-SemiBold.ttf'), 16)
+  const smallFont = useFont(require('assets/fonts/Inter-Bold.ttf'), 16)
 
   if (!smallFont) {
     return null
@@ -125,14 +125,14 @@ const WalletConnectText = (): JSX.Element | null => {
     <Group>
       <Text
         x={55}
-        y={395}
+        y={408}
         text="On the website find “Connect”"
         font={smallFont}
         color={'white'}
       />
       <Text
         x={55}
-        y={418}
+        y={433}
         text="then tap Wallet Connect"
         font={smallFont}
         color={'white'}
@@ -146,11 +146,11 @@ const CoreOwlIcon = (): JSX.Element | null => {
   if (!image) {
     return null
   }
-  return <Image image={image} x={16} y={442} width={24} height={24} />
+  return <Image image={image} x={16} y={454} width={24} height={24} />
 }
 
 const CoreOwlText = (): JSX.Element | null => {
-  const smallFont = useFont(require('assets/fonts/Inter-SemiBold.ttf'), 16)
+  const smallFont = useFont(require('assets/fonts/Inter-Bold.ttf'), 16)
 
   if (!smallFont) {
     return null
@@ -159,7 +159,7 @@ const CoreOwlText = (): JSX.Element | null => {
     <Group>
       <Text
         x={55}
-        y={460}
+        y={472}
         text="Find Core and tap “Connect”"
         font={smallFont}
         color={'white'}
@@ -173,11 +173,11 @@ const RocketIcon = (): JSX.Element | null => {
   if (!image) {
     return null
   }
-  return <Image image={image} x={16} y={480} width={24} height={24} />
+  return <Image image={image} x={16} y={495} width={24} height={24} />
 }
 
 const RocketText = (): JSX.Element | null => {
-  const smallFont = useFont(require('assets/fonts/Inter-SemiBold.ttf'), 16)
+  const smallFont = useFont(require('assets/fonts/Inter-Bold.ttf'), 16)
 
   if (!smallFont) {
     return null
@@ -186,7 +186,7 @@ const RocketText = (): JSX.Element | null => {
     <Group>
       <Text
         x={55}
-        y={497}
+        y={512}
         text="Conquer the cryptoverse!"
         font={smallFont}
         color={'white'}
@@ -225,7 +225,7 @@ export default function IntroScreen(): JSX.Element | null {
           position: 'absolute',
           bottom: 0,
           left: 32,
-          paddingBottom: 115,
+          paddingBottom: 95,
           width: '80%'
         }}>
         <AvaButton.PrimaryLarge>Get started!</AvaButton.PrimaryLarge>
