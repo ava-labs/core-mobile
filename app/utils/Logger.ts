@@ -2,6 +2,7 @@
 /* eslint-disable no-console */
 import { format } from 'date-fns'
 import { TextInput } from 'react-native'
+import { assertNotNull } from 'utils/assertions'
 
 export enum LogLevel {
   TRACE = 0,
@@ -71,6 +72,9 @@ class Logger {
     }
   }
 
+  /**
+   * Log message to TextInput view. First set view with {@link showOnScreen}
+   */
   screen = (message: string): void => {
     this.textRefBuffer += '\n' + message
     if (this.textRefBuffer.length > 10000) {
@@ -81,13 +85,42 @@ class Logger {
     this.printToScreen(this.textRefBuffer)
   }
 
+  /**
+   * Set TextInput view to which will logs output. {@link screen}
+   * Example:
+   *   const textRef = createRef<TextInput>()
+   *
+   *   useEffect(() => {
+   *     Logger.showOnScreen(textRef.current)
+   *   }, [textRef])
+   *
+   *   ...
+   *   <TextInput
+   *     ref={textRef}
+   *     editable={false}
+   *     multiline={true}
+   *     style={{
+   *       position: 'absolute',
+   *       top: 40,
+   *       end: 0,
+   *       color: 'white',
+   *       width: 300,
+   *       height: 50,
+   *     }}
+   *   />
+   *   ...
+   */
   showOnScreen = (screen: TextInput | null): void => {
     this.textRef = screen
   }
 
   private printToScreen = (message: string): void => {
-    this.textRef?.setNativeProps({
-      text: (this.textRef?.props?.value ?? '') + '\n' + message
+    assertNotNull(
+      this.textRef,
+      'You must set TextInput ref with Logger.showOnScreen()'
+    )
+    this.textRef.setNativeProps({
+      text: (this.textRef.props.value ?? '') + '\n' + message
     })
   }
 }
