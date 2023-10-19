@@ -1,0 +1,4 @@
+{
+  "name": "@avalabs/tsconfig-mobile",
+  "description": "shared typescript config for all avalabs mobile projects"
+}
