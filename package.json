@@ -6,21 +6,14 @@
     "packages/*"
   ],
   "scripts": {
-    "all:setup": "yarn workspaces foreach -p run setup",
-    "all:setup:ci": "yarn workspaces foreach -p run setup:ci",
-    "all:lint": "yarn lint && yarn workspaces foreach -p run lint",
-    "all:lint:ci": "yarn lint:ci && yarn workspaces foreach -p run lint:ci",
-    "prepare": "husky install",
-    "lint": "eslint .",
-    "lint:ci": "yarn run lint --quiet --format json --output-file eslint_report.json"
+    "setup": "yarn workspaces foreach -p run setup",
+    "setup:ci": "yarn workspaces foreach -p run setup:ci",
+    "lint": "yarn workspaces foreach -p run lint",
+    "lint:ci": "yarn workspaces foreach -p run lint:ci",
+    "prepare": "husky install"
   },
   "devDependencies": {
-    "@avalabs/eslint-config-mobile": "workspace:*",
-    "@rushstack/eslint-patch": "1.5.1",
-    "eslint": "8.50.0",
-    "husky": "8.0.1",
-    "lint-staged": "13.0.3",
-    "typescript": "4.7.4"
+    "husky": "8.0.1"
   },
   "resolutions": {
     "minimist": "1.2.6",
@@ -39,12 +32,5 @@
   "engines": {
     "node": ">=18.14.1",
     "yarn": ">=1.22.10"
-  },
-  "volta": {
-    "node": "18.14.1",
-    "yarn": "1.22.10"
-  },
-  "lint-staged": {
-    "*.{js,jsx,ts,tsx}": "eslint --fix --max-warnings 0"
   }
 }
