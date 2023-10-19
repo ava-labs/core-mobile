@@ -1,10 +1,9 @@
-import React, { createRef, useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import {
   KeyboardAvoidingView,
   LogBox,
   Platform,
   SafeAreaView,
-  TextInput,
   UIManager
 } from 'react-native'
 import RootScreenStack from 'navigation/RootScreenStack'
@@ -14,8 +13,6 @@ import useDevDebugging from 'utils/debugging/DevDebugging'
 import 'utils/debugging/wdyr'
 import { navigationRef } from 'utils/Navigation'
 import SentryService from 'services/sentry/SentryService'
-import Logger from 'utils/Logger'
-import { Opacity50 } from 'resources/Constants'
 
 LogBox.ignoreLogs([
   'Require cycle:',
@@ -39,11 +36,6 @@ export default function App(): JSX.Element {
 
   const context = useApplicationContext()
   const [backgroundStyle] = useState(context.appBackgroundStyle)
-  const textRef = createRef<TextInput>()
-
-  useEffect(() => {
-    Logger.showOnScreen(textRef.current)
-  }, [textRef])
 
   return (
     <SafeAreaView style={backgroundStyle}>
@@ -60,22 +52,6 @@ export default function App(): JSX.Element {
           <RootScreenStack />
         </NavigationContainer>
       </KeyboardAvoidingView>
-
-      <TextInput
-        ref={textRef}
-        numberOfLines={10}
-        editable={false}
-        multiline={true}
-        style={{
-          position: 'absolute',
-          top: 40,
-          end: 0,
-          color: 'white',
-          width: 300,
-          height: 50,
-          backgroundColor: 'black' + Opacity50
-        }}
-      />
     </SafeAreaView>
   )
 }
