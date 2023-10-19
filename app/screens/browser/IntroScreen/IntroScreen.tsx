@@ -17,7 +17,7 @@ import {
   Text,
   useFont
 } from '@shopify/react-native-skia'
-
+import { RocketIcon, SearchIcon, WalletConnectIcon, CoreOwlIcon } from './Icons'
 
 const TOO_COLOR = '#000000'
 const FROM_COLOR = '#007AFF'
@@ -69,16 +69,6 @@ const HowToUseTheCoreBrowser = (): JSX.Element | null => {
   )
 }
 
-const SearchIcon = (): JSX.Element | null => {
-  const image = useImage(require('assets/icons/search_dark.png'))
-  if (!image) {
-    return null
-  }
-  return (
-    <Image image={image} fit="contain" x={16} y={328} width={24} height={24} />
-  )
-}
-
 const SearchText = (): JSX.Element | null => {
   const smallFont = useFont(require('assets/fonts/Inter-Bold.ttf'), 16)
 
@@ -103,14 +93,6 @@ const SearchText = (): JSX.Element | null => {
       />
     </Group>
   )
-}
-
-const WalletConnectIcon = (): JSX.Element | null => {
-  const image = useImage(require('assets/icons/wallet_connect.png'))
-  if (!image) {
-    return null
-  }
-  return <Image image={image} x={16} y={391} width={24} height={24} />
 }
 
 const WalletConnectText = (): JSX.Element | null => {
@@ -139,14 +121,6 @@ const WalletConnectText = (): JSX.Element | null => {
   )
 }
 
-const CoreOwlIcon = (): JSX.Element | null => {
-  const image = useImage(require('assets/icons/core_owl_icon.png'))
-  if (!image) {
-    return null
-  }
-  return <Image image={image} x={16} y={454} width={24} height={24} />
-}
-
 const CoreOwlText = (): JSX.Element | null => {
   const smallFont = useFont(require('assets/fonts/Inter-Bold.ttf'), 16)
 
@@ -164,14 +138,6 @@ const CoreOwlText = (): JSX.Element | null => {
       />
     </Group>
   )
-}
-
-const RocketIcon = (): JSX.Element | null => {
-  const image = useImage(require('assets/icons/rocket_launch.png'))
-  if (!image) {
-    return null
-  }
-  return <Image image={image} x={16} y={495} width={24} height={24} />
 }
 
 const RocketText = (): JSX.Element | null => {
