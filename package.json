@@ -7,7 +7,6 @@
   ],
   "scripts": {
     "setup": "yarn workspaces foreach -p run setup",
-    "setup:ci": "yarn workspaces foreach -p run setup:ci",
     "lint": "yarn workspaces foreach -p run lint",
     "lint:ci": "yarn workspaces foreach -p run lint:ci",
     "tsc": "yarn workspaces foreach -p run tsc",
