@@ -18,8 +18,6 @@ import {
   useFont
 } from '@shopify/react-native-skia'
 
-// const WINDOW_WIDTH = Dimensions.get('window').width
-// const WINDOW_HEIGHT = Dimensions.get('window').height
 
 const TOO_COLOR = '#000000'
 const FROM_COLOR = '#007AFF'
