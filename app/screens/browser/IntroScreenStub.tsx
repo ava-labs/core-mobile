@@ -30,8 +30,8 @@ const BlueBackground = (): JSX.Element => {
   return (
     <Box box={rrect(rect(0, 0, 387, 640), 8, 8)}>
       <LinearGradient
-        start={vec(height, 0)}
-        end={vec(0, width)}
+        start={vec(1300, 0)}
+        end={vec(width + 200, height)}
         colors={[FROM_COLOR, TOO_COLOR]}
       />
     </Box>
@@ -45,28 +45,28 @@ const TokenImageWithGradient = (): JSX.Element => {
       mask={
         <Rect x={0} y={0} height={height / 2} width={width}>
           <LinearGradient
-            start={vec(0, 0)}
-            end={vec(0, height / 3)}
+            start={vec(0, -100)}
+            end={vec(0, height / 3.7)}
             colors={['white', 'transparent']}
           />
         </Rect>
       }>
       {image && (
-        <Image image={image} x={-150} y={-220} width={685} height={623} />
+        <Image image={image} x={-145} y={-219} width={695} height={623} />
       )}
     </Mask>
   )
 }
 
 const HowToUseTheCoreBrowser = (): JSX.Element | null => {
-  const font = useFont(require('assets/fonts/Inter-SemiBold.ttf'), 34)
+  const font = useFont(require('assets/fonts/Inter-Bold.ttf'), 34)
   if (!font) {
     return null
   }
   return (
     <Group>
-      <Text x={16} y={255} text="How to use the" font={font} color={'white'} />
-      <Text x={16} y={295} text="Core browser..." font={font} color={'white'} />
+      <Text x={16} y={243} text="How to use the" font={font} color={'white'} />
+      <Text x={16} y={285} text="Core browser..." font={font} color={'white'} />
     </Group>
   )
 }
@@ -77,7 +77,7 @@ const SearchIcon = (): JSX.Element | null => {
     return null
   }
   return (
-    <Image image={image} fit="contain" x={16} y={315} width={24} height={24} />
+    <Image image={image} fit="contain" x={16} y={320} width={24} height={24} />
   )
 }
 
@@ -90,15 +90,15 @@ const SearchText = (): JSX.Element | null => {
   return (
     <Group>
       <Text
-        x={48}
-        y={330}
+        x={55}
+        y={335}
         text="Search for a website or browse"
         font={smallFont}
         color={'white'}
       />
       <Text
-        x={48}
-        y={350}
+        x={55}
+        y={358}
         text="suggested apps"
         font={smallFont}
         color={'white'}
@@ -112,7 +112,7 @@ const WalletConnectIcon = (): JSX.Element | null => {
   if (!image) {
     return null
   }
-  return <Image image={image} x={16} y={371} width={24} height={24} />
+  return <Image image={image} x={16} y={377} width={24} height={24} />
 }
 
 const WalletConnectText = (): JSX.Element | null => {
@@ -124,15 +124,15 @@ const WalletConnectText = (): JSX.Element | null => {
   return (
     <Group>
       <Text
-        x={48}
-        y={388}
+        x={55}
+        y={395}
         text="On the website find “Connect”"
         font={smallFont}
         color={'white'}
       />
       <Text
-        x={48}
-        y={409}
+        x={55}
+        y={418}
         text="then tap Wallet Connect"
         font={smallFont}
         color={'white'}
@@ -142,11 +142,11 @@ const WalletConnectText = (): JSX.Element | null => {
 }
 
 const CoreOwlIcon = (): JSX.Element | null => {
-  const image = useImage(require('assets/icons/core_owl.png'))
+  const image = useImage(require('assets/icons/core_owl_icon.png'))
   if (!image) {
     return null
   }
-  return <Image image={image} x={16} y={426} width={24} height={24} />
+  return <Image image={image} x={16} y={442} width={24} height={24} />
 }
 
 const CoreOwlText = (): JSX.Element | null => {
@@ -158,8 +158,8 @@ const CoreOwlText = (): JSX.Element | null => {
   return (
     <Group>
       <Text
-        x={48}
-        y={443}
+        x={55}
+        y={460}
         text="Find Core and tap “Connect”"
         font={smallFont}
         color={'white'}
@@ -173,7 +173,7 @@ const RocketIcon = (): JSX.Element | null => {
   if (!image) {
     return null
   }
-  return <Image image={image} x={16} y={460} width={24} height={24} />
+  return <Image image={image} x={16} y={480} width={24} height={24} />
 }
 
 const RocketText = (): JSX.Element | null => {
@@ -185,8 +185,8 @@ const RocketText = (): JSX.Element | null => {
   return (
     <Group>
       <Text
-        x={48}
-        y={476}
+        x={55}
+        y={497}
         text="Conquer the cryptoverse!"
         font={smallFont}
         color={'white'}
@@ -225,7 +225,7 @@ export default function IntroScreen(): JSX.Element | null {
           position: 'absolute',
           bottom: 0,
           left: 32,
-          paddingBottom: 130,
+          paddingBottom: 115,
           width: '80%'
         }}>
         <AvaButton.PrimaryLarge>Get started!</AvaButton.PrimaryLarge>
