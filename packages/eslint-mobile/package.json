@@ -1,15 +1,16 @@
 {
   "name": "@avalabs/eslint-config-mobile",
-  "version": "0.0.0",
   "description": "shared eslint config for all avalabs mobile projects",
   "main": "index.js",
   "scripts": {
     "setup": "yarn install && yarn allow-scripts",
     "setup:ci": "yarn install --frozen-lockfile && yarn allow-scripts",
     "lint": "eslint .",
-    "lint:ci": "yarn run lint --quiet --format json --output-file eslint_report.json"
+    "lint:ci": "yarn run lint --quiet --format json --output-file eslint_report.json",
+    "tsc": ""
   },
   "devDependencies": {
+    "@avalabs/tsconfig-mobile": "workspace:*",
     "@lavamoat/allow-scripts": "2.0.3",
     "@react-native-community/eslint-config": "3.0.3",
     "@tanstack/eslint-plugin-query": "5.0.0",
