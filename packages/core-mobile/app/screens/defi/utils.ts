@@ -10,7 +10,8 @@ import {
   DeFiPerpetualItem,
   DeFiRewardItem,
   DeFiVestingItem,
-  DeFiCommonItem
+  DeFiCommonItem,
+  DeFiProtocolInformation
 } from 'services/defi/types'
 
 export const mapPortfolioItems = (
@@ -154,4 +155,19 @@ export const sortDeFiItems = <T extends { netUsdValue: number }>(
 
 export const profitLossColors = (theme: AppTheme, value: number): string => {
   return value > 0 ? theme.colorSuccess : theme.colorError
+}
+
+export const sortDeFiProtocolInformationListByTvl = (
+  protocolInformationList: DeFiProtocolInformation[]
+): DeFiProtocolInformation[] => {
+  return [...protocolInformationList].sort(({ tvl: a }, { tvl: b }) => b - a)
+}
+
+export const getTopDefiProtocolInformationList = (
+  protocolInformationList?: DeFiProtocolInformation[],
+  limit = 8
+): DeFiProtocolInformation[] => {
+  if (protocolInformationList === undefined) return []
+  const sorted = sortDeFiProtocolInformationListByTvl(protocolInformationList)
+  return sorted.slice(0, limit)
 }

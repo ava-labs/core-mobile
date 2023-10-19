@@ -1,7 +1,7 @@
 // The API reference:
 // https://docs.open.DeFi.com/en/reference/api-models/portfolioitemobject
 
-import z, { literal, number, object, string } from 'zod'
+import z, { boolean, literal, number, object, string } from 'zod'
 
 export const DeFiChainSchema = object({
   id: string(),
@@ -125,3 +125,20 @@ export const DeFiProtocolSchema = object({
   portfolio_item_list: DeFiPortfolioItemSchema.array()
 })
 export type DeFiProtocolObject = z.infer<typeof DeFiProtocolSchema>
+
+export const DeFiProtocolInformationSchema = object({
+  id: string(),
+  chain: string(),
+  name: string().nullable(),
+  site_url: string()
+    .nullable()
+    .transform(v => v ?? undefined),
+  logo_url: string()
+    .nullable()
+    .transform(v => v ?? undefined),
+  has_supported_portfolio: boolean(),
+  tvl: number()
+})
+export type DeFiProtocolInformationObject = z.infer<
+  typeof DeFiProtocolInformationSchema
+>

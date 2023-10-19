@@ -3,6 +3,7 @@ import Config from 'react-native-config'
 import { z } from 'zod'
 import {
   DeFiChainSchema,
+  DeFiProtocolInformationSchema,
   DeFiProtocolSchema,
   DeFiSimpleProtocolSchema
 } from './debankTypes'
@@ -37,6 +38,13 @@ export const defiApiClient = new Zodios(
       parameters: [{ name: 'id', type: 'Query', schema: z.string() }],
       alias: 'getDeFiProtocolList',
       response: z.array(DeFiSimpleProtocolSchema)
+    },
+    {
+      method: 'get',
+      path: '/protocol/list',
+      parameters: [{ name: 'chain_id', type: 'Query', schema: z.string() }],
+      alias: 'getDeFiProtocolInformationList',
+      response: z.array(DeFiProtocolInformationSchema)
     }
   ],
   {

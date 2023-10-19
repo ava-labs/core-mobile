@@ -4,6 +4,7 @@ import { CamelCasedPropertiesDeep } from 'type-fest'
 import {
   DeFiChainSchema,
   DeFiPortfolioItemSchema,
+  DeFiProtocolInformationSchema,
   DeFiProtocolSchema,
   DeFiSimpleProtocolSchema,
   DeFiTokenSchema
@@ -34,6 +35,13 @@ export type DeFiPortfolioItem = z.infer<typeof DeFiPortfolioItemCamelCase>
 
 const DeFiTokenCamelCase = zodToCamelCase(DeFiTokenSchema)
 export type DeFiToken = z.infer<typeof DeFiTokenCamelCase>
+
+export const DeFiProtocolInformationCamelCase = zodToCamelCase(
+  DeFiProtocolInformationSchema
+)
+export type DeFiProtocolInformation = z.infer<
+  typeof DeFiProtocolInformationCamelCase
+>
 
 type BaseDeFiItem = {
   type: DeFiProtocolDetailTypes

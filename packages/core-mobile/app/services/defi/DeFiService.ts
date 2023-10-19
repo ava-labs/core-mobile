@@ -1,6 +1,7 @@
 import { defiApiClient, exchangeRateApiClient } from './apiClient'
 import {
   DeFiChainObject,
+  DeFiProtocolInformationObject,
   DeFiProtocolObject,
   DeFiSimpleProtocolObject
 } from './debankTypes'
@@ -23,6 +24,13 @@ class DeFiService {
     defiApiClient.getDeFiProtocolList({ queries: { id: userAddress } })
 
   static getExchangeRates = exchangeRateApiClient.getExchangeRates
+
+  static getDeFiProtocolInformationList = (): Promise<
+    DeFiProtocolInformationObject[]
+  > =>
+    defiApiClient.getDeFiProtocolInformationList({
+      queries: { chain_id: 'avax' }
+    })
 }
 
 export default DeFiService
