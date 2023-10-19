@@ -55,7 +55,7 @@ const NetworkFeeSelector = ({
   onGasPriceChange?(gasPrice: bigint, feePreset: FeePreset): void
   onGasLimitChange?(customGasLimit: number): void
   maxGasPrice?: string
-}) => {
+}): JSX.Element => {
   const { navigate } = useNavigation<NavigationProp>()
   const { theme } = useApplicationContext()
   const activeNetwork = useSelector(selectActiveNetwork)
@@ -81,12 +81,10 @@ const NetworkFeeSelector = ({
   }, [networkFee.low, customGasPrice])
 
   const selectedGasPrice: bigint = useMemo(() => {
-    switch (selectedPreset) {
-      case FeePreset.Custom:
-        return customGasPrice || 0n
-      default:
-        return networkFee[FeePresetNetworkFeeMap[selectedPreset]]
+    if (selectedPreset === FeePreset.Custom) {
+      return customGasPrice || 0n
     }
+    return networkFee[FeePresetNetworkFeeMap[selectedPreset]]
   }, [customGasPrice, networkFee, selectedPreset])
 
   const newFees = useMemo(
@@ -116,7 +114,7 @@ const NetworkFeeSelector = ({
     onGasPriceChange?.(selectedGasPrice, selectedPreset)
   }, [selectedGasPrice, selectedPreset, networkFee.low, onGasPriceChange])
 
-  function handleGasLimitChange(newGasLimit: number) {
+  function handleGasLimitChange(newGasLimit: number): void {
     onGasLimitChange?.(newGasLimit)
   }
 
@@ -282,7 +280,7 @@ export const FeeSelector: FC<{
     }
   }, [editable, selected])
 
-  const handleSelect = () => {
+  const handleSelect = (): void => {
     onSelect(label)
 
     // if you select Custom fee and then dismiss keyboard, you cannot again edit Custom unless you switch to other preset first

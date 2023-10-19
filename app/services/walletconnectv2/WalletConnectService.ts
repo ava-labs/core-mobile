@@ -102,13 +102,11 @@ class WalletConnectService {
     EngineTypes.ApproveParams,
     'id' | 'relayProtocol' | 'namespaces'
   >) => {
-    const session = await this.client.approveSession({
+    return await this.client.approveSession({
       id,
       relayProtocol,
       namespaces
     })
-
-    return session
   }
 
   rejectSession = async (id: number) => {
@@ -239,7 +237,7 @@ class WalletConnectService {
   }) => {
     // if dapp is not online, updateSession will be stuck for a long time
     // we are using promiseWithTimeout here to exit early when that happens
-    const promise = promiseWithTimeout(
+    return promiseWithTimeout(
       this.updateSession({ session, chainId, address }),
       UPDATE_SESSION_TIMEOUT
     ).catch(e => {
@@ -248,8 +246,6 @@ class WalletConnectService {
         e
       )
     })
-
-    return promise
   }
 
   updateSessions = async ({

@@ -91,11 +91,9 @@ const NetworkTokens = () => {
   }
 
   function capturePosthogEvents(tabIndex: number) {
-    switch (tabIndex) {
-      case NetworkTokensTabs.Activity:
-        // capture event only for the activity tab with old event name, by request from product
-        capture('PortfolioActivityClicked')
-        break
+    if (tabIndex === NetworkTokensTabs.Activity) {
+      // capture event only for the activity tab with old event name, by request from product
+      capture('PortfolioActivityClicked')
     }
   }
 

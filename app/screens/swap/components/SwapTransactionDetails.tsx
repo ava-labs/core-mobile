@@ -13,16 +13,13 @@ import { PopableLabel } from 'components/PopableLabel'
 import { bigintToBig } from 'utils/bigNumbers/bigintToBig'
 import { useNetworkFee } from 'hooks/useNetworkFee'
 
-const isSlippageValid = (value: string) => {
-  if (
+const isSlippageValid = (value: string): boolean => {
+  return Boolean(
     (parseFloat(value) >= 0 &&
       parseFloat(value) <= 100 &&
       value?.length <= 4) ||
-    !value
-  ) {
-    return true
-  }
-  return false
+      !value
+  )
 }
 
 interface SwapTransactionDetailProps {

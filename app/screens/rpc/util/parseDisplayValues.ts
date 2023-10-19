@@ -4,6 +4,21 @@ import { calculateGasAndFees } from 'utils/Utils'
 import { Network } from '@avalabs/chains-sdk'
 import { TransactionParams } from 'store/walletConnectV2/handlers/eth_sendTransaction/utils'
 import { TransactionDescription } from 'ethers'
+import { CoreTypes } from '@walletconnect/types'
+
+interface DisplayValueTypes {
+  displayValue: string
+  gasLimit: number
+  bnFee: bigint
+  site: CoreTypes.Metadata | null | undefined
+  fee: string
+  feeInCurrency: number
+  name: string
+  description: TransactionDescription | undefined
+  fromAddress: string
+  toAddress: string
+  gasPrice: bigint
+}
 
 export function isTxParams(
   params: Partial<TransactionParams>
@@ -16,7 +31,7 @@ export function parseDisplayValues(
   txParams: TransactionParams,
   props: DisplayValueParserProps,
   description?: TransactionDescription
-) {
+): DisplayValueTypes {
   const tokenDecimals = network.networkToken.decimals
   const name = description?.name ?? description?.fragment?.name
   let displayValue = ''

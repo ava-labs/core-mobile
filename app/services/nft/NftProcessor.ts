@@ -87,26 +87,7 @@ export class NftProcessor {
       return nft
     }
 
-    if (nft.metadata.indexStatus === NftTokenMetadataStatus.INDEXED) {
-      try {
-        return {
-          ...nft,
-          attributes:
-            JSON.parse(
-              (isErc721(nft)
-                ? nft.metadata.attributes
-                : nft.metadata.properties) || ''
-            ) ?? [],
-          external_url: nft.metadata.externalUrl ?? ''
-        }
-      } catch (e) {
-        return {
-          ...nft,
-          attributes: [],
-          external_url: nft.metadata.externalUrl ?? ''
-        }
-      }
-    } else {
+    if (nft.metadata.indexStatus !== NftTokenMetadataStatus.INDEXED) {
       const metadata = await this.fetchMetadata(getTokenUri(nft))
       // do not use spread operator on metadata to prevent overwriting core NFT properties
       return {
@@ -121,6 +102,25 @@ export class NftProcessor {
           externalUrl: metadata.external_url ?? '',
           animationUri: metadata.animation_url ?? ''
         }
+      }
+    }
+
+    try {
+      return {
+        ...nft,
+        attributes:
+          JSON.parse(
+            (isErc721(nft)
+              ? nft.metadata.attributes
+              : nft.metadata.properties) || ''
+          ) ?? [],
+        external_url: nft.metadata.externalUrl ?? ''
+      }
+    } catch (e) {
+      return {
+        ...nft,
+        attributes: [],
+        external_url: nft.metadata.externalUrl ?? ''
       }
     }
   }

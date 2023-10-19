@@ -10,7 +10,7 @@ jest.mock('store/network', () => {
   const actual = jest.requireActual('store/network')
   return {
     ...actual,
-    selectRawNetworks: () => mockNetworks
+    selectAllNetworks: () => mockNetworks
   }
 })
 const mockNavigate = jest.fn()

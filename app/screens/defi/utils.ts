@@ -54,7 +54,7 @@ export const mapPortfolioItems = (
     .filter(Boolean) as DeFiItem[] // Filter-out the nullish items.
 
   // sort items by netUsdValue
-  const sortedItems = sortItems(groupItems)
+  const sortedItems = sortDeFiItems(groupItems)
 
   const groupedByName = sortedItems.reduce(
     (groups: Record<string, DeFiItemGroup>, item: DeFiItem) => {
@@ -146,11 +146,12 @@ const mapCommonItem = (item: DeFiPortfolioItem): DeFiCommonItem => {
   }
 }
 
-const sortItems = (items: DeFiItem[]): DeFiItem[] => {
+export const sortDeFiItems = <T extends { netUsdValue: number }>(
+  items: T[]
+): T[] => {
   return [...items].sort(({ netUsdValue: a }, { netUsdValue: b }) => b - a)
 }
 
-export const profitLossColors = (theme: AppTheme, value: number) => {
-  const coloredValue = value > 0 ? theme.colorSuccess : theme.colorError
-  return coloredValue
+export const profitLossColors = (theme: AppTheme, value: number): string => {
+  return value > 0 ? theme.colorSuccess : theme.colorError
 }

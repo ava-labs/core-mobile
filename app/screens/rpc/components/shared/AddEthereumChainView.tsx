@@ -29,7 +29,7 @@ const AddEthereumChainView = ({
   dappLogo,
   onReject,
   onApprove
-}: Props) => {
+}: Props): JSX.Element => {
   const theme = useApplicationContext().theme
 
   return (
@@ -68,6 +68,8 @@ const AddEthereumChainView = ({
               title={'Explorer URL'}
               value={network.explorerUrl ?? ''}
             />
+            <Space y={16} />
+            <DetailItem title={'Testnet'} value={String(network.isTestnet)} />
             <FlexSpacer minHeight={30} />
             <View style={styles.actionContainer}>
               <AvaButton.PrimaryMedium onPress={onApprove}>
@@ -85,7 +87,13 @@ const AddEthereumChainView = ({
   )
 }
 
-const DetailItem = ({ title, value }: { title: string; value: string }) => {
+const DetailItem = ({
+  title,
+  value
+}: {
+  title: string
+  value: string
+}): JSX.Element => {
   const { theme } = useApplicationContext()
 
   return (

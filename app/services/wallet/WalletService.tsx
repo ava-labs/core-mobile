@@ -251,8 +251,7 @@ class WalletService {
   }
 
   getInstantBaseFee(baseFee: Avax): Avax {
-    const instantFee = baseFee.add(baseFee.mul(BASE_FEE_MULTIPLIER))
-    return instantFee
+    return baseFee.add(baseFee.mul(BASE_FEE_MULTIPLIER))
   }
 
   async createExportCTx({

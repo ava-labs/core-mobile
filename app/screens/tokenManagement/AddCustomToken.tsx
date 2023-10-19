@@ -14,7 +14,7 @@ import { ShowSnackBar } from 'components/Snackbar'
 
 const AddCustomToken: FC = () => {
   const theme = useApplicationContext().theme
-  const [showQrCamera, setShowQrCamera] = useState(false)
+  const [showQrScanner, setShowQrScanner] = useState(false)
   const { goBack } = useNavigation()
 
   const showSuccess = useCallback(() => {
@@ -27,6 +27,11 @@ const AddCustomToken: FC = () => {
 
   // only enable button if we have token and no error message
   const disabled = !!(errorMessage || !token)
+
+  const handleQrCodeScanSuccess = (data: string): void => {
+    setTokenAddress(data)
+    setShowQrScanner(false)
+  }
 
   return (
     <View
@@ -53,7 +58,7 @@ const AddCustomToken: FC = () => {
                 right: 24,
                 top: 40
               }}>
-              <AvaButton.Icon onPress={() => setShowQrCamera(true)}>
+              <AvaButton.Icon onPress={() => setShowQrScanner(true)}>
                 <QRCode />
               </AvaButton.Icon>
             </View>
@@ -80,11 +85,11 @@ const AddCustomToken: FC = () => {
       <Modal
         animationType="slide"
         transparent={true}
-        onRequestClose={() => setShowQrCamera(false)}
-        visible={showQrCamera}>
+        onRequestClose={() => setShowQrScanner(false)}
+        visible={showQrScanner}>
         <QrScannerAva
-          onSuccess={setTokenAddress}
-          onCancel={() => setShowQrCamera(false)}
+          onSuccess={handleQrCodeScanSuccess}
+          onCancel={() => setShowQrScanner(false)}
         />
       </Modal>
     </View>

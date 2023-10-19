@@ -34,6 +34,14 @@ class PlusMenuPage {
     return by.text(PlusMenuLoc.walletConnectButton)
   }
 
+  get receiveButton() {
+    return by.id(PlusMenuLoc.receive)
+  }
+
+  async tapReceiveButton() {
+    await Actions.tap(this.receiveButton)
+  }
+
   async connectWallet(clipboardValue: string) {
     await Actions.setInputText(this.inputTextField, clipboardValue, 0)
     await Actions.tap(this.connectionURI)

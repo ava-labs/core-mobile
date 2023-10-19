@@ -30,7 +30,10 @@ import {
 
 const TIME_TO_LOCK_IN_SECONDS = 5
 
-const init = async (_: Action, listenerApi: AppListenerEffectAPI) => {
+const init = async (
+  _: Action,
+  listenerApi: AppListenerEffectAPI
+): Promise<void> => {
   Logger.setLevel(__DEV__ ? LogLevel.TRACE : LogLevel.ERROR)
   const { dispatch } = listenerApi
   const state = listenerApi.getState()
@@ -58,17 +61,19 @@ const init = async (_: Action, listenerApi: AppListenerEffectAPI) => {
 const applyVersionMigrations = async (
   _: Action,
   listenerApi: AppListenerEffectAPI
-) => {
+): Promise<void> => {
   extendAccountProps(listenerApi)
 }
 
-const listenToAppState = async (listenerApi: AppListenerEffectAPI) => {
+const listenToAppState = async (
+  listenerApi: AppListenerEffectAPI
+): Promise<void> => {
   const dispatch = listenerApi.dispatch
 
   const handleAppStateChange = (
     currentAppState: AppStateStatus,
     nextAppState: AppStateStatus
-  ) => {
+  ): void => {
     // if app state has changed
     if (nextAppState !== currentAppState) {
       // update cached state
@@ -95,7 +100,10 @@ const listenToAppState = async (listenerApi: AppListenerEffectAPI) => {
   })
 }
 
-const lockApp = async (_: Action, listenerApi: AppListenerEffectAPI) => {
+const lockApp = async (
+  _: Action,
+  listenerApi: AppListenerEffectAPI
+): Promise<void> => {
   const { dispatch, condition } = listenerApi
   const state = listenerApi.getState()
   const walletState = selectWalletState(state)
@@ -131,20 +139,23 @@ const lockApp = async (_: Action, listenerApi: AppListenerEffectAPI) => {
 const setStateToUnlocked = async (
   _: Action,
   listenerApi: AppListenerEffectAPI
-) => {
+): Promise<void> => {
   const dispatch = listenerApi.dispatch
   dispatch(setIsLocked(false))
   dispatch(setWalletState(WalletState.ACTIVE))
 }
 
-const clearData = async (_: Action, listenerApi: AppListenerEffectAPI) => {
+const clearData = async (
+  _: Action,
+  listenerApi: AppListenerEffectAPI
+): Promise<void> => {
   const { dispatch } = listenerApi
   dispatch(setWalletState(WalletState.NONEXISTENT))
-  await BiometricsSDK.clearWalletKey()
+  await BiometricsSDK.clearAllWalletKeys()
   await AsyncStorage.clear()
 }
 
-export const addAppListeners = (startListening: AppStartListening) => {
+export const addAppListeners = (startListening: AppStartListening): void => {
   startListening({
     actionCreator: onRehydrationComplete,
     effect: init

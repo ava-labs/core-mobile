@@ -7,6 +7,7 @@ interface Prop {
   size?: number
   absolutePosition?: boolean
   backgroundColor?: string
+  testID?: string
 }
 
 function BitcoinSVG({
@@ -14,9 +15,10 @@ function BitcoinSVG({
   absolutePosition = false,
   backgroundColor = BITCOIN_BACKGROUND_COLOR,
   ...props
-}: Prop) {
+}: Prop): JSX.Element {
   return (
     <Svg
+      testID="bitcoin_svg"
       {...props}
       style={absolutePosition && { position: 'absolute' }}
       width={size}

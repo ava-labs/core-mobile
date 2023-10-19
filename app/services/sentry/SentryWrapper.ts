@@ -13,10 +13,9 @@ class SentryWrapper {
   }
 
   public startTransaction(name: TransactionName): Transaction {
-    const transaction = Sentry.startTransaction({ name, op: name }, {
+    return Sentry.startTransaction({ name, op: name }, {
       sampleRate: this.sampleRate
     } as CustomSamplingContext)
-    return transaction
   }
 
   public finish(transaction: Transaction) {
