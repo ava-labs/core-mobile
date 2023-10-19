@@ -27,7 +27,7 @@ Platform.OS === 'android' &&
   UIManager.setLayoutAnimationEnabledExperimental &&
   UIManager.setLayoutAnimationEnabledExperimental(false)
 
-export default function App() {
+export default function App(): JSX.Element {
   const { configure } = useDevDebugging()
   const isProduction = process.env.NODE_ENV === 'production'
   if (!isProduction) {

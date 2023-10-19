@@ -5,8 +5,8 @@ import { createMigrate, persistReducer, persistStore } from 'redux-persist'
 import { bridgeReducer as bridge } from 'store/bridge'
 import { nftsApi } from 'store/nft/api'
 import { migrations } from 'store/migrations'
-import { encryptTransform } from 'redux-persist-transform-encrypt'
 import DevDebuggingConfig from 'utils/debugging/DevDebuggingConfig'
+import { EncryptThenMacTransform } from 'store/transforms/EncryptThenMacTransform'
 import { networkReducer as network } from './network'
 import { balanceReducer as balance } from './balance'
 import { appReducer as app, onLogOut, onRehydrationComplete } from './app'
@@ -92,14 +92,6 @@ const rootReducer = (state: any, action: AnyAction) => {
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export function configureEncryptedStore(secretKey: string) {
-  // If this transform fails to decrypt or parse then it will log a warning and
-  // return `undefined`, which will cause the redux state to be reset.
-  const EncryptionTransform = encryptTransform<
-    RawRootState,
-    RawRootState,
-    RawRootState
-  >({ secretKey })
-
   const persistConfig = {
     key: 'root',
     storage: AsyncStorage,
@@ -109,7 +101,7 @@ export function configureEncryptedStore(secretKey: string) {
       AppBlacklistTransform,
       BridgeBlacklistTransform,
       WatchlistBlacklistTransform,
-      EncryptionTransform // last!
+      EncryptThenMacTransform(secretKey) // last!
     ],
     migrate: createMigrate(migrations, { debug: __DEV__ }),
     version: VERSION
