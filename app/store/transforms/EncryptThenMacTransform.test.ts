@@ -1,6 +1,6 @@
 import {
-  EncryptThenMacStoreType,
-  EncryptThenMacTransform
+  EncryptThenMacTransform,
+  VersionedStore
 } from 'store/transforms/EncryptThenMacTransform'
 import { AppState } from 'store/app'
 import { BridgeState } from 'store/bridge'
@@ -43,7 +43,7 @@ describe('EncryptThenMacTransform functions', () => {
 
     const transform = EncryptThenMacTransform(secretKey)
     const decrypted = transform.out(
-      stateEncrypted as unknown as EncryptThenMacStoreType,
+      stateEncrypted as unknown as VersionedStore,
       'app',
       {} as unknown as RawRootState
     )
@@ -54,7 +54,7 @@ describe('EncryptThenMacTransform functions', () => {
     const state = { test: 'test' }
     const transform = EncryptThenMacTransform(secretKey)
     const result = transform.out(
-      state as unknown as EncryptThenMacStoreType,
+      state as unknown as VersionedStore,
       'app',
       {} as unknown as RawRootState
     )

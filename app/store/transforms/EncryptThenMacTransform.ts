@@ -9,7 +9,7 @@ import {
 } from 'store/utils/seralization'
 import { Transform } from 'redux-persist/es/types'
 
-type VersionedStore = EncryptThenMacStoreType & {
+export type VersionedStore = EncryptThenMacStoreType & {
   /**
    * Used for versioning if there will be any future changes
    * in format/algorithm of persisted store.
@@ -17,7 +17,7 @@ type VersionedStore = EncryptThenMacStoreType & {
   version: number
 }
 
-type EncryptThenMacStoreType = {
+export type EncryptThenMacStoreType = {
   iv: Uint8Array
   ciphertext: string
   mac: string
