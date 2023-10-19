@@ -76,6 +76,7 @@ const getStories = () => {
     "./storybook/stories/RadioButton.stories.tsx": require("../storybook/stories/RadioButton.stories.tsx"),
     "./storybook/stories/StackedImages.stories.tsx": require("../storybook/stories/StackedImages.stories.tsx"),
     "./storybook/stories/SVGs.stories.tsx": require("../storybook/stories/SVGs.stories.tsx"),
+    "./storybook/stories/Tooltip.stories.tsx": require("../storybook/stories/Tooltip.stories.tsx"),
   };
 };
 
