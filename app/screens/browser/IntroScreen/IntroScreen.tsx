@@ -43,6 +43,8 @@ const BlueBackground = (): JSX.Element => {
 }
 
 const TokenImageWithGradient = (): JSX.Element => {
+  const platform = Platform.OS
+  const imageWidth = platform === 'ios' ? width + 300 : width + 250
   const image = useImage(require('assets/icons/browser_intro_screen_logos.png'))
   return (
     <Mask
@@ -60,7 +62,7 @@ const TokenImageWithGradient = (): JSX.Element => {
           image={image}
           x={-150}
           y={-219}
-          width={width + 300}
+          width={imageWidth}
           height={height - 210}
           fit="contain"
         />
@@ -148,7 +150,12 @@ export default function IntroScreen(): JSX.Element {
 
   return (
     <View style={{ flex: 1, paddingHorizontal: 16 }}>
-      <View style={{ marginTop: topPadding, zIndex: 1, position: 'absolute' }}>
+      <View
+        style={{
+          marginTop: topPadding,
+          zIndex: 1,
+          position: 'absolute'
+        }}>
         <HowToUseTheCoreBrowser />
         <Space y={16} />
         <Row style={{ alignItems: 'flex-start' }}>
