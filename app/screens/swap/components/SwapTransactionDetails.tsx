@@ -4,14 +4,12 @@ import { View } from 'react-native'
 import { Space } from 'components/Space'
 import AvaText from 'components/AvaText'
 import InputText from 'components/InputText'
-import { Popable } from 'react-native-popable'
 import NetworkFeeSelector, { FeePreset } from 'components/NetworkFeeSelector'
 import { Row } from 'components/Row'
 import Big from 'big.js'
-import { PopableContent } from 'components/PopableContent'
-import { PopableLabel } from 'components/PopableLabel'
 import { bigintToBig } from 'utils/bigNumbers/bigintToBig'
 import { useNetworkFee } from 'hooks/useNetworkFee'
+import { Tooltip } from 'components/Tooltip'
 
 const isSlippageValid = (value: string): boolean => {
   return Boolean(
@@ -38,9 +36,8 @@ interface SwapTransactionDetailProps {
   maxGasPrice?: string
 }
 
-const slippageInfoMessage = (
-  <PopableContent message="Suggested slippage – your transaction will fail if the price changes unfavorably more than this percentage" />
-)
+const slippageInfoMessage =
+  'Suggested slippage – your transaction will fail if the price changes unfavorably more than this percentage'
 
 const SwapTransactionDetail: FC<SwapTransactionDetailProps> = ({
   review = false,
@@ -54,18 +51,14 @@ const SwapTransactionDetail: FC<SwapTransactionDetailProps> = ({
   gasPrice,
   slippage,
   setSlippage
-}) => {
+}): JSX.Element => {
   const { theme } = useApplicationContext()
   const { data: networkFee } = useNetworkFee()
 
-  const netFeeInfoMessage = (
-    <PopableContent
-      message={`Gas limit: ${gasLimit} \nGas price: ${bigintToBig(
-        gasPrice,
-        networkFee.displayDecimals
-      ).toFixed(0)} nAVAX`}
-    />
-  )
+  const netFeeInfoMessage = `Gas limit: ${gasLimit} \nGas price: ${bigintToBig(
+    gasPrice,
+    networkFee.displayDecimals
+  ).toFixed(0)} nAVAX`
 
   return (
     <View style={{ flex: 1, paddingHorizontal: 16 }}>
@@ -84,17 +77,13 @@ const SwapTransactionDetail: FC<SwapTransactionDetailProps> = ({
       </Row>
       <Space y={16} />
       <Row style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-        <Popable
+        <Tooltip
           content={slippageInfoMessage}
-          position={'top'}
-          strictPosition={true}
-          style={{ minWidth: 300, marginBottom: review ? 0 : -32 }}
-          backgroundColor={theme.neutral100}>
-          <PopableLabel
-            label="Slippage tolerance"
-            textStyle={{ color: theme.white }}
-          />
-        </Popable>
+          style={{ width: 200 }}
+          position="right"
+          textStyle={{ color: theme.white }}>
+          Slippage tolerance
+        </Tooltip>
         {review ? (
           <AvaText.Heading3>{slippage}%</AvaText.Heading3>
         ) : (
@@ -122,17 +111,13 @@ const SwapTransactionDetail: FC<SwapTransactionDetailProps> = ({
           <Space y={16} />
           <Row
             style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-            <Popable
+            <Tooltip
               content={netFeeInfoMessage}
               position={'right'}
-              strictPosition={true}
-              style={{ minWidth: 180 }}
-              backgroundColor={theme.neutral100}>
-              <PopableLabel
-                label="Network Fee"
-                textStyle={{ color: theme.white }}
-              />
-            </Popable>
+              style={{ width: 180 }}
+              textStyle={{ color: theme.white }}>
+              Network Fee
+            </Tooltip>
             <AvaText.Heading3>
               {new Big(gasPrice.toString())
                 .mul(gasLimit)

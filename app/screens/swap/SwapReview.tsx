@@ -12,7 +12,6 @@ import AvaButton from 'components/AvaButton'
 import { Row } from 'components/Row'
 import InfoSVG from 'components/svg/InfoSVG'
 import { interval, tap } from 'rxjs'
-import { Popable } from 'react-native-popable'
 import { bnToLocaleString } from '@avalabs/utils-sdk'
 import BN from 'bn.js'
 import {
@@ -23,6 +22,7 @@ import { calculateRate } from 'swap/utils'
 import { getTokenAddress } from 'swap/getSwapRate'
 import { TokenType } from 'store/balance'
 import { usePostCapture } from 'hooks/usePosthogCapture'
+import { Tooltip } from 'components/Tooltip'
 
 const SECOND = 1000
 
@@ -31,7 +31,7 @@ type Props = {
   onBackToParent: () => void
 }
 
-const SwapReview = ({ onCancel, onBackToParent }: Props) => {
+const SwapReview = ({ onCancel, onBackToParent }: Props): JSX.Element => {
   const {
     fromToken,
     toToken,
@@ -66,7 +66,7 @@ const SwapReview = ({ onCancel, onBackToParent }: Props) => {
     refresh()
   }, [refresh])
 
-  const onHandleSwap = () => {
+  const onHandleSwap = (): void => {
     capture('SwapConfirmed')
     if (
       fromToken &&
@@ -137,11 +137,11 @@ const SwapReview = ({ onCancel, onBackToParent }: Props) => {
       <ScrollView style={styles.container}>
         <Row style={{ justifyContent: 'space-between', marginHorizontal: 16 }}>
           <AvaText.LargeTitleBold>Review Order</AvaText.LargeTitleBold>
-          <Popable
+          <Tooltip
             content={'Quotes are refreshed to reflect current market prices'}
             position={'left'}
-            style={{ minWidth: 200 }}
-            backgroundColor={theme.neutral100}>
+            style={{ width: 200 }}
+            isLabelPopable>
             <Row
               style={{
                 backgroundColor: theme.colorBg2,
@@ -152,7 +152,7 @@ const SwapReview = ({ onCancel, onBackToParent }: Props) => {
               <Space x={4} />
               <InfoSVG />
             </Row>
-          </Popable>
+          </Tooltip>
         </Row>
         <Space y={20} />
         <AvaText.Heading3 textStyle={{ marginHorizontal: 16 }}>

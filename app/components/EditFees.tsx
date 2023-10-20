@@ -9,7 +9,6 @@ import { Row } from 'components/Row'
 import { calculateGasAndFees } from 'utils/Utils'
 import { Network } from '@avalabs/chains-sdk'
 import { useNativeTokenPriceForNetwork } from 'hooks/useNativeTokenPriceForNetwork'
-import { PopableContent } from './PopableContent'
 
 interface EditFeesProps {
   network: Network
@@ -19,9 +18,8 @@ interface EditFeesProps {
   onClose?: () => void
 }
 
-const gasLimitInfoInfoMessage = (
-  <PopableContent message="Gas limit is the maximum units of gas you are willing to use." />
-)
+const gasLimitInfoInfoMessage =
+  'Gas limit is the maximum units of gas you are willing to use.'
 
 const EditFees = ({
   network,
@@ -29,7 +27,7 @@ const EditFees = ({
   gasLimit,
   onSave,
   onClose
-}: EditFeesProps) => {
+}: EditFeesProps): JSX.Element => {
   const [newGasLimit, setNewGasLimit] = useState(gasLimit)
   const tokenPrice = useNativeTokenPriceForNetwork(network).nativeTokenPrice
   const [feeError, setFeeError] = useState('')
@@ -44,7 +42,7 @@ const EditFees = ({
     })
   )
 
-  const checkCustomGasLimit = (customGasLimit: string) => {
+  const checkCustomGasLimit = (customGasLimit: string): void => {
     try {
       const fees = calculateGasAndFees({
         gasPrice,
@@ -64,7 +62,7 @@ const EditFees = ({
     }
   }
 
-  const handleOnSave = () => {
+  const handleOnSave = (): void => {
     if (newGasLimit) {
       onSave(newGasLimit)
       onClose?.()

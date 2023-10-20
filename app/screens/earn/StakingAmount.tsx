@@ -23,17 +23,15 @@ import { Avax } from 'types/Avax'
 import { useCChainBalance } from 'hooks/earn/useCChainBalance'
 import { useGetClaimableBalance } from 'hooks/earn/useGetClaimableBalance'
 import { ActivityIndicator } from 'components/ActivityIndicator'
-import { PopableContent } from 'components/PopableContent'
-import { PopableLabel } from 'components/PopableLabel'
-import { Popable } from 'react-native-popable'
 import { useAvaxFormatter } from 'hooks/formatter/useAvaxFormatter'
 import { usePostCapture } from 'hooks/usePosthogCapture'
+import { Tooltip } from 'components/Tooltip'
 
 type ScreenProps = StakeSetupScreenProps<
   typeof AppNavigation.StakeSetup.SmartStakeAmount
 >
 
-export default function StakingAmount() {
+export default function StakingAmount(): JSX.Element {
   const { capture } = usePostCapture()
   const avaxFormatter = useAvaxFormatter()
   const { theme } = useApplicationContext()
@@ -78,28 +76,13 @@ export default function StakingAmount() {
 
   const [balanceInAvax] = avaxFormatter(cumulativeBalance, true)
 
-  function handleAmountChange(amount: Avax) {
+  function handleAmountChange(amount: Avax): void {
     setInputAmount(amount)
   }
 
-  function setAmount(factor: number) {
+  function setAmount(factor: number): void {
     capture('StakeUseAmountPercentage', { percent: (100 / factor).toString() })
     setInputAmount(cumulativeBalance.div(factor))
-  }
-
-  const renderBalanceInfo = () => {
-    return (
-      <Popable
-        content={PopableContent({
-          message: 'Final staking amount may be slightly lower due to fees'
-        })}
-        position="top"
-        strictPosition={true}
-        style={{ minWidth: 218 }}
-        backgroundColor={theme.neutral100}>
-        <PopableLabel label="" />
-      </Popable>
-    )
   }
 
   return (
@@ -112,17 +95,18 @@ export default function StakingAmount() {
       <Space y={40} />
       {fetchingBalance && <ActivityIndicator size="small" />}
       {!fetchingBalance && (
-        <>
-          <Row style={{ justifyContent: 'center', alignItems: 'center' }}>
+        <Row style={{ justifyContent: 'center' }}>
+          <Tooltip
+            content="Final staking amount may be slightly lower due to fees"
+            style={{ width: 150 }}>
             <AvaText.Subtitle1
               color={theme.neutral500}
               testID="available_balance">
               Balance:
               {' ' + balanceInAvax + ' AVAX'}
             </AvaText.Subtitle1>
-            {renderBalanceInfo()}
-          </Row>
-        </>
+          </Tooltip>
+        </Row>
       )}
       <Space y={40} />
       <EarnInputAmount

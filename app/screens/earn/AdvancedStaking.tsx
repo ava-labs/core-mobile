@@ -1,11 +1,8 @@
 import React from 'react'
-import { ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native'
+import { ScrollView, StyleSheet, View } from 'react-native'
 import AvaText from 'components/AvaText'
 import AvaButton from 'components/AvaButton'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { Popable } from 'react-native-popable'
-import { PopableLabel } from 'components/PopableLabel'
-import { PopableContent } from 'components/PopableContent'
 import { StakeSetupScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation, useRoute } from '@react-navigation/native'
@@ -15,6 +12,7 @@ import { z } from 'zod'
 import { FormInputText } from 'components/form/FormInputText'
 import { isEmpty } from 'lodash'
 import { usePostCapture } from 'hooks/usePosthogCapture'
+import { Tooltip } from 'components/Tooltip'
 import { Opacity50 } from '../../resources/Constants'
 
 type TFormProps = {
@@ -37,9 +35,8 @@ type ScreenProps = StakeSetupScreenProps<
   typeof AppNavigation.StakeSetup.AdvancedStaking
 >
 
-const AdvancedStaking = () => {
+const AdvancedStaking = (): JSX.Element => {
   const { capture } = usePostCapture()
-  const width = useWindowDimensions().width
   const { theme } = useApplicationContext()
   const { navigate } = useNavigation<ScreenProps['navigation']>()
   const { stakingAmount, stakingEndTime, selectedDuration } =
@@ -57,7 +54,7 @@ const AdvancedStaking = () => {
       maxFee: ''
     }
   })
-  const onSubmit = (data: TFormProps) => {
+  const onSubmit = (data: TFormProps): void => {
     capture('StakeStartNodeSearch', {
       from: 'AdvancedStakingScreen',
       duration: selectedDuration
@@ -89,13 +86,11 @@ const AdvancedStaking = () => {
         </AvaText.Subtitle1>
         <View>
           <View style={{ marginBottom: 24 }}>
-            <View style={{ alignSelf: 'flex-start', width: width / 2 }}>
-              <PopableComponent
-                label="Minimum Uptime"
-                message="This is a validator’s uptime, the minimum threshold for rewards is 80%"
-                minWidth={187}
-              />
-            </View>
+            <PopableComponent
+              label="Minimum Uptime"
+              message="This is a validator’s uptime, the minimum threshold for rewards is 80%"
+              width={130}
+            />
             <FormInputText
               control={control}
               name={'minUpTime'}
@@ -110,16 +105,11 @@ const AdvancedStaking = () => {
             </AvaText.Caption>
           </View>
           <View>
-            <View
-              style={{
-                alignSelf: 'flex-start'
-              }}>
-              <PopableComponent
-                label="Maximum Delegation Fee"
-                message="This is a range set by the protocol."
-                minWidth={141}
-              />
-            </View>
+            <PopableComponent
+              label="Maximum Delegation Fee"
+              message="This is a range set by the protocol."
+              width={141}
+            />
             <FormInputText
               control={control}
               name={'maxFee'}
@@ -149,30 +139,26 @@ const AdvancedStaking = () => {
 const PopableComponent = ({
   label,
   message,
-  minWidth
+  width
 }: {
   label: string
   message: string
-  minWidth: number
-}) => {
+  width: number
+}): JSX.Element => {
   const { theme } = useApplicationContext()
 
   return (
-    <Popable
-      content={<PopableContent message={message} />}
-      position={'top'}
-      style={{ minWidth }}
-      backgroundColor={theme.neutral100}>
-      <PopableLabel
-        label={label}
-        iconColor={theme.neutral50}
-        textStyle={{
-          color: theme.neutral50,
-          fontWeight: '600',
-          fontSize: 14
-        }}
-      />
-    </Popable>
+    <Tooltip
+      content={message}
+      style={{ width }}
+      iconColor={theme.neutral50}
+      textStyle={{
+        color: theme.neutral50,
+        fontWeight: '600',
+        fontSize: 14
+      }}>
+      {label}
+    </Tooltip>
   )
 }
 
