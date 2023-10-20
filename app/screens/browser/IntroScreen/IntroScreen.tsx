@@ -119,7 +119,6 @@ const RocketText = (): JSX.Element | null => {
 
 export default function IntroScreen(): JSX.Element | null {
   const dispatch = useDispatch()
-
   const onInstructionRead = (): void => {
     dispatch(setViewOnce(ViewOnceKey.BROWSER_INTERACTION))
   }
