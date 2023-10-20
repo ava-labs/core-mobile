@@ -1,28 +1,21 @@
-import { PopableContent } from 'components/PopableContent'
-import { PopableLabel } from 'components/PopableLabel'
+import { Tooltip } from 'components/Tooltip'
 import QuestionSVG from 'components/svg/QuestionSVG'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import React from 'react'
-import { Popable } from 'react-native-popable'
 
-const UnableToEstimate = () => {
+const UnableToEstimate = (): JSX.Element => {
   const { theme } = useApplicationContext()
 
   return (
-    <Popable
-      content={PopableContent({
-        message: 'Unable to estimate due to network conditions'
-      })}
-      position="top"
-      strictPosition={true}
-      style={{ minWidth: 218 }}
-      backgroundColor={theme.neutral100}>
-      <PopableLabel
-        label="Unable to Estimate"
-        textStyle={{ color: theme.white }}
-        icon={<QuestionSVG color={theme.neutral50} />}
-      />
-    </Popable>
+    <Tooltip
+      content={'Unable to estimate due to network conditions'}
+      style={{ width: 218 }}
+      caretPosition="right"
+      caretStyle={{ margin: 5 }}
+      textStyle={{ color: theme.white }}
+      icon={<QuestionSVG color={theme.neutral50} />}>
+      Unable to Estimate
+    </Tooltip>
   )
 }
 

@@ -1,11 +1,10 @@
 import React from 'react'
 import AvaText from 'components/AvaText'
-import { PopableContent } from 'components/PopableContent'
 import { Row } from 'components/Row'
 import { Space } from 'components/Space'
 import InfoSVG from 'components/svg/InfoSVG'
-import { Popable } from 'react-native-popable'
 import { useApplicationContext } from 'contexts/ApplicationContext'
+import { Tooltip } from 'components/Tooltip'
 
 export type IPopableContentWithCaption = {
   label: string
@@ -17,16 +16,16 @@ export const PopableContentWithCaption = ({
   label,
   message,
   contentWidth = 110
-}: IPopableContentWithCaption) => {
+}: IPopableContentWithCaption): JSX.Element => {
   const { theme } = useApplicationContext()
 
   return (
-    <Popable
-      content={<PopableContent message={message} />}
+    <Tooltip
+      content={message}
       position="right"
       style={{ width: contentWidth }}
-      strictPosition={true}
-      backgroundColor={theme.neutral100}>
+      hitslop={{ left: 25, right: 5, top: 5, bottom: 5 }}
+      isLabelPopable>
       <Row style={{ alignItems: 'center' }}>
         <AvaText.Caption textStyle={{ color: theme.neutral400 }}>
           {label}
@@ -34,6 +33,6 @@ export const PopableContentWithCaption = ({
         <Space x={4} />
         <InfoSVG size={12} />
       </Row>
-    </Popable>
+    </Tooltip>
   )
 }

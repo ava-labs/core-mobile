@@ -14,7 +14,6 @@ import AppNavigation from 'navigation/AppNavigation'
 import { SendTokensScreenProps } from 'navigation/types'
 import { formatLargeNumber } from 'utils/Utils'
 import SendRow from 'components/SendRow'
-import { Popable } from 'react-native-popable'
 import { bnToLocaleString } from '@avalabs/utils-sdk'
 import PoppableGasAndLimit from 'components/PoppableGasAndLimit'
 import { ActivityIndicator } from 'components/ActivityIndicator'
@@ -22,14 +21,18 @@ import {
   RemoveEvents,
   useBeforeRemoveListener
 } from 'hooks/useBeforeRemoveListener'
-import { PopableLabel } from 'components/PopableLabel'
 import { usePostCapture } from 'hooks/usePosthogCapture'
+import { Tooltip } from 'components/Tooltip'
 
 type NavigationProp = SendTokensScreenProps<
   typeof AppNavigation.Send.Review
 >['navigation']
 
-export default function ReviewSend({ onSuccess }: { onSuccess: () => void }) {
+export default function ReviewSend({
+  onSuccess
+}: {
+  onSuccess: () => void
+}): JSX.Element {
   const { theme } = useApplicationContext()
   const { goBack } = useNavigation<NavigationProp>()
   const { capture } = usePostCapture()
@@ -46,7 +49,7 @@ export default function ReviewSend({ onSuccess }: { onSuccess: () => void }) {
     sendStatusMsg
   } = useSendTokenContext()
 
-  function handleSend() {
+  function handleSend(): void {
     onSendNow()
   }
 
@@ -126,7 +129,7 @@ export default function ReviewSend({ onSuccess }: { onSuccess: () => void }) {
         />
         <Space y={16} />
         <Row style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-          <Popable
+          <Tooltip
             content={
               <PoppableGasAndLimit
                 gasLimit={fees.gasLimit ?? 0}
@@ -134,10 +137,9 @@ export default function ReviewSend({ onSuccess }: { onSuccess: () => void }) {
               />
             }
             position={'right'}
-            style={{ minWidth: 200 }}
-            backgroundColor={theme.neutral100}>
-            <PopableLabel label="Network Fee" />
-          </Popable>
+            style={{ width: 200 }}>
+            Network Fee
+          </Tooltip>
           <AvaText.Heading2 testID="review_and_send__network_fee" currency>
             {fees.sendFeeInCurrency}
           </AvaText.Heading2>

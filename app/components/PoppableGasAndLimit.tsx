@@ -10,7 +10,10 @@ type Props = {
   gasPrice: string
 }
 
-export default function PoppableGasAndLimit({ gasLimit, gasPrice }: Props) {
+export default function PoppableGasAndLimit({
+  gasLimit,
+  gasPrice
+}: Props): JSX.Element {
   const { theme } = useApplicationContext()
 
   return (
