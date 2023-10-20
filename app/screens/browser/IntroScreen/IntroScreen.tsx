@@ -25,7 +25,7 @@ import SearchIcon from 'assets/icons/search.svg'
 import { useDispatch } from 'react-redux'
 import { setViewOnce, ViewOnceKey } from 'store/viewOnce'
 
-const TOO_COLOR = '#000000'
+const TO_COLOR = '#000000'
 const FROM_COLOR = '#007AFF'
 
 const { height, width } = Dimensions.get('screen')
@@ -36,7 +36,7 @@ const BlueBackground = (): JSX.Element => {
       <LinearGradient
         start={vec(width + 900, 0)}
         end={vec(width + 200, height)}
-        colors={[FROM_COLOR, TOO_COLOR]}
+        colors={[FROM_COLOR, TO_COLOR]}
       />
     </Box>
   )
