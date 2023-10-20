@@ -34,7 +34,7 @@ const BlueBackground = (): JSX.Element => {
   return (
     <Box box={rrect(rect(0, 0, 358, 640), 8, 8)}>
       <LinearGradient
-        start={vec(1300, 0)}
+        start={vec(width + 900, 0)}
         end={vec(width + 200, height)}
         colors={[FROM_COLOR, TOO_COLOR]}
       />
@@ -56,7 +56,13 @@ const TokenImageWithGradient = (): JSX.Element => {
         </Rect>
       }>
       {image && (
-        <Image image={image} x={-145} y={-219} width={695} height={623} />
+        <Image
+          image={image}
+          x={width - 550}
+          y={-219}
+          width={width + 310}
+          height={height - 210}
+        />
       )}
     </Mask>
   )
