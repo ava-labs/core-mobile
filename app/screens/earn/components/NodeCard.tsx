@@ -37,7 +37,7 @@ export const NodeCard = ({
   data: NodeValidator
   stakingAmount: Avax
   stakingEndTime: Date
-}) => {
+}): JSX.Element => {
   const { theme } = useApplicationContext()
   const [isCardExpanded, setIsCardExpanded] = useState(false)
   const { navigate } = useNavigation<NavigationProp>()

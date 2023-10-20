@@ -23,7 +23,7 @@ const NFTSendStack = createStackNavigator<NFTSendStackParamList>()
 
 type NFTSendScreenProp = NFTDetailsScreenProps<typeof AppNavigation.Nft.Send>
 
-export default function NFTSendScreenStack() {
+export default function NFTSendScreenStack(): JSX.Element | null {
   const { params } = useRoute<NFTSendScreenProp['route']>()
   const item = 'nft' in params ? params.nft : undefined
   const { sendBlocked } = usePosthogContext()
@@ -70,9 +70,9 @@ type AddressPickNavigationProp = NFTDetailsSendScreenProps<
   typeof AppNavigation.NftSend.AddressPick
 >['navigation']
 
-const NftSendScreen = () => {
+const NftSendScreen = (): JSX.Element => {
   const { navigate } = useNavigation<AddressPickNavigationProp>()
-  const showReviewScreen = () => {
+  const showReviewScreen = (): void => {
     navigate(AppNavigation.NftSend.Review)
   }
 
@@ -88,10 +88,10 @@ type ReviewNavigationProp = NFTDetailsSendScreenProps<
   typeof AppNavigation.NftSend.Review
 >['navigation']
 
-const NftReviewScreen = () => {
+const NftReviewScreen = (): JSX.Element => {
   const navigation = useNavigation<ReviewNavigationProp>()
 
-  const onSuccess = () => {
+  const onSuccess = (): void => {
     navigation.getParent()?.getParent()?.goBack()
   }
   return <NftReview onSuccess={onSuccess} />
@@ -101,7 +101,7 @@ type SuccessScreenProp = NFTDetailsSendScreenProps<
   typeof AppNavigation.NftSend.Success
 >
 
-const SuccessScreen = () => {
+const SuccessScreen = (): JSX.Element => {
   const { goBack } = useNavigation<SuccessScreenProp['navigation']>()
 
   const { transactionId } = useRoute<SuccessScreenProp['route']>().params

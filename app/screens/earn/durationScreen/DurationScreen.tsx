@@ -19,13 +19,13 @@ import {
   StakeDurationTitle,
   TWO_WEEKS
 } from 'services/earn/getStakeEndDate'
-import InfoSVG from 'components/svg/InfoSVG'
-import { Popable } from 'react-native-popable'
 import Logger from 'utils/Logger'
 import { DOCS_STAKING } from 'resources/Constants'
 import { useNow } from 'hooks/time/useNow'
 import { BackButton } from 'components/BackButton'
 import { usePostCapture } from 'hooks/usePosthogCapture'
+import { Tooltip } from 'components/Tooltip'
+import InfoSVG from 'components/svg/InfoSVG'
 import { CustomDurationOptionItem } from './components/CustomDurationOptionItem'
 import { DurationOptionItem } from './components/DurationOptionItem'
 
@@ -33,7 +33,7 @@ type ScreenProps = StakeSetupScreenProps<
   typeof AppNavigation.StakeSetup.StakingDuration
 >
 
-export const StakingDuration = () => {
+export const StakingDuration = (): JSX.Element => {
   const { capture } = usePostCapture()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const currentDate = useNow()
@@ -70,7 +70,7 @@ export const StakingDuration = () => {
     const isCustomSelected =
       selectedDuration.title === StakeDurationTitle.CUSTOM
 
-    const customGoBack = () => {
+    const customGoBack = (): void => {
       isCustomSelected ? selectMinDuration() : goBack()
     }
 
@@ -80,7 +80,7 @@ export const StakingDuration = () => {
     })
   }, [goBack, selectMinDuration, selectedDuration.title, setOptions])
 
-  const onRadioSelect = (durationOption: DurationOption) => {
+  const onRadioSelect = (durationOption: DurationOption): void => {
     if (selectedDuration?.title === durationOption.title) {
       if (durationOption.title === StakeDurationTitle.CUSTOM) {
         selectMinDuration()
@@ -98,12 +98,12 @@ export const StakingDuration = () => {
     setStakeEndTime(calculatedStakeEndTime)
   }
 
-  const handleDateConfirm = (dateInput: Date) => {
+  const handleDateConfirm = (dateInput: Date): void => {
     setSelectedDuration(CUSTOM)
     setStakeEndTime(dateInput)
   }
 
-  const navigateToNodeSearch = () => {
+  const navigateToNodeSearch = (): void => {
     if (stakeEndTime) {
       capture('StakeStartNodeSearch', {
         duration: selectedDuration.title,
@@ -116,7 +116,7 @@ export const StakingDuration = () => {
     }
   }
 
-  const navigateToAdvancedStaking = () => {
+  const navigateToAdvancedStaking = (): void => {
     if (stakeEndTime) {
       capture('StakeSelectAdvancedStaking')
       navigate(AppNavigation.StakeSetup.AdvancedStaking, {
@@ -127,14 +127,14 @@ export const StakingDuration = () => {
     }
   }
 
-  const handleReadMore = () => {
+  const handleReadMore = (): void => {
     capture('StakeOpenStakingDocs', { from: 'DurationScreen' })
     Linking.openURL(DOCS_STAKING).catch(e => {
       Logger.error(DOCS_STAKING, e)
     })
   }
 
-  const renderDurationOptions = () => {
+  const renderDurationOptions = (): JSX.Element[] => {
     const durationOptions = isDeveloperMode
       ? DURATION_OPTIONS_FUJI
       : DURATION_OPTIONS_MAINNET
@@ -152,7 +152,7 @@ export const StakingDuration = () => {
     })
   }
 
-  const renderCustomOption = () => (
+  const renderCustomOption = (): JSX.Element => (
     <CustomDurationOptionItem
       stakeAmount={stakingAmount}
       stakeEndTime={stakeEndTime}
@@ -161,13 +161,12 @@ export const StakingDuration = () => {
     />
   )
 
-  const renderFooter = () => (
+  const renderFooter = (): JSX.Element => (
     <View>
-      <Popable
+      <Tooltip
         content={renderPopoverInfoText()}
-        position={'top'}
-        style={{ minWidth: 246 }}
-        backgroundColor={theme.neutral100}>
+        style={{ width: 246 }}
+        isLabelPopable>
         <AvaText.Caption
           textStyle={{
             color: theme.neutral400,
@@ -179,7 +178,7 @@ export const StakingDuration = () => {
           <Space x={8} />
           <InfoSVG size={13.33} />
         </AvaText.Caption>
-      </Popable>
+      </Tooltip>
       <Space y={12} />
       <AvaButton.PrimaryLarge
         disabled={isNextDisabled}
@@ -194,7 +193,7 @@ export const StakingDuration = () => {
     </View>
   )
 
-  const renderPopoverInfoText = () => (
+  const renderPopoverInfoText = (): JSX.Element => (
     <View
       style={{
         marginHorizontal: 8,

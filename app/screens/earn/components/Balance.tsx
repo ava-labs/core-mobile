@@ -13,20 +13,18 @@ import { useAvaxFormatter } from 'hooks/formatter/useAvaxFormatter'
 import { useWeiAvaxFormatter } from 'hooks/formatter/useWeiAvaxFormatter'
 import { useNAvaxFormatter } from 'hooks/formatter/useNAvaxFormatter'
 import { BalanceItem } from 'screens/earn/components/BalanceItem'
-import { PopableLabel } from 'components/PopableLabel'
 import { Row } from 'components/Row'
-import { Popable } from 'react-native-popable'
 import { useImportAnyStuckFunds } from 'hooks/earn/useImportAnyStuckFunds'
 import { Avax } from 'types/Avax'
-import { PopableContent } from 'components/PopableContent'
 import { usePostCapture } from 'hooks/usePosthogCapture'
+import { Tooltip } from 'components/Tooltip'
 import { getStakePrimaryColor } from '../utils'
 import { BalanceLoader } from './BalanceLoader'
 import { CircularProgress } from './CircularProgress'
 
 type ScreenProps = EarnScreenProps<typeof AppNavigation.Earn.StakeDashboard>
 
-export const Balance = () => {
+export const Balance = (): JSX.Element | null => {
   const { capture } = usePostCapture()
   const { theme } = useApplicationContext()
   const { navigate } = useNavigation<ScreenProps['navigation']>()
@@ -85,7 +83,7 @@ export const Balance = () => {
     }
   ]
 
-  const goToGetStarted = () => {
+  const goToGetStarted = (): void => {
     capture('StakeBegin', { from: 'BalanceScreen' })
     navigate(AppNavigation.Wallet.Earn, {
       screen: AppNavigation.Earn.StakeSetup,
@@ -95,20 +93,20 @@ export const Balance = () => {
     })
   }
 
-  const goToClaimRewards = () => {
+  const goToClaimRewards = (): void => {
     capture('StakeClaim')
     navigate(AppNavigation.Wallet.Earn, {
       screen: AppNavigation.Earn.ClaimRewards
     })
   }
 
-  const renderStakeButton = () => (
+  const renderStakeButton = (): JSX.Element => (
     <AvaButton.PrimaryLarge onPress={goToGetStarted}>
       Stake
     </AvaButton.PrimaryLarge>
   )
 
-  const renderStakeAndClaimButton = () => (
+  const renderStakeAndClaimButton = (): JSX.Element => (
     <View
       style={{
         flexDirection: 'row',
@@ -174,21 +172,14 @@ export const Balance = () => {
   )
 }
 
-function InaccurateBalancePoppable() {
-  const { theme } = useApplicationContext()
-
+function InaccurateBalancePoppable(): JSX.Element {
   return (
-    <Popable
-      content={
-        <PopableContent
-          message={'Balance may be inaccurate due to network issues'}
-        />
-      }
-      position="top"
-      style={{ minWidth: 200 }}
-      strictPosition={true}
-      backgroundColor={theme.neutral100}>
-      <PopableLabel label="" />
-    </Popable>
+    <Tooltip
+      caretPosition="right"
+      caretStyle={{ margin: 5 }}
+      content="Balance may be inaccurate due to network issues"
+      style={{ width: 200 }}>
+      {''}
+    </Tooltip>
   )
 }

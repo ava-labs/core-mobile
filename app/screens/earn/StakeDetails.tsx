@@ -12,9 +12,6 @@ import TokenAddress from 'components/TokenAddress'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Row } from 'components/Row'
 import Separator from 'components/Separator'
-import { PopableLabel } from 'components/PopableLabel'
-import { PopableContent } from 'components/PopableContent'
-import { Popable } from 'react-native-popable'
 import { ScrollView } from 'react-native-gesture-handler'
 import { useStake } from 'hooks/earn/useStake'
 import { useNAvaxFormatter } from 'hooks/formatter/useNAvaxFormatter'
@@ -24,12 +21,13 @@ import { humanize } from 'utils/string/humanize'
 import { RewardType } from '@avalabs/glacier-sdk'
 import { isOnGoing } from 'utils/earn/status'
 import { estimatesTooltipText } from 'consts/earn'
+import { Tooltip } from 'components/Tooltip'
 import { StatusChip } from './components/StatusChip'
 import { StakeProgress } from './components/StakeProgress'
 
 type ScreenProps = EarnScreenProps<typeof AppNavigation.Earn.StakeDetails>
 
-const StakeDetails = () => {
+const StakeDetails = (): JSX.Element | null => {
   const { theme } = useApplicationContext()
   const { setOptions } = useNavigation<ScreenProps['navigation']>()
   const {
@@ -62,7 +60,7 @@ const StakeDetails = () => {
 
   const endDate = fromUnixTime(stake.endTimestamp || 0)
 
-  const renderHeader = () => {
+  const renderHeader = (): JSX.Element => {
     return (
       <View style={styles.header}>
         <StakeLogoBigSVG />
@@ -79,7 +77,7 @@ const StakeDetails = () => {
     )
   }
 
-  const renderActiveDetails = () => {
+  const renderActiveDetails = (): JSX.Element => {
     const formattedEndDate = format(endDate, 'LLLL d, yyyy, H:mm aa')
     const remainingTime = humanize(getReadableDateDuration(endDate))
     const [estimatedRewardInAvax, estimatedRewardInCurrency] = nAvaxFormatter(
@@ -90,17 +88,13 @@ const StakeDetails = () => {
     return (
       <>
         <Row style={styles.row}>
-          <Popable
-            content={<PopableContent message={estimatesTooltipText} />}
+          <Tooltip
+            content={estimatesTooltipText}
             position="right"
-            strictPosition={true}
-            style={{ minWidth: 200 }}
-            backgroundColor={theme.neutral100}>
-            <PopableLabel
-              label="Estimated Rewards"
-              textStyle={{ lineHeight: 24, color: theme.colorText1 }}
-            />
-          </Popable>
+            style={{ width: 200 }}
+            textStyle={{ lineHeight: 24, color: theme.colorText1 }}>
+            Estimated Rewards
+          </Tooltip>
           <View style={{ alignItems: 'flex-end' }}>
             <AvaText.Heading4 color={theme.colorBgGreen}>
               {estimatedRewardInAvax} AVAX
@@ -126,7 +120,7 @@ const StakeDetails = () => {
     )
   }
 
-  const renderCompletedDetails = () => {
+  const renderCompletedDetails = (): JSX.Element => {
     const endDateStr = format(endDate, 'MM/dd/yyyy')
     const rewardUtxo = stake.emittedUtxos.find(
       utxo => utxo.rewardType === RewardType.DELEGATOR
@@ -180,7 +174,7 @@ const StakeDetails = () => {
       </>
     )
   }
-  const renderBody = () => {
+  const renderBody = (): JSX.Element => {
     const stakeAmount = stake.amountStaked?.[0]?.amount
     const [stakeAmountInAvax, stakeAmountInCurrency] = nAvaxFormatter(
       stakeAmount,
@@ -207,7 +201,7 @@ const StakeDetails = () => {
     )
   }
 
-  const renderProgress = () => {
+  const renderProgress = (): JSX.Element => {
     if (!isActive) return <StakeProgress progress={100} />
 
     const start = fromUnixTime(stake.startTimestamp || 0).getTime()

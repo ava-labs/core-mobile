@@ -4,12 +4,11 @@ import { DeFiInsuranceBuyerItem } from 'services/defi/types'
 import React from 'react'
 import { Row } from 'components/Row'
 import { View } from 'react-native'
-import { Popable } from 'react-native-popable'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { useExchangedAmount } from 'hooks/defi/useExchangedAmount'
-import { PopableContent } from 'components/PopableContent'
 import { format } from 'date-fns'
 import { Space } from 'components/Space'
+import { Tooltip } from 'components/Tooltip'
 
 interface Props {
   items: DeFiInsuranceBuyerItem[]
@@ -49,14 +48,11 @@ export const DeFiPortfolioInsuranceBuyer: FC<Props> = ({ items }) => {
                   marginRight: 10,
                   maxWidth: '80%'
                 }}>
-                <Popable
-                  content={<PopableContent message={description} />}
-                  position="top"
-                  backgroundColor={theme.neutral100}>
+                <Tooltip content={description}>
                   <AvaText.Body2 ellipsizeMode="tail" color={theme.neutral50}>
                     {item.description}
                   </AvaText.Body2>
-                </Popable>
+                </Tooltip>
               </Row>
               <AvaText.Body2 color={theme.neutral50}>
                 {getAmount(item.netUsdValue)}
