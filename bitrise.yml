@@ -120,12 +120,14 @@ workflows:
     before_run:
     - _install-node-18
     steps:
-    - restore-npm-cache@1: {}
     - script-runner@0:
         title: Yarn Setup
         inputs:
         - file_path: scripts/bitrise/yarnSetup.sh
-    - save-npm-cache@1: {}
+    - change-workdir@1:
+        inputs:
+        - is_create_path: "false"
+        - path: packages/core-mobile
     - script-runner@0:
         title: Download Env Files
         inputs:
