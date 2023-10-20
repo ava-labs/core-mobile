@@ -120,10 +120,20 @@ workflows:
     before_run:
     - _install-node-18
     steps:
+    - restore-cache@1:
+        title: Restore NPM Cache
+        inputs:
+        - key: '{{ .OS }}-{{ .Arch }}-npm-cache-{{ checksum "yarn.lock" }}'
     - script-runner@0:
         title: Yarn Setup
         inputs:
         - file_path: scripts/bitrise/yarnSetup.sh
+    - save-cache@1:
+        title: Save NPM Cache
+        inputs:
+        - paths: .yarn/cache
+        - is_key_unique: "true"
+        - key: '{{ .OS }}-{{ .Arch }}-npm-cache-{{ checksum "yarn.lock" }}'
     - change-workdir@1:
         inputs:
         - is_create_path: "false"
