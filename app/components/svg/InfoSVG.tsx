@@ -8,7 +8,7 @@ interface Prop {
   testID?: string
 }
 
-function InfoSVG({ color, size = 14 }: Prop) {
+function InfoSVG({ color, size = 14 }: Prop): JSX.Element {
   const context = useApplicationContext()
   const iconColor = color ?? context.theme.colorText2
   return (

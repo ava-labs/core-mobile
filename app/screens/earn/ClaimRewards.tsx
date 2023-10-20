@@ -7,9 +7,6 @@ import { usePChainBalance } from 'hooks/earn/usePChainBalance'
 import { useIsFocused, useNavigation, useRoute } from '@react-navigation/native'
 import Separator from 'components/Separator'
 import AvaText from 'components/AvaText'
-import { Popable } from 'react-native-popable'
-import { PopableContent } from 'components/PopableContent'
-import { PopableLabel } from 'components/PopableLabel'
 import { Row } from 'components/Row'
 import { useSelector } from 'react-redux'
 import { selectActiveNetwork } from 'store/network'
@@ -23,12 +20,13 @@ import { useTimeElapsed } from 'hooks/time/useTimeElapsed'
 import Spinner from 'components/animation/Spinner'
 import { timeToShowNetworkFeeError } from 'consts/earn'
 import { usePostCapture } from 'hooks/usePosthogCapture'
+import { Tooltip } from 'components/Tooltip'
 import { ConfirmScreen } from './components/ConfirmScreen'
 import { EmptyClaimRewards } from './EmptyClaimRewards'
 
 type ScreenProps = EarnScreenProps<typeof AppNavigation.Earn.ClaimRewards>
 
-const ClaimRewards = () => {
+const ClaimRewards = (): JSX.Element | null => {
   const { capture } = usePostCapture()
   const { theme } = useApplicationContext()
   const { navigate, goBack } = useNavigation<ScreenProps['navigation']>()
@@ -73,7 +71,7 @@ const ClaimRewards = () => {
 
   const [feesInAvax, feesInCurrency] = avaxFormatter(totalFees, true)
 
-  const cancelClaim = () => {
+  const cancelClaim = (): void => {
     capture('StakeCancelClaim')
     if (onBack) {
       onBack()
@@ -82,7 +80,7 @@ const ClaimRewards = () => {
     }
   }
 
-  const renderFees = () => {
+  const renderFees = (): JSX.Element => {
     if (unableToGetFees) {
       return <Spinner size={22} />
     }
@@ -104,23 +102,23 @@ const ClaimRewards = () => {
     )
   }
 
-  function onFundsStuck() {
+  function onFundsStuck(): void {
     navigate(AppNavigation.Earn.FundsStuck, {
       onTryAgain: () => issueClaimRewards()
     })
   }
 
-  const issueClaimRewards = () => {
+  const issueClaimRewards = (): void => {
     capture('StakeIssueClaim')
     claimRewardsMutation.mutate()
   }
 
-  function onClaimSuccess() {
+  function onClaimSuccess(): void {
     capture('StakeClaimSuccess')
     goBack()
   }
 
-  function onClaimError(error: Error) {
+  function onClaimError(error: Error): void {
     capture('StakeClaimFail')
     showSimpleToast(error.message)
   }
@@ -158,16 +156,12 @@ const ClaimRewards = () => {
           justifyContent: 'space-between',
           alignItems: 'flex-start'
         }}>
-        <Popable
-          content={
-            <PopableContent message={'Fees paid to execute the transaction'} />
-          }
+        <Tooltip
+          content="Fees paid to execute the transaction"
           position="right"
-          strictPosition={true}
-          style={{ minWidth: 180 }}
-          backgroundColor={theme.neutral100}>
-          <PopableLabel label="Network Fee" />
-        </Popable>
+          style={{ width: 180 }}>
+          Network Fee
+        </Tooltip>
         {renderFees()}
       </Row>
     </ConfirmScreen>

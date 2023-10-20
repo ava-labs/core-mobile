@@ -19,6 +19,7 @@ interface Props {
   icon?: JSX.Element
   containerStyle?: StyleProp<ViewStyle>
   textStyle?: StyleProp<TextStyle>
+  isLabelPopable?: boolean
 }
 
 export const Tooltip = ({
@@ -29,8 +30,12 @@ export const Tooltip = ({
   position,
   backgroundColor,
   containerStyle,
+  wrapperStyle,
   textStyle,
+  caretPosition,
+  isLabelPopable = false,
   hitslop = { left: 15, right: 15, top: 15, bottom: 15 },
+  caretStyle,
   style
 }: Props & PopableProps): JSX.Element => {
   const { theme } = useApplicationContext()
@@ -44,7 +49,7 @@ export const Tooltip = ({
     }
   }
 
-  const renderChildren = (): JSX.Element => {
+  const renderLabel = (): JSX.Element => {
     if (children && typeof children === 'string') {
       return (
         <AvaText.Body2 textStyle={textStyle} color={theme.colorText1}>
@@ -78,6 +83,38 @@ export const Tooltip = ({
     return content
   }
 
+  const renderPopable = (popableLabel: JSX.Element | string): JSX.Element => {
+    return (
+      <Popable
+        ref={ref}
+        hitslop={hitslop}
+        strictPosition
+        onAction={handleOnAction}
+        content={renderContent()}
+        position={position}
+        caretPosition={caretPosition}
+        caretStyle={caretStyle}
+        wrapperStyle={wrapperStyle}
+        style={style}
+        backgroundColor={backgroundColor ?? theme.neutral100}>
+        {popableLabel}
+      </Popable>
+    )
+  }
+
+  const renderChildren = (): JSX.Element => {
+    if (isLabelPopable && typeof children !== 'string') {
+      return renderPopable(renderLabel())
+    }
+    return (
+      <>
+        {renderLabel()}
+        <Space x={4} />
+        {renderPopable(icon ?? <InfoSVG color={iconColor} />)}
+      </>
+    )
+  }
+
   return (
     <View style={containerStyle}>
       <Row
@@ -85,18 +122,6 @@ export const Tooltip = ({
           alignItems: 'center'
         }}>
         {renderChildren()}
-        <Space x={4} />
-        <Popable
-          ref={ref}
-          hitslop={hitslop}
-          strictPosition
-          onAction={handleOnAction}
-          content={renderContent()}
-          position={position}
-          style={style}
-          backgroundColor={backgroundColor ?? theme.neutral100}>
-          {icon ?? <InfoSVG color={iconColor} />}
-        </Popable>
       </Row>
     </View>
   )

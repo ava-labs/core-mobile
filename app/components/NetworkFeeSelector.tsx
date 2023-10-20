@@ -7,14 +7,12 @@ import { Space } from 'components/Space'
 import React, { FC, useCallback, useEffect, useMemo, useState } from 'react'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Opacity50 } from 'resources/Constants'
-import { Popable } from 'react-native-popable'
 import PoppableGasAndLimit from 'components/PoppableGasAndLimit'
 import { useSelector } from 'react-redux'
 import { NetworkVMType } from '@avalabs/chains-sdk'
 import { useNavigation } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
 import Big from 'big.js'
-import InfoSVG from 'components/svg/InfoSVG'
 import { WalletScreenProps } from 'navigation/types'
 import { selectActiveNetwork, selectNetwork } from 'store/network'
 import { VsCurrencyType } from '@avalabs/coingecko-sdk'
@@ -25,6 +23,7 @@ import { bigToBigint } from 'utils/bigNumbers/bigToBigint'
 import { useNetworkFee } from 'hooks/useNetworkFee'
 import { useNativeTokenPriceForNetwork } from 'hooks/useNativeTokenPriceForNetwork'
 import InputText from './InputText'
+import { Tooltip } from './Tooltip'
 
 export enum FeePreset {
   Normal = 'Normal',
@@ -143,7 +142,7 @@ const NetworkFeeSelector = ({
     <>
       <Row style={{ justifyContent: 'space-between', alignItems: 'center' }}>
         {!isBtcNetwork && (
-          <Popable
+          <Tooltip
             content={
               <PoppableGasAndLimit
                 gasLimit={gasLimit}
@@ -153,14 +152,9 @@ const NetworkFeeSelector = ({
               />
             }
             position={'right'}
-            style={{ minWidth: 200 }}
-            backgroundColor={theme.neutral100}>
-            <Row style={{ alignItems: 'center' }}>
-              <AvaText.Body2>Network Fee</AvaText.Body2>
-              <Space x={4} />
-              <InfoSVG />
-            </Row>
-          </Popable>
+            style={{ width: 200 }}>
+            <AvaText.Body2>Network Fee</AvaText.Body2>
+          </Tooltip>
         )}
         {network?.vmName === NetworkVMType.EVM && (
           <View>

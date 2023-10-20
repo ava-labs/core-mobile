@@ -19,11 +19,10 @@ import {
   useBeforeRemoveListener
 } from 'hooks/useBeforeRemoveListener'
 import { Row } from 'components/Row'
-import { Popable } from 'react-native-popable'
 import PoppableGasAndLimit from 'components/PoppableGasAndLimit'
 import { bnToLocaleString } from '@avalabs/utils-sdk'
-import { PopableLabel } from 'components/PopableLabel'
 import { usePostCapture } from 'hooks/usePosthogCapture'
+import { Tooltip } from 'components/Tooltip'
 
 type NavigationProp = NFTDetailsSendScreenProps<
   typeof AppNavigation.NftSend.Review
@@ -33,7 +32,9 @@ export type NftReviewScreenProps = {
   onSuccess: () => void
 }
 
-export default function NftReview({ onSuccess }: NftReviewScreenProps) {
+export default function NftReview({
+  onSuccess
+}: NftReviewScreenProps): JSX.Element {
   const { theme } = useApplicationContext()
   const { goBack } = useNavigation<NavigationProp>()
   const { capture } = usePostCapture()
@@ -117,7 +118,7 @@ export default function NftReview({ onSuccess }: NftReviewScreenProps) {
         />
         <Space y={16} />
         <Row style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-          <Popable
+          <Tooltip
             content={
               <PoppableGasAndLimit
                 gasLimit={fees.gasLimit ?? 0}
@@ -125,10 +126,9 @@ export default function NftReview({ onSuccess }: NftReviewScreenProps) {
               />
             }
             position={'right'}
-            style={{ minWidth: 200 }}
-            backgroundColor={theme.neutral100}>
-            <PopableLabel label="Network Fee" />
-          </Popable>
+            style={{ width: 200 }}>
+            Network Fee
+          </Tooltip>
           <AvaText.Heading2 currency>{fees.sendFeeInCurrency}</AvaText.Heading2>
         </Row>
         <Space y={16} />

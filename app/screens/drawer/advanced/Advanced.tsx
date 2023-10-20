@@ -10,16 +10,13 @@ import {
   toggleDeveloperMode,
   toggleLeftHanded
 } from 'store/settings/advanced'
-import { Popable } from 'react-native-popable'
 import AvaText from 'components/AvaText'
-import InfoSVG from 'components/svg/InfoSVG'
 import { Row } from 'components/Row'
-import { Space } from 'components/Space'
-import { PopableContent } from 'components/PopableContent'
 import { usePostCapture } from 'hooks/usePosthogCapture'
 import { selectUseLeftFab } from 'store/posthog'
+import { Tooltip } from 'components/Tooltip'
 
-const Advanced = () => {
+const Advanced = (): JSX.Element => {
   const { theme } = useApplicationContext()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const isLeftHanded = useSelector(selectIsLeftHanded)
@@ -27,11 +24,11 @@ const Advanced = () => {
   const dispatch = useDispatch()
   const { capture } = usePostCapture()
 
-  const onTestnetChange = (value: boolean) => {
+  const onTestnetChange = (value: boolean): void => {
     capture(value ? 'DeveloperModeEnabled' : 'DeveloperModeDisabled')
     dispatch(toggleDeveloperMode())
   }
-  const onLeftHandedChange = () => {
+  const onLeftHandedChange = (): void => {
     dispatch(toggleLeftHanded())
   }
 
@@ -41,22 +38,16 @@ const Advanced = () => {
         titleAlignment="flex-start"
         title={
           <Row style={{ alignItems: 'center' }}>
-            <Popable
-              content={
-                <PopableContent message="Testnet mode changes the interface to allow you to interact with supported testnets." />
-              }
-              position={'bottom'}
-              style={styles.widthStyle}
-              wrapperStyle={styles.widthStyle}
-              backgroundColor={theme.neutral100}>
+            <Tooltip
+              content="Testnet mode changes the interface to allow you to interact with supported testnets."
+              position={'right'}
+              style={styles.widthStyle}>
               <Row style={{ alignItems: 'center' }}>
                 <AvaText.Heading3 ellipsizeMode="tail">
                   Testnet Mode
                 </AvaText.Heading3>
-                <Space x={8} />
-                <InfoSVG />
               </Row>
-            </Popable>
+            </Tooltip>
           </Row>
         }
         background={theme.background}
@@ -73,22 +64,16 @@ const Advanced = () => {
           titleAlignment="flex-start"
           title={
             <Row style={{ alignItems: 'center' }}>
-              <Popable
-                content={
-                  <PopableContent message="Move FAB to left screen side." />
-                }
+              <Tooltip
+                content="Move FAB to left screen side."
                 position={'bottom'}
-                style={styles.widthStyle}
-                wrapperStyle={styles.widthStyle}
-                backgroundColor={theme.neutral100}>
+                style={styles.widthStyle}>
                 <Row style={{ alignItems: 'center' }}>
                   <AvaText.Heading3 ellipsizeMode="tail">
                     I'm left-handed
                   </AvaText.Heading3>
-                  <Space x={8} />
-                  <InfoSVG />
                 </Row>
-              </Popable>
+              </Tooltip>
             </Row>
           }
           background={theme.background}
@@ -103,7 +88,7 @@ const Advanced = () => {
 
 const styles = StyleSheet.create({
   widthStyle: {
-    minWidth: 250
+    width: 150
   }
 })
 
