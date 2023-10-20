@@ -4,7 +4,6 @@
   "scripts": {
     "setup": "yarn allow-scripts",
     "lint": "eslint .",
-    "lint:ci": "yarn run lint --quiet --format json --output-file eslint_report.json",
     "tsc": ""
   },
   "devDependencies": {
