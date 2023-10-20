@@ -28,7 +28,6 @@ import {
   selectBridgeConfig,
   selectBridgeTransactions
 } from 'store/bridge'
-import { selectIsReady } from 'store/app'
 import {
   useAvalancheProvider,
   useBitcoinProvider,
@@ -95,7 +94,6 @@ function LocalBridgeProvider({
   const config = bridgeConfig?.config
   const activeAccount = useSelector(selectActiveAccount)
   const bridgeTransactions = useSelector(selectBridgeTransactions)
-  const hydrationComplete = useSelector(selectIsReady)
   const { transferHandler, events } = useTransferAsset()
   const ethereumProvider = useEthereumProvider()
   const bitcoinProvider = useBitcoinProvider()
@@ -282,22 +280,14 @@ function LocalBridgeProvider({
 
   // load pending txs from storage
   useEffect(() => {
-    if (Object.values(bridgeTransactions).length > 0) {
-      Object.values(bridgeTransactions).forEach(tx => {
-        if (tx.complete === true) {
-          removeBridgeTransaction(tx)
-        } else {
-          subscribeToTransaction(tx)
-        }
-      })
-    }
-  }, [
-    hydrationComplete,
-    config,
-    bridgeTransactions,
-    subscribeToTransaction,
-    removeBridgeTransaction
-  ])
+    Object.values(bridgeTransactions).forEach(tx => {
+      if (tx.complete) {
+        removeBridgeTransaction(tx)
+      } else {
+        subscribeToTransaction(tx)
+      }
+    })
+  }, [bridgeTransactions, subscribeToTransaction, removeBridgeTransaction])
 
   return (
     <bridgeContext.Provider
