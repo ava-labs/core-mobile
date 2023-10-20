@@ -287,7 +287,7 @@ function LocalBridgeProvider({
         if (tx.complete === true) {
           removeBridgeTransaction(tx)
         } else {
-          subscribeToTransaction(tx as BridgeTransaction)
+          subscribeToTransaction(tx)
         }
       })
     }
