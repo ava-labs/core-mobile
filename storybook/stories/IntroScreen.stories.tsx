@@ -3,7 +3,7 @@ import type { Meta } from '@storybook/react-native'
 import IntroScreen from 'screens/browser/IntroScreen/IntroScreen'
 
 export default {
-  title: 'Browser/IntroScreenStub'
+  title: 'Browser/IntroScreen'
 } as Meta
 
 export const Basic = (): JSX.Element => {

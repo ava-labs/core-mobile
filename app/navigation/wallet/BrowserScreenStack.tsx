@@ -55,7 +55,7 @@ function BrowserScreenStack(): JSX.Element {
       <BrowserStack.Screen
         name={AppNavigation.Browser.Intro}
         options={{ headerShown: false }}
-        component={IntroStub}
+        component={IntroScreen}
       />
     </BrowserStack.Navigator>
   )
@@ -78,7 +78,7 @@ const renderNavigationHeader = ({
 
 export default React.memo(BrowserScreenStack)
 
-function IntroStub(): JSX.Element {
+function IntroScreen(): JSX.Element {
   return (
     <View>
       <IntroScreen />
