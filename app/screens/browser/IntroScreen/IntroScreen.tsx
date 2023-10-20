@@ -68,7 +68,7 @@ const TokenImageWithGradient = (): JSX.Element => {
   )
 }
 
-const HowToUseTheCoreBrowser = (): JSX.Element | null => {
+const HowToUseTheCoreBrowser = (): JSX.Element => {
   return (
     <View style={{ paddingHorizontal: 32 }}>
       <AvaText.Heading3
@@ -79,7 +79,7 @@ const HowToUseTheCoreBrowser = (): JSX.Element | null => {
   )
 }
 
-const SearchText = (): JSX.Element | null => {
+const SearchText = (): JSX.Element => {
   return (
     <View style={{ paddingHorizontal: 16 }}>
       <AvaText.Heading6
@@ -90,7 +90,7 @@ const SearchText = (): JSX.Element | null => {
   )
 }
 
-const WalletConnectText = (): JSX.Element | null => {
+const WalletConnectText = (): JSX.Element => {
   return (
     <View style={{ paddingHorizontal: 16 }}>
       <AvaText.Heading6
@@ -101,7 +101,7 @@ const WalletConnectText = (): JSX.Element | null => {
   )
 }
 
-const CoreOwlText = (): JSX.Element | null => {
+const CoreOwlText = (): JSX.Element => {
   return (
     <View style={{ paddingHorizontal: 16 }}>
       <AvaText.Heading6
@@ -112,7 +112,7 @@ const CoreOwlText = (): JSX.Element | null => {
   )
 }
 
-const RocketText = (): JSX.Element | null => {
+const RocketText = (): JSX.Element => {
   return (
     <View style={{ paddingHorizontal: 16 }}>
       <AvaText.Heading6
