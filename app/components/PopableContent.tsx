@@ -11,7 +11,7 @@ export const PopableContent = ({
   message: string
   backgroundColor?: string
   textStyle?: StyleProp<TextStyle>
-}) => {
+}): JSX.Element => {
   const { theme } = useApplicationContext()
 
   return (
