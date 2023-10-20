@@ -25,3 +25,10 @@ in NftFullScreen we have a type error related to rxjs
 to keep certain eslint plugins/configs from conflicting with each other
 
     
+### "jest": "29.4.2" & "jest-config": "29.4.2"
+
+to prevent the error below due to different versions of jest/jest-config conflicting
+
+```
+TypeError: Cannot read properties of undefined (reading 'testEnvironmentOptions')
+```
