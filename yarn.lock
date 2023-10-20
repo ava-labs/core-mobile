@@ -194,6 +194,7 @@ __metadata:
     deprecated-react-native-prop-types: 2.3.0
     detox: 20.2.0
     esbuild: 0.15.13
+    eslint: 8.50.0
     eth-rpc-errors: 4.0.3
     ethers: 6.7.1
     events: 3.3.0
