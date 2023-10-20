@@ -128,9 +128,12 @@ export default function IntroScreen(): JSX.Element | null {
   const onInstructionRead = (): void => {
     dispatch(setViewOnce(ViewOnceKey.BROWSER_INTERACTION))
   }
+  const topPadding = height > 750 ? 290 : 200
+  const bottomPadding = height > 750 ? 70 : 50
+
   return (
     <View style={{ flex: 1, paddingHorizontal: 16 }}>
-      <View style={{ marginTop: 290, zIndex: 1, position: 'absolute' }}>
+      <View style={{ marginTop: topPadding, zIndex: 1, position: 'absolute' }}>
         <HowToUseTheCoreBrowser />
         <Space y={16} />
         <Row style={{ alignItems: 'flex-start' }}>
@@ -188,7 +191,7 @@ export default function IntroScreen(): JSX.Element | null {
           bottom: 0,
           left: 16,
           paddingHorizontal: 16,
-          paddingBottom: 45,
+          paddingBottom: bottomPadding,
           width: '100%'
         }}>
         <AvaButton.PrimaryLarge onPress={onInstructionRead}>
