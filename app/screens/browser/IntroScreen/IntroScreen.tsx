@@ -71,10 +71,7 @@ const TokenImageWithGradient = (): JSX.Element => {
 const HowToUseTheCoreBrowser = (): JSX.Element => {
   return (
     <View style={{ paddingHorizontal: 32 }}>
-      <AvaText.Heading3
-        textStyle={{ fontSize: 34, lineHeight: 44, fontWeight: '700' }}>
-        How to use the Core Browser...
-      </AvaText.Heading3>
+      <AvaText.Heading3>How to use the Core Browser...</AvaText.Heading3>
     </View>
   )
 }
@@ -82,8 +79,7 @@ const HowToUseTheCoreBrowser = (): JSX.Element => {
 const SearchText = (): JSX.Element => {
   return (
     <View style={{ paddingHorizontal: 16 }}>
-      <AvaText.Heading6
-        textStyle={{ fontSize: 16, lineHeight: 24, fontWeight: '700' }}>
+      <AvaText.Heading6>
         Search for a website or browse suggested apps
       </AvaText.Heading6>
     </View>
@@ -93,8 +89,7 @@ const SearchText = (): JSX.Element => {
 const WalletConnectText = (): JSX.Element => {
   return (
     <View style={{ paddingHorizontal: 16 }}>
-      <AvaText.Heading6
-        textStyle={{ fontSize: 16, lineHeight: 24, fontWeight: '700' }}>
+      <AvaText.Heading6>
         On the website find “Connect” then tap Wallet Connect
       </AvaText.Heading6>
     </View>
@@ -115,10 +110,7 @@ const CoreOwlText = (): JSX.Element => {
 const RocketText = (): JSX.Element => {
   return (
     <View style={{ paddingHorizontal: 16 }}>
-      <AvaText.Heading6
-        textStyle={{ fontSize: 16, lineHeight: 24, fontWeight: '700' }}>
-        Conquer the cryptoverse!
-      </AvaText.Heading6>
+      <AvaText.Heading6>Conquer the cryptoverse!</AvaText.Heading6>
     </View>
   )
 }
