@@ -71,7 +71,14 @@ const TokenImageWithGradient = (): JSX.Element => {
 const HowToUseTheCoreBrowser = (): JSX.Element => {
   return (
     <View style={{ paddingHorizontal: 32 }}>
-      <AvaText.Heading3>How to use the Core Browser...</AvaText.Heading3>
+      <AvaText.Heading3
+        textStyle={{
+          fontSize: 34,
+          lineHeight: 44,
+          fontWeight: '700'
+        }}>
+        How to use the Core Browser...
+      </AvaText.Heading3>
     </View>
   )
 }
@@ -120,8 +127,8 @@ export default function IntroScreen(): JSX.Element | null {
   const onInstructionRead = (): void => {
     dispatch(setViewOnce(ViewOnceKey.BROWSER_INTERACTION))
   }
-  const topPadding = height > 750 ? 290 : 200
-  const bottomPadding = height > 750 ? 70 : 50
+  const topPadding = height * 0.33
+  const bottomPadding = height * 0.12
 
   return (
     <View style={{ flex: 1, paddingHorizontal: 16 }}>
