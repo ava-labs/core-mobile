@@ -1,7 +1,13 @@
+import fetch, { Headers, Request, Response } from 'node-fetch'
 import { server } from './node/server'
 
 // polyfill "fetch"
-global.fetch = require('node-fetch').default
+if (!global.fetch) {
+  global.fetch = fetch
+  global.Headers = Headers
+  global.Request = Request
+  global.Response = Response
+}
 
 // establish API mocking before all tests.
 beforeAll(() => {

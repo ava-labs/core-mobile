@@ -22,7 +22,6 @@
     "plist": "3.0.5",
     "ansi-regex": "4.1.1",
     "ansi-styles": "3.2.1",
-    "node-fetch": "2.6.7",
     "@types/react": "17.0.44",
     "@types/react-dom": "18.0.6",
     "rxjs": "7.5.6",
