@@ -6,6 +6,7 @@ import { noop } from '@avalabs/utils-sdk'
 import { View } from 'react-native'
 import AvaText from 'components/AvaText'
 import { AreYouSureModal } from 'screens/browser/AreYouSureModal'
+import IntroScreen from 'screens/browser/IntroScreen/IntroScreen'
 
 export type BrowserStackParamList = {
   [AppNavigation.Browser.Intro]: undefined
@@ -80,7 +81,7 @@ export default React.memo(BrowserScreenStack)
 function IntroStub(): JSX.Element {
   return (
     <View>
-      <AvaText.LargeTitleBold>IntroStub</AvaText.LargeTitleBold>
+      <IntroScreen />
     </View>
   )
 }

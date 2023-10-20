@@ -22,6 +22,8 @@ import WalletConnectSVG from 'components/svg/WalletConnectSVG'
 import CoreOwl from 'assets/icons/core_owl.svg'
 import RocketLaunch from 'assets/icons/rocket_launch.svg'
 import SearchIcon from 'assets/icons/search.svg'
+import { useDispatch } from 'react-redux'
+import { setViewOnce, ViewOnceKey } from 'store/viewOnce'
 
 const TOO_COLOR = '#000000'
 const FROM_COLOR = '#007AFF'
@@ -116,6 +118,11 @@ const RocketText = (): JSX.Element | null => {
 }
 
 export default function IntroScreen(): JSX.Element | null {
+  const dispatch = useDispatch()
+
+  const onInstructionRead = (): void => {
+    dispatch(setViewOnce(ViewOnceKey.CHART_INTERACTION))
+  }
   return (
     <View style={{ flex: 1, paddingHorizontal: 16 }}>
       <View style={{ marginTop: 290, zIndex: 1, position: 'absolute' }}>
@@ -179,7 +186,9 @@ export default function IntroScreen(): JSX.Element | null {
           paddingBottom: 45,
           width: '100%'
         }}>
-        <AvaButton.PrimaryLarge>Get started!</AvaButton.PrimaryLarge>
+        <AvaButton.PrimaryLarge onPress={onInstructionRead}>
+          Get started!
+        </AvaButton.PrimaryLarge>
       </View>
     </View>
   )
