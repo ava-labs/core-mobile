@@ -63,9 +63,6 @@ buck-out/
 /ios/Pods/
 /vendor/bundle/
 
-# Eslint
-eslint_report.json
-
 package-lock.json
 .markdownlint.json
 /.env*
