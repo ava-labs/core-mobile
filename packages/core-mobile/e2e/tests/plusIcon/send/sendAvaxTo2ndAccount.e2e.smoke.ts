@@ -1,4 +1,3 @@
-/* eslint-disable jest/expect-expect */
 import LoginRecoverWallet from '../../../helpers/loginRecoverWallet'
 import AccountManagePage from '../../../pages/accountManage.page'
 import ActivityTabPage from '../../../pages/activityTab.page'

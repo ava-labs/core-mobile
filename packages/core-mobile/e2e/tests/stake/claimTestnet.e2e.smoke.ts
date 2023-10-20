@@ -1,5 +1,4 @@
-/* eslint-disable jest/expect-expect */
-
+import { expect as jestExpect } from 'expect'
 import Actions from '../../helpers/actions'
 import Assert from '../../helpers/assertions'
 import AdvancedPage from '../../pages/burgerMenu/advanced.page'
@@ -10,7 +9,6 @@ import { warmup } from '../../helpers/warmup'
 import StakePage from '../../pages/Stake/stake.page'
 import ClaimPage from '../../pages/Stake/claim.page'
 
-const jestExpect = require('expect')
 const platformIndex = Actions.platform() === Platform.iOS ? 1 : 2
 
 describe('Stake: testnet flow', () => {

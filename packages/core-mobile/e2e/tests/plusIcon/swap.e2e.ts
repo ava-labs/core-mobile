@@ -1,4 +1,4 @@
-/* eslint-disable jest/expect-expect */
+import { expect as jestExpect } from 'expect'
 import Actions from '../../helpers/actions'
 import activityTabPage from '../../pages/activityTab.page'
 import delay from '../../helpers/waits'
@@ -9,8 +9,6 @@ import { warmup } from '../../helpers/warmup'
 import PlusMenuPage from '../../pages/plusMenu.page'
 import SwapTabPage from '../../pages/swapTab.page'
 import Assert from '../../helpers/assertions'
-
-const jestExpect = require('expect')
 
 describe('Send Avax to another account', () => {
   beforeAll(async () => {

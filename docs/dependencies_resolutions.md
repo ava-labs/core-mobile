@@ -25,3 +25,6 @@ in NftFullScreen we have a type error related to rxjs
 to keep certain eslint plugins/configs from conflicting with each other
 
     
+### "jest": "29.7.0"
+
+to prevent error when running detox due to different versions of jest conflicting

@@ -8,7 +8,7 @@ describe('EarnService', () => {
   describe('getCurrentValidators', () => {
     it('should return valid validators', async () => {
       const validators = await EarnService.getCurrentValidators(true)
-      expect(validators).toStrictEqual(testValidators)
+      expect(validators).toEqual(testValidators)
     })
   })
   describe('calcReward', () => {

@@ -1,8 +1,7 @@
+import { expect as jestExpect } from 'expect'
 import claimScreenLoc from '../../locators/Stake/claimScreen.loc'
 import Assert from '../../helpers/assertions'
 import Actions from '../../helpers/actions'
-
-const jestExpect = require('expect')
 
 class ClaimPage {
   get avaLogo() {

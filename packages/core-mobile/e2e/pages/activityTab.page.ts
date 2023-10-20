@@ -1,3 +1,4 @@
+import { expect as jestExpect } from 'expect'
 import Action from '../helpers/actions'
 import AccountManagePage from '../pages/accountManage.page'
 import Assert from '../helpers/assertions'
@@ -9,7 +10,6 @@ import PortfolioPage from '../pages/portfolio.page'
 import TransactionDetailsPage from '../pages/transactionDetails.page'
 
 const platformIndex = Action.platform() === Platform.iOS ? 1 : 0
-const jestExpect = require('expect')
 
 class ActivityTabPage {
   get address() {

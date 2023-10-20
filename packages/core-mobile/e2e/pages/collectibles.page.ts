@@ -1,12 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-
+import { expect as jestExpect } from 'expect'
 import Action from '../helpers/actions'
 import Assert from '../helpers/assertions'
 import Collectibles from '../locators/collectibles.loc'
 import { Platform } from '../helpers/constants'
 import AccountManagePage from './accountManage.page'
 
-const jestExpect = require('expect')
 class CollectiblesPage {
   get sendButton() {
     return by.id(Collectibles.sendButton)
