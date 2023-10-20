@@ -9,7 +9,7 @@ set -x
 
 if ! cat /etc/issue 2>/dev/null
 then
-yarn setup:ci
+yarn install --immutable && yarn setup
 else 
   stack=$( cat /etc/issue )
 fi
@@ -21,5 +21,5 @@ if [[ $stack == *Ubuntu* ]]; then
     # Bitrise issue link https://support.bitrise.io/hc/en-us/requests/39436?page=1
     sudo chown root .
 
-    yarn setup:ci
+    yarn install --immutable && yarn setup
 fi
