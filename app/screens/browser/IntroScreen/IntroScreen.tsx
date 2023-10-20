@@ -121,7 +121,7 @@ export default function IntroScreen(): JSX.Element | null {
   const dispatch = useDispatch()
 
   const onInstructionRead = (): void => {
-    dispatch(setViewOnce(ViewOnceKey.CHART_INTERACTION))
+    dispatch(setViewOnce(ViewOnceKey.BROWSER_INTERACTION))
   }
   return (
     <View style={{ flex: 1, paddingHorizontal: 16 }}>
