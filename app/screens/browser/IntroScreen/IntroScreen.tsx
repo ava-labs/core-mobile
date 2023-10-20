@@ -1,5 +1,5 @@
 import React from 'react'
-import { Dimensions, View } from 'react-native'
+import { Dimensions, View, Platform } from 'react-native'
 import AvaButton from 'components/AvaButton'
 
 import {
@@ -58,10 +58,11 @@ const TokenImageWithGradient = (): JSX.Element => {
       {image && (
         <Image
           image={image}
-          x={width - 550}
+          x={-150}
           y={-219}
-          width={width + 310}
+          width={width + 300}
           height={height - 210}
+          fit="contain"
         />
       )}
     </Mask>
@@ -122,13 +123,28 @@ const RocketText = (): JSX.Element => {
   )
 }
 
-export default function IntroScreen(): JSX.Element | null {
+export default function IntroScreen(): JSX.Element {
   const dispatch = useDispatch()
   const onInstructionRead = (): void => {
     dispatch(setViewOnce(ViewOnceKey.BROWSER_INTERACTION))
   }
   const topPadding = height * 0.33
-  const bottomPadding = height * 0.12
+
+  const bottomPadding = (): number => {
+    if (Platform.OS === 'ios') {
+      return height > 725 ? 105 : 45
+    } else {
+      return height > 725 ? 75 : 40
+    }
+  }
+
+  const rightMargin = (): number => {
+    if (Platform.OS === 'ios') {
+      return -16
+    } else {
+      return -32
+    }
+  }
 
   return (
     <View style={{ flex: 1, paddingHorizontal: 16 }}>
@@ -139,7 +155,7 @@ export default function IntroScreen(): JSX.Element | null {
           <View style={{ paddingLeft: 32 }}>
             <SearchIcon />
           </View>
-          <View style={{ flex: 1, marginRight: -16 }}>
+          <View style={{ flex: 1, marginRight: rightMargin() }}>
             <SearchText />
           </View>
         </Row>
@@ -148,7 +164,7 @@ export default function IntroScreen(): JSX.Element | null {
           <View style={{ paddingLeft: 32 }}>
             <WalletConnectSVG color="white" />
           </View>
-          <View style={{ flex: 1, marginRight: -16 }}>
+          <View style={{ flex: 1, marginRight: rightMargin() }}>
             <WalletConnectText />
           </View>
         </Row>
@@ -157,7 +173,7 @@ export default function IntroScreen(): JSX.Element | null {
           <View style={{ paddingLeft: 32 }}>
             <CoreOwl width={24} height={24} />
           </View>
-          <View style={{ flex: 1, marginRight: -16 }}>
+          <View style={{ flex: 1, marginRight: rightMargin() }}>
             <CoreOwlText />
           </View>
         </Row>
@@ -166,7 +182,7 @@ export default function IntroScreen(): JSX.Element | null {
           <View style={{ paddingLeft: 32 }}>
             <RocketLaunch />
           </View>
-          <View style={{ flex: 1, marginRight: -16 }}>
+          <View style={{ flex: 1, marginRight: rightMargin() }}>
             <RocketText />
           </View>
         </Row>
@@ -190,7 +206,7 @@ export default function IntroScreen(): JSX.Element | null {
           bottom: 0,
           left: 16,
           paddingHorizontal: 16,
-          paddingBottom: bottomPadding,
+          paddingBottom: bottomPadding(),
           width: '100%'
         }}>
         <AvaButton.PrimaryLarge onPress={onInstructionRead}>
