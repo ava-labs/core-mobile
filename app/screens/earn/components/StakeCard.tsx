@@ -6,9 +6,6 @@ import AvaText from 'components/AvaText'
 import { Row } from 'components/Row'
 import Separator from 'components/Separator'
 import { Space } from 'components/Space'
-import { Popable } from 'react-native-popable'
-import { PopableContent } from 'components/PopableContent'
-import { PopableLabel } from 'components/PopableLabel'
 import { format, fromUnixTime } from 'date-fns'
 import { getReadableDateDuration } from 'utils/date/getReadableDateDuration'
 import { useNAvaxFormatter } from 'hooks/formatter/useNAvaxFormatter'
@@ -18,6 +15,7 @@ import { useNavigation } from '@react-navigation/native'
 import { TabsScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
 import { estimatesTooltipText } from 'consts/earn'
+import { Tooltip } from 'components/Tooltip'
 import { StatusChip } from './StatusChip'
 
 type BaseProps = {
@@ -43,7 +41,7 @@ type NavigationProp = TabsScreenProps<
   typeof AppNavigation.Tabs.Stake
 >['navigation']
 
-export const StakeCard = (props: Props) => {
+export const StakeCard = (props: Props): JSX.Element => {
   const { theme } = useApplicationContext()
   const nAvaxFormatter = useNAvaxFormatter()
   const navigation = useNavigation<NavigationProp>()
@@ -51,14 +49,14 @@ export const StakeCard = (props: Props) => {
 
   const cardHighLightColor = getCardHighLightColor(theme)
 
-  const navigateToStakeDetails = () => {
+  const navigateToStakeDetails = (): void => {
     navigation.navigate(AppNavigation.Wallet.Earn, {
       screen: AppNavigation.Earn.StakeDetails,
       params: { txHash, stakeTitle: title }
     })
   }
 
-  const renderStatus = () => {
+  const renderStatus = (): JSX.Element => {
     switch (status) {
       case StakeStatus.Ongoing: {
         const remainingTime = getReadableDateDuration(
@@ -75,7 +73,7 @@ export const StakeCard = (props: Props) => {
     }
   }
 
-  const renderContents = () => {
+  const renderContents = (): JSX.Element => {
     const [stakeAmountInAvax, stakeAmountInCurrency] = nAvaxFormatter(
       stakeAmount,
       true
@@ -105,17 +103,12 @@ export const StakeCard = (props: Props) => {
             </Row>
             <Space y={8} />
             <Row style={{ justifyContent: 'space-between' }}>
-              <Popable
-                content={<PopableContent message={estimatesTooltipText} />}
-                position="top"
-                strictPosition={true}
-                style={{ minWidth: 240 }}
-                backgroundColor={theme.neutral100}>
-                <PopableLabel
-                  label="Estimated Rewards"
-                  textStyle={{ lineHeight: 24, color: theme.colorText1 }}
-                />
-              </Popable>
+              <Tooltip
+                content={estimatesTooltipText}
+                style={{ width: 240 }}
+                textStyle={{ lineHeight: 20 }}>
+                Estimated Rewards
+              </Tooltip>
               <View style={{ alignItems: 'flex-end' }}>
                 <AvaText.Heading6 color={theme.colorBgGreen}>
                   {estimatedRewardInAvax} AVAX

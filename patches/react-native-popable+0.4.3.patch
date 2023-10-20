@@ -1,5 +1,48 @@
+diff --git a/node_modules/react-native-popable/lib/typescript/Popable.d.ts b/node_modules/react-native-popable/lib/typescript/Popable.d.ts
+index 8257eba..1fcd853 100644
+--- a/node_modules/react-native-popable/lib/typescript/Popable.d.ts
++++ b/node_modules/react-native-popable/lib/typescript/Popable.d.ts
+@@ -18,6 +18,8 @@ export declare type PopableProps = {
+     style?: PopoverProps['style'];
+     visible?: boolean;
+     wrapperStyle?: ViewProps['style'];
++    hitslop?: ViewProps['hitslop'];
++    caretStyle?: PopoverProps['caretStyle'];
+ };
+ declare const Popable: React.ForwardRefExoticComponent<PopableProps & React.RefAttributes<PopableManager>>;
+ export default Popable;
+diff --git a/node_modules/react-native-popable/lib/typescript/Popover.d.ts b/node_modules/react-native-popable/lib/typescript/Popover.d.ts
+index 25b61de..fe12aa0 100644
+--- a/node_modules/react-native-popable/lib/typescript/Popover.d.ts
++++ b/node_modules/react-native-popable/lib/typescript/Popover.d.ts
+@@ -6,6 +6,7 @@ export declare type PopoverProps = {
+     backgroundColor?: string;
+     caret?: boolean;
+     caretPosition?: 'left' | 'center' | 'right';
++    caretStyle?: ViewProps['style'];
+     children: string | React.ReactElement;
+     forceInitialAnimation?: boolean;
+     numberOfLines?: number;
+@@ -18,6 +19,7 @@ declare const Popover: React.ForwardRefExoticComponent<{
+     backgroundColor?: string | undefined;
+     caret?: boolean | undefined;
+     caretPosition?: "left" | "center" | "right" | undefined;
++    caretStyle?: ViewProps['style'];
+     children: string | React.ReactElement;
+     forceInitialAnimation?: boolean | undefined;
+     numberOfLines?: number | undefined;
+diff --git a/node_modules/react-native-popable/lib/typescript/index.d.ts b/node_modules/react-native-popable/lib/typescript/index.d.ts
+index ffe74e2..4cf6f33 100644
+--- a/node_modules/react-native-popable/lib/typescript/index.d.ts
++++ b/node_modules/react-native-popable/lib/typescript/index.d.ts
+@@ -1,4 +1,4 @@
+ export { default as Popover } from './Popover';
+-export { default as Popable } from './Popable';
++export { default as Popable, PopableProps } from './Popable';
+ export { default as usePopable } from './use-popable';
+ export * from './use-popable/types';
 diff --git a/node_modules/react-native-popable/src/Popable.tsx b/node_modules/react-native-popable/src/Popable.tsx
-index 75f214e..6c5b26c 100644
+index 75f214e..771082f 100644
 --- a/node_modules/react-native-popable/src/Popable.tsx
 +++ b/node_modules/react-native-popable/src/Popable.tsx
 @@ -7,6 +7,7 @@ import React, {
@@ -10,7 +53,16 @@ index 75f214e..6c5b26c 100644
    Platform,
    // @ts-ignore
    Pressable,
-@@ -44,6 +45,7 @@ const DEFAULT_LAYOUT = {
+@@ -35,6 +36,8 @@ export type PopableProps = {
+   style?: PopoverProps['style'];
+   visible?: boolean;
+   wrapperStyle?: ViewProps['style'];
++  hitslop?: ViewProps['hitSlop'];
++  caretStyle?: PopoverProps['caretStyle'];
+ };
+ 
+ const DEFAULT_LAYOUT = {
+@@ -44,6 +47,7 @@ const DEFAULT_LAYOUT = {
    y: 0,
  };
  
@@ -18,7 +70,16 @@ index 75f214e..6c5b26c 100644
  const Popable = forwardRef<PopableManager, PopableProps>(function Popable(
    {
      action = 'press',
-@@ -185,6 +187,12 @@ const Popable = forwardRef<PopableManager, PopableProps>(function Popable(
+@@ -61,6 +65,8 @@ const Popable = forwardRef<PopableManager, PopableProps>(function Popable(
+     style,
+     visible,
+     wrapperStyle,
++    caretStyle,
++    hitslop
+   },
+   ref
+ ) {
+@@ -185,6 +191,12 @@ const Popable = forwardRef<PopableManager, PopableProps>(function Popable(
        case 'top':
        case 'bottom':
          left = (popoverLayout.width - childrenLayout.width) / 2;
@@ -31,3 +92,58 @@ index 75f214e..6c5b26c 100644
          break;
      }
  
+@@ -197,6 +209,7 @@ const Popable = forwardRef<PopableManager, PopableProps>(function Popable(
+     backgroundColor,
+     caret,
+     caretPosition,
++    caretStyle,
+     children: content,
+     numberOfLines,
+     position: computedPosition,
+@@ -265,6 +278,7 @@ const Popable = forwardRef<PopableManager, PopableProps>(function Popable(
+ 
+       <Pressable
+         ref={childrenRef}
++        hitSlop={hitslop}
+         onLayout={handleChildrenLayout}
+         {...handlers}
+       >
+diff --git a/node_modules/react-native-popable/src/Popover.tsx b/node_modules/react-native-popable/src/Popover.tsx
+index 6b5833f..ea8e338 100644
+--- a/node_modules/react-native-popable/src/Popover.tsx
++++ b/node_modules/react-native-popable/src/Popover.tsx
+@@ -17,6 +17,7 @@ export type PopoverProps = {
+   backgroundColor?: string;
+   caret?: boolean;
+   caretPosition?: 'left' | 'center' | 'right';
++  caretStyle?: ViewProps['style'];
+   children: string | React.ReactElement;
+   forceInitialAnimation?: boolean;
+   numberOfLines?: number;
+@@ -31,6 +32,7 @@ const Popover = React.forwardRef<View, PopoverProps>(function Popover(
+     backgroundColor,
+     caret: withCaret = true,
+     caretPosition = 'center',
++    caretStyle,
+     children,
+     forceInitialAnimation = false,
+     numberOfLines,
+@@ -84,7 +86,7 @@ const Popover = React.forwardRef<View, PopoverProps>(function Popover(
+       align={caretPosition}
+       position={position}
+       backgroundColor={backgroundColor}
+-      style={styles.caret}
++      style={[styles.caret, caretStyle]}
+     />
+   );
+ 
+diff --git a/node_modules/react-native-popable/src/index.tsx b/node_modules/react-native-popable/src/index.tsx
+index ffe74e2..4cf6f33 100644
+--- a/node_modules/react-native-popable/src/index.tsx
++++ b/node_modules/react-native-popable/src/index.tsx
+@@ -1,4 +1,4 @@
+ export { default as Popover } from './Popover';
+-export { default as Popable } from './Popable';
++export { default as Popable, PopableProps } from './Popable';
+ export { default as usePopable } from './use-popable';
+ export * from './use-popable/types';

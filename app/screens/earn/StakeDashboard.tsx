@@ -4,7 +4,7 @@ import AvaText from 'components/AvaText'
 import { Balance } from './components/Balance'
 import { StakeTabs } from './StakeTabs'
 
-export const StakeDashboard = () => {
+export const StakeDashboard = (): JSX.Element => {
   return (
     <View style={styles.container}>
       <AvaText.LargeTitleBold>Stake</AvaText.LargeTitleBold>

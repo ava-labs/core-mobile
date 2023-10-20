@@ -7,8 +7,6 @@ import CollectiblesPage from '../../pages/collectibles.page'
 import { warmup } from '../../helpers/warmup'
 import { Platform } from '../../helpers/constants'
 
-//Add InsufficientFeeAmountTest
-
 describe('Send Avax to another account', () => {
   beforeAll(async () => {
     await warmup()

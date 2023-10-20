@@ -11,12 +11,12 @@ import { useStopwatch } from 'react-timer-hook'
 import { Blockchain } from '@avalabs/bridge-sdk'
 import InfoSVG from 'components/svg/InfoSVG'
 import { Space } from 'components/Space'
-import { Popable, usePopable } from 'react-native-popable'
 import { DOCS_BTC_TO_BTCB_FAQ } from 'resources/Constants'
 import Logger from 'utils/Logger'
 import { selectBridgeAppConfig } from 'store/bridge'
 import { useSelector } from 'react-redux'
 import { getFormattedDistance } from 'utils/date/getFormattedDistance'
+import { Tooltip } from 'components/Tooltip'
 
 interface Props {
   sourceChain?: Blockchain
@@ -180,11 +180,9 @@ const PopableInfo = ({
   const theme = useApplicationContext().theme
   const width = useWindowDimensions().width
   const config = useSelector(selectBridgeAppConfig)
-  const [ref, { hide }] = usePopable()
 
   const handleOnPress = (): void => {
     openFaq()
-    hide()
   }
 
   const offboardDelayDuration = config?.criticalBitcoin.offboardDelaySeconds
@@ -212,14 +210,14 @@ const PopableInfo = ({
   )
 
   return (
-    <Popable
-      ref={ref}
+    <Tooltip
       content={renderPopoverInfoText()}
-      position={'top'}
-      style={{ minWidth: width / 2 }}
-      backgroundColor={theme.neutral100}>
+      style={{ width: width / 2 }}
+      caretPosition="right"
+      caretStyle={{ margin: 20 }}
+      isLabelPopable>
       {children}
-    </Popable>
+    </Tooltip>
   )
 }
 

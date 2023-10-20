@@ -15,7 +15,7 @@ export const PopableLabel = ({
   textStyle?: StyleProp<TextStyle>
   iconColor?: string
   icon?: React.ReactNode
-}) => {
+}): JSX.Element => {
   return (
     <Row style={{ alignItems: 'center' }}>
       <AvaText.Body2 textStyle={textStyle}>{label}</AvaText.Body2>
