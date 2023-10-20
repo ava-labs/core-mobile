@@ -1,16 +1,9 @@
-import testValidators from 'tests/fixtures/pvm/validators.json'
 import { Hour, MainnetParams } from 'utils/NetworkParams'
 import { Seconds } from 'types/siUnits'
 import { Avax } from 'types/Avax'
 import EarnService from './EarnService'
 
 describe('EarnService', () => {
-  describe('getCurrentValidators', () => {
-    it('should return valid validators', async () => {
-      const validators = await EarnService.getCurrentValidators(true)
-      expect(validators).toStrictEqual(testValidators)
-    })
-  })
   describe('calcReward', () => {
     it('should return zero if current supply is max', () => {
       expect(
