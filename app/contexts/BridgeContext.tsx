@@ -28,7 +28,6 @@ import {
   selectBridgeConfig,
   selectBridgeTransactions
 } from 'store/bridge'
-import { selectIsReady } from 'store/app'
 import {
   useAvalancheProvider,
   useBitcoinProvider,
@@ -67,7 +66,11 @@ interface BridgeContext {
 
 const bridgeContext = createContext<BridgeContext>({} as BridgeContext)
 
-export function BridgeProvider({ children }: { children: ReactNode }) {
+export function BridgeProvider({
+  children
+}: {
+  children: ReactNode
+}): JSX.Element {
   return (
     <BridgeSDKProvider>
       <LocalBridgeProvider>{children}</LocalBridgeProvider>
@@ -75,19 +78,22 @@ export function BridgeProvider({ children }: { children: ReactNode }) {
   )
 }
 
-export function useBridgeContext() {
+export function useBridgeContext(): BridgeContext {
   return useContext(bridgeContext)
 }
 
 const TrackerSubscriptions = new Map<string, TrackerSubscription>()
 
-function LocalBridgeProvider({ children }: { children: ReactNode }) {
+function LocalBridgeProvider({
+  children
+}: {
+  children: ReactNode
+}): JSX.Element {
   const dispatch = useDispatch()
   const bridgeConfig = useSelector(selectBridgeConfig)
   const config = bridgeConfig?.config
   const activeAccount = useSelector(selectActiveAccount)
   const bridgeTransactions = useSelector(selectBridgeTransactions)
-  const hydrationComplete = useSelector(selectIsReady)
   const { transferHandler, events } = useTransferAsset()
   const ethereumProvider = useEthereumProvider()
   const bitcoinProvider = useBitcoinProvider()
@@ -95,6 +101,32 @@ function LocalBridgeProvider({ children }: { children: ReactNode }) {
   const { bridgeConfig: bridgeConfigSDK, setBridgeConfig } = useBridgeSDK()
   const { capture } = usePostCapture()
   const isToastVisible = useRef<boolean>()
+
+  const removeBridgeTransaction = useCallback(
+    (tx: BridgeTransaction) => {
+      dispatch(popBridgeTransaction(tx.sourceTxHash))
+      capture('BridgeTransferRequestSucceeded')
+
+      if (!isToastVisible.current) {
+        isToastVisible.current = true
+
+        showSnackBarCustom({
+          component: (
+            <TransactionToast
+              message={'Bridge Successful'}
+              type={TransactionToastType.SUCCESS}
+              txHash={tx.sourceTxHash}
+            />
+          ),
+          duration: 'short',
+          onClose: () => {
+            isToastVisible.current = false
+          }
+        })
+      }
+    },
+    [capture, dispatch]
+  )
 
   useEffect(() => {
     // sync bridge config in bridge sdk with ours
@@ -127,26 +159,7 @@ function LocalBridgeProvider({ children }: { children: ReactNode }) {
               dispatch(addBridgeTransaction(tx))
 
               if (tx.complete) {
-                dispatch(popBridgeTransaction(tx.sourceTxHash))
-                capture('BridgeTransferRequestSucceeded')
-
-                if (!isToastVisible.current) {
-                  isToastVisible.current = true
-
-                  showSnackBarCustom({
-                    component: (
-                      <TransactionToast
-                        message={'Bridge Successful'}
-                        type={TransactionToastType.SUCCESS}
-                        txHash={tx.sourceTxHash}
-                      />
-                    ),
-                    duration: 'short',
-                    onClose: () => {
-                      isToastVisible.current = false
-                    }
-                  })
-                }
+                removeBridgeTransaction(tx)
               }
             },
             config,
@@ -170,7 +183,7 @@ function LocalBridgeProvider({ children }: { children: ReactNode }) {
       config,
       dispatch,
       ethereumProvider,
-      capture
+      removeBridgeTransaction
     ]
   )
 
@@ -267,12 +280,14 @@ function LocalBridgeProvider({ children }: { children: ReactNode }) {
 
   // load pending txs from storage
   useEffect(() => {
-    if (Object.values(bridgeTransactions).length > 0) {
-      Object.values(bridgeTransactions).forEach(tx => {
-        subscribeToTransaction(tx as BridgeTransaction)
-      })
-    }
-  }, [hydrationComplete, config, bridgeTransactions, subscribeToTransaction])
+    Object.values(bridgeTransactions).forEach(tx => {
+      if (tx.complete) {
+        removeBridgeTransaction(tx)
+      } else {
+        subscribeToTransaction(tx)
+      }
+    })
+  }, [bridgeTransactions, subscribeToTransaction, removeBridgeTransaction])
 
   return (
     <bridgeContext.Provider
