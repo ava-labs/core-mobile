@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { FC, useMemo } from 'react'
 import {
   Animated,
   Dimensions,
@@ -13,7 +13,6 @@ import BridgeTransactionItem from 'screens/bridge/components/BridgeTransactionIt
 import { BridgeTransactionStatusParams } from 'navigation/types'
 import useInAppBrowser from 'hooks/useInAppBrowser'
 import { useSelector } from 'react-redux'
-import { selectBridgeTransactions } from 'store/bridge'
 import { Transaction } from 'store/transaction'
 import ZeroState from 'components/ZeroState'
 import { BridgeTransaction } from '@avalabs/bridge-sdk'
@@ -23,6 +22,8 @@ import { usePostCapture } from 'hooks/usePosthogCapture'
 import FlashList from 'components/FlashList'
 import { getDayString } from 'utils/date/getDayString'
 import { isPendingBridgeTransaction } from 'screens/bridge/utils/bridgeUtils'
+import usePendingBridgeTransactions from 'screens/bridge/hooks/usePendingBridgeTransactions'
+import { selectActiveNetwork } from 'store/network'
 
 const SCREEN_WIDTH = Dimensions.get('window').width
 const BOTTOM_PADDING = SCREEN_WIDTH * 0.3
@@ -44,46 +45,62 @@ interface Props {
   testID?: string
 }
 
-const Transactions = ({
+const Transactions: FC<Props> = ({
   isRefreshing,
   onRefresh,
   onEndReached,
   data,
   openTransactionDetails,
   openTransactionStatus
-}: Props) => {
+}) => {
   const { openUrl } = useInAppBrowser()
   const { capture } = usePostCapture()
   const bridgeDisabled = useIsUIDisabled(UI.Bridge)
-  const pendingBridgeByTxId = useSelector(selectBridgeTransactions)
+  const activeNetwork = useSelector(selectActiveNetwork)
+  const pendingBridgeTxs = usePendingBridgeTransactions(activeNetwork)
   const combinedData = useMemo(() => {
+    function isPendingBridge(tx: Transaction): boolean {
+      return (
+        tx.isBridge &&
+        pendingBridgeTxs.some(
+          bridge =>
+            (bridge.sourceTxHash === tx.hash ||
+              (!!bridge.targetTxHash && bridge.targetTxHash === tx.hash)) &&
+            bridge.complete === false
+        )
+      )
+    }
+
     const allSections: Section[] = []
 
-    const pendingBridgeTransactions = Object.values(pendingBridgeByTxId).sort(
-      (a, b) => b.sourceStartedAt - a.sourceStartedAt // descending
-    )
-
     // add pending bridge transactions
-    if (!bridgeDisabled && pendingBridgeTransactions.length > 0)
-      allSections.push({ title: 'Pending', data: pendingBridgeTransactions })
+    if (!bridgeDisabled && pendingBridgeTxs.length > 0)
+      allSections.push({
+        title: 'Pending',
+        data: pendingBridgeTxs.sort(
+          (a, b) => b.sourceStartedAt - a.sourceStartedAt // descending
+        )
+      })
 
     // add all other transactions
     let section: { title: string; data: Transaction[] }
     let sectionTitle = ''
 
-    data.forEach(item => {
-      const dateText = getDayString(item.timestamp)
-      if (!sectionTitle || sectionTitle !== dateText) {
-        section = {
-          title: dateText,
-          data: [item]
+    data
+      .filter(tx => !isPendingBridge(tx))
+      .forEach(item => {
+        const dateText = getDayString(item.timestamp)
+        if (!sectionTitle || sectionTitle !== dateText) {
+          section = {
+            title: dateText,
+            data: [item]
+          }
+          sectionTitle = dateText
+          allSections.push(section)
+        } else {
+          section.data.push(item)
         }
-        sectionTitle = dateText
-        allSections.push(section)
-      } else {
-        section.data.push(item)
-      }
-    })
+      })
 
     // convert back to flatlist data format
     const flatListData: Array<Item> = []
@@ -94,9 +111,11 @@ const Transactions = ({
     }
 
     return flatListData
-  }, [bridgeDisabled, data, pendingBridgeByTxId])
+  }, [bridgeDisabled, data, pendingBridgeTxs])
 
-  const renderPendingBridgeTransaction = (tx: BridgeTransaction) => {
+  const renderPendingBridgeTransaction = (
+    tx: BridgeTransaction
+  ): JSX.Element => {
     return (
       <BridgeTransactionItem
         key={tx.sourceTxHash}
@@ -110,7 +129,7 @@ const Transactions = ({
     )
   }
 
-  const renderItem = (item: Item) => {
+  const renderItem = (item: Item): JSX.Element => {
     // render section header
     if (typeof item === 'string') {
       return renderSectionHeader(item)
@@ -120,7 +139,7 @@ const Transactions = ({
     if (isPendingBridgeTransaction(item)) {
       return renderPendingBridgeTransaction(item)
     } else {
-      const onPress = () => {
+      const onPress = (): void => {
         if (item.isContractCall || item.isBridge) {
           capture('ActivityCardLinkClicked')
           openUrl(item.explorerLink)
@@ -142,7 +161,7 @@ const Transactions = ({
     }
   }
 
-  const renderSectionHeader = (title: string) => {
+  const renderSectionHeader = (title: string): JSX.Element => {
     return (
       <Animated.View style={styles.headerContainer}>
         <AvaText.ActivityTotal>{title}</AvaText.ActivityTotal>
@@ -150,7 +169,9 @@ const Transactions = ({
     )
   }
 
-  const keyExtractor = (item: string | Transaction | BridgeTransaction) => {
+  const keyExtractor = (
+    item: string | Transaction | BridgeTransaction
+  ): string => {
     if (typeof item === 'string') return item
 
     if (isPendingBridgeTransaction(item)) return `pending-${item.sourceTxHash}`
@@ -158,7 +179,7 @@ const Transactions = ({
     return item.hash
   }
 
-  const renderTransactions = () => {
+  const renderTransactions = (): JSX.Element => {
     if (Platform.OS === 'ios') {
       return (
         <FlashList
@@ -199,7 +220,7 @@ const Transactions = ({
   return <View style={styles.container}>{renderTransactions()}</View>
 }
 
-const TransactionsZeroState = () => {
+const TransactionsZeroState = (): JSX.Element => {
   return (
     <View style={styles.zeroState}>
       <ZeroState.NoTransactions />
