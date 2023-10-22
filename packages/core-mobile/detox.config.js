@@ -1,5 +1,6 @@
 /** @type {Detox.DetoxConfig} */
 
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 const getApkPaths = () => {
   if (process.env.BITRISE_SIGNED_APK_PATH_LIST) {
     const apks = process.env.BITRISE_SIGNED_APK_PATH_LIST.split('|')
@@ -85,16 +86,22 @@ module.exports = {
     plugins: {
       instruments: { enabled: false },
       log: { enabled: true },
-      uiHierarchy: 'enabled',
+      uiHierarchy: {
+        enabled: true,
+        keepOnlyFailedTestsArtifacts: true
+      },
       screenshot: {
         shouldTakeAutomaticSnapshots: true,
         keepOnlyFailedTestsArtifacts: true,
         takeWhen: {
           testStart: false,
           testDone: true
-        }
+        },
+        enabled: true
       },
       video: {
+        enabled: true,
+        keepOnlyFailedTestsArtifacts: true,
         android: {
           bitRate: 4000000
         },

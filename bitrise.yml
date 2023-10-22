@@ -64,7 +64,7 @@ workflows:
         - api_level: "28"
         - emulator_id: emulator-5554
         - emulator_channel: "0"
-        - create_command_flags: --sdcard 512M
+        - create_command_flags: --sdcard 2048M
         - tag: default
         - abi: x86_64
         - profile: pixel_4
@@ -246,6 +246,24 @@ workflows:
         - version_code_offset: ""
         - new_version_code: $BUILD_NUMBER
         - build_gradle_path: $BITRISE_SOURCE_DIR/$ANDROID_PROJECT_LOCATION/app/build.gradle
+  _upload-detox-artifacts:
+    steps:
+    - script-runner@0:
+        title: Copy Detox Artifacts
+        is_always_run: true
+        run_if: .IsBuildFailed
+        inputs:
+        - file_path: scripts/bitrise/detox/deployArtifacts.sh
+    - deploy-to-bitrise-io@2:
+        title: Deploy Detox Artifacts
+        is_always_run: true
+        run_if: .IsBuildFailed
+        inputs:
+        - zip_name: detox_artifacts
+        - notify_user_groups: none
+        - is_enable_public_page: "false"
+        - deploy_path: $BITRISE_DEPLOY_DIR/detox
+        - is_compress: "true"
   android:
     before_run:
     - _install-and-set-env
@@ -278,6 +296,7 @@ workflows:
     - _set-version
     - _build-android-for-testing
     after_run:
+    - _upload-detox-artifacts
     - _send-test-result-notifcation-slack
     envs:
     - ENVIRONMENT: production
@@ -339,6 +358,7 @@ workflows:
     - _set-version
     - _build-android-for-testing
     after_run:
+    - _upload-detox-artifacts
     - _send-test-result-notifcation-slack
     envs:
     - ENVIRONMENT: production
@@ -401,6 +421,7 @@ workflows:
     - _set-version
     - _build-ios-simulator
     after_run:
+    - _upload-detox-artifacts
     - _send-test-result-notifcation-slack
     envs:
     - ENVIRONMENT: production
@@ -468,6 +489,7 @@ workflows:
     - _set-version
     - _build-ios-simulator
     after_run:
+    - _upload-detox-artifacts
     - _send-test-result-notifcation-slack
     envs:
     - ENVIRONMENT: production
