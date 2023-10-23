@@ -130,6 +130,11 @@ const BridgeConfirmations: FC<Props> = ({
   paddingHorizontal = 16,
   started = false
 }) => {
+  const currentConfirmationCount = Math.min(
+    confirmationCount,
+    requiredConfirmationCount
+  )
+
   return (
     <View>
       <AvaListItem.Base
@@ -138,11 +143,7 @@ const BridgeConfirmations: FC<Props> = ({
         rightComponent={
           <Row style={{ alignItems: 'center' }}>
             <AvaText.Heading3 textStyle={{ marginEnd: 8 }}>
-              {confirmationCount > // to avoid showing 16/15 since confirmations keep going up
-              requiredConfirmationCount
-                ? requiredConfirmationCount
-                : confirmationCount}
-              /{requiredConfirmationCount}
+              {currentConfirmationCount}/{requiredConfirmationCount}
             </AvaText.Heading3>
             {startTime && (
               <ElapsedTimer
@@ -159,11 +160,7 @@ const BridgeConfirmations: FC<Props> = ({
         <ConfirmationTracker
           started={started}
           requiredCount={requiredConfirmationCount}
-          currentCount={
-            confirmationCount > requiredConfirmationCount
-              ? requiredConfirmationCount
-              : confirmationCount
-          }
+          currentCount={currentConfirmationCount}
         />
       </View>
     </View>
