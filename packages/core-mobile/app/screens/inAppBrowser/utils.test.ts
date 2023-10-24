@@ -1,5 +1,5 @@
 import { DeFiProtocolInformation } from 'services/inAppBrowser/types'
-import MOCK_PROTOCOL_INFORMATION_DATA from 'tests/fixtures/defi/protocolInformationListData.json'
+import MOCK_PROTOCOL_INFORMATION_DATA from 'tests/fixtures/inAppBrowser/protocolInformationListData.json'
 import {
   getTopDefiProtocolInformationList,
   sortDeFiProtocolInformationListByTvl
