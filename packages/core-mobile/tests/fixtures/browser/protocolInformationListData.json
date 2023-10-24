@@ -1,0 +1,182 @@
+[
+  {
+    "chain": "avax",
+    "hasSupportedPortfolio": false,
+    "id": "avax_0x",
+    "logoUrl": "https://static.debank.com/image/project/logo_url/0x/140b607264f4741133c35eb32c6bc314.png",
+    "name": "0x",
+    "siteUrl": "https://0x.org",
+    "tvl": 0
+  },
+  {
+    "chain": "avax",
+    "hasSupportedPortfolio": false,
+    "id": "avax_1inch",
+    "logoUrl": "https://static.debank.com/image/project/logo_url/avax_1inch/ca1218c87620bbfe9c1e5e9b9d5a36de.png",
+    "name": "1inch",
+    "siteUrl": "https://app.1inch.io",
+    "tvl": 0
+  },
+  {
+    "chain": "avax",
+    "hasSupportedPortfolio": true,
+    "id": "avax_88mph3",
+    "logoUrl": "https://static.debank.com/image/project/logo_url/avax_88mph3/0d9e6a7f445957e8c6e74409003f4254.png",
+    "name": "88mph V3",
+    "siteUrl": "https://88mph.app",
+    "tvl": 45.855767755593945
+  },
+  {
+    "chain": "avax",
+    "hasSupportedPortfolio": true,
+    "id": "avax_aave",
+    "logoUrl": "https://static.debank.com/image/project/logo_url/avax_aave/554d03bf03dcafca1969826679b55e4d.png",
+    "name": "Aave",
+    "siteUrl": "https://app.aave.com",
+    "tvl": 27662441.36778636
+  },
+  {
+    "chain": "avax",
+    "hasSupportedPortfolio": true,
+    "id": "avax_aave3",
+    "logoUrl": "https://static.debank.com/image/project/logo_url/avax_aave3/9459cb86efd13145537eab8104e923bf.png",
+    "name": "Aave V3",
+    "siteUrl": "https://app.aave.com",
+    "tvl": 139422539.71763813
+  },
+  {
+    "chain": "avax",
+    "hasSupportedPortfolio": false,
+    "id": "avax_aboard",
+    "logoUrl": "https://static.debank.com/image/project/logo_url/arb_aboard/ab20562d3cb8a0c703b5f5252fb5377b.png",
+    "name": "Aboard",
+    "siteUrl": "https://app.aboard.exchange",
+    "tvl": 0
+  },
+  {
+    "chain": "avax",
+    "hasSupportedPortfolio": true,
+    "id": "avax_abracadabra",
+    "logoUrl": "https://static.debank.com/image/project/logo_url/avax_abracadabra/8f3f0914e27971bcc14bd91bc418460d.png",
+    "name": "Abracadabra",
+    "siteUrl": "https://abracadabra.money",
+    "tvl": 1430118.491309462
+  },
+  {
+    "chain": "avax",
+    "hasSupportedPortfolio": true,
+    "id": "avax_acryptos",
+    "logoUrl": "https://static.debank.com/image/project/logo_url/avax_acryptos/b2428cfc421b6eff65503ea8809c8960.png",
+    "name": "Acryptos",
+    "siteUrl": "https://app.acryptos.com",
+    "tvl": 67071.37114955483
+  },
+  {
+    "chain": "avax",
+    "hasSupportedPortfolio": true,
+    "id": "avax_actafi",
+    "logoUrl": "https://static.debank.com/image/project/logo_url/avax_actafi/2239ff1a84d7134a5090e149e478241c.png",
+    "name": "Acta Finance",
+    "siteUrl": "https://app.actafi.org",
+    "tvl": 20630.75663249556
+  },
+  {
+    "chain": "avax",
+    "hasSupportedPortfolio": true,
+    "id": "avax_alpha2",
+    "logoUrl": "https://static.debank.com/image/project/logo_url/avax_alpha2/7b7fcbe565437429124aac434ad0a254.png",
+    "name": " Alpha Homora V2",
+    "siteUrl": "https://homora-v2.alphaventuredao.io",
+    "tvl": 1063099.0176562315
+  },
+  {
+    "chain": "avax",
+    "hasSupportedPortfolio": true,
+    "id": "avax_altitude",
+    "logoUrl": "https://static.debank.com/image/project/logo_url/altitude/ae7fa94788baac495fa337e89caa294b.png",
+    "name": "Altitude",
+    "siteUrl": "https://www.altitudedefi.com/pool",
+    "tvl": 3529.9583400200004
+  },
+  {
+    "chain": "avax",
+    "hasSupportedPortfolio": true,
+    "id": "avax_ampleforth",
+    "logoUrl": "https://static.debank.com/image/project/logo_url/avax_ampleforth/da811d9131c4616e3875c9e0c2b6f30a.png",
+    "name": "Ampleforth",
+    "siteUrl": "https://ampleforth.org",
+    "tvl": 19931.1690079461
+  },
+  {
+    "chain": "avax",
+    "hasSupportedPortfolio": true,
+    "id": "avax_ankr",
+    "logoUrl": "https://static.debank.com/image/project/logo_url/avax_ankr/5acf19e660e9a0c1fdebcf55ab81f1d7.png",
+    "name": "Ankr",
+    "siteUrl": "https://www.ankr.com/earn/dashboard",
+    "tvl": 302878.37210565084
+  },
+  {
+    "chain": "avax",
+    "hasSupportedPortfolio": true,
+    "id": "avax_aperture",
+    "logoUrl": "https://static.debank.com/image/project/logo_url/avax_aperture/565a7129f45685fdcb8f791cd3464e6e.png",
+    "name": "Aperture",
+    "siteUrl": "https://app.aperture.finance/",
+    "tvl": 2307.4975899092437
+  },
+  {
+    "chain": "avax",
+    "hasSupportedPortfolio": false,
+    "id": "avax_apex",
+    "logoUrl": "https://static.debank.com/image/project/logo_url/arb_apex/81a7308ded02b285614873bf72acd005.png",
+    "name": "ApeX",
+    "siteUrl": "https://www.apex.exchange/",
+    "tvl": 0
+  },
+  {
+    "chain": "avax",
+    "hasSupportedPortfolio": false,
+    "id": "avax_aptosbridge",
+    "logoUrl": "https://static.debank.com/image/project/logo_url/aptosbridge/2e30e2680ebd86447b1f8734179436dc.png",
+    "name": "Aptos Bridge",
+    "siteUrl": "https://theaptosbridge.com/",
+    "tvl": 0
+  },
+  {
+    "chain": "avax",
+    "hasSupportedPortfolio": true,
+    "id": "avax_arable",
+    "logoUrl": "https://static.debank.com/image/project/logo_url/avax_arable/1c3a2775926e56a5ae04d4a66c5f8ba7.png",
+    "name": "Arable",
+    "siteUrl": "https://app.arable.finance",
+    "tvl": 25869.990950230036
+  },
+  {
+    "chain": "avax",
+    "hasSupportedPortfolio": false,
+    "id": "avax_arcticfox",
+    "logoUrl": "https://static.debank.com/image/project/logo_url/avax_arcticfox/8caf741e8f825c5deef8877e61ae5471.png",
+    "name": "ArcticFox",
+    "siteUrl": "https://arctic-fox.finance",
+    "tvl": 0
+  },
+  {
+    "chain": "avax",
+    "hasSupportedPortfolio": true,
+    "id": "avax_augmented",
+    "logoUrl": "https://static.debank.com/image/project/logo_url/avax_augmented/68bac772bbd2e5c0eb6f691f2fd8f274.png",
+    "name": "Augmented Finance",
+    "siteUrl": "https://app.augmented.finance",
+    "tvl": 58331.57613856507
+  },
+  {
+    "chain": "avax",
+    "hasSupportedPortfolio": true,
+    "id": "avax_autofarm",
+    "logoUrl": "https://static.debank.com/image/project/logo_url/avax_autofarm/34c39b326f51d038e2b0a554211bc674.png",
+    "name": "AutoFarm",
+    "siteUrl": "https://autofarm.network",
+    "tvl": 66505.215426936
+  }
+]
