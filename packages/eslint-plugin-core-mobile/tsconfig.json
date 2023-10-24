@@ -1,0 +1,10 @@
+{
+  "extends": "@avalabs/tsconfig-mobile/base.json",
+  "compilerOptions": {
+    "module": "Node16",
+    "moduleResolution": "Node16",
+    "outDir": "./lib",
+  },
+  "include": ["./src/**/*.ts"],
+}
+  

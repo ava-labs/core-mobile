@@ -210,6 +210,7 @@
     "detox": "20.2.0",
     "esbuild": "0.15.13",
     "eslint": "8.50.0",
+    "eslint-plugin-core-mobile": "workspace:*",
     "jest": "29.7.0",
     "metro-minify-esbuild": "0.2.0",
     "metro-react-native-babel-preset": "0.72.3",

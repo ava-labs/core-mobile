@@ -1,0 +1,21 @@
+{
+  "name": "eslint-plugin-core-mobile",
+  "version": "0.0.1",
+  "description": "",
+  "main": "lib/index.js",
+  "scripts": {
+    "build": "tsc"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@avalabs/tsconfig-mobile": "workspace:*",
+    "@types/node": "20.8.8",
+    "@typescript-eslint/eslint-plugin": "6.9.0",
+    "@typescript-eslint/parser": "6.9.0",
+    "@typescript-eslint/utils": "6.9.0",
+    "eslint": "8.50.0",
+    "typescript": "4.7.4"
+  }
+}
