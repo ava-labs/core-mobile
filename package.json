@@ -10,7 +10,8 @@
     "lint": "yarn workspaces foreach -p run lint",
     "tsc": "yarn workspaces foreach -p run tsc",
     "test": "yarn workspaces foreach -p run test",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "core": "yarn workspace @avalabs/core-mobile"
   },
   "devDependencies": {
     "husky": "8.0.1"
