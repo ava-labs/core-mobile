@@ -1,0 +1,14 @@
+{
+    "extends": "@avalabs/tsconfig-mobile/base.json",
+    "compilerOptions": {
+      "baseUrl": "./src",
+    },
+    "include": [
+      "**/*.ts",
+      "**/*.tsx", "*.d.ts", "jest.config.js",
+    ],
+    "exclude": [
+      "node_modules"
+    ]
+  }
+  
