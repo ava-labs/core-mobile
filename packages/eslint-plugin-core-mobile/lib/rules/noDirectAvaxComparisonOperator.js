@@ -17,10 +17,11 @@ const rule = {
             BinaryExpression: (node) => {
                 const expr = node;
                 if (['<', '>', '==', '!='].includes(expr.operator)) {
-                    const { symbol: { escapedName: leftTypeSymbolName } } = checker.getTypeAtLocation(services.esTreeNodeToTSNodeMap.get(expr.left));
-                    const { symbol: { escapedName: rightTypeSymbolName } } = checker.getTypeAtLocation(services.esTreeNodeToTSNodeMap.get(expr.left));
+                    const { symbol: leftSymbol } = checker.getTypeAtLocation(services.esTreeNodeToTSNodeMap.get(expr.left));
+                    const { symbol: rightSymbol } = checker.getTypeAtLocation(services.esTreeNodeToTSNodeMap.get(expr.left));
                     const isAvax = (symbolName) => symbolName === 'Avax';
-                    
+                    const leftTypeSymbolName = leftSymbol?.escapedName;
+                    const rightTypeSymbolName = rightSymbol?.escapedName;
                     if (leftTypeSymbolName &&
                         rightTypeSymbolName &&
                         (isAvax(leftTypeSymbolName) || isAvax(rightTypeSymbolName))) {

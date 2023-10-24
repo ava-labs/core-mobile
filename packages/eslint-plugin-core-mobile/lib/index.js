@@ -1,6 +1,9 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-const noDirectAvaxComparisonOperator_1 = require("./rules/noDirectAvaxComparisonOperator");
+const noDirectAvaxComparisonOperator_1 = __importDefault(require("./rules/noDirectAvaxComparisonOperator"));
 module.exports = {
     rules: {
         'no-direct-avax-comparison-operator': noDirectAvaxComparisonOperator_1.default

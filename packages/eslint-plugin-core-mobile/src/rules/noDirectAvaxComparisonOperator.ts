@@ -19,20 +19,23 @@ const rule: TSESLint.RuleModule<'noDirectAvaxComparisonOperator'> = {
         const expr = node as TSESTree.BinaryExpression
         if (['<', '>', '==', '!='].includes(expr.operator)) {
           const {
-            symbol: { escapedName: leftTypeSymbolName }
+            symbol: leftSymbol
           } = checker.getTypeAtLocation(
             services.esTreeNodeToTSNodeMap.get(expr.left)
           )
           const {
-            symbol: { escapedName: rightTypeSymbolName }
+            symbol: rightSymbol
           } = checker.getTypeAtLocation(
             services.esTreeNodeToTSNodeMap.get(expr.left)
           )
 
           const isAvax = (symbolName: string): boolean => symbolName === 'Avax'
 
+          const leftTypeSymbolName = leftSymbol?.escapedName
+          const rightTypeSymbolName = rightSymbol?.escapedName
+
           if (
-            leftTypeSymbolName &&
+            leftTypeSymbolName && 
             rightTypeSymbolName &&
             (isAvax(leftTypeSymbolName) || isAvax(rightTypeSymbolName))
           ) {
