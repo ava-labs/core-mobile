@@ -1,0 +1,16 @@
+{
+  "extends": "@avalabs/tsconfig-mobile/base.json",
+  "compilerOptions": {
+    "baseUrl": "./app",
+    "paths": {
+      "tests/*": ["../tests/*"],
+    }
+  },
+  "include": [
+    "**/*.ts",
+    "**/*.tsx", "*.d.ts", "jest.config.js",
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

@@ -22,18 +22,17 @@ jobs:
       - name: Check out repo
         uses: actions/checkout@v3
 
+      - name: Set up node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: 'yarn'
+
       - name: Install dependencies
-        run: yarn setup:ci
+        run: yarn install --immutable && yarn setup
 
       - name: Eslint
-        run: yarn lint:ci
-        # Continue to Annotate step which will fail if there are errors
-        continue-on-error: true
-      - name: "Eslint: Annotate Results"
-        uses: ataylorme/eslint-annotate-action@v2
-        with:
-          repo-token: '${{ secrets.GITHUB_TOKEN }}'
-          report-json: 'eslint_report.json'
+        run: yarn lint --quiet
 
       - name: Typescript
         run: yarn tsc
@@ -41,4 +40,4 @@ jobs:
       - name: Test
         env:
           NODE_OPTIONS: "--max_old_space_size=4096"
-        run: yarn test:ci
+        run: yarn test --ci --silent
