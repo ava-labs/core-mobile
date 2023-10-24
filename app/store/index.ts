@@ -21,6 +21,7 @@ import { posthogReducer as posthog } from './posthog'
 import { nftReducer as nft } from './nft'
 import { addressBookReducer as addressBook } from './addressBook'
 import { viewOnceReducer as viewOnce } from './viewOnce'
+import { browserReducer as browser } from './browser'
 import settings from './settings'
 import swap from './swap'
 import { transactionApi } from './transaction'
@@ -56,6 +57,7 @@ const combinedReducer = combineReducers({
   security,
   walletConnectV2,
   viewOnce,
+  browser,
 
   // user preferences
   settings,
