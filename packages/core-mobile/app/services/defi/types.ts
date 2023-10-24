@@ -1,6 +1,5 @@
-import z, { object, string, number, record, ZodEffects } from 'zod'
-import camelcaseKeys from 'camelcase-keys'
-import { CamelCasedPropertiesDeep } from 'type-fest'
+import { zodToCamelCase } from 'utils/zodToCamelCase'
+import z, { object, string, number, record } from 'zod'
 import {
   DeFiChainSchema,
   DeFiPortfolioItemSchema,
@@ -8,13 +7,6 @@ import {
   DeFiSimpleProtocolSchema,
   DeFiTokenSchema
 } from './debankTypes'
-
-export const zodToCamelCase = <T extends z.ZodTypeAny>(
-  zod: T
-): ZodEffects<z.ZodTypeAny, CamelCasedPropertiesDeep<T['_output']>> =>
-  zod.transform(
-    val => camelcaseKeys(val, { deep: true }) as CamelCasedPropertiesDeep<T>
-  )
 
 export const DeFiChainCamelCase = zodToCamelCase(DeFiChainSchema)
 export type DeFiChain = z.infer<typeof DeFiChainCamelCase>

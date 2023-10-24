@@ -11,7 +11,7 @@ export const useDeFiProtocol = (protocolId: string) => {
   const addressC = useSelector(selectActiveAccount)?.address ?? ''
 
   return useRefreshableQuery({
-    refetchInterval: refetchIntervals.deFiProtocol,
+    refetchInterval: refetchIntervals.defi,
     enabled: !!addressC && !!protocolId,
     queryKey: [ReactQueryKeys.DEFI_PROTOCOL, addressC, protocolId],
     queryFn: () => DeFiService.getDeFiProtocol(addressC, protocolId),
