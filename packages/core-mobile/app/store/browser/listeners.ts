@@ -19,7 +19,7 @@ const updateActiveTabId = (
   listenerApi: AppListenerEffectAPI,
   tabId: TabId
 ): void => {
-  const inAppBrowserState = listenerApi.getState().inAppBrowser
+  const inAppBrowserState = listenerApi.getState().browser
   if (inAppBrowserState.ids.length === 0) {
     listenerApi.dispatch(clearAllTabs())
     return
@@ -38,7 +38,7 @@ const keepMaximumAllowedTabs = (
   _: Action,
   listenerApi: AppListenerEffectAPI
 ): void => {
-  const inAppBrowserState = listenerApi.getState().inAppBrowser
+  const inAppBrowserState = listenerApi.getState().browser
   if (inAppBrowserState.ids.length > MAXIMUM_TABS) {
     const oldestTabId = getOldestTabId(inAppBrowserState)
     oldestTabId && listenerApi.dispatch(removeTab({ id: oldestTabId }))

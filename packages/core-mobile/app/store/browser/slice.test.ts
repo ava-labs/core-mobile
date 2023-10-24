@@ -1,7 +1,7 @@
 import { subDays } from 'date-fns'
 import * as uuid from 'uuid'
 import {
-  inAppBrowserReducer as reducer,
+  browserReducer as reducer,
   addTab,
   removeTab,
   addHistory,
@@ -9,7 +9,7 @@ import {
   clearAllTabs,
   setActiveTabId
 } from './slice'
-import { InAppBrowserState } from './types'
+import { BrowserState } from './types'
 
 jest.mock('uuid')
 const uuidSpy = jest.spyOn(uuid, 'v4')
@@ -105,7 +105,7 @@ describe('Tabs', () => {
   })
 
   it('should clear all tabs', () => {
-    let state: InAppBrowserState = initialState
+    let state: BrowserState = initialState
 
     const times = 10
     for (let i = 0; i < times; i++) {
@@ -117,7 +117,7 @@ describe('Tabs', () => {
   })
 
   it('should set active tab id', () => {
-    let state: InAppBrowserState = initialState
+    let state: BrowserState = initialState
 
     const times = 10
     for (let i = 0; i < times; i++) {
