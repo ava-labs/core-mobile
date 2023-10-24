@@ -1,15 +1,15 @@
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { useRefreshableQuery } from 'hooks/query/useRefreshableQuery'
-import DeFiService from 'services/defi/DeFiService'
 import { refetchIntervals } from 'services/defi/constants'
-import { DeFiProtocolInformationCamelCase } from 'services/defi/types'
+import InAppBrowserService from 'services/inAppBrowser/InAppBrowserService'
+import { DeFiProtocolInformationCamelCase } from 'services/inAppBrowser/types'
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export const useDeFiProtocolInformationList = () => {
   return useRefreshableQuery({
-    refetchInterval: refetchIntervals.defiProtocolInformationList,
+    refetchInterval: refetchIntervals.defi,
     queryKey: [ReactQueryKeys.DEFI_PROTOCOL_INFORMATION_LIST],
-    queryFn: () => DeFiService.getDeFiProtocolInformationList(),
+    queryFn: () => InAppBrowserService.getDeFiProtocolInformationList(),
     select: data => DeFiProtocolInformationCamelCase.array().parse(data)
   })
 }
