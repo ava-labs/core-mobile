@@ -275,9 +275,11 @@ function sectionsAndSubsectionsTestrail(sections: any) {
 }
 
 async function newTCTitles() {
+  const testCasesFromTestrail = await getAllTestCasesFromTestrail()
   const allTestCasesFromTestRun = await testCasesFromTestRun()
 
   const allTestCaseTitlesFromRun: { testTitle: any; testSection: any }[] = []
+  const theNewTCTitles = []
 
   allTestCasesFromTestRun.forEach(function (title) {
     const testTitle = title.testCase
@@ -285,6 +287,12 @@ async function newTCTitles() {
     allTestCaseTitlesFromRun.push({ testTitle, testSection })
   })
 
+  // eslint-disable-next-line sonarjs/no-ignored-return
+  allTestCaseTitlesFromRun.filter(function (item) {
+    testCasesFromTestrail.indexOf(item.testTitle) === -1
+      ? theNewTCTitles.push(item)
+      : undefined
+  })
   return allTestCaseTitlesFromRun
 }
 
@@ -324,6 +332,17 @@ async function getSectionsFromTestRail() {
   })
   // console.log(sections)
   return sections
+}
+
+async function getAllTestCasesFromTestrail() {
+  const tcArray: any[] = []
+  const cases = await api.getCases(projectId)
+  cases.forEach(function (testCase: { title: any }) {
+    const testCaseTitle = testCase.title
+    tcArray.push(testCaseTitle)
+  })
+  // console.log(tcArray)
+  return tcArray
 }
 
 async function testCasesFromTestRun() {
