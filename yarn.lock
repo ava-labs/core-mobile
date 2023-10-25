@@ -99,6 +99,7 @@ __metadata:
     "@avalabs/eslint-config-mobile": "workspace:*"
     "@avalabs/etherscan-sdk": 2.8.0-alpha.150
     "@avalabs/glacier-sdk": 2.8.0-alpha.150
+    "@avalabs/k2-mobile": "workspace:*"
     "@avalabs/paraswap-sdk": 2.8.0-alpha.150
     "@avalabs/snowtrace-sdk": 2.8.0-alpha.150
     "@avalabs/token-prices-sdk": 2.8.0-alpha.150
@@ -204,6 +205,7 @@ __metadata:
     jimp: 0.22.10
     lodash.isempty: 4.4.0
     lodash.isstring: 4.0.1
+    lodash.merge: 4.6.2
     lottie-react-native: 5.0.1
     metro-minify-esbuild: 0.2.0
     metro-react-native-babel-preset: 0.72.3
@@ -360,7 +362,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/k2-mobile@workspace:packages/k2-mobile":
+"@avalabs/k2-mobile@workspace:*, @avalabs/k2-mobile@workspace:packages/k2-mobile":
   version: 0.0.0-use.local
   resolution: "@avalabs/k2-mobile@workspace:packages/k2-mobile"
   dependencies:
@@ -16552,7 +16554,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lodash.merge@npm:^4.6.2":
+"lodash.merge@npm:4.6.2, lodash.merge@npm:^4.6.2":
   version: 4.6.2
   resolution: "lodash.merge@npm:4.6.2"
   checksum: ad580b4bdbb7ca1f7abf7e1bce63a9a0b98e370cf40194b03380a46b4ed799c9573029599caebc1b14e3f24b111aef72b96674a56cfa105e0f5ac70546cdc005

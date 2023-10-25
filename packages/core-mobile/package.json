@@ -12,7 +12,7 @@
     "tsc": "tsc -p .",
     "lint": "eslint .",
     "clean": "./scripts/clean",
-    "postinstall": "node_modules/.bin/patch-package; node_modules/.bin/rn-nodeify --install events,stream,vm,assert,https,http,os,zlib --hack; yarn run gen:contracts",
+    "postinstall": "node ${PROJECT_CWD}/scripts/generate-metro-monorepo-config.js; node_modules/.bin/patch-package; node_modules/.bin/rn-nodeify --install events,stream,vm,assert,https,http,os,zlib --hack; yarn run gen:contracts",
     "storybook-generate": "sb-rn-get-stories",
     "storybook-watch": "sb-rn-watcher",
     "gen:contracts": "typechain --target=ethers-v6 --out-dir app/contracts/openzeppelin ./node_modules/@openzeppelin/contracts/build/contracts/ERC20.json ./node_modules/@openzeppelin/contracts/build/contracts/ERC721.json ./node_modules/@openzeppelin/contracts/build/contracts/ERC1155.json",
@@ -27,6 +27,7 @@
     "@avalabs/covalent-sdk": "2.8.0-alpha.150",
     "@avalabs/etherscan-sdk": "2.8.0-alpha.150",
     "@avalabs/glacier-sdk": "2.8.0-alpha.150",
+    "@avalabs/k2-mobile": "workspace:*",
     "@avalabs/paraswap-sdk": "2.8.0-alpha.150",
     "@avalabs/snowtrace-sdk": "2.8.0-alpha.150",
     "@avalabs/token-prices-sdk": "2.8.0-alpha.150",
@@ -85,6 +86,7 @@
     "jimp": "0.22.10",
     "lodash.isempty": "4.4.0",
     "lodash.isstring": "4.0.1",
+    "lodash.merge": "4.6.2",
     "lottie-react-native": "5.0.1",
     "moment": "2.29.4",
     "node-cache": "5.1.2",
@@ -271,7 +273,8 @@
       "@storybook/addon-links>core-js": false,
       "@avalabs/wallets-sdk>@avalabs/hw-app-avalanche>@ledgerhq/hw-app-eth>@ledgerhq/domain-service>eip55>keccak": false,
       "@avalabs/wallets-sdk>bip32>tiny-secp256k1": false,
-      "babel-loader>webpack>watchpack>watchpack-chokidar2>chokidar>fsevents": false
+      "babel-loader>webpack>watchpack>watchpack-chokidar2>chokidar>fsevents": false,
+      "@avalabs/k2-mobile": false
     }
   },
   "react-native": {
