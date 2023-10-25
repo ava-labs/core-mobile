@@ -6308,10 +6308,10 @@
     pino "7.11.0"
     tslib "1.14.1"
 
-"@walletconnect/react-native-compat@2.10.1":
-  version "2.10.1"
-  resolved "https://registry.yarnpkg.com/@walletconnect/react-native-compat/-/react-native-compat-2.10.1.tgz#39b6f1912c44bf1b0e9ce02ba63e4a30b92d6044"
-  integrity sha512-KZLj7wBcmnrzkqATZdW+OgrPvoceua54cgG460cpo3Yh81af+T51j3YFfpe7naCPW+EFX6SU5dpmMIe8jNfVjQ==
+"@walletconnect/react-native-compat@2.10.4":
+  version "2.10.4"
+  resolved "https://registry.yarnpkg.com/@walletconnect/react-native-compat/-/react-native-compat-2.10.4.tgz#2d28b61e63ab69b6d364d3946bdb13753bdecf30"
+  integrity sha512-U19UHlVfxBWO1Vslmx1W8mU5xbyejzDKeXOsK61nlByzc1SzPZUz5s6o4TTBox5ILBNOoZUitUY2d+vgfnKg8g==
   dependencies:
     events "3.3.0"
     fast-text-encoding "^1.0.6"
@@ -6390,6 +6390,18 @@
     "@walletconnect/logger" "^2.0.1"
     events "^3.3.0"
 
+"@walletconnect/types@2.10.4":
+  version "2.10.4"
+  resolved "https://registry.yarnpkg.com/@walletconnect/types/-/types-2.10.4.tgz#23f6e4bd785671812dc6ea96848a6bd7ea78f038"
+  integrity sha512-eQpOElyiwJp3tepuOS3TS9dXTl9jVVlrC3iVA8bytnbLagkAUxmiv/s7PyDFx+ndXwQVh8PFBkWg1oxGwgCSBA==
+  dependencies:
+    "@walletconnect/events" "^1.0.1"
+    "@walletconnect/heartbeat" "1.2.1"
+    "@walletconnect/jsonrpc-types" "1.0.3"
+    "@walletconnect/keyvaluestorage" "^1.0.2"
+    "@walletconnect/logger" "^2.0.1"
+    events "^3.3.0"
+
 "@walletconnect/utils@2.10.0":
   version "2.10.0"
   resolved "https://registry.yarnpkg.com/@walletconnect/utils/-/utils-2.10.0.tgz#6918d12180d797b8bd4a19fb2ff128e394e181d6"
@@ -6424,6 +6436,26 @@
     "@walletconnect/safe-json" "^1.0.2"
     "@walletconnect/time" "^1.0.2"
     "@walletconnect/types" "2.10.1"
+    "@walletconnect/window-getters" "^1.0.1"
+    "@walletconnect/window-metadata" "^1.0.1"
+    detect-browser "5.3.0"
+    query-string "7.1.3"
+    uint8arrays "^3.1.0"
+
+"@walletconnect/utils@2.10.4":
+  version "2.10.4"
+  resolved "https://registry.yarnpkg.com/@walletconnect/utils/-/utils-2.10.4.tgz#5f17938e7ea481541ec2dbae0df5cd494c72523f"
+  integrity sha512-XbrKgnQ0hC9DC9wjFb468MEYMoJxnCVmOj2gi01DA4FSr8fJi7wwNRUnlnZzLWrUWrHuaPReYe4PgBAgIv363g==
+  dependencies:
+    "@stablelib/chacha20poly1305" "1.0.1"
+    "@stablelib/hkdf" "1.0.1"
+    "@stablelib/random" "^1.0.2"
+    "@stablelib/sha256" "1.0.1"
+    "@stablelib/x25519" "^1.0.3"
+    "@walletconnect/relay-api" "^1.0.9"
+    "@walletconnect/safe-json" "^1.0.2"
+    "@walletconnect/time" "^1.0.2"
+    "@walletconnect/types" "2.10.4"
     "@walletconnect/window-getters" "^1.0.1"
     "@walletconnect/window-metadata" "^1.0.1"
     detect-browser "5.3.0"
