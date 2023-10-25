@@ -23,7 +23,6 @@
       "./e2e/tests/plusIcon/walletConnect/traderjoe.e2e.ts",
       "./e2e/tests/send/sendGoerlyEthTo2ndAccount.e2e.ts",
       "./e2e/tests/send/sendEthTo2ndAccount.e2e.ts",
-      "./e2e/tests/network/addCustomToken.smoke.e2e.ts",
-      "./e2e/tests/stake/stakingTestnet.smoke.e2e.ts"
+      "./e2e/tests/network/addCustomToken.smoke.e2e.ts"
     ]
   }
