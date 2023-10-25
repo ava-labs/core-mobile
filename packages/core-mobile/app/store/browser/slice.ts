@@ -9,7 +9,7 @@ import { History, TabData, TabId, BrowserState } from './types'
 import { getLatestEntity, getOldestEntity } from './utils'
 import { MAXIMUM_HISTORY } from './const'
 
-const reducerName = 'inAppBrowser'
+const reducerName = 'browser'
 
 const entityAdapter = createEntityAdapter<TabData>()
 
@@ -18,7 +18,7 @@ const initialState: BrowserState = {
   activeTabId: undefined
 }
 
-const inAppBrowserSlice = createSlice({
+const browserSlice = createSlice({
   name: reducerName,
   initialState,
   reducers: {
@@ -118,6 +118,6 @@ export const {
   setActiveTabId,
   limitMaxHistory,
   updateActiveHistory
-} = inAppBrowserSlice.actions
+} = browserSlice.actions
 
-export const browserReducer = inAppBrowserSlice.reducer
+export const browserReducer = browserSlice.reducer
