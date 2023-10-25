@@ -1,5 +1,6 @@
 {
   "name": "@avalabs/k2-mobile",
+  "main": "src/index.ts",
   "scripts": {
     "setup": "yarn allow-scripts",
     "android": "react-native run-android",
