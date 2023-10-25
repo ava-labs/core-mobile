@@ -82,9 +82,10 @@ const testParams = [
   {
     from: '0xcA0E993876152ccA6053eeDFC753092c8cE712D0',
     to: '0xC7E5ffBd7843EdB88cCB2ebaECAa07EC55c65318',
-    value: '10000',
-    gas: '100',
-    gasPrice: '10'
+    data: '0x10000',
+    value: '0x10000',
+    gas: '0x100',
+    gasPrice: '0x10'
   }
 ]
 
@@ -92,9 +93,10 @@ const testData = {
   txParams: {
     from: '0xcA0E993876152ccA6053eeDFC753092c8cE712D0',
     to: '0xC7E5ffBd7843EdB88cCB2ebaECAa07EC55c65318',
-    value: '10000',
-    gas: '100',
-    gasPrice: '10'
+    data: '0x10000',
+    value: '0x10000',
+    gas: '0x100',
+    gasPrice: '0x10'
   }
 }
 
@@ -162,7 +164,7 @@ describe('eth_sendTransaction handler', () => {
         ],
         [
           {
-            gas: '100'
+            gas: '0x100'
           }
         ]
       ]
@@ -265,8 +267,8 @@ describe('eth_sendTransaction handler', () => {
         {
           nonce: mockTransactionCount,
           chainId: mockNetwork.chainId,
-          data: undefined,
-          gasLimit: 100,
+          data: '0x10000',
+          gasLimit: 256,
           gasPrice: BigInt(testData.txParams.gasPrice),
           to: testData.txParams.to,
           value: testData.txParams.value
@@ -311,8 +313,8 @@ describe('eth_sendTransaction handler', () => {
         {
           nonce: mockTransactionCount,
           chainId: mockNetwork.chainId,
-          data: undefined,
-          gasLimit: 100,
+          data: '0x10000',
+          gasLimit: 256,
           gasPrice: BigInt(testData.txParams.gasPrice),
           to: testData.txParams.to,
           value: testData.txParams.value
