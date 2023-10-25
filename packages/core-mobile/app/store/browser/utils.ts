@@ -1,12 +1,12 @@
-import { TabData } from './types'
+import { Tab } from './types'
 
-export const getOldestEntity = (tabs: TabData[]): TabData | undefined => {
+export const getOldestTab = (tabs: Tab[]): Tab | undefined => {
   return tabs.sort(
     (a, b) => a.lastVisited.getTime() - b.lastVisited.getTime()
   )[0]
 }
 
-export const getLatestEntity = (tabs: TabData[]): TabData | undefined => {
+export const getLatestTab = (tabs: Tab[]): Tab | undefined => {
   return tabs.sort(
     (a, b) => b.lastVisited.getTime() - a.lastVisited.getTime()
   )[0]

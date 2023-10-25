@@ -1,24 +1,28 @@
 import { AppStartListening } from 'store/middleware/listener'
 import { AppListenerEffectAPI } from 'store'
 import Logger from 'utils/Logger'
-import { Action } from '@reduxjs/toolkit'
+import { Action, PayloadAction } from '@reduxjs/toolkit'
 import {
   removeTab,
   clearAllTabs,
   setActiveTabId,
   getLastVisitedTabId,
   addTab,
-  getOldestTabId,
   addHistory,
-  limitMaxHistory
+  limitMaxHistory,
+  limitMaxTab,
+  removeHistory,
+  clearAllHistories,
+  setActiveHistoryId,
+  getLastVisitedHistoryId
 } from './slice'
-import { TabId } from './types'
-import { MAXIMUM_TABS } from './const'
+import { AddHistoryDTO, HistoryDTO, TabDTO } from './types'
 
 const updateActiveTabId = (
-  listenerApi: AppListenerEffectAPI,
-  tabId: TabId
+  action: PayloadAction<TabDTO>,
+  listenerApi: AppListenerEffectAPI
 ): void => {
+  const { id: tabId } = action.payload
   const browserState = listenerApi.getState().browser
   if (browserState.ids.length === 0) {
     listenerApi.dispatch(clearAllTabs())
@@ -34,21 +38,41 @@ const updateActiveTabId = (
   }
 }
 
+const updateActiveHistoryId = (
+  action: PayloadAction<HistoryDTO>,
+  listenerApi: AppListenerEffectAPI
+): void => {
+  const { id: historyId, tabId } = action.payload
+  const browserState = listenerApi.getState().browser
+  const historyState = browserState.entities[tabId]?.histories
+  if (historyState?.ids.length === 0) {
+    listenerApi.dispatch(clearAllHistories({ id: tabId }))
+    return
+  }
+  if (historyState?.activeHistoryId === historyId) {
+    const lastVisitedHistoryId = getLastVisitedHistoryId(historyState)
+    if (!lastVisitedHistoryId) {
+      Logger.warn('could not find last visited history id')
+      return
+    }
+    listenerApi.dispatch(
+      setActiveHistoryId({ id: lastVisitedHistoryId, tabId })
+    )
+  }
+}
+
 const keepMaximumAllowedTabs = (
   _: Action,
   listenerApi: AppListenerEffectAPI
 ): void => {
-  const browserState = listenerApi.getState().browser
-  if (browserState.ids.length > MAXIMUM_TABS) {
-    const oldestTabId = getOldestTabId(browserState)
-    oldestTabId && listenerApi.dispatch(removeTab({ id: oldestTabId }))
-  }
+  listenerApi.dispatch(limitMaxTab())
 }
 
 const keepMaximumAllowedHistory = (
-  listenerApi: AppListenerEffectAPI,
-  tabId: TabId
+  action: PayloadAction<AddHistoryDTO>,
+  listenerApi: AppListenerEffectAPI
 ): void => {
+  const { tabId } = action.payload
   listenerApi.dispatch(limitMaxHistory({ id: tabId }))
 }
 
@@ -58,9 +82,17 @@ export const updateActiveTabIdListener = (
 ) => {
   startListening({
     actionCreator: removeTab,
-    effect: (action, listenerApi) => {
-      updateActiveTabId(listenerApi, action.payload.id)
-    }
+    effect: updateActiveTabId
+  })
+}
+
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+export const updateActiveHistoryIdListener = (
+  startListening: AppStartListening
+) => {
+  startListening({
+    actionCreator: removeHistory,
+    effect: updateActiveHistoryId
   })
 }
 
@@ -78,8 +110,6 @@ export const limitMaximumHistoryListener = (
 ) => {
   startListening({
     actionCreator: addHistory,
-    effect: (action, listenerApi) => {
-      keepMaximumAllowedHistory(listenerApi, action.payload.id)
-    }
+    effect: keepMaximumAllowedHistory
   })
 }
