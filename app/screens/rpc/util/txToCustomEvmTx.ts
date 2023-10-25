@@ -17,13 +17,7 @@ export async function txToCustomEvmTx(
   }
 
   const { gas, to, from, data, value, gasPrice } = txParams
-
-  //gasPrice comes in hex form but not prefixed with 0x (eg. 6b1a22f80)
-  let hexGasPrice = gasPrice
-  if (hexGasPrice?.startsWith('0x') === false) {
-    hexGasPrice = hexGasPrice.length % 2 ? '0x0' : '0x' + hexGasPrice
-  }
-  const sureGasPrice = BigInt(hexGasPrice ?? networkFee)
+  const sureGasPrice = BigInt(gasPrice ?? networkFee)
 
   if (!gas || !sureGasPrice) {
     throw new Error('Gas or gas estimate is malformed')
