@@ -1,7 +1,6 @@
 import { EntityState } from '@reduxjs/toolkit'
 
 export type TabId = string // unique, generated
-export type HistoryReferendceId = string // unique, generated
 export type HistoryId = string // unique, generated
 
 export type Tab = {
@@ -13,7 +12,7 @@ export type TabHistory = {
   id: HistoryId
   title: string // title grabbed from html metadata
   url: string // url grabbed from html metadata
-  screenshot?: string // url to screenshot
+  screenshot?: string // id to grab screenshot stored in MMKV
 }
 
 export type TabState = EntityState<Tab> & {
@@ -24,21 +23,21 @@ export type TabHistoryState = EntityState<TabHistory> & {
   activeHistoryId?: HistoryId
 }
 
-export type AddTabHistoryDTO = {
+export type AddTabHistoryPayload = {
   tabId: TabId
   history: Omit<TabHistory, 'id'>
 }
 
-export type TabHistoryDTO = {
+export type TabHistoryPayload = {
   tabId: TabId
   id: HistoryId
 }
 
-export type TabDTO = {
+export type TabPayload = {
   id: TabId
 }
 
 export type BrowserState = {
   tab: TabState
-  tabHistoryByTabId: Map<TabId, TabHistoryState>
+  history: Record<TabId, TabHistoryState>
 }

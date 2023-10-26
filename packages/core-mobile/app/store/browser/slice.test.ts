@@ -19,7 +19,7 @@ const initialState = {
     entities: {},
     ids: []
   },
-  tabHistoryByTabId: new Map()
+  history: {}
 }
 
 const TAB_HISTORY_DATA = {
@@ -53,7 +53,7 @@ describe('Tabs', () => {
       },
       ids: ['1']
     })
-    expect(Object.fromEntries(state.tabHistoryByTabId)).toMatchObject({
+    expect(state.history).toMatchObject({
       '1': {
         entities: {},
         ids: []
@@ -80,7 +80,7 @@ describe('Tabs', () => {
       },
       ids: ['1', '2']
     })
-    expect(Object.fromEntries(state.tabHistoryByTabId)).toMatchObject({
+    expect(state.history).toMatchObject({
       '1': {
         entities: {},
         ids: []
@@ -109,7 +109,7 @@ describe('Tabs', () => {
       },
       ids: ['1']
     })
-    expect(Object.fromEntries(state.tabHistoryByTabId)).toMatchObject({
+    expect(state.history).toMatchObject({
       '1': {
         entities: {},
         ids: []
@@ -172,7 +172,7 @@ describe('tab history', () => {
       },
       ids: ['1']
     })
-    expect(Object.fromEntries(state.tabHistoryByTabId)).toMatchObject({
+    expect(state.history).toMatchObject({
       '1': {
         entities: { history_1: { id: 'history_1', ...TAB_HISTORY_DATA } },
         ids: ['history_1']
@@ -197,6 +197,6 @@ describe('tab history', () => {
       )
     }
     state = reducer(state, limitMaxTabHistory({ id: '1' }))
-    expect(state.tabHistoryByTabId.get('1')?.ids.length).toEqual(20)
+    expect(state.history['1']?.ids.length).toEqual(20)
   })
 })
