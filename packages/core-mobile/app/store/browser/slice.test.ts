@@ -1,4 +1,4 @@
-import { subDays } from 'date-fns'
+import { getUnixTime } from 'date-fns'
 import * as uuid from 'uuid'
 import {
   browserReducer as reducer,
@@ -15,35 +15,23 @@ jest.mock('uuid')
 const uuidSpy = jest.spyOn(uuid, 'v4')
 
 const initialState = {
-  activeTabId: undefined,
-  entities: {},
-  ids: [],
-  histories: {
-    activeTabHistory: undefined,
+  tab: {
     entities: {},
     ids: []
-  }
+  },
+  tabHistoryByTabId: new Map()
 }
 
-const TAB_DATA_1 = {
-  lastVisited: subDays(new Date(), 1),
+const TAB_HISTORY_DATA = {
   screenshot: 'https://www.google.com/screenshot.png',
   title: 'Google',
-  active: 'https://www.google.com'
-}
-
-const TAB_DATA_2 = {
-  lastVisited: subDays(new Date(), 2),
-  screenshot: 'https://www.apple.com/screenshot.png',
-  title: 'Apple',
-  active: 'https://www.apple.com',
-  history: ['https://www.apple.com']
+  url: 'https://www.google.com'
 }
 
 describe('reducer', () => {
   it('should handle initial state', () => {
     const state = reducer(undefined, { type: 'unknown' })
-    expect(state).toEqual(initialState)
+    expect(state).toMatchObject(initialState)
   })
 })
 
@@ -55,60 +43,77 @@ describe('Tabs', () => {
   it('should add a new tab', () => {
     const currentState = initialState
     uuidSpy.mockImplementation(() => '1')
-    const state = reducer(currentState, addTab({ ...TAB_DATA_1 }))
-
-    expect(state).toEqual({
+    const state = reducer(currentState, addTab())
+    expect(state.tab).toMatchObject({
       activeTabId: '1',
       entities: {
-        ['1']: {
-          ...TAB_DATA_1,
+        '1': {
           id: '1'
         }
       },
       ids: ['1']
+    })
+    expect(Object.fromEntries(state.tabHistoryByTabId)).toMatchObject({
+      '1': {
+        entities: {},
+        ids: []
+      }
     })
   })
 
   it('should add two new tabs', () => {
     const currentState = initialState
     uuidSpy.mockImplementation(() => '1')
-    const state1 = reducer(currentState, addTab({ ...TAB_DATA_1 }))
+    const state1 = reducer(currentState, addTab())
     uuidSpy.mockImplementation(() => '2')
-    const state = reducer(state1, addTab({ ...TAB_DATA_2 }))
+    const state = reducer(state1, addTab())
 
-    expect(state).toEqual({
+    expect(state.tab).toMatchObject({
       activeTabId: '2',
       entities: {
-        ['1']: {
-          ...TAB_DATA_1,
+        '1': {
           id: '1'
         },
-        ['2']: {
-          ...TAB_DATA_2,
+        '2': {
           id: '2'
         }
       },
       ids: ['1', '2']
+    })
+    expect(Object.fromEntries(state.tabHistoryByTabId)).toMatchObject({
+      '1': {
+        entities: {},
+        ids: []
+      },
+      '2': {
+        entities: {},
+        ids: []
+      }
     })
   })
 
   it('should remove tab', () => {
     const currentState = initialState
     uuidSpy.mockImplementation(() => '1')
-    const state1 = reducer(currentState, addTab({ ...TAB_DATA_1 }))
+    const state1 = reducer(currentState, addTab())
     uuidSpy.mockImplementation(() => '2')
-    const state2 = reducer(state1, addTab({ ...TAB_DATA_2 }))
+    const state2 = reducer(state1, addTab())
     const state = reducer(state2, removeTab({ id: '2' }))
 
-    expect(state).toEqual({
-      activeTabId: '2',
+    expect(state.tab).toMatchObject({
+      activeTabId: '1',
       entities: {
-        ['1']: {
-          ...TAB_DATA_1,
+        '1': {
           id: '1'
         }
       },
       ids: ['1']
+    })
+    expect(Object.fromEntries(state.tabHistoryByTabId)).toMatchObject({
+      '1': {
+        entities: {},
+        ids: []
+      }
     })
   })
 
@@ -118,10 +123,10 @@ describe('Tabs', () => {
     const times = 10
     for (let i = 0; i < times; i++) {
       uuidSpy.mockImplementation(() => `${i}`)
-      state = reducer(state, addTab({ ...TAB_DATA_1 }))
+      state = reducer(state, addTab())
     }
     state = reducer(state, clearAllTabs())
-    expect(state).toEqual(initialState)
+    expect(state).toMatchObject(initialState)
   })
 
   it('should set active tab id', () => {
@@ -130,10 +135,10 @@ describe('Tabs', () => {
     const times = 10
     for (let i = 0; i < times; i++) {
       uuidSpy.mockImplementation(() => `${i}`)
-      state = reducer(state, addTab({ ...TAB_DATA_1 }))
+      state = reducer(state, addTab())
     }
     state = reducer(state, setActiveTabId({ id: '3' }))
-    expect(state.activeTabId).toEqual('3')
+    expect(state.tab.activeTabId).toEqual('3')
   })
 })
 
@@ -144,46 +149,54 @@ describe('tab history', () => {
 
   it('should add a new history', () => {
     const currentState = initialState
-    uuidSpy.mockImplementation(() => '1')
-    const state1 = reducer(currentState, addTab({ ...TAB_DATA_1 }))
+    uuidSpy.mockImplementationOnce(() => '1')
+    const unixTimestamp = getUnixTime(new Date('2023-10-26'))
+    jest.useFakeTimers().setSystemTime(new Date('2023-10-26'))
+    const state1 = reducer(currentState, addTab())
+    uuidSpy.mockImplementationOnce(() => 'history_1')
     const state = reducer(
       state1,
-      addTabHistory({ id: '1', historyId: 'https://www.google.com/history/1' })
+      addTabHistory({
+        tabId: '1',
+        history: TAB_HISTORY_DATA
+      })
     )
 
-    expect(state).toEqual({
+    expect(state.tab).toMatchObject({
       activeTabId: '1',
       entities: {
-        ['1']: {
-          ...TAB_DATA_1,
+        '1': {
           id: '1',
-          history: [
-            'https://www.google.com',
-            'https://www.google.com/history/1'
-          ],
-          active: 'https://www.google.com/history/1'
+          lastVisited: unixTimestamp
         }
       },
       ids: ['1']
+    })
+    expect(Object.fromEntries(state.tabHistoryByTabId)).toMatchObject({
+      '1': {
+        entities: { history_1: { id: 'history_1', ...TAB_HISTORY_DATA } },
+        ids: ['history_1']
+      }
     })
   })
   it('should limit history count to max of 20', () => {
     const currentState = initialState
 
     uuidSpy.mockImplementation(() => '1')
-    let state = reducer(currentState, addTab({ ...TAB_DATA_1 }))
+    let state = reducer(currentState, addTab())
 
     const times = 20
     for (let i = 0; i < times; i++) {
+      uuidSpy.mockImplementation(() => `history_${i}`)
       state = reducer(
         state,
         addTabHistory({
           tabId: '1',
-          id: `https://www.google.com/history/${i}`
+          history: TAB_HISTORY_DATA
         })
       )
     }
     state = reducer(state, limitMaxTabHistory({ id: '1' }))
-    expect(state.entities['1']?.histories.ids.length).toEqual(20)
+    expect(state.tabHistoryByTabId.get('1')?.ids.length).toEqual(20)
   })
 })

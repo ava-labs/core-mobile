@@ -1,12 +1,12 @@
 import { EntityState } from '@reduxjs/toolkit'
 
 export type TabId = string // unique, generated
+export type HistoryReferendceId = string // unique, generated
 export type HistoryId = string // unique, generated
 
 export type Tab = {
   id: TabId
-  lastVisited: Date // last time this tab was visited, delete oldest if more than 99 tabs active
-  histories: TabHistoryState
+  lastVisited?: number // unix timestamp, last time this tab was visited, delete oldest if more than 99 tabs active
 }
 
 export type TabHistory = {
@@ -16,7 +16,7 @@ export type TabHistory = {
   screenshot?: string // url to screenshot
 }
 
-export type BrowserState = EntityState<Tab> & {
+export type TabState = EntityState<Tab> & {
   activeTabId?: TabId
 }
 
@@ -26,7 +26,7 @@ export type TabHistoryState = EntityState<TabHistory> & {
 
 export type AddTabHistoryDTO = {
   tabId: TabId
-  history: TabHistory
+  history: Omit<TabHistory, 'id'>
 }
 
 export type TabHistoryDTO = {
@@ -36,4 +36,9 @@ export type TabHistoryDTO = {
 
 export type TabDTO = {
   id: TabId
+}
+
+export type BrowserState = {
+  tab: TabState
+  tabHistoryByTabId: Map<TabId, TabHistoryState>
 }
