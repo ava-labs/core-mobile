@@ -13,6 +13,7 @@
     "tsc": "tsc -p ."
   },
   "dependencies": {
+    "dripsy": "4.3.3",
     "react": "18.1.0",
     "react-native": "0.70.6"
   },
