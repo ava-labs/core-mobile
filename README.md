@@ -35,7 +35,16 @@ This repository is a monorepo that we manage using [Yarn workspaces](https://yar
 
 ## 📖 Tips
 
-To quickly remove all the node_modules folders, you can run
-```
-./scripts/remove-node-modules.sh
-```
+1. You can use these shortcuts to quickly run a command for `packages/core-mobile` and `packages/k2-mobile`
+
+   ```
+   yarn core <COMMAND>
+   yarn k2 <COMMAND>
+
+   e.g yarn core start && yarn core ios
+   ```
+
+2. To quickly remove all the node_modules folders, you can run
+   ```
+   ./scripts/remove-node-modules.sh
+   ```

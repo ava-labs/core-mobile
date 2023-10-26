@@ -1,10 +1,10 @@
 import React from 'react'
-import { TouchableOpacity, Text } from './Primitives'
+import { TouchableOpacity, Text } from '../Primitives'
 
 export const ExampleButton = (): JSX.Element => {
   return (
     <TouchableOpacity
-      sx={{ backgroundColor: '$secondary' }}
+      sx={{ backgroundColor: '$primary' }}
       onPress={() => {
         // @ts-expect-error
         // eslint-disable-next-line no-alert

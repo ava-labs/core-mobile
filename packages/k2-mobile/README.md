@@ -64,3 +64,15 @@
     ```
 
     Note: If you need to access the theme object outside the `sx` prop, you can use `useTheme()` hook.
+
+## Storybook
+
+For iOS:
+```
+yarn storybook-generate && yarn ios
+```
+
+For Android:
+```
+yarn storybook-generate && yarn android
+```

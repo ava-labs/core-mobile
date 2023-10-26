@@ -6,7 +6,7 @@ export const theme = makeTheme({
     reactNativeTypesOnly: true
   },
   colors: {
-    $primary: 'black',
+    $primary: 'pink',
     $secondary: 'white'
   }
 })

@@ -4,7 +4,7 @@
   "scripts": {
     "setup": "yarn allow-scripts",
     "android": "ENVFILE=.env.development react-native run-android --variant=internalDebug",
-    "podInstall": "bundle install && cd ios && bundle exec pod install",
+    "podInstall": "bundle _2.1.4_ install && cd ios && bundle exec pod install",
     "ios": "ENVFILE=.env.development react-native run-ios",
     "start": "react-native start",
     "link": "react-native link",

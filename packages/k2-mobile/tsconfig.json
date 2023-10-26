@@ -1,8 +1,5 @@
 {
     "extends": "@avalabs/tsconfig-mobile/base.json",
-    "compilerOptions": {
-      "baseUrl": "./src",
-    },
     "exclude": [
       "node_modules"
     ]

@@ -13,5 +13,9 @@ module.exports = {
         inlineRequires: true
       }
     })
+  },
+  resolver: {
+    // sbmodern is needed for storybook
+    resolverMainFields: ['sbmodern', 'react-native', 'browser', 'main']
   }
 }
