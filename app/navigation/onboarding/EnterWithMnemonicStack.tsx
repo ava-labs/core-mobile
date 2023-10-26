@@ -14,12 +14,7 @@ import { createStackNavigator } from '@react-navigation/stack'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { MainHeaderOptions } from 'navigation/NavUtils'
 import TermsNConditionsModal from 'components/TermsNConditionsModal'
-import {
-  onAppUnlocked,
-  onLogIn,
-  selectWalletState,
-  WalletState
-} from 'store/app'
+import { selectWalletState, WalletState } from 'store/app'
 import { useDispatch, useSelector } from 'react-redux'
 import {
   RemoveEvents,
@@ -50,7 +45,7 @@ const EnterWithMnemonicContext = createContext(
   {} as EnterWithMnemonicContextState
 )
 
-const EnterWithMnemonicStack = () => {
+const EnterWithMnemonicStack = (): JSX.Element => {
   const [mnemonic, setMnemonic] = useState('')
 
   return (
@@ -88,7 +83,7 @@ type LoginNavigationProp = EnterWithMnemonicScreenProps<
   typeof AppNavigation.LoginWithMnemonic.LoginWithMnemonic
 >['navigation']
 
-const LoginWithMnemonicScreen = () => {
+const LoginWithMnemonicScreen = (): JSX.Element => {
   const enterWithMnemonicContext = useContext(EnterWithMnemonicContext)
   const { navigate, goBack } = useNavigation<LoginNavigationProp>()
   const { capture } = usePostCapture()
@@ -125,7 +120,7 @@ type CreatePinNavigationProp = EnterWithMnemonicScreenProps<
   typeof AppNavigation.LoginWithMnemonic.CreatePin
 >['navigation']
 
-const CreatePinScreen = () => {
+const CreatePinScreen = (): JSX.Element => {
   const enterWithMnemonicContext = useContext(EnterWithMnemonicContext)
   const walletSetupHook = useApplicationContext().walletSetupHook
   const { navigate } = useNavigation<CreatePinNavigationProp>()
@@ -156,7 +151,7 @@ type BiometricLoginNavigationProp = EnterWithMnemonicScreenProps<
   typeof AppNavigation.LoginWithMnemonic.BiometricLogin
 >['navigation']
 
-const BiometricLoginScreen = () => {
+const BiometricLoginScreen = (): JSX.Element => {
   const enterWithMnemonicContext = useContext(EnterWithMnemonicContext)
   const { navigate } = useNavigation<BiometricLoginNavigationProp>()
 
@@ -171,12 +166,12 @@ const BiometricLoginScreen = () => {
   )
 }
 
-const TermsNConditionsModalScreen = () => {
+const TermsNConditionsModalScreen = (): JSX.Element => {
   const enterWithMnemonicContext = useContext(EnterWithMnemonicContext)
   const walletSetupHook = useApplicationContext().walletSetupHook
   const { signOut } = useApplicationContext().appHook
-  const dispatch = useDispatch()
   const { navigate } = useNavigation<BiometricLoginNavigationProp>()
+  const { appNavHook } = useApplicationContext()
 
   return (
     <TermsNConditionsModal
@@ -187,8 +182,9 @@ const TermsNConditionsModalScreen = () => {
           walletSetupHook
             .enterWallet(enterWithMnemonicContext.mnemonic)
             .then(() => {
-              dispatch(onLogIn())
-              dispatch(onAppUnlocked())
+              setTimeout(() => {
+                appNavHook.navigateToRootWallet()
+              }, 300)
             })
             .catch(Logger.error)
         }, 300)

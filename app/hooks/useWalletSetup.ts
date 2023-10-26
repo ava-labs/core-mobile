@@ -1,9 +1,9 @@
 import { encrypt } from 'utils/EncryptionHelper'
 import BiometricsSDK from 'utils/BiometricsSDK'
-import { AppNavHook } from 'useAppNav'
 import walletService from 'services/wallet/WalletService'
 import { useDispatch, useSelector } from 'react-redux'
 import { addAccount, selectAccounts } from 'store/account'
+import { onAppUnlocked } from 'store/app'
 
 export interface WalletSetupHook {
   onPinCreated: (
@@ -17,38 +17,27 @@ export interface WalletSetupHook {
 
 /**
  * This hook handles onboarding process.
- * onPinCreated - use when user sets PIN to encrypt mnemonic end see if
+ * onPinCreated - use when user sets PIN to encrypt mnemonic and see if
  * user has biometry turned on
  * enterWallet - use when ready to enter the wallet
  * destroyWallet - call when user ends session
  */
-export function useWalletSetup(appNavHook: AppNavHook): WalletSetupHook {
+export function useWalletSetup(): WalletSetupHook {
   const accounts = useSelector(selectAccounts)
   const dispatch = useDispatch()
 
-  const enterWallet = async (mnemonic: string) => {
-    await initWalletWithMnemonic(mnemonic)
-    setTimeout(() => {
-      appNavHook.navigateToRootWallet()
-    }, 300)
-  }
-
-  /**
-   * Inits wallet with Mnemonic phrase
-   *
-   * @param mnemonic
-   */
-  async function initWalletWithMnemonic(mnemonic: string) {
+  const enterWallet = async (mnemonic: string): Promise<void> => {
     await walletService.setMnemonic(mnemonic)
     if (Object.keys(accounts).length === 0) {
       dispatch(addAccount())
     }
+    dispatch(onAppUnlocked())
   }
 
   /**
    * Destroys the wallet instance
    */
-  async function destroyWallet() {
+  async function destroyWallet(): Promise<void> {
     walletService.destroy()
   }
 

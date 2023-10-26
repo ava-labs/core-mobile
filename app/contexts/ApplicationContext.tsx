@@ -51,9 +51,9 @@ export const ApplicationContextProvider = ({
   children
 }: {
   children: React.ReactNode
-}) => {
+}): JSX.Element => {
   const appNavHook = useAppNav()
-  const walletSetupHook = useWalletSetup(appNavHook)
+  const walletSetupHook = useWalletSetup()
   const appHook = useApp(appNavHook, walletSetupHook)
 
   const isDarkMode = true // useState(Appearance.getColorScheme() === 'dark');
@@ -114,6 +114,6 @@ export const ApplicationContextProvider = ({
   )
 }
 
-export function useApplicationContext() {
+export function useApplicationContext(): ApplicationContextState {
   return useContext(ApplicationContext)
 }

@@ -16,7 +16,6 @@ import { MainHeaderOptions } from 'navigation/NavUtils'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import WarningModal from 'components/WarningModal'
 import TermsNConditionsModal from 'components/TermsNConditionsModal'
-import { onAppUnlocked, onLogIn } from 'store/app'
 import { useDispatch } from 'react-redux'
 import {
   RemoveEvents,
@@ -94,7 +93,7 @@ type CreateWalletNavigationProp = CreateWalletScreenProps<
   typeof AppNavigation.CreateWallet.CreateWallet
 >['navigation']
 
-const CreateWalletScreen = () => {
+const CreateWalletScreen = (): JSX.Element => {
   const createWalletContext = useContext(CreateWalletContext)
   const { navigate } = useNavigation<CreateWalletNavigationProp>()
   const { capture } = usePostCapture()
@@ -108,7 +107,7 @@ const CreateWalletScreen = () => {
     [RemoveEvents.GO_BACK]
   )
 
-  const onSavedMyPhrase = (mnemonic: string) => {
+  const onSavedMyPhrase = (mnemonic: string): void => {
     createWalletContext.setMnemonic(mnemonic)
     navigate(AppNavigation.CreateWallet.ProtectFunds)
   }
@@ -120,17 +119,17 @@ type ProtectFundsNavigationProp = CreateWalletScreenProps<
   typeof AppNavigation.CreateWallet.ProtectFunds
 >['navigation']
 
-const CreateWalletWarningModal = () => {
+const CreateWalletWarningModal = (): JSX.Element => {
   const { navigate, goBack } = useNavigation<ProtectFundsNavigationProp>()
   const { capture } = usePostCapture()
 
-  const onUnderstand = () => {
+  const onUnderstand = (): void => {
     capture('OnboardingMnemonicCreated')
     goBack()
     navigate(AppNavigation.CreateWallet.CheckMnemonic)
   }
 
-  const onBack = () => {
+  const onBack = (): void => {
     goBack()
   }
 
@@ -153,7 +152,7 @@ type CheckMnemonicNavigationProp = CreateWalletScreenProps<
   typeof AppNavigation.CreateWallet.CheckMnemonic
 >['navigation']
 
-const CheckMnemonicScreen = () => {
+const CheckMnemonicScreen = (): JSX.Element => {
   const createWalletContext = useContext(CreateWalletContext)
   const { navigate, goBack } = useNavigation<CheckMnemonicNavigationProp>()
   return (
@@ -171,7 +170,7 @@ type CreatePinNavigationProp = CreateWalletScreenProps<
   typeof AppNavigation.CreateWallet.CreatePin
 >['navigation']
 
-const CreatePinScreen = () => {
+const CreatePinScreen = (): JSX.Element => {
   const createWalletContext = useContext(CreateWalletContext)
   const walletSetupHook = useApplicationContext().walletSetupHook
   const { navigate } = useNavigation<CreatePinNavigationProp>()
@@ -201,7 +200,7 @@ type BiometricLoginNavigationProp = CreateWalletScreenProps<
   typeof AppNavigation.CreateWallet.BiometricLogin
 >['navigation']
 
-const BiometricLoginScreen = () => {
+const BiometricLoginScreen = (): JSX.Element => {
   const createWalletContext = useContext(CreateWalletContext)
   const { navigate } = useNavigation<BiometricLoginNavigationProp>()
   return (
@@ -215,11 +214,11 @@ const BiometricLoginScreen = () => {
   )
 }
 
-const TermsNConditionsModalScreen = () => {
+const TermsNConditionsModalScreen = (): JSX.Element => {
   const createWalletContext = useContext(CreateWalletContext)
   const walletSetupHook = useApplicationContext().walletSetupHook
   const { signOut } = useApplicationContext().appHook
-  const dispatch = useDispatch()
+  const { appNavHook } = useApplicationContext()
   const { navigate } = useNavigation<BiometricLoginNavigationProp>()
 
   return (
@@ -231,8 +230,9 @@ const TermsNConditionsModalScreen = () => {
           walletSetupHook
             .enterWallet(createWalletContext.mnemonic)
             .then(() => {
-              dispatch(onLogIn())
-              dispatch(onAppUnlocked())
+              setTimeout(() => {
+                appNavHook.navigateToRootWallet()
+              }, 300)
             })
             .catch(Logger.error)
         }, 300)

@@ -1,5 +1,5 @@
 import { isAnyOf } from '@reduxjs/toolkit'
-import { onLogIn, onLogOut, onRehydrationComplete } from 'store/app'
+import { onAppUnlocked, onLogOut, onRehydrationComplete } from 'store/app'
 import { AppStartListening } from 'store/middleware/listener'
 import { setActive } from 'store/network'
 import { setActiveAccountIndex } from 'store/account'
@@ -7,28 +7,28 @@ import {
   killSessions,
   newSession,
   onDisconnect,
+  onRequest,
   onSendRpcError,
-  onSendRpcResult,
-  onRequest
+  onSendRpcResult
 } from '../slice'
 import {
+  handleAccountChange,
+  handleDisconnect,
+  handleNetworkChange,
+  initWalletConnect,
   killAllSessions,
   killSomeSessions,
-  handleDisconnect,
-  startSession,
-  initWalletConnect,
-  handleNetworkChange,
-  handleAccountChange
+  startSession
 } from './sessions'
 import { processRequest } from './requests'
-import { sendRpcResult, sendRpcError } from './responses'
+import { sendRpcError, sendRpcResult } from './responses'
 
-export const addWCListeners = (startListening: AppStartListening) => {
+export const addWCListeners = (startListening: AppStartListening): void => {
   /*********************
    * SESSION LISTENERS *
    *********************/
   startListening({
-    matcher: isAnyOf(onRehydrationComplete, onLogIn),
+    matcher: isAnyOf(onRehydrationComplete, onAppUnlocked),
     effect: initWalletConnect
   })
 
