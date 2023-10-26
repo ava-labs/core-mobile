@@ -6,31 +6,30 @@ export type HistoryId = string // unique, generated
 export type Tab = {
   id: TabId
   lastVisited: Date // last time this tab was visited, delete oldest if more than 99 tabs active
-  histories: HistoryState
+  histories: TabHistoryState
 }
 
-export type History = {
+export type TabHistory = {
   id: HistoryId
   title: string // title grabbed from html metadata
   url: string // url grabbed from html metadata
   screenshot?: string // url to screenshot
-  after?: HistoryId
 }
 
 export type BrowserState = EntityState<Tab> & {
   activeTabId?: TabId
 }
 
-export type HistoryState = EntityState<History> & {
+export type TabHistoryState = EntityState<TabHistory> & {
   activeHistoryId?: HistoryId
 }
 
-export type AddHistoryDTO = {
+export type AddTabHistoryDTO = {
   tabId: TabId
-  history: History
+  history: TabHistory
 }
 
-export type HistoryDTO = {
+export type TabHistoryDTO = {
   tabId: TabId
   id: HistoryId
 }

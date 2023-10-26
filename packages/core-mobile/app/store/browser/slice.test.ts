@@ -4,8 +4,8 @@ import {
   browserReducer as reducer,
   addTab,
   removeTab,
-  addHistory,
-  limitMaxHistory,
+  addTabHistory,
+  limitMaxTabHistory,
   clearAllTabs,
   setActiveTabId
 } from './slice'
@@ -14,14 +14,22 @@ import { BrowserState } from './types'
 jest.mock('uuid')
 const uuidSpy = jest.spyOn(uuid, 'v4')
 
-const initialState = { activeTabId: undefined, entities: {}, ids: [] }
+const initialState = {
+  activeTabId: undefined,
+  entities: {},
+  ids: [],
+  histories: {
+    activeTabHistory: undefined,
+    entities: {},
+    ids: []
+  }
+}
 
 const TAB_DATA_1 = {
   lastVisited: subDays(new Date(), 1),
   screenshot: 'https://www.google.com/screenshot.png',
   title: 'Google',
-  active: 'https://www.google.com',
-  history: ['https://www.google.com']
+  active: 'https://www.google.com'
 }
 
 const TAB_DATA_2 = {
@@ -140,7 +148,7 @@ describe('tab history', () => {
     const state1 = reducer(currentState, addTab({ ...TAB_DATA_1 }))
     const state = reducer(
       state1,
-      addHistory({ id: '1', historyId: 'https://www.google.com/history/1' })
+      addTabHistory({ id: '1', historyId: 'https://www.google.com/history/1' })
     )
 
     expect(state).toEqual({
@@ -169,13 +177,13 @@ describe('tab history', () => {
     for (let i = 0; i < times; i++) {
       state = reducer(
         state,
-        addHistory({
-          id: '1',
-          historyId: `https://www.google.com/history/${i}`
+        addTabHistory({
+          tabId: '1',
+          id: `https://www.google.com/history/${i}`
         })
       )
     }
-    state = reducer(state, limitMaxHistory({ id: '1' }))
-    expect(state.entities['1']?.history.length).toEqual(20)
+    state = reducer(state, limitMaxTabHistory({ id: '1' }))
+    expect(state.entities['1']?.histories.ids.length).toEqual(20)
   })
 })
