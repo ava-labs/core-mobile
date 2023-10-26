@@ -39,8 +39,3 @@ To quickly remove all the node_modules folders, you can run
 ```
 ./scripts/remove-node-modules.sh
 ```
-
-To run core-mobile commands, you can run
-```
-yarn core <COMMAND> - e.g yarn core start && yarn core ios
-```
