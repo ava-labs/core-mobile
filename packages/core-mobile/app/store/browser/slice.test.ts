@@ -5,7 +5,6 @@ import {
   addTab,
   removeTab,
   addTabHistory,
-  limitMaxTabHistory,
   clearAllTabs,
   setActiveTabId
 } from './slice'
@@ -178,25 +177,5 @@ describe('tab history', () => {
         ids: ['history_1']
       }
     })
-  })
-  it('should limit history count to max of 20', () => {
-    const currentState = initialState
-
-    uuidSpy.mockImplementation(() => '1')
-    let state = reducer(currentState, addTab())
-
-    const times = 20
-    for (let i = 0; i < times; i++) {
-      uuidSpy.mockImplementation(() => `history_${i}`)
-      state = reducer(
-        state,
-        addTabHistory({
-          tabId: '1',
-          history: TAB_HISTORY_DATA
-        })
-      )
-    }
-    state = reducer(state, limitMaxTabHistory({ id: '1' }))
-    expect(state.history['1']?.ids.length).toEqual(20)
   })
 })

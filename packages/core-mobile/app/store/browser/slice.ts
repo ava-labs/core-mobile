@@ -43,7 +43,16 @@ const browserSlice = createSlice({
       })
       state.tab.activeTabId = tabId
       state.history[tabId] = tabHistoryAdapter.getInitialState()
-      limitMaxTab()
+
+      // limit max tabs
+      const tabIds = tabAdapter.getSelectors().selectIds(state.tab)
+      if (tabIds.length > MAXIMUM_TABS) {
+        const tabIdsToRemove = tabIds.slice(0, tabIds.length - MAXIMUM_TABS)
+        tabAdapter.removeMany(state.tab, tabIdsToRemove)
+        tabIdsToRemove.forEach(idToRemove => {
+          delete state.history[idToRemove]
+        })
+      }
     },
     // call addHistory whenever user navigates to a new tab
     addTabHistory: (
@@ -71,7 +80,20 @@ const browserSlice = createSlice({
       })
 
       tabHistoryState.activeHistoryId = historyId
-      limitMaxTabHistory({ id: tabId })
+
+      // limit max tab histories
+      const historyIds = tabHistoryAdapter
+        .getSelectors()
+        .selectIds(tabHistoryState)
+      if (historyIds === undefined) return
+
+      if (historyIds.length > MAXIMUM_HISTORY) {
+        const historiesToRemove = historyIds.slice(
+          0,
+          historyIds.length - MAXIMUM_HISTORY
+        )
+        tabHistoryAdapter.removeMany(tabHistoryState, historiesToRemove)
+      }
     },
     removeTab: (state: BrowserState, action: PayloadAction<TabPayload>) => {
       const { id: tabId } = action.payload
@@ -149,39 +171,6 @@ const browserSlice = createSlice({
           lastVisited
         }
       })
-    },
-    // side effect of adding a new history is that we need to limit the number of histories
-    limitMaxTabHistory: (
-      state: BrowserState,
-      action: PayloadAction<TabPayload>
-    ) => {
-      const { id: tabId } = action.payload
-      const tabHistoryState = state.history[tabId]
-      if (tabHistoryState === undefined) return
-
-      const historyIds = tabHistoryAdapter
-        .getSelectors()
-        .selectIds(tabHistoryState)
-      if (historyIds === undefined) return
-
-      if (historyIds.length > MAXIMUM_HISTORY) {
-        const historiesToRemove = historyIds.slice(
-          0,
-          historyIds.length - MAXIMUM_HISTORY
-        )
-        tabHistoryAdapter.removeMany(tabHistoryState, historiesToRemove)
-      }
-    },
-    // side effect of adding a new tab is that we need to limit the number of tabs
-    limitMaxTab: (state: BrowserState) => {
-      const tabIds = tabAdapter.getSelectors().selectIds(state.tab)
-      if (tabIds.length > MAXIMUM_TABS) {
-        const tabIdsToRemove = tabIds.slice(0, tabIds.length - MAXIMUM_TABS)
-        tabAdapter.removeMany(state.tab, tabIdsToRemove)
-        tabIdsToRemove.forEach(tabId => {
-          delete state.history[tabId]
-        })
-      }
     }
   }
 })
@@ -239,9 +228,7 @@ export const {
   clearAllTabs,
   clearAllTabHistories,
   setActiveTabId,
-  setActiveTabHistoryId,
-  limitMaxTabHistory,
-  limitMaxTab
+  setActiveTabHistoryId
 } = browserSlice.actions
 
 export const browserReducer = browserSlice.reducer
