@@ -7,6 +7,8 @@ import {
   getAddressFromXPub,
   getAddressPublicKeyFromXPub,
   getBech32AddressFromXPub,
+  getBtcAddressFromPubKey,
+  getEvmAddressFromPubKey,
   getWalletFromMnemonic,
   getXpubFromMnemonic
 } from '@avalabs/wallets-sdk'
@@ -39,6 +41,7 @@ import { fromUnixTime, getUnixTime } from 'date-fns'
 import { getMinimumStakeEndTime } from 'services/earn/utils'
 import { Avax } from 'types/Avax'
 import { bnToBigint } from 'utils/bigNumbers/bnToBigint'
+import SeedlessWallet from 'seedless/SeedlessWallet'
 
 // Tolerate 50% buffer for burn amount for EVM transactions
 const EVM_FEE_TOLERANCE = 50
@@ -46,39 +49,76 @@ const EVM_FEE_TOLERANCE = 50
 // We increase C chain base fee by 20% for instant speed
 const BASE_FEE_MULTIPLIER = 0.2
 
-class WalletService {
-  private mnemonic?: string
+type MnemonicWalletParams = {
+  mnemonic: string
   /**
    * Derivation path: m/44'/60'/0'
    * @private
    */
-  private xpub?: string
+  xpub?: string
   /**
    * Derivation path: m/44'/9000'/0'
    * @private
    */
-  private xpubXP?: string
+  xpubXP?: string
+}
 
-  async setMnemonic(mnemonic: string) {
+type SeedlessWalletParams = {
+  pubKeys: PubKeyType[]
+}
+
+function isMnemonicWalletParams(
+  params: MnemonicWalletParams | SeedlessWalletParams
+): params is MnemonicWalletParams {
+  return 'mnemonic' in params
+}
+
+function isSeedlessWalletParams(
+  params: MnemonicWalletParams | SeedlessWalletParams
+): params is SeedlessWalletParams {
+  return 'pubKeys' in params
+}
+
+class WalletService {
+  private walletParams?: MnemonicWalletParams | SeedlessWalletParams
+
+  async initWithMenemonic(mnemonic: string): Promise<void> {
     const xpubPromise = getXpubFromMnemonic(mnemonic)
     const xpubXPPromise = new Promise<string>(resolve => {
       resolve(Avalanche.getXpubFromMnemonic(mnemonic))
     })
+    this.walletParams = {
+      mnemonic
+    }
     const pubKeys = await Promise.allSettled([xpubPromise, xpubXPPromise])
     if (pubKeys[0].status === 'fulfilled') {
-      this.xpub = pubKeys[0].value
+      this.walletParams.xpub = pubKeys[0].value
     }
     if (pubKeys[1].status === 'fulfilled') {
-      this.xpubXP = pubKeys[1].value
+      this.walletParams.xpubXP = pubKeys[1].value
     }
-    this.mnemonic = mnemonic
+  }
+
+  async initWithOidcToken(oidcToken: string): Promise<void> {
+    await SeedlessWallet.auth(oidcToken)
+    const seedlessWallet = new SeedlessWallet()
+    await seedlessWallet.connect()
+    const pubKeys = await seedlessWallet.getPublicKeys()
+
+    if (!pubKeys) {
+      throw new Error('Unable to get pubkey for seedless wallet')
+    }
+
+    this.walletParams = {
+      pubKeys
+    }
   }
 
   private async getBtcWallet(
     accountIndex: number,
     network: Network
   ): Promise<BitcoinWallet> {
-    if (!this.mnemonic) {
+    if (!this.walletParams || !isMnemonicWalletParams(this.walletParams)) {
       throw new Error('not initialized')
     }
     if (network.vmName !== NetworkVMType.BITCOIN) {
@@ -88,7 +128,7 @@ class WalletService {
 
     Logger.info('btcWallet', now())
     const btcWallet = await BitcoinWallet.fromMnemonic(
-      this.mnemonic,
+      this.walletParams.mnemonic,
       accountIndex,
       provider as BitcoinProviderAbstract
     )
@@ -97,7 +137,7 @@ class WalletService {
   }
 
   private getEvmWallet(accountIndex: number, network: Network): BaseWallet {
-    if (!this.mnemonic) {
+    if (!this.walletParams || !isMnemonicWalletParams(this.walletParams)) {
       throw new Error('not initialized')
     }
     if (network.vmName !== NetworkVMType.EVM) {
@@ -106,7 +146,7 @@ class WalletService {
     const start = now()
 
     const wallet = getWalletFromMnemonic(
-      this.mnemonic,
+      this.walletParams.mnemonic,
       accountIndex,
       DerivationPath.BIP44
     )
@@ -174,15 +214,34 @@ class WalletService {
           return signedTx.toHex()
         }
         // Handle Avalanche signing, X/P/CoreEth
-        if ('tx' in tx && wallet instanceof Avalanche.StaticSigner) {
-          const sig = await wallet.signTx({
-            tx: tx.tx,
-            externalIndices: tx.externalIndices,
-            internalIndices: tx.internalIndices
-          })
+        if ('tx' in tx) {
+          if (wallet instanceof Avalanche.StaticSigner) {
+            const sig = await wallet.signTx({
+              tx: tx.tx,
+              externalIndices: tx.externalIndices,
+              internalIndices: tx.internalIndices
+            })
 
-          return JSON.stringify(sig.toJSON())
+            return JSON.stringify(sig.toJSON())
+          }
+
+          if (wallet instanceof SeedlessWallet) {
+            const txToSign = {
+              tx: tx.tx,
+              externalIndices: tx.externalIndices,
+              internalIndices: tx.internalIndices
+            }
+
+            const result = await wallet.signAvalancheTx(txToSign)
+
+            if (result instanceof UnsignedTx) {
+              return JSON.stringify(result.toJSON())
+            }
+
+            return result
+          }
         }
+
         if ('to' in tx) {
           return await (wallet as BaseWallet).signTransaction(tx)
         }
@@ -196,14 +255,18 @@ class WalletService {
     data: any,
     accountIndex: number,
     network: Network
-  ) {
+  ): Promise<string | Buffer> {
     const wallet = await this.getWallet(accountIndex, network)
-    if (!wallet || !(wallet instanceof BaseWallet)) {
-      throw new Error(
-        wallet
-          ? `this function not supported on your wallet`
-          : 'wallet undefined in sign tx'
-      )
+    if (!wallet) {
+      throw new Error('wallet undefined in sign tx')
+    }
+
+    if (wallet instanceof SeedlessWallet) {
+      return await wallet.signMessage(rpcMethod, data, network)
+    }
+
+    if (!(wallet instanceof BaseWallet)) {
+      throw new Error(`this function not supported on your wallet`)
     }
 
     const privateKey = wallet.privateKey.toLowerCase().startsWith('0x')
@@ -458,10 +521,8 @@ class WalletService {
     return unsignedTx
   }
 
-  destroy() {
-    this.mnemonic = undefined
-    this.xpub = undefined
-    this.xpubXP = undefined
+  destroy(): void {
+    this.walletParams = undefined
   }
 
   /**
@@ -473,71 +534,132 @@ class WalletService {
    * @param isTestnet
    */
   getAddress(index: number, isTestnet: boolean): Record<NetworkVMType, string> {
-    if (!this.xpub) {
-      throw new Error('No public key available')
+    if (!this.walletParams) {
+      throw new Error('not initialized')
     }
 
     // Avalanche XP Provider
     const provXP = networkService.getAvalancheProviderXP(isTestnet)
 
-    // C-avax... this address uses the same public key as EVM
-    const cPubKey = getAddressPublicKeyFromXPub(this.xpub, index)
-    const cAddr = provXP.getAddress(cPubKey, 'C')
-
     let xAddr = '',
       pAddr = ''
-    // We can only get X/P addresses if xpubXP is set
-    if (this.xpubXP) {
-      // X and P addresses different derivation path m/44'/9000'/0'...
-      const xpPub = Avalanche.getAddressPublicKeyFromXpub(this.xpubXP, index)
-      xAddr = provXP.getAddress(xpPub, 'X')
-      pAddr = provXP.getAddress(xpPub, 'P')
+
+    if (isMnemonicWalletParams(this.walletParams)) {
+      if (!this.walletParams.xpub) {
+        throw new Error('No public key available')
+      }
+
+      // C-avax... this address uses the same public key as EVM
+      const cPubKey = getAddressPublicKeyFromXPub(this.walletParams.xpub, index)
+      const cAddr = provXP.getAddress(cPubKey, 'C')
+
+      // We can only get X/P addresses if xpubXP is set
+      if (this.walletParams.xpubXP) {
+        // X and P addresses different derivation path m/44'/9000'/0'...
+        const xpPub = Avalanche.getAddressPublicKeyFromXpub(
+          this.walletParams.xpubXP,
+          index
+        )
+        xAddr = provXP.getAddress(xpPub, 'X')
+        pAddr = provXP.getAddress(xpPub, 'P')
+      }
+      return {
+        [NetworkVMType.EVM]: getAddressFromXPub(this.walletParams.xpub, index),
+        [NetworkVMType.BITCOIN]: getBech32AddressFromXPub(
+          this.walletParams.xpub,
+          index,
+          isTestnet ? networks.testnet : networks.bitcoin
+        ),
+        [NetworkVMType.AVM]: xAddr,
+        [NetworkVMType.PVM]: pAddr,
+        [NetworkVMType.CoreEth]: cAddr
+      }
+    } else if (isSeedlessWalletParams(this.walletParams)) {
+      // pubkeys are used for LedgerLive derivation paths m/44'/60'/n'/0/0
+      // and for X/P derivation paths  m/44'/9000'/n'/0/0
+      const addressPublicKey = this.walletParams.pubKeys[index]
+
+      if (!addressPublicKey?.evm) {
+        throw new Error('Account not added')
+      }
+
+      const pubKeyBuffer = Buffer.from(addressPublicKey.evm, 'hex')
+
+      // X/P addresses use a different public key because derivation path is different
+      if (addressPublicKey.xp) {
+        const pubKeyBufferXP = Buffer.from(addressPublicKey.xp, 'hex')
+        xAddr = provXP.getAddress(pubKeyBufferXP, 'X')
+        pAddr = provXP.getAddress(pubKeyBufferXP, 'P')
+      }
+
+      return {
+        [NetworkVMType.EVM]: getEvmAddressFromPubKey(pubKeyBuffer),
+        [NetworkVMType.BITCOIN]: getBtcAddressFromPubKey(
+          pubKeyBuffer,
+          isTestnet ? networks.testnet : networks.bitcoin
+        ),
+        [NetworkVMType.AVM]: xAddr,
+        [NetworkVMType.PVM]: pAddr,
+        [NetworkVMType.CoreEth]: provXP.getAddress(pubKeyBuffer, 'C')
+      }
     }
-    return {
-      [NetworkVMType.EVM]: getAddressFromXPub(this.xpub, index),
-      [NetworkVMType.BITCOIN]: getBech32AddressFromXPub(
-        this.xpub,
-        index,
-        isTestnet ? networks.testnet : networks.bitcoin
-      ),
-      [NetworkVMType.AVM]: xAddr,
-      [NetworkVMType.PVM]: pAddr,
-      [NetworkVMType.CoreEth]: cAddr
-    }
+
+    throw new Error('Invalid wallet params')
   }
 
   private async getWallet(
     accountIndex: number,
     network: Network,
     sentryTrx?: Transaction
-  ): Promise<BaseWallet | BitcoinWallet | Avalanche.StaticSigner | undefined> {
+  ): Promise<
+    | BaseWallet
+    | BitcoinWallet
+    | Avalanche.StaticSigner
+    | SeedlessWallet
+    | undefined
+  > {
     const provider = networkService.getProviderForNetwork(network)
     return SentryWrapper.createSpanFor(sentryTrx)
       .setContext('svc.wallet.get_wallet')
       .executeAsync(async () => {
-        switch (network.vmName) {
-          case NetworkVMType.EVM:
-            return this.getEvmWallet(accountIndex, network)
-          case NetworkVMType.BITCOIN:
-            return this.getBtcWallet(accountIndex, network)
-          case NetworkVMType.AVM:
-          case NetworkVMType.PVM:
-            return Avalanche.StaticSigner.fromMnemonic(
-              this.mnemonic ?? '',
-              getAddressDerivationPath(
-                accountIndex,
-                DerivationPath.BIP44,
-                'AVM'
-              ),
-              getAddressDerivationPath(
-                accountIndex,
-                DerivationPath.BIP44,
-                'EVM'
-              ),
-              provider as Avalanche.JsonRpcProvider
-            )
-          default:
-            return undefined
+        if (!this.walletParams) {
+          throw new Error('not initialized')
+        }
+
+        if (isMnemonicWalletParams(this.walletParams)) {
+          switch (network.vmName) {
+            case NetworkVMType.EVM:
+              return this.getEvmWallet(accountIndex, network)
+            case NetworkVMType.BITCOIN:
+              return this.getBtcWallet(accountIndex, network)
+            case NetworkVMType.AVM:
+            case NetworkVMType.PVM:
+              return Avalanche.StaticSigner.fromMnemonic(
+                this.walletParams.mnemonic ?? '',
+                getAddressDerivationPath(
+                  accountIndex,
+                  DerivationPath.BIP44,
+                  'AVM'
+                ),
+                getAddressDerivationPath(
+                  accountIndex,
+                  DerivationPath.BIP44,
+                  'EVM'
+                ),
+                provider as Avalanche.JsonRpcProvider
+              )
+            default:
+              return undefined
+          }
+        } else if (isSeedlessWalletParams(this.walletParams)) {
+          const addressPublicKey = this.walletParams.pubKeys?.[accountIndex]
+          if (!addressPublicKey) {
+            throw new Error('Account public key not available')
+          }
+
+          const wallet = new SeedlessWallet(network, addressPublicKey)
+          await wallet.connect()
+          return wallet
         }
       })
   }
@@ -548,15 +670,33 @@ class WalletService {
    * @param account Account to get public key of.
    */
   async getPublicKey(account: Account): Promise<PubKeyType> {
-    if (this.xpub && this.xpubXP) {
-      const evmPub = getAddressPublicKeyFromXPub(this.xpub, account.index)
+    if (!this.walletParams) {
+      throw new Error('not initialized')
+    }
+
+    if (
+      isMnemonicWalletParams(this.walletParams) &&
+      this.walletParams.xpub &&
+      this.walletParams.xpubXP
+    ) {
+      const evmPub = getAddressPublicKeyFromXPub(
+        this.walletParams.xpub,
+        account.index
+      )
       const xpPub = Avalanche.getAddressPublicKeyFromXpub(
-        this.xpubXP,
+        this.walletParams.xpubXP,
         account.index
       )
       return {
         evm: evmPub.toString('hex'),
         xp: xpPub.toString('hex')
+      }
+    } else if (isSeedlessWalletParams(this.walletParams)) {
+      const pub = this.walletParams.pubKeys[account.index]
+      if (!pub) throw new Error('Can not find public key for the given index')
+      return {
+        evm: pub.evm,
+        xp: pub.xp
       }
     } else {
       throw new Error('Can not find public key for the given index')
@@ -568,22 +708,33 @@ class WalletService {
     chainAlias: 'X' | 'P',
     isChange: boolean,
     isTestnet: boolean
-  ) {
+  ): Promise<string[]> {
+    if (!this.walletParams) {
+      throw new Error('not initialized')
+    }
+
     const provXP = await networkService.getAvalancheProviderXP(isTestnet)
 
     if (isChange && chainAlias !== 'X') {
       return []
     }
 
-    return indices.map(index =>
-      Avalanche.getAddressFromXpub(
-        this.xpubXP as string,
-        index,
-        provXP,
-        chainAlias,
-        isChange
+    if (isMnemonicWalletParams(this.walletParams) && this.walletParams.xpubXP) {
+      const xpubXP = this.walletParams.xpubXP
+
+      return indices.map(index =>
+        Avalanche.getAddressFromXpub(
+          xpubXP,
+          index,
+          provXP,
+          chainAlias,
+          isChange
+        )
       )
-    )
+    }
+
+    // Seedless Todo: missing implementation?
+    throw new Error('getAddressesByIndices: should support seedless wallet')
   }
 
   /**

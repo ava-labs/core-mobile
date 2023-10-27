@@ -12,6 +12,7 @@ export interface WalletSetupHook {
     isResetting: boolean
   ) => Promise<'useBiometry' | 'enterWallet'>
   enterWallet: (mnemonic: string) => Promise<void>
+  enterSeedlessWallet: (oidcToken: string) => Promise<void>
   destroyWallet: () => void
 }
 
@@ -26,8 +27,15 @@ export function useWalletSetup(appNavHook: AppNavHook): WalletSetupHook {
   const accounts = useSelector(selectAccounts)
   const dispatch = useDispatch()
 
-  const enterWallet = async (mnemonic: string) => {
+  const enterWallet = async (mnemonic: string): Promise<void> => {
     await initWalletWithMnemonic(mnemonic)
+    setTimeout(() => {
+      appNavHook.navigateToRootWallet()
+    }, 300)
+  }
+
+  const enterSeedlessWallet = async (oidcToken: string): Promise<void> => {
+    await initWalletWithOidcToken(oidcToken)
     setTimeout(() => {
       appNavHook.navigateToRootWallet()
     }, 300)
@@ -38,8 +46,20 @@ export function useWalletSetup(appNavHook: AppNavHook): WalletSetupHook {
    *
    * @param mnemonic
    */
-  async function initWalletWithMnemonic(mnemonic: string) {
-    await walletService.setMnemonic(mnemonic)
+  async function initWalletWithMnemonic(mnemonic: string): Promise<void> {
+    await walletService.initWithMenemonic(mnemonic)
+    if (Object.keys(accounts).length === 0) {
+      dispatch(addAccount())
+    }
+  }
+
+  /**
+   * Inits seedless wallet with oidc token
+   *
+   * @param oidcToken
+   */
+  async function initWalletWithOidcToken(oidcToken: string): Promise<void> {
+    walletService.initWithOidcToken(oidcToken)
     if (Object.keys(accounts).length === 0) {
       dispatch(addAccount())
     }
@@ -48,13 +68,14 @@ export function useWalletSetup(appNavHook: AppNavHook): WalletSetupHook {
   /**
    * Destroys the wallet instance
    */
-  async function destroyWallet() {
+  function destroyWallet(): void {
     walletService.destroy()
   }
 
   return {
     onPinCreated,
     enterWallet,
+    enterSeedlessWallet,
     destroyWallet
   }
 }
