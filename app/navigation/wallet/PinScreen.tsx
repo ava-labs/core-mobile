@@ -7,7 +7,7 @@ import { useWalletSetup } from 'hooks/useWalletSetup'
 
 export function PinScreen(): JSX.Element {
   const { appNavHook } = useApplicationContext()
-  const { enterWallet } = useWalletSetup()
+  const { enterWallet } = useWalletSetup(appNavHook)
 
   return (
     <View

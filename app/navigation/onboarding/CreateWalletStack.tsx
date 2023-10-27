@@ -218,7 +218,6 @@ const TermsNConditionsModalScreen = (): JSX.Element => {
   const createWalletContext = useContext(CreateWalletContext)
   const walletSetupHook = useApplicationContext().walletSetupHook
   const { signOut } = useApplicationContext().appHook
-  const { appNavHook } = useApplicationContext()
   const { navigate } = useNavigation<BiometricLoginNavigationProp>()
 
   return (
@@ -229,11 +228,6 @@ const TermsNConditionsModalScreen = (): JSX.Element => {
           // signing in with a brand new wallet
           walletSetupHook
             .enterWallet(createWalletContext.mnemonic)
-            .then(() => {
-              setTimeout(() => {
-                appNavHook.navigateToRootWallet()
-              }, 300)
-            })
             .catch(Logger.error)
         }, 300)
       }}

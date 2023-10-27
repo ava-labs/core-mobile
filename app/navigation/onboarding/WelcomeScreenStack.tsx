@@ -61,7 +61,6 @@ const WelcomeScreenStack: () => JSX.Element = () => (
 const LoginWithPinOrBiometryScreen = (): JSX.Element => {
   const context = useApplicationContext()
   const { enterWallet } = context.walletSetupHook
-  const { appNavHook } = useApplicationContext()
 
   return (
     <PinOrBiometryLogin
@@ -69,13 +68,7 @@ const LoginWithPinOrBiometryScreen = (): JSX.Element => {
         context.appNavHook.resetNavToEnterMnemonic()
       }
       onLoginSuccess={mnemonic => {
-        enterWallet(mnemonic)
-          .then(() => {
-            setTimeout(() => {
-              appNavHook.navigateToRootWallet()
-            }, 300)
-          })
-          .catch(Logger.error)
+        enterWallet(mnemonic).catch(Logger.error)
       }}
     />
   )

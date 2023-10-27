@@ -53,7 +53,7 @@ export const ApplicationContextProvider = ({
   children: React.ReactNode
 }): JSX.Element => {
   const appNavHook = useAppNav()
-  const walletSetupHook = useWalletSetup()
+  const walletSetupHook = useWalletSetup(appNavHook)
   const appHook = useApp(appNavHook, walletSetupHook)
 
   const isDarkMode = true // useState(Appearance.getColorScheme() === 'dark');

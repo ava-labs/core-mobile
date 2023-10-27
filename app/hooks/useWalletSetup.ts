@@ -4,6 +4,7 @@ import walletService from 'services/wallet/WalletService'
 import { useDispatch, useSelector } from 'react-redux'
 import { addAccount, selectAccounts } from 'store/account'
 import { onAppUnlocked } from 'store/app'
+import { AppNavHook } from 'useAppNav'
 
 export interface WalletSetupHook {
   onPinCreated: (
@@ -22,16 +23,18 @@ export interface WalletSetupHook {
  * enterWallet - use when ready to enter the wallet
  * destroyWallet - call when user ends session
  */
-export function useWalletSetup(): WalletSetupHook {
+export function useWalletSetup(appNavHook: AppNavHook): WalletSetupHook {
   const accounts = useSelector(selectAccounts)
   const dispatch = useDispatch()
 
   const enterWallet = async (mnemonic: string): Promise<void> => {
     await walletService.setMnemonic(mnemonic)
+    dispatch(onAppUnlocked())
     if (Object.keys(accounts).length === 0) {
+      //must be after onAppUnlocked
       dispatch(addAccount())
     }
-    dispatch(onAppUnlocked())
+    appNavHook.navigateToRootWallet()
   }
 
   /**
