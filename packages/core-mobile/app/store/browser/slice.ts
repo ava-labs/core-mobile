@@ -47,9 +47,11 @@ const browserSlice = createSlice({
       // limit max tabs
       const tabIds = tabAdapter.getSelectors().selectIds(state.tab)
       if (tabIds.length > MAXIMUM_TABS) {
-        const tabIdsToRemove = tabIds.slice(0, tabIds.length - MAXIMUM_TABS)
-        tabAdapter.removeMany(state.tab, tabIdsToRemove)
-        tabIdsToRemove.forEach(idToRemove => {
+        const numberOfTabsToRemove = tabIds.length - MAXIMUM_TABS
+        const oldestTabIds = getOldestTabIds(state, numberOfTabsToRemove)
+        if (oldestTabIds === undefined) return
+        tabAdapter.removeMany(state.tab, oldestTabIds)
+        oldestTabIds.forEach(idToRemove => {
           delete state.history[idToRemove]
         })
       }
@@ -106,6 +108,7 @@ const browserSlice = createSlice({
       if (state.tab.activeTabId === tabId) {
         const lastVisitedTabId = getLastVisitedTabId(state)
         if (!lastVisitedTabId) {
+          state.tab.activeTabId = undefined
           Logger.warn('could not find last visited tab id')
           return
         }
@@ -186,11 +189,14 @@ export const getLastVisitedTabId = (state: BrowserState): TabId | undefined => {
   return lastVisitedTab?.id
 }
 
-export const getOldestTabId = (state: BrowserState): TabId | undefined => {
+export const getOldestTabIds = (
+  state: BrowserState,
+  count: number
+): TabId[] | undefined => {
   const tabs = tabAdapter.getSelectors().selectAll(state.tab)
   if (tabs.length === 0) return undefined
-  const oldestTab = getOldestTab(tabs)
-  return oldestTab?.id
+  const oldestTabs = getOldestTab(tabs, count)
+  return oldestTabs.map(tab => tab.id)
 }
 
 export const getLastVisitedTabHistoryId = (
