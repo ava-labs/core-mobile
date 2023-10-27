@@ -1,11 +1,11 @@
 import React, { useState } from 'react'
 import {
+  Dimensions,
   Image,
+  Platform,
   ScrollView,
   StyleSheet,
-  View,
-  Dimensions,
-  Platform
+  View
 } from 'react-native'
 import AvaText from 'components/AvaText'
 import AvaButton from 'components/AvaButton'
@@ -32,7 +32,7 @@ export default function NftDetails({
   nft: item,
   onPicturePressed,
   onSendPressed
-}: NftDetailsProps) {
+}: NftDetailsProps): JSX.Element {
   const [imgLoadFailed, setImgLoadFailed] = useState(false)
   const { theme } = useApplicationContext()
   const { sendNftBlockediOS, sendNftBlockedAndroid } = usePosthogContext()
@@ -40,7 +40,7 @@ export default function NftDetails({
     ? truncateAddress(item.owner)
     : item.owner
 
-  const renderSendBtn = () => {
+  const renderSendBtn = (): null | JSX.Element => {
     const shouldHide =
       (Platform.OS === 'ios' && sendNftBlockediOS) ||
       (Platform.OS === 'android' && sendNftBlockedAndroid)
@@ -72,7 +72,7 @@ export default function NftDetails({
             <SvgXml
               xml={item.metadata.imageUri ?? null}
               width={imageWidth}
-              height={imageWidth * item.aspect}
+              height={imageWidth * (item.aspect ?? 1)}
             />
           </View>
         )}
@@ -81,7 +81,7 @@ export default function NftDetails({
             onError={_ => setImgLoadFailed(true)}
             style={styles.imageStyle}
             width={imageWidth}
-            height={imageWidth * item.aspect}
+            height={imageWidth * (item.aspect ?? 1)}
             source={{ uri: item.metadata.imageUri }}
           />
         )}
@@ -140,7 +140,9 @@ export default function NftDetails({
   )
 }
 
-const renderProps = (attributes?: NFTItemExternalDataAttribute[]) => {
+const renderProps: (
+  attributes?: NFTItemExternalDataAttribute[]
+) => JSX.Element[] = (attributes?: NFTItemExternalDataAttribute[]) => {
   if (!attributes) {
     return []
   }
