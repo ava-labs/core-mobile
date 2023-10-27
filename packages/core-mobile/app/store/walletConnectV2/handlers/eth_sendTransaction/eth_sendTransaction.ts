@@ -13,6 +13,7 @@ import { selectAccountByAddress } from 'store/account'
 import { queryClient } from 'contexts/ReactQueryProvider'
 import { NetworkFee } from 'services/networkFee/types'
 import { getQueryKey, prefetchNetworkFee } from 'hooks/useNetworkFee'
+import { assertNotUndefined } from 'utils/assertions'
 import { updateRequestStatus } from '../../slice'
 import { RpcMethod, SessionRequest } from '../../types'
 import {
@@ -26,8 +27,9 @@ import { parseApproveData, parseRequestParams } from './utils'
 export type EthSendTransactionRpcRequest =
   SessionRequest<RpcMethod.ETH_SEND_TRANSACTION>
 
-const getChainIdFromRequest = (request: EthSendTransactionRpcRequest) =>
-  request.data.params.chainId.split(':')[1]
+const getChainIdFromRequest = (
+  request: EthSendTransactionRpcRequest
+): string | undefined => request.data.params.chainId.split(':')[1]
 
 class EthSendTransactionHandler
   implements RpcRequestHandler<EthSendTransactionRpcRequest>
@@ -49,6 +51,8 @@ class EthSendTransactionHandler
           message: 'Transaction params are invalid'
         })
       }
+    } else {
+      assertNotUndefined(result.data[0])
     }
 
     // pre-fetch network fees for tx parsing and approval screen
