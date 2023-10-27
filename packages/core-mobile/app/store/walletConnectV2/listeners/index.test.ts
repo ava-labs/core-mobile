@@ -162,7 +162,7 @@ describe('walletConnect - listeners', () => {
 
   describe('on onLogIn', () => {
     it('should initialize wallet connect', () => {
-      store.dispatch(appSlice.onLogIn())
+      store.dispatch(appSlice.onAppUnlocked())
 
       expect(mockWCInit).toHaveBeenCalledWith({
         onSessionProposal: expect.any(Function),

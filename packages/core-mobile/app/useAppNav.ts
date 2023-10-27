@@ -18,24 +18,36 @@ export function useAppNav(): AppNavHook {
 
   return {
     navigation,
-    navigateToRootWallet: () => navigateToRootWallet(navigation),
+    navigateToRootWallet: () => maybeSetRootWalletRoute(navigation),
     resetNavToRoot: () => resetNavToRoot(navigation),
     resetNavToEnterMnemonic: () => resetNavToEnterMnemonic(navigation)
   }
 }
 
-function navigateToRootWallet(navigation: NavigationRef) {
-  navigation.current?.reset({
-    index: 0,
-    routes: [
-      {
-        name: AppNavigation.Root.Wallet
-      }
-    ]
-  })
+/**
+ * This is used when we switch to unlockedApp state to set Root.Wallet as root route.
+ * It is important to swap only root route because handling deepLinks will push new views
+ * event if current state is lockedApp.
+ */
+function maybeSetRootWalletRoute(navigation: NavigationRef): void {
+  if (
+    navigation.current?.getState().routes[0]?.name !== AppNavigation.Root.Wallet
+  ) {
+    const others = navigation.current?.getState().routes.slice(1) ?? []
+    navigation.current?.reset({
+      index: 0,
+      // @ts-ignore
+      routes: [
+        {
+          name: AppNavigation.Root.Wallet
+        },
+        ...others
+      ]
+    })
+  }
 }
 
-function resetNavToRoot(navigation: NavigationRef) {
+function resetNavToRoot(navigation: NavigationRef): void {
   navigation.current?.reset({
     index: 0,
     routes: [
@@ -47,7 +59,7 @@ function resetNavToRoot(navigation: NavigationRef) {
   })
 }
 
-function resetNavToEnterMnemonic(navigation: NavigationRef) {
+function resetNavToEnterMnemonic(navigation: NavigationRef): void {
   navigation.current?.reset({
     index: 0,
     routes: [
