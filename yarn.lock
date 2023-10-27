@@ -387,6 +387,7 @@ __metadata:
     "@types/react-dom": 18.0.6
     "@types/react-native": 0.66.4
     "@types/react-test-renderer": 18.0.0
+    "@types/tinycolor2": 1.4.5
     babel-jest: 29.7.0
     deprecated-react-native-prop-types: 2.3.0
     dripsy: 4.3.3
@@ -399,6 +400,7 @@ __metadata:
     react-native: 0.70.6
     react-native-safe-area-context: 4.5.3
     react-test-renderer: 18.2.0
+    tinycolor2: 1.6.0
     typescript: 4.7.4
   peerDependencies:
     react: 18.1.0
@@ -7079,6 +7081,13 @@ __metadata:
   version: 2.0.2
   resolution: "@types/stack-utils@npm:2.0.2"
   checksum: 777cc7ac0c1000c5a07561013bcf7bd8477a3d55f55f376ee2f0c586331f7b999f57788140cfbdb65f6d7d97c0c41fe8fe6c778fd3ed71859c9b681ea76fc621
+  languageName: node
+  linkType: hard
+
+"@types/tinycolor2@npm:1.4.5":
+  version: 1.4.5
+  resolution: "@types/tinycolor2@npm:1.4.5"
+  checksum: 653b9d9b4a07c94f9e507e2173ee8d6bebcfbc7c73b19f5d357a3af489957390d817db82a9e5a4823b41b10179e9d0b2b825068f7f9d42706d591f8b2c1a464f
   languageName: node
   linkType: hard
 
@@ -22881,7 +22890,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tinycolor2@npm:^1.4.1, tinycolor2@npm:^1.6.0":
+"tinycolor2@npm:1.6.0, tinycolor2@npm:^1.4.1, tinycolor2@npm:^1.6.0":
   version: 1.6.0
   resolution: "tinycolor2@npm:1.6.0"
   checksum: 6df4d07fceeedc0a878d7bac47e2cd47c1ceeb1078340a9eb8a295bc0651e17c750f73d47b3028d829f30b85c15e0572c0fd4142083e4c21a30a597e47f47230
