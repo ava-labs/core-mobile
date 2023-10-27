@@ -12,7 +12,7 @@
 - Theme-aware styling with the `sx` prop
 - Responsive styles
 - Customizable themes
-- Full TypeScript support with IntelliSense
+- Full TypeScript support with autocomplete
 - Powered by [Dripsy](https://www.dripsy.xyz/)
 
 ## Integration
