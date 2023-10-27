@@ -1,5 +1,6 @@
 import { getUnixTime } from 'date-fns'
 import * as uuid from 'uuid'
+import * as utils from 'utils/createHash'
 import {
   browserReducer as reducer,
   addTab,
@@ -11,14 +12,20 @@ import {
 import { BrowserState } from './types'
 
 jest.mock('uuid')
+
 const uuidSpy = jest.spyOn(uuid, 'v4')
+const creashHash = jest.spyOn(utils, 'createHash')
 
 const initialState = {
-  tab: {
+  tabs: {
     entities: {},
     ids: []
   },
-  history: {}
+  tabHistories: {},
+  histories: {
+    entities: {},
+    ids: []
+  }
 }
 
 const TAB_HISTORY_DATA = {
@@ -43,7 +50,7 @@ describe('Tabs', () => {
     const currentState = initialState
     uuidSpy.mockImplementation(() => '1')
     const state = reducer(currentState, addTab())
-    expect(state.tab).toMatchObject({
+    expect(state.tabs).toMatchObject({
       activeTabId: '1',
       entities: {
         '1': {
@@ -52,7 +59,7 @@ describe('Tabs', () => {
       },
       ids: ['1']
     })
-    expect(state.history).toMatchObject({
+    expect(state.tabHistories).toMatchObject({
       '1': {
         entities: {},
         ids: []
@@ -67,7 +74,7 @@ describe('Tabs', () => {
     uuidSpy.mockImplementation(() => '2')
     const state = reducer(state1, addTab())
 
-    expect(state.tab).toMatchObject({
+    expect(state.tabs).toMatchObject({
       activeTabId: '2',
       entities: {
         '1': {
@@ -79,7 +86,7 @@ describe('Tabs', () => {
       },
       ids: ['1', '2']
     })
-    expect(state.history).toMatchObject({
+    expect(state.tabHistories).toMatchObject({
       '1': {
         entities: {},
         ids: []
@@ -99,7 +106,7 @@ describe('Tabs', () => {
     const state2 = reducer(state1, addTab())
     const state = reducer(state2, removeTab({ id: '2' }))
 
-    expect(state.tab).toMatchObject({
+    expect(state.tabs).toMatchObject({
       activeTabId: '1',
       entities: {
         '1': {
@@ -108,7 +115,7 @@ describe('Tabs', () => {
       },
       ids: ['1']
     })
-    expect(state.history).toMatchObject({
+    expect(state.tabHistories).toMatchObject({
       '1': {
         entities: {},
         ids: []
@@ -137,7 +144,7 @@ describe('Tabs', () => {
       state = reducer(state, addTab())
     }
     state = reducer(state, setActiveTabId({ id: '3' }))
-    expect(state.tab.activeTabId).toEqual('3')
+    expect(state.tabs.activeTabId).toEqual('3')
   })
 })
 
@@ -152,7 +159,7 @@ describe('tab history', () => {
     const unixTimestamp = getUnixTime(new Date('2023-10-26'))
     jest.useFakeTimers().setSystemTime(new Date('2023-10-26'))
     const state1 = reducer(currentState, addTab())
-    uuidSpy.mockImplementationOnce(() => 'history_1')
+    creashHash.mockImplementationOnce(() => 'history_1')
     const state = reducer(
       state1,
       addTabHistory({
@@ -161,7 +168,7 @@ describe('tab history', () => {
       })
     )
 
-    expect(state.tab).toMatchObject({
+    expect(state.tabs).toMatchObject({
       activeTabId: '1',
       entities: {
         '1': {
@@ -171,9 +178,9 @@ describe('tab history', () => {
       },
       ids: ['1']
     })
-    expect(state.history).toMatchObject({
+    expect(state.tabHistories).toMatchObject({
       '1': {
-        entities: { history_1: { id: 'history_1', ...TAB_HISTORY_DATA } },
+        entities: { history_1: { id: 'history_1' } },
         ids: ['history_1']
       }
     })

@@ -10,6 +10,10 @@ export type Tab = {
 
 export type TabHistory = {
   id: HistoryId
+}
+
+export type History = {
+  id: HistoryId
   title: string // title grabbed from html metadata
   url: string // url grabbed from html metadata
   screenshot?: string // id to grab screenshot stored in MMKV
@@ -23,9 +27,11 @@ export type TabHistoryState = EntityState<TabHistory> & {
   activeHistoryId?: HistoryId
 }
 
-export type AddTabHistoryPayload = {
+export type HistoryState = EntityState<History>
+
+export type AddHistoryPayload = {
   tabId: TabId
-  history: Omit<TabHistory, 'id'>
+  history: Omit<History, 'id'>
 }
 
 export type TabHistoryPayload = {
@@ -38,6 +44,7 @@ export type TabPayload = {
 }
 
 export type BrowserState = {
-  tab: TabState
-  history: Record<TabId, TabHistoryState>
+  tabs: TabState
+  tabHistories: Record<TabId, TabHistoryState>
+  histories: HistoryState
 }
