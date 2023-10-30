@@ -6,11 +6,13 @@
     "packages/*"
   ],
   "scripts": {
+    "prepare": "husky install",
     "setup": "yarn workspaces foreach -p run setup",
     "lint": "yarn workspaces foreach -p run lint",
     "tsc": "yarn workspaces foreach -p run tsc",
     "test": "yarn workspaces foreach -p run test",
-    "prepare": "husky install"
+    "core": "yarn workspace @avalabs/core-mobile",
+    "k2": "yarn workspace @avalabs/k2-mobile"
   },
   "devDependencies": {
     "husky": "8.0.1"

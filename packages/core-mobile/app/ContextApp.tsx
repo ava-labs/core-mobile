@@ -8,6 +8,7 @@ import App from 'App'
 import { ApplicationContextProvider } from 'contexts/ApplicationContext'
 import Toast from 'react-native-toast-notifications'
 import JailMonkey from 'jail-monkey'
+import { K2ThemeProvider } from '@avalabs/k2-mobile'
 import JailbrokenWarning from 'screens/onboarding/JailbrokenWarning'
 import { BridgeProvider } from 'contexts/BridgeContext'
 import { PosthogContextProvider } from 'contexts/PosthogContext'
@@ -20,7 +21,7 @@ import FlipperAsyncStorage from 'rn-flipper-async-storage-advanced'
 import { ReactQueryProvider } from 'contexts/ReactQueryProvider'
 import SentryService from 'services/sentry/SentryService'
 
-function setToast(toast: Toast) {
+function setToast(toast: Toast): void {
   global.toast = toast
 }
 
@@ -31,17 +32,19 @@ const ContextProviders: FC = ({ children }) => (
   <EncryptedStoreProvider>
     <ReactQueryProvider>
       <PosthogContextProvider>
-        <ApplicationContextProvider>
-          <DeeplinkContextProvider>
-            <BridgeProvider>{children}</BridgeProvider>
-          </DeeplinkContextProvider>
-        </ApplicationContextProvider>
+        <K2ThemeProvider>
+          <ApplicationContextProvider>
+            <DeeplinkContextProvider>
+              <BridgeProvider>{children}</BridgeProvider>
+            </DeeplinkContextProvider>
+          </ApplicationContextProvider>
+        </K2ThemeProvider>
       </PosthogContextProvider>
     </ReactQueryProvider>
   </EncryptedStoreProvider>
 )
 
-const ContextApp = () => {
+const ContextApp = (): JSX.Element => {
   return (
     <Sentry.ErrorBoundary fallback={<TopLevelErrorFallback />}>
       <StatusBar barStyle={'light-content'} backgroundColor="black" />
