@@ -51,7 +51,6 @@ const getStories = () => {
     "./storybook/stories/AvaListItem.stories.tsx": require("../storybook/stories/AvaListItem.stories.tsx"),
     "./storybook/stories/AvaText.stories.tsx": require("../storybook/stories/AvaText.stories.tsx"),
     "./storybook/stories/BottomSheet.stories.tsx": require("../storybook/stories/BottomSheet.stories.tsx"),
-    "./storybook/stories/browser/IntroScreen.stories.tsx": require("../storybook/stories/browser/IntroScreen.stories.tsx"),
     "./storybook/stories/CalendarInput.stories.tsx": require("../storybook/stories/CalendarInput.stories.tsx"),
     "./storybook/stories/ConfirmationTracker.stories.tsx": require("../storybook/stories/ConfirmationTracker.stories.tsx"),
     "./storybook/stories/defi/DeFiPortfolioCommon.stories.tsx": require("../storybook/stories/defi/DeFiPortfolioCommon.stories.tsx"),
