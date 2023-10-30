@@ -49,14 +49,16 @@ describe('Tabs', () => {
     const currentState = initialState
     uuidSpy.mockImplementation(() => '1')
     const state = reducer(currentState, addTab())
-    expect(state.tabs).toMatchObject({
+    expect(state).toMatchObject({
       activeTabId: '1',
-      entities: {
-        '1': {
-          id: '1'
-        }
-      },
-      ids: ['1']
+      tabs: {
+        entities: {
+          '1': {
+            id: '1'
+          }
+        },
+        ids: ['1']
+      }
     })
   })
 
@@ -67,17 +69,19 @@ describe('Tabs', () => {
     uuidSpy.mockImplementation(() => '2')
     const state = reducer(state1, addTab())
 
-    expect(state.tabs).toMatchObject({
+    expect(state).toMatchObject({
       activeTabId: '2',
-      entities: {
-        '1': {
-          id: '1'
+      tabs: {
+        entities: {
+          '1': {
+            id: '1'
+          },
+          '2': {
+            id: '2'
+          }
         },
-        '2': {
-          id: '2'
-        }
-      },
-      ids: ['1', '2']
+        ids: ['1', '2']
+      }
     })
   })
 
@@ -89,14 +93,16 @@ describe('Tabs', () => {
     const state2 = reducer(state1, addTab())
     const state = reducer(state2, removeTab({ id: '2' }))
 
-    expect(state.tabs).toMatchObject({
+    expect(state).toMatchObject({
       activeTabId: '1',
-      entities: {
-        '1': {
-          id: '1'
-        }
-      },
-      ids: ['1']
+      tabs: {
+        entities: {
+          '1': {
+            id: '1'
+          }
+        },
+        ids: ['1']
+      }
     })
   })
 
@@ -145,22 +151,24 @@ describe('tab history', () => {
       })
     )
 
-    expect(state.tabs).toMatchObject({
+    expect(state).toMatchObject({
       activeTabId: '1',
-      entities: {
-        '1': {
-          id: '1',
-          lastVisited: unixTimestamp,
-          historyIds: ['history_1']
-        }
+      tabs: {
+        entities: {
+          '1': {
+            id: '1',
+            lastVisited: unixTimestamp,
+            historyIds: ['history_1']
+          }
+        },
+        ids: ['1']
       },
-      ids: ['1']
-    })
-    expect(state.globalHistories).toMatchObject({
-      entities: {
-        history_1: { id: 'history_1' }
-      },
-      ids: ['history_1']
+      globalHistories: {
+        entities: {
+          history_1: { id: 'history_1' }
+        },
+        ids: ['history_1']
+      }
     })
   })
 
