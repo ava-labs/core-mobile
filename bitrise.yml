@@ -84,7 +84,6 @@ workflows:
     - script-runner@0:
         title: Create Test Run
         inputs:
-<<<<<<< HEAD
         - file_path: scripts/bitrise/detox/createAndroidTestRun.sh
         - variables:
             - TESTRAIL_RUN_ID=$TESTRAIL_RUN_ID
@@ -99,7 +98,6 @@ workflows:
             TESTS_TO_RUN_GROUP_1=$TESTS_ONE
             TESTS_TO_RUN_GROUP_2=$TESTS_TWO
             TESTS_TO_RUN_GROUP_3=$TESTS_THREE
-=======
         - api_level: "28"
         - emulator_id: emulator-5554
         - emulator_channel: "0"
@@ -107,7 +105,6 @@ workflows:
         - tag: default
         - abi: x86_64
         - profile: pixel_4
->>>>>>> development
     - android-build-for-ui-testing@0:
         inputs:
         - module: $ANDROID_MODULE
@@ -546,12 +543,9 @@ workflows:
     - _install-and-set-env
     - _set-version
     - _build-android-for-testing
-<<<<<<< HEAD
-=======
     after_run:
     - _upload-detox-artifacts
     - _send-test-result-notifcation-slack
->>>>>>> development
     envs:
     - ENVIRONMENT: production
       opts:
