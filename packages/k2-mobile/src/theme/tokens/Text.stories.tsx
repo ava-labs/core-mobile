@@ -35,7 +35,7 @@ export const All = (): JSX.Element => {
       </Text>
       {Object.keys(text).map((variant, index) => (
         // @ts-expect-error
-        <Text key={index} variant={variant} sx={{ color: 'white' }}>
+        <Text key={index} variant={variant}>
           {variant}
         </Text>
       ))}
