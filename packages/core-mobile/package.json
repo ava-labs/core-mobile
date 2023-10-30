@@ -12,7 +12,7 @@
     "tsc": "tsc -p .",
     "lint": "eslint .",
     "clean": "./scripts/clean",
-    "postinstall": "node ${PROJECT_CWD}/scripts/generate-metro-monorepo-config.js; node_modules/.bin/patch-package; node_modules/.bin/rn-nodeify --install events,stream,vm,assert,https,http,os,zlib --hack; yarn run gen:contracts",
+    "postinstall": "node ${PROJECT_CWD}/scripts/generate-metro-monorepo-config.js; node_modules/.bin/patch-package; node_modules/.bin/rn-nodeify --install events,stream,vm,assert,https,http,os,zlib,path,fs --hack; yarn run gen:contracts",
     "storybook-generate": "sb-rn-get-stories",
     "storybook-watch": "sb-rn-watcher",
     "gen:contracts": "typechain --target=ethers-v6 --out-dir app/contracts/openzeppelin ./node_modules/@openzeppelin/contracts/build/contracts/ERC20.json ./node_modules/@openzeppelin/contracts/build/contracts/ERC721.json ./node_modules/@openzeppelin/contracts/build/contracts/ERC1155.json",
@@ -69,6 +69,7 @@
     "@walletconnect/utils": "2.10.1",
     "@walletconnect/web3wallet": "1.9.0",
     "@zodios/core": "10.9.6",
+    "asyncstorage-down": "4.2.0",
     "axios": "1.5.1",
     "base-64": "1.0.0",
     "big.js": "6.1.1",
@@ -82,7 +83,7 @@
     "date-fns": "2.28.0",
     "deprecated-react-native-prop-types": "2.3.0",
     "eth-rpc-errors": "4.0.3",
-    "ethers": "^6.7.1",
+    "ethers": "6.8.0",
     "events": "3.3.0",
     "https-browserify": "0.0.1",
     "jail-monkey": "2.6.0",
@@ -94,6 +95,7 @@
     "moment": "2.29.4",
     "node-cache": "5.1.2",
     "paraswap": "5.2.0",
+    "path-browserify": "0.0.0",
     "qrcode-reader": "1.0.4",
     "react": "18.1.0",
     "react-content-loader": "6.2.0",
@@ -118,6 +120,7 @@
     "react-native-haptic-feedback": "2.0.3",
     "react-native-inappbrowser-reborn": "3.7.0",
     "react-native-keychain": "8.1.1",
+    "react-native-level-fs": "3.0.0",
     "react-native-localize": "2.2.6",
     "react-native-modal-datetime-picker": "15.0.1",
     "react-native-os": "1.2.6",
@@ -243,6 +246,7 @@
       "@ethereumjs/tx>ethereumjs-util>ethereum-cryptography>keccak": false,
       "@lavamoat/preinstall-always-fail": false,
       "bip32>tiny-secp256k1": false,
+      "bitcoinjs-lib>tiny-secp256k1": false,
       "react-native-inappbrowser-reborn": false,
       "react-native-reanimated>fbjs>core-js": false,
       "@avalabs/bridge-sdk>bitcoinjs-lib>tiny-secp256k1": false,
@@ -291,7 +295,9 @@
     "_stream_passthrough": "readable-stream/passthrough",
     "stream": "stream-browserify",
     "vm": "vm-browserify",
-    "zlib": "browserify-zlib"
+    "zlib": "browserify-zlib",
+    "path": "path-browserify",
+    "fs": "react-native-level-fs"
   },
   "browser": {
     "_stream_duplex": "readable-stream/duplex",
@@ -299,11 +305,24 @@
     "_stream_readable": "readable-stream/readable",
     "_stream_transform": "readable-stream/transform",
     "_stream_writable": "readable-stream/writable",
+    "fs": "react-native-level-fs",
     "http": "@tradle/react-native-http",
     "https": "https-browserify",
     "os": "react-native-os",
+    "path": "path-browserify",
     "stream": "stream-browserify",
     "vm": "vm-browserify",
     "zlib": "browserify-zlib"
-  }
+  },
+  "types": "./index.d.ts",
+  "description": "## Setup dev environment",
+  "version": "1.0.0",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
 }

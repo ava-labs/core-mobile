@@ -1,0 +1,13 @@
+diff --git a/package.json b/package.json
+index 1e8fbb0d71bf1094cec85d228d8f19a0594f3960..9b3a9e568ef634493f1166f8e075a76316b7a78d 100644
+--- a/package.json
++++ b/package.json
+@@ -15,7 +15,7 @@
+     "test": "yarn g:jest && karma start karma.conf.js",
+     "test:integration": "yarn g:jest --config jest.config.integ.js"
+   },
+-  "main": "./dist-cjs/index.js",
++  "main": "./dist-es/index.js",
+   "module": "./dist-es/index.js",
+   "types": "./dist-types/index.d.ts",
+   "author": {
