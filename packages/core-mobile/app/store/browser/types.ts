@@ -38,6 +38,6 @@ export type TabPayload = {
 
 export type BrowserState = {
   tabs: TabState
-  globalHistories: HistoryState
+  globalHistory: HistoryState
   activeTabId?: TabId
 }

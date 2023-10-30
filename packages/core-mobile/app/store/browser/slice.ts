@@ -25,7 +25,7 @@ const reducerName = 'browser'
 
 const initialState: BrowserState = {
   tabs: tabAdapter.getInitialState(),
-  globalHistories: historyAdapter.getInitialState()
+  globalHistory: historyAdapter.getInitialState()
 }
 
 const browserSlice = createSlice({
@@ -68,7 +68,7 @@ const browserSlice = createSlice({
         }
       })
 
-      historyAdapter.upsertOne(state.globalHistories, {
+      historyAdapter.upsertOne(state.globalHistory, {
         ...action.payload.history,
         id: historyId
       })
@@ -78,12 +78,12 @@ const browserSlice = createSlice({
         tab.historyIds = tab.historyIds.slice(-MAXIMUM_TAB_HISTORIES)
       }
       // limit max histories
-      if (state.globalHistories.ids.length > MAXIMUM_TAB_HISTORIES) {
+      if (state.globalHistory.ids.length > MAXIMUM_TAB_HISTORIES) {
         const historiesToRemove = historyAdapter
           .getSelectors()
-          .selectIds(state.globalHistories)
+          .selectIds(state.globalHistory)
           .slice(0, -MAXIMUM_HISTORIES)
-        historyAdapter.removeMany(state.globalHistories, historiesToRemove)
+        historyAdapter.removeMany(state.globalHistory, historiesToRemove)
       }
     },
     removeTab: (state: BrowserState, action: PayloadAction<TabPayload>) => {

@@ -21,7 +21,7 @@ const initialState = {
     entities: {},
     ids: []
   },
-  globalHistories: {
+  globalHistory: {
     entities: {},
     ids: []
   }
@@ -163,7 +163,7 @@ describe('tab history', () => {
         },
         ids: ['1']
       },
-      globalHistories: {
+      globalHistory: {
         entities: {
           history_1: { id: 'history_1' }
         },
@@ -195,6 +195,6 @@ describe('tab history', () => {
         ids: ['1']
       }
     })
-    expect(state.globalHistories).toMatchObject({})
+    expect(state.globalHistory).toMatchObject({})
   })
 })
