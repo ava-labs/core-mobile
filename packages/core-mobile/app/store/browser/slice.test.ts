@@ -121,7 +121,7 @@ describe('Tabs', () => {
       state = reducer(state, addTab())
     }
     state = reducer(state, setActiveTabId({ id: '3' }))
-    expect(state.tabs.activeTabId).toEqual('3')
+    expect(state.activeTabId).toEqual('3')
   })
 })
 
@@ -176,14 +176,16 @@ describe('tab history', () => {
         history: TAB_HISTORY_DATA
       })
     )
-    expect(state.tabs).toMatchObject({
+    expect(state).toMatchObject({
       activeTabId: '1',
-      entities: {
-        '1': {
-          id: '1'
-        }
-      },
-      ids: ['1']
+      tabs: {
+        entities: {
+          '1': {
+            id: '1'
+          }
+        },
+        ids: ['1']
+      }
     })
     expect(state.globalHistories).toMatchObject({})
   })

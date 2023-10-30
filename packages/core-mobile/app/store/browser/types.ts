@@ -17,7 +17,6 @@ export type History = {
 }
 
 export type TabState = EntityState<Tab> & {
-  activeTabId?: TabId
   activeHistoryId?: HistoryId
 }
 
@@ -40,4 +39,5 @@ export type TabPayload = {
 export type BrowserState = {
   tabs: TabState
   globalHistories: HistoryState
+  activeTabId?: TabId
 }

@@ -2,7 +2,7 @@ import { createEntityAdapter } from '@reduxjs/toolkit'
 import { getUnixTime } from 'date-fns'
 import Logger from 'utils/Logger'
 import { MAXIMUM_TABS } from './const'
-import { Tab, BrowserState, History, TabId, TabState, HistoryId } from './types'
+import { Tab, BrowserState, History, TabId, HistoryId } from './types'
 
 export const getOldestTab = (tabs: Tab[], count: number): Tab[] => {
   return tabs
@@ -20,45 +20,48 @@ export const historyAdapter = createEntityAdapter<History>({
 })
 
 export const limitMaxTabs = (state: BrowserState): void => {
-  const tabIds = tabAdapter.getSelectors().selectIds(state.tabs)
-  if (tabIds.length > MAXIMUM_TABS) {
-    const numberOfTabsToRemove = tabIds.length - MAXIMUM_TABS
-    const oldestTabIds = getOldestTabIds(state, numberOfTabsToRemove)
-    if (oldestTabIds === undefined) return
-    tabAdapter.removeMany(state.tabs, oldestTabIds)
-  }
+  const tabs = tabAdapter.getSelectors().selectAll(state.tabs)
+  if (tabs.length <= MAXIMUM_TABS) return
+  tabAdapter.removeMany(state.tabs, getTabsToDelete(tabs))
+}
+
+const getTabsToDelete = (tabs: Tab[]): TabId[] => {
+  return tabs
+    .sort((a, b) => (b.lastVisited ?? 0) - (a.lastVisited ?? 0)) //sort by last visited first
+    .slice(MAXIMUM_TABS) //get least visited above limit
+    .map(tab => tab.id)
 }
 
 export const updateActiveTabId = (state: BrowserState, tabId: TabId): void => {
   if (state.tabs.ids.length === 0) {
-    state.tabs.activeTabId = undefined
+    state.activeTabId = undefined
     return
   }
-  if (state.tabs.activeTabId === tabId) {
+  if (state.activeTabId === tabId) {
     const lastVisitedTabId = getLastVisitedTabId(state)
     if (!lastVisitedTabId) {
-      state.tabs.activeTabId = undefined
+      state.activeTabId = undefined
       Logger.warn('could not find last visited tab id')
       return
     }
-    state.tabs.activeTabId = lastVisitedTabId
+    state.activeTabId = lastVisitedTabId
   }
 }
 
 export const updateActiveTabHistoryId = (
-  tabState: TabState,
+  browserState: BrowserState,
   tabId: TabId,
   historyId: HistoryId
 ): void => {
-  if (tabState.activeHistoryId === historyId) {
-    const lastVisitedHistoryId = getLastVisitedTabHistoryId(tabState)
+  if (browserState.tabs.activeHistoryId === historyId) {
+    const lastVisitedHistoryId = getLastVisitedTabHistoryId(browserState)
     if (!lastVisitedHistoryId) {
-      tabState.activeHistoryId = undefined
+      browserState.tabs.activeHistoryId = undefined
       Logger.warn('could not find last visited history id')
       return
     }
-    tabState.activeHistoryId = historyId
-    tabAdapter.updateOne(tabState, {
+    browserState.tabs.activeHistoryId = historyId
+    tabAdapter.updateOne(browserState.tabs, {
       id: tabId,
       changes: {
         lastVisited: getUnixTime(new Date())
@@ -74,19 +77,10 @@ const getLastVisitedTabId = (state: BrowserState): TabId | undefined => {
   return lastVisitedTab?.id
 }
 
-const getOldestTabIds = (
-  state: BrowserState,
-  count: number
-): TabId[] | undefined => {
-  const tabs = tabAdapter.getSelectors().selectAll(state.tabs)
-  if (tabs.length === 0) return undefined
-  const oldestTabs = getOldestTab(tabs, count)
-  return oldestTabs.map(tab => tab.id)
-}
-
-const getLastVisitedTabHistoryId = (state: TabState): TabId | undefined => {
-  return tabAdapter.getSelectors().selectById(state, state.activeTabId ?? '')
-    ?.historyIds[-1]
+const getLastVisitedTabHistoryId = (state: BrowserState): TabId | undefined => {
+  return tabAdapter
+    .getSelectors()
+    .selectById(state.tabs, state.activeTabId ?? '')?.historyIds[-1]
 }
 
 export const navigateTabHistory = (
@@ -100,7 +94,7 @@ export const navigateTabHistory = (
   if (activeHistoryId === undefined) return
 
   const activeHistoryIndex = tab.historyIds.indexOf(activeHistoryId)
-  if (activeHistoryIndex === undefined) return
+  if (activeHistoryIndex === -1) return
   const newActiveHistoryIndex =
     action === 'forward' ? activeHistoryIndex + 1 : activeHistoryIndex - 1
   const historyId = tab.historyIds[newActiveHistoryIndex]

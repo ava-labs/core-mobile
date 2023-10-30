@@ -38,7 +38,7 @@ const browserSlice = createSlice({
         id: tabId,
         historyIds: []
       })
-      state.tabs.activeTabId = tabId
+      state.activeTabId = tabId
       // limit max tabs
       limitMaxTabs(state)
     },
@@ -79,9 +79,11 @@ const browserSlice = createSlice({
       }
       // limit max histories
       if (state.globalHistories.ids.length > MAXIMUM_TAB_HISTORIES) {
-        state.globalHistories.ids = state.globalHistories.ids.slice(
-          -MAXIMUM_HISTORIES
-        )
+        const historiesToRemove = historyAdapter
+          .getSelectors()
+          .selectIds(state.globalHistories)
+          .slice(0, -MAXIMUM_HISTORIES)
+        historyAdapter.removeMany(state.globalHistories, historiesToRemove)
       }
     },
     removeTab: (state: BrowserState, action: PayloadAction<TabPayload>) => {
@@ -104,11 +106,11 @@ const browserSlice = createSlice({
         changes: { historyIds: tabHistoryIds.filter(id => id !== historyId) }
       })
       // update active tab history id
-      updateActiveTabHistoryId(state.tabs, tabId, historyId)
+      updateActiveTabHistoryId(state, tabId, historyId)
     },
     clearAllTabs: (state: BrowserState) => {
       tabAdapter.removeAll(state.tabs)
-      state.tabs.activeTabId = undefined
+      state.activeTabId = undefined
       state.tabs.activeHistoryId = undefined
     },
     clearAllTabHistories: (
@@ -127,7 +129,7 @@ const browserSlice = createSlice({
       action: PayloadAction<TabPayload>
     ) => {
       const { id: tabId } = action.payload
-      state.tabs.activeTabId = tabId
+      state.activeTabId = tabId
     },
     goForwardInHistory: (
       state: BrowserState,
@@ -159,10 +161,10 @@ export const selectTab =
     tabAdapter.getSelectors().selectById(state.browser.tabs, tabId)
 
 export const selectActiveTab = (state: RootState): Tab | undefined => {
-  if (state.browser.tabs.activeTabId === undefined) return
+  if (state.browser.activeTabId === undefined) return
   return tabAdapter
     .getSelectors()
-    .selectById(state.browser.tabs, state.browser.tabs.activeTabId)
+    .selectById(state.browser.tabs, state.browser.activeTabId)
 }
 
 // actions
