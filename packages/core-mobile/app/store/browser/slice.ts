@@ -74,7 +74,7 @@ const browserSlice = createSlice({
       }
       const historyId = createHash(history.url)
 
-      historyAdapter.addOne(state.histories, {
+      historyAdapter.upsertOne(state.histories, {
         ...action.payload.history,
         id: historyId
       })

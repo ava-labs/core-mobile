@@ -149,7 +149,10 @@ export const navigateTabHistory = (
   const activeHistoryId = tabHistoryState.activeHistoryId
   if (activeHistoryId === undefined) return
   const activeHistoryIndex = tabHistoryState.ids.indexOf(activeHistoryId)
-  const historyId = tabHistoryState.ids[activeHistoryIndex + 1]
+
+  const newActiveHistoryIndex =
+    action === 'forward' ? activeHistoryIndex + 1 : activeHistoryIndex - 1
+  const historyId = tabHistoryState.ids[newActiveHistoryIndex]
   if (historyId === undefined) return
   tabHistoryState.activeHistoryId = historyId.toString()
   tabAdapter.updateOne(state.tabs, {
