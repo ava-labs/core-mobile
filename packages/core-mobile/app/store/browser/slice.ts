@@ -42,7 +42,7 @@ const browserSlice = createSlice({
       // limit max tabs
       limitMaxTabs(state)
     },
-    addTabHistory: (
+    addHistoryForTab: (
       state: BrowserState,
       action: PayloadAction<AddHistoryPayload>
     ) => {
@@ -92,7 +92,7 @@ const browserSlice = createSlice({
       // update active tab id
       updateActiveTabId(state, tabId)
     },
-    removeTabHistory: (
+    removeHistoryForTab: (
       state: BrowserState,
       action: PayloadAction<TabHistoryPayload>
     ) => {
@@ -108,12 +108,12 @@ const browserSlice = createSlice({
       // update active tab history id
       updateActiveTabHistoryId(state, tabId, historyId)
     },
-    clearAllTabs: (state: BrowserState) => {
+    removeAllTabs: (state: BrowserState) => {
       tabAdapter.removeAll(state.tabs)
       state.activeTabId = undefined
       state.tabs.activeHistoryId = undefined
     },
-    clearAllTabHistories: (
+    removeAllHistoryForTab: (
       state: BrowserState,
       action: PayloadAction<TabPayload>
     ) => {
@@ -131,17 +131,11 @@ const browserSlice = createSlice({
       const { id: tabId } = action.payload
       state.activeTabId = tabId
     },
-    goForwardInHistory: (
-      state: BrowserState,
-      action: PayloadAction<TabPayload>
-    ) => {
+    goForward: (state: BrowserState, action: PayloadAction<TabPayload>) => {
       const { id: tabId } = action.payload
       navigateTabHistory(state, 'forward', tabId)
     },
-    goBackwardInHistory: (
-      state: BrowserState,
-      action: PayloadAction<TabPayload>
-    ) => {
+    goBackward: (state: BrowserState, action: PayloadAction<TabPayload>) => {
       const { id: tabId } = action.payload
       navigateTabHistory(state, 'backward', tabId)
     }
@@ -170,14 +164,14 @@ export const selectActiveTab = (state: RootState): Tab | undefined => {
 // actions
 export const {
   addTab,
-  addTabHistory,
+  addHistoryForTab,
   removeTab,
-  removeTabHistory,
-  clearAllTabs,
-  clearAllTabHistories,
+  removeHistoryForTab,
+  removeAllTabs,
+  removeAllHistoryForTab,
   setActiveTabId,
-  goBackwardInHistory,
-  goForwardInHistory
+  goBackward,
+  goForward
 } = browserSlice.actions
 
 export const browserReducer = browserSlice.reducer

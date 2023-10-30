@@ -5,8 +5,8 @@ import {
   browserReducer as reducer,
   addTab,
   removeTab,
-  addTabHistory,
-  clearAllTabs,
+  addHistoryForTab,
+  removeAllTabs,
   setActiveTabId
 } from './slice'
 import { BrowserState } from './types'
@@ -114,7 +114,7 @@ describe('Tabs', () => {
       uuidSpy.mockImplementation(() => `${i}`)
       state = reducer(state, addTab())
     }
-    state = reducer(state, clearAllTabs())
+    state = reducer(state, removeAllTabs())
     expect(state).toMatchObject(initialState)
   })
 
@@ -145,7 +145,7 @@ describe('tab history', () => {
     creashHash.mockImplementationOnce(() => 'history_1')
     const state = reducer(
       state1,
-      addTabHistory({
+      addHistoryForTab({
         tabId: '1',
         history: TAB_HISTORY_DATA
       })
@@ -179,7 +179,7 @@ describe('tab history', () => {
     creashHash.mockImplementationOnce(() => 'history_1')
     const state = reducer(
       state1,
-      addTabHistory({
+      addHistoryForTab({
         tabId: 'unknown',
         history: TAB_HISTORY_DATA
       })
