@@ -84,6 +84,7 @@ workflows:
     - script-runner@0:
         title: Create Test Run
         inputs:
+<<<<<<< HEAD
         - file_path: scripts/bitrise/detox/createAndroidTestRun.sh
         - variables:
             - TESTRAIL_RUN_ID=$TESTRAIL_RUN_ID
@@ -98,6 +99,15 @@ workflows:
             TESTS_TO_RUN_GROUP_1=$TESTS_ONE
             TESTS_TO_RUN_GROUP_2=$TESTS_TWO
             TESTS_TO_RUN_GROUP_3=$TESTS_THREE
+=======
+        - api_level: "28"
+        - emulator_id: emulator-5554
+        - emulator_channel: "0"
+        - create_command_flags: --sdcard 2048M
+        - tag: default
+        - abi: x86_64
+        - profile: pixel_4
+>>>>>>> development
     - android-build-for-ui-testing@0:
         inputs:
         - module: $ANDROID_MODULE
@@ -299,12 +309,24 @@ workflows:
     before_run:
     - _install-node-18
     steps:
-    - restore-npm-cache@1: {}
+    - restore-cache@1:
+        title: Restore NPM Cache
+        inputs:
+        - key: '{{ .OS }}-{{ .Arch }}-npm-cache-{{ checksum "yarn.lock" }}'
     - script-runner@0:
         title: Yarn Setup
         inputs:
         - file_path: scripts/bitrise/yarnSetup.sh
-    - save-npm-cache@1: {}
+    - save-cache@1:
+        title: Save NPM Cache
+        inputs:
+        - paths: .yarn/cache
+        - is_key_unique: "true"
+        - key: '{{ .OS }}-{{ .Arch }}-npm-cache-{{ checksum "yarn.lock" }}'
+    - change-workdir@1:
+        inputs:
+        - is_create_path: "false"
+        - path: packages/core-mobile
     - script-runner@0:
         title: Download Env Files
         inputs:
@@ -413,6 +435,24 @@ workflows:
         - version_code_offset: ""
         - new_version_code: $BUILD_NUMBER
         - build_gradle_path: $BITRISE_SOURCE_DIR/$ANDROID_PROJECT_LOCATION/app/build.gradle
+  _upload-detox-artifacts:
+    steps:
+    - script-runner@0:
+        title: Copy Detox Artifacts
+        is_always_run: true
+        run_if: .IsBuildFailed
+        inputs:
+        - file_path: scripts/bitrise/detox/deployArtifacts.sh
+    - deploy-to-bitrise-io@2:
+        title: Deploy Detox Artifacts
+        is_always_run: true
+        run_if: .IsBuildFailed
+        inputs:
+        - zip_name: detox_artifacts
+        - notify_user_groups: none
+        - is_enable_public_page: "false"
+        - deploy_path: $BITRISE_DEPLOY_DIR/detox
+        - is_compress: "true"
   android:
     before_run:
     - _install-and-set-env
@@ -445,6 +485,7 @@ workflows:
     - _set-version
     - _build-android-for-testing
     after_run:
+    - _upload-detox-artifacts
     - _send-test-result-notifcation-slack
     envs:
     - ENVIRONMENT: production
@@ -505,6 +546,12 @@ workflows:
     - _install-and-set-env
     - _set-version
     - _build-android-for-testing
+<<<<<<< HEAD
+=======
+    after_run:
+    - _upload-detox-artifacts
+    - _send-test-result-notifcation-slack
+>>>>>>> development
     envs:
     - ENVIRONMENT: production
       opts:
@@ -560,6 +607,7 @@ workflows:
     - _set-version
     - _build-ios-simulator
     after_run:
+    - _upload-detox-artifacts
     - _send-test-result-notifcation-slack
     envs:
     - ENVIRONMENT: production
@@ -654,6 +702,7 @@ workflows:
     - _set-version
     - _pull_app_files
     after_run:
+    - _upload-detox-artifacts
     - _send-test-result-notifcation-slack
     envs:
     - ENVIRONMENT: production
