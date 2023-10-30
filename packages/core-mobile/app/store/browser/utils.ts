@@ -1,18 +1,8 @@
 import { createEntityAdapter } from '@reduxjs/toolkit'
 import { getUnixTime } from 'date-fns'
 import Logger from 'utils/Logger'
-import { MAXIMUM_HISTORIES, MAXIMUM_TABS, MAXIMUM_TAB_HISTORIES } from './const'
-import {
-  Tab,
-  BrowserState,
-  TabHistory,
-  History,
-  TabId,
-  TabHistoryState,
-  HistoryState,
-  TabState,
-  HistoryId
-} from './types'
+import { MAXIMUM_TABS } from './const'
+import { Tab, BrowserState, History, TabId, TabState, HistoryId } from './types'
 
 export const getOldestTab = (tabs: Tab[], count: number): Tab[] => {
   return tabs
@@ -25,9 +15,6 @@ export const getLatestTab = (tabs: Tab[]): Tab | undefined => {
 }
 
 export const tabAdapter = createEntityAdapter<Tab>({ selectId: tab => tab.id })
-export const tabHistoryAdapter = createEntityAdapter<TabHistory>({
-  selectId: tabHistory => tabHistory.id
-})
 export const historyAdapter = createEntityAdapter<History>({
   selectId: history => history.id
 })
@@ -39,33 +26,6 @@ export const limitMaxTabs = (state: BrowserState): void => {
     const oldestTabIds = getOldestTabIds(state, numberOfTabsToRemove)
     if (oldestTabIds === undefined) return
     tabAdapter.removeMany(state.tabs, oldestTabIds)
-    oldestTabIds.forEach(idToRemove => {
-      delete state.tabHistories[idToRemove]
-    })
-    historyAdapter.removeMany(state.histories, oldestTabIds)
-  }
-}
-
-export const limitMaxTabHistories = (state: TabHistoryState): void => {
-  const tabHistoryIds = tabHistoryAdapter.getSelectors().selectIds(state)
-
-  if (tabHistoryIds.length > MAXIMUM_TAB_HISTORIES) {
-    const historiesToRemove = tabHistoryIds.slice(
-      0,
-      tabHistoryIds.length - MAXIMUM_TAB_HISTORIES
-    )
-    tabHistoryAdapter.removeMany(state, historiesToRemove)
-  }
-}
-
-export const limitMaxHistories = (state: HistoryState): void => {
-  const historiesIds = historyAdapter.getSelectors().selectIds(state)
-  if (historiesIds.length > MAXIMUM_HISTORIES) {
-    const historiesToRemove = historiesIds.slice(
-      0,
-      historiesIds.length - MAXIMUM_HISTORIES
-    )
-    historyAdapter.removeMany(state, historiesToRemove)
   }
 }
 
@@ -86,23 +46,18 @@ export const updateActiveTabId = (state: BrowserState, tabId: TabId): void => {
 }
 
 export const updateActiveTabHistoryId = (
-  tabHistoryState: TabHistoryState,
   tabState: TabState,
   tabId: TabId,
   historyId: HistoryId
 ): void => {
-  if (tabHistoryState.ids.length === 0) {
-    tabHistoryState.activeHistoryId = undefined
-    return
-  }
-  if (tabHistoryState?.activeHistoryId === historyId) {
-    const lastVisitedHistoryId = getLastVisitedTabHistoryId(tabHistoryState)
+  if (tabState.activeHistoryId === historyId) {
+    const lastVisitedHistoryId = getLastVisitedTabHistoryId(tabState)
     if (!lastVisitedHistoryId) {
-      tabHistoryState.activeHistoryId = undefined
+      tabState.activeHistoryId = undefined
       Logger.warn('could not find last visited history id')
       return
     }
-    tabHistoryState.activeHistoryId = historyId
+    tabState.activeHistoryId = historyId
     tabAdapter.updateOne(tabState, {
       id: tabId,
       changes: {
@@ -129,12 +84,9 @@ const getOldestTabIds = (
   return oldestTabs.map(tab => tab.id)
 }
 
-const getLastVisitedTabHistoryId = (
-  state: TabHistoryState
-): TabId | undefined => {
-  const histories = tabHistoryAdapter.getSelectors().selectAll(state)
-  if (histories.length === 0) return undefined
-  return histories[histories.length - 1]?.id
+const getLastVisitedTabHistoryId = (state: TabState): TabId | undefined => {
+  return tabAdapter.getSelectors().selectById(state, state.activeTabId ?? '')
+    ?.historyIds[-1]
 }
 
 export const navigateTabHistory = (
@@ -144,17 +96,16 @@ export const navigateTabHistory = (
 ): void => {
   const tab = tabAdapter.getSelectors().selectById(state.tabs, tabId)
   if (tab === undefined) return
-  const tabHistoryState = state.tabHistories[tabId]
-  if (tabHistoryState === undefined) return
-  const activeHistoryId = tabHistoryState.activeHistoryId
+  const activeHistoryId = state.tabs.activeHistoryId
   if (activeHistoryId === undefined) return
-  const activeHistoryIndex = tabHistoryState.ids.indexOf(activeHistoryId)
 
+  const activeHistoryIndex = tab.historyIds.indexOf(activeHistoryId)
+  if (activeHistoryIndex === undefined) return
   const newActiveHistoryIndex =
     action === 'forward' ? activeHistoryIndex + 1 : activeHistoryIndex - 1
-  const historyId = tabHistoryState.ids[newActiveHistoryIndex]
+  const historyId = tab.historyIds[newActiveHistoryIndex]
   if (historyId === undefined) return
-  tabHistoryState.activeHistoryId = historyId.toString()
+  state.tabs.activeHistoryId = historyId.toString()
   tabAdapter.updateOne(state.tabs, {
     id: tabId,
     changes: {

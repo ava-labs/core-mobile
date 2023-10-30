@@ -6,10 +6,7 @@ export type HistoryId = string // unique, generated
 export type Tab = {
   id: TabId
   lastVisited?: number // unix timestamp, last time this tab was visited, delete oldest if more than 99 tabs active
-}
-
-export type TabHistory = {
-  id: HistoryId
+  historyIds: HistoryId[] // array of history indices
 }
 
 export type History = {
@@ -21,9 +18,6 @@ export type History = {
 
 export type TabState = EntityState<Tab> & {
   activeTabId?: TabId
-}
-
-export type TabHistoryState = EntityState<TabHistory> & {
   activeHistoryId?: HistoryId
 }
 
@@ -45,6 +39,5 @@ export type TabPayload = {
 
 export type BrowserState = {
   tabs: TabState
-  tabHistories: Record<TabId, TabHistoryState>
-  histories: HistoryState
+  globalHistories: HistoryState
 }

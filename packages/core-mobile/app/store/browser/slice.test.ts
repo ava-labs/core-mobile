@@ -21,8 +21,7 @@ const initialState = {
     entities: {},
     ids: []
   },
-  tabHistories: {},
-  histories: {
+  globalHistories: {
     entities: {},
     ids: []
   }
@@ -59,12 +58,6 @@ describe('Tabs', () => {
       },
       ids: ['1']
     })
-    expect(state.tabHistories).toMatchObject({
-      '1': {
-        entities: {},
-        ids: []
-      }
-    })
   })
 
   it('should add two new tabs', () => {
@@ -86,16 +79,6 @@ describe('Tabs', () => {
       },
       ids: ['1', '2']
     })
-    expect(state.tabHistories).toMatchObject({
-      '1': {
-        entities: {},
-        ids: []
-      },
-      '2': {
-        entities: {},
-        ids: []
-      }
-    })
   })
 
   it('should remove tab', () => {
@@ -114,12 +97,6 @@ describe('Tabs', () => {
         }
       },
       ids: ['1']
-    })
-    expect(state.tabHistories).toMatchObject({
-      '1': {
-        entities: {},
-        ids: []
-      }
     })
   })
 
@@ -173,20 +150,21 @@ describe('tab history', () => {
       entities: {
         '1': {
           id: '1',
-          lastVisited: unixTimestamp
+          lastVisited: unixTimestamp,
+          historyIds: ['history_1']
         }
       },
       ids: ['1']
     })
-    expect(state.tabHistories).toMatchObject({
-      '1': {
-        entities: { history_1: { id: 'history_1' } },
-        ids: ['history_1']
-      }
+    expect(state.globalHistories).toMatchObject({
+      entities: {
+        history_1: { id: 'history_1' }
+      },
+      ids: ['history_1']
     })
   })
 
-  it('should not add a new history when tab is not found', () => {
+  it('should not add a new global history when tab is not found', () => {
     const currentState = initialState
     uuidSpy.mockImplementationOnce(() => '1')
     const state1 = reducer(currentState, addTab())
@@ -207,6 +185,6 @@ describe('tab history', () => {
       },
       ids: ['1']
     })
-    expect(state.tabHistories).toMatchObject({})
+    expect(state.globalHistories).toMatchObject({})
   })
 })
