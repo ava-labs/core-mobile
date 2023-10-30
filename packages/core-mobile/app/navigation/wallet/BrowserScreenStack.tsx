@@ -6,7 +6,7 @@ import { noop } from '@avalabs/utils-sdk'
 import { View } from 'react-native'
 import AvaText from 'components/AvaText'
 import { AreYouSureModal } from 'screens/browser/AreYouSureModal'
-import IntroScreen from 'screens/browser/IntroScreen/IntroScreen'
+import IntroScreen from 'screens/browser/IntroScreen'
 
 export type BrowserStackParamList = {
   [AppNavigation.Browser.Intro]: undefined
