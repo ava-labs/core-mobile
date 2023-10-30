@@ -1,108 +1,50 @@
-# Core X Mobile
+<!-- Title -->
+<h1 align="center">
+Ava Labs Mobile
+</h1>
 
-## Setup dev environment
+<p align="center">Welcome to the Mobile Team Repo</p>
 
-Follow [these](https://reactnative.dev/docs/environment-setup) steps to setup dev environment; make sure to select
-**React Native CLI Quickstart** tab and select appropriate Development & Target OS.
+---
 
-## Getting Started
+## 📦 Packages
 
-### 1. Clone the repo.
+This repository is a monorepo that we manage using [Yarn workspaces](https://yarnpkg.com/features/workspaces).
 
-```zsh
-git clone git@github.com:ava-labs/avalanche-wallet-apps.git
-cd avalanche-wallet-apps/
-```
+| Package             |                                         Description |
+| :---                |                                            :---     |
+| [@avalabs/core-mobile](https://github.com/ava-labs/avalanche-wallet-apps/tree/develop/packages/core-mobile)        | Core Mobile app                                               |
+| [@avalabs/k2-mobile](https://github.com/ava-labs/avalanche-wallet-apps/tree/develop/packages/k2-mobile) | Mobile Design System (under 🚧👷‍♂️🚧)   | 
+| [@avalabs/eslint-config-mobile](https://github.com/ava-labs/avalanche-wallet-apps/tree/develop/packages/eslint-mobile) | Shared Eslint config        | 
+| [@avalabs/tsconfig-mobile](https://github.com/ava-labs/avalanche-wallet-apps/tree/develop/packages/tsconfig-mobile) | Shared Typescript config       | 
 
-**NOTE:** If you're using IDE to initiate this action you will need `github access token` registered with Jumpcloud SSO.
-To do that, go to  https://github.com/settings/tokens, generate access token and authorize it with Jumpcloud. Finally, import that token to your favorite IDE.
+## ⚡ Quickstart
 
-### 2. Setup environment.
-1. To access all project's dependencies you will need to generate an `NPM token` from your npmjs account and add that as an environment variable named `NPM_TOKEN` on your mac (for example, `.zshenv` if using zsh or `.bash_profile` if not).
-2. Create a `.env.development` file in the root of the project. The contents of the .env file is in 1Password. Ask permission to access it (the vault name is Mobile team). Once access is given copy and paste the contents from the 1Password Secure Note into your local .env file.
-3. Download `keystore.properties` from 1Password and place it in the `android` folder
+1. Clone the repo
+2. Install yarn globally (if you don't have yarn yet)
+   ```
+   brew install yarn
+   ```
+4. Install required dependencies for all packages
 
-**IMPORTANT:** the `.env` files are never to be committed to the repo, and are already added to .gitignore.
+   In the root directory, run:
+   ```
+   yarn install && yarn setup
+   ```
+5. Follow the specific instructions in each package to build/run it
 
+## 📖 Tips
 
-### 3. Install the dependencies.
+1. You can use these shortcuts to quickly run a command for `packages/core-mobile` and `packages/k2-mobile`
 
-```zsh
-yarn setup
-```
+   ```
+   yarn core <COMMAND>
+   yarn k2 <COMMAND>
 
-### 4. Launch the app
+   e.g yarn core start && yarn core ios
+   ```
 
-#### For iOS
-
-First install iOS dependencies:
-```zsh
-yarn podInstall
-```
-
-Now you can run the app
-
-```zsh
-# launch iOS simulator and start the app
-yarn ios
-```
-
-**Note:** if you run into `"Your session has expired. Please log in."` issue, go to `XCode > Preferences > Accounts` and sign in with your account.
-
-#### For Android
-```zsh
-# launch android emulator and start the app
-yarn android
-```
-
-## Tests
-
-You can run the test suite with
-
-```zsh
-yarn test
-```
-
-## Custom fonts
-
-To add custom font, add it to src/assets folder and then run: 
-```zsh
-yarn link
-```
-
-## Navigation System
-
-https://whimsical.com/mobile-navigation-system-4WaXLt2DgAutCmbfFF6wpS
-
-## Wallet Connect Flows
-
-https://whimsical.com/wallet-connect-flows-9QqTTDNdktBePx6vDR9oeX
-
-## App Signing
-[Documentation](docs/app_signing.md)
-
-## Release Process
-[Documentation](docs/release_process.md)
-
-## Known issues
-### Apple M1 chips
-
-Exclude arch `arm64`
-
-Prefix all comands with `arch -x86_64`
-
-Examples:
-```zsh
-arch -x86_64 pod install
-```
-
-```zsh
-arch -x86_64 yarn ios
-```
-
-### `pod install` fails on Apple M1 chips
-
-Install ffi
-```zsh
-sudo arch -x86_64 gem install ffi
-```
+2. To quickly remove all the node_modules folders, you can run
+   ```
+   ./scripts/remove-node-modules.sh
+   ```
