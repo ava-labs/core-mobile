@@ -185,4 +185,28 @@ describe('tab history', () => {
       }
     })
   })
+
+  it('should not add a new history when tab is not found', () => {
+    const currentState = initialState
+    uuidSpy.mockImplementationOnce(() => '1')
+    const state1 = reducer(currentState, addTab())
+    creashHash.mockImplementationOnce(() => 'history_1')
+    const state = reducer(
+      state1,
+      addTabHistory({
+        tabId: 'unknown',
+        history: TAB_HISTORY_DATA
+      })
+    )
+    expect(state.tabs).toMatchObject({
+      activeTabId: '1',
+      entities: {
+        '1': {
+          id: '1'
+        }
+      },
+      ids: ['1']
+    })
+    expect(state.tabHistories).toMatchObject({})
+  })
 })
