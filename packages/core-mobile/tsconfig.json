@@ -7,10 +7,10 @@
     }
   },
   "include": [
-    "**/*.ts",
-    "**/*.tsx", "*.d.ts", "jest.config.js",
+    "**/*.ts", "**/*.tsx", "*.d.ts", "jest.config.js",
+    "../k2-mobile/src/theme.d.ts"
   ],
   "exclude": [
     "node_modules"
-  ]
+  ],
 }

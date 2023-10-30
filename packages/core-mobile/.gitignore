@@ -72,3 +72,6 @@ e2e/artifacts/
 
 # generated openzeppelin contract types
 app/contracts/openzeppelin
+
+# generated metro monorepo config
+metro.monorepo.config.js
