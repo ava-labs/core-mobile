@@ -6,6 +6,7 @@ import { noop } from '@avalabs/utils-sdk'
 import { View } from 'react-native'
 import AvaText from 'components/AvaText'
 import { AreYouSureModal } from 'screens/browser/AreYouSureModal'
+import IntroScreen from 'screens/browser/IntroScreen'
 
 export type BrowserStackParamList = {
   [AppNavigation.Browser.Intro]: undefined
@@ -54,7 +55,7 @@ function BrowserScreenStack(): JSX.Element {
       <BrowserStack.Screen
         name={AppNavigation.Browser.Intro}
         options={{ headerShown: false }}
-        component={IntroStub}
+        component={BrowswerIntroScreen}
       />
     </BrowserStack.Navigator>
   )
@@ -77,10 +78,10 @@ const renderNavigationHeader = ({
 
 export default React.memo(BrowserScreenStack)
 
-function IntroStub(): JSX.Element {
+function BrowswerIntroScreen(): JSX.Element {
   return (
     <View>
-      <AvaText.LargeTitleBold>IntroStub</AvaText.LargeTitleBold>
+      <IntroScreen />
     </View>
   )
 }
