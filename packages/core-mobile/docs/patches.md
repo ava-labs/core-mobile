@@ -41,3 +41,11 @@ Calling pino({ level: 'error' }) will throw an error `Cannot assign to read only
 commenting out "react-native-get-random-values" as we already use getRandomValues from "react-native-quick-crypto"
 
 commenting out import "react-native-url-polyfill/auto" as we already import it ourselves
+
+### @react-native+0.70.14.patch
+
+commenting out assertions in JSCRuntime.cpp that checked if API object and API string counters are zero in debug to avoid crash in fast refresh
+
+changed the warning message about ViewPropTypes being removed from React Native, to import ViewPropTypes from deprecated-react-native-prop-types
+
+modified condition statements with $USE_HERMES in react-native-xcode.sh to avoid error with generating hermes bundle in release mode
