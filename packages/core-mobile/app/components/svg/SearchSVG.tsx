@@ -9,7 +9,12 @@ interface Prop {
   hideBorder?: boolean
 }
 
-function SearchSVG({ color, circleColor, size = 44, hideBorder }: Prop) {
+function SearchSVG({
+  color,
+  circleColor,
+  size = 44,
+  hideBorder
+}: Prop): JSX.Element {
   const context = useApplicationContext()
 
   const iconColor = color ?? context.theme.colorText2

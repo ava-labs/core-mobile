@@ -28,6 +28,7 @@ import { walletConnectReducer as walletConnectV2 } from './walletConnectV2'
 import { BridgeBlacklistTransform } from './transforms/BridgeBlacklistTransform'
 import { WatchlistBlacklistTransform } from './transforms/WatchlistBlacklistTransform'
 import { AppBlacklistTransform } from './transforms/AppBlacklistTransform'
+import { browserReducer as browser } from './browser'
 
 const VERSION = 8
 
@@ -56,6 +57,7 @@ const combinedReducer = combineReducers({
   security,
   walletConnectV2,
   viewOnce,
+  browser,
 
   // user preferences
   settings,
@@ -83,7 +85,8 @@ const rootReducer = (state: any, action: AnyAction) => {
         }
       },
       network: state.network,
-      watchlist: state.watchlist
+      watchlist: state.watchlist,
+      browser: state.browser
     }
   }
 

@@ -1,7 +1,7 @@
 import * as React from 'react'
 import Svg, { Path } from 'react-native-svg'
 
-const CoreOwlSVG = () => (
+const CoreOwlSVG = (): JSX.Element => (
   <Svg width={40} height={32} fill="none">
     <Path
       fillRule="evenodd"
