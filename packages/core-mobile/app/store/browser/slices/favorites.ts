@@ -1,7 +1,11 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { RootState } from 'store/index'
 import { v4 as uuidv4 } from 'uuid'
-import { FavoriteState, FavoriteId, Favorite } from 'store/browser/types'
+import {
+  FavoriteState,
+  FavoriteId,
+  Favorite,
+  BrowserState
+} from 'store/browser/types'
 import { favoriteAdapter } from '../utils'
 
 const reducerName = 'browser-favorites'
@@ -26,8 +30,8 @@ const favoriteSlice = createSlice({
 })
 
 // selectors
-export const selectAllFavorites = (state: RootState): Favorite[] =>
-  favoriteAdapter.getSelectors().selectAll(state.browser.favorites)
+export const selectAllFavorites = (state: BrowserState): Favorite[] =>
+  favoriteAdapter.getSelectors().selectAll(state.favorites)
 
 // actions
 export const { removeFavorite, addFavorite, clearAll } = favoriteSlice.actions
