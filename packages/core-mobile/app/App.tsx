@@ -52,7 +52,7 @@ export default function App(): JSX.Element {
             navigationRef.current = ref
           }}
           onReady={() => {
-            DataDogService.startRumTracking(navigationRef.current)
+            DataDogService.startRumTracking()
           }}>
           <RootScreenStack />
         </NavigationContainer>
