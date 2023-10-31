@@ -18,7 +18,9 @@ export const DefaultFeatureFlagConfig = {
   [FeatureGates.DEFI]: true,
   [FeatureGates.BROWSER]: false,
   [FeatureGates.LEFT_FAB]: false,
-  [FeatureGates.DARK_MODE]: false
+  [FeatureGates.DARK_MODE]: false,
+  [FeatureGates.SEEDLESS_ONBOARDING]: false,
+  [FeatureGates.SEEDLESS_SIGNING]: false
 }
 
 export const initialState = {
