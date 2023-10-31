@@ -46,6 +46,6 @@ commenting out import "react-native-url-polyfill/auto" as we already import it o
 
 commenting out assertions in JSCRuntime.cpp that checked if API object and API string counters are zero in debug to avoid crash in fast refresh
 
-changed the warning message about ViewPropTypes being removed from React Native, to now import ViewPropTypes from deprecated-react-native-prop-types
+changed the warning message about ViewPropTypes being removed from React Native, to import ViewPropTypes from deprecated-react-native-prop-types
 
 modified condition statements with $USE_HERMES in react-native-xcode.sh to avoid error with generating hermes bundle in release mode
