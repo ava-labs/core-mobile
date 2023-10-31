@@ -117,6 +117,8 @@ __metadata:
     "@babel/preset-typescript": 7.22.11
     "@babel/runtime": 7.22.11
     "@coinbase/cbpay-js": 1.6.0
+    "@datadog/mobile-react-native": 1.9.0
+    "@datadog/mobile-react-navigation": 1.9.0
     "@dlenroc/testrail": 1.7.2
     "@ethereumjs/common": 2.6.5
     "@ethereumjs/tx": 3.4.0
@@ -2412,6 +2414,27 @@ __metadata:
   dependencies:
     "@jridgewell/trace-mapping": 0.3.9
   checksum: 5718f267085ed8edb3e7ef210137241775e607ee18b77d95aa5bd7514f47f5019aa2d82d96b3bf342ef7aa890a346fa1044532ff7cc3009e7d24fce3ce6200fa
+  languageName: node
+  linkType: hard
+
+"@datadog/mobile-react-native@npm:1.9.0":
+  version: 1.9.0
+  resolution: "@datadog/mobile-react-native@npm:1.9.0"
+  peerDependencies:
+    react: ">=16.13.1"
+    react-native: ">=0.63.4 <1.0"
+  checksum: 73f3fab024d3debed3055125790a2ef0aa0564cd9d33e29bac6a3b24d22f521644aecdface8bb18b8e5e37d0b4a3c2d8b595542df8b9def6b7d8af30dbc32927
+  languageName: node
+  linkType: hard
+
+"@datadog/mobile-react-navigation@npm:1.9.0":
+  version: 1.9.0
+  resolution: "@datadog/mobile-react-navigation@npm:1.9.0"
+  peerDependencies:
+    "@datadog/mobile-react-native": 1.0.0-beta4
+    react: ">=16.13.1"
+    react-native: ">=0.63.4 <1.0"
+  checksum: 18e4c1d2d0443afd9c16ed24f3fa654f3f260acf440f0b63d74030933deef18bf003cda08ed0aea00da94b2eae5b51f1a299010aaf1d5b074403a035dcc821fc
   languageName: node
   linkType: hard
 
