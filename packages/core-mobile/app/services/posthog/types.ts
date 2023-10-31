@@ -14,7 +14,9 @@ export enum FeatureGates {
   DEFI = 'defi-feature',
   BROWSER = 'browser-feature',
   LEFT_FAB = 'left-fab-feature',
-  DARK_MODE = 'dark-mode-feature'
+  DARK_MODE = 'dark-mode-feature',
+  SEEDLESS_ONBOARDING = 'seedless-onboarding',
+  SEEDLESS_SIGNING = 'seedless-signing'
 }
 
 export enum FeatureVars {
