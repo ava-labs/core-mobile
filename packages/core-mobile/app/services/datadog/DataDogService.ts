@@ -9,7 +9,6 @@ const DataDogService = {
             if (config) {
                 try {
                     await DdSdkReactNative.initialize(config)
-                    console.log('DataDog Initiated')
                 } catch (error) {
                     console.error('Error initializing Datadog:', error)
                 }
