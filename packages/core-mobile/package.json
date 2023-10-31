@@ -97,7 +97,7 @@
     "react": "18.1.0",
     "react-content-loader": "6.2.0",
     "react-hook-form": "7.45.1",
-    "react-native": "0.70.14",
+    "react-native": "0.70.6",
     "react-native-aes-crypto": "1.3.10",
     "react-native-argon2": "2.0.1",
     "react-native-big-list": "1.6.1",
