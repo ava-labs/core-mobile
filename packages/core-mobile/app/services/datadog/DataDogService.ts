@@ -3,18 +3,18 @@ import { DdSdkReactNative } from '@datadog/mobile-react-native'
 import DataDogConfig from 'utils/DataDogConfig'
 
 const DataDogService = {
-    init: async () => {
-        if (Config.ENVIRONMENT !== 'production') {
-            const config = DataDogConfig
-            if (config) {
-                try {
-                    await DdSdkReactNative.initialize(config)
-                } catch (error) {
-                    console.error('Error initializing Datadog:', error)
-                }
-            }
+  init: async () => {
+    if (Config.ENVIRONMENT !== 'production') {
+      const config = DataDogConfig
+      if (config) {
+        try {
+          await DdSdkReactNative.initialize(config)
+        } catch (error) {
+          console.error('Error initializing Datadog:', error)
         }
+      }
     }
+  }
 };
 
 export default DataDogService

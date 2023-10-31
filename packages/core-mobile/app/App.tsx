@@ -41,23 +41,23 @@ export default function App(): JSX.Element {
   const [backgroundStyle] = useState(context.appBackgroundStyle)
 
   return (
-      <SafeAreaView style={backgroundStyle}>
-        <KeyboardAvoidingView
-          enabled={context.keyboardAvoidingViewEnabled}
-          style={{ flex: 1 }}
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-              <NavigationContainer
-                theme={context.navContainerTheme}
-                ref={ref => {
-                  context.appNavHook.navigation.current = ref
-                  navigationRef.current = ref
-                }}
-                onReady={() => {
-                  DdRumReactNavigationTracking.startTrackingViews(navigationRef.current)}}
-                  >
-                <RootScreenStack />
-              </NavigationContainer>
-        </KeyboardAvoidingView>
-      </SafeAreaView>
+    <SafeAreaView style={backgroundStyle}>
+      <KeyboardAvoidingView
+        enabled={context.keyboardAvoidingViewEnabled}
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+        <NavigationContainer
+          theme={context.navContainerTheme}
+          ref={ref => {
+            context.appNavHook.navigation.current = ref
+            navigationRef.current = ref
+          }}
+          onReady={() => {
+            DdRumReactNavigationTracking.startTrackingViews(navigationRef.current)}}
+          >
+          <RootScreenStack />
+        </NavigationContainer>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   )
 }
