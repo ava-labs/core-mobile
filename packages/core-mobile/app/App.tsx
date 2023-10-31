@@ -14,7 +14,6 @@ import 'utils/debugging/wdyr'
 import { navigationRef } from 'utils/Navigation'
 import SentryService from 'services/sentry/SentryService'
 import DataDogService from 'services/datadog/DataDogService'
-import { DdRumReactNavigationTracking } from '@datadog/mobile-react-navigation'
 
 LogBox.ignoreLogs([
   'Require cycle:',
@@ -53,9 +52,7 @@ export default function App(): JSX.Element {
             navigationRef.current = ref
           }}
           onReady={() => {
-            DdRumReactNavigationTracking.startTrackingViews(
-              navigationRef.current
-            )
+            DataDogService.startRumTracking(navigationRef.current)
           }}>
           <RootScreenStack />
         </NavigationContainer>

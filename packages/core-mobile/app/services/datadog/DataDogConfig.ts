@@ -1,29 +1,31 @@
 import { DdSdkReactNativeConfiguration } from '@datadog/mobile-react-native'
+import Config from 'react-native-config'
+import DeviceInfo from 'react-native-device-info'
 
 let DataDogConfig: DdSdkReactNativeConfiguration | null = null
 
 if (
-  process.env.DD_CLIENT_TOKEN &&
-  process.env.ENVIRONMENT &&
-  process.env.DD_APPLICATION_ID &&
-  process.env.DD_SITE &&
-  process.env.BUILD_NUMBER
+  Config.DD_CLIENT_TOKEN &&
+  Config.ENVIRONMENT &&
+  Config.DD_APPLICATION_ID &&
+  Config.DD_SITE &&
+  Config.BUILD_NUMBER
 ) {
   DataDogConfig = new DdSdkReactNativeConfiguration(
-    process.env.DD_CLIENT_TOKEN,
-    process.env.ENVIRONMENT,
-    process.env.DD_APPLICATION_ID,
+    Config.DD_CLIENT_TOKEN,
+    Config.ENVIRONMENT,
+    Config.DD_APPLICATION_ID,
     true,
     true,
     true
   )
 
-  DataDogConfig.site = process.env.DD_SITE
+  DataDogConfig.site = Config.DD_SITE
   DataDogConfig.nativeCrashReportEnabled = true
   DataDogConfig.nativeViewTracking = true
   DataDogConfig.sessionSamplingRate = 80
   DataDogConfig.resourceTracingSamplingRate = 80
-  DataDogConfig.version = process.env.BUILD_NUMBER
+  DataDogConfig.version = DeviceInfo.getBuildNumber()
 }
 
 export default DataDogConfig
