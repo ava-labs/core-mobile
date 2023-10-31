@@ -10,11 +10,10 @@ const DataDogService = {
         try {
           await DdSdkReactNative.initialize(config)
         } catch (error) {
-          console.error('Error initializing Datadog:', error)
         }
       }
     }
   }
-};
+}
 
 export default DataDogService
