@@ -53,9 +53,10 @@ export default function App(): JSX.Element {
             navigationRef.current = ref
           }}
           onReady={() => {
-            DdRumReactNavigationTracking.startTrackingViews(navigationRef.current)
-          }}
-          >
+            DdRumReactNavigationTracking.startTrackingViews(
+              navigationRef.current
+            )
+          }}>
           <RootScreenStack />
         </NavigationContainer>
       </KeyboardAvoidingView>
