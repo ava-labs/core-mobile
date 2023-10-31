@@ -17,7 +17,7 @@ function LinearGradientSVG({
   loop = false,
   opacityFrom = 1,
   opacityTo = 1
-}: Prop) {
+}: Prop): JSX.Element {
   const endPoint =
     orientation === 'horizontal' ? { x: 1, y: 0 } : { x: 0, y: 1 }
   return (
