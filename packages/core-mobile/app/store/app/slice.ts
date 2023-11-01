@@ -36,7 +36,8 @@ export const selectIsReady = (state: RootState): boolean => state.app.isReady
 
 export const selectIsLocked = (state: RootState): boolean => state.app.isLocked
 
-export const selectAppState = (state: RootState): string => state.app.appState
+export const selectAppState = (state: RootState): AppStateStatus =>
+  state.app.appState
 
 export const selectWalletState = (state: RootState): WalletState =>
   state.app.walletState

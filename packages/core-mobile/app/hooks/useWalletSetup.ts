@@ -34,7 +34,7 @@ export function useWalletSetup(appNavHook: AppNavHook): WalletSetupHook {
       //must be after onAppUnlocked
       dispatch(addAccount())
     }
-    appNavHook.resetNavigationToUnlockedWallet()
+    appNavHook.resetNavToUnlockedWallet()
   }
 
   /**
