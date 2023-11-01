@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { FC } from 'react'
 import FlexSpacer from 'components/FlexSpacer'
 import AvaButton from 'components/AvaButton'
 import AvaText from 'components/AvaText'
@@ -12,6 +12,7 @@ import { PRIVACY_POLICY_URL } from 'resources/Constants'
 import { usePostCapture } from 'hooks/usePosthogCapture'
 import { useDispatch } from 'react-redux'
 import { setCoreAnalytics } from 'store/settings/securityPrivacy'
+import { signInWithGoogle } from 'seedless/utils/googleSignIn'
 
 type Props = {
   nextScreen:
@@ -24,25 +25,29 @@ type Props = {
   ) => void
 }
 
-const AnalyticsConsent = ({ onNextScreen, nextScreen }: Props) => {
+const AnalyticsConsent: FC<Props> = ({ onNextScreen, nextScreen }: Props) => {
   const dispatch = useDispatch()
   const { theme } = useApplicationContext()
   const { capture } = usePostCapture()
 
-  function openPrivacyPolicy() {
+  function openPrivacyPolicy(): void {
     Linking.openURL(PRIVACY_POLICY_URL)
   }
 
-  function acceptAnalytics() {
+  function acceptAnalytics(): void {
     capture('OnboardingAnalyticsAccepted')
     dispatch(setCoreAnalytics(true))
     onNextScreen(nextScreen)
   }
 
-  function rejectAnalytics() {
+  function rejectAnalytics(): void {
     capture('OnboardingAnalyticsRejected')
     dispatch(setCoreAnalytics(false))
     onNextScreen(nextScreen)
+  }
+
+  function googleSignin(): void {
+    signInWithGoogle()
   }
 
   return (
@@ -110,6 +115,10 @@ const AnalyticsConsent = ({ onNextScreen, nextScreen }: Props) => {
       </Row>
       <FlexSpacer />
       <Space y={24} />
+      <AvaButton.SecondaryLarge onPress={googleSignin} testID="iAgreeBtn">
+        Sign in with Google
+      </AvaButton.SecondaryLarge>
+      <Space y={16} />
       <AvaButton.SecondaryLarge onPress={acceptAnalytics} testID="iAgreeBtn">
         I Agree
       </AvaButton.SecondaryLarge>

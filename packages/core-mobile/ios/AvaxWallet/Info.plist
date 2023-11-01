@@ -34,6 +34,14 @@
 				<string>core</string>
 			</array>
 		</dict>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>org.avalabs.avaxwallet.internal</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>core</string>
+			</array>
+		</dict>
 	</array>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
