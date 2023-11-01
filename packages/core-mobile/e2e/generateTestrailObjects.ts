@@ -286,6 +286,7 @@ async function newTCTitles() {
     allTestCaseTitlesFromRun.push({ testTitle, testSection })
   })
 
+  // eslint-disable-next-line sonarjs/no-ignored-return
   allTestCaseTitlesFromRun.filter(function (item) {
     testCasesFromTestrail.indexOf(item.testTitle) === -1
       ? theNewTCTitles.push(item)

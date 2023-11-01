@@ -1,0 +1,15 @@
+{
+  "extends": "@avalabs/tsconfig-mobile/base.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "sourceMap": false,
+    "outDir": "./lib/customRules",
+    "module": "commonjs",
+  },
+  "include": [
+    "src/customRules/*"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}
