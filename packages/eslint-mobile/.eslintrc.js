@@ -71,5 +71,11 @@ module.exports = {
         "jest/globals": true,
       },
     },
+    {
+      files: ["*.js", "*.jsx"],
+      rules: {
+        "@typescript-eslint/explicit-function-return-type": 0,
+      },
+    },
   ],
 };
