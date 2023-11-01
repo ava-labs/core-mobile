@@ -21,7 +21,7 @@ import {
 } from '../utils'
 import { MAXIMUM_TAB_HISTORIES } from '../const'
 
-const reducerName = 'browserTabs'
+const reducerName = 'browser/tabs'
 
 const initialState = tabAdapter.getInitialState()
 

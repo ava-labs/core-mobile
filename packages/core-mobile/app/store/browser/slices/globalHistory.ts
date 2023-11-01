@@ -5,7 +5,7 @@ import { historyAdapter } from '../utils'
 import { MAXIMUM_HISTORIES } from '../const'
 import { addHistoryForTab } from './tabs'
 
-const reducerName = 'browserGlobalHistory'
+const reducerName = 'browser/globalHistory'
 
 const initialState = historyAdapter.getInitialState()
 

@@ -8,7 +8,7 @@ import {
 } from 'store/browser/types'
 import { favoriteAdapter } from '../utils'
 
-const reducerName = 'browserFavorites'
+const reducerName = 'browser/favorites'
 
 const initialState: FavoriteState = favoriteAdapter.getInitialState()
 
