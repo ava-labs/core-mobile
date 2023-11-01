@@ -140,9 +140,9 @@ export default function NftDetails({
   )
 }
 
-const renderProps: (
+const renderProps = (
   attributes?: NFTItemExternalDataAttribute[]
-) => JSX.Element[] = (attributes?: NFTItemExternalDataAttribute[]) => {
+): JSX.Element[] => {
   if (!attributes) {
     return []
   }
