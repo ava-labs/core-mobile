@@ -1,0 +1,6 @@
+{
+  "extends": "@avalabs/tsconfig-mobile/base.json",
+  "exclude": [
+    "node_modules"
+  ]
+}
