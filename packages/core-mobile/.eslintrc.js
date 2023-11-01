@@ -18,18 +18,7 @@ module.exports = {
     {
       files: ['e2e/**/*'],
       rules: {
-        'no-console': 0
-      }
-    },
-    {
-      files: [
-        '*.e2e.smoke.ts',
-        '*.e2e.ts',
-        '*.page.ts',
-        '*.spec.ts',
-        '*.loc.ts'
-      ],
-      rules: {
+        'no-console': 0,
         '@typescript-eslint/explicit-function-return-type': 0
       }
     }
