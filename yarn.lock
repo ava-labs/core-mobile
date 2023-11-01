@@ -134,6 +134,7 @@ __metadata:
     "@react-native-community/datetimepicker": 7.1.0
     "@react-native-community/netinfo": 9.3.10
     "@react-native-community/slider": 4.4.2
+    "@react-native-menu/menu": 0.9.1
     "@react-navigation/bottom-tabs": 6.4.0
     "@react-navigation/drawer": 6.5.0
     "@react-navigation/elements": 1.3.6
@@ -266,7 +267,7 @@ __metadata:
     react-native-url-polyfill: 1.3.0
     react-native-v8: 1.5.2
     react-native-version: 4.0.0
-    react-native-webview: 11.22.7
+    react-native-webview: 13.6.2
     react-redux: 8.0.1
     react-test-renderer: 18.2.0
     react-timer-hook: 3.0.5
@@ -4649,6 +4650,16 @@ __metadata:
   version: 4.4.2
   resolution: "@react-native-community/slider@npm:4.4.2"
   checksum: 1ae613f594a8ea9d7243b3125d26b36aab4e4c2dd9eba1bf66c4f31878e74fae055cd35a1babc46b262240885bb61fa321610417bb2a6d9f77a330136ff33293
+  languageName: node
+  linkType: hard
+
+"@react-native-menu/menu@npm:0.9.1":
+  version: 0.9.1
+  resolution: "@react-native-menu/menu@npm:0.9.1"
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+  checksum: 97de17ddcd4292f9f1cf2f47b62eed2bdb11c7d69734ffc260cbeb1e19e02ee3f279d9df1b9c9be3191ee12b3645842510087c0e6166aa99f87694c1a50787da
   languageName: node
   linkType: hard
 
@@ -20395,16 +20406,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-webview@npm:11.22.7":
-  version: 11.22.7
-  resolution: "react-native-webview@npm:11.22.7"
+"react-native-webview@npm:13.6.2":
+  version: 13.6.2
+  resolution: "react-native-webview@npm:13.6.2"
   dependencies:
     escape-string-regexp: 2.0.0
     invariant: 2.2.4
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 32fa1c87c40c7205efc5ef451e6ecb07cc7960323ca9f8eaed4749590c9451832ce06e39b4c1749e22a9e6fb8653ac5062ce0e91ffe9e3cc966430aaf042a9a7
+  checksum: 20cbad5bf47410f8aabab3c12610770204edb26b9ad8690f2f868c6b784a84b05231718bae2ea72a2ac2ebcbc0af89fe05a37b56615c4e8363f9aafadbe64b5a
   languageName: node
   linkType: hard
 
