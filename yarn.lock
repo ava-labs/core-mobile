@@ -2381,7 +2381,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-
 "@cspotcode/source-map-support@npm:^0.8.0":
   version: 0.8.1
   resolution: "@cspotcode/source-map-support@npm:0.8.1"
