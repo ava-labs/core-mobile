@@ -1,6 +1,5 @@
 import { DdSdkReactNativeConfiguration } from '@datadog/mobile-react-native'
 import Config from 'react-native-config'
-import DeviceInfo from 'react-native-device-info'
 
 let DataDogConfig: DdSdkReactNativeConfiguration | null = null
 
@@ -25,7 +24,7 @@ if (
   DataDogConfig.nativeViewTracking = true
   DataDogConfig.sessionSamplingRate = 80
   DataDogConfig.resourceTracingSamplingRate = 80
-  DataDogConfig.version = DeviceInfo.getBuildNumber()
+  DataDogConfig.version = Config.BUILD_NUMBER
 }
 
 export default DataDogConfig
