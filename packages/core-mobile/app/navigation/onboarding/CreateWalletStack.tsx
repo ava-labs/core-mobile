@@ -16,6 +16,7 @@ import { MainHeaderOptions } from 'navigation/NavUtils'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import WarningModal from 'components/WarningModal'
 import TermsNConditionsModal from 'components/TermsNConditionsModal'
+import { onLogIn } from 'store/app'
 import { useDispatch } from 'react-redux'
 import {
   RemoveEvents,
@@ -218,6 +219,7 @@ const TermsNConditionsModalScreen = (): JSX.Element => {
   const createWalletContext = useContext(CreateWalletContext)
   const walletSetupHook = useApplicationContext().walletSetupHook
   const { signOut } = useApplicationContext().appHook
+  const dispatch = useDispatch()
   const { navigate } = useNavigation<BiometricLoginNavigationProp>()
 
   return (
@@ -228,6 +230,9 @@ const TermsNConditionsModalScreen = (): JSX.Element => {
           // signing in with a brand new wallet
           walletSetupHook
             .enterWallet(createWalletContext.mnemonic)
+            .then(() => {
+              dispatch(onLogIn())
+            })
             .catch(Logger.error)
         }, 300)
       }}

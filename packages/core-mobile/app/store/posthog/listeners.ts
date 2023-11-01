@@ -1,6 +1,6 @@
 import { Action, isAnyOf } from '@reduxjs/toolkit'
 import { AppStartListening } from 'store/middleware/listener'
-import { onAppUnlocked, onLogOut, onRehydrationComplete } from 'store/app'
+import { onLogIn, onLogOut, onRehydrationComplete } from 'store/app'
 import {
   capture,
   regenerateUserId,
@@ -47,7 +47,7 @@ const fetchFeatureFlagsPeriodically = async (
     await listenerApi.pause(fetchFeatureFlags())
 
     await Promise.race([
-      condition(isAnyOf(onAppUnlocked)),
+      condition(isAnyOf(onLogIn)),
       listenerApi.delay(FEATURE_FLAGS_FETCH_INTERVAL)
     ])
   }

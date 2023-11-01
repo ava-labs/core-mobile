@@ -14,7 +14,7 @@ import { createStackNavigator } from '@react-navigation/stack'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { MainHeaderOptions } from 'navigation/NavUtils'
 import TermsNConditionsModal from 'components/TermsNConditionsModal'
-import { selectWalletState, WalletState } from 'store/app'
+import { onLogIn, selectWalletState, WalletState } from 'store/app'
 import { useDispatch, useSelector } from 'react-redux'
 import {
   RemoveEvents,
@@ -170,6 +170,7 @@ const TermsNConditionsModalScreen = (): JSX.Element => {
   const enterWithMnemonicContext = useContext(EnterWithMnemonicContext)
   const walletSetupHook = useApplicationContext().walletSetupHook
   const { signOut } = useApplicationContext().appHook
+  const dispatch = useDispatch()
   const { navigate } = useNavigation<BiometricLoginNavigationProp>()
 
   return (
@@ -180,6 +181,9 @@ const TermsNConditionsModalScreen = (): JSX.Element => {
           // signing in with recovery phrase
           walletSetupHook
             .enterWallet(enterWithMnemonicContext.mnemonic)
+            .then(() => {
+              dispatch(onLogIn())
+            })
             .catch(Logger.error)
         }, 300)
       }}
