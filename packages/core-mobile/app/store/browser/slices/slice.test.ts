@@ -1,15 +1,15 @@
 import { getUnixTime } from 'date-fns'
 import * as uuid from 'uuid'
 import * as utils from 'utils/createHash'
+import { BrowserState } from '../types'
+import { combinedReducer as reducer } from '../combinedReducer'
 import {
-  browserReducer as reducer,
   addTab,
   removeTab,
   addHistoryForTab,
   removeAllTabs,
   setActiveTabId
-} from './slice'
-import { BrowserState } from './types'
+} from './tabs'
 
 jest.mock('uuid')
 
@@ -17,11 +17,15 @@ const uuidSpy = jest.spyOn(uuid, 'v4')
 const creashHash = jest.spyOn(utils, 'createHash')
 
 const initialState = {
-  tabs: {
+  favorites: {
     entities: {},
     ids: []
   },
   globalHistory: {
+    entities: {},
+    ids: []
+  },
+  tabs: {
     entities: {},
     ids: []
   }
@@ -50,8 +54,8 @@ describe('Tabs', () => {
     uuidSpy.mockImplementation(() => '1')
     const state = reducer(currentState, addTab())
     expect(state).toMatchObject({
-      activeTabId: '1',
       tabs: {
+        activeTabId: '1',
         entities: {
           '1': {
             id: '1'
@@ -70,8 +74,8 @@ describe('Tabs', () => {
     const state = reducer(state1, addTab())
 
     expect(state).toMatchObject({
-      activeTabId: '2',
       tabs: {
+        activeTabId: '2',
         entities: {
           '1': {
             id: '1'
@@ -94,8 +98,8 @@ describe('Tabs', () => {
     const state = reducer(state2, removeTab({ id: '2' }))
 
     expect(state).toMatchObject({
-      activeTabId: '1',
       tabs: {
+        activeTabId: '1',
         entities: {
           '1': {
             id: '1'
@@ -127,7 +131,7 @@ describe('Tabs', () => {
       state = reducer(state, addTab())
     }
     state = reducer(state, setActiveTabId({ id: '3' }))
-    expect(state.activeTabId).toEqual('3')
+    expect(state.tabs.activeTabId).toEqual('3')
   })
 })
 
@@ -138,11 +142,12 @@ describe('tab history', () => {
 
   it('should add a new history', () => {
     const currentState = initialState
+
     uuidSpy.mockImplementationOnce(() => '1')
     const unixTimestamp = getUnixTime(new Date('2023-10-26'))
     jest.useFakeTimers().setSystemTime(new Date('2023-10-26'))
     const state1 = reducer(currentState, addTab())
-    creashHash.mockImplementationOnce(() => 'history_1')
+    creashHash.mockImplementation(() => 'history_1')
     const state = reducer(
       state1,
       addHistoryForTab({
@@ -152,8 +157,8 @@ describe('tab history', () => {
     )
 
     expect(state).toMatchObject({
-      activeTabId: '1',
       tabs: {
+        activeTabId: '1',
         entities: {
           '1': {
             id: '1',
@@ -165,36 +170,37 @@ describe('tab history', () => {
       },
       globalHistory: {
         entities: {
-          history_1: { id: 'history_1' }
+          history_1: {
+            ...TAB_HISTORY_DATA,
+            id: 'history_1'
+          }
         },
         ids: ['history_1']
       }
     })
   })
+})
 
-  it('should not add a new global history when tab is not found', () => {
-    const currentState = initialState
-    uuidSpy.mockImplementationOnce(() => '1')
-    const state1 = reducer(currentState, addTab())
-    creashHash.mockImplementationOnce(() => 'history_1')
-    const state = reducer(
-      state1,
-      addHistoryForTab({
-        tabId: 'unknown',
-        history: TAB_HISTORY_DATA
-      })
-    )
-    expect(state).toMatchObject({
-      activeTabId: '1',
-      tabs: {
-        entities: {
-          '1': {
-            id: '1'
-          }
-        },
-        ids: ['1']
-      }
+it('should not add a new global history when tab is not found', () => {
+  const currentState = initialState
+  uuidSpy.mockImplementationOnce(() => '1')
+  const state1 = reducer(currentState, addTab())
+  creashHash.mockImplementationOnce(() => 'history_1')
+  const state = reducer(
+    state1,
+    addHistoryForTab({
+      tabId: 'unknown',
+      history: TAB_HISTORY_DATA
     })
-    expect(state.globalHistory).toMatchObject({})
+  )
+  expect(state.tabs).toMatchObject({
+    activeTabId: '1',
+    entities: {
+      '1': {
+        id: '1'
+      }
+    },
+    ids: ['1']
   })
+  expect(state.globalHistory).toMatchObject({})
 })

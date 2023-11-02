@@ -2,6 +2,7 @@ import { EntityState } from '@reduxjs/toolkit'
 
 export type TabId = string // unique, generated
 export type HistoryId = string // unique, generated
+export type FavoriteId = string // unique, generated
 
 export type Tab = {
   id: TabId
@@ -17,6 +18,7 @@ export type History = {
 }
 
 export type TabState = EntityState<Tab> & {
+  activeTabId?: TabId
   activeHistoryId?: HistoryId
 }
 
@@ -39,5 +41,15 @@ export type TabPayload = {
 export type BrowserState = {
   tabs: TabState
   globalHistory: HistoryState
-  activeTabId?: TabId
+  favorites: FavoriteState
 }
+
+export type Favorite = {
+  id: FavoriteId
+  favicon: string //url to favicon
+  title: string //title grabbed from html metadata
+  description: string //description grabbed from html metadata
+  url: string
+}
+
+export type FavoriteState = EntityState<Favorite>

@@ -28,7 +28,7 @@ import { walletConnectReducer as walletConnectV2 } from './walletConnectV2'
 import { BridgeBlacklistTransform } from './transforms/BridgeBlacklistTransform'
 import { WatchlistBlacklistTransform } from './transforms/WatchlistBlacklistTransform'
 import { AppBlacklistTransform } from './transforms/AppBlacklistTransform'
-import { browserReducer as browser } from './browser'
+import { combinedReducer as browser } from './browser'
 
 const VERSION = 8
 

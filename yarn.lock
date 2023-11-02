@@ -96,7 +96,6 @@ __metadata:
     "@avalabs/chains-sdk": 2.8.0-alpha.150
     "@avalabs/coingecko-sdk": 2.8.0-alpha.150
     "@avalabs/covalent-sdk": 2.8.0-alpha.150
-    "@avalabs/eslint-config-mobile": "workspace:*"
     "@avalabs/etherscan-sdk": 2.8.0-alpha.150
     "@avalabs/glacier-sdk": 2.8.0-alpha.150
     "@avalabs/k2-mobile": "workspace:*"
@@ -196,6 +195,7 @@ __metadata:
     detox: 20.2.0
     esbuild: 0.15.13
     eslint: 8.50.0
+    eslint-plugin-avalabs-mobile: "workspace:*"
     eth-rpc-errors: 4.0.3
     ethers: 6.7.1
     events: 3.3.0
@@ -307,32 +307,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/eslint-config-mobile@workspace:*, @avalabs/eslint-config-mobile@workspace:packages/eslint-mobile":
-  version: 0.0.0-use.local
-  resolution: "@avalabs/eslint-config-mobile@workspace:packages/eslint-mobile"
-  dependencies:
-    "@avalabs/tsconfig-mobile": "workspace:*"
-    "@lavamoat/allow-scripts": 2.0.3
-    "@react-native-community/eslint-config": 3.0.3
-    "@tanstack/eslint-plugin-query": 5.0.0
-    "@typescript-eslint/eslint-plugin": 5.62.0
-    "@typescript-eslint/parser": 5.62.0
-    eslint: 8.50.0
-    eslint-config-prettier: 8.5.0
-    eslint-plugin-detox: 1.0.0
-    eslint-plugin-import: 2.26.0
-    eslint-plugin-prettier: 4.2.1
-    eslint-plugin-promise: 6.1.1
-    eslint-plugin-react-hooks: 4.6.0
-    eslint-plugin-sonarjs: 0.21.0
-    prettier: 2.6.2
-    typescript: 4.7.4
-  peerDependencies:
-    eslint: 8.50.0
-    typescript: 4.7.4
-  languageName: unknown
-  linkType: soft
-
 "@avalabs/etherscan-sdk@npm:2.8.0-alpha.150":
   version: 2.8.0-alpha.150
   resolution: "@avalabs/etherscan-sdk@npm:2.8.0-alpha.150"
@@ -366,7 +340,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@avalabs/k2-mobile@workspace:packages/k2-mobile"
   dependencies:
-    "@avalabs/eslint-config-mobile": "workspace:*"
     "@avalabs/tsconfig-mobile": "workspace:*"
     "@babel/core": 7.22.11
     "@babel/runtime": 7.22.11
@@ -392,6 +365,7 @@ __metadata:
     deprecated-react-native-prop-types: 2.3.0
     dripsy: 4.3.3
     eslint: 8.50.0
+    eslint-plugin-avalabs-mobile: "workspace:*"
     jest: 29.7.0
     metro-react-native-babel-preset: 0.72.3
     patch-package: 6.4.7
@@ -6902,6 +6876,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/node@npm:20.8.8":
+  version: 20.8.8
+  resolution: "@types/node@npm:20.8.8"
+  dependencies:
+    undici-types: ~5.25.1
+  checksum: 028a9606e4ef594a4bc7b3310596499d7ce01b2e30f4d1d906ad8ec30c24cea7ec1b3dc181dd5df8d8d2bfe8de54bf3e28ae93be174b4c7d81c0db8326e4f35c
+  languageName: node
+  linkType: hard
+
 "@types/node@npm:^12.0.2, @types/node@npm:^12.12.6":
   version: 12.20.55
   resolution: "@types/node@npm:12.20.55"
@@ -7235,7 +7218,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@typescript-eslint/utils@npm:5.62.0, @typescript-eslint/utils@npm:^5.54.0":
+"@typescript-eslint/utils@npm:5.62.0, @typescript-eslint/utils@npm:^5.10.0, @typescript-eslint/utils@npm:^5.54.0":
   version: 5.62.0
   resolution: "@typescript-eslint/utils@npm:5.62.0"
   dependencies:
@@ -7953,9 +7936,9 @@ __metadata:
   linkType: hard
 
 "acorn-walk@npm:^8.1.1":
-  version: 8.2.0
-  resolution: "acorn-walk@npm:8.2.0"
-  checksum: 1715e76c01dd7b2d4ca472f9c58968516a4899378a63ad5b6c2d668bba8da21a71976c14ec5f5b75f887b6317c4ae0b897ab141c831d741dc76024d8745f1ad1
+  version: 8.3.0
+  resolution: "acorn-walk@npm:8.3.0"
+  checksum: 15ea56ab6529135be05e7d018f935ca80a572355dd3f6d3cd717e36df3346e0f635a93ae781b1c7942607693e2e5f3ef81af5c6fc697bbadcc377ebda7b7f5f6
   languageName: node
   linkType: hard
 
@@ -7968,7 +7951,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"acorn@npm:^8.4.1, acorn@npm:^8.5.0, acorn@npm:^8.9.0":
+"acorn@npm:^8.4.1":
+  version: 8.11.2
+  resolution: "acorn@npm:8.11.2"
+  bin:
+    acorn: bin/acorn
+  checksum: 818450408684da89423e3daae24e4dc9b68692db8ab49ea4569c7c5abb7a3f23669438bf129cc81dfdada95e1c9b944ee1bfca2c57a05a4dc73834a612fbf6a7
+  languageName: node
+  linkType: hard
+
+"acorn@npm:^8.5.0, acorn@npm:^8.9.0":
   version: 8.10.0
   resolution: "acorn@npm:8.10.0"
   bin:
@@ -12223,6 +12215,35 @@ __metadata:
   languageName: node
   linkType: hard
 
+"eslint-plugin-avalabs-mobile@workspace:*, eslint-plugin-avalabs-mobile@workspace:packages/eslint-mobile":
+  version: 0.0.0-use.local
+  resolution: "eslint-plugin-avalabs-mobile@workspace:packages/eslint-mobile"
+  dependencies:
+    "@avalabs/tsconfig-mobile": "workspace:*"
+    "@lavamoat/allow-scripts": 2.0.3
+    "@react-native-community/eslint-config": 3.0.3
+    "@tanstack/eslint-plugin-query": 5.0.0
+    "@types/node": 20.8.8
+    "@typescript-eslint/eslint-plugin": 5.62.0
+    "@typescript-eslint/parser": 5.62.0
+    "@typescript-eslint/utils": 5.62.0
+    eslint: 8.50.0
+    eslint-config-prettier: 8.5.0
+    eslint-plugin-detox: 1.0.0
+    eslint-plugin-import: 2.26.0
+    eslint-plugin-jest: 27.6.0
+    eslint-plugin-prettier: 4.2.1
+    eslint-plugin-promise: 6.1.1
+    eslint-plugin-react-hooks: 4.6.0
+    eslint-plugin-sonarjs: 0.21.0
+    prettier: 2.6.2
+    typescript: 4.7.4
+  peerDependencies:
+    eslint: 8.50.0
+    typescript: 4.7.4
+  languageName: unknown
+  linkType: soft
+
 "eslint-plugin-detox@npm:1.0.0":
   version: 1.0.0
   resolution: "eslint-plugin-detox@npm:1.0.0"
@@ -12278,6 +12299,24 @@ __metadata:
   peerDependencies:
     eslint: ^2 || ^3 || ^4 || ^5 || ^6 || ^7.2.0 || ^8
   checksum: 0bf77ad80339554481eafa2b1967449e1f816b94c7a6f9614ce33fb4083c4e6c050f10d241dd50b4975d47922880a34de1e42ea9d8e6fd663ebb768baa67e655
+  languageName: node
+  linkType: hard
+
+"eslint-plugin-jest@npm:27.6.0":
+  version: 27.6.0
+  resolution: "eslint-plugin-jest@npm:27.6.0"
+  dependencies:
+    "@typescript-eslint/utils": ^5.10.0
+  peerDependencies:
+    "@typescript-eslint/eslint-plugin": ^5.0.0 || ^6.0.0
+    eslint: ^7.0.0 || ^8.0.0
+    jest: "*"
+  peerDependenciesMeta:
+    "@typescript-eslint/eslint-plugin":
+      optional: true
+    jest:
+      optional: true
+  checksum: 4c42641f9bf2d597761637028083e20b9f81762308e98baae40eb805d3e81ff8d837f06f4f0c1a2fd249e2be2fb24d33b7aafeaa8942de805c2b8d7c3b6fc4e4
   languageName: node
   linkType: hard
 
