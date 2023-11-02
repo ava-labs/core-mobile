@@ -108,14 +108,10 @@ const TabNavigator: () => JSX.Element = () => {
         component={BrowserScreenStack}
         listeners={({ navigation }) => ({
           tabPress: _ => {
-              navigation.navigate(AppNavigation.Tabs.Browser, {
-                screen: AppNavigation.Browser.TabView
-              }) 
-              if (!hasBeenViewedBrowser) {
-                navigation.navigate(AppNavigation.Tabs.Browser, {
-                  screen: AppNavigation.Browser.Intro
-                })
-              }
+            navigation.navigate(AppNavigation.Browser.TabView)
+            if (!hasBeenViewedBrowser) {
+            navigation.navigate(AppNavigation.Browser.Intro)
+            }
           }
         })}
       />

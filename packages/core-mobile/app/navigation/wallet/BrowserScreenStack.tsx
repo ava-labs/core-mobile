@@ -49,7 +49,7 @@ function BrowserScreenStack(): JSX.Element {
       />
       <BrowserStack.Screen
         name={AppNavigation.Browser.AreYouSure}
-        options={{ presentation: 'transparentModal' }}
+        options={{ presentation: 'modal' }}
         component={AreYouSureModal}
       />
       <BrowserStack.Screen
