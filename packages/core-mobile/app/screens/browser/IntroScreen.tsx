@@ -145,41 +145,35 @@ export default function IntroScreen(): JSX.Element {
           <TokenImageWithGradient />
         </Group>
       </Canvas>
-      <Row
-        style={{
-          marginHorizontal: 32,
-          marginTop: 215
-        }}>
-        <View style={{ marginHorizontal: 16 }}>
-          <HowToUseTheCoreBrowser />
-          <Space y={24} />
-          <Row>
-            <SearchIcon />
-            <SearchText />
-          </Row>
-          <Space y={16} />
-          <Row>
-            <WalletConnectSVG color={theme.colors.$neutral50} />
-            <WalletConnectText />
-          </Row>
-          <Space y={16} />
-          <Row>
-            <CoreOwl width={24} height={24} />
-            <CoreOwlText />
-          </Row>
-          <Space y={16} />
-          <Row>
-            <RocketLaunch width={24} height={24} />
-            <RocketText />
-          </Row>
-          <Space y={32} />
-          <View>
-            <AvaButton.PrimaryLarge onPress={onInstructionRead}>
-              Get started!
-            </AvaButton.PrimaryLarge>
-          </View>
+      <View style={{ marginHorizontal: 48, marginTop: 215 }}>
+        <HowToUseTheCoreBrowser />
+        <Space y={24} />
+        <Row>
+          <SearchIcon />
+          <SearchText />
+        </Row>
+        <Space y={16} />
+        <Row>
+          <WalletConnectSVG color={theme.colors.$neutral50} />
+          <WalletConnectText />
+        </Row>
+        <Space y={16} />
+        <Row>
+          <CoreOwl width={24} height={24} />
+          <CoreOwlText />
+        </Row>
+        <Space y={16} />
+        <Row>
+          <RocketLaunch width={24} height={24} />
+          <RocketText />
+        </Row>
+        <Space y={32} />
+        <View>
+          <AvaButton.PrimaryLarge onPress={onInstructionRead}>
+            Get started!
+          </AvaButton.PrimaryLarge>
         </View>
-      </Row>
+      </View>
     </View>
   )
 }
