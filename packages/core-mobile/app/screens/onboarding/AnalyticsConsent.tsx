@@ -13,6 +13,7 @@ import { usePostCapture } from 'hooks/usePosthogCapture'
 import { useDispatch } from 'react-redux'
 import { setCoreAnalytics } from 'store/settings/securityPrivacy'
 import { signInWithGoogle } from 'seedless/utils/googleSignIn'
+import { approveSeedlessRegistration } from 'seedless/utils/approveSeedlessRegistration'
 
 type Props = {
   nextScreen:
@@ -46,8 +47,13 @@ const AnalyticsConsent: FC<Props> = ({ onNextScreen, nextScreen }: Props) => {
     onNextScreen(nextScreen)
   }
 
-  function googleSignin(): void {
-    signInWithGoogle()
+  async function googleSignin(): Promise<void> {
+    const oidcToken = await signInWithGoogle()
+
+    const result = await approveSeedlessRegistration(oidcToken)
+
+    // eslint-disable-next-line no-console
+    console.log(result)
   }
 
   return (

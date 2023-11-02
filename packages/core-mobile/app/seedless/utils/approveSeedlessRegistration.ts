@@ -1,3 +1,9 @@
+import Config from 'react-native-config'
+
+if (!Config.SEEDLESS_URL) {
+  throw Error('SEEDLESS_URL is missing. Please check your env file.')
+}
+
 enum SeedlessRegistrationResult {
   ALREADY_REGISTERED = 'ALREADY_REGISTERED',
   APPROVED = 'APPROVED',
@@ -15,7 +21,7 @@ export async function approveSeedlessRegistration(
   const sub = payload.sub
   const email = payload.email
 
-  return fetch(process.env.SEEDLESS_URL + '/v1/register', {
+  return fetch(Config.SEEDLESS_URL + '/v1/register', {
     method: 'POST',
     body: JSON.stringify({
       iss,

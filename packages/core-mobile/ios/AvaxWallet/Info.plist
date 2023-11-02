@@ -34,14 +34,6 @@
 				<string>core</string>
 			</array>
 		</dict>
-		<dict>
-			<key>CFBundleURLName</key>
-			<string>org.avalabs.avaxwallet.internal</string>
-			<key>CFBundleURLSchemes</key>
-			<array>
-				<string>core</string>
-			</array>
-		</dict>
 	</array>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
@@ -89,5 +81,16 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
+	<key>GIDClientID</key>
+	<string>1023766203719-ngiu0g65qaspe3qoad2sv3hodlhsj9br.apps.googleusercontent.com</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+	<dict>
+		<key>CFBundleURLSchemes</key>
+		<array>
+		<string>com.googleusercontent.apps.1023766203719-ngiu0g65qaspe3qoad2sv3hodlhsj9br</string>
+		</array>
+	</dict>
+	</array>
 </dict>
 </plist>
