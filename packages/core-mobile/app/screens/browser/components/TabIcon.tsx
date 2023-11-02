@@ -1,4 +1,4 @@
-import { Pressable, Text } from '@avalabs/k2-mobile'
+import { Text, TouchableHighlight } from '@avalabs/k2-mobile'
 import React from 'react'
 
 interface Props {
@@ -8,7 +8,7 @@ interface Props {
 
 export const TabIcon = ({ numberOfTabs, onPress }: Props): JSX.Element => {
   return (
-    <Pressable
+    <TouchableHighlight
       onPress={onPress}
       sx={{
         backgroundColor: '$transparent',
@@ -26,6 +26,6 @@ export const TabIcon = ({ numberOfTabs, onPress }: Props): JSX.Element => {
         }}>
         {numberOfTabs ?? 0}
       </Text>
-    </Pressable>
+    </TouchableHighlight>
   )
 }
