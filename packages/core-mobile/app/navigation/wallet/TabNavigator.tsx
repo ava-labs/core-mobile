@@ -110,7 +110,7 @@ const TabNavigator: () => JSX.Element = () => {
           tabPress: _ => {
             navigation.navigate(AppNavigation.Browser.TabView)
             if (!hasBeenViewedBrowser) {
-            navigation.navigate(AppNavigation.Browser.Intro)
+              navigation.navigate(AppNavigation.Browser.Intro)
             }
           }
         })}
