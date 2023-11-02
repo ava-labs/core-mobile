@@ -62,7 +62,7 @@ const TokenImageWithGradient = (): JSX.Element => {
           x={width / 2 - 430}
           y={height / 2 - 530}
           width={width * 2.2}
-          height={height / 2.1}
+          height={height / 2}
           fit="contain"
         />
       )}
@@ -134,15 +134,19 @@ export default function IntroScreen(): JSX.Element {
   return (
     <View>
       <Canvas
-        style={{ marginHorizontal: 16, height: '100%', position: 'absolute' }}>
+        style={{
+          marginHorizontal: 16,
+          width: '92%',
+          height: '100%',
+          position: 'absolute'
+        }}>
         <Group>
           <BlueBackground />
           <TokenImageWithGradient />
         </Group>
       </Canvas>
-      <View
+      <Row
         style={{
-          flexDirection: 'row',
           marginHorizontal: 32,
           marginTop: 215
         }}>
@@ -175,7 +179,7 @@ export default function IntroScreen(): JSX.Element {
             </AvaButton.PrimaryLarge>
           </View>
         </View>
-      </View>
+      </Row>
     </View>
   )
 }
