@@ -123,59 +123,57 @@ const RocketText = (): JSX.Element => {
   )
 }
 
-export default function IntroScreen(): JSX.Element {  
+export default function IntroScreen(): JSX.Element {
   const dispatch = useDispatch()
-  const {goBack} = useNavigation()
+  const { goBack } = useNavigation()
   const onInstructionRead = (): void => {
-    dispatch(setViewOnce(ViewOnceKey.BROWSER_INTERACTION)),
-    goBack()
+    dispatch(setViewOnce(ViewOnceKey.BROWSER_INTERACTION)), goBack()
   }
-    return (
-      <View>
-        <Canvas style={{ marginHorizontal: 16, height: '100%' }}>
-          <Group>
-            <BlueBackground />
-            <TokenImageWithGradient />
-          </Group>
-        </Canvas>
-        <View
-          style={{
-            flexDirection: 'row',
-            position: 'absolute',
-            marginHorizontal: 32,
-            marginTop: 215
-          }}>
-          <View style={{ flexWrap: 'wrap', marginHorizontal: 16 }}>
-            <HowToUseTheCoreBrowser />
-            <Space y={24} />
-            <View style={{ flexDirection: 'row' }}>
-              <SearchIcon />
-              <SearchText />
-            </View>
-            <Space y={16} />
-            <View style={{ flexDirection: 'row' }}>
-              <WalletConnectSVG color={theme.colors.$neutral50} />
-              <WalletConnectText />
-            </View>
-            <Space y={16} />
-            <View style={{ flexDirection: 'row' }}>
-              <CoreOwl width={24} height={24} />
-              <CoreOwlText />
-            </View>
-            <Space y={16} />
-            <View style={{ flexDirection: 'row' }}>
-              <RocketLaunch width={24} height={24} />
-              <RocketText />
-            </View>
-            <Space y={32} />
-            <View>
-              <AvaButton.PrimaryLarge onPress={onInstructionRead}>
-                Get started!
-              </AvaButton.PrimaryLarge>
-            </View>
+  return (
+    <View>
+      <Canvas style={{ marginHorizontal: 16, height: '100%' }}>
+        <Group>
+          <BlueBackground />
+          <TokenImageWithGradient />
+        </Group>
+      </Canvas>
+      <View
+        style={{
+          flexDirection: 'row',
+          position: 'absolute',
+          marginHorizontal: 32,
+          marginTop: 215
+        }}>
+        <View style={{ flexWrap: 'wrap', marginHorizontal: 16 }}>
+          <HowToUseTheCoreBrowser />
+          <Space y={24} />
+          <View style={{ flexDirection: 'row' }}>
+            <SearchIcon />
+            <SearchText />
+          </View>
+          <Space y={16} />
+          <View style={{ flexDirection: 'row' }}>
+            <WalletConnectSVG color={theme.colors.$neutral50} />
+            <WalletConnectText />
+          </View>
+          <Space y={16} />
+          <View style={{ flexDirection: 'row' }}>
+            <CoreOwl width={24} height={24} />
+            <CoreOwlText />
+          </View>
+          <Space y={16} />
+          <View style={{ flexDirection: 'row' }}>
+            <RocketLaunch width={24} height={24} />
+            <RocketText />
+          </View>
+          <Space y={32} />
+          <View>
+            <AvaButton.PrimaryLarge onPress={onInstructionRead}>
+              Get started!
+            </AvaButton.PrimaryLarge>
           </View>
         </View>
       </View>
-    )
-        
+    </View>
+  )
 }
