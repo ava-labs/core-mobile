@@ -7,6 +7,7 @@ import { View } from 'react-native'
 import AvaText from 'components/AvaText'
 import { AreYouSureModal } from 'screens/browser/AreYouSureModal'
 import IntroScreen from 'screens/browser/IntroScreen'
+import TabViewScreen from 'screens/browser/TabViewScreen'
 import { useNavigation } from '@react-navigation/native'
 import { BrowserScreenProps } from 'navigation/types'
 import { useSelector } from 'react-redux'
@@ -25,7 +26,7 @@ export type BrowserStackParamList = {
 
 type TabViewScreenProps = BrowserScreenProps<
   typeof AppNavigation.Browser.TabView
->
+  >
 
 const BrowserStack = createStackNavigator<BrowserStackParamList>()
 
@@ -87,6 +88,14 @@ function BrowserIntroScreen(): JSX.Element {
   return (
     <View>
       <IntroScreen />
+    </View>
+  )
+}
+
+function BrowserTabViewScreen(): JSX.Element {
+  return (
+    <View>
+      <TabViewScreen />
     </View>
   )
 }
