@@ -1,7 +1,6 @@
 import React from 'react'
-import { Dimensions, View, Platform } from 'react-native'
+import { Dimensions, View } from 'react-native'
 import AvaButton from 'components/AvaButton'
-
 import {
   Canvas,
   Rect,
@@ -17,14 +16,14 @@ import {
 } from '@shopify/react-native-skia'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
-import { Row } from 'components/Row'
 import WalletConnectSVG from 'components/svg/WalletConnectSVG'
 import CoreOwl from 'assets/icons/core_owl.svg'
 import RocketLaunch from 'assets/icons/rocket_launch.svg'
 import SearchIcon from 'assets/icons/search.svg'
+import { theme } from '@avalabs/k2-mobile/src/theme/theme'
 import { useDispatch } from 'react-redux'
-import { setViewOnce, ViewOnceKey } from 'store/viewOnce'
-import { useApplicationContext } from 'contexts/ApplicationContext'
+import { ViewOnceKey, setViewOnce } from 'store/viewOnce'
+import { useNavigation } from '@react-navigation/native'
 
 const TO_COLOR = '#000000'
 const FROM_COLOR = '#007AFF'
@@ -33,7 +32,7 @@ const { height, width } = Dimensions.get('screen')
 
 const BlueBackground = (): JSX.Element => {
   return (
-    <Box box={rrect(rect(0, 0, width / 1.1, height), 8, 8)}>
+    <Box box={rrect(rect(0, 0, width - 32, height), 8, 8)}>
       <LinearGradient
         start={vec(width * 2.8, 0)}
         end={vec(width + 200, height)}
@@ -44,12 +43,11 @@ const BlueBackground = (): JSX.Element => {
 }
 
 const TokenImageWithGradient = (): JSX.Element => {
-  const imageWidth = width * 1.6
   const image = useImage(require('assets/icons/browser_intro_screen_logos.png'))
   return (
     <Mask
       mask={
-        <Rect x={0} y={0} height={height / 3} width={width / 1.1}>
+        <Rect x={0} y={0} height={height / 3} width={width}>
           <LinearGradient
             start={vec(0, height / 15)}
             end={vec(0, height / 3.5)}
@@ -60,9 +58,9 @@ const TokenImageWithGradient = (): JSX.Element => {
       {image && (
         <Image
           image={image}
-          x={width / 3.5 - imageWidth / 2.15}
-          y={height / 1.95 - imageWidth / 1.15}
-          width={imageWidth * 1.2}
+          x={width / 2 - 430}
+          y={height / 2 - 530}
+          width={width * 2.2}
           height={height / 2.1}
           fit="contain"
         />
@@ -125,58 +123,59 @@ const RocketText = (): JSX.Element => {
   )
 }
 
-export default function IntroScreen(): JSX.Element {
+export default function IntroScreen(): JSX.Element {  
   const dispatch = useDispatch()
+  const {goBack} = useNavigation()
   const onInstructionRead = (): void => {
-    dispatch(setViewOnce(ViewOnceKey.BROWSER_INTERACTION))
+    dispatch(setViewOnce(ViewOnceKey.BROWSER_INTERACTION)),
+    goBack()
   }
-  const theme = useApplicationContext().theme
-
-  return (
-    <View>
-      <Canvas style={{ marginHorizontal: 16, height: '100%' }}>
-        <Group>
-          <BlueBackground />
-          <TokenImageWithGradient />
-        </Group>
-      </Canvas>
-      <View
-        style={{
-          flexDirection: 'row',
-          position: 'absolute',
-          marginHorizontal: 32,
-          marginTop: 215
-        }}>
-        <View style={{ flexWrap: 'wrap' }}>
-          <HowToUseTheCoreBrowser />
-          <Space y={24} />
-          <View style={{ flexDirection: 'row' }}>
-            <SearchIcon />
-            <SearchText />
-          </View>
-          <Space y={16} />
-          <View style={{ flexDirection: 'row' }}>
-            <WalletConnectSVG color={theme.neutral50} />
-            <WalletConnectText />
-          </View>
-          <Space y={16} />
-          <View style={{ flexDirection: 'row' }}>
-            <CoreOwl width={24} height={24} />
-            <CoreOwlText />
-          </View>
-          <Space y={16} />
-          <View style={{ flexDirection: 'row' }}>
-            <RocketLaunch width={24} height={24} />
-            <RocketText />
-          </View>
-          <Space y={32} />
-          <View>
-            <AvaButton.PrimaryLarge onPress={onInstructionRead}>
-              Get started!
-            </AvaButton.PrimaryLarge>
+    return (
+      <View>
+        <Canvas style={{ marginHorizontal: 16, height: '100%' }}>
+          <Group>
+            <BlueBackground />
+            <TokenImageWithGradient />
+          </Group>
+        </Canvas>
+        <View
+          style={{
+            flexDirection: 'row',
+            position: 'absolute',
+            marginHorizontal: 32,
+            marginTop: 215
+          }}>
+          <View style={{ flexWrap: 'wrap', marginHorizontal: 16 }}>
+            <HowToUseTheCoreBrowser />
+            <Space y={24} />
+            <View style={{ flexDirection: 'row' }}>
+              <SearchIcon />
+              <SearchText />
+            </View>
+            <Space y={16} />
+            <View style={{ flexDirection: 'row' }}>
+              <WalletConnectSVG color={theme.colors.$neutral50} />
+              <WalletConnectText />
+            </View>
+            <Space y={16} />
+            <View style={{ flexDirection: 'row' }}>
+              <CoreOwl width={24} height={24} />
+              <CoreOwlText />
+            </View>
+            <Space y={16} />
+            <View style={{ flexDirection: 'row' }}>
+              <RocketLaunch width={24} height={24} />
+              <RocketText />
+            </View>
+            <Space y={32} />
+            <View>
+              <AvaButton.PrimaryLarge onPress={onInstructionRead}>
+                Get started!
+              </AvaButton.PrimaryLarge>
+            </View>
           </View>
         </View>
       </View>
-    </View>
-  )
+    )
+        
 }

@@ -33,7 +33,7 @@ function BrowserScreenStack(): JSX.Element {
       <BrowserStack.Screen
         name={AppNavigation.Browser.TabView}
         options={{ headerShown: false }}
-        component={TabViewStub}
+        component={TabView}
       />
       <BrowserStack.Screen
         name={AppNavigation.Browser.TabsList}
@@ -55,7 +55,7 @@ function BrowserScreenStack(): JSX.Element {
       <BrowserStack.Screen
         name={AppNavigation.Browser.Intro}
         options={{ headerShown: false }}
-        component={BrowswerIntroScreen}
+        component={BrowserIntroScreen}
       />
     </BrowserStack.Navigator>
   )
@@ -78,7 +78,7 @@ const renderNavigationHeader = ({
 
 export default React.memo(BrowserScreenStack)
 
-function BrowswerIntroScreen(): JSX.Element {
+function BrowserIntroScreen(): JSX.Element {
   return (
     <View>
       <IntroScreen />
@@ -86,7 +86,7 @@ function BrowswerIntroScreen(): JSX.Element {
   )
 }
 
-function TabViewStub(): JSX.Element {
+function TabView(): JSX.Element {
   return (
     <View>
       <AvaText.LargeTitleBold>TabViewStub</AvaText.LargeTitleBold>
