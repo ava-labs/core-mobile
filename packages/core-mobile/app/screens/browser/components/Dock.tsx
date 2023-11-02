@@ -22,6 +22,7 @@ import {
   selectCanGoBack,
   selectCanGoForward
 } from 'store/browser/slices/tabs'
+import { useHardwareBackHandler } from '../handleBrowserBack'
 
 type TabViewNavigationProp = BrowserScreenProps<
   typeof AppNavigation.Browser.TabView
@@ -35,6 +36,7 @@ export const Dock = (): JSX.Element => {
   const { navigate, replace } = useNavigation<TabViewNavigationProp>()
   const totalTabs = useSelector(selectAllTabs).length
   const activeTab = useSelector(selectActiveTab)
+  useHardwareBackHandler()
 
   const canGoBack = useSelector(selectCanGoBack)
   const canGoForward = useSelector(selectCanGoForward)
