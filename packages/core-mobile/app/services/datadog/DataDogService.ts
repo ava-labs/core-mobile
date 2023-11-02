@@ -7,15 +7,21 @@ import { navigationRef } from 'utils/Navigation'
 
 export const DataDogService = {
   init: async () => {
+    let result
     if (Config.E2E_MNEMONIC) {
       const config = DataDogConfig
       if (config) {
         try {
           await DdSdkReactNative.initialize(config)
+          result = true
         } catch (error) {
           Logger.error('Error initializing Datadog:', error)
+          result = false
         }
       }
+    }
+    if (result) {
+      DataDogService.startRumTracking()
     }
   },
 
