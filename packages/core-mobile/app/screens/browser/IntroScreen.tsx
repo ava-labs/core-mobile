@@ -20,7 +20,7 @@ import WalletConnectSVG from 'components/svg/WalletConnectSVG'
 import CoreOwl from 'assets/icons/core_owl.svg'
 import RocketLaunch from 'assets/icons/rocket_launch.svg'
 import SearchIcon from 'assets/icons/search.svg'
-import { theme } from '@avalabs/k2-mobile/src/theme/theme'
+import { useTheme } from '@avalabs/k2-mobile'
 import { useDispatch } from 'react-redux'
 import { ViewOnceKey, setViewOnce } from 'store/viewOnce'
 import { useNavigation } from '@react-navigation/native'
@@ -160,7 +160,7 @@ export default function IntroScreen(): JSX.Element {
         </Row>
         <Space y={16} />
         <Row>
-          <WalletConnectSVG color={theme.colors.$neutral50} />
+          <WalletConnectSVG color={useTheme().theme.colors.$neutral50} />
           <WalletConnectText />
         </Row>
         <Space y={16} />
