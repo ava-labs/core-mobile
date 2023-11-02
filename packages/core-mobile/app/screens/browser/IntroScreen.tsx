@@ -24,6 +24,7 @@ import { theme } from '@avalabs/k2-mobile/src/theme/theme'
 import { useDispatch } from 'react-redux'
 import { ViewOnceKey, setViewOnce } from 'store/viewOnce'
 import { useNavigation } from '@react-navigation/native'
+import { Row } from 'components/Row'
 
 const TO_COLOR = '#000000'
 const FROM_COLOR = '#007AFF'
@@ -132,7 +133,8 @@ export default function IntroScreen(): JSX.Element {
   }
   return (
     <View>
-      <Canvas style={{ marginHorizontal: 16, height: '100%' }}>
+      <Canvas
+        style={{ marginHorizontal: 16, height: '100%', position: 'absolute' }}>
         <Group>
           <BlueBackground />
           <TokenImageWithGradient />
@@ -141,32 +143,31 @@ export default function IntroScreen(): JSX.Element {
       <View
         style={{
           flexDirection: 'row',
-          position: 'absolute',
           marginHorizontal: 32,
           marginTop: 215
         }}>
-        <View style={{ flexWrap: 'wrap', marginHorizontal: 16 }}>
+        <View style={{ marginHorizontal: 16 }}>
           <HowToUseTheCoreBrowser />
           <Space y={24} />
-          <View style={{ flexDirection: 'row' }}>
+          <Row>
             <SearchIcon />
             <SearchText />
-          </View>
+          </Row>
           <Space y={16} />
-          <View style={{ flexDirection: 'row' }}>
+          <Row>
             <WalletConnectSVG color={theme.colors.$neutral50} />
             <WalletConnectText />
-          </View>
+          </Row>
           <Space y={16} />
-          <View style={{ flexDirection: 'row' }}>
+          <Row>
             <CoreOwl width={24} height={24} />
             <CoreOwlText />
-          </View>
+          </Row>
           <Space y={16} />
-          <View style={{ flexDirection: 'row' }}>
+          <Row>
             <RocketLaunch width={24} height={24} />
             <RocketText />
-          </View>
+          </Row>
           <Space y={32} />
           <View>
             <AvaButton.PrimaryLarge onPress={onInstructionRead}>
