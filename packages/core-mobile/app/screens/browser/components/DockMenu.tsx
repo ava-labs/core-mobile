@@ -40,8 +40,7 @@ export const DockMenu: FC<Props> = ({
 
   const onShare = async (): Promise<void> => {
     await ShareApi.share({
-      message: 'check it out!',
-      url: '' // get the history from the store
+      url: activeHistory?.url ?? ''
     })
   }
 
