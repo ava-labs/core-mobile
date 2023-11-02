@@ -145,7 +145,13 @@ export default function IntroScreen(): JSX.Element {
           <TokenImageWithGradient />
         </Group>
       </Canvas>
-      <View style={{ marginHorizontal: 48, marginTop: 215 }}>
+      <View
+        style={{
+          marginHorizontal: 32,
+          height: '100%',
+          justifyContent: 'flex-end',
+          paddingBottom: 32
+        }}>
         <HowToUseTheCoreBrowser />
         <Space y={24} />
         <Row>
