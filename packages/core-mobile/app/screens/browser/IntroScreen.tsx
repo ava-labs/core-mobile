@@ -127,7 +127,8 @@ export default function IntroScreen(): JSX.Element {
   const dispatch = useDispatch()
   const { goBack } = useNavigation()
   const onInstructionRead = (): void => {
-    dispatch(setViewOnce(ViewOnceKey.BROWSER_INTERACTION)), goBack()
+    dispatch(setViewOnce(ViewOnceKey.BROWSER_INTERACTION))
+    goBack()
   }
   return (
     <View>
