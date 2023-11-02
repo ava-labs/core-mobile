@@ -33,6 +33,7 @@ import {
 } from 'store/walletConnectV2/handlers/avalanche_signTransaction/avalanche_signTransaction'
 import { EarnStackParamList } from 'navigation/wallet/EarnScreenStack/EarnScreenStack'
 import { RefreshTokenScreenStackParamList } from 'navigation/RefreshTokenScreenStack'
+import { BrowserStackParamList } from 'navigation/wallet/BrowserScreenStack'
 import { RootScreenStackParamList } from './RootScreenStack'
 import { OnboardingScreenStackParamList } from './OnboardScreenStack'
 import { WelcomeScreenStackParamList } from './onboarding/WelcomeScreenStack'
