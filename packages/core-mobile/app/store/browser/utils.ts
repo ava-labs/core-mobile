@@ -56,17 +56,25 @@ export const updateActiveTabHistoryId = (
   tabId: TabId,
   historyId: HistoryId
 ): void => {
-  if (tabState.activeHistoryId === historyId) {
+  const activeHistoryId = tabAdapter
+    .getSelectors()
+    .selectById(tabState, tabId)?.activeHistoryId
+  if (activeHistoryId === historyId) {
     const lastVisitedHistoryId = getLastVisitedTabHistoryId(tabState)
     if (!lastVisitedHistoryId) {
-      tabState.activeHistoryId = undefined
+      tabAdapter.updateOne(tabState, {
+        id: tabId,
+        changes: {
+          activeHistoryId: undefined
+        }
+      })
       Logger.warn('could not find last visited history id')
       return
     }
-    tabState.activeHistoryId = historyId
     tabAdapter.updateOne(tabState, {
       id: tabId,
       changes: {
+        activeHistoryId: historyId,
         lastVisited: getUnixTime(new Date())
       }
     })
@@ -92,20 +100,19 @@ export const navigateTabHistory = (
 ): void => {
   const tab = tabAdapter.getSelectors().selectById(state, tabId)
   if (tab === undefined) return
-  const activeHistoryId = state.activeHistoryId
-  if (activeHistoryId === undefined) return
+  if (tab.activeHistoryId === undefined) return
 
-  const activeHistoryIndex = tab.historyIds.indexOf(activeHistoryId)
+  const activeHistoryIndex = tab.historyIds.indexOf(tab.activeHistoryId)
   if (activeHistoryIndex === -1) return
   const newActiveHistoryIndex =
     action === 'forward' ? activeHistoryIndex + 1 : activeHistoryIndex - 1
   const historyId = tab.historyIds[newActiveHistoryIndex]
   if (historyId === undefined) return
-  state.activeHistoryId = historyId.toString()
   tabAdapter.updateOne(state, {
     id: tabId,
     changes: {
-      lastVisited: getUnixTime(new Date())
+      lastVisited: getUnixTime(new Date()),
+      activeHistoryId: historyId.toString()
     }
   })
 }

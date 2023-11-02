@@ -9,8 +9,7 @@ import {
   TabHistoryPayload,
   TabPayload,
   AddHistoryPayload,
-  TabState,
-  BrowserState
+  TabState
 } from '../types'
 import {
   limitMaxTabs,
@@ -23,7 +22,7 @@ import { MAXIMUM_TAB_HISTORIES } from '../const'
 
 const reducerName = 'browser/tabs'
 
-const initialState = tabAdapter.getInitialState()
+const initialState = { ...tabAdapter.getInitialState(), activeTabId: undefined }
 
 const tabSlice = createSlice({
   name: reducerName,
@@ -45,27 +44,31 @@ const tabSlice = createSlice({
     ) => {
       const { tabId, history } = action.payload
       const lastVisited = getUnixTime(new Date())
+
       const tab = tabAdapter.getSelectors().selectById(state, tabId)
+
       if (tab === undefined) return
-      const activeHistoryId = state.activeHistoryId
+      const activeHistoryId = tab.activeHistoryId
 
       let indexToInsert = -1
+
       if (activeHistoryId && tab.historyIds) {
         indexToInsert = tab.historyIds.indexOf(activeHistoryId)
       }
       const historyId = createHash(history.url)
-      if (indexToInsert !== -1) {
+      if (indexToInsert !== 0 || indexToInsert !== tab.historyIds.length - 1) {
         tab.historyIds = tab.historyIds.slice(0, indexToInsert)
       }
+
       tabAdapter.updateOne(state, {
         id: tabId,
         changes: {
           historyIds: [...tab.historyIds, historyId],
-          lastVisited
+          lastVisited,
+          activeHistoryId: historyId
         }
       })
 
-      state.activeHistoryId = historyId
       // limit max tab histories
       if (tab.historyIds.length > MAXIMUM_TAB_HISTORIES) {
         tab.historyIds = tab.historyIds.slice(-MAXIMUM_TAB_HISTORIES)
@@ -96,7 +99,6 @@ const tabSlice = createSlice({
     removeAllTabs: (state: TabState) => {
       tabAdapter.removeAll(state)
       state.activeTabId = undefined
-      state.activeHistoryId = undefined
     },
     removeAllHistoryForTab: (
       state: TabState,
@@ -105,42 +107,72 @@ const tabSlice = createSlice({
       const { id: tabId } = action.payload
       tabAdapter.updateOne(state, {
         id: tabId,
-        changes: { historyIds: [] }
+        changes: {
+          historyIds: [],
+          lastVisited: undefined,
+          activeHistoryId: undefined
+        }
       })
-      state.activeHistoryId = undefined
     },
     setActiveTabId: (state: TabState, action: PayloadAction<TabPayload>) => {
       const { id: tabId } = action.payload
       state.activeTabId = tabId
     },
-    goForward: (state: TabState, action: PayloadAction<TabPayload>) => {
-      const { id: tabId } = action.payload
-      navigateTabHistory(state, 'forward', tabId)
+    goForward: (state: TabState) => {
+      const activeTabId = state.activeTabId
+      if (activeTabId === undefined) return
+      navigateTabHistory(state, 'forward', activeTabId)
     },
-    goBackward: (state: TabState, action: PayloadAction<TabPayload>) => {
-      const { id: tabId } = action.payload
-      navigateTabHistory(state, 'backward', tabId)
+    goBackward: (state: TabState) => {
+      const activeTabId = state.activeTabId
+      if (activeTabId === undefined) return
+      navigateTabHistory(state, 'backward', activeTabId)
     }
   }
 })
 
 // selectors
-export const selectIsTabEmpty = (state: BrowserState): boolean =>
-  tabAdapter.getSelectors().selectAll(state.tabs).length === 0
+export const selectIsTabEmpty = (state: RootState): boolean =>
+  tabAdapter.getSelectors().selectAll(state.browser.tabs).length === 0
 
-export const selectAllTabs = (state: BrowserState): Tab[] =>
-  tabAdapter.getSelectors().selectAll(state.tabs)
+export const selectAllTabs = (state: RootState): Tab[] =>
+  tabAdapter.getSelectors().selectAll(state.browser.tabs)
 
 export const selectTab =
   (tabId: TabId) =>
   (state: RootState): Tab | undefined =>
     tabAdapter.getSelectors().selectById(state.browser.tabs, tabId)
 
-export const selectActiveTab = (state: BrowserState): Tab | undefined => {
-  if (state.tabs.activeTabId === undefined) return
+export const selectCanGoBack = (state: RootState): boolean => {
+  if (state.browser.tabs.activeTabId === undefined) return false
+  const activeTab = tabAdapter
+    .getSelectors()
+    .selectById(state.browser.tabs, state.browser.tabs.activeTabId)
+  if (activeTab && activeTab.activeHistoryId) {
+    return activeTab.historyIds.indexOf(activeTab.activeHistoryId) > 0
+  }
+  return false
+}
+
+export const selectCanGoForward = (state: RootState): boolean => {
+  if (state.browser.tabs.activeTabId === undefined) return false
+  const activeTab = tabAdapter
+    .getSelectors()
+    .selectById(state.browser.tabs, state.browser.tabs.activeTabId)
+  if (activeTab && activeTab.activeHistoryId) {
+    return (
+      activeTab.historyIds.indexOf(activeTab.activeHistoryId) <
+      activeTab.historyIds.length - 1
+    )
+  }
+  return false
+}
+
+export const selectActiveTab = (state: RootState): Tab | undefined => {
+  if (state.browser.tabs.activeTabId === undefined) return
   return tabAdapter
     .getSelectors()
-    .selectById(state.tabs, state.tabs.activeTabId)
+    .selectById(state.browser.tabs, state.browser.tabs.activeTabId)
 }
 
 // actions

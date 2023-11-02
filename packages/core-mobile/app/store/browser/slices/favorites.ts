@@ -1,12 +1,14 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { v4 as uuidv4 } from 'uuid'
 import {
   FavoriteState,
   FavoriteId,
   Favorite,
-  BrowserState
+  BrowserState,
+  HistoryId
 } from 'store/browser/types'
 import { favoriteAdapter } from '../utils'
+import { createHash } from 'utils/createHash'
+import { RootState } from 'store'
 
 const reducerName = 'browser/favorites'
 
@@ -16,10 +18,9 @@ const favoriteSlice = createSlice({
   name: reducerName,
   initialState,
   reducers: {
-    addFavorite: (state, action: PayloadAction<Favorite>) => {
-      const newFavorite = action.payload
-      newFavorite.id = uuidv4()
-      favoriteAdapter.addOne(state, newFavorite)
+    addFavorite: (state, action: PayloadAction<Omit<Favorite, 'id'>>) => {
+      const id = createHash(action.payload.url)
+      favoriteAdapter.addOne(state, { ...action.payload, id })
     },
     removeFavorite: (state, action: PayloadAction<FavoriteId>) => {
       const favoriteIdToRemove = action.payload
@@ -30,8 +31,19 @@ const favoriteSlice = createSlice({
 })
 
 // selectors
-export const selectAllFavorites = (state: BrowserState): Favorite[] =>
-  favoriteAdapter.getSelectors().selectAll(state.favorites)
+export const selectAllFavorites = (state: RootState): Favorite[] =>
+  favoriteAdapter.getSelectors().selectAll(state.browser.favorites)
+
+export const selectIsFavorited =
+  (id?: HistoryId) =>
+  (state: RootState): boolean => {
+    if (id === undefined) return false
+    return (
+      state.browser.favorites &&
+      favoriteAdapter.getSelectors().selectById(state.browser.favorites, id) !==
+        undefined
+    )
+  }
 
 // actions
 export const { removeFavorite, addFavorite, clearAll } = favoriteSlice.actions

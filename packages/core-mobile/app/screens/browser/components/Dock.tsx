@@ -6,19 +6,62 @@ import CreateNewWalletPlusSVG, {
 import EllipsisSVG from 'components/svg/EllipsisSVG'
 import { TouchableOpacity, useTheme } from '@avalabs/k2-mobile'
 import Animated, { FadeInDown, FadeOutDown } from 'react-native-reanimated'
-import { noop } from '@avalabs/utils-sdk'
 import { TabIcon } from './TabIcon'
 import { DockMenu } from './DockMenu'
+import { useDispatch, useSelector } from 'react-redux'
+import { selectIsFavorited } from 'store/browser/slices/favorites'
+import AppNavigation from 'navigation/AppNavigation'
+import { BrowserScreenProps } from 'navigation/types'
+import { useNavigation } from '@react-navigation/native'
+import {
+  addTab,
+  goBackward,
+  goForward as goFowardInPage,
+  selectActiveTab,
+  selectAllTabs,
+  selectCanGoBack,
+  selectCanGoForward
+} from 'store/browser/slices/tabs'
+
+type TabViewNavigationProp = BrowserScreenProps<
+  typeof AppNavigation.Browser.TabView
+>['navigation']
 
 export const Dock = (): JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
+  const dispatch = useDispatch()
+  const { navigate, replace } = useNavigation<TabViewNavigationProp>()
+  const totalTabs = useSelector(selectAllTabs).length
+  const activeTab = useSelector(selectActiveTab)
 
-  const goBackward = noop
-  const goForward = noop
-  const createNewTab = noop
-  const navigateToTabList = noop
+  const canGoBack = useSelector(selectCanGoBack)
+  const canGoForward = useSelector(selectCanGoForward)
+
+  const isFavorited = useSelector(selectIsFavorited(activeTab?.activeHistoryId))
+
+  const goBack = () => {
+    if (!canGoBack) return
+    dispatch(goBackward())
+    navigate(AppNavigation.Browser.TabView)
+  }
+  const goForward = () => {
+    if (!canGoForward) return
+    dispatch(goFowardInPage())
+    navigate(AppNavigation.Browser.TabView)
+  }
+
+  const createNewTab = () => {
+    // browser will listen to this and reset the screen with
+    // initiated tab data
+    dispatch(addTab())
+    replace(AppNavigation.Browser.TabView)
+  }
+
+  const navigateToTabList = () => {
+    navigate(AppNavigation.Browser.TabsList)
+  }
 
   return (
     <Animated.View
@@ -38,11 +81,18 @@ export const Dock = (): JSX.Element => {
       }}
       entering={FadeInDown}
       exiting={FadeOutDown}>
-      <TouchableOpacity onPress={goBackward}>
-        <CarrotSVG direction="left" size={26} color={colors.$neutral900} />
+      <TouchableOpacity onPress={goBack} disabled={!canGoBack}>
+        <CarrotSVG
+          direction="left"
+          size={26}
+          color={canGoBack ? colors.$neutral900 : colors.$neutral300}
+        />
       </TouchableOpacity>
-      <TouchableOpacity onPress={goForward}>
-        <CarrotSVG size={26} color={colors.$neutral900} />
+      <TouchableOpacity onPress={goForward} disabled={!canGoForward}>
+        <CarrotSVG
+          size={26}
+          color={canGoForward ? colors.$neutral900 : colors.$neutral300}
+        />
       </TouchableOpacity>
       <TouchableOpacity onPress={createNewTab}>
         <CreateNewWalletPlusSVG
@@ -51,8 +101,8 @@ export const Dock = (): JSX.Element => {
           color={colors.$neutral900}
         />
       </TouchableOpacity>
-      <TabIcon numberOfTabs={10} onPress={navigateToTabList} />
-      <DockMenu>
+      <TabIcon numberOfTabs={totalTabs} onPress={navigateToTabList} />
+      <DockMenu isFavorited={isFavorited}>
         <EllipsisSVG color={colors.$neutral900} size={25} />
       </DockMenu>
     </Animated.View>

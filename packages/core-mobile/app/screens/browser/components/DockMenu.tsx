@@ -2,12 +2,23 @@ import React, { FC } from 'react'
 import { MenuView } from '@react-native-menu/menu'
 import { Platform, Share as ShareApi } from 'react-native'
 import { useTheme } from '@avalabs/k2-mobile'
+import { useDispatch, useSelector } from 'react-redux'
+import { addFavorite } from 'store/browser/slices/favorites'
+import { useNavigation } from '@react-navigation/native'
+import { BrowserScreenProps } from 'navigation/types'
+import AppNavigation from 'navigation/AppNavigation'
+import { selectActiveTab } from 'store/browser/slices/tabs'
+import { selectActiveHistory } from 'store/browser/slices/globalHistory'
 
 enum MenuId {
   Favorite = 'favorite',
   History = 'history',
   Share = 'share'
 }
+
+type TabViewNavigationProp = BrowserScreenProps<
+  typeof AppNavigation.Browser.TabView
+>['navigation']
 
 interface Props {
   isFavorited?: boolean
@@ -20,6 +31,12 @@ export const DockMenu: FC<Props> = ({
   const {
     theme: { colors }
   } = useTheme()
+  const dispatch = useDispatch()
+  const { navigate } = useNavigation<TabViewNavigationProp>()
+  const activeTab = useSelector(selectActiveTab)
+  const activeHistory = useSelector(
+    selectActiveHistory(activeTab?.activeHistoryId)
+  )
 
   const onShare = async (): Promise<void> => {
     await ShareApi.share({
@@ -76,11 +93,18 @@ export const DockMenu: FC<Props> = ({
             onShare()
             break
           case MenuId.History: {
-            // should navigate to history screen
+            navigate(AppNavigation.Browser.History)
             break
           }
           case MenuId.Favorite: {
-            // add to favorites
+            dispatch(
+              addFavorite({
+                favicon: '', // get from current html metadta
+                title: '', // get from current html metadta
+                description: '', // get from current html metadta
+                url: activeHistory?.url ?? ''
+              })
+            )
             // show toast message
             break
           }
