@@ -7,6 +7,10 @@ import { View } from 'react-native'
 import AvaText from 'components/AvaText'
 import { AreYouSureModal } from 'screens/browser/AreYouSureModal'
 import IntroScreen from 'screens/browser/IntroScreen'
+import { useNavigation } from '@react-navigation/native'
+import { BrowserScreenProps } from 'navigation/types'
+import { useSelector } from 'react-redux'
+import { selectHasBeenViewedOnce, ViewOnceKey } from 'store/viewOnce'
 
 export type BrowserStackParamList = {
   [AppNavigation.Browser.Intro]: undefined
@@ -54,7 +58,7 @@ function BrowserScreenStack(): JSX.Element {
       />
       <BrowserStack.Screen
         name={AppNavigation.Browser.Intro}
-        options={{ headerShown: false }}
+        options={{ presentation: 'modal' }}
         component={BrowserIntroScreen}
       />
     </BrowserStack.Navigator>
@@ -87,6 +91,17 @@ function BrowserIntroScreen(): JSX.Element {
 }
 
 function TabView(): JSX.Element {
+  const hasBeenViewedBrowser = useSelector(
+    selectHasBeenViewedOnce(ViewOnceKey.BROWSER_INTERACTION)
+  )
+  const { navigate } =
+    useNavigation<
+      BrowserScreenProps<typeof AppNavigation.Browser.Intro>['navigation']
+    >()
+
+  if (hasBeenViewedBrowser) {
+    navigate(AppNavigation.Browser.Intro)
+  }
   return (
     <View>
       <AvaText.LargeTitleBold>TabViewStub</AvaText.LargeTitleBold>

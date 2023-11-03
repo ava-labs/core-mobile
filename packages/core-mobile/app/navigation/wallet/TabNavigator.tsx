@@ -16,8 +16,6 @@ import { useIsEarnDashboardEnabled } from 'hooks/earn/useIsEarnDashboardEnabled'
 import { usePostCapture } from 'hooks/usePosthogCapture'
 import BrowserSVG from 'components/svg/BrowserSVG'
 import BrowserScreenStack from 'navigation/wallet/BrowserScreenStack'
-import { useSelector } from 'react-redux'
-import { selectHasBeenViewedOnce, ViewOnceKey } from 'store/viewOnce'
 import EarnScreenStack from './EarnScreenStack/EarnScreenStack'
 
 export type TabNavigatorParamList = {
@@ -36,9 +34,6 @@ const TabNavigator: () => JSX.Element = () => {
   const { isEarnDashboardEnabled } = useIsEarnDashboardEnabled()
   const isAvalancheNetwork = useIsAvalancheNetwork()
   const { capture } = usePostCapture()
-  const hasBeenViewedBrowser = useSelector(
-    selectHasBeenViewedOnce(ViewOnceKey.BROWSER_INTERACTION)
-  )
 
   const renderEarnTab: () => null | JSX.Element = () => {
     if (earnBlocked) return null
@@ -108,10 +103,9 @@ const TabNavigator: () => JSX.Element = () => {
         component={BrowserScreenStack}
         listeners={({ navigation }) => ({
           tabPress: _ => {
-            navigation.navigate(AppNavigation.Browser.TabView)
-            if (!hasBeenViewedBrowser) {
-              navigation.navigate(AppNavigation.Browser.Intro)
-            }
+            navigation.navigate(AppNavigation.Tabs.Browser, {
+              screen: AppNavigation.Browser.TabView
+            })
           }
         })}
       />
