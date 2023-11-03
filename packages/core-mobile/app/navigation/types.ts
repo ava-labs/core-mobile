@@ -37,6 +37,7 @@ import {
   AvalancheSignTransactionRpcRequest as AvalancheSignTransactionRpcRequestV2
 } from 'store/walletConnectV2/handlers/avalanche_signTransaction/avalanche_signTransaction'
 import { EarnStackParamList } from 'navigation/wallet/EarnScreenStack/EarnScreenStack'
+import { CreateSeedlessWalletStackParamList } from 'seedless/screens/CreateSeedlessWalletStack'
 import { RootScreenStackParamList } from './RootScreenStack'
 import { OnboardingScreenStackParamList } from './OnboardScreenStack'
 import { WelcomeScreenStackParamList } from './onboarding/WelcomeScreenStack'
@@ -166,6 +167,14 @@ export type CreateWalletScreenProps<
   T extends keyof CreateWalletStackParamList
 > = CompositeScreenProps<
   StackScreenProps<CreateWalletStackParamList, T>,
+  WelcomeScreenProps<keyof WelcomeScreenStackParamList>
+>
+
+/** ROOT -> ONBOARD -> WELCOME -> CREATE WALLET **/
+export type CreateSeedlessWalletScreenProps<
+  T extends keyof CreateSeedlessWalletStackParamList
+> = CompositeScreenProps<
+  StackScreenProps<CreateSeedlessWalletStackParamList, T>,
   WelcomeScreenProps<keyof WelcomeScreenStackParamList>
 >
 

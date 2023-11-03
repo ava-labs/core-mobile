@@ -10,8 +10,10 @@ enum OnboardScreens {
   Init = 'OnboardScreens.Init',
   AnalyticsConsent = 'OnboardScreens.AnalyticsConsent',
   CreateWalletStack = 'OnboardScreens.CreateWalletStack',
+  CreateSeedlessWalletStack = 'OnboardScreens.CreateSeedlessWalletStack',
   EnterWithMnemonicStack = 'OnboardScreens.EnterWithMnemonicStack',
-  Login = 'OnboardScreens.Login'
+  Login = 'OnboardScreens.Login',
+  Dummy = 'OnboardScreens.Dummy'
 }
 
 enum CreateWalletNavigationScreens {
@@ -22,6 +24,13 @@ enum CreateWalletNavigationScreens {
   TermsNConditions = 'CreateWalletNavigationScreens.TermsNConditions',
   ProtectFunds = 'CreateWalletNavigationScreens.ProtectFunds',
   Loader = 'CreateWalletNavigationScreens.Loader'
+}
+
+enum CreateSeedlessWalletNavigationScreens {
+  CreatePin = 'CreateSeedlessWalletNavigationScreens.CreatePin',
+  BiometricLogin = 'CreateSeedlessWalletNavigationScreens.BiometricLogin',
+  TermsNConditions = 'CreateSeedlessWalletNavigationScreens.TermsNConditions',
+  Loader = 'CreateSeedlessWalletNavigationScreens.Loader'
 }
 
 enum LoginWithMnemonicStackScreens {
@@ -226,6 +235,7 @@ const AppNavigation = {
   Root: Root,
   Onboard: OnboardScreens,
   CreateWallet: CreateWalletNavigationScreens,
+  CreateSeedlessWallet: CreateSeedlessWalletNavigationScreens,
   LoginWithMnemonic: LoginWithMnemonicStackScreens,
   Wallet: WalletScreens,
   NoWallet: NoWalletScreens,

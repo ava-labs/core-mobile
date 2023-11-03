@@ -4,7 +4,13 @@ if (!Config.SEEDLESS_URL) {
   throw Error('SEEDLESS_URL is missing. Please check your env file.')
 }
 
-enum SeedlessRegistrationResult {
+if (!Config.SEEDLESS_API_AUTHORIZATION_TOKEN) {
+  throw Error(
+    'SEEDLESS_API_AUTHORIZATION_TOKEN is missing. Please check your env file.'
+  )
+}
+
+export enum SeedlessRegistrationResult {
   ALREADY_REGISTERED = 'ALREADY_REGISTERED',
   APPROVED = 'APPROVED',
   ERROR = 'ERROR'
@@ -27,7 +33,10 @@ export async function approveSeedlessRegistration(
       iss,
       sub,
       email
-    })
+    }),
+    headers: {
+      Authorization: `${Config.SEEDLESS_API_AUTHORIZATION_TOKEN}`
+    }
   })
     .then(async response => {
       if ((await response.text()) === 'USER_ALREADY_EXISTS') {

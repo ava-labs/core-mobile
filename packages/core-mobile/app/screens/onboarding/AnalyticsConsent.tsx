@@ -12,8 +12,6 @@ import { PRIVACY_POLICY_URL } from 'resources/Constants'
 import { usePostCapture } from 'hooks/usePosthogCapture'
 import { useDispatch } from 'react-redux'
 import { setCoreAnalytics } from 'store/settings/securityPrivacy'
-import { signInWithGoogle } from 'seedless/utils/googleSignIn'
-import { approveSeedlessRegistration } from 'seedless/utils/approveSeedlessRegistration'
 
 type Props = {
   nextScreen:
@@ -45,15 +43,6 @@ const AnalyticsConsent: FC<Props> = ({ onNextScreen, nextScreen }: Props) => {
     capture('OnboardingAnalyticsRejected')
     dispatch(setCoreAnalytics(false))
     onNextScreen(nextScreen)
-  }
-
-  async function googleSignin(): Promise<void> {
-    const oidcToken = await signInWithGoogle()
-
-    const result = await approveSeedlessRegistration(oidcToken)
-
-    // eslint-disable-next-line no-console
-    console.log(result)
   }
 
   return (
@@ -121,10 +110,6 @@ const AnalyticsConsent: FC<Props> = ({ onNextScreen, nextScreen }: Props) => {
       </Row>
       <FlexSpacer />
       <Space y={24} />
-      <AvaButton.SecondaryLarge onPress={googleSignin} testID="iAgreeBtn">
-        Sign in with Google
-      </AvaButton.SecondaryLarge>
-      <Space y={16} />
       <AvaButton.SecondaryLarge onPress={acceptAnalytics} testID="iAgreeBtn">
         I Agree
       </AvaButton.SecondaryLarge>

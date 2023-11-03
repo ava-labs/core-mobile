@@ -1,6 +1,5 @@
-import React from 'react'
+import React, { FC } from 'react'
 import AppNavigation from 'navigation/AppNavigation'
-import WelcomeScreenStack from 'navigation/onboarding/WelcomeScreenStack'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { createStackNavigator } from '@react-navigation/stack'
 import { NavigatorScreenParams } from '@react-navigation/native'
@@ -15,7 +14,7 @@ export type OnboardingScreenStackParamList = {
 
 const OnboardingScreenS = createStackNavigator<OnboardingScreenStackParamList>()
 
-export const OnboardScreenStack = () => {
+export const OnboardScreenStack: FC = () => {
   const { theme } = useApplicationContext()
 
   return (
@@ -27,10 +26,6 @@ export const OnboardScreenStack = () => {
       <OnboardingScreenS.Screen
         name={AppNavigation.Onboard.Init}
         component={View}
-      />
-      <OnboardingScreenS.Screen
-        name={AppNavigation.Root.Welcome}
-        component={WelcomeScreenStack}
       />
     </OnboardingScreenS.Navigator>
   )

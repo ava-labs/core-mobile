@@ -4,7 +4,7 @@ import {
   createBottomTabNavigator
 } from '@react-navigation/bottom-tabs'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import React, { useEffect } from 'react'
+import React, { FC, useEffect } from 'react'
 import { View } from 'react-native'
 import CreateNewWalletPlusSVG from 'components/svg/CreateNewWalletPlusSVG'
 import WalletSVG from 'components/svg/WalletSVG'
@@ -40,11 +40,14 @@ type NavigationProp = NoWalletDrawerScreenProps<
 const Tab = createBottomTabNavigator<NoWalletTabNavigatorParamList>()
 const TAB_ICON_SIZE = 28
 
-const DummyComponent = () => (
+const DummyComponent = (): JSX.Element => (
   <View style={{ flex: 1, backgroundColor: 'transparent' }} />
 )
 
-function header(props: BottomTabHeaderProps, navigation: NavigationProp) {
+function header(
+  props: BottomTabHeaderProps,
+  navigation: NavigationProp
+): JSX.Element {
   return (
     <AvaButton.Icon
       {...props}
@@ -58,7 +61,7 @@ function header(props: BottomTabHeaderProps, navigation: NavigationProp) {
 type DrawerNavigationProp = NoWalletScreenProps<
   typeof AppNavigation.NoWallet.Drawer
 >['navigation']
-const NoWalletTabNavigator = () => {
+const NoWalletTabNavigator: FC = () => {
   const theme = useApplicationContext().theme
   const { capture } = usePostCapture()
   const drawerNavigation = useNavigation<DrawerNavigationProp>()
@@ -92,7 +95,7 @@ const NoWalletTabNavigator = () => {
     }
   }, [appNavHook?.navigation, isLocked, pendingDeepLink, walletState])
 
-  const renderNonExistentWalletTab = () => (
+  const renderNonExistentWalletTab = (): JSX.Element => (
     <>
       <Tab.Screen
         name={AppNavigation.NoWalletTabs.NewWallet}
@@ -111,11 +114,14 @@ const NoWalletTabNavigator = () => {
           tabPress: e => {
             e.preventDefault()
             capture('NewWalletTabClicked')
+            // drawerNavigation.navigate(AppNavigation.NoWallet.Welcome, {
+            //   screen: AppNavigation.Onboard.AnalyticsConsent,
+            //   params: {
+            //     nextScreen: AppNavigation.Onboard.CreateWalletStack
+            //   }
+            // })
             drawerNavigation.navigate(AppNavigation.NoWallet.Welcome, {
-              screen: AppNavigation.Onboard.AnalyticsConsent,
-              params: {
-                nextScreen: AppNavigation.Onboard.CreateWalletStack
-              }
+              screen: AppNavigation.Onboard.Dummy
             })
           }
         })}
@@ -149,7 +155,7 @@ const NoWalletTabNavigator = () => {
     </>
   )
 
-  const renderExistentWalletTab = () => {
+  const renderExistentWalletTab = (): JSX.Element => {
     return (
       <>
         <Tab.Screen
@@ -183,7 +189,7 @@ const NoWalletTabNavigator = () => {
   )
 }
 
-const EnterWalletButton = () => {
+const EnterWalletButton: FC = () => {
   const appNavHook = useApplicationContext().appNavHook
   return (
     <AvaButton.PrimaryLarge

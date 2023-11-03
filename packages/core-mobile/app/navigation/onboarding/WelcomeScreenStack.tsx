@@ -1,5 +1,5 @@
 import AppNavigation from 'navigation/AppNavigation'
-import React from 'react'
+import React, { FC } from 'react'
 import {
   NavigatorScreenParams,
   useNavigation,
@@ -13,6 +13,9 @@ import { MainHeaderOptions } from 'navigation/NavUtils'
 import { useDispatch } from 'react-redux'
 import { onAppUnlocked } from 'store/app'
 import Logger from 'utils/Logger'
+import CreateSeedlessWalletStack from 'seedless/screens/CreateSeedlessWalletStack'
+import DummyOnboardingScreen from 'seedless/screens/DummyOnboardingScreen'
+import { SignerSessionData } from '@cubist-dev/cubesigner-sdk'
 import { WelcomeScreenProps } from '../types'
 import CreateWalletStack, {
   CreateWalletStackParamList
@@ -30,6 +33,10 @@ export type WelcomeScreenStackParamList = {
   [AppNavigation.Onboard.CreateWalletStack]:
     | NavigatorScreenParams<CreateWalletStackParamList>
     | undefined
+  [AppNavigation.Onboard.Dummy]: undefined
+  [AppNavigation.Onboard.CreateSeedlessWalletStack]: {
+    signerSessionData: SignerSessionData
+  }
   [AppNavigation.Onboard.EnterWithMnemonicStack]:
     | NavigatorScreenParams<EnterWithMnemonicStackParamList>
     | undefined
@@ -54,13 +61,22 @@ const WelcomeScreenStack: () => JSX.Element = () => (
       component={CreateWalletStack}
     />
     <WelcomeScreenS.Screen
+      options={MainHeaderOptions()}
+      name={AppNavigation.Onboard.Dummy}
+      component={DummyOnboardingScreen}
+    />
+    <WelcomeScreenS.Screen
+      name={AppNavigation.Onboard.CreateSeedlessWalletStack}
+      component={CreateSeedlessWalletStack}
+    />
+    <WelcomeScreenS.Screen
       name={AppNavigation.Onboard.EnterWithMnemonicStack}
       component={EnterWithMnemonicStack}
     />
   </WelcomeScreenS.Navigator>
 )
 
-const LoginWithPinOrBiometryScreen = () => {
+const LoginWithPinOrBiometryScreen: FC = () => {
   const context = useApplicationContext()
   const { enterWallet } = context.walletSetupHook
   const dispatch = useDispatch()
@@ -85,7 +101,7 @@ type AnalyticsConsentScreenProps = WelcomeScreenProps<
   typeof AppNavigation.Onboard.AnalyticsConsent
 >
 
-const AnalyticsConsentScreen = () => {
+const AnalyticsConsentScreen: FC = () => {
   const { navigate } =
     useNavigation<AnalyticsConsentScreenProps['navigation']>()
   const { params } = useRoute<AnalyticsConsentScreenProps['route']>()
