@@ -6,8 +6,6 @@ import CreateNewWalletPlusSVG, {
 import EllipsisSVG from 'components/svg/EllipsisSVG'
 import { TouchableOpacity, useTheme } from '@avalabs/k2-mobile'
 import Animated, { FadeInDown, FadeOutDown } from 'react-native-reanimated'
-import { TabIcon } from './TabIcon'
-import { DockMenu } from './DockMenu'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectIsFavorited } from 'store/browser/slices/favorites'
 import AppNavigation from 'navigation/AppNavigation'
@@ -22,7 +20,10 @@ import {
   selectCanGoBack,
   selectCanGoForward
 } from 'store/browser/slices/tabs'
+import { BlurBackground } from 'components/BlurBackground'
 import { useHardwareBackHandler } from '../handleBrowserBack'
+import { DockMenu } from './DockMenu'
+import { TabIcon } from './TabIcon'
 
 type TabViewNavigationProp = BrowserScreenProps<
   typeof AppNavigation.Browser.TabView
@@ -71,8 +72,6 @@ export const Dock = (): JSX.Element => {
         height: 64,
         left: 43.5,
         right: 43.5,
-        backgroundColor: '#BFBFBF70',
-        opacity: 0.44,
         borderRadius: 41,
         justifyContent: 'space-around',
         alignItems: 'center',
@@ -83,6 +82,12 @@ export const Dock = (): JSX.Element => {
       }}
       entering={FadeInDown}
       exiting={FadeOutDown}>
+      <BlurBackground
+        opacity={0.44}
+        iosBlurType="light"
+        borderRadius={32}
+        backgroundColor="#BFBFBF70"
+      />
       <TouchableOpacity onPress={goBack} disabled={!canGoBack}>
         <CarrotSVG
           direction="left"

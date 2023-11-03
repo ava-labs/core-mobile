@@ -303,7 +303,7 @@ export type BridgeScreenProps<T extends keyof BridgeStackParamList> =
     StackScreenProps<BridgeStackParamList, T>,
     WalletScreenProps<keyof WalletScreenStackParams>
   >
-  
+
 /** ROOT -> WALLET -> DRAWER -> TABS -> Browser **/
 export type BrowserScreenProps<T extends keyof BrowserStackParamList> =
   CompositeScreenProps<

@@ -3,12 +3,11 @@ import {
   FavoriteState,
   FavoriteId,
   Favorite,
-  BrowserState,
   HistoryId
 } from 'store/browser/types'
-import { favoriteAdapter } from '../utils'
 import { createHash } from 'utils/createHash'
 import { RootState } from 'store'
+import { favoriteAdapter } from '../utils'
 
 const reducerName = 'browser/favorites'
 
