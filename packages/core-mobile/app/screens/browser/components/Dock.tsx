@@ -34,7 +34,7 @@ export const Dock = (): JSX.Element => {
     theme: { colors }
   } = useTheme()
   const dispatch = useDispatch()
-  const { navigate, replace } = useNavigation<TabViewNavigationProp>()
+  const { navigate } = useNavigation<TabViewNavigationProp>()
   const totalTabs = useSelector(selectAllTabs).length
   const activeTab = useSelector(selectActiveTab)
   useHardwareBackHandler()
@@ -47,19 +47,16 @@ export const Dock = (): JSX.Element => {
   const goBack = (): void => {
     if (!canGoBack) return
     dispatch(goBackward())
-    replace(AppNavigation.Browser.TabView)
   }
   const goForward = (): void => {
     if (!canGoForward) return
     dispatch(goFowardInPage())
-    replace(AppNavigation.Browser.TabView)
   }
 
   const createNewTab = (): void => {
     // browser will listen to this and reset the screen with
     // initiated tab data
     dispatch(addTab())
-    replace(AppNavigation.Browser.TabView)
   }
 
   const navigateToTabList = (): void => {
