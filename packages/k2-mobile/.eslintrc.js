@@ -5,8 +5,9 @@ require('@rushstack/eslint-patch/modern-module-resolution')
 module.exports = {
   root: true,
   parserOptions: {
+    project: './tsconfig.json',
     tsconfigRootDir: __dirname
   },
-  extends: ['@avalabs/eslint-config-mobile'],
+  extends: ['plugin:eslint-plugin-avalabs-mobile/all'],
   ignorePatterns: ['.storybook/storybook.requires.js']
 }

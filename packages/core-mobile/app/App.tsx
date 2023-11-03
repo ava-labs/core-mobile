@@ -13,6 +13,7 @@ import useDevDebugging from 'utils/debugging/DevDebugging'
 import 'utils/debugging/wdyr'
 import { navigationRef } from 'utils/Navigation'
 import SentryService from 'services/sentry/SentryService'
+import DataDogService from 'services/datadog/DataDogService'
 
 LogBox.ignoreLogs([
   'Require cycle:',
@@ -48,6 +49,9 @@ export default function App(): JSX.Element {
           ref={ref => {
             context.appNavHook.navigation.current = ref
             navigationRef.current = ref
+          }}
+          onReady={() => {
+            DataDogService.init(navigationRef)
           }}>
           <RootScreenStack />
         </NavigationContainer>

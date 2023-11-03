@@ -1,3 +1,4 @@
-const eslintrc = require("./.eslintrc.js");
-
-module.exports = eslintrc;
+module.exports = {
+  rules: require("./src/rules"),
+  configs: require("./src/configs"),
+};
