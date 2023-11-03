@@ -23,7 +23,6 @@ LogBox.ignoreLogs([
 ])
 
 SentryService.init()
-DataDogService.init()
 
 Platform.OS === 'android' &&
   UIManager.setLayoutAnimationEnabledExperimental &&
@@ -50,6 +49,9 @@ export default function App(): JSX.Element {
           ref={ref => {
             context.appNavHook.navigation.current = ref
             navigationRef.current = ref
+          }}
+          onReady={() => {
+            DataDogService.init()
           }}>
           <RootScreenStack />
         </NavigationContainer>
