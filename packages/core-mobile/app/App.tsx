@@ -51,7 +51,7 @@ export default function App(): JSX.Element {
             navigationRef.current = ref
           }}
           onReady={() => {
-            DataDogService.init()
+            DataDogService.init(navigationRef)
           }}>
           <RootScreenStack />
         </NavigationContainer>
