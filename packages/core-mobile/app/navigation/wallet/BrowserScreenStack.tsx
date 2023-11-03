@@ -102,7 +102,7 @@ function TabView(): JSX.Element {
       BrowserScreenProps<typeof AppNavigation.Browser.Intro>['navigation']
     >()
 
-  if (hasBeenViewedBrowser) {
+  if (!hasBeenViewedBrowser) {
     navigate(AppNavigation.Browser.Intro)
   }
   return (
