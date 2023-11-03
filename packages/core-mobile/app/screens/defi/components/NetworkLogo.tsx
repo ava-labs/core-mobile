@@ -9,6 +9,7 @@ export const NetworkLogo = ({
   uri?: string
   size?: number
   style?: StyleProp<ImageStyle>
+  testID?: string
 }) => {
   if (!uri) return null
   return (
@@ -22,6 +23,7 @@ export const NetworkLogo = ({
         },
         style
       ]}
+      testID="network_logo"
     />
   )
 }

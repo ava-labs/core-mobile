@@ -380,7 +380,10 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
           component={CaptureDappQR}
         />
         <WalletScreenS.Screen
-          options={MainHeaderOptions()}
+          options={MainHeaderOptions({
+            title: '',
+            headerBackTestID: 'header_back'
+          })}
           name={AppNavigation.Wallet.DeFiProtocolDetails}
           component={DeFiProtocolDetails}
         />

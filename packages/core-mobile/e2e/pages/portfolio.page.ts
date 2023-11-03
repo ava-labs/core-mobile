@@ -42,6 +42,10 @@ class PortfolioPage {
     return by.text(portfolio.collectiblesTab)
   }
 
+  get defiTab() {
+    return by.text(portfolio.defiTab)
+  }
+
   get activityTab() {
     return by.text(portfolio.activityTab)
   }
@@ -140,6 +144,10 @@ class PortfolioPage {
 
   async tapCollectiblesTab() {
     await Action.tapElementAtIndex(this.collectiblesTab, 0)
+  }
+
+  async tapDefiTab() {
+    await Action.tapElementAtIndex(this.defiTab, 0)
   }
 
   async tapEthNetwork() {
