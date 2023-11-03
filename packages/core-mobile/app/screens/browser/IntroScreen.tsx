@@ -131,6 +131,8 @@ export default function IntroScreen(): JSX.Element {
     dispatch(setViewOnce(ViewOnceKey.BROWSER_INTERACTION))
     goBack()
   }
+  const { theme } = useTheme()
+
   return (
     <View>
       <View style={{ paddingBottom: 30 }}>
@@ -161,7 +163,7 @@ export default function IntroScreen(): JSX.Element {
           </Row>
           <Space y={16} />
           <Row>
-            <WalletConnectSVG color={useTheme().theme.colors.$neutral50} />
+            <WalletConnectSVG color={theme.colors.$neutral50} />
             <WalletConnectText />
           </Row>
           <Space y={16} />
