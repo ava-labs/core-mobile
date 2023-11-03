@@ -109,7 +109,10 @@ export const DeFiProtocolList: FC = () => {
           <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
             {renderLogo()}
             <View style={{ flex: 1, marginRight: 8 }}>
-              <AvaText.Heading5 numberOfLines={1} ellipsizeMode="tail">
+              <AvaText.Heading5
+                numberOfLines={1}
+                ellipsizeMode="tail"
+                testID="protocol_name">
                 {item.name}
               </AvaText.Heading5>
             </View>
@@ -117,7 +120,7 @@ export const DeFiProtocolList: FC = () => {
           <View>
             <AvaButton.Base onPress={() => goToProtocolPage(item.siteUrl)}>
               <View style={{ alignItems: 'flex-end' }}>
-                <AvaText.Body2 color={theme.neutral50}>
+                <AvaText.Body2 color={theme.neutral50} testID="usd_value">
                   {netUsdValue}
                 </AvaText.Body2>
                 <Space y={6} />
