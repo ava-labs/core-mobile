@@ -9,7 +9,7 @@ import {
   TabHistoryPayload,
   TabPayload,
   AddHistoryPayload,
-  TabState
+  TabState,
 } from '../types'
 import {
   limitMaxTabs,
@@ -22,7 +22,10 @@ import { MAXIMUM_TAB_HISTORIES } from '../const'
 
 const reducerName = 'browser/tabs'
 
-const initialState = { ...tabAdapter.getInitialState(), activeTabId: undefined }
+const initialState = {
+  ...tabAdapter.getInitialState(),
+  activeTabId: undefined
+}
 
 const tabSlice = createSlice({
   name: reducerName,
