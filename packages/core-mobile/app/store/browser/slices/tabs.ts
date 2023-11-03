@@ -9,7 +9,7 @@ import {
   TabHistoryPayload,
   TabPayload,
   AddHistoryPayload,
-  TabState,
+  TabState
 } from '../types'
 import {
   limitMaxTabs,
