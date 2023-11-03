@@ -3,7 +3,7 @@ import AppNavigation from 'navigation/AppNavigation'
 import { createStackNavigator } from '@react-navigation/stack'
 import TopNavigationHeader from 'navigation/TopNavigationHeader'
 import { noop } from '@avalabs/utils-sdk'
-import { View } from 'react-native'
+import { Modal, View } from 'react-native'
 import AvaText from 'components/AvaText'
 import { AreYouSureModal } from 'screens/browser/AreYouSureModal'
 import IntroScreen from 'screens/browser/IntroScreen'
@@ -58,7 +58,10 @@ function BrowserScreenStack(): JSX.Element {
       />
       <BrowserStack.Screen
         name={AppNavigation.Browser.Intro}
-        options={{ presentation: 'modal' }}
+        options={{
+          presentation: 'transparentModal',
+          headerShown: false
+        }}
         component={BrowserIntroScreen}
       />
     </BrowserStack.Navigator>

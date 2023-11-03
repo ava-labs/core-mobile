@@ -33,7 +33,7 @@ const { height, width } = Dimensions.get('screen')
 
 const BlueBackground = (): JSX.Element => {
   return (
-    <Box box={rrect(rect(0, 0, width - 32, height), 8, 8)}>
+    <Box box={rrect(rect(0, 0, width, height), 8, 8)}>
       <LinearGradient
         start={vec(width * 2.8, 0)}
         end={vec(width + 200, height)}
@@ -48,10 +48,10 @@ const TokenImageWithGradient = (): JSX.Element => {
   return (
     <Mask
       mask={
-        <Rect x={0} y={0} height={height / 3} width={width}>
+        <Rect x={0} y={0} height={height} width={width}>
           <LinearGradient
-            start={vec(0, height / 15)}
-            end={vec(0, height / 3.5)}
+            start={vec(0, height / 20)}
+            end={vec(0, height / 3.3)}
             colors={['white', 'transparent']}
           />
         </Rect>
@@ -59,10 +59,10 @@ const TokenImageWithGradient = (): JSX.Element => {
       {image && (
         <Image
           image={image}
-          x={width / 2 - 430}
-          y={height / 2 - 530}
-          width={width * 2.2}
-          height={height / 2}
+          x={-175}
+          y={-290}
+          width={width * 1.9}
+          height={height * 0.9}
           fit="contain"
         />
       )}
@@ -133,51 +133,53 @@ export default function IntroScreen(): JSX.Element {
   }
   return (
     <View>
-      <Canvas
-        style={{
-          marginHorizontal: 16,
-          width: '92%',
-          height: '100%',
-          position: 'absolute'
-        }}>
-        <Group>
-          <BlueBackground />
-          <TokenImageWithGradient />
-        </Group>
-      </Canvas>
-      <View
-        style={{
-          marginHorizontal: 32,
-          height: '100%',
-          justifyContent: 'flex-end',
-          paddingBottom: 32
-        }}>
-        <HowToUseTheCoreBrowser />
-        <Space y={24} />
-        <Row>
-          <SearchIcon />
-          <SearchText />
-        </Row>
-        <Space y={16} />
-        <Row>
-          <WalletConnectSVG color={useTheme().theme.colors.$neutral50} />
-          <WalletConnectText />
-        </Row>
-        <Space y={16} />
-        <Row>
-          <CoreOwl width={24} height={24} />
-          <CoreOwlText />
-        </Row>
-        <Space y={16} />
-        <Row>
-          <RocketLaunch width={24} height={24} />
-          <RocketText />
-        </Row>
-        <Space y={32} />
-        <View>
-          <AvaButton.PrimaryLarge onPress={onInstructionRead}>
-            Get started!
-          </AvaButton.PrimaryLarge>
+      <View style={{ paddingBottom: 30 }}>
+        <Canvas
+          style={{
+            marginHorizontal: 16,
+            width: '92%',
+            height: '100%',
+            position: 'absolute'
+          }}>
+          <Group>
+            <BlueBackground />
+            <TokenImageWithGradient />
+          </Group>
+        </Canvas>
+        <View
+          style={{
+            marginHorizontal: 32,
+            height: '100%',
+            justifyContent: 'flex-end',
+            paddingBottom: 32
+          }}>
+          <HowToUseTheCoreBrowser />
+          <Space y={24} />
+          <Row>
+            <SearchIcon />
+            <SearchText />
+          </Row>
+          <Space y={16} />
+          <Row>
+            <WalletConnectSVG color={useTheme().theme.colors.$neutral50} />
+            <WalletConnectText />
+          </Row>
+          <Space y={16} />
+          <Row>
+            <CoreOwl width={24} height={24} />
+            <CoreOwlText />
+          </Row>
+          <Space y={16} />
+          <Row>
+            <RocketLaunch width={24} height={24} />
+            <RocketText />
+          </Row>
+          <Space y={32} />
+          <View>
+            <AvaButton.PrimaryLarge onPress={onInstructionRead}>
+              Get started!
+            </AvaButton.PrimaryLarge>
+          </View>
         </View>
       </View>
     </View>
