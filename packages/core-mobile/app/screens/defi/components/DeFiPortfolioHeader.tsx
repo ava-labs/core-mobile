@@ -16,6 +16,7 @@ interface Props {
   chainName?: string
   goToProtocolPage?: () => void
   totalValueOfProtocolItems?: string
+  testID?: string
 }
 
 export const DeFiPortfolioHeader = ({
@@ -37,7 +38,9 @@ export const DeFiPortfolioHeader = ({
         }}>
         <ProtocolLogo size={48} uri={logoUrl} />
         <View style={{ flex: 2, marginHorizontal: 8 }}>
-          <AvaText.Heading5 ellipsizeMode="tail">{name ?? ''}</AvaText.Heading5>
+          <AvaText.Heading5 testID="protocol_name" ellipsizeMode="tail">
+            {name ?? ''}
+          </AvaText.Heading5>
           <Row
             style={{
               alignItems: 'center'
@@ -48,7 +51,7 @@ export const DeFiPortfolioHeader = ({
                 marginRight: 6
               }}
             />
-            <AvaText.Body1 color={theme.neutral400}>
+            <AvaText.Body1 color={theme.neutral400} testID="network_name">
               {chainName ?? ''}
             </AvaText.Body1>
           </Row>
@@ -56,7 +59,7 @@ export const DeFiPortfolioHeader = ({
       </Row>
       <AvaButton.Base onPress={goToProtocolPage}>
         <View style={{ alignItems: 'flex-end' }}>
-          <AvaText.ActivityTotal color={theme.neutral50}>
+          <AvaText.ActivityTotal testID="usd_value" color={theme.neutral50}>
             {totalValueOfProtocolItems}
           </AvaText.ActivityTotal>
           <Space y={6} />

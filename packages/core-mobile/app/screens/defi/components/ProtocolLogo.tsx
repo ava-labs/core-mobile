@@ -7,6 +7,7 @@ export const ProtocolLogo = ({
 }: {
   uri?: string
   size?: number
+  testID?: string
 }) => {
   if (!uri) return null
   return (
@@ -17,6 +18,7 @@ export const ProtocolLogo = ({
         height: size,
         borderRadius: size / 2
       }}
+      testID="protocol_logo"
     />
   )
 }
