@@ -44,25 +44,25 @@ export const Dock = (): JSX.Element => {
 
   const isFavorited = useSelector(selectIsFavorited(activeTab?.activeHistoryId))
 
-  const goBack = () => {
+  const goBack = (): void => {
     if (!canGoBack) return
     dispatch(goBackward())
-    navigate(AppNavigation.Browser.TabView)
+    replace(AppNavigation.Browser.TabView)
   }
-  const goForward = () => {
+  const goForward = (): void => {
     if (!canGoForward) return
     dispatch(goFowardInPage())
-    navigate(AppNavigation.Browser.TabView)
+    replace(AppNavigation.Browser.TabView)
   }
 
-  const createNewTab = () => {
+  const createNewTab = (): void => {
     // browser will listen to this and reset the screen with
     // initiated tab data
     dispatch(addTab())
     replace(AppNavigation.Browser.TabView)
   }
 
-  const navigateToTabList = () => {
+  const navigateToTabList = (): void => {
     navigate(AppNavigation.Browser.TabsList)
   }
 
