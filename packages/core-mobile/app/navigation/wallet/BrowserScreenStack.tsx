@@ -20,6 +20,10 @@ export type BrowserStackParamList = {
   [AppNavigation.Browser.AreYouSure]: undefined
 }
 
+type TabViewScreenProps = BrowserScreenProps<
+  typeof AppNavigation.Browser.TabView
+>
+
 const BrowserStack = createStackNavigator<BrowserStackParamList>()
 
 function BrowserScreenStack(): JSX.Element {
@@ -92,10 +96,6 @@ function BrowserIntroScreen(): JSX.Element {
     </View>
   )
 }
-
-type TabViewScreenProps = BrowserScreenProps<
-  typeof AppNavigation.Browser.TabView
->
 
 function TabView(): JSX.Element {
   const hasBeenViewedBrowser = useSelector(
