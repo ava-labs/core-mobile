@@ -3,19 +3,11 @@ import { RootState } from 'store/index'
 import { v4 as uuidv4 } from 'uuid'
 import { getUnixTime } from 'date-fns'
 import { createHash } from 'utils/createHash'
-import {
-  Tab,
-  TabId,
-  TabHistoryPayload,
-  TabPayload,
-  AddHistoryPayload,
-  TabState
-} from '../types'
+import { Tab, TabId, TabPayload, AddHistoryPayload, TabState } from '../types'
 import {
   limitMaxTabs,
   navigateTabHistory,
   tabAdapter,
-  updateActiveTabHistoryId,
   updateActiveTabId
 } from '../utils'
 import { MAXIMUM_TAB_HISTORIES } from '../const'
@@ -83,39 +75,9 @@ const tabSlice = createSlice({
       // update active tab id
       updateActiveTabId(state, tabId)
     },
-    removeHistoryForTab: (
-      state: TabState,
-      action: PayloadAction<TabHistoryPayload>
-    ) => {
-      const { tabId, id: historyId } = action.payload
-      const tabHistoryIds = tabAdapter
-        .getSelectors()
-        .selectById(state, tabId)?.historyIds
-      if (tabHistoryIds === undefined) return
-      tabAdapter.updateOne(state, {
-        id: tabId,
-        changes: { historyIds: tabHistoryIds.filter(id => id !== historyId) }
-      })
-      // update active tab history id
-      updateActiveTabHistoryId(state, tabId, historyId)
-    },
     removeAllTabs: (state: TabState) => {
       tabAdapter.removeAll(state)
       state.activeTabId = undefined
-    },
-    removeAllHistoryForTab: (
-      state: TabState,
-      action: PayloadAction<TabPayload>
-    ) => {
-      const { id: tabId } = action.payload
-      tabAdapter.updateOne(state, {
-        id: tabId,
-        changes: {
-          historyIds: [],
-          lastVisited: undefined,
-          activeHistoryId: undefined
-        }
-      })
     },
     setActiveTabId: (state: TabState, action: PayloadAction<TabPayload>) => {
       const { id: tabId } = action.payload
@@ -183,9 +145,7 @@ export const {
   addTab,
   addHistoryForTab,
   removeTab,
-  removeHistoryForTab,
   removeAllTabs,
-  removeAllHistoryForTab,
   setActiveTabId,
   goBackward,
   goForward

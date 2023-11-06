@@ -38,9 +38,8 @@ export const selectIsFavorited =
   (state: RootState): boolean => {
     if (id === undefined) return false
     return (
-      state.browser.favorites &&
       favoriteAdapter.getSelectors().selectById(state.browser.favorites, id) !==
-        undefined
+      undefined
     )
   }
 

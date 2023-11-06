@@ -2,7 +2,7 @@ import { createEntityAdapter } from '@reduxjs/toolkit'
 import { getUnixTime } from 'date-fns'
 import Logger from 'utils/Logger'
 import { MAXIMUM_TABS } from './const'
-import { Tab, History, TabId, HistoryId, Favorite, TabState } from './types'
+import { Tab, History, TabId, Favorite, TabState } from './types'
 
 export const getOldestTab = (tabs: Tab[], count: number): Tab[] => {
   return tabs
@@ -51,46 +51,11 @@ export const updateActiveTabId = (state: TabState, tabId: TabId): void => {
   }
 }
 
-export const updateActiveTabHistoryId = (
-  tabState: TabState,
-  tabId: TabId,
-  historyId: HistoryId
-): void => {
-  const activeHistoryId = tabAdapter
-    .getSelectors()
-    .selectById(tabState, tabId)?.activeHistoryId
-  if (activeHistoryId === historyId) {
-    const lastVisitedHistoryId = getLastVisitedTabHistoryId(tabState)
-    if (!lastVisitedHistoryId) {
-      tabAdapter.updateOne(tabState, {
-        id: tabId,
-        changes: {
-          activeHistoryId: undefined
-        }
-      })
-      Logger.warn('could not find last visited history id')
-      return
-    }
-    tabAdapter.updateOne(tabState, {
-      id: tabId,
-      changes: {
-        activeHistoryId: historyId,
-        lastVisited: getUnixTime(new Date())
-      }
-    })
-  }
-}
-
 const getLastVisitedTabId = (state: TabState): TabId | undefined => {
   const tabs = tabAdapter.getSelectors().selectAll(state)
   if (tabs.length === 0) return undefined
   const lastVisitedTab = getLatestTab(tabs)
   return lastVisitedTab?.id
-}
-
-const getLastVisitedTabHistoryId = (state: TabState): TabId | undefined => {
-  return tabAdapter.getSelectors().selectById(state, state.activeTabId ?? '')
-    ?.historyIds[-1]
 }
 
 export const navigateTabHistory = (
