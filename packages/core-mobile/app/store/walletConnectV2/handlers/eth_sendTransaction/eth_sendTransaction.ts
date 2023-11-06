@@ -13,7 +13,6 @@ import { selectAccountByAddress } from 'store/account'
 import { queryClient } from 'contexts/ReactQueryProvider'
 import { NetworkFee } from 'services/networkFee/types'
 import { getQueryKey, prefetchNetworkFee } from 'hooks/useNetworkFee'
-import { assertNotUndefined } from 'utils/assertions'
 import { updateRequestStatus } from '../../slice'
 import { RpcMethod, SessionRequest } from '../../types'
 import {
@@ -51,8 +50,15 @@ class EthSendTransactionHandler
           message: 'Transaction params are invalid'
         })
       }
-    } else {
-      assertNotUndefined(result.data[0])
+    }
+    const transaction = result.data[0]
+    if (!transaction) {
+      return {
+        success: false,
+        error: ethErrors.rpc.invalidParams({
+          message: 'Transaction params are invalid'
+        })
+      }
     }
 
     // pre-fetch network fees for tx parsing and approval screen
@@ -63,7 +69,6 @@ class EthSendTransactionHandler
 
     // TODO CP-4894 decode transaction data here instead of in SignTransaction component/useExplainTransaction hook
 
-    const transaction = result.data[0]
     Navigation.navigate({
       name: AppNavigation.Root.Wallet,
       params: {
