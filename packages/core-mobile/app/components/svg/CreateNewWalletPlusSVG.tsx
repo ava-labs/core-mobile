@@ -1,14 +1,24 @@
 import React from 'react'
 import Svg, { Line } from 'react-native-svg'
 
+export enum IconWeight {
+  regular = '3.25',
+  bold = '5.25',
+  extraBold = '9.25'
+}
+
 interface Prop {
   size?: number
-  bold?: boolean
+  weight?: IconWeight
+  color?: string
   testID?: string
 }
 
-function CreateNewWalletPlusSVG({ size = 65, bold = false }: Prop) {
-  const strokeWidth = bold ? '5.25' : '3.25'
+function CreateNewWalletPlusSVG({
+  size = 65,
+  weight = IconWeight.regular,
+  color = 'white'
+}: Prop): JSX.Element {
   return (
     <Svg
       width={size}
@@ -21,8 +31,8 @@ function CreateNewWalletPlusSVG({ size = 65, bold = false }: Prop) {
         y1="8.125"
         x2="32.5956"
         y2="56.875"
-        stroke="white"
-        strokeWidth={strokeWidth}
+        stroke={color}
+        strokeWidth={weight}
         strokeLinecap="round"
       />
       <Line
@@ -30,8 +40,8 @@ function CreateNewWalletPlusSVG({ size = 65, bold = false }: Prop) {
         y1="32.4043"
         x2="56.875"
         y2="32.4043"
-        stroke="white"
-        strokeWidth={strokeWidth}
+        stroke={color}
+        strokeWidth={weight}
         strokeLinecap="round"
       />
     </Svg>

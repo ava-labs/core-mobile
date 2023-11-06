@@ -1,6 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit'
 import { createHash } from 'utils/createHash'
-import { HistoryState } from '../types'
+import { RootState } from 'store'
+import { History, HistoryId, HistoryState } from '../types'
 import { historyAdapter } from '../utils'
 import { MAXIMUM_HISTORIES } from '../const'
 import { addHistoryForTab } from './tabs'
@@ -32,5 +33,15 @@ const globalHistorySlice = createSlice({
     })
   }
 })
+
+// selectors
+export const selectActiveHistory =
+  (id?: HistoryId) =>
+  (state: RootState): History | undefined => {
+    if (id === undefined) return
+    return historyAdapter
+      .getSelectors()
+      .selectById(state.browser.globalHistory, id)
+  }
 
 export const globalHistoryReducer = globalHistorySlice.reducer

@@ -37,7 +37,6 @@ import {
   AvalancheSignTransactionRpcRequest as AvalancheSignTransactionRpcRequestV2
 } from 'store/walletConnectV2/handlers/avalanche_signTransaction/avalanche_signTransaction'
 import { EarnStackParamList } from 'navigation/wallet/EarnScreenStack/EarnScreenStack'
-import { BrowserStackParamList } from 'navigation/wallet/BrowserScreenStack'
 import { RootScreenStackParamList } from './RootScreenStack'
 import { OnboardingScreenStackParamList } from './OnboardScreenStack'
 import { WelcomeScreenStackParamList } from './onboarding/WelcomeScreenStack'
@@ -56,6 +55,7 @@ import { SecurityStackParamList } from './wallet/SecurityPrivacyStackScreen'
 import { BridgeStackParamList } from './wallet/BridgeScreenStack'
 import { PortfolioStackParamList } from './wallet/PortfolioScreenStack'
 import { StakeSetupStackParamList } from './wallet/EarnScreenStack/StakeSetupScreenStack'
+import { BrowserStackParamList } from './wallet/BrowserScreenStack'
 
 export type { RootScreenStackParamList }
 

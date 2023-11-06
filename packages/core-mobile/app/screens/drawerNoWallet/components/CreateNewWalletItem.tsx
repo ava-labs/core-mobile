@@ -3,7 +3,9 @@ import AvaListItem from 'components/AvaListItem'
 import { useNavigation } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
 import { NoWalletScreenProps } from 'navigation/types'
-import CreateNewWalletPlusSVG from 'components/svg/CreateNewWalletPlusSVG'
+import CreateNewWalletPlusSVG, {
+  IconWeight
+} from 'components/svg/CreateNewWalletPlusSVG'
 import { usePostCapture } from 'hooks/usePosthogCapture'
 
 type NavigationProp = NoWalletScreenProps<
@@ -21,7 +23,9 @@ const CreateNewWalletItem = () => {
         title={'Create New Wallet'}
         titleAlignment={'flex-start'}
         showNavigationArrow
-        leftComponent={<CreateNewWalletPlusSVG bold size={18} />}
+        leftComponent={
+          <CreateNewWalletPlusSVG weight={IconWeight.bold} size={18} />
+        }
         rightComponentVerticalAlignment={'center'}
         onPress={() => {
           capture('OnboardingCreateNewWalletSelected')

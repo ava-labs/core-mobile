@@ -1,7 +1,6 @@
 import { getUnixTime } from 'date-fns'
 import * as uuid from 'uuid'
 import * as utils from 'utils/createHash'
-import { BrowserState } from '../types'
 import { combinedReducer as reducer } from '../combinedReducer'
 import {
   addTab,
@@ -29,7 +28,7 @@ const initialState = {
     entities: {},
     ids: []
   }
-}
+} as any
 
 const TAB_HISTORY_DATA = {
   screenshot: 'https://www.google.com/screenshot.png',
@@ -111,7 +110,7 @@ describe('Tabs', () => {
   })
 
   it('should clear all tabs', () => {
-    let state: BrowserState = initialState
+    let state = initialState
 
     const times = 10
     for (let i = 0; i < times; i++) {
@@ -123,7 +122,7 @@ describe('Tabs', () => {
   })
 
   it('should set active tab id', () => {
-    let state: BrowserState = initialState
+    let state = initialState
 
     const times = 10
     for (let i = 0; i < times; i++) {
