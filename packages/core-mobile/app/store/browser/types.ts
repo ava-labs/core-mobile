@@ -6,8 +6,9 @@ export type FavoriteId = string // unique, generated
 
 export type Tab = {
   id: TabId
-  lastVisited?: number // unix timestamp, last time this tab was visited, delete oldest if more than 99 tabs active
   historyIds: HistoryId[] // array of history indices
+  lastVisited?: number // unix timestamp, last time this tab was visited, delete oldest if more than 99 tabs active
+  activeHistoryId?: HistoryId
 }
 
 export type History = {
@@ -19,7 +20,6 @@ export type History = {
 
 export type TabState = EntityState<Tab> & {
   activeTabId?: TabId
-  activeHistoryId?: HistoryId
 }
 
 export type HistoryState = EntityState<History>
