@@ -1,7 +1,6 @@
-import React, { useEffect } from 'react'
-import {
-  OnboardingScreenStackParamList,
-  OnboardScreenStack
+import React, { FC, useEffect } from 'react'
+import OnboardScreenStack, {
+  OnboardingScreenStackParamList
 } from 'navigation/OnboardScreenStack'
 import { createStackNavigator } from '@react-navigation/stack'
 import { Alert, Vibration } from 'react-native'
@@ -16,10 +15,6 @@ import WalletScreenStack, {
 } from 'navigation/WalletScreenStack/WalletScreenStack'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { ExitEvents, ExitPromptAnswers, ShowExitPrompt } from 'AppHook'
-import {
-  NoWalletScreenStack,
-  NoWalletScreenStackParams
-} from 'navigation/NoWalletScreenStack'
 import { useSelector } from 'react-redux'
 import { selectIsLocked } from 'store/app'
 import { useBgDetect } from 'navigation/useBgDetect'
@@ -32,8 +27,6 @@ export type RootScreenStackParamList = {
   [AppNavigation.Root
     .Onboard]: NavigatorScreenParams<OnboardingScreenStackParamList>
   [AppNavigation.Root.Wallet]: NavigatorScreenParams<WalletScreenStackParams>
-  [AppNavigation.Root
-    .NoWallet]: NavigatorScreenParams<NoWalletScreenStackParams>
   [AppNavigation.Root.CopyPhraseWarning]: {
     copy: () => void
   }
@@ -51,12 +44,12 @@ const onNo = (value: ShowExitPrompt): void => {
 
 const RootStack = createStackNavigator<RootScreenStackParamList>()
 
-const WalletScreenStackWithContext = () => {
+const WalletScreenStackWithContext: FC = () => {
   const { onExit } = useApplicationContext().appHook
   const { inBackground } = useBgDetect()
   const isLocked = useSelector(selectIsLocked)
 
-  const doExit = () => {
+  const doExit = (): void => {
     onExit().subscribe({
       next: (value: ExitEvents) => {
         if (value instanceof ShowExitPrompt) {
@@ -94,20 +87,13 @@ const WalletScreenStackWithContext = () => {
   )
 }
 
-const RootScreenStack = () => {
+const RootScreenStack: FC = () => {
   return (
     <RootStack.Navigator
       screenOptions={{
         headerShown: false,
         animationEnabled: false
       }}>
-      <RootStack.Screen
-        name={AppNavigation.Root.NoWallet}
-        component={NoWalletScreenStack}
-        options={{
-          animationEnabled: false
-        }}
-      />
       <RootStack.Screen
         name={AppNavigation.Root.Onboard}
         component={OnboardScreenStack}
@@ -136,7 +122,7 @@ type CopyPhraseWarningNavigationProp = RootStackScreenProps<
   typeof AppNavigation.Root.CopyPhraseWarning
 >
 
-const CopyPhraseWarningModal = () => {
+const CopyPhraseWarningModal: FC = () => {
   const { goBack } =
     useNavigation<CopyPhraseWarningNavigationProp['navigation']>()
   const { params } = useRoute<CopyPhraseWarningNavigationProp['route']>()
@@ -145,12 +131,12 @@ const CopyPhraseWarningModal = () => {
     Vibration.vibrate()
   }, [])
 
-  const onCopy = () => {
+  const onCopy = (): void => {
     goBack()
     params.copy()
   }
 
-  const onCancel = () => {
+  const onCancel = (): void => {
     goBack()
   }
 

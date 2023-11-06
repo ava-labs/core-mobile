@@ -53,8 +53,8 @@ function resetNavToRoot(navigation: NavigationRef): void {
     index: 0,
     routes: [
       {
-        name: AppNavigation.Root.NoWallet,
-        params: { screen: AppNavigation.NoWallet.Drawer }
+        name: AppNavigation.Root.Onboard,
+        params: { screen: AppNavigation.Onboard.Init }
       }
     ]
   })
@@ -65,17 +65,8 @@ function resetNavToEnterMnemonic(navigation: NavigationRef): void {
     index: 0,
     routes: [
       {
-        name: AppNavigation.Root.NoWallet,
-        params: { screen: AppNavigation.Root.NoWallet }
-      },
-      {
-        name: AppNavigation.Root.NoWallet,
-        params: {
-          screen: AppNavigation.NoWallet.Welcome,
-          params: {
-            screen: AppNavigation.Onboard.EnterWithMnemonicStack
-          }
-        }
+        name: AppNavigation.Root.Welcome,
+        params: { screen: AppNavigation.Onboard.EnterWithMnemonicStack }
       }
     ]
   })
