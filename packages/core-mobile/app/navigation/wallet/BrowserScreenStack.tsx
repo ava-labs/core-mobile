@@ -7,6 +7,10 @@ import { View } from 'react-native'
 import AvaText from 'components/AvaText'
 import { AreYouSureModal } from 'screens/browser/AreYouSureModal'
 import IntroScreen from 'screens/browser/IntroScreen'
+import { useNavigation } from '@react-navigation/native'
+import { BrowserScreenProps } from 'navigation/types'
+import { useSelector } from 'react-redux'
+import { selectHasBeenViewedOnce, ViewOnceKey } from 'store/viewOnce'
 
 export type BrowserStackParamList = {
   [AppNavigation.Browser.Intro]: undefined
@@ -15,6 +19,10 @@ export type BrowserStackParamList = {
   [AppNavigation.Browser.History]: undefined
   [AppNavigation.Browser.AreYouSure]: undefined
 }
+
+type TabViewScreenProps = BrowserScreenProps<
+  typeof AppNavigation.Browser.TabView
+>
 
 const BrowserStack = createStackNavigator<BrowserStackParamList>()
 
@@ -33,7 +41,7 @@ function BrowserScreenStack(): JSX.Element {
       <BrowserStack.Screen
         name={AppNavigation.Browser.TabView}
         options={{ headerShown: false }}
-        component={TabViewStub}
+        component={TabView}
       />
       <BrowserStack.Screen
         name={AppNavigation.Browser.TabsList}
@@ -49,13 +57,16 @@ function BrowserScreenStack(): JSX.Element {
       />
       <BrowserStack.Screen
         name={AppNavigation.Browser.AreYouSure}
-        options={{ presentation: 'transparentModal' }}
+        options={{ presentation: 'modal' }}
         component={AreYouSureModal}
       />
       <BrowserStack.Screen
         name={AppNavigation.Browser.Intro}
-        options={{ headerShown: false }}
-        component={BrowswerIntroScreen}
+        options={{
+          presentation: 'transparentModal',
+          headerShown: false
+        }}
+        component={BrowserIntroScreen}
       />
     </BrowserStack.Navigator>
   )
@@ -78,7 +89,7 @@ const renderNavigationHeader = ({
 
 export default React.memo(BrowserScreenStack)
 
-function BrowswerIntroScreen(): JSX.Element {
+function BrowserIntroScreen(): JSX.Element {
   return (
     <View>
       <IntroScreen />
@@ -86,7 +97,15 @@ function BrowswerIntroScreen(): JSX.Element {
   )
 }
 
-function TabViewStub(): JSX.Element {
+function TabView(): JSX.Element {
+  const hasBeenViewedBrowser = useSelector(
+    selectHasBeenViewedOnce(ViewOnceKey.BROWSER_INTERACTION)
+  )
+  const { navigate } = useNavigation<TabViewScreenProps['navigation']>()
+
+  if (!hasBeenViewedBrowser) {
+    navigate(AppNavigation.Browser.Intro)
+  }
   return (
     <View>
       <AvaText.LargeTitleBold>TabViewStub</AvaText.LargeTitleBold>
