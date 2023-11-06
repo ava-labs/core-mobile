@@ -1,5 +1,5 @@
 import { TransactionParams } from 'store/walletConnectV2/handlers/eth_sendTransaction/utils'
-import { BigNumberish } from 'ethers/src.ts/utils/maths'
+import { BigNumberish } from 'ethers'
 
 export async function txToCustomEvmTx(
   networkFee: bigint,
