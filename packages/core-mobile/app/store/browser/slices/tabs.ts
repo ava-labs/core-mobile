@@ -51,8 +51,8 @@ const tabSlice = createSlice({
         indexToInsert = tab.historyIds.indexOf(activeHistoryId)
       }
       const historyId = createHash(history.url)
-      if (indexToInsert !== 0 || indexToInsert !== tab.historyIds.length - 1) {
-        tab.historyIds = tab.historyIds.slice(0, indexToInsert)
+      if (indexToInsert !== -1) {
+        tab.historyIds = tab.historyIds.slice(0, indexToInsert + 1)
       }
 
       tabAdapter.updateOne(state, {
