@@ -93,13 +93,15 @@ function BrowserIntroScreen(): JSX.Element {
   )
 }
 
-function TabView(): JSX.Element {
-  type ScreenProps = BrowserScreenProps<typeof AppNavigation.Browser.TabView>
+type TabViewScreenProps = BrowserScreenProps<
+  typeof AppNavigation.Browser.TabView
+>
 
+function TabView(): JSX.Element {
   const hasBeenViewedBrowser = useSelector(
     selectHasBeenViewedOnce(ViewOnceKey.BROWSER_INTERACTION)
   )
-  const { navigate } = useNavigation<ScreenProps['navigation']>()
+  const { navigate } = useNavigation<TabViewScreenProps['navigation']>()
 
   if (!hasBeenViewedBrowser) {
     navigate(AppNavigation.Browser.Intro)
