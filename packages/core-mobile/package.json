@@ -35,6 +35,8 @@
     "@avalabs/utils-sdk": "2.8.0-alpha.150",
     "@avalabs/wallets-sdk": "2.8.0-alpha.150",
     "@coinbase/cbpay-js": "1.6.0",
+    "@datadog/mobile-react-native": "1.9.0",
+    "@datadog/mobile-react-navigation": "1.9.0",
     "@ethereumjs/common": "2.6.5",
     "@ethereumjs/tx": "3.4.0",
     "@gorhom/bottom-sheet": "4.4.5",
@@ -275,7 +277,8 @@
       "@avalabs/wallets-sdk>@avalabs/hw-app-avalanche>@ledgerhq/hw-app-eth>@ledgerhq/domain-service>eip55>keccak": false,
       "@avalabs/wallets-sdk>bip32>tiny-secp256k1": false,
       "babel-loader>webpack>watchpack>watchpack-chokidar2>chokidar>fsevents": false,
-      "@avalabs/k2-mobile": false
+      "@avalabs/k2-mobile": false,
+      "@datadog/mobile-react-native": false
     }
   },
   "react-native": {
