@@ -26,8 +26,9 @@ import { parseApproveData, parseRequestParams } from './utils'
 export type EthSendTransactionRpcRequest =
   SessionRequest<RpcMethod.ETH_SEND_TRANSACTION>
 
-const getChainIdFromRequest = (request: EthSendTransactionRpcRequest) =>
-  request.data.params.chainId.split(':')[1]
+const getChainIdFromRequest = (
+  request: EthSendTransactionRpcRequest
+): string | undefined => request.data.params.chainId.split(':')[1]
 
 class EthSendTransactionHandler
   implements RpcRequestHandler<EthSendTransactionRpcRequest>
@@ -50,6 +51,15 @@ class EthSendTransactionHandler
         })
       }
     }
+    const transaction = result.data[0]
+    if (!transaction) {
+      return {
+        success: false,
+        error: ethErrors.rpc.invalidParams({
+          message: 'Transaction params are invalid'
+        })
+      }
+    }
 
     // pre-fetch network fees for tx parsing and approval screen
     const state = listenerApi.getState()
@@ -59,7 +69,6 @@ class EthSendTransactionHandler
 
     // TODO CP-4894 decode transaction data here instead of in SignTransaction component/useExplainTransaction hook
 
-    const transaction = result.data[0]
     Navigation.navigate({
       name: AppNavigation.Root.Wallet,
       params: {

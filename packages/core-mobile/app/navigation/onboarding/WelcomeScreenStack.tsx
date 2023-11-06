@@ -10,8 +10,6 @@ import { createStackNavigator } from '@react-navigation/stack'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AnalyticsConsent from 'screens/onboarding/AnalyticsConsent'
 import { MainHeaderOptions } from 'navigation/NavUtils'
-import { useDispatch } from 'react-redux'
-import { onAppUnlocked } from 'store/app'
 import Logger from 'utils/Logger'
 import { WelcomeScreenProps } from '../types'
 import CreateWalletStack, {
@@ -60,10 +58,9 @@ const WelcomeScreenStack: () => JSX.Element = () => (
   </WelcomeScreenS.Navigator>
 )
 
-const LoginWithPinOrBiometryScreen = () => {
+const LoginWithPinOrBiometryScreen = (): JSX.Element => {
   const context = useApplicationContext()
   const { enterWallet } = context.walletSetupHook
-  const dispatch = useDispatch()
 
   return (
     <PinOrBiometryLogin
@@ -71,11 +68,7 @@ const LoginWithPinOrBiometryScreen = () => {
         context.appNavHook.resetNavToEnterMnemonic()
       }
       onLoginSuccess={mnemonic => {
-        enterWallet(mnemonic)
-          .then(() => {
-            dispatch(onAppUnlocked())
-          })
-          .catch(Logger.error)
+        enterWallet(mnemonic).catch(Logger.error)
       }}
     />
   )
@@ -85,7 +78,7 @@ type AnalyticsConsentScreenProps = WelcomeScreenProps<
   typeof AppNavigation.Onboard.AnalyticsConsent
 >
 
-const AnalyticsConsentScreen = () => {
+const AnalyticsConsentScreen = (): JSX.Element => {
   const { navigate } =
     useNavigation<AnalyticsConsentScreenProps['navigation']>()
   const { params } = useRoute<AnalyticsConsentScreenProps['route']>()

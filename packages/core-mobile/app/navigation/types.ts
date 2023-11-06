@@ -37,6 +37,7 @@ import {
   AvalancheSignTransactionRpcRequest as AvalancheSignTransactionRpcRequestV2
 } from 'store/walletConnectV2/handlers/avalanche_signTransaction/avalanche_signTransaction'
 import { EarnStackParamList } from 'navigation/wallet/EarnScreenStack/EarnScreenStack'
+import { BrowserStackParamList } from 'navigation/wallet/BrowserScreenStack'
 import { RootScreenStackParamList } from './RootScreenStack'
 import { OnboardingScreenStackParamList } from './OnboardScreenStack'
 import { WelcomeScreenStackParamList } from './onboarding/WelcomeScreenStack'
@@ -304,9 +305,9 @@ export type BridgeScreenProps<T extends keyof BridgeStackParamList> =
     WalletScreenProps<keyof WalletScreenStackParams>
   >
 
-/** ROOT -> WALLET -> DRAWER -> TABS -> Browser **/
+/** ROOT -> WALLET -> BROWSER **/
 export type BrowserScreenProps<T extends keyof BrowserStackParamList> =
   CompositeScreenProps<
     StackScreenProps<BrowserStackParamList, T>,
-    TabsScreenProps<keyof TabNavigatorParamList>
+    WalletScreenProps<keyof WalletScreenStackParams>
   >

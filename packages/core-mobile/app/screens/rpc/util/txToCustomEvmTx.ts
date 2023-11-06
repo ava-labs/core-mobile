@@ -1,9 +1,17 @@
 import { TransactionParams } from 'store/walletConnectV2/handlers/eth_sendTransaction/utils'
+import { BigNumberish } from 'ethers'
 
 export async function txToCustomEvmTx(
   networkFee: bigint,
   txParams: TransactionParams
-) {
+): Promise<{
+  gasLimit: number
+  data: string | undefined
+  from: string
+  to: string
+  value: BigNumberish | undefined
+  gasPrice: bigint
+}> {
   if (!txParams) {
     throw new Error('params is malformed')
   }
