@@ -31,7 +31,7 @@ if (!Config.WALLET_CONNECT_PROJECT_ID) {
 class WalletConnectService {
   #client: IWeb3Wallet | undefined
 
-  private get client() {
+  private get client(): IWeb3Wallet {
     assertNotUndefined(this.#client)
     return this.#client
   }
@@ -40,7 +40,11 @@ class WalletConnectService {
     this.#client = client
   }
 
-  init = async (callbacks: WalletConnectCallbacks) => {
+  init = async (callbacks: WalletConnectCallbacks): Promise<void> => {
+    if (this.#client !== undefined) {
+      Logger.info('WC already initialized')
+      return
+    }
     // after init, WC will auto restore sessions
     const core = new Core({
       logger: LOG_LEVEL,
@@ -67,7 +71,7 @@ class WalletConnectService {
     })
   }
 
-  pair = async (uri: string) => {
+  pair = async (uri: string): Promise<void> => {
     try {
       await this.client.pair({ uri, activatePairing: true })
     } catch (error) {
@@ -101,7 +105,7 @@ class WalletConnectService {
   }: Pick<
     EngineTypes.ApproveParams,
     'id' | 'relayProtocol' | 'namespaces'
-  >) => {
+  >): Promise<SessionTypes.Struct> => {
     return await this.client.approveSession({
       id,
       relayProtocol,
@@ -109,7 +113,7 @@ class WalletConnectService {
     })
   }
 
-  rejectSession = async (id: number) => {
+  rejectSession = async (id: number): Promise<void> => {
     await this.client.rejectSession({
       id,
       reason: getSdkError('USER_REJECTED_METHODS')
@@ -120,13 +124,17 @@ class WalletConnectService {
     topic: string,
     requestId: number,
     result: unknown
-  ) => {
+  ): Promise<void> => {
     const response = { id: requestId, result, jsonrpc: '2.0' }
 
     await this.client.respondSessionRequest({ topic, response })
   }
 
-  rejectRequest = async (topic: string, requestId: number, error: RpcError) => {
+  rejectRequest = async (
+    topic: string,
+    requestId: number,
+    error: RpcError
+  ): Promise<void> => {
     const response = {
       id: requestId,
       jsonrpc: '2.0',
@@ -136,14 +144,14 @@ class WalletConnectService {
     await this.client.respondSessionRequest({ topic, response })
   }
 
-  killSession = async (topic: string) => {
+  killSession = async (topic: string): Promise<void> => {
     await this.client.disconnectSession({
       topic,
       reason: getSdkError('USER_DISCONNECTED')
     })
   }
 
-  killAllSessions = async () => {
+  killAllSessions = async (): Promise<void> => {
     const promises: Promise<void>[] = []
 
     this.getSessions().forEach(session => {
@@ -153,14 +161,14 @@ class WalletConnectService {
     await Promise.allSettled(promises)
   }
 
-  killSessions = (topics: string[]) => {
+  killSessions = (topics: string[]): void => {
     const promises: Promise<void>[] = []
 
     for (const topic of topics) {
       promises.push(this.killSession(topic))
     }
 
-    return Promise.allSettled(promises)
+    Promise.allSettled(promises).catch(reason => Logger.error(reason))
   }
 
   updateSession = async ({
@@ -171,7 +179,7 @@ class WalletConnectService {
     session: SessionTypes.Struct
     chainId: number
     address: string
-  }) => {
+  }): Promise<void> => {
     if (isBitcoinChainId(chainId)) {
       Logger.info('skip updating WC session for bitcoin network')
       return
@@ -234,7 +242,7 @@ class WalletConnectService {
     session: SessionTypes.Struct
     chainId: number
     address: string
-  }) => {
+  }): Promise<void> => {
     // if dapp is not online, updateSession will be stuck for a long time
     // we are using promiseWithTimeout here to exit early when that happens
     return promiseWithTimeout(
@@ -254,7 +262,7 @@ class WalletConnectService {
   }: {
     chainId: number
     address: string
-  }) => {
+  }): Promise<void> => {
     if (isBitcoinChainId(chainId)) {
       Logger.info('skip updating WC sessions for bitcoin network')
       return
