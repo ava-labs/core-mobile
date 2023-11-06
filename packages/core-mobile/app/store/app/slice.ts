@@ -32,13 +32,15 @@ export const appSlice = createSlice({
 })
 
 // selectors
-export const selectIsReady = (state: RootState) => state.app.isReady
+export const selectIsReady = (state: RootState): boolean => state.app.isReady
 
-export const selectIsLocked = (state: RootState) => state.app.isLocked
+export const selectIsLocked = (state: RootState): boolean => state.app.isLocked
 
-export const selectAppState = (state: RootState) => state.app.appState
+export const selectAppState = (state: RootState): AppStateStatus =>
+  state.app.appState
 
-export const selectWalletState = (state: RootState) => state.app.walletState
+export const selectWalletState = (state: RootState): WalletState =>
+  state.app.walletState
 
 // actions
 // when app rehydration is complete
