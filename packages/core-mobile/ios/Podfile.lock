@@ -2,6 +2,14 @@ PODS:
   - boost (1.76.0)
   - CatCrypto (0.3.2)
   - CocoaAsyncSocket (7.6.5)
+  - DatadogSDK (1.22.0)
+  - DatadogSDKCrashReporting (1.22.0):
+    - DatadogSDK (= 1.22.0)
+    - PLCrashReporter (~> 1.11.0)
+  - DatadogSDKReactNative (1.9.0):
+    - DatadogSDK (~> 1.22.0)
+    - DatadogSDKCrashReporting (~> 1.22.0)
+    - React-Core
   - DoubleConversion (1.1.6)
   - FBLazyVector (0.70.14)
   - FBReactNativeSpec (0.70.14):
@@ -92,6 +100,7 @@ PODS:
   - OpenSSL-Universal (1.1.1100)
   - Permission-Camera (3.6.0):
     - RNPermissions
+  - PLCrashReporter (1.11.1)
   - RCT-Folly (2021.07.22.00):
     - boost
     - DoubleConversion
@@ -518,6 +527,7 @@ PODS:
 
 DEPENDENCIES:
   - boost (from `../node_modules/react-native/third-party-podspecs/boost.podspec`)
+  - "DatadogSDKReactNative (from `../node_modules/@datadog/mobile-react-native`)"
   - DoubleConversion (from `../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec`)
   - FBLazyVector (from `../node_modules/react-native/Libraries/FBLazyVector`)
   - FBReactNativeSpec (from `../node_modules/react-native/React/FBReactNativeSpec`)
@@ -622,6 +632,8 @@ SPEC REPOS:
   trunk:
     - CatCrypto
     - CocoaAsyncSocket
+    - DatadogSDK
+    - DatadogSDKCrashReporting
     - Flipper
     - Flipper-Boost-iOSX
     - Flipper-DoubleConversion
@@ -636,6 +648,7 @@ SPEC REPOS:
     - libwebp
     - lottie-ios
     - OpenSSL-Universal
+    - PLCrashReporter
     - SDWebImage
     - SDWebImageWebPCoder
     - Sentry
@@ -646,6 +659,8 @@ SPEC REPOS:
 EXTERNAL SOURCES:
   boost:
     :podspec: "../node_modules/react-native/third-party-podspecs/boost.podspec"
+  DatadogSDKReactNative:
+    :path: "../node_modules/@datadog/mobile-react-native"
   DoubleConversion:
     :podspec: "../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec"
   FBLazyVector:
@@ -801,6 +816,9 @@ SPEC CHECKSUMS:
   boost: a7c83b31436843459a1961bfd74b96033dc77234
   CatCrypto: a477899b6be4954e75be4897e732da098cc0a5a8
   CocoaAsyncSocket: 065fd1e645c7abab64f7a6a2007a48038fdc6a99
+  DatadogSDK: 46e1a7363bc3130fae151ec4aedf11ea291517c5
+  DatadogSDKCrashReporting: 24a0e6ec6db905cdeb174721962a7941b2f8a9d2
+  DatadogSDKReactNative: 92e7f7fb2e1231d35b22971e899efe863bd43d8d
   DoubleConversion: 5189b271737e1565bdce30deb4a08d647e3f5f54
   FBLazyVector: efad4471d02263013cfcb7a2f75de6ac7565692f
   FBReactNativeSpec: 9cd9542bfdcc64e07bc649f809dd621876f78619
@@ -822,6 +840,7 @@ SPEC CHECKSUMS:
   lottie-react-native: a029a86e1689c86a07169c520ae770e84348cd20
   OpenSSL-Universal: ebc357f1e6bc71fa463ccb2fe676756aff50e88c
   Permission-Camera: 0a0fb4341f50ab242f496fb2f73380e0ec454fe7
+  PLCrashReporter: 5d2d3967afe0efad61b3048d617e2199a5d1b787
   RCT-Folly: 0080d0a6ebf2577475bda044aa59e2ca1f909cda
   RCTRequired: 6f42727926c2ef4836fc23169586f3d8d7f5a6e4
   RCTTypeSafety: de9b538a8f20ae8c780bf38935f37f303b083fc8
