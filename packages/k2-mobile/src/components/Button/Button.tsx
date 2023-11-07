@@ -6,9 +6,9 @@ import {
   ViewStyle
 } from 'react-native'
 import { Pressable, Text, View } from '../Primitives'
-import { colors } from '../../theme/tokens/colors'
 import { Icons } from '../../theme/tokens/Icons'
 import { TextVariant } from '../../theme/tokens/text'
+import { useTheme } from '../..'
 
 interface BaseButtonProps {
   onPress?: () => void
@@ -66,6 +66,10 @@ export const Button: FC<ButtonProps> = ({
   children,
   ...rest
 }) => {
+  const {
+    theme: { colors }
+  } = useTheme()
+
   const tintColor = (pressed: boolean): string => {
     if (disabled) {
       switch (type) {
