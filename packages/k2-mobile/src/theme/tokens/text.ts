@@ -150,3 +150,5 @@ export const text = {
     lineHeight: 16
   }
 }
+
+export type TextVariant = keyof typeof text
