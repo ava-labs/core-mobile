@@ -396,6 +396,7 @@ __metadata:
   peerDependencies:
     react: 18.1.0
     react-native: 0.70.14
+    react-native-svg: 13.8.0
   languageName: unknown
   linkType: soft
 
