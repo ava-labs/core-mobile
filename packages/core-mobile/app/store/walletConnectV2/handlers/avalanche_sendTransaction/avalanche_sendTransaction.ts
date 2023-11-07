@@ -1,3 +1,4 @@
+import Config from 'react-native-config'
 import { AppListenerEffectAPI } from 'store'
 import * as Navigation from 'utils/Navigation'
 import AppNavigation from 'navigation/AppNavigation'
@@ -26,6 +27,9 @@ import {
   RpcRequestHandler
 } from '../types'
 import { parseRequestParams } from './utils'
+
+const GLACIER_URL = Config.GLACIER_URL
+const GLACIER_API_KEY = Config.GLACIER_API_KEY
 
 export type AvalancheTxParams = {
   transactionHex: string
@@ -90,11 +94,19 @@ class AvalancheSendTransactionHandler
       }
     }
 
+    const utxos = await Avalanche.getUtxosByTxFromGlacier({
+      transactionHex,
+      chainAlias,
+      isTestnet: isDevMode,
+      url: GLACIER_URL as string,
+      token: GLACIER_API_KEY
+    })
+
     if (chainAlias === 'C') {
       unsignedTx = await Avalanche.createAvalancheEvmUnsignedTx({
         txBytes,
         vm,
-        provider,
+        utxos,
         fromAddress: currentAddress
       })
     } else {
@@ -124,7 +136,7 @@ class AvalancheSendTransactionHandler
 
       unsignedTx = await Avalanche.createAvalancheUnsignedTx({
         tx,
-        vm,
+        utxos,
         provider,
         fromAddressBytes
       })

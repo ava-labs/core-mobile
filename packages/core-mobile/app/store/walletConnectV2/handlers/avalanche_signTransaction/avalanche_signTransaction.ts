@@ -1,3 +1,4 @@
+import Config from 'react-native-config'
 import { AppListenerEffectAPI } from 'store'
 import * as Navigation from 'utils/Navigation'
 import AppNavigation from 'navigation/AppNavigation'
@@ -6,7 +7,6 @@ import {
   Credential,
   UnsignedTx,
   utils,
-  Utxo,
   VM
 } from '@avalabs/avalanchejs-v2'
 import { ethErrors } from 'eth-rpc-errors'
@@ -26,6 +26,9 @@ import {
   RpcRequestHandler
 } from '../types'
 import { parseRequestParams } from './utils'
+
+const GLACIER_URL = Config.GLACIER_URL
+const GLACIER_API_KEY = Config.GLACIER_API_KEY
 
 export type AvalancheTxParams = {
   transactionHex: string
@@ -85,7 +88,6 @@ class AvalancheSignTransactionHandler
     const activeAccount = selectActiveAccount(getState())
     const currentAddress = getAddressByVM(vm, activeAccount)
     let credentials: Credential[] | undefined
-    let utxos: Utxo[] | undefined
 
     if (!currentAddress) {
       return {
@@ -98,12 +100,20 @@ class AvalancheSignTransactionHandler
 
     const tx = utils.unpackWithManager(vm, txBytes) as avaxSerial.AvaxTx
 
+    const utxos = await Avalanche.getUtxosByTxFromGlacier({
+      transactionHex,
+      chainAlias,
+      isTestnet: isDevMode,
+      url: GLACIER_URL as string,
+      token: GLACIER_API_KEY
+    })
+
     try {
       const codecManager = utils.getManagerForVM(vm)
       const signedTx = codecManager.unpack(txBytes, avaxSerial.SignedTx)
       const unsignedTx = await Avalanche.createAvalancheUnsignedTx({
         tx,
-        vm,
+        utxos,
         provider,
         credentials: signedTx.getCredentials()
       })
@@ -119,9 +129,6 @@ class AvalancheSignTransactionHandler
             })
           )
       )
-
-      // prevents double-fetching
-      utxos = unsignedTx.getInputUtxos()
     } catch (err) {
       // transaction hasn't been signed yet thus we continue with a custom list of empty credentials
       // to ensure it contains a signature slot for all signature indices from the inputs
@@ -132,7 +139,6 @@ class AvalancheSignTransactionHandler
 
     const unsignedTx = await Avalanche.createAvalancheUnsignedTx({
       tx,
-      vm,
       provider,
       credentials,
       utxos

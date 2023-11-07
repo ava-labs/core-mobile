@@ -37,6 +37,17 @@ jest.mock('services/network/NetworkService')
 jest.mock('services/wallet/WalletService')
 jest.mock('utils/Navigation')
 
+const mockIsDeveloperMode = true
+jest.mock('store/settings/advanced', () => {
+  const actual = jest.requireActual('store/settings/advanced')
+  return {
+    ...actual,
+    selectIsDeveloperMode: () => mockIsDeveloperMode
+  }
+})
+
+const utxosMock = [{ utxoId: '1' }, { utxoId: '2' }]
+
 const createRequest = (
   params: AvalancheTxParams = { transactionHex: '0x00001', chainAlias: 'X' }
 ): AvalancheSignTransactionRpcRequest => {
@@ -114,6 +125,7 @@ describe('app/store/walletConnectV2/handlers/avalanche_signTransaction/avalanche
     ;(networkService.getAvalancheNetworkXP as jest.Mock).mockReturnValue(
       'network'
     )
+    ;(Avalanche.getUtxosByTxFromGlacier as jest.Mock).mockReturnValue(utxosMock)
   })
 
   describe('handle', () => {
@@ -193,12 +205,20 @@ describe('app/store/walletConnectV2/handlers/avalanche_signTransaction/avalanche
 
       expect(Avalanche.getVmByChainAlias).toHaveBeenCalledWith('X')
       expect(utils.hexToBuffer).toHaveBeenCalledWith('0x00001')
+
+      expect(Avalanche.getUtxosByTxFromGlacier).toHaveBeenCalledWith({
+        transactionHex: '0x00001',
+        chainAlias: 'X',
+        isTestnet: true,
+        url: 'MOCK_GLACIER_URL',
+        token: 'MOCK_GLACIER_API_KEY'
+      })
+
       expect(Avalanche.createAvalancheUnsignedTx).toHaveBeenCalledWith({
         tx: txMock,
-        vm: AVM,
+        utxos: utxosMock,
         provider: providerMock,
-        credentials: [],
-        utxos: undefined
+        credentials: []
       })
       expect(utils.addressesFromBytes).toHaveBeenCalledWith([
         signerAddressBytesMock
@@ -225,12 +245,19 @@ describe('app/store/walletConnectV2/handlers/avalanche_signTransaction/avalanche
         })
       })
 
+      expect(Avalanche.getUtxosByTxFromGlacier).toHaveBeenCalledWith({
+        transactionHex: '0x00001',
+        chainAlias: 'X',
+        isTestnet: true,
+        url: 'MOCK_GLACIER_URL',
+        token: 'MOCK_GLACIER_API_KEY'
+      })
+
       expect(Avalanche.createAvalancheUnsignedTx).toHaveBeenCalledWith({
         tx: txMock,
-        vm: AVM,
+        utxos: utxosMock,
         provider: providerMock,
-        credentials: [],
-        utxos: undefined
+        credentials: []
       })
       expect(utils.addressesFromBytes).toHaveBeenCalledWith([
         signerAddressBytesMock
@@ -262,12 +289,19 @@ describe('app/store/walletConnectV2/handlers/avalanche_signTransaction/avalanche
         })
       })
 
+      expect(Avalanche.getUtxosByTxFromGlacier).toHaveBeenCalledWith({
+        transactionHex: '0x00001',
+        chainAlias: 'X',
+        isTestnet: true,
+        url: 'MOCK_GLACIER_URL',
+        token: 'MOCK_GLACIER_API_KEY'
+      })
+
       expect(Avalanche.createAvalancheUnsignedTx).toHaveBeenCalledWith({
         tx: txMock,
-        vm: AVM,
+        utxos: utxosMock,
         provider: providerMock,
-        credentials: [],
-        utxos: undefined
+        credentials: []
       })
       expect(utils.addressesFromBytes).toHaveBeenCalledWith([
         signerAddressBytesMock
@@ -343,16 +377,23 @@ describe('app/store/walletConnectV2/handlers/avalanche_signTransaction/avalanche
         value: DEFERRED_RESULT
       })
 
+      expect(Avalanche.getUtxosByTxFromGlacier).toHaveBeenCalledWith({
+        transactionHex: '0x00001',
+        chainAlias: 'X',
+        isTestnet: true,
+        url: 'MOCK_GLACIER_URL',
+        token: 'MOCK_GLACIER_API_KEY'
+      })
+
       expect(Avalanche.createAvalancheUnsignedTx).toHaveBeenCalledTimes(1)
       expect(Avalanche.createAvalancheUnsignedTx).toHaveBeenCalledWith({
         tx: txMock,
-        vm: AVM,
+        utxos: utxosMock,
         provider: providerMock,
         credentials: [
           (Credential as unknown as jest.Mock).mock.instances[0],
           (Credential as unknown as jest.Mock).mock.instances[1]
-        ],
-        utxos: undefined
+        ]
       })
 
       expect(Navigation.navigate).toHaveBeenCalledWith({
@@ -385,11 +426,6 @@ describe('app/store/walletConnectV2/handlers/avalanche_signTransaction/avalanche
         [{ _type: 'signature' }, { _type: 'signature' }]
       ]
 
-      const utxosMock = [
-        { utxoID: { txID: '0x1' } },
-        { utxoID: { txID: '0x2' } }
-      ]
-
       const request = createRequest()
 
       txMock.getSigIndices.mockReturnValueOnce([
@@ -397,7 +433,6 @@ describe('app/store/walletConnectV2/handlers/avalanche_signTransaction/avalanche
         [1, 1]
       ])
       codecManagerMock.unpack.mockReturnValueOnce(signedTxMock)
-      unsignedTxMock.getInputUtxos.mockReturnValueOnce(utxosMock)
       unsignedTxMock.getSigIndicesForAddress.mockReturnValueOnce([[0, 1]])
       unsignedTxMock.getSigIndices.mockReturnValueOnce([
         [1, 2],
@@ -437,16 +472,23 @@ describe('app/store/walletConnectV2/handlers/avalanche_signTransaction/avalanche
         credentialIndex: 1
       })
 
+      expect(Avalanche.getUtxosByTxFromGlacier).toHaveBeenCalledWith({
+        transactionHex: '0x00001',
+        chainAlias: 'X',
+        isTestnet: true,
+        url: 'MOCK_GLACIER_URL',
+        token: 'MOCK_GLACIER_API_KEY'
+      })
+
       expect(Avalanche.createAvalancheUnsignedTx).toHaveBeenCalledTimes(2)
       expect(Avalanche.createAvalancheUnsignedTx).toHaveBeenNthCalledWith(1, {
         tx: txMock,
-        vm: AVM,
+        utxos: utxosMock,
         provider: providerMock,
         credentials: [{ biz: 'baz' }, { baz: 'biz' }]
       })
       expect(Avalanche.createAvalancheUnsignedTx).toHaveBeenNthCalledWith(2, {
         tx: txMock,
-        vm: AVM,
         provider: providerMock,
         credentials: [
           (Credential as unknown as jest.Mock).mock.instances[0],
