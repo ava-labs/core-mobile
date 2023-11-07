@@ -24,7 +24,7 @@ type HistoryNavigationProp = BrowserScreenProps<
 export const HistoryListItem = ({ history }: Props): JSX.Element => {
   const dispatch = useDispatch()
   const { navigate } = useNavigation<HistoryNavigationProp>()
-  const activeTabId = useSelector(selectActiveTab)
+  const activeTab = useSelector(selectActiveTab)
   const {
     theme: { colors }
   } = useTheme()
@@ -35,8 +35,8 @@ export const HistoryListItem = ({ history }: Props): JSX.Element => {
 
   const navigateToTabView = (): void => {
     dispatch(addTab())
-    if (activeTabId) {
-      dispatch(addHistoryForTab({ tabId: activeTabId.id, history }))
+    if (activeTab) {
+      dispatch(addHistoryForTab({ tabId: activeTab.id, history }))
       navigate(AppNavigation.Browser.TabView)
     }
   }
