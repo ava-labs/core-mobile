@@ -36,7 +36,7 @@ function BrowserScreenStack(): JSX.Element {
       <BrowserStack.Screen
         name={AppNavigation.Browser.TabView}
         options={{ header: () => renderNavigationHeader({}) }}
-        component={TabView}
+        component={TabViewScreen}
       />
       <BrowserStack.Screen
         name={AppNavigation.Browser.TabsList}
@@ -92,12 +92,20 @@ function BrowserIntroScreen(): JSX.Element {
   )
 }
 
-function BrowserTabViewScreen(): JSX.Element {
-  return (
-    <View>
-      <TabViewScreen />
-    </View>
+type TabViewScreenProps = BrowserScreenProps<
+  typeof AppNavigation.Browser.TabView
+  >
+
+function TabViewScreen(): JSX.Element {
+  const hasBeenViewedBrowser = useSelector(
+    selectHasBeenViewedOnce(ViewOnceKey.BROWSER_INTERACTION)
   )
+  const { navigate } = useNavigation<TabViewScreenProps['navigation']>()
+
+  if (!hasBeenViewedBrowser) {
+    navigate(AppNavigation.Browser.Intro)
+  }
+  return <TabViewScreen />
 }
 
 function TabView(): JSX.Element {
