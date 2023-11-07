@@ -64,20 +64,25 @@ export const navigateTabHistory = (
   tabId: TabId
 ): void => {
   const tab = tabAdapter.getSelectors().selectById(state, tabId)
-  if (tab === undefined) return
-  if (tab.activeHistoryId === undefined) return
+  if (tab === undefined || tab.activeHistory?.id === undefined) return
 
-  const activeHistoryIndex = tab.historyIds.indexOf(tab.activeHistoryId)
+  const activeHistoryIndex = tab.historyIds.indexOf(tab.activeHistory.id)
   if (activeHistoryIndex === -1) return
   const newActiveHistoryIndex =
     action === 'forward' ? activeHistoryIndex + 1 : activeHistoryIndex - 1
   const historyId = tab.historyIds[newActiveHistoryIndex]
   if (historyId === undefined) return
+
   tabAdapter.updateOne(state, {
     id: tabId,
     changes: {
       lastVisited: getUnixTime(new Date()),
-      activeHistoryId: historyId.toString()
+      activeHistory: {
+        id: historyId,
+        url: '',
+        title: '',
+        screenshot: ''
+      }
     }
   })
 }

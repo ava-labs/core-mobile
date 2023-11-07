@@ -43,7 +43,7 @@ const tabSlice = createSlice({
       const tab = tabAdapter.getSelectors().selectById(state, tabId)
 
       if (tab === undefined) return
-      const activeHistoryId = tab.activeHistoryId
+      const activeHistoryId = tab.activeHistory?.id
 
       let indexToInsert = -1
 
@@ -60,7 +60,10 @@ const tabSlice = createSlice({
         changes: {
           historyIds: [...tab.historyIds, historyId],
           lastVisited,
-          activeHistoryId: historyId
+          activeHistory: {
+            id: historyId,
+            ...history
+          }
         }
       })
 
@@ -113,8 +116,8 @@ export const selectCanGoBack = (state: RootState): boolean => {
   const activeTab = tabAdapter
     .getSelectors()
     .selectById(state.browser.tabs, state.browser.tabs.activeTabId)
-  if (activeTab && activeTab.activeHistoryId) {
-    return activeTab.historyIds.indexOf(activeTab.activeHistoryId) > 0
+  if (activeTab && activeTab.activeHistory?.id) {
+    return activeTab.historyIds.indexOf(activeTab.activeHistory.id) > 0
   }
   return false
 }
@@ -124,9 +127,9 @@ export const selectCanGoForward = (state: RootState): boolean => {
   const activeTab = tabAdapter
     .getSelectors()
     .selectById(state.browser.tabs, state.browser.tabs.activeTabId)
-  if (activeTab && activeTab.activeHistoryId) {
+  if (activeTab && activeTab.activeHistory?.id) {
     return (
-      activeTab.historyIds.indexOf(activeTab.activeHistoryId) <
+      activeTab.historyIds.indexOf(activeTab.activeHistory.id) <
       activeTab.historyIds.length - 1
     )
   }
