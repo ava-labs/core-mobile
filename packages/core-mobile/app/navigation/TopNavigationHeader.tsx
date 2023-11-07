@@ -123,7 +123,9 @@ const TopNavigationHeader: FC<Props> = ({
         }}>
         {renderLeftButton() || <View />}
         {showAccountSelector && renderAccountSelector()}
-        {(showNetworkSelector && <NetworkDropdown />) || <View />}
+        {(showNetworkSelector && <NetworkDropdown />) || (
+          <View style={{ height: 34, width: 64 }} />
+        )}
       </Row>
       {renderAddress()}
     </View>

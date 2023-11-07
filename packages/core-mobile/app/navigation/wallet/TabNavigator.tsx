@@ -82,16 +82,7 @@ const TabNavigator: () => JSX.Element = () => {
       <Tab.Screen
         name={AppNavigation.Tabs.Browser}
         options={{
-          header: () => {
-            return (
-              <TopNavigationHeader
-                showMenu={false}
-                showBackButton={false}
-                showAccountSelector={true}
-                showNetworkSelector={false}
-              />
-            )
-          },
+          headerShown: false,
           tabBarIcon: ({ focused }) =>
             normalTabButton({
               theme,
