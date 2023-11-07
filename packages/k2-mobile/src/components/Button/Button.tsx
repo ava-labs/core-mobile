@@ -9,6 +9,7 @@ import { Pressable, Text, View } from '../Primitives'
 import { Icons } from '../../theme/tokens/Icons'
 import { TextVariant } from '../../theme/tokens/text'
 import { useTheme } from '../..'
+import { alpha } from '../../theme/tokens/colors'
 
 interface BaseButtonProps {
   onPress?: () => void
@@ -104,10 +105,12 @@ export const Button: FC<ButtonProps> = ({
         return pressed
           ? colors.$neutral400
           : disabled
-          ? colors.$neutral700 + 'CC'
+          ? alpha(colors.$neutral700, 0.5)
           : colors.$neutral50
       case 'secondary':
-        return pressed ? colors.$neutral700 + 'CC' : colors.$neutral700 + '80'
+        return pressed
+          ? alpha(colors.$neutral700, 0.8)
+          : alpha(colors.$neutral700, 0.5)
       case 'tertiary':
       case 'tertiaryDanger':
         return 'transparent'

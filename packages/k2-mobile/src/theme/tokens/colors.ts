@@ -1,6 +1,8 @@
 // K2 Foundation - Colors
 // https://www.figma.com/file/hDSl4OUgXorDAtqPZtCUhB/K2-Foundation?type=design&node-id=349-2238
 
+import tinycolor from 'tinycolor2'
+
 export const colors = {
   // primary colors
   $blueLighter: '#91D1FF',
@@ -70,4 +72,8 @@ export const colors = {
   $transparent: '#00000000',
   $black: '#000000',
   $white: '#FFFFFF'
+}
+
+export function alpha(color: string, value: number): string {
+  return tinycolor(color).setAlpha(value).toString()
 }
