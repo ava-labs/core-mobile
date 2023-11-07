@@ -32,6 +32,7 @@ interface Props extends Omit<TextInputProps, 'value' | 'onChangeText'> {
   hideBottomNav?: boolean
   useDebounce?: boolean
   debounceMillis?: number
+  textColor?: string
   testID?: string
 }
 
@@ -53,6 +54,7 @@ const DEFAULT_DEBOUNCE_MILLISECONDS = 150
  * @param placeholder defaults to 'Search'
  * @param hideBottomNav attempts to hide bottom tabs, gives more space
  * @param debounce if true, will delay calling 'onTextChanged' by default ms
+ * @param textColor defaults to theme.colorText2
  * @param rest all other props
  * @constructor
  */
@@ -63,6 +65,7 @@ const SearchBar: FC<Props> = ({
   hideBottomNav = false,
   useDebounce = false,
   debounceMillis = DEFAULT_DEBOUNCE_MILLISECONDS,
+  textColor,
   ...rest
 }) => {
   const textInputRef = useRef<TextInput>(null)
@@ -166,7 +169,7 @@ const SearchBar: FC<Props> = ({
           ref={textInputRef}
           style={[
             styles.searchInput,
-            { color: theme.colorText2, width: textInputWidth }
+            { color: textColor ?? theme.colorText2, width: textInputWidth }
           ]}
           placeholder={placeholder}
           placeholderTextColor={theme.colorText2}

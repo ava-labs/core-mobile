@@ -13,7 +13,14 @@ const initialState = historyAdapter.getInitialState()
 const globalHistorySlice = createSlice({
   name: reducerName,
   initialState,
-  reducers: {},
+  reducers: {
+    removeAllHistories: (state: HistoryState) => {
+      historyAdapter.removeAll(state)
+    },
+    removeHistory: (state: HistoryState, { payload }) => {
+      historyAdapter.removeOne(state, payload.id)
+    }
+  },
   extraReducers: builder => {
     builder.addCase(addHistoryForTab, (state: HistoryState, { payload }) => {
       const { history } = payload
@@ -43,5 +50,12 @@ export const selectActiveHistory =
       .getSelectors()
       .selectById(state.browser.globalHistory, id)
   }
+
+export const selectAllHistories = (state: RootState): History[] => {
+  return historyAdapter.getSelectors().selectAll(state.browser.globalHistory)
+}
+
+// actions
+export const { removeAllHistories, removeHistory } = globalHistorySlice.actions
 
 export const globalHistoryReducer = globalHistorySlice.reducer
