@@ -1,8 +1,9 @@
 import React from 'react'
 import type { Meta } from '@storybook/react-native'
-import { Linking, StyleSheet } from 'react-native'
+import { StyleSheet } from 'react-native'
 import { withCenterView } from '../../../storybook/decorators/withCenterView'
-import { ScrollView, Text, View } from '../Primitives'
+import { ScrollView, View } from '../Primitives'
+import Link from '../../utils/Link'
 import { Button, ButtonSize, ButtonType } from './Button'
 
 export default {
@@ -54,18 +55,11 @@ export const All = (): JSX.Element => {
 
   return (
     <ScrollView contentContainerStyle={{ padding: 16 }}>
-      <Text
-        variant="heading5"
-        onPress={() => {
-          Linking.openURL(FIGMA_LINK)
-        }}
-        sx={{
-          color: '$blueMain',
-          textDecorationLine: 'underline',
-          marginBottom: 20
-        }}>
-        Figma Source
-      </Text>
+      <Link
+        title="Figma Source"
+        url={FIGMA_LINK}
+        style={{ marginBottom: 20 }}
+      />
       {types.map((type, index) => (
         <View
           key={index}
