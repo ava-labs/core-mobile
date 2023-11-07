@@ -73,7 +73,7 @@ export const All = (): JSX.Element => {
           type={type}
           size="large"
           leftIcon="check"
-          rightIcon={'expandMore'}
+          rightIcon="expandMore"
           style={{
             marginBottom: index !== types.length - 1 ? 16 : 0,
             width: 300
