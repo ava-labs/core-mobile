@@ -20,6 +20,7 @@ export type BrowserStackParamList = {
   [AppNavigation.Browser.TabsList]: undefined
   [AppNavigation.Browser.History]: undefined
   [AppNavigation.Browser.AreYouSure]: undefined
+  [AppNavigation.Browser.ClearAllHistory]: undefined
 }
 
 type TabViewScreenProps = BrowserScreenProps<

@@ -25,7 +25,7 @@ export const HistoryScreen = (): JSX.Element => {
   } = useTheme()
 
   const removeAll = (): void => {
-    navigate(AppNavigation.Browser.AreYouSure)
+    navigate(AppNavigation.Browser.ClearAllHistory)
   }
 
   useEffect(() => {
