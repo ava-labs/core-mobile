@@ -3,8 +3,8 @@ import type { Meta } from '@storybook/react-native'
 import { FlatList } from 'react-native'
 import { SvgProps } from 'react-native-svg'
 import Link from '../../utils/Link'
+import { useTheme } from '../..'
 import { Icons } from './Icons'
-import { colors } from './colors'
 
 export default {
   title: 'Icons'
@@ -26,6 +26,9 @@ const Template = ({
   icons: React.FC<SvgProps>[]
   resourceURL: string
 }): JSX.Element => {
+  const {
+    theme: { colors }
+  } = useTheme()
   const renderItem = ({ item }: { item: React.FC<SvgProps> }): JSX.Element => {
     const IconComponent = item
 
