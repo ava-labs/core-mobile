@@ -7,6 +7,12 @@ import { View } from 'react-native'
 import AvaText from 'components/AvaText'
 import { AreYouSureModal } from 'screens/browser/AreYouSureModal'
 import IntroScreen from 'screens/browser/IntroScreen'
+import { useNavigation } from '@react-navigation/native'
+import { BrowserScreenProps } from 'navigation/types'
+import { useSelector } from 'react-redux'
+import { selectHasBeenViewedOnce, ViewOnceKey } from 'store/viewOnce'
+import { HistoryScreen } from 'screens/browser/HistoryScreen'
+import { SubHeaderOptions } from 'navigation/NavUtils'
 
 export type BrowserStackParamList = {
   [AppNavigation.Browser.Intro]: undefined
@@ -14,26 +20,22 @@ export type BrowserStackParamList = {
   [AppNavigation.Browser.TabsList]: undefined
   [AppNavigation.Browser.History]: undefined
   [AppNavigation.Browser.AreYouSure]: undefined
+  [AppNavigation.Browser.ClearAllHistory]: undefined
 }
+
+type TabViewScreenProps = BrowserScreenProps<
+  typeof AppNavigation.Browser.TabView
+>
 
 const BrowserStack = createStackNavigator<BrowserStackParamList>()
 
 function BrowserScreenStack(): JSX.Element {
   return (
-    <BrowserStack.Navigator
-      screenOptions={{
-        headerShown: true,
-        title: '',
-        headerBackTitleVisible: false,
-        headerTitleAlign: 'center',
-        headerLeftContainerStyle: {
-          paddingLeft: 8
-        }
-      }}>
+    <BrowserStack.Navigator>
       <BrowserStack.Screen
         name={AppNavigation.Browser.TabView}
-        options={{ headerShown: false }}
-        component={TabViewStub}
+        options={{ header: () => renderNavigationHeader({}) }}
+        component={TabView}
       />
       <BrowserStack.Screen
         name={AppNavigation.Browser.TabsList}
@@ -43,19 +45,22 @@ function BrowserScreenStack(): JSX.Element {
       <BrowserStack.Screen
         name={AppNavigation.Browser.History}
         options={{
-          header: () => renderNavigationHeader({})
+          ...SubHeaderOptions('History')
         }}
         component={HistoryStub}
       />
       <BrowserStack.Screen
         name={AppNavigation.Browser.AreYouSure}
-        options={{ presentation: 'transparentModal' }}
+        options={{ presentation: 'transparentModal', headerShown: false }}
         component={AreYouSureModal}
       />
       <BrowserStack.Screen
         name={AppNavigation.Browser.Intro}
-        options={{ headerShown: false }}
-        component={BrowswerIntroScreen}
+        options={{
+          presentation: 'transparentModal',
+          headerShown: false
+        }}
+        component={BrowserIntroScreen}
       />
     </BrowserStack.Navigator>
   )
@@ -69,7 +74,7 @@ const renderNavigationHeader = ({
   onBack?: () => void
 }): JSX.Element => (
   <TopNavigationHeader
-    showAccountSelector={false}
+    showAccountSelector={true}
     showNetworkSelector={false}
     showBackButton={showBackButton}
     onBack={onBack}
@@ -78,7 +83,7 @@ const renderNavigationHeader = ({
 
 export default React.memo(BrowserScreenStack)
 
-function BrowswerIntroScreen(): JSX.Element {
+function BrowserIntroScreen(): JSX.Element {
   return (
     <View>
       <IntroScreen />
@@ -86,7 +91,15 @@ function BrowswerIntroScreen(): JSX.Element {
   )
 }
 
-function TabViewStub(): JSX.Element {
+function TabView(): JSX.Element {
+  const hasBeenViewedBrowser = useSelector(
+    selectHasBeenViewedOnce(ViewOnceKey.BROWSER_INTERACTION)
+  )
+  const { navigate } = useNavigation<TabViewScreenProps['navigation']>()
+
+  if (!hasBeenViewedBrowser) {
+    navigate(AppNavigation.Browser.Intro)
+  }
   return (
     <View>
       <AvaText.LargeTitleBold>TabViewStub</AvaText.LargeTitleBold>
@@ -103,9 +116,5 @@ function TabsListStub(): JSX.Element {
 }
 
 function HistoryStub(): JSX.Element {
-  return (
-    <View>
-      <AvaText.LargeTitleBold>HistoryStub</AvaText.LargeTitleBold>
-    </View>
-  )
+  return <HistoryScreen />
 }

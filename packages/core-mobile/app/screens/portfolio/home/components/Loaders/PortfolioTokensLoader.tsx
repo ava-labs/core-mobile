@@ -2,12 +2,14 @@ import React from 'react'
 import ContentLoader, { Rect } from 'react-content-loader/native'
 import { Dimensions, View } from 'react-native'
 import { useSkeletonColors } from 'hooks/colors/useSkeletonColors'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 
 const deviceWidth = Dimensions.get('screen').width
 const aspectRatio = 359 / 518
 
-export const PortfolioTokensLoader = () => {
+export const PortfolioTokensLoader = (): JSX.Element => {
   const { backgroundColor, foregroundColor } = useSkeletonColors()
+  const { theme } = useApplicationContext()
 
   return (
     <View
@@ -15,6 +17,7 @@ export const PortfolioTokensLoader = () => {
         alignItems: 'center',
         width: deviceWidth - 16,
         aspectRatio: aspectRatio,
+        backgroundColor: theme.background,
         marginTop: 14,
         marginLeft: 16
       }}>

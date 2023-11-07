@@ -2,9 +2,9 @@ import React, { useCallback } from 'react'
 import { useNavigation } from '@react-navigation/native'
 import WarningModal from 'components/WarningModal'
 import { useDispatch } from 'react-redux'
-import { removeAllTabs } from 'store/browser/slices/tabs'
+import { removeAllHistories } from 'store/browser/slices/globalHistory'
 
-export const AreYouSureModal: () => JSX.Element = () => {
+export const ClearAllHistoryModal: () => JSX.Element = () => {
   const dispatch = useDispatch()
   const { goBack, canGoBack } = useNavigation()
 
@@ -15,15 +15,15 @@ export const AreYouSureModal: () => JSX.Element = () => {
   }, [canGoBack, goBack])
 
   const onYes = useCallback(() => {
-    dispatch(removeAllTabs())
+    dispatch(removeAllHistories())
     onGoBack()
   }, [dispatch, onGoBack])
 
   return (
     <WarningModal
-      title={'Close All Tabs?'}
+      title={'Clear History?'}
       message={
-        'Closing all tabs will permanently remove them from this page. You can still access them from your History.'
+        'Clearing your history will permanently remove this information.'
       }
       actionText={'Yes'}
       dismissText={'Cancel'}

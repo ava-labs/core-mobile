@@ -6,7 +6,9 @@ import {
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import React, { useEffect } from 'react'
 import { View } from 'react-native'
-import CreateNewWalletPlusSVG from 'components/svg/CreateNewWalletPlusSVG'
+import CreateNewWalletPlusSVG, {
+  IconWeight
+} from 'components/svg/CreateNewWalletPlusSVG'
 import WalletSVG from 'components/svg/WalletSVG'
 import MenuSVG from 'components/svg/MenuSVG'
 import AvaButton from 'components/AvaButton'
@@ -104,7 +106,12 @@ const NoWalletTabNavigator = () => {
               theme,
               routeName: AppNavigation.NoWalletTabs.NewWallet,
               focused,
-              image: <CreateNewWalletPlusSVG size={TAB_ICON_SIZE} bold />
+              image: (
+                <CreateNewWalletPlusSVG
+                  size={TAB_ICON_SIZE}
+                  weight={IconWeight.bold}
+                />
+              )
             })
         }}
         listeners={() => ({

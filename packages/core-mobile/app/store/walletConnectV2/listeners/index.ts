@@ -7,23 +7,23 @@ import {
   killSessions,
   newSession,
   onDisconnect,
+  onRequest,
   onSendRpcError,
-  onSendRpcResult,
-  onRequest
+  onSendRpcResult
 } from '../slice'
 import {
+  handleAccountChange,
+  handleDisconnect,
+  handleNetworkChange,
+  initWalletConnect,
   killAllSessions,
   killSomeSessions,
-  handleDisconnect,
-  startSession,
-  initWalletConnect,
-  handleNetworkChange,
-  handleAccountChange
+  startSession
 } from './sessions'
 import { processRequest } from './requests'
-import { sendRpcResult, sendRpcError } from './responses'
+import { sendRpcError, sendRpcResult } from './responses'
 
-export const addWCListeners = (startListening: AppStartListening) => {
+export const addWCListeners = (startListening: AppStartListening): void => {
   /*********************
    * SESSION LISTENERS *
    *********************/

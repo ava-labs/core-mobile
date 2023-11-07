@@ -55,6 +55,7 @@ import { SecurityStackParamList } from './wallet/SecurityPrivacyStackScreen'
 import { BridgeStackParamList } from './wallet/BridgeScreenStack'
 import { PortfolioStackParamList } from './wallet/PortfolioScreenStack'
 import { StakeSetupStackParamList } from './wallet/EarnScreenStack/StakeSetupScreenStack'
+import { BrowserStackParamList } from './wallet/BrowserScreenStack'
 
 export type { RootScreenStackParamList }
 
@@ -300,5 +301,12 @@ export type AdvancedScreenProps<T extends keyof AdvancedStackParamList> =
 export type BridgeScreenProps<T extends keyof BridgeStackParamList> =
   CompositeScreenProps<
     StackScreenProps<BridgeStackParamList, T>,
+    WalletScreenProps<keyof WalletScreenStackParams>
+  >
+
+/** ROOT -> WALLET -> BROWSER **/
+export type BrowserScreenProps<T extends keyof BrowserStackParamList> =
+  CompositeScreenProps<
+    StackScreenProps<BrowserStackParamList, T>,
     WalletScreenProps<keyof WalletScreenStackParams>
   >

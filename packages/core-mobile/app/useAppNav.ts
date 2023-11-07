@@ -7,7 +7,7 @@ type NavigationRef = MutableRefObject<NavigationContainerRef<any> | null>
 
 export type AppNavHook = {
   navigation: NavigationRef
-  navigateToRootWallet: () => void
+  resetNavToUnlockedWallet: () => void
   resetNavToRoot: () => void
   resetNavToEnterMnemonic: () => void
 }
@@ -18,24 +18,37 @@ export function useAppNav(): AppNavHook {
 
   return {
     navigation,
-    navigateToRootWallet: () => navigateToRootWallet(navigation),
+    resetNavToUnlockedWallet: () => resetNavToUnlockedWallet(navigation),
     resetNavToRoot: () => resetNavToRoot(navigation),
     resetNavToEnterMnemonic: () => resetNavToEnterMnemonic(navigation)
   }
 }
 
-function navigateToRootWallet(navigation: NavigationRef) {
-  navigation.current?.reset({
-    index: 0,
-    routes: [
-      {
-        name: AppNavigation.Root.Wallet
-      }
-    ]
-  })
+/**
+ * This is used when we switch to unlockedApp state to set Root.Wallet as root route.
+ * It is important to swap only root route because handling deepLinks and walletConnect listeners
+ * will push new views even if current state is lockedApp.
+ */
+function resetNavToUnlockedWallet(navigation: NavigationRef): void {
+  if (
+    navigation.current?.getState().routes[0]?.name !== AppNavigation.Root.Wallet
+  ) {
+    let others = navigation.current?.getState().routes.slice(1) ?? []
+    others = others.filter(navs => !navs.name.includes('NoWallet'))
+    navigation.current?.reset({
+      index: 0,
+      // @ts-ignore
+      routes: [
+        {
+          name: AppNavigation.Root.Wallet
+        },
+        ...others
+      ]
+    })
+  }
 }
 
-function resetNavToRoot(navigation: NavigationRef) {
+function resetNavToRoot(navigation: NavigationRef): void {
   navigation.current?.reset({
     index: 0,
     routes: [
@@ -47,7 +60,7 @@ function resetNavToRoot(navigation: NavigationRef) {
   })
 }
 
-function resetNavToEnterMnemonic(navigation: NavigationRef) {
+function resetNavToEnterMnemonic(navigation: NavigationRef): void {
   navigation.current?.reset({
     index: 0,
     routes: [

@@ -99,10 +99,10 @@ export const useExplainTransactionShared = (
           ...currentTransaction,
           txParams: {
             ...currentTransaction.txParams,
-            gasLimit: feeDisplayValues.gasLimit,
-            gasPrice: feeDisplayValues.gasPrice.toString(16) // test this
+            gas: '0x' + feeDisplayValues.gasLimit.toString(16),
+            gasPrice: '0x' + feeDisplayValues.gasPrice.toString(16) // test this
           }
-        }
+        } as Transaction
       })
     },
     [tokenPrice, network?.networkToken?.decimals]
@@ -351,7 +351,9 @@ const getTxParamsWithGasLimit = (
   gasLimit: number | null,
   txParams: TransactionParams
 ): TransactionParams => {
-  return gasLimit ? { ...txParams, gas: gasLimit } : txParams
+  return gasLimit
+    ? { ...txParams, gas: '0x' + gasLimit.toString(16) }
+    : txParams
 }
 
 const extractParamsForContractParser = (
