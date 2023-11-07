@@ -11,6 +11,8 @@ import { useNavigation } from '@react-navigation/native'
 import { BrowserScreenProps } from 'navigation/types'
 import { useSelector } from 'react-redux'
 import { selectHasBeenViewedOnce, ViewOnceKey } from 'store/viewOnce'
+import { HistoryScreen } from 'screens/browser/HistoryScreen'
+import { SubHeaderOptions } from 'navigation/NavUtils'
 
 export type BrowserStackParamList = {
   [AppNavigation.Browser.Intro]: undefined
@@ -18,6 +20,7 @@ export type BrowserStackParamList = {
   [AppNavigation.Browser.TabsList]: undefined
   [AppNavigation.Browser.History]: undefined
   [AppNavigation.Browser.AreYouSure]: undefined
+  [AppNavigation.Browser.ClearAllHistory]: undefined
 }
 
 type TabViewScreenProps = BrowserScreenProps<
@@ -28,19 +31,10 @@ const BrowserStack = createStackNavigator<BrowserStackParamList>()
 
 function BrowserScreenStack(): JSX.Element {
   return (
-    <BrowserStack.Navigator
-      screenOptions={{
-        headerShown: true,
-        title: '',
-        headerBackTitleVisible: false,
-        headerTitleAlign: 'center',
-        headerLeftContainerStyle: {
-          paddingLeft: 8
-        }
-      }}>
+    <BrowserStack.Navigator>
       <BrowserStack.Screen
         name={AppNavigation.Browser.TabView}
-        options={{ headerShown: false }}
+        options={{ header: () => renderNavigationHeader({}) }}
         component={TabView}
       />
       <BrowserStack.Screen
@@ -51,13 +45,13 @@ function BrowserScreenStack(): JSX.Element {
       <BrowserStack.Screen
         name={AppNavigation.Browser.History}
         options={{
-          header: () => renderNavigationHeader({})
+          ...SubHeaderOptions('History')
         }}
         component={HistoryStub}
       />
       <BrowserStack.Screen
         name={AppNavigation.Browser.AreYouSure}
-        options={{ presentation: 'modal' }}
+        options={{ presentation: 'transparentModal', headerShown: false }}
         component={AreYouSureModal}
       />
       <BrowserStack.Screen
@@ -80,7 +74,7 @@ const renderNavigationHeader = ({
   onBack?: () => void
 }): JSX.Element => (
   <TopNavigationHeader
-    showAccountSelector={false}
+    showAccountSelector={true}
     showNetworkSelector={false}
     showBackButton={showBackButton}
     onBack={onBack}
@@ -122,9 +116,5 @@ function TabsListStub(): JSX.Element {
 }
 
 function HistoryStub(): JSX.Element {
-  return (
-    <View>
-      <AvaText.LargeTitleBold>HistoryStub</AvaText.LargeTitleBold>
-    </View>
-  )
+  return <HistoryScreen />
 }

@@ -7,7 +7,7 @@ interface Props {
   backgroundColor: string
 }
 
-function ClearSVG({ color, backgroundColor, size = 24 }: Props) {
+function ClearSVG({ color, backgroundColor, size = 24 }: Props): JSX.Element {
   const svgColor = color
   const bgColor = backgroundColor
   return (
