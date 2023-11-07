@@ -93,7 +93,7 @@ export const Button: FC<ButtonProps> = ({
     }
   }
 
-  const backgroundColor = (pressed: boolean): string | undefined => {
+  const backgroundColor = (pressed: boolean): string => {
     switch (type) {
       case 'primary':
       case 'primaryDanger':
@@ -106,7 +106,7 @@ export const Button: FC<ButtonProps> = ({
         return pressed ? colors.$neutral700 + 'CC' : colors.$neutral700 + '80'
       case 'tertiary':
       case 'tertiaryDanger':
-        return undefined
+        return 'transparent'
     }
   }
 
