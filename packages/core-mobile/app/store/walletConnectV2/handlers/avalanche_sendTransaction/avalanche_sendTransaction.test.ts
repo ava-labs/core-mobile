@@ -37,6 +37,17 @@ jest.mock('services/network/NetworkService')
 jest.mock('services/wallet/WalletService')
 jest.mock('utils/Navigation')
 
+const mockIsDeveloperMode = true
+jest.mock('store/settings/advanced', () => {
+  const actual = jest.requireActual('store/settings/advanced')
+  return {
+    ...actual,
+    selectIsDeveloperMode: () => mockIsDeveloperMode
+  }
+})
+
+const utxosMock = [{ utxoId: '1' }, { utxoId: '2' }]
+
 const createRequest = (
   params: AvalancheTxParams = { transactionHex: '0x00001', chainAlias: 'X' }
 ): AvalancheSendTransactionRpcRequest => {
@@ -106,6 +117,7 @@ describe('app/store/walletConnectV2/handlers/avalanche_sendTransaction/avalanche
     )
     ;(utils.hexToBuffer as jest.Mock).mockReturnValue(txBytes)
     ;(selectActiveAccount as jest.Mock).mockReturnValue(mockAccounts[0])
+    ;(Avalanche.getUtxosByTxFromGlacier as jest.Mock).mockReturnValue(utxosMock)
   })
 
   describe('handle', () => {
@@ -189,6 +201,7 @@ describe('app/store/walletConnectV2/handlers/avalanche_sendTransaction/avalanche
     it('X/P: opens the approval window and returns deferred result', async () => {
       const request = createRequest()
       const tx = { vm: AVM }
+
       ;(utils.unpackWithManager as jest.Mock).mockReturnValueOnce(tx)
       ;(Avalanche.parseAvalancheTx as jest.Mock).mockReturnValueOnce({
         type: 'import'
@@ -204,9 +217,17 @@ describe('app/store/walletConnectV2/handlers/avalanche_sendTransaction/avalanche
         mockListenerApi
       )
 
+      expect(Avalanche.getUtxosByTxFromGlacier).toHaveBeenCalledWith({
+        transactionHex: '0x00001',
+        chainAlias: 'X',
+        isTestnet: true,
+        url: 'MOCK_GLACIER_URL',
+        token: 'MOCK_GLACIER_API_KEY'
+      })
+
       expect(Avalanche.createAvalancheUnsignedTx).toHaveBeenCalledWith({
         tx,
-        vm: AVM,
+        utxos: utxosMock,
         provider: providerMock,
         fromAddressBytes: [new Uint8Array([0, 1, 2])]
       })
@@ -234,9 +255,11 @@ describe('app/store/walletConnectV2/handlers/avalanche_sendTransaction/avalanche
     })
 
     it('C: opens the approval window and returns deferred result', async () => {
+      const transactionHex = '0x00001'
+      const chainAlias = 'C'
       const request = createRequest({
-        transactionHex: '0x00001',
-        chainAlias: 'C'
+        transactionHex,
+        chainAlias
       })
       ;(Avalanche.getVmByChainAlias as jest.Mock).mockReturnValue(EVM)
       ;(utils.hexToBuffer as jest.Mock).mockReturnValueOnce(
@@ -282,10 +305,18 @@ describe('app/store/walletConnectV2/handlers/avalanche_sendTransaction/avalanche
         value: DEFERRED_RESULT
       })
 
+      expect(Avalanche.getUtxosByTxFromGlacier).toHaveBeenCalledWith({
+        transactionHex: transactionHex,
+        chainAlias: chainAlias,
+        isTestnet: true,
+        url: 'MOCK_GLACIER_URL',
+        token: 'MOCK_GLACIER_API_KEY'
+      })
+
       expect(Avalanche.createAvalancheEvmUnsignedTx).toHaveBeenCalledWith({
         txBytes: new Uint8Array([0, 1, 2]),
         vm: EVM,
-        provider: providerMock,
+        utxos: utxosMock,
         fromAddress: mockAccounts[0].addressCoreEth
       })
     })
