@@ -61,20 +61,6 @@ enum WalletScreens {
   SendFeedback = 'WalletScreens.SendFeedback'
 }
 
-enum NoWalletScreens {
-  CurrencySelector = 'NoWalletScreens.CurrencySelector',
-  Drawer = 'NoWalletScreens.Drawer',
-  Legal = 'NoWalletScreens.Legal',
-  Tabs = 'NoWalletScreens.Tabs',
-  Welcome = 'NoWalletScreens.Welcome'
-}
-
-enum NoWalletTabs {
-  ExistingWallet = 'Recover Wallet',
-  NewWallet = 'New Wallet',
-  EnterWallet = 'Enter Wallet'
-}
-
 enum ReceiveTokensScreens {
   ReceiveCChain = 'ReceiveTokensScreens.ReceiveCChain'
 }
@@ -228,12 +214,10 @@ const AppNavigation = {
   CreateWallet: CreateWalletNavigationScreens,
   LoginWithMnemonic: LoginWithMnemonicStackScreens,
   Wallet: WalletScreens,
-  NoWallet: NoWalletScreens,
   SecurityPrivacy: SecurityPrivacyScreens,
   Legal: LegalScreens,
   Advanced: AdvancedScreens,
   Tabs: Tabs,
-  NoWalletTabs: NoWalletTabs,
   Modal: ModalScreens,
   Swap: SwapScreens,
   Nft: NftScreens,

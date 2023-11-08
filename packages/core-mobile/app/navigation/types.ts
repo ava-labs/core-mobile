@@ -3,11 +3,6 @@ import { StackScreenProps } from '@react-navigation/stack'
 import { BottomTabScreenProps } from '@react-navigation/bottom-tabs'
 import { DrawerScreenProps as RNDrawerScreenProps } from '@react-navigation/drawer'
 import { TokenWithBalance } from 'store/balance'
-import {
-  NoWalletDrawerParamList,
-  NoWalletScreenStackParams
-} from 'navigation/NoWalletScreenStack'
-import { NoWalletTabNavigatorParamList } from 'navigation/wallet/NoWalletTabNavigator'
 import { AdvancedStackParamList } from 'navigation/wallet/AdvancedStackScreen'
 import { AvalancheCreateContactRequest as AvalancheCreateContactRequestV2 } from 'store/walletConnectV2/handlers/contact/avalanche_createContact/avalanche_createContact'
 import { AvalancheRemoveContactRequest as AvalancheRemoveContactRequestV2 } from 'store/walletConnectV2/handlers/contact/avalanche_removeContact/avalanche_removeContact'
@@ -185,13 +180,6 @@ export type WalletScreenProps<T extends keyof WalletScreenStackParams> =
     RootStackScreenProps<keyof RootScreenStackParamList>
   >
 
-/** ROOT -> NO WALLET **/
-export type NoWalletScreenProps<T extends keyof NoWalletScreenStackParams> =
-  CompositeScreenProps<
-    StackScreenProps<NoWalletScreenStackParams, T>,
-    RootStackScreenProps<keyof RootScreenStackParamList>
-  >
-
 /** ROOT -> WALLET -> DRAWER **/
 export type DrawerScreenProps<T extends keyof DrawerParamList> =
   CompositeScreenProps<
@@ -199,25 +187,11 @@ export type DrawerScreenProps<T extends keyof DrawerParamList> =
     WalletScreenProps<keyof WalletScreenStackParams>
   >
 
-/** ROOT -> NO WALLET -> DRAWER **/
-export type NoWalletDrawerScreenProps<T extends keyof NoWalletDrawerParamList> =
-  CompositeScreenProps<
-    RNDrawerScreenProps<NoWalletDrawerParamList, T>,
-    NoWalletScreenProps<keyof NoWalletScreenStackParams>
-  >
-
 /** ROOT -> WALLET -> DRAWER -> TABS **/
 export type TabsScreenProps<T extends keyof TabNavigatorParamList> =
   CompositeScreenProps<
     BottomTabScreenProps<TabNavigatorParamList, T>,
     DrawerScreenProps<keyof DrawerParamList>
-  >
-
-/** ROOT -> WALLET -> DRAWER -> TABS **/
-export type NoTabsScreenProps<T extends keyof NoWalletTabNavigatorParamList> =
-  CompositeScreenProps<
-    BottomTabScreenProps<NoWalletTabNavigatorParamList, T>,
-    NoWalletDrawerScreenProps<keyof NoWalletDrawerParamList>
   >
 
 /** ROOT -> WALLET -> DRAWER -> TABS -> PORTFOLIO **/
