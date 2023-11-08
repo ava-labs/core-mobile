@@ -8,7 +8,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { History } from 'store/browser'
 import { removeHistory } from 'store/browser/slices/globalHistory'
 import {
-  addHistoryForTab,
+  addHistoryForActiveTab,
   addTab,
   selectActiveTab
 } from 'store/browser/slices/tabs'
@@ -36,7 +36,7 @@ export const HistoryListItem = ({ history }: Props): JSX.Element => {
   const navigateToTabView = (): void => {
     dispatch(addTab())
     if (activeTab) {
-      dispatch(addHistoryForTab({ tabId: activeTab.id, history }))
+      dispatch(addHistoryForActiveTab(history))
       navigate(AppNavigation.Browser.TabView)
     }
   }

@@ -8,7 +8,7 @@ export type Tab = {
   id: TabId
   historyIds: HistoryId[] // array of history indices
   lastVisited?: number // unix timestamp, last time this tab was visited, delete oldest if more than 99 tabs active
-  activeHistoryId?: HistoryId
+  activeHistory?: History
 }
 
 export type History = {
@@ -24,10 +24,7 @@ export type TabState = EntityState<Tab> & {
 
 export type HistoryState = EntityState<History>
 
-export type AddHistoryPayload = {
-  tabId: TabId
-  history: Omit<History, 'id'>
-}
+export type AddHistoryPayload = Omit<History, 'id'>
 
 export type TabHistoryPayload = {
   tabId: TabId

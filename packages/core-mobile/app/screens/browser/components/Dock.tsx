@@ -42,7 +42,9 @@ export const Dock = (): JSX.Element => {
   const canGoBack = useSelector(selectCanGoBack)
   const canGoForward = useSelector(selectCanGoForward)
 
-  const isFavorited = useSelector(selectIsFavorited(activeTab?.activeHistoryId))
+  const isFavorited = useSelector(
+    selectIsFavorited(activeTab?.activeHistory?.id)
+  )
 
   const goBack = (): void => {
     if (!canGoBack) return

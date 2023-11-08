@@ -4,7 +4,7 @@ import { RootState } from 'store'
 import { History, HistoryId, HistoryState } from '../types'
 import { historyAdapter } from '../utils'
 import { MAXIMUM_HISTORIES } from '../const'
-import { addHistoryForTab } from './tabs'
+import { addHistoryForActiveTab } from './tabs'
 
 const reducerName = 'browser/globalHistory'
 
@@ -22,22 +22,24 @@ const globalHistorySlice = createSlice({
     }
   },
   extraReducers: builder => {
-    builder.addCase(addHistoryForTab, (state: HistoryState, { payload }) => {
-      const { history } = payload
-      const historyId = createHash(history.url)
-      historyAdapter.upsertOne(state, {
-        id: historyId,
-        ...payload.history
-      })
-      // limit max histories
-      if (state.ids.length > MAXIMUM_HISTORIES) {
-        const historiesToRemove = historyAdapter
-          .getSelectors()
-          .selectIds(state)
-          .slice(0, -MAXIMUM_HISTORIES)
-        historyAdapter.removeMany(state, historiesToRemove)
+    builder.addCase(
+      addHistoryForActiveTab,
+      (state: HistoryState, { payload: history }) => {
+        const historyId = createHash(history.url)
+        historyAdapter.upsertOne(state, {
+          id: historyId,
+          ...history
+        })
+        // limit max histories
+        if (state.ids.length > MAXIMUM_HISTORIES) {
+          const historiesToRemove = historyAdapter
+            .getSelectors()
+            .selectIds(state)
+            .slice(0, -MAXIMUM_HISTORIES)
+          historyAdapter.removeMany(state, historiesToRemove)
+        }
       }
-    })
+    )
   }
 })
 
