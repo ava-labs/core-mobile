@@ -1,4 +1,4 @@
-import React, { FC, useEffect } from 'react'
+import React, { FC, useEffect, useRef } from 'react'
 import AppNavigation from 'navigation/AppNavigation'
 import WelcomeScreenStack from 'navigation/onboarding/WelcomeScreenStack'
 import { useApplicationContext } from 'contexts/ApplicationContext'
@@ -24,6 +24,7 @@ const OnboardScreenStack: FC = () => {
   const isLocked = useSelector(selectIsLocked)
   const { appNavHook } = useApplicationContext()
   const navigation = useNavigation<NavigationProp>()
+  const welcomeScreenStackTransitionAnimationEnabled = useRef(true)
 
   useEffect(() => {
     if (pendingDeepLink && walletState === WalletState.NONEXISTENT) {
@@ -40,7 +41,8 @@ const OnboardScreenStack: FC = () => {
 
   useEffect(() => {
     if (isLocked && walletState !== WalletState.NONEXISTENT) {
-      navigation.navigate(AppNavigation.Root.Welcome, {
+      welcomeScreenStackTransitionAnimationEnabled.current = false
+      navigation.replace(AppNavigation.Root.Welcome, {
         screen: AppNavigation.Onboard.Login
       })
     }
@@ -59,6 +61,9 @@ const OnboardScreenStack: FC = () => {
       <OnboardingScreenS.Screen
         name={AppNavigation.Root.Welcome}
         component={WelcomeScreenStack}
+        options={{
+          animationEnabled: welcomeScreenStackTransitionAnimationEnabled.current
+        }}
       />
     </OnboardingScreenS.Navigator>
   )
