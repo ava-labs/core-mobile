@@ -1,6 +1,5 @@
-import { View } from '@avalabs/k2-mobile'
+import { Button, View } from '@avalabs/k2-mobile'
 import { useNavigation } from '@react-navigation/native'
-import AvaButton from 'components/AvaButton'
 import CoreXLogoAnimated from 'components/CoreXLogoAnimated'
 import { Space } from 'components/Space'
 import AppNavigation from 'navigation/AppNavigation'
@@ -45,13 +44,13 @@ const SignupScreen: FC = () => {
       </View>
       {isSeedlessOnboardingBlocked ? (
         <View style={styles.buttonsContainer}>
-          <AvaButton.PrimaryLarge onPress={handleLogin}>
+          <Button type="primary" size="xlarge" onPress={handleLogin}>
             Log in with Recovery Phrase
-          </AvaButton.PrimaryLarge>
+          </Button>
           <Space y={16} />
-          <AvaButton.SecondaryLarge onPress={handleSignup}>
+          <Button type="secondary" size="xlarge" onPress={handleSignup}>
             Sign up with Recovery Phrase
-          </AvaButton.SecondaryLarge>
+          </Button>
         </View>
       ) : (
         <View style={styles.buttonsContainer} />
