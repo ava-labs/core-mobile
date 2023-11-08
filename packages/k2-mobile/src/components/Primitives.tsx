@@ -1,5 +1,5 @@
 import React from 'react'
-import { styled, Text as DripsyText, View as DripsyView } from 'dripsy'
+import { styled, Text as DripsyText } from 'dripsy'
 import {
   TouchableHighlight as RNTouchableHighlight,
   TouchableOpacity as RNTouchableOpacity
@@ -18,15 +18,8 @@ export const Text = styled(DripsyText, {
   color: props.variant === 'overline' ? '$neutral400' : '$neutral50'
 }))
 
-export const View = styled(
-  DripsyView,
-  {}
-)(() => ({
-  // default background color
-  backgroundColor: '$black'
-}))
-
 export {
+  View,
   TextInput,
   Image,
   ScrollView,
