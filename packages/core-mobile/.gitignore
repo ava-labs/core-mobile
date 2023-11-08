@@ -69,6 +69,7 @@ e2e/artifacts/
 /playwright-report/
 /playwright/.cache/
 /testResults/
+e2e/tests/performance/testResults/
 
 # generated openzeppelin contract types
 app/contracts/openzeppelin
