@@ -9,5 +9,9 @@ module.exports = {
     tsconfigRootDir: __dirname
   },
   extends: ['plugin:eslint-plugin-avalabs-mobile/all'],
-  ignorePatterns: ['.storybook/storybook.requires.js']
+  ignorePatterns: [
+    '!.storybook',
+    '!.prettierrc.js',
+    '.storybook/storybook.requires.js'
+  ]
 }
