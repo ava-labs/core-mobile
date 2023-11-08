@@ -1,34 +1,34 @@
-import { TSESLint, ESLintUtils, TSESTree } from "@typescript-eslint/utils";
+import { TSESLint, ESLintUtils, TSESTree } from '@typescript-eslint/utils'
 
-const rule: TSESLint.RuleModule<"noDirectAvaxComparisonOperator"> = {
+const rule: TSESLint.RuleModule<'noDirectAvaxComparisonOperator'> = {
   defaultOptions: [],
   meta: {
-    type: "problem",
+    type: 'problem',
     schema: [],
     messages: {
       noDirectAvaxComparisonOperator:
-        "Avoid using {{operator}} with {{symbol}} types. Use respective methods instead.",
-    },
+        'Avoid using {{operator}} with {{symbol}} types. Use respective methods instead.'
+    }
   },
-  create: (context) => {
-    const services = ESLintUtils.getParserServices(context);
-    const checker = services.program.getTypeChecker();
+  create: context => {
+    const services = ESLintUtils.getParserServices(context)
+    const checker = services.program.getTypeChecker()
 
     return {
       BinaryExpression: (node: TSESTree.Node) => {
-        const expr = node as TSESTree.BinaryExpression;
-        if (["<", ">", "==", "!="].includes(expr.operator)) {
+        const expr = node as TSESTree.BinaryExpression
+        if (['<', '>', '==', '!='].includes(expr.operator)) {
           const { symbol: leftSymbol } = checker.getTypeAtLocation(
             services.esTreeNodeToTSNodeMap.get(expr.left)
-          );
+          )
           const { symbol: rightSymbol } = checker.getTypeAtLocation(
             services.esTreeNodeToTSNodeMap.get(expr.left)
-          );
+          )
 
-          const isAvax = (symbolName: string): boolean => symbolName === "Avax";
+          const isAvax = (symbolName: string): boolean => symbolName === 'Avax'
 
-          const leftTypeSymbolName = leftSymbol?.escapedName;
-          const rightTypeSymbolName = rightSymbol?.escapedName;
+          const leftTypeSymbolName = leftSymbol?.escapedName
+          const rightTypeSymbolName = rightSymbol?.escapedName
 
           if (
             leftTypeSymbolName &&
@@ -37,17 +37,17 @@ const rule: TSESLint.RuleModule<"noDirectAvaxComparisonOperator"> = {
           ) {
             return context.report({
               node,
-              messageId: "noDirectAvaxComparisonOperator",
+              messageId: 'noDirectAvaxComparisonOperator',
               data: {
                 operator: expr.operator,
-                symbol: leftTypeSymbolName,
-              },
-            });
+                symbol: leftTypeSymbolName
+              }
+            })
           }
         }
-      },
-    };
-  },
-};
+      }
+    }
+  }
+}
 
-export default rule;
+export default rule
