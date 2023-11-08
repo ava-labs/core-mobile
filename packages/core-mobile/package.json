@@ -230,9 +230,6 @@
     "typechain": "8.3.1",
     "typescript": "4.7.4"
   },
-  "lint-staged": {
-    "*.{js,jsx,ts,tsx}": "eslint --fix --max-warnings 0"
-  },
   "engines": {
     "node": ">=18.14.1",
     "yarn": ">=1.22.10"
