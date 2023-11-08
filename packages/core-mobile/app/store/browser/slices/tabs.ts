@@ -1,9 +1,8 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { createAction, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from 'store/index'
 import { v4 as uuidv4 } from 'uuid'
 import { getUnixTime } from 'date-fns'
 import { createHash } from 'utils/createHash'
-import { noop } from '@avalabs/utils-sdk'
 import { Tab, TabId, TabPayload, AddHistoryPayload, TabState } from '../types'
 import { limitMaxTabs, tabAdapter, updateActiveTabId } from '../utils'
 import { MAXIMUM_TAB_HISTORIES } from '../const'
@@ -29,7 +28,7 @@ const tabSlice = createSlice({
       // limit max tabs
       limitMaxTabs(state)
     },
-    addHistoryForTab: (
+    addHistoryForActiveTab: (
       state: TabState,
       action: PayloadAction<AddHistoryPayload>
     ) => {
@@ -95,9 +94,7 @@ const tabSlice = createSlice({
           activeHistory
         }
       })
-    },
-    goForward: noop,
-    goBackward: noop
+    }
   }
 })
 
@@ -146,14 +143,15 @@ export const selectActiveTab = (state: RootState): Tab | undefined => {
 }
 
 // actions
+export const goForward = createAction(`${reducerName}/goForward`)
+export const goBackward = createAction(`${reducerName}/goBackward`)
+
 export const {
   addTab,
-  addHistoryForTab,
+  addHistoryForActiveTab,
   removeTab,
   removeAllTabs,
   setActiveTabId,
-  goBackward,
-  goForward,
   setActiveHistoryForTab
 } = tabSlice.actions
 

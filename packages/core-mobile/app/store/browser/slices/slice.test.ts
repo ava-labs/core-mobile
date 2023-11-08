@@ -5,7 +5,7 @@ import { combinedReducer as reducer } from '../combinedReducer'
 import {
   addTab,
   removeTab,
-  addHistoryForTab,
+  addHistoryForActiveTab,
   removeAllTabs,
   setActiveTabId
 } from './tabs'
@@ -149,7 +149,7 @@ describe('tab history', () => {
     creashHash.mockImplementation(() => 'history_1')
     const state = reducer(
       state1,
-      addHistoryForTab({
+      addHistoryForActiveTab({
         tabId: '1',
         history: TAB_HISTORY_DATA
       })
@@ -187,7 +187,7 @@ it('should not add a new global history when tab is not found', () => {
   creashHash.mockImplementationOnce(() => 'history_1')
   const state = reducer(
     state1,
-    addHistoryForTab({
+    addHistoryForActiveTab({
       tabId: 'unknown',
       history: TAB_HISTORY_DATA
     })
