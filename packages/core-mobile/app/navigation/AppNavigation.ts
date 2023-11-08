@@ -1,12 +1,12 @@
 enum Root {
   Wallet = 'Stacks.Wallet',
   Onboard = 'Stacks.Onboard',
-  Welcome = 'Stacks.Welcome',
   CopyPhraseWarning = 'Stacks.CopyPhraseWarning'
 }
 
 enum OnboardScreens {
-  Init = 'OnboardScreens.Init',
+  Signup = 'OnboardScreens.Init',
+  Welcome = 'OnboardScreens.Welcome',
   AnalyticsConsent = 'OnboardScreens.AnalyticsConsent',
   CreateWalletStack = 'OnboardScreens.CreateWalletStack',
   EnterWithMnemonicStack = 'OnboardScreens.EnterWithMnemonicStack',

@@ -14,7 +14,7 @@ import { WelcomeScreenStackParamList } from './onboarding/WelcomeScreenStack'
 import { OnboardScreenProps } from './types'
 
 type NavigationProp = OnboardScreenProps<
-  typeof AppNavigation.Onboard.Init
+  typeof AppNavigation.Onboard.Signup
 >['navigation']
 
 const OnboardScreenStack: FC = () => {
@@ -42,7 +42,7 @@ const OnboardScreenStack: FC = () => {
   useEffect(() => {
     if (isLocked && walletState !== WalletState.NONEXISTENT) {
       welcomeScreenStackTransitionAnimationEnabled.current = false
-      navigation.replace(AppNavigation.Root.Welcome, {
+      navigation.replace(AppNavigation.Onboard.Welcome, {
         screen: AppNavigation.Onboard.Login
       })
     }
@@ -55,11 +55,11 @@ const OnboardScreenStack: FC = () => {
         cardStyle: { backgroundColor: theme.colorBg2 }
       }}>
       <OnboardingScreenS.Screen
-        name={AppNavigation.Onboard.Init}
+        name={AppNavigation.Onboard.Signup}
         component={SignupScreen}
       />
       <OnboardingScreenS.Screen
-        name={AppNavigation.Root.Welcome}
+        name={AppNavigation.Onboard.Welcome}
         component={WelcomeScreenStack}
         options={{
           animationEnabled: welcomeScreenStackTransitionAnimationEnabled.current
@@ -70,8 +70,8 @@ const OnboardScreenStack: FC = () => {
 }
 
 export type OnboardingScreenStackParamList = {
-  [AppNavigation.Onboard.Init]: undefined
-  [AppNavigation.Root
+  [AppNavigation.Onboard.Signup]: undefined
+  [AppNavigation.Onboard
     .Welcome]: NavigatorScreenParams<WelcomeScreenStackParamList>
 }
 

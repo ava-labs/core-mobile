@@ -10,7 +10,7 @@ import { useSelector } from 'react-redux'
 import { selectIsSeedlessOnboardingBlocked } from 'store/posthog'
 
 type NavigationProp = OnboardScreenProps<
-  typeof AppNavigation.Onboard.Init
+  typeof AppNavigation.Onboard.Signup
 >['navigation']
 
 const SignupScreen: FC = () => {
@@ -20,7 +20,7 @@ const SignupScreen: FC = () => {
   const navigation = useNavigation<NavigationProp>()
 
   const handleLogin = (): void => {
-    navigation.navigate(AppNavigation.Root.Welcome, {
+    navigation.navigate(AppNavigation.Onboard.Welcome, {
       screen: AppNavigation.Onboard.AnalyticsConsent,
       params: {
         nextScreen: AppNavigation.Onboard.EnterWithMnemonicStack
@@ -29,7 +29,7 @@ const SignupScreen: FC = () => {
   }
 
   const handleSignup = (): void => {
-    navigation.navigate(AppNavigation.Root.Welcome, {
+    navigation.navigate(AppNavigation.Onboard.Welcome, {
       screen: AppNavigation.Onboard.AnalyticsConsent,
       params: {
         nextScreen: AppNavigation.Onboard.CreateWalletStack

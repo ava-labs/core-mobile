@@ -54,7 +54,7 @@ function resetNavToRoot(navigation: NavigationRef): void {
     routes: [
       {
         name: AppNavigation.Root.Onboard,
-        params: { screen: AppNavigation.Onboard.Init }
+        params: { screen: AppNavigation.Onboard.Signup }
       }
     ]
   })
@@ -65,7 +65,7 @@ function resetNavToEnterMnemonic(navigation: NavigationRef): void {
     index: 0,
     routes: [
       {
-        name: AppNavigation.Root.Welcome,
+        name: AppNavigation.Onboard.Welcome,
         params: { screen: AppNavigation.Onboard.EnterWithMnemonicStack }
       }
     ]
