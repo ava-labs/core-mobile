@@ -1,8 +1,8 @@
 import React from 'react'
 import { View } from 'react-native'
-import AvaText from 'components/AvaText'
 import { useSelector } from 'react-redux'
 import { selectActiveTab } from 'store/browser/slices/tabs'
+import { Text } from '@avalabs/k2-mobile'
 
 export default function TabViewScreen(): JSX.Element {
   const activeTab = useSelector(selectActiveTab)
@@ -13,12 +13,12 @@ export default function TabViewScreen(): JSX.Element {
     <View>
       {showEmptyTab && (
         <View>
-          <AvaText.LargeTitleBold>EmptyTab</AvaText.LargeTitleBold>
+          <Text variant="heading3">EmptyTab</Text>
         </View>
       )}
       {showWebView && (
         <View>
-          <AvaText.LargeTitleBold>Browser</AvaText.LargeTitleBold>
+          <Text variant="heading3">Browser</Text>
         </View>
       )}
     </View>

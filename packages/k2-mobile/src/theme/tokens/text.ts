@@ -144,7 +144,7 @@ export const text = {
     fontSize: 12,
     lineHeight: 16
   },
-  bottomNavigatioSmall: {
+  bottomNavigationSmall: {
     fontFamily: 'Inter-SemiBold',
     fontSize: 10,
     lineHeight: 16
