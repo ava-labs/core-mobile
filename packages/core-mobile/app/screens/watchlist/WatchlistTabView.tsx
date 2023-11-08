@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { View } from 'react-native'
 import AvaText from 'components/AvaText'
 import { useApplicationContext } from 'contexts/ApplicationContext'
@@ -6,8 +6,11 @@ import TabViewAva from 'components/TabViewAva'
 import WatchlistView from 'screens/watchlist/WatchlistView'
 import { Space } from 'components/Space'
 import SearchBar from 'components/SearchBar'
-import { useSelector } from 'react-redux'
-import { selectWatchlistFavoritesIsEmpty } from 'store/watchlist'
+import { useDispatch, useSelector } from 'react-redux'
+import {
+  fetchWatchlist,
+  selectWatchlistFavoritesIsEmpty
+} from 'store/watchlist'
 import FavoriteWatchlistView from 'screens/watchlist/FavoriteWatchlistView'
 
 const CustomLabel: React.FC<{ focused: boolean; title: string }> = ({
@@ -24,12 +27,17 @@ const CustomLabel: React.FC<{ focused: boolean; title: string }> = ({
   )
 }
 
-export default function WatchlistTab() {
+export default function WatchlistTab(): JSX.Element {
   const isWatchlistFavoritesEmpty = useSelector(selectWatchlistFavoritesIsEmpty)
   const [searchText, setSearchText] = useState('')
   const [tabIndex, setTabIndex] = useState(isWatchlistFavoritesEmpty ? 1 : 0)
+  const dispatch = useDispatch()
 
-  const renderCustomLabel = (title: string, focused: boolean) => {
+  useEffect(() => {
+    dispatch(fetchWatchlist())
+  }, [dispatch])
+
+  const renderCustomLabel = (title: string, focused: boolean): JSX.Element => {
     return <CustomLabel focused={focused} title={title} />
   }
 
