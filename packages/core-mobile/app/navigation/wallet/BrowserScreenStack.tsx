@@ -24,10 +24,6 @@ export type BrowserStackParamList = {
   [AppNavigation.Browser.ClearAllHistory]: undefined
 }
 
-type TabViewScreenProps = BrowserScreenProps<
-  typeof AppNavigation.Browser.TabView
-  >
-
 const BrowserStack = createStackNavigator<BrowserStackParamList>()
 
 function BrowserScreenStack(): JSX.Element {
@@ -36,7 +32,7 @@ function BrowserScreenStack(): JSX.Element {
       <BrowserStack.Screen
         name={AppNavigation.Browser.TabView}
         options={{ header: () => renderNavigationHeader({}) }}
-        component={TabViewScreen}
+        component={TabView}
       />
       <BrowserStack.Screen
         name={AppNavigation.Browser.TabsList}
@@ -94,19 +90,7 @@ function BrowserIntroScreen(): JSX.Element {
 
 type TabViewScreenProps = BrowserScreenProps<
   typeof AppNavigation.Browser.TabView
-  >
-
-function TabViewScreen(): JSX.Element {
-  const hasBeenViewedBrowser = useSelector(
-    selectHasBeenViewedOnce(ViewOnceKey.BROWSER_INTERACTION)
-  )
-  const { navigate } = useNavigation<TabViewScreenProps['navigation']>()
-
-  if (!hasBeenViewedBrowser) {
-    navigate(AppNavigation.Browser.Intro)
-  }
-  return <TabViewScreen />
-}
+>
 
 function TabView(): JSX.Element {
   const hasBeenViewedBrowser = useSelector(
@@ -117,11 +101,7 @@ function TabView(): JSX.Element {
   if (!hasBeenViewedBrowser) {
     navigate(AppNavigation.Browser.Intro)
   }
-  return (
-    <View>
-      <AvaText.LargeTitleBold>TabViewStub</AvaText.LargeTitleBold>
-    </View>
-  )
+  return <TabViewScreen />
 }
 
 function TabsListStub(): JSX.Element {
