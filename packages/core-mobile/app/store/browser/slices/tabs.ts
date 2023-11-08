@@ -3,13 +3,9 @@ import { RootState } from 'store/index'
 import { v4 as uuidv4 } from 'uuid'
 import { getUnixTime } from 'date-fns'
 import { createHash } from 'utils/createHash'
+import { noop } from '@avalabs/utils-sdk'
 import { Tab, TabId, TabPayload, AddHistoryPayload, TabState } from '../types'
-import {
-  limitMaxTabs,
-  navigateTabHistory,
-  tabAdapter,
-  updateActiveTabId
-} from '../utils'
+import { limitMaxTabs, tabAdapter, updateActiveTabId } from '../utils'
 import { MAXIMUM_TAB_HISTORIES } from '../const'
 
 const reducerName = 'browser/tabs'
@@ -66,6 +62,7 @@ const tabSlice = createSlice({
           }
         }
       })
+      state.activeTabId = tabId
 
       // limit max tab histories
       if (tab.historyIds.length > MAXIMUM_TAB_HISTORIES) {
@@ -86,16 +83,21 @@ const tabSlice = createSlice({
       const { id: tabId } = action.payload
       state.activeTabId = tabId
     },
-    goForward: (state: TabState) => {
-      const activeTabId = state.activeTabId
-      if (activeTabId === undefined) return
-      navigateTabHistory(state, 'forward', activeTabId)
+    setActiveHistoryForTab: (
+      state: TabState,
+      action: PayloadAction<Omit<Tab, 'historyIds' | 'lastVisited'>>
+    ) => {
+      const { id, activeHistory } = action.payload
+      tabAdapter.updateOne(state, {
+        id,
+        changes: {
+          lastVisited: getUnixTime(new Date()),
+          activeHistory
+        }
+      })
     },
-    goBackward: (state: TabState) => {
-      const activeTabId = state.activeTabId
-      if (activeTabId === undefined) return
-      navigateTabHistory(state, 'backward', activeTabId)
-    }
+    goForward: noop,
+    goBackward: noop
   }
 })
 
@@ -151,7 +153,8 @@ export const {
   removeAllTabs,
   setActiveTabId,
   goBackward,
-  goForward
+  goForward,
+  setActiveHistoryForTab
 } = tabSlice.actions
 
 export const tabReducer = tabSlice.reducer

@@ -1,34 +1,47 @@
 import { AppListenerEffectAPI } from 'store'
 import { AppStartListening } from 'store/middleware/listener'
 import { Action, isAnyOf } from '@reduxjs/toolkit'
-import { goBackward, goForward } from './slices/tabs'
+import { goBackward, goForward, setActiveHistoryForTab } from './slices/tabs'
 import { historyAdapter, tabAdapter } from './utils'
 
 const updateActiveHistory = (
-  _: Action,
+  action: Action,
   listenerApi: AppListenerEffectAPI
 ): void => {
-  const { getState } = listenerApi
+  const browserAction = isAnyOf(goBackward)(action) ? 'backward' : 'forward'
+
+  const { getState, dispatch } = listenerApi
   const globalHistoryState = getState().browser.globalHistory
-  const tabsState = getState().browser.tabs
-  const activeTabId = tabsState.activeTabId
+  const tabState = getState().browser.tabs
+  const activeTabId = tabState.activeTabId
   if (activeTabId === undefined) return
 
-  const historyId = tabAdapter.getSelectors().selectById(tabsState, activeTabId)
+  const historyId = tabAdapter.getSelectors().selectById(tabState, activeTabId)
     ?.activeHistory?.id
 
   if (!historyId) return
+  const tab = tabAdapter.getSelectors().selectById(tabState, activeTabId)
+  if (tab === undefined || tab.activeHistory?.id === undefined) return
 
-  const history = historyAdapter
+  const activeHistoryIndex = tab.historyIds.indexOf(tab.activeHistory.id)
+
+  if (activeHistoryIndex === -1) return
+  const newActiveHistoryIndex =
+    browserAction === 'forward'
+      ? activeHistoryIndex + 1
+      : activeHistoryIndex - 1
+
+  const newActiveHistoryId = tab.historyIds[newActiveHistoryIndex]
+
+  if (newActiveHistoryId === undefined) return
+
+  const newActiveHistory = historyAdapter
     .getSelectors()
-    .selectById(globalHistoryState, historyId)
+    .selectById(globalHistoryState, newActiveHistoryId)
 
-  tabAdapter.updateOne(tabsState, {
-    id: activeTabId,
-    changes: {
-      activeHistory: history
-    }
-  })
+  dispatch(
+    setActiveHistoryForTab({ id: activeTabId, activeHistory: newActiveHistory })
+  )
 }
 
 export const addBrowserListener = (startListening: AppStartListening): void => {
