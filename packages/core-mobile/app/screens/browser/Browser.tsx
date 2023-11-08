@@ -3,7 +3,10 @@ import { View } from '@avalabs/k2-mobile'
 import WebView from 'react-native-webview'
 import Logger from 'utils/Logger'
 import { useDispatch, useSelector } from 'react-redux'
-import { addHistoryForTab, selectActiveTab } from 'store/browser/slices/tabs'
+import {
+  addHistoryForActiveTab,
+  selectActiveTab
+} from 'store/browser/slices/tabs'
 import { useDeeplink } from 'contexts/DeeplinkContext/DeeplinkContext'
 import { DeepLink, DeepLinkOrigin } from 'contexts/DeeplinkContext/types'
 import { AddHistoryPayload } from 'store/browser'
@@ -49,13 +52,10 @@ export default function Browser(): JSX.Element {
         onNavigationStateChange={event => {
           if (activeTab) {
             const history: AddHistoryPayload = {
-              tabId: activeTab.id,
-              history: {
-                title: event.title,
-                url: event.url
-              }
+              title: event.title,
+              url: event.url
             }
-            dispatch(addHistoryForTab(history))
+            dispatch(addHistoryForActiveTab(history))
           }
         }}
         setSupportMultipleWindows={false}
