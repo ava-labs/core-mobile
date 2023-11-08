@@ -45,7 +45,7 @@ const SignupScreen: FC = () => {
       {isSeedlessOnboardingBlocked ? (
         <View style={styles.buttonsContainer}>
           <Button type="primary" size="xlarge" onPress={handleLogin}>
-            Log in with Recovery Phrase
+            Sign in with Recovery Phrase
           </Button>
           <Space y={16} />
           <Button type="secondary" size="xlarge" onPress={handleSignup}>
