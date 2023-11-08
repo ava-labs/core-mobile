@@ -10,6 +10,7 @@ import { addBalanceListeners } from 'store/balance/listeners'
 import { addAccountListeners } from 'store/account/listeners'
 import { addNetworkListeners } from 'store/network/listeners'
 import { addBridgeListeners } from 'store/bridge/listeners'
+import { addBrowserListener } from 'store/browser/listener'
 import { addPosthogListeners } from 'store/posthog/listeners'
 import { addWatchlistListeners } from 'store/watchlist/listeners'
 import { addNftListeners } from 'store/nft/listeners'
@@ -48,6 +49,8 @@ addWatchlistListeners(startListening)
 addWCListenersV2(startListening)
 
 addNotificationsListeners(startListening)
+
+addBrowserListener(startListening)
 
 export const addAppListener = addListener as AppAddListener
 
