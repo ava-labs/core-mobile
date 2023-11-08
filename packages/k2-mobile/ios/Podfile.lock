@@ -298,6 +298,8 @@ PODS:
     - React-Core
   - RNDateTimePicker (7.1.0):
     - React-Core
+  - RNSVG (13.8.0):
+    - React-Core
   - Yoga (1.14.0)
 
 DEPENDENCIES:
@@ -337,6 +339,7 @@ DEPENDENCIES:
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
   - "RNCAsyncStorage (from `../node_modules/@react-native-async-storage/async-storage`)"
   - "RNDateTimePicker (from `../node_modules/@react-native-community/datetimepicker`)"
+  - RNSVG (from `../node_modules/react-native-svg`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
 SPEC REPOS:
@@ -414,6 +417,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-async-storage/async-storage"
   RNDateTimePicker:
     :path: "../node_modules/@react-native-community/datetimepicker"
+  RNSVG:
+    :path: "../node_modules/react-native-svg"
   Yoga:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
@@ -454,6 +459,7 @@ SPEC CHECKSUMS:
   ReactCommon: dce64235f8548b6e4758647310145f5356c8d0cb
   RNCAsyncStorage: b90b71f45b8b97be43bc4284e71a6af48ac9f547
   RNDateTimePicker: 7ecd54a97fc3749f38c3c89a171f6cbd52f3c142
+  RNSVG: c1e76b81c76cdcd34b4e1188852892dc280eb902
   Yoga: 56413d530d1808044600320ced5baa883acedc44
 
 PODFILE CHECKSUM: 59e2d9b68127bb44d87ad6cb418f0dde0d29651b

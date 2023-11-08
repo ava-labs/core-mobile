@@ -1,8 +1,8 @@
 import React from 'react'
 import type { Meta } from '@storybook/react-native'
-import { Linking } from 'react-native'
 import tinycolor from 'tinycolor2'
 import { View, Text, ScrollView } from '../../components/Primitives'
+import Link from '../../utils/Link'
 import { colors } from './colors'
 
 const FIGMA_LINK =
@@ -49,18 +49,11 @@ export const All = (): JSX.Element => {
         alignItems: 'center',
         paddingBottom: '15%'
       }}>
-      <Text
-        variant="heading5"
-        onPress={() => {
-          Linking.openURL(FIGMA_LINK)
-        }}
-        sx={{
-          color: '$blueMain',
-          textDecorationLine: 'underline',
-          marginBottom: 20
-        }}>
-        Figma Source
-      </Text>
+      <Link
+        title="Figma Source"
+        url={FIGMA_LINK}
+        style={{ marginBottom: 20 }}
+      />
       {Object.entries(colors).map(([colorKey, colorValue], index) => (
         <Color key={index} name={colorKey} value={colorValue} />
       ))}
