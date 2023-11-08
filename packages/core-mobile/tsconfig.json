@@ -11,6 +11,7 @@
     "**/*.tsx",
     "**/*.js",
     "*.d.ts",
+    "./.storybook/*.js",
     ".eslintrc.js",
     "jest.config.js",
     ".prettierrc.js",

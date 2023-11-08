@@ -1,8 +1,8 @@
-const { ESLint } = require("eslint");
-const eslint = new ESLint();
+const { ESLint } = require('eslint')
+const eslint = new ESLint()
 
 const {
-  generateLintStagedConfig,
-} = require("../../scripts/generate-lint-staged-config.js");
+  generateLintStagedConfig
+} = require('../../scripts/generate-lint-staged-config.js')
 
-module.exports = generateLintStagedConfig(eslint);
+module.exports = generateLintStagedConfig(eslint)
