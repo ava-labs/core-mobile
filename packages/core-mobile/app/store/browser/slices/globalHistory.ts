@@ -24,12 +24,11 @@ const globalHistorySlice = createSlice({
   extraReducers: builder => {
     builder.addCase(
       addHistoryForActiveTab,
-      (state: HistoryState, { payload }) => {
-        const { history } = payload
+      (state: HistoryState, { payload: history }) => {
         const historyId = createHash(history.url)
         historyAdapter.upsertOne(state, {
           id: historyId,
-          ...payload.history
+          ...history
         })
         // limit max histories
         if (state.ids.length > MAXIMUM_HISTORIES) {

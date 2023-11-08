@@ -24,10 +24,7 @@ export type TabState = EntityState<Tab> & {
 
 export type HistoryState = EntityState<History>
 
-export type AddHistoryPayload = {
-  tabId: TabId
-  history: Omit<History, 'id'>
-}
+export type AddHistoryPayload = Omit<History, 'id'>
 
 export type TabHistoryPayload = {
   tabId: TabId

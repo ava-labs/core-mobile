@@ -32,11 +32,11 @@ const tabSlice = createSlice({
       state: TabState,
       action: PayloadAction<AddHistoryPayload>
     ) => {
-      const { tabId, history } = action.payload
+      const history = action.payload
       const lastVisited = getUnixTime(new Date())
-
-      const tab = tabAdapter.getSelectors().selectById(state, tabId)
-
+      const activeTabId = state.activeTabId
+      if (activeTabId === undefined) return
+      const tab = tabAdapter.getSelectors().selectById(state, activeTabId)
       if (tab === undefined) return
       const activeHistoryId = tab.activeHistory?.id
 
@@ -51,7 +51,7 @@ const tabSlice = createSlice({
       }
 
       tabAdapter.updateOne(state, {
-        id: tabId,
+        id: activeTabId,
         changes: {
           historyIds: [...tab.historyIds, historyId],
           lastVisited,
@@ -61,7 +61,6 @@ const tabSlice = createSlice({
           }
         }
       })
-      state.activeTabId = tabId
 
       // limit max tab histories
       if (tab.historyIds.length > MAXIMUM_TAB_HISTORIES) {

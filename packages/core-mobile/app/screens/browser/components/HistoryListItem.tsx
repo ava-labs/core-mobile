@@ -36,7 +36,7 @@ export const HistoryListItem = ({ history }: Props): JSX.Element => {
   const navigateToTabView = (): void => {
     dispatch(addTab())
     if (activeTab) {
-      dispatch(addHistoryForActiveTab({ tabId: activeTab.id, history }))
+      dispatch(addHistoryForActiveTab(history))
       navigate(AppNavigation.Browser.TabView)
     }
   }
