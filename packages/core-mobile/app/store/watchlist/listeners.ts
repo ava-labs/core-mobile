@@ -1,5 +1,4 @@
 import { AppStartListening } from 'store/middleware/listener'
-import { onRehydrationComplete } from 'store/app'
 import { AppListenerEffectAPI } from 'store/index'
 import { selectNetworks } from 'store/network'
 import {
@@ -7,6 +6,7 @@ import {
   setSelectedCurrency
 } from 'store/settings/currency'
 import {
+  fetchWatchlist,
   onWatchlistRefresh,
   selectWatchlistFavoriteIds,
   setCharts,
@@ -18,7 +18,10 @@ import { VsCurrencyType } from '@avalabs/coingecko-sdk'
 import { toggleDeveloperMode } from 'store/settings/advanced'
 import WatchlistService from 'services/watchlist/WatchlistService'
 
-async function getTokens(action: Action, listenerApi: AppListenerEffectAPI) {
+async function getTokens(
+  action: Action,
+  listenerApi: AppListenerEffectAPI
+): Promise<void> {
   const dispatch = listenerApi.dispatch
   const state = listenerApi.getState()
   const currency = selectSelectedCurrency(state)
@@ -33,7 +36,10 @@ async function getTokens(action: Action, listenerApi: AppListenerEffectAPI) {
   dispatch(setCharts(charts))
 }
 
-async function getPrices(action: Action, listenerApi: AppListenerEffectAPI) {
+async function getPrices(
+  action: Action,
+  listenerApi: AppListenerEffectAPI
+): Promise<void> {
   const dispatch = listenerApi.dispatch
   const state = listenerApi.getState()
   const currency = selectSelectedCurrency(state).toLowerCase()
@@ -47,13 +53,11 @@ async function getPrices(action: Action, listenerApi: AppListenerEffectAPI) {
   dispatch(setPrices(prices))
 }
 
-export const addWatchlistListeners = (startListening: AppStartListening) => {
+export const addWatchlistListeners = (
+  startListening: AppStartListening
+): void => {
   startListening({
-    matcher: isAnyOf(
-      onRehydrationComplete,
-      toggleDeveloperMode,
-      onWatchlistRefresh
-    ),
+    matcher: isAnyOf(fetchWatchlist, toggleDeveloperMode, onWatchlistRefresh),
     effect: getTokens
   })
 

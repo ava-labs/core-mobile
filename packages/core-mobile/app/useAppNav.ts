@@ -33,8 +33,7 @@ function resetNavToUnlockedWallet(navigation: NavigationRef): void {
   if (
     navigation.current?.getState().routes[0]?.name !== AppNavigation.Root.Wallet
   ) {
-    let others = navigation.current?.getState().routes.slice(1) ?? []
-    others = others.filter(navs => !navs.name.includes('NoWallet'))
+    const others = navigation.current?.getState().routes.slice(1) ?? []
     navigation.current?.reset({
       index: 0,
       // @ts-ignore
@@ -53,8 +52,8 @@ function resetNavToRoot(navigation: NavigationRef): void {
     index: 0,
     routes: [
       {
-        name: AppNavigation.Root.NoWallet,
-        params: { screen: AppNavigation.NoWallet.Drawer }
+        name: AppNavigation.Root.Onboard,
+        params: { screen: AppNavigation.Onboard.Signup }
       }
     ]
   })
@@ -65,17 +64,8 @@ function resetNavToEnterMnemonic(navigation: NavigationRef): void {
     index: 0,
     routes: [
       {
-        name: AppNavigation.Root.NoWallet,
-        params: { screen: AppNavigation.Root.NoWallet }
-      },
-      {
-        name: AppNavigation.Root.NoWallet,
-        params: {
-          screen: AppNavigation.NoWallet.Welcome,
-          params: {
-            screen: AppNavigation.Onboard.EnterWithMnemonicStack
-          }
-        }
+        name: AppNavigation.Onboard.Welcome,
+        params: { screen: AppNavigation.Onboard.EnterWithMnemonicStack }
       }
     ]
   })
