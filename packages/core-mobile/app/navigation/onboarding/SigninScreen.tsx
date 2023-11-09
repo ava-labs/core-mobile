@@ -4,7 +4,7 @@ import CoreXLogoAnimated from 'components/CoreXLogoAnimated'
 import AppNavigation from 'navigation/AppNavigation'
 import { OnboardScreenProps } from 'navigation/types'
 import React, { FC, useLayoutEffect, useState } from 'react'
-import { StyleSheet } from 'react-native'
+import { Alert, StyleSheet } from 'react-native'
 import AuthButtons from 'seedless/components/AuthButtons'
 import CoreSeedlessAPIService, {
   SeedlessUserRegistrationResult
@@ -41,7 +41,7 @@ const SigninScreen: FC = () => {
       // todo: implement totp registration flow
       // CP-7663: https://ava-labs.atlassian.net/browse/CP-7663
       setIsLoading(false)
-      // eslint-disable-next-line sonarjs/no-duplicated-branches
+      Alert.alert('seedless user registration approved')
     } else if (result === SeedlessUserRegistrationResult.ALREADY_REGISTERED) {
       // todo: implement totp verification flow
       // CP-7664: https://ava-labs.atlassian.net/browse/CP-7664
