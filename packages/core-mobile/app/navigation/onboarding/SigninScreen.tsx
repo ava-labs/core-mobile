@@ -10,7 +10,6 @@ import CoreSeedlessAPIService, {
   SeedlessUserRegistrationResult
 } from 'seedless/services/CoreSeedlessAPIService'
 import GoogleSigninService from 'seedless/services/GoogleSigninService'
-// import SeedlessService from 'seedless/services/SeedllessService'
 
 type NavigationProp = OnboardScreenProps<
   typeof AppNavigation.Onboard.Signup
@@ -39,19 +38,12 @@ const SigninScreen: FC = () => {
     const result = await CoreSeedlessAPIService.register(oidcToken)
 
     if (result === SeedlessUserRegistrationResult.APPROVED) {
-      try {
-        // const signerSessionData = await SeedlessService.getSessionData(
-        //   oidcToken
-        // )
-        // console.log(signerSessionData)
-      } catch (e) {
-        // eslint-disable-next-line no-console
-        console.log(e)
-      } finally {
-        setIsLoading(false)
-      }
+      // todo: implement totp registration flow
+      setIsLoading(false)
+      // eslint-disable-next-line sonarjs/no-duplicated-branches
     } else if (result === SeedlessUserRegistrationResult.ALREADY_REGISTERED) {
-      // recover flow
+      // todo: implement totp verification flow
+      setIsLoading(false)
     }
   }
 

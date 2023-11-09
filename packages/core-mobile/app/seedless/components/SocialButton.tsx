@@ -2,14 +2,16 @@ import { Pressable, View, useTheme } from '@avalabs/k2-mobile'
 import React, { FC, useMemo } from 'react'
 import { StyleSheet } from 'react-native'
 import { alpha } from '@avalabs/k2-mobile/src/theme/tokens/colors'
-import GoogleLogo from '../assets/google.svg'
-import AppleLogo from '../assets/apple.svg'
+import GoogleLogo from 'assets/icons/google.svg'
+import AppleLogo from 'assets/icons/apple.svg'
 
 type Props = {
   type: 'google' | 'apple'
   disabled?: boolean
   onPress: () => void
 }
+
+const LOGO_SIZE = 32
 
 const SocialButton: FC<Props> = ({ type, disabled, onPress }) => {
   const {
@@ -18,9 +20,9 @@ const SocialButton: FC<Props> = ({ type, disabled, onPress }) => {
   const logo = useMemo(() => {
     switch (type) {
       case 'google':
-        return <GoogleLogo />
+        return <GoogleLogo width={LOGO_SIZE} height={LOGO_SIZE} />
       case 'apple':
-        return <AppleLogo />
+        return <AppleLogo width={LOGO_SIZE} height={LOGO_SIZE} />
     }
   }, [type])
 

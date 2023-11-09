@@ -128,7 +128,7 @@ __metadata:
     "@babel/preset-typescript": 7.22.11
     "@babel/runtime": 7.22.11
     "@coinbase/cbpay-js": 1.6.0
-    "@cubist-dev/cubesigner-sdk": "https://github.com/cubist-labs/CubeSigner-TypeScript-SDK.git#e19afb2d5b57134f24baac8e8fa0a3d36e93f1c7"
+    "@cubist-dev/cubesigner-sdk": "https://github.com/cubist-labs/CubeSigner-TypeScript-SDK.git#f5e330fb6e258ff1d418dfe851dc0429dce8ca6d"
     "@datadog/mobile-react-native": 1.9.0
     "@datadog/mobile-react-navigation": 1.9.0
     "@dlenroc/testrail": 1.7.2
@@ -2921,9 +2921,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@cubist-dev/cubesigner-sdk@https://github.com/cubist-labs/CubeSigner-TypeScript-SDK.git#e19afb2d5b57134f24baac8e8fa0a3d36e93f1c7":
-  version: 0.1.61
-  resolution: "@cubist-dev/cubesigner-sdk@https://github.com/cubist-labs/CubeSigner-TypeScript-SDK.git#commit=e19afb2d5b57134f24baac8e8fa0a3d36e93f1c7"
+"@cubist-dev/cubesigner-sdk@https://github.com/cubist-labs/CubeSigner-TypeScript-SDK.git#f5e330fb6e258ff1d418dfe851dc0429dce8ca6d":
+  version: 0.1.73
+  resolution: "@cubist-dev/cubesigner-sdk@https://github.com/cubist-labs/CubeSigner-TypeScript-SDK.git#commit=f5e330fb6e258ff1d418dfe851dc0429dce8ca6d"
   dependencies:
     "@aws-sdk/client-cognito-identity-provider": ^3.398.0
     ethers: ^6.7.1
@@ -2931,7 +2931,7 @@ __metadata:
   dependenciesMeta:
     "@aws-sdk/client-cognito-identity-provider":
       optional: true
-  checksum: a711b4263e0982cba2f66b3fb5751f384ba244f2e57173a80c467c6a7aaa0111ac445fc5529052d010082048dcb2d77b32b9871076b894c293806d1e9ce0f071
+  checksum: 09cc1962f3299d7a14ea27a3690ae56d94b4fae11cd7eaa085c652c8d91a3218bacaf2828af494512a1a45421c08087d26b091702913e9e92eae5eeae81313fb
   languageName: node
   linkType: hard
 
