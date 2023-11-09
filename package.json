@@ -15,7 +15,8 @@
     "k2": "yarn workspace @avalabs/k2-mobile"
   },
   "devDependencies": {
-    "husky": "8.0.1"
+    "husky": "8.0.1",
+    "lint-staged": "15.0.2"
   },
   "resolutions": {
     "minimist": "1.2.6",

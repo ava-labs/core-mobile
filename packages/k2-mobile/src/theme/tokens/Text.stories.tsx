@@ -1,7 +1,7 @@
 import React from 'react'
-import { Linking } from 'react-native'
 import type { Meta } from '@storybook/react-native'
 import { ScrollView, Text } from '../../components/Primitives'
+import Link from '../../utils/Link'
 import { text } from './text'
 
 const FIGMA_LINK =
@@ -21,18 +21,11 @@ export const All = (): JSX.Element => {
         paddingLeft: '7%',
         paddingBottom: '15%'
       }}>
-      <Text
-        variant="heading5"
-        onPress={() => {
-          Linking.openURL(FIGMA_LINK)
-        }}
-        sx={{
-          color: '$blueMain',
-          textDecorationLine: 'underline',
-          marginBottom: 20
-        }}>
-        Figma Source
-      </Text>
+      <Link
+        title="Figma Source"
+        url={FIGMA_LINK}
+        style={{ marginBottom: 20 }}
+      />
       {Object.keys(text).map((variant, index) => (
         // @ts-expect-error
         <Text key={index} variant={variant}>

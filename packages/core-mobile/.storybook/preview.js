@@ -1,6 +1,5 @@
-
-import React from 'react';
-import { withBackgrounds } from '@storybook/addon-ondevice-backgrounds';
+import React from 'react'
+import { withBackgrounds } from '@storybook/addon-ondevice-backgrounds'
 import { NavigationContainer } from '@react-navigation/native'
 import { EncryptedStoreProvider } from '../app/contexts/EncryptedStoreProvider'
 import { ApplicationContextProvider } from '../app/contexts/ApplicationContext'
@@ -11,8 +10,8 @@ export const parameters = {
   controls: {
     matchers: {
       color: /(background|color)$/i,
-      date: /Date$/,
-    },
+      date: /Date$/
+    }
   },
   backgrounds: {
     default: 'night',
@@ -21,9 +20,9 @@ export const parameters = {
       { name: 'day', value: COLORS_DAY.background }
     ]
   }
-};
+}
 
-const withProviders = (Story) => (
+const withProviders = Story => (
   <EncryptedStoreProvider>
     <PosthogContextProvider>
       <ApplicationContextProvider>
@@ -35,7 +34,4 @@ const withProviders = (Story) => (
   </EncryptedStoreProvider>
 )
 
-export const decorators = [withBackgrounds, withProviders];
-
-
-
+export const decorators = [withBackgrounds, withProviders]
