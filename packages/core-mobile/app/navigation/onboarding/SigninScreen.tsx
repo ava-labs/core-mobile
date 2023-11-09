@@ -4,7 +4,7 @@ import CoreXLogoAnimated from 'components/CoreXLogoAnimated'
 import AppNavigation from 'navigation/AppNavigation'
 import { OnboardScreenProps } from 'navigation/types'
 import React, { FC, useLayoutEffect, useState } from 'react'
-import { Alert, StyleSheet } from 'react-native'
+import { Alert } from 'react-native'
 import AuthButtons from 'seedless/components/AuthButtons'
 import CoreSeedlessAPIService, {
   SeedlessUserRegistrationResult
@@ -59,11 +59,20 @@ const SigninScreen: FC = () => {
   }, [navigation, colors])
 
   return (
-    <View style={styles.container}>
-      <View style={styles.logoContainer}>
+    <View sx={{ flex: 1, backgroundColor: colors.$black }}>
+      <View
+        sx={{
+          flex: 1,
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}>
         <CoreXLogoAnimated size={180} />
       </View>
-      <View style={styles.buttonsContainer}>
+      <View
+        sx={{
+          padding: 16,
+          marginBottom: 46
+        }}>
         <AuthButtons
           title="Sign in with..."
           disabled={isLoading}
@@ -75,21 +84,5 @@ const SigninScreen: FC = () => {
     </View>
   )
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: 'black'
-  },
-  logoContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center'
-  },
-  buttonsContainer: {
-    padding: 16,
-    marginBottom: 46
-  }
-})
 
 export default SigninScreen

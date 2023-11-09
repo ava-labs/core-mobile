@@ -1,6 +1,5 @@
 import { Button, Text, View, useTheme } from '@avalabs/k2-mobile'
 import React, { FC } from 'react'
-import { StyleSheet } from 'react-native'
 import { Space } from 'components/Space'
 import Separator from 'components/Separator'
 import SocialButton from './SocialButton'
@@ -23,10 +22,10 @@ const AuthButtons: FC<Props> = ({
   } = useTheme()
   return (
     <View>
-      <View style={styles.centerContainer}>
+      <View sx={{ alignItems: 'center', marginBottom: 16 }}>
         <Text variant="alertTitle">{title}</Text>
         <Space y={16} />
-        <View style={styles.socialButtonsContainer}>
+        <View sx={{ flexDirection: 'row' }}>
           <SocialButton
             type="google"
             disabled={disabled}
@@ -34,7 +33,13 @@ const AuthButtons: FC<Props> = ({
           />
         </View>
         <Space y={16} />
-        <View style={styles.separatorContainer}>
+        <View
+          sx={{
+            paddingHorizontal: 28,
+            flexDirection: 'row',
+            width: '100%',
+            alignItems: 'center'
+          }}>
           <Separator color={colors.$neutral850} style={{ flexGrow: 1 }} />
           <Text style={{ marginHorizontal: 16 }} variant="alertTitle">
             or
@@ -52,21 +57,5 @@ const AuthButtons: FC<Props> = ({
     </View>
   )
 }
-
-const styles = StyleSheet.create({
-  centerContainer: {
-    alignItems: 'center',
-    marginBottom: 16
-  },
-  socialButtonsContainer: {
-    flexDirection: 'row'
-  },
-  separatorContainer: {
-    paddingHorizontal: 28,
-    flexDirection: 'row',
-    width: '100%',
-    alignItems: 'center'
-  }
-})
 
 export default AuthButtons

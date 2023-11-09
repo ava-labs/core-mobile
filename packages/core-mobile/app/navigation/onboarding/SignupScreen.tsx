@@ -1,11 +1,11 @@
-import { Button, View } from '@avalabs/k2-mobile'
+import { Button, View, useTheme } from '@avalabs/k2-mobile'
 import { useNavigation } from '@react-navigation/native'
 import CoreXLogoAnimated from 'components/CoreXLogoAnimated'
 import { Space } from 'components/Space'
 import AppNavigation from 'navigation/AppNavigation'
 import { OnboardScreenProps } from 'navigation/types'
 import React, { FC, useState } from 'react'
-import { Alert, StyleSheet } from 'react-native'
+import { Alert } from 'react-native'
 import { useSelector } from 'react-redux'
 import AuthButtons from 'seedless/components/AuthButtons'
 import CoreSeedlessAPIService, {
@@ -24,6 +24,9 @@ const SignupScreen: FC = () => {
   )
   const navigation = useNavigation<NavigationProp>()
   const [isLoading, setIsLoading] = useState(false)
+  const {
+    theme: { colors }
+  } = useTheme()
 
   const handleSigninWithMnemonic = (): void => {
     navigation.navigate(AppNavigation.Onboard.Welcome, {
@@ -66,63 +69,58 @@ const SignupScreen: FC = () => {
   }
 
   return (
-    <View style={styles.container}>
-      <View style={styles.logoContainer}>
+    <View
+      sx={{
+        flex: 1,
+        backgroundColor: colors.$black
+      }}>
+      <View
+        sx={{
+          flex: 1,
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}>
         <CoreXLogoAnimated size={180} />
       </View>
-      {isSeedlessOnboardingBlocked ? (
-        <View style={styles.buttonsContainer}>
-          <Button
-            type="primary"
-            size="xlarge"
-            onPress={handleSigninWithMnemonic}>
-            Sign in with Recovery Phrase
-          </Button>
-          <Space y={16} />
-          <Button
-            type="secondary"
-            size="xlarge"
-            onPress={handleSignupWithMnemonic}>
-            Sign up with Recovery Phrase
-          </Button>
-        </View>
-      ) : (
-        <View style={styles.buttonsContainer}>
-          <AuthButtons
-            title="Sign up with..."
-            disabled={isLoading}
-            onGoogleAction={handleSignupWithGoogle}
-            onMnemonicAction={handleSignupWithMnemonic}
-          />
-          <Space y={48} />
-          <Button
-            type="tertiary"
-            size="xlarge"
-            disabled={isLoading}
-            onPress={handleSignin}>
-            Already Have a Wallet?
-          </Button>
-        </View>
-      )}
+      <View sx={{ padding: 16, marginBottom: 46 }}>
+        {isSeedlessOnboardingBlocked ? (
+          <>
+            <Button
+              type="primary"
+              size="xlarge"
+              onPress={handleSigninWithMnemonic}>
+              Sign in with Recovery Phrase
+            </Button>
+            <Space y={16} />
+            <Button
+              type="secondary"
+              size="xlarge"
+              onPress={handleSignupWithMnemonic}>
+              Sign up with Recovery Phrase
+            </Button>
+          </>
+        ) : (
+          <>
+            <AuthButtons
+              title="Sign up with..."
+              disabled={isLoading}
+              onGoogleAction={handleSignupWithGoogle}
+              onMnemonicAction={handleSignupWithMnemonic}
+            />
+            <Space y={48} />
+            <Button
+              type="tertiary"
+              size="xlarge"
+              disabled={isLoading}
+              onPress={handleSignin}>
+              Already Have a Wallet?
+            </Button>
+          </>
+        )}
+      </View>
       <View />
     </View>
   )
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: 'black'
-  },
-  logoContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center'
-  },
-  buttonsContainer: {
-    padding: 16,
-    marginBottom: 46
-  }
-})
 
 export default SignupScreen
