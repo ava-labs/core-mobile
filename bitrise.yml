@@ -131,9 +131,6 @@ workflows:
     - TESTS_TO_RUN: $TESTS_TO_RUN_GROUP_1
       opts:
         is_expand: false
-    - TESTRAIL_RUN: $TESTRAIL_RUN_ID
-      opts:
-        is_expand: false
     steps:
     - avd-manager@1.2:
         inputs:
@@ -156,9 +153,6 @@ workflows:
     - TESTS_TO_RUN: $TESTS_TO_RUN_GROUP_2
       opts:
         is_expand: false
-    - TESTRAIL_RUN: $TESTRAIL_RUN_ID
-      opts:
-        is_expand: false
     steps:
     - avd-manager@1.2:
         inputs:
@@ -179,9 +173,6 @@ workflows:
   android-internal-e2e-run-pixel5:
     envs:
     - TESTS_TO_RUN: $TESTS_TO_RUN_GROUP_3
-      opts:
-        is_expand: false
-    - TESTRAIL_RUN: $TESTRAIL_RUN_ID
       opts:
         is_expand: false
     steps:
@@ -491,25 +482,6 @@ workflows:
     - _build-android-for-testing
     after_run:
     - _upload-detox-artifacts
-    envs:
-    - ENVIRONMENT: production
-      opts:
-        is_expand: false
-    - PLATFORM: Android
-      opts:
-        is_expand: false
-    - ANDROID_BUILD_VARIANT: internalE2e
-      opts:
-        is_expand: false
-    - APP_TITLE: Core Mobile Internal
-      opts:
-        is_expand: false
-    - E2E: "true"
-      opts:
-        is_expand: false
-    - USE_TEST_FEATURE_FLAGS: "true"
-      opts:
-        is_expand: false
   ios:
     before_run:
     - _install-and-set-env
