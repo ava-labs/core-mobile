@@ -2,11 +2,8 @@ import React, { useEffect, useState } from 'react'
 import { View } from '@avalabs/k2-mobile'
 import WebView from 'react-native-webview'
 import Logger from 'utils/Logger'
-import { useDispatch, useSelector } from 'react-redux'
-import {
-  addHistoryForActiveTab,
-  selectActiveTab
-} from 'store/browser/slices/tabs'
+import { useDispatch } from 'react-redux'
+import { addHistoryForActiveTab } from 'store/browser/slices/tabs'
 import { useDeeplink } from 'contexts/DeeplinkContext/DeeplinkContext'
 import { DeepLink, DeepLinkOrigin } from 'contexts/DeeplinkContext/types'
 import { AddHistoryPayload } from 'store/browser'
@@ -18,7 +15,6 @@ import useRecentWalletHack from 'hooks/browser/useRecentWalletHack'
 export default function Browser(): JSX.Element {
   const dispatch = useDispatch()
   const { setPendingDeepLink } = useDeeplink()
-  const activeTab = useSelector(selectActiveTab)
   const [urlEntry, setUrlEntry] = useState('')
   const [urlToLoad, setUrlToLoad] = useState('')
   const clipboard = useClipboardWatcher()
@@ -50,13 +46,12 @@ export default function Browser(): JSX.Element {
         injectedJavaScript={injectCoreAsRecent}
         source={{ uri: urlToLoad }}
         onNavigationStateChange={event => {
-          if (activeTab) {
-            const history: AddHistoryPayload = {
-              title: event.title,
-              url: event.url
-            }
-            dispatch(addHistoryForActiveTab(history))
+          const history: AddHistoryPayload = {
+            title: event.title,
+            url: event.url
           }
+          dispatch(addHistoryForActiveTab(history))
+          setUrlEntry(event.url)
         }}
         setSupportMultipleWindows={false}
         onScroll={onScrollHandler}
