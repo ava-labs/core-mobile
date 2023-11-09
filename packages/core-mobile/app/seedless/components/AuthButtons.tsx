@@ -7,12 +7,14 @@ import SocialButton from './SocialButton'
 
 type Props = {
   title: string
+  disabled?: boolean
   onGoogleAction: () => void
   onMnemonicAction: () => void
 }
 
 const AuthButtons: FC<Props> = ({
   title,
+  disabled,
   onGoogleAction,
   onMnemonicAction
 }) => {
@@ -25,7 +27,11 @@ const AuthButtons: FC<Props> = ({
         <Text variant="alertTitle">{title}</Text>
         <Space y={16} />
         <View style={styles.socialButtonsContainer}>
-          <SocialButton type="google" onPress={onGoogleAction} />
+          <SocialButton
+            type="google"
+            disabled={disabled}
+            onPress={onGoogleAction}
+          />
         </View>
         <Space y={16} />
         <View style={styles.separatorContainer}>
@@ -36,7 +42,11 @@ const AuthButtons: FC<Props> = ({
           <Separator color={colors.$neutral850} style={{ flexGrow: 1 }} />
         </View>
       </View>
-      <Button type="secondary" size="xlarge" onPress={onMnemonicAction}>
+      <Button
+        type="secondary"
+        size="xlarge"
+        disabled={disabled}
+        onPress={onMnemonicAction}>
         Recovery Phrase
       </Button>
     </View>

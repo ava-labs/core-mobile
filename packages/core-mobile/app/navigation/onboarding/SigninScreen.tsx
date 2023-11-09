@@ -3,9 +3,14 @@ import { useNavigation } from '@react-navigation/native'
 import CoreXLogoAnimated from 'components/CoreXLogoAnimated'
 import AppNavigation from 'navigation/AppNavigation'
 import { OnboardScreenProps } from 'navigation/types'
-import React, { FC, useLayoutEffect } from 'react'
+import React, { FC, useLayoutEffect, useState } from 'react'
 import { StyleSheet } from 'react-native'
 import AuthButtons from 'seedless/components/AuthButtons'
+import CoreSeedlessAPIService, {
+  SeedlessUserRegistrationResult
+} from 'seedless/services/CoreSeedlessAPIService'
+import GoogleSigninService from 'seedless/services/GoogleSigninService'
+// import SeedlessService from 'seedless/services/SeedllessService'
 
 type NavigationProp = OnboardScreenProps<
   typeof AppNavigation.Onboard.Signup
@@ -13,6 +18,7 @@ type NavigationProp = OnboardScreenProps<
 
 const SigninScreen: FC = () => {
   const navigation = useNavigation<NavigationProp>()
+  const [isLoading, setIsLoading] = useState(false)
   const {
     theme: { colors }
   } = useTheme()
@@ -26,8 +32,27 @@ const SigninScreen: FC = () => {
     })
   }
 
-  const handleSigninWithGoogle = (): void => {
-    // todo: implement sign in with google
+  const handleSigninWithGoogle = async (): Promise<Promise<Promise<void>>> => {
+    const oidcToken = await GoogleSigninService.signin()
+
+    setIsLoading(true)
+    const result = await CoreSeedlessAPIService.register(oidcToken)
+
+    if (result === SeedlessUserRegistrationResult.APPROVED) {
+      try {
+        // const signerSessionData = await SeedlessService.getSessionData(
+        //   oidcToken
+        // )
+        // console.log(signerSessionData)
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.log(e)
+      } finally {
+        setIsLoading(false)
+      }
+    } else if (result === SeedlessUserRegistrationResult.ALREADY_REGISTERED) {
+      // recover flow
+    }
   }
 
   useLayoutEffect(() => {
@@ -47,6 +72,7 @@ const SigninScreen: FC = () => {
       <View style={styles.buttonsContainer}>
         <AuthButtons
           title="Sign in with..."
+          disabled={isLoading}
           onGoogleAction={handleSigninWithGoogle}
           onMnemonicAction={handleSigninWithMnemonic}
         />

@@ -4,10 +4,15 @@ import CoreXLogoAnimated from 'components/CoreXLogoAnimated'
 import { Space } from 'components/Space'
 import AppNavigation from 'navigation/AppNavigation'
 import { OnboardScreenProps } from 'navigation/types'
-import React, { FC } from 'react'
+import React, { FC, useState } from 'react'
 import { StyleSheet } from 'react-native'
 import { useSelector } from 'react-redux'
 import AuthButtons from 'seedless/components/AuthButtons'
+import CoreSeedlessAPIService, {
+  SeedlessUserRegistrationResult
+} from 'seedless/services/CoreSeedlessAPIService'
+import GoogleSigninService from 'seedless/services/GoogleSigninService'
+// import SeedlessService from 'seedless/services/SeedllessService'
 import { selectIsSeedlessOnboardingBlocked } from 'store/posthog'
 
 type NavigationProp = OnboardScreenProps<
@@ -19,6 +24,7 @@ const SignupScreen: FC = () => {
     selectIsSeedlessOnboardingBlocked
   )
   const navigation = useNavigation<NavigationProp>()
+  const [isLoading, setIsLoading] = useState(false)
 
   const handleSigninWithMnemonic = (): void => {
     navigation.navigate(AppNavigation.Onboard.Welcome, {
@@ -42,8 +48,28 @@ const SignupScreen: FC = () => {
     navigation.navigate(AppNavigation.Onboard.Signin)
   }
 
-  const handleSignupWithGoogle = (): void => {
-    // todo: implement sign up with google
+  const handleSignupWithGoogle = async (): Promise<void> => {
+    const oidcToken = await GoogleSigninService.signin()
+
+    setIsLoading(true)
+    const result = await CoreSeedlessAPIService.register(oidcToken)
+
+    if (result === SeedlessUserRegistrationResult.APPROVED) {
+      try {
+        // const signerSessionData = await SeedlessService.getSessionData(
+        //   oidcToken
+        // )
+        // todo: implement Register TOTP flow
+        // console.log('signerSessionData', signerSessionData)
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.log(e)
+      } finally {
+        setIsLoading(false)
+      }
+    } else if (result === SeedlessUserRegistrationResult.ALREADY_REGISTERED) {
+      // recover flow
+    }
   }
 
   return (
@@ -71,11 +97,16 @@ const SignupScreen: FC = () => {
         <View style={styles.buttonsContainer}>
           <AuthButtons
             title="Sign up with..."
+            disabled={isLoading}
             onGoogleAction={handleSignupWithGoogle}
             onMnemonicAction={handleSignupWithMnemonic}
           />
           <Space y={48} />
-          <Button type="tertiary" size="xlarge" onPress={handleSignin}>
+          <Button
+            type="tertiary"
+            size="xlarge"
+            disabled={isLoading}
+            onPress={handleSignin}>
             Already Have a Wallet?
           </Button>
         </View>

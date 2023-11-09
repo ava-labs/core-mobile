@@ -7,10 +7,11 @@ import AppleLogo from '../assets/apple.svg'
 
 type Props = {
   type: 'google' | 'apple'
+  disabled?: boolean
   onPress: () => void
 }
 
-const SocialButton: FC<Props> = ({ type, onPress }) => {
+const SocialButton: FC<Props> = ({ type, disabled, onPress }) => {
   const {
     theme: { colors }
   } = useTheme()
@@ -24,14 +25,14 @@ const SocialButton: FC<Props> = ({ type, onPress }) => {
   }, [type])
 
   return (
-    <Pressable onPress={onPress}>
+    <Pressable disabled={disabled} onPress={onPress}>
       {({ pressed }) => (
         <View
           style={[
             styles.container,
             { backgroundColor: alpha(colors.$neutral700, pressed ? 0.8 : 0.5) }
           ]}>
-          {logo}
+          <View style={{ opacity: disabled ? 0.5 : 1 }}>{logo}</View>
         </View>
       )}
     </Pressable>
