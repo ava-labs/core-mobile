@@ -7,6 +7,7 @@ import { OnboardScreenProps } from 'navigation/types'
 import React, { FC } from 'react'
 import { StyleSheet } from 'react-native'
 import { useSelector } from 'react-redux'
+import AuthButtons from 'seedless/components/AuthButtons'
 import { selectIsSeedlessOnboardingBlocked } from 'store/posthog'
 
 type NavigationProp = OnboardScreenProps<
@@ -19,7 +20,7 @@ const SignupScreen: FC = () => {
   )
   const navigation = useNavigation<NavigationProp>()
 
-  const handleLogin = (): void => {
+  const handleSigninWithMnemonic = (): void => {
     navigation.navigate(AppNavigation.Onboard.Welcome, {
       screen: AppNavigation.Onboard.AnalyticsConsent,
       params: {
@@ -28,13 +29,21 @@ const SignupScreen: FC = () => {
     })
   }
 
-  const handleSignup = (): void => {
+  const handleSignupWithMnemonic = (): void => {
     navigation.navigate(AppNavigation.Onboard.Welcome, {
       screen: AppNavigation.Onboard.AnalyticsConsent,
       params: {
         nextScreen: AppNavigation.Onboard.CreateWalletStack
       }
     })
+  }
+
+  const handleSignin = (): void => {
+    navigation.navigate(AppNavigation.Onboard.Signin)
+  }
+
+  const handleSignupWithGoogle = (): void => {
+    // todo: implement sign up with google
   }
 
   return (
@@ -44,16 +53,32 @@ const SignupScreen: FC = () => {
       </View>
       {isSeedlessOnboardingBlocked ? (
         <View style={styles.buttonsContainer}>
-          <Button type="primary" size="xlarge" onPress={handleLogin}>
+          <Button
+            type="primary"
+            size="xlarge"
+            onPress={handleSigninWithMnemonic}>
             Sign in with Recovery Phrase
           </Button>
           <Space y={16} />
-          <Button type="secondary" size="xlarge" onPress={handleSignup}>
+          <Button
+            type="secondary"
+            size="xlarge"
+            onPress={handleSignupWithMnemonic}>
             Sign up with Recovery Phrase
           </Button>
         </View>
       ) : (
-        <View style={styles.buttonsContainer} />
+        <View style={styles.buttonsContainer}>
+          <AuthButtons
+            title="Sign up with..."
+            onGoogleAction={handleSignupWithGoogle}
+            onMnemonicAction={handleSignupWithMnemonic}
+          />
+          <Space y={48} />
+          <Button type="tertiary" size="xlarge" onPress={handleSignin}>
+            Already Have a Wallet?
+          </Button>
+        </View>
       )}
       <View />
     </View>
@@ -62,7 +87,8 @@ const SignupScreen: FC = () => {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1
+    flex: 1,
+    backgroundColor: 'black'
   },
   logoContainer: {
     flex: 1,
