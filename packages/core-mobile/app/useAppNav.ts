@@ -33,8 +33,8 @@ function resetNavToUnlockedWallet(navigation: NavigationRef): void {
   if (
     navigation.current?.getState().routes[0]?.name !== AppNavigation.Root.Wallet
   ) {
-    let others = navigation.current?.getState().routes.slice(1) ?? []
-    others = others.filter(navs => !navs.name.includes('Onboard'))
+    const others = navigation.current?.getState().routes.slice(1) ?? []
+    // others = others.filter(navs => !navs.name.includes('Onboard'))
     navigation.current?.reset({
       index: 0,
       // @ts-ignore
