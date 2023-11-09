@@ -8,8 +8,7 @@ import {
 import { Pressable, Text, View } from '../Primitives'
 import { Icons } from '../../theme/tokens/Icons'
 import { TextVariant } from '../../theme/tokens/text'
-import { useTheme } from '../..'
-import { alpha } from '../../theme/tokens/colors'
+import { alpha, useTheme } from '../..'
 
 interface BaseButtonProps {
   onPress?: () => void

@@ -11,7 +11,8 @@ enum OnboardScreens {
   AnalyticsConsent = 'OnboardScreens.AnalyticsConsent',
   CreateWalletStack = 'OnboardScreens.CreateWalletStack',
   EnterWithMnemonicStack = 'OnboardScreens.EnterWithMnemonicStack',
-  Login = 'OnboardScreens.Login'
+  Login = 'OnboardScreens.Login',
+  RecoveryMethodsStack = 'OnboardScreens.RecoveryMethodsStack'
 }
 
 enum CreateWalletNavigationScreens {
@@ -209,6 +210,14 @@ enum PortfolioScreens {
   NetworkTokens = 'PortfolioScreens.NetworkTokens'
 }
 
+enum RecoveryMethodsStackScreens {
+  AddRecoveryMethods = 'RecoveryMethodsStackScreens.AddRecoveryMethods',
+  AuthenticatorSetup = 'RecoveryMethodsStackScreens.AuthenticatorSetup',
+  ScanQrCode = 'RecoveryMethodsStackScreens.ScanQrCode',
+  LearnMore = 'RecoveryMethodsStackScreens.LearnMore',
+  VerifyCode = 'RecoveryMethodsStackScreens.VerifyCode'
+}
+
 const AppNavigation = {
   Root: Root,
   Onboard: OnboardScreens,
@@ -233,7 +242,8 @@ const AppNavigation = {
   Browser: BrowserScreens,
   StakeSetup: StakeSetupScreens,
   Notifications: NotificationsScreens,
-  SendFeedback: SendFeedbackScreens
+  SendFeedback: SendFeedbackScreens,
+  RecoveryMethods: RecoveryMethodsStackScreens
 }
 
 export default AppNavigation

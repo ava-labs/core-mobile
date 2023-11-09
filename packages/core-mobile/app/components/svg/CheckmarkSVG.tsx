@@ -7,7 +7,7 @@ interface Prop {
   size?: number
 }
 
-function CheckmarkSVG({ color, size = 16 }: Prop) {
+function CheckmarkSVG({ color, size = 16 }: Prop): JSX.Element {
   const context = useApplicationContext()
 
   const iconColor = color ?? context.theme.alternateBackground
