@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/explicit-function-return-type */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { element, waitFor } from 'detox'
@@ -18,7 +17,9 @@ const reportUIPerformanceFilePath = createFileIfNotExist(
   './e2e/tests/performance/testResults/allResults.txt'
 )
 
-const tempUIPerformanceFilePath = createFileIfNotExist('./e2e/tests/performance/testResults/tempResults.txt')
+const tempUIPerformanceFilePath = createFileIfNotExist(
+  './e2e/tests/performance/testResults/tempResults.txt'
+)
 
 const balanceToNumber = async (balance: Detox.NativeMatcher, index = 0) => {
   //currently works only with android
