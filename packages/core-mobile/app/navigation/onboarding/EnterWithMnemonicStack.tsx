@@ -85,12 +85,13 @@ type LoginNavigationProp = EnterWithMnemonicScreenProps<
 
 const LoginWithMnemonicScreen = (): JSX.Element => {
   const enterWithMnemonicContext = useContext(EnterWithMnemonicContext)
-  const { navigate, goBack } = useNavigation<LoginNavigationProp>()
+  const { navigate, goBack, canGoBack } = useNavigation<LoginNavigationProp>()
   const { capture } = usePostCapture()
   const dispatch = useDispatch()
   const { deleteWallet } = useApplicationContext().appHook
   const walletState = useSelector(selectWalletState)
   const isWalletExisted = walletState !== WalletState.NONEXISTENT
+  const { appNavHook } = useApplicationContext()
 
   useBeforeRemoveListener(
     useCallback(() => {
@@ -113,7 +114,15 @@ const LoginWithMnemonicScreen = (): JSX.Element => {
     [isWalletExisted, enterWithMnemonicContext, navigate, deleteWallet]
   )
 
-  return <HdWalletLogin onEnterWallet={onEnterWallet} onBack={() => goBack()} />
+  const handleBack = (): void => {
+    if (canGoBack()) {
+      goBack()
+    } else {
+      appNavHook.resetNavToRoot()
+    }
+  }
+
+  return <HdWalletLogin onEnterWallet={onEnterWallet} onBack={handleBack} />
 }
 
 type CreatePinNavigationProp = EnterWithMnemonicScreenProps<
