@@ -7,10 +7,18 @@ import { Platform } from './constants'
 import Constants from './constants'
 const fs = require('fs')
 
-const reportUIPerformanceFilePath =
+async function createFileIfNotExist(path: string) {
+  fs.writeFile(path, '', { flag: 'wx' }, function (err: string) {
+    if (err) throw err
+    return path
+  })
+}
+
+const reportUIPerformanceFilePath = createFileIfNotExist(
   './e2e/tests/performance/testResults/allResults.txt'
-const tempUIPerformanceFilePath =
-  './e2e/tests/performance/testResults/tempResults.txt'
+)
+
+const tempUIPerformanceFilePath = createFileIfNotExist('./e2e/tests/performance/testResults/tempResults.txt')
 
 const balanceToNumber = async (balance: Detox.NativeMatcher, index = 0) => {
   //currently works only with android
