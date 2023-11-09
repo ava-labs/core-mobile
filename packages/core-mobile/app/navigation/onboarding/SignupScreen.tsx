@@ -55,10 +55,12 @@ const SignupScreen: FC = () => {
 
     if (result === SeedlessUserRegistrationResult.APPROVED) {
       // todo: implement totp registration flow
+      // CP-7663: https://ava-labs.atlassian.net/browse/CP-7663
       setIsLoading(false)
       // eslint-disable-next-line sonarjs/no-duplicated-branches
     } else if (result === SeedlessUserRegistrationResult.ALREADY_REGISTERED) {
       // todo: implement totp verification flow
+      // CP-7664: https://ava-labs.atlassian.net/browse/CP-7664
       setIsLoading(false)
     }
   }
