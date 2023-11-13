@@ -6,8 +6,8 @@ import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation } from '@react-navigation/native'
 import { Space } from 'components/Space'
 import { copyToClipboard } from 'utils/DeviceTools'
-import { Card } from './components'
-import { SnackBarMessage } from './components/SnackBarMessage'
+import { Card } from '../components'
+import { SnackBarMessage } from '../components/SnackBarMessage'
 
 type LearnMoreScreenProps = RecoveryMethodsScreenProps<
   typeof AppNavigation.RecoveryMethods.LearnMore

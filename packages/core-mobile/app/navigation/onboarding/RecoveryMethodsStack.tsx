@@ -1,12 +1,12 @@
 import AppNavigation from 'navigation/AppNavigation'
 import React from 'react'
 import { createStackNavigator } from '@react-navigation/stack'
-import { AddRecoveryMethods } from 'screens/onboarding/seedless/AddRecoveryMethods'
-import { AuthenticatorSetup } from 'screens/onboarding/seedless/AuthenticatorSetup'
-import { ScanQrCode } from 'screens/onboarding/seedless/ScanQrCode'
-import { LearnMore } from 'screens/onboarding/seedless/LearnMore'
-import { VerifyCode } from 'screens/onboarding/seedless/VerifyCode'
+import { AuthenticatorSetup } from 'seedless/screens/AuthenticatorSetup'
+import { ScanQrCode } from 'seedless/screens/ScanQrCode'
+import { LearnMore } from 'seedless/screens/LearnMore'
+import { VerifyCode } from 'seedless/screens/VerifyCode'
 import { MainHeaderOptions } from 'navigation/NavUtils'
+import { AddRecoveryMethods } from 'seedless/screens/AddRecoveryMethods'
 
 export type RecoveryMethodsStackParamList = {
   [AppNavigation.RecoveryMethods.AddRecoveryMethods]: undefined
