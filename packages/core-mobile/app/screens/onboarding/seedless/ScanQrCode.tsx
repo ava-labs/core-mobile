@@ -12,10 +12,10 @@ type ScanQrCodeScreenProps = RecoveryMethodsScreenProps<
 
 const { width: screenWidth } = Dimensions.get('window')
 
-export const ScanQrCode = (): JSX.Element => {
-  const qrCodeContainerSize = screenWidth - 96
-  const qrCodeSize = qrCodeContainerSize - 40
+const qrCodeContainerSize = screenWidth - 96
+const qrCodeSize = qrCodeContainerSize - 40
 
+export const ScanQrCode = (): JSX.Element => {
   const { navigate } = useNavigation<ScanQrCodeScreenProps['navigation']>()
 
   const openVerifyCode = (): void => {

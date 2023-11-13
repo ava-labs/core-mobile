@@ -72,7 +72,7 @@ const OnboardScreenStack: FC = () => {
         }}
       />
       <OnboardingScreenS.Screen
-        name={AppNavigation.Onboard.RecoveryMethodsStack}
+        name={AppNavigation.Onboard.RecoveryMethods}
         component={RecoveryMethodsStack}
       />
     </OnboardingScreenS.Navigator>
@@ -84,7 +84,7 @@ export type OnboardingScreenStackParamList = {
   [AppNavigation.Onboard.Signin]: undefined
   [AppNavigation.Onboard
     .Welcome]: NavigatorScreenParams<WelcomeScreenStackParamList>
-  [AppNavigation.Onboard.RecoveryMethodsStack]: undefined
+  [AppNavigation.Onboard.RecoveryMethods]: undefined
 }
 
 const OnboardingScreenS = createStackNavigator<OnboardingScreenStackParamList>()

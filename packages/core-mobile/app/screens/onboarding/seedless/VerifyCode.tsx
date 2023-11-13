@@ -1,5 +1,4 @@
 import {
-  Button,
   Pressable,
   Text,
   TextInput,
@@ -21,7 +20,7 @@ type VerifyCodeScreenProps = RecoveryMethodsScreenProps<
 
 export const VerifyCode = (): JSX.Element => {
   const {
-    theme: { colors }
+    theme: { colors, text }
   } = useTheme()
   const [code, setCode] = useState('')
 
@@ -35,9 +34,9 @@ export const VerifyCode = (): JSX.Element => {
     }
   }
 
-  const handleVerifyCode = (text: string): void => {
-    setCode(text)
-    if (text.length < 6) {
+  const handleVerifyCode = (changedText: string): void => {
+    setCode(changedText)
+    if (changedText.length < 6) {
       setShowError(false)
       return
     }
@@ -89,11 +88,9 @@ export const VerifyCode = (): JSX.Element => {
               backgroundColor: alpha(colors.$neutral700, 0.5),
               borderColor: '$dangerLight',
               borderRadius: 8,
-              fontFamily: 'Inter-Bold',
-              fontSize: 34,
-              lineHeight: 44,
               color: '$neutral50',
               padding: 8,
+              ...text.heading3,
               ...textInputStyle
             }}
           />

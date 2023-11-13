@@ -20,7 +20,7 @@ export const SnackBarMessage = (): JSX.Element => {
         }}>
         <CheckmarkSVG size={14} color={colors.$neutral850} />
       </View>
-      <Space x={4} />
+      <Space x={8} />
       <Text variant="buttonMedium">Key Copied</Text>
     </View>
   )

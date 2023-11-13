@@ -12,7 +12,7 @@ enum OnboardScreens {
   CreateWalletStack = 'OnboardScreens.CreateWalletStack',
   EnterWithMnemonicStack = 'OnboardScreens.EnterWithMnemonicStack',
   Login = 'OnboardScreens.Login',
-  RecoveryMethodsStack = 'OnboardScreens.RecoveryMethodsStack'
+  RecoveryMethods = 'OnboardScreens.RecoveryMethods'
 }
 
 enum CreateWalletNavigationScreens {
@@ -210,12 +210,12 @@ enum PortfolioScreens {
   NetworkTokens = 'PortfolioScreens.NetworkTokens'
 }
 
-enum RecoveryMethodsStackScreens {
-  AddRecoveryMethods = 'RecoveryMethodsStackScreens.AddRecoveryMethods',
-  AuthenticatorSetup = 'RecoveryMethodsStackScreens.AuthenticatorSetup',
-  ScanQrCode = 'RecoveryMethodsStackScreens.ScanQrCode',
-  LearnMore = 'RecoveryMethodsStackScreens.LearnMore',
-  VerifyCode = 'RecoveryMethodsStackScreens.VerifyCode'
+enum RecoveryMethodsScreens {
+  AddRecoveryMethods = 'RecoveryMethodsScreens.AddRecoveryMethods',
+  AuthenticatorSetup = 'RecoveryMethodsScreens.AuthenticatorSetup',
+  ScanQrCode = 'RecoveryMethodsScreens.ScanQrCode',
+  LearnMore = 'RecoveryMethodsScreens.LearnMore',
+  VerifyCode = 'RecoveryMethodsScreens.VerifyCode'
 }
 
 const AppNavigation = {
@@ -243,7 +243,7 @@ const AppNavigation = {
   StakeSetup: StakeSetupScreens,
   Notifications: NotificationsScreens,
   SendFeedback: SendFeedbackScreens,
-  RecoveryMethods: RecoveryMethodsStackScreens
+  RecoveryMethods: RecoveryMethodsScreens
 }
 
 export default AppNavigation
