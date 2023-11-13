@@ -10,9 +10,9 @@ import React, { useState } from 'react'
 import { BottomSheet } from 'components/BottomSheet'
 import ClearSVG from 'components/svg/ClearSVG'
 import { Space } from 'components/Space'
-import { RecoveryMethodsScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation } from '@react-navigation/native'
+import { RecoveryMethodsScreenProps } from 'navigation/types'
 
 type VerifyCodeScreenProps = RecoveryMethodsScreenProps<
   typeof AppNavigation.RecoveryMethods.LearnMore
@@ -31,13 +31,6 @@ export const VerifyCode = (): JSX.Element => {
   const onGoBack = (): void => {
     if (canGoBack()) {
       goBack()
-    }
-  }
-
-  const verifyCode = (): void => {
-    // todo: verify code
-    if (code === 'wrong') {
-      setShowError(true)
     }
   }
 
