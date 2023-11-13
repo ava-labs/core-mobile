@@ -56,14 +56,17 @@ async function onPinCreated(
   pin: string,
   isResetting = false
 ): Promise<'useBiometry' | 'enterWallet'> {
-  const encryptedData = await encrypt(mnemonic, pin)
-  const pinSaved = await BiometricsSDK.storeWalletWithPin(
-    encryptedData,
-    isResetting
-  )
-  if (pinSaved === false) {
-    throw Error('Pin not saved')
+  if (walletService.getWalletType() !== 'seedless') {
+    const encryptedData = await encrypt(mnemonic, pin)
+    const pinSaved = await BiometricsSDK.storeWalletWithPin(
+      encryptedData,
+      isResetting
+    )
+    if (pinSaved === false) {
+      throw Error('Pin not saved')
+    }
   }
+
   const canUseBiometry = isResetting
     ? false
     : await BiometricsSDK.canUseBiometry()

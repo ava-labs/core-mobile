@@ -58,8 +58,9 @@ class WalletService {
    * @private
    */
   private xpubXP?: string
+  private type?: 'seedless' | 'mnemonic'
 
-  async setMnemonic(mnemonic: string) {
+  async setMnemonic(mnemonic: string): Promise<void> {
     const xpubPromise = getXpubFromMnemonic(mnemonic)
     const xpubXPPromise = new Promise<string>(resolve => {
       resolve(Avalanche.getXpubFromMnemonic(mnemonic))
@@ -72,6 +73,11 @@ class WalletService {
       this.xpubXP = pubKeys[1].value
     }
     this.mnemonic = mnemonic
+    this.type = 'mnemonic'
+  }
+
+  getWalletType = (): 'seedless' | 'mnemonic' | undefined => {
+    return this.type
   }
 
   private async getBtcWallet(
@@ -196,7 +202,7 @@ class WalletService {
     data: any,
     accountIndex: number,
     network: Network
-  ) {
+  ): Promise<string> {
     const wallet = await this.getWallet(accountIndex, network)
     if (!wallet || !(wallet instanceof BaseWallet)) {
       throw new Error(
@@ -458,7 +464,7 @@ class WalletService {
     return unsignedTx
   }
 
-  destroy() {
+  destroy(): void {
     this.mnemonic = undefined
     this.xpub = undefined
     this.xpubXP = undefined

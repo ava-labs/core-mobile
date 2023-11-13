@@ -17,6 +17,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { differenceInSeconds } from 'date-fns'
 import Logger from 'utils/Logger'
 import { formatTimer } from 'utils/Utils'
+import walletService from 'services/wallet/WalletService'
 import {
   resetLoginAttempt,
   selectLoginAttempt,
@@ -187,9 +188,7 @@ export function usePinOrBiometryLogin(): {
 
   useEffect(() => {
     async function checkPinEntered(): Promise<void> {
-      if (!pinEntered) {
-        return
-      }
+      if (!pinEntered || walletService.getWalletType() === 'seedless') return
 
       try {
         const credentials =
