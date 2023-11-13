@@ -38,7 +38,7 @@ class AuthenticatorService {
       }
       const signerSession = new SignerSession(signerSessionManager)
       response = await response.approveTotp(signerSession, existingTotpCode)
-      if (!response.requiresMfa()) {
+      if (response.requiresMfa()) {
         return { success: false, error: new WrongMfaCode() }
       }
     }
