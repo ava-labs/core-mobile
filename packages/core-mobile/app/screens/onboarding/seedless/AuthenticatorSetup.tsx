@@ -6,7 +6,7 @@ import { RecoveryMethodsScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation } from '@react-navigation/native'
 import { copyToClipboard } from 'utils/DeviceTools'
-import { Card } from './components/Card'
+import { Card } from './components'
 import { SnackBarMessage } from './components/SnackBarMessage'
 
 type AuthenticatorSetupScreenProps = RecoveryMethodsScreenProps<
