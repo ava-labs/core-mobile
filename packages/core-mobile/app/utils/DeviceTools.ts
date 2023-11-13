@@ -1,10 +1,13 @@
 import Clipboard from '@react-native-clipboard/clipboard'
 import { ShowSnackBar } from 'components/Snackbar'
 
-export const copyToClipboard = (str?: string): void => {
+export const copyToClipboard = (
+  str?: string,
+  message: string | JSX.Element = 'Copied'
+): void => {
   if (str) {
     Clipboard.setString(str)
-    ShowSnackBar('Copied')
+    ShowSnackBar(message)
   } else {
     Clipboard.setString('') //better to clean clipboard than let user paste something unintentionally
   }
