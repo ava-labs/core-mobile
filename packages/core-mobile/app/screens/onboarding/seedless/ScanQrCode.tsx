@@ -36,10 +36,7 @@ export const ScanQrCode = (): JSX.Element => {
             Open any <Text variant="heading6">authenticator app</Text> and scan
             the QR code found below.
           </Text>
-          <Text
-            variant="body1"
-            sx={{ color: '$neutral50', marginTop: 32 }}
-            onPress={goToAuthenticatorSetup}>
+          <Text variant="body1" sx={{ color: '$neutral50', marginTop: 32 }}>
             Or enter code manually.
           </Text>
         </View>
@@ -58,7 +55,7 @@ export const ScanQrCode = (): JSX.Element => {
           }}>
           <QRCode ecl={'H'} size={qrCodeSize} value={'TO_BE_IMPLEMENTED'} />
         </View>
-        <Button type="tertiary" size="xlarge">
+        <Button type="tertiary" size="xlarge" onPress={goToAuthenticatorSetup}>
           Enter Code Manually
         </Button>
       </View>
