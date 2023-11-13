@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/explicit-function-return-type */
 import commonEls from '../locators/commonEls.loc'
 import Actions from '../helpers/actions'
 
@@ -26,8 +27,8 @@ class CommonElsPage {
     await Actions.setInputText(this.inputTextField, inputText, index)
   }
 
-  async waitForToastMsgGone() {
-    await Actions.waitForElementNotVisible(this.simpleToastMsg)
+  async waitForToastMsgGone(index?: number) {
+    await Actions.waitForElementNotVisible(this.simpleToastMsg, 10, index)
   }
 
   async waitForJailbrokenWarning() {
