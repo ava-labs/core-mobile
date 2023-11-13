@@ -1,12 +1,12 @@
 import { Button, Text, View } from '@avalabs/k2-mobile'
 import React from 'react'
-import ContentCopy from 'assets/icons/ContentCopy.svg'
 import { RecoveryMethodsScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation } from '@react-navigation/native'
 import { Space } from 'components/Space'
 import { copyToClipboard } from 'utils/DeviceTools'
-import { Card } from '../components'
+import ContentCopy from '../assets/ContentCopy.svg'
+import { Card } from '../components/Card'
 import { SnackBarMessage } from '../components/SnackBarMessage'
 
 type LearnMoreScreenProps = RecoveryMethodsScreenProps<

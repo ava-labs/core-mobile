@@ -3,8 +3,8 @@ import { useNavigation } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
 import { RecoveryMethodsScreenProps } from 'navigation/types'
 import React from 'react'
-import QrCode from 'assets/icons/QrCode.svg'
-import { Card } from '../components'
+import QrCode from '../assets/QrCode.svg'
+import { Card } from '../components/Card'
 
 type AddRecoveryMethodsScreenProps = RecoveryMethodsScreenProps<
   typeof AppNavigation.RecoveryMethods.AddRecoveryMethods
