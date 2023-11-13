@@ -5,7 +5,8 @@ enum Root {
 }
 
 enum OnboardScreens {
-  Signup = 'OnboardScreens.Init',
+  Signup = 'OnboardScreens.Signup',
+  Signin = 'OnboardScreens.Signin',
   Welcome = 'OnboardScreens.Welcome',
   AnalyticsConsent = 'OnboardScreens.AnalyticsConsent',
   CreateWalletStack = 'OnboardScreens.CreateWalletStack',
