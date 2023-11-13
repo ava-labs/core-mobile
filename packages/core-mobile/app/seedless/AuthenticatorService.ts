@@ -2,9 +2,9 @@ import assert from 'assert'
 import {
   CubeSigner,
   SignerSession,
-  SignerSessionManager
+  SignerSessionManager,
+  CognitoSessionManager
 } from '@cubist-dev/cubesigner-sdk'
-import { CognitoSessionManager } from '@cubist-dev/cubesigner-sdk/dist/src/session/cognito_manager'
 import { Result } from 'types/result'
 
 interface SetTotpParams {
