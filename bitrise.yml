@@ -24,7 +24,10 @@ workflows:
     - install-missing-android-tools@3:
         inputs:
         - gradlew_path: $ANDROID_PROJECT_LOCATION/gradlew
-    - restore-gradle-cache@1: {}
+    - restore-gradle-cache@1: 
+        inputs:
+        - key: |-
+            verbose
     - android-build@1:
         inputs:
         - project_location: $ANDROID_PROJECT_LOCATION
@@ -33,7 +36,10 @@ workflows:
         - build_type: aab
         - cache_level: all
         - variant: $ANDROID_BUILD_VARIANT
-    - save-gradle-cache@1: {}
+    - save-gradle-cache@1:
+        inputs:
+        - key: |-
+            verbose
     - sign-apk@1:
         inputs:
         - android_app: $BITRISE_AAB_PATH
