@@ -1,5 +1,6 @@
 import { GoogleSignin } from '@react-native-google-signin/google-signin'
 import Config from 'react-native-config'
+import Logger from 'utils/Logger'
 
 if (!Config.GOOGLE_OAUTH_CLIENT_WEB_ID) {
   throw Error(
@@ -30,9 +31,12 @@ class GoogleSigninService {
       if (userInfo.idToken) {
         return userInfo.idToken
       } else {
-        throw new Error('Seedless login error')
+        const error = 'Seedless login error: empty token'
+        Logger.error(error)
+        throw new Error(error)
       }
     } catch (error) {
+      Logger.error('Seedless login error', error)
       throw new Error('Seedless login error')
     }
   }
