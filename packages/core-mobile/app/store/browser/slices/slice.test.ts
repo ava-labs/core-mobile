@@ -5,7 +5,7 @@ import { combinedReducer as reducer } from '../combinedReducer'
 import {
   addTab,
   removeTab,
-  addHistoryForTab,
+  addHistoryForActiveTab,
   removeAllTabs,
   setActiveTabId
 } from './tabs'
@@ -147,13 +147,7 @@ describe('tab history', () => {
     jest.useFakeTimers().setSystemTime(new Date('2023-10-26'))
     const state1 = reducer(currentState, addTab())
     creashHash.mockImplementation(() => 'history_1')
-    const state = reducer(
-      state1,
-      addHistoryForTab({
-        tabId: '1',
-        history: TAB_HISTORY_DATA
-      })
-    )
+    const state = reducer(state1, addHistoryForActiveTab(TAB_HISTORY_DATA))
 
     expect(state).toMatchObject({
       tabs: {
@@ -185,13 +179,7 @@ it('should not add a new global history when tab is not found', () => {
   uuidSpy.mockImplementationOnce(() => '1')
   const state1 = reducer(currentState, addTab())
   creashHash.mockImplementationOnce(() => 'history_1')
-  const state = reducer(
-    state1,
-    addHistoryForTab({
-      tabId: 'unknown',
-      history: TAB_HISTORY_DATA
-    })
-  )
+  const state = reducer(state1, addHistoryForActiveTab(TAB_HISTORY_DATA))
   expect(state.tabs).toMatchObject({
     activeTabId: '1',
     entities: {

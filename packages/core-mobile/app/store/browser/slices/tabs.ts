@@ -1,15 +1,10 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { createAction, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from 'store/index'
 import { v4 as uuidv4 } from 'uuid'
 import { getUnixTime } from 'date-fns'
 import { createHash } from 'utils/createHash'
 import { Tab, TabId, TabPayload, AddHistoryPayload, TabState } from '../types'
-import {
-  limitMaxTabs,
-  navigateTabHistory,
-  tabAdapter,
-  updateActiveTabId
-} from '../utils'
+import { limitMaxTabs, tabAdapter, updateActiveTabId } from '../utils'
 import { MAXIMUM_TAB_HISTORIES } from '../const'
 
 const reducerName = 'browser/tabs'
@@ -33,17 +28,17 @@ const tabSlice = createSlice({
       // limit max tabs
       limitMaxTabs(state)
     },
-    addHistoryForTab: (
+    addHistoryForActiveTab: (
       state: TabState,
       action: PayloadAction<AddHistoryPayload>
     ) => {
-      const { tabId, history } = action.payload
+      const history = action.payload
       const lastVisited = getUnixTime(new Date())
-
-      const tab = tabAdapter.getSelectors().selectById(state, tabId)
-
+      const activeTabId = state.activeTabId
+      if (activeTabId === undefined) return
+      const tab = tabAdapter.getSelectors().selectById(state, activeTabId)
       if (tab === undefined) return
-      const activeHistoryId = tab.activeHistoryId
+      const activeHistoryId = tab.activeHistory?.id
 
       let indexToInsert = -1
 
@@ -56,11 +51,14 @@ const tabSlice = createSlice({
       }
 
       tabAdapter.updateOne(state, {
-        id: tabId,
+        id: activeTabId,
         changes: {
           historyIds: [...tab.historyIds, historyId],
           lastVisited,
-          activeHistoryId: historyId
+          activeHistory: {
+            id: historyId,
+            ...history
+          }
         }
       })
 
@@ -83,15 +81,18 @@ const tabSlice = createSlice({
       const { id: tabId } = action.payload
       state.activeTabId = tabId
     },
-    goForward: (state: TabState) => {
-      const activeTabId = state.activeTabId
-      if (activeTabId === undefined) return
-      navigateTabHistory(state, 'forward', activeTabId)
-    },
-    goBackward: (state: TabState) => {
-      const activeTabId = state.activeTabId
-      if (activeTabId === undefined) return
-      navigateTabHistory(state, 'backward', activeTabId)
+    setActiveHistoryForTab: (
+      state: TabState,
+      action: PayloadAction<Omit<Tab, 'historyIds' | 'lastVisited'>>
+    ) => {
+      const { id, activeHistory } = action.payload
+      tabAdapter.updateOne(state, {
+        id,
+        changes: {
+          lastVisited: getUnixTime(new Date()),
+          activeHistory
+        }
+      })
     }
   }
 })
@@ -113,8 +114,8 @@ export const selectCanGoBack = (state: RootState): boolean => {
   const activeTab = tabAdapter
     .getSelectors()
     .selectById(state.browser.tabs, state.browser.tabs.activeTabId)
-  if (activeTab && activeTab.activeHistoryId) {
-    return activeTab.historyIds.indexOf(activeTab.activeHistoryId) > 0
+  if (activeTab && activeTab.activeHistory?.id) {
+    return activeTab.historyIds.indexOf(activeTab.activeHistory.id) > 0
   }
   return false
 }
@@ -124,9 +125,9 @@ export const selectCanGoForward = (state: RootState): boolean => {
   const activeTab = tabAdapter
     .getSelectors()
     .selectById(state.browser.tabs, state.browser.tabs.activeTabId)
-  if (activeTab && activeTab.activeHistoryId) {
+  if (activeTab && activeTab.activeHistory?.id) {
     return (
-      activeTab.historyIds.indexOf(activeTab.activeHistoryId) <
+      activeTab.historyIds.indexOf(activeTab.activeHistory.id) <
       activeTab.historyIds.length - 1
     )
   }
@@ -141,14 +142,16 @@ export const selectActiveTab = (state: RootState): Tab | undefined => {
 }
 
 // actions
+export const goForward = createAction(`${reducerName}/goForward`)
+export const goBackward = createAction(`${reducerName}/goBackward`)
+
 export const {
   addTab,
-  addHistoryForTab,
+  addHistoryForActiveTab,
   removeTab,
   removeAllTabs,
   setActiveTabId,
-  goBackward,
-  goForward
+  setActiveHistoryForTab
 } = tabSlice.actions
 
 export const tabReducer = tabSlice.reducer

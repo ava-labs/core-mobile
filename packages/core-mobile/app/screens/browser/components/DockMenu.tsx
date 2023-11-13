@@ -35,7 +35,7 @@ export const DockMenu: FC<Props> = ({
   const { navigate } = useNavigation<TabViewNavigationProp>()
   const activeTab = useSelector(selectActiveTab)
   const activeHistory = useSelector(
-    selectActiveHistory(activeTab?.activeHistoryId)
+    selectActiveHistory(activeTab?.activeHistory?.id)
   )
 
   const onShare = async (): Promise<void> => {

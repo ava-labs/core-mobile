@@ -1,5 +1,4 @@
 import { createEntityAdapter } from '@reduxjs/toolkit'
-import { getUnixTime } from 'date-fns'
 import Logger from 'utils/Logger'
 import { MAXIMUM_TABS } from './const'
 import { Tab, History, TabId, Favorite, TabState } from './types'
@@ -56,28 +55,4 @@ const getLastVisitedTabId = (state: TabState): TabId | undefined => {
   if (tabs.length === 0) return undefined
   const lastVisitedTab = getLatestTab(tabs)
   return lastVisitedTab?.id
-}
-
-export const navigateTabHistory = (
-  state: TabState,
-  action: 'forward' | 'backward',
-  tabId: TabId
-): void => {
-  const tab = tabAdapter.getSelectors().selectById(state, tabId)
-  if (tab === undefined) return
-  if (tab.activeHistoryId === undefined) return
-
-  const activeHistoryIndex = tab.historyIds.indexOf(tab.activeHistoryId)
-  if (activeHistoryIndex === -1) return
-  const newActiveHistoryIndex =
-    action === 'forward' ? activeHistoryIndex + 1 : activeHistoryIndex - 1
-  const historyId = tab.historyIds[newActiveHistoryIndex]
-  if (historyId === undefined) return
-  tabAdapter.updateOne(state, {
-    id: tabId,
-    changes: {
-      lastVisited: getUnixTime(new Date()),
-      activeHistoryId: historyId.toString()
-    }
-  })
 }
