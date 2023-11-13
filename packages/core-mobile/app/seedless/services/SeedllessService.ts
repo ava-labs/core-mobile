@@ -16,7 +16,7 @@ if (!Config.SEEDLESS_ORG_ID) {
  */
 class SeedlessService {
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-  static async login(oidcToken: string, mfaReceipt?: MfaReceipt | undefined) {
+  async login(oidcToken: string, mfaReceipt?: MfaReceipt | undefined) {
     const cubesigner = new CubeSigner()
     return await cubesigner.oidcLogin(
       oidcToken,
@@ -35,7 +35,7 @@ class SeedlessService {
     )
   }
 
-  static async getSessionData(oidcToken: string): Promise<SignerSessionData> {
+  async getSessionData(oidcToken: string): Promise<SignerSessionData> {
     const response = await this.login(oidcToken)
 
     const sessionInfo = response.data()
@@ -49,4 +49,4 @@ class SeedlessService {
   }
 }
 
-export default SeedlessService
+export default new SeedlessService()
