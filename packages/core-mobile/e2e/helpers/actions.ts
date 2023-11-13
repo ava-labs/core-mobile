@@ -6,10 +6,20 @@ import { Platform } from './constants'
 import Constants from './constants'
 const fs = require('fs')
 
-const reportUIPerformanceFilePath =
+async function createFileIfNotExist(path: string) {
+  fs.writeFile(path, '', { flag: 'wx' }, function (err: string) {
+    if (err) throw err
+    return path
+  })
+}
+
+const reportUIPerformanceFilePath = createFileIfNotExist(
   './e2e/tests/performance/testResults/allResults.txt'
-const tempUIPerformanceFilePath =
+)
+
+const tempUIPerformanceFilePath = createFileIfNotExist(
   './e2e/tests/performance/testResults/tempResults.txt'
+)
 
 const balanceToNumber = async (balance: Detox.NativeMatcher, index = 0) => {
   //currently works only with android
@@ -109,9 +119,12 @@ const waitForElementNoSync = async (
 
 const waitForElementNotVisible = async (
   item: Detox.NativeMatcher,
-  timeout = 20000
+  timeout = 20000,
+  index = 0
 ) => {
-  await waitFor(element(item)).not.toBeVisible().withTimeout(timeout)
+  await waitFor(element(item).atIndex(index))
+    .not.toBeVisible()
+    .withTimeout(timeout)
 }
 
 const getAttributes = async (item: any, index = 0) => {
