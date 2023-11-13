@@ -1,6 +1,6 @@
 import { Pressable, View, useTheme } from '@avalabs/k2-mobile'
 import React, { FC, useMemo } from 'react'
-import { alpha } from '@avalabs/k2-mobile/src/theme/tokens/colors'
+import { alpha } from '@avalabs/k2-mobile'
 import GoogleLogo from 'assets/icons/google.svg'
 import AppleLogo from 'assets/icons/apple.svg'
 

@@ -51,6 +51,7 @@ import { BridgeStackParamList } from './wallet/BridgeScreenStack'
 import { PortfolioStackParamList } from './wallet/PortfolioScreenStack'
 import { StakeSetupStackParamList } from './wallet/EarnScreenStack/StakeSetupScreenStack'
 import { BrowserStackParamList } from './wallet/BrowserScreenStack'
+import { RecoveryMethodsStackParamList } from './onboarding/RecoveryMethodsStack'
 
 export type { RootScreenStackParamList }
 
@@ -171,6 +172,14 @@ export type EnterWithMnemonicScreenProps<
 > = CompositeScreenProps<
   StackScreenProps<EnterWithMnemonicStackParamList, T>,
   WelcomeScreenProps<keyof WelcomeScreenStackParamList>
+>
+
+/** ROOT -> ONBOARD -> RECOVERY METHODS **/
+export type RecoveryMethodsScreenProps<
+  T extends keyof RecoveryMethodsStackParamList
+> = CompositeScreenProps<
+  StackScreenProps<RecoveryMethodsStackParamList, T>,
+  OnboardScreenProps<keyof OnboardingScreenStackParamList>
 >
 
 /** ROOT -> WALLET **/
