@@ -62,6 +62,10 @@ const SignupScreen: FC = () => {
       // todo: implement totp verification flow
       // CP-7664: https://ava-labs.atlassian.net/browse/CP-7664
       setIsLoading(false)
+      Alert.alert('seedless user already registered')
+    } else if (result === SeedlessUserRegistrationResult.ERROR) {
+      setIsLoading(false)
+      Alert.alert('seedless user registration error')
     }
   }
 

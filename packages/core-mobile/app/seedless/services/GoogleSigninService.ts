@@ -24,7 +24,7 @@ GoogleSignin.configure({
  * https://github.com/react-native-google-signin/google-signin
  */
 class GoogleSigninService {
-  static async signin(): Promise<string> {
+  async signin(): Promise<string> {
     try {
       const userInfo = await GoogleSignin.signIn()
 
@@ -42,4 +42,4 @@ class GoogleSigninService {
   }
 }
 
-export default GoogleSigninService
+export default new GoogleSigninService()

@@ -30,26 +30,28 @@ class CoreSeedlessAPIService {
     const sub = payload.sub
     const email = payload.email
 
-    return fetch(Config.SEEDLESS_URL + '/v1/register', {
-      method: 'POST',
-      body: JSON.stringify({
-        iss,
-        sub,
-        email
-      }),
-      headers: {
-        Authorization: `${Config.SEEDLESS_API_KEY}`
-      }
-    })
-      .then(async response => {
-        if ((await response.text()) === 'USER_ALREADY_EXISTS') {
-          return SeedlessUserRegistrationResult.ALREADY_REGISTERED
+    try {
+      const response = await fetch(Config.SEEDLESS_URL + '/v1/register', {
+        method: 'POST',
+        body: JSON.stringify({
+          iss,
+          sub,
+          email
+        }),
+        headers: {
+          Authorization: `${Config.SEEDLESS_API_KEY}`
         }
-        return SeedlessUserRegistrationResult.APPROVED
       })
-      .catch(() => {
-        return SeedlessUserRegistrationResult.ERROR
-      })
+
+      const body = await response.json()
+
+      if (body.message === 'USER_ALREADY_EXISTS') {
+        return SeedlessUserRegistrationResult.ALREADY_REGISTERED
+      }
+      return SeedlessUserRegistrationResult.APPROVED
+    } catch (error) {
+      return SeedlessUserRegistrationResult.ERROR
+    }
   }
 }
 
