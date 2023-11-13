@@ -12,6 +12,7 @@ import GeneralToast from 'components/toast/GeneralToast'
 import SignupScreen from './onboarding/SignupScreen'
 import { WelcomeScreenStackParamList } from './onboarding/WelcomeScreenStack'
 import { OnboardScreenProps } from './types'
+import SigninScreen from './onboarding/SigninScreen'
 
 type NavigationProp = OnboardScreenProps<
   typeof AppNavigation.Onboard.Signup
@@ -59,6 +60,10 @@ const OnboardScreenStack: FC = () => {
         component={SignupScreen}
       />
       <OnboardingScreenS.Screen
+        name={AppNavigation.Onboard.Signin}
+        component={SigninScreen}
+      />
+      <OnboardingScreenS.Screen
         name={AppNavigation.Onboard.Welcome}
         component={WelcomeScreenStack}
         options={{
@@ -71,6 +76,7 @@ const OnboardScreenStack: FC = () => {
 
 export type OnboardingScreenStackParamList = {
   [AppNavigation.Onboard.Signup]: undefined
+  [AppNavigation.Onboard.Signin]: undefined
   [AppNavigation.Onboard
     .Welcome]: NavigatorScreenParams<WelcomeScreenStackParamList>
 }

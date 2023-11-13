@@ -1,29 +1,26 @@
-import { Button, View } from '@avalabs/k2-mobile'
+import { View, useTheme } from '@avalabs/k2-mobile'
 import { useNavigation } from '@react-navigation/native'
 import CoreXLogoAnimated from 'components/CoreXLogoAnimated'
-import { Space } from 'components/Space'
 import AppNavigation from 'navigation/AppNavigation'
 import { OnboardScreenProps } from 'navigation/types'
-import React, { FC, useState } from 'react'
+import React, { FC, useLayoutEffect, useState } from 'react'
 import { Alert } from 'react-native'
-import { useSelector } from 'react-redux'
 import AuthButtons from 'seedless/components/AuthButtons'
 import CoreSeedlessAPIService, {
   SeedlessUserRegistrationResult
 } from 'seedless/services/CoreSeedlessAPIService'
 import GoogleSigninService from 'seedless/services/GoogleSigninService'
-import { selectIsSeedlessOnboardingBlocked } from 'store/posthog'
 
 type NavigationProp = OnboardScreenProps<
   typeof AppNavigation.Onboard.Signup
 >['navigation']
 
-const SignupScreen: FC = () => {
-  const isSeedlessOnboardingBlocked = useSelector(
-    selectIsSeedlessOnboardingBlocked
-  )
+const SigninScreen: FC = () => {
   const navigation = useNavigation<NavigationProp>()
   const [isLoading, setIsLoading] = useState(false)
+  const {
+    theme: { colors }
+  } = useTheme()
 
   const handleSigninWithMnemonic = (): void => {
     navigation.navigate(AppNavigation.Onboard.Welcome, {
@@ -34,20 +31,7 @@ const SignupScreen: FC = () => {
     })
   }
 
-  const handleSignupWithMnemonic = (): void => {
-    navigation.navigate(AppNavigation.Onboard.Welcome, {
-      screen: AppNavigation.Onboard.AnalyticsConsent,
-      params: {
-        nextScreen: AppNavigation.Onboard.CreateWalletStack
-      }
-    })
-  }
-
-  const handleSignin = (): void => {
-    navigation.navigate(AppNavigation.Onboard.Signin)
-  }
-
-  const handleSignupWithGoogle = async (): Promise<void> => {
+  const handleSigninWithGoogle = async (): Promise<Promise<Promise<void>>> => {
     const oidcToken = await GoogleSigninService.signin()
 
     setIsLoading(true)
@@ -69,12 +53,17 @@ const SignupScreen: FC = () => {
     }
   }
 
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerShown: true,
+      title: '',
+      headerBackTitle: 'Sign Up',
+      headerTintColor: colors.$blueMain
+    })
+  }, [navigation, colors])
+
   return (
-    <View
-      sx={{
-        flex: 1,
-        backgroundColor: '$black'
-      }}>
+    <View sx={{ flex: 1, backgroundColor: '$black' }}>
       <View
         sx={{
           flex: 1,
@@ -83,45 +72,21 @@ const SignupScreen: FC = () => {
         }}>
         <CoreXLogoAnimated size={180} />
       </View>
-      <View sx={{ padding: 16, marginBottom: 46 }}>
-        {isSeedlessOnboardingBlocked ? (
-          <>
-            <Button
-              type="primary"
-              size="xlarge"
-              onPress={handleSigninWithMnemonic}>
-              Sign in with Recovery Phrase
-            </Button>
-            <Space y={16} />
-            <Button
-              type="secondary"
-              size="xlarge"
-              onPress={handleSignupWithMnemonic}>
-              Sign up with Recovery Phrase
-            </Button>
-          </>
-        ) : (
-          <>
-            <AuthButtons
-              title="Sign up with..."
-              disabled={isLoading}
-              onGoogleAction={handleSignupWithGoogle}
-              onMnemonicAction={handleSignupWithMnemonic}
-            />
-            <Space y={48} />
-            <Button
-              type="tertiary"
-              size="xlarge"
-              disabled={isLoading}
-              onPress={handleSignin}>
-              Already Have a Wallet?
-            </Button>
-          </>
-        )}
+      <View
+        sx={{
+          padding: 16,
+          marginBottom: 46
+        }}>
+        <AuthButtons
+          title="Sign in with..."
+          disabled={isLoading}
+          onGoogleAction={handleSigninWithGoogle}
+          onMnemonicAction={handleSigninWithMnemonic}
+        />
       </View>
       <View />
     </View>
   )
 }
 
-export default SignupScreen
+export default SigninScreen
