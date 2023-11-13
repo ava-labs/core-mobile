@@ -15,6 +15,7 @@ import Assert from '../../../helpers/assertions'
 import ConnectedSitesPage from '../../../pages/connectedSites.page'
 import actions from '../../../helpers/actions'
 import CommonElsPage from '../../../pages/commonEls.page'
+import delay from '../../../helpers/waits'
 
 describe('Connect to dApp using WalletConnect', () => {
   beforeAll(async () => {
@@ -30,13 +31,16 @@ describe('Connect to dApp using WalletConnect', () => {
 
   it('should connect to dApp', async () => {
     await ScanQrCodePage.enterQrCode()
+    await delay(1000)
     await ConnectToSitePage.tapSelectAccountsDropdown()
     await ConnectedSitesPage.tapSelectAllChkBox()
     await ConnectToSitePage.tapApproveBtn()
     await BurgerMenuPage.tapBurgerMenuButton()
     await BurgerMenuPage.tapSecurityAndPrivacy()
-    await CommonElsPage.waitForToastMsgGone()
+    delay(2000)
+    await CommonElsPage.waitForToastMsgGone(1)
     await SecurityAndPrivacyPage.tapConnectedSites()
+    await CommonElsPage.waitForToastMsgGone(1)
     await ConnectedSitesPage.tapManageBtn()
     await ConnectedSitesPage.tapSelectAllChkBox()
     await ConnectedSitesPage.tapDeleteBtn()
