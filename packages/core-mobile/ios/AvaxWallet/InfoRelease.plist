@@ -35,10 +35,10 @@
       </array>
     </dict>
     <dict>
-			<key>CFBundleURLSchemes</key>
-			<array>
-				<string>com.googleusercontent.apps.1023766203719-ngiu0g65qaspe3qoad2sv3hodlhsj9br</string>
-			</array>
+      <key>CFBundleURLSchemes</key>
+      <array>
+        <string>com.googleusercontent.apps.1023766203719-ngiu0g65qaspe3qoad2sv3hodlhsj9br</string>
+      </array>
 		</dict>
   </array>
   <key>CFBundleVersion</key>
