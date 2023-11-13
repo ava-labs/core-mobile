@@ -63,11 +63,11 @@ export const selectIsWatchlistFavorite =
   (coingeckoId: string) => (state: RootState) =>
     state.watchlist.favorites.includes(coingeckoId)
 
-export const selectWatchlistFavoriteIds = (state: RootState) => {
+export const selectWatchlistFavoriteIds = (state: RootState): string[] => {
   return state.watchlist.favorites
 }
 
-export const selectWatchlistFavorites = (state: RootState) => {
+export const selectWatchlistFavorites = (state: RootState): MarketToken[] => {
   return state.watchlist.favorites.reduce((acc, id) => {
     const token = state.watchlist.tokens[id]
     if (token) {
@@ -77,13 +77,13 @@ export const selectWatchlistFavorites = (state: RootState) => {
   }, [] as MarketToken[])
 }
 
-export const selectWatchlistFavoritesIsEmpty = (state: RootState) =>
+export const selectWatchlistFavoritesIsEmpty = (state: RootState): boolean =>
   state.watchlist.favorites.length === 0
 
 export const selectWatchlistTokens = (state: RootState): MarketToken[] =>
   Object.values(state.watchlist.tokens)
 
-export const selectWatchlistPrices = (state: RootState) =>
+export const selectWatchlistPrices = (state: RootState): Prices =>
   state.watchlist.prices
 
 export const selectWatchlistPrice: (
@@ -92,7 +92,7 @@ export const selectWatchlistPrice: (
   (coingeckoId: string) => (state: RootState) =>
     state.watchlist.prices[coingeckoId]
 
-export const selectWatchlistCharts = (state: RootState) =>
+export const selectWatchlistCharts = (state: RootState): Charts =>
   state.watchlist.charts
 
 export const selectWatchlistChart: (
@@ -110,6 +110,8 @@ export const {
   setCharts,
   setPrices
 } = watchlistSlice.actions
+
+export const fetchWatchlist = createAction(`${reducerName}/fetchWatchlist`)
 
 export const onWatchlistRefresh = createAction(
   `${reducerName}/onWatchlistRefresh`
