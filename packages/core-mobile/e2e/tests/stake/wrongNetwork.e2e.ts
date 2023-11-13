@@ -1,4 +1,3 @@
-/* eslint-disable jest/expect-expect */
 import Actions from '../../helpers/actions'
 import AccountManagePage from '../../pages/accountManage.page'
 import LoginRecoverWallet from '../../helpers/loginRecoverWallet'
@@ -17,17 +16,8 @@ describe('Stake: wrong network', () => {
     await PortfolioPage.tapNetworksDropdown()
     await PortfolioPage.tapNetworksDropdownETH()
     await BottomTabsPage.tapStakeTab()
-    const startTime = new Date().getTime()
     await Actions.waitForElement(StakePage.switchNetworkTitle)
-    const endTime = new Date().getTime()
     await StakePage.verifySwitchNetworkScreenItems()
-    await Actions.reportUIPerformance(
-      startTime,
-      endTime,
-      'SwitchNetworkScreen',
-      1,
-      3
-    )
   })
 
   it('should verify switching on Avax network for staking', async () => {

@@ -1,4 +1,3 @@
-/* eslint-disable jest/expect-expect */
 /* eslint-env detox/detox, jest */
 /**
  * @jest-environment ./environment.ts
@@ -18,27 +17,9 @@ describe('Address Book', () => {
 
   it('Should verify empty contacts', async () => {
     await BurgerMenuPage.tapBurgerMenuButton()
-    const startTime = new Date().getTime()
     await Actions.waitForElement(BurgerMenuPage.addressBook)
-    const endTime = new Date().getTime()
-    await Actions.reportUIPerformance(
-      startTime,
-      endTime,
-      'BurgerMenuScreen',
-      1,
-      3
-    )
     await BurgerMenuPage.tapAddressBook()
-    const startTime2 = new Date().getTime()
     await Actions.waitForElement(AddressBookPage.emptyContacts)
-    const endTime2 = new Date().getTime()
-    await Actions.reportUIPerformance(
-      startTime2,
-      endTime2,
-      'AddressBookScreen',
-      1,
-      3
-    )
     await Assert.isVisible(AddressBookPage.emptyContacts)
     await Assert.isVisible(AddressBookPage.emptyContactsText)
     await Assert.isVisible(AddressBookPage.addAddressButton)
@@ -46,16 +27,7 @@ describe('Address Book', () => {
 
   it('Should add contact', async () => {
     await AddressBookPage.tapAddAddressButton()
-    const startTime = new Date().getTime()
     await Actions.waitForElement(AddressBookPage.nameText)
-    const endTime = new Date().getTime()
-    await Actions.reportUIPerformance(
-      startTime,
-      endTime,
-      'AddNewContactScreen',
-      1,
-      3
-    )
     await AddressBookPage.inputContactName()
     await AddressBookPage.inputAvaxAddress()
     await AddressBookPage.inputBtcAddress()

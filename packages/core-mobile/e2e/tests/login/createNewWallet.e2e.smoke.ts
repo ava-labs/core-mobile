@@ -1,4 +1,3 @@
-/* eslint-disable jest/expect-expect */
 /* eslint-env detox/detox, jest */
 /**
  * @jest-environment ./environment.ts
@@ -27,64 +26,28 @@ describe('Create new wallet', () => {
 
   it('should view proper page title and action icons', async () => {
     await WatchListPage.tapNewWalletBtn()
-    const startTime = new Date().getTime()
     await Actions.waitForElement(AnalyticsConsentPage.noThanksBtn)
-    const endTime = new Date().getTime()
     await AnalyticsConsentPage.tapNoThanksBtn()
-    const startTime2 = new Date().getTime()
     await Actions.waitForElement(NewRecoveryPhrasePage.iWroteItDownBtn)
-    const endTime2 = new Date().getTime()
     await Assert.isVisible(NewRecoveryPhrasePage.mnemonicWord)
-    await Actions.reportUIPerformance(
-      startTime,
-      endTime,
-      'HelpUsImproveScreen',
-      1,
-      3
-    )
-    await Actions.reportUIPerformance(
-      startTime2,
-      endTime2,
-      'RecoveryPhraseScreen',
-      1,
-      3
-    )
   })
 
   it('should verify recovery phrase flow', async () => {
     const wordsObject: object =
       await NewRecoveryPhrasePage.mnemonicWordsObject()
     await NewRecoveryPhrasePage.tapIWroteItDownBtn()
-    const startTime = new Date().getTime()
     await Actions.waitForElement(NewRecoveryPhrasePage.iUnderstandBtn)
-    const endTime = new Date().getTime()
     await Assert.isVisible(NewRecoveryPhrasePage.protectFundsModalBackBtn)
     await Assert.isVisible(NewRecoveryPhrasePage.protectFundsModalMsg)
     await Assert.isVisible(NewRecoveryPhrasePage.protectFundsModalTitle)
     await NewRecoveryPhrasePage.tapIUnderstandBtn()
-    const startTime2 = new Date().getTime()
     await Actions.waitForElement(VerifyPhrasePage.verifyPhraseBtn)
-    const endTime2 = new Date().getTime()
     const confirmWordsArray = await VerifyPhrasePage.selectWordNumbers(
       wordsObject
     )
     await VerifyPhrasePage.tapWordsToConfirm(confirmWordsArray)
     await Assert.isVisible(VerifyPhrasePage.selectWord)
     await VerifyPhrasePage.tapVerifyPhraseBtn()
-    await Actions.reportUIPerformance(
-      startTime,
-      endTime,
-      'IUnderstandScreen',
-      1,
-      3
-    )
-    await Actions.reportUIPerformance(
-      startTime2,
-      endTime2,
-      'VerifyPhraseScreen',
-      1,
-      3
-    )
   })
 
   it('should successfully create a new wallet', async () => {

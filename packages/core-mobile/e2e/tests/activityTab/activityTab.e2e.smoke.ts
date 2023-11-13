@@ -1,4 +1,3 @@
-/* eslint-disable jest/expect-expect */
 import Assert from '../../helpers/assertions'
 import actions from '../../helpers/actions'
 import ActivityTabPage from '../../pages/activityTab.page'
@@ -16,28 +15,10 @@ describe('Activity Tab', () => {
   it('should show contract call only in activity list', async () => {
     await PortfolioPage.tapAvaxNetwork()
     await PortfolioPage.tapActivityTab()
-    const startTime = new Date().getTime()
     await actions.waitForElement(ActivityTabPage.arrowSVG, 10000, 1)
-    const endTime = new Date().getTime()
-    await actions.reportUIPerformance(
-      startTime,
-      endTime,
-      'ActivityPageScreen',
-      1,
-      3
-    )
     await ActivityTabPage.tapFilterDropdown()
     await ActivityTabPage.tapContractCallFilterOption()
-    const startTime2 = new Date().getTime()
     await actions.waitForElement(ActivityTabPage.contractCallFilterOption)
-    const endTime2 = new Date().getTime()
-    await actions.reportUIPerformance(
-      startTime2,
-      endTime2,
-      'ContractFiltering',
-      1,
-      3
-    )
     await Assert.isNotVisible(ActivityTabPage.bridgeSVG)
     // Need to make some contract call transactions on the mobile test account or these elements will not be present
     // await Assert.isVisible(ActivityTabPage.arrowSVG)
@@ -51,16 +32,7 @@ describe('Activity Tab', () => {
   it('should show bridge transactions only in list', async () => {
     await ActivityTabPage.tapFilterDropdown()
     await ActivityTabPage.tapBridgeFilterOption()
-    const startTime = new Date().getTime()
     await actions.waitForElement(ActivityTabPage.bridgeFilterOption)
-    const endTime = new Date().getTime()
-    await actions.reportUIPerformance(
-      startTime,
-      endTime,
-      'BridgeFiltering',
-      1,
-      3
-    )
     await Assert.isNotVisible(ActivityTabPage.arrowSVG, 1)
     await Assert.isVisible(ActivityTabPage.selectFilterDropdown)
     // Todo: need to figure out why this locator is not working in the app
@@ -74,16 +46,7 @@ describe('Activity Tab', () => {
   it('should display incoming transaction details', async () => {
     await ActivityTabPage.tapFilterDropdown()
     await ActivityTabPage.tapIncomingFilterOption()
-    const startTime = new Date().getTime()
     await actions.waitForElement(ActivityTabPage.incomingFilterOption)
-    const endTime = new Date().getTime()
-    await actions.reportUIPerformance(
-      startTime,
-      endTime,
-      'IncomingFiltering',
-      1,
-      3
-    )
     await Assert.hasText(
       ActivityTabPage.selectFilterDropdown,
       'Display: Incoming'
@@ -93,16 +56,7 @@ describe('Activity Tab', () => {
   it('should display outgoing transaction details', async () => {
     await ActivityTabPage.tapFilterDropdown()
     await ActivityTabPage.tapOutgingFilterOption()
-    const startTime = new Date().getTime()
     await actions.waitForElement(ActivityTabPage.outgoingFilterOption)
-    const endTime = new Date().getTime()
-    await actions.reportUIPerformance(
-      startTime,
-      endTime,
-      'OutgoingFiltering',
-      1,
-      3
-    )
     await Assert.hasText(
       ActivityTabPage.selectFilterDropdown,
       'Display: Outgoing'

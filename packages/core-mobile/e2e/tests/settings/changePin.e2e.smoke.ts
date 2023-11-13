@@ -1,4 +1,3 @@
-/* eslint-disable jest/expect-expect */
 /* eslint-env detox/detox, jest */
 /**
  * @jest-environment ./environment.ts
@@ -20,16 +19,7 @@ describe('Change Pin', () => {
   it('Should set new Pin & verify pin Headers', async () => {
     await BurgerMenuPage.tapBurgerMenuButton()
     await BurgerMenuPage.tapSecurityAndPrivacy()
-    const startTime = new Date().getTime()
     await Actions.waitForElement(SecurityAndPrivacyPage.changePin)
-    const endTime = new Date().getTime()
-    await Actions.reportUIPerformance(
-      startTime,
-      endTime,
-      'Security&PrivacyScreen',
-      1,
-      3
-    )
     await SecurityAndPrivacyPage.tapChangePin()
     await Assert.isVisible(CreatePinPage.enterYourPinHeader)
     await CreatePinPage.enterCurrentPin()

@@ -1,4 +1,3 @@
-/* eslint-disable jest/expect-expect */
 /* eslint-env detox/detox, jest */
 /**
  * @jest-environment ./environment.ts
@@ -19,48 +18,21 @@ describe('Change Network', () => {
   it('should verify changing Active network to ETH', async () => {
     await PortfolioPage.tapNetworksDropdown()
     await PortfolioPage.tapNetworksDropdownETH()
-    const startTime = new Date().getTime()
     await Actions.waitForElement(PortfolioPage.ethNetwork)
-    const endTime = new Date().getTime()
-    await Actions.reportUIPerformance(
-      startTime,
-      endTime,
-      'SwitchToEthereumFlow',
-      1,
-      3
-    )
     await Assert.isVisible(PortfolioPage.ethNetwork)
   })
 
   it('should verify changing Active network to BTC', async () => {
     await PortfolioPage.tapNetworksDropdown()
     await PortfolioPage.tapNetworksDropdownBTC()
-    const startTime = new Date().getTime()
     await Actions.waitForElement(PortfolioPage.btcNetwork)
-    const endTime = new Date().getTime()
     await Assert.isVisible(PortfolioPage.btcNetwork)
-    await Actions.reportUIPerformance(
-      startTime,
-      endTime,
-      'SwitchToBtcflow',
-      1,
-      3
-    )
   })
 
   it('should verify changing Active network to AVAX', async () => {
     await PortfolioPage.tapNetworksDropdown()
     await PortfolioPage.tapNetworksDropdownAVAX() ////?????
-    const startTime = new Date().getTime()
     await Assert.isVisible(PortfolioPage.avaxNetwork)
-    const endTime = new Date().getTime()
-    await Actions.reportUIPerformance(
-      startTime,
-      endTime,
-      'SwitchToAvaxFlow',
-      1,
-      3
-    )
     await Assert.isVisible(PortfolioPage.avaxNetwork)
   })
 

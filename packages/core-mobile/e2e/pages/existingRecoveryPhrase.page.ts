@@ -1,7 +1,6 @@
 import recoveryPhraseLoc from '../locators/existingRecoveryPhrase.loc'
 import Action from '../helpers/actions'
 import Assert from '../helpers/assertions'
-import WatchlistPage from './watchlist.page'
 import AnalyticsConsentPage from './analyticsConsent.page'
 import CreatePinPage from './createPin.page'
 import PortfolioPage from './portfolio.page'
@@ -28,6 +27,22 @@ class ExistingRecoveryPhrasePage {
     return by.id(recoveryPhraseLoc.testWalletLink)
   }
 
+  get alreadyHaveAWalletBtn() {
+    return by.text(recoveryPhraseLoc.alreadyHaveAWalletBtn)
+  }
+
+  get recoveryPhrase() {
+    return by.text(recoveryPhraseLoc.recoveryPhrase)
+  }
+
+  async tapRecoveryPhraseBtn() {
+    await Action.tap(this.recoveryPhrase)
+  }
+
+  async tapAlreadyHaveAWalletBtn() {
+    await Action.tap(this.alreadyHaveAWalletBtn)
+  }
+
   async verifyExistingRecoveryPhrasePage() {
     await Assert.isVisible(this.recoveryPhraseTextInput)
     await Assert.isVisible(this.signInBtn)
@@ -44,45 +59,19 @@ class ExistingRecoveryPhrasePage {
   }
 
   async recoverWallet(recoveryPhrase: string) {
-    await WatchlistPage.tapWalletSVG()
+    await this.tapAlreadyHaveAWalletBtn()
+    await this.tapRecoveryPhraseBtn()
     await AnalyticsConsentPage.tapNoThanksBtn()
-    const startTime = new Date().getTime()
     await Action.waitForElement(this.recoveryPhraseTextInput)
-    const endTime = new Date().getTime()
-    await Action.reportUIPerformance(
-      startTime,
-      endTime,
-      'performanceRecoveryPhraseScreen',
-      1,
-      3
-    )
     await this.verifyExistingRecoveryPhrasePage()
     await this.enterRecoveryPhrase(recoveryPhrase)
     await this.tapSignInBtn()
-    const startTime2 = new Date().getTime()
     await Action.waitForElement(CreatePinPage.numpadOne)
-    const endTime2 = new Date().getTime()
-    await Action.reportUIPerformance(
-      startTime2,
-      endTime2,
-      'performanceRecoveryCreatePinScreen',
-      1,
-      3
-    )
     await CreatePinPage.tapNumpadZero()
     await CreatePinPage.tapNumpadZero()
     await CreatePinPage.tapEmptyCheckbox()
     await CreatePinPage.tapNextBtn()
-    const startTime3 = new Date().getTime()
     await Action.waitForElement(PortfolioPage.colectiblesTab)
-    const endTime3 = new Date().getTime()
-    await Action.reportUIPerformance(
-      startTime3,
-      endTime3,
-      'performancePortfolioScreen',
-      1,
-      3
-    )
     await PortfolioPage.verifyPorfolioScreen()
     await BottomTabsPage.verifyBottomTabs()
   }
