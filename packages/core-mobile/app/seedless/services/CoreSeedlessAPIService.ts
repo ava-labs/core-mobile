@@ -4,10 +4,8 @@ if (!Config.SEEDLESS_URL) {
   throw Error('SEEDLESS_URL is missing. Please check your env file.')
 }
 
-if (!Config.SEEDLESS_API_AUTHORIZATION_TOKEN) {
-  throw Error(
-    'SEEDLESS_API_AUTHORIZATION_TOKEN is missing. Please check your env file.'
-  )
+if (!Config.SEEDLESS_API_KEY) {
+  throw Error('SEEDLESS_API_KEY is missing. Please check your env file.')
 }
 
 export enum SeedlessUserRegistrationResult {
@@ -40,7 +38,7 @@ class CoreSeedlessAPIService {
         email
       }),
       headers: {
-        Authorization: `${Config.SEEDLESS_API_AUTHORIZATION_TOKEN}`
+        Authorization: `${Config.SEEDLESS_API_KEY}`
       }
     })
       .then(async response => {
