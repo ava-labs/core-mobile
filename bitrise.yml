@@ -147,7 +147,7 @@ workflows:
     - _pull_app_files
     after_run:
     - _run_android_tests
-    - _send-test-result-notifcation-slack
+    - _send-test-result-notification-slack
   android-internal-e2e-run-pixel3:
     envs:
     - TESTS_TO_RUN: $TESTS_TO_RUN_GROUP_2
@@ -169,7 +169,7 @@ workflows:
     - _pull_app_files
     after_run:
     - _run_android_tests
-    - _send-test-result-notifcation-slack
+    - _send-test-result-notification-slack
   android-internal-e2e-run-pixel5:
     envs:
     - TESTS_TO_RUN: $TESTS_TO_RUN_GROUP_3
@@ -191,7 +191,7 @@ workflows:
     - _pull_app_files
     after_run:
     - _run_android_tests
-    - _send-test-result-notifcation-slack
+    - _send-test-result-notification-slack
   _run_android_tests:
     steps:
       - script-runner@0:
@@ -320,7 +320,7 @@ workflows:
         - footer: ""
         - thumb_url: $BITRISE_PUBLIC_INSTALL_PAGE_QR_CODE_IMAGE_URL
         - webhook_url: $SLACK_WEBHOOK_URL
-  _send-test-result-notifcation-slack:
+  _send-test-result-notification-slack:
     steps:
     - slack@3:
         inputs:
@@ -420,7 +420,7 @@ workflows:
     - _build-android-for-testing
     after_run:
     - _upload-detox-artifacts
-    - _send-test-result-notifcation-slack
+    - _send-test-result-notification-slack
     envs:
     - ENVIRONMENT: production
       opts:
@@ -519,7 +519,7 @@ workflows:
     - _build-ios-simulator
     after_run:
     - _upload-detox-artifacts
-    - _send-test-result-notifcation-slack
+    - _send-test-result-notification-slack
     envs:
     - ENVIRONMENT: production
       opts:
@@ -614,7 +614,7 @@ workflows:
     - _pull_app_files
     after_run:
     - _upload-detox-artifacts
-    - _send-test-result-notifcation-slack
+    - _send-test-result-notification-slack
     envs:
     - ENVIRONMENT: production
       opts:
