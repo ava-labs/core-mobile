@@ -39,7 +39,7 @@
       <array>
         <string>com.googleusercontent.apps.1023766203719-ngiu0g65qaspe3qoad2sv3hodlhsj9br</string>
       </array>
-		</dict>
+    </dict>
   </array>
   <key>CFBundleVersion</key>
   <string>$(CURRENT_PROJECT_VERSION)</string>
