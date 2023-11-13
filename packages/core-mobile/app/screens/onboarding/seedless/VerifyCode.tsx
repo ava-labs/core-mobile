@@ -35,7 +35,12 @@ export const VerifyCode = (): JSX.Element => {
     }
   }
 
-  const handleVerifyCode = (): void => {
+  const handleVerifyCode = (text: string): void => {
+    setCode(text)
+    if (text.length < 6) {
+      setShowError(false)
+      return
+    }
     // todo: if code is incorrect, show error
     setShowError(true)
     // todo: else go to next screen
@@ -74,7 +79,7 @@ export const VerifyCode = (): JSX.Element => {
           </Text>
           <Space y={24} />
           <TextInput
-            onChangeText={setCode}
+            onChangeText={handleVerifyCode}
             keyboardType="number-pad"
             keyboardAppearance="dark"
             multiline
@@ -100,13 +105,6 @@ export const VerifyCode = (): JSX.Element => {
             </Text>
           )}
         </View>
-        <Button
-          type="primary"
-          size="large"
-          style={{ marginVertical: 16 }}
-          onPress={handleVerifyCode}>
-          Confirm
-        </Button>
       </View>
     </BottomSheet>
   )
