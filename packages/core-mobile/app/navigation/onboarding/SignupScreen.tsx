@@ -1,4 +1,4 @@
-import { Button, View, useTheme } from '@avalabs/k2-mobile'
+import { Button, View } from '@avalabs/k2-mobile'
 import { useNavigation } from '@react-navigation/native'
 import CoreXLogoAnimated from 'components/CoreXLogoAnimated'
 import { Space } from 'components/Space'
@@ -24,9 +24,6 @@ const SignupScreen: FC = () => {
   )
   const navigation = useNavigation<NavigationProp>()
   const [isLoading, setIsLoading] = useState(false)
-  const {
-    theme: { colors }
-  } = useTheme()
 
   const handleSigninWithMnemonic = (): void => {
     navigation.navigate(AppNavigation.Onboard.Welcome, {
@@ -72,7 +69,7 @@ const SignupScreen: FC = () => {
     <View
       sx={{
         flex: 1,
-        backgroundColor: colors.$black
+        backgroundColor: '$black'
       }}>
       <View
         sx={{

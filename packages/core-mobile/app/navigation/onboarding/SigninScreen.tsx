@@ -59,7 +59,7 @@ const SigninScreen: FC = () => {
   }, [navigation, colors])
 
   return (
-    <View sx={{ flex: 1, backgroundColor: colors.$black }}>
+    <View sx={{ flex: 1, backgroundColor: '$black' }}>
       <View
         sx={{
           flex: 1,
