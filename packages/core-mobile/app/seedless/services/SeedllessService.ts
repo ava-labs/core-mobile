@@ -15,10 +15,15 @@ if (!Config.SEEDLESS_ORG_ID) {
  * https://github.com/cubist-labs/CubeSigner-TypeScript-SDK
  */
 class SeedlessService {
+  private cubesigner: CubeSigner
+
+  constructor() {
+    this.cubesigner = new CubeSigner()
+  }
+
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
   async login(oidcToken: string, mfaReceipt?: MfaReceipt | undefined) {
-    const cubesigner = new CubeSigner()
-    return await cubesigner.oidcLogin(
+    return await this.cubesigner.oidcLogin(
       oidcToken,
       Config.SEEDLESS_ORG_ID || '',
       ['sign:*', 'manage:*'],
