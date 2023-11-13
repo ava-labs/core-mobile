@@ -21,6 +21,9 @@ class SeedlessService {
     this.cubesigner = new CubeSigner()
   }
 
+  /**
+   * Exchange an OIDC token for a CubeSigner session with token, mfa session info, etc.
+   */
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
   async login(oidcToken: string, mfaReceipt?: MfaReceipt | undefined) {
     return await this.cubesigner.oidcLogin(
@@ -40,14 +43,17 @@ class SeedlessService {
     )
   }
 
+  /**
+   * Logs in with an OIDC token and creates a session manager to retrieve session data, which includes a signer token.
+   */
   async getSessionData(oidcToken: string): Promise<SignerSessionData> {
-    const response = await this.login(oidcToken)
+    const signResponse = await this.login(oidcToken)
 
-    const sessionInfo = response.data()
+    const oidcAuthResponse = signResponse.data()
     const sessionMgr = await SignerSessionManager.createFromSessionInfo(
       envs.gamma,
       Config.SEEDLESS_ORG_ID || '',
-      sessionInfo
+      oidcAuthResponse
     )
 
     return await sessionMgr.storage.retrieve()
