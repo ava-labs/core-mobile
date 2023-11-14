@@ -4,12 +4,8 @@ import CoreXLogoAnimated from 'components/CoreXLogoAnimated'
 import AppNavigation from 'navigation/AppNavigation'
 import { OnboardScreenProps } from 'navigation/types'
 import React, { FC, useLayoutEffect, useState } from 'react'
-import { Alert } from 'react-native'
 import AuthButtons from 'seedless/components/AuthButtons'
-import CoreSeedlessAPIService, {
-  SeedlessUserRegistrationResult
-} from 'seedless/services/CoreSeedlessAPIService'
-import GoogleSigninService from 'seedless/services/GoogleSigninService'
+import { useSignInWithGoogle } from 'seedless/hooks/useSignInWithGoogle'
 
 type NavigationProp = OnboardScreenProps<
   typeof AppNavigation.Onboard.Signup
@@ -21,6 +17,7 @@ const SigninScreen: FC = () => {
   const {
     theme: { colors }
   } = useTheme()
+  const { signInWithGoogle } = useSignInWithGoogle()
 
   const handleSigninWithMnemonic = (): void => {
     navigation.navigate(AppNavigation.Onboard.Welcome, {
@@ -29,27 +26,6 @@ const SigninScreen: FC = () => {
         nextScreen: AppNavigation.Onboard.EnterWithMnemonicStack
       }
     })
-  }
-
-  const handleSigninWithGoogle = async (): Promise<Promise<Promise<void>>> => {
-    const oidcToken = await GoogleSigninService.signin()
-
-    setIsLoading(true)
-    const result = await CoreSeedlessAPIService.register(oidcToken)
-
-    if (result === SeedlessUserRegistrationResult.APPROVED) {
-      setIsLoading(false)
-      navigation.navigate(AppNavigation.Onboard.RecoveryMethods)
-      Alert.alert('seedless user registration approved')
-    } else if (result === SeedlessUserRegistrationResult.ALREADY_REGISTERED) {
-      // todo: implement totp verification flow
-      // CP-7664: https://ava-labs.atlassian.net/browse/CP-7664
-      setIsLoading(false)
-      Alert.alert('seedless user already registered')
-    } else if (result === SeedlessUserRegistrationResult.ERROR) {
-      setIsLoading(false)
-      Alert.alert('seedless user registration error')
-    }
   }
 
   useLayoutEffect(() => {
@@ -79,7 +55,7 @@ const SigninScreen: FC = () => {
         <AuthButtons
           title="Sign in with..."
           disabled={isLoading}
-          onGoogleAction={handleSigninWithGoogle}
+          onGoogleAction={() => signInWithGoogle(setIsLoading)}
           onMnemonicAction={handleSigninWithMnemonic}
         />
       </View>

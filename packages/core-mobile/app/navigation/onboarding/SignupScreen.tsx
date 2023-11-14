@@ -5,13 +5,9 @@ import { Space } from 'components/Space'
 import AppNavigation from 'navigation/AppNavigation'
 import { OnboardScreenProps } from 'navigation/types'
 import React, { FC, useState } from 'react'
-import { Alert } from 'react-native'
 import { useSelector } from 'react-redux'
 import AuthButtons from 'seedless/components/AuthButtons'
-import CoreSeedlessAPIService, {
-  SeedlessUserRegistrationResult
-} from 'seedless/services/CoreSeedlessAPIService'
-import GoogleSigninService from 'seedless/services/GoogleSigninService'
+import { useSignInWithGoogle } from 'seedless/hooks/useSignInWithGoogle'
 import { selectIsSeedlessOnboardingBlocked } from 'store/posthog'
 
 type NavigationProp = OnboardScreenProps<
@@ -24,6 +20,7 @@ const SignupScreen: FC = () => {
   )
   const navigation = useNavigation<NavigationProp>()
   const [isLoading, setIsLoading] = useState(false)
+  const { signInWithGoogle } = useSignInWithGoogle()
 
   const handleSigninWithMnemonic = (): void => {
     navigation.navigate(AppNavigation.Onboard.Welcome, {
@@ -45,26 +42,6 @@ const SignupScreen: FC = () => {
 
   const handleSignin = (): void => {
     navigation.navigate(AppNavigation.Onboard.Signin)
-  }
-
-  const handleSignupWithGoogle = async (): Promise<void> => {
-    const oidcToken = await GoogleSigninService.signin()
-
-    setIsLoading(true)
-    const result = await CoreSeedlessAPIService.register(oidcToken)
-
-    if (result === SeedlessUserRegistrationResult.APPROVED) {
-      setIsLoading(false)
-      navigation.navigate(AppNavigation.Onboard.RecoveryMethods)
-    } else if (result === SeedlessUserRegistrationResult.ALREADY_REGISTERED) {
-      // todo: implement totp verification flow
-      // CP-7664: https://ava-labs.atlassian.net/browse/CP-7664
-      setIsLoading(false)
-      Alert.alert('seedless user already registered')
-    } else if (result === SeedlessUserRegistrationResult.ERROR) {
-      setIsLoading(false)
-      Alert.alert('seedless user registration error')
-    }
   }
 
   return (
@@ -103,7 +80,7 @@ const SignupScreen: FC = () => {
             <AuthButtons
               title="Sign up with..."
               disabled={isLoading}
-              onGoogleAction={handleSignupWithGoogle}
+              onGoogleAction={() => signInWithGoogle(setIsLoading)}
               onMnemonicAction={handleSignupWithMnemonic}
             />
             <Space y={48} />
@@ -117,7 +94,6 @@ const SignupScreen: FC = () => {
           </>
         )}
       </View>
-      <View />
     </View>
   )
 }
