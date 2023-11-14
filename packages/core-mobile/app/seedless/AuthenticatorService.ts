@@ -1,9 +1,8 @@
-import assert from 'assert'
 import {
+  CognitoSessionManager,
   CubeSigner,
   SignerSession,
-  SignerSessionManager,
-  CognitoSessionManager
+  SignerSessionManager
 } from '@cubist-dev/cubesigner-sdk'
 import { Result } from 'types/result'
 import { TotpErrors } from 'seedless/errors'
@@ -49,7 +48,15 @@ class AuthenticatorService {
 
     //now we have totp_url
     const totpChallenge = response.data()
-    assert(totpChallenge.totpUrl) //throw if no totpUrl, something is broken
+    if (!totpChallenge.totpUrl) {
+      return {
+        success: false,
+        error: new TotpErrors({
+          name: 'UnexpectedError',
+          message: 'Registering Authenticator failed, please try again.'
+        })
+      }
+    }
     const { totpCode } = await totpCodeResolve(totpChallenge.totpUrl)
     await totpChallenge.answer(totpCode)
     return { success: true }
