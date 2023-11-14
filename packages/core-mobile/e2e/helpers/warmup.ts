@@ -5,7 +5,9 @@ import Action from './actions'
 import { Platform } from './constants'
 
 export const warmup = async () => {
-  await device.launchApp()
+  await device.launchApp({
+    permissions: { notifications: 'YES', camera: 'YES' }
+  })
 
   // if we are running Android e2e on Bitrise, we also need to handle the Jailbroken overlay
   if (process.env.E2E === 'true' && Action.platform() === Platform.Android) {
