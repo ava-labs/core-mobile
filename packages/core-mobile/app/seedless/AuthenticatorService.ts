@@ -6,6 +6,7 @@ import {
   CognitoSessionManager
 } from '@cubist-dev/cubesigner-sdk'
 import { Result } from 'types/result'
+import { TotpErrors } from 'seedless/errors'
 
 interface SetTotpParams {
   cognitoSessionManager: CognitoSessionManager
@@ -14,19 +15,13 @@ interface SetTotpParams {
   existingTotpCode?: string
 }
 
-export class TotpSet {}
-
-export class RequiresMfa extends Error {}
-
-export class WrongMfaCode extends Error {}
-
 class AuthenticatorService {
   async setTotp({
     cognitoSessionManager,
     signerSessionManager,
     totpCodeResolve,
     existingTotpCode
-  }: SetTotpParams): Promise<Result<TotpSet, RequiresMfa | WrongMfaCode>> {
+  }: SetTotpParams): Promise<Result<void, TotpErrors>> {
     const cs = new CubeSigner({
       sessionMgr: cognitoSessionManager
     })
@@ -34,12 +29,21 @@ class AuthenticatorService {
     if (response.requiresMfa()) {
       //mfa already exists, we need approval
       if (!existingTotpCode) {
-        return { success: false, error: new RequiresMfa() }
+        return {
+          success: false,
+          error: new TotpErrors({ name: 'RequiresMfa', message: 'RequiresMfa' })
+        }
       }
       const signerSession = new SignerSession(signerSessionManager)
       response = await response.approveTotp(signerSession, existingTotpCode)
       if (response.requiresMfa()) {
-        return { success: false, error: new WrongMfaCode() }
+        return {
+          success: false,
+          error: new TotpErrors({
+            name: 'WrongMfaCode',
+            message: 'WrongMfaCode'
+          })
+        }
       }
     }
 
@@ -48,7 +52,7 @@ class AuthenticatorService {
     assert(totpChallenge.totpUrl) //throw if no totpUrl, something is broken
     const { totpCode } = await totpCodeResolve(totpChallenge.totpUrl)
     await totpChallenge.answer(totpCode)
-    return { success: true, value: new TotpSet() }
+    return { success: true }
   }
 }
 

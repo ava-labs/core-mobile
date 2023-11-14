@@ -1,9 +1,5 @@
 import assert from 'assert'
-import AuthenticatorService, {
-  RequiresMfa,
-  TotpSet,
-  WrongMfaCode
-} from 'seedless/AuthenticatorService'
+import AuthenticatorService from 'seedless/AuthenticatorService'
 import { CognitoSessionManager } from '@cubist-dev/cubesigner-sdk/dist/src/session/cognito_manager'
 import {
   CubeSigner,
@@ -13,6 +9,7 @@ import {
 } from '@cubist-dev/cubesigner-sdk'
 import Logger from 'utils/Logger'
 import { SignResponse } from '@cubist-dev/cubesigner-sdk/dist/src/signer_session'
+import { TotpErrors } from 'seedless/errors'
 
 const AUTH_CODE = 'AUTH_CODE'
 const VALID_MFA_CODE = 'VALID_MFA_CODE'
@@ -94,7 +91,6 @@ describe('AuthenticatorService', () => {
       expect(promptForCode).toHaveBeenCalled()
       expect(mockAnswer).toHaveBeenCalledWith(AUTH_CODE)
       assert(result.success)
-      expect(result.value).toBeInstanceOf(TotpSet)
     })
 
     it('should require existingTotpCode if there is active mfa', async () => {
@@ -111,7 +107,8 @@ describe('AuthenticatorService', () => {
         totpCodeResolve: promptForCode
       })
       assert(!result.success)
-      expect(result.error).toBeInstanceOf(RequiresMfa)
+      expect(result.error).toBeInstanceOf(TotpErrors)
+      expect(result.error.name).toBe('RequiresMfa')
     })
 
     it('should require valid code from existing mfa', async () => {
@@ -129,7 +126,8 @@ describe('AuthenticatorService', () => {
         existingTotpCode: INVALID_MFA_CODE
       })
       assert(!result.success)
-      expect(result.error).toBeInstanceOf(WrongMfaCode)
+      expect(result.error).toBeInstanceOf(TotpErrors)
+      expect(result.error.name).toBe('WrongMfaCode')
     })
 
     it('should require valid code from existing mfa and succeed', async () => {
@@ -149,7 +147,6 @@ describe('AuthenticatorService', () => {
       expect(promptForCode).toHaveBeenCalled()
       expect(mockAnswer).toHaveBeenCalledWith(AUTH_CODE)
       assert(result.success)
-      expect(result.value).toBeInstanceOf(TotpSet)
     })
   })
 })
