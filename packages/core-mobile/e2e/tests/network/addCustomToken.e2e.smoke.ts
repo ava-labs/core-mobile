@@ -14,18 +14,14 @@ describe('Add custom token', () => {
   it('should add custom token', async () => {
     await PortfolioPage.tapAvaxNetwork()
     await Actions.waitForElement(PortfolioPage.manageTokens)
-
     await PortfolioPage.tapManageTokens()
     await Actions.waitForElement(ManageTokensPage.addcustomToken)
-
     await ManageTokensPage.tapAddcustomToken()
     await Actions.waitForElement(ManageTokensPage.inputContractAddress)
-
     await ManageTokensPage.inputCustomToken()
     await ManageTokensPage.tapAddButton()
     await ManageTokensPage.tapAddcustomToken()
     await ManageTokensPage.inputCustomToken()
-
     await Assert.isVisible(ManageTokensPage.addedMessage)
   })
 })
