@@ -31,12 +31,20 @@ class WatchListPage {
     return by.id(watchlist.walletSVG)
   }
 
+  get alreadyHaveAWalletBtn() {
+    return by.text(watchlist.alreadyHaveAWalletBtn)
+  }
+
   get watchListTokenBtc() {
     return by.id(`watchlist_item__btc`)
   }
 
   get enterWalletBtn() {
     return by.id(watchlist.enterWalletBtn)
+  }
+
+  async tapAlreadyHaveAWalletBtn() {
+    await Action.tap(this.alreadyHaveAWalletBtn)
   }
 
   async tapEnterWalletBtn() {

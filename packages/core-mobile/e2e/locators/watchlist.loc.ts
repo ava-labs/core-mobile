@@ -6,5 +6,7 @@ export default {
   newWalletBtn: 'New Wallet',
   recoverWalletBtn: `no_wallet_tab_navigator__recover_wallet_btn`,
   walletSVG: 'wallet_svg',
-  enterWalletBtn: 'btnPrimary'
+  enterWalletBtn: 'btnPrimary',
+  alreadyHaveAWalletBtn: 'Already Have a Wallet?',
+  recoveryPhrase: 'Recovery Phrase'
 }

@@ -1,4 +1,3 @@
-/* eslint-disable jest/expect-expect */
 import Actions from '../../helpers/actions'
 import LoginRecoverWallet from '../../helpers/loginRecoverWallet'
 import BottomTabsPage from '../../pages/bottomTabs.page'
@@ -17,16 +16,7 @@ describe('Stake: not enough Avax', () => {
     await AccountManagePage.createAccount(4)
     await BottomTabsPage.tapStakeTab()
     await GetStartedScreenPage.tapNextButton()
-    const startTime = new Date().getTime()
     await Actions.waitForElement(StakePage.notEnoughAvaxTitle)
-    const endTime = new Date().getTime()
     await StakePage.verifyStakeScreenItems()
-    await Actions.reportUIPerformance(
-      startTime,
-      endTime,
-      'NotEnoughAvaxScreen',
-      1,
-      3
-    )
   })
 })

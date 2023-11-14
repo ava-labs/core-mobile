@@ -1,4 +1,3 @@
-/* eslint-disable jest/expect-expect */
 /* eslint-env detox/detox, jest */
 /**
  * @jest-environment ./environment.ts
@@ -21,30 +20,12 @@ describe('Favorites Token', () => {
   it('should verify adding token to favorite', async () => {
     await PortfolioPage.tapAddToWatchlist()
     await WatchListPage.tapWatchListToken('btc')
-    const startTime = new Date().getTime()
     await Actions.waitForElement(TokenDetailPage.favorite)
-    const endTime = new Date().getTime()
-    await Actions.reportUIPerformance(
-      startTime,
-      endTime,
-      'TokenDetailScreen',
-      1,
-      3
-    )
     await TokenDetailPage.tapFavorite()
     await TokenDetailPage.tapBackButton()
     await BottomTabsPage.tapWatchlistTab()
     await WatchListPage.tapFavoritesTab()
-    const startTime2 = new Date().getTime()
     await Actions.waitForElement(WatchListPage.watchListTokenBtc)
-    const endTime2 = new Date().getTime()
-    await Actions.reportUIPerformance(
-      startTime2,
-      endTime2,
-      'FavoritesTokenScreen',
-      1,
-      3
-    )
     await Assert.isVisible(WatchListPage.watchListTokenBtc)
     await BottomTabsPage.tapPortfolioTab()
     await Assert.isVisible(PortfolioPage.btcTokenItem)

@@ -3,5 +3,7 @@ export default {
   signInBtn: `Sign in`,
   recoveryPhraseHeader: 'recovery_phrase__header',
   cancelButton: 'Cancel',
-  testWalletLink: 'hd_wallet_login__test_wallet'
+  testWalletLink: 'hd_wallet_login__test_wallet',
+  alreadyHaveAWalletBtn: 'Already Have a Wallet?',
+  recoveryPhrase: 'Recovery Phrase'
 }
