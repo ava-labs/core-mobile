@@ -48,7 +48,7 @@ const SignupScreen: FC = () => {
     navigation.navigate(AppNavigation.Onboard.Signin)
   }
 
-  const handleSigninWithGoogle = async (): Promise<void> => {
+  const handleSignupWithGoogle = async (): Promise<void> => {
     const oidcToken = await GoogleSigninService.signin()
 
     setIsLoading(true)
@@ -111,7 +111,7 @@ const SignupScreen: FC = () => {
             <AuthButtons
               title="Sign up with..."
               disabled={isLoading}
-              onGoogleAction={handleSigninWithGoogle}
+              onGoogleAction={handleSignupWithGoogle}
               onMnemonicAction={handleSignupWithMnemonic}
             />
             <Space y={48} />
