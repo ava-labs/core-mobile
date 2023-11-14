@@ -80,27 +80,10 @@ class SendPage {
 
   async sendTokenTo2ndAccount(token: string, sendingAmmount: string) {
     await BottomTabsPage.tapPlusIcon()
-    const startTime = new Date().getTime()
     await Actions.waitForElement(PlusMenuPage.sendButton)
-    const endTime = new Date().getTime()
-    await Actions.reportUIPerformance(
-      startTime,
-      endTime,
-      'PlusMenuScreen',
-      1,
-      3
-    )
     await PlusMenuPage.tapSendButton()
-    const startTime2 = new Date().getTime()
     await Actions.waitForElement(this.addressBook)
-    const endTime2 = new Date().getTime()
-    await Actions.reportUIPerformance(
-      startTime2,
-      endTime2,
-      'SendTokenScreen',
-      1,
-      3
-    )
+
     await this.tapAddressBook()
     await this.tapMyAccounts()
     await AccountManagePage.tapSecondAccount()
@@ -109,27 +92,9 @@ class SendPage {
     await this.enterAmount(sendingAmmount)
     await this.tapSendTitle()
     await this.tapNextButton()
-    const startTime3 = new Date().getTime()
     await Actions.waitForElement(ReviewAndSend.balanceAfterTransaction)
-    const endTime3 = new Date().getTime()
-    await Actions.reportUIPerformance(
-      startTime3,
-      endTime3,
-      'SendConfirmationScreen',
-      1,
-      3
-    )
     await ReviewAndSend.tapSendNow()
-    const startTime4 = new Date().getTime()
     await Actions.waitForElement(ReviewAndSend.sendSuccessfulToastMsg)
-    const endTime4 = new Date().getTime()
-    await Actions.reportUIPerformance(
-      startTime4,
-      endTime4,
-      'SendSuccessfulMsg',
-      1,
-      3
-    )
   }
 }
 
