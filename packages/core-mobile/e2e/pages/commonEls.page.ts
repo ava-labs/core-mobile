@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/explicit-function-return-type */
 import commonEls from '../locators/commonEls.loc'
 import Actions from '../helpers/actions'
 

@@ -1,4 +1,5 @@
 import { AppListenerEffectAPI } from 'store'
+import { Result } from 'types/result'
 import { SessionProposal, SessionRequest, RpcMethod, RpcError } from '../types'
 
 export type HandleResponse<Response = unknown> = Promise<
@@ -25,16 +26,6 @@ export interface RpcRequestHandler<
     listenerApi: AppListenerEffectAPI
   ) => ApproveResponse<ApproveResponseType>
 }
-
-export type Result<Value, Error> =
-  | {
-      success: true
-      value?: Value
-    }
-  | {
-      success: false
-      error: Error
-    }
 
 export const DEFERRED_RESULT = Symbol()
 
