@@ -1,6 +1,5 @@
 /** @type {Detox.DetoxConfig} */
 
-// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 const getApkPaths = () => {
   if (process.env.BITRISE_SIGNED_APK_PATH_LIST) {
     const apks = process.env.BITRISE_SIGNED_APK_PATH_LIST.split('|')
