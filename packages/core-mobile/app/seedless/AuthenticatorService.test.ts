@@ -1,14 +1,14 @@
 import assert from 'assert'
 import AuthenticatorService from 'seedless/AuthenticatorService'
-import { CognitoSessionManager } from '@cubist-dev/cubesigner-sdk/dist/src/session/cognito_manager'
 import {
+  CognitoSessionManager,
   CubeSigner,
   SignerSession,
   SignerSessionManager,
+  SignResponse,
   TotpChallenge
 } from '@cubist-dev/cubesigner-sdk'
 import Logger from 'utils/Logger'
-import { SignResponse } from '@cubist-dev/cubesigner-sdk/dist/src/signer_session'
 import { TotpErrors } from 'seedless/errors'
 
 const AUTH_CODE = 'AUTH_CODE'
