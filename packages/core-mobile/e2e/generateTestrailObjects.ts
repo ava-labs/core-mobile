@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/explicit-function-return-type */
 /* eslint-disable no-var */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 

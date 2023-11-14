@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/explicit-function-return-type */
 import { globalTeardown } from 'detox/runners/jest'
 import sendResults from './sendResults'
 
