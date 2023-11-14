@@ -8,7 +8,7 @@ const LENGTH_LONG = 5000
 const LENGTH_INFINITE = Number.MAX_SAFE_INTEGER
 
 // provided by `global`. See ContextApp.tsx and index.d.ts at the root of the project.
-export function ShowSnackBar(text: string, long = false) {
+export function ShowSnackBar(text: string | JSX.Element, long = false): string {
   return global?.toast?.show(text, {
     type: 'normal',
     placement: 'top',
@@ -26,7 +26,7 @@ type showCustomProps = {
   onClose?: () => void
 }
 
-export const showDappToastError = (message: string, dappName: string) => {
+export const showDappToastError = (message: string, dappName: string): void => {
   showSnackBarCustom({
     component: (
       <DappToast
@@ -39,7 +39,7 @@ export const showDappToastError = (message: string, dappName: string) => {
   })
 }
 
-export const showSimpleToast = (message: string, id?: string) => {
+export const showSimpleToast = (message: string, id?: string): void => {
   showSnackBarCustom({
     component: <GeneralToast message={message} testID="simple_toast_msg" />,
     duration: 'short',
@@ -53,7 +53,7 @@ export function showSnackBarCustom({
   placement = 'top',
   id,
   onClose
-}: showCustomProps) {
+}: showCustomProps): string | undefined {
   const toastOptions = {
     type: 'transaction',
     placement: placement,
@@ -80,7 +80,7 @@ export function updateSnackBarCustom(
   id: string,
   component: JSX.Element,
   long = true
-) {
+): void {
   global?.toast?.update(id, component, {
     duration: long ? LENGTH_LONG : LENGTH_SHORT
   })

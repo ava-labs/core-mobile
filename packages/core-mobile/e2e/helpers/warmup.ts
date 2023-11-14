@@ -1,6 +1,6 @@
 import { device } from 'detox'
-import WatchListPage from '../pages/watchlist.page'
 import CommonElsPage from '../pages/commonEls.page'
+import existingRecoveryPhrasePage from '../pages/existingRecoveryPhrase.page'
 import Assert from './assertions'
 import Action from './actions'
 import { Platform } from './constants'
@@ -15,5 +15,5 @@ export const warmup = async () => {
     console.log('Jailbroken warning handled!!!')
   }
 
-  await Assert.isVisible(WatchListPage.walletSVG, 1)
+  await Assert.isVisible(existingRecoveryPhrasePage.alreadyHaveAWalletBtn, 0)
 }

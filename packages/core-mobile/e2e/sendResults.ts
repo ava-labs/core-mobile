@@ -6,6 +6,7 @@ import {
   getTestCaseId,
   api,
   createNewTestSectionsAndCases,
+  getTestCasesFromRun,
   currentRunID
 } from './generateTestrailObjects'
 import getTestLogs, { isResultPresent } from './getResultsFromLogs'
@@ -114,32 +115,26 @@ export default async function sendResults() {
 
   if (process.env.POST_TO_TESTRAIL === 'true') {
     if (await isResultPresent('android')) {
-      const runID = (await currentRunID('android')).runID
+      const runID = process.env.TESTRAIL_RUN_ID
+      console.log('The run id is ' + runID)
       await generatePlatformResults(
         testCasesToSend,
         resultsToSendToTestrail,
         'android',
-        runID
+        Number(runID)
       )
-      writeRunIdToTextFile(`${runID}`)
     }
     if (await isResultPresent('ios')) {
       const runID = (await currentRunID('ios')).runID
+      console.log('The run id is ' + runID)
       await generatePlatformResults(
         testCasesToSend,
         resultsToSendToTestrail,
         'ios',
         runID
       )
-      writeRunIdToTextFile(`${runID}`)
     }
   }
-}
-
-export async function writeRunIdToTextFile(runId: string) {
-  fs.writeFile('e2e/testrailRunId.txt', runId, err => {
-    if (err) throw err
-  })
 }
 
 // Todo: Write a check for a different result and if the existing result differs from the result being sent update the result in testrail
@@ -153,18 +148,27 @@ export async function isResultExistsInTestrail(runID: number, caseId: number) {
   }
 }
 
-// Updates the results for an existing test run or and empty test run
+// Updates the results for an existing test run or an empty test run
 async function generatePlatformResults(
   testCasesToSend: any,
-  resultsToSendToTestrail: any,
-  platform: any,
-  runId?: any
+  resultsToSendToTestrail: [],
+  platform: string,
+  runId?: number
 ) {
   try {
-    const resultArray = resultsToSendToTestrail.filter(
+    let resultArray = resultsToSendToTestrail.filter(
       result => result.platform === platform
     )
     try {
+      const existingTestCases = await getTestCasesFromRun(runId)
+      // Adds the existing test case results to the results array so they are not overwritten in testrail when using the updateRun endpoint
+      resultArray = [...resultArray, ...existingTestCases]
+      // Add already existing test cases to the testCasesToSend array
+      if (existingTestCases.length > 0) {
+        existingTestCases.forEach((testCase: string) => {
+          testCasesToSend.case_ids.push(testCase.case_id)
+        })
+      }
       // Takes the array of test cases and adds them to the test run
       await api.updateRun(Number(runId), testCasesToSend)
       console.log(

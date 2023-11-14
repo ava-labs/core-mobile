@@ -1,4 +1,3 @@
-/* eslint-disable jest/expect-expect */
 /* eslint-env detox/detox, jest */
 /**
  * @jest-environment ./environment.ts
@@ -16,9 +15,6 @@ describe('Performance Help Us improve Screen', () => {
 
   it('should view proper page title and action icons', async () => {
     await WatchListPage.tapNewWalletBtn()
-    const startTime = new Date().getTime()
     await Actions.waitForElementNoSync(AnalyticsConsentPage.noThanksBtn)
-    const endTime = new Date().getTime()
-    Actions.saveTempUIPerformance(startTime, endTime)
   })
 })

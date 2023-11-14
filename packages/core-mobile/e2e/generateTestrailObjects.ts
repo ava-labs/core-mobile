@@ -6,6 +6,7 @@ import getTestLogs, {
   isSmokeTestRun,
   testRunTimestamp
 } from './getResultsFromLogs'
+const fs = require('fs')
 
 const projectId = Number(process.env.TESTRAIL_PROJECT_ID)
 const password = String(process.env.TESTRAIL_API_KEY)
@@ -528,6 +529,7 @@ export const currentRunID = async (platform: any) => {
         `${platform} smoke test run ${timestamp}`,
         `This is a smoke test run on ${platform}`
       )
+      writeRunIdToTextFile(`${runID}`)
       return { runID, emptyTestRun: false }
     } else {
       return { runID: smokeTestRunExists, emptyTestRun: true }
@@ -559,14 +561,20 @@ export function getUniqueListBy(arr: any, key: string) {
   ]
 }
 
-export async function getTestCasesFromRun(runId: number) {
+export async function getTestCasesFromRun(runId: number): Promise<object[]> {
   const casesObject = await api.getTests(runId)
   const titleArray = []
   for (const testCase of casesObject) {
     const testCaseName = testCase.title
     const testResult = testCase.status_id
-    titleArray.push({ title: testCaseName, statusId: testResult })
+    const caseId = testCase.case_id
+    titleArray.push({
+      case_id: caseId,
+      title: testCaseName,
+      status_id: testResult
+    })
   }
+  console.log(titleArray)
   return titleArray
 }
 
@@ -577,4 +585,14 @@ export async function compareTestCaseArrays(
   return casesToBeAdded
     .filter((x: any) => !casesInRun.includes(x))
     .concat(casesInRun.filter((x: any) => !casesToBeAdded.includes(x)))
+}
+
+export async function writeRunIdToTextFile(runId: string) {
+  await fs.writeFile('./e2e/testrailRunID.txt', runId, (err: any) => {
+    if (err) throw err
+  })
+}
+
+export function generateUtcTimestamp() {
+  return new Date().getUTCDate().toString()
 }

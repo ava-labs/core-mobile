@@ -1,6 +1,5 @@
 /** @type {Detox.DetoxConfig} */
 
-// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 const getApkPaths = () => {
   if (process.env.BITRISE_SIGNED_APK_PATH_LIST) {
     const apks = process.env.BITRISE_SIGNED_APK_PATH_LIST.split('|')
@@ -28,7 +27,7 @@ module.exports = {
     },
     simulator: {
       type: 'ios.simulator',
-      device: { type: 'iPhone 14' }
+      device: { type: 'iPhone 15' }
     },
     emulator_ci: {
       type: 'android.emulator',
@@ -65,8 +64,8 @@ module.exports = {
     },
     'android.internal.release.ci': {
       type: 'android.apk',
-      binaryPath: ANDROID_APK_PATH,
-      testBinaryPath: ANDROID_TEST_APK_PATH
+      binaryPath: process.env.BITRISE_APK_PATH,
+      testBinaryPath: process.env.BITRISE_TEST_APK_PATH
     },
     'android.external.release.ci': {
       type: 'android.apk',
@@ -219,7 +218,8 @@ module.exports = {
       testRunner: {
         $0: 'jest',
         args: {
-          config: 'e2e/smoke_test_config.json'
+          config: 'e2e/smoke_test_config.json',
+          _: [process.env.TESTS_TO_RUN]
         }
       }
     },

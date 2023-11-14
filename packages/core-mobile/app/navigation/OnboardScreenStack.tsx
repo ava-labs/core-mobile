@@ -12,6 +12,8 @@ import GeneralToast from 'components/toast/GeneralToast'
 import SignupScreen from './onboarding/SignupScreen'
 import { WelcomeScreenStackParamList } from './onboarding/WelcomeScreenStack'
 import { OnboardScreenProps } from './types'
+import SigninScreen from './onboarding/SigninScreen'
+import RecoveryMethodsStack from './onboarding/RecoveryMethodsStack'
 
 type NavigationProp = OnboardScreenProps<
   typeof AppNavigation.Onboard.Signup
@@ -59,11 +61,19 @@ const OnboardScreenStack: FC = () => {
         component={SignupScreen}
       />
       <OnboardingScreenS.Screen
+        name={AppNavigation.Onboard.Signin}
+        component={SigninScreen}
+      />
+      <OnboardingScreenS.Screen
         name={AppNavigation.Onboard.Welcome}
         component={WelcomeScreenStack}
         options={{
           animationEnabled: welcomeScreenStackTransitionAnimationEnabled.current
         }}
+      />
+      <OnboardingScreenS.Screen
+        name={AppNavigation.Onboard.RecoveryMethods}
+        component={RecoveryMethodsStack}
       />
     </OnboardingScreenS.Navigator>
   )
@@ -71,8 +81,10 @@ const OnboardScreenStack: FC = () => {
 
 export type OnboardingScreenStackParamList = {
   [AppNavigation.Onboard.Signup]: undefined
+  [AppNavigation.Onboard.Signin]: undefined
   [AppNavigation.Onboard
     .Welcome]: NavigatorScreenParams<WelcomeScreenStackParamList>
+  [AppNavigation.Onboard.RecoveryMethods]: undefined
 }
 
 const OnboardingScreenS = createStackNavigator<OnboardingScreenStackParamList>()
