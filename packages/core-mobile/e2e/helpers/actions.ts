@@ -6,21 +6,6 @@ import { Platform } from './constants'
 import Constants from './constants'
 const fs = require('fs')
 
-async function createFileIfNotExist(path: string) {
-  fs.writeFile(path, '', { flag: 'wx' }, function (err: string) {
-    if (err) throw err
-    return path
-  })
-}
-
-const reportUIPerformanceFilePath = createFileIfNotExist(
-  './e2e/tests/performance/testResults/allResults.txt'
-)
-
-const tempUIPerformanceFilePath = createFileIfNotExist(
-  './e2e/tests/performance/testResults/tempResults.txt'
-)
-
 const balanceToNumber = async (balance: Detox.NativeMatcher, index = 0) => {
   //currently works only with android
   const availableBalance: any = await getAttributes(balance, index)
@@ -208,63 +193,6 @@ const getCurrentDateTime = () => {
   return `${year}-${month}-${day}  ${hours}:${minutes}:${seconds}`
 }
 
-const reportUIPerformance = async (
-  startTime: number,
-  endTime: number,
-  testName: string,
-  androidMaxTime: number,
-  iOSMaxTime: number
-) => {
-  let resultPlatform
-  let maxTime
-
-  if (platform() === Platform.Android) {
-    resultPlatform = 'Android'
-    maxTime = androidMaxTime
-  } else {
-    resultPlatform = 'iOS'
-    maxTime = iOSMaxTime
-  }
-
-  const time = (endTime - startTime) / 1000
-
-  const status = time > maxTime ? 'fail' : 'pass'
-
-  const currentDateTime = getCurrentDateTime()
-  const newValue = `${time
-    .toFixed(3)
-    .toString()}  ${resultPlatform}  ${testName}  ${status}  ${currentDateTime}\n`
-
-  let data = ''
-
-  try {
-    data = fs.readFileSync(reportUIPerformanceFilePath, 'utf8')
-  } catch (err) {
-    console.error('Error reading file:', err)
-    // continue
-  }
-
-  const existingLines = data.trim().split('\n')
-
-  const updatedContent = existingLines.concat(newValue).join('\n')
-
-  try {
-    fs.writeFileSync(reportUIPerformanceFilePath, updatedContent, 'utf8')
-    console.log('Value appended to file:', newValue)
-  } catch (err) {
-    console.error('Error writing file:', err)
-  }
-
-  console.log('Results saved to file.')
-}
-
-const saveTempUIPerformance = async (startTime: number, endTime: number) => {
-  const result = ((endTime - startTime) / 1000).toString()
-  fs.writeFile(tempUIPerformanceFilePath, result, (err: any) => {
-    if (err) throw err
-  })
-}
-
 async function writeQrCodeToFile(clipboardValue: string) {
   fs.writeFile(
     './e2e/tests/playwright/qr_codes.txt',
@@ -295,7 +223,5 @@ export default {
   platform,
   isVisible,
   getCurrentDateTime,
-  reportUIPerformance,
-  saveTempUIPerformance,
   writeQrCodeToFile
 }
