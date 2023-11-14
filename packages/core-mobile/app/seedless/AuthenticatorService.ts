@@ -10,11 +10,25 @@ import { TotpErrors } from 'seedless/errors'
 interface SetTotpParams {
   cognitoSessionManager: CognitoSessionManager
   signerSessionManager: SignerSessionManager
+  /**
+   * This callback function should pass totpUrl to Authenticator app and return promise which
+   * resolves to Authenticator code generated with given totpUrl.
+   */
   totpCodeResolve: (totpUrl: string) => Promise<{ totpCode: string }>
+  /**
+   * If user already has Authenticator app here needs to be provided code from that Auth app which is
+   * about to be replaced.
+   */
   existingTotpCode?: string
 }
 
 class AuthenticatorService {
+  /**
+   * setTotp is used to initiate registration of Authenticator app to Cubist.
+   * We pass session managers with adequate scopes.
+   * Since only one Authenticator app can be registered we optionally pass {@link SetTotpParams.existingTotpCode}
+   * as authentication to replace existing Authenticator app.
+   */
   async setTotp({
     cognitoSessionManager,
     signerSessionManager,
