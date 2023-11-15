@@ -72,6 +72,9 @@ workflows:
     - USE_TEST_FEATURE_FLAGS: "true"
       opts:
         is_expand: false
+    - TESTRAIL_PROJECT_ID: $TESTRAIL_PROJECT_ID
+      opts:
+        is_expand: false
     steps:
     - install-missing-android-tools@3:
         inputs:
@@ -94,6 +97,7 @@ workflows:
     - share-pipeline-variable@1:
         inputs:
         - variables: |-
+            TESTRAIL_PROJECT_ID:$TESTRAIL_PROJECT_ID
             TESTRAIL_RUN_ID=$TESTRAIL_RUN_ID
             TESTS_TO_RUN_GROUP_1=$TESTS_ONE
             TESTS_TO_RUN_GROUP_2=$TESTS_TWO
