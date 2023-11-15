@@ -72,7 +72,6 @@ class WalletService {
       this.xpubXP = pubKeys[1].value
     }
     this.mnemonic = mnemonic
-    this.type = 'mnemonic'
   }
 
   private async getBtcWallet(
