@@ -58,7 +58,6 @@ class WalletService {
    * @private
    */
   private xpubXP?: string
-  private type?: 'seedless' | 'mnemonic'
 
   async setMnemonic(mnemonic: string): Promise<void> {
     const xpubPromise = getXpubFromMnemonic(mnemonic)
@@ -74,10 +73,6 @@ class WalletService {
     }
     this.mnemonic = mnemonic
     this.type = 'mnemonic'
-  }
-
-  getWalletType = (): 'seedless' | 'mnemonic' | undefined => {
-    return this.type
   }
 
   private async getBtcWallet(
