@@ -6,11 +6,10 @@ import { OnboardScreenProps } from 'navigation/types'
 import React, { FC, useLayoutEffect, useState } from 'react'
 import { Alert } from 'react-native'
 import AuthButtons from 'seedless/components/AuthButtons'
-import CoreSeedlessAPIService, {
-  SeedlessUserRegistrationResult
-} from 'seedless/services/CoreSeedlessAPIService'
+import { SeedlessUserRegistrationResult } from 'seedless/services/CoreSeedlessAPIService'
 import GoogleSigninService from 'seedless/services/GoogleSigninService'
 import SeedlessService from 'seedless/services/SeedlessService'
+import { seedlessRegister } from 'seedless/utils/seedlessRegister'
 
 type NavigationProp = OnboardScreenProps<
   typeof AppNavigation.Onboard.Signup
@@ -36,7 +35,14 @@ const SigninScreen: FC = () => {
     const oidcToken = await GoogleSigninService.signin()
 
     setIsLoading(true)
-    const result = await CoreSeedlessAPIService.register(oidcToken)
+
+    const result = await seedlessRegister(oidcToken)
+
+    if (result === SeedlessUserRegistrationResult.ERROR) {
+      setIsLoading(false)
+      Alert.alert('seedless user registration error')
+      return
+    }
 
     if (result === SeedlessUserRegistrationResult.APPROVED) {
       setIsLoading(false)
@@ -44,8 +50,8 @@ const SigninScreen: FC = () => {
     } else if (result === SeedlessUserRegistrationResult.ALREADY_REGISTERED) {
       setIsLoading(false)
 
-      const userInfo = await SeedlessService.aboutMe(oidcToken)
-      if (userInfo.mfa.length === 0) {
+      const userMfa = await SeedlessService.userMfa()
+      if (userMfa.length === 0) {
         navigation.navigate(AppNavigation.Onboard.RecoveryMethods)
         return
       }
@@ -53,9 +59,6 @@ const SigninScreen: FC = () => {
       navigation.navigate(AppNavigation.Onboard.RecoveryMethods, {
         screen: AppNavigation.RecoveryMethods.VerifyCode
       })
-    } else if (result === SeedlessUserRegistrationResult.ERROR) {
-      setIsLoading(false)
-      Alert.alert('seedless user registration error')
     }
   }
 
