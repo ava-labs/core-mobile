@@ -75,7 +75,8 @@ const rootReducer = (state: any, action: AnyAction) => {
     // reset state
     // except the following keys
     state = {
-      app: state.app
+      app: state.app,
+      posthog: state.posthog
     }
   }
 
