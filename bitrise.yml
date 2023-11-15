@@ -141,6 +141,9 @@ workflows:
     - TESTS_TO_RUN: $TESTS_TO_RUN_GROUP_1
       opts:
         is_expand: false
+    - POST_TO_TESTRAIL: "true"
+      opts:
+        is_expand: false
     steps:
     - avd-manager@1.2:
         inputs:
@@ -163,6 +166,9 @@ workflows:
     - TESTS_TO_RUN: $TESTS_TO_RUN_GROUP_2
       opts:
         is_expand: false
+    - POST_TO_TESTRAIL: "true"
+      opts:
+        is_expand: false
     steps:
     - avd-manager@1.2:
         inputs:
@@ -183,6 +189,9 @@ workflows:
   android-internal-e2e-run-pixel5:
     envs:
     - TESTS_TO_RUN: $TESTS_TO_RUN_GROUP_3
+      opts:
+        is_expand: false
+    - POST_TO_TESTRAIL: "true"
       opts:
         is_expand: false
     steps:
