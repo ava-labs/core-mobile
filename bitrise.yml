@@ -75,6 +75,9 @@ workflows:
     - TESTRAIL_PROJECT_ID: $TESTRAIL_PROJECT_ID
       opts:
         is_expand: false
+    - POST_TO_TESTRAIL: "true"
+      opts:
+        is_expand: false
     steps:
     - install-missing-android-tools@3:
         inputs:
@@ -99,6 +102,7 @@ workflows:
         - variables: |-
             TESTRAIL_PROJECT_ID:$TESTRAIL_PROJECT_ID
             TESTRAIL_RUN_ID=$TESTRAIL_RUN_ID
+            POST_TO_TESTRAIL:$POST_TO_TESTRAIL
             TESTS_TO_RUN_GROUP_1=$TESTS_ONE
             TESTS_TO_RUN_GROUP_2=$TESTS_TWO
             TESTS_TO_RUN_GROUP_3=$TESTS_THREE
