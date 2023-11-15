@@ -98,6 +98,7 @@ workflows:
             TESTS_TO_RUN_GROUP_1=$TESTS_ONE
             TESTS_TO_RUN_GROUP_2=$TESTS_TWO
             TESTS_TO_RUN_GROUP_3=$TESTS_THREE
+            E2E=$E2E
         - api_level: "28"
         - emulator_id: emulator-5554
         - emulator_channel: "0"
