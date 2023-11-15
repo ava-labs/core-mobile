@@ -15,12 +15,7 @@ const fs = require('fs')
 async function parseResultsFile() {
   const jsonResultsArray = await getTestLogs()
 
-  // If this env variable is set to true it will update the test cases in testrail
-  if (process.env.UPDATE_TESTRAIL_CASES) {
-    await createNewTestSectionsAndCases(jsonResultsArray)
-  } else {
-    console.log('Not updating testrail cases...')
-  }
+  await createNewTestSectionsAndCases(jsonResultsArray)
 
   const testIdArrayForTestrail = []
   const casesToAddToRun = []
@@ -134,6 +129,11 @@ export default async function sendResults() {
         runID
       )
     }
+  } else {
+    console.log(
+      'POST_TO_TESTRAIL is false, skipping sending results to TestRail',
+      process.env.POST_TO_TESTRAIL
+    )
   }
 }
 
