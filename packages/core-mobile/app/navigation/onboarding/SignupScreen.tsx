@@ -12,7 +12,7 @@ import CoreSeedlessAPIService, {
   SeedlessUserRegistrationResult
 } from 'seedless/services/CoreSeedlessAPIService'
 import GoogleSigninService from 'seedless/services/GoogleSigninService'
-import SeedllessService from 'seedless/services/SeedllessService'
+import SeedlessService from 'seedless/services/SeedlessService'
 import { selectIsSeedlessOnboardingBlocked } from 'store/posthog'
 
 type NavigationProp = OnboardScreenProps<
@@ -60,7 +60,7 @@ const SignupScreen: FC = () => {
     } else if (result === SeedlessUserRegistrationResult.ALREADY_REGISTERED) {
       setIsLoading(false)
 
-      const userInfo = await SeedllessService.aboutMe(oidcToken)
+      const userInfo = await SeedlessService.aboutMe(oidcToken)
       if (userInfo.mfa.length === 0) {
         navigation.navigate(AppNavigation.Onboard.RecoveryMethods)
         return
