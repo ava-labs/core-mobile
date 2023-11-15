@@ -12,6 +12,7 @@ import CoreSeedlessAPIService, {
   SeedlessUserRegistrationResult
 } from 'seedless/services/CoreSeedlessAPIService'
 import GoogleSigninService from 'seedless/services/GoogleSigninService'
+import SeedllessService from 'seedless/services/SeedllessService'
 import { selectIsSeedlessOnboardingBlocked } from 'store/posthog'
 
 type NavigationProp = OnboardScreenProps<
@@ -57,10 +58,17 @@ const SignupScreen: FC = () => {
       setIsLoading(false)
       navigation.navigate(AppNavigation.Onboard.RecoveryMethods)
     } else if (result === SeedlessUserRegistrationResult.ALREADY_REGISTERED) {
-      // todo: implement totp verification flow
-      // CP-7664: https://ava-labs.atlassian.net/browse/CP-7664
       setIsLoading(false)
-      Alert.alert('seedless user already registered')
+
+      const userInfo = await SeedllessService.aboutMe(oidcToken)
+      if (userInfo.mfa.length === 0) {
+        navigation.navigate(AppNavigation.Onboard.RecoveryMethods)
+        return
+      }
+      // @ts-ignore
+      navigation.navigate(AppNavigation.Onboard.RecoveryMethods, {
+        screen: AppNavigation.RecoveryMethods.VerifyCode
+      })
     } else if (result === SeedlessUserRegistrationResult.ERROR) {
       setIsLoading(false)
       Alert.alert('seedless user registration error')
@@ -117,7 +125,6 @@ const SignupScreen: FC = () => {
           </>
         )}
       </View>
-      <View />
     </View>
   )
 }
