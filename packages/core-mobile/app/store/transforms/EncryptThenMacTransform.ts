@@ -3,11 +3,9 @@ import { createTransform } from 'redux-persist'
 import { encryptTransform } from 'redux-persist-transform-encrypt'
 import { RawRootState } from 'store'
 import Logger from 'utils/Logger'
-import {
-  deserializeReduxState,
-  serializeReduxState
-} from 'store/utils/seralization'
 import { Transform } from 'redux-persist/es/types'
+import { serializeJson } from 'utils/serialization/serialize'
+import { deserializeJson } from 'utils/serialization/deserialize'
 
 export type VersionedStore = EncryptThenMacStoreType & {
   /**
@@ -63,7 +61,7 @@ export const EncryptThenMacTransform: (
       )
 
       const ciphertext = Buffer.concat([
-        cipher.update(serializeReduxState(inboundState), 'utf8'),
+        cipher.update(serializeJson(inboundState), 'utf8'),
         cipher.final()
       ]).toString(ENCRYPT_OUTPUT_ENCODING)
 
@@ -122,7 +120,7 @@ export const EncryptThenMacTransform: (
           decipher.final()
         ]).toString()
 
-        return deserializeReduxState(cleartext)
+        return deserializeJson(cleartext)
       } catch (e) {
         Logger.error('Failed to decipher', e)
         return undefined
