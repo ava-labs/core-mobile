@@ -156,9 +156,13 @@ async function generatePlatformResults(
   runId?: number
 ) {
   try {
+    let resultArray = resultsToSendToTestrail.filter(
+      result => result.platform === platform
+    )
     try {
       const existingTestCases = await getTestCasesFromRun(runId)
       // Adds the existing test case results to the results array so they are not overwritten in testrail when using the updateRun endpoint
+      resultArray = resultArray.concat(existingTestCases)
       // Add already existing test cases to the testCasesToSend array
       if (existingTestCases.length > 0) {
         existingTestCases.forEach((testCase: string) => {
