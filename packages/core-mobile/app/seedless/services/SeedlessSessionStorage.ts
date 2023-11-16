@@ -4,7 +4,9 @@ import { assertNotUndefined } from 'utils/assertions'
 let signerSessionData: SignerSessionData | undefined
 
 // TODO: This is a stub. It should be implemented.
-export class SeedlessTokenStorage implements SessionStorage<SignerSessionData> {
+export class SeedlessSessionStorage
+  implements SessionStorage<SignerSessionData>
+{
   async save(data: SignerSessionData): Promise<void> {
     signerSessionData = data
   }

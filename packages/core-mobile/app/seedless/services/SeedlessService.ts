@@ -2,7 +2,7 @@ import { CubeSigner, MfaReceipt, UserInfo } from '@cubist-dev/cubesigner-sdk'
 import Config from 'react-native-config'
 import { SignerSessionManager, envs } from '@cubist-dev/cubesigner-sdk'
 import { assertNotUndefined } from 'utils/assertions'
-import { SeedlessTokenStorage } from './SeedlessSessionStorage'
+import { SeedlessSessionStorage } from './SeedlessSessionStorage'
 
 if (!Config.SEEDLESS_ORG_ID) {
   throw Error('SEEDLESS_ORG_ID is missing. Please check your env file.')
@@ -50,7 +50,7 @@ class SeedlessService {
       envs.gamma,
       SEEDLESS_ORG_ID,
       signResponse.data(),
-      new SeedlessTokenStorage()
+      new SeedlessSessionStorage()
     )
 
     this.cubeSigner = new CubeSigner({
