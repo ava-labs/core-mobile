@@ -5,12 +5,11 @@ import { DeserializableValue } from './deserialize'
 export type SerializableValue = Big | bigint | BN
 
 /**
- * Prepare data for JSON serialization by converting complex numbers like `Big`,
- * `BN`, etc. into a format that can be auto-deserialized with
- * `deserializeFromJSON`.
+ * Stringify JSON.
+ * Complex numbers like `Big`, `BN`, etc. will be converted into a format that can be auto-deserialized with
+ * {@link deserializeJson}.
  *
- * For example, `new BN(100_000_000_000)` is converted to
- * `{ type: 'BN', value: '100_000_000_000' }`
+ * For example, `new BN(100_000_000_000)` is converted to `{ type: 'BN', value: '100_000_000_000' }`
  */
 export function serializeJson<T>(value: T): string {
   return JSON.stringify(value, function (key, stringifiedElement) {

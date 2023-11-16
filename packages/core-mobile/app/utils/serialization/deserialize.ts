@@ -8,8 +8,8 @@ export type DeserializableValue = {
 }
 
 /**
- * Deserialize complex numbers like `Big`, `BN`, etc. back to their original
- * form after they were serialized with `serializeToJSON`.
+ * Un-stringify Json.
+ * Complex objects like `Big`, `BN`, etc. will be instantiated.
  *
  * For example, `{ type: 'BN', value: '100_000_000_000' }` is converted to
  * `new BN(100_000_000_000)`
