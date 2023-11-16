@@ -14,7 +14,7 @@ export type DeserializableValue = {
  * For example, `{ type: 'BN', value: '100_000_000_000' }` is converted to
  * `new BN(100_000_000_000)`
  */
-export function deserializeFromJSON<T>(value: string): T {
+export function deserializeJson<T>(value: string): T {
   return JSON.parse(value, function (_, element) {
     if (isDeserializable(element)) {
       return deserializeValue(element)

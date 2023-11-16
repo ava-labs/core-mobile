@@ -2,8 +2,8 @@ import assert from 'assert'
 import Keychain from 'react-native-keychain'
 import { NativeModules } from 'react-native'
 import { decrypt, encrypt } from 'utils/EncryptionHelper'
-import { serializeToJSON } from 'utils/serialization/serialize'
-import { deserializeFromJSON } from 'utils/serialization/deserialize'
+import { serializeJson } from 'utils/serialization/serialize'
+import { deserializeJson } from 'utils/serialization/deserialize'
 
 export enum KeySlot {
   SeedlessSessionStorage = 'SeedlessSessionStorage'
@@ -18,7 +18,7 @@ class SecurityService {
    */
   async store(slot: KeySlot, value: unknown): Promise<void> {
     const serviceForValues = `ss_value_${slot}`
-    const serialized = serializeToJSON(value)
+    const serialized = serializeJson(value)
     const key = await SecurityService.getOrCreateKey(slot)
     const encrypted = await encrypt(serialized, key)
     const result = await Keychain.setGenericPassword('', encrypted, {
@@ -40,7 +40,7 @@ class SecurityService {
     assert(result !== false)
     const decrypted = await decrypt(result.password, key)
     const stringified = decrypted.data
-    return deserializeFromJSON<T>(stringified)
+    return deserializeJson<T>(stringified)
   }
 
   private static async getOrCreateKey(slot: KeySlot): Promise<string> {

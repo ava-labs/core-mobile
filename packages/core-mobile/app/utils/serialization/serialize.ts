@@ -12,7 +12,7 @@ export type SerializableValue = Big | bigint | BN
  * For example, `new BN(100_000_000_000)` is converted to
  * `{ type: 'BN', value: '100_000_000_000' }`
  */
-export function serializeToJSON<T>(value: T): string {
+export function serializeJson<T>(value: T): string {
   return JSON.stringify(value, function (key, stringifiedElement) {
     const element = this[key]
 
