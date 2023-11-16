@@ -64,6 +64,7 @@ async function onPinCreated(
   if (pinSaved === false) {
     throw Error('Pin not saved')
   }
+
   const canUseBiometry = isResetting
     ? false
     : await BiometricsSDK.canUseBiometry()

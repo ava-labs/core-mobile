@@ -18,18 +18,23 @@ import CreateWalletStack, {
 import EnterWithMnemonicStack, {
   EnterWithMnemonicStackParamList
 } from './EnterWithMnemonicStack'
+import CreatePinStack, { CreatePinStackParamList } from './CreatePinStack'
 
 export type WelcomeScreenStackParamList = {
   [AppNavigation.Onboard.AnalyticsConsent]: {
     nextScreen:
       | typeof AppNavigation.Onboard.CreateWalletStack
       | typeof AppNavigation.Onboard.EnterWithMnemonicStack
+      | typeof AppNavigation.Onboard.CreatePin
   }
   [AppNavigation.Onboard.CreateWalletStack]:
     | NavigatorScreenParams<CreateWalletStackParamList>
     | undefined
   [AppNavigation.Onboard.EnterWithMnemonicStack]:
     | NavigatorScreenParams<EnterWithMnemonicStackParamList>
+    | undefined
+  [AppNavigation.Onboard.CreatePin]:
+    | NavigatorScreenParams<CreatePinStackParamList>
     | undefined
   [AppNavigation.Onboard.Login]: undefined
 }
@@ -54,6 +59,10 @@ const WelcomeScreenStack: () => JSX.Element = () => (
     <WelcomeScreenS.Screen
       name={AppNavigation.Onboard.EnterWithMnemonicStack}
       component={EnterWithMnemonicStack}
+    />
+    <WelcomeScreenS.Screen
+      name={AppNavigation.Onboard.CreatePin}
+      component={CreatePinStack}
     />
   </WelcomeScreenS.Navigator>
 )
