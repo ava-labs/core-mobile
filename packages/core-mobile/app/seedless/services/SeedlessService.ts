@@ -1,24 +1,28 @@
 import { CubeSigner, MfaReceipt, UserInfo } from '@cubist-dev/cubesigner-sdk'
 import Config from 'react-native-config'
-import {
-  SignerSessionManager,
-  envs,
-  SignerSessionData
-} from '@cubist-dev/cubesigner-sdk'
+import { SignerSessionManager, envs } from '@cubist-dev/cubesigner-sdk'
+import { assertNotUndefined } from 'utils/assertions'
+import { SeedlessSessionStorage } from './SeedlessSessionStorage'
 
 if (!Config.SEEDLESS_ORG_ID) {
   throw Error('SEEDLESS_ORG_ID is missing. Please check your env file.')
 }
 
+const SEEDLESS_ORG_ID = Config.SEEDLESS_ORG_ID
 /**
  * Service for cubesigner-sdk
  * https://github.com/cubist-labs/CubeSigner-TypeScript-SDK
  */
 class SeedlessService {
-  private cubesigner: CubeSigner
+  #cubeSigner: CubeSigner
 
-  constructor() {
-    this.cubesigner = new CubeSigner()
+  private get cubeSigner(): CubeSigner {
+    assertNotUndefined(this.#cubeSigner)
+    return this.#cubeSigner
+  }
+
+  private set cubeSigner(cubeSigner: CubeSigner) {
+    this.#cubeSigner = cubeSigner
   }
 
   /**
@@ -26,7 +30,7 @@ class SeedlessService {
    */
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
   async login(oidcToken: string, mfaReceipt?: MfaReceipt | undefined) {
-    return await this.cubesigner.oidcLogin(
+    const signResponse = await new CubeSigner().oidcLogin(
       oidcToken,
       Config.SEEDLESS_ORG_ID || '',
       ['sign:*', 'manage:*'],
@@ -41,36 +45,40 @@ class SeedlessService {
       },
       mfaReceipt
     )
-  }
 
-  /**
-   * Logs in with an OIDC token and creates a session manager to retrieve session data, which includes a signer token.
-   */
-  async getSessionData(oidcToken: string): Promise<SignerSessionData> {
-    const sessionMgr = await this.getSessionManager(oidcToken)
-    return sessionMgr.storage.retrieve()
+    const sessionMgr = await SignerSessionManager.createFromSessionInfo(
+      envs.gamma,
+      SEEDLESS_ORG_ID,
+      signResponse.data(),
+      new SeedlessSessionStorage()
+    )
+
+    this.cubeSigner = new CubeSigner({
+      env: envs.gamma,
+      orgId: SEEDLESS_ORG_ID,
+      sessionMgr
+    })
   }
 
   /**
    * Returns a session manager that can be used to retrieve session data.
    */
-  async getSessionManager(oidcToken: string): Promise<SignerSessionManager> {
-    const signResponse = await this.login(oidcToken)
-    const oidcAuthResponse = signResponse.data()
-    return await SignerSessionManager.createFromSessionInfo(
-      envs.gamma,
-      Config.SEEDLESS_ORG_ID || '',
-      oidcAuthResponse
-    )
+  async getSessionManager(): Promise<SignerSessionManager> {
+    return this.cubeSigner.sessionMgr as SignerSessionManager
   }
 
   /**
    * Retrieves information about the current user.
    */
-  async aboutMe(oidcToken: string): Promise<UserInfo> {
-    const sessionMgr = await this.getSessionManager(oidcToken)
-    const cs = new CubeSigner({ sessionMgr })
-    return await cs.aboutMe()
+  async aboutMe(): Promise<UserInfo> {
+    return this.cubeSigner.aboutMe()
+  }
+
+  /**
+   * Retrieves information about the current user's mfa.
+   */
+  async userMfa(): Promise<UserInfo['mfa']> {
+    return (await this.aboutMe()).mfa
   }
 }
 
