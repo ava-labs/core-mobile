@@ -18,7 +18,7 @@ export enum KeySlot {
  *
  * Values stored should be reasonable small
  */
-class SecurityService {
+class SecureStorageService {
   /**
    * Encrypts and stores value to secured storage for given slot.
    * Throws error if Keychain fails.
@@ -28,7 +28,7 @@ class SecurityService {
   async store(slot: KeySlot, value: unknown): Promise<void> {
     const serviceForValues = `ss_value_${slot}`
     const serialized = serializeJson(value)
-    const key = await SecurityService.getOrCreateKey(slot)
+    const key = await SecureStorageService.getOrCreateKey(slot)
     const encrypted = await encrypt(serialized, key)
     const result = await Keychain.setGenericPassword('', encrypted, {
       service: serviceForValues
@@ -42,7 +42,7 @@ class SecurityService {
    */
   async load<T>(slot: KeySlot): Promise<T> {
     const serviceForValues = `ss_value_${slot}`
-    const key = await SecurityService.getOrCreateKey(slot)
+    const key = await SecureStorageService.getOrCreateKey(slot)
     const result = await Keychain.getGenericPassword({
       service: serviceForValues
     })
@@ -69,4 +69,4 @@ class SecurityService {
   }
 }
 
-export default new SecurityService()
+export default new SecureStorageService()
