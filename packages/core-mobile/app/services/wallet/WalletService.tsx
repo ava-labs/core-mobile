@@ -59,7 +59,7 @@ class WalletService {
    */
   private xpubXP?: string
 
-  async setMnemonic(mnemonic: string) {
+  async setMnemonic(mnemonic: string): Promise<void> {
     const xpubPromise = getXpubFromMnemonic(mnemonic)
     const xpubXPPromise = new Promise<string>(resolve => {
       resolve(Avalanche.getXpubFromMnemonic(mnemonic))
@@ -196,7 +196,7 @@ class WalletService {
     data: any,
     accountIndex: number,
     network: Network
-  ) {
+  ): Promise<string> {
     const wallet = await this.getWallet(accountIndex, network)
     if (!wallet || !(wallet instanceof BaseWallet)) {
       throw new Error(
@@ -458,7 +458,7 @@ class WalletService {
     return unsignedTx
   }
 
-  destroy() {
+  destroy(): void {
     this.mnemonic = undefined
     this.xpub = undefined
     this.xpubXP = undefined

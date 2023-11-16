@@ -25,7 +25,7 @@ export const VerifyCode = (): JSX.Element => {
   const [code, setCode] = useState('')
 
   const [showError, setShowError] = useState(false)
-  const { canGoBack, goBack } =
+  const { canGoBack, goBack, navigate } =
     useNavigation<VerifyCodeScreenProps['navigation']>()
 
   const onGoBack = (): void => {
@@ -42,7 +42,17 @@ export const VerifyCode = (): JSX.Element => {
     }
     // todo: if code is incorrect, show error
     setShowError(true)
-    // todo: else go to next screen
+
+    // todo: if code is correct, go to next screen
+    navigate(AppNavigation.Root.Onboard, {
+      screen: AppNavigation.Onboard.Welcome,
+      params: {
+        screen: AppNavigation.Onboard.AnalyticsConsent,
+        params: {
+          nextScreen: AppNavigation.Onboard.CreatePin
+        }
+      }
+    })
   }
 
   const textInputStyle = showError
