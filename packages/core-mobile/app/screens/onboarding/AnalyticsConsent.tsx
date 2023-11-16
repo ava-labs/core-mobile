@@ -17,29 +17,31 @@ type Props = {
   nextScreen:
     | typeof AppNavigation.Onboard.CreateWalletStack
     | typeof AppNavigation.Onboard.EnterWithMnemonicStack
+    | typeof AppNavigation.Onboard.CreatePin
   onNextScreen: (
     screen:
       | typeof AppNavigation.Onboard.CreateWalletStack
       | typeof AppNavigation.Onboard.EnterWithMnemonicStack
+      | typeof AppNavigation.Onboard.CreatePin
   ) => void
 }
 
-const AnalyticsConsent = ({ onNextScreen, nextScreen }: Props) => {
+const AnalyticsConsent = ({ onNextScreen, nextScreen }: Props): JSX.Element => {
   const dispatch = useDispatch()
   const { theme } = useApplicationContext()
   const { capture } = usePostCapture()
 
-  function openPrivacyPolicy() {
+  function openPrivacyPolicy(): void {
     Linking.openURL(PRIVACY_POLICY_URL)
   }
 
-  function acceptAnalytics() {
+  function acceptAnalytics(): void {
     capture('OnboardingAnalyticsAccepted')
     dispatch(setCoreAnalytics(true))
     onNextScreen(nextScreen)
   }
 
-  function rejectAnalytics() {
+  function rejectAnalytics(): void {
     capture('OnboardingAnalyticsRejected')
     dispatch(setCoreAnalytics(false))
     onNextScreen(nextScreen)

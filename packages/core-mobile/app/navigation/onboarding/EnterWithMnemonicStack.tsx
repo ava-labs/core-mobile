@@ -57,7 +57,7 @@ const EnterWithMnemonicStack = (): JSX.Element => {
           component={LoginWithMnemonicScreen}
         />
         <EnterWithMnemonicS.Screen
-          options={{ headerShown: true, headerTitle: '' }}
+          options={MainHeaderOptions()}
           name={AppNavigation.LoginWithMnemonic.CreatePin}
           component={CreatePinScreen}
         />
