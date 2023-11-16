@@ -8,7 +8,7 @@ class LoginRecoverWallet {
     const recoveryPhrase: string = process.env.E2E_MNEMONIC as string
     // await ExistingRecoveryPhrasePage.tapAlreadyHaveAWalletBtn()
     await ExistingRecoveryPhrasePage.tapSignInWithRecoveryPhraseBtn()
-    await ExistingRecoveryPhrasePage.tapRecoveryPhraseBtn()
+    // await ExistingRecoveryPhrasePage.tapRecoveryPhraseBtn()
     await AnalyticsConsentPage.tapNoThanksBtn()
     await ExistingRecoveryPhrasePage.enterRecoveryPhrase(recoveryPhrase)
     await ExistingRecoveryPhrasePage.tapSignInBtn()
