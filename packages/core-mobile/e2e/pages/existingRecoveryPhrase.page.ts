@@ -11,6 +11,10 @@ class ExistingRecoveryPhrasePage {
     return by.id(recoveryPhraseLoc.recoveryPhraseInput)
   }
 
+  get signInWithRecoveryPhraseBtn() {
+    return by.text(recoveryPhraseLoc.signInWithRecoveryPhrase)
+  }
+
   get signInBtn() {
     return by.text(recoveryPhraseLoc.signInBtn)
   }
@@ -41,6 +45,10 @@ class ExistingRecoveryPhrasePage {
 
   async tapAlreadyHaveAWalletBtn() {
     await Action.tap(this.alreadyHaveAWalletBtn)
+  }
+
+  async tapSignInWithRecoveryPhraseBtn() {
+    await Action.tap(this.signInWithRecoveryPhraseBtn)
   }
 
   async verifyExistingRecoveryPhrasePage() {

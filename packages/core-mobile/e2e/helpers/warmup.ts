@@ -14,6 +14,11 @@ export const warmup = async () => {
     console.log('Handling Jailbroken warning...', process.env.E2E)
     await Assert.isVisible(CommonElsPage.jailbrokenWarning, 0)
     await Action.tapElementAtIndex(by.text('Ok'), 0)
+    await Action.waitForElementNotVisible(
+      CommonElsPage.jailbrokenWarning,
+      20,
+      0
+    )
     console.log('Jailbroken warning handled!!!')
   }
 }
