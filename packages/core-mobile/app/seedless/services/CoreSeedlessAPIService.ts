@@ -22,7 +22,7 @@ class CoreSeedlessAPIService {
   async register(oidcToken: string): Promise<SeedlessUserRegistrationResult> {
     // Extract user identity from token
     const payload = JSON.parse(
-      Buffer.from(oidcToken.split('.')?.[1] ?? '', 'base64').toString('ascii')
+      Buffer.from(oidcToken.split('.')?.[1] ?? '', 'base64').toString('utf8')
     )
     const iss = payload.iss
     const sub = payload.sub
