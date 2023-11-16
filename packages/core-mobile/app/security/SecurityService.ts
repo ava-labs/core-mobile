@@ -9,12 +9,21 @@ export enum KeySlot {
   SeedlessSessionStorage = 'SeedlessSessionStorage'
 }
 
+/**
+ * SecurityService provides way to store and load anything using Keychain.
+ * Storage is divided into <b>slots</b>, so when you want to load/store something you provide one of enumed slots
+ * (add to enum if needed).
+ * Data is firstly encrypted then stored into Keychain under name "ss_value_${slot}", and encryption key is stored under
+ * "ss_key_${slot}".
+ *
+ * Values stored should be reasonable small
+ */
 class SecurityService {
   /**
    * Encrypts and stores value to secured storage for given slot.
-   * Throws error.
-   * @param slot
-   * @param value
+   * Throws error if Keychain fails.
+   * @param slot - Slot under which to store
+   * @param value - Any JSON
    */
   async store(slot: KeySlot, value: unknown): Promise<void> {
     const serviceForValues = `ss_value_${slot}`
@@ -29,7 +38,7 @@ class SecurityService {
 
   /**
    * Loads end decrypts data for given slot or throws error.
-   * @param slot
+   * @param slot - Slot from which to load
    */
   async load<T>(slot: KeySlot): Promise<T> {
     const serviceForValues = `ss_value_${slot}`
