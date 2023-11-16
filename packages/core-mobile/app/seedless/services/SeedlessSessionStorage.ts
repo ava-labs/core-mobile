@@ -6,12 +6,12 @@ export class SeedlessSessionStorage
   implements SessionStorage<SignerSessionData>
 {
   async save(data: SignerSessionData): Promise<void> {
-    await SecurityService.store(KeySlot.SeedlessSessionStorage, data)
+    await SecurityService.store(KeySlot.SignerSessionData, data)
   }
 
   async retrieve(): Promise<SignerSessionData> {
     const signerSessionData = await SecurityService.load<SignerSessionData>(
-      KeySlot.SeedlessSessionStorage
+      KeySlot.SignerSessionData
     )
     assertNotUndefined(signerSessionData)
     return signerSessionData

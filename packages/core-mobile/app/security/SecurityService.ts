@@ -6,7 +6,7 @@ import { serializeJson } from 'utils/serialization/serialize'
 import { deserializeJson } from 'utils/serialization/deserialize'
 
 export enum KeySlot {
-  SeedlessSessionStorage = 'SeedlessSessionStorage'
+  SignerSessionData = 'SignerSessionData'
 }
 
 /**
