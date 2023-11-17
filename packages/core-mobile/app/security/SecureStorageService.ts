@@ -52,13 +52,30 @@ class SecureStorageService {
     return deserializeJson<T>(stringified)
   }
 
+  async clearAll(): Promise<void> {
+    const promises: Promise<boolean>[] = []
+    Object.values(KeySlot).forEach(slot => {
+      promises.push(
+        Keychain.resetGenericPassword({
+          service: `ss_value_${slot}`
+        })
+      )
+      promises.push(
+        Keychain.resetGenericPassword({
+          service: `ss_key_${slot}`
+        })
+      )
+    })
+    await Promise.allSettled(promises)
+  }
+
   private static async getOrCreateKey(slot: KeySlot): Promise<string> {
     const serviceForKeys = `ss_key_${slot}`
     const existingCredentials = await Keychain.getGenericPassword({
       service: serviceForKeys
     })
     if (existingCredentials) {
-      existingCredentials.password
+      return existingCredentials.password
     }
     const key: string = await NativeModules.Aes.randomKey(32)
     const result = await Keychain.setGenericPassword('', key, {
