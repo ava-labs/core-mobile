@@ -91,7 +91,7 @@ export const LearnMore = (): JSX.Element => {
 
       <Button
         type="primary"
-        size="large"
+        size="xlarge"
         style={{ marginVertical: 16 }}
         onPress={onGoBack}>
         Back

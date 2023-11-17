@@ -77,7 +77,7 @@ export const ScanQrCode = (): JSX.Element => {
 
       <Button
         type="primary"
-        size="large"
+        size="xlarge"
         style={{ marginVertical: 16 }}
         onPress={openVerifyCode}>
         Next
