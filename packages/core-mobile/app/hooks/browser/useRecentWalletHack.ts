@@ -102,14 +102,14 @@ export default function useRecentWalletHack(): RecentWalletHackScripts {
 
   const injectCoreAsRecent = `(async function(){ 
     const wallet = ${coreMobileWalletConnectObject}
-    window.localStorage.setItem('WCM_RECENT_WALLET_DATA', JSON.stringify(coreWallet));
+    window.localStorage.setItem('WCM_RECENT_WALLET_DATA', JSON.stringify(wallet));
     const recentWallet = window.localStorage.getItem('WCM_RECENT_WALLET_DATA');
     window.ReactNativeWebView.postMessage(recentWallet)
   })();`
 
   const injectMetamaskAsRecent = `(async function(){ 
     const wallet = ${metamaskWalletConnectObject}
-    window.localStorage.setItem('WCM_RECENT_WALLET_DATA', JSON.stringify(coreWallet));
+    window.localStorage.setItem('WCM_RECENT_WALLET_DATA', JSON.stringify(wallet));
     const recentWallet = window.localStorage.getItem('WCM_RECENT_WALLET_DATA');
     window.ReactNativeWebView.postMessage(recentWallet)
   })();`
