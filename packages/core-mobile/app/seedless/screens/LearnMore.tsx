@@ -10,7 +10,6 @@ import SeedlessService from 'seedless/services/SeedlessService'
 import ContentCopy from '../assets/ContentCopy.svg'
 import { Card } from '../components/Card'
 import { SnackBarMessage } from '../components/SnackBarMessage'
-import Logger from 'utils/Logger'
 
 type LearnMoreScreenProps = RecoveryMethodsScreenProps<
   typeof AppNavigation.RecoveryMethods.LearnMore
