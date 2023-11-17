@@ -1,6 +1,7 @@
 import { View, useTheme } from '@avalabs/k2-mobile'
 import { useNavigation } from '@react-navigation/native'
 import CoreXLogoAnimated from 'components/CoreXLogoAnimated'
+import Loader from 'components/Loader'
 import AppNavigation from 'navigation/AppNavigation'
 import { OnboardScreenProps } from 'navigation/types'
 import React, { FC, useLayoutEffect, useState } from 'react'
@@ -73,6 +74,19 @@ const SigninScreen: FC = () => {
 
   return (
     <View sx={{ flex: 1, backgroundColor: '$black' }}>
+      {isRegistering && (
+        <View
+          sx={{
+            backgroundColor: '$transparent',
+            position: 'absolute',
+            top: 0,
+            bottom: 0,
+            left: 0,
+            right: 0
+          }}>
+          <Loader />
+        </View>
+      )}
       <View
         sx={{
           flex: 1,
