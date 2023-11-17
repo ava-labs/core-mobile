@@ -6,6 +6,7 @@ import React, { useEffect } from 'react'
 import { Dimensions } from 'react-native'
 import QRCode from 'react-native-qrcode-svg'
 import AuthenticatorService from 'seedless/services/AuthenticatorService'
+import Logger from 'utils/Logger'
 
 type ScanQrCodeScreenProps = RecoveryMethodsScreenProps<
   typeof AppNavigation.RecoveryMethods.ScanQrCode
@@ -35,7 +36,9 @@ export const ScanQrCode = (): JSX.Element => {
         setTotpUrl(result.value)
       }
     }
-    getTotpUrl()
+    getTotpUrl().catch(reason => {
+      Logger.error('ScanQrCode AuthenticatorService.setTotp error', reason)
+    })
   }, [])
 
   return (

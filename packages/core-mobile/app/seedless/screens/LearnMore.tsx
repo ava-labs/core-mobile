@@ -9,6 +9,7 @@ import AuthenticatorService from 'seedless/services/AuthenticatorService'
 import ContentCopy from '../assets/ContentCopy.svg'
 import { Card } from '../components/Card'
 import { SnackBarMessage } from '../components/SnackBarMessage'
+import Logger from 'utils/Logger'
 
 type LearnMoreScreenProps = RecoveryMethodsScreenProps<
   typeof AppNavigation.RecoveryMethods.LearnMore
@@ -43,7 +44,9 @@ export const LearnMore = (): JSX.Element => {
         newCode && setCode(newCode)
       }
     }
-    init()
+    init().catch(reason => {
+      Logger.error('LearnMore AuthenticatorService.setTotp error', reason)
+    })
   }, [totpCode])
 
   return (

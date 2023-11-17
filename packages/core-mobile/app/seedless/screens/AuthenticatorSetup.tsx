@@ -9,6 +9,7 @@ import ContentCopy from '../assets/ContentCopy.svg'
 import QrCodeScanner from '../assets/QrCodeScanner.svg'
 import { Card } from '../components/Card'
 import { SnackBarMessage } from '../components/SnackBarMessage'
+import Logger from 'utils/Logger'
 
 type AuthenticatorSetupScreenProps = RecoveryMethodsScreenProps<
   typeof AppNavigation.RecoveryMethods.AuthenticatorSetup
@@ -43,7 +44,12 @@ export const AuthenticatorSetup = (): JSX.Element => {
         totpCode && setCode(totpCode)
       }
     }
-    init()
+    init().catch(reason => {
+      Logger.error(
+        'AuthenticatorSetup AuthenticatorService.setTotp error',
+        reason
+      )
+    })
   }, [])
 
   return (

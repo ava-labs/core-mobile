@@ -14,6 +14,8 @@ import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation } from '@react-navigation/native'
 import { RecoveryMethodsScreenProps } from 'navigation/types'
 import AuthenticatorService from 'seedless/services/AuthenticatorService'
+import { handleAsyncOnChangeText } from 'utils/handleAsyncOnChangeText'
+import Logger from 'utils/Logger'
 
 type VerifyCodeScreenProps = RecoveryMethodsScreenProps<
   typeof AppNavigation.RecoveryMethods.LearnMore
@@ -91,7 +93,12 @@ export const VerifyCode = (): JSX.Element => {
           </Text>
           <Space y={24} />
           <TextInput
-            onChangeText={handleVerifyCode}
+            onChangeText={changedText =>
+              handleAsyncOnChangeText(changedText)({
+                action: handleVerifyCode,
+                error: reason => Logger.error('handleVerifyCode', reason)
+              })
+            }
             keyboardType="number-pad"
             keyboardAppearance="dark"
             multiline

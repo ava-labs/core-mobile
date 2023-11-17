@@ -14,6 +14,8 @@ import { SeedlessUserRegistrationResult } from 'seedless/services/CoreSeedlessAP
 import GoogleSigninService from 'seedless/services/GoogleSigninService'
 import SeedlessService from 'seedless/services/SeedlessService'
 import { selectIsSeedlessOnboardingBlocked } from 'store/posthog'
+import Logger from 'utils/Logger'
+import { handleAsyncOnPress } from 'utils/handleAsyncOnPress'
 
 type NavigationProp = OnboardScreenProps<
   typeof AppNavigation.Onboard.Signup
@@ -46,6 +48,11 @@ const SignupScreen: FC = () => {
 
   const handleSignin = (): void => {
     navigation.navigate(AppNavigation.Onboard.Signin)
+  }
+
+  const handleAsyncOnPressError = (reason: unknown): void => {
+    Alert.alert('seedless user registration error')
+    Logger.error('handleSignupWithGoogle', reason)
   }
 
   const handleSignupWithGoogle = async (): Promise<void> => {
@@ -122,7 +129,12 @@ const SignupScreen: FC = () => {
             <AuthButtons
               title="Sign up with..."
               disabled={isRegistering}
-              onGoogleAction={handleSignupWithGoogle}
+              onGoogleAction={() =>
+                handleAsyncOnPress({
+                  action: handleSignupWithGoogle,
+                  error: handleAsyncOnPressError
+                })
+              }
               onMnemonicAction={handleSignupWithMnemonic}
             />
             <Space y={48} />
