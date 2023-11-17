@@ -6,10 +6,10 @@ import { useNavigation, useRoute } from '@react-navigation/native'
 import { Space } from 'components/Space'
 import { copyToClipboard } from 'utils/DeviceTools'
 import AuthenticatorService from 'seedless/services/AuthenticatorService'
+import Logger from 'utils/Logger'
 import ContentCopy from '../assets/ContentCopy.svg'
 import { Card } from '../components/Card'
 import { SnackBarMessage } from '../components/SnackBarMessage'
-import Logger from 'utils/Logger'
 
 type LearnMoreScreenProps = RecoveryMethodsScreenProps<
   typeof AppNavigation.RecoveryMethods.LearnMore

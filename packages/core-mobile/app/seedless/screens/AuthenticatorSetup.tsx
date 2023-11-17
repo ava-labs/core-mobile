@@ -5,11 +5,11 @@ import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation } from '@react-navigation/native'
 import { copyToClipboard } from 'utils/DeviceTools'
 import AuthenticatorService from 'seedless/services/AuthenticatorService'
+import Logger from 'utils/Logger'
 import ContentCopy from '../assets/ContentCopy.svg'
 import QrCodeScanner from '../assets/QrCodeScanner.svg'
 import { Card } from '../components/Card'
 import { SnackBarMessage } from '../components/SnackBarMessage'
-import Logger from 'utils/Logger'
 
 type AuthenticatorSetupScreenProps = RecoveryMethodsScreenProps<
   typeof AppNavigation.RecoveryMethods.AuthenticatorSetup
