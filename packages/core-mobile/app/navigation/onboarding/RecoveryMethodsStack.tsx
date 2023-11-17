@@ -12,7 +12,7 @@ export type RecoveryMethodsStackParamList = {
   [AppNavigation.RecoveryMethods.AddRecoveryMethods]: undefined
   [AppNavigation.RecoveryMethods.AuthenticatorSetup]: undefined
   [AppNavigation.RecoveryMethods.ScanQrCode]: undefined
-  [AppNavigation.RecoveryMethods.LearnMore]: undefined
+  [AppNavigation.RecoveryMethods.LearnMore]: { totpCode?: string }
   [AppNavigation.RecoveryMethods.VerifyCode]: undefined
 }
 const RecoveryMethodsS = createStackNavigator<RecoveryMethodsStackParamList>()

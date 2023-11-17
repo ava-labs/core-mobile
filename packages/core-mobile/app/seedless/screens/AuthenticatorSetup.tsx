@@ -1,9 +1,10 @@
 import { Button, Text, View } from '@avalabs/k2-mobile'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { RecoveryMethodsScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation } from '@react-navigation/native'
 import { copyToClipboard } from 'utils/DeviceTools'
+import AuthenticatorService from 'seedless/services/AuthenticatorService'
 import ContentCopy from '../assets/ContentCopy.svg'
 import QrCodeScanner from '../assets/QrCodeScanner.svg'
 import { Card } from '../components/Card'
@@ -14,11 +15,12 @@ type AuthenticatorSetupScreenProps = RecoveryMethodsScreenProps<
 >
 
 export const AuthenticatorSetup = (): JSX.Element => {
+  const [code, setCode] = useState<string>()
   const { navigate } =
     useNavigation<AuthenticatorSetupScreenProps['navigation']>()
 
   const openLearnMore = (): void => {
-    navigate(AppNavigation.RecoveryMethods.LearnMore)
+    navigate(AppNavigation.RecoveryMethods.LearnMore, { totpCode: code })
   }
 
   const openScanQrCode = (): void => {
@@ -26,12 +28,23 @@ export const AuthenticatorSetup = (): JSX.Element => {
   }
 
   const copyCode = (): void => {
-    copyToClipboard('TO_BE_IMPLEMENTED', <SnackBarMessage />)
+    copyToClipboard(code, <SnackBarMessage />)
   }
 
   const openVerifyCode = (): void => {
     navigate(AppNavigation.RecoveryMethods.VerifyCode)
   }
+
+  useEffect(() => {
+    const init = async (): Promise<void> => {
+      const result = await AuthenticatorService.setTotp()
+      if (result.success && result.value) {
+        const totpCode = new URL(result.value).searchParams.get('secret')
+        totpCode && setCode(totpCode)
+      }
+    }
+    init()
+  }, [])
 
   return (
     <View
@@ -54,13 +67,15 @@ export const AuthenticatorSetup = (): JSX.Element => {
           </Text>
         </View>
 
-        <Card
-          onPress={copyCode}
-          icon={<ContentCopy />}
-          title="Copy Code"
-          body="TO_BE_IMPLEMENTED"
-          bodyVariant="buttonLarge"
-        />
+        {code && (
+          <Card
+            onPress={copyCode}
+            icon={<ContentCopy />}
+            title="Copy Code"
+            body={code}
+            bodyVariant="buttonLarge"
+          />
+        )}
         <Card
           onPress={openScanQrCode}
           icon={<QrCodeScanner />}

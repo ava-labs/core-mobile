@@ -1,10 +1,11 @@
 import { Button, Text, View } from '@avalabs/k2-mobile'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { RecoveryMethodsScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
-import { useNavigation } from '@react-navigation/native'
+import { useNavigation, useRoute } from '@react-navigation/native'
 import { Space } from 'components/Space'
 import { copyToClipboard } from 'utils/DeviceTools'
+import AuthenticatorService from 'seedless/services/AuthenticatorService'
 import ContentCopy from '../assets/ContentCopy.svg'
 import { Card } from '../components/Card'
 import { SnackBarMessage } from '../components/SnackBarMessage'
@@ -14,6 +15,9 @@ type LearnMoreScreenProps = RecoveryMethodsScreenProps<
 >
 
 export const LearnMore = (): JSX.Element => {
+  const { totpCode } = useRoute<LearnMoreScreenProps['route']>().params
+  const [code, setCode] = useState<string>()
+
   const { canGoBack, goBack } =
     useNavigation<LearnMoreScreenProps['navigation']>()
 
@@ -24,8 +28,23 @@ export const LearnMore = (): JSX.Element => {
   }
 
   const copyCode = (): void => {
-    copyToClipboard('TO_BE_IMPLEMENTED', <SnackBarMessage />)
+    copyToClipboard(code, <SnackBarMessage />)
   }
+
+  useEffect(() => {
+    const init = async (): Promise<void> => {
+      if (totpCode) {
+        setCode(totpCode)
+        return
+      }
+      const result = await AuthenticatorService.setTotp()
+      if (result.success && result.value) {
+        const newCode = new URL(result.value).searchParams.get('secret')
+        newCode && setCode(newCode)
+      }
+    }
+    init()
+  }, [totpCode])
 
   return (
     <View
@@ -39,13 +58,15 @@ export const LearnMore = (): JSX.Element => {
           </Text>
         </View>
 
-        <Card
-          onPress={copyCode}
-          icon={<ContentCopy />}
-          title="Copy Code"
-          body="TO_BE_IMPLEMENTED"
-          bodyVariant="buttonLarge"
-        />
+        {code && (
+          <Card
+            onPress={copyCode}
+            icon={<ContentCopy />}
+            title="Copy Code"
+            body={code}
+            bodyVariant="buttonLarge"
+          />
+        )}
 
         <View sx={{ marginVertical: 8 }}>
           <Text variant="body1" sx={{ color: '$neutral50' }}>

@@ -2,9 +2,10 @@ import { Button, Text, View } from '@avalabs/k2-mobile'
 import { useNavigation } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
 import { RecoveryMethodsScreenProps } from 'navigation/types'
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Dimensions } from 'react-native'
 import QRCode from 'react-native-qrcode-svg'
+import AuthenticatorService from 'seedless/services/AuthenticatorService'
 
 type ScanQrCodeScreenProps = RecoveryMethodsScreenProps<
   typeof AppNavigation.RecoveryMethods.ScanQrCode
@@ -17,6 +18,7 @@ const qrCodeSize = qrCodeContainerSize - 40
 
 export const ScanQrCode = (): JSX.Element => {
   const { navigate } = useNavigation<ScanQrCodeScreenProps['navigation']>()
+  const [totpUrl, setTotpUrl] = React.useState<string>()
 
   const openVerifyCode = (): void => {
     navigate(AppNavigation.RecoveryMethods.VerifyCode)
@@ -25,6 +27,16 @@ export const ScanQrCode = (): JSX.Element => {
   const goToAuthenticatorSetup = (): void => {
     navigate(AppNavigation.RecoveryMethods.AuthenticatorSetup)
   }
+
+  useEffect(() => {
+    const getTotpUrl = async (): Promise<void> => {
+      const result = await AuthenticatorService.setTotp()
+      if (result.success && result.value) {
+        setTotpUrl(result.value)
+      }
+    }
+    getTotpUrl()
+  }, [])
 
   return (
     <View
@@ -53,7 +65,7 @@ export const ScanQrCode = (): JSX.Element => {
             alignItems: 'center',
             alignSelf: 'center'
           }}>
-          <QRCode ecl={'H'} size={qrCodeSize} value={'TO_BE_IMPLEMENTED'} />
+          {!!totpUrl && <QRCode ecl={'H'} size={qrCodeSize} value={totpUrl} />}
         </View>
         <Button type="tertiary" size="xlarge" onPress={goToAuthenticatorSetup}>
           Enter Code Manually

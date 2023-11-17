@@ -1,4 +1,10 @@
-import { CubeSigner, MfaReceipt, UserInfo } from '@cubist-dev/cubesigner-sdk'
+import {
+  CubeSigner,
+  MfaReceipt,
+  SignResponse,
+  TotpChallenge,
+  UserInfo
+} from '@cubist-dev/cubesigner-sdk'
 import Config from 'react-native-config'
 import { SignerSessionManager, envs } from '@cubist-dev/cubesigner-sdk'
 import { SeedlessSessionStorage } from './SeedlessSessionStorage'
@@ -74,6 +80,22 @@ class SeedlessService {
    */
   async userMfa(): Promise<UserInfo['mfa']> {
     return (await this.aboutMe()).mfa
+  }
+
+  /**
+   * Creates a request to change user's TOTP. This request returns a new TOTP challenge
+   * that must be answered by calling resetTotpComplete
+   */
+  async resetTotpStart(): Promise<SignResponse<TotpChallenge>> {
+    return this.cubeSigner.resetTotpStart()
+  }
+
+  /**
+   * Verifies a given TOTP code against the current user's TOTP configuration.
+   * Throws an error if the verification fails.
+   */
+  async verifyTotp(code: string): Promise<void> {
+    return this.cubeSigner.verifyTotp(code)
   }
 }
 
