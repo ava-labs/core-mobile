@@ -15,9 +15,10 @@ import {
 import { AppStartListening } from 'store/middleware/listener'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import Logger, { LogLevel } from 'utils/Logger'
-import { extendAccountProps } from 'store/app/migrations'
 import { capture } from 'store/posthog'
 import DeviceInfo from 'react-native-device-info'
+import { WalletType } from 'services/wallet/types'
+import WalletService from 'services/wallet/WalletService'
 import {
   onAppLocked,
   onAppUnlocked,
@@ -25,7 +26,9 @@ import {
   onForeground,
   onLogOut,
   selectAppState,
-  selectIsLocked
+  selectIsLocked,
+  setWalletType,
+  selectWalletType
 } from './slice'
 
 const TIME_TO_LOCK_IN_SECONDS = 5
@@ -56,13 +59,6 @@ const init = async (
     await BiometricsSDK.warmup()
   }
   dispatch(setIsReady(true))
-}
-
-const applyVersionMigrations = async (
-  _: Action,
-  listenerApi: AppListenerEffectAPI
-): Promise<void> => {
-  extendAccountProps(listenerApi)
 }
 
 const listenToAppState = async (
@@ -151,8 +147,18 @@ const clearData = async (
 ): Promise<void> => {
   const { dispatch } = listenerApi
   dispatch(setWalletState(WalletState.NONEXISTENT))
+  dispatch(setWalletType(WalletType.UNSET))
   await BiometricsSDK.clearAllWalletKeys()
   await AsyncStorage.clear()
+}
+
+const initWalletService = async (
+  { payload: { mnemonic } }: ReturnType<typeof onAppUnlocked>,
+  listenerApi: AppListenerEffectAPI
+): Promise<void> => {
+  const state = listenerApi.getState()
+  const walletType = selectWalletType(state)
+  WalletService.init(mnemonic, walletType)
 }
 
 export const addAppListeners = (startListening: AppStartListening): void => {
@@ -163,7 +169,7 @@ export const addAppListeners = (startListening: AppStartListening): void => {
 
   startListening({
     actionCreator: onAppUnlocked,
-    effect: applyVersionMigrations
+    effect: initWalletService
   })
 
   startListening({

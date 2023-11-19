@@ -1,8 +1,7 @@
 import { encrypt } from 'utils/EncryptionHelper'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import walletService from 'services/wallet/WalletService'
-import { useDispatch, useSelector } from 'react-redux'
-import { addAccount, selectAccounts } from 'store/account'
+import { useDispatch } from 'react-redux'
 import { onAppUnlocked } from 'store/app'
 import { AppNavHook } from 'useAppNav'
 
@@ -24,16 +23,10 @@ export interface WalletSetupHook {
  * destroyWallet - call when user ends session
  */
 export function useWalletSetup(appNavHook: AppNavHook): WalletSetupHook {
-  const accounts = useSelector(selectAccounts)
   const dispatch = useDispatch()
 
   const enterWallet = async (mnemonic: string): Promise<void> => {
-    await walletService.setMnemonic(mnemonic)
-    dispatch(onAppUnlocked())
-    if (Object.keys(accounts).length === 0) {
-      //must be after onAppUnlocked
-      dispatch(addAccount())
-    }
+    dispatch(onAppUnlocked({ mnemonic }))
     appNavHook.resetNavToUnlockedWallet()
   }
 
