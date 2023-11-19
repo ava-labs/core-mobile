@@ -16,7 +16,7 @@ import { MainHeaderOptions } from 'navigation/NavUtils'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import WarningModal from 'components/WarningModal'
 import TermsNConditionsModal from 'components/TermsNConditionsModal'
-import { onLogIn } from 'store/app'
+import { onLogIn, setWalletType } from 'store/app'
 import { useDispatch } from 'react-redux'
 import {
   RemoveEvents,
@@ -26,6 +26,7 @@ import { usePostCapture } from 'hooks/usePosthogCapture'
 import OwlLoader from 'components/OwlLoader'
 import { setCoreAnalytics } from 'store/settings/securityPrivacy'
 import Logger from 'utils/Logger'
+import { WalletType } from 'services/wallet/types'
 import { CreateWalletScreenProps } from '../types'
 
 export type CreateWalletStackParamList = {
@@ -227,7 +228,9 @@ const TermsNConditionsModalScreen = (): JSX.Element => {
       onNext={() => {
         navigate(AppNavigation.CreateWallet.Loader)
         setTimeout(() => {
-          // signing in with a brand new wallet
+          // signing in with a brand new wallet (mnemonic)
+          dispatch(setWalletType(WalletType.MNEMONIC))
+
           walletSetupHook
             .enterWallet(createWalletContext.mnemonic)
             .then(() => {

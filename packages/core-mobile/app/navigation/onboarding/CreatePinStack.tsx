@@ -7,11 +7,13 @@ import { createStackNavigator } from '@react-navigation/stack'
 import { MainHeaderOptions } from 'navigation/NavUtils'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import TermsNConditionsModal from 'components/TermsNConditionsModal'
-import { onLogIn } from 'store/app'
+import { onLogIn, setWalletType } from 'store/app'
 import { useDispatch } from 'react-redux'
 import { usePostCapture } from 'hooks/usePosthogCapture'
 import OwlLoader from 'components/OwlLoader'
 import Logger from 'utils/Logger'
+import { WalletType } from 'services/wallet/types'
+import { SEEDLESS_MNEMONIC_STUB } from 'seedless/consts'
 import { CreateWalletScreenProps } from '../types'
 
 export type CreatePinStackParamList = {
@@ -60,7 +62,7 @@ const CreatePinScreen = (): JSX.Element => {
   const onPinSet = (pin: string): void => {
     capture('OnboardingPasswordSet')
     walletSetupHook
-      .onPinCreated('', pin, false)
+      .onPinCreated(SEEDLESS_MNEMONIC_STUB, pin, false)
       .then(value => {
         switch (value) {
           case 'useBiometry':
@@ -105,9 +107,14 @@ const TermsNConditionsModalScreen = (): JSX.Element => {
       onNext={() => {
         navigate(AppNavigation.CreateWallet.Loader)
         setTimeout(() => {
-          // signing in with a brand new wallet
+          // signing in with a brand new wallet (seedless)
+          dispatch(setWalletType(WalletType.SEEDLESS))
+
+          // here we are using a dummy mnemonic to enter the wallet
+          // so that our pin/biometric logic still works normally
+          // TODO: use a random string instead of a constant
           walletSetupHook
-            .enterWallet('')
+            .enterWallet(SEEDLESS_MNEMONIC_STUB)
             .then(() => {
               dispatch(onLogIn())
             })

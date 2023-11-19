@@ -14,7 +14,12 @@ import { createStackNavigator } from '@react-navigation/stack'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { MainHeaderOptions } from 'navigation/NavUtils'
 import TermsNConditionsModal from 'components/TermsNConditionsModal'
-import { onLogIn, selectWalletState, WalletState } from 'store/app'
+import {
+  onLogIn,
+  selectWalletState,
+  setWalletType,
+  WalletState
+} from 'store/app'
 import { useDispatch, useSelector } from 'react-redux'
 import {
   RemoveEvents,
@@ -24,6 +29,7 @@ import { usePostCapture } from 'hooks/usePosthogCapture'
 import OwlLoader from 'components/OwlLoader'
 import { setCoreAnalytics } from 'store/settings/securityPrivacy'
 import Logger from 'utils/Logger'
+import { WalletType } from 'services/wallet/types'
 import { EnterWithMnemonicScreenProps } from '../types'
 
 export type EnterWithMnemonicStackParamList = {
@@ -108,6 +114,7 @@ const LoginWithMnemonicScreen = (): JSX.Element => {
       if (isWalletExisted) {
         deleteWallet()
       }
+
       enterWithMnemonicContext.setMnemonic(m)
       navigate(AppNavigation.LoginWithMnemonic.CreatePin)
     },
@@ -187,7 +194,9 @@ const TermsNConditionsModalScreen = (): JSX.Element => {
       onNext={() => {
         navigate(AppNavigation.LoginWithMnemonic.Loader)
         setTimeout(() => {
-          // signing in with recovery phrase
+          // signing in with recovery phrase (mnemonic)
+          dispatch(setWalletType(WalletType.MNEMONIC))
+
           walletSetupHook
             .enterWallet(enterWithMnemonicContext.mnemonic)
             .then(() => {
