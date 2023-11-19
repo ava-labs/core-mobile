@@ -230,7 +230,7 @@ class WalletService {
     Logger.info(`initializing wallet with type ${walletType}`)
 
     if (walletType === WalletType.MNEMONIC) {
-      this.mnemonicInit(mnemonic)
+      await this.mnemonicInit(mnemonic)
     }
 
     this.#walletType = walletType

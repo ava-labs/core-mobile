@@ -19,6 +19,7 @@ import { capture } from 'store/posthog'
 import DeviceInfo from 'react-native-device-info'
 import { WalletType } from 'services/wallet/types'
 import WalletService from 'services/wallet/WalletService'
+import SecureStorageService from 'security/SecureStorageService'
 import {
   onAppLocked,
   onAppUnlocked,
@@ -148,8 +149,15 @@ const clearData = async (
   const { dispatch } = listenerApi
   dispatch(setWalletState(WalletState.NONEXISTENT))
   dispatch(setWalletType(WalletType.UNSET))
-  await BiometricsSDK.clearAllWalletKeys()
-  await AsyncStorage.clear()
+  await BiometricsSDK.clearAllWalletKeys().catch(e =>
+    Logger.error('failed to clear biometrics', e)
+  )
+  await SecureStorageService.clearAll().catch(e =>
+    Logger.error('failed to clear secure store', e)
+  )
+  await AsyncStorage.clear().catch(e =>
+    Logger.error('failed to clear async store', e)
+  )
 }
 
 const initWalletService = async (
@@ -158,7 +166,9 @@ const initWalletService = async (
 ): Promise<void> => {
   const state = listenerApi.getState()
   const walletType = selectWalletType(state)
-  WalletService.init(mnemonic, walletType)
+  await WalletService.init(mnemonic, walletType).catch(e =>
+    Logger.error('failed to init wallet', e)
+  )
 }
 
 export const addAppListeners = (startListening: AppStartListening): void => {
