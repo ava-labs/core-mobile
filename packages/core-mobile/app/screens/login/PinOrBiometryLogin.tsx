@@ -200,7 +200,7 @@ export default function PinOrBiometryLogin({
               <AvaButton.TextMedium
                 onPress={onSignInWithRecoveryPhrase}
                 testID="pin_or_biometry_login__signin_w_recovery">
-                Sign In with recovery phrase
+                Forgot PIN?
               </AvaButton.TextMedium>
               <Space y={16} />
             </>
