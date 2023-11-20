@@ -1,5 +1,6 @@
 import { Button, Text, View } from '@avalabs/k2-mobile'
 import { useNavigation } from '@react-navigation/native'
+import Loader from 'components/Loader'
 import AppNavigation from 'navigation/AppNavigation'
 import { RecoveryMethodsScreenProps } from 'navigation/types'
 import React, { useEffect } from 'react'
@@ -41,6 +42,31 @@ export const ScanQrCode = (): JSX.Element => {
     })
   }, [])
 
+  const renderQRCode = (): JSX.Element => {
+    const hasTotpUrl = totpUrl !== undefined
+    const borderColor = hasTotpUrl ? '$white' : '$transparent'
+    return (
+      <View
+        sx={{
+          marginVertical: 24,
+          borderWidth: 32,
+          height: qrCodeContainerSize,
+          width: qrCodeContainerSize,
+          borderColor,
+          borderRadius: 8,
+          justifyContent: 'center',
+          alignItems: 'center',
+          alignSelf: 'center'
+        }}>
+        {hasTotpUrl ? (
+          <QRCode ecl={'H'} size={qrCodeSize} value={totpUrl} />
+        ) : (
+          <Loader />
+        )}
+      </View>
+    )
+  }
+
   return (
     <View
       sx={{ marginHorizontal: 16, flex: 1, justifyContent: 'space-between' }}>
@@ -55,21 +81,7 @@ export const ScanQrCode = (): JSX.Element => {
             Or enter code manually.
           </Text>
         </View>
-
-        <View
-          sx={{
-            marginVertical: 24,
-            borderWidth: 32,
-            height: qrCodeContainerSize,
-            width: qrCodeContainerSize,
-            borderColor: '$white',
-            borderRadius: 8,
-            justifyContent: 'center',
-            alignItems: 'center',
-            alignSelf: 'center'
-          }}>
-          {!!totpUrl && <QRCode ecl={'H'} size={qrCodeSize} value={totpUrl} />}
-        </View>
+        {renderQRCode()}
         <Button type="tertiary" size="xlarge" onPress={goToAuthenticatorSetup}>
           Enter Code Manually
         </Button>
