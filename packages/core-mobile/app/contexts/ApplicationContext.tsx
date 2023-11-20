@@ -2,8 +2,6 @@ import React, { createContext, useContext, useState } from 'react'
 import { COLORS_DAY, COLORS_NIGHT } from 'resources/Constants'
 import type { Theme } from '@react-navigation/native'
 import { AppHook, useApp } from 'AppHook'
-import { AppNavHook, useAppNav } from 'useAppNav'
-import { useWalletSetup, WalletSetupHook } from 'hooks/useWalletSetup'
 
 export type AppTheme = typeof COLORS_DAY | typeof COLORS_NIGHT
 
@@ -17,8 +15,6 @@ export interface ApplicationContextState {
   keyboardAvoidingViewEnabled: boolean
   setKeyboardAvoidingViewEnabled: (value: boolean) => void
   appHook: AppHook
-  appNavHook: AppNavHook
-  walletSetupHook: WalletSetupHook
 }
 
 export declare type BackgroundStyle = {
@@ -52,9 +48,7 @@ export const ApplicationContextProvider = ({
 }: {
   children: React.ReactNode
 }): JSX.Element => {
-  const appNavHook = useAppNav()
-  const walletSetupHook = useWalletSetup(appNavHook)
-  const appHook = useApp(appNavHook, walletSetupHook)
+  const appHook = useApp()
 
   const isDarkMode = true // useState(Appearance.getColorScheme() === 'dark');
   const [theme] = useState(isDarkMode ? COLORS_NIGHT : COLORS_DAY)
@@ -103,9 +97,7 @@ export const ApplicationContextProvider = ({
     shadow,
     keyboardAvoidingViewEnabled,
     setKeyboardAvoidingViewEnabled,
-    appHook,
-    appNavHook,
-    walletSetupHook
+    appHook
   }
   return (
     <ApplicationContext.Provider value={appContextState}>

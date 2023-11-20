@@ -71,6 +71,7 @@ import NotificationsStackScreen, {
 } from 'navigation/wallet/NotificationsStackScreen'
 import { DeFiProtocolDetails } from 'screens/defi/DeFiProtocolDetails'
 import SendFeedbackStackScreen from 'navigation/wallet/SendFeedbackStackScreen'
+import { navigationRef } from 'utils/Navigation'
 import { BridgeStackParamList } from '../wallet/BridgeScreenStack'
 import {
   BridgeTransactionStatusParams,
@@ -174,7 +175,7 @@ const WalletScreenS = createStackNavigator<WalletScreenStackParams>()
 
 export type WalletScreenSType = typeof WalletScreenS
 
-export const SignOutModalScreen = () => {
+export const SignOutModalScreen = (): JSX.Element => {
   const { signOut } = useApplicationContext().appHook
 
   const doSwitchWallet = (): void => {
@@ -184,13 +185,11 @@ export const SignOutModalScreen = () => {
   return <SignOutModal onConfirm={doSwitchWallet} />
 }
 
-function WalletScreenStack(props: Props | Readonly<Props>) {
-  const context = useApplicationContext()
-
+function WalletScreenStack(props: Props | Readonly<Props>): JSX.Element {
   useFocusEffect(
     React.useCallback(() => {
-      const onBackPress = () => {
-        if (!context.appNavHook.navigation.current?.canGoBack()) {
+      const onBackPress = (): boolean => {
+        if (!navigationRef.current?.canGoBack()) {
           onExit()
           return true
         } else {
@@ -397,7 +396,7 @@ type BridgeTransactionStatusScreenProps = WalletScreenProps<
   typeof AppNavigation.Bridge.BridgeTransactionStatus
 >
 
-const BridgeTransactionStatus = () => {
+const BridgeTransactionStatus = (): JSX.Element => {
   const { txHash } =
     useRoute<BridgeTransactionStatusScreenProps['route']>().params
 
@@ -408,18 +407,18 @@ type NetworkSelectorScreenProps = WalletScreenProps<
   typeof AppNavigation.Wallet.NetworkSelector
 >
 
-function NetworkSelectorScreen() {
+function NetworkSelectorScreen(): JSX.Element {
   const { navigate, goBack } =
     useNavigation<NetworkSelectorScreenProps['navigation']>()
 
-  function showNetworkDetails(chainId: ChainID) {
+  function showNetworkDetails(chainId: ChainID): void {
     navigate(AppNavigation.Wallet.NetworkDetails, { chainId, goBack })
   }
 
   return <NetworkManager onShowInfo={showNetworkDetails} />
 }
 
-const AddNetworkAction = () => {
+const AddNetworkAction = (): JSX.Element => {
   const { navigate } = useNavigation<NetworkSelectorScreenProps['navigation']>()
   return (
     <AvaButton.Icon
@@ -437,7 +436,7 @@ type NetworkDetailsScreenProps = WalletScreenProps<
   typeof AppNavigation.Wallet.NetworkDetails
 >
 
-function NetworkDetailsScreen() {
+function NetworkDetailsScreen(): JSX.Element {
   const { goBack } = useNavigation<NetworkDetailsScreenProps['navigation']>()
   const { params } = useRoute<NetworkDetailsScreenProps['route']>()
 
@@ -448,7 +447,7 @@ type NetworkAddEditScreenProps = WalletScreenProps<
   typeof AppNavigation.Wallet.NetworkAddEdit
 >
 
-function NetworkAddEditScreen() {
+function NetworkAddEditScreen(): JSX.Element {
   const { params } = useRoute<NetworkAddEditScreenProps['route']>()
   const { goBack } = useNavigation<NetworkAddEditScreenProps['navigation']>()
 
