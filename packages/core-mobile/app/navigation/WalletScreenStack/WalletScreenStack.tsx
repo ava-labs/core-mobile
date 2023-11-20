@@ -185,7 +185,7 @@ export const SignOutModalScreen = (): JSX.Element => {
   return <SignOutModal onConfirm={doSwitchWallet} />
 }
 
-function WalletScreenStack(props: Props | Readonly<Props>): JSX.Element {
+function WalletScreenStack(props: Props): JSX.Element {
   useFocusEffect(
     React.useCallback(() => {
       const onBackPress = (): boolean => {
