@@ -13,7 +13,8 @@ import { networks } from 'bitcoinjs-lib'
 import {
   Avalanche,
   getBtcAddressFromPubKey,
-  getEvmAddressFromPubKey
+  getEvmAddressFromPubKey,
+  WalletVoid
 } from '@avalabs/wallets-sdk'
 import { sha256 } from '@noble/hashes/sha256'
 import { EVM, hexToBuffer } from '@avalabs/avalanchejs-v2'
@@ -31,7 +32,7 @@ export default class SeedlessWallet {
   #addressPublicKey: PubKeyType | undefined
 
   private get session(): cs.SignerSession {
-    assertNotUndefined(this.#session)
+    assertNotUndefined(this.#session, 'no session available')
     return this.#session
   }
 
@@ -40,7 +41,7 @@ export default class SeedlessWallet {
   }
 
   private get addressPublicKey(): PubKeyType {
-    assertNotUndefined(this.#addressPublicKey)
+    assertNotUndefined(this.#addressPublicKey, 'no addressPublicKey available')
     return this.#addressPublicKey
   }
 
@@ -160,6 +161,17 @@ export default class SeedlessWallet {
     return key
   }
 
+  private getPubKeyBufferC(): Buffer {
+    return Buffer.from(this.addressPublicKey.evm, 'hex')
+  }
+
+  private getPubKeyBufferXP(): Buffer {
+    if (!this.addressPublicKey.xp)
+      throw new Error('xp public key not available')
+
+    return Buffer.from(this.addressPublicKey.xp, 'hex')
+  }
+
   private async signBlob(address: string, digest: BytesLike): Promise<string> {
     const blobReq = {
       message_base64: Buffer.from(getBytes(digest)).toString('base64')
@@ -171,9 +183,7 @@ export default class SeedlessWallet {
     return res.data().signature
   }
 
-  public static create = async (
-    accountIndex: number
-  ): Promise<SeedlessWallet> => {
+  static create = async (accountIndex: number): Promise<SeedlessWallet> => {
     const wallet = new SeedlessWallet()
     const storage = new SeedlessSessionStorage()
 
@@ -194,31 +204,30 @@ export default class SeedlessWallet {
     return wallet
   }
 
+  getPublicKey(): PubKeyType {
+    return this.addressPublicKey
+  }
+
   getAddresses(
     isTestnet: boolean,
     provXP: Avalanche.JsonRpcProvider
   ): Record<NetworkVMType, string> {
-    const pubKeyBuffer = Buffer.from(this.addressPublicKey.evm, 'hex')
+    const pubKeyBufferC = this.getPubKeyBufferC()
 
     // X/P addresses use a different public key because derivation path is different
-    let addrX = '',
-      addrP = ''
-
-    if (this.addressPublicKey.xp) {
-      const pubKeyBufferXP = Buffer.from(this.addressPublicKey.xp, 'hex')
-      addrX = provXP.getAddress(pubKeyBufferXP, 'X')
-      addrP = provXP.getAddress(pubKeyBufferXP, 'P')
-    }
+    const pubKeyBufferXP = this.getPubKeyBufferXP()
+    const addrX = provXP.getAddress(pubKeyBufferXP, 'X')
+    const addrP = provXP.getAddress(pubKeyBufferXP, 'P')
 
     return {
-      [NetworkVMType.EVM]: getEvmAddressFromPubKey(pubKeyBuffer),
+      [NetworkVMType.EVM]: getEvmAddressFromPubKey(pubKeyBufferC).toLowerCase(),
       [NetworkVMType.BITCOIN]: getBtcAddressFromPubKey(
-        pubKeyBuffer,
+        pubKeyBufferC,
         isTestnet ? networks.testnet : networks.bitcoin
       ),
       [NetworkVMType.AVM]: addrX,
       [NetworkVMType.PVM]: addrP,
-      [NetworkVMType.CoreEth]: provXP.getAddress(pubKeyBuffer, 'C')
+      [NetworkVMType.CoreEth]: provXP.getAddress(pubKeyBufferC, 'C')
     }
   }
 
@@ -231,7 +240,7 @@ export default class SeedlessWallet {
     data: any
   }): Promise<string> {
     const addressEVM = getEvmAddressFromPubKey(
-      Buffer.from(this.addressPublicKey.evm, 'hex')
+      this.getPubKeyBufferC()
     ).toLowerCase()
 
     switch (rpcMethod) {
@@ -268,7 +277,7 @@ export default class SeedlessWallet {
     provider: JsonRpcProvider
   ): Promise<string> {
     const signer = new cs.ethers.Signer(
-      getEvmAddressFromPubKey(Buffer.from(this.addressPublicKey.evm, 'hex')),
+      getEvmAddressFromPubKey(this.getPubKeyBufferC()),
       this.session,
       { provider }
     )
@@ -300,5 +309,12 @@ export default class SeedlessWallet {
     request.tx.addSignature(hexToBuffer(response.data().signature))
 
     return request.tx
+  }
+
+  getReadOnlyWallet(provXP: Avalanche.JsonRpcProvider): WalletVoid {
+    const pubKeyBufferC = this.getPubKeyBufferC()
+    const pubKeyBufferXP = this.getPubKeyBufferXP()
+
+    return WalletVoid.fromPublicKey(pubKeyBufferXP, pubKeyBufferC, provXP)
   }
 }
