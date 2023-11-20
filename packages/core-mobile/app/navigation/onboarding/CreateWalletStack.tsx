@@ -16,7 +16,6 @@ import { MainHeaderOptions } from 'navigation/NavUtils'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import WarningModal from 'components/WarningModal'
 import TermsNConditionsModal from 'components/TermsNConditionsModal'
-import { onLogIn, setWalletType } from 'store/app'
 import { useDispatch } from 'react-redux'
 import {
   RemoveEvents,
@@ -27,6 +26,8 @@ import OwlLoader from 'components/OwlLoader'
 import { setCoreAnalytics } from 'store/settings/securityPrivacy'
 import Logger from 'utils/Logger'
 import { WalletType } from 'services/wallet/types'
+import { useWallet } from 'hooks/useWallet'
+import { onLogIn } from 'store/app'
 import { CreateWalletScreenProps } from '../types'
 
 export type CreateWalletStackParamList = {
@@ -174,14 +175,13 @@ type CreatePinNavigationProp = CreateWalletScreenProps<
 
 const CreatePinScreen = (): JSX.Element => {
   const createWalletContext = useContext(CreateWalletContext)
-  const walletSetupHook = useApplicationContext().walletSetupHook
+  const { onPinCreated } = useWallet()
   const { navigate } = useNavigation<CreatePinNavigationProp>()
   const { capture } = usePostCapture()
 
   const onPinSet = (pin: string): void => {
     capture('OnboardingPasswordSet')
-    walletSetupHook
-      .onPinCreated(createWalletContext.mnemonic, pin, false)
+    onPinCreated(createWalletContext.mnemonic, pin, false)
       .then(value => {
         switch (value) {
           case 'useBiometry':
@@ -218,21 +218,18 @@ const BiometricLoginScreen = (): JSX.Element => {
 
 const TermsNConditionsModalScreen = (): JSX.Element => {
   const createWalletContext = useContext(CreateWalletContext)
-  const walletSetupHook = useApplicationContext().walletSetupHook
+  const { initWallet } = useWallet()
   const { signOut } = useApplicationContext().appHook
-  const dispatch = useDispatch()
   const { navigate } = useNavigation<BiometricLoginNavigationProp>()
+  const dispatch = useDispatch()
 
   return (
     <TermsNConditionsModal
       onNext={() => {
         navigate(AppNavigation.CreateWallet.Loader)
         setTimeout(() => {
-          // signing in with a brand new wallet (mnemonic)
-          dispatch(setWalletType(WalletType.MNEMONIC))
-
-          walletSetupHook
-            .enterWallet(createWalletContext.mnemonic)
+          // creating a brand new mnemonic wallet
+          initWallet(createWalletContext.mnemonic, WalletType.MNEMONIC)
             .then(() => {
               dispatch(onLogIn())
             })

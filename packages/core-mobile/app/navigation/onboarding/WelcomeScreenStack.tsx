@@ -7,10 +7,11 @@ import {
 } from '@react-navigation/native'
 import PinOrBiometryLogin from 'screens/login/PinOrBiometryLogin'
 import { createStackNavigator } from '@react-navigation/stack'
-import { useApplicationContext } from 'contexts/ApplicationContext'
 import AnalyticsConsent from 'screens/onboarding/AnalyticsConsent'
 import { MainHeaderOptions } from 'navigation/NavUtils'
 import Logger from 'utils/Logger'
+import { useWallet } from 'hooks/useWallet'
+import { resetNavToEnterMnemonic } from 'utils/Navigation'
 import { WelcomeScreenProps } from '../types'
 import CreateWalletStack, {
   CreateWalletStackParamList
@@ -68,16 +69,13 @@ const WelcomeScreenStack: () => JSX.Element = () => (
 )
 
 const LoginWithPinOrBiometryScreen = (): JSX.Element => {
-  const context = useApplicationContext()
-  const { enterWallet } = context.walletSetupHook
+  const { initWallet } = useWallet()
 
   return (
     <PinOrBiometryLogin
-      onSignInWithRecoveryPhrase={() =>
-        context.appNavHook.resetNavToEnterMnemonic()
-      }
+      onSignInWithRecoveryPhrase={() => resetNavToEnterMnemonic()}
       onLoginSuccess={mnemonic => {
-        enterWallet(mnemonic).catch(Logger.error)
+        initWallet(mnemonic).catch(Logger.error)
       }}
     />
   )

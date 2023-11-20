@@ -1,13 +1,12 @@
-import { useApplicationContext } from 'contexts/ApplicationContext'
 import React from 'react'
 import { View } from 'react-native'
 import PinOrBiometryLogin from 'screens/login/PinOrBiometryLogin'
 import Logger from 'utils/Logger'
-import { useWalletSetup } from 'hooks/useWalletSetup'
+import { useWallet } from 'hooks/useWallet'
+import { resetNavToEnterMnemonic } from 'utils/Navigation'
 
 export function PinScreen(): JSX.Element {
-  const { appNavHook } = useApplicationContext()
-  const { enterWallet } = useWalletSetup(appNavHook)
+  const { initWallet } = useWallet()
 
   return (
     <View
@@ -17,9 +16,9 @@ export function PinScreen(): JSX.Element {
         position: 'absolute'
       }}>
       <PinOrBiometryLogin
-        onSignInWithRecoveryPhrase={() => appNavHook.resetNavToEnterMnemonic()}
+        onSignInWithRecoveryPhrase={() => resetNavToEnterMnemonic()}
         onLoginSuccess={mnemonic => {
-          enterWallet(mnemonic).catch(reason => Logger.error(reason))
+          initWallet(mnemonic).catch(Logger.error)
         }}
       />
     </View>
