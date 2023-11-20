@@ -4,8 +4,8 @@ import { RecoveryMethodsScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation } from '@react-navigation/native'
 import { copyToClipboard } from 'utils/DeviceTools'
-import AuthenticatorService from 'seedless/services/AuthenticatorService'
 import Logger from 'utils/Logger'
+import SeedlessService from 'seedless/services/SeedlessService'
 import ContentCopy from '../assets/ContentCopy.svg'
 import QrCodeScanner from '../assets/QrCodeScanner.svg'
 import { Card } from '../components/Card'
@@ -38,7 +38,7 @@ export const AuthenticatorSetup = (): JSX.Element => {
 
   useEffect(() => {
     const init = async (): Promise<void> => {
-      const result = await AuthenticatorService.setTotp()
+      const result = await SeedlessService.setTotp()
       if (result.success && result.value) {
         const totpCode = new URL(result.value).searchParams.get('secret')
         totpCode && setCode(totpCode)

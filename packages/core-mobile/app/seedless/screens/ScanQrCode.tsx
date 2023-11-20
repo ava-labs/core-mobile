@@ -5,7 +5,7 @@ import { RecoveryMethodsScreenProps } from 'navigation/types'
 import React, { useEffect } from 'react'
 import { Dimensions } from 'react-native'
 import QRCode from 'react-native-qrcode-svg'
-import AuthenticatorService from 'seedless/services/AuthenticatorService'
+import SeedlessService from 'seedless/services/SeedlessService'
 import Logger from 'utils/Logger'
 
 type ScanQrCodeScreenProps = RecoveryMethodsScreenProps<
@@ -31,7 +31,7 @@ export const ScanQrCode = (): JSX.Element => {
 
   useEffect(() => {
     const getTotpUrl = async (): Promise<void> => {
-      const result = await AuthenticatorService.setTotp()
+      const result = await SeedlessService.setTotp()
       if (result.success && result.value) {
         setTotpUrl(result.value)
       }

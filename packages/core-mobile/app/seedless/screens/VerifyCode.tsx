@@ -13,9 +13,9 @@ import { Space } from 'components/Space'
 import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation } from '@react-navigation/native'
 import { RecoveryMethodsScreenProps } from 'navigation/types'
-import AuthenticatorService from 'seedless/services/AuthenticatorService'
 import { handleAsyncOnChangeText } from 'utils/handleAsyncOnChangeText'
 import Logger from 'utils/Logger'
+import SeedlessService from 'seedless/services/SeedlessService'
 
 type VerifyCodeScreenProps = RecoveryMethodsScreenProps<
   typeof AppNavigation.RecoveryMethods.LearnMore
@@ -43,7 +43,7 @@ export const VerifyCode = (): JSX.Element => {
       setShowError(false)
       return
     }
-    const result = await AuthenticatorService.verifyCode(changedText)
+    const result = await SeedlessService.verifyCode(changedText)
     if (result.success === false) {
       setShowError(true)
       return

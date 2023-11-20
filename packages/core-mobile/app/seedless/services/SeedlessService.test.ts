@@ -1,6 +1,9 @@
 import assert from 'assert'
-import AuthenticatorService from 'seedless/services/AuthenticatorService'
-import { SignResponse, TotpChallenge } from '@cubist-dev/cubesigner-sdk'
+import {
+  CubeSigner,
+  SignResponse,
+  TotpChallenge
+} from '@cubist-dev/cubesigner-sdk'
 import { TotpErrors } from 'seedless/errors'
 import SeedlessService from './SeedlessService'
 
@@ -32,28 +35,31 @@ const cubistResponseHasMfa = {
   }
 } as SignResponse<TotpChallenge>
 
-describe('AuthenticatorService', () => {
+describe('SeedlessService', () => {
+  jest.spyOn(SeedlessService, 'cubeSigner', 'get').mockImplementation(() => {
+    return new CubeSigner()
+  })
   describe('setTotp', () => {
     it('should return the totp challenge url', async () => {
       jest
-        .spyOn(SeedlessService, 'resetTotpStart')
+        .spyOn(CubeSigner.prototype, 'resetTotpStart')
         .mockImplementation(async () => {
           return cubistResponseNoMfa
         })
 
-      const result = await AuthenticatorService.setTotp()
+      const result = await SeedlessService.setTotp()
       assert(result.success)
       expect(result.value).toBe(mockTotpChallenge.totpUrl)
     })
 
     it('should return error if there is active mfa', async () => {
       jest
-        .spyOn(SeedlessService, 'resetTotpStart')
+        .spyOn(CubeSigner.prototype, 'resetTotpStart')
         .mockImplementation(async () => {
           return cubistResponseHasMfa
         })
 
-      const result = await AuthenticatorService.setTotp()
+      const result = await SeedlessService.setTotp()
       assert(!result.success)
       expect(result.error).toBeInstanceOf(TotpErrors)
       expect(result.error.name).toBe('RequiresMfa')
@@ -61,17 +67,19 @@ describe('AuthenticatorService', () => {
 
     it('should throw wrong mfa code error from existing mfa', async () => {
       jest
-        .spyOn(SeedlessService, 'resetTotpStart')
+        .spyOn(CubeSigner.prototype, 'resetTotpStart')
         .mockImplementation(async () => {
           return cubistResponseNoMfa
         })
 
-      jest.spyOn(SeedlessService, 'verifyTotp').mockImplementation(async () => {
-        throw new Error('WrongMfaCode')
-      })
+      jest
+        .spyOn(CubeSigner.prototype, 'verifyTotp')
+        .mockImplementation(async () => {
+          throw new Error('WrongMfaCode')
+        })
 
-      await AuthenticatorService.setTotp()
-      const result = await AuthenticatorService.verifyCode(INVALID_MFA_CODE)
+      await SeedlessService.setTotp()
+      const result = await SeedlessService.verifyCode(INVALID_MFA_CODE)
       expect(mockAnswer).toHaveBeenCalledWith(INVALID_MFA_CODE)
       assert(!result.success)
       expect(result.error).toBeInstanceOf(TotpErrors)
@@ -80,14 +88,14 @@ describe('AuthenticatorService', () => {
 
     it('should require valid code from existing mfa and succeed', async () => {
       jest
-        .spyOn(SeedlessService, 'resetTotpStart')
+        .spyOn(CubeSigner.prototype, 'resetTotpStart')
         .mockImplementation(async () => {
           return cubistResponseNoMfa
         })
-      jest.spyOn(SeedlessService, 'verifyTotp').mockImplementation()
+      jest.spyOn(CubeSigner.prototype, 'verifyTotp').mockImplementation()
 
-      await AuthenticatorService.setTotp()
-      const result = await AuthenticatorService.verifyCode(VALID_MFA_CODE)
+      await SeedlessService.setTotp()
+      const result = await SeedlessService.verifyCode(VALID_MFA_CODE)
       expect(mockAnswer).toHaveBeenCalledWith(VALID_MFA_CODE)
       assert(result.success)
     })

@@ -5,8 +5,8 @@ import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import { Space } from 'components/Space'
 import { copyToClipboard } from 'utils/DeviceTools'
-import AuthenticatorService from 'seedless/services/AuthenticatorService'
 import Logger from 'utils/Logger'
+import SeedlessService from 'seedless/services/SeedlessService'
 import ContentCopy from '../assets/ContentCopy.svg'
 import { Card } from '../components/Card'
 import { SnackBarMessage } from '../components/SnackBarMessage'
@@ -38,7 +38,7 @@ export const LearnMore = (): JSX.Element => {
         setCode(totpCode)
         return
       }
-      const result = await AuthenticatorService.setTotp()
+      const result = await SeedlessService.setTotp()
       if (result.success && result.value) {
         const newCode = new URL(result.value).searchParams.get('secret')
         newCode && setCode(newCode)
