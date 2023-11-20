@@ -1,15 +1,15 @@
+import Config from 'react-native-config'
 import {
   CubeSigner,
+  IdentityProof,
   MfaReceipt,
+  SignerSessionManager,
   TotpChallenge,
   UserInfo,
-  SignerSessionManager,
-  envs,
-  IdentityProof
-} from '@cubist-dev/cubesigner-sdk'
-import Config from 'react-native-config'
-import { Result } from 'types/result'
+  envs
+} from '@cubist-labs/cubesigner-sdk'
 import { TotpErrors } from 'seedless/errors'
+import { Result } from 'types/result'
 import { SeedlessSessionStorage } from './SeedlessSessionStorage'
 
 if (!Config.SEEDLESS_ORG_ID) {
