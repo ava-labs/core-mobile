@@ -1,4 +1,4 @@
-import { AddDelegatorProps } from 'services/wallet/types'
+import { AddDelegatorProps, WalletType } from 'services/wallet/types'
 import WalletService from 'services/wallet/WalletService'
 import { add, getUnixTime, sub } from 'date-fns'
 import { Utxo } from '@avalabs/avalanchejs-v2'
@@ -38,7 +38,7 @@ describe('WalletService', () => {
       jest.mock('services/wallet/WalletService')
 
       jest // @ts-ignore
-        .spyOn(WalletService, 'getWallet')
+        .spyOn(WalletService, 'getReadOnlyAvaWallet')
         // @ts-ignore
         .mockImplementation(() => mockWallet())
 
@@ -50,6 +50,7 @@ describe('WalletService', () => {
 
     beforeEach(() => {
       mockValidateFee.mockReset()
+      WalletService.init('test', WalletType.MNEMONIC)
     })
 
     it('should throw if Node ID is invalid', async () => {

@@ -24,7 +24,6 @@ const OnboardScreenStack: FC = () => {
   const { pendingDeepLink } = useDeeplink()
   const walletState = useSelector(selectWalletState)
   const isLocked = useSelector(selectIsLocked)
-  const { appNavHook } = useApplicationContext()
   const navigation = useNavigation<NavigationProp>()
   const welcomeScreenStackTransitionAnimationEnabled = useRef(true)
 
@@ -39,7 +38,7 @@ const OnboardScreenStack: FC = () => {
         duration: 'short'
       })
     }
-  }, [appNavHook?.navigation, isLocked, pendingDeepLink, walletState])
+  }, [isLocked, pendingDeepLink, walletState])
 
   useEffect(() => {
     if (isLocked && walletState !== WalletState.NONEXISTENT) {

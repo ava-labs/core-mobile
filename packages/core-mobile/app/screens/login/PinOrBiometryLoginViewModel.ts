@@ -55,7 +55,6 @@ function getTimoutForAttempt(attempt: number): 0 | 60 | 300 | 900 | 3600 {
 }
 
 export function usePinOrBiometryLogin(): {
-  title: string
   pinDots: DotView[]
   onEnterPin: (pinKey: PinKeys) => void
   mnemonic: string | undefined
@@ -64,7 +63,6 @@ export function usePinOrBiometryLogin(): {
   disableKeypad: boolean
   timeRemaining: string
 } {
-  const [title] = useState('Wallet')
   const [enteredPin, setEnteredPin] = useState('')
   const [pinDots, setPinDots] = useState<DotView[]>([])
   const [pinEntered, setPinEntered] = useState(false)
@@ -306,7 +304,6 @@ export function usePinOrBiometryLogin(): {
     }
 
   return {
-    title,
     pinDots,
     onEnterPin,
     mnemonic,

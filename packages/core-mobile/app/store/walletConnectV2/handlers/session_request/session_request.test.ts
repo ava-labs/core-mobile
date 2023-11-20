@@ -1,5 +1,5 @@
 import { ethErrors } from 'eth-rpc-errors'
-import { RpcMethod } from 'store/walletConnectV2'
+import { RpcMethod } from 'store/walletConnectV2/types'
 import mockNetworks from 'tests/fixtures/networks.json'
 import AppNavigation from 'navigation/AppNavigation'
 import * as Navigation from 'utils/Navigation'
@@ -226,7 +226,6 @@ describe('session_request handler', () => {
   })
 
   describe('approve', () => {
-    // eslint-disable-next-line jest/expect-expect
     it('should return error when approve data is invalid', async () => {
       const invalidDataScenarios = [
         null,

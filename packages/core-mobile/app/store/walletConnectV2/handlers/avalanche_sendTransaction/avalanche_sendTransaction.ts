@@ -112,19 +112,19 @@ class AvalancheSendTransactionHandler
     } else {
       const tx = utils.unpackWithManager(vm, txBytes) as avaxSerial.AvaxTx
 
-      const externalAddresses = await walletService.getAddressesByIndices(
-        externalIndices ?? [],
+      const externalAddresses = await walletService.getAddressesByIndices({
+        indices: externalIndices ?? [],
         chainAlias,
-        false,
-        isDevMode
-      )
+        isChange: false,
+        isTestnet: isDevMode
+      })
 
-      const internalAddresses = await walletService.getAddressesByIndices(
-        internalIndices ?? [],
+      const internalAddresses = await walletService.getAddressesByIndices({
+        indices: internalIndices ?? [],
         chainAlias,
-        true,
-        isDevMode
-      )
+        isChange: true,
+        isTestnet: isDevMode
+      })
 
       const fromAddresses = [
         ...new Set([currentAddress, ...externalAddresses, ...internalAddresses])

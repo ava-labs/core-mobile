@@ -200,12 +200,12 @@ describe('eth_sign handler', () => {
         data
       })
 
-      expect(mockSignMessage).toHaveBeenCalledWith(
-        testRequest.method,
-        data.data,
-        testAccount.index,
-        testNetwork
-      )
+      expect(mockSignMessage).toHaveBeenCalledWith({
+        rpcMethod: testRequest.method,
+        data: data.data,
+        accountIndex: testAccount.index,
+        network: testNetwork
+      })
 
       expect(result).toEqual({ success: true, value: mockEncodedMessage })
     })
@@ -231,12 +231,12 @@ describe('eth_sign handler', () => {
         data
       })
 
-      expect(mockSignMessage).toHaveBeenCalledWith(
-        testRequest.method,
-        data.data,
-        testAccount.index,
-        testNetwork
-      )
+      expect(mockSignMessage).toHaveBeenCalledWith({
+        rpcMethod: testRequest.method,
+        data: data.data,
+        accountIndex: testAccount.index,
+        network: testNetwork
+      })
 
       expect(mockCaptureException).toHaveBeenCalledWith(testError, {
         tags: { dapps: 'signMessageV2' }

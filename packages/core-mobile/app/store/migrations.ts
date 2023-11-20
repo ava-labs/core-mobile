@@ -1,5 +1,7 @@
 import { ChainId } from '@avalabs/chains-sdk'
 import StorageTools from 'repository/StorageTools'
+import BiometricsSDK from 'utils/BiometricsSDK'
+import { WalletType } from 'services/wallet/types'
 import { initialState as watchlistInitialState } from './watchlist'
 import {
   DefaultFeatureFlagConfig,
@@ -110,5 +112,18 @@ export const migrations = {
   8: (state: any) => {
     delete state.walletConnect
     return state
+  },
+  9: async (state: any) => {
+    // for people upgrading from < 9, if they have set biometrics or pin,
+    // it means they have created a mnemonic wallet
+    const isLoggedIn = await BiometricsSDK.getAccessType()
+
+    return {
+      ...state,
+      app: {
+        ...state.app,
+        walletType: isLoggedIn ? WalletType.MNEMONIC : WalletType.UNSET
+      }
+    }
   }
 }
