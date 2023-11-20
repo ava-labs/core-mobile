@@ -35,7 +35,7 @@
     "@avalabs/utils-sdk": "2.8.0-alpha.153",
     "@avalabs/wallets-sdk": "2.8.0-alpha.153",
     "@coinbase/cbpay-js": "1.6.0",
-    "@cubist-dev/cubesigner-sdk": "https://github.com/cubist-labs/CubeSigner-TypeScript-SDK.git#f5e330fb6e258ff1d418dfe851dc0429dce8ca6d",
+    "@cubist-labs/cubesigner-sdk": "https://github.com/cubist-labs/CubeSigner-TypeScript-SDK.git#f5e330fb6e258ff1d418dfe851dc0429dce8ca6d",
     "@datadog/mobile-react-native": "1.9.0",
     "@datadog/mobile-react-navigation": "1.9.0",
     "@ethereumjs/common": "2.6.5",

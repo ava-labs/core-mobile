@@ -49,7 +49,7 @@ class SeedlessService {
   ): Promise<void> {
     const signResponse = await new CubeSigner().oidcLogin(
       oidcToken,
-      Config.SEEDLESS_ORG_ID || '',
+      SEEDLESS_ORG_ID,
       ['sign:*', 'manage:*'],
       {
         // How long singing with a particular token works from the token creation
