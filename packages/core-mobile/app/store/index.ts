@@ -30,7 +30,7 @@ import { WatchlistBlacklistTransform } from './transforms/WatchlistBlacklistTran
 import { AppBlacklistTransform } from './transforms/AppBlacklistTransform'
 import { combinedReducer as browser } from './browser'
 
-const VERSION = 8
+const VERSION = 9
 
 // list of reducers that don't need to be persisted
 // for nested/partial blacklist, please use transform

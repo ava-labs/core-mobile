@@ -93,7 +93,7 @@ const SignupScreen: FC = () => {
               type="primary"
               size="xlarge"
               onPress={handleSigninWithMnemonic}>
-              Sign in with Recovery Phrase
+              Forgot PIN?
             </Button>
             <Space y={16} />
             <Button

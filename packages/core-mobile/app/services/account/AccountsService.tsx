@@ -3,12 +3,15 @@ import { Account, AccountCollection } from 'store/account'
 import { Network, NetworkVMType } from '@avalabs/chains-sdk'
 
 class AccountsService {
-  async reloadAccounts(isTestnet: boolean, accounts: AccountCollection) {
+  async reloadAccounts(
+    isTestnet: boolean,
+    accounts: AccountCollection
+  ): Promise<AccountCollection> {
     const reloadedAccounts: AccountCollection = {}
 
     for (const index of Object.keys(accounts)) {
       const key = parseInt(index)
-      const addresses = walletService.getAddress(key, isTestnet)
+      const addresses = await walletService.getAddresses(key, isTestnet)
 
       const account = accounts[key]
       if (account) {
@@ -26,9 +29,12 @@ class AccountsService {
     return reloadedAccounts
   }
 
-  async createNextAccount(isTestnet: boolean, accounts: AccountCollection) {
+  async createNextAccount(
+    isTestnet: boolean,
+    accounts: AccountCollection
+  ): Promise<Account> {
     const newIndex = Object.keys(accounts).length
-    const addresses = walletService.getAddress(newIndex, isTestnet)
+    const addresses = await walletService.getAddresses(newIndex, isTestnet)
 
     return {
       index: newIndex,
@@ -41,7 +47,7 @@ class AccountsService {
     } as Account
   }
 
-  getAddressForNetwork(account: Account, network: Network) {
+  getAddressForNetwork(account: Account, network: Network): string {
     if (network.vmName === NetworkVMType.BITCOIN) {
       return account.addressBtc
     }

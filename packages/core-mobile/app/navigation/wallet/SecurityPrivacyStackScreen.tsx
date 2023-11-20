@@ -5,7 +5,6 @@ import CreatePIN from 'screens/onboarding/CreatePIN'
 import SecurityPrivacy from 'screens/drawer/security/SecurityPrivacy'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import { MainHeaderOptions } from 'navigation/NavUtils'
-import { useApplicationContext } from 'contexts/ApplicationContext'
 import { createStackNavigator } from '@react-navigation/stack'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import RevealMnemonic from 'navigation/wallet/RevealMnemonic'
@@ -14,6 +13,7 @@ import ConnectedDapps from 'screens/rpc/ConnectedDapps/ConnectedDapps'
 import CaptureDappQR from 'screens/shared/CaptureDappQR'
 import { usePostCapture } from 'hooks/usePosthogCapture'
 import Logger from 'utils/Logger'
+import { useWallet } from 'hooks/useWallet'
 
 export type SecurityStackParamList = {
   [AppNavigation.SecurityPrivacy.SecurityPrivacy]: undefined
@@ -86,7 +86,7 @@ type SecurityPrivacyNavigationProp = SecurityPrivacyScreenProps<
   typeof AppNavigation.SecurityPrivacy.SecurityPrivacy
 >['navigation']
 
-const SecurityPrivacyScreen = () => {
+const SecurityPrivacyScreen = (): JSX.Element => {
   const { capture } = usePostCapture()
   const nav = useNavigation<SecurityPrivacyNavigationProp>()
   return (
@@ -189,12 +189,12 @@ type CreatePinScreenProps = SecurityPrivacyScreenProps<
 >
 
 const CreatePinScreen = memo(() => {
-  const { onPinCreated } = useApplicationContext().walletSetupHook
+  const { onPinCreated } = useWallet()
   const { mnemonic } = useRoute<CreatePinScreenProps['route']>().params
   const nav = useNavigation<CreatePinScreenProps['navigation']>()
   const { capture } = usePostCapture()
 
-  const handleOnResetPinFailed = () => {
+  const handleOnResetPinFailed = (): void => {
     capture('ChangePasswordFailed')
   }
 

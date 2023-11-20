@@ -116,12 +116,12 @@ class EthSignHandler implements RpcRequestHandler<EthSignRpcRequest> {
     const { data, network, account } = result.data
 
     try {
-      const encodedMessage = await WalletService.signMessage(
-        request.method,
+      const encodedMessage = await WalletService.signMessage({
+        rpcMethod: request.method,
         data,
-        account.index,
+        accountIndex: account.index,
         network
-      )
+      })
 
       return { success: true, value: encodedMessage }
     } catch (e) {
