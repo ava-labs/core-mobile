@@ -57,9 +57,7 @@ export const onRehydrationComplete = createAction(
 )
 
 // when user has successfully entered pin or biometrics to unlock the app
-export const onAppUnlocked = createAction<{ mnemonic: string }>(
-  `${reducerName}/onAppUnlocked`
-)
+export const onAppUnlocked = createAction(`${reducerName}/onAppUnlocked`)
 
 // when app is locked and user is required to unlock to use app again
 export const onAppLocked = createAction(`${reducerName}/onAppLocked`)

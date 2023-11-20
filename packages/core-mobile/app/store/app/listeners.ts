@@ -18,7 +18,6 @@ import Logger, { LogLevel } from 'utils/Logger'
 import { capture } from 'store/posthog'
 import DeviceInfo from 'react-native-device-info'
 import { WalletType } from 'services/wallet/types'
-import WalletService from 'services/wallet/WalletService'
 import SecureStorageService from 'security/SecureStorageService'
 import {
   onAppLocked,
@@ -28,8 +27,7 @@ import {
   onLogOut,
   selectAppState,
   selectIsLocked,
-  setWalletType,
-  selectWalletType
+  setWalletType
 } from './slice'
 
 const TIME_TO_LOCK_IN_SECONDS = 5
@@ -160,26 +158,10 @@ const clearData = async (
   )
 }
 
-const initWalletService = async (
-  { payload: { mnemonic } }: ReturnType<typeof onAppUnlocked>,
-  listenerApi: AppListenerEffectAPI
-): Promise<void> => {
-  const state = listenerApi.getState()
-  const walletType = selectWalletType(state)
-  await WalletService.init(mnemonic, walletType).catch(e =>
-    Logger.error('failed to init wallet', e)
-  )
-}
-
 export const addAppListeners = (startListening: AppStartListening): void => {
   startListening({
     actionCreator: onRehydrationComplete,
     effect: init
-  })
-
-  startListening({
-    actionCreator: onAppUnlocked,
-    effect: initWalletService
   })
 
   startListening({
