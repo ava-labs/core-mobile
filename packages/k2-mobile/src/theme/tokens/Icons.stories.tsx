@@ -58,3 +58,10 @@ export const Navigation = (): JSX.Element =>
     resourceURL:
       'https://www.figma.com/file/hDSl4OUgXorDAtqPZtCUhB/K2-Foundation?type=design&node-id=378-5642&mode=design&t=HOIixbVhKpxGrRwG-4'
   })
+
+export const Communication = (): JSX.Element =>
+  Template({
+    icons: [Icons.Communication.IconKey, Icons.Communication.IconQRCode],
+    resourceURL:
+      'https://www.figma.com/file/hDSl4OUgXorDAtqPZtCUhB/K2-Foundation?type=design&node-id=376-14634&mode=design&t=sWvS6Pnw2oR45PI0-4'
+  })

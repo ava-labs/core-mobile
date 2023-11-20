@@ -1,5 +1,6 @@
 import Config from 'react-native-config'
 import {
+  AddFidoChallenge,
   CubeSigner,
   IdentityProof,
   MfaReceipt,
@@ -137,6 +138,13 @@ class SeedlessService {
     }
     this.totpChallenge = challenge
     return { success: true, value: challenge.totpUrl }
+  }
+
+  async addFidoStart(name: string): Promise<AddFidoChallenge> {
+    const cubeSigner = await this.getCubeSigner()
+    const signResponse = await cubeSigner.addFidoStart(name)
+
+    return signResponse.data()
   }
 
   /**

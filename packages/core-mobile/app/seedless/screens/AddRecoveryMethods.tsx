@@ -1,9 +1,10 @@
-import { Text, View } from '@avalabs/k2-mobile'
+import { Icons, Text, View, useTheme } from '@avalabs/k2-mobile'
 import { useNavigation } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
 import { RecoveryMethodsScreenProps } from 'navigation/types'
 import React from 'react'
-import QrCode from '../assets/QrCode.svg'
+import SeedlessService from 'seedless/services/SeedlessService'
+import PasskeyService from 'seedless/services/PasskeyService'
 import { Card } from '../components/Card'
 
 type AddRecoveryMethodsScreenProps = RecoveryMethodsScreenProps<
@@ -13,9 +14,26 @@ type AddRecoveryMethodsScreenProps = RecoveryMethodsScreenProps<
 export const AddRecoveryMethods = (): JSX.Element => {
   const { navigate } =
     useNavigation<AddRecoveryMethodsScreenProps['navigation']>()
+  const {
+    theme: { colors }
+  } = useTheme()
 
   const goToAuthenticatorSetup = (): void => {
     navigate(AppNavigation.RecoveryMethods.AuthenticatorSetup)
+  }
+
+  const goToFidoSetup = async (): Promise<void> => {
+    const mfa = await SeedlessService.userMfa()
+    if (mfa.length === 0) {
+      const challenge = await SeedlessService.addFidoStart('Test')
+
+      const result = await PasskeyService.register(challenge.options)
+
+      // eslint-disable-next-line no-console
+      console.log(result)
+
+      // await challenge.answer()
+    }
   }
 
   return (
@@ -24,13 +42,31 @@ export const AddRecoveryMethods = (): JSX.Element => {
       <Text variant="body1" sx={{ color: '$neutral50', marginVertical: 8 }}>
         Add <Text variant="heading6">one</Text> recovery method to continue.
       </Text>
+      {PasskeyService.isSupported && (
+        <Card
+          onPress={goToFidoSetup}
+          icon={<Icons.Communication.IconKey color={colors.$neutral50} />}
+          title="Passkey"
+          body="Add a passkey as a recovery method."
+          showCaret
+        />
+      )}
       <Card
         onPress={goToAuthenticatorSetup}
-        icon={<QrCode />}
+        icon={<Icons.Communication.IconQRCode color={colors.$neutral50} />}
         title="Authenticator"
         body="Add an authenticator app as a recovery method."
         showCaret
       />
+      {PasskeyService.isSupported && (
+        <Card
+          onPress={goToFidoSetup}
+          icon={<Icons.Device.IconUSB color={colors.$neutral50} />}
+          title="YubiKey"
+          body="Add a YubiKey as a recovery method."
+          showCaret
+        />
+      )}
     </View>
   )
 }

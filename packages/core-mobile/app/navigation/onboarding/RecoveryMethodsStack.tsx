@@ -46,26 +46,32 @@ const RecoveryMethodsStack = (): JSX.Element => {
           name={AppNavigation.RecoveryMethods.AddRecoveryMethods}
           component={AddRecoveryMethods}
         />
-        <RecoveryMethodsS.Screen
-          options={MainHeaderOptions()}
-          name={AppNavigation.RecoveryMethods.AuthenticatorSetup}
-          component={AuthenticatorSetup}
-        />
-        <RecoveryMethodsS.Screen
-          options={MainHeaderOptions()}
-          name={AppNavigation.RecoveryMethods.ScanQrCode}
-          component={ScanQrCode}
-        />
-        <RecoveryMethodsS.Screen
-          options={MainHeaderOptions()}
-          name={AppNavigation.RecoveryMethods.LearnMore}
-          component={LearnMore}
-        />
-        <RecoveryMethodsS.Screen
-          options={{ presentation: 'transparentModal' }}
-          name={AppNavigation.RecoveryMethods.VerifyCode}
-          component={VerifyCode}
-        />
+        <RecoveryMethodsS.Group>
+          {/* Screens for authenticator setup */}
+          <RecoveryMethodsS.Screen
+            options={MainHeaderOptions()}
+            name={AppNavigation.RecoveryMethods.AuthenticatorSetup}
+            component={AuthenticatorSetup}
+          />
+          <RecoveryMethodsS.Screen
+            options={MainHeaderOptions()}
+            name={AppNavigation.RecoveryMethods.ScanQrCode}
+            component={ScanQrCode}
+          />
+          <RecoveryMethodsS.Screen
+            options={MainHeaderOptions()}
+            name={AppNavigation.RecoveryMethods.LearnMore}
+            component={LearnMore}
+          />
+          <RecoveryMethodsS.Screen
+            options={{ presentation: 'transparentModal' }}
+            name={AppNavigation.RecoveryMethods.VerifyCode}
+            component={VerifyCode}
+          />
+        </RecoveryMethodsS.Group>
+        <RecoveryMethodsS.Group>
+          {/* Screens for fido(yubikey) setup */}
+        </RecoveryMethodsS.Group>
       </RecoveryMethodsS.Navigator>
     </RecoveryMethodsContext.Provider>
   )
