@@ -3,7 +3,6 @@ import {
   BitcoinProviderAbstract,
   BitcoinWallet,
   DerivationPath,
-  WalletVoid,
   getAddressDerivationPath,
   getAddressFromXPub,
   getAddressPublicKeyFromXPub,
@@ -247,7 +246,7 @@ class WalletService {
       | BaseWallet
       | BitcoinWallet,
     isTestnet: boolean
-  ): Avalanche.StaticSigner | WalletVoid {
+  ): Avalanche.StaticSigner | Avalanche.WalletVoid {
     if (
       !(wallet instanceof Avalanche.StaticSigner) &&
       !(wallet instanceof SeedlessWallet)

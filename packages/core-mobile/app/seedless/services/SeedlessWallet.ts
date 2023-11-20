@@ -13,8 +13,7 @@ import { networks } from 'bitcoinjs-lib'
 import {
   Avalanche,
   getBtcAddressFromPubKey,
-  getEvmAddressFromPubKey,
-  WalletVoid
+  getEvmAddressFromPubKey
 } from '@avalabs/wallets-sdk'
 import { sha256 } from '@noble/hashes/sha256'
 import { EVM, hexToBuffer } from '@avalabs/avalanchejs-v2'
@@ -109,13 +108,16 @@ export default class SeedlessWallet {
     const pubkeys: PubKeyType[] = []
 
     derivedKeys.forEach(key => {
-      if (!key || !key[cs.Secp256k1.Ava] || !key[cs.Secp256k1.Evm]) {
+      const AvaKey = key[cs.Secp256k1.Ava]
+      const EvmKey = key[cs.Secp256k1.Evm]
+
+      if (!AvaKey || !EvmKey) {
         return
       }
 
       pubkeys.push({
-        evm: strip0x(key[cs.Secp256k1.Evm].public_key),
-        xp: strip0x(key[cs.Secp256k1.Ava].public_key)
+        evm: strip0x(EvmKey.public_key),
+        xp: strip0x(AvaKey.public_key)
       })
     })
 
@@ -311,10 +313,14 @@ export default class SeedlessWallet {
     return request.tx
   }
 
-  getReadOnlyWallet(provXP: Avalanche.JsonRpcProvider): WalletVoid {
+  getReadOnlyWallet(provXP: Avalanche.JsonRpcProvider): Avalanche.WalletVoid {
     const pubKeyBufferC = this.getPubKeyBufferC()
     const pubKeyBufferXP = this.getPubKeyBufferXP()
 
-    return WalletVoid.fromPublicKey(pubKeyBufferXP, pubKeyBufferC, provXP)
+    return Avalanche.WalletVoid.fromPublicKey(
+      pubKeyBufferXP,
+      pubKeyBufferC,
+      provXP
+    )
   }
 }
