@@ -4,7 +4,8 @@ import {
   TotpChallenge,
   UserInfo,
   SignerSessionManager,
-  envs
+  envs,
+  IdentityProof
 } from '@cubist-dev/cubesigner-sdk'
 import Config from 'react-native-config'
 import { Result } from 'types/result'
@@ -137,6 +138,19 @@ class SeedlessService {
         })
       }
     }
+  }
+
+  /**
+   * Exchange an OIDC token for a proof of authentication.
+   * @param oidcToken — The OIDC token
+   * @param orgId — The id of the organization that the user is in
+   * @return — Proof of authentication
+   */
+  async oidcProveIdentity(oidcToken: string): Promise<IdentityProof> {
+    return (await this.getCubeSigner()).oidcProveIdentity(
+      oidcToken,
+      SEEDLESS_ORG_ID
+    )
   }
 }
 
