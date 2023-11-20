@@ -27,19 +27,20 @@ const DECRYPT_INPUT_ENCODING = ENCRYPT_OUTPUT_ENCODING
 const SECRET_KEY_ENCODING = 'hex'
 
 /**
- * AesGcmEncryptTransform is used to encrypt and decrypt redux store.
- * It uses AES-GCM algorithm to do so.
- * Since users of previous versions of our app might already have redux store encrypted with AES-CBC algorithm
- * we this function makes sure that that kind of store is decrypted with redux-persist-transform-encrypt library.
+ * EncryptThenMacTransform is used to encrypt and decrypt redux store.
+ * It uses AES-CBC algorithm to encrypt the payload and attaches/checks MAC of that ciphertext to protect from store manipulation.
+ * To migrate existing users to this kind of encryption this function makes sure that previously encrypted store
+ * is decrypted with redux-persist-transform-encrypt (previous) library.
  */
 export const EncryptThenMacTransform: (
-  secretKey: string
+  secretKey: string,
+  macKey: string
 ) => Transform<
   RawRootState | undefined,
   VersionedStore | undefined,
   RawRootState,
   RawRootState
-> = (secretKey: string) =>
+> = (secretKey: string, macKey: string) =>
   createTransform<
     RawRootState | undefined,
     VersionedStore | undefined,
@@ -65,7 +66,7 @@ export const EncryptThenMacTransform: (
         cipher.final()
       ]).toString(ENCRYPT_OUTPUT_ENCODING)
 
-      const mac = getMac(secretKey, ciphertext)
+      const mac = getMac(macKey, ciphertext)
 
       return {
         iv: iv.valueOf(),
@@ -77,11 +78,11 @@ export const EncryptThenMacTransform: (
 
     // transform state after it gets rehydrated
     (outboundState: VersionedStore | undefined, key, rawState) => {
-      //We need to check if this is the state encrypted with  AES-CBC algorithm
-      const maybeAesCbcEncrypted = outboundState as unknown
-      if (typeof maybeAesCbcEncrypted === 'string') {
+      //We need to check if this is the state encrypted with old transform function
+      const maybeOldEncryption = outboundState as unknown
+      if (typeof maybeOldEncryption === 'string') {
         Logger.info(
-          'Rehydrated state is encrypted with old algorithm, decrypt it with redux-persist-transform-encrypt'
+          'Rehydrated state is encrypted with old transform funciton, decrypt it with redux-persist-transform-encrypt'
         )
         const encryptionTransform = encryptTransform<
           RawRootState,
@@ -90,7 +91,7 @@ export const EncryptThenMacTransform: (
         >({
           secretKey
         })
-        return encryptionTransform.out(maybeAesCbcEncrypted, key, rawState)
+        return encryptionTransform.out(maybeOldEncryption, key, rawState)
       }
 
       if (!outboundState) {
@@ -98,12 +99,12 @@ export const EncryptThenMacTransform: (
       }
       //Make sure we have the right object here
       if (!('ciphertext' in outboundState)) {
-        Logger.error('Unknown state, expecting AesGcmStoreType')
+        Logger.error('Unknown state, expecting VersionedStore')
         return undefined
       }
 
       const iv = Buffer.from(outboundState.iv)
-      const computedMac = getMac(secretKey, outboundState.ciphertext)
+      const computedMac = getMac(macKey, outboundState.ciphertext)
       if (computedMac !== outboundState.mac) {
         Logger.error('MAC verification failed. Data may be tampered with.')
         return undefined
@@ -129,11 +130,8 @@ export const EncryptThenMacTransform: (
     {}
   )
 
-function getMac(secretKey: string, ciphertext: string): string {
-  const hmacSecret = Crypto.createHash(HASH_ALGORITHM)
-    .update(secretKey, SECRET_KEY_ENCODING)
-    .digest()
-  const hmac = Crypto.createHmac(HASH_ALGORITHM, hmacSecret)
+function getMac(macSecret: string, ciphertext: string): string {
+  const hmac = Crypto.createHmac(HASH_ALGORITHM, macSecret)
   hmac.update(ciphertext)
   return hmac.digest(ENCRYPT_OUTPUT_ENCODING)
 }

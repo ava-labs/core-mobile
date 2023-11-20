@@ -84,7 +84,7 @@ const rootReducer = (state: any, action: AnyAction) => {
 }
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-export function configureEncryptedStore(secretKey: string) {
+export function configureEncryptedStore(secretKey: string, macSecret: string) {
   const persistConfig = {
     key: 'root',
     storage: AsyncStorage,
@@ -94,7 +94,7 @@ export function configureEncryptedStore(secretKey: string) {
       AppBlacklistTransform,
       BridgeBlacklistTransform,
       WatchlistBlacklistTransform,
-      EncryptThenMacTransform(secretKey) // last!
+      EncryptThenMacTransform(secretKey, macSecret) // last!
     ],
     migrate: createMigrate(migrations, { debug: __DEV__ }),
     version: VERSION
