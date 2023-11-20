@@ -7,7 +7,7 @@ import {
 } from 'store/settings/advanced'
 import { AppListenerEffectAPI } from 'store'
 import { AnyAction, isAnyOf } from '@reduxjs/toolkit'
-import { onLogIn } from 'store/app'
+import { onLogIn } from 'store/app/slice'
 import {
   addAccount,
   selectAccounts,

@@ -22,7 +22,7 @@ import {
   TypedDataUtils,
   typedSignatureHash
 } from '@metamask/eth-sig-util'
-import { RpcMethod } from 'store/walletConnectV2'
+import { RpcMethod } from 'store/walletConnectV2/types'
 import { assertNotUndefined } from 'utils/assertions'
 import { SeedlessSessionStorage } from './SeedlessSessionStorage'
 

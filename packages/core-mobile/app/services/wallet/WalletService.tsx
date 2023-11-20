@@ -239,14 +239,12 @@ class WalletService {
     Logger.info('burned amount is valid')
   }
 
-  private getReadOnlyAvaWallet(
-    wallet:
-      | Avalanche.StaticSigner
-      | SeedlessWallet
-      | BaseWallet
-      | BitcoinWallet,
-    isTestnet: boolean
-  ): Avalanche.StaticSigner | Avalanche.WalletVoid {
+  private async getReadOnlyAvaWallet(
+    accountIndex: number,
+    network: Network
+  ): Promise<Avalanche.StaticSigner | Avalanche.WalletVoid> {
+    const wallet = await this.getWallet(accountIndex, network)
+
     if (
       !(wallet instanceof Avalanche.StaticSigner) &&
       !(wallet instanceof SeedlessWallet)
@@ -255,7 +253,9 @@ class WalletService {
     }
 
     if (wallet instanceof SeedlessWallet) {
-      const provXP = networkService.getAvalancheProviderXP(isTestnet)
+      const provXP = networkService.getAvalancheProviderXP(
+        Boolean(network.isTestnet)
+      )
       return wallet.getReadOnlyWallet(provXP)
     }
 
@@ -420,11 +420,9 @@ class WalletService {
     destinationAddress,
     shouldValidateBurnedAmount = true
   }: CreateExportCTxParams): Promise<UnsignedTx> {
-    const wallet = await this.getWallet(accountIndex, avaxXPNetwork)
-
-    const readOnlyWallet = this.getReadOnlyAvaWallet(
-      wallet,
-      Boolean(avaxXPNetwork.isTestnet)
+    const readOnlyWallet = await this.getReadOnlyAvaWallet(
+      accountIndex,
+      avaxXPNetwork
     )
 
     const nonce = await readOnlyWallet.getNonce()
@@ -454,11 +452,9 @@ class WalletService {
     destinationAddress,
     shouldValidateBurnedAmount = true
   }: CreateImportPTxParams): Promise<UnsignedTx> {
-    const wallet = await this.getWallet(accountIndex, avaxXPNetwork)
-
-    const readOnlyWallet = this.getReadOnlyAvaWallet(
-      wallet,
-      Boolean(avaxXPNetwork.isTestnet)
+    const readOnlyWallet = await this.getReadOnlyAvaWallet(
+      accountIndex,
+      avaxXPNetwork
     )
 
     const utxoSet = await readOnlyWallet.getAtomicUTXOs('P', sourceChain)
@@ -493,11 +489,9 @@ class WalletService {
     destinationAddress,
     shouldValidateBurnedAmount = true
   }: CreateExportPTxParams): Promise<UnsignedTx> {
-    const wallet = await this.getWallet(accountIndex, avaxXPNetwork)
-
-    const readOnlyWallet = this.getReadOnlyAvaWallet(
-      wallet,
-      Boolean(avaxXPNetwork.isTestnet)
+    const readOnlyWallet = await this.getReadOnlyAvaWallet(
+      accountIndex,
+      avaxXPNetwork
     )
 
     const utxoSet = await readOnlyWallet.getUTXOs('P')
@@ -533,11 +527,9 @@ class WalletService {
     destinationAddress,
     shouldValidateBurnedAmount = true
   }: CreateImportCTxParams): Promise<UnsignedTx> {
-    const wallet = await this.getWallet(accountIndex, avaxXPNetwork)
-
-    const readOnlyWallet = this.getReadOnlyAvaWallet(
-      wallet,
-      Boolean(avaxXPNetwork.isTestnet)
+    const readOnlyWallet = await this.getReadOnlyAvaWallet(
+      accountIndex,
+      avaxXPNetwork
     )
 
     const utxoSet = await readOnlyWallet.getAtomicUTXOs('C', sourceChain)
@@ -602,11 +594,9 @@ class WalletService {
       throw Error('Reward address must be from P chain')
     }
 
-    const wallet = await this.getWallet(accountIndex, avaxXPNetwork)
-
-    const readOnlyWallet = this.getReadOnlyAvaWallet(
-      wallet,
-      Boolean(avaxXPNetwork.isTestnet)
+    const readOnlyWallet = await this.getReadOnlyAvaWallet(
+      accountIndex,
+      avaxXPNetwork
     )
 
     const utxoSet = await readOnlyWallet.getUTXOs('P')
@@ -767,11 +757,9 @@ class WalletService {
     pChainUtxo: utils.UtxoSet
     cChainUtxo: utils.UtxoSet
   }> {
-    const wallet = await this.getWallet(accountIndex, avaxXPNetwork)
-
-    const readOnlyWallet = this.getReadOnlyAvaWallet(
-      wallet,
-      Boolean(avaxXPNetwork.isTestnet)
+    const readOnlyWallet = await this.getReadOnlyAvaWallet(
+      accountIndex,
+      avaxXPNetwork
     )
 
     const pChainUtxo = await readOnlyWallet.getAtomicUTXOs('P', 'C')
