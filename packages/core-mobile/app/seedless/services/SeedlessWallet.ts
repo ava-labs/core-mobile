@@ -1,4 +1,4 @@
-import { NetworkVMType } from '@avalabs/chains-sdk'
+import { Network, NetworkVMType } from '@avalabs/chains-sdk'
 import * as cs from '@cubist-dev/cubesigner-sdk'
 import { PubKeyType } from 'services/wallet/types'
 import { strip0x } from '@avalabs/utils-sdk'
@@ -9,9 +9,13 @@ import {
   hashMessage,
   JsonRpcProvider
 } from 'ethers'
-import { networks } from 'bitcoinjs-lib'
+import { Transaction, networks } from 'bitcoinjs-lib'
 import {
   Avalanche,
+  BitcoinInputUTXO,
+  BitcoinOutputUTXO,
+  BlockCypherProvider,
+  createPsbt,
   getBtcAddressFromPubKey,
   getEvmAddressFromPubKey
 } from '@avalabs/wallets-sdk'
@@ -24,7 +28,9 @@ import {
 } from '@metamask/eth-sig-util'
 import { RpcMethod } from 'store/walletConnectV2/types'
 import { assertNotUndefined } from 'utils/assertions'
+import { isBitcoinNetwork } from 'utils/network/isBitcoinNetwork'
 import { SeedlessSessionStorage } from './SeedlessSessionStorage'
+import { SeedlessBtcSigner } from './SeedlessBtcSigner'
 
 export default class SeedlessWallet {
   #session: cs.SignerSession | undefined
@@ -274,7 +280,7 @@ export default class SeedlessWallet {
     }
   }
 
-  async signEvmTransaction(
+  async signEvmTx(
     tx: TransactionRequest,
     provider: JsonRpcProvider
   ): Promise<string> {
@@ -311,6 +317,52 @@ export default class SeedlessWallet {
     request.tx.addSignature(hexToBuffer(response.data().signature))
 
     return request.tx
+  }
+
+  async signBtcTx(
+    ins: BitcoinInputUTXO[],
+    outs: BitcoinOutputUTXO[],
+    provider: BlockCypherProvider
+  ): Promise<Transaction> {
+    // if (!isBitcoinNetwork(network)) {
+    //   throw new Error('Unable to sign BTC transaction on non Bitcoin network')
+    // }
+
+    // const provider = NetworkSer.getProviderForNetwork(this.network)
+
+    // if (!(provider instanceof BlockCypherProvider)) {
+    //   throw new Error('Wrong provider obtained for BTC transaction')
+    // }
+
+    const btcNetwork = provider.getNetwork()
+    const psbt = createPsbt(ins, outs, btcNetwork)
+
+    // Sign the inputs
+    await Promise.all(
+      psbt.txInputs.map((_, i) => {
+        if (!this.addressPublicKey) {
+          throw new Error('Public key not available')
+        }
+
+        const signer = new SeedlessBtcSigner({
+          fromKey: this.addressPublicKey.evm,
+          psbt,
+          inputIndex: i,
+          utxos: ins,
+          network: btcNetwork,
+          session: this.session
+        })
+
+        return psbt.signInputAsync(i, signer)
+      })
+    )
+
+    // Validate inputs
+    psbt.validateSignaturesOfAllInputs()
+    // Finalize inputs
+    psbt.finalizeAllInputs()
+
+    return psbt.extractTransaction()
   }
 
   getReadOnlyWallet(provXP: Avalanche.JsonRpcProvider): Avalanche.WalletVoid {

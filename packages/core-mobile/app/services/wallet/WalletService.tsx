@@ -332,7 +332,7 @@ class WalletService {
             )
           }
 
-          return await wallet.signEvmTransaction(tx, provider)
+          return await wallet.signEvmTx(tx, provider)
         }
 
         return await wallet.signTransaction(tx)
