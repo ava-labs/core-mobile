@@ -100,15 +100,17 @@ workflows:
     - share-pipeline-variable@1:
         inputs:
         - variables: |-
-            TESTRAIL_PROJECT_ID:$TESTRAIL_PROJECT_ID
+            TESTRAIL_PROJECT_ID=$TESTRAIL_PROJECT_ID
             TESTRAIL_RUN_ID=$TESTRAIL_RUN_ID
-            POST_TO_TESTRAIL:$POST_TO_TESTRAIL
+            POST_TO_TESTRAIL=$POST_TO_TESTRAIL
             TESTS_TO_RUN_GROUP_1=$TESTS_ONE
             TESTS_TO_RUN_GROUP_2=$TESTS_TWO
             TESTS_TO_RUN_GROUP_3=$TESTS_THREE
             E2E=$E2E
             PLATFROM=$PLATFORM
             E2E_MNEMONIC=$E2E_MNEMONIC
+            E2E=$E2E
+            ENVIRONMENT=$ENVIRONMENT
         - api_level: "28"
         - emulator_id: emulator-5554
         - emulator_channel: "0"
