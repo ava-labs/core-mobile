@@ -5,7 +5,7 @@ import { PersistGate } from 'redux-persist/integration/react'
 import { configureEncryptedStore } from 'store'
 import { NativeModules } from 'react-native'
 
-type EncryptionKey = { isNew: boolean; key: string | null }
+type EncryptionKey = string | null
 const SERVICE_KEY = 'sec-store-provider'
 const MAC_KEY = 'sec-store-provider-mac'
 
@@ -40,8 +40,8 @@ const useEncryptedStore = (): ReturnType<
     ;(async () => {
       const encryptionKey = await getEncryptionKey()
       const macKey = await getMacKey()
-      if (!encryptionKey.key || !macKey.key) return
-      setEncryptedStore(configureEncryptedStore(encryptionKey.key, macKey.key))
+      if (!encryptionKey || !macKey) return
+      setEncryptedStore(configureEncryptedStore(encryptionKey, macKey))
     })()
   }, []) // only once!
 
@@ -57,7 +57,7 @@ const getEncryptionKey = async (): Promise<EncryptionKey> => {
     service: SERVICE_KEY
   })
   if (existingCredentials) {
-    return { isNew: false, key: existingCredentials.password }
+    return existingCredentials.password
   }
 
   // Generate new credentials based on random string
@@ -68,7 +68,7 @@ const getEncryptionKey = async (): Promise<EncryptionKey> => {
     { service: SERVICE_KEY }
   )
   if (hasSetCredentials) {
-    return { isNew: true, key }
+    return key
   }
   throw new Error('Error setting store password on Keychain')
 }
@@ -82,7 +82,7 @@ const getMacKey = async (): Promise<EncryptionKey> => {
     service: MAC_KEY
   })
   if (existingCredentials) {
-    return { isNew: false, key: existingCredentials.password }
+    return existingCredentials.password
   }
 
   // Generate new credentials based on random string
@@ -91,7 +91,7 @@ const getMacKey = async (): Promise<EncryptionKey> => {
     service: MAC_KEY
   })
   if (hasSetCredentials) {
-    return { isNew: true, key }
+    return key
   }
   throw new Error('Error setting store mac key on Keychain')
 }
