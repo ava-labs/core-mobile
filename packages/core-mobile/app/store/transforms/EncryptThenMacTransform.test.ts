@@ -19,10 +19,12 @@ import { Network } from '@avalabs/chains-sdk'
 
 const secretKey =
   '037f948ec4fc19c751a8508744626399768efc81d07e2b9dd5ad298196328efa'
+const secretMacKey =
+  '037f948ec4fc19c751a8508744626399768efc81d07e2b9dd5ad298196328123'
 
 describe('EncryptThenMacTransform functions', () => {
   it('should decode to same encoded object', () => {
-    const transform = EncryptThenMacTransform(secretKey)
+    const transform = EncryptThenMacTransform(secretKey, secretMacKey)
     const encoded = transform.in(initialState, 'app', initialState)
     expect(encoded).not.toEqual(initialState)
 
@@ -41,7 +43,7 @@ describe('EncryptThenMacTransform functions', () => {
     })
     const stateEncrypted = reduxPersistTransformEncrypt.in(state, 'test', state)
 
-    const transform = EncryptThenMacTransform(secretKey)
+    const transform = EncryptThenMacTransform(secretKey, secretMacKey)
     const decrypted = transform.out(
       stateEncrypted as unknown as VersionedStore,
       'app',
@@ -52,7 +54,7 @@ describe('EncryptThenMacTransform functions', () => {
 
   it('should return undefined on decrypting if state is object but not AesGcmStoreType', async () => {
     const state = { test: 'test' }
-    const transform = EncryptThenMacTransform(secretKey)
+    const transform = EncryptThenMacTransform(secretKey, secretMacKey)
     const result = transform.out(
       state as unknown as VersionedStore,
       'app',
@@ -62,7 +64,7 @@ describe('EncryptThenMacTransform functions', () => {
   })
 
   it('should return undefined on decrypting if state is undefined', async () => {
-    const transform = EncryptThenMacTransform(secretKey)
+    const transform = EncryptThenMacTransform(secretKey, secretMacKey)
     const result = transform.out(
       undefined,
       'app',
@@ -72,7 +74,7 @@ describe('EncryptThenMacTransform functions', () => {
   })
 
   it('should return undefined on encrypting if state is undefined', async () => {
-    const transform = EncryptThenMacTransform(secretKey)
+    const transform = EncryptThenMacTransform(secretKey, secretMacKey)
     const result = transform.in(undefined, 'app', {} as unknown as RawRootState)
     expect(result).toBeUndefined()
   })
