@@ -60,7 +60,6 @@ export default async function getTestLogs(): Promise<
     )
     for (const result of attachmentFolders) {
       const splitTestFolder = await splitTestResult(result)
-      console.log(result, ' this is the result')
       const testResult = result?.includes('✓') ? 1 : 5
       const failedScreenshot =
         testResult === 5
