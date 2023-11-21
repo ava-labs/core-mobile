@@ -36,9 +36,11 @@ const cubistResponseHasMfa = {
 } as SignResponse<TotpChallenge>
 
 describe('SeedlessService', () => {
-  jest.spyOn(SeedlessService, 'cubeSigner', 'get').mockImplementation(() => {
+  // @ts-ignore
+  jest.spyOn(SeedlessService, 'getCubeSigner').mockImplementation(async () => {
     return new CubeSigner()
   })
+
   describe('setTotp', () => {
     it('should return the totp challenge url', async () => {
       jest
