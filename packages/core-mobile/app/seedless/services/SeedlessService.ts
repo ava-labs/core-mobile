@@ -14,10 +14,21 @@ const SEEDLESS_ORG_ID = Config.SEEDLESS_ORG_ID
  * https://github.com/cubist-labs/CubeSigner-TypeScript-SDK
  */
 class SeedlessService {
+  /**
+   * Returns a CubeSigner instance
+   */
   private async getCubeSigner(): Promise<CubeSigner> {
     const storage = new SeedlessSessionStorage()
     const sessionMgr = await SignerSessionManager.loadFromStorage(storage)
     return new CubeSigner({ sessionMgr })
+  }
+
+  /**
+   * Returns a session manager that can be used to retrieve session data.
+   */
+  // @ts-expect-error
+  private async getSessionManager(): Promise<SignerSessionManager> {
+    return (await this.getCubeSigner()).sessionMgr as SignerSessionManager
   }
 
   /**
@@ -49,13 +60,6 @@ class SeedlessService {
       signResponse.data(),
       new SeedlessSessionStorage()
     )
-  }
-
-  /**
-   * Returns a session manager that can be used to retrieve session data.
-   */
-  async getSessionManager(): Promise<SignerSessionManager> {
-    return (await this.getCubeSigner()).sessionMgr as SignerSessionManager
   }
 
   /**
