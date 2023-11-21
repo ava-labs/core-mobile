@@ -20,7 +20,7 @@ export const useSeedlessRegister = (): ReturnType => {
 
     try {
       const identity = await SeedlessService.oidcProveIdentity(oidcToken)
-      const result = await CoreSeedlessAPIService.register(oidcToken)
+      const result = await CoreSeedlessAPIService.register(identity)
       if (result !== SeedlessUserRegistrationResult.ERROR) {
         await SeedlessService.login(oidcToken)
       }
