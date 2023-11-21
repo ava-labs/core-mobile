@@ -7,10 +7,11 @@ import {
 } from '@react-navigation/native'
 import PinOrBiometryLogin from 'screens/login/PinOrBiometryLogin'
 import { createStackNavigator } from '@react-navigation/stack'
-import { useApplicationContext } from 'contexts/ApplicationContext'
 import AnalyticsConsent from 'screens/onboarding/AnalyticsConsent'
 import { MainHeaderOptions } from 'navigation/NavUtils'
 import Logger from 'utils/Logger'
+import { useWallet } from 'hooks/useWallet'
+import { resetNavToEnterMnemonic } from 'utils/Navigation'
 import { WelcomeScreenProps } from '../types'
 import CreateWalletStack, {
   CreateWalletStackParamList
@@ -18,18 +19,23 @@ import CreateWalletStack, {
 import EnterWithMnemonicStack, {
   EnterWithMnemonicStackParamList
 } from './EnterWithMnemonicStack'
+import CreatePinStack, { CreatePinStackParamList } from './CreatePinStack'
 
 export type WelcomeScreenStackParamList = {
   [AppNavigation.Onboard.AnalyticsConsent]: {
     nextScreen:
       | typeof AppNavigation.Onboard.CreateWalletStack
       | typeof AppNavigation.Onboard.EnterWithMnemonicStack
+      | typeof AppNavigation.Onboard.CreatePin
   }
   [AppNavigation.Onboard.CreateWalletStack]:
     | NavigatorScreenParams<CreateWalletStackParamList>
     | undefined
   [AppNavigation.Onboard.EnterWithMnemonicStack]:
     | NavigatorScreenParams<EnterWithMnemonicStackParamList>
+    | undefined
+  [AppNavigation.Onboard.CreatePin]:
+    | NavigatorScreenParams<CreatePinStackParamList>
     | undefined
   [AppNavigation.Onboard.Login]: undefined
 }
@@ -55,20 +61,21 @@ const WelcomeScreenStack: () => JSX.Element = () => (
       name={AppNavigation.Onboard.EnterWithMnemonicStack}
       component={EnterWithMnemonicStack}
     />
+    <WelcomeScreenS.Screen
+      name={AppNavigation.Onboard.CreatePin}
+      component={CreatePinStack}
+    />
   </WelcomeScreenS.Navigator>
 )
 
 const LoginWithPinOrBiometryScreen = (): JSX.Element => {
-  const context = useApplicationContext()
-  const { enterWallet } = context.walletSetupHook
+  const { initWallet } = useWallet()
 
   return (
     <PinOrBiometryLogin
-      onSignInWithRecoveryPhrase={() =>
-        context.appNavHook.resetNavToEnterMnemonic()
-      }
+      onSignInWithRecoveryPhrase={() => resetNavToEnterMnemonic()}
       onLoginSuccess={mnemonic => {
-        enterWallet(mnemonic).catch(Logger.error)
+        initWallet(mnemonic).catch(Logger.error)
       }}
     />
   )

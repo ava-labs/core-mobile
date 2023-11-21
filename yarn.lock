@@ -216,7 +216,7 @@ __metadata:
     eslint: 8.50.0
     eslint-plugin-avalabs-mobile: "workspace:*"
     eth-rpc-errors: 4.0.3
-    ethers: 6.8.0
+    ethers: 6.8.1
     events: 3.3.0
     https-browserify: 0.0.1
     jail-monkey: 2.6.0
@@ -13881,22 +13881,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ethers@npm:6.8.0":
-  version: 6.8.0
-  resolution: "ethers@npm:6.8.0"
-  dependencies:
-    "@adraffy/ens-normalize": 1.10.0
-    "@noble/curves": 1.2.0
-    "@noble/hashes": 1.3.2
-    "@types/node": 18.15.13
-    aes-js: 4.0.0-beta.5
-    tslib: 2.4.0
-    ws: 8.5.0
-  checksum: 967e4bdc23eae48444361ededa77cd884271ab7af059a0458b3c2ec52338124258cb92dbb28b37f53c7b532313dcbb209792ea3232c87927c94164697948182d
-  languageName: node
-  linkType: hard
-
-"ethers@npm:^6.7.1":
+"ethers@npm:6.8.1, ethers@npm:^6.7.1":
   version: 6.8.1
   resolution: "ethers@npm:6.8.1"
   dependencies:

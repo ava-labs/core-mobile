@@ -4,15 +4,14 @@ import CoreXLogoAnimated from 'components/CoreXLogoAnimated'
 import { Space } from 'components/Space'
 import AppNavigation from 'navigation/AppNavigation'
 import { OnboardScreenProps } from 'navigation/types'
-import React, { FC, useState } from 'react'
+import React, { FC } from 'react'
 import { Alert } from 'react-native'
 import { useSelector } from 'react-redux'
 import AuthButtons from 'seedless/components/AuthButtons'
-import CoreSeedlessAPIService, {
-  SeedlessUserRegistrationResult
-} from 'seedless/services/CoreSeedlessAPIService'
+import { useSeedlessRegister } from 'seedless/hooks/useSeedlessRegister'
+import { SeedlessUserRegistrationResult } from 'seedless/services/CoreSeedlessAPIService'
 import GoogleSigninService from 'seedless/services/GoogleSigninService'
-import SeedllessService from 'seedless/services/SeedllessService'
+import SeedlessService from 'seedless/services/SeedlessService'
 import { selectIsSeedlessOnboardingBlocked } from 'store/posthog'
 
 type NavigationProp = OnboardScreenProps<
@@ -24,7 +23,7 @@ const SignupScreen: FC = () => {
     selectIsSeedlessOnboardingBlocked
   )
   const navigation = useNavigation<NavigationProp>()
-  const [isLoading, setIsLoading] = useState(false)
+  const { register, isRegistering } = useSeedlessRegister()
 
   const handleSigninWithMnemonic = (): void => {
     navigation.navigate(AppNavigation.Onboard.Welcome, {
@@ -51,17 +50,18 @@ const SignupScreen: FC = () => {
   const handleSignupWithGoogle = async (): Promise<void> => {
     const oidcToken = await GoogleSigninService.signin()
 
-    setIsLoading(true)
-    const result = await CoreSeedlessAPIService.register(oidcToken)
+    const result = await register(oidcToken)
+
+    if (result === SeedlessUserRegistrationResult.ERROR) {
+      Alert.alert('seedless user registration error')
+      return
+    }
 
     if (result === SeedlessUserRegistrationResult.APPROVED) {
-      setIsLoading(false)
       navigation.navigate(AppNavigation.Onboard.RecoveryMethods)
     } else if (result === SeedlessUserRegistrationResult.ALREADY_REGISTERED) {
-      setIsLoading(false)
-
-      const userInfo = await SeedllessService.aboutMe(oidcToken)
-      if (userInfo.mfa.length === 0) {
+      const userMfa = await SeedlessService.userMfa()
+      if (userMfa.length === 0) {
         navigation.navigate(AppNavigation.Onboard.RecoveryMethods)
         return
       }
@@ -69,9 +69,6 @@ const SignupScreen: FC = () => {
       navigation.navigate(AppNavigation.Onboard.RecoveryMethods, {
         screen: AppNavigation.RecoveryMethods.VerifyCode
       })
-    } else if (result === SeedlessUserRegistrationResult.ERROR) {
-      setIsLoading(false)
-      Alert.alert('seedless user registration error')
     }
   }
 
@@ -96,7 +93,7 @@ const SignupScreen: FC = () => {
               type="primary"
               size="xlarge"
               onPress={handleSigninWithMnemonic}>
-              Sign in with Recovery Phrase
+              Forgot PIN?
             </Button>
             <Space y={16} />
             <Button
@@ -110,7 +107,7 @@ const SignupScreen: FC = () => {
           <>
             <AuthButtons
               title="Sign up with..."
-              disabled={isLoading}
+              disabled={isRegistering}
               onGoogleAction={handleSignupWithGoogle}
               onMnemonicAction={handleSignupWithMnemonic}
             />
@@ -118,7 +115,7 @@ const SignupScreen: FC = () => {
             <Button
               type="tertiary"
               size="xlarge"
-              disabled={isLoading}
+              disabled={isRegistering}
               onPress={handleSignin}>
               Already Have a Wallet?
             </Button>

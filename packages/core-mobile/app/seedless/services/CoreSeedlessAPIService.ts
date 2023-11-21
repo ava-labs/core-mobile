@@ -19,12 +19,10 @@ export enum SeedlessUserRegistrationResult {
  * https://github.com/ava-labs/core-seedless-api
  */
 class CoreSeedlessAPIService {
-  static async register(
-    oidcToken: string
-  ): Promise<SeedlessUserRegistrationResult> {
+  async register(oidcToken: string): Promise<SeedlessUserRegistrationResult> {
     // Extract user identity from token
     const payload = JSON.parse(
-      Buffer.from(oidcToken.split('.')?.[1] ?? '', 'base64').toString('ascii')
+      Buffer.from(oidcToken.split('.')?.[1] ?? '', 'base64').toString('utf8')
     )
     const iss = payload.iss
     const sub = payload.sub
@@ -55,4 +53,4 @@ class CoreSeedlessAPIService {
   }
 }
 
-export default CoreSeedlessAPIService
+export default new CoreSeedlessAPIService()

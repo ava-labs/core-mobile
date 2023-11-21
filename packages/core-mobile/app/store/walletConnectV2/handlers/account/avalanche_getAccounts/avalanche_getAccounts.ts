@@ -1,5 +1,5 @@
 import { AppListenerEffectAPI } from 'store'
-import { selectAccounts, selectActiveAccount } from 'store/account'
+import { selectAccounts, selectActiveAccount } from 'store/account/slice'
 import { RpcMethod, SessionRequest } from '../../../types'
 import { HandleResponse, RpcRequestHandler } from '../../types'
 import { mapAccountToCoreWebAccount } from './utils'

@@ -2,8 +2,6 @@ import { asyncScheduler, AsyncSubject, concat, Observable, of } from 'rxjs'
 import { map } from 'rxjs/operators'
 import { BackHandler } from 'react-native'
 import { useCallback, useEffect, useMemo } from 'react'
-import { WalletSetupHook } from 'hooks/useWalletSetup'
-import { AppNavHook } from 'useAppNav'
 import { usePosthogContext } from 'contexts/PosthogContext'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectSelectedCurrency } from 'store/settings/currency'
@@ -12,6 +10,8 @@ import { resetLoginAttempt } from 'store/security'
 import { formatCurrency } from 'utils/FormatCurrency'
 import { selectCoreAnalyticsConsent } from 'store/settings/securityPrivacy'
 import { NotationTypes } from 'consts/FormatNumberTypes'
+import { useWallet } from 'hooks/useWallet'
+import { resetNavToRoot } from 'utils/Navigation'
 
 export type AppHook = {
   onExit: () => Observable<ExitEvents>
@@ -22,32 +22,30 @@ export type AppHook = {
   tokenInCurrencyFormatter(num: number | string): string
 }
 
-export function useApp(
-  appNavHook: AppNavHook,
-  walletSetupHook: WalletSetupHook
-): AppHook {
+export function useApp(): AppHook {
   const dispatch = useDispatch()
+  const { destroyWallet } = useWallet()
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { setAnalyticsConsent } = usePosthogContext()
   const coreAnalyticsConsentSetting = useSelector(selectCoreAnalyticsConsent)
 
   const deleteWallet = useCallback(() => {
-    walletSetupHook.destroyWallet()
+    destroyWallet()
     dispatch(onLogOut())
     dispatch(resetLoginAttempt())
-  }, [dispatch, walletSetupHook])
+  }, [dispatch, destroyWallet])
 
   const signOut = useCallback(() => {
     deleteWallet()
-    appNavHook.resetNavToRoot()
-  }, [appNavHook, deleteWallet])
+    resetNavToRoot()
+  }, [deleteWallet])
 
   useEffect(watchCoreAnalyticsFlagFx, [
     coreAnalyticsConsentSetting,
     setAnalyticsConsent
   ])
 
-  function watchCoreAnalyticsFlagFx() {
+  function watchCoreAnalyticsFlagFx(): void {
     setAnalyticsConsent(coreAnalyticsConsentSetting)
   }
 
@@ -64,7 +62,7 @@ export function useApp(
       }),
       map((exitEvent: ExitEvents) => {
         if (exitEvent instanceof ExitFinished) {
-          appNavHook.resetNavToRoot()
+          resetNavToRoot()
           setTimeout(() => BackHandler.exitApp(), 0)
         }
         return exitEvent

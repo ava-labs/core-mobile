@@ -2,17 +2,18 @@ import { encrypt } from 'utils/EncryptionHelper'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import walletService from 'services/wallet/WalletService'
 import { useDispatch, useSelector } from 'react-redux'
-import { addAccount, selectAccounts } from 'store/account'
-import { onAppUnlocked } from 'store/app'
-import { AppNavHook } from 'useAppNav'
+import { onAppUnlocked, selectWalletType, setWalletType } from 'store/app'
+import { WalletType } from 'services/wallet/types'
+import WalletService from 'services/wallet/WalletService'
+import { resetNavToUnlockedWallet } from 'utils/Navigation'
 
-export interface WalletSetupHook {
+export interface UseWallet {
   onPinCreated: (
     mnemonic: string,
     pin: string,
     isResetting: boolean
   ) => Promise<'useBiometry' | 'enterWallet'>
-  enterWallet: (mnemonic: string) => Promise<void>
+  initWallet: (mnemonic: string, walletType?: WalletType) => Promise<void>
   destroyWallet: () => void
 }
 
@@ -20,21 +21,29 @@ export interface WalletSetupHook {
  * This hook handles onboarding process.
  * onPinCreated - use when user sets PIN to encrypt mnemonic and see if
  * user has biometry turned on
- * enterWallet - use when ready to enter the wallet
+ * initWallet - use when ready to enter the wallet
  * destroyWallet - call when user ends session
  */
-export function useWalletSetup(appNavHook: AppNavHook): WalletSetupHook {
-  const accounts = useSelector(selectAccounts)
+export function useWallet(): UseWallet {
   const dispatch = useDispatch()
+  const cachedWalletType = useSelector(selectWalletType)
 
-  const enterWallet = async (mnemonic: string): Promise<void> => {
-    await walletService.setMnemonic(mnemonic)
-    dispatch(onAppUnlocked())
-    if (Object.keys(accounts).length === 0) {
-      //must be after onAppUnlocked
-      dispatch(addAccount())
+  /**
+   * Initializes wallet with the specified mnemonic and wallet type
+   * and navigates to the unlocked wallet screen
+   */
+  const initWallet = async (
+    mnemonic: string,
+    walletType?: WalletType
+  ): Promise<void> => {
+    if (walletType) {
+      dispatch(setWalletType(walletType))
     }
-    appNavHook.resetNavToUnlockedWallet()
+
+    await WalletService.init(mnemonic, walletType || cachedWalletType)
+
+    dispatch(onAppUnlocked())
+    resetNavToUnlockedWallet()
   }
 
   /**
@@ -46,7 +55,7 @@ export function useWalletSetup(appNavHook: AppNavHook): WalletSetupHook {
 
   return {
     onPinCreated,
-    enterWallet,
+    initWallet,
     destroyWallet
   }
 }
@@ -64,6 +73,7 @@ async function onPinCreated(
   if (pinSaved === false) {
     throw Error('Pin not saved')
   }
+
   const canUseBiometry = isResetting
     ? false
     : await BiometricsSDK.canUseBiometry()
