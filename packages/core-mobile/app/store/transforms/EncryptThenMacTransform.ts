@@ -82,7 +82,7 @@ export const EncryptThenMacTransform: (
       const maybeOldEncryption = outboundState as unknown
       if (typeof maybeOldEncryption === 'string') {
         Logger.info(
-          'Rehydrated state is encrypted with old transform funciton, decrypt it with redux-persist-transform-encrypt'
+          'Rehydrated state is encrypted with old transform function, decrypt it with redux-persist-transform-encrypt'
         )
         const encryptionTransform = encryptTransform<
           RawRootState,
