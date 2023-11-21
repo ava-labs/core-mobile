@@ -59,7 +59,7 @@ class ExistingRecoveryPhrasePage {
   }
 
   async enterRecoveryPhrase(recoveryPhrase: string) {
-    await Action.setInputText(this.recoveryPhraseTextInput, recoveryPhrase)
+    await Action.setInputText(this.recoveryPhraseTextInput, recoveryPhrase, 1)
   }
 
   async tapSignInBtn() {
