@@ -185,7 +185,7 @@ export default class SeedlessWallet {
     return res.data().signature
   }
 
-  static create = async (accountIndex: number): Promise<SeedlessWallet> => {
+  static async create(accountIndex: number): Promise<SeedlessWallet> {
     const wallet = new SeedlessWallet()
     const storage = new SeedlessSessionStorage()
 

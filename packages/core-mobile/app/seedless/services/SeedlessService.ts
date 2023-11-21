@@ -1,7 +1,6 @@
 import { CubeSigner, MfaReceipt, UserInfo } from '@cubist-dev/cubesigner-sdk'
 import Config from 'react-native-config'
 import { SignerSessionManager, envs } from '@cubist-dev/cubesigner-sdk'
-import { assertNotUndefined } from 'utils/assertions'
 import { SeedlessSessionStorage } from './SeedlessSessionStorage'
 
 if (!Config.SEEDLESS_ORG_ID) {
@@ -9,27 +8,25 @@ if (!Config.SEEDLESS_ORG_ID) {
 }
 
 const SEEDLESS_ORG_ID = Config.SEEDLESS_ORG_ID
+
 /**
  * Service for cubesigner-sdk
  * https://github.com/cubist-labs/CubeSigner-TypeScript-SDK
  */
 class SeedlessService {
-  #cubeSigner: CubeSigner
-
-  private get cubeSigner(): CubeSigner {
-    assertNotUndefined(this.#cubeSigner)
-    return this.#cubeSigner
-  }
-
-  private set cubeSigner(cubeSigner: CubeSigner) {
-    this.#cubeSigner = cubeSigner
+  private async getCubeSigner(): Promise<CubeSigner> {
+    const storage = new SeedlessSessionStorage()
+    const sessionMgr = await SignerSessionManager.loadFromStorage(storage)
+    return new CubeSigner({ sessionMgr })
   }
 
   /**
    * Exchange an OIDC token for a CubeSigner session with token, mfa session info, etc.
    */
-  // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-  async login(oidcToken: string, mfaReceipt?: MfaReceipt | undefined) {
+  async login(
+    oidcToken: string,
+    mfaReceipt?: MfaReceipt | undefined
+  ): Promise<void> {
     const signResponse = await new CubeSigner().oidcLogin(
       oidcToken,
       Config.SEEDLESS_ORG_ID || '',
@@ -46,32 +43,26 @@ class SeedlessService {
       mfaReceipt
     )
 
-    const sessionMgr = await SignerSessionManager.createFromSessionInfo(
+    await SignerSessionManager.createFromSessionInfo(
       envs.gamma,
       SEEDLESS_ORG_ID,
       signResponse.data(),
       new SeedlessSessionStorage()
     )
-
-    this.cubeSigner = new CubeSigner({
-      env: envs.gamma,
-      orgId: SEEDLESS_ORG_ID,
-      sessionMgr
-    })
   }
 
   /**
    * Returns a session manager that can be used to retrieve session data.
    */
   async getSessionManager(): Promise<SignerSessionManager> {
-    return this.cubeSigner.sessionMgr as SignerSessionManager
+    return (await this.getCubeSigner()).sessionMgr as SignerSessionManager
   }
 
   /**
    * Retrieves information about the current user.
    */
   async aboutMe(): Promise<UserInfo> {
-    return this.cubeSigner.aboutMe()
+    return (await this.getCubeSigner()).aboutMe()
   }
 
   /**
