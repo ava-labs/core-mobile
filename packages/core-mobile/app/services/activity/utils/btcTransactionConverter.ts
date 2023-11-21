@@ -17,7 +17,7 @@ type ConvertTransactionParams = {
     | undefined
 }
 
-const bitcoinAmount = (amount: number, demonimation: number) => {
+const bitcoinAmount = (amount: number, demonimation: number): string => {
   if (amount < 0) {
     amount = amount * -1
   }
@@ -31,7 +31,15 @@ export const convertTransaction = ({
   bitcoinWalletAddresses
 }: ConvertTransactionParams): Transaction => {
   const txAddress = item.addresses[0] ? item.addresses[0] : ''
+
   const denomination = BITCOIN_NETWORK.networkToken.decimals
+
+  // if sent to self, the addresses array will be empty (from @avalabs/wallets-sdk's source code)
+  const to = item.isSender
+    ? item.addresses.length === 0
+      ? address
+      : txAddress
+    : address
 
   return {
     isBridge: isBridgeTransactionBTC(item, bitcoinWalletAddresses),
@@ -43,7 +51,7 @@ export const convertTransaction = ({
     amount: bitcoinAmount(item.amount, denomination),
     isSender: item.isSender,
     from: item.isSender ? address : txAddress,
-    to: item.isSender ? txAddress : address,
+    to,
     token: {
       decimal: denomination.toString(),
       name: BITCOIN_NETWORK.networkToken.name,
