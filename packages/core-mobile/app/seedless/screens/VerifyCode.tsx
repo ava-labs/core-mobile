@@ -13,7 +13,6 @@ import { Space } from 'components/Space'
 import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation } from '@react-navigation/native'
 import { RecoveryMethodsScreenProps } from 'navigation/types'
-import { handleAsyncOnChangeText } from 'utils/handleAsyncOnChangeText'
 import Logger from 'utils/Logger'
 import SeedlessService from 'seedless/services/SeedlessService'
 
@@ -93,12 +92,11 @@ export const VerifyCode = (): JSX.Element => {
           </Text>
           <Space y={24} />
           <TextInput
-            onChangeText={changedText =>
-              handleAsyncOnChangeText(changedText)({
-                action: handleVerifyCode,
-                error: reason => Logger.error('handleVerifyCode', reason)
-              })
-            }
+            onChangeText={changedText => {
+              handleVerifyCode(changedText).catch(error =>
+                Logger.error('handleVerifyCode', error)
+              )
+            }}
             keyboardType="number-pad"
             keyboardAppearance="dark"
             multiline

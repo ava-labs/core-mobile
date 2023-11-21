@@ -11,7 +11,6 @@ import { SeedlessUserRegistrationResult } from 'seedless/services/CoreSeedlessAP
 import GoogleSigninService from 'seedless/services/GoogleSigninService'
 import SeedlessService from 'seedless/services/SeedlessService'
 import Logger from 'utils/Logger'
-import { handleAsyncOnPress } from 'utils/handleAsyncOnPress'
 
 type NavigationProp = OnboardScreenProps<
   typeof AppNavigation.Onboard.Signup
@@ -31,11 +30,6 @@ const SigninScreen: FC = () => {
         nextScreen: AppNavigation.Onboard.EnterWithMnemonicStack
       }
     })
-  }
-
-  const handleAsyncOnPressError = (reason: unknown): void => {
-    Alert.alert('seedless user registration error')
-    Logger.error('handleSignupWithGoogle', reason)
   }
 
   const handleSigninWithGoogle = async (): Promise<void> => {
@@ -106,12 +100,12 @@ const SigninScreen: FC = () => {
         <AuthButtons
           title="Sign in with..."
           disabled={isRegistering}
-          onGoogleAction={() =>
-            handleAsyncOnPress({
-              action: handleSigninWithGoogle,
-              error: handleAsyncOnPressError
+          onGoogleAction={() => {
+            handleSigninWithGoogle().catch(error => {
+              Alert.alert('seedless user registration error')
+              Logger.error('handleSignupWithGoogle', error)
             })
-          }
+          }}
           onMnemonicAction={handleSigninWithMnemonic}
         />
       </View>
