@@ -147,6 +147,12 @@ workflows:
     - POST_TO_TESTRAIL: "true"
       opts:
         is_expand: false
+    - ENVIRONMENT: production
+      opts:
+        is_expand: false
+    - E2E: "true"
+      opts:
+        is_expand: false
     steps:
     - avd-manager@1.2:
         inputs:
@@ -172,6 +178,12 @@ workflows:
     - POST_TO_TESTRAIL: "true"
       opts:
         is_expand: false
+    - ENVIRONMENT: production
+      opts:
+        is_expand: false
+    - E2E: "true"
+      opts:
+        is_expand: false
     steps:
     - avd-manager@1.2:
         inputs:
@@ -195,6 +207,12 @@ workflows:
       opts:
         is_expand: false
     - POST_TO_TESTRAIL: "true"
+      opts:
+        is_expand: false
+    - ENVIRONMENT: production
+      opts:
+        is_expand: false
+    - E2E: "true"
       opts:
         is_expand: false
     steps:
