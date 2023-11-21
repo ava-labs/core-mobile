@@ -1,10 +1,13 @@
 import { Button, Text, View } from '@avalabs/k2-mobile'
 import { useNavigation } from '@react-navigation/native'
+import Loader from 'components/Loader'
 import AppNavigation from 'navigation/AppNavigation'
 import { RecoveryMethodsScreenProps } from 'navigation/types'
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Dimensions } from 'react-native'
 import QRCode from 'react-native-qrcode-svg'
+import SeedlessService from 'seedless/services/SeedlessService'
+import Logger from 'utils/Logger'
 
 type ScanQrCodeScreenProps = RecoveryMethodsScreenProps<
   typeof AppNavigation.RecoveryMethods.ScanQrCode
@@ -17,6 +20,7 @@ const qrCodeSize = qrCodeContainerSize - 40
 
 export const ScanQrCode = (): JSX.Element => {
   const { navigate } = useNavigation<ScanQrCodeScreenProps['navigation']>()
+  const [totpUrl, setTotpUrl] = React.useState<string>()
 
   const openVerifyCode = (): void => {
     navigate(AppNavigation.RecoveryMethods.VerifyCode)
@@ -24,6 +28,43 @@ export const ScanQrCode = (): JSX.Element => {
 
   const goToAuthenticatorSetup = (): void => {
     navigate(AppNavigation.RecoveryMethods.AuthenticatorSetup)
+  }
+
+  useEffect(() => {
+    const getTotpUrl = async (): Promise<void> => {
+      const result = await SeedlessService.setTotp()
+      if (result.success && result.value) {
+        setTotpUrl(result.value)
+      }
+    }
+    getTotpUrl().catch(reason => {
+      Logger.error('ScanQrCode AuthenticatorService.setTotp error', reason)
+    })
+  }, [])
+
+  const renderQRCode = (): JSX.Element => {
+    const hasTotpUrl = totpUrl !== undefined
+    const borderColor = hasTotpUrl ? '$white' : '$transparent'
+    return (
+      <View
+        sx={{
+          marginVertical: 24,
+          borderWidth: 32,
+          height: qrCodeContainerSize,
+          width: qrCodeContainerSize,
+          borderColor,
+          borderRadius: 8,
+          justifyContent: 'center',
+          alignItems: 'center',
+          alignSelf: 'center'
+        }}>
+        {hasTotpUrl ? (
+          <QRCode ecl={'H'} size={qrCodeSize} value={totpUrl} />
+        ) : (
+          <Loader />
+        )}
+      </View>
+    )
   }
 
   return (
@@ -40,21 +81,7 @@ export const ScanQrCode = (): JSX.Element => {
             Or enter code manually.
           </Text>
         </View>
-
-        <View
-          sx={{
-            marginVertical: 24,
-            borderWidth: 32,
-            height: qrCodeContainerSize,
-            width: qrCodeContainerSize,
-            borderColor: '$white',
-            borderRadius: 8,
-            justifyContent: 'center',
-            alignItems: 'center',
-            alignSelf: 'center'
-          }}>
-          <QRCode ecl={'H'} size={qrCodeSize} value={'TO_BE_IMPLEMENTED'} />
-        </View>
+        {renderQRCode()}
         <Button type="tertiary" size="xlarge" onPress={goToAuthenticatorSetup}>
           Enter Code Manually
         </Button>
@@ -62,7 +89,7 @@ export const ScanQrCode = (): JSX.Element => {
 
       <Button
         type="primary"
-        size="large"
+        size="xlarge"
         style={{ marginVertical: 16 }}
         onPress={openVerifyCode}>
         Next

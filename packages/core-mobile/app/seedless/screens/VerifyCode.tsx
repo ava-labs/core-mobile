@@ -13,6 +13,8 @@ import { Space } from 'components/Space'
 import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation } from '@react-navigation/native'
 import { RecoveryMethodsScreenProps } from 'navigation/types'
+import Logger from 'utils/Logger'
+import SeedlessService from 'seedless/services/SeedlessService'
 
 type VerifyCodeScreenProps = RecoveryMethodsScreenProps<
   typeof AppNavigation.RecoveryMethods.LearnMore
@@ -22,7 +24,7 @@ export const VerifyCode = (): JSX.Element => {
   const {
     theme: { colors, text }
   } = useTheme()
-  const [code, setCode] = useState('')
+  const [code, setCode] = useState<string>()
 
   const [showError, setShowError] = useState(false)
   const { canGoBack, goBack, navigate } =
@@ -34,16 +36,18 @@ export const VerifyCode = (): JSX.Element => {
     }
   }
 
-  const handleVerifyCode = (changedText: string): void => {
+  const handleVerifyCode = async (changedText: string): Promise<void> => {
     setCode(changedText)
     if (changedText.length < 6) {
       setShowError(false)
       return
     }
-    // todo: if code is incorrect, show error
-    setShowError(true)
+    const result = await SeedlessService.verifyCode(changedText)
+    if (result.success === false) {
+      setShowError(true)
+      return
+    }
 
-    // todo: if code is correct, go to next screen
     navigate(AppNavigation.Root.Onboard, {
       screen: AppNavigation.Onboard.Welcome,
       params: {
@@ -88,7 +92,11 @@ export const VerifyCode = (): JSX.Element => {
           </Text>
           <Space y={24} />
           <TextInput
-            onChangeText={handleVerifyCode}
+            onChangeText={changedText => {
+              handleVerifyCode(changedText).catch(error =>
+                Logger.error('handleVerifyCode', error)
+              )
+            }}
             keyboardType="number-pad"
             keyboardAppearance="dark"
             multiline

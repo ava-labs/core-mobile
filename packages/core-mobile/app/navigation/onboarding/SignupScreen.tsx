@@ -4,7 +4,7 @@ import CoreXLogoAnimated from 'components/CoreXLogoAnimated'
 import { Space } from 'components/Space'
 import AppNavigation from 'navigation/AppNavigation'
 import { OnboardScreenProps } from 'navigation/types'
-import React, { FC } from 'react'
+import React, { FC, useState } from 'react'
 import { Alert } from 'react-native'
 import { useSelector } from 'react-redux'
 import AuthButtons from 'seedless/components/AuthButtons'
@@ -13,17 +13,20 @@ import { SeedlessUserRegistrationResult } from 'seedless/services/CoreSeedlessAP
 import GoogleSigninService from 'seedless/services/GoogleSigninService'
 import SeedlessService from 'seedless/services/SeedlessService'
 import { selectIsSeedlessOnboardingBlocked } from 'store/posthog'
+import Logger from 'utils/Logger'
 
 type NavigationProp = OnboardScreenProps<
   typeof AppNavigation.Onboard.Signup
 >['navigation']
 
 const SignupScreen: FC = () => {
+  const [isLoading, setIsLoading] = useState(false)
   const isSeedlessOnboardingBlocked = useSelector(
     selectIsSeedlessOnboardingBlocked
   )
   const navigation = useNavigation<NavigationProp>()
   const { register, isRegistering } = useSeedlessRegister()
+  const loading = isRegistering || isLoading
 
   const handleSigninWithMnemonic = (): void => {
     navigation.navigate(AppNavigation.Onboard.Welcome, {
@@ -57,12 +60,14 @@ const SignupScreen: FC = () => {
       return
     }
 
+    setIsLoading(true)
     if (result === SeedlessUserRegistrationResult.APPROVED) {
       navigation.navigate(AppNavigation.Onboard.RecoveryMethods)
     } else if (result === SeedlessUserRegistrationResult.ALREADY_REGISTERED) {
       const userMfa = await SeedlessService.userMfa()
       if (userMfa.length === 0) {
         navigation.navigate(AppNavigation.Onboard.RecoveryMethods)
+        setIsLoading(false)
         return
       }
       // @ts-ignore
@@ -70,6 +75,7 @@ const SignupScreen: FC = () => {
         screen: AppNavigation.RecoveryMethods.VerifyCode
       })
     }
+    setIsLoading(false)
   }
 
   return (
@@ -79,49 +85,56 @@ const SignupScreen: FC = () => {
         backgroundColor: '$black'
       }}>
       <View
-        sx={{
+        style={{
           flex: 1,
           alignItems: 'center',
           justifyContent: 'center'
         }}>
         <CoreXLogoAnimated size={180} />
       </View>
-      <View sx={{ padding: 16, marginBottom: 46 }}>
-        {isSeedlessOnboardingBlocked ? (
-          <>
-            <Button
-              type="primary"
-              size="xlarge"
-              onPress={handleSigninWithMnemonic}>
-              Forgot PIN?
-            </Button>
-            <Space y={16} />
-            <Button
-              type="secondary"
-              size="xlarge"
-              onPress={handleSignupWithMnemonic}>
-              Sign up with Recovery Phrase
-            </Button>
-          </>
-        ) : (
-          <>
-            <AuthButtons
-              title="Sign up with..."
-              disabled={isRegistering}
-              onGoogleAction={handleSignupWithGoogle}
-              onMnemonicAction={handleSignupWithMnemonic}
-            />
-            <Space y={48} />
-            <Button
-              type="tertiary"
-              size="xlarge"
-              disabled={isRegistering}
-              onPress={handleSignin}>
-              Already Have a Wallet?
-            </Button>
-          </>
-        )}
-      </View>
+      {!loading && (
+        <View sx={{ padding: 16, marginBottom: 46 }}>
+          {isSeedlessOnboardingBlocked ? (
+            <>
+              <Button
+                type="primary"
+                size="xlarge"
+                onPress={handleSigninWithMnemonic}>
+                Forgot PIN?
+              </Button>
+              <Space y={16} />
+              <Button
+                type="secondary"
+                size="xlarge"
+                onPress={handleSignupWithMnemonic}>
+                Sign up with Recovery Phrase
+              </Button>
+            </>
+          ) : (
+            <>
+              <AuthButtons
+                title="Sign up with..."
+                disabled={isRegistering}
+                onGoogleAction={() => {
+                  handleSignupWithGoogle().catch(error => {
+                    Alert.alert('seedless user registration error')
+                    Logger.error('handleSignupWithGoogle', error)
+                  })
+                }}
+                onMnemonicAction={handleSignupWithMnemonic}
+              />
+              <Space y={48} />
+              <Button
+                type="tertiary"
+                size="xlarge"
+                disabled={isRegistering}
+                onPress={handleSignin}>
+                Already Have a Wallet?
+              </Button>
+            </>
+          )}
+        </View>
+      )}
     </View>
   )
 }
