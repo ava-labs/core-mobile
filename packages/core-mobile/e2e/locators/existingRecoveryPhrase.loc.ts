@@ -6,5 +6,6 @@ export default {
   testWalletLink: 'hd_wallet_login__test_wallet',
   alreadyHaveAWalletBtn: 'Already Have a Wallet?',
   recoveryPhrase: 'Recovery Phrase',
-  signInWithRecoveryPhrase: 'Sign in with Recovery Phrase'
+  signInWithRecoveryPhrase: 'Sign in with Recovery Phrase',
+  forgotPinButton: 'Forgot PIN?'
 }

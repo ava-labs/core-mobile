@@ -15,6 +15,10 @@ class ExistingRecoveryPhrasePage {
     return by.text(recoveryPhraseLoc.signInWithRecoveryPhrase)
   }
 
+  get forgotPinBtn() {
+    return by.text(recoveryPhraseLoc.forgotPinButton)
+  }
+
   get signInBtn() {
     return by.text(recoveryPhraseLoc.signInBtn)
   }
@@ -37,6 +41,10 @@ class ExistingRecoveryPhrasePage {
 
   get recoveryPhrase() {
     return by.text(recoveryPhraseLoc.recoveryPhrase)
+  }
+
+  async tapForgotPinBtn() {
+    await Action.tap(this.forgotPinBtn)
   }
 
   async tapRecoveryPhraseBtn() {
@@ -67,7 +75,8 @@ class ExistingRecoveryPhrasePage {
   }
 
   async recoverWallet(recoveryPhrase: string) {
-    await this.tapSignInWithRecoveryPhraseBtn()
+    await this.tapForgotPinBtn()
+    //await this.tapSignInWithRecoveryPhraseBtn()
     // await this.tapAlreadyHaveAWalletBtn()
     // await this.tapRecoveryPhraseBtn()
     await AnalyticsConsentPage.tapNoThanksBtn()
