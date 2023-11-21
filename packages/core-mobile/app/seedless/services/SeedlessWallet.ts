@@ -1,4 +1,4 @@
-import { Network, NetworkVMType } from '@avalabs/chains-sdk'
+import { NetworkVMType } from '@avalabs/chains-sdk'
 import * as cs from '@cubist-dev/cubesigner-sdk'
 import { PubKeyType } from 'services/wallet/types'
 import { strip0x } from '@avalabs/utils-sdk'
@@ -26,9 +26,9 @@ import {
   TypedDataUtils,
   typedSignatureHash
 } from '@metamask/eth-sig-util'
+import * as secp from '@noble/secp256k1'
 import { RpcMethod } from 'store/walletConnectV2/types'
 import { assertNotUndefined } from 'utils/assertions'
-import { isBitcoinNetwork } from 'utils/network/isBitcoinNetwork'
 import { SeedlessSessionStorage } from './SeedlessSessionStorage'
 import { SeedlessBtcSigner } from './SeedlessBtcSigner'
 
@@ -324,16 +324,6 @@ export default class SeedlessWallet {
     outs: BitcoinOutputUTXO[],
     provider: BlockCypherProvider
   ): Promise<Transaction> {
-    // if (!isBitcoinNetwork(network)) {
-    //   throw new Error('Unable to sign BTC transaction on non Bitcoin network')
-    // }
-
-    // const provider = NetworkSer.getProviderForNetwork(this.network)
-
-    // if (!(provider instanceof BlockCypherProvider)) {
-    //   throw new Error('Wrong provider obtained for BTC transaction')
-    // }
-
     const btcNetwork = provider.getNetwork()
     const psbt = createPsbt(ins, outs, btcNetwork)
 
@@ -358,7 +348,19 @@ export default class SeedlessWallet {
     )
 
     // Validate inputs
-    psbt.validateSignaturesOfAllInputs()
+    const validator = (
+      pubkey: Buffer,
+      msghash: Buffer,
+      signature: Buffer
+    ): boolean => {
+      return secp.verify(signature, msghash, pubkey)
+    }
+
+    const areSignaturesValid = psbt.validateSignaturesOfAllInputs(validator)
+
+    if (!areSignaturesValid)
+      throw new Error('Unable to sign Btc transaction: invalid signatures')
+
     // Finalize inputs
     psbt.finalizeAllInputs()
 

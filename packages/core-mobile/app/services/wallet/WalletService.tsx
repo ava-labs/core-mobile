@@ -2,6 +2,7 @@ import {
   Avalanche,
   BitcoinProviderAbstract,
   BitcoinWallet,
+  BlockCypherProvider,
   DerivationPath,
   getAddressDerivationPath,
   getAddressFromXPub,
@@ -13,6 +14,8 @@ import {
 import { now } from 'moment'
 import {
   AddDelegatorProps,
+  AvalancheTransactionRequest,
+  BtcTransactionRequest,
   CreateExportCTxParams,
   CreateExportPTxParams,
   CreateImportCTxParams,
@@ -21,17 +24,17 @@ import {
   SignTransactionRequest,
   WalletType
 } from 'services/wallet/types'
-import { BaseWallet, JsonRpcProvider } from 'ethers'
+import { BaseWallet, JsonRpcProvider, TransactionRequest } from 'ethers'
 import networkService from 'services/network/NetworkService'
 import { Network, NetworkVMType } from '@avalabs/chains-sdk'
-import { networks } from 'bitcoinjs-lib'
+import { networks, Transaction as BtcTransaction } from 'bitcoinjs-lib'
 import {
   personalSign,
   signTypedData,
   SignTypedDataVersion
 } from '@metamask/eth-sig-util'
 import SentryWrapper from 'services/sentry/SentryWrapper'
-import { Transaction } from '@sentry/types'
+import { Transaction as SentryTransaction } from '@sentry/types'
 import { Account } from 'store/account'
 import { RpcMethod } from 'store/walletConnectV2/types'
 import Logger from 'utils/Logger'
@@ -155,7 +158,7 @@ class WalletService {
   private async getWallet(
     accountIndex: number,
     network: Network,
-    sentryTrx?: Transaction
+    sentryTrx?: SentryTransaction
   ): Promise<
     BaseWallet | BitcoinWallet | Avalanche.StaticSigner | SeedlessWallet
   > {
@@ -262,6 +265,101 @@ class WalletService {
     return wallet
   }
 
+  private async signBtcTx(
+    wallet:
+      | SeedlessWallet
+      | BitcoinWallet
+      | BaseWallet
+      | Avalanche.StaticSigner,
+    tx: BtcTransactionRequest,
+    network: Network
+  ): Promise<string> {
+    if (
+      !(wallet instanceof BitcoinWallet) &&
+      !(wallet instanceof SeedlessWallet)
+    ) {
+      throw new Error('Unable to sign transaction: invalid wallet')
+    }
+
+    let signedTx: BtcTransaction
+
+    if (wallet instanceof SeedlessWallet) {
+      const provider = networkService.getProviderForNetwork(network)
+
+      if (!(provider instanceof BlockCypherProvider)) {
+        throw new Error(
+          'Unable to sign btc transaction: wrong provider obtained'
+        )
+      }
+
+      signedTx = await wallet.signBtcTx(tx.inputs, tx.outputs, provider)
+    } else {
+      signedTx = await wallet.signTx(tx.inputs, tx.outputs)
+    }
+
+    return signedTx.toHex()
+  }
+
+  private async signAvalancheTx(
+    wallet:
+      | SeedlessWallet
+      | BitcoinWallet
+      | BaseWallet
+      | Avalanche.StaticSigner,
+    tx: AvalancheTransactionRequest
+  ): Promise<string> {
+    if (
+      !(wallet instanceof Avalanche.StaticSigner) &&
+      !(wallet instanceof SeedlessWallet)
+    ) {
+      throw new Error('Unable to sign transaction: invalid wallet')
+    }
+
+    const txToSign = {
+      tx: tx.tx,
+      externalIndices: tx.externalIndices,
+      internalIndices: tx.internalIndices
+    }
+
+    const sig =
+      wallet instanceof SeedlessWallet
+        ? await wallet.signAvalancheTx(txToSign)
+        : await wallet.signTx(txToSign)
+
+    return JSON.stringify(sig.toJSON())
+  }
+
+  private async signEvmTx(
+    wallet:
+      | SeedlessWallet
+      | BitcoinWallet
+      | BaseWallet
+      | Avalanche.StaticSigner,
+    tx: TransactionRequest,
+    network: Network
+  ): Promise<string> {
+    if (
+      !(wallet instanceof BaseWallet) &&
+      !(wallet instanceof SeedlessWallet)
+    ) {
+      throw new Error('Unable to sign transaction: invalid wallet')
+    }
+
+    if (wallet instanceof SeedlessWallet) {
+      const provider = networkService.getProviderForNetwork(network)
+
+      if (!(provider instanceof JsonRpcProvider)) {
+        throw new Error(
+          'Unable to sign transaction: wrong provider obtained for EVM transaction'
+        )
+      }
+
+      return await wallet.signEvmTx(tx, provider)
+    }
+
+    return await wallet.signTransaction(tx)
+  }
+
   async init(mnemonic: string, walletType: WalletType): Promise<void> {
     Logger.info(`initializing wallet with type ${walletType}`)
 
@@ -276,66 +374,22 @@ class WalletService {
     tx: SignTransactionRequest,
     accountIndex: number,
     network: Network,
-    sentryTrx?: Transaction
+    sentryTrx?: SentryTransaction
   ): Promise<string> {
     return SentryWrapper.createSpanFor(sentryTrx)
       .setContext('svc.wallet.sign')
       .executeAsync(async () => {
         const wallet = await this.getWallet(accountIndex, network, sentryTrx)
 
-        // handle BTC signing
         if (isBtcTransactionRequest(tx)) {
-          if (!(wallet instanceof BitcoinWallet)) {
-            throw new Error('Unable to sign transaction: invalid wallet')
-          }
-
-          const signedTx = await wallet.signTx(tx.inputs, tx.outputs)
-          return signedTx.toHex()
+          return await this.signBtcTx(wallet, tx, network)
         }
-        // Handle Avalanche signing, X/P/CoreEth
+
         if (isAvalancheTransactionRequest(tx)) {
-          if (
-            !(wallet instanceof Avalanche.StaticSigner) &&
-            !(wallet instanceof SeedlessWallet)
-          ) {
-            throw new Error('Unable to sign transaction: invalid wallet')
-          }
-
-          const txToSign = {
-            tx: tx.tx,
-            externalIndices: tx.externalIndices,
-            internalIndices: tx.internalIndices
-          }
-
-          const sig =
-            wallet instanceof SeedlessWallet
-              ? await wallet.signAvalancheTx(txToSign)
-              : await wallet.signTx(txToSign)
-
-          return JSON.stringify(sig.toJSON())
+          return await this.signAvalancheTx(wallet, tx)
         }
 
-        // handle EVM signing
-        if (
-          !(wallet instanceof BaseWallet) &&
-          !(wallet instanceof SeedlessWallet)
-        ) {
-          throw new Error('Unable to sign transaction: invalid wallet')
-        }
-
-        if (wallet instanceof SeedlessWallet) {
-          const provider = networkService.getProviderForNetwork(network)
-
-          if (!(provider instanceof JsonRpcProvider)) {
-            throw new Error(
-              'Unable to sign transaction: wrong provider obtained for EVM transaction'
-            )
-          }
-
-          return await wallet.signEvmTx(tx, provider)
-        }
-
-        return await wallet.signTransaction(tx)
+        return await this.signEvmTx(wallet, tx, network)
       })
   }
 
