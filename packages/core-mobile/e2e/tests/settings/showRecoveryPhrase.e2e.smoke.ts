@@ -13,10 +13,10 @@ import SecurityAndPrivacyPage from '../../pages/burgerMenu/securityAndPrivacy.pa
 describe('Show Recovery Phrase', () => {
   beforeAll(async () => {
     await warmup()
-    await LoginRecoverWallet.recoverWalletLogin()
   })
 
   it('Should verify first and last word of mnemonic presented', async () => {
+    await LoginRecoverWallet.recoverWalletLogin()
     await BurgerMenuPage.tapBurgerMenuButton()
     await BurgerMenuPage.tapSecurityAndPrivacy()
     await SecurityAndPrivacyPage.tapShowRecoveryPhrase()

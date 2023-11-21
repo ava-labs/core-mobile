@@ -9,10 +9,10 @@ import StakePage from '../../pages/Stake/stake.page'
 describe('Stake: not enough Avax', () => {
   beforeAll(async () => {
     await warmup()
-    await LoginRecoverWallet.recoverWalletLogin()
   })
 
   it('should verify not enough avax screen items on Mainnet', async () => {
+    await LoginRecoverWallet.recoverWalletLogin()
     await AccountManagePage.createAccount(4)
     await BottomTabsPage.tapStakeTab()
     await GetStartedScreenPage.tapNextButton()

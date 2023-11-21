@@ -8,10 +8,10 @@ import { warmup } from '../../helpers/warmup'
 describe('Add custom token', () => {
   beforeAll(async () => {
     await warmup()
-    await LoginRecoverWallet.recoverWalletLogin()
   })
 
   it('should add custom token', async () => {
+    await LoginRecoverWallet.recoverWalletLogin()
     await PortfolioPage.tapAvaxNetwork()
     await Actions.waitForElement(PortfolioPage.manageTokens)
     await PortfolioPage.tapManageTokens()

@@ -1,5 +1,3 @@
-/* eslint-disable jest/expect-expect */
-
 import Actions from '../../helpers/actions'
 import Assert from '../../helpers/assertions'
 import AdvancedPage from '../../pages/burgerMenu/advanced.page'
@@ -14,10 +12,10 @@ import StakePage from '../../pages/Stake/stake.page'
 describe('Stake: testnet flow', () => {
   beforeAll(async () => {
     await warmup()
-    await LoginRecoverWallet.recoverWalletLogin()
   })
 
   it('should verify staking amount screen items', async () => {
+    await LoginRecoverWallet.recoverWalletLogin()
     await AdvancedPage.switchToTestnet()
     await BottomTabsPage.tapStakeTab()
     await StakePage.tapStakeButton()

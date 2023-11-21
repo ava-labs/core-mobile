@@ -30,6 +30,7 @@ export default async function getTestLogs(): Promise<
     testCase?: string
     subsection?: string
     platform?: string
+    testResult?: number
   }[]
 > {
   const folders = await getDirectories('./e2e/artifacts/')
@@ -59,9 +60,10 @@ export default async function getTestLogs(): Promise<
     )
     for (const result of attachmentFolders) {
       const splitTestFolder = await splitTestResult(result)
-      const testResult = result?.includes('✓') ? 'passed' : 'failed'
+      console.log(result, ' this is the result')
+      const testResult = result?.includes('✓') ? 1 : 5
       const failedScreenshot =
-        testResult === 'failed'
+        testResult === 5
           ? `${parsedResultFolder}/${result}/testDone.png`
           : undefined
       if (splitTestFolder) {

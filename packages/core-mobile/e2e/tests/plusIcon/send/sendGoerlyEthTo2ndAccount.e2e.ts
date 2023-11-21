@@ -1,4 +1,3 @@
-/* eslint-disable jest/expect-expect */
 import AccountManagePage from '../../../pages/accountManage.page'
 import ActivityTabPage from '../../../pages/activityTab.page'
 import ActivityTabLoc from '../../../locators/activityTab.loc'
@@ -13,10 +12,10 @@ import AdvancedPage from '../../../pages/burgerMenu/advanced.page'
 describe('Send Goerly Eth to another account', () => {
   beforeAll(async () => {
     await warmup()
-    await LoginRecoverWallet.recoverWalletLogin()
   })
 
   it('Should send Goerly Eth to second account', async () => {
+    await LoginRecoverWallet.recoverWalletLogin()
     await AdvancedPage.switchToTestnet()
     await NetworksManagePage.switchToEthereumGoerliNetwork()
     const secondAccountAddress = await AccountManagePage.createSecondAccount()

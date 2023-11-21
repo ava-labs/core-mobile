@@ -10,10 +10,10 @@ import { warmup } from '../../../helpers/warmup'
 describe('Send Avax to another account', () => {
   beforeAll(async () => {
     await warmup()
-    await LoginRecoverWallet.recoverWalletLogin()
   })
 
   it('Should send AVAX to second account', async () => {
+    await LoginRecoverWallet.recoverWalletLogin()
     const secondAccountAddress = await AccountManagePage.createSecondAccount()
     await SendPage.sendTokenTo2ndAccount(
       sendLoc.avaxToken,

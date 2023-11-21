@@ -7,10 +7,10 @@ import DefiPage from '../../pages/defi.page'
 describe('Defi Tab', () => {
   beforeAll(async () => {
     await warmup()
-    await LoginRecoverWallet.recoverWalletLogin()
   })
 
   it('Should verify Defi Items', async () => {
+    await LoginRecoverWallet.recoverWalletLogin()
     await PortfolioPage.tapDefiTab()
     await DefiPage.verifyDefiListItems()
   })

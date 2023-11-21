@@ -8,10 +8,10 @@ import GetStartedScreenPage from '../../pages/Stake/getStartedScreen.page'
 describe('Stake: get started screen', () => {
   beforeAll(async () => {
     await warmup()
-    await LoginRecoverWallet.recoverWalletLogin()
   })
 
   it('should verify get started screen on Mainnet', async () => {
+    await LoginRecoverWallet.recoverWalletLogin()
     await AccountManagePage.createAccount(4)
     await BottomTabsPage.tapStakeTab()
     await Actions.waitForElement(GetStartedScreenPage.getStartedTitle)

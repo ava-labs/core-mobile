@@ -12,10 +12,11 @@ import AddressBookPage from '../../pages/burgerMenu/addressBook.page'
 describe('Address Book', () => {
   beforeAll(async () => {
     await warmup()
-    await LoginRecoverWallet.recoverWalletLogin()
   })
 
   it('Should verify empty contacts', async () => {
+    await LoginRecoverWallet.recoverWalletLogin()
+
     await BurgerMenuPage.tapBurgerMenuButton()
     await Actions.waitForElement(BurgerMenuPage.addressBook)
     await BurgerMenuPage.tapAddressBook()
