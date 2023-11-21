@@ -330,12 +330,13 @@ class EarnService {
       )
 
       const indices = accountsArray.map(acc => acc.index)
-      const secondQueryParams = await WalletService.getAddressesByIndices(
+      // TODO: get addresses normally, not by indices
+      const secondQueryParams = await WalletService.getAddressesByIndices({
         indices,
-        'P',
-        false,
-        oppositeIsDeveloperMode
-      )
+        chainAlias: 'P',
+        isChange: false,
+        isTestnet: oppositeIsDeveloperMode
+      })
 
       const secondTransactions = await getTransformedTransactions(
         secondQueryParams,

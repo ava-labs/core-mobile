@@ -15,9 +15,10 @@ import {
 import { AppStartListening } from 'store/middleware/listener'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import Logger, { LogLevel } from 'utils/Logger'
-import { extendAccountProps } from 'store/app/migrations'
 import { capture } from 'store/posthog'
 import DeviceInfo from 'react-native-device-info'
+import { WalletType } from 'services/wallet/types'
+import SecureStorageService from 'security/SecureStorageService'
 import {
   onAppLocked,
   onAppUnlocked,
@@ -25,7 +26,8 @@ import {
   onForeground,
   onLogOut,
   selectAppState,
-  selectIsLocked
+  selectIsLocked,
+  setWalletType
 } from './slice'
 
 const TIME_TO_LOCK_IN_SECONDS = 5
@@ -56,13 +58,6 @@ const init = async (
     await BiometricsSDK.warmup()
   }
   dispatch(setIsReady(true))
-}
-
-const applyVersionMigrations = async (
-  _: Action,
-  listenerApi: AppListenerEffectAPI
-): Promise<void> => {
-  extendAccountProps(listenerApi)
 }
 
 const listenToAppState = async (
@@ -151,19 +146,22 @@ const clearData = async (
 ): Promise<void> => {
   const { dispatch } = listenerApi
   dispatch(setWalletState(WalletState.NONEXISTENT))
-  await BiometricsSDK.clearAllWalletKeys()
-  await AsyncStorage.clear()
+  dispatch(setWalletType(WalletType.UNSET))
+  await BiometricsSDK.clearAllWalletKeys().catch(e =>
+    Logger.error('failed to clear biometrics', e)
+  )
+  await SecureStorageService.clearAll().catch(e =>
+    Logger.error('failed to clear secure store', e)
+  )
+  await AsyncStorage.clear().catch(e =>
+    Logger.error('failed to clear async store', e)
+  )
 }
 
 export const addAppListeners = (startListening: AppStartListening): void => {
   startListening({
     actionCreator: onRehydrationComplete,
     effect: init
-  })
-
-  startListening({
-    actionCreator: onAppUnlocked,
-    effect: applyVersionMigrations
   })
 
   startListening({

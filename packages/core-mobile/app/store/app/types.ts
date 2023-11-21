@@ -1,4 +1,5 @@
 import { AppStateStatus } from 'react-native'
+import { WalletType } from 'services/wallet/types'
 
 export enum WalletState {
   NONEXISTENT,
@@ -20,4 +21,7 @@ export type AppState = {
 
   // indicates whether wallet does not exist, or if exists if it's active or inactive
   walletState: WalletState
+
+  // indicates the type of wallet (unset, seedless or mnemonic)
+  walletType: WalletType
 }
