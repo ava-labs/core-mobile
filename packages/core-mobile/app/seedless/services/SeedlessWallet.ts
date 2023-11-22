@@ -9,9 +9,13 @@ import {
   hashMessage,
   JsonRpcProvider
 } from 'ethers'
-import { networks } from 'bitcoinjs-lib'
+import { Transaction, networks } from 'bitcoinjs-lib'
 import {
   Avalanche,
+  BitcoinInputUTXO,
+  BitcoinOutputUTXO,
+  BlockCypherProvider,
+  createPsbt,
   getBtcAddressFromPubKey,
   getEvmAddressFromPubKey
 } from '@avalabs/wallets-sdk'
@@ -22,9 +26,11 @@ import {
   TypedDataUtils,
   typedSignatureHash
 } from '@metamask/eth-sig-util'
+import * as secp from '@noble/secp256k1'
 import { RpcMethod } from 'store/walletConnectV2/types'
 import { assertNotUndefined } from 'utils/assertions'
 import { SeedlessSessionStorage } from './SeedlessSessionStorage'
+import { SeedlessBtcSigner } from './SeedlessBtcSigner'
 
 export default class SeedlessWallet {
   #session: cs.SignerSession | undefined
@@ -274,7 +280,7 @@ export default class SeedlessWallet {
     }
   }
 
-  async signEvmTransaction(
+  async signEvmTx(
     tx: TransactionRequest,
     provider: JsonRpcProvider
   ): Promise<string> {
@@ -311,6 +317,54 @@ export default class SeedlessWallet {
     request.tx.addSignature(hexToBuffer(response.data().signature))
 
     return request.tx
+  }
+
+  async signBtcTx(
+    ins: BitcoinInputUTXO[],
+    outs: BitcoinOutputUTXO[],
+    provider: BlockCypherProvider
+  ): Promise<Transaction> {
+    const btcNetwork = provider.getNetwork()
+    const psbt = createPsbt(ins, outs, btcNetwork)
+
+    // Sign the inputs
+    await Promise.all(
+      psbt.txInputs.map((_, i) => {
+        if (!this.addressPublicKey) {
+          throw new Error('Public key not available')
+        }
+
+        const signer = new SeedlessBtcSigner({
+          fromKey: this.addressPublicKey.evm,
+          psbt,
+          inputIndex: i,
+          utxos: ins,
+          network: btcNetwork,
+          session: this.session
+        })
+
+        return psbt.signInputAsync(i, signer)
+      })
+    )
+
+    // Validate inputs
+    const validator = (
+      pubkey: Buffer,
+      msghash: Buffer,
+      signature: Buffer
+    ): boolean => {
+      return secp.verify(signature, msghash, pubkey)
+    }
+
+    const areSignaturesValid = psbt.validateSignaturesOfAllInputs(validator)
+
+    if (!areSignaturesValid)
+      throw new Error('Unable to sign Btc transaction: invalid signatures')
+
+    // Finalize inputs
+    psbt.finalizeAllInputs()
+
+    return psbt.extractTransaction()
   }
 
   getReadOnlyWallet(provXP: Avalanche.JsonRpcProvider): Avalanche.WalletVoid {
