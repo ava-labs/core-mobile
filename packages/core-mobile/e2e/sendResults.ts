@@ -192,7 +192,6 @@ async function generatePlatformResults(
           resultObject?.case_id,
           payload
         )
-        console.log(testResult, 'another test result!!!')
         if (testResult.status_id === 5) {
           // This is the path to the screenshot for when the test fails
           const failScreenshot = `./e2e/artifacts/${platform}/${resultObject.screenshot}`
