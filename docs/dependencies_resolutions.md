@@ -28,3 +28,7 @@ to keep certain eslint plugins/configs from conflicting with each other
 ### "jest": "29.7.0"
 
 to prevent error when running detox due to different versions of jest conflicting
+
+### "bitcoinjs-lib": "6.1.5"
+
+to prevent type conflicts between 5.2.0 from @avalabs/wallets-sdk and our code
