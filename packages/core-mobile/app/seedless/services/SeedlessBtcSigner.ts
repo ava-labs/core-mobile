@@ -65,6 +65,8 @@ export class SeedlessBtcSigner implements SignerAsync {
 
     const pk = Buffer.from(strip0x(fromKey), 'hex') // uncompressed
 
+    // 04 prefix denotes uncompressed public key
+    // www.doubloin.com/learn/bitcoin-address-compressed-uncompressed#how-to-know-if-a-bitcoin-address-is-compressed-or-uncompressed
     if (pk.length !== 65 || pk[0] !== 4) {
       throw new Error('Invalid public key')
     }
