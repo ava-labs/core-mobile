@@ -75,10 +75,10 @@ class ExistingRecoveryPhrasePage {
   }
 
   async recoverWallet(recoveryPhrase: string) {
-    await this.tapForgotPinBtn()
+    // await this.tapForgotPinBtn()
     //await this.tapSignInWithRecoveryPhraseBtn()
-    // await this.tapAlreadyHaveAWalletBtn()
-    // await this.tapRecoveryPhraseBtn()
+    await this.tapAlreadyHaveAWalletBtn()
+    await this.tapRecoveryPhraseBtn()
     await AnalyticsConsentPage.tapNoThanksBtn()
     await Action.waitForElement(this.recoveryPhraseTextInput)
     await this.verifyExistingRecoveryPhrasePage()
