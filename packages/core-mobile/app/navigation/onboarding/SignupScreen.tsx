@@ -4,14 +4,13 @@ import CoreXLogoAnimated from 'components/CoreXLogoAnimated'
 import { Space } from 'components/Space'
 import AppNavigation from 'navigation/AppNavigation'
 import { OnboardScreenProps } from 'navigation/types'
-import React, { FC, useState } from 'react'
+import React, { FC } from 'react'
 import { Alert } from 'react-native'
 import { useSelector } from 'react-redux'
 import AuthButtons from 'seedless/components/AuthButtons'
 import { useSeedlessRegister } from 'seedless/hooks/useSeedlessRegister'
 import { SeedlessUserRegistrationResult } from 'seedless/services/CoreSeedlessAPIService'
 import GoogleSigninService from 'seedless/services/GoogleSigninService'
-import SeedlessService from 'seedless/services/SeedlessService'
 import { selectIsSeedlessOnboardingBlocked } from 'store/posthog'
 import Logger from 'utils/Logger'
 
@@ -20,13 +19,11 @@ type NavigationProp = OnboardScreenProps<
 >['navigation']
 
 const SignupScreen: FC = () => {
-  const [isLoading, setIsLoading] = useState(false)
   const isSeedlessOnboardingBlocked = useSelector(
     selectIsSeedlessOnboardingBlocked
   )
   const navigation = useNavigation<NavigationProp>()
   const { register, isRegistering } = useSeedlessRegister()
-  const loading = isRegistering || isLoading
 
   const handleSigninWithMnemonic = (): void => {
     navigation.navigate(AppNavigation.Onboard.Welcome, {
@@ -60,22 +57,14 @@ const SignupScreen: FC = () => {
       return
     }
 
-    setIsLoading(true)
     if (result === SeedlessUserRegistrationResult.APPROVED) {
       navigation.navigate(AppNavigation.Onboard.RecoveryMethods)
     } else if (result === SeedlessUserRegistrationResult.ALREADY_REGISTERED) {
-      const userMfa = await SeedlessService.userMfa()
-      if (userMfa.length === 0) {
-        navigation.navigate(AppNavigation.Onboard.RecoveryMethods)
-        setIsLoading(false)
-        return
-      }
       // @ts-ignore
       navigation.navigate(AppNavigation.Onboard.RecoveryMethods, {
         screen: AppNavigation.RecoveryMethods.VerifyCode
       })
     }
-    setIsLoading(false)
   }
 
   return (
@@ -108,7 +97,7 @@ const SignupScreen: FC = () => {
         }}>
         <CoreXLogoAnimated size={180} />
       </View>
-      {!loading && (
+      {!isRegistering && (
         <View sx={{ padding: 16, marginBottom: 46 }}>
           {isSeedlessOnboardingBlocked ? (
             <>

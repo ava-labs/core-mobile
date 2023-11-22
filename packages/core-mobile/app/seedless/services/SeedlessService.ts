@@ -147,10 +147,11 @@ class SeedlessService {
    * @return — Proof of authentication
    */
   async oidcProveIdentity(oidcToken: string): Promise<IdentityProof> {
-    return (await this.getCubeSigner()).oidcProveIdentity(
-      oidcToken,
-      SEEDLESS_ORG_ID
-    )
+    const cubeSigner = new CubeSigner({
+      env: envs.gamma,
+      orgId: SEEDLESS_ORG_ID
+    })
+    return cubeSigner.oidcProveIdentity(oidcToken, SEEDLESS_ORG_ID)
   }
 }
 

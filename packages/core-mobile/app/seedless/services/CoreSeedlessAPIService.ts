@@ -28,16 +28,21 @@ class CoreSeedlessAPIService {
         method: 'POST',
         body: JSON.stringify(identityProof),
         headers: {
-          Authorization: `${Config.SEEDLESS_API_KEY}`
+          Authorization: `${Config.SEEDLESS_API_KEY}`,
+          'Content-Type': 'application/json'
         }
       })
 
+      const status = response.status
       const body = await response.json()
+      if (status === 200) {
+        return SeedlessUserRegistrationResult.APPROVED
+      }
 
       if (body.message === 'USER_ALREADY_EXISTS') {
         return SeedlessUserRegistrationResult.ALREADY_REGISTERED
       }
-      return SeedlessUserRegistrationResult.APPROVED
+      return SeedlessUserRegistrationResult.ERROR
     } catch (error) {
       return SeedlessUserRegistrationResult.ERROR
     }
