@@ -19,7 +19,7 @@ export class SeedlessBtcSigner implements SignerAsync {
   // cubesigner current signer session
   readonly #session: cs.SignerSession
 
-  /** Compressed pubkey of the wallet/key (`this.#keyInfo`) to sign with */
+  /** Compressed pubkey of the wallet/key (`this.#fromKey`) to sign with */
   public readonly publicKey: Buffer
 
   /** Bitcoin network to sign for */
