@@ -3,6 +3,7 @@ import CoreSeedlessAPIService, {
   SeedlessUserRegistrationResult
 } from 'seedless/services/CoreSeedlessAPIService'
 import SeedlessService from 'seedless/services/SeedlessService'
+import Logger from 'utils/Logger'
 
 type ReturnType = {
   isRegistering: boolean
@@ -17,14 +18,18 @@ export const useSeedlessRegister = (): ReturnType => {
   ): Promise<SeedlessUserRegistrationResult> => {
     setIsRegistering(true)
 
-    const result = await CoreSeedlessAPIService.register(oidcToken)
-
-    if (result !== SeedlessUserRegistrationResult.ERROR) {
-      await SeedlessService.login(oidcToken)
+    try {
+      const result = await CoreSeedlessAPIService.register(oidcToken)
+      if (result !== SeedlessUserRegistrationResult.ERROR) {
+        await SeedlessService.login(oidcToken)
+      }
+      return result
+    } catch (error) {
+      Logger.error('useSeedlessRegister error', error)
+      return SeedlessUserRegistrationResult.ERROR
+    } finally {
+      setIsRegistering(false)
     }
-
-    setIsRegistering(false)
-    return result
   }
 
   return {
