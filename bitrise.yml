@@ -526,9 +526,12 @@ workflows:
         - service_account_json_key_path: $BITRISEIO_AVALABS_GOOGLE_PLAY_SERVICE_ACCOUNT_JSON_KEY_URL
   android-internal-e2e:
     envs:
-      - POST_TO_TESTRAIL: "true"
-        opts:
-          is_expand: false
+    - ENVIRONMENT: production
+      opts:
+        is_expand: false
+    - E2E: "true"
+      opts:
+        is_expand: false
     before_run:
     - _install-and-set-env
     - _set-version
