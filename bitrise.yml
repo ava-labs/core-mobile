@@ -157,12 +157,6 @@ workflows:
     - USE_TEST_FEATURE_FLAGS: "true"
       opts:
         is_expand: false
-    - TESTRAIL_PROJECT_ID: $TESTRAIL_PROJECT_ID
-      opts:
-        is_expand: false
-    - POST_TO_TESTRAIL: "true"
-      opts:
-        is_expand: false
     steps:
     - avd-manager@1.2:
         inputs:
@@ -203,12 +197,6 @@ workflows:
     - USE_TEST_FEATURE_FLAGS: "true"
       opts:
         is_expand: false
-    - TESTRAIL_PROJECT_ID: $TESTRAIL_PROJECT_ID
-      opts:
-        is_expand: false
-    - POST_TO_TESTRAIL: "true"
-      opts:
-        is_expand: false
     steps:
     - avd-manager@1.2:
         inputs:
@@ -247,12 +235,6 @@ workflows:
       opts:
         is_expand: false
     - USE_TEST_FEATURE_FLAGS: "true"
-      opts:
-        is_expand: false
-    - TESTRAIL_PROJECT_ID: $TESTRAIL_PROJECT_ID
-      opts:
-        is_expand: false
-    - POST_TO_TESTRAIL: "true"
       opts:
         is_expand: false
     steps:
@@ -573,12 +555,6 @@ workflows:
       opts:
         is_expand: false
     - USE_TEST_FEATURE_FLAGS: "true"
-      opts:
-        is_expand: false
-    - TESTRAIL_PROJECT_ID: $TESTRAIL_PROJECT_ID
-      opts:
-        is_expand: false
-    - POST_TO_TESTRAIL: "true"
       opts:
         is_expand: false
     before_run:
