@@ -153,6 +153,9 @@ workflows:
     - E2E: "true"
       opts:
         is_expand: false
+    - E2E_MNEMONIC: $E2E_MNEMONIC
+      opts:
+        is_expand: false
     steps:
     - avd-manager@1.2:
         inputs:
@@ -184,6 +187,9 @@ workflows:
     - E2E: "true"
       opts:
         is_expand: false
+    - E2E_MNEMONIC: $E2E_MNEMONIC
+      opts:
+        is_expand: false
     steps:
     - avd-manager@1.2:
         inputs:
@@ -213,6 +219,9 @@ workflows:
       opts:
         is_expand: false
     - E2E: "true"
+      opts:
+        is_expand: false
+    - E2E_MNEMONIC: $E2E_MNEMONIC
       opts:
         is_expand: false
     steps:
