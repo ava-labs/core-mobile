@@ -27,10 +27,15 @@ export const AddRecoveryMethods = (): JSX.Element => {
     if (mfa.length === 0) {
       const challenge = await SeedlessService.addFidoStart('Test')
 
-      const result = await PasskeyService.register(challenge.options)
+      // console.log('challenge', challenge.options)
 
-      // eslint-disable-next-line no-console
-      console.log(result)
+      try {
+        const result = await PasskeyService.register(challenge.options)
+        // eslint-disable-next-line no-console
+        console.log(result)
+      } catch (e) {
+        // console.log(e)
+      }
 
       // await challenge.answer()
     }
