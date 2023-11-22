@@ -10,7 +10,7 @@ class LoginRecoverWallet {
     await ExistingRecoveryPhrasePage.tapAlreadyHaveAWalletBtn()
     // await ExistingRecoveryPhrasePage.tapSignInWithRecoveryPhraseBtn()
     await ExistingRecoveryPhrasePage.tapRecoveryPhraseBtn()
-    await ExistingRecoveryPhrasePage.tapForgotPinBtn()
+    // await ExistingRecoveryPhrasePage.tapForgotPinBtn()
     await AnalyticsConsentPage.tapNoThanksBtn()
     await ExistingRecoveryPhrasePage.enterRecoveryPhrase(recoveryPhrase)
     await ExistingRecoveryPhrasePage.tapSignInBtn()
