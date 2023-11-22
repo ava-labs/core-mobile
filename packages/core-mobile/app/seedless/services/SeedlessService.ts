@@ -142,6 +142,7 @@ class SeedlessService {
 
   async addFidoStart(name: string): Promise<AddFidoChallenge> {
     const cubeSigner = await this.getCubeSigner()
+    cubeSigner.setOrgId(SEEDLESS_ORG_ID)
     const signResponse = await cubeSigner.addFidoStart(name)
 
     return signResponse.data()
