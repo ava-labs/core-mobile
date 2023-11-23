@@ -1,8 +1,32 @@
 diff --git a/node_modules/react-native/ReactCommon/jsi/JSCRuntime.cpp b/node_modules/react-native/ReactCommon/jsi/JSCRuntime.cpp
-index 5d8487b2cd5b93b5238df0fb547e44c62fefc0b4..f960c6fc26d602bf3a83d4e4305a4efd64e0381a 100644
+index 5d8487b..37c6a49 100644
 --- a/node_modules/react-native/ReactCommon/jsi/JSCRuntime.cpp
 +++ b/node_modules/react-native/ReactCommon/jsi/JSCRuntime.cpp
-@@ -392,12 +392,12 @@ JSCRuntime::~JSCRuntime() {
+@@ -285,6 +285,9 @@ class JSCRuntime : public jsi::Runtime {
+ #if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_10_0
+ #define _JSC_NO_ARRAY_BUFFERS
+ #endif
++#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 160400
++#define _JSC_HAS_INSPECTABLE
++#endif
+ #endif
+ #if defined(__MAC_OS_X_VERSION_MIN_REQUIRED)
+ #if __MAC_OS_X_VERSION_MIN_REQUIRED >= __MAC_10_11
+@@ -381,6 +384,13 @@ JSCRuntime::JSCRuntime(JSGlobalContextRef ctx)
+       stringCounter_(0)
+ #endif
+ {
++#ifndef NDEBUG
++#ifdef _JSC_HAS_INSPECTABLE
++  if (__builtin_available(macOS 13.3, iOS 16.4, tvOS 16.4, *)) {
++    JSGlobalContextSetInspectable(ctx_, true);
++  }
++#endif
++#endif
+ }
+ 
+ JSCRuntime::~JSCRuntime() {
+@@ -392,12 +402,12 @@ JSCRuntime::~JSCRuntime() {
    // has started.
    ctxInvalid_ = true;
    JSGlobalContextRelease(ctx_);
@@ -22,7 +46,7 @@ index 5d8487b2cd5b93b5238df0fb547e44c62fefc0b4..f960c6fc26d602bf3a83d4e4305a4efd
  
  std::shared_ptr<const jsi::PreparedJavaScript> JSCRuntime::prepareJavaScript(
 diff --git a/node_modules/react-native/index.js b/node_modules/react-native/index.js
-index d59ba3454e9cabed1231554418b5b288c2461a0b..3f51111c619952c12178445bc3fb89cca8eaa4e6 100644
+index d59ba34..3f51111 100644
 --- a/node_modules/react-native/index.js
 +++ b/node_modules/react-native/index.js
 @@ -456,11 +456,12 @@ module.exports = {
@@ -44,7 +68,7 @@ index d59ba3454e9cabed1231554418b5b288c2461a0b..3f51111c619952c12178445bc3fb89cc
  };
  
 diff --git a/node_modules/react-native/scripts/react-native-xcode.sh b/node_modules/react-native/scripts/react-native-xcode.sh
-index 927ec76c3adc1fad91acfd97c8653e69493b6b0a..6e4043a5956c5d652a668747eb4d5d5a8f4f9904 100755
+index 927ec76..6e4043a 100755
 --- a/node_modules/react-native/scripts/react-native-xcode.sh
 +++ b/node_modules/react-native/scripts/react-native-xcode.sh
 @@ -129,7 +129,7 @@ fi
