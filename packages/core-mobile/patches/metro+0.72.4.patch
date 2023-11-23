@@ -1,0 +1,29 @@
+diff --git a/node_modules/metro/src/lib/logToConsole.js b/node_modules/metro/src/lib/logToConsole.js
+index 292dbb7..f235515 100644
+--- a/node_modules/metro/src/lib/logToConsole.js
++++ b/node_modules/metro/src/lib/logToConsole.js
+@@ -53,7 +53,7 @@ module.exports = (terminal, level, mode, ...data) => {
+     return;
+   }
+ 
+-  if (!groupStack.includes("groupCollapsed")) {
++  
+     // Remove excess whitespace at the end of a log message, if possible.
+     const lastItem = data[data.length - 1];
+ 
+@@ -64,12 +64,12 @@ module.exports = (terminal, level, mode, ...data) => {
+     const modePrefix =
+       !mode || mode == "BRIDGE" ? "" : `(${mode.toUpperCase()}) `;
+     terminal.log(
+-      color.bold(` ${modePrefix}${logFunction.toUpperCase()} `) +
+-        "".padEnd(groupStack.length * 2, " "), // `util.format` actually accepts any arguments.
++      color.bold(` ${modePrefix}${logFunction.toUpperCase()} `), 
++      // `util.format` actually accepts any arguments.
+       // If the first argument is a string, it tries to format it.
+       // Otherwise, it just concatenates all arguments.
+       // $FlowIssue[incompatible-call] util.format expected the first argument to be a string
+       util.format(...data)
+     );
+-  }
++  
+ };
