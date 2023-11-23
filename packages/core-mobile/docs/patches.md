@@ -1,5 +1,10 @@
 # Patches
 
+## How to patch
+1. adjust the code the package you want to patch
+2. in core-mobile folder, run `../../scripts/patch-package.sh [dependency]`. it should create a patch file in core-mobile/patches folder
+
+## Current patches
 ### react-native-flipper-performance-plugin+0.4.0.patch
 
 Android:
