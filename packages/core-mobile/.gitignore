@@ -62,6 +62,7 @@ buck-out/
 package-lock.json
 .markdownlint.json
 /.env*
+!/.env.example
 
 # detox
 e2e/artifacts/
