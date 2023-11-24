@@ -193,14 +193,14 @@ type NavigationProp = WalletScreenProps<
 >['navigation']
 
 function WalletScreenStack(props: Props): JSX.Element {
-  const hasBeenViewedCoreOnboarding = useSelector(
-    selectHasBeenViewedOnce(ViewOnceKey.CORE_ONBOARDING)
+  const hasBeenViewedCoreIntro = useSelector(
+    selectHasBeenViewedOnce(ViewOnceKey.CORE_INTRO)
   )
   const navigation = useNavigation<NavigationProp>()
 
   useFocusEffect(
     React.useCallback(() => {
-      if (!hasBeenViewedCoreOnboarding) {
+      if (!hasBeenViewedCoreIntro) {
         navigation.navigate(AppNavigation.Modal.CoreIntro)
       }
       const onBackPress = (): boolean => {

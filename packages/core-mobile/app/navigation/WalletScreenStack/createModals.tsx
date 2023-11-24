@@ -188,7 +188,7 @@ const CoreOnboardingModal = (): JSX.Element => {
   return (
     <OnboardingModal
       heading="Welcome to Core!"
-      viewOnceKey={ViewOnceKey.CORE_ONBOARDING}
+      viewOnceKey={ViewOnceKey.CORE_INTRO}
       buttonText="Get Started!"
       descriptions={descriptions}
     />
