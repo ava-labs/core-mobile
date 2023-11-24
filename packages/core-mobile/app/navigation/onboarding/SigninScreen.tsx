@@ -3,7 +3,7 @@ import { useNavigation } from '@react-navigation/native'
 import CoreXLogoAnimated from 'components/CoreXLogoAnimated'
 import AppNavigation from 'navigation/AppNavigation'
 import { OnboardScreenProps } from 'navigation/types'
-import React, { FC, useLayoutEffect, useState } from 'react'
+import React, { FC, useLayoutEffect } from 'react'
 import { Alert } from 'react-native'
 import AuthButtons from 'seedless/components/AuthButtons'
 import { useSeedlessRegister } from 'seedless/hooks/useSeedlessRegister'
@@ -17,13 +17,11 @@ type NavigationProp = OnboardScreenProps<
 >['navigation']
 
 const SigninScreen: FC = () => {
-  const [isLoading, setIsLoading] = useState(false)
   const navigation = useNavigation<NavigationProp>()
   const {
     theme: { colors }
   } = useTheme()
   const { register, isRegistering } = useSeedlessRegister()
-  const loading = isRegistering || isLoading
 
   const handleSigninWithMnemonic = (): void => {
     navigation.navigate(AppNavigation.Onboard.Welcome, {
@@ -43,14 +41,11 @@ const SigninScreen: FC = () => {
       Alert.alert('seedless user registration error')
       return
     }
-
-    setIsLoading(true)
     if (result === SeedlessUserRegistrationResult.APPROVED) {
       navigation.navigate(AppNavigation.Onboard.RecoveryMethods)
     } else if (result === SeedlessUserRegistrationResult.ALREADY_REGISTERED) {
       const userMfa = await SeedlessService.userMfa()
       if (userMfa.length === 0) {
-        setIsLoading(false)
         navigation.navigate(AppNavigation.Onboard.RecoveryMethods)
         return
       }
@@ -59,17 +54,16 @@ const SigninScreen: FC = () => {
         screen: AppNavigation.RecoveryMethods.VerifyCode
       })
     }
-    setIsLoading(false)
   }
 
   useLayoutEffect(() => {
     navigation.setOptions({
-      headerShown: !loading,
+      headerShown: !isRegistering,
       title: '',
       headerBackTitle: 'Sign Up',
       headerTintColor: colors.$blueMain
     })
-  }, [navigation, colors, loading])
+  }, [navigation, colors, isRegistering])
 
   return (
     <View sx={{ flex: 1, backgroundColor: '$black' }}>
@@ -81,7 +75,7 @@ const SigninScreen: FC = () => {
         }}>
         <CoreXLogoAnimated size={180} />
       </View>
-      {!loading && (
+      {!isRegistering && (
         <View
           sx={{
             padding: 16,
@@ -89,7 +83,6 @@ const SigninScreen: FC = () => {
           }}>
           <AuthButtons
             title="Sign in with..."
-            disabled={isRegistering}
             onGoogleAction={() => {
               handleSigninWithGoogle().catch(error => {
                 Alert.alert('seedless user registration error')
