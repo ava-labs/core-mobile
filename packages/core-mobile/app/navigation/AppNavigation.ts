@@ -14,7 +14,8 @@ enum OnboardScreens {
   EnterWithMnemonicStack = 'OnboardScreens.EnterWithMnemonicStack',
   Login = 'OnboardScreens.Login',
   RecoveryMethods = 'OnboardScreens.RecoveryMethods',
-  CreatePin = 'OnboardScreens.CreatePin'
+  CreatePin = 'OnboardScreens.CreatePin',
+  NameYourWallet = 'OnboardScreens.NameYourWallet'
 }
 
 enum RefreshTokenScreens {

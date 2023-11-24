@@ -9,6 +9,7 @@ import { WalletState, selectIsLocked, selectWalletState } from 'store/app'
 import { useSelector } from 'react-redux'
 import { showSnackBarCustom } from 'components/Snackbar'
 import GeneralToast from 'components/toast/GeneralToast'
+import { NameYourWallet } from 'seedless/screens/NameYourWallet'
 import SignupScreen from './onboarding/SignupScreen'
 import { WelcomeScreenStackParamList } from './onboarding/WelcomeScreenStack'
 import { OnboardScreenProps } from './types'
@@ -16,6 +17,7 @@ import SigninScreen from './onboarding/SigninScreen'
 import RecoveryMethodsStack, {
   RecoveryMethodsStackParamList
 } from './onboarding/RecoveryMethodsStack'
+import { MainHeaderOptions } from './NavUtils'
 
 type NavigationProp = OnboardScreenProps<
   typeof AppNavigation.Onboard.Signup
@@ -76,6 +78,11 @@ const OnboardScreenStack: FC = () => {
         name={AppNavigation.Onboard.RecoveryMethods}
         component={RecoveryMethodsStack}
       />
+      <OnboardingScreenS.Screen
+        options={MainHeaderOptions()}
+        name={AppNavigation.Onboard.NameYourWallet}
+        component={NameYourWallet}
+      />
     </OnboardingScreenS.Navigator>
   )
 }
@@ -90,6 +97,7 @@ export type OnboardingScreenStackParamList = {
     oidcToken: string
     mfaId: string
   }
+  [AppNavigation.Onboard.NameYourWallet]: undefined
 }
 
 const OnboardingScreenS = createStackNavigator<OnboardingScreenStackParamList>()
