@@ -14,6 +14,9 @@ import 'utils/debugging/wdyr'
 import { navigationRef } from 'utils/Navigation'
 import SentryService from 'services/sentry/SentryService'
 import DataDogService from 'services/datadog/DataDogService'
+import Logger, { LogLevel } from 'utils/Logger'
+
+Logger.setLevel(__DEV__ ? LogLevel.TRACE : LogLevel.ERROR)
 
 LogBox.ignoreLogs([
   'Require cycle:',
