@@ -9,8 +9,6 @@ import {
   envs,
   Environment
 } from '@cubist-labs/cubesigner-sdk'
-import Config from 'react-native-config'
-import { Result } from 'types/result'
 import { TotpErrors } from 'seedless/errors'
 import { Result } from 'types/result'
 import { SeedlessSessionStorage } from './SeedlessSessionStorage'
