@@ -6,7 +6,8 @@ import {
   SignerSessionManager,
   TotpChallenge,
   UserInfo,
-  envs
+  envs,
+  Environment
 } from '@cubist-labs/cubesigner-sdk'
 import { TotpErrors } from 'seedless/errors'
 import { Result } from 'types/result'
@@ -16,7 +17,19 @@ if (!Config.SEEDLESS_ORG_ID) {
   throw Error('SEEDLESS_ORG_ID is missing. Please check your env file.')
 }
 
+if (!Config.SEEDLESS_ENVIRONMENT) {
+  throw Error('SEEDLESS_ENVIRONMENT is missing. Please check your env file.')
+}
+
 const SEEDLESS_ORG_ID = Config.SEEDLESS_ORG_ID
+
+const SEEDLESS_ENVIRONMENT = Config.SEEDLESS_ENVIRONMENT
+
+const envInterface = envs[SEEDLESS_ENVIRONMENT as Environment]
+
+if (!envInterface) {
+  throw Error('SEEDLESS_ENVIRONMENT is incorrect. Please check your env file.')
+}
 
 /**
  * Service for cubesigner-sdk
@@ -65,7 +78,7 @@ class SeedlessService {
     )
 
     await SignerSessionManager.createFromSessionInfo(
-      envs.gamma,
+      envInterface,
       SEEDLESS_ORG_ID,
       signResponse.data(),
       new SeedlessSessionStorage()
