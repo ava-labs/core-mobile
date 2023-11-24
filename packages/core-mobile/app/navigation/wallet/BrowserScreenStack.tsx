@@ -13,7 +13,7 @@ import { useSelector } from 'react-redux'
 import { selectHasBeenViewedOnce, ViewOnceKey } from 'store/viewOnce'
 import { HistoryScreen } from 'screens/browser/HistoryScreen'
 import { SubHeaderOptions } from 'navigation/NavUtils'
-import OnboardingModal from 'screens/onboarding/OnboardingModal'
+import IntroModal from 'screens/onboarding/IntroModal'
 import WalletConnectSVG from 'components/svg/WalletConnectSVG'
 import CoreOwl from 'assets/icons/core_owl.svg'
 import RocketLaunch from 'assets/icons/rocket_launch.svg'
@@ -62,7 +62,7 @@ function BrowserScreenStack(): JSX.Element {
           presentation: 'transparentModal',
           headerShown: false
         }}
-        component={BrowserIntroScreen}
+        component={BrowserIntroModal}
       />
     </BrowserStack.Navigator>
   )
@@ -85,7 +85,7 @@ const renderNavigationHeader = ({
 
 export default React.memo(BrowserScreenStack)
 
-const BrowserIntroScreen = (): JSX.Element => {
+const BrowserIntroModal = (): JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
@@ -109,7 +109,7 @@ const BrowserIntroScreen = (): JSX.Element => {
     }
   ]
   return (
-    <OnboardingModal
+    <IntroModal
       heading="How to use the Core Browser..."
       viewOnceKey={ViewOnceKey.BROWSER_INTERACTION}
       buttonText="Get Started"

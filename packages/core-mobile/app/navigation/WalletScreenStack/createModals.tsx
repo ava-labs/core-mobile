@@ -18,7 +18,7 @@ import SwitchEthereumChainV2 from 'screens/rpc/components/v2/SwitchEthereumChain
 import BuyCarefully from 'screens/rpc/buy/BuyCarefully'
 import AvalancheSendTransactionV2 from 'screens/rpc/components/v2/AvalancheSendTransaction'
 import { DisclaimerBottomSheet } from 'screens/earn/components/DisclaimerBottomSheet'
-import OnboardingModal from 'screens/onboarding/OnboardingModal'
+import IntroModal from 'screens/onboarding/IntroModal'
 import { ViewOnceKey } from 'store/viewOnce'
 import SearchIcon from 'assets/icons/search.svg'
 import RocketLaunch from 'assets/icons/rocket_launch.svg'
@@ -77,7 +77,7 @@ export const createModals = (WalletScreenS: WalletScreenSType): JSX.Element => {
       />
       <WalletScreenS.Screen
         name={AppNavigation.Modal.CoreIntro}
-        component={CoreOnboardingModal}
+        component={CoreIntroModal}
       />
     </WalletScreenS.Group>
   )
@@ -169,7 +169,7 @@ const StakeDisclaimer = (): JSX.Element => {
   return <DisclaimerBottomSheet onClose={goBack} />
 }
 
-const CoreOnboardingModal = (): JSX.Element => {
+const CoreIntroModal = (): JSX.Element => {
   const descriptions = [
     { icon: <SearchIcon />, text: 'Explore the Avalanche ecosystem!' },
     {
@@ -186,7 +186,7 @@ const CoreOnboardingModal = (): JSX.Element => {
     }
   ]
   return (
-    <OnboardingModal
+    <IntroModal
       heading="Welcome to Core!"
       viewOnceKey={ViewOnceKey.CORE_INTRO}
       buttonText="Get Started!"

@@ -71,7 +71,7 @@ interface Props {
   descriptions: { icon: JSX.Element; text: string }[]
 }
 
-export default function OnboardingModal({
+export default function IntroModal({
   viewOnceKey,
   heading,
   buttonText,

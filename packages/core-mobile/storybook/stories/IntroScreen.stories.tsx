@@ -1,7 +1,7 @@
 import React from 'react'
 import type { Meta } from '@storybook/react-native'
 import { useTheme } from '@avalabs/k2-mobile'
-import OnboardingModal from 'screens/onboarding/OnboardingModal'
+import IntroModal from 'screens/onboarding/IntroModal'
 import { ViewOnceKey } from 'store/viewOnce'
 import WalletConnectSVG from 'components/svg/WalletConnectSVG'
 import CoreOwl from 'assets/icons/core_owl.svg'
@@ -38,7 +38,7 @@ export const Basic = (): JSX.Element => {
     }
   ]
   return (
-    <OnboardingModal
+    <IntroModal
       heading="How to use the Core Browser..."
       viewOnceKey={ViewOnceKey.BROWSER_INTERACTION}
       buttonText="Get Started"
