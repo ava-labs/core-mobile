@@ -14,7 +14,7 @@ import {
 } from 'store/app'
 import { AppStartListening } from 'store/middleware/listener'
 import BiometricsSDK from 'utils/BiometricsSDK'
-import Logger, { LogLevel } from 'utils/Logger'
+import Logger from 'utils/Logger'
 import { capture } from 'store/posthog'
 import DeviceInfo from 'react-native-device-info'
 import { WalletType } from 'services/wallet/types'
@@ -36,7 +36,6 @@ const init = async (
   _: Action,
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
-  Logger.setLevel(__DEV__ ? LogLevel.TRACE : LogLevel.ERROR)
   const { dispatch } = listenerApi
   const state = listenerApi.getState()
 

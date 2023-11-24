@@ -1,5 +1,10 @@
 # Patches
 
+## How to patch
+1. adjust the code the package you want to patch
+2. in core-mobile folder, run `../../scripts/patch-package.sh [dependency]`. it should create a patch file in core-mobile/patches folder
+
+## Current patches
 ### react-native-flipper-performance-plugin+0.4.0.patch
 
 Android:
@@ -49,3 +54,9 @@ commenting out assertions in JSCRuntime.cpp that checked if API object and API s
 changed the warning message about ViewPropTypes being removed from React Native, to import ViewPropTypes from deprecated-react-native-prop-types
 
 modified condition statements with $USE_HERMES in react-native-xcode.sh to avoid error with generating hermes bundle in release mode
+
+HMRClient.js: adjust stringify logic of object to make logs in Terminal more readable
+
+### metro+0.72.4.patch
+
+logToConsole.js: make it also log any console calls within console.groupCollapsed() and console.groupEnd().. this allows Logger.error, Logger.warn and Logger.trace to work in Terminal.
