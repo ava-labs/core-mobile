@@ -73,22 +73,6 @@ const SignupScreen: FC = () => {
         flex: 1,
         backgroundColor: '$black'
       }}>
-      {isRegistering && (
-        <View
-          sx={{
-            backgroundColor: '$black',
-            position: 'absolute',
-            top: 0,
-            bottom: 0,
-            left: 0,
-            right: 0,
-            zIndex: 1,
-            justifyContent: 'center',
-            alignItems: 'center'
-          }}>
-          <CoreXLogoAnimated size={100} />
-        </View>
-      )}
       <View
         style={{
           flex: 1,
