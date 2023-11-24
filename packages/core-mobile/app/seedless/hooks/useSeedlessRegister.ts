@@ -27,7 +27,7 @@ export const useSeedlessRegister = (): ReturnType => {
       if (result === SeedlessUserRegistrationResult.ALREADY_REGISTERED) {
         const userMfa = await SeedlessService.userMfa()
         if (userMfa.length === 0) {
-          return SeedlessUserRegistrationResult.APPROVED
+          return SeedlessUserRegistrationResult.MFA_REQUIRED
         }
       }
       return result

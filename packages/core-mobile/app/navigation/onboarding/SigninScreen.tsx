@@ -9,7 +9,6 @@ import AuthButtons from 'seedless/components/AuthButtons'
 import { useSeedlessRegister } from 'seedless/hooks/useSeedlessRegister'
 import { SeedlessUserRegistrationResult } from 'seedless/services/CoreSeedlessAPIService'
 import GoogleSigninService from 'seedless/services/GoogleSigninService'
-import SeedlessService from 'seedless/services/SeedlessService'
 import Logger from 'utils/Logger'
 
 type NavigationProp = OnboardScreenProps<
@@ -41,14 +40,12 @@ const SigninScreen: FC = () => {
       Alert.alert('seedless user registration error')
       return
     }
-    if (result === SeedlessUserRegistrationResult.APPROVED) {
+    if (
+      result === SeedlessUserRegistrationResult.APPROVED ||
+      result === SeedlessUserRegistrationResult.MFA_REQUIRED
+    ) {
       navigation.navigate(AppNavigation.Onboard.RecoveryMethods)
     } else if (result === SeedlessUserRegistrationResult.ALREADY_REGISTERED) {
-      const userMfa = await SeedlessService.userMfa()
-      if (userMfa.length === 0) {
-        navigation.navigate(AppNavigation.Onboard.RecoveryMethods)
-        return
-      }
       // @ts-ignore
       navigation.navigate(AppNavigation.Onboard.RecoveryMethods, {
         screen: AppNavigation.RecoveryMethods.VerifyCode

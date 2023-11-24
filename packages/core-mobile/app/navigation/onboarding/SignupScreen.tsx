@@ -57,7 +57,10 @@ const SignupScreen: FC = () => {
       return
     }
 
-    if (result === SeedlessUserRegistrationResult.APPROVED) {
+    if (
+      result === SeedlessUserRegistrationResult.APPROVED ||
+      result === SeedlessUserRegistrationResult.MFA_REQUIRED
+    ) {
       navigation.navigate(AppNavigation.Onboard.RecoveryMethods)
     } else if (result === SeedlessUserRegistrationResult.ALREADY_REGISTERED) {
       // @ts-ignore

@@ -12,7 +12,8 @@ if (!Config.SEEDLESS_API_KEY) {
 export enum SeedlessUserRegistrationResult {
   ALREADY_REGISTERED = 'ALREADY_REGISTERED',
   APPROVED = 'APPROVED',
-  ERROR = 'ERROR'
+  ERROR = 'ERROR',
+  MFA_REQUIRED = 'MFA_REQUIRED'
 }
 
 /**
