@@ -72,6 +72,8 @@ import NotificationsStackScreen, {
 import { DeFiProtocolDetails } from 'screens/defi/DeFiProtocolDetails'
 import SendFeedbackStackScreen from 'navigation/wallet/SendFeedbackStackScreen'
 import { navigationRef } from 'utils/Navigation'
+import { ViewOnceKey, selectHasBeenViewedOnce } from 'store/viewOnce'
+import { useSelector } from 'react-redux'
 import { BridgeStackParamList } from '../wallet/BridgeScreenStack'
 import {
   BridgeTransactionStatusParams,
@@ -169,6 +171,7 @@ export type WalletScreenStackParams = {
     .AvalancheSignTransactionV2]: AvalancheSignTransactionV2Params
   [AppNavigation.Modal.StakeDisclaimer]: undefined
   [AppNavigation.Wallet.DeFiProtocolDetails]: { protocolId: string }
+  [AppNavigation.Modal.CoreIntro]: undefined
 }
 
 const WalletScreenS = createStackNavigator<WalletScreenStackParams>()
@@ -185,9 +188,21 @@ export const SignOutModalScreen = (): JSX.Element => {
   return <SignOutModal onConfirm={doSwitchWallet} />
 }
 
+type NavigationProp = WalletScreenProps<
+  typeof AppNavigation.Wallet.Drawer
+>['navigation']
+
 function WalletScreenStack(props: Props): JSX.Element {
+  const hasBeenViewedCoreOnboarding = useSelector(
+    selectHasBeenViewedOnce(ViewOnceKey.CORE_ONBOARDING)
+  )
+  const navigation = useNavigation<NavigationProp>()
+
   useFocusEffect(
     React.useCallback(() => {
+      if (!hasBeenViewedCoreOnboarding) {
+        navigation.navigate(AppNavigation.Modal.CoreIntro)
+      }
       const onBackPress = (): boolean => {
         if (!navigationRef.current?.canGoBack()) {
           onExit()

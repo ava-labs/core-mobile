@@ -6,7 +6,6 @@ import { noop } from '@avalabs/utils-sdk'
 import { View } from 'react-native'
 import AvaText from 'components/AvaText'
 import { AreYouSureModal } from 'screens/browser/AreYouSureModal'
-import IntroScreen from 'screens/browser/IntroScreen'
 import TabViewScreen from 'screens/browser/TabViewScreen'
 import { useNavigation } from '@react-navigation/native'
 import { BrowserScreenProps } from 'navigation/types'
@@ -14,6 +13,12 @@ import { useSelector } from 'react-redux'
 import { selectHasBeenViewedOnce, ViewOnceKey } from 'store/viewOnce'
 import { HistoryScreen } from 'screens/browser/HistoryScreen'
 import { SubHeaderOptions } from 'navigation/NavUtils'
+import OnboardingModal from 'screens/onboarding/OnboardingModal'
+import WalletConnectSVG from 'components/svg/WalletConnectSVG'
+import CoreOwl from 'assets/icons/core_owl.svg'
+import RocketLaunch from 'assets/icons/rocket_launch.svg'
+import SearchIcon from 'assets/icons/search.svg'
+import { useTheme } from '@avalabs/k2-mobile'
 
 export type BrowserStackParamList = {
   [AppNavigation.Browser.Intro]: undefined
@@ -80,11 +85,36 @@ const renderNavigationHeader = ({
 
 export default React.memo(BrowserScreenStack)
 
-function BrowserIntroScreen(): JSX.Element {
+const BrowserIntroScreen = (): JSX.Element => {
+  const {
+    theme: { colors }
+  } = useTheme()
+
+  const descriptions = [
+    {
+      icon: <SearchIcon />,
+      text: 'Search for a website or browse suggested apps'
+    },
+    {
+      icon: <WalletConnectSVG color={colors.$neutral50} />,
+      text: 'On the website find “Connect” then tap Wallet Connect'
+    },
+    {
+      icon: <CoreOwl width={24} height={24} />,
+      text: 'Find Core and tap “Connect”'
+    },
+    {
+      icon: <RocketLaunch />,
+      text: 'Conquer the cryptoverse!'
+    }
+  ]
   return (
-    <View>
-      <IntroScreen />
-    </View>
+    <OnboardingModal
+      heading="How to use the Core Browser..."
+      viewOnceKey={ViewOnceKey.BROWSER_INTERACTION}
+      buttonText="Get Started"
+      descriptions={descriptions}
+    />
   )
 }
 
