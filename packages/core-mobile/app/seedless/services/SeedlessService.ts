@@ -1,14 +1,15 @@
+import Config from 'react-native-config'
 import {
   CubeSigner,
+  IdentityProof,
   MfaReceipt,
+  SignerSessionManager,
   TotpChallenge,
   UserInfo,
-  SignerSessionManager,
   envs
-} from '@cubist-dev/cubesigner-sdk'
-import Config from 'react-native-config'
-import { Result } from 'types/result'
+} from '@cubist-labs/cubesigner-sdk'
 import { TotpErrors } from 'seedless/errors'
+import { Result } from 'types/result'
 import { SeedlessSessionStorage } from './SeedlessSessionStorage'
 
 if (!Config.SEEDLESS_ORG_ID) {
@@ -49,7 +50,7 @@ class SeedlessService {
   ): Promise<void> {
     const signResponse = await new CubeSigner().oidcLogin(
       oidcToken,
-      Config.SEEDLESS_ORG_ID || '',
+      SEEDLESS_ORG_ID,
       ['sign:*', 'manage:*'],
       {
         // How long singing with a particular token works from the token creation
@@ -137,6 +138,20 @@ class SeedlessService {
         })
       }
     }
+  }
+
+  /**
+   * Exchange an OIDC token for a proof of authentication.
+   * @param oidcToken — The OIDC token
+   * @param orgId — The id of the organization that the user is in
+   * @return — Proof of authentication
+   */
+  async oidcProveIdentity(oidcToken: string): Promise<IdentityProof> {
+    const cubeSigner = new CubeSigner({
+      env: envs.gamma,
+      orgId: SEEDLESS_ORG_ID
+    })
+    return cubeSigner.oidcProveIdentity(oidcToken, SEEDLESS_ORG_ID)
   }
 }
 

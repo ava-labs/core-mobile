@@ -19,9 +19,16 @@ export const useSeedlessRegister = (): ReturnType => {
     setIsRegistering(true)
 
     try {
-      const result = await CoreSeedlessAPIService.register(oidcToken)
+      const identity = await SeedlessService.oidcProveIdentity(oidcToken)
+      const result = await CoreSeedlessAPIService.register(identity)
       if (result !== SeedlessUserRegistrationResult.ERROR) {
         await SeedlessService.login(oidcToken)
+      }
+      if (result === SeedlessUserRegistrationResult.ALREADY_REGISTERED) {
+        const userMfa = await SeedlessService.userMfa()
+        if (userMfa.length === 0) {
+          return SeedlessUserRegistrationResult.MFA_REQUIRED
+        }
       }
       return result
     } catch (error) {
