@@ -1,6 +1,6 @@
 import { strip0x } from '@avalabs/utils-sdk'
 import { BitcoinInputUTXO, getBtcAddressFromPubKey } from '@avalabs/wallets-sdk'
-import * as cs from '@cubist-dev/cubesigner-sdk'
+import * as cs from '@cubist-labs/cubesigner-sdk'
 import { Network, Psbt, SignerAsync, payments } from 'bitcoinjs-lib'
 
 /**

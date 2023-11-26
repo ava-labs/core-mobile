@@ -1,21 +1,35 @@
+import Config from 'react-native-config'
 import {
   CubeSigner,
+  IdentityProof,
   MfaReceipt,
+  SignerSessionManager,
   TotpChallenge,
   UserInfo,
-  SignerSessionManager,
-  envs
-} from '@cubist-dev/cubesigner-sdk'
-import Config from 'react-native-config'
-import { Result } from 'types/result'
+  envs,
+  Environment
+} from '@cubist-labs/cubesigner-sdk'
 import { TotpErrors } from 'seedless/errors'
+import { Result } from 'types/result'
 import { SeedlessSessionStorage } from './SeedlessSessionStorage'
 
 if (!Config.SEEDLESS_ORG_ID) {
   throw Error('SEEDLESS_ORG_ID is missing. Please check your env file.')
 }
 
+if (!Config.SEEDLESS_ENVIRONMENT) {
+  throw Error('SEEDLESS_ENVIRONMENT is missing. Please check your env file.')
+}
+
 const SEEDLESS_ORG_ID = Config.SEEDLESS_ORG_ID
+
+const SEEDLESS_ENVIRONMENT = Config.SEEDLESS_ENVIRONMENT
+
+const envInterface = envs[SEEDLESS_ENVIRONMENT as Environment]
+
+if (!envInterface) {
+  throw Error('SEEDLESS_ENVIRONMENT is incorrect. Please check your env file.')
+}
 
 /**
  * Service for cubesigner-sdk
@@ -49,7 +63,7 @@ class SeedlessService {
   ): Promise<void> {
     const signResponse = await new CubeSigner().oidcLogin(
       oidcToken,
-      Config.SEEDLESS_ORG_ID || '',
+      SEEDLESS_ORG_ID,
       ['sign:*', 'manage:*'],
       {
         // How long singing with a particular token works from the token creation
@@ -64,7 +78,7 @@ class SeedlessService {
     )
 
     await SignerSessionManager.createFromSessionInfo(
-      envs.gamma,
+      envInterface,
       SEEDLESS_ORG_ID,
       signResponse.data(),
       new SeedlessSessionStorage()
@@ -137,6 +151,20 @@ class SeedlessService {
         })
       }
     }
+  }
+
+  /**
+   * Exchange an OIDC token for a proof of authentication.
+   * @param oidcToken — The OIDC token
+   * @param orgId — The id of the organization that the user is in
+   * @return — Proof of authentication
+   */
+  async oidcProveIdentity(oidcToken: string): Promise<IdentityProof> {
+    const cubeSigner = new CubeSigner({
+      env: envs.gamma,
+      orgId: SEEDLESS_ORG_ID
+    })
+    return cubeSigner.oidcProveIdentity(oidcToken, SEEDLESS_ORG_ID)
   }
 }
 

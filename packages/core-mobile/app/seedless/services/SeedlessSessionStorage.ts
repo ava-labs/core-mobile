@@ -1,4 +1,4 @@
-import { SessionStorage, SignerSessionData } from '@cubist-dev/cubesigner-sdk'
+import { SessionStorage, SignerSessionData } from '@cubist-labs/cubesigner-sdk'
 import { assertNotUndefined } from 'utils/assertions'
 import SecureStorageService, { KeySlot } from 'security/SecureStorageService'
 
