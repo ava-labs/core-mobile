@@ -1,4 +1,3 @@
-/* eslint-disable jest/expect-expect */
 import LoginRecoverWallet from '../../helpers/loginRecoverWallet'
 import AccountManagePage from '../../pages/accountManage.page'
 import Actions from '../../helpers/actions'
@@ -10,10 +9,10 @@ import { Platform } from '../../helpers/constants'
 describe('Send Avax to another account', () => {
   beforeAll(async () => {
     await warmup()
-    await LoginRecoverWallet.recoverWalletLogin()
   })
 
   it('Should verify NFT Details items', async () => {
+    await LoginRecoverWallet.recoverWalletLogin()
     await AccountManagePage.tapAccountMenu()
     await AccountManagePage.tapAccountMenu()
     await AccountManagePage.createSecondAccount()

@@ -15,24 +15,15 @@ const fs = require('fs')
 async function parseResultsFile() {
   const jsonResultsArray = await getTestLogs()
 
-  // If this env variable is set to true it will update the test cases in testrail
-  if (process.env.UPDATE_TESTRAIL_CASES) {
-    await createNewTestSectionsAndCases(jsonResultsArray)
-  } else {
-    console.log('Not updating testrail cases...')
-  }
+  await createNewTestSectionsAndCases(jsonResultsArray)
 
   const testIdArrayForTestrail = []
   const casesToAddToRun = []
   for (const result of jsonResultsArray) {
     // Todo add more status ids for different results such as skipped tests or untested
-    const testResult = result.testResult
-    if (testResult === 'passed') {
-      var statusId = 1
-    } else {
-      var statusId = 5
-      var failedScreenshot = result.failedScreenshot
-    }
+    const statusId = result.testResult
+    const failedScreenshot = result.failedScreenshot
+
     const testName = result.testCase
     const testCaseId = await getTestCaseId(result.testCase)
     const platform = result.platform
@@ -134,6 +125,11 @@ export default async function sendResults() {
         runID
       )
     }
+  } else {
+    console.log(
+      'POST_TO_TESTRAIL is false, skipping sending results to TestRail',
+      process.env.POST_TO_TESTRAIL
+    )
   }
 }
 
@@ -162,10 +158,10 @@ async function generatePlatformResults(
     try {
       const existingTestCases = await getTestCasesFromRun(runId)
       // Adds the existing test case results to the results array so they are not overwritten in testrail when using the updateRun endpoint
-      resultArray = [...resultArray, ...existingTestCases]
+      resultArray = resultArray.concat(existingTestCases)
       // Add already existing test cases to the testCasesToSend array
       if (existingTestCases.length > 0) {
-        existingTestCases.forEach((testCase: string) => {
+        existingTestCases.forEach((testCase: number) => {
           testCasesToSend.case_ids.push(testCase.case_id)
         })
       }
@@ -186,16 +182,11 @@ async function generatePlatformResults(
 
     for (let i = 0; i < resultArray.length; i++) {
       const resultObject = resultArray[i]
-      const statusId = resultObject?.status_id
-      const testCaseId = resultObject?.case_id
-      const isResultsExists = await isResultExistsInTestrail(
-        Number(runId),
-        testCaseId
-      )
+      const statusId = Number(resultObject?.status_id)
       const payload = {
         status_id: statusId
       }
-      if (resultObject && !isResultsExists) {
+      if (resultObject) {
         const testResult = await api.addResultForCase(
           Number(runId),
           resultObject?.case_id,

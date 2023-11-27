@@ -14,10 +14,10 @@ import { warmup } from '../../helpers/warmup'
 describe('Favorites Token', () => {
   beforeAll(async () => {
     await warmup()
-    await LoginRecoverWallet.recoverWalletLogin()
   })
 
   it('should verify adding token to favorite', async () => {
+    await LoginRecoverWallet.recoverWalletLogin()
     await PortfolioPage.tapAddToWatchlist()
     await WatchListPage.tapWatchListToken('btc')
     await Actions.waitForElement(TokenDetailPage.favorite)

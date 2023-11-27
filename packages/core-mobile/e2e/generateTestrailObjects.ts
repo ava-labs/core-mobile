@@ -8,7 +8,7 @@ import getTestLogs, {
 } from './getResultsFromLogs'
 const fs = require('fs')
 
-const projectId = Number(process.env.TESTRAIL_PROJECT_ID)
+const projectId = 3
 const password = String(process.env.TESTRAIL_API_KEY)
 
 export var api = new TestRail({
@@ -574,7 +574,6 @@ export async function getTestCasesFromRun(runId: number): Promise<object[]> {
       status_id: testResult
     })
   }
-  console.log(titleArray)
   return titleArray
 }
 

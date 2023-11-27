@@ -1,5 +1,3 @@
-/* eslint-disable jest/expect-expect */
-
 import Actions from '../../helpers/actions'
 import AccountManagePage from '../../pages/accountManage.page'
 import AdvancedPage from '../../pages/burgerMenu/advanced.page'
@@ -11,10 +9,10 @@ import StakePage from '../../pages/Stake/stake.page'
 describe('Stake: testnet flow', () => {
   beforeAll(async () => {
     await warmup()
-    await LoginRecoverWallet.recoverWalletLogin()
   })
 
   it('should verify no active stakes screen', async () => {
+    await LoginRecoverWallet.recoverWalletLogin()
     await BottomTabsPage.tapPortfolioTab()
     await AccountManagePage.createAccount(3)
     await AdvancedPage.switchToTestnet()

@@ -13,10 +13,10 @@ import Assert from '../../helpers/assertions'
 describe('Send Avax to another account', () => {
   beforeAll(async () => {
     await warmup()
-    await LoginRecoverWallet.recoverWalletLogin()
   })
 
   it('Should swap AVAX to USDC', async () => {
+    await LoginRecoverWallet.recoverWalletLogin()
     await BottomTabsPage.tapPlusIcon()
     await PlusMenuPage.tapSwapButton()
     await SwapTabPage.tapSelectTokenDropdown()

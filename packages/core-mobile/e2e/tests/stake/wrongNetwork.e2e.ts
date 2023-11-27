@@ -9,10 +9,10 @@ import StakePage from '../../pages/Stake/stake.page'
 describe('Stake: wrong network', () => {
   beforeAll(async () => {
     await warmup()
-    await LoginRecoverWallet.recoverWalletLogin()
   })
 
   it('should verify wrong network screen for staking on mainnet', async () => {
+    await LoginRecoverWallet.recoverWalletLogin()
     await PortfolioPage.tapNetworksDropdown()
     await PortfolioPage.tapNetworksDropdownETH()
     await BottomTabsPage.tapStakeTab()

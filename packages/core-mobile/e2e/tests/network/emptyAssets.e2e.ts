@@ -9,10 +9,10 @@ import { warmup } from '../../helpers/warmup'
 describe('Empty Assets', () => {
   beforeAll(async () => {
     await warmup()
-    await LoginRecoverWallet.recoverWalletLogin()
   })
 
   it('should check empty assets on custom Network', async () => {
+    await LoginRecoverWallet.recoverWalletLogin()
     await PortfolioPage.tapNetworksDropdown()
     await PortfolioPage.tapManageNetworks()
     await NetworksManagePage.tapAddNetwork()

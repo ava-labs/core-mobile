@@ -9,10 +9,10 @@ import { warmup } from '../../helpers/warmup'
 describe('Activity Tab', () => {
   beforeAll(async () => {
     await warmup()
-    await LoginRecoverWallet.recoverWalletLogin()
   })
 
   it('should show contract call only in activity list', async () => {
+    await LoginRecoverWallet.recoverWalletLogin()
     await PortfolioPage.tapAvaxNetwork()
     await PortfolioPage.tapActivityTab()
     await actions.waitForElement(ActivityTabPage.arrowSVG, 10000, 1)

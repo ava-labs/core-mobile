@@ -1,4 +1,3 @@
-/* eslint-disable jest/expect-expect */
 import AccountManagePage from '../../../pages/accountManage.page'
 import ActivityTabPage from '../../../pages/activityTab.page'
 import ActivityTabLoc from '../../../locators/activityTab.loc'
@@ -11,10 +10,10 @@ import { warmup } from '../../../helpers/warmup'
 describe('Send Eth to another account', () => {
   beforeAll(async () => {
     await warmup()
-    await LoginRecoverWallet.recoverWalletLogin()
   })
 
   it('Should send Eth to second account', async () => {
+    await LoginRecoverWallet.recoverWalletLogin()
     const secondAccountAddress = await AccountManagePage.createSecondAccount()
     await PortfolioPage.tapNetworksDropdown()
     await PortfolioPage.tapNetworksDropdownETH()

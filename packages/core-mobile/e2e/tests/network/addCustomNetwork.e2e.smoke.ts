@@ -13,10 +13,10 @@ import { warmup } from '../../helpers/warmup'
 describe('Add custom network', () => {
   beforeAll(async () => {
     await warmup()
-    await LoginRecoverWallet.recoverWalletLogin()
   })
 
   it('should add custom network', async () => {
+    await LoginRecoverWallet.recoverWalletLogin()
     await PortfolioPage.tapNetworksDropdown()
     await Actions.waitForElement(PortfolioPage.manageNetworks)
     await PortfolioPage.tapManageNetworks()
