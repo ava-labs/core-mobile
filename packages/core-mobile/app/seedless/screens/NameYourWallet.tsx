@@ -4,21 +4,25 @@ import InputText from 'components/InputText'
 import AppNavigation from 'navigation/AppNavigation'
 import { OnboardScreenProps } from 'navigation/types'
 import React, { useState } from 'react'
+import { useDispatch } from 'react-redux'
+import { setWalletName } from 'seedless/store/slice'
 
 type NavigationProp = OnboardScreenProps<
   typeof AppNavigation.Onboard.NameYourWallet
 >['navigation']
 
 export const NameYourWallet = (): JSX.Element => {
-  const [text, setText] = useState('')
+  const dispatch = useDispatch()
+  const [name, setName] = useState('')
   const { navigate } = useNavigation<NavigationProp>()
   const {
     theme: { colors }
   } = useTheme()
 
-  const isWalletNameValid = text.trim().length > 0
+  const isWalletNameValid = name.trim().length > 0
 
   const handleNext = (): void => {
+    dispatch(setWalletName({ name }))
     navigate(AppNavigation.Root.Onboard, {
       screen: AppNavigation.Onboard.Welcome,
       params: {
@@ -30,10 +34,6 @@ export const NameYourWallet = (): JSX.Element => {
     })
   }
 
-  const onChangeText = (value: string): void => {
-    setText(value)
-    // TODO: save name to redux
-  }
   return (
     <View
       sx={{
@@ -50,8 +50,8 @@ export const NameYourWallet = (): JSX.Element => {
         <InputText
           autoFocus
           mode={'default'}
-          onChangeText={onChangeText}
-          text={text}
+          onChangeText={setName}
+          text={name}
           backgroundColor={colors.$transparent}
           textStyle={{
             fontFamily: 'Inter-Bold',
