@@ -18,6 +18,8 @@
     "../k2-mobile/src/theme.d.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "**/e2e/**/*.spec.ts",
+    "**/e2e/**/*.test.ts",
   ],
 }
