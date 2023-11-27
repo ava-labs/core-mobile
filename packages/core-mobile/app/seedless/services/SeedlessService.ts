@@ -104,7 +104,7 @@ class SeedlessService {
   /**
    * Retrieves information about the current user's mfa.
    */
-  async userMfa(): Promise<UserMFAs> {
+  async userMfa(): Promise<UserInfo['mfa']> {
     return (await this.aboutMe()).mfa
   }
 
@@ -176,7 +176,5 @@ class SeedlessService {
     return cubeSigner.oidcProveIdentity(oidcToken, SEEDLESS_ORG_ID)
   }
 }
-
-export type UserMFAs = UserInfo['mfa']
 
 export default new SeedlessService()
