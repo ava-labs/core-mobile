@@ -3,6 +3,7 @@ import {
   ActivityIndicator,
   Appearance,
   Keyboard,
+  TextInput,
   NativeSyntheticEvent,
   StyleProp,
   TextInputFocusEventData,
@@ -13,14 +14,7 @@ import ClearInputSVG from 'components/svg/ClearInputSVG'
 import { Space } from 'components/Space'
 import CheckmarkSVG from 'components/svg/CheckmarkSVG'
 import { Row } from 'components/Row'
-import {
-  alpha,
-  useTheme,
-  View,
-  TextInput,
-  Text,
-  Button
-} from '@avalabs/k2-mobile'
+import { alpha, useTheme, View, Text, Button } from '@avalabs/k2-mobile'
 import AvaButton from './AvaButton'
 import { Tooltip } from './Tooltip'
 import InfoSVG from './svg/InfoSVG'
@@ -70,9 +64,10 @@ export type InputTextProps = {
   keyboardWillShow?: () => void
   keyboardDidHide?: () => void
   testID?: string
+  autoCorrect?: boolean
 }
 
-const InputText = forwardRef<typeof TextInput, InputTextProps>(
+const InputText = forwardRef<TextInput, InputTextProps>(
   (
     {
       text,
@@ -103,7 +98,8 @@ const InputText = forwardRef<typeof TextInput, InputTextProps>(
       selectTextOnFocus,
       paddingVertical = 12,
       keyboardWillShow,
-      keyboardDidHide
+      keyboardDidHide,
+      autoCorrect
     },
     ref
   ) => {
@@ -202,6 +198,7 @@ const InputText = forwardRef<typeof TextInput, InputTextProps>(
             testID="input_text"
             keyboardAppearance={Appearance.getColorScheme() || 'default'}
             ref={ref}
+            autoCorrect={autoCorrect}
             autoFocus={autoFocus}
             autoCapitalize="none"
             placeholder={placeholder}

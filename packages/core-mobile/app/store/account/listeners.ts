@@ -8,6 +8,7 @@ import {
 import { AppListenerEffectAPI } from 'store'
 import { AnyAction, isAnyOf } from '@reduxjs/toolkit'
 import { onLogIn, selectWalletType } from 'store/app/slice'
+import { selectWalletName } from 'seedless/store/slice'
 import { WalletType } from 'services/wallet/types'
 import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKeysStorage'
 import { selectAccounts, setAccount, setAccounts } from './slice'
@@ -30,10 +31,13 @@ const initAccounts = async (
      */
     const pubKeysStorage = new SeedlessPubKeysStorage()
     const pubKeys = await pubKeysStorage.retrieve()
+    const walletName = selectWalletName(state)
 
     for (let i = 0; i < pubKeys.length; i++) {
       const acc = await accountService.createNextAccount(isDeveloperMode, i)
-      listenerApi.dispatch(setAccount(acc))
+      const accountTitle =
+        acc.index === 0 && walletName.length > 0 ? walletName : acc.title
+      listenerApi.dispatch(setAccount({ ...acc, title: accountTitle }))
     }
   } else if (walletType === WalletType.MNEMONIC) {
     // only add the first account for mnemonic wallet

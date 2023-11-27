@@ -46,6 +46,7 @@ export const NameYourWallet = (): JSX.Element => {
           Add a display name for your wallet. You can change it at anytime.
         </Text>
         <InputText
+          autoCorrect={false}
           autoFocus
           mode={'default'}
           onChangeText={setName}
