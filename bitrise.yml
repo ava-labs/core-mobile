@@ -60,13 +60,7 @@ workflows:
     - PLATFORM: Android
       opts:
         is_expand: false
-    - ANDROID_BUILD_VARIANT: internalE2e
-      opts:
-        is_expand: false
     - APP_TITLE: Core Mobile Internal
-      opts:
-        is_expand: false
-    - E2E: "true"
       opts:
         is_expand: false
     - USE_TEST_FEATURE_FLAGS: "true"
