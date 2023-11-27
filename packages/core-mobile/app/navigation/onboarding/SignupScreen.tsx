@@ -9,7 +9,6 @@ import { Alert } from 'react-native'
 import { useSelector } from 'react-redux'
 import AuthButtons from 'seedless/components/AuthButtons'
 import { useSeedlessRegister } from 'seedless/hooks/useSeedlessRegister'
-import { SeedlessUserRegistrationResult } from 'seedless/services/CoreSeedlessAPIService'
 import GoogleSigninService from 'seedless/services/GoogleSigninService'
 import { selectIsSeedlessOnboardingBlocked } from 'store/posthog'
 import Logger from 'utils/Logger'
@@ -50,23 +49,20 @@ const SignupScreen: FC = () => {
   const handleSignupWithGoogle = async (): Promise<void> => {
     const oidcToken = await GoogleSigninService.signin()
 
-    const result = await register(oidcToken)
-
-    if (result === SeedlessUserRegistrationResult.ERROR) {
-      Alert.alert('seedless user registration error')
-      return
-    }
-
-    if (
-      result === SeedlessUserRegistrationResult.APPROVED ||
-      result === SeedlessUserRegistrationResult.MFA_REQUIRED
-    ) {
-      navigation.navigate(AppNavigation.Onboard.RecoveryMethods)
-    } else if (result === SeedlessUserRegistrationResult.ALREADY_REGISTERED) {
-      // @ts-ignore
-      navigation.navigate(AppNavigation.Onboard.RecoveryMethods, {
-        screen: AppNavigation.RecoveryMethods.VerifyCode
+    try {
+      await register({
+        oidcToken,
+        onRegisterMfaMethods: () => {
+          navigation.navigate(AppNavigation.Onboard.RecoveryMethods)
+        },
+        onVerifyMfaMethod: () => {
+          navigation.navigate(AppNavigation.Onboard.RecoveryMethods, {
+            screen: AppNavigation.RecoveryMethods.VerifyCode
+          })
+        }
       })
+    } catch (e) {
+      Alert.alert('seedless user registration error')
     }
   }
 
