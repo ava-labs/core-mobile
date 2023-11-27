@@ -18,9 +18,15 @@ import SwitchEthereumChainV2 from 'screens/rpc/components/v2/SwitchEthereumChain
 import BuyCarefully from 'screens/rpc/buy/BuyCarefully'
 import AvalancheSendTransactionV2 from 'screens/rpc/components/v2/AvalancheSendTransaction'
 import { DisclaimerBottomSheet } from 'screens/earn/components/DisclaimerBottomSheet'
+import IntroModal from 'screens/onboarding/IntroModal'
+import { ViewOnceKey } from 'store/viewOnce'
+import SearchIcon from 'assets/icons/search.svg'
+import RocketLaunch from 'assets/icons/rocket_launch.svg'
+import Photo from 'assets/icons/photo_placeholder.svg'
+import Swap from 'assets/icons/swap_v2.svg'
 import { SignOutModalScreen, WalletScreenSType } from './WalletScreenStack'
 
-export const createModals = (WalletScreenS: WalletScreenSType) => {
+export const createModals = (WalletScreenS: WalletScreenSType): JSX.Element => {
   /* we have to disable gesture here so bottom sheet swipe down gesture
       doesn't conflict with react navigation swipe down */
   const walletConnectV2Modals = (
@@ -68,6 +74,10 @@ export const createModals = (WalletScreenS: WalletScreenSType) => {
       <WalletScreenS.Screen
         name={AppNavigation.Modal.AvalancheSignTransactionV2}
         component={AvalancheSendTransactionV2}
+      />
+      <WalletScreenS.Screen
+        name={AppNavigation.Modal.CoreIntro}
+        component={CoreIntroModal}
       />
     </WalletScreenS.Group>
   )
@@ -117,7 +127,7 @@ type AccountDropDownNavigationProp = WalletScreenProps<
   typeof AppNavigation.Modal.AccountDropDown
 >['navigation']
 
-const AccountDropdownComp = () => {
+const AccountDropdownComp = (): JSX.Element => {
   const navigation = useNavigation<AccountDropDownNavigationProp>()
   return (
     <AccountDropdown
@@ -132,11 +142,11 @@ type EditGasLimitScreenProps = WalletScreenProps<
   typeof AppNavigation.Modal.EditGasLimit
 >
 
-const EditGasLimit = () => {
+const EditGasLimit = (): JSX.Element => {
   const { goBack } = useNavigation<EditGasLimitScreenProps['navigation']>()
   const { params } = useRoute<EditGasLimitScreenProps['route']>()
 
-  const onSave = (newGasLimit: number) => params.onSave(newGasLimit)
+  const onSave = (newGasLimit: number): void => params.onSave(newGasLimit)
 
   return (
     <EditGasLimitBottomSheet
@@ -153,8 +163,35 @@ type StakeDisclaimerScreenProps = WalletScreenProps<
   typeof AppNavigation.Modal.StakeDisclaimer
 >
 
-const StakeDisclaimer = () => {
+const StakeDisclaimer = (): JSX.Element => {
   const { goBack } = useNavigation<StakeDisclaimerScreenProps['navigation']>()
 
   return <DisclaimerBottomSheet onClose={goBack} />
+}
+
+const CoreIntroModal = (): JSX.Element => {
+  const descriptions = [
+    { icon: <SearchIcon />, text: 'Explore the Avalanche ecosystem!' },
+    {
+      icon: <Swap />,
+      text: 'Send, Receive, Swap and Bridge assets across multiple chains!'
+    },
+    {
+      icon: <Photo />,
+      text: 'Collect and share NFTs!'
+    },
+    {
+      icon: <RocketLaunch />,
+      text: 'Conquer the cryptoverse!'
+    }
+  ]
+  return (
+    <IntroModal
+      heading="Welcome to Core!"
+      viewOnceKey={ViewOnceKey.CORE_INTRO}
+      buttonText="Get Started!"
+      descriptions={descriptions}
+      styles={{ marginBottom: 74 }}
+    />
+  )
 }
