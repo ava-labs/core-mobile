@@ -1,4 +1,4 @@
-import { Button, Text, View, useTheme } from '@avalabs/k2-mobile'
+import { Text, View, useTheme } from '@avalabs/k2-mobile'
 import { useNavigation } from '@react-navigation/native'
 import InputText from 'components/InputText'
 import AppNavigation from 'navigation/AppNavigation'
@@ -18,8 +18,6 @@ export const NameYourWallet = (): JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
-
-  const isWalletNameValid = name.trim().length > 0
 
   const handleNext = (): void => {
     dispatch(setWalletName({ name }))
@@ -51,6 +49,7 @@ export const NameYourWallet = (): JSX.Element => {
           autoFocus
           mode={'default'}
           onChangeText={setName}
+          onSubmit={handleNext}
           text={name}
           backgroundColor={colors.$transparent}
           textStyle={{
@@ -62,14 +61,6 @@ export const NameYourWallet = (): JSX.Element => {
           }}
         />
       </View>
-      <Button
-        disabled={!isWalletNameValid}
-        type="primary"
-        size="xlarge"
-        style={{ marginVertical: 16 }}
-        onPress={handleNext}>
-        Next
-      </Button>
     </View>
   )
 }
