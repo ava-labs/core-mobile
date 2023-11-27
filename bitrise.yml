@@ -60,13 +60,7 @@ workflows:
     - PLATFORM: Android
       opts:
         is_expand: false
-    - ANDROID_BUILD_VARIANT: internalE2e
-      opts:
-        is_expand: false
     - APP_TITLE: Core Mobile Internal
-      opts:
-        is_expand: false
-    - E2E: "true"
       opts:
         is_expand: false
     - USE_TEST_FEATURE_FLAGS: "true"
@@ -94,11 +88,12 @@ workflows:
     - share-pipeline-variable@1:
         inputs:
         - variables: |-
+            TESTRAIL_PROJECT_ID=$TESTRAIL_PROJECT_ID
             TESTRAIL_RUN_ID=$TESTRAIL_RUN_ID
+            POST_TO_TESTRAIL=$POST_TO_TESTRAIL
             TESTS_TO_RUN_GROUP_1=$TESTS_ONE
             TESTS_TO_RUN_GROUP_2=$TESTS_TWO
             TESTS_TO_RUN_GROUP_3=$TESTS_THREE
-            E2E=$E2E
         - api_level: "28"
         - emulator_id: emulator-5554
         - emulator_channel: "0"
@@ -132,6 +127,24 @@ workflows:
     - TESTS_TO_RUN: $TESTS_TO_RUN_GROUP_1
       opts:
         is_expand: false
+    - ENVIRONMENT: production
+      opts:
+        is_expand: false
+    - PLATFORM: Android
+      opts:
+        is_expand: false
+    - ANDROID_BUILD_VARIANT: internalE2e
+      opts:
+        is_expand: false
+    - APP_TITLE: Core Mobile Internal
+      opts:
+        is_expand: false
+    - E2E: "true"
+      opts:
+        is_expand: false
+    - USE_TEST_FEATURE_FLAGS: "true"
+      opts:
+        is_expand: false
     steps:
     - avd-manager@1.2:
         inputs:
@@ -154,6 +167,24 @@ workflows:
     - TESTS_TO_RUN: $TESTS_TO_RUN_GROUP_2
       opts:
         is_expand: false
+    - ENVIRONMENT: production
+      opts:
+        is_expand: false
+    - PLATFORM: Android
+      opts:
+        is_expand: false
+    - ANDROID_BUILD_VARIANT: internalE2e
+      opts:
+        is_expand: false
+    - APP_TITLE: Core Mobile Internal
+      opts:
+        is_expand: false
+    - E2E: "true"
+      opts:
+        is_expand: false
+    - USE_TEST_FEATURE_FLAGS: "true"
+      opts:
+        is_expand: false
     steps:
     - avd-manager@1.2:
         inputs:
@@ -174,6 +205,24 @@ workflows:
   android-internal-e2e-run-pixel5:
     envs:
     - TESTS_TO_RUN: $TESTS_TO_RUN_GROUP_3
+      opts:
+        is_expand: false
+    - ENVIRONMENT: production
+      opts:
+        is_expand: false
+    - PLATFORM: Android
+      opts:
+        is_expand: false
+    - ANDROID_BUILD_VARIANT: internalE2e
+      opts:
+        is_expand: false
+    - APP_TITLE: Core Mobile Internal
+      opts:
+        is_expand: false
+    - E2E: "true"
+      opts:
+        is_expand: false
+    - USE_TEST_FEATURE_FLAGS: "true"
       opts:
         is_expand: false
     steps:
@@ -477,6 +526,25 @@ workflows:
         - track: internal
         - service_account_json_key_path: $BITRISEIO_AVALABS_GOOGLE_PLAY_SERVICE_ACCOUNT_JSON_KEY_URL
   android-internal-e2e:
+    envs:
+    - ENVIRONMENT: production
+      opts:
+        is_expand: false
+    - PLATFORM: Android
+      opts:
+        is_expand: false
+    - ANDROID_BUILD_VARIANT: internalE2e
+      opts:
+        is_expand: false
+    - APP_TITLE: Core Mobile Internal
+      opts:
+        is_expand: false
+    - E2E: "true"
+      opts:
+        is_expand: false
+    - USE_TEST_FEATURE_FLAGS: "true"
+      opts:
+        is_expand: false
     before_run:
     - _install-and-set-env
     - _set-version

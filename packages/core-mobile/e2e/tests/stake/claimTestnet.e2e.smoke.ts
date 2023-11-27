@@ -14,10 +14,10 @@ const platformIndex = Actions.platform() === Platform.iOS ? 1 : 2
 describe('Stake: testnet flow', () => {
   beforeAll(async () => {
     await warmup()
-    await LoginRecoverWallet.recoverWalletLogin()
   })
 
   it('should claim & verify claim screen items on testnet', async () => {
+    await LoginRecoverWallet.recoverWalletLogin()
     await BottomTabsPage.tapPortfolioTab()
     await AdvancedPage.switchToTestnet()
     await BottomTabsPage.tapStakeTab()

@@ -13,10 +13,10 @@ import SecurityAndPrivacyPage from '../../pages/burgerMenu/securityAndPrivacy.pa
 describe('Change Pin', () => {
   beforeAll(async () => {
     await warmup()
-    await LoginRecoverWallet.recoverWalletLogin()
   })
 
   it('Should set new Pin & verify pin Headers', async () => {
+    await LoginRecoverWallet.recoverWalletLogin()
     await BurgerMenuPage.tapBurgerMenuButton()
     await BurgerMenuPage.tapSecurityAndPrivacy()
     await Actions.waitForElement(SecurityAndPrivacyPage.changePin)

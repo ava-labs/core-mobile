@@ -20,13 +20,13 @@ import delay from '../../../helpers/waits'
 describe('Connect to dApp using WalletConnect', () => {
   beforeAll(async () => {
     await warmup()
+  })
+
+  it('should navigate to wallet connect screen', async () => {
     await LoginRecoverWallet.recoverWalletLogin()
     await PortfolioPage.tapNetworksDropdown()
     await PortfolioPage.tapNetworksDropdownETH()
     await actions.waitForElement(PortfolioPage.ethNetwork)
-  })
-
-  it('should navigate to wallet connect screen', async () => {
     await actions.waitForElement(BottomTabsPage.plusIcon, 10, 1)
     await ConnectToSitePage.tapPlusIcon()
     await PlusMenuPage.tapWalletConnectButton()

@@ -1,4 +1,3 @@
-/* eslint-disable jest/expect-expect */
 import Assert from '../../../helpers/assertions'
 import ReceivePage from '../../../pages/receive.page'
 import { warmup } from '../../../helpers/warmup'
@@ -11,10 +10,10 @@ import actions from '../../../helpers/actions'
 describe('Receive Address', () => {
   beforeAll(async () => {
     await warmup()
-    await LoginRecoverWallet.recoverWalletLogin()
   })
 
   it('should validate receive address screen', async () => {
+    await LoginRecoverWallet.recoverWalletLogin()
     await bottomTabsPage.tapPlusIcon()
     await plusMenuPage.tapReceiveButton()
     await ReceivePage.verifyReceiveAddressPage()

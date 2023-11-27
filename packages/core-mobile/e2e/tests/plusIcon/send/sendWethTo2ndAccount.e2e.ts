@@ -1,4 +1,3 @@
-/* eslint-disable jest/expect-expect */
 import LoginRecoverWallet from '../../../helpers/loginRecoverWallet'
 import AccountManagePage from '../../../pages/accountManage.page'
 import ActivityTabPage from '../../../pages/activityTab.page'
@@ -11,10 +10,10 @@ import { warmup } from '../../../helpers/warmup'
 describe('Send WETH to another account', () => {
   beforeAll(async () => {
     await warmup()
-    await LoginRecoverWallet.recoverWalletLogin()
   })
 
   it('Should send WETH to second account', async () => {
+    await LoginRecoverWallet.recoverWalletLogin()
     const secondAccountAddress = await AccountManagePage.createSecondAccount()
     await SendPage.sendTokenTo2ndAccount(
       sendLoc.wethToken,

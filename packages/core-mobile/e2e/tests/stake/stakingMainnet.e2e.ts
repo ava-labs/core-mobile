@@ -1,5 +1,3 @@
-/* eslint-disable jest/expect-expect */
-
 import Actions from '../../helpers/actions'
 import ConfirmStakingPage from '../../pages/Stake/confirmStaking.page'
 import LoginRecoverWallet from '../../helpers/loginRecoverWallet'
@@ -12,10 +10,10 @@ import StakePage from '../../pages/Stake/stake.page'
 describe('Stake: mainnet flow', () => {
   beforeAll(async () => {
     await warmup()
-    await LoginRecoverWallet.recoverWalletLogin()
   })
 
   it('should verify staking amount screen items on mainnet', async () => {
+    await LoginRecoverWallet.recoverWalletLogin()
     await BottomTabsPage.tapStakeTab()
     await StakePage.tapStakeButton()
     await GetStartedScreenPage.tapNextButton()

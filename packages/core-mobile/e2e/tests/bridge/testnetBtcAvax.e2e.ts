@@ -1,4 +1,3 @@
-/* eslint-disable jest/expect-expect */
 import LoginRecoverWallet from '../../helpers/loginRecoverWallet'
 import BridgeTabPage from '../../pages/bridgeTab.page'
 import { warmup } from '../../helpers/warmup'
@@ -7,10 +6,10 @@ import AdvancedPage from '../../pages/burgerMenu/advanced.page'
 describe('Bridge transfer testnet BTC -> AVAX', () => {
   beforeAll(async () => {
     await warmup()
-    await LoginRecoverWallet.recoverWalletLogin()
   })
 
   it('Should verify Transaction Status Items', async () => {
+    await LoginRecoverWallet.recoverWalletLogin()
     await AdvancedPage.switchToTestnet()
     await BridgeTabPage.switchToNetwork('Bitcoin')
     await BridgeTabPage.inputTokenAmmountBtcAvax()

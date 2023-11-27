@@ -12,10 +12,10 @@ import { warmup } from '../../helpers/warmup'
 describe('Change Network', () => {
   beforeAll(async () => {
     await warmup()
-    await LoginRecoverWallet.recoverWalletLogin()
   })
 
   it('should verify changing Active network to ETH', async () => {
+    await LoginRecoverWallet.recoverWalletLogin()
     await PortfolioPage.tapNetworksDropdown()
     await PortfolioPage.tapNetworksDropdownETH()
     await Actions.waitForElement(PortfolioPage.ethNetwork)

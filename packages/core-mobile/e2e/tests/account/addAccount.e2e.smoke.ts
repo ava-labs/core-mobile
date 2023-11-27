@@ -8,10 +8,10 @@ import { warmup } from '../../helpers/warmup'
 describe('Add and edit accounts', () => {
   beforeAll(async () => {
     await warmup()
-    await LoginRecoverWallet.recoverWalletLogin()
   })
 
   it('should add second account', async () => {
+    await LoginRecoverWallet.recoverWalletLogin()
     await AccountManagePage.tapAccountMenu()
     await Actions.waitForElement(AccountManagePage.addEditAccount)
     await AccountManagePage.tapAddEditAccounts()

@@ -1,4 +1,3 @@
-/* eslint-disable jest/expect-expect */
 import Assert from '../../helpers/assertions'
 import LoginRecoverWallet from '../../helpers/loginRecoverWallet'
 import NetworksManagePage from '../../pages/networksManage.page'
@@ -9,10 +8,10 @@ import AdvancedPage from '../../pages/burgerMenu/advanced.page'
 describe('Enable Testnet', () => {
   beforeAll(async () => {
     await warmup()
-    await LoginRecoverWallet.recoverWalletLogin()
   })
 
   it('Should verify Avax Network', async () => {
+    await LoginRecoverWallet.recoverWalletLogin()
     await AdvancedPage.switchToTestnet()
     await PortfolioPage.tapAvaxNetwork()
     await Assert.isVisible(PortfolioPage.avaxNetwork)
