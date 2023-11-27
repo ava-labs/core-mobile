@@ -5,35 +5,61 @@ import CoreSeedlessAPIService, {
 import SeedlessService from 'seedless/services/SeedlessService'
 import Logger from 'utils/Logger'
 
+type RegisterProps = {
+  oidcToken: string
+  onRegisterMfaMethods: () => void
+  onVerifyMfaMethod: (mfaId: string) => void
+}
+
 type ReturnType = {
   isRegistering: boolean
-  register: (oidcToken: string) => Promise<SeedlessUserRegistrationResult>
+  register: ({
+    oidcToken,
+    onRegisterMfaMethods,
+    onVerifyMfaMethod
+  }: RegisterProps) => Promise<void>
 }
 
 export const useSeedlessRegister = (): ReturnType => {
   const [isRegistering, setIsRegistering] = useState(false)
 
-  const register = async (
-    oidcToken: string
-  ): Promise<SeedlessUserRegistrationResult> => {
+  const register = async ({
+    oidcToken,
+    onRegisterMfaMethods,
+    onVerifyMfaMethod
+  }: RegisterProps): Promise<void> => {
     setIsRegistering(true)
 
     try {
       const identity = await SeedlessService.oidcProveIdentity(oidcToken)
       const result = await CoreSeedlessAPIService.register(identity)
-      if (result !== SeedlessUserRegistrationResult.ERROR) {
-        await SeedlessService.login(oidcToken)
-      }
+      const signResponse = await SeedlessService.login(oidcToken)
+      const isMfaRequired = signResponse.requiresMfa()
+
       if (result === SeedlessUserRegistrationResult.ALREADY_REGISTERED) {
-        const userMfa = await SeedlessService.userMfa()
-        if (userMfa.length === 0) {
-          return SeedlessUserRegistrationResult.MFA_REQUIRED
+        if (isMfaRequired) {
+          const mfa = await SeedlessService.userMfa()
+
+          if (mfa && mfa.length > 0) {
+            onVerifyMfaMethod(signResponse.mfaId())
+          } else {
+            onRegisterMfaMethods()
+          }
+        } else {
+          // TODO: handle ALREADY_REGISTERED without mfa
         }
+      } else if (result === SeedlessUserRegistrationResult.APPROVED) {
+        if (isMfaRequired) {
+          onRegisterMfaMethods()
+        } else {
+          // TODO: handle APPROVED without mfa
+        }
+      } else {
+        throw new Error(SeedlessUserRegistrationResult.ERROR)
       }
-      return result
     } catch (error) {
       Logger.error('useSeedlessRegister error', error)
-      return SeedlessUserRegistrationResult.ERROR
+      throw new Error(SeedlessUserRegistrationResult.ERROR)
     } finally {
       setIsRegistering(false)
     }
