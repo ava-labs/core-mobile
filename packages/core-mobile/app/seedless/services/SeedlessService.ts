@@ -7,7 +7,8 @@ import {
   TotpChallenge,
   UserInfo,
   envs,
-  Environment
+  Environment,
+  SignResponse
 } from '@cubist-labs/cubesigner-sdk'
 import { TotpErrors } from 'seedless/errors'
 import { Result } from 'types/result'
@@ -60,7 +61,7 @@ class SeedlessService {
   async login(
     oidcToken: string,
     mfaReceipt?: MfaReceipt | undefined
-  ): Promise<void> {
+  ): Promise<SignResponse<unknown>> {
     const signResponse = await new CubeSigner().oidcLogin(
       oidcToken,
       SEEDLESS_ORG_ID,
@@ -77,12 +78,20 @@ class SeedlessService {
       mfaReceipt
     )
 
-    await SignerSessionManager.createFromSessionInfo(
-      envInterface,
-      SEEDLESS_ORG_ID,
-      signResponse.data(),
-      new SeedlessSessionStorage()
-    )
+    const sessionResponse = signResponse.requiresMfa()
+      ? signResponse.mfaSessionInfo()
+      : signResponse.data()
+
+    if (sessionResponse) {
+      await SignerSessionManager.createFromSessionInfo(
+        envInterface,
+        SEEDLESS_ORG_ID,
+        sessionResponse,
+        new SeedlessSessionStorage()
+      )
+    }
+
+    return signResponse
   }
 
   /**
@@ -95,7 +104,7 @@ class SeedlessService {
   /**
    * Retrieves information about the current user's mfa.
    */
-  async userMfa(): Promise<UserInfo['mfa']> {
+  async userMfa(): Promise<UserMFAs> {
     return (await this.aboutMe()).mfa
   }
 
@@ -167,5 +176,7 @@ class SeedlessService {
     return cubeSigner.oidcProveIdentity(oidcToken, SEEDLESS_ORG_ID)
   }
 }
+
+export type UserMFAs = UserInfo['mfa']
 
 export default new SeedlessService()

@@ -50,23 +50,29 @@ const SignupScreen: FC = () => {
   const handleSignupWithGoogle = async (): Promise<void> => {
     const oidcToken = await GoogleSigninService.signin()
 
-    const result = await register(oidcToken)
+    const { result, isMfaRequired, mfa } = await register(oidcToken)
 
-    if (result === SeedlessUserRegistrationResult.ERROR) {
+    if (result === SeedlessUserRegistrationResult.APPROVED) {
+      if (isMfaRequired) {
+        navigation.navigate(AppNavigation.Onboard.RecoveryMethods)
+      } else {
+        // TODO: handle APPROVED without mfa
+      }
+    } else if (result === SeedlessUserRegistrationResult.ALREADY_REGISTERED) {
+      if (isMfaRequired) {
+        if (mfa && mfa.length > 0) {
+          navigation.navigate(AppNavigation.Onboard.RecoveryMethods, {
+            screen: AppNavigation.RecoveryMethods.VerifyCode
+          })
+        } else {
+          navigation.navigate(AppNavigation.Onboard.RecoveryMethods)
+        }
+      } else {
+        // TODO: handle ALREADY_REGISTERED without mfa
+      }
+    } else {
       Alert.alert('seedless user registration error')
       return
-    }
-
-    if (
-      result === SeedlessUserRegistrationResult.APPROVED ||
-      result === SeedlessUserRegistrationResult.MFA_REQUIRED
-    ) {
-      navigation.navigate(AppNavigation.Onboard.RecoveryMethods)
-    } else if (result === SeedlessUserRegistrationResult.ALREADY_REGISTERED) {
-      // @ts-ignore
-      navigation.navigate(AppNavigation.Onboard.RecoveryMethods, {
-        screen: AppNavigation.RecoveryMethods.VerifyCode
-      })
     }
   }
 
