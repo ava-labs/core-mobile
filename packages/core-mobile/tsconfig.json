@@ -19,7 +19,5 @@
   ],
   "exclude": [
     "node_modules",
-    "**/e2e/**/*.spec.ts",
-    "**/e2e/**/*.test.ts",
   ],
 }

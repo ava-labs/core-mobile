@@ -21,6 +21,7 @@ test('check wallet connect button', async ({ page, context }) => {
   await context.grantPermissions(['clipboard-read'])
 
   const clipboardValue = await page.evaluate(() => {
+    // @ts-ignore
     return navigator.clipboard.readText()
   })
 
