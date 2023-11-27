@@ -32,3 +32,7 @@ to prevent error when running detox due to different versions of jest conflictin
 ### "bitcoinjs-lib": "6.1.5"
 
 to prevent type conflicts between 5.2.0 from @avalabs/wallets-sdk and our code
+
+### "ethers": "6.8.1"
+
+to prevent type conflicts between cubist sdk and ours
