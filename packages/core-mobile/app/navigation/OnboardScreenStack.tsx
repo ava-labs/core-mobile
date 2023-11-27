@@ -13,7 +13,9 @@ import SignupScreen from './onboarding/SignupScreen'
 import { WelcomeScreenStackParamList } from './onboarding/WelcomeScreenStack'
 import { OnboardScreenProps } from './types'
 import SigninScreen from './onboarding/SigninScreen'
-import RecoveryMethodsStack from './onboarding/RecoveryMethodsStack'
+import RecoveryMethodsStack, {
+  RecoveryMethodsStackParamList
+} from './onboarding/RecoveryMethodsStack'
 
 type NavigationProp = OnboardScreenProps<
   typeof AppNavigation.Onboard.Signup
@@ -83,7 +85,9 @@ export type OnboardingScreenStackParamList = {
   [AppNavigation.Onboard.Signin]: undefined
   [AppNavigation.Onboard
     .Welcome]: NavigatorScreenParams<WelcomeScreenStackParamList>
-  [AppNavigation.Onboard.RecoveryMethods]: undefined
+  [AppNavigation.Onboard.RecoveryMethods]:
+    | NavigatorScreenParams<RecoveryMethodsStackParamList>
+    | undefined
 }
 
 const OnboardingScreenS = createStackNavigator<OnboardingScreenStackParamList>()
