@@ -2,54 +2,64 @@ import { useState } from 'react'
 import CoreSeedlessAPIService, {
   SeedlessUserRegistrationResult
 } from 'seedless/services/CoreSeedlessAPIService'
-import SeedlessService, { UserMFAs } from 'seedless/services/SeedlessService'
+import SeedlessService from 'seedless/services/SeedlessService'
 import Logger from 'utils/Logger'
 
-type RegisterReturnType = {
-  result: SeedlessUserRegistrationResult
-  isMfaRequired?: boolean
-  mfaId?: string
-  mfa?: UserMFAs
+type RegisterProps = {
+  oidcToken: string
+  onRegisterMfaMethods: () => void
+  onVerifyMfaMethod: (mfaId: string) => void
 }
 
 type ReturnType = {
   isRegistering: boolean
-  register: (oidcToken: string) => Promise<RegisterReturnType>
+  register: ({
+    oidcToken,
+    onRegisterMfaMethods,
+    onVerifyMfaMethod
+  }: RegisterProps) => Promise<void>
 }
 
 export const useSeedlessRegister = (): ReturnType => {
   const [isRegistering, setIsRegistering] = useState(false)
 
-  const register = async (oidcToken: string): Promise<RegisterReturnType> => {
+  const register = async ({
+    oidcToken,
+    onRegisterMfaMethods,
+    onVerifyMfaMethod
+  }: RegisterProps): Promise<void> => {
     setIsRegistering(true)
 
     try {
       const identity = await SeedlessService.oidcProveIdentity(oidcToken)
       const result = await CoreSeedlessAPIService.register(identity)
-      if (result === SeedlessUserRegistrationResult.ERROR) {
-        return { result }
-      } else {
-        const signResponse = await SeedlessService.login(oidcToken)
+      const signResponse = await SeedlessService.login(oidcToken)
+      const isMfaRequired = signResponse.requiresMfa()
 
-        if (result === SeedlessUserRegistrationResult.ALREADY_REGISTERED) {
-          return {
-            result,
-            isMfaRequired: signResponse.requiresMfa(),
-            mfaId: signResponse.requiresMfa()
-              ? signResponse.mfaId()
-              : undefined,
-            mfa: await SeedlessService.userMfa()
+      if (result === SeedlessUserRegistrationResult.ALREADY_REGISTERED) {
+        if (isMfaRequired) {
+          const mfa = await SeedlessService.userMfa()
+
+          if (mfa && mfa.length > 0) {
+            onVerifyMfaMethod(signResponse.mfaId())
+          } else {
+            onRegisterMfaMethods()
           }
         } else {
-          return {
-            result: SeedlessUserRegistrationResult.APPROVED,
-            isMfaRequired: signResponse.requiresMfa()
-          }
+          // TODO: handle ALREADY_REGISTERED without mfa
         }
+      } else if (result === SeedlessUserRegistrationResult.APPROVED) {
+        if (isMfaRequired) {
+          onRegisterMfaMethods()
+        } else {
+          // TODO: handle APPROVED without mfa
+        }
+      } else {
+        throw new Error(SeedlessUserRegistrationResult.ERROR)
       }
     } catch (error) {
       Logger.error('useSeedlessRegister error', error)
-      return { result: SeedlessUserRegistrationResult.ERROR }
+      throw new Error(SeedlessUserRegistrationResult.ERROR)
     } finally {
       setIsRegistering(false)
     }

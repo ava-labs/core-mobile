@@ -7,7 +7,6 @@ import React, { FC, useLayoutEffect } from 'react'
 import { Alert } from 'react-native'
 import AuthButtons from 'seedless/components/AuthButtons'
 import { useSeedlessRegister } from 'seedless/hooks/useSeedlessRegister'
-import { SeedlessUserRegistrationResult } from 'seedless/services/CoreSeedlessAPIService'
 import GoogleSigninService from 'seedless/services/GoogleSigninService'
 import Logger from 'utils/Logger'
 
@@ -34,29 +33,20 @@ const SigninScreen: FC = () => {
   const handleSigninWithGoogle = async (): Promise<void> => {
     const oidcToken = await GoogleSigninService.signin()
 
-    const { result, isMfaRequired, mfa } = await register(oidcToken)
-
-    if (result === SeedlessUserRegistrationResult.APPROVED) {
-      if (isMfaRequired) {
-        navigation.navigate(AppNavigation.Onboard.RecoveryMethods)
-      } else {
-        // TODO: handle APPROVED without mfa
-      }
-    } else if (result === SeedlessUserRegistrationResult.ALREADY_REGISTERED) {
-      if (isMfaRequired) {
-        if (mfa && mfa.length > 0) {
+    try {
+      await register({
+        oidcToken,
+        onRegisterMfaMethods: () => {
+          navigation.navigate(AppNavigation.Onboard.RecoveryMethods)
+        },
+        onVerifyMfaMethod: () => {
           navigation.navigate(AppNavigation.Onboard.RecoveryMethods, {
             screen: AppNavigation.RecoveryMethods.VerifyCode
           })
-        } else {
-          navigation.navigate(AppNavigation.Onboard.RecoveryMethods)
         }
-      } else {
-        // TODO: handle ALREADY_REGISTERED without mfa
-      }
-    } else {
+      })
+    } catch (e) {
       Alert.alert('seedless user registration error')
-      return
     }
   }
 
