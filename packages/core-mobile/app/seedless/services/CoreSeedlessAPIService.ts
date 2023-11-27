@@ -1,3 +1,4 @@
+import { IdentityProof } from '@cubist-labs/cubesigner-sdk'
 import Config from 'react-native-config'
 
 if (!Config.SEEDLESS_URL) {
@@ -11,7 +12,8 @@ if (!Config.SEEDLESS_API_KEY) {
 export enum SeedlessUserRegistrationResult {
   ALREADY_REGISTERED = 'ALREADY_REGISTERED',
   APPROVED = 'APPROVED',
-  ERROR = 'ERROR'
+  ERROR = 'ERROR',
+  MFA_REQUIRED = 'MFA_REQUIRED'
 }
 
 /**
@@ -19,34 +21,29 @@ export enum SeedlessUserRegistrationResult {
  * https://github.com/ava-labs/core-seedless-api
  */
 class CoreSeedlessAPIService {
-  async register(oidcToken: string): Promise<SeedlessUserRegistrationResult> {
-    // Extract user identity from token
-    const payload = JSON.parse(
-      Buffer.from(oidcToken.split('.')?.[1] ?? '', 'base64').toString('utf8')
-    )
-    const iss = payload.iss
-    const sub = payload.sub
-    const email = payload.email
-
+  async register(
+    identityProof: IdentityProof
+  ): Promise<SeedlessUserRegistrationResult> {
     try {
       const response = await fetch(Config.SEEDLESS_URL + '/v1/register', {
         method: 'POST',
-        body: JSON.stringify({
-          iss,
-          sub,
-          email
-        }),
+        body: JSON.stringify(identityProof),
         headers: {
-          Authorization: `${Config.SEEDLESS_API_KEY}`
+          Authorization: `${Config.SEEDLESS_API_KEY}`,
+          'Content-Type': 'application/json'
         }
       })
 
+      const status = response.status
       const body = await response.json()
+      if (status === 200) {
+        return SeedlessUserRegistrationResult.APPROVED
+      }
 
       if (body.message === 'USER_ALREADY_EXISTS') {
         return SeedlessUserRegistrationResult.ALREADY_REGISTERED
       }
-      return SeedlessUserRegistrationResult.APPROVED
+      return SeedlessUserRegistrationResult.ERROR
     } catch (error) {
       return SeedlessUserRegistrationResult.ERROR
     }

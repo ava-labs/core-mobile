@@ -3,7 +3,7 @@ import {
   CubeSigner,
   SignResponse,
   TotpChallenge
-} from '@cubist-dev/cubesigner-sdk'
+} from '@cubist-labs/cubesigner-sdk'
 import { TotpErrors } from 'seedless/errors'
 import SeedlessService from './SeedlessService'
 

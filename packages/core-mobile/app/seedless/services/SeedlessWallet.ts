@@ -1,5 +1,5 @@
 import { NetworkVMType } from '@avalabs/chains-sdk'
-import * as cs from '@cubist-dev/cubesigner-sdk'
+import * as cs from '@cubist-labs/cubesigner-sdk'
 import { PubKeyType } from 'services/wallet/types'
 import { strip0x } from '@avalabs/utils-sdk'
 import {
