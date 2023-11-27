@@ -30,9 +30,13 @@ class SecureStorageService {
     const serialized = serializeJson(value)
     const key = await SecureStorageService.getOrCreateKey(slot)
     const encrypted = await encrypt(serialized, key)
-    const result = await Keychain.setGenericPassword('', encrypted, {
-      service: serviceForValues
-    })
+    const result = await Keychain.setGenericPassword(
+      serviceForValues,
+      encrypted,
+      {
+        service: serviceForValues
+      }
+    )
     assert(result !== false)
   }
 
@@ -78,7 +82,7 @@ class SecureStorageService {
       return existingCredentials.password
     }
     const key: string = await NativeModules.Aes.randomKey(32)
-    const result = await Keychain.setGenericPassword('', key, {
+    const result = await Keychain.setGenericPassword(serviceForKeys, key, {
       service: serviceForKeys
     })
     assert(result !== false)
