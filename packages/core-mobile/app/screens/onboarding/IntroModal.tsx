@@ -18,7 +18,7 @@ import { useDispatch } from 'react-redux'
 import { ViewOnceKey, setViewOnce } from 'store/viewOnce'
 import { useNavigation } from '@react-navigation/native'
 import { Row } from 'components/Row'
-import { Button, Text, View } from '@avalabs/k2-mobile'
+import { Button, SxProp, Text, View } from '@avalabs/k2-mobile'
 
 const TO_COLOR = '#000000'
 const FROM_COLOR = '#007AFF'
@@ -69,13 +69,15 @@ interface Props {
   heading: string
   buttonText: string
   descriptions: { icon: JSX.Element; text: string }[]
+  styles?: SxProp
 }
 
 export default function IntroModal({
   viewOnceKey,
   heading,
   buttonText,
-  descriptions
+  descriptions,
+  styles
 }: Props): JSX.Element {
   const dispatch = useDispatch()
   const { goBack } = useNavigation()
@@ -85,49 +87,53 @@ export default function IntroModal({
   }
 
   return (
-    <View>
-      <View sx={{ paddingBottom: 30 }}>
-        <Canvas
-          style={{
-            marginHorizontal: 16,
-            width: '92%',
-            height: '100%',
-            position: 'absolute'
-          }}>
-          <Group>
-            <BlueBackground />
-            <TokenImageWithGradient />
-          </Group>
-        </Canvas>
-        <View
-          sx={{
-            marginHorizontal: 32,
-            height: '100%',
-            justifyContent: 'flex-end',
-            paddingBottom: 32
-          }}>
-          <Text variant="heading3">{heading}</Text>
-          <Space y={24} />
-          {descriptions.map(({ icon, text }, index) => (
-            <View key={index}>
-              <Row>
-                {icon}
-                <Text
-                  variant="heading6"
-                  sx={{
-                    paddingHorizontal: 16
-                  }}>
-                  {text}
-                </Text>
-              </Row>
-              <Space y={16} />
-            </View>
-          ))}
-          <Space y={16} />
-          <Button type="primary" size="xlarge" onPress={onInstructionRead}>
-            {buttonText}
-          </Button>
-        </View>
+    <View
+      sx={{
+        marginTop: 64,
+        marginHorizontal: 24,
+        borderRadius: 16,
+        overflow: 'hidden',
+        ...styles
+      }}>
+      <Canvas
+        style={{
+          width: width - 48,
+          height: '100%',
+          position: 'absolute'
+        }}>
+        <Group>
+          <BlueBackground />
+          <TokenImageWithGradient />
+        </Group>
+      </Canvas>
+      <View
+        sx={{
+          marginHorizontal: 16,
+          height: '100%',
+          justifyContent: 'flex-end',
+          paddingBottom: 72
+        }}>
+        <Text variant="heading3">{heading}</Text>
+        <Space y={24} />
+        {descriptions.map(({ icon, text }, index) => (
+          <View key={index}>
+            <Row>
+              {icon}
+              <Text
+                variant="heading6"
+                sx={{
+                  paddingHorizontal: 16
+                }}>
+                {text}
+              </Text>
+            </Row>
+            <Space y={16} />
+          </View>
+        ))}
+        <Space y={52} />
+        <Button type="primary" size="xlarge" onPress={onInstructionRead}>
+          {buttonText}
+        </Button>
       </View>
     </View>
   )

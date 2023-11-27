@@ -191,6 +191,7 @@ const CoreIntroModal = (): JSX.Element => {
       viewOnceKey={ViewOnceKey.CORE_INTRO}
       buttonText="Get Started!"
       descriptions={descriptions}
+      styles={{ marginBottom: 74 }}
     />
   )
 }
