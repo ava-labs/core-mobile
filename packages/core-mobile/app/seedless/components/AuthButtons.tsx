@@ -8,6 +8,7 @@ type Props = {
   title: string
   disabled?: boolean
   onGoogleAction: () => void
+  onAppleAction: () => void
   onMnemonicAction: () => void
 }
 
@@ -15,6 +16,7 @@ const AuthButtons: FC<Props> = ({
   title,
   disabled,
   onGoogleAction,
+  onAppleAction,
   onMnemonicAction
 }) => {
   const {
@@ -30,6 +32,12 @@ const AuthButtons: FC<Props> = ({
             type="google"
             disabled={disabled}
             onPress={onGoogleAction}
+          />
+          <Space x={16} />
+          <SocialButton
+            type="apple"
+            disabled={disabled}
+            onPress={onAppleAction}
           />
         </View>
         <Space y={16} />
