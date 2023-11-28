@@ -255,7 +255,7 @@ __metadata:
     react-native-modal-datetime-picker: 15.0.1
     react-native-os: 1.2.6
     react-native-pager-view: 5.4.25
-    react-native-passkey: ^2.1.1
+    react-native-passkey: 2.1.1
     react-native-performance: 4.0.0
     react-native-performance-flipper-reporter: 4.0.0
     react-native-permissions: 3.6.0
@@ -21590,7 +21590,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-passkey@npm:^2.1.1":
+"react-native-passkey@npm:2.1.1":
   version: 2.1.1
   resolution: "react-native-passkey@npm:2.1.1"
   peerDependencies:
