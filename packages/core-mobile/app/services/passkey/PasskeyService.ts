@@ -5,7 +5,6 @@ import {
   PasskeyRegistrationRequest,
   PasskeyRegistrationResult
 } from 'react-native-passkey/lib/typescript/Passkey'
-import { AddFidoChallenge, MfaFidoChallenge } from '@cubist-labs/cubesigner-sdk'
 
 class PasskeyService {
   get isSupported(): boolean {
@@ -17,43 +16,36 @@ class PasskeyService {
   }
 
   async register(
-    challenge: AddFidoChallenge,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    challengeOptions: any,
     withSecurityKey: boolean
-  ): Promise<void> {
-    const request = this.prepareRegistrationRequest(challenge)
+  ): Promise<unknown> {
+    const request = this.prepareRegistrationRequest(challengeOptions)
 
     const result = await Passkey.register(request, { withSecurityKey })
 
-    const credential = this.convertRegistrationResultToCredential(result)
-
-    await challenge.answer(credential)
+    return this.convertRegistrationResultToCredential(result)
   }
 
   async authenticate(
-    challenge: MfaFidoChallenge,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    challengeOptions: any,
     withSecurityKey: boolean
-  ): Promise<string> {
-    const request = this.prepareAuthenticationRequest(challenge)
+  ): Promise<unknown> {
+    const request = this.prepareAuthenticationRequest(challengeOptions)
 
     const result = await Passkey.authenticate(request, {
       withSecurityKey
     })
 
-    const credential = this.convertAuthenticationResultToCredential(result)
-
-    const mfaRequestInfo = await challenge.answer(credential)
-
-    if (mfaRequestInfo.receipt?.confirmation) {
-      return mfaRequestInfo.receipt.confirmation
-    } else {
-      throw new Error('Passkey authentication failed')
-    }
+    return this.convertAuthenticationResultToCredential(result)
   }
 
   private prepareRegistrationRequest(
-    challenge: AddFidoChallenge
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    challengeOptions: any
   ): PasskeyRegistrationRequest {
-    const request = challenge.options as PasskeyRegistrationRequest
+    const request = challengeOptions as PasskeyRegistrationRequest
 
     request.challenge = Buffer.from(request.challenge).toString('base64')
     request.user.id = Buffer.from(request.user.id).toString('base64')
@@ -66,9 +58,10 @@ class PasskeyService {
   }
 
   private prepareAuthenticationRequest(
-    challenge: MfaFidoChallenge
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    challengeOptions: any
   ): PasskeyAuthenticationRequest {
-    const request = challenge.options as PasskeyAuthenticationRequest
+    const request = challengeOptions as PasskeyAuthenticationRequest
 
     request.challenge = Buffer.from(request.challenge).toString('base64')
     request.rpId = this.rpID

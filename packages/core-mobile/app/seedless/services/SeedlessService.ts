@@ -14,8 +14,8 @@ import {
 import { TotpErrors } from 'seedless/errors'
 import { Result } from 'types/result'
 import { MFA } from 'seedless/types'
+import PasskeyService from 'services/passkey/PasskeyService'
 import { SeedlessSessionStorage } from './storage/SeedlessSessionStorage'
-import PasskeyService from './PasskeyService'
 
 if (!Config.SEEDLESS_ORG_ID) {
   throw Error('SEEDLESS_ORG_ID is missing. Please check your env file.')
@@ -150,7 +150,12 @@ class SeedlessService {
 
     const challenge = signResponse.data()
 
-    await PasskeyService.register(challenge, withSecurityKey)
+    const credential = await PasskeyService.register(
+      challenge.options,
+      withSecurityKey
+    )
+
+    await challenge.answer(credential)
   }
 
   async approveFido(
@@ -163,16 +168,23 @@ class SeedlessService {
 
     const challenge = await signerSession.fidoApproveStart(mfaId)
 
-    const mfaConfirmationKey = await PasskeyService.authenticate(
-      challenge,
+    const credential = await PasskeyService.authenticate(
+      challenge.options,
       withSecurityKey
     )
 
-    await this.login(oidcToken, {
-      mfaOrgId: SEEDLESS_ORG_ID,
-      mfaId: mfaId,
-      mfaConf: mfaConfirmationKey
-    })
+    const mfaRequestInfo = await challenge.answer(credential)
+
+    if (mfaRequestInfo.receipt?.confirmation) {
+      // return mfaRequestInfo.receipt.confirmation
+      await this.login(oidcToken, {
+        mfaOrgId: SEEDLESS_ORG_ID,
+        mfaId: mfaId,
+        mfaConf: mfaRequestInfo.receipt.confirmation
+      })
+    } else {
+      throw new Error('Passkey authentication failed')
+    }
   }
 
   /**
