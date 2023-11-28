@@ -333,7 +333,7 @@ workflows:
       - script-runner@0:
           title: Trigger iOS Internal Build
           inputs:
-            - file_path: scripts/bitrise/triggerIosInternalBuild.sh
+            - file_path: packages/core-mobile/scripts/bitrise/triggerIosInternalBuild.sh
   _install-node-18:
     steps:
     - restore-cache@1:
