@@ -78,7 +78,7 @@ class PasskeyService {
     result: PasskeyRegistrationResult
   ): unknown {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const converted = result as any
+    const converted = { ...result } as any
     converted.rawId = Buffer.from(result.rawId, 'base64')
     converted.response.clientDataJSON = Buffer.from(
       result.response.clientDataJSON,
@@ -96,7 +96,7 @@ class PasskeyService {
     result: PasskeyAuthenticationResult
   ): unknown {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const converted = result as any
+    const converted = { ...result } as any
     converted.rawId = Buffer.from(result.rawId, 'base64')
     converted.response.clientDataJSON = Buffer.from(
       result.response.clientDataJSON,
