@@ -53,12 +53,12 @@ export const NameYourWallet = (): JSX.Element => {
           onSubmit={handleNext}
           text={name}
           backgroundColor={colors.$transparent}
+          style={{ marginHorizontal: 0 }}
           textStyle={{
             fontFamily: 'Inter-Bold',
             fontSize: 48,
             lineHeight: 56,
-            textAlign: 'right',
-            alignSelf: 'center'
+            textAlign: 'justify'
           }}
         />
       </View>
