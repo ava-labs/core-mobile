@@ -30,6 +30,16 @@ export const AddRecoveryMethods = (): JSX.Element => {
       await SeedlessService.registerFido('Passkey', false)
 
       await SeedlessService.approveFido(oidcToken, mfaId, false)
+
+      navigate(AppNavigation.Root.Onboard, {
+        screen: AppNavigation.Onboard.Welcome,
+        params: {
+          screen: AppNavigation.Onboard.AnalyticsConsent,
+          params: {
+            nextScreen: AppNavigation.Onboard.CreatePin
+          }
+        }
+      })
     } catch (e) {
       Alert.alert('Passkey registration error')
     }
@@ -40,6 +50,16 @@ export const AddRecoveryMethods = (): JSX.Element => {
       await SeedlessService.registerFido('Yubikey', true)
 
       await SeedlessService.approveFido(oidcToken, mfaId, true)
+
+      navigate(AppNavigation.Root.Onboard, {
+        screen: AppNavigation.Onboard.Welcome,
+        params: {
+          screen: AppNavigation.Onboard.AnalyticsConsent,
+          params: {
+            nextScreen: AppNavigation.Onboard.CreatePin
+          }
+        }
+      })
     } catch (e) {
       Alert.alert('Yubikey registration error')
     }
