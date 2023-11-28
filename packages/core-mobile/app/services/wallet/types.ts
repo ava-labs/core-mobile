@@ -1,8 +1,15 @@
 import { TransactionRequest } from 'ethers'
-import { BitcoinInputUTXO, BitcoinOutputUTXO } from '@avalabs/wallets-sdk'
+import {
+  Avalanche,
+  BitcoinInputUTXO,
+  BitcoinOutputUTXO,
+  BlockCypherProvider,
+  JsonRpcBatchInternal
+} from '@avalabs/wallets-sdk'
 import { UnsignedTx } from '@avalabs/avalanchejs-v2'
-import { Network } from '@avalabs/chains-sdk'
+import { Network, NetworkVMType } from '@avalabs/chains-sdk'
 import { Avax } from 'types/Avax'
+import { RpcMethod } from 'store/walletConnectV2/types'
 
 export type SignTransactionRequest =
   | TransactionRequest
@@ -81,4 +88,128 @@ export enum WalletType {
   UNSET = 'UNSET',
   SEEDLESS = 'SEEDLESS',
   MNEMONIC = 'MNEMONIC'
+}
+
+/**
+ * Interface representing a universal wallet with common methods for
+ * signing message/transaction and retrieving wallet infos (addresses, public key)
+ */
+export interface Wallet {
+  /**
+   * Signs a message using the specified account, network, and provider.
+   * @param rpcMethod - The RPC method for the message.
+   * @param data - The data to be signed.
+   * @param accountIndex - The index of the account.
+   * @param network - The network type.
+   * @param provider - The JSON RPC provider
+   */
+  signMessage({
+    rpcMethod,
+    data,
+    accountIndex,
+    network,
+    provider
+  }: {
+    rpcMethod: RpcMethod
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    data: any
+    accountIndex: number
+    network: Network
+    provider: JsonRpcBatchInternal
+  }): Promise<string>
+
+  /**
+   * Signs a Bitcoin transaction using the specified account, transaction request, network, and BlockCypher provider.
+   * @param accountIndex - The index of the account.
+   * @param transaction - The Bitcoin transaction request.
+   * @param network - The network type.
+   * @param provider - The BlockCypher provider.
+   */
+  signBtcTransaction({
+    accountIndex,
+    transaction,
+    network,
+    provider
+  }: {
+    accountIndex: number
+    transaction: BtcTransactionRequest
+    network: Network
+    provider: BlockCypherProvider
+  }): Promise<string>
+
+  /**
+   * Signs an Avalanche transaction using the specified account, transaction request, network, and Avalanche JSON RPC provider.
+   * @param accountIndex - The index of the account.
+   * @param transaction - The Avalanche transaction request.
+   * @param network - The network type.
+   * @param provider - The Avalanche JSON RPC provider.
+   */
+  signAvalancheTransaction({
+    accountIndex,
+    transaction,
+    network,
+    provider
+  }: {
+    accountIndex: number
+    transaction: AvalancheTransactionRequest
+    network: Network
+    provider: Avalanche.JsonRpcProvider
+  }): Promise<string>
+
+  /**
+   * Signs an Ethereum Virtual Machine (EVM) transaction using the specified account, transaction request, network, and JSON RPC provider.
+   * @param accountIndex - The index of the account.
+   * @param transaction - The EVM transaction request.
+   * @param network - The network type.
+   * @param provider - The JSON RPC provider.
+   */
+  signEvmTransaction({
+    accountIndex,
+    transaction,
+    network,
+    provider
+  }: {
+    accountIndex: number
+    transaction: TransactionRequest
+    network: Network
+    provider: JsonRpcBatchInternal
+  }): Promise<string>
+
+  /**
+   * Retrieves the public key for a specific account.
+   * @param accountIndex - The index of the account.
+   */
+  getPublicKey(accountIndex: number): Promise<PubKeyType>
+
+  /**
+   * Retrieves addresses for a specific account on various networks.
+   * @param accountIndex - The index of the account.
+   * @param isTestnet - A boolean indicating whether the network is a testnet.
+   * @param provXP - The Avalanche JSON RPC provider.
+   */
+  getAddresses({
+    accountIndex,
+    isTestnet,
+    provXP
+  }: {
+    accountIndex: number
+    isTestnet: boolean
+    provXP: Avalanche.JsonRpcProvider
+  }): Record<NetworkVMType, string>
+
+  /**
+   * Retrieves a read-only Avalanche signer that can be used to
+   * - retrieve transaction info (e.g. utxo, nonce,...)
+   * - generate transaction object (e.g. export/import tx)
+   *
+   * @param accountIndex - The index of the account.
+   * @param provXP - The Avalanche JSON RPC provider.
+   */
+  getReadOnlyAvaSigner({
+    accountIndex,
+    provXP
+  }: {
+    accountIndex: number
+    provXP: Avalanche.JsonRpcProvider
+  }): Avalanche.WalletVoid | Avalanche.StaticSigner
 }
