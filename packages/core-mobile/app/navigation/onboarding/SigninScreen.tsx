@@ -1,4 +1,5 @@
 import { View, useTheme } from '@avalabs/k2-mobile'
+import { noop } from '@avalabs/utils-sdk'
 import { useNavigation } from '@react-navigation/native'
 import CoreXLogoAnimated from 'components/CoreXLogoAnimated'
 import AppNavigation from 'navigation/AppNavigation'
@@ -89,6 +90,7 @@ const SigninScreen: FC = () => {
                 Logger.error('handleSignupWithGoogle', error)
               })
             }}
+            onAppleAction={noop}
             onMnemonicAction={handleSigninWithMnemonic}
           />
         </View>

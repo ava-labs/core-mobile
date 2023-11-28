@@ -1,4 +1,5 @@
 import { Button, View } from '@avalabs/k2-mobile'
+import { noop } from '@avalabs/utils-sdk'
 import { useNavigation } from '@react-navigation/native'
 import CoreXLogoAnimated from 'components/CoreXLogoAnimated'
 import { Space } from 'components/Space'
@@ -115,6 +116,7 @@ const SignupScreen: FC = () => {
                     Logger.error('handleSignupWithGoogle', error)
                   })
                 }}
+                onAppleAction={noop}
                 onMnemonicAction={handleSignupWithMnemonic}
               />
               <Space y={48} />
