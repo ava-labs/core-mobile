@@ -1,21 +1,10 @@
 import {
   Avalanche,
-  BitcoinProviderAbstract,
-  BitcoinWallet,
   BlockCypherProvider,
-  DerivationPath,
-  getAddressDerivationPath,
-  getAddressFromXPub,
-  getAddressPublicKeyFromXPub,
-  getBech32AddressFromXPub,
-  getWalletFromMnemonic,
-  getXpubFromMnemonic
+  JsonRpcBatchInternal
 } from '@avalabs/wallets-sdk'
-import { now } from 'moment'
 import {
   AddDelegatorProps,
-  AvalancheTransactionRequest,
-  BtcTransactionRequest,
   CreateExportCTxParams,
   CreateExportPTxParams,
   CreateImportCTxParams,
@@ -24,15 +13,8 @@ import {
   SignTransactionRequest,
   WalletType
 } from 'services/wallet/types'
-import { BaseWallet, JsonRpcProvider, TransactionRequest } from 'ethers'
-import networkService from 'services/network/NetworkService'
+import NetworkService from 'services/network/NetworkService'
 import { Network, NetworkVMType } from '@avalabs/chains-sdk'
-import { networks, Transaction as BtcTransaction } from 'bitcoinjs-lib'
-import {
-  personalSign,
-  signTypedData,
-  SignTypedDataVersion
-} from '@metamask/eth-sig-util'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { Transaction as SentryTransaction } from '@sentry/types'
 import { Account } from 'store/account'
@@ -43,9 +25,13 @@ import { fromUnixTime, getUnixTime } from 'date-fns'
 import { getMinimumStakeEndTime } from 'services/earn/utils'
 import { Avax } from 'types/Avax'
 import { bnToBigint } from 'utils/bigNumbers/bnToBigint'
-import SeedlessWallet from 'seedless/services/SeedlessWallet'
 import { assertNotUndefined } from 'utils/assertions'
+import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKeysStorage'
+import SeedlessWallet from 'seedless/services/wallet/SeedlessWallet'
 import { isAvalancheTransactionRequest, isBtcTransactionRequest } from './utils'
+import WalletInitializer from './WalletInitializer'
+import WalletFactory from './WalletFactory'
+import MnemonicWalletInstance from './MnemonicWallet'
 
 // Tolerate 50% buffer for burn amount for EVM transactions
 const EVM_FEE_TOLERANCE = 50
@@ -54,324 +40,21 @@ const EVM_FEE_TOLERANCE = 50
 const BASE_FEE_MULTIPLIER = 0.2
 
 class WalletService {
-  #mnemonic?: string
-  /**
-   * Derivation path: m/44'/60'/0'
-   * @private
-   */
-  #xpub?: string
-  /**
-   * Derivation path: m/44'/9000'/0'
-   * @private
-   */
-  #xpubXP?: string
-
   #walletType?: WalletType
 
-  private get mnemonic(): string {
-    assertNotUndefined(this.#mnemonic, 'no mnemonic available')
-    return this.#mnemonic
-  }
-
-  private set mnemonic(mnemonic: string | undefined) {
-    this.#mnemonic = mnemonic
-  }
-
-  private get xpub(): string {
-    assertNotUndefined(this.#xpub, 'no public key (xpub) available')
-    return this.#xpub
-  }
-
-  private set xpub(xpub: string | undefined) {
-    this.#xpub = xpub
-  }
-
-  private get xpubXP(): string {
-    assertNotUndefined(this.#xpubXP, 'no public key (xpubXP) available')
-    return this.#xpubXP
-  }
-
-  private set xpubXP(xpubXP: string | undefined) {
-    this.#xpubXP = xpubXP
-  }
-
-  private get walletType(): WalletType {
-    assertNotUndefined(this.#walletType, 'wallet type is not set')
-    return this.#walletType
-  }
-
-  private set walletType(walletType: WalletType | undefined) {
-    this.#walletType = walletType
-  }
-
-  private async mnemonicInit(mnemonic: string): Promise<void> {
-    const xpubPromise = getXpubFromMnemonic(mnemonic)
-    const xpubXPPromise = new Promise<string>(resolve => {
-      resolve(Avalanche.getXpubFromMnemonic(mnemonic))
-    })
-    const pubKeys = await Promise.allSettled([xpubPromise, xpubXPPromise])
-    if (pubKeys[0].status === 'fulfilled') {
-      this.xpub = pubKeys[0].value
-    }
-    if (pubKeys[1].status === 'fulfilled') {
-      this.xpubXP = pubKeys[1].value
-    }
-    this.mnemonic = mnemonic
-  }
-
-  private async getBtcWallet(
-    accountIndex: number,
-    network: Network
-  ): Promise<BitcoinWallet> {
-    if (network.vmName !== NetworkVMType.BITCOIN) {
-      throw new Error('Only Bitcoin networks supported')
-    }
-    const provider = networkService.getProviderForNetwork(network)
-
-    Logger.info('btcWallet', now())
-    const btcWallet = await BitcoinWallet.fromMnemonic(
-      this.mnemonic,
-      accountIndex,
-      provider as BitcoinProviderAbstract
-    )
-    Logger.info('btcWallet end', now())
-    return btcWallet
-  }
-
-  private getEvmWallet(accountIndex: number, network: Network): BaseWallet {
-    if (network.vmName !== NetworkVMType.EVM) {
-      throw new Error('Only EVM networks supported')
-    }
-    const start = now()
-
-    const wallet = getWalletFromMnemonic(
-      this.mnemonic,
-      accountIndex,
-      DerivationPath.BIP44
-    )
-
-    Logger.info('evmWallet getWalletFromMnemonic', now() - start)
-
-    return wallet
-  }
-
-  private async getWallet(
-    accountIndex: number,
-    network: Network,
-    sentryTrx?: SentryTransaction
-  ): Promise<
-    BaseWallet | BitcoinWallet | Avalanche.StaticSigner | SeedlessWallet
-  > {
-    const provider = networkService.getProviderForNetwork(network)
-
-    return SentryWrapper.createSpanFor(sentryTrx)
-      .setContext('svc.wallet.get_wallet')
-      .executeAsync(async () => {
-        // Seedless wallet uses a universal signer class (one for all tx types)
-        if (this.walletType === WalletType.SEEDLESS) {
-          return SeedlessWallet.create(accountIndex)
-        }
-
-        if (this.walletType === WalletType.MNEMONIC) {
-          switch (network.vmName) {
-            // EVM signers
-            case NetworkVMType.EVM:
-              return this.getEvmWallet(accountIndex, network)
-            // Bitcoin signers
-            case NetworkVMType.BITCOIN:
-              return this.getBtcWallet(accountIndex, network)
-            // Avalanche signers
-            case NetworkVMType.AVM:
-            case NetworkVMType.PVM:
-              return Avalanche.StaticSigner.fromMnemonic(
-                this.mnemonic,
-                getAddressDerivationPath(
-                  accountIndex,
-                  DerivationPath.BIP44,
-                  'AVM'
-                ),
-                getAddressDerivationPath(
-                  accountIndex,
-                  DerivationPath.BIP44,
-                  'EVM'
-                ),
-                provider as Avalanche.JsonRpcProvider
-              )
-            default:
-              throw new Error('Unable to get wallet: network not supported')
-          }
-        }
-
-        throw new Error('Unable to get wallet: unsupported wallet type')
-      })
-  }
-
-  private validateAvalancheFee({
-    network,
-    unsignedTx,
-    evmBaseFee
-  }: {
-    network: Network
-    unsignedTx: UnsignedTx
-    evmBaseFee?: Avax
-  }): void {
-    if (
-      network.vmName !== NetworkVMType.AVM &&
-      network.vmName !== NetworkVMType.PVM
-    ) {
-      throw new Error('Wrong network')
-    }
-
-    Logger.info('validating burned amount')
-    const avalancheProvider = networkService.getProviderForNetwork(
-      network
-    ) as Avalanche.JsonRpcProvider
-
-    const { isValid, txFee } = utils.validateBurnedAmount({
-      unsignedTx,
-      context: avalancheProvider.getContext(),
-      evmBaseFee: evmBaseFee?.toSubUnit(),
-      evmFeeTolerance: EVM_FEE_TOLERANCE
-    })
-
-    if (!isValid) {
-      Logger.error(`Excessive burn amount. Expected ${txFee} nAvax.`)
-      throw Error('Excessive burn amount')
-    }
-
-    Logger.info('burned amount is valid')
-  }
-
-  private async getReadOnlyAvaWallet(
-    accountIndex: number,
-    network: Network
-  ): Promise<Avalanche.StaticSigner | Avalanche.WalletVoid> {
-    const wallet = await this.getWallet(accountIndex, network)
-
-    if (
-      !(wallet instanceof Avalanche.StaticSigner) &&
-      !(wallet instanceof SeedlessWallet)
-    ) {
-      throw new Error('Unable to get read only wallet: invalid wallet instance')
-    }
-
-    if (wallet instanceof SeedlessWallet) {
-      const provXP = networkService.getAvalancheProviderXP(
-        Boolean(network.isTestnet)
-      )
-      return wallet.getReadOnlyWallet(provXP)
-    }
-
-    return wallet
-  }
-
-  private async signBtcTx(
-    wallet:
-      | SeedlessWallet
-      | BitcoinWallet
-      | BaseWallet
-      | Avalanche.StaticSigner,
-    tx: BtcTransactionRequest,
-    network: Network
-  ): Promise<string> {
-    if (
-      !(wallet instanceof BitcoinWallet) &&
-      !(wallet instanceof SeedlessWallet)
-    ) {
-      throw new Error('Unable to sign transaction: invalid wallet')
-    }
-
-    let signedTx: BtcTransaction
-
-    if (wallet instanceof SeedlessWallet) {
-      const provider = networkService.getProviderForNetwork(network)
-
-      if (!(provider instanceof BlockCypherProvider)) {
-        throw new Error(
-          'Unable to sign btc transaction: wrong provider obtained'
-        )
-      }
-
-      signedTx = await wallet.signBtcTx(tx.inputs, tx.outputs, provider)
-    } else {
-      signedTx = await wallet.signTx(tx.inputs, tx.outputs)
-    }
-
-    return signedTx.toHex()
-  }
-
-  private async signAvalancheTx(
-    wallet:
-      | SeedlessWallet
-      | BitcoinWallet
-      | BaseWallet
-      | Avalanche.StaticSigner,
-    tx: AvalancheTransactionRequest
-  ): Promise<string> {
-    if (
-      !(wallet instanceof Avalanche.StaticSigner) &&
-      !(wallet instanceof SeedlessWallet)
-    ) {
-      throw new Error('Unable to sign transaction: invalid wallet')
-    }
-
-    const txToSign = {
-      tx: tx.tx,
-      externalIndices: tx.externalIndices,
-      internalIndices: tx.internalIndices
-    }
-
-    const sig =
-      wallet instanceof SeedlessWallet
-        ? await wallet.signAvalancheTx(txToSign)
-        : await wallet.signTx(txToSign)
-
-    return JSON.stringify(sig.toJSON())
-  }
-
-  private async signEvmTx(
-    wallet:
-      | SeedlessWallet
-      | BitcoinWallet
-      | BaseWallet
-      | Avalanche.StaticSigner,
-    tx: TransactionRequest,
-    network: Network
-  ): Promise<string> {
-    if (
-      !(wallet instanceof BaseWallet) &&
-      !(wallet instanceof SeedlessWallet)
-    ) {
-      throw new Error('Unable to sign transaction: invalid wallet')
-    }
-
-    if (wallet instanceof SeedlessWallet) {
-      const provider = networkService.getProviderForNetwork(network)
-
-      if (!(provider instanceof JsonRpcProvider)) {
-        throw new Error(
-          'Unable to sign transaction: wrong provider obtained for EVM transaction'
-        )
-      }
-
-      return await wallet.signEvmTx(tx, provider)
-    }
-
-    return await wallet.signTransaction(tx)
-  }
-
-  async init(mnemonic: string, walletType: WalletType): Promise<void> {
+  public async init(mnemonic: string, walletType: WalletType): Promise<void> {
     Logger.info(`initializing wallet with type ${walletType}`)
 
-    if (walletType === WalletType.MNEMONIC) {
-      await this.mnemonicInit(mnemonic)
-    }
+    await WalletInitializer.initialize({
+      mnemonic,
+      walletType
+    })
 
     this.walletType = walletType
   }
 
-  async sign(
-    tx: SignTransactionRequest,
+  public async sign(
+    transaction: SignTransactionRequest,
     accountIndex: number,
     network: Network,
     sentryTrx?: SentryTransaction
@@ -379,21 +62,55 @@ class WalletService {
     return SentryWrapper.createSpanFor(sentryTrx)
       .setContext('svc.wallet.sign')
       .executeAsync(async () => {
-        const wallet = await this.getWallet(accountIndex, network, sentryTrx)
+        const provider = NetworkService.getProviderForNetwork(network)
+        const wallet = await WalletFactory.createWallet(
+          accountIndex,
+          this.walletType
+        )
 
-        if (isBtcTransactionRequest(tx)) {
-          return await this.signBtcTx(wallet, tx, network)
+        if (isBtcTransactionRequest(transaction)) {
+          if (!(provider instanceof BlockCypherProvider))
+            throw new Error(
+              'Unable to sign btc transaction: wrong provider obtained'
+            )
+
+          return wallet.signBtcTransaction({
+            accountIndex,
+            transaction,
+            network,
+            provider
+          })
         }
 
-        if (isAvalancheTransactionRequest(tx)) {
-          return await this.signAvalancheTx(wallet, tx)
+        if (isAvalancheTransactionRequest(transaction)) {
+          if (!(provider instanceof Avalanche.JsonRpcProvider))
+            throw new Error(
+              'Unable to sign avalanche transaction: wrong provider obtained'
+            )
+
+          return wallet.signAvalancheTransaction({
+            accountIndex,
+            transaction,
+            network,
+            provider
+          })
         }
 
-        return await this.signEvmTx(wallet, tx, network)
+        if (!(provider instanceof JsonRpcBatchInternal))
+          throw new Error(
+            'Unable to sign evm transaction: wrong provider obtained'
+          )
+
+        return wallet.signEvmTransaction({
+          accountIndex,
+          transaction,
+          network,
+          provider
+        })
       })
   }
 
-  async signMessage({
+  public async signMessage({
     rpcMethod,
     data,
     accountIndex,
@@ -405,67 +122,160 @@ class WalletService {
     accountIndex: number
     network: Network
   }): Promise<string> {
-    const wallet = await this.getWallet(accountIndex, network)
+    const wallet = await WalletFactory.createWallet(
+      accountIndex,
+      this.walletType
+    )
+    const provider = NetworkService.getProviderForNetwork(network)
 
-    if (wallet instanceof SeedlessWallet) {
-      return wallet.signMessage({ rpcMethod, data })
+    if (!(provider instanceof JsonRpcBatchInternal))
+      throw new Error('Unable to sign message: wrong provider obtained')
+
+    return wallet.signMessage({
+      rpcMethod,
+      data,
+      accountIndex,
+      network,
+      provider
+    })
+  }
+
+  public destroy(): void {
+    WalletInitializer.terminate(this.walletType).catch(e =>
+      Logger.error('unable to destroy wallet', e)
+    )
+    this.walletType = undefined
+  }
+
+  public async addAddress(
+    accountIndex: number,
+    isTestnet: boolean
+  ): Promise<Record<NetworkVMType, string>> {
+    if (this.walletType === WalletType.SEEDLESS) {
+      const pubKeysStorage = await new SeedlessPubKeysStorage()
+      const pubKeys = await pubKeysStorage.retrieve()
+
+      // only create next account if it doesn't exist yet
+      if (!pubKeys[accountIndex]) {
+        const wallet = await WalletFactory.createWallet(
+          accountIndex,
+          this.walletType
+        )
+
+        if (!(wallet instanceof SeedlessWallet))
+          throw new Error('Unable to add address: wrong wallet type')
+
+        // prompt Core Seedless API to derive new keys
+        await wallet.addAccount(accountIndex)
+
+        // re-ini wallet to fetch new pub keys
+        await WalletInitializer.initialize({
+          walletType: this.walletType
+        })
+      }
     }
 
-    if (!(wallet instanceof BaseWallet)) {
-      throw new Error(
-        'Unable to sign message: function is not supported on your wallet'
+    return this.getAddresses(accountIndex, isTestnet)
+  }
+
+  /**
+   * Generates addresses for the given account index
+   */
+  public async getAddresses(
+    accountIndex: number,
+    isTestnet: boolean
+  ): Promise<Record<NetworkVMType, string>> {
+    const wallet = await WalletFactory.createWallet(
+      accountIndex,
+      this.walletType
+    )
+    const provXP = NetworkService.getAvalancheProviderXP(isTestnet)
+
+    return await wallet.getAddresses({ accountIndex, isTestnet, provXP })
+  }
+
+  /**
+   * Get the public key of an account
+   * @param account Account to get public key of.
+   */
+  public async getPublicKey(account: Account): Promise<PubKeyType> {
+    const wallet = await WalletFactory.createWallet(
+      account.index,
+      this.walletType
+    )
+    return await wallet.getPublicKey(account.index)
+  }
+
+  // TODO: remove this method and use getAddresses instead
+  public async getAddressesByIndices({
+    indices,
+    chainAlias,
+    isChange,
+    isTestnet
+  }: {
+    indices: number[]
+    chainAlias: 'X' | 'P'
+    isChange: boolean
+    isTestnet: boolean
+  }): Promise<string[]> {
+    if (
+      this.walletType === WalletType.SEEDLESS ||
+      (isChange && chainAlias !== 'X')
+    ) {
+      return []
+    }
+
+    if (this.walletType === WalletType.MNEMONIC) {
+      const provXP = await NetworkService.getAvalancheProviderXP(isTestnet)
+
+      return indices.map(index =>
+        Avalanche.getAddressFromXpub(
+          MnemonicWalletInstance.xpubXP,
+          index,
+          provXP,
+          chainAlias,
+          isChange
+        )
       )
     }
 
-    const privateKey = wallet.privateKey.toLowerCase().startsWith('0x')
-      ? wallet.privateKey.slice(2)
-      : wallet.privateKey
+    throw new Error(
+      'Unable to get addresses by indices: unsupported wallet type'
+    )
+  }
 
-    const key = Buffer.from(privateKey, 'hex')
+  /**
+   * Get atomic transactions that are in VM memory.
+   */
+  public async getAtomicUTXOs({
+    accountIndex,
+    avaxXPNetwork
+  }: {
+    accountIndex: number
+    avaxXPNetwork: Network
+  }): Promise<{
+    pChainUtxo: utils.UtxoSet
+    cChainUtxo: utils.UtxoSet
+  }> {
+    const readOnlySigner = await this.getReadOnlyAvaSigner(
+      accountIndex,
+      avaxXPNetwork
+    )
 
-    if (!data) {
-      throw new Error('no message to sign')
-    }
+    const pChainUtxo = await readOnlySigner.getAtomicUTXOs('P', 'C')
+    const cChainUtxo = await readOnlySigner.getAtomicUTXOs('C', 'P')
 
-    switch (rpcMethod) {
-      case RpcMethod.ETH_SIGN:
-      case RpcMethod.PERSONAL_SIGN:
-        return personalSign({ privateKey: key, data })
-      case RpcMethod.SIGN_TYPED_DATA:
-      case RpcMethod.SIGN_TYPED_DATA_V1: {
-        // instances were observed where method was eth_signTypedData or eth_signTypedData_v1,
-        // however, payload was V4
-        const isV4 =
-          typeof data === 'object' && 'types' in data && 'primaryType' in data
-
-        return signTypedData({
-          privateKey: key,
-          data,
-          version: isV4 ? SignTypedDataVersion.V4 : SignTypedDataVersion.V1
-        })
-      }
-      case RpcMethod.SIGN_TYPED_DATA_V3:
-        return signTypedData({
-          privateKey: key,
-          data,
-          version: SignTypedDataVersion.V3
-        })
-      case RpcMethod.SIGN_TYPED_DATA_V4:
-        return signTypedData({
-          privateKey: key,
-          data,
-          version: SignTypedDataVersion.V4
-        })
-      default:
-        throw new Error('unknown method')
+    return {
+      pChainUtxo,
+      cChainUtxo
     }
   }
 
-  getInstantBaseFee(baseFee: Avax): Avax {
+  public getInstantBaseFee(baseFee: Avax): Avax {
     return baseFee.add(baseFee.mul(BASE_FEE_MULTIPLIER))
   }
 
-  async createExportCTx({
+  public async createExportCTx({
     amount,
     baseFee,
     accountIndex,
@@ -474,14 +284,14 @@ class WalletService {
     destinationAddress,
     shouldValidateBurnedAmount = true
   }: CreateExportCTxParams): Promise<UnsignedTx> {
-    const readOnlyWallet = await this.getReadOnlyAvaWallet(
+    const readOnlySigner = await this.getReadOnlyAvaSigner(
       accountIndex,
       avaxXPNetwork
     )
 
-    const nonce = await readOnlyWallet.getNonce()
+    const nonce = await readOnlySigner.getNonce()
 
-    const unsignedTx = readOnlyWallet.exportC(
+    const unsignedTx = readOnlySigner.exportC(
       amount.toSubUnit(),
       destinationChain,
       BigInt(nonce),
@@ -499,21 +309,21 @@ class WalletService {
     return unsignedTx
   }
 
-  async createImportPTx({
+  public async createImportPTx({
     accountIndex,
     avaxXPNetwork,
     sourceChain,
     destinationAddress,
     shouldValidateBurnedAmount = true
   }: CreateImportPTxParams): Promise<UnsignedTx> {
-    const readOnlyWallet = await this.getReadOnlyAvaWallet(
+    const readOnlySigner = await this.getReadOnlyAvaSigner(
       accountIndex,
       avaxXPNetwork
     )
 
-    const utxoSet = await readOnlyWallet.getAtomicUTXOs('P', sourceChain)
+    const utxoSet = await readOnlySigner.getAtomicUTXOs('P', sourceChain)
 
-    const unsignedTx = readOnlyWallet.importP(
+    const unsignedTx = readOnlySigner.importP(
       utxoSet,
       sourceChain,
       destinationAddress
@@ -535,7 +345,7 @@ class WalletService {
    * @param destinationChain
    * @param destinationAddress
    */
-  async createExportPTx({
+  public async createExportPTx({
     amount,
     accountIndex,
     avaxXPNetwork,
@@ -543,14 +353,14 @@ class WalletService {
     destinationAddress,
     shouldValidateBurnedAmount = true
   }: CreateExportPTxParams): Promise<UnsignedTx> {
-    const readOnlyWallet = await this.getReadOnlyAvaWallet(
+    const readOnlySigner = await this.getReadOnlyAvaSigner(
       accountIndex,
       avaxXPNetwork
     )
 
-    const utxoSet = await readOnlyWallet.getUTXOs('P')
+    const utxoSet = await readOnlySigner.getUTXOs('P')
 
-    const unsignedTx = readOnlyWallet.exportP(
+    const unsignedTx = readOnlySigner.exportP(
       amount,
       utxoSet,
       destinationChain,
@@ -573,7 +383,7 @@ class WalletService {
    * @param sourceChain
    * @param destinationAddress
    */
-  async createImportCTx({
+  public async createImportCTx({
     accountIndex,
     baseFee,
     avaxXPNetwork,
@@ -581,14 +391,14 @@ class WalletService {
     destinationAddress,
     shouldValidateBurnedAmount = true
   }: CreateImportCTxParams): Promise<UnsignedTx> {
-    const readOnlyWallet = await this.getReadOnlyAvaWallet(
+    const readOnlySigner = await this.getReadOnlyAvaSigner(
       accountIndex,
       avaxXPNetwork
     )
 
-    const utxoSet = await readOnlyWallet.getAtomicUTXOs('C', sourceChain)
+    const utxoSet = await readOnlySigner.getAtomicUTXOs('C', sourceChain)
 
-    const unsignedTx = readOnlyWallet.importC(
+    const unsignedTx = readOnlySigner.importC(
       utxoSet,
       sourceChain,
       baseFee.toSubUnit(),
@@ -606,7 +416,7 @@ class WalletService {
     return unsignedTx
   }
 
-  async createAddDelegatorTx({
+  public async createAddDelegatorTx({
     accountIndex,
     avaxXPNetwork,
     nodeId,
@@ -648,19 +458,19 @@ class WalletService {
       throw Error('Reward address must be from P chain')
     }
 
-    const readOnlyWallet = await this.getReadOnlyAvaWallet(
+    const readOnlySigner = await this.getReadOnlyAvaSigner(
       accountIndex,
       avaxXPNetwork
     )
 
-    const utxoSet = await readOnlyWallet.getUTXOs('P')
+    const utxoSet = await readOnlySigner.getUTXOs('P')
     const config = {
       rewardAddress
     }
 
-    const network = networkService.getAvalancheNetworkXP(isDevMode)
+    const network = NetworkService.getAvalancheNetworkXP(isDevMode)
 
-    const unsignedTx = readOnlyWallet.addDelegator(
+    const unsignedTx = readOnlySigner.addDelegator(
       utxoSet,
       nodeId,
       stakeAmount,
@@ -678,151 +488,64 @@ class WalletService {
     return unsignedTx
   }
 
-  destroy(): void {
-    this.mnemonic = undefined
-    this.xpub = undefined
-    this.xpubXP = undefined
-    this.walletType = undefined
+  // PRIVATE METHODS
+  private get walletType(): WalletType {
+    assertNotUndefined(this.#walletType, 'wallet type is not set')
+    return this.#walletType
   }
 
-  /**
-   * Generates addresses with helpers from wallets-sdk
-   * xpub is set at the time the mnemonic is set and is a derived 'read-only' key used for Ledger (not supported)
-   * and to derive BTC, EVM addresses
-   *
-   * @param     accountIndex: number,
-
-   * @param isTestnet
-   */
-  async getAddresses(
-    accountIndex: number,
-    isTestnet: boolean
-  ): Promise<Record<NetworkVMType, string>> {
-    // Avalanche XP Provider
-    const provXP = networkService.getAvalancheProviderXP(isTestnet)
-
-    if (this.walletType === WalletType.SEEDLESS) {
-      const seedlessWallet = await SeedlessWallet.create(accountIndex)
-      return seedlessWallet.getAddresses(isTestnet, provXP)
-    }
-
-    if (this.walletType === WalletType.MNEMONIC) {
-      // C-avax... this address uses the same public key as EVM
-      const cPubKey = getAddressPublicKeyFromXPub(this.xpub, accountIndex)
-      const cAddr = provXP.getAddress(cPubKey, 'C')
-
-      // X and P addresses different derivation path m/44'/9000'/0'...
-      const xpPub = Avalanche.getAddressPublicKeyFromXpub(
-        this.xpubXP,
-        accountIndex
-      )
-      const xAddr = provXP.getAddress(xpPub, 'X')
-      const pAddr = provXP.getAddress(xpPub, 'P')
-
-      return {
-        [NetworkVMType.EVM]: getAddressFromXPub(this.xpub, accountIndex),
-        [NetworkVMType.BITCOIN]: getBech32AddressFromXPub(
-          this.xpub,
-          accountIndex,
-          isTestnet ? networks.testnet : networks.bitcoin
-        ),
-        [NetworkVMType.AVM]: xAddr,
-        [NetworkVMType.PVM]: pAddr,
-        [NetworkVMType.CoreEth]: cAddr
-      }
-    }
-
-    throw new Error('Unable to get addresses: unsupported wallet type')
+  private set walletType(walletType: WalletType | undefined) {
+    this.#walletType = walletType
   }
 
-  /**
-   * Get the public key of an account
-   * @param account Account to get public key of.
-   */
-  async getPublicKey(account: Account): Promise<PubKeyType> {
-    if (this.walletType === WalletType.SEEDLESS) {
-      const seedlessWallet = await SeedlessWallet.create(account.index)
-      return seedlessWallet.getPublicKey()
-    }
-
-    if (this.walletType === WalletType.MNEMONIC) {
-      const evmPub = getAddressPublicKeyFromXPub(this.xpub, account.index)
-      const xpPub = Avalanche.getAddressPublicKeyFromXpub(
-        this.xpubXP,
-        account.index
-      )
-
-      return {
-        evm: evmPub.toString('hex'),
-        xp: xpPub.toString('hex')
-      }
-    }
-
-    throw new Error('unable to get public key: unsupported wallet type')
-  }
-
-  async getAddressesByIndices({
-    indices,
-    chainAlias,
-    isChange,
-    isTestnet
+  private validateAvalancheFee({
+    network,
+    unsignedTx,
+    evmBaseFee
   }: {
-    indices: number[]
-    chainAlias: 'X' | 'P'
-    isChange: boolean
-    isTestnet: boolean
-  }): Promise<string[]> {
+    network: Network
+    unsignedTx: UnsignedTx
+    evmBaseFee?: Avax
+  }): void {
     if (
-      this.walletType === WalletType.SEEDLESS ||
-      (isChange && chainAlias !== 'X')
+      network.vmName !== NetworkVMType.AVM &&
+      network.vmName !== NetworkVMType.PVM
     ) {
-      return []
+      throw new Error('Wrong network')
     }
 
-    if (this.walletType === WalletType.MNEMONIC) {
-      const provXP = await networkService.getAvalancheProviderXP(isTestnet)
+    Logger.info('validating burned amount')
+    const avalancheProvider = NetworkService.getProviderForNetwork(
+      network
+    ) as Avalanche.JsonRpcProvider
 
-      return indices.map(index =>
-        Avalanche.getAddressFromXpub(
-          this.xpubXP,
-          index,
-          provXP,
-          chainAlias,
-          isChange
-        )
-      )
+    const { isValid, txFee } = utils.validateBurnedAmount({
+      unsignedTx,
+      context: avalancheProvider.getContext(),
+      evmBaseFee: evmBaseFee?.toSubUnit(),
+      evmFeeTolerance: EVM_FEE_TOLERANCE
+    })
+
+    if (!isValid) {
+      Logger.error(`Excessive burn amount. Expected ${txFee} nAvax.`)
+      throw Error('Excessive burn amount')
     }
 
-    throw new Error(
-      'Unable to get addresses by indices: unsupported wallet type'
-    )
+    Logger.info('burned amount is valid')
   }
 
-  /**
-   * Get atomic transactions that are in VM memory.
-   */
-  async getAtomicUTXOs({
-    accountIndex,
-    avaxXPNetwork
-  }: {
-    accountIndex: number
-    avaxXPNetwork: Network
-  }): Promise<{
-    pChainUtxo: utils.UtxoSet
-    cChainUtxo: utils.UtxoSet
-  }> {
-    const readOnlyWallet = await this.getReadOnlyAvaWallet(
+  private async getReadOnlyAvaSigner(
+    accountIndex: number,
+    network: Network
+  ): Promise<Avalanche.StaticSigner | Avalanche.WalletVoid> {
+    const wallet = await WalletFactory.createWallet(
       accountIndex,
-      avaxXPNetwork
+      this.walletType
     )
-
-    const pChainUtxo = await readOnlyWallet.getAtomicUTXOs('P', 'C')
-    const cChainUtxo = await readOnlyWallet.getAtomicUTXOs('C', 'P')
-
-    return {
-      pChainUtxo,
-      cChainUtxo
-    }
+    const provXP = NetworkService.getAvalancheProviderXP(
+      Boolean(network.isTestnet)
+    )
+    return wallet.getReadOnlyAvaSigner({ accountIndex, provXP })
   }
 }
 
