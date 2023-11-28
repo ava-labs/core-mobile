@@ -81,7 +81,11 @@ describe('SeedlessService', () => {
         })
 
       await SeedlessService.setTotp()
-      const result = await SeedlessService.verifyCode(INVALID_MFA_CODE)
+      const result = await SeedlessService.verifyCode(
+        'oidcToken',
+        'mfaId',
+        INVALID_MFA_CODE
+      )
       expect(mockAnswer).toHaveBeenCalledWith(INVALID_MFA_CODE)
       assert(!result.success)
       expect(result.error).toBeInstanceOf(TotpErrors)
@@ -94,10 +98,26 @@ describe('SeedlessService', () => {
         .mockImplementation(async () => {
           return cubistResponseNoMfa
         })
-      jest.spyOn(CubeSigner.prototype, 'verifyTotp').mockImplementation()
+      jest.spyOn(CubeSigner, 'loadSignerSession').mockReturnValueOnce({
+        totpApprove: () => {
+          return {
+            receipt: {
+              confirmation: 'confirmation'
+            }
+          }
+        }
+      } as never)
+
+      jest
+        .spyOn(SeedlessService, 'login')
+        .mockReturnValueOnce('loggedin' as never)
 
       await SeedlessService.setTotp()
-      const result = await SeedlessService.verifyCode(VALID_MFA_CODE)
+      const result = await SeedlessService.verifyCode(
+        'oidcToken',
+        'mfaId',
+        VALID_MFA_CODE
+      )
       expect(mockAnswer).toHaveBeenCalledWith(VALID_MFA_CODE)
       assert(result.success)
     })
