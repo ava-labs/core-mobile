@@ -172,6 +172,7 @@ class SeedlessService {
         mfaConf: status.receipt.confirmation
       })
 
+      this.totpChallenge = undefined
       return { success: true }
     } catch {
       return {
