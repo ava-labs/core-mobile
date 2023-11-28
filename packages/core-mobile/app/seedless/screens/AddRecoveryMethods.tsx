@@ -2,9 +2,11 @@ import { Icons, Text, View, useTheme } from '@avalabs/k2-mobile'
 import { useNavigation } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
 import { RecoveryMethodsScreenProps } from 'navigation/types'
-import React from 'react'
+import React, { useContext } from 'react'
 import SeedlessService from 'seedless/services/SeedlessService'
 import PasskeyService from 'seedless/services/PasskeyService'
+import { RecoveryMethodsContext } from 'navigation/onboarding/RecoveryMethodsStack'
+import { Alert } from 'react-native'
 import { Card } from '../components/Card'
 
 type AddRecoveryMethodsScreenProps = RecoveryMethodsScreenProps<
@@ -17,27 +19,29 @@ export const AddRecoveryMethods = (): JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
+  const { mfaId, oidcToken } = useContext(RecoveryMethodsContext)
 
   const goToAuthenticatorSetup = (): void => {
     navigate(AppNavigation.RecoveryMethods.AuthenticatorSetup)
   }
 
-  const goToFidoSetup = async (): Promise<void> => {
-    const mfa = await SeedlessService.userMfa()
-    if (mfa.length === 0) {
-      const challenge = await SeedlessService.addFidoStart('Test')
+  const handlePasskey = async (): Promise<void> => {
+    try {
+      await SeedlessService.registerFido('Passkey', false)
 
-      // console.log('challenge', challenge.options)
+      await SeedlessService.approveFido(oidcToken, mfaId, false)
+    } catch (e) {
+      Alert.alert('Passkey registration error')
+    }
+  }
 
-      try {
-        const result = await PasskeyService.register(challenge.options)
-        // eslint-disable-next-line no-console
-        console.log(result)
-      } catch (e) {
-        // console.log(e)
-      }
+  const handleYubikey = async (): Promise<void> => {
+    try {
+      await SeedlessService.registerFido('Yubikey', true)
 
-      // await challenge.answer()
+      await SeedlessService.approveFido(oidcToken, mfaId, true)
+    } catch (e) {
+      Alert.alert('Yubikey registration error')
     }
   }
 
@@ -49,7 +53,7 @@ export const AddRecoveryMethods = (): JSX.Element => {
       </Text>
       {PasskeyService.isSupported && (
         <Card
-          onPress={goToFidoSetup}
+          onPress={handlePasskey}
           icon={<Icons.Communication.IconKey color={colors.$neutral50} />}
           title="Passkey"
           body="Add a passkey as a recovery method."
@@ -65,7 +69,7 @@ export const AddRecoveryMethods = (): JSX.Element => {
       />
       {PasskeyService.isSupported && (
         <Card
-          onPress={goToFidoSetup}
+          onPress={handleYubikey}
           icon={<Icons.Device.IconUSB color={colors.$neutral50} />}
           title="YubiKey"
           body="Add a YubiKey as a recovery method."

@@ -1,6 +1,5 @@
 import Config from 'react-native-config'
 import {
-  AddFidoChallenge,
   CubeSigner,
   IdentityProof,
   MfaReceipt,
@@ -9,11 +8,14 @@ import {
   UserInfo,
   envs,
   Environment,
+  SignerSession,
   SignResponse
 } from '@cubist-labs/cubesigner-sdk'
 import { TotpErrors } from 'seedless/errors'
 import { Result } from 'types/result'
+import { MFA } from 'seedless/types'
 import { SeedlessSessionStorage } from './storage/SeedlessSessionStorage'
+import PasskeyService from './PasskeyService'
 
 if (!Config.SEEDLESS_ORG_ID) {
   throw Error('SEEDLESS_ORG_ID is missing. Please check your env file.')
@@ -45,7 +47,10 @@ class SeedlessService {
   private async getCubeSigner(): Promise<CubeSigner> {
     const storage = new SeedlessSessionStorage()
     const sessionMgr = await SignerSessionManager.loadFromStorage(storage)
-    return new CubeSigner({ sessionMgr })
+    return new CubeSigner({
+      orgId: SEEDLESS_ORG_ID,
+      sessionMgr
+    })
   }
 
   /**
@@ -105,7 +110,7 @@ class SeedlessService {
   /**
    * Retrieves information about the current user's mfa.
    */
-  async userMfa(): Promise<UserInfo['mfa']> {
+  async userMfa(): Promise<MFA[]> {
     return (await this.aboutMe()).mfa
   }
 
@@ -140,12 +145,39 @@ class SeedlessService {
     return { success: true, value: challenge.totpUrl }
   }
 
-  async addFidoStart(name: string): Promise<AddFidoChallenge> {
+  async registerFido(name: string, withSecurityKey: boolean): Promise<void> {
     const cubeSigner = await this.getCubeSigner()
-    cubeSigner.setOrgId(SEEDLESS_ORG_ID)
     const signResponse = await cubeSigner.addFidoStart(name)
 
-    return signResponse.data()
+    const challenge = signResponse.data()
+
+    await PasskeyService.register(challenge, withSecurityKey)
+  }
+
+  async approveFido(
+    oidcToken: string,
+    mfaId: string,
+    withSecurityKey: boolean
+  ): Promise<void> {
+    try {
+      const sessionMgr = await this.getSessionManager()
+      const signerSession = new SignerSession(sessionMgr)
+
+      const challenge = await signerSession.fidoApproveStart(mfaId)
+
+      const mfaConfirmationKey = await PasskeyService.authenticate(
+        challenge,
+        withSecurityKey
+      )
+
+      await this.login(oidcToken, {
+        mfaOrgId: SEEDLESS_ORG_ID,
+        mfaId: mfaId,
+        mfaConf: mfaConfirmationKey
+      })
+    } catch (e) {
+      throw new Error('Fido authentication failed')
+    }
   }
 
   /**

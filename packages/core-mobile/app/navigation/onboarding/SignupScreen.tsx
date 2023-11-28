@@ -60,9 +60,10 @@ const SignupScreen: FC = () => {
             mfaId
           })
         },
-        onVerifyMfaMethod: mfaId => {
+        onVerifyMfaMethod: (mfaId, mfaMethods) => {
           navigation.navigate(AppNavigation.Onboard.RecoveryMethods, {
-            screen: AppNavigation.RecoveryMethods.VerifyCode,
+            screen: AppNavigation.RecoveryMethods.SelectRecoveryMethods,
+            params: { mfaMethods },
             oidcToken,
             mfaId
           })

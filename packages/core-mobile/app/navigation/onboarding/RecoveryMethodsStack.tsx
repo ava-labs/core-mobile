@@ -9,9 +9,12 @@ import { MainHeaderOptions } from 'navigation/NavUtils'
 import { AddRecoveryMethods } from 'seedless/screens/AddRecoveryMethods'
 import { useRoute } from '@react-navigation/native'
 import { OnboardScreenProps } from 'navigation/types'
+import { SelectRecoveryMethods } from 'seedless/screens/SelectRecoveryMethods'
+import { MFA } from 'seedless/types'
 
 export type RecoveryMethodsStackParamList = {
   [AppNavigation.RecoveryMethods.AddRecoveryMethods]: undefined
+  [AppNavigation.RecoveryMethods.SelectRecoveryMethods]: { mfaMethods: MFA[] }
   [AppNavigation.RecoveryMethods.AuthenticatorSetup]: undefined
   [AppNavigation.RecoveryMethods.ScanQrCode]: undefined
   [AppNavigation.RecoveryMethods.LearnMore]: { totpCode?: string }
@@ -45,6 +48,11 @@ const RecoveryMethodsStack = (): JSX.Element => {
           options={MainHeaderOptions()}
           name={AppNavigation.RecoveryMethods.AddRecoveryMethods}
           component={AddRecoveryMethods}
+        />
+        <RecoveryMethodsS.Screen
+          options={MainHeaderOptions()}
+          name={AppNavigation.RecoveryMethods.SelectRecoveryMethods}
+          component={SelectRecoveryMethods}
         />
         <RecoveryMethodsS.Group>
           {/* Screens for authenticator setup */}
