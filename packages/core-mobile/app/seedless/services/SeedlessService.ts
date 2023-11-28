@@ -151,6 +151,8 @@ class SeedlessService {
   ): Promise<Result<void, TotpErrors>> => {
     try {
       await this.totpChallenge?.answer(code)
+      this.totpChallenge = undefined
+
       const mfaSession = await CubeSigner.loadSignerSession(
         new SeedlessSessionStorage()
       )
@@ -172,7 +174,6 @@ class SeedlessService {
         mfaConf: status.receipt.confirmation
       })
 
-      this.totpChallenge = undefined
       return { success: true }
     } catch {
       return {
