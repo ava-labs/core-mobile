@@ -1,3 +1,4 @@
+import Config from 'react-native-config'
 import { Passkey } from 'react-native-passkey'
 import {
   PasskeyAuthenticationRequest,
@@ -6,13 +7,17 @@ import {
   PasskeyRegistrationResult
 } from 'react-native-passkey/lib/typescript/Passkey'
 
+if (!Config.SEEDLESS_ENVIRONMENT) {
+  throw Error('SEEDLESS_ENVIRONMENT is missing. Please check your env file.')
+}
+
 class PasskeyService {
   get isSupported(): boolean {
     return Passkey.isSupported()
   }
 
   get rpID(): string {
-    return 'core.app' // TODO: use 'test.core.app' for 'gamma' env
+    return Config.SEEDLESS_ENVIRONMENT === 'prod' ? 'core.app' : 'test.core.app'
   }
 
   async register(
