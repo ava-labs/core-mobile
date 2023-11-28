@@ -2,6 +2,7 @@ import ExistingRecoveryPhrasePage from '../pages/existingRecoveryPhrase.page'
 import CreatePinPage from '../pages/createPin.page'
 import AnalyticsConsentPage from '../pages/analyticsConsent.page'
 import PortfolioPage from '../pages/portfolio.page'
+import commonElsPage from '../pages/commonEls.page'
 
 class LoginRecoverWallet {
   async recoverWalletLogin() {
@@ -17,6 +18,7 @@ class LoginRecoverWallet {
     await CreatePinPage.tapNumpadZero()
     await CreatePinPage.tapEmptyCheckbox()
     await CreatePinPage.tapNextBtn()
+    await commonElsPage.tapGetStartedButton()
     await PortfolioPage.verifyPorfolioScreen()
   }
 }

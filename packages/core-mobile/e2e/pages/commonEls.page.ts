@@ -6,6 +6,10 @@ class CommonElsPage {
     return by.id(commonEls.backButton)
   }
 
+  get getStartedButton() {
+    return by.text(commonEls.getStartedBtn)
+  }
+
   get inputTextField() {
     return by.id(commonEls.inputTextField)
   }
@@ -20,6 +24,10 @@ class CommonElsPage {
 
   async tapBackButton() {
     await Actions.tap(this.backButton)
+  }
+
+  async tapGetStartedButton() {
+    await Actions.tap(this.getStartedButton)
   }
 
   async enterTextInput(index: number, inputText: string) {
