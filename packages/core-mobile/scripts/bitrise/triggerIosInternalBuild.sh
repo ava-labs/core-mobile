@@ -7,7 +7,7 @@ PIPELINE=$(
   -d '{
   "build_params": {
     "branch": "development",
-    "pipeline_id": "build-ios-apps-internal-e2e"
+    "pipeline_id": "build-ios-apps-internal-triggered-e2e"
   },
   "hook_info": {
     "type": "bitrise"
