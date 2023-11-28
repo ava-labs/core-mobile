@@ -185,7 +185,7 @@ async function generatePlatformResults(
       const statusId = Number(resultObject?.status_id)
       const payload = {
         status_id: statusId,
-        comment: `Test case result for ${resultObject?.test_name}`
+        comment: `Test case result for ${resultObject?.case_id}`
       }
       if (resultObject) {
         const testResult = await api.addResultForCase(
