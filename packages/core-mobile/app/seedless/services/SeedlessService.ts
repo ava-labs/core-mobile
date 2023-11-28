@@ -56,7 +56,6 @@ class SeedlessService {
   /**
    * Returns a session manager that can be used to retrieve session data.
    */
-  // @ts-expect-error
   private async getSessionManager(): Promise<SignerSessionManager> {
     return (await this.getCubeSigner()).sessionMgr as SignerSessionManager
   }
