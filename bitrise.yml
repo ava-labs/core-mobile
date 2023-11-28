@@ -51,9 +51,6 @@ workflows:
         - keystore_url: $BITRISEIO_ANDROID_KEY_STORE_URL
   _build-android-for-testing: 
     envs:
-    - TESTRAIL_RUN: $TESTRAIL_RUN_ID
-      opts:
-        is_expand: false
     - ENVIRONMENT: production
       opts:
         is_expand: false
@@ -90,7 +87,6 @@ workflows:
         - variables: |-
             TESTRAIL_PROJECT_ID=$TESTRAIL_PROJECT_ID
             TESTRAIL_RUN_ID=$TESTRAIL_RUN_ID
-            POST_TO_TESTRAIL=$POST_TO_TESTRAIL
             TESTS_TO_RUN_GROUP_1=$TESTS_ONE
             TESTS_TO_RUN_GROUP_2=$TESTS_TWO
             TESTS_TO_RUN_GROUP_3=$TESTS_THREE
@@ -145,6 +141,9 @@ workflows:
     - USE_TEST_FEATURE_FLAGS: "true"
       opts:
         is_expand: false
+    - POST_TO_TESTRAIL: "true"
+      opts:
+        is_expand: false
     steps:
     - avd-manager@1.2:
         inputs:
@@ -185,6 +184,9 @@ workflows:
     - USE_TEST_FEATURE_FLAGS: "true"
       opts:
         is_expand: false
+    - POST_TO_TESTRAIL: "true"
+      opts:
+        is_expand: false
     steps:
     - avd-manager@1.2:
         inputs:
@@ -223,6 +225,9 @@ workflows:
       opts:
         is_expand: false
     - USE_TEST_FEATURE_FLAGS: "true"
+      opts:
+        is_expand: false
+    - POST_TO_TESTRAIL: "true"
       opts:
         is_expand: false
     steps:
@@ -676,6 +681,9 @@ workflows:
     - USE_TEST_FEATURE_FLAGS: "true"
       opts:
         is_expand: false
+    - POST_TO_TESTRAIL: "true"
+      opts:
+        is_expand: false
   ios-internal-e2e-run:
     before_run:
     - _install-and-set-env
@@ -704,6 +712,9 @@ workflows:
       opts:
         is_expand: false
     - USE_TEST_FEATURE_FLAGS: "true"
+      opts:
+        is_expand: false
+    - POST_TO_TESTRAIL: "true"
       opts:
         is_expand: false
     steps:
