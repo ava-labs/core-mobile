@@ -85,9 +85,11 @@ export type OnboardingScreenStackParamList = {
   [AppNavigation.Onboard.Signin]: undefined
   [AppNavigation.Onboard
     .Welcome]: NavigatorScreenParams<WelcomeScreenStackParamList>
-  [AppNavigation.Onboard.RecoveryMethods]:
-    | NavigatorScreenParams<RecoveryMethodsStackParamList>
-    | undefined
+  [AppNavigation.Onboard
+    .RecoveryMethods]: NavigatorScreenParams<RecoveryMethodsStackParamList> & {
+    oidcToken: string
+    mfaId: string
+  }
 }
 
 const OnboardingScreenS = createStackNavigator<OnboardingScreenStackParamList>()

@@ -144,12 +144,34 @@ class SeedlessService {
    * and calls resetTotpComplete from totpChallenge.answer() if it is part of the registration flow.
    * registration would fail if totpChallenge.answer() is not called.
    */
-  verifyCode = async (code: string): Promise<Result<void, TotpErrors>> => {
+  verifyCode = async (
+    oidcToken: string,
+    mfaId: string,
+    code: string
+  ): Promise<Result<void, TotpErrors>> => {
     try {
       await this.totpChallenge?.answer(code)
-      const cubeSigner = await this.getCubeSigner()
-      await cubeSigner.verifyTotp(code)
-      this.totpChallenge = undefined
+      const mfaSession = await CubeSigner.loadSignerSession(
+        new SeedlessSessionStorage()
+      )
+      const status = await mfaSession.totpApprove(mfaId, code)
+
+      if (!status.receipt?.confirmation) {
+        return {
+          success: false,
+          error: new TotpErrors({
+            name: 'WrongMfaCode',
+            message: 'WrongMfaCode'
+          })
+        }
+      }
+
+      await this.login(oidcToken, {
+        mfaOrgId: SEEDLESS_ORG_ID,
+        mfaId: mfaId,
+        mfaConf: status.receipt.confirmation
+      })
+
       return { success: true }
     } catch {
       return {

@@ -11,7 +11,7 @@ import GoogleSigninService from 'seedless/services/GoogleSigninService'
 import Logger from 'utils/Logger'
 
 type NavigationProp = OnboardScreenProps<
-  typeof AppNavigation.Onboard.Signup
+  typeof AppNavigation.Onboard.Signin
 >['navigation']
 
 const SigninScreen: FC = () => {
@@ -36,12 +36,18 @@ const SigninScreen: FC = () => {
     try {
       await register({
         oidcToken,
-        onRegisterMfaMethods: () => {
-          navigation.navigate(AppNavigation.Onboard.RecoveryMethods)
-        },
-        onVerifyMfaMethod: () => {
+        onRegisterMfaMethods: mfaId => {
           navigation.navigate(AppNavigation.Onboard.RecoveryMethods, {
-            screen: AppNavigation.RecoveryMethods.VerifyCode
+            screen: AppNavigation.RecoveryMethods.AddRecoveryMethods,
+            oidcToken,
+            mfaId
+          })
+        },
+        onVerifyMfaMethod: mfaId => {
+          navigation.navigate(AppNavigation.Onboard.RecoveryMethods, {
+            screen: AppNavigation.RecoveryMethods.VerifyCode,
+            oidcToken,
+            mfaId
           })
         }
       })

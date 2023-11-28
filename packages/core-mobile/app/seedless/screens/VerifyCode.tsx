@@ -6,7 +6,7 @@ import {
   alpha,
   useTheme
 } from '@avalabs/k2-mobile'
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 import { BottomSheet } from 'components/BottomSheet'
 import ClearSVG from 'components/svg/ClearSVG'
 import { Space } from 'components/Space'
@@ -15,15 +15,17 @@ import { useNavigation } from '@react-navigation/native'
 import { RecoveryMethodsScreenProps } from 'navigation/types'
 import Logger from 'utils/Logger'
 import SeedlessService from 'seedless/services/SeedlessService'
+import { RecoveryMethodsContext } from 'navigation/onboarding/RecoveryMethodsStack'
 
 type VerifyCodeScreenProps = RecoveryMethodsScreenProps<
-  typeof AppNavigation.RecoveryMethods.LearnMore
+  typeof AppNavigation.RecoveryMethods.VerifyCode
 >
 
 export const VerifyCode = (): JSX.Element => {
   const {
     theme: { colors, text }
   } = useTheme()
+  const { oidcToken, mfaId } = useContext(RecoveryMethodsContext)
   const [code, setCode] = useState<string>()
 
   const [showError, setShowError] = useState(false)
@@ -42,7 +44,11 @@ export const VerifyCode = (): JSX.Element => {
       setShowError(false)
       return
     }
-    const result = await SeedlessService.verifyCode(changedText)
+    const result = await SeedlessService.verifyCode(
+      oidcToken,
+      mfaId,
+      changedText
+    )
     if (result.success === false) {
       setShowError(true)
       return
