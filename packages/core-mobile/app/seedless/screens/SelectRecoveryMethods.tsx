@@ -6,6 +6,7 @@ import { RecoveryMethodsScreenProps } from 'navigation/types'
 import PasskeyService from 'seedless/services/PasskeyService'
 import SeedlessService from 'seedless/services/SeedlessService'
 import { RecoveryMethodsContext } from 'navigation/onboarding/RecoveryMethodsStack'
+import { Alert } from 'react-native'
 import { Card } from '../components/Card'
 
 type SelectRecoveryMethodsScreenProps = RecoveryMethodsScreenProps<
@@ -28,17 +29,21 @@ export const SelectRecoveryMethods = (): JSX.Element => {
   }
 
   const handleFido = async (): Promise<void> => {
-    await SeedlessService.approveFido(oidcToken, mfaId, false)
+    try {
+      await SeedlessService.approveFido(oidcToken, mfaId, false)
 
-    navigate(AppNavigation.Root.Onboard, {
-      screen: AppNavigation.Onboard.Welcome,
-      params: {
-        screen: AppNavigation.Onboard.AnalyticsConsent,
+      navigate(AppNavigation.Root.Onboard, {
+        screen: AppNavigation.Onboard.Welcome,
         params: {
-          nextScreen: AppNavigation.Onboard.CreatePin
+          screen: AppNavigation.Onboard.AnalyticsConsent,
+          params: {
+            nextScreen: AppNavigation.Onboard.CreatePin
+          }
         }
-      }
-    })
+      })
+    } catch (e) {
+      Alert.alert('Passkey authentication error')
+    }
   }
 
   return (
