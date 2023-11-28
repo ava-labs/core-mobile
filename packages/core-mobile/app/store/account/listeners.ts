@@ -8,10 +8,14 @@ import {
 import { AppListenerEffectAPI } from 'store'
 import { AnyAction, isAnyOf } from '@reduxjs/toolkit'
 import { onLogIn, selectWalletType } from 'store/app/slice'
-import { selectWalletName } from 'seedless/store/slice'
 import { WalletType } from 'services/wallet/types'
 import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKeysStorage'
-import { selectAccounts, setAccount, setAccounts } from './slice'
+import {
+  selectAccounts,
+  selectWalletName,
+  setAccount,
+  setAccounts
+} from './slice'
 
 const initAccounts = async (
   _action: AnyAction,
@@ -36,7 +40,9 @@ const initAccounts = async (
     for (let i = 0; i < pubKeys.length; i++) {
       const acc = await accountService.createNextAccount(isDeveloperMode, i)
       const accountTitle =
-        acc.index === 0 && walletName.length > 0 ? walletName : acc.title
+        acc.index === 0 && walletName && walletName.length > 0
+          ? walletName
+          : acc.title
       listenerApi.dispatch(setAccount({ ...acc, title: accountTitle }))
     }
   } else if (walletType === WalletType.MNEMONIC) {

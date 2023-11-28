@@ -5,7 +5,7 @@ import AppNavigation from 'navigation/AppNavigation'
 import { OnboardScreenProps } from 'navigation/types'
 import React, { useState } from 'react'
 import { useDispatch } from 'react-redux'
-import { setWalletName } from 'seedless/store/slice'
+import { setWalletName } from 'store/account'
 
 type NavigationProp = OnboardScreenProps<
   typeof AppNavigation.Onboard.NameYourWallet

@@ -3,6 +3,7 @@ export type AccountCollection = { [accountIndex: number]: Account }
 export type AccountsState = {
   accounts: AccountCollection
   activeAccountIndex: number
+  walletName?: string
 }
 
 export type Account = {
