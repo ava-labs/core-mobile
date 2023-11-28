@@ -33,23 +33,19 @@ class PasskeyService {
     challenge: MfaFidoChallenge,
     withSecurityKey: boolean
   ): Promise<string> {
-    try {
-      const request = this.prepareAuthenticationRequest(challenge)
+    const request = this.prepareAuthenticationRequest(challenge)
 
-      const result = await Passkey.authenticate(request, {
-        withSecurityKey
-      })
+    const result = await Passkey.authenticate(request, {
+      withSecurityKey
+    })
 
-      const credential = this.convertAuthenticationResultToCredential(result)
+    const credential = this.convertAuthenticationResultToCredential(result)
 
-      const mfaRequestInfo = await challenge.answer(credential)
+    const mfaRequestInfo = await challenge.answer(credential)
 
-      if (mfaRequestInfo.receipt?.confirmation) {
-        return mfaRequestInfo.receipt.confirmation
-      } else {
-        throw new Error('Passkey authentication failed')
-      }
-    } catch (e) {
+    if (mfaRequestInfo.receipt?.confirmation) {
+      return mfaRequestInfo.receipt.confirmation
+    } else {
       throw new Error('Passkey authentication failed')
     }
   }

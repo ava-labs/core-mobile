@@ -1,6 +1,6 @@
 export type MFA =
   | {
-      /** type for autenticator */
+      /** type for authenticator */
       type: 'totp'
     }
   | {

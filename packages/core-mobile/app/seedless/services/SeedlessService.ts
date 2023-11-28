@@ -158,25 +158,21 @@ class SeedlessService {
     mfaId: string,
     withSecurityKey: boolean
   ): Promise<void> {
-    try {
-      const sessionMgr = await this.getSessionManager()
-      const signerSession = new SignerSession(sessionMgr)
+    const sessionMgr = await this.getSessionManager()
+    const signerSession = new SignerSession(sessionMgr)
 
-      const challenge = await signerSession.fidoApproveStart(mfaId)
+    const challenge = await signerSession.fidoApproveStart(mfaId)
 
-      const mfaConfirmationKey = await PasskeyService.authenticate(
-        challenge,
-        withSecurityKey
-      )
+    const mfaConfirmationKey = await PasskeyService.authenticate(
+      challenge,
+      withSecurityKey
+    )
 
-      await this.login(oidcToken, {
-        mfaOrgId: SEEDLESS_ORG_ID,
-        mfaId: mfaId,
-        mfaConf: mfaConfirmationKey
-      })
-    } catch (e) {
-      throw new Error('Fido authentication failed')
-    }
+    await this.login(oidcToken, {
+      mfaOrgId: SEEDLESS_ORG_ID,
+      mfaId: mfaId,
+      mfaConf: mfaConfirmationKey
+    })
   }
 
   /**

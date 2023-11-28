@@ -7,6 +7,7 @@ import SeedlessService from 'seedless/services/SeedlessService'
 import PasskeyService from 'seedless/services/PasskeyService'
 import { RecoveryMethodsContext } from 'navigation/onboarding/RecoveryMethodsStack'
 import { Alert } from 'react-native'
+import Logger from 'utils/Logger'
 import { Card } from '../components/Card'
 
 type AddRecoveryMethodsScreenProps = RecoveryMethodsScreenProps<
@@ -41,6 +42,7 @@ export const AddRecoveryMethods = (): JSX.Element => {
         }
       })
     } catch (e) {
+      Logger.error('passkey registration failed', e)
       Alert.alert('Passkey registration error')
     }
   }
@@ -61,6 +63,7 @@ export const AddRecoveryMethods = (): JSX.Element => {
         }
       })
     } catch (e) {
+      Logger.error('yubikey registration failed', e)
       Alert.alert('Yubikey registration error')
     }
   }

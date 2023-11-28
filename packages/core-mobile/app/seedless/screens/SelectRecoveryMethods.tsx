@@ -7,6 +7,7 @@ import PasskeyService from 'seedless/services/PasskeyService'
 import SeedlessService from 'seedless/services/SeedlessService'
 import { RecoveryMethodsContext } from 'navigation/onboarding/RecoveryMethodsStack'
 import { Alert } from 'react-native'
+import Logger from 'utils/Logger'
 import { Card } from '../components/Card'
 
 type SelectRecoveryMethodsScreenProps = RecoveryMethodsScreenProps<
@@ -42,6 +43,7 @@ export const SelectRecoveryMethods = (): JSX.Element => {
         }
       })
     } catch (e) {
+      Logger.error('passkey authentication failed', e)
       Alert.alert('Passkey authentication error')
     }
   }
