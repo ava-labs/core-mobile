@@ -1,4 +1,4 @@
-import walletService from 'services/wallet/WalletService'
+import WalletService from 'services/wallet/WalletService'
 import { Account, AccountCollection } from 'store/account'
 import { Network, NetworkVMType } from '@avalabs/chains-sdk'
 
@@ -11,7 +11,7 @@ class AccountsService {
 
     for (const index of Object.keys(accounts)) {
       const key = parseInt(index)
-      const addresses = await walletService.getAddresses(key, isTestnet)
+      const addresses = await WalletService.getAddresses(key, isTestnet)
 
       const account = accounts[key]
       if (account) {
@@ -29,16 +29,12 @@ class AccountsService {
     return reloadedAccounts
   }
 
-  async createNextAccount(
-    isTestnet: boolean,
-    accounts: AccountCollection
-  ): Promise<Account> {
-    const newIndex = Object.keys(accounts).length
-    const addresses = await walletService.getAddresses(newIndex, isTestnet)
+  async createNextAccount(isTestnet: boolean, index: number): Promise<Account> {
+    const addresses = await WalletService.addAddress(index, isTestnet)
 
     return {
-      index: newIndex,
-      title: `Account ${newIndex + 1}`,
+      index,
+      title: `Account ${index + 1}`,
       addressBtc: addresses[NetworkVMType.BITCOIN],
       address: addresses[NetworkVMType.EVM],
       addressAVM: addresses[NetworkVMType.AVM],
