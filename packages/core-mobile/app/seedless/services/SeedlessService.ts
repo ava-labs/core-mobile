@@ -176,7 +176,6 @@ class SeedlessService {
     const mfaRequestInfo = await challenge.answer(credential)
 
     if (mfaRequestInfo.receipt?.confirmation) {
-      // return mfaRequestInfo.receipt.confirmation
       await this.login(oidcToken, {
         mfaOrgId: SEEDLESS_ORG_ID,
         mfaId: mfaId,
