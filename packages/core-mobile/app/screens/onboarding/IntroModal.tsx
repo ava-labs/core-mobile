@@ -11,7 +11,8 @@ import {
   rrect,
   rect,
   Box,
-  Mask
+  Mask,
+  SkImage
 } from '@shopify/react-native-skia'
 import { Space } from 'components/Space'
 import { useDispatch } from 'react-redux'
@@ -19,6 +20,7 @@ import { ViewOnceKey, setViewOnce } from 'store/viewOnce'
 import { useNavigation } from '@react-navigation/native'
 import { Row } from 'components/Row'
 import { Button, SxProp, Text, View } from '@avalabs/k2-mobile'
+import Logger from 'utils/Logger'
 
 const TO_COLOR = '#000000'
 const FROM_COLOR = '#007AFF'
@@ -37,8 +39,7 @@ const BlueBackground = (): JSX.Element => {
   )
 }
 
-const TokenImageWithGradient = (): JSX.Element => {
-  const image = useImage(require('assets/icons/browser_intro_screen_logos.png'))
+const TokenImageWithGradient = ({ image }: { image: SkImage }): JSX.Element => {
   return (
     <Mask
       mask={
@@ -85,6 +86,10 @@ export default function IntroModal({
     dispatch(setViewOnce(viewOnceKey))
     goBack()
   }
+  const image = useImage(
+    require('assets/icons/browser_intro_screen_logos.png'),
+    error => Logger.error('Error loading IntroModal SKImage: ', error)
+  )
 
   return (
     <View
@@ -103,7 +108,7 @@ export default function IntroModal({
         }}>
         <Group>
           <BlueBackground />
-          <TokenImageWithGradient />
+          {image && <TokenImageWithGradient image={image} />}
         </Group>
       </Canvas>
       <View
