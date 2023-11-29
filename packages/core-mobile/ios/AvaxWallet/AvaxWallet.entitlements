@@ -6,6 +6,8 @@
 	<array>
 		<string>applinks:core.app</string>
 		<string>applinks:test.core.app</string>
+		<string>webcredentials:core.app</string>
+		<string>webcredentials:test.core.app</string>
 	</array>
 	<key>com.apple.security.cs.allow-jit</key>
 	<true/>

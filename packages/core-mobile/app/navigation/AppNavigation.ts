@@ -214,6 +214,7 @@ enum PortfolioScreens {
 
 enum RecoveryMethodsScreens {
   AddRecoveryMethods = 'RecoveryMethodsScreens.AddRecoveryMethods',
+  SelectRecoveryMethods = 'RecoveryMethodsScreens.SelectRecoveryMethods',
   AuthenticatorSetup = 'RecoveryMethodsScreens.AuthenticatorSetup',
   ScanQrCode = 'RecoveryMethodsScreens.ScanQrCode',
   LearnMore = 'RecoveryMethodsScreens.LearnMore',
