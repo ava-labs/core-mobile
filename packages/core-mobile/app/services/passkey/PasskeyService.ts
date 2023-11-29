@@ -6,6 +6,12 @@ import {
   PasskeyRegistrationRequest,
   PasskeyRegistrationResult
 } from 'react-native-passkey/lib/typescript/Passkey'
+import {
+  FIDOAuthenticationResult,
+  FIDOAuthenticationRequest,
+  FIDORegistrationResult,
+  FIDORegistrationRequest
+} from 'seedless/types'
 
 if (!Config.SEEDLESS_ENVIRONMENT) {
   throw Error('SEEDLESS_ENVIRONMENT is missing. Please check your env file.')
@@ -21,20 +27,18 @@ class PasskeyService {
   }
 
   async register(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    challengeOptions: any,
+    challengeOptions: FIDORegistrationRequest,
     withSecurityKey: boolean
   ): Promise<unknown> {
     const request = this.prepareRegistrationRequest(challengeOptions)
 
     const result = await Passkey.register(request, { withSecurityKey })
 
-    return this.convertRegistrationResultToCredential(result)
+    return this.convertRegistrationResult(result)
   }
 
   async authenticate(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    challengeOptions: any,
+    challengeOptions: FIDOAuthenticationRequest,
     withSecurityKey: boolean
   ): Promise<unknown> {
     const request = this.prepareAuthenticationRequest(challengeOptions)
@@ -43,79 +47,78 @@ class PasskeyService {
       withSecurityKey
     })
 
-    return this.convertAuthenticationResultToCredential(result)
+    return this.convertAuthenticationResult(result)
   }
 
   private prepareRegistrationRequest(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    challengeOptions: any
+    request: FIDORegistrationRequest
   ): PasskeyRegistrationRequest {
-    const request = challengeOptions as PasskeyRegistrationRequest
-
-    request.challenge = Buffer.from(request.challenge).toString('base64')
-    request.user.id = Buffer.from(request.user.id).toString('base64')
-    request.excludeCredentials = (request.excludeCredentials ?? []).map(
-      cred => ({ ...cred, id: Buffer.from(cred.id).toString('base64') })
-    )
-    request.rp.id = this.rpID
-
-    return request
+    return {
+      ...request,
+      challenge: request.challenge.toString('base64'),
+      rp: {
+        ...request.rp,
+        id: this.rpID
+      },
+      user: {
+        ...request.user,
+        id: request.user.id.toString('base64')
+      },
+      excludeCredentials: (request.excludeCredentials ?? []).map(cred => ({
+        ...cred,
+        id: cred.id.toString('base64')
+      }))
+    }
   }
 
   private prepareAuthenticationRequest(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    challengeOptions: any
+    request: FIDOAuthenticationRequest
   ): PasskeyAuthenticationRequest {
-    const request = challengeOptions as PasskeyAuthenticationRequest
-
-    request.challenge = Buffer.from(request.challenge).toString('base64')
-    request.rpId = this.rpID
-
-    return request
+    return {
+      ...request,
+      challenge: request.challenge.toString('base64'),
+      rpId: this.rpID,
+      allowCredentials: (request.allowCredentials ?? []).map(cred => ({
+        ...cred,
+        id: cred.id.toString('base64')
+      }))
+    }
   }
 
-  private convertRegistrationResultToCredential(
+  private convertRegistrationResult(
     result: PasskeyRegistrationResult
-  ): unknown {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const converted = { ...result } as any
-    converted.rawId = Buffer.from(result.rawId, 'base64')
-    converted.response.clientDataJSON = Buffer.from(
-      result.response.clientDataJSON,
-      'base64'
-    )
-    converted.response.attestationObject = Buffer.from(
-      result.response.attestationObject,
-      'base64'
-    )
-
-    return converted
+  ): FIDORegistrationResult {
+    return {
+      ...result,
+      rawId: Buffer.from(result.rawId, 'base64'),
+      response: {
+        ...result.response,
+        clientDataJSON: Buffer.from(result.response.clientDataJSON, 'base64'),
+        attestationObject: Buffer.from(
+          result.response.attestationObject,
+          'base64'
+        )
+      }
+    }
   }
 
-  private convertAuthenticationResultToCredential(
+  private convertAuthenticationResult(
     result: PasskeyAuthenticationResult
-  ): unknown {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const converted = { ...result } as any
-    converted.rawId = Buffer.from(result.rawId, 'base64')
-    converted.response.clientDataJSON = Buffer.from(
-      result.response.clientDataJSON,
-      'base64'
-    )
-    converted.response.authenticatorData = Buffer.from(
-      result.response.authenticatorData,
-      'base64'
-    )
-    converted.response.signature = Buffer.from(
-      result.response.signature,
-      'base64'
-    )
-    converted.response.userHandle = Buffer.from(
-      result.response.userHandle,
-      'base64'
-    )
-
-    return converted
+  ): FIDOAuthenticationResult {
+    return {
+      ...result,
+      rawId: Buffer.from(result.rawId, 'base64'),
+      response: {
+        ...result.response,
+        clientDataJSON: Buffer.from(result.response.clientDataJSON, 'base64'),
+        authenticatorData: Buffer.from(
+          result.response.authenticatorData,
+          'base64'
+        ),
+        signature: Buffer.from(result.response.signature, 'base64'),
+        userHandle: Buffer.from(result.response.userHandle, 'base64')
+      }
+    }
   }
 }
 
