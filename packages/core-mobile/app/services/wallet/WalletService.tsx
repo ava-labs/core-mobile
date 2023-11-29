@@ -155,12 +155,10 @@ class WalletService {
       const pubKeysStorage = await new SeedlessPubKeysStorage()
       const pubKeys = await pubKeysStorage.retrieve()
 
-      // only create next account if it doesn't exist yet
+      // create next account only if it doesn't exist yet
       if (!pubKeys[accountIndex]) {
-        const wallet = await WalletFactory.createWallet(
-          accountIndex,
-          this.walletType
-        )
+        // using the first account here since it always exists
+        const wallet = await WalletFactory.createWallet(0, this.walletType)
 
         if (!(wallet instanceof SeedlessWallet))
           throw new Error('Unable to add address: wrong wallet type')
@@ -168,7 +166,7 @@ class WalletService {
         // prompt Core Seedless API to derive new keys
         await wallet.addAccount(accountIndex)
 
-        // re-ini wallet to fetch new pub keys
+        // re-init wallet to fetch new public keys
         await WalletInitializer.initialize({
           walletType: this.walletType
         })
@@ -179,7 +177,7 @@ class WalletService {
   }
 
   /**
-   * Generates addresses for the given account index
+   * Generates addresses for the given account index and testnet flag.
    */
   public async getAddresses(
     accountIndex: number,
@@ -206,7 +204,7 @@ class WalletService {
     return await wallet.getPublicKey(account.index)
   }
 
-  // TODO: remove this method and use getAddresses instead
+  // TODO: use getAddresses instead for staking notification setup logic
   public async getAddressesByIndices({
     indices,
     chainAlias,
