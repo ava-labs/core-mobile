@@ -11,7 +11,7 @@ import {
   FIDOAuthenticationRequest,
   FIDORegistrationResult,
   FIDORegistrationRequest
-} from 'seedless/types'
+} from 'services/passkey/types'
 
 if (!Config.SEEDLESS_ENVIRONMENT) {
   throw Error('SEEDLESS_ENVIRONMENT is missing. Please check your env file.')
