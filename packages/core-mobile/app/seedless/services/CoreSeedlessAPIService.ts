@@ -1,5 +1,6 @@
 import { IdentityProof } from '@cubist-labs/cubesigner-sdk'
 import Config from 'react-native-config'
+import Logger from 'utils/Logger'
 
 if (!Config.SEEDLESS_URL) {
   throw Error('SEEDLESS_URL is missing. Please check your env file.')
@@ -45,6 +46,35 @@ class CoreSeedlessAPIService {
       return SeedlessUserRegistrationResult.ERROR
     } catch (error) {
       return SeedlessUserRegistrationResult.ERROR
+    }
+  }
+
+  async addAccount({
+    accountIndex,
+    identityProof,
+    mnemonicId
+  }: {
+    accountIndex: number
+    identityProof: IdentityProof
+    mnemonicId: string
+  }): Promise<void> {
+    const response = await fetch(Config.SEEDLESS_URL + '/v1/addAccount', {
+      method: 'POST',
+      headers: {
+        Authorization: `${Config.SEEDLESS_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        accountIndex,
+        identityProof,
+        mnemonicId
+      })
+    })
+
+    if (!response.ok) {
+      Logger.error('Adding new account failed')
+      Logger.info(`${response.status}`, await response.json())
+      throw new Error('Adding new account failed')
     }
   }
 }

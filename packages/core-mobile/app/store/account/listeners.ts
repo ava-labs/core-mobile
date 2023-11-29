@@ -7,31 +7,39 @@ import {
 } from 'store/settings/advanced'
 import { AppListenerEffectAPI } from 'store'
 import { AnyAction, isAnyOf } from '@reduxjs/toolkit'
-import { onLogIn } from 'store/app/slice'
-import {
-  addAccount,
-  selectAccounts,
-  setAccount,
-  setAccounts,
-  setActiveAccountIndex
-} from './slice'
+import { onLogIn, selectWalletType } from 'store/app/slice'
+import { WalletType } from 'services/wallet/types'
+import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKeysStorage'
+import { selectAccounts, setAccount, setAccounts } from './slice'
 
-const createAndAddAccount = async (
-  action: AnyAction,
+const initAccounts = async (
+  _action: AnyAction,
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
   const state = listenerApi.getState()
   const isDeveloperMode = selectIsDeveloperMode(state)
-  const accounts = selectAccounts(state)
-  const acc = await accountService.createNextAccount(isDeveloperMode, accounts)
+  const walletType = selectWalletType(state)
 
-  listenerApi.dispatch(setAccount(acc))
+  if (walletType === WalletType.SEEDLESS) {
+    /**
+     * for seedless wallet, we need to add all accounts the user has upon login
+     *
+     * note:
+     * adding accounts cannot be parallelized, they need to be added one-by-one.
+     * otherwise race conditions occur and addresses get mixed up.
+     */
+    const pubKeysStorage = new SeedlessPubKeysStorage()
+    const pubKeys = await pubKeysStorage.retrieve()
 
-  // update active account index whenever we add a new account
-  // if this is the first account (in the case of onLogIn)
-  // no need to update as active index is already 0
-  if (addAccount.match(action))
-    listenerApi.dispatch(setActiveAccountIndex(acc.index))
+    for (let i = 0; i < pubKeys.length; i++) {
+      const acc = await accountService.createNextAccount(isDeveloperMode, i)
+      listenerApi.dispatch(setAccount(acc))
+    }
+  } else if (walletType === WalletType.MNEMONIC) {
+    // only add the first account for mnemonic wallet
+    const acc = await accountService.createNextAccount(isDeveloperMode, 0)
+    listenerApi.dispatch(setAccount(acc))
+  }
 }
 
 // reload addresses
@@ -55,8 +63,8 @@ export const addAccountListeners = (
   startListening: AppStartListening
 ): void => {
   startListening({
-    matcher: isAnyOf(onLogIn, addAccount),
-    effect: createAndAddAccount
+    actionCreator: onLogIn,
+    effect: initAccounts
   })
 
   startListening({

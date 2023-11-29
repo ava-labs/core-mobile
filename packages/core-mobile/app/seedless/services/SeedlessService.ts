@@ -12,7 +12,7 @@ import {
 } from '@cubist-labs/cubesigner-sdk'
 import { TotpErrors } from 'seedless/errors'
 import { Result } from 'types/result'
-import { SeedlessSessionStorage } from './SeedlessSessionStorage'
+import { SeedlessSessionStorage } from './storage/SeedlessSessionStorage'
 
 if (!Config.SEEDLESS_ORG_ID) {
   throw Error('SEEDLESS_ORG_ID is missing. Please check your env file.')
@@ -144,11 +144,11 @@ class SeedlessService {
    * and calls resetTotpComplete from totpChallenge.answer() if it is part of the registration flow.
    * registration would fail if totpChallenge.answer() is not called.
    */
-  verifyCode = async (
+  async verifyCode(
     oidcToken: string,
     mfaId: string,
     code: string
-  ): Promise<Result<void, TotpErrors>> => {
+  ): Promise<Result<void, TotpErrors>> {
     try {
       await this.totpChallenge?.answer(code)
       this.totpChallenge = undefined

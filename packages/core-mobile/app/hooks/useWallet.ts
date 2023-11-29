@@ -50,7 +50,7 @@ export function useWallet(): UseWallet {
    * Destroys the wallet instance
    */
   async function destroyWallet(): Promise<void> {
-    walletService.destroy()
+    await walletService.destroy()
   }
 
   return {

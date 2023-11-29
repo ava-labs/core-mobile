@@ -144,3 +144,7 @@ export type RawRootState = ReturnType<typeof rootReducer>
 export type RootState = ReturnType<ConfiguredStore['getState']>
 export type AppDispatch = ConfiguredStore['dispatch']
 export type AppListenerEffectAPI = ListenerEffectAPI<RootState, AppDispatch>
+export type ThunkApi = {
+  state: RootState
+  dispatch: AppDispatch
+}

@@ -1,8 +1,8 @@
-import { createAction, createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { Account, AccountCollection, AccountsState } from 'store/account/types'
 import { RootState } from 'store/index'
 
-const reducerName = 'account'
+export const reducerName = 'account'
 
 const initialState = {
   accounts: {},
@@ -37,18 +37,18 @@ const accountsSlice = createSlice({
 })
 
 // selectors
-export const selectAccounts = (state: RootState) => state.account.accounts
+export const selectAccounts = (state: RootState): AccountCollection =>
+  state.account.accounts
 
 export const selectAccountByAddress =
   (address?: string) => (state: RootState) =>
     Object.values(state.account.accounts).find(
       acc => acc.address.toLowerCase() === address?.toLowerCase()
     )
-export const selectActiveAccount = (state: RootState) =>
+export const selectActiveAccount = (state: RootState): Account | undefined =>
   state.account.accounts[state.account.activeAccountIndex]
 
 // actions
-export const addAccount = createAction(`${reducerName}/addAccount`)
 export const {
   setAccountTitle,
   setActiveAccountIndex,
