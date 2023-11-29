@@ -38,7 +38,7 @@ describe('WalletService', () => {
       jest.mock('services/wallet/WalletService')
 
       jest // @ts-ignore
-        .spyOn(WalletService, 'getReadOnlyAvaWallet')
+        .spyOn(WalletService, 'getReadOnlyAvaSigner')
         // @ts-ignore
         .mockImplementation(() => mockWallet())
 

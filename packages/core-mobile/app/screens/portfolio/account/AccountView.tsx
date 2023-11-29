@@ -1,9 +1,5 @@
-import React from 'react'
-import { View } from 'react-native'
-import { useApplicationContext } from 'contexts/ApplicationContext'
-import AvaText from 'components/AvaText'
+import React, { useState } from 'react'
 import { Space } from 'components/Space'
-import AvaButton from 'components/AvaButton'
 import { Account } from 'store/account'
 import AccountItem from 'screens/portfolio/account/AccountItem'
 import { BottomSheetFlatList } from '@gorhom/bottom-sheet'
@@ -15,18 +11,33 @@ import {
   setActiveAccountIndex
 } from 'store/account'
 import { usePostCapture } from 'hooks/usePosthogCapture'
+import { Button, Text, View } from '@avalabs/k2-mobile'
+import { ActivityIndicator } from 'components/ActivityIndicator'
+import Logger from 'utils/Logger'
+import { showSimpleToast } from 'components/Snackbar'
 
 function AccountView({ onDone }: { onDone: () => void }): JSX.Element {
-  const { theme } = useApplicationContext()
   const accounts = useSelector(selectAccounts)
   const dispatch = useDispatch()
   const { capture } = usePostCapture()
+  const [isAddingAccount, setIsAddingAccount] = useState(false)
 
-  const addAccountAndSetActive = async () => {
-    await capture('AccountSelectorAddAccount', {
-      accountNumber: Object.keys(accounts).length + 1
-    })
-    dispatch(addAccount())
+  const addAccountAndSetActive = async (): Promise<void> => {
+    try {
+      await capture('AccountSelectorAddAccount', {
+        accountNumber: Object.keys(accounts).length + 1
+      })
+
+      setIsAddingAccount(true)
+      // @ts-expect-error
+      // dispatch here is not typed correctly
+      await dispatch(addAccount()).unwrap()
+    } catch (error) {
+      Logger.error('Unable to add account', error)
+      showSimpleToast('Unable to add account')
+    } finally {
+      setIsAddingAccount(false)
+    }
   }
 
   return (
@@ -41,12 +52,14 @@ function AccountView({ onDone }: { onDone: () => void }): JSX.Element {
           justifyContent: 'space-between',
           alignItems: 'center'
         }}>
-        <AvaText.Heading1>My Accounts</AvaText.Heading1>
-        <AvaButton.Base rippleBorderless onPress={onDone}>
-          <AvaText.ButtonLarge textStyle={{ color: theme.colorPrimary1 }}>
-            Done
-          </AvaText.ButtonLarge>
-        </AvaButton.Base>
+        <Text variant="heading4">My Accounts</Text>
+        <Button
+          type="tertiary"
+          size="xlarge"
+          onPress={onDone}
+          style={{ marginRight: -25 }}>
+          Done
+        </Button>
       </View>
       <Space y={16} />
       <BottomSheetFlatList
@@ -61,9 +74,14 @@ function AccountView({ onDone }: { onDone: () => void }): JSX.Element {
           />
         )}
       />
-      <AvaButton.PrimaryLarge onPress={addAccountAndSetActive}>
-        Add Account
-      </AvaButton.PrimaryLarge>
+
+      <Button
+        type="primary"
+        size="xlarge"
+        onPress={addAccountAndSetActive}
+        disabled={isAddingAccount}>
+        {isAddingAccount ? <ActivityIndicator size={'small'} /> : 'Add Account'}
+      </Button>
       <Space y={16} />
     </View>
   )
@@ -75,7 +93,7 @@ function AccountItemRenderer({
 }: {
   account: Account
   onSelectAccount: (accountIndex: number) => void
-}) {
+}): JSX.Element {
   const activeAccount = useSelector(selectActiveAccount)
   return (
     <AccountItem

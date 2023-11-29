@@ -14,7 +14,7 @@ export class SeedlessSessionStorage
       await SecureStorageService.load<SignerSessionData>(
         KeySlot.SignerSessionData
       )
-    assertNotUndefined(signerSessionData)
+    assertNotUndefined(signerSessionData, 'no signer session data found')
     return signerSessionData
   }
 }

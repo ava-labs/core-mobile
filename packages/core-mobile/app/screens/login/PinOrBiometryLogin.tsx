@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react'
+import React, { useEffect } from 'react'
 import {
   Animated,
   Dimensions,
@@ -23,6 +23,8 @@ import ReAnimated, {
 } from 'react-native-reanimated'
 import Logger from 'utils/Logger'
 import { usePinOrBiometryLogin } from './PinOrBiometryLoginViewModel'
+
+const WINDOW_HEIGHT = Dimensions.get('window').height
 
 const keymap: Map<string, PinKeys> = new Map([
   ['1', PinKeys.Key1],
@@ -74,7 +76,6 @@ export default function PinOrBiometryLogin({
     timeRemaining
   } = usePinOrBiometryLogin()
 
-  const windowHeight = useMemo(() => Dimensions.get('window').height, [])
   const logoTranslateY = useSharedValue(0)
   const opacity = useSharedValue(1)
 
@@ -117,13 +118,13 @@ export default function PinOrBiometryLogin({
 
   useEffect(() => {
     if (mnemonic) {
-      logoTranslateY.value = (windowHeight - LOGO_HEIGHT) / 2 - TOP_SPACE
+      logoTranslateY.value = (WINDOW_HEIGHT - LOGO_HEIGHT) / 2 - TOP_SPACE * 3
       opacity.value = 0
       setTimeout(() => {
         onLoginSuccess(mnemonic)
       }, 500)
     }
-  }, [logoTranslateY, mnemonic, onLoginSuccess, opacity, windowHeight])
+  }, [logoTranslateY, mnemonic, onLoginSuccess, opacity])
 
   const generatePinDots = (): Element[] => {
     const dots: Element[] = []
