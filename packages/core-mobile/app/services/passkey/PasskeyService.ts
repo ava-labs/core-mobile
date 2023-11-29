@@ -29,7 +29,7 @@ class PasskeyService {
   async register(
     challengeOptions: FIDORegistrationRequest,
     withSecurityKey: boolean
-  ): Promise<unknown> {
+  ): Promise<FIDORegistrationResult> {
     const request = this.prepareRegistrationRequest(challengeOptions)
 
     const result = await Passkey.register(request, { withSecurityKey })
@@ -40,7 +40,7 @@ class PasskeyService {
   async authenticate(
     challengeOptions: FIDOAuthenticationRequest,
     withSecurityKey: boolean
-  ): Promise<unknown> {
+  ): Promise<FIDOAuthenticationResult> {
     const request = this.prepareAuthenticationRequest(challengeOptions)
 
     const result = await Passkey.authenticate(request, {
