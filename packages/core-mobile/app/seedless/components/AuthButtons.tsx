@@ -2,6 +2,7 @@ import { Button, Text, View, useTheme } from '@avalabs/k2-mobile'
 import React, { FC } from 'react'
 import { Space } from 'components/Space'
 import Separator from 'components/Separator'
+import AppleSignInService from 'seedless/services/AppleSignInService'
 import SocialButton from './SocialButton'
 
 type Props = {
@@ -22,6 +23,8 @@ const AuthButtons: FC<Props> = ({
   const {
     theme: { colors }
   } = useTheme()
+  const isAppleSignInAvailable = AppleSignInService.isSupported()
+
   return (
     <View>
       <View sx={{ alignItems: 'center', marginBottom: 16 }}>
@@ -33,12 +36,16 @@ const AuthButtons: FC<Props> = ({
             disabled={disabled}
             onPress={onGoogleAction}
           />
-          <Space x={16} />
-          <SocialButton
-            type="apple"
-            disabled={disabled}
-            onPress={onAppleAction}
-          />
+          {isAppleSignInAvailable && (
+            <>
+              <Space x={16} />
+              <SocialButton
+                type="apple"
+                disabled={disabled}
+                onPress={onAppleAction}
+              />
+            </>
+          )}
         </View>
         <Space y={16} />
         <View

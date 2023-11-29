@@ -1,16 +1,15 @@
-import { useTheme, View } from '@avalabs/k2-mobile'
-import { noop } from '@avalabs/utils-sdk'
+import { View, useTheme } from '@avalabs/k2-mobile'
 import { useNavigation } from '@react-navigation/native'
 import CoreXLogoAnimated from 'components/CoreXLogoAnimated'
 import AppNavigation from 'navigation/AppNavigation'
 import { OnboardScreenProps } from 'navigation/types'
 import React, { FC, useLayoutEffect } from 'react'
-import { Alert } from 'react-native'
 import AuthButtons from 'seedless/components/AuthButtons'
 import { useSeedlessRegister } from 'seedless/hooks/useSeedlessRegister'
-import GoogleSigninService from 'seedless/services/GoogleSigninService'
+import { MFA } from 'seedless/types'
+import AppleSignInService from 'services/socialSignIn/apple/AppleSignInService'
+import GoogleSigninService from 'services/socialSignIn/google/GoogleSigninService'
 import Logger from 'utils/Logger'
-import SecureStorageService, { KeySlot } from 'security/SecureStorageService'
 import { OidcProviders } from 'seedless/consts'
 
 type NavigationProp = OnboardScreenProps<
@@ -18,14 +17,14 @@ type NavigationProp = OnboardScreenProps<
 >['navigation']
 
 const SigninScreen: FC = () => {
-  const navigation = useNavigation<NavigationProp>()
+  const { navigate, setOptions } = useNavigation<NavigationProp>()
   const {
     theme: { colors }
   } = useTheme()
   const { register, isRegistering } = useSeedlessRegister()
 
   const handleSigninWithMnemonic = (): void => {
-    navigation.navigate(AppNavigation.Onboard.Welcome, {
+    navigate(AppNavigation.Onboard.Welcome, {
       screen: AppNavigation.Onboard.AnalyticsConsent,
       params: {
         nextScreen: AppNavigation.Onboard.EnterWithMnemonicStack
@@ -33,42 +32,35 @@ const SigninScreen: FC = () => {
     })
   }
 
-  const handleSigninWithGoogle = async (): Promise<void> => {
-    await SecureStorageService.store(KeySlot.OidcProvider, OidcProviders.GOOGLE)
-    const oidcToken = await GoogleSigninService.signin()
+  const onRegisterMfaMethods = (oidcToken: string, mfaId: string): void => {
+    navigate(AppNavigation.Onboard.RecoveryMethods, {
+      screen: AppNavigation.RecoveryMethods.AddRecoveryMethods,
+      oidcToken,
+      mfaId
+    })
+  }
 
-    try {
-      await register({
-        oidcToken,
-        onRegisterMfaMethods: mfaId => {
-          navigation.navigate(AppNavigation.Onboard.RecoveryMethods, {
-            screen: AppNavigation.RecoveryMethods.AddRecoveryMethods,
-            oidcToken,
-            mfaId
-          })
-        },
-        onVerifyMfaMethod: (mfaId, mfaMethods) => {
-          navigation.navigate(AppNavigation.Onboard.RecoveryMethods, {
-            screen: AppNavigation.RecoveryMethods.SelectRecoveryMethods,
-            params: { mfaMethods },
-            oidcToken,
-            mfaId
-          })
-        }
-      })
-    } catch (e) {
-      Alert.alert('seedless user registration error')
-    }
+  const onVerifyMfaMethod = (
+    oidcToken: string,
+    mfaId: string,
+    mfaMethods: MFA[]
+  ): void => {
+    navigate(AppNavigation.Onboard.RecoveryMethods, {
+      screen: AppNavigation.RecoveryMethods.SelectRecoveryMethods,
+      params: { mfaMethods },
+      oidcToken,
+      mfaId
+    })
   }
 
   useLayoutEffect(() => {
-    navigation.setOptions({
+    setOptions({
       headerShown: !isRegistering,
       title: '',
       headerBackTitle: 'Sign Up',
       headerTintColor: colors.$blueMain
     })
-  }, [navigation, colors, isRegistering])
+  }, [setOptions, colors, isRegistering])
 
   return (
     <View sx={{ flex: 1, backgroundColor: '$black' }}>
@@ -89,12 +81,25 @@ const SigninScreen: FC = () => {
           <AuthButtons
             title="Sign in with..."
             onGoogleAction={() => {
-              handleSigninWithGoogle().catch(error => {
-                Alert.alert('seedless user registration error')
-                Logger.error('handleSignupWithGoogle', error)
+              register({
+                getOidcToken: GoogleSigninService.signin,
+                oidcProvider: OidcProviders.GOOGLE,
+                onRegisterMfaMethods,
+                onVerifyMfaMethod
+              }).catch(error => {
+                Logger.error('Unable to sign in with Google: ', error)
               })
             }}
-            onAppleAction={noop}
+            onAppleAction={() => {
+              register({
+                getOidcToken: AppleSignInService.signIn,
+                oidcProvider: OidcProviders.APPLE,
+                onRegisterMfaMethods,
+                onVerifyMfaMethod
+              }).catch(error => {
+                Logger.error('Unable to sign in with Apple: ', error)
+              })
+            }}
             onMnemonicAction={handleSigninWithMnemonic}
           />
         </View>
