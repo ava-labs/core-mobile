@@ -5,6 +5,7 @@ import AnalyticsConsentPage from './analyticsConsent.page'
 import CreatePinPage from './createPin.page'
 import PortfolioPage from './portfolio.page'
 import BottomTabsPage from './bottomTabs.page'
+import commonElsPage from './commonEls.page'
 
 class ExistingRecoveryPhrasePage {
   get recoveryPhraseTextInput() {
@@ -89,6 +90,7 @@ class ExistingRecoveryPhrasePage {
     await CreatePinPage.tapNumpadZero()
     await CreatePinPage.tapEmptyCheckbox()
     await CreatePinPage.tapNextBtn()
+    await commonElsPage.tapGetStartedButton()
     await Action.waitForElement(PortfolioPage.colectiblesTab)
     await PortfolioPage.verifyPorfolioScreen()
     await BottomTabsPage.verifyBottomTabs()
