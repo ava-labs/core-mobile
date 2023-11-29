@@ -355,6 +355,8 @@ PODS:
     - React-Core
   - react-native-pager-view (5.4.25):
     - React-Core
+  - react-native-passkey (2.1.1):
+    - React-Core
   - react-native-performance (4.0.0):
     - React-Core
   - react-native-quick-base64 (2.0.5):
@@ -600,6 +602,7 @@ DEPENDENCIES:
   - "react-native-menu (from `../node_modules/@react-native-menu/menu`)"
   - "react-native-netinfo (from `../node_modules/@react-native-community/netinfo`)"
   - react-native-pager-view (from `../node_modules/react-native-pager-view`)
+  - react-native-passkey (from `../node_modules/react-native-passkey`)
   - react-native-performance (from `../node_modules/react-native-performance`)
   - react-native-quick-base64 (from `../node_modules/react-native-quick-base64`)
   - react-native-quick-crypto (from `../node_modules/react-native-quick-crypto`)
@@ -745,6 +748,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-community/netinfo"
   react-native-pager-view:
     :path: "../node_modules/react-native-pager-view"
+  react-native-passkey:
+    :path: "../node_modules/react-native-passkey"
   react-native-performance:
     :path: "../node_modules/react-native-performance"
   react-native-quick-base64:
@@ -893,6 +898,7 @@ SPEC CHECKSUMS:
   react-native-menu: 9728f90160c36b9a75481fc76e05354b99d54c59
   react-native-netinfo: ccbe1085dffd16592791d550189772e13bf479e2
   react-native-pager-view: da490aa1f902c9a5aeecf0909cc975ad0e92e53e
+  react-native-passkey: 29ff814a83dfd4311478498e71a801dce68043ac
   react-native-performance: 224bd53e6a835fda4353302cf891d088a0af7406
   react-native-quick-base64: e657e9197e61b60a9dec49807843052b830da254
   react-native-quick-crypto: e7ac378e827bfab02db29092ff204f13adc60c7c

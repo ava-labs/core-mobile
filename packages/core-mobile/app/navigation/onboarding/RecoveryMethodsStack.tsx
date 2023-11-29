@@ -9,9 +9,12 @@ import { MainHeaderOptions } from 'navigation/NavUtils'
 import { AddRecoveryMethods } from 'seedless/screens/AddRecoveryMethods'
 import { useRoute } from '@react-navigation/native'
 import { OnboardScreenProps } from 'navigation/types'
+import { SelectRecoveryMethods } from 'seedless/screens/SelectRecoveryMethods'
+import { MFA } from 'seedless/types'
 
 export type RecoveryMethodsStackParamList = {
   [AppNavigation.RecoveryMethods.AddRecoveryMethods]: undefined
+  [AppNavigation.RecoveryMethods.SelectRecoveryMethods]: { mfaMethods: MFA[] }
   [AppNavigation.RecoveryMethods.AuthenticatorSetup]: undefined
   [AppNavigation.RecoveryMethods.ScanQrCode]: undefined
   [AppNavigation.RecoveryMethods.LearnMore]: { totpCode?: string }
@@ -48,24 +51,35 @@ const RecoveryMethodsStack = (): JSX.Element => {
         />
         <RecoveryMethodsS.Screen
           options={MainHeaderOptions()}
-          name={AppNavigation.RecoveryMethods.AuthenticatorSetup}
-          component={AuthenticatorSetup}
+          name={AppNavigation.RecoveryMethods.SelectRecoveryMethods}
+          component={SelectRecoveryMethods}
         />
-        <RecoveryMethodsS.Screen
-          options={MainHeaderOptions()}
-          name={AppNavigation.RecoveryMethods.ScanQrCode}
-          component={ScanQrCode}
-        />
-        <RecoveryMethodsS.Screen
-          options={MainHeaderOptions()}
-          name={AppNavigation.RecoveryMethods.LearnMore}
-          component={LearnMore}
-        />
-        <RecoveryMethodsS.Screen
-          options={{ presentation: 'transparentModal' }}
-          name={AppNavigation.RecoveryMethods.VerifyCode}
-          component={VerifyCode}
-        />
+        <RecoveryMethodsS.Group>
+          {/* Screens for authenticator setup */}
+          <RecoveryMethodsS.Screen
+            options={MainHeaderOptions()}
+            name={AppNavigation.RecoveryMethods.AuthenticatorSetup}
+            component={AuthenticatorSetup}
+          />
+          <RecoveryMethodsS.Screen
+            options={MainHeaderOptions()}
+            name={AppNavigation.RecoveryMethods.ScanQrCode}
+            component={ScanQrCode}
+          />
+          <RecoveryMethodsS.Screen
+            options={MainHeaderOptions()}
+            name={AppNavigation.RecoveryMethods.LearnMore}
+            component={LearnMore}
+          />
+          <RecoveryMethodsS.Screen
+            options={{ presentation: 'transparentModal' }}
+            name={AppNavigation.RecoveryMethods.VerifyCode}
+            component={VerifyCode}
+          />
+        </RecoveryMethodsS.Group>
+        <RecoveryMethodsS.Group>
+          {/* Screens for fido(yubikey) setup */}
+        </RecoveryMethodsS.Group>
       </RecoveryMethodsS.Navigator>
     </RecoveryMethodsContext.Provider>
   )

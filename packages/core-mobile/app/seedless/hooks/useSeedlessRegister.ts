@@ -3,12 +3,13 @@ import CoreSeedlessAPIService, {
   SeedlessUserRegistrationResult
 } from 'seedless/services/CoreSeedlessAPIService'
 import SeedlessService from 'seedless/services/SeedlessService'
+import { MFA } from 'seedless/types'
 import Logger from 'utils/Logger'
 
 type RegisterProps = {
   oidcToken: string
   onRegisterMfaMethods: (mfaId: string) => void
-  onVerifyMfaMethod: (mfaId: string) => void
+  onVerifyMfaMethod: (mfaId: string, mfaMethods: MFA[]) => void
 }
 
 type ReturnType = {
@@ -39,10 +40,10 @@ export const useSeedlessRegister = (): ReturnType => {
       if (result === SeedlessUserRegistrationResult.ALREADY_REGISTERED) {
         if (isMfaRequired) {
           const mfaId = signResponse.mfaId()
-          const mfa = await SeedlessService.userMfa()
+          const mfaMethods = await SeedlessService.userMfa()
 
-          if (mfa && mfa.length > 0) {
-            onVerifyMfaMethod(mfaId)
+          if (mfaMethods && mfaMethods.length > 0) {
+            onVerifyMfaMethod(mfaId, mfaMethods)
           } else {
             onRegisterMfaMethods(mfaId)
           }
