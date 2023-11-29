@@ -140,8 +140,8 @@ class WalletService {
     })
   }
 
-  public destroy(): void {
-    WalletInitializer.terminate(this.walletType).catch(e =>
+  public async destroy(): Promise<void> {
+    await WalletInitializer.terminate(this.walletType).catch(e =>
       Logger.error('unable to destroy wallet', e)
     )
     this.walletType = undefined
