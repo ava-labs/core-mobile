@@ -15,7 +15,7 @@ type AddRecoveryMethodsScreenProps = RecoveryMethodsScreenProps<
 >
 
 export const AddRecoveryMethods = (): JSX.Element => {
-  const { navigate } =
+  const { navigate, goBack } =
     useNavigation<AddRecoveryMethodsScreenProps['navigation']>()
   const {
     theme: { colors }
@@ -27,45 +27,40 @@ export const AddRecoveryMethods = (): JSX.Element => {
   }
 
   const handlePasskey = async (): Promise<void> => {
-    try {
-      await SeedlessService.registerFido('Passkey', false)
-
-      await SeedlessService.approveFido(oidcToken, mfaId, false)
-
-      navigate(AppNavigation.Root.Onboard, {
-        screen: AppNavigation.Onboard.Welcome,
-        params: {
-          screen: AppNavigation.Onboard.AnalyticsConsent,
-          params: {
-            nextScreen: AppNavigation.Onboard.CreatePin
-          }
-        }
-      })
-    } catch (e) {
-      Logger.error('passkey registration failed', e)
-      Alert.alert('Passkey registration error')
-    }
+    navigate(AppNavigation.RecoveryMethods.PasskeySetup)
   }
 
   const handleYubikey = async (): Promise<void> => {
-    try {
-      await SeedlessService.registerFido('Yubikey', true)
+    navigate(AppNavigation.RecoveryMethods.FIDONameInput, {
+      title: 'Name Your Yubikey',
+      description: "Add a Yubikey name, so it's easier to find later.",
+      inputFieldLabel: 'Yubikey Name',
+      inputFieldPlaceholder: 'Enter Name',
+      onClose: async (name?: string) => {
+        const yubikeyName = name && name.length > 0 ? name : 'Yubikey'
 
-      await SeedlessService.approveFido(oidcToken, mfaId, true)
+        try {
+          await SeedlessService.registerFido(yubikeyName, true)
 
-      navigate(AppNavigation.Root.Onboard, {
-        screen: AppNavigation.Onboard.Welcome,
-        params: {
-          screen: AppNavigation.Onboard.AnalyticsConsent,
-          params: {
-            nextScreen: AppNavigation.Onboard.CreatePin
-          }
+          await SeedlessService.approveFido(oidcToken, mfaId, true)
+
+          goBack()
+
+          navigate(AppNavigation.Root.Onboard, {
+            screen: AppNavigation.Onboard.Welcome,
+            params: {
+              screen: AppNavigation.Onboard.AnalyticsConsent,
+              params: {
+                nextScreen: AppNavigation.Onboard.CreatePin
+              }
+            }
+          })
+        } catch (e) {
+          Logger.error('yubikey registration failed', e)
+          Alert.alert('Yubikey registration error')
         }
-      })
-    } catch (e) {
-      Logger.error('yubikey registration failed', e)
-      Alert.alert('Yubikey registration error')
-    }
+      }
+    })
   }
 
   return (

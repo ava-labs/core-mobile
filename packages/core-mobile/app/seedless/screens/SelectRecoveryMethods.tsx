@@ -15,7 +15,7 @@ type SelectRecoveryMethodsScreenProps = RecoveryMethodsScreenProps<
 >
 
 export const SelectRecoveryMethods = (): JSX.Element => {
-  const { navigate } =
+  const { navigate, goBack } =
     useNavigation<SelectRecoveryMethodsScreenProps['navigation']>()
   const { mfaId, oidcToken } = useContext(RecoveryMethodsContext)
   const {
@@ -32,6 +32,8 @@ export const SelectRecoveryMethods = (): JSX.Element => {
   const handleFido = async (): Promise<void> => {
     try {
       await SeedlessService.approveFido(oidcToken, mfaId, false)
+
+      goBack()
 
       navigate(AppNavigation.Root.Onboard, {
         screen: AppNavigation.Onboard.Welcome,
