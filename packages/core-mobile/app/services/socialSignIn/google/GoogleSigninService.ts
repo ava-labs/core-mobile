@@ -31,13 +31,13 @@ class GoogleSigninService {
       if (userInfo.idToken) {
         return userInfo.idToken
       } else {
-        const error = 'Seedless login error: empty token'
+        const error = 'Google sign in error: empty token'
         Logger.error(error)
         throw new Error(error)
       }
     } catch (error) {
-      Logger.error('Seedless login error', error)
-      throw new Error('Seedless login error')
+      Logger.error('Google sign in error', error)
+      throw new Error('Google sign in error')
     }
   }
 }

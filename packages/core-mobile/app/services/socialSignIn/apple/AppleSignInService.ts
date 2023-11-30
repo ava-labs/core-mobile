@@ -16,25 +16,25 @@ class AppleSigninService {
       const { user, identityToken } = appleAuthRequestResponse
 
       if (!identityToken) {
-        Logger.error('Seedless login error: empty token')
-        throw new Error('Seedless login error: empty token')
+        Logger.error('iOS Apple sign in error: empty token')
+        throw new Error('iOS Apple sign in error: empty token')
       }
 
       if (user === null) {
-        Logger.error('Seedless login error: user not found')
-        throw new Error('Seedless login error: user not found')
+        Logger.error('iOS Apple sign in error: user not found')
+        throw new Error('iOS Apple sign in error: user not found')
       }
 
       const credentialState = await appleAuth.getCredentialStateForUser(user)
 
       if (credentialState !== appleAuth.State.AUTHORIZED) {
-        Logger.error('Seedless login error: unauthorized user')
-        throw new Error('Seedless login error: unauthorized user')
+        Logger.error('iOS Apple sign in error: unauthorized user')
+        throw new Error('iOS Apple sign in error unauthorized user')
       }
       return identityToken
     } catch (error) {
-      Logger.error('Seedless login error', error)
-      throw new Error('Seedless login error')
+      Logger.error('iOS Apple sign in error', error)
+      throw new Error('iOS Apple sign in error')
     }
   }
 }

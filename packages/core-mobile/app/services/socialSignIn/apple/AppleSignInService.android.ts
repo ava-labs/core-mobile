@@ -36,13 +36,13 @@ class AppleSigninService {
       this.configure()
       const response = await appleAuthAndroid.signIn()
       if (response.id_token === undefined) {
-        Logger.error('Seedless login error: empty token')
-        throw new Error('Seedless login error: empty token')
+        Logger.error('Android Apple sign in error: empty token')
+        throw new Error('Android Apple sign in error: empty token')
       }
       return response.id_token
     } catch (error) {
-      Logger.error('Seedless login error', error)
-      throw new Error('Seedless login error')
+      Logger.error('Android Apple sign in error', error)
+      throw new Error('Android Apple sign in error')
     }
   }
 }

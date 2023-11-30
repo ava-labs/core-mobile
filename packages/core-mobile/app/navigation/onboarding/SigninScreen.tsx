@@ -92,7 +92,7 @@ const SigninScreen: FC = () => {
             }}
             onAppleAction={() => {
               register({
-                getOidcToken: AppleSignInService.signIn,
+                getOidcToken: AppleSignInService.signin,
                 oidcProvider: OidcProviders.APPLE,
                 onRegisterMfaMethods,
                 onVerifyMfaMethod
