@@ -11,6 +11,8 @@ import { useRoute } from '@react-navigation/native'
 import { OnboardScreenProps } from 'navigation/types'
 import { SelectRecoveryMethods } from 'seedless/screens/SelectRecoveryMethods'
 import { MFA } from 'seedless/types'
+import { PasskeySetupScreen } from 'seedless/screens/PasskeySetupScreen'
+import { FIDONameInputScreen } from 'seedless/screens/FIDONameInputScreen'
 
 export type RecoveryMethodsStackParamList = {
   [AppNavigation.RecoveryMethods.AddRecoveryMethods]: undefined
@@ -19,6 +21,14 @@ export type RecoveryMethodsStackParamList = {
   [AppNavigation.RecoveryMethods.ScanQrCode]: undefined
   [AppNavigation.RecoveryMethods.LearnMore]: { totpCode?: string }
   [AppNavigation.RecoveryMethods.VerifyCode]: undefined
+  [AppNavigation.RecoveryMethods.PasskeySetup]: undefined
+  [AppNavigation.RecoveryMethods.FIDONameInput]: {
+    title: string
+    description: string
+    inputFieldLabel: string
+    inputFieldPlaceholder: string
+    onClose: (name?: string) => Promise<void>
+  }
 }
 
 const RecoveryMethodsS = createStackNavigator<RecoveryMethodsStackParamList>()
@@ -43,7 +53,7 @@ const RecoveryMethodsStack = (): JSX.Element => {
 
   return (
     <RecoveryMethodsContext.Provider value={{ oidcToken, mfaId }}>
-      <RecoveryMethodsS.Navigator screenOptions={{ headerShown: false }}>
+      <RecoveryMethodsS.Navigator>
         <RecoveryMethodsS.Screen
           options={MainHeaderOptions()}
           name={AppNavigation.RecoveryMethods.AddRecoveryMethods}
@@ -78,7 +88,16 @@ const RecoveryMethodsStack = (): JSX.Element => {
           />
         </RecoveryMethodsS.Group>
         <RecoveryMethodsS.Group>
-          {/* Screens for fido(yubikey) setup */}
+          <RecoveryMethodsS.Screen
+            options={MainHeaderOptions()}
+            name={AppNavigation.RecoveryMethods.PasskeySetup}
+            component={PasskeySetupScreen}
+          />
+          <RecoveryMethodsS.Screen
+            options={{ presentation: 'modal' }}
+            name={AppNavigation.RecoveryMethods.FIDONameInput}
+            component={FIDONameInputScreen}
+          />
         </RecoveryMethodsS.Group>
       </RecoveryMethodsS.Navigator>
     </RecoveryMethodsContext.Provider>

@@ -218,7 +218,9 @@ enum RecoveryMethodsScreens {
   AuthenticatorSetup = 'RecoveryMethodsScreens.AuthenticatorSetup',
   ScanQrCode = 'RecoveryMethodsScreens.ScanQrCode',
   LearnMore = 'RecoveryMethodsScreens.LearnMore',
-  VerifyCode = 'RecoveryMethodsScreens.VerifyCode'
+  VerifyCode = 'RecoveryMethodsScreens.VerifyCode',
+  PasskeySetup = 'RecoveryMethodsScreens.PasskeySetup',
+  FIDONameInput = 'RecoveryMethodsScreens.FIDONameInput'
 }
 
 const AppNavigation = {
