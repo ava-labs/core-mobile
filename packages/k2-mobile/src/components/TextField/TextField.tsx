@@ -1,7 +1,7 @@
 import React, { forwardRef, useState } from 'react'
-import { TextInput, TextInputProps } from 'react-native'
+import { TextInput as rTextInput, TextInputProps } from 'react-native'
 import { Text, alpha, useTheme } from '../..'
-import { View } from '../Primitives'
+import { View, TextInput } from '../Primitives'
 
 export type TextFieldSize = 'small' | 'medium' | 'large'
 
@@ -10,7 +10,7 @@ type TextFieldProps = TextInputProps & {
   size?: TextFieldSize
 }
 
-const TextField = forwardRef<TextInput, TextFieldProps>(
+const TextField = forwardRef<rTextInput, TextFieldProps>(
   (
     {
       value,
@@ -44,31 +44,28 @@ const TextField = forwardRef<TextInput, TextFieldProps>(
           </Text>
         )}
         <TextInput
-          style={[
-            {
-              paddingHorizontal: 16,
-              paddingVertical: paddingVertical,
-              fontSize: 16,
-              backgroundColor: isActive
-                ? 'transparent'
-                : alpha(colors.$neutral700, 0.5),
-              borderRadius: 8,
-              borderWidth: 1,
-              borderColor: isActive
-                ? colors.$neutral50
-                : isFilled
-                ? colors.$neutral700
-                : 'transparent',
-              color: colors.$neutral50
-            },
-            style
-          ]}
+          sx={{
+            paddingHorizontal: 16,
+            paddingVertical: paddingVertical,
+            fontSize: 16,
+            backgroundColor: isActive
+              ? 'transparent'
+              : alpha(colors.$neutral700, 0.5),
+            borderRadius: 8,
+            borderWidth: 1,
+            borderColor: isActive
+              ? colors.$neutral50
+              : isFilled
+              ? colors.$neutral700
+              : 'transparent',
+            color: colors.$neutral50
+          }}
+          style={style}
           ref={ref}
           value={value}
           placeholder={placeholder}
-          placeholderTextColor={
-            isActive ? colors.$neutral50 : colors.$neutral400
-          }
+          // @ts-ignore
+          placeholderTextColor={isActive ? '$neutral50' : '$neutral400'}
           autoCorrect={autoCorrect}
           onFocus={e => {
             setIsActive(true)
