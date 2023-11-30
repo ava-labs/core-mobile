@@ -3,10 +3,9 @@ import React, { FC, useMemo } from 'react'
 import { alpha } from '@avalabs/k2-mobile'
 import GoogleLogo from 'assets/icons/google.svg'
 import AppleLogo from 'assets/icons/apple.svg'
-import { SocialProviderTypes } from 'types/SocialProviderTypes'
 
 type Props = {
-  type: SocialProviderTypes
+  type: 'google' | 'apple'
   disabled?: boolean
   onPress: () => void
 }

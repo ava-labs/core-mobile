@@ -118,7 +118,7 @@ const SignupScreen: FC = () => {
                 }}
                 onAppleAction={() => {
                   register({
-                    getOidcToken: AppleSignInService.signin,
+                    getOidcToken: AppleSignInService.signIn,
                     oidcProvider: OidcProviders.APPLE,
                     onRegisterMfaMethods,
                     onVerifyMfaMethod

@@ -6,7 +6,7 @@ class AppleSigninService {
     return appleAuth.isSupported
   }
 
-  async signin(): Promise<string> {
+  async signIn(): Promise<string> {
     try {
       const appleAuthRequestResponse = await appleAuth.performRequest({
         requestedOperation: appleAuth.Operation.LOGIN,

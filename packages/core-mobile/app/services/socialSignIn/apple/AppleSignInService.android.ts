@@ -31,7 +31,7 @@ class AppleSigninService {
     })
   }
 
-  async signin(): Promise<string> {
+  async signIn(): Promise<string> {
     try {
       this.configure()
       const response = await appleAuthAndroid.signIn()
