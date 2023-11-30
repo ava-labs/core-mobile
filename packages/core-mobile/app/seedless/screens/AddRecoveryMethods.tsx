@@ -6,8 +6,8 @@ import React, { useContext } from 'react'
 import SeedlessService from 'seedless/services/SeedlessService'
 import PasskeyService from 'services/passkey/PasskeyService'
 import { RecoveryMethodsContext } from 'navigation/onboarding/RecoveryMethodsStack'
-import { Alert } from 'react-native'
 import Logger from 'utils/Logger'
+import { showSimpleToast } from 'components/Snackbar'
 import { Card } from '../components/Card'
 
 type AddRecoveryMethodsScreenProps = RecoveryMethodsScreenProps<
@@ -57,7 +57,7 @@ export const AddRecoveryMethods = (): JSX.Element => {
           })
         } catch (e) {
           Logger.error('yubikey registration failed', e)
-          Alert.alert('Yubikey registration error')
+          showSimpleToast('Unable to register yubikey')
         }
       }
     })

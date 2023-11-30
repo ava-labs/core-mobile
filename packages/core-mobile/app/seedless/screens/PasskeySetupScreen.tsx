@@ -6,8 +6,8 @@ import { useNavigation } from '@react-navigation/native'
 import { Space } from 'components/Space'
 import { RecoveryMethodsContext } from 'navigation/onboarding/RecoveryMethodsStack'
 import SeedlessService from 'seedless/services/SeedlessService'
-import { Alert } from 'react-native'
 import Logger from 'utils/Logger'
+import { showSimpleToast } from 'components/Snackbar'
 
 type PasskeySetupScreenProps = RecoveryMethodsScreenProps<
   typeof AppNavigation.RecoveryMethods.PasskeySetup
@@ -54,7 +54,7 @@ export const PasskeySetupScreen = (): JSX.Element => {
           })
         } catch (e) {
           Logger.error('passkey registration failed', e)
-          Alert.alert('Passkey registration error')
+          showSimpleToast('Unable to register passkey')
         }
       }
     })

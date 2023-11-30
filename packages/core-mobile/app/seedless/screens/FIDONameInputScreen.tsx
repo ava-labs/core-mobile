@@ -1,4 +1,4 @@
-import { Button, InputField, ScrollView, Text, View } from '@avalabs/k2-mobile'
+import { Button, TextField, ScrollView, Text, View } from '@avalabs/k2-mobile'
 import React, { useLayoutEffect, useRef, useState } from 'react'
 import { RecoveryMethodsScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
@@ -70,7 +70,7 @@ export const FIDONameInputScreen = (): JSX.Element => {
               {description}
             </Text>
             <Space y={24} />
-            <InputField
+            <TextField
               ref={inputFieldRef}
               value={name}
               placeholder={inputFieldPlaceholder}
@@ -82,7 +82,11 @@ export const FIDONameInputScreen = (): JSX.Element => {
         </View>
       </ScrollView>
       <View sx={{ paddingHorizontal: 16 }}>
-        <Button type="primary" size="xlarge" onPress={handleSave}>
+        <Button
+          type="primary"
+          size="xlarge"
+          onPress={handleSave}
+          disabled={(name ?? '').length === 0}>
           Save
         </Button>
         <Button
