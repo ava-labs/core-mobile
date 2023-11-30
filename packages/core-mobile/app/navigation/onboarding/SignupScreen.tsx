@@ -8,12 +8,12 @@ import React, { FC } from 'react'
 import { useSelector } from 'react-redux'
 import AuthButtons from 'seedless/components/AuthButtons'
 import { useSeedlessRegister } from 'seedless/hooks/useSeedlessRegister'
-import GoogleSigninService from 'seedless/services/GoogleSigninService'
 import { selectIsSeedlessOnboardingBlocked } from 'store/posthog'
 import Logger from 'utils/Logger'
 import { OidcProviders } from 'seedless/consts'
-import AppleSignInService from 'seedless/services/AppleSignInService'
 import { MFA } from 'seedless/types'
+import AppleSignInService from 'services/socialSignIn/apple/AppleSignInService'
+import GoogleSigninService from 'services/socialSignIn/google/GoogleSigninService'
 
 type NavigationProp = OnboardScreenProps<
   typeof AppNavigation.Onboard.Signup
