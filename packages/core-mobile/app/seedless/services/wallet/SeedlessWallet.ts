@@ -24,7 +24,6 @@ import {
   TypedDataUtils,
   typedSignatureHash
 } from '@metamask/eth-sig-util'
-import * as secp from '@noble/secp256k1'
 import { RpcMethod } from 'store/walletConnectV2/types'
 import CoreSeedlessAPIService from '../CoreSeedlessAPIService'
 import { SeedlessBtcSigner } from './SeedlessBtcSigner'
@@ -202,15 +201,7 @@ export default class SeedlessWallet implements Wallet {
     )
 
     // Validate inputs
-    const validator = (
-      pubkey: Buffer,
-      msghash: Buffer,
-      signature: Buffer
-    ): boolean => {
-      return secp.verify(signature, msghash, pubkey)
-    }
-
-    const areSignaturesValid = psbt.validateSignaturesOfAllInputs(validator)
+    const areSignaturesValid = psbt.validateSignaturesOfAllInputs()
 
     if (!areSignaturesValid)
       throw new Error('Unable to sign Btc transaction: invalid signatures')
