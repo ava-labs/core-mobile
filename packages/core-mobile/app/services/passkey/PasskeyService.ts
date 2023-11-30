@@ -90,6 +90,7 @@ class PasskeyService {
   ): FIDORegistrationResult {
     return {
       ...result,
+      id: this.convertBase64ToBase64Url(result.id),
       rawId: Buffer.from(result.rawId, 'base64'),
       response: {
         ...result.response,
@@ -107,6 +108,7 @@ class PasskeyService {
   ): FIDOAuthenticationResult {
     return {
       ...result,
+      id: this.convertBase64ToBase64Url(result.id),
       rawId: Buffer.from(result.rawId, 'base64'),
       response: {
         ...result.response,
@@ -119,6 +121,10 @@ class PasskeyService {
         userHandle: Buffer.from(result.response.userHandle, 'base64')
       }
     }
+  }
+
+  private convertBase64ToBase64Url(b64: string): string {
+    return b64.replace(/\+/g, '-').replace(/\//g, '_').replace(/[=]*$/g, '')
   }
 }
 
