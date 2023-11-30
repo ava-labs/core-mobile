@@ -130,6 +130,8 @@ enum SecurityPrivacyScreens {
   PinChange = 'SecurityPrivacyScreens.PinChange',
   CreatePin = 'SecurityPrivacyScreens.CreatePin',
   ShowRecoveryPhrase = 'SecurityPrivacyScreens.ShowRecoveryPhrase',
+  RecoveryMethods = 'SecurityPrivacyScreens.RecoveryMethods',
+  MFASetting = 'SecurityPrivacyScreens.MFASetting',
   TurnOnBiometrics = 'SecurityPrivacyScreens.TurnOnBiometrics',
   RecoveryPhrase = 'SecurityPrivacyScreens.RecoveryPhrase',
   DappList = 'SecurityPrivacyScreens.DappList',

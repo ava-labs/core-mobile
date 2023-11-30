@@ -486,12 +486,12 @@ class WalletService {
     return unsignedTx
   }
 
-  // PRIVATE METHODS
-  private get walletType(): WalletType {
+  get walletType(): WalletType {
     assertNotUndefined(this.#walletType, 'wallet type is not set')
     return this.#walletType
   }
 
+  // PRIVATE METHODS
   private set walletType(walletType: WalletType | undefined) {
     this.#walletType = walletType
   }
