@@ -45,4 +45,4 @@ export const All = (): JSX.Element => {
 }
 
 const FIGMA_LINK =
-  'https://www.figma.com/file/TAXtaoLGSNNt8nAqqcYH2H/K2-Component-Library?type=design&node-id=1869-36606&mode=design&t=9WAiwS0ehBNLg93L-11'
+  'https://www.figma.com/file/TAXtaoLGSNNt8nAqqcYH2H/K2-Component-Library?type=design&node-id=550%3A31986&mode=design&t=8cSsvugFjwVLqJNL-1'
