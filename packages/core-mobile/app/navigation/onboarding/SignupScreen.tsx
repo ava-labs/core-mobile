@@ -123,7 +123,7 @@ const SignupScreen: FC = () => {
                     onRegisterMfaMethods,
                     onVerifyMfaMethod
                   }).catch(error => {
-                    Logger.error('Unable to sign in with Apple: ', error)
+                    Logger.error('Unable to sign up with Apple: ', error)
                   })
                 }}
                 onMnemonicAction={handleSignupWithMnemonic}
