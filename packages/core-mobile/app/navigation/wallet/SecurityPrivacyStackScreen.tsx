@@ -14,12 +14,17 @@ import CaptureDappQR from 'screens/shared/CaptureDappQR'
 import { usePostCapture } from 'hooks/usePosthogCapture'
 import Logger from 'utils/Logger'
 import { useWallet } from 'hooks/useWallet'
+import { RecoveryMethodsSettingScreen } from 'seedless/screens/RecoveryMethodsSettingScreen'
+import { RecoveryMethodsSettingMFAScreen } from 'seedless/screens/RecoveryMethodsSettingMFAScreen'
+import { MFA } from 'seedless/types'
 
 export type SecurityStackParamList = {
   [AppNavigation.SecurityPrivacy.SecurityPrivacy]: undefined
   [AppNavigation.SecurityPrivacy.PinChange]: undefined
   [AppNavigation.SecurityPrivacy.CreatePin]: { mnemonic: string }
   [AppNavigation.SecurityPrivacy.ShowRecoveryPhrase]: undefined
+  [AppNavigation.SecurityPrivacy.RecoveryMethods]: undefined
+  [AppNavigation.SecurityPrivacy.MFASetting]: { mfa: MFA }
   [AppNavigation.SecurityPrivacy.TurnOnBiometrics]: undefined
   [AppNavigation.SecurityPrivacy.RecoveryPhrase]: { mnemonic: string }
   [AppNavigation.SecurityPrivacy.DappList]: undefined
@@ -44,6 +49,16 @@ function SecurityPrivacyStackScreen(): JSX.Element {
           options={MainHeaderOptions()}
           name={AppNavigation.SecurityPrivacy.DappList}
           component={DappConnectionsList}
+        />
+        <SecurityStack.Screen
+          options={MainHeaderOptions({ title: 'Recovery Methods' })}
+          name={AppNavigation.SecurityPrivacy.RecoveryMethods}
+          component={RecoveryMethodsSettingScreen}
+        />
+        <SecurityStack.Screen
+          options={MainHeaderOptions()}
+          name={AppNavigation.SecurityPrivacy.MFASetting}
+          component={RecoveryMethodsSettingMFAScreen}
         />
         <SecurityStack.Screen
           options={MainHeaderOptions()}
@@ -98,6 +113,9 @@ const SecurityPrivacyScreen = (): JSX.Element => {
       onShowRecoveryPhrase={() =>
         nav.navigate(AppNavigation.SecurityPrivacy.ShowRecoveryPhrase)
       }
+      onRecoveryMethods={() => {
+        nav.navigate(AppNavigation.SecurityPrivacy.RecoveryMethods)
+      }}
       onTurnOnBiometrics={() =>
         nav.navigate(AppNavigation.SecurityPrivacy.TurnOnBiometrics)
       }

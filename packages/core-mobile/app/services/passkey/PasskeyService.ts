@@ -1,3 +1,4 @@
+import { Platform } from 'react-native'
 import Config from 'react-native-config'
 import { Passkey } from 'react-native-passkey'
 import {
@@ -19,7 +20,7 @@ if (!Config.SEEDLESS_ENVIRONMENT) {
 
 class PasskeyService {
   get isSupported(): boolean {
-    return Passkey.isSupported()
+    return Passkey.isSupported() && Platform.OS === 'ios'
   }
 
   get rpID(): string {

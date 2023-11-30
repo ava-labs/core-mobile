@@ -4,7 +4,7 @@ import CarrotSVG from 'components/svg/CarrotSVG'
 import React from 'react'
 
 interface Props {
-  onPress: () => void
+  onPress?: () => void
   icon: JSX.Element
   title: string
   body?: string
@@ -46,10 +46,14 @@ export const Card = ({
               <Text variant="buttonMedium" sx={{ color: '$neutral50' }}>
                 {title}
               </Text>
-              <Space y={4} />
-              <Text variant={bodyVariant} sx={{ color: bodyColor }}>
-                {body}
-              </Text>
+              {body && body.length > 0 && (
+                <>
+                  <Space y={4} />
+                  <Text variant={bodyVariant} sx={{ color: bodyColor }}>
+                    {body}
+                  </Text>
+                </>
+              )}
             </View>
           </View>
           {showCaret && (
