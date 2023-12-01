@@ -111,18 +111,10 @@ type VerifyCodeScreenProps = RecoveryMethodsScreenProps<
 >
 function VerifyCodeScreen(): JSX.Element {
   const { oidcToken, mfaId } = useContext(RecoveryMethodsContext)
-  const { canGoBack, goBack, navigate } =
+  const { canGoBack, goBack, replace } =
     useNavigation<VerifyCodeScreenProps['navigation']>()
   const handleVerifySuccess = (): void => {
-    navigate(AppNavigation.Root.Onboard, {
-      screen: AppNavigation.Onboard.Welcome,
-      params: {
-        screen: AppNavigation.Onboard.AnalyticsConsent,
-        params: {
-          nextScreen: AppNavigation.Onboard.CreatePin
-        }
-      }
-    })
+    replace(AppNavigation.Onboard.NameYourWallet)
   }
 
   const handleOnBack = (): void => {

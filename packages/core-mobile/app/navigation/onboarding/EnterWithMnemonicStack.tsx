@@ -27,10 +27,12 @@ import Logger from 'utils/Logger'
 import { WalletType } from 'services/wallet/types'
 import { useWallet } from 'hooks/useWallet'
 import { resetNavToRoot } from 'utils/Navigation'
+import { NameYourWallet } from 'seedless/screens/NameYourWallet'
 import { EnterWithMnemonicScreenProps } from '../types'
 
 export type EnterWithMnemonicStackParamList = {
   [AppNavigation.LoginWithMnemonic.LoginWithMnemonic]: undefined
+  [AppNavigation.LoginWithMnemonic.NameYourWallet]: undefined
   [AppNavigation.LoginWithMnemonic.CreatePin]: undefined
   [AppNavigation.LoginWithMnemonic.BiometricLogin]: undefined
   [AppNavigation.LoginWithMnemonic.TermsNConditions]: undefined
@@ -58,6 +60,11 @@ const EnterWithMnemonicStack = (): JSX.Element => {
           options={MainHeaderOptions()}
           name={AppNavigation.LoginWithMnemonic.LoginWithMnemonic}
           component={LoginWithMnemonicScreen}
+        />
+        <EnterWithMnemonicS.Screen
+          options={MainHeaderOptions()}
+          name={AppNavigation.LoginWithMnemonic.NameYourWallet}
+          component={NameYourWalletScreen}
         />
         <EnterWithMnemonicS.Screen
           options={MainHeaderOptions()}
@@ -112,7 +119,7 @@ const LoginWithMnemonicScreen = (): JSX.Element => {
       }
 
       enterWithMnemonicContext.setMnemonic(m)
-      navigate(AppNavigation.LoginWithMnemonic.CreatePin)
+      navigate(AppNavigation.LoginWithMnemonic.NameYourWallet)
     },
     [isWalletExisted, enterWithMnemonicContext, navigate, deleteWallet]
   )
@@ -126,6 +133,21 @@ const LoginWithMnemonicScreen = (): JSX.Element => {
   }
 
   return <HdWalletLogin onEnterWallet={onEnterWallet} onBack={handleBack} />
+}
+
+type NameYourWalletNavigationProp = EnterWithMnemonicScreenProps<
+  typeof AppNavigation.LoginWithMnemonic.NameYourWallet
+>['navigation']
+
+const NameYourWalletScreen = (): JSX.Element => {
+  const { navigate } = useNavigation<NameYourWalletNavigationProp>()
+  const { capture } = usePostCapture()
+
+  const onSetWalletName = (): void => {
+    capture('LoginWithMnemonic:WalletNameSet')
+    navigate(AppNavigation.LoginWithMnemonic.CreatePin)
+  }
+  return <NameYourWallet onSetWalletName={onSetWalletName} />
 }
 
 type CreatePinNavigationProp = EnterWithMnemonicScreenProps<
