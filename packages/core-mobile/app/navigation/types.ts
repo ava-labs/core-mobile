@@ -32,6 +32,7 @@ import {
   AvalancheSignTransactionRpcRequest as AvalancheSignTransactionRpcRequestV2
 } from 'store/walletConnectV2/handlers/avalanche_signTransaction/avalanche_signTransaction'
 import { EarnStackParamList } from 'navigation/wallet/EarnScreenStack/EarnScreenStack'
+import { RefreshTokenScreenStackParamList } from 'navigation/RefreshTokenScreenStack'
 import { RootScreenStackParamList } from './RootScreenStack'
 import { OnboardingScreenStackParamList } from './OnboardScreenStack'
 import { WelcomeScreenStackParamList } from './onboarding/WelcomeScreenStack'
@@ -150,6 +151,11 @@ export type OnboardScreenProps<T extends keyof OnboardingScreenStackParamList> =
     StackScreenProps<OnboardingScreenStackParamList, T>,
     RootStackScreenProps<keyof RootScreenStackParamList>
   >
+
+/** ROOT -> REFRESH TOKEN **/
+export type RefreshTokenScreenProps<
+  T extends keyof RefreshTokenScreenStackParamList
+> = StackScreenProps<RefreshTokenScreenStackParamList, T>
 
 /** ROOT -> ONBOARD -> WELCOME **/
 export type WelcomeScreenProps<T extends keyof WelcomeScreenStackParamList> =

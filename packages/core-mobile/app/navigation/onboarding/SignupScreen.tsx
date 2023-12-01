@@ -13,6 +13,8 @@ import { useSeedlessRegister } from 'seedless/hooks/useSeedlessRegister'
 import GoogleSigninService from 'seedless/services/GoogleSigninService'
 import { selectIsSeedlessOnboardingBlocked } from 'store/posthog'
 import Logger from 'utils/Logger'
+import SecureStorageService, { KeySlot } from 'security/SecureStorageService'
+import { OidcProviders } from 'seedless/consts'
 
 type NavigationProp = OnboardScreenProps<
   typeof AppNavigation.Onboard.Signup
@@ -48,6 +50,7 @@ const SignupScreen: FC = () => {
   }
 
   const handleSignupWithGoogle = async (): Promise<void> => {
+    await SecureStorageService.store(KeySlot.OidcProvider, OidcProviders.GOOGLE)
     const oidcToken = await GoogleSigninService.signin()
 
     try {

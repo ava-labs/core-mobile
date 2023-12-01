@@ -1,42 +1,37 @@
 import {
+  alpha,
   Pressable,
   Text,
   TextInput,
-  View,
-  alpha,
-  useTheme
+  useTheme,
+  View
 } from '@avalabs/k2-mobile'
-import React, { useContext, useLayoutEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { BottomSheet } from 'components/BottomSheet'
 import ClearSVG from 'components/svg/ClearSVG'
 import { Space } from 'components/Space'
-import AppNavigation from 'navigation/AppNavigation'
-import { useNavigation } from '@react-navigation/native'
-import { RecoveryMethodsScreenProps } from 'navigation/types'
 import Logger from 'utils/Logger'
 import SeedlessService from 'seedless/services/SeedlessService'
-import { RecoveryMethodsContext } from 'navigation/onboarding/RecoveryMethodsStack'
 
-type VerifyCodeScreenProps = RecoveryMethodsScreenProps<
-  typeof AppNavigation.RecoveryMethods.VerifyCode
->
+export type VerifyCodeParams = {
+  oidcToken: string
+  mfaId: string
+  onVerifySuccess: () => void
+  onBack: () => void
+}
 
-export const VerifyCode = (): JSX.Element => {
+export const VerifyCode = ({
+  oidcToken,
+  mfaId,
+  onVerifySuccess,
+  onBack
+}: VerifyCodeParams): JSX.Element => {
   const {
     theme: { colors, text }
   } = useTheme()
-  const { oidcToken, mfaId } = useContext(RecoveryMethodsContext)
   const [code, setCode] = useState<string>()
 
   const [showError, setShowError] = useState(false)
-  const { canGoBack, goBack, navigate, setOptions } =
-    useNavigation<VerifyCodeScreenProps['navigation']>()
-
-  const onGoBack = (): void => {
-    if (canGoBack()) {
-      goBack()
-    }
-  }
 
   const handleVerifyCode = async (changedText: string): Promise<void> => {
     setCode(changedText)
@@ -53,16 +48,7 @@ export const VerifyCode = (): JSX.Element => {
       setShowError(true)
       return
     }
-
-    navigate(AppNavigation.Root.Onboard, {
-      screen: AppNavigation.Onboard.Welcome,
-      params: {
-        screen: AppNavigation.Onboard.AnalyticsConsent,
-        params: {
-          nextScreen: AppNavigation.Onboard.CreatePin
-        }
-      }
-    })
+    onVerifySuccess()
   }
 
   const textInputStyle = showError
@@ -71,10 +57,6 @@ export const VerifyCode = (): JSX.Element => {
         borderWidth: 1
       }
     : undefined
-
-  useLayoutEffect(() => {
-    setOptions({ headerShown: false })
-  }, [setOptions])
 
   return (
     <BottomSheet snapPoints={['99%']}>
@@ -88,7 +70,7 @@ export const VerifyCode = (): JSX.Element => {
               alignItems: 'center'
             }}>
             <Text variant="heading4">VerifyCode</Text>
-            <Pressable onPress={onGoBack}>
+            <Pressable onPress={onBack}>
               <ClearSVG
                 backgroundColor={alpha(colors.$neutral700, 0.5)}
                 color={colors.$neutral500}
