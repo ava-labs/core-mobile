@@ -1,4 +1,4 @@
-import { View, useTheme } from '@avalabs/k2-mobile'
+import { useTheme, View } from '@avalabs/k2-mobile'
 import { noop } from '@avalabs/utils-sdk'
 import { useNavigation } from '@react-navigation/native'
 import CoreXLogoAnimated from 'components/CoreXLogoAnimated'
@@ -10,6 +10,8 @@ import AuthButtons from 'seedless/components/AuthButtons'
 import { useSeedlessRegister } from 'seedless/hooks/useSeedlessRegister'
 import GoogleSigninService from 'seedless/services/GoogleSigninService'
 import Logger from 'utils/Logger'
+import SecureStorageService, { KeySlot } from 'security/SecureStorageService'
+import { OidcProviders } from 'seedless/consts'
 
 type NavigationProp = OnboardScreenProps<
   typeof AppNavigation.Onboard.Signin
@@ -32,6 +34,7 @@ const SigninScreen: FC = () => {
   }
 
   const handleSigninWithGoogle = async (): Promise<void> => {
+    await SecureStorageService.store(KeySlot.OidcProvider, OidcProviders.Google)
     const oidcToken = await GoogleSigninService.signin()
 
     try {
