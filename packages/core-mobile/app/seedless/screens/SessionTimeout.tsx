@@ -24,7 +24,7 @@ export default function SessionTimeout({
       </View>
       <FlexSpacer />
       <Button
-        size={'large'}
+        size={'xlarge'}
         type={'primary'}
         onPress={onRetry}
         style={{ width: '100%' }}>
