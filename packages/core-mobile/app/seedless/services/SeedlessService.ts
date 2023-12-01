@@ -224,7 +224,7 @@ class SeedlessService {
         mfaConf: status.receipt.confirmation
       })
 
-      return { success: true }
+      return { success: true, value: undefined }
     } catch {
       return {
         success: false,
@@ -263,7 +263,7 @@ class SeedlessService {
         })
       }
     })
-    return { success: true }
+    return { success: true, value: undefined }
   }
 }
 

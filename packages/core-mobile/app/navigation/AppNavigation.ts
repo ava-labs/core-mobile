@@ -1,6 +1,7 @@
 enum Root {
   Wallet = 'Stacks.Wallet',
   Onboard = 'Stacks.Onboard',
+  RefreshToken = 'Stacks.RefreshToken',
   CopyPhraseWarning = 'Stacks.CopyPhraseWarning'
 }
 
@@ -14,6 +15,12 @@ enum OnboardScreens {
   Login = 'OnboardScreens.Login',
   RecoveryMethods = 'OnboardScreens.RecoveryMethods',
   CreatePin = 'OnboardScreens.CreatePin'
+}
+
+enum RefreshTokenScreens {
+  OwlLoader = 'RefreshTokenScreens.OwlLoader',
+  SessionTimeout = 'RefreshTokenScreens.SessionTimeout',
+  VerifyCode = 'RefreshTokenScreens.VerifyCode'
 }
 
 enum CreateWalletNavigationScreens {
@@ -228,6 +235,7 @@ enum RecoveryMethodsScreens {
 const AppNavigation = {
   Root: Root,
   Onboard: OnboardScreens,
+  RefreshToken: RefreshTokenScreens,
   CreateWallet: CreateWalletNavigationScreens,
   LoginWithMnemonic: LoginWithMnemonicStackScreens,
   Wallet: WalletScreens,

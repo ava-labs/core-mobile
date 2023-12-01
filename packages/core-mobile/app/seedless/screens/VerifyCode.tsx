@@ -13,7 +13,7 @@ import { Space } from 'components/Space'
 import Logger from 'utils/Logger'
 import SeedlessService from 'seedless/services/SeedlessService'
 
-type VerifyCodeParams = {
+export type VerifyCodeParams = {
   oidcToken: string
   mfaId: string
   onVerifySuccess: () => void
