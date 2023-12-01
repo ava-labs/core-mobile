@@ -132,7 +132,7 @@ export class SendServiceEVM implements SendServiceHelper {
           ...unsignedTx,
           chainId,
           gasLimit,
-          gasPrice: sendState.gasPrice,
+          maxFeePerGas: sendState.gasPrice,
           nonce
         }
       })
