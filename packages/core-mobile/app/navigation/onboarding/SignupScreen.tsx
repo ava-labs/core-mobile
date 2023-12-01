@@ -1,20 +1,20 @@
 import { Button, View } from '@avalabs/k2-mobile'
-import { noop } from '@avalabs/utils-sdk'
 import { useNavigation } from '@react-navigation/native'
 import CoreXLogoAnimated from 'components/CoreXLogoAnimated'
 import { Space } from 'components/Space'
 import AppNavigation from 'navigation/AppNavigation'
 import { OnboardScreenProps } from 'navigation/types'
 import React, { FC } from 'react'
-import { Alert } from 'react-native'
 import { useSelector } from 'react-redux'
 import AuthButtons from 'seedless/components/AuthButtons'
 import { useSeedlessRegister } from 'seedless/hooks/useSeedlessRegister'
-import GoogleSigninService from 'seedless/services/GoogleSigninService'
 import { selectIsSeedlessOnboardingBlocked } from 'store/posthog'
 import Logger from 'utils/Logger'
-import SecureStorageService, { KeySlot } from 'security/SecureStorageService'
 import { OidcProviders } from 'seedless/consts'
+import { MFA } from 'seedless/types'
+import AppleSignInService from 'services/socialSignIn/apple/AppleSignInService'
+import GoogleSigninService from 'services/socialSignIn/google/GoogleSigninService'
+import { showSimpleToast } from 'components/Snackbar'
 
 type NavigationProp = OnboardScreenProps<
   typeof AppNavigation.Onboard.Signup
@@ -24,11 +24,11 @@ const SignupScreen: FC = () => {
   const isSeedlessOnboardingBlocked = useSelector(
     selectIsSeedlessOnboardingBlocked
   )
-  const navigation = useNavigation<NavigationProp>()
+  const { navigate } = useNavigation<NavigationProp>()
   const { register, isRegistering } = useSeedlessRegister()
 
   const handleSigninWithMnemonic = (): void => {
-    navigation.navigate(AppNavigation.Onboard.Welcome, {
+    navigate(AppNavigation.Onboard.Welcome, {
       screen: AppNavigation.Onboard.AnalyticsConsent,
       params: {
         nextScreen: AppNavigation.Onboard.EnterWithMnemonicStack
@@ -37,7 +37,7 @@ const SignupScreen: FC = () => {
   }
 
   const handleSignupWithMnemonic = (): void => {
-    navigation.navigate(AppNavigation.Onboard.Welcome, {
+    navigate(AppNavigation.Onboard.Welcome, {
       screen: AppNavigation.Onboard.AnalyticsConsent,
       params: {
         nextScreen: AppNavigation.Onboard.CreateWalletStack
@@ -46,35 +46,28 @@ const SignupScreen: FC = () => {
   }
 
   const handleSignin = (): void => {
-    navigation.navigate(AppNavigation.Onboard.Signin)
+    navigate(AppNavigation.Onboard.Signin)
   }
 
-  const handleSignupWithGoogle = async (): Promise<void> => {
-    await SecureStorageService.store(KeySlot.OidcProvider, OidcProviders.GOOGLE)
-    const oidcToken = await GoogleSigninService.signin()
+  const onRegisterMfaMethods = (oidcToken: string, mfaId: string): void => {
+    navigate(AppNavigation.Onboard.RecoveryMethods, {
+      screen: AppNavigation.RecoveryMethods.AddRecoveryMethods,
+      oidcToken,
+      mfaId
+    })
+  }
 
-    try {
-      await register({
-        oidcToken,
-        onRegisterMfaMethods: mfaId => {
-          navigation.navigate(AppNavigation.Onboard.RecoveryMethods, {
-            screen: AppNavigation.RecoveryMethods.AddRecoveryMethods,
-            oidcToken,
-            mfaId
-          })
-        },
-        onVerifyMfaMethod: (mfaId, mfaMethods) => {
-          navigation.navigate(AppNavigation.Onboard.RecoveryMethods, {
-            screen: AppNavigation.RecoveryMethods.SelectRecoveryMethods,
-            params: { mfaMethods },
-            oidcToken,
-            mfaId
-          })
-        }
-      })
-    } catch (e) {
-      Alert.alert('seedless user registration error')
-    }
+  const onVerifyMfaMethod = (
+    oidcToken: string,
+    mfaId: string,
+    mfaMethods: MFA[]
+  ): void => {
+    navigate(AppNavigation.Onboard.RecoveryMethods, {
+      screen: AppNavigation.RecoveryMethods.SelectRecoveryMethods,
+      params: { mfaMethods },
+      oidcToken,
+      mfaId
+    })
   }
 
   return (
@@ -115,12 +108,27 @@ const SignupScreen: FC = () => {
                 title="Sign up with..."
                 disabled={isRegistering}
                 onGoogleAction={() => {
-                  handleSignupWithGoogle().catch(error => {
-                    Alert.alert('seedless user registration error')
-                    Logger.error('handleSignupWithGoogle', error)
+                  register({
+                    getOidcToken: GoogleSigninService.signin,
+                    oidcProvider: OidcProviders.GOOGLE,
+                    onRegisterMfaMethods,
+                    onVerifyMfaMethod
+                  }).catch(error => {
+                    Logger.error('Unable to sign up with Google: ', error)
+                    showSimpleToast('Unable to sign up with Google')
                   })
                 }}
-                onAppleAction={noop}
+                onAppleAction={() => {
+                  register({
+                    getOidcToken: AppleSignInService.signIn,
+                    oidcProvider: OidcProviders.APPLE,
+                    onRegisterMfaMethods,
+                    onVerifyMfaMethod
+                  }).catch(error => {
+                    Logger.error('Unable to sign up with Apple: ', error)
+                    showSimpleToast('Unable to sign up with Apple')
+                  })
+                }}
                 onMnemonicAction={handleSignupWithMnemonic}
               />
               <Space y={48} />

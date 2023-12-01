@@ -10,8 +10,9 @@ import CoreSeedlessAPIService, {
   SeedlessUserRegistrationResult
 } from 'seedless/services/CoreSeedlessAPIService'
 import SeedlessService from 'seedless/services/SeedlessService'
-import GoogleSigninService from 'seedless/services/GoogleSigninService'
 import { VerifyCodeParams } from 'seedless/screens/VerifyCode'
+import AppleSignInService from 'services/socialSignIn/apple/AppleSignInService'
+import GoogleSigninService from 'services/socialSignIn/google/GoogleSigninService'
 
 const refreshSeedlessToken = async (): Promise<void> => {
   const refreshTokenResult = await SeedlessService.refreshToken()
@@ -56,6 +57,8 @@ async function refreshSeedlessTokenFlow(): Promise<void> {
         oidcTokenResult = await GoogleSigninService.signin()
         break
       case OidcProviders.APPLE:
+        oidcTokenResult = await AppleSignInService.signIn()
+        break
       default:
         throw new Error('Unsupported oidcProvider')
     }

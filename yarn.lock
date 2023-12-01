@@ -124,6 +124,7 @@ __metadata:
     "@ethereumjs/tx": 3.4.0
     "@gorhom/bottom-sheet": 4.4.5
     "@hookform/resolvers": 2.6.0
+    "@invertase/react-native-apple-authentication": 2.3.0
     "@lavamoat/allow-scripts": 2.0.3
     "@lavamoat/preinstall-always-fail": 1.0.0
     "@metamask/eth-sig-util": 5.0.2
@@ -3535,6 +3536,13 @@ __metadata:
   version: 1.2.1
   resolution: "@humanwhocodes/object-schema@npm:1.2.1"
   checksum: a824a1ec31591231e4bad5787641f59e9633827d0a2eaae131a288d33c9ef0290bd16fda8da6f7c0fcb014147865d12118df10db57f27f41e20da92369fcb3f1
+  languageName: node
+  linkType: hard
+
+"@invertase/react-native-apple-authentication@npm:2.3.0":
+  version: 2.3.0
+  resolution: "@invertase/react-native-apple-authentication@npm:2.3.0"
+  checksum: 7e70b69cdf61c81e955392fa63827dd675a7c1ae029683f21f1f591cf4564d6ca277a55e594b4a3c1636bbf056bf32ceffe699ea1da20f3fa90d00ab6422b4b0
   languageName: node
   linkType: hard
 
