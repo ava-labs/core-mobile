@@ -24,6 +24,7 @@ const initAccounts = async (
   const state = listenerApi.getState()
   const isDeveloperMode = selectIsDeveloperMode(state)
   const walletType = selectWalletType(state)
+  const walletName = selectWalletName(state)
 
   if (walletType === WalletType.SEEDLESS) {
     /**
@@ -35,7 +36,6 @@ const initAccounts = async (
      */
     const pubKeysStorage = new SeedlessPubKeysStorage()
     const pubKeys = await pubKeysStorage.retrieve()
-    const walletName = selectWalletName(state)
 
     for (let i = 0; i < pubKeys.length; i++) {
       const acc = await accountService.createNextAccount(isDeveloperMode, i)
@@ -48,7 +48,9 @@ const initAccounts = async (
   } else if (walletType === WalletType.MNEMONIC) {
     // only add the first account for mnemonic wallet
     const acc = await accountService.createNextAccount(isDeveloperMode, 0)
-    listenerApi.dispatch(setAccount(acc))
+    const accountTitle =
+      walletName && walletName.length > 0 ? walletName : acc.title
+    listenerApi.dispatch(setAccount({ ...acc, title: accountTitle }))
   }
 }
 
