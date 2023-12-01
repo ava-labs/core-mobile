@@ -20,12 +20,17 @@ import { selectIsLocked } from 'store/app'
 import { useBgDetect } from 'navigation/useBgDetect'
 import { RootStackScreenProps } from 'navigation/types'
 import WarningModal from 'components/WarningModal'
+import RefreshTokenScreenStack, {
+  RefreshTokenScreenStackParamList
+} from 'navigation/RefreshTokenScreenStack'
 import { PrivacyScreen } from './wallet/PrivacyScreen'
 import { PinScreen } from './wallet/PinScreen'
 
 export type RootScreenStackParamList = {
   [AppNavigation.Root
     .Onboard]: NavigatorScreenParams<OnboardingScreenStackParamList>
+  [AppNavigation.Root
+    .RefreshToken]: NavigatorScreenParams<RefreshTokenScreenStackParamList>
   [AppNavigation.Root.Wallet]: NavigatorScreenParams<WalletScreenStackParams>
   [AppNavigation.Root.CopyPhraseWarning]: {
     copy: () => void
@@ -107,6 +112,13 @@ const RootScreenStack: FC = () => {
         options={{
           animationEnabled: false,
           presentation: 'card'
+        }}
+      />
+      <RootStack.Screen
+        name={AppNavigation.Root.RefreshToken}
+        component={RefreshTokenScreenStack}
+        options={{
+          animationEnabled: false
         }}
       />
       <RootStack.Screen
