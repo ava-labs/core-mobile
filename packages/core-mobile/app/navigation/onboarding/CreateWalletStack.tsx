@@ -28,12 +28,14 @@ import Logger from 'utils/Logger'
 import { WalletType } from 'services/wallet/types'
 import { useWallet } from 'hooks/useWallet'
 import { onLogIn } from 'store/app'
+import { NameYourWallet } from 'seedless/screens/NameYourWallet'
 import { CreateWalletScreenProps } from '../types'
 
 export type CreateWalletStackParamList = {
   [AppNavigation.CreateWallet.CreateWallet]: undefined
   [AppNavigation.CreateWallet.ProtectFunds]: undefined
   [AppNavigation.CreateWallet.CheckMnemonic]: undefined
+  [AppNavigation.CreateWallet.NameYourWallet]: undefined
   [AppNavigation.CreateWallet.CreatePin]: undefined
   [AppNavigation.CreateWallet.BiometricLogin]: undefined
   [AppNavigation.CreateWallet.TermsNConditions]: undefined
@@ -67,6 +69,11 @@ const CreateWalletStack: () => JSX.Element = () => {
           options={MainHeaderOptions()}
           name={AppNavigation.CreateWallet.CheckMnemonic}
           component={CheckMnemonicScreen}
+        />
+        <CreateWalletS.Screen
+          options={MainHeaderOptions()}
+          name={AppNavigation.CreateWallet.NameYourWallet}
+          component={NameYourWalletScreen}
         />
         <CreateWalletS.Screen
           options={MainHeaderOptions()}
@@ -161,12 +168,27 @@ const CheckMnemonicScreen = (): JSX.Element => {
   return (
     <CheckMnemonic
       onSuccess={() => {
-        navigate(AppNavigation.CreateWallet.CreatePin)
+        navigate(AppNavigation.CreateWallet.NameYourWallet)
       }}
       onBack={() => goBack()}
       mnemonic={createWalletContext.mnemonic}
     />
   )
+}
+
+type NameYourWalletNavigationProp = CreateWalletScreenProps<
+  typeof AppNavigation.CreateWallet.NameYourWallet
+>['navigation']
+
+const NameYourWalletScreen = (): JSX.Element => {
+  const { navigate } = useNavigation<NameYourWalletNavigationProp>()
+  const { capture } = usePostCapture()
+
+  const onSetWalletName = (): void => {
+    capture('CreateWallet:WalletNameSet')
+    navigate(AppNavigation.CreateWallet.CreatePin)
+  }
+  return <NameYourWallet onSetWalletName={onSetWalletName} />
 }
 
 type CreatePinNavigationProp = CreateWalletScreenProps<

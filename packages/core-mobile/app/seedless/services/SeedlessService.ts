@@ -13,10 +13,12 @@ import {
   OidcClient,
   SignerSessionData
 } from '@cubist-labs/cubesigner-sdk'
-import { TotpErrors } from 'seedless/errors'
+import { TokenRefreshErrors, TotpErrors } from 'seedless/errors'
 import { Result } from 'types/result'
 import { MFA } from 'seedless/types'
 import PasskeyService from 'services/passkey/PasskeyService'
+import { hoursToSeconds, minutesToSeconds } from 'date-fns'
+import { retry, RetryBackoffPolicy } from 'utils/js/retry'
 import { SeedlessSessionStorage } from './storage/SeedlessSessionStorage'
 
 if (!Config.SEEDLESS_ORG_ID) {
@@ -85,12 +87,12 @@ class SeedlessService {
       ['sign:*', 'manage:*'],
       {
         // How long singing with a particular token works from the token creation
-        auth_lifetime: 5 * 60, // 5 minutes
+        auth_lifetime: minutesToSeconds(5),
         // How long a refresh token is valid, the user has to unlock Core in this timeframe otherwise they will have to re-login
         // Sessions expire either if the session lifetime expires or if a refresh token expires before a new one is generated
-        refresh_lifetime: 90 * 24 * 60 * 60, // 90 days
+        refresh_lifetime: hoursToSeconds(90 * 24),
         // How long till the user absolutely must sign in again
-        session_lifetime: 1 * 365 * 24 * 60 * 60 // 1 year
+        session_lifetime: hoursToSeconds(365 * 24)
       },
       mfaReceipt
     )
@@ -130,6 +132,7 @@ class SeedlessService {
    * it creates a request to change user's TOTP. This request returns a new TOTP challenge
    * that must be answered by calling resetTotpComplete
    */
+  //TODO: do it like you would
   async setTotp(): Promise<Result<string, TotpErrors>> {
     const cubeSigner = await this.getCubeSigner()
     const response = await cubeSigner.userResetTotpInit('Core')
@@ -233,7 +236,7 @@ class SeedlessService {
         mfaConf: status.receipt.confirmation
       })
 
-      return { success: true }
+      return { success: true, value: undefined }
     } catch {
       return {
         success: false,
@@ -254,6 +257,51 @@ class SeedlessService {
   async oidcProveIdentity(oidcToken: string): Promise<IdentityProof> {
     const oidcClient = this.getOidcClient(oidcToken)
     return oidcClient.identityProve()
+  }
+
+  async refreshToken(): Promise<Result<void, TokenRefreshErrors>> {
+    const storage = new SeedlessSessionStorage()
+    const sessionMgr = await SignerSessionManager.loadFromStorage(storage)
+
+    const refreshResult = await retry({
+      operation: async _ => {
+        return await sessionMgr.refresh().catch(err => {
+          //if status is 403 means the token has expired and we need to refresh it
+
+          if ('status' in err && err.status === 403) {
+            return {
+              success: false,
+              error: new TokenRefreshErrors({
+                name: 'TokenExpired',
+                message: 'Token refresh failed'
+              })
+            }
+          }
+          //otherwise propagate error to retry()
+          throw err
+        })
+      },
+      backoffPolicy: RetryBackoffPolicy.constant(1),
+      isSuccess: result => {
+        //stop retry if refresh() passed without problems or we intercepted it in 403 logic
+        return result === undefined || 'success' in result
+      },
+      maxRetries: 10
+    }).catch(_ => {
+      //if retry() exceeded max retry catch it here
+      return {
+        success: false,
+        error: new TokenRefreshErrors({
+          name: 'RefreshFailed',
+          message: 'Token refresh failed'
+        })
+      }
+    })
+
+    return (refreshResult || { success: true, value: undefined }) as Result<
+      void,
+      TokenRefreshErrors
+    >
   }
 }
 

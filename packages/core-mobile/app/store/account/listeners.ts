@@ -10,7 +10,12 @@ import { AnyAction, isAnyOf } from '@reduxjs/toolkit'
 import { onLogIn, selectWalletType } from 'store/app/slice'
 import { WalletType } from 'services/wallet/types'
 import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKeysStorage'
-import { selectAccounts, setAccount, setAccounts } from './slice'
+import {
+  selectAccounts,
+  selectWalletName,
+  setAccount,
+  setAccounts
+} from './slice'
 
 const initAccounts = async (
   _action: AnyAction,
@@ -19,6 +24,7 @@ const initAccounts = async (
   const state = listenerApi.getState()
   const isDeveloperMode = selectIsDeveloperMode(state)
   const walletType = selectWalletType(state)
+  const walletName = selectWalletName(state)
 
   if (walletType === WalletType.SEEDLESS) {
     /**
@@ -33,12 +39,18 @@ const initAccounts = async (
 
     for (let i = 0; i < pubKeys.length; i++) {
       const acc = await accountService.createNextAccount(isDeveloperMode, i)
-      listenerApi.dispatch(setAccount(acc))
+      const accountTitle =
+        acc.index === 0 && walletName && walletName.length > 0
+          ? walletName
+          : acc.title
+      listenerApi.dispatch(setAccount({ ...acc, title: accountTitle }))
     }
   } else if (walletType === WalletType.MNEMONIC) {
     // only add the first account for mnemonic wallet
     const acc = await accountService.createNextAccount(isDeveloperMode, 0)
-    listenerApi.dispatch(setAccount(acc))
+    const accountTitle =
+      walletName && walletName.length > 0 ? walletName : acc.title
+    listenerApi.dispatch(setAccount({ ...acc, title: accountTitle }))
   }
 }
 

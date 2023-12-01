@@ -1,5 +1,5 @@
 import AppNavigation from 'navigation/AppNavigation'
-import React, { createContext, useState } from 'react'
+import React, { createContext, useContext, useState } from 'react'
 import { createStackNavigator } from '@react-navigation/stack'
 import { AuthenticatorSetup } from 'seedless/screens/AuthenticatorSetup'
 import { ScanQrCode } from 'seedless/screens/ScanQrCode'
@@ -13,6 +13,8 @@ import { SelectRecoveryMethods } from 'seedless/screens/SelectRecoveryMethods'
 import { MFA } from 'seedless/types'
 import { PasskeySetupScreen } from 'seedless/screens/PasskeySetupScreen'
 import { FIDONameInputScreen } from 'seedless/screens/FIDONameInputScreen'
+import { useNavigation } from '@react-navigation/native'
+import { RecoveryMethodsScreenProps } from 'navigation/types'
 
 export type RecoveryMethodsStackParamList = {
   [AppNavigation.RecoveryMethods.AddRecoveryMethods]: undefined
@@ -84,7 +86,7 @@ const RecoveryMethodsStack = (): JSX.Element => {
           <RecoveryMethodsS.Screen
             options={{ presentation: 'transparentModal' }}
             name={AppNavigation.RecoveryMethods.VerifyCode}
-            component={VerifyCode}
+            component={VerifyCodeScreen}
           />
         </RecoveryMethodsS.Group>
         <RecoveryMethodsS.Group>
@@ -104,4 +106,29 @@ const RecoveryMethodsStack = (): JSX.Element => {
   )
 }
 
+type VerifyCodeScreenProps = RecoveryMethodsScreenProps<
+  typeof AppNavigation.RecoveryMethods.LearnMore
+>
+function VerifyCodeScreen(): JSX.Element {
+  const { oidcToken, mfaId } = useContext(RecoveryMethodsContext)
+  const { canGoBack, goBack, replace } =
+    useNavigation<VerifyCodeScreenProps['navigation']>()
+  const handleVerifySuccess = (): void => {
+    replace(AppNavigation.Onboard.NameYourWallet)
+  }
+
+  const handleOnBack = (): void => {
+    if (canGoBack()) {
+      goBack()
+    }
+  }
+  return (
+    <VerifyCode
+      onVerifySuccess={handleVerifySuccess}
+      onBack={handleOnBack}
+      oidcToken={oidcToken}
+      mfaId={mfaId}
+    />
+  )
+}
 export default RecoveryMethodsStack
