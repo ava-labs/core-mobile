@@ -1,7 +1,8 @@
 import assert from 'assert'
 import {
-  CubeSigner,
-  SignResponse,
+  CubeSignerApi,
+  CubeSignerResponse,
+  SignerSession,
   TotpChallenge
 } from '@cubist-labs/cubesigner-sdk'
 import { TotpErrors } from 'seedless/errors'
@@ -24,7 +25,7 @@ const cubistResponseNoMfa = {
   data(): TotpChallenge {
     return mockTotpChallenge
   }
-} as SignResponse<TotpChallenge>
+} as CubeSignerResponse<TotpChallenge>
 
 const cubistResponseHasMfa = {
   requiresMfa(): boolean {
@@ -33,22 +34,19 @@ const cubistResponseHasMfa = {
   data(): TotpChallenge {
     return mockTotpChallenge
   }
-} as SignResponse<TotpChallenge>
+} as CubeSignerResponse<TotpChallenge>
 
 describe('SeedlessService', () => {
-  // @ts-ignore
-  jest.spyOn(SeedlessService, 'getCubeSigner').mockImplementation(async () => {
-    return new CubeSigner()
-  })
-
+  jest
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .spyOn(SeedlessService, 'getCubeSigner' as any)
+    .mockImplementation(async () => {
+      return {
+        userResetTotpInit: () => cubistResponseNoMfa
+      }
+    })
   describe('setTotp', () => {
     it('should return the totp challenge url', async () => {
-      jest
-        .spyOn(CubeSigner.prototype, 'resetTotpStart')
-        .mockImplementation(async () => {
-          return cubistResponseNoMfa
-        })
-
       const result = await SeedlessService.setTotp()
       assert(result.success)
       expect(result.value).toBe(mockTotpChallenge.totpUrl)
@@ -56,9 +54,12 @@ describe('SeedlessService', () => {
 
     it('should return error if there is active mfa', async () => {
       jest
-        .spyOn(CubeSigner.prototype, 'resetTotpStart')
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .spyOn(SeedlessService, 'getCubeSigner' as any)
         .mockImplementation(async () => {
-          return cubistResponseHasMfa
+          return {
+            userResetTotpInit: () => cubistResponseHasMfa
+          }
         })
 
       const result = await SeedlessService.setTotp()
@@ -69,13 +70,15 @@ describe('SeedlessService', () => {
 
     it('should throw wrong mfa code error from existing mfa', async () => {
       jest
-        .spyOn(CubeSigner.prototype, 'resetTotpStart')
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .spyOn(SeedlessService, 'getCubeSigner' as any)
         .mockImplementation(async () => {
-          return cubistResponseNoMfa
+          return {
+            userResetTotpInit: () => cubistResponseNoMfa
+          }
         })
-
       jest
-        .spyOn(CubeSigner.prototype, 'verifyTotp')
+        .spyOn(CubeSignerApi.prototype, 'userVerifyTotp')
         .mockImplementation(async () => {
           throw new Error('WrongMfaCode')
         })
@@ -94,11 +97,14 @@ describe('SeedlessService', () => {
 
     it('should require valid code from existing mfa and succeed', async () => {
       jest
-        .spyOn(CubeSigner.prototype, 'resetTotpStart')
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .spyOn(SeedlessService, 'getCubeSigner' as any)
         .mockImplementation(async () => {
-          return cubistResponseNoMfa
+          return {
+            userResetTotpInit: () => cubistResponseNoMfa
+          }
         })
-      jest.spyOn(CubeSigner, 'loadSignerSession').mockReturnValueOnce({
+      jest.spyOn(SignerSession, 'loadSignerSession').mockReturnValueOnce({
         totpApprove: () => {
           return {
             receipt: {
@@ -109,7 +115,7 @@ describe('SeedlessService', () => {
       } as never)
 
       jest
-        .spyOn(SeedlessService, 'login')
+        .spyOn(SeedlessService, 'requestOidcAuth')
         .mockReturnValueOnce('loggedin' as never)
 
       await SeedlessService.setTotp()
