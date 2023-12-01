@@ -48,10 +48,10 @@ async function refreshSeedlessTokenFlow(): Promise<void> {
     const oidcProvider = await SecureStorageService.load(KeySlot.OidcProvider)
     let oidcTokenResult = ''
     switch (oidcProvider) {
-      case OidcProviders.Google:
+      case OidcProviders.GOOGLE:
         oidcTokenResult = await GoogleSigninService.signin()
         break
-      case OidcProviders.Apple:
+      case OidcProviders.APPLE:
       default:
         throw new Error('Unsupported oidcProvider')
     }

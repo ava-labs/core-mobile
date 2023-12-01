@@ -50,7 +50,7 @@ const SignupScreen: FC = () => {
   }
 
   const handleSignupWithGoogle = async (): Promise<void> => {
-    await SecureStorageService.store(KeySlot.OidcProvider, OidcProviders.Google)
+    await SecureStorageService.store(KeySlot.OidcProvider, OidcProviders.GOOGLE)
     const oidcToken = await GoogleSigninService.signin()
 
     try {
