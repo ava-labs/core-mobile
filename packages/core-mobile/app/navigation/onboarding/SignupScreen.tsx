@@ -14,6 +14,7 @@ import { OidcProviders } from 'seedless/consts'
 import { MFA } from 'seedless/types'
 import AppleSignInService from 'services/socialSignIn/apple/AppleSignInService'
 import GoogleSigninService from 'services/socialSignIn/google/GoogleSigninService'
+import { showSimpleToast } from 'components/Snackbar'
 
 type NavigationProp = OnboardScreenProps<
   typeof AppNavigation.Onboard.Signup
@@ -114,6 +115,7 @@ const SignupScreen: FC = () => {
                     onVerifyMfaMethod
                   }).catch(error => {
                     Logger.error('Unable to sign up with Google: ', error)
+                    showSimpleToast('Unable to sign up with Google')
                   })
                 }}
                 onAppleAction={() => {
@@ -124,6 +126,7 @@ const SignupScreen: FC = () => {
                     onVerifyMfaMethod
                   }).catch(error => {
                     Logger.error('Unable to sign up with Apple: ', error)
+                    showSimpleToast('Unable to sign up with Apple')
                   })
                 }}
                 onMnemonicAction={handleSignupWithMnemonic}
