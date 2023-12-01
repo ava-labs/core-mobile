@@ -17,6 +17,7 @@ import { addNftListeners } from 'store/nft/listeners'
 import { addWCListeners as addWCListenersV2 } from 'store/walletConnectV2/listeners'
 import Logger from 'utils/Logger'
 import { addNotificationsListeners } from 'store/notifications/listeners/listeners'
+import { addSeedlessListeners } from 'store/seedless'
 
 export type AppStartListening = TypedStartListening<RootState, AppDispatch>
 export type AppAddListener = TypedAddListener<RootState, AppDispatch>
@@ -51,6 +52,8 @@ addWCListenersV2(startListening)
 addNotificationsListeners(startListening)
 
 addBrowserListener(startListening)
+
+addSeedlessListeners(startListening)
 
 export const addAppListener = addListener as AppAddListener
 

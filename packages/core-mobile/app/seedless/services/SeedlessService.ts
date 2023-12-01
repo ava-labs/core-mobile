@@ -11,10 +11,12 @@ import {
   SignerSession,
   SignResponse
 } from '@cubist-labs/cubesigner-sdk'
-import { TotpErrors } from 'seedless/errors'
+import { TokenRefreshErrors, TotpErrors } from 'seedless/errors'
 import { Result } from 'types/result'
 import { MFA } from 'seedless/types'
 import PasskeyService from 'services/passkey/PasskeyService'
+import Logger from 'utils/Logger'
+import { hoursToSeconds, minutesToSeconds } from 'date-fns'
 import { SeedlessSessionStorage } from './storage/SeedlessSessionStorage'
 
 if (!Config.SEEDLESS_ORG_ID) {
@@ -73,12 +75,12 @@ class SeedlessService {
       ['sign:*', 'manage:*'],
       {
         // How long singing with a particular token works from the token creation
-        auth_lifetime: 5 * 60, // 5 minutes
+        auth_lifetime: minutesToSeconds(5),
         // How long a refresh token is valid, the user has to unlock Core in this timeframe otherwise they will have to re-login
         // Sessions expire either if the session lifetime expires or if a refresh token expires before a new one is generated
-        refresh_lifetime: 90 * 24 * 60 * 60, // 90 days
+        refresh_lifetime: hoursToSeconds(90 * 24),
         // How long till the user absolutely must sign in again
-        session_lifetime: 1 * 365 * 24 * 60 * 60 // 1 year
+        session_lifetime: hoursToSeconds(365 * 24)
       },
       mfaReceipt
     )
@@ -245,6 +247,22 @@ class SeedlessService {
       orgId: SEEDLESS_ORG_ID
     })
     return cubeSigner.oidcProveIdentity(oidcToken, SEEDLESS_ORG_ID)
+  }
+
+  async refreshToken(): Promise<Result<void, TokenRefreshErrors>> {
+    const storage = new SeedlessSessionStorage()
+    const sessionMgr = await SignerSessionManager.loadFromStorage(storage)
+    await sessionMgr.refresh().catch(reason => {
+      Logger.error('refresh token error', reason)
+      return {
+        success: false,
+        error: new TokenRefreshErrors({
+          name: 'RefreshFailed',
+          message: 'Token refresh failed'
+        })
+      }
+    })
+    return { success: true }
   }
 }
 
