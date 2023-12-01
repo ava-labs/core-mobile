@@ -1,10 +1,8 @@
 import React from 'react'
-import { View } from 'react-native'
-import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
-import AvaButton from 'components/AvaButton'
 import TimerSVG from 'components/svg/TimerSVG'
 import FlexSpacer from 'components/FlexSpacer'
+import { Button, Text, View } from '@avalabs/k2-mobile'
 
 export type SessionTimeoutParams = {
   onRetry: () => void
@@ -18,16 +16,20 @@ export default function SessionTimeout({
       <View style={{ flex: 1, alignItems: 'center', paddingHorizontal: 30 }}>
         <TimerSVG />
         <Space y={24} />
-        <AvaText.Heading5>Your Session has Timed Out</AvaText.Heading5>
+        <Text variant={'heading5'}>Your Session has Timed Out</Text>
         <Space y={8} />
-        <AvaText.Body2 textStyle={{ textAlign: 'center' }}>
+        <Text variant={'body2'} style={{ textAlign: 'center' }}>
           The session has expired, press Retry to continue.
-        </AvaText.Body2>
+        </Text>
       </View>
       <FlexSpacer />
-      <AvaButton.PrimaryLarge onPress={onRetry} style={{ width: '100%' }}>
+      <Button
+        size={'large'}
+        type={'primary'}
+        onPress={onRetry}
+        style={{ width: '100%' }}>
         Retry
-      </AvaButton.PrimaryLarge>
+      </Button>
     </View>
   )
 }
