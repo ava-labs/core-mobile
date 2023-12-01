@@ -40,7 +40,7 @@ export const useSeedlessRegister = (): ReturnType => {
       if (result === SeedlessUserRegistrationResult.ALREADY_REGISTERED) {
         if (isMfaRequired) {
           const mfaId = signResponse.mfaId()
-          const mfaMethods = await SeedlessService.userMfa()
+          const mfaMethods = identity.user_info?.configured_mfa
 
           if (mfaMethods && mfaMethods.length > 0) {
             onVerifyMfaMethod(mfaId, mfaMethods)
