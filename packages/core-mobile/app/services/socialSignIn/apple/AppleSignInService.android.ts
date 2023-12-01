@@ -16,24 +16,21 @@ if (!Config.APPLE_OAUTH_REDIRECT_URL) {
 const clientId = Config.APPLE_OAUTH_CLIENT_ID
 const redirectUri = Config.APPLE_OAUTH_REDIRECT_URL
 
+appleAuthAndroid.configure({
+  clientId,
+  redirectUri,
+  scope: appleAuthAndroid.Scope.EMAIL,
+  responseType: appleAuthAndroid.ResponseType.ALL,
+  state: DeviceInfoService.getAppNameSpace()
+})
+
 class AppleSigninService {
   isSupported(): boolean {
     return appleAuthAndroid.isSupported
   }
 
-  configure(): void {
-    appleAuthAndroid.configure({
-      clientId,
-      redirectUri,
-      scope: appleAuthAndroid.Scope.EMAIL,
-      responseType: appleAuthAndroid.ResponseType.ALL,
-      state: DeviceInfoService.getAppNameSpace()
-    })
-  }
-
   async signIn(): Promise<string> {
     try {
-      this.configure()
       const response = await appleAuthAndroid.signIn()
       if (response.id_token === undefined) {
         Logger.error('Android Apple sign in error: empty token')
