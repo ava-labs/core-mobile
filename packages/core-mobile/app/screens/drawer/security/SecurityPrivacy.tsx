@@ -12,18 +12,22 @@ import {
   setCoreAnalytics
 } from 'store/settings/securityPrivacy'
 import Logger from 'utils/Logger'
+import WalletService from 'services/wallet/WalletService'
+import { WalletType } from 'services/wallet/types'
 
 function SecurityPrivacy({
   onChangePin,
   onShowRecoveryPhrase,
+  onRecoveryMethods,
   onTurnOnBiometrics,
   onShowConnectedDapps
 }: {
   onChangePin: () => void
   onShowRecoveryPhrase: () => void
+  onRecoveryMethods: () => void
   onTurnOnBiometrics: () => void
   onShowConnectedDapps: () => void
-}) {
+}): JSX.Element {
   const theme = useApplicationContext().theme
   const dispatch = useDispatch()
   const coreAnalyticsConsent = useSelector(selectCoreAnalyticsConsent)
@@ -45,7 +49,7 @@ function SecurityPrivacy({
       .catch(Logger.error)
   }, [])
 
-  const handleSwitchChange = (value: boolean) => {
+  const handleSwitchChange = (value: boolean): void => {
     setIsBiometricSwitchEnabled(value)
     if (value) {
       onTurnOnBiometrics()
@@ -54,7 +58,7 @@ function SecurityPrivacy({
     }
   }
 
-  const handleAnalyticsSwitchChange = (value: boolean) => {
+  const handleAnalyticsSwitchChange = (value: boolean): void => {
     dispatch(setCoreAnalytics(value))
   }
 
@@ -73,12 +77,22 @@ function SecurityPrivacy({
         showNavigationArrow
         onPress={onChangePin}
       />
-      <AvaListItem.Base
-        title={'Show recovery phrase'}
-        background={theme.background}
-        showNavigationArrow
-        onPress={onShowRecoveryPhrase}
-      />
+      {WalletService.walletType === WalletType.MNEMONIC && (
+        <AvaListItem.Base
+          title={'Show recovery phrase'}
+          background={theme.background}
+          showNavigationArrow
+          onPress={onShowRecoveryPhrase}
+        />
+      )}
+      {WalletService.walletType === WalletType.SEEDLESS && (
+        <AvaListItem.Base
+          title={'Recovery Methods'}
+          background={theme.background}
+          showNavigationArrow
+          onPress={onRecoveryMethods}
+        />
+      )}
       {isBiometricEnabled && (
         <AvaListItem.Base
           title={'Sign in with Biometrics'}

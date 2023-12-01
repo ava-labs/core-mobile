@@ -6,7 +6,7 @@ import {
   alpha,
   useTheme
 } from '@avalabs/k2-mobile'
-import React, { useContext, useState } from 'react'
+import React, { useContext, useLayoutEffect, useState } from 'react'
 import { BottomSheet } from 'components/BottomSheet'
 import ClearSVG from 'components/svg/ClearSVG'
 import { Space } from 'components/Space'
@@ -29,7 +29,7 @@ export const VerifyCode = (): JSX.Element => {
   const [code, setCode] = useState<string>()
 
   const [showError, setShowError] = useState(false)
-  const { canGoBack, goBack, navigate } =
+  const { canGoBack, goBack, navigate, setOptions } =
     useNavigation<VerifyCodeScreenProps['navigation']>()
 
   const onGoBack = (): void => {
@@ -71,6 +71,10 @@ export const VerifyCode = (): JSX.Element => {
         borderWidth: 1
       }
     : undefined
+
+  useLayoutEffect(() => {
+    setOptions({ headerShown: false })
+  }, [setOptions])
 
   return (
     <BottomSheet snapPoints={['99%']}>

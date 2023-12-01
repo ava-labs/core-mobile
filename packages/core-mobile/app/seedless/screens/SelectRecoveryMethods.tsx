@@ -8,6 +8,7 @@ import SeedlessService from 'seedless/services/SeedlessService'
 import { RecoveryMethodsContext } from 'navigation/onboarding/RecoveryMethodsStack'
 import { Alert } from 'react-native'
 import Logger from 'utils/Logger'
+import { showSimpleToast } from 'components/Snackbar'
 import { Card } from '../components/Card'
 
 type SelectRecoveryMethodsScreenProps = RecoveryMethodsScreenProps<
@@ -30,6 +31,11 @@ export const SelectRecoveryMethods = (): JSX.Element => {
   }
 
   const handleFido = async (): Promise<void> => {
+    if (PasskeyService.isSupported === false) {
+      showSimpleToast('Passkey or Yubikey is not supported on this device')
+      return
+    }
+
     try {
       await SeedlessService.approveFido(oidcToken, mfaId, false)
 
@@ -68,7 +74,7 @@ export const SelectRecoveryMethods = (): JSX.Element => {
               key={i}
             />
           )
-        } else if (mfa.type === 'fido' && PasskeyService.isSupported) {
+        } else if (mfa.type === 'fido') {
           return (
             <Card
               onPress={handleFido}
