@@ -19,6 +19,10 @@ const refreshSeedlessToken = async (): Promise<void> => {
     Logger.trace('Refresh token success')
     return
   }
+  if (refreshTokenResult.error.name === 'RefreshFailed') {
+    Logger.error('refresh failed', refreshTokenResult.error)
+    return
+  }
 
   Navigation.navigate({
     name: AppNavigation.Root.RefreshToken,

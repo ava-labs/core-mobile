@@ -15,8 +15,8 @@ import { TokenRefreshErrors, TotpErrors } from 'seedless/errors'
 import { Result } from 'types/result'
 import { MFA } from 'seedless/types'
 import PasskeyService from 'services/passkey/PasskeyService'
-import Logger from 'utils/Logger'
 import { hoursToSeconds, minutesToSeconds } from 'date-fns'
+import { retry, RetryBackoffPolicy } from 'utils/js/retry'
 import { SeedlessSessionStorage } from './storage/SeedlessSessionStorage'
 
 if (!Config.SEEDLESS_ORG_ID) {
@@ -253,8 +253,33 @@ class SeedlessService {
   async refreshToken(): Promise<Result<void, TokenRefreshErrors>> {
     const storage = new SeedlessSessionStorage()
     const sessionMgr = await SignerSessionManager.loadFromStorage(storage)
-    await sessionMgr.refresh().catch(reason => {
-      Logger.error('refresh token error', reason)
+
+    const refreshResult = await retry({
+      operation: async _ => {
+        return await sessionMgr.refresh().catch(err => {
+          //if status is 403 means the token has expired and we need to refresh it
+
+          if ('status' in err && err.status === 403) {
+            return {
+              success: false,
+              error: new TokenRefreshErrors({
+                name: 'TokenExpired',
+                message: 'Token refresh failed'
+              })
+            }
+          }
+          //otherwise propagate error to retry()
+          throw err
+        })
+      },
+      backoffPolicy: RetryBackoffPolicy.constant(1),
+      isSuccess: result => {
+        //stop retry if refresh() passed without problems or we intercepted it in 403 logic
+        return result === undefined || 'success' in result
+      },
+      maxRetries: 10
+    }).catch(_ => {
+      //if retry() exceeded max retry catch it here
       return {
         success: false,
         error: new TokenRefreshErrors({
@@ -263,7 +288,11 @@ class SeedlessService {
         })
       }
     })
-    return { success: true, value: undefined }
+
+    return (refreshResult || { success: true, value: undefined }) as Result<
+      void,
+      TokenRefreshErrors
+    >
   }
 }
 
