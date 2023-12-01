@@ -1,36 +1,19 @@
 import { Text, View, useTheme } from '@avalabs/k2-mobile'
-import { useNavigation } from '@react-navigation/native'
 import InputText from 'components/InputText'
-import AppNavigation from 'navigation/AppNavigation'
-import { OnboardScreenProps } from 'navigation/types'
 import React, { useState } from 'react'
 import { useDispatch } from 'react-redux'
 import { setWalletName } from 'store/account'
 
-type NavigationProp = OnboardScreenProps<
-  typeof AppNavigation.Onboard.NameYourWallet
->['navigation']
-
-export const NameYourWallet = (): JSX.Element => {
+export const NameYourWallet = ({
+  onSetWalletName
+}: {
+  onSetWalletName: () => void
+}): JSX.Element => {
   const dispatch = useDispatch()
   const [name, setName] = useState('')
-  const { navigate } = useNavigation<NavigationProp>()
   const {
     theme: { colors }
   } = useTheme()
-
-  const handleNext = (): void => {
-    dispatch(setWalletName({ name }))
-    navigate(AppNavigation.Root.Onboard, {
-      screen: AppNavigation.Onboard.Welcome,
-      params: {
-        screen: AppNavigation.Onboard.AnalyticsConsent,
-        params: {
-          nextScreen: AppNavigation.Onboard.CreatePin
-        }
-      }
-    })
-  }
 
   return (
     <View
@@ -50,7 +33,10 @@ export const NameYourWallet = (): JSX.Element => {
           autoFocus
           mode={'default'}
           onChangeText={setName}
-          onSubmit={handleNext}
+          onSubmit={() => {
+            dispatch(setWalletName({ name }))
+            onSetWalletName()
+          }}
           text={name}
           backgroundColor={colors.$transparent}
           style={{ marginHorizontal: 0 }}

@@ -10,6 +10,7 @@ import { useSelector } from 'react-redux'
 import { showSnackBarCustom } from 'components/Snackbar'
 import GeneralToast from 'components/toast/GeneralToast'
 import { NameYourWallet } from 'seedless/screens/NameYourWallet'
+import { usePostCapture } from 'hooks/usePosthogCapture'
 import SignupScreen from './onboarding/SignupScreen'
 import { WelcomeScreenStackParamList } from './onboarding/WelcomeScreenStack'
 import { OnboardScreenProps } from './types'
@@ -81,7 +82,7 @@ const OnboardScreenStack: FC = () => {
       <OnboardingScreenS.Screen
         options={MainHeaderOptions()}
         name={AppNavigation.Onboard.NameYourWallet}
-        component={NameYourWallet}
+        component={NameYourWalletScreen}
       />
     </OnboardingScreenS.Navigator>
   )
@@ -101,5 +102,28 @@ export type OnboardingScreenStackParamList = {
 }
 
 const OnboardingScreenS = createStackNavigator<OnboardingScreenStackParamList>()
+
+type NameYourWalletNavigationProp = OnboardScreenProps<
+  typeof AppNavigation.Onboard.NameYourWallet
+>['navigation']
+
+const NameYourWalletScreen = (): JSX.Element => {
+  const { navigate } = useNavigation<NameYourWalletNavigationProp>()
+  const { capture } = usePostCapture()
+
+  const onSetWalletName = (): void => {
+    capture('Onboard:WalletNameSet')
+    navigate(AppNavigation.Root.Onboard, {
+      screen: AppNavigation.Onboard.Welcome,
+      params: {
+        screen: AppNavigation.Onboard.AnalyticsConsent,
+        params: {
+          nextScreen: AppNavigation.Onboard.CreatePin
+        }
+      }
+    })
+  }
+  return <NameYourWallet onSetWalletName={onSetWalletName} />
+}
 
 export default OnboardScreenStack
