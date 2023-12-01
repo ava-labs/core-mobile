@@ -63,7 +63,7 @@ async function refreshSeedlessTokenFlow(): Promise<void> {
     const identity = await SeedlessService.oidcProveIdentity(oidcTokenResult)
     const result = await CoreSeedlessAPIService.register(identity)
     if (result === SeedlessUserRegistrationResult.ALREADY_REGISTERED) {
-      const loginResult = await SeedlessService.login(oidcTokenResult)
+      const loginResult = await SeedlessService.requestOidcAuth(oidcTokenResult)
       const userMfa = await SeedlessService.userMfa()
       const usesTotp = userMfa.some(value => value.type === 'totp')
       if (usesTotp) {
