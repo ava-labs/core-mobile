@@ -12,6 +12,7 @@ import ClearSVG from 'components/svg/ClearSVG'
 import { Space } from 'components/Space'
 import Logger from 'utils/Logger'
 import SeedlessService from 'seedless/services/SeedlessService'
+import Loader from 'components/Loader'
 
 export type VerifyCodeParams = {
   oidcToken: string
@@ -29,6 +30,7 @@ export const VerifyCode = ({
   const {
     theme: { colors, text }
   } = useTheme()
+  const [isVerifying, setIsVerifying] = useState(false)
   const [code, setCode] = useState<string>()
 
   const [showError, setShowError] = useState(false)
@@ -39,6 +41,8 @@ export const VerifyCode = ({
       setShowError(false)
       return
     }
+
+    setIsVerifying(true)
     const result = await SeedlessService.verifyCode(
       oidcToken,
       mfaId,
@@ -46,8 +50,10 @@ export const VerifyCode = ({
     )
     if (result.success === false) {
       setShowError(true)
+      setIsVerifying(false)
       return
     }
+    setIsVerifying(false)
     onVerifySuccess()
   }
 
@@ -62,6 +68,18 @@ export const VerifyCode = ({
     <BottomSheet snapPoints={['99%']}>
       <View
         sx={{ marginHorizontal: 16, justifyContent: 'space-between', flex: 1 }}>
+        {isVerifying && (
+          <View
+            sx={{
+              position: 'absolute',
+              top: 0,
+              bottom: 0,
+              left: 0,
+              right: 0
+            }}>
+            <Loader transparent />
+          </View>
+        )}
         <View>
           <View
             sx={{
@@ -84,6 +102,7 @@ export const VerifyCode = ({
           </Text>
           <Space y={24} />
           <TextInput
+            editable={!isVerifying}
             onChangeText={changedText => {
               handleVerifyCode(changedText).catch(error =>
                 Logger.error('handleVerifyCode', error)
