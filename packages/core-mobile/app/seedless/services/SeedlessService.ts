@@ -1,6 +1,5 @@
 import Config from 'react-native-config'
 import {
-  CubeSigner,
   IdentityProof,
   MfaReceipt,
   SignerSessionManager,
@@ -9,7 +8,10 @@ import {
   envs,
   Environment,
   SignerSession,
-  SignResponse
+  CubeSignerApi as CubeSigner,
+  CubeSignerResponse,
+  OidcClient,
+  SignerSessionData
 } from '@cubist-labs/cubesigner-sdk'
 import { TokenRefreshErrors, TotpErrors } from 'seedless/errors'
 import { Result } from 'types/result'
@@ -49,10 +51,21 @@ class SeedlessService {
   private async getCubeSigner(): Promise<CubeSigner> {
     const storage = new SeedlessSessionStorage()
     const sessionMgr = await SignerSessionManager.loadFromStorage(storage)
-    return new CubeSigner({
-      orgId: SEEDLESS_ORG_ID,
-      sessionMgr
-    })
+    return new CubeSigner(sessionMgr, SEEDLESS_ORG_ID)
+  }
+
+  /**
+   * Create a CubeSigner API client for methods that require OIDC authorization.
+   *
+   * This client can be used to:
+   * - obtain a proof of identity (see {@link OidcClient.identityProve})
+   * - obtain a full CubeSigner session (see {@link OidcClient.sessionCreate})
+   *
+   * @param {string} oidcToken The OIDC token to include in 'Authorization' header.
+   * @return {OidcClient} CubeSigner API client for methods that require OIDC authorization.
+   */
+  getOidcClient(oidcToken: string): OidcClient {
+    return new OidcClient(envInterface, SEEDLESS_ORG_ID, oidcToken)
   }
 
   /**
@@ -65,13 +78,12 @@ class SeedlessService {
   /**
    * Exchange an OIDC token for a CubeSigner session with token, mfa session info, etc.
    */
-  async login(
+  async requestOidcAuth(
     oidcToken: string,
     mfaReceipt?: MfaReceipt | undefined
-  ): Promise<SignResponse<unknown>> {
-    const signResponse = await new CubeSigner().oidcLogin(
-      oidcToken,
-      SEEDLESS_ORG_ID,
+  ): Promise<CubeSignerResponse<SignerSessionData>> {
+    const oidcClient = this.getOidcClient(oidcToken)
+    const signResponse = await oidcClient.sessionCreate(
       ['sign:*', 'manage:*'],
       {
         // How long singing with a particular token works from the token creation
@@ -105,7 +117,7 @@ class SeedlessService {
    * Retrieves information about the current user.
    */
   async aboutMe(): Promise<UserInfo> {
-    return (await this.getCubeSigner()).aboutMe()
+    return (await this.getCubeSigner()).userGet()
   }
 
   /**
@@ -123,7 +135,7 @@ class SeedlessService {
   //TODO: do it like you would
   async setTotp(): Promise<Result<string, TotpErrors>> {
     const cubeSigner = await this.getCubeSigner()
-    const response = await cubeSigner.resetTotpStart()
+    const response = await cubeSigner.userResetTotpInit('Core')
     if (response.requiresMfa()) {
       return {
         success: false,
@@ -149,7 +161,7 @@ class SeedlessService {
 
   async registerFido(name: string, withSecurityKey: boolean): Promise<void> {
     const cubeSigner = await this.getCubeSigner()
-    const signResponse = await cubeSigner.addFidoStart(name)
+    const signResponse = await cubeSigner.userRegisterFidoInit(name)
 
     const challenge = signResponse.data()
 
@@ -179,7 +191,7 @@ class SeedlessService {
     const mfaRequestInfo = await challenge.answer(credential)
 
     if (mfaRequestInfo.receipt?.confirmation) {
-      await this.login(oidcToken, {
+      await this.requestOidcAuth(oidcToken, {
         mfaOrgId: SEEDLESS_ORG_ID,
         mfaId: mfaId,
         mfaConf: mfaRequestInfo.receipt.confirmation
@@ -203,7 +215,7 @@ class SeedlessService {
       await this.totpChallenge?.answer(code)
       this.totpChallenge = undefined
 
-      const mfaSession = await CubeSigner.loadSignerSession(
+      const mfaSession = await SignerSession.loadSignerSession(
         new SeedlessSessionStorage()
       )
       const status = await mfaSession.totpApprove(mfaId, code)
@@ -218,7 +230,7 @@ class SeedlessService {
         }
       }
 
-      await this.login(oidcToken, {
+      await this.requestOidcAuth(oidcToken, {
         mfaOrgId: SEEDLESS_ORG_ID,
         mfaId: mfaId,
         mfaConf: status.receipt.confirmation
@@ -243,11 +255,8 @@ class SeedlessService {
    * @return — Proof of authentication
    */
   async oidcProveIdentity(oidcToken: string): Promise<IdentityProof> {
-    const cubeSigner = new CubeSigner({
-      env: envs.gamma,
-      orgId: SEEDLESS_ORG_ID
-    })
-    return cubeSigner.oidcProveIdentity(oidcToken, SEEDLESS_ORG_ID)
+    const oidcClient = this.getOidcClient(oidcToken)
+    return oidcClient.identityProve()
   }
 
   async refreshToken(): Promise<Result<void, TokenRefreshErrors>> {

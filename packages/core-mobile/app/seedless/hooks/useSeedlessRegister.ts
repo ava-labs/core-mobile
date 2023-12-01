@@ -34,13 +34,13 @@ export const useSeedlessRegister = (): ReturnType => {
     try {
       const identity = await SeedlessService.oidcProveIdentity(oidcToken)
       const result = await CoreSeedlessAPIService.register(identity)
-      const signResponse = await SeedlessService.login(oidcToken)
+      const signResponse = await SeedlessService.requestOidcAuth(oidcToken)
       const isMfaRequired = signResponse.requiresMfa()
 
       if (result === SeedlessUserRegistrationResult.ALREADY_REGISTERED) {
         if (isMfaRequired) {
           const mfaId = signResponse.mfaId()
-          const mfaMethods = await SeedlessService.userMfa()
+          const mfaMethods = identity.user_info?.configured_mfa
 
           if (mfaMethods && mfaMethods.length > 0) {
             onVerifyMfaMethod(mfaId, mfaMethods)
