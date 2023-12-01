@@ -14,7 +14,8 @@ enum OnboardScreens {
   EnterWithMnemonicStack = 'OnboardScreens.EnterWithMnemonicStack',
   Login = 'OnboardScreens.Login',
   RecoveryMethods = 'OnboardScreens.RecoveryMethods',
-  CreatePin = 'OnboardScreens.CreatePin'
+  CreatePin = 'OnboardScreens.CreatePin',
+  NameYourWallet = 'OnboardScreens.NameYourWallet'
 }
 
 enum RefreshTokenScreens {
@@ -26,6 +27,7 @@ enum RefreshTokenScreens {
 enum CreateWalletNavigationScreens {
   CreateWallet = 'CreateWalletNavigationScreens.CreateWallet',
   CheckMnemonic = 'CreateWalletNavigationScreens.CheckMnemonic',
+  NameYourWallet = 'CreateWalletNavigationScreens.NameYourWallet',
   CreatePin = 'CreateWalletNavigationScreens.CreatePin',
   BiometricLogin = 'CreateWalletNavigationScreens.BiometricLogin',
   TermsNConditions = 'CreateWalletNavigationScreens.TermsNConditions',
@@ -35,6 +37,7 @@ enum CreateWalletNavigationScreens {
 
 enum LoginWithMnemonicStackScreens {
   LoginWithMnemonic = 'LoginWithMnemonicStackScreens.LoginWithMnemonic',
+  NameYourWallet = 'LoginWithMnemonicStackScreens.NameYourWallet',
   CreatePin = 'LoginWithMnemonicStackScreens.CreatePin',
   BiometricLogin = 'LoginWithMnemonicStackScreens.BiometricLogin',
   TermsNConditions = 'LoginWithMnemonicStackScreens.TermsNConditions',
