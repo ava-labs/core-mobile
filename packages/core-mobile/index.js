@@ -5,7 +5,6 @@ import { Text, TextInput } from 'react-native'
 import './polyfills'
 import { AppRegistry } from 'react-native'
 import Big from 'big.js'
-import { decode, encode } from 'base-64'
 import ContextApp from './app/ContextApp'
 import { name as appName } from './app.json'
 import DevDebuggingConfig from './app/utils/debugging/DevDebuggingConfig'
@@ -45,12 +44,4 @@ if (DevDebuggingConfig.API_MOCKING || process.env.API_MOCKING) {
 
 if (process.env.PERF_ENABLED) {
   require('react-native-performance-flipper-reporter').setupDefaultFlipperReporter()
-}
-
-if (!global.btoa) {
-  global.btoa = encode
-}
-
-if (!global.atob) {
-  global.atob = decode
 }
