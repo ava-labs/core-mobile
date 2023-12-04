@@ -11,3 +11,8 @@ export type MFA =
       /** type for fido(i.e. passkey, yubikey) */
       type: 'fido'
     }
+
+export type OidcPayload = {
+  oidcToken: string
+  userId: string
+}
