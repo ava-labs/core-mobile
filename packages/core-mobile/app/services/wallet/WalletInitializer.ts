@@ -21,7 +21,7 @@ class WalletInitializer {
         const sessionStorage = new SeedlessSessionStorage()
         const session = await cs.CubeSigner.loadSignerSession(sessionStorage)
         const allKeys = await session.keys()
-        const pubKeys = await transformKeyInfosToPubKeys(allKeys)
+        const pubKeys = transformKeyInfosToPubKeys(allKeys)
 
         Logger.info('saving public keys')
         const pubKeysStorage = new SeedlessPubKeysStorage()
@@ -40,9 +40,15 @@ class WalletInitializer {
         const pubKeys = await Promise.allSettled([xpubPromise, xpubXPPromise])
         if (pubKeys[0].status === 'fulfilled') {
           MnemonicWalletInstance.xpub = pubKeys[0].value
+        } else {
+          throw new Error(`getXpubFromMnemonic failed, ${pubKeys[0].reason}`)
         }
         if (pubKeys[1].status === 'fulfilled') {
           MnemonicWalletInstance.xpubXP = pubKeys[1].value
+        } else {
+          throw new Error(
+            `Avalanche.getXpubFromMnemonic failed, ${pubKeys[1].reason}`
+          )
         }
 
         MnemonicWalletInstance.mnemonic = mnemonic
