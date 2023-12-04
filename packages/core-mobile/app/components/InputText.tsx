@@ -306,9 +306,13 @@ function MaxBtn({ onPress }: { onPress?: () => void }): JSX.Element {
         position: 'absolute',
         end: 0
       }}>
-      <AvaButton.TextMedium onPress={onPress} testID="input_text__max_button">
+      <Button
+        type="tertiary"
+        size="small"
+        onPress={onPress}
+        testID="input_text__max_button">
         Max
-      </AvaButton.TextMedium>
+      </Button>
     </View>
   )
 }

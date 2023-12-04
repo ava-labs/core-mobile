@@ -1,4 +1,4 @@
-import { Text, View, useTheme } from '@avalabs/k2-mobile'
+import { Button, Text, View, useTheme } from '@avalabs/k2-mobile'
 import InputText from 'components/InputText'
 import React, { useState } from 'react'
 import { useDispatch } from 'react-redux'
@@ -14,6 +14,11 @@ export const NameYourWallet = ({
   const {
     theme: { colors }
   } = useTheme()
+
+  const handleSubmit = (): void => {
+    dispatch(setWalletName({ name }))
+    onSetWalletName()
+  }
 
   return (
     <View
@@ -36,10 +41,7 @@ export const NameYourWallet = ({
           autoFocus
           mode={'default'}
           onChangeText={setName}
-          onSubmit={() => {
-            dispatch(setWalletName({ name }))
-            onSetWalletName()
-          }}
+          onSubmit={handleSubmit}
           text={name}
           backgroundColor={colors.$transparent}
           style={{ marginHorizontal: 0 }}
@@ -55,6 +57,13 @@ export const NameYourWallet = ({
           }}
         />
       </View>
+      <Button
+        type="primary"
+        size="xlarge"
+        style={{ marginVertical: 16 }}
+        onPress={handleSubmit}>
+        Next
+      </Button>
     </View>
   )
 }
