@@ -6,6 +6,7 @@ import CreatePinPage from './createPin.page'
 import PortfolioPage from './portfolio.page'
 import BottomTabsPage from './bottomTabs.page'
 import commonElsPage from './commonEls.page'
+import nameWalletPage from './nameWallet.page'
 
 class ExistingRecoveryPhrasePage {
   get recoveryPhraseTextInput() {
@@ -85,6 +86,7 @@ class ExistingRecoveryPhrasePage {
     await this.verifyExistingRecoveryPhrasePage()
     await this.enterRecoveryPhrase(recoveryPhrase)
     await this.tapSignInBtn()
+    await nameWalletPage.enterWalletName('testWallet1\n')
     await Action.waitForElement(CreatePinPage.numpadOne)
     await CreatePinPage.tapNumpadZero()
     await CreatePinPage.tapNumpadZero()

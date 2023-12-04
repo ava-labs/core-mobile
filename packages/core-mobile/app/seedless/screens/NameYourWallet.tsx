@@ -24,11 +24,14 @@ export const NameYourWallet = ({
         backgroundColor: '$black'
       }}>
       <View>
-        <Text variant="heading3">Name Your Wallet</Text>
+        <Text variant="heading3" testID="name_your_wallet_title">
+          Name Your Wallet
+        </Text>
         <Text variant="body1" sx={{ color: '$neutral50', marginVertical: 8 }}>
           Add a display name for your wallet. You can change it at anytime.
         </Text>
         <InputText
+          testID="name_your_wallet_input"
           autoCorrect={false}
           autoFocus
           mode={'default'}
