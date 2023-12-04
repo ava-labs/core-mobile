@@ -21,7 +21,7 @@ class WalletInitializer {
         const sessionStorage = new SeedlessSessionStorage()
         const session = await cs.CubeSigner.loadSignerSession(sessionStorage)
         const allKeys = await session.keys()
-        const pubKeys = await transformKeyInfosToPubKeys(allKeys)
+        const pubKeys = transformKeyInfosToPubKeys(allKeys)
 
         Logger.info('saving public keys')
         const pubKeysStorage = new SeedlessPubKeysStorage()

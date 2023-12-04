@@ -151,7 +151,7 @@ class WalletService {
     isTestnet: boolean
   ): Promise<Record<NetworkVMType, string>> {
     if (this.walletType === WalletType.SEEDLESS) {
-      const pubKeysStorage = await new SeedlessPubKeysStorage()
+      const pubKeysStorage = new SeedlessPubKeysStorage()
       const pubKeys = await pubKeysStorage.retrieve()
 
       // create next account only if it doesn't exist yet
@@ -188,7 +188,7 @@ class WalletService {
     )
     const provXP = NetworkService.getAvalancheProviderXP(isTestnet)
 
-    return await wallet.getAddresses({ accountIndex, isTestnet, provXP })
+    return wallet.getAddresses({ accountIndex, isTestnet, provXP })
   }
 
   /**
@@ -223,7 +223,7 @@ class WalletService {
     }
 
     if (this.walletType === WalletType.MNEMONIC) {
-      const provXP = await NetworkService.getAvalancheProviderXP(isTestnet)
+      const provXP = NetworkService.getAvalancheProviderXP(isTestnet)
 
       return indices.map(index =>
         Avalanche.getAddressFromXpub(
@@ -335,13 +335,6 @@ class WalletService {
     return unsignedTx
   }
 
-  /**
-   * @param amount in nAvax
-   * @param accountIndex
-   * @param avaxXPNetwork
-   * @param destinationChain
-   * @param destinationAddress
-   */
   public async createExportPTx({
     amount,
     accountIndex,
@@ -373,13 +366,6 @@ class WalletService {
     return unsignedTx
   }
 
-  /**
-   * @param accountIndex
-   * @param baseFee
-   * @param avaxXPNetwork
-   * @param sourceChain
-   * @param destinationAddress
-   */
   public async createImportCTx({
     accountIndex,
     baseFee,
