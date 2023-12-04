@@ -5,11 +5,11 @@ import CoreSeedlessAPIService, {
   SeedlessUserRegistrationResult
 } from 'seedless/services/CoreSeedlessAPIService'
 import SeedlessService from 'seedless/services/SeedlessService'
-import { MFA } from 'seedless/types'
+import { MFA, OidcPayload } from 'seedless/types'
 import Logger from 'utils/Logger'
 
 type RegisterProps = {
-  getOidcToken: () => Promise<string>
+  getOidcToken: () => Promise<OidcPayload>
   oidcProvider: OidcProviders
   onRegisterMfaMethods: (oidcToken: string, mfaId: string) => void
   onVerifyMfaMethod: (
@@ -42,7 +42,7 @@ export const useSeedlessRegister = (): ReturnType => {
 
     try {
       await SecureStorageService.store(KeySlot.OidcProvider, oidcProvider)
-      const oidcToken = await getOidcToken()
+      const { oidcToken } = await getOidcToken()
       const identity = await SeedlessService.oidcProveIdentity(oidcToken)
       const result = await CoreSeedlessAPIService.register(identity)
       const signResponse = await SeedlessService.requestOidcAuth(oidcToken)

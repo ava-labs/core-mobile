@@ -13,6 +13,7 @@ import SeedlessService from 'seedless/services/SeedlessService'
 import { VerifyCodeParams } from 'seedless/screens/VerifyCode'
 import AppleSignInService from 'services/socialSignIn/apple/AppleSignInService'
 import GoogleSigninService from 'services/socialSignIn/google/GoogleSigninService'
+import { OidcPayload } from 'seedless/types'
 
 const refreshSeedlessToken = async (): Promise<void> => {
   const refreshTokenResult = await SeedlessService.refreshToken()
@@ -51,7 +52,7 @@ const refreshSeedlessToken = async (): Promise<void> => {
 async function refreshSeedlessTokenFlow(): Promise<void> {
   try {
     const oidcProvider = await SecureStorageService.load(KeySlot.OidcProvider)
-    let oidcTokenResult = ''
+    let oidcTokenResult: OidcPayload
     switch (oidcProvider) {
       case OidcProviders.GOOGLE:
         oidcTokenResult = await GoogleSigninService.signin()
@@ -63,10 +64,14 @@ async function refreshSeedlessTokenFlow(): Promise<void> {
         throw new Error('Unsupported oidcProvider')
     }
 
-    const identity = await SeedlessService.oidcProveIdentity(oidcTokenResult)
+    const identity = await SeedlessService.oidcProveIdentity(
+      oidcTokenResult.oidcToken
+    )
     const result = await CoreSeedlessAPIService.register(identity)
     if (result === SeedlessUserRegistrationResult.ALREADY_REGISTERED) {
-      const loginResult = await SeedlessService.requestOidcAuth(oidcTokenResult)
+      const loginResult = await SeedlessService.requestOidcAuth(
+        oidcTokenResult.oidcToken
+      )
       const userMfa = await SeedlessService.userMfa()
       const usesTotp = userMfa.some(value => value.type === 'totp')
       if (usesTotp) {
@@ -76,7 +81,7 @@ async function refreshSeedlessTokenFlow(): Promise<void> {
             params: {
               screen: AppNavigation.RefreshToken.VerifyCode,
               params: {
-                oidcToken: oidcTokenResult,
+                oidcToken: oidcTokenResult.oidcToken,
                 mfaId: loginResult.mfaId(),
                 onVerifySuccess: resolve,
                 onBack: () => reject('canceled')
