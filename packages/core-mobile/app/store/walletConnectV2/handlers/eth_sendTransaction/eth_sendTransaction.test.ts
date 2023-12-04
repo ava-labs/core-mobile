@@ -267,7 +267,7 @@ describe('eth_sendTransaction handler', () => {
           chainId: mockNetwork.chainId,
           data: '0x10000',
           gasLimit: 256,
-          gasPrice: BigInt(testData.txParams.gasPrice),
+          maxFeePerGas: BigInt(testData.txParams.gasPrice),
           to: testData.txParams.to,
           value: testData.txParams.value
         },
@@ -313,7 +313,7 @@ describe('eth_sendTransaction handler', () => {
           chainId: mockNetwork.chainId,
           data: '0x10000',
           gasLimit: 256,
-          gasPrice: BigInt(testData.txParams.gasPrice),
+          maxFeePerGas: BigInt(testData.txParams.gasPrice),
           to: testData.txParams.to,
           value: testData.txParams.value
         },

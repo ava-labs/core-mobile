@@ -19,6 +19,7 @@ import { MFA } from 'seedless/types'
 import PasskeyService from 'services/passkey/PasskeyService'
 import { hoursToSeconds, minutesToSeconds } from 'date-fns'
 import { retry, RetryBackoffPolicy } from 'utils/js/retry'
+import Logger from 'utils/Logger'
 import { SeedlessSessionStorage } from './storage/SeedlessSessionStorage'
 
 if (!Config.SEEDLESS_ORG_ID) {
@@ -261,8 +262,22 @@ class SeedlessService {
 
   async refreshToken(): Promise<Result<void, TokenRefreshErrors>> {
     const storage = new SeedlessSessionStorage()
-    const sessionMgr = await SignerSessionManager.loadFromStorage(storage)
+    const sessionMgr = await SignerSessionManager.loadFromStorage(
+      storage
+    ).catch(reason => {
+      Logger.error('Failed to load session manager from storage', reason)
+      return undefined
+    })
 
+    if (!sessionMgr) {
+      return {
+        success: false,
+        error: {
+          name: 'RefreshFailed',
+          message: 'Failed to load session manager from storage'
+        }
+      }
+    }
     const refreshResult = await retry({
       operation: async _ => {
         return await sessionMgr.refresh().catch(err => {
