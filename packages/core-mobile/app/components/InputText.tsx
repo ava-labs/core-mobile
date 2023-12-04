@@ -14,7 +14,7 @@ import ClearInputSVG from 'components/svg/ClearInputSVG'
 import { Space } from 'components/Space'
 import CheckmarkSVG from 'components/svg/CheckmarkSVG'
 import { Row } from 'components/Row'
-import { alpha, useTheme, View, Text, Button } from '@avalabs/k2-mobile'
+import { alpha, useTheme, View, Text, Button, SxProp } from '@avalabs/k2-mobile'
 import AvaButton from './AvaButton'
 import { Tooltip } from './Tooltip'
 import InfoSVG from './svg/InfoSVG'
@@ -65,6 +65,7 @@ export type InputTextProps = {
   keyboardDidHide?: () => void
   testID?: string
   autoCorrect?: boolean
+  inputTextContainerStyle?: SxProp
 }
 
 const InputText = forwardRef<TextInput, InputTextProps>(
@@ -99,7 +100,8 @@ const InputText = forwardRef<TextInput, InputTextProps>(
       paddingVertical = 12,
       keyboardWillShow,
       keyboardDidHide,
-      autoCorrect
+      autoCorrect,
+      inputTextContainerStyle
     },
     ref
   ) => {
@@ -189,8 +191,7 @@ const InputText = forwardRef<TextInput, InputTextProps>(
         <View
           sx={{
             justifyContent: 'center',
-            flexDirection: 'row',
-            alignItems: 'center'
+            ...inputTextContainerStyle
           }}>
           <TextInput
             selectionColor={colors.$neutral50}
@@ -305,13 +306,9 @@ function MaxBtn({ onPress }: { onPress?: () => void }): JSX.Element {
         position: 'absolute',
         end: 0
       }}>
-      <Button
-        type="primary"
-        size="xlarge"
-        onPress={onPress}
-        testID="input_text__max_button">
+      <AvaButton.TextMedium onPress={onPress} testID="input_text__max_button">
         Max
-      </Button>
+      </AvaButton.TextMedium>
     </View>
   )
 }

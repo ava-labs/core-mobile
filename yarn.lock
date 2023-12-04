@@ -162,6 +162,7 @@ __metadata:
     "@tanstack/react-query": 5.0.0-alpha.57
     "@tradle/react-native-http": 2.0.1
     "@typechain/ethers-v6": 0.5.0
+    "@types/base-64": 1.0.2
     "@types/big.js": 6.1.3
     "@types/bn.js": 5.1.0
     "@types/d3": 7.4.0
@@ -7361,6 +7362,13 @@ __metadata:
   dependencies:
     "@babel/types": ^7.20.7
   checksum: 6d0f70d8972647c9b78b51a54f0b6481c4f23f0bb2699ad276e6070678bd121fede99e8e2c8c3e409d2f31a0bf83ae511abc6fefb91f0630c8d728a3a9136790
+  languageName: node
+  linkType: hard
+
+"@types/base-64@npm:1.0.2":
+  version: 1.0.2
+  resolution: "@types/base-64@npm:1.0.2"
+  checksum: bb7593c6de16c88a1bfed73a37c3be2e940921261bb7a160ab6d671f66d976b5426334ae9ce59553a10086db11e52af348813271a8b636e4f88e4cab8f27a3e4
   languageName: node
   linkType: hard
 

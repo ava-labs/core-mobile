@@ -49,6 +49,10 @@ export const NameYourWallet = ({
             lineHeight: 56,
             textAlign: 'justify'
           }}
+          inputTextContainerStyle={{
+            flexDirection: 'row',
+            alignItems: 'center'
+          }}
         />
       </View>
     </View>
