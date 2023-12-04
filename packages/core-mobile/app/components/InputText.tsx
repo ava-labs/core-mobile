@@ -393,7 +393,7 @@ const Percent = (): JSX.Element => {
         justifyContent: 'center',
         end: 16
       }}>
-      <Text variant="heading3">%</Text>
+      <Text variant="body1">%</Text>
     </View>
   )
 }

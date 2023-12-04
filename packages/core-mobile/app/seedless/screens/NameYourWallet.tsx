@@ -1,6 +1,8 @@
 import { Button, Text, View, useTheme } from '@avalabs/k2-mobile'
+import { useFocusEffect } from '@react-navigation/native'
 import InputText from 'components/InputText'
-import React, { useState } from 'react'
+import React, { useCallback, useRef, useState } from 'react'
+import { TextInput } from 'react-native'
 import { useDispatch } from 'react-redux'
 import { setWalletName } from 'store/account'
 
@@ -9,11 +11,14 @@ export const NameYourWallet = ({
 }: {
   onSetWalletName: () => void
 }): JSX.Element => {
+  const textInputRef = useRef<TextInput>(null)
   const dispatch = useDispatch()
   const [name, setName] = useState('')
   const {
     theme: { colors }
   } = useTheme()
+
+  useFocusEffect(useCallback(() => textInputRef.current?.focus(), []))
 
   const handleSubmit = (): void => {
     dispatch(setWalletName({ name }))
@@ -37,6 +42,8 @@ export const NameYourWallet = ({
         </Text>
         <InputText
           testID="name_your_wallet_input"
+          ref={textInputRef}
+          placeholder={'Wallet Name'}
           autoCorrect={false}
           autoFocus
           mode={'default'}
@@ -44,18 +51,24 @@ export const NameYourWallet = ({
           onSubmit={handleSubmit}
           text={name}
           backgroundColor={colors.$transparent}
-          style={{ marginHorizontal: 0 }}
+          style={{ marginHorizontal: 0, marginBottom: 0 }}
           textStyle={{
             fontFamily: 'Inter-Bold',
             fontSize: 48,
             lineHeight: 56,
-            textAlign: 'justify'
+            textAlign: 'justify',
+            paddingStart: 8
           }}
           inputTextContainerStyle={{
             flexDirection: 'row',
             alignItems: 'center'
           }}
         />
+        <View sx={{ alignItems: 'center' }}>
+          <Text variant="caption" sx={{ color: '$neutral400' }}>
+            {name}
+          </Text>
+        </View>
       </View>
       <Button
         type="primary"
