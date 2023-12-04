@@ -25,7 +25,6 @@ import { fromUnixTime, getUnixTime } from 'date-fns'
 import { getMinimumStakeEndTime } from 'services/earn/utils'
 import { Avax } from 'types/Avax'
 import { bnToBigint } from 'utils/bigNumbers/bnToBigint'
-import { assertNotUndefined } from 'utils/assertions'
 import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKeysStorage'
 import SeedlessWallet from 'seedless/services/wallet/SeedlessWallet'
 import { isAvalancheTransactionRequest, isBtcTransactionRequest } from './utils'
@@ -40,7 +39,7 @@ const EVM_FEE_TOLERANCE = 50
 const BASE_FEE_MULTIPLIER = 0.2
 
 class WalletService {
-  #walletType?: WalletType
+  #walletType: WalletType = WalletType.UNSET
 
   public async init(mnemonic: string, walletType: WalletType): Promise<void> {
     Logger.info(`initializing wallet with type ${walletType}`)
@@ -144,7 +143,7 @@ class WalletService {
     await WalletInitializer.terminate(this.walletType).catch(e =>
       Logger.error('unable to destroy wallet', e)
     )
-    this.walletType = undefined
+    this.walletType = WalletType.UNSET
   }
 
   public async addAddress(
@@ -152,7 +151,7 @@ class WalletService {
     isTestnet: boolean
   ): Promise<Record<NetworkVMType, string>> {
     if (this.walletType === WalletType.SEEDLESS) {
-      const pubKeysStorage = await new SeedlessPubKeysStorage()
+      const pubKeysStorage = new SeedlessPubKeysStorage()
       const pubKeys = await pubKeysStorage.retrieve()
 
       // create next account only if it doesn't exist yet
@@ -189,7 +188,7 @@ class WalletService {
     )
     const provXP = NetworkService.getAvalancheProviderXP(isTestnet)
 
-    return await wallet.getAddresses({ accountIndex, isTestnet, provXP })
+    return wallet.getAddresses({ accountIndex, isTestnet, provXP })
   }
 
   /**
@@ -224,7 +223,7 @@ class WalletService {
     }
 
     if (this.walletType === WalletType.MNEMONIC) {
-      const provXP = await NetworkService.getAvalancheProviderXP(isTestnet)
+      const provXP = NetworkService.getAvalancheProviderXP(isTestnet)
 
       return indices.map(index =>
         Avalanche.getAddressFromXpub(
@@ -336,13 +335,6 @@ class WalletService {
     return unsignedTx
   }
 
-  /**
-   * @param amount in nAvax
-   * @param accountIndex
-   * @param avaxXPNetwork
-   * @param destinationChain
-   * @param destinationAddress
-   */
   public async createExportPTx({
     amount,
     accountIndex,
@@ -374,13 +366,6 @@ class WalletService {
     return unsignedTx
   }
 
-  /**
-   * @param accountIndex
-   * @param baseFee
-   * @param avaxXPNetwork
-   * @param sourceChain
-   * @param destinationAddress
-   */
   public async createImportCTx({
     accountIndex,
     baseFee,
@@ -487,12 +472,11 @@ class WalletService {
   }
 
   get walletType(): WalletType {
-    assertNotUndefined(this.#walletType, 'wallet type is not set')
     return this.#walletType
   }
 
   // PRIVATE METHODS
-  private set walletType(walletType: WalletType | undefined) {
+  private set walletType(walletType: WalletType) {
     this.#walletType = walletType
   }
 
