@@ -2,6 +2,10 @@ import commonEls from '../locators/commonEls.loc'
 import Actions from '../helpers/actions'
 
 class CommonElsPage {
+  get retryBtn() {
+    return by.text(commonEls.retryBtn)
+  }
+
   get backButton() {
     return by.id(commonEls.backButton)
   }
@@ -40,6 +44,15 @@ class CommonElsPage {
 
   async waitForJailbrokenWarning() {
     await Actions.waitForElement(this.jailbrokenWarning)
+  }
+
+  async tapRetryBtn() {
+    await Actions.waitForElement(this.retryBtn, 1)
+    try {
+      await Actions.tap(this.retryBtn)
+    } catch (error) {
+      /* empty */
+    }
   }
 }
 

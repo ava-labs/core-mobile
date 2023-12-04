@@ -10,7 +10,7 @@ export async function txToCustomEvmTx(
   from: string
   to: string
   value: BigNumberish | undefined
-  gasPrice: bigint
+  maxFeePerGas: bigint
 }> {
   if (!txParams) {
     throw new Error('params is malformed')
@@ -31,7 +31,7 @@ export async function txToCustomEvmTx(
   const gasLimit = Number(gas)
 
   return {
-    gasPrice: sureGasPrice,
+    maxFeePerGas: sureGasPrice,
     gasLimit: gasLimit,
     to,
     from,
