@@ -1,12 +1,13 @@
 import appleAuth from '@invertase/react-native-apple-authentication'
 import Logger from 'utils/Logger'
+import { OidcPayload } from 'seedless/types'
 
 class AppleSigninService {
   isSupported(): boolean {
     return appleAuth.isSupported
   }
 
-  async signIn(): Promise<string> {
+  async signIn(): Promise<OidcPayload> {
     try {
       const appleAuthRequestResponse = await appleAuth.performRequest({
         requestedOperation: appleAuth.Operation.LOGIN,
@@ -31,7 +32,7 @@ class AppleSigninService {
         Logger.error('iOS Apple sign in error: unauthorized user')
         throw new Error('iOS Apple sign in error unauthorized user')
       }
-      return identityToken
+      return { oidcToken: identityToken, userId: user }
     } catch (error) {
       Logger.error('iOS Apple sign in error', error)
       throw new Error('iOS Apple sign in error')
