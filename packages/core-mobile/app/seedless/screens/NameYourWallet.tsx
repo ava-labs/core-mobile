@@ -21,7 +21,8 @@ export const NameYourWallet = ({
   useFocusEffect(useCallback(() => textInputRef.current?.focus(), []))
 
   const handleSubmit = (): void => {
-    dispatch(setWalletName({ name }))
+    const trimmed = name.trim()
+    dispatch(setWalletName({ name: trimmed }))
     onSetWalletName()
   }
 
@@ -47,7 +48,10 @@ export const NameYourWallet = ({
           autoCorrect={false}
           autoFocus
           mode={'default'}
-          onChangeText={setName}
+          onChangeText={text => {
+            const trimmed = text.trimStart()
+            setName(trimmed)
+          }}
           onSubmit={handleSubmit}
           text={name}
           backgroundColor={colors.$transparent}
@@ -71,6 +75,7 @@ export const NameYourWallet = ({
         </View>
       </View>
       <Button
+        disabled={name.length <= 0}
         type="primary"
         size="xlarge"
         style={{ marginVertical: 16 }}
