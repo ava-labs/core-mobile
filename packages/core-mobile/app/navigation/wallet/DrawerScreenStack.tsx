@@ -28,8 +28,6 @@ import { Opacity50 } from 'resources/Constants'
 import { usePostCapture } from 'hooks/usePosthogCapture'
 import { selectIsLeftHanded } from 'store/settings/advanced'
 import { ActionProp } from 'components/fab/types'
-import { selectIsDeveloperMode } from 'store/settings/advanced'
-import TestnetBanner from 'components/TestnetBanner'
 
 export type DrawerParamList = {
   [AppNavigation.Wallet.Tabs]: NavigatorScreenParams<TabNavigatorParamList>
@@ -55,11 +53,8 @@ const DrawerScreenStack: FC = () => (
 )
 
 const TabNavigatorWithFab: FC = () => {
-  const isTestnet = useSelector(selectIsDeveloperMode)
-
   return (
     <>
-      {isTestnet && <TestnetBanner />}
       <TabNavigator />
       <Fab />
     </>

@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useLayoutEffect } from 'react'
 import AppNavigation from 'navigation/AppNavigation'
 import { WalletScreenProps } from 'navigation/types'
 import { useNavigation, useRoute } from '@react-navigation/native'
@@ -24,6 +24,8 @@ import SearchIcon from 'assets/icons/search.svg'
 import RocketLaunch from 'assets/icons/rocket_launch.svg'
 import Photo from 'assets/icons/photo_placeholder.svg'
 import Swap from 'assets/icons/swap_v2.svg'
+import HeaderAccountSelector from 'components/HeaderAccountSelector'
+import { View } from '@avalabs/k2-mobile'
 import { SignOutModalScreen, WalletScreenSType } from './WalletScreenStack'
 
 export const createModals = (WalletScreenS: WalletScreenSType): JSX.Element => {
@@ -129,6 +131,24 @@ type AccountDropDownNavigationProp = WalletScreenProps<
 
 const AccountDropdownComp = (): JSX.Element => {
   const navigation = useNavigation<AccountDropDownNavigationProp>()
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerShown: true,
+      headerLeft: () => null,
+      // eslint-disable-next-line react/no-unstable-nested-components
+      headerTitle: () => (
+        <View sx={{ marginTop: 4 }}>
+          <HeaderAccountSelector
+            direction="up"
+            onPressed={() => {
+              navigation.goBack()
+            }}
+          />
+        </View>
+      )
+    })
+  }, [navigation])
+
   return (
     <AccountDropdown
       onAddEditAccounts={() => {
