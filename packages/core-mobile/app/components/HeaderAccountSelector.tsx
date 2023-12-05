@@ -15,7 +15,7 @@ export default function HeaderAccountSelector({
 }: {
   onPressed?: () => void
   direction?: Direction
-}) {
+}): JSX.Element {
   const activeAccount = useSelector(selectActiveAccount)
   const theme = useApplicationContext().theme
 
@@ -42,6 +42,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    minHeight: 44
+    minHeight: 44,
+    maxWidth: 200
   }
 })
