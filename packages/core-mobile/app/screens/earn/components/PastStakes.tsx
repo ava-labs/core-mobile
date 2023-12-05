@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { FC } from 'react'
 import { ListRenderItemInfo, StyleSheet } from 'react-native'
 import BigList from 'components/BigList'
 import { PChainTransaction, RewardType } from '@avalabs/glacier-sdk'
@@ -9,26 +9,28 @@ import { StakeCard } from './StakeCard'
 import { NoPastStakes } from './ZeroState'
 import { StakeListLoader } from './StakeListLoader'
 
-export const PastStakes = () => {
+export const PastStakes: FC = () => {
   const { stakes, pullToRefresh, isRefreshing, isLoading } = usePastStakes()
 
   if (isLoading) {
     return <StakeListLoader />
   }
 
-  const keyExtractor = (item: PChainTransaction) => item.txHash
+  const keyExtractor = (item: PChainTransaction): string => item.txHash
 
   const renderItem = ({
     item,
     index
-  }: ListRenderItemInfo<PChainTransaction>) => {
+  }: ListRenderItemInfo<PChainTransaction>): JSX.Element => {
     const title = zeroPad(index + 1, 2)
     const stakeAmount = item.amountStaked?.[0]?.amount
     const endTimestamp = item.endTimestamp
     const rewardUtxo = item.emittedUtxos.find(
-      utxo => utxo.rewardType === RewardType.DELEGATOR
+      utxo =>
+        utxo.rewardType === RewardType.DELEGATOR ||
+        utxo.rewardType === RewardType.VALIDATOR
     )
-    const rewardAmount = rewardUtxo?.amount
+    const rewardAmount = rewardUtxo?.asset.amount
     const txHash = item.txHash
 
     return (
