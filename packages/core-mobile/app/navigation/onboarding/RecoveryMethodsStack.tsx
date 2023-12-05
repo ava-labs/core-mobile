@@ -1,5 +1,10 @@
 import AppNavigation from 'navigation/AppNavigation'
-import React, { createContext, useContext, useState } from 'react'
+import React, {
+  createContext,
+  useContext,
+  useLayoutEffect,
+  useState
+} from 'react'
 import { createStackNavigator } from '@react-navigation/stack'
 import { AuthenticatorSetup } from 'seedless/screens/AuthenticatorSetup'
 import { ScanQrCode } from 'seedless/screens/ScanQrCode'
@@ -111,11 +116,17 @@ type VerifyCodeScreenProps = RecoveryMethodsScreenProps<
 >
 function VerifyCodeScreen(): JSX.Element {
   const { oidcToken, mfaId } = useContext(RecoveryMethodsContext)
-  const { canGoBack, goBack, replace } =
+  const { canGoBack, goBack, replace, setOptions } =
     useNavigation<VerifyCodeScreenProps['navigation']>()
   const handleVerifySuccess = (): void => {
     replace(AppNavigation.Onboard.NameYourWallet)
   }
+
+  useLayoutEffect(() => {
+    setOptions({
+      headerShown: false
+    })
+  }, [setOptions])
 
   const handleOnBack = (): void => {
     if (canGoBack()) {
