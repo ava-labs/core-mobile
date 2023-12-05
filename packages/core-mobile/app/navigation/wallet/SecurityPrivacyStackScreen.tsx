@@ -17,6 +17,9 @@ import { useWallet } from 'hooks/useWallet'
 import { RecoveryMethodsSettingScreen } from 'seedless/screens/RecoveryMethodsSettingScreen'
 import { RecoveryMethodsSettingMFAScreen } from 'seedless/screens/RecoveryMethodsSettingMFAScreen'
 import { MFA } from 'seedless/types'
+import { WalletType } from 'services/wallet/types'
+import walletService from 'services/wallet/WalletService'
+import SeedlessExportStack from './SeedlessExportStackScreen'
 
 export type SecurityStackParamList = {
   [AppNavigation.SecurityPrivacy.SecurityPrivacy]: undefined
@@ -29,6 +32,7 @@ export type SecurityStackParamList = {
   [AppNavigation.SecurityPrivacy.RecoveryPhrase]: { mnemonic: string }
   [AppNavigation.SecurityPrivacy.DappList]: undefined
   [AppNavigation.SecurityPrivacy.QRCode]: QRCodeParams
+  [AppNavigation.SecurityPrivacy.SeedlessExport]: undefined
 }
 
 const SecurityStack = createStackNavigator<SecurityStackParamList>()
@@ -65,6 +69,11 @@ function SecurityPrivacyStackScreen(): JSX.Element {
           name={AppNavigation.SecurityPrivacy.QRCode}
           component={CaptureDappQR}
         />
+        <SecurityStack.Screen
+          options={{ headerShown: false }}
+          name={AppNavigation.SecurityPrivacy.SeedlessExport}
+          component={SeedlessExportStack}
+        />
       </SecurityStack.Group>
       <SecurityStack.Group screenOptions={{ presentation: 'modal' }}>
         <SecurityStack.Screen
@@ -90,7 +99,7 @@ function SecurityPrivacyStackScreen(): JSX.Element {
         <SecurityStack.Screen
           options={MainHeaderOptions({ title: 'Recovery Phrase' })}
           name={AppNavigation.SecurityPrivacy.RecoveryPhrase}
-          component={RevealMnemonic}
+          component={RecoveryPhraseNavigation}
         />
       </SecurityStack.Group>
     </SecurityStack.Navigator>
@@ -104,15 +113,21 @@ type SecurityPrivacyNavigationProp = SecurityPrivacyScreenProps<
 const SecurityPrivacyScreen = (): JSX.Element => {
   const { capture } = usePostCapture()
   const nav = useNavigation<SecurityPrivacyNavigationProp>()
+  const walletType = walletService.walletType
+
   return (
     <SecurityPrivacy
       onChangePin={() => {
         capture('ChangePasswordClicked')
         nav.navigate(AppNavigation.SecurityPrivacy.PinChange)
       }}
-      onShowRecoveryPhrase={() =>
+      onShowRecoveryPhrase={() => {
+        if (walletType === WalletType.SEEDLESS) {
+          nav.navigate(AppNavigation.SecurityPrivacy.SeedlessExport)
+          return
+        }
         nav.navigate(AppNavigation.SecurityPrivacy.ShowRecoveryPhrase)
-      }
+      }}
       onRecoveryMethods={() => {
         nav.navigate(AppNavigation.SecurityPrivacy.RecoveryMethods)
       }}
@@ -228,6 +243,23 @@ const CreatePinScreen = memo(() => {
       }}
       isResettingPin
       onResetPinFailed={handleOnResetPinFailed}
+    />
+  )
+})
+
+type RecoveryPhraseNavigationProp = SecurityPrivacyScreenProps<
+  typeof AppNavigation.SecurityPrivacy.RecoveryPhrase
+>
+const RecoveryPhraseNavigation = memo(() => {
+  const { goBack } = useNavigation<RecoveryPhraseNavigationProp['navigation']>()
+  const { mnemonic } = useRoute<RecoveryPhraseNavigationProp['route']>().params
+
+  return (
+    <RevealMnemonic
+      mnemonic={mnemonic}
+      buttonText="I wrote it down"
+      onGoBack={goBack}
+      canToggleBlur={false}
     />
   )
 })

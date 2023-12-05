@@ -77,14 +77,12 @@ function SecurityPrivacy({
         showNavigationArrow
         onPress={onChangePin}
       />
-      {WalletService.walletType === WalletType.MNEMONIC && (
-        <AvaListItem.Base
-          title={'Show recovery phrase'}
-          background={theme.background}
-          showNavigationArrow
-          onPress={onShowRecoveryPhrase}
-        />
-      )}
+      <AvaListItem.Base
+        title={'Show recovery phrase'}
+        background={theme.background}
+        showNavigationArrow
+        onPress={onShowRecoveryPhrase}
+      />
       {WalletService.walletType === WalletType.SEEDLESS && (
         <AvaListItem.Base
           title={'Recovery Methods'}
