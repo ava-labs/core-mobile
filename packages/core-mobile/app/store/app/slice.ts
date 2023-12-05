@@ -64,6 +64,8 @@ export const onAppLocked = createAction(`${reducerName}/onAppLocked`)
 
 export const onBackground = createAction(`${reducerName}/onBackground`)
 
+export const immediateAppLock = createAction(`${reducerName}/immediateAppLock`)
+
 export const onForeground = createAction(`${reducerName}/onForeground`)
 
 // when user has successfully created/recovered a wallet

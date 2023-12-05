@@ -14,7 +14,6 @@ import WalletScreenStack, {
   WalletScreenStackParams
 } from 'navigation/WalletScreenStack/WalletScreenStack'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { ExitEvents, ExitPromptAnswers, ShowExitPrompt } from 'AppHook'
 import { useSelector } from 'react-redux'
 import { selectIsLocked } from 'store/app'
 import { useBgDetect } from 'navigation/useBgDetect'
@@ -37,16 +36,6 @@ export type RootScreenStackParamList = {
   }
 }
 
-const onOk = (value: ShowExitPrompt): void => {
-  value.prompt.next(ExitPromptAnswers.Ok)
-  value.prompt.complete()
-}
-
-const onNo = (value: ShowExitPrompt): void => {
-  value.prompt.next(ExitPromptAnswers.Cancel)
-  value.prompt.complete()
-}
-
 const RootStack = createStackNavigator<RootScreenStackParamList>()
 
 const WalletScreenStackWithContext: FC = () => {
@@ -55,27 +44,22 @@ const WalletScreenStackWithContext: FC = () => {
   const isLocked = useSelector(selectIsLocked)
 
   const doExit = (): void => {
-    onExit().subscribe({
-      next: (value: ExitEvents) => {
-        if (value instanceof ShowExitPrompt) {
-          Alert.alert(
-            'Exit app?',
-            'Your passphrase will remain securely stored for easier later access of wallet.',
-            [
-              {
-                text: 'Ok',
-                onPress: () => onOk(value as ShowExitPrompt)
-              },
-              {
-                text: 'Cancel',
-                onPress: () => onNo(value as ShowExitPrompt),
-                style: 'cancel'
-              }
-            ]
-          )
-        }
-      },
-      error: err => Alert.alert(err.message)
+    onExit((confirmExit, cancel) => {
+      Alert.alert(
+        'Exit app?',
+        'Your passphrase will remain securely stored for easier later access of wallet.',
+        [
+          {
+            text: 'Ok',
+            onPress: confirmExit
+          },
+          {
+            text: 'Cancel',
+            onPress: cancel,
+            style: 'cancel'
+          }
+        ]
+      )
     })
   }
 
