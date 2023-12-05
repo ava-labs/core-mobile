@@ -133,11 +133,14 @@ const AccountDropdownComp = (): JSX.Element => {
   const navigation = useNavigation<AccountDropDownNavigationProp>()
   useLayoutEffect(() => {
     navigation.setOptions({
+      headerBackgroundContainerStyle: {
+        opacity: 0.5
+      },
       headerShown: true,
       headerLeft: () => null,
       // eslint-disable-next-line react/no-unstable-nested-components
       headerTitle: () => (
-        <View sx={{ marginTop: 4 }}>
+        <View sx={{ marginTop: 4, backgroundColor: '$black' }}>
           <HeaderAccountSelector
             direction="up"
             onPressed={() => {
@@ -150,12 +153,14 @@ const AccountDropdownComp = (): JSX.Element => {
   }, [navigation])
 
   return (
-    <AccountDropdown
-      onAddEditAccounts={() => {
-        navigation.goBack()
-        navigation.navigate(AppNavigation.Modal.AccountBottomSheet)
-      }}
-    />
+    <View sx={{ marginTop: 4, flex: 1 }}>
+      <AccountDropdown
+        onAddEditAccounts={() => {
+          navigation.goBack()
+          navigation.navigate(AppNavigation.Modal.AccountBottomSheet)
+        }}
+      />
+    </View>
   )
 }
 type EditGasLimitScreenProps = WalletScreenProps<
