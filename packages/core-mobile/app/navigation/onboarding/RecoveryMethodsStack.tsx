@@ -1,5 +1,10 @@
 import AppNavigation from 'navigation/AppNavigation'
-import React, { createContext, useContext, useState } from 'react'
+import React, {
+  createContext,
+  useContext,
+  useLayoutEffect,
+  useState
+} from 'react'
 import { createStackNavigator } from '@react-navigation/stack'
 import { AuthenticatorSetup } from 'seedless/screens/AuthenticatorSetup'
 import { ScanQrCode } from 'seedless/screens/ScanQrCode'
@@ -15,6 +20,7 @@ import { PasskeySetupScreen } from 'seedless/screens/PasskeySetupScreen'
 import { FIDONameInputScreen } from 'seedless/screens/FIDONameInputScreen'
 import { useNavigation } from '@react-navigation/native'
 import { RecoveryMethodsScreenProps } from 'navigation/types'
+import { BackButton } from 'components/BackButton'
 
 export type RecoveryMethodsStackParamList = {
   [AppNavigation.RecoveryMethods.AddRecoveryMethods]: undefined
@@ -111,11 +117,19 @@ type VerifyCodeScreenProps = RecoveryMethodsScreenProps<
 >
 function VerifyCodeScreen(): JSX.Element {
   const { oidcToken, mfaId } = useContext(RecoveryMethodsContext)
-  const { canGoBack, goBack, replace } =
+  const { canGoBack, goBack, replace, setOptions } =
     useNavigation<VerifyCodeScreenProps['navigation']>()
   const handleVerifySuccess = (): void => {
     replace(AppNavigation.Onboard.NameYourWallet)
   }
+
+  useLayoutEffect(() => {
+    setOptions({
+      headerTitle: '',
+      // eslint-disable-next-line react/no-unstable-nested-components
+      headerLeft: () => <BackButton />
+    })
+  }, [setOptions])
 
   const handleOnBack = (): void => {
     if (canGoBack()) {
