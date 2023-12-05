@@ -180,6 +180,9 @@ async function generatePlatformResults(
       )
     }
 
+    // Removes duplicate test cases from the array
+    resultArray = [...new Map(arr.map(item => [item.case_id, item])).values()]
+
     for (let i = 0; i < resultArray.length; i++) {
       const resultObject = resultArray[i]
       const statusId = Number(resultObject?.status_id)
