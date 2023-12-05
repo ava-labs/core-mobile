@@ -28,6 +28,8 @@ import { Opacity50 } from 'resources/Constants'
 import { usePostCapture } from 'hooks/usePosthogCapture'
 import { selectIsLeftHanded } from 'store/settings/advanced'
 import { ActionProp } from 'components/fab/types'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
+import TestnetBanner from 'components/TestnetBanner'
 
 export type DrawerParamList = {
   [AppNavigation.Wallet.Tabs]: NavigatorScreenParams<TabNavigatorParamList>
@@ -36,9 +38,9 @@ export type DrawerParamList = {
 
 const DrawerStack = createDrawerNavigator()
 
-const DrawerContent = () => <DrawerView />
+const DrawerContent = (): JSX.Element => <DrawerView />
 
-const DrawerScreenStack = () => (
+const DrawerScreenStack: FC = () => (
   <DrawerStack.Navigator
     screenOptions={{
       headerShown: false,
@@ -52,9 +54,12 @@ const DrawerScreenStack = () => (
   </DrawerStack.Navigator>
 )
 
-const TabNavigatorWithFab = () => {
+const TabNavigatorWithFab: FC = () => {
+  const isTestnet = useSelector(selectIsDeveloperMode)
+
   return (
     <>
+      {isTestnet && <TestnetBanner />}
       <TabNavigator />
       <Fab />
     </>
@@ -210,7 +215,7 @@ const Fab: FC = () => {
     setPendingDeepLink
   ])
 
-  function dismiss() {
+  function dismiss(): void {
     setExpanded(false)
     capture('FABClosed')
   }
