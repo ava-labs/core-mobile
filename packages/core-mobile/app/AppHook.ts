@@ -1,20 +1,21 @@
-import { asyncScheduler, AsyncSubject, concat, Observable, of } from 'rxjs'
-import { map } from 'rxjs/operators'
 import { BackHandler } from 'react-native'
 import { useCallback, useEffect, useMemo } from 'react'
 import { usePosthogContext } from 'contexts/PosthogContext'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectSelectedCurrency } from 'store/settings/currency'
-import { onLogOut } from 'store/app'
+import { immediateAppLock, onLogOut } from 'store/app'
 import { resetLoginAttempt } from 'store/security'
 import { formatCurrency } from 'utils/FormatCurrency'
 import { selectCoreAnalyticsConsent } from 'store/settings/securityPrivacy'
 import { NotationTypes } from 'consts/FormatNumberTypes'
 import { useWallet } from 'hooks/useWallet'
 import { resetNavToRoot } from 'utils/Navigation'
+import Logger from 'utils/Logger'
 
 export type AppHook = {
-  onExit: () => Observable<ExitEvents>
+  onExit: (
+    showExitPrompt: (confirmExit: () => void, cancel: () => void) => void
+  ) => void
   selectedCurrency: string
   deleteWallet: () => void
   signOut: () => void
@@ -49,26 +50,20 @@ export function useApp(): AppHook {
     setAnalyticsConsent(coreAnalyticsConsentSetting)
   }
 
-  function onExit(): Observable<ExitEvents> {
-    const exitPrompt = new AsyncSubject<ExitPromptAnswers>()
-    const dialogOp: Observable<ExitFinished> = exitPrompt.pipe(
-      map((answer: ExitPromptAnswers) => {
-        switch (answer) {
-          case ExitPromptAnswers.Cancel:
-            return new ExitCanceled()
-          case ExitPromptAnswers.Ok:
-            return new ExitFinished()
-        }
-      }),
-      map((exitEvent: ExitEvents) => {
-        if (exitEvent instanceof ExitFinished) {
-          resetNavToRoot()
-          setTimeout(() => BackHandler.exitApp(), 0)
-        }
-        return exitEvent
+  function onExit(
+    showExitPrompt: (confirmExit: () => void, cancel: () => void) => void
+  ): void {
+    const confirmExitPromise = new Promise<void>((resolve, reject) => {
+      showExitPrompt(resolve, reject)
+    })
+    confirmExitPromise
+      .then(_ => {
+        dispatch(immediateAppLock)
+        setTimeout(() => BackHandler.exitApp(), 0)
       })
-    )
-    return concat(of(new ShowExitPrompt(exitPrompt)), dialogOp, asyncScheduler)
+      .catch(_ => {
+        Logger.trace('User canceled app exit')
+      })
   }
 
   /**
@@ -106,24 +101,4 @@ export function useApp(): AppHook {
     currencyFormatter,
     tokenInCurrencyFormatter
   }
-}
-
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface ExitEvents {}
-
-export class ShowExitPrompt implements ExitEvents {
-  prompt: AsyncSubject<ExitPromptAnswers>
-
-  constructor(prompt: AsyncSubject<ExitPromptAnswers>) {
-    this.prompt = prompt
-  }
-}
-
-export class ExitFinished implements ExitEvents {}
-
-export class ExitCanceled implements ExitEvents {}
-
-export enum ExitPromptAnswers {
-  Ok,
-  Cancel
 }
