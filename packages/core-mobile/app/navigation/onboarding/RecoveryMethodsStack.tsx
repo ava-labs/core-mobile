@@ -16,7 +16,6 @@ import { useRoute } from '@react-navigation/native'
 import { OnboardScreenProps } from 'navigation/types'
 import { SelectRecoveryMethods } from 'seedless/screens/SelectRecoveryMethods'
 import { MFA } from 'seedless/types'
-import { PasskeySetupScreen } from 'seedless/screens/PasskeySetupScreen'
 import { FIDONameInputScreen } from 'seedless/screens/FIDONameInputScreen'
 import { useNavigation } from '@react-navigation/native'
 import { RecoveryMethodsScreenProps } from 'navigation/types'
@@ -28,7 +27,6 @@ export type RecoveryMethodsStackParamList = {
   [AppNavigation.RecoveryMethods.ScanQrCode]: undefined
   [AppNavigation.RecoveryMethods.LearnMore]: { totpCode?: string }
   [AppNavigation.RecoveryMethods.VerifyCode]: undefined
-  [AppNavigation.RecoveryMethods.PasskeySetup]: undefined
   [AppNavigation.RecoveryMethods.FIDONameInput]: {
     title: string
     description: string
@@ -95,11 +93,6 @@ const RecoveryMethodsStack = (): JSX.Element => {
           />
         </RecoveryMethodsS.Group>
         <RecoveryMethodsS.Group>
-          <RecoveryMethodsS.Screen
-            options={MainHeaderOptions()}
-            name={AppNavigation.RecoveryMethods.PasskeySetup}
-            component={PasskeySetupScreen}
-          />
           <RecoveryMethodsS.Screen
             options={{ presentation: 'modal' }}
             name={AppNavigation.RecoveryMethods.FIDONameInput}

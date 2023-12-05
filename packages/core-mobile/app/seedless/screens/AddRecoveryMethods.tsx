@@ -27,7 +27,36 @@ export const AddRecoveryMethods = (): JSX.Element => {
   }
 
   const handlePasskey = async (): Promise<void> => {
-    navigate(AppNavigation.RecoveryMethods.PasskeySetup)
+    navigate(AppNavigation.RecoveryMethods.FIDONameInput, {
+      title: 'Name Your Passkey',
+      description: "Add a Passkey name, so it's easier to find later.",
+      inputFieldLabel: 'Passkey Name',
+      inputFieldPlaceholder: 'Enter Name',
+      onClose: async (name?: string) => {
+        const passkeyName = name && name.length > 0 ? name : 'Passkey'
+
+        try {
+          await SeedlessService.registerFido(passkeyName, false)
+
+          await SeedlessService.approveFido(oidcToken, mfaId, false)
+
+          goBack()
+
+          navigate(AppNavigation.Root.Onboard, {
+            screen: AppNavigation.Onboard.Welcome,
+            params: {
+              screen: AppNavigation.Onboard.AnalyticsConsent,
+              params: {
+                nextScreen: AppNavigation.Onboard.CreatePin
+              }
+            }
+          })
+        } catch (e) {
+          Logger.error('passkey registration failed', e)
+          showSimpleToast('Unable to register passkey')
+        }
+      }
+    })
   }
 
   const handleYubikey = async (): Promise<void> => {
