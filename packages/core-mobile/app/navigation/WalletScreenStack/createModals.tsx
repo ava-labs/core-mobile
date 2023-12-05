@@ -1,4 +1,4 @@
-import React, { useLayoutEffect } from 'react'
+import React, { useEffect, useLayoutEffect, useRef } from 'react'
 import AppNavigation from 'navigation/AppNavigation'
 import { WalletScreenProps } from 'navigation/types'
 import { useNavigation, useRoute } from '@react-navigation/native'
@@ -26,6 +26,7 @@ import Photo from 'assets/icons/photo_placeholder.svg'
 import Swap from 'assets/icons/swap_v2.svg'
 import HeaderAccountSelector from 'components/HeaderAccountSelector'
 import { View } from '@avalabs/k2-mobile'
+import { Animated } from 'react-native'
 import { SignOutModalScreen, WalletScreenSType } from './WalletScreenStack'
 
 export const createModals = (WalletScreenS: WalletScreenSType): JSX.Element => {
@@ -131,6 +132,22 @@ type AccountDropDownNavigationProp = WalletScreenProps<
 
 const AccountDropdownComp = (): JSX.Element => {
   const navigation = useNavigation<AccountDropDownNavigationProp>()
+  const backgroundColor = useRef(new Animated.Value(0)).current
+
+  useEffect(() => {
+    Animated.timing(backgroundColor, {
+      toValue: 1,
+      duration: 400,
+      delay: 200,
+      useNativeDriver: false
+    }).start()
+  }, [backgroundColor])
+
+  const backgroundColorInterpolate = backgroundColor.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['transparent', 'black']
+  })
+
   useLayoutEffect(() => {
     navigation.setOptions({
       headerBackgroundContainerStyle: {
@@ -140,17 +157,21 @@ const AccountDropdownComp = (): JSX.Element => {
       headerLeft: () => null,
       // eslint-disable-next-line react/no-unstable-nested-components
       headerTitle: () => (
-        <View sx={{ marginTop: 4, backgroundColor: '$black' }}>
+        <Animated.View
+          style={{
+            marginTop: 4,
+            backgroundColor: backgroundColorInterpolate
+          }}>
           <HeaderAccountSelector
             direction="up"
             onPressed={() => {
               navigation.goBack()
             }}
           />
-        </View>
+        </Animated.View>
       )
     })
-  }, [navigation])
+  }, [navigation, backgroundColorInterpolate])
 
   return (
     <View sx={{ marginTop: 4, flex: 1 }}>
