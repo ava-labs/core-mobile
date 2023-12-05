@@ -8,7 +8,8 @@ import { deserializeJson } from 'utils/serialization/deserialize'
 export enum KeySlot {
   SignerSessionData = 'SignerSessionData',
   SeedlessPubKeys = 'SeedlessPubKeys',
-  OidcProvider = 'OidcProvider'
+  OidcProvider = 'OidcProvider',
+  OidcUserId = 'OidcUserId'
 }
 
 /**
@@ -45,6 +46,7 @@ class SecureStorageService {
   /**
    * Loads end decrypts data for given slot or throws error.
    * @param slot - Slot from which to load
+   * @throws Error if no value is found for given slot
    */
   async load<T>(slot: KeySlot): Promise<T> {
     const serviceForValues = `ss_value_${slot}`

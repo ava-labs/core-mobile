@@ -254,6 +254,7 @@ class SeedlessService {
    * @param oidcToken — The OIDC token
    * @param orgId — The id of the organization that the user is in
    * @return — Proof of authentication
+   * @throws Error in case of network call fail
    */
   async oidcProveIdentity(oidcToken: string): Promise<IdentityProof> {
     const oidcClient = this.getOidcClient(oidcToken)
