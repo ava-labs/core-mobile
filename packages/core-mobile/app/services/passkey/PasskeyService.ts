@@ -13,6 +13,8 @@ import {
   FIDORegistrationResult,
   FIDORegistrationRequest
 } from 'services/passkey/types'
+import { base64ToBase64Url } from 'utils/data/base64'
+import { RP_ID, RP_NAME } from './consts'
 
 if (!Config.SEEDLESS_ENVIRONMENT) {
   throw Error('SEEDLESS_ENVIRONMENT is missing. Please check your env file.')
@@ -23,18 +25,12 @@ class PasskeyService {
     return Passkey.isSupported() && Platform.OS === 'ios'
   }
 
-  get rpID(): string {
-    return Config.SEEDLESS_ENVIRONMENT === 'prod' ? 'core.app' : 'test.core.app'
-  }
-
   async register(
     challengeOptions: FIDORegistrationRequest,
     withSecurityKey: boolean
   ): Promise<FIDORegistrationResult> {
     const request = this.prepareRegistrationRequest(challengeOptions)
-
     const result = await Passkey.register(request, { withSecurityKey })
-
     return this.convertRegistrationResult(result)
   }
 
@@ -59,7 +55,8 @@ class PasskeyService {
       challenge: request.challenge.toString('base64'),
       rp: {
         ...request.rp,
-        id: this.rpID
+        name: RP_NAME,
+        id: RP_ID
       },
       user: {
         ...request.user,
@@ -78,7 +75,7 @@ class PasskeyService {
     return {
       ...request,
       challenge: request.challenge.toString('base64'),
-      rpId: this.rpID,
+      rpId: RP_ID,
       allowCredentials: (request.allowCredentials ?? []).map(cred => ({
         ...cred,
         id: cred.id.toString('base64')
@@ -91,7 +88,7 @@ class PasskeyService {
   ): FIDORegistrationResult {
     return {
       ...result,
-      id: this.convertBase64ToBase64Url(result.id),
+      id: base64ToBase64Url(result.id),
       rawId: Buffer.from(result.rawId, 'base64'),
       response: {
         ...result.response,
@@ -109,7 +106,7 @@ class PasskeyService {
   ): FIDOAuthenticationResult {
     return {
       ...result,
-      id: this.convertBase64ToBase64Url(result.id),
+      id: base64ToBase64Url(result.id),
       rawId: Buffer.from(result.rawId, 'base64'),
       response: {
         ...result.response,
@@ -122,10 +119,6 @@ class PasskeyService {
         userHandle: Buffer.from(result.response.userHandle, 'base64')
       }
     }
-  }
-
-  private convertBase64ToBase64Url(b64: string): string {
-    return b64.replace(/\+/g, '-').replace(/\//g, '_').replace(/[=]*$/g, '')
   }
 }
 
