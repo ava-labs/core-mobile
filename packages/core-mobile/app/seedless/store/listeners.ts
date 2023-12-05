@@ -1,5 +1,5 @@
 import { AppStartListening } from 'store/middleware/listener'
-import { onAppUnlocked } from 'store/app'
+import { immediateAppLock, onAppUnlocked } from 'store/app'
 import * as Navigation from 'utils/Navigation'
 import AppNavigation from 'navigation/AppNavigation'
 import Logger from 'utils/Logger'
@@ -16,8 +16,17 @@ import GoogleSigninService from 'services/socialSignIn/google/GoogleSigninServic
 import WalletService from 'services/wallet/WalletService'
 import { WalletType } from 'services/wallet/types'
 import { OidcPayload } from 'seedless/types'
+import { Result } from 'types/result'
+import { RefreshSeedlessTokenFlowErrors } from 'seedless/errors'
+import { Action, Dispatch } from '@reduxjs/toolkit'
+import { AppListenerEffectAPI } from 'store'
 
-const refreshSeedlessToken = async (): Promise<void> => {
+const refreshSeedlessToken = async (
+  _: Action,
+  listenerApi: AppListenerEffectAPI
+): Promise<void> => {
+  const { dispatch } = listenerApi
+
   if (WalletService.walletType !== WalletType.SEEDLESS) {
     return
   }
@@ -42,69 +51,138 @@ const refreshSeedlessToken = async (): Promise<void> => {
     params: {
       screen: AppNavigation.RefreshToken.SessionTimeout,
       params: {
-        onRetry: () => {
-          refreshSeedlessTokenFlow().catch(e =>
-            Logger.error('refreshSeedlessTokenFlow', e)
-          )
-          //dismiss SessionTimeout screen
-          Navigation.goBack()
-        }
+        onRetry: () => handleRetry(dispatch)
       } as SessionTimeoutParams
     }
   })
 }
 
-async function refreshSeedlessTokenFlow(): Promise<void> {
-  try {
-    const oidcProvider = await SecureStorageService.load(KeySlot.OidcProvider)
-    let oidcTokenResult: OidcPayload
-    switch (oidcProvider) {
-      case OidcProviders.GOOGLE:
-        oidcTokenResult = await GoogleSigninService.signin()
-        break
-      case OidcProviders.APPLE:
-        oidcTokenResult = await AppleSignInService.signIn()
-        break
-      default:
-        throw new Error('Unsupported oidcProvider')
-    }
-
-    const identity = await SeedlessService.oidcProveIdentity(
-      oidcTokenResult.oidcToken
-    )
-    const result = await CoreSeedlessAPIService.register(identity)
-    if (result === SeedlessUserRegistrationResult.ALREADY_REGISTERED) {
-      const loginResult = await SeedlessService.requestOidcAuth(
-        oidcTokenResult.oidcToken
-      )
-      const userMfa = await SeedlessService.userMfa()
-      const usesTotp = userMfa.some(value => value.type === 'totp')
-      if (usesTotp) {
-        const onVerifySuccessPromise = new Promise((resolve, reject) => {
+function handleRetry(dispatch: Dispatch): void {
+  //dismiss previous modal screen
+  Navigation.goBack()
+  refreshSeedlessTokenFlow()
+    .then(result => {
+      if (result.success) {
+        //dismiss Loader screen
+        Navigation.goBack()
+        return
+      }
+      switch (result.error.name) {
+        case 'USER_ID_MISMATCH':
           Navigation.navigate({
             name: AppNavigation.Root.RefreshToken,
             params: {
-              screen: AppNavigation.RefreshToken.VerifyCode,
+              screen: AppNavigation.RefreshToken.WrongSocialAccount,
               params: {
-                oidcToken: oidcTokenResult.oidcToken,
-                mfaId: loginResult.mfaId(),
-                onVerifySuccess: resolve,
-                onBack: () => reject('canceled')
-              } as VerifyCodeParams
+                onRetry: () => handleRetry(dispatch)
+              } as SessionTimeoutParams
             }
           })
-        })
+          break
+        case 'USER_CANCELED':
+        case 'UNSUPPORTED_OIDC_PROVIDER':
+        case 'NOT_REGISTERED':
+        case 'UNEXPECTED_ERROR':
+          throw new Error(result.error.name)
+      }
+    })
+    .catch(e => {
+      Logger.error('refreshSeedlessTokenFlow error', e)
+      //dismiss Loader screen
+      Navigation.goBack()
+      dispatch(immediateAppLock)
+    })
+}
 
-        await onVerifySuccessPromise
+async function refreshSeedlessTokenFlow(): Promise<
+  Result<void, RefreshSeedlessTokenFlowErrors>
+> {
+  const oidcProvider = await SecureStorageService.load(KeySlot.OidcProvider)
+  const oidcUserId = await SecureStorageService.load(KeySlot.OidcUserId).catch(
+    _ => undefined
+  )
+  let oidcTokenResult: OidcPayload
+  switch (oidcProvider) {
+    case OidcProviders.GOOGLE:
+      oidcTokenResult = await GoogleSigninService.signin()
+      break
+    case OidcProviders.APPLE:
+      oidcTokenResult = await AppleSignInService.signIn()
+      break
+    default:
+      return {
+        success: false,
+        error: {
+          name: 'UNSUPPORTED_OIDC_PROVIDER',
+          message: `${oidcProvider} not supported`
+        }
+      }
+  }
+
+  if (oidcUserId && oidcUserId !== oidcTokenResult.userId) {
+    return {
+      success: false,
+      error: {
+        name: 'USER_ID_MISMATCH',
+        message: `Please use same social account as when registering.`
       }
     }
-    //TODO: handle other cases
-  } catch (e) {
-    Logger.error('refreshSeedlessTokenFlow', e)
-    //TODO: sign out user
-  } finally {
-    //remove loader screen
-    Navigation.goBack()
+  }
+
+  const identity = await SeedlessService.oidcProveIdentity(
+    oidcTokenResult.oidcToken
+  )
+  const result = await CoreSeedlessAPIService.register(identity)
+  if (result === SeedlessUserRegistrationResult.ALREADY_REGISTERED) {
+    const loginResult = await SeedlessService.requestOidcAuth(
+      oidcTokenResult.oidcToken
+    )
+    const userMfa = await SeedlessService.userMfa()
+    const usesTotp = userMfa.some(value => value.type === 'totp')
+    if (usesTotp) {
+      const onVerifySuccessPromise = new Promise((resolve, reject) => {
+        Navigation.navigate({
+          name: AppNavigation.Root.RefreshToken,
+          params: {
+            screen: AppNavigation.RefreshToken.VerifyCode,
+            params: {
+              oidcToken: oidcTokenResult.oidcToken,
+              mfaId: loginResult.mfaId(),
+              onVerifySuccess: resolve,
+              onBack: () => reject('USER_CANCELED')
+            } as VerifyCodeParams
+          }
+        })
+      })
+
+      try {
+        await onVerifySuccessPromise
+        return {
+          success: true,
+          value: undefined
+        }
+      } catch (e) {
+        return {
+          success: false,
+          error: {
+            name: e === 'USER_CANCELED' ? e : 'UNEXPECTED_ERROR',
+            message: ``
+          }
+        }
+      }
+    }
+
+    return {
+      success: true,
+      value: undefined
+    }
+  }
+  return {
+    success: false,
+    error: {
+      name: 'NOT_REGISTERED',
+      message: `Please sign in again.`
+    }
   }
 }
 
