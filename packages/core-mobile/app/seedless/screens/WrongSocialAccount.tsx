@@ -4,12 +4,12 @@ import FlexSpacer from 'components/FlexSpacer'
 import { Button, Text, View } from '@avalabs/k2-mobile'
 import ErrorOutlineSVG from 'components/svg/ErrorOutlineSVG'
 
-export type WrongIdParams = {
+export type WrongSocialAccountParams = {
   onRetry: () => void
 }
 export default function WrongSocialAccount({
   onRetry
-}: WrongIdParams): JSX.Element {
+}: WrongSocialAccountParams): JSX.Element {
   return (
     <View style={{ padding: 16, flex: 1 }}>
       <FlexSpacer />

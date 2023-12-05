@@ -9,10 +9,14 @@ import SessionTimeout, {
 import { VerifyCode, VerifyCodeParams } from 'seedless/screens/VerifyCode'
 import { useTheme } from '@avalabs/k2-mobile'
 import { RefreshTokenScreenProps } from 'navigation/types'
+import WrongSocialAccount, {
+  WrongSocialAccountParams
+} from 'seedless/screens/WrongSocialAccount'
 
 export type RefreshTokenScreenStackParamList = {
   [AppNavigation.RefreshToken.OwlLoader]: undefined
   [AppNavigation.RefreshToken.SessionTimeout]: SessionTimeoutParams
+  [AppNavigation.RefreshToken.WrongSocialAccount]: WrongSocialAccountParams
   [AppNavigation.RefreshToken.VerifyCode]: VerifyCodeParams
 }
 
@@ -38,6 +42,11 @@ const RefreshTokenScreenStack: FC = () => {
         component={SessionTimeoutScreen}
       />
       <RefreshTokenScreenS.Screen
+        options={{ presentation: 'transparentModal' }}
+        name={AppNavigation.RefreshToken.WrongSocialAccount}
+        component={WrongSocialAccountScreen}
+      />
+      <RefreshTokenScreenS.Screen
         options={{ presentation: 'modal' }}
         name={AppNavigation.RefreshToken.VerifyCode}
         component={VerifyCodeScreen}
@@ -53,6 +62,15 @@ type SessionTimeoutScreenProps = RefreshTokenScreenProps<
 function SessionTimeoutScreen(): JSX.Element {
   const { params } = useRoute<SessionTimeoutScreenProps['route']>()
   return <SessionTimeout onRetry={params.onRetry} />
+}
+
+type WrongSocialAccountScreenProps = RefreshTokenScreenProps<
+  typeof AppNavigation.RefreshToken.WrongSocialAccount
+>
+
+function WrongSocialAccountScreen(): JSX.Element {
+  const { params } = useRoute<WrongSocialAccountScreenProps['route']>()
+  return <WrongSocialAccount onRetry={params.onRetry} />
 }
 
 type VerifyCodeScreenProps = RefreshTokenScreenProps<
