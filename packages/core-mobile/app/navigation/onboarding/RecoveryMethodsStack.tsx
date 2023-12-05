@@ -20,7 +20,6 @@ import { PasskeySetupScreen } from 'seedless/screens/PasskeySetupScreen'
 import { FIDONameInputScreen } from 'seedless/screens/FIDONameInputScreen'
 import { useNavigation } from '@react-navigation/native'
 import { RecoveryMethodsScreenProps } from 'navigation/types'
-import { BackButton } from 'components/BackButton'
 
 export type RecoveryMethodsStackParamList = {
   [AppNavigation.RecoveryMethods.AddRecoveryMethods]: undefined
@@ -125,9 +124,7 @@ function VerifyCodeScreen(): JSX.Element {
 
   useLayoutEffect(() => {
     setOptions({
-      headerTitle: '',
-      // eslint-disable-next-line react/no-unstable-nested-components
-      headerLeft: () => <BackButton />
+      headerShown: false
     })
   }, [setOptions])
 
