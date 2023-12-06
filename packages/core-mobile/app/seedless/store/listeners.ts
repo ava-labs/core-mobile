@@ -1,11 +1,17 @@
 import { AppStartListening } from 'store/middleware/listener'
-import { immediateAppLock, onAppUnlocked } from 'store/app'
+import {
+  immediateAppLock,
+  onAppUnlocked,
+  onRehydrationComplete,
+  selectWalletState,
+  WalletState
+} from 'store/app'
 import * as Navigation from 'utils/Navigation'
 import AppNavigation from 'navigation/AppNavigation'
 import Logger from 'utils/Logger'
 import { SessionTimeoutParams } from 'seedless/screens/SessionTimeout'
 import SecureStorageService, { KeySlot } from 'security/SecureStorageService'
-import { OidcProviders } from 'seedless/consts'
+import { OidcProviders, SEEDLESS_MNEMONIC_STUB } from 'seedless/consts'
 import CoreSeedlessAPIService, {
   SeedlessUserRegistrationResult
 } from 'seedless/services/CoreSeedlessAPIService'
@@ -18,28 +24,57 @@ import { WalletType } from 'services/wallet/types'
 import { OidcPayload } from 'seedless/types'
 import { Result } from 'types/result'
 import { RefreshSeedlessTokenFlowErrors } from 'seedless/errors'
-import { Action, Dispatch } from '@reduxjs/toolkit'
+import { Action } from '@reduxjs/toolkit'
 import { AppListenerEffectAPI } from 'store'
+import { onTokenExpired, reInitWalletIfNeeded } from 'seedless/store/slice'
+import { GlobalEvents } from '@cubist-labs/cubesigner-sdk'
+import { initWalletServiceAndUnlock } from 'hooks/useWallet'
 
-const refreshSeedlessToken = async (
-  _: Action,
-  listenerApi: AppListenerEffectAPI
-): Promise<void> => {
-  const { dispatch } = listenerApi
+let onSessionExpiredHandler: () => Promise<void>
 
+const refreshSeedlessToken = async (): Promise<void> => {
   if (WalletService.walletType !== WalletType.SEEDLESS) {
     return
   }
+  //refreshToken will trigger onSessionExpired if fails for that reason
   const refreshTokenResult = await SeedlessService.refreshToken()
   if (refreshTokenResult.success) {
     Logger.trace('Refresh token success')
     return
   }
-  if (refreshTokenResult.error.name === 'RefreshFailed') {
-    Logger.error('refresh failed', refreshTokenResult.error)
-    return
-  }
+  Logger.error('refresh failed', refreshTokenResult.error)
+}
 
+const registerTokenExpire = async (
+  _: Action,
+  listenerApi: AppListenerEffectAPI
+): Promise<void> => {
+  const { dispatch } = listenerApi
+  onSessionExpiredHandler = async () => {
+    dispatch(onTokenExpired)
+  }
+  GlobalEvents.onSessionExpired(onSessionExpiredHandler)
+}
+
+const handleReInitWalletIfNeeded = async (
+  _: Action,
+  listenerApi: AppListenerEffectAPI
+): Promise<void> => {
+  const { dispatch } = listenerApi
+  const state = listenerApi.getState()
+  if (selectWalletState(state) === WalletState.INACTIVE) {
+    await initWalletServiceAndUnlock(
+      dispatch,
+      SEEDLESS_MNEMONIC_STUB,
+      WalletType.SEEDLESS
+    )
+  }
+}
+
+const handleTokenExpired = async (
+  _: Action,
+  listenerApi: AppListenerEffectAPI
+): Promise<void> => {
   Navigation.navigate({
     name: AppNavigation.Root.RefreshToken,
     params: {
@@ -51,20 +86,30 @@ const refreshSeedlessToken = async (
     params: {
       screen: AppNavigation.RefreshToken.SessionTimeout,
       params: {
-        onRetry: () => handleRetry(dispatch)
+        onRetry: () => handleRetry(listenerApi)
       } as SessionTimeoutParams
     }
   })
 }
 
-function handleRetry(dispatch: Dispatch): void {
+function handleRetry(listenerApi: AppListenerEffectAPI): void {
+  const { dispatch } = listenerApi
   //dismiss previous modal screen
   Navigation.goBack()
-  refreshSeedlessTokenFlow()
+  startRefreshSeedlessTokenFlow()
     .then(result => {
       if (result.success) {
         //dismiss Loader screen
         Navigation.goBack()
+
+        const state = listenerApi.getState()
+        if (selectWalletState(state) === WalletState.INACTIVE) {
+          initWalletServiceAndUnlock(
+            dispatch,
+            SEEDLESS_MNEMONIC_STUB,
+            WalletType.SEEDLESS
+          ).catch(Logger.error)
+        }
         return
       }
       switch (result.error.name) {
@@ -74,7 +119,7 @@ function handleRetry(dispatch: Dispatch): void {
             params: {
               screen: AppNavigation.RefreshToken.WrongSocialAccount,
               params: {
-                onRetry: () => handleRetry(dispatch)
+                onRetry: () => handleRetry(listenerApi)
               } as SessionTimeoutParams
             }
           })
@@ -87,14 +132,14 @@ function handleRetry(dispatch: Dispatch): void {
       }
     })
     .catch(e => {
-      Logger.error('refreshSeedlessTokenFlow error', e)
+      Logger.error('startRefreshSeedlessTokenFlow error', e)
       //dismiss Loader screen
       Navigation.goBack()
       dispatch(immediateAppLock)
     })
 }
 
-async function refreshSeedlessTokenFlow(): Promise<
+async function startRefreshSeedlessTokenFlow(): Promise<
   Result<void, RefreshSeedlessTokenFlowErrors>
 > {
   const oidcProvider = await SecureStorageService.load(KeySlot.OidcProvider)
@@ -192,5 +237,17 @@ export const addSeedlessListeners = (
   startListening({
     actionCreator: onAppUnlocked,
     effect: refreshSeedlessToken
+  })
+  startListening({
+    actionCreator: onTokenExpired,
+    effect: handleTokenExpired
+  })
+  startListening({
+    actionCreator: onRehydrationComplete,
+    effect: registerTokenExpire
+  })
+  startListening({
+    actionCreator: reInitWalletIfNeeded,
+    effect: handleReInitWalletIfNeeded
   })
 }
