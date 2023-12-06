@@ -6,6 +6,7 @@ import { onAppUnlocked, selectWalletType, setWalletType } from 'store/app'
 import { WalletType } from 'services/wallet/types'
 import WalletService from 'services/wallet/WalletService'
 import { resetNavToUnlockedWallet } from 'utils/Navigation'
+import { Dispatch } from '@reduxjs/toolkit'
 
 export interface UseWallet {
   onPinCreated: (
@@ -15,6 +16,16 @@ export interface UseWallet {
   ) => Promise<'useBiometry' | 'enterWallet'>
   initWallet: (mnemonic: string, walletType?: WalletType) => Promise<void>
   destroyWallet: () => void
+}
+
+export async function initWalletServiceAndUnlock(
+  dispatch: Dispatch,
+  mnemonic: string,
+  walletType: WalletType
+): Promise<void> {
+  await WalletService.init(mnemonic, walletType)
+  dispatch(onAppUnlocked())
+  resetNavToUnlockedWallet()
 }
 
 /**
@@ -40,10 +51,11 @@ export function useWallet(): UseWallet {
       dispatch(setWalletType(walletType))
     }
 
-    await WalletService.init(mnemonic, walletType || cachedWalletType)
-
-    dispatch(onAppUnlocked())
-    resetNavToUnlockedWallet()
+    await initWalletServiceAndUnlock(
+      dispatch,
+      mnemonic,
+      walletType || cachedWalletType
+    )
   }
 
   /**
