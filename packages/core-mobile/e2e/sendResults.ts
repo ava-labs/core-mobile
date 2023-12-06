@@ -1,3 +1,4 @@
+/* eslint-disable sonarjs/cognitive-complexity */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // @ts-nocheck comment at the top of the file
 /* eslint-disable no-var */
@@ -157,8 +158,19 @@ async function generatePlatformResults(
     )
     try {
       const existingTestCases = await getTestCasesFromRun(runId)
+      existingTestCases.forEach((testCase: any) => {
+        resultArray.forEach((result: any) => {
+          if (
+            testCase.case_id === result.case_id &&
+            testCase.status_id !== result.status_id
+          ) {
+            existingTestCases.splice(existingTestCases.indexOf(testCase), 1)
+          }
+        })
+      })
       // Adds the existing test case results to the results array so they are not overwritten in testrail when using the updateRun endpoint
       resultArray = resultArray.concat(existingTestCases)
+      console.log(resultArray, ' is the result array')
       // Add already existing test cases to the testCasesToSend array
       if (existingTestCases.length > 0) {
         existingTestCases.forEach((testCase: number) => {
@@ -179,14 +191,6 @@ async function generatePlatformResults(
           runId
       )
     }
-
-    // Removes duplicate test cases from the array
-    resultArray = [
-      ...new Map(
-        arr.map(item => [item.case_id && item.status_id, item])
-      ).values()
-    ]
-
     for (let i = 0; i < resultArray.length; i++) {
       const resultObject = resultArray[i]
       const statusId = Number(resultObject?.status_id)
