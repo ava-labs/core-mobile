@@ -211,7 +211,7 @@ async function generatePlatformResults(
       }
     }
     // Send the results to testrail
-    const results = await api.addResultsForCases(testResults)
+    const results = await api.addResultsForCases(Number(runId), testResults)
     console.log(results, ' is the result for testrail')
 
     // Adds the screenshot to the test case in testrail if the test failed
