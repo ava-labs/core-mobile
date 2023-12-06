@@ -238,6 +238,7 @@ __metadata:
     react-native-big-list: 1.6.1
     react-native-camera: 4.2.1
     react-native-chart-kit: 6.12.0
+    react-native-circular-progress: 1.3.9
     react-native-collapsible: 1.6.0
     react-native-config: 1.4.5
     react-native-device-info: 10.0.2
@@ -21417,6 +21418,19 @@ __metadata:
     react-native: ">= 0.50.0"
     react-native-svg: "> 6.4.1"
   checksum: 04c225965c0ce3c71205a62bc92743e9188458d8f95c12481e43a2e53c425bd5db8274e57ab93c1cb95ffd3fb54950ca92c3d33e518a3505d7697c247b3b7e15
+  languageName: node
+  linkType: hard
+
+"react-native-circular-progress@npm:1.3.9":
+  version: 1.3.9
+  resolution: "react-native-circular-progress@npm:1.3.9"
+  dependencies:
+    prop-types: ^15.8.1
+  peerDependencies:
+    react: ">=16.0.0"
+    react-native: ">=0.50.0"
+    react-native-svg: ">=7.0.0"
+  checksum: e0a33d7ff7afd9912f52e0237e33fc2c4e33d42b7e887ffd52a1b05bd098c50caa5350fab4cb8a65dd8cf4e52587ed652449ffa13f64de42fcf022d2d84fe4d6
   languageName: node
   linkType: hard
 

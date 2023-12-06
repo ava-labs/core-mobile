@@ -256,7 +256,7 @@ const ConfirmCancelModal = (): JSX.Element => {
   }, [canGoBack, goBack])
 
   const onNext = useCallback(() => {
-    // cancel seedless export
+    // todo: cancel seedless export
     if (getParent()?.canGoBack()) {
       getParent()?.goBack()
     }
@@ -289,7 +289,7 @@ const ConfirmCloseModal = (): JSX.Element => {
   }, [canGoBack, goBack])
 
   const onNext = useCallback(() => {
-    // cancel seedless export
+    // todo: cancel seedless export
     if (getParent()?.canGoBack()) {
       getParent()?.goBack()
     }

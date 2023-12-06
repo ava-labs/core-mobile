@@ -1,29 +1,41 @@
-import { Button, Text, View } from '@avalabs/k2-mobile'
+import { Button, Text, View, useTheme } from '@avalabs/k2-mobile'
 import React from 'react'
 import { Space } from 'components/Space'
+import { Dimensions } from 'react-native'
+import { AnimatedCircularProgress } from 'react-native-circular-progress'
 
 const DAY_REMAINING = 2
 
 interface Props {
   onCancel: () => void
 }
+const { width } = Dimensions.get('window')
+const CIRCULAR_PROGRESS_SIZE = width / 3
 
 export const RecoveryPhrasePending = ({ onCancel }: Props): JSX.Element => {
+  const {
+    theme: { colors }
+  } = useTheme()
+
   return (
     <View
       sx={{ marginHorizontal: 16, flex: 1, justifyContent: 'space-between' }}>
       <View>
         <Text variant="heading3">Recovery Phrase</Text>
-        <Space y={80} />
-        <View
-          sx={{
-            backgroundColor: '$altOrange1',
-            marginVertical: 32,
-            height: 153
-          }}
-        />
-
-        <View sx={{ alignItems: 'center', marginHorizontal: 36 }}>
+      </View>
+      <View>
+        <View sx={{ alignItems: 'center', marginHorizontal: 16 }}>
+          <AnimatedCircularProgress
+            size={CIRCULAR_PROGRESS_SIZE}
+            width={10}
+            fill={50}
+            tintColor={colors.$blueMain}
+            backgroundColor={colors.$neutral800}
+            arcSweepAngle={180}
+            rotation={270}
+            lineCap="round"
+            style={{ height: CIRCULAR_PROGRESS_SIZE / 2, marginBottom: 32 }}
+          />
           <Text variant="heading5" sx={{ color: '$neutral50' }}>
             {DAY_REMAINING > 1
               ? `${DAY_REMAINING} Days Remaining`
