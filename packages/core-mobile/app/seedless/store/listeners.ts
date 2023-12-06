@@ -157,20 +157,20 @@ async function startRefreshSeedlessTokenFlow(): Promise<
     default:
       return {
         success: false,
-        error: {
+        error: new RefreshSeedlessTokenFlowErrors({
           name: 'UNSUPPORTED_OIDC_PROVIDER',
           message: `${oidcProvider} not supported`
-        }
+        })
       }
   }
 
   if (oidcUserId && oidcUserId !== oidcTokenResult.userId) {
     return {
       success: false,
-      error: {
+      error: new RefreshSeedlessTokenFlowErrors({
         name: 'USER_ID_MISMATCH',
         message: `Please use same social account as when registering.`
-      }
+      })
     }
   }
 
@@ -209,10 +209,10 @@ async function startRefreshSeedlessTokenFlow(): Promise<
       } catch (e) {
         return {
           success: false,
-          error: {
+          error: new RefreshSeedlessTokenFlowErrors({
             name: e === 'USER_CANCELED' ? e : 'UNEXPECTED_ERROR',
             message: ``
-          }
+          })
         }
       }
     }
@@ -224,10 +224,10 @@ async function startRefreshSeedlessTokenFlow(): Promise<
   }
   return {
     success: false,
-    error: {
+    error: new RefreshSeedlessTokenFlowErrors({
       name: 'NOT_REGISTERED',
       message: `Please sign in again.`
-    }
+    })
   }
 }
 
