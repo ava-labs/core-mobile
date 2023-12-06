@@ -4,16 +4,14 @@ import * as Navigation from 'utils/Navigation'
 import AppNavigation from 'navigation/AppNavigation'
 import Logger from 'utils/Logger'
 import { SessionTimeoutParams } from 'seedless/screens/SessionTimeout'
-import SecureStorageService, { KeySlot } from 'security/SecureStorageService'
-import { OidcProviders } from 'seedless/consts'
-import CoreSeedlessAPIService, {
-  SeedlessUserRegistrationResult
-} from 'seedless/services/CoreSeedlessAPIService'
 import SeedlessService from 'seedless/services/SeedlessService'
 import { VerifyCodeParams } from 'seedless/screens/VerifyCode'
-import AppleSignInService from 'services/socialSignIn/apple/AppleSignInService'
-import GoogleSigninService from 'services/socialSignIn/google/GoogleSigninService'
 import { OidcPayload } from 'seedless/types'
+import {
+  CubeSignerResponse,
+  SignerSessionData
+} from '@cubist-labs/cubesigner-sdk'
+import { refreshSeedlessTokenFlow } from 'seedless/utils/refreshSeedlessTokenFlow'
 
 const refreshSeedlessToken = async (): Promise<void> => {
   const refreshTokenResult = await SeedlessService.refreshToken()
@@ -38,69 +36,34 @@ const refreshSeedlessToken = async (): Promise<void> => {
       screen: AppNavigation.RefreshToken.SessionTimeout,
       params: {
         onRetry: () => {
-          refreshSeedlessTokenFlow().catch(e =>
-            Logger.error('refreshSeedlessTokenFlow', e)
-          )
+          const onVerifySuccessPromise = (
+            loginResult: CubeSignerResponse<SignerSessionData>,
+            oidcTokenResult: OidcPayload
+          ): Promise<void> =>
+            new Promise((resolve, reject) => {
+              Navigation.navigate({
+                name: AppNavigation.Root.RefreshToken,
+                params: {
+                  screen: AppNavigation.RefreshToken.VerifyCode,
+                  params: {
+                    oidcToken: oidcTokenResult.oidcToken,
+                    mfaId: loginResult.mfaId(),
+                    onVerifySuccess: resolve,
+                    onBack: () => reject('canceled')
+                  } as VerifyCodeParams
+                }
+              })
+            })
+          refreshSeedlessTokenFlow(
+            onVerifySuccessPromise,
+            Navigation.goBack
+          ).catch(e => Logger.error('refreshSeedlessTokenFlow', e))
           //dismiss SessionTimeout screen
           Navigation.goBack()
         }
       } as SessionTimeoutParams
     }
   })
-}
-
-async function refreshSeedlessTokenFlow(): Promise<void> {
-  try {
-    const oidcProvider = await SecureStorageService.load(KeySlot.OidcProvider)
-    let oidcTokenResult: OidcPayload
-    switch (oidcProvider) {
-      case OidcProviders.GOOGLE:
-        oidcTokenResult = await GoogleSigninService.signin()
-        break
-      case OidcProviders.APPLE:
-        oidcTokenResult = await AppleSignInService.signIn()
-        break
-      default:
-        throw new Error('Unsupported oidcProvider')
-    }
-
-    const identity = await SeedlessService.oidcProveIdentity(
-      oidcTokenResult.oidcToken
-    )
-    const result = await CoreSeedlessAPIService.register(identity)
-    if (result === SeedlessUserRegistrationResult.ALREADY_REGISTERED) {
-      const loginResult = await SeedlessService.requestOidcAuth(
-        oidcTokenResult.oidcToken
-      )
-      const userMfa = await SeedlessService.userMfa()
-      const usesTotp = userMfa.some(value => value.type === 'totp')
-      if (usesTotp) {
-        const onVerifySuccessPromise = new Promise((resolve, reject) => {
-          Navigation.navigate({
-            name: AppNavigation.Root.RefreshToken,
-            params: {
-              screen: AppNavigation.RefreshToken.VerifyCode,
-              params: {
-                oidcToken: oidcTokenResult.oidcToken,
-                mfaId: loginResult.mfaId(),
-                onVerifySuccess: resolve,
-                onBack: () => reject('canceled')
-              } as VerifyCodeParams
-            }
-          })
-        })
-
-        await onVerifySuccessPromise
-      }
-    }
-    //TODO: handle other cases
-  } catch (e) {
-    Logger.error('refreshSeedlessTokenFlow', e)
-    //TODO: sign out user
-  } finally {
-    //remove loader screen
-    Navigation.goBack()
-  }
 }
 
 export const addSeedlessListeners = (

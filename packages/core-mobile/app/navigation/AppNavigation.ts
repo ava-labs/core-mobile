@@ -146,7 +146,8 @@ enum SecurityPrivacyScreens {
   RecoveryPhrase = 'SecurityPrivacyScreens.RecoveryPhrase',
   DappList = 'SecurityPrivacyScreens.DappList',
   DappConnectModal = 'SecurityPrivacyScreens.DappConnectModal',
-  QRCode = 'SecurityPrivacyScreens.QRCode'
+  QRCode = 'SecurityPrivacyScreens.QRCode',
+  SeedlessExport = 'SecurityPrivacyScreens.SeedlessExport'
 }
 
 enum LegalScreens {
@@ -235,6 +236,17 @@ enum RecoveryMethodsScreens {
   FIDONameInput = 'RecoveryMethodsScreens.FIDONameInput'
 }
 
+enum SeedlessExportScreens {
+  Instructions = 'SeedlessExportScreens.Instructions',
+  WaitingPeriodModal = 'SeedlessExportScreens.WaitingPeriodModal',
+  VerifyCode = 'SeedlessExportScreens.VerifyCode',
+  RecoveryPhrasePending = 'SeedlessExportScreens.RecoveryPhrasePending',
+  RecoveryPhrase = 'SeedlessExportScreens.RecoveryPhrase',
+  ConfirmCancelModal = 'SeedlessExportScreens.ConfirmCancelModal',
+  ConfirmCloseModal = 'SeedlessExportScreens.ConfirmCloseModal',
+  OwlLoader = 'SeedlessExportScreens.OwlLoader'
+}
+
 const AppNavigation = {
   Root: Root,
   Onboard: OnboardScreens,
@@ -261,7 +273,8 @@ const AppNavigation = {
   StakeSetup: StakeSetupScreens,
   Notifications: NotificationsScreens,
   SendFeedback: SendFeedbackScreens,
-  RecoveryMethods: RecoveryMethodsScreens
+  RecoveryMethods: RecoveryMethodsScreens,
+  SeedlessExport: SeedlessExportScreens
 }
 
 export default AppNavigation

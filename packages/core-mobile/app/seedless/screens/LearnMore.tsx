@@ -29,7 +29,7 @@ export const LearnMore = (): JSX.Element => {
   }
 
   const copyCode = (): void => {
-    copyToClipboard(code, <SnackBarMessage />)
+    copyToClipboard(code, <SnackBarMessage message="Key Copied" />)
   }
 
   useEffect(() => {

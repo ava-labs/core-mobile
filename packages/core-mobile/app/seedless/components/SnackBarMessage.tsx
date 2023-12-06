@@ -3,7 +3,11 @@ import { Space } from 'components/Space'
 import CheckmarkSVG from 'components/svg/CheckmarkSVG'
 import React from 'react'
 
-export const SnackBarMessage = (): JSX.Element => {
+export const SnackBarMessage = ({
+  message
+}: {
+  message: string
+}): JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
@@ -21,7 +25,7 @@ export const SnackBarMessage = (): JSX.Element => {
         <CheckmarkSVG size={14} color={colors.$neutral850} />
       </View>
       <Space x={8} />
-      <Text variant="buttonMedium">Key Copied</Text>
+      <Text variant="buttonMedium">{message}</Text>
     </View>
   )
 }
