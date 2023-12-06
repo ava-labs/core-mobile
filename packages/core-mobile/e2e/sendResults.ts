@@ -193,7 +193,7 @@ async function generatePlatformResults(
       )
     }
 
-    const testResults: object[]
+    const testResults = []
     for (let i = 0; i < resultArray.length; i++) {
       const resultObject = resultArray[i]
       const statusId = Number(resultObject?.status_id)
