@@ -166,6 +166,9 @@ async function generatePlatformResults(
           ) {
             existingTestCases.splice(existingTestCases.indexOf(testCase), 1)
           }
+          if (testCase.status_id === 3) {
+            existingTestCases.splice(existingTestCases.indexOf(testCase), 1)
+          }
         })
       })
       // Adds the existing test case results to the results array so they are not overwritten in testrail when using the updateRun endpoint
