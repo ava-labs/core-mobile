@@ -1,16 +1,14 @@
 import { Button, Text, View, useTheme } from '@avalabs/k2-mobile'
 import React from 'react'
 import { Space } from 'components/Space'
-import { Dimensions } from 'react-native'
 import { AnimatedCircularProgress } from 'react-native-circular-progress'
 
-const DAY_REMAINING = 2
+const DAY_REMAINING = 2 // todo: handle the timer logic in KDEV-7865
+const CIRCULAR_PROGRESS_SIZE = 153
 
 interface Props {
   onCancel: () => void
 }
-const { width } = Dimensions.get('window')
-const CIRCULAR_PROGRESS_SIZE = width / 3
 
 export const RecoveryPhrasePending = ({ onCancel }: Props): JSX.Element => {
   const {
