@@ -199,7 +199,7 @@ async function generatePlatformResults(
         status_id: statusId,
         comment: `Test case result for ${resultObject?.case_id} and has a status of ${statusId} for ${platform}`
       }
-      if (!existingTestCases.contains(resultObject)) {
+      if (resultObject) {
         const testResult = await api.addResultForCase(
           Number(runId),
           resultObject?.case_id,
