@@ -1,5 +1,4 @@
 import Config from 'react-native-config'
-import { Passkey } from 'react-native-passkey'
 import { InAppBrowser } from 'react-native-inappbrowser-reborn'
 import {
   PasskeyAuthenticationRequest,
@@ -9,7 +8,8 @@ import {
   FIDOAuthenticationResult,
   FIDOAuthenticationRequest,
   FIDORegistrationResult,
-  FIDORegistrationRequest
+  FIDORegistrationRequest,
+  FidoType
 } from 'services/passkey/types'
 import { base64UrlToBuffer, bufferToBase64Url } from 'utils/data/base64'
 import { FIDO_CALLBACK_URL, RP_ID, RP_NAME } from './consts'
@@ -31,17 +31,42 @@ const BROWSER_OPTIONS = {
 
 const IDENTITY_URL = 'https://identity.core.app/' // TODO use env
 
+const FIDO_TIMEOUT = 90000 // 90 seconds
+
+enum Action {
+  REGISTER = 'register',
+  AUTHENTICATE = 'authenticate'
+}
+
+type GenerateAuthUrlsParams =
+  | {
+      options: PasskeyRegistrationRequest
+      action: Action.REGISTER
+      fidoType: FidoType
+    }
+  | {
+      options: PasskeyAuthenticationRequest
+      action: Action.AUTHENTICATE
+      fidoType?: never
+    }
+
 class PasskeyService {
+  // unfortunately, we don't know if the device supports passkey
+  // until we open browser and try to register
   get isSupported(): boolean {
-    return Passkey.isSupported()
+    return true
   }
 
   async register(
     challengeOptions: FIDORegistrationRequest,
-    _withSecurityKey: boolean
+    withSecurityKey: boolean
   ): Promise<FIDORegistrationResult> {
     const options = this.prepareRegistrationOptions(challengeOptions)
-    const { url, redirectUrl } = this.generateAuthUrls(options, 'register')
+    const { url, redirectUrl } = this.generateAuthUrls({
+      options,
+      action: Action.REGISTER,
+      fidoType: withSecurityKey ? FidoType.YUBI_KEY : FidoType.PASS_KEY
+    })
     const result = await this.startAuthSession(url, redirectUrl)
     return this.convertRegistrationResult(result)
   }
@@ -51,7 +76,10 @@ class PasskeyService {
     _withSecurityKey: boolean
   ): Promise<FIDOAuthenticationResult> {
     const options = this.prepareAuthenticationRequest(challengeOptions)
-    const { url, redirectUrl } = this.generateAuthUrls(options, 'authenticate')
+    const { url, redirectUrl } = this.generateAuthUrls({
+      options,
+      action: Action.AUTHENTICATE
+    })
     const result = await this.startAuthSession(url, redirectUrl)
     return this.convertAuthenticationResult(result)
   }
@@ -92,16 +120,41 @@ class PasskeyService {
     }
   }
 
-  private generateAuthUrls(
-    options: PasskeyRegistrationRequest | PasskeyAuthenticationRequest,
-    type: 'register' | 'authenticate'
-  ): { url: string; redirectUrl: string } {
+  private generateAuthUrls({
+    options,
+    action,
+    fidoType
+  }: GenerateAuthUrlsParams): { url: string; redirectUrl: string } {
+    // adjust timeout to 90 seconds from 15 seconds to allow users time to complete
+    options.timeout = FIDO_TIMEOUT
+
+    // https://www.corbado.com/blog/webauthn-resident-key-discoverable-credentials-passkeys
+    if (action === Action.REGISTER) {
+      if (fidoType === FidoType.PASS_KEY) {
+        // requesting passkey as a discoverable credential
+        options.authenticatorSelection = {
+          authenticatorAttachment: 'platform',
+          requireResidentKey: true,
+          residentKey: 'required',
+          userVerification: 'required'
+        }
+      } else if (fidoType === FidoType.YUBI_KEY) {
+        // requesting yubikey as a non discoverable credential
+        options.authenticatorSelection = {
+          authenticatorAttachment: 'cross-platform',
+          requireResidentKey: false,
+          residentKey: 'discouraged',
+          userVerification: 'preferred'
+        }
+      }
+    }
+
     const encodedOptions = encodeURIComponent(JSON.stringify(options))
 
-    const redirectUrl = `${FIDO_CALLBACK_URL}${type}`
+    const redirectUrl = `${FIDO_CALLBACK_URL}${action}`
 
     // TODO use env
-    const url = `${IDENTITY_URL}${type}?options=${encodedOptions}&redirectUrl=${encodeURIComponent(
+    const url = `${IDENTITY_URL}${action}?options=${encodedOptions}&redirectUrl=${encodeURIComponent(
       redirectUrl
     )}`
 

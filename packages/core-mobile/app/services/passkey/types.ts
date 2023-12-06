@@ -63,3 +63,8 @@ export interface FIDOAuthenticationResult {
     userHandle: Buffer
   }
 }
+
+export enum FidoType {
+  PASS_KEY = 'Passkey',
+  YUBI_KEY = 'Yubikey'
+}
