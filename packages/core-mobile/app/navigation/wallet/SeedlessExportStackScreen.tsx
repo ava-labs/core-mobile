@@ -43,14 +43,6 @@ const SeedlessExportStack: FC = () => {
         component={SeedlessExportInstructionsScreen}
       />
       <SeedlessExportS.Screen
-        options={{
-          presentation: 'modal',
-          headerShown: false
-        }}
-        name={AppNavigation.SeedlessExport.WaitingPeriodModal}
-        component={WaitingPeriodModal}
-      />
-      <SeedlessExportS.Screen
         options={{ presentation: 'transparentModal', headerShown: false }}
         name={AppNavigation.SeedlessExport.VerifyCode}
         component={VerifyCodeScreen}
@@ -64,20 +56,25 @@ const SeedlessExportStack: FC = () => {
         component={RecoveryPhraseScreen}
       />
       <SeedlessExportS.Screen
-        options={{ presentation: 'modal', headerShown: false }}
-        name={AppNavigation.SeedlessExport.ConfirmCancelModal}
-        component={ConfirmCancelModal}
-      />
-      <SeedlessExportS.Screen
-        options={{ presentation: 'modal', headerShown: false }}
-        name={AppNavigation.SeedlessExport.ConfirmCloseModal}
-        component={ConfirmCloseModal}
-      />
-      <SeedlessExportS.Screen
         options={{ headerShown: false }}
         name={AppNavigation.SeedlessExport.OwlLoader}
         component={OwlLoader}
       />
+      <SeedlessExportS.Group
+        screenOptions={{ presentation: 'modal', headerShown: false }}>
+        <SeedlessExportS.Screen
+          name={AppNavigation.SeedlessExport.WaitingPeriodModal}
+          component={WaitingPeriodModal}
+        />
+        <SeedlessExportS.Screen
+          name={AppNavigation.SeedlessExport.ConfirmCancelModal}
+          component={ConfirmCancelModal}
+        />
+        <SeedlessExportS.Screen
+          name={AppNavigation.SeedlessExport.ConfirmCloseModal}
+          component={ConfirmCloseModal}
+        />
+      </SeedlessExportS.Group>
     </SeedlessExportS.Navigator>
   )
 }
