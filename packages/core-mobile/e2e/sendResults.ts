@@ -3,6 +3,7 @@
 // @ts-nocheck comment at the top of the file
 /* eslint-disable no-var */
 import * as fs from 'fs'
+import { object } from 'zod'
 import {
   getTestCaseId,
   api,
@@ -192,6 +193,8 @@ async function generatePlatformResults(
           runId
       )
     }
+
+    const testResults: object[]
     for (let i = 0; i < resultArray.length; i++) {
       const resultObject = resultArray[i]
       const statusId = Number(resultObject?.status_id)
@@ -200,26 +203,34 @@ async function generatePlatformResults(
         comment: `Test case result for ${resultObject?.case_id} and has a status of ${statusId} for ${platform}`
       }
       if (resultObject) {
-        const testResult = await api.addResultForCase(
-          Number(runId),
-          resultObject?.case_id,
+        const testResult = {
+          run_id: Number(runId),
+          case_id: resultObject?.case_id,
           payload
-        )
-        if (testResult.status_id === 5) {
-          // This is the path to the screenshot for when the test fails
-          const failScreenshot = `./e2e/artifacts/${platform}/${resultObject.screenshot}`
-          if (failScreenshot) {
-            const failedPayload = {
-              name: 'failed.png',
-              value: await fs.createReadStream(failScreenshot)
-            }
-            // Attaches the screenshot to the corressponding case in the test run
-            const attachmentID = await api.addAttachmentToResult(
-              testResult.id,
-              failedPayload
-            )
-            console.log(`${attachmentID.attachment_id} is the attachment ID...`)
+        }
+        testResults.push(testResult)
+      }
+    }
+    // Send the results to testrail
+    const results = await api.addResultsForCases(testResults)
+    console.log(results, ' is the result for testrail')
+
+    // Adds the screenshot to the test case in testrail if the test failed
+    for (let i = 0; i < testResults.length; i++) {
+      if (testResults[i].status_id === 5) {
+        // This is the path to the screenshot for when the test fails
+        const failScreenshot = `./e2e/artifacts/${platform}/${testResults[i].screenshot}`
+        if (failScreenshot) {
+          const failedPayload = {
+            name: 'failed.png',
+            value: await fs.createReadStream(failScreenshot)
           }
+          // Attaches the screenshot to the corressponding case in the test run
+          const attachmentID = await api.addAttachmentToResult(
+            testResult.id,
+            failedPayload
+          )
+          console.log(`${attachmentID.attachment_id} is the attachment ID...`)
         }
       }
     }
