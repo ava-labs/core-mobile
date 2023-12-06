@@ -113,22 +113,22 @@ export default function MnemonicScreen({
             {`${isRecoveryPhraseHidden ? 'Show' : 'Hide'} Recovery Phrase`}
           </Text>
         ) : (
-          <View />
-        )}
-        {!canToggleBlur && (
-          <AvaButton.TextWithIcon
-            disabled={!mnemonic}
-            onPress={handleCopyPhrase}
-            icon={<CopySVG />}
-            testID="mnemonic_screen__copy_phrase_button"
-            text={
-              <AvaText.ButtonMedium
-                textStyle={{ color: theme.alternateBackground }}
-                testID="mnemonic_screen__copy_phrase_button">
-                Copy Phrase
-              </AvaText.ButtonMedium>
-            }
-          />
+          <>
+            <View />
+            <AvaButton.TextWithIcon
+              disabled={!mnemonic}
+              onPress={handleCopyPhrase}
+              icon={<CopySVG />}
+              testID="mnemonic_screen__copy_phrase_button"
+              text={
+                <AvaText.ButtonMedium
+                  textStyle={{ color: theme.alternateBackground }}
+                  testID="mnemonic_screen__copy_phrase_button">
+                  Copy Phrase
+                </AvaText.ButtonMedium>
+              }
+            />
+          </>
         )}
       </View>
     </View>

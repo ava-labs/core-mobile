@@ -259,7 +259,6 @@ const RecoveryPhraseNavigation = memo(() => {
       mnemonic={mnemonic}
       buttonText="I wrote it down"
       onGoBack={goBack}
-      canToggleBlur={false}
     />
   )
 })
