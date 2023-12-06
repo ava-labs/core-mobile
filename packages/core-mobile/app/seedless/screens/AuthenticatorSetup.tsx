@@ -29,7 +29,7 @@ export const AuthenticatorSetup = (): JSX.Element => {
   }
 
   const copyCode = (): void => {
-    copyToClipboard(code, <SnackBarMessage />)
+    copyToClipboard(code, <SnackBarMessage message="Key Copied" />)
   }
 
   const openVerifyCode = (): void => {
