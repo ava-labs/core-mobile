@@ -103,7 +103,7 @@ export const AddRecoveryMethods = (): JSX.Element => {
           onPress={handlePasskey}
           icon={<Icons.Communication.IconKey color={colors.$neutral50} />}
           title="Passkey"
-          body="Add a passkey as a recovery method."
+          body="Add a Passkey as a recovery method."
           showCaret
         />
       )}
@@ -111,7 +111,7 @@ export const AddRecoveryMethods = (): JSX.Element => {
         onPress={goToAuthenticatorSetup}
         icon={<Icons.Communication.IconQRCode color={colors.$neutral50} />}
         title="Authenticator"
-        body="Add an authenticator app as a recovery method."
+        body="Add an Authenticator app as a recovery method."
         showCaret
       />
       {PasskeyService.isSupported && (

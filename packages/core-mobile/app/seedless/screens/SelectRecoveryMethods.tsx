@@ -80,7 +80,7 @@ export const SelectRecoveryMethods = (): JSX.Element => {
               onPress={handleFido}
               icon={<Icons.Communication.IconKey color={colors.$neutral50} />}
               title={mfa.name}
-              body="Use your Passkey(or YubiKey) as your recovery method."
+              body="Use your Passkey (or YubiKey) as your recovery method."
               showCaret
               key={i}
             />

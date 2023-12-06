@@ -12,7 +12,7 @@ import {
   FIDORegistrationRequest
 } from 'services/passkey/types'
 import { base64UrlToBuffer, bufferToBase64Url } from 'utils/data/base64'
-import { RP_ID, RP_NAME } from './consts'
+import { FIDO_CALLBACK_URL, RP_ID, RP_NAME } from './consts'
 
 if (!Config.SEEDLESS_ENVIRONMENT) {
   throw Error('SEEDLESS_ENVIRONMENT is missing. Please check your env file.')
@@ -29,7 +29,6 @@ const BROWSER_OPTIONS = {
   showInRecents: false
 }
 
-const APP_SCHEME = 'core://'
 const IDENTITY_URL = 'https://identity.core.app/' // TODO use env
 
 class PasskeyService {
@@ -99,7 +98,7 @@ class PasskeyService {
   ): { url: string; redirectUrl: string } {
     const encodedOptions = encodeURIComponent(JSON.stringify(options))
 
-    const redirectUrl = `${APP_SCHEME}fido/callback/${type}`
+    const redirectUrl = `${FIDO_CALLBACK_URL}${type}`
 
     // TODO use env
     const url = `${IDENTITY_URL}${type}?options=${encodedOptions}&redirectUrl=${encodeURIComponent(
