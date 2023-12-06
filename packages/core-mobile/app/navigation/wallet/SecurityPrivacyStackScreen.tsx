@@ -19,7 +19,7 @@ import { RecoveryMethodsSettingMFAScreen } from 'seedless/screens/RecoveryMethod
 import { MFA } from 'seedless/types'
 import { WalletType } from 'services/wallet/types'
 import walletService from 'services/wallet/WalletService'
-import SeedlessExportStack from './SeedlessExportStackScreen'
+import SeedlessExportStack from './SeedlessExportStack'
 
 export type SecurityStackParamList = {
   [AppNavigation.SecurityPrivacy.SecurityPrivacy]: undefined

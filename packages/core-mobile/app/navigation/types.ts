@@ -53,7 +53,7 @@ import { PortfolioStackParamList } from './wallet/PortfolioScreenStack'
 import { StakeSetupStackParamList } from './wallet/EarnScreenStack/StakeSetupScreenStack'
 import { BrowserStackParamList } from './wallet/BrowserScreenStack'
 import { RecoveryMethodsStackParamList } from './onboarding/RecoveryMethodsStack'
-import { SeedlessExportStackParamList } from './wallet/SeedlessExportStackScreen'
+import { SeedlessExportStackParamList } from './wallet/SeedlessExportStack'
 
 export type { RootScreenStackParamList }
 
