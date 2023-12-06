@@ -3,7 +3,7 @@ import React from 'react'
 import { Space } from 'components/Space'
 import { AnimatedCircularProgress } from 'react-native-circular-progress'
 
-const DAY_REMAINING = 2 // todo: handle the timer logic in KDEV-7865
+const DAY_REMAINING = 2 // todo: handle the timer logic in KDEV-7856
 const CIRCULAR_PROGRESS_SIZE = 153
 
 interface Props {
