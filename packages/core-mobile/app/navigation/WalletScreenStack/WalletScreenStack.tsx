@@ -74,6 +74,8 @@ import SendFeedbackStackScreen from 'navigation/wallet/SendFeedbackStackScreen'
 import { navigationRef } from 'utils/Navigation'
 import { ViewOnceKey, selectHasBeenViewedOnce } from 'store/viewOnce'
 import { useSelector } from 'react-redux'
+import TestnetBanner from 'components/TestnetBanner'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { BridgeStackParamList } from '../wallet/BridgeScreenStack'
 import {
   BridgeTransactionStatusParams,
@@ -197,6 +199,7 @@ function WalletScreenStack(props: Props): JSX.Element {
     selectHasBeenViewedOnce(ViewOnceKey.CORE_INTRO)
   )
   const navigation = useNavigation<NavigationProp>()
+  const isTestnet = useSelector(selectIsDeveloperMode)
 
   useFocusEffect(
     React.useCallback(() => {
@@ -225,6 +228,7 @@ function WalletScreenStack(props: Props): JSX.Element {
 
   return (
     <>
+      {isTestnet && <TestnetBanner />}
       <WalletScreenS.Navigator
         screenOptions={{
           headerShown: false

@@ -36,9 +36,9 @@ export type DrawerParamList = {
 
 const DrawerStack = createDrawerNavigator()
 
-const DrawerContent = () => <DrawerView />
+const DrawerContent = (): JSX.Element => <DrawerView />
 
-const DrawerScreenStack = () => (
+const DrawerScreenStack: FC = () => (
   <DrawerStack.Navigator
     screenOptions={{
       headerShown: false,
@@ -52,7 +52,7 @@ const DrawerScreenStack = () => (
   </DrawerStack.Navigator>
 )
 
-const TabNavigatorWithFab = () => {
+const TabNavigatorWithFab: FC = () => {
   return (
     <>
       <TabNavigator />
@@ -210,7 +210,7 @@ const Fab: FC = () => {
     setPendingDeepLink
   ])
 
-  function dismiss() {
+  function dismiss(): void {
     setExpanded(false)
     capture('FABClosed')
   }
