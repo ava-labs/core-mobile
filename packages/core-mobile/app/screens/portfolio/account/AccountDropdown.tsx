@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useRef } from 'react'
 import { Animated, Easing, FlatList, Pressable, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import HeaderAccountSelector from 'components/HeaderAccountSelector'
 import { Account } from 'store/account'
 import AccountItem from 'screens/portfolio/account/AccountItem'
 import AvaText from 'components/AvaText'
@@ -32,7 +31,7 @@ function AccountDropdown({
 
   useEffect(() => {
     capture('AccountSelectorOpened')
-  }, [])
+  }, [capture])
 
   useEffect(() => {
     const compositeAnimation1 = Animated.timing(animTranslateY, {
@@ -55,7 +54,7 @@ function AccountDropdown({
     compositeAnimation1.start(() => goBack())
   }, [animTranslateY, goBack])
 
-  function onSelectAccount(accountIndex: number) {
+  function onSelectAccount(accountIndex: number): void {
     dispatch(setActiveAccountIndex(accountIndex))
     animatedDismiss()
   }
@@ -68,17 +67,6 @@ function AccountDropdown({
           flex: 1,
           paddingHorizontal: 16
         }}>
-        <View
-          style={{
-            alignSelf: 'center',
-            width: 200,
-            marginTop: 2,
-            marginLeft: 0.5,
-            backgroundColor: theme.colorBg1
-          }}>
-          <HeaderAccountSelector direction={'up'} onPressed={() => goBack()} />
-        </View>
-
         <Animated.View
           key="some key"
           style={{
@@ -124,7 +112,7 @@ function AccountItemRenderer({
 }: {
   account: Account
   onSelectAccount: (accountIndex: number) => void
-}) {
+}): JSX.Element {
   const activeAccount = useSelector(selectActiveAccount)
   return (
     <AccountItem

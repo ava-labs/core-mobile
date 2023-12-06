@@ -100,7 +100,6 @@ const TopNavigationHeader: FC<Props> = ({
       style={{
         zIndex: 1,
         flex: 1,
-        maxWidth: 200,
         alignItems: 'center'
       }}>
       <HeaderAccountSelector
