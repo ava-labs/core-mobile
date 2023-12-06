@@ -12,7 +12,6 @@ describe('Add existing wallet', () => {
 
   it('should successfully add an existing wallet', async () => {
     const recoveryPhrase: string = process.env.E2E_MNEMONIC as string
-    console.log('The recovery phrase is ' + recoveryPhrase)
     await ExistingRecoveryPhrasePage.recoverWallet(recoveryPhrase)
   })
 })
