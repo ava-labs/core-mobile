@@ -7,6 +7,8 @@ import SeedlessService from 'seedless/services/SeedlessService'
 import PasskeyService from 'services/passkey/PasskeyService'
 import { RecoveryMethodsContext } from 'navigation/onboarding/RecoveryMethodsStack'
 import Logger from 'utils/Logger'
+import { FidoType } from 'services/passkey/types'
+import CoreXLogoAnimated from 'components/CoreXLogoAnimated'
 import { showSimpleToast } from 'components/Snackbar'
 import { Card } from '../components/Card'
 
@@ -21,9 +23,47 @@ export const AddRecoveryMethods = (): JSX.Element => {
     theme: { colors }
   } = useTheme()
   const { mfaId, oidcToken } = useContext(RecoveryMethodsContext)
+  const [isAdding, setIsAdding] = React.useState(false)
 
   const goToAuthenticatorSetup = (): void => {
     navigate(AppNavigation.RecoveryMethods.AuthenticatorSetup)
+  }
+
+  const registerAndAuthenticateFido = async ({
+    name,
+    fidoType
+  }: {
+    name?: string
+    fidoType: FidoType
+  }): Promise<void> => {
+    const passkeyName = name && name.length > 0 ? name : fidoType.toString()
+
+    setIsAdding(true)
+
+    try {
+      const withSecurityKey = fidoType === FidoType.YUBI_KEY
+
+      await SeedlessService.registerFido(passkeyName, withSecurityKey)
+
+      await SeedlessService.approveFido(oidcToken, mfaId, withSecurityKey)
+
+      goBack()
+
+      navigate(AppNavigation.Root.Onboard, {
+        screen: AppNavigation.Onboard.Welcome,
+        params: {
+          screen: AppNavigation.Onboard.AnalyticsConsent,
+          params: {
+            nextScreen: AppNavigation.Onboard.CreatePin
+          }
+        }
+      })
+    } catch (e) {
+      Logger.error(`${fidoType} registration failed`, e)
+      showSimpleToast(`Unable to register ${fidoType}`)
+    } finally {
+      setIsAdding(false)
+    }
   }
 
   const handlePasskey = async (): Promise<void> => {
@@ -33,28 +73,7 @@ export const AddRecoveryMethods = (): JSX.Element => {
       inputFieldLabel: 'Passkey Name',
       inputFieldPlaceholder: 'Enter Name',
       onClose: async (name?: string) => {
-        const passkeyName = name && name.length > 0 ? name : 'Passkey'
-
-        try {
-          await SeedlessService.registerFido(passkeyName, false)
-
-          await SeedlessService.approveFido(oidcToken, mfaId, false)
-
-          goBack()
-
-          navigate(AppNavigation.Root.Onboard, {
-            screen: AppNavigation.Onboard.Welcome,
-            params: {
-              screen: AppNavigation.Onboard.AnalyticsConsent,
-              params: {
-                nextScreen: AppNavigation.Onboard.CreatePin
-              }
-            }
-          })
-        } catch (e) {
-          Logger.error('passkey registration failed', e)
-          showSimpleToast('Unable to register passkey')
-        }
+        registerAndAuthenticateFido({ name, fidoType: FidoType.PASS_KEY })
       }
     })
   }
@@ -66,30 +85,22 @@ export const AddRecoveryMethods = (): JSX.Element => {
       inputFieldLabel: 'Yubikey Name',
       inputFieldPlaceholder: 'Enter Name',
       onClose: async (name?: string) => {
-        const yubikeyName = name && name.length > 0 ? name : 'Yubikey'
-
-        try {
-          await SeedlessService.registerFido(yubikeyName, true)
-
-          await SeedlessService.approveFido(oidcToken, mfaId, true)
-
-          goBack()
-
-          navigate(AppNavigation.Root.Onboard, {
-            screen: AppNavigation.Onboard.Welcome,
-            params: {
-              screen: AppNavigation.Onboard.AnalyticsConsent,
-              params: {
-                nextScreen: AppNavigation.Onboard.CreatePin
-              }
-            }
-          })
-        } catch (e) {
-          Logger.error('yubikey registration failed', e)
-          showSimpleToast('Unable to register yubikey')
-        }
+        registerAndAuthenticateFido({ name, fidoType: FidoType.YUBI_KEY })
       }
     })
+  }
+
+  if (isAdding) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center'
+        }}>
+        <CoreXLogoAnimated size={180} />
+      </View>
+    )
   }
 
   return (

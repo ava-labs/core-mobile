@@ -6,9 +6,9 @@ import { RecoveryMethodsScreenProps } from 'navigation/types'
 import PasskeyService from 'services/passkey/PasskeyService'
 import SeedlessService from 'seedless/services/SeedlessService'
 import { RecoveryMethodsContext } from 'navigation/onboarding/RecoveryMethodsStack'
-import { Alert } from 'react-native'
 import Logger from 'utils/Logger'
 import { showSimpleToast } from 'components/Snackbar'
+import CoreXLogoAnimated from 'components/CoreXLogoAnimated'
 import { Card } from '../components/Card'
 
 type SelectRecoveryMethodsScreenProps = RecoveryMethodsScreenProps<
@@ -25,6 +25,7 @@ export const SelectRecoveryMethods = (): JSX.Element => {
   const {
     params: { mfaMethods }
   } = useRoute<SelectRecoveryMethodsScreenProps['route']>()
+  const [isVerifying, setIsVerifying] = React.useState(false)
 
   const handleTotp = async (): Promise<void> => {
     navigate(AppNavigation.RecoveryMethods.VerifyCode)
@@ -35,6 +36,8 @@ export const SelectRecoveryMethods = (): JSX.Element => {
       showSimpleToast('Passkey or Yubikey is not supported on this device')
       return
     }
+
+    setIsVerifying(true)
 
     try {
       await SeedlessService.approveFido(oidcToken, mfaId, false)
@@ -52,8 +55,23 @@ export const SelectRecoveryMethods = (): JSX.Element => {
       })
     } catch (e) {
       Logger.error('passkey authentication failed', e)
-      Alert.alert('Passkey authentication error')
+      showSimpleToast('Unable to authenticate')
+    } finally {
+      setIsVerifying(false)
     }
+  }
+
+  if (isVerifying) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center'
+        }}>
+        <CoreXLogoAnimated size={180} />
+      </View>
+    )
   }
 
   return (
