@@ -3,7 +3,6 @@
 // @ts-nocheck comment at the top of the file
 /* eslint-disable no-var */
 import * as fs from 'fs'
-import { object } from 'zod'
 import {
   getTestCaseId,
   api,
