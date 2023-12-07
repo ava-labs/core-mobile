@@ -56,15 +56,7 @@ export const AddRecoveryMethods = (): JSX.Element => {
 
       goBack()
 
-      navigate(AppNavigation.Root.Onboard, {
-        screen: AppNavigation.Onboard.Welcome,
-        params: {
-          screen: AppNavigation.Onboard.AnalyticsConsent,
-          params: {
-            nextScreen: AppNavigation.Onboard.CreatePin
-          }
-        }
-      })
+      navigate(AppNavigation.Onboard.NameYourWallet)
     } catch (e) {
       Logger.error(`${fidoType} registration failed`, e)
       showSimpleToast(`Unable to register ${fidoType}`)

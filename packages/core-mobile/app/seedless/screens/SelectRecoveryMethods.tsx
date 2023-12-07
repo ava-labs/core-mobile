@@ -47,15 +47,7 @@ export const SelectRecoveryMethods = (): JSX.Element => {
 
       goBack()
 
-      navigate(AppNavigation.Root.Onboard, {
-        screen: AppNavigation.Onboard.Welcome,
-        params: {
-          screen: AppNavigation.Onboard.AnalyticsConsent,
-          params: {
-            nextScreen: AppNavigation.Onboard.CreatePin
-          }
-        }
-      })
+      navigate(AppNavigation.Onboard.NameYourWallet)
     } catch (e) {
       Logger.error('passkey authentication failed', e)
       showSimpleToast('Unable to authenticate')
