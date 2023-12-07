@@ -1,8 +1,7 @@
 import React from 'react'
 import { StyleSheet, TouchableNativeFeedback } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import BackSpaceSVG from 'assets/icons/back_keyboard_btn.svg'
-import { View, Text } from '@avalabs/k2-mobile'
+import { View, Text, Icons } from '@avalabs/k2-mobile'
 
 export enum PinKeys {
   Key1,
@@ -56,7 +55,7 @@ export default function PinKey({
       onPress={() => onPress(keyboardKey)}
       background={TouchableNativeFeedback.Ripple(theme.buttonRipple, true)}>
       <View style={[styles.button, disabled && { opacity: 0.5 }]}>
-        {isBackspace && <BackSpaceSVG />}
+        {isBackspace && <Icons.Content.IconBackspace color={theme.white} />}
         {!isBackspace && (
           <Text
             variant="heading2"

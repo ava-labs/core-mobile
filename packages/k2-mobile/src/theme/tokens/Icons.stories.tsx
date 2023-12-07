@@ -65,3 +65,17 @@ export const Communication = (): JSX.Element =>
     resourceURL:
       'https://www.figma.com/file/hDSl4OUgXorDAtqPZtCUhB/K2-Foundation?type=design&node-id=376-14634&mode=design&t=sWvS6Pnw2oR45PI0-4'
   })
+
+export const Content = (): JSX.Element =>
+  Template({
+    icons: [Icons.Content.IconBackspace],
+    resourceURL:
+      'https://www.figma.com/file/hDSl4OUgXorDAtqPZtCUhB/K2-Foundation?type=design&node-id=376-16360&mode=design&t=CmN8i9XpOWpJzqsg-4'
+  })
+
+export const Device = (): JSX.Element =>
+  Template({
+    icons: [Icons.Device.IconUSB],
+    resourceURL:
+      'https://www.figma.com/file/hDSl4OUgXorDAtqPZtCUhB/K2-Foundation?type=design&node-id=376-17725&mode=design&t=CmN8i9XpOWpJzqsg-4'
+  })
