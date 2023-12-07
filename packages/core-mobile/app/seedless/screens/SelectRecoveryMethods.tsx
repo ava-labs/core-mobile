@@ -6,9 +6,9 @@ import { RecoveryMethodsScreenProps } from 'navigation/types'
 import PasskeyService from 'services/passkey/PasskeyService'
 import SeedlessService from 'seedless/services/SeedlessService'
 import { RecoveryMethodsContext } from 'navigation/onboarding/RecoveryMethodsStack'
-import { Alert } from 'react-native'
 import Logger from 'utils/Logger'
 import { showSimpleToast } from 'components/Snackbar'
+import { hideOwl, showOwl } from 'components/GlobalOwlLoader'
 import { Card } from '../components/Card'
 
 type SelectRecoveryMethodsScreenProps = RecoveryMethodsScreenProps<
@@ -36,6 +36,8 @@ export const SelectRecoveryMethods = (): JSX.Element => {
       return
     }
 
+    showOwl()
+
     try {
       await SeedlessService.approveFido(oidcToken, mfaId, false)
 
@@ -52,7 +54,9 @@ export const SelectRecoveryMethods = (): JSX.Element => {
       })
     } catch (e) {
       Logger.error('passkey authentication failed', e)
-      Alert.alert('Passkey authentication error')
+      showSimpleToast('Unable to authenticate')
+    } finally {
+      hideOwl()
     }
   }
 
@@ -80,7 +84,7 @@ export const SelectRecoveryMethods = (): JSX.Element => {
               onPress={handleFido}
               icon={<Icons.Communication.IconKey color={colors.$neutral50} />}
               title={mfa.name}
-              body="Use your Passkey(or YubiKey) as your recovery method."
+              body="Use your Passkey (or YubiKey) as your recovery method."
               showCaret
               key={i}
             />

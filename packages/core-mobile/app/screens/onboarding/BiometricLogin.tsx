@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { ActivityIndicator, Alert, StyleSheet, View } from 'react-native'
+import { Button } from '@avalabs/k2-mobile'
 import { Space } from 'components/Space'
 import AvaText from 'components/AvaText'
 import AvaButton from 'components/AvaButton'
@@ -42,7 +43,7 @@ export default function BiometricLogin(
 
   useEffect(() => {
     if (confirmedUseBiometry) {
-      const asyncWrapper = async () => {
+      const asyncWrapper = async (): Promise<void> => {
         try {
           await storeMnemonicWithBiometric()
           props.onBiometrySet()
@@ -77,10 +78,6 @@ export default function BiometricLogin(
         </AvaText.Body4>
       </View>
 
-      {!confirmedUseBiometry && (
-        <AvaButton.TextMedium onPress={props.onSkip}>Skip</AvaButton.TextMedium>
-      )}
-      <Space y={16} />
       <AvaButton.PrimaryLarge onPress={() => setConfirmedUseBiometry(true)}>
         {confirmedUseBiometry ? (
           <ActivityIndicator size={'small'} />
@@ -88,6 +85,12 @@ export default function BiometricLogin(
           'Use ' + formattedBiometryType
         )}
       </AvaButton.PrimaryLarge>
+      <Space y={16} />
+      {!confirmedUseBiometry && (
+        <Button type="tertiary" size="xlarge" onPress={props.onSkip}>
+          Skip
+        </Button>
+      )}
     </View>
   )
 }

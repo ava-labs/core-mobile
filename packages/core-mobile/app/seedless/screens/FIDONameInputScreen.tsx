@@ -81,7 +81,7 @@ export const FIDONameInputScreen = (): JSX.Element => {
           </View>
         </View>
       </ScrollView>
-      <View sx={{ paddingHorizontal: 16 }}>
+      <View sx={{ paddingHorizontal: 16, marginBottom: 28 }}>
         <Button
           type="primary"
           size="xlarge"
