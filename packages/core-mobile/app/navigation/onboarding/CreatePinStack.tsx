@@ -13,8 +13,7 @@ import Logger from 'utils/Logger'
 import { WalletType } from 'services/wallet/types'
 import { SEEDLESS_MNEMONIC_STUB } from 'seedless/consts'
 import { useWallet } from 'hooks/useWallet'
-import { useDispatch } from 'react-redux'
-import { onLogIn } from 'store/app'
+import { useSignupWallet } from 'hooks/useSignupWallet'
 import { CreateWalletScreenProps } from '../types'
 
 // This stack is for Seedless
@@ -106,22 +105,16 @@ const BiometricLoginScreen = (): JSX.Element => {
 }
 
 const TermsNConditionsModalScreen = (): JSX.Element => {
-  const { initWallet } = useWallet()
+  const { signupWallet } = useSignupWallet()
   const { signOut } = useApplicationContext().appHook
   const { navigate } = useNavigation<BiometricLoginNavigationProp>()
-  const dispatch = useDispatch()
 
   return (
     <TermsNConditionsModal
       onNext={() => {
         navigate(AppNavigation.CreateWallet.Loader)
         setTimeout(() => {
-          // creating/recovering a seedless wallet
-          initWallet(SEEDLESS_MNEMONIC_STUB, WalletType.SEEDLESS)
-            .then(() => {
-              dispatch(onLogIn())
-            })
-            .catch(Logger.error)
+          signupWallet(SEEDLESS_MNEMONIC_STUB, WalletType.SEEDLESS)
         }, 300)
       }}
       onReject={() => signOut()}

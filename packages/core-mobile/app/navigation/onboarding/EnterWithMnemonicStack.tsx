@@ -14,7 +14,7 @@ import { createStackNavigator } from '@react-navigation/stack'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { MainHeaderOptions } from 'navigation/NavUtils'
 import TermsNConditionsModal from 'components/TermsNConditionsModal'
-import { onLogIn, selectWalletState, WalletState } from 'store/app'
+import { selectWalletState, WalletState } from 'store/app'
 import { useDispatch, useSelector } from 'react-redux'
 import {
   RemoveEvents,
@@ -28,6 +28,7 @@ import { WalletType } from 'services/wallet/types'
 import { useWallet } from 'hooks/useWallet'
 import { resetNavToRoot } from 'utils/Navigation'
 import { NameYourWallet } from 'seedless/screens/NameYourWallet'
+import { useSignupWallet } from 'hooks/useSignupWallet'
 import { EnterWithMnemonicScreenProps } from '../types'
 
 export type EnterWithMnemonicStackParamList = {
@@ -201,22 +202,16 @@ const BiometricLoginScreen = (): JSX.Element => {
 
 const TermsNConditionsModalScreen = (): JSX.Element => {
   const enterWithMnemonicContext = useContext(EnterWithMnemonicContext)
-  const { initWallet } = useWallet()
+  const { signupWallet } = useSignupWallet()
   const { signOut } = useApplicationContext().appHook
   const { navigate } = useNavigation<BiometricLoginNavigationProp>()
-  const dispatch = useDispatch()
 
   return (
     <TermsNConditionsModal
       onNext={() => {
         navigate(AppNavigation.LoginWithMnemonic.Loader)
         setTimeout(() => {
-          // recovering a mnemonic wallet
-          initWallet(enterWithMnemonicContext.mnemonic, WalletType.MNEMONIC)
-            .then(() => {
-              dispatch(onLogIn())
-            })
-            .catch(Logger.error)
+          signupWallet(enterWithMnemonicContext.mnemonic, WalletType.MNEMONIC)
         }, 300)
       }}
       onReject={() => signOut()}

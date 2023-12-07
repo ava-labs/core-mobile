@@ -10,6 +10,7 @@ import Logger from 'utils/Logger'
 import { FidoType } from 'services/passkey/types'
 import { showSimpleToast } from 'components/Snackbar'
 import { hideOwl, showOwl } from 'components/GlobalOwlLoader'
+import { usePostCapture } from 'hooks/usePosthogCapture'
 import { Card } from '../components/Card'
 
 type AddRecoveryMethodsScreenProps = RecoveryMethodsScreenProps<
@@ -23,9 +24,12 @@ export const AddRecoveryMethods = (): JSX.Element => {
     theme: { colors }
   } = useTheme()
   const { mfaId, oidcToken } = useContext(RecoveryMethodsContext)
+  const { capture } = usePostCapture()
 
   const goToAuthenticatorSetup = (): void => {
     navigate(AppNavigation.RecoveryMethods.AuthenticatorSetup)
+
+    capture('SeedlessAddMfa', { method: 'Authenticator' })
   }
 
   const registerAndAuthenticateFido = async ({
@@ -44,7 +48,11 @@ export const AddRecoveryMethods = (): JSX.Element => {
 
       await SeedlessService.registerFido(passkeyName, withSecurityKey)
 
+      capture('SeedlessMfaAdded')
+
       await SeedlessService.approveFido(oidcToken, mfaId, withSecurityKey)
+
+      capture('SeedlessMfaVerified', { type: fidoType })
 
       goBack()
 
@@ -75,6 +83,8 @@ export const AddRecoveryMethods = (): JSX.Element => {
         registerAndAuthenticateFido({ name, fidoType: FidoType.PASS_KEY })
       }
     })
+
+    capture('SeedlessAddMfa', { type: FidoType.PASS_KEY })
   }
 
   const handleYubikey = async (): Promise<void> => {
@@ -87,6 +97,8 @@ export const AddRecoveryMethods = (): JSX.Element => {
         registerAndAuthenticateFido({ name, fidoType: FidoType.YUBI_KEY })
       }
     })
+
+    capture('SeedlessAddMfa', { type: FidoType.YUBI_KEY })
   }
 
   return (

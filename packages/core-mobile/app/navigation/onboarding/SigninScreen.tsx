@@ -13,6 +13,7 @@ import GoogleSigninService from 'services/socialSignIn/google/GoogleSigninServic
 import Logger from 'utils/Logger'
 import { OidcProviders } from 'seedless/consts'
 import { hideOwl, showOwl } from 'components/GlobalOwlLoader'
+import { usePostCapture } from 'hooks/usePosthogCapture'
 
 type NavigationProp = OnboardScreenProps<
   typeof AppNavigation.Onboard.Signin
@@ -24,6 +25,7 @@ const SigninScreen: FC = () => {
     theme: { colors }
   } = useTheme()
   const { register, isRegistering } = useSeedlessRegister()
+  const { capture } = usePostCapture()
 
   const handleSigninWithMnemonic = (): void => {
     navigate(AppNavigation.Onboard.Welcome, {
@@ -32,6 +34,7 @@ const SigninScreen: FC = () => {
         nextScreen: AppNavigation.Onboard.EnterWithMnemonicStack
       }
     })
+    capture('SignInWithRecoveryPhraseClicked')
   }
 
   const onRegisterMfaMethods = (oidcToken: string, mfaId: string): void => {

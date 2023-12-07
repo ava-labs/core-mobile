@@ -1,6 +1,7 @@
 import { Button, Text, View, useTheme } from '@avalabs/k2-mobile'
 import { useFocusEffect } from '@react-navigation/native'
 import InputText from 'components/InputText'
+import { usePostCapture } from 'hooks/usePosthogCapture'
 import React, { useCallback, useRef, useState } from 'react'
 import { TextInput } from 'react-native'
 import { useDispatch } from 'react-redux'
@@ -17,6 +18,7 @@ export const NameYourWallet = ({
   const {
     theme: { colors }
   } = useTheme()
+  const { capture } = usePostCapture()
 
   useFocusEffect(useCallback(() => textInputRef.current?.focus(), []))
 
@@ -24,6 +26,7 @@ export const NameYourWallet = ({
     const trimmed = name.trim()
     dispatch(setWalletName({ name: trimmed }))
     onSetWalletName()
+    capture('WalletNameAdded')
   }
 
   return (

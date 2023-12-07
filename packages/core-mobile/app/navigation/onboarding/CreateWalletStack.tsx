@@ -27,8 +27,8 @@ import { setCoreAnalytics } from 'store/settings/securityPrivacy'
 import Logger from 'utils/Logger'
 import { WalletType } from 'services/wallet/types'
 import { useWallet } from 'hooks/useWallet'
-import { onLogIn } from 'store/app'
 import { NameYourWallet } from 'seedless/screens/NameYourWallet'
+import { useSignupWallet } from 'hooks/useSignupWallet'
 import { CreateWalletScreenProps } from '../types'
 
 export type CreateWalletStackParamList = {
@@ -240,22 +240,16 @@ const BiometricLoginScreen = (): JSX.Element => {
 
 const TermsNConditionsModalScreen = (): JSX.Element => {
   const createWalletContext = useContext(CreateWalletContext)
-  const { initWallet } = useWallet()
+  const { signupWallet } = useSignupWallet()
   const { signOut } = useApplicationContext().appHook
   const { navigate } = useNavigation<BiometricLoginNavigationProp>()
-  const dispatch = useDispatch()
 
   return (
     <TermsNConditionsModal
       onNext={() => {
         navigate(AppNavigation.CreateWallet.Loader)
         setTimeout(() => {
-          // creating a brand new mnemonic wallet
-          initWallet(createWalletContext.mnemonic, WalletType.MNEMONIC)
-            .then(() => {
-              dispatch(onLogIn())
-            })
-            .catch(Logger.error)
+          signupWallet(createWalletContext.mnemonic, WalletType.MNEMONIC)
         }, 300)
       }}
       onReject={() => signOut()}
