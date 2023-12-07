@@ -248,6 +248,7 @@ const TermsNConditionsModalScreen = (): JSX.Element => {
       onNext={() => {
         navigate(AppNavigation.CreateWallet.Loader)
         setTimeout(() => {
+          // creating a brand new mnemonic wallet
           initAndLoginWallet(createWalletContext.mnemonic, WalletType.MNEMONIC)
         }, 300)
       }}

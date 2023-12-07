@@ -210,6 +210,7 @@ const TermsNConditionsModalScreen = (): JSX.Element => {
       onNext={() => {
         navigate(AppNavigation.LoginWithMnemonic.Loader)
         setTimeout(() => {
+          // recovering a mnemonic wallet
           initAndLoginWallet(
             enterWithMnemonicContext.mnemonic,
             WalletType.MNEMONIC
