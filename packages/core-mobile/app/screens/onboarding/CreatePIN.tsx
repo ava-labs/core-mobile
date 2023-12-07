@@ -38,7 +38,7 @@ export default function CreatePIN({
   onPinSet,
   isResettingPin,
   onResetPinFailed
-}: Props): Element {
+}: Props): JSX.Element {
   const { theme } = useTheme()
   const {
     title,
