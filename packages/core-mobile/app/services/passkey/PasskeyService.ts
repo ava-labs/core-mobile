@@ -14,7 +14,7 @@ import {
   FIDORegistrationRequest
 } from 'services/passkey/types'
 import { base64ToBase64Url } from 'utils/data/base64'
-import { RP_ID, RP_NAME } from './consts'
+import { FIDO_TIMEOUT, RP_ID, RP_NAME } from './consts'
 
 if (!Config.SEEDLESS_ENVIRONMENT) {
   throw Error('SEEDLESS_ENVIRONMENT is missing. Please check your env file.')
@@ -62,6 +62,7 @@ class PasskeyService {
         ...request.user,
         id: request.user.id.toString('base64')
       },
+      timeout: FIDO_TIMEOUT,
       excludeCredentials: (request.excludeCredentials ?? []).map(cred => ({
         ...cred,
         id: cred.id.toString('base64')
@@ -76,6 +77,7 @@ class PasskeyService {
       ...request,
       challenge: request.challenge.toString('base64'),
       rpId: RP_ID,
+      timeout: FIDO_TIMEOUT,
       allowCredentials: (request.allowCredentials ?? []).map(cred => ({
         ...cred,
         id: cred.id.toString('base64')

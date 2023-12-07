@@ -12,7 +12,7 @@ import {
   FidoType
 } from 'services/passkey/types'
 import { base64UrlToBuffer, bufferToBase64Url } from 'utils/data/base64'
-import { FIDO_CALLBACK_URL, RP_ID, RP_NAME } from './consts'
+import { FIDO_CALLBACK_URL, RP_ID } from './consts'
 
 if (!Config.SEEDLESS_ENVIRONMENT) {
   throw Error('SEEDLESS_ENVIRONMENT is missing. Please check your env file.')
@@ -31,8 +31,6 @@ const BROWSER_OPTIONS = {
 }
 
 const IDENTITY_URL = `https://${RP_ID}/`
-
-const FIDO_TIMEOUT = 90000 // 90 seconds
 
 enum Action {
   REGISTER = 'register',
@@ -90,11 +88,6 @@ class PasskeyService {
   ): PasskeyRegistrationRequest {
     return {
       ...options,
-      rp: {
-        ...options.rp,
-        name: RP_NAME,
-        id: RP_ID
-      },
       challenge: bufferToBase64Url(options.challenge),
       user: {
         ...options.user,
@@ -113,7 +106,6 @@ class PasskeyService {
     return {
       ...options,
       challenge: bufferToBase64Url(options.challenge),
-      rpId: RP_ID,
       allowCredentials: (options.allowCredentials ?? []).map(cred => ({
         ...cred,
         id: bufferToBase64Url(cred.id)
@@ -126,40 +118,17 @@ class PasskeyService {
     action,
     fidoType
   }: GenerateAuthUrlsParams): { url: string; redirectUrl: string } {
-    // TODO: move this logic to identity web app
-    // adjust timeout to 90 seconds from 15 seconds to allow users time to complete
-    options.timeout = FIDO_TIMEOUT
-
-    // https://www.corbado.com/blog/webauthn-resident-key-discoverable-credentials-passkeys
-    if (action === Action.REGISTER) {
-      if (fidoType === FidoType.PASS_KEY) {
-        // requesting passkey as a discoverable credential
-        options.authenticatorSelection = {
-          authenticatorAttachment: 'platform',
-          requireResidentKey: true,
-          residentKey: 'required',
-          userVerification: 'required'
-        }
-      } else if (fidoType === FidoType.YUBI_KEY) {
-        // requesting yubikey as a non discoverable credential
-        options.authenticatorSelection = {
-          authenticatorAttachment: 'cross-platform',
-          requireResidentKey: false,
-          residentKey: 'discouraged',
-          userVerification: 'preferred'
-        }
-      }
-    }
-
-    const encodedOptions = encodeURIComponent(JSON.stringify(options))
-
     const redirectUrl = `${FIDO_CALLBACK_URL}${action}`
 
-    const url = `${IDENTITY_URL}${action}?options=${encodedOptions}&redirectUrl=${encodeURIComponent(
-      redirectUrl
-    )}`
+    const url = new URL(`${IDENTITY_URL}${action}`)
+    url.searchParams.set('options', encodeURIComponent(JSON.stringify(options)))
+    url.searchParams.set('redirectUrl', encodeURIComponent(redirectUrl))
 
-    return { url, redirectUrl }
+    if (fidoType) {
+      url.searchParams.set('keyType', fidoType.toLowerCase())
+    }
+
+    return { url: url.toString(), redirectUrl }
   }
 
   private async startAuthSession(
