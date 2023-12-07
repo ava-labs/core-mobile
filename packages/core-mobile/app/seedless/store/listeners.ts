@@ -26,7 +26,7 @@ import { Result } from 'types/result'
 import { RefreshSeedlessTokenFlowErrors } from 'seedless/errors'
 import { Action } from '@reduxjs/toolkit'
 import { AppListenerEffectAPI } from 'store'
-import { onTokenExpired, reInitWalletIfNeeded } from 'seedless/store/slice'
+import { onTokenExpired } from 'seedless/store/slice'
 import { GlobalEvents } from '@cubist-labs/cubesigner-sdk'
 import { initWalletServiceAndUnlock } from 'hooks/useWallet'
 
@@ -52,21 +52,6 @@ const registerTokenExpireHandler = async (
     dispatch(onTokenExpired)
   }
   GlobalEvents.onSessionExpired(onSessionExpiredHandler)
-}
-
-const handleReInitWalletIfNeeded = async (
-  _: Action,
-  listenerApi: AppListenerEffectAPI
-): Promise<void> => {
-  const { dispatch } = listenerApi
-  const state = listenerApi.getState()
-  if (selectWalletState(state) === WalletState.INACTIVE) {
-    await initWalletServiceAndUnlock(
-      dispatch,
-      SEEDLESS_MNEMONIC_STUB,
-      WalletType.SEEDLESS
-    )
-  }
 }
 
 const handleTokenExpired = async (
@@ -243,9 +228,5 @@ export const addSeedlessListeners = (
   startListening({
     actionCreator: onRehydrationComplete,
     effect: registerTokenExpireHandler
-  })
-  startListening({
-    actionCreator: reInitWalletIfNeeded,
-    effect: handleReInitWalletIfNeeded
   })
 }
