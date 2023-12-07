@@ -1,3 +1,4 @@
+/* eslint-disable sonarjs/cognitive-complexity */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // @ts-nocheck comment at the top of the file
 /* eslint-disable no-var */
@@ -157,8 +158,20 @@ async function generatePlatformResults(
     )
     try {
       const existingTestCases = await getTestCasesFromRun(runId)
+      resultArray.forEach((result: any) => {
+        existingTestCases.forEach((testCase: any) => {
+          if (testCase.case_id === result.case_id && testCase.status_id === 5) {
+            console.log('removed ' + testCase.case_id + ' from the array')
+            existingTestCases.splice(testCase, 1)
+          }
+          if (testCase.status_id === 3) {
+            existingTestCases.splice(testCase, 1)
+          }
+        })
+      })
       // Adds the existing test case results to the results array so they are not overwritten in testrail when using the updateRun endpoint
       resultArray = resultArray.concat(existingTestCases)
+      console.log(resultArray, ' is the result array')
       // Add already existing test cases to the testCasesToSend array
       if (existingTestCases.length > 0) {
         existingTestCases.forEach((testCase: number) => {
@@ -180,34 +193,40 @@ async function generatePlatformResults(
       )
     }
 
+    const testResults = []
     for (let i = 0; i < resultArray.length; i++) {
       const resultObject = resultArray[i]
       const statusId = Number(resultObject?.status_id)
-      const payload = {
-        status_id: statusId,
-        comment: `Test case result for ${resultObject?.case_id} and has a status of ${statusId} for ${platform}`
-      }
+      const comment = `Test case result for ${resultObject?.case_id} and has a status of ${statusId} for ${platform}`
+
       if (resultObject) {
-        const testResult = await api.addResultForCase(
-          Number(runId),
-          resultObject?.case_id,
-          payload
-        )
-        if (testResult.status_id === 5) {
-          // This is the path to the screenshot for when the test fails
-          const failScreenshot = `./e2e/artifacts/${platform}/${resultObject.screenshot}`
-          if (failScreenshot) {
-            const failedPayload = {
-              name: 'failed.png',
-              value: await fs.createReadStream(failScreenshot)
-            }
-            // Attaches the screenshot to the corressponding case in the test run
-            const attachmentID = await api.addAttachmentToResult(
-              testResult.id,
-              failedPayload
-            )
-            console.log(`${attachmentID.attachment_id} is the attachment ID...`)
+        const testResult = {
+          case_id: resultObject?.case_id,
+          status_id: statusId,
+          comment: comment
+        }
+        testResults.push(testResult)
+      }
+    }
+    // Send the results to testrail
+    await api.addResultsForCases(Number(runId), { results: testResults })
+
+    // Adds the screenshot to the test case in testrail if the test failed
+    for (let i = 0; i < testResults.length; i++) {
+      if (testResults[i].status_id === 5) {
+        // This is the path to the screenshot for when the test fails
+        const failScreenshot = `./e2e/artifacts/${platform}/${testResults[i].screenshot}`
+        if (failScreenshot) {
+          const failedPayload = {
+            name: 'failed.png',
+            value: await fs.createReadStream(failScreenshot)
           }
+          // Attaches the screenshot to the corressponding case in the test run
+          const attachmentID = await api.addAttachmentToResult(
+            testResult.id,
+            failedPayload
+          )
+          console.log(`${attachmentID.attachment_id} is the attachment ID...`)
         }
       }
     }

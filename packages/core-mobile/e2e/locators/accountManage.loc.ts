@@ -1,5 +1,5 @@
 export default {
-  account: 'Account 1',
+  account: 'testWallet1',
   addAccountButton: 'Add Account',
   addEditAccounts: 'Add/Edit Accounts',
   avaxAddress: 'account_address',
