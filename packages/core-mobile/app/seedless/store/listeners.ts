@@ -45,7 +45,7 @@ const refreshSeedlessToken = async (): Promise<void> => {
   Logger.error('refresh failed', refreshTokenResult.error)
 }
 
-const registerTokenExpire = async (
+const registerTokenExpireHandler = async (
   _: Action,
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
@@ -244,7 +244,7 @@ export const addSeedlessListeners = (
   })
   startListening({
     actionCreator: onRehydrationComplete,
-    effect: registerTokenExpire
+    effect: registerTokenExpireHandler
   })
   startListening({
     actionCreator: reInitWalletIfNeeded,
