@@ -1,4 +1,4 @@
-import React, { FC, useEffect } from 'react'
+import React, { FC, useCallback, useEffect } from 'react'
 import OnboardScreenStack, {
   OnboardingScreenStackParamList
 } from 'navigation/OnboardScreenStack'
@@ -43,7 +43,7 @@ const WalletScreenStackWithContext: FC = () => {
   const { inBackground } = useBgDetect()
   const isLocked = useSelector(selectIsLocked)
 
-  const doExit = (): void => {
+  const doExit = useCallback(() => {
     onExit((confirmExit, cancel) => {
       Alert.alert(
         'Exit app?',
@@ -61,7 +61,7 @@ const WalletScreenStackWithContext: FC = () => {
         ]
       )
     })
-  }
+  }, [onExit])
 
   return (
     <>
