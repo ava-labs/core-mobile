@@ -8,6 +8,7 @@ import App from 'App'
 import { ApplicationContextProvider } from 'contexts/ApplicationContext'
 import Toast from 'react-native-toast-notifications'
 import JailMonkey from 'jail-monkey'
+import { RootSiblingParent } from 'react-native-root-siblings'
 import { K2ThemeProvider } from '@avalabs/k2-mobile'
 import JailbrokenWarning from 'screens/onboarding/JailbrokenWarning'
 import { BridgeProvider } from 'contexts/BridgeContext'
@@ -52,7 +53,9 @@ const ContextApp = (): JSX.Element => {
       <ContextProviders>
         <JailBrokenCheck>
           <GestureHandlerRootView style={{ flex: 1 }}>
-            <App />
+            <RootSiblingParent>
+              <App />
+            </RootSiblingParent>
           </GestureHandlerRootView>
         </JailBrokenCheck>
         <Toast
