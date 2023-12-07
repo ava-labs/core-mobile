@@ -72,29 +72,29 @@ import NotificationsStackScreen, {
 import { DeFiProtocolDetails } from 'screens/defi/DeFiProtocolDetails'
 import SendFeedbackStackScreen from 'navigation/wallet/SendFeedbackStackScreen'
 import { navigationRef } from 'utils/Navigation'
-import { ViewOnceKey, selectHasBeenViewedOnce } from 'store/viewOnce'
+import { selectHasBeenViewedOnce, ViewOnceKey } from 'store/viewOnce'
 import { useSelector } from 'react-redux'
 import TestnetBanner from 'components/TestnetBanner'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { BridgeStackParamList } from '../wallet/BridgeScreenStack'
 import {
+  AddEthereumChainV2Params,
+  AvalancheSendTransactionV2Params,
+  AvalancheSignTransactionV2Params,
+  BridgeAssetV2Params,
   BridgeTransactionStatusParams,
+  BuyCarefullyParams,
+  CreateRemoveContactV2Params,
   EditGasLimitParams,
   QRCodeParams,
-  TokenSelectParams,
-  WalletScreenProps,
-  SignMessageV2Params,
-  SessionProposalV2Params,
-  CreateRemoveContactV2Params,
-  UpdateContactV2Params,
   SelectAccountV2Params,
-  AddEthereumChainV2Params,
-  SwitchEthereumChainV2Params,
-  BridgeAssetV2Params,
+  SessionProposalV2Params,
+  SignMessageV2Params,
   SignTransactionV2Params,
-  BuyCarefullyParams,
-  AvalancheSendTransactionV2Params,
-  AvalancheSignTransactionV2Params
+  SwitchEthereumChainV2Params,
+  TokenSelectParams,
+  UpdateContactV2Params,
+  WalletScreenProps
 } from '../types'
 import AdvancedStackScreen, {
   AdvancedStackParamList
@@ -201,6 +201,8 @@ function WalletScreenStack(props: Props): JSX.Element {
   const navigation = useNavigation<NavigationProp>()
   const isTestnet = useSelector(selectIsDeveloperMode)
 
+  const { onExit } = props
+
   useFocusEffect(
     React.useCallback(() => {
       if (!hasBeenViewedCoreIntro) {
@@ -218,13 +220,8 @@ function WalletScreenStack(props: Props): JSX.Element {
 
       return () =>
         BackHandler.removeEventListener('hardwareBackPress', onBackPress)
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [])
+    }, [hasBeenViewedCoreIntro, navigation, onExit])
   )
-
-  const onExit = (): void => {
-    props.onExit()
-  }
 
   return (
     <>

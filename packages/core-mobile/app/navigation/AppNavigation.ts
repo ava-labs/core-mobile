@@ -21,6 +21,7 @@ enum OnboardScreens {
 enum RefreshTokenScreens {
   OwlLoader = 'RefreshTokenScreens.OwlLoader',
   SessionTimeout = 'RefreshTokenScreens.SessionTimeout',
+  WrongSocialAccount = 'RefreshTokenScreens.WrongSocialAccount',
   VerifyCode = 'RefreshTokenScreens.VerifyCode'
 }
 

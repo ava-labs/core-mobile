@@ -116,7 +116,7 @@ __metadata:
     "@babel/preset-typescript": 7.22.11
     "@babel/runtime": 7.22.11
     "@coinbase/cbpay-js": 1.6.0
-    "@cubist-labs/cubesigner-sdk": 0.2.15
+    "@cubist-labs/cubesigner-sdk": 0.2.21
     "@datadog/mobile-react-native": 1.9.0
     "@datadog/mobile-react-navigation": 1.9.0
     "@dlenroc/testrail": 1.7.2
@@ -2924,9 +2924,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@cubist-labs/cubesigner-sdk@npm:0.2.15":
-  version: 0.2.15
-  resolution: "@cubist-labs/cubesigner-sdk@npm:0.2.15"
+"@cubist-labs/cubesigner-sdk@npm:0.2.21":
+  version: 0.2.21
+  resolution: "@cubist-labs/cubesigner-sdk@npm:0.2.21"
   dependencies:
     "@aws-sdk/client-cognito-identity-provider": ^3.454.0
     "@hpke/core": ^1.2.5
@@ -2937,7 +2937,7 @@ __metadata:
       optional: true
     "@hpke/core":
       optional: true
-  checksum: a23cdc8f905a23fd74328551a889685b282e7a66388f8145c3a22c09a62906d31a910c1eb3d690ce16d33f052cd5c6d98dafec735637f19f8c6d40812aee4f9d
+  checksum: 14064d8349d43e5eb92db2ab26cd7d3edf9d1490e5d14909a115e02607a5af943919ef611f3df101fe85e0556bcb6eeb5dbf6e2e99501d0aa08039bf4fe3a98f
   languageName: node
   linkType: hard
 
