@@ -270,6 +270,7 @@ __metadata:
     react-native-reanimated: 3.0.2
     react-native-redash: 18.1.0
     react-native-restart: 0.0.24
+    react-native-root-siblings: 5.0.1
     react-native-safe-area-context: 4.5.3
     react-native-screens: 3.18.0
     react-native-sensors: 7.3.5
@@ -21859,6 +21860,13 @@ __metadata:
     react: "*"
     react-native: "*"
   checksum: 2ea5f1e9c31d3d705ad2061966a240db32131ad11fd227f244919f2882a1ed7a6d48aed6b7bcab59a989fb58f59ca7e1d6d5316089d011a6955975f1148160f0
+  languageName: node
+  linkType: hard
+
+"react-native-root-siblings@npm:5.0.1":
+  version: 5.0.1
+  resolution: "react-native-root-siblings@npm:5.0.1"
+  checksum: f6885e60064eca9181d02b643901dee313368e53167683d9869951fb870542f3faf01548a9dd82df12d6964bb61ef636ec7b53aca9b9b42309b4ac11c1710199
   languageName: node
   linkType: hard
 

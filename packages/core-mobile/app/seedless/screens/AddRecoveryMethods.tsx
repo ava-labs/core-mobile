@@ -8,8 +8,8 @@ import PasskeyService from 'services/passkey/PasskeyService'
 import { RecoveryMethodsContext } from 'navigation/onboarding/RecoveryMethodsStack'
 import Logger from 'utils/Logger'
 import { FidoType } from 'services/passkey/types'
-import CoreXLogoAnimated from 'components/CoreXLogoAnimated'
 import { showSimpleToast } from 'components/Snackbar'
+import { hideOwl, showOwl } from 'components/GlobalOwlLoader'
 import { Card } from '../components/Card'
 
 type AddRecoveryMethodsScreenProps = RecoveryMethodsScreenProps<
@@ -23,7 +23,6 @@ export const AddRecoveryMethods = (): JSX.Element => {
     theme: { colors }
   } = useTheme()
   const { mfaId, oidcToken } = useContext(RecoveryMethodsContext)
-  const [isAdding, setIsAdding] = React.useState(false)
 
   const goToAuthenticatorSetup = (): void => {
     navigate(AppNavigation.RecoveryMethods.AuthenticatorSetup)
@@ -38,7 +37,7 @@ export const AddRecoveryMethods = (): JSX.Element => {
   }): Promise<void> => {
     const passkeyName = name && name.length > 0 ? name : fidoType.toString()
 
-    setIsAdding(true)
+    showOwl()
 
     try {
       const withSecurityKey = fidoType === FidoType.YUBI_KEY
@@ -62,7 +61,7 @@ export const AddRecoveryMethods = (): JSX.Element => {
       Logger.error(`${fidoType} registration failed`, e)
       showSimpleToast(`Unable to register ${fidoType}`)
     } finally {
-      setIsAdding(false)
+      hideOwl()
     }
   }
 
@@ -88,19 +87,6 @@ export const AddRecoveryMethods = (): JSX.Element => {
         registerAndAuthenticateFido({ name, fidoType: FidoType.YUBI_KEY })
       }
     })
-  }
-
-  if (isAdding) {
-    return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: 'center',
-          alignItems: 'center'
-        }}>
-        <CoreXLogoAnimated size={180} />
-      </View>
-    )
   }
 
   return (

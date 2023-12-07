@@ -8,7 +8,7 @@ import SeedlessService from 'seedless/services/SeedlessService'
 import { RecoveryMethodsContext } from 'navigation/onboarding/RecoveryMethodsStack'
 import Logger from 'utils/Logger'
 import { showSimpleToast } from 'components/Snackbar'
-import CoreXLogoAnimated from 'components/CoreXLogoAnimated'
+import { hideOwl, showOwl } from 'components/GlobalOwlLoader'
 import { Card } from '../components/Card'
 
 type SelectRecoveryMethodsScreenProps = RecoveryMethodsScreenProps<
@@ -25,7 +25,6 @@ export const SelectRecoveryMethods = (): JSX.Element => {
   const {
     params: { mfaMethods }
   } = useRoute<SelectRecoveryMethodsScreenProps['route']>()
-  const [isVerifying, setIsVerifying] = React.useState(false)
 
   const handleTotp = async (): Promise<void> => {
     navigate(AppNavigation.RecoveryMethods.VerifyCode)
@@ -37,7 +36,7 @@ export const SelectRecoveryMethods = (): JSX.Element => {
       return
     }
 
-    setIsVerifying(true)
+    showOwl()
 
     try {
       await SeedlessService.approveFido(oidcToken, mfaId, false)
@@ -57,21 +56,8 @@ export const SelectRecoveryMethods = (): JSX.Element => {
       Logger.error('passkey authentication failed', e)
       showSimpleToast('Unable to authenticate')
     } finally {
-      setIsVerifying(false)
+      hideOwl()
     }
-  }
-
-  if (isVerifying) {
-    return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: 'center',
-          alignItems: 'center'
-        }}>
-        <CoreXLogoAnimated size={180} />
-      </View>
-    )
   }
 
   return (
