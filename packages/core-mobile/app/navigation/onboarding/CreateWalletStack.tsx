@@ -28,7 +28,6 @@ import Logger from 'utils/Logger'
 import { WalletType } from 'services/wallet/types'
 import { useWallet } from 'hooks/useWallet'
 import { NameYourWallet } from 'seedless/screens/NameYourWallet'
-import { useSignupWallet } from 'hooks/useSignupWallet'
 import { CreateWalletScreenProps } from '../types'
 
 export type CreateWalletStackParamList = {
@@ -240,7 +239,7 @@ const BiometricLoginScreen = (): JSX.Element => {
 
 const TermsNConditionsModalScreen = (): JSX.Element => {
   const createWalletContext = useContext(CreateWalletContext)
-  const { signupWallet } = useSignupWallet()
+  const { initAndLoginWallet } = useWallet()
   const { signOut } = useApplicationContext().appHook
   const { navigate } = useNavigation<BiometricLoginNavigationProp>()
 
@@ -249,7 +248,7 @@ const TermsNConditionsModalScreen = (): JSX.Element => {
       onNext={() => {
         navigate(AppNavigation.CreateWallet.Loader)
         setTimeout(() => {
-          signupWallet(createWalletContext.mnemonic, WalletType.MNEMONIC)
+          initAndLoginWallet(createWalletContext.mnemonic, WalletType.MNEMONIC)
         }, 300)
       }}
       onReject={() => signOut()}

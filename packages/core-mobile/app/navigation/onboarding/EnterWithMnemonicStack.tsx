@@ -28,7 +28,6 @@ import { WalletType } from 'services/wallet/types'
 import { useWallet } from 'hooks/useWallet'
 import { resetNavToRoot } from 'utils/Navigation'
 import { NameYourWallet } from 'seedless/screens/NameYourWallet'
-import { useSignupWallet } from 'hooks/useSignupWallet'
 import { EnterWithMnemonicScreenProps } from '../types'
 
 export type EnterWithMnemonicStackParamList = {
@@ -202,7 +201,7 @@ const BiometricLoginScreen = (): JSX.Element => {
 
 const TermsNConditionsModalScreen = (): JSX.Element => {
   const enterWithMnemonicContext = useContext(EnterWithMnemonicContext)
-  const { signupWallet } = useSignupWallet()
+  const { initAndLoginWallet } = useWallet()
   const { signOut } = useApplicationContext().appHook
   const { navigate } = useNavigation<BiometricLoginNavigationProp>()
 
@@ -211,7 +210,10 @@ const TermsNConditionsModalScreen = (): JSX.Element => {
       onNext={() => {
         navigate(AppNavigation.LoginWithMnemonic.Loader)
         setTimeout(() => {
-          signupWallet(enterWithMnemonicContext.mnemonic, WalletType.MNEMONIC)
+          initAndLoginWallet(
+            enterWithMnemonicContext.mnemonic,
+            WalletType.MNEMONIC
+          )
         }, 300)
       }}
       onReject={() => signOut()}
