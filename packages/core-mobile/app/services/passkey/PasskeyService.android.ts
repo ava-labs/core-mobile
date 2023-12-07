@@ -29,7 +29,7 @@ const BROWSER_OPTIONS = {
   showInRecents: false
 }
 
-const IDENTITY_URL = 'https://identity.core.app/' // TODO use env
+const IDENTITY_URL = `https://${RP_ID}/`
 
 const FIDO_TIMEOUT = 90000 // 90 seconds
 
@@ -125,6 +125,7 @@ class PasskeyService {
     action,
     fidoType
   }: GenerateAuthUrlsParams): { url: string; redirectUrl: string } {
+    // TODO: move this logic to identity web app
     // adjust timeout to 90 seconds from 15 seconds to allow users time to complete
     options.timeout = FIDO_TIMEOUT
 
@@ -153,7 +154,6 @@ class PasskeyService {
 
     const redirectUrl = `${FIDO_CALLBACK_URL}${action}`
 
-    // TODO use env
     const url = `${IDENTITY_URL}${action}?options=${encodedOptions}&redirectUrl=${encodeURIComponent(
       redirectUrl
     )}`
