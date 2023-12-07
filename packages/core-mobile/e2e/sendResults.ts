@@ -210,7 +210,6 @@ async function generatePlatformResults(
     }
     // Send the results to testrail
     await api.addResultsForCases(Number(runId), { results: testResults })
-    console.log(testResults, ' is the result for testrail')
 
     // Adds the screenshot to the test case in testrail if the test failed
     for (let i = 0; i < testResults.length; i++) {
