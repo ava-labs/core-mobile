@@ -26,7 +26,8 @@ const BROWSER_OPTIONS = {
   navigationBarDividerColor: '#ffffff',
   enableUrlBarHiding: true,
   enableDefaultShare: false,
-  showInRecents: false
+  showInRecents: false,
+  browserPackage: 'com.android.chrome' // force using chrome or else it will use default browser sometimes
 }
 
 const IDENTITY_URL = `https://${RP_ID}/`
