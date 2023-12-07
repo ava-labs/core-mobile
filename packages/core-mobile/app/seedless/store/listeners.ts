@@ -30,8 +30,6 @@ import { onTokenExpired, reInitWalletIfNeeded } from 'seedless/store/slice'
 import { GlobalEvents } from '@cubist-labs/cubesigner-sdk'
 import { initWalletServiceAndUnlock } from 'hooks/useWallet'
 
-let onSessionExpiredHandler: () => Promise<void>
-
 const refreshSeedlessToken = async (): Promise<void> => {
   if (WalletService.walletType !== WalletType.SEEDLESS) {
     return
@@ -50,7 +48,7 @@ const registerTokenExpireHandler = async (
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
   const { dispatch } = listenerApi
-  onSessionExpiredHandler = async () => {
+  const onSessionExpiredHandler = async (): Promise<void> => {
     dispatch(onTokenExpired)
   }
   GlobalEvents.onSessionExpired(onSessionExpiredHandler)
