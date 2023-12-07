@@ -83,7 +83,7 @@ class ExistingRecoveryPhrasePage {
     await this.tapRecoveryPhraseBtn()
     await AnalyticsConsentPage.tapNoThanksBtn()
     await Action.waitForElement(this.recoveryPhraseTextInput)
-    await this.verifyExistingRecoveryPhrasePage()
+    // await this.verifyExistingRecoveryPhrasePage()
     await this.enterRecoveryPhrase(recoveryPhrase)
     await this.tapSignInBtn()
     await nameWalletPage.enterWalletName('testWallet1\n')

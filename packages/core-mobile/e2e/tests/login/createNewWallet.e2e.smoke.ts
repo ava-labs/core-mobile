@@ -13,6 +13,7 @@ import BottomTabsPage from '../../pages/bottomTabs.page'
 import { warmup } from '../../helpers/warmup'
 import existingRecoveryPhrasePage from '../../pages/existingRecoveryPhrase.page'
 import commonElsPage from '../../pages/commonEls.page'
+import nameWalletPage from '../../pages/nameWallet.page'
 
 describe('Create new wallet', () => {
   beforeAll(async () => {
@@ -47,6 +48,7 @@ describe('Create new wallet', () => {
   })
 
   it('should successfully create a new wallet', async () => {
+    await nameWalletPage.enterWalletName('tester1\n')
     await CreatePinPage.createPin()
     await CreatePinPage.tapEmptyCheckbox()
     await CreatePinPage.tapNextBtn()
