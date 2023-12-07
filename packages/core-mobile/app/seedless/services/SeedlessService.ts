@@ -136,7 +136,7 @@ class SeedlessService {
   //TODO: do it like you would
   async setTotp(): Promise<Result<string, TotpErrors>> {
     const cubeSigner = await this.getCubeSigner()
-    const response = await cubeSigner.userResetTotpInit('Core')
+    const response = await cubeSigner.userTotpResetInit('Core')
     if (response.requiresMfa()) {
       return {
         success: false,
@@ -162,7 +162,7 @@ class SeedlessService {
 
   async registerFido(name: string, withSecurityKey: boolean): Promise<void> {
     const cubeSigner = await this.getCubeSigner()
-    const signResponse = await cubeSigner.userRegisterFidoInit(name)
+    const signResponse = await cubeSigner.userFidoRegisterInit(name)
 
     const challenge = signResponse.data()
 
@@ -254,6 +254,7 @@ class SeedlessService {
    * @param oidcToken — The OIDC token
    * @param orgId — The id of the organization that the user is in
    * @return — Proof of authentication
+   * @throws Error in case of network call fail
    */
   async oidcProveIdentity(oidcToken: string): Promise<IdentityProof> {
     const oidcClient = this.getOidcClient(oidcToken)

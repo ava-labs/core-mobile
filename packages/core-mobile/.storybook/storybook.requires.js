@@ -70,6 +70,7 @@ const getStories = () => {
     "./storybook/stories/earn/StatusChip.stories.tsx": require("../storybook/stories/earn/StatusChip.stories.tsx"),
     "./storybook/stories/earn/ZeroState.stories.tsx": require("../storybook/stories/earn/ZeroState.stories.tsx"),
     "./storybook/stories/seedless/SessionTimeout.stories.tsx": require("../storybook/stories/seedless/SessionTimeout.stories.tsx"),
+    "./storybook/stories/seedless/WrongSocialAccount.stories.tsx": require("../storybook/stories/seedless/WrongSocialAccount.stories.tsx"),
     "./storybook/stories/FeeSelector.stories.tsx": require("../storybook/stories/FeeSelector.stories.tsx"),
     "./storybook/stories/IntroModal.stories.tsx": require("../storybook/stories/IntroModal.stories.tsx"),
     "./storybook/stories/JailbrokenWarning.stories.tsx": require("../storybook/stories/JailbrokenWarning.stories.tsx"),

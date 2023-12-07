@@ -42,7 +42,7 @@ describe('SeedlessService', () => {
     .spyOn(SeedlessService, 'getCubeSigner' as any)
     .mockImplementation(async () => {
       return {
-        userResetTotpInit: () => cubistResponseNoMfa
+        userTotpResetInit: () => cubistResponseNoMfa
       }
     })
   describe('setTotp', () => {
@@ -58,7 +58,7 @@ describe('SeedlessService', () => {
         .spyOn(SeedlessService, 'getCubeSigner' as any)
         .mockImplementation(async () => {
           return {
-            userResetTotpInit: () => cubistResponseHasMfa
+            userTotpResetInit: () => cubistResponseHasMfa
           }
         })
 
@@ -74,11 +74,11 @@ describe('SeedlessService', () => {
         .spyOn(SeedlessService, 'getCubeSigner' as any)
         .mockImplementation(async () => {
           return {
-            userResetTotpInit: () => cubistResponseNoMfa
+            userTotpResetInit: () => cubistResponseNoMfa
           }
         })
       jest
-        .spyOn(CubeSignerApi.prototype, 'userVerifyTotp')
+        .spyOn(CubeSignerApi.prototype, 'userTotpVerify')
         .mockImplementation(async () => {
           throw new Error('WrongMfaCode')
         })
@@ -101,7 +101,7 @@ describe('SeedlessService', () => {
         .spyOn(SeedlessService, 'getCubeSigner' as any)
         .mockImplementation(async () => {
           return {
-            userResetTotpInit: () => cubistResponseNoMfa
+            userTotpResetInit: () => cubistResponseNoMfa
           }
         })
       jest.spyOn(SignerSession, 'loadSignerSession').mockReturnValueOnce({
