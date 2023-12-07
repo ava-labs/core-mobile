@@ -1,7 +1,8 @@
 import React from 'react'
-import { Image, StyleSheet, TouchableNativeFeedback, View } from 'react-native'
+import { StyleSheet, TouchableNativeFeedback } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import AvaText from 'components/AvaText'
+import BackSpaceSVG from 'assets/icons/back_keyboard_btn.svg'
+import { View, Text } from '@avalabs/k2-mobile'
 
 export enum PinKeys {
   Key1,
@@ -41,7 +42,7 @@ export default function PinKey({
   keyboardKey,
   onPress,
   disabled
-}: Props | Readonly<Props>) {
+}: Props | Readonly<Props>): JSX.Element {
   const context = useApplicationContext()
   const theme = context.theme
   const isBackspace = keyboardKey === PinKeys.Backspace
@@ -55,29 +56,21 @@ export default function PinKey({
       onPress={() => onPress(keyboardKey)}
       background={TouchableNativeFeedback.Ripple(theme.buttonRipple, true)}>
       <View style={[styles.button, disabled && { opacity: 0.5 }]}>
-        {isBackspace && Backspace(context.isDarkMode)}
-        {!isBackspace && Digit(keyboardKey)}
+        {isBackspace && <BackSpaceSVG />}
+        {!isBackspace && (
+          <Text
+            variant="heading2"
+            style={{ fontSize: 36, lineHeight: 44 }}
+            testID={keymap.get(keyboardKey)}>
+            {keymap.get(keyboardKey)}
+          </Text>
+        )}
       </View>
     </TouchableNativeFeedback>
   )
 }
 
-const Digit = (key: PinKeys) => {
-  return (
-    <AvaText.LargeTitleRegular testID={keymap.get(key)}>
-      {keymap.get(key)}
-    </AvaText.LargeTitleRegular>
-  )
-}
-
-const Backspace = (isDarkMode: boolean) => {
-  const backspaceIcon = isDarkMode
-    ? require('assets/icons/backspace_dark.png')
-    : require('assets/icons/backspace_light.png')
-  return <Image source={backspaceIcon} style={[{ width: 24, height: 24 }]} />
-}
-
-const styles: any = StyleSheet.create({
+const styles = StyleSheet.create({
   button: {
     height: 44,
     justifyContent: 'center',
