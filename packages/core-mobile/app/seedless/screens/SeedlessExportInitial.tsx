@@ -9,19 +9,17 @@ import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation } from '@react-navigation/native'
 import {
   CubeSignerResponse,
-  SignerSessionData,
+  UserExportCompleteResponse,
   UserExportInitResponse,
-  userExportDecrypt,
-  userExportKeygen
+  userExportDecrypt
 } from '@cubist-labs/cubesigner-sdk'
 import RevealMnemonic from 'navigation/wallet/RevealMnemonic'
 import { Button } from '@avalabs/k2-mobile'
 import { SnackBarMessage } from 'seedless/components/SnackBarMessage'
 import { copyToClipboard } from 'utils/DeviceTools'
-import { OidcPayload } from 'seedless/types'
-import { goBack } from 'utils/Navigation'
 import Logger from 'utils/Logger'
 import SeedlessService from 'seedless/services/SeedlessService'
+import { goBack } from 'utils/Navigation'
 import { SeedlessExportInstructions } from './SeedlessExportInstructions'
 import { RecoveryPhrasePending } from './RecoveryPhrasePending'
 
@@ -41,11 +39,18 @@ export const SeedlessExportInitial = (): JSX.Element => {
     initExport,
     deleteExport,
     completeExport,
-    setPendingRequest
+    setPendingRequest,
+    timeLeft
   } = useSeedlessMnemonicExport()
 
   const onCancelExportRequest = (): void => {
     navigate(AppNavigation.SeedlessExport.ConfirmCancelModal, {
+      onCancel: deleteExport
+    })
+  }
+
+  const onCloseExportRequest = (): void => {
+    navigate(AppNavigation.SeedlessExport.ConfirmCloseModal, {
       onCancel: deleteExport
     })
   }
@@ -71,98 +76,49 @@ export const SeedlessExportInitial = (): JSX.Element => {
     )
   }
 
-  console.log('state', state)
-
-  // const handleCompleteExport = async (): Promise<void> => {
-  //   const keyPair = await userExportKeygen()
-  //   console.log('completeExport: ', keyPair)
-  //   const exportReponse = await SeedlessService.userExportComplete(
-  //     keyId,
-  //     keyPair.publicKey
-  //   )
-  //   const cs = await SeedlessService.getCubeSignerClient()
-  //   const csResponse = await exportReponse.approve(cs)
-  //   if (csResponse.requiresMfa() === false && csResponse.data()) {
-  //     const exportDecrypted = await userExportDecrypt(
-  //       keyPair.privateKey,
-  //       csResponse.data()
-  //     )
-  //     const hasMnemonic = 'mnemonic' in exportDecrypted
-  //     if (!hasMnemonic || typeof exportDecrypted.mnemonic !== 'string') {
-  //       throw new Error('completeExport: missing mnemonic')
-  //     }
-  //     setState(ExportState.Exported)
-  //     setMnemonic(exportDecrypted.mnemonic)
-  // }
-
   const onCompleteExportPromise = (
-    response: CubeSignerResponse<SignerSessionData>,
-    oidcTokenResult: OidcPayload,
-    keyId: string
-  ): Promise<void> =>
-    new Promise(() => {
+    userExportResponse: CubeSignerResponse<UserExportCompleteResponse>,
+    privateKey: string
+  ): Promise<void> => {
+    return new Promise(() => {
       replace(AppNavigation.SeedlessExport.VerifyCode, {
-        exportInitResponse: response,
-        oidcToken: oidcTokenResult.oidcToken,
-        mfaId: response.mfaId(),
+        userExportResponse: userExportResponse,
         onVerifySuccess: async () => {
-          debugger
-          const keyPair = await userExportKeygen()
-          console.log('completeExport: ', keyPair)
-          debugger
-          const exportReponse = await SeedlessService.userExportComplete(
-            keyId,
-            keyPair.publicKey
-          )
-          debugger
-          const cs = await SeedlessService.getCubeSignerClient()
-          await exportReponse.approve(cs)
-          debugger
+          console.log('onCompleteExportPromise', userExportResponse.data())
           const exportDecrypted = await userExportDecrypt(
-            keyPair.privateKey,
-            exportReponse.data()
+            privateKey,
+            userExportResponse.data()
           )
           const hasMnemonic = 'mnemonic' in exportDecrypted
           if (!hasMnemonic || typeof exportDecrypted.mnemonic !== 'string') {
             throw new Error('completeExport: missing mnemonic')
           }
           setMnemonic(exportDecrypted.mnemonic)
-          setState(ExportState.Exported)
-        },
-        onBack: () => {}
+          goBack()
+        }
       })
     })
+  }
 
   const onInitExportPromise = (
-    response: CubeSignerResponse<UserExportInitResponse>
-    // oidcTokenResult: OidcPayload
-  ): Promise<void> =>
-    new Promise(() => {
-      console.log('onInitExportPromise', response)
+    userExportResponse: CubeSignerResponse<UserExportInitResponse>
+  ): Promise<void> => {
+    return new Promise(() => {
+      console.log('onInitExportPromise', userExportResponse)
       replace(AppNavigation.SeedlessExport.VerifyCode, {
-        // oidcToken: oidcTokenResult.oidcToken,
-        mfaId: response.mfaId(),
         onVerifySuccess: async () => {
-          // const cs = await SeedlessService.getCubeSignerClient()
-          // await exportInitResponse.approve(cs)
-          const d = response.data()
-          setPendingRequest(d)
-          debugger
+          const pendingExport = await SeedlessService.userExportList()
           setState(ExportState.Pending)
-          console.log('onInitExportPromise')
+          setPendingRequest(pendingExport)
+          goBack()
         },
-        onBack: () => {},
-        exportInitResponse: response
+        userExportResponse
       })
     })
+  }
 
   useEffect(() => {
-    if (
-      state === ExportState.Loading ||
-      state === ExportState.Initiating ||
-      state === ExportState.Exporting ||
-      state === ExportState.Cancelling
-    ) {
+    if (state === ExportState.Loading) {
       setOptions({ headerShown: false })
     } else {
       setOptions({ headerShown: true })
@@ -172,23 +128,21 @@ export const SeedlessExportInitial = (): JSX.Element => {
   return (
     <>
       {state === ExportState.Loading && <Loader />}
-      {true && (
+      {state === ExportState.NotInitiated && (
         <SeedlessExportInstructions
           onNext={() =>
             navigate(AppNavigation.SeedlessExport.WaitingPeriodModal, {
               onNext: () =>
-                initExport(
-                  response => onInitExportPromise(response),
-                  goBack
-                ).catch(e => {
-                  Logger.error(e)
-                })
+                initExport(response => onInitExportPromise(response)).catch(
+                  Logger.error
+                )
             })
           }
         />
       )}
       {state === ExportState.Pending && (
         <RecoveryPhrasePending
+          timeLeft={timeLeft}
           onCancel={onCancelExportRequest}
           progress={progress}
         />
@@ -196,12 +150,12 @@ export const SeedlessExportInitial = (): JSX.Element => {
       {state === ExportState.ReadyToExport && (
         <RevealMnemonic
           completeExport={() => {
-            completeExport(onCompleteExportPromise, goBack).catch(Logger.error)
+            completeExport(onCompleteExportPromise).catch(Logger.error)
           }}
           mnemonic={mnemonic} // west mention cat frog interest lighter ponder vast west book tree pen health dupa chip moral enroll chair hub book pioneer fortune can beautiful
           buttonOverride={buttonOverride()}
           canToggleBlur={true}
-          onGoBack={onCancelExportRequest}
+          onGoBack={onCloseExportRequest}
         />
       )}
     </>

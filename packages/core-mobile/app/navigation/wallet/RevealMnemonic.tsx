@@ -4,12 +4,12 @@ import AvaButton from 'components/AvaButton'
 import MnemonicScreen from 'components/MnemonicScreen'
 
 interface Props {
-  mnemonic: string
+  mnemonic?: string
   buttonText?: string
   onGoBack?: () => void
   canToggleBlur?: boolean
   buttonOverride?: JSX.Element
-  completeExport?: () => Promise<void>
+  completeExport?: () => void
 }
 
 export default function RevealMnemonic({

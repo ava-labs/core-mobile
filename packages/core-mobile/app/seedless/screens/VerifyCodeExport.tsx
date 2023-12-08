@@ -11,30 +11,33 @@ import { BottomSheet } from 'components/BottomSheet'
 import ClearSVG from 'components/svg/ClearSVG'
 import { Space } from 'components/Space'
 import Logger from 'utils/Logger'
-import SeedlessService from 'seedless/services/SeedlessService'
 import Loader from 'components/Loader'
-import { usePostCapture } from 'hooks/usePosthogCapture'
+import {
+  CubeSignerResponse,
+  SignerSession,
+  UserExportCompleteResponse,
+  UserExportInitResponse
+} from '@cubist-labs/cubesigner-sdk'
+import { SeedlessSessionStorage } from 'seedless/services/storage/SeedlessSessionStorage'
+import { goBack } from 'utils/Navigation'
 
-export type VerifyCodeParams = {
-  oidcToken: string
-  mfaId: string
+export type VerifyCodeExportParams = {
   onVerifySuccess: () => void
-  onBack: () => void
+  userExportResponse: CubeSignerResponse<
+    UserExportInitResponse | UserExportCompleteResponse
+  >
 }
 
-export const VerifyCode = ({
-  oidcToken,
-  mfaId,
+export const VerifyCodeExport = ({
   onVerifySuccess,
-  onBack
-}: VerifyCodeParams): JSX.Element => {
+  userExportResponse
+}: VerifyCodeExportParams): JSX.Element => {
   const {
     theme: { colors, text }
   } = useTheme()
   const [isVerifying, setIsVerifying] = useState(false)
   const [code, setCode] = useState<string>()
   const [showError, setShowError] = useState(false)
-  const { capture } = usePostCapture()
 
   const handleVerifyCode = async (changedText: string): Promise<void> => {
     setCode(changedText)
@@ -42,23 +45,19 @@ export const VerifyCode = ({
       setShowError(false)
       return
     }
-
     setIsVerifying(true)
 
-    const result = await SeedlessService.verifyCode(
-      oidcToken,
-      mfaId,
-      changedText
-    )
-    if (result.success === false) {
+    try {
+      const session = await SignerSession.loadSignerSession(
+        new SeedlessSessionStorage()
+      )
+      await userExportResponse.approveTotp(session, changedText)
+      setIsVerifying(false)
+      onVerifySuccess()
+    } catch {
       setShowError(true)
       setIsVerifying(false)
-      capture('TotpValidationFailed', { error: result.error.name })
-      return
     }
-    setIsVerifying(false)
-    onVerifySuccess()
-    capture('TotpValidationSuccess')
   }
 
   const textInputStyle = showError
@@ -92,7 +91,7 @@ export const VerifyCode = ({
               alignItems: 'center'
             }}>
             <Text variant="heading4">VerifyCode</Text>
-            <Pressable onPress={onBack}>
+            <Pressable onPress={goBack}>
               <ClearSVG
                 backgroundColor={alpha(colors.$neutral700, 0.5)}
                 color={colors.$neutral500}

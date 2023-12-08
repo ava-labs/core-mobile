@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { ScrollView, StyleSheet, View } from 'react-native'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
@@ -32,13 +32,12 @@ export default function MnemonicScreen({
 }: Props): JSX.Element {
   const { theme, isDarkMode } = useApplicationContext()
   const { navigate } = useNavigation<CreateWalletNavigationProp>()
-  const [isRecoveryPhraseHidden, setIsRecoveryPhraseHidden] = useState(false)
 
-  useEffect(() => {
-    if (mnemonic === undefined) {
-      completeExport?.()
-    }
-  }, [completeExport, mnemonic])
+  // useEffect(() => {
+  //   if (mnemonic === undefined) {
+  //     completeExport?.()
+  //   }
+  // }, [completeExport, mnemonic])
 
   const mnemonics = (): JSX.Element => {
     const mnemonicColumns: Element[][] = [[], [], []]
@@ -62,6 +61,10 @@ export default function MnemonicScreen({
   }
 
   function handleCopyPhrase(): void {
+    if (mnemonic === undefined) {
+      completeExport?.()
+      return
+    }
     navigate(AppNavigation.Root.CopyPhraseWarning, {
       copy: () => {
         copyToClipboard(mnemonic)
@@ -70,7 +73,9 @@ export default function MnemonicScreen({
   }
 
   const toggleRecoveryPhrase = (): void => {
-    setIsRecoveryPhraseHidden(prev => !prev)
+    if (mnemonic === undefined) {
+      completeExport?.()
+    }
   }
 
   return (
@@ -95,7 +100,7 @@ export default function MnemonicScreen({
             }
           ]}>
           {mnemonics()}
-          {isRecoveryPhraseHidden && (
+          {!mnemonic && (
             <BlurBackground
               opacity={1}
               iosBlurType="dark"
@@ -118,7 +123,7 @@ export default function MnemonicScreen({
             variant="buttonMedium"
             sx={{ color: '$blueMain' }}
             onPress={toggleRecoveryPhrase}>
-            {`${isRecoveryPhraseHidden ? 'Show' : 'Hide'} Recovery Phrase`}
+            {`${mnemonic ? 'Hide' : 'Show'} Recovery Phrase`}
           </Text>
         ) : (
           <>

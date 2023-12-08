@@ -3,14 +3,15 @@ import React from 'react'
 import { Space } from 'components/Space'
 import { AnimatedCircularProgress } from 'react-native-circular-progress'
 
-const DAY_REMAINING = 2 // todo: handle the timer logic in KDEV-7856
 const CIRCULAR_PROGRESS_SIZE = 153
 interface Props {
+  timeLeft: string
   progress: number
   onCancel: () => void
 }
 
 export const RecoveryPhrasePending = ({
+  timeLeft,
   progress,
   onCancel
 }: Props): JSX.Element => {
@@ -40,9 +41,7 @@ export const RecoveryPhrasePending = ({
             style={{ height: CIRCULAR_PROGRESS_SIZE / 2, marginBottom: 32 }}
           />
           <Text variant="heading5" sx={{ color: '$neutral50' }}>
-            {DAY_REMAINING > 1
-              ? `${DAY_REMAINING} Days Remaining`
-              : `${DAY_REMAINING} Day Remaining`}
+            {`${timeLeft} Remaining`}
           </Text>
           <Space y={8} />
           <Text
