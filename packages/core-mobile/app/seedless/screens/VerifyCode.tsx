@@ -22,19 +22,19 @@ import {
 import { SeedlessSessionStorage } from 'seedless/services/storage/SeedlessSessionStorage'
 
 export type VerifyCodeParams = {
-  // oidcToken: string
+  oidcToken: string
   mfaId: string
   onVerifySuccess: () => void
   onBack: () => void
-  userExportResponse?: CubeSignerResponse<UserExportInitResponse>
+  exportInitResponse?: CubeSignerResponse<UserExportInitResponse>
 }
 
 export const VerifyCode = ({
-  // oidcToken,
+  oidcToken,
   mfaId,
   onVerifySuccess,
   onBack,
-  userExportResponse
+  exportInitResponse
 }: VerifyCodeParams): JSX.Element => {
   const {
     theme: { colors, text }
@@ -52,6 +52,7 @@ export const VerifyCode = ({
     }
 
     setIsVerifying(true)
+
     // const result = await SeedlessService.verifyCode(
     //   oidcToken,
     //   mfaId,
@@ -66,13 +67,17 @@ export const VerifyCode = ({
     // setIsVerifying(false)
     // onVerifySuccess()
     // capture('TotpValidationSuccess')
+
+    //debugger
     const session = await SignerSession.loadSignerSession(
       new SeedlessSessionStorage()
     )
-    const cs = await SeedlessService.getCubeSignerClient()
-    const result = await userExportResponse?.approve(cs)
-    // const result = await userExportResponse?.approveTotp(session, changedText)
-    console.log('result', result)
+    // const cs = await SeedlessService.getCubeSignerClient()
+    // const result = await exportInitResponse?.approve(cs)
+    const result = await exportInitResponse?.approveTotp(session, changedText)
+    //debugger
+    // const a = result?.data()
+    // console.log('result', a)
     setIsVerifying(false)
     onVerifySuccess()
   }

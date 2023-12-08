@@ -44,6 +44,7 @@ export const useSeedlessRegister = (): ReturnType => {
 
     try {
       const { oidcToken, userId } = await getOidcToken()
+      console.log(oidcToken)
       await SecureStorageService.store(KeySlot.OidcUserId, userId)
       await SecureStorageService.store(KeySlot.OidcProvider, oidcProvider)
       const identity = await SeedlessService.oidcProveIdentity(oidcToken)

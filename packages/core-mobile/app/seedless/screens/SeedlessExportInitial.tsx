@@ -102,18 +102,22 @@ export const SeedlessExportInitial = (): JSX.Element => {
   ): Promise<void> =>
     new Promise(() => {
       replace(AppNavigation.SeedlessExport.VerifyCode, {
+        exportInitResponse: response,
         oidcToken: oidcTokenResult.oidcToken,
         mfaId: response.mfaId(),
         onVerifySuccess: async () => {
+          debugger
           const keyPair = await userExportKeygen()
           console.log('completeExport: ', keyPair)
+          debugger
           const exportReponse = await SeedlessService.userExportComplete(
             keyId,
             keyPair.publicKey
           )
+          debugger
           const cs = await SeedlessService.getCubeSignerClient()
           await exportReponse.approve(cs)
-
+          debugger
           const exportDecrypted = await userExportDecrypt(
             keyPair.privateKey,
             exportReponse.data()
@@ -130,22 +134,25 @@ export const SeedlessExportInitial = (): JSX.Element => {
     })
 
   const onInitExportPromise = (
-    response: CubeSignerResponse<UserExportInitResponse>,
+    response: CubeSignerResponse<UserExportInitResponse>
     // oidcTokenResult: OidcPayload
   ): Promise<void> =>
     new Promise(() => {
+      console.log('onInitExportPromise', response)
       replace(AppNavigation.SeedlessExport.VerifyCode, {
         // oidcToken: oidcTokenResult.oidcToken,
         mfaId: response.mfaId(),
         onVerifySuccess: async () => {
           // const cs = await SeedlessService.getCubeSignerClient()
           // await exportInitResponse.approve(cs)
-          // setPendingRequest(response.data())
+          const d = response.data()
+          setPendingRequest(d)
+          debugger
           setState(ExportState.Pending)
           console.log('onInitExportPromise')
         },
         onBack: () => {},
-        userExportResponse: response
+        exportInitResponse: response
       })
     })
 
@@ -165,12 +172,15 @@ export const SeedlessExportInitial = (): JSX.Element => {
   return (
     <>
       {state === ExportState.Loading && <Loader />}
-      {state === ExportState.NotInitiated && (
+      {true && (
         <SeedlessExportInstructions
           onNext={() =>
             navigate(AppNavigation.SeedlessExport.WaitingPeriodModal, {
               onNext: () =>
-                initExport(onInitExportPromise, goBack).catch(e => {
+                initExport(
+                  response => onInitExportPromise(response),
+                  goBack
+                ).catch(e => {
                   Logger.error(e)
                 })
             })
@@ -185,9 +195,9 @@ export const SeedlessExportInitial = (): JSX.Element => {
       )}
       {state === ExportState.ReadyToExport && (
         <RevealMnemonic
-          completeExport={() =>
+          completeExport={() => {
             completeExport(onCompleteExportPromise, goBack).catch(Logger.error)
-          }
+          }}
           mnemonic={mnemonic} // west mention cat frog interest lighter ponder vast west book tree pen health dupa chip moral enroll chair hub book pioneer fortune can beautiful
           buttonOverride={buttonOverride()}
           canToggleBlur={true}

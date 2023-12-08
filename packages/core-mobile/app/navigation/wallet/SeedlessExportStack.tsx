@@ -115,7 +115,7 @@ type VerifyCodeScreenProps = SeedlessExportScreenProps<
 
 function VerifyCodeScreen(): JSX.Element {
   const {
-    params: { onVerifySuccess, onBack, oidcToken, mfaId }
+    params: { onVerifySuccess, onBack, oidcToken, mfaId, exportInitResponse }
   } = useRoute<VerifyCodeScreenProps['route']>()
 
   function handleOnVerifySuccess(): void {
@@ -125,13 +125,14 @@ function VerifyCodeScreen(): JSX.Element {
   function handleOnBack(): void {
     onBack()
   }
-
+  console.log('hello exportInitResponse')
   return (
     <VerifyCode
       onVerifySuccess={handleOnVerifySuccess}
       onBack={handleOnBack}
       oidcToken={oidcToken}
       mfaId={mfaId}
+      exportInitResponse={exportInitResponse}
     />
   )
 }

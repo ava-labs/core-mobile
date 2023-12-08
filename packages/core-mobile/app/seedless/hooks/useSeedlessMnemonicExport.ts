@@ -107,9 +107,12 @@ export const useSeedlessMnemonicExport = (): ReturnProps => {
   const completeExport = useCallback(
     async (
       onVerifySuccessPromise: (
-        response: CubeSignerResponse<SignerSessionData>,
-        oidcTokenResult: OidcPayload,
-        keyId: string
+        onVerifySuccessPromise: (
+          response: CubeSignerResponse<UserExportInitResponse>,
+          oidcTokenResult: OidcPayload,
+          keyId: string
+        ) => Promise<void>,
+        onGoBack: () => void
       ) => Promise<void>,
       onGoBack: () => void
     ): Promise<void> => {
@@ -117,8 +120,7 @@ export const useSeedlessMnemonicExport = (): ReturnProps => {
       setMnemonic(undefined)
       try {
         refreshSeedlessTokenFlow(
-          (reponse, oidcToken) =>
-            onVerifySuccessPromise(reponse, oidcToken, keyId),
+          (_reponse, oidcToken) => onVerifySuccessPromise(_reponse, oidcToken),
           onGoBack
         )
       } catch (e) {
@@ -207,7 +209,7 @@ export const useSeedlessMnemonicExport = (): ReturnProps => {
   const initExport = useCallback(
     async (
       onVerifySuccessPromise: (
-        response: CubeSignerResponse<UserExportInitResponse>,
+        response: CubeSignerResponse<UserExportInitResponse>
         // oidcTokenResult: OidcPayload
         // keyId: string
       ) => Promise<void>,
@@ -220,7 +222,9 @@ export const useSeedlessMnemonicExport = (): ReturnProps => {
           throw new Error('initExport:pendingRequest in progress')
         }
         const exportInitResponse = await SeedlessService.userExportInit(keyId)
-
+        debugger
+        console.log('keyId', keyId)
+        console.log('exportInitResponse', exportInitResponse)
         if (exportInitResponse.requiresMfa()) {
           onVerifySuccessPromise(exportInitResponse)
           return
