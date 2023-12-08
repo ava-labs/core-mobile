@@ -2,6 +2,13 @@ import { createNavigationContainerRef } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
 import { RootScreenStackParamList } from 'navigation/types'
 
+let pinRecovery = false
+
+export const isPinRecovery = (): boolean => pinRecovery
+export const setPinRecovery = (value: boolean): void => {
+  pinRecovery = value
+}
+
 /**
  * use this to navigate without the navigation prop.
  * if you have access to the navigation prop, do not use this.

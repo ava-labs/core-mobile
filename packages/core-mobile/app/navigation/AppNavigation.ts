@@ -14,7 +14,7 @@ enum OnboardScreens {
   AnalyticsConsent = 'OnboardScreens.AnalyticsConsent',
   CreateWalletStack = 'OnboardScreens.CreateWalletStack',
   EnterWithMnemonicStack = 'OnboardScreens.EnterWithMnemonicStack',
-  Login = 'OnboardScreens.Login',
+  RecoverWithMnemonicStack = 'OnboardScreens.RecoverWithMnemonicStack',
   RecoveryMethods = 'OnboardScreens.RecoveryMethods',
   CreatePin = 'OnboardScreens.CreatePin',
   NameYourWallet = 'OnboardScreens.NameYourWallet'

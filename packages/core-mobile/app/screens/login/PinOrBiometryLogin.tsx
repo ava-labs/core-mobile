@@ -173,9 +173,7 @@ export default function PinOrBiometryLogin({
         title: 'Reset PIN?',
         message:
           'By clicking Continue, you will need to reset your PIN and recover your wallet.',
-        onConfirm: () => {
-          // log user out to sign up or sign in screen
-        }
+        onConfirm: onSignInWithRecoveryPhrase
       })
     }
   }
