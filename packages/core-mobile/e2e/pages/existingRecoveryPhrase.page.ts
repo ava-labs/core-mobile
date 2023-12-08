@@ -90,7 +90,6 @@ class ExistingRecoveryPhrasePage {
     await Action.waitForElement(CreatePinPage.numpadOne)
     await CreatePinPage.tapNumpadZero()
     await CreatePinPage.tapNumpadZero()
-    await CreatePinPage.tapEmptyCheckbox()
     await CreatePinPage.tapNextBtn()
     await commonElsPage.tapGetStartedButton()
     await Action.waitForElement(PortfolioPage.colectiblesTab)

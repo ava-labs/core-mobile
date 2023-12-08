@@ -1,9 +1,8 @@
 import React, { useEffect } from 'react'
-import { Animated, StyleSheet, View } from 'react-native'
+import { Animated, StyleSheet } from 'react-native'
+import { useTheme, View, Text } from '@avalabs/k2-mobile'
 import { Space } from 'components/Space'
-import AvaText from 'components/AvaText'
 import DotSVG from 'components/svg/DotSVG'
-import { useApplicationContext } from 'contexts/ApplicationContext'
 import { useCreatePin } from './CreatePinViewModel'
 import PinKey, { PinKeys } from './PinKey'
 
@@ -40,7 +39,7 @@ export default function CreatePIN({
   isResettingPin,
   onResetPinFailed
 }: Props): JSX.Element {
-  const { theme } = useApplicationContext()
+  const { theme } = useTheme()
   const {
     title,
     pinDots,
@@ -55,6 +54,7 @@ export default function CreatePIN({
     if (validPin) {
       onPinSet(validPin)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [validPin, title])
 
   const generatePinDots = (): Element[] => {
@@ -63,7 +63,8 @@ export default function CreatePIN({
     pinDots.forEach((value, key) => {
       dots.push(
         <DotSVG
-          fillColor={value.filled ? theme.alternateBackground : undefined}
+          fillColor={value.filled ? theme.colors.$blueMain : undefined}
+          borderColor={theme.colors.$neutral400}
           key={key}
         />
       )
@@ -71,12 +72,13 @@ export default function CreatePIN({
     return dots
   }
 
-  const keyboard = (isChosenPinEntered: boolean) => {
+  const keyboard = (isChosenPinEntered: boolean): Element[] => {
     const keys: Element[] = []
     '123456789 0<'.split('').forEach((value, key) => {
       keys.push(
         <View key={key} style={styles.pinKey}>
           <PinKey
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             keyboardKey={keymap.get(value)!}
             onPress={
               isChosenPinEntered ? onEnterConfirmedPin : onEnterChosenPin
@@ -92,9 +94,9 @@ export default function CreatePIN({
     <View style={[styles.verticalLayout]}>
       {isResettingPin || (
         <>
-          <AvaText.LargeTitleBold textStyle={{ marginHorizontal: 16 }}>
+          <Text variant="heading3" style={{ marginHorizontal: 16 }}>
             {title}
-          </AvaText.LargeTitleBold>
+          </Text>
           <Space y={20} />
         </>
       )}
