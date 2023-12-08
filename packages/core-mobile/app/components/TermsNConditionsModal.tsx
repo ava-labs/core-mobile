@@ -11,6 +11,7 @@ import { useDispatch } from 'react-redux'
 import { setTouAndPpConsent } from 'store/settings/securityPrivacy'
 import { Button, Text } from '@avalabs/k2-mobile'
 import Logger from 'utils/Logger'
+import { usePostCapture } from 'hooks/usePosthogCapture'
 
 interface Props {
   onNext: () => void
@@ -27,6 +28,7 @@ const openPrivacyPolicy = (): void => {
 
 const TermsNConditionsModal = ({ onNext, onReject }: Props): JSX.Element => {
   const dispatch = useDispatch()
+  const { capture } = usePostCapture()
 
   useBeforeRemoveListener(onReject, [RemoveEvents.GO_BACK], true)
 
@@ -37,6 +39,7 @@ const TermsNConditionsModal = ({ onNext, onReject }: Props): JSX.Element => {
   const saveConsentAndProceed = (): void => {
     dispatch(setTouAndPpConsent(true))
     onNext()
+    capture('TermsAndConditionsAccepted')
   }
 
   return (

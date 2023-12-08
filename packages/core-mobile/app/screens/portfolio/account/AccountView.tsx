@@ -15,6 +15,7 @@ import { Button, Text, View } from '@avalabs/k2-mobile'
 import { ActivityIndicator } from 'components/ActivityIndicator'
 import Logger from 'utils/Logger'
 import { showSimpleToast } from 'components/Snackbar'
+import WalletService from 'services/wallet/WalletService'
 
 function AccountView({ onDone }: { onDone: () => void }): JSX.Element {
   const accounts = useSelector(selectAccounts)
@@ -24,7 +25,7 @@ function AccountView({ onDone }: { onDone: () => void }): JSX.Element {
 
   const addAccountAndSetActive = async (): Promise<void> => {
     try {
-      await capture('AccountSelectorAddAccount', {
+      capture('AccountSelectorAddAccount', {
         accountNumber: Object.keys(accounts).length + 1
       })
 
@@ -32,6 +33,10 @@ function AccountView({ onDone }: { onDone: () => void }): JSX.Element {
       // @ts-expect-error
       // dispatch here is not typed correctly
       await dispatch(addAccount()).unwrap()
+
+      capture('CreatedANewAccountSuccessfully', {
+        walletType: WalletService.walletType
+      })
     } catch (error) {
       Logger.error('Unable to add account', error)
       showSimpleToast('Unable to add account')
