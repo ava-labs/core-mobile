@@ -22,6 +22,7 @@ import WarningModal from 'components/WarningModal'
 import RefreshTokenScreenStack, {
   RefreshTokenScreenStackParamList
 } from 'navigation/RefreshTokenScreenStack'
+import ForgotPinModal from 'screens/shared/ForgotPinModal'
 import { PrivacyScreen } from './wallet/PrivacyScreen'
 import { PinScreen } from './wallet/PinScreen'
 
@@ -33,6 +34,11 @@ export type RootScreenStackParamList = {
   [AppNavigation.Root.Wallet]: NavigatorScreenParams<WalletScreenStackParams>
   [AppNavigation.Root.CopyPhraseWarning]: {
     copy: () => void
+  }
+  [AppNavigation.Root.ForgotPin]: {
+    onConfirm: () => void
+    title: string
+    message: string
   }
 }
 
@@ -105,11 +111,16 @@ const RootScreenStack: FC = () => {
           animationEnabled: false
         }}
       />
-      <RootStack.Screen
-        options={{ presentation: 'transparentModal' }}
-        name={AppNavigation.Root.CopyPhraseWarning}
-        component={CopyPhraseWarningModal}
-      />
+      <RootStack.Group screenOptions={{ presentation: 'transparentModal' }}>
+        <RootStack.Screen
+          name={AppNavigation.Root.CopyPhraseWarning}
+          component={CopyPhraseWarningModal}
+        />
+        <RootStack.Screen
+          name={AppNavigation.Root.ForgotPin}
+          component={ForgotPinModal}
+        />
+      </RootStack.Group>
     </RootStack.Navigator>
   )
 }

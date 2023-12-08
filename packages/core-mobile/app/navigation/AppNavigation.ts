@@ -1,8 +1,9 @@
 enum Root {
-  Wallet = 'Stacks.Wallet',
-  Onboard = 'Stacks.Onboard',
-  RefreshToken = 'Stacks.RefreshToken',
-  CopyPhraseWarning = 'Stacks.CopyPhraseWarning'
+  Wallet = 'Root.Wallet',
+  Onboard = 'Root.Onboard',
+  RefreshToken = 'Root.RefreshToken',
+  CopyPhraseWarning = 'Root.CopyPhraseWarning',
+  ForgotPin = 'Root.ForgotPin'
 }
 
 enum OnboardScreens {
