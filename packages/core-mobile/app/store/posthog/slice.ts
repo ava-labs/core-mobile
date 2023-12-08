@@ -196,7 +196,59 @@ export const selectIsSeedlessOnboardingBlocked = (
 ): boolean => {
   const { featureFlags } = state.posthog
   return (
+    (!featureFlags[FeatureGates.SEEDLESS_ONBOARDING_APPLE] &&
+      !featureFlags[FeatureGates.SEEDLESS_ONBOARDING_GOOGLE]) ||
     !featureFlags[FeatureGates.SEEDLESS_ONBOARDING] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
+export const selectIsSeedlessOnboardingAppleBlocked = (
+  state: RootState
+): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    !featureFlags[FeatureGates.SEEDLESS_ONBOARDING_APPLE] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
+export const selectIsSeedlessOnboardingGoogleBlocked = (
+  state: RootState
+): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    !featureFlags[FeatureGates.SEEDLESS_ONBOARDING_GOOGLE] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
+export const selectIsSeedlessMfaPasskeyBlocked = (
+  state: RootState
+): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    !featureFlags[FeatureGates.SEEDLESS_MFA_PASSKEY] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
+export const selectIsSeedlessMfaAuthenticatorBlocked = (
+  state: RootState
+): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    !featureFlags[FeatureGates.SEEDLESS_MFA_AUTHENTICATOR] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
+export const selectIsSeedlessMfaYubikeyBlocked = (
+  state: RootState
+): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    !featureFlags[FeatureGates.SEEDLESS_MFA_YUBIKEY] ||
     !featureFlags[FeatureGates.EVERYTHING]
   )
 }

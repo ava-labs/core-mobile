@@ -19,8 +19,13 @@ export const DefaultFeatureFlagConfig = {
   [FeatureGates.BROWSER]: false,
   [FeatureGates.LEFT_FAB]: false,
   [FeatureGates.DARK_MODE]: false,
-  [FeatureGates.SEEDLESS_ONBOARDING]: false,
-  [FeatureGates.SEEDLESS_SIGNING]: false
+  [FeatureGates.SEEDLESS_ONBOARDING]: true,
+  [FeatureGates.SEEDLESS_ONBOARDING_GOOGLE]: true,
+  [FeatureGates.SEEDLESS_ONBOARDING_APPLE]: true,
+  [FeatureGates.SEEDLESS_MFA_PASSKEY]: true,
+  [FeatureGates.SEEDLESS_MFA_AUTHENTICATOR]: true,
+  [FeatureGates.SEEDLESS_MFA_YUBIKEY]: true,
+  [FeatureGates.SEEDLESS_SIGNING]: true
 }
 
 export const initialState = {

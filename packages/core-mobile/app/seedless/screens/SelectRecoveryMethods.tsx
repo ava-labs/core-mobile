@@ -10,6 +10,12 @@ import Logger from 'utils/Logger'
 import { showSimpleToast } from 'components/Snackbar'
 import { hideOwl, showOwl } from 'components/GlobalOwlLoader'
 import { usePostCapture } from 'hooks/usePosthogCapture'
+import { useSelector } from 'react-redux'
+import {
+  selectIsSeedlessMfaAuthenticatorBlocked,
+  selectIsSeedlessMfaPasskeyBlocked,
+  selectIsSeedlessMfaYubikeyBlocked
+} from 'store/posthog'
 import { Card } from '../components/Card'
 
 type SelectRecoveryMethodsScreenProps = RecoveryMethodsScreenProps<
@@ -27,6 +33,15 @@ export const SelectRecoveryMethods = (): JSX.Element => {
     params: { mfaMethods }
   } = useRoute<SelectRecoveryMethodsScreenProps['route']>()
   const { capture } = usePostCapture()
+  const isSeedlessMfaAuthenticatorBlocked = useSelector(
+    selectIsSeedlessMfaAuthenticatorBlocked
+  )
+  const isSeedlessMfaPasskeyBlocked = useSelector(
+    selectIsSeedlessMfaPasskeyBlocked
+  )
+  const isSeedlessMfaYubikeyBlocked = useSelector(
+    selectIsSeedlessMfaYubikeyBlocked
+  )
 
   const handleTotp = async (): Promise<void> => {
     navigate(AppNavigation.RecoveryMethods.VerifyCode)
@@ -64,6 +79,10 @@ export const SelectRecoveryMethods = (): JSX.Element => {
       </Text>
       {mfaMethods.map((mfa, i) => {
         if (mfa.type === 'totp') {
+          if (isSeedlessMfaAuthenticatorBlocked) {
+            return null
+          }
+
           return (
             <Card
               onPress={handleTotp}
@@ -75,6 +94,10 @@ export const SelectRecoveryMethods = (): JSX.Element => {
             />
           )
         } else if (mfa.type === 'fido') {
+          if (isSeedlessMfaPasskeyBlocked && isSeedlessMfaYubikeyBlocked) {
+            return null
+          }
+
           return (
             <Card
               onPress={handleFido}

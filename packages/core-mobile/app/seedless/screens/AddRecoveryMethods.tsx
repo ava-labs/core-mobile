@@ -11,6 +11,12 @@ import { FidoType } from 'services/passkey/types'
 import { showSimpleToast } from 'components/Snackbar'
 import { hideOwl, showOwl } from 'components/GlobalOwlLoader'
 import { usePostCapture } from 'hooks/usePosthogCapture'
+import { useSelector } from 'react-redux'
+import {
+  selectIsSeedlessMfaAuthenticatorBlocked,
+  selectIsSeedlessMfaPasskeyBlocked,
+  selectIsSeedlessMfaYubikeyBlocked
+} from 'store/posthog'
 import { Card } from '../components/Card'
 
 type AddRecoveryMethodsScreenProps = RecoveryMethodsScreenProps<
@@ -25,6 +31,15 @@ export const AddRecoveryMethods = (): JSX.Element => {
   } = useTheme()
   const { mfaId, oidcToken } = useContext(RecoveryMethodsContext)
   const { capture } = usePostCapture()
+  const isSeedlessMfaPasskeyBlocked = useSelector(
+    selectIsSeedlessMfaPasskeyBlocked
+  )
+  const isSeedlessMfaAuthenticatorBlocked = useSelector(
+    selectIsSeedlessMfaAuthenticatorBlocked
+  )
+  const isSeedlessMfaYubikeyBlocked = useSelector(
+    selectIsSeedlessMfaYubikeyBlocked
+  )
 
   const goToAuthenticatorSetup = (): void => {
     navigate(AppNavigation.RecoveryMethods.AuthenticatorSetup)
@@ -99,7 +114,7 @@ export const AddRecoveryMethods = (): JSX.Element => {
       <Text variant="body1" sx={{ color: '$neutral50', marginVertical: 8 }}>
         Add <Text variant="heading6">one</Text> recovery method to continue.
       </Text>
-      {PasskeyService.isSupported && (
+      {PasskeyService.isSupported && !isSeedlessMfaPasskeyBlocked && (
         <Card
           onPress={handlePasskey}
           icon={<Icons.Communication.IconKey color={colors.$neutral50} />}
@@ -108,14 +123,16 @@ export const AddRecoveryMethods = (): JSX.Element => {
           showCaret
         />
       )}
-      <Card
-        onPress={goToAuthenticatorSetup}
-        icon={<Icons.Communication.IconQRCode color={colors.$neutral50} />}
-        title="Authenticator"
-        body="Add an Authenticator app as a recovery method."
-        showCaret
-      />
-      {PasskeyService.isSupported && (
+      {!isSeedlessMfaAuthenticatorBlocked && (
+        <Card
+          onPress={goToAuthenticatorSetup}
+          icon={<Icons.Communication.IconQRCode color={colors.$neutral50} />}
+          title="Authenticator"
+          body="Add an Authenticator app as a recovery method."
+          showCaret
+        />
+      )}
+      {PasskeyService.isSupported && !isSeedlessMfaYubikeyBlocked && (
         <Card
           onPress={handleYubikey}
           icon={<Icons.Device.IconUSB color={colors.$neutral50} />}
