@@ -22,12 +22,16 @@ import RecoveryMethodsStack, {
 } from './onboarding/RecoveryMethodsStack'
 import { MainHeaderOptions } from './NavUtils'
 
+type NavigationProp = OnboardScreenProps<
+  typeof AppNavigation.Onboard.RecoverWithMnemonicStack
+>['navigation']
+
 const OnboardScreenStack: FC = () => {
   const { theme } = useApplicationContext()
   const { pendingDeepLink } = useDeeplink()
   const walletState = useSelector(selectWalletState)
   const isLocked = useSelector(selectIsLocked)
-  const navigation = useNavigation<NameYourWalletNavigationProp>()
+  const navigation = useNavigation<NavigationProp>()
 
   useEffect(() => {
     if (pendingDeepLink && walletState === WalletState.NONEXISTENT) {
