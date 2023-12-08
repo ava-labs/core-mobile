@@ -282,6 +282,7 @@ __metadata:
     react-native-v8: 1.5.2
     react-native-version: 4.0.0
     react-native-webview: 13.6.2
+    react-native-webview-crypto: 0.0.25
     react-redux: 8.0.1
     react-test-renderer: 18.2.0
     react-timer-hook: 3.0.5
@@ -12787,7 +12788,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"encode-utf8@npm:^1.0.3":
+"encode-utf8@npm:^1.0.2, encode-utf8@npm:^1.0.3":
   version: 1.0.3
   resolution: "encode-utf8@npm:1.0.3"
   checksum: 550224bf2a104b1d355458c8a82e9b4ea07f9fc78387bc3a49c151b940ad26473de8dc9e121eefc4e84561cb0b46de1e4cd2bc766f72ee145e9ea9541482817f
@@ -14147,6 +14148,13 @@ __metadata:
   version: 1.4.1
   resolution: "extsprintf@npm:1.4.1"
   checksum: a2f29b241914a8d2bad64363de684821b6b1609d06ae68d5b539e4de6b28659715b5bea94a7265201603713b7027d35399d10b0548f09071c5513e65e8323d33
+  languageName: node
+  linkType: hard
+
+"fast-base64-encode@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "fast-base64-encode@npm:1.0.0"
+  checksum: 1a711d2cfd663ae612900f0836b1c51cdcb797893b312db818e61fe55fde41a201d1f06d0814abc74fd3aeb92826ef45aa889bf1a1a7d68f52748d92f4d4bcd2
   languageName: node
   linkType: hard
 
@@ -18036,6 +18044,13 @@ __metadata:
   version: 4.17.21
   resolution: "lodash@npm:4.17.21"
   checksum: eb835a2e51d381e561e508ce932ea50a8e5a68f4ebdd771ea240d3048244a8d13658acbd502cd4829768c56f2e16bdd4340b9ea141297d472517b83868e677f7
+  languageName: node
+  linkType: hard
+
+"lodash@npm:4.17.3":
+  version: 4.17.3
+  resolution: "lodash@npm:4.17.3"
+  checksum: 5811ce6f39de420142631be6ee8c4bab321474ad1b79b43277baad6a4b2352e854558c8efd2845d1b61fb335902b43593baa73cfa0a12edfc80a8119ed6e8121
   languageName: node
   linkType: hard
 
@@ -22031,6 +22046,21 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-native-webview-crypto@npm:0.0.25":
+  version: 0.0.25
+  resolution: "react-native-webview-crypto@npm:0.0.25"
+  dependencies:
+    encode-utf8: ^1.0.2
+    fast-base64-encode: ^1.0.0
+    webview-crypto: ^0.1.13
+  peerDependencies:
+    react: ">=16.4"
+    react-native: ">=0.56"
+    react-native-webview: ">=8.*"
+  checksum: 66277ecf2ec7a433bea64c99ee2914c34f80d8e0fd323367831145be5bc4aa1a1be5e1ebe04af168f4f498e0352b6323223c3e2fd44a44f893268ada8bbf750b
+  languageName: node
+  linkType: hard
+
 "react-native-webview@npm:13.6.2":
   version: 13.6.2
   resolution: "react-native-webview@npm:13.6.2"
@@ -23154,7 +23184,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"serialize-error@npm:^2.1.0":
+"serialize-error@npm:2.1.0, serialize-error@npm:^2.1.0":
   version: 2.1.0
   resolution: "serialize-error@npm:2.1.0"
   checksum: 28464a6f65e6becd6e49fb782aff06573fdbf3d19f161a20228179842fed05c75a34110e54c3ee020b00240f9e11d8bee9b9fee5d04e0bc0bef1fdbf2baa297e
@@ -26678,6 +26708,16 @@ __metadata:
     utf-8-validate: ^5.0.2
     yaeti: ^0.0.6
   checksum: 8a0ce6d79cc1334bb6ea0d607f0092f3d32700b4dd19e4d5540f2a85f3b50e1f8110da0e4716737056584dde70bbebcb40bbd94bbb437d7468c71abfbfa077d8
+  languageName: node
+  linkType: hard
+
+"webview-crypto@npm:^0.1.13":
+  version: 0.1.13
+  resolution: "webview-crypto@npm:0.1.13"
+  dependencies:
+    lodash: 4.17.3
+    serialize-error: 2.1.0
+  checksum: a6a4c2560add55a5060e33b0b04797bc8cd19674cac6cfcd86b68a99b9bacacb9fdcd94461ed8279f3221ab56348227cc9a3644792784b093552959661541b9b
   languageName: node
   linkType: hard
 

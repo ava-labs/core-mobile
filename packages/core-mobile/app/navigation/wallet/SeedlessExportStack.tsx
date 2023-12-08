@@ -44,51 +44,57 @@ export type SeedlessExportStackParamList = {
 
 const SeedlessExportS = createStackNavigator<SeedlessExportStackParamList>()
 
+// @ts-expect-error
+const PolyfillCrypto = React.lazy(() => import('react-native-webview-crypto'))
+
 const SeedlessExportStack: FC = () => {
   return (
-    <SeedlessExportS.Navigator screenOptions={MainHeaderOptions()}>
-      <SeedlessExportS.Screen
-        name={AppNavigation.SeedlessExport.InitialScreen}
-        component={SeedlessExportInitialScreen}
-      />
-      {/* <SeedlessExportS.Screen
+    <>
+      <SeedlessExportS.Navigator screenOptions={MainHeaderOptions()}>
+        <SeedlessExportS.Screen
+          name={AppNavigation.SeedlessExport.InitialScreen}
+          component={SeedlessExportInitialScreen}
+        />
+        {/* <SeedlessExportS.Screen
         name={AppNavigation.SeedlessExport.Instructions}
         component={SeedlessExportInstructionsScreen}
       /> */}
-      <SeedlessExportS.Screen
-        options={{ presentation: 'transparentModal', headerShown: false }}
-        name={AppNavigation.SeedlessExport.VerifyCode}
-        component={VerifyCodeScreen}
-      />
-      {/* <SeedlessExportS.Screen
+        <SeedlessExportS.Screen
+          options={{ presentation: 'transparentModal', headerShown: false }}
+          name={AppNavigation.SeedlessExport.VerifyCode}
+          component={VerifyCodeScreen}
+        />
+        {/* <SeedlessExportS.Screen
         name={AppNavigation.SeedlessExport.RecoveryPhrasePending}
         component={RecoveryPhrasePendingScreen}
       /> */}
-      {/* <SeedlessExportS.Screen
+        {/* <SeedlessExportS.Screen
         name={AppNavigation.SeedlessExport.RecoveryPhrase}
         component={RecoveryPhraseScreen}
       /> */}
-      <SeedlessExportS.Screen
-        options={{ headerShown: false }}
-        name={AppNavigation.SeedlessExport.OwlLoader}
-        component={OwlLoader}
-      />
-      <SeedlessExportS.Group
-        screenOptions={{ presentation: 'modal', headerShown: false }}>
         <SeedlessExportS.Screen
-          name={AppNavigation.SeedlessExport.WaitingPeriodModal}
-          component={WaitingPeriodModal}
+          options={{ headerShown: false }}
+          name={AppNavigation.SeedlessExport.OwlLoader}
+          component={OwlLoader}
         />
-        <SeedlessExportS.Screen
-          name={AppNavigation.SeedlessExport.ConfirmCancelModal}
-          component={ConfirmCancelModal}
-        />
-        <SeedlessExportS.Screen
-          name={AppNavigation.SeedlessExport.ConfirmCloseModal}
-          component={ConfirmCloseModal}
-        />
-      </SeedlessExportS.Group>
-    </SeedlessExportS.Navigator>
+        <SeedlessExportS.Group
+          screenOptions={{ presentation: 'modal', headerShown: false }}>
+          <SeedlessExportS.Screen
+            name={AppNavigation.SeedlessExport.WaitingPeriodModal}
+            component={WaitingPeriodModal}
+          />
+          <SeedlessExportS.Screen
+            name={AppNavigation.SeedlessExport.ConfirmCancelModal}
+            component={ConfirmCancelModal}
+          />
+          <SeedlessExportS.Screen
+            name={AppNavigation.SeedlessExport.ConfirmCloseModal}
+            component={ConfirmCloseModal}
+          />
+        </SeedlessExportS.Group>
+      </SeedlessExportS.Navigator>
+      <PolyfillCrypto />
+    </>
   )
 }
 
