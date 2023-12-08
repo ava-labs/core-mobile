@@ -49,11 +49,9 @@ export default function App(): JSX.Element {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <NavigationContainer
           theme={context.navContainerTheme}
-          ref={ref => {
-            navigationRef.current = ref
-          }}
+          ref={navigationRef}
           onReady={() => {
-            DataDogService.init(navigationRef)
+            DataDogService.init(navigationRef).catch(Logger.error)
           }}>
           <RootScreenStack />
         </NavigationContainer>

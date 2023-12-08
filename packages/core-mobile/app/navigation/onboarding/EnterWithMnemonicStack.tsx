@@ -26,7 +26,6 @@ import { setCoreAnalytics } from 'store/settings/securityPrivacy'
 import Logger from 'utils/Logger'
 import { WalletType } from 'services/wallet/types'
 import { useWallet } from 'hooks/useWallet'
-import { resetNavToRoot } from 'utils/Navigation'
 import { NameYourWallet } from 'seedless/screens/NameYourWallet'
 import { EnterWithMnemonicScreenProps } from '../types'
 
@@ -127,8 +126,6 @@ const LoginWithMnemonicScreen = (): JSX.Element => {
   const handleBack = (): void => {
     if (canGoBack()) {
       goBack()
-    } else {
-      resetNavToRoot()
     }
   }
 

@@ -3,7 +3,8 @@ enum Root {
   Onboard = 'Root.Onboard',
   RefreshToken = 'Root.RefreshToken',
   CopyPhraseWarning = 'Root.CopyPhraseWarning',
-  ForgotPin = 'Root.ForgotPin'
+  ForgotPin = 'Root.ForgotPin',
+  Login = 'Root.Login'
 }
 
 enum OnboardScreens {
@@ -13,7 +14,7 @@ enum OnboardScreens {
   AnalyticsConsent = 'OnboardScreens.AnalyticsConsent',
   CreateWalletStack = 'OnboardScreens.CreateWalletStack',
   EnterWithMnemonicStack = 'OnboardScreens.EnterWithMnemonicStack',
-  Login = 'OnboardScreens.Login',
+  RecoverWithMnemonicStack = 'OnboardScreens.RecoverWithMnemonicStack',
   RecoveryMethods = 'OnboardScreens.RecoveryMethods',
   CreatePin = 'OnboardScreens.CreatePin',
   NameYourWallet = 'OnboardScreens.NameYourWallet'
