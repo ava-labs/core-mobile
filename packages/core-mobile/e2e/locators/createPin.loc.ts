@@ -1,7 +1,7 @@
 export default {
   numPadZero: `0`,
   numpadOne: '1',
-  emptyCheckBox: `checkbox_empty_svg`,
+  agreeAndContinueBtn: `Agree and Continue`,
   nextBtn: `Next`,
   enterYourPinHeader: 'Enter your pin',
   setNewPinHeader: 'Set new pin',
