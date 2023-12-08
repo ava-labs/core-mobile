@@ -35,7 +35,6 @@ describe('Unlock app with recovery phrase', () => {
     await ExistingRecoveryPhrasePage.tapSignInBtn()
     await CreatePinPage.tapNumpadZero()
     await CreatePinPage.tapNumpadZero()
-    await CreatePinPage.tapEmptyCheckbox()
     await CreatePinPage.tapNextBtn()
     await PortfolioPage.verifyPorfolioScreen()
     await BottomTabsPage.verifyBottomTabs()
