@@ -1,18 +1,16 @@
 import React from 'react'
 import Svg, { Path } from 'react-native-svg'
-import { useApplicationContext } from 'contexts/ApplicationContext'
+import { useTheme } from '@avalabs/k2-mobile'
 
 interface Prop {
   selected?: boolean
   size?: number
 }
 
-function HomeSVG({ selected, size = 32 }: Prop) {
-  const context = useApplicationContext()
+function HomeSVG({ selected, size = 32 }: Prop): JSX.Element {
+  const { theme } = useTheme()
+  const svgColor = selected ? theme.colors.$blueDark : theme.colors.$neutral600
 
-  const svgColor = selected
-    ? context.theme.alternateBackground
-    : context.theme.colorIcon4
   return (
     <Svg width={size} height={size} viewBox="0 0 32 33" fill="none">
       <Path
