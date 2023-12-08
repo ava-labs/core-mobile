@@ -25,13 +25,6 @@ export const posthogSlice = createSlice({
 })
 
 // selectors
-const isSeedlessSigningBlocked = (featureFlags: FeatureFlags): boolean => {
-  return (
-    !featureFlags[FeatureGates.SEEDLESS_SIGNING] ||
-    !featureFlags[FeatureGates.EVERYTHING]
-  )
-}
-
 export const selectUserID = (state: RootState): string => state.posthog.userID
 export const selectDistinctID = (state: RootState): string =>
   state.posthog.distinctID
@@ -70,6 +63,17 @@ export const selectFeatureFlags = (state: RootState): ProcessedFeatureFlags => {
     leftFab,
     darkMode
   }
+}
+
+const isSeedlessSigningBlocked = (featureFlags: FeatureFlags): boolean => {
+  return (
+    !featureFlags[FeatureGates.SEEDLESS_SIGNING] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
+export const selectIsSeedlessSigningBlocked = (state: RootState): boolean => {
+  return isSeedlessSigningBlocked(state.posthog.featureFlags)
 }
 
 export const selectIsSwapBlocked = (state: RootState): boolean => {
@@ -278,14 +282,6 @@ export const selectIsSeedlessMfaYubikeyBlocked = (
   const { featureFlags } = state.posthog
   return (
     !featureFlags[FeatureGates.SEEDLESS_MFA_YUBIKEY] ||
-    !featureFlags[FeatureGates.EVERYTHING]
-  )
-}
-
-export const selectIsSeedlessSigningBlocked = (state: RootState): boolean => {
-  const { featureFlags } = state.posthog
-  return (
-    !featureFlags[FeatureGates.SEEDLESS_SIGNING] ||
     !featureFlags[FeatureGates.EVERYTHING]
   )
 }
