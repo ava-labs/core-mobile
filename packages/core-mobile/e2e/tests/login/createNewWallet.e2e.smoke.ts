@@ -50,7 +50,7 @@ describe('Create new wallet', () => {
   it('should successfully create a new wallet', async () => {
     await nameWalletPage.enterWalletName('tester1\n')
     await CreatePinPage.createPin()
-    await CreatePinPage.tapNextBtn()
+    await CreatePinPage.tapAgreeAndContinueBtn()
     await commonElsPage.tapGetStartedButton()
     await PortfolioPage.verifyPorfolioScreen()
     await BottomTabsPage.verifyBottomTabs()
