@@ -143,6 +143,7 @@ const LoginWithPinOrBiometryScreen = (): JSX.Element => {
 
   return (
     <PinOrBiometryLogin
+      onSignOut={signOut}
       onSignInWithRecoveryPhrase={() => {
         setPinRecovery(true)
         signOut()

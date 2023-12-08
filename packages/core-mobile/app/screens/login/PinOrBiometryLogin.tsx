@@ -24,6 +24,7 @@ import { useSelector } from 'react-redux'
 import { WalletType } from 'services/wallet/types'
 import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation } from '@react-navigation/native'
+import { noop } from '@avalabs/utils-sdk'
 import { usePinOrBiometryLogin } from './PinOrBiometryLoginViewModel'
 
 const WINDOW_HEIGHT = Dimensions.get('window').height
@@ -45,7 +46,8 @@ const LOGO_HEIGHT = 100
 const TOP_SPACE = 64
 
 type Props = {
-  onSignInWithRecoveryPhrase: () => void
+  onSignInWithRecoveryPhrase?: () => void
+  onSignOut?: () => void
   onLoginSuccess: (mnemonic: string) => void
   isResettingPin?: boolean
   hideLoginWithMnemonic?: boolean
@@ -54,14 +56,10 @@ type Props = {
 
 /**
  * This screen will select appropriate login method (pin or biometry) and call onLoginSuccess upon successful login.
- * @param onSignInWithRecoveryPhrase
- * @param onLoginSuccess
- * @param isResettingPin
- * @param hideLoginWithMnemonic
- * @constructor
  */
 export default function PinOrBiometryLogin({
   onSignInWithRecoveryPhrase,
+  onSignOut,
   onLoginSuccess,
   isResettingPin,
   hideLoginWithMnemonic = false
@@ -166,14 +164,14 @@ export default function PinOrBiometryLogin({
         title: 'Have you written down your recovery phrase?',
         message:
           'This will terminate this session, without your phrase you will not be able to access the current wallet.',
-        onConfirm: onSignInWithRecoveryPhrase
+        onConfirm: onSignInWithRecoveryPhrase || noop
       })
     } else if (walletType === WalletType.SEEDLESS) {
       navigation.navigate(AppNavigation.Root.ForgotPin, {
         title: 'Reset PIN?',
         message:
           'By clicking Continue, you will need to reset your PIN and recover your wallet.',
-        onConfirm: onSignInWithRecoveryPhrase
+        onConfirm: onSignOut || noop
       })
     }
   }
