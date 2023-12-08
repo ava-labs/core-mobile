@@ -313,39 +313,33 @@ class EarnService {
       }[]
     | undefined
   > => {
-    const oppositeIsDeveloperMode = !isDeveloperMode
     const accountsArray = Object.values(accounts)
 
     try {
-      const firstQueryParams = accountsArray.reduce((result, account) => {
-        if (account.addressPVM) {
-          result.push(account.addressPVM)
-        }
-        return result
-      }, [] as string[])
-
-      const firstTransactions = await getTransformedTransactions(
-        firstQueryParams,
+      const currentNetworkAddresses = accountsArray
+        .map(account => account.addressPVM)
+        .filter((address): address is string => address !== undefined)
+      const currentNetworkTransactions = await getTransformedTransactions(
+        currentNetworkAddresses,
         isDeveloperMode
       )
 
-      const indices = accountsArray.map(acc => acc.index)
-      // TODO: get addresses normally, not by indices
-      const secondQueryParams = await WalletService.getAddressesByIndices({
-        indices,
-        chainAlias: 'P',
-        isChange: false,
-        isTestnet: oppositeIsDeveloperMode
-      })
-
-      const secondTransactions = await getTransformedTransactions(
-        secondQueryParams,
-        oppositeIsDeveloperMode
+      const accountIndices = accountsArray.map(acc => acc.index)
+      const oppositeNetworkAddresses = (
+        await Promise.all(
+          accountIndices.map(accountIndex =>
+            WalletService.getAddresses(accountIndex, !isDeveloperMode)
+          )
+        )
+      ).map(address => address.PVM)
+      const oppositeNetworkTransactions = await getTransformedTransactions(
+        oppositeNetworkAddresses,
+        !isDeveloperMode
       )
 
       const now = new Date()
-      return (firstTransactions ?? [])
-        .concat(secondTransactions ?? [])
+      return currentNetworkTransactions
+        .concat(oppositeNetworkTransactions)
         .map(transaction => {
           return {
             txHash: transaction.txHash,
