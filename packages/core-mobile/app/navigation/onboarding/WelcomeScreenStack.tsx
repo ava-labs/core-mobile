@@ -5,13 +5,9 @@ import {
   useNavigation,
   useRoute
 } from '@react-navigation/native'
-import PinOrBiometryLogin from 'screens/login/PinOrBiometryLogin'
 import { createStackNavigator } from '@react-navigation/stack'
 import AnalyticsConsent from 'screens/onboarding/AnalyticsConsent'
 import { MainHeaderOptions } from 'navigation/NavUtils'
-import Logger from 'utils/Logger'
-import { useWallet } from 'hooks/useWallet'
-import { resetNavToEnterMnemonic } from 'utils/Navigation'
 import { WelcomeScreenProps } from '../types'
 import CreateWalletStack, {
   CreateWalletStackParamList
@@ -37,17 +33,11 @@ export type WelcomeScreenStackParamList = {
   [AppNavigation.Onboard.CreatePin]:
     | NavigatorScreenParams<CreatePinStackParamList>
     | undefined
-  [AppNavigation.Onboard.Login]: undefined
 }
 const WelcomeScreenS = createStackNavigator<WelcomeScreenStackParamList>()
 
 const WelcomeScreenStack: () => JSX.Element = () => (
   <WelcomeScreenS.Navigator screenOptions={{ headerShown: false }}>
-    <WelcomeScreenS.Screen
-      options={{ presentation: 'modal' }}
-      name={AppNavigation.Onboard.Login}
-      component={LoginWithPinOrBiometryScreen}
-    />
     <WelcomeScreenS.Screen
       options={MainHeaderOptions()}
       name={AppNavigation.Onboard.AnalyticsConsent}
@@ -67,19 +57,6 @@ const WelcomeScreenStack: () => JSX.Element = () => (
     />
   </WelcomeScreenS.Navigator>
 )
-
-const LoginWithPinOrBiometryScreen = (): JSX.Element => {
-  const { initWallet } = useWallet()
-
-  return (
-    <PinOrBiometryLogin
-      onSignInWithRecoveryPhrase={() => resetNavToEnterMnemonic()}
-      onLoginSuccess={mnemonic => {
-        initWallet(mnemonic).catch(Logger.error)
-      }}
-    />
-  )
-}
 
 type AnalyticsConsentScreenProps = WelcomeScreenProps<
   typeof AppNavigation.Onboard.AnalyticsConsent

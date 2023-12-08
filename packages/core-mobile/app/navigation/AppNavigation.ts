@@ -3,7 +3,8 @@ enum Root {
   Onboard = 'Root.Onboard',
   RefreshToken = 'Root.RefreshToken',
   CopyPhraseWarning = 'Root.CopyPhraseWarning',
-  ForgotPin = 'Root.ForgotPin'
+  ForgotPin = 'Root.ForgotPin',
+  Login = 'Root.Login'
 }
 
 enum OnboardScreens {
