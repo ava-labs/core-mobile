@@ -1,9 +1,9 @@
 import { StackNavigationOptions } from '@react-navigation/stack'
-import AvaText from 'components/AvaText'
 import React from 'react'
-import { Platform, View } from 'react-native'
+import { Platform } from 'react-native'
 import { Row } from 'components/Row'
 import { AppTheme } from 'contexts/ApplicationContext'
+import { Text, View } from '@avalabs/k2-mobile'
 
 export const BOTTOM_BAR_HEIGHT = 60
 
@@ -33,7 +33,7 @@ export const MainHeaderOptions = (
             alignItems: 'center',
             justifyContent: 'space-between'
           }}>
-          <AvaText.Heading1>{title}</AvaText.Heading1>
+          <Text variant="heading4">{title}</Text>
         </Row>
       )
     },
@@ -61,7 +61,7 @@ export const SubHeaderOptions = (
   const options: Partial<StackNavigationOptions> = {
     headerBackTestID,
     headerShown: true,
-    headerTitle: () => <AvaText.Heading2>{title}</AvaText.Heading2>,
+    headerTitle: () => <Text variant="heading5">{title}</Text>,
     headerTitleAlign: 'center',
     headerLeft: hideHeaderLeft ? () => null : undefined,
     headerBackTitleVisible: false,
@@ -75,6 +75,7 @@ export const SubHeaderOptions = (
   return options
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export const getCommonBottomTabOptions = (theme: AppTheme) => ({
   tabBarShowLabel: false,
   headerShown: true,
@@ -87,37 +88,33 @@ export const getCommonBottomTabOptions = (theme: AppTheme) => ({
   }
 })
 
-type NormalTabButtonParams = {
-  theme: AppTheme
+type TabButtonProps = {
   routeName: string
-  focused: boolean
   image: React.ReactNode
-  testID?: string
+  focused: boolean
 }
 
 /**
- * extracts creation of "normal" tab items
- * @param theme
+ * normal tab item
+ *
  * @param routeName
- * @param focused
  * @param image
+ * @param focused
  */
-export const normalTabButton = ({
-  theme,
+export const TabButton = ({
   routeName,
-  focused,
-  image
-}: NormalTabButtonParams) => {
+  image,
+  focused
+}: TabButtonProps): JSX.Element => {
   return (
     <View style={{ justifyContent: 'center', alignItems: 'center', top: 2 }}>
       {image}
-      <AvaText.Caption
-        textStyle={{
-          color: focused ? theme.alternateBackground : theme.colorIcon4
-        }}
+      <Text
+        variant="bottomNavigationSmall"
+        sx={{ color: focused ? '$neutral50' : '$neutral600' }}
         testID={`navutils_normal_tab_button__${routeName.toLowerCase()}`}>
         {routeName}
-      </AvaText.Caption>
+      </Text>
     </View>
   )
 }

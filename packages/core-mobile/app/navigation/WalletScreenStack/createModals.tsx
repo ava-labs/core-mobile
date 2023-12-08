@@ -21,7 +21,6 @@ import { DisclaimerBottomSheet } from 'screens/earn/components/DisclaimerBottomS
 import IntroModal from 'screens/onboarding/IntroModal'
 import { ViewOnceKey } from 'store/viewOnce'
 import SearchIcon from 'assets/icons/search.svg'
-import RocketLaunch from 'assets/icons/rocket_launch.svg'
 import Photo from 'assets/icons/photo_placeholder.svg'
 import Swap from 'assets/icons/swap_v2.svg'
 import HeaderAccountSelector from 'components/HeaderAccountSelector'
@@ -78,10 +77,15 @@ export const createModals = (WalletScreenS: WalletScreenSType): JSX.Element => {
         name={AppNavigation.Modal.AvalancheSignTransactionV2}
         component={AvalancheSendTransactionV2}
       />
-      <WalletScreenS.Screen
-        name={AppNavigation.Modal.CoreIntro}
-        component={CoreIntroModal}
-      />
+      <WalletScreenS.Group
+        screenOptions={{
+          cardOverlayEnabled: true
+        }}>
+        <WalletScreenS.Screen
+          name={AppNavigation.Modal.CoreIntro}
+          component={CoreIntroModal}
+        />
+      </WalletScreenS.Group>
     </WalletScreenS.Group>
   )
 
@@ -217,25 +221,22 @@ const StakeDisclaimer = (): JSX.Element => {
 
 const CoreIntroModal = (): JSX.Element => {
   const descriptions = [
-    { icon: <SearchIcon />, text: 'Explore the Avalanche ecosystem!' },
+    { icon: <SearchIcon />, text: 'Explore the Avalanche ecosystem' },
     {
       icon: <Swap />,
-      text: 'Send, Receive, Swap and Bridge assets across multiple chains!'
+      text: 'Interact with assets across multiple chains'
     },
     {
       icon: <Photo />,
-      text: 'Collect and share NFTs!'
-    },
-    {
-      icon: <RocketLaunch />,
-      text: 'Conquer the cryptoverse!'
+      text: 'Collect and share NFTs'
     }
   ]
+
   return (
     <IntroModal
       heading="Welcome to Core!"
       viewOnceKey={ViewOnceKey.CORE_INTRO}
-      buttonText="Get Started!"
+      buttonText="Get Started"
       descriptions={descriptions}
       styles={{ marginBottom: 74 }}
     />
