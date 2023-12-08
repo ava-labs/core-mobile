@@ -2,6 +2,7 @@ import { createAction, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from 'store'
 import { v4 as uuidv4 } from 'uuid'
 import { FeatureGates, FeatureFlags, FeatureVars } from 'services/posthog/types'
+import { WalletType } from 'services/wallet/types'
 import { initialState, JsonMap, ProcessedFeatureFlags } from './types'
 
 const reducerName = 'posthog'
@@ -24,6 +25,13 @@ export const posthogSlice = createSlice({
 })
 
 // selectors
+const isSeedlessSigningBlocked = (featureFlags: FeatureFlags): boolean => {
+  return (
+    !featureFlags[FeatureGates.SEEDLESS_SIGNING] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
 export const selectUserID = (state: RootState): string => state.posthog.userID
 export const selectDistinctID = (state: RootState): string =>
   state.posthog.distinctID
@@ -66,6 +74,13 @@ export const selectFeatureFlags = (state: RootState): ProcessedFeatureFlags => {
 
 export const selectIsSwapBlocked = (state: RootState): boolean => {
   const { featureFlags } = state.posthog
+
+  const isSeedlessWallet = state.app.walletType === WalletType.SEEDLESS
+
+  if (isSeedlessWallet) {
+    return isSeedlessSigningBlocked(featureFlags)
+  }
+
   return (
     !featureFlags[FeatureGates.SWAP] || !featureFlags[FeatureGates.EVERYTHING]
   )
@@ -73,6 +88,13 @@ export const selectIsSwapBlocked = (state: RootState): boolean => {
 
 export const selectIsBridgeBlocked = (state: RootState): boolean => {
   const { featureFlags } = state.posthog
+
+  const isSeedlessWallet = state.app.walletType === WalletType.SEEDLESS
+
+  if (isSeedlessWallet) {
+    return isSeedlessSigningBlocked(featureFlags)
+  }
+
   return (
     !featureFlags[FeatureGates.BRIDGE] || !featureFlags[FeatureGates.EVERYTHING]
   )
@@ -96,6 +118,13 @@ export const selectIsBridgeEthBlocked = (state: RootState): boolean => {
 
 export const selectIsSendBlocked = (state: RootState): boolean => {
   const { featureFlags } = state.posthog
+
+  const isSeedlessWallet = state.app.walletType === WalletType.SEEDLESS
+
+  if (isSeedlessWallet) {
+    return isSeedlessSigningBlocked(featureFlags)
+  }
+
   return (
     !featureFlags[FeatureGates.SEND] || !featureFlags[FeatureGates.EVERYTHING]
   )
