@@ -1,15 +1,15 @@
 import React from 'react'
 import Svg, { NumberProp, Path } from 'react-native-svg'
-import { useApplicationContext } from 'contexts/ApplicationContext'
+import { useTheme } from '@avalabs/k2-mobile'
 
 interface Props {
   selected: boolean
   size?: NumberProp
 }
 
-export default function EarnSVG({ selected, size = 24 }: Props) {
-  const { theme } = useApplicationContext()
-  const svgColor = selected ? theme.alternateBackground : theme.colorIcon4
+export default function EarnSVG({ selected, size = 24 }: Props): JSX.Element {
+  const { theme } = useTheme()
+  const svgColor = selected ? theme.colors.$blueDark : theme.colors.$neutral600
 
   return (
     <Svg
