@@ -13,6 +13,7 @@ import { Space } from 'components/Space'
 import Logger from 'utils/Logger'
 import SeedlessService from 'seedless/services/SeedlessService'
 import Loader from 'components/Loader'
+import { usePostCapture } from 'hooks/usePosthogCapture'
 
 export type VerifyCodeParams = {
   oidcToken: string
@@ -32,8 +33,8 @@ export const VerifyCode = ({
   } = useTheme()
   const [isVerifying, setIsVerifying] = useState(false)
   const [code, setCode] = useState<string>()
-
   const [showError, setShowError] = useState(false)
+  const { capture } = usePostCapture()
 
   const handleVerifyCode = async (changedText: string): Promise<void> => {
     setCode(changedText)
@@ -51,10 +52,12 @@ export const VerifyCode = ({
     if (result.success === false) {
       setShowError(true)
       setIsVerifying(false)
+      capture('TotpValidationFailed', { error: result.error.name })
       return
     }
     setIsVerifying(false)
     onVerifySuccess()
+    capture('TotpValidationSuccess')
   }
 
   const textInputStyle = showError

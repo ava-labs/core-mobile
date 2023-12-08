@@ -1,6 +1,7 @@
 import { Button, Text, View } from '@avalabs/k2-mobile'
 import { useNavigation } from '@react-navigation/native'
 import Loader from 'components/Loader'
+import { usePostCapture } from 'hooks/usePosthogCapture'
 import AppNavigation from 'navigation/AppNavigation'
 import { RecoveryMethodsScreenProps } from 'navigation/types'
 import React, { useEffect } from 'react'
@@ -21,6 +22,7 @@ const qrCodeSize = qrCodeContainerSize - 40
 export const ScanQrCode = (): JSX.Element => {
   const { navigate } = useNavigation<ScanQrCodeScreenProps['navigation']>()
   const [totpUrl, setTotpUrl] = React.useState<string>()
+  const { capture } = usePostCapture()
 
   const openVerifyCode = (): void => {
     navigate(AppNavigation.RecoveryMethods.VerifyCode)
@@ -39,8 +41,9 @@ export const ScanQrCode = (): JSX.Element => {
     }
     getTotpUrl().catch(reason => {
       Logger.error('ScanQrCode AuthenticatorService.setTotp error', reason)
+      capture('SeedlessRegisterTOTPStartFailed')
     })
-  }, [])
+  }, [capture])
 
   const renderQRCode = (): JSX.Element => {
     const hasTotpUrl = totpUrl !== undefined

@@ -9,6 +9,7 @@ import { RecoveryMethodsContext } from 'navigation/onboarding/RecoveryMethodsSta
 import Logger from 'utils/Logger'
 import { showSimpleToast } from 'components/Snackbar'
 import { hideOwl, showOwl } from 'components/GlobalOwlLoader'
+import { usePostCapture } from 'hooks/usePosthogCapture'
 import { Card } from '../components/Card'
 
 type SelectRecoveryMethodsScreenProps = RecoveryMethodsScreenProps<
@@ -25,6 +26,7 @@ export const SelectRecoveryMethods = (): JSX.Element => {
   const {
     params: { mfaMethods }
   } = useRoute<SelectRecoveryMethodsScreenProps['route']>()
+  const { capture } = usePostCapture()
 
   const handleTotp = async (): Promise<void> => {
     navigate(AppNavigation.RecoveryMethods.VerifyCode)
@@ -41,17 +43,11 @@ export const SelectRecoveryMethods = (): JSX.Element => {
     try {
       await SeedlessService.approveFido(oidcToken, mfaId, false)
 
+      capture('SeedlessMfaVerified', { type: 'Fido' })
+
       goBack()
 
-      navigate(AppNavigation.Root.Onboard, {
-        screen: AppNavigation.Onboard.Welcome,
-        params: {
-          screen: AppNavigation.Onboard.AnalyticsConsent,
-          params: {
-            nextScreen: AppNavigation.Onboard.CreatePin
-          }
-        }
-      })
+      navigate(AppNavigation.Onboard.NameYourWallet)
     } catch (e) {
       Logger.error('passkey authentication failed', e)
       showSimpleToast('Unable to authenticate')
