@@ -5,15 +5,20 @@ import { AnimatedCircularProgress } from 'react-native-circular-progress'
 
 const DAY_REMAINING = 2 // todo: handle the timer logic in KDEV-7856
 const CIRCULAR_PROGRESS_SIZE = 153
-
 interface Props {
+  progress: number
   onCancel: () => void
 }
 
-export const RecoveryPhrasePending = ({ onCancel }: Props): JSX.Element => {
+export const RecoveryPhrasePending = ({
+  progress,
+  onCancel
+}: Props): JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
+
+  console.log('progress', progress)
 
   return (
     <View
@@ -26,7 +31,7 @@ export const RecoveryPhrasePending = ({ onCancel }: Props): JSX.Element => {
           <AnimatedCircularProgress
             size={CIRCULAR_PROGRESS_SIZE}
             width={10}
-            fill={50}
+            fill={progress}
             tintColor={colors.$blueMain}
             backgroundColor={colors.$neutral800}
             arcSweepAngle={180}

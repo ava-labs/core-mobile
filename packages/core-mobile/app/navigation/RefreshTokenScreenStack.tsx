@@ -97,6 +97,7 @@ function VerifyCodeScreen(): JSX.Element {
       onBack={handleOnBack}
       oidcToken={params.oidcToken}
       mfaId={params.mfaId}
+      exportInitResponse={params.exportInitResponse}
     />
   )
 }

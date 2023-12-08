@@ -1,6 +1,8 @@
 import {
   CubeSignerResponse,
-  SignerSessionData
+  SignerSessionData,
+  UserExportInitRequest,
+  UserExportInitResponse
 } from '@cubist-labs/cubesigner-sdk'
 import SecureStorageService, { KeySlot } from 'security/SecureStorageService'
 import { OidcProviders } from 'seedless/consts'
@@ -15,7 +17,7 @@ import Logger from 'utils/Logger'
 
 export async function refreshSeedlessTokenFlow(
   onVerifySuccessPromise: (
-    loginResult: CubeSignerResponse<SignerSessionData>,
+    response: CubeSignerResponse<SignerSessionData>,
     oidcTokenResult: OidcPayload
   ) => Promise<void>,
   hideLoader: () => void

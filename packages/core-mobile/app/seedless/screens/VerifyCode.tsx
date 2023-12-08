@@ -14,19 +14,27 @@ import Logger from 'utils/Logger'
 import SeedlessService from 'seedless/services/SeedlessService'
 import Loader from 'components/Loader'
 import { usePostCapture } from 'hooks/usePosthogCapture'
+import {
+  CubeSignerResponse,
+  SignerSession,
+  UserExportInitResponse
+} from '@cubist-labs/cubesigner-sdk'
+import { SeedlessSessionStorage } from 'seedless/services/storage/SeedlessSessionStorage'
 
 export type VerifyCodeParams = {
-  oidcToken: string
+  // oidcToken: string
   mfaId: string
   onVerifySuccess: () => void
   onBack: () => void
+  userExportResponse?: CubeSignerResponse<UserExportInitResponse>
 }
 
 export const VerifyCode = ({
-  oidcToken,
+  // oidcToken,
   mfaId,
   onVerifySuccess,
-  onBack
+  onBack,
+  userExportResponse
 }: VerifyCodeParams): JSX.Element => {
   const {
     theme: { colors, text }
@@ -44,20 +52,29 @@ export const VerifyCode = ({
     }
 
     setIsVerifying(true)
-    const result = await SeedlessService.verifyCode(
-      oidcToken,
-      mfaId,
-      changedText
+    // const result = await SeedlessService.verifyCode(
+    //   oidcToken,
+    //   mfaId,
+    //   changedText
+    // )
+    // if (result.success === false) {
+    //   setShowError(true)
+    //   setIsVerifying(false)
+    //   capture('TotpValidationFailed', { error: result.error.name })
+    //   return
+    // }
+    // setIsVerifying(false)
+    // onVerifySuccess()
+    // capture('TotpValidationSuccess')
+    const session = await SignerSession.loadSignerSession(
+      new SeedlessSessionStorage()
     )
-    if (result.success === false) {
-      setShowError(true)
-      setIsVerifying(false)
-      capture('TotpValidationFailed', { error: result.error.name })
-      return
-    }
+    const cs = await SeedlessService.getCubeSignerClient()
+    const result = await userExportResponse?.approve(cs)
+    // const result = await userExportResponse?.approveTotp(session, changedText)
+    console.log('result', result)
     setIsVerifying(false)
     onVerifySuccess()
-    capture('TotpValidationSuccess')
   }
 
   const textInputStyle = showError

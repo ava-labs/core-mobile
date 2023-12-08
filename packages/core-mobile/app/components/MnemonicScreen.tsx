@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { ScrollView, StyleSheet, View } from 'react-native'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
@@ -15,9 +15,10 @@ import { Text } from '@avalabs/k2-mobile'
 import { BlurBackground } from './BlurBackground'
 
 type Props = {
-  mnemonic: string
+  mnemonic?: string
   canToggleBlur?: boolean
   testID?: string
+  completeExport?: () => Promise<void>
 }
 
 type CreateWalletNavigationProp = RootStackScreenProps<
@@ -26,11 +27,18 @@ type CreateWalletNavigationProp = RootStackScreenProps<
 
 export default function MnemonicScreen({
   mnemonic,
-  canToggleBlur = false
+  canToggleBlur = false,
+  completeExport
 }: Props): JSX.Element {
   const { theme, isDarkMode } = useApplicationContext()
   const { navigate } = useNavigation<CreateWalletNavigationProp>()
   const [isRecoveryPhraseHidden, setIsRecoveryPhraseHidden] = useState(false)
+
+  useEffect(() => {
+    if (mnemonic === undefined) {
+      completeExport?.()
+    }
+  }, [completeExport, mnemonic])
 
   const mnemonics = (): JSX.Element => {
     const mnemonicColumns: Element[][] = [[], [], []]

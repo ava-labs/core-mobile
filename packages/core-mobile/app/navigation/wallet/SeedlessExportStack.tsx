@@ -8,28 +8,37 @@ import WarningModal from 'components/WarningModal'
 import { MainHeaderOptions } from 'navigation/NavUtils'
 import Logger from 'utils/Logger'
 import { VerifyCode, VerifyCodeParams } from 'seedless/screens/VerifyCode'
-import {
-  CubeSignerResponse,
-  SignerSessionData
-} from '@cubist-labs/cubesigner-sdk'
-import { OidcPayload } from 'seedless/types'
 import { RecoveryPhrasePending } from 'seedless/screens/RecoveryPhrasePending'
 import OwlLoader from 'components/OwlLoader'
 import { Button, Text } from '@avalabs/k2-mobile'
 import { copyToClipboard } from 'utils/DeviceTools'
 import { SnackBarMessage } from 'seedless/components/SnackBarMessage'
 import { BackButton } from 'components/BackButton'
-import { refreshSeedlessTokenFlow } from 'seedless/utils/refreshSeedlessTokenFlow'
+// import { refreshSeedlessTokenFlow } from 'seedless/utils/refreshSeedlessTokenFlow'
+import { SeedlessExportInitial } from 'seedless/screens/SeedlessExportInitial'
+import SeedlessService from 'seedless/services/SeedlessService'
 import RevealMnemonic from './RevealMnemonic'
+import {
+  CubeSignerResponse,
+  SignerSessionData,
+  userExportDecrypt,
+  userExportKeygen
+} from '@cubist-labs/cubesigner-sdk'
+import { OidcPayload } from 'seedless/types'
+import { refreshSeedlessTokenFlow } from 'seedless/utils/refreshSeedlessTokenFlow'
 
 export type SeedlessExportStackParamList = {
-  [AppNavigation.SeedlessExport.Instructions]: undefined
-  [AppNavigation.SeedlessExport.WaitingPeriodModal]: undefined
+  [AppNavigation.SeedlessExport.InitialScreen]: undefined
+  // [AppNavigation.SeedlessExport.Instructions]: undefined
+  [AppNavigation.SeedlessExport.WaitingPeriodModal]: { onNext: () => void }
   [AppNavigation.SeedlessExport.VerifyCode]: VerifyCodeParams
-  [AppNavigation.SeedlessExport.RecoveryPhrasePending]: undefined
-  [AppNavigation.SeedlessExport.RecoveryPhrase]: { mnemonic: string }
+  // [AppNavigation.SeedlessExport.RecoveryPhrasePending]: {
+  //   progress: number
+  //   onCancel: () => void
+  // }
+  // [AppNavigation.SeedlessExport.RecoveryPhrase]: { mnemonic: string }
   [AppNavigation.SeedlessExport.ConfirmCloseModal]: undefined
-  [AppNavigation.SeedlessExport.ConfirmCancelModal]: undefined
+  [AppNavigation.SeedlessExport.ConfirmCancelModal]: { onCancel: () => void }
   [AppNavigation.SeedlessExport.OwlLoader]: undefined
 }
 
@@ -39,22 +48,26 @@ const SeedlessExportStack: FC = () => {
   return (
     <SeedlessExportS.Navigator screenOptions={MainHeaderOptions()}>
       <SeedlessExportS.Screen
+        name={AppNavigation.SeedlessExport.InitialScreen}
+        component={SeedlessExportInitialScreen}
+      />
+      {/* <SeedlessExportS.Screen
         name={AppNavigation.SeedlessExport.Instructions}
         component={SeedlessExportInstructionsScreen}
-      />
+      /> */}
       <SeedlessExportS.Screen
         options={{ presentation: 'transparentModal', headerShown: false }}
         name={AppNavigation.SeedlessExport.VerifyCode}
         component={VerifyCodeScreen}
       />
-      <SeedlessExportS.Screen
+      {/* <SeedlessExportS.Screen
         name={AppNavigation.SeedlessExport.RecoveryPhrasePending}
         component={RecoveryPhrasePendingScreen}
-      />
-      <SeedlessExportS.Screen
+      /> */}
+      {/* <SeedlessExportS.Screen
         name={AppNavigation.SeedlessExport.RecoveryPhrase}
         component={RecoveryPhraseScreen}
-      />
+      /> */}
       <SeedlessExportS.Screen
         options={{ headerShown: false }}
         name={AppNavigation.SeedlessExport.OwlLoader}
@@ -79,18 +92,22 @@ const SeedlessExportStack: FC = () => {
   )
 }
 
-type InstructionsScreenProps = SeedlessExportScreenProps<
-  typeof AppNavigation.SeedlessExport.Instructions
->
-
-const SeedlessExportInstructionsScreen = (): JSX.Element => {
-  const { navigate } = useNavigation<InstructionsScreenProps['navigation']>()
-
-  const handOnNext = (): void => {
-    navigate(AppNavigation.SeedlessExport.WaitingPeriodModal)
-  }
-  return <SeedlessExportInstructions onNext={handOnNext} />
+const SeedlessExportInitialScreen = (): JSX.Element => {
+  return <SeedlessExportInitial />
 }
+
+// type InstructionsScreenProps = SeedlessExportScreenProps<
+//   typeof AppNavigation.SeedlessExport.Instructions
+// >
+
+// const SeedlessExportInstructionsScreen = (): JSX.Element => {
+//   const { navigate } = useNavigation<InstructionsScreenProps['navigation']>()
+
+//   const handOnNext = (): void => {
+//     navigate(AppNavigation.SeedlessExport.WaitingPeriodModal)
+//   }
+//   return <SeedlessExportInstructions onNext={handOnNext} />
+// }
 
 type VerifyCodeScreenProps = SeedlessExportScreenProps<
   typeof AppNavigation.SeedlessExport.VerifyCode
@@ -119,85 +136,84 @@ function VerifyCodeScreen(): JSX.Element {
   )
 }
 
-type RecoveryPhrasePendingScreenProps = SeedlessExportScreenProps<
-  typeof AppNavigation.SeedlessExport.RecoveryPhrasePending
->
+// type RecoveryPhrasePendingScreenProps = SeedlessExportScreenProps<
+//   typeof AppNavigation.SeedlessExport.RecoveryPhrasePending
+// >
 
-const RecoveryPhrasePendingScreen = (): JSX.Element => {
-  const { navigate, setOptions } =
-    useNavigation<RecoveryPhrasePendingScreenProps['navigation']>()
+// const RecoveryPhrasePendingScreen = (): JSX.Element => {
+//   const { setOptions } =
+//     useNavigation<RecoveryPhrasePendingScreenProps['navigation']>()
+//   const { progress, onCancel } =
+//     useRoute<RecoveryPhrasePendingScreenProps['route']>().params
 
-  const handleOnCancel = (): void => {
-    navigate(AppNavigation.SeedlessExport.ConfirmCancelModal)
-  }
+//   useEffect(() => {
+//     setOptions({
+//       headerLeft: ConfirmCancelBackButton
+//     })
+//   }, [setOptions])
 
-  useEffect(() => {
-    setOptions({
-      headerLeft: ConfirmCancelBackButton
-    })
-  }, [setOptions])
+//   return <RecoveryPhrasePending onCancel={onCancel} progress={progress} />
+// }
 
-  return <RecoveryPhrasePending onCancel={handleOnCancel} />
-}
+// type RecoveryPhraseScreenProps = SeedlessExportScreenProps<
+//   typeof AppNavigation.SeedlessExport.RecoveryPhrase
+// >
 
-type RecoveryPhraseScreenProps = SeedlessExportScreenProps<
-  typeof AppNavigation.SeedlessExport.RecoveryPhrase
->
+// const RecoveryPhraseScreen = (): JSX.Element => {
+//   const { navigate, setOptions } =
+//     useNavigation<RecoveryPhraseScreenProps['navigation']>()
+//   const { mnemonic } = useRoute<RecoveryPhraseScreenProps['route']>().params
 
-const RecoveryPhraseScreen = (): JSX.Element => {
-  const { navigate, setOptions } =
-    useNavigation<RecoveryPhraseScreenProps['navigation']>()
-  const { mnemonic } = useRoute<RecoveryPhraseScreenProps['route']>().params
+//   useEffect(() => {
+//     setOptions({
+//       headerLeft: ConfirmCloseBackButton
+//     })
+//   }, [setOptions])
 
-  useEffect(() => {
-    setOptions({
-      headerLeft: ConfirmCloseBackButton
-    })
-  }, [setOptions])
+//   const buttonOverride = (): JSX.Element => {
+//     return (
+//       <Button
+//         type="secondary"
+//         size="xlarge"
+//         disabled={!mnemonic}
+//         onPress={() => {
+//           navigate(AppNavigation.Root.CopyPhraseWarning, {
+//             copy: () => {
+//               copyToClipboard(
+//                 mnemonic,
+//                 <SnackBarMessage message="Phrase Copied!" />
+//               )
+//             }
+//           })
+//         }}>
+//         Copy Phrase
+//       </Button>
+//     )
+//   }
 
-  const buttonOverride = (): JSX.Element => {
-    return (
-      <Button
-        type="secondary"
-        size="xlarge"
-        disabled={!mnemonic}
-        onPress={() => {
-          navigate(AppNavigation.Root.CopyPhraseWarning, {
-            copy: () => {
-              copyToClipboard(
-                mnemonic,
-                <SnackBarMessage message="Phrase Copied!" />
-              )
-            }
-          })
-        }}>
-        Copy Phrase
-      </Button>
-    )
-  }
-
-  return (
-    <>
-      <Text variant="heading3" sx={{ marginHorizontal: 16, marginBottom: 16 }}>
-        Recovery Phrase
-      </Text>
-      <RevealMnemonic
-        mnemonic={mnemonic}
-        buttonOverride={buttonOverride()}
-        canToggleBlur={true}
-      />
-    </>
-  )
-}
+//   return (
+//     <>
+//       <Text variant="heading3" sx={{ marginHorizontal: 16, marginBottom: 16 }}>
+//         Recovery Phrase
+//       </Text>
+//       <RevealMnemonic
+//         mnemonic={mnemonic}
+//         buttonOverride={buttonOverride()}
+//         canToggleBlur={true}
+//       />
+//     </>
+//   )
+// }
 
 // Modals
 type WaitingPeriodScreenProps = SeedlessExportScreenProps<
   typeof AppNavigation.SeedlessExport.WaitingPeriodModal
->['navigation']
+>
 
 const WaitingPeriodModal = (): JSX.Element => {
-  const { goBack, canGoBack, navigate, replace } =
-    useNavigation<WaitingPeriodScreenProps>()
+  const { goBack, canGoBack } =
+    useNavigation<WaitingPeriodScreenProps['navigation']>()
+  const { onNext } = useRoute<WaitingPeriodScreenProps['route']>().params
 
   const onGoBack = useCallback(() => {
     if (canGoBack()) {
@@ -205,26 +221,26 @@ const WaitingPeriodModal = (): JSX.Element => {
     }
   }, [canGoBack, goBack])
 
-  const onNext = (): void => {
-    replace(AppNavigation.SeedlessExport.OwlLoader)
-    const onVerifySuccessPromise = (
-      loginResult: CubeSignerResponse<SignerSessionData>,
-      oidcTokenResult: OidcPayload
-    ): Promise<void> =>
-      new Promise(() => {
-        replace(AppNavigation.SeedlessExport.VerifyCode, {
-          oidcToken: oidcTokenResult.oidcToken,
-          mfaId: loginResult.mfaId(),
-          onVerifySuccess: () => {
-            navigate(AppNavigation.SeedlessExport.RecoveryPhrasePending)
-          },
-          onBack: onGoBack
-        })
-      })
-    refreshSeedlessTokenFlow(onVerifySuccessPromise, onGoBack).catch(() =>
-      Logger.error('WaitingPeriodModal:refreshSeedlessTokenFlow')
-    )
-  }
+  // const onNext = (): void => {
+  //   replace(AppNavigation.SeedlessExport.OwlLoader)
+  //   const onVerifySuccessPromise = (
+  //     loginResult: CubeSignerResponse<SignerSessionData>,
+  //     oidcTokenResult: OidcPayload
+  //   ): Promise<void> =>
+  //     new Promise(() => {
+  //       replace(AppNavigation.SeedlessExport.VerifyCode, {
+  //         oidcToken: oidcTokenResult.oidcToken,
+  //         mfaId: loginResult.mfaId(),
+  //         onVerifySuccess: () => {
+  //           navigate(AppNavigation.SeedlessExport.RecoveryPhrasePending)
+  //         },
+  //         onBack: onGoBack
+  //       })
+  //     })
+  //   refreshSeedlessTokenFlow(onVerifySuccessPromise, onGoBack).catch(() =>
+  //     Logger.error('WaitingPeriodModal:refreshSeedlessTokenFlow')
+  //   )
+  // }
 
   return (
     <WarningModal
@@ -240,11 +256,12 @@ const WaitingPeriodModal = (): JSX.Element => {
 
 type ConfirmCancelModalProps = SeedlessExportScreenProps<
   typeof AppNavigation.SeedlessExport.ConfirmCancelModal
->['navigation']
+>
 
 const ConfirmCancelModal = (): JSX.Element => {
   const { goBack, canGoBack, getParent } =
-    useNavigation<ConfirmCancelModalProps>()
+    useNavigation<ConfirmCancelModalProps['navigation']>()
+  const { onCancel } = useRoute<ConfirmCancelModalProps['route']>().params
 
   const onGoBack = useCallback(() => {
     if (canGoBack()) {
@@ -253,11 +270,11 @@ const ConfirmCancelModal = (): JSX.Element => {
   }, [canGoBack, goBack])
 
   const onNext = useCallback(() => {
-    // todo: cancel seedless export
+    onCancel()
     if (getParent()?.canGoBack()) {
       getParent()?.goBack()
     }
-  }, [getParent])
+  }, [getParent, onCancel])
 
   return (
     <WarningModal
@@ -304,8 +321,12 @@ const ConfirmCloseModal = (): JSX.Element => {
   )
 }
 
+type initialScreenProps = SeedlessExportScreenProps<
+  typeof AppNavigation.SeedlessExport.initialScreen
+>['navigation']
+
 const ConfirmCloseBackButton = (): JSX.Element => {
-  const { navigate } = useNavigation<RecoveryPhraseScreenProps['navigation']>()
+  const { navigate } = useNavigation<initialScreenProps>()
   return (
     <BackButton
       onPress={() => {
@@ -316,15 +337,8 @@ const ConfirmCloseBackButton = (): JSX.Element => {
 }
 
 const ConfirmCancelBackButton = (): JSX.Element => {
-  const { navigate } =
-    useNavigation<RecoveryPhrasePendingScreenProps['navigation']>()
-  return (
-    <BackButton
-      onPress={() => {
-        navigate(AppNavigation.SeedlessExport.ConfirmCancelModal)
-      }}
-    />
-  )
+  const { goBack } = useNavigation<initialScreenProps>()
+  return <BackButton onPress={goBack} />
 }
 
 export default SeedlessExportStack

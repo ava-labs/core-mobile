@@ -11,7 +11,12 @@ import {
   CubeSignerApi as CubeSigner,
   CubeSignerResponse,
   OidcClient,
-  SignerSessionData
+  SignerSessionData,
+  UserExportInitResponse,
+  KeyInfoApi,
+  CubeSignerClient,
+  EnvInterface,
+  UserExportCompleteResponse
 } from '@cubist-labs/cubesigner-sdk'
 import { TokenRefreshErrors, TotpErrors } from 'seedless/errors'
 import { Result } from 'types/result'
@@ -67,6 +72,11 @@ class SeedlessService {
    */
   getOidcClient(oidcToken: string): OidcClient {
     return new OidcClient(envInterface, SEEDLESS_ORG_ID, oidcToken)
+  }
+
+  async getCubeSignerClient(): Promise<CubeSignerClient> {
+    const sessionManager = await this.getSessionManager()
+    return new CubeSignerClient(sessionManager, SEEDLESS_ORG_ID)
   }
 
   /**
@@ -319,6 +329,72 @@ class SeedlessService {
       void,
       TokenRefreshErrors
     >
+  }
+
+  /**
+   * Returns the list of keys that this session has access to.
+   */
+  async getSessoinKeysList(): Promise<KeyInfoApi[]> {
+    const session = new SignerSession(await this.getSessionManager())
+    return (await session.sessionKeysList()).filter(
+      key => key.key_type === 'Mnemonic'
+    )
+  }
+
+  /**
+   * Initiate user export
+   */
+  async userExportInit(
+    keyId: string,
+    mfaReceipt?: MfaReceipt
+  ): Promise<CubeSignerResponse<UserExportInitResponse>> {
+    const session = new SignerSession(await this.getSessionManager())
+    return session.userExportInit(keyId, mfaReceipt)
+  }
+
+  /**
+   * Detele user export
+   */
+  async userExportDelete(keyId: string, userId?: string): Promise<void> {
+    const session = new SignerSession(await this.getSessionManager())
+    session.userExportDelete(keyId, userId)
+  }
+
+  /**
+   * List user export
+   */
+  async userExportList(
+    keyId?: string,
+    userId?: string
+  ): Promise<UserExportInitResponse | undefined> {
+    const session = new SignerSession(await this.getSessionManager())
+    const paginator = session.userExportList(keyId, userId)
+    const [userExport] = await paginator.fetchAll()
+    return userExport
+  }
+
+  /**
+   * Complete user export
+   */
+  async userExportComplete(
+    keyId: string,
+    pubKey: string
+  ): Promise<CubeSignerResponse<UserExportCompleteResponse>> {
+    const session = new SignerSession(await this.getSessionManager())
+    return await session.userExportComplete(keyId, pubKey)
+  }
+
+  /**
+   * get key_id for mnemonic key type
+   */
+  async getMnemonicKey(): Promise<string | undefined> {
+    const cubeSigner = await this.getCubeSigner()
+    const sessoinKeysList = await cubeSigner.sessionKeysList()
+    return sessoinKeysList.find(key => key.key_type === 'Mnemonic')?.key_id
+  }
+
+  getEnvironment(): EnvInterface {
+    return envInterface
   }
 }
 
