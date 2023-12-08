@@ -324,11 +324,10 @@ class EarnService {
         isDeveloperMode
       )
 
-      const accountIndices = accountsArray.map(acc => acc.index)
       const oppositeNetworkAddresses = (
         await Promise.all(
-          accountIndices.map(accountIndex =>
-            WalletService.getAddresses(accountIndex, !isDeveloperMode)
+          accountsArray.map(account =>
+            WalletService.getAddresses(account.index, !isDeveloperMode)
           )
         )
       ).map(address => address.PVM)
