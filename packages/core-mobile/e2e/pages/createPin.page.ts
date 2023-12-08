@@ -10,8 +10,8 @@ class CreatePinPage {
     return by.id(createPinLoc.numpadOne)
   }
 
-  get emptyCheckBox() {
-    return by.id(createPinLoc.emptyCheckBox)
+  get agreeAndContinueBtn() {
+    return by.text(createPinLoc.agreeAndContinueBtn)
   }
 
   get nextBtn() {
@@ -46,9 +46,8 @@ class CreatePinPage {
     await Action.tap(this.nextBtn)
   }
 
-  async tapEmptyCheckbox() {
-    await Action.tapElementAtIndex(this.emptyCheckBox, 0)
-    await Action.tapElementAtIndex(this.emptyCheckBox, 0)
+  async tapAgreeAndContinueBtn() {
+    await Action.tapElementAtIndex(this.agreeAndContinueBtn, 0)
   }
 
   async tapNumpadZero6Times() {
