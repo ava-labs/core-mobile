@@ -28,7 +28,6 @@ import PinOrBiometryLogin from 'screens/login/PinOrBiometryLogin'
 import Logger from 'utils/Logger'
 import { setPinRecovery } from 'utils/Navigation'
 import { PrivacyScreen } from './wallet/PrivacyScreen'
-import { PinScreen } from './wallet/PinScreen'
 
 export type RootScreenStackParamList = {
   [AppNavigation.Root
@@ -52,7 +51,6 @@ const RootStack = createStackNavigator<RootScreenStackParamList>()
 const WalletScreenStackWithContext: FC = () => {
   const { onExit } = useApplicationContext().appHook
   const { inBackground } = useBgDetect()
-  const isLocked = useSelector(selectIsLocked)
 
   const doExit = useCallback(() => {
     onExit((confirmExit, cancel) => {
@@ -77,7 +75,6 @@ const WalletScreenStackWithContext: FC = () => {
   return (
     <>
       <WalletScreenStack onExit={doExit} />
-      {isLocked && <PinScreen />}
 
       {/* This protects from leaking last screen in "recent apps" list.                                 */}
       {/* For Android it is additionally implemented natively in MainActivity.java because react-native */}

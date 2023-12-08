@@ -10,7 +10,6 @@ import {
 } from 'store/app'
 import { WalletType } from 'services/wallet/types'
 import WalletService from 'services/wallet/WalletService'
-import { resetNavToUnlockedWallet } from 'utils/Navigation'
 import { Dispatch } from '@reduxjs/toolkit'
 import Logger from 'utils/Logger'
 import { usePostCapture } from './usePosthogCapture'
@@ -36,7 +35,6 @@ export async function initWalletServiceAndUnlock(
 ): Promise<void> {
   await WalletService.init(mnemonic, walletType)
   dispatch(onAppUnlocked())
-  resetNavToUnlockedWallet()
 }
 
 /**
