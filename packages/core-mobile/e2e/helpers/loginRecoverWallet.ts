@@ -18,7 +18,7 @@ class LoginRecoverWallet {
     await nameWalletPage.enterWalletName('testWallet1\n')
     await CreatePinPage.tapNumpadZero()
     await CreatePinPage.tapNumpadZero()
-    await CreatePinPage.tapNextBtn()
+    await CreatePinPage.tapAgreeAndContinueBtn()
     await commonElsPage.tapGetStartedButton()
     await PortfolioPage.verifyPorfolioScreen()
   }
