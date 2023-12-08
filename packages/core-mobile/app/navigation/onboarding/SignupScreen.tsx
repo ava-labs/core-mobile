@@ -16,6 +16,7 @@ import AppleSignInService from 'services/socialSignIn/apple/AppleSignInService'
 import GoogleSigninService from 'services/socialSignIn/google/GoogleSigninService'
 import { showSimpleToast } from 'components/Snackbar'
 import { hideOwl, showOwl } from 'components/GlobalOwlLoader'
+import { usePostCapture } from 'hooks/usePosthogCapture'
 
 type NavigationProp = OnboardScreenProps<
   typeof AppNavigation.Onboard.Signup
@@ -27,6 +28,7 @@ const SignupScreen: FC = () => {
   )
   const { navigate } = useNavigation<NavigationProp>()
   const { register, isRegistering } = useSeedlessRegister()
+  const { capture } = usePostCapture()
 
   useEffect(() => {
     isRegistering ? showOwl() : hideOwl()
@@ -48,10 +50,12 @@ const SignupScreen: FC = () => {
         nextScreen: AppNavigation.Onboard.CreateWalletStack
       }
     })
+    capture('RecoveryPhraseClicked')
   }
 
   const handleSignin = (): void => {
     navigate(AppNavigation.Onboard.Signin)
+    capture('AlreadyHaveAWalletClicked')
   }
 
   const onRegisterMfaMethods = (oidcToken: string, mfaId: string): void => {
