@@ -3,6 +3,6 @@ export default {
   inputTextField: 'input_text',
   simpleToastMsg: 'simple_toast_msg',
   jailbrokenWarning: 'jailbroken_warning__text',
-  getStartedBtn: 'Get Started!',
+  getStartedBtn: 'Get Started',
   retryBtn: 'Retry'
 }

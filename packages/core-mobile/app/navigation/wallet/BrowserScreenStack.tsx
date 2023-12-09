@@ -114,6 +114,7 @@ const BrowserIntroModal = (): JSX.Element => {
       viewOnceKey={ViewOnceKey.BROWSER_INTERACTION}
       buttonText="Get Started"
       descriptions={descriptions}
+      testID="browser-intro-modal"
     />
   )
 }
