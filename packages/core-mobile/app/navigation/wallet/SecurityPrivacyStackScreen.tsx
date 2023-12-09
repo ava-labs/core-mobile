@@ -20,11 +20,6 @@ import { MFA } from 'seedless/types'
 import { WalletType } from 'services/wallet/types'
 import walletService from 'services/wallet/WalletService'
 import SeedlessExportStack from './SeedlessExportStack'
-import {
-  CubeSignerResponse,
-  UserExportCompleteResponse,
-  UserExportInitResponse
-} from '@cubist-labs/cubesigner-sdk'
 
 export type SecurityStackParamList = {
   [AppNavigation.SecurityPrivacy.SecurityPrivacy]: undefined
@@ -37,16 +32,7 @@ export type SecurityStackParamList = {
   [AppNavigation.SecurityPrivacy.RecoveryPhrase]: { mnemonic: string }
   [AppNavigation.SecurityPrivacy.DappList]: undefined
   [AppNavigation.SecurityPrivacy.QRCode]: QRCodeParams
-  [AppNavigation.SecurityPrivacy.SeedlessExport]: {
-    isInProgress: boolean
-    isReadyToExport: boolean
-    progress: number
-    keyId?: string
-    mnemonic?: string
-    userExportResponse?: CubeSignerResponse<
-      UserExportInitResponse | UserExportCompleteResponse
-    >
-  }
+  [AppNavigation.SecurityPrivacy.SeedlessExport]: undefined
 }
 
 const SecurityStack = createStackNavigator<SecurityStackParamList>()

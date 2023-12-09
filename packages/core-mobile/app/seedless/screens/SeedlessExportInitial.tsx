@@ -113,9 +113,11 @@ export const SeedlessExportInitial = (): JSX.Element => {
               userExportResponse.data()
             )
             const hasMnemonic = 'mnemonic' in exportDecrypted
+            // @ts-ignore
             if (!hasMnemonic || typeof exportDecrypted.mnemonic !== 'string') {
               throw new Error('completeExport: missing mnemonic')
             }
+            // @ts-ignore
             setMnemonic(exportDecrypted.mnemonic)
             setHideMnemonic(false)
             goBack()
