@@ -2,6 +2,11 @@ import { Button, Text, View, alpha, useTheme } from '@avalabs/k2-mobile'
 import React from 'react'
 import { Space } from 'components/Space'
 import InfoSVG from 'components/svg/InfoSVG'
+import {
+  getDelayInstruction,
+  getDelayWarningDescription,
+  getDelayWarningTitle
+} from 'seedless/hooks/useSeedlessMnemonicExport'
 
 interface Props {
   onNext: () => void
@@ -10,7 +15,7 @@ interface Props {
 const STEPS = [
   'Login with your social account',
   'Verify recovery method',
-  'Wait 2 days to retrieve phrase'
+  getDelayInstruction()
 ]
 
 export const SeedlessExportInstructions = ({ onNext }: Props): JSX.Element => {
@@ -65,10 +70,9 @@ export const SeedlessExportInstructions = ({ onNext }: Props): JSX.Element => {
           <InfoSVG color={colors.$warningLight} size={24} />
           <Space x={8} />
           <View sx={{ flex: 1 }}>
-            <Text variant="alertTitle">2 Day Waiting Period</Text>
+            <Text variant="alertTitle">{getDelayWarningTitle()}</Text>
             <Text variant="alertDescription">
-              For your safety there is a 2 day waiting period to retrieve a
-              phrase
+              {getDelayWarningDescription()}
             </Text>
           </View>
         </View>

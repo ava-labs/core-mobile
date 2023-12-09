@@ -12,32 +12,26 @@ import ClearSVG from 'components/svg/ClearSVG'
 import { Space } from 'components/Space'
 import Logger from 'utils/Logger'
 import Loader from 'components/Loader'
-import {
-  CubeSignerResponse,
-  SignerSession,
-  UserExportCompleteResponse,
-  UserExportInitResponse
-} from '@cubist-labs/cubesigner-sdk'
-import { SeedlessSessionStorage } from 'seedless/services/storage/SeedlessSessionStorage'
-import { goBack } from 'utils/Navigation'
+import { useNavigation } from '@react-navigation/native'
+import SeedlessService from 'seedless/services/SeedlessService'
+import { UserExportResponse } from 'seedless/types'
 
-export type VerifyCodeExportParams = {
-  onVerifySuccess: () => void
-  userExportResponse: CubeSignerResponse<
-    UserExportInitResponse | UserExportCompleteResponse
-  >
+export type VerifyCodeExportParams<T extends UserExportResponse> = {
+  onVerifySuccess: (response: T) => void
+  userExportResponse: T
 }
 
 export const VerifyCodeExport = ({
   onVerifySuccess,
   userExportResponse
-}: VerifyCodeExportParams): JSX.Element => {
+}: VerifyCodeExportParams<UserExportResponse>): JSX.Element => {
   const {
     theme: { colors, text }
   } = useTheme()
   const [isVerifying, setIsVerifying] = useState(false)
   const [code, setCode] = useState<string>()
   const [showError, setShowError] = useState(false)
+  const { goBack } = useNavigation()
 
   const handleVerifyCode = async (changedText: string): Promise<void> => {
     setCode(changedText)
@@ -48,12 +42,14 @@ export const VerifyCodeExport = ({
     setIsVerifying(true)
 
     try {
-      const session = await SignerSession.loadSignerSession(
-        new SeedlessSessionStorage()
+      const response = await SeedlessService.verifyUserExportCode(
+        userExportResponse,
+        changedText
       )
-      await userExportResponse.approveTotp(session, changedText)
+
       setIsVerifying(false)
-      onVerifySuccess()
+      onVerifySuccess(response)
+      goBack()
     } catch {
       setShowError(true)
       setIsVerifying(false)
