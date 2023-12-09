@@ -1,16 +1,18 @@
-import React, { FC, useEffect, useRef } from 'react'
+import React, { FC, useEffect } from 'react'
 import AppNavigation from 'navigation/AppNavigation'
 import WelcomeScreenStack from 'navigation/onboarding/WelcomeScreenStack'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { createStackNavigator } from '@react-navigation/stack'
 import { NavigatorScreenParams, useNavigation } from '@react-navigation/native'
 import { useDeeplink } from 'contexts/DeeplinkContext/DeeplinkContext'
-import { WalletState, selectIsLocked, selectWalletState } from 'store/app'
+import { selectIsLocked, selectWalletState, WalletState } from 'store/app'
 import { useSelector } from 'react-redux'
 import { showSnackBarCustom } from 'components/Snackbar'
 import GeneralToast from 'components/toast/GeneralToast'
 import { NameYourWallet } from 'seedless/screens/NameYourWallet'
 import { usePostCapture } from 'hooks/usePosthogCapture'
+import EnterWithMnemonicStack from 'navigation/onboarding/EnterWithMnemonicStack'
+import { isPinRecovery, setPinRecovery } from 'utils/Navigation'
 import SignupScreen from './onboarding/SignupScreen'
 import { WelcomeScreenStackParamList } from './onboarding/WelcomeScreenStack'
 import { OnboardScreenProps } from './types'
@@ -21,7 +23,7 @@ import RecoveryMethodsStack, {
 import { MainHeaderOptions } from './NavUtils'
 
 type NavigationProp = OnboardScreenProps<
-  typeof AppNavigation.Onboard.Signup
+  typeof AppNavigation.Onboard.RecoverWithMnemonicStack
 >['navigation']
 
 const OnboardScreenStack: FC = () => {
@@ -30,7 +32,6 @@ const OnboardScreenStack: FC = () => {
   const walletState = useSelector(selectWalletState)
   const isLocked = useSelector(selectIsLocked)
   const navigation = useNavigation<NavigationProp>()
-  const welcomeScreenStackTransitionAnimationEnabled = useRef(true)
 
   useEffect(() => {
     if (pendingDeepLink && walletState === WalletState.NONEXISTENT) {
@@ -46,13 +47,11 @@ const OnboardScreenStack: FC = () => {
   }, [isLocked, pendingDeepLink, walletState])
 
   useEffect(() => {
-    if (isLocked && walletState !== WalletState.NONEXISTENT) {
-      welcomeScreenStackTransitionAnimationEnabled.current = false
-      navigation.replace(AppNavigation.Onboard.Welcome, {
-        screen: AppNavigation.Onboard.Login
-      })
+    if (isPinRecovery()) {
+      setPinRecovery(false)
+      navigation.navigate(AppNavigation.Onboard.RecoverWithMnemonicStack)
     }
-  }, [navigation, isLocked, walletState])
+  }, [navigation])
 
   return (
     <OnboardingScreenS.Navigator
@@ -71,9 +70,6 @@ const OnboardScreenStack: FC = () => {
       <OnboardingScreenS.Screen
         name={AppNavigation.Onboard.Welcome}
         component={WelcomeScreenStack}
-        options={{
-          animationEnabled: welcomeScreenStackTransitionAnimationEnabled.current
-        }}
       />
       <OnboardingScreenS.Screen
         name={AppNavigation.Onboard.RecoveryMethods}
@@ -83,6 +79,10 @@ const OnboardScreenStack: FC = () => {
         options={MainHeaderOptions()}
         name={AppNavigation.Onboard.NameYourWallet}
         component={NameYourWalletScreen}
+      />
+      <OnboardingScreenS.Screen
+        name={AppNavigation.Onboard.RecoverWithMnemonicStack}
+        component={EnterWithMnemonicStack}
       />
     </OnboardingScreenS.Navigator>
   )
@@ -99,6 +99,7 @@ export type OnboardingScreenStackParamList = {
     mfaId: string
   }
   [AppNavigation.Onboard.NameYourWallet]: undefined
+  [AppNavigation.Onboard.RecoverWithMnemonicStack]: undefined
 }
 
 const OnboardingScreenS = createStackNavigator<OnboardingScreenStackParamList>()

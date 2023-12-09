@@ -15,15 +15,19 @@ import WalletScreenStack, {
 } from 'navigation/WalletScreenStack/WalletScreenStack'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { useSelector } from 'react-redux'
-import { selectIsLocked } from 'store/app'
+import { selectWalletState, WalletState } from 'store/app'
 import { useBgDetect } from 'navigation/useBgDetect'
 import { RootStackScreenProps } from 'navigation/types'
 import WarningModal from 'components/WarningModal'
 import RefreshTokenScreenStack, {
   RefreshTokenScreenStackParamList
 } from 'navigation/RefreshTokenScreenStack'
+import ForgotPinModal from 'screens/shared/ForgotPinModal'
+import { useWallet } from 'hooks/useWallet'
+import PinOrBiometryLogin from 'screens/login/PinOrBiometryLogin'
+import Logger from 'utils/Logger'
+import { setPinRecovery } from 'utils/Navigation'
 import { PrivacyScreen } from './wallet/PrivacyScreen'
-import { PinScreen } from './wallet/PinScreen'
 
 export type RootScreenStackParamList = {
   [AppNavigation.Root
@@ -34,6 +38,12 @@ export type RootScreenStackParamList = {
   [AppNavigation.Root.CopyPhraseWarning]: {
     copy: () => void
   }
+  [AppNavigation.Root.ForgotPin]: {
+    onConfirm: () => void
+    title: string
+    message: string
+  }
+  [AppNavigation.Root.Login]: undefined
 }
 
 const RootStack = createStackNavigator<RootScreenStackParamList>()
@@ -41,7 +51,6 @@ const RootStack = createStackNavigator<RootScreenStackParamList>()
 const WalletScreenStackWithContext: FC = () => {
   const { onExit } = useApplicationContext().appHook
   const { inBackground } = useBgDetect()
-  const isLocked = useSelector(selectIsLocked)
 
   const doExit = useCallback(() => {
     onExit((confirmExit, cancel) => {
@@ -66,7 +75,6 @@ const WalletScreenStackWithContext: FC = () => {
   return (
     <>
       <WalletScreenStack onExit={doExit} />
-      {isLocked && <PinScreen />}
 
       {/* This protects from leaking last screen in "recent apps" list.                                 */}
       {/* For Android it is additionally implemented natively in MainActivity.java because react-native */}
@@ -77,27 +85,37 @@ const WalletScreenStackWithContext: FC = () => {
 }
 
 const RootScreenStack: FC = () => {
+  const walletState = useSelector(selectWalletState)
+
   return (
     <RootStack.Navigator
       screenOptions={{
         headerShown: false,
         animationEnabled: false
       }}>
-      <RootStack.Screen
-        name={AppNavigation.Root.Onboard}
-        component={OnboardScreenStack}
-        options={{
-          animationEnabled: false
-        }}
-      />
-      <RootStack.Screen
-        name={AppNavigation.Root.Wallet}
-        component={WalletScreenStackWithContext}
-        options={{
-          animationEnabled: false,
-          presentation: 'card'
-        }}
-      />
+      {walletState === WalletState.NONEXISTENT ? (
+        <RootStack.Screen
+          name={AppNavigation.Root.Onboard}
+          component={OnboardScreenStack}
+          options={{
+            animationEnabled: false
+          }}
+        />
+      ) : walletState === WalletState.ACTIVE ? (
+        <RootStack.Screen
+          name={AppNavigation.Root.Wallet}
+          component={WalletScreenStackWithContext}
+          options={{
+            animationEnabled: false,
+            presentation: 'card'
+          }}
+        />
+      ) : (
+        <RootStack.Screen
+          name={AppNavigation.Root.Login}
+          component={LoginWithPinOrBiometryScreen}
+        />
+      )}
       <RootStack.Screen
         name={AppNavigation.Root.RefreshToken}
         component={RefreshTokenScreenStack}
@@ -105,12 +123,35 @@ const RootScreenStack: FC = () => {
           animationEnabled: false
         }}
       />
-      <RootStack.Screen
-        options={{ presentation: 'transparentModal' }}
-        name={AppNavigation.Root.CopyPhraseWarning}
-        component={CopyPhraseWarningModal}
-      />
+      <RootStack.Group screenOptions={{ presentation: 'transparentModal' }}>
+        <RootStack.Screen
+          name={AppNavigation.Root.CopyPhraseWarning}
+          component={CopyPhraseWarningModal}
+        />
+        <RootStack.Screen
+          name={AppNavigation.Root.ForgotPin}
+          component={ForgotPinModal}
+        />
+      </RootStack.Group>
     </RootStack.Navigator>
+  )
+}
+
+const LoginWithPinOrBiometryScreen = (): JSX.Element => {
+  const { initWallet } = useWallet()
+  const { signOut } = useApplicationContext().appHook
+
+  return (
+    <PinOrBiometryLogin
+      onSignOut={signOut}
+      onSignInWithRecoveryPhrase={() => {
+        setPinRecovery(true)
+        signOut()
+      }}
+      onLoginSuccess={mnemonic => {
+        initWallet(mnemonic).catch(Logger.error)
+      }}
+    />
   )
 }
 

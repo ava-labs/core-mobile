@@ -4,16 +4,12 @@ import {
   Dimensions,
   InteractionManager,
   Keyboard,
-  StyleSheet,
-  View
+  StyleSheet
 } from 'react-native'
 import PinKey, { PinKeys } from 'screens/onboarding/PinKey'
 import { Space } from 'components/Space'
-import { useApplicationContext } from 'contexts/ApplicationContext'
-import AvaButton from 'components/AvaButton'
 import DotSVG from 'components/svg/DotSVG'
 import CoreXLogoAnimated from 'components/CoreXLogoAnimated'
-import AvaText from 'components/AvaText'
 import { Subscription } from 'rxjs'
 import ReAnimated, {
   Easing,
@@ -22,6 +18,13 @@ import ReAnimated, {
   withTiming
 } from 'react-native-reanimated'
 import Logger from 'utils/Logger'
+import { Text, useTheme, View } from '@avalabs/k2-mobile'
+import { selectWalletType } from 'store/app'
+import { useSelector } from 'react-redux'
+import { WalletType } from 'services/wallet/types'
+import AppNavigation from 'navigation/AppNavigation'
+import { useNavigation } from '@react-navigation/native'
+import { noop } from '@avalabs/utils-sdk'
 import { usePinOrBiometryLogin } from './PinOrBiometryLoginViewModel'
 
 const WINDOW_HEIGHT = Dimensions.get('window').height
@@ -43,7 +46,8 @@ const LOGO_HEIGHT = 100
 const TOP_SPACE = 64
 
 type Props = {
-  onSignInWithRecoveryPhrase: () => void
+  onSignInWithRecoveryPhrase?: () => void
+  onSignOut?: () => void
   onLoginSuccess: (mnemonic: string) => void
   isResettingPin?: boolean
   hideLoginWithMnemonic?: boolean
@@ -52,20 +56,15 @@ type Props = {
 
 /**
  * This screen will select appropriate login method (pin or biometry) and call onLoginSuccess upon successful login.
- * @param onSignInWithRecoveryPhrase
- * @param onLoginSuccess
- * @param isResettingPin
- * @param hideLoginWithMnemonic
- * @constructor
  */
 export default function PinOrBiometryLogin({
   onSignInWithRecoveryPhrase,
+  onSignOut,
   onLoginSuccess,
   isResettingPin,
   hideLoginWithMnemonic = false
 }: Props | Readonly<Props>): JSX.Element {
-  const theme = useApplicationContext().theme
-
+  const { theme } = useTheme()
   const {
     pinDots,
     onEnterPin,
@@ -75,6 +74,8 @@ export default function PinOrBiometryLogin({
     disableKeypad,
     timeRemaining
   } = usePinOrBiometryLogin()
+  const walletType = useSelector(selectWalletType)
+  const navigation = useNavigation()
 
   const logoTranslateY = useSharedValue(0)
   const opacity = useSharedValue(1)
@@ -132,7 +133,8 @@ export default function PinOrBiometryLogin({
     pinDots.forEach((value, key) => {
       dots.push(
         <DotSVG
-          fillColor={value.filled ? theme.alternateBackground : undefined}
+          fillColor={value.filled ? theme.colors.$blueMain : undefined}
+          borderColor={theme.colors.$neutral400}
           key={key}
         />
       )
@@ -155,8 +157,27 @@ export default function PinOrBiometryLogin({
     })
     return keys
   }
+
+  const handleForgotPin = (): void => {
+    if (walletType === WalletType.MNEMONIC) {
+      navigation.navigate(AppNavigation.Root.ForgotPin, {
+        title: 'Have you written down your recovery phrase?',
+        message:
+          'This will terminate this session, without your phrase you will not be able to access the current wallet.',
+        onConfirm: onSignInWithRecoveryPhrase || noop
+      })
+    } else if (walletType === WalletType.SEEDLESS) {
+      navigation.navigate(AppNavigation.Root.ForgotPin, {
+        title: 'Reset PIN?',
+        message:
+          'By clicking Continue, you will need to reset your PIN and recover your wallet.',
+        onConfirm: onSignOut || noop
+      })
+    }
+  }
+
   return (
-    <View style={{ height: '100%', backgroundColor: theme.background }}>
+    <View sx={{ height: '100%', backgroundColor: theme.colors.$black }}>
       <Space y={TOP_SPACE} />
       {!isResettingPin && (
         <ReAnimated.View
@@ -168,7 +189,7 @@ export default function PinOrBiometryLogin({
             logoTranslateYStyle
           ]}>
           <CoreXLogoAnimated size={LOGO_HEIGHT} />
-          {mnemonic && <AvaText.Heading3>Unlocking wallet...</AvaText.Heading3>}
+          {mnemonic && <Text variant="subtitle1">Unlocking wallet...</Text>}
         </ReAnimated.View>
       )}
       {
@@ -189,20 +210,23 @@ export default function PinOrBiometryLogin({
             </Animated.View>
             {disableKeypad && (
               <View style={{ justifyContent: 'center', alignItems: 'center' }}>
-                <AvaText.Heading3>Login Disabled</AvaText.Heading3>
+                <Text variant="heading5">Login Disabled</Text>
                 <Space y={8} />
-                <AvaText.Body2>Try again in {timeRemaining}</AvaText.Body2>
+                <Text variant="body2">Try again in {timeRemaining}</Text>
               </View>
             )}
           </View>
           <View style={styles.keyboard}>{keyboard()}</View>
           {isResettingPin || hideLoginWithMnemonic || (
             <>
-              <AvaButton.TextMedium
-                onPress={onSignInWithRecoveryPhrase}
-                testID="pin_or_biometry_login__signin_w_recovery">
+              <Text
+                variant="buttonLarge"
+                onPress={handleForgotPin}
+                testID="pin_or_biometry_login__signin_w_recovery"
+                sx={{ alignSelf: 'center', color: '$blueMain' }}>
                 Forgot PIN?
-              </AvaButton.TextMedium>
+              </Text>
+
               <Space y={16} />
             </>
           )}

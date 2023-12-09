@@ -170,7 +170,6 @@ const PinOrBiometryLoginForPassChange = memo(() => {
       onLoginSuccess={mnemonic => {
         nav.replace(AppNavigation.SecurityPrivacy.CreatePin, { mnemonic })
       }}
-      onSignInWithRecoveryPhrase={() => Logger.info('onSignIn')}
       isResettingPin
     />
   )
@@ -188,7 +187,6 @@ const PinOrBiometryLoginForRecoveryReveal = memo(() => {
       onLoginSuccess={mnemonic => {
         nav.replace(AppNavigation.SecurityPrivacy.RecoveryPhrase, { mnemonic })
       }}
-      onSignInWithRecoveryPhrase={() => Logger.info('onSignIn')}
       hideLoginWithMnemonic
       isResettingPin
     />
@@ -211,7 +209,6 @@ const PinForBiometryEnable = memo(() => {
           )
           .catch(Logger.error)
       }}
-      onSignInWithRecoveryPhrase={() => Logger.info('onSignIn')}
       isResettingPin
     />
   )
