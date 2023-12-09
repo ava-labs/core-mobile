@@ -58,6 +58,7 @@ interface Props {
   buttonText: string
   descriptions: { icon: JSX.Element; text: string }[]
   styles?: SxProp
+  testID?: string
 }
 
 export default function IntroModal({
@@ -65,7 +66,8 @@ export default function IntroModal({
   heading,
   buttonText,
   descriptions,
-  styles
+  styles,
+  testID
 }: Props): JSX.Element {
   const dispatch = useDispatch()
   const { goBack } = useNavigation()
@@ -123,8 +125,12 @@ export default function IntroModal({
             <Space y={14} />
           </View>
         ))}
-        <Space y={35} />
-        <Button type="primary" size="xlarge" onPress={onInstructionRead}>
+        <Space y={52} />
+        <Button
+          type="primary"
+          size="xlarge"
+          onPress={onInstructionRead}
+          testID={testID}>
           {buttonText}
         </Button>
       </View>
