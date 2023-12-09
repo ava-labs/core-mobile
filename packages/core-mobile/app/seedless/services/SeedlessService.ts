@@ -15,12 +15,13 @@ import {
   UserExportInitResponse,
   KeyInfoApi,
   CubeSignerClient,
-  EnvInterface,
-  UserExportCompleteResponse
+  UserExportCompleteResponse,
+  userExportDecrypt,
+  userExportKeygen
 } from '@cubist-labs/cubesigner-sdk'
 import { TokenRefreshErrors, TotpErrors } from 'seedless/errors'
 import { Result } from 'types/result'
-import { MFA } from 'seedless/types'
+import { MFA, UserExportResponse } from 'seedless/types'
 import PasskeyService from 'services/passkey/PasskeyService'
 import { hoursToSeconds, minutesToSeconds } from 'date-fns'
 import { retry, RetryBackoffPolicy } from 'utils/js/retry'
@@ -51,14 +52,6 @@ if (!envInterface) {
  */
 class SeedlessService {
   private totpChallenge?: TotpChallenge
-  /**
-   * Returns a CubeSigner instance
-   */
-  private async getCubeSigner(): Promise<CubeSigner> {
-    const storage = new SeedlessSessionStorage()
-    const sessionMgr = await SignerSessionManager.loadFromStorage(storage)
-    return new CubeSigner(sessionMgr, SEEDLESS_ORG_ID)
-  }
 
   /**
    * Create a CubeSigner API client for methods that require OIDC authorization.
@@ -77,13 +70,6 @@ class SeedlessService {
   async getCubeSignerClient(): Promise<CubeSignerClient> {
     const sessionManager = await this.getSessionManager()
     return new CubeSignerClient(sessionManager, SEEDLESS_ORG_ID)
-  }
-
-  /**
-   * Returns a session manager that can be used to retrieve session data.
-   */
-  private async getSessionManager(): Promise<SignerSessionManager> {
-    return (await this.getCubeSigner()).sessionMgr as SignerSessionManager
   }
 
   /**
@@ -190,8 +176,7 @@ class SeedlessService {
     mfaId: string,
     withSecurityKey: boolean
   ): Promise<void> {
-    const sessionMgr = await this.getSessionManager()
-    const signerSession = new SignerSession(sessionMgr)
+    const signerSession = await this.getSignerSession()
 
     const challenge = await signerSession.fidoApproveStart(mfaId)
 
@@ -334,9 +319,9 @@ class SeedlessService {
   /**
    * Returns the list of keys that this session has access to.
    */
-  async getSessoinKeysList(): Promise<KeyInfoApi[]> {
-    const session = new SignerSession(await this.getSessionManager())
-    return (await session.sessionKeysList()).filter(
+  async getSessionKeysList(): Promise<KeyInfoApi[]> {
+    const signerSession = await this.getSignerSession()
+    return (await signerSession.sessionKeysList()).filter(
       key => key.key_type === 'Mnemonic'
     )
   }
@@ -348,27 +333,24 @@ class SeedlessService {
     keyId: string,
     mfaReceipt?: MfaReceipt
   ): Promise<CubeSignerResponse<UserExportInitResponse>> {
-    const session = new SignerSession(await this.getSessionManager())
-    return session.userExportInit(keyId, mfaReceipt)
+    const signerSession = await this.getSignerSession()
+    return signerSession.userExportInit(keyId, mfaReceipt)
   }
 
   /**
    * Detele user export
    */
   async userExportDelete(keyId: string, userId?: string): Promise<void> {
-    const session = new SignerSession(await this.getSessionManager())
-    session.userExportDelete(keyId, userId)
+    const signerSession = await this.getSignerSession()
+    return signerSession.userExportDelete(keyId, userId)
   }
 
   /**
    * List user export
    */
-  async userExportList(
-    keyId?: string,
-    userId?: string
-  ): Promise<UserExportInitResponse | undefined> {
-    const session = new SignerSession(await this.getSessionManager())
-    const paginator = session.userExportList(keyId, userId)
+  async userExportList(): Promise<UserExportInitResponse | undefined> {
+    const signerSession = await this.getSignerSession()
+    const paginator = signerSession.userExportList()
     const [userExport] = await paginator.fetchAll()
     return userExport
   }
@@ -380,12 +362,52 @@ class SeedlessService {
     keyId: string,
     pubKey: string
   ): Promise<CubeSignerResponse<UserExportCompleteResponse>> {
-    const session = new SignerSession(await this.getSessionManager())
-    return await session.userExportComplete(keyId, pubKey)
+    const signerSession = await this.getSignerSession()
+    return signerSession.userExportComplete(keyId, pubKey)
   }
 
   /**
-   * get key_id for mnemonic key type
+   * Decrypt user export's mnemonic
+   */
+  async userExportDecrypt(
+    privateKey: Parameters<typeof userExportDecrypt>[0]['privateKey'],
+    response: UserExportCompleteResponse
+  ): Promise<string> {
+    const exportDecrypted = await userExportDecrypt(privateKey, response)
+
+    const hasMnemonic = 'mnemonic' in exportDecrypted
+
+    // @ts-expect-error typescript cannot detech mnemonic in exportDecrypted
+    if (!hasMnemonic || typeof exportDecrypted.mnemonic !== 'string') {
+      throw new Error('userExportDecrypt failed: missing mnemonic')
+    }
+
+    // @ts-expect-error typescript cannot detech mnemonic in exportDecrypted
+    return exportDecrypted.mnemonic
+  }
+
+  /**
+   * Generate key pair for user export
+   */
+  async userExportGenerateKeyPair(): Promise<
+    ReturnType<typeof userExportKeygen>
+  > {
+    return userExportKeygen()
+  }
+
+  /**
+   * Verify authenticator code when exporting mnemonic
+   */
+  async verifyUserExportCode(
+    userExportResponse: UserExportResponse,
+    code: string
+  ): Promise<UserExportResponse> {
+    const signerSession = await this.getSignerSession()
+    return userExportResponse.approveTotp(signerSession, code)
+  }
+
+  /**
+   * Get key_id for mnemonic key type
    */
   async getMnemonicKey(): Promise<string | undefined> {
     const cubeSigner = await this.getCubeSigner()
@@ -393,8 +415,35 @@ class SeedlessService {
     return sessoinKeysList.find(key => key.key_type === 'Mnemonic')?.key_id
   }
 
-  getEnvironment(): EnvInterface {
-    return envInterface
+  /**
+   * Get current cubist environment
+   */
+  getEnvironment(): Environment {
+    return SEEDLESS_ENVIRONMENT as Environment
+  }
+
+  // PRIVATE METHODS
+  /**
+   * Returns a CubeSigner instance
+   */
+  private async getCubeSigner(): Promise<CubeSigner> {
+    const storage = new SeedlessSessionStorage()
+    const sessionMgr = await SignerSessionManager.loadFromStorage(storage)
+    return new CubeSigner(sessionMgr, SEEDLESS_ORG_ID)
+  }
+
+  /**
+   * Returns a session manager that can be used to retrieve session data.
+   */
+  private async getSessionManager(): Promise<SignerSessionManager> {
+    return (await this.getCubeSigner()).sessionMgr as SignerSessionManager
+  }
+
+  /**
+   * Returns a signer session
+   */
+  private async getSignerSession(): Promise<SignerSession> {
+    return new SignerSession(await this.getSessionManager())
   }
 }
 
