@@ -4,7 +4,7 @@ import CoreXLogoAnimated from 'components/CoreXLogoAnimated'
 import { showSimpleToast } from 'components/Snackbar'
 import AppNavigation from 'navigation/AppNavigation'
 import { OnboardScreenProps } from 'navigation/types'
-import React, { FC, useLayoutEffect } from 'react'
+import React, { FC, useEffect, useLayoutEffect } from 'react'
 import AuthButtons from 'seedless/components/AuthButtons'
 import { useSeedlessRegister } from 'seedless/hooks/useSeedlessRegister'
 import { MFA } from 'seedless/types'
@@ -12,6 +12,8 @@ import AppleSignInService from 'services/socialSignIn/apple/AppleSignInService'
 import GoogleSigninService from 'services/socialSignIn/google/GoogleSigninService'
 import Logger from 'utils/Logger'
 import { OidcProviders } from 'seedless/consts'
+import { hideOwl, showOwl } from 'components/GlobalOwlLoader'
+import { usePostCapture } from 'hooks/usePosthogCapture'
 
 type NavigationProp = OnboardScreenProps<
   typeof AppNavigation.Onboard.Signin
@@ -23,6 +25,7 @@ const SigninScreen: FC = () => {
     theme: { colors }
   } = useTheme()
   const { register, isRegistering } = useSeedlessRegister()
+  const { capture } = usePostCapture()
 
   const handleSigninWithMnemonic = (): void => {
     navigate(AppNavigation.Onboard.Welcome, {
@@ -31,6 +34,7 @@ const SigninScreen: FC = () => {
         nextScreen: AppNavigation.Onboard.EnterWithMnemonicStack
       }
     })
+    capture('SignInWithRecoveryPhraseClicked')
   }
 
   const onRegisterMfaMethods = (oidcToken: string, mfaId: string): void => {
@@ -54,9 +58,13 @@ const SigninScreen: FC = () => {
     })
   }
 
+  useEffect(() => {
+    isRegistering ? showOwl() : hideOwl()
+  }, [isRegistering])
+
   useLayoutEffect(() => {
     setOptions({
-      headerShown: !isRegistering,
+      headerShown: true,
       title: '',
       headerBackTitle: 'Sign Up',
       headerTintColor: colors.$blueMain

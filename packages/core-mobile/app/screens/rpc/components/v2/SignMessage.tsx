@@ -22,6 +22,9 @@ import {
   oldTypedDataSchema,
   typedDataSchema
 } from 'store/walletConnectV2/handlers/eth_sign/schemas/ethSignTypedData'
+import { useSelector } from 'react-redux'
+import { selectIsSeedlessSigningBlocked } from 'store/posthog'
+import FeatureBlocked from 'screens/posthog/FeatureBlocked'
 import EthSign from '../shared/signMessage/EthSign'
 import SignDataV4 from '../shared/signMessage/SignDataV4'
 import PersonalSign from '../shared/signMessage/PersonalSign'
@@ -31,7 +34,8 @@ type SignMessageScreenProps = WalletScreenProps<
   typeof AppNavigation.Modal.SignMessageV2
 >
 
-const SignMessage = () => {
+const SignMessage = (): JSX.Element | null => {
+  const isSeedlessSigningBlocked = useSelector(selectIsSeedlessSigningBlocked)
   const { goBack } = useNavigation<SignMessageScreenProps['navigation']>()
 
   const { request, data, network, account } =
@@ -57,7 +61,7 @@ const SignMessage = () => {
 
   if (!account || !network) return null
 
-  const renderNetwork = () => {
+  const renderNetwork = (): JSX.Element => {
     return (
       <View style={styles.fullWidthContainer}>
         <Row style={{ justifyContent: 'space-between' }}>
@@ -79,7 +83,7 @@ const SignMessage = () => {
     )
   }
 
-  const renderAccount = () => {
+  const renderAccount = (): JSX.Element => {
     const accountAddress = ` (${truncateAddress(account.address, 5)})`
 
     return (
@@ -101,7 +105,7 @@ const SignMessage = () => {
     )
   }
 
-  const renderMessage = () => {
+  const renderMessage = (): JSX.Element | null => {
     switch (request.method) {
       case RpcMethod.ETH_SIGN: {
         if (!isString(data)) return null
@@ -130,45 +134,55 @@ const SignMessage = () => {
   }
 
   return (
-    <RpcRequestBottomSheet onClose={rejectAndClose}>
-      <ScrollView contentContainerStyle={styles.scrollView}>
-        <AvaText.LargeTitleBold>Sign Message</AvaText.LargeTitleBold>
-        <Space y={30} />
-        <View style={{ justifyContent: 'center', alignItems: 'center' }}>
-          <OvalTagBg
-            style={{
-              height: 80,
-              width: 80,
-              backgroundColor: theme.colorBg3
-            }}>
-            <Avatar.Custom name={dappName} size={48} logoUri={dappLogoUri} />
-          </OvalTagBg>
-          <View style={styles.domainUrlContainer}>
-            <AvaText.Body3
-              color={theme.colorText1}
-              textStyle={{ textAlign: 'center' }}>
-              {dappName} requests you to sign the following message
-            </AvaText.Body3>
+    <>
+      <RpcRequestBottomSheet onClose={rejectAndClose}>
+        <ScrollView contentContainerStyle={styles.scrollView}>
+          <AvaText.LargeTitleBold>Sign Message</AvaText.LargeTitleBold>
+          <Space y={30} />
+          <View style={{ justifyContent: 'center', alignItems: 'center' }}>
+            <OvalTagBg
+              style={{
+                height: 80,
+                width: 80,
+                backgroundColor: theme.colorBg3
+              }}>
+              <Avatar.Custom name={dappName} size={48} logoUri={dappLogoUri} />
+            </OvalTagBg>
+            <View style={styles.domainUrlContainer}>
+              <AvaText.Body3
+                color={theme.colorText1}
+                textStyle={{ textAlign: 'center' }}>
+                {dappName} requests you to sign the following message
+              </AvaText.Body3>
+            </View>
+            <Space y={24} />
+            {renderNetwork()}
+            {renderAccount()}
+            <Space y={24} />
+            {renderMessage()}
           </View>
           <Space y={24} />
-          {renderNetwork()}
-          {renderAccount()}
-          <Space y={24} />
-          {renderMessage()}
-        </View>
-        <Space y={24} />
-        <FlexSpacer />
-        <View style={styles.actionContainer}>
-          <AvaButton.PrimaryMedium onPress={approveAndClose}>
-            Approve
-          </AvaButton.PrimaryMedium>
-          <Space y={21} />
-          <AvaButton.SecondaryMedium onPress={rejectAndClose}>
-            Reject
-          </AvaButton.SecondaryMedium>
-        </View>
-      </ScrollView>
-    </RpcRequestBottomSheet>
+          <FlexSpacer />
+          <View style={styles.actionContainer}>
+            <AvaButton.PrimaryMedium onPress={approveAndClose}>
+              Approve
+            </AvaButton.PrimaryMedium>
+            <Space y={21} />
+            <AvaButton.SecondaryMedium onPress={rejectAndClose}>
+              Reject
+            </AvaButton.SecondaryMedium>
+          </View>
+        </ScrollView>
+      </RpcRequestBottomSheet>
+      {isSeedlessSigningBlocked && (
+        <FeatureBlocked
+          onOk={goBack}
+          message={
+            'Signing is currently under maintenance. Service will resume shortly.'
+          }
+        />
+      )}
+    </>
   )
 }
 

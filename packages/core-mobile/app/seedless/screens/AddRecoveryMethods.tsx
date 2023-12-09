@@ -7,7 +7,16 @@ import SeedlessService from 'seedless/services/SeedlessService'
 import PasskeyService from 'services/passkey/PasskeyService'
 import { RecoveryMethodsContext } from 'navigation/onboarding/RecoveryMethodsStack'
 import Logger from 'utils/Logger'
+import { FidoType } from 'services/passkey/types'
 import { showSimpleToast } from 'components/Snackbar'
+import { hideOwl, showOwl } from 'components/GlobalOwlLoader'
+import { usePostCapture } from 'hooks/usePosthogCapture'
+import { useSelector } from 'react-redux'
+import {
+  selectIsSeedlessMfaAuthenticatorBlocked,
+  selectIsSeedlessMfaPasskeyBlocked,
+  selectIsSeedlessMfaYubikeyBlocked
+} from 'store/posthog'
 import { Card } from '../components/Card'
 
 type AddRecoveryMethodsScreenProps = RecoveryMethodsScreenProps<
@@ -21,13 +30,68 @@ export const AddRecoveryMethods = (): JSX.Element => {
     theme: { colors }
   } = useTheme()
   const { mfaId, oidcToken } = useContext(RecoveryMethodsContext)
+  const { capture } = usePostCapture()
+  const isSeedlessMfaPasskeyBlocked = useSelector(
+    selectIsSeedlessMfaPasskeyBlocked
+  )
+  const isSeedlessMfaAuthenticatorBlocked = useSelector(
+    selectIsSeedlessMfaAuthenticatorBlocked
+  )
+  const isSeedlessMfaYubikeyBlocked = useSelector(
+    selectIsSeedlessMfaYubikeyBlocked
+  )
 
   const goToAuthenticatorSetup = (): void => {
     navigate(AppNavigation.RecoveryMethods.AuthenticatorSetup)
+
+    capture('SeedlessAddMfa', { method: 'Authenticator' })
+  }
+
+  const registerAndAuthenticateFido = async ({
+    name,
+    fidoType
+  }: {
+    name?: string
+    fidoType: FidoType
+  }): Promise<void> => {
+    const passkeyName = name && name.length > 0 ? name : fidoType.toString()
+
+    showOwl()
+
+    try {
+      const withSecurityKey = fidoType === FidoType.YUBI_KEY
+
+      await SeedlessService.registerFido(passkeyName, withSecurityKey)
+
+      capture('SeedlessMfaAdded')
+
+      await SeedlessService.approveFido(oidcToken, mfaId, withSecurityKey)
+
+      capture('SeedlessMfaVerified', { type: fidoType })
+
+      goBack()
+
+      navigate(AppNavigation.Onboard.NameYourWallet)
+    } catch (e) {
+      Logger.error(`${fidoType} registration failed`, e)
+      showSimpleToast(`Unable to register ${fidoType}`)
+    } finally {
+      hideOwl()
+    }
   }
 
   const handlePasskey = async (): Promise<void> => {
-    navigate(AppNavigation.RecoveryMethods.PasskeySetup)
+    navigate(AppNavigation.RecoveryMethods.FIDONameInput, {
+      title: 'Name Your Passkey',
+      description: "Add a Passkey name, so it's easier to find later.",
+      inputFieldLabel: 'Passkey Name',
+      inputFieldPlaceholder: 'Enter Name',
+      onClose: async (name?: string) => {
+        registerAndAuthenticateFido({ name, fidoType: FidoType.PASS_KEY })
+      }
+    })
+
+    capture('SeedlessAddMfa', { type: FidoType.PASS_KEY })
   }
 
   const handleYubikey = async (): Promise<void> => {
@@ -37,30 +101,11 @@ export const AddRecoveryMethods = (): JSX.Element => {
       inputFieldLabel: 'Yubikey Name',
       inputFieldPlaceholder: 'Enter Name',
       onClose: async (name?: string) => {
-        const yubikeyName = name && name.length > 0 ? name : 'Yubikey'
-
-        try {
-          await SeedlessService.registerFido(yubikeyName, true)
-
-          await SeedlessService.approveFido(oidcToken, mfaId, true)
-
-          goBack()
-
-          navigate(AppNavigation.Root.Onboard, {
-            screen: AppNavigation.Onboard.Welcome,
-            params: {
-              screen: AppNavigation.Onboard.AnalyticsConsent,
-              params: {
-                nextScreen: AppNavigation.Onboard.CreatePin
-              }
-            }
-          })
-        } catch (e) {
-          Logger.error('yubikey registration failed', e)
-          showSimpleToast('Unable to register yubikey')
-        }
+        registerAndAuthenticateFido({ name, fidoType: FidoType.YUBI_KEY })
       }
     })
+
+    capture('SeedlessAddMfa', { type: FidoType.YUBI_KEY })
   }
 
   return (
@@ -69,23 +114,25 @@ export const AddRecoveryMethods = (): JSX.Element => {
       <Text variant="body1" sx={{ color: '$neutral50', marginVertical: 8 }}>
         Add <Text variant="heading6">one</Text> recovery method to continue.
       </Text>
-      {PasskeyService.isSupported && (
+      {PasskeyService.isSupported && !isSeedlessMfaPasskeyBlocked && (
         <Card
           onPress={handlePasskey}
           icon={<Icons.Communication.IconKey color={colors.$neutral50} />}
           title="Passkey"
-          body="Add a passkey as a recovery method."
+          body="Add a Passkey as a recovery method."
           showCaret
         />
       )}
-      <Card
-        onPress={goToAuthenticatorSetup}
-        icon={<Icons.Communication.IconQRCode color={colors.$neutral50} />}
-        title="Authenticator"
-        body="Add an authenticator app as a recovery method."
-        showCaret
-      />
-      {PasskeyService.isSupported && (
+      {!isSeedlessMfaAuthenticatorBlocked && (
+        <Card
+          onPress={goToAuthenticatorSetup}
+          icon={<Icons.Communication.IconQRCode color={colors.$neutral50} />}
+          title="Authenticator"
+          body="Add an Authenticator app as a recovery method."
+          showCaret
+        />
+      )}
+      {PasskeyService.isSupported && !isSeedlessMfaYubikeyBlocked && (
         <Card
           onPress={handleYubikey}
           icon={<Icons.Device.IconUSB color={colors.$neutral50} />}

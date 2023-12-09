@@ -2,11 +2,17 @@ import { encrypt } from 'utils/EncryptionHelper'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import walletService from 'services/wallet/WalletService'
 import { useDispatch, useSelector } from 'react-redux'
-import { onAppUnlocked, selectWalletType, setWalletType } from 'store/app'
+import {
+  onAppUnlocked,
+  onLogIn,
+  selectWalletType,
+  setWalletType
+} from 'store/app'
 import { WalletType } from 'services/wallet/types'
 import WalletService from 'services/wallet/WalletService'
-import { resetNavToUnlockedWallet } from 'utils/Navigation'
 import { Dispatch } from '@reduxjs/toolkit'
+import Logger from 'utils/Logger'
+import { usePostCapture } from './usePosthogCapture'
 
 export interface UseWallet {
   onPinCreated: (
@@ -15,6 +21,10 @@ export interface UseWallet {
     isResetting: boolean
   ) => Promise<'useBiometry' | 'enterWallet'>
   initWallet: (mnemonic: string, walletType?: WalletType) => Promise<void>
+  initAndLoginWallet: (
+    mnemonic: string,
+    walletType: WalletType
+  ) => Promise<void>
   destroyWallet: () => void
 }
 
@@ -25,7 +35,6 @@ export async function initWalletServiceAndUnlock(
 ): Promise<void> {
   await WalletService.init(mnemonic, walletType)
   dispatch(onAppUnlocked())
-  resetNavToUnlockedWallet()
 }
 
 /**
@@ -38,6 +47,7 @@ export async function initWalletServiceAndUnlock(
 export function useWallet(): UseWallet {
   const dispatch = useDispatch()
   const cachedWalletType = useSelector(selectWalletType)
+  const { capture } = usePostCapture()
 
   /**
    * Initializes wallet with the specified mnemonic and wallet type
@@ -58,6 +68,23 @@ export function useWallet(): UseWallet {
     )
   }
 
+  const initAndLoginWallet = async (
+    mnemonic: string,
+    walletType: WalletType
+  ): Promise<void> => {
+    try {
+      await initWallet(mnemonic, walletType)
+
+      dispatch(onLogIn())
+
+      capture('OnboardingSubmitSucceeded', { walletType })
+    } catch (e) {
+      Logger.error('Unable to create wallet', e)
+
+      capture('OnboardingSubmitFailed', { walletType })
+    }
+  }
+
   /**
    * Destroys the wallet instance
    */
@@ -68,6 +95,7 @@ export function useWallet(): UseWallet {
   return {
     onPinCreated,
     initWallet,
+    initAndLoginWallet,
     destroyWallet
   }
 }

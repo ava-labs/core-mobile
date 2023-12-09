@@ -1,11 +1,12 @@
 import React from 'react'
 import AppNavigation from 'navigation/AppNavigation'
 import { createStackNavigator } from '@react-navigation/stack'
+import { useSelector } from 'react-redux'
+import { selectIsSwapBlocked } from 'store/posthog'
 import SwapView from 'screens/swap/SwapView'
 import SwapReview from 'screens/swap/SwapReview'
 import HeaderAccountSelector from 'components/HeaderAccountSelector'
 import { SwapContextProvider } from 'contexts/SwapContext'
-import { usePosthogContext } from 'contexts/PosthogContext'
 import { useNavigation } from '@react-navigation/native'
 import FeatureBlocked from 'screens/posthog/FeatureBlocked'
 import { SwapScreenProps } from '../types'
@@ -17,8 +18,12 @@ export type SwapStackParamList = {
 
 const SwapStack = createStackNavigator<SwapStackParamList>()
 
-function SwapScreenStack() {
-  const { swapBlocked } = usePosthogContext()
+const HeaderTitle = (): JSX.Element => (
+  <HeaderAccountSelector direction="down" />
+)
+
+function SwapScreenStack(): JSX.Element {
+  const isSwapBlocked = useSelector(selectIsSwapBlocked)
   const { goBack } = useNavigation()
 
   return (
@@ -29,7 +34,7 @@ function SwapScreenStack() {
           headerShown: true,
           headerBackTitleVisible: false,
           headerTitleAlign: 'center',
-          headerTitle: () => <HeaderAccountSelector direction="down" />
+          headerTitle: HeaderTitle
         }}>
         <SwapStack.Screen name={AppNavigation.Swap.Swap} component={SwapView} />
         <SwapStack.Screen
@@ -40,7 +45,7 @@ function SwapScreenStack() {
           component={SwapReviewComp}
         />
       </SwapStack.Navigator>
-      {swapBlocked && (
+      {isSwapBlocked && (
         <FeatureBlocked
           onOk={goBack}
           message={
@@ -54,9 +59,9 @@ function SwapScreenStack() {
 
 type SwapNav = SwapScreenProps<typeof AppNavigation.Swap.Swap>['navigation']
 
-function SwapReviewComp() {
+function SwapReviewComp(): JSX.Element {
   const navigation = useNavigation<SwapNav>()
-  const onBackToParent = () => {
+  const onBackToParent = (): void => {
     navigation.getParent()?.goBack()
   }
   return (

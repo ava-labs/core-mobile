@@ -1,4 +1,3 @@
-/* eslint-disable jest/expect-expect */
 /* eslint-env detox/detox, jest */
 /**
  * @jest-environment ./jestCustomEnv
@@ -35,7 +34,6 @@ describe('Unlock app with recovery phrase', () => {
     await ExistingRecoveryPhrasePage.tapSignInBtn()
     await CreatePinPage.tapNumpadZero()
     await CreatePinPage.tapNumpadZero()
-    await CreatePinPage.tapEmptyCheckbox()
     await CreatePinPage.tapNextBtn()
     await PortfolioPage.verifyPorfolioScreen()
     await BottomTabsPage.verifyBottomTabs()

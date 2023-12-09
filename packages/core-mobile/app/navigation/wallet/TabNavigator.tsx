@@ -8,7 +8,7 @@ import PortfolioStackScreen from 'navigation/wallet/PortfolioScreenStack'
 import React from 'react'
 import WatchlistTab from 'screens/watchlist/WatchlistTabView'
 import TopNavigationHeader from 'navigation/TopNavigationHeader'
-import { getCommonBottomTabOptions, normalTabButton } from 'navigation/NavUtils'
+import { getCommonBottomTabOptions, TabButton } from 'navigation/NavUtils'
 import EarnSVG from 'components/svg/EarnSVG'
 import { usePosthogContext } from 'contexts/PosthogContext'
 import { useIsAvalancheNetwork } from 'hooks/useIsAvalancheNetwork'
@@ -42,13 +42,13 @@ const TabNavigator: () => JSX.Element = () => {
         name={AppNavigation.Tabs.Stake}
         options={{
           headerShown: false,
-          tabBarIcon: ({ focused }) =>
-            normalTabButton({
-              theme,
-              routeName: AppNavigation.Tabs.Stake,
-              focused,
-              image: <EarnSVG selected={focused} size={TAB_ICON_SIZE} />
-            })
+          tabBarIcon: ({ focused }) => (
+            <TabButton
+              routeName={AppNavigation.Tabs.Stake}
+              focused={focused}
+              image={<EarnSVG selected={focused} size={TAB_ICON_SIZE} />}
+            />
+          )
         }}
         component={EarnScreenStack}
         listeners={({ navigation }) => ({
@@ -83,13 +83,13 @@ const TabNavigator: () => JSX.Element = () => {
         name={AppNavigation.Tabs.Browser}
         options={{
           headerShown: false,
-          tabBarIcon: ({ focused }) =>
-            normalTabButton({
-              theme,
-              routeName: AppNavigation.Tabs.Browser,
-              focused,
-              image: <BrowserSVG selected={focused} size={TAB_ICON_SIZE} />
-            })
+          tabBarIcon: ({ focused }) => (
+            <TabButton
+              routeName={AppNavigation.Tabs.Browser}
+              focused={focused}
+              image={<BrowserSVG selected={focused} size={TAB_ICON_SIZE} />}
+            />
+          )
         }}
         component={BrowserScreenStack}
       />
@@ -114,13 +114,13 @@ const TabNavigator: () => JSX.Element = () => {
               />
             )
           },
-          tabBarIcon: ({ focused }) =>
-            normalTabButton({
-              theme,
-              routeName: AppNavigation.Tabs.Portfolio,
-              focused,
-              image: <HomeSVG selected={focused} size={TAB_ICON_SIZE} />
-            })
+          tabBarIcon: ({ focused }) => (
+            <TabButton
+              routeName={AppNavigation.Tabs.Portfolio}
+              focused={focused}
+              image={<HomeSVG selected={focused} size={TAB_ICON_SIZE} />}
+            />
+          )
         })}
       />
       <Tab.Screen
@@ -134,13 +134,13 @@ const TabNavigator: () => JSX.Element = () => {
               />
             )
           },
-          tabBarIcon: ({ focused }) =>
-            normalTabButton({
-              theme,
-              routeName: AppNavigation.Tabs.Watchlist,
-              focused,
-              image: <WatchlistSVG selected={focused} size={TAB_ICON_SIZE} />
-            })
+          tabBarIcon: ({ focused }) => (
+            <TabButton
+              routeName={AppNavigation.Tabs.Watchlist}
+              focused={focused}
+              image={<WatchlistSVG selected={focused} size={TAB_ICON_SIZE} />}
+            />
+          )
         }}
         component={WatchlistTab}
       />

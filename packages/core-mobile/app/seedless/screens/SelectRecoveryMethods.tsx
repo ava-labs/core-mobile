@@ -6,9 +6,16 @@ import { RecoveryMethodsScreenProps } from 'navigation/types'
 import PasskeyService from 'services/passkey/PasskeyService'
 import SeedlessService from 'seedless/services/SeedlessService'
 import { RecoveryMethodsContext } from 'navigation/onboarding/RecoveryMethodsStack'
-import { Alert } from 'react-native'
 import Logger from 'utils/Logger'
 import { showSimpleToast } from 'components/Snackbar'
+import { hideOwl, showOwl } from 'components/GlobalOwlLoader'
+import { usePostCapture } from 'hooks/usePosthogCapture'
+import { useSelector } from 'react-redux'
+import {
+  selectIsSeedlessMfaAuthenticatorBlocked,
+  selectIsSeedlessMfaPasskeyBlocked,
+  selectIsSeedlessMfaYubikeyBlocked
+} from 'store/posthog'
 import { Card } from '../components/Card'
 
 type SelectRecoveryMethodsScreenProps = RecoveryMethodsScreenProps<
@@ -25,34 +32,50 @@ export const SelectRecoveryMethods = (): JSX.Element => {
   const {
     params: { mfaMethods }
   } = useRoute<SelectRecoveryMethodsScreenProps['route']>()
+  const { capture } = usePostCapture()
+  const isSeedlessMfaAuthenticatorBlocked = useSelector(
+    selectIsSeedlessMfaAuthenticatorBlocked
+  )
+  const isSeedlessMfaPasskeyBlocked = useSelector(
+    selectIsSeedlessMfaPasskeyBlocked
+  )
+  const isSeedlessMfaYubikeyBlocked = useSelector(
+    selectIsSeedlessMfaYubikeyBlocked
+  )
 
   const handleTotp = async (): Promise<void> => {
-    navigate(AppNavigation.RecoveryMethods.VerifyCode)
+    if (isSeedlessMfaAuthenticatorBlocked) {
+      showSimpleToast('Authenticator is not available at the moment')
+    } else {
+      navigate(AppNavigation.RecoveryMethods.VerifyCode)
+    }
   }
 
   const handleFido = async (): Promise<void> => {
     if (PasskeyService.isSupported === false) {
-      showSimpleToast('Passkey or Yubikey is not supported on this device')
+      showSimpleToast('Passkey/Yubikey is not supported on this device')
       return
     }
+
+    if (isSeedlessMfaPasskeyBlocked && isSeedlessMfaYubikeyBlocked) {
+      showSimpleToast('AuthenPasskey/Yubikey is not available at the moment')
+    }
+
+    showOwl()
 
     try {
       await SeedlessService.approveFido(oidcToken, mfaId, false)
 
+      capture('SeedlessMfaVerified', { type: 'Fido' })
+
       goBack()
 
-      navigate(AppNavigation.Root.Onboard, {
-        screen: AppNavigation.Onboard.Welcome,
-        params: {
-          screen: AppNavigation.Onboard.AnalyticsConsent,
-          params: {
-            nextScreen: AppNavigation.Onboard.CreatePin
-          }
-        }
-      })
+      navigate(AppNavigation.Onboard.NameYourWallet)
     } catch (e) {
       Logger.error('passkey authentication failed', e)
-      Alert.alert('Passkey authentication error')
+      showSimpleToast('Unable to authenticate')
+    } finally {
+      hideOwl()
     }
   }
 
@@ -80,7 +103,7 @@ export const SelectRecoveryMethods = (): JSX.Element => {
               onPress={handleFido}
               icon={<Icons.Communication.IconKey color={colors.$neutral50} />}
               title={mfa.name}
-              body="Use your Passkey(or YubiKey) as your recovery method."
+              body="Use your Passkey (or YubiKey) as your recovery method."
               showCaret
               key={i}
             />

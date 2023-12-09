@@ -85,7 +85,9 @@ class SeedlessService {
   ): Promise<CubeSignerResponse<SignerSessionData>> {
     const oidcClient = this.getOidcClient(oidcToken)
     const signResponse = await oidcClient.sessionCreate(
-      ['sign:*', 'manage:*'],
+      // TODO: reduce the scopes once we have a proper/stable permission system
+      // https://ava-labs.atlassian.net/browse/CP-7891
+      ['sign:*', 'manage:*', 'export:*'],
       {
         // How long singing with a particular token works from the token creation
         auth_lifetime: minutesToSeconds(5),
@@ -133,7 +135,6 @@ class SeedlessService {
    * it creates a request to change user's TOTP. This request returns a new TOTP challenge
    * that must be answered by calling resetTotpComplete
    */
-  //TODO: do it like you would
   async setTotp(): Promise<Result<string, TotpErrors>> {
     const cubeSigner = await this.getCubeSigner()
     const response = await cubeSigner.userTotpResetInit('Core')

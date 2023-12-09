@@ -16,10 +16,10 @@ import { useRoute } from '@react-navigation/native'
 import { OnboardScreenProps } from 'navigation/types'
 import { SelectRecoveryMethods } from 'seedless/screens/SelectRecoveryMethods'
 import { MFA } from 'seedless/types'
-import { PasskeySetupScreen } from 'seedless/screens/PasskeySetupScreen'
 import { FIDONameInputScreen } from 'seedless/screens/FIDONameInputScreen'
 import { useNavigation } from '@react-navigation/native'
 import { RecoveryMethodsScreenProps } from 'navigation/types'
+import { usePostCapture } from 'hooks/usePosthogCapture'
 
 export type RecoveryMethodsStackParamList = {
   [AppNavigation.RecoveryMethods.AddRecoveryMethods]: undefined
@@ -28,7 +28,6 @@ export type RecoveryMethodsStackParamList = {
   [AppNavigation.RecoveryMethods.ScanQrCode]: undefined
   [AppNavigation.RecoveryMethods.LearnMore]: { totpCode?: string }
   [AppNavigation.RecoveryMethods.VerifyCode]: undefined
-  [AppNavigation.RecoveryMethods.PasskeySetup]: undefined
   [AppNavigation.RecoveryMethods.FIDONameInput]: {
     title: string
     description: string
@@ -96,11 +95,6 @@ const RecoveryMethodsStack = (): JSX.Element => {
         </RecoveryMethodsS.Group>
         <RecoveryMethodsS.Group>
           <RecoveryMethodsS.Screen
-            options={MainHeaderOptions()}
-            name={AppNavigation.RecoveryMethods.PasskeySetup}
-            component={PasskeySetupScreen}
-          />
-          <RecoveryMethodsS.Screen
             options={{ presentation: 'modal' }}
             name={AppNavigation.RecoveryMethods.FIDONameInput}
             component={FIDONameInputScreen}
@@ -118,8 +112,12 @@ function VerifyCodeScreen(): JSX.Element {
   const { oidcToken, mfaId } = useContext(RecoveryMethodsContext)
   const { canGoBack, goBack, replace, setOptions } =
     useNavigation<VerifyCodeScreenProps['navigation']>()
+  const { capture } = usePostCapture()
+
   const handleVerifySuccess = (): void => {
     replace(AppNavigation.Onboard.NameYourWallet)
+
+    capture('SeedlessMfaVerified', { type: 'Authenticator' })
   }
 
   useLayoutEffect(() => {
