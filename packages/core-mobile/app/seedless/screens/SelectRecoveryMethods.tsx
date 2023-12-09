@@ -10,6 +10,12 @@ import Logger from 'utils/Logger'
 import { showSimpleToast } from 'components/Snackbar'
 import { hideOwl, showOwl } from 'components/GlobalOwlLoader'
 import { usePostCapture } from 'hooks/usePosthogCapture'
+import { useSelector } from 'react-redux'
+import {
+  selectIsSeedlessMfaAuthenticatorBlocked,
+  selectIsSeedlessMfaPasskeyBlocked,
+  selectIsSeedlessMfaYubikeyBlocked
+} from 'store/posthog'
 import { Card } from '../components/Card'
 
 type SelectRecoveryMethodsScreenProps = RecoveryMethodsScreenProps<
@@ -27,15 +33,32 @@ export const SelectRecoveryMethods = (): JSX.Element => {
     params: { mfaMethods }
   } = useRoute<SelectRecoveryMethodsScreenProps['route']>()
   const { capture } = usePostCapture()
+  const isSeedlessMfaAuthenticatorBlocked = useSelector(
+    selectIsSeedlessMfaAuthenticatorBlocked
+  )
+  const isSeedlessMfaPasskeyBlocked = useSelector(
+    selectIsSeedlessMfaPasskeyBlocked
+  )
+  const isSeedlessMfaYubikeyBlocked = useSelector(
+    selectIsSeedlessMfaYubikeyBlocked
+  )
 
   const handleTotp = async (): Promise<void> => {
-    navigate(AppNavigation.RecoveryMethods.VerifyCode)
+    if (isSeedlessMfaAuthenticatorBlocked) {
+      showSimpleToast('Authenticator is not available at the moment')
+    } else {
+      navigate(AppNavigation.RecoveryMethods.VerifyCode)
+    }
   }
 
   const handleFido = async (): Promise<void> => {
     if (PasskeyService.isSupported === false) {
-      showSimpleToast('Passkey or Yubikey is not supported on this device')
+      showSimpleToast('Passkey/Yubikey is not supported on this device')
       return
+    }
+
+    if (isSeedlessMfaPasskeyBlocked && isSeedlessMfaYubikeyBlocked) {
+      showSimpleToast('AuthenPasskey/Yubikey is not available at the moment')
     }
 
     showOwl()
