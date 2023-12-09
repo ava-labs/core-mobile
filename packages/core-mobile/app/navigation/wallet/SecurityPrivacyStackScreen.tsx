@@ -3,7 +3,11 @@ import AppNavigation from 'navigation/AppNavigation'
 import PinOrBiometryLogin from 'screens/login/PinOrBiometryLogin'
 import CreatePIN from 'screens/onboarding/CreatePIN'
 import SecurityPrivacy from 'screens/drawer/security/SecurityPrivacy'
-import { useNavigation, useRoute } from '@react-navigation/native'
+import {
+  NavigatorScreenParams,
+  useNavigation,
+  useRoute
+} from '@react-navigation/native'
 import { MainHeaderOptions } from 'navigation/NavUtils'
 import { createStackNavigator } from '@react-navigation/stack'
 import BiometricsSDK from 'utils/BiometricsSDK'
@@ -19,7 +23,9 @@ import { RecoveryMethodsSettingMFAScreen } from 'seedless/screens/RecoveryMethod
 import { MFA } from 'seedless/types'
 import { WalletType } from 'services/wallet/types'
 import walletService from 'services/wallet/WalletService'
-import SeedlessExportStack from './SeedlessExportStack'
+import SeedlessExportStack, {
+  SeedlessExportStackParamList
+} from './SeedlessExportStack'
 
 export type SecurityStackParamList = {
   [AppNavigation.SecurityPrivacy.SecurityPrivacy]: undefined
@@ -32,7 +38,8 @@ export type SecurityStackParamList = {
   [AppNavigation.SecurityPrivacy.RecoveryPhrase]: { mnemonic: string }
   [AppNavigation.SecurityPrivacy.DappList]: undefined
   [AppNavigation.SecurityPrivacy.QRCode]: QRCodeParams
-  [AppNavigation.SecurityPrivacy.SeedlessExport]: undefined
+  [AppNavigation.SecurityPrivacy
+    .SeedlessExport]: NavigatorScreenParams<SeedlessExportStackParamList>
 }
 
 const SecurityStack = createStackNavigator<SecurityStackParamList>()
@@ -70,7 +77,7 @@ function SecurityPrivacyStackScreen(): JSX.Element {
           component={CaptureDappQR}
         />
         <SecurityStack.Screen
-          options={MainHeaderOptions()}
+          options={{ headerShown: false }}
           name={AppNavigation.SecurityPrivacy.SeedlessExport}
           component={SeedlessExportStack}
         />
@@ -123,7 +130,9 @@ const SecurityPrivacyScreen = (): JSX.Element => {
       }}
       onShowRecoveryPhrase={() => {
         if (walletType === WalletType.SEEDLESS) {
-          nav.navigate(AppNavigation.SecurityPrivacy.SeedlessExport)
+          nav.navigate(AppNavigation.SecurityPrivacy.SeedlessExport, {
+            screen: AppNavigation.SeedlessExport.InitialScreen
+          })
           return
         }
         nav.navigate(AppNavigation.SecurityPrivacy.ShowRecoveryPhrase)

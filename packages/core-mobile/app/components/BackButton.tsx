@@ -1,16 +1,13 @@
 import React from 'react'
-import { StyleSheet } from 'react-native'
 import { HeaderBackButton } from '@react-navigation/elements'
 import { useNavigation } from '@react-navigation/native'
 
-export const BackButton = ({ onPress }: { onPress?: () => void }) => {
+export const BackButton = ({
+  onPress
+}: {
+  onPress?: () => void
+}): JSX.Element => {
   const { goBack } = useNavigation()
 
-  return (
-    <HeaderBackButton onPress={onPress || goBack} style={styles.container} />
-  )
+  return <HeaderBackButton onPress={onPress || goBack} />
 }
-
-const styles = StyleSheet.create({
-  container: { marginLeft: 8 }
-})
