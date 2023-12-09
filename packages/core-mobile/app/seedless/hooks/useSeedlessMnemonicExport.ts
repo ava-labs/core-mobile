@@ -1,13 +1,12 @@
 import {
   CubeSignerResponse,
   UserExportCompleteResponse,
-  UserExportInitResponse,
-  userExportKeygen
+  UserExportInitResponse
 } from '@cubist-labs/cubesigner-sdk'
-import { getEnvironment } from '@walletconnect/utils'
 import { formatDistanceToNow } from 'date-fns'
 import { useCallback, useEffect, useState } from 'react'
 import SeedlessService from 'seedless/services/SeedlessService'
+import { UserExportResponse } from 'seedless/types'
 import Logger from 'utils/Logger'
 
 export enum ExportState {
@@ -19,28 +18,41 @@ export enum ExportState {
 
 const HOURS_48 = 60 * 60 * 48
 const ONE_MINUTE = 60
-const EXPORT_DELAY = getEnvironment() ? HOURS_48 : ONE_MINUTE
+
+const EXPORT_DELAY =
+  SeedlessService.getEnvironment() === 'prod' ? HOURS_48 : ONE_MINUTE
+
+type OnVerifyMfaSuccess<T> = (response: T) => Promise<void>
+
+type UserExportOnVerifyMfa<T extends UserExportResponse> = (
+  response: T,
+  onVerifySuccess: OnVerifyMfaSuccess<T>
+) => void
+
+export type InitExportOnVerifyMfa = UserExportOnVerifyMfa<
+  CubeSignerResponse<UserExportInitResponse>
+>
+
+export type CompleteExportOnVerifyMfa = UserExportOnVerifyMfa<
+  CubeSignerResponse<UserExportCompleteResponse>
+>
 
 interface ReturnProps {
   state: ExportState
-  setState: (state: ExportState) => void
-  initExport: (
-    onVerifySuccessPromise: (
-      response: CubeSignerResponse<UserExportInitResponse>
-    ) => Promise<void>
-  ) => Promise<void>
-  completeExport: (
-    onVerifySuccessPromise: (
-      response: CubeSignerResponse<UserExportCompleteResponse>,
-      privateKey: string
-    ) => Promise<void>
-  ) => Promise<void>
-  deleteExport: () => void
-  mnemonic?: string
-  setMnemonic: (mnemonic?: string) => void
-  progress: number
-  setPendingRequest: (pendingRequest?: UserExportInitResponse) => void
   timeLeft: string
+  progress: number
+  mnemonic?: string
+  initExport: ({
+    onVerifyMfa
+  }: {
+    onVerifyMfa: InitExportOnVerifyMfa
+  }) => Promise<void>
+  completeExport: ({
+    onVerifyMfa
+  }: {
+    onVerifyMfa: CompleteExportOnVerifyMfa
+  }) => Promise<void>
+  deleteExport: () => void
 }
 
 export const useSeedlessMnemonicExport = (): ReturnProps => {
@@ -52,22 +64,34 @@ export const useSeedlessMnemonicExport = (): ReturnProps => {
   const [timeLeft, setTimeLeft] = useState('')
 
   const completeExport = useCallback(
-    async (
-      onVerifySuccessPromise: (
-        response: CubeSignerResponse<UserExportCompleteResponse>,
-        privateKey: string
-      ) => Promise<void>
-    ): Promise<void> => {
+    async ({
+      onVerifyMfa
+    }: {
+      onVerifyMfa: CompleteExportOnVerifyMfa
+    }): Promise<void> => {
       setMnemonic(undefined)
       try {
-        const keyPair = await userExportKeygen()
+        const keyPair = await SeedlessService.userExportGenerateKeyPair()
         const exportReponse = await SeedlessService.userExportComplete(
           keyId,
           keyPair.publicKey
         )
-        if (exportReponse.requiresMfa()) {
-          onVerifySuccessPromise(exportReponse, keyPair.privateKey)
+
+        if (!exportReponse.requiresMfa()) {
+          throw new Error('completeExport:must require mfa')
         }
+
+        const onVerifySuccess: OnVerifyMfaSuccess<
+          CubeSignerResponse<UserExportCompleteResponse>
+        > = async response => {
+          const decryptedMnemonic = await SeedlessService.userExportDecrypt(
+            keyPair.privateKey,
+            response.data()
+          )
+          setMnemonic(decryptedMnemonic)
+        }
+
+        onVerifyMfa(exportReponse, onVerifySuccess)
       } catch (e) {
         Logger.error('failed to complete export request error: ', e)
       }
@@ -86,27 +110,37 @@ export const useSeedlessMnemonicExport = (): ReturnProps => {
       setMnemonic(undefined)
       setState(ExportState.NotInitiated)
     } catch (e) {
-      Logger.error('failed to cdelete export request error: ', e)
+      Logger.error('failed to delete export request error: ', e)
     }
   }, [keyId])
 
   const initExport = useCallback(
-    async (
-      onVerifySuccessPromise: (
-        response: CubeSignerResponse<UserExportInitResponse>
-      ) => Promise<void>
-    ): Promise<void> => {
+    async ({
+      onVerifyMfa
+    }: {
+      onVerifyMfa: InitExportOnVerifyMfa
+    }): Promise<void> => {
       try {
         const pending = await SeedlessService.userExportList()
+
         if (pending) {
           throw new Error('initExport:pendingRequest in progress')
         }
+
         const exportInitResponse = await SeedlessService.userExportInit(keyId)
-        if (exportInitResponse.requiresMfa()) {
-          onVerifySuccessPromise(exportInitResponse)
-          return
+
+        if (!exportInitResponse.requiresMfa()) {
+          throw new Error('initExport:must require mfa')
         }
-        setPendingRequest(exportInitResponse.data())
+
+        const onVerifySuccess: OnVerifyMfaSuccess<
+          CubeSignerResponse<UserExportInitResponse>
+        > = async response => {
+          setPendingRequest(response.data())
+          setState(ExportState.Pending)
+        }
+
+        onVerifyMfa(exportInitResponse, onVerifySuccess)
       } catch (e) {
         Logger.error('initExport error: ', e)
       }
@@ -147,7 +181,7 @@ export const useSeedlessMnemonicExport = (): ReturnProps => {
 
   useEffect(() => {
     const checkPendingExports = async (): Promise<void> => {
-      const keysList = await SeedlessService.getSessoinKeysList()
+      const keysList = await SeedlessService.getSessionKeysList()
       const id = keysList[0]?.key_id
       if (id) {
         setKeyId(id)
@@ -174,14 +208,50 @@ export const useSeedlessMnemonicExport = (): ReturnProps => {
 
   return {
     state,
-    setState,
+    timeLeft,
+    progress,
+    mnemonic,
     initExport,
     completeExport,
-    deleteExport,
-    mnemonic,
-    setMnemonic,
-    progress,
-    setPendingRequest,
-    timeLeft
+    deleteExport
   }
+}
+
+export const getDelayInstruction = (): string => {
+  return `Wait ${
+    EXPORT_DELAY === HOURS_48 ? '2 days' : '1 minute'
+  } to retrieve phrase`
+}
+
+export const getDelayWarningTitle = (): string => {
+  return `${EXPORT_DELAY === HOURS_48 ? '2 Day' : '1 Minute'} Waiting Period`
+}
+
+export const getDelayWarningDescription = (): string => {
+  return `For your safety there is a ${
+    EXPORT_DELAY === HOURS_48 ? '2 day' : '1 minute'
+  } waiting period to retrieve a phrase`
+}
+
+export const getWaitingPeriodDescription = (): string => {
+  const is2Days = EXPORT_DELAY === HOURS_48
+  return `It will take ${
+    is2Days ? '2 days' : '1 minute'
+  } to retrieve your recovery phrase. You will only have ${
+    is2Days ? '48 hours' : '1 minute'
+  } to copy your recovery phrase once the ${
+    is2Days ? '2 day' : '1 minute'
+  } waiting period is over.`
+}
+
+export const getConfirmCancelDelayText = (): string => {
+  return `Canceling will require you to restart the ${
+    EXPORT_DELAY === HOURS_48 ? '2 day' : '1 minute'
+  } waiting period.`
+}
+
+export const getConfirmCloseDelayText = (): string => {
+  return `Closing the settings menu will require you to restart the ${
+    EXPORT_DELAY === HOURS_48 ? '2 day' : '1 minute'
+  } waiting period.`
 }
