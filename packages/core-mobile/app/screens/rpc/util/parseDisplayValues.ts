@@ -5,6 +5,8 @@ import { Network } from '@avalabs/chains-sdk'
 import { TransactionParams } from 'store/walletConnectV2/handlers/eth_sendTransaction/utils'
 import { TransactionDescription } from 'ethers'
 import { CoreTypes } from '@walletconnect/types'
+import { bigintToBig } from 'utils/bigNumbers/bigintToBig'
+import Big from 'big.js'
 
 interface DisplayValueTypes {
   displayValue: string
@@ -36,11 +38,16 @@ export function parseDisplayValues(
   const name = description?.name ?? description?.fragment?.name
   let displayValue = ''
   if (description?.args?.amount) {
-    const big = bnToBig(
-      hexToBN(description.args?.amount?.toHexString()),
-      tokenDecimals
-    )
-    displayValue = `${bigToLocaleString(big, tokenDecimals)}`
+    let amountBig: Big
+    if (typeof description?.args?.amount === 'bigint') {
+      amountBig = bigintToBig(description?.args?.amount, tokenDecimals)
+    } else {
+      amountBig = bnToBig(
+        hexToBN(description.args?.amount?.toHexString()),
+        tokenDecimals
+      )
+    }
+    displayValue = `${bigToLocaleString(amountBig, tokenDecimals)}`
   } else if (description?.value) {
     const big = bnToBig(hexToBN(description.value?.toString(16)), tokenDecimals)
     displayValue = `${bigToLocaleString(big, tokenDecimals)}`
