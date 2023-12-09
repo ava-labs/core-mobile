@@ -6,12 +6,12 @@ import { useNavigation, useRoute } from '@react-navigation/native'
 import WarningModal from 'components/WarningModal'
 import { MainHeaderOptions } from 'navigation/NavUtils'
 import OwlLoader from 'components/OwlLoader'
-import { SeedlessExportInitial } from 'seedless/screens/SeedlessExportInitial'
 
 import {
   VerifyCodeExport,
   VerifyCodeExportParams
 } from 'seedless/screens/VerifyCodeExport'
+import { SeedlessExportInitial } from 'seedless/screens/SeedlessExportInitial'
 
 export type SeedlessExportStackParamList = {
   [AppNavigation.SeedlessExport.InitialScreen]: undefined
@@ -33,7 +33,7 @@ const SeedlessExportStack: FC = () => {
       <SeedlessExportS.Navigator screenOptions={MainHeaderOptions()}>
         <SeedlessExportS.Screen
           name={AppNavigation.SeedlessExport.InitialScreen}
-          component={SeedlessExportInitialScreen}
+          component={SeedlessExportInitial}
         />
         <SeedlessExportS.Screen
           options={{ presentation: 'transparentModal', headerShown: false }}
@@ -66,10 +66,6 @@ const SeedlessExportStack: FC = () => {
   )
 }
 
-const SeedlessExportInitialScreen = (): JSX.Element => {
-  return <SeedlessExportInitial />
-}
-
 type VerifyCodeScreenProps = SeedlessExportScreenProps<
   typeof AppNavigation.SeedlessExport.VerifyCode
 >
@@ -78,14 +74,9 @@ function VerifyCodeScreen(): JSX.Element {
   const {
     params: { onVerifySuccess, userExportResponse }
   } = useRoute<VerifyCodeScreenProps['route']>()
-  function handleOnVerifySuccess(): void {
-    onVerifySuccess()
-  }
-
-  console.log('hello exportInitResponse')
   return (
     <VerifyCodeExport
-      onVerifySuccess={handleOnVerifySuccess}
+      onVerifySuccess={onVerifySuccess}
       userExportResponse={userExportResponse}
     />
   )

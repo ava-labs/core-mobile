@@ -8,8 +8,9 @@ interface Props {
   buttonText?: string
   onGoBack?: () => void
   canToggleBlur?: boolean
+  hideMnemonic?: boolean
   buttonOverride?: JSX.Element
-  completeExport?: () => void
+  toggleRecoveryPhrase?: () => void
 }
 
 export default function RevealMnemonic({
@@ -17,8 +18,9 @@ export default function RevealMnemonic({
   buttonText,
   onGoBack,
   canToggleBlur,
+  hideMnemonic,
   buttonOverride,
-  completeExport
+  toggleRecoveryPhrase
 }: Props): JSX.Element {
   const handleSaveMyPhrase = (): void => {
     onGoBack?.()
@@ -40,7 +42,8 @@ export default function RevealMnemonic({
       <MnemonicScreen
         mnemonic={mnemonic}
         canToggleBlur={canToggleBlur}
-        completeExport={completeExport}
+        hideMnemonic={hideMnemonic}
+        toggleRecoveryPhrase={toggleRecoveryPhrase}
       />
 
       {/* This serves as grouping so we can achieve desired behavior with `justifyContent: 'space-between'`   */}

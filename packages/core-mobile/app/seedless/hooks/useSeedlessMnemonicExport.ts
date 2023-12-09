@@ -5,7 +5,7 @@ import {
   userExportKeygen
 } from '@cubist-labs/cubesigner-sdk'
 import { getEnvironment } from '@walletconnect/utils'
-import { formatDistanceToNow, fromUnixTime } from 'date-fns'
+import { formatDistanceToNow } from 'date-fns'
 import { useCallback, useEffect, useState } from 'react'
 import SeedlessService from 'seedless/services/SeedlessService'
 import Logger from 'utils/Logger'
@@ -61,9 +61,6 @@ export const useSeedlessMnemonicExport = (): ReturnProps => {
       setMnemonic(undefined)
       try {
         const keyPair = await userExportKeygen()
-        console.log('completeExport: ', keyPair)
-        console.log('completeExport:keyId ', keyId)
-
         const exportReponse = await SeedlessService.userExportComplete(
           keyId,
           keyPair.publicKey
@@ -105,8 +102,6 @@ export const useSeedlessMnemonicExport = (): ReturnProps => {
           throw new Error('initExport:pendingRequest in progress')
         }
         const exportInitResponse = await SeedlessService.userExportInit(keyId)
-        console.log('keyId', keyId)
-        console.log('exportInitResponse', exportInitResponse)
         if (exportInitResponse.requiresMfa()) {
           onVerifySuccessPromise(exportInitResponse)
           return
@@ -128,24 +123,12 @@ export const useSeedlessMnemonicExport = (): ReturnProps => {
     const { valid_epoch: availableAt, exp_epoch: availableUntil } =
       pendingRequest
 
-    console.log(
-      'updateProgress: ',
-      fromUnixTime(availableAt),
-      fromUnixTime(availableUntil)
-    )
-
     const isInProgress = Date.now() / 1000 < availableAt
 
     const isReadyToDecrypt =
       Date.now() / 1000 >= availableAt && Date.now() / 1000 <= availableUntil
     const secondsPassed = EXPORT_DELAY - (availableAt - Date.now() / 1000)
 
-    console.log(
-      'updateProgress: ',
-      isInProgress,
-      isReadyToDecrypt,
-      secondsPassed
-    )
     if (isInProgress) {
       setState(ExportState.Pending)
       setTimeLeft(formatDistanceToNow(new Date(availableAt * 1000)))
@@ -169,9 +152,7 @@ export const useSeedlessMnemonicExport = (): ReturnProps => {
       if (id) {
         setKeyId(id)
       }
-      // deleteExport(id)
       const pendingExport = await SeedlessService.userExportList()
-      console.log('pendingExport', pendingExport)
       setState(pendingExport ? ExportState.Pending : ExportState.NotInitiated)
       setPendingRequest(pendingExport)
     }

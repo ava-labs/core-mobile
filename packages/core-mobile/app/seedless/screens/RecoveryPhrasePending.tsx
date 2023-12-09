@@ -19,8 +19,6 @@ export const RecoveryPhrasePending = ({
     theme: { colors }
   } = useTheme()
 
-  console.log('progress', progress)
-
   return (
     <View
       sx={{ marginHorizontal: 16, flex: 1, justifyContent: 'space-between' }}>

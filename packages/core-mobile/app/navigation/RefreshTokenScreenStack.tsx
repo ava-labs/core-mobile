@@ -90,14 +90,12 @@ function VerifyCodeScreen(): JSX.Element {
     params.onBack()
     goBack()
   }
-  // console.log('hello 2 exportInitResponse', exportInitResponse)
   return (
     <VerifyCode
       onVerifySuccess={handleOnVerifySuccess}
       onBack={handleOnBack}
       oidcToken={params.oidcToken}
       mfaId={params.mfaId}
-      exportInitResponse={params.exportInitResponse}
     />
   )
 }

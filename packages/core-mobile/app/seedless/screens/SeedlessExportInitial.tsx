@@ -1,5 +1,5 @@
 import Loader from 'components/Loader'
-import React, { useEffect } from 'react'
+import React, { useCallback, useEffect, useLayoutEffect, useState } from 'react'
 import {
   ExportState,
   useSeedlessMnemonicExport
@@ -19,7 +19,7 @@ import { SnackBarMessage } from 'seedless/components/SnackBarMessage'
 import { copyToClipboard } from 'utils/DeviceTools'
 import Logger from 'utils/Logger'
 import SeedlessService from 'seedless/services/SeedlessService'
-import { goBack } from 'utils/Navigation'
+import { BackButton } from 'components/BackButton'
 import { SeedlessExportInstructions } from './SeedlessExportInstructions'
 import { RecoveryPhrasePending } from './RecoveryPhrasePending'
 
@@ -28,7 +28,8 @@ type SeedlessExportInitialScreenProps = SeedlessExportScreenProps<
 >
 
 export const SeedlessExportInitial = (): JSX.Element => {
-  const { navigate, replace, setOptions } =
+  const [hideMnemonic, setHideMnemonic] = useState(true)
+  const { navigate, replace, setOptions, goBack, canGoBack } =
     useNavigation<SeedlessExportInitialScreenProps['navigation']>()
   const {
     state,
@@ -49,11 +50,33 @@ export const SeedlessExportInitial = (): JSX.Element => {
     })
   }
 
-  const onCloseExportRequest = (): void => {
+  const onCloseExportRequest = useCallback((): void => {
     navigate(AppNavigation.SeedlessExport.ConfirmCloseModal, {
       onCancel: deleteExport
     })
-  }
+  }, [deleteExport, navigate])
+
+  const customGoBack = useCallback((): void => {
+    switch (state) {
+      case ExportState.ReadyToExport:
+        onCloseExportRequest()
+        break
+      case ExportState.NotInitiated:
+      case ExportState.Pending:
+      default:
+        if (canGoBack()) {
+          goBack()
+        }
+        break
+    }
+  }, [canGoBack, goBack, onCloseExportRequest, state])
+
+  useLayoutEffect(() => {
+    setOptions({
+      // eslint-disable-next-line react/no-unstable-nested-components
+      headerLeft: () => <BackButton onPress={customGoBack} />
+    })
+  }, [customGoBack, goBack, setOptions])
 
   const buttonOverride = (): JSX.Element => {
     return (
@@ -76,35 +99,37 @@ export const SeedlessExportInitial = (): JSX.Element => {
     )
   }
 
-  const onCompleteExportPromise = (
-    userExportResponse: CubeSignerResponse<UserExportCompleteResponse>,
-    privateKey: string
-  ): Promise<void> => {
-    return new Promise(() => {
-      replace(AppNavigation.SeedlessExport.VerifyCode, {
-        userExportResponse: userExportResponse,
-        onVerifySuccess: async () => {
-          console.log('onCompleteExportPromise', userExportResponse.data())
-          const exportDecrypted = await userExportDecrypt(
-            privateKey,
-            userExportResponse.data()
-          )
-          const hasMnemonic = 'mnemonic' in exportDecrypted
-          if (!hasMnemonic || typeof exportDecrypted.mnemonic !== 'string') {
-            throw new Error('completeExport: missing mnemonic')
+  const onCompleteExportPromise = useCallback(
+    (
+      userExportResponse: CubeSignerResponse<UserExportCompleteResponse>,
+      privateKey: string
+    ): Promise<void> => {
+      return new Promise(() => {
+        navigate(AppNavigation.SeedlessExport.VerifyCode, {
+          userExportResponse,
+          onVerifySuccess: async () => {
+            const exportDecrypted = await userExportDecrypt(
+              privateKey,
+              userExportResponse.data()
+            )
+            const hasMnemonic = 'mnemonic' in exportDecrypted
+            if (!hasMnemonic || typeof exportDecrypted.mnemonic !== 'string') {
+              throw new Error('completeExport: missing mnemonic')
+            }
+            setMnemonic(exportDecrypted.mnemonic)
+            setHideMnemonic(false)
+            goBack()
           }
-          setMnemonic(exportDecrypted.mnemonic)
-          goBack()
-        }
+        })
       })
-    })
-  }
+    },
+    [goBack, navigate, setMnemonic]
+  )
 
   const onInitExportPromise = (
     userExportResponse: CubeSignerResponse<UserExportInitResponse>
   ): Promise<void> => {
     return new Promise(() => {
-      console.log('onInitExportPromise', userExportResponse)
       replace(AppNavigation.SeedlessExport.VerifyCode, {
         onVerifySuccess: async () => {
           const pendingExport = await SeedlessService.userExportList()
@@ -116,6 +141,13 @@ export const SeedlessExportInitial = (): JSX.Element => {
       })
     })
   }
+
+  const toggleRecoveryPhrase = useCallback(async (): Promise<void> => {
+    if (mnemonic === undefined) {
+      await completeExport(onCompleteExportPromise).catch(Logger.error)
+    }
+    setHideMnemonic(prev => !prev)
+  }, [completeExport, mnemonic, onCompleteExportPromise])
 
   useEffect(() => {
     if (state === ExportState.Loading) {
@@ -149,13 +181,11 @@ export const SeedlessExportInitial = (): JSX.Element => {
       )}
       {state === ExportState.ReadyToExport && (
         <RevealMnemonic
-          completeExport={() => {
-            completeExport(onCompleteExportPromise).catch(Logger.error)
-          }}
-          mnemonic={mnemonic} // west mention cat frog interest lighter ponder vast west book tree pen health dupa chip moral enroll chair hub book pioneer fortune can beautiful
-          buttonOverride={buttonOverride()}
+          toggleRecoveryPhrase={toggleRecoveryPhrase}
+          mnemonic={mnemonic}
+          hideMnemonic={hideMnemonic || mnemonic === undefined}
           canToggleBlur={true}
-          onGoBack={onCloseExportRequest}
+          buttonOverride={buttonOverride()}
         />
       )}
     </>
