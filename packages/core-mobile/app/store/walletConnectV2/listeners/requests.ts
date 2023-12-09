@@ -44,7 +44,7 @@ export const processRequest = async (
   const handler = handlerMap.get(method)
 
   const state = listenerApi.getState()
-  if (selectWalletState(state) !== WalletState.ACTIVE) {
+  if (selectWalletState(state) === WalletState.INACTIVE) {
     //Wait until app is unlocked
     await condition(isAnyOf(onAppUnlocked))
   }
