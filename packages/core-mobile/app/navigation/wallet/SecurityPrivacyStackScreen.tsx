@@ -70,7 +70,7 @@ function SecurityPrivacyStackScreen(): JSX.Element {
           component={CaptureDappQR}
         />
         <SecurityStack.Screen
-          options={{ headerShown: false }}
+          options={MainHeaderOptions()}
           name={AppNavigation.SecurityPrivacy.SeedlessExport}
           component={SeedlessExportStack}
         />

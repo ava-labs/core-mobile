@@ -83,6 +83,7 @@ export const SeedlessExportInitial = (): JSX.Element => {
       <Button
         type="secondary"
         size="xlarge"
+        leftIcon="copy"
         disabled={!mnemonic}
         onPress={() => {
           navigate(AppNavigation.Root.CopyPhraseWarning, {

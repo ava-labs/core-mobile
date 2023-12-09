@@ -4,7 +4,6 @@ import { createStackNavigator } from '@react-navigation/stack'
 import { SeedlessExportScreenProps } from 'navigation/types'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import WarningModal from 'components/WarningModal'
-import { MainHeaderOptions } from 'navigation/NavUtils'
 import OwlLoader from 'components/OwlLoader'
 
 import {
@@ -30,23 +29,23 @@ const PolyfillCrypto = React.lazy(() => import('react-native-webview-crypto'))
 const SeedlessExportStack: FC = () => {
   return (
     <>
-      <SeedlessExportS.Navigator screenOptions={MainHeaderOptions()}>
+      <SeedlessExportS.Navigator screenOptions={{ header: () => null }}>
         <SeedlessExportS.Screen
           name={AppNavigation.SeedlessExport.InitialScreen}
           component={SeedlessExportInitial}
         />
         <SeedlessExportS.Screen
-          options={{ presentation: 'transparentModal', headerShown: false }}
-          name={AppNavigation.SeedlessExport.VerifyCode}
-          component={VerifyCodeScreen}
-        />
-        <SeedlessExportS.Screen
-          options={{ headerShown: false }}
           name={AppNavigation.SeedlessExport.OwlLoader}
           component={OwlLoader}
         />
         <SeedlessExportS.Group
-          screenOptions={{ presentation: 'modal', headerShown: false }}>
+          screenOptions={{
+            presentation: 'transparentModal'
+          }}>
+          <SeedlessExportS.Screen
+            name={AppNavigation.SeedlessExport.VerifyCode}
+            component={VerifyCodeScreen}
+          />
           <SeedlessExportS.Screen
             name={AppNavigation.SeedlessExport.WaitingPeriodModal}
             component={WaitingPeriodModal}
@@ -98,13 +97,18 @@ const WaitingPeriodModal = (): JSX.Element => {
     }
   }, [canGoBack, goBack])
 
+  const onAction = useCallback(() => {
+    onNext()
+    onGoBack()
+  }, [onGoBack, onNext])
+
   return (
     <WarningModal
       title="Waiting Period"
       message="It will take 2 days to retrieve your recovery phrase. You will only have 48 hours to copy your recovery phrase once the 2 day waiting period is over."
       actionText={'Next'}
       dismissText={'Cancel'}
-      onAction={onNext}
+      onAction={onAction}
       onDismiss={onGoBack}
     />
   )

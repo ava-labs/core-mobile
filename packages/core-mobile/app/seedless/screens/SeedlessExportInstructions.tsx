@@ -36,7 +36,7 @@ export const SeedlessExportInstructions = ({ onNext }: Props): JSX.Element => {
                     justifyContent: 'center',
                     alignItems: 'center'
                   }}>
-                  <Text variant="body1" sx={{ color: '$neutral50' }}>
+                  <Text variant="heading6" sx={{ color: '$neutral50' }}>
                     {index + 1}.
                   </Text>
                 </View>
