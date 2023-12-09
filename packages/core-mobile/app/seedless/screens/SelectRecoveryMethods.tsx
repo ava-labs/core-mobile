@@ -44,13 +44,21 @@ export const SelectRecoveryMethods = (): JSX.Element => {
   )
 
   const handleTotp = async (): Promise<void> => {
-    navigate(AppNavigation.RecoveryMethods.VerifyCode)
+    if (isSeedlessMfaAuthenticatorBlocked) {
+      showSimpleToast('Authenticator is not available at the moment')
+    } else {
+      navigate(AppNavigation.RecoveryMethods.VerifyCode)
+    }
   }
 
   const handleFido = async (): Promise<void> => {
     if (PasskeyService.isSupported === false) {
-      showSimpleToast('Passkey or Yubikey is not supported on this device')
+      showSimpleToast('Passkey/Yubikey is not supported on this device')
       return
+    }
+
+    if (isSeedlessMfaPasskeyBlocked && isSeedlessMfaYubikeyBlocked) {
+      showSimpleToast('AuthenPasskey/Yubikey is not available at the moment')
     }
 
     showOwl()
@@ -79,10 +87,6 @@ export const SelectRecoveryMethods = (): JSX.Element => {
       </Text>
       {mfaMethods.map((mfa, i) => {
         if (mfa.type === 'totp') {
-          if (isSeedlessMfaAuthenticatorBlocked) {
-            return null
-          }
-
           return (
             <Card
               onPress={handleTotp}
@@ -94,10 +98,6 @@ export const SelectRecoveryMethods = (): JSX.Element => {
             />
           )
         } else if (mfa.type === 'fido') {
-          if (isSeedlessMfaPasskeyBlocked && isSeedlessMfaYubikeyBlocked) {
-            return null
-          }
-
           return (
             <Card
               onPress={handleFido}

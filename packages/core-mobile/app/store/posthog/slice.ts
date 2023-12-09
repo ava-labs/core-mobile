@@ -73,6 +73,12 @@ const isSeedlessSigningBlocked = (featureFlags: FeatureFlags): boolean => {
 }
 
 export const selectIsSeedlessSigningBlocked = (state: RootState): boolean => {
+  const isSeedlessWallet = state.app.walletType === WalletType.SEEDLESS
+
+  if (!isSeedlessWallet) {
+    return false
+  }
+
   return isSeedlessSigningBlocked(state.posthog.featureFlags)
 }
 
