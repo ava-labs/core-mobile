@@ -9,6 +9,7 @@ import { FindToken } from 'contracts/contractParsers/utils/useFindToken'
 import { Network } from '@avalabs/chains-sdk'
 import { Result, TransactionDescription } from 'ethers'
 import { TransactionParams } from 'store/walletConnectV2/handlers/eth_sendTransaction/utils'
+import { bigIntToHex } from '@ethereumjs/util'
 
 export async function approveTxHandler(
   findToken: FindToken,
@@ -34,7 +35,7 @@ export async function approveTxHandler(
       // in erc20 contracts the approve is has the limit as second parameter however it's not always named the same
       // eg JOE uses the standard namig: `approve(spender, amount)`
       // while PNG uses something else: `approve(spender, rawAmount)`
-      limit: data[1]?.toHexString(),
+      limit: bigIntToHex(BigInt(data[1])),
       spender: data.spender
     },
     ...parseDisplayValues(network, request, props, description)
