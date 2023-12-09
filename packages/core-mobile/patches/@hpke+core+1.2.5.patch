@@ -1,0 +1,21 @@
+diff --git a/node_modules/@hpke/core/package.json b/node_modules/@hpke/core/package.json
+index a1dfb56..0b200f3 100644
+--- a/node_modules/@hpke/core/package.json
++++ b/node_modules/@hpke/core/package.json
+@@ -1,6 +1,6 @@
+ {
+   "module": "./esm/core/mod.js",
+-  "main": "./script/core/mod.js",
++  "main": "./esm/core/mod.js",
+   "types": "./esm/core/mod.d.ts",
+   "name": "@hpke/core",
+   "version": "1.2.5",
+@@ -15,7 +15,7 @@
+   "exports": {
+     ".": {
+       "import": "./esm/core/mod.js",
+-      "require": "./script/core/mod.js"
++      "require": "./esm/core/mod.js"
+     },
+     "./package.json": "./package.json"
+   },
