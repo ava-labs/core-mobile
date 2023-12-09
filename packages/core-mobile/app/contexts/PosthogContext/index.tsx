@@ -13,17 +13,14 @@ import { usePostCapture } from 'hooks/usePosthogCapture'
 import { useSelector, useDispatch } from 'react-redux'
 import {
   selectIsAnalyticsEnabled,
-  selectIsBridgeBlocked,
   selectIsBridgeBtcBlocked,
   selectIsBridgeEthBlocked,
   selectIsBrowserBlocked,
   selectIsCoinbasePayBlocked,
   selectIsEarnBlocked,
   selectIsEventsBlocked,
-  selectIsSendBlocked,
   selectIsSendNftBlockedAndroid,
   selectIsSendNftBlockediOS,
-  selectIsSwapBlocked,
   selectSentrySampleRate,
   selectUseCoinGeckoPro,
   toggleAnalytics
@@ -36,13 +33,10 @@ export const PosthogContext = createContext<PosthogContextState>(
 
 export interface PosthogContextState {
   setAnalyticsConsent: Dispatch<boolean | undefined>
-  swapBlocked: boolean
-  bridgeBlocked: boolean
   bridgeBtcBlocked: boolean
   bridgeEthBlocked: boolean
   earnBlocked: boolean
   browserBlocked: boolean
-  sendBlocked: boolean
   sendNftBlockediOS: boolean
   sendNftBlockedAndroid: boolean
   sentrySampleRate: number
@@ -60,12 +54,9 @@ export const PosthogContextProvider = ({
   const isAnalyticsEnabled = useSelector(selectIsAnalyticsEnabled)
 
   // TODO: in react components, use flags directly from redux
-  const swapBlocked = useSelector(selectIsSwapBlocked)
-  const bridgeBlocked = useSelector(selectIsBridgeBlocked)
   const bridgeBtcBlocked = useSelector(selectIsBridgeBtcBlocked)
   const bridgeEthBlocked = useSelector(selectIsBridgeEthBlocked)
   const earnBlocked = useSelector(selectIsEarnBlocked)
-  const sendBlocked = useSelector(selectIsSendBlocked)
   const sendNftBlockediOS = useSelector(selectIsSendNftBlockediOS)
   const sendNftBlockedAndroid = useSelector(selectIsSendNftBlockedAndroid)
   const eventsBlocked = useSelector(selectIsEventsBlocked)
@@ -134,12 +125,9 @@ export const PosthogContextProvider = ({
     <PosthogContext.Provider
       value={{
         setAnalyticsConsent,
-        swapBlocked,
-        bridgeBlocked,
         bridgeBtcBlocked,
         bridgeEthBlocked,
         earnBlocked,
-        sendBlocked,
         sendNftBlockediOS,
         sendNftBlockedAndroid,
         sentrySampleRate,

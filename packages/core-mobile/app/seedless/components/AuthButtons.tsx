@@ -3,6 +3,11 @@ import React, { FC } from 'react'
 import { Space } from 'components/Space'
 import Separator from 'components/Separator'
 import AppleSignInService from 'services/socialSignIn/apple/AppleSignInService'
+import { useSelector } from 'react-redux'
+import {
+  selectIsSeedlessOnboardingAppleBlocked,
+  selectIsSeedlessOnboardingGoogleBlocked
+} from 'store/posthog'
 import SocialButton from './SocialButton'
 
 type Props = {
@@ -23,7 +28,18 @@ const AuthButtons: FC<Props> = ({
   const {
     theme: { colors }
   } = useTheme()
-  const isAppleSignInAvailable = AppleSignInService.isSupported()
+
+  const isSeedlessOnboardingAppleBlocked = useSelector(
+    selectIsSeedlessOnboardingAppleBlocked
+  )
+  const isSeedlessOnboardingGoogleBlocked = useSelector(
+    selectIsSeedlessOnboardingGoogleBlocked
+  )
+
+  const shouldShowGoogle = !isSeedlessOnboardingGoogleBlocked
+  const shouldShowApple =
+    !isSeedlessOnboardingAppleBlocked && AppleSignInService.isSupported()
+  const shouldShowSpace = shouldShowGoogle && shouldShowApple
 
   return (
     <View>
@@ -31,20 +47,22 @@ const AuthButtons: FC<Props> = ({
         <Text variant="alertTitle">{title}</Text>
         <Space y={16} />
         <View sx={{ flexDirection: 'row' }}>
-          <SocialButton
-            type="google"
-            disabled={disabled}
-            onPress={onGoogleAction}
-          />
-          {isAppleSignInAvailable && (
+          {shouldShowGoogle && (
             <>
-              <Space x={16} />
               <SocialButton
-                type="apple"
+                type="google"
                 disabled={disabled}
-                onPress={onAppleAction}
+                onPress={onGoogleAction}
               />
             </>
+          )}
+          {shouldShowSpace && <Space x={16} />}
+          {shouldShowApple && (
+            <SocialButton
+              type="apple"
+              disabled={disabled}
+              onPress={onAppleAction}
+            />
           )}
         </View>
         <Space y={16} />

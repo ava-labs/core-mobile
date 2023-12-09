@@ -16,6 +16,11 @@ export enum FeatureGates {
   LEFT_FAB = 'left-fab-feature',
   DARK_MODE = 'dark-mode-feature',
   SEEDLESS_ONBOARDING = 'seedless-onboarding',
+  SEEDLESS_ONBOARDING_APPLE = 'seedless-onboarding-apple',
+  SEEDLESS_ONBOARDING_GOOGLE = 'seedless-onboarding-google',
+  SEEDLESS_MFA_YUBIKEY = 'seedless-mfa-yubikey',
+  SEEDLESS_MFA_PASSKEY = 'seedless-mfa-passkey',
+  SEEDLESS_MFA_AUTHENTICATOR = 'seedless-mfa-authenticator',
   SEEDLESS_SIGNING = 'seedless-signing'
 }
 

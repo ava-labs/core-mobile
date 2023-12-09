@@ -10,13 +10,17 @@ import { WalletScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import { useDappConnectionV2 } from 'hooks/useDappConnectionV2'
+import { useSelector } from 'react-redux'
+import { selectIsSeedlessSigningBlocked } from 'store/posthog'
+import FeatureBlocked from 'screens/posthog/FeatureBlocked'
 import SimplePrompt from '../shared/SimplePrompt'
 
 type BridgeAssetScreenProps = WalletScreenProps<
   typeof AppNavigation.Modal.BridgeAssetV2
 >
 
-const BridgeAsset = () => {
+const BridgeAsset = (): JSX.Element => {
+  const isSeedlessSigningBlocked = useSelector(selectIsSeedlessSigningBlocked)
   const { goBack } = useNavigation<BridgeAssetScreenProps['navigation']>()
 
   const { request, asset, amountStr, currentBlockchain } =
@@ -46,7 +50,7 @@ const BridgeAsset = () => {
     goBack()
   }, [amountStr, asset, currentBlockchain, goBack, onApprove, request])
 
-  const renderIcon = () => (
+  const renderIcon = (): JSX.Element => (
     <Avatar.Custom
       name={peerMeta?.name ?? ''}
       size={48}
@@ -54,7 +58,7 @@ const BridgeAsset = () => {
     />
   )
 
-  const renderContent = () => {
+  const renderContent = (): JSX.Element => {
     return (
       <View style={{ flexShrink: 1 }}>
         <AvaText.Body1
@@ -81,14 +85,24 @@ const BridgeAsset = () => {
   }
 
   return (
-    <SimplePrompt
-      onApprove={approveAndClose}
-      onReject={rejectAndClose}
-      header={header}
-      description={description}
-      renderIcon={renderIcon}
-      renderContent={renderContent}
-    />
+    <>
+      <SimplePrompt
+        onApprove={approveAndClose}
+        onReject={rejectAndClose}
+        header={header}
+        description={description}
+        renderIcon={renderIcon}
+        renderContent={renderContent}
+      />
+      {isSeedlessSigningBlocked && (
+        <FeatureBlocked
+          onOk={goBack}
+          message={
+            'Signing is currently under maintenance. Service will resume shortly.'
+          }
+        />
+      )}
+    </>
   )
 }
 
