@@ -37,6 +37,8 @@ import { NetworkLogo } from 'screens/network/NetworkLogo'
 import { isAddressApproved } from 'store/walletConnectV2/handlers/eth_sign/utils/isAddressApproved'
 import { hexToBN } from '@avalabs/utils-sdk'
 import { Tooltip } from 'components/Tooltip'
+import { selectIsSeedlessSigningBlocked } from 'store/posthog'
+import FeatureBlocked from 'screens/posthog/FeatureBlocked'
 import RpcRequestBottomSheet from '../shared/RpcRequestBottomSheet'
 
 const defaultErrMessage = 'Transaction failed'
@@ -46,6 +48,7 @@ type SignTransactionScreenProps = WalletScreenProps<
 >
 
 const SignTransaction = (): JSX.Element => {
+  const isSeedlessSigningBlocked = useSelector(selectIsSeedlessSigningBlocked)
   const { goBack } = useNavigation<SignTransactionScreenProps['navigation']>()
   const { request, transaction: txParams } =
     useRoute<SignTransactionScreenProps['route']>().params
@@ -358,50 +361,60 @@ const SignTransaction = (): JSX.Element => {
   }
 
   return (
-    <RpcRequestBottomSheet
-      onClose={() => (requestResult ? close() : rejectAndClose())}>
-      <ScrollView contentContainerStyle={txStyles.scrollView}>
-        <View>
-          <AvaText.Heading1>{txTitle()}</AvaText.Heading1>
-          <Space y={24} />
-          {renderNetwork()}
-          <Row
-            style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-            <AvaText.Body2 color={theme.colorText1}>
-              Transaction Details
-            </AvaText.Body2>
-            <AvaButton.Base onPress={() => setShowData(true)}>
-              <Row>
-                <CarrotSVG
-                  color={theme.colorText1}
-                  direction={'left'}
-                  size={12}
-                />
-                <CarrotSVG color={theme.colorText1} size={12} />
-              </Row>
-            </AvaButton.Base>
-          </Row>
-          {!displayData?.gasPrice ? (
-            <View>
-              <ActivityIndicator size={'large'} />
-            </View>
-          ) : (
-            renderTransactionInfo()
+    <>
+      <RpcRequestBottomSheet
+        onClose={() => (requestResult ? close() : rejectAndClose())}>
+        <ScrollView contentContainerStyle={txStyles.scrollView}>
+          <View>
+            <AvaText.Heading1>{txTitle()}</AvaText.Heading1>
+            <Space y={24} />
+            {renderNetwork()}
+            <Row
+              style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+              <AvaText.Body2 color={theme.colorText1}>
+                Transaction Details
+              </AvaText.Body2>
+              <AvaButton.Base onPress={() => setShowData(true)}>
+                <Row>
+                  <CarrotSVG
+                    color={theme.colorText1}
+                    direction={'left'}
+                    size={12}
+                  />
+                  <CarrotSVG color={theme.colorText1} size={12} />
+                </Row>
+              </AvaButton.Base>
+            </Row>
+            {!displayData?.gasPrice ? (
+              <View>
+                <ActivityIndicator size={'large'} />
+              </View>
+            ) : (
+              renderTransactionInfo()
+            )}
+          </View>
+          {!requestResult && displayData?.gasPrice && (
+            <NetworkFeeSelector
+              chainId={chainId}
+              gasLimit={displayData?.gasLimit ?? 0}
+              onGasPriceChange={handleGasPriceChange}
+              onGasLimitChange={handleGasLimitChange}
+            />
           )}
-        </View>
-        {!requestResult && displayData?.gasPrice && (
-          <NetworkFeeSelector
-            chainId={chainId}
-            gasLimit={displayData?.gasLimit ?? 0}
-            onGasPriceChange={handleGasPriceChange}
-            onGasLimitChange={handleGasLimitChange}
-          />
-        )}
-        {requestResult
-          ? renderTransactionResult(requestResult)
-          : renderApproveRejectButtons()}
-      </ScrollView>
-    </RpcRequestBottomSheet>
+          {requestResult
+            ? renderTransactionResult(requestResult)
+            : renderApproveRejectButtons()}
+        </ScrollView>
+      </RpcRequestBottomSheet>
+      {isSeedlessSigningBlocked && (
+        <FeatureBlocked
+          onOk={goBack}
+          message={
+            'Signing is currently under maintenance. Service will resume shortly.'
+          }
+        />
+      )}
+    </>
   )
 }
 

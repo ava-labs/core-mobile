@@ -10,8 +10,9 @@ import {
   NFTDetailsSendScreenProps
 } from 'navigation/types'
 import DoneScreen from 'screens/send/DoneScreen'
-import { usePosthogContext } from 'contexts/PosthogContext'
 import FeatureBlocked from 'screens/posthog/FeatureBlocked'
+import { useSelector } from 'react-redux'
+import { selectIsSendBlocked } from 'store/posthog'
 
 export type NFTSendStackParamList = {
   [AppNavigation.NftSend.AddressPick]: undefined
@@ -26,7 +27,7 @@ type NFTSendScreenProp = NFTDetailsScreenProps<typeof AppNavigation.Nft.Send>
 export default function NFTSendScreenStack(): JSX.Element | null {
   const { params } = useRoute<NFTSendScreenProp['route']>()
   const item = 'nft' in params ? params.nft : undefined
-  const { sendBlocked } = usePosthogContext()
+  const isSendBlocked = useSelector(selectIsSendBlocked)
   const { goBack } = useNavigation<NFTSendScreenProp['navigation']>()
 
   if (item === undefined) return null
@@ -54,7 +55,7 @@ export default function NFTSendScreenStack(): JSX.Element | null {
           component={SuccessScreen}
         />
       </NFTSendStack.Navigator>
-      {sendBlocked && (
+      {isSendBlocked && (
         <FeatureBlocked
           onOk={goBack}
           message={

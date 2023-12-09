@@ -6,12 +6,13 @@ import { useNavigation, useRoute } from '@react-navigation/native'
 import ReviewSend from 'screens/send/ReviewSend'
 import { SendTokenContextProvider } from 'contexts/SendTokenContext'
 import { SendTokensScreenProps } from 'navigation/types'
-import { usePosthogContext } from 'contexts/PosthogContext'
 import FeatureBlocked from 'screens/posthog/FeatureBlocked'
 import { TokenWithBalance } from 'store/balance'
 import { SubHeaderOptions } from 'navigation/NavUtils'
 import { usePostCapture } from 'hooks/usePosthogCapture'
 import { Contact } from 'store/addressBook'
+import { useSelector } from 'react-redux'
+import { selectIsSendBlocked } from 'store/posthog'
 
 export type SendStackParamList = {
   [AppNavigation.Send.Send]:
@@ -22,8 +23,8 @@ export type SendStackParamList = {
 
 const SendStack = createStackNavigator<SendStackParamList>()
 
-function SendScreenStack() {
-  const { sendBlocked } = usePosthogContext()
+function SendScreenStack(): JSX.Element {
+  const isSendBlocked = useSelector(selectIsSendBlocked)
   const { goBack } = useNavigation()
 
   return (
@@ -44,7 +45,7 @@ function SendScreenStack() {
           component={ReviewSendComponent}
         />
       </SendStack.Navigator>
-      {sendBlocked && (
+      {isSendBlocked && (
         <FeatureBlocked
           onOk={goBack}
           message={
@@ -58,14 +59,14 @@ function SendScreenStack() {
 
 type SendScreenProps = SendTokensScreenProps<typeof AppNavigation.Send.Send>
 
-const SendTokenComponent = () => {
+const SendTokenComponent = (): JSX.Element => {
   const { navigate } = useNavigation<SendScreenProps['navigation']>()
   const { params } = useRoute<SendScreenProps['route']>()
   const { capture } = usePostCapture()
 
   const onOpenSelectToken = (
     onTokenSelected: (token: TokenWithBalance) => void
-  ) => {
+  ): void => {
     navigate(AppNavigation.Modal.SelectToken, {
       onTokenSelected: (token: TokenWithBalance) => {
         onTokenSelected(token)
@@ -89,10 +90,10 @@ type ReviewNavigationProp = SendTokensScreenProps<
   typeof AppNavigation.Send.Review
 >['navigation']
 
-const ReviewSendComponent = () => {
+const ReviewSendComponent = (): JSX.Element => {
   const navigation = useNavigation<ReviewNavigationProp>()
 
-  const onSuccess = () => {
+  const onSuccess = (): void => {
     navigation.getParent()?.goBack()
   }
 
