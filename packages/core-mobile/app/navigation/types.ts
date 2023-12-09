@@ -156,7 +156,10 @@ export type OnboardScreenProps<T extends keyof OnboardingScreenStackParamList> =
 /** ROOT -> REFRESH TOKEN **/
 export type RefreshTokenScreenProps<
   T extends keyof RefreshTokenScreenStackParamList
-> = StackScreenProps<RefreshTokenScreenStackParamList, T>
+> = CompositeScreenProps<
+  StackScreenProps<RefreshTokenScreenStackParamList, T>,
+  RootStackScreenProps<keyof RootScreenStackParamList>
+>
 
 /** ROOT -> ONBOARD -> WELCOME **/
 export type WelcomeScreenProps<T extends keyof WelcomeScreenStackParamList> =
