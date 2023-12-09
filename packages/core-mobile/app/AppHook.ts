@@ -9,7 +9,6 @@ import { formatCurrency } from 'utils/FormatCurrency'
 import { selectCoreAnalyticsConsent } from 'store/settings/securityPrivacy'
 import { NotationTypes } from 'consts/FormatNumberTypes'
 import { useWallet } from 'hooks/useWallet'
-import { resetNavToRoot } from 'utils/Navigation'
 import Logger from 'utils/Logger'
 
 export type AppHook = {
@@ -38,7 +37,6 @@ export function useApp(): AppHook {
 
   const signOut = useCallback(() => {
     deleteWallet()
-    resetNavToRoot()
   }, [deleteWallet])
 
   useEffect(watchCoreAnalyticsFlagFx, [
