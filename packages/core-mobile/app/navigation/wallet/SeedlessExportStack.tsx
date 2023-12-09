@@ -11,11 +11,18 @@ import {
   VerifyCodeExportParams
 } from 'seedless/screens/VerifyCodeExport'
 import { SeedlessExportInitial } from 'seedless/screens/SeedlessExportInitial'
+import { UserExportResponse } from 'seedless/types'
+import { MainHeaderOptions } from 'navigation/NavUtils'
+import {
+  getConfirmCloseDelayText,
+  getWaitingPeriodDescription
+} from 'seedless/hooks/useSeedlessMnemonicExport'
 
 export type SeedlessExportStackParamList = {
   [AppNavigation.SeedlessExport.InitialScreen]: undefined
   [AppNavigation.SeedlessExport.WaitingPeriodModal]: { onNext: () => void }
-  [AppNavigation.SeedlessExport.VerifyCode]: VerifyCodeExportParams
+  [AppNavigation.SeedlessExport
+    .VerifyCode]: VerifyCodeExportParams<UserExportResponse>
   [AppNavigation.SeedlessExport.ConfirmCloseModal]: { onCancel: () => void }
   [AppNavigation.SeedlessExport.ConfirmCancelModal]: { onCancel: () => void }
   [AppNavigation.SeedlessExport.OwlLoader]: undefined
@@ -23,13 +30,13 @@ export type SeedlessExportStackParamList = {
 
 const SeedlessExportS = createStackNavigator<SeedlessExportStackParamList>()
 
-// @ts-expect-error
+// @ts-expect-error lazy import is fine but typescript doesn't like it
 const PolyfillCrypto = React.lazy(() => import('react-native-webview-crypto'))
 
 const SeedlessExportStack: FC = () => {
   return (
     <>
-      <SeedlessExportS.Navigator screenOptions={{ header: () => null }}>
+      <SeedlessExportS.Navigator screenOptions={MainHeaderOptions()}>
         <SeedlessExportS.Screen
           name={AppNavigation.SeedlessExport.InitialScreen}
           component={SeedlessExportInitial}
@@ -105,7 +112,7 @@ const WaitingPeriodModal = (): JSX.Element => {
   return (
     <WarningModal
       title="Waiting Period"
-      message="It will take 2 days to retrieve your recovery phrase. You will only have 48 hours to copy your recovery phrase once the 2 day waiting period is over."
+      message={getWaitingPeriodDescription()}
       actionText={'Next'}
       dismissText={'Cancel'}
       onAction={onAction}
@@ -171,7 +178,7 @@ const ConfirmCloseModal = (): JSX.Element => {
   return (
     <WarningModal
       title="Confirm Close?"
-      message="Closing the settings menu will require you to restart the 2 day waiting period. 2 day waiting period."
+      message={getConfirmCloseDelayText()}
       actionText={'Next'}
       dismissText={'Cancel'}
       onAction={onNext}
