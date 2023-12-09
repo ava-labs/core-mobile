@@ -1,4 +1,4 @@
-import { AnyAction } from '@reduxjs/toolkit'
+import { AnyAction, isAnyOf } from '@reduxjs/toolkit'
 import { AppListenerEffectAPI } from 'store'
 import {
   EthereumProviderError,
@@ -8,12 +8,13 @@ import {
 import Logger from 'utils/Logger'
 import { selectNetwork } from 'store/network'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { onAppUnlocked, selectWalletState, WalletState } from 'store/app'
 import {
+  onRequest,
   onRequestApproved,
   onRequestRejected,
   onSendRpcError,
-  onSendRpcResult,
-  onRequest
+  onSendRpcResult
 } from '../slice'
 import { DEFERRED_RESULT } from '../handlers/types'
 import handlerMap from '../handlers'
@@ -34,13 +35,19 @@ const isRequestApprovedOrRejected =
 export const processRequest = async (
   addRequestAction: ReturnType<typeof onRequest>,
   listenerApi: AppListenerEffectAPI
-) => {
-  const { dispatch, take } = listenerApi
+): Promise<void> => {
+  const { dispatch, take, condition } = listenerApi
 
   const request = addRequestAction.payload
   const method = request.method
   const requestId = request.data.id
   const handler = handlerMap.get(method)
+
+  const state = listenerApi.getState()
+  if (selectWalletState(state) !== WalletState.ACTIVE) {
+    //Wait until app is unlocked
+    await condition(isAnyOf(onAppUnlocked))
+  }
 
   Logger.info('processing request', request)
 
@@ -106,24 +113,24 @@ export const processRequest = async (
         error: action.payload.error
       })
     )
-  } else {
-    Logger.info('user approved request', request)
-    if (handler.approve) {
-      const approveResponse = await handler.approve(
-        { ...action.payload },
-        listenerApi
-      )
+    return
+  }
+  Logger.info('user approved request', request)
+  if (handler.approve) {
+    const approveResponse = await handler.approve(
+      { ...action.payload },
+      listenerApi
+    )
 
-      if (!approveResponse.success) {
-        dispatch(
-          onSendRpcError({
-            request,
-            error: approveResponse.error
-          })
-        )
-      } else {
-        dispatch(onSendRpcResult({ request, result: approveResponse.value }))
-      }
+    if (!approveResponse.success) {
+      dispatch(
+        onSendRpcError({
+          request,
+          error: approveResponse.error
+        })
+      )
+    } else {
+      dispatch(onSendRpcResult({ request, result: approveResponse.value }))
     }
   }
 }
@@ -131,7 +138,7 @@ export const processRequest = async (
 export const validateRequest = (
   request: Request,
   listenerApi: AppListenerEffectAPI
-) => {
+): void => {
   if (isSessionProposal(request)) return
 
   if (chainAgnosticMethods.includes(request.method as RpcMethod)) return
