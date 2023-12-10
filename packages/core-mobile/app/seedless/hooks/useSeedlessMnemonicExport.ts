@@ -7,6 +7,7 @@ import { formatDistanceToNow } from 'date-fns'
 import { useCallback, useEffect, useState } from 'react'
 import SeedlessService from 'seedless/services/SeedlessService'
 import { UserExportResponse } from 'seedless/types'
+import PasskeyService from 'services/passkey/PasskeyService'
 import Logger from 'utils/Logger'
 
 export enum ExportState {
@@ -53,6 +54,9 @@ interface ReturnProps {
     onVerifyMfa: CompleteExportOnVerifyMfa
   }) => Promise<void>
   deleteExport: () => void
+  handleFidoVerify: (
+    reponse: UserExportResponse
+  ) => Promise<UserExportResponse | undefined>
 }
 
 export const useSeedlessMnemonicExport = (): ReturnProps => {
@@ -132,14 +136,12 @@ export const useSeedlessMnemonicExport = (): ReturnProps => {
         if (!exportInitResponse.requiresMfa()) {
           throw new Error('initExport:must require mfa')
         }
-
         const onVerifySuccess: OnVerifyMfaSuccess<
           CubeSignerResponse<UserExportInitResponse>
         > = async response => {
           setPendingRequest(response.data())
           setState(ExportState.Pending)
         }
-
         onVerifyMfa(exportInitResponse, onVerifySuccess)
       } catch (e) {
         Logger.error('initExport error: ', e)
@@ -147,6 +149,30 @@ export const useSeedlessMnemonicExport = (): ReturnProps => {
     },
     [keyId]
   )
+
+  const handleFidoVerify = async (
+    response: UserExportResponse
+  ): Promise<UserExportResponse | undefined> => {
+    try {
+      const challenge = await SeedlessService.fidoApproveStart(response.mfaId())
+      const credential = await PasskeyService.authenticate(
+        challenge.options,
+        false
+      )
+      const mfaRequestInfo = await challenge.answer(credential)
+
+      if (!mfaRequestInfo.receipt?.confirmation) {
+        Logger.error('Passkey authentication failed')
+        return
+      }
+      return SeedlessService.signWithMfaApproval(
+        response,
+        mfaRequestInfo.receipt.confirmation
+      )
+    } catch (e) {
+      Logger.error('handleFidoVerify error: ', e)
+    }
+  }
 
   const updateProgress = useCallback(async () => {
     if (!pendingRequest) {
@@ -213,7 +239,8 @@ export const useSeedlessMnemonicExport = (): ReturnProps => {
     mnemonic,
     initExport,
     completeExport,
-    deleteExport
+    deleteExport,
+    handleFidoVerify
   }
 }
 

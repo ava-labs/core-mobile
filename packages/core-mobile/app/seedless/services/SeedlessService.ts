@@ -17,7 +17,8 @@ import {
   CubeSignerClient,
   UserExportCompleteResponse,
   userExportDecrypt,
-  userExportKeygen
+  userExportKeygen,
+  MfaFidoChallenge
 } from '@cubist-labs/cubesigner-sdk'
 import { TokenRefreshErrors, TotpErrors } from 'seedless/errors'
 import { Result } from 'types/result'
@@ -444,6 +445,38 @@ class SeedlessService {
    */
   private async getSignerSession(): Promise<SignerSession> {
     return new SignerSession(await this.getSessionManager())
+  }
+
+  /**
+   * Returns MFA type
+   */
+  async getMfaType(): Promise<'totp' | 'fido' | undefined> {
+    const signerSession = new SignerSession(await this.getSessionManager())
+    const identity = await signerSession.identityProve()
+    return identity.user_info?.configured_mfa?.[0]?.type
+  }
+
+  /**
+   * Returns a MfaFidoChallenge that must be answered by calling
+   * MfaFidoChallenge.answer or fidoApproveComplete.
+   */
+  async fidoApproveStart(mfaId: string): Promise<MfaFidoChallenge> {
+    const signerSession = new SignerSession(await this.getSessionManager())
+    return signerSession.fidoApproveStart(mfaId)
+  }
+
+  /**
+   * Returns the result of signing after MFA approval
+   */
+  async signWithMfaApproval(
+    userExportResponse: UserExportResponse,
+    mfaReceiptConfirmation: string
+  ): Promise<UserExportResponse> {
+    return userExportResponse.signWithMfaApproval({
+      mfaId: userExportResponse.mfaId(),
+      mfaOrgId: SEEDLESS_ORG_ID,
+      mfaConf: mfaReceiptConfirmation
+    })
   }
 }
 

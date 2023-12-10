@@ -50,6 +50,7 @@ const SeedlessExportStack: FC = () => {
             presentation: 'transparentModal'
           }}>
           <SeedlessExportS.Screen
+            options={{ headerShown: false }}
             name={AppNavigation.SeedlessExport.VerifyCode}
             component={VerifyCodeScreen}
           />

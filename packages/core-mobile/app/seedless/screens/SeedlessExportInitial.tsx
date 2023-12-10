@@ -15,6 +15,12 @@ import { SnackBarMessage } from 'seedless/components/SnackBarMessage'
 import { copyToClipboard } from 'utils/DeviceTools'
 import Logger from 'utils/Logger'
 import { BackButton } from 'components/BackButton'
+import {
+  CubeSignerResponse,
+  UserExportCompleteResponse,
+  UserExportInitResponse
+} from '@cubist-labs/cubesigner-sdk'
+import SeedlessService from 'seedless/services/SeedlessService'
 import { SeedlessExportInstructions } from './SeedlessExportInstructions'
 import { RecoveryPhrasePending } from './RecoveryPhrasePending'
 
@@ -34,7 +40,8 @@ export const SeedlessExportInitial = (): JSX.Element => {
     mnemonic,
     initExport,
     deleteExport,
-    completeExport
+    completeExport,
+    handleFidoVerify
   } = useSeedlessMnemonicExport()
 
   const onCancelExportRequest = (): void => {
@@ -111,18 +118,32 @@ export const SeedlessExportInitial = (): JSX.Element => {
         response,
         onVerifySuccess
       ): Promise<void> => {
-        navigate(AppNavigation.SeedlessExport.VerifyCode, {
-          userExportResponse: response,
-          // @ts-expect-error navigation can't handle generic params well
-          onVerifySuccess
-        })
+        const mfaType = await SeedlessService.getMfaType()
+        if (mfaType === undefined) {
+          Logger.error(`Unsupported MFA type: ${mfaType}`)
+          return
+        }
+        if (mfaType === 'totp') {
+          navigate(AppNavigation.SeedlessExport.VerifyCode, {
+            userExportResponse: response,
+            // @ts-expect-error navigation can't handle generic params well
+            onVerifySuccess
+          })
+          return
+        }
+        if (mfaType === 'fido') {
+          const approved = await handleFidoVerify(response)
+          onVerifySuccess(
+            approved as CubeSignerResponse<UserExportCompleteResponse>
+          )
+        }
       }
 
       await completeExport({ onVerifyMfa }).catch(Logger.error)
     }
 
     setHideMnemonic(prev => !prev)
-  }, [completeExport, mnemonic, navigate])
+  }, [completeExport, handleFidoVerify, mnemonic, navigate])
 
   return (
     <>
@@ -137,13 +158,26 @@ export const SeedlessExportInitial = (): JSX.Element => {
                   onVerifySuccess
                   // eslint-disable-next-line sonarjs/no-identical-functions
                 ) => {
-                  navigate(AppNavigation.SeedlessExport.VerifyCode, {
-                    userExportResponse: response,
-                    // @ts-expect-error navigation can't handle generic params well
-                    onVerifySuccess
-                  })
+                  const mfaType = await SeedlessService.getMfaType()
+                  if (mfaType === undefined) {
+                    Logger.error(`Unsupported MFA type: ${mfaType}`)
+                    return
+                  }
+                  if (mfaType === 'totp') {
+                    navigate(AppNavigation.SeedlessExport.VerifyCode, {
+                      userExportResponse: response,
+                      // @ts-expect-error navigation can't handle generic params well
+                      onVerifySuccess
+                    })
+                    return
+                  }
+                  if (mfaType === 'fido') {
+                    const approved = await handleFidoVerify(response)
+                    onVerifySuccess(
+                      approved as CubeSignerResponse<UserExportInitResponse>
+                    )
+                  }
                 }
-
                 initExport({ onVerifyMfa }).catch(Logger.error)
               }
             })
