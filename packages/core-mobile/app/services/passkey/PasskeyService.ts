@@ -11,7 +11,8 @@ import {
   FIDOAuthenticationResult,
   FIDOAuthenticationRequest,
   FIDORegistrationResult,
-  FIDORegistrationRequest
+  FIDORegistrationRequest,
+  PasskeyServiceInterface
 } from 'services/passkey/types'
 import { base64ToBase64Url } from 'utils/data/base64'
 import { FIDO_TIMEOUT, RP_ID, RP_NAME } from './consts'
@@ -20,7 +21,7 @@ if (!Config.SEEDLESS_ENVIRONMENT) {
   throw Error('SEEDLESS_ENVIRONMENT is missing. Please check your env file.')
 }
 
-class PasskeyService {
+class PasskeyService implements PasskeyServiceInterface {
   get isSupported(): boolean {
     return Passkey.isSupported() && Platform.OS === 'ios'
   }
