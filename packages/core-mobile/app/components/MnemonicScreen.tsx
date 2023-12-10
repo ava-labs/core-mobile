@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { ScrollView, StyleSheet, View } from 'react-native'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
@@ -14,10 +14,14 @@ import { RootStackScreenProps } from 'navigation/types'
 import { Text } from '@avalabs/k2-mobile'
 import { BlurBackground } from './BlurBackground'
 
+const EMPTY_MNEMONIC = [...Array(24).values()] as string[]
+
 type Props = {
-  mnemonic: string
-  canToggleBlur?: boolean
+  mnemonic?: string
+  hideMnemonic?: boolean
   testID?: string
+  toggleRecoveryPhrase?: () => void
+  canToggleBlur?: boolean
 }
 
 type CreateWalletNavigationProp = RootStackScreenProps<
@@ -26,15 +30,18 @@ type CreateWalletNavigationProp = RootStackScreenProps<
 
 export default function MnemonicScreen({
   mnemonic,
-  canToggleBlur = false
+  hideMnemonic = false,
+  canToggleBlur = false,
+  toggleRecoveryPhrase
 }: Props): JSX.Element {
   const { theme, isDarkMode } = useApplicationContext()
   const { navigate } = useNavigation<CreateWalletNavigationProp>()
-  const [isRecoveryPhraseHidden, setIsRecoveryPhraseHidden] = useState(false)
 
   const mnemonics = (): JSX.Element => {
     const mnemonicColumns: Element[][] = [[], [], []]
-    mnemonic?.split(' ').forEach((value, key) => {
+
+    const menomicArray = mnemonic ? mnemonic.split(' ') : EMPTY_MNEMONIC
+    menomicArray.forEach((value, key) => {
       const column = Math.floor(key / 8)
       const columnToPush = mnemonicColumns[column]
       if (columnToPush) {
@@ -61,10 +68,6 @@ export default function MnemonicScreen({
     })
   }
 
-  const toggleRecoveryPhrase = (): void => {
-    setIsRecoveryPhraseHidden(prev => !prev)
-  }
-
   return (
     <View style={{ flex: 1 }}>
       <AvaText.Body1 testID="menemonic_screen__new_recovery_phrase_instructions">
@@ -87,7 +90,7 @@ export default function MnemonicScreen({
             }
           ]}>
           {mnemonics()}
-          {isRecoveryPhraseHidden && (
+          {hideMnemonic && (
             <BlurBackground
               opacity={1}
               iosBlurType="dark"
@@ -110,7 +113,7 @@ export default function MnemonicScreen({
             variant="buttonMedium"
             sx={{ color: '$blueMain' }}
             onPress={toggleRecoveryPhrase}>
-            {`${isRecoveryPhraseHidden ? 'Show' : 'Hide'} Recovery Phrase`}
+            {`${hideMnemonic ? 'Show' : 'Hide'} Recovery Phrase`}
           </Text>
         ) : (
           <>

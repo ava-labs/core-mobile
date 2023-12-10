@@ -240,6 +240,7 @@ enum RecoveryMethodsScreens {
 }
 
 enum SeedlessExportScreens {
+  InitialScreen = 'SeedlessExportScreens.InitialScreen',
   Instructions = 'SeedlessExportScreens.Instructions',
   WaitingPeriodModal = 'SeedlessExportScreens.WaitingPeriodModal',
   VerifyCode = 'SeedlessExportScreens.VerifyCode',

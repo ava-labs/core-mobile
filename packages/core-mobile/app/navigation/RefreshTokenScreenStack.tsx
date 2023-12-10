@@ -90,7 +90,6 @@ function VerifyCodeScreen(): JSX.Element {
     params.onBack()
     goBack()
   }
-
   return (
     <VerifyCode
       onVerifySuccess={handleOnVerifySuccess}
