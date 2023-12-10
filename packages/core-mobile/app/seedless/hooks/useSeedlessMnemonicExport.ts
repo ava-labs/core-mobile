@@ -157,7 +157,7 @@ export const useSeedlessMnemonicExport = (): ReturnProps => {
       const challenge = await SeedlessService.fidoApproveStart(response.mfaId())
       const credential = await PasskeyService.authenticate(
         challenge.options,
-        false
+        true
       )
       const mfaRequestInfo = await challenge.answer(credential)
 

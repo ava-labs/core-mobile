@@ -158,11 +158,12 @@ const ConfirmCancelModal = (): JSX.Element => {
 
 type ConfirmCloseModalProps = SeedlessExportScreenProps<
   typeof AppNavigation.SeedlessExport.ConfirmCloseModal
->['navigation']
+>
 
 const ConfirmCloseModal = (): JSX.Element => {
   const { goBack, canGoBack, getParent } =
-    useNavigation<ConfirmCloseModalProps>()
+    useNavigation<ConfirmCloseModalProps['navigation']>()
+  const { onCancel } = useRoute<ConfirmCloseModalProps['route']>().params
 
   const onGoBack = useCallback(() => {
     if (canGoBack()) {
@@ -171,10 +172,11 @@ const ConfirmCloseModal = (): JSX.Element => {
   }, [canGoBack, goBack])
 
   const onNext = useCallback(() => {
+    onCancel()
     if (getParent()?.canGoBack()) {
       getParent()?.goBack()
     }
-  }, [getParent])
+  }, [getParent, onCancel])
 
   return (
     <WarningModal
