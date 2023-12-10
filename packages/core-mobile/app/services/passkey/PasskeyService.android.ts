@@ -9,7 +9,8 @@ import {
   FIDOAuthenticationRequest,
   FIDORegistrationResult,
   FIDORegistrationRequest,
-  FidoType
+  FidoType,
+  PasskeyServiceInterface
 } from 'services/passkey/types'
 import { base64UrlToBuffer, bufferToBase64Url } from 'utils/data/base64'
 import { FIDO_CALLBACK_URL, RP_ID } from './consts'
@@ -49,7 +50,7 @@ type GenerateAuthUrlsParams =
       fidoType?: never
     }
 
-class PasskeyService {
+class PasskeyService implements PasskeyServiceInterface {
   // unfortunately, we don't know if the device supports passkey
   // until we open browser and try to register
   get isSupported(): boolean {
