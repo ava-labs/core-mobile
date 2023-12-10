@@ -11,30 +11,27 @@ import { BottomSheet } from 'components/BottomSheet'
 import ClearSVG from 'components/svg/ClearSVG'
 import { Space } from 'components/Space'
 import Logger from 'utils/Logger'
-import SeedlessService from 'seedless/services/SeedlessService'
 import Loader from 'components/Loader'
-import { usePostCapture } from 'hooks/usePosthogCapture'
+import { useNavigation } from '@react-navigation/native'
+import SeedlessService from 'seedless/services/SeedlessService'
+import { UserExportResponse } from 'seedless/types'
 
-export type VerifyCodeParams = {
-  oidcToken: string
-  mfaId: string
-  onVerifySuccess: () => void
-  onBack: () => void
+export type VerifyCodeExportParams<T extends UserExportResponse> = {
+  onVerifySuccess: (response: T) => void
+  userExportResponse: T
 }
 
-export const VerifyCode = ({
-  oidcToken,
-  mfaId,
+export const VerifyCodeExport = ({
   onVerifySuccess,
-  onBack
-}: VerifyCodeParams): JSX.Element => {
+  userExportResponse
+}: VerifyCodeExportParams<UserExportResponse>): JSX.Element => {
   const {
     theme: { colors, text }
   } = useTheme()
   const [isVerifying, setIsVerifying] = useState(false)
   const [code, setCode] = useState<string>()
   const [showError, setShowError] = useState(false)
-  const { capture } = usePostCapture()
+  const { goBack } = useNavigation()
 
   const handleVerifyCode = async (changedText: string): Promise<void> => {
     setCode(changedText)
@@ -42,23 +39,21 @@ export const VerifyCode = ({
       setShowError(false)
       return
     }
-
     setIsVerifying(true)
 
-    const result = await SeedlessService.verifyCode(
-      oidcToken,
-      mfaId,
-      changedText
-    )
-    if (result.success === false) {
+    try {
+      const response = await SeedlessService.verifyUserExportCode(
+        userExportResponse,
+        changedText
+      )
+
+      setIsVerifying(false)
+      onVerifySuccess(response)
+      goBack()
+    } catch {
       setShowError(true)
       setIsVerifying(false)
-      capture('TotpValidationFailed', { error: result.error.name })
-      return
     }
-    setIsVerifying(false)
-    onVerifySuccess()
-    capture('TotpValidationSuccess')
   }
 
   const textInputStyle = showError
@@ -92,7 +87,7 @@ export const VerifyCode = ({
               alignItems: 'center'
             }}>
             <Text variant="heading4">VerifyCode</Text>
-            <Pressable onPress={onBack}>
+            <Pressable onPress={goBack}>
               <ClearSVG
                 backgroundColor={alpha(colors.$neutral700, 0.5)}
                 color={colors.$neutral500}

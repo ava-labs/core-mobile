@@ -4,11 +4,13 @@ import AvaButton from 'components/AvaButton'
 import MnemonicScreen from 'components/MnemonicScreen'
 
 interface Props {
-  mnemonic: string
+  mnemonic?: string
   buttonText?: string
   onGoBack?: () => void
   canToggleBlur?: boolean
+  hideMnemonic?: boolean
   buttonOverride?: JSX.Element
+  toggleRecoveryPhrase?: () => void
 }
 
 export default function RevealMnemonic({
@@ -16,7 +18,9 @@ export default function RevealMnemonic({
   buttonText,
   onGoBack,
   canToggleBlur,
-  buttonOverride
+  hideMnemonic,
+  buttonOverride,
+  toggleRecoveryPhrase
 }: Props): JSX.Element {
   const handleSaveMyPhrase = (): void => {
     onGoBack?.()
@@ -35,7 +39,12 @@ export default function RevealMnemonic({
   return (
     <View style={styles.verticalLayout}>
       {/* This serves as grouping so we can achieve desired behavior with `justifyContent: 'space-between'`   */}
-      <MnemonicScreen mnemonic={mnemonic} canToggleBlur={canToggleBlur} />
+      <MnemonicScreen
+        mnemonic={mnemonic}
+        canToggleBlur={canToggleBlur}
+        hideMnemonic={hideMnemonic}
+        toggleRecoveryPhrase={toggleRecoveryPhrase}
+      />
 
       {/* This serves as grouping so we can achieve desired behavior with `justifyContent: 'space-between'`   */}
       <View style={{ marginTop: 28, marginBottom: 40 }}>
