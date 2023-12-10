@@ -21,6 +21,7 @@ import {
   UserExportInitResponse
 } from '@cubist-labs/cubesigner-sdk'
 import SeedlessService from 'seedless/services/SeedlessService'
+import { showSimpleToast } from 'components/Snackbar'
 import { SeedlessExportInstructions } from './SeedlessExportInstructions'
 import { RecoveryPhrasePending } from './RecoveryPhrasePending'
 
@@ -121,6 +122,7 @@ export const SeedlessExportInitial = (): JSX.Element => {
         const mfaType = await SeedlessService.getMfaType()
         if (mfaType === undefined) {
           Logger.error(`Unsupported MFA type: ${mfaType}`)
+          showSimpleToast(`Unsupported MFA type: ${mfaType}`)
           return
         }
         if (mfaType === 'totp') {
@@ -161,6 +163,7 @@ export const SeedlessExportInitial = (): JSX.Element => {
                   const mfaType = await SeedlessService.getMfaType()
                   if (mfaType === undefined) {
                     Logger.error(`Unsupported MFA type: ${mfaType}`)
+                    showSimpleToast(`Unsupported MFA type: ${mfaType}`)
                     return
                   }
                   if (mfaType === 'totp') {

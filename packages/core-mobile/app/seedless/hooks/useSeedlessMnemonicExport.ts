@@ -3,6 +3,7 @@ import {
   UserExportCompleteResponse,
   UserExportInitResponse
 } from '@cubist-labs/cubesigner-sdk'
+import { showSimpleToast } from 'components/Snackbar'
 import { formatDistanceToNow } from 'date-fns'
 import { useCallback, useEffect, useState } from 'react'
 import SeedlessService from 'seedless/services/SeedlessService'
@@ -98,6 +99,7 @@ export const useSeedlessMnemonicExport = (): ReturnProps => {
         onVerifyMfa(exportReponse, onVerifySuccess)
       } catch (e) {
         Logger.error('failed to complete export request error: ', e)
+        showSimpleToast('Unable to complete export request')
       }
     },
     [keyId]
@@ -107,7 +109,7 @@ export const useSeedlessMnemonicExport = (): ReturnProps => {
     try {
       const pending = await SeedlessService.userExportList()
       if (!pending) {
-        throw new Error('deleteExport: no pending')
+        throw new Error('deleteExport: no pending export request')
       }
       await SeedlessService.userExportDelete(keyId)
       setPendingRequest(undefined)
@@ -115,6 +117,7 @@ export const useSeedlessMnemonicExport = (): ReturnProps => {
       setState(ExportState.NotInitiated)
     } catch (e) {
       Logger.error('failed to delete export request error: ', e)
+      showSimpleToast('Unable to delete export request')
     }
   }, [keyId])
 
@@ -145,6 +148,7 @@ export const useSeedlessMnemonicExport = (): ReturnProps => {
         onVerifyMfa(exportInitResponse, onVerifySuccess)
       } catch (e) {
         Logger.error('initExport error: ', e)
+        showSimpleToast('Unable to start export request')
       }
     },
     [keyId]
@@ -162,8 +166,7 @@ export const useSeedlessMnemonicExport = (): ReturnProps => {
       const mfaRequestInfo = await challenge.answer(credential)
 
       if (!mfaRequestInfo.receipt?.confirmation) {
-        Logger.error('Passkey authentication failed')
-        return
+        throw new Error('FIDO authentication failed')
       }
       return SeedlessService.signWithMfaApproval(
         response,
@@ -171,6 +174,7 @@ export const useSeedlessMnemonicExport = (): ReturnProps => {
       )
     } catch (e) {
       Logger.error('handleFidoVerify error: ', e)
+      showSimpleToast('FIDO authentication failed')
     }
   }
 
