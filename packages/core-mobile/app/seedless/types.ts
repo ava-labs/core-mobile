@@ -20,7 +20,6 @@ export type MFA =
 
 export type OidcPayload = {
   oidcToken: string
-  userId: string
 }
 
 export type UserExportResponse = CubeSignerResponse<

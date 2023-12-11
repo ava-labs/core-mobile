@@ -131,6 +131,7 @@ async function startRefreshSeedlessTokenFlow(): Promise<
     _ => undefined
   )
   let oidcTokenResult: OidcPayload
+
   switch (oidcProvider) {
     case OidcProviders.GOOGLE:
       oidcTokenResult = await GoogleSigninService.signin()
@@ -148,7 +149,11 @@ async function startRefreshSeedlessTokenFlow(): Promise<
       }
   }
 
-  if (oidcUserId && oidcUserId !== oidcTokenResult.userId) {
+  const identity = await SeedlessService.oidcProveIdentity(
+    oidcTokenResult.oidcToken
+  )
+
+  if (oidcUserId && oidcUserId !== identity.email) {
     return {
       success: false,
       error: new RefreshSeedlessTokenFlowErrors({
@@ -158,10 +163,8 @@ async function startRefreshSeedlessTokenFlow(): Promise<
     }
   }
 
-  const identity = await SeedlessService.oidcProveIdentity(
-    oidcTokenResult.oidcToken
-  )
   const result = await CoreSeedlessAPIService.register(identity)
+
   if (result === SeedlessUserRegistrationResult.ALREADY_REGISTERED) {
     const loginResult = await SeedlessService.requestOidcAuth(
       oidcTokenResult.oidcToken
