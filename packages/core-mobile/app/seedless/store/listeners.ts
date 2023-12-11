@@ -2,6 +2,7 @@ import { AppStartListening } from 'store/middleware/listener'
 import {
   immediateAppLock,
   onAppUnlocked,
+  onLogOut,
   onRehydrationComplete,
   selectWalletState,
   WalletState
@@ -217,6 +218,10 @@ async function startRefreshSeedlessTokenFlow(): Promise<
   }
 }
 
+const signOutSocial = async (_: Action): Promise<void> => {
+  await GoogleSigninService.signOut()
+}
+
 export const addSeedlessListeners = (
   startListening: AppStartListening
 ): void => {
@@ -231,5 +236,9 @@ export const addSeedlessListeners = (
   startListening({
     actionCreator: onRehydrationComplete,
     effect: registerTokenExpireHandler
+  })
+  startListening({
+    actionCreator: onLogOut,
+    effect: signOutSocial
   })
 }
