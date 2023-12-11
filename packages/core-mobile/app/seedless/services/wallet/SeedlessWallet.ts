@@ -253,7 +253,13 @@ export default class SeedlessWallet implements Wallet {
       { provider }
     )
 
-    return signer.signTransaction(transaction)
+    // seedless signer expects maxFeePerGas instead of gasPrice for EVM transactions
+    const nomalizedTx = { ...transaction }
+    if (transaction.gasPrice && !transaction.maxFeePerGas) {
+      nomalizedTx.maxFeePerGas = transaction.gasPrice
+    }
+
+    return signer.signTransaction(nomalizedTx)
   }
 
   public async getPublicKey(): Promise<PubKeyType> {
