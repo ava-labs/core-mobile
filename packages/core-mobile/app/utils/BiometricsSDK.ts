@@ -47,7 +47,7 @@ export const KeystoreConfig: KeystoreConfigType = {
 class BiometricsSDK {
   /**
    * On some android devices loading keystore can take
-   * some time on firs run, so we call this function
+   * some time on first run, so we call this function
    * early and mask it with splash for smoother UX
    */
   async warmup(): Promise<void> {
