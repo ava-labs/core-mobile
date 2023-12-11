@@ -43,7 +43,6 @@ export type RootScreenStackParamList = {
     title: string
     message: string
   }
-  [AppNavigation.Root.Login]: undefined
 }
 
 const RootStack = createStackNavigator<RootScreenStackParamList>()
