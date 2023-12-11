@@ -221,7 +221,6 @@ const SwapReview = ({ onCancel, onBackToParent }: Props): JSX.Element => {
           gasLimit={gasLimit}
           rate={optimalRate ? calculateRate(optimalRate) : 0}
           slippage={slippage}
-          walletFee={optimalRate?.partnerFee}
         />
       </ScrollView>
       <View
