@@ -41,6 +41,10 @@ class GoogleSigninService {
       throw new Error('Google sign in error')
     }
   }
+
+  async signOut(): Promise<null> {
+    return GoogleSignin.signOut()
+  }
 }
 
 export default new GoogleSigninService()
