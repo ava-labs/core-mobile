@@ -401,14 +401,15 @@ class SeedlessService {
   }
 
   /**
-   * Verify authenticator code when exporting mnemonic
+   * Verify authenticator code
    */
-  async verifyUserExportCode(
-    userExportResponse: UserExportResponse,
+  async verifyApprovalCode<T>(
+    userExportResponse: CubeSignerResponse<T>,
     code: string
-  ): Promise<UserExportResponse> {
+  ): Promise<Result<CubeSignerResponse<T>, TotpErrors>> {
     const signerSession = await this.getSignerSession()
-    return userExportResponse.approveTotp(signerSession, code)
+    const response = await userExportResponse.approveTotp(signerSession, code)
+    return { success: true, value: response }
   }
 
   /**
@@ -425,30 +426,6 @@ class SeedlessService {
    */
   getEnvironment(): Environment {
     return SEEDLESS_ENVIRONMENT as Environment
-  }
-
-  // PRIVATE METHODS
-  /**
-   * Returns a CubeSigner instance
-   */
-  private async getCubeSigner(): Promise<CubeSigner> {
-    const storage = new SeedlessSessionStorage()
-    const sessionMgr = await SignerSessionManager.loadFromStorage(storage)
-    return new CubeSigner(sessionMgr, SEEDLESS_ORG_ID)
-  }
-
-  /**
-   * Returns a session manager that can be used to retrieve session data.
-   */
-  private async getSessionManager(): Promise<SignerSessionManager> {
-    return (await this.getCubeSigner()).sessionMgr as SignerSessionManager
-  }
-
-  /**
-   * Returns a signer session
-   */
-  private async getSignerSession(): Promise<SignerSession> {
-    return new SignerSession(await this.getSessionManager())
   }
 
   /**
@@ -481,6 +458,30 @@ class SeedlessService {
       mfaOrgId: SEEDLESS_ORG_ID,
       mfaConf: mfaReceiptConfirmation
     })
+  }
+
+  // PRIVATE METHODS
+  /**
+   * Returns a CubeSigner instance
+   */
+  private async getCubeSigner(): Promise<CubeSigner> {
+    const storage = new SeedlessSessionStorage()
+    const sessionMgr = await SignerSessionManager.loadFromStorage(storage)
+    return new CubeSigner(sessionMgr, SEEDLESS_ORG_ID)
+  }
+
+  /**
+   * Returns a session manager that can be used to retrieve session data.
+   */
+  private async getSessionManager(): Promise<SignerSessionManager> {
+    return (await this.getCubeSigner()).sessionMgr as SignerSessionManager
+  }
+
+  /**
+   * Returns a signer session
+   */
+  private async getSignerSession(): Promise<SignerSession> {
+    return new SignerSession(await this.getSessionManager())
   }
 }
 

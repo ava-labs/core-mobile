@@ -41,19 +41,19 @@ export const VerifyCodeExport = ({
     }
     setIsVerifying(true)
 
-    try {
-      const response = await SeedlessService.verifyUserExportCode(
-        userExportResponse,
-        changedText
-      )
+    const result = await SeedlessService.verifyApprovalCode(
+      userExportResponse,
+      changedText
+    )
 
-      setIsVerifying(false)
-      onVerifySuccess(response)
-      goBack()
-    } catch {
+    if (result.success === false) {
       setShowError(true)
       setIsVerifying(false)
+      return
     }
+    setIsVerifying(false)
+    onVerifySuccess(result.value)
+    goBack()
   }
 
   const textInputStyle = showError

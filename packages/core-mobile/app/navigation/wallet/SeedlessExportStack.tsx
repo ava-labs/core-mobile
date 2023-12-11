@@ -17,6 +17,7 @@ import {
   getConfirmCloseDelayText,
   getWaitingPeriodDescription
 } from 'seedless/hooks/useSeedlessMnemonicExport'
+import { goBack } from 'utils/Navigation'
 
 export type SeedlessExportStackParamList = {
   [AppNavigation.SeedlessExport.InitialScreen]: undefined
@@ -95,20 +96,12 @@ type WaitingPeriodScreenProps = SeedlessExportScreenProps<
 >
 
 const WaitingPeriodModal = (): JSX.Element => {
-  const { goBack, canGoBack } =
-    useNavigation<WaitingPeriodScreenProps['navigation']>()
   const { onNext } = useRoute<WaitingPeriodScreenProps['route']>().params
-
-  const onGoBack = useCallback(() => {
-    if (canGoBack()) {
-      goBack()
-    }
-  }, [canGoBack, goBack])
 
   const onAction = useCallback(() => {
     onNext()
-    onGoBack()
-  }, [onGoBack, onNext])
+    goBack()
+  }, [onNext])
 
   return (
     <WarningModal
@@ -117,7 +110,7 @@ const WaitingPeriodModal = (): JSX.Element => {
       actionText={'Next'}
       dismissText={'Cancel'}
       onAction={onAction}
-      onDismiss={onGoBack}
+      onDismiss={goBack}
     />
   )
 }
@@ -127,15 +120,8 @@ type ConfirmCancelModalProps = SeedlessExportScreenProps<
 >
 
 const ConfirmCancelModal = (): JSX.Element => {
-  const { goBack, canGoBack, getParent } =
-    useNavigation<ConfirmCancelModalProps['navigation']>()
+  const { getParent } = useNavigation<ConfirmCancelModalProps['navigation']>()
   const { onCancel } = useRoute<ConfirmCancelModalProps['route']>().params
-
-  const onGoBack = useCallback(() => {
-    if (canGoBack()) {
-      goBack()
-    }
-  }, [canGoBack, goBack])
 
   const onNext = useCallback(() => {
     onCancel()
@@ -151,7 +137,7 @@ const ConfirmCancelModal = (): JSX.Element => {
       actionText={'Next'}
       dismissText={'Cancel'}
       onAction={onNext}
-      onDismiss={onGoBack}
+      onDismiss={goBack}
     />
   )
 }
@@ -161,15 +147,8 @@ type ConfirmCloseModalProps = SeedlessExportScreenProps<
 >
 
 const ConfirmCloseModal = (): JSX.Element => {
-  const { goBack, canGoBack, getParent } =
-    useNavigation<ConfirmCloseModalProps['navigation']>()
+  const { getParent } = useNavigation<ConfirmCloseModalProps['navigation']>()
   const { onCancel } = useRoute<ConfirmCloseModalProps['route']>().params
-
-  const onGoBack = useCallback(() => {
-    if (canGoBack()) {
-      goBack()
-    }
-  }, [canGoBack, goBack])
 
   const onNext = useCallback(() => {
     onCancel()
@@ -185,7 +164,7 @@ const ConfirmCloseModal = (): JSX.Element => {
       actionText={'Next'}
       dismissText={'Cancel'}
       onAction={onNext}
-      onDismiss={onGoBack}
+      onDismiss={goBack}
     />
   )
 }
