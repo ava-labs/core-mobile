@@ -97,9 +97,7 @@ function VerifyCodeScreen(): JSX.Element {
   function handleOnVerifyCode(
     code: string
   ): Promise<Result<void | UserExportResponse, TotpErrors>> {
-    const result = params.onVerifyCode(code)
-    goBack()
-    return result
+    return params.onVerifyCode(code)
   }
 
   return (
