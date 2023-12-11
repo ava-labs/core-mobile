@@ -43,13 +43,17 @@ export const useSeedlessRegister = (): ReturnType => {
     setIsRegistering(true)
 
     try {
-      const { oidcToken, userId } = await getOidcToken()
-      await SecureStorageService.store(KeySlot.OidcUserId, userId)
-      await SecureStorageService.store(KeySlot.OidcProvider, oidcProvider)
+      const { oidcToken } = await getOidcToken()
       const identity = await SeedlessService.oidcProveIdentity(oidcToken)
       const result = await CoreSeedlessAPIService.register(identity)
       const signResponse = await SeedlessService.requestOidcAuth(oidcToken)
       const isMfaRequired = signResponse.requiresMfa()
+
+      // persist email and provider for later use with refresh token flow
+      // email is always the same on the cubist's side
+      // even if user changes it in the provider, it doesn't change
+      await SecureStorageService.store(KeySlot.OidcUserId, identity.email)
+      await SecureStorageService.store(KeySlot.OidcProvider, oidcProvider)
 
       if (result === SeedlessUserRegistrationResult.ALREADY_REGISTERED) {
         if (isMfaRequired) {

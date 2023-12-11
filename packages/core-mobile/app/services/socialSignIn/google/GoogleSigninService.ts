@@ -30,7 +30,7 @@ class GoogleSigninService {
       const userInfo = await GoogleSignin.signIn()
 
       if (userInfo.idToken) {
-        return { oidcToken: userInfo.idToken, userId: userInfo.user.id }
+        return { oidcToken: userInfo.idToken }
       } else {
         const error = 'Google sign in error: empty token'
         Logger.error(error)
