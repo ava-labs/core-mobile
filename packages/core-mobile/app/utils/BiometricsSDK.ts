@@ -47,7 +47,7 @@ export const KeystoreConfig: KeystoreConfigType = {
 class BiometricsSDK {
   /**
    * On some android devices loading keystore can take
-   * some time on firs run so we call this function
+   * some time on first run, so we call this function
    * early and mask it with splash for smoother UX
    */
   async warmup(): Promise<void> {
@@ -63,7 +63,7 @@ class BiometricsSDK {
   }
 
   async storeWalletWithPin(
-    walletMnemonic: string,
+    encryptedMnemonic: string,
     isResetting = false
   ): Promise<false | Keychain.Result> {
     // if the user is not resetting the pin
@@ -77,7 +77,7 @@ class BiometricsSDK {
     }
     return Keychain.setGenericPassword(
       'wallet',
-      walletMnemonic,
+      encryptedMnemonic,
       KeystoreConfig.KEYSTORE_PASSCODE_OPTIONS
     )
   }
@@ -87,8 +87,8 @@ class BiometricsSDK {
   }
 
   /**
-   * Stores key under available biometry and prompts user for biometry to check if everytinih is ok.
-   * Emits boolean true if everything ok, or throws Error if something whent wrong.
+   * Stores key under available biometry and prompts user for biometry to check if everything is ok.
+   * Emits boolean true if everything ok, or throws Error if something went wrong.
    * @param key - mnemonic to store
    */
   async storeWalletWithBiometry(key: string): Promise<boolean> {
@@ -104,7 +104,7 @@ class BiometricsSDK {
       return true
     } catch (e) {
       Logger.error('failed to store with biometry', e)
-      // case something goes wrong with biometrics, use use the fallback, which defaults to device code
+      // case something goes wrong with biometrics, use the fallback, which defaults to device code
       try {
         await Keychain.setGenericPassword(
           'wallet',
