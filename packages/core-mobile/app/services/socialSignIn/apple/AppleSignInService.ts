@@ -34,7 +34,7 @@ class AppleSigninService implements AppleSigninServiceInterface {
         throw new Error('iOS Apple sign in error unauthorized user')
       }
 
-      return { oidcToken: identityToken, userId: user }
+      return { oidcToken: identityToken }
     } catch (error) {
       Logger.error('iOS Apple sign in error', error)
       throw new Error('iOS Apple sign in error')
