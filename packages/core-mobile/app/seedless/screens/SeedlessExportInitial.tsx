@@ -1,8 +1,6 @@
 import Loader from 'components/Loader'
 import React, { useCallback, useEffect, useLayoutEffect, useState } from 'react'
 import {
-  CompleteExportOnVerifyMfa,
-  InitExportOnVerifyMfa,
   ExportState,
   useSeedlessMnemonicExport
 } from 'seedless/hooks/useSeedlessMnemonicExport'
@@ -43,8 +41,7 @@ export const SeedlessExportInitial = (): JSX.Element => {
     mnemonic,
     initExport,
     deleteExport,
-    completeExport,
-    handleFidoVerify
+    completeExport
   } = useSeedlessMnemonicExport()
 
   const onCancelExportRequest = (): void => {
@@ -118,35 +115,8 @@ export const SeedlessExportInitial = (): JSX.Element => {
 
   const toggleRecoveryPhrase = useCallback(async (): Promise<void> => {
     if (mnemonic === undefined) {
-      const onVerifyMfa: CompleteExportOnVerifyMfa = async (
-        response,
-        onVerifySuccess
-      ): Promise<void> => {
-        const mfaType = await SeedlessService.getMfaType()
-        if (mfaType === undefined) {
-          Logger.error(`Unsupported MFA type: ${mfaType}`)
-          showSimpleToast(`Unsupported MFA type: ${mfaType}`)
-          return
-        }
-        if (mfaType === 'totp') {
-          navigate(AppNavigation.SeedlessExport.VerifyCode, {
-            userExportResponse: response,
-            // @ts-expect-error navigation can't handle generic params well
-            onVerifySuccess
-          })
-          return
-        }
-        if (mfaType === 'fido') {
-          const approved = await handleFidoVerify(response)
-          onVerifySuccess(
-            approved as CubeSignerResponse<UserExportCompleteResponse>
-          )
-        }
-      }
-
-      await completeExport({ onVerifyMfa }).catch(Logger.error)
+      await completeExport().catch(Logger.error)
     }
-
     setHideMnemonic(prev => !prev)
     capture(
       !hideMnemonic === true
