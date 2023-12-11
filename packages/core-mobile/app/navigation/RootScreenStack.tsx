@@ -43,7 +43,6 @@ export type RootScreenStackParamList = {
     title: string
     message: string
   }
-  [AppNavigation.Root.Login]: undefined
 }
 
 const RootStack = createStackNavigator<RootScreenStackParamList>()
@@ -51,6 +50,7 @@ const RootStack = createStackNavigator<RootScreenStackParamList>()
 const WalletScreenStackWithContext: FC = () => {
   const { onExit } = useApplicationContext().appHook
   const { inBackground } = useBgDetect()
+  const walletState = useSelector(selectWalletState)
 
   const doExit = useCallback(() => {
     onExit((confirmExit, cancel) => {
@@ -75,6 +75,7 @@ const WalletScreenStackWithContext: FC = () => {
   return (
     <>
       <WalletScreenStack onExit={doExit} />
+      {walletState === WalletState.INACTIVE && <LoginWithPinOrBiometryScreen />}
 
       {/* This protects from leaking last screen in "recent apps" list.                                 */}
       {/* For Android it is additionally implemented natively in MainActivity.java because react-native */}
@@ -101,7 +102,7 @@ const RootScreenStack: FC = () => {
             animationEnabled: false
           }}
         />
-      ) : walletState === WalletState.ACTIVE ? (
+      ) : (
         <RootStack.Screen
           name={AppNavigation.Root.Wallet}
           component={WalletScreenStackWithContext}
@@ -109,11 +110,6 @@ const RootScreenStack: FC = () => {
             animationEnabled: false,
             presentation: 'card'
           }}
-        />
-      ) : (
-        <RootStack.Screen
-          name={AppNavigation.Root.Login}
-          component={LoginWithPinOrBiometryScreen}
         />
       )}
       <RootStack.Screen
