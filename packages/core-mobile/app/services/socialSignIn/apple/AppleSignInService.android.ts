@@ -1,6 +1,5 @@
 import { appleAuthAndroid } from '@invertase/react-native-apple-authentication'
 import Config from 'react-native-config'
-import { v4 as uuidv4 } from 'uuid'
 import DeviceInfoService from 'services/deviceInfo/DeviceInfoService'
 import Logger from 'utils/Logger'
 import { OidcPayload } from 'seedless/types'
@@ -41,11 +40,7 @@ class AppleSigninService implements AppleSigninServiceInterface {
         throw new Error('Android Apple sign in error: empty token')
       }
 
-      // apple sign in only returns user info the first time user signs up
-      // thus, there is no need to persist user id for the refresh token flow as we can't depend on it
-      // here, we are saving a random user id
-      // this means we will force user to do a full recover flow once their tokens expire
-      return { oidcToken: response.id_token, userId: uuidv4() }
+      return { oidcToken: response.id_token }
     } catch (error) {
       Logger.error('Android Apple sign in error', error)
       throw new Error('Android Apple sign in error')
