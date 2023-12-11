@@ -5,25 +5,22 @@ import { SeedlessExportScreenProps } from 'navigation/types'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import WarningModal from 'components/WarningModal'
 import OwlLoader from 'components/OwlLoader'
-
-import {
-  VerifyCodeExport,
-  VerifyCodeExportParams
-} from 'seedless/screens/VerifyCodeExport'
 import { SeedlessExportInitial } from 'seedless/screens/SeedlessExportInitial'
-import { UserExportResponse } from 'seedless/types'
 import { MainHeaderOptions } from 'navigation/NavUtils'
 import {
   getConfirmCloseDelayText,
   getWaitingPeriodDescription
 } from 'seedless/hooks/useSeedlessMnemonicExport'
 import { goBack } from 'utils/Navigation'
+import { VerifyCode, VerifyCodeParams } from 'seedless/screens/VerifyCode'
+import { UserExportResponse } from 'seedless/types'
+import { TotpErrors } from 'seedless/errors'
+import { Result } from 'types/result'
 
 export type SeedlessExportStackParamList = {
   [AppNavigation.SeedlessExport.InitialScreen]: undefined
   [AppNavigation.SeedlessExport.WaitingPeriodModal]: { onNext: () => void }
-  [AppNavigation.SeedlessExport
-    .VerifyCode]: VerifyCodeExportParams<UserExportResponse>
+  [AppNavigation.SeedlessExport.VerifyCode]: Omit<VerifyCodeParams, 'onBack'>
   [AppNavigation.SeedlessExport.ConfirmCloseModal]: { onCancel: () => void }
   [AppNavigation.SeedlessExport.ConfirmCancelModal]: { onCancel: () => void }
   [AppNavigation.SeedlessExport.OwlLoader]: undefined
@@ -80,12 +77,22 @@ type VerifyCodeScreenProps = SeedlessExportScreenProps<
 
 function VerifyCodeScreen(): JSX.Element {
   const {
-    params: { onVerifySuccess, userExportResponse }
+    params: { onVerifySuccess, onVerifyCode }
   } = useRoute<VerifyCodeScreenProps['route']>()
+
+  const handleOnVerifyCode = async (
+    code: string
+  ): Promise<Result<void | UserExportResponse, TotpErrors>> => {
+    const result = await onVerifyCode(code)
+    goBack()
+    return result
+  }
+
   return (
-    <VerifyCodeExport
+    <VerifyCode
+      onVerifyCode={handleOnVerifyCode}
       onVerifySuccess={onVerifySuccess}
-      userExportResponse={userExportResponse}
+      onBack={goBack}
     />
   )
 }

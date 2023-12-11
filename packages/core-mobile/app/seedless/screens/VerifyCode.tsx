@@ -11,20 +11,22 @@ import { BottomSheet } from 'components/BottomSheet'
 import ClearSVG from 'components/svg/ClearSVG'
 import { Space } from 'components/Space'
 import Logger from 'utils/Logger'
-import SeedlessService from 'seedless/services/SeedlessService'
 import Loader from 'components/Loader'
 import { useAnalytics } from 'hooks/useAnalytics'
+import { TotpErrors } from 'seedless/errors'
+import { Result } from 'types/result'
+import { UserExportResponse } from 'seedless/types'
 
 export type VerifyCodeParams = {
-  oidcToken: string
-  mfaId: string
-  onVerifySuccess: () => void
+  onVerifyCode: (
+    code: string
+  ) => Promise<Result<UserExportResponse | void, TotpErrors>>
+  onVerifySuccess: (cubeSignerResponse?: UserExportResponse) => void
   onBack: () => void
 }
 
 export const VerifyCode = ({
-  oidcToken,
-  mfaId,
+  onVerifyCode,
   onVerifySuccess,
   onBack
 }: VerifyCodeParams): JSX.Element => {
@@ -46,16 +48,15 @@ export const VerifyCode = ({
     setIsVerifying(true)
 
     try {
-      const result = await SeedlessService.verifyCode(
-        oidcToken,
-        mfaId,
-        changedText
-      )
+      const result = (await onVerifyCode(changedText)) as Result<
+        UserExportResponse,
+        TotpErrors
+      >
       if (result.success === false) {
         throw new Error(result.error.message)
       }
       setIsVerifying(false)
-      onVerifySuccess()
+      onVerifySuccess(result.value)
       capture('TotpValidationSuccess')
     } catch (error) {
       setShowError(true)

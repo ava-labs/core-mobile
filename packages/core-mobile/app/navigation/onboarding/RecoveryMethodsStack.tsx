@@ -20,6 +20,9 @@ import { FIDONameInputScreen } from 'seedless/screens/FIDONameInputScreen'
 import { useNavigation } from '@react-navigation/native'
 import { RecoveryMethodsScreenProps } from 'navigation/types'
 import { useAnalytics } from 'hooks/useAnalytics'
+import SeedlessService from 'seedless/services/SeedlessService'
+import { Result } from 'types/result'
+import { TotpErrors } from 'seedless/errors'
 
 export type RecoveryMethodsStackParamList = {
   [AppNavigation.RecoveryMethods.AddRecoveryMethods]: undefined
@@ -120,6 +123,12 @@ function VerifyCodeScreen(): JSX.Element {
     capture('SeedlessMfaVerified', { type: 'Authenticator' })
   }
 
+  const handleOnVerifyCode = (
+    code: string
+  ): Promise<Result<void, TotpErrors>> => {
+    return SeedlessService.verifyCode(oidcToken, mfaId, code)
+  }
+
   useLayoutEffect(() => {
     setOptions({
       headerShown: false
@@ -133,10 +142,9 @@ function VerifyCodeScreen(): JSX.Element {
   }
   return (
     <VerifyCode
+      onVerifyCode={handleOnVerifyCode}
       onVerifySuccess={handleVerifySuccess}
       onBack={handleOnBack}
-      oidcToken={oidcToken}
-      mfaId={mfaId}
     />
   )
 }

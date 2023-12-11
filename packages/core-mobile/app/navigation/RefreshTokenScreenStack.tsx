@@ -12,6 +12,9 @@ import { RefreshTokenScreenProps } from 'navigation/types'
 import WrongSocialAccount, {
   WrongSocialAccountParams
 } from 'seedless/screens/WrongSocialAccount'
+import { UserExportResponse } from 'seedless/types'
+import { TotpErrors } from 'seedless/errors'
+import { Result } from 'types/result'
 
 export type RefreshTokenScreenStackParamList = {
   [AppNavigation.RefreshToken.OwlLoader]: undefined
@@ -90,12 +93,20 @@ function VerifyCodeScreen(): JSX.Element {
     params.onBack()
     goBack()
   }
+
+  function handleOnVerifyCode(
+    code: string
+  ): Promise<Result<void | UserExportResponse, TotpErrors>> {
+    const result = params.onVerifyCode(code)
+    goBack()
+    return result
+  }
+
   return (
     <VerifyCode
+      onVerifyCode={handleOnVerifyCode}
       onVerifySuccess={handleOnVerifySuccess}
       onBack={handleOnBack}
-      oidcToken={params.oidcToken}
-      mfaId={params.mfaId}
     />
   )
 }

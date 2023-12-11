@@ -404,11 +404,11 @@ class SeedlessService {
    * Verify authenticator code
    */
   async verifyApprovalCode<T>(
-    userExportResponse: CubeSignerResponse<T>,
+    cubeSignerResponse: CubeSignerResponse<T>,
     code: string
   ): Promise<Result<CubeSignerResponse<T>, TotpErrors>> {
     const signerSession = await this.getSignerSession()
-    const response = await userExportResponse.approveTotp(signerSession, code)
+    const response = await cubeSignerResponse.approveTotp(signerSession, code)
     return { success: true, value: response }
   }
 

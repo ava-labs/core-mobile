@@ -8,9 +8,11 @@ import { formatDistanceToNow } from 'date-fns'
 import { useAnalytics } from 'hooks/useAnalytics'
 import AppNavigation from 'navigation/AppNavigation'
 import { useCallback, useEffect, useState } from 'react'
+import { TotpErrors } from 'seedless/errors'
 import SeedlessService from 'seedless/services/SeedlessService'
 import { UserExportResponse } from 'seedless/types'
 import PasskeyService from 'services/passkey/PasskeyService'
+import { Result } from 'types/result'
 import Logger from 'utils/Logger'
 import * as Navigation from 'utils/Navigation'
 
@@ -177,6 +179,11 @@ export const useSeedlessMnemonicExport = (): ReturnProps => {
         return
       }
       if (mfaType === 'totp') {
+        const onVerifyCode = (
+          code: string
+        ): Promise<Result<UserExportResponse, TotpErrors>> => {
+          return SeedlessService.verifyApprovalCode(response, code)
+        }
         Navigation.navigate({
           name: AppNavigation.Root.Wallet,
           params: {
@@ -186,8 +193,7 @@ export const useSeedlessMnemonicExport = (): ReturnProps => {
               params: {
                 screen: AppNavigation.SeedlessExport.VerifyCode,
                 params: {
-                  userExportResponse: response,
-                  // @ts-expect-error navigation can't handle generic params well
+                  onVerifyCode,
                   onVerifySuccess
                 }
               }
