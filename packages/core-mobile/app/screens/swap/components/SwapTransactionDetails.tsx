@@ -25,7 +25,6 @@ interface SwapTransactionDetailProps {
   fromTokenSymbol?: string
   toTokenSymbol?: string
   rate: number
-  walletFee?: number
   onGasChange?: (gasPrice: bigint, feeType: FeePreset) => void
   onGasLimitChange?: (gasLimit: number) => void
   gasLimit: number
@@ -44,7 +43,6 @@ const SwapTransactionDetail: FC<SwapTransactionDetailProps> = ({
   fromTokenSymbol,
   toTokenSymbol,
   rate,
-  walletFee,
   onGasChange,
   onGasLimitChange,
   gasLimit,
@@ -138,11 +136,6 @@ const SwapTransactionDetail: FC<SwapTransactionDetailProps> = ({
           />
         </>
       )}
-      <Space y={16} />
-      <Row style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-        <AvaText.Body2 color={theme.white}>Avalanche Wallet fee</AvaText.Body2>
-        <AvaText.Heading3>{walletFee}</AvaText.Heading3>
-      </Row>
     </View>
   )
 }

@@ -39,7 +39,7 @@ export type Amount = {
   amount: string
 }
 
-export default function SwapView() {
+export default function SwapView(): JSX.Element {
   const { capture } = usePostCapture()
   const { theme } = useApplicationContext()
   const { navigate } = useNavigation<NavigationProp>()
@@ -96,7 +96,7 @@ export default function SwapView() {
     gasPrice
   ])
 
-  function validateInputsFx() {
+  function validateInputsFx(): void {
     if (fromTokenValue && fromTokenValue.bn.isZero()) {
       setLocalError('Please enter an amount')
     } else if (
@@ -110,7 +110,7 @@ export default function SwapView() {
     }
   }
 
-  function applyOptimalRateFx() {
+  function applyOptimalRateFx(): void {
     if (optimalRate) {
       if (optimalRate.side === SwapSide.SELL) {
         setToTokenValue({
@@ -126,7 +126,7 @@ export default function SwapView() {
     }
   }
 
-  function calculateGasAndMaxFx() {
+  function calculateGasAndMaxFx(): void {
     if (gasPrice && gasLimit && fromToken?.type === TokenType.NATIVE) {
       const newFees = calculateGasAndFees({
         gasPrice,
@@ -142,7 +142,7 @@ export default function SwapView() {
     setMaxFromValue(fromToken?.balance)
   }
 
-  const swapTokens = () => {
+  const swapTokens = (): void => {
     if (
       tokensWithZeroBalance.some(
         token =>
@@ -185,7 +185,7 @@ export default function SwapView() {
           .find(t => t.type === TokenType.NATIVE)
           ?.balance.toString() ?? '0'
 
-  const reviewOrder = () => {
+  const reviewOrder = (): void => {
     if (optimalRate) {
       setGasPrice(gasPrice)
       navigate(AppNavigation.Swap.Review)
@@ -321,7 +321,6 @@ export default function SwapView() {
             fromTokenSymbol={fromToken?.symbol}
             toTokenSymbol={toToken?.symbol}
             rate={optimalRate ? calculateRate(optimalRate) : 0}
-            walletFee={optimalRate?.partnerFee}
             onGasChange={onGasChange}
             onGasLimitChange={onGasLimitChange}
             gasLimit={gasLimit}
