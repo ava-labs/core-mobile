@@ -5,6 +5,7 @@ import {
 } from '@cubist-labs/cubesigner-sdk'
 import { showSimpleToast } from 'components/Snackbar'
 import { formatDistanceToNow } from 'date-fns'
+import { usePostCapture } from 'hooks/usePosthogCapture'
 import { useCallback, useEffect, useState } from 'react'
 import SeedlessService from 'seedless/services/SeedlessService'
 import { UserExportResponse } from 'seedless/types'
@@ -61,6 +62,7 @@ interface ReturnProps {
 }
 
 export const useSeedlessMnemonicExport = (): ReturnProps => {
+  const { capture } = usePostCapture()
   const [pendingRequest, setPendingRequest] = useState<UserExportInitResponse>()
   const [mnemonic, setMnemonic] = useState<string>()
   const [state, setState] = useState<ExportState>(ExportState.Loading)
@@ -89,6 +91,7 @@ export const useSeedlessMnemonicExport = (): ReturnProps => {
         const onVerifySuccess: OnVerifyMfaSuccess<
           CubeSignerResponse<UserExportCompleteResponse>
         > = async response => {
+          capture('SeedlessExportCompleted')
           const decryptedMnemonic = await SeedlessService.userExportDecrypt(
             keyPair.privateKey,
             response.data()
@@ -99,10 +102,11 @@ export const useSeedlessMnemonicExport = (): ReturnProps => {
         onVerifyMfa(exportReponse, onVerifySuccess)
       } catch (e) {
         Logger.error('failed to complete export request error: ', e)
+        capture('SeedlessExportCompleteFailed')
         showSimpleToast('Unable to complete export request')
       }
     },
-    [keyId]
+    [capture, keyId]
   )
 
   const deleteExport = useCallback(async (): Promise<void> => {
@@ -115,11 +119,13 @@ export const useSeedlessMnemonicExport = (): ReturnProps => {
       setPendingRequest(undefined)
       setMnemonic(undefined)
       setState(ExportState.NotInitiated)
+      capture('SeedlessExportCancelled')
     } catch (e) {
       Logger.error('failed to delete export request error: ', e)
+      capture('SeedlessExportCancelFailed')
       showSimpleToast('Unable to delete export request')
     }
-  }, [keyId])
+  }, [capture, keyId])
 
   const initExport = useCallback(
     async ({
@@ -144,14 +150,16 @@ export const useSeedlessMnemonicExport = (): ReturnProps => {
         > = async response => {
           setPendingRequest(response.data())
           setState(ExportState.Pending)
+          capture('SeedlessExportInitiated')
         }
         onVerifyMfa(exportInitResponse, onVerifySuccess)
       } catch (e) {
         Logger.error('initExport error: ', e)
+        capture('SeedlessExportInitiateFailed')
         showSimpleToast('Unable to start export request')
       }
     },
-    [keyId]
+    [capture, keyId]
   )
 
   const handleFidoVerify = async (

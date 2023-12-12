@@ -22,6 +22,7 @@ import {
 } from '@cubist-labs/cubesigner-sdk'
 import SeedlessService from 'seedless/services/SeedlessService'
 import { showSimpleToast } from 'components/Snackbar'
+import { usePostCapture } from 'hooks/usePosthogCapture'
 import { SeedlessExportInstructions } from './SeedlessExportInstructions'
 import { RecoveryPhrasePending } from './RecoveryPhrasePending'
 
@@ -30,6 +31,7 @@ type SeedlessExportInitialScreenProps = SeedlessExportScreenProps<
 >
 
 export const SeedlessExportInitial = (): JSX.Element => {
+  const { capture } = usePostCapture()
   const [hideMnemonic, setHideMnemonic] = useState(true)
   const { navigate, setOptions, goBack, canGoBack } =
     useNavigation<SeedlessExportInitialScreenProps['navigation']>()
@@ -101,6 +103,7 @@ export const SeedlessExportInitial = (): JSX.Element => {
         onPress={() => {
           navigate(AppNavigation.Root.CopyPhraseWarning, {
             copy: () => {
+              capture('SeedlessExportPhraseCopied')
               copyToClipboard(
                 mnemonic,
                 <SnackBarMessage message="Phrase Copied!" />
@@ -145,7 +148,19 @@ export const SeedlessExportInitial = (): JSX.Element => {
     }
 
     setHideMnemonic(prev => !prev)
-  }, [completeExport, handleFidoVerify, mnemonic, navigate])
+    capture(
+      !hideMnemonic === true
+        ? 'SeedlessExportPhraseHidden'
+        : 'SeedlessExportPhraseRevealed'
+    )
+  }, [
+    capture,
+    completeExport,
+    handleFidoVerify,
+    hideMnemonic,
+    mnemonic,
+    navigate
+  ])
 
   return (
     <>
