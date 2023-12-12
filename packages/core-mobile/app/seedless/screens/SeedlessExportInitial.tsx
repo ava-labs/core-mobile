@@ -148,7 +148,19 @@ export const SeedlessExportInitial = (): JSX.Element => {
     }
 
     setHideMnemonic(prev => !prev)
-  }, [completeExport, handleFidoVerify, mnemonic, navigate])
+    capture(
+      !hideMnemonic === true
+        ? 'SeedlessExportPhraseHidden'
+        : 'SeedlessExportPhraseRevealed'
+    )
+  }, [
+    capture,
+    completeExport,
+    handleFidoVerify,
+    hideMnemonic,
+    mnemonic,
+    navigate
+  ])
 
   return (
     <>
