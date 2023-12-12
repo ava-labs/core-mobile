@@ -1,5 +1,5 @@
 import React from 'react'
-import { ScrollView, StyleSheet, View } from 'react-native'
+import { Platform, ScrollView, StyleSheet, View } from 'react-native'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
 import { useApplicationContext } from 'contexts/ApplicationContext'
@@ -38,6 +38,9 @@ export default function MnemonicScreen({
   } = useTheme()
   const { isDarkMode } = useApplicationContext()
   const { navigate } = useNavigation<CreateWalletNavigationProp>()
+
+  const BLUR_BACKGROUND_COLOR =
+    Platform.OS === 'ios' ? '#BFBFBF70' : colors.$neutral900
 
   const mnemonics = (): JSX.Element => {
     const mnemonicColumns: Element[][] = [[], [], []]
@@ -97,7 +100,7 @@ export default function MnemonicScreen({
               opacity={1}
               iosBlurType="dark"
               borderRadius={8}
-              backgroundColor={colors.$neutral900}
+              backgroundColor={BLUR_BACKGROUND_COLOR}
             />
           )}
         </View>
