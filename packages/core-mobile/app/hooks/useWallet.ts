@@ -12,7 +12,7 @@ import { WalletType } from 'services/wallet/types'
 import WalletService from 'services/wallet/WalletService'
 import { Dispatch } from '@reduxjs/toolkit'
 import Logger from 'utils/Logger'
-import { usePostCapture } from './usePosthogCapture'
+import { useAnalytics } from './useAnalytics'
 
 export interface UseWallet {
   onPinCreated: (
@@ -47,7 +47,7 @@ export async function initWalletServiceAndUnlock(
 export function useWallet(): UseWallet {
   const dispatch = useDispatch()
   const cachedWalletType = useSelector(selectWalletType)
-  const { capture } = usePostCapture()
+  const { track } = useAnalytics()
 
   /**
    * Initializes wallet with the specified mnemonic and wallet type
@@ -77,11 +77,11 @@ export function useWallet(): UseWallet {
 
       dispatch(onLogIn())
 
-      capture('OnboardingSubmitSucceeded', { walletType })
+      track('OnboardingSubmitSucceeded', { walletType: walletType })
     } catch (e) {
       Logger.error('Unable to create wallet', e)
 
-      capture('OnboardingSubmitFailed', { walletType })
+      track('OnboardingSubmitFailed', { walletType: walletType })
     }
   }
 
