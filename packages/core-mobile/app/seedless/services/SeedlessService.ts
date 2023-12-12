@@ -177,10 +177,7 @@ class SeedlessService {
     mfaId: string,
     withSecurityKey: boolean
   ): Promise<void> {
-    const signerSession = await this.getSignerSession()
-
-    const challenge = await signerSession.fidoApproveStart(mfaId)
-
+    const challenge = await this.fidoApproveStart(mfaId)
     const credential = await PasskeyService.authenticate(
       challenge.options,
       withSecurityKey
