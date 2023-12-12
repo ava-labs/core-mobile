@@ -8,7 +8,8 @@ import {
   StyleProp,
   TextInputFocusEventData,
   TextStyle,
-  ViewStyle
+  ViewStyle,
+  LayoutChangeEvent
 } from 'react-native'
 import ClearInputSVG from 'components/svg/ClearInputSVG'
 import { Space } from 'components/Space'
@@ -66,6 +67,7 @@ export type InputTextProps = {
   testID?: string
   autoCorrect?: boolean
   inputTextContainerStyle?: SxProp
+  onLayout?: (event: LayoutChangeEvent) => void
 }
 
 const InputText = forwardRef<TextInput, InputTextProps>(
@@ -101,7 +103,8 @@ const InputText = forwardRef<TextInput, InputTextProps>(
       keyboardWillShow,
       keyboardDidHide,
       autoCorrect,
-      inputTextContainerStyle
+      inputTextContainerStyle,
+      onLayout
     },
     ref
   ) => {
@@ -194,6 +197,7 @@ const InputText = forwardRef<TextInput, InputTextProps>(
             ...inputTextContainerStyle
           }}>
           <TextInput
+            onLayout={onLayout}
             selectionColor={colors.$neutral50}
             maxLength={maxLength}
             testID="input_text"

@@ -19,6 +19,8 @@ export const NameYourWallet = ({
     theme: { colors }
   } = useTheme()
   const { capture } = usePostCapture()
+  const [containerWidth, setContainerWidth] = useState(0)
+  const [textWidth, setTextWidth] = useState(0)
 
   useFocusEffect(useCallback(() => textInputRef.current?.focus(), []))
 
@@ -29,6 +31,8 @@ export const NameYourWallet = ({
     capture('WalletNameAdded')
   }
 
+  const shouldShowLongText = textWidth >= containerWidth
+
   return (
     <View
       sx={{
@@ -37,7 +41,8 @@ export const NameYourWallet = ({
         justifyContent: 'space-between',
         backgroundColor: '$black'
       }}>
-      <View>
+      <View
+        onLayout={event => setContainerWidth(event.nativeEvent.layout.width)}>
         <Text variant="heading3" testID="name_your_wallet_title">
           Name Your Wallet
         </Text>
@@ -45,6 +50,7 @@ export const NameYourWallet = ({
           Add a display name for your wallet. You can change it at anytime.
         </Text>
         <InputText
+          onLayout={event => setTextWidth(event.nativeEvent.layout.width)}
           testID="name_your_wallet_input"
           ref={textInputRef}
           placeholder={'Wallet Name'}
@@ -71,11 +77,13 @@ export const NameYourWallet = ({
             alignItems: 'center'
           }}
         />
-        <View sx={{ alignItems: 'center' }}>
-          <Text variant="caption" sx={{ color: '$neutral400' }}>
-            {name}
-          </Text>
-        </View>
+        {shouldShowLongText && (
+          <View sx={{ alignItems: 'center' }}>
+            <Text variant="caption" sx={{ color: '$neutral400' }}>
+              {name}
+            </Text>
+          </View>
+        )}
       </View>
       <Button
         disabled={name.length <= 0}
