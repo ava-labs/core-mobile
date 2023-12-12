@@ -244,14 +244,7 @@ const InputText = forwardRef<TextInput, InputTextProps>(
             value={text}
           />
           {mode === 'default' && text.length > 0 && (
-            <View
-              sx={{
-                marginLeft: 12,
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}>
-              <ClearBtn color={colors.$neutral400} onClear={onClear} />
-            </View>
+            <ClearBtn color={colors.$neutral400} onClear={onClear}/>
           )}
           {mode === 'private' && text.length > 0 && (
             <ShowPassBtn
