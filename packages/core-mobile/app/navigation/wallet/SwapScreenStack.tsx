@@ -9,6 +9,7 @@ import HeaderAccountSelector from 'components/HeaderAccountSelector'
 import { SwapContextProvider } from 'contexts/SwapContext'
 import { useNavigation } from '@react-navigation/native'
 import FeatureBlocked from 'screens/posthog/FeatureBlocked'
+import * as Navigation from 'utils/Navigation'
 import { SwapScreenProps } from '../types'
 
 export type SwapStackParamList = {
@@ -18,9 +19,19 @@ export type SwapStackParamList = {
 
 const SwapStack = createStackNavigator<SwapStackParamList>()
 
-const HeaderTitle = (): JSX.Element => (
-  <HeaderAccountSelector direction="down" />
-)
+const HeaderTitle = (): JSX.Element => {
+  return (
+    <HeaderAccountSelector
+      direction="down"
+      onPressed={() =>
+        Navigation.navigate({
+          name: AppNavigation.Root.Wallet,
+          params: { screen: AppNavigation.Modal.AccountDropDown }
+        })
+      }
+    />
+  )
+}
 
 function SwapScreenStack(): JSX.Element {
   const isSwapBlocked = useSelector(selectIsSwapBlocked)
