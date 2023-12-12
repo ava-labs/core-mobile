@@ -1,5 +1,5 @@
 import React from 'react'
-import { ScrollView, StyleSheet, View } from 'react-native'
+import { Platform, ScrollView, StyleSheet, View } from 'react-native'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
 import { useApplicationContext } from 'contexts/ApplicationContext'
@@ -7,11 +7,10 @@ import MnemonicAva from 'screens/onboarding/MnemonicAva'
 import AvaButton from 'components/AvaButton'
 import CopySVG from 'components/svg/CopySVG'
 import { copyToClipboard } from 'utils/DeviceTools'
-import { Opacity30 } from 'resources/Constants'
 import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation } from '@react-navigation/native'
 import { RootStackScreenProps } from 'navigation/types'
-import { Text } from '@avalabs/k2-mobile'
+import { Text, alpha, useTheme } from '@avalabs/k2-mobile'
 import { BlurBackground } from './BlurBackground'
 
 const EMPTY_MNEMONIC = [...Array(24).values()] as string[]
@@ -34,8 +33,14 @@ export default function MnemonicScreen({
   canToggleBlur = false,
   toggleRecoveryPhrase
 }: Props): JSX.Element {
-  const { theme, isDarkMode } = useApplicationContext()
+  const {
+    theme: { colors }
+  } = useTheme()
+  const { isDarkMode } = useApplicationContext()
   const { navigate } = useNavigation<CreateWalletNavigationProp>()
+
+  const BLUR_BACKGROUND_COLOR =
+    Platform.OS === 'ios' ? '#BFBFBF70' : colors.$neutral900
 
   const mnemonics = (): JSX.Element => {
     const mnemonicColumns: Element[][] = [[], [], []]
@@ -85,8 +90,8 @@ export default function MnemonicScreen({
             styles.mnemonics,
             {
               backgroundColor: isDarkMode
-                ? theme.colorBg3 + Opacity30
-                : theme.colorBg1
+                ? alpha(colors.$neutral800, 0.3)
+                : colors.$black
             }
           ]}>
           {mnemonics()}
@@ -95,7 +100,7 @@ export default function MnemonicScreen({
               opacity={1}
               iosBlurType="dark"
               borderRadius={8}
-              backgroundColor="#BFBFBF70"
+              backgroundColor={BLUR_BACKGROUND_COLOR}
             />
           )}
         </View>
@@ -125,7 +130,7 @@ export default function MnemonicScreen({
               testID="mnemonic_screen__copy_phrase_button"
               text={
                 <AvaText.ButtonMedium
-                  textStyle={{ color: theme.alternateBackground }}
+                  textStyle={{ color: colors.$white }}
                   testID="mnemonic_screen__copy_phrase_button">
                   Copy Phrase
                 </AvaText.ButtonMedium>
