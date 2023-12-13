@@ -64,7 +64,7 @@ export const NameYourWallet = ({
           onSubmit={handleSubmit}
           text={name}
           backgroundColor={colors.$transparent}
-          style={{ marginHorizontal: 0, marginBottom: 0 }}
+          style={{ marginHorizontal: 0, marginBottom: 0, left: 8 }}
           textStyle={{
             fontFamily: 'Inter-Bold',
             fontSize: 48,
@@ -75,6 +75,12 @@ export const NameYourWallet = ({
           inputTextContainerStyle={{
             flexDirection: 'row',
             alignItems: 'center'
+          }}
+          clearBtnContainerSx={{
+            justifyContent: 'center',
+            alignItems: 'center',
+            right: 16,
+            position: 'relative'
           }}
         />
         {shouldShowLongText && (
