@@ -68,6 +68,7 @@ export type InputTextProps = {
   autoCorrect?: boolean
   inputTextContainerStyle?: SxProp
   onLayout?: (event: LayoutChangeEvent) => void
+  clearBtnContainerStyle?: SxProp
 }
 
 const InputText = forwardRef<TextInput, InputTextProps>(
@@ -104,7 +105,8 @@ const InputText = forwardRef<TextInput, InputTextProps>(
       keyboardDidHide,
       autoCorrect,
       inputTextContainerStyle,
-      onLayout
+      onLayout,
+      clearBtnContainerStyle
     },
     ref
   ) => {
@@ -246,9 +248,9 @@ const InputText = forwardRef<TextInput, InputTextProps>(
           {mode === 'default' && text.length > 0 && (
             <View
               sx={{
-                marginLeft: 12,
-                alignItems: 'center',
-                justifyContent: 'center'
+                position: 'absolute',
+                right: 8,
+                ...clearBtnContainerStyle
               }}>
               <ClearBtn color={colors.$neutral400} onClear={onClear} />
             </View>
@@ -377,15 +379,9 @@ const ClearBtn = ({
   color: string
 }): JSX.Element => {
   return (
-    <View
-      sx={{
-        position: 'absolute',
-        right: 8
-      }}>
-      <AvaButton.Icon onPress={onClear} testID="input_text__clear_button">
-        <ClearInputSVG color={color} size={14} />
-      </AvaButton.Icon>
-    </View>
+    <AvaButton.Icon onPress={onClear} testID="input_text__clear_button">
+      <ClearInputSVG color={color} size={14} />
+    </AvaButton.Icon>
   )
 }
 
