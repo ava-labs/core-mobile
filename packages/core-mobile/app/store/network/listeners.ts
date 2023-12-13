@@ -13,13 +13,13 @@ import {
   selectIsDeveloperMode,
   toggleDeveloperMode
 } from 'store/settings/advanced'
-import { isAnyOf } from '@reduxjs/toolkit'
-import { capture } from 'store/posthog'
+import { AnyAction, isAnyOf } from '@reduxjs/toolkit'
+import { captureEvent } from 'hooks/useAnalytics'
 
-const adjustActiveNetwork = async (
-  action: any,
+const adjustActiveNetwork = (
+  action: AnyAction,
   listenerApi: AppListenerEffectAPI
-) => {
+): void => {
   const { dispatch, getState } = listenerApi
   const state = getState()
   const isDeveloperMode = selectIsDeveloperMode(state)
@@ -31,7 +31,10 @@ const adjustActiveNetwork = async (
   dispatch(setActive(chainId))
 }
 
-const getNetworks = async (action: any, listenerApi: AppListenerEffectAPI) => {
+const getNetworks = async (
+  action: AnyAction,
+  listenerApi: AppListenerEffectAPI
+): Promise<void> => {
   const { dispatch, getState } = listenerApi
   const state = getState()
   const networks = await NetworkService.getNetworks()
@@ -43,10 +46,10 @@ const getNetworks = async (action: any, listenerApi: AppListenerEffectAPI) => {
   }
 }
 
-const toggleFavoriteSideEffect = async (
-  action: any,
+const toggleFavoriteSideEffect = (
+  action: AnyAction,
   listenerApi: AppListenerEffectAPI
-) => {
+): void => {
   const chainId = action.payload
   const { dispatch, getState } = listenerApi
   const network = getState().network
@@ -59,14 +62,13 @@ const toggleFavoriteSideEffect = async (
     : 'NetworkFavoriteRemoved'
 
   dispatch(
-    capture({
-      event,
-      properties: { networkChainId: chainId, isCustom: isCustomNetwork }
-    })
+    captureEvent(event, { networkChainId: chainId, isCustom: isCustomNetwork })
   )
 }
 
-export const addNetworkListeners = (startListening: AppStartListening) => {
+export const addNetworkListeners = (
+  startListening: AppStartListening
+): void => {
   startListening({
     matcher: isAnyOf(onAppUnlocked, toggleDeveloperMode, onRehydrationComplete),
     effect: getNetworks

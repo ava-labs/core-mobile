@@ -1,20 +1,26 @@
 import { useDispatch } from 'react-redux'
-import { capture } from 'store/posthog'
+import { capture as captureAction } from 'store/posthog'
 import { useCallback } from 'react'
+import { AnyAction } from '@reduxjs/toolkit'
+import { AnalyticsEvents } from 'types/analytics'
 
-// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-export function useAnalytics() {
+type AnalyticsEventName = keyof AnalyticsEvents
+
+export function useAnalytics(): {
+  capture: <E extends AnalyticsEventName>(
+    event: E,
+    ...properties: CaptureEventProperties<E>
+  ) => void
+} {
   const dispatch = useDispatch()
 
-  const track = useCallback(
+  const capture = useCallback(
     <E extends AnalyticsEventName>(
       event: E,
-      ...properties: undefined extends AnalyticsEventParamList[E]
-        ? [AnalyticsEventParamList[E]?]
-        : [AnalyticsEventParamList[E]]
+      ...properties: CaptureEventProperties<E>
     ) => {
       dispatch(
-        capture({
+        captureAction({
           event,
           properties: properties[0]
         })
@@ -24,25 +30,21 @@ export function useAnalytics() {
   )
 
   return {
-    track
+    capture
   }
 }
 
-type AnalyticsEventName = keyof AnalyticsEventParamList
+type CaptureEventProperties<E extends AnalyticsEventName> =
+  undefined extends AnalyticsEvents[E]
+    ? [AnalyticsEvents[E]?]
+    : [AnalyticsEvents[E]]
 
-export function trackEvent<E extends AnalyticsEventName>(
+export function captureEvent<E extends AnalyticsEventName>(
   event: E,
-  ...properties: undefined extends AnalyticsEventParamList[E]
-    ? [AnalyticsEventParamList[E]?]
-    : [AnalyticsEventParamList[E]]
-): void {
-  capture({
+  ...properties: CaptureEventProperties<E>
+): AnyAction {
+  return captureAction({
     event,
     properties: properties[0]
   })
-}
-
-type AnalyticsEventParamList = {
-  OnboardingSubmitSucceeded: { walletType: string }
-  OnboardingSubmitFailed: { walletType: string }
 }

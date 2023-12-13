@@ -47,7 +47,7 @@ export async function initWalletServiceAndUnlock(
 export function useWallet(): UseWallet {
   const dispatch = useDispatch()
   const cachedWalletType = useSelector(selectWalletType)
-  const { track } = useAnalytics()
+  const { capture } = useAnalytics()
 
   /**
    * Initializes wallet with the specified mnemonic and wallet type
@@ -77,11 +77,11 @@ export function useWallet(): UseWallet {
 
       dispatch(onLogIn())
 
-      track('OnboardingSubmitSucceeded', { walletType: walletType })
+      capture('OnboardingSubmitSucceeded', { walletType: walletType })
     } catch (e) {
       Logger.error('Unable to create wallet', e)
 
-      track('OnboardingSubmitFailed', { walletType: walletType })
+      capture('OnboardingSubmitFailed', { walletType: walletType })
     }
   }
 

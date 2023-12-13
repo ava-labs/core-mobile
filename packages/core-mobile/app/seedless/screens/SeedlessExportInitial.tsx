@@ -22,7 +22,7 @@ import {
 } from '@cubist-labs/cubesigner-sdk'
 import SeedlessService from 'seedless/services/SeedlessService'
 import { showSimpleToast } from 'components/Snackbar'
-import { usePostCapture } from 'hooks/usePosthogCapture'
+import { useAnalytics } from 'hooks/useAnalytics'
 import { SeedlessExportInstructions } from './SeedlessExportInstructions'
 import { RecoveryPhrasePending } from './RecoveryPhrasePending'
 
@@ -31,7 +31,7 @@ type SeedlessExportInitialScreenProps = SeedlessExportScreenProps<
 >
 
 export const SeedlessExportInitial = (): JSX.Element => {
-  const { capture } = usePostCapture()
+  const { capture } = useAnalytics()
   const [hideMnemonic, setHideMnemonic] = useState(true)
   const { navigate, setOptions, goBack, canGoBack } =
     useNavigation<SeedlessExportInitialScreenProps['navigation']>()
@@ -173,7 +173,6 @@ export const SeedlessExportInitial = (): JSX.Element => {
                 const onVerifyMfa: InitExportOnVerifyMfa = async (
                   response,
                   onVerifySuccess
-                  // eslint-disable-next-line sonarjs/no-identical-functions
                 ) => {
                   const mfaType = await SeedlessService.getMfaType()
                   if (mfaType === undefined) {
