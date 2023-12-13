@@ -15,7 +15,6 @@ import RevealMnemonic from 'navigation/wallet/RevealMnemonic'
 import { QRCodeParams, SecurityPrivacyScreenProps } from 'navigation/types'
 import ConnectedDapps from 'screens/rpc/ConnectedDapps/ConnectedDapps'
 import CaptureDappQR from 'screens/shared/CaptureDappQR'
-import { usePostCapture } from 'hooks/usePosthogCapture'
 import Logger from 'utils/Logger'
 import { useWallet } from 'hooks/useWallet'
 import { RecoveryMethodsSettingScreen } from 'seedless/screens/RecoveryMethodsSettingScreen'
@@ -23,6 +22,7 @@ import { RecoveryMethodsSettingMFAScreen } from 'seedless/screens/RecoveryMethod
 import { MFA } from 'seedless/types'
 import { WalletType } from 'services/wallet/types'
 import walletService from 'services/wallet/WalletService'
+import { useAnalytics } from 'hooks/useAnalytics'
 import SeedlessExportStack, {
   SeedlessExportStackParamList
 } from './SeedlessExportStack'
@@ -118,7 +118,7 @@ type SecurityPrivacyNavigationProp = SecurityPrivacyScreenProps<
 >['navigation']
 
 const SecurityPrivacyScreen = (): JSX.Element => {
-  const { capture } = usePostCapture()
+  const { capture } = useAnalytics()
   const nav = useNavigation<SecurityPrivacyNavigationProp>()
   const walletType = walletService.walletType
 
@@ -231,7 +231,7 @@ const CreatePinScreen = memo(() => {
   const { onPinCreated } = useWallet()
   const { mnemonic } = useRoute<CreatePinScreenProps['route']>().params
   const nav = useNavigation<CreatePinScreenProps['navigation']>()
-  const { capture } = usePostCapture()
+  const { capture } = useAnalytics()
 
   const handleOnResetPinFailed = (): void => {
     capture('ChangePasswordFailed')

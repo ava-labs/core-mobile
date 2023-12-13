@@ -18,7 +18,7 @@ import {
 } from 'store/balance'
 import ReloadSVG from 'components/svg/ReloadSVG'
 import { ActivityIndicator } from 'components/ActivityIndicator'
-import { usePostCapture } from 'hooks/usePosthogCapture'
+import { useAnalytics } from 'hooks/useAnalytics'
 
 type Props = {
   account: Account
@@ -48,7 +48,7 @@ function AccountItem({
   const [editAccount, setEditAccount] = useState(false)
   const [editedAccountTitle, setEditedAccountTitle] = useState(account.title)
   const [showLoader, setShowLoader] = useState(false)
-  const { capture } = usePostCapture()
+  const { capture } = useAnalytics()
   const dispatch = useDispatch()
 
   const bgColor = useMemo(() => {
@@ -78,10 +78,6 @@ function AccountItem({
     },
     [account.index, dispatch]
   )
-
-  const handleOnCopyAddressAnalytics = (eventName: string) => {
-    capture(eventName)
-  }
 
   const handleLoadBalance = useCallback(() => {
     dispatch(fetchBalanceForAccount({ accountIndex: account.index }))
@@ -160,17 +156,13 @@ function AccountItem({
             <TokenAddress
               address={account.address}
               showIcon
-              onCopyAddress={() =>
-                handleOnCopyAddressAnalytics('AccountSelectorEthAddressCopied')
-              }
+              onCopyAddress={() => capture('AccountSelectorEthAddressCopied')}
             />
             <Space y={6} />
             <TokenAddress
               address={account.addressBtc}
               showIcon
-              onCopyAddress={() =>
-                handleOnCopyAddressAnalytics('AccountSelectorBtcAddressCopied')
-              }
+              onCopyAddress={() => capture('AccountSelectorBtcAddressCopied')}
             />
           </View>
         </Row>
@@ -195,7 +187,7 @@ const Save = ({
 }: {
   disabled: boolean
   onPress: () => void
-}) => {
+}): JSX.Element => {
   const { theme } = useApplicationContext()
   return (
     <AvaButton.Base
@@ -210,7 +202,7 @@ const Save = ({
   )
 }
 
-const Edit = ({ onPress }: { onPress: () => void }) => {
+const Edit = ({ onPress }: { onPress: () => void }): JSX.Element => {
   const { theme } = useApplicationContext()
   return (
     <AvaButton.Base
@@ -232,7 +224,7 @@ const EditTitle = ({
   title: string
   onChangeText: (text: string) => void
   onSubmit: () => void
-}) => {
+}): JSX.Element => {
   const { theme } = useApplicationContext()
   return (
     <Row>
@@ -253,7 +245,7 @@ const EditTitle = ({
   )
 }
 
-const Title = ({ title }: { title: string }) => {
+const Title = ({ title }: { title: string }): JSX.Element => {
   return <AvaText.Heading2 ellipsizeMode={'tail'}>{title}</AvaText.Heading2>
 }
 export default AccountItem

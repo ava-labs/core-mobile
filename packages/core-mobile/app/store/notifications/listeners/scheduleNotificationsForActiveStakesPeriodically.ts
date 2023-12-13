@@ -1,6 +1,6 @@
 import { Action } from '@reduxjs/toolkit'
 import { AppListenerEffectAPI } from 'store'
-import { capture as captureAction, selectIsEarnBlocked } from 'store/posthog'
+import { selectIsEarnBlocked } from 'store/posthog'
 import Logger from 'utils/Logger'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectAccounts } from 'store/account'
@@ -8,12 +8,15 @@ import EarnService from 'services/earn/EarnService'
 import NotificationsService from 'services/notifications/NotificationsService'
 import { WalletState, selectWalletState } from 'store/app'
 import { ChannelId } from 'services/notifications/channels'
+import { captureEvent } from 'hooks/useAnalytics'
 import { turnOnNotificationsFor } from '../slice'
 import { isStakeCompleteNotificationDisabled } from './utils'
 
 const SCHEDULE_INTERVAL = 60000 * 3 // 3 minutes
 
-const isTurnOnNotificationsForStakingCompleteAction = (action: Action) => {
+const isTurnOnNotificationsForStakingCompleteAction = (
+  action: Action
+): boolean => {
   return (
     turnOnNotificationsFor.match(action) &&
     action.payload.channelId === ChannelId.STAKING_COMPLETE
@@ -25,7 +28,7 @@ const isTurnOnNotificationsForStakingCompleteAction = (action: Action) => {
 export const scheduleNotificationsForActiveStakesPeriodically = async (
   _: Action,
   listenerApi: AppListenerEffectAPI
-) => {
+): Promise<never> => {
   // only allow one instance of this listener to run at a time
   listenerApi.unsubscribe()
 
@@ -51,7 +54,7 @@ export const scheduleNotificationsForActiveStakesPeriodically = async (
 
 const scheduleNotificationsForActiveStakes = async (
   listenerApi: AppListenerEffectAPI
-) => {
+): Promise<void> => {
   const state = listenerApi.getState()
   const isEarnBlocked = selectIsEarnBlocked(state)
 
@@ -91,13 +94,10 @@ const scheduleNotificationsForActiveStakes = async (
     const historyStakes = totalStakes - activeStakes
 
     listenerApi.dispatch(
-      captureAction({
-        event: 'StakeCountStakes',
-        properties: {
-          active: activeStakes,
-          history: historyStakes,
-          total: totalStakes
-        }
+      captureEvent('StakeCountStakes', {
+        active: activeStakes,
+        history: historyStakes,
+        total: totalStakes
       })
     )
 

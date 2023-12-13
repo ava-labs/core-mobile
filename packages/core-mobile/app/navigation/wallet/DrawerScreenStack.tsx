@@ -25,9 +25,9 @@ import { useSelector } from 'react-redux'
 import { selectActiveNetwork } from 'store/network'
 import BridgeSVG from 'components/svg/BridgeSVG'
 import { Opacity50 } from 'resources/Constants'
-import { usePostCapture } from 'hooks/usePosthogCapture'
 import { selectIsLeftHanded } from 'store/settings/advanced'
 import { ActionProp } from 'components/fab/types'
+import { useAnalytics } from 'hooks/useAnalytics'
 
 export type DrawerParamList = {
   [AppNavigation.Wallet.Tabs]: NavigatorScreenParams<TabNavigatorParamList>
@@ -75,7 +75,7 @@ const Fab: FC = () => {
   const { setPendingDeepLink } = useDeeplink()
   const activeNetwork = useSelector(selectActiveNetwork)
   const [expanded, setExpanded] = useState(false)
-  const { capture } = usePostCapture()
+  const { capture } = useAnalytics()
   const isLeftHanded = useSelector(selectIsLeftHanded)
 
   const actionItems = useMemo(() => {

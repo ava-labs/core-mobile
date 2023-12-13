@@ -15,14 +15,14 @@ import { Row } from 'components/Row'
 import { useSendNFTContext } from 'contexts/SendNFTContext'
 import { Account } from 'store/account'
 import { NFTItemData } from 'store/nft'
-import NetworkFeeSelector from 'components/NetworkFeeSelector'
+import NetworkFeeSelector, { FeePreset } from 'components/NetworkFeeSelector'
 import { useSelector } from 'react-redux'
 import { selectActiveNetwork } from 'store/network'
 import { NetworkVMType } from '@avalabs/chains-sdk'
 import { SvgXml } from 'react-native-svg'
-import { usePostCapture } from 'hooks/usePosthogCapture'
 import { BN } from 'bn.js'
 import { AddrBookItemType, Contact } from 'store/addressBook'
+import { useAnalytics } from 'hooks/useAnalytics'
 
 export type NftSendScreenProps = {
   onNext: () => void
@@ -32,9 +32,9 @@ export type NftSendScreenProps = {
 export default function NftSend({
   onNext,
   onOpenAddressBook
-}: NftSendScreenProps) {
+}: NftSendScreenProps): JSX.Element {
   const { theme } = useApplicationContext()
-  const { capture } = usePostCapture()
+  const { capture } = useAnalytics()
   const {
     sendToken: nft,
     toAccount,
@@ -62,7 +62,7 @@ export default function NftSend({
     showAddressBook
   } = useAddressBookLists()
 
-  const onNextPress = () => {
+  const onNextPress = (): void => {
     saveRecentContact()
     onNext()
   }
@@ -73,7 +73,13 @@ export default function NftSend({
     }
   }, [setShowAddressBook, toAccount.address])
 
-  function setAddress({ address, title }: { address: string; title: string }) {
+  function setAddress({
+    address,
+    title
+  }: {
+    address: string
+    title: string
+  }): void {
     toAccount.setAddress?.(address)
     toAccount.setTitle?.(title)
   }
@@ -82,7 +88,7 @@ export default function NftSend({
     item: Contact | Account,
     type: AddrBookItemType,
     source: AddressBookSource
-  ) => {
+  ): void => {
     switch (activeNetwork.vmName) {
       case NetworkVMType.EVM:
         setAddress({ address: item.address, title: item.title })
@@ -101,7 +107,7 @@ export default function NftSend({
   }
 
   const handleGasPriceChange = useCallback(
-    (gasPrice1, feePreset) => {
+    (gasPrice1: bigint, feePreset: FeePreset) => {
       if (feePreset !== selectedFeePreset) {
         capture('NftSendFeeOptionChanged', {
           modifier: feePreset
@@ -184,7 +190,7 @@ export default function NftSend({
   )
 }
 
-const CollectibleItem = ({ nft }: { nft: NFTItemData }) => {
+const CollectibleItem = ({ nft }: { nft: NFTItemData }): JSX.Element => {
   const { theme } = useApplicationContext()
 
   return (

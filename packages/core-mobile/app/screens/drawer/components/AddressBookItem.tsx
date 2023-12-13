@@ -3,19 +3,19 @@ import AvaListItem from 'components/AvaListItem'
 import { useNavigation } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
 import { WalletScreenProps } from 'navigation/types'
-import { usePostCapture } from 'hooks/usePosthogCapture'
 import AddressBookSVG from 'components/svg/AddressBookSVG'
 import { View } from 'react-native'
+import { useAnalytics } from 'hooks/useAnalytics'
 
 type NavigationProp = WalletScreenProps<
   typeof AppNavigation.Wallet.Drawer
 >['navigation']
 
-const AddressBookItem = () => {
+const AddressBookItem = (): JSX.Element => {
   const navigation = useNavigation<NavigationProp>()
-  const { capture } = usePostCapture()
+  const { capture } = useAnalytics()
 
-  const icon = () => {
+  const icon = (): JSX.Element => {
     return (
       <View style={{ marginRight: -8 }}>
         <AddressBookSVG />

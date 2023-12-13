@@ -295,7 +295,11 @@ export const selectIsSeedlessMfaYubikeyBlocked = (
 // actions
 export const { regenerateUserId, toggleAnalytics, setFeatureFlags } =
   posthogSlice.actions
-export const capture = createAction<{ event: string; properties?: JsonMap }>(
+
+/**
+ * do not call _capture directly, use captureEvent function instead
+ */
+export const _capture = createAction<{ event: string; properties?: JsonMap }>(
   `${reducerName}/capture`
 )
 

@@ -16,10 +16,10 @@ import {
 import { AppStartListening } from 'store/middleware/listener'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import Logger from 'utils/Logger'
-import { capture } from 'store/posthog'
 import DeviceInfo from 'react-native-device-info'
 import { WalletType } from 'services/wallet/types'
 import SecureStorageService from 'security/SecureStorageService'
+import { captureEvent } from 'hooks/useAnalytics'
 import {
   onAppLocked,
   onAppUnlocked,
@@ -45,13 +45,8 @@ const init = async (
   isWalletActive && dispatch(setWalletState(WalletState.INACTIVE))
 
   const fontScale = await DeviceInfo.getFontScale()
-  dispatch(
-    capture({
-      event: 'ApplicationLaunched',
-      properties: { FontScale: fontScale }
-    })
-  )
-  dispatch(capture({ event: 'ApplicationOpened' }))
+  dispatch(captureEvent('ApplicationLaunched', { FontScale: fontScale }))
+  dispatch(captureEvent('ApplicationOpened'))
   listenToAppState(listenerApi)
 
   if (Platform.OS === 'android') {
@@ -79,7 +74,7 @@ const listenToAppState = async (
         nextAppState === 'active'
       ) {
         Logger.info('app comes back to foreground')
-        dispatch(capture({ event: 'ApplicationOpened' }))
+        dispatch(captureEvent('ApplicationOpened'))
         dispatch(onForeground())
       } else if (nextAppState === 'background') {
         Logger.info('app goes to background')

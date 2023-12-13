@@ -9,10 +9,10 @@ import { SendTokensScreenProps } from 'navigation/types'
 import FeatureBlocked from 'screens/posthog/FeatureBlocked'
 import { TokenWithBalance } from 'store/balance'
 import { SubHeaderOptions } from 'navigation/NavUtils'
-import { usePostCapture } from 'hooks/usePosthogCapture'
 import { Contact } from 'store/addressBook'
 import { useSelector } from 'react-redux'
 import { selectIsSendBlocked } from 'store/posthog'
+import { useAnalytics } from 'hooks/useAnalytics'
 
 export type SendStackParamList = {
   [AppNavigation.Send.Send]:
@@ -62,7 +62,7 @@ type SendScreenProps = SendTokensScreenProps<typeof AppNavigation.Send.Send>
 const SendTokenComponent = (): JSX.Element => {
   const { navigate } = useNavigation<SendScreenProps['navigation']>()
   const { params } = useRoute<SendScreenProps['route']>()
-  const { capture } = usePostCapture()
+  const { capture } = useAnalytics()
 
   const onOpenSelectToken = (
     onTokenSelected: (token: TokenWithBalance) => void

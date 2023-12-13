@@ -16,8 +16,8 @@ import { BalanceItem } from 'screens/earn/components/BalanceItem'
 import { Row } from 'components/Row'
 import { useImportAnyStuckFunds } from 'hooks/earn/useImportAnyStuckFunds'
 import { Avax } from 'types/Avax'
-import { usePostCapture } from 'hooks/usePosthogCapture'
 import { Tooltip } from 'components/Tooltip'
+import { useAnalytics } from 'hooks/useAnalytics'
 import { getStakePrimaryColor } from '../utils'
 import { BalanceLoader } from './BalanceLoader'
 import { CircularProgress } from './CircularProgress'
@@ -25,7 +25,7 @@ import { CircularProgress } from './CircularProgress'
 type ScreenProps = EarnScreenProps<typeof AppNavigation.Earn.StakeDashboard>
 
 export const Balance = (): JSX.Element | null => {
-  const { capture } = usePostCapture()
+  const { capture } = useAnalytics()
   const { theme } = useApplicationContext()
   const { navigate } = useNavigation<ScreenProps['navigation']>()
   const pChainBalance = usePChainBalance()

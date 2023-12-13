@@ -14,10 +14,10 @@ import { NetworkLogo } from 'screens/network/NetworkLogo'
 import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList'
 import { selectActiveNetwork } from 'store/network'
 import { selectActiveAccount } from 'store/account'
-import { usePostCapture } from 'hooks/usePosthogCapture'
 import { getCardHighLightColor } from 'utils/color/getCardHighLightColor'
 import usePendingBridgeTransactions from 'screens/bridge/hooks/usePendingBridgeTransactions'
 import TopRightBadge from 'components/TopRightBadge'
+import { useAnalytics } from 'hooks/useAnalytics'
 import ZeroState from './ZeroState'
 import Tokens from './Tokens'
 
@@ -25,7 +25,7 @@ type NavigationProp = PortfolioScreenProps<
   typeof AppNavigation.Portfolio.Portfolio
 >['navigation']
 
-const ActiveNetworkCard = () => {
+const ActiveNetworkCard = (): JSX.Element => {
   const { filteredTokenList: tokens } = useSearchableTokenList()
 
   const network = useSelector(selectActiveNetwork)
@@ -37,7 +37,7 @@ const ActiveNetworkCard = () => {
     )
   )
   const { navigate } = useNavigation<NavigationProp>()
-  const { capture } = usePostCapture()
+  const { capture } = useAnalytics()
   const {
     appHook: { currencyFormatter },
     theme
@@ -46,14 +46,14 @@ const ActiveNetworkCard = () => {
   const highlighColor = getCardHighLightColor(theme)
   const pendingBridgeTxs = usePendingBridgeTransactions(network)
 
-  const navigateToNetworkTokens = () => {
+  const navigateToNetworkTokens = (): void => {
     capture('PortfolioPrimaryNetworkClicked', {
       chainId: network.chainId
     })
     navigate(AppNavigation.Portfolio.NetworkTokens)
   }
 
-  const renderHeader = () => {
+  const renderHeader = (): JSX.Element => {
     const balanceTextColor = theme.colorText3
     const tagTextColor = theme.colorBg2
     const tagBgColor = theme.colorText3
@@ -96,7 +96,7 @@ const ActiveNetworkCard = () => {
     )
   }
 
-  const renderSeparator = () => {
+  const renderSeparator = (): JSX.Element => {
     const separatorColor = theme.colorText3 + Opacity20
     return (
       <Separator
@@ -105,7 +105,7 @@ const ActiveNetworkCard = () => {
     )
   }
 
-  const renderContent = () => {
+  const renderContent = (): JSX.Element => {
     if (tokens.length === 0) return <ZeroState />
 
     return <Tokens />

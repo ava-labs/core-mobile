@@ -24,15 +24,15 @@ import { useCChainBalance } from 'hooks/earn/useCChainBalance'
 import { useGetClaimableBalance } from 'hooks/earn/useGetClaimableBalance'
 import { ActivityIndicator } from 'components/ActivityIndicator'
 import { useAvaxFormatter } from 'hooks/formatter/useAvaxFormatter'
-import { usePostCapture } from 'hooks/usePosthogCapture'
 import { Tooltip } from 'components/Tooltip'
+import { useAnalytics } from 'hooks/useAnalytics'
 
 type ScreenProps = StakeSetupScreenProps<
   typeof AppNavigation.StakeSetup.SmartStakeAmount
 >
 
 export default function StakingAmount(): JSX.Element {
-  const { capture } = usePostCapture()
+  const { capture } = useAnalytics()
   const avaxFormatter = useAvaxFormatter()
   const { theme } = useApplicationContext()
   const { navigate } = useNavigation<ScreenProps['navigation']>()

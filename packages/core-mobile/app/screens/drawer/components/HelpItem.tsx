@@ -1,13 +1,13 @@
 import React from 'react'
 import AvaListItem from 'components/AvaListItem'
 import useInAppBrowser from 'hooks/useInAppBrowser'
-import { usePostCapture } from 'hooks/usePosthogCapture'
+import { useAnalytics } from 'hooks/useAnalytics'
 
 const HELP_URL = 'https://support.avax.network/en/'
 
-const HelpItem = () => {
+const HelpItem = (): JSX.Element => {
   const { openUrl } = useInAppBrowser()
-  const { capture } = usePostCapture()
+  const { capture } = useAnalytics()
 
   return (
     <AvaListItem.Base

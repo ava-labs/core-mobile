@@ -30,10 +30,10 @@ import TransactionToast, {
 } from 'components/toast/TransactionToast'
 import BN from 'bn.js'
 import SentryWrapper from 'services/sentry/SentryWrapper'
-import { usePostCapture } from 'hooks/usePosthogCapture'
 import { formatUriImageToPng } from 'utils/Contentful'
 import { bnToBigint } from 'utils/bigNumbers/bnToBigint'
 import Logger from 'utils/Logger'
+import { useAnalytics } from 'hooks/useAnalytics'
 
 export interface SendTokenContextState {
   sendToken: TokenWithBalance | undefined
@@ -63,9 +63,9 @@ export const SendTokenContextProvider = ({
   children
 }: {
   children: ReactNode
-}) => {
+}): JSX.Element => {
   const { theme } = useApplicationContext()
-  const { capture } = usePostCapture()
+  const { capture } = useAnalytics()
   const activeAccount = useSelector(selectActiveAccount)
   const activeNetwork = useSelector(selectActiveNetwork)
   const selectedCurrency = useSelector(selectSelectedCurrency)
@@ -161,7 +161,7 @@ export const SendTokenContextProvider = ({
     trueGasLimit
   ])
 
-  function onSendNow() {
+  function onSendNow(): void {
     if (!activeAccount) {
       setSendStatus('Fail')
       setSendStatusMsg('No active account')
@@ -271,7 +271,7 @@ export const SendTokenContextProvider = ({
     }
   }, [sendToken, theme])
 
-  function validateStateFx() {
+  function validateStateFx(): void {
     if (!activeAccount) {
       setError('Account not set')
       setCanSubmit(false)
@@ -349,7 +349,7 @@ export const SendTokenContextProvider = ({
   )
 }
 
-export function useSendTokenContext() {
+export function useSendTokenContext(): SendTokenContextState {
   return useContext(SendTokenContext)
 }
 

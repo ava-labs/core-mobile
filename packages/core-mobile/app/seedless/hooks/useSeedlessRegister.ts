@@ -1,4 +1,4 @@
-import { usePostCapture } from 'hooks/usePosthogCapture'
+import { useAnalytics } from 'hooks/useAnalytics'
 import { useState } from 'react'
 import SecureStorageService, { KeySlot } from 'security/SecureStorageService'
 import { OidcProviders } from 'seedless/consts'
@@ -32,7 +32,7 @@ type ReturnType = {
 
 export const useSeedlessRegister = (): ReturnType => {
   const [isRegistering, setIsRegistering] = useState(false)
-  const { capture } = usePostCapture()
+  const { capture } = useAnalytics()
 
   const register = async ({
     getOidcToken,

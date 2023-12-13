@@ -13,9 +13,9 @@ import EarnSVG from 'components/svg/EarnSVG'
 import { usePosthogContext } from 'contexts/PosthogContext'
 import { useIsAvalancheNetwork } from 'hooks/useIsAvalancheNetwork'
 import { useIsEarnDashboardEnabled } from 'hooks/earn/useIsEarnDashboardEnabled'
-import { usePostCapture } from 'hooks/usePosthogCapture'
 import BrowserSVG from 'components/svg/BrowserSVG'
 import BrowserScreenStack from 'navigation/wallet/BrowserScreenStack'
+import { useAnalytics } from 'hooks/useAnalytics'
 import EarnScreenStack from './EarnScreenStack/EarnScreenStack'
 
 export type TabNavigatorParamList = {
@@ -33,7 +33,7 @@ const TabNavigator: () => JSX.Element = () => {
   const { earnBlocked, browserBlocked } = usePosthogContext()
   const { isEarnDashboardEnabled } = useIsEarnDashboardEnabled()
   const isAvalancheNetwork = useIsAvalancheNetwork()
-  const { capture } = usePostCapture()
+  const { capture } = useAnalytics()
 
   const renderEarnTab: () => null | JSX.Element = () => {
     if (earnBlocked) return null

@@ -6,7 +6,7 @@ import { useNavigation } from '@react-navigation/native'
 import { copyToClipboard } from 'utils/DeviceTools'
 import Logger from 'utils/Logger'
 import SeedlessService from 'seedless/services/SeedlessService'
-import { usePostCapture } from 'hooks/usePosthogCapture'
+import { useAnalytics } from 'hooks/useAnalytics'
 import ContentCopy from '../assets/ContentCopy.svg'
 import QrCodeScanner from '../assets/QrCodeScanner.svg'
 import { Card } from '../components/Card'
@@ -20,7 +20,7 @@ export const AuthenticatorSetup = (): JSX.Element => {
   const [code, setCode] = useState<string>()
   const { navigate } =
     useNavigation<AuthenticatorSetupScreenProps['navigation']>()
-  const { capture } = usePostCapture()
+  const { capture } = useAnalytics()
 
   const openLearnMore = (): void => {
     navigate(AppNavigation.RecoveryMethods.LearnMore, { totpCode: code })

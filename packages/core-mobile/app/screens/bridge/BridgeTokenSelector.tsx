@@ -11,7 +11,7 @@ import SearchBar from 'components/SearchBar'
 
 import { BottomSheetFlatList } from '@gorhom/bottom-sheet'
 import { AssetBalance } from 'screens/bridge/utils/types'
-import { usePostCapture } from 'hooks/usePosthogCapture'
+import { useAnalytics } from 'hooks/useAnalytics'
 
 const DEFAULT_HORIZONTAL_MARGIN = 16
 
@@ -32,17 +32,17 @@ function BridgeTokenSelector({
   onTokenSelected,
   bridgeTokenList,
   horizontalMargin = DEFAULT_HORIZONTAL_MARGIN
-}: TokenSelectorProps) {
+}: TokenSelectorProps): JSX.Element {
   const [searchText, setSearchText] = useState('')
   const tokenInfoData = useTokenInfoContext()
-  const { capture } = usePostCapture()
+  const { capture } = useAnalytics()
 
-  const renderItem = (item: ListRenderItemInfo<AssetBalance>) => {
+  const renderItem = (item: ListRenderItemInfo<AssetBalance>): JSX.Element => {
     const token = item.item
     const symbol = token.asset.symbol
     const name = token.symbol === 'ETH' ? 'Ethereum' : token.asset.tokenName
 
-    const tokenLogo = () => {
+    const tokenLogo = (): JSX.Element => {
       return (
         <Avatar.Custom
           name={name}

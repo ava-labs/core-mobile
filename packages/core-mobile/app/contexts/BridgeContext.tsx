@@ -38,10 +38,10 @@ import { Network } from '@avalabs/chains-sdk'
 import Logger from 'utils/Logger'
 import { TransactionResponse } from 'ethers'
 import { showSnackBarCustom } from 'components/Snackbar'
-import { usePostCapture } from 'hooks/usePosthogCapture'
 import TransactionToast, {
   TransactionToastType
 } from 'components/toast/TransactionToast'
+import { useAnalytics } from 'hooks/useAnalytics'
 
 export enum TransferEventType {
   WRAP_STATUS = 'wrap_status',
@@ -99,7 +99,7 @@ function LocalBridgeProvider({
   const bitcoinProvider = useBitcoinProvider()
   const avalancheProvider = useAvalancheProvider()
   const { bridgeConfig: bridgeConfigSDK, setBridgeConfig } = useBridgeSDK()
-  const { capture } = usePostCapture()
+  const { capture } = useAnalytics()
   const isToastVisible = useRef<boolean>()
 
   const removeBridgeTransaction = useCallback(

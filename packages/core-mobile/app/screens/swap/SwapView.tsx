@@ -25,10 +25,10 @@ import SwapTransactionDetail from 'screens/swap/components/SwapTransactionDetail
 import { calculateRate } from 'swap/utils'
 import { calculateGasAndFees, getMaxValue, truncateBN } from 'utils/Utils'
 import { bnToLocaleString } from '@avalabs/utils-sdk'
-import { usePostCapture } from 'hooks/usePosthogCapture'
 import { selectActiveNetwork } from 'store/network'
 import { useNetworkFee } from 'hooks/useNetworkFee'
 import Logger from 'utils/Logger'
+import { useAnalytics } from 'hooks/useAnalytics'
 
 type NavigationProp = SwapScreenProps<
   typeof AppNavigation.Swap.Swap
@@ -40,7 +40,7 @@ export type Amount = {
 }
 
 export default function SwapView(): JSX.Element {
-  const { capture } = usePostCapture()
+  const { capture } = useAnalytics()
   const { theme } = useApplicationContext()
   const { navigate } = useNavigation<NavigationProp>()
   const activeNetwork = useSelector(selectActiveNetwork)

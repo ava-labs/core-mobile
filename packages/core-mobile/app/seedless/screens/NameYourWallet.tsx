@@ -1,7 +1,7 @@
 import { Button, Text, View, useTheme } from '@avalabs/k2-mobile'
 import { useFocusEffect } from '@react-navigation/native'
 import InputText from 'components/InputText'
-import { usePostCapture } from 'hooks/usePosthogCapture'
+import { useAnalytics } from 'hooks/useAnalytics'
 import React, { useCallback, useRef, useState } from 'react'
 import { TextInput } from 'react-native'
 import { useDispatch } from 'react-redux'
@@ -18,7 +18,7 @@ export const NameYourWallet = ({
   const {
     theme: { colors }
   } = useTheme()
-  const { capture } = usePostCapture()
+  const { capture } = useAnalytics()
   const [containerWidth, setContainerWidth] = useState(0)
   const [textWidth, setTextWidth] = useState(0)
 

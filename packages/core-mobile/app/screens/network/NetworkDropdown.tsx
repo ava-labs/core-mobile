@@ -18,7 +18,7 @@ import {
 } from 'store/network'
 import { arrayHash } from 'utils/Utils'
 import SettingsCogSVG from 'components/svg/SettingsCogSVG'
-import { usePostCapture } from 'hooks/usePosthogCapture'
+import { useAnalytics } from 'hooks/useAnalytics'
 import { NetworkLogo } from './NetworkLogo'
 
 const ManageNetworks = 'Manage networks'
@@ -27,12 +27,12 @@ type NetworkDropdownNavigationProp = DrawerScreenProps<
   typeof AppNavigation.Wallet.Tabs
 >['navigation']
 
-export default function NetworkDropdown() {
+export default function NetworkDropdown(): JSX.Element {
   const favoriteNetworks = useSelector(selectFavoriteNetworks)
   const activeNetwork = useSelector(selectActiveNetwork)
   const dispatch = useDispatch()
   const { theme } = useApplicationContext()
-  const { capture } = usePostCapture()
+  const { capture } = useAnalytics()
   const navigation = useNavigation<NetworkDropdownNavigationProp>()
 
   const data = useMemo(
@@ -63,11 +63,11 @@ export default function NetworkDropdown() {
     item => item.chainId === activeNetwork.chainId
   )
 
-  const renderSelection = (selectedItem: typeof data[0]) => (
+  const renderSelection = (selectedItem: typeof data[0]): JSX.Element => (
     <Selection logoUri={selectedItem.logoUri} />
   )
 
-  const renderOption = ({ item }: { item: typeof data[0] }) => (
+  const renderOption = ({ item }: { item: typeof data[0] }): JSX.Element => (
     <Option
       networkName={item.name}
       networkLogo={item.logoUri}
@@ -75,7 +75,7 @@ export default function NetworkDropdown() {
     />
   )
 
-  const handleOnDropDownToggle = (isOpen: boolean) => {
+  const handleOnDropDownToggle = (isOpen: boolean): void => {
     if (isOpen) {
       capture('NetworkSwitcherOpened')
     }
@@ -122,7 +122,7 @@ export default function NetworkDropdown() {
   )
 }
 
-function Selection({ logoUri }: { logoUri: string }) {
+function Selection({ logoUri }: { logoUri: string }): JSX.Element {
   return (
     <View style={{ marginRight: 2 }}>
       <NetworkLogo
@@ -142,7 +142,7 @@ function Option({
   networkLogo: string
   networkName: string
   isSelected: boolean
-}) {
+}): JSX.Element {
   return (
     <Row
       style={{
