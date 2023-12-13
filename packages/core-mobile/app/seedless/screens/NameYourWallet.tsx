@@ -80,7 +80,7 @@ export const NameYourWallet = ({
             justifyContent: 'center',
             alignItems: 'center',
             right: 16,
-            position: undefined
+            position: 'relative'
           }}
         />
         {shouldShowLongText && (
