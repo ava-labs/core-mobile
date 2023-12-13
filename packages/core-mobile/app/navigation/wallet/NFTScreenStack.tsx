@@ -13,7 +13,7 @@ import NFTSendScreenStack, {
 } from 'navigation/wallet/NFTSendStack'
 import { NFTDetailsScreenProps } from 'navigation/types'
 import { NFTItemData } from 'store/nft'
-import { usePostCapture } from 'hooks/usePosthogCapture'
+import { useAnalytics } from 'hooks/useAnalytics'
 
 export type NFTStackParamList = {
   [AppNavigation.Nft.Details]: { nft: NFTItemData }
@@ -28,7 +28,7 @@ export type NFTStackParamList = {
 
 const NFTStack = createStackNavigator<NFTStackParamList>()
 
-function NFTScreenStack() {
+function NFTScreenStack(): JSX.Element {
   return (
     <NFTStack.Navigator
       screenOptions={{
@@ -62,16 +62,16 @@ type NftDetailsScreenProps = NFTDetailsScreenProps<
   typeof AppNavigation.Nft.Details
 >
 
-const NftDetailsScreen = () => {
+const NftDetailsScreen = (): JSX.Element => {
   const { navigate } = useNavigation<NftDetailsScreenProps['navigation']>()
   const { params } = useRoute<NftDetailsScreenProps['route']>()
-  const { capture } = usePostCapture()
+  const { capture } = useAnalytics()
 
-  const openImageFull = (url: string, isSvg: boolean) => {
+  const openImageFull = (url: string, isSvg: boolean): void => {
     navigate(AppNavigation.Nft.FullScreen, { url, isSvg })
   }
 
-  const openSendNftScreen = (item: NFTItemData) => {
+  const openSendNftScreen = (item: NFTItemData): void => {
     capture('CollectibleSendClicked', { chainId: item.chainId })
     navigate(AppNavigation.Nft.Send, { nft: item })
   }

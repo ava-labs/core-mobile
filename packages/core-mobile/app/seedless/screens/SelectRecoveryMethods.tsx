@@ -9,13 +9,13 @@ import { RecoveryMethodsContext } from 'navigation/onboarding/RecoveryMethodsSta
 import Logger from 'utils/Logger'
 import { showSimpleToast } from 'components/Snackbar'
 import { hideOwl, showOwl } from 'components/GlobalOwlLoader'
-import { usePostCapture } from 'hooks/usePosthogCapture'
 import { useSelector } from 'react-redux'
 import {
   selectIsSeedlessMfaAuthenticatorBlocked,
   selectIsSeedlessMfaPasskeyBlocked,
   selectIsSeedlessMfaYubikeyBlocked
 } from 'store/posthog'
+import { useAnalytics } from 'hooks/useAnalytics'
 import { Card } from '../components/Card'
 
 type SelectRecoveryMethodsScreenProps = RecoveryMethodsScreenProps<
@@ -32,7 +32,7 @@ export const SelectRecoveryMethods = (): JSX.Element => {
   const {
     params: { mfaMethods }
   } = useRoute<SelectRecoveryMethodsScreenProps['route']>()
-  const { capture } = usePostCapture()
+  const { capture } = useAnalytics()
   const isSeedlessMfaAuthenticatorBlocked = useSelector(
     selectIsSeedlessMfaAuthenticatorBlocked
   )

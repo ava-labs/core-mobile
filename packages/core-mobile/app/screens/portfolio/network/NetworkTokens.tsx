@@ -13,7 +13,6 @@ import {
 import { UI, useIsUIDisabled } from 'hooks/useIsUIDisabled'
 import { LocalTokenWithBalance } from 'store/balance'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { usePostCapture } from 'hooks/usePosthogCapture'
 import { getSelectedToken } from 'utils/getSelectedToken'
 import TabViewAva from 'components/TabViewAva'
 import AvaText from 'components/AvaText'
@@ -23,18 +22,19 @@ import usePendingBridgeTransactions from 'screens/bridge/hooks/usePendingBridgeT
 import { selectActiveNetwork } from 'store/network'
 import { useSelector } from 'react-redux'
 import TopRightBadge from 'components/TopRightBadge'
+import { useAnalytics } from 'hooks/useAnalytics'
 import NetworkTokensHeader from './components/NetworkTokensHeader'
 
 type NavigationProp = PortfolioScreenProps<
   typeof AppNavigation.Portfolio.NetworkTokens
 >
 
-const NetworkTokens = () => {
+const NetworkTokens = (): JSX.Element => {
   const { params } = useRoute<NavigationProp['route']>()
   const { navigate, getParent, setParams } =
     useNavigation<NavigationProp['navigation']>()
   const { theme } = useApplicationContext()
-  const { capture } = usePostCapture()
+  const { capture } = useAnalytics()
   const {
     isLoading,
     isRefetching,
@@ -58,9 +58,9 @@ const NetworkTokens = () => {
     }
   }, [getParent])
 
-  const goToReceive = () => navigate(AppNavigation.Wallet.ReceiveTokens)
+  const goToReceive = (): void => navigate(AppNavigation.Wallet.ReceiveTokens)
 
-  const selectToken = (token: LocalTokenWithBalance) => {
+  const selectToken = (token: LocalTokenWithBalance): void => {
     navigate(AppNavigation.Wallet.OwnedTokenDetail, {
       tokenId: token.localId
     })
@@ -74,11 +74,11 @@ const NetworkTokens = () => {
     })
   }
 
-  const manageTokens = () => {
+  const manageTokens = (): void => {
     navigate(AppNavigation.Wallet.TokenManagement)
   }
 
-  const openTransactionDetails = (item: Transaction) => {
+  const openTransactionDetails = (item: Transaction): void => {
     navigate(AppNavigation.Wallet.ActivityDetail, {
       tx: item
     })
@@ -86,11 +86,11 @@ const NetworkTokens = () => {
 
   const openTransactionStatus = (
     statusParams: BridgeTransactionStatusParams
-  ) => {
+  ): void => {
     navigate(AppNavigation.Bridge.BridgeTransactionStatus, statusParams)
   }
 
-  function capturePosthogEvents(tabIndex: number) {
+  function capturePosthogEvents(tabIndex: number): void {
     if (tabIndex === NetworkTokensTabs.Activity) {
       // capture event only for the activity tab with old event name, by request from product
       capture('PortfolioActivityClicked')
@@ -101,7 +101,7 @@ const NetworkTokens = () => {
     title: string,
     selected: boolean,
     color: string
-  ) => {
+  ): JSX.Element => {
     return (
       <View>
         <AvaText.Heading3 textStyle={{ color }} ellipsizeMode="tail">
@@ -121,7 +121,9 @@ const NetworkTokens = () => {
     )
   }
 
-  const renderItem = (item: ListRenderItemInfo<LocalTokenWithBalance>) => {
+  const renderItem = (
+    item: ListRenderItemInfo<LocalTokenWithBalance>
+  ): JSX.Element => {
     const token = item.item
     return (
       <PortfolioListItem
@@ -136,7 +138,7 @@ const NetworkTokens = () => {
     )
   }
 
-  const renderManageButton = () => (
+  const renderManageButton = (): JSX.Element => (
     <View
       style={{
         flexDirection: 'row',
@@ -152,7 +154,7 @@ const NetworkTokens = () => {
     </View>
   )
 
-  const renderTokens = () => (
+  const renderTokens = (): JSX.Element => (
     <FlatList
       contentContainerStyle={{
         paddingHorizontal: 16,
@@ -169,7 +171,7 @@ const NetworkTokens = () => {
     />
   )
 
-  const renderZeroState = () => {
+  const renderZeroState = (): JSX.Element => {
     return (
       <View style={{ paddingHorizontal: 16, flex: 1, marginTop: -160 }}>
         <ZeroState.NetworkTokens goToReceive={goToReceive} />
@@ -177,13 +179,13 @@ const NetworkTokens = () => {
     )
   }
 
-  const renderTokenTab = () => {
+  const renderTokenTab = (): JSX.Element => {
     if (tokenList.length === 0) return renderZeroState()
 
     return renderTokens()
   }
 
-  const renderActivityTab = () => {
+  const renderActivityTab = (): JSX.Element => {
     return (
       <ActivityList
         openTransactionDetails={openTransactionDetails}

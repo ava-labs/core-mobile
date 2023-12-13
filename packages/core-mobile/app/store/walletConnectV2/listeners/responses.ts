@@ -2,19 +2,19 @@ import { AppListenerEffectAPI } from 'store'
 import { SessionTypes } from '@walletconnect/types'
 import WalletConnectService from 'services/walletconnectv2/WalletConnectService'
 import { ethErrors } from 'eth-rpc-errors'
-import { capture } from 'store/posthog'
 import { showSimpleToast, showDappToastError } from 'components/Snackbar'
 import Logger from 'utils/Logger'
 import { selectActiveAccount } from 'store/account'
 import { selectActiveNetwork } from 'store/network'
 import { UPDATE_SESSION_DELAY } from 'consts/walletConnect'
+import { captureEvent } from 'hooks/useAnalytics'
 import { onSendRpcError, onSendRpcResult } from '../slice'
 import { isSessionProposal } from './utils'
 
 export const sendRpcResult = async (
   action: ReturnType<typeof onSendRpcResult>,
   listenerApi: AppListenerEffectAPI
-) => {
+): Promise<void> => {
   const { request, result } = action.payload
   const { dispatch, getState } = listenerApi
 
@@ -41,14 +41,11 @@ export const sendRpcResult = async (
       showSimpleToast(message)
 
       dispatch(
-        capture({
-          event: 'WalletConnectSessionApprovedV2',
-          properties: {
-            namespaces,
-            requiredNamespaces,
-            optionalNamespaces,
-            dappUrl: url
-          }
+        captureEvent('WalletConnectSessionApprovedV2', {
+          namespaces,
+          requiredNamespaces,
+          optionalNamespaces,
+          dappUrl: url
         })
       )
 
@@ -96,7 +93,7 @@ export const sendRpcResult = async (
 
 export const sendRpcError = async (
   action: ReturnType<typeof onSendRpcError>
-) => {
+): Promise<void> => {
   const { request, error } = action.payload
 
   // only show error toast if it is not a user rejected error

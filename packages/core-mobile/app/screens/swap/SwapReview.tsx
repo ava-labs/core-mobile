@@ -21,8 +21,8 @@ import {
 import { calculateRate } from 'swap/utils'
 import { getTokenAddress } from 'swap/getSwapRate'
 import { TokenType } from 'store/balance'
-import { usePostCapture } from 'hooks/usePosthogCapture'
 import { Tooltip } from 'components/Tooltip'
+import { useAnalytics } from 'hooks/useAnalytics'
 
 const SECOND = 1000
 
@@ -46,7 +46,7 @@ const SwapReview = ({ onCancel, onBackToParent }: Props): JSX.Element => {
   const theme = useApplicationContext().theme
   const [secondsLeft, setSecondsLeft] = useState('0s')
   const [colorAnim] = useState(new Animated.Value(1))
-  const { capture } = usePostCapture()
+  const { capture } = useAnalytics()
 
   useEffect(() => {
     if (swapStatus === 'Swapping') {

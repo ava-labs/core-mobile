@@ -16,7 +16,7 @@ import AppleSignInService from 'services/socialSignIn/apple/AppleSignInService'
 import GoogleSigninService from 'services/socialSignIn/google/GoogleSigninService'
 import { showSimpleToast } from 'components/Snackbar'
 import { hideOwl, showOwl } from 'components/GlobalOwlLoader'
-import { usePostCapture } from 'hooks/usePosthogCapture'
+import { useAnalytics } from 'hooks/useAnalytics'
 
 type NavigationProp = OnboardScreenProps<
   typeof AppNavigation.Onboard.Signup
@@ -28,7 +28,7 @@ const SignupScreen: FC = () => {
   )
   const { navigate } = useNavigation<NavigationProp>()
   const { register, isRegistering } = useSeedlessRegister()
-  const { capture } = usePostCapture()
+  const { capture } = useAnalytics()
 
   useEffect(() => {
     isRegistering ? showOwl() : hideOwl()

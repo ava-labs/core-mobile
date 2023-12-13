@@ -1,5 +1,5 @@
 import { useDispatch } from 'react-redux'
-import { capture as captureAction } from 'store/posthog'
+import { _capture } from 'store/posthog'
 import { useCallback } from 'react'
 import { AnyAction } from '@reduxjs/toolkit'
 import { AnalyticsEvents } from 'types/analytics'
@@ -20,7 +20,7 @@ export function useAnalytics(): {
       ...properties: CaptureEventProperties<E>
     ) => {
       dispatch(
-        captureAction({
+        _capture({
           event,
           properties: properties[0]
         })
@@ -43,7 +43,7 @@ export function captureEvent<E extends AnalyticsEventName>(
   event: E,
   ...properties: CaptureEventProperties<E>
 ): AnyAction {
-  return captureAction({
+  return _capture({
     event,
     properties: properties[0]
   })

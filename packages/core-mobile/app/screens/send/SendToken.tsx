@@ -27,9 +27,9 @@ import { bnToLocaleString } from '@avalabs/utils-sdk'
 import UniversalTokenSelector from 'components/UniversalTokenSelector'
 import { getMaxValue } from 'utils/Utils'
 import { Amount } from 'screens/swap/SwapView'
-import { usePostCapture } from 'hooks/usePosthogCapture'
 import { BN } from 'bn.js'
 import { AddrBookItemType, Contact } from 'store/addressBook'
+import { useAnalytics } from 'hooks/useAnalytics'
 import { FeePreset } from '../../components/NetworkFeeSelector'
 
 type Props = {
@@ -49,7 +49,7 @@ const SendToken: FC<Props> = ({
   token,
   contact
 }) => {
-  const { capture } = usePostCapture()
+  const { capture } = useAnalytics()
   const {
     setSendToken,
     sendToken,
@@ -126,7 +126,7 @@ const SendToken: FC<Props> = ({
     item: Contact | Account,
     type: AddrBookItemType,
     source: AddressBookSource
-  ) => {
+  ): void => {
     switch (activeNetwork.vmName) {
       case NetworkVMType.EVM:
         setAddress({ address: item.address, title: item.title })
@@ -142,7 +142,7 @@ const SendToken: FC<Props> = ({
     capture('SendContactSelected', { contactSource: source })
   }
 
-  const onNextPress = () => {
+  const onNextPress = (): void => {
     saveRecentContact()
     onNext()
   }

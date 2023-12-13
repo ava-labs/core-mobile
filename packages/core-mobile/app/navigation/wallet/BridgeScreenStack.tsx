@@ -14,9 +14,9 @@ import {
 } from 'navigation/types'
 import FeatureBlocked from 'screens/posthog/FeatureBlocked'
 import { AssetBalance } from 'screens/bridge/utils/types'
-import { usePostCapture } from 'hooks/usePosthogCapture'
 import { useSelector } from 'react-redux'
 import { selectIsBridgeBlocked } from 'store/posthog'
+import { useAnalytics } from 'hooks/useAnalytics'
 
 export type BridgeStackParamList = {
   [AppNavigation.Bridge.Bridge]: undefined
@@ -86,7 +86,7 @@ type HideTransactionNavigationProp = BridgeScreenProps<
 
 const HideTransactionWarningModal = (): JSX.Element => {
   const navigation = useNavigation<HideTransactionNavigationProp>()
-  const { capture } = usePostCapture()
+  const { capture } = useAnalytics()
 
   const onHide = (): void => {
     navigation.getParent()?.goBack()

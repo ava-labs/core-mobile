@@ -10,9 +10,9 @@ import { useSelector } from 'react-redux'
 import { showSnackBarCustom } from 'components/Snackbar'
 import GeneralToast from 'components/toast/GeneralToast'
 import { NameYourWallet } from 'seedless/screens/NameYourWallet'
-import { usePostCapture } from 'hooks/usePosthogCapture'
 import EnterWithMnemonicStack from 'navigation/onboarding/EnterWithMnemonicStack'
 import { isPinRecovery, setPinRecovery } from 'utils/Navigation'
+import { useAnalytics } from 'hooks/useAnalytics'
 import SignupScreen from './onboarding/SignupScreen'
 import { WelcomeScreenStackParamList } from './onboarding/WelcomeScreenStack'
 import { OnboardScreenProps } from './types'
@@ -110,7 +110,7 @@ type NameYourWalletNavigationProp = OnboardScreenProps<
 
 const NameYourWalletScreen = (): JSX.Element => {
   const { navigate } = useNavigation<NameYourWalletNavigationProp>()
-  const { capture } = usePostCapture()
+  const { capture } = useAnalytics()
 
   const onSetWalletName = (): void => {
     capture('Onboard:WalletNameSet')

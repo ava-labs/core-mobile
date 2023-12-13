@@ -7,7 +7,7 @@ import { Space } from 'components/Space'
 import { copyToClipboard } from 'utils/DeviceTools'
 import Logger from 'utils/Logger'
 import SeedlessService from 'seedless/services/SeedlessService'
-import { usePostCapture } from 'hooks/usePosthogCapture'
+import { useAnalytics } from 'hooks/useAnalytics'
 import ContentCopy from '../assets/ContentCopy.svg'
 import { Card } from '../components/Card'
 import { SnackBarMessage } from '../components/SnackBarMessage'
@@ -19,7 +19,7 @@ type LearnMoreScreenProps = RecoveryMethodsScreenProps<
 export const LearnMore = (): JSX.Element => {
   const { totpCode } = useRoute<LearnMoreScreenProps['route']>().params
   const [code, setCode] = useState<string>()
-  const { capture } = usePostCapture()
+  const { capture } = useAnalytics()
   const { canGoBack, goBack } =
     useNavigation<LearnMoreScreenProps['navigation']>()
 

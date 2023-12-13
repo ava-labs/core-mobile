@@ -23,9 +23,9 @@ import Logger from 'utils/Logger'
 import { DOCS_STAKING } from 'resources/Constants'
 import { useNow } from 'hooks/time/useNow'
 import { BackButton } from 'components/BackButton'
-import { usePostCapture } from 'hooks/usePosthogCapture'
 import { Tooltip } from 'components/Tooltip'
 import InfoSVG from 'components/svg/InfoSVG'
+import { useAnalytics } from 'hooks/useAnalytics'
 import { CustomDurationOptionItem } from './components/CustomDurationOptionItem'
 import { DurationOptionItem } from './components/DurationOptionItem'
 
@@ -34,7 +34,7 @@ type ScreenProps = StakeSetupScreenProps<
 >
 
 export const StakingDuration = (): JSX.Element => {
-  const { capture } = usePostCapture()
+  const { capture } = useAnalytics()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const currentDate = useNow()
   const minDelegationTime = isDeveloperMode ? ONE_DAY : TWO_WEEKS

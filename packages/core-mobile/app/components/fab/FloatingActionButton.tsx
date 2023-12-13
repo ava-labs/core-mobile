@@ -7,9 +7,9 @@ import Animated, {
 import React, { useCallback, useEffect, useMemo } from 'react'
 import { Pressable, StyleSheet, ViewStyle } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { usePostCapture } from 'hooks/usePosthogCapture'
 import { FABProps } from 'components/fab/types'
 import ActionItems from 'components/fab/ActionItems'
+import { useAnalytics } from 'hooks/useAnalytics'
 
 const springConfig = { damping: 11.5, stiffness: 95 }
 
@@ -21,10 +21,10 @@ const FloatingActionButton = ({
   setExpanded,
   resetOnItemPress = true,
   isLeftHanded
-}: FABProps) => {
+}: FABProps): JSX.Element => {
   const progress = useSharedValue(0)
   const { theme } = useApplicationContext()
-  const { capture } = usePostCapture()
+  const { capture } = useAnalytics()
 
   useEffect(() => {
     if (!expanded) {
@@ -32,7 +32,7 @@ const FloatingActionButton = ({
     }
   }, [expanded, progress])
 
-  function collapse() {
+  function collapse(): void {
     setExpanded(false)
   }
 

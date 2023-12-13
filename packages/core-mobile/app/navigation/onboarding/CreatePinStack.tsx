@@ -7,12 +7,12 @@ import { createStackNavigator } from '@react-navigation/stack'
 import { MainHeaderOptions } from 'navigation/NavUtils'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import TermsNConditionsModal from 'components/TermsNConditionsModal'
-import { usePostCapture } from 'hooks/usePosthogCapture'
 import OwlLoader from 'components/OwlLoader'
 import Logger from 'utils/Logger'
 import { WalletType } from 'services/wallet/types'
 import { SEEDLESS_MNEMONIC_STUB } from 'seedless/consts'
 import { useWallet } from 'hooks/useWallet'
+import { useAnalytics } from 'hooks/useAnalytics'
 import { CreateWalletScreenProps } from '../types'
 
 // This stack is for Seedless
@@ -57,7 +57,7 @@ type CreatePinNavigationProp = CreateWalletScreenProps<
 const CreatePinScreen = (): JSX.Element => {
   const { onPinCreated } = useWallet()
   const { navigate } = useNavigation<CreatePinNavigationProp>()
-  const { capture } = usePostCapture()
+  const { capture } = useAnalytics()
 
   const onPinSet = (pin: string): void => {
     capture('OnboardingPasswordSet')

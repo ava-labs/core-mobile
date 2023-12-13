@@ -8,11 +8,15 @@ import {
   killSessions as killSessionsAction,
   Request
 } from 'store/walletConnectV2'
-import { usePostCapture } from './usePosthogCapture'
+import { useAnalytics } from './useAnalytics'
 
-export const useDappConnectionV2 = () => {
+export const useDappConnectionV2 = (): {
+  onUserApproved: (request: Request, data?: unknown) => void
+  onUserRejected: (request: Request, message?: string) => void
+  killSessions: (sessionsToKill: Session[]) => Promise<void>
+} => {
   const dispatch = useDispatch()
-  const { capture } = usePostCapture()
+  const { capture } = useAnalytics()
 
   const onUserApproved = useCallback(
     (request: Request, data?: unknown) => {

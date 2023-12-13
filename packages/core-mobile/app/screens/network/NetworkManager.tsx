@@ -16,20 +16,20 @@ import ZeroState from 'components/ZeroState'
 import { NetworkListItem } from 'screens/network/NetworkListItem'
 import { Network } from '@avalabs/chains-sdk'
 import { useNavigation } from '@react-navigation/native'
-import { usePostCapture } from 'hooks/usePosthogCapture'
+import { useAnalytics } from 'hooks/useAnalytics'
 
 type Props = {
   onShowInfo: (chainId: ChainID) => void
 }
 
-export default function NetworkManager({ onShowInfo }: Props) {
+export default function NetworkManager({ onShowInfo }: Props): JSX.Element {
   const { goBack } = useNavigation()
   const networks = useSelector(selectNetworks)
   const customNetworks = useSelector(selectCustomNetworks)
   const favoriteNetworks = useSelector(selectFavoriteNetworks)
   const dispatch = useDispatch()
   const [searchText, setSearchText] = useState('')
-  const { capture } = usePostCapture()
+  const { capture } = useAnalytics()
   const title = 'Networks'
 
   const customNetworkChainIds = useMemo(
@@ -66,7 +66,7 @@ export default function NetworkManager({ onShowInfo }: Props) {
     label: string,
     selected: boolean,
     color: string
-  ) => {
+  ): JSX.Element => {
     return selected ? (
       <AvaText.ButtonMedium
         ellipsizeMode={'tail'}
@@ -82,17 +82,17 @@ export default function NetworkManager({ onShowInfo }: Props) {
     )
   }
 
-  function showInfo(chainId: number) {
+  function showInfo(chainId: number): void {
     capture('NetworkDetailsClicked', { chainId })
     onShowInfo(chainId)
   }
 
-  function connect(chainId: number) {
+  function connect(chainId: number): void {
     dispatch(setActive(chainId))
     goBack()
   }
 
-  const renderNetwork = ({ item }: { item: Network }) => {
+  const renderNetwork = ({ item }: { item: Network }): JSX.Element => {
     const isFavorite = favoriteNetworks.some(
       network => network.chainId === item.chainId
     )
@@ -176,6 +176,6 @@ export default function NetworkManager({ onShowInfo }: Props) {
   )
 }
 
-function sortNetworks(a: Network, b: Network) {
+function sortNetworks(a: Network, b: Network): number {
   return a.chainName.localeCompare(b.chainName)
 }

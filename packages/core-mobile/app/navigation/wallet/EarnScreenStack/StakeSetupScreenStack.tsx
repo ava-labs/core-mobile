@@ -15,7 +15,7 @@ import { Avax } from 'types/Avax'
 import { BackButton } from 'components/BackButton'
 import { FundsStuckModal } from 'screens/earn/FundsStuckModal'
 import { handleStakeConfirmationGoBack } from 'utils/earn/handleStakeConfirmationGoBack'
-import { usePostCapture } from 'hooks/usePosthogCapture'
+import { useAnalytics } from 'hooks/useAnalytics'
 
 export type StakeSetupStackParamList = {
   [AppNavigation.StakeSetup.GetStarted]: undefined
@@ -50,7 +50,7 @@ export type StakeSetupStackParamList = {
 
 const Stack = createStackNavigator<StakeSetupStackParamList>()
 
-function StakeSetupScreenStack() {
+function StakeSetupScreenStack(): JSX.Element {
   return (
     <Stack.Navigator
       screenOptions={() => {
@@ -109,11 +109,11 @@ type GetStartedScreenProps = StakeSetupScreenProps<
   typeof AppNavigation.StakeSetup.GetStarted
 >
 
-const GetStartedScreen = () => {
+const GetStartedScreen = (): JSX.Element => {
   const { navigate } = useNavigation<GetStartedScreenProps['navigation']>()
-  const { capture } = usePostCapture()
+  const { capture } = useAnalytics()
 
-  const navToSmartStakeAmount = () => {
+  const navToSmartStakeAmount = (): void => {
     capture('StakeOpenEnterAmount')
     navigate(AppNavigation.StakeSetup.SmartStakeAmount)
   }
@@ -125,10 +125,10 @@ type ConfirmationNavigationProp = StakeSetupScreenProps<
   typeof AppNavigation.StakeSetup.Confirmation
 >['navigation']
 
-const ConfirmationBackButton = () => {
+const ConfirmationBackButton = (): JSX.Element => {
   const navigation = useNavigation<ConfirmationNavigationProp>()
 
-  const onPress = () => {
+  const onPress = (): void => {
     handleStakeConfirmationGoBack(navigation)
   }
   return <BackButton onPress={onPress} />

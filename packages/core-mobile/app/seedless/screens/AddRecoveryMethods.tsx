@@ -10,13 +10,13 @@ import Logger from 'utils/Logger'
 import { FidoType } from 'services/passkey/types'
 import { showSimpleToast } from 'components/Snackbar'
 import { hideOwl, showOwl } from 'components/GlobalOwlLoader'
-import { usePostCapture } from 'hooks/usePosthogCapture'
 import { useSelector } from 'react-redux'
 import {
   selectIsSeedlessMfaAuthenticatorBlocked,
   selectIsSeedlessMfaPasskeyBlocked,
   selectIsSeedlessMfaYubikeyBlocked
 } from 'store/posthog'
+import { useAnalytics } from 'hooks/useAnalytics'
 import { Card } from '../components/Card'
 
 type AddRecoveryMethodsScreenProps = RecoveryMethodsScreenProps<
@@ -30,7 +30,7 @@ export const AddRecoveryMethods = (): JSX.Element => {
     theme: { colors }
   } = useTheme()
   const { mfaId, oidcToken } = useContext(RecoveryMethodsContext)
-  const { capture } = usePostCapture()
+  const { capture } = useAnalytics()
   const isSeedlessMfaPasskeyBlocked = useSelector(
     selectIsSeedlessMfaPasskeyBlocked
   )
@@ -44,7 +44,7 @@ export const AddRecoveryMethods = (): JSX.Element => {
   const goToAuthenticatorSetup = (): void => {
     navigate(AppNavigation.RecoveryMethods.AuthenticatorSetup)
 
-    capture('SeedlessAddMfa', { method: 'Authenticator' })
+    capture('SeedlessAddMfa', { type: 'Authenticator' })
   }
 
   const registerAndAuthenticateFido = async ({

@@ -8,7 +8,7 @@ import { usePosthogContext } from 'contexts/PosthogContext'
 import { WalletScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation } from '@react-navigation/native'
-import { usePostCapture } from 'hooks/usePosthogCapture'
+import { useAnalytics } from 'hooks/useAnalytics'
 import { TokenType } from './BuyCarefully'
 
 const MoonPayLogo = require('assets/icons/moonpay-icon.png')
@@ -20,11 +20,11 @@ type NavigationProp = WalletScreenProps<
 
 const Buy: FC = () => {
   const { theme } = useApplicationContext()
-  const { capture } = usePostCapture()
+  const { capture } = useAnalytics()
   const navigation = useNavigation<NavigationProp>()
   const { coinbasePayBlocked } = usePosthogContext()
 
-  const onPaySelection = (type: TokenType) => {
+  const onPaySelection = (type: TokenType): void => {
     capture(
       type === TokenType.COINBASE
         ? 'CoinbasePayBuyClicked'

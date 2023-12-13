@@ -10,17 +10,17 @@ import {
   selectActiveAccount,
   setActiveAccountIndex
 } from 'store/account'
-import { usePostCapture } from 'hooks/usePosthogCapture'
 import { Button, Text, View } from '@avalabs/k2-mobile'
 import { ActivityIndicator } from 'components/ActivityIndicator'
 import Logger from 'utils/Logger'
 import { showSimpleToast } from 'components/Snackbar'
 import WalletService from 'services/wallet/WalletService'
+import { useAnalytics } from 'hooks/useAnalytics'
 
 function AccountView({ onDone }: { onDone: () => void }): JSX.Element {
   const accounts = useSelector(selectAccounts)
   const dispatch = useDispatch()
-  const { capture } = usePostCapture()
+  const { capture } = useAnalytics()
   const [isAddingAccount, setIsAddingAccount] = useState(false)
 
   const addAccountAndSetActive = async (): Promise<void> => {

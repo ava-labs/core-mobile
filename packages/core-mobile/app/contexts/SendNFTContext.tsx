@@ -26,10 +26,10 @@ import TransactionToast, {
 import BN from 'bn.js'
 import { InteractionManager } from 'react-native'
 import SentryWrapper from 'services/sentry/SentryWrapper'
-import { usePostCapture } from 'hooks/usePosthogCapture'
 import { RootState } from 'store'
 import { bnToBigint } from 'utils/bigNumbers/bnToBigint'
 import Logger from 'utils/Logger'
+import { useAnalytics } from 'hooks/useAnalytics'
 
 export interface SendNFTContextState {
   sendToken: NFTItemData
@@ -55,8 +55,8 @@ export const SendNFTContextProvider = ({
 }: {
   nft: NFTItemData
   children: ReactNode
-}) => {
-  const { capture } = usePostCapture()
+}): JSX.Element => {
+  const { capture } = useAnalytics()
   const activeAccount = useSelector(selectActiveAccount)
   const activeNetwork = useSelector(selectActiveNetwork)
   const selectedCurrency = useSelector(selectSelectedCurrency)
@@ -120,7 +120,7 @@ export const SendNFTContextProvider = ({
     sendToken
   ])
 
-  function onSendNow() {
+  function onSendNow(): void {
     if (!activeAccount) {
       setSendStatus('Fail')
       setSendStatusMsg('No active account')
@@ -203,7 +203,7 @@ export const SendNFTContextProvider = ({
     })
   }
 
-  function validateStateFx() {
+  function validateStateFx(): void {
     if (!activeAccount) {
       setError('Account not set')
       setCanSubmit(false)
@@ -265,7 +265,7 @@ export const SendNFTContextProvider = ({
   )
 }
 
-export function useSendNFTContext() {
+export function useSendNFTContext(): SendNFTContextState {
   return useContext(SendNFTContext)
 }
 

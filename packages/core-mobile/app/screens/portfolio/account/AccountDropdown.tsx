@@ -13,7 +13,7 @@ import {
   selectActiveAccount,
   setActiveAccountIndex
 } from 'store/account'
-import { usePostCapture } from 'hooks/usePosthogCapture'
+import { useAnalytics } from 'hooks/useAnalytics'
 
 const Y_START = -400
 
@@ -27,7 +27,7 @@ function AccountDropdown({
   const { goBack } = useNavigation()
   const animTranslateY = useRef(new Animated.Value(Y_START)).current
   const dispatch = useDispatch()
-  const { capture } = usePostCapture()
+  const { capture } = useAnalytics()
 
   useEffect(() => {
     capture('AccountSelectorOpened')

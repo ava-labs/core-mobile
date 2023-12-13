@@ -2,7 +2,7 @@ import { Action, isAnyOf } from '@reduxjs/toolkit'
 import { AppStartListening } from 'store/middleware/listener'
 import { onLogIn, onLogOut, onRehydrationComplete } from 'store/app'
 import {
-  capture,
+  _capture,
   regenerateUserId,
   selectDistinctID,
   selectIsAnalyticsEnabled,
@@ -72,7 +72,7 @@ export const addPosthogListeners = (
   })
 
   startListening({
-    actionCreator: capture,
+    actionCreator: _capture,
     effect: async (action, api) => {
       const state = api.getState()
       const posthogUserId = selectUserID(state)

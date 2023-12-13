@@ -13,17 +13,17 @@ import { addContact } from 'store/addressBook'
 import { useDispatch } from 'react-redux'
 import { getContactValidationError } from 'screens/drawer/addressBook/utils'
 import { ScrollView } from 'react-native'
-import { usePostCapture } from 'hooks/usePosthogCapture'
+import { useAnalytics } from 'hooks/useAnalytics'
 
 type NavigationProp = AddressBookScreenProps<
   typeof AppNavigation.AddressBook.Add
 >['navigation']
 
-const AddContact = () => {
+const AddContact = (): JSX.Element => {
   const { goBack } = useNavigation<NavigationProp>()
   const dispatch = useDispatch()
   const { theme } = useApplicationContext()
-  const { capture } = usePostCapture()
+  const { capture } = useAnalytics()
   const [title, setTitle] = useState('')
   const [address, setAddress] = useState('')
   const [addressBtc, setAddressBtc] = useState('')
