@@ -4,6 +4,10 @@ import { useDispatch } from 'react-redux'
 import { capture as captureAction } from 'store/posthog'
 import { useCallback } from 'react'
 
+/**
+ * @deprecated use useAnalytics instead
+ */
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export const usePostCapture = () => {
   const dispatch = useDispatch()
 
