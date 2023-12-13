@@ -68,7 +68,7 @@ export type InputTextProps = {
   autoCorrect?: boolean
   inputTextContainerStyle?: SxProp
   onLayout?: (event: LayoutChangeEvent) => void
-  clearBtnContainerStyle?: SxProp
+  clearBtnContainerSx?: SxProp
 }
 
 const InputText = forwardRef<TextInput, InputTextProps>(
@@ -106,7 +106,7 @@ const InputText = forwardRef<TextInput, InputTextProps>(
       autoCorrect,
       inputTextContainerStyle,
       onLayout,
-      clearBtnContainerStyle
+      clearBtnContainerSx
     },
     ref
   ) => {
@@ -250,7 +250,7 @@ const InputText = forwardRef<TextInput, InputTextProps>(
               sx={{
                 position: 'absolute',
                 right: 8,
-                ...clearBtnContainerStyle
+                ...clearBtnContainerSx
               }}>
               <ClearBtn color={colors.$neutral400} onClear={onClear} />
             </View>

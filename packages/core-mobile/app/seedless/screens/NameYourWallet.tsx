@@ -76,7 +76,7 @@ export const NameYourWallet = ({
             flexDirection: 'row',
             alignItems: 'center'
           }}
-          clearBtnContainerStyle={{
+          clearBtnContainerSx={{
             justifyContent: 'center',
             alignItems: 'center',
             right: 16,
