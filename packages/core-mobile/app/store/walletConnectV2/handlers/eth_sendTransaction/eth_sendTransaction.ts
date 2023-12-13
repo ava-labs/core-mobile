@@ -137,7 +137,7 @@ class EthSendTransactionHandler
         {
           nonce,
           chainId: network.chainId,
-          maxFeePerGas: evmParams.maxFeePerGas,
+          gasPrice: evmParams.gasPrice,
           gasLimit: evmParams.gasLimit,
           data: evmParams.data,
           to: params.to,

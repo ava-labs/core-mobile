@@ -253,13 +253,13 @@ export default class SeedlessWallet implements Wallet {
       { provider }
     )
 
-    // seedless signer expects maxFeePerGas instead of gasPrice for EVM transactions
-    const nomalizedTx = { ...transaction }
-    if (transaction.gasPrice && !transaction.maxFeePerGas) {
-      nomalizedTx.maxFeePerGas = transaction.gasPrice
+    // set type 0 to indicate legacy transaction, since mobile doesn't support EIP-1559 yet
+    const legacyTx = {
+      ...transaction,
+      type: 0
     }
 
-    return signer.signTransaction(nomalizedTx)
+    return signer.signTransaction(legacyTx)
   }
 
   public async getPublicKey(): Promise<PubKeyType> {
