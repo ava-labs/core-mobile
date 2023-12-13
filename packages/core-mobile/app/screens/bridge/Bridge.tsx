@@ -52,7 +52,7 @@ import { BNInput } from 'components/BNInput'
 import BN from 'bn.js'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectBridgeCriticalConfig } from 'store/bridge'
-import { usePostCapture } from 'hooks/usePosthogCapture'
+import { useAnalytics } from 'hooks/useAnalytics'
 
 const blockchainTitleMaxWidth = Dimensions.get('window').width * 0.5
 const dropdownWith = Dimensions.get('window').width * 0.6
@@ -65,7 +65,7 @@ const sourceBlockchains = [
 
 const TRANSFER_ERROR = 'There was a problem with the transfer.'
 
-const formatBalance = (balance: Big | undefined) => {
+const formatBalance = (balance: Big | undefined): string | undefined => {
   return balance && formatTokenAmount(balance, 6)
 }
 
@@ -76,7 +76,7 @@ type NavigationProp = BridgeScreenProps<
 const Bridge: FC = () => {
   const navigation = useNavigation<NavigationProp>()
   const theme = useApplicationContext().theme
-  const { capture } = usePostCapture()
+  const { capture } = useAnalytics()
   const dispatch = useDispatch()
   const criticalConfig = useSelector(selectBridgeCriticalConfig)
 
@@ -180,7 +180,7 @@ const Bridge: FC = () => {
   /**
    * Opens token selection modal
    */
-  const navigateToTokenSelector = () => {
+  const navigateToTokenSelector = (): void => {
     navigation.navigate(AppNavigation.Modal.BridgeSelectToken, {
       onTokenSelected: handleSelect,
       bridgeTokenList: assetsWithBalances ?? []
@@ -202,7 +202,7 @@ const Bridge: FC = () => {
     [bridgeError, denomination, setAmount]
   )
 
-  const setCurrentBlockchain = (blockchain: Blockchain) => {
+  const setCurrentBlockchain = (blockchain: Blockchain): void => {
     // update network
     const blockChainNetwork = blockchainToNetwork(
       blockchain,
@@ -214,20 +214,20 @@ const Bridge: FC = () => {
     setAmount(BIG_ZERO)
   }
 
-  const handleBlockchainToggle = () => {
+  const handleBlockchainToggle = (): void => {
     if (targetBlockchain) {
       setCurrentBlockchain(targetBlockchain)
     }
   }
 
-  const handleSelect = (symbol: string) => {
+  const handleSelect = (symbol: string): void => {
     setCurrentAsset(symbol)
   }
 
   /**
    * Handles transfer transaction
    */
-  const handleTransfer = async () => {
+  const handleTransfer = async (): Promise<void> => {
     if (BIG_ZERO.eq(amount)) {
       return
     }
@@ -286,7 +286,7 @@ const Bridge: FC = () => {
   const renderBlockchain = (
     blockchain: Blockchain,
     textSize: 'large' | 'medium'
-  ) => {
+  ): JSX.Element => {
     const blockchainTitle = getBlockchainDisplayName(blockchain)
 
     const Text =
@@ -318,7 +318,7 @@ const Bridge: FC = () => {
     )
   }
 
-  const renderToBlockchain = (blockchain: Blockchain) => {
+  const renderToBlockchain = (blockchain: Blockchain): JSX.Element => {
     return (
       <Row
         style={{
@@ -333,7 +333,7 @@ const Bridge: FC = () => {
     )
   }
 
-  const renderFromBlockchain = (blockchain: Blockchain) => {
+  const renderFromBlockchain = (blockchain: Blockchain): JSX.Element => {
     return (
       <Row
         style={{
@@ -350,7 +350,7 @@ const Bridge: FC = () => {
   const renderDropdownItem = (
     blockchain: Blockchain,
     selectedBlockchain?: Blockchain
-  ) => {
+  ): JSX.Element => {
     const isSelected = blockchain === selectedBlockchain
 
     return (
@@ -384,7 +384,7 @@ const Bridge: FC = () => {
     )
   }
 
-  const renderFromSection = () => {
+  const renderFromSection = (): JSX.Element => {
     return (
       <>
         <AvaListItem.Base
@@ -414,7 +414,7 @@ const Bridge: FC = () => {
     )
   }
 
-  const renderBalance = () => {
+  const renderBalance = (): JSX.Element => {
     return (
       <AvaText.Body3
         color={theme.colorText2}
@@ -430,7 +430,7 @@ const Bridge: FC = () => {
       </AvaText.Body3>
     )
   }
-  const renderTokenSelectInput = () => (
+  const renderTokenSelectInput = (): JSX.Element => (
     <Pressable disabled={loading} onPress={() => navigateToTokenSelector()}>
       <Row style={styles.tokenRow}>
         {!!currentAsset && (
@@ -461,7 +461,7 @@ const Bridge: FC = () => {
     })
   }, [denomination, handleAmountChanged, maximum])
 
-  const renderAmountInput = () => (
+  const renderAmountInput = (): JSX.Element => (
     <View>
       <>
         <BNInput
@@ -496,7 +496,7 @@ const Bridge: FC = () => {
     </View>
   )
 
-  const renderError = () => {
+  const renderError = (): JSX.Element | false => {
     return (
       (!!bridgeError || isAmountTooLow || !hasEnoughForNetworkFee) && (
         <>
@@ -524,7 +524,7 @@ const Bridge: FC = () => {
     )
   }
 
-  const renderSelectSection = () => {
+  const renderSelectSection = (): JSX.Element => {
     return (
       <View style={styles.fromContainer}>
         {renderBalance()}
@@ -553,7 +553,7 @@ const Bridge: FC = () => {
     )
   }
 
-  const renderToggleBtn = () => {
+  const renderToggleBtn = (): JSX.Element => {
     return (
       <AvaButton.Base
         onPress={handleBlockchainToggle}
@@ -566,7 +566,7 @@ const Bridge: FC = () => {
     )
   }
 
-  const renderToSection = () => {
+  const renderToSection = (): JSX.Element => {
     return (
       <View>
         <AvaListItem.Base
@@ -601,7 +601,7 @@ const Bridge: FC = () => {
     )
   }
 
-  const renderTransferBtn = () => {
+  const renderTransferBtn = (): JSX.Element => {
     return (
       <AvaButton.Base
         style={[

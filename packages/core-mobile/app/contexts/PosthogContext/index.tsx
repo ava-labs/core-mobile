@@ -9,7 +9,6 @@ import React, {
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import useAppBackgroundTracker from 'hooks/useAppBackgroundTracker'
 import SentryWrapper from 'services/sentry/SentryWrapper'
-import { usePostCapture } from 'hooks/usePosthogCapture'
 import { useSelector, useDispatch } from 'react-redux'
 import {
   selectIsAnalyticsEnabled,
@@ -26,6 +25,7 @@ import {
   toggleAnalytics
 } from 'store/posthog'
 import { createInstance } from 'services/token/TokenService'
+import { useAnalytics } from 'hooks/useAnalytics'
 
 export const PosthogContext = createContext<PosthogContextState>(
   {} as PosthogContextState
@@ -50,7 +50,7 @@ export const PosthogContextProvider = ({
   children: ReactNode
 }): JSX.Element => {
   const dispatch = useDispatch()
-  const { capture } = usePostCapture()
+  const { capture } = useAnalytics()
   const isAnalyticsEnabled = useSelector(selectIsAnalyticsEnabled)
 
   // TODO: in react components, use flags directly from redux

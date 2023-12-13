@@ -19,10 +19,10 @@ import { setActive } from 'store/network'
 import { selectBalanceTotalInCurrencyForNetworkAndAccount } from 'store/balance'
 import { NetworkLogo } from 'screens/network/NetworkLogo'
 import { selectActiveAccount } from 'store/account'
-import { usePostCapture } from 'hooks/usePosthogCapture'
 import { getCardHighLightColor } from 'utils/color/getCardHighLightColor'
 import usePendingBridgeTransactions from 'screens/bridge/hooks/usePendingBridgeTransactions'
 import TopRightBadge from 'components/TopRightBadge'
+import { useAnalytics } from 'hooks/useAnalytics'
 
 const windowWidth = Dimensions.get('window').width
 
@@ -36,7 +36,7 @@ type NavigationProp = PortfolioScreenProps<
 
 const InactiveNetworkCard: FC<Props> = ({ network }) => {
   const dispatch = useDispatch()
-  const { capture } = usePostCapture()
+  const { capture } = useAnalytics()
 
   const {
     appHook: { currencyFormatter },
@@ -55,7 +55,7 @@ const InactiveNetworkCard: FC<Props> = ({ network }) => {
   const highlighColor = getCardHighLightColor(theme)
   const pendingBridgeTxs = usePendingBridgeTransactions(network)
 
-  const navigateToNetworkTokens = () => {
+  const navigateToNetworkTokens = (): void => {
     capture('PortfolioSecondaryNetworkClicked', {
       chainId: network.chainId
     })
@@ -68,7 +68,7 @@ const InactiveNetworkCard: FC<Props> = ({ network }) => {
     )
   }
 
-  const renderContent = () => {
+  const renderContent = (): JSX.Element => {
     const textColor = theme.colorText3
     const balance = currencyFormatter(totalBalance)
 

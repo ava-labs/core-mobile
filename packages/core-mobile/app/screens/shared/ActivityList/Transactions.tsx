@@ -18,12 +18,12 @@ import ZeroState from 'components/ZeroState'
 import { BridgeTransaction } from '@avalabs/bridge-sdk'
 import { UI, useIsUIDisabled } from 'hooks/useIsUIDisabled'
 import { RefreshControl } from 'components/RefreshControl'
-import { usePostCapture } from 'hooks/usePosthogCapture'
 import FlashList from 'components/FlashList'
 import { getDayString } from 'utils/date/getDayString'
 import { isPendingBridgeTransaction } from 'screens/bridge/utils/bridgeUtils'
 import usePendingBridgeTransactions from 'screens/bridge/hooks/usePendingBridgeTransactions'
 import { selectActiveNetwork } from 'store/network'
+import { useAnalytics } from 'hooks/useAnalytics'
 
 const SCREEN_WIDTH = Dimensions.get('window').width
 const BOTTOM_PADDING = SCREEN_WIDTH * 0.3
@@ -54,7 +54,7 @@ const Transactions: FC<Props> = ({
   openTransactionStatus
 }) => {
   const { openUrl } = useInAppBrowser()
-  const { capture } = usePostCapture()
+  const { capture } = useAnalytics()
   const bridgeDisabled = useIsUIDisabled(UI.Bridge)
   const activeNetwork = useSelector(selectActiveNetwork)
   const pendingBridgeTxs = usePendingBridgeTransactions(activeNetwork)

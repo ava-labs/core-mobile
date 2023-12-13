@@ -12,14 +12,14 @@ import AppNavigation from 'navigation/AppNavigation'
 import { EarnScreenProps } from 'navigation/types'
 import { useNavigation } from '@react-navigation/native'
 import { useIsEarnDashboardEnabled } from 'hooks/earn/useIsEarnDashboardEnabled'
-import { usePostCapture } from 'hooks/usePosthogCapture'
+import { useAnalytics } from 'hooks/useAnalytics'
 
 type ScreenProps = EarnScreenProps<
   typeof AppNavigation.Earn.WrongNetwork
 >['navigation']
 
-export const WrongNetwork = () => {
-  const { capture } = usePostCapture()
+export const WrongNetwork = (): JSX.Element => {
+  const { capture } = useAnalytics()
   const dispatch = useDispatch()
   const { navigate, replace } = useNavigation<ScreenProps>()
   const { isEarnDashboardEnabled } = useIsEarnDashboardEnabled()
@@ -28,7 +28,7 @@ export const WrongNetwork = () => {
     ? ChainId.AVALANCHE_TESTNET_ID
     : ChainId.AVALANCHE_MAINNET_ID
 
-  const onSwitchNetwork = () => {
+  const onSwitchNetwork = (): void => {
     dispatch(setActive(avalancheChainId))
 
     if (isEarnDashboardEnabled) {

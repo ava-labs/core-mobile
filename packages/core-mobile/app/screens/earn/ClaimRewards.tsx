@@ -19,15 +19,15 @@ import { useAvaxFormatter } from 'hooks/formatter/useAvaxFormatter'
 import { useTimeElapsed } from 'hooks/time/useTimeElapsed'
 import Spinner from 'components/animation/Spinner'
 import { timeToShowNetworkFeeError } from 'consts/earn'
-import { usePostCapture } from 'hooks/usePosthogCapture'
 import { Tooltip } from 'components/Tooltip'
+import { useAnalytics } from 'hooks/useAnalytics'
 import { ConfirmScreen } from './components/ConfirmScreen'
 import { EmptyClaimRewards } from './EmptyClaimRewards'
 
 type ScreenProps = EarnScreenProps<typeof AppNavigation.Earn.ClaimRewards>
 
 const ClaimRewards = (): JSX.Element | null => {
-  const { capture } = usePostCapture()
+  const { capture } = useAnalytics()
   const { theme } = useApplicationContext()
   const { navigate, goBack } = useNavigation<ScreenProps['navigation']>()
   const onBack = useRoute<ScreenProps['route']>().params?.onBack

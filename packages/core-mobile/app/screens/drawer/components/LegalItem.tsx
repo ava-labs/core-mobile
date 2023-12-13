@@ -3,15 +3,15 @@ import AvaListItem from 'components/AvaListItem'
 import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation } from '@react-navigation/native'
 import { WalletScreenProps } from 'navigation/types'
-import { usePostCapture } from 'hooks/usePosthogCapture'
+import { useAnalytics } from 'hooks/useAnalytics'
 
 type NavigationProp = WalletScreenProps<
   typeof AppNavigation.Wallet.Drawer
 >['navigation']
 
-const LegalItem = () => {
+const LegalItem = (): JSX.Element => {
   const navigation = useNavigation<NavigationProp>()
-  const { capture } = usePostCapture()
+  const { capture } = useAnalytics()
   return (
     <>
       <AvaListItem.Base

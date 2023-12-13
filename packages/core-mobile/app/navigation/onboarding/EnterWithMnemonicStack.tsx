@@ -20,13 +20,13 @@ import {
   RemoveEvents,
   useBeforeRemoveListener
 } from 'hooks/useBeforeRemoveListener'
-import { usePostCapture } from 'hooks/usePosthogCapture'
 import OwlLoader from 'components/OwlLoader'
 import { setCoreAnalytics } from 'store/settings/securityPrivacy'
 import Logger from 'utils/Logger'
 import { WalletType } from 'services/wallet/types'
 import { useWallet } from 'hooks/useWallet'
 import { NameYourWallet } from 'seedless/screens/NameYourWallet'
+import { useAnalytics } from 'hooks/useAnalytics'
 import { EnterWithMnemonicScreenProps } from '../types'
 
 export type EnterWithMnemonicStackParamList = {
@@ -95,7 +95,7 @@ type LoginNavigationProp = EnterWithMnemonicScreenProps<
 const LoginWithMnemonicScreen = (): JSX.Element => {
   const enterWithMnemonicContext = useContext(EnterWithMnemonicContext)
   const { navigate, goBack, canGoBack } = useNavigation<LoginNavigationProp>()
-  const { capture } = usePostCapture()
+  const { capture } = useAnalytics()
   const dispatch = useDispatch()
   const { deleteWallet } = useApplicationContext().appHook
   const walletState = useSelector(selectWalletState)
@@ -138,7 +138,7 @@ type NameYourWalletNavigationProp = EnterWithMnemonicScreenProps<
 
 const NameYourWalletScreen = (): JSX.Element => {
   const { navigate } = useNavigation<NameYourWalletNavigationProp>()
-  const { capture } = usePostCapture()
+  const { capture } = useAnalytics()
 
   const onSetWalletName = (): void => {
     capture('LoginWithMnemonic:WalletNameSet')
@@ -155,7 +155,7 @@ const CreatePinScreen = (): JSX.Element => {
   const enterWithMnemonicContext = useContext(EnterWithMnemonicContext)
   const { onPinCreated } = useWallet()
   const { navigate } = useNavigation<CreatePinNavigationProp>()
-  const { capture } = usePostCapture()
+  const { capture } = useAnalytics()
 
   const onPinSet = (pin: string): void => {
     capture('OnboardingPasswordSet')

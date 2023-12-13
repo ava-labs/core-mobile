@@ -16,9 +16,9 @@ import {
 import ActivityList from 'screens/shared/ActivityList/ActivityList'
 import { TokenWithBalance } from 'store/balance'
 import { Transaction } from 'store/transaction'
-import { usePostCapture } from 'hooks/usePosthogCapture'
 import { useSelector } from 'react-redux'
 import { selectActiveNetwork } from 'store/network'
+import { useAnalytics } from 'hooks/useAnalytics'
 
 type ScreenProps = WalletScreenProps<
   typeof AppNavigation.Wallet.OwnedTokenDetail
@@ -29,22 +29,24 @@ const OwnedTokenDetail: FC = () => {
   const { navigate } = useNavigation<ScreenProps['navigation']>()
   const { filteredTokenList } = useSearchableTokenList()
   const [token, setToken] = useState<TokenWithBalance>()
-  const { capture } = usePostCapture()
+  const { capture } = useAnalytics()
   const activeNetwork = useSelector(selectActiveNetwork)
 
   useEffect(loadToken, [filteredTokenList, token, tokenId])
 
-  const openTransactionDetails = (item: Transaction) => {
-    return navigate(AppNavigation.Wallet.ActivityDetail, {
+  const openTransactionDetails = (item: Transaction): void => {
+    navigate(AppNavigation.Wallet.ActivityDetail, {
       tx: item
     })
   }
 
-  const openTransactionStatus = (params: BridgeTransactionStatusParams) => {
+  const openTransactionStatus = (
+    params: BridgeTransactionStatusParams
+  ): void => {
     navigate(AppNavigation.Bridge.BridgeTransactionStatus, params)
   }
 
-  function loadToken() {
+  function loadToken(): void {
     if (filteredTokenList && !token) {
       const result = filteredTokenList.filter(tk => tk.localId === tokenId)
       if (result.length > 0) {

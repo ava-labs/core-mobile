@@ -9,9 +9,9 @@ import { Row } from 'components/Row'
 import CheckmarkSVG from 'components/svg/CheckmarkSVG'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { PRIVACY_POLICY_URL } from 'resources/Constants'
-import { usePostCapture } from 'hooks/usePosthogCapture'
 import { useDispatch } from 'react-redux'
 import { setCoreAnalytics } from 'store/settings/securityPrivacy'
+import { useAnalytics } from 'hooks/useAnalytics'
 
 type Props = {
   nextScreen:
@@ -29,7 +29,7 @@ type Props = {
 const AnalyticsConsent = ({ onNextScreen, nextScreen }: Props): JSX.Element => {
   const dispatch = useDispatch()
   const { theme } = useApplicationContext()
-  const { capture } = usePostCapture()
+  const { capture } = useAnalytics()
 
   function openPrivacyPolicy(): void {
     Linking.openURL(PRIVACY_POLICY_URL)

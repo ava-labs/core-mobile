@@ -12,9 +12,9 @@ import {
 } from 'store/settings/advanced'
 import AvaText from 'components/AvaText'
 import { Row } from 'components/Row'
-import { usePostCapture } from 'hooks/usePosthogCapture'
 import { selectUseLeftFab } from 'store/posthog'
 import { Tooltip } from 'components/Tooltip'
+import { useAnalytics } from 'hooks/useAnalytics'
 
 const Advanced = (): JSX.Element => {
   const { theme } = useApplicationContext()
@@ -22,7 +22,7 @@ const Advanced = (): JSX.Element => {
   const isLeftHanded = useSelector(selectIsLeftHanded)
   const useLeftFab = useSelector(selectUseLeftFab)
   const dispatch = useDispatch()
-  const { capture } = usePostCapture()
+  const { capture } = useAnalytics()
 
   const onTestnetChange = (value: boolean): void => {
     capture(value ? 'DeveloperModeEnabled' : 'DeveloperModeDisabled')

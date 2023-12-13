@@ -13,7 +13,7 @@ import { Space } from 'components/Space'
 import Logger from 'utils/Logger'
 import SeedlessService from 'seedless/services/SeedlessService'
 import Loader from 'components/Loader'
-import { usePostCapture } from 'hooks/usePosthogCapture'
+import { useAnalytics } from 'hooks/useAnalytics'
 
 export type VerifyCodeParams = {
   oidcToken: string
@@ -34,7 +34,7 @@ export const VerifyCode = ({
   const [isVerifying, setIsVerifying] = useState(false)
   const [code, setCode] = useState<string>()
   const [showError, setShowError] = useState(false)
-  const { capture } = usePostCapture()
+  const { capture } = useAnalytics()
 
   const handleVerifyCode = async (changedText: string): Promise<void> => {
     setCode(changedText)

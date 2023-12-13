@@ -21,8 +21,8 @@ import {
 import { Row } from 'components/Row'
 import PoppableGasAndLimit from 'components/PoppableGasAndLimit'
 import { bnToLocaleString } from '@avalabs/utils-sdk'
-import { usePostCapture } from 'hooks/usePosthogCapture'
 import { Tooltip } from 'components/Tooltip'
+import { useAnalytics } from 'hooks/useAnalytics'
 
 type NavigationProp = NFTDetailsSendScreenProps<
   typeof AppNavigation.NftSend.Review
@@ -37,7 +37,7 @@ export default function NftReview({
 }: NftReviewScreenProps): JSX.Element {
   const { theme } = useApplicationContext()
   const { goBack } = useNavigation<NavigationProp>()
-  const { capture } = usePostCapture()
+  const { capture } = useAnalytics()
   const {
     sendToken: nft,
     sendStatus,

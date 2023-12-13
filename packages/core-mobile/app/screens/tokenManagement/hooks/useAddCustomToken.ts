@@ -8,8 +8,8 @@ import { getInstance } from 'services/token/TokenService'
 import { addCustomToken as addCustomTokenAction } from 'store/customToken'
 import { useState, useEffect } from 'react'
 import { Network, NetworkContractToken } from '@avalabs/chains-sdk'
-import { usePostCapture } from 'hooks/usePosthogCapture'
 import Logger from 'utils/Logger'
+import { useAnalytics } from 'hooks/useAnalytics'
 
 enum AddressValidationStatus {
   Valid,
@@ -70,7 +70,7 @@ const useAddCustomToken = (callback: () => void): CustomToken => {
   const tokens = useSelector(selectActiveNetworkContractTokens)
   const dispatch = useDispatch()
   const chainId = network.chainId
-  const { capture } = usePostCapture()
+  const { capture } = useAnalytics()
 
   useEffect(() => {
     setErrorMessage('')

@@ -19,7 +19,7 @@ import { MFA } from 'seedless/types'
 import { FIDONameInputScreen } from 'seedless/screens/FIDONameInputScreen'
 import { useNavigation } from '@react-navigation/native'
 import { RecoveryMethodsScreenProps } from 'navigation/types'
-import { usePostCapture } from 'hooks/usePosthogCapture'
+import { useAnalytics } from 'hooks/useAnalytics'
 
 export type RecoveryMethodsStackParamList = {
   [AppNavigation.RecoveryMethods.AddRecoveryMethods]: undefined
@@ -112,7 +112,7 @@ function VerifyCodeScreen(): JSX.Element {
   const { oidcToken, mfaId } = useContext(RecoveryMethodsContext)
   const { canGoBack, goBack, replace, setOptions } =
     useNavigation<VerifyCodeScreenProps['navigation']>()
-  const { capture } = usePostCapture()
+  const { capture } = useAnalytics()
 
   const handleVerifySuccess = (): void => {
     replace(AppNavigation.Onboard.NameYourWallet)

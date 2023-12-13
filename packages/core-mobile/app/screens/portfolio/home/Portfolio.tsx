@@ -14,12 +14,12 @@ import { Space } from 'components/Space'
 import { RefreshControl } from 'components/RefreshControl'
 import { NFTItemData } from 'store/nft'
 import { PortfolioScreenProps } from 'navigation/types'
-import { usePostCapture } from 'hooks/usePosthogCapture'
 import Animated, { FadeInDown, FadeOutUp } from 'react-native-reanimated'
 import { TokensTabHeader } from 'screens/portfolio/home/components/TokensTabHeader'
 import { PortfolioTabs } from 'consts/portfolio'
 import { selectIsDeFiBlocked } from 'store/posthog'
 import { DeFiProtocolList } from 'screens/defi/DeFiProtocolList'
+import { useAnalytics } from 'hooks/useAnalytics'
 import InactiveNetworkCard from './components/Cards/InactiveNetworkCard'
 import { PortfolioTokensLoader } from './components/Loaders/PortfolioTokensLoader'
 import PortfolioHeader from './components/PortfolioHeader'
@@ -28,15 +28,15 @@ type PortfolioNavigationProp = PortfolioScreenProps<
   typeof AppNavigation.Portfolio.Portfolio
 >
 
-const Portfolio = () => {
+const Portfolio = (): JSX.Element => {
   const { params } = useRoute<PortfolioNavigationProp['route']>()
   const { setParams } = useNavigation<PortfolioNavigationProp['navigation']>()
 
   const collectiblesDisabled = useIsUIDisabled(UI.Collectibles)
   const defiBlocked = useSelector(selectIsDeFiBlocked)
-  const { capture } = usePostCapture()
+  const { capture } = useAnalytics()
 
-  function capturePosthogEvents(tabIndex: number) {
+  function captureAnalyticsEvents(tabIndex: number): void {
     switch (tabIndex) {
       case PortfolioTabs.Tokens:
         capture('PortfolioAssetsClicked')
@@ -56,7 +56,7 @@ const Portfolio = () => {
         currentTabIndex={params?.tabIndex}
         onTabIndexChange={tabIndex => {
           setParams({ tabIndex })
-          capturePosthogEvents(tabIndex)
+          captureAnalyticsEvents(tabIndex)
         }}
         renderCustomLabel={renderCustomLabel}>
         <TabViewAva.Item title={'Assets'}>
@@ -77,13 +77,15 @@ const Portfolio = () => {
   )
 }
 
-const Separator = () => <Space y={16} />
+const Separator = (): JSX.Element => <Space y={16} />
 
-const TokensTab = () => {
+const TokensTab = (): JSX.Element => {
   const { isLoading, isRefetching, refetch } = useSearchableTokenList()
   const inactiveNetworks = useSelector(selectInactiveNetworks)
 
-  const renderInactiveNetwork = (item: ListRenderItemInfo<Network>) => {
+  const renderInactiveNetwork = (
+    item: ListRenderItemInfo<Network>
+  ): JSX.Element => {
     return (
       <Animated.View
         sharedTransitionTag={
@@ -124,18 +126,18 @@ const TokensTab = () => {
   )
 }
 
-const NftTab = () => {
+const NftTab = (): JSX.Element => {
   const { navigate } = useNavigation<PortfolioNavigationProp['navigation']>()
-  const { capture } = usePostCapture()
+  const { capture } = useAnalytics()
 
-  const openNftDetails = (item: NFTItemData) => {
+  const openNftDetails = (item: NFTItemData): void => {
     capture('CollectibleItemClicked', { chainId: item.chainId })
     navigate(AppNavigation.Wallet.NFTDetails, {
       screen: AppNavigation.Nft.Details,
       params: { nft: item }
     })
   }
-  const openNftManage = () => {
+  const openNftManage = (): void => {
     navigate(AppNavigation.Wallet.NFTManage)
   }
   return (
@@ -146,11 +148,15 @@ const NftTab = () => {
   )
 }
 
-const DeFiTab = () => {
+const DeFiTab = (): JSX.Element => {
   return <DeFiProtocolList />
 }
 
-const renderCustomLabel = (title: string, selected: boolean, color: string) => {
+const renderCustomLabel = (
+  title: string,
+  selected: boolean,
+  color: string
+): JSX.Element => {
   return (
     <AvaText.Heading3 textStyle={{ color }} ellipsizeMode="tail">
       {title}

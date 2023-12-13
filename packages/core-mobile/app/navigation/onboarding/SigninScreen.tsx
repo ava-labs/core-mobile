@@ -13,7 +13,7 @@ import GoogleSigninService from 'services/socialSignIn/google/GoogleSigninServic
 import Logger from 'utils/Logger'
 import { OidcProviders } from 'seedless/consts'
 import { hideOwl, showOwl } from 'components/GlobalOwlLoader'
-import { usePostCapture } from 'hooks/usePosthogCapture'
+import { useAnalytics } from 'hooks/useAnalytics'
 
 type NavigationProp = OnboardScreenProps<
   typeof AppNavigation.Onboard.Signin
@@ -25,7 +25,7 @@ const SigninScreen: FC = () => {
     theme: { colors }
   } = useTheme()
   const { register, isRegistering } = useSeedlessRegister()
-  const { capture } = usePostCapture()
+  const { capture } = useAnalytics()
 
   const handleSigninWithMnemonic = (): void => {
     navigate(AppNavigation.Onboard.Welcome, {
