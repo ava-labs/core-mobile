@@ -162,7 +162,10 @@ async function generatePlatformResults(
       // Adds the existing test case results to the results array so they are not overwritten in testrail when using the updateRun endpoint
       resultArray = resultArray.concat(existingTestCases)
       resultArray.forEach((testCase: any) => {
-        if (testCase.case_id === result.case_id && testCase.status_id === 5) {
+        if (
+          isResultExistsInTestrail(runId, testCase.case_id) &&
+          testCase.status_id === 5
+        ) {
           console.log('removed ' + testCase.case_id + ' from the array')
           existingTestCases.splice(testCase, 1)
         }
