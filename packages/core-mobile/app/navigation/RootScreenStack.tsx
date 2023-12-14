@@ -134,7 +134,7 @@ const RootScreenStack: FC = () => {
 }
 
 const LoginWithPinOrBiometryScreen = (): JSX.Element => {
-  const { initWallet } = useWallet()
+  const { unlock } = useWallet()
   const { signOut } = useApplicationContext().appHook
 
   return (
@@ -145,7 +145,7 @@ const LoginWithPinOrBiometryScreen = (): JSX.Element => {
         signOut()
       }}
       onLoginSuccess={mnemonic => {
-        initWallet({ mnemonic, isLoggingIn: false }).catch(Logger.error)
+        unlock({ mnemonic, isLoggingIn: false }).catch(Logger.error)
       }}
     />
   )

@@ -198,7 +198,7 @@ const BiometricLoginScreen = (): JSX.Element => {
 
 const TermsNConditionsModalScreen = (): JSX.Element => {
   const enterWithMnemonicContext = useContext(EnterWithMnemonicContext)
-  const { initAndLoginWallet } = useWallet()
+  const { login } = useWallet()
   const { signOut } = useApplicationContext().appHook
   const { navigate } = useNavigation<BiometricLoginNavigationProp>()
 
@@ -208,10 +208,7 @@ const TermsNConditionsModalScreen = (): JSX.Element => {
         navigate(AppNavigation.LoginWithMnemonic.Loader)
         setTimeout(() => {
           // recovering a mnemonic wallet
-          initAndLoginWallet(
-            enterWithMnemonicContext.mnemonic,
-            WalletType.MNEMONIC
-          )
+          login(enterWithMnemonicContext.mnemonic, WalletType.MNEMONIC)
         }, 300)
       }}
       onReject={() => signOut()}
