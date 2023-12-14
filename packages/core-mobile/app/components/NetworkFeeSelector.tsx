@@ -237,7 +237,11 @@ const NetworkFeeSelector = ({
       </AvaText.Body3>
       {maxGasPrice && newFees.bnFee > BigInt(maxGasPrice) && (
         <AvaText.Body3 color={theme.colorError}>
-          Insufficient balance to cover gas costs. {'\n'}Please add AVAX.
+          Insufficient balance to cover gas costs. {'\n'}
+          {network?.networkToken?.symbol
+            ? `Please add ${network.networkToken.symbol}`
+            : ''}
+          .
         </AvaText.Body3>
       )}
     </>
