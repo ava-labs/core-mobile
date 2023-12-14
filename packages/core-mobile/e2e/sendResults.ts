@@ -179,9 +179,11 @@ async function generatePlatformResults(
           testCasesToSend.case_ids.push(Number(testCase.case_id))
         })
       }
+
+      const uniqueCaseIdArray = [...new Set(testCasesToSend.case_ids)]
       const testCasePayload = {
         include_all: false,
-        case_ids: testCasesToSend.case_ids
+        case_ids: uniqueCaseIdArray
       }
       console.log(JSON.stringify(testCasePayload) + ' is the test case payload')
       // Takes the array of test cases and adds them to the test run
