@@ -3,7 +3,6 @@
 // @ts-nocheck comment at the top of the file
 /* eslint-disable no-var */
 import * as fs from 'fs'
-import { get } from 'react-hook-form'
 import {
   getTestCaseId,
   api,
@@ -181,23 +180,13 @@ async function generatePlatformResults(
       }
 
       const uniqueCaseIdArray = [...new Set(testCasesToSend.case_ids)]
-      const testCasePayload = {
-        include_all: false,
-        case_ids: uniqueCaseIdArray
-      }
+      // const testCasePayload = {
+      //   include_all: false,
+      //   case_ids: uniqueCaseIdArray
+      // }
       console.log(JSON.stringify(uniqueCaseIdArray) + ' is the test case array')
       // Takes the array of test cases and adds them to the test run
-      try {
-        await api.updateRun(Number(runId), testCasePayload)
-      } catch (TestRailException) {
-        console.log(
-          TestRailException +
-            ' with run id ' +
-            runId +
-            ' and payload ' +
-            testCasePayload
-        )
-      }
+      // await api.updateRun(Number(runId), testCasePayload)
       console.log(
         'Test cases have been sent to the test run...' +
           testCasesToSend.case_ids
