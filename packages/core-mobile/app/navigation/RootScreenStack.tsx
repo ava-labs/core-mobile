@@ -145,7 +145,7 @@ const LoginWithPinOrBiometryScreen = (): JSX.Element => {
         signOut()
       }}
       onLoginSuccess={mnemonic => {
-        unlock({ mnemonic, isLoggingIn: false }).catch(Logger.error)
+        unlock({ mnemonic }).catch(Logger.error)
       }}
     />
   )

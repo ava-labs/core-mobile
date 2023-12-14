@@ -14,12 +14,6 @@ import { Dispatch } from '@reduxjs/toolkit'
 import Logger from 'utils/Logger'
 import { useAnalytics } from './useAnalytics'
 
-type UnlockProps = {
-  mnemonic: string
-  isLoggingIn: boolean
-  walletType?: WalletType
-}
-
 type InitWalletServiceAndUnlockProps = {
   mnemonic: string
   isLoggingIn: boolean
@@ -33,7 +27,7 @@ export interface UseWallet {
     pin: string,
     isResetting: boolean
   ) => Promise<'useBiometry' | 'enterWallet'>
-  unlock: ({ mnemonic, isLoggingIn, walletType }: UnlockProps) => Promise<void>
+  unlock: ({ mnemonic }: { mnemonic: string }) => Promise<void>
   login: (mnemonic: string, walletType: WalletType) => Promise<void>
   destroyWallet: () => void
 }
@@ -64,20 +58,12 @@ export function useWallet(): UseWallet {
    * Initializes wallet with the specified mnemonic and wallet type
    * and navigates to the unlocked wallet screen
    */
-  const unlock = async ({
-    mnemonic,
-    isLoggingIn,
-    walletType
-  }: UnlockProps): Promise<void> => {
-    if (walletType) {
-      dispatch(setWalletType(walletType))
-    }
-
+  const unlock = async ({ mnemonic }: { mnemonic: string }): Promise<void> => {
     await initWalletServiceAndUnlock({
       dispatch,
       mnemonic,
-      walletType: walletType || cachedWalletType,
-      isLoggingIn
+      walletType: cachedWalletType,
+      isLoggingIn: false
     })
   }
 
@@ -86,7 +72,15 @@ export function useWallet(): UseWallet {
     walletType: WalletType
   ): Promise<void> => {
     try {
-      await unlock({ mnemonic, isLoggingIn: true, walletType })
+      if (walletType) {
+        dispatch(setWalletType(walletType))
+      }
+      await initWalletServiceAndUnlock({
+        dispatch,
+        mnemonic,
+        walletType: cachedWalletType,
+        isLoggingIn: true
+      })
 
       dispatch(onLogIn())
 
