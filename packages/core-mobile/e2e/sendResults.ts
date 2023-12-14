@@ -170,15 +170,9 @@ async function generatePlatformResults(
           delete resultArray[testCase]
         }
         if (testCase.status_id === 3) {
-          delete existingTestCases[testCase]
+          delete resultArray[testCase]
         }
       })
-      // Add already existing test cases to the testCasesToSend array
-      if (existingTestCases.length > 0) {
-        existingTestCases.forEach((testCase: number) => {
-          testCasesToSend.case_ids.push(testCase.case_id)
-        })
-      }
       // Takes the array of test cases and adds them to the test run
       await api.updateRun(Number(runId), testCasesToSend)
       console.log(
