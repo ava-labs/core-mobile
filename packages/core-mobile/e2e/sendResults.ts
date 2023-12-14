@@ -183,7 +183,17 @@ async function generatePlatformResults(
         case_ids: testCasesToSend.case_ids
       }
       // Takes the array of test cases and adds them to the test run
-      await api.updateRun(Number(runId), testCasePayload)
+      try {
+        await api.updateRun(Number(runId), testCasePayload)
+      } catch (TestRailException) {
+        console.log(
+          TestRailException +
+            ' with run id ' +
+            runId +
+            ' and payload ' +
+            testCasePayload
+        )
+      }
       console.log(
         'Test cases have been sent to the test run...' +
           testCasesToSend.case_ids
