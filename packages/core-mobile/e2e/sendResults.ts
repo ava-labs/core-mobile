@@ -176,12 +176,14 @@ async function generatePlatformResults(
       // Add already existing test cases to the testCasesToSend array
       if (resultArray.length > 0) {
         resultArray.forEach((testCase: object) => {
-          testCasesToSend.case_ids.push(testCase.case_id)
+          testCasesToSend.case_ids.push(Number(testCase.case_id))
         })
       }
       const testCasePayload = {
+        include_all: false,
         case_ids: testCasesToSend.case_ids
       }
+      console.log(testCasePayload + ' is the test case payload')
       // Takes the array of test cases and adds them to the test run
       try {
         await api.updateRun(Number(runId), testCasePayload)
@@ -215,7 +217,7 @@ async function generatePlatformResults(
 
       if (resultObject) {
         const testResult = {
-          case_id: resultObject?.case_id,
+          case_id: Number(resultObject?.case_id),
           status_id: statusId,
           comment: comment
         }
