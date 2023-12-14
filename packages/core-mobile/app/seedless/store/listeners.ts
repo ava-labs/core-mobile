@@ -1,6 +1,5 @@
 import { AppStartListening } from 'store/middleware/listener'
 import {
-  immediateAppLock,
   onAppUnlocked,
   onLogOut,
   onRehydrationComplete,
@@ -119,7 +118,7 @@ function handleRetry(listenerApi: AppListenerEffectAPI): void {
       Logger.error('startRefreshSeedlessTokenFlow error', e)
       //dismiss Loader screen
       Navigation.goBack()
-      dispatch(immediateAppLock)
+      dispatch(onLogOut)
     })
 }
 

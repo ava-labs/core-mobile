@@ -322,9 +322,15 @@ class SeedlessService {
    */
   async getSessionKeysList(): Promise<KeyInfoApi[]> {
     const signerSession = await this.getSignerSession()
-    return (await signerSession.sessionKeysList()).filter(
-      key => key.key_type === 'Mnemonic'
-    )
+    return signerSession.sessionKeysList()
+  }
+
+  /**
+   * Returns Mnemonic keys that this session has access to.
+   */
+  async getMnemonicKeysList(): Promise<KeyInfoApi | undefined> {
+    const keysList = await this.getSessionKeysList()
+    return keysList.find(k => k.key_type === 'Mnemonic')
   }
 
   /**

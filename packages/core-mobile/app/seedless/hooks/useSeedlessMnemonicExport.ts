@@ -219,10 +219,9 @@ export const useSeedlessMnemonicExport = (): ReturnProps => {
 
   useEffect(() => {
     const checkPendingExports = async (): Promise<void> => {
-      const keysList = await SeedlessService.getSessionKeysList()
-      const id = keysList[0]?.key_id
-      if (id) {
-        setKeyId(id)
+      const key = await SeedlessService.getMnemonicKeysList()
+      if (key?.key_id) {
+        setKeyId(key.key_id)
       }
       const pendingExport = await SeedlessService.userExportList()
       setState(pendingExport ? ExportState.Pending : ExportState.NotInitiated)
