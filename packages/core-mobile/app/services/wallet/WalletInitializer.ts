@@ -9,21 +9,26 @@ import MnemonicWalletInstance from './MnemonicWallet'
 class WalletInitializer {
   async initialize({
     mnemonic,
-    walletType
+    walletType,
+    isLoggingIn
   }: {
     mnemonic?: string
     walletType: WalletType
+    isLoggingIn: boolean
   }): Promise<void> {
     switch (walletType) {
       case WalletType.SEEDLESS: {
         try {
-          const allKeys = await SeedlessService.getSessionKeysList()
-          const pubKeys = transformKeyInfosToPubKeys(allKeys)
-          Logger.info('saving public keys')
-          const pubKeysStorage = new SeedlessPubKeysStorage()
-          await pubKeysStorage.save(pubKeys)
+          if (isLoggingIn) {
+            const allKeys = await SeedlessService.getSessionKeysList()
+            const pubKeys = transformKeyInfosToPubKeys(allKeys)
+            Logger.info('saving public keys')
+            const pubKeysStorage = new SeedlessPubKeysStorage()
+            await pubKeysStorage.save(pubKeys)
+          }
         } catch (error) {
-          throw new Error(`Unable to save public keys: ${error}`)
+          Logger.error(`Unable to save public keys`, error)
+          throw new Error(`Unable to save public keys`)
         }
         break
       }
