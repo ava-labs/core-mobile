@@ -3,6 +3,7 @@
 // @ts-nocheck comment at the top of the file
 /* eslint-disable no-var */
 import * as fs from 'fs'
+import { get } from 'react-hook-form'
 import {
   getTestCaseId,
   api,
@@ -158,19 +159,17 @@ async function generatePlatformResults(
     )
     try {
       const existingTestCases = await getTestCasesFromRun(runId)
-      resultArray.forEach((result: any) => {
-        existingTestCases.forEach((testCase: any) => {
-          if (testCase.case_id === result.case_id && testCase.status_id === 5) {
-            console.log('removed ' + testCase.case_id + ' from the array')
-            existingTestCases.splice(testCase, 1)
-          }
-          if (testCase.status_id === 3) {
-            existingTestCases.splice(testCase, 1)
-          }
-        })
-      })
       // Adds the existing test case results to the results array so they are not overwritten in testrail when using the updateRun endpoint
       resultArray = resultArray.concat(existingTestCases)
+      resultArray.forEach((testCase: any) => {
+        if (testCase.case_id === result.case_id && testCase.status_id === 5) {
+          console.log('removed ' + testCase.case_id + ' from the array')
+          existingTestCases.splice(testCase, 1)
+        }
+        if (testCase.status_id === 3) {
+          existingTestCases.splice(testCase, 1)
+        }
+      })
       console.log(resultArray, ' is the result array')
       // Add already existing test cases to the testCasesToSend array
       if (existingTestCases.length > 0) {
@@ -234,3 +233,11 @@ async function generatePlatformResults(
     console.log(error)
   }
 }
+
+async function getCaseDetails(runId: number) {
+  const caseDetails = await getTestCasesFromRun(runId)
+  console.log(caseDetails)
+  return caseDetails
+}
+
+getCaseDetails(7095)
