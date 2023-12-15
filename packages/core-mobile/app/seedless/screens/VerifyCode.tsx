@@ -21,7 +21,7 @@ export type VerifyCodeParams = {
   onVerifyCode: (
     code: string
   ) => Promise<Result<UserExportResponse | void, TotpErrors>>
-  onVerifySuccess: (cubeSignerResponse?: UserExportResponse) => void
+  onVerifySuccess: (cubeSignerResponse?: UserExportResponse | void) => void
   onBack: () => void
 }
 
@@ -49,7 +49,7 @@ export const VerifyCode = ({
 
     try {
       const result = (await onVerifyCode(changedText)) as Result<
-        UserExportResponse,
+        UserExportResponse | void,
         TotpErrors
       >
       if (result.success === false) {
