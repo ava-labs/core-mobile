@@ -229,7 +229,9 @@ async function totpRefreshFlow(
   mfaId: string
 ): Promise<Result<void, RefreshSeedlessTokenFlowErrors>> {
   const onVerifySuccessPromise = new Promise((resolve, reject) => {
-    const onVerifyCode = (code: string): Promise<Result<void, TotpErrors>> => {
+    const onVerifyCode = (
+      code: string
+    ): Promise<Result<undefined, TotpErrors>> => {
       return SeedlessService.verifyCode(oidcToken, mfaId, code)
     }
     Navigation.navigate({

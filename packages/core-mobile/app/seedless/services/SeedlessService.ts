@@ -205,7 +205,7 @@ class SeedlessService {
     oidcToken: string,
     mfaId: string,
     code: string
-  ): Promise<Result<void, TotpErrors>> {
+  ): Promise<Result<undefined, TotpErrors>> {
     try {
       await this.totpChallenge?.answer(code)
       this.totpChallenge = undefined

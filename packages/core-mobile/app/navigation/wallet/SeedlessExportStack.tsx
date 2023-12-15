@@ -12,7 +12,7 @@ import {
   getWaitingPeriodDescription
 } from 'seedless/hooks/useSeedlessMnemonicExport'
 import { goBack } from 'utils/Navigation'
-import { VerifyCode, VerifyCodeParams } from 'seedless/screens/VerifyCode'
+import { VerifyCode } from 'seedless/screens/VerifyCode'
 import { UserExportResponse } from 'seedless/types'
 import { TotpErrors } from 'seedless/errors'
 import { Result } from 'types/result'
@@ -20,7 +20,12 @@ import { Result } from 'types/result'
 export type SeedlessExportStackParamList = {
   [AppNavigation.SeedlessExport.InitialScreen]: undefined
   [AppNavigation.SeedlessExport.WaitingPeriodModal]: { onNext: () => void }
-  [AppNavigation.SeedlessExport.VerifyCode]: Omit<VerifyCodeParams, 'onBack'>
+  [AppNavigation.SeedlessExport.VerifyCode]: {
+    onVerifyCode: (
+      code: string
+    ) => Promise<Result<UserExportResponse, TotpErrors>>
+    onVerifySuccess: (cubeSignerResponse?: UserExportResponse) => void
+  }
   [AppNavigation.SeedlessExport.ConfirmCloseModal]: { onCancel: () => void }
   [AppNavigation.SeedlessExport.ConfirmCancelModal]: { onCancel: () => void }
   [AppNavigation.SeedlessExport.OwlLoader]: undefined
@@ -82,7 +87,7 @@ function VerifyCodeScreen(): JSX.Element {
 
   const handleOnVerifyCode = async (
     code: string
-  ): Promise<Result<void | UserExportResponse, TotpErrors>> => {
+  ): Promise<Result<UserExportResponse, TotpErrors>> => {
     const result = await onVerifyCode(code)
     goBack()
     return result

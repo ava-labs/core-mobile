@@ -20,8 +20,8 @@ import { UserExportResponse } from 'seedless/types'
 export type VerifyCodeParams = {
   onVerifyCode: (
     code: string
-  ) => Promise<Result<UserExportResponse | void, TotpErrors>>
-  onVerifySuccess: (cubeSignerResponse?: UserExportResponse | void) => void
+  ) => Promise<Result<UserExportResponse | undefined, TotpErrors>>
+  onVerifySuccess: (cubeSignerResponse?: UserExportResponse) => void
   onBack: () => void
 }
 
@@ -48,10 +48,7 @@ export const VerifyCode = ({
     setIsVerifying(true)
 
     try {
-      const result = (await onVerifyCode(changedText)) as Result<
-        UserExportResponse | void,
-        TotpErrors
-      >
+      const result = await onVerifyCode(changedText)
       if (result.success === false) {
         throw new Error(result.error.message)
       }
