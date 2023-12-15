@@ -27,7 +27,7 @@ import { RefreshSeedlessTokenFlowErrors } from 'seedless/errors'
 import { Action } from '@reduxjs/toolkit'
 import { AppListenerEffectAPI } from 'store'
 import { onTokenExpired } from 'seedless/store/slice'
-import { GlobalEvents } from '@cubist-labs/cubesigner-sdk'
+import { ErrResponse, GlobalEvents } from '@cubist-labs/cubesigner-sdk'
 import { initWalletServiceAndUnlock } from 'hooks/useWallet'
 
 const refreshSeedlessToken = async (): Promise<void> => {
@@ -48,10 +48,12 @@ const registerTokenExpireHandler = async (
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
   const { dispatch } = listenerApi
-  const onSessionExpiredHandler = async (): Promise<void> => {
-    dispatch(onTokenExpired)
+  const onSessionExpiredHandler = async (e: ErrResponse): Promise<void> => {
+    if (e.status === 403) {
+      dispatch(onTokenExpired)
+    }
   }
-  GlobalEvents.onSessionExpired(onSessionExpiredHandler)
+  GlobalEvents.onError(onSessionExpiredHandler)
 }
 
 const handleTokenExpired = async (
@@ -123,7 +125,6 @@ function handleRetry(listenerApi: AppListenerEffectAPI): void {
       dispatch(onLogOut)
     })
 }
-
 async function startRefreshSeedlessTokenFlow(): Promise<
   Result<void, RefreshSeedlessTokenFlowErrors>
 > {
@@ -172,37 +173,19 @@ async function startRefreshSeedlessTokenFlow(): Promise<
     )
     const userMfa = await SeedlessService.userMfa()
     const usesTotp = userMfa.some(value => value.type === 'totp')
+    const usesFido = userMfa.some(value => value.type === 'fido')
+    //we prioritize fido over totp
+    if (usesFido) {
+      return await fidoRefreshFlow(
+        oidcTokenResult.oidcToken,
+        loginResult.mfaId()
+      )
+    }
     if (usesTotp) {
-      const onVerifySuccessPromise = new Promise((resolve, reject) => {
-        Navigation.navigate({
-          name: AppNavigation.Root.RefreshToken,
-          params: {
-            screen: AppNavigation.RefreshToken.VerifyCode,
-            params: {
-              oidcToken: oidcTokenResult.oidcToken,
-              mfaId: loginResult.mfaId(),
-              onVerifySuccess: resolve,
-              onBack: () => reject('USER_CANCELED')
-            } as VerifyCodeParams
-          }
-        })
-      })
-
-      try {
-        await onVerifySuccessPromise
-        return {
-          success: true,
-          value: undefined
-        }
-      } catch (e) {
-        return {
-          success: false,
-          error: new RefreshSeedlessTokenFlowErrors({
-            name: e === 'USER_CANCELED' ? e : 'UNEXPECTED_ERROR',
-            message: ``
-          })
-        }
-      }
+      return await totpRefreshFlow(
+        oidcTokenResult.oidcToken,
+        loginResult.mfaId()
+      )
     }
 
     return {
@@ -216,6 +199,66 @@ async function startRefreshSeedlessTokenFlow(): Promise<
       name: 'NOT_REGISTERED',
       message: `Please sign in again.`
     })
+  }
+}
+
+async function fidoRefreshFlow(
+  oidcToken: string,
+  mfaId: string
+): Promise<Result<void, RefreshSeedlessTokenFlowErrors>> {
+  try {
+    await SeedlessService.approveFido(
+      oidcToken,
+      mfaId,
+      false //FIXME: this parameter is not needed, should refactor approveFido to remove it
+    )
+    return {
+      success: true,
+      value: undefined
+    }
+  } catch (e) {
+    return {
+      success: false,
+      error: new RefreshSeedlessTokenFlowErrors({
+        name: e === 'USER_CANCELED' ? e : 'UNEXPECTED_ERROR',
+        message: ``
+      })
+    }
+  }
+}
+async function totpRefreshFlow(
+  oidcToken: string,
+  mfaId: string
+): Promise<Result<void, RefreshSeedlessTokenFlowErrors>> {
+  const onVerifySuccessPromise = new Promise((resolve, reject) => {
+    Navigation.navigate({
+      name: AppNavigation.Root.RefreshToken,
+      params: {
+        screen: AppNavigation.RefreshToken.VerifyCode,
+        params: {
+          oidcToken,
+          mfaId,
+          onVerifySuccess: resolve,
+          onBack: () => reject('USER_CANCELED')
+        } as VerifyCodeParams
+      }
+    })
+  })
+
+  try {
+    await onVerifySuccessPromise
+    return {
+      success: true,
+      value: undefined
+    }
+  } catch (e) {
+    return {
+      success: false,
+      error: new RefreshSeedlessTokenFlowErrors({
+        name: e === 'USER_CANCELED' ? e : 'UNEXPECTED_ERROR',
+        message: ``
+      })
+    }
   }
 }
 
