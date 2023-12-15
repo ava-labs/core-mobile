@@ -384,12 +384,10 @@ class SeedlessService {
 
     const hasMnemonic = 'mnemonic' in exportDecrypted
 
-    // @ts-expect-error typescript cannot detech mnemonic in exportDecrypted
     if (!hasMnemonic || typeof exportDecrypted.mnemonic !== 'string') {
       throw new Error('userExportDecrypt failed: missing mnemonic')
     }
 
-    // @ts-expect-error typescript cannot detech mnemonic in exportDecrypted
     return exportDecrypted.mnemonic
   }
 
