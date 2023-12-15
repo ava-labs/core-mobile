@@ -13,13 +13,6 @@ import { SnackBarMessage } from 'seedless/components/SnackBarMessage'
 import { copyToClipboard } from 'utils/DeviceTools'
 import Logger from 'utils/Logger'
 import { BackButton } from 'components/BackButton'
-import {
-  CubeSignerResponse,
-  UserExportCompleteResponse,
-  UserExportInitResponse
-} from '@cubist-labs/cubesigner-sdk'
-import SeedlessService from 'seedless/services/SeedlessService'
-import { showSimpleToast } from 'components/Snackbar'
 import { useAnalytics } from 'hooks/useAnalytics'
 import { SeedlessExportInstructions } from './SeedlessExportInstructions'
 import { RecoveryPhrasePending } from './RecoveryPhrasePending'
@@ -123,14 +116,7 @@ export const SeedlessExportInitial = (): JSX.Element => {
         ? 'SeedlessExportPhraseHidden'
         : 'SeedlessExportPhraseRevealed'
     )
-  }, [
-    capture,
-    completeExport,
-    handleFidoVerify,
-    hideMnemonic,
-    mnemonic,
-    navigate
-  ])
+  }, [capture, completeExport, hideMnemonic, mnemonic])
 
   return (
     <>
@@ -140,32 +126,7 @@ export const SeedlessExportInitial = (): JSX.Element => {
           onNext={() =>
             navigate(AppNavigation.SeedlessExport.WaitingPeriodModal, {
               onNext: () => {
-                const onVerifyMfa: InitExportOnVerifyMfa = async (
-                  response,
-                  onVerifySuccess
-                ) => {
-                  const mfaType = await SeedlessService.getMfaType()
-                  if (mfaType === undefined) {
-                    Logger.error(`Unsupported MFA type: ${mfaType}`)
-                    showSimpleToast(`Unsupported MFA type: ${mfaType}`)
-                    return
-                  }
-                  if (mfaType === 'totp') {
-                    navigate(AppNavigation.SeedlessExport.VerifyCode, {
-                      userExportResponse: response,
-                      // @ts-expect-error navigation can't handle generic params well
-                      onVerifySuccess
-                    })
-                    return
-                  }
-                  if (mfaType === 'fido') {
-                    const approved = await handleFidoVerify(response)
-                    onVerifySuccess(
-                      approved as CubeSignerResponse<UserExportInitResponse>
-                    )
-                  }
-                }
-                initExport({ onVerifyMfa }).catch(Logger.error)
+                initExport().catch(Logger.error)
               }
             })
           }
