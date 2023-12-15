@@ -27,12 +27,7 @@ import { RefreshSeedlessTokenFlowErrors } from 'seedless/errors'
 import { Action } from '@reduxjs/toolkit'
 import { AppListenerEffectAPI } from 'store'
 import { onTokenExpired } from 'seedless/store/slice'
-import {
-  CubeSignerResponse,
-  ErrResponse,
-  GlobalEvents,
-  SignerSessionData
-} from '@cubist-labs/cubesigner-sdk'
+import { ErrResponse, GlobalEvents } from '@cubist-labs/cubesigner-sdk'
 import { initWalletServiceAndUnlock } from 'hooks/useWallet'
 
 const refreshSeedlessToken = async (): Promise<void> => {
@@ -181,10 +176,16 @@ async function startRefreshSeedlessTokenFlow(): Promise<
     const usesFido = userMfa.some(value => value.type === 'fido')
     //we prioritize fido over totp
     if (usesFido) {
-      return await fidoRefreshFlow(oidcTokenResult, loginResult)
+      return await fidoRefreshFlow(
+        oidcTokenResult.oidcToken,
+        loginResult.mfaId()
+      )
     }
     if (usesTotp) {
-      return await totpRefreshFlow(oidcTokenResult, loginResult)
+      return await totpRefreshFlow(
+        oidcTokenResult.oidcToken,
+        loginResult.mfaId()
+      )
     }
 
     return {
@@ -202,13 +203,13 @@ async function startRefreshSeedlessTokenFlow(): Promise<
 }
 
 async function fidoRefreshFlow(
-  oidcTokenResult: OidcPayload,
-  loginResult: CubeSignerResponse<SignerSessionData>
+  oidcToken: string,
+  mfaId: string
 ): Promise<Result<void, RefreshSeedlessTokenFlowErrors>> {
   try {
     await SeedlessService.approveFido(
-      oidcTokenResult.oidcToken,
-      loginResult.mfaId(),
+      oidcToken,
+      mfaId,
       false //FIXME: this parameter is not needed, should refactor approveFido to remove it
     )
     return {
@@ -226,8 +227,8 @@ async function fidoRefreshFlow(
   }
 }
 async function totpRefreshFlow(
-  oidcTokenResult: OidcPayload,
-  loginResult: CubeSignerResponse<SignerSessionData>
+  oidcToken: string,
+  mfaId: string
 ): Promise<Result<void, RefreshSeedlessTokenFlowErrors>> {
   const onVerifySuccessPromise = new Promise((resolve, reject) => {
     Navigation.navigate({
@@ -235,8 +236,8 @@ async function totpRefreshFlow(
       params: {
         screen: AppNavigation.RefreshToken.VerifyCode,
         params: {
-          oidcToken: oidcTokenResult.oidcToken,
-          mfaId: loginResult.mfaId(),
+          oidcToken,
+          mfaId,
           onVerifySuccess: resolve,
           onBack: () => reject('USER_CANCELED')
         } as VerifyCodeParams
