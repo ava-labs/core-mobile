@@ -104,7 +104,7 @@ const BiometricLoginScreen = (): JSX.Element => {
 }
 
 const TermsNConditionsModalScreen = (): JSX.Element => {
-  const { initAndLoginWallet } = useWallet()
+  const { login } = useWallet()
   const { signOut } = useApplicationContext().appHook
   const { navigate } = useNavigation<BiometricLoginNavigationProp>()
 
@@ -114,9 +114,7 @@ const TermsNConditionsModalScreen = (): JSX.Element => {
         navigate(AppNavigation.CreateWallet.Loader)
         setTimeout(() => {
           // creating/recovering a seedless wallet
-          initAndLoginWallet(SEEDLESS_MNEMONIC_STUB, WalletType.SEEDLESS).catch(
-            Logger.error
-          )
+          login(SEEDLESS_MNEMONIC_STUB, WalletType.SEEDLESS).catch(Logger.error)
         }, 300)
       }}
       onReject={() => signOut()}

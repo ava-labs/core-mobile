@@ -239,7 +239,7 @@ const BiometricLoginScreen = (): JSX.Element => {
 
 const TermsNConditionsModalScreen = (): JSX.Element => {
   const createWalletContext = useContext(CreateWalletContext)
-  const { initAndLoginWallet } = useWallet()
+  const { login } = useWallet()
   const { signOut } = useApplicationContext().appHook
   const { navigate } = useNavigation<BiometricLoginNavigationProp>()
 
@@ -249,7 +249,7 @@ const TermsNConditionsModalScreen = (): JSX.Element => {
         navigate(AppNavigation.CreateWallet.Loader)
         setTimeout(() => {
           // creating a brand new mnemonic wallet
-          initAndLoginWallet(createWalletContext.mnemonic, WalletType.MNEMONIC)
+          login(createWalletContext.mnemonic, WalletType.MNEMONIC)
         }, 300)
       }}
       onReject={() => signOut()}
