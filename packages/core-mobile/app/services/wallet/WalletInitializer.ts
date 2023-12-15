@@ -1,31 +1,35 @@
-import * as cs from '@cubist-labs/cubesigner-sdk'
 import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKeysStorage'
-import { SeedlessSessionStorage } from 'seedless/services/storage/SeedlessSessionStorage'
 import Logger from 'utils/Logger'
 import { transformKeyInfosToPubKeys } from 'seedless/services/wallet/transformKeyInfosToPubkeys'
 import { Avalanche, getXpubFromMnemonic } from '@avalabs/wallets-sdk'
+import SeedlessService from 'seedless/services/SeedlessService'
 import { WalletType } from './types'
 import MnemonicWalletInstance from './MnemonicWallet'
 
 class WalletInitializer {
   async initialize({
     mnemonic,
-    walletType
+    walletType,
+    isLoggingIn
   }: {
     mnemonic?: string
     walletType: WalletType
+    isLoggingIn: boolean
   }): Promise<void> {
     switch (walletType) {
       case WalletType.SEEDLESS: {
-        Logger.info('fetching public keys')
-        const sessionStorage = new SeedlessSessionStorage()
-        const session = await cs.CubeSigner.loadSignerSession(sessionStorage)
-        const allKeys = await session.keys()
-        const pubKeys = transformKeyInfosToPubKeys(allKeys)
-
-        Logger.info('saving public keys')
-        const pubKeysStorage = new SeedlessPubKeysStorage()
-        await pubKeysStorage.save(pubKeys)
+        try {
+          if (isLoggingIn) {
+            const allKeys = await SeedlessService.getSessionKeysList()
+            const pubKeys = transformKeyInfosToPubKeys(allKeys)
+            Logger.info('saving public keys')
+            const pubKeysStorage = new SeedlessPubKeysStorage()
+            await pubKeysStorage.save(pubKeys)
+          }
+        } catch (error) {
+          Logger.error(`Unable to save public keys`, error)
+          throw new Error(`Unable to save public keys`)
+        }
         break
       }
       case WalletType.MNEMONIC: {

@@ -50,7 +50,11 @@ describe('WalletService', () => {
 
     beforeEach(() => {
       mockValidateFee.mockReset()
-      WalletService.init('test', WalletType.MNEMONIC)
+      WalletService.init({
+        mnemonic: 'test',
+        walletType: WalletType.MNEMONIC,
+        isLoggingIn: false
+      })
     })
 
     it('should throw if Node ID is invalid', async () => {

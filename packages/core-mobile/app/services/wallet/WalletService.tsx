@@ -32,6 +32,11 @@ import WalletInitializer from './WalletInitializer'
 import WalletFactory from './WalletFactory'
 import MnemonicWalletInstance from './MnemonicWallet'
 
+type InitProps = {
+  mnemonic: string
+  walletType: WalletType
+  isLoggingIn: boolean
+}
 // Tolerate 50% buffer for burn amount for EVM transactions
 const EVM_FEE_TOLERANCE = 50
 
@@ -41,12 +46,17 @@ const BASE_FEE_MULTIPLIER = 0.2
 class WalletService {
   #walletType: WalletType = WalletType.UNSET
 
-  public async init(mnemonic: string, walletType: WalletType): Promise<void> {
+  public async init({
+    mnemonic,
+    isLoggingIn,
+    walletType
+  }: InitProps): Promise<void> {
     Logger.info(`initializing wallet with type ${walletType}`)
 
     await WalletInitializer.initialize({
       mnemonic,
-      walletType
+      walletType,
+      isLoggingIn
     })
 
     this.walletType = walletType
@@ -167,7 +177,8 @@ class WalletService {
 
         // re-init wallet to fetch new public keys
         await WalletInitializer.initialize({
-          walletType: this.walletType
+          walletType: this.walletType,
+          isLoggingIn: true
         })
       }
     }
