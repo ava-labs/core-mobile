@@ -73,7 +73,6 @@ export function useWallet(): UseWallet {
   ): Promise<void> => {
     try {
       dispatch(setWalletType(walletType))
-
       await initWalletServiceAndUnlock({
         dispatch,
         mnemonic,
