@@ -1,8 +1,6 @@
 import Loader from 'components/Loader'
 import React, { useCallback, useEffect, useLayoutEffect, useState } from 'react'
 import {
-  CompleteExportOnVerifyMfa,
-  InitExportOnVerifyMfa,
   ExportState,
   useSeedlessMnemonicExport
 } from 'seedless/hooks/useSeedlessMnemonicExport'
@@ -15,13 +13,6 @@ import { SnackBarMessage } from 'seedless/components/SnackBarMessage'
 import { copyToClipboard } from 'utils/DeviceTools'
 import Logger from 'utils/Logger'
 import { BackButton } from 'components/BackButton'
-import {
-  CubeSignerResponse,
-  UserExportCompleteResponse,
-  UserExportInitResponse
-} from '@cubist-labs/cubesigner-sdk'
-import SeedlessService from 'seedless/services/SeedlessService'
-import { showSimpleToast } from 'components/Snackbar'
 import { useAnalytics } from 'hooks/useAnalytics'
 import { SeedlessExportInstructions } from './SeedlessExportInstructions'
 import { RecoveryPhrasePending } from './RecoveryPhrasePending'
@@ -43,8 +34,7 @@ export const SeedlessExportInitial = (): JSX.Element => {
     mnemonic,
     initExport,
     deleteExport,
-    completeExport,
-    handleFidoVerify
+    completeExport
   } = useSeedlessMnemonicExport()
 
   const onCancelExportRequest = (): void => {
@@ -118,49 +108,15 @@ export const SeedlessExportInitial = (): JSX.Element => {
 
   const toggleRecoveryPhrase = useCallback(async (): Promise<void> => {
     if (mnemonic === undefined) {
-      const onVerifyMfa: CompleteExportOnVerifyMfa = async (
-        response,
-        onVerifySuccess
-      ): Promise<void> => {
-        const mfaType = await SeedlessService.getMfaType()
-        if (mfaType === undefined) {
-          Logger.error(`Unsupported MFA type: ${mfaType}`)
-          showSimpleToast(`Unsupported MFA type: ${mfaType}`)
-          return
-        }
-        if (mfaType === 'totp') {
-          navigate(AppNavigation.SeedlessExport.VerifyCode, {
-            userExportResponse: response,
-            // @ts-expect-error navigation can't handle generic params well
-            onVerifySuccess
-          })
-          return
-        }
-        if (mfaType === 'fido') {
-          const approved = await handleFidoVerify(response)
-          onVerifySuccess(
-            approved as CubeSignerResponse<UserExportCompleteResponse>
-          )
-        }
-      }
-
-      await completeExport({ onVerifyMfa }).catch(Logger.error)
+      await completeExport().catch(Logger.error)
     }
-
     setHideMnemonic(prev => !prev)
     capture(
       !hideMnemonic === true
         ? 'SeedlessExportPhraseHidden'
         : 'SeedlessExportPhraseRevealed'
     )
-  }, [
-    capture,
-    completeExport,
-    handleFidoVerify,
-    hideMnemonic,
-    mnemonic,
-    navigate
-  ])
+  }, [capture, completeExport, hideMnemonic, mnemonic])
 
   return (
     <>
@@ -170,32 +126,7 @@ export const SeedlessExportInitial = (): JSX.Element => {
           onNext={() =>
             navigate(AppNavigation.SeedlessExport.WaitingPeriodModal, {
               onNext: () => {
-                const onVerifyMfa: InitExportOnVerifyMfa = async (
-                  response,
-                  onVerifySuccess
-                ) => {
-                  const mfaType = await SeedlessService.getMfaType()
-                  if (mfaType === undefined) {
-                    Logger.error(`Unsupported MFA type: ${mfaType}`)
-                    showSimpleToast(`Unsupported MFA type: ${mfaType}`)
-                    return
-                  }
-                  if (mfaType === 'totp') {
-                    navigate(AppNavigation.SeedlessExport.VerifyCode, {
-                      userExportResponse: response,
-                      // @ts-expect-error navigation can't handle generic params well
-                      onVerifySuccess
-                    })
-                    return
-                  }
-                  if (mfaType === 'fido') {
-                    const approved = await handleFidoVerify(response)
-                    onVerifySuccess(
-                      approved as CubeSignerResponse<UserExportInitResponse>
-                    )
-                  }
-                }
-                initExport({ onVerifyMfa }).catch(Logger.error)
+                initExport().catch(Logger.error)
               }
             })
           }
