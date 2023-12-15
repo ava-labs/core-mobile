@@ -16,14 +16,13 @@ import CoreSeedlessAPIService, {
   SeedlessUserRegistrationResult
 } from 'seedless/services/CoreSeedlessAPIService'
 import SeedlessService from 'seedless/services/SeedlessService'
-import { VerifyCodeParams } from 'seedless/screens/VerifyCode'
 import AppleSignInService from 'services/socialSignIn/apple/AppleSignInService'
 import GoogleSigninService from 'services/socialSignIn/google/GoogleSigninService'
 import WalletService from 'services/wallet/WalletService'
 import { WalletType } from 'services/wallet/types'
 import { OidcPayload } from 'seedless/types'
 import { Result } from 'types/result'
-import { RefreshSeedlessTokenFlowErrors } from 'seedless/errors'
+import { RefreshSeedlessTokenFlowErrors, TotpErrors } from 'seedless/errors'
 import { Action } from '@reduxjs/toolkit'
 import { AppListenerEffectAPI } from 'store'
 import { onTokenExpired } from 'seedless/store/slice'
@@ -230,16 +229,18 @@ async function totpRefreshFlow(
   mfaId: string
 ): Promise<Result<void, RefreshSeedlessTokenFlowErrors>> {
   const onVerifySuccessPromise = new Promise((resolve, reject) => {
+    const onVerifyCode = (code: string): Promise<Result<void, TotpErrors>> => {
+      return SeedlessService.verifyCode(oidcToken, mfaId, code)
+    }
     Navigation.navigate({
       name: AppNavigation.Root.RefreshToken,
       params: {
         screen: AppNavigation.RefreshToken.VerifyCode,
         params: {
-          oidcToken,
-          mfaId,
+          onVerifyCode,
           onVerifySuccess: resolve,
           onBack: () => reject('USER_CANCELED')
-        } as VerifyCodeParams
+        }
       }
     })
   })
