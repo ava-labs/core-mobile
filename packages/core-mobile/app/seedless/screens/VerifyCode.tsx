@@ -45,20 +45,23 @@ export const VerifyCode = ({
 
     setIsVerifying(true)
 
-    const result = await SeedlessService.verifyCode(
-      oidcToken,
-      mfaId,
-      changedText
-    )
-    if (result.success === false) {
+    try {
+      const result = await SeedlessService.verifyCode(
+        oidcToken,
+        mfaId,
+        changedText
+      )
+      if (result.success === false) {
+        throw new Error(result.error.message)
+      }
+      setIsVerifying(false)
+      onVerifySuccess()
+      capture('TotpValidationSuccess')
+    } catch (error) {
       setShowError(true)
       setIsVerifying(false)
-      capture('TotpValidationFailed', { error: result.error.name })
-      return
+      capture('TotpValidationFailed', { error: error as string })
     }
-    setIsVerifying(false)
-    onVerifySuccess()
-    capture('TotpValidationSuccess')
   }
 
   const textInputStyle = showError

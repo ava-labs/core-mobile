@@ -72,13 +72,12 @@ export function useWallet(): UseWallet {
     walletType: WalletType
   ): Promise<void> => {
     try {
-      if (walletType) {
-        dispatch(setWalletType(walletType))
-      }
+      dispatch(setWalletType(walletType))
+
       await initWalletServiceAndUnlock({
         dispatch,
         mnemonic,
-        walletType: cachedWalletType,
+        walletType,
         isLoggingIn: true
       })
 

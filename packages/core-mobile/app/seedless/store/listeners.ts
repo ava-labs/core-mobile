@@ -68,12 +68,6 @@ const handleTokenExpired = async (
   Navigation.navigate({
     name: AppNavigation.Root.RefreshToken,
     params: {
-      screen: AppNavigation.RefreshToken.OwlLoader
-    }
-  })
-  Navigation.navigate({
-    name: AppNavigation.Root.RefreshToken,
-    params: {
       screen: AppNavigation.RefreshToken.SessionTimeout,
       params: {
         onRetry: () => handleRetry(listenerApi)
@@ -86,6 +80,13 @@ function handleRetry(listenerApi: AppListenerEffectAPI): void {
   const { dispatch } = listenerApi
   //dismiss previous modal screen
   Navigation.goBack()
+
+  Navigation.navigate({
+    name: AppNavigation.Root.RefreshToken,
+    params: {
+      screen: AppNavigation.RefreshToken.OwlLoader
+    }
+  })
   startRefreshSeedlessTokenFlow()
     .then(result => {
       if (result.success) {
