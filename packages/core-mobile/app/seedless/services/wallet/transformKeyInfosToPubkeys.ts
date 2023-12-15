@@ -3,7 +3,7 @@ import { strip0x } from '@avalabs/utils-sdk'
 import { PubKeyType } from 'services/wallet/types'
 
 export const transformKeyInfosToPubKeys = (
-  keyInfos: cs.KeyInfo[]
+  keyInfos: cs.KeyInfoApi[]
 ): PubKeyType[] => {
   // get derived keys only and group them
   const requiredKeyTypes = [
@@ -17,7 +17,7 @@ export const transformKeyInfosToPubKeys = (
         requiredKeyTypes.includes(k.key_type) &&
         Boolean(k.derivation_info?.derivation_path)
     )
-    .reduce<Record<string, Record<string, cs.KeyInfo>[]>>((acc, key) => {
+    .reduce<Record<string, Record<string, cs.KeyInfoApi>[]>>((acc, key) => {
       const { derivation_info } = key
 
       if (

@@ -1,6 +1,5 @@
 import { AppStartListening } from 'store/middleware/listener'
 import {
-  immediateAppLock,
   onAppUnlocked,
   onLogOut,
   onRehydrationComplete,
@@ -88,11 +87,12 @@ function handleRetry(listenerApi: AppListenerEffectAPI): void {
 
         const state = listenerApi.getState()
         if (selectWalletState(state) === WalletState.INACTIVE) {
-          initWalletServiceAndUnlock(
+          initWalletServiceAndUnlock({
             dispatch,
-            SEEDLESS_MNEMONIC_STUB,
-            WalletType.SEEDLESS
-          ).catch(Logger.error)
+            mnemonic: SEEDLESS_MNEMONIC_STUB,
+            walletType: WalletType.SEEDLESS,
+            isLoggingIn: true
+          }).catch(Logger.error)
         }
         return
       }
@@ -119,7 +119,7 @@ function handleRetry(listenerApi: AppListenerEffectAPI): void {
       Logger.error('startRefreshSeedlessTokenFlow error', e)
       //dismiss Loader screen
       Navigation.goBack()
-      dispatch(immediateAppLock)
+      dispatch(onLogOut)
     })
 }
 
