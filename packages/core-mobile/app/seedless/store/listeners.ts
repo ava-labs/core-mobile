@@ -75,7 +75,6 @@ function handleRetry(listenerApi: AppListenerEffectAPI): void {
   const { dispatch } = listenerApi
   //dismiss previous modal screen
   Navigation.goBack()
-
   Navigation.navigate({
     name: AppNavigation.Root.RefreshToken,
     params: {
