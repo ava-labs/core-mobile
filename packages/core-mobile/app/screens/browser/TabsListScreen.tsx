@@ -23,6 +23,7 @@ import AppNavigation from 'navigation/AppNavigation'
 import { BrowserScreenProps } from 'navigation/types'
 import TabsListToolbarMenu from './components/TabsListToolbarMenu'
 import TabListItem from './components/TabListItem'
+import { removeProtocol } from './utils'
 
 type TabViewNavigationProp = BrowserScreenProps<
   typeof AppNavigation.Browser.TabView
@@ -90,7 +91,7 @@ function TabsListScreen(): JSX.Element {
           marginBottom: GRID_ITEM_MARGIN_VERTICAL
         }}>
         <TabListItem
-          url={activeHistory?.url}
+          title={activeHistory?.url ? removeProtocol(activeHistory.url) : ''}
           onPress={() => handlePressTab(item)}
           onClose={() => handleCloseTab(item)}
         />

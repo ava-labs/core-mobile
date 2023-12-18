@@ -8,15 +8,14 @@ import {
 } from '@avalabs/k2-mobile'
 import React, { useState } from 'react'
 import { LayoutChangeEvent } from 'react-native'
-import { removeProtocol } from '../utils'
 
 type Props = {
-  url?: string
+  title: string
   onPress: () => void
   onClose: () => void
 }
 
-function TabListItem({ url, onPress, onClose }: Props): JSX.Element {
+function TabListItem({ title, onPress, onClose }: Props): JSX.Element {
   const {
     theme: { colors }
   } = useTheme()
@@ -40,7 +39,7 @@ function TabListItem({ url, onPress, onClose }: Props): JSX.Element {
             variant="buttonSmall"
             sx={{ padding: 8, flexGrow: 1, flexShrink: 1 }}
             numberOfLines={1}>
-            {url ? removeProtocol(url) : ''}
+            {title}
           </Text>
           <Pressable sx={{ padding: 4 }} hitSlop={10} onPress={onClose}>
             {({ pressed }) => (
