@@ -1,4 +1,3 @@
-/* eslint-disable sonarjs/cognitive-complexity */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // @ts-nocheck comment at the top of the file
 /* eslint-disable no-var */
@@ -7,8 +6,7 @@ import {
   getTestCaseId,
   api,
   createNewTestSectionsAndCases,
-  getTestCasesFromRun,
-  currentRunID
+  getTestCasesFromRun
 } from './generateTestrailObjects'
 import getTestLogs, { isResultPresent } from './getResultsFromLogs'
 const fs = require('fs')
@@ -150,28 +148,24 @@ async function generatePlatformResults(
   testCasesToSend: any,
   resultsToSendToTestrail: [],
   platform: string,
-  runId?: number
+  runID: number
 ) {
+  const runId = runID
   try {
-    let resultArray = resultsToSendToTestrail.filter(
+    const resultArray = resultsToSendToTestrail.filter(
       result => result.platform === platform
     )
     try {
       const existingTestCases = await getTestCasesFromRun(runId)
       // Adds the existing test case results to the results array so they are not overwritten in testrail when using the updateRun endpoint
-      resultArray = resultArray.concat(existingTestCases)
-      resultArray.forEach((testCase: any) => {
-        if (
-          isResultExistsInTestrail(runId, testCase.case_id) &&
-          testCase.status_id === 5
-        ) {
-          console.log('removed ' + testCase.case_id + ' from the array')
-          delete resultArray[testCase]
-        }
-        if (testCase.status_id === 3) {
-          delete resultArray[testCase]
-        }
+      existingTestCases.forEach((testCase: any) => {
+        resultArray.forEach((result: any) => {
+          if (testCase.case_id !== result.case_id && testCase.status_id !== 3) {
+            resultArray.push(testCase)
+          }
+        })
       })
+
       // Add already existing test cases to the testCasesToSend array
       if (resultArray.length > 0) {
         resultArray.forEach((testCase: object) => {
@@ -180,21 +174,23 @@ async function generatePlatformResults(
       }
 
       const uniqueCaseIdArray = [...new Set(testCasesToSend.case_ids)]
-      // const testCasePayload = {
-      //   include_all: false,
-      //   case_ids: uniqueCaseIdArray
-      // }
+      const testCasePayload = {
+        include_all: false,
+        case_ids: uniqueCaseIdArray
+      }
+      uniqueCaseIdArray.forEach((testCase: number) => {
+        console.log('Test case ' + testCase + ' is being added to the test run')
+      })
       console.log(JSON.stringify(uniqueCaseIdArray) + ' is the test case array')
       // Takes the array of test cases and adds them to the test run
-      // await api.updateRun(Number(runId), testCasePayload)
+      await api.updateRun(Number(runId), testCasePayload)
       console.log(
-        'Test cases have been sent to the test run...' +
-          testCasesToSend.case_ids
+        'Test cases have been sent to the test run...' + uniqueCaseIdArray
       )
     } catch (TestRailException) {
       console.log(
         'Invalid test case ids found in ' +
-          testCasesToSend.case_ids +
+          uniqueCaseIdArray +
           ' with run id ' +
           runId
       )
@@ -204,7 +200,7 @@ async function generatePlatformResults(
     for (let i = 0; i < resultArray.length; i++) {
       const resultObject = resultArray[i]
       const statusId = Number(resultObject?.status_id)
-      const comment = `Test case result for ${resultObject?.case_id} and has a status of ${statusId} for ${platform}`
+      const comment = `Test case result for ${resultObject?.case_id} and has a status of ${statusId}`
 
       if (resultObject) {
         const testResult = {
@@ -212,10 +208,11 @@ async function generatePlatformResults(
           status_id: statusId,
           comment: comment
         }
-        testResults.push(testResult)
+        if (testResult !== undefined) {
+          testResults.push(testResult)
+        }
       }
     }
-    console.log(testResults + ' is the test results array')
     // Send the results to testrail
     await api.addResultsForCases(Number(runId), { results: testResults })
 
@@ -231,7 +228,7 @@ async function generatePlatformResults(
           }
           // Attaches the screenshot to the corressponding case in the test run
           const attachmentID = await api.addAttachmentToResult(
-            testResult.id,
+            testResults[i]?.status_id,
             failedPayload
           )
           console.log(`${attachmentID.attachment_id} is the attachment ID...`)
