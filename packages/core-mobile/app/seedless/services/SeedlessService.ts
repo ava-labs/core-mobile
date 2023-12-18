@@ -177,10 +177,7 @@ class SeedlessService {
     mfaId: string,
     withSecurityKey: boolean
   ): Promise<void> {
-    const signerSession = await this.getSignerSession()
-
-    const challenge = await signerSession.fidoApproveStart(mfaId)
-
+    const challenge = await this.fidoApproveStart(mfaId)
     const credential = await PasskeyService.authenticate(
       challenge.options,
       withSecurityKey
@@ -208,7 +205,7 @@ class SeedlessService {
     oidcToken: string,
     mfaId: string,
     code: string
-  ): Promise<Result<void, TotpErrors>> {
+  ): Promise<Result<undefined, TotpErrors>> {
     try {
       await this.totpChallenge?.answer(code)
       this.totpChallenge = undefined
@@ -384,12 +381,10 @@ class SeedlessService {
 
     const hasMnemonic = 'mnemonic' in exportDecrypted
 
-    // @ts-expect-error typescript cannot detech mnemonic in exportDecrypted
     if (!hasMnemonic || typeof exportDecrypted.mnemonic !== 'string') {
       throw new Error('userExportDecrypt failed: missing mnemonic')
     }
 
-    // @ts-expect-error typescript cannot detech mnemonic in exportDecrypted
     return exportDecrypted.mnemonic
   }
 
@@ -403,14 +398,15 @@ class SeedlessService {
   }
 
   /**
-   * Verify authenticator code when exporting mnemonic
+   * Verify authenticator code
    */
-  async verifyUserExportCode(
-    userExportResponse: UserExportResponse,
+  async verifyApprovalCode<T>(
+    cubeSignerResponse: CubeSignerResponse<T>,
     code: string
-  ): Promise<UserExportResponse> {
+  ): Promise<Result<CubeSignerResponse<T>, TotpErrors>> {
     const signerSession = await this.getSignerSession()
-    return userExportResponse.approveTotp(signerSession, code)
+    const response = await cubeSignerResponse.approveTotp(signerSession, code)
+    return { success: true, value: response }
   }
 
   /**
@@ -427,30 +423,6 @@ class SeedlessService {
    */
   getEnvironment(): Environment {
     return SEEDLESS_ENVIRONMENT as Environment
-  }
-
-  // PRIVATE METHODS
-  /**
-   * Returns a CubeSigner instance
-   */
-  private async getCubeSigner(): Promise<CubeSigner> {
-    const storage = new SeedlessSessionStorage()
-    const sessionMgr = await SignerSessionManager.loadFromStorage(storage)
-    return new CubeSigner(sessionMgr, SEEDLESS_ORG_ID)
-  }
-
-  /**
-   * Returns a session manager that can be used to retrieve session data.
-   */
-  private async getSessionManager(): Promise<SignerSessionManager> {
-    return (await this.getCubeSigner()).sessionMgr as SignerSessionManager
-  }
-
-  /**
-   * Returns a signer session
-   */
-  private async getSignerSession(): Promise<SignerSession> {
-    return new SignerSession(await this.getSessionManager())
   }
 
   /**
@@ -483,6 +455,30 @@ class SeedlessService {
       mfaOrgId: SEEDLESS_ORG_ID,
       mfaConf: mfaReceiptConfirmation
     })
+  }
+
+  // PRIVATE METHODS
+  /**
+   * Returns a CubeSigner instance
+   */
+  private async getCubeSigner(): Promise<CubeSigner> {
+    const storage = new SeedlessSessionStorage()
+    const sessionMgr = await SignerSessionManager.loadFromStorage(storage)
+    return new CubeSigner(sessionMgr, SEEDLESS_ORG_ID)
+  }
+
+  /**
+   * Returns a session manager that can be used to retrieve session data.
+   */
+  private async getSessionManager(): Promise<SignerSessionManager> {
+    return (await this.getCubeSigner()).sessionMgr as SignerSessionManager
+  }
+
+  /**
+   * Returns a signer session
+   */
+  private async getSignerSession(): Promise<SignerSession> {
+    return new SignerSession(await this.getSessionManager())
   }
 }
 

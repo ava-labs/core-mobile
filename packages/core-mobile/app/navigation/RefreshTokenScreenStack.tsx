@@ -6,18 +6,24 @@ import { useNavigation, useRoute } from '@react-navigation/native'
 import SessionTimeout, {
   SessionTimeoutParams
 } from 'seedless/screens/SessionTimeout'
-import { VerifyCode, VerifyCodeParams } from 'seedless/screens/VerifyCode'
+import { VerifyCode } from 'seedless/screens/VerifyCode'
 import { useTheme } from '@avalabs/k2-mobile'
 import { RefreshTokenScreenProps } from 'navigation/types'
 import WrongSocialAccount, {
   WrongSocialAccountParams
 } from 'seedless/screens/WrongSocialAccount'
+import { TotpErrors } from 'seedless/errors'
+import { Result } from 'types/result'
 
 export type RefreshTokenScreenStackParamList = {
   [AppNavigation.RefreshToken.OwlLoader]: undefined
   [AppNavigation.RefreshToken.SessionTimeout]: SessionTimeoutParams
   [AppNavigation.RefreshToken.WrongSocialAccount]: WrongSocialAccountParams
-  [AppNavigation.RefreshToken.VerifyCode]: VerifyCodeParams
+  [AppNavigation.RefreshToken.VerifyCode]: {
+    onVerifyCode: (code: string) => Promise<Result<undefined, TotpErrors>>
+    onVerifySuccess: (response?: undefined) => void
+    onBack: () => void
+  }
 }
 
 const RefreshTokenScreenS =
@@ -90,12 +96,18 @@ function VerifyCodeScreen(): JSX.Element {
     params.onBack()
     goBack()
   }
+
+  function handleOnVerifyCode(
+    code: string
+  ): Promise<Result<undefined, TotpErrors>> {
+    return params.onVerifyCode(code)
+  }
+
   return (
     <VerifyCode
+      onVerifyCode={handleOnVerifyCode}
       onVerifySuccess={handleOnVerifySuccess}
       onBack={handleOnBack}
-      oidcToken={params.oidcToken}
-      mfaId={params.mfaId}
     />
   )
 }
