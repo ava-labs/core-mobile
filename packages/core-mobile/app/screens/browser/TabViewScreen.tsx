@@ -3,6 +3,7 @@ import { View } from 'react-native'
 import { useSelector } from 'react-redux'
 import { selectActiveTab } from 'store/browser/slices/tabs'
 import { Text } from '@avalabs/k2-mobile'
+import Browser from 'screens/browser/Browser'
 
 export default function TabViewScreen(): JSX.Element {
   const activeTab = useSelector(selectActiveTab)
@@ -16,11 +17,7 @@ export default function TabViewScreen(): JSX.Element {
           <Text variant="heading3">EmptyTab</Text>
         </View>
       )}
-      {showWebView && (
-        <View>
-          <Text variant="heading3">Browser</Text>
-        </View>
-      )}
+      {showWebView && <Browser />}
     </View>
   )
 }
