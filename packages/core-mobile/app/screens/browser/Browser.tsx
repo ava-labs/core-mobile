@@ -22,7 +22,7 @@ export default function Browser(): JSX.Element {
   const { injectCoreAsRecent } = useRecentWalletHack()
 
   useEffect(() => {
-    Logger.trace('TODO: pass this to Dock', scrollState)
+    Logger.trace('TODO: pass this to Dock')
   }, [scrollState])
 
   useEffect(() => {
