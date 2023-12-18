@@ -159,6 +159,7 @@ export type AnalyticsEvents = {
 
   // CP-7638 - DeFi aggregator
   DeFiAggregatorsCount: { count: number }
-  DeFiCardOpened: undefined
-  DeFiCardLaunchIconClicked: undefined
+  DeFiCardClicked: undefined
+  DeFiCardLaunchButtonlicked: undefined
+  DeFiDetailLaunchButtonClicked: undefined
 }
