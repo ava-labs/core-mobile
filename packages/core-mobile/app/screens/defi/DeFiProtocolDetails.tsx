@@ -15,6 +15,7 @@ import { openURL } from 'utils/openURL'
 import { ScrollView } from 'react-native-gesture-handler'
 import { useExchangedAmount } from 'hooks/defi/useExchangedAmount'
 import Separator from 'components/Separator'
+import { useAnalytics } from 'hooks/useAnalytics'
 import { ProtocolDetailsErrorState } from './components/ProtocolDetailsErrorState'
 import { mapPortfolioItems } from './utils'
 import { DeFiPortfolioItemGroup } from './components/DeFiPortfolioItemGroup'
@@ -25,7 +26,7 @@ type ScreenProps = WalletScreenProps<
   typeof AppNavigation.Wallet.DeFiProtocolDetails
 >
 
-export const DeFiProtocolDetails = () => {
+export const DeFiProtocolDetails = (): JSX.Element => {
   const {
     theme,
     appHook: { currencyFormatter }
@@ -36,6 +37,7 @@ export const DeFiProtocolDetails = () => {
   const { data, isLoading, error, isPaused, isSuccess } =
     useDeFiProtocol(protocolId)
   const { data: chainList } = useDeFiChainList()
+  const { capture } = useAnalytics()
 
   const memoizedChain = useMemo(() => {
     if (!data?.chain) return undefined
@@ -44,7 +46,8 @@ export const DeFiProtocolDetails = () => {
 
   const goToProtocolPage = useCallback(async () => {
     openURL(data?.siteUrl)
-  }, [data?.siteUrl])
+    capture('DeFiDetailLaunchButtonClicked')
+  }, [data?.siteUrl, capture])
 
   const calculatedTotalValueOfProtocolItems = useMemo(() => {
     if (!data?.portfolioItemList) return currencyFormatter(0)
@@ -63,7 +66,7 @@ export const DeFiProtocolDetails = () => {
     })
   }, [data?.portfolioItemList])
 
-  const renderCardContent = () => {
+  const renderCardContent = (): JSX.Element => {
     if (!data?.portfolioItemList || data.portfolioItemList.length === 0) {
       return (
         <>
