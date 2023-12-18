@@ -110,8 +110,7 @@ export default async function sendResults() {
       await generatePlatformResults(
         testCasesToSend,
         resultsToSendToTestrail,
-        'android',
-        Number(runID)
+        'android'
       )
     }
     if (await isResultPresent('ios')) {
@@ -144,6 +143,7 @@ export async function isResultExistsInTestrail(runID: number, caseId: number) {
 }
 
 // Updates the results for an existing test run or an empty test run
+// eslint-disable-next-line sonarjs/cognitive-complexity
 async function generatePlatformResults(
   testCasesToSend: any,
   resultsToSendToTestrail: [],
@@ -213,6 +213,7 @@ async function generatePlatformResults(
         }
       }
     }
+
     // Send the results to testrail
     await api.addResultsForCases(Number(runId), { results: testResults })
 
