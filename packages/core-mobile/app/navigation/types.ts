@@ -52,7 +52,6 @@ import { SecurityStackParamList } from './wallet/SecurityPrivacyStackScreen'
 import { BridgeStackParamList } from './wallet/BridgeScreenStack'
 import { PortfolioStackParamList } from './wallet/PortfolioScreenStack'
 import { StakeSetupStackParamList } from './wallet/EarnScreenStack/StakeSetupScreenStack'
-import { BrowserStackParamList } from './wallet/BrowserScreenStack'
 import { RecoveryMethodsStackParamList } from './onboarding/RecoveryMethodsStack'
 import { SeedlessExportStackParamList } from './wallet/SeedlessExportStack'
 
