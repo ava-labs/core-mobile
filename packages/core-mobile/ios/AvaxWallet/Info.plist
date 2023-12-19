@@ -69,7 +69,7 @@
 	<key>NSCameraUsageDescription</key>
 	<string>To scan QR we need camera permission.</string>
 	<key>NSFaceIDUsageDescription</key>
-	<string>$(PRODUCT_NAME) requires FaceID access to allow you quick and secure access to your wallet.</string>
+	<string>$(PRODUCT_NAME) requires Face ID access to allow you quick and secure access to your wallet.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string></string>
 	<key>UIAppFonts</key>
