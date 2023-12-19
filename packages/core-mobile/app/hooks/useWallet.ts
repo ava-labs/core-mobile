@@ -14,26 +14,31 @@ import { Dispatch } from '@reduxjs/toolkit'
 import Logger from 'utils/Logger'
 import { useAnalytics } from './useAnalytics'
 
+type InitWalletServiceAndUnlockProps = {
+  mnemonic: string
+  isLoggingIn: boolean
+  walletType: WalletType
+  dispatch: Dispatch
+}
+
 export interface UseWallet {
   onPinCreated: (
     mnemonic: string,
     pin: string,
     isResetting: boolean
   ) => Promise<'useBiometry' | 'enterWallet'>
-  initWallet: (mnemonic: string, walletType?: WalletType) => Promise<void>
-  initAndLoginWallet: (
-    mnemonic: string,
-    walletType: WalletType
-  ) => Promise<void>
+  unlock: ({ mnemonic }: { mnemonic: string }) => Promise<void>
+  login: (mnemonic: string, walletType: WalletType) => Promise<void>
   destroyWallet: () => void
 }
 
-export async function initWalletServiceAndUnlock(
-  dispatch: Dispatch,
-  mnemonic: string,
-  walletType: WalletType
-): Promise<void> {
-  await WalletService.init(mnemonic, walletType)
+export async function initWalletServiceAndUnlock({
+  dispatch,
+  mnemonic,
+  walletType,
+  isLoggingIn
+}: InitWalletServiceAndUnlockProps): Promise<void> {
+  await WalletService.init({ mnemonic, walletType, isLoggingIn })
   dispatch(onAppUnlocked())
 }
 
@@ -53,27 +58,27 @@ export function useWallet(): UseWallet {
    * Initializes wallet with the specified mnemonic and wallet type
    * and navigates to the unlocked wallet screen
    */
-  const initWallet = async (
-    mnemonic: string,
-    walletType?: WalletType
-  ): Promise<void> => {
-    if (walletType) {
-      dispatch(setWalletType(walletType))
-    }
-
-    await initWalletServiceAndUnlock(
+  const unlock = async ({ mnemonic }: { mnemonic: string }): Promise<void> => {
+    await initWalletServiceAndUnlock({
       dispatch,
       mnemonic,
-      walletType || cachedWalletType
-    )
+      walletType: cachedWalletType,
+      isLoggingIn: false
+    })
   }
 
-  const initAndLoginWallet = async (
+  const login = async (
     mnemonic: string,
     walletType: WalletType
   ): Promise<void> => {
     try {
-      await initWallet(mnemonic, walletType)
+      dispatch(setWalletType(walletType))
+      await initWalletServiceAndUnlock({
+        dispatch,
+        mnemonic,
+        walletType,
+        isLoggingIn: true
+      })
 
       dispatch(onLogIn())
 
@@ -94,8 +99,8 @@ export function useWallet(): UseWallet {
 
   return {
     onPinCreated,
-    initWallet,
-    initAndLoginWallet,
+    unlock,
+    login,
     destroyWallet
   }
 }

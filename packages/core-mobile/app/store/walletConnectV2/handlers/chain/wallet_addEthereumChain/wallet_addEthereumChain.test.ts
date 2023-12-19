@@ -11,6 +11,7 @@ import {
   selectIsDeveloperMode,
   toggleDeveloperMode
 } from 'store/settings/advanced'
+import { selectActiveNetwork } from 'store/network'
 import { walletAddEthereumChainHandler as handler } from './wallet_addEthereumChain'
 
 const mockIsValidRPCUrl = jest.fn()
@@ -23,7 +24,7 @@ jest.mock('store/network', () => {
   const actual = jest.requireActual('store/network')
   return {
     ...actual,
-    selectActiveNetwork: () => mockActiveNetwork,
+    selectActiveNetwork: jest.fn(),
     selectAllNetworks: () => mockNetworks
   }
 })
@@ -137,13 +138,82 @@ const testApproveInvalidData = async (data: unknown) => {
   })
 }
 
+const testShouldAskToAddNetwork = async ({
+  currentDeveloperMode,
+  isTestnet,
+  expectedIsTestnet
+}: {
+  currentDeveloperMode: boolean
+  isTestnet?: boolean
+  expectedIsTestnet: boolean
+}) => {
+  const mockSelectActiveNetwork =
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    selectActiveNetwork as jest.MockedFunction<any>
+  mockSelectActiveNetwork.mockImplementationOnce(() => {
+    return { ...mockActiveNetwork, isTestnet: currentDeveloperMode }
+  })
+
+  const testRequest =
+    isTestnet !== undefined
+      ? createRequest([{ ...sepoliaMainnetInfo, isTestnet }])
+      : createRequest([sepoliaMainnetInfo])
+
+  const result = await handler.handle(testRequest, mockListenerApi)
+
+  const expectedNetwork = {
+    chainId: 11155111,
+    chainName: 'Sepolia',
+    description: '',
+    explorerUrl: 'https://sepolia.etherscan.io',
+    isTestnet: expectedIsTestnet,
+    logoUri: '',
+    mainnetChainId: 0,
+    networkToken: {
+      symbol: 'SEP',
+      name: 'SEP',
+      description: '',
+      decimals: 18,
+      logoUri: ''
+    },
+    platformChainId: '',
+    primaryColor: '',
+    rpcUrl: 'https://rpc.sepolia.dev',
+    subnetId: '',
+    vmId: '',
+    vmName: 'EVM'
+  }
+
+  expect(mockNavigate).toHaveBeenCalledWith({
+    name: AppNavigation.Root.Wallet,
+    params: {
+      screen: AppNavigation.Modal.AddEthereumChainV2,
+      params: {
+        request: testRequest,
+        network: expectedNetwork,
+        isExisting: false
+      }
+    }
+  })
+
+  expect(result).toEqual({ success: true, value: expect.any(Symbol) })
+}
+
 describe('wallet_addEthereumChain handler', () => {
   it('should contain correct methods', () => {
     expect(handler.methods).toEqual(['wallet_addEthereumChain'])
   })
 
   describe('handle', () => {
-    // eslint-disable-next-line jest/expect-expect
+    beforeEach(() => {
+      const mockSelectActiveNetwork =
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        selectActiveNetwork as jest.MockedFunction<any>
+      mockSelectActiveNetwork.mockImplementation(() => {
+        return mockActiveNetwork
+      })
+    })
+
     it('should return error when params are invalid', async () => {
       const invalidParamsScenarios = [
         null,
@@ -257,47 +327,46 @@ describe('wallet_addEthereumChain handler', () => {
       })
     })
 
-    it('should ask to add network when network does not already exist and return success', async () => {
-      const testRequest = createRequest([sepoliaMainnetInfo])
+    describe('when request contains isTestnet field', () => {
+      it('should ask to add network when network does not already exist and return success', async () => {
+        await testShouldAskToAddNetwork({
+          currentDeveloperMode: true,
+          isTestnet: true,
+          expectedIsTestnet: true
+        })
 
-      const result = await handler.handle(testRequest, mockListenerApi)
+        await testShouldAskToAddNetwork({
+          currentDeveloperMode: true,
+          isTestnet: false,
+          expectedIsTestnet: false
+        })
 
-      const expectedNetwork = {
-        chainId: 11155111,
-        chainName: 'Sepolia',
-        description: '',
-        explorerUrl: 'https://sepolia.etherscan.io',
-        isTestnet: false,
-        logoUri: '',
-        mainnetChainId: 0,
-        networkToken: {
-          symbol: 'SEP',
-          name: 'SEP',
-          description: '',
-          decimals: 18,
-          logoUri: ''
-        },
-        platformChainId: '',
-        primaryColor: '',
-        rpcUrl: 'https://rpc.sepolia.dev',
-        subnetId: '',
-        vmId: '',
-        vmName: 'EVM'
-      }
+        await testShouldAskToAddNetwork({
+          currentDeveloperMode: false,
+          isTestnet: false,
+          expectedIsTestnet: false
+        })
 
-      expect(mockNavigate).toHaveBeenCalledWith({
-        name: AppNavigation.Root.Wallet,
-        params: {
-          screen: AppNavigation.Modal.AddEthereumChainV2,
-          params: {
-            request: testRequest,
-            network: expectedNetwork,
-            isExisting: false
-          }
-        }
+        await testShouldAskToAddNetwork({
+          currentDeveloperMode: false,
+          isTestnet: true,
+          expectedIsTestnet: true
+        })
       })
+    })
 
-      expect(result).toEqual({ success: true, value: expect.any(Symbol) })
+    describe('when request does not contain isTestnet field', () => {
+      it('should ask to add network when network does not already exist and return success', async () => {
+        await testShouldAskToAddNetwork({
+          currentDeveloperMode: true,
+          expectedIsTestnet: true
+        })
+
+        await testShouldAskToAddNetwork({
+          currentDeveloperMode: false,
+          expectedIsTestnet: false
+        })
+      })
     })
   })
 
@@ -309,7 +378,6 @@ describe('wallet_addEthereumChain handler', () => {
       mockSelectIsDeveloperMode.mockImplementation(() => false)
     })
 
-    // eslint-disable-next-line jest/expect-expect
     it('should return error when approve data is invalid', async () => {
       const invalidDataScenarios = [
         null,

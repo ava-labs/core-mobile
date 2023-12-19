@@ -1,5 +1,5 @@
 import { useDeFiProtocolList } from 'hooks/defi/useDeFiProtocolList'
-import React, { FC } from 'react'
+import React, { FC, useEffect } from 'react'
 import { View } from 'react-native'
 import Card from 'components/Card'
 import { DeFiSimpleProtocol } from 'services/defi/types'
@@ -16,6 +16,7 @@ import { useNavigation } from '@react-navigation/native'
 import { openURL } from 'utils/openURL'
 import BigList from 'components/BigList'
 import { useExchangedAmount } from 'hooks/defi/useExchangedAmount'
+import { useAnalytics } from 'hooks/useAnalytics'
 import { ErrorState } from './components/ErrorState'
 import { ZeroState } from './components/ZeroState'
 import { ProtocolLogo } from './components/ProtocolLogo'
@@ -28,6 +29,7 @@ type ScreenProps = PortfolioScreenProps<
 
 export const DeFiProtocolList: FC = () => {
   const { navigate } = useNavigation<ScreenProps>()
+  const { capture } = useAnalytics()
 
   const { theme } = useApplicationContext()
   const { data: chainList } = useDeFiChainList()
@@ -48,15 +50,23 @@ export const DeFiProtocolList: FC = () => {
 
   const getAmount = useExchangedAmount()
 
+  useEffect(() => {
+    if (isSuccess) {
+      capture('DeFiAggregatorsCount', { count: memoizedData.length })
+    }
+  }, [capture, memoizedData, isSuccess])
+
   const handleGoToDetail = (protocolId: string): void => {
     navigate({
       name: AppNavigation.Wallet.DeFiProtocolDetails,
       params: { protocolId }
     })
+    capture('DeFiCardClicked')
   }
 
   const goToProtocolPage = (siteUrl?: string): void => {
     openURL(siteUrl)
+    capture('DeFiCardLaunchButtonlicked')
   }
 
   const handleExploreEcosystem = (): void => {

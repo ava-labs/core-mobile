@@ -36,7 +36,7 @@ class WalletAddEthereumChainHandler
     request: WalletAddEthereumChainRpcRequest,
     listenerApi: AppListenerEffectAPI
   ): HandleResponse => {
-    const store = listenerApi.getState()
+    const state = listenerApi.getState()
     const { params } = request.data.params.request
     const result = parseRequestParams(params)
 
@@ -52,8 +52,8 @@ class WalletAddEthereumChainHandler
 
     const requestedChain = result.data[0]
 
-    const chains = selectAllNetworks(store)
-    const currentActiveNetwork = selectActiveNetwork(store)
+    const chains = selectAllNetworks(state)
+    const currentActiveNetwork = selectActiveNetwork(state)
     const requestedChainId = Number(requestedChain.chainId)
 
     const isSameNetwork = requestedChainId === currentActiveNetwork?.chainId
@@ -85,9 +85,10 @@ class WalletAddEthereumChainHandler
     }
 
     // use the requested chain's isTestnet value or fall back to the current active network's
-    const isTestnet = requestedChain.isTestnet
-      ? requestedChain.isTestnet
-      : Boolean(currentActiveNetwork.isTestnet)
+    const isTestnet =
+      requestedChain.isTestnet !== undefined
+        ? requestedChain.isTestnet
+        : Boolean(currentActiveNetwork.isTestnet)
 
     const customNetwork: Network = {
       chainId: requestedChainId,

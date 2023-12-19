@@ -25,11 +25,14 @@ subgraph startTokenRefreshFlow
 	oidcOk? -- yes --> Cubist.register
 	oidcOk? -- wrongEmail --> showWarn --> retry
 	oidcOk? -- somethingElse --> fail
-	Cubist.register --> usesTOTP?
-	usesTOTP? -- yes --> verifyTOTP
+	Cubist.register --> whichMFA?
+    whichMFA? -- TOTP --> verifyTOTP
 	verifyTOTP --> totpOK? -- yes --> success
 	totpOK? -- no --> verifyTOTP
 	totpOK? -- user canceled --> fail
-	usesTOTP? -- no --> success
+    whichMFA? -- none --> success
+    whichMFA? -- FIDO --> approveFido --> approved?
+    approved? -- yes --> success
+    approved? -- no --> fail
 end
 ```
