@@ -104,30 +104,23 @@ export default async function sendResults() {
   const testCasesToSend = preparedFinalResults.testCasesToSend
   const resultsToSendToTestrail = preparedFinalResults.resultsToSendToTestrail
 
-  if (process.env.POST_TO_TESTRAIL === 'true') {
-    if (await isResultPresent('android')) {
-      const runID = process.env.TESTRAIL_RUN_ID
-      console.log('The run id is ' + runID)
-      await generatePlatformResults(
-        testCasesToSend,
-        resultsToSendToTestrail,
-        'android'
-      )
-    }
-    if (await isResultPresent('ios')) {
-      const runID = (await currentRunID('ios')).runID
-      console.log('The run id is ' + runID)
-      await generatePlatformResults(
-        testCasesToSend,
-        resultsToSendToTestrail,
-        'ios',
-        runID
-      )
-    }
-  } else {
-    console.log(
-      'POST_TO_TESTRAIL is false, skipping sending results to TestRail',
-      process.env.POST_TO_TESTRAIL
+  if (await isResultPresent('android')) {
+    const runID = process.env.TESTRAIL_RUN_ID
+    console.log('The run id is ' + runID)
+    await generatePlatformResults(
+      testCasesToSend,
+      resultsToSendToTestrail,
+      'android'
+    )
+  }
+  if (await isResultPresent('ios')) {
+    const runID = (await currentRunID('ios')).runID
+    console.log('The run id is ' + runID)
+    await generatePlatformResults(
+      testCasesToSend,
+      resultsToSendToTestrail,
+      'ios',
+      runID
     )
   }
 }
@@ -179,10 +172,6 @@ async function generatePlatformResults(
         include_all: false,
         case_ids: uniqueCaseIdArray
       }
-      uniqueCaseIdArray.forEach((testCase: number) => {
-        console.log('Test case ' + testCase + ' is being added to the test run')
-      })
-      console.log(JSON.stringify(uniqueCaseIdArray) + ' is the test case array')
       // Takes the array of test cases and adds them to the test run
       await api.updateRun(Number(runId), testCasePayload)
       console.log(
