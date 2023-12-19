@@ -6,7 +6,8 @@ import {
   getTestCaseId,
   api,
   createNewTestSectionsAndCases,
-  getTestCasesFromRun
+  getTestCasesFromRun,
+  currentRunID
 } from './generateTestrailObjects'
 import getTestLogs, { isResultPresent } from './getResultsFromLogs'
 const fs = require('fs')
