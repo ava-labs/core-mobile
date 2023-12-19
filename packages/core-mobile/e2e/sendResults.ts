@@ -107,6 +107,7 @@ export default async function sendResults() {
   const resultsToSendToTestrail = preparedFinalResults.resultsToSendToTestrail
 
   console.log(testCasesToSend, 'is the test cases to send...')
+  console.log(resultsToSendToTestrail, 'is the results to send...')
 
   if (await isResultPresent('android')) {
     const runID = process.env.TESTRAIL_RUN_ID
@@ -148,10 +149,12 @@ async function generatePlatformResults(
   platform: string,
   runID?: number
 ) {
+  console.log('starting to generate results...')
   try {
     const resultArray = resultsToSendToTestrail.filter(
       result => result.platform === platform
     )
+    console.log(resultArray, 'is the result array...')
     try {
       const existingTestCases = await getTestCasesFromRun(runID)
       // Adds the existing test case results to the results array so they are not overwritten in testrail when using the updateRun endpoint
