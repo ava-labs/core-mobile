@@ -106,9 +106,6 @@ export default async function sendResults() {
   const testCasesToSend = preparedFinalResults.testCasesToSend
   const resultsToSendToTestrail = preparedFinalResults.resultsToSendToTestrail
 
-  console.log(testCasesToSend, 'is the test cases to send...')
-  console.log(resultsToSendToTestrail, 'is the results to send...')
-
   if (await isResultPresent('android')) {
     const runID = process.env.TESTRAIL_RUN_ID
     console.log('The run id is ' + runID)
@@ -154,7 +151,6 @@ async function generatePlatformResults(
     const resultArray = resultsToSendToTestrail.filter(
       result => result.platform === platform
     )
-    console.log(resultArray, 'is the result array...')
     try {
       const existingTestCases = await getTestCasesFromRun(runID)
       // Adds the existing test case results to the results array so they are not overwritten in testrail when using the updateRun endpoint
@@ -166,22 +162,17 @@ async function generatePlatformResults(
         })
       })
 
-      console.log(resultArray, 'is the result array...')
-
       // Add already existing test cases to the testCasesToSend array
       if (resultArray.length > 0) {
         resultArray.forEach((testCase: object) => {
           testCasesToSend.case_ids.push(Number(testCase.case_id))
         })
       }
-
-      const uniqueCaseIdArray = [...new Set(testCasesToSend.case_ids)]
-
-      console.log(uniqueCaseIdArray, 'is the unique case id array...')
+      console.log(testCasesToSend.case_ids, 'is the test cases to send...')
 
       const testCasePayload = {
         include_all: false,
-        case_ids: uniqueCaseIdArray
+        case_ids: testCasesToSend.case_ids
       }
       // Takes the array of test cases and adds them to the test run
       await api.updateRun(Number(runID), testCasePayload)
