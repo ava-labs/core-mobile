@@ -44,7 +44,7 @@ const globalHistorySlice = createSlice({
 })
 
 // selectors
-export const selectActiveHistory =
+export const selectHistory =
   (id?: HistoryId) =>
   (state: RootState): History | undefined => {
     if (id === undefined) return

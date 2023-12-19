@@ -8,7 +8,7 @@ import { useNavigation } from '@react-navigation/native'
 import { BrowserScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
 import { selectActiveTab } from 'store/browser/slices/tabs'
-import { selectActiveHistory } from 'store/browser/slices/globalHistory'
+import { selectHistory } from 'store/browser/slices/globalHistory'
 
 enum MenuId {
   Favorite = 'favorite',
@@ -34,9 +34,7 @@ export const DockMenu: FC<Props> = ({
   const dispatch = useDispatch()
   const { navigate } = useNavigation<TabViewNavigationProp>()
   const activeTab = useSelector(selectActiveTab)
-  const activeHistory = useSelector(
-    selectActiveHistory(activeTab?.activeHistory?.id)
-  )
+  const activeHistory = useSelector(selectHistory(activeTab?.activeHistory?.id))
 
   const onShare = async (): Promise<void> => {
     await ShareApi.share({
