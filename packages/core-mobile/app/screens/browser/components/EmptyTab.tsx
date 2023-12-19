@@ -16,7 +16,6 @@ import {
 } from 'store/browser/slices/globalHistory'
 import { AddHistoryPayload, History } from 'store/browser'
 import GoogleSVG from 'assets/icons/google.svg'
-import Logger from 'utils/Logger'
 import { addHistoryForActiveTab } from 'store/browser/slices/tabs'
 import AppNavigation from 'navigation/AppNavigation'
 import { BrowserScreenProps } from 'navigation/types'
@@ -59,9 +58,6 @@ export const EmptyTab = (): JSX.Element => {
   }
 
   const handleGoogleSearch = (): void => {
-    if (!isValidUrl(searchText)) {
-      Logger.error('Invalid URL')
-    }
     const url =
       'https://www.google.com/search?q=' + encodeURIComponent(searchText)
     const history: AddHistoryPayload = {
@@ -70,14 +66,6 @@ export const EmptyTab = (): JSX.Element => {
     }
     dispatch(addHistoryForActiveTab(history))
     navigate(AppNavigation.Browser.TabView)
-  }
-
-  const isValidUrl = (urlString: string): boolean => {
-    try {
-      return Boolean(new URL(urlString))
-    } catch {
-      return false
-    }
   }
 
   const renderHistory = (): JSX.Element => {
