@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // @ts-nocheck comment at the top of the file
-/* eslint-disable no-var */
 import * as fs from 'fs'
 import {
   getTestCaseId,
@@ -51,7 +50,7 @@ export async function prepareResults() {
   const uniqueCaseIdArray = [...new Set(testIdArrayForTestrail)]
 
   // Payload for testrail to add the casses to the test run before the results are sent
-  var testCasesToSend = {
+  const testCasesToSend = {
     include_all: false,
     case_ids: uniqueCaseIdArray
   }
@@ -68,14 +67,14 @@ Creates an array of test case objects from the current test run in testrail. Thi
 A 'case id' is the permanent test case in our suite, a 'test case id' is a part of the test run only. It can get confusing so please be sure to ask questions if you need help.
 /*/
 
-  var resultsToSendToTestrail = []
+  const resultsToSendToTestrail = []
 
   // This takes the array of tests in the test run and applies the results to each of the tests
-  for (var testCaseResultObject of casesToAddToRun) {
-    var testRunCaseStatusId = testCaseResultObject.status_id
-    var testId = testCaseResultObject.test_id
-    var screenshot = testCaseResultObject.failed_screenshot
-    var platform = testCaseResultObject.platform
+  for (const testCaseResultObject of casesToAddToRun) {
+    const testRunCaseStatusId = testCaseResultObject.status_id
+    const testId = testCaseResultObject.test_id
+    const screenshot = testCaseResultObject.failed_screenshot
+    const platform = testCaseResultObject.platform
     if (testRunCaseStatusId === 1) {
       // Sends a passed test to testrail with no comment
       resultsToSendToTestrail.push({
@@ -142,15 +141,14 @@ async function generatePlatformResults(
   testCasesToSend: any,
   resultsToSendToTestrail: [],
   platform: string,
-  runID: number
+  runID?: number
 ) {
-  const runId = runID
   try {
     const resultArray = resultsToSendToTestrail.filter(
       result => result.platform === platform
     )
     try {
-      const existingTestCases = await getTestCasesFromRun(runId)
+      const existingTestCases = await getTestCasesFromRun(runID)
       // Adds the existing test case results to the results array so they are not overwritten in testrail when using the updateRun endpoint
       existingTestCases.forEach((testCase: any) => {
         resultArray.forEach((result: any) => {
@@ -173,7 +171,7 @@ async function generatePlatformResults(
         case_ids: uniqueCaseIdArray
       }
       // Takes the array of test cases and adds them to the test run
-      await api.updateRun(Number(runId), testCasePayload)
+      await api.updateRun(Number(runID), testCasePayload)
       console.log(
         'Test cases have been sent to the test run...' + uniqueCaseIdArray
       )
@@ -182,14 +180,14 @@ async function generatePlatformResults(
         'Invalid test case ids found in ' +
           uniqueCaseIdArray +
           ' with run id ' +
-          runId
+          runID
       )
     }
 
     const testResults = []
     for (let i = 0; i < resultArray.length; i++) {
       const resultObject = resultArray[i]
-      const statusId = Number(resultObject?.status_id)
+      const statusId = resultObject?.status_id
       const comment = `Test case result for ${resultObject?.case_id} and has a status of ${statusId}`
 
       if (resultObject) {
@@ -205,7 +203,7 @@ async function generatePlatformResults(
     }
 
     // Send the results to testrail
-    await api.addResultsForCases(Number(runId), { results: testResults })
+    await api.addResultsForCases(Number(runID), { results: testResults })
 
     // Adds the screenshot to the test case in testrail if the test failed
     for (let i = 0; i < testResults.length; i++) {
