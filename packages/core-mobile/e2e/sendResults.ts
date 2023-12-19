@@ -158,6 +158,8 @@ async function generatePlatformResults(
         })
       })
 
+      console.log(resultArray, 'is the result array...')
+
       // Add already existing test cases to the testCasesToSend array
       if (resultArray.length > 0) {
         resultArray.forEach((testCase: object) => {
@@ -166,6 +168,9 @@ async function generatePlatformResults(
       }
 
       const uniqueCaseIdArray = [...new Set(testCasesToSend.case_ids)]
+
+      console.log(uniqueCaseIdArray, 'is the unique case id array...')
+
       const testCasePayload = {
         include_all: false,
         case_ids: uniqueCaseIdArray
@@ -192,7 +197,7 @@ async function generatePlatformResults(
 
       if (resultObject) {
         const testResult = {
-          case_id: Number(resultObject?.case_id),
+          case_id: resultObject?.case_id,
           status_id: statusId,
           comment: comment
         }
