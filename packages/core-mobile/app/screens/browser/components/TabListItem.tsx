@@ -10,7 +10,7 @@ import React, { useState } from 'react'
 import { LayoutChangeEvent } from 'react-native'
 
 type Props = {
-  title: string
+  title?: string
   onPress: () => void
   onClose: () => void
 }

@@ -18,7 +18,6 @@ import {
   selectAllTabs,
   Tab
 } from 'store/browser'
-import { selectAllHistories } from 'store/browser/slices/globalHistory'
 import AppNavigation from 'navigation/AppNavigation'
 import { BrowserScreenProps } from 'navigation/types'
 import TabsListToolbarMenu from './components/TabsListToolbarMenu'
@@ -35,7 +34,6 @@ function TabsListScreen(): JSX.Element {
     theme: { colors }
   } = useTheme()
   const tabs = useSelector(selectAllTabs)
-  const allHistories = useSelector(selectAllHistories)
   const dispatch = useDispatch()
   const [width, setWidth] = useState(0)
 
@@ -79,9 +77,7 @@ function TabsListScreen(): JSX.Element {
   }
 
   function renderTab({ item }: { item: Tab }): JSX.Element | null {
-    const activeHistory = allHistories.filter(
-      history => history.id === item.activeHistory?.id
-    )[0]
+    const activeHistory = item.activeHistory
 
     return (
       <View
