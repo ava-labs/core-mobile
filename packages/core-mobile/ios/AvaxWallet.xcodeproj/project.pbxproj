@@ -38,7 +38,7 @@
 		0BAAA732269F480900722C85 /* Inter-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "Inter-Regular.ttf"; path = "../android/app/src/main/assets/fonts/Inter-Regular.ttf"; sourceTree = "<group>"; };
 		0BAAA733269F480900722C85 /* Inter-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "Inter-Bold.ttf"; path = "../android/app/src/main/assets/fonts/Inter-Bold.ttf"; sourceTree = "<group>"; };
 		11E965FF9ACCACA936688635 /* Pods-common-AvaxWallet.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-common-AvaxWallet.release.xcconfig"; path = "Target Support Files/Pods-common-AvaxWallet/Pods-common-AvaxWallet.release.xcconfig"; sourceTree = "<group>"; };
-		13B07F961A680F5B00A75B9A /* AvaxWallet.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AvaxWallet.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		13B07F961A680F5B00A75B9A /* Core.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Core.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = AvaxWallet/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = AvaxWallet/Info.plist; sourceTree = "<group>"; };
 		204927316FD49572841BF299 /* Pods-common-AvaxWalletInternal.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-common-AvaxWalletInternal.debug.xcconfig"; path = "Target Support Files/Pods-common-AvaxWalletInternal/Pods-common-AvaxWalletInternal.debug.xcconfig"; sourceTree = "<group>"; };
@@ -149,7 +149,7 @@
 		83CBBA001A601CBA00E9B192 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				13B07F961A680F5B00A75B9A /* AvaxWallet.app */,
+				13B07F961A680F5B00A75B9A /* Core.app */,
 				8E858A6628AFD47300236EF2 /* AvaxWalletInternal.app */,
 			);
 			name = Products;
@@ -200,7 +200,7 @@
 			);
 			name = AvaxWallet;
 			productName = AvaxWallet;
-			productReference = 13B07F961A680F5B00A75B9A /* AvaxWallet.app */;
+			productReference = 13B07F961A680F5B00A75B9A /* Core.app */;
 			productType = "com.apple.product-type.application";
 		};
 		8E858A5228AFD47300236EF2 /* AvaxWalletInternal */ = {
@@ -559,7 +559,7 @@
 					"-lc++",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = org.avalabs.corewallet;
-				PRODUCT_NAME = AvaxWallet;
+				PRODUCT_NAME = Core;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OBJC_BRIDGING_HEADER = "AvaxWallet-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -610,7 +610,7 @@
 					"-lc++",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = org.avalabs.corewallet;
-				PRODUCT_NAME = AvaxWallet;
+				PRODUCT_NAME = Core;
 				PROVISIONING_PROFILE_SPECIFIER = "Bitrise iOS app-store - (org.avalabs.corewallet)";
 				SWIFT_OBJC_BRIDGING_HEADER = "AvaxWallet-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
