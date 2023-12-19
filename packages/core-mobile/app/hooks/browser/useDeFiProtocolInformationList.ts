@@ -5,11 +5,18 @@ import BrowserService from 'services/browser/BrowserService'
 import { DeFiProtocolInformationCamelCase } from 'services/browser/types'
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-export const useDeFiProtocolInformationList = () => {
+export const useDeFiProtocolInformationList = ({
+  limit
+}: {
+  limit: number
+}) => {
   return useRefreshableQuery({
     refetchInterval: refetchIntervals.defi,
     queryKey: [ReactQueryKeys.DEFI_PROTOCOL_INFORMATION_LIST],
     queryFn: () => BrowserService.getDeFiProtocolInformationList(),
-    select: data => DeFiProtocolInformationCamelCase.array().parse(data)
+    select: data => {
+      const topTvl = data.sort((a, b) => b.tvl - a.tvl).slice(0, limit)
+      return DeFiProtocolInformationCamelCase.array().parse(topTvl)
+    }
   })
 }
