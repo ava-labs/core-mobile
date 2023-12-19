@@ -14,6 +14,7 @@ import SearchSVG from 'components/svg/SearchSVG'
 import React, {
   FC,
   useCallback,
+  useEffect,
   useLayoutEffect,
   useRef,
   useState
@@ -34,6 +35,7 @@ interface Props extends Omit<TextInputProps, 'value' | 'onChangeText'> {
   debounceMillis?: number
   textColor?: string
   testID?: string
+  setSearchBarFocused?: (value: boolean) => void
 }
 
 const SCREEN_WIDTH = Dimensions.get('window').width
@@ -66,6 +68,7 @@ const SearchBar: FC<Props> = ({
   useDebounce = false,
   debounceMillis = DEFAULT_DEBOUNCE_MILLISECONDS,
   textColor,
+  setSearchBarFocused,
   ...rest
 }) => {
   const textInputRef = useRef<TextInput>(null)
@@ -75,6 +78,10 @@ const SearchBar: FC<Props> = ({
   const [_searchText, _setSearchText] = useState(searchText)
 
   useLayoutEffect(keyboardListenerFx, [hideBottomNav, navigation])
+
+  useEffect(() => {
+    setSearchBarFocused?.(isFocused)
+  }, [isFocused, setSearchBarFocused])
 
   /**
    * An attempt to hide bottom tabs when the search is focused.
