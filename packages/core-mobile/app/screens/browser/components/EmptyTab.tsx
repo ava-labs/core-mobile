@@ -10,10 +10,7 @@ import SearchBar from 'components/SearchBar'
 import { Space } from 'components/Space'
 import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import {
-  removeAllHistories,
-  selectAllHistories
-} from 'store/browser/slices/globalHistory'
+import { selectAllHistories } from 'store/browser/slices/globalHistory'
 import { AddHistoryPayload, History } from 'store/browser'
 import GoogleSVG from 'assets/icons/google.svg'
 import { addHistoryForActiveTab } from 'store/browser/slices/tabs'
@@ -54,7 +51,7 @@ export const EmptyTab = (): JSX.Element => {
   }, [histories, searchText])
 
   const clearAll = (): void => {
-    dispatch(removeAllHistories())
+    navigate(AppNavigation.Browser.ClearAllHistory)
   }
 
   const handleGoogleSearch = (): void => {
