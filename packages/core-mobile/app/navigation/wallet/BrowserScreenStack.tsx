@@ -19,6 +19,7 @@ import CoreOwl from 'assets/icons/core_owl.svg'
 import RocketLaunch from 'assets/icons/rocket_launch.svg'
 import SearchIcon from 'assets/icons/search.svg'
 import { useTheme } from '@avalabs/k2-mobile'
+import { ClearAllHistoryModal } from 'screens/browser/ClearAllHistoryModal'
 
 export type BrowserStackParamList = {
   [AppNavigation.Browser.Intro]: undefined
@@ -55,6 +56,11 @@ function BrowserScreenStack(): JSX.Element {
         name={AppNavigation.Browser.AreYouSure}
         options={{ presentation: 'transparentModal', headerShown: false }}
         component={AreYouSureModal}
+      />
+      <BrowserStack.Screen
+        name={AppNavigation.Browser.ClearAllHistory}
+        options={{ presentation: 'transparentModal', headerShown: false }}
+        component={ClearAllHistoryModal}
       />
       <BrowserStack.Screen
         name={AppNavigation.Browser.Intro}
