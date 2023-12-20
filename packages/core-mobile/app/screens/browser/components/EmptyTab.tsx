@@ -139,7 +139,7 @@ export const EmptyTab = ({
   }
 
   return (
-    <View sx={{ marginHorizontal: 16 }}>
+    <View sx={{ paddingHorizontal: 16, backgroundColor: '$black' }}>
       <SearchBar
         setSearchBarFocused={setIsFocused}
         onTextChanged={setSearchText}

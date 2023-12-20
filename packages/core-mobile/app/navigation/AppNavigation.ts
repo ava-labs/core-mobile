@@ -3,7 +3,9 @@ enum Root {
   Onboard = 'Root.Onboard',
   RefreshToken = 'Root.RefreshToken',
   CopyPhraseWarning = 'Root.CopyPhraseWarning',
-  ForgotPin = 'Root.ForgotPin'
+  ForgotPin = 'Root.ForgotPin',
+  BrowserTabsList = 'Root.BrowserTabsList',
+  BrowserTabCloseAll = 'Root.BrowserTabCloseAll'
 }
 
 enum OnboardScreens {
@@ -98,9 +100,7 @@ enum EarnScreens {
 enum BrowserScreens {
   Intro = 'BrowserScreens.Intro',
   TabView = 'BrowserScreens.TabView',
-  TabsList = 'BrowserScreens.TabsList',
   History = 'BrowserScreens.History',
-  AreYouSure = 'BrowserScreens.AreYouSure',
   ClearAllHistory = 'BrowserScreens.ClearAllHistory'
 }
 
