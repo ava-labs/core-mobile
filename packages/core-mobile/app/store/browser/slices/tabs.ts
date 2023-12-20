@@ -9,12 +9,17 @@ import { v4 as uuidv4 } from 'uuid'
 import { getUnixTime } from 'date-fns'
 import { createHash } from 'utils/createHash'
 import {
+  removeAllHistories,
+  removeHistory
+} from 'store/browser/slices/globalHistory'
+import {
+  AddHistoryPayload,
+  History,
+  HistoryId,
   Tab,
   TabId,
   TabPayload,
-  AddHistoryPayload,
-  TabState,
-  History
+  TabState
 } from '../types'
 import { limitMaxTabs, tabAdapter, updateActiveTabId } from '../utils'
 import { MAXIMUM_TAB_HISTORIES } from '../const'
@@ -30,7 +35,8 @@ export const getInitialState = (): TabState => {
         [tabId]: {
           id: tabId,
           historyIds: [],
-          activeHistoryIndex: -1
+          activeHistoryIndex: -1,
+          lastVisited: getUnixTime(new Date())
         }
       }
     } as EntityState<Tab>),
@@ -125,6 +131,46 @@ const tabSlice = createSlice({
         }
       })
     }
+  },
+  extraReducers: builder => {
+    builder.addCase(
+      removeHistory,
+      (state: TabState, action: PayloadAction<{ historyId: HistoryId }>) => {
+        //remove that history item from all tabs
+        const allTabs = tabAdapter.getSelectors().selectAll(state)
+        allTabs.forEach(tab => {
+          let historyIds = tab.historyIds.filter(
+            id => id !== action.payload.historyId
+          )
+          const activeHistoryIndex = historyIds.indexOf(
+            tab.activeHistory?.id ?? 'undefined'
+          )
+          if (activeHistoryIndex === -1) {
+            //we removed history which is currently active on this tab; let's remove all history items for that tab
+            historyIds = []
+          }
+          tabAdapter.updateOne(state, {
+            id: tab.id,
+            changes: {
+              historyIds,
+              activeHistoryIndex
+            }
+          })
+        })
+      }
+    )
+    builder.addCase(removeAllHistories, (state: TabState) => {
+      const allTabs = tabAdapter.getSelectors().selectAll(state)
+      allTabs.forEach(tab => {
+        tabAdapter.updateOne(state, {
+          id: tab.id,
+          changes: {
+            historyIds: [],
+            activeHistoryIndex: -1
+          }
+        })
+      })
+    })
   }
 })
 
