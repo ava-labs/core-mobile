@@ -22,7 +22,7 @@ import { MAXIMUM_TAB_HISTORIES } from '../const'
 
 const reducerName = 'browser/tabs'
 
-const getInitialState = (): TabState => {
+export const getInitialState = (): TabState => {
   const tabId = uuidv4()
   return {
     ...({
