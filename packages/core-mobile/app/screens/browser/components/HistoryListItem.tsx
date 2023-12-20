@@ -49,9 +49,13 @@ export const HistoryListItem = ({ history }: Props): JSX.Element => {
         marginTop: 8,
         justifyContent: 'space-between'
       }}>
-      <View>
-        <Text variant="inputLabel">{history.title}</Text>
-        <Text variant="caption">{history.url}</Text>
+      <View sx={{ flex: 1 }}>
+        <Text variant="inputLabel" numberOfLines={1}>
+          {history.title}
+        </Text>
+        <Text variant="caption" numberOfLines={1}>
+          {history.url}
+        </Text>
       </View>
       <Pressable onPress={() => remove(history.id)}>
         <ClearSVG
