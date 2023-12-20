@@ -8,7 +8,7 @@ import {
   useTheme
 } from '@avalabs/k2-mobile'
 import { useNavigation } from '@react-navigation/native'
-import React, { useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import { FlatList, LayoutChangeEvent } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 import {
@@ -50,11 +50,11 @@ function TabsListScreen(): JSX.Element {
       NUMBER_OF_COLUMNS
   )
 
-  function handleAdd(): void {
+  const handleAddTap = useCallback(() => {
     dispatch(addTab())
 
     navigation.goBack()
-  }
+  }, [navigation, dispatch])
 
   function handleCloseAll(): void {
     navigation.navigate(AppNavigation.Root.BrowserTabCloseAll, {
@@ -62,10 +62,16 @@ function TabsListScreen(): JSX.Element {
     })
   }
 
-  function handleCloseTab(tab: Tab): void {
+  async function handleCloseTab(tab: Tab): Promise<void> {
+    const isDeletingLastTab = tabs.length === 1
+
     dispatch(removeTab({ id: tab.id }))
     dispatch(deleteSnapshotTimestamp({ id: tab.id }))
-    SnapshotService.delete(tab.id)
+    await SnapshotService.delete(tab.id)
+
+    if (isDeletingLastTab) {
+      navigation.goBack()
+    }
   }
 
   async function handleConfirmCloseAll(): Promise<void> {
@@ -151,7 +157,7 @@ function TabsListScreen(): JSX.Element {
             left: '50%',
             marginLeft: -TOOLBAR_ICON_SIZE / 2
           }}
-          onPress={handleAdd}>
+          onPress={handleAddTap}>
           <Icons.Content.Add
             color={colors.$white}
             width={TOOLBAR_ICON_SIZE}
