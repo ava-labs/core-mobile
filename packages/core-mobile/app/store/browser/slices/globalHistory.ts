@@ -1,4 +1,4 @@
-import { createAction, createSlice } from '@reduxjs/toolkit'
+import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { createHash } from 'utils/createHash'
 import { RootState } from 'store'
 import { History, HistoryId, HistoryState } from '../types'
@@ -13,7 +13,17 @@ const initialState = historyAdapter.getInitialState()
 const globalHistorySlice = createSlice({
   name: reducerName,
   initialState,
-  reducers: {},
+  reducers: {
+    removeAllHistories: (state: HistoryState) => {
+      historyAdapter.removeAll(state)
+    },
+    removeHistory: (
+      state: HistoryState,
+      action: PayloadAction<{ historyId: HistoryId }>
+    ) => {
+      historyAdapter.removeOne(state, action.payload.historyId)
+    }
+  },
   extraReducers: builder => {
     builder.addCase(
       addHistoryForActiveTab,
@@ -51,11 +61,6 @@ export const selectAllHistories = (state: RootState): History[] => {
 }
 
 // actions
-export const removeAllHistories = createAction(
-  `${reducerName}/removeAllHistories`
-)
-export const removeHistory = createAction<{ historyId: HistoryId }>(
-  `${reducerName}/removeHistory`
-)
+export const { removeAllHistories, removeHistory } = globalHistorySlice.actions
 
 export const globalHistoryReducer = globalHistorySlice.reducer
