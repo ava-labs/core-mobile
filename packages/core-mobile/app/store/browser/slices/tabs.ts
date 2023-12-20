@@ -101,8 +101,13 @@ const tabSlice = createSlice({
     removeTab: (state: TabState, action: PayloadAction<TabPayload>) => {
       const { id: tabId } = action.payload
       tabAdapter.removeOne(state, tabId)
-      // update active tab id
-      updateActiveTabId(state, tabId)
+
+      if (tabAdapter.getSelectors().selectAll(state).length > 0) {
+        // update active tab id
+        updateActiveTabId(state, tabId)
+      } else {
+        Object.assign(state, getInitialState())
+      }
     },
     removeAllTabs: (state: TabState) => {
       tabAdapter.removeAll(state)

@@ -17,6 +17,7 @@ import { addHistoryForActiveTab } from 'store/browser/slices/tabs'
 import AppNavigation from 'navigation/AppNavigation'
 import { BrowserScreenProps } from 'navigation/types'
 import { useNavigation } from '@react-navigation/native'
+import useScrollHandler, { ScrollState } from 'hooks/browser/useScrollHandler'
 import { FavoritesAndSuggestions } from './FavoritesAndSuggestions'
 import { HistoryListItem } from './HistoryListItem'
 
@@ -24,7 +25,11 @@ type NavigationProp = BrowserScreenProps<
   typeof AppNavigation.Browser.TabView
 >['navigation']
 
-export const EmptyTab = (): JSX.Element => {
+export const EmptyTab = ({
+  onNewScrollState
+}: {
+  onNewScrollState: (scrollState: ScrollState) => void
+}): JSX.Element => {
   const histories = useSelector(selectAllHistories)
   const dispatch = useDispatch()
   const hasHistory = histories.length > 0
@@ -32,12 +37,17 @@ export const EmptyTab = (): JSX.Element => {
   const [filterHistories, setFilterHistories] = useState(histories)
   const [isFocused, setIsFocused] = useState(false)
   const { navigate } = useNavigation<NavigationProp>()
+  const { scrollState, onScrollHandler } = useScrollHandler()
 
   const hasSearchResult = filterHistories.length > 0
 
   const {
     theme: { colors }
   } = useTheme()
+
+  useEffect(() => {
+    onNewScrollState(scrollState)
+  }, [onNewScrollState, scrollState])
 
   useEffect(() => {
     if (searchText.length > 0 && histories.length > 0) {
@@ -116,6 +126,7 @@ export const EmptyTab = (): JSX.Element => {
             <Space y={16} />
             <FlatList
               data={filterHistories}
+              onScroll={onScrollHandler}
               renderItem={item => (
                 <HistoryListItem history={item.item as History} />
               )}
@@ -128,7 +139,7 @@ export const EmptyTab = (): JSX.Element => {
   }
 
   return (
-    <View sx={{ marginHorizontal: 16 }}>
+    <View sx={{ paddingHorizontal: 16, backgroundColor: '$black' }}>
       <SearchBar
         setSearchBarFocused={setIsFocused}
         onTextChanged={setSearchText}
@@ -137,7 +148,9 @@ export const EmptyTab = (): JSX.Element => {
         textColor={colors.$white}
       />
       {isFocused && renderHistory()}
-      {!isFocused && <FavoritesAndSuggestions />}
+      {!isFocused && (
+        <FavoritesAndSuggestions onScrollHandler={onScrollHandler} />
+      )}
     </View>
   )
 }

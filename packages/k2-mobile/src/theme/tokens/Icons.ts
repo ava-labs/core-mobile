@@ -5,6 +5,9 @@ import IconKey from '../../assets/icons/key.svg'
 import IconUSB from '../../assets/icons/usb.svg'
 import IconBackspace from '../../assets/icons/backspace.svg'
 import IconCopy from '../../assets/icons/content_copy.svg'
+import IconMoreHoriz from '../../assets/icons/more_horiz.svg'
+import IconAdd from '../../assets/icons/add.svg'
+import IconCancel from '../../assets/icons/cancel.svg'
 
 export const Icons = {
   Communication: {
@@ -12,6 +15,7 @@ export const Icons = {
     IconQRCode: IconQRCode
   },
   Content: {
+    Add: IconAdd,
     IconBackspace: IconBackspace,
     ContentCopy: IconCopy
   },
@@ -19,7 +23,9 @@ export const Icons = {
     IconUSB: IconUSB
   },
   Navigation: {
+    Cancel: IconCancel,
     Check: IconCheck,
-    ExpandMore: IconExpandMore
+    ExpandMore: IconExpandMore,
+    MoreHoriz: IconMoreHoriz
   }
 }

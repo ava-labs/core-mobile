@@ -60,7 +60,7 @@ export const Dock = (): JSX.Element => {
   }
 
   const navigateToTabList = (): void => {
-    navigate(AppNavigation.Browser.TabsList)
+    navigate(AppNavigation.Root.BrowserTabsList)
   }
 
   return (

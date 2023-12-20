@@ -2,6 +2,7 @@ import { DeFiProtocolInformation } from 'services/browser/types'
 import MOCK_PROTOCOL_INFORMATION_DATA from 'tests/fixtures/browser/protocolInformationListData.json'
 import {
   getTopDefiProtocolInformationList,
+  removeProtocol,
   sortDeFiProtocolInformationListByTvl
 } from './utils'
 
@@ -28,5 +29,13 @@ describe('getTopDefiProtocolInformationList', () => {
       10
     )
     expect(firstEightItems.length).toStrictEqual(10)
+  })
+})
+
+describe('removeProtocol', () => {
+  it('should have returned url without protocol', () => {
+    const url = 'https://core.app/'
+    const result = removeProtocol(url)
+    expect(result).toStrictEqual('core.app/')
   })
 })
