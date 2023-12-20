@@ -16,7 +16,6 @@ export type History = {
   id: HistoryId
   title: string // title grabbed from html metadata
   url: string // url grabbed from html metadata
-  screenshot?: string // id to grab screenshot stored in MMKV
 }
 
 export type TabState = EntityState<Tab> & {

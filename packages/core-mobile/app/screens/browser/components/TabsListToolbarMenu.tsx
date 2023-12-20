@@ -28,8 +28,8 @@ const TabsListToolbarMenu: FC<Props> = ({
       id: MenuId.CloseAll,
       title: 'Close All Tabs',
       image: Platform.select({
-        ios: 'star.fill',
-        android: 'star_fill_24px'
+        ios: 'xmark',
+        android: 'xmark_24px'
       }),
       attributes: {
         destructive: true

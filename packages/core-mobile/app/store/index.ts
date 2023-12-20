@@ -29,6 +29,7 @@ import { BridgeBlacklistTransform } from './transforms/BridgeBlacklistTransform'
 import { WatchlistBlacklistTransform } from './transforms/WatchlistBlacklistTransform'
 import { AppBlacklistTransform } from './transforms/AppBlacklistTransform'
 import { combinedReducer as browser } from './browser'
+import { snapshotsReducer as snapshots } from './snapshots'
 
 const VERSION = 9
 
@@ -58,6 +59,7 @@ const combinedReducer = combineReducers({
   walletConnectV2,
   viewOnce,
   browser,
+  snapshots,
 
   // user preferences
   settings,

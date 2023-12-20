@@ -46,7 +46,7 @@ export type RootScreenStackParamList = {
     message: string
   }
   [AppNavigation.Root.BrowserTabsList]: undefined
-  [AppNavigation.Root.BrowserTabCloseAll]: undefined
+  [AppNavigation.Root.BrowserTabCloseAll]: { onConfirm: () => void }
 }
 
 const RootStack = createStackNavigator<RootScreenStackParamList>()

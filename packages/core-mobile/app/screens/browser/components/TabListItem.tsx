@@ -1,5 +1,6 @@
 import {
   Icons,
+  Image,
   Pressable,
   Text,
   TouchableOpacity,
@@ -11,11 +12,17 @@ import { LayoutChangeEvent } from 'react-native'
 
 type Props = {
   title?: string
+  imagePath?: string
   onPress: () => void
   onClose: () => void
 }
 
-function TabListItem({ title, onPress, onClose }: Props): JSX.Element {
+function TabListItem({
+  title,
+  imagePath,
+  onPress,
+  onClose
+}: Props): JSX.Element {
   const {
     theme: { colors }
   } = useTheme()
@@ -28,7 +35,11 @@ function TabListItem({ title, onPress, onClose }: Props): JSX.Element {
   return (
     <TouchableOpacity onPress={onPress}>
       <View
-        sx={{ backgroundColor: '$neutral850', borderRadius: 8 }}
+        sx={{
+          backgroundColor: '$neutral850',
+          borderRadius: 8,
+          overflow: 'hidden'
+        }}
         onLayout={handleLayout}>
         <View
           sx={{
@@ -50,7 +61,10 @@ function TabListItem({ title, onPress, onClose }: Props): JSX.Element {
             )}
           </Pressable>
         </View>
-        <View sx={{ height: width * IMAGE_RATIO }} />
+        <Image
+          source={{ uri: imagePath }}
+          style={{ height: width * IMAGE_RATIO }}
+        />
       </View>
     </TouchableOpacity>
   )

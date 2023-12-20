@@ -16,10 +16,17 @@ import {
   removeTab,
   setActiveTabId,
   selectAllTabs,
-  Tab
+  Tab,
+  removeAllTabs
 } from 'store/browser'
 import AppNavigation from 'navigation/AppNavigation'
 import { BrowserScreenProps } from 'navigation/types'
+import {
+  deleteAllSnapshotTimestamps,
+  deleteSnapshotTimestamp,
+  selectAllSnapshotTimestamps
+} from 'store/snapshots'
+import SnapshotService from 'services/snapshot/SnapshotService'
 import TabsListToolbarMenu from './components/TabsListToolbarMenu'
 import TabListItem from './components/TabListItem'
 import { removeProtocol } from './utils'
@@ -36,6 +43,7 @@ function TabsListScreen(): JSX.Element {
   const tabs = useSelector(selectAllTabs)
   const dispatch = useDispatch()
   const [width, setWidth] = useState(0)
+  const snapshotTimestamps = useSelector(selectAllSnapshotTimestamps)
 
   const itemWidth = Math.floor(
     (width - GRID_ITEM_MARGIN_HORIZONTAL * (NUMBER_OF_COLUMNS + 1)) /
@@ -49,11 +57,24 @@ function TabsListScreen(): JSX.Element {
   }
 
   function handleCloseAll(): void {
-    navigation.navigate(AppNavigation.Root.BrowserTabCloseAll)
+    navigation.navigate(AppNavigation.Root.BrowserTabCloseAll, {
+      onConfirm: handleConfirmCloseAll
+    })
   }
 
   function handleCloseTab(tab: Tab): void {
     dispatch(removeTab({ id: tab.id }))
+    dispatch(deleteSnapshotTimestamp({ id: tab.id }))
+    SnapshotService.delete(tab.id)
+  }
+
+  async function handleConfirmCloseAll(): Promise<void> {
+    dispatch(removeAllTabs())
+    dispatch(deleteAllSnapshotTimestamps())
+
+    await Promise.all(tabs.map(tab => SnapshotService.delete(tab.id)))
+
+    navigation.goBack()
   }
 
   function handleViewHistory(): void {
@@ -76,7 +97,7 @@ function TabsListScreen(): JSX.Element {
     navigation.goBack()
   }
 
-  function renderTab({ item }: { item: Tab }): JSX.Element | null {
+  function renderItem({ item }: { item: Tab }): JSX.Element | null {
     const activeHistory = item.activeHistory
 
     return (
@@ -88,6 +109,8 @@ function TabsListScreen(): JSX.Element {
         }}>
         <TabListItem
           title={activeHistory?.url ? removeProtocol(activeHistory.url) : ''}
+          imagePath={SnapshotService.getPath(item.id)}
+          key={snapshotTimestamps[item.id]}
           onPress={() => handlePressTab(item)}
           onClose={() => handleCloseTab(item)}
         />
@@ -153,7 +176,7 @@ function TabsListScreen(): JSX.Element {
         contentContainerStyle={{
           paddingHorizontal: GRID_ITEM_MARGIN_HORIZONTAL
         }}
-        renderItem={renderTab}
+        renderItem={renderItem}
         ListHeaderComponent={renderHeader()}
         numColumns={NUMBER_OF_COLUMNS}
         onLayout={handleLayout}
