@@ -2,17 +2,24 @@ import React, { useEffect, useState } from 'react'
 import { View } from '@avalabs/k2-mobile'
 import WebView from 'react-native-webview'
 import Logger from 'utils/Logger'
-import { useDispatch } from 'react-redux'
-import { addHistoryForActiveTab } from 'store/browser/slices/tabs'
+import { useDispatch, useSelector } from 'react-redux'
+import {
+  addHistoryForActiveTab,
+  selectActiveHistory
+} from 'store/browser/slices/tabs'
 import { useDeeplink } from 'contexts/DeeplinkContext/DeeplinkContext'
 import { DeepLink, DeepLinkOrigin } from 'contexts/DeeplinkContext/types'
 import { AddHistoryPayload } from 'store/browser'
 import InputText from 'components/InputText'
 import useClipboardWatcher from 'hooks/useClipboardWatcher'
-import useScrollHandler from 'hooks/browser/useScrollHandler'
+import useScrollHandler, { ScrollState } from 'hooks/browser/useScrollHandler'
 import useRecentWalletHack from 'hooks/browser/useRecentWalletHack'
 
-export default function Browser(): JSX.Element {
+export default function Browser({
+  onNewScrollState
+}: {
+  onNewScrollState: (scrollState: ScrollState) => void
+}): JSX.Element {
   const dispatch = useDispatch()
   const { setPendingDeepLink } = useDeeplink()
   const [urlEntry, setUrlEntry] = useState('')
@@ -20,10 +27,15 @@ export default function Browser(): JSX.Element {
   const clipboard = useClipboardWatcher()
   const { scrollState, onScrollHandler } = useScrollHandler()
   const { injectCoreAsRecent } = useRecentWalletHack()
+  const activeHistory = useSelector(selectActiveHistory)
 
   useEffect(() => {
-    Logger.trace('TODO: pass this to Dock')
-  }, [scrollState])
+    activeHistory?.url && setUrlToLoad(activeHistory.url)
+  }, [activeHistory?.url])
+
+  useEffect(() => {
+    onNewScrollState(scrollState)
+  }, [onNewScrollState, scrollState])
 
   useEffect(() => {
     //initiate deep link if user copies WC link to clipboard
@@ -45,21 +57,25 @@ export default function Browser(): JSX.Element {
       <WebView
         injectedJavaScript={injectCoreAsRecent}
         source={{ uri: urlToLoad }}
-        onNavigationStateChange={event => {
-          const history: AddHistoryPayload = {
-            title: event.title,
-            url: event.url
-          }
-          dispatch(addHistoryForActiveTab(history))
-          setUrlEntry(event.url)
-        }}
         setSupportMultipleWindows={false}
         onScroll={onScrollHandler}
         onError={event => {
           Logger.error('WebView onError', event.nativeEvent.description)
         }}
-        onMessage={event =>
-          Logger.trace('WebView onMessage', event.nativeEvent.data)
+        onLoadEnd={() => {
+          Logger.trace('------> onLoadEnd')
+        }}
+        onLoad={event => {
+          const history: AddHistoryPayload = {
+            title: event.nativeEvent.title,
+            url: event.nativeEvent.url
+          }
+          dispatch(addHistoryForActiveTab(history))
+          setUrlEntry(event.nativeEvent.url)
+        }}
+        onMessage={() =>
+          //do not remove this listener, https://github.com/react-native-webview/react-native-webview/blob/master/docs/Reference.md#injectedjavascript
+          Logger.trace('WebView onMessage')
         }
       />
     </View>

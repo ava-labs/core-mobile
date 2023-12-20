@@ -30,7 +30,7 @@ export const HistoryListItem = ({ history }: Props): JSX.Element => {
   } = useTheme()
 
   const remove = (historyId: string): void => {
-    dispatch(removeHistory({ id: historyId }))
+    dispatch(removeHistory({ historyId }))
   }
 
   const navigateToTabView = (): void => {
