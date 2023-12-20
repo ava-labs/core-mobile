@@ -162,4 +162,22 @@ export type AnalyticsEvents = {
   DeFiCardClicked: undefined
   DeFiCardLaunchButtonlicked: undefined
   DeFiDetailLaunchButtonClicked: undefined
+
+  // In App Browser
+  BrowserOpened: undefined
+  BrowserWelcomeScreenButtonTapped: undefined
+  BrowserAccountSwitched: undefined
+  BrowserSearchSubmitted: undefined
+  BrowserFavoritesTapped: undefined
+  BrowserSuggestedTapped: undefined
+  BrowserBackTapped: undefined
+  BrowserForwardTapped: undefined
+  BrowserAddToFavoriteTapped: undefined
+  BrowserTabsOpened: undefined
+  BrowserContextualMenuOpened: undefined
+  BrowserSharedTapped: undefined
+  BrowserViewHistoryTapped: undefined
+  BrowserTabsUsed: { count: number }
+  BrowserWalletConnectedToDapp: { dAppUrl: string }
+  BrowserTxSubmittedToDapp: { dAppUrl: string }
 }
