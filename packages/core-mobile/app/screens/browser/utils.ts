@@ -14,3 +14,8 @@ export const getTopDefiProtocolInformationList = (
   const sorted = sortDeFiProtocolInformationListByTvl(protocolInformationList)
   return sorted.slice(0, limit)
 }
+
+export function removeProtocol(url: string): string {
+  const urlObj = new URL(url)
+  return urlObj.href.replace(`${urlObj.protocol}//`, '')
+}
