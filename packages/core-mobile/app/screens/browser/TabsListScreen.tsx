@@ -25,7 +25,7 @@ import {
   deleteAllSnapshotTimestamps,
   deleteSnapshotTimestamp,
   selectAllSnapshotTimestamps
-} from 'store/snapshots'
+} from 'store/snapshots/slice'
 import SnapshotService from 'services/snapshot/SnapshotService'
 import TabsListToolbarMenu from './components/TabsListToolbarMenu'
 import TabListItem from './components/TabListItem'

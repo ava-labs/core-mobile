@@ -10,7 +10,7 @@ import { useFocusEffect } from '@react-navigation/native'
 import ViewShot from 'react-native-view-shot'
 import { TabId } from 'store/browser'
 import SnapshotService from 'services/snapshot/SnapshotService'
-import { updateSnapshotTimestamp } from 'store/snapshots'
+import { updateSnapshotTimestamp } from 'store/snapshots/slice'
 
 export default function TabViewScreen(): JSX.Element {
   const activeTab = useSelector(selectActiveTab)
