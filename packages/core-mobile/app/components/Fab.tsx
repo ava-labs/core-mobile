@@ -1,5 +1,4 @@
 import { useNavigation } from '@react-navigation/native'
-import { useApplicationContext } from 'contexts/ApplicationContext'
 import { useDeeplink } from 'contexts/DeeplinkContext/DeeplinkContext'
 import { useAnalytics } from 'hooks/useAnalytics'
 import { UI, useIsUIDisabled } from 'hooks/useIsUIDisabled'
@@ -9,10 +8,8 @@ import React, { FC, useMemo, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { selectActiveNetwork } from 'store/network'
 import { selectIsLeftHanded } from 'store/settings/advanced'
-import { Pressable, View } from '@avalabs/k2-mobile'
+import { Pressable, SxProp, View, alpha, useTheme } from '@avalabs/k2-mobile'
 import { DeepLinkOrigin } from 'contexts/DeeplinkContext/types'
-import { ViewStyle } from 'react-native'
-import { Opacity50 } from 'resources/Constants'
 import { ActionProp } from './fab/types'
 import ArrowSVG from './svg/ArrowSVG'
 import QRCodeSVG from './svg/QRCodeSVG'
@@ -34,13 +31,15 @@ export const Fab: FC = () => {
   const buyDisabled = useIsUIDisabled(UI.Buy)
   const wcDisabled = useIsUIDisabled(UI.WalletConnect)
   const isBridgeDisabled = useIsUIDisabled(UI.Bridge)
-  const { theme } = useApplicationContext()
   const navigation = useNavigation<FabNavigationProp>()
   const { setPendingDeepLink } = useDeeplink()
   const activeNetwork = useSelector(selectActiveNetwork)
   const [expanded, setExpanded] = useState(false)
   const { capture } = useAnalytics()
   const isLeftHanded = useSelector(selectIsLeftHanded)
+  const {
+    theme: { colors }
+  } = useTheme()
 
   const actionItems = useMemo(() => {
     const actions: Record<string, ActionProp> = {}
@@ -55,7 +54,7 @@ export const Fab: FC = () => {
             justifyContent: 'center',
             alignItems: 'center'
           }}>
-          <ArrowSVG rotate={180} color={theme.background} size={17} />
+          <ArrowSVG rotate={180} color={colors.$black} size={17} />
         </View>
       ),
       onPress: () => {
@@ -67,13 +66,13 @@ export const Fab: FC = () => {
       image: (
         <View
           testID="tab_navigator__receive_button"
-          style={{
+          sx={{
             width: 24,
             height: 24,
             justifyContent: 'center',
             alignItems: 'center'
           }}>
-          <QRCodeSVG color={theme.background} size={24} />
+          <QRCodeSVG color={colors.$black} size={24} />
         </View>
       ),
       onPress: () => {
@@ -86,13 +85,13 @@ export const Fab: FC = () => {
         image: (
           <View
             testID="tab_navigator__buy_button"
-            style={{
+            sx={{
               width: 24,
               height: 24,
               justifyContent: 'center',
               alignItems: 'center'
             }}>
-            <BuySVG color={theme.background} size={24} />
+            <BuySVG color={colors.$black} size={24} />
           </View>
         ),
         onPress: () => {
@@ -106,13 +105,13 @@ export const Fab: FC = () => {
         image: (
           <View
             testID="tab_navigator__swap_button"
-            style={{
+            sx={{
               width: 24,
               height: 24,
               justifyContent: 'center',
               alignItems: 'center'
             }}>
-            <SwapSVG color={theme.background} size={24} />
+            <SwapSVG color={colors.$black} size={24} />
           </View>
         ),
         onPress: () => {
@@ -123,7 +122,7 @@ export const Fab: FC = () => {
     }
     if (!wcDisabled) {
       actions.WalletConnect = {
-        image: <WalletConnectSVG color={theme.background} size={24} />,
+        image: <WalletConnectSVG color={colors.$black} size={24} />,
         onPress: () => {
           navigation.navigate(AppNavigation.Wallet.QRCode, {
             onScanned: uri => {
@@ -141,7 +140,7 @@ export const Fab: FC = () => {
     actions.Bridge = {
       image: (
         <View testID="tab_navigator__bridge_button">
-          <BridgeSVG color={theme.background} size={24} />
+          <BridgeSVG color={colors.$black} size={24} />
         </View>
       ),
       onPress: () => {
@@ -163,15 +162,15 @@ export const Fab: FC = () => {
 
     return actions
   }, [
-    theme.background,
-    wcDisabled,
-    swapDisabled,
     buyDisabled,
-    isBridgeDisabled,
-    activeNetwork.chainName,
+    swapDisabled,
+    wcDisabled,
+    colors.$black,
     navigation,
     capture,
-    setPendingDeepLink
+    setPendingDeepLink,
+    isBridgeDisabled,
+    activeNetwork.chainName
   ])
 
   function dismiss(): void {
@@ -187,15 +186,17 @@ export const Fab: FC = () => {
       justifyContent: 'flex-end',
       alignItems: isLeftHanded ? 'flex-start' : 'flex-end',
       paddingBottom: 60,
-      backgroundColor: expanded ? theme.colorBg1 + Opacity50 : theme.transparent
-    } as ViewStyle
-  }, [expanded, isLeftHanded, theme.colorBg1, theme.transparent])
+      backgroundColor: expanded
+        ? alpha(colors.$black, 0.5)
+        : colors.$transparent
+    } as SxProp
+  }, [colors.$black, colors.$transparent, expanded, isLeftHanded])
 
   return (
     <Pressable
       pointerEvents={expanded ? 'auto' : 'box-none'}
       onPress={dismiss}
-      style={fabStyle}>
+      sx={fabStyle}>
       <FloatingActionButton
         isLeftHanded={isLeftHanded}
         setExpanded={setExpanded}
@@ -204,7 +205,7 @@ export const Fab: FC = () => {
         size={56}
         icon={
           <AddSVG
-            color={theme.colorBg2}
+            color={colors.$neutral900}
             size={28}
             hideCircle
             testID="add_svg"
