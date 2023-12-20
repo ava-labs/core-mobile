@@ -5,7 +5,7 @@ import WatchlistSVG from 'components/svg/WatchlistSVG'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import PortfolioStackScreen from 'navigation/wallet/PortfolioScreenStack'
-import React from 'react'
+import React, { useState } from 'react'
 import WatchlistTab from 'screens/watchlist/WatchlistTabView'
 import TopNavigationHeader from 'navigation/TopNavigationHeader'
 import { getCommonBottomTabOptions, TabButton } from 'navigation/NavUtils'
@@ -16,6 +16,7 @@ import { useIsEarnDashboardEnabled } from 'hooks/earn/useIsEarnDashboardEnabled'
 import BrowserSVG from 'components/svg/BrowserSVG'
 import BrowserScreenStack from 'navigation/wallet/BrowserScreenStack'
 import { useAnalytics } from 'hooks/useAnalytics'
+import { Fab } from 'components/Fab'
 import EarnScreenStack from './EarnScreenStack/EarnScreenStack'
 
 export type TabNavigatorParamList = {
@@ -23,6 +24,7 @@ export type TabNavigatorParamList = {
   [AppNavigation.Tabs.Watchlist]: undefined
   [AppNavigation.Tabs.Stake]: undefined
   [AppNavigation.Tabs.Browser]: undefined
+  [AppNavigation.Tabs.Fab]: undefined
 }
 
 const Tab = createBottomTabNavigator<TabNavigatorParamList>()
@@ -34,6 +36,7 @@ const TabNavigator: () => JSX.Element = () => {
   const { isEarnDashboardEnabled } = useIsEarnDashboardEnabled()
   const isAvalancheNetwork = useIsAvalancheNetwork()
   const { capture } = useAnalytics()
+  const [showFab, setShowFab] = useState(true)
 
   const renderEarnTab: () => null | JSX.Element = () => {
     if (earnBlocked) return null
@@ -52,6 +55,9 @@ const TabNavigator: () => JSX.Element = () => {
         }}
         component={EarnScreenStack}
         listeners={({ navigation }) => ({
+          focus: () => {
+            setShowFab(true)
+          },
           tabPress: e => {
             if (!isAvalancheNetwork) {
               e.preventDefault()
@@ -91,62 +97,80 @@ const TabNavigator: () => JSX.Element = () => {
             />
           )
         }}
+        listeners={() => ({
+          focus: () => {
+            setShowFab(false)
+          }
+        })}
         component={BrowserScreenStack}
       />
     )
   }
 
   return (
-    <Tab.Navigator
-      screenOptions={{
-        ...getCommonBottomTabOptions(theme)
-      }}>
-      <Tab.Screen
-        name={AppNavigation.Tabs.Portfolio}
-        component={PortfolioStackScreen}
-        options={({ route }) => ({
-          header: () => {
-            const showBackButton = route.params?.showBackButton
-            return (
-              <TopNavigationHeader
-                showAddress
-                showBackButton={showBackButton}
+    <>
+      <Tab.Navigator
+        screenOptions={{
+          ...getCommonBottomTabOptions(theme)
+        }}>
+        <Tab.Screen
+          name={AppNavigation.Tabs.Portfolio}
+          component={PortfolioStackScreen}
+          options={({ route }) => ({
+            header: () => {
+              const showBackButton = route.params?.showBackButton
+              return (
+                <TopNavigationHeader
+                  showAddress
+                  showBackButton={showBackButton}
+                />
+              )
+            },
+            tabBarIcon: ({ focused }) => (
+              <TabButton
+                routeName={AppNavigation.Tabs.Portfolio}
+                focused={focused}
+                image={<HomeSVG selected={focused} size={TAB_ICON_SIZE} />}
               />
             )
-          },
-          tabBarIcon: ({ focused }) => (
-            <TabButton
-              routeName={AppNavigation.Tabs.Portfolio}
-              focused={focused}
-              image={<HomeSVG selected={focused} size={TAB_ICON_SIZE} />}
-            />
-          )
-        })}
-      />
-      <Tab.Screen
-        name={AppNavigation.Tabs.Watchlist}
-        options={{
-          header: () => {
-            return (
-              <TopNavigationHeader
-                showAccountSelector={false}
-                showNetworkSelector={false}
+          })}
+          listeners={() => ({
+            focus: () => {
+              setShowFab(true)
+            }
+          })}
+        />
+        <Tab.Screen
+          name={AppNavigation.Tabs.Watchlist}
+          options={{
+            header: () => {
+              return (
+                <TopNavigationHeader
+                  showAccountSelector={false}
+                  showNetworkSelector={false}
+                />
+              )
+            },
+            tabBarIcon: ({ focused }) => (
+              <TabButton
+                routeName={AppNavigation.Tabs.Watchlist}
+                focused={focused}
+                image={<WatchlistSVG selected={focused} size={TAB_ICON_SIZE} />}
               />
             )
-          },
-          tabBarIcon: ({ focused }) => (
-            <TabButton
-              routeName={AppNavigation.Tabs.Watchlist}
-              focused={focused}
-              image={<WatchlistSVG selected={focused} size={TAB_ICON_SIZE} />}
-            />
-          )
-        }}
-        component={WatchlistTab}
-      />
-      {renderEarnTab()}
-      {renderBrowserTab()}
-    </Tab.Navigator>
+          }}
+          listeners={() => ({
+            focus: () => {
+              setShowFab(true)
+            }
+          })}
+          component={WatchlistTab}
+        />
+        {renderEarnTab()}
+        {renderBrowserTab()}
+      </Tab.Navigator>
+      {showFab && <Fab />}
+    </>
   )
 }
 
