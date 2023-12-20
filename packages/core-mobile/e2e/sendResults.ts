@@ -113,7 +113,7 @@ export default async function sendResults() {
       testCasesToSend,
       resultsToSendToTestrail,
       'android',
-      runID
+      Number(runID)
     )
   }
   if (await isResultPresent('ios')) {
