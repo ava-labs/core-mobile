@@ -163,7 +163,7 @@ async function generatePlatformResults(
       // Add already existing test cases to the testCasesToSend array
       if (resultArray.length > 0) {
         resultArray.forEach((testCase: object) => {
-          testCasesToSend.case_ids.push(Number(testCase.case_id))
+          testCasesToSend.case_ids.push(testCase.case_id)
         })
       }
 
