@@ -137,7 +137,7 @@ export async function isResultExistsInTestrail(runID: number, caseId: number) {
 }
 
 // Updates the results for an existing test run or an empty test run
-// eslint-disable-next-line sonarjs/cognitive-complexity
+
 async function generatePlatformResults(
   testCasesToSend: any,
   resultsToSendToTestrail: [],
@@ -146,7 +146,7 @@ async function generatePlatformResults(
 ) {
   console.log('starting to generate results...')
   try {
-    const resultArray = resultsToSendToTestrail.filter(
+    let resultArray = resultsToSendToTestrail.filter(
       result => result.platform === platform
     )
     try {
@@ -154,13 +154,14 @@ async function generatePlatformResults(
       console.log('The existing test cases are ' + existingTestCases)
       console.log('The results to send are ' + resultArray)
       // Adds the existing test case results to the results array so they are not overwritten in testrail when using the updateRun endpoint
-      for (let i = 0; i < existingTestCases.length; i++) {
-        for (let j = 0; j < resultArray.length; j++) {
-          if (testCase.case_id !== result.case_id && testCase.status_id !== 3) {
-            resultArray.push(testCase)
-          }
-        }
-      }
+      const caseIDs = resultArray.map(result => result.case_id)
+      resultArray = resultArray.concat(
+        existingTestCases.filter(({ case_id }) => !caseIDs.includes(case_id))
+      )
+
+      resultArray.forEach(result => {
+        console.log('The result is ' + result.case_id)
+      })
 
       // Add already existing test cases to the testCasesToSend array
       if (resultArray.length > 0) {
