@@ -112,7 +112,8 @@ export default async function sendResults() {
     await generatePlatformResults(
       testCasesToSend,
       resultsToSendToTestrail,
-      'android'
+      'android',
+      runID
     )
   }
   if (await isResultPresent('ios')) {
