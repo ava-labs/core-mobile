@@ -154,13 +154,13 @@ async function generatePlatformResults(
       console.log(existingTestCases.length, ' is the length of existing cases')
       console.log(resultArray.length, ' is the length of result array')
       // Adds the existing test case results to the results array so they are not overwritten in testrail when using the updateRun endpoint
-      existingTestCases.forEach((testCase: any) => {
-        resultArray.forEach((result: any) => {
+      for (let i = 0; i < existingTestCases.length; i++) {
+        for (let j = 0; j < resultArray.length; j++) {
           if (testCase.case_id !== result.case_id && testCase.status_id !== 3) {
             resultArray.push(testCase)
           }
-        })
-      })
+        }
+      }
 
       // Add already existing test cases to the testCasesToSend array
       if (resultArray.length > 0) {
