@@ -38,7 +38,6 @@ async function parseResultsFile() {
       })
     }
   }
-  console.log(testIdArrayForTestrail, 'is the test id array for testrail...')
   return { casesToAddToRun, testIdArrayForTestrail }
 }
 
@@ -49,8 +48,6 @@ export async function prepareResults() {
   const casesToAddToRun = resultsToSendObject.casesToAddToRun
 
   const uniqueCaseIdArray = [...new Set(testIdArrayForTestrail)]
-
-  console.log(uniqueCaseIdArray, 'is the unique case id array...')
 
   // Payload for testrail to add the casses to the test run before the results are sent
   const testCasesToSend = {
@@ -169,7 +166,6 @@ async function generatePlatformResults(
           testCasesToSend.case_ids.push(Number(testCase.case_id))
         })
       }
-      console.log(testCasesToSend.case_ids, 'is the test cases to send...')
 
       const testCasePayload = {
         include_all: false,
