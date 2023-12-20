@@ -160,7 +160,8 @@ async function generatePlatformResults(
       )
 
       resultArray.forEach(result => {
-        console.log('The result is ' + result.case_id)
+        console.log('The result is ' + result.case_id + result.status_id)
+        console.log(JSON.stringify(result))
       })
 
       // Add already existing test cases to the testCasesToSend array
