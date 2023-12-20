@@ -14,8 +14,8 @@ import { useNavigation } from '@react-navigation/native'
 import {
   addTab,
   goBackward,
-  goForward as goFowardInPage,
-  selectActiveTab,
+  goForward as goForwardInPage,
+  selectActiveHistory,
   selectAllTabs,
   selectCanGoBack,
   selectCanGoForward
@@ -36,15 +36,13 @@ export const Dock = (): JSX.Element => {
   const dispatch = useDispatch()
   const { navigate } = useNavigation<TabViewNavigationProp>()
   const totalTabs = useSelector(selectAllTabs).length
-  const activeTab = useSelector(selectActiveTab)
+  const activeHistory = useSelector(selectActiveHistory)
   useHardwareBackHandler()
 
   const canGoBack = useSelector(selectCanGoBack)
   const canGoForward = useSelector(selectCanGoForward)
 
-  const isFavorited = useSelector(
-    selectIsFavorited(activeTab?.activeHistory?.id)
-  )
+  const isFavorited = useSelector(selectIsFavorited(activeHistory?.id))
 
   const goBack = (): void => {
     if (!canGoBack) return
@@ -52,7 +50,7 @@ export const Dock = (): JSX.Element => {
   }
   const goForward = (): void => {
     if (!canGoForward) return
-    dispatch(goFowardInPage())
+    dispatch(goForwardInPage())
   }
 
   const createNewTab = (): void => {
