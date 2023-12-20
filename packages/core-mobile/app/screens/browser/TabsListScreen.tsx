@@ -50,7 +50,7 @@ function TabsListScreen(): JSX.Element {
       NUMBER_OF_COLUMNS
   )
 
-  const handleAddTap = useCallback(() => {
+  const handleAddTab = useCallback(() => {
     dispatch(addTab())
 
     navigation.goBack()
@@ -157,7 +157,7 @@ function TabsListScreen(): JSX.Element {
             left: '50%',
             marginLeft: -TOOLBAR_ICON_SIZE / 2
           }}
-          onPress={handleAddTap}>
+          onPress={handleAddTab}>
           <Icons.Content.Add
             color={colors.$white}
             width={TOOLBAR_ICON_SIZE}
