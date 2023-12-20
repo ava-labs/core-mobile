@@ -4,10 +4,15 @@ import React from 'react'
 import { useSelector } from 'react-redux'
 import { selectAllFavorites } from 'store/browser/slices/favorites'
 import { Favorite } from 'store/browser'
+import { NativeScrollEvent, NativeSyntheticEvent } from 'react-native'
 import { FavoritesListItem } from './FavoritesListItem'
 import { SuggestedSection } from './SuggestedSection'
 
-export const FavoritesAndSuggestions = (): JSX.Element | null => {
+export const FavoritesAndSuggestions = ({
+  onScrollHandler
+}: {
+  onScrollHandler: (e: NativeSyntheticEvent<NativeScrollEvent>) => void
+}): JSX.Element | null => {
   const favorites = useSelector(selectAllFavorites)
 
   return (
@@ -35,6 +40,7 @@ export const FavoritesAndSuggestions = (): JSX.Element | null => {
             isLastItem={item.index === favorites.length - 1}
           />
         )}
+        onScroll={onScrollHandler}
         contentContainerStyle={{ paddingBottom: 16 }}
         ListFooterComponent={<SuggestedSection />}
         contentInset={{ bottom: 160 }}

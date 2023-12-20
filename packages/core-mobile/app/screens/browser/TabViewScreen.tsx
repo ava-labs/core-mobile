@@ -1,11 +1,11 @@
 import React, { useState } from 'react'
-import { View } from 'react-native'
 import { useSelector } from 'react-redux'
 import { selectActiveTab } from 'store/browser/slices/tabs'
 import Browser from 'screens/browser/Browser'
 import { Dock } from 'screens/browser/components/Dock'
 import { ScrollState } from 'hooks/browser/useScrollHandler'
 import { EmptyTab } from 'screens/browser/components/EmptyTab'
+import { View } from '@avalabs/k2-mobile'
 
 export default function TabViewScreen(): JSX.Element {
   const activeTab = useSelector(selectActiveTab)
@@ -26,8 +26,8 @@ export default function TabViewScreen(): JSX.Element {
   }
 
   return (
-    <View>
-      {showEmptyTab && <EmptyTab />}
+    <View sx={{ flex: 1 }}>
+      {showEmptyTab && <EmptyTab onNewScrollState={onNewScrollState} />}
       {showWebView && <Browser onNewScrollState={onNewScrollState} />}
       {dockVisible && <Dock />}
     </View>
