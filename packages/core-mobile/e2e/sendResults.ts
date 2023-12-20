@@ -120,7 +120,7 @@ export default async function sendResults() {
       testCasesToSend,
       resultsToSendToTestrail,
       'ios',
-      runID
+      Number(runID)
     )
   }
 }
