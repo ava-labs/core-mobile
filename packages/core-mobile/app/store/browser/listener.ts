@@ -1,6 +1,7 @@
 import { AppListenerEffectAPI } from 'store'
 import { AppStartListening } from 'store/middleware/listener'
 import { Action, isAnyOf } from '@reduxjs/toolkit'
+import { historyAdapter } from 'store/browser/utils'
 import {
   goBackward,
   goForward,
@@ -24,10 +25,18 @@ const updateActiveHistory = (
       ? activeHistoryIndex + 1
       : activeHistoryIndex - 1
 
+  const historyId = activeTab?.historyIds[newActiveHistoryIndex]
+  if (!historyId) return
+  const history = historyAdapter
+    .getSelectors()
+    .selectById(state.browser.globalHistory, historyId)
+  if (!history) return
+
   listenerApi.dispatch(
     setActiveHistoryForTab({
       id: activeTab.id,
-      activeHistoryIndex: newActiveHistoryIndex
+      activeHistoryIndex: newActiveHistoryIndex,
+      activeHistory: history
     })
   )
 }

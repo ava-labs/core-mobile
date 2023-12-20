@@ -9,6 +9,7 @@ export type Tab = {
   historyIds: HistoryId[] // array of history indices
   lastVisited?: number // unix timestamp, last time this tab was visited, delete oldest if more than 99 tabs active
   activeHistoryIndex: number
+  activeHistory?: History
 }
 
 export type History = {

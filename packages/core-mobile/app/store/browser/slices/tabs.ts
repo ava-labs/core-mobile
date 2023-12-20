@@ -8,7 +8,6 @@ import { RootState } from 'store/index'
 import { v4 as uuidv4 } from 'uuid'
 import { getUnixTime } from 'date-fns'
 import { createHash } from 'utils/createHash'
-import { selectHistory } from 'store/browser/slices/globalHistory'
 import {
   Tab,
   TabId,
@@ -58,14 +57,17 @@ const tabSlice = createSlice({
       state: TabState,
       action: PayloadAction<AddHistoryPayload>
     ) => {
-      const history = action.payload
+      const historyPayload = action.payload
+      const historyId = createHash(historyPayload.url)
+      const history = {
+        id: historyId,
+        ...historyPayload
+      } as History
       const lastVisited = getUnixTime(new Date())
       const activeTabId = state.activeTabId
       if (activeTabId === undefined) return
       const tab = tabAdapter.getSelectors().selectById(state, activeTabId)
       if (tab === undefined) return
-
-      const historyId = createHash(history.url)
 
       //if same as current, skip; useful for multiple loads of same page (by refresh, js, etc..)
       if (tab.historyIds[tab.activeHistoryIndex] === historyId) return
@@ -80,7 +82,8 @@ const tabSlice = createSlice({
         changes: {
           historyIds: newHistory,
           lastVisited,
-          activeHistoryIndex: tab.activeHistoryIndex + 1
+          activeHistoryIndex: tab.activeHistoryIndex + 1,
+          activeHistory: history
         }
       })
 
@@ -107,12 +110,13 @@ const tabSlice = createSlice({
       state: TabState,
       action: PayloadAction<Omit<Tab, 'historyIds' | 'lastVisited'>>
     ) => {
-      const { id, activeHistoryIndex } = action.payload
+      const { id, activeHistoryIndex, activeHistory } = action.payload
       tabAdapter.updateOne(state, {
         id,
         changes: {
           lastVisited: getUnixTime(new Date()),
-          activeHistoryIndex
+          activeHistoryIndex,
+          activeHistory
         }
       })
     }
@@ -156,9 +160,7 @@ export const selectActiveTab = (state: RootState): Tab | undefined => {
  */
 export const selectActiveHistory = (state: RootState): History | undefined => {
   const activeTab = selectActiveTab(state)
-  if (!activeTab || activeTab.activeHistoryIndex < 0) return undefined
-  const activeHistoryId = activeTab.historyIds[activeTab.activeHistoryIndex]
-  return selectHistory(activeHistoryId)(state)
+  return activeTab?.activeHistory
 }
 
 // actions
