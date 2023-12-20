@@ -47,15 +47,6 @@ export default function Browser({
     }
   }, [clipboard, setPendingDeepLink])
 
-  useEffect(() => {
-    const initialUrl = activeHistory?.url
-
-    if (initialUrl) {
-      setUrlEntry(initialUrl)
-      setUrlToLoad(initialUrl)
-    }
-  }, [activeHistory?.url])
-
   return (
     <View style={{ width: '100%', height: '100%' }}>
       <InputText
