@@ -137,7 +137,7 @@ export async function isResultExistsInTestrail(runID: number, caseId: number) {
 }
 
 // Updates the results for an existing test run or an empty test run
-
+// eslint-disable-next-line sonarjs/cognitive-complexity
 async function generatePlatformResults(
   testCasesToSend: any,
   resultsToSendToTestrail: [],
@@ -146,23 +146,19 @@ async function generatePlatformResults(
 ) {
   console.log('starting to generate results...')
   try {
-    let resultArray = resultsToSendToTestrail.filter(
+    const resultArray = resultsToSendToTestrail.filter(
       result => result.platform === platform
     )
     try {
       const existingTestCases = await getTestCasesFromRun(runID)
-      console.log('The existing test cases are ' + existingTestCases)
-      console.log('The results to send are ' + resultArray)
       // Adds the existing test case results to the results array so they are not overwritten in testrail when using the updateRun endpoint
-      const caseIDs = resultArray.map(result => result.case_id)
-      resultArray = resultArray.concat(
-        existingTestCases.filter(({ case_id }) => !caseIDs.includes(case_id))
-      )
-
-      resultArray.forEach(result => {
-        console.log('The result is ' + result.case_id + result.status_id)
-        console.log(JSON.stringify(result))
-      })
+      for (let j = 0; j < resultArray.length; j++) {
+        for (let i = 0; i < existingTestCases.length; i++) {
+          if (testCase.case_id !== result.case_id && testCase.status_id !== 3) {
+            resultArray.push(testCase)
+          }
+        }
+      }
 
       // Add already existing test cases to the testCasesToSend array
       if (resultArray.length > 0) {
@@ -171,15 +167,16 @@ async function generatePlatformResults(
         })
       }
 
+      const uniqueCaseIdArray = [...new Set(testCasesToSend.case_ids)]
+
       const testCasePayload = {
         include_all: false,
-        case_ids: testCasesToSend.case_ids
+        case_ids: uniqueCaseIdArray
       }
       // Takes the array of test cases and adds them to the test run
       await api.updateRun(runID, testCasePayload)
       console.log(
-        'Test cases have been sent to the test run...' +
-          testCasesToSend.case_ids
+        'Test cases have been sent to the test run...' + uniqueCaseIdArray
       )
     } catch (TestRailException) {
       console.log(
