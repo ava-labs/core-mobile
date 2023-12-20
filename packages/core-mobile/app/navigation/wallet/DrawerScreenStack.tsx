@@ -1,7 +1,7 @@
 import { NavigatorScreenParams } from '@react-navigation/native'
 import DrawerView from 'screens/drawer/DrawerView'
 import AppNavigation from 'navigation/AppNavigation'
-import TabNavigator, {
+import TabNavigatorWithFab, {
   TabNavigatorParamList
 } from 'navigation/wallet/TabNavigator'
 import React, { FC } from 'react'
@@ -24,7 +24,7 @@ const DrawerScreenStack: FC = () => (
     drawerContent={DrawerContent}>
     <DrawerStack.Screen
       name={AppNavigation.Wallet.Tabs}
-      component={TabNavigator}
+      component={TabNavigatorWithFab}
     />
   </DrawerStack.Navigator>
 )
