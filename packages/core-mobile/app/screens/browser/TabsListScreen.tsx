@@ -106,6 +106,11 @@ function TabsListScreen(): JSX.Element {
   function renderItem({ item }: { item: Tab }): JSX.Element | null {
     const activeHistory = item.activeHistory
 
+    let imagePath = SnapshotService.getPath(item.id)
+    if (snapshotTimestamps[item.id]) {
+      imagePath += '?' + snapshotTimestamps[item.id]
+    }
+
     return (
       <View
         sx={{
@@ -115,8 +120,7 @@ function TabsListScreen(): JSX.Element {
         }}>
         <TabListItem
           title={activeHistory?.url ? removeProtocol(activeHistory.url) : ''}
-          imagePath={SnapshotService.getPath(item.id)}
-          key={snapshotTimestamps[item.id]}
+          imagePath={imagePath}
           onPress={() => handlePressTab(item)}
           onClose={() => handleCloseTab(item)}
         />
