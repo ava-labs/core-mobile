@@ -55,9 +55,13 @@ const Template = ({
 export const Navigation = (): JSX.Element =>
   Template({
     icons: [
+      Icons.Navigation.ArrowBackIOSNew,
+      Icons.Navigation.ArrowForwardIOS,
+      Icons.Navigation.Cancel,
       Icons.Navigation.Check,
       Icons.Navigation.ExpandMore,
-      Icons.Navigation.MoreHoriz
+      Icons.Navigation.MoreHoriz,
+      Icons.Navigation.Refresh
     ],
     resourceURL:
       'https://www.figma.com/file/hDSl4OUgXorDAtqPZtCUhB/K2-Foundation?type=design&node-id=378-5642&mode=design&t=HOIixbVhKpxGrRwG-4'
