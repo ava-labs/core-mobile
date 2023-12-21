@@ -1,11 +1,11 @@
 import React, { useCallback } from 'react'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import WarningModal from 'components/WarningModal'
-import { RootStackScreenProps } from 'navigation/types'
+import { WalletScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
 
-type ScreenProps = RootStackScreenProps<
-  typeof AppNavigation.Root.BrowserTabCloseAll
+type ScreenProps = WalletScreenProps<
+  typeof AppNavigation.Modal.BrowserTabCloseAll
 >
 
 export const AreYouSureModal: () => JSX.Element = () => {

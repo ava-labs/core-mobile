@@ -3,9 +3,7 @@ enum Root {
   Onboard = 'Root.Onboard',
   RefreshToken = 'Root.RefreshToken',
   CopyPhraseWarning = 'Root.CopyPhraseWarning',
-  ForgotPin = 'Root.ForgotPin',
-  BrowserTabsList = 'Root.BrowserTabsList',
-  BrowserTabCloseAll = 'Root.BrowserTabCloseAll'
+  ForgotPin = 'Root.ForgotPin'
 }
 
 enum OnboardScreens {
@@ -200,7 +198,9 @@ enum ModalScreens {
   AvalancheSendTransactionV2 = 'ModalScreens.AvalancheSendTransactionV2',
   AvalancheSignTransactionV2 = 'ModalScreens.AvalancheSignTransactionV2',
   StakeDisclaimer = 'ModalScreens.StakeDisclaimer',
-  CoreIntro = 'ModalScreens.CoreIntro'
+  CoreIntro = 'ModalScreens.CoreIntro',
+  BrowserTabsList = 'ModalScreens.BrowserTabsList',
+  BrowserTabCloseAll = 'ModalScreens.BrowserTabCloseAll'
 }
 
 enum SendScreens {

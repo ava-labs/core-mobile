@@ -27,8 +27,6 @@ import { useWallet } from 'hooks/useWallet'
 import PinOrBiometryLogin from 'screens/login/PinOrBiometryLogin'
 import Logger from 'utils/Logger'
 import { setPinRecovery } from 'utils/Navigation'
-import TabsListScreen from 'screens/browser/TabsListScreen'
-import { AreYouSureModal } from 'screens/browser/AreYouSureModal'
 import { PrivacyScreen } from './wallet/PrivacyScreen'
 
 export type RootScreenStackParamList = {
@@ -45,8 +43,6 @@ export type RootScreenStackParamList = {
     title: string
     message: string
   }
-  [AppNavigation.Root.BrowserTabsList]: undefined
-  [AppNavigation.Root.BrowserTabCloseAll]: { onConfirm: () => void }
 }
 
 const RootStack = createStackNavigator<RootScreenStackParamList>()
@@ -131,32 +127,6 @@ const RootScreenStack: FC = () => {
         <RootStack.Screen
           name={AppNavigation.Root.ForgotPin}
           component={ForgotPinModal}
-        />
-      </RootStack.Group>
-      <RootStack.Group>
-        {/* modal screens for browser feature */}
-        <RootStack.Screen
-          name={AppNavigation.Root.BrowserTabsList}
-          options={{
-            presentation: 'modal',
-            animationEnabled: true,
-            cardStyleInterpolator: ({ current: { progress } }) => {
-              return {
-                cardStyle: {
-                  opacity: progress
-                }
-              }
-            }
-          }}
-          component={TabsListScreen}
-        />
-        <RootStack.Screen
-          name={AppNavigation.Root.BrowserTabCloseAll}
-          options={{
-            presentation: 'transparentModal',
-            animationEnabled: true
-          }}
-          component={AreYouSureModal}
         />
       </RootStack.Group>
     </RootStack.Navigator>
