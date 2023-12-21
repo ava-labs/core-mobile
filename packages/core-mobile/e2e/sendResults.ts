@@ -205,6 +205,9 @@ async function generatePlatformResults(
       }
     }
 
+    testResults.forEach(async (result: any) => {
+      console.log(JSON.stringify(result))
+    })
     // Send the results to testrail
     await api.addResultsForCases(runID, { results: testResults })
 
