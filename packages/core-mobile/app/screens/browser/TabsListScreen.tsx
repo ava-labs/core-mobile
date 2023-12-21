@@ -190,6 +190,7 @@ function TabsListScreen(): JSX.Element {
         ListHeaderComponent={renderHeader()}
         numColumns={NUMBER_OF_COLUMNS}
         onLayout={handleLayout}
+        keyExtractor={item => item.id}
       />
       {renderToolbar()}
     </>
