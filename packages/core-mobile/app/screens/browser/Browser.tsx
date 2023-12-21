@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { View } from '@avalabs/k2-mobile'
 import WebView from 'react-native-webview'
 import Logger from 'utils/Logger'
@@ -28,6 +28,7 @@ export default function Browser({
   const { scrollState, onScrollHandler } = useScrollHandler()
   const { injectCoreAsRecent } = useRecentWalletHack()
   const activeHistory = useSelector(selectActiveHistory)
+  const webViewRef = useRef<WebView>(null)
 
   useEffect(() => {
     activeHistory?.url && setUrlToLoad(activeHistory.url)
@@ -47,14 +48,22 @@ export default function Browser({
     }
   }, [clipboard, setPendingDeepLink])
 
+  function handleRefresh(): void {
+    webViewRef.current?.reload()
+  }
+
   return (
     <View style={{ width: '100%', height: '100%' }}>
       <InputText
+        mode={'url'}
+        onRefresh={handleRefresh}
         text={urlEntry}
         onChangeText={setUrlEntry}
         onSubmit={() => setUrlToLoad(urlEntry)}
       />
       <WebView
+        ref={webViewRef}
+        pullToRefreshEnabled={true}
         injectedJavaScript={injectCoreAsRecent}
         source={{ uri: urlToLoad }}
         setSupportMultipleWindows={false}
