@@ -9,8 +9,7 @@ import {
 import SearchBar from 'components/SearchBar'
 import { Space } from 'components/Space'
 import React, { useEffect, useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
-import { selectAllHistories } from 'store/browser/slices/globalHistory'
+import { useDispatch } from 'react-redux'
 import { AddHistoryPayload, History } from 'store/browser'
 import GoogleSVG from 'assets/icons/google.svg'
 import { addHistoryForActiveTab } from 'store/browser/slices/tabs'
@@ -18,6 +17,7 @@ import AppNavigation from 'navigation/AppNavigation'
 import { BrowserScreenProps } from 'navigation/types'
 import { useNavigation } from '@react-navigation/native'
 import useScrollHandler, { ScrollState } from 'hooks/browser/useScrollHandler'
+import { useSearchHistory } from 'hooks/browser/useSearchHistory'
 import { FavoritesAndSuggestions } from './FavoritesAndSuggestions'
 import { HistoryListItem } from './HistoryListItem'
 
@@ -30,16 +30,17 @@ export const EmptyTab = ({
 }: {
   onNewScrollState: (scrollState: ScrollState) => void
 }): JSX.Element => {
-  const histories = useSelector(selectAllHistories)
   const dispatch = useDispatch()
-  const hasHistory = histories.length > 0
-  const [searchText, setSearchText] = useState('')
-  const [filterHistories, setFilterHistories] = useState(histories)
   const [isFocused, setIsFocused] = useState(false)
   const { navigate } = useNavigation<NavigationProp>()
   const { scrollState, onScrollHandler } = useScrollHandler()
-
-  const hasSearchResult = filterHistories.length > 0
+  const {
+    searchText,
+    setSearchText,
+    filterHistories,
+    hasHistory,
+    hasSearchResult
+  } = useSearchHistory()
 
   const {
     theme: { colors }
@@ -48,20 +49,6 @@ export const EmptyTab = ({
   useEffect(() => {
     onNewScrollState(scrollState)
   }, [onNewScrollState, scrollState])
-
-  useEffect(() => {
-    const sortedHistories = [...histories].sort(
-      (a, b) => b.lastVisited - a.lastVisited
-    )
-    if (searchText.length > 0 && sortedHistories.length > 0) {
-      const filteredHistories = sortedHistories.filter(history => {
-        return history.title.toLowerCase().includes(searchText.toLowerCase())
-      })
-      setFilterHistories(filteredHistories)
-      return
-    }
-    setFilterHistories(sortedHistories)
-  }, [histories, searchText])
 
   const clearAll = (): void => {
     navigate(AppNavigation.Browser.ClearAllHistory)
