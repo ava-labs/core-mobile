@@ -26,6 +26,8 @@ import Swap from 'assets/icons/swap_v2.svg'
 import HeaderAccountSelector from 'components/HeaderAccountSelector'
 import { View } from '@avalabs/k2-mobile'
 import { Animated } from 'react-native'
+import TabsListScreen from 'screens/browser/TabsListScreen'
+import { AreYouSureModal } from 'screens/browser/AreYouSureModal'
 import { SignOutModalScreen, WalletScreenSType } from './WalletScreenStack'
 
 export const createModals = (WalletScreenS: WalletScreenSType): JSX.Element => {
@@ -89,9 +91,38 @@ export const createModals = (WalletScreenS: WalletScreenSType): JSX.Element => {
     </WalletScreenS.Group>
   )
 
+  const browserModals = (
+    <WalletScreenS.Group>
+      <WalletScreenS.Screen
+        name={AppNavigation.Modal.BrowserTabsList}
+        options={{
+          presentation: 'modal',
+          animationEnabled: true,
+          cardStyleInterpolator: ({ current: { progress } }) => {
+            return {
+              cardStyle: {
+                opacity: progress
+              }
+            }
+          }
+        }}
+        component={TabsListScreen}
+      />
+      <WalletScreenS.Screen
+        name={AppNavigation.Modal.BrowserTabCloseAll}
+        options={{
+          presentation: 'transparentModal',
+          animationEnabled: true
+        }}
+        component={AreYouSureModal}
+      />
+    </WalletScreenS.Group>
+  )
+
   return (
     <WalletScreenS.Group screenOptions={{ presentation: 'transparentModal' }}>
       {walletConnectV2Modals}
+      {browserModals}
       <WalletScreenS.Screen
         options={{
           transitionSpec: {

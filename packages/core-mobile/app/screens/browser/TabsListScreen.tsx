@@ -57,7 +57,7 @@ function TabsListScreen(): JSX.Element {
   }, [navigation, dispatch])
 
   function handleCloseAll(): void {
-    navigation.navigate(AppNavigation.Root.BrowserTabCloseAll, {
+    navigation.navigate(AppNavigation.Modal.BrowserTabCloseAll, {
       onConfirm: handleConfirmCloseAll
     })
   }
