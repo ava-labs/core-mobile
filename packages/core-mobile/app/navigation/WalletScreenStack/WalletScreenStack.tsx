@@ -174,6 +174,8 @@ export type WalletScreenStackParams = {
   [AppNavigation.Modal.StakeDisclaimer]: undefined
   [AppNavigation.Wallet.DeFiProtocolDetails]: { protocolId: string }
   [AppNavigation.Modal.CoreIntro]: undefined
+  [AppNavigation.Modal.BrowserTabsList]: undefined
+  [AppNavigation.Modal.BrowserTabCloseAll]: { onConfirm: () => void }
 }
 
 const WalletScreenS = createStackNavigator<WalletScreenStackParams>()
