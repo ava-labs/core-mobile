@@ -43,7 +43,7 @@ export const FavoritesAndSuggestions = ({
         onScroll={onScrollHandler}
         contentContainerStyle={{ paddingBottom: 16 }}
         ListFooterComponent={<SuggestedSection />}
-        contentInset={{ bottom: 160 }}
+        contentInset={{ bottom: 80 }}
       />
     </View>
   )

@@ -121,7 +121,7 @@ export const EmptyTab = ({
                 <HistoryListItem history={item.item as History} />
               )}
               contentContainerStyle={{ paddingBottom: 16 }}
-              sx={{ height: '80%' }}
+              sx={{ height: '85%' }}
             />
           </View>
         )}
