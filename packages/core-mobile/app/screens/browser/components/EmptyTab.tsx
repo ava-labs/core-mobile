@@ -9,8 +9,7 @@ import {
 import SearchBar from 'components/SearchBar'
 import { Space } from 'components/Space'
 import React, { useEffect, useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
-import { selectAllHistories } from 'store/browser/slices/globalHistory'
+import { useDispatch } from 'react-redux'
 import { AddHistoryPayload, History } from 'store/browser'
 import GoogleSVG from 'assets/icons/google.svg'
 import { addHistoryForActiveTab } from 'store/browser/slices/tabs'
@@ -18,8 +17,13 @@ import AppNavigation from 'navigation/AppNavigation'
 import { BrowserScreenProps } from 'navigation/types'
 import { useNavigation } from '@react-navigation/native'
 import useScrollHandler, { ScrollState } from 'hooks/browser/useScrollHandler'
+import { useSearchHistory } from 'hooks/browser/useSearchHistory'
+import { Dimensions } from 'react-native'
 import { FavoritesAndSuggestions } from './FavoritesAndSuggestions'
 import { HistoryListItem } from './HistoryListItem'
+
+const SCREEN_WIDTH = Dimensions.get('window').width
+const BOTTOM_PADDING = SCREEN_WIDTH * 0.35
 
 type NavigationProp = BrowserScreenProps<
   typeof AppNavigation.Browser.TabView
@@ -30,16 +34,17 @@ export const EmptyTab = ({
 }: {
   onNewScrollState: (scrollState: ScrollState) => void
 }): JSX.Element => {
-  const histories = useSelector(selectAllHistories)
   const dispatch = useDispatch()
-  const hasHistory = histories.length > 0
-  const [searchText, setSearchText] = useState('')
-  const [filterHistories, setFilterHistories] = useState(histories)
   const [isFocused, setIsFocused] = useState(false)
   const { navigate } = useNavigation<NavigationProp>()
   const { scrollState, onScrollHandler } = useScrollHandler()
-
-  const hasSearchResult = filterHistories.length > 0
+  const {
+    searchText,
+    setSearchText,
+    filterHistories,
+    hasHistory,
+    hasSearchResult
+  } = useSearchHistory()
 
   const {
     theme: { colors }
@@ -48,17 +53,6 @@ export const EmptyTab = ({
   useEffect(() => {
     onNewScrollState(scrollState)
   }, [onNewScrollState, scrollState])
-
-  useEffect(() => {
-    if (searchText.length > 0 && histories.length > 0) {
-      const filteredHistories = histories.filter(history => {
-        return history.title.toLowerCase().includes(searchText.toLowerCase())
-      })
-      setFilterHistories(filteredHistories)
-      return
-    }
-    setFilterHistories(histories)
-  }, [histories, searchText])
 
   const clearAll = (): void => {
     navigate(AppNavigation.Browser.ClearAllHistory)
@@ -79,7 +73,7 @@ export const EmptyTab = ({
     const isSearching = searchText.length > 0
 
     return (
-      <View>
+      <View sx={{ flex: 1 }}>
         <Pressable onPress={handleGoogleSearch}>
           {(isSearching || searchText.length > 0) && (
             <View sx={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -124,14 +118,16 @@ export const EmptyTab = ({
               )}
             </View>
             <Space y={16} />
-            <FlatList
-              data={filterHistories}
-              onScroll={onScrollHandler}
-              renderItem={item => (
-                <HistoryListItem history={item.item as History} />
-              )}
-              contentContainerStyle={{ paddingBottom: 16 }}
-            />
+            <View>
+              <FlatList
+                data={filterHistories}
+                onScroll={onScrollHandler}
+                renderItem={item => (
+                  <HistoryListItem history={item.item as History} />
+                )}
+                contentContainerStyle={{ paddingBottom: BOTTOM_PADDING }}
+              />
+            </View>
           </View>
         )}
       </View>
@@ -139,14 +135,16 @@ export const EmptyTab = ({
   }
 
   return (
-    <View sx={{ paddingHorizontal: 16, backgroundColor: '$black' }}>
-      <SearchBar
-        setSearchBarFocused={setIsFocused}
-        onTextChanged={setSearchText}
-        searchText={searchText}
-        placeholder="Search or Type URL"
-        textColor={colors.$white}
-      />
+    <View sx={{ paddingHorizontal: 16, backgroundColor: '$black', flex: 1 }}>
+      <View>
+        <SearchBar
+          setSearchBarFocused={setIsFocused}
+          onTextChanged={setSearchText}
+          searchText={searchText}
+          placeholder="Search or Type URL"
+          textColor={colors.$white}
+        />
+      </View>
       {isFocused && renderHistory()}
       {!isFocused && (
         <FavoritesAndSuggestions onScrollHandler={onScrollHandler} />
