@@ -14,6 +14,7 @@ import InputText from 'components/InputText'
 import useClipboardWatcher from 'hooks/useClipboardWatcher'
 import useScrollHandler, { ScrollState } from 'hooks/browser/useScrollHandler'
 import useRecentWalletHack from 'hooks/browser/useRecentWalletHack'
+import { normalizeUrlWithHttps } from './utils'
 
 export default function Browser({
   onNewScrollState
@@ -29,6 +30,10 @@ export default function Browser({
   const { injectCoreAsRecent } = useRecentWalletHack()
   const activeHistory = useSelector(selectActiveHistory)
   const webViewRef = useRef<WebView>(null)
+
+  function handleUrlSubmit(): void {
+    setUrlToLoad(normalizeUrlWithHttps(urlEntry))
+  }
 
   useEffect(() => {
     activeHistory?.url && setUrlToLoad(activeHistory.url)
@@ -58,8 +63,9 @@ export default function Browser({
         mode={'url'}
         onRefresh={handleRefresh}
         text={urlEntry}
+        autoCorrect={false}
         onChangeText={setUrlEntry}
-        onSubmit={() => setUrlToLoad(urlEntry)}
+        onSubmit={handleUrlSubmit}
       />
       <WebView
         ref={webViewRef}
