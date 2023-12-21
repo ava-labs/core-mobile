@@ -125,5 +125,12 @@ export const migrations = {
         walletType: isLoggedIn ? WalletType.MNEMONIC : WalletType.UNSET
       }
     }
+  },
+  10: async (state: any) => {
+    //wipe browser state since this is first version that users are actually gonna use
+    return {
+      ...state,
+      browser: undefined
+    }
   }
 }
