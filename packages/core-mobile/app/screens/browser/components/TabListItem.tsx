@@ -12,7 +12,7 @@ import { LayoutChangeEvent } from 'react-native'
 
 type Props = {
   title?: string
-  imagePath?: string
+  imagePath: string
   onPress: () => void
   onClose: () => void
 }
