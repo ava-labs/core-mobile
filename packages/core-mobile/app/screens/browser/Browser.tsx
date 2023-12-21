@@ -66,6 +66,7 @@ export default function Browser({
           Logger.trace('------> onLoadEnd')
         }}
         onLoad={event => {
+          if (event.nativeEvent.url.startsWith('about:blank')) return
           const history: AddHistoryPayload = {
             title: event.nativeEvent.title,
             url: event.nativeEvent.url
