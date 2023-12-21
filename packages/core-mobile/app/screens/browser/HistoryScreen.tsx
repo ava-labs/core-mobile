@@ -29,14 +29,17 @@ export const HistoryScreen = (): JSX.Element => {
   }
 
   useEffect(() => {
-    if (searchText.length > 0 && histories.length > 0) {
-      const filteredHistories = histories.filter(history => {
+    const sortedHistories = [...histories].sort(
+      (a, b) => b.lastVisited - a.lastVisited
+    )
+    if (searchText.length > 0 && sortedHistories.length > 0) {
+      const filteredHistories = sortedHistories.filter(history => {
         return history.title.toLowerCase().includes(searchText.toLowerCase())
       })
       setFilterHistories(filteredHistories)
       return
     }
-    setFilterHistories(histories)
+    setFilterHistories(sortedHistories)
   }, [histories, searchText])
 
   return (
