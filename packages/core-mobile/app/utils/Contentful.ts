@@ -4,9 +4,9 @@ export const formatUriImageToPng = (
   uri: string,
   size: number,
   pixelRatio: number = PixelRatio.get()
-) => {
+): string => {
   if (isContentfulImageUri(uri)) {
-    const sizeInPixel = size * pixelRatio
+    const sizeInPixel = Math.floor(size * pixelRatio)
 
     return uri?.endsWith('.svg')
       ? `${uri}?fm=png&w=${sizeInPixel}&h=${sizeInPixel}`
@@ -15,7 +15,7 @@ export const formatUriImageToPng = (
   return uri
 }
 
-export const isContentfulImageUri = (uri: string) => {
+export const isContentfulImageUri = (uri: string): boolean => {
   const allowedUrl = 'https://images.ctfassets.net'
 
   return uri.startsWith(allowedUrl)
