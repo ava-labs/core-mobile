@@ -16,6 +16,7 @@ export type History = {
   id: HistoryId
   title: string // title grabbed from html metadata
   url: string // url grabbed from html metadata
+  lastVisited: number
 }
 
 export type TabState = EntityState<Tab> & {
@@ -24,7 +25,7 @@ export type TabState = EntityState<Tab> & {
 
 export type HistoryState = EntityState<History>
 
-export type AddHistoryPayload = Omit<History, 'id'>
+export type AddHistoryPayload = Omit<History, 'id' | 'lastVisited'>
 
 export type TabHistoryPayload = {
   tabId: TabId

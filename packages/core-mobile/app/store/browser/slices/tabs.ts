@@ -63,13 +63,15 @@ const tabSlice = createSlice({
       state: TabState,
       action: PayloadAction<AddHistoryPayload>
     ) => {
+      const lastVisited = getUnixTime(new Date())
+
       const historyPayload = action.payload
       const historyId = createHash(historyPayload.url)
       const history = {
         id: historyId,
+        lastVisited,
         ...historyPayload
       } as History
-      const lastVisited = getUnixTime(new Date())
       const activeTabId = state.activeTabId
       if (activeTabId === undefined) return
       const tab = tabAdapter.getSelectors().selectById(state, activeTabId)
