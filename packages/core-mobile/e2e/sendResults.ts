@@ -183,7 +183,8 @@ async function generatePlatformResults(
         'Invalid test case ids found in ' +
           testCasesToSend.case_ids +
           ' with run id ' +
-          runID
+          runID,
+        TestRailException
       )
     }
 
