@@ -22,9 +22,9 @@ import {
   Text,
   Button,
   SxProp,
-  Pressable
+  Pressable,
+  Icons
 } from '@avalabs/k2-mobile'
-import RefreshSVG from 'components/svg/RefreshSVG'
 import AvaButton from './AvaButton'
 import { Tooltip } from './Tooltip'
 import InfoSVG from './svg/InfoSVG'
@@ -297,7 +297,7 @@ const InputText = forwardRef<TextInput, InputTextProps>(
                 ...clearBtnContainerSx
               }}>
               <Pressable onPress={onRefresh}>
-                <RefreshSVG />
+                <Icons.Navigation.Refresh color={colors.$neutral500} />
               </Pressable>
             </View>
           )}
