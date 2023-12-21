@@ -8,7 +8,7 @@ import {
 } from '@avalabs/k2-mobile'
 import SearchBar from 'components/SearchBar'
 import { Space } from 'components/Space'
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import { AddHistoryPayload, History } from 'store/browser'
 import GoogleSVG from 'assets/icons/google.svg'
@@ -42,12 +42,11 @@ export const EmptyTab = ({
   const {
     searchText,
     setSearchText,
+    trimmedSearchText,
     filterHistories,
     hasHistory,
     hasSearchResult
   } = useSearchHistory()
-
-  const trimmedSearchText = useMemo(() => searchText.trim(), [searchText])
 
   const {
     theme: { colors }
