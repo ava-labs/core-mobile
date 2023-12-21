@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import AppNavigation from 'navigation/AppNavigation'
 import { createStackNavigator } from '@react-navigation/stack'
 import TopNavigationHeader from 'navigation/TopNavigationHeader'
@@ -120,9 +120,12 @@ function TabView(): JSX.Element {
   )
   const { navigate } = useNavigation<TabViewScreenProps['navigation']>()
 
-  if (!hasBeenViewedBrowser) {
-    navigate(AppNavigation.Browser.Intro)
-  }
+  useEffect(() => {
+    if (!hasBeenViewedBrowser) {
+      navigate(AppNavigation.Browser.Intro)
+    }
+  }, [hasBeenViewedBrowser, navigate])
+
   return <TabViewScreen />
 }
 
