@@ -47,9 +47,10 @@ export const HistoryListItem = ({ history }: Props): JSX.Element => {
       sx={{
         flexDirection: 'row',
         marginTop: 8,
-        justifyContent: 'space-between'
+        justifyContent: 'space-between',
+        flex: 1
       }}>
-      <View sx={{ flex: 1 }}>
+      <View>
         <Text variant="inputLabel" numberOfLines={1}>
           {history.title}
         </Text>
