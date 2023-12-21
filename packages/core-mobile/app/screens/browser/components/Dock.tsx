@@ -1,10 +1,5 @@
 import React from 'react'
-import CarrotSVG from 'components/svg/CarrotSVG'
-import CreateNewWalletPlusSVG, {
-  IconWeight
-} from 'components/svg/CreateNewWalletPlusSVG'
-import EllipsisSVG from 'components/svg/EllipsisSVG'
-import { TouchableOpacity, useTheme } from '@avalabs/k2-mobile'
+import { Icons, TouchableOpacity, useTheme } from '@avalabs/k2-mobile'
 import Animated, { FadeInDown, FadeOutDown } from 'react-native-reanimated'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectIsFavorited } from 'store/browser/slices/favorites'
@@ -63,6 +58,8 @@ export const Dock = (): JSX.Element => {
     navigate(AppNavigation.Modal.BrowserTabsList)
   }
 
+  const ICON_SIZE = 32
+
   return (
     <Animated.View
       style={{
@@ -86,28 +83,33 @@ export const Dock = (): JSX.Element => {
         backgroundColor="#BFBFBF70"
       />
       <TouchableOpacity onPress={goBack} disabled={!canGoBack}>
-        <CarrotSVG
-          direction="left"
-          size={26}
+        <Icons.Navigation.ArrowBackIOSNew
+          width={ICON_SIZE}
+          height={ICON_SIZE}
           color={canGoBack ? colors.$neutral900 : colors.$neutral300}
         />
       </TouchableOpacity>
       <TouchableOpacity onPress={goForward} disabled={!canGoForward}>
-        <CarrotSVG
-          size={26}
+        <Icons.Navigation.ArrowForwardIOS
+          width={ICON_SIZE}
+          height={ICON_SIZE}
           color={canGoForward ? colors.$neutral900 : colors.$neutral300}
         />
       </TouchableOpacity>
       <TouchableOpacity onPress={createNewTab}>
-        <CreateNewWalletPlusSVG
-          size={21}
-          weight={IconWeight.extraBold}
+        <Icons.Content.Add
+          width={ICON_SIZE}
+          height={ICON_SIZE}
           color={colors.$neutral900}
         />
       </TouchableOpacity>
       <TabIcon numberOfTabs={totalTabs} onPress={navigateToTabList} />
       <DockMenu isFavorited={isFavorited}>
-        <EllipsisSVG color={colors.$neutral900} size={25} />
+        <Icons.Navigation.MoreHoriz
+          color={colors.$neutral900}
+          width={ICON_SIZE}
+          height={ICON_SIZE}
+        />
       </DockMenu>
     </Animated.View>
   )
