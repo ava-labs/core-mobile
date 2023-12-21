@@ -8,7 +8,7 @@ import {
 } from '@avalabs/k2-mobile'
 import SearchBar from 'components/SearchBar'
 import { Space } from 'components/Space'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import { AddHistoryPayload, History } from 'store/browser'
 import GoogleSVG from 'assets/icons/google.svg'
@@ -19,6 +19,7 @@ import { useNavigation } from '@react-navigation/native'
 import useScrollHandler, { ScrollState } from 'hooks/browser/useScrollHandler'
 import { useSearchHistory } from 'hooks/browser/useSearchHistory'
 import { Dimensions } from 'react-native'
+import { isValidHttpUrl, normalizeUrlWithHttps } from '../utils'
 import { FavoritesAndSuggestions } from './FavoritesAndSuggestions'
 import { HistoryListItem } from './HistoryListItem'
 
@@ -46,6 +47,8 @@ export const EmptyTab = ({
     hasSearchResult
   } = useSearchHistory()
 
+  const trimmedSearchText = useMemo(() => searchText.trim(), [searchText])
+
   const {
     theme: { colors }
   } = useTheme()
@@ -60,22 +63,36 @@ export const EmptyTab = ({
 
   const handleGoogleSearch = (): void => {
     const url =
-      'https://www.google.com/search?q=' + encodeURIComponent(searchText)
+      'https://www.google.com/search?q=' + encodeURIComponent(trimmedSearchText)
     const history: AddHistoryPayload = {
-      title: searchText,
+      title: trimmedSearchText,
       url
     }
     dispatch(addHistoryForActiveTab(history))
     navigate(AppNavigation.Browser.TabView)
   }
 
+  const handleSearchBarSubmit = (): void => {
+    const normalizedUrl = normalizeUrlWithHttps(trimmedSearchText)
+    if (isValidHttpUrl(normalizedUrl)) {
+      const history: AddHistoryPayload = {
+        title: trimmedSearchText,
+        url: normalizedUrl
+      }
+      dispatch(addHistoryForActiveTab(history))
+      navigate(AppNavigation.Browser.TabView)
+    } else {
+      handleGoogleSearch()
+    }
+  }
+
   const renderHistory = (): JSX.Element => {
-    const isSearching = searchText.length > 0
+    const isSearching = trimmedSearchText.length > 0
 
     return (
       <View sx={{ flex: 1 }}>
         <Pressable onPress={handleGoogleSearch}>
-          {(isSearching || searchText.length > 0) && (
+          {(isSearching || trimmedSearchText.length > 0) && (
             <View sx={{ flexDirection: 'row', alignItems: 'center' }}>
               <View
                 sx={{
@@ -93,7 +110,7 @@ export const EmptyTab = ({
                 variant="buttonMedium"
                 numberOfLines={1}
                 sx={{ marginLeft: 16, flex: 1 }}>
-                {`Search "${searchText}"`}
+                {`Search "${trimmedSearchText}"`}
               </Text>
             </View>
           )}
@@ -136,15 +153,15 @@ export const EmptyTab = ({
 
   return (
     <View sx={{ paddingHorizontal: 16, backgroundColor: '$black', flex: 1 }}>
-      <View>
-        <SearchBar
-          setSearchBarFocused={setIsFocused}
-          onTextChanged={setSearchText}
-          searchText={searchText}
-          placeholder="Search or Type URL"
-          textColor={colors.$white}
-        />
-      </View>
+      <SearchBar
+        returnKeyType="done"
+        setSearchBarFocused={setIsFocused}
+        onTextChanged={setSearchText}
+        searchText={searchText}
+        placeholder="Search or Type URL"
+        textColor={colors.$white}
+        onSubmitEditing={handleSearchBarSubmit}
+      />
       {isFocused && renderHistory()}
       {!isFocused && (
         <FavoritesAndSuggestions onScrollHandler={onScrollHandler} />
