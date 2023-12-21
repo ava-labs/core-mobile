@@ -15,7 +15,16 @@ import ClearInputSVG from 'components/svg/ClearInputSVG'
 import { Space } from 'components/Space'
 import CheckmarkSVG from 'components/svg/CheckmarkSVG'
 import { Row } from 'components/Row'
-import { alpha, useTheme, View, Text, Button, SxProp } from '@avalabs/k2-mobile'
+import {
+  alpha,
+  useTheme,
+  View,
+  Text,
+  Button,
+  SxProp,
+  Pressable
+} from '@avalabs/k2-mobile'
+import RefreshSVG from 'components/svg/RefreshSVG'
 import AvaButton from './AvaButton'
 import { Tooltip } from './Tooltip'
 import InfoSVG from './svg/InfoSVG'
@@ -27,6 +36,7 @@ type Mode =
   | 'confirmEntry'
   | 'percentage'
   | 'currency'
+  | 'url'
 
 export type InputTextProps = {
   onBlur?: (e: NativeSyntheticEvent<TextInputFocusEventData>) => void
@@ -37,6 +47,7 @@ export type InputTextProps = {
   maxLength?: number
   onSubmit?: () => void
   onMax?: () => void
+  onRefresh?: () => void
   onConfirm?: (text: string) => void
   placeholder?: string
   // Shows label above input
@@ -90,6 +101,7 @@ const InputText = forwardRef<TextInput, InputTextProps>(
       popOverPosition,
       mode = 'default',
       onMax,
+      onRefresh,
       width,
       minHeight,
       maxLength,
@@ -112,6 +124,7 @@ const InputText = forwardRef<TextInput, InputTextProps>(
   ) => {
     const [showInput, setShowInput] = useState(false)
     const [toggleShowText, setToggleShowText] = useState('Show')
+    const [isFocused, setIsFocused] = useState(false)
 
     const [selection, setSelection] = useState<{ start: number } | undefined>({
       start: 0
@@ -148,6 +161,7 @@ const InputText = forwardRef<TextInput, InputTextProps>(
       args => {
         setSelection({ start: 0 })
         onBlur?.(args)
+        setIsFocused(false)
       },
       [onBlur]
     )
@@ -158,6 +172,7 @@ const InputText = forwardRef<TextInput, InputTextProps>(
 
       // disable selection so that user can position cursor on its own
       setTimeout(() => setSelection(undefined), 100)
+      setIsFocused(true)
     }
 
     const {
@@ -245,7 +260,8 @@ const InputText = forwardRef<TextInput, InputTextProps>(
             onChangeText={onTextChanged}
             value={text}
           />
-          {mode === 'default' && text.length > 0 && (
+          {((mode === 'default' && text.length > 0) ||
+            (mode === 'url' && isFocused && text.length > 0)) && (
             <View
               sx={{
                 position: 'absolute',
@@ -272,6 +288,18 @@ const InputText = forwardRef<TextInput, InputTextProps>(
               style={{ position: 'absolute', right: 16 }}
               size={'small'}
             />
+          )}
+          {mode === 'url' && !isFocused && (
+            <View
+              sx={{
+                position: 'absolute',
+                right: 8,
+                ...clearBtnContainerSx
+              }}>
+              <Pressable onPress={onRefresh}>
+                <RefreshSVG />
+              </Pressable>
+            </View>
           )}
         </View>
 
