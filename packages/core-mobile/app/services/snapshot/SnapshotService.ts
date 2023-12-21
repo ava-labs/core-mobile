@@ -6,7 +6,7 @@ class SnapshotService {
   }
 
   getPath(filename: string): string {
-    return `${this.folderPath}/${filename}`
+    return `file://${this.folderPath}/${filename}`
   }
 
   async saveAs(tempPath: string, filename: string): Promise<void> {
