@@ -41,7 +41,6 @@ export default function TabViewScreen(): JSX.Element {
         setDockVisible(false)
         break
       case ScrollState.up:
-      case ScrollState.idle:
         setDockVisible(true)
         break
     }

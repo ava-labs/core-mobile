@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { createHash } from 'utils/createHash'
 import { RootState } from 'store'
+import { getUnixTime } from 'date-fns'
 import { History, HistoryId, HistoryState } from '../types'
 import { historyAdapter } from '../utils'
 import { MAXIMUM_HISTORIES } from '../const'
@@ -31,6 +32,7 @@ const globalHistorySlice = createSlice({
         const historyId = createHash(history.url)
         historyAdapter.upsertOne(state, {
           id: historyId,
+          lastVisited: getUnixTime(new Date()),
           ...history
         })
         // limit max histories

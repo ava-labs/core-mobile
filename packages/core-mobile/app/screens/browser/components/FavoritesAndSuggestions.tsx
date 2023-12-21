@@ -4,9 +4,16 @@ import React from 'react'
 import { useSelector } from 'react-redux'
 import { selectAllFavorites } from 'store/browser/slices/favorites'
 import { Favorite } from 'store/browser'
-import { NativeScrollEvent, NativeSyntheticEvent } from 'react-native'
+import {
+  Dimensions,
+  NativeScrollEvent,
+  NativeSyntheticEvent
+} from 'react-native'
 import { FavoritesListItem } from './FavoritesListItem'
 import { SuggestedSection } from './SuggestedSection'
+
+const SCREEN_WIDTH = Dimensions.get('window').width
+const BOTTOM_PADDING = SCREEN_WIDTH * 0.15
 
 export const FavoritesAndSuggestions = ({
   onScrollHandler
@@ -41,9 +48,8 @@ export const FavoritesAndSuggestions = ({
           />
         )}
         onScroll={onScrollHandler}
-        contentContainerStyle={{ paddingBottom: 16 }}
+        contentContainerStyle={{ paddingBottom: BOTTOM_PADDING }}
         ListFooterComponent={<SuggestedSection />}
-        contentInset={{ bottom: 160 }}
       />
     </View>
   )
