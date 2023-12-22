@@ -17,6 +17,8 @@ import BrowserSVG from 'components/svg/BrowserSVG'
 import BrowserScreenStack from 'navigation/wallet/BrowserScreenStack'
 import { useAnalytics } from 'hooks/useAnalytics'
 import { Fab } from 'components/Fab'
+import { selectAllTabs } from 'store/browser'
+import { useSelector } from 'react-redux'
 import EarnScreenStack from './EarnScreenStack/EarnScreenStack'
 
 export type TabNavigatorParamList = {
@@ -37,6 +39,7 @@ const TabNavigator: () => JSX.Element = () => {
   const isAvalancheNetwork = useIsAvalancheNetwork()
   const { capture } = useAnalytics()
   const [showFab, setShowFab] = useState(true)
+  const allTabs = useSelector(selectAllTabs)
 
   const renderEarnTab: () => null | JSX.Element = () => {
     if (earnBlocked) return null
@@ -100,6 +103,9 @@ const TabNavigator: () => JSX.Element = () => {
         listeners={() => ({
           focus: () => {
             setShowFab(false)
+          },
+          tabPress: () => {
+            capture('BrowserOpened', { openTabs: allTabs.length })
           }
         })}
         component={BrowserScreenStack}

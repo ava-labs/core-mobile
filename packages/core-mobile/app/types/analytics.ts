@@ -1,5 +1,6 @@
 export type AnalyticsEvents = {
   AccountSelectorOpened: undefined
+  AccountSelectorAccountSwitched: { accountIndex: number }
   AccountSelectorAddAccount: { accountNumber: number }
   AccountSelectorBtcAddressCopied: undefined
   AccountSelectorEthAddressCopied: undefined
@@ -164,20 +165,19 @@ export type AnalyticsEvents = {
   DeFiDetailLaunchButtonClicked: undefined
 
   // In App Browser
-  BrowserOpened: undefined
+  BrowserOpened: { openTabs: number }
   BrowserWelcomeScreenButtonTapped: undefined
-  BrowserAccountSwitched: undefined
   BrowserSearchSubmitted: undefined
   BrowserFavoritesTapped: undefined
-  BrowserSuggestedTapped: undefined
+  BrowserSuggestedTapped: { url: string }
   BrowserBackTapped: undefined
   BrowserForwardTapped: undefined
   BrowserAddToFavoriteTapped: undefined
   BrowserTabsOpened: undefined
+  BrowserNewTabTapped: undefined
   BrowserContextualMenuOpened: undefined
-  BrowserSharedTapped: undefined
+  BrowserShareTapped: undefined
   BrowserViewHistoryTapped: undefined
-  BrowserTabsUsed: { count: number }
   BrowserWalletConnectedToDapp: { dAppUrl: string }
   BrowserTxSubmittedToDapp: { dAppUrl: string }
 }
