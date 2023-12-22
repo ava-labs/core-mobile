@@ -17,7 +17,7 @@ export type History = {
   title: string // title grabbed from html metadata
   url: string // url grabbed from html metadata
   lastVisited: number
-  description?: string // description grabbed from html metadataq
+  description?: string // description grabbed from html metadata
   favicon?: string // url to favicon
 }
 
