@@ -19,6 +19,7 @@ import { useNavigation } from '@react-navigation/native'
 import useScrollHandler, { ScrollState } from 'hooks/browser/useScrollHandler'
 import { useSearchHistory } from 'hooks/browser/useSearchHistory'
 import { Dimensions } from 'react-native'
+import { useAnalytics } from 'hooks/useAnalytics'
 import { isValidHttpUrl, normalizeUrlWithHttps } from '../utils'
 import { FavoritesAndSuggestions } from './FavoritesAndSuggestions'
 import { HistoryListItem } from './HistoryListItem'
@@ -52,6 +53,8 @@ export const EmptyTab = ({
     theme: { colors }
   } = useTheme()
 
+  const { capture } = useAnalytics()
+
   useEffect(() => {
     onNewScrollState(scrollState)
   }, [onNewScrollState, scrollState])
@@ -72,6 +75,8 @@ export const EmptyTab = ({
   }
 
   const handleSearchBarSubmit = (): void => {
+    capture('BrowserSearchSubmitted')
+
     const normalizedUrl = normalizeUrlWithHttps(trimmedSearchText)
     if (isValidHttpUrl(normalizedUrl)) {
       const history: AddHistoryPayload = {
@@ -90,7 +95,11 @@ export const EmptyTab = ({
 
     return (
       <View sx={{ flex: 1 }}>
-        <Pressable onPress={handleGoogleSearch}>
+        <Pressable
+          onPress={() => {
+            capture('BrowserSearchSubmitted')
+            handleGoogleSearch()
+          }}>
           {(isSearching || trimmedSearchText.length > 0) && (
             <View sx={{ flexDirection: 'row', alignItems: 'center' }}>
               <View

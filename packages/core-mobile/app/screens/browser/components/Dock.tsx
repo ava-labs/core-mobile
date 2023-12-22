@@ -16,6 +16,7 @@ import {
   selectCanGoForward
 } from 'store/browser/slices/tabs'
 import { BlurBackground } from 'components/BlurBackground'
+import { useAnalytics } from 'hooks/useAnalytics'
 import { useHardwareBackHandler } from '../handleBrowserBack'
 import { DockMenu } from './DockMenu'
 import { TabIcon } from './TabIcon'
@@ -33,6 +34,7 @@ export const Dock = (): JSX.Element => {
   const totalTabs = useSelector(selectAllTabs).length
   const activeHistory = useSelector(selectActiveHistory)
   useHardwareBackHandler()
+  const { capture } = useAnalytics()
 
   const canGoBack = useSelector(selectCanGoBack)
   const canGoForward = useSelector(selectCanGoForward)
@@ -41,20 +43,24 @@ export const Dock = (): JSX.Element => {
 
   const goBack = (): void => {
     if (!canGoBack) return
+    capture('BrowserBackTapped')
     dispatch(goBackward())
   }
   const goForward = (): void => {
     if (!canGoForward) return
+    capture('BrowserForwardTapped')
     dispatch(goForwardInPage())
   }
 
   const createNewTab = (): void => {
     // browser will listen to this and reset the screen with
     // initiated tab data
+    capture('BrowserNewTabTapped')
     dispatch(addTab())
   }
 
   const navigateToTabList = (): void => {
+    capture('BrowserTabsOpened')
     navigate(AppNavigation.Modal.BrowserTabsList)
   }
 
@@ -104,13 +110,15 @@ export const Dock = (): JSX.Element => {
         />
       </TouchableOpacity>
       <TabIcon numberOfTabs={totalTabs} onPress={navigateToTabList} />
-      <DockMenu isFavorited={isFavorited}>
-        <Icons.Navigation.MoreHoriz
-          color={colors.$neutral900}
-          width={ICON_SIZE}
-          height={ICON_SIZE}
-        />
-      </DockMenu>
+      <TouchableOpacity onPress={() => capture('BrowserContextualMenuOpened')}>
+        <DockMenu isFavorited={isFavorited}>
+          <Icons.Navigation.MoreHoriz
+            color={colors.$neutral900}
+            width={ICON_SIZE}
+            height={ICON_SIZE}
+          />
+        </DockMenu>
+      </TouchableOpacity>
     </Animated.View>
   )
 }
