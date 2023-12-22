@@ -14,8 +14,8 @@ import InputText from 'components/InputText'
 import useClipboardWatcher from 'hooks/useClipboardWatcher'
 import useScrollHandler, { ScrollState } from 'hooks/browser/useScrollHandler'
 import useRecentWalletHack, {
-  InjectedJavascriptReturnType
-} from 'hooks/browser/useRecentWalletHack'
+  GetDescriptionAndFavicon
+} from 'hooks/browser/useInjectedJavascript'
 import { useAnalytics } from 'hooks/useAnalytics'
 import { updateMetadataForActiveTab } from 'store/browser/slices/globalHistory'
 import { normalizeUrlWithHttps } from './utils'
@@ -31,7 +31,8 @@ export default function Browser({
   const [urlToLoad, setUrlToLoad] = useState('')
   const clipboard = useClipboardWatcher()
   const { scrollState, onScrollHandler } = useScrollHandler()
-  const { injectedJavascript } = useRecentWalletHack()
+  const { injectCoreAsRecent, injectGetDescriptionAndFavicon } =
+    useRecentWalletHack()
   const activeHistory = useSelector(selectActiveHistory)
   const webViewRef = useRef<WebView>(null)
   const { capture } = useAnalytics()
@@ -78,7 +79,7 @@ export default function Browser({
       <WebView
         ref={webViewRef}
         pullToRefreshEnabled={true}
-        injectedJavaScript={injectedJavascript}
+        injectedJavaScript={injectGetDescriptionAndFavicon + injectCoreAsRecent}
         source={{ uri: urlToLoad }}
         setSupportMultipleWindows={false}
         onScroll={onScrollHandler}
@@ -90,7 +91,8 @@ export default function Browser({
         }}
         onLoad={event => {
           if (event.nativeEvent.url.startsWith('about:blank')) return
-          const includeDescriptionAndFavicon = description && favicon
+          const includeDescriptionAndFavicon =
+            description !== '' && favicon !== 'null'
           const history: AddHistoryPayload = includeDescriptionAndFavicon
             ? {
                 title: event.nativeEvent.title,
@@ -105,7 +107,7 @@ export default function Browser({
         onMessage={event => {
           const parsedJson = JSON.parse(
             event.nativeEvent.data
-          ) as InjectedJavascriptReturnType
+          ) as GetDescriptionAndFavicon
 
           if (parsedJson.favicon || parsedJson.description) {
             setFavicon(parsedJson.favicon)
