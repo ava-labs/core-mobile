@@ -9,6 +9,7 @@ import { BrowserScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
 import { selectActiveHistory } from 'store/browser/slices/tabs'
 import { useAnalytics } from 'hooks/useAnalytics'
+import { isValidUrl } from '../utils'
 
 enum MenuId {
   Favorite = 'favorite',
@@ -107,11 +108,24 @@ export const DockMenu: FC<Props> = ({
           }
           case MenuId.Favorite: {
             capture('BrowserAddToFavoriteTapped')
+            let favicon: string | undefined
+            const activeHistoryUrl = new URL(activeHistory?.url ?? '')
+            const activeHistoryDomain =
+              activeHistoryUrl.protocol + '//' + activeHistoryUrl.hostname
+
+            if (activeHistory?.favicon) {
+              if (isValidUrl(activeHistory.favicon)) {
+                favicon = activeHistory.favicon
+              } else {
+                favicon = activeHistoryDomain + activeHistory.favicon
+              }
+            }
+
             dispatch(
               addFavorite({
-                favicon: '', // get from current html metadta
-                title: '', // get from current html metadta
-                description: '', // get from current html metadta
+                favicon,
+                title: activeHistory?.title ?? '',
+                description: activeHistory?.description ?? '',
                 url: activeHistory?.url ?? ''
               })
             )

@@ -13,8 +13,11 @@ import { AddHistoryPayload } from 'store/browser'
 import InputText from 'components/InputText'
 import useClipboardWatcher from 'hooks/useClipboardWatcher'
 import useScrollHandler, { ScrollState } from 'hooks/browser/useScrollHandler'
-import useRecentWalletHack from 'hooks/browser/useRecentWalletHack'
+import useRecentWalletHack, {
+  GetDescriptionAndFavicon
+} from 'hooks/browser/useInjectedJavascript'
 import { useAnalytics } from 'hooks/useAnalytics'
+import { updateMetadataForActiveTab } from 'store/browser/slices/globalHistory'
 import { normalizeUrlWithHttps } from './utils'
 
 export default function Browser({
@@ -28,10 +31,13 @@ export default function Browser({
   const [urlToLoad, setUrlToLoad] = useState('')
   const clipboard = useClipboardWatcher()
   const { scrollState, onScrollHandler } = useScrollHandler()
-  const { injectCoreAsRecent } = useRecentWalletHack()
+  const { injectCoreAsRecent, injectGetDescriptionAndFavicon } =
+    useRecentWalletHack()
   const activeHistory = useSelector(selectActiveHistory)
   const webViewRef = useRef<WebView>(null)
+  const [favicon, setFavicon] = useState<string | undefined>(undefined)
   const { capture } = useAnalytics()
+  const [description, setDescription] = useState('')
 
   function handleUrlSubmit(): void {
     capture('BrowserSearchSubmitted')
@@ -73,7 +79,7 @@ export default function Browser({
       <WebView
         ref={webViewRef}
         pullToRefreshEnabled={true}
-        injectedJavaScript={injectCoreAsRecent}
+        injectedJavaScript={injectGetDescriptionAndFavicon + injectCoreAsRecent}
         source={{ uri: urlToLoad }}
         setSupportMultipleWindows={false}
         onScroll={onScrollHandler}
@@ -85,17 +91,39 @@ export default function Browser({
         }}
         onLoad={event => {
           if (event.nativeEvent.url.startsWith('about:blank')) return
-          const history: AddHistoryPayload = {
-            title: event.nativeEvent.title,
-            url: event.nativeEvent.url
-          }
+          const includeDescriptionAndFavicon =
+            description !== '' && favicon !== undefined
+          const history: AddHistoryPayload = includeDescriptionAndFavicon
+            ? {
+                title: event.nativeEvent.title,
+                url: event.nativeEvent.url,
+                description,
+                favicon
+              }
+            : { title: event.nativeEvent.title, url: event.nativeEvent.url }
           dispatch(addHistoryForActiveTab(history))
           setUrlEntry(event.nativeEvent.url)
         }}
-        onMessage={() =>
+        onMessage={event => {
+          const parsedJson = JSON.parse(
+            event.nativeEvent.data
+          ) as GetDescriptionAndFavicon
+
+          if (parsedJson.favicon || parsedJson.description) {
+            setFavicon(parsedJson.favicon)
+            setDescription(parsedJson.description)
+            dispatch(
+              updateMetadataForActiveTab({
+                url: event.nativeEvent.url,
+                favicon: parsedJson.favicon,
+                description: parsedJson.description
+              })
+            )
+          }
+
           //do not remove this listener, https://github.com/react-native-webview/react-native-webview/blob/master/docs/Reference.md#injectedjavascript
           Logger.trace('WebView onMessage')
-        }
+        }}
       />
     </View>
   )
