@@ -35,9 +35,19 @@ export const DockMenu: FC<Props> = ({
   const activeHistory = useSelector(selectActiveHistory)
 
   const onShare = async (): Promise<void> => {
-    await ShareApi.share({
-      url: activeHistory?.url ?? ''
-    })
+    const linkToShare = activeHistory?.url
+    if (linkToShare) {
+      const content =
+        Platform.OS === 'ios'
+          ? {
+              url: linkToShare
+            }
+          : {
+              message: linkToShare
+            }
+
+      await ShareApi.share(content)
+    }
   }
 
   const favoriteIcon = isFavorited
