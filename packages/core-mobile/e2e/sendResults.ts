@@ -150,6 +150,7 @@ async function generatePlatformResults(
       result => result.platform === platform
     )
     try {
+      console.log('Grabbing the existing test cases from the run...')
       const existingTestCases = await getTestCasesFromRun(runID)
       // Adds the existing test case results to the results array so they are not overwritten in testrail when using the updateRun endpoint
       for (let j = 0; j < resultArray.length; j++) {
