@@ -173,6 +173,7 @@ async function generatePlatformResults(
         include_all: false,
         case_ids: uniqueCaseIdArray
       }
+      console.log('The test case payload is ' + JSON.stringify(testCasePayload))
       // Takes the array of test cases and adds them to the test run
       await api.updateRun(runID, testCasePayload)
       console.log(
