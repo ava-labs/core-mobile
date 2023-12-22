@@ -178,6 +178,6 @@ export type AnalyticsEvents = {
   BrowserContextualMenuOpened: undefined
   BrowserShareTapped: undefined
   BrowserViewHistoryTapped: undefined
-  BrowserWalletConnectedToDapp: { dAppUrl: string }
-  BrowserTxSubmittedToDapp: { dAppUrl: string }
+  WalletConnectedToDapp: { dAppUrl: string }
+  TxSubmittedToDapp: undefined
 }
