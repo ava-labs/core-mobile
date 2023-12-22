@@ -108,7 +108,7 @@ export const DockMenu: FC<Props> = ({
           }
           case MenuId.Favorite: {
             capture('BrowserAddToFavoriteTapped')
-            let favicon = 'null'
+            let favicon: string | undefined
             const activeHistoryUrl = new URL(activeHistory?.url ?? '')
             const activeHistoryDomain =
               activeHistoryUrl.protocol + '//' + activeHistoryUrl.hostname

@@ -35,8 +35,8 @@ export default function Browser({
     useRecentWalletHack()
   const activeHistory = useSelector(selectActiveHistory)
   const webViewRef = useRef<WebView>(null)
+  const [favicon, setFavicon] = useState<string | undefined>(undefined)
   const { capture } = useAnalytics()
-  const [favicon, setFavicon] = useState('null')
   const [description, setDescription] = useState('')
 
   function handleUrlSubmit(): void {
@@ -92,7 +92,7 @@ export default function Browser({
         onLoad={event => {
           if (event.nativeEvent.url.startsWith('about:blank')) return
           const includeDescriptionAndFavicon =
-            description !== '' && favicon !== 'null'
+            description !== '' && favicon !== undefined
           const history: AddHistoryPayload = includeDescriptionAndFavicon
             ? {
                 title: event.nativeEvent.title,

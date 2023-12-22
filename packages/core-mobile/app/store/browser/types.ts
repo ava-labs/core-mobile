@@ -48,10 +48,10 @@ export type BrowserState = {
 
 export type Favorite = {
   id: FavoriteId
-  favicon: string //url to favicon
   title: string //title grabbed from html metadata
   description: string //description grabbed from html metadata
   url: string
+  favicon?: string //url to favicon
 }
 
 export type FavoriteState = EntityState<Favorite>
