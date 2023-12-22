@@ -38,6 +38,9 @@ export default function useScrollHandler(): {
           : setScrollState(ScrollState.up)
       }
       lastY = event.nativeEvent.contentOffset.y
+      if (lastY < 0) {
+        lastY = 0
+      }
     }
   }, [])
 
