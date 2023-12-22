@@ -2,7 +2,12 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { createHash } from 'utils/createHash'
 import { RootState } from 'store'
 import { getUnixTime } from 'date-fns'
-import { History, HistoryId, HistoryState } from '../types'
+import {
+  History,
+  HistoryId,
+  HistoryState,
+  UpdateHistoryPayload
+} from '../types'
 import { historyAdapter } from '../utils'
 import { MAXIMUM_HISTORIES } from '../const'
 import { addHistoryForActiveTab } from './tabs'
@@ -23,6 +28,18 @@ const globalHistorySlice = createSlice({
       action: PayloadAction<{ historyId: HistoryId }>
     ) => {
       historyAdapter.removeOne(state, action.payload.historyId)
+    },
+    updateMetadataForActiveTab: (
+      state: HistoryState,
+      action: PayloadAction<UpdateHistoryPayload>
+    ) => {
+      historyAdapter.updateOne(state, {
+        id: createHash(action.payload.url),
+        changes: {
+          favicon: action.payload.favicon,
+          description: action.payload.description
+        }
+      })
     }
   },
   extraReducers: builder => {
@@ -63,6 +80,7 @@ export const selectAllHistories = (state: RootState): History[] => {
 }
 
 // actions
-export const { removeAllHistories, removeHistory } = globalHistorySlice.actions
+export const { removeAllHistories, removeHistory, updateMetadataForActiveTab } =
+  globalHistorySlice.actions
 
 export const globalHistoryReducer = globalHistorySlice.reducer
