@@ -9,6 +9,7 @@ import { BrowserScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
 import { selectActiveHistory } from 'store/browser/slices/tabs'
 import { useAnalytics } from 'hooks/useAnalytics'
+import Logger from 'utils/Logger'
 import { isValidUrl } from '../utils'
 
 enum MenuId {
@@ -109,6 +110,12 @@ export const DockMenu: FC<Props> = ({
           case MenuId.Favorite: {
             capture('BrowserAddToFavoriteTapped')
             let favicon: string | undefined
+
+            if (!isValidUrl(activeHistory?.url ?? '')) {
+              Logger.error('Invalid URL')
+              return
+            }
+
             const activeHistoryUrl = new URL(activeHistory?.url ?? '')
             const activeHistoryDomain =
               activeHistoryUrl.protocol + '//' + activeHistoryUrl.hostname
