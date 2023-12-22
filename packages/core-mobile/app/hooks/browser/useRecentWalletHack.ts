@@ -1,10 +1,16 @@
 export type RecentWalletHackScripts = {
-  injectCoreAsRecent: string
+  injectedJavascript: string
   /**
    * Use injectLogRecentWallet if you need to find out what is stored in localStorage under WCM_RECENT_WALLET_DATA key.
    * To use it put this string into WebView.injectedJavaScript, and watch for messages in WebView.onMessage
    */
   injectLogRecentWallet: string
+}
+
+export type InjectedJavascriptReturnType = {
+  favicon: string
+  description: string
+  recentWallet: string
 }
 
 /**
@@ -57,11 +63,34 @@ export default function useRecentWalletHack(): RecentWalletHackScripts {
     };
   `
 
-  const injectCoreAsRecent = `(async function(){ 
+  // inject Core as recent wallet
+  // grab favicon and description from html
+  const injectedJavascript = `(async function(){ 
     const wallet = ${coreMobileWalletConnectObject}
     window.localStorage.setItem('WCM_RECENT_WALLET_DATA', JSON.stringify(wallet));
     const recentWallet = window.localStorage.getItem('WCM_RECENT_WALLET_DATA');
-    window.ReactNativeWebView.postMessage(recentWallet)
+
+    let description = '';
+    let favicon = 'null';
+    const metas = document.getElementsByTagName('meta');
+    for (let i = 0; i < metas.length; i++) {
+      if (metas[i].getAttribute('name') === 'description') {
+        description = metas[i].getAttribute('content');
+      }
+    }
+    var nodeList = document.getElementsByTagName("link");
+    for (var i = 0; i < nodeList.length; i++) {
+      if (nodeList[i].getAttribute("rel") === "apple-touch-icon" && favicon === "null") {
+        favicon = nodeList[i].getAttribute("href");
+      } else if (nodeList[i].getAttribute("rel") === "shortcut icon" && favicon === "null") {
+        favicon = nodeList[i].getAttribute("href");
+      } else if (nodeList[i].getAttribute("rel") === "icon shortcut" && favicon === "null") {
+        favicon = nodeList[i].getAttribute("href");
+      } else if (nodeList[i].getAttribute("rel") === "icon" && favicon === "null") {
+        favicon = nodeList[i].getAttribute("href");
+      }
+    }
+    window.ReactNativeWebView.postMessage(JSON.stringify({favicon, description, recentWallet}));
   })();`
 
   const injectLogRecentWallet = `(async function(){
@@ -76,7 +105,7 @@ export default function useRecentWalletHack(): RecentWalletHackScripts {
   })();`
 
   return {
-    injectCoreAsRecent,
+    injectedJavascript,
     injectLogRecentWallet
   }
 }
