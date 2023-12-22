@@ -574,7 +574,7 @@ export async function getTestCasesFromRun(runId: number): Promise<object[]> {
       status_id: testResult
     })
   }
-  console.log(titleArray, ' this is the title array')
+  console.log(JSON.stringify(titleArray), ' this is the title array')
   return titleArray
 }
 
