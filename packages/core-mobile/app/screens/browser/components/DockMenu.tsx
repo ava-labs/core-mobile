@@ -8,6 +8,7 @@ import { useNavigation } from '@react-navigation/native'
 import { BrowserScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
 import { selectActiveHistory } from 'store/browser/slices/tabs'
+import { useAnalytics } from 'hooks/useAnalytics'
 
 enum MenuId {
   Favorite = 'favorite',
@@ -33,6 +34,7 @@ export const DockMenu: FC<Props> = ({
   const dispatch = useDispatch()
   const { navigate } = useNavigation<TabViewNavigationProp>()
   const activeHistory = useSelector(selectActiveHistory)
+  const { capture } = useAnalytics()
 
   const onShare = async (): Promise<void> => {
     const linkToShare = activeHistory?.url
@@ -95,13 +97,16 @@ export const DockMenu: FC<Props> = ({
       onPressAction={({ nativeEvent }) => {
         switch (nativeEvent.event) {
           case MenuId.Share:
+            capture('BrowserShareTapped')
             onShare()
             break
           case MenuId.History: {
+            capture('BrowserViewHistoryTapped')
             navigate(AppNavigation.Browser.History)
             break
           }
           case MenuId.Favorite: {
+            capture('BrowserAddToFavoriteTapped')
             dispatch(
               addFavorite({
                 favicon: '', // get from current html metadta

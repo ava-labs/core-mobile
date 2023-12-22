@@ -20,6 +20,15 @@ export const useDappConnectionV2 = (): {
 
   const onUserApproved = useCallback(
     (request: Request, data?: unknown) => {
+      if (request.method === 'session_request') {
+        capture('WalletConnectedToDapp', {
+          // @ts-ignore
+          dAppUrl: request.data?.verifyContext?.verified?.origin ?? ''
+        })
+      } else {
+        capture('TxSubmittedToDapp')
+      }
+
       dispatch(
         onRequestApproved({
           request,
@@ -27,7 +36,7 @@ export const useDappConnectionV2 = (): {
         })
       )
     },
-    [dispatch]
+    [capture, dispatch]
   )
 
   const onUserRejected = useCallback(

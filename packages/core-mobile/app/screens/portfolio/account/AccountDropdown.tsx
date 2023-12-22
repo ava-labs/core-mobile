@@ -55,6 +55,7 @@ function AccountDropdown({
   }, [animTranslateY, goBack])
 
   function onSelectAccount(accountIndex: number): void {
+    capture('AccountSelectorAccountSwitched', { accountIndex })
     dispatch(setActiveAccountIndex(accountIndex))
     animatedDismiss()
   }

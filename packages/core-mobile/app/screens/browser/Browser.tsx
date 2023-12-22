@@ -14,6 +14,7 @@ import InputText from 'components/InputText'
 import useClipboardWatcher from 'hooks/useClipboardWatcher'
 import useScrollHandler, { ScrollState } from 'hooks/browser/useScrollHandler'
 import useRecentWalletHack from 'hooks/browser/useRecentWalletHack'
+import { useAnalytics } from 'hooks/useAnalytics'
 import { normalizeUrlWithHttps } from './utils'
 
 export default function Browser({
@@ -30,8 +31,10 @@ export default function Browser({
   const { injectCoreAsRecent } = useRecentWalletHack()
   const activeHistory = useSelector(selectActiveHistory)
   const webViewRef = useRef<WebView>(null)
+  const { capture } = useAnalytics()
 
   function handleUrlSubmit(): void {
+    capture('BrowserSearchSubmitted')
     setUrlToLoad(normalizeUrlWithHttps(urlEntry))
   }
 
