@@ -179,8 +179,9 @@ const tabSlice = createSlice({
 })
 
 // selectors
-export const selectIsTabEmpty = (state: RootState): boolean =>
-  tabAdapter.getSelectors().selectAll(state.browser.tabs).length === 0
+export const selectIsTabEmpty = (state: RootState): boolean => {
+  return (selectActiveTab(state)?.activeHistoryIndex ?? -1) === -1
+}
 
 export const selectAllTabs = (state: RootState): Tab[] =>
   tabAdapter.getSelectors().selectAll(state.browser.tabs)
@@ -192,7 +193,7 @@ export const selectTab =
 
 export const selectCanGoBack = (state: RootState): boolean => {
   const activeTab = selectActiveTab(state)
-  return !!activeTab && activeTab.activeHistoryIndex > 0
+  return !!activeTab && activeTab.activeHistoryIndex >= 0
 }
 
 export const selectCanGoForward = (state: RootState): boolean => {
