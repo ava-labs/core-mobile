@@ -12,6 +12,7 @@ import {
   removeAllHistories,
   removeHistory
 } from 'store/browser/slices/globalHistory'
+import { trimTrailingSlash } from 'utils/string/trimTrailingSlash'
 import {
   AddHistoryPayload,
   History,
@@ -66,6 +67,7 @@ const tabSlice = createSlice({
       const lastVisited = getUnixTime(new Date())
 
       const historyPayload = action.payload
+      historyPayload.url = trimTrailingSlash(historyPayload.url)
       const historyId = createHash(historyPayload.url)
       const history = {
         id: historyId,
