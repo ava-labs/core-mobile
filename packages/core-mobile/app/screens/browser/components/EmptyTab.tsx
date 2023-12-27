@@ -20,6 +20,7 @@ import useScrollHandler, { ScrollState } from 'hooks/browser/useScrollHandler'
 import { useSearchHistory } from 'hooks/browser/useSearchHistory'
 import { Dimensions } from 'react-native'
 import { useAnalytics } from 'hooks/useAnalytics'
+import { useGoogleSearch } from 'hooks/browser/useGoogleSearch'
 import { isValidHttpUrl, normalizeUrlWithHttps } from '../utils'
 import { FavoritesAndSuggestions } from './FavoritesAndSuggestions'
 import { HistoryListItem } from './HistoryListItem'
@@ -40,6 +41,7 @@ export const EmptyTab = ({
   const [isFocused, setIsFocused] = useState(false)
   const { navigate } = useNavigation<NavigationProp>()
   const { scrollState, onScrollHandler } = useScrollHandler()
+  const { searchGoogle } = useGoogleSearch()
   const {
     searchText,
     setSearchText,
@@ -63,17 +65,6 @@ export const EmptyTab = ({
     navigate(AppNavigation.Browser.ClearAllHistory)
   }
 
-  const handleGoogleSearch = (): void => {
-    const url =
-      'https://www.google.com/search?q=' + encodeURIComponent(trimmedSearchText)
-    const history: AddHistoryPayload = {
-      title: trimmedSearchText,
-      url
-    }
-    dispatch(addHistoryForActiveTab(history))
-    navigate(AppNavigation.Browser.TabView)
-  }
-
   const handleSearchBarSubmit = (): void => {
     capture('BrowserSearchSubmitted')
 
@@ -86,7 +77,7 @@ export const EmptyTab = ({
       dispatch(addHistoryForActiveTab(history))
       navigate(AppNavigation.Browser.TabView)
     } else {
-      handleGoogleSearch()
+      searchGoogle(trimmedSearchText)
     }
   }
 
@@ -98,7 +89,7 @@ export const EmptyTab = ({
         <Pressable
           onPress={() => {
             capture('BrowserSearchSubmitted')
-            handleGoogleSearch()
+            searchGoogle(trimmedSearchText)
           }}>
           {(isSearching || trimmedSearchText.length > 0) && (
             <View sx={{ flexDirection: 'row', alignItems: 'center' }}>

@@ -18,7 +18,8 @@ import useRecentWalletHack, {
 } from 'hooks/browser/useInjectedJavascript'
 import { useAnalytics } from 'hooks/useAnalytics'
 import { updateMetadataForActiveTab } from 'store/browser/slices/globalHistory'
-import { normalizeUrlWithHttps } from './utils'
+import { useGoogleSearch } from 'hooks/browser/useGoogleSearch'
+import { isValidHttpUrl, normalizeUrlWithHttps } from './utils'
 
 export default function Browser({
   onNewScrollState
@@ -38,10 +39,16 @@ export default function Browser({
   const [favicon, setFavicon] = useState<string | undefined>(undefined)
   const { capture } = useAnalytics()
   const [description, setDescription] = useState('')
+  const { searchGoogle } = useGoogleSearch()
 
   function handleUrlSubmit(): void {
     capture('BrowserSearchSubmitted')
-    setUrlToLoad(normalizeUrlWithHttps(urlEntry))
+    const normalized = normalizeUrlWithHttps(urlEntry)
+    if (isValidHttpUrl(normalized)) {
+      setUrlToLoad(normalized)
+    } else {
+      searchGoogle(normalized)
+    }
   }
 
   useEffect(() => {
