@@ -1,6 +1,6 @@
-export function trimTrailingSlash<T extends string | undefined>(input: T): T {
-  if (input?.endsWith('/')) {
-    return input.slice(0, -1) as T
+export function trimTrailingSlash(input: string): string {
+  if (input.endsWith('/')) {
+    return input.slice(0, -1)
   }
   return input
 }
