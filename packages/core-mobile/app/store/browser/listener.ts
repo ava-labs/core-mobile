@@ -24,7 +24,7 @@ const updateActiveHistory = (
     browserAction === 'forward'
       ? activeHistoryIndex + 1
       : activeHistoryIndex - 1
-  if (activeHistoryIndex === -2) return
+  if (newActiveHistoryIndex === -2) return
 
   const historyId = activeTab?.historyIds[newActiveHistoryIndex]
   if (newActiveHistoryIndex !== -1 && !historyId) return
