@@ -49,6 +49,18 @@ describe('normalizeUrlWithHttps', () => {
     const result = normalizeUrlWithHttps(url)
     expect(result).toStrictEqual('https://core.app')
   })
+
+  it('should return same input if result is not valid url', () => {
+    const url = 'core app'
+    const result = normalizeUrlWithHttps(url)
+    expect(result).toEqual(url)
+  })
+
+  it('should convert http to https', () => {
+    const url = 'http://core.app'
+    const result = normalizeUrlWithHttps(url)
+    expect(result).toEqual('https://core.app')
+  })
 })
 
 describe('isValidUrl', () => {

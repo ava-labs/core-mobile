@@ -39,8 +39,16 @@ export function isValidHttpUrl(url: string): boolean {
   return urlObj.protocol === 'http:' || urlObj.protocol === 'https:'
 }
 
+/**
+ * Converts http to https protocol, or if protocol is missing adds https.
+ * For invalid url-s returns same as input.
+ */
 export function normalizeUrlWithHttps(url: string): string {
-  if (isValidUrl(url)) return url
+  let normalized = url.replaceAll('http:', 'https:')
+  if (!normalized.startsWith('https')) {
+    normalized = `https://${url}`
+  }
+  if (isValidHttpUrl(normalized)) return normalized
 
-  return `https://${url}`
+  return url
 }
