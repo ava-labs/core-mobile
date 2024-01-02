@@ -8,10 +8,12 @@ type NavigationProp = BrowserScreenProps<
   typeof AppNavigation.Browser.TabView
 >['navigation']
 
-export function useGoogleSearch(): { searchGoogle: (input: string) => void } {
+export function useGoogleSearch(): {
+  navigateToGoogleSearchResult: (input: string) => void
+} {
   const dispatch = useDispatch()
   const { navigate } = useNavigation<NavigationProp>()
-  const searchGoogle = (input: string): void => {
+  const navigateToGoogleSearchResult = (input: string): void => {
     const url = 'https://www.google.com/search?q=' + encodeURIComponent(input)
     const history: AddHistoryPayload = {
       title: input,
@@ -21,5 +23,5 @@ export function useGoogleSearch(): { searchGoogle: (input: string) => void } {
     navigate(AppNavigation.Browser.TabView)
   }
 
-  return { searchGoogle }
+  return { navigateToGoogleSearchResult }
 }

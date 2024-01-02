@@ -41,7 +41,7 @@ export const EmptyTab = ({
   const [isFocused, setIsFocused] = useState(false)
   const { navigate } = useNavigation<NavigationProp>()
   const { scrollState, onScrollHandler } = useScrollHandler()
-  const { searchGoogle } = useGoogleSearch()
+  const { navigateToGoogleSearchResult } = useGoogleSearch()
   const {
     searchText,
     setSearchText,
@@ -77,7 +77,7 @@ export const EmptyTab = ({
       dispatch(addHistoryForActiveTab(history))
       navigate(AppNavigation.Browser.TabView)
     } else {
-      searchGoogle(trimmedSearchText)
+      navigateToGoogleSearchResult(trimmedSearchText)
     }
   }
 
@@ -89,7 +89,7 @@ export const EmptyTab = ({
         <Pressable
           onPress={() => {
             capture('BrowserSearchSubmitted')
-            searchGoogle(trimmedSearchText)
+            navigateToGoogleSearchResult(trimmedSearchText)
           }}>
           {(isSearching || trimmedSearchText.length > 0) && (
             <View sx={{ flexDirection: 'row', alignItems: 'center' }}>

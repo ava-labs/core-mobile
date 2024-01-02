@@ -39,7 +39,7 @@ export default function Browser({
   const [favicon, setFavicon] = useState<string | undefined>(undefined)
   const { capture } = useAnalytics()
   const [description, setDescription] = useState('')
-  const { searchGoogle } = useGoogleSearch()
+  const { navigateToGoogleSearchResult } = useGoogleSearch()
 
   function handleUrlSubmit(): void {
     capture('BrowserSearchSubmitted')
@@ -47,7 +47,7 @@ export default function Browser({
     if (isValidHttpUrl(normalized)) {
       setUrlToLoad(normalized)
     } else {
-      searchGoogle(normalized)
+      navigateToGoogleSearchResult(normalized)
     }
   }
 
