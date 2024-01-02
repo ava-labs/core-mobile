@@ -50,7 +50,7 @@ describe('normalizeUrlWithHttps', () => {
     expect(result).toStrictEqual('https://core.app')
   })
 
-  it('should return sam input if result is not valid url', () => {
+  it('should return same input if result is not valid url', () => {
     const url = 'core app'
     const result = normalizeUrlWithHttps(url)
     expect(result).toEqual(url)
