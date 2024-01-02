@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { selectActiveTab } from 'store/browser/slices/tabs'
+import { selectActiveTab, selectIsTabEmpty } from 'store/browser/slices/tabs'
 import Browser from 'screens/browser/Browser'
 import { Dock } from 'screens/browser/components/Dock'
 import { ScrollState } from 'hooks/browser/useScrollHandler'
@@ -14,7 +14,7 @@ import { updateSnapshotTimestamp } from 'store/snapshots/slice'
 
 export default function TabViewScreen(): JSX.Element {
   const activeTab = useSelector(selectActiveTab)
-  const showEmptyTab = (activeTab?.historyIds?.length ?? 0) === 0
+  const showEmptyTab = useSelector(selectIsTabEmpty)
   const showWebView = !showEmptyTab
   const [dockVisible, setDockVisible] = useState(true)
   const viewShotRef = useRef<ViewShot>(null)
