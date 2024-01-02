@@ -1,4 +1,4 @@
-import React, { FC } from 'react'
+import React, { FC, useMemo } from 'react'
 import { MenuView } from '@react-native-menu/menu'
 import { Platform, Share as ShareApi } from 'react-native'
 import { useTheme } from '@avalabs/k2-mobile'
@@ -54,25 +54,15 @@ export const DockMenu: FC<Props> = ({
     }
   }
 
-  const favoriteIcon = isFavorited
-    ? { ios: 'star.fill', android: 'star_fill_24px' }
-    : { ios: 'star', android: 'star_24px' }
+  const menuActions = useMemo(() => {
+    const favoriteIcon = isFavorited
+      ? { ios: 'star.fill', android: 'star_fill_24px' }
+      : { ios: 'star', android: 'star_24px' }
 
-  const menuActionColor =
-    Platform.OS === 'android' ? colors.$white : colors.$black
+    const menuActionColor =
+      Platform.OS === 'android' ? colors.$white : colors.$black
 
-  const menuActions = [
-    {
-      id: MenuId.Favorite,
-      title: 'Mark as Favorite',
-      image: Platform.select({
-        ios: favoriteIcon.ios,
-        android: favoriteIcon.android
-      }),
-      titleColor: menuActionColor,
-      imageColor: menuActionColor
-    },
-    {
+    const historyAction = {
       id: MenuId.History,
       title: 'View History',
       image: Platform.select({
@@ -81,8 +71,20 @@ export const DockMenu: FC<Props> = ({
       }),
       titleColor: menuActionColor,
       imageColor: menuActionColor
-    },
-    {
+    }
+
+    const favoriteAction = {
+      id: MenuId.Favorite,
+      title: 'Mark as Favorite',
+      image: Platform.select({
+        ios: favoriteIcon.ios,
+        android: favoriteIcon.android
+      }),
+      titleColor: menuActionColor,
+      imageColor: menuActionColor
+    }
+
+    const shareAction = {
       id: MenuId.Share,
       title: 'Share',
       image: Platform.select({
@@ -92,7 +94,13 @@ export const DockMenu: FC<Props> = ({
       titleColor: menuActionColor,
       imageColor: menuActionColor
     }
-  ]
+
+    if (activeHistory) {
+      return [favoriteAction, historyAction, shareAction]
+    } else {
+      return [historyAction]
+    }
+  }, [activeHistory, colors, isFavorited])
 
   return (
     <MenuView
