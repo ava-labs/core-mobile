@@ -29,6 +29,10 @@ export function isValidUrl(url: string): boolean {
 }
 
 export function isValidHttpUrl(url: string): boolean {
+  //urls such as http://core we will discard, it must have at least one dot
+  const basicHttpUrlRegex = new RegExp('[^ ]*[.][^ ]*', 'i')
+  if (!basicHttpUrlRegex.test(url)) return false
+
   let urlObj
   try {
     urlObj = new URL(url)

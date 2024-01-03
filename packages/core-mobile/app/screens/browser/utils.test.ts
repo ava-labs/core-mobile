@@ -51,8 +51,16 @@ describe('normalizeUrlWithHttps', () => {
   })
 
   it('should return same input if result is not valid url', () => {
-    const url = 'core app'
-    const result = normalizeUrlWithHttps(url)
+    let url = 'core app'
+    let result = normalizeUrlWithHttps(url)
+    expect(result).toEqual(url)
+
+    url = 'coreapp'
+    result = normalizeUrlWithHttps(url)
+    expect(result).toEqual(url)
+
+    url = 'http://coreapp'
+    result = normalizeUrlWithHttps(url)
     expect(result).toEqual(url)
   })
 
