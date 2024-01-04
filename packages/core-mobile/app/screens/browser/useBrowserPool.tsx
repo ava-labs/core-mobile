@@ -38,41 +38,39 @@ function useBrowserPool(onNewScrollState: (scrollState: ScrollState) => void): {
 
   // Add or update pool item for the active tab
   useLayoutEffect(() => {
-    if (!activeTab) return
+    if (!activeTab || !activeTab.activeHistory) return
 
     setPoolItems(prevPoolItems => {
       const index = prevPoolItems.findIndex(
         poolItem => poolItem.tab.id === activeTab.id
       )
 
-      let updatedPoolItems = [...prevPoolItems]
-
       if (index === -1) {
-        if (updatedPoolItems.length >= MAX_POOL_SIZE) {
+        if (prevPoolItems.length >= MAX_POOL_SIZE) {
           // Remove least recently visited pool item
-          updatedPoolItems = updatedPoolItems.slice(1)
+          prevPoolItems = prevPoolItems.slice(1)
         }
 
         // Add new pool item
-        updatedPoolItems.push({
+        prevPoolItems.push({
           tab: activeTab,
           browser: (
             <Browser tabId={activeTab.id} onNewScrollState={onNewScrollState} />
           )
         })
       } else {
-        const cachedBrowser = updatedPoolItems[index]?.browser
+        const cachedBrowser = prevPoolItems[index]?.browser
         if (cachedBrowser) {
-          // Update existing pool item
-          updatedPoolItems[index] = {
+          prevPoolItems.splice(index, 1)
+          prevPoolItems.push({
             tab: activeTab,
             browser: cachedBrowser
-          }
+          })
         }
       }
 
       // Sort pool items based on lastVisited, for LRU behavior
-      return sortTabViewPoolItems(updatedPoolItems)
+      return sortTabViewPoolItems(prevPoolItems)
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab])
