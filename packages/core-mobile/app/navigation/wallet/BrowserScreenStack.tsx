@@ -3,7 +3,6 @@ import AppNavigation from 'navigation/AppNavigation'
 import { createStackNavigator } from '@react-navigation/stack'
 import TopNavigationHeader from 'navigation/TopNavigationHeader'
 import { noop } from '@avalabs/utils-sdk'
-import TabViewScreen from 'screens/browser/TabViewScreen'
 import { useNavigation } from '@react-navigation/native'
 import { BrowserScreenProps } from 'navigation/types'
 import { useSelector } from 'react-redux'
@@ -18,6 +17,7 @@ import SearchIcon from 'assets/icons/search.svg'
 import { useTheme } from '@avalabs/k2-mobile'
 import { ClearAllHistoryModal } from 'screens/browser/ClearAllHistoryModal'
 import { useAnalytics } from 'hooks/useAnalytics'
+import useTabPool from 'screens/browser/useTabPool'
 
 export type BrowserStackParamList = {
   [AppNavigation.Browser.Intro]: undefined
@@ -117,11 +117,12 @@ type TabViewScreenProps = BrowserScreenProps<
   typeof AppNavigation.Browser.TabView
 >
 
-function TabView(): JSX.Element {
+function TabView(): JSX.Element | null {
   const hasBeenViewedBrowser = useSelector(
     selectHasBeenViewedOnce(ViewOnceKey.BROWSER_INTERACTION)
   )
   const { navigate } = useNavigation<TabViewScreenProps['navigation']>()
+  const { activeTabViewScreen } = useTabPool()
 
   useEffect(() => {
     if (!hasBeenViewedBrowser) {
@@ -129,7 +130,7 @@ function TabView(): JSX.Element {
     }
   }, [hasBeenViewedBrowser, navigate])
 
-  return <TabViewScreen />
+  return activeTabViewScreen
 }
 
 function HistoryStub(): JSX.Element {

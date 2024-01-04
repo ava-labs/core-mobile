@@ -10,13 +10,14 @@ import {
   addTab,
   goBackward,
   goForward as goForwardInPage,
-  selectActiveHistory,
   selectAllTabs,
   selectCanGoBack,
-  selectCanGoForward
+  selectCanGoForward,
+  selectTab
 } from 'store/browser/slices/tabs'
 import { BlurBackground } from 'components/BlurBackground'
 import { useAnalytics } from 'hooks/useAnalytics'
+import { TabId } from 'store/browser'
 import { useHardwareBackHandler } from '../handleBrowserBack'
 import { DockMenu } from './DockMenu'
 import { TabIcon } from './TabIcon'
@@ -25,14 +26,14 @@ type TabViewNavigationProp = BrowserScreenProps<
   typeof AppNavigation.Browser.TabView
 >['navigation']
 
-export const Dock = (): JSX.Element => {
+export const Dock = ({ tabId }: { tabId: TabId }): JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
   const dispatch = useDispatch()
   const { navigate } = useNavigation<TabViewNavigationProp>()
   const totalTabs = useSelector(selectAllTabs).length
-  const activeHistory = useSelector(selectActiveHistory)
+  const activeHistory = useSelector(selectTab(tabId))?.activeHistory
   useHardwareBackHandler()
   const { capture } = useAnalytics()
 
@@ -111,7 +112,7 @@ export const Dock = (): JSX.Element => {
       </TouchableOpacity>
       <TabIcon numberOfTabs={totalTabs} onPress={navigateToTabList} />
       <TouchableOpacity onPress={() => capture('BrowserContextualMenuOpened')}>
-        <DockMenu isFavorited={isFavorited}>
+        <DockMenu isFavorited={isFavorited} history={activeHistory}>
           <Icons.Navigation.MoreHoriz
             color={colors.$neutral900}
             width={ICON_SIZE}

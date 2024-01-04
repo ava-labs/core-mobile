@@ -2,18 +2,19 @@ import React, { FC, useMemo } from 'react'
 import { MenuView } from '@react-native-menu/menu'
 import { Platform, Share as ShareApi } from 'react-native'
 import { useTheme } from '@avalabs/k2-mobile'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import { addFavorite } from 'store/browser/slices/favorites'
 import { useNavigation } from '@react-navigation/native'
 import { BrowserScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
-import { selectActiveHistory } from 'store/browser/slices/tabs'
 import { useAnalytics } from 'hooks/useAnalytics'
 import Logger from 'utils/Logger'
+import { History } from 'store/browser'
 import { isValidUrl } from '../utils'
 
 enum MenuId {
   Favorite = 'favorite',
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   History = 'history',
   Share = 'share'
 }
@@ -23,11 +24,13 @@ type TabViewNavigationProp = BrowserScreenProps<
 >['navigation']
 
 interface Props {
+  history?: History
   isFavorited?: boolean
 }
 
 export const DockMenu: FC<Props> = ({
   children,
+  history,
   isFavorited = false
 }): JSX.Element => {
   const {
@@ -35,11 +38,10 @@ export const DockMenu: FC<Props> = ({
   } = useTheme()
   const dispatch = useDispatch()
   const { navigate } = useNavigation<TabViewNavigationProp>()
-  const activeHistory = useSelector(selectActiveHistory)
   const { capture } = useAnalytics()
 
   const onShare = async (): Promise<void> => {
-    const linkToShare = activeHistory?.url
+    const linkToShare = history?.url
     if (linkToShare) {
       const content =
         Platform.OS === 'ios'
@@ -95,12 +97,12 @@ export const DockMenu: FC<Props> = ({
       imageColor: menuActionColor
     }
 
-    if (activeHistory) {
+    if (history) {
       return [favoriteAction, historyAction, shareAction]
     } else {
       return [historyAction]
     }
-  }, [activeHistory, colors, isFavorited])
+  }, [history, colors, isFavorited])
 
   return (
     <MenuView
@@ -119,29 +121,29 @@ export const DockMenu: FC<Props> = ({
             capture('BrowserAddToFavoriteTapped')
             let favicon: string | undefined
 
-            if (!isValidUrl(activeHistory?.url ?? '')) {
+            if (!isValidUrl(history?.url ?? '')) {
               Logger.error('Invalid URL')
               return
             }
 
-            const activeHistoryUrl = new URL(activeHistory?.url ?? '')
-            const activeHistoryDomain =
-              activeHistoryUrl.protocol + '//' + activeHistoryUrl.hostname
+            const historyUrl = new URL(history?.url ?? '')
+            const historyDomain =
+              historyUrl.protocol + '//' + historyUrl.hostname
 
-            if (activeHistory?.favicon) {
-              if (isValidUrl(activeHistory.favicon)) {
-                favicon = activeHistory.favicon
+            if (history?.favicon) {
+              if (isValidUrl(history.favicon)) {
+                favicon = history.favicon
               } else {
-                favicon = activeHistoryDomain + activeHistory.favicon
+                favicon = historyDomain + history.favicon
               }
             }
 
             dispatch(
               addFavorite({
                 favicon,
-                title: activeHistory?.title ?? '',
-                description: activeHistory?.description ?? '',
-                url: activeHistory?.url ?? ''
+                title: history?.title ?? '',
+                description: history?.description ?? '',
+                url: history?.url ?? ''
               })
             )
             // show toast message

@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { selectActiveTab, selectIsTabEmpty } from 'store/browser/slices/tabs'
+import { selectIsTabEmpty } from 'store/browser/slices/tabs'
 import Browser from 'screens/browser/Browser'
 import { Dock } from 'screens/browser/components/Dock'
 import { ScrollState } from 'hooks/browser/useScrollHandler'
@@ -12,21 +12,20 @@ import { TabId } from 'store/browser'
 import SnapshotService from 'services/snapshot/SnapshotService'
 import { updateSnapshotTimestamp } from 'store/snapshots/slice'
 
-export default function TabViewScreen(): JSX.Element {
-  const activeTab = useSelector(selectActiveTab)
+const TabViewScreen = React.memo(({ tabId }: { tabId: TabId }): JSX.Element => {
   const showEmptyTab = useSelector(selectIsTabEmpty)
   const showWebView = !showEmptyTab
   const [dockVisible, setDockVisible] = useState(true)
   const viewShotRef = useRef<ViewShot>(null)
   const dispatch = useDispatch()
   const takeSnapshot = useCallback(
-    async (tabId: TabId) => {
+    async (id: TabId) => {
       viewShotRef.current?.capture?.().then(async uri => {
-        await SnapshotService.saveAs(uri, tabId)
+        await SnapshotService.saveAs(uri, id)
 
         dispatch(
           updateSnapshotTimestamp({
-            id: tabId,
+            id: id,
             timestamp: Date.now()
           })
         )
@@ -49,23 +48,25 @@ export default function TabViewScreen(): JSX.Element {
   useFocusEffect(
     useCallback(() => {
       return () => {
-        if (activeTab?.id) {
-          takeSnapshot(activeTab.id)
-        }
+        takeSnapshot(tabId)
       }
-    }, [activeTab?.id, takeSnapshot])
+    }, [tabId, takeSnapshot])
   )
 
   return (
     <ViewShot
       ref={viewShotRef}
-      options={{ fileName: activeTab?.id, format: 'jpg', quality: 0.5 }}
+      options={{ fileName: tabId, format: 'jpg', quality: 0.5 }}
       style={{ flex: 1 }}>
       <View sx={{ flex: 1 }}>
         {showEmptyTab && <EmptyTab onNewScrollState={onNewScrollState} />}
-        {showWebView && <Browser onNewScrollState={onNewScrollState} />}
-        {dockVisible && <Dock />}
+        {showWebView && (
+          <Browser tabId={tabId} onNewScrollState={onNewScrollState} />
+        )}
+        {dockVisible && <Dock tabId={tabId} />}
       </View>
     </ViewShot>
   )
-}
+})
+
+export default TabViewScreen
