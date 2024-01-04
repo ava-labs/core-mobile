@@ -10,14 +10,13 @@ import {
   addTab,
   goBackward,
   goForward as goForwardInPage,
+  selectActiveTab,
   selectAllTabs,
   selectCanGoBack,
-  selectCanGoForward,
-  selectTab
+  selectCanGoForward
 } from 'store/browser/slices/tabs'
 import { BlurBackground } from 'components/BlurBackground'
 import { useAnalytics } from 'hooks/useAnalytics'
-import { TabId } from 'store/browser'
 import { useHardwareBackHandler } from '../handleBrowserBack'
 import { DockMenu } from './DockMenu'
 import { TabIcon } from './TabIcon'
@@ -26,14 +25,14 @@ type TabViewNavigationProp = BrowserScreenProps<
   typeof AppNavigation.Browser.TabView
 >['navigation']
 
-export const Dock = ({ tabId }: { tabId: TabId }): JSX.Element => {
+export const Dock = (): JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
   const dispatch = useDispatch()
   const { navigate } = useNavigation<TabViewNavigationProp>()
   const totalTabs = useSelector(selectAllTabs).length
-  const activeHistory = useSelector(selectTab(tabId))?.activeHistory
+  const activeHistory = useSelector(selectActiveTab)?.activeHistory
   useHardwareBackHandler()
   const { capture } = useAnalytics()
 

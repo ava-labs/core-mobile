@@ -1,23 +1,23 @@
 import React, { useEffect, useLayoutEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Tab, selectActiveTab, selectAllTabs } from 'store/browser'
-import TabViewScreen from './TabViewScreen'
+import { View } from '@avalabs/k2-mobile'
+import { ScrollState } from 'hooks/browser/useScrollHandler'
+import Browser from './Browser'
 
 const MAX_POOL_SIZE = 5
 
-type TabViewScreenPoolItem = { tab: Tab; tabViewScreen: JSX.Element }
+type BrowserPoolItem = { tab: Tab; browser: JSX.Element }
 
-function useTabViewScreenPool(): {
-  tabViewScreen: JSX.Element | null
+function useBrowserPool(onNewScrollState: (scrollState: ScrollState) => void): {
+  browsers: JSX.Element[]
 } {
   const activeTab = useSelector(selectActiveTab)
   const allTabs = useSelector(selectAllTabs)
 
-  const [poolItems, setPoolItems] = useState<TabViewScreenPoolItem[]>([])
+  const [poolItems, setPoolItems] = useState<BrowserPoolItem[]>([])
 
-  function sortTabViewPoolItems(
-    screens: TabViewScreenPoolItem[]
-  ): TabViewScreenPoolItem[] {
+  function sortTabViewPoolItems(screens: BrowserPoolItem[]): BrowserPoolItem[] {
     return screens.sort((a, b) => {
       if (a.tab.lastVisited && b.tab.lastVisited) {
         return a.tab.lastVisited - b.tab.lastVisited
@@ -56,15 +56,17 @@ function useTabViewScreenPool(): {
         // Add new pool item
         updatedPoolItems.push({
           tab: activeTab,
-          tabViewScreen: <TabViewScreen tabId={activeTab.id} />
+          browser: (
+            <Browser tabId={activeTab.id} onNewScrollState={onNewScrollState} />
+          )
         })
       } else {
-        const cachedTabViewScreen = updatedPoolItems[index]?.tabViewScreen
-        if (cachedTabViewScreen) {
+        const cachedBrowser = updatedPoolItems[index]?.browser
+        if (cachedBrowser) {
           // Update existing pool item
           updatedPoolItems[index] = {
             tab: activeTab,
-            tabViewScreen: cachedTabViewScreen
+            browser: cachedBrowser
           }
         }
       }
@@ -72,13 +74,23 @@ function useTabViewScreenPool(): {
       // Sort pool items based on lastVisited, for LRU behavior
       return sortTabViewPoolItems(updatedPoolItems)
     })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab])
 
   return {
-    tabViewScreen:
-      poolItems.find(poolItem => poolItem.tab.id === activeTab?.id)
-        ?.tabViewScreen ?? null
+    browsers: poolItems.map(poolItem => {
+      return (
+        <View
+          key={poolItem.tab.id}
+          sx={{
+            flex: 1,
+            display: poolItem.tab.id === activeTab?.id ? 'flex' : 'none'
+          }}>
+          {poolItem.browser}
+        </View>
+      )
+    })
   }
 }
 
-export default useTabViewScreenPool
+export default useBrowserPool

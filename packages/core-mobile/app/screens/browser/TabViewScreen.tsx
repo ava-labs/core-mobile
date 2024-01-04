@@ -1,7 +1,6 @@
 import React, { useState, useCallback, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { selectIsTabEmpty } from 'store/browser/slices/tabs'
-import Browser from 'screens/browser/Browser'
+import { selectActiveTab, selectIsTabEmpty } from 'store/browser/slices/tabs'
 import { Dock } from 'screens/browser/components/Dock'
 import { ScrollState } from 'hooks/browser/useScrollHandler'
 import { EmptyTab } from 'screens/browser/components/EmptyTab'
@@ -11,13 +10,15 @@ import ViewShot from 'react-native-view-shot'
 import { TabId } from 'store/browser'
 import SnapshotService from 'services/snapshot/SnapshotService'
 import { updateSnapshotTimestamp } from 'store/snapshots/slice'
+import useBrowserPool from './useBrowserPool'
 
-const TabViewScreen = React.memo(({ tabId }: { tabId: TabId }): JSX.Element => {
+const TabViewScreen = React.memo((): JSX.Element => {
   const showEmptyTab = useSelector(selectIsTabEmpty)
   const showWebView = !showEmptyTab
   const [dockVisible, setDockVisible] = useState(true)
   const viewShotRef = useRef<ViewShot>(null)
   const dispatch = useDispatch()
+  const activeTabId = useSelector(selectActiveTab)?.id
   const takeSnapshot = useCallback(
     async (id: TabId) => {
       viewShotRef.current?.capture?.().then(async uri => {
@@ -45,25 +46,29 @@ const TabViewScreen = React.memo(({ tabId }: { tabId: TabId }): JSX.Element => {
     }
   }
 
+  const { browsers } = useBrowserPool(onNewScrollState)
+
   useFocusEffect(
     useCallback(() => {
       return () => {
-        takeSnapshot(tabId)
+        if (activeTabId) {
+          takeSnapshot(activeTabId)
+        }
       }
-    }, [tabId, takeSnapshot])
+    }, [activeTabId, takeSnapshot])
   )
 
   return (
     <ViewShot
       ref={viewShotRef}
-      options={{ fileName: tabId, format: 'jpg', quality: 0.5 }}
+      options={{ fileName: activeTabId, format: 'jpg', quality: 0.5 }}
       style={{ flex: 1 }}>
       <View sx={{ flex: 1 }}>
         {showEmptyTab && <EmptyTab onNewScrollState={onNewScrollState} />}
-        {showWebView && (
-          <Browser tabId={tabId} onNewScrollState={onNewScrollState} />
-        )}
-        {dockVisible && <Dock tabId={tabId} />}
+        <View sx={{ display: showWebView ? 'flex' : 'none', flex: 1 }}>
+          {browsers}
+        </View>
+        {dockVisible && <Dock />}
       </View>
     </ViewShot>
   )

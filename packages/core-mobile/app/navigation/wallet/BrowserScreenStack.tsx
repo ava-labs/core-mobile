@@ -17,7 +17,7 @@ import SearchIcon from 'assets/icons/search.svg'
 import { useTheme } from '@avalabs/k2-mobile'
 import { ClearAllHistoryModal } from 'screens/browser/ClearAllHistoryModal'
 import { useAnalytics } from 'hooks/useAnalytics'
-import useTabViewScreenPool from 'screens/browser/useTabViewScreenPool'
+import TabViewScreen from 'screens/browser/TabViewScreen'
 
 export type BrowserStackParamList = {
   [AppNavigation.Browser.Intro]: undefined
@@ -117,12 +117,11 @@ type TabViewScreenProps = BrowserScreenProps<
   typeof AppNavigation.Browser.TabView
 >
 
-function TabView(): JSX.Element | null {
+function TabView(): JSX.Element {
   const hasBeenViewedBrowser = useSelector(
     selectHasBeenViewedOnce(ViewOnceKey.BROWSER_INTERACTION)
   )
   const { navigate } = useNavigation<TabViewScreenProps['navigation']>()
-  const { tabViewScreen } = useTabViewScreenPool()
 
   useEffect(() => {
     if (!hasBeenViewedBrowser) {
@@ -130,7 +129,7 @@ function TabView(): JSX.Element | null {
     }
   }, [hasBeenViewedBrowser, navigate])
 
-  return tabViewScreen
+  return <TabViewScreen />
 }
 
 function HistoryStub(): JSX.Element {
