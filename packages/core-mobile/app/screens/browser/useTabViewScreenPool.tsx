@@ -7,8 +7,8 @@ const MAX_POOL_SIZE = 5
 
 type TabViewScreenPoolItem = { tab: Tab; tabViewScreen: JSX.Element }
 
-function useTabPool(): {
-  activeTabViewScreen: JSX.Element | null
+function useTabViewScreenPool(): {
+  tabViewScreen: JSX.Element | null
 } {
   const activeTab = useSelector(selectActiveTab)
   const allTabs = useSelector(selectAllTabs)
@@ -75,10 +75,10 @@ function useTabPool(): {
   }, [activeTab])
 
   return {
-    activeTabViewScreen:
+    tabViewScreen:
       poolItems.find(poolItem => poolItem.tab.id === activeTab?.id)
         ?.tabViewScreen ?? null
   }
 }
 
-export default useTabPool
+export default useTabViewScreenPool
