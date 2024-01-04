@@ -10,7 +10,7 @@ import {
   addTab,
   goBackward,
   goForward as goForwardInPage,
-  selectActiveTab,
+  selectActiveHistory,
   selectAllTabs,
   selectCanGoBack,
   selectCanGoForward
@@ -32,7 +32,7 @@ export const Dock = (): JSX.Element => {
   const dispatch = useDispatch()
   const { navigate } = useNavigation<TabViewNavigationProp>()
   const totalTabs = useSelector(selectAllTabs).length
-  const activeHistory = useSelector(selectActiveTab)?.activeHistory
+  const activeHistory = useSelector(selectActiveHistory)
   useHardwareBackHandler()
   const { capture } = useAnalytics()
 
@@ -111,7 +111,7 @@ export const Dock = (): JSX.Element => {
       </TouchableOpacity>
       <TabIcon numberOfTabs={totalTabs} onPress={navigateToTabList} />
       <TouchableOpacity onPress={() => capture('BrowserContextualMenuOpened')}>
-        <DockMenu isFavorited={isFavorited} history={activeHistory}>
+        <DockMenu isFavorited={isFavorited}>
           <Icons.Navigation.MoreHoriz
             color={colors.$neutral900}
             width={ICON_SIZE}

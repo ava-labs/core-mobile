@@ -211,6 +211,14 @@ export const selectActiveTab = (state: RootState): Tab | undefined => {
     .selectById(state.browser.tabs, state.browser.tabs.activeTabId)
 }
 
+/**
+ * Selects currently active history from currently active tab
+ */
+export const selectActiveHistory = (state: RootState): History | undefined => {
+  const activeTab = selectActiveTab(state)
+  return activeTab?.activeHistory
+}
+
 // actions
 export const goForward = createAction(`${reducerName}/goForward`)
 export const goBackward = createAction(`${reducerName}/goBackward`)

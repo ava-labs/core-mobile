@@ -12,21 +12,21 @@ import SnapshotService from 'services/snapshot/SnapshotService'
 import { updateSnapshotTimestamp } from 'store/snapshots/slice'
 import useBrowserPool from './useBrowserPool'
 
-const TabViewScreen = React.memo((): JSX.Element => {
+export default function TabViewScreen(): JSX.Element {
+  const activeTab = useSelector(selectActiveTab)
   const showEmptyTab = useSelector(selectIsTabEmpty)
   const showWebView = !showEmptyTab
   const [dockVisible, setDockVisible] = useState(true)
   const viewShotRef = useRef<ViewShot>(null)
   const dispatch = useDispatch()
-  const activeTabId = useSelector(selectActiveTab)?.id
   const takeSnapshot = useCallback(
-    async (id: TabId) => {
+    async (tabId: TabId) => {
       viewShotRef.current?.capture?.().then(async uri => {
-        await SnapshotService.saveAs(uri, id)
+        await SnapshotService.saveAs(uri, tabId)
 
         dispatch(
           updateSnapshotTimestamp({
-            id: id,
+            id: tabId,
             timestamp: Date.now()
           })
         )
@@ -51,17 +51,17 @@ const TabViewScreen = React.memo((): JSX.Element => {
   useFocusEffect(
     useCallback(() => {
       return () => {
-        if (activeTabId) {
-          takeSnapshot(activeTabId)
+        if (activeTab?.id) {
+          takeSnapshot(activeTab.id)
         }
       }
-    }, [activeTabId, takeSnapshot])
+    }, [activeTab?.id, takeSnapshot])
   )
 
   return (
     <ViewShot
       ref={viewShotRef}
-      options={{ fileName: activeTabId, format: 'jpg', quality: 0.5 }}
+      options={{ fileName: activeTab?.id, format: 'jpg', quality: 0.5 }}
       style={{ flex: 1 }}>
       <View sx={{ flex: 1 }}>
         {showEmptyTab && <EmptyTab onNewScrollState={onNewScrollState} />}
@@ -72,6 +72,4 @@ const TabViewScreen = React.memo((): JSX.Element => {
       </View>
     </ViewShot>
   )
-})
-
-export default TabViewScreen
+}
