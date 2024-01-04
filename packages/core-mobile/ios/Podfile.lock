@@ -336,6 +336,8 @@ PODS:
     - React-Core
   - react-native-camera/RN (4.2.1):
     - React-Core
+  - react-native-compat (2.11.0):
+    - React-Core
   - react-native-config (1.4.5):
     - react-native-config/App (= 1.4.5)
   - react-native-config/App (1.4.5):
@@ -599,6 +601,7 @@ DEPENDENCIES:
   - react-native-aes (from `../node_modules/react-native-aes-crypto`)
   - "react-native-blur (from `../node_modules/@react-native-community/blur`)"
   - react-native-camera (from `../node_modules/react-native-camera`)
+  - "react-native-compat (from `../node_modules/@walletconnect/react-native-compat`)"
   - react-native-config (from `../node_modules/react-native-config`)
   - react-native-document-picker (from `../node_modules/react-native-document-picker`)
   - react-native-flipper (from `../node_modules/react-native-flipper`)
@@ -740,6 +743,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-community/blur"
   react-native-camera:
     :path: "../node_modules/react-native-camera"
+  react-native-compat:
+    :path: "../node_modules/@walletconnect/react-native-compat"
   react-native-config:
     :path: "../node_modules/react-native-config"
   react-native-document-picker:
@@ -901,6 +906,7 @@ SPEC CHECKSUMS:
   react-native-aes: c6e4e3ffcff410535e31e161fca95d50e608d4ee
   react-native-blur: 4568dd93d1d82748c180df8beb2d929c97b13b47
   react-native-camera: 3eae183c1d111103963f3dd913b65d01aef8110f
+  react-native-compat: d9195ea36efd9333b5f8370042086c34ae299fce
   react-native-config: 6502b1879f97ed5ac570a029961fc35ea606cd14
   react-native-document-picker: 226068006be4c52f8ef7f32d855ee025a12e9e64
   react-native-flipper: ea8a0760747ff0c2fc6eeed3bc9d8d88c95194ee
