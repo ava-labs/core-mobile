@@ -51,8 +51,12 @@ export function usePinOrBiometryLogin(): {
   const { jiggleAnim, fireJiggleAnimation } = useJigglyPinIndicator()
   const { signOut } = useApplicationContext().appHook
   const [timeRemaining, setTimeRemaining] = useState('00:00')
-  const { increaseAttempt, attemptAllowed, reset, remainingSeconds } =
-    useRateLimiter()
+  const {
+    increaseAttempt,
+    attemptAllowed,
+    reset: resetRateLimiter,
+    remainingSeconds
+  } = useRateLimiter()
 
   useEffect(() => {
     setPinDots(getPinDots(enteredPin))
@@ -113,7 +117,7 @@ export function usePinOrBiometryLogin(): {
         }
 
         setMnemonic(data)
-        reset()
+        resetRateLimiter()
       } catch (err) {
         Logger.error('Error decrypting data', err)
 
@@ -142,7 +146,7 @@ export function usePinOrBiometryLogin(): {
     fireJiggleAnimation,
     increaseAttempt,
     pinEntered,
-    reset
+    resetRateLimiter
   ])
 
   const getPinDots = (pin: string): DotView[] => {
@@ -195,9 +199,11 @@ export function usePinOrBiometryLogin(): {
           if (value !== false) {
             const keyOrMnemonic = (value as UserCredentials).password
             if (keyOrMnemonic.startsWith('PrivateKey')) {
+              resetRateLimiter()
               return new PrivateKeyLoaded(keyOrMnemonic)
             } else {
               setMnemonic(keyOrMnemonic)
+              resetRateLimiter()
               return new NothingToLoad()
             }
           } else {
