@@ -23,7 +23,6 @@ function useBrowserPool(onNewScrollState: (scrollState: ScrollState) => void): {
         return a.tab.lastVisited - b.tab.lastVisited
       }
       // If only one of the tabs has a lastVisited timestamp, it should be last
-      // so that empty tabs are prioritized to be removed from the pool
       return a.tab.lastVisited ? 1 : b.tab.lastVisited ? -1 : 0
     })
   }
