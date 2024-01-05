@@ -130,7 +130,8 @@ const lockApp = async (
   )
 
   // when app goes to background, lock the app after [TIME_TO_LOCK_IN_SECONDS] seconds
-  if (secondsPassed >= TIME_TO_LOCK_IN_SECONDS) {
+  const isTimeManipulated = secondsPassed <= 0
+  if (isTimeManipulated || secondsPassed >= TIME_TO_LOCK_IN_SECONDS) {
     lockTheApp()
   }
 }
