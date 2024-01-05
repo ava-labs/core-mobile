@@ -1,7 +1,6 @@
 import React, { useState, useCallback, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectActiveTab, selectIsTabEmpty } from 'store/browser/slices/tabs'
-import Browser from 'screens/browser/Browser'
 import { Dock } from 'screens/browser/components/Dock'
 import { ScrollState } from 'hooks/browser/useScrollHandler'
 import { EmptyTab } from 'screens/browser/components/EmptyTab'
@@ -11,6 +10,7 @@ import ViewShot from 'react-native-view-shot'
 import { TabId } from 'store/browser'
 import SnapshotService from 'services/snapshot/SnapshotService'
 import { updateSnapshotTimestamp } from 'store/snapshots/slice'
+import useBrowserPool from './useBrowserPool'
 
 export default function TabViewScreen(): JSX.Element {
   const activeTab = useSelector(selectActiveTab)
@@ -35,7 +35,7 @@ export default function TabViewScreen(): JSX.Element {
     [dispatch]
   )
 
-  function onNewScrollState(scrollState: ScrollState): void {
+  const onNewScrollState = useCallback((scrollState: ScrollState) => {
     switch (scrollState) {
       case ScrollState.down:
         setDockVisible(false)
@@ -44,7 +44,9 @@ export default function TabViewScreen(): JSX.Element {
         setDockVisible(true)
         break
     }
-  }
+  }, [])
+
+  const { browsers } = useBrowserPool(onNewScrollState)
 
   useFocusEffect(
     useCallback(() => {
@@ -63,7 +65,9 @@ export default function TabViewScreen(): JSX.Element {
       style={{ flex: 1 }}>
       <View sx={{ flex: 1 }}>
         {showEmptyTab && <EmptyTab onNewScrollState={onNewScrollState} />}
-        {showWebView && <Browser onNewScrollState={onNewScrollState} />}
+        <View sx={{ display: showWebView ? 'flex' : 'none', flex: 1 }}>
+          {browsers}
+        </View>
         {dockVisible && <Dock />}
       </View>
     </ViewShot>

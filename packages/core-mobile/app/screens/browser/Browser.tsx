@@ -3,10 +3,7 @@ import { View } from '@avalabs/k2-mobile'
 import WebView from 'react-native-webview'
 import Logger from 'utils/Logger'
 import { useDispatch, useSelector } from 'react-redux'
-import {
-  addHistoryForActiveTab,
-  selectActiveHistory
-} from 'store/browser/slices/tabs'
+import { addHistoryForActiveTab, selectTab } from 'store/browser/slices/tabs'
 import { useDeeplink } from 'contexts/DeeplinkContext/DeeplinkContext'
 import { DeepLink, DeepLinkOrigin } from 'contexts/DeeplinkContext/types'
 import { AddHistoryPayload } from 'store/browser'
@@ -22,8 +19,10 @@ import { useGoogleSearch } from 'hooks/browser/useGoogleSearch'
 import { isValidHttpUrl, normalizeUrlWithHttps } from './utils'
 
 export default function Browser({
+  tabId,
   onNewScrollState
 }: {
+  tabId: string
   onNewScrollState: (scrollState: ScrollState) => void
 }): JSX.Element {
   const dispatch = useDispatch()
@@ -34,7 +33,7 @@ export default function Browser({
   const { scrollState, onScrollHandler } = useScrollHandler()
   const { injectCoreAsRecent, injectGetDescriptionAndFavicon } =
     useRecentWalletHack()
-  const activeHistory = useSelector(selectActiveHistory)
+  const activeHistory = useSelector(selectTab(tabId))?.activeHistory
   const webViewRef = useRef<WebView>(null)
   const [favicon, setFavicon] = useState<string | undefined>(undefined)
   const { capture } = useAnalytics()

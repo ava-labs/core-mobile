@@ -120,6 +120,12 @@ const tabSlice = createSlice({
     setActiveTabId: (state: TabState, action: PayloadAction<TabPayload>) => {
       const { id: tabId } = action.payload
       state.activeTabId = tabId
+
+      // update last visited when active tab is changed
+      const entity = state.entities[tabId]
+      if (entity) {
+        entity.lastVisited = getUnixTime(new Date())
+      }
     },
     setActiveHistoryForTab: (
       state: TabState,

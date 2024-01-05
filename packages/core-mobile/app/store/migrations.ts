@@ -132,5 +132,17 @@ export const migrations = {
       ...state,
       browser: undefined
     }
+  },
+  11: async (state: any) => {
+    //set security countdown
+    return {
+      ...state,
+      security: {
+        loginAttempt: {
+          count: state.security.loginAttempt.count,
+          countdown: 0
+        }
+      }
+    }
   }
 }
