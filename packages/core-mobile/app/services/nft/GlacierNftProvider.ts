@@ -26,7 +26,6 @@ export class GlacierNftProvider implements NftProvider {
   async fetchNfts(
     chainId: number,
     address: string,
-    selectedCurrency?: string,
     pageToken?: {
       erc1155?: string
       erc721?: string
@@ -116,7 +115,7 @@ export class GlacierNftProvider implements NftProvider {
     }
   }
 
-  private async isHealthy() {
+  private async isHealthy(): Promise<boolean> {
     const healthStatus = await glacierSdk.healthCheck.healthCheck()
     const status = healthStatus?.status?.toString()
     return status === 'ok'

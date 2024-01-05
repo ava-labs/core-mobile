@@ -9,7 +9,7 @@ export const nftsApi = createApi({
   baseQuery: fakeBaseQuery(),
   endpoints: builder => ({
     getNfts: builder.query<NftResponse, GetNftArgs>({
-      queryFn: async ({ network, account, nextPageToken, currency }) => {
+      queryFn: async ({ network, account, nextPageToken }) => {
         if (!account) return { error: 'unable to get NFTs' }
 
         const t = SentryWrapper.startTransaction('get-nfts')
@@ -17,7 +17,6 @@ export const nftsApi = createApi({
           const nftPagedData = await nftService.fetchNft(
             network.chainId,
             account.address,
-            currency,
             nextPageToken
           )
 
