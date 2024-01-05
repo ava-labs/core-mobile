@@ -12,6 +12,7 @@ import {
   removeAllHistories,
   removeHistory
 } from 'store/browser/slices/globalHistory'
+import { trimTrailingSlash } from 'utils/string/trimTrailingSlash'
 import {
   AddHistoryPayload,
   History,
@@ -66,6 +67,7 @@ const tabSlice = createSlice({
       const lastVisited = getUnixTime(new Date())
 
       const historyPayload = action.payload
+      historyPayload.url = trimTrailingSlash(historyPayload.url)
       const historyId = createHash(historyPayload.url)
       const history = {
         id: historyId,
@@ -118,6 +120,12 @@ const tabSlice = createSlice({
     setActiveTabId: (state: TabState, action: PayloadAction<TabPayload>) => {
       const { id: tabId } = action.payload
       state.activeTabId = tabId
+
+      // update last visited when active tab is changed
+      const entity = state.entities[tabId]
+      if (entity) {
+        entity.lastVisited = getUnixTime(new Date())
+      }
     },
     setActiveHistoryForTab: (
       state: TabState,
@@ -177,8 +185,9 @@ const tabSlice = createSlice({
 })
 
 // selectors
-export const selectIsTabEmpty = (state: RootState): boolean =>
-  tabAdapter.getSelectors().selectAll(state.browser.tabs).length === 0
+export const selectIsTabEmpty = (state: RootState): boolean => {
+  return (selectActiveTab(state)?.activeHistoryIndex ?? -1) === -1
+}
 
 export const selectAllTabs = (state: RootState): Tab[] =>
   tabAdapter.getSelectors().selectAll(state.browser.tabs)
@@ -190,7 +199,7 @@ export const selectTab =
 
 export const selectCanGoBack = (state: RootState): boolean => {
   const activeTab = selectActiveTab(state)
-  return !!activeTab && activeTab.activeHistoryIndex > 0
+  return !!activeTab && activeTab.activeHistoryIndex >= 0
 }
 
 export const selectCanGoForward = (state: RootState): boolean => {

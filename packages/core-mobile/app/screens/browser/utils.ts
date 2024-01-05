@@ -29,6 +29,10 @@ export function isValidUrl(url: string): boolean {
 }
 
 export function isValidHttpUrl(url: string): boolean {
+  //urls such as http://core we will discard, it must have at least one dot
+  const basicHttpUrlRegex = new RegExp('[^ ]*[.][^ ]*', 'i')
+  if (!basicHttpUrlRegex.test(url)) return false
+
   let urlObj
   try {
     urlObj = new URL(url)
@@ -39,8 +43,16 @@ export function isValidHttpUrl(url: string): boolean {
   return urlObj.protocol === 'http:' || urlObj.protocol === 'https:'
 }
 
+/**
+ * Converts http to https protocol, or if protocol is missing adds https.
+ * For invalid url-s returns same as input.
+ */
 export function normalizeUrlWithHttps(url: string): string {
-  if (isValidUrl(url)) return url
+  let normalized = url.replaceAll('http:', 'https:')
+  if (!normalized.startsWith('https')) {
+    normalized = `https://${url}`
+  }
+  if (isValidHttpUrl(normalized)) return normalized
 
-  return `https://${url}`
+  return url
 }
