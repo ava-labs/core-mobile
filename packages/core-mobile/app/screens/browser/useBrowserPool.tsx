@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Tab, selectActiveTab, selectAllTabs } from 'store/browser'
 import { View } from '@avalabs/k2-mobile'
@@ -36,40 +36,44 @@ function useBrowserPool(onNewScrollState: (scrollState: ScrollState) => void): {
   }, [allTabs])
 
   // Add or update pool item for the active tab
-  useLayoutEffect(() => {
+  useEffect(() => {
     if (!activeTab || !activeTab.activeHistory) return
 
     setPoolItems(prevPoolItems => {
-      const index = prevPoolItems.findIndex(
+      const newPoolItems = [...prevPoolItems]
+
+      const item = newPoolItems.find(
         poolItem => poolItem.tab.id === activeTab.id
       )
 
-      if (index === -1) {
-        if (prevPoolItems.length >= MAX_POOL_SIZE) {
+      if (item) {
+        const index = newPoolItems.findIndex(
+          poolItem => poolItem.tab.id === item.tab.id
+        )
+        if (index !== -1) {
+          newPoolItems.splice(index, 1)
+        }
+        newPoolItems.push({
+          tab: activeTab,
+          browser: item.browser
+        })
+      } else {
+        if (newPoolItems.length >= MAX_POOL_SIZE) {
           // Remove least recently visited pool item
-          prevPoolItems = prevPoolItems.slice(1)
+          newPoolItems.splice(0, 1)
         }
 
         // Add new pool item
-        prevPoolItems.push({
+        newPoolItems.push({
           tab: activeTab,
           browser: (
             <Browser tabId={activeTab.id} onNewScrollState={onNewScrollState} />
           )
         })
-      } else {
-        const cachedBrowser = prevPoolItems[index]?.browser
-        if (cachedBrowser) {
-          prevPoolItems.splice(index, 1)
-          prevPoolItems.push({
-            tab: activeTab,
-            browser: cachedBrowser
-          })
-        }
       }
 
       // Sort pool items based on lastVisited, for LRU behavior
-      return sortTabViewPoolItems(prevPoolItems)
+      return sortTabViewPoolItems(newPoolItems)
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab])

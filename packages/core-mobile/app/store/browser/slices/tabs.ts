@@ -124,10 +124,7 @@ const tabSlice = createSlice({
       // update last visited when active tab is changed
       const entity = state.entities[tabId]
       if (entity) {
-        state.entities[tabId] = {
-          ...entity,
-          lastVisited: getUnixTime(new Date())
-        }
+        entity.lastVisited = getUnixTime(new Date())
       }
     },
     setActiveHistoryForTab: (
