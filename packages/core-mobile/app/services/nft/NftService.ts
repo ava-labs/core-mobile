@@ -27,7 +27,6 @@ export class NftService {
   async fetchNft(
     chainId: number,
     address: string,
-    selectedCurrency?: string,
     pageToken?:
       | {
           erc1155?: string
@@ -44,12 +43,7 @@ export class NftService {
 
         if (!provider) throw Error('no available providers')
 
-        return await provider.fetchNfts(
-          chainId,
-          address,
-          selectedCurrency,
-          pageToken
-        )
+        return await provider.fetchNfts(chainId, address, pageToken)
       })
   }
 }
