@@ -29,8 +29,8 @@ export const HistoryListItem = ({ history }: Props): JSX.Element => {
     theme: { colors }
   } = useTheme()
 
-  const remove = (historyId: string): void => {
-    dispatch(removeHistory({ historyId }))
+  const remove = (): void => {
+    dispatch(removeHistory({ historyId: history.id }))
   }
 
   const navigateToTabView = (): void => {
@@ -50,7 +50,7 @@ export const HistoryListItem = ({ history }: Props): JSX.Element => {
         justifyContent: 'space-between',
         flex: 1
       }}>
-      <View>
+      <View sx={{ marginRight: 8, flexShrink: 1 }}>
         <Text variant="inputLabel" numberOfLines={1}>
           {history.title}
         </Text>
@@ -58,7 +58,7 @@ export const HistoryListItem = ({ history }: Props): JSX.Element => {
           {history.url}
         </Text>
       </View>
-      <Pressable onPress={() => remove(history.id)}>
+      <Pressable hitSlop={8} onPress={() => remove()}>
         <ClearSVG
           backgroundColor={colors.$neutral400}
           color={colors.$black}

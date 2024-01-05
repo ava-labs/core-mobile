@@ -62,6 +62,7 @@ export const HistoryScreen = (): JSX.Element => {
             </View>
             <Space y={16} />
             <FlatList
+              keyboardShouldPersistTaps="always"
               data={filterHistories}
               renderItem={item => (
                 <HistoryListItem history={item.item as History} />
