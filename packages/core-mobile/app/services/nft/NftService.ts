@@ -1,12 +1,12 @@
 import glacierNftProvider from 'services/nft/GlacierNftProvider'
-import covalentNftProvider from 'services/nft/CovalentNftProvider'
 import { NftProvider } from 'services/nft/types'
 import { findAsyncSequential } from 'utils/Utils'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { Transaction } from '@sentry/types'
+import { NftResponse } from 'store/nft'
 
 export class NftService {
-  providers: NftProvider[] = [glacierNftProvider, covalentNftProvider]
+  providers: NftProvider[] = [glacierNftProvider]
 
   private async getProvider(
     chainId: number,
@@ -35,7 +35,7 @@ export class NftService {
         }
       | string,
     sentryTrx?: Transaction
-  ) {
+  ): Promise<NftResponse> {
     return SentryWrapper.createSpanFor(sentryTrx)
       .setContext('svc.nft.fetch')
       .executeAsync(async () => {
