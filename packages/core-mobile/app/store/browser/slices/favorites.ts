@@ -1,10 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import {
-  FavoriteState,
-  FavoriteId,
-  Favorite,
-  HistoryId
-} from 'store/browser/types'
+import { FavoriteState, Favorite, HistoryId } from 'store/browser/types'
 import { createHash } from 'utils/createHash'
 import { RootState } from 'store'
 import { favoriteAdapter } from '../utils'
@@ -21,9 +16,9 @@ const favoriteSlice = createSlice({
       const id = createHash(action.payload.url)
       favoriteAdapter.addOne(state, { ...action.payload, id })
     },
-    removeFavorite: (state, action: PayloadAction<FavoriteId>) => {
-      const favoriteIdToRemove = action.payload
-      favoriteAdapter.removeOne(state, favoriteIdToRemove)
+    removeFavorite: (state, action: PayloadAction<{ url: string }>) => {
+      const id = createHash(action.payload.url)
+      favoriteAdapter.removeOne(state, id)
     },
     clearAll: state => favoriteAdapter.removeAll(state)
   }

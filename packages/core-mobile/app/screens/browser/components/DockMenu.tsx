@@ -3,13 +3,14 @@ import { MenuView } from '@react-native-menu/menu'
 import { Platform, Share as ShareApi } from 'react-native'
 import { useTheme } from '@avalabs/k2-mobile'
 import { useDispatch, useSelector } from 'react-redux'
-import { addFavorite } from 'store/browser/slices/favorites'
+import { addFavorite, removeFavorite } from 'store/browser/slices/favorites'
 import { useNavigation } from '@react-navigation/native'
 import { BrowserScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
 import { selectActiveHistory } from 'store/browser/slices/tabs'
 import { useAnalytics } from 'hooks/useAnalytics'
 import Logger from 'utils/Logger'
+import { showSimpleToast } from 'components/Snackbar'
 import { isValidUrl } from '../utils'
 
 enum MenuId {
@@ -102,49 +103,71 @@ export const DockMenu: FC<Props> = ({
     }
   }, [activeHistory, colors, isFavorited])
 
+  function handleShare(): void {
+    capture('BrowserShareTapped')
+    onShare()
+  }
+
+  function handleHistory(): void {
+    capture('BrowserViewHistoryTapped')
+    navigate(AppNavigation.Browser.History)
+  }
+
+  function handleFavorite(): void {
+    if (!activeHistory) {
+      return
+    }
+
+    capture('BrowserAddToFavoriteTapped')
+    if (!isValidUrl(activeHistory.url ?? '')) {
+      Logger.error('Invalid URL')
+      return
+    }
+
+    if (isFavorited) {
+      dispatch(removeFavorite({ url: activeHistory.url }))
+
+      showSimpleToast('Removed from favorites')
+    } else {
+      const activeHistoryUrl = new URL(activeHistory.url)
+      const activeHistoryDomain =
+        activeHistoryUrl.protocol + '//' + activeHistoryUrl.hostname
+
+      let favicon: string | undefined
+      if (activeHistory.favicon) {
+        if (isValidUrl(activeHistory.favicon)) {
+          favicon = activeHistory.favicon
+        } else {
+          favicon = activeHistoryDomain + activeHistory.favicon
+        }
+      }
+
+      dispatch(
+        addFavorite({
+          favicon,
+          title: activeHistory.title,
+          description: activeHistory.description ?? '',
+          url: activeHistory.url
+        })
+      )
+
+      showSimpleToast('Added to favorites')
+    }
+  }
+
   return (
     <MenuView
       onPressAction={({ nativeEvent }) => {
         switch (nativeEvent.event) {
           case MenuId.Share:
-            capture('BrowserShareTapped')
-            onShare()
+            handleShare()
             break
           case MenuId.History: {
-            capture('BrowserViewHistoryTapped')
-            navigate(AppNavigation.Browser.History)
+            handleHistory()
             break
           }
           case MenuId.Favorite: {
-            capture('BrowserAddToFavoriteTapped')
-            let favicon: string | undefined
-
-            if (!isValidUrl(activeHistory?.url ?? '')) {
-              Logger.error('Invalid URL')
-              return
-            }
-
-            const activeHistoryUrl = new URL(activeHistory?.url ?? '')
-            const activeHistoryDomain =
-              activeHistoryUrl.protocol + '//' + activeHistoryUrl.hostname
-
-            if (activeHistory?.favicon) {
-              if (isValidUrl(activeHistory.favicon)) {
-                favicon = activeHistory.favicon
-              } else {
-                favicon = activeHistoryDomain + activeHistory.favicon
-              }
-            }
-
-            dispatch(
-              addFavorite({
-                favicon,
-                title: activeHistory?.title ?? '',
-                description: activeHistory?.description ?? '',
-                url: activeHistory?.url ?? ''
-              })
-            )
-            // show toast message
+            handleFavorite()
             break
           }
         }
