@@ -136,6 +136,8 @@ export const EmptyTab = ({
             <Space y={16} />
             <View>
               <FlatList
+                keyboardShouldPersistTaps="always"
+                keyExtractor={item => (item as History).id}
                 data={filterHistories}
                 onScroll={onScrollHandler}
                 renderItem={item => (
