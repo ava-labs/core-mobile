@@ -47,16 +47,8 @@ function useBrowserPool(onNewScrollState: (scrollState: ScrollState) => void): {
       )
 
       if (item) {
-        const index = newPoolItems.findIndex(
-          poolItem => poolItem.tab.id === item.tab.id
-        )
-        if (index !== -1) {
-          newPoolItems.splice(index, 1)
-        }
-        newPoolItems.push({
-          tab: activeTab,
-          browser: item.browser
-        })
+        // Update existing pool item
+        item.tab = activeTab
       } else {
         if (newPoolItems.length >= MAX_POOL_SIZE) {
           // Remove least recently visited pool item
@@ -75,8 +67,7 @@ function useBrowserPool(onNewScrollState: (scrollState: ScrollState) => void): {
       // Sort pool items based on lastVisited, for LRU behavior
       return sortTabViewPoolItems(newPoolItems)
     })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab])
+  }, [activeTab, onNewScrollState])
 
   return {
     browsers: poolItems.map(poolItem => {

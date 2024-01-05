@@ -35,7 +35,7 @@ export default function TabViewScreen(): JSX.Element {
     [dispatch]
   )
 
-  function onNewScrollState(scrollState: ScrollState): void {
+  const onNewScrollState = useCallback((scrollState: ScrollState) => {
     switch (scrollState) {
       case ScrollState.down:
         setDockVisible(false)
@@ -44,7 +44,7 @@ export default function TabViewScreen(): JSX.Element {
         setDockVisible(true)
         break
     }
-  }
+  }, [])
 
   const { browsers } = useBrowserPool(onNewScrollState)
 
