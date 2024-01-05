@@ -8,7 +8,6 @@ export interface NftProvider {
   fetchNfts(
     chainId: number,
     address: string,
-    selectedCurrency?: string,
     pageToken?:
       | {
           erc1155?: string
