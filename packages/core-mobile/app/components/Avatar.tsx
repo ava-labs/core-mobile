@@ -187,6 +187,7 @@ const CustomAvatar: FC<Props> = props => {
   return <AvatarBase {...props} testID="avatar__custom_avatar" />
 }
 
+/** @deprecated - Use {@link Avatar2} instead **/
 const Avatar = {
   Token: TokenAvatar,
   Custom: CustomAvatar
