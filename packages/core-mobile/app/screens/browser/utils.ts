@@ -1,4 +1,6 @@
 import { DeFiProtocolInformation } from 'services/browser/types'
+import { assertNotUndefined } from 'utils/assertions'
+import { FavoriteId } from 'store/browser'
 
 export const sortDeFiProtocolInformationListByTvl = (
   protocolInformationList: DeFiProtocolInformation[]
@@ -55,4 +57,26 @@ export function normalizeUrlWithHttps(url: string): string {
   if (isValidHttpUrl(normalized)) return normalized
 
   return url
+}
+
+const usedFavIcoColors = new Map<FavoriteId, undefined>()
+
+export function getNextFavColor(id: FavoriteId): string {
+  usedFavIcoColors.set(id, undefined)
+  const index = [...usedFavIcoColors.keys()].indexOf(id)
+  const cycleColors = [
+    '#003F5C',
+    '#00628F',
+    '#2F4B7C',
+    '#3E62A3',
+    '#665191',
+    '#7E68AB',
+    '#A05195',
+    '#B56DAB',
+    '#D45087',
+    '#059E93'
+  ]
+  const nextColor = cycleColors[index % 10]
+  assertNotUndefined(nextColor)
+  return nextColor
 }

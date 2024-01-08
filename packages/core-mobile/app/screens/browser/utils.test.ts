@@ -1,6 +1,7 @@
 import { DeFiProtocolInformation } from 'services/browser/types'
 import MOCK_PROTOCOL_INFORMATION_DATA from 'tests/fixtures/browser/protocolInformationListData.json'
 import {
+  getNextFavColor,
   getTopDefiProtocolInformationList,
   isValidHttpUrl,
   isValidUrl,
@@ -108,5 +109,20 @@ describe('isValidHttpUrl', () => {
     const url = 'core://stake'
     const result = isValidHttpUrl(url)
     expect(result).toStrictEqual(false)
+  })
+})
+
+describe('getNextFavColor', () => {
+  it('should get color in order', () => {
+    const favIds = ['fav1', 'fav2', 'fav3']
+    const controlFavColors = ['#003F5C', '#00628F', '#2F4B7C']
+    const testFavColors = favIds.map(id => getNextFavColor(id))
+    expect(testFavColors).toEqual(controlFavColors)
+  })
+  it('should get same color for same id', () => {
+    const favIds = ['fav1', 'fav2', 'fav3', 'fav1']
+    const controlFavColors = ['#003F5C', '#00628F', '#2F4B7C', '#003F5C']
+    const testFavColors = favIds.map(id => getNextFavColor(id))
+    expect(testFavColors).toEqual(controlFavColors)
   })
 })
