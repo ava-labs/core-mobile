@@ -127,6 +127,7 @@ interface CustomAvatarProps {
   showBorder?: boolean
   size?: number
   circleColor?: string
+  testID?: string
 }
 
 const CustomAvatar: FC<CustomAvatarProps> = props => {
@@ -136,12 +137,14 @@ const CustomAvatar: FC<CustomAvatarProps> = props => {
       title={props.name}
       backgroundColor={props.circleColor}
       tokenSymbol={props.symbol}
-      testID="avatar__custom_avatar"
+      testID={props.testID ?? 'avatar__custom_avatar'}
     />
   )
 }
 const BasicAvatar: FC<AvatarBaseProps> = props => {
-  return <AvatarBase {...props} testID="avatar__custom_avatar" />
+  return (
+    <AvatarBase {...props} testID={props.testID ?? 'avatar__custom_avatar'} />
+  )
 }
 
 function FallbackAvatar({
@@ -187,9 +190,6 @@ function FallbackAvatar({
 }
 
 const Avatar = {
-  /**
-   * @deprecated - use Basic
-   */
   Token: TokenAvatar,
   /**
    * @deprecated - use Basic
