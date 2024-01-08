@@ -21,6 +21,12 @@ interface AvatarBaseProps {
 
 const DEFAULT_SIZE = 32
 
+/**
+ * Shows given logoUrl as circled avatar.
+ * LogoUrl can be valid image or svg.
+ * In case if image load fails, it will fall back to circled avatar containing one to max two capital letters from title property
+ * A special case is if tokenSymbol is provided then it will return one of 3 predefined token SVGs.
+ */
 const AvatarBase: FC<AvatarBaseProps> = ({
   title,
   tokenSymbol,
@@ -39,7 +45,7 @@ const AvatarBase: FC<AvatarBaseProps> = ({
 
   if (!hasValidLogoUri) {
     return (
-      <InitialsAvatar
+      <FallbackAvatar
         title={title}
         size={size}
         showBorder={showBorder}
@@ -138,7 +144,7 @@ const BasicAvatar: FC<AvatarBaseProps> = props => {
   return <AvatarBase {...props} testID="avatar__custom_avatar" />
 }
 
-function InitialsAvatar({
+function FallbackAvatar({
   title,
   size = DEFAULT_SIZE,
   fallbackBackgroundColor,
