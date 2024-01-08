@@ -1,4 +1,4 @@
-import { Pressable, View, Text, Image, useTheme } from '@avalabs/k2-mobile'
+import { Pressable, Text, View } from '@avalabs/k2-mobile'
 import { useNavigation } from '@react-navigation/native'
 import { useAnalytics } from 'hooks/useAnalytics'
 import AppNavigation from 'navigation/AppNavigation'
@@ -7,6 +7,10 @@ import React from 'react'
 import { useDispatch } from 'react-redux'
 import { Favorite } from 'store/browser'
 import { addHistoryForActiveTab } from 'store/browser/slices/tabs'
+import { Avatar2 } from 'components/Avatar2'
+import { getNextFavColor } from 'screens/browser/utils'
+import { Row } from 'components/Row'
+import FlexSpacer from 'components/FlexSpacer'
 
 interface Props {
   favorite: Favorite
@@ -16,7 +20,6 @@ interface Props {
 type NavigationProp = BrowserScreenProps<
   typeof AppNavigation.Browser.TabView
 >['navigation']
-
 export const FavoritesListItem = ({
   favorite,
   isLastItem
@@ -24,9 +27,6 @@ export const FavoritesListItem = ({
   const dispatch = useDispatch()
   const { navigate } = useNavigation<NavigationProp>()
   const { capture } = useAnalytics()
-  const {
-    theme: { colors }
-  } = useTheme()
 
   const navigateToTabView = (): void => {
     capture('BrowserFavoritesTapped')
@@ -36,59 +36,31 @@ export const FavoritesListItem = ({
     navigate(AppNavigation.Browser.TabView)
   }
 
-  const renderFavicon = (): JSX.Element => {
-    if (favorite.favicon) {
-      return (
-        <Image
-          source={{ uri: favorite.favicon }}
-          sx={{ width: 48, height: 48, marginBottom: 17, borderRadius: 24 }}
+  return (
+    <Pressable onPress={navigateToTabView}>
+      <Row style={{ alignItems: 'center', marginVertical: 8 }}>
+        <Avatar2
+          logoUrl={favorite.favicon}
+          title={favorite.title}
+          errorBackgroundColor={getNextFavColor(favorite.id)}
         />
-      )
-    }
-    return (
+        <View sx={{ flex: 1, marginLeft: 8 }}>
+          <Text variant="body1" sx={{ color: '$neutral50' }} numberOfLines={1}>
+            {favorite.title}
+          </Text>
+          <Text variant="body2" sx={{ color: '$neutral400' }} numberOfLines={1}>
+            {favorite.description}
+          </Text>
+          <FlexSpacer />
+        </View>
+      </Row>
       <View
         sx={{
-          width: 48,
-          height: 48,
-          marginBottom: 17,
-          borderRadius: 24,
-          justifyContent: 'center',
-          alignItems: 'center',
-          backgroundColor: colors.$neutral800
-        }}>
-        <Text
-          variant="body1"
-          sx={{ color: '$neutral50', fontSize: 24, lineHeight: 36 }}>
-          NA
-        </Text>
-      </View>
-    )
-  }
-
-  return (
-    <Pressable
-      onPress={navigateToTabView}
-      sx={{
-        flexDirection: 'row',
-        marginTop: 8,
-        alignItems: 'center'
-      }}>
-      {renderFavicon()}
-      <View sx={{ marginLeft: 16, flex: 1 }}>
-        <Text variant="body1" sx={{ color: '$neutral50' }} numberOfLines={1}>
-          {favorite.title}
-        </Text>
-        <Text variant="body2" sx={{ color: '$neutral400' }} numberOfLines={1}>
-          {favorite.description}
-        </Text>
-        <View
-          sx={{
-            marginVertical: 8,
-            height: 1,
-            backgroundColor: isLastItem ? '$transparent' : '$neutral800'
-          }}
-        />
-      </View>
+          height: 1,
+          marginLeft: 48,
+          backgroundColor: isLastItem ? '$transparent' : '$neutral800'
+        }}
+      />
     </Pressable>
   )
 }
