@@ -76,7 +76,7 @@ export function getNextFavColor(id: FavoriteId): string {
     '#D45087',
     '#059E93'
   ]
-  const nextColor = cycleColors[index % 10]
+  const nextColor = cycleColors[index % cycleColors.length]
   assertNotUndefined(nextColor)
   return nextColor
 }
