@@ -7,10 +7,10 @@ import React from 'react'
 import { useDispatch } from 'react-redux'
 import { Favorite } from 'store/browser'
 import { addHistoryForActiveTab } from 'store/browser/slices/tabs'
-import { Avatar2 } from 'components/Avatar2'
 import { getNextFavColor } from 'screens/browser/utils'
 import { Row } from 'components/Row'
 import FlexSpacer from 'components/FlexSpacer'
+import Avatar from 'components/Avatar'
 
 interface Props {
   favorite: Favorite
@@ -39,10 +39,11 @@ export const FavoritesListItem = ({
   return (
     <Pressable onPress={navigateToTabView}>
       <Row style={{ alignItems: 'center', marginVertical: 8 }}>
-        <Avatar2
-          logoUrl={favorite.favicon}
+        <Avatar.Basic
           title={favorite.title}
-          errorBackgroundColor={getNextFavColor(favorite.id)}
+          logoUri={favorite.favicon}
+          size={48}
+          fallbackBackgroundColor={getNextFavColor(favorite.id)}
         />
         <View sx={{ flex: 1, marginLeft: 8 }}>
           <Text variant="body1" sx={{ color: '$neutral50' }} numberOfLines={1}>
