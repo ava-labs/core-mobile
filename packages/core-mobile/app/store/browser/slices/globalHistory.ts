@@ -1,7 +1,13 @@
-import { createSlice } from '@reduxjs/toolkit'
+import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { createHash } from 'utils/createHash'
 import { RootState } from 'store'
-import { History, HistoryId, HistoryState } from '../types'
+import { getUnixTime } from 'date-fns'
+import {
+  History,
+  HistoryId,
+  HistoryState,
+  UpdateHistoryPayload
+} from '../types'
 import { historyAdapter } from '../utils'
 import { MAXIMUM_HISTORIES } from '../const'
 import { addHistoryForActiveTab } from './tabs'
@@ -17,8 +23,23 @@ const globalHistorySlice = createSlice({
     removeAllHistories: (state: HistoryState) => {
       historyAdapter.removeAll(state)
     },
-    removeHistory: (state: HistoryState, { payload }) => {
-      historyAdapter.removeOne(state, payload.id)
+    removeHistory: (
+      state: HistoryState,
+      action: PayloadAction<{ historyId: HistoryId }>
+    ) => {
+      historyAdapter.removeOne(state, action.payload.historyId)
+    },
+    updateMetadataForActiveTab: (
+      state: HistoryState,
+      action: PayloadAction<UpdateHistoryPayload>
+    ) => {
+      historyAdapter.updateOne(state, {
+        id: createHash(action.payload.url),
+        changes: {
+          favicon: action.payload.favicon,
+          description: action.payload.description
+        }
+      })
     }
   },
   extraReducers: builder => {
@@ -28,6 +49,7 @@ const globalHistorySlice = createSlice({
         const historyId = createHash(history.url)
         historyAdapter.upsertOne(state, {
           id: historyId,
+          lastVisited: getUnixTime(new Date()),
           ...history
         })
         // limit max histories
@@ -44,7 +66,7 @@ const globalHistorySlice = createSlice({
 })
 
 // selectors
-export const selectActiveHistory =
+export const selectHistory =
   (id?: HistoryId) =>
   (state: RootState): History | undefined => {
     if (id === undefined) return
@@ -58,6 +80,7 @@ export const selectAllHistories = (state: RootState): History[] => {
 }
 
 // actions
-export const { removeAllHistories, removeHistory } = globalHistorySlice.actions
+export const { removeAllHistories, removeHistory, updateMetadataForActiveTab } =
+  globalHistorySlice.actions
 
 export const globalHistoryReducer = globalHistorySlice.reducer

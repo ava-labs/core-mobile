@@ -9,69 +9,89 @@ import {
 import SearchBar from 'components/SearchBar'
 import { Space } from 'components/Space'
 import React, { useEffect, useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
-import { selectAllHistories } from 'store/browser/slices/globalHistory'
+import { useDispatch } from 'react-redux'
 import { AddHistoryPayload, History } from 'store/browser'
 import GoogleSVG from 'assets/icons/google.svg'
 import { addHistoryForActiveTab } from 'store/browser/slices/tabs'
 import AppNavigation from 'navigation/AppNavigation'
 import { BrowserScreenProps } from 'navigation/types'
 import { useNavigation } from '@react-navigation/native'
+import useScrollHandler, { ScrollState } from 'hooks/browser/useScrollHandler'
+import { useSearchHistory } from 'hooks/browser/useSearchHistory'
+import { Dimensions } from 'react-native'
+import { useAnalytics } from 'hooks/useAnalytics'
+import { useGoogleSearch } from 'hooks/browser/useGoogleSearch'
+import { isValidHttpUrl, normalizeUrlWithHttps } from '../utils'
 import { FavoritesAndSuggestions } from './FavoritesAndSuggestions'
 import { HistoryListItem } from './HistoryListItem'
+
+const SCREEN_WIDTH = Dimensions.get('window').width
+const BOTTOM_PADDING = SCREEN_WIDTH * 0.35
 
 type NavigationProp = BrowserScreenProps<
   typeof AppNavigation.Browser.TabView
 >['navigation']
 
-export const EmptyTab = (): JSX.Element => {
-  const histories = useSelector(selectAllHistories)
+export const EmptyTab = ({
+  onNewScrollState
+}: {
+  onNewScrollState: (scrollState: ScrollState) => void
+}): JSX.Element => {
   const dispatch = useDispatch()
-  const hasHistory = histories.length > 0
-  const [searchText, setSearchText] = useState('')
-  const [filterHistories, setFilterHistories] = useState(histories)
   const [isFocused, setIsFocused] = useState(false)
   const { navigate } = useNavigation<NavigationProp>()
-
-  const hasSearchResult = filterHistories.length > 0
+  const { scrollState, onScrollHandler } = useScrollHandler()
+  const { navigateToGoogleSearchResult } = useGoogleSearch()
+  const {
+    searchText,
+    setSearchText,
+    trimmedSearchText,
+    filterHistories,
+    hasHistory,
+    hasSearchResult
+  } = useSearchHistory()
 
   const {
     theme: { colors }
   } = useTheme()
 
+  const { capture } = useAnalytics()
+
   useEffect(() => {
-    if (searchText.length > 0 && histories.length > 0) {
-      const filteredHistories = histories.filter(history => {
-        return history.title.toLowerCase().includes(searchText.toLowerCase())
-      })
-      setFilterHistories(filteredHistories)
-      return
-    }
-    setFilterHistories(histories)
-  }, [histories, searchText])
+    onNewScrollState(scrollState)
+  }, [onNewScrollState, scrollState])
 
   const clearAll = (): void => {
     navigate(AppNavigation.Browser.ClearAllHistory)
   }
 
-  const handleGoogleSearch = (): void => {
-    const url =
-      'https://www.google.com/search?q=' + encodeURIComponent(searchText)
-    const history: AddHistoryPayload = {
-      title: searchText,
-      url
+  const handleSearchBarSubmit = (): void => {
+    capture('BrowserSearchSubmitted')
+
+    const normalizedUrl = normalizeUrlWithHttps(trimmedSearchText)
+    if (isValidHttpUrl(normalizedUrl)) {
+      const history: AddHistoryPayload = {
+        title: trimmedSearchText,
+        url: normalizedUrl
+      }
+      dispatch(addHistoryForActiveTab(history))
+      navigate(AppNavigation.Browser.TabView)
+    } else {
+      navigateToGoogleSearchResult(trimmedSearchText)
     }
-    dispatch(addHistoryForActiveTab(history))
-    navigate(AppNavigation.Browser.TabView)
   }
 
   const renderHistory = (): JSX.Element => {
-    const isSearching = searchText.length > 0
+    const isSearching = trimmedSearchText.length > 0
 
     return (
-      <View>
-        <Pressable onPress={handleGoogleSearch}>
-          {(isSearching || searchText.length > 0) && (
+      <View sx={{ flex: 1 }}>
+        <Pressable
+          onPress={() => {
+            capture('BrowserSearchSubmitted')
+            navigateToGoogleSearchResult(trimmedSearchText)
+          }}>
+          {(isSearching || trimmedSearchText.length > 0) && (
             <View sx={{ flexDirection: 'row', alignItems: 'center' }}>
               <View
                 sx={{
@@ -89,7 +109,7 @@ export const EmptyTab = (): JSX.Element => {
                 variant="buttonMedium"
                 numberOfLines={1}
                 sx={{ marginLeft: 16, flex: 1 }}>
-                {`Search "${searchText}"`}
+                {`Search "${trimmedSearchText}"`}
               </Text>
             </View>
           )}
@@ -114,13 +134,18 @@ export const EmptyTab = (): JSX.Element => {
               )}
             </View>
             <Space y={16} />
-            <FlatList
-              data={filterHistories}
-              renderItem={item => (
-                <HistoryListItem history={item.item as History} />
-              )}
-              contentContainerStyle={{ paddingBottom: 16 }}
-            />
+            <View>
+              <FlatList
+                keyboardShouldPersistTaps="always"
+                keyExtractor={item => (item as History).id}
+                data={filterHistories}
+                onScroll={onScrollHandler}
+                renderItem={item => (
+                  <HistoryListItem history={item.item as History} />
+                )}
+                contentContainerStyle={{ paddingBottom: BOTTOM_PADDING }}
+              />
+            </View>
           </View>
         )}
       </View>
@@ -128,16 +153,20 @@ export const EmptyTab = (): JSX.Element => {
   }
 
   return (
-    <View sx={{ marginHorizontal: 16 }}>
+    <View sx={{ paddingHorizontal: 16, backgroundColor: '$black', flex: 1 }}>
       <SearchBar
+        returnKeyType="done"
         setSearchBarFocused={setIsFocused}
         onTextChanged={setSearchText}
         searchText={searchText}
         placeholder="Search or Type URL"
         textColor={colors.$white}
+        onSubmitEditing={handleSearchBarSubmit}
       />
       {isFocused && renderHistory()}
-      {!isFocused && <FavoritesAndSuggestions />}
+      {!isFocused && (
+        <FavoritesAndSuggestions onScrollHandler={onScrollHandler} />
+      )}
     </View>
   )
 }

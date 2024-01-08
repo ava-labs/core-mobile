@@ -29,8 +29,9 @@ import { BridgeBlacklistTransform } from './transforms/BridgeBlacklistTransform'
 import { WatchlistBlacklistTransform } from './transforms/WatchlistBlacklistTransform'
 import { AppBlacklistTransform } from './transforms/AppBlacklistTransform'
 import { combinedReducer as browser } from './browser'
+import { snapshotsReducer as snapshots } from './snapshots/slice'
 
-const VERSION = 9
+const VERSION = 11
 
 // list of reducers that don't need to be persisted
 // for nested/partial blacklist, please use transform
@@ -58,6 +59,7 @@ const combinedReducer = combineReducers({
   walletConnectV2,
   viewOnce,
   browser,
+  snapshots,
 
   // user preferences
   settings,

@@ -19,7 +19,7 @@ export const TabIcon = ({ numberOfTabs, onPress }: Props): JSX.Element => {
         borderRadius: 4
       }}>
       <Text
-        style={{
+        sx={{
           marginHorizontal: 4,
           color: '$neutral900',
           fontWeight: '700'

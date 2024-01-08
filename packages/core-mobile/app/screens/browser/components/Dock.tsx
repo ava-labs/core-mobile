@@ -1,10 +1,5 @@
 import React from 'react'
-import CarrotSVG from 'components/svg/CarrotSVG'
-import CreateNewWalletPlusSVG, {
-  IconWeight
-} from 'components/svg/CreateNewWalletPlusSVG'
-import EllipsisSVG from 'components/svg/EllipsisSVG'
-import { TouchableOpacity, useTheme } from '@avalabs/k2-mobile'
+import { Icons, TouchableOpacity, useTheme } from '@avalabs/k2-mobile'
 import Animated, { FadeInDown, FadeOutDown } from 'react-native-reanimated'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectIsFavorited } from 'store/browser/slices/favorites'
@@ -14,13 +9,14 @@ import { useNavigation } from '@react-navigation/native'
 import {
   addTab,
   goBackward,
-  goForward as goFowardInPage,
-  selectActiveTab,
+  goForward as goForwardInPage,
+  selectActiveHistory,
   selectAllTabs,
   selectCanGoBack,
   selectCanGoForward
 } from 'store/browser/slices/tabs'
 import { BlurBackground } from 'components/BlurBackground'
+import { useAnalytics } from 'hooks/useAnalytics'
 import { useHardwareBackHandler } from '../handleBrowserBack'
 import { DockMenu } from './DockMenu'
 import { TabIcon } from './TabIcon'
@@ -36,34 +32,39 @@ export const Dock = (): JSX.Element => {
   const dispatch = useDispatch()
   const { navigate } = useNavigation<TabViewNavigationProp>()
   const totalTabs = useSelector(selectAllTabs).length
-  const activeTab = useSelector(selectActiveTab)
+  const activeHistory = useSelector(selectActiveHistory)
   useHardwareBackHandler()
+  const { capture } = useAnalytics()
 
   const canGoBack = useSelector(selectCanGoBack)
   const canGoForward = useSelector(selectCanGoForward)
 
-  const isFavorited = useSelector(
-    selectIsFavorited(activeTab?.activeHistory?.id)
-  )
+  const isFavorited = useSelector(selectIsFavorited(activeHistory?.id))
 
   const goBack = (): void => {
     if (!canGoBack) return
+    capture('BrowserBackTapped')
     dispatch(goBackward())
   }
   const goForward = (): void => {
     if (!canGoForward) return
-    dispatch(goFowardInPage())
+    capture('BrowserForwardTapped')
+    dispatch(goForwardInPage())
   }
 
   const createNewTab = (): void => {
     // browser will listen to this and reset the screen with
     // initiated tab data
+    capture('BrowserNewTabTapped')
     dispatch(addTab())
   }
 
   const navigateToTabList = (): void => {
-    navigate(AppNavigation.Browser.TabsList)
+    capture('BrowserTabsOpened')
+    navigate(AppNavigation.Modal.BrowserTabsList)
   }
+
+  const ICON_SIZE = 32
 
   return (
     <Animated.View
@@ -88,29 +89,36 @@ export const Dock = (): JSX.Element => {
         backgroundColor="#BFBFBF70"
       />
       <TouchableOpacity onPress={goBack} disabled={!canGoBack}>
-        <CarrotSVG
-          direction="left"
-          size={26}
+        <Icons.Navigation.ArrowBackIOSNew
+          width={ICON_SIZE}
+          height={ICON_SIZE}
           color={canGoBack ? colors.$neutral900 : colors.$neutral300}
         />
       </TouchableOpacity>
       <TouchableOpacity onPress={goForward} disabled={!canGoForward}>
-        <CarrotSVG
-          size={26}
+        <Icons.Navigation.ArrowForwardIOS
+          width={ICON_SIZE}
+          height={ICON_SIZE}
           color={canGoForward ? colors.$neutral900 : colors.$neutral300}
         />
       </TouchableOpacity>
       <TouchableOpacity onPress={createNewTab}>
-        <CreateNewWalletPlusSVG
-          size={21}
-          weight={IconWeight.extraBold}
+        <Icons.Content.Add
+          width={ICON_SIZE}
+          height={ICON_SIZE}
           color={colors.$neutral900}
         />
       </TouchableOpacity>
       <TabIcon numberOfTabs={totalTabs} onPress={navigateToTabList} />
-      <DockMenu isFavorited={isFavorited}>
-        <EllipsisSVG color={colors.$neutral900} size={25} />
-      </DockMenu>
+      <TouchableOpacity onPress={() => capture('BrowserContextualMenuOpened')}>
+        <DockMenu isFavorited={isFavorited}>
+          <Icons.Navigation.MoreHoriz
+            color={colors.$neutral900}
+            width={ICON_SIZE}
+            height={ICON_SIZE}
+          />
+        </DockMenu>
+      </TouchableOpacity>
     </Animated.View>
   )
 }

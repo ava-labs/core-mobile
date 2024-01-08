@@ -98,9 +98,7 @@ enum EarnScreens {
 enum BrowserScreens {
   Intro = 'BrowserScreens.Intro',
   TabView = 'BrowserScreens.TabView',
-  TabsList = 'BrowserScreens.TabsList',
   History = 'BrowserScreens.History',
-  AreYouSure = 'BrowserScreens.AreYouSure',
   ClearAllHistory = 'BrowserScreens.ClearAllHistory'
 }
 
@@ -200,7 +198,9 @@ enum ModalScreens {
   AvalancheSendTransactionV2 = 'ModalScreens.AvalancheSendTransactionV2',
   AvalancheSignTransactionV2 = 'ModalScreens.AvalancheSignTransactionV2',
   StakeDisclaimer = 'ModalScreens.StakeDisclaimer',
-  CoreIntro = 'ModalScreens.CoreIntro'
+  CoreIntro = 'ModalScreens.CoreIntro',
+  BrowserTabsList = 'ModalScreens.BrowserTabsList',
+  BrowserTabCloseAll = 'ModalScreens.BrowserTabCloseAll'
 }
 
 enum SendScreens {

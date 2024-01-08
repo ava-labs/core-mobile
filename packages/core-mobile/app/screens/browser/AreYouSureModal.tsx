@@ -1,11 +1,17 @@
 import React, { useCallback } from 'react'
-import { useNavigation } from '@react-navigation/native'
+import { useNavigation, useRoute } from '@react-navigation/native'
 import WarningModal from 'components/WarningModal'
-import { useDispatch } from 'react-redux'
-import { removeAllTabs } from 'store/browser/slices/tabs'
+import { WalletScreenProps } from 'navigation/types'
+import AppNavigation from 'navigation/AppNavigation'
+
+type ScreenProps = WalletScreenProps<
+  typeof AppNavigation.Modal.BrowserTabCloseAll
+>
 
 export const AreYouSureModal: () => JSX.Element = () => {
-  const dispatch = useDispatch()
+  const {
+    params: { onConfirm }
+  } = useRoute<ScreenProps['route']>()
   const { goBack, canGoBack } = useNavigation()
 
   const onGoBack = useCallback(() => {
@@ -15,9 +21,12 @@ export const AreYouSureModal: () => JSX.Element = () => {
   }, [canGoBack, goBack])
 
   const onYes = useCallback(() => {
-    dispatch(removeAllTabs())
-    onGoBack()
-  }, [dispatch, onGoBack])
+    onConfirm()
+
+    if (canGoBack()) {
+      goBack()
+    }
+  }, [canGoBack, goBack, onConfirm])
 
   return (
     <WarningModal

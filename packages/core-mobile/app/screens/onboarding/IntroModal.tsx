@@ -58,6 +58,7 @@ interface Props {
   buttonText: string
   descriptions: { icon: JSX.Element; text: string }[]
   styles?: SxProp
+  onConfirm?: () => void
   testID?: string
 }
 
@@ -67,6 +68,7 @@ export default function IntroModal({
   buttonText,
   descriptions,
   styles,
+  onConfirm,
   testID
 }: Props): JSX.Element {
   const dispatch = useDispatch()
@@ -79,6 +81,11 @@ export default function IntroModal({
     require('assets/icons/core_welcome_modal_bg.png'),
     error => Logger.error('Error loading IntroModal SKImage: ', error)
   )
+
+  const handleOnPress = (): void => {
+    onConfirm?.()
+    onInstructionRead()
+  }
 
   return (
     <View
@@ -129,7 +136,7 @@ export default function IntroModal({
         <Button
           type="primary"
           size="xlarge"
-          onPress={onInstructionRead}
+          onPress={handleOnPress}
           testID={testID}>
           {buttonText}
         </Button>

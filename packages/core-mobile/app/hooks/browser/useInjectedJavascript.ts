@@ -1,10 +1,16 @@
-export type RecentWalletHackScripts = {
+export type InjectedJavascripts = {
   injectCoreAsRecent: string
   /**
    * Use injectLogRecentWallet if you need to find out what is stored in localStorage under WCM_RECENT_WALLET_DATA key.
    * To use it put this string into WebView.injectedJavaScript, and watch for messages in WebView.onMessage
    */
   injectLogRecentWallet: string
+  injectGetDescriptionAndFavicon: string
+}
+
+export type GetDescriptionAndFavicon = {
+  favicon: string
+  description: string
 }
 
 /**
@@ -15,7 +21,7 @@ export type RecentWalletHackScripts = {
  * [WalletConnect modal]{@link https://github.com/WalletConnect/modal/blob/95571fb4e96bd2a5c36214e657dc66aae0f1c8b4/packages/modal-ui/src/utils/UiUtil.ts#L146}
  * and it sets this wallet as first in the list of supported wallets.
  */
-export default function useRecentWalletHack(): RecentWalletHackScripts {
+export default function useInjectedJavascript(): InjectedJavascripts {
   const coreMobileWalletConnectObject = `
     {
       id: 'f323633c1f67055a45aac84e321af6ffe46322da677ffdd32f9bc1e33bafe29c',
@@ -57,11 +63,10 @@ export default function useRecentWalletHack(): RecentWalletHackScripts {
     };
   `
 
+  // inject Core as recent wallet
   const injectCoreAsRecent = `(async function(){ 
     const wallet = ${coreMobileWalletConnectObject}
     window.localStorage.setItem('WCM_RECENT_WALLET_DATA', JSON.stringify(wallet));
-    const recentWallet = window.localStorage.getItem('WCM_RECENT_WALLET_DATA');
-    window.ReactNativeWebView.postMessage(recentWallet)
   })();`
 
   const injectLogRecentWallet = `(async function(){
@@ -75,8 +80,34 @@ export default function useRecentWalletHack(): RecentWalletHackScripts {
     }
   })();`
 
+  // inject favicon and description from html link tags and meta tags
+  const injectGetDescriptionAndFavicon = `(async function(){ 
+    let description = '';
+    let favicon = 'null';
+    const metas = document.getElementsByTagName('meta');
+    for (let i = 0; i < metas.length; i++) {
+      if (metas[i].getAttribute('name') === 'description') {
+        description = metas[i].getAttribute('content');
+      }
+    }
+    var nodeList = document.getElementsByTagName("link");
+    for (var i = 0; i < nodeList.length; i++) {
+      if (nodeList[i].getAttribute("rel") === "apple-touch-icon" && favicon === "null") {
+        favicon = nodeList[i].getAttribute("href");
+      } else if (nodeList[i].getAttribute("rel") === "shortcut icon" && favicon === "null") {
+        favicon = nodeList[i].getAttribute("href");
+      } else if (nodeList[i].getAttribute("rel") === "icon shortcut" && favicon === "null") {
+        favicon = nodeList[i].getAttribute("href");
+      } else if (nodeList[i].getAttribute("rel") === "icon" && favicon === "null") {
+        favicon = nodeList[i].getAttribute("href");
+      }
+    }
+    window.ReactNativeWebView.postMessage(JSON.stringify({favicon, description}));
+  })();`
+
   return {
     injectCoreAsRecent,
-    injectLogRecentWallet
+    injectLogRecentWallet,
+    injectGetDescriptionAndFavicon
   }
 }

@@ -1,14 +1,17 @@
-import React, { FC } from 'react'
+import React, { FC, useMemo } from 'react'
 import { MenuView } from '@react-native-menu/menu'
 import { Platform, Share as ShareApi } from 'react-native'
 import { useTheme } from '@avalabs/k2-mobile'
 import { useDispatch, useSelector } from 'react-redux'
-import { addFavorite } from 'store/browser/slices/favorites'
+import { addFavorite, removeFavorite } from 'store/browser/slices/favorites'
 import { useNavigation } from '@react-navigation/native'
 import { BrowserScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
-import { selectActiveTab } from 'store/browser/slices/tabs'
-import { selectActiveHistory } from 'store/browser/slices/globalHistory'
+import { selectActiveHistory } from 'store/browser/slices/tabs'
+import { useAnalytics } from 'hooks/useAnalytics'
+import Logger from 'utils/Logger'
+import { showSimpleToast } from 'components/Snackbar'
+import { isValidUrl } from '../utils'
 
 enum MenuId {
   Favorite = 'favorite',
@@ -33,36 +36,34 @@ export const DockMenu: FC<Props> = ({
   } = useTheme()
   const dispatch = useDispatch()
   const { navigate } = useNavigation<TabViewNavigationProp>()
-  const activeTab = useSelector(selectActiveTab)
-  const activeHistory = useSelector(
-    selectActiveHistory(activeTab?.activeHistory?.id)
-  )
+  const activeHistory = useSelector(selectActiveHistory)
+  const { capture } = useAnalytics()
 
   const onShare = async (): Promise<void> => {
-    await ShareApi.share({
-      url: activeHistory?.url ?? ''
-    })
+    const linkToShare = activeHistory?.url
+    if (linkToShare) {
+      const content =
+        Platform.OS === 'ios'
+          ? {
+              url: linkToShare
+            }
+          : {
+              message: linkToShare
+            }
+
+      await ShareApi.share(content)
+    }
   }
 
-  const favoriteIcon = isFavorited
-    ? { ios: 'star.fill', android: 'star_fill_24px' }
-    : { ios: 'star', android: 'star_24px' }
+  const menuActions = useMemo(() => {
+    const favoriteIcon = isFavorited
+      ? { ios: 'star.fill', android: 'star_fill_24px' }
+      : { ios: 'star', android: 'star_24px' }
 
-  const menuActionColor =
-    Platform.OS === 'android' ? colors.$white : colors.$black
+    const menuActionColor =
+      Platform.OS === 'android' ? colors.$white : colors.$black
 
-  const menuActions = [
-    {
-      id: MenuId.Favorite,
-      title: 'Mark as Favorite',
-      image: Platform.select({
-        ios: favoriteIcon.ios,
-        android: favoriteIcon.android
-      }),
-      titleColor: menuActionColor,
-      imageColor: menuActionColor
-    },
-    {
+    const historyAction = {
       id: MenuId.History,
       title: 'View History',
       image: Platform.select({
@@ -71,8 +72,20 @@ export const DockMenu: FC<Props> = ({
       }),
       titleColor: menuActionColor,
       imageColor: menuActionColor
-    },
-    {
+    }
+
+    const favoriteAction = {
+      id: MenuId.Favorite,
+      title: 'Mark as Favorite',
+      image: Platform.select({
+        ios: favoriteIcon.ios,
+        android: favoriteIcon.android
+      }),
+      titleColor: menuActionColor,
+      imageColor: menuActionColor
+    }
+
+    const shareAction = {
       id: MenuId.Share,
       title: 'Share',
       image: Platform.select({
@@ -82,29 +95,79 @@ export const DockMenu: FC<Props> = ({
       titleColor: menuActionColor,
       imageColor: menuActionColor
     }
-  ]
+
+    if (activeHistory) {
+      return [favoriteAction, historyAction, shareAction]
+    } else {
+      return [historyAction]
+    }
+  }, [activeHistory, colors, isFavorited])
+
+  function handleShare(): void {
+    capture('BrowserShareTapped')
+    onShare()
+  }
+
+  function handleHistory(): void {
+    capture('BrowserViewHistoryTapped')
+    navigate(AppNavigation.Browser.History)
+  }
+
+  function handleFavorite(): void {
+    if (!activeHistory) {
+      return
+    }
+
+    capture('BrowserAddToFavoriteTapped')
+    if (!isValidUrl(activeHistory.url ?? '')) {
+      Logger.error('Invalid URL')
+      return
+    }
+
+    if (isFavorited) {
+      dispatch(removeFavorite({ url: activeHistory.url }))
+
+      showSimpleToast('Removed from favorites')
+    } else {
+      const activeHistoryUrl = new URL(activeHistory.url)
+      const activeHistoryDomain =
+        activeHistoryUrl.protocol + '//' + activeHistoryUrl.hostname
+
+      let favicon: string | undefined
+      if (activeHistory.favicon) {
+        if (isValidUrl(activeHistory.favicon)) {
+          favicon = activeHistory.favicon
+        } else {
+          favicon = activeHistoryDomain + activeHistory.favicon
+        }
+      }
+
+      dispatch(
+        addFavorite({
+          favicon,
+          title: activeHistory.title,
+          description: activeHistory.description ?? '',
+          url: activeHistory.url
+        })
+      )
+
+      showSimpleToast('Added to favorites')
+    }
+  }
 
   return (
     <MenuView
       onPressAction={({ nativeEvent }) => {
         switch (nativeEvent.event) {
           case MenuId.Share:
-            onShare()
+            handleShare()
             break
           case MenuId.History: {
-            navigate(AppNavigation.Browser.History)
+            handleHistory()
             break
           }
           case MenuId.Favorite: {
-            dispatch(
-              addFavorite({
-                favicon: '', // get from current html metadta
-                title: '', // get from current html metadta
-                description: '', // get from current html metadta
-                url: activeHistory?.url ?? ''
-              })
-            )
-            // show toast message
+            handleFavorite()
             break
           }
         }

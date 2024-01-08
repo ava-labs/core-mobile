@@ -125,5 +125,24 @@ export const migrations = {
         walletType: isLoggedIn ? WalletType.MNEMONIC : WalletType.UNSET
       }
     }
+  },
+  10: async (state: any) => {
+    //wipe browser state since this is first version that users are actually gonna use
+    return {
+      ...state,
+      browser: undefined
+    }
+  },
+  11: async (state: any) => {
+    //set security countdown
+    return {
+      ...state,
+      security: {
+        loginAttempt: {
+          count: state.security.loginAttempt.count,
+          countdown: 0
+        }
+      }
+    }
   }
 }
