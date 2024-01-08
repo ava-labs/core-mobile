@@ -1,5 +1,6 @@
 import { Pressable, Text, Image } from '@avalabs/k2-mobile'
 import { useNavigation } from '@react-navigation/native'
+import { Space } from 'components/Space'
 import { useAnalytics } from 'hooks/useAnalytics'
 import AppNavigation from 'navigation/AppNavigation'
 import { BrowserScreenProps } from 'navigation/types'
@@ -49,7 +50,8 @@ export const SuggestedListItem = ({
         source={{ uri: suggested.logoUrl }}
         sx={{ width: 64, height: 64, borderRadius: 8 }}
       />
-      <Text variant="body1" sx={{ color: '$white' }} numberOfLines={1}>
+      <Space y={4} />
+      <Text variant="badgeLabel" sx={{ color: '$white' }} numberOfLines={1}>
         {suggested.name}
       </Text>
     </Pressable>

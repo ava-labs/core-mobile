@@ -7,7 +7,7 @@ import { addFavorite, removeFavorite } from 'store/browser/slices/favorites'
 import { useNavigation } from '@react-navigation/native'
 import { BrowserScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
-import { selectActiveHistory } from 'store/browser/slices/tabs'
+import { addTab, selectActiveHistory } from 'store/browser/slices/tabs'
 import { useAnalytics } from 'hooks/useAnalytics'
 import Logger from 'utils/Logger'
 import { showSimpleToast } from 'components/Snackbar'
@@ -16,7 +16,8 @@ import { isValidUrl } from '../utils'
 enum MenuId {
   Favorite = 'favorite',
   History = 'history',
-  Share = 'share'
+  Share = 'share',
+  NewTab = 'newTab'
 }
 
 type TabViewNavigationProp = BrowserScreenProps<
@@ -27,7 +28,7 @@ interface Props {
   isFavorited?: boolean
 }
 
-export const DockMenu: FC<Props> = ({
+export const MoreMenu: FC<Props> = ({
   children,
   isFavorited = false
 }): JSX.Element => {
@@ -96,12 +97,30 @@ export const DockMenu: FC<Props> = ({
       imageColor: menuActionColor
     }
 
+    const newTabAction = {
+      id: MenuId.NewTab,
+      title: 'New Tab',
+      image: Platform.select({
+        ios: 'plus',
+        android: 'add'
+      }),
+      titleColor: menuActionColor,
+      imageColor: menuActionColor
+    }
+
     if (activeHistory) {
-      return [favoriteAction, historyAction, shareAction]
+      return [newTabAction, favoriteAction, historyAction, shareAction]
     } else {
-      return [historyAction]
+      return [newTabAction, historyAction]
     }
   }, [activeHistory, colors, isFavorited])
+
+  function handleNewTab(): void {
+    // browser will listen to this and reset the screen with
+    // initiated tab data
+    capture('BrowserNewTabTapped')
+    dispatch(addTab())
+  }
 
   function handleShare(): void {
     capture('BrowserShareTapped')
@@ -168,6 +187,10 @@ export const DockMenu: FC<Props> = ({
           }
           case MenuId.Favorite: {
             handleFavorite()
+            break
+          }
+          case MenuId.NewTab: {
+            handleNewTab()
             break
           }
         }
