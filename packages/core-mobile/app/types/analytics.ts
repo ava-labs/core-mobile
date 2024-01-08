@@ -180,4 +180,7 @@ export type AnalyticsEvents = {
   BrowserViewHistoryTapped: undefined
   WalletConnectedToDapp: { dAppUrl: string }
   TxSubmittedToDapp: undefined
+
+  // CP-7989 - Address and Tx Hash Analytics Collection
+  WalletAddresses: { addresses: { EVM: string; BTC: string }[] }
 }

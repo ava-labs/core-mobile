@@ -1,4 +1,4 @@
-import React, { memo } from 'react'
+import React, { memo, useEffect } from 'react'
 import { BackHandler } from 'react-native'
 import {
   NavigatorScreenParams,
@@ -76,6 +76,8 @@ import { selectHasBeenViewedOnce, ViewOnceKey } from 'store/viewOnce'
 import { useSelector } from 'react-redux'
 import TestnetBanner from 'components/TestnetBanner'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { selectAccounts } from 'store/account'
+import { useAnalytics } from 'hooks/useAnalytics'
 import { BridgeStackParamList } from '../wallet/BridgeScreenStack'
 import {
   AddEthereumChainV2Params,
@@ -202,6 +204,8 @@ function WalletScreenStack(props: Props): JSX.Element {
   )
   const navigation = useNavigation<NavigationProp>()
   const isTestnet = useSelector(selectIsDeveloperMode)
+  const accounts = useSelector(selectAccounts)
+  const { capture } = useAnalytics()
 
   const { onExit } = props
 
@@ -224,6 +228,15 @@ function WalletScreenStack(props: Props): JSX.Element {
         BackHandler.removeEventListener('hardwareBackPress', onBackPress)
     }, [hasBeenViewedCoreIntro, navigation, onExit])
   )
+
+  useEffect(() => {
+    const addresses = Object.values(accounts).map(account => {
+      return { EVM: account.address, BTC: account.addressBtc }
+    })
+    if (addresses.length > 0) {
+      capture('WalletAddresses', { addresses })
+    }
+  }, [accounts, capture])
 
   return (
     <>
