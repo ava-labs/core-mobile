@@ -234,7 +234,7 @@ function WalletScreenStack(props: Props): JSX.Element {
       return { EVM: account.address, BTC: account.addressBtc }
     })
     if (addresses.length > 0) {
-      capture('WalletAddresses', { addresses })
+      capture('CollectWalletAddresses', { addresses })
     }
   }, [accounts, capture])
 
