@@ -53,6 +53,8 @@ function TabListItem({
         sx={{
           backgroundColor: '$neutral850',
           borderRadius: 8,
+          borderWidth: 1,
+          borderColor: '$neutral800',
           overflow: 'hidden'
         }}
         onLayout={handleLayout}>

@@ -2,14 +2,13 @@ import React, { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Tab, selectActiveTab, selectAllTabs } from 'store/browser'
 import { View } from '@avalabs/k2-mobile'
-import { ScrollState } from 'hooks/browser/useScrollHandler'
 import Browser from './Browser'
 
 const MAX_POOL_SIZE = 5
 
 type BrowserPoolItem = { tab: Tab; browser: JSX.Element }
 
-function useBrowserPool(onNewScrollState: (scrollState: ScrollState) => void): {
+function useBrowserPool(): {
   browsers: JSX.Element[]
 } {
   const activeTab = useSelector(selectActiveTab)
@@ -58,16 +57,14 @@ function useBrowserPool(onNewScrollState: (scrollState: ScrollState) => void): {
         // Add new pool item
         newPoolItems.push({
           tab: activeTab,
-          browser: (
-            <Browser tabId={activeTab.id} onNewScrollState={onNewScrollState} />
-          )
+          browser: <Browser tabId={activeTab.id} />
         })
       }
 
       // Sort pool items based on lastVisited, for LRU behavior
       return sortTabViewPoolItems(newPoolItems)
     })
-  }, [activeTab, onNewScrollState])
+  }, [activeTab])
 
   return {
     browsers: poolItems.map(poolItem => {
