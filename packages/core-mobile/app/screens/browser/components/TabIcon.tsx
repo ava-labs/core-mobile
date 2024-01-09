@@ -1,4 +1,4 @@
-import { Text, TouchableHighlight } from '@avalabs/k2-mobile'
+import { Text, TouchableOpacity } from '@avalabs/k2-mobile'
 import React from 'react'
 
 interface Props {
@@ -8,24 +8,26 @@ interface Props {
 
 export const TabIcon = ({ numberOfTabs, onPress }: Props): JSX.Element => {
   return (
-    <TouchableHighlight
+    <TouchableOpacity
       onPress={onPress}
+      hitSlop={{ left: 15, right: 15, top: 15, bottom: 15 }}
       sx={{
         backgroundColor: '$transparent',
-        borderWidth: 3,
-        borderColor: '$neutral900',
+        borderWidth: 2,
+        borderColor: '$neutral50',
         alignItems: 'center',
         justifyContent: 'center',
         borderRadius: 4
       }}>
       <Text
+        variant="caption"
         sx={{
           marginHorizontal: 4,
-          color: '$neutral900',
+          color: '$neutral50',
           fontWeight: '700'
         }}>
         {numberOfTabs ?? 0}
       </Text>
-    </TouchableHighlight>
+    </TouchableOpacity>
   )
 }

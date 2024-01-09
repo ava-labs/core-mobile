@@ -131,9 +131,9 @@ function TabsListScreen(): JSX.Element {
 
   function renderHeader(): JSX.Element {
     return (
-      <Text
-        variant="heading5"
-        sx={{ marginBottom: 16 }}>{`${tabs.length} Tabs`}</Text>
+      <Text variant="heading5" sx={{ marginBottom: 16 }}>
+        {tabs.length} {tabs.length === 1 ? 'Tab' : 'Tabs'}
+      </Text>
     )
   }
 
