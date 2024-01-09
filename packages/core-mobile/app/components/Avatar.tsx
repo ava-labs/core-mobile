@@ -1,166 +1,104 @@
-import React, { FC, useCallback, useState } from 'react'
-import { StyleSheet, View } from 'react-native'
-import { useApplicationContext } from 'contexts/ApplicationContext'
+import React, { FC, useMemo, useState } from 'react'
 import AvaLogoSVG from 'components/svg/AvaLogoSVG'
-import { Opacity10 } from 'resources/Constants'
 import EthereumSvg from 'components/svg/Ethereum'
 import BitcoinSVG from 'components/svg/BitcoinSVG'
 import { TokenSymbol } from 'store/network'
 import { SvgUri } from 'react-native-svg'
 import { formatUriImageToPng, isContentfulImageUri } from 'utils/Contentful'
 import FastImage from 'react-native-fast-image'
-import AvaText from './AvaText'
+import { Text, useTheme, View } from '@avalabs/k2-mobile'
 
-interface Props {
-  name: string
-  symbol?: string
+interface AvatarBaseProps {
+  title: string
   logoUri?: string
   showBorder?: boolean
   size?: number
-  circleColor?: string
   testID?: string
+  tokenSymbol?: string
+  backgroundColor?: string
+  fallbackBackgroundColor?: string
 }
 
-const AvatarBase: FC<Props> = ({
-  name,
-  symbol,
+const DEFAULT_SIZE = 32
+
+/**
+ * Shows given logoUrl as circled avatar.
+ * LogoUrl can be valid image or svg.
+ * In case if image load fails, it will fall back to circled avatar containing one to max two capital letters from title property
+ * A special case is if tokenSymbol is provided then it will return one of 3 predefined token SVGs.
+ */
+const AvatarBase: FC<AvatarBaseProps> = ({
+  title,
+  tokenSymbol,
   logoUri,
   showBorder,
-  size = 32,
-  circleColor
+  size = DEFAULT_SIZE,
+  backgroundColor,
+  fallbackBackgroundColor
 }) => {
-  const { theme } = useApplicationContext()
+  const { theme } = useTheme()
   const [failedToLoad, setFailedToLoad] = useState(false)
   const hasValidLogoUri =
     !!logoUri &&
     (logoUri.startsWith('http') || logoUri.startsWith('https')) &&
     !failedToLoad
 
-  const renderSVG = useCallback(
-    (uri: string): JSX.Element => {
-      const style = {
-        borderRadius: size / 2,
+  if (!hasValidLogoUri) {
+    return (
+      <FallbackAvatar
+        title={title}
+        size={size}
+        showBorder={showBorder}
+        fallbackBackgroundColor={fallbackBackgroundColor ?? backgroundColor}
+      />
+    )
+  }
+
+  if (tokenSymbol === TokenSymbol.AVAX || tokenSymbol === 'FAU') {
+    return (
+      <AvaLogoSVG
+        size={size}
+        logoColor={theme.colors.$white}
+        backgroundColor={theme.colors.$avalancheRed}
+      />
+    )
+  } else if (tokenSymbol === TokenSymbol.ETH) {
+    return <EthereumSvg size={size} />
+  } else if (tokenSymbol === TokenSymbol.BTC) {
+    return <BitcoinSVG size={size} />
+  }
+
+  return logoUri?.endsWith('svg') && !isContentfulImageUri(logoUri) ? (
+    <SvgUri
+      uri={logoUri}
+      width={size}
+      height={size}
+      style={{
+        borderRadius: size,
+        backgroundColor: backgroundColor
+      }}
+      onLoad={() => setFailedToLoad(false)}
+      onError={() => setFailedToLoad(true)}
+      testID="avatar__logo_avatar"
+    />
+  ) : (
+    <FastImage
+      style={{
+        borderRadius: size,
         width: size,
-        height: size
-      }
-
-      if (isContentfulImageUri(uri)) {
-        return (
-          <FastImage
-            source={{
-              uri: formatUriImageToPng(uri, size)
-            }}
-            style={style}
-            testID="avatar__logo_avatar"
-          />
-        )
-      }
-      return (
-        <SvgUri
-          uri={uri}
-          style={style}
-          width={size}
-          height={size}
-          testID="avatar__logo_avatar"
-        />
-      )
-    },
-    [size]
+        height: size,
+        backgroundColor: backgroundColor
+      }}
+      source={{
+        uri: isContentfulImageUri(logoUri)
+          ? formatUriImageToPng(logoUri, size)
+          : logoUri
+      }}
+      onLoad={() => setFailedToLoad(false)}
+      onError={() => setFailedToLoad(true)}
+      testID="avatar__logo_avatar"
+    />
   )
-
-  const tokenLogo = useCallback(() => {
-    // if AVAX, return our own logo
-    if (symbol === TokenSymbol.AVAX || symbol === 'FAU') {
-      return (
-        <AvaLogoSVG
-          size={size}
-          logoColor={theme.tokenLogoColor}
-          backgroundColor={theme.tokenLogoBg}
-        />
-      )
-    } else if (symbol === TokenSymbol.ETH) {
-      return <EthereumSvg size={size} />
-    } else if (symbol === TokenSymbol.BTC) {
-      return <BitcoinSVG size={size} />
-    }
-
-    const renderTokenInitials = (): JSX.Element => {
-      const names = (name ?? '').split(' ')
-
-      const initials =
-        names.length > 1
-          ? names[0]?.substring(0, 1) ??
-            '' + names[names.length - 1]?.substring(0, 1) ??
-            ''
-          : names[0]?.substring(0, 1) ?? ''
-
-      return (
-        <View
-          style={[
-            styles.initials,
-            {
-              backgroundColor: circleColor ?? theme.colorStroke2 + Opacity10,
-              width: size,
-              height: size
-            },
-            showBorder && { borderWidth: 0.5, borderColor: theme.colorDisabled }
-          ]}>
-          <AvaText.Body1
-            // Scale text in relation to the size
-            textStyle={{ fontSize: size * 0.5, lineHeight: size * 0.75 }}
-            testID={initials}>
-            {initials}
-          </AvaText.Body1>
-        </View>
-      )
-    }
-
-    const renderTokenLogo = (): JSX.Element => {
-      if (logoUri?.endsWith('svg')) {
-        return renderSVG(logoUri)
-      }
-
-      // adding a white background by default
-      // as a temporary workaround to show logos with transparency and black strokes
-      // for example https://assets.coingecko.com/coins/images/13423/large/frax_share.png?1608478989
-      return (
-        <FastImage
-          style={[
-            { backgroundColor: 'white' },
-            {
-              borderRadius: size / 2,
-              width: size,
-              height: size
-            }
-          ]}
-          source={{ uri: logoUri }}
-          onError={() => {
-            setFailedToLoad(true)
-          }}
-          testID="avatar__logo_avatar"
-        />
-      )
-    }
-
-    // if ERC20 or invalid URL, return token initials
-    // if TokenWithBalance and valid URI get load it.
-    return hasValidLogoUri ? renderTokenLogo() : renderTokenInitials()
-  }, [
-    circleColor,
-    hasValidLogoUri,
-    logoUri,
-    name,
-    renderSVG,
-    showBorder,
-    size,
-    symbol,
-    theme.colorDisabled,
-    theme.colorStroke2,
-    theme.tokenLogoBg,
-    theme.tokenLogoColor
-  ])
-
-  return tokenLogo()
 }
 
 interface TokenAvatarProps {
@@ -171,38 +109,93 @@ interface TokenAvatarProps {
   testID?: string
 }
 
-const TokenAvatar: FC<TokenAvatarProps> = ({ name, symbol, logoUri, size }) => {
+const TokenAvatar: FC<TokenAvatarProps> = props => {
   return (
     <AvatarBase
-      name={name}
-      symbol={symbol}
-      logoUri={logoUri}
-      size={size}
-      testID={symbol}
+      {...props}
+      title={props.name}
+      tokenSymbol={props.symbol}
+      testID={props.symbol}
     />
   )
 }
 
-const CustomAvatar: FC<Props> = props => {
-  return <AvatarBase {...props} testID="avatar__custom_avatar" />
+interface CustomAvatarProps {
+  name: string
+  symbol?: string
+  logoUri?: string
+  showBorder?: boolean
+  size?: number
+  circleColor?: string
+  testID?: string
+}
+
+const CustomAvatar: FC<CustomAvatarProps> = props => {
+  return (
+    <AvatarBase
+      {...props}
+      title={props.name}
+      backgroundColor={props.circleColor}
+      tokenSymbol={props.symbol}
+      testID={props.testID ?? 'avatar__custom_avatar'}
+    />
+  )
+}
+const BasicAvatar: FC<AvatarBaseProps> = props => {
+  return (
+    <AvatarBase {...props} testID={props.testID ?? 'avatar__custom_avatar'} />
+  )
+}
+
+function FallbackAvatar({
+  title,
+  size = DEFAULT_SIZE,
+  fallbackBackgroundColor,
+  showBorder
+}: AvatarBaseProps): JSX.Element {
+  const initials = useMemo(() => {
+    const names = (title ?? '').split(' ')
+    const length = names.length
+
+    return length > 1
+      ? `${names[0]?.substring(0, 1) ?? ''}${
+          names[length - 1]?.substring(0, 1) ?? ''
+        }`
+      : names[0]?.substring(0, 1) ?? ''
+  }, [title])
+
+  return (
+    <View
+      sx={{
+        width: size,
+        height: size,
+        borderRadius: size,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: fallbackBackgroundColor,
+        borderWidth: showBorder ? 0.5 : 0,
+        borderColor: showBorder ? '$neutral800' : 'unset'
+      }}>
+      <Text
+        variant="body1"
+        sx={{
+          color: '$neutral50',
+          fontSize: size * 0.5,
+          lineHeight: size * 0.75
+        }}>
+        {initials}
+      </Text>
+    </View>
+  )
 }
 
 const Avatar = {
   Token: TokenAvatar,
-  Custom: CustomAvatar
+  /**
+   * @deprecated - use Basic
+   */
+  Custom: CustomAvatar,
+  Basic: BasicAvatar
 }
-
-const styles = StyleSheet.create({
-  tokenLogo: {
-    paddingHorizontal: 16,
-    borderRadius: 50,
-    overflow: 'hidden'
-  },
-  initials: {
-    borderRadius: 50,
-    justifyContent: 'center',
-    alignItems: 'center'
-  }
-})
 
 export default Avatar
