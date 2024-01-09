@@ -42,6 +42,13 @@ class SnapshotService {
       await RNFS.unlink(this.folderPath)
     }
   }
+
+  async exists(path: string): Promise<boolean> {
+    const url = new URL(path)
+    url.search = '' // remove query params, i.e. ?timestamp=1234567890
+
+    return await RNFS.exists(url.href)
+  }
 }
 
 export default new SnapshotService()
