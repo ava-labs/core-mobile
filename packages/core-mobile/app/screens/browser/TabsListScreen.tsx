@@ -121,6 +121,7 @@ function TabsListScreen(): JSX.Element {
         <TabListItem
           title={activeHistory?.url ? removeProtocol(activeHistory.url) : ''}
           imagePath={imagePath}
+          onVerifyImagePath={SnapshotService.exists}
           onPress={() => handlePressTab(item)}
           onClose={() => handleCloseTab(item)}
         />
