@@ -40,6 +40,7 @@ type Mode =
 
 export type InputTextProps = {
   onBlur?: (e: NativeSyntheticEvent<TextInputFocusEventData>) => void
+  onFocus?: (e: NativeSyntheticEvent<TextInputFocusEventData>) => void
   onChangeText?: (text: string) => void
   editable?: boolean
   multiline?: boolean
@@ -89,6 +90,7 @@ const InputText = forwardRef<TextInput, InputTextProps>(
       helperText,
       errorText,
       onBlur,
+      onFocus,
       onChangeText,
       currency,
       style,
@@ -166,15 +168,19 @@ const InputText = forwardRef<TextInput, InputTextProps>(
       [onBlur]
     )
 
-    const handleFocus = (): void => {
-      // set cursor at end of text
-      setSelection({ start: text.length })
+    const handleFocus = useCallback(
+      args => {
+        // set cursor at end of text
+        setSelection({ start: text.length })
 
-      // disable selection so that user can position cursor on its own
-      setTimeout(() => setSelection(undefined), 100)
-      setIsFocused(true)
-    }
+        // disable selection so that user can position cursor on its own
+        setTimeout(() => setSelection(undefined), 100)
+        setIsFocused(true)
 
+        onFocus?.(args)
+      },
+      [onFocus, text.length]
+    )
     const {
       theme: { colors }
     } = useTheme()
@@ -297,7 +303,7 @@ const InputText = forwardRef<TextInput, InputTextProps>(
                 ...clearBtnContainerSx
               }}>
               <Pressable onPress={onRefresh}>
-                <Icons.Navigation.Refresh color={colors.$neutral500} />
+                <Icons.Navigation.Refresh color={colors.$neutral50} />
               </Pressable>
             </View>
           )}

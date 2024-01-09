@@ -7,8 +7,9 @@ import {
   TextInput,
   TextInputProps,
   TouchableOpacity,
-  View
+  ViewStyle
 } from 'react-native'
+import { View } from '@avalabs/k2-mobile'
 import { Opacity50 } from 'resources/Constants'
 import SearchSVG from 'components/svg/SearchSVG'
 import React, {
@@ -36,12 +37,15 @@ interface Props extends Omit<TextInputProps, 'value' | 'onChangeText'> {
   textColor?: string
   testID?: string
   setSearchBarFocused?: (value: boolean) => void
+  containerStyle?: ViewStyle
+  accessoryView?: JSX.Element
 }
 
 const SCREEN_WIDTH = Dimensions.get('window').width
 const INPUT_SIZE = SCREEN_WIDTH - 82
 const INPUT_SIZE_FOCUSED = SCREEN_WIDTH - 160
 const INPUT_SIZE_FOCUSED_SHOWING_CLEAR = SCREEN_WIDTH - 188
+const INPUT_SIZE_WITH_ACCESSORY_VIEW = INPUT_SIZE_FOCUSED
 const DEFAULT_DEBOUNCE_MILLISECONDS = 150
 
 /**
@@ -69,6 +73,8 @@ const SearchBar: FC<Props> = ({
   debounceMillis = DEFAULT_DEBOUNCE_MILLISECONDS,
   textColor,
   setSearchBarFocused,
+  containerStyle,
+  accessoryView,
   ...rest
 }) => {
   const textInputRef = useRef<TextInput>(null)
@@ -76,7 +82,6 @@ const SearchBar: FC<Props> = ({
   const { theme } = useApplicationContext()
   const [isFocused, setIsFocused] = useState(false)
   const [_searchText, _setSearchText] = useState(searchText)
-
   useLayoutEffect(keyboardListenerFx, [hideBottomNav, navigation])
 
   useEffect(() => {
@@ -87,7 +92,7 @@ const SearchBar: FC<Props> = ({
    * An attempt to hide bottom tabs when the search is focused.
    * It's kinda working.
    */
-  function keyboardListenerFx() {
+  function keyboardListenerFx(): (() => void) | undefined {
     if (!hideBottomNav) {
       return
     }
@@ -111,7 +116,7 @@ const SearchBar: FC<Props> = ({
   /**
    * Clears the input by reference and state,
    */
-  function clearText() {
+  function clearText(): void {
     textInputRef?.current?.clear()
     onTextChanged('')
   }
@@ -120,7 +125,7 @@ const SearchBar: FC<Props> = ({
    * Sets the behavior for when the user cancels
    * the search
    */
-  function onCancel() {
+  function onCancel(): void {
     setIsFocused(false)
     clearText()
     textInputRef.current?.blur()
@@ -129,7 +134,7 @@ const SearchBar: FC<Props> = ({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const debounceFn = useCallback(debounce(onTextChanged, debounceMillis), [])
 
-  const handleTextChange = (value: string) => {
+  const handleTextChange = (value: string): void => {
     _setSearchText(value)
     if (useDebounce) {
       debounceFn(value)
@@ -150,17 +155,20 @@ const SearchBar: FC<Props> = ({
 
   /**
    * Sets textInputWidth
-   * Used to the set the with and animate based on that.
+   * Used to the set the width and animate based on that.
    */
   let textInputWidth = INPUT_SIZE
+
   if (isEmpty) {
     textInputWidth = INPUT_SIZE_FOCUSED_SHOWING_CLEAR
   } else if (isFocused) {
     textInputWidth = INPUT_SIZE_FOCUSED
+  } else if (accessoryView) {
+    textInputWidth = INPUT_SIZE_WITH_ACCESSORY_VIEW
   }
 
   return (
-    <View style={styles.searchContainer}>
+    <View style={[styles.searchContainer, containerStyle]}>
       <View
         style={[
           styles.searchBackground,
@@ -199,8 +207,24 @@ const SearchBar: FC<Props> = ({
           </TouchableOpacity>
         )}
       </View>
+      {!isFocused && accessoryView && (
+        <View
+          style={{
+            flex: 1,
+            justifyContent: 'center',
+            alignSelf: 'center'
+          }}>
+          {accessoryView}
+        </View>
+      )}
       {isFocused && (
-        <AvaButton.Base style={{ marginStart: 16 }} onPress={onCancel}>
+        <AvaButton.Base
+          style={{
+            marginStart: 16,
+            alignSelf: 'center',
+            alignItems: 'center'
+          }}
+          onPress={onCancel}>
           <AvaText.ButtonLarge color={'#0A84FF'}>Cancel</AvaText.ButtonLarge>
         </AvaButton.Base>
       )}

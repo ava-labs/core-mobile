@@ -1,5 +1,6 @@
 import {
   FlatList,
+  Icons,
   Pressable,
   Text,
   View,
@@ -8,15 +9,17 @@ import {
 } from '@avalabs/k2-mobile'
 import SearchBar from 'components/SearchBar'
 import { Space } from 'components/Space'
-import React, { useEffect, useState } from 'react'
-import { useDispatch } from 'react-redux'
+import React, { useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import { AddHistoryPayload, History } from 'store/browser'
 import GoogleSVG from 'assets/icons/google.svg'
-import { addHistoryForActiveTab } from 'store/browser/slices/tabs'
+import {
+  addHistoryForActiveTab,
+  selectAllTabs
+} from 'store/browser/slices/tabs'
 import AppNavigation from 'navigation/AppNavigation'
 import { BrowserScreenProps } from 'navigation/types'
 import { useNavigation } from '@react-navigation/native'
-import useScrollHandler, { ScrollState } from 'hooks/browser/useScrollHandler'
 import { useSearchHistory } from 'hooks/browser/useSearchHistory'
 import { Dimensions } from 'react-native'
 import { useAnalytics } from 'hooks/useAnalytics'
@@ -24,6 +27,9 @@ import { useGoogleSearch } from 'hooks/browser/useGoogleSearch'
 import { isValidHttpUrl, normalizeUrlWithHttps } from '../utils'
 import { FavoritesAndSuggestions } from './FavoritesAndSuggestions'
 import { HistoryListItem } from './HistoryListItem'
+import { TabIcon } from './TabIcon'
+import { MoreMenu } from './MoreMenu'
+import NavButton from './NavButton'
 
 const SCREEN_WIDTH = Dimensions.get('window').width
 const BOTTOM_PADDING = SCREEN_WIDTH * 0.35
@@ -32,15 +38,10 @@ type NavigationProp = BrowserScreenProps<
   typeof AppNavigation.Browser.TabView
 >['navigation']
 
-export const EmptyTab = ({
-  onNewScrollState
-}: {
-  onNewScrollState: (scrollState: ScrollState) => void
-}): JSX.Element => {
+export const EmptyTab = (): JSX.Element => {
   const dispatch = useDispatch()
   const [isFocused, setIsFocused] = useState(false)
   const { navigate } = useNavigation<NavigationProp>()
-  const { scrollState, onScrollHandler } = useScrollHandler()
   const { navigateToGoogleSearchResult } = useGoogleSearch()
   const {
     searchText,
@@ -50,19 +51,19 @@ export const EmptyTab = ({
     hasHistory,
     hasSearchResult
   } = useSearchHistory()
-
+  const totalTabs = useSelector(selectAllTabs).length
   const {
     theme: { colors }
   } = useTheme()
-
   const { capture } = useAnalytics()
-
-  useEffect(() => {
-    onNewScrollState(scrollState)
-  }, [onNewScrollState, scrollState])
 
   const clearAll = (): void => {
     navigate(AppNavigation.Browser.ClearAllHistory)
+  }
+
+  const navigateToTabList = (): void => {
+    capture('BrowserTabsOpened')
+    navigate(AppNavigation.Modal.BrowserTabsList)
   }
 
   const handleSearchBarSubmit = (): void => {
@@ -136,8 +137,9 @@ export const EmptyTab = ({
             <Space y={16} />
             <View>
               <FlatList
+                keyboardShouldPersistTaps="always"
+                keyExtractor={item => (item as History).id}
                 data={filterHistories}
-                onScroll={onScrollHandler}
                 renderItem={item => (
                   <HistoryListItem history={item.item as History} />
                 )}
@@ -151,20 +153,49 @@ export const EmptyTab = ({
   }
 
   return (
-    <View sx={{ paddingHorizontal: 16, backgroundColor: '$black', flex: 1 }}>
-      <SearchBar
-        returnKeyType="done"
-        setSearchBarFocused={setIsFocused}
-        onTextChanged={setSearchText}
-        searchText={searchText}
-        placeholder="Search or Type URL"
-        textColor={colors.$white}
-        onSubmitEditing={handleSearchBarSubmit}
-      />
+    <View
+      sx={{
+        marginLeft: 16,
+        marginRight: 16,
+        backgroundColor: '$black',
+        flex: 1
+      }}>
+      <View style={{ flexDirection: 'row' }}>
+        <SearchBar
+          returnKeyType="done"
+          setSearchBarFocused={setIsFocused}
+          onTextChanged={setSearchText}
+          searchText={searchText}
+          placeholder="Search or Type URL"
+          textColor={colors.$white}
+          onSubmitEditing={handleSearchBarSubmit}
+          containerStyle={{
+            alignItems: 'flex-start'
+          }}
+          accessoryView={
+            <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'space-around',
+                marginRight: -16,
+                marginLeft: 8,
+                alignItems: 'center'
+              }}>
+              <TabIcon numberOfTabs={totalTabs} onPress={navigateToTabList} />
+              <MoreMenu isFavorited={false}>
+                <NavButton
+                  Icon={Icons.Navigation.MoreVert}
+                  onPress={() => {
+                    capture('BrowserContextualMenuOpened')
+                  }}
+                />
+              </MoreMenu>
+            </View>
+          }
+        />
+      </View>
       {isFocused && renderHistory()}
-      {!isFocused && (
-        <FavoritesAndSuggestions onScrollHandler={onScrollHandler} />
-      )}
+      {!isFocused && <FavoritesAndSuggestions />}
     </View>
   )
 }

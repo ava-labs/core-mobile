@@ -7,12 +7,13 @@ import {
   View,
   useTheme
 } from '@avalabs/k2-mobile'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { LayoutChangeEvent } from 'react-native'
 
 type Props = {
   title?: string
   imagePath: string
+  onVerifyImagePath: (imagePath: string) => Promise<boolean>
   onPress: () => void
   onClose: () => void
 }
@@ -20,6 +21,7 @@ type Props = {
 function TabListItem({
   title,
   imagePath,
+  onVerifyImagePath,
   onPress,
   onClose
 }: Props): JSX.Element {
@@ -27,10 +29,23 @@ function TabListItem({
     theme: { colors }
   } = useTheme()
   const [width, setWidth] = useState(0)
+  const [verifiedImageSource, setVerifiedImageSource] = useState<string>()
 
   function handleLayout({ nativeEvent }: LayoutChangeEvent): void {
     setWidth(nativeEvent.layout.width)
   }
+
+  useEffect(() => {
+    onVerifyImagePath(imagePath)
+      .then(isVerified => {
+        if (isVerified) {
+          setVerifiedImageSource(imagePath)
+        }
+      })
+      .catch(() => {
+        // do nothing
+      })
+  }, [imagePath, onVerifyImagePath])
 
   return (
     <TouchableOpacity onPress={onPress}>
@@ -38,6 +53,8 @@ function TabListItem({
         sx={{
           backgroundColor: '$neutral850',
           borderRadius: 8,
+          borderWidth: 1,
+          borderColor: '$neutral800',
           overflow: 'hidden'
         }}
         onLayout={handleLayout}>
@@ -62,7 +79,7 @@ function TabListItem({
           </Pressable>
         </View>
         <Image
-          source={{ uri: imagePath }}
+          source={{ uri: verifiedImageSource }}
           style={{ height: width * IMAGE_RATIO }}
         />
       </View>
