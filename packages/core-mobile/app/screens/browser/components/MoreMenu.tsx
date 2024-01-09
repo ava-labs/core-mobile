@@ -102,7 +102,7 @@ export const MoreMenu: FC<Props> = ({
       title: 'New Tab',
       image: Platform.select({
         ios: 'plus',
-        android: 'add'
+        android: 'plus_24px'
       }),
       titleColor: menuActionColor,
       imageColor: menuActionColor
