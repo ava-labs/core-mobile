@@ -38,14 +38,14 @@ interface Props extends Omit<TextInputProps, 'value' | 'onChangeText'> {
   testID?: string
   setSearchBarFocused?: (value: boolean) => void
   containerStyle?: ViewStyle
-  additionalActions?: JSX.Element
+  accessoryView?: JSX.Element
 }
 
 const SCREEN_WIDTH = Dimensions.get('window').width
 const INPUT_SIZE = SCREEN_WIDTH - 82
 const INPUT_SIZE_FOCUSED = SCREEN_WIDTH - 160
 const INPUT_SIZE_FOCUSED_SHOWING_CLEAR = SCREEN_WIDTH - 188
-const INPUT_SIZE_WITH_ADDITIONAL_ACTIONS = INPUT_SIZE_FOCUSED
+const INPUT_SIZE_WITH_ACCESSORY_VIEW = INPUT_SIZE_FOCUSED
 const DEFAULT_DEBOUNCE_MILLISECONDS = 150
 
 /**
@@ -74,7 +74,7 @@ const SearchBar: FC<Props> = ({
   textColor,
   setSearchBarFocused,
   containerStyle,
-  additionalActions,
+  accessoryView,
   ...rest
 }) => {
   const textInputRef = useRef<TextInput>(null)
@@ -163,8 +163,8 @@ const SearchBar: FC<Props> = ({
     textInputWidth = INPUT_SIZE_FOCUSED_SHOWING_CLEAR
   } else if (isFocused) {
     textInputWidth = INPUT_SIZE_FOCUSED
-  } else if (additionalActions) {
-    textInputWidth = INPUT_SIZE_WITH_ADDITIONAL_ACTIONS
+  } else if (accessoryView) {
+    textInputWidth = INPUT_SIZE_WITH_ACCESSORY_VIEW
   }
 
   return (
@@ -207,14 +207,14 @@ const SearchBar: FC<Props> = ({
           </TouchableOpacity>
         )}
       </View>
-      {!isFocused && additionalActions && (
+      {!isFocused && accessoryView && (
         <View
           style={{
             flex: 1,
             justifyContent: 'center',
             alignSelf: 'center'
           }}>
-          {additionalActions}
+          {accessoryView}
         </View>
       )}
       {isFocused && (

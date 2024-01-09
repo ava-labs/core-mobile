@@ -172,7 +172,7 @@ export const EmptyTab = (): JSX.Element => {
           containerStyle={{
             alignItems: 'flex-start'
           }}
-          additionalActions={
+          accessoryView={
             <View
               style={{
                 flexDirection: 'row',
