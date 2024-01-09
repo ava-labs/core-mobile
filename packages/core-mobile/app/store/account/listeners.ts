@@ -10,6 +10,7 @@ import { AnyAction, isAnyOf } from '@reduxjs/toolkit'
 import { onLogIn, selectWalletType } from 'store/app/slice'
 import { WalletType } from 'services/wallet/types'
 import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKeysStorage'
+import { captureEvent } from 'hooks/useAnalytics'
 import {
   selectAccounts,
   selectWalletName,
@@ -25,6 +26,8 @@ const initAccounts = async (
   const isDeveloperMode = selectIsDeveloperMode(state)
   const walletType = selectWalletType(state)
   const walletName = selectWalletName(state)
+
+  const accounts = []
 
   if (walletType === WalletType.SEEDLESS) {
     /**
@@ -44,6 +47,8 @@ const initAccounts = async (
           ? walletName
           : acc.title
       listenerApi.dispatch(setAccount({ ...acc, title: accountTitle }))
+
+      accounts.push(acc)
     }
   } else if (walletType === WalletType.MNEMONIC) {
     // only add the first account for mnemonic wallet
@@ -51,7 +56,18 @@ const initAccounts = async (
     const accountTitle =
       walletName && walletName.length > 0 ? walletName : acc.title
     listenerApi.dispatch(setAccount({ ...acc, title: accountTitle }))
+
+    accounts.push(acc)
   }
+
+  listenerApi.dispatch(
+    captureEvent('CollectWalletAddresses', {
+      addresses: accounts.map(acc => ({
+        EVM: acc.address,
+        BTC: acc.addressBtc
+      }))
+    })
+  )
 }
 
 // reload addresses

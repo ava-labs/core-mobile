@@ -2,6 +2,7 @@ import { createAsyncThunk } from '@reduxjs/toolkit'
 import { ThunkApi } from 'store'
 import { selectIsDeveloperMode } from 'store/settings/advanced/slice'
 import AccountsService from 'services/account/AccountsService'
+import { captureEvent } from 'hooks/useAnalytics'
 import {
   reducerName,
   selectAccounts,
@@ -26,5 +27,11 @@ export const addAccount = createAsyncThunk<void, void, ThunkApi>(
 
     // update active account index
     thunkApi.dispatch(setActiveAccountIndex(acc.index))
+
+    thunkApi.dispatch(
+      captureEvent('CollectWalletAddresses', {
+        addresses: [{ EVM: acc.address, BTC: acc.addressBtc }]
+      })
+    )
   }
 )
