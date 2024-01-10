@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Space } from 'components/Space'
 import { Linking, ScrollView } from 'react-native'
 import { PRIVACY_POLICY_URL } from 'resources/Constants'
@@ -6,6 +6,7 @@ import { useDispatch } from 'react-redux'
 import { setCoreAnalytics } from 'store/settings/securityPrivacy'
 import { useAnalytics } from 'hooks/useAnalytics'
 import { Button, Text, View } from '@avalabs/k2-mobile'
+import { ViewOnceKey, setViewOnce } from 'store/viewOnce'
 
 type Props = {
   onDone: () => void
@@ -30,6 +31,12 @@ const AnalyticsConsent = ({ onDone }: Props): JSX.Element => {
     dispatch(setCoreAnalytics(false))
     onDone()
   }
+
+  useEffect(() => {
+    return () => {
+      dispatch(setViewOnce(ViewOnceKey.ANALYTICS_CONSENT))
+    }
+  }, [dispatch])
 
   return (
     <>
