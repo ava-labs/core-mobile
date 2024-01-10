@@ -61,8 +61,7 @@ export const MoreMenu: FC<Props> = ({
       ? { ios: 'star.fill', android: 'star_fill_24px' }
       : { ios: 'star', android: 'star_24px' }
 
-    const menuActionColor =
-      Platform.OS === 'android' ? colors.$white : colors.$black
+    const menuActionColor = colors.$white
 
     const historyAction = {
       id: MenuId.History,
@@ -195,6 +194,7 @@ export const MoreMenu: FC<Props> = ({
           }
         }
       }}
+      themeVariant="dark"
       actions={menuActions}
       shouldOpenOnLongPress={false}>
       {children}
