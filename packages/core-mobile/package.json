@@ -19,7 +19,7 @@
     "gen:glacierApi": "npx openapi-zod-client 'https://glacier-api-dev.avax.network/api-json' -o './app/utils/network/glacierApi.client.ts'"
   },
   "dependencies": {
-    "@avalabs/avalanchejs-v2": "1.4.0-alpha.21",
+    "@avalabs/avalanchejs-v2": "1.4.0-alpha.27",
     "@avalabs/blockcypher-sdk": "2.8.0-alpha.164",
     "@avalabs/bridge-sdk": "2.8.0-alpha.164",
     "@avalabs/chains-sdk": "2.8.0-alpha.164",
