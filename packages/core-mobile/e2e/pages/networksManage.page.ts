@@ -30,8 +30,8 @@ class NetworksPage {
     return by.text(networksManage.editNetwork)
   }
 
-  get ethereumGoerlyNetwork() {
-    return by.text(networksManage.ethereumGoerlyNetwork)
+  get ethereumSepoliaNetwork() {
+    return by.text(networksManage.ethereumSepoliaNetwork)
   }
 
   get ethTokenOnCustomNetwork() {
@@ -110,8 +110,8 @@ class NetworksPage {
     await Action.tapElementAtIndex(this.addNetwork, 0)
   }
 
-  async tapEthereumGoerliNetwork() {
-    await Action.tapElementAtIndex(this.ethereumGoerlyNetwork, 0)
+  async tapEthereumSepoliaNetwork() {
+    await Action.tapElementAtIndex(this.ethereumSepoliaNetwork, 0)
   }
 
   async tapCustomTab() {
@@ -191,7 +191,7 @@ class NetworksPage {
     await Action.swipeUp(this.nativeTokenSymbol, 'fast', 0.5, 0)
   }
 
-  async switchToEthereumGoerliNetwork() {
+  async switchToEthereumSepoliaNetwork() {
     await PortfolioPage.tapNetworksDropdown()
     if (
       (await Action.isVisible(PortfolioPage.manageNetworks, platformIndex)) ===
@@ -201,10 +201,10 @@ class NetworksPage {
     }
     await PortfolioPage.tapManageNetworks()
     await this.tapNetworksTab()
-    if ((await Action.isVisible(this.ethereumGoerlyNetwork, 0)) === false) {
+    if ((await Action.isVisible(this.ethereumSepoliaNetwork, 0)) === false) {
       await Action.swipeUp(this.bitcoinTestnet, 'slow', 0.5, 0)
     }
-    await this.tapEthereumGoerliNetwork()
+    await this.tapEthereumSepoliaNetwork()
   }
 }
 

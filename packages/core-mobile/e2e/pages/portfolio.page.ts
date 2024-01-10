@@ -58,8 +58,8 @@ class PortfolioPage {
     return by.text(portfolio.ethNetwork)
   }
 
-  get ethGoerlyNetwork() {
-    return by.text(portfolio.ethGoerlyNetwork)
+  get ethSepoliaNetwork() {
+    return by.text(portfolio.ethSepoliaNetwork)
   }
 
   get assetsTab() {
@@ -154,8 +154,8 @@ class PortfolioPage {
     await Action.tapElementAtIndex(this.ethNetwork, 1)
   }
 
-  async tapEthGoerlyNetwork() {
-    await Action.tapElementAtIndex(this.ethGoerlyNetwork, 1)
+  async tapEthSepoliaNetwork() {
+    await Action.tapElementAtIndex(this.ethSepoliaNetwork, 1)
   }
 
   async tapManageTokens() {

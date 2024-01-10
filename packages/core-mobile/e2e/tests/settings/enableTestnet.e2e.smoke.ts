@@ -17,12 +17,12 @@ describe('Enable Testnet', () => {
     await Assert.isVisible(PortfolioPage.avaxNetwork)
   })
 
-  it('Should verify Bitcoin & Eth Goerly Networks', async () => {
+  it('Should verify Bitcoin & Eth Sepolia Networks', async () => {
     await PortfolioPage.tapNetworksDropdown()
     await PortfolioPage.tapManageNetworks()
     await NetworksManagePage.tapNetworksTab()
-    await NetworksManagePage.searchNetworks('Ethereum Goerli')
-    await Assert.isVisible(NetworksManagePage.ethereumGoerlyNetwork)
+    await NetworksManagePage.searchNetworks('Ethereum Sepolia')
+    await Assert.isVisible(NetworksManagePage.ethereumSepoliaNetwork)
     await NetworksManagePage.searchNetworks('Bitcoin Testnet')
     await Assert.isVisible(NetworksManagePage.bitcoinTestnet)
   })
