@@ -1,4 +1,4 @@
-import React, { memo } from 'react'
+import React, { memo, useCallback } from 'react'
 import { BackHandler } from 'react-native'
 import {
   NavigatorScreenParams,
@@ -176,6 +176,7 @@ export type WalletScreenStackParams = {
   [AppNavigation.Modal.CoreIntro]: undefined
   [AppNavigation.Modal.BrowserTabsList]: undefined
   [AppNavigation.Modal.BrowserTabCloseAll]: { onConfirm: () => void }
+  [AppNavigation.Modal.AnalyticsConsentBottomSheet]: undefined
 }
 
 const WalletScreenS = createStackNavigator<WalletScreenStackParams>()
@@ -200,16 +201,16 @@ function WalletScreenStack(props: Props): JSX.Element {
   const hasBeenViewedCoreIntro = useSelector(
     selectHasBeenViewedOnce(ViewOnceKey.CORE_INTRO)
   )
+  const hasBeenViewedAnalyticsConsent = useSelector(
+    selectHasBeenViewedOnce(ViewOnceKey.ANALYTICS_CONSENT)
+  )
   const navigation = useNavigation<NavigationProp>()
   const isTestnet = useSelector(selectIsDeveloperMode)
 
   const { onExit } = props
 
   useFocusEffect(
-    React.useCallback(() => {
-      if (!hasBeenViewedCoreIntro) {
-        navigation.navigate(AppNavigation.Modal.CoreIntro)
-      }
+    useCallback(() => {
       const onBackPress = (): boolean => {
         if (!navigationRef.current?.canGoBack()) {
           onExit()
@@ -222,7 +223,17 @@ function WalletScreenStack(props: Props): JSX.Element {
 
       return () =>
         BackHandler.removeEventListener('hardwareBackPress', onBackPress)
-    }, [hasBeenViewedCoreIntro, navigation, onExit])
+    }, [onExit])
+  )
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!hasBeenViewedCoreIntro) {
+        navigation.navigate(AppNavigation.Modal.CoreIntro)
+      } else if (!hasBeenViewedAnalyticsConsent) {
+        navigation.navigate(AppNavigation.Modal.AnalyticsConsentBottomSheet)
+      }
+    }, [hasBeenViewedCoreIntro, hasBeenViewedAnalyticsConsent, navigation])
   )
 
   return (

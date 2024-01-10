@@ -200,7 +200,8 @@ enum ModalScreens {
   StakeDisclaimer = 'ModalScreens.StakeDisclaimer',
   CoreIntro = 'ModalScreens.CoreIntro',
   BrowserTabsList = 'ModalScreens.BrowserTabsList',
-  BrowserTabCloseAll = 'ModalScreens.BrowserTabCloseAll'
+  BrowserTabCloseAll = 'ModalScreens.BrowserTabCloseAll',
+  AnalyticsConsentBottomSheet = 'ModalScreens.AnalyticsConsentBottomSheet'
 }
 
 enum SendScreens {

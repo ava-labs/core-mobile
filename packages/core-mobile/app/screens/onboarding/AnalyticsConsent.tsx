@@ -1,34 +1,18 @@
 import React from 'react'
-import FlexSpacer from 'components/FlexSpacer'
-import AvaButton from 'components/AvaButton'
-import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
 import { Linking, ScrollView } from 'react-native'
-import AppNavigation from 'navigation/AppNavigation'
-import { Row } from 'components/Row'
-import CheckmarkSVG from 'components/svg/CheckmarkSVG'
-import { useApplicationContext } from 'contexts/ApplicationContext'
 import { PRIVACY_POLICY_URL } from 'resources/Constants'
 import { useDispatch } from 'react-redux'
 import { setCoreAnalytics } from 'store/settings/securityPrivacy'
 import { useAnalytics } from 'hooks/useAnalytics'
+import { Button, Text, View } from '@avalabs/k2-mobile'
 
 type Props = {
-  nextScreen:
-    | typeof AppNavigation.Onboard.CreateWalletStack
-    | typeof AppNavigation.Onboard.EnterWithMnemonicStack
-    | typeof AppNavigation.Onboard.CreatePin
-  onNextScreen: (
-    screen:
-      | typeof AppNavigation.Onboard.CreateWalletStack
-      | typeof AppNavigation.Onboard.EnterWithMnemonicStack
-      | typeof AppNavigation.Onboard.CreatePin
-  ) => void
+  onDone: () => void
 }
 
-const AnalyticsConsent = ({ onNextScreen, nextScreen }: Props): JSX.Element => {
+const AnalyticsConsent = ({ onDone }: Props): JSX.Element => {
   const dispatch = useDispatch()
-  const { theme } = useApplicationContext()
   const { capture } = useAnalytics()
 
   function openPrivacyPolicy(): void {
@@ -38,88 +22,70 @@ const AnalyticsConsent = ({ onNextScreen, nextScreen }: Props): JSX.Element => {
   function acceptAnalytics(): void {
     capture('OnboardingAnalyticsAccepted')
     dispatch(setCoreAnalytics(true))
-    onNextScreen(nextScreen)
+    onDone()
   }
 
   function rejectAnalytics(): void {
     capture('OnboardingAnalyticsRejected')
     dispatch(setCoreAnalytics(false))
-    onNextScreen(nextScreen)
+    onDone()
   }
 
   return (
-    <ScrollView
-      contentContainerStyle={{
-        minHeight: '100%',
-        paddingHorizontal: 16,
-        paddingBottom: 32
-      }}>
-      <AvaText.LargeTitleBold>Help Us Improve</AvaText.LargeTitleBold>
-      <Space y={23} />
-      <AvaText.Body1>
-        Core would like to gather data to understand how users interact with the
-        app.
-      </AvaText.Body1>
-      <Space y={16} />
-      <AvaText.Body1>
-        {
-          'This enables us to develop improvements. To learn more please read our '
-        }
-        <AvaText.Body1
-          textStyle={{ color: theme.colorPrimary1 }}
-          onPress={openPrivacyPolicy}>
-          Privacy Policy
-        </AvaText.Body1>
-        . You can always opt out by visiting the settings page.
-      </AvaText.Body1>
-      <Space y={24} />
-      <FlexSpacer />
-      <AvaText.Heading2 textStyle={{ alignSelf: 'center' }}>
-        Core will...
-      </AvaText.Heading2>
-      <Space y={24} />
-      <Row style={{ alignItems: 'center', paddingHorizontal: 8 }}>
-        <CheckmarkSVG color={theme.colorSuccess} />
-        <Space x={20} />
-        <AvaText.Body1 textStyle={{ flex: 1 }}>
-          <AvaText.Body1 textStyle={{ fontWeight: 'bold' }}>
-            Never{' '}
-          </AvaText.Body1>
-          collect keys, public addresses, balances, or hashes
-        </AvaText.Body1>
-      </Row>
-      <Space y={24} />
-      <Row style={{ alignItems: 'center', paddingHorizontal: 8 }}>
-        <CheckmarkSVG color={theme.colorSuccess} />
-        <Space x={20} />
-        <AvaText.Body1 textStyle={{ flex: 1 }}>
-          <AvaText.Body1 textStyle={{ fontWeight: 'bold' }}>
-            Never{' '}
-          </AvaText.Body1>
-          collect full IP addresses
-        </AvaText.Body1>
-      </Row>
-      <Space y={24} />
-      <Row style={{ alignItems: 'center', paddingHorizontal: 8 }}>
-        <CheckmarkSVG color={theme.colorSuccess} />
-        <Space x={20} />
-        <AvaText.Body1 textStyle={{ flex: 1 }}>
-          <AvaText.Body1 textStyle={{ fontWeight: 'bold' }}>
-            Never{' '}
-          </AvaText.Body1>
-          sell or share data. Ever!
-        </AvaText.Body1>
-      </Row>
-      <FlexSpacer />
-      <Space y={24} />
-      <AvaButton.SecondaryLarge onPress={acceptAnalytics} testID="iAgreeBtn">
-        I Agree
-      </AvaButton.SecondaryLarge>
-      <Space y={16} />
-      <AvaButton.SecondaryLarge onPress={rejectAnalytics} testID="noThanksBtn">
-        No Thanks
-      </AvaButton.SecondaryLarge>
-    </ScrollView>
+    <>
+      <ScrollView
+        contentContainerStyle={{
+          minHeight: '100%',
+          paddingHorizontal: 16,
+          paddingBottom: 32
+        }}>
+        <Text variant="heading3">Help Us Improve</Text>
+        <Space y={23} />
+        <Text variant="body1">
+          Core would like to gather data using local storage and similar
+          technologies to help us understand how our users interact with Core.
+        </Text>
+        <Space y={16} />
+        <Text variant="body1">
+          {
+            'This enables us to develop improvements and enhance your experience, to find out more you can read our '
+          }
+          <Text
+            variant="body1"
+            sx={{ color: '$blueMain' }}
+            onPress={openPrivacyPolicy}>
+            Privacy Policy
+          </Text>
+          .
+        </Text>
+        <Space y={16} />
+        <Text variant="body1">
+          You can always opt out by visiting the settings page.
+        </Text>
+        <Space y={16} />
+        <Text variant="body1">
+          Core will <Text sx={{ fontWeight: '700' }}>never</Text> sell or share
+          data.
+        </Text>
+      </ScrollView>
+      <View sx={{ padding: 16 }}>
+        <Button
+          size="xlarge"
+          type="primary"
+          onPress={acceptAnalytics}
+          testID="iAgreeBtn">
+          I Agree
+        </Button>
+        <Space y={16} />
+        <Button
+          size="xlarge"
+          type="secondary"
+          onPress={rejectAnalytics}
+          testID="noThanksBtn">
+          No Thanks
+        </Button>
+      </View>
+    </>
   )
 }
 
