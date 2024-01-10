@@ -22,7 +22,7 @@ export function isBridgeTransactionEVM(
   },
   network: Network,
   criticalConfig: CriticalConfig | undefined
-) {
+): boolean {
   if (isEthereumNetwork(network)) {
     const ethBridgeAddress = criticalConfig?.critical.walletAddresses.ethereum
     return (
@@ -60,7 +60,7 @@ export const isBridgeTransactionBTC = (
         btc: string
       }
     | undefined
-) => {
+): boolean => {
   if (!bitcoinWalletAddresses) {
     return false
   }
@@ -85,7 +85,9 @@ const blockchainDisplayNameMap = new Map([
   [Blockchain.UNKNOWN, '']
 ])
 
-export function getBlockchainDisplayName(chain: Blockchain | undefined) {
+export function getBlockchainDisplayName(
+  chain: Blockchain | undefined
+): string {
   return blockchainDisplayNameMap.get(chain ?? Blockchain.UNKNOWN) ?? ''
 }
 
@@ -93,7 +95,7 @@ export const blockchainToNetwork = (
   blockChain: Blockchain,
   networks: Networks,
   criticalConfig: CriticalConfig | undefined
-) => {
+): Network | undefined => {
   switch (blockChain) {
     case Blockchain.AVALANCHE:
     case Blockchain.ETHEREUM: {
@@ -113,7 +115,9 @@ export const blockchainToNetwork = (
   }
 }
 
-export const networkToBlockchain = (network: Network | undefined) => {
+export const networkToBlockchain = (
+  network: Network | undefined
+): Blockchain => {
   switch (network?.chainId) {
     case ChainId.AVALANCHE_MAINNET_ID:
     case ChainId.AVALANCHE_LOCAL_ID:
@@ -122,6 +126,7 @@ export const networkToBlockchain = (network: Network | undefined) => {
     case ChainId.ETHEREUM_HOMESTEAD:
     case ChainId.ETHEREUM_TEST_GOERLY:
     case ChainId.ETHEREUM_TEST_RINKEBY:
+    case ChainId.ETHEREUM_TEST_SEPOLIA:
       return Blockchain.ETHEREUM
     case ChainId.BITCOIN:
     case ChainId.BITCOIN_TESTNET:
