@@ -9,21 +9,21 @@ import sendLoc from '../../../locators/send.loc'
 import { warmup } from '../../../helpers/warmup'
 import AdvancedPage from '../../../pages/burgerMenu/advanced.page'
 
-describe('Send Goerly Eth to another account', () => {
+describe('Send Sepolia Eth to another account', () => {
   beforeAll(async () => {
     await warmup()
   })
 
-  it('Should send Goerly Eth to second account', async () => {
+  it('Should send Sepolia Eth to second account', async () => {
     await LoginRecoverWallet.recoverWalletLogin()
     await AdvancedPage.switchToTestnet()
-    await NetworksManagePage.switchToEthereumGoerliNetwork()
+    await NetworksManagePage.switchToEthereumSepoliaNetwork()
     const secondAccountAddress = await AccountManagePage.createSecondAccount()
     await SendPage.sendTokenTo2ndAccount(
       sendLoc.ethToken,
       sendLoc.sendingAmount
     )
-    await PortfolioPage.tapEthGoerlyNetwork()
+    await PortfolioPage.tapEthSepoliaNetwork()
     await PortfolioPage.tapActivityTab()
     await ActivityTabPage.verifyOutgoingTransaction(
       60000,
@@ -32,7 +32,7 @@ describe('Send Goerly Eth to another account', () => {
     )
   }, 120000)
 
-  it('Should receive Goerly Eth on second account', async () => {
+  it('Should receive Sepolia Eth on second account', async () => {
     await ActivityTabPage.tapHeaderBack()
     await ActivityTabPage.verifyIncomingTransaction(
       ActivityTabLoc.ethIncomingTransactionDetail

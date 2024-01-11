@@ -9,20 +9,22 @@
   "verbose": true,
   "globalTeardown": "./e2e/sendResultsTeardown.ts",
   "globalSetup": "detox/runners/jest/globalSetup",
-  "transformIgnorePatterns": ["node_modules/(?!(jest-)?react-native|@react-native-community|@react-native|@react-navigation)"],
+  "transformIgnorePatterns": [
+    "node_modules/(?!(jest-)?react-native|@react-native-community|@react-native|@react-navigation)"
+  ],
   "transform": {
-      "^.+\\.tsx?$": [
-        "ts-jest",
-        {
-          "babelConfig": "babel.config.js"
-        }
-      ]
-    },
-   "testPathIgnorePatterns": [
+    "^.+\\.tsx?$": [
+      "ts-jest",
+      {
+        "babelConfig": "babel.config.js"
+      }
+    ]
+  },
+  "testPathIgnorePatterns": [
     "./e2e/tests/bridge",
     "./e2e/tests/plusIcon/walletConnect/traderjoe.e2e.ts",
-    "./e2e/tests/send/sendGoerlyEthTo2ndAccount.e2e.ts",
-    "./e2e/tests/send/sendEthTo2ndAccount.e2e.ts",
+    "./e2e/tests/plusIcon/send/sendSepoliaEthTo2ndAccount.e2e.ts",
+    "./e2e/tests/plusIcon/send/sendEthTo2ndAccount.e2e.ts",
     "./e2e/tests/network/addCustomToken.smoke.e2e.ts"
   ]
 }

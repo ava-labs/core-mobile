@@ -1,10 +1,10 @@
 import { BridgeTransaction } from '@avalabs/bridge-sdk'
 import { Network } from '@avalabs/chains-sdk'
 import { useSelector } from 'react-redux'
+import { isAvalancheNetwork } from 'services/network/utils/isAvalancheNetwork'
+import { isEthereumNetwork } from 'services/network/utils/isEthereumNetwork'
 import { selectBridgeTransactions } from 'store/bridge'
-import { isAvalancheNetwork } from 'utils/network/isAvalancheNetwork'
 import { isBitcoinNetwork } from 'utils/network/isBitcoinNetwork'
-import { isEthereumNetwork } from 'utils/network/isEthereumNetwork'
 
 const usePendingBridgeTransactions = (
   network?: Network
