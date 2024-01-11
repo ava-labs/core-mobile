@@ -66,9 +66,9 @@ const initAccounts = async (
         addresses: accounts.map(acc => ({
           address: acc.address,
           addressBtc: acc.addressBtc,
-          addressAVM: acc.addressAVM,
-          addressPVM: acc.addressPVM,
-          addressCoreEth: acc.addressCoreEth
+          addressAVM: acc.addressAVM ?? '',
+          addressPVM: acc.addressPVM ?? '',
+          addressCoreEth: acc.addressCoreEth ?? ''
         }))
       })
     )
@@ -97,9 +97,9 @@ const reloadAccounts = async (
         addresses: Object.values(reloadedAccounts).map(acc => ({
           address: acc.address,
           addressBtc: acc.addressBtc,
-          addressAVM: acc.addressAVM,
-          addressPVM: acc.addressPVM,
-          addressCoreEth: acc.addressCoreEth
+          addressAVM: acc.addressAVM ?? '',
+          addressPVM: acc.addressPVM ?? '',
+          addressCoreEth: acc.addressCoreEth ?? ''
         }))
       })
     )

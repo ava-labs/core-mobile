@@ -186,9 +186,9 @@ export type AnalyticsEvents = {
     addresses: {
       address: string
       addressBtc: string
-      addressAVM: string | undefined
-      addressPVM: string | undefined
-      addressCoreEth: string | undefined
+      addressAVM: string
+      addressPVM: string
+      addressCoreEth: string
     }[]
   }
 }

@@ -35,9 +35,9 @@ export const addAccount = createAsyncThunk<void, void, ThunkApi>(
             {
               address: acc.address,
               addressBtc: acc.addressBtc,
-              addressAVM: acc.addressAVM,
-              addressPVM: acc.addressPVM,
-              addressCoreEth: acc.addressCoreEth
+              addressAVM: acc.addressAVM ?? '',
+              addressPVM: acc.addressPVM ?? '',
+              addressCoreEth: acc.addressCoreEth ?? ''
             }
           ]
         })
