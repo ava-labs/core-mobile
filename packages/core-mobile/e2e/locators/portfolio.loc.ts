@@ -13,7 +13,7 @@ export default {
   collectiblesTab: 'Collectibles',
   defiTab: 'DeFi',
   ethNetwork: 'Ethereum',
-  ethGoerlyNetwork: 'Ethereum Goerli',
+  ethSepoliaNetwork: 'Ethereum Sepolia',
   favoritesHeader: 'Favorites',
   manageNetworks: 'Manage networks',
   manageTokens: 'Manage',

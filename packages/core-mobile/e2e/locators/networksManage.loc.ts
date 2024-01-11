@@ -17,7 +17,7 @@ export default {
   dropdown: 'ellipsis_svg',
   deleteNetwork: 'Delete',
   editNetwork: 'Edit',
-  ethereumGoerlyNetwork: 'Ethereum Goerli',
+  ethereumSepoliaNetwork: 'Ethereum Sepolia',
   ethTokenOnCustomNetwork: 'ETH',
   explorerUrl: 'Explorer URL',
   favoriteNetwork: 'star_svg',
