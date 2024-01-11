@@ -3,32 +3,30 @@ import { Space } from 'components/Space'
 import { Linking, ScrollView } from 'react-native'
 import { PRIVACY_POLICY_URL } from 'resources/Constants'
 import { useDispatch } from 'react-redux'
-import { setCoreAnalytics } from 'store/settings/securityPrivacy'
-import { useAnalytics } from 'hooks/useAnalytics'
 import { Button, Text, View } from '@avalabs/k2-mobile'
 import { ViewOnceKey, setViewOnce } from 'store/viewOnce'
+import { useAnalyticsConsent } from 'hooks/useAnalytics'
 
 type Props = {
+  title?: string
   onDone: () => void
 }
 
-const AnalyticsConsent = ({ onDone }: Props): JSX.Element => {
+const AnalyticsConsent = ({ title, onDone }: Props): JSX.Element => {
   const dispatch = useDispatch()
-  const { capture } = useAnalytics()
+  const { accept, reject } = useAnalyticsConsent()
 
   function openPrivacyPolicy(): void {
     Linking.openURL(PRIVACY_POLICY_URL)
   }
 
   function acceptAnalytics(): void {
-    capture('OnboardingAnalyticsAccepted')
-    dispatch(setCoreAnalytics(true))
+    accept()
     onDone()
   }
 
   function rejectAnalytics(): void {
-    capture('OnboardingAnalyticsRejected')
-    dispatch(setCoreAnalytics(false))
+    reject()
     onDone()
   }
 
@@ -46,8 +44,12 @@ const AnalyticsConsent = ({ onDone }: Props): JSX.Element => {
           paddingHorizontal: 16,
           paddingBottom: 32
         }}>
-        <Text variant="heading3">Help Us Improve</Text>
-        <Space y={23} />
+        {(title ?? '').length > 0 && (
+          <>
+            <Text variant="heading3">{title}</Text>
+          </>
+        )}
+        <Space y={12} />
         <Text variant="body1">
           Core would like to gather data using local storage and similar
           technologies to help us understand how our users interact with Core.

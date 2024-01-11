@@ -176,7 +176,7 @@ export type WalletScreenStackParams = {
   [AppNavigation.Modal.CoreIntro]: undefined
   [AppNavigation.Modal.BrowserTabsList]: undefined
   [AppNavigation.Modal.BrowserTabCloseAll]: { onConfirm: () => void }
-  [AppNavigation.Modal.AnalyticsConsentBottomSheet]: undefined
+  [AppNavigation.Modal.AnalyticsConsentSheet]: undefined
 }
 
 const WalletScreenS = createStackNavigator<WalletScreenStackParams>()
@@ -231,7 +231,7 @@ function WalletScreenStack(props: Props): JSX.Element {
       if (!hasBeenViewedCoreIntro) {
         navigation.navigate(AppNavigation.Modal.CoreIntro)
       } else if (!hasBeenViewedAnalyticsConsent) {
-        navigation.navigate(AppNavigation.Modal.AnalyticsConsentBottomSheet)
+        navigation.navigate(AppNavigation.Modal.AnalyticsConsentSheet)
       }
     }, [hasBeenViewedCoreIntro, hasBeenViewedAnalyticsConsent, navigation])
   )

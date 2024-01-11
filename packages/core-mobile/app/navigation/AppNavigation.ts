@@ -201,7 +201,7 @@ enum ModalScreens {
   CoreIntro = 'ModalScreens.CoreIntro',
   BrowserTabsList = 'ModalScreens.BrowserTabsList',
   BrowserTabCloseAll = 'ModalScreens.BrowserTabCloseAll',
-  AnalyticsConsentBottomSheet = 'ModalScreens.AnalyticsConsentBottomSheet'
+  AnalyticsConsentSheet = 'ModalScreens.AnalyticsConsentSheet'
 }
 
 enum SendScreens {

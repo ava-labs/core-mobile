@@ -28,7 +28,7 @@ import { View } from '@avalabs/k2-mobile'
 import { Animated } from 'react-native'
 import TabsListScreen from 'screens/browser/TabsListScreen'
 import { AreYouSureModal } from 'screens/browser/AreYouSureModal'
-import AnalyticsConsentBottomSheet from 'screens/mainView/AnalyticsConsentBottomSheet'
+import AnalyticsConsentSheet from 'screens/mainView/AnalyticsConsentSheet'
 import { SignOutModalScreen, WalletScreenSType } from './WalletScreenStack'
 
 export const createModals = (WalletScreenS: WalletScreenSType): JSX.Element => {
@@ -159,8 +159,8 @@ export const createModals = (WalletScreenS: WalletScreenSType): JSX.Element => {
         component={BuyCarefully}
       />
       <WalletScreenS.Screen
-        name={AppNavigation.Modal.AnalyticsConsentBottomSheet}
-        component={AnalyticsConsentBottomSheet}
+        name={AppNavigation.Modal.AnalyticsConsentSheet}
+        component={AnalyticsConsentSheet}
       />
     </WalletScreenS.Group>
   )
