@@ -29,17 +29,17 @@ export const addAccount = createAsyncThunk<void, void, ThunkApi>(
     thunkApi.dispatch(setActiveAccountIndex(acc.index))
 
     if (isDeveloperMode === false) {
+      const allAccounts = [...Object.values(accounts), acc]
+
       thunkApi.dispatch(
         captureEvent('CollectAccountAddresses', {
-          addresses: [
-            {
-              address: acc.address,
-              addressBtc: acc.addressBtc,
-              addressAVM: acc.addressAVM ?? '',
-              addressPVM: acc.addressPVM ?? '',
-              addressCoreEth: acc.addressCoreEth ?? ''
-            }
-          ]
+          addresses: allAccounts.map(account => ({
+            address: account.address,
+            addressBtc: account.addressBtc,
+            addressAVM: account.addressAVM ?? '',
+            addressPVM: account.addressPVM ?? '',
+            addressCoreEth: account.addressCoreEth ?? ''
+          }))
         })
       )
     }
