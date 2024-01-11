@@ -1,5 +1,10 @@
 import { Blockchain, BridgeTransaction } from '@avalabs/bridge-sdk'
-import { BITCOIN_NETWORK, ChainId } from '@avalabs/chains-sdk'
+import {
+  BITCOIN_NETWORK,
+  ChainId,
+  NetworkContractToken,
+  NetworkToken
+} from '@avalabs/chains-sdk'
 import { useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import { selectNetworkContractTokens } from 'store/network'
@@ -7,13 +12,13 @@ import { selectNetworkContractTokens } from 'store/network'
 export function useTokenForBridgeTransaction(
   bridgeTransaction: BridgeTransaction | undefined,
   isTestnet: boolean
-) {
+): NetworkContractToken | NetworkToken | undefined {
   const chainId = useMemo(() => {
     switch (bridgeTransaction?.sourceChain) {
       case Blockchain.BITCOIN:
         return isTestnet ? ChainId.BITCOIN_TESTNET : ChainId.BITCOIN
       case Blockchain.ETHEREUM:
-        // ETHEREUM_GOERLI doesn't have contract tokens, so always use ETHEREUM_HOMESTEAD chainid.
+        // ETHEREUM_SEPOLIA doesn't have contract tokens, so always use ETHEREUM_HOMESTEAD chainid.
         return ChainId.ETHEREUM_HOMESTEAD
       case Blockchain.AVALANCHE:
       default:
