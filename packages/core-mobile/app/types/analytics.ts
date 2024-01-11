@@ -182,5 +182,13 @@ export type AnalyticsEvents = {
   TxSubmittedToDapp: undefined
 
   // CP-7989 - Address and Tx Hash Analytics Collection
-  CollectWalletAddresses: { addresses: { EVM: string; BTC: string }[] }
+  CollectAccountAddresses: {
+    addresses: {
+      address: string
+      addressBtc: string
+      addressAVM: string | undefined
+      addressPVM: string | undefined
+      addressCoreEth: string | undefined
+    }[]
+  }
 }

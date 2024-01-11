@@ -28,10 +28,20 @@ export const addAccount = createAsyncThunk<void, void, ThunkApi>(
     // update active account index
     thunkApi.dispatch(setActiveAccountIndex(acc.index))
 
-    thunkApi.dispatch(
-      captureEvent('CollectWalletAddresses', {
-        addresses: [{ EVM: acc.address, BTC: acc.addressBtc }]
-      })
-    )
+    if (isDeveloperMode === false) {
+      thunkApi.dispatch(
+        captureEvent('CollectAccountAddresses', {
+          addresses: [
+            {
+              address: acc.address,
+              addressBtc: acc.addressBtc,
+              addressAVM: acc.addressAVM,
+              addressPVM: acc.addressPVM,
+              addressCoreEth: acc.addressCoreEth
+            }
+          ]
+        })
+      )
+    }
   }
 )

@@ -60,14 +60,19 @@ const initAccounts = async (
     accounts.push(acc)
   }
 
-  listenerApi.dispatch(
-    captureEvent('CollectWalletAddresses', {
-      addresses: accounts.map(acc => ({
-        EVM: acc.address,
-        BTC: acc.addressBtc
-      }))
-    })
-  )
+  if (isDeveloperMode === false) {
+    listenerApi.dispatch(
+      captureEvent('CollectAccountAddresses', {
+        addresses: accounts.map(acc => ({
+          address: acc.address,
+          addressBtc: acc.addressBtc,
+          addressAVM: acc.addressAVM,
+          addressPVM: acc.addressPVM,
+          addressCoreEth: acc.addressCoreEth
+        }))
+      })
+    )
+  }
 }
 
 // reload addresses
@@ -85,6 +90,20 @@ const reloadAccounts = async (
   )
 
   listenerApi.dispatch(setAccounts(reloadedAccounts))
+
+  if (isDeveloperMode === false) {
+    listenerApi.dispatch(
+      captureEvent('CollectAccountAddresses', {
+        addresses: Object.values(reloadedAccounts).map(acc => ({
+          address: acc.address,
+          addressBtc: acc.addressBtc,
+          addressAVM: acc.addressAVM,
+          addressPVM: acc.addressPVM,
+          addressCoreEth: acc.addressCoreEth
+        }))
+      })
+    )
+  }
 }
 
 export const addAccountListeners = (
