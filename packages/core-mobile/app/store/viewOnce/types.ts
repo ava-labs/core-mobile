@@ -1,7 +1,8 @@
 export enum ViewOnceKey {
   CHART_INTERACTION,
   BROWSER_INTERACTION,
-  CORE_INTRO
+  CORE_INTRO,
+  ANALYTICS_CONSENT
 }
 
 export type ViewOnceObjectType = {

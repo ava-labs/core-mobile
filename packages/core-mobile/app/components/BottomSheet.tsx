@@ -20,6 +20,10 @@ interface BottomSheetProps {
   enableContentPanningGesture?: boolean
 }
 
+/**
+ * @deprecated
+ * use `Sheet` instead
+ */
 export const BottomSheet: FC<BottomSheetProps> = ({
   backdropComponent,
   backgroundComponent,
