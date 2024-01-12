@@ -38,6 +38,21 @@ const AvatarBase: FC<AvatarBaseProps> = ({
 }) => {
   const { theme } = useTheme()
   const [failedToLoad, setFailedToLoad] = useState(false)
+
+  if (tokenSymbol === TokenSymbol.AVAX || tokenSymbol === 'FAU') {
+    return (
+      <AvaLogoSVG
+        size={size}
+        logoColor={theme.colors.$white}
+        backgroundColor={theme.colors.$avalancheRed}
+      />
+    )
+  } else if (tokenSymbol === TokenSymbol.ETH) {
+    return <EthereumSvg size={size} />
+  } else if (tokenSymbol === TokenSymbol.BTC) {
+    return <BitcoinSVG size={size} />
+  }
+
   const hasValidLogoUri =
     !!logoUri &&
     (logoUri.startsWith('http') || logoUri.startsWith('https')) &&
@@ -52,20 +67,6 @@ const AvatarBase: FC<AvatarBaseProps> = ({
         fallbackBackgroundColor={fallbackBackgroundColor ?? backgroundColor}
       />
     )
-  }
-
-  if (tokenSymbol === TokenSymbol.AVAX || tokenSymbol === 'FAU') {
-    return (
-      <AvaLogoSVG
-        size={size}
-        logoColor={theme.colors.$white}
-        backgroundColor={theme.colors.$avalancheRed}
-      />
-    )
-  } else if (tokenSymbol === TokenSymbol.ETH) {
-    return <EthereumSvg size={size} />
-  } else if (tokenSymbol === TokenSymbol.BTC) {
-    return <BitcoinSVG size={size} />
   }
 
   return logoUri?.endsWith('svg') && !isContentfulImageUri(logoUri) ? (
