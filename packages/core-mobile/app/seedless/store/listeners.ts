@@ -48,7 +48,10 @@ const registerTokenExpireHandler = async (
 ): Promise<void> => {
   const { dispatch } = listenerApi
   const onSessionExpiredHandler = async (e: ErrResponse): Promise<void> => {
-    if (e.status === 403) {
+    if (e.status === 403 && e.message.includes('Invalid')) {
+      // this means the mfaid entered is wrong, we don't need to handle this
+      // this is handled in the verify code screen
+    } else if (e.status === 403) {
       dispatch(onTokenExpired)
     }
   }
