@@ -14,7 +14,7 @@ import { addHistoryForActiveTab } from './tabs'
 
 const reducerName = 'browser/globalHistory'
 
-const initialState = historyAdapter.getInitialState()
+export const initialState = historyAdapter.getInitialState()
 
 const globalHistorySlice = createSlice({
   name: reducerName,
