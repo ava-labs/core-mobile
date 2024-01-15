@@ -7,7 +7,9 @@ import {
   DefaultFeatureFlagConfig,
   initialState as posthogInitialState
 } from './posthog'
-
+import { initialState as browserFavoritesInitialState } from './browser/slices/favorites'
+import { getInitialState as browserTabsGetInitialState } from './browser/slices/tabs'
+import { initialState as browserGlobalHistoryInitialState } from './browser/slices/globalHistory'
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export const migrations = {
   1: (state: any) => {
@@ -127,16 +129,15 @@ export const migrations = {
     }
   },
   10: async (state: any) => {
-    //wipe browser state since this is first version that users are actually gonna use
     return {
       ...state,
-      browser: undefined
-    }
-  },
-  11: async (state: any) => {
-    //set security countdown
-    return {
-      ...state,
+      // reset browser data
+      browser: {
+        favorites: browserFavoritesInitialState,
+        globalHistory: browserGlobalHistoryInitialState,
+        tabs: browserTabsGetInitialState()
+      },
+      // set security countdown
       security: {
         loginAttempt: {
           count: state.security.loginAttempt.count,
