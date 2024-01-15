@@ -67,13 +67,11 @@ const AnalyticsConsentScreen = (): JSX.Element => {
     useNavigation<AnalyticsConsentScreenProps['navigation']>()
   const { params } = useRoute<AnalyticsConsentScreenProps['route']>()
 
-  return (
-    <AnalyticsConsent
-      nextScreen={params.nextScreen}
-      onNextScreen={screen => {
-        navigate(screen)
-      }}
-    />
-  )
+  function handleDone(): void {
+    navigate(params.nextScreen)
+  }
+
+  return <AnalyticsConsent title={'Help Us Improve'} onDone={handleDone} />
 }
+
 export default WelcomeScreenStack

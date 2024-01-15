@@ -3,6 +3,7 @@ import { _capture } from 'store/posthog'
 import { useCallback } from 'react'
 import { AnyAction } from '@reduxjs/toolkit'
 import { AnalyticsEvents } from 'types/analytics'
+import { setCoreAnalytics } from 'store/settings/securityPrivacy'
 
 type AnalyticsEventName = keyof AnalyticsEvents
 
@@ -47,4 +48,27 @@ export function captureEvent<E extends AnalyticsEventName>(
     event,
     properties: properties[0]
   })
+}
+
+export function useAnalyticsConsent(): {
+  accept: () => void
+  reject: () => void
+} {
+  const dispatch = useDispatch()
+  const { capture } = useAnalytics()
+
+  const accept = (): void => {
+    capture('OnboardingAnalyticsAccepted')
+    dispatch(setCoreAnalytics(true))
+  }
+
+  const reject = (): void => {
+    capture('OnboardingAnalyticsRejected')
+    dispatch(setCoreAnalytics(false))
+  }
+
+  return {
+    accept,
+    reject
+  }
 }

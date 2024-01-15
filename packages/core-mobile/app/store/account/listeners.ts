@@ -10,6 +10,7 @@ import { AnyAction, isAnyOf } from '@reduxjs/toolkit'
 import { onLogIn, selectWalletType } from 'store/app/slice'
 import { WalletType } from 'services/wallet/types'
 import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKeysStorage'
+import { captureEvent } from 'hooks/useAnalytics'
 import {
   selectAccounts,
   selectWalletName,
@@ -25,6 +26,8 @@ const initAccounts = async (
   const isDeveloperMode = selectIsDeveloperMode(state)
   const walletType = selectWalletType(state)
   const walletName = selectWalletName(state)
+
+  const accounts = []
 
   if (walletType === WalletType.SEEDLESS) {
     /**
@@ -44,6 +47,8 @@ const initAccounts = async (
           ? walletName
           : acc.title
       listenerApi.dispatch(setAccount({ ...acc, title: accountTitle }))
+
+      accounts.push(acc)
     }
   } else if (walletType === WalletType.MNEMONIC) {
     // only add the first account for mnemonic wallet
@@ -51,6 +56,22 @@ const initAccounts = async (
     const accountTitle =
       walletName && walletName.length > 0 ? walletName : acc.title
     listenerApi.dispatch(setAccount({ ...acc, title: accountTitle }))
+
+    accounts.push(acc)
+  }
+
+  if (isDeveloperMode === false) {
+    listenerApi.dispatch(
+      captureEvent('CollectAccountAddresses', {
+        addresses: accounts.map(acc => ({
+          address: acc.address,
+          addressBtc: acc.addressBtc,
+          addressAVM: acc.addressAVM ?? '',
+          addressPVM: acc.addressPVM ?? '',
+          addressCoreEth: acc.addressCoreEth ?? ''
+        }))
+      })
+    )
   }
 }
 
@@ -69,6 +90,20 @@ const reloadAccounts = async (
   )
 
   listenerApi.dispatch(setAccounts(reloadedAccounts))
+
+  if (isDeveloperMode === false) {
+    listenerApi.dispatch(
+      captureEvent('CollectAccountAddresses', {
+        addresses: Object.values(reloadedAccounts).map(acc => ({
+          address: acc.address,
+          addressBtc: acc.addressBtc,
+          addressAVM: acc.addressAVM ?? '',
+          addressPVM: acc.addressPVM ?? '',
+          addressCoreEth: acc.addressCoreEth ?? ''
+        }))
+      })
+    )
+  }
 }
 
 export const addAccountListeners = (
