@@ -6,7 +6,7 @@ import { favoriteAdapter } from '../utils'
 
 const reducerName = 'browser/favorites'
 
-const initialState: FavoriteState = favoriteAdapter.getInitialState()
+export const initialState: FavoriteState = favoriteAdapter.getInitialState()
 
 const favoriteSlice = createSlice({
   name: reducerName,
