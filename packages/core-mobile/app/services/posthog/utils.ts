@@ -1,7 +1,7 @@
 import DeviceInfoService from 'services/deviceInfo/DeviceInfoService'
-import { DeviceInfo } from '../analytics/types'
+import { PosthogDeviceInfo } from './types'
 
-export const getPosthogDeviceInfo = async (): Promise<DeviceInfo> => {
+export const getPosthogDeviceInfo = async (): Promise<PosthogDeviceInfo> => {
   return {
     $app_build: DeviceInfoService.getAppBuild(),
     $app_name: DeviceInfoService.getAppName(),
