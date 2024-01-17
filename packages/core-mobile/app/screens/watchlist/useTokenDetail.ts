@@ -3,13 +3,13 @@ import useInAppBrowser from 'hooks/useInAppBrowser'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { CoinsInfoResponse, VsCurrencyType } from '@avalabs/coingecko-sdk'
 import { useDispatch, useSelector } from 'react-redux'
-import { getInstance } from 'services/token/TokenService'
 import {
   selectIsWatchlistFavorite,
   selectWatchlistPrice,
   toggleWatchListFavorite
 } from 'store/watchlist'
 import { InteractionManager } from 'react-native'
+import TokenService from 'services/token/TokenService'
 
 export function useTokenDetail(coingeckoId: string) {
   const dispatch = useDispatch()
@@ -42,8 +42,7 @@ export function useTokenDetail(coingeckoId: string) {
   // get coingecko chart data
   useEffect(() => {
     const getChartData = async () => {
-      const tokenService = getInstance()
-      const data = await tokenService.getChartDataForCoinId({
+      const data = await TokenService.getChartDataForCoinId({
         coingeckoId,
         days: chartDays,
         currency: currency
@@ -67,8 +66,7 @@ export function useTokenDetail(coingeckoId: string) {
   // get market cap, volume, etc
   useEffect(() => {
     const getMarketDetails = async () => {
-      const tokenService = getInstance()
-      const data = await tokenService.getCoinInfo({
+      const data = await TokenService.getCoinInfo({
         coingeckoId
       })
 

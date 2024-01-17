@@ -14,7 +14,6 @@ export const DefaultFeatureFlagConfig = {
   [FeatureGates.SEND_NFT_ANDROID]: true,
   [FeatureVars.SENTRY_SAMPLE_RATE]: '10', // 10% of events/errors
   [FeatureGates.BUY_COINBASE_PAY]: true,
-  [FeatureGates.USE_COINGECKO_PRO]: true,
   [FeatureGates.DEFI]: true,
   [FeatureGates.BROWSER]: false,
   [FeatureGates.LEFT_FAB]: false,
@@ -62,7 +61,6 @@ export type ProcessedFeatureFlags = {
   sendNftBlockedAndroid: boolean
   sentrySampleRate: number
   coinbasePayBlocked: boolean
-  useCoinGeckoPro: boolean
   defiBlocked: boolean
   leftFab: boolean
   darkMode: boolean

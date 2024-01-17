@@ -4,12 +4,12 @@ import {
   selectActiveNetwork,
   selectActiveNetworkContractTokens
 } from 'store/network'
-import { getInstance } from 'services/token/TokenService'
 import { addCustomToken as addCustomTokenAction } from 'store/customToken'
 import { useState, useEffect } from 'react'
 import { Network, NetworkContractToken } from '@avalabs/chains-sdk'
 import Logger from 'utils/Logger'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import TokenService from 'services/token/TokenService'
 
 enum AddressValidationStatus {
   Valid,
@@ -41,8 +41,7 @@ const fetchTokenData = async (
   network: Network,
   tokenAddress: string
 ): Promise<NetworkContractToken> => {
-  const tokenService = getInstance()
-  const networkContractToken = await tokenService.getTokenData(
+  const networkContractToken = await TokenService.getTokenData(
     tokenAddress,
     network
   )

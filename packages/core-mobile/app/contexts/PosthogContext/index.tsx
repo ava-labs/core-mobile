@@ -21,10 +21,8 @@ import {
   selectIsSendNftBlockedAndroid,
   selectIsSendNftBlockediOS,
   selectSentrySampleRate,
-  selectUseCoinGeckoPro,
   toggleAnalytics
 } from 'store/posthog'
-import { createInstance } from 'services/token/TokenService'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 
 export const PosthogContext = createContext<PosthogContextState>(
@@ -41,7 +39,6 @@ export interface PosthogContextState {
   sendNftBlockedAndroid: boolean
   sentrySampleRate: number
   coinbasePayBlocked: boolean
-  useCoinGeckoPro: boolean
 }
 
 export const PosthogContextProvider = ({
@@ -61,7 +58,6 @@ export const PosthogContextProvider = ({
   const eventsBlocked = useSelector(selectIsEventsBlocked)
   const sentrySampleRate = useSelector(selectSentrySampleRate)
   const coinbasePayBlocked = useSelector(selectIsCoinbasePayBlocked)
-  const useCoinGeckoPro = useSelector(selectUseCoinGeckoPro)
   const browserBlocked = useSelector(selectIsBrowserBlocked)
 
   const { timeoutPassed } = useAppBackgroundTracker({
@@ -78,10 +74,6 @@ export const PosthogContextProvider = ({
     () => SentryWrapper.setSampleRate(sentrySampleRate),
     [sentrySampleRate]
   )
-
-  useEffect(() => {
-    createInstance(useCoinGeckoPro)
-  }, [useCoinGeckoPro])
 
   useEffect(setEventsLogging, [
     analyticsConsent,
@@ -130,7 +122,6 @@ export const PosthogContextProvider = ({
         sendNftBlockedAndroid,
         sentrySampleRate,
         coinbasePayBlocked,
-        useCoinGeckoPro,
         browserBlocked
       }}>
       {children}

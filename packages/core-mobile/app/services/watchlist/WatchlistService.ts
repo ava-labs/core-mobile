@@ -1,12 +1,12 @@
 import { ChainId, Network } from '@avalabs/chains-sdk'
 import { CoinMarket, VsCurrencyType } from '@avalabs/coingecko-sdk'
-import { getBasicInstance, getInstance } from 'services/token/TokenService'
+import TokenService from 'services/token/TokenService'
 import { transformSparklineData } from 'services/token/utils'
 import { Charts, MarketToken, Prices } from 'store/watchlist'
 
 const coinByAddress = require('assets/coinByAddress.json')
 
-const notFoundId = -1
+const notFoundId = 'not_found_id'
 
 const getMarketsCommonParams = {
   sparkline: true,
@@ -14,7 +14,7 @@ const getMarketsCommonParams = {
   page: 1
 }
 
-const getCoingeckoId = (address: string, symbol: string) => {
+const getCoingeckoId = (address: string, symbol: string): string => {
   if (coinByAddress[address] && coinByAddress[address].symbol === symbol) {
     return coinByAddress[address].id
   }
@@ -32,8 +32,7 @@ class WatchlistService {
     charts: Charts
   }> {
     // 1. get top 250 tokens with sparkline data
-    const dynamicTokenService = getInstance()
-    const top250Tokens = await dynamicTokenService.getMarkets({
+    const top250Tokens = await TokenService.getMarkets({
       currency: currency.toLowerCase() as VsCurrencyType,
       ...getMarketsCommonParams
     })
@@ -94,7 +93,7 @@ class WatchlistService {
 
     if (tokenIdsToFetch.length !== 0) {
       // network contract tokens and favorite tokens
-      otherTokens = await dynamicTokenService.getMarkets({
+      otherTokens = await TokenService.getMarkets({
         currency: currency as VsCurrencyType,
         coinIds: tokenIdsToFetch,
         ...getMarketsCommonParams
@@ -122,17 +121,11 @@ class WatchlistService {
   }
 
   async getPrices(coingeckoIds: string[], currency: string): Promise<Prices> {
-    const dynamicTokenService = getInstance()
-
-    const pricesRaw = await dynamicTokenService.getPriceWithMarketDataByCoinIds(
-      coingeckoIds,
-      currency as VsCurrencyType
-    )
-
+    const allPriceData = await TokenService.fetchPriceWithMarketData()
     const prices: Prices = {}
 
-    for (const tokenId in pricesRaw) {
-      const pricesInCurrency = pricesRaw[tokenId]
+    for (const tokenId in coingeckoIds) {
+      const pricesInCurrency = allPriceData?.[tokenId]
       if (!pricesInCurrency) continue
       const price = pricesInCurrency[currency as VsCurrencyType]
       prices[tokenId] = {
@@ -152,17 +145,13 @@ class WatchlistService {
   ): Promise<
     { tokens: MarketToken[]; charts: Charts; prices: Prices } | undefined
   > {
-    const tokenService = getBasicInstance()
-    const coins = await tokenService.getTokenSearch(query)
+    const coins = await TokenService.getTokenSearch(query)
     const coinIds = coins?.map(tk => tk.id)
 
     if (coinIds && coinIds.length > 0) {
-      const pricePromise = tokenService.getPriceWithMarketDataByCoinIds(
-        coinIds,
-        currency as VsCurrencyType
-      )
+      const pricePromise = TokenService.fetchPriceWithMarketData()
 
-      const marketPromise = await tokenService.getMarkets({
+      const marketPromise = TokenService.getMarkets({
         currency: currency as VsCurrencyType,
         coinIds,
         ...getMarketsCommonParams
