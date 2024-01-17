@@ -6,14 +6,10 @@ import {
 } from '@reduxjs/toolkit'
 import { RootState } from 'store'
 import { v4 as uuidv4 } from 'uuid'
-import {
-  FeatureGates,
-  FeatureFlags,
-  FeatureVars,
-  AnalyticsEventName
-} from 'services/posthog/types'
+import { FeatureGates, FeatureFlags, FeatureVars } from 'services/posthog/types'
 import { WalletType } from 'services/wallet/types'
 import { AnalyticsEvents } from 'types/analytics'
+import { AnalyticsEventName } from 'services/analytics/types'
 import { initialState, ProcessedFeatureFlags } from './types'
 
 const reducerName = 'posthog'
