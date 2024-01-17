@@ -95,7 +95,7 @@ class NetworkService {
 
         if (!network.isTestnet) {
           AnalyticsService.capture('CollectTransactionHash', {
-            txID,
+            txHash: txID,
             chainId: network.chainId,
             chainName: network.chainName
           })
