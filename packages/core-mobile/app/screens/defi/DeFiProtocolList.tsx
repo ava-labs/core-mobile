@@ -71,7 +71,7 @@ export const DeFiProtocolList: FC = () => {
   }
 
   const handleExploreEcosystem = (): void => {
-    openURL('https://core.app/discover/')
+    openURL('https://core.app/discover/').catch(Logger.error)
   }
 
   if (isLoading) return <PortfolioDeFiHomeLoader />
