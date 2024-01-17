@@ -16,7 +16,7 @@ class AnalyticsService {
       return
     }
 
-    return PostHogService.capture(eventName, ...properties)
+    return PostHogService.capture(eventName, properties[0])
   }
 }
 

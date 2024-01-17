@@ -1,10 +1,7 @@
 import Config from 'react-native-config'
 import Logger from 'utils/Logger'
 import DeviceInfoService from 'services/deviceInfo/DeviceInfoService'
-import {
-  AnalyticsEventName,
-  CaptureEventProperties
-} from 'services/analytics/types'
+import { JsonMap } from 'store/posthog'
 import { sanitizeFeatureFlags } from './sanitizeFeatureFlags'
 import { FeatureGates, FeatureVars } from './types'
 import { getPosthogDeviceInfo } from './utils'
@@ -32,10 +29,7 @@ class PostHogService {
     return this.distinctId !== undefined && this.userId !== undefined
   }
 
-  async capture<E extends AnalyticsEventName>(
-    eventName: E,
-    ...properties: CaptureEventProperties<E>
-  ): Promise<void> {
+  async capture(eventName: string, properties?: JsonMap): Promise<void> {
     if (!this.isConfigured) {
       throw new Error(
         'PostHogService not configured. please call configure() first'
@@ -56,7 +50,7 @@ class PostHogService {
         distinct_id: this.distinctId,
         properties: {
           ...deviceInfo,
-          ...properties[0],
+          ...properties,
           $user_id: this.userId
         }
       })
