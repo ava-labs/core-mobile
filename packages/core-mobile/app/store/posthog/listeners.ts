@@ -48,18 +48,18 @@ const identifyAnalyticsUser = async (
   await AnalyticsService.identifyUser(distinctId)
 }
 
-const configurePosthog = async (
+const configureAnalytics = async (
   _: Action,
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
   const state = listenerApi.getState()
-  const posthogUserId = selectUserID(state)
+  const userId = selectUserID(state)
   const distinctId = selectDistinctID(state)
   const isAnalyticsEnabled = selectIsAnalyticsEnabled(state)
 
   AnalyticsService.configure({
     distinctId,
-    userId: posthogUserId,
+    userId,
     isEnabled: isAnalyticsEnabled
   })
 }
@@ -74,7 +74,7 @@ export const addPosthogListeners = (
       regenerateUserId,
       onRehydrationComplete
     ),
-    effect: configurePosthog
+    effect: configureAnalytics
   })
 
   startListening({
