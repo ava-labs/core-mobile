@@ -40,12 +40,12 @@ const fetchFeatureFlagsPeriodically = async (
   }
 }
 
-const identifyAnalyticsUser = async (
+const posthogIdentifyUser = async (
   _: Action,
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
   const distinctId = selectDistinctID(listenerApi.getState())
-  await AnalyticsService.identifyUser(distinctId)
+  await PostHogService.identifyUser(distinctId)
 }
 
 const configureAnalytics = async (
@@ -58,8 +58,10 @@ const configureAnalytics = async (
   const isAnalyticsEnabled = selectIsAnalyticsEnabled(state)
 
   AnalyticsService.configure({
-    distinctId,
-    userId,
+    posthog: {
+      distinctId,
+      userId
+    },
     isEnabled: isAnalyticsEnabled
   })
 }
@@ -100,6 +102,6 @@ export const addPosthogListeners = (
 
   startListening({
     actionCreator: onRehydrationComplete,
-    effect: identifyAnalyticsUser
+    effect: posthogIdentifyUser
   })
 }

@@ -1,5 +1,5 @@
 import DeviceInfoService from 'services/deviceInfo/DeviceInfoService'
-import { DeviceInfo } from './types'
+import { DeviceInfo } from '../analytics/types'
 
 export const getDeviceInfo = async (): Promise<DeviceInfo> => {
   return {
