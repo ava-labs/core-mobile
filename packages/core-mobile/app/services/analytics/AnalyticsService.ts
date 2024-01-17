@@ -2,17 +2,9 @@ import PostHogService from 'services/posthog/PostHogService'
 import { AnalyticsEventName, CaptureEventProperties } from './types'
 
 class AnalyticsService {
-  isEnabled: boolean | undefined
+  private isEnabled: boolean | undefined
 
-  configure({
-    posthog: { distinctId, userId },
-    isEnabled
-  }: {
-    posthog: { distinctId: string; userId: string }
-    isEnabled: boolean
-  }): void {
-    PostHogService.configure({ distinctId, userId })
-
+  setEnabled(isEnabled: boolean): void {
     this.isEnabled = isEnabled
   }
 
@@ -20,7 +12,7 @@ class AnalyticsService {
     eventName: E,
     ...properties: CaptureEventProperties<E>
   ): Promise<void> {
-    if (this.isEnabled === false) {
+    if (!this.isEnabled) {
       return
     }
 
