@@ -25,15 +25,19 @@ class AnalyticsService {
     this.isEnabled = isEnabled
   }
 
+  get isConfigured(): boolean {
+    return (
+      this.distinctId !== undefined &&
+      this.userId !== undefined &&
+      this.isEnabled !== undefined
+    )
+  }
+
   async capture<E extends AnalyticsEventName>(
     eventName: E,
     ...properties: CaptureEventProperties<E>
   ): Promise<void> {
-    if (
-      this.distinctId === undefined ||
-      this.userId === undefined ||
-      this.isEnabled === undefined
-    ) {
+    if (!this.isConfigured) {
       Logger.error(
         'AnalyticsService not configured. please call configureIds first'
       )
