@@ -2,32 +2,18 @@ import { Action, isAnyOf } from '@reduxjs/toolkit'
 import { AppStartListening } from 'store/middleware/listener'
 import { onLogIn, onLogOut, onRehydrationComplete } from 'store/app'
 import {
-  _capture,
+  capture,
   regenerateUserId,
   selectDistinctID,
   selectIsAnalyticsEnabled,
   selectUserID,
-  setFeatureFlags
+  setFeatureFlags,
+  toggleAnalytics
 } from 'store/posthog/slice'
 import PostHogService from 'services/posthog/PostHogService'
 import { AppListenerEffectAPI } from 'store'
-import { JsonMap } from './types'
 
 const FEATURE_FLAGS_FETCH_INTERVAL = 60000 // 1 minute
-
-export const posthogCapture = ({
-  distinctId,
-  posthogUserId,
-  event,
-  properties
-}: {
-  distinctId: string
-  posthogUserId: string
-  event: string
-  properties?: JsonMap
-}): Promise<void> => {
-  return PostHogService.capture(event, distinctId, posthogUserId, properties)
-}
 
 const fetchFeatureFlagsPeriodically = async (
   _: Action,
@@ -61,9 +47,35 @@ const posthogIdentifyUser = async (
   await PostHogService.identifyUser(distinctId)
 }
 
+const configurePosthog = async (
+  _: Action,
+  listenerApi: AppListenerEffectAPI
+): Promise<void> => {
+  const state = listenerApi.getState()
+  const posthogUserId = selectUserID(state)
+  const distinctId = selectDistinctID(state)
+  const isAnalyticsEnabled = selectIsAnalyticsEnabled(state)
+
+  PostHogService.configure({
+    distinctId,
+    userId: posthogUserId,
+    isEnabled: isAnalyticsEnabled
+  })
+}
+
 export const addPosthogListeners = (
   startListening: AppStartListening
 ): void => {
+  startListening({
+    matcher: isAnyOf(
+      toggleAnalytics,
+      onLogIn,
+      regenerateUserId,
+      onRehydrationComplete
+    ),
+    effect: configurePosthog
+  })
+
   startListening({
     actionCreator: onLogOut,
     effect: async (action, api) => {
@@ -72,17 +84,11 @@ export const addPosthogListeners = (
   })
 
   startListening({
-    actionCreator: _capture,
-    effect: async (action, api) => {
-      const state = api.getState()
-      const posthogUserId = selectUserID(state)
-      const distinctId = selectDistinctID(state)
-      const isAnalyticsEnabled = selectIsAnalyticsEnabled(state)
+    actionCreator: capture,
+    effect: async (action, _) => {
       const { event, properties } = action.payload
 
-      if (isAnalyticsEnabled) {
-        posthogCapture({ distinctId, posthogUserId, event, properties })
-      }
+      PostHogService.capture(event, properties)
     }
   })
 

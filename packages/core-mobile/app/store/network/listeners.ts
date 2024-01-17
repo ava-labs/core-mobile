@@ -14,7 +14,7 @@ import {
   toggleDeveloperMode
 } from 'store/settings/advanced'
 import { AnyAction, isAnyOf } from '@reduxjs/toolkit'
-import { captureEvent } from 'hooks/useAnalytics'
+import { capture } from 'store/posthog'
 
 const adjustActiveNetwork = (
   action: AnyAction,
@@ -62,7 +62,10 @@ const toggleFavoriteSideEffect = (
     : 'NetworkFavoriteRemoved'
 
   dispatch(
-    captureEvent(event, { networkChainId: chainId, isCustom: isCustomNetwork })
+    capture({
+      event,
+      properties: { networkChainId: chainId, isCustom: isCustomNetwork }
+    })
   )
 }
 

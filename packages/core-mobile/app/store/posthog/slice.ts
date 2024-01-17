@@ -1,9 +1,20 @@
-import { createAction, createSlice, PayloadAction } from '@reduxjs/toolkit'
+import {
+  ActionCreatorWithPayload,
+  createAction,
+  createSlice,
+  PayloadAction
+} from '@reduxjs/toolkit'
 import { RootState } from 'store'
 import { v4 as uuidv4 } from 'uuid'
-import { FeatureGates, FeatureFlags, FeatureVars } from 'services/posthog/types'
+import {
+  FeatureGates,
+  FeatureFlags,
+  FeatureVars,
+  AnalyticsEventName
+} from 'services/posthog/types'
 import { WalletType } from 'services/wallet/types'
-import { initialState, JsonMap, ProcessedFeatureFlags } from './types'
+import { AnalyticsEvents } from 'types/analytics'
+import { initialState, ProcessedFeatureFlags } from './types'
 
 const reducerName = 'posthog'
 
@@ -296,11 +307,16 @@ export const selectIsSeedlessMfaYubikeyBlocked = (
 export const { regenerateUserId, toggleAnalytics, setFeatureFlags } =
   posthogSlice.actions
 
-/**
- * do not call _capture directly, use captureEvent function instead
- */
-export const _capture = createAction<{ event: string; properties?: JsonMap }>(
-  `${reducerName}/capture`
-)
+const createCaptureAction = <
+  E extends AnalyticsEventName
+>(): ActionCreatorWithPayload<
+  {
+    event: E
+    properties?: AnalyticsEvents[E] | undefined
+  },
+  string
+> => createAction(`${reducerName}/capture`)
+
+export const capture = createCaptureAction()
 
 export const posthogReducer = posthogSlice.reducer

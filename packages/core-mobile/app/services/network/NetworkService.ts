@@ -16,6 +16,7 @@ import {
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { Transaction } from '@sentry/types'
 import { avaxSerial } from '@avalabs/avalanchejs-v2'
+import PostHogService from 'services/posthog/PostHogService'
 import { getBitcoinProvider, getEvmProvider } from './utils/providerUtils'
 
 class NetworkService {
@@ -66,38 +67,48 @@ class NetworkService {
         if (!network) {
           throw new Error('No active network')
         }
+
+        let txID: string | undefined
         const provider = this.getProviderForNetwork(network)
 
         if (
           signedTx instanceof avaxSerial.SignedTx &&
           provider instanceof Avalanche.JsonRpcProvider
         ) {
-          return (await provider.issueTx(signedTx)).txID
-        }
-
-        if (typeof signedTx === 'string') {
+          txID = (await provider.issueTx(signedTx)).txID
+        } else if (typeof signedTx === 'string') {
           if (provider instanceof JsonRpcBatchInternal) {
-            if (waitToPost) {
-              const tx = await provider.broadcastTransaction(signedTx)
-              await tx.wait()
-              return tx.hash
-            }
-            return (await provider.broadcastTransaction(signedTx)).hash
-          }
+            const tx = await provider.broadcastTransaction(signedTx)
 
-          if (provider instanceof BlockCypherProvider) {
-            return (await provider.issueRawTx(signedTx)).hash
+            if (waitToPost) {
+              await tx.wait()
+            }
+            txID = tx.hash
+          } else if (provider instanceof BlockCypherProvider) {
+            txID = (await provider.issueRawTx(signedTx)).hash
           }
         }
 
-        throw new Error('No provider found')
+        if (txID === undefined) {
+          throw new Error('No provider found')
+        }
+
+        if (!network.isTestnet) {
+          PostHogService.capture('CollectTransactionHash', {
+            txID,
+            chainId: network.chainId,
+            chainName: network.chainName
+          })
+        }
+
+        return txID
       })
   }
 
   /**
    * Returns the network object for Avalanche X/P Chains
    */
-  getAvalancheNetworkXP(isDeveloperMode: boolean) {
+  getAvalancheNetworkXP(isDeveloperMode: boolean): Network {
     return isDeveloperMode ? AVALANCHE_XP_TEST_NETWORK : AVALANCHE_XP_NETWORK
   }
 

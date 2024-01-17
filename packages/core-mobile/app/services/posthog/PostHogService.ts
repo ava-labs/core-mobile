@@ -1,34 +1,52 @@
 import Config from 'react-native-config'
-import { JsonMap } from 'store/posthog/types'
 import Logger from 'utils/Logger'
 import DeviceInfoService from 'services/deviceInfo/DeviceInfoService'
 import { getPosthogDeviceInfo } from './utils'
 import { sanitizeFeatureFlags } from './sanitizeFeatureFlags'
+import { AnalyticsEventName, CaptureEventProperties } from './types'
 
 const PostHogCaptureUrl = `${Config.POSTHOG_URL}/capture/`
 
 const PostHogDecideUrl = `${Config.POSTHOG_URL}/decide?v=2`
-const generatePostHogDecideFetchOptions = (distinctId: string) => {
-  return {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      api_key: Config.POSTHOG_FEATURE_FLAGS_KEY,
-      distinct_id: distinctId,
-      app_version: DeviceInfoService.getAppVersion()
-    })
-  }
-}
 
 class PostHogService {
-  async capture(
-    eventName: string,
-    distinctId: string,
-    userId: string,
-    properties?: JsonMap
-  ) {
+  distinctId: string | undefined
+  userId: string | undefined
+  isEnabled: boolean | undefined
+
+  configure({
+    distinctId,
+    userId,
+    isEnabled
+  }: {
+    distinctId: string
+    userId: string
+    isEnabled: boolean
+  }): void {
+    this.distinctId = distinctId
+    this.userId = userId
+    this.isEnabled = isEnabled
+  }
+
+  async capture<E extends AnalyticsEventName>(
+    eventName: E,
+    ...properties: CaptureEventProperties<E>
+  ): Promise<void> {
+    if (
+      this.distinctId === undefined ||
+      this.userId === undefined ||
+      this.isEnabled === undefined
+    ) {
+      Logger.error(
+        'PostHogService not configured. please call configureIds first'
+      )
+      return
+    }
+
+    if (this.isEnabled === false) {
+      return
+    }
+
     const deviceInfo = await getPosthogDeviceInfo()
     const PostHogCaptureFetchOptions = {
       method: 'POST',
@@ -40,11 +58,11 @@ class PostHogService {
         event: eventName,
         timestamp: Date.now().toString(),
         ip: '',
-        distinct_id: distinctId,
+        distinct_id: this.distinctId,
         properties: {
           ...deviceInfo,
-          ...properties,
-          $user_id: userId
+          ...properties[0],
+          $user_id: this.userId
         }
       })
     }
@@ -60,7 +78,7 @@ class PostHogService {
       })
   }
 
-  async identifyUser(distinctId: string) {
+  async identifyUser(distinctId: string): Promise<void> {
     const PostHogIdentifyFetchOptions = {
       method: 'POST',
       headers: {
@@ -89,13 +107,21 @@ class PostHogService {
       })
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
   async fetchFeatureFlags(distinctId: string) {
     try {
       Logger.info('fetching feature flags')
-      const response = await fetch(
-        PostHogDecideUrl,
-        generatePostHogDecideFetchOptions(distinctId)
-      )
+      const response = await fetch(PostHogDecideUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          api_key: Config.POSTHOG_FEATURE_FLAGS_KEY,
+          distinct_id: distinctId,
+          app_version: DeviceInfoService.getAppVersion()
+        })
+      })
 
       if (!response.ok) {
         throw new Error('Something went wrong')

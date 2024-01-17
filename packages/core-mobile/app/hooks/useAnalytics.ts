@@ -1,11 +1,11 @@
 import { useDispatch } from 'react-redux'
-import { _capture } from 'store/posthog'
+import { capture as _capture } from 'store/posthog'
 import { useCallback } from 'react'
-import { AnyAction } from '@reduxjs/toolkit'
-import { AnalyticsEvents } from 'types/analytics'
 import { setCoreAnalytics } from 'store/settings/securityPrivacy'
-
-type AnalyticsEventName = keyof AnalyticsEvents
+import {
+  AnalyticsEventName,
+  CaptureEventProperties
+} from 'services/posthog/types'
 
 export function useAnalytics(): {
   capture: <E extends AnalyticsEventName>(
@@ -33,21 +33,6 @@ export function useAnalytics(): {
   return {
     capture
   }
-}
-
-type CaptureEventProperties<E extends AnalyticsEventName> =
-  undefined extends AnalyticsEvents[E]
-    ? [AnalyticsEvents[E]?]
-    : [AnalyticsEvents[E]]
-
-export function captureEvent<E extends AnalyticsEventName>(
-  event: E,
-  ...properties: CaptureEventProperties<E>
-): AnyAction {
-  return _capture({
-    event,
-    properties: properties[0]
-  })
 }
 
 export function useAnalyticsConsent(): {

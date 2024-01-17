@@ -1,3 +1,5 @@
+import { AnalyticsEvents } from 'types/analytics'
+
 export enum FeatureGates {
   EVERYTHING = 'everything',
   EVENTS = 'events',
@@ -35,3 +37,10 @@ export type PostHogDecideResponse = {
 }
 
 export type FeatureFlags = PostHogDecideResponse['featureFlags']
+
+export type AnalyticsEventName = keyof AnalyticsEvents
+
+export type CaptureEventProperties<E extends AnalyticsEventName> =
+  undefined extends AnalyticsEvents[E]
+    ? [AnalyticsEvents[E]?]
+    : [AnalyticsEvents[E]]

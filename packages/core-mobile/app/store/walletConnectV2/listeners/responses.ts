@@ -7,7 +7,7 @@ import Logger from 'utils/Logger'
 import { selectActiveAccount } from 'store/account'
 import { selectActiveNetwork } from 'store/network'
 import { UPDATE_SESSION_DELAY } from 'consts/walletConnect'
-import { captureEvent } from 'hooks/useAnalytics'
+import { capture } from 'store/posthog'
 import { onSendRpcError, onSendRpcResult } from '../slice'
 import { isSessionProposal } from './utils'
 
@@ -41,11 +41,14 @@ export const sendRpcResult = async (
       showSimpleToast(message)
 
       dispatch(
-        captureEvent('WalletConnectSessionApprovedV2', {
-          namespaces,
-          requiredNamespaces,
-          optionalNamespaces,
-          dappUrl: url
+        capture({
+          event: 'WalletConnectSessionApprovedV2',
+          properties: {
+            namespaces,
+            requiredNamespaces,
+            optionalNamespaces,
+            dappUrl: url
+          }
         })
       )
 

@@ -11,7 +11,7 @@ import * as appSlice from 'store/app/slice'
 import { ethErrors } from 'eth-rpc-errors'
 import { typedData } from 'tests/fixtures/rpc/typedData'
 import { selectIsDeveloperMode } from 'store/settings/advanced/slice'
-import { captureEvent } from 'hooks/useAnalytics'
+import { capture } from 'store/posthog'
 import {
   walletConnectReducer,
   reducerName,
@@ -750,11 +750,18 @@ describe('walletConnect - listeners', () => {
         )
 
         expect(mockDispatch).toHaveBeenCalledWith(
-          captureEvent('WalletConnectSessionApprovedV2', {
-            namespaces: JSON.stringify(mockSession.namespaces),
-            requiredNamespaces: JSON.stringify(mockSession.requiredNamespaces),
-            optionalNamespaces: JSON.stringify(mockSession.optionalNamespaces),
-            dappUrl: 'http://127.0.0.1:5173'
+          capture({
+            event: 'WalletConnectSessionApprovedV2',
+            properties: {
+              namespaces: JSON.stringify(mockSession.namespaces),
+              requiredNamespaces: JSON.stringify(
+                mockSession.requiredNamespaces
+              ),
+              optionalNamespaces: JSON.stringify(
+                mockSession.optionalNamespaces
+              ),
+              dappUrl: 'http://127.0.0.1:5173'
+            }
           })
         )
       })
@@ -797,9 +804,14 @@ describe('walletConnect - listeners', () => {
         )
 
         expect(mockDispatch).not.toHaveBeenCalledWith(
-          captureEvent('WalletConnectSessionApprovedV2', {
-            requiredNamespaces: JSON.stringify(mockSession.requiredNamespaces),
-            dappUrl: 'http://127.0.0.1:5173'
+          capture({
+            event: 'WalletConnectSessionApprovedV2',
+            properties: {
+              requiredNamespaces: JSON.stringify(
+                mockSession.requiredNamespaces
+              ),
+              dappUrl: 'http://127.0.0.1:5173'
+            }
           })
         )
 

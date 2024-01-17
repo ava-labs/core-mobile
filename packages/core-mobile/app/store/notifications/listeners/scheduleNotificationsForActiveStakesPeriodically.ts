@@ -1,6 +1,6 @@
 import { Action } from '@reduxjs/toolkit'
 import { AppListenerEffectAPI } from 'store'
-import { selectIsEarnBlocked } from 'store/posthog'
+import { capture, selectIsEarnBlocked } from 'store/posthog'
 import Logger from 'utils/Logger'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectAccounts } from 'store/account'
@@ -8,7 +8,6 @@ import EarnService from 'services/earn/EarnService'
 import NotificationsService from 'services/notifications/NotificationsService'
 import { WalletState, selectWalletState } from 'store/app'
 import { ChannelId } from 'services/notifications/channels'
-import { captureEvent } from 'hooks/useAnalytics'
 import { turnOnNotificationsFor } from '../slice'
 import { isStakeCompleteNotificationDisabled } from './utils'
 
@@ -94,10 +93,13 @@ const scheduleNotificationsForActiveStakes = async (
     const historyStakes = totalStakes - activeStakes
 
     listenerApi.dispatch(
-      captureEvent('StakeCountStakes', {
-        active: activeStakes,
-        history: historyStakes,
-        total: totalStakes
+      capture({
+        event: 'StakeCountStakes',
+        properties: {
+          active: activeStakes,
+          history: historyStakes,
+          total: totalStakes
+        }
       })
     )
 
