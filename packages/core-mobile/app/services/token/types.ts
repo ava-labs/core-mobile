@@ -30,7 +30,7 @@ export type GetMarketsParams = {
   perPage?: number
 }
 
-export const SimplePriceResponseSchema = z.record(
+export const SimplePriceResponseSchema = record(
   string(),
   record(string(), string())
 )
