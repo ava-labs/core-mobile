@@ -1,6 +1,5 @@
 import { useNavigation } from '@react-navigation/native'
 import { useDeeplink } from 'contexts/DeeplinkContext/DeeplinkContext'
-import { useAnalytics } from 'hooks/useAnalytics'
 import { UI, useIsUIDisabled } from 'hooks/useIsUIDisabled'
 import AppNavigation from 'navigation/AppNavigation'
 import { TabsScreenProps } from 'navigation/types'
@@ -10,6 +9,7 @@ import { selectActiveNetwork } from 'store/network'
 import { selectIsLeftHanded } from 'store/settings/advanced'
 import { Pressable, SxProp, View, alpha, useTheme } from '@avalabs/k2-mobile'
 import { DeepLinkOrigin } from 'contexts/DeeplinkContext/types'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import { ActionProp } from './fab/types'
 import ArrowSVG from './svg/ArrowSVG'
 import QRCodeSVG from './svg/QRCodeSVG'
@@ -35,7 +35,6 @@ export const Fab: FC = () => {
   const { setPendingDeepLink } = useDeeplink()
   const activeNetwork = useSelector(selectActiveNetwork)
   const [expanded, setExpanded] = useState(false)
-  const { capture } = useAnalytics()
   const isLeftHanded = useSelector(selectIsLeftHanded)
   const {
     theme: { colors }
@@ -59,7 +58,7 @@ export const Fab: FC = () => {
       ),
       onPress: () => {
         navigation.navigate(AppNavigation.Wallet.SendTokens)
-        capture('FABItemSelected_Send')
+        AnalyticsService.capture('FABItemSelected_Send')
       }
     } as ActionProp
     actions.Receive = {
@@ -77,7 +76,7 @@ export const Fab: FC = () => {
       ),
       onPress: () => {
         navigation.navigate(AppNavigation.Wallet.ReceiveTokens)
-        capture('FABItemSelected_Receive')
+        AnalyticsService.capture('FABItemSelected_Receive')
       }
     } as ActionProp
     if (!buyDisabled) {
@@ -96,7 +95,7 @@ export const Fab: FC = () => {
         ),
         onPress: () => {
           navigation.navigate(AppNavigation.Wallet.Buy)
-          capture('FABItemSelected_Buy')
+          AnalyticsService.capture('FABItemSelected_Buy')
         }
       } as ActionProp
     }
@@ -116,7 +115,7 @@ export const Fab: FC = () => {
         ),
         onPress: () => {
           navigation.navigate(AppNavigation.Wallet.Swap)
-          capture('FABItemSelected_Swap')
+          AnalyticsService.capture('FABItemSelected_Swap')
         }
       } as ActionProp
     }
@@ -133,7 +132,7 @@ export const Fab: FC = () => {
               navigation.goBack()
             }
           })
-          capture('FABItemSelected_WalletConnect')
+          AnalyticsService.capture('FABItemSelected_WalletConnect')
         }
       } as ActionProp
     }
@@ -155,7 +154,7 @@ export const Fab: FC = () => {
           })
         } else {
           navigation.navigate(AppNavigation.Wallet.Bridge)
-          capture('FABItemSelected_Bridge')
+          AnalyticsService.capture('FABItemSelected_Bridge')
         }
       }
     } as ActionProp
@@ -167,7 +166,6 @@ export const Fab: FC = () => {
     wcDisabled,
     colors.$black,
     navigation,
-    capture,
     setPendingDeepLink,
     isBridgeDisabled,
     activeNetwork.chainName
@@ -175,7 +173,7 @@ export const Fab: FC = () => {
 
   function dismiss(): void {
     setExpanded(false)
-    capture('FABClosed')
+    AnalyticsService.capture('FABClosed')
   }
 
   const fabStyle = useMemo(() => {

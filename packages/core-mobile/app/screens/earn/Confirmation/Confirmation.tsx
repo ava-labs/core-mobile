@@ -44,7 +44,7 @@ import useStakingParams from 'hooks/earn/useStakingParams'
 import { selectActiveAccount } from 'store/account'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { Tooltip } from 'components/Tooltip'
-import { useAnalytics } from 'hooks/useAnalytics'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import { ConfirmScreen } from '../components/ConfirmScreen'
 import UnableToEstimate from '../components/UnableToEstimate'
 import { useValidateStakingEndTime } from './useValidateStakingEndTime'
@@ -54,7 +54,6 @@ type ScreenProps = StakeSetupScreenProps<
 >
 
 export const Confirmation = (): JSX.Element | null => {
-  const { capture } = useAnalytics()
   const dispatch = useDispatch()
   const { minStakeAmount } = useStakingParams()
   const avaxFormatter = useAvaxFormatter()
@@ -131,7 +130,9 @@ export const Confirmation = (): JSX.Element | null => {
   }, [data?.estimatedTokenReward, validator?.delegationFee])
 
   const cancelStaking = (): void => {
-    capture('StakeCancelStaking', { from: 'ConfirmationScreen' })
+    AnalyticsService.capture('StakeCancelStaking', {
+      from: 'ConfirmationScreen'
+    })
     navigate(AppNavigation.StakeSetup.Cancel)
   }
 
@@ -145,7 +146,7 @@ export const Confirmation = (): JSX.Element | null => {
     if (!claimableBalance) {
       return
     }
-    capture('StakeIssueDelegation')
+    AnalyticsService.capture('StakeIssueDelegation')
     issueDelegationMutation.mutate({
       stakingAmount: deductedStakingAmount,
       startDate: minStartTime,
@@ -155,7 +156,7 @@ export const Confirmation = (): JSX.Element | null => {
   }
 
   function onDelegationSuccess(txHash: string): void {
-    capture('StakeDelegationSuccess')
+    AnalyticsService.capture('StakeDelegationSuccess')
     showSnackBarCustom({
       component: (
         <TransactionToast
@@ -180,7 +181,7 @@ export const Confirmation = (): JSX.Element | null => {
   }
 
   function onDelegationError(error: Error): void {
-    capture('StakeDelegationFail')
+    AnalyticsService.capture('StakeDelegationFail')
     showSimpleToast(error.message)
   }
 

@@ -10,7 +10,7 @@ import { AnyAction, isAnyOf } from '@reduxjs/toolkit'
 import { onLogIn, selectWalletType } from 'store/app/slice'
 import { WalletType } from 'services/wallet/types'
 import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKeysStorage'
-import { capture } from 'store/posthog'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import {
   selectAccounts,
   selectWalletName,
@@ -61,20 +61,15 @@ const initAccounts = async (
   }
 
   if (isDeveloperMode === false) {
-    listenerApi.dispatch(
-      capture({
-        event: 'CollectAccountAddresses',
-        properties: {
-          addresses: accounts.map(acc => ({
-            address: acc.address,
-            addressBtc: acc.addressBtc,
-            addressAVM: acc.addressAVM ?? '',
-            addressPVM: acc.addressPVM ?? '',
-            addressCoreEth: acc.addressCoreEth ?? ''
-          }))
-        }
-      })
-    )
+    AnalyticsService.capture('CollectAccountAddresses', {
+      addresses: accounts.map(acc => ({
+        address: acc.address,
+        addressBtc: acc.addressBtc,
+        addressAVM: acc.addressAVM ?? '',
+        addressPVM: acc.addressPVM ?? '',
+        addressCoreEth: acc.addressCoreEth ?? ''
+      }))
+    })
   }
 }
 
@@ -95,20 +90,15 @@ const reloadAccounts = async (
   listenerApi.dispatch(setAccounts(reloadedAccounts))
 
   if (isDeveloperMode === false) {
-    listenerApi.dispatch(
-      capture({
-        event: 'CollectAccountAddresses',
-        properties: {
-          addresses: Object.values(reloadedAccounts).map(acc => ({
-            address: acc.address,
-            addressBtc: acc.addressBtc,
-            addressAVM: acc.addressAVM ?? '',
-            addressPVM: acc.addressPVM ?? '',
-            addressCoreEth: acc.addressCoreEth ?? ''
-          }))
-        }
-      })
-    )
+    AnalyticsService.capture('CollectAccountAddresses', {
+      addresses: Object.values(reloadedAccounts).map(acc => ({
+        address: acc.address,
+        addressBtc: acc.addressBtc,
+        addressAVM: acc.addressAVM ?? '',
+        addressPVM: acc.addressPVM ?? '',
+        addressCoreEth: acc.addressCoreEth ?? ''
+      }))
+    })
   }
 }
 

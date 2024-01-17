@@ -16,7 +16,7 @@ import ZeroState from 'components/ZeroState'
 import { NetworkListItem } from 'screens/network/NetworkListItem'
 import { Network } from '@avalabs/chains-sdk'
 import { useNavigation } from '@react-navigation/native'
-import { useAnalytics } from 'hooks/useAnalytics'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 
 type Props = {
   onShowInfo: (chainId: ChainID) => void
@@ -29,7 +29,6 @@ export default function NetworkManager({ onShowInfo }: Props): JSX.Element {
   const favoriteNetworks = useSelector(selectFavoriteNetworks)
   const dispatch = useDispatch()
   const [searchText, setSearchText] = useState('')
-  const { capture } = useAnalytics()
   const title = 'Networks'
 
   const customNetworkChainIds = useMemo(
@@ -83,7 +82,7 @@ export default function NetworkManager({ onShowInfo }: Props): JSX.Element {
   }
 
   function showInfo(chainId: number): void {
-    capture('NetworkDetailsClicked', { chainId })
+    AnalyticsService.capture('NetworkDetailsClicked', { chainId })
     onShowInfo(chainId)
   }
 

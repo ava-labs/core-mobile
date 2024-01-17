@@ -18,7 +18,7 @@ import {
 } from 'store/network'
 import { arrayHash } from 'utils/Utils'
 import SettingsCogSVG from 'components/svg/SettingsCogSVG'
-import { useAnalytics } from 'hooks/useAnalytics'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import { NetworkLogo } from './NetworkLogo'
 
 const ManageNetworks = 'Manage networks'
@@ -32,7 +32,6 @@ export default function NetworkDropdown(): JSX.Element {
   const activeNetwork = useSelector(selectActiveNetwork)
   const dispatch = useDispatch()
   const { theme } = useApplicationContext()
-  const { capture } = useAnalytics()
   const navigation = useNavigation<NetworkDropdownNavigationProp>()
 
   const data = useMemo(
@@ -77,7 +76,7 @@ export default function NetworkDropdown(): JSX.Element {
 
   const handleOnDropDownToggle = (isOpen: boolean): void => {
     if (isOpen) {
-      capture('NetworkSwitcherOpened')
+      AnalyticsService.capture('NetworkSwitcherOpened')
     }
   }
 
@@ -106,7 +105,7 @@ export default function NetworkDropdown(): JSX.Element {
         selectedIndex={selectedNetworkIndex === -1 ? 0 : selectedNetworkIndex}
         onItemSelected={selectedItem => {
           if (selectedItem.name === ManageNetworks) {
-            capture('ManageNetworksClicked')
+            AnalyticsService.capture('ManageNetworksClicked')
             navigation.navigate(AppNavigation.Wallet.NetworkSelector)
           } else {
             dispatch(setActive(selectedItem.chainId))

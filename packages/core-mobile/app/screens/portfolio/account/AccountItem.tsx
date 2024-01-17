@@ -18,7 +18,7 @@ import {
 } from 'store/balance'
 import ReloadSVG from 'components/svg/ReloadSVG'
 import { ActivityIndicator } from 'components/ActivityIndicator'
-import { useAnalytics } from 'hooks/useAnalytics'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 
 type Props = {
   account: Account
@@ -48,7 +48,6 @@ function AccountItem({
   const [editAccount, setEditAccount] = useState(false)
   const [editedAccountTitle, setEditedAccountTitle] = useState(account.title)
   const [showLoader, setShowLoader] = useState(false)
-  const { capture } = useAnalytics()
   const dispatch = useDispatch()
 
   const bgColor = useMemo(() => {
@@ -156,13 +155,17 @@ function AccountItem({
             <TokenAddress
               address={account.address}
               showIcon
-              onCopyAddress={() => capture('AccountSelectorEthAddressCopied')}
+              onCopyAddress={() =>
+                AnalyticsService.capture('AccountSelectorEthAddressCopied')
+              }
             />
             <Space y={6} />
             <TokenAddress
               address={account.addressBtc}
               showIcon
-              onCopyAddress={() => capture('AccountSelectorBtcAddressCopied')}
+              onCopyAddress={() =>
+                AnalyticsService.capture('AccountSelectorBtcAddressCopied')
+              }
             />
           </View>
         </Row>

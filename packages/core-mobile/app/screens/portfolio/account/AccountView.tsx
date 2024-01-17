@@ -15,17 +15,16 @@ import { ActivityIndicator } from 'components/ActivityIndicator'
 import Logger from 'utils/Logger'
 import { showSimpleToast } from 'components/Snackbar'
 import WalletService from 'services/wallet/WalletService'
-import { useAnalytics } from 'hooks/useAnalytics'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 
 function AccountView({ onDone }: { onDone: () => void }): JSX.Element {
   const accounts = useSelector(selectAccounts)
   const dispatch = useDispatch()
-  const { capture } = useAnalytics()
   const [isAddingAccount, setIsAddingAccount] = useState(false)
 
   const addAccountAndSetActive = async (): Promise<void> => {
     try {
-      capture('AccountSelectorAddAccount', {
+      AnalyticsService.capture('AccountSelectorAddAccount', {
         accountNumber: Object.keys(accounts).length + 1
       })
 
@@ -34,7 +33,7 @@ function AccountView({ onDone }: { onDone: () => void }): JSX.Element {
       // dispatch here is not typed correctly
       await dispatch(addAccount()).unwrap()
 
-      capture('CreatedANewAccountSuccessfully', {
+      AnalyticsService.capture('CreatedANewAccountSuccessfully', {
         walletType: WalletService.walletType
       })
     } catch (error) {

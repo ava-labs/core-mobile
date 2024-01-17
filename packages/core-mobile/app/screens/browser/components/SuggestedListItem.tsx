@@ -1,11 +1,11 @@
 import { Pressable, Text, Image } from '@avalabs/k2-mobile'
 import { useNavigation } from '@react-navigation/native'
 import { Space } from 'components/Space'
-import { useAnalytics } from 'hooks/useAnalytics'
 import AppNavigation from 'navigation/AppNavigation'
 import { BrowserScreenProps } from 'navigation/types'
 import React from 'react'
 import { useDispatch } from 'react-redux'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import { DeFiProtocolInformation } from 'services/browser/types'
 import { addHistoryForActiveTab } from 'store/browser/slices/tabs'
 
@@ -24,10 +24,11 @@ export const SuggestedListItem = ({
 }: Props): JSX.Element => {
   const dispatch = useDispatch()
   const { navigate } = useNavigation<NavigationProp>()
-  const { capture } = useAnalytics()
 
   const navigateToTabView = (): void => {
-    capture('BrowserSuggestedTapped', { url: suggested.siteUrl ?? '' })
+    AnalyticsService.capture('BrowserSuggestedTapped', {
+      url: suggested.siteUrl ?? ''
+    })
     dispatch(
       addHistoryForActiveTab({
         title: suggested.name ?? '',

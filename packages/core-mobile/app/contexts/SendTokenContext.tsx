@@ -33,7 +33,7 @@ import SentryWrapper from 'services/sentry/SentryWrapper'
 import { formatUriImageToPng } from 'utils/Contentful'
 import { bnToBigint } from 'utils/bigNumbers/bnToBigint'
 import Logger from 'utils/Logger'
-import { useAnalytics } from 'hooks/useAnalytics'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 
 export interface SendTokenContextState {
   sendToken: TokenWithBalance | undefined
@@ -65,7 +65,6 @@ export const SendTokenContextProvider = ({
   children: ReactNode
 }): JSX.Element => {
   const { theme } = useApplicationContext()
-  const { capture } = useAnalytics()
   const activeAccount = useSelector(selectActiveAccount)
   const activeNetwork = useSelector(selectActiveNetwork)
   const selectedCurrency = useSelector(selectSelectedCurrency)
@@ -165,14 +164,14 @@ export const SendTokenContextProvider = ({
     if (!activeAccount) {
       setSendStatus('Fail')
       setSendStatusMsg('No active account')
-      capture('SendFailed', {
+      AnalyticsService.capture('SendFailed', {
         errorMessage: 'No active account',
         chainId: activeNetwork.chainId
       })
       return
     }
 
-    capture('SendApproved', {
+    AnalyticsService.capture('SendApproved', {
       selectedGasFee: selectedFeePreset.toUpperCase(),
       chainId: activeNetwork.chainId
     })
@@ -213,7 +212,9 @@ export const SendTokenContextProvider = ({
         )
         .then(txId => {
           setSendStatus('Success')
-          capture('SendSucceeded', { chainId: activeNetwork.chainId })
+          AnalyticsService.capture('SendSucceeded', {
+            chainId: activeNetwork.chainId
+          })
           showSnackBarCustom({
             component: (
               <TransactionToast
@@ -229,7 +230,7 @@ export const SendTokenContextProvider = ({
         .catch(reason => {
           const transactionHash =
             reason?.transactionHash ?? reason?.error?.transactionHash
-          capture('SendFailed', {
+          AnalyticsService.capture('SendFailed', {
             errorMessage: reason?.error?.message,
             chainId: activeNetwork.chainId
           })

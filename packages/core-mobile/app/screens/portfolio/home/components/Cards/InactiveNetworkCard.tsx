@@ -22,7 +22,7 @@ import { selectActiveAccount } from 'store/account'
 import { getCardHighLightColor } from 'utils/color/getCardHighLightColor'
 import usePendingBridgeTransactions from 'screens/bridge/hooks/usePendingBridgeTransactions'
 import TopRightBadge from 'components/TopRightBadge'
-import { useAnalytics } from 'hooks/useAnalytics'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 
 const windowWidth = Dimensions.get('window').width
 
@@ -36,7 +36,6 @@ type NavigationProp = PortfolioScreenProps<
 
 const InactiveNetworkCard: FC<Props> = ({ network }) => {
   const dispatch = useDispatch()
-  const { capture } = useAnalytics()
 
   const {
     appHook: { currencyFormatter },
@@ -56,7 +55,7 @@ const InactiveNetworkCard: FC<Props> = ({ network }) => {
   const pendingBridgeTxs = usePendingBridgeTransactions(network)
 
   const navigateToNetworkTokens = (): void => {
-    capture('PortfolioSecondaryNetworkClicked', {
+    AnalyticsService.capture('PortfolioSecondaryNetworkClicked', {
       chainId: network.chainId
     })
     dispatch(setActive(network.chainId))

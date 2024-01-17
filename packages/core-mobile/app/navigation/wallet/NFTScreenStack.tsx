@@ -13,7 +13,7 @@ import NFTSendScreenStack, {
 } from 'navigation/wallet/NFTSendStack'
 import { NFTDetailsScreenProps } from 'navigation/types'
 import { NFTItemData } from 'store/nft'
-import { useAnalytics } from 'hooks/useAnalytics'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 
 export type NFTStackParamList = {
   [AppNavigation.Nft.Details]: { nft: NFTItemData }
@@ -65,14 +65,15 @@ type NftDetailsScreenProps = NFTDetailsScreenProps<
 const NftDetailsScreen = (): JSX.Element => {
   const { navigate } = useNavigation<NftDetailsScreenProps['navigation']>()
   const { params } = useRoute<NftDetailsScreenProps['route']>()
-  const { capture } = useAnalytics()
 
   const openImageFull = (url: string, isSvg: boolean): void => {
     navigate(AppNavigation.Nft.FullScreen, { url, isSvg })
   }
 
   const openSendNftScreen = (item: NFTItemData): void => {
-    capture('CollectibleSendClicked', { chainId: item.chainId })
+    AnalyticsService.capture('CollectibleSendClicked', {
+      chainId: item.chainId
+    })
     navigate(AppNavigation.Nft.Send, { nft: item })
   }
 

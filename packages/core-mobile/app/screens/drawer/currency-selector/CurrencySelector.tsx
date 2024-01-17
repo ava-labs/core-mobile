@@ -14,14 +14,13 @@ import {
   setSelectedCurrency
 } from 'store/settings/currency'
 import { useNavigation } from '@react-navigation/native'
-import { useAnalytics } from 'hooks/useAnalytics'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 
 const CurrencySelector = (): JSX.Element => {
   const navigation = useNavigation()
   const currencies = useSelector(selectCurrencies)
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const dispatch = useDispatch()
-  const { capture } = useAnalytics()
 
   const renderItem = (
     item: ListRenderItemInfo<{ name: string; symbol: string }>
@@ -33,7 +32,7 @@ const CurrencySelector = (): JSX.Element => {
         currency.symbol.toLocaleUpperCase() !==
         selectedCurrency.toLocaleUpperCase()
       ) {
-        capture('CurrencySettingChanged', {
+        AnalyticsService.capture('CurrencySettingChanged', {
           currency: currency.symbol.toLocaleUpperCase()
         })
       }

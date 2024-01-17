@@ -1,10 +1,10 @@
 import { Button, Text, View, useTheme } from '@avalabs/k2-mobile'
 import { useFocusEffect } from '@react-navigation/native'
 import InputText from 'components/InputText'
-import { useAnalytics } from 'hooks/useAnalytics'
 import React, { useCallback, useRef, useState } from 'react'
 import { TextInput } from 'react-native'
 import { useDispatch } from 'react-redux'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import { setWalletName } from 'store/account'
 
 export const NameYourWallet = ({
@@ -18,7 +18,6 @@ export const NameYourWallet = ({
   const {
     theme: { colors }
   } = useTheme()
-  const { capture } = useAnalytics()
   const [containerWidth, setContainerWidth] = useState(0)
   const [textWidth, setTextWidth] = useState(0)
 
@@ -28,7 +27,7 @@ export const NameYourWallet = ({
     const trimmed = name.trim()
     dispatch(setWalletName({ name: trimmed }))
     onSetWalletName()
-    capture('WalletNameAdded')
+    AnalyticsService.capture('WalletNameAdded')
   }
 
   const shouldShowLongText = textWidth >= containerWidth

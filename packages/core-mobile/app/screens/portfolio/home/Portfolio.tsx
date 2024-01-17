@@ -19,7 +19,7 @@ import { TokensTabHeader } from 'screens/portfolio/home/components/TokensTabHead
 import { PortfolioTabs } from 'consts/portfolio'
 import { selectIsDeFiBlocked } from 'store/posthog'
 import { DeFiProtocolList } from 'screens/defi/DeFiProtocolList'
-import { useAnalytics } from 'hooks/useAnalytics'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import InactiveNetworkCard from './components/Cards/InactiveNetworkCard'
 import { PortfolioTokensLoader } from './components/Loaders/PortfolioTokensLoader'
 import PortfolioHeader from './components/PortfolioHeader'
@@ -34,18 +34,17 @@ const Portfolio = (): JSX.Element => {
 
   const collectiblesDisabled = useIsUIDisabled(UI.Collectibles)
   const defiBlocked = useSelector(selectIsDeFiBlocked)
-  const { capture } = useAnalytics()
 
   function captureAnalyticsEvents(tabIndex: number): void {
     switch (tabIndex) {
       case PortfolioTabs.Tokens:
-        capture('PortfolioAssetsClicked')
+        AnalyticsService.capture('PortfolioAssetsClicked')
         break
       case PortfolioTabs.NFT:
-        capture('PortfolioCollectiblesClicked')
+        AnalyticsService.capture('PortfolioCollectiblesClicked')
         break
       case PortfolioTabs.DeFi:
-        capture('PortfolioDeFiClicked')
+        AnalyticsService.capture('PortfolioDeFiClicked')
     }
   }
 
@@ -128,10 +127,11 @@ const TokensTab = (): JSX.Element => {
 
 const NftTab = (): JSX.Element => {
   const { navigate } = useNavigation<PortfolioNavigationProp['navigation']>()
-  const { capture } = useAnalytics()
 
   const openNftDetails = (item: NFTItemData): void => {
-    capture('CollectibleItemClicked', { chainId: item.chainId })
+    AnalyticsService.capture('CollectibleItemClicked', {
+      chainId: item.chainId
+    })
     navigate(AppNavigation.Wallet.NFTDetails, {
       screen: AppNavigation.Nft.Details,
       params: { nft: item }

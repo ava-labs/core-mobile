@@ -2,7 +2,6 @@ import { Action, isAnyOf } from '@reduxjs/toolkit'
 import { AppStartListening } from 'store/middleware/listener'
 import { onLogIn, onLogOut, onRehydrationComplete } from 'store/app'
 import {
-  capture,
   regenerateUserId,
   selectDistinctID,
   selectIsAnalyticsEnabled,
@@ -83,15 +82,6 @@ export const addPosthogListeners = (
     actionCreator: onLogOut,
     effect: async (action, api) => {
       api.dispatch(regenerateUserId())
-    }
-  })
-
-  startListening({
-    actionCreator: capture,
-    effect: async (action, _) => {
-      const { event, properties } = action.payload
-
-      AnalyticsService.capture(event, properties)
     }
   })
 

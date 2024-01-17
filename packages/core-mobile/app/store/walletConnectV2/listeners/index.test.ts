@@ -11,7 +11,7 @@ import * as appSlice from 'store/app/slice'
 import { ethErrors } from 'eth-rpc-errors'
 import { typedData } from 'tests/fixtures/rpc/typedData'
 import { selectIsDeveloperMode } from 'store/settings/advanced/slice'
-import { capture } from 'store/posthog'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import {
   walletConnectReducer,
   reducerName,
@@ -116,10 +116,10 @@ const listenerMiddlewareInstance = createListenerMiddleware({
   onError: jest.fn(noop)
 })
 
-const mockDispatch = jest.fn()
+jest.mock('services/analytics/AnalyticsService')
+;(AnalyticsService.capture as jest.Mock).mockReturnValue(undefined)
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const dispatchSpyMiddleware = () => (next: any) => (action: any) => {
-  mockDispatch(action)
   return next(action)
 }
 
@@ -141,7 +141,6 @@ let store: ReturnType<typeof setupTestStore>
 
 describe('walletConnect - listeners', () => {
   beforeEach(() => {
-    mockDispatch.mockClear()
     mockSelectIsDeveloperMode.mockImplementation(() => false)
     mockApprove.mockImplementation(async () => {
       return {
@@ -749,20 +748,14 @@ describe('walletConnect - listeners', () => {
           'Connected to Playground'
         )
 
-        expect(mockDispatch).toHaveBeenCalledWith(
-          capture({
-            event: 'WalletConnectSessionApprovedV2',
-            properties: {
-              namespaces: JSON.stringify(mockSession.namespaces),
-              requiredNamespaces: JSON.stringify(
-                mockSession.requiredNamespaces
-              ),
-              optionalNamespaces: JSON.stringify(
-                mockSession.optionalNamespaces
-              ),
-              dappUrl: 'http://127.0.0.1:5173'
-            }
-          })
+        expect(AnalyticsService.capture).toHaveBeenCalledWith(
+          'WalletConnectSessionApprovedV2',
+          {
+            namespaces: JSON.stringify(mockSession.namespaces),
+            requiredNamespaces: JSON.stringify(mockSession.requiredNamespaces),
+            optionalNamespaces: JSON.stringify(mockSession.optionalNamespaces),
+            dappUrl: 'http://127.0.0.1:5173'
+          }
         )
       })
 
@@ -803,16 +796,12 @@ describe('walletConnect - listeners', () => {
           'Connected to Playground'
         )
 
-        expect(mockDispatch).not.toHaveBeenCalledWith(
-          capture({
-            event: 'WalletConnectSessionApprovedV2',
-            properties: {
-              requiredNamespaces: JSON.stringify(
-                mockSession.requiredNamespaces
-              ),
-              dappUrl: 'http://127.0.0.1:5173'
-            }
-          })
+        expect(AnalyticsService.capture).not.toHaveBeenCalledWith(
+          'WalletConnectSessionApprovedV2',
+          {
+            requiredNamespaces: JSON.stringify(mockSession.requiredNamespaces),
+            dappUrl: 'http://127.0.0.1:5173'
+          }
         )
 
         expect(mockShowDappToastError).toHaveBeenCalledWith(

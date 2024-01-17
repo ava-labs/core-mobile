@@ -22,7 +22,7 @@ import usePendingBridgeTransactions from 'screens/bridge/hooks/usePendingBridgeT
 import { selectActiveNetwork } from 'store/network'
 import { useSelector } from 'react-redux'
 import TopRightBadge from 'components/TopRightBadge'
-import { useAnalytics } from 'hooks/useAnalytics'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import NetworkTokensHeader from './components/NetworkTokensHeader'
 
 type NavigationProp = PortfolioScreenProps<
@@ -34,7 +34,6 @@ const NetworkTokens = (): JSX.Element => {
   const { navigate, getParent, setParams } =
     useNavigation<NavigationProp['navigation']>()
   const { theme } = useApplicationContext()
-  const { capture } = useAnalytics()
   const {
     isLoading,
     isRefetching,
@@ -65,11 +64,11 @@ const NetworkTokens = (): JSX.Element => {
       tokenId: token.localId
     })
 
-    capture('TokenListTokenSelected', {
+    AnalyticsService.capture('TokenListTokenSelected', {
       selectedToken: getSelectedToken(token)
     })
 
-    capture('PortfolioTokenSelected', {
+    AnalyticsService.capture('PortfolioTokenSelected', {
       selectedToken: getSelectedToken(token)
     })
   }
@@ -93,7 +92,7 @@ const NetworkTokens = (): JSX.Element => {
   function capturePosthogEvents(tabIndex: number): void {
     if (tabIndex === NetworkTokensTabs.Activity) {
       // capture event only for the activity tab with old event name, by request from product
-      capture('PortfolioActivityClicked')
+      AnalyticsService.capture('PortfolioActivityClicked')
     }
   }
 

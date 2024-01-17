@@ -25,7 +25,7 @@ import {
   toggleAnalytics
 } from 'store/posthog'
 import { createInstance } from 'services/token/TokenService'
-import { useAnalytics } from 'hooks/useAnalytics'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 
 export const PosthogContext = createContext<PosthogContextState>(
   {} as PosthogContextState
@@ -50,7 +50,6 @@ export const PosthogContextProvider = ({
   children: ReactNode
 }): JSX.Element => {
   const dispatch = useDispatch()
-  const { capture } = useAnalytics()
   const isAnalyticsEnabled = useSelector(selectIsAnalyticsEnabled)
 
   // TODO: in react components, use flags directly from redux
@@ -87,16 +86,15 @@ export const PosthogContextProvider = ({
   useEffect(setEventsLogging, [
     analyticsConsent,
     eventsBlocked,
-    capture,
     dispatch,
     isAnalyticsEnabled
   ])
 
-  useEffect(checkRestartSession, [capture, timeoutPassed])
+  useEffect(checkRestartSession, [timeoutPassed])
 
   function checkRestartSession(): void {
     if (timeoutPassed) {
-      capture('AnalyticsEnabled')
+      AnalyticsService.capture('AnalyticsEnabled')
     }
   }
   /**
@@ -113,10 +111,10 @@ export const PosthogContextProvider = ({
     if (analyticsConsent || analyticsConsent === undefined) {
       if (!isAnalyticsEnabled) {
         dispatch(toggleAnalytics(true))
-        capture('AnalyticsEnabled')
+        AnalyticsService.capture('AnalyticsEnabled')
       }
     } else {
-      capture('AnalyticsDisabled')
+      AnalyticsService.capture('AnalyticsDisabled')
       dispatch(toggleAnalytics(false))
     }
   }

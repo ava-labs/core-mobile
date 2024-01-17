@@ -12,7 +12,7 @@ import { z } from 'zod'
 import { FormInputText } from 'components/form/FormInputText'
 import { isEmpty } from 'lodash'
 import { Tooltip } from 'components/Tooltip'
-import { useAnalytics } from 'hooks/useAnalytics'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import { Opacity50 } from '../../resources/Constants'
 
 type TFormProps = {
@@ -36,7 +36,6 @@ type ScreenProps = StakeSetupScreenProps<
 >
 
 const AdvancedStaking = (): JSX.Element => {
-  const { capture } = useAnalytics()
   const { theme } = useApplicationContext()
   const { navigate } = useNavigation<ScreenProps['navigation']>()
   const { stakingAmount, stakingEndTime, selectedDuration } =
@@ -55,7 +54,7 @@ const AdvancedStaking = (): JSX.Element => {
     }
   })
   const onSubmit = (data: TFormProps): void => {
-    capture('StakeStartNodeSearch', {
+    AnalyticsService.capture('StakeStartNodeSearch', {
       from: 'AdvancedStakingScreen',
       duration: selectedDuration
     })

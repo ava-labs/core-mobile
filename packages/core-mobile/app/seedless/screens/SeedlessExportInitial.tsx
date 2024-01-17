@@ -13,7 +13,7 @@ import { SnackBarMessage } from 'seedless/components/SnackBarMessage'
 import { copyToClipboard } from 'utils/DeviceTools'
 import Logger from 'utils/Logger'
 import { BackButton } from 'components/BackButton'
-import { useAnalytics } from 'hooks/useAnalytics'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import { SeedlessExportInstructions } from './SeedlessExportInstructions'
 import { RecoveryPhrasePending } from './RecoveryPhrasePending'
 
@@ -22,7 +22,6 @@ type SeedlessExportInitialScreenProps = SeedlessExportScreenProps<
 >
 
 export const SeedlessExportInitial = (): JSX.Element => {
-  const { capture } = useAnalytics()
   const [hideMnemonic, setHideMnemonic] = useState(true)
   const { navigate, setOptions, goBack, canGoBack } =
     useNavigation<SeedlessExportInitialScreenProps['navigation']>()
@@ -93,7 +92,7 @@ export const SeedlessExportInitial = (): JSX.Element => {
         onPress={() => {
           navigate(AppNavigation.Root.CopyPhraseWarning, {
             copy: () => {
-              capture('SeedlessExportPhraseCopied')
+              AnalyticsService.capture('SeedlessExportPhraseCopied')
               copyToClipboard(
                 mnemonic,
                 <SnackBarMessage message="Phrase Copied!" />
@@ -111,12 +110,12 @@ export const SeedlessExportInitial = (): JSX.Element => {
       await completeExport().catch(Logger.error)
     }
     setHideMnemonic(prev => !prev)
-    capture(
+    AnalyticsService.capture(
       !hideMnemonic === true
         ? 'SeedlessExportPhraseHidden'
         : 'SeedlessExportPhraseRevealed'
     )
-  }, [capture, completeExport, hideMnemonic, mnemonic])
+  }, [completeExport, hideMnemonic, mnemonic])
 
   return (
     <>

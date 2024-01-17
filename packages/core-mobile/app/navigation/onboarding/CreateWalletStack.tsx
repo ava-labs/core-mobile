@@ -27,7 +27,7 @@ import Logger from 'utils/Logger'
 import { WalletType } from 'services/wallet/types'
 import { useWallet } from 'hooks/useWallet'
 import { NameYourWallet } from 'seedless/screens/NameYourWallet'
-import { useAnalytics } from 'hooks/useAnalytics'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import { CreateWalletScreenProps } from '../types'
 
 export type CreateWalletStackParamList = {
@@ -105,14 +105,13 @@ type CreateWalletNavigationProp = CreateWalletScreenProps<
 const CreateWalletScreen = (): JSX.Element => {
   const createWalletContext = useContext(CreateWalletContext)
   const { navigate } = useNavigation<CreateWalletNavigationProp>()
-  const { capture } = useAnalytics()
   const dispatch = useDispatch()
 
   useBeforeRemoveListener(
     useCallback(() => {
-      capture('OnboardingCancelled')
+      AnalyticsService.capture('OnboardingCancelled')
       dispatch(setCoreAnalytics(undefined))
-    }, [capture, dispatch]),
+    }, [dispatch]),
     [RemoveEvents.GO_BACK]
   )
 
@@ -130,10 +129,9 @@ type ProtectFundsNavigationProp = CreateWalletScreenProps<
 
 const CreateWalletWarningModal = (): JSX.Element => {
   const { navigate, goBack } = useNavigation<ProtectFundsNavigationProp>()
-  const { capture } = useAnalytics()
 
   const onUnderstand = (): void => {
-    capture('OnboardingMnemonicCreated')
+    AnalyticsService.capture('OnboardingMnemonicCreated')
     goBack()
     navigate(AppNavigation.CreateWallet.CheckMnemonic)
   }
@@ -181,10 +179,9 @@ type NameYourWalletNavigationProp = CreateWalletScreenProps<
 
 const NameYourWalletScreen = (): JSX.Element => {
   const { navigate } = useNavigation<NameYourWalletNavigationProp>()
-  const { capture } = useAnalytics()
 
   const onSetWalletName = (): void => {
-    capture('CreateWallet:WalletNameSet')
+    AnalyticsService.capture('CreateWallet:WalletNameSet')
     navigate(AppNavigation.CreateWallet.CreatePin)
   }
   return <NameYourWallet onSetWalletName={onSetWalletName} />
@@ -198,10 +195,9 @@ const CreatePinScreen = (): JSX.Element => {
   const createWalletContext = useContext(CreateWalletContext)
   const { onPinCreated } = useWallet()
   const { navigate } = useNavigation<CreatePinNavigationProp>()
-  const { capture } = useAnalytics()
 
   const onPinSet = (pin: string): void => {
-    capture('OnboardingPasswordSet')
+    AnalyticsService.capture('OnboardingPasswordSet')
     onPinCreated(createWalletContext.mnemonic, pin, false)
       .then(value => {
         switch (value) {

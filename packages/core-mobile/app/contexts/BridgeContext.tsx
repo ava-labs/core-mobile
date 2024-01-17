@@ -41,7 +41,7 @@ import { showSnackBarCustom } from 'components/Snackbar'
 import TransactionToast, {
   TransactionToastType
 } from 'components/toast/TransactionToast'
-import { useAnalytics } from 'hooks/useAnalytics'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 
 export enum TransferEventType {
   WRAP_STATUS = 'wrap_status',
@@ -99,13 +99,12 @@ function LocalBridgeProvider({
   const bitcoinProvider = useBitcoinProvider()
   const avalancheProvider = useAvalancheProvider()
   const { bridgeConfig: bridgeConfigSDK, setBridgeConfig } = useBridgeSDK()
-  const { capture } = useAnalytics()
   const isToastVisible = useRef<boolean>()
 
   const removeBridgeTransaction = useCallback(
     (tx: BridgeTransaction) => {
       dispatch(popBridgeTransaction(tx.sourceTxHash))
-      capture('BridgeTransferRequestSucceeded')
+      AnalyticsService.capture('BridgeTransferRequestSucceeded')
 
       if (!isToastVisible.current) {
         isToastVisible.current = true
@@ -125,7 +124,7 @@ function LocalBridgeProvider({
         })
       }
     },
-    [capture, dispatch]
+    [dispatch]
   )
 
   useEffect(() => {

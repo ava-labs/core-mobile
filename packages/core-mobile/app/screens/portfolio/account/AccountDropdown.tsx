@@ -13,7 +13,7 @@ import {
   selectActiveAccount,
   setActiveAccountIndex
 } from 'store/account'
-import { useAnalytics } from 'hooks/useAnalytics'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 
 const Y_START = -400
 
@@ -27,11 +27,10 @@ function AccountDropdown({
   const { goBack } = useNavigation()
   const animTranslateY = useRef(new Animated.Value(Y_START)).current
   const dispatch = useDispatch()
-  const { capture } = useAnalytics()
 
   useEffect(() => {
-    capture('AccountSelectorOpened')
-  }, [capture])
+    AnalyticsService.capture('AccountSelectorOpened')
+  }, [])
 
   useEffect(() => {
     const compositeAnimation1 = Animated.timing(animTranslateY, {
@@ -55,7 +54,7 @@ function AccountDropdown({
   }, [animTranslateY, goBack])
 
   function onSelectAccount(accountIndex: number): void {
-    capture('AccountSelectorAccountSwitched', { accountIndex })
+    AnalyticsService.capture('AccountSelectorAccountSwitched', { accountIndex })
     dispatch(setActiveAccountIndex(accountIndex))
     animatedDismiss()
   }

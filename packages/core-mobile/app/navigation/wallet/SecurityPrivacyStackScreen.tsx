@@ -22,7 +22,7 @@ import { RecoveryMethodsSettingMFAScreen } from 'seedless/screens/RecoveryMethod
 import { MFA } from 'seedless/types'
 import { WalletType } from 'services/wallet/types'
 import walletService from 'services/wallet/WalletService'
-import { useAnalytics } from 'hooks/useAnalytics'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import SeedlessExportStack, {
   SeedlessExportStackParamList
 } from './SeedlessExportStack'
@@ -118,14 +118,13 @@ type SecurityPrivacyNavigationProp = SecurityPrivacyScreenProps<
 >['navigation']
 
 const SecurityPrivacyScreen = (): JSX.Element => {
-  const { capture } = useAnalytics()
   const nav = useNavigation<SecurityPrivacyNavigationProp>()
   const walletType = walletService.walletType
 
   return (
     <SecurityPrivacy
       onChangePin={() => {
-        capture('ChangePasswordClicked')
+        AnalyticsService.capture('ChangePasswordClicked')
         nav.navigate(AppNavigation.SecurityPrivacy.PinChange)
       }}
       onShowRecoveryPhrase={() => {
@@ -144,7 +143,7 @@ const SecurityPrivacyScreen = (): JSX.Element => {
         nav.navigate(AppNavigation.SecurityPrivacy.TurnOnBiometrics)
       }
       onShowConnectedDapps={() => {
-        capture('ConnectedSitesClicked')
+        AnalyticsService.capture('ConnectedSitesClicked')
         nav.navigate(AppNavigation.SecurityPrivacy.DappList)
       }}
     />
@@ -231,10 +230,9 @@ const CreatePinScreen = memo(() => {
   const { onPinCreated } = useWallet()
   const { mnemonic } = useRoute<CreatePinScreenProps['route']>().params
   const nav = useNavigation<CreatePinScreenProps['navigation']>()
-  const { capture } = useAnalytics()
 
   const handleOnResetPinFailed = (): void => {
-    capture('ChangePasswordFailed')
+    AnalyticsService.capture('ChangePasswordFailed')
   }
 
   return (
@@ -242,7 +240,7 @@ const CreatePinScreen = memo(() => {
       onPinSet={pin => {
         onPinCreated(mnemonic, pin, true)
           .then(() => {
-            capture('ChangePasswordSucceeded')
+            AnalyticsService.capture('ChangePasswordSucceeded')
             nav.goBack()
           })
           .catch(Logger.error)

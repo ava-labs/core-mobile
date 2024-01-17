@@ -17,7 +17,7 @@ import { Row } from 'components/Row'
 import { useImportAnyStuckFunds } from 'hooks/earn/useImportAnyStuckFunds'
 import { Avax } from 'types/Avax'
 import { Tooltip } from 'components/Tooltip'
-import { useAnalytics } from 'hooks/useAnalytics'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import { getStakePrimaryColor } from '../utils'
 import { BalanceLoader } from './BalanceLoader'
 import { CircularProgress } from './CircularProgress'
@@ -25,7 +25,6 @@ import { CircularProgress } from './CircularProgress'
 type ScreenProps = EarnScreenProps<typeof AppNavigation.Earn.StakeDashboard>
 
 export const Balance = (): JSX.Element | null => {
-  const { capture } = useAnalytics()
   const { theme } = useApplicationContext()
   const { navigate } = useNavigation<ScreenProps['navigation']>()
   const pChainBalance = usePChainBalance()
@@ -84,7 +83,7 @@ export const Balance = (): JSX.Element | null => {
   ]
 
   const goToGetStarted = (): void => {
-    capture('StakeBegin', { from: 'BalanceScreen' })
+    AnalyticsService.capture('StakeBegin', { from: 'BalanceScreen' })
     navigate(AppNavigation.Wallet.Earn, {
       screen: AppNavigation.Earn.StakeSetup,
       params: {
@@ -94,7 +93,7 @@ export const Balance = (): JSX.Element | null => {
   }
 
   const goToClaimRewards = (): void => {
-    capture('StakeClaim')
+    AnalyticsService.capture('StakeClaim')
     navigate(AppNavigation.Wallet.Earn, {
       screen: AppNavigation.Earn.ClaimRewards
     })

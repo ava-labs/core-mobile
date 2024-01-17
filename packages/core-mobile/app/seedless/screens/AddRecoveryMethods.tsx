@@ -16,7 +16,7 @@ import {
   selectIsSeedlessMfaPasskeyBlocked,
   selectIsSeedlessMfaYubikeyBlocked
 } from 'store/posthog'
-import { useAnalytics } from 'hooks/useAnalytics'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import { Card } from '../components/Card'
 
 type AddRecoveryMethodsScreenProps = RecoveryMethodsScreenProps<
@@ -30,7 +30,6 @@ export const AddRecoveryMethods = (): JSX.Element => {
     theme: { colors }
   } = useTheme()
   const { mfaId, oidcToken } = useContext(RecoveryMethodsContext)
-  const { capture } = useAnalytics()
   const isSeedlessMfaPasskeyBlocked = useSelector(
     selectIsSeedlessMfaPasskeyBlocked
   )
@@ -44,7 +43,7 @@ export const AddRecoveryMethods = (): JSX.Element => {
   const goToAuthenticatorSetup = (): void => {
     navigate(AppNavigation.RecoveryMethods.AuthenticatorSetup)
 
-    capture('SeedlessAddMfa', { type: 'Authenticator' })
+    AnalyticsService.capture('SeedlessAddMfa', { type: 'Authenticator' })
   }
 
   const registerAndAuthenticateFido = async ({
@@ -63,11 +62,11 @@ export const AddRecoveryMethods = (): JSX.Element => {
 
       await SeedlessService.registerFido(passkeyName, withSecurityKey)
 
-      capture('SeedlessMfaAdded')
+      AnalyticsService.capture('SeedlessMfaAdded')
 
       await SeedlessService.approveFido(oidcToken, mfaId, withSecurityKey)
 
-      capture('SeedlessMfaVerified', { type: fidoType })
+      AnalyticsService.capture('SeedlessMfaVerified', { type: fidoType })
 
       goBack()
 
@@ -91,7 +90,7 @@ export const AddRecoveryMethods = (): JSX.Element => {
       }
     })
 
-    capture('SeedlessAddMfa', { type: FidoType.PASS_KEY })
+    AnalyticsService.capture('SeedlessAddMfa', { type: FidoType.PASS_KEY })
   }
 
   const handleYubikey = async (): Promise<void> => {
@@ -105,7 +104,7 @@ export const AddRecoveryMethods = (): JSX.Element => {
       }
     })
 
-    capture('SeedlessAddMfa', { type: FidoType.YUBI_KEY })
+    AnalyticsService.capture('SeedlessAddMfa', { type: FidoType.YUBI_KEY })
   }
 
   return (

@@ -9,7 +9,7 @@ import { addCustomToken as addCustomTokenAction } from 'store/customToken'
 import { useState, useEffect } from 'react'
 import { Network, NetworkContractToken } from '@avalabs/chains-sdk'
 import Logger from 'utils/Logger'
-import { useAnalytics } from 'hooks/useAnalytics'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 
 enum AddressValidationStatus {
   Valid,
@@ -70,7 +70,6 @@ const useAddCustomToken = (callback: () => void): CustomToken => {
   const tokens = useSelector(selectActiveNetworkContractTokens)
   const dispatch = useDispatch()
   const chainId = network.chainId
-  const { capture } = useAnalytics()
 
   useEffect(() => {
     setErrorMessage('')
@@ -105,7 +104,7 @@ const useAddCustomToken = (callback: () => void): CustomToken => {
       dispatch(addCustomTokenAction({ chainId, token }))
       setTokenAddress('')
       callback()
-      capture('ManageTokensAddCustomToken', {
+      AnalyticsService.capture('ManageTokensAddCustomToken', {
         status: 'success',
         address: token.address
       })

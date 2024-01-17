@@ -22,7 +22,7 @@ import { NetworkVMType } from '@avalabs/chains-sdk'
 import { SvgXml } from 'react-native-svg'
 import { BN } from 'bn.js'
 import { AddrBookItemType, Contact } from 'store/addressBook'
-import { useAnalytics } from 'hooks/useAnalytics'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 
 export type NftSendScreenProps = {
   onNext: () => void
@@ -34,7 +34,6 @@ export default function NftSend({
   onOpenAddressBook
 }: NftSendScreenProps): JSX.Element {
   const { theme } = useApplicationContext()
-  const { capture } = useAnalytics()
   const {
     sendToken: nft,
     toAccount,
@@ -101,7 +100,7 @@ export default function NftSend({
         break
     }
     selectContact(item, type)
-    capture('NftSendContactSelected', {
+    AnalyticsService.capture('NftSendContactSelected', {
       contactSource: source
     })
   }
@@ -109,14 +108,14 @@ export default function NftSend({
   const handleGasPriceChange = useCallback(
     (gasPrice1: bigint, feePreset: FeePreset) => {
       if (feePreset !== selectedFeePreset) {
-        capture('NftSendFeeOptionChanged', {
+        AnalyticsService.capture('NftSendFeeOptionChanged', {
           modifier: feePreset
         })
       }
       setCustomGasPrice(new BN(gasPrice1.toString()))
       setSelectedFeePreset(feePreset)
     },
-    [setCustomGasPrice, setSelectedFeePreset, selectedFeePreset, capture]
+    [setCustomGasPrice, setSelectedFeePreset, selectedFeePreset]
   )
 
   const handleGasLimitChange = useCallback(

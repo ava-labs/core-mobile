@@ -29,7 +29,7 @@ import { getMaxValue } from 'utils/Utils'
 import { Amount } from 'screens/swap/SwapView'
 import { BN } from 'bn.js'
 import { AddrBookItemType, Contact } from 'store/addressBook'
-import { useAnalytics } from 'hooks/useAnalytics'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import { FeePreset } from '../../components/NetworkFeeSelector'
 
 type Props = {
@@ -49,7 +49,6 @@ const SendToken: FC<Props> = ({
   token,
   contact
 }) => {
-  const { capture } = useAnalytics()
   const {
     setSendToken,
     sendToken,
@@ -139,7 +138,7 @@ const SendToken: FC<Props> = ({
         break
     }
     selectContact(item, type)
-    capture('SendContactSelected', { contactSource: source })
+    AnalyticsService.capture('SendContactSelected', { contactSource: source })
   }
 
   const onNextPress = (): void => {
@@ -160,14 +159,14 @@ const SendToken: FC<Props> = ({
   const handleGasPriceChange = useCallback(
     (gasPrice1: bigint, feePreset: FeePreset) => {
       if (feePreset !== selectedFeePreset) {
-        capture('SendFeeOptionChanged', {
+        AnalyticsService.capture('SendFeeOptionChanged', {
           modifier: feePreset
         })
       }
       setCustomGasPrice(new BN(gasPrice1.toString()))
       setSelectedFeePreset(feePreset)
     },
-    [capture, selectedFeePreset, setCustomGasPrice, setSelectedFeePreset]
+    [selectedFeePreset, setCustomGasPrice, setSelectedFeePreset]
   )
 
   return (

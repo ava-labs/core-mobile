@@ -11,7 +11,7 @@ import SearchBar from 'components/SearchBar'
 
 import { BottomSheetFlatList } from '@gorhom/bottom-sheet'
 import { AssetBalance } from 'screens/bridge/utils/types'
-import { useAnalytics } from 'hooks/useAnalytics'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 
 const DEFAULT_HORIZONTAL_MARGIN = 16
 
@@ -35,7 +35,6 @@ function BridgeTokenSelector({
 }: TokenSelectorProps): JSX.Element {
   const [searchText, setSearchText] = useState('')
   const tokenInfoData = useTokenInfoContext()
-  const { capture } = useAnalytics()
 
   const renderItem = (item: ListRenderItemInfo<AssetBalance>): JSX.Element => {
     const token = item.item
@@ -66,7 +65,7 @@ function BridgeTokenSelector({
         }
         onPress={() => {
           onTokenSelected(symbol)
-          capture('Bridge_TokenSelected')
+          AnalyticsService.capture('Bridge_TokenSelected')
         }}
       />
     )
