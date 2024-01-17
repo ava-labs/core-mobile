@@ -1,7 +1,7 @@
 import DeviceInfoService from 'services/deviceInfo/DeviceInfoService'
+import { DeviceInfo } from './types'
 
-// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-export const getPosthogDeviceInfo = async () => {
+export const getDeviceInfo = async (): Promise<DeviceInfo> => {
   return {
     $app_build: DeviceInfoService.getAppBuild(),
     $app_name: DeviceInfoService.getAppName(),

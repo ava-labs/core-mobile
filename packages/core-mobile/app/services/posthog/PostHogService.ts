@@ -2,12 +2,16 @@ import Config from 'react-native-config'
 import Logger from 'utils/Logger'
 import DeviceInfoService from 'services/deviceInfo/DeviceInfoService'
 import { sanitizeFeatureFlags } from './sanitizeFeatureFlags'
+import { FeatureGates, FeatureVars } from './types'
 
 const PostHogDecideUrl = `${Config.POSTHOG_URL}/decide?v=2`
 
 class PostHogService {
-  // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-  async fetchFeatureFlags(distinctId: string) {
+  async fetchFeatureFlags(
+    distinctId: string
+  ): Promise<
+    Partial<Record<FeatureGates | FeatureVars, string | boolean>> | undefined
+  > {
     try {
       Logger.info('fetching feature flags')
       const response = await fetch(PostHogDecideUrl, {

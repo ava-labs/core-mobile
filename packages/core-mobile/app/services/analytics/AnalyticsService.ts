@@ -1,7 +1,7 @@
 import Config from 'react-native-config'
 import Logger from 'utils/Logger'
 import DeviceInfoService from 'services/deviceInfo/DeviceInfoService'
-import { getPosthogDeviceInfo } from './utils'
+import { getDeviceInfo } from './utils'
 import { AnalyticsEventName, CaptureEventProperties } from './types'
 
 const PostHogCaptureUrl = `${Config.POSTHOG_URL}/capture/`
@@ -48,7 +48,7 @@ class AnalyticsService {
       return
     }
 
-    const deviceInfo = await getPosthogDeviceInfo()
+    const deviceInfo = await getDeviceInfo()
     const PostHogCaptureFetchOptions = {
       method: 'POST',
       headers: {
