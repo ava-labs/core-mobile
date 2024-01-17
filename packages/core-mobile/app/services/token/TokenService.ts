@@ -125,7 +125,6 @@ export class TokenService {
       data = topMarkets.concat(additionalMarkets)
       setCache(cacheId, data)
     }
-
     return data ?? []
   }
 
