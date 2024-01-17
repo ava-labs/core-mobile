@@ -7,7 +7,7 @@ import {
 } from 'services/analytics/types'
 import { sanitizeFeatureFlags } from './sanitizeFeatureFlags'
 import { FeatureGates, FeatureVars } from './types'
-import { getDeviceInfo } from './utils'
+import { getPosthogDeviceInfo } from './utils'
 
 const PostHogCaptureUrl = `${Config.POSTHOG_URL}/capture/`
 
@@ -42,7 +42,7 @@ class PostHogService {
       )
     }
 
-    const deviceInfo = await getDeviceInfo()
+    const deviceInfo = await getPosthogDeviceInfo()
     const PostHogCaptureFetchOptions = {
       method: 'POST',
       headers: {
