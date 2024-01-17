@@ -1,5 +1,6 @@
 import DeviceInfoService from 'services/deviceInfo/DeviceInfoService'
 
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export const getPosthogDeviceInfo = async () => {
   return {
     $app_build: DeviceInfoService.getAppBuild(),

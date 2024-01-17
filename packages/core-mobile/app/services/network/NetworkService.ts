@@ -16,7 +16,7 @@ import {
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { Transaction } from '@sentry/types'
 import { avaxSerial } from '@avalabs/avalanchejs-v2'
-import PostHogService from 'services/posthog/PostHogService'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import { getBitcoinProvider, getEvmProvider } from './utils/providerUtils'
 
 class NetworkService {
@@ -94,7 +94,7 @@ class NetworkService {
         }
 
         if (!network.isTestnet) {
-          PostHogService.capture('CollectTransactionHash', {
+          AnalyticsService.capture('CollectTransactionHash', {
             txID,
             chainId: network.chainId,
             chainName: network.chainName

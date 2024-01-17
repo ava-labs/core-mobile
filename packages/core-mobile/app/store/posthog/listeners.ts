@@ -11,6 +11,7 @@ import {
   toggleAnalytics
 } from 'store/posthog/slice'
 import PostHogService from 'services/posthog/PostHogService'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import { AppListenerEffectAPI } from 'store'
 
 const FEATURE_FLAGS_FETCH_INTERVAL = 60000 // 1 minute
@@ -39,12 +40,12 @@ const fetchFeatureFlagsPeriodically = async (
   }
 }
 
-const posthogIdentifyUser = async (
+const identifyAnalyticsUser = async (
   _: Action,
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
   const distinctId = selectDistinctID(listenerApi.getState())
-  await PostHogService.identifyUser(distinctId)
+  await AnalyticsService.identifyUser(distinctId)
 }
 
 const configurePosthog = async (
@@ -56,7 +57,7 @@ const configurePosthog = async (
   const distinctId = selectDistinctID(state)
   const isAnalyticsEnabled = selectIsAnalyticsEnabled(state)
 
-  PostHogService.configure({
+  AnalyticsService.configure({
     distinctId,
     userId: posthogUserId,
     isEnabled: isAnalyticsEnabled
@@ -88,7 +89,7 @@ export const addPosthogListeners = (
     effect: async (action, _) => {
       const { event, properties } = action.payload
 
-      PostHogService.capture(event, properties)
+      AnalyticsService.capture(event, properties)
     }
   })
 
@@ -99,6 +100,6 @@ export const addPosthogListeners = (
 
   startListening({
     actionCreator: onRehydrationComplete,
-    effect: posthogIdentifyUser
+    effect: identifyAnalyticsUser
   })
 }

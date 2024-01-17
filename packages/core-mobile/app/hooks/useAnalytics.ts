@@ -5,7 +5,7 @@ import { setCoreAnalytics } from 'store/settings/securityPrivacy'
 import {
   AnalyticsEventName,
   CaptureEventProperties
-} from 'services/posthog/types'
+} from 'services/analytics/types'
 
 export function useAnalytics(): {
   capture: <E extends AnalyticsEventName>(
