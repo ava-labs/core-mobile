@@ -33,6 +33,10 @@ export abstract class TokenBaseUnit<T extends TokenBaseUnit<T>> {
     this.childConstructor = childConstructor
   }
 
+  getMaxDecimals(): number {
+    return this.maxDecimals
+  }
+
   add(value: TokenBaseUnit<T> | AcceptedTypes): T {
     return this.cloneWithValue(this.value.add(TokenBaseUnit.toBig(value)))
   }
