@@ -8,7 +8,7 @@ import EarnService from 'services/earn/EarnService'
 import NotificationsService from 'services/notifications/NotificationsService'
 import { WalletState, selectWalletState } from 'store/app'
 import { ChannelId } from 'services/notifications/channels'
-import { captureEvent } from 'hooks/useAnalytics'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import { turnOnNotificationsFor } from '../slice'
 import { isStakeCompleteNotificationDisabled } from './utils'
 
@@ -93,13 +93,11 @@ const scheduleNotificationsForActiveStakes = async (
     const activeStakes = onGoingTransactions.length
     const historyStakes = totalStakes - activeStakes
 
-    listenerApi.dispatch(
-      captureEvent('StakeCountStakes', {
-        active: activeStakes,
-        history: historyStakes,
-        total: totalStakes
-      })
-    )
+    AnalyticsService.capture('StakeCountStakes', {
+      active: activeStakes,
+      history: historyStakes,
+      total: totalStakes
+    })
 
     if (onGoingTransactions && onGoingTransactions.length > 0) {
       Logger.info('updating staking complete notifications')

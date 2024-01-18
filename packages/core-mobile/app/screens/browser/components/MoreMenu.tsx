@@ -8,9 +8,9 @@ import { useNavigation } from '@react-navigation/native'
 import { BrowserScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
 import { addTab, selectActiveHistory } from 'store/browser/slices/tabs'
-import { useAnalytics } from 'hooks/useAnalytics'
 import Logger from 'utils/Logger'
 import { showSimpleToast } from 'components/Snackbar'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import { isValidUrl } from '../utils'
 
 enum MenuId {
@@ -38,7 +38,6 @@ export const MoreMenu: FC<Props> = ({
   const dispatch = useDispatch()
   const { navigate } = useNavigation<TabViewNavigationProp>()
   const activeHistory = useSelector(selectActiveHistory)
-  const { capture } = useAnalytics()
 
   const onShare = async (): Promise<void> => {
     const linkToShare = activeHistory?.url
@@ -117,17 +116,17 @@ export const MoreMenu: FC<Props> = ({
   function handleNewTab(): void {
     // browser will listen to this and reset the screen with
     // initiated tab data
-    capture('BrowserNewTabTapped')
+    AnalyticsService.capture('BrowserNewTabTapped')
     dispatch(addTab())
   }
 
   function handleShare(): void {
-    capture('BrowserShareTapped')
+    AnalyticsService.capture('BrowserShareTapped')
     onShare()
   }
 
   function handleHistory(): void {
-    capture('BrowserViewHistoryTapped')
+    AnalyticsService.capture('BrowserViewHistoryTapped')
     navigate(AppNavigation.Browser.History)
   }
 
@@ -136,7 +135,7 @@ export const MoreMenu: FC<Props> = ({
       return
     }
 
-    capture('BrowserAddToFavoriteTapped')
+    AnalyticsService.capture('BrowserAddToFavoriteTapped')
     if (!isValidUrl(activeHistory.url ?? '')) {
       Logger.error('Invalid URL')
       return

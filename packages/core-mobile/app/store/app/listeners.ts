@@ -19,7 +19,7 @@ import Logger from 'utils/Logger'
 import DeviceInfo from 'react-native-device-info'
 import { WalletType } from 'services/wallet/types'
 import SecureStorageService from 'security/SecureStorageService'
-import { captureEvent } from 'hooks/useAnalytics'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import {
   onAppLocked,
   onAppUnlocked,
@@ -45,8 +45,8 @@ const init = async (
   isWalletActive && dispatch(setWalletState(WalletState.INACTIVE))
 
   const fontScale = await DeviceInfo.getFontScale()
-  dispatch(captureEvent('ApplicationLaunched', { FontScale: fontScale }))
-  dispatch(captureEvent('ApplicationOpened'))
+  AnalyticsService.capture('ApplicationLaunched', { FontScale: fontScale })
+  AnalyticsService.capture('ApplicationOpened')
   listenToAppState(listenerApi)
 
   if (Platform.OS === 'android') {
@@ -74,7 +74,7 @@ const listenToAppState = async (
         nextAppState === 'active'
       ) {
         Logger.info('app comes back to foreground')
-        dispatch(captureEvent('ApplicationOpened'))
+        AnalyticsService.capture('ApplicationOpened')
         dispatch(onForeground())
       } else if (nextAppState === 'background') {
         Logger.info('app goes to background')

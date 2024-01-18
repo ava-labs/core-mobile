@@ -5,7 +5,7 @@ import TextArea from 'components/TextArea'
 import AvaText from 'components/AvaText'
 import AvaButton from 'components/AvaButton'
 import * as bip39 from 'bip39'
-import { useAnalytics } from 'hooks/useAnalytics'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 
 type Props = {
   onEnterWallet: (mnemonic: string) => void
@@ -13,7 +13,6 @@ type Props = {
 }
 
 export default function HdWalletLogin(props: Props): JSX.Element {
-  const { capture } = useAnalytics()
   const [errorMessage, setErrorMessage] = useState<string | undefined>(
     undefined
   )
@@ -31,7 +30,7 @@ export default function HdWalletLogin(props: Props): JSX.Element {
     const isValid = bip39.validateMnemonic(trimmed)
     try {
       if (isValid) {
-        capture('OnboardingMnemonicImported')
+        AnalyticsService.capture('OnboardingMnemonicImported')
         props.onEnterWallet(trimmed)
       } else {
         throw new Error()

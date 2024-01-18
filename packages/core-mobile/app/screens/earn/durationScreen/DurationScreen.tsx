@@ -25,7 +25,7 @@ import { useNow } from 'hooks/time/useNow'
 import { BackButton } from 'components/BackButton'
 import { Tooltip } from 'components/Tooltip'
 import InfoSVG from 'components/svg/InfoSVG'
-import { useAnalytics } from 'hooks/useAnalytics'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import { CustomDurationOptionItem } from './components/CustomDurationOptionItem'
 import { DurationOptionItem } from './components/DurationOptionItem'
 
@@ -34,7 +34,6 @@ type ScreenProps = StakeSetupScreenProps<
 >
 
 export const StakingDuration = (): JSX.Element => {
-  const { capture } = useAnalytics()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const currentDate = useNow()
   const minDelegationTime = isDeveloperMode ? ONE_DAY : TWO_WEEKS
@@ -105,7 +104,7 @@ export const StakingDuration = (): JSX.Element => {
 
   const navigateToNodeSearch = (): void => {
     if (stakeEndTime) {
-      capture('StakeStartNodeSearch', {
+      AnalyticsService.capture('StakeStartNodeSearch', {
         duration: selectedDuration.title,
         from: 'DurationScreen'
       })
@@ -118,7 +117,7 @@ export const StakingDuration = (): JSX.Element => {
 
   const navigateToAdvancedStaking = (): void => {
     if (stakeEndTime) {
-      capture('StakeSelectAdvancedStaking')
+      AnalyticsService.capture('StakeSelectAdvancedStaking')
       navigate(AppNavigation.StakeSetup.AdvancedStaking, {
         stakingAmount,
         stakingEndTime: stakeEndTime,
@@ -128,7 +127,7 @@ export const StakingDuration = (): JSX.Element => {
   }
 
   const handleReadMore = (): void => {
-    capture('StakeOpenStakingDocs', { from: 'DurationScreen' })
+    AnalyticsService.capture('StakeOpenStakingDocs', { from: 'DurationScreen' })
     Linking.openURL(DOCS_STAKING).catch(e => {
       Logger.error(DOCS_STAKING, e)
     })

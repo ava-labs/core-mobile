@@ -6,7 +6,7 @@ import { useNavigation } from '@react-navigation/native'
 import { copyToClipboard } from 'utils/DeviceTools'
 import Logger from 'utils/Logger'
 import SeedlessService from 'seedless/services/SeedlessService'
-import { useAnalytics } from 'hooks/useAnalytics'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import ContentCopy from '../assets/ContentCopy.svg'
 import QrCodeScanner from '../assets/QrCodeScanner.svg'
 import { Card } from '../components/Card'
@@ -20,7 +20,6 @@ export const AuthenticatorSetup = (): JSX.Element => {
   const [code, setCode] = useState<string>()
   const { navigate } =
     useNavigation<AuthenticatorSetupScreenProps['navigation']>()
-  const { capture } = useAnalytics()
 
   const openLearnMore = (): void => {
     navigate(AppNavigation.RecoveryMethods.LearnMore, { totpCode: code })
@@ -51,9 +50,9 @@ export const AuthenticatorSetup = (): JSX.Element => {
         'AuthenticatorSetup AuthenticatorService.setTotp error',
         reason
       )
-      capture('SeedlessRegisterTOTPStartFailed')
+      AnalyticsService.capture('SeedlessRegisterTOTPStartFailed')
     })
-  }, [capture])
+  }, [])
 
   return (
     <View

@@ -1,9 +1,9 @@
-import { createAction, createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from 'store'
 import { v4 as uuidv4 } from 'uuid'
 import { FeatureGates, FeatureFlags, FeatureVars } from 'services/posthog/types'
 import { WalletType } from 'services/wallet/types'
-import { initialState, JsonMap, ProcessedFeatureFlags } from './types'
+import { initialState, ProcessedFeatureFlags } from './types'
 
 const reducerName = 'posthog'
 
@@ -295,12 +295,5 @@ export const selectIsSeedlessMfaYubikeyBlocked = (
 // actions
 export const { regenerateUserId, toggleAnalytics, setFeatureFlags } =
   posthogSlice.actions
-
-/**
- * do not call _capture directly, use captureEvent function instead
- */
-export const _capture = createAction<{ event: string; properties?: JsonMap }>(
-  `${reducerName}/capture`
-)
 
 export const posthogReducer = posthogSlice.reducer

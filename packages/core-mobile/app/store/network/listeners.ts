@@ -14,7 +14,7 @@ import {
   toggleDeveloperMode
 } from 'store/settings/advanced'
 import { AnyAction, isAnyOf } from '@reduxjs/toolkit'
-import { captureEvent } from 'hooks/useAnalytics'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 
 const adjustActiveNetwork = (
   action: AnyAction,
@@ -51,7 +51,7 @@ const toggleFavoriteSideEffect = (
   listenerApi: AppListenerEffectAPI
 ): void => {
   const chainId = action.payload
-  const { dispatch, getState } = listenerApi
+  const { getState } = listenerApi
   const network = getState().network
   const isCustomNetwork = Object.values(network.customNetworks)
     .map(n => n.chainId)
@@ -61,9 +61,10 @@ const toggleFavoriteSideEffect = (
     ? 'NetworkFavoriteAdded'
     : 'NetworkFavoriteRemoved'
 
-  dispatch(
-    captureEvent(event, { networkChainId: chainId, isCustom: isCustomNetwork })
-  )
+  AnalyticsService.capture(event, {
+    networkChainId: chainId,
+    isCustom: isCustomNetwork
+  })
 }
 
 export const addNetworkListeners = (

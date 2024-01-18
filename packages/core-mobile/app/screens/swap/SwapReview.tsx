@@ -22,7 +22,7 @@ import { calculateRate } from 'swap/utils'
 import { getTokenAddress } from 'swap/getSwapRate'
 import { TokenType } from 'store/balance'
 import { Tooltip } from 'components/Tooltip'
-import { useAnalytics } from 'hooks/useAnalytics'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 
 const SECOND = 1000
 
@@ -46,7 +46,6 @@ const SwapReview = ({ onCancel, onBackToParent }: Props): JSX.Element => {
   const theme = useApplicationContext().theme
   const [secondsLeft, setSecondsLeft] = useState('0s')
   const [colorAnim] = useState(new Animated.Value(1))
-  const { capture } = useAnalytics()
 
   useEffect(() => {
     if (swapStatus === 'Swapping') {
@@ -57,8 +56,8 @@ const SwapReview = ({ onCancel, onBackToParent }: Props): JSX.Element => {
 
   useBeforeRemoveListener(
     useCallback(() => {
-      capture('SwapCancelled')
-    }, [capture]),
+      AnalyticsService.capture('SwapCancelled')
+    }, []),
     [RemoveEvents.GO_BACK]
   )
 
@@ -67,7 +66,7 @@ const SwapReview = ({ onCancel, onBackToParent }: Props): JSX.Element => {
   }, [refresh])
 
   const onHandleSwap = (): void => {
-    capture('SwapConfirmed')
+    AnalyticsService.capture('SwapConfirmed')
     if (
       fromToken &&
       toToken &&
@@ -123,7 +122,7 @@ const SwapReview = ({ onCancel, onBackToParent }: Props): JSX.Element => {
         tap(value => {
           if (value && value % RESET_INTERVAL === 0) {
             refresh()
-            capture('SwapReviewTimerRestarted')
+            AnalyticsService.capture('SwapReviewTimerRestarted')
           }
         })
       )

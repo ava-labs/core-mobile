@@ -16,7 +16,7 @@ import AppleSignInService from 'services/socialSignIn/apple/AppleSignInService'
 import GoogleSigninService from 'services/socialSignIn/google/GoogleSigninService'
 import { showSimpleToast } from 'components/Snackbar'
 import { hideOwl, showOwl } from 'components/GlobalOwlLoader'
-import { useAnalytics } from 'hooks/useAnalytics'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 
 type NavigationProp = OnboardScreenProps<
   typeof AppNavigation.Onboard.Signup
@@ -28,7 +28,6 @@ const SignupScreen: FC = () => {
   )
   const { navigate } = useNavigation<NavigationProp>()
   const { register, isRegistering } = useSeedlessRegister()
-  const { capture } = useAnalytics()
 
   useEffect(() => {
     isRegistering ? showOwl() : hideOwl()
@@ -50,12 +49,12 @@ const SignupScreen: FC = () => {
         nextScreen: AppNavigation.Onboard.CreateWalletStack
       }
     })
-    capture('RecoveryPhraseClicked')
+    AnalyticsService.capture('RecoveryPhraseClicked')
   }
 
   const handleSignin = (): void => {
     navigate(AppNavigation.Onboard.Signin)
-    capture('AlreadyHaveAWalletClicked')
+    AnalyticsService.capture('AlreadyHaveAWalletClicked')
   }
 
   const onRegisterMfaMethods = (oidcToken: string, mfaId: string): void => {

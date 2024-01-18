@@ -15,7 +15,7 @@ import { Avax } from 'types/Avax'
 import { BackButton } from 'components/BackButton'
 import { FundsStuckModal } from 'screens/earn/FundsStuckModal'
 import { handleStakeConfirmationGoBack } from 'utils/earn/handleStakeConfirmationGoBack'
-import { useAnalytics } from 'hooks/useAnalytics'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 
 export type StakeSetupStackParamList = {
   [AppNavigation.StakeSetup.GetStarted]: undefined
@@ -111,10 +111,9 @@ type GetStartedScreenProps = StakeSetupScreenProps<
 
 const GetStartedScreen = (): JSX.Element => {
   const { navigate } = useNavigation<GetStartedScreenProps['navigation']>()
-  const { capture } = useAnalytics()
 
   const navToSmartStakeAmount = (): void => {
-    capture('StakeOpenEnterAmount')
+    AnalyticsService.capture('StakeOpenEnterAmount')
     navigate(AppNavigation.StakeSetup.SmartStakeAmount)
   }
 

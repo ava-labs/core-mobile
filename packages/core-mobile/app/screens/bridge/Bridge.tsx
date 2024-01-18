@@ -52,7 +52,7 @@ import { BNInput } from 'components/BNInput'
 import BN from 'bn.js'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectBridgeCriticalConfig } from 'store/bridge'
-import { useAnalytics } from 'hooks/useAnalytics'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 
 const blockchainTitleMaxWidth = Dimensions.get('window').width * 0.5
 const dropdownWith = Dimensions.get('window').width * 0.6
@@ -76,7 +76,6 @@ type NavigationProp = BridgeScreenProps<
 const Bridge: FC = () => {
   const navigation = useNavigation<NavigationProp>()
   const theme = useApplicationContext().theme
-  const { capture } = useAnalytics()
   const dispatch = useDispatch()
   const criticalConfig = useSelector(selectBridgeCriticalConfig)
 
@@ -232,7 +231,7 @@ const Bridge: FC = () => {
       return
     }
 
-    capture('BridgeTransferStarted', {
+    AnalyticsService.capture('BridgeTransferStarted', {
       sourceBlockchain: currentBlockchain,
       targetBlockchain
     })
@@ -246,7 +245,7 @@ const Bridge: FC = () => {
         // do not show the error when the user denied the transfer
         if (error === 'User declined the transaction') {
           Logger.error(error)
-          capture('BridgeTransferRequestUserRejectedError', {
+          AnalyticsService.capture('BridgeTransferRequestUserRejectedError', {
             sourceBlockchain: currentBlockchain,
             targetBlockchain,
             fee: bridgeFee?.toNumber()
@@ -255,7 +254,7 @@ const Bridge: FC = () => {
         }
         setBridgeError(TRANSFER_ERROR)
         Logger.error(TRANSFER_ERROR)
-        capture('BridgeTransferRequestError', {
+        AnalyticsService.capture('BridgeTransferRequestError', {
           sourceBlockchain: currentBlockchain,
           targetBlockchain
         })
@@ -274,7 +273,7 @@ const Bridge: FC = () => {
           : e?.message ??
             'An unknown error has occurred. Bridging was halted. Please try again later'
       Alert.alert('Error Bridging', errorMessage)
-      capture('BridgeTokenSelectError', {
+      AnalyticsService.capture('BridgeTokenSelectError', {
         errorMessage
       })
       return

@@ -1,4 +1,3 @@
-import { useAnalytics } from 'hooks/useAnalytics'
 import { useState } from 'react'
 import SecureStorageService, { KeySlot } from 'security/SecureStorageService'
 import { OidcProviders } from 'seedless/consts'
@@ -7,6 +6,7 @@ import CoreSeedlessAPIService, {
 } from 'seedless/services/CoreSeedlessAPIService'
 import SeedlessService from 'seedless/services/SeedlessService'
 import { MFA, OidcPayload } from 'seedless/types'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import Logger from 'utils/Logger'
 
 type RegisterProps = {
@@ -32,7 +32,6 @@ type ReturnType = {
 
 export const useSeedlessRegister = (): ReturnType => {
   const [isRegistering, setIsRegistering] = useState(false)
-  const { capture } = useAnalytics()
 
   const register = async ({
     getOidcToken,
@@ -62,10 +61,14 @@ export const useSeedlessRegister = (): ReturnType => {
 
           if (mfaMethods && mfaMethods.length > 0) {
             onVerifyMfaMethod(oidcToken, mfaId, mfaMethods)
-            capture('SeedlessSignIn', { oidcProvider: oidcProvider })
+            AnalyticsService.capture('SeedlessSignIn', {
+              oidcProvider: oidcProvider
+            })
           } else {
             onRegisterMfaMethods(oidcToken, mfaId)
-            capture('SeedlessSignUp', { oidcProvider: oidcProvider })
+            AnalyticsService.capture('SeedlessSignUp', {
+              oidcProvider: oidcProvider
+            })
           }
         } else {
           // TODO: handle ALREADY_REGISTERED without mfa
@@ -74,7 +77,9 @@ export const useSeedlessRegister = (): ReturnType => {
         if (isMfaRequired) {
           const mfaId = signResponse.mfaId()
           onRegisterMfaMethods(oidcToken, mfaId)
-          capture('SeedlessSignUp', { oidcProvider: oidcProvider })
+          AnalyticsService.capture('SeedlessSignUp', {
+            oidcProvider: oidcProvider
+          })
         } else {
           // TODO: handle APPROVED without mfa
         }
@@ -82,7 +87,7 @@ export const useSeedlessRegister = (): ReturnType => {
         throw new Error(SeedlessUserRegistrationResult.ERROR)
       }
     } catch (error) {
-      capture('SeedlessLoginFailed')
+      AnalyticsService.capture('SeedlessLoginFailed')
       Logger.error('useSeedlessRegister error', error)
       throw new Error(SeedlessUserRegistrationResult.ERROR)
     } finally {

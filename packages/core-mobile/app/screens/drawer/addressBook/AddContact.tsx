@@ -13,7 +13,7 @@ import { addContact } from 'store/addressBook'
 import { useDispatch } from 'react-redux'
 import { getContactValidationError } from 'screens/drawer/addressBook/utils'
 import { ScrollView } from 'react-native'
-import { useAnalytics } from 'hooks/useAnalytics'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 
 type NavigationProp = AddressBookScreenProps<
   typeof AppNavigation.AddressBook.Add
@@ -23,7 +23,6 @@ const AddContact = (): JSX.Element => {
   const { goBack } = useNavigation<NavigationProp>()
   const dispatch = useDispatch()
   const { theme } = useApplicationContext()
-  const { capture } = useAnalytics()
   const [title, setTitle] = useState('')
   const [address, setAddress] = useState('')
   const [addressBtc, setAddressBtc] = useState('')
@@ -32,15 +31,15 @@ const AddContact = (): JSX.Element => {
   const save = useCallback(() => {
     const err = getContactValidationError(title, address, addressBtc)
     if (err) {
-      capture('AddContactFailed')
+      AnalyticsService.capture('AddContactFailed')
       setError(err)
       return
     }
     const id = uuidv4()
     dispatch(addContact({ id, title, address, addressBtc }))
-    capture('AddContactSucceeded')
+    AnalyticsService.capture('AddContactSucceeded')
     goBack()
-  }, [address, addressBtc, capture, dispatch, goBack, title])
+  }, [address, addressBtc, dispatch, goBack, title])
 
   return (
     <ScrollView

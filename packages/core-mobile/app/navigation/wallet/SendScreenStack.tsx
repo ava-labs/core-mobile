@@ -12,7 +12,7 @@ import { SubHeaderOptions } from 'navigation/NavUtils'
 import { Contact } from 'store/addressBook'
 import { useSelector } from 'react-redux'
 import { selectIsSendBlocked } from 'store/posthog'
-import { useAnalytics } from 'hooks/useAnalytics'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 
 export type SendStackParamList = {
   [AppNavigation.Send.Send]:
@@ -62,7 +62,6 @@ type SendScreenProps = SendTokensScreenProps<typeof AppNavigation.Send.Send>
 const SendTokenComponent = (): JSX.Element => {
   const { navigate } = useNavigation<SendScreenProps['navigation']>()
   const { params } = useRoute<SendScreenProps['route']>()
-  const { capture } = useAnalytics()
 
   const onOpenSelectToken = (
     onTokenSelected: (token: TokenWithBalance) => void
@@ -70,7 +69,7 @@ const SendTokenComponent = (): JSX.Element => {
     navigate(AppNavigation.Modal.SelectToken, {
       onTokenSelected: (token: TokenWithBalance) => {
         onTokenSelected(token)
-        capture('Send_TokenSelected')
+        AnalyticsService.capture('Send_TokenSelected')
       }
     })
   }

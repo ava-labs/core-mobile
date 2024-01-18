@@ -7,7 +7,7 @@ import { Space } from 'components/Space'
 import { copyToClipboard } from 'utils/DeviceTools'
 import Logger from 'utils/Logger'
 import SeedlessService from 'seedless/services/SeedlessService'
-import { useAnalytics } from 'hooks/useAnalytics'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import ContentCopy from '../assets/ContentCopy.svg'
 import { Card } from '../components/Card'
 import { SnackBarMessage } from '../components/SnackBarMessage'
@@ -19,7 +19,6 @@ type LearnMoreScreenProps = RecoveryMethodsScreenProps<
 export const LearnMore = (): JSX.Element => {
   const { totpCode } = useRoute<LearnMoreScreenProps['route']>().params
   const [code, setCode] = useState<string>()
-  const { capture } = useAnalytics()
   const { canGoBack, goBack } =
     useNavigation<LearnMoreScreenProps['navigation']>()
 
@@ -48,9 +47,9 @@ export const LearnMore = (): JSX.Element => {
     init().catch(reason => {
       Logger.error('LearnMore AuthenticatorService.setTotp error', reason)
 
-      capture('SeedlessRegisterTOTPStartFailed')
+      AnalyticsService.capture('SeedlessRegisterTOTPStartFailed')
     })
-  }, [totpCode, capture])
+  }, [totpCode])
 
   return (
     <View

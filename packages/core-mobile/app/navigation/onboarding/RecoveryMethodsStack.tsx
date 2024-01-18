@@ -19,10 +19,10 @@ import { MFA } from 'seedless/types'
 import { FIDONameInputScreen } from 'seedless/screens/FIDONameInputScreen'
 import { useNavigation } from '@react-navigation/native'
 import { RecoveryMethodsScreenProps } from 'navigation/types'
-import { useAnalytics } from 'hooks/useAnalytics'
 import SeedlessService from 'seedless/services/SeedlessService'
 import { Result } from 'types/result'
 import { TotpErrors } from 'seedless/errors'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 
 export type RecoveryMethodsStackParamList = {
   [AppNavigation.RecoveryMethods.AddRecoveryMethods]: undefined
@@ -115,12 +115,11 @@ function VerifyCodeScreen(): JSX.Element {
   const { oidcToken, mfaId } = useContext(RecoveryMethodsContext)
   const { canGoBack, goBack, replace, setOptions } =
     useNavigation<VerifyCodeScreenProps['navigation']>()
-  const { capture } = useAnalytics()
 
   const handleVerifySuccess = (): void => {
     replace(AppNavigation.Onboard.NameYourWallet)
 
-    capture('SeedlessMfaVerified', { type: 'Authenticator' })
+    AnalyticsService.capture('SeedlessMfaVerified', { type: 'Authenticator' })
   }
 
   const handleOnVerifyCode = (

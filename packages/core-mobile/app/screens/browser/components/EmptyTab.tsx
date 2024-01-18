@@ -22,8 +22,8 @@ import { BrowserScreenProps } from 'navigation/types'
 import { useNavigation } from '@react-navigation/native'
 import { useSearchHistory } from 'hooks/browser/useSearchHistory'
 import { Dimensions } from 'react-native'
-import { useAnalytics } from 'hooks/useAnalytics'
 import { useGoogleSearch } from 'hooks/browser/useGoogleSearch'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import { isValidHttpUrl, normalizeUrlWithHttps } from '../utils'
 import { FavoritesAndSuggestions } from './FavoritesAndSuggestions'
 import { HistoryListItem } from './HistoryListItem'
@@ -55,19 +55,18 @@ export const EmptyTab = (): JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
-  const { capture } = useAnalytics()
 
   const clearAll = (): void => {
     navigate(AppNavigation.Browser.ClearAllHistory)
   }
 
   const navigateToTabList = (): void => {
-    capture('BrowserTabsOpened')
+    AnalyticsService.capture('BrowserTabsOpened')
     navigate(AppNavigation.Modal.BrowserTabsList)
   }
 
   const handleSearchBarSubmit = (): void => {
-    capture('BrowserSearchSubmitted')
+    AnalyticsService.capture('BrowserSearchSubmitted')
 
     const normalizedUrl = normalizeUrlWithHttps(trimmedSearchText)
     if (isValidHttpUrl(normalizedUrl)) {
@@ -89,7 +88,7 @@ export const EmptyTab = (): JSX.Element => {
       <View sx={{ flex: 1 }}>
         <Pressable
           onPress={() => {
-            capture('BrowserSearchSubmitted')
+            AnalyticsService.capture('BrowserSearchSubmitted')
             navigateToGoogleSearchResult(trimmedSearchText)
           }}>
           {(isSearching || trimmedSearchText.length > 0) && (
@@ -186,7 +185,7 @@ export const EmptyTab = (): JSX.Element => {
                 <NavButton
                   Icon={Icons.Navigation.MoreVert}
                   onPress={() => {
-                    capture('BrowserContextualMenuOpened')
+                    AnalyticsService.capture('BrowserContextualMenuOpened')
                   }}
                 />
               </MoreMenu>

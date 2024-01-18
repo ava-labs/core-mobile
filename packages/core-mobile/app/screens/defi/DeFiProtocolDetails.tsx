@@ -15,7 +15,7 @@ import { openURL } from 'utils/openURL'
 import { ScrollView } from 'react-native-gesture-handler'
 import { useExchangedAmount } from 'hooks/defi/useExchangedAmount'
 import Separator from 'components/Separator'
-import { useAnalytics } from 'hooks/useAnalytics'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import { ProtocolDetailsErrorState } from './components/ProtocolDetailsErrorState'
 import { mapPortfolioItems } from './utils'
 import { DeFiPortfolioItemGroup } from './components/DeFiPortfolioItemGroup'
@@ -37,7 +37,6 @@ export const DeFiProtocolDetails = (): JSX.Element => {
   const { data, isLoading, error, isPaused, isSuccess } =
     useDeFiProtocol(protocolId)
   const { data: chainList } = useDeFiChainList()
-  const { capture } = useAnalytics()
 
   const memoizedChain = useMemo(() => {
     if (!data?.chain) return undefined
@@ -46,8 +45,8 @@ export const DeFiProtocolDetails = (): JSX.Element => {
 
   const goToProtocolPage = useCallback(async () => {
     openURL(data?.siteUrl)
-    capture('DeFiDetailLaunchButtonClicked')
-  }, [data?.siteUrl, capture])
+    AnalyticsService.capture('DeFiDetailLaunchButtonClicked')
+  }, [data?.siteUrl])
 
   const calculatedTotalValueOfProtocolItems = useMemo(() => {
     if (!data?.portfolioItemList) return currencyFormatter(0)

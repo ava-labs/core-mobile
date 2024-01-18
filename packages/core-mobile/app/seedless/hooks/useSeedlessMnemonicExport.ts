@@ -5,12 +5,12 @@ import {
 } from '@cubist-labs/cubesigner-sdk'
 import { showSimpleToast } from 'components/Snackbar'
 import { formatDistanceToNow } from 'date-fns'
-import { useAnalytics } from 'hooks/useAnalytics'
 import AppNavigation from 'navigation/AppNavigation'
 import { useCallback, useEffect, useState } from 'react'
 import { TotpErrors } from 'seedless/errors'
 import SeedlessService from 'seedless/services/SeedlessService'
 import { UserExportResponse } from 'seedless/types'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import PasskeyService from 'services/passkey/PasskeyService'
 import { Result } from 'types/result'
 import Logger from 'utils/Logger'
@@ -45,7 +45,6 @@ interface ReturnProps {
 }
 
 export const useSeedlessMnemonicExport = (): ReturnProps => {
-  const { capture } = useAnalytics()
   const [pendingRequest, setPendingRequest] = useState<UserExportInitResponse>()
   const [mnemonic, setMnemonic] = useState<string>()
   const [state, setState] = useState<ExportState>(ExportState.Loading)
@@ -64,13 +63,13 @@ export const useSeedlessMnemonicExport = (): ReturnProps => {
       setPendingRequest(undefined)
       setMnemonic(undefined)
       setState(ExportState.NotInitiated)
-      capture('SeedlessExportCancelled')
+      AnalyticsService.capture('SeedlessExportCancelled')
     } catch (e) {
       Logger.error('failed to delete export request error: ', e)
-      capture('SeedlessExportCancelFailed')
+      AnalyticsService.capture('SeedlessExportCancelFailed')
       showSimpleToast('Unable to delete export request')
     }
-  }, [capture, keyId])
+  }, [keyId])
 
   const handleFidoVerify = async (
     response: UserExportResponse

@@ -2,7 +2,7 @@ import React from 'react'
 import AnalyticsConsent from 'screens/onboarding/AnalyticsConsent'
 import { useNavigation } from '@react-navigation/native'
 import { Sheet } from 'components/Sheet'
-import { useAnalyticsConsent } from 'hooks/useAnalytics'
+import { useAnalyticsConsent } from 'hooks/useAnalyticsConsent'
 
 function AnalyticsConsentSheet(): JSX.Element {
   const navigation = useNavigation()

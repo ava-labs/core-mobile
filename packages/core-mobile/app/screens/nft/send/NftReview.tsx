@@ -22,7 +22,7 @@ import { Row } from 'components/Row'
 import PoppableGasAndLimit from 'components/PoppableGasAndLimit'
 import { bnToLocaleString } from '@avalabs/utils-sdk'
 import { Tooltip } from 'components/Tooltip'
-import { useAnalytics } from 'hooks/useAnalytics'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 
 type NavigationProp = NFTDetailsSendScreenProps<
   typeof AppNavigation.NftSend.Review
@@ -37,7 +37,6 @@ export default function NftReview({
 }: NftReviewScreenProps): JSX.Element {
   const { theme } = useApplicationContext()
   const { goBack } = useNavigation<NavigationProp>()
-  const { capture } = useAnalytics()
   const {
     sendToken: nft,
     sendStatus,
@@ -56,8 +55,8 @@ export default function NftReview({
 
   useBeforeRemoveListener(
     useCallback(() => {
-      capture('SendCancel')
-    }, [capture]),
+      AnalyticsService.capture('SendCancel')
+    }, []),
     [RemoveEvents.GO_BACK, RemoveEvents.POP]
   )
 

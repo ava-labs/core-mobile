@@ -7,7 +7,7 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import { WalletScreenProps } from 'navigation/types'
 import MoneySVG from 'components/svg/MoneySVG'
 import { View } from 'react-native'
-import { useAnalytics } from 'hooks/useAnalytics'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 
 type NavigationProp = WalletScreenProps<
   typeof AppNavigation.Wallet.Drawer
@@ -15,7 +15,6 @@ type NavigationProp = WalletScreenProps<
 
 const CurrencyItem = (): JSX.Element => {
   const { selectedCurrency } = useApplicationContext().appHook
-  const { capture } = useAnalytics()
   const navigation = useNavigation<NavigationProp>()
   const currency = (): JSX.Element => (
     <AvaText.Body2 textStyle={{ paddingRight: 12 }}>
@@ -41,7 +40,7 @@ const CurrencyItem = (): JSX.Element => {
         leftComponent={icon()}
         showNavigationArrow
         onPress={() => {
-          capture('CurrencySettingClicked')
+          AnalyticsService.capture('CurrencySettingClicked')
           navigation.navigate(AppNavigation.Wallet.CurrencySelector)
         }}
       />

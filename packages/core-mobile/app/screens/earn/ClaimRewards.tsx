@@ -20,14 +20,13 @@ import { useTimeElapsed } from 'hooks/time/useTimeElapsed'
 import Spinner from 'components/animation/Spinner'
 import { timeToShowNetworkFeeError } from 'consts/earn'
 import { Tooltip } from 'components/Tooltip'
-import { useAnalytics } from 'hooks/useAnalytics'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import { ConfirmScreen } from './components/ConfirmScreen'
 import { EmptyClaimRewards } from './EmptyClaimRewards'
 
 type ScreenProps = EarnScreenProps<typeof AppNavigation.Earn.ClaimRewards>
 
 const ClaimRewards = (): JSX.Element | null => {
-  const { capture } = useAnalytics()
   const { theme } = useApplicationContext()
   const { navigate, goBack } = useNavigation<ScreenProps['navigation']>()
   const onBack = useRoute<ScreenProps['route']>().params?.onBack
@@ -72,7 +71,7 @@ const ClaimRewards = (): JSX.Element | null => {
   const [feesInAvax, feesInCurrency] = avaxFormatter(totalFees, true)
 
   const cancelClaim = (): void => {
-    capture('StakeCancelClaim')
+    AnalyticsService.capture('StakeCancelClaim')
     if (onBack) {
       onBack()
     } else {
@@ -109,17 +108,17 @@ const ClaimRewards = (): JSX.Element | null => {
   }
 
   const issueClaimRewards = (): void => {
-    capture('StakeIssueClaim')
+    AnalyticsService.capture('StakeIssueClaim')
     claimRewardsMutation.mutate()
   }
 
   function onClaimSuccess(): void {
-    capture('StakeClaimSuccess')
+    AnalyticsService.capture('StakeClaimSuccess')
     goBack()
   }
 
   function onClaimError(error: Error): void {
-    capture('StakeClaimFail')
+    AnalyticsService.capture('StakeClaimFail')
     showSimpleToast(error.message)
   }
 

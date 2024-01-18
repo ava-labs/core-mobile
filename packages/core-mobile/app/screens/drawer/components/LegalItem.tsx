@@ -3,7 +3,7 @@ import AvaListItem from 'components/AvaListItem'
 import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation } from '@react-navigation/native'
 import { WalletScreenProps } from 'navigation/types'
-import { useAnalytics } from 'hooks/useAnalytics'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 
 type NavigationProp = WalletScreenProps<
   typeof AppNavigation.Wallet.Drawer
@@ -11,14 +11,14 @@ type NavigationProp = WalletScreenProps<
 
 const LegalItem = (): JSX.Element => {
   const navigation = useNavigation<NavigationProp>()
-  const { capture } = useAnalytics()
+
   return (
     <>
       <AvaListItem.Base
         title={'Legal'}
         showNavigationArrow
         onPress={() => {
-          capture('LegalClicked')
+          AnalyticsService.capture('LegalClicked')
           navigation.navigate(AppNavigation.Wallet.Legal, {
             screen: AppNavigation.Legal.Legal
           })
