@@ -292,6 +292,14 @@ export const selectIsSeedlessMfaYubikeyBlocked = (
   )
 }
 
+export const selectIsUnifiedBridgeCCTPBlocked = (state: RootState): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    !featureFlags[FeatureGates.UNIFIED_BRIDGE_CCTP] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
 // actions
 export const { regenerateUserId, toggleAnalytics, setFeatureFlags } =
   posthogSlice.actions
