@@ -12,7 +12,7 @@ import Logger from 'utils/Logger'
 import { WalletType } from 'services/wallet/types'
 import { SEEDLESS_MNEMONIC_STUB } from 'seedless/consts'
 import { useWallet } from 'hooks/useWallet'
-import { useAnalytics } from 'hooks/useAnalytics'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import { CreateWalletScreenProps } from '../types'
 
 // This stack is for Seedless
@@ -57,10 +57,9 @@ type CreatePinNavigationProp = CreateWalletScreenProps<
 const CreatePinScreen = (): JSX.Element => {
   const { onPinCreated } = useWallet()
   const { navigate } = useNavigation<CreatePinNavigationProp>()
-  const { capture } = useAnalytics()
 
   const onPinSet = (pin: string): void => {
-    capture('OnboardingPasswordSet')
+    AnalyticsService.capture('OnboardingPasswordSet')
 
     /**
      * we are using a dummy mnemonic here

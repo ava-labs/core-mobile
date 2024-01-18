@@ -1,6 +1,7 @@
 import { ethErrors } from 'eth-rpc-errors'
 import { useCallback } from 'react'
 import { useDispatch } from 'react-redux'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import { Session } from 'services/walletconnectv2/types'
 import {
   onRequestApproved,
@@ -8,7 +9,6 @@ import {
   killSessions as killSessionsAction,
   Request
 } from 'store/walletConnectV2'
-import { useAnalytics } from './useAnalytics'
 
 export const useDappConnectionV2 = (): {
   onUserApproved: (request: Request, data?: unknown) => void
@@ -16,17 +16,16 @@ export const useDappConnectionV2 = (): {
   killSessions: (sessionsToKill: Session[]) => Promise<void>
 } => {
   const dispatch = useDispatch()
-  const { capture } = useAnalytics()
 
   const onUserApproved = useCallback(
     (request: Request, data?: unknown) => {
       if (request.method === 'session_request') {
-        capture('WalletConnectedToDapp', {
+        AnalyticsService.capture('WalletConnectedToDapp', {
           // @ts-ignore
           dAppUrl: request.data?.verifyContext?.verified?.origin ?? ''
         })
       } else {
-        capture('TxSubmittedToDapp')
+        AnalyticsService.capture('TxSubmittedToDapp')
       }
 
       dispatch(
@@ -36,7 +35,7 @@ export const useDappConnectionV2 = (): {
         })
       )
     },
-    [capture, dispatch]
+    [dispatch]
   )
 
   const onUserRejected = useCallback(
@@ -56,7 +55,7 @@ export const useDappConnectionV2 = (): {
   const killSessions = useCallback(
     async (sessionsToKill: Session[]) => {
       sessionsToKill.forEach(sessionToKill => {
-        capture('ConnectedSiteRemoved', {
+        AnalyticsService.capture('ConnectedSiteRemoved', {
           walletConnectVersion: 'v2',
           url: sessionToKill.peer.metadata.url,
           name: sessionToKill.peer.metadata.name
@@ -64,7 +63,7 @@ export const useDappConnectionV2 = (): {
       })
       dispatch(killSessionsAction(sessionsToKill))
     },
-    [capture, dispatch]
+    [dispatch]
   )
 
   return { onUserApproved, onUserRejected, killSessions }

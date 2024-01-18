@@ -9,7 +9,7 @@ import { Pressable, StyleSheet, ViewStyle } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { FABProps } from 'components/fab/types'
 import ActionItems from 'components/fab/ActionItems'
-import { useAnalytics } from 'hooks/useAnalytics'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 
 const springConfig = { damping: 11.5, stiffness: 95 }
 
@@ -24,7 +24,6 @@ const FloatingActionButton = ({
 }: FABProps): JSX.Element => {
   const progress = useSharedValue(0)
   const { theme } = useApplicationContext()
-  const { capture } = useAnalytics()
 
   useEffect(() => {
     if (!expanded) {
@@ -62,13 +61,13 @@ const FloatingActionButton = ({
     // if fab is active (expanded) then we collapse.
     if (expanded) {
       setExpanded(false)
-      capture('FABClosed')
+      AnalyticsService.capture('FABClosed')
       return
     }
     progress.value = withSpring(1, springConfig)
     setExpanded(true)
-    capture('FABOpened')
-  }, [capture, expanded, progress, setExpanded])
+    AnalyticsService.capture('FABOpened')
+  }, [expanded, progress, setExpanded])
 
   const wrapperStyle = useMemo(() => {
     return {

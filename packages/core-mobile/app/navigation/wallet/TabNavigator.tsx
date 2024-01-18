@@ -15,10 +15,10 @@ import { useIsAvalancheNetwork } from 'hooks/useIsAvalancheNetwork'
 import { useIsEarnDashboardEnabled } from 'hooks/earn/useIsEarnDashboardEnabled'
 import BrowserSVG from 'components/svg/BrowserSVG'
 import BrowserScreenStack from 'navigation/wallet/BrowserScreenStack'
-import { useAnalytics } from 'hooks/useAnalytics'
 import { Fab } from 'components/Fab'
 import { selectAllTabs } from 'store/browser'
 import { useSelector } from 'react-redux'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import EarnScreenStack from './EarnScreenStack/EarnScreenStack'
 
 export type TabNavigatorParamList = {
@@ -37,7 +37,6 @@ const TabNavigator: () => JSX.Element = () => {
   const { earnBlocked, browserBlocked } = usePosthogContext()
   const { isEarnDashboardEnabled } = useIsEarnDashboardEnabled()
   const isAvalancheNetwork = useIsAvalancheNetwork()
-  const { capture } = useAnalytics()
   const [showFab, setShowFab] = useState(true)
   const allTabs = useSelector(selectAllTabs)
 
@@ -70,7 +69,7 @@ const TabNavigator: () => JSX.Element = () => {
               return
             }
 
-            capture('StakeOpened')
+            AnalyticsService.capture('StakeOpened')
             if (!isEarnDashboardEnabled) {
               e.preventDefault()
               navigation.navigate(AppNavigation.Wallet.Earn, {
@@ -105,7 +104,9 @@ const TabNavigator: () => JSX.Element = () => {
             setShowFab(false)
           },
           tabPress: () => {
-            capture('BrowserOpened', { openTabs: allTabs.length })
+            AnalyticsService.capture('BrowserOpened', {
+              openTabs: allTabs.length
+            })
           }
         })}
         component={BrowserScreenStack}

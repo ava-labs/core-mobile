@@ -12,7 +12,7 @@ import { WalletType } from 'services/wallet/types'
 import WalletService from 'services/wallet/WalletService'
 import { Dispatch } from '@reduxjs/toolkit'
 import Logger from 'utils/Logger'
-import { useAnalytics } from './useAnalytics'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 
 type InitWalletServiceAndUnlockProps = {
   mnemonic: string
@@ -52,7 +52,6 @@ export async function initWalletServiceAndUnlock({
 export function useWallet(): UseWallet {
   const dispatch = useDispatch()
   const cachedWalletType = useSelector(selectWalletType)
-  const { capture } = useAnalytics()
 
   /**
    * Initializes wallet with the specified mnemonic and wallet type
@@ -82,11 +81,15 @@ export function useWallet(): UseWallet {
 
       dispatch(onLogIn())
 
-      capture('OnboardingSubmitSucceeded', { walletType: walletType })
+      AnalyticsService.capture('OnboardingSubmitSucceeded', {
+        walletType: walletType
+      })
     } catch (e) {
       Logger.error('Unable to create wallet', e)
 
-      capture('OnboardingSubmitFailed', { walletType: walletType })
+      AnalyticsService.capture('OnboardingSubmitFailed', {
+        walletType: walletType
+      })
     }
   }
 

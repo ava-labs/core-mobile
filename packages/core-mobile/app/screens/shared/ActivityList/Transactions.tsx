@@ -23,7 +23,7 @@ import { getDayString } from 'utils/date/getDayString'
 import { isPendingBridgeTransaction } from 'screens/bridge/utils/bridgeUtils'
 import usePendingBridgeTransactions from 'screens/bridge/hooks/usePendingBridgeTransactions'
 import { selectActiveNetwork } from 'store/network'
-import { useAnalytics } from 'hooks/useAnalytics'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 
 const SCREEN_WIDTH = Dimensions.get('window').width
 const BOTTOM_PADDING = SCREEN_WIDTH * 0.3
@@ -54,7 +54,6 @@ const Transactions: FC<Props> = ({
   openTransactionStatus
 }) => {
   const { openUrl } = useInAppBrowser()
-  const { capture } = useAnalytics()
   const bridgeDisabled = useIsUIDisabled(UI.Bridge)
   const activeNetwork = useSelector(selectActiveNetwork)
   const pendingBridgeTxs = usePendingBridgeTransactions(activeNetwork)
@@ -141,10 +140,10 @@ const Transactions: FC<Props> = ({
     } else {
       const onPress = (): void => {
         if (item.isContractCall || item.isBridge) {
-          capture('ActivityCardLinkClicked')
+          AnalyticsService.capture('ActivityCardLinkClicked')
           openUrl(item.explorerLink)
         } else {
-          capture('ActivityCardDetailShown')
+          AnalyticsService.capture('ActivityCardDetailShown')
           openTransactionDetails(item)
         }
       }

@@ -25,14 +25,13 @@ import { useGetClaimableBalance } from 'hooks/earn/useGetClaimableBalance'
 import { ActivityIndicator } from 'components/ActivityIndicator'
 import { useAvaxFormatter } from 'hooks/formatter/useAvaxFormatter'
 import { Tooltip } from 'components/Tooltip'
-import { useAnalytics } from 'hooks/useAnalytics'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 
 type ScreenProps = StakeSetupScreenProps<
   typeof AppNavigation.StakeSetup.SmartStakeAmount
 >
 
 export default function StakingAmount(): JSX.Element {
-  const { capture } = useAnalytics()
   const avaxFormatter = useAvaxFormatter()
   const { theme } = useApplicationContext()
   const { navigate } = useNavigation<ScreenProps['navigation']>()
@@ -81,7 +80,9 @@ export default function StakingAmount(): JSX.Element {
   }
 
   function setAmount(factor: number): void {
-    capture('StakeUseAmountPercentage', { percent: (100 / factor).toString() })
+    AnalyticsService.capture('StakeUseAmountPercentage', {
+      percent: (100 / factor).toString()
+    })
     setInputAmount(cumulativeBalance.div(factor))
   }
 
@@ -142,7 +143,7 @@ export default function StakingAmount(): JSX.Element {
       {inputValid && (
         <AvaButton.PrimaryLarge
           onPress={() => {
-            capture('StakeOpenDurationSelect')
+            AnalyticsService.capture('StakeOpenDurationSelect')
             navigate(AppNavigation.StakeSetup.StakingDuration, {
               stakingAmount: inputAmount
             })

@@ -9,7 +9,7 @@ import TokenAddress from 'components/TokenAddress'
 import { selectActiveNetwork } from 'store/network'
 import { ChainId } from '@avalabs/chains-sdk'
 import { selectActiveAccount } from 'store/account'
-import { useAnalytics } from 'hooks/useAnalytics'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 
 type Props = {
   embedded: boolean
@@ -17,7 +17,6 @@ type Props = {
 
 const ReceiveToken: FC<Props> = memo(props => {
   const theme = useApplicationContext().theme
-  const { capture } = useAnalytics()
   const embedded = !!props?.embedded
   const activeNetwork = useSelector(selectActiveNetwork)
   const activeAccount = useSelector(selectActiveAccount)
@@ -26,8 +25,8 @@ const ReceiveToken: FC<Props> = memo(props => {
   const btcAddress = activeAccount?.addressBtc
 
   useEffect(() => {
-    capture('ReceivePageVisited')
-  }, [capture])
+    AnalyticsService.capture('ReceivePageVisited')
+  }, [])
 
   const receiveAddress = (): string => {
     switch (chainId) {

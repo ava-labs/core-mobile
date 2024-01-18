@@ -16,7 +16,7 @@ import { StakeSetupScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation } from '@react-navigation/core'
 import { ScrollView } from 'react-native-gesture-handler'
-import { useAnalytics } from 'hooks/useAnalytics'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 
 type ScreenProps = StakeSetupScreenProps<
   typeof AppNavigation.StakeSetup.GetStarted
@@ -29,17 +29,18 @@ export default function GetStarted({
 }): JSX.Element {
   const { theme } = useApplicationContext()
   const { navigate } = useNavigation<ScreenProps>()
-  const { capture } = useAnalytics()
 
   function goToStakingDocs(): void {
-    capture('StakeOpenStakingDocs', { from: 'GetStartedScreen' })
+    AnalyticsService.capture('StakeOpenStakingDocs', {
+      from: 'GetStartedScreen'
+    })
     Linking.openURL(DOCS_STAKING).catch(e => {
       Logger.error(DOCS_STAKING, e)
     })
   }
 
   const goToDisclaimer = (): void => {
-    capture('StakeOpenStakingDisclaimer')
+    AnalyticsService.capture('StakeOpenStakingDisclaimer')
     navigate(AppNavigation.Modal.StakeDisclaimer)
   }
 

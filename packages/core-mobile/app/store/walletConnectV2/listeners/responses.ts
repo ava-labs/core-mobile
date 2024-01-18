@@ -7,7 +7,7 @@ import Logger from 'utils/Logger'
 import { selectActiveAccount } from 'store/account'
 import { selectActiveNetwork } from 'store/network'
 import { UPDATE_SESSION_DELAY } from 'consts/walletConnect'
-import { captureEvent } from 'hooks/useAnalytics'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import { onSendRpcError, onSendRpcResult } from '../slice'
 import { isSessionProposal } from './utils'
 
@@ -16,7 +16,7 @@ export const sendRpcResult = async (
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
   const { request, result } = action.payload
-  const { dispatch, getState } = listenerApi
+  const { getState } = listenerApi
 
   if (isSessionProposal(request)) {
     const relayProtocol = request.data.params.relays[0]?.protocol
@@ -40,14 +40,12 @@ export const sendRpcResult = async (
 
       showSimpleToast(message)
 
-      dispatch(
-        captureEvent('WalletConnectSessionApprovedV2', {
-          namespaces,
-          requiredNamespaces,
-          optionalNamespaces,
-          dappUrl: url
-        })
-      )
+      AnalyticsService.capture('WalletConnectSessionApprovedV2', {
+        namespaces,
+        requiredNamespaces,
+        optionalNamespaces,
+        dappUrl: url
+      })
 
       /**
        * update session with active chainId and address for 2 reasons

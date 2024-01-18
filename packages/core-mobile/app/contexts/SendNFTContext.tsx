@@ -29,7 +29,7 @@ import SentryWrapper from 'services/sentry/SentryWrapper'
 import { RootState } from 'store'
 import { bnToBigint } from 'utils/bigNumbers/bnToBigint'
 import Logger from 'utils/Logger'
-import { useAnalytics } from 'hooks/useAnalytics'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 
 export interface SendNFTContextState {
   sendToken: NFTItemData
@@ -56,7 +56,6 @@ export const SendNFTContextProvider = ({
   nft: NFTItemData
   children: ReactNode
 }): JSX.Element => {
-  const { capture } = useAnalytics()
   const activeAccount = useSelector(selectActiveAccount)
   const activeNetwork = useSelector(selectActiveNetwork)
   const selectedCurrency = useSelector(selectSelectedCurrency)
@@ -124,14 +123,14 @@ export const SendNFTContextProvider = ({
     if (!activeAccount) {
       setSendStatus('Fail')
       setSendStatusMsg('No active account')
-      capture('NftSendFailed', {
+      AnalyticsService.capture('NftSendFailed', {
         errorMessage: 'No active account',
         chainId: activeNetwork.chainId
       })
       return
     }
 
-    capture('NftSendApproved', {
+    AnalyticsService.capture('NftSendApproved', {
       selectedGasFee: selectedFeePreset.toUpperCase()
     })
 
@@ -168,7 +167,9 @@ export const SendNFTContextProvider = ({
         )
         .then(txId => {
           setSendStatus('Success')
-          capture('NftSendSucceeded', { chainId: activeNetwork.chainId })
+          AnalyticsService.capture('NftSendSucceeded', {
+            chainId: activeNetwork.chainId
+          })
           showSnackBarCustom({
             component: (
               <TransactionToast
@@ -182,7 +183,7 @@ export const SendNFTContextProvider = ({
         })
         .catch(reason => {
           setSendStatus('Fail')
-          capture('NftSendFailed', {
+          AnalyticsService.capture('NftSendFailed', {
             errorMessage: reason?.error?.message,
             chainId: activeNetwork.chainId
           })

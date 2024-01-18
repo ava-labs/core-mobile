@@ -3,7 +3,7 @@ import AvaListItem from 'components/AvaListItem'
 import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation } from '@react-navigation/native'
 import { WalletScreenProps } from 'navigation/types'
-import { useAnalytics } from 'hooks/useAnalytics'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 
 type NavigationProp = WalletScreenProps<
   typeof AppNavigation.Wallet.Drawer
@@ -11,7 +11,6 @@ type NavigationProp = WalletScreenProps<
 
 const FeedbackItem = (): JSX.Element => {
   const navigation = useNavigation<NavigationProp>()
-  const { capture } = useAnalytics()
 
   return (
     <AvaListItem.Base
@@ -19,7 +18,7 @@ const FeedbackItem = (): JSX.Element => {
       title={'Send Feedback'}
       showNavigationArrow
       onPress={() => {
-        capture('sendFeedbackClicked')
+        AnalyticsService.capture('sendFeedbackClicked')
         navigation.navigate(AppNavigation.Wallet.SendFeedback)
       }}
     />

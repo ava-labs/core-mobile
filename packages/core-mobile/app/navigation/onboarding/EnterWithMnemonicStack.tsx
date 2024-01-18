@@ -26,7 +26,7 @@ import Logger from 'utils/Logger'
 import { WalletType } from 'services/wallet/types'
 import { useWallet } from 'hooks/useWallet'
 import { NameYourWallet } from 'seedless/screens/NameYourWallet'
-import { useAnalytics } from 'hooks/useAnalytics'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import { EnterWithMnemonicScreenProps } from '../types'
 
 export type EnterWithMnemonicStackParamList = {
@@ -95,7 +95,6 @@ type LoginNavigationProp = EnterWithMnemonicScreenProps<
 const LoginWithMnemonicScreen = (): JSX.Element => {
   const enterWithMnemonicContext = useContext(EnterWithMnemonicContext)
   const { navigate, goBack, canGoBack } = useNavigation<LoginNavigationProp>()
-  const { capture } = useAnalytics()
   const dispatch = useDispatch()
   const { deleteWallet } = useApplicationContext().appHook
   const walletState = useSelector(selectWalletState)
@@ -103,9 +102,9 @@ const LoginWithMnemonicScreen = (): JSX.Element => {
 
   useBeforeRemoveListener(
     useCallback(() => {
-      capture('OnboardingCancelled')
+      AnalyticsService.capture('OnboardingCancelled')
       dispatch(setCoreAnalytics(undefined))
-    }, [capture, dispatch]),
+    }, [dispatch]),
     [RemoveEvents.GO_BACK]
   )
 
@@ -138,10 +137,9 @@ type NameYourWalletNavigationProp = EnterWithMnemonicScreenProps<
 
 const NameYourWalletScreen = (): JSX.Element => {
   const { navigate } = useNavigation<NameYourWalletNavigationProp>()
-  const { capture } = useAnalytics()
 
   const onSetWalletName = (): void => {
-    capture('LoginWithMnemonic:WalletNameSet')
+    AnalyticsService.capture('LoginWithMnemonic:WalletNameSet')
     navigate(AppNavigation.LoginWithMnemonic.CreatePin)
   }
   return <NameYourWallet onSetWalletName={onSetWalletName} />
@@ -155,10 +153,9 @@ const CreatePinScreen = (): JSX.Element => {
   const enterWithMnemonicContext = useContext(EnterWithMnemonicContext)
   const { onPinCreated } = useWallet()
   const { navigate } = useNavigation<CreatePinNavigationProp>()
-  const { capture } = useAnalytics()
 
   const onPinSet = (pin: string): void => {
-    capture('OnboardingPasswordSet')
+    AnalyticsService.capture('OnboardingPasswordSet')
     if (enterWithMnemonicContext.mnemonic) {
       onPinCreated(enterWithMnemonicContext.mnemonic, pin, false)
         .then(value => {

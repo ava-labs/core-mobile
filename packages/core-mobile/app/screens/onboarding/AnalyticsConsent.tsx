@@ -5,7 +5,7 @@ import { PRIVACY_POLICY_URL } from 'resources/Constants'
 import { useDispatch } from 'react-redux'
 import { Button, Text, View } from '@avalabs/k2-mobile'
 import { ViewOnceKey, setViewOnce } from 'store/viewOnce'
-import { useAnalyticsConsent } from 'hooks/useAnalytics'
+import { useAnalyticsConsent } from 'hooks/useAnalyticsConsent'
 
 type Props = {
   title?: string

@@ -15,7 +15,7 @@ import {
   selectIsSeedlessMfaPasskeyBlocked,
   selectIsSeedlessMfaYubikeyBlocked
 } from 'store/posthog'
-import { useAnalytics } from 'hooks/useAnalytics'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import { Card } from '../components/Card'
 
 type SelectRecoveryMethodsScreenProps = RecoveryMethodsScreenProps<
@@ -32,7 +32,6 @@ export const SelectRecoveryMethods = (): JSX.Element => {
   const {
     params: { mfaMethods }
   } = useRoute<SelectRecoveryMethodsScreenProps['route']>()
-  const { capture } = useAnalytics()
   const isSeedlessMfaAuthenticatorBlocked = useSelector(
     selectIsSeedlessMfaAuthenticatorBlocked
   )
@@ -66,7 +65,7 @@ export const SelectRecoveryMethods = (): JSX.Element => {
     try {
       await SeedlessService.approveFido(oidcToken, mfaId, false)
 
-      capture('SeedlessMfaVerified', { type: 'Fido' })
+      AnalyticsService.capture('SeedlessMfaVerified', { type: 'Fido' })
 
       goBack()
 

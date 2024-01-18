@@ -1,6 +1,5 @@
 import { Pressable, Text, View } from '@avalabs/k2-mobile'
 import { useNavigation } from '@react-navigation/native'
-import { useAnalytics } from 'hooks/useAnalytics'
 import AppNavigation from 'navigation/AppNavigation'
 import { BrowserScreenProps } from 'navigation/types'
 import React from 'react'
@@ -11,6 +10,7 @@ import { getNextFavColor } from 'screens/browser/utils'
 import { Row } from 'components/Row'
 import FlexSpacer from 'components/FlexSpacer'
 import Avatar from 'components/Avatar'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 
 interface Props {
   favorite: Favorite
@@ -26,10 +26,9 @@ export const FavoritesListItem = ({
 }: Props): JSX.Element => {
   const dispatch = useDispatch()
   const { navigate } = useNavigation<NavigationProp>()
-  const { capture } = useAnalytics()
 
   const navigateToTabView = (): void => {
-    capture('BrowserFavoritesTapped')
+    AnalyticsService.capture('BrowserFavoritesTapped')
     dispatch(
       addHistoryForActiveTab({ title: favorite.title, url: favorite.url })
     )

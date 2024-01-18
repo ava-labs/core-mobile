@@ -22,7 +22,7 @@ import {
   useBeforeRemoveListener
 } from 'hooks/useBeforeRemoveListener'
 import { Tooltip } from 'components/Tooltip'
-import { useAnalytics } from 'hooks/useAnalytics'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 
 type NavigationProp = SendTokensScreenProps<
   typeof AppNavigation.Send.Review
@@ -35,7 +35,6 @@ export default function ReviewSend({
 }): JSX.Element {
   const { theme } = useApplicationContext()
   const { goBack } = useNavigation<NavigationProp>()
-  const { capture } = useAnalytics()
   const {
     sendToken,
     sendAmountInCurrency,
@@ -62,8 +61,8 @@ export default function ReviewSend({
 
   useBeforeRemoveListener(
     useCallback(() => {
-      capture('SendCancel')
-    }, [capture]),
+      AnalyticsService.capture('SendCancel')
+    }, []),
     [RemoveEvents.GO_BACK]
   )
 

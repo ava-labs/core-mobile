@@ -5,7 +5,7 @@ import AppNavigation from 'navigation/AppNavigation'
 import { WalletScreenProps } from 'navigation/types'
 import AddressBookSVG from 'components/svg/AddressBookSVG'
 import { View } from 'react-native'
-import { useAnalytics } from 'hooks/useAnalytics'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 
 type NavigationProp = WalletScreenProps<
   typeof AppNavigation.Wallet.Drawer
@@ -13,7 +13,6 @@ type NavigationProp = WalletScreenProps<
 
 const AddressBookItem = (): JSX.Element => {
   const navigation = useNavigation<NavigationProp>()
-  const { capture } = useAnalytics()
 
   const icon = (): JSX.Element => {
     return (
@@ -33,7 +32,7 @@ const AddressBookItem = (): JSX.Element => {
         rightComponentVerticalAlignment={'center'}
         leftComponent={icon()}
         onPress={() => {
-          capture('AddContactClicked')
+          AnalyticsService.capture('AddContactClicked')
           navigation.navigate(AppNavigation.Wallet.AddressBook)
         }}
       />

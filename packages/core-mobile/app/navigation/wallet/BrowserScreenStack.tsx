@@ -17,7 +17,7 @@ import RocketLaunch from 'assets/icons/rocket_launch.svg'
 import SearchIcon from 'assets/icons/search.svg'
 import { useTheme } from '@avalabs/k2-mobile'
 import { ClearAllHistoryModal } from 'screens/browser/ClearAllHistoryModal'
-import { useAnalytics } from 'hooks/useAnalytics'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 
 export type BrowserStackParamList = {
   [AppNavigation.Browser.Intro]: undefined
@@ -81,7 +81,6 @@ const BrowserIntroModal = (): JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
-  const { capture } = useAnalytics()
 
   const descriptions = [
     {
@@ -107,7 +106,9 @@ const BrowserIntroModal = (): JSX.Element => {
       viewOnceKey={ViewOnceKey.BROWSER_INTERACTION}
       buttonText="Get Started"
       descriptions={descriptions}
-      onConfirm={() => capture('BrowserWelcomeScreenButtonTapped')}
+      onConfirm={() =>
+        AnalyticsService.capture('BrowserWelcomeScreenButtonTapped')
+      }
       testID="browser-intro-modal"
     />
   )

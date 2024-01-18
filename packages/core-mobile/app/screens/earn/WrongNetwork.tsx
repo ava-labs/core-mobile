@@ -12,14 +12,13 @@ import AppNavigation from 'navigation/AppNavigation'
 import { EarnScreenProps } from 'navigation/types'
 import { useNavigation } from '@react-navigation/native'
 import { useIsEarnDashboardEnabled } from 'hooks/earn/useIsEarnDashboardEnabled'
-import { useAnalytics } from 'hooks/useAnalytics'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 
 type ScreenProps = EarnScreenProps<
   typeof AppNavigation.Earn.WrongNetwork
 >['navigation']
 
 export const WrongNetwork = (): JSX.Element => {
-  const { capture } = useAnalytics()
   const dispatch = useDispatch()
   const { navigate, replace } = useNavigation<ScreenProps>()
   const { isEarnDashboardEnabled } = useIsEarnDashboardEnabled()
@@ -36,7 +35,7 @@ export const WrongNetwork = (): JSX.Element => {
       navigate(AppNavigation.Tabs.Stake)
       return
     }
-    capture('StakeBegin', { from: 'WrongNetworkScreen' })
+    AnalyticsService.capture('StakeBegin', { from: 'WrongNetworkScreen' })
     replace(AppNavigation.Wallet.Earn, {
       screen: AppNavigation.Earn.StakeSetup,
       params: {

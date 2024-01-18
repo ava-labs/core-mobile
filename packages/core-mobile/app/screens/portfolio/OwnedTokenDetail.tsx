@@ -18,7 +18,7 @@ import { TokenWithBalance } from 'store/balance'
 import { Transaction } from 'store/transaction'
 import { useSelector } from 'react-redux'
 import { selectActiveNetwork } from 'store/network'
-import { useAnalytics } from 'hooks/useAnalytics'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 
 type ScreenProps = WalletScreenProps<
   typeof AppNavigation.Wallet.OwnedTokenDetail
@@ -29,7 +29,6 @@ const OwnedTokenDetail: FC = () => {
   const { navigate } = useNavigation<ScreenProps['navigation']>()
   const { filteredTokenList } = useSearchableTokenList()
   const [token, setToken] = useState<TokenWithBalance>()
-  const { capture } = useAnalytics()
   const activeNetwork = useSelector(selectActiveNetwork)
 
   useEffect(loadToken, [filteredTokenList, token, tokenId])
@@ -93,7 +92,9 @@ const OwnedTokenDetail: FC = () => {
         <View style={{ flex: 1 }}>
           <AvaButton.SecondaryMedium
             onPress={() => {
-              capture('TokenReceiveClicked', { chainId: activeNetwork.chainId })
+              AnalyticsService.capture('TokenReceiveClicked', {
+                chainId: activeNetwork.chainId
+              })
               navigate(AppNavigation.Wallet.ReceiveTokens)
             }}>
             Receive
@@ -103,7 +104,9 @@ const OwnedTokenDetail: FC = () => {
         <View style={{ flex: 1 }}>
           <AvaButton.SecondaryMedium
             onPress={() => {
-              capture('TokenSendClicked', { chainId: activeNetwork.chainId })
+              AnalyticsService.capture('TokenSendClicked', {
+                chainId: activeNetwork.chainId
+              })
               navigate(AppNavigation.Wallet.SendTokens, {
                 screen: AppNavigation.Send.Send,
                 params: { token: token }

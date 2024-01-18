@@ -191,4 +191,5 @@ export type AnalyticsEvents = {
       addressCoreEth: string
     }[]
   }
+  CollectTransactionHash: { txHash: string; chainName: string; chainId: number }
 }

@@ -20,7 +20,6 @@ import useClipboardWatcher from 'hooks/useClipboardWatcher'
 import useRecentWalletHack, {
   GetDescriptionAndFavicon
 } from 'hooks/browser/useInjectedJavascript'
-import { useAnalytics } from 'hooks/useAnalytics'
 import { updateMetadataForActiveTab } from 'store/browser/slices/globalHistory'
 import { useGoogleSearch } from 'hooks/browser/useGoogleSearch'
 import AppNavigation from 'navigation/AppNavigation'
@@ -28,6 +27,7 @@ import { useNavigation } from '@react-navigation/native'
 import { BrowserScreenProps } from 'navigation/types'
 import { selectIsFavorited } from 'store/browser/slices/favorites'
 import { LayoutAnimation } from 'react-native'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import { isValidHttpUrl, normalizeUrlWithHttps } from './utils'
 import { TabIcon } from './components/TabIcon'
 import { MoreMenu } from './components/MoreMenu'
@@ -48,7 +48,6 @@ export default function Browser({ tabId }: { tabId: string }): JSX.Element {
   const activeHistory = useSelector(selectTab(tabId))?.activeHistory
   const webViewRef = useRef<WebView>(null)
   const [favicon, setFavicon] = useState<string | undefined>(undefined)
-  const { capture } = useAnalytics()
   const [description, setDescription] = useState('')
   const { navigateToGoogleSearchResult } = useGoogleSearch()
   const totalTabs = useSelector(selectAllTabs).length
@@ -60,22 +59,22 @@ export default function Browser({ tabId }: { tabId: string }): JSX.Element {
 
   const goBack = (): void => {
     if (!canGoBack) return
-    capture('BrowserBackTapped')
+    AnalyticsService.capture('BrowserBackTapped')
     dispatch(goBackward())
   }
   const goForward = (): void => {
     if (!canGoForward) return
-    capture('BrowserForwardTapped')
+    AnalyticsService.capture('BrowserForwardTapped')
     dispatch(goForwardInPage())
   }
 
   const navigateToTabList = (): void => {
-    capture('BrowserTabsOpened')
+    AnalyticsService.capture('BrowserTabsOpened')
     navigate(AppNavigation.Modal.BrowserTabsList)
   }
 
   function handleUrlSubmit(): void {
-    capture('BrowserSearchSubmitted')
+    AnalyticsService.capture('BrowserSearchSubmitted')
     const normalized = normalizeUrlWithHttps(urlEntry)
     if (isValidHttpUrl(normalized)) {
       setUrlToLoad(normalized)
@@ -152,7 +151,7 @@ export default function Browser({ tabId }: { tabId: string }): JSX.Element {
             <NavButton
               Icon={Icons.Navigation.MoreVert}
               onPress={() => {
-                capture('BrowserContextualMenuOpened')
+                AnalyticsService.capture('BrowserContextualMenuOpened')
               }}
             />
           </MoreMenu>

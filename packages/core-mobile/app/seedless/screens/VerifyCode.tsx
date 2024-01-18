@@ -12,10 +12,10 @@ import ClearSVG from 'components/svg/ClearSVG'
 import { Space } from 'components/Space'
 import Logger from 'utils/Logger'
 import Loader from 'components/Loader'
-import { useAnalytics } from 'hooks/useAnalytics'
 import { TotpErrors } from 'seedless/errors'
 import { Result } from 'types/result'
 import { UserExportResponse } from 'seedless/types'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 
 export type VerifyCodeParams = {
   onVerifyCode: (
@@ -36,7 +36,6 @@ export const VerifyCode = ({
   const [isVerifying, setIsVerifying] = useState(false)
   const [code, setCode] = useState<string>()
   const [showError, setShowError] = useState(false)
-  const { capture } = useAnalytics()
 
   const handleVerifyCode = async (changedText: string): Promise<void> => {
     setCode(changedText)
@@ -54,11 +53,13 @@ export const VerifyCode = ({
       }
       setIsVerifying(false)
       onVerifySuccess(result.value)
-      capture('TotpValidationSuccess')
+      AnalyticsService.capture('TotpValidationSuccess')
     } catch (error) {
       setShowError(true)
       setIsVerifying(false)
-      capture('TotpValidationFailed', { error: error as string })
+      AnalyticsService.capture('TotpValidationFailed', {
+        error: error as string
+      })
     }
   }
 
