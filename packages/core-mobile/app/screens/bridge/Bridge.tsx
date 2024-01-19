@@ -616,7 +616,7 @@ const Bridge: FC = () => {
         <Button
           type="primary"
           size="xlarge"
-          style={{ marginHorizontal: 16 }}
+          style={{ marginHorizontal: 16, marginBottom: 10 }}
           disabled={transferDisabled}
           onPress={() => {
             handleTransfer()
@@ -667,7 +667,7 @@ const Bridge: FC = () => {
           alignItems: 'center',
           justifyContent: 'center',
           flexDirection: 'row',
-          marginTop: -6
+          marginBottom: 10
         }}>
         <Text variant="caption">Powered by </Text>
         <CircleLogo width={50} height={'100%'} style={{ marginTop: 1 }} />
