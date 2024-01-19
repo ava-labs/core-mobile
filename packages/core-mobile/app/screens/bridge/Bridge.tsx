@@ -1,5 +1,5 @@
 import React, { FC, useCallback, useEffect, useMemo, useState } from 'react'
-import { Alert, Dimensions, Pressable, StyleSheet, View } from 'react-native'
+import { Alert, Dimensions, Linking, Pressable, StyleSheet } from 'react-native'
 import { Space } from 'components/Space'
 import AvaText from 'components/AvaText'
 import AvaButton from 'components/AvaButton'
@@ -53,6 +53,10 @@ import BN from 'bn.js'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectBridgeCriticalConfig } from 'store/bridge'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import { Text, View, useTheme } from '@avalabs/k2-mobile'
+import CircleLogo from 'assets/icons/circle_logo.svg'
+import { Tooltip } from 'components/Tooltip'
+import { DOCS_STAKING } from 'resources/Constants'
 
 const blockchainTitleMaxWidth = Dimensions.get('window').width * 0.5
 const dropdownWith = Dimensions.get('window').width * 0.6
@@ -76,6 +80,7 @@ type NavigationProp = BridgeScreenProps<
 const Bridge: FC = () => {
   const navigation = useNavigation<NavigationProp>()
   const theme = useApplicationContext().theme
+  const { theme: k2Theme } = useTheme()
   const dispatch = useDispatch()
   const criticalConfig = useSelector(selectBridgeCriticalConfig)
 
@@ -288,7 +293,7 @@ const Bridge: FC = () => {
   ): JSX.Element => {
     const blockchainTitle = getBlockchainDisplayName(blockchain)
 
-    const Text =
+    const TextComponent =
       textSize === 'large' ? AvaText.ButtonLarge : AvaText.ButtonMedium
 
     const symbol =
@@ -304,7 +309,7 @@ const Bridge: FC = () => {
       <>
         <Avatar.Custom name={blockchain ?? ''} symbol={symbol} />
         <Space x={8} />
-        <Text
+        <TextComponent
           textStyle={{
             maxWidth: blockchainTitleMaxWidth,
             textAlign: 'right',
@@ -312,7 +317,7 @@ const Bridge: FC = () => {
           }}
           ellipsizeMode="tail">
           {blockchainTitle}
-        </Text>
+        </TextComponent>
       </>
     )
   }
@@ -622,6 +627,56 @@ const Bridge: FC = () => {
     )
   }
 
+  const handleBridgeFaqs = (): void => {
+    Linking.openURL(DOCS_STAKING).catch(e => {
+      Logger.error(DOCS_STAKING, e)
+    })
+  }
+
+  const renderCCTPPopoverInfoText = (): JSX.Element => (
+    <View
+      sx={{
+        backgroundColor: '$neutral100',
+        marginHorizontal: 8,
+        marginVertical: 4
+      }}>
+      <Text
+        variant="buttonSmall"
+        sx={{ color: '$neutral900', fontWeight: '400' }}>
+        USDC is routed through Circle's Cross-Chain Transfer Protocol.
+      </Text>
+      <Text
+        variant="buttonSmall"
+        onPress={handleBridgeFaqs}
+        sx={{ color: '$blueDark' }}>
+        Bridge FAQs
+      </Text>
+    </View>
+  )
+
+  const renderCircleBadge = (): JSX.Element => {
+    return (
+      <View
+        style={{
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexDirection: 'row',
+          marginTop: -6
+        }}>
+        <Text variant="caption">Powered by </Text>
+        <CircleLogo width={50} height={'100%'} style={{ marginTop: 1 }} />
+        <Tooltip
+          iconColor={k2Theme.colors.$neutral50}
+          content={renderCCTPPopoverInfoText()}
+          position="top"
+          style={{
+            width: 200
+          }}
+        />
+      </View>
+    )
+  }
+
   return (
     <SafeAreaProvider>
       <ScrollViewList style={styles.container}>
@@ -640,6 +695,11 @@ const Bridge: FC = () => {
         </View>
       </ScrollViewList>
       {renderTransferBtn()}
+      {
+        // TODO: hook this up with logic in CP-8033
+        // eslint-disable-next-line sonarjs/no-redundant-boolean
+        false && renderCircleBadge()
+      }
     </SafeAreaProvider>
   )
 }
