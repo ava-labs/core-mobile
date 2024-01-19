@@ -1,7 +1,6 @@
 import React, { FC, useCallback, useEffect, useMemo, useState } from 'react'
 import { Alert, Dimensions, Linking, Pressable, StyleSheet } from 'react-native'
 import { Space } from 'components/Space'
-import AvaText from 'components/AvaText'
 import AvaButton from 'components/AvaButton'
 import BridgeToggleIcon from 'assets/icons/BridgeToggleIcon.svg'
 import AvaListItem from 'components/AvaListItem'
@@ -53,7 +52,7 @@ import BN from 'bn.js'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectBridgeCriticalConfig } from 'store/bridge'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { Text, View, useTheme } from '@avalabs/k2-mobile'
+import { Button, Text, View, useTheme } from '@avalabs/k2-mobile'
 import CircleLogo from 'assets/icons/circle_logo.svg'
 import { Tooltip } from 'components/Tooltip'
 import { DOCS_STAKING } from 'resources/Constants'
@@ -127,6 +126,7 @@ const Bridge: FC = () => {
 
   const isAmountTooLow =
     amount && !amount.eq(BIG_ZERO) && amount.lt(minimum || BIG_ZERO)
+
   const hasValidAmount = !isAmountTooLow && amount.gt(BIG_ZERO)
 
   const formattedAmountCurrency = hasValidAmount
@@ -289,12 +289,9 @@ const Bridge: FC = () => {
 
   const renderBlockchain = (
     blockchain: Blockchain,
-    textSize: 'large' | 'medium'
+    textVariant: 'buttonLarge' | 'buttonMedium'
   ): JSX.Element => {
     const blockchainTitle = getBlockchainDisplayName(blockchain)
-
-    const TextComponent =
-      textSize === 'large' ? AvaText.ButtonLarge : AvaText.ButtonMedium
 
     const symbol =
       blockchain === Blockchain.AVALANCHE
@@ -309,15 +306,16 @@ const Bridge: FC = () => {
       <>
         <Avatar.Custom name={blockchain ?? ''} symbol={symbol} />
         <Space x={8} />
-        <TextComponent
-          textStyle={{
+        <Text
+          variant={textVariant}
+          sx={{
             maxWidth: blockchainTitleMaxWidth,
             textAlign: 'right',
             color: theme.colorText1
           }}
           ellipsizeMode="tail">
           {blockchainTitle}
-        </TextComponent>
+        </Text>
       </>
     )
   }
@@ -332,7 +330,7 @@ const Bridge: FC = () => {
           justifyContent: 'flex-end',
           flex: 0
         }}>
-        {renderBlockchain(blockchain, 'large')}
+        {renderBlockchain(blockchain, 'buttonLarge')}
       </Row>
     )
   }
@@ -343,10 +341,11 @@ const Bridge: FC = () => {
         style={{
           paddingVertical: 8,
           paddingLeft: 16,
+          flex: 1,
           alignItems: 'center',
           justifyContent: 'flex-end'
         }}>
-        {renderBlockchain(blockchain, 'large')}
+        {renderBlockchain(blockchain, 'buttonLarge')}
       </Row>
     )
   }
@@ -370,7 +369,7 @@ const Bridge: FC = () => {
             alignItems: 'center',
             flex: 1
           }}>
-          {renderBlockchain(blockchain, 'medium')}
+          {renderBlockchain(blockchain, 'buttonMedium')}
         </Row>
         {isSelected && (
           <View
@@ -420,18 +419,15 @@ const Bridge: FC = () => {
 
   const renderBalance = (): JSX.Element => {
     return (
-      <AvaText.Body3
-        color={theme.colorText2}
-        textStyle={{
-          alignSelf: 'flex-end',
-          paddingEnd: 16
-        }}>
+      <Text
+        variant="caption"
+        sx={{ color: '$neutral300', alignSelf: 'flex-end', paddingEnd: 16 }}>
         Balance:
         {sourceBalance?.balance
           ? ` ${formatBalance(sourceBalance?.balance)}`
-          : !!currentAsset && <ActivityIndicator size={'small'} />}{' '}
-        {blockchainTokenSymbol}
-      </AvaText.Body3>
+          : !!currentAsset && <ActivityIndicator size={'small'} />}
+        {' ' + blockchainTokenSymbol}
+      </Text>
     )
   }
   const renderTokenSelectInput = (): JSX.Element => (
@@ -447,9 +443,9 @@ const Bridge: FC = () => {
             <Space x={8} />
           </>
         )}
-        <AvaText.Heading3 textStyle={styles.tokenSelectorText}>
+        <Text variant="buttonMedium" style={styles.tokenSelectorText}>
           {currentAsset ? blockchainTokenSymbol : 'Select Token'}
-        </AvaText.Heading3>
+        </Text>
         <CarrotSVG direction={'down'} size={12} />
       </Row>
     </Pressable>
@@ -474,6 +470,7 @@ const Bridge: FC = () => {
           onMax={handleMax}
           placeholder={'0.0'}
           onChange={handleAmountChanged}
+          textStyle={{ borderWidth: 0 }}
           style={{
             minWidth: 160
           }}
@@ -505,23 +502,33 @@ const Bridge: FC = () => {
       (!!bridgeError || isAmountTooLow || !hasEnoughForNetworkFee) && (
         <>
           {!hasEnoughForNetworkFee && (
-            <AvaText.Body3 color={theme.colorError}>
-              {`Insufficient balance to cover gas costs.\nPlease add ${
-                currentBlockchain === Blockchain.AVALANCHE
-                  ? TokenSymbol.AVAX
-                  : TokenSymbol.ETH
-              }.`}
-            </AvaText.Body3>
+            <Text
+              variant="caption"
+              sx={{
+                color: '$dangerDark'
+              }}>{`Insufficient balance to cover gas costs.\nPlease add ${
+              currentBlockchain === Blockchain.AVALANCHE
+                ? TokenSymbol.AVAX
+                : TokenSymbol.ETH
+            }.`}</Text>
           )}
           {isAmountTooLow && (
-            <AvaText.Body3 color={theme.colorError}>
+            <Text
+              variant="caption"
+              sx={{
+                color: '$dangerDark'
+              }}>
               {`Amount too low -- minimum is ${minimum?.toFixed(9)}`}
-            </AvaText.Body3>
+            </Text>
           )}
           {!!bridgeError && (
-            <AvaText.Body3 color={theme.colorError}>
+            <Text
+              variant="caption"
+              sx={{
+                color: '$dangerDark'
+              }}>
               {bridgeError}
-            </AvaText.Body3>
+            </Text>
           )}
         </>
       )
@@ -542,16 +549,20 @@ const Bridge: FC = () => {
             {renderError()}
 
             {wrapStatus === WrapStatus.WAITING_FOR_DEPOSIT && (
-              <AvaText.Body3 color={theme.colorError}>
+              <Text
+                variant="caption"
+                sx={{
+                  color: '$dangerDark'
+                }}>
                 Waiting for deposit confirmation
-              </AvaText.Body3>
+              </Text>
             )}
           </View>
 
           {/* Amount in currency */}
-          <AvaText.Body3 color={theme.colorText2}>
+          <Text variant="caption" sx={{ color: '$neutral300' }}>
             {formattedAmountCurrency}
-          </AvaText.Body3>
+          </Text>
         </Row>
       </View>
     )
@@ -578,27 +589,21 @@ const Bridge: FC = () => {
           rightComponentMaxWidth={'auto'}
           rightComponent={renderToBlockchain(targetBlockchain)}
         />
-        <Separator inset={16} color="#666666" />
+        <Separator inset={16} color={k2Theme.colors.$neutral800} />
         <Row style={styles.receiveRow}>
           <View>
-            <AvaText.ButtonLarge textStyle={{ color: theme.colorText1 }}>
-              Receive
-            </AvaText.ButtonLarge>
-            <AvaText.Body3
-              color={theme.colorText2}
-              textStyle={{ marginTop: 8 }}>
+            <Text variant="buttonLarge">Receive</Text>
+            <Text variant="caption" sx={{ marginTop: 4, color: '$neutral400' }}>
               Estimated (minus transfer fees)
-            </AvaText.Body3>
+            </Text>
           </View>
           <View style={{ alignItems: 'flex-end' }}>
             {/* receive amount */}
-            <AvaText.Body1>{formattedReceiveAmount}</AvaText.Body1>
+            <Text variant="body1">{formattedReceiveAmount}</Text>
             {/* estimate amount */}
-            <AvaText.Body3
-              textStyle={{ marginTop: 8 }}
-              color={theme.colorText2}>
+            <Text variant="caption" sx={{ marginTop: 4, color: '$neutral400' }}>
               {formattedReceiveAmountCurrency}
-            </AvaText.Body3>
+            </Text>
           </View>
         </Row>
       </View>
@@ -607,23 +612,24 @@ const Bridge: FC = () => {
 
   const renderTransferBtn = (): JSX.Element => {
     return (
-      <AvaButton.Base
-        style={[
-          styles.transferButton,
-          { backgroundColor: transferDisabled ? '#FFFFFF80' : theme.white }
-        ]}
-        onPress={() => {
-          handleTransfer()
-        }}
-        disabled={transferDisabled}>
-        <Row>
-          {isPending && <ActivityIndicator />}
-          <AvaText.ButtonLarge
-            textStyle={{ color: theme.background, marginStart: 4 }}>
-            Transfer
-          </AvaText.ButtonLarge>
-        </Row>
-      </AvaButton.Base>
+      <>
+        <Button
+          type="primary"
+          size="xlarge"
+          style={{ marginHorizontal: 16 }}
+          disabled={transferDisabled}
+          onPress={() => {
+            handleTransfer()
+          }}>
+          {isPending ? (
+            <>
+              <ActivityIndicator /> Transferring...
+            </>
+          ) : (
+            'Transfer'
+          )}
+        </Button>
+      </>
     )
   }
 
@@ -680,14 +686,22 @@ const Bridge: FC = () => {
   return (
     <SafeAreaProvider>
       <ScrollViewList style={styles.container}>
-        <AvaText.LargeTitleBold textStyle={{ marginHorizontal: 8 }}>
+        <Text variant="heading3" style={{ marginHorizontal: 8 }}>
           Bridge
-        </AvaText.LargeTitleBold>
-        <Space y={20} />
-        <View style={{ backgroundColor: '#333333', borderRadius: 10 }}>
-          <View style={{ backgroundColor: theme.colorBg2, borderRadius: 10 }}>
+        </Text>
+        <Space y={40} />
+        <View
+          style={{
+            backgroundColor: k2Theme.colors.$neutral850,
+            borderRadius: 10
+          }}>
+          <View
+            style={{
+              backgroundColor: k2Theme.colors.$neutral900,
+              borderRadius: 10
+            }}>
             {renderFromSection()}
-            <Separator inset={16} />
+            <Separator inset={16} color={k2Theme.colors.$neutral800} />
             {renderSelectSection()}
           </View>
           {renderToggleBtn()}
@@ -735,7 +749,8 @@ const styles = StyleSheet.create({
   tokenSelectorText: {
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 8
+    marginRight: 8,
+    fontWeight: '600'
   },
   toggleButton: {
     alignSelf: 'center',
