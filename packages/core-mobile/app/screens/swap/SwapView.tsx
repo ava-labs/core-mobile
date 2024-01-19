@@ -23,7 +23,11 @@ import { FeePreset } from 'components/NetworkFeeSelector'
 import UniversalTokenSelector from 'components/UniversalTokenSelector'
 import SwapTransactionDetail from 'screens/swap/components/SwapTransactionDetails'
 import { calculateRate } from 'swap/utils'
-import { calculateGasAndFees, getMaxValue, truncateBN } from 'utils/Utils'
+import {
+  calculateGasAndFees,
+  getMaxAvailableBalance,
+  truncateBN
+} from 'utils/Utils'
 import { bnToLocaleString } from '@avalabs/utils-sdk'
 import { selectActiveNetwork } from 'store/network'
 import { useNetworkFee } from 'hooks/useNetworkFee'
@@ -134,7 +138,7 @@ export default function SwapView(): JSX.Element {
         tokenDecimals: activeNetwork?.networkToken?.decimals
       })
 
-      const max = getMaxValue(fromToken, newFees.fee)
+      const max = getMaxAvailableBalance(fromToken, newFees.fee)
       setMaxFromValue(max)
       return
     }
@@ -228,7 +232,7 @@ export default function SwapView(): JSX.Element {
             new BN(feeBig.toString()),
             fromToken?.decimals
           )
-          let maxBn = getMaxValue(fromToken, feeString)
+          let maxBn = getMaxAvailableBalance(fromToken, feeString)
           if (maxBn) {
             // there's high probability that on next call swap fees will change so let's lower
             // max amount just a bit more for safety margin by chopping off some decimals

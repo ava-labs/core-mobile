@@ -49,7 +49,7 @@ export function formatTokenAmount(amount: Big, denomination = 2): string {
  * @param digits - default: 2 - fraction digits to be used by large and normal amounts.
  */
 // adapted from: https://stackoverflow.com/a/9462382
-export function formatLargeNumber(num: number | string, digits = 2) {
+export function formatLargeNumber(num: number | string, digits = 2): string {
   const number = typeof num === 'number' ? num : Number(num)
 
   const lookup = [
@@ -77,7 +77,7 @@ export function formatLargeNumber(num: number | string, digits = 2) {
  * @param currencyNum
  * @param digits - default: 2 - fraction digits to be used by large and normal amounts.
  */
-export function formatLargeCurrency(currencyNum: string, digits = 2) {
+export function formatLargeCurrency(currencyNum: string, digits = 2): string {
   const match = currencyNum.match(/^(-)?([^0-9]+)?([0-9,.]+) ?([A-Z]+)?$/)
   if (!match) return currencyNum
   const [_, negative, symbol, amount, code] = match
@@ -91,13 +91,13 @@ export function formatLargeCurrency(currencyNum: string, digits = 2) {
   return `${negative || ''}${symbol || ''}${newAmount}${codeString}`
 }
 
-export const formatTimer = (time: number) =>
-  `${String(Math.floor(time / 60)).padStart(2, '0')}:${String(
-    time % 60
+export const formatTimer = (seconds: number): string =>
+  `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(
+    seconds % 60
   ).padStart(2, '0')}`
 
 // from https://stackoverflow.com/a/25105589
-export function arrayHash(array: string[]) {
+export function arrayHash(array: string[]): string {
   let i,
     sum = 0
   for (i = 0; i < array.length; i++) {
@@ -107,7 +107,7 @@ export function arrayHash(array: string[]) {
   return ('' + sum).slice(0, 16)
 }
 
-function charsum(s: string) {
+function charsum(s: string): number {
   let i,
     sum = 0
   for (i = 0; i < s.length; i++) {
@@ -116,7 +116,7 @@ function charsum(s: string) {
   return sum
 }
 
-export function titleToInitials(title: string) {
+export function titleToInitials(title: string): string {
   return (
     title?.split(' ').reduce((previousValue, currentValue) => {
       return currentValue.length > 0
@@ -156,7 +156,10 @@ export function calculateGasAndFees({
   }
 }
 
-export const getMaxValue = (token?: TokenWithBalance, fee?: string) => {
+export const getMaxAvailableBalance = (
+  token?: TokenWithBalance,
+  fee?: string
+): BN | undefined => {
   if (!token || !fee) {
     return
   }

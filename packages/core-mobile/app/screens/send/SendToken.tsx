@@ -25,7 +25,7 @@ import { NetworkVMType } from '@avalabs/chains-sdk'
 import NetworkFeeSelector from 'components/NetworkFeeSelector'
 import { bnToLocaleString } from '@avalabs/utils-sdk'
 import UniversalTokenSelector from 'components/UniversalTokenSelector'
-import { getMaxValue } from 'utils/Utils'
+import { getMaxAvailableBalance } from 'utils/Utils'
 import { Amount } from 'screens/swap/SwapView'
 import { BN } from 'bn.js'
 import { AddrBookItemType, Contact } from 'store/addressBook'
@@ -147,7 +147,7 @@ const SendToken: FC<Props> = ({
   }
 
   const handleMax = useCallback(() => {
-    const maxBn = getMaxValue(sendToken, sendFeeNative)
+    const maxBn = getMaxAvailableBalance(sendToken, sendFeeNative)
     if (maxBn) {
       setSendAmount({
         bn: maxBn,
