@@ -78,8 +78,7 @@ type NavigationProp = BridgeScreenProps<
 
 const Bridge: FC = () => {
   const navigation = useNavigation<NavigationProp>()
-  const theme = useApplicationContext().theme
-  const { theme: k2Theme } = useTheme()
+  const { theme } = useTheme()
   const dispatch = useDispatch()
   const criticalConfig = useSelector(selectBridgeCriticalConfig)
 
@@ -311,7 +310,7 @@ const Bridge: FC = () => {
           sx={{
             maxWidth: blockchainTitleMaxWidth,
             textAlign: 'right',
-            color: theme.colorText1
+            color: theme.colors.$neutral50
           }}
           ellipsizeMode="tail">
           {blockchainTitle}
@@ -572,11 +571,8 @@ const Bridge: FC = () => {
     return (
       <AvaButton.Base
         onPress={handleBlockchainToggle}
-        style={[
-          styles.toggleButton,
-          { backgroundColor: theme.alternateBackground }
-        ]}>
-        <BridgeToggleIcon color={theme.background} />
+        style={[styles.toggleButton, { backgroundColor: theme.colors.$white }]}>
+        <BridgeToggleIcon color={theme.colors.$black} />
       </AvaButton.Base>
     )
   }
@@ -589,7 +585,7 @@ const Bridge: FC = () => {
           rightComponentMaxWidth={'auto'}
           rightComponent={renderToBlockchain(targetBlockchain)}
         />
-        <Separator inset={16} color={k2Theme.colors.$neutral800} />
+        <Separator inset={16} color={theme.colors.$neutral800} />
         <Row style={styles.receiveRow}>
           <View>
             <Text variant="buttonLarge">Receive</Text>
@@ -672,7 +668,7 @@ const Bridge: FC = () => {
         <Text variant="caption">Powered by </Text>
         <CircleLogo width={50} height={'100%'} style={{ marginTop: 1 }} />
         <Tooltip
-          iconColor={k2Theme.colors.$neutral50}
+          iconColor={theme.colors.$neutral50}
           content={renderCCTPPopoverInfoText()}
           position="top"
           style={{
@@ -692,16 +688,16 @@ const Bridge: FC = () => {
         <Space y={40} />
         <View
           style={{
-            backgroundColor: k2Theme.colors.$neutral850,
+            backgroundColor: theme.colors.$neutral850,
             borderRadius: 10
           }}>
           <View
             style={{
-              backgroundColor: k2Theme.colors.$neutral900,
+              backgroundColor: theme.colors.$neutral900,
               borderRadius: 10
             }}>
             {renderFromSection()}
-            <Separator inset={16} color={k2Theme.colors.$neutral800} />
+            <Separator inset={16} color={theme.colors.$neutral800} />
             {renderSelectSection()}
           </View>
           {renderToggleBtn()}
