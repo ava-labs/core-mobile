@@ -1,11 +1,14 @@
-// The Swimmer subnet is the only one with fixed fee.
-export interface NetworkFee {
-  displayDecimals: number
-  nativeTokenDecimals: number
-  unit: string
-  low: bigint
-  medium: bigint
-  high: bigint
+import { TokenBaseUnit } from 'types/TokenBaseUnit'
+
+export interface NetworkFee<T extends TokenBaseUnit<T>> {
+  baseFee?: T
+  low: FeeRate<T>
+  medium: FeeRate<T>
+  high: FeeRate<T>
   isFixedFee: boolean
-  nativeTokenSymbol: string
+}
+
+export type FeeRate<T extends TokenBaseUnit<T>> = {
+  maxFeePerGas: T
+  maxPriorityFeePerGas?: T
 }

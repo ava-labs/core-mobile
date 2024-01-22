@@ -4,7 +4,7 @@ import { AcceptedTypes, TokenBaseUnit } from 'types/TokenBaseUnit'
 
 export class Avax extends TokenBaseUnit<Avax> {
   constructor(value: AcceptedTypes) {
-    super(value, 9, Avax)
+    super(value, 9, 'AVAX', Avax)
   }
 
   static fromBase(value: AcceptedTypes): Avax {
