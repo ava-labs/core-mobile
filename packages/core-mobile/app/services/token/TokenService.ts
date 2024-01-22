@@ -41,7 +41,6 @@ import { coingeckoRetry, transformContractMarketChartResponse } from './utils'
 
 const coingeckoBasicClient = getBasicCoingeckoHttp()
 const CONTRACT_CALLS_TIMEOUT = 10000
-const maxRetries = 2
 
 export class TokenService {
   /**
