@@ -1,5 +1,5 @@
 import { VsCurrencyType } from '@avalabs/coingecko-sdk'
-import { array, number, object, record, string } from 'zod'
+import { array, number, object, record, string, z } from 'zod'
 
 export type SparklineData = number[]
 
@@ -30,26 +30,54 @@ export type GetMarketsParams = {
   perPage?: number
 }
 
+const SimplePriceInCurrency = object({
+  price: number().optional().nullable(),
+  change24: number().optional().nullable(),
+  marketCap: number().optional().nullable(),
+  vol24: number().optional().nullable()
+})
+
+const SimplePriceInCurrencyResponseSchema = record(
+  string(),
+  SimplePriceInCurrency
+)
+
 export const SimplePriceResponseSchema = record(
   string(),
-  record(string(), string())
+  SimplePriceInCurrencyResponseSchema
 )
+
+export type SimplePriceInCurrencyResponse = z.infer<
+  typeof SimplePriceInCurrencyResponseSchema
+>
+export type SimplePriceResponse = z.infer<typeof SimplePriceResponseSchema>
 
 export const CoinMarketSchema = object({
   id: string(),
   symbol: string(),
   name: string(),
-  price: number(),
+  price: number().optional().nullable(),
   image: string(),
   sparkline_in_7d: object({
     price: array(number())
-  }),
-  price_change_percentage_24h: number(),
-  price_change_percentage_1h_in_currency: number(),
-  price_change_percentage_24h_in_currency: number(),
-  price_change_percentage_7d_in_currency: number(),
+  })
+    .nullable()
+    .optional(),
+  price_change_percentage_24h: number().optional().nullable(),
+  price_change_percentage_1h_in_currency: number().optional().nullable(),
+  price_change_percentage_24h_in_currency: number().optional().nullable(),
+  price_change_percentage_7d_in_currency: number().optional().nullable(),
   market_cap: number(),
   total_volume: number(),
   circulating_supply: number(),
-  current_price: number()
+  current_price: number().optional().nullable()
 })
+
+export type CoinMarket = z.infer<typeof CoinMarketSchema>
+
+export type Error = {
+  status: {
+    error_code: number
+    error_message: string
+  }
+}

@@ -1,11 +1,14 @@
 import {
-  CoinMarket,
   coinsInfo,
   CoinsInfoResponse,
+  coinsMarket,
   coinsMarketChart,
   coinsSearch,
+  CoinsSearchResponse,
+  ContractMarketChartResponse,
   getBasicCoingeckoHttp,
-  SimplePriceResponse,
+  simplePrice,
+  SimplePriceParams,
   simpleTokenPrice,
   SimpleTokenPriceResponse,
   VsCurrencyType
@@ -24,12 +27,23 @@ import NetworkService from 'services/network/NetworkService'
 import { MarketToken } from 'store/watchlist'
 import xss from 'xss'
 import promiseWithTimeout, { TimeoutError } from 'utils/js/promiseWithTimeout'
-import { ChartData, GetMarketsParams, PriceWithMarketData } from './types'
+import { coingeckoProxyClient } from 'services/coingecko/coingeckoProxyClient'
+import { watchListCacheClient } from 'services/coingecko/watchListCacheClient'
+import Logger from 'utils/Logger'
+import { retry, RetryBackoffPolicy } from '../../utils/js/retry'
+import {
+  ChartData,
+  CoinMarket,
+  Error,
+  GetMarketsParams,
+  PriceWithMarketData,
+  SimplePriceResponse
+} from './types'
 import { transformContractMarketChartResponse } from './utils'
-import { tokenServiceApiClient } from './apiClient'
 
 const coingeckoBasicClient = getBasicCoingeckoHttp()
 const CONTRACT_CALLS_TIMEOUT = 10000
+const maxRetries = 2
 
 export class TokenService {
   /**
@@ -85,43 +99,47 @@ export class TokenService {
     }
   }
 
-  // if coinIds are undefined, the top 100 tokens will be returned
-  async getMarkets({
-    currency = VsCurrencyType.USD,
-    sparkline = false,
-    coinIds
+  // returns the top 250 markets
+  async getMarketsFromWatchlistCache({
+    currency = VsCurrencyType.USD
   }: GetMarketsParams): Promise<CoinMarket[]> {
     let data: CoinMarket[] | undefined
 
-    const key = coinIds
-      ? `${arrayHash(coinIds)}-${currency}-${sparkline}`
-      : `${currency}-${sparkline}`
-
-    const cacheId = `getMarkets-${key}`
+    const cacheId = `getMarkets-${currency}`
 
     data = getCache(cacheId)
 
     if (data === undefined) {
-      data = await tokenServiceApiClient.markets({
+      data = await watchListCacheClient.markets({
         queries: { currency, topMarkets: true }
       })
       setCache(cacheId, data)
     }
+
     return data ?? []
   }
 
   async getTokenSearch(query: string): Promise<MarketToken[] | undefined> {
-    const data = await coinsSearch(coingeckoBasicClient, {
-      query
-    })
-    return data?.coins?.map(coin => {
-      return {
-        id: coin?.id,
-        name: coin?.name,
-        symbol: coin?.symbol,
-        logoUri: coin?.thumb
-      } as MarketToken
-    })
+    try {
+      const data = (await retry({
+        operation: (retries: number) => this.searchCoins(query, retries > 0),
+        maxRetries,
+        backoffPolicy: RetryBackoffPolicy.constant(1),
+        isSuccess: (response: CoinsSearchResponse | Error) =>
+          (response as Error)?.status?.error_code !== 429
+      })) as CoinsSearchResponse | undefined
+
+      return data?.coins?.map(coin => {
+        return {
+          id: coin?.id,
+          name: coin?.name,
+          symbol: coin?.symbol,
+          logoUri: coin?.thumb
+        } as MarketToken
+      })
+    } catch {
+      Logger.error('Failed to fetch token search data', { query })
+    }
   }
 
   /**
@@ -157,12 +175,14 @@ export class TokenService {
     const allPriceData = await this.fetchPriceWithMarketData()
     return coinIds.reduce((acc, coinId) => {
       const priceData = allPriceData?.[coinId]?.[currency]
-      acc[coinId] = {
-        [currency]: {
-          price: priceData?.price,
-          change24: priceData?.change24,
-          marketCap: priceData?.marketCap,
-          vol24: priceData?.vol24
+      if (priceData) {
+        acc[coinId] = {
+          [currency]: {
+            price: priceData?.price,
+            change24: priceData?.change24,
+            marketCap: priceData?.marketCap,
+            vol24: priceData?.vol24
+          }
         }
       }
       return acc
@@ -189,11 +209,23 @@ export class TokenService {
     data = getCache(cacheId)
 
     if (data === undefined) {
-      data = await this.fetchPricesWithMarketDataByAddresses(
-        assetPlatformId,
-        tokenAddresses,
-        currency
-      )
+      try {
+        data = (await retry({
+          operation: (retries: number) =>
+            this.fetchPricesWithMarketDataByAddresses({
+              assetPlatformId,
+              tokenAddresses,
+              currency,
+              useCoingeckoProxy: retries > 0
+            }),
+          maxRetries,
+          backoffPolicy: RetryBackoffPolicy.constant(1),
+          isSuccess: (response: SimpleTokenPriceResponse | Error) =>
+            (response as Error)?.status?.error_code !== 429
+        })) as SimpleTokenPriceResponse | undefined
+      } catch {
+        data = undefined
+      }
 
       setCache(cacheId, data)
     }
@@ -229,7 +261,25 @@ export class TokenService {
 
     if (data === undefined) {
       if (coingeckoId) {
-        data = await this.fetchChartDataForCoin(coingeckoId, days, currency)
+        try {
+          data = (await retry({
+            operation: (retries: number) => {
+              return this.fetchChartDataForCoin({
+                coingeckoId,
+                days,
+                currency,
+                useCoingeckoProxy: retries > 0
+              })
+            },
+            maxRetries,
+            backoffPolicy: RetryBackoffPolicy.constant(1),
+            isSuccess: (response: ChartData | Error | undefined) => {
+              return (response as Error)?.status?.error_code !== 429
+            }
+          })) as ChartData | undefined
+        } catch {
+          data = undefined
+        }
       }
 
       setCache(cacheId, data)
@@ -260,7 +310,19 @@ export class TokenService {
 
     if (data === undefined) {
       if (coingeckoId) {
-        data = await this.fetchCoinInfo(coingeckoId)
+        try {
+          data = (await retry({
+            operation: (retries: number) => {
+              return this.fetchCoinInfo(coingeckoId, retries > 0)
+            },
+            maxRetries,
+            backoffPolicy: RetryBackoffPolicy.constant(1),
+            isSuccess: (response: CoinsInfoResponse | Error | undefined) =>
+              (response as Error)?.status?.error_code !== 429
+          })) as CoinsInfoResponse | undefined
+        } catch {
+          data = undefined
+        }
       }
       setCache(cacheId, data)
     }
@@ -268,33 +330,23 @@ export class TokenService {
     return data
   }
 
-  private async fetchChartDataForCoin(
-    coingeckoId: string,
-    days: number,
-    currency: VsCurrencyType = VsCurrencyType.USD
-  ): Promise<ChartData | undefined> {
-    try {
-      const rawData = await coinsMarketChart(coingeckoBasicClient, {
-        assetPlatformId: coingeckoId,
-        currency,
-        days
-      })
-
-      return transformContractMarketChartResponse(rawData)
-    } catch (e) {
-      return Promise.resolve(undefined)
-    }
-  }
-
   private async fetchCoinInfo(
-    coingeckoId: string
-  ): Promise<CoinsInfoResponse | undefined> {
+    coingeckoId: string,
+    useCoingeckoProxy = false
+  ): Promise<CoinsInfoResponse | Error> {
+    if (useCoingeckoProxy) {
+      return coingeckoProxyClient.marketDataByCoinId({
+        params: {
+          id: coingeckoId
+        }
+      })
+    }
     try {
       return coinsInfo(coingeckoBasicClient, {
         assetPlatformId: coingeckoId
       })
     } catch (e) {
-      return Promise.resolve(undefined)
+      return Promise.resolve(e as Error)
     }
   }
 
@@ -306,7 +358,7 @@ export class TokenService {
       data = getCache(cacheId)
 
       if (data === undefined) {
-        data = await tokenServiceApiClient.simplePrice()
+        data = await watchListCacheClient.simplePrice()
         setCache(cacheId, data)
       }
       return data
@@ -315,23 +367,239 @@ export class TokenService {
     }
   }
 
-  private async fetchPricesWithMarketDataByAddresses(
-    assetPlatformId: string,
-    tokenAddresses: string[],
-    currencyCode: VsCurrencyType = VsCurrencyType.USD
-  ): Promise<SimpleTokenPriceResponse | undefined> {
-    try {
-      return simpleTokenPrice(coingeckoBasicClient, {
-        assetPlatformId,
-        tokenAddresses,
-        currencies: [currencyCode],
-        marketCap: true,
-        vol24: true,
-        change24: true
+  private async fetchChartDataForCoin({
+    coingeckoId,
+    days = 7,
+    currency = VsCurrencyType.USD,
+    useCoingeckoProxy = false
+  }: {
+    coingeckoId: string
+    currency: VsCurrencyType
+    days?: number
+    useCoingeckoProxy?: boolean
+  }): Promise<ChartData | Error | undefined> {
+    let rawData: ContractMarketChartResponse | undefined
+    if (useCoingeckoProxy) {
+      rawData = await coingeckoProxyClient.marketChartByCoinId({
+        params: {
+          id: coingeckoId
+        },
+        queries: {
+          vs_currency: currency,
+          days: days?.toString()
+        }
       })
-    } catch (e) {
-      return Promise.resolve(undefined)
+    } else {
+      try {
+        rawData = await coinsMarketChart(coingeckoBasicClient, {
+          assetPlatformId: coingeckoId,
+          currency,
+          days
+        })
+      } catch {
+        rawData = undefined
+      }
     }
+    return rawData ? transformContractMarketChartResponse(rawData) : undefined
+  }
+
+  // if coinIds are undefined, the top 100 tokens will be returned
+  async getMarkets({
+    currency = VsCurrencyType.USD,
+    sparkline = false,
+    coinIds,
+    perPage,
+    page
+  }: GetMarketsParams): Promise<CoinMarket[]> {
+    let data: CoinMarket[] | undefined
+
+    const key = coinIds
+      ? `${arrayHash(coinIds)}-${currency}-${sparkline}`
+      : `${currency}-${sparkline}`
+
+    const cacheId = `getMarkets-${key}`
+
+    data = getCache(cacheId)
+
+    if (data === undefined) {
+      try {
+        data = (await retry({
+          operation: (retries: number) =>
+            this.coinsMarket({
+              coinIds,
+              currency,
+              sparkline,
+              perPage,
+              page,
+              useCoingeckoProxy: retries > 0
+            }),
+          maxRetries,
+          backoffPolicy: RetryBackoffPolicy.constant(1),
+          isSuccess: (response: CoinMarket[] | Error) =>
+            (response as Error)?.status?.error_code !== 429
+        })) as CoinMarket[] | undefined
+      } catch {
+        data = undefined
+      }
+      setCache(cacheId, data)
+    }
+
+    return data ?? []
+  }
+
+  async getSimplePrice({
+    coinIds = [],
+    currency = VsCurrencyType.USD
+  }: {
+    coinIds: string[]
+    currency: VsCurrencyType
+  }): Promise<SimplePriceResponse | undefined> {
+    let data: SimplePriceResponse | undefined
+
+    const key = coinIds ? `${arrayHash(coinIds)}-${currency}` : `${currency}`
+
+    const cacheId = `getSimplePrice-${key}`
+
+    data = getCache(cacheId)
+
+    if (data === undefined) {
+      try {
+        data = (await retry({
+          operation: (retries: number) =>
+            this.simplePrice({
+              coinIds,
+              currencies: [currency],
+              marketCap: true,
+              vol24: true,
+              change24: true,
+              useCoingeckoProxy: retries > 0
+            }),
+          maxRetries,
+          backoffPolicy: RetryBackoffPolicy.constant(1),
+          isSuccess: (response: SimplePriceResponse | Error) =>
+            (response as Error)?.status?.error_code !== 429
+        })) as SimplePriceResponse | undefined
+      } catch {
+        data = undefined
+      }
+      setCache(cacheId, data)
+    }
+
+    return data
+  }
+
+  private async coinsMarket({
+    currency = VsCurrencyType.USD,
+    sparkline = false,
+    coinIds,
+    perPage,
+    page,
+    useCoingeckoProxy = false
+  }: GetMarketsParams & { useCoingeckoProxy?: boolean }): Promise<
+    CoinMarket[] | Error
+  > {
+    if (useCoingeckoProxy) {
+      return coingeckoProxyClient.coinsMarkets({
+        queries: {
+          ids: coinIds?.join(','),
+          vs_currency: currency,
+          per_page: perPage,
+          page,
+          sparkline
+        }
+      })
+    }
+    return coinsMarket(coingeckoBasicClient, {
+      currency,
+      sparkline,
+      coinIds,
+      perPage,
+      page
+    })
+  }
+
+  private async simplePrice({
+    coinIds = [],
+    currencies = [VsCurrencyType.USD],
+    marketCap = false,
+    vol24 = false,
+    change24 = false,
+    lastUpdated = false,
+    useCoingeckoProxy = false
+  }: SimplePriceParams & { useCoingeckoProxy?: boolean }): Promise<
+    SimplePriceResponse | Error
+  > {
+    if (useCoingeckoProxy) {
+      return coingeckoProxyClient.simplePrice({
+        queries: {
+          ids: coinIds?.join(','),
+          vs_currencies: currencies.join(','),
+          include_market_cap: String(marketCap),
+          include_24hr_vol: String(vol24),
+          include_24hr_change: String(change24),
+          include_last_updated_at: String(lastUpdated)
+        }
+      })
+    }
+    return simplePrice(coingeckoBasicClient, {
+      coinIds,
+      currencies,
+      marketCap,
+      vol24,
+      change24,
+      lastUpdated
+    })
+  }
+
+  private async searchCoins(
+    query: string,
+    useCoingeckoProxy = false
+  ): Promise<CoinsSearchResponse | Error> {
+    if (useCoingeckoProxy) {
+      return coingeckoProxyClient.searchCoins({
+        queries: {
+          query
+        }
+      })
+    }
+    return coinsSearch(coingeckoBasicClient, {
+      query
+    })
+  }
+
+  private async fetchPricesWithMarketDataByAddresses({
+    assetPlatformId,
+    tokenAddresses,
+    currency = VsCurrencyType.USD,
+    useCoingeckoProxy = false
+  }: {
+    assetPlatformId: string
+    tokenAddresses: string[]
+    currency: VsCurrencyType
+    useCoingeckoProxy?: boolean
+  }): Promise<SimpleTokenPriceResponse | Error> {
+    if (useCoingeckoProxy) {
+      return coingeckoProxyClient.simplePriceByContractAddresses({
+        params: {
+          id: assetPlatformId
+        },
+        queries: {
+          contract_addresses: tokenAddresses,
+          vs_currencies: [currency],
+          include_market_cap: true,
+          include_24hr_vol: true,
+          include_24hr_change: true
+        }
+      })
+    }
+    return simpleTokenPrice(coingeckoBasicClient, {
+      assetPlatformId,
+      tokenAddresses,
+      currencies: [currency],
+      marketCap: true,
+      vol24: true,
+      change24: true
+    })
   }
 }
 
