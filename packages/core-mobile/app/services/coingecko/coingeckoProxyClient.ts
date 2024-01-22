@@ -10,7 +10,7 @@ export const coingeckoProxyClient = new Zodios(
   baseUrl,
   [
     {
-      method: 'get',
+      method: 'post',
       path: '/coins/markets',
       parameters: [
         { name: 'vs_currency', type: 'Query', schema: string() },
@@ -23,7 +23,7 @@ export const coingeckoProxyClient = new Zodios(
       response: any()
     },
     {
-      method: 'get',
+      method: 'post',
       path: '/simple/price',
       parameters: [
         { name: 'ids', type: 'Query', schema: string() },
@@ -53,14 +53,14 @@ export const coingeckoProxyClient = new Zodios(
       response: any()
     },
     {
-      method: 'get',
+      method: 'post',
       path: '/coins/:id',
       parameters: [{ name: 'id', type: 'Path', schema: string() }],
       alias: 'marketDataByCoinId',
       response: any()
     },
     {
-      method: 'get',
+      method: 'post',
       path: '/coins/:id/market_chart',
       parameters: [
         { name: 'id', type: 'Path', schema: string() },
@@ -73,14 +73,14 @@ export const coingeckoProxyClient = new Zodios(
       response: any()
     },
     {
-      method: 'get',
+      method: 'post',
       path: '/search',
       parameters: [{ name: 'query', type: 'Query', schema: string() }],
       alias: 'searchCoins',
       response: any()
     },
     {
-      method: 'get',
+      method: 'post',
       path: '/simple/token_price/:id',
       parameters: [
         { name: 'id', type: 'Path', schema: string() },

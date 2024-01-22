@@ -335,7 +335,7 @@ export class TokenService {
     useCoingeckoProxy = false
   ): Promise<CoinsInfoResponse | Error> {
     if (useCoingeckoProxy) {
-      return coingeckoProxyClient.marketDataByCoinId({
+      return coingeckoProxyClient.marketDataByCoinId(undefined, {
         params: {
           id: coingeckoId
         }
@@ -380,7 +380,7 @@ export class TokenService {
   }): Promise<ChartData | Error | undefined> {
     let rawData: ContractMarketChartResponse | undefined
     if (useCoingeckoProxy) {
-      rawData = await coingeckoProxyClient.marketChartByCoinId({
+      rawData = await coingeckoProxyClient.marketChartByCoinId(undefined, {
         params: {
           id: coingeckoId
         },
@@ -390,15 +390,11 @@ export class TokenService {
         }
       })
     } else {
-      try {
-        rawData = await coinsMarketChart(coingeckoBasicClient, {
-          assetPlatformId: coingeckoId,
-          currency,
-          days
-        })
-      } catch {
-        rawData = undefined
-      }
+      rawData = await coinsMarketChart(coingeckoBasicClient, {
+        assetPlatformId: coingeckoId,
+        currency,
+        days
+      })
     }
     return rawData ? transformContractMarketChartResponse(rawData) : undefined
   }
@@ -499,7 +495,7 @@ export class TokenService {
     CoinMarket[] | Error
   > {
     if (useCoingeckoProxy) {
-      return coingeckoProxyClient.coinsMarkets({
+      return coingeckoProxyClient.coinsMarkets(undefined, {
         queries: {
           ids: coinIds?.join(','),
           vs_currency: currency,
@@ -530,7 +526,7 @@ export class TokenService {
     SimplePriceResponse | Error
   > {
     if (useCoingeckoProxy) {
-      return coingeckoProxyClient.simplePrice({
+      return coingeckoProxyClient.simplePrice(undefined, {
         queries: {
           ids: coinIds?.join(','),
           vs_currencies: currencies.join(','),
@@ -556,7 +552,7 @@ export class TokenService {
     useCoingeckoProxy = false
   ): Promise<CoinsSearchResponse | Error> {
     if (useCoingeckoProxy) {
-      return coingeckoProxyClient.searchCoins({
+      return coingeckoProxyClient.searchCoins(undefined, {
         queries: {
           query
         }
@@ -579,7 +575,7 @@ export class TokenService {
     useCoingeckoProxy?: boolean
   }): Promise<SimpleTokenPriceResponse | Error> {
     if (useCoingeckoProxy) {
-      return coingeckoProxyClient.simplePriceByContractAddresses({
+      return coingeckoProxyClient.simplePriceByContractAddresses(undefined, {
         params: {
           id: assetPlatformId
         },
