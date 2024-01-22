@@ -75,7 +75,7 @@ export const MoreMenu: FC<Props> = ({
 
     const favoriteAction = {
       id: MenuId.Favorite,
-      title: 'Mark as Favorite',
+      title: isFavorited ? 'Remove from Favorites' : 'Mark as Favorite',
       image: Platform.select({
         ios: favoriteIcon.ios,
         android: favoriteIcon.android
@@ -144,7 +144,7 @@ export const MoreMenu: FC<Props> = ({
     if (isFavorited) {
       dispatch(removeFavorite({ url: activeHistory.url }))
 
-      showSimpleToast('Removed from favorites')
+      showSimpleToast('Removed from Favorites')
     } else {
       const activeHistoryUrl = new URL(activeHistory.url)
       const activeHistoryDomain =
@@ -168,7 +168,7 @@ export const MoreMenu: FC<Props> = ({
         })
       )
 
-      showSimpleToast('Added to favorites')
+      showSimpleToast('Added to Favorites')
     }
   }
 
