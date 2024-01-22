@@ -300,6 +300,16 @@ export const selectIsUnifiedBridgeCCTPBlocked = (state: RootState): boolean => {
   )
 }
 
+export const selectIsLogErrorsWithSentryBlocked = (
+  state: RootState
+): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    !featureFlags[FeatureGates.LOG_ERRORS_WITH_SENTRY] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
 // actions
 export const { regenerateUserId, toggleAnalytics, setFeatureFlags } =
   posthogSlice.actions

@@ -5,6 +5,7 @@ import {
   regenerateUserId,
   selectDistinctID,
   selectIsAnalyticsEnabled,
+  selectIsLogErrorsWithSentryBlocked,
   selectUserID,
   setFeatureFlags,
   toggleAnalytics
@@ -12,6 +13,7 @@ import {
 import PostHogService from 'services/posthog/PostHogService'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { AppListenerEffectAPI } from 'store'
+import Logger from 'utils/Logger'
 
 const FEATURE_FLAGS_FETCH_INTERVAL = 60000 // 1 minute
 
@@ -61,6 +63,16 @@ const configure = async (
   AnalyticsService.setEnabled(isAnalyticsEnabled)
 }
 
+const featureFlagsUpdated = async (
+  action: Action,
+  listenerApi: AppListenerEffectAPI
+): Promise<void> => {
+  const state = listenerApi.getState()
+  const isLogErrorsWithSentryBlocked = selectIsLogErrorsWithSentryBlocked(state)
+
+  Logger.setShouldLogErrorToSentry(!isLogErrorsWithSentryBlocked)
+}
+
 export const addPosthogListeners = (
   startListening: AppStartListening
 ): void => {
@@ -89,5 +101,10 @@ export const addPosthogListeners = (
   startListening({
     actionCreator: onRehydrationComplete,
     effect: posthogIdentifyUser
+  })
+
+  startListening({
+    actionCreator: setFeatureFlags,
+    effect: featureFlagsUpdated
   })
 }

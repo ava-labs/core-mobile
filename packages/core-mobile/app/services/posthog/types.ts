@@ -22,7 +22,8 @@ export enum FeatureGates {
   SEEDLESS_MFA_PASSKEY = 'seedless-mfa-passkey',
   SEEDLESS_MFA_AUTHENTICATOR = 'seedless-mfa-authenticator',
   SEEDLESS_SIGNING = 'seedless-signing',
-  UNIFIED_BRIDGE_CCTP = 'unified-bridge-cctp'
+  UNIFIED_BRIDGE_CCTP = 'unified-bridge-cctp',
+  LOG_ERRORS_WITH_SENTRY = 'log-errors-with-sentry'
 }
 
 export enum FeatureVars {
