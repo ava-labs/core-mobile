@@ -63,7 +63,7 @@ const configure = async (
   AnalyticsService.setEnabled(isAnalyticsEnabled)
 }
 
-const featureFlagsUpdated = async (
+const onSetFeatureFlags = async (
   action: Action,
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
@@ -105,6 +105,6 @@ export const addPosthogListeners = (
 
   startListening({
     actionCreator: setFeatureFlags,
-    effect: featureFlagsUpdated
+    effect: onSetFeatureFlags
   })
 }
