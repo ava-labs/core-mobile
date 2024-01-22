@@ -1,13 +1,13 @@
 import { Zodios } from '@zodios/core'
 import Config from 'react-native-config'
 import { array, boolean, string } from 'zod'
-import { CoinMarketSchema, SimplePriceResponseSchema } from './types'
+import { CoinMarketSchema, SimplePriceResponseSchema } from '../token/types'
 
 if (!Config.PROXY_URL) throw Error('PROXY_URL is missing')
 
 const baseUrl = Config.PROXY_URL + '/watchlist'
 
-export const tokenServiceApiClient = new Zodios(
+export const watchListCacheClient = new Zodios(
   baseUrl,
   [
     {
