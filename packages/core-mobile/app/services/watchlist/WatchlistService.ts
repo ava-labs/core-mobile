@@ -9,6 +9,19 @@ import { transformSparklineData } from 'services/token/utils'
 import { Charts, MarketToken, PriceData, Prices } from 'store/watchlist'
 import Logger from 'utils/Logger'
 
+/*
+ WatchlistService handles the following 3 API calls:
+  1. getTokens
+    - get token data from cache
+    - get token data from network (tokens not in cache)
+  2. getPrices
+    - get price data from cache
+    - get price data from network (tokens not in cache)
+  3. tokenSearch
+    - get token Id from network
+    - get price and market data from cached
+    - get price and market data from network (tokens not in cache)
+*/
 class WatchlistService {
   async getTokens(
     currency: string,
