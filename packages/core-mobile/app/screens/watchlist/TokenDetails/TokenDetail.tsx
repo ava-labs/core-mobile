@@ -172,7 +172,8 @@ const TokenDetail: FC = () => {
           subtitle={symbol}
           leftComponent={
             name &&
-            symbol && (
+            symbol &&
+            logoUri && (
               <Avatar.Token
                 name={name}
                 symbol={symbol}
