@@ -1,16 +1,18 @@
 import { useCallback, useEffect, useState } from 'react'
 import useInAppBrowser from 'hooks/useInAppBrowser'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { CoinsInfoResponse, VsCurrencyType } from '@avalabs/coingecko-sdk'
+import { VsCurrencyType } from '@avalabs/coingecko-sdk'
 import { useDispatch, useSelector } from 'react-redux'
-import { getInstance } from 'services/token/TokenService'
 import {
   selectIsWatchlistFavorite,
   selectWatchlistPrice,
   toggleWatchListFavorite
 } from 'store/watchlist'
 import { InteractionManager } from 'react-native'
+import TokenService from 'services/token/TokenService'
+import { CoinsInfoResponse } from 'services/token/types'
 
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export function useTokenDetail(coingeckoId: string) {
   const dispatch = useDispatch()
   const isFavorite = useSelector(selectIsWatchlistFavorite(coingeckoId))
@@ -41,9 +43,8 @@ export function useTokenDetail(coingeckoId: string) {
 
   // get coingecko chart data
   useEffect(() => {
-    const getChartData = async () => {
-      const tokenService = getInstance()
-      const data = await tokenService.getChartDataForCoinId({
+    const getChartData = async (): Promise<void> => {
+      const data = await TokenService.getChartDataForCoinId({
         coingeckoId,
         days: chartDays,
         currency: currency
@@ -66,9 +67,8 @@ export function useTokenDetail(coingeckoId: string) {
 
   // get market cap, volume, etc
   useEffect(() => {
-    const getMarketDetails = async () => {
-      const tokenService = getInstance()
-      const data = await tokenService.getCoinInfo({
+    const getMarketDetails = async (): Promise<void> => {
+      const data = await TokenService.getCoinInfo({
         coingeckoId
       })
 
@@ -123,7 +123,7 @@ export function useTokenDetail(coingeckoId: string) {
     id: coingeckoId,
     symbol: coinInfo?.symbol.toUpperCase(),
     name: coinInfo?.name,
-    logoUri: coinInfo?.image.large,
+    logoUri: coinInfo?.image?.large,
     // @ts-ignore contract_address exists in CoinsInfoResponse
     contractAddress: coinInfo?.contract_address as string
   }

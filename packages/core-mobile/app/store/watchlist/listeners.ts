@@ -1,6 +1,5 @@
 import { AppStartListening } from 'store/middleware/listener'
 import { AppListenerEffectAPI } from 'store/index'
-import { selectNetworks } from 'store/network'
 import {
   selectSelectedCurrency,
   setSelectedCurrency
@@ -25,11 +24,9 @@ async function getTokens(
   const dispatch = listenerApi.dispatch
   const state = listenerApi.getState()
   const currency = selectSelectedCurrency(state)
-  const allNetworks = Object.values(selectNetworks(state))
   const cachedFavoriteTokenIds = selectWatchlistFavoriteIds(state)
   const { tokens, charts } = await WatchlistService.getTokens(
     currency,
-    allNetworks,
     cachedFavoriteTokenIds
   )
   dispatch(setTokens(tokens))

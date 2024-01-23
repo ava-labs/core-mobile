@@ -141,8 +141,7 @@ const initialState = {
       'send-nft-android-feature': true,
       'send-nft-ios-feature': true,
       'sentry-sample-rate': '90',
-      'swap-feature': true,
-      'use-coingecko-pro': true
+      'swap-feature': true
     },
     isAnalyticsEnabled: true,
     userID: '845c3f7f-d81f-4501-9143-7ef9f689cbf6'

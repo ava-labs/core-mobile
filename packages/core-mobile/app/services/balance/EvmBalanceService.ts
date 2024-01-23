@@ -15,13 +15,13 @@ import {
   SimpleTokenPriceResponse,
   VsCurrencyType
 } from '@avalabs/coingecko-sdk'
-import { getInstance } from 'services/token/TokenService'
 import { BalanceServiceProvider } from 'services/balance/types'
 import NetworkService from 'services/network/NetworkService'
 import { Transaction } from '@sentry/types'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import ERC20 from '@openzeppelin/contracts/build/contracts/ERC20.json'
 import { bigintToBig } from 'utils/bigNumbers/bigintToBig'
+import TokenService from 'services/token/TokenService'
 
 type Provider = JsonRpcBatchInternal | InfuraProvider
 
@@ -41,7 +41,6 @@ export class EvmBalanceService implements BalanceServiceProvider {
     return SentryWrapper.createSpanFor(sentryTrx)
       .setContext('svc.balance.evm.get')
       .executeAsync(async () => {
-        const tokenService = getInstance()
         const activeTokenList = network.tokens ?? []
         const tokenAddresses = activeTokenList.map(token => token.address)
         const provider = NetworkService.getProviderForNetwork(
@@ -53,7 +52,7 @@ export class EvmBalanceService implements BalanceServiceProvider {
 
         const tokenPriceDict =
           (assetPlatformId &&
-            (await tokenService.getPricesWithMarketDataByAddresses(
+            (await TokenService.getPricesWithMarketDataByAddresses(
               tokenAddresses,
               assetPlatformId,
               currency as VsCurrencyType
@@ -85,7 +84,6 @@ export class EvmBalanceService implements BalanceServiceProvider {
     network: Network,
     currency: string
   ): Promise<NetworkTokenWithBalance> {
-    const tokenService = getInstance()
     const { networkToken } = network
     const tokenDecimals = networkToken.decimals ?? DEFAULT_DECIMALS
     const nativeTokenId =
@@ -98,7 +96,7 @@ export class EvmBalanceService implements BalanceServiceProvider {
       marketCap,
       vol24,
       change24
-    } = await tokenService.getPriceWithMarketDataByCoinId(
+    } = await TokenService.getPriceWithMarketDataByCoinId(
       nativeTokenId,
       currency as VsCurrencyType
     )

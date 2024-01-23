@@ -42,7 +42,6 @@ export const selectFeatureFlags = (state: RootState): ProcessedFeatureFlags => {
   const eventsBlocked = selectIsEventsBlocked(state)
   const sentrySampleRate = selectSentrySampleRate(state)
   const coinbasePayBlocked = selectIsCoinbasePayBlocked(state)
-  const useCoinGeckoPro = selectUseCoinGeckoPro(state)
   const defiBlocked = selectIsDeFiBlocked(state)
   const leftFab = selectUseLeftFab(state)
   const darkMode = selectUseDarkMode(state)
@@ -58,7 +57,6 @@ export const selectFeatureFlags = (state: RootState): ProcessedFeatureFlags => {
     eventsBlocked,
     sentrySampleRate,
     coinbasePayBlocked,
-    useCoinGeckoPro,
     defiBlocked,
     leftFab,
     darkMode
@@ -187,14 +185,6 @@ export const selectIsBrowserBlocked = (state: RootState): boolean => {
   const { featureFlags } = state.posthog
   return (
     !featureFlags[FeatureGates.BROWSER] ||
-    !featureFlags[FeatureGates.EVERYTHING]
-  )
-}
-
-export const selectUseCoinGeckoPro = (state: RootState): boolean => {
-  const { featureFlags } = state.posthog
-  return (
-    Boolean(featureFlags[FeatureGates.USE_COINGECKO_PRO]) ||
     !featureFlags[FeatureGates.EVERYTHING]
   )
 }
