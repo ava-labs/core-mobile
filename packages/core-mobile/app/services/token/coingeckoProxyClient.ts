@@ -1,6 +1,13 @@
 import { Zodios } from '@zodios/core'
 import Config from 'react-native-config'
-import { any, boolean, number, string } from 'zod'
+import {
+  CoinMarketSchema,
+  CoinsContractInfoResponseSchema,
+  CoinsSearchResponseSchema,
+  ContractMarketChartResponseSchema,
+  SimplePriceResponseSchema
+} from 'services/token/types'
+import { boolean, number, string } from 'zod'
 
 if (!Config.PROXY_URL) throw Error('PROXY_URL is missing')
 
@@ -20,7 +27,7 @@ export const coingeckoProxyClient = new Zodios(
         { name: 'sparkline', type: 'Query', schema: boolean().optional() }
       ],
       alias: 'coinsMarkets',
-      response: any()
+      response: CoinMarketSchema.array()
     },
     {
       method: 'post',
@@ -50,14 +57,14 @@ export const coingeckoProxyClient = new Zodios(
         }
       ],
       alias: 'simplePrice',
-      response: any()
+      response: SimplePriceResponseSchema
     },
     {
       method: 'post',
       path: '/coins/:id',
       parameters: [{ name: 'id', type: 'Path', schema: string() }],
       alias: 'marketDataByCoinId',
-      response: any()
+      response: CoinsContractInfoResponseSchema
     },
     {
       method: 'post',
@@ -70,14 +77,14 @@ export const coingeckoProxyClient = new Zodios(
         { name: 'precision', type: 'Query', schema: string().optional() }
       ],
       alias: 'marketChartByCoinId',
-      response: any()
+      response: ContractMarketChartResponseSchema
     },
     {
       method: 'post',
       path: '/search',
       parameters: [{ name: 'query', type: 'Query', schema: string() }],
       alias: 'searchCoins',
-      response: any()
+      response: CoinsSearchResponseSchema
     },
     {
       method: 'post',
@@ -103,7 +110,7 @@ export const coingeckoProxyClient = new Zodios(
         }
       ],
       alias: 'simplePriceByContractAddresses',
-      response: any()
+      response: SimplePriceResponseSchema
     }
   ],
   {
