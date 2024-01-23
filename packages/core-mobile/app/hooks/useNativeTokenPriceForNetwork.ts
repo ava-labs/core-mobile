@@ -1,4 +1,4 @@
-import { getInstance } from 'services/token/TokenService'
+import TokenService from 'services/token/TokenService'
 import { VsCurrencyType } from '@avalabs/coingecko-sdk'
 import { useSelector } from 'react-redux'
 import { selectSelectedCurrency } from 'store/settings/currency'
@@ -29,8 +29,7 @@ export const useNativeTokenPriceForNetwork = (
     enabled: Boolean(nativeTokenId),
     queryKey: ['nativeTokenPrice', nativeTokenId, currency],
     queryFn: async () => {
-      const tokenService = getInstance()
-      return tokenService.getPriceWithMarketDataByCoinId(
+      return TokenService.getPriceWithMarketDataByCoinId(
         nativeTokenId,
         currency
       )
