@@ -20,6 +20,7 @@ interface Props {
   containerStyle?: StyleProp<ViewStyle>
   textStyle?: StyleProp<TextStyle>
   isLabelPopable?: boolean
+  children?: string | JSX.Element
 }
 
 export const Tooltip = ({
@@ -37,7 +38,7 @@ export const Tooltip = ({
   hitslop = { left: 15, right: 15, top: 15, bottom: 15 },
   caretStyle,
   style
-}: Props & PopableProps): JSX.Element => {
+}: Props & Omit<PopableProps, 'children'>): JSX.Element => {
   const { theme } = useApplicationContext()
   const { ref, show, hide } = usePopable()
 
@@ -49,14 +50,17 @@ export const Tooltip = ({
     }
   }
 
-  const renderLabel = (): JSX.Element => {
-    if (children && typeof children === 'string') {
+  const renderLabel = (): JSX.Element | null => {
+    if (children === undefined) {
+      return null
+    } else if (typeof children === 'string') {
       return (
         <AvaText.Body2 textStyle={textStyle} color={theme.colorText1}>
           {children}
         </AvaText.Body2>
       )
     }
+
     return children
   }
 
@@ -83,7 +87,9 @@ export const Tooltip = ({
     return content
   }
 
-  const renderPopable = (popableLabel: JSX.Element | string): JSX.Element => {
+  const renderPopable = (
+    popableLabel: JSX.Element | string | null
+  ): JSX.Element => {
     return (
       <Popable
         ref={ref}
