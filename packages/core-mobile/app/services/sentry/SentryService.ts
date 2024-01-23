@@ -5,7 +5,7 @@ import { scrub } from 'utils/data/scrubber'
 
 const isAvailable = Config.SENTRY_DSN !== undefined && !__DEV__
 
-const init = () => {
+const init = (): void => {
   if (isAvailable) {
     Sentry.init({
       dsn: Config.SENTRY_DSN,
@@ -42,4 +42,19 @@ const init = () => {
   }
 }
 
-export default { init, isAvailable }
+const captureException = (message: string, value?: unknown): void => {
+  if (!isAvailable) {
+    return
+  }
+
+  if (value instanceof Error) {
+    Sentry.captureException(value, { extra: { message } })
+  } else {
+    Sentry.captureException(
+      new Error(message),
+      value !== undefined ? { extra: { value } } : undefined
+    )
+  }
+}
+
+export default { init, isAvailable, captureException }
