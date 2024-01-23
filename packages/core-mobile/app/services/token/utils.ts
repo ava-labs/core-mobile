@@ -1,6 +1,7 @@
 import { ContractMarketChartResponse } from '@avalabs/coingecko-sdk'
 import { defaultChartData } from 'store/watchlist'
-import { ChartData, SparklineData } from './types'
+import { ChartData, Error, SparklineData } from './types'
+import { RetryBackoffPolicy, retry } from 'utils/js/retry'
 
 // data is of 7 days
 // we only need the last 24 hours
@@ -65,4 +66,16 @@ export const transformContractMarketChartResponse = (
       return { date: new Date(tu[0]), value: tu[1] }
     })
   }
+}
+
+export const coingeckoRetry = <T>(
+  operation: (retryIndex: number) => Promise<T | Error>
+): Promise<T | undefined> => {
+  return retry({
+    operation,
+    maxRetries: 2,
+    backoffPolicy: RetryBackoffPolicy.constant(1),
+    isSuccess: (response: T | Error) =>
+      (response as Error)?.status?.error_code !== 429
+  }) as Promise<T | undefined>
 }

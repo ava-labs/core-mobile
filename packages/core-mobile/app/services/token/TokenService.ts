@@ -30,7 +30,6 @@ import promiseWithTimeout, { TimeoutError } from 'utils/js/promiseWithTimeout'
 import { coingeckoProxyClient } from 'services/token/coingeckoProxyClient'
 import { watchListCacheClient } from 'services/watchlist/watchListCacheClient'
 import Logger from 'utils/Logger'
-import { retry, RetryBackoffPolicy } from '../../utils/js/retry'
 import {
   ChartData,
   CoinMarket,
@@ -39,11 +38,10 @@ import {
   PriceWithMarketData,
   SimplePriceResponse
 } from './types'
-import { transformContractMarketChartResponse } from './utils'
+import { coingeckoRetry, transformContractMarketChartResponse } from './utils'
 
 const coingeckoBasicClient = getBasicCoingeckoHttp()
 const CONTRACT_CALLS_TIMEOUT = 10000
-const maxRetries = 2
 
 export class TokenService {
   /**
@@ -139,13 +137,9 @@ export class TokenService {
    */
   async getTokenSearch(query: string): Promise<MarketToken[] | undefined> {
     try {
-      const data = (await retry({
-        operation: (retries: number) => this.searchCoins(query, retries > 0),
-        maxRetries,
-        backoffPolicy: RetryBackoffPolicy.constant(1),
-        isSuccess: (response: CoinsSearchResponse | Error) =>
-          (response as Error)?.status?.error_code !== 429
-      })) as CoinsSearchResponse | undefined
+      const data = await coingeckoRetry<CoinsSearchResponse>(retryIndex =>
+        this.searchCoins(query, retryIndex > 0)
+      )
 
       return data?.coins?.map(coin => {
         return {
@@ -228,19 +222,14 @@ export class TokenService {
 
     if (data === undefined) {
       try {
-        data = (await retry({
-          operation: (retries: number) =>
-            this.fetchPricesWithMarketDataByAddresses({
-              assetPlatformId,
-              tokenAddresses,
-              currency,
-              useCoingeckoProxy: retries > 0
-            }),
-          maxRetries,
-          backoffPolicy: RetryBackoffPolicy.constant(1),
-          isSuccess: (response: SimpleTokenPriceResponse | Error) =>
-            (response as Error)?.status?.error_code !== 429
-        })) as SimpleTokenPriceResponse | undefined
+        data = await coingeckoRetry<SimpleTokenPriceResponse>(retryIndex =>
+          this.fetchPricesWithMarketDataByAddresses({
+            assetPlatformId,
+            tokenAddresses,
+            currency,
+            useCoingeckoProxy: retryIndex > 0
+          })
+        )
       } catch {
         data = undefined
       }
@@ -280,21 +269,14 @@ export class TokenService {
     if (data === undefined) {
       if (coingeckoId) {
         try {
-          data = (await retry({
-            operation: (retries: number) => {
-              return this.fetchChartDataForCoin({
-                coingeckoId,
-                days,
-                currency,
-                useCoingeckoProxy: retries > 0
-              })
-            },
-            maxRetries,
-            backoffPolicy: RetryBackoffPolicy.constant(1),
-            isSuccess: (response: ChartData | Error | undefined) => {
-              return (response as Error)?.status?.error_code !== 429
-            }
-          })) as ChartData | undefined
+          data = await coingeckoRetry<ChartData | undefined>(retryIndex =>
+            this.fetchChartDataForCoin({
+              coingeckoId,
+              days,
+              currency,
+              useCoingeckoProxy: retryIndex > 0
+            })
+          )
         } catch {
           data = undefined
         }
@@ -329,15 +311,9 @@ export class TokenService {
     if (data === undefined) {
       if (coingeckoId) {
         try {
-          data = (await retry({
-            operation: (retries: number) => {
-              return this.fetchCoinInfo(coingeckoId, retries > 0)
-            },
-            maxRetries,
-            backoffPolicy: RetryBackoffPolicy.constant(1),
-            isSuccess: (response: CoinsInfoResponse | Error | undefined) =>
-              (response as Error)?.status?.error_code !== 429
-          })) as CoinsInfoResponse | undefined
+          data = await coingeckoRetry<CoinsInfoResponse>(retryIndex =>
+            this.fetchCoinInfo(coingeckoId, retryIndex > 0)
+          )
         } catch {
           data = undefined
         }
@@ -393,21 +369,16 @@ export class TokenService {
 
     if (data === undefined) {
       try {
-        data = (await retry({
-          operation: (retries: number) =>
-            this.coinsMarket({
-              coinIds,
-              currency,
-              sparkline,
-              perPage,
-              page,
-              useCoingeckoProxy: retries > 0
-            }),
-          maxRetries,
-          backoffPolicy: RetryBackoffPolicy.constant(1),
-          isSuccess: (response: CoinMarket[] | Error) =>
-            (response as Error)?.status?.error_code !== 429
-        })) as CoinMarket[] | undefined
+        data = await coingeckoRetry<CoinMarket[]>(retryIndex =>
+          this.coinsMarket({
+            coinIds,
+            currency,
+            sparkline,
+            perPage,
+            page,
+            useCoingeckoProxy: retryIndex > 0
+          })
+        )
       } catch {
         data = undefined
       }
@@ -439,21 +410,16 @@ export class TokenService {
 
     if (data === undefined) {
       try {
-        data = (await retry({
-          operation: (retries: number) =>
-            this.simplePrice({
-              coinIds,
-              currencies: [currency],
-              marketCap: true,
-              vol24: true,
-              change24: true,
-              useCoingeckoProxy: retries > 0
-            }),
-          maxRetries,
-          backoffPolicy: RetryBackoffPolicy.constant(1),
-          isSuccess: (response: SimplePriceResponse | Error) =>
-            (response as Error)?.status?.error_code !== 429
-        })) as SimplePriceResponse | undefined
+        data = await coingeckoRetry<SimplePriceResponse>(retryIndex =>
+          this.simplePrice({
+            coinIds,
+            currencies: [currency],
+            marketCap: true,
+            vol24: true,
+            change24: true,
+            useCoingeckoProxy: retryIndex > 0
+          })
+        )
       } catch {
         data = undefined
       }
