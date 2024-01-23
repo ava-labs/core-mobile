@@ -30,7 +30,7 @@ export type MarketToken = {
   id: string // coingeckoId
   symbol: string
   name: string
-  logoUri: string
+  logoUri?: string
   testID?: string
 }
 

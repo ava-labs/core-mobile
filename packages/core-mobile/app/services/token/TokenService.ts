@@ -1,16 +1,12 @@
 import {
   coinsInfo,
-  CoinsInfoResponse,
   coinsMarket,
   coinsMarketChart,
   coinsSearch,
-  CoinsSearchResponse,
-  ContractMarketChartResponse,
   getBasicCoingeckoHttp,
   simplePrice,
   SimplePriceParams,
   simpleTokenPrice,
-  SimpleTokenPriceResponse,
   VsCurrencyType
 } from '@avalabs/coingecko-sdk'
 import { ethers } from 'ethers'
@@ -36,7 +32,10 @@ import {
   Error,
   GetMarketsParams,
   PriceWithMarketData,
-  SimplePriceResponse
+  SimplePriceResponse,
+  CoinsSearchResponse,
+  ContractMarketChartResponse,
+  CoinsInfoResponse
 } from './types'
 import { coingeckoRetry, transformContractMarketChartResponse } from './utils'
 
@@ -212,8 +211,8 @@ export class TokenService {
     tokenAddresses: string[],
     assetPlatformId: string,
     currency: VsCurrencyType = VsCurrencyType.USD
-  ): Promise<SimpleTokenPriceResponse | undefined> {
-    let data: SimpleTokenPriceResponse | undefined
+  ): Promise<SimplePriceResponse | undefined> {
+    let data: SimplePriceResponse | undefined
 
     const key = `${arrayHash(tokenAddresses)}-${assetPlatformId}-${currency}`
 
@@ -222,14 +221,13 @@ export class TokenService {
 
     if (data === undefined) {
       try {
-        data = await coingeckoRetry<SimpleTokenPriceResponse>(
-          useCoingeckoProxy =>
-            this.fetchPricesWithMarketDataByAddresses({
-              assetPlatformId,
-              tokenAddresses,
-              currency,
-              useCoingeckoProxy
-            })
+        data = await coingeckoRetry<SimplePriceResponse>(useCoingeckoProxy =>
+          this.fetchPricesWithMarketDataByAddresses({
+            assetPlatformId,
+            tokenAddresses,
+            currency,
+            useCoingeckoProxy
+          })
         )
       } catch {
         data = undefined
@@ -572,7 +570,7 @@ export class TokenService {
     tokenAddresses: string[]
     currency: VsCurrencyType
     useCoingeckoProxy?: boolean
-  }): Promise<SimpleTokenPriceResponse | Error> {
+  }): Promise<SimplePriceResponse | Error> {
     if (useCoingeckoProxy) {
       return coingeckoProxyClient.simplePriceByContractAddresses(undefined, {
         params: {
