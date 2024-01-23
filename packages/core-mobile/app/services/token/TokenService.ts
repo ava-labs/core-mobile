@@ -137,8 +137,8 @@ export class TokenService {
    */
   async getTokenSearch(query: string): Promise<MarketToken[] | undefined> {
     try {
-      const data = await coingeckoRetry<CoinsSearchResponse>(retryIndex =>
-        this.searchCoins(query, retryIndex > 0)
+      const data = await coingeckoRetry<CoinsSearchResponse>(
+        useCoingeckoProxy => this.searchCoins(query, useCoingeckoProxy)
       )
 
       return data?.coins?.map(coin => {
@@ -222,13 +222,14 @@ export class TokenService {
 
     if (data === undefined) {
       try {
-        data = await coingeckoRetry<SimpleTokenPriceResponse>(retryIndex =>
-          this.fetchPricesWithMarketDataByAddresses({
-            assetPlatformId,
-            tokenAddresses,
-            currency,
-            useCoingeckoProxy: retryIndex > 0
-          })
+        data = await coingeckoRetry<SimpleTokenPriceResponse>(
+          useCoingeckoProxy =>
+            this.fetchPricesWithMarketDataByAddresses({
+              assetPlatformId,
+              tokenAddresses,
+              currency,
+              useCoingeckoProxy
+            })
         )
       } catch {
         data = undefined
@@ -269,13 +270,14 @@ export class TokenService {
     if (data === undefined) {
       if (coingeckoId) {
         try {
-          data = await coingeckoRetry<ChartData | undefined>(retryIndex =>
-            this.fetchChartDataForCoin({
-              coingeckoId,
-              days,
-              currency,
-              useCoingeckoProxy: retryIndex > 0
-            })
+          data = await coingeckoRetry<ChartData | undefined>(
+            useCoingeckoProxy =>
+              this.fetchChartDataForCoin({
+                coingeckoId,
+                days,
+                currency,
+                useCoingeckoProxy
+              })
           )
         } catch {
           data = undefined
@@ -311,8 +313,8 @@ export class TokenService {
     if (data === undefined) {
       if (coingeckoId) {
         try {
-          data = await coingeckoRetry<CoinsInfoResponse>(retryIndex =>
-            this.fetchCoinInfo(coingeckoId, retryIndex > 0)
+          data = await coingeckoRetry<CoinsInfoResponse>(useCoingeckoProxy =>
+            this.fetchCoinInfo(coingeckoId, useCoingeckoProxy)
           )
         } catch {
           data = undefined
@@ -369,14 +371,14 @@ export class TokenService {
 
     if (data === undefined) {
       try {
-        data = await coingeckoRetry<CoinMarket[]>(retryIndex =>
+        data = await coingeckoRetry<CoinMarket[]>(useCoingeckoProxy =>
           this.coinsMarket({
             coinIds,
             currency,
             sparkline,
             perPage,
             page,
-            useCoingeckoProxy: retryIndex > 0
+            useCoingeckoProxy
           })
         )
       } catch {
@@ -410,14 +412,14 @@ export class TokenService {
 
     if (data === undefined) {
       try {
-        data = await coingeckoRetry<SimplePriceResponse>(retryIndex =>
+        data = await coingeckoRetry<SimplePriceResponse>(useCoingeckoProxy =>
           this.simplePrice({
             coinIds,
             currencies: [currency],
             marketCap: true,
             vol24: true,
             change24: true,
-            useCoingeckoProxy: retryIndex > 0
+            useCoingeckoProxy
           })
         )
       } catch {

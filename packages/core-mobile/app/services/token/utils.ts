@@ -69,10 +69,10 @@ export const transformContractMarketChartResponse = (
 }
 
 export const coingeckoRetry = <T>(
-  operation: (retryIndex: number) => Promise<T | Error>
+  operation: (useCoingeckoProxy: boolean) => Promise<T | Error>
 ): Promise<T | undefined> => {
   return retry({
-    operation,
+    operation: (retryIndex: number) => operation(retryIndex > 0),
     maxRetries: 2,
     backoffPolicy: RetryBackoffPolicy.constant(1),
     isSuccess: (response: T | Error) =>
