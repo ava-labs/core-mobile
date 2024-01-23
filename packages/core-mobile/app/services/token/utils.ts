@@ -1,7 +1,7 @@
 import { ContractMarketChartResponse } from '@avalabs/coingecko-sdk'
 import { defaultChartData } from 'store/watchlist'
-import { ChartData, Error, SparklineData } from './types'
 import { RetryBackoffPolicy, retry } from 'utils/js/retry'
+import { ChartData, Error, SparklineData } from './types'
 
 // data is of 7 days
 // we only need the last 24 hours
