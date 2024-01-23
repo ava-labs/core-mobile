@@ -68,6 +68,7 @@ const onSetFeatureFlags = async (
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
   const state = listenerApi.getState()
+
   const isLogErrorsWithSentryBlocked = selectIsLogErrorsWithSentryBlocked(state)
 
   Logger.setShouldLogErrorToSentry(!isLogErrorsWithSentryBlocked)

@@ -50,7 +50,10 @@ const captureException = (message: string, value?: unknown): void => {
   if (value instanceof Error) {
     Sentry.captureException(value, { extra: { message } })
   } else {
-    Sentry.captureException(new Error(message), { extra: { value } })
+    Sentry.captureException(
+      new Error(message),
+      value !== undefined ? { extra: { value } } : undefined
+    )
   }
 }
 

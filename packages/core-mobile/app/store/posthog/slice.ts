@@ -305,7 +305,7 @@ export const selectIsLogErrorsWithSentryBlocked = (
 ): boolean => {
   const { featureFlags } = state.posthog
   return (
-    !featureFlags[FeatureGates.LOG_ERRORS_WITH_SENTRY] ||
+    !featureFlags[FeatureGates.LOG_ERRORS_TO_SENTRY] ||
     !featureFlags[FeatureGates.EVERYTHING]
   )
 }
