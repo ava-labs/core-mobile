@@ -251,7 +251,7 @@ describe('getMarkets', () => {
 
   it('should return coins market data from sdk', async () => {
     inMemoryCacheMock.mockImplementation(() => undefined)
-    sdkMock.mockImplementation(async () => MARKET_DATA)
+    sdkMock.mockImplementation(async () => MARKET_DATA as never)
     const result = await TokenService.getMarkets({})
     expect(sdkMock).toHaveBeenCalledTimes(1)
     expect(result?.[0]?.id).toEqual('test')
@@ -259,13 +259,13 @@ describe('getMarkets', () => {
   it('should return coins market data from proxy', async () => {
     inMemoryCacheMock.mockImplementation(() => undefined)
     sdkMock.mockRejectedValue(async () => MOCK_429)
-    proxyMock.mockImplementation(async () => MARKET_DATA)
+    proxyMock.mockImplementation(async () => MARKET_DATA as never)
     const result = await TokenService.getMarkets({})
     expect(proxyMock).toHaveBeenCalledTimes(1)
     expect(result?.[0]?.id).toEqual('test')
   })
   it('should return coins market data from cache', async () => {
-    inMemoryCacheMock.mockImplementation(() => MARKET_DATA)
+    inMemoryCacheMock.mockImplementation(() => MARKET_DATA as never)
     const result = await TokenService.getMarkets({})
     expect(sdkMock).not.toHaveBeenCalled()
     expect(proxyMock).not.toHaveBeenCalled()
