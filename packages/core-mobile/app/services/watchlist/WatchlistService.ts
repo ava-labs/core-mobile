@@ -108,6 +108,65 @@ class WatchlistService {
     return prices
   }
 
+  async tokenSearch(
+    query: string,
+    currency: string
+  ): Promise<
+    { tokens: MarketToken[]; charts: Charts; prices: Prices } | undefined
+  > {
+    const coins = await TokenService.getTokenSearch(query)
+    const coinIds = coins?.map(tk => tk.id)
+
+    if (coinIds && coinIds.length > 0) {
+      const pricePromise = this.getPriceWithMarketDataByCoinIds(
+        coinIds,
+        currency
+      )
+
+      const marketPromise = this.getMarketsByCoinIds(coinIds, currency)
+
+      const [pricesRaw, marketsRaw] = await Promise.all([
+        pricePromise,
+        marketPromise
+      ])
+
+      const tokens: MarketToken[] = []
+      const charts: Charts = {}
+      const prices: Prices = {}
+
+      marketsRaw.forEach(market => {
+        tokens.push({
+          id: market.id,
+          symbol: market.symbol,
+          name: market.name,
+          logoUri: market.image
+        })
+
+        if (market.sparkline_in_7d?.price) {
+          charts[market.id] = transformSparklineData(
+            market.sparkline_in_7d.price
+          )
+        }
+      })
+
+      for (const tokenId in pricesRaw) {
+        const pricesInCurrency = pricesRaw[tokenId]
+        if (!pricesInCurrency) continue
+        const price = pricesInCurrency[currency as VsCurrencyType]
+        prices[tokenId] = {
+          priceInCurrency: price?.price ?? 0,
+          change24: price?.change24 ?? 0,
+          marketCap: price?.marketCap ?? 0,
+          vol24: price?.vol24 ?? 0
+        }
+      }
+
+      return { tokens, charts, prices }
+    }
+
+    return undefined
+  }
+
   private getPriceInCurrency(
     priceData: SimplePriceInCurrencyResponse,
     currency: string
@@ -168,65 +227,6 @@ class WatchlistService {
       }
     }
     return cachedMarketData
-  }
-
-  async tokenSearch(
-    query: string,
-    currency: string
-  ): Promise<
-    { tokens: MarketToken[]; charts: Charts; prices: Prices } | undefined
-  > {
-    const coins = await TokenService.getTokenSearch(query)
-    const coinIds = coins?.map(tk => tk.id)
-
-    if (coinIds && coinIds.length > 0) {
-      const pricePromise = this.getPriceWithMarketDataByCoinIds(
-        coinIds,
-        currency
-      )
-
-      const marketPromise = this.getMarketsByCoinIds(coinIds, currency)
-
-      const [pricesRaw, marketsRaw] = await Promise.all([
-        pricePromise,
-        marketPromise
-      ])
-
-      const tokens: MarketToken[] = []
-      const charts: Charts = {}
-      const prices: Prices = {}
-
-      marketsRaw.forEach(market => {
-        tokens.push({
-          id: market.id,
-          symbol: market.symbol,
-          name: market.name,
-          logoUri: market.image
-        })
-
-        if (market.sparkline_in_7d?.price) {
-          charts[market.id] = transformSparklineData(
-            market.sparkline_in_7d.price
-          )
-        }
-      })
-
-      for (const tokenId in pricesRaw) {
-        const pricesInCurrency = pricesRaw[tokenId]
-        if (!pricesInCurrency) continue
-        const price = pricesInCurrency[currency as VsCurrencyType]
-        prices[tokenId] = {
-          priceInCurrency: price?.price ?? 0,
-          change24: price?.change24 ?? 0,
-          marketCap: price?.marketCap ?? 0,
-          vol24: price?.vol24 ?? 0
-        }
-      }
-
-      return { tokens, charts, prices }
-    }
-
-    return undefined
   }
 }
 

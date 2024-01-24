@@ -1,5 +1,5 @@
 {
-  "test-aave": {
+  "additional-watchlist-price-1": {
     "aud": {
       "change24": -6.65808862188606,
       "marketCap": 1940363515.739892,
@@ -13,7 +13,7 @@
       "vol24": 213824387.2699328
     }
   },
-  "test": {
+  "additional-watchlist-price-2": {
     "aud": {
       "change24": -6.65808862188606,
       "marketCap": 1940363515.739892,
@@ -27,7 +27,7 @@
       "vol24": 213824387.2699328
     }
   },
-  "test01": {
+  "additional-watchlist-price-3": {
     "aud": {
       "change24": -6.65808862188606,
       "marketCap": 1940363515.739892,

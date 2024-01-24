@@ -26,7 +26,7 @@ describe('getMarketsFromWatchlistCache', () => {
     const result = await TokenService.getMarketsFromWatchlistCache({
       currency: sdk.VsCurrencyType.USD
     })
-    expect(result.length).toEqual(4)
+    expect(result.length).toEqual(5)
   })
   it('should not have been called watchListCacheClient.markets', async () => {
     inMemoryCacheMock.mockImplementation(() => TOP_MARKETS)
@@ -130,7 +130,7 @@ describe('getPriceWithMarketDataByCoinId', () => {
   })
   it('should return data for token aave in currency AUD', async () => {
     const result = await TokenService.getPriceWithMarketDataByCoinId(
-      'aave',
+      'test-aave',
       sdk.VsCurrencyType.AUD
     )
     expect(result.price).toEqual(10)
@@ -152,7 +152,7 @@ describe('getPriceWithMarketDataByCoinIds', () => {
   it('should return data for list of tokens in currency USD', async () => {
     const result = await TokenService.getPriceWithMarketDataByCoinIds([
       'test',
-      'aave'
+      'test-aave'
     ])
     // @ts-ignore
     expect(Object.keys(result).length).toEqual(2)
