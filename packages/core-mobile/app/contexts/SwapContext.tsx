@@ -80,7 +80,11 @@ export const SwapContext = createContext<SwapContextState>(
   {} as SwapContextState
 )
 
-export const SwapContextProvider = ({ children }: { children: ReactNode }) => {
+export const SwapContextProvider = ({
+  children
+}: {
+  children: ReactNode
+}): JSX.Element => {
   const activeAccount = useSelector(selectActiveAccount)
   const activeNetwork = useSelector(selectActiveNetwork)
   const avalancheProvider = useAvalancheProvider()
@@ -169,7 +173,7 @@ export const SwapContextProvider = ({ children }: { children: ReactNode }) => {
     swapGasLimit,
     swapGasPrice,
     swapSlippage
-  }: SwapParams) {
+  }: SwapParams): void {
     setSwapStatus('Preparing')
     setSwapStatus('Swapping')
 
@@ -209,7 +213,7 @@ export const SwapContextProvider = ({ children }: { children: ReactNode }) => {
           transactionSign: tx =>
             WalletService.sign(tx, activeAccount.index, activeNetwork),
           userAddress: activeAccount.address,
-          networkGasPrice: networkFee.low
+          networkGasPrice: networkFee?.low.maxFeePerGas.toSubUnit() ?? 0n
         })
       )
         .then(([result, err]) => {
@@ -273,6 +277,6 @@ export const SwapContextProvider = ({ children }: { children: ReactNode }) => {
   return <SwapContext.Provider value={state}>{children}</SwapContext.Provider>
 }
 
-export function useSwapContext() {
+export function useSwapContext(): SwapContextState {
   return useContext(SwapContext)
 }

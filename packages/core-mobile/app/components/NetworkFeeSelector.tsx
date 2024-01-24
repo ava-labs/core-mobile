@@ -4,26 +4,23 @@ import { View } from 'react-native'
 import AvaButton from 'components/AvaButton'
 import SettingsCogSVG from 'components/svg/SettingsCogSVG'
 import { Space } from 'components/Space'
-import React, { FC, useCallback, useEffect, useMemo, useState } from 'react'
+import React, { FC, useEffect, useMemo, useState } from 'react'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Opacity50 } from 'resources/Constants'
-import PoppableGasAndLimit from 'components/PoppableGasAndLimit'
 import { useSelector } from 'react-redux'
 import { NetworkVMType } from '@avalabs/chains-sdk'
 import { useNavigation } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
-import Big from 'big.js'
 import { WalletScreenProps } from 'navigation/types'
 import { selectActiveNetwork, selectNetwork } from 'store/network'
 import { VsCurrencyType } from '@avalabs/coingecko-sdk'
 import { selectSelectedCurrency } from 'store/settings/currency'
-import { calculateGasAndFees } from 'utils/Utils'
-import { bigintToBig } from 'utils/bigNumbers/bigintToBig'
-import { bigToBigint } from 'utils/bigNumbers/bigToBigint'
+import { calculateGasAndFees, Eip1559Fees, GasAndFees } from 'utils/Utils'
 import { useNetworkFee } from 'hooks/useNetworkFee'
 import { useNativeTokenPriceForNetwork } from 'hooks/useNativeTokenPriceForNetwork'
-import InputText from './InputText'
+import { NetworkTokenUnit } from 'types'
 import { Tooltip } from './Tooltip'
+import InputText from './InputText'
 
 export enum FeePreset {
   Normal = 'Normal',
@@ -45,15 +42,13 @@ type NavigationProp = WalletScreenProps<
 const NetworkFeeSelector = ({
   chainId,
   gasLimit,
-  onGasPriceChange,
-  onGasLimitChange,
-  maxGasPrice
+  onFeesChange,
+  maxNetworkFee
 }: {
   chainId?: number
   gasLimit: number
-  onGasPriceChange?(gasPrice: bigint, feePreset: FeePreset): void
-  onGasLimitChange?(customGasLimit: number): void
-  maxGasPrice?: string
+  onFeesChange?(fees: Eip1559Fees<NetworkTokenUnit>, feePreset: FeePreset): void
+  maxNetworkFee?: NetworkTokenUnit
 }): JSX.Element => {
   const { navigate } = useNavigation<NavigationProp>()
   const { theme } = useApplicationContext()
@@ -69,74 +64,109 @@ const NetworkFeeSelector = ({
   )
   const isBtcNetwork = Boolean(network?.vmName === NetworkVMType.BITCOIN)
   const [selectedPreset, setSelectedPreset] = useState(FeePreset.Instant)
-  const [customGasPrice, setCustomGasPrice] = useState<bigint>()
+  const [calculatedFees, setCalculatedFees] =
+    useState<GasAndFees<NetworkTokenUnit>>()
+  const [customFees, setCustomFees] = useState<GasAndFees<NetworkTokenUnit>>()
 
-  // customGasPrice init value.
+  // customFees init value.
   // NetworkFee is not immediately available hence the useEffect
   useEffect(() => {
-    if (!customGasPrice) {
-      setCustomGasPrice(networkFee.low)
-    }
-  }, [networkFee.low, customGasPrice])
-
-  const selectedGasPrice: bigint = useMemo(() => {
-    if (selectedPreset === FeePreset.Custom) {
-      return customGasPrice || 0n
-    }
-    return networkFee[FeePresetNetworkFeeMap[selectedPreset]]
-  }, [customGasPrice, networkFee, selectedPreset])
-
-  const newFees = useMemo(
-    () =>
-      calculateGasAndFees({
-        gasPrice: selectedGasPrice,
+    if (!customFees && networkFee && gasLimit) {
+      const initialCustomFees = calculateGasAndFees<NetworkTokenUnit>({
+        maxFeePerGas: networkFee.low.maxFeePerGas,
+        maxPriorityFeePerGas:
+          networkFee.low.maxPriorityFeePerGas ??
+          NetworkTokenUnit.fromNetwork(activeNetwork, 0),
         tokenPrice: nativeTokenPrice,
-        tokenDecimals: network?.networkToken.decimals,
         gasLimit
-      }),
-    [
-      gasLimit,
-      nativeTokenPrice,
-      network?.networkToken.decimals,
-      selectedGasPrice
-    ]
-  )
+      })
+      setCustomFees(initialCustomFees)
+    }
+  }, [activeNetwork, customFees, gasLimit, nativeTokenPrice, networkFee])
 
-  const totalFeeBig = useMemo(() => {
-    return bigintToBig(
-      (selectedGasPrice || 0n) * BigInt(gasLimit),
-      networkFee.nativeTokenDecimals
-    )
-  }, [gasLimit, networkFee.nativeTokenDecimals, selectedGasPrice])
-
-  useEffect(() => {
-    onGasPriceChange?.(selectedGasPrice, selectedPreset)
-  }, [selectedGasPrice, selectedPreset, networkFee.low, onGasPriceChange])
-
-  function handleGasLimitChange(newGasLimit: number): void {
-    onGasLimitChange?.(newGasLimit)
+  function handleSelectedPreset(preset: FeePreset): void {
+    setSelectedPreset(preset)
+    let newFees
+    if (preset === FeePreset.Custom) {
+      newFees = customFees
+    } else {
+      const presetFeeRate = networkFee?.[FeePresetNetworkFeeMap[preset]]
+      if (!presetFeeRate) return
+      newFees = calculateGasAndFees<NetworkTokenUnit>({
+        maxFeePerGas: presetFeeRate.maxFeePerGas,
+        maxPriorityFeePerGas:
+          presetFeeRate.maxPriorityFeePerGas ??
+          NetworkTokenUnit.fromNetwork(activeNetwork, 0),
+        tokenPrice: nativeTokenPrice,
+        gasLimit
+      })
+    }
+    setCalculatedFees(newFees)
+    if (newFees) {
+      onFeesChange?.(
+        {
+          maxFeePerGas: newFees.maxFeePerGas,
+          maxPriorityFeePerGas: newFees.maxPriorityFeePerGas,
+          gasLimit
+        },
+        preset
+      )
+    }
   }
 
-  const convertFeeToUnit = useCallback(
-    (value: bigint) =>
-      bigintToBig(value, networkFee.displayDecimals).toFixed(0),
-    [networkFee.displayDecimals]
-  )
+  function handleSetCustomFees(fees: Eip1559Fees<NetworkTokenUnit>): void {
+    setSelectedPreset(FeePreset.Custom)
+
+    const newFees = calculateGasAndFees<NetworkTokenUnit>({
+      maxFeePerGas: fees.maxFeePerGas,
+      maxPriorityFeePerGas: fees.maxPriorityFeePerGas,
+      tokenPrice: nativeTokenPrice,
+      gasLimit
+    })
+    setCustomFees(newFees)
+    setCalculatedFees(newFees)
+    onFeesChange?.(
+      {
+        maxFeePerGas: newFees.maxFeePerGas,
+        maxPriorityFeePerGas: newFees.maxPriorityFeePerGas,
+        gasLimit
+      },
+      FeePreset.Custom
+    )
+  }
 
   const displayGasValues = useMemo(() => {
+    if (!networkFee) return undefined
     return {
-      [FeePreset.Normal]: convertFeeToUnit(networkFee.low),
-      [FeePreset.Fast]: convertFeeToUnit(networkFee.medium),
-      [FeePreset.Instant]: convertFeeToUnit(networkFee.high),
-      [FeePreset.Custom]: convertFeeToUnit(customGasPrice ?? networkFee.low)
+      [FeePreset.Normal]: networkFee.low.maxFeePerGas.toFeeUnit().toString(),
+      [FeePreset.Fast]: networkFee.medium.maxFeePerGas.toFeeUnit().toString(),
+      [FeePreset.Instant]: networkFee.high.maxFeePerGas.toFeeUnit().toString(),
+      [FeePreset.Custom]:
+        customFees?.maxFeePerGas.toFeeUnit().toString() ??
+        networkFee.low.maxFeePerGas.toFeeUnit().toString()
     }
-  }, [
-    convertFeeToUnit,
-    customGasPrice,
-    networkFee.high,
-    networkFee.low,
-    networkFee.medium
-  ])
+  }, [customFees?.maxFeePerGas, networkFee])
+
+  function calcRelativeFeeIncrease(value: string): void {
+    if (!value) return
+    if (!networkFee || !customFees) return
+    const zeroNetworkTokenUnit = NetworkTokenUnit.fromNetwork(activeNetwork)
+    const customMaxFeePerGas = zeroNetworkTokenUnit.add(value).div(10 ** 9)
+    const customFeeRelativeChange = customMaxFeePerGas.sub(
+      networkFee.low.maxFeePerGas
+    )
+    let customPriorityFee =
+      networkFee.low.maxPriorityFeePerGas?.add(customFeeRelativeChange) ??
+      zeroNetworkTokenUnit
+    if (customPriorityFee.lt(0)) {
+      customPriorityFee = zeroNetworkTokenUnit
+    }
+    handleSetCustomFees({
+      gasLimit: customFees.gasLimit,
+      maxFeePerGas: customMaxFeePerGas,
+      maxPriorityFeePerGas: customPriorityFee
+    })
+  }
 
   return (
     <>
@@ -144,27 +174,28 @@ const NetworkFeeSelector = ({
         {!isBtcNetwork && (
           <Tooltip
             content={
-              <PoppableGasAndLimit
-                gasLimit={gasLimit}
-                gasPrice={`${convertFeeToUnit(selectedGasPrice)} ${
-                  networkFee.unit
-                }`}
-              />
+              'Core estimates the maximum gas (maxFeePerGas) a transaction could consume based on network conditions. This transaction will likely consume less gas than estimated.'
             }
             position={'right'}
             style={{ width: 200 }}>
-            <AvaText.Body2>Network Fee</AvaText.Body2>
+            <AvaText.Body2>Maximum Network Fee</AvaText.Body2>
           </Tooltip>
         )}
         {network?.vmName === NetworkVMType.EVM && (
           <View>
             <AvaButton.Icon
               onPress={() => {
+                if (!networkFee) return
                 navigate(AppNavigation.Modal.EditGasLimit, {
                   network,
-                  gasLimit: gasLimit,
-                  gasPrice: customGasPrice ?? networkFee.low,
-                  onSave: handleGasLimitChange
+                  onSave: handleSetCustomFees,
+                  maxFeePerGas:
+                    customFees?.maxFeePerGas ?? networkFee.low.maxFeePerGas,
+                  maxPriorityFeePerGas:
+                    customFees?.maxPriorityFeePerGas ??
+                    networkFee.low.maxPriorityFeePerGas ??
+                    NetworkTokenUnit.fromNetwork(activeNetwork),
+                  gasLimit: gasLimit
                 })
               }}>
               <SettingsCogSVG />
@@ -182,40 +213,35 @@ const NetworkFeeSelector = ({
         <FeeSelector
           label={isBtcNetwork ? 'Slow' : FeePreset.Normal}
           selected={selectedPreset === FeePreset.Normal}
-          onSelect={() => setSelectedPreset(FeePreset.Normal)}
-          value={displayGasValues[FeePreset.Normal]}
+          onSelect={() => handleSelectedPreset(FeePreset.Normal)}
+          value={displayGasValues?.[FeePreset.Normal]}
         />
         {!networkFee?.isFixedFee && (
           <>
             <FeeSelector
               label={isBtcNetwork ? 'Medium' : FeePreset.Fast}
               selected={selectedPreset === FeePreset.Fast}
-              onSelect={() => setSelectedPreset(FeePreset.Fast)}
-              value={displayGasValues[FeePreset.Fast]}
+              onSelect={() => handleSelectedPreset(FeePreset.Fast)}
+              value={displayGasValues?.[FeePreset.Fast]}
             />
             <FeeSelector
               label={isBtcNetwork ? 'Fast' : FeePreset.Instant}
               selected={selectedPreset === FeePreset.Instant}
-              onSelect={() => setSelectedPreset(FeePreset.Instant)}
-              value={displayGasValues[FeePreset.Instant]}
+              onSelect={() => handleSelectedPreset(FeePreset.Instant)}
+              value={displayGasValues?.[FeePreset.Instant]}
             />
             <FeeSelector
               editable
               label={FeePreset.Custom}
               selected={selectedPreset === FeePreset.Custom}
-              onSelect={() => setSelectedPreset(FeePreset.Custom)}
-              placeholder={displayGasValues[FeePreset.Normal]}
+              onSelect={() => handleSelectedPreset(FeePreset.Custom)}
+              placeholder={displayGasValues?.[FeePreset.Normal]}
               value={
-                selectedPreset !== FeePreset.Custom &&
-                (!customGasPrice || customGasPrice === 0n)
-                  ? displayGasValues[FeePreset.Normal]
-                  : displayGasValues[FeePreset.Custom]
+                selectedPreset !== FeePreset.Custom && !customFees
+                  ? displayGasValues?.[FeePreset.Normal]
+                  : displayGasValues?.[FeePreset.Custom]
               }
-              onValueEntered={value =>
-                setCustomGasPrice(
-                  bigToBigint(new Big(value || 0), networkFee.displayDecimals)
-                )
-              }
+              onValueEntered={calcRelativeFeeIncrease}
             />
           </>
         )}
@@ -224,18 +250,17 @@ const NetworkFeeSelector = ({
       <Row style={{ justifyContent: 'space-between', alignItems: 'center' }}>
         <AvaText.Body2>Fee Amount</AvaText.Body2>
         <AvaText.Heading3>
-          {totalFeeBig.toString()} {network?.networkToken?.symbol}
+          {calculatedFees?.maxTotalFee.toDisplay(4)}{' '}
+          {network?.networkToken?.symbol}
         </AvaText.Heading3>
       </Row>
       <AvaText.Body3
         currency
         color={theme.colorText2}
         textStyle={{ marginTop: 4, alignSelf: 'flex-end' }}>
-        {(Number.parseFloat(totalFeeBig.toString()) * nativeTokenPrice).toFixed(
-          2
-        )}
+        {calculatedFees?.maxTotalFeeInCurrency}
       </AvaText.Body3>
-      {maxGasPrice && newFees.bnFee > BigInt(maxGasPrice) && (
+      {maxNetworkFee && calculatedFees?.maxTotalFee.gt(maxNetworkFee) && (
         <AvaText.Body3 color={theme.colorError}>
           Insufficient balance to cover gas costs. {'\n'}
           {network?.networkToken?.symbol

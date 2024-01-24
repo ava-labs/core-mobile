@@ -1,57 +1,91 @@
-import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
-import { View } from 'react-native'
 import InputText from 'components/InputText'
-import AvaButton from 'components/AvaButton'
-import React, { useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import FlexSpacer from 'components/FlexSpacer'
 import { Row } from 'components/Row'
-import { calculateGasAndFees } from 'utils/Utils'
+import { calculateGasAndFees, Eip1559Fees, GasAndFees } from 'utils/Utils'
 import { Network } from '@avalabs/chains-sdk'
 import { useNativeTokenPriceForNetwork } from 'hooks/useNativeTokenPriceForNetwork'
+import { Button, DividerLine, Text, View } from '@avalabs/k2-mobile'
+import { Tooltip } from 'components/Tooltip'
+import { TokenBaseUnit } from 'types/TokenBaseUnit'
+import { NetworkTokenUnit } from 'types'
+import { useSelector } from 'react-redux'
+import { selectSelectedCurrency } from 'store/settings/currency'
+import { VsCurrencyType } from '@avalabs/coingecko-sdk'
 
-interface EditFeesProps {
+type EditFeesProps<T extends TokenBaseUnit<T>> = {
   network: Network
-  gasPrice: bigint
-  gasLimit: number
-  onSave: (newGasLimit: number) => void
+  onSave: (customFees: Eip1559Fees<T>) => void
   onClose?: () => void
+} & Eip1559Fees<T>
+
+const maxBaseFeeInfoMessage =
+  'The Base Fee is set by the network and changes frequently. Any difference between the set Base Fee and the actual Base Fee will be refunded.'
+const maxPriorityFeeInfoMessage =
+  'The Priority Fee is an incentive paid to network operators to prioritize processing a transaction.'
+const gasLimitInfoMessage =
+  'Total units of gas needed to complete the transaction. Do not edit unless necessary.'
+
+function CurrencyHelperText({ text }: { text: string }): JSX.Element {
+  return (
+    <Row style={{ justifyContent: 'flex-end', paddingHorizontal: 16 }}>
+      <Text variant="caption" sx={{ color: '$neutral300' }}>
+        {text}
+      </Text>
+    </Row>
+  )
 }
 
-const gasLimitInfoInfoMessage =
-  'Gas limit is the maximum units of gas you are willing to use.'
-
 const EditFees = ({
+  maxFeePerGas: initMaxFeePerGas,
+  maxPriorityFeePerGas: initMaxPriorityFeePerGas,
+  gasLimit: initGasLimit,
   network,
-  gasPrice,
-  gasLimit,
   onSave,
   onClose
-}: EditFeesProps): JSX.Element => {
-  const [newGasLimit, setNewGasLimit] = useState(gasLimit)
+}: EditFeesProps<NetworkTokenUnit>): JSX.Element => {
+  const selectedCurrency = useSelector(
+    selectSelectedCurrency
+  ).toLowerCase() as VsCurrencyType
+  const typeCreator = useMemo(
+    () => NetworkTokenUnit.fromNetwork(network),
+    [network]
+  )
+  const [newGasLimit, setNewGasLimit] = useState<string>(
+    initGasLimit.toString()
+  )
+  const [newMaxFeePerGas, setNewMaxFeePerGas] = useState<string>(
+    initMaxFeePerGas.toFeeUnit().toString()
+  )
+  const [newMaxPriorityFeePerGas, setNewMaxPriorityFeePerGas] =
+    useState<string>(initMaxPriorityFeePerGas.toFeeUnit().toString())
   const tokenPrice = useNativeTokenPriceForNetwork(network).nativeTokenPrice
   const [feeError, setFeeError] = useState('')
-  const [newFees, setNewFees] = useState<
-    ReturnType<typeof calculateGasAndFees>
-  >(
+  const [newFees, setNewFees] = useState<GasAndFees<NetworkTokenUnit>>(
     calculateGasAndFees({
-      gasPrice,
+      maxFeePerGas: initMaxFeePerGas,
+      maxPriorityFeePerGas: initMaxPriorityFeePerGas,
       tokenPrice,
-      tokenDecimals: network?.networkToken?.decimals,
-      gasLimit
+      gasLimit: initGasLimit
     })
   )
+  const maxTotalFee = useMemo(
+    () => newFees.maxTotalFee.toDisplay(6),
+    [newFees.maxTotalFee]
+  )
 
-  const checkCustomGasLimit = (customGasLimit: string): void => {
+  useEffect(() => {
     try {
       const fees = calculateGasAndFees({
-        gasPrice,
         tokenPrice,
-        tokenDecimals: network?.networkToken?.decimals,
-        gasLimit: isNaN(parseInt(customGasLimit)) ? 0 : parseInt(customGasLimit)
+        maxFeePerGas: typeCreator.newFromFeeUnit(newMaxFeePerGas),
+        maxPriorityFeePerGas: typeCreator.newFromFeeUnit(
+          newMaxPriorityFeePerGas
+        ),
+        gasLimit: isNaN(parseInt(newGasLimit)) ? 0 : parseInt(newGasLimit)
       })
       setNewFees(fees)
-      setNewGasLimit(fees.gasLimit)
       if (fees.gasLimit === 0) {
         setFeeError('Please enter a valid gas limit')
       } else {
@@ -60,45 +94,96 @@ const EditFees = ({
     } catch (e) {
       setFeeError('Gas Limit is too much')
     }
-  }
+  }, [
+    feeError,
+    newGasLimit,
+    newMaxFeePerGas,
+    newMaxPriorityFeePerGas,
+    tokenPrice,
+    typeCreator
+  ])
 
   const handleOnSave = (): void => {
     if (newGasLimit) {
-      onSave(newGasLimit)
+      onSave({
+        gasLimit: newFees.gasLimit,
+        maxFeePerGas: newFees.maxFeePerGas,
+        maxPriorityFeePerGas: newFees.maxPriorityFeePerGas
+      })
       onClose?.()
     }
   }
 
-  const saveDisabled = !!feeError || newGasLimit === 0
+  const saveDisabled = !!feeError || newFees.gasLimit === 0
 
   return (
     <View style={{ flex: 1, paddingBottom: 16 }}>
-      <AvaText.LargeTitleBold textStyle={{ marginHorizontal: 12 }}>
-        Edit Gas Limit
-      </AvaText.LargeTitleBold>
+      <Text
+        variant="heading4"
+        sx={{ color: '$neutral50', marginHorizontal: 12 }}>
+        Edit Network Fee
+      </Text>
       <Space y={24} />
-      <Row style={{ marginHorizontal: 12, alignItems: 'flex-end' }}>
-        <AvaText.Heading1>{newFees.fee}</AvaText.Heading1>
-        <Space x={4} />
-        <AvaText.Heading3>
-          {network?.networkToken?.symbol?.toUpperCase()}
-        </AvaText.Heading3>
-      </Row>
+      <InputText
+        label={'Max Base Fee'}
+        mode={'amount'}
+        text={newMaxFeePerGas}
+        popOverInfoText={maxBaseFeeInfoMessage}
+        onChangeText={setNewMaxFeePerGas}
+        errorText={feeError}
+        currency={'USD'}
+      />
+      <InputText
+        label={'Max Priority Fee'}
+        mode={'amount'}
+        text={newMaxPriorityFeePerGas}
+        popOverInfoText={maxPriorityFeeInfoMessage}
+        onChangeText={setNewMaxPriorityFeePerGas}
+        errorText={feeError}
+      />
       <InputText
         label={'Gas Limit'}
         mode={'amount'}
-        text={newGasLimit === 0 ? '' : newGasLimit.toString()}
-        popOverInfoText={gasLimitInfoInfoMessage}
-        onChangeText={checkCustomGasLimit}
+        text={newGasLimit}
+        popOverInfoText={gasLimitInfoMessage}
+        onChangeText={setNewGasLimit}
         errorText={feeError}
       />
+      <View sx={{ paddingHorizontal: 16, marginTop: 20, marginBottom: 16 }}>
+        <DividerLine />
+      </View>
+      <Row style={{ marginHorizontal: 12, alignItems: 'baseline' }}>
+        <Tooltip
+          style={{ width: 220 }}
+          content={`Total Network Fee = (Current Base Fee + Max Priority Fee) * Gas Limit.\n\nIt will never be higher than Max Base Fee * Gas Limit.`}
+          position={'bottom'}>
+          <Text variant="caption" sx={{ color: '$neutral500' }}>
+            Total Network Fee
+          </Text>
+        </Tooltip>
+        <FlexSpacer />
+        <Text variant="heading5" sx={{ color: '$neutral50' }}>
+          {maxTotalFee}
+        </Text>
+        <Space x={4} />
+        <Text variant="heading6" sx={{ color: '$neutral400' }}>
+          {network?.networkToken?.symbol?.toUpperCase()}
+        </Text>
+      </Row>
+      <CurrencyHelperText
+        text={`${
+          newFees.maxTotalFeeInCurrency
+        } ${selectedCurrency.toUpperCase()}`}
+      />
       <FlexSpacer />
-      <AvaButton.PrimaryLarge
+      <Button
+        type={'primary'}
+        size={'xlarge'}
         disabled={saveDisabled}
-        style={{ marginHorizontal: 12 }}
+        style={{ marginHorizontal: 16 }}
         onPress={handleOnSave}>
         Save
-      </AvaButton.PrimaryLarge>
+      </Button>
     </View>
   )
 }

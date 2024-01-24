@@ -1,14 +1,9 @@
 import Big from 'big.js'
-import {
-  bigToBN,
-  bigToLocaleString,
-  bnToBig,
-  stringToBN
-} from '@avalabs/utils-sdk'
+import { bigToBN, bnToBig, stringToBN } from '@avalabs/utils-sdk'
 import { TokenType, TokenWithBalance } from 'store/balance'
 import { APIError } from 'paraswap'
 import BN from 'bn.js'
-import { bigintToBig } from './bigNumbers/bigintToBig'
+import { TokenBaseUnit } from 'types/TokenBaseUnit'
 
 export const truncateAddress = (address: string, size = 6): string => {
   const firstChunk = address.substring(0, size)
@@ -126,33 +121,35 @@ export function titleToInitials(title: string): string {
   )
 }
 
-export type GasAndFees = {
-  gasPrice: bigint
+export type GasAndFees<T extends TokenBaseUnit<T>> = {
+  maxTotalFee: T
+  maxTotalFeeInCurrency: string
+  /** @deprecated For legacy, non eip-1559 transactions. Those places should be replaced with maxFeePerGas **/
+  gasPrice: T
+} & Eip1559Fees<T>
+
+export type Eip1559Fees<T extends TokenBaseUnit<T>> = {
+  maxFeePerGas: T
+  maxPriorityFeePerGas: T
   gasLimit: number
-  fee: string
-  bnFee: bigint
-  feeInCurrency: number
 }
 
-export function calculateGasAndFees({
-  gasPrice,
+export function calculateGasAndFees<T extends TokenBaseUnit<T>>({
+  maxFeePerGas,
+  maxPriorityFeePerGas,
   tokenPrice,
-  tokenDecimals = 18,
   gasLimit
-}: {
-  gasPrice: bigint
+}: Eip1559Fees<T> & {
   tokenPrice: number
-  tokenDecimals?: number
-  gasLimit?: number | string
-}): GasAndFees {
-  const bnFee = gasLimit ? gasPrice * BigInt(gasLimit) : gasPrice
-  const fee = bigToLocaleString(bigintToBig(bnFee, tokenDecimals), 8)
+}): GasAndFees<T> {
+  const maxTotalFee = maxFeePerGas.mul(gasLimit)
   return {
-    gasPrice: gasPrice,
-    gasLimit: Number(gasLimit) || 0,
-    fee,
-    bnFee,
-    feeInCurrency: parseFloat((parseFloat(fee) * tokenPrice).toFixed(4))
+    maxFeePerGas,
+    maxPriorityFeePerGas,
+    gasLimit,
+    maxTotalFee,
+    maxTotalFeeInCurrency: maxTotalFee.mul(tokenPrice).toFixed(2),
+    gasPrice: maxFeePerGas
   }
 }
 

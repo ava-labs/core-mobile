@@ -4,12 +4,12 @@ import { View } from 'react-native'
 import { Space } from 'components/Space'
 import AvaText from 'components/AvaText'
 import InputText from 'components/InputText'
-import NetworkFeeSelector, { FeePreset } from 'components/NetworkFeeSelector'
+import { FeePreset } from 'components/NetworkFeeSelector'
 import { Row } from 'components/Row'
 import Big from 'big.js'
-import { bigintToBig } from 'utils/bigNumbers/bigintToBig'
 import { useNetworkFee } from 'hooks/useNetworkFee'
 import { Tooltip } from 'components/Tooltip'
+import { NetworkTokenUnit } from 'types'
 
 const isSlippageValid = (value: string): boolean => {
   return Boolean(
@@ -25,14 +25,11 @@ interface SwapTransactionDetailProps {
   fromTokenSymbol?: string
   toTokenSymbol?: string
   rate: number
-  onGasChange?: (gasPrice: bigint, feeType: FeePreset) => void
-  onGasLimitChange?: (gasLimit: number) => void
   gasLimit: number
-  gasPrice: bigint
+  gasPrice: NetworkTokenUnit
   slippage: number
   setSlippage?: (slippage: number) => void
   selectedGasFee?: FeePreset
-  maxGasPrice?: string
 }
 
 const slippageInfoMessage =
@@ -43,8 +40,6 @@ const SwapTransactionDetail: FC<SwapTransactionDetailProps> = ({
   fromTokenSymbol,
   toTokenSymbol,
   rate,
-  onGasChange,
-  onGasLimitChange,
   gasLimit,
   gasPrice,
   slippage,
@@ -53,10 +48,9 @@ const SwapTransactionDetail: FC<SwapTransactionDetailProps> = ({
   const { theme } = useApplicationContext()
   const { data: networkFee } = useNetworkFee()
 
-  const netFeeInfoMessage = `Gas limit: ${gasLimit} \nGas price: ${bigintToBig(
-    gasPrice,
-    networkFee.displayDecimals
-  ).toFixed(0)} nAVAX`
+  const netFeeInfoMessage = `Gas limit: ${gasLimit} \nGas price: ${
+    networkFee?.low.maxFeePerGas?.toFeeUnit() ?? '-'
+  } nAVAX`
 
   return (
     <View style={{ flex: 1, paddingHorizontal: 16 }}>
@@ -124,16 +118,6 @@ const SwapTransactionDetail: FC<SwapTransactionDetailProps> = ({
               AVAX
             </AvaText.Heading3>
           </Row>
-        </>
-      )}
-      {!review && (
-        <>
-          <Space y={16} />
-          <NetworkFeeSelector
-            gasLimit={gasLimit}
-            onGasPriceChange={onGasChange}
-            onGasLimitChange={onGasLimitChange}
-          />
         </>
       )}
     </View>

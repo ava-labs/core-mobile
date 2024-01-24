@@ -34,6 +34,8 @@ import {
 import { EarnStackParamList } from 'navigation/wallet/EarnScreenStack/EarnScreenStack'
 import { RefreshTokenScreenStackParamList } from 'navigation/RefreshTokenScreenStack'
 import { BrowserStackParamList } from 'navigation/wallet/BrowserScreenStack'
+import { Eip1559Fees } from 'utils/Utils'
+import { NetworkTokenUnit } from 'types'
 import { RootScreenStackParamList } from './RootScreenStack'
 import { OnboardingScreenStackParamList } from './OnboardScreenStack'
 import { WelcomeScreenStackParamList } from './onboarding/WelcomeScreenStack'
@@ -68,10 +70,8 @@ export type BridgeTransactionStatusParams = {
 
 export type EditGasLimitParams = {
   network: Network
-  onSave: (newGasLimit: number) => void
-  gasLimit: number
-  gasPrice: bigint
-}
+  onSave: (customFees: Eip1559Fees<NetworkTokenUnit>) => void
+} & Eip1559Fees<NetworkTokenUnit>
 
 export type SessionProposalV2Params = {
   request: SessionProposal
