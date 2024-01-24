@@ -1,9 +1,12 @@
 import { defaultChartData } from 'store/watchlist'
 import { RetryBackoffPolicy, retry } from 'utils/js/retry'
+import { VsCurrencyType } from '@avalabs/coingecko-sdk'
 import {
   ChartData,
   ContractMarketChartResponse,
   Error,
+  SimplePriceResponse,
+  RawSimplePriceResponse,
   SparklineData
 } from './types'
 
@@ -80,6 +83,28 @@ export const coingeckoRetry = <T>(
     maxRetries: 2,
     backoffPolicy: RetryBackoffPolicy.constant(1),
     isSuccess: (response: T | Error) =>
-      (response as Error)?.status?.error_code !== 429
+      (response as Error)?.status?.error_code !== 429 &&
+      Object.keys(response ?? {}).length !== 0
   }) as Promise<T | undefined>
+}
+
+export const transformSimplePriceResponse = (
+  data: RawSimplePriceResponse,
+  currencies = [VsCurrencyType.USD]
+): SimplePriceResponse => {
+  const formattedData: SimplePriceResponse = {}
+  Object.keys(data).forEach(id => {
+    const tokenData = data[id]
+    formattedData[id] = {}
+    currencies.forEach((currency: VsCurrencyType) => {
+      // @ts-ignore
+      formattedData[id][currency] = {
+        price: tokenData?.[currency],
+        change24: tokenData?.[`${currency}_24h_change`],
+        vol24: tokenData?.[`${currency}_24h_vol`],
+        marketCap: tokenData?.[`${currency}_market_cap`]
+      }
+    })
+  })
+  return formattedData
 }

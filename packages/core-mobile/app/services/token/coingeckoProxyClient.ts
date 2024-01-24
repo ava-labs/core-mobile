@@ -5,6 +5,7 @@ import {
   CoinsContractInfoResponseSchema,
   CoinsSearchResponseSchema,
   ContractMarketChartResponseSchema,
+  RawSimplePriceResponseSchema,
   SimplePriceResponseSchema
 } from 'services/token/types'
 import { boolean, number, string } from 'zod'
@@ -57,7 +58,7 @@ export const coingeckoProxyClient = new Zodios(
         }
       ],
       alias: 'simplePrice',
-      response: SimplePriceResponseSchema
+      response: RawSimplePriceResponseSchema
     },
     {
       method: 'post',
