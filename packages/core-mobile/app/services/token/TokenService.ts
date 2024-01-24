@@ -440,13 +440,9 @@ export class TokenService {
         }
       })
     }
-    try {
-      return coinsInfo(coingeckoBasicClient, {
-        assetPlatformId: coingeckoId
-      })
-    } catch (e) {
-      return Promise.resolve(e as Error)
-    }
+    return coinsInfo(coingeckoBasicClient, {
+      assetPlatformId: coingeckoId
+    })
   }
 
   private async fetchChartDataForCoin({
@@ -492,7 +488,7 @@ export class TokenService {
     CoinMarket[] | Error
   > {
     if (useCoingeckoProxy) {
-      return coingeckoProxyClient.coinsMarkets(undefined, {
+      return coingeckoProxyClient.coinsMarket(undefined, {
         queries: {
           ids: coinIds?.join(','),
           vs_currency: currency,
