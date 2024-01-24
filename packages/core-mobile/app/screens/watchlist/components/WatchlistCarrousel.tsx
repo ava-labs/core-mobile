@@ -1,4 +1,4 @@
-import React, { FC, useMemo } from 'react'
+import React, { FC, useEffect, useMemo } from 'react'
 import {
   FlatList,
   ListRenderItemInfo,
@@ -17,9 +17,10 @@ import AppNavigation from 'navigation/AppNavigation'
 import MarketMovement from 'screens/watchlist/components/MarketMovement'
 import { Opacity85 } from 'resources/Constants'
 import { PortfolioScreenProps } from 'navigation/types'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import {
   MarketToken,
+  fetchWatchlist,
   selectWatchlistChart,
   selectWatchlistFavorites
 } from 'store/watchlist'
@@ -36,8 +37,13 @@ const WatchlistCarrousel: FC<Props> = () => {
   const { theme } = useApplicationContext()
   const watchlistFavorites = useSelector(selectWatchlistFavorites)
   const navigation = useNavigation<NavigationProp>()
+  const dispatch = useDispatch()
 
-  function goToWatchlist() {
+  useEffect(() => {
+    dispatch(fetchWatchlist())
+  }, [dispatch])
+
+  function goToWatchlist(): void {
     navigation.navigate(AppNavigation.Tabs.Watchlist)
   }
 
@@ -64,7 +70,7 @@ const WatchlistCarrousel: FC<Props> = () => {
     []
   )
 
-  const renderItem = (item: ListRenderItemInfo<MarketToken>) => {
+  const renderItem = (item: ListRenderItemInfo<MarketToken>): JSX.Element => {
     const token = item.item
     return (
       <CarrouselItem
@@ -93,7 +99,7 @@ const WatchlistCarrousel: FC<Props> = () => {
   )
 }
 
-const Separator = () => <View style={{ margin: 4 }} />
+const Separator = (): JSX.Element => <View style={{ margin: 4 }} />
 
 interface CarrouselItemProps {
   token: MarketToken
