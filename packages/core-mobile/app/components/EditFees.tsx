@@ -180,6 +180,32 @@ const EditFees = ({
           newFees.maxTotalFeeInCurrency
         } ${selectedCurrency.toUpperCase()}`}
       />
+      <View sx={{ paddingHorizontal: 16, marginTop: 20, marginBottom: 16 }}>
+        <DividerLine />
+      </View>
+      <Row style={{ marginHorizontal: 12, alignItems: 'baseline' }}>
+        <Tooltip
+          style={{ width: 220 }}
+          content={`Total Network Fee = (Current Base Fee + Max Priority Fee) * Gas Limit.\n\nIt will never be higher than Max Base Fee * Gas Limit.`}
+          position={'bottom'}>
+          <Text variant="caption" sx={{ color: '$neutral500' }}>
+            Total Network Fee
+          </Text>
+        </Tooltip>
+        <FlexSpacer />
+        <Text variant="heading5" sx={{ color: '$neutral50' }}>
+          {maxTotalFee}
+        </Text>
+        <Space x={4} />
+        <Text variant="heading6" sx={{ color: '$neutral400' }}>
+          {network?.networkToken?.symbol?.toUpperCase()}
+        </Text>
+      </Row>
+      <CurrencyHelperText
+        text={`${
+          newFees.maxTotalFeeInCurrency
+        } ${selectedCurrency.toUpperCase()}`}
+      />
       <FlexSpacer />
       <Button
         type={'primary'}
