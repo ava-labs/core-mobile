@@ -26,7 +26,7 @@ export const coingeckoProxyClient = new Zodios(
         { name: 'page', type: 'Query', schema: number().optional() },
         { name: 'sparkline', type: 'Query', schema: boolean().optional() }
       ],
-      alias: 'coinsMarkets',
+      alias: 'coinsMarket',
       response: CoinMarketSchema.array()
     },
     {
