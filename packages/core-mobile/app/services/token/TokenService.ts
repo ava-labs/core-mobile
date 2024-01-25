@@ -427,9 +427,7 @@ export class TokenService {
       } catch {
         data = undefined
       }
-      if (Object.keys(data ?? {}).length !== 0) {
-        setCache(cacheId, data)
-      }
+      setCache(cacheId, data)
     }
 
     return data
