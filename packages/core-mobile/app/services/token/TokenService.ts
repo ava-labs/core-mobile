@@ -37,7 +37,11 @@ import {
   ContractMarketChartResponse,
   CoinsInfoResponse
 } from './types'
-import { coingeckoRetry, transformContractMarketChartResponse } from './utils'
+import {
+  coingeckoRetry,
+  transformContractMarketChartResponse,
+  transformSimplePriceResponse
+} from './utils'
 
 const coingeckoBasicClient = getBasicCoingeckoHttp()
 const CONTRACT_CALLS_TIMEOUT = 10000
@@ -519,7 +523,7 @@ export class TokenService {
     SimplePriceResponse | Error
   > {
     if (useCoingeckoProxy) {
-      return coingeckoProxyClient.simplePrice(undefined, {
+      const rawData = await coingeckoProxyClient.simplePrice(undefined, {
         queries: {
           ids: coinIds?.join(','),
           vs_currencies: currencies.join(','),
@@ -529,6 +533,7 @@ export class TokenService {
           include_last_updated_at: String(lastUpdated)
         }
       })
+      return transformSimplePriceResponse(rawData)
     }
     return simplePrice(coingeckoBasicClient, {
       coinIds,
@@ -536,7 +541,8 @@ export class TokenService {
       marketCap,
       vol24,
       change24,
-      lastUpdated
+      lastUpdated,
+      shouldThrow: true
     })
   }
 

@@ -49,13 +49,9 @@ const SimplePriceInCurrency = object({
   vol24: number().optional().nullable()
 })
 
-const SimplePriceInCurrencyResponseSchema = record(
-  string(),
-  SimplePriceInCurrency
-)
+const SimplePriceInCurrencyResponseSchema = record(SimplePriceInCurrency)
 
 export const SimplePriceResponseSchema = record(
-  string(),
   SimplePriceInCurrencyResponseSchema
 )
 
@@ -257,4 +253,11 @@ export type CoinsContractInfoResponse = z.infer<
 export type CoinsInfoResponse = Omit<
   CoinsContractInfoResponse,
   'contract_address'
+>
+
+export const RawSimplePriceResponseSchema = record(
+  record(number().nullable().optional())
+)
+export type RawSimplePriceResponse = z.infer<
+  typeof RawSimplePriceResponseSchema
 >
