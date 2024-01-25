@@ -427,9 +427,7 @@ export class TokenService {
       } catch {
         data = undefined
       }
-      if (Object.keys(data ?? {}).length !== 0) {
-        setCache(cacheId, data)
-      }
+      setCache(cacheId, data)
     }
 
     return data
@@ -543,7 +541,8 @@ export class TokenService {
       marketCap,
       vol24,
       change24,
-      lastUpdated
+      lastUpdated,
+      shouldThrow: true
     })
   }
 

@@ -1,6 +1,7 @@
 import { defaultChartData } from 'store/watchlist'
 import { RetryBackoffPolicy, retry } from 'utils/js/retry'
 import { VsCurrencyType } from '@avalabs/coingecko-sdk'
+import Logger from 'utils/Logger'
 import {
   ChartData,
   ContractMarketChartResponse,
@@ -82,9 +83,14 @@ export const coingeckoRetry = <T>(
     operation: (retryIndex: number) => operation(retryIndex > 0),
     maxRetries: 2,
     backoffPolicy: RetryBackoffPolicy.constant(1),
-    isSuccess: (response: T | Error) =>
-      (response as Error)?.status?.error_code !== 429 &&
-      Object.keys(response ?? {}).length !== 0
+    isSuccess: (response: T | Error) => {
+      const errorStatus = (response as Error)?.status
+      if (errorStatus?.error_code === 429) {
+        Logger.error(errorStatus?.error_message, errorStatus)
+        return false
+      }
+      return true
+    }
   }) as Promise<T | undefined>
 }
 
