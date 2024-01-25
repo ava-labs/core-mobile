@@ -9,6 +9,7 @@ import WATCHLIST_PRICE from './__mocks__/watchlistPrice.json'
 import MARKET_CHART from './__mocks__/marketChart.json'
 import COIN_INFO from './__mocks__/coinInfo.json'
 import MARKET_DATA from './__mocks__/marketData.json'
+import RAW_WATCHLIST_PRICE from './__mocks__/rawWatchlistPrice.json'
 
 const MOCK_429 = { status: 429, message: 'Too many requests' }
 
@@ -96,7 +97,7 @@ describe('getSimplePrice', () => {
   it('should return simple price data from proxy', async () => {
     inMemoryCacheMock.mockImplementation(() => undefined)
     sdkMock.mockRejectedValueOnce(async () => MOCK_429)
-    proxyMock.mockImplementationOnce(async () => WATCHLIST_PRICE)
+    proxyMock.mockImplementationOnce(async () => RAW_WATCHLIST_PRICE)
     const result = await TokenService.getSimplePrice({
       coinIds: ['test'],
       currency: sdk.VsCurrencyType.USD
