@@ -4,6 +4,7 @@ import { bigToBigint } from 'utils/bigNumbers/bigToBigint'
 
 export type AcceptedTypes = BigSource | BN | bigint
 
+const FEE_UNIT_DENOMINATION = 9
 /**
  * TokenBaseUnit abstracts units in which crypto tokens are represented.
  * It holds value of token in Big type in normal numeric representation (as opposed to exponential or any other).
@@ -20,16 +21,23 @@ export type AcceptedTypes = BigSource | BN | bigint
  */
 export abstract class TokenBaseUnit<T extends TokenBaseUnit<T>> {
   protected readonly value: Big
+  protected readonly symbol: string
   protected readonly maxDecimals: number
-  protected readonly childConstructor: new (value: AcceptedTypes) => T
+  protected readonly childConstructor: new (
+    v: AcceptedTypes,
+    d: number,
+    l: string
+  ) => T
 
   protected constructor(
     value: AcceptedTypes,
     maxDecimals: number,
-    childConstructor: new (v: AcceptedTypes) => T
+    symbol: string,
+    childConstructor: new (v: AcceptedTypes, d: number, l: string) => T
   ) {
     this.value = TokenBaseUnit.toBig(value)
     this.maxDecimals = maxDecimals
+    this.symbol = symbol
     this.childConstructor = childConstructor
   }
 
@@ -37,31 +45,31 @@ export abstract class TokenBaseUnit<T extends TokenBaseUnit<T>> {
     return this.maxDecimals
   }
 
-  add(value: TokenBaseUnit<T> | AcceptedTypes): T {
+  add(value: T | AcceptedTypes): T {
     return this.cloneWithValue(this.value.add(TokenBaseUnit.toBig(value)))
   }
 
-  sub(value: TokenBaseUnit<T> | AcceptedTypes): T {
+  sub(value: T | AcceptedTypes): T {
     return this.cloneWithValue(this.value.sub(TokenBaseUnit.toBig(value)))
   }
 
-  mul(value: TokenBaseUnit<T> | AcceptedTypes): T {
+  mul(value: T | AcceptedTypes): T {
     return this.cloneWithValue(this.value.mul(TokenBaseUnit.toBig(value)))
   }
 
-  div(value: TokenBaseUnit<T> | AcceptedTypes): T {
+  div(value: T | AcceptedTypes): T {
     return this.cloneWithValue(this.value.div(TokenBaseUnit.toBig(value)))
   }
 
-  gt(value: TokenBaseUnit<T> | AcceptedTypes): boolean {
+  gt(value: T | AcceptedTypes): boolean {
     return this.value.gt(TokenBaseUnit.toBig(value))
   }
 
-  lt(value: TokenBaseUnit<T> | AcceptedTypes): boolean {
+  lt(value: T | AcceptedTypes): boolean {
     return this.value.lt(TokenBaseUnit.toBig(value))
   }
 
-  eq(value: TokenBaseUnit<T> | AcceptedTypes): boolean {
+  eq(value: T | AcceptedTypes): boolean {
     return this.value.eq(TokenBaseUnit.toBig(value))
   }
 
@@ -100,9 +108,25 @@ export abstract class TokenBaseUnit<T extends TokenBaseUnit<T>> {
     return bigToBigint(rounded, this.maxDecimals)
   }
 
-  static toBig<T extends TokenBaseUnit<T>>(
-    value: AcceptedTypes | TokenBaseUnit<T>
-  ): Big {
+  /**
+   * Display token unit in denomination used for displaying fees
+   */
+  toFeeUnit(): string {
+    return this.value.mul(Big(10).pow(FEE_UNIT_DENOMINATION)).toFixed(0)
+  }
+
+  new(value?: AcceptedTypes): T {
+    return new this.childConstructor(value ?? 0, this.maxDecimals, this.symbol)
+  }
+
+  newFromFeeUnit(value?: AcceptedTypes): T {
+    const baseValue = TokenBaseUnit.toBig(value ? value : 0).div(
+      Big(10).pow(FEE_UNIT_DENOMINATION)
+    )
+    return new this.childConstructor(baseValue, this.maxDecimals, this.symbol)
+  }
+
+  static toBig<T extends TokenBaseUnit<T>>(value: AcceptedTypes | T): Big {
     switch (typeof value) {
       case 'bigint':
         return Big(BigInt(value as bigint).toString())
@@ -122,6 +146,6 @@ export abstract class TokenBaseUnit<T extends TokenBaseUnit<T>> {
   }
 
   private cloneWithValue(value: Big): T {
-    return new this.childConstructor(value)
+    return new this.childConstructor(value, this.maxDecimals, this.symbol)
   }
 }
