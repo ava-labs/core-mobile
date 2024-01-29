@@ -35,7 +35,7 @@
     "@avalabs/utils-sdk": "2.8.0-alpha.165",
     "@avalabs/wallets-sdk": "2.8.0-alpha.165",
     "@coinbase/cbpay-js": "1.6.0",
-    "@cubist-labs/cubesigner-sdk": "0.2.28",
+    "@cubist-labs/cubesigner-sdk": "0.3.11",
     "@datadog/mobile-react-native": "1.9.0",
     "@datadog/mobile-react-navigation": "1.9.0",
     "@ethereumjs/common": "2.6.5",
