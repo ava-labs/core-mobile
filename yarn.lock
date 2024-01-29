@@ -117,6 +117,7 @@ __metadata:
     "@babel/runtime": 7.22.11
     "@coinbase/cbpay-js": 1.6.0
     "@cubist-labs/cubesigner-sdk": 0.3.11
+    "@cubist-labs/cubesigner-sdk-ethers-v6": 0.3.11
     "@datadog/mobile-react-native": 1.9.0
     "@datadog/mobile-react-navigation": 1.9.0
     "@dlenroc/testrail": 1.7.2
@@ -2406,6 +2407,17 @@ __metadata:
   dependencies:
     "@jridgewell/trace-mapping": 0.3.9
   checksum: 5718f267085ed8edb3e7ef210137241775e607ee18b77d95aa5bd7514f47f5019aa2d82d96b3bf342ef7aa890a346fa1044532ff7cc3009e7d24fce3ce6200fa
+  languageName: node
+  linkType: hard
+
+"@cubist-labs/cubesigner-sdk-ethers-v6@npm:0.3.11":
+  version: 0.3.11
+  resolution: "@cubist-labs/cubesigner-sdk-ethers-v6@npm:0.3.11"
+  dependencies:
+    ethers: 6.7.1
+  peerDependencies:
+    "@cubist-labs/cubesigner-sdk": ^0.3.11
+  checksum: 6e48e8eaa8cc4c9f9087ac090f306092793bbbe44b5fb1afc54d752b20ff84528761b0639e709dbab2e27852dee29dd6ecd01d83a7cb26334e667b634cd7d0df
   languageName: node
   linkType: hard
 

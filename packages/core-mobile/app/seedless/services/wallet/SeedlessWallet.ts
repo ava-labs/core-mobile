@@ -1,5 +1,6 @@
 import { NetworkVMType } from '@avalabs/chains-sdk'
 import * as cs from '@cubist-labs/cubesigner-sdk'
+import { Signer as CsEthersSigner } from '@cubist-labs/cubesigner-sdk-ethers-v6'
 import {
   AvalancheTransactionRequest,
   BtcTransactionRequest,
@@ -247,7 +248,7 @@ export default class SeedlessWallet implements Wallet {
     transaction: TransactionRequest
     provider: JsonRpcBatchInternal
   }): Promise<string> {
-    const signer = new cs.ethers.Signer(
+    const signer = new CsEthersSigner(
       getEvmAddressFromPubKey(this.getPubKeyBufferC()),
       this.#session,
       { provider }
