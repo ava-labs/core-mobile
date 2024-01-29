@@ -48,7 +48,7 @@ const registerTokenExpireHandler = async (
 ): Promise<void> => {
   const { dispatch } = listenerApi
   const onSessionExpiredHandler = async (e: ErrResponse): Promise<void> => {
-    if (!e.isUserMfaError()) {
+    if (e.status === 403 && !e.isUserMfaError()) {
       dispatch(onTokenExpired)
     }
   }
