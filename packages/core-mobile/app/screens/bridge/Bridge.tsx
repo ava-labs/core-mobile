@@ -45,6 +45,7 @@ import Logger from 'utils/Logger'
 import {
   blockchainToNetwork,
   getBlockchainDisplayName,
+  isUnifiedBridgeAsset,
   networkToBlockchain
 } from 'screens/bridge/utils/bridgeUtils'
 import { BNInput } from 'components/BNInput'
@@ -55,7 +56,9 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { Button, Text, View, useTheme } from '@avalabs/k2-mobile'
 import CircleLogo from 'assets/icons/circle_logo.svg'
 import { Tooltip } from 'components/Tooltip'
-import { DOCS_STAKING } from 'resources/Constants'
+import { DOCS_BRIDGE_FAQS } from 'resources/Constants'
+import { selectSelectedCurrency } from 'store/settings/currency/slice'
+import { AssetBalance, BridgeProvider } from './utils/types'
 
 const blockchainTitleMaxWidth = Dimensions.get('window').width * 0.5
 const dropdownWith = Dimensions.get('window').width * 0.6
@@ -81,7 +84,8 @@ const Bridge: FC = () => {
   const { theme } = useTheme()
   const dispatch = useDispatch()
   const criticalConfig = useSelector(selectBridgeCriticalConfig)
-
+  const [selectedAsset, setSelectedAsset] = useState<AssetBalance>()
+  const selectedCurrency = useSelector(selectSelectedCurrency)
   const {
     sourceBalance,
     amount,
@@ -95,12 +99,12 @@ const Bridge: FC = () => {
     receiveAmount,
     wrapStatus,
     transfer,
-    bridgeFee
-  } = useBridge()
+    bridgeFee,
+    provider
+  } = useBridge(selectedAsset)
 
   const {
-    currentAsset,
-    setCurrentAsset,
+    setCurrentAsset: setCurrentAssetSymbol,
     currentBlockchain,
     setCurrentBlockchain: setCurrentBlockchainSDK,
     targetBlockchain
@@ -111,33 +115,53 @@ const Bridge: FC = () => {
   const [bridgeError, setBridgeError] = useState<string>('')
   const [isPending, setIsPending] = useState<boolean>(false)
   const tokenInfoData = useTokenInfoContext()
-  const denomination = sourceBalance?.asset.denomination || 0
-  const blockchainTokenSymbol = getTokenSymbolOnNetwork(
-    currentAsset ?? '',
-    currentBlockchain
+
+  const denomination = useMemo(() => {
+    if (!sourceBalance) {
+      return 0
+    }
+
+    if (isUnifiedBridgeAsset(sourceBalance.asset)) {
+      return sourceBalance.asset.decimals
+    }
+
+    return sourceBalance.asset.denomination
+  }, [sourceBalance])
+
+  const selectedAssetSymbol = useMemo(
+    () =>
+      isUnifiedBridgeAsset(selectedAsset?.asset)
+        ? selectedAsset?.asset.symbol
+        : getTokenSymbolOnNetwork(
+            selectedAsset?.asset.symbol ?? '',
+            currentBlockchain
+          ),
+    [currentBlockchain, getTokenSymbolOnNetwork, selectedAsset?.asset]
   )
+
   const { bridgeBtcBlocked, bridgeEthBlocked } = usePosthogContext()
   const { currencyFormatter } = useApplicationContext().appHook
   const amountBN = useMemo(
     () => bigToBN(amount, denomination),
     [amount, denomination]
   )
-
   const isAmountTooLow =
     amount && !amount.eq(BIG_ZERO) && amount.lt(minimum || BIG_ZERO)
 
   const hasValidAmount = !isAmountTooLow && amount.gt(BIG_ZERO)
 
   const formattedAmountCurrency = hasValidAmount
-    ? `${currencyFormatter(price.mul(amount).toNumber())}`
+    ? `${currencyFormatter(price.mul(amount).toNumber())} ${selectedCurrency}`
     : '-'
   const formattedReceiveAmount =
     hasValidAmount && receiveAmount
-      ? `~${receiveAmount.toFixed(9)} ${currentAsset}`
+      ? `${bigToLocaleString(receiveAmount)} ${selectedAssetSymbol}`
       : '-'
   const formattedReceiveAmountCurrency =
     hasValidAmount && price && receiveAmount
-      ? `~${currencyFormatter(price.mul(receiveAmount).toNumber())}`
+      ? `${currencyFormatter(
+          price.mul(receiveAmount).toNumber()
+        )} ${selectedCurrency}`
       : '-'
 
   const transferDisabled =
@@ -155,6 +179,41 @@ const Bridge: FC = () => {
       setCurrentBlockchainSDK(networkBlockchain)
     }
   }, [activeNetwork, currentBlockchain, setCurrentBlockchainSDK])
+
+  // Update selected asset for unified bridge whenever currentBlockchain changes
+  useEffect(() => {
+    if (!selectedAsset) return
+
+    const correspondingAsset = assetsWithBalances?.find(asset => {
+      // when selected asset is USDC.e and we are switching to Ethereum
+      // we want to automatically select USDC
+      // to do that, we need to compare by symbol (USDC) instead of symbolOnNetwork (USDC.e)
+      if (
+        currentBlockchain === Blockchain.ETHEREUM &&
+        selectedAsset.symbolOnNetwork === 'USDC.e'
+      ) {
+        return asset.symbol === selectedAsset.symbol
+      }
+
+      // for all other cases we just simply compare the real symbol on network
+      return asset.symbolOnNetwork === selectedAsset.symbolOnNetwork
+    })
+
+    // if the found asset is not in the list of new assets with balances, clear the selection
+    if (!correspondingAsset) {
+      setSelectedAsset(undefined)
+      return
+    }
+
+    // if the found asset is a unified bridge asset and its value is different, set it as the current asset
+    if (
+      isUnifiedBridgeAsset(correspondingAsset.asset) &&
+      JSON.stringify(correspondingAsset.asset) !==
+        JSON.stringify(selectedAsset.asset)
+    ) {
+      setSelectedAsset(correspondingAsset)
+    }
+  }, [assetsWithBalances, currentBlockchain, selectedAsset])
 
   // Remove chains turned off by the feature flags
   const filterChains = useCallback(
@@ -223,8 +282,11 @@ const Bridge: FC = () => {
     }
   }
 
-  const handleSelect = (symbol: string): void => {
-    setCurrentAsset(symbol)
+  const handleSelect = (token: AssetBalance): void => {
+    const symbol = token.symbol
+
+    setCurrentAssetSymbol(symbol)
+    setSelectedAsset(token)
   }
 
   /**
@@ -257,7 +319,7 @@ const Bridge: FC = () => {
           return
         }
         setBridgeError(TRANSFER_ERROR)
-        Logger.error(TRANSFER_ERROR)
+        Logger.error(TRANSFER_ERROR, error)
         AnalyticsService.capture('BridgeTransferRequestError', {
           sourceBlockchain: currentBlockchain,
           targetBlockchain
@@ -417,33 +479,38 @@ const Bridge: FC = () => {
   }
 
   const renderBalance = (): JSX.Element => {
+    const shouldRenderBalance = selectedAsset && sourceBalance?.balance
+
     return (
       <Text
         variant="caption"
         sx={{ color: '$neutral300', alignSelf: 'flex-end', paddingEnd: 16 }}>
         Balance:
-        {sourceBalance?.balance
+        {shouldRenderBalance
           ? ` ${formatBalance(sourceBalance?.balance)}`
-          : !!currentAsset && <ActivityIndicator size={'small'} />}
-        {' ' + blockchainTokenSymbol}
+          : selectedAsset && <ActivityIndicator size={'small'} />}
+        {' ' + selectedAssetSymbol}
       </Text>
     )
   }
   const renderTokenSelectInput = (): JSX.Element => (
     <Pressable disabled={loading} onPress={() => navigateToTokenSelector()}>
       <Row style={styles.tokenRow}>
-        {!!currentAsset && (
+        {selectedAsset && (
           <>
             <Avatar.Custom
-              name={blockchainTokenSymbol}
-              symbol={blockchainTokenSymbol}
-              logoUri={tokenInfoData?.[blockchainTokenSymbol]?.logo}
+              name={selectedAssetSymbol ?? ''}
+              symbol={selectedAssetSymbol}
+              logoUri={
+                selectedAssetSymbol &&
+                tokenInfoData?.[selectedAssetSymbol]?.logo
+              }
             />
             <Space x={8} />
           </>
         )}
         <Text variant="buttonMedium" style={styles.tokenSelectorText}>
-          {currentAsset ? blockchainTokenSymbol : 'Select Token'}
+          {selectedAsset ? selectedAssetSymbol : 'Select Token'}
         </Text>
         <CarrotSVG direction={'down'} size={12} />
       </Row>
@@ -486,7 +553,7 @@ const Bridge: FC = () => {
           />
         )}
       </>
-      {!currentAsset && (
+      {!selectedAsset && (
         <Pressable
           disabled={loading}
           style={StyleSheet.absoluteFill}
@@ -630,8 +697,8 @@ const Bridge: FC = () => {
   }
 
   const handleBridgeFaqs = (): void => {
-    Linking.openURL(DOCS_STAKING).catch(e => {
-      Logger.error(DOCS_STAKING, e)
+    Linking.openURL(DOCS_BRIDGE_FAQS).catch(e => {
+      Logger.error(DOCS_BRIDGE_FAQS, e)
     })
   }
 
@@ -705,11 +772,7 @@ const Bridge: FC = () => {
         </View>
       </ScrollViewList>
       {renderTransferBtn()}
-      {
-        // TODO: hook this up with logic in CP-8033
-        // eslint-disable-next-line sonarjs/no-redundant-boolean
-        false && renderCircleBadge()
-      }
+      {provider === BridgeProvider.UNIFIED && renderCircleBadge()}
     </SafeAreaProvider>
   )
 }
@@ -761,15 +824,8 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
     justifyContent: 'space-between'
-  },
-  transferButton: {
-    margin: 16,
-    borderRadius: 50,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginHorizontal: 16,
-    paddingVertical: 12
   }
 })
 
 export default React.memo(Bridge)
+// Bridge.whyDidYouRender = true

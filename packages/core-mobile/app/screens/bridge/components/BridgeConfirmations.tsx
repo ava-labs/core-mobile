@@ -17,12 +17,13 @@ import { selectBridgeAppConfig } from 'store/bridge'
 import { useSelector } from 'react-redux'
 import { getFormattedDistance } from 'utils/date/getFormattedDistance'
 import { Tooltip } from 'components/Tooltip'
+import { Chain } from '@avalabs/bridge-unified'
 
 interface Props {
-  sourceChain?: Blockchain
-  targetChain?: Blockchain
+  sourceChain?: Blockchain | Chain
+  targetChain?: Blockchain | Chain
   paddingHorizontal?: number
-  confirmationCount: number
+  currentConfirmationCount: number
   requiredConfirmationCount: number
   startTime?: number
   endTime?: number
@@ -38,13 +39,11 @@ const padTimeElapsed = (startTime: number, endTime?: number): Date => {
 }
 
 function ElapsedTimer({
-  sourceChain,
-  targetChain,
+  isOffboardingBitcoin,
   startTime,
   endTime
 }: {
-  sourceChain?: Blockchain
-  targetChain?: Blockchain
+  isOffboardingBitcoin: boolean
   startTime: number
   endTime?: number
 }): JSX.Element {
@@ -78,10 +77,7 @@ function ElapsedTimer({
   const displayedHours = hours > 0 ? hours.toLocaleString('en-US') : undefined
   const complete = !!endTime
 
-  const showInfoIcon =
-    !complete &&
-    sourceChain === Blockchain.AVALANCHE &&
-    targetChain === Blockchain.BITCOIN
+  const showInfoIcon = !complete && isOffboardingBitcoin
 
   const renderOvalTagBg = (): JSX.Element => {
     return (
@@ -123,17 +119,15 @@ function ElapsedTimer({
 const BridgeConfirmations: FC<Props> = ({
   sourceChain,
   targetChain,
-  confirmationCount,
+  currentConfirmationCount,
   requiredConfirmationCount,
   startTime,
   endTime = 0,
   paddingHorizontal = 16,
   started = false
 }) => {
-  const currentConfirmationCount = Math.min(
-    confirmationCount,
-    requiredConfirmationCount
-  )
+  const isOffboardingBitcoin =
+    sourceChain === Blockchain.AVALANCHE && targetChain === Blockchain.BITCOIN
 
   return (
     <View>
@@ -149,8 +143,7 @@ const BridgeConfirmations: FC<Props> = ({
               <ElapsedTimer
                 startTime={startTime}
                 endTime={endTime}
-                sourceChain={sourceChain}
-                targetChain={targetChain}
+                isOffboardingBitcoin={isOffboardingBitcoin}
               />
             )}
           </Row>

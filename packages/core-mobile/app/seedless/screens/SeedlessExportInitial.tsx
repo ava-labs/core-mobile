@@ -111,7 +111,7 @@ export const SeedlessExportInitial = (): JSX.Element => {
     }
     setHideMnemonic(prev => !prev)
     AnalyticsService.capture(
-      !hideMnemonic === true
+      hideMnemonic !== true // state hasn't updated yet
         ? 'SeedlessExportPhraseHidden'
         : 'SeedlessExportPhraseRevealed'
     )

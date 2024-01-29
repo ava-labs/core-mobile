@@ -39,12 +39,7 @@ export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
   const currency = useSelector(selectSelectedCurrency)
   const bridgeConfig = useSelector(selectBridgeAppConfig)
   const { createBridgeTransaction } = useBridgeContext()
-  const {
-    currentAsset,
-    setTransactionDetails,
-    currentBlockchain,
-    targetBlockchain
-  } = useBridgeSDK()
+  const { currentAsset, currentBlockchain, targetBlockchain } = useBridgeSDK()
   const btcAddress = activeAccount?.addressBtc
   const allNetworks = useSelector(selectNetworks)
   const avalancheNetwork = getAvalancheNetwork(
@@ -54,7 +49,6 @@ export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
   const avalancheTokens = useSelector(
     selectTokensWithBalanceByNetwork(avalancheNetwork)
   )
-
   const isBitcoinBridge = getIsBitcoinBridge(
     currentBlockchain,
     targetBlockchain
@@ -220,11 +214,6 @@ export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
 
     const hash = await networkService.sendTransaction(signedTx, bitcoinNetwork)
 
-    setTransactionDetails({
-      tokenSymbol: symbol,
-      amount: amountInBtc
-    })
-
     createBridgeTransaction(
       {
         sourceChain: Blockchain.BITCOIN,
@@ -248,7 +237,6 @@ export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
     amountInSatoshis,
     feeRate,
     currentAsset,
-    setTransactionDetails,
     amountInBtc,
     createBridgeTransaction
   ])

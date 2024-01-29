@@ -8,6 +8,7 @@ import { Space } from 'components/Space'
 import { Row } from 'components/Row'
 import MarketMovement from 'screens/watchlist/components/MarketMovement'
 import type { ComponentStory, Meta } from '@storybook/react-native'
+import { withProviders } from '../decorators/withProviders'
 
 const styles = StyleSheet.create({
   container: {
@@ -17,7 +18,7 @@ const styles = StyleSheet.create({
   }
 })
 
-const BaseDemo = () => {
+const BaseDemo = (): JSX.Element => {
   return (
     <ScrollView
       contentContainerStyle={styles.container}
@@ -199,7 +200,8 @@ const BaseDemo = () => {
 }
 
 export default {
-  title: 'AvaListItem'
+  title: 'AvaListItem',
+  decorators: [withProviders]
 } as Meta
 
 export const BaseExamples = BaseDemo

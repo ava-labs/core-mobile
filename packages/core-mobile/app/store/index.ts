@@ -3,6 +3,7 @@ import { combineReducers } from 'redux'
 import { AnyAction, configureStore, ListenerEffectAPI } from '@reduxjs/toolkit'
 import { createMigrate, persistReducer, persistStore } from 'redux-persist'
 import { bridgeReducer as bridge } from 'store/bridge'
+import { unifiedBridgeReducer as unifiedBridge } from 'store/unifiedBridge'
 import { nftsApi } from 'store/nft/api'
 import { migrations } from 'store/migrations'
 import DevDebuggingConfig from 'utils/debugging/DevDebuggingConfig'
@@ -51,6 +52,7 @@ const combinedReducer = combineReducers({
   notifications,
   addressBook,
   bridge,
+  unifiedBridge,
   customToken,
   posthog,
   swap,

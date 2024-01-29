@@ -1,17 +1,18 @@
 import React, { useMemo, useState } from 'react'
 import { ListRenderItemInfo, View } from 'react-native'
+import { Text } from '@avalabs/k2-mobile'
 import Loader from 'components/Loader'
 import { Space } from 'components/Space'
-import { BIG_ZERO, useTokenInfoContext } from '@avalabs/bridge-sdk'
+import { Asset, BIG_ZERO, useTokenInfoContext } from '@avalabs/bridge-sdk'
 import AvaListItem from 'components/AvaListItem'
-import AvaText from 'components/AvaText'
 import Avatar from 'components/Avatar'
 import { formatTokenAmount } from 'utils/Utils'
 import SearchBar from 'components/SearchBar'
-
+import { BridgeAsset } from '@avalabs/bridge-unified'
 import { BottomSheetFlatList } from '@gorhom/bottom-sheet'
 import { AssetBalance } from 'screens/bridge/utils/types'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import { isUnifiedBridgeAsset } from './utils/bridgeUtils'
 
 const DEFAULT_HORIZONTAL_MARGIN = 16
 
@@ -22,10 +23,14 @@ export enum SelectTokenMode {
 }
 
 interface TokenSelectorProps {
-  onTokenSelected: (symbol: string) => void
+  onTokenSelected: (token: AssetBalance) => void
   bridgeTokenList: AssetBalance[]
   horizontalMargin?: number
   selectMode: SelectTokenMode
+}
+
+const getTokenName = (asset: Asset | BridgeAsset): string => {
+  return isUnifiedBridgeAsset(asset) ? asset.name : asset.tokenName
 }
 
 function BridgeTokenSelector({
@@ -39,7 +44,11 @@ function BridgeTokenSelector({
   const renderItem = (item: ListRenderItemInfo<AssetBalance>): JSX.Element => {
     const token = item.item
     const symbol = token.asset.symbol
-    const name = token.symbol === 'ETH' ? 'Ethereum' : token.asset.tokenName
+    const name = getTokenName(token.asset)
+
+    const title = token.symbolOnNetwork
+      ? `${name} (${token.symbolOnNetwork})`
+      : name
 
     const tokenLogo = (): JSX.Element => {
       return (
@@ -53,18 +62,16 @@ function BridgeTokenSelector({
 
     return (
       <AvaListItem.Base
-        title={name}
+        title={title}
         leftComponent={tokenLogo()}
         rightComponentVerticalAlignment={'center'}
         rightComponent={
-          <>
-            <AvaText.Body1>
-              {formatTokenAmount(token.balance || BIG_ZERO, 6)} {token.symbol}
-            </AvaText.Body1>
-          </>
+          <Text variant="body1" style={{ marginLeft: 12 }}>
+            {formatTokenAmount(token.balance || BIG_ZERO, 6)} {token.symbol}
+          </Text>
         }
         onPress={() => {
-          onTokenSelected(symbol)
+          onTokenSelected(token)
           AnalyticsService.capture('Bridge_TokenSelected')
         }}
       />
@@ -78,7 +85,7 @@ function BridgeTokenSelector({
     return searchText && searchText.length > 0
       ? bridgeTokenList?.filter(
           i =>
-            i.asset.tokenName
+            getTokenName(i.asset)
               ?.toLowerCase()
               .includes(searchText.toLowerCase()) ||
             i.symbol?.toLowerCase().includes(searchText.toLowerCase())

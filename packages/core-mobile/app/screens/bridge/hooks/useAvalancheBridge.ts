@@ -1,19 +1,12 @@
-import {
-  BIG_ZERO,
-  Blockchain,
-  useBridgeSDK,
-  useHasEnoughForGas
-} from '@avalabs/bridge-sdk'
+import { BIG_ZERO, Blockchain, useBridgeSDK } from '@avalabs/bridge-sdk'
 import { BridgeAdapter } from 'screens/bridge/hooks/useBridge'
 import { useBridgeContext } from 'contexts/BridgeContext'
-import { useCallback, useState } from 'react'
-import { useSingularAssetBalanceEVM } from 'screens/bridge/hooks/useSingularAssetBalanceEVM'
+import { useCallback, useMemo, useState } from 'react'
 import { useAssetBalancesEVM } from 'screens/bridge/hooks/useAssetBalancesEVM'
 import Big from 'big.js'
-import { useAvalancheProvider } from 'hooks/networkProviderHooks'
 import { useSelector } from 'react-redux'
-import { selectActiveAccount } from 'store/account'
 import { selectActiveNetwork } from 'store/network'
+import { useHasEnoughForGas } from './useHasEnoughtForGas'
 
 /**
  * Hook for when the source is Avalanche
@@ -23,34 +16,24 @@ export function useAvalancheBridge(
   bridgeFee: Big,
   minimum: Big
 ): BridgeAdapter {
-  const {
-    targetBlockchain,
-    currentBlockchain,
-    setTransactionDetails,
-    currentAssetData
-  } = useBridgeSDK()
-
+  const { targetBlockchain, currentAssetData } = useBridgeSDK()
   const { createBridgeTransaction, transferAsset } = useBridgeContext()
-
-  const isAvalancheBridge = currentBlockchain === Blockchain.AVALANCHE
   const [txHash, setTxHash] = useState<string>()
-
-  const sourceBalance = useSingularAssetBalanceEVM(
-    isAvalancheBridge ? currentAssetData : undefined,
-    Blockchain.AVALANCHE
-  )
 
   const { assetsWithBalances, loading } = useAssetBalancesEVM(
     Blockchain.AVALANCHE
   )
 
-  const activeAccount = useSelector(selectActiveAccount)
-  const network = useSelector(selectActiveNetwork)
-  const avalancheProvider = useAvalancheProvider()
-  const hasEnoughForNetworkFee = useHasEnoughForGas(
-    isAvalancheBridge ? activeAccount?.address : undefined,
-    avalancheProvider
+  const sourceBalance = useMemo(
+    () =>
+      assetsWithBalances.find(
+        ({ asset }) => asset.symbol === currentAssetData?.symbol
+      ),
+    [assetsWithBalances, currentAssetData?.symbol]
   )
+
+  const network = useSelector(selectActiveNetwork)
+  const hasEnoughForNetworkFee = useHasEnoughForGas()
 
   const maximum = sourceBalance?.balance || BIG_ZERO
   const receiveAmount = amount.gt(minimum) ? amount.minus(bridgeFee) : BIG_ZERO
@@ -70,11 +53,6 @@ export function useAvalancheBridge(
       setTxHash
     )
 
-    setTransactionDetails({
-      tokenSymbol: currentAssetData.symbol,
-      amount
-    })
-
     createBridgeTransaction(
       {
         sourceChain: Blockchain.AVALANCHE,
@@ -92,7 +70,6 @@ export function useAvalancheBridge(
     amount,
     createBridgeTransaction,
     currentAssetData,
-    setTransactionDetails,
     targetBlockchain,
     transferAsset,
     network

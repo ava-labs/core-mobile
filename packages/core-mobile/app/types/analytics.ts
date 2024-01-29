@@ -24,7 +24,7 @@ export type AnalyticsEvents = {
   BridgeTransferRequestUserRejectedError: {
     sourceBlockchain: string
     targetBlockchain: string
-    fee: number
+    fee: number | undefined
   }
   BridgeTransferStarted: { sourceBlockchain: string; targetBlockchain: string }
   BridgeTransactionHide: undefined
