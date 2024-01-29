@@ -406,7 +406,7 @@ index f3f27d7..a2ca264 100644
     * Whether to enable Graph scrubbing/pan gesture.
     */
 diff --git a/node_modules/react-native-graph/src/StaticLineGraph.tsx b/node_modules/react-native-graph/src/StaticLineGraph.tsx
-index cd5f0aa..7556c31 100644
+index cd5f0aa..edfc2e8 100644
 --- a/node_modules/react-native-graph/src/StaticLineGraph.tsx
 +++ b/node_modules/react-native-graph/src/StaticLineGraph.tsx
 @@ -1,9 +1,11 @@
@@ -459,20 +459,20 @@ index cd5f0aa..7556c31 100644
 +
 +      if (shouldFillGradient) {
 +        const { path, gradientPath } = createGraphPathWithGradient(createGraphPathProps)
-+        const pathSVG = useSVG ? path.toSVGString() : ''
-+        const gradientPathSVG = useSVG ? gradientPath.toSVGString() : ''
++        const pathSVG = useSVG && path !== undefined ? path.toSVGString() : ''
++        const gradientPathSVG = useSVG && gradientPath !== undefined ? gradientPath.toSVGString() : ''
 +  
 +        return [path, gradientPath, pathSVG, gradientPathSVG]
 +      }
 +
 +      const path = createGraphPath(createGraphPathProps)
-+      const pathSVG = useSVG ? path.toSVGString() : ''
++      const pathSVG = useSVG && path !== undefined ? path.toSVGString() : ''
 +
 +      return [path, gradientPath, pathSVG, '']
 +    },
 +    [shouldFillGradient, height, lineThickness, pathRange, pointsInRange, width]
    )
-  
+ 
 +  const gradientFrom = useMemo(() => vec(0, 0), [])
 +  const gradientTo = useMemo(() => vec(width * 0.15, 0), [width])
 +
@@ -502,7 +502,7 @@ index cd5f0aa..7556c31 100644
 +      </View>
 +    )
 +  }
-   
+ 
    return (
      <View {...props} style={style} onLayout={onLayout}>
 @@ -96,6 +137,18 @@ export function StaticLineGraph({
