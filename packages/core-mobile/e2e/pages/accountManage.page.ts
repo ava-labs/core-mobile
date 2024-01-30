@@ -166,7 +166,7 @@ class AccountManagePage {
   }
 
   async tapSecondAccount() {
-    await Action.tapElementAtIndex(this.secondAccount, 0)
+    await Action.tapElementAtIndex(this.secondAccount, 1)
   }
 
   async tapCarrotSVG() {
