@@ -314,7 +314,7 @@ const Bridge: FC = () => {
           AnalyticsService.capture('BridgeTransferRequestUserRejectedError', {
             sourceBlockchain: currentBlockchain,
             targetBlockchain,
-            fee: bridgeFee?.toNumber()
+            fee: bridgeFee.toNumber()
           })
           return
         }

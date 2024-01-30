@@ -49,6 +49,7 @@ interface Bridge extends BridgeAdapter {
   setAmount: (amount: Big) => void
   price: Big
   provider: BridgeProvider
+  bridgeFee: Big
 }
 
 export default function useBridge(selectedAsset?: AssetBalance): Bridge {
