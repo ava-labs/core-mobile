@@ -18,7 +18,9 @@ describe('Send Sepolia Eth to another account', () => {
     await LoginRecoverWallet.recoverWalletLogin()
     await AdvancedPage.switchToTestnet()
     await NetworksManagePage.switchToEthereumSepoliaNetwork()
+    await AccountManagePage.switchToFirstAccount()
     const secondAccountAddress = await AccountManagePage.createSecondAccount()
+    await AccountManagePage.tapFirstAccount()
     await SendPage.sendTokenTo2ndAccount(
       sendLoc.ethToken,
       sendLoc.sendingAmount

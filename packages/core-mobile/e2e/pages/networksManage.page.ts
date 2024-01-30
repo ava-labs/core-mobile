@@ -102,6 +102,10 @@ class NetworksPage {
     return by.id(networksManage.searchBar)
   }
 
+  get networkNotAvailableToast() {
+    return by.id(networksManage.networkNotAvailableToast)
+  }
+
   async addBtcNetwork() {
     await Action.tapElementAtIndex(this.favoriteNetwork, 0)
   }
@@ -205,6 +209,13 @@ class NetworksPage {
       await Action.swipeUp(this.bitcoinTestnet, 'slow', 0.5, 0)
     }
     await this.tapEthereumSepoliaNetwork()
+  }
+
+  async switchToAvalancheNetwork() {
+    if (process.env.SEEDLESS_TEST === 'true') {
+      await PortfolioPage.tapNetworksDropdown()
+      await PortfolioPage.tapNetworksDropdownAVAX()
+    }
   }
 }
 

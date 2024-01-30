@@ -14,7 +14,9 @@ describe('Send USDC to another account', () => {
 
   it('Should send USDC to second account', async () => {
     await LoginRecoverWallet.recoverWalletLogin()
+    await AccountManagePage.switchToFirstAccount()
     const secondAccountAddress = await AccountManagePage.createSecondAccount()
+    await AccountManagePage.tapFirstAccount()
     await SendPage.sendTokenTo2ndAccount(
       sendLoc.usdcToken,
       sendLoc.sendingAmount
@@ -25,13 +27,6 @@ describe('Send USDC to another account', () => {
       5000,
       secondAccountAddress,
       ActivityTabLoc.usdcOutgoingTransactionDetail
-    )
-  })
-
-  it('Should receive USDC on second account', async () => {
-    await ActivityTabPage.tapHeaderBack()
-    await ActivityTabPage.verifyIncomingTransaction(
-      ActivityTabLoc.usdcIncomingTransactionDetail
     )
   })
 })

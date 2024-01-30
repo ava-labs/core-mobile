@@ -121,6 +121,30 @@ module.exports = {
         }
       }
     },
+    'ios.internal.debug.seedless': {
+      device: 'simulator',
+      app: 'ios.internal.debug',
+      args: {
+        detoxDebugVisibility: 'YES',
+        config: 'e2e/seedless_config.json'
+      },
+      artifacts: {
+        rootDir: './e2e/artifacts/ios',
+        plugins: {
+          instruments: 'all'
+        }
+      }
+    },
+    'ios.internal.seedless.debug': {
+      device: 'simulator',
+      app: 'ios.internal.debug',
+      artifacts: {
+        rootDir: './e2e/artifacts/ios',
+        plugins: {
+          instruments: 'all'
+        }
+      }
+    },
     'ios.internal.smoke.debug': {
       device: 'simulator',
       app: 'ios.internal.debug',

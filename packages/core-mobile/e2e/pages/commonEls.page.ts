@@ -1,5 +1,7 @@
 import commonEls from '../locators/commonEls.loc'
 import Actions from '../helpers/actions'
+import advancedPage from './burgerMenu/advanced.page'
+import burgerMenuPage from './burgerMenu/burgerMenu.page'
 
 class CommonElsPage {
   get retryBtn() {
@@ -8,6 +10,10 @@ class CommonElsPage {
 
   get backButton() {
     return by.id(commonEls.backButton)
+  }
+
+  get backButton2() {
+    return by.id(commonEls.backButton2)
   }
 
   get getStartedButton() {
@@ -26,8 +32,16 @@ class CommonElsPage {
     return by.id(commonEls.jailbrokenWarning)
   }
 
-  async tapBackButton() {
-    await Actions.tap(this.backButton)
+  get testnetBanner() {
+    return by.id(commonEls.testnetBanner)
+  }
+
+  async tapBackButton(index = 0) {
+    await Actions.tapElementAtIndex(this.backButton, index)
+  }
+
+  async tapBackButton2() {
+    await Actions.tapElementAtIndex(this.backButton2, 0)
   }
 
   async tapGetStartedButton() {
@@ -52,6 +66,20 @@ class CommonElsPage {
       await Actions.tap(this.retryBtn)
     } catch (error) {
       /* empty */
+    }
+  }
+
+  async checkIfMainnet() {
+    if (process.env.SEEDLESS_TEST === 'true') {
+      try {
+        await Actions.waitForElement(this.testnetBanner, 10000, 0)
+        await advancedPage.switchToMainnet()
+        await this.tapBackButton()
+        await burgerMenuPage.swipeLeft()
+        await Actions.swipeLeft(burgerMenuPage.addressBook, 'slow', 1000, 0)
+      } catch (error) {
+        return
+      }
     }
   }
 }

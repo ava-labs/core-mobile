@@ -11,6 +11,10 @@ describe('Empty Assets', () => {
     await warmup()
   })
 
+  afterAll(async () => {
+    await NetworksManagePage.switchToAvalancheNetwork()
+  })
+
   it('should check empty assets on custom Network', async () => {
     await LoginRecoverWallet.recoverWalletLogin()
     await PortfolioPage.tapNetworksDropdown()

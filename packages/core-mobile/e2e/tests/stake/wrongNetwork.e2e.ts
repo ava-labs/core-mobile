@@ -5,10 +5,18 @@ import BottomTabsPage from '../../pages/bottomTabs.page'
 import { warmup } from '../../helpers/warmup'
 import PortfolioPage from '../../pages/portfolio.page'
 import StakePage from '../../pages/Stake/stake.page'
+import networksManagePage from '../../pages/networksManage.page'
+import commonElsPage from '../../pages/commonEls.page'
 
 describe('Stake: wrong network', () => {
   beforeAll(async () => {
     await warmup()
+  })
+
+  afterAll(async () => {
+    await commonElsPage.tapBackButton2()
+    await AccountManagePage.switchToFirstAccount()
+    await networksManagePage.switchToAvalancheNetwork()
   })
 
   it('should verify wrong network screen for staking on mainnet', async () => {

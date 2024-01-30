@@ -13,6 +13,7 @@ describe('Send Avax to another account', () => {
 
   it('Should verify Address Required warning', async () => {
     await LoginRecoverWallet.recoverWalletLogin()
+    await AccountManagePage.switchToFirstAccount()
     await PortfolioPage.tapCollectiblesTab()
     await Actions.waitForElement(CollectiblesPage.gridItem, 5000)
     await CollectiblesPage.tapGridItem()

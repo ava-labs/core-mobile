@@ -8,6 +8,7 @@ import ExistingRecoveryPhrasePage from '../../pages/existingRecoveryPhrase.page'
 import tokenDetailPage from '../../pages/tokenDetail.page'
 import { warmup } from '../../helpers/warmup'
 import Actions from '../../helpers/actions'
+import accountManagePage from '../../pages/accountManage.page'
 
 describe('Verify Watchlist', () => {
   beforeAll(async () => {
@@ -17,6 +18,7 @@ describe('Verify Watchlist', () => {
   it('should navigate to watchlist', async () => {
     const recoveryPhrase: string = process.env.E2E_MNEMONIC as string
     await ExistingRecoveryPhrasePage.recoverWallet(recoveryPhrase)
+    await accountManagePage.switchToFirstAccount()
     await BottomTabsPage.tapWatchlistTab()
     await Actions.waitForElement(WatchListPage.favoritesTab)
     await BottomTabsPage.verifyBottomTabs()

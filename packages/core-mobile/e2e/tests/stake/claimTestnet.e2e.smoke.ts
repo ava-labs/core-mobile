@@ -8,6 +8,7 @@ import BottomTabsPage from '../../pages/bottomTabs.page'
 import { warmup } from '../../helpers/warmup'
 import StakePage from '../../pages/Stake/stake.page'
 import ClaimPage from '../../pages/Stake/claim.page'
+import accountManagePage from '../../pages/accountManage.page'
 
 const platformIndex = Actions.platform() === Platform.iOS ? 1 : 2
 
@@ -16,8 +17,13 @@ describe('Stake: testnet flow', () => {
     await warmup()
   })
 
+  afterAll(async () => {
+    await AdvancedPage.switchToMainnet()
+  })
+
   it('should claim & verify claim screen items on testnet', async () => {
     await LoginRecoverWallet.recoverWalletLogin()
+    await accountManagePage.switchToFirstAccount()
     await BottomTabsPage.tapPortfolioTab()
     await AdvancedPage.switchToTestnet()
     await BottomTabsPage.tapStakeTab()

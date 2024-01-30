@@ -31,7 +31,11 @@ export default function HeaderAccountSelector({
           }}>
           {activeAccount?.title}
         </AvaText.Heading3>
-        <CarrotSVG color={theme.colorText1} direction={direction} />
+        <CarrotSVG
+          color={theme.colorText1}
+          direction={direction}
+          testID="account_dropdown_carrot"
+        />
       </View>
     </AvaButton.Base>
   )

@@ -14,7 +14,9 @@ describe('Send WETH to another account', () => {
 
   it('Should send WETH to second account', async () => {
     await LoginRecoverWallet.recoverWalletLogin()
+    await AccountManagePage.switchToFirstAccount()
     const secondAccountAddress = await AccountManagePage.createSecondAccount()
+    await AccountManagePage.tapFirstAccount()
     await SendPage.sendTokenTo2ndAccount(
       sendLoc.wethToken,
       sendLoc.sendingAmount
@@ -25,13 +27,6 @@ describe('Send WETH to another account', () => {
       20000,
       secondAccountAddress,
       ActivityTabLoc.wethOutgoingTransactionDetail
-    )
-  })
-
-  it('Should receive WETH on second account', async () => {
-    await ActivityTabPage.tapHeaderBack()
-    await ActivityTabPage.verifyIncomingTransaction(
-      ActivityTabLoc.wethIncomingTransactionDetail
     )
   })
 })

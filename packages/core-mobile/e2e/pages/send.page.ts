@@ -79,6 +79,7 @@ class SendPage {
   }
 
   async sendTokenTo2ndAccount(token: string, sendingAmmount: string) {
+    await Actions.waitForElement(BottomTabsPage.plusIcon)
     await BottomTabsPage.tapPlusIcon()
     await Actions.waitForElement(PlusMenuPage.sendButton)
     await PlusMenuPage.tapSendButton()

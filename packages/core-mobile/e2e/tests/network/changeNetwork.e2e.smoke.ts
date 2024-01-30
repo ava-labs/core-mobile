@@ -14,6 +14,10 @@ describe('Change Network', () => {
     await warmup()
   })
 
+  afterAll(async () => {
+    await NetworksManagePage.switchToAvalancheNetwork()
+  })
+
   it('should verify changing Active network to ETH', async () => {
     await LoginRecoverWallet.recoverWalletLogin()
     await PortfolioPage.tapNetworksDropdown()

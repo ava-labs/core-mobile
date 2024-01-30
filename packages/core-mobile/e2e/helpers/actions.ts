@@ -16,6 +16,14 @@ const tap = async (item: Detox.NativeMatcher) => {
   await element(item).tap()
 }
 
+const multiTap = async (
+  item: Detox.NativeMatcher,
+  count: number,
+  index: number
+) => {
+  await element(item).atIndex(index).multiTap(count)
+}
+
 const tapElementAtIndex = async (item: Detox.NativeMatcher, num: number) => {
   await element(item).atIndex(num).tap()
 }
@@ -206,6 +214,7 @@ async function writeQrCodeToFile(clipboardValue: string) {
 export default {
   balanceToNumber,
   tap,
+  multiTap,
   longPress,
   waitForElement,
   waitForElementNoSync,

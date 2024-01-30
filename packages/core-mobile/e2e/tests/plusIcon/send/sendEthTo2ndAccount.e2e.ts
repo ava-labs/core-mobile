@@ -6,15 +6,24 @@ import PortfolioPage from '../../../pages/portfolio.page'
 import SendPage from '../../../pages/send.page'
 import sendLoc from '../../../locators/send.loc'
 import { warmup } from '../../../helpers/warmup'
+import networksManagePage from '../../../pages/networksManage.page'
+import commonElsPage from '../../../pages/commonEls.page'
 
 describe('Send Eth to another account', () => {
   beforeAll(async () => {
     await warmup()
   })
 
+  afterAll(async () => {
+    await commonElsPage.tapBackButton2()
+    await networksManagePage.switchToAvalancheNetwork()
+  })
+
   it('Should send Eth to second account', async () => {
     await LoginRecoverWallet.recoverWalletLogin()
+    await AccountManagePage.switchToFirstAccount()
     const secondAccountAddress = await AccountManagePage.createSecondAccount()
+    await AccountManagePage.tapFirstAccount()
     await PortfolioPage.tapNetworksDropdown()
     await PortfolioPage.tapNetworksDropdownETH()
     await SendPage.sendTokenTo2ndAccount(

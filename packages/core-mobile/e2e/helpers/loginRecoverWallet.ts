@@ -1,17 +1,16 @@
-import ExistingRecoveryPhrasePage from '../pages/existingRecoveryPhrase.page'
 import CreatePinPage from '../pages/createPin.page'
 import AnalyticsConsentPage from '../pages/analyticsConsent.page'
 import PortfolioPage from '../pages/portfolio.page'
 import commonElsPage from '../pages/commonEls.page'
 import nameWalletPage from '../pages/nameWallet.page'
+import ExistingRecoveryPhrasePage from '../pages/existingRecoveryPhrase.page'
+import accountManagePage from '../pages/accountManage.page'
 
 class LoginRecoverWallet {
-  async recoverWalletLogin() {
+  async recoverMnemonicWallet() {
     const recoveryPhrase: string = process.env.E2E_MNEMONIC as string
     await ExistingRecoveryPhrasePage.tapAlreadyHaveAWalletBtn()
-    // await ExistingRecoveryPhrasePage.tapSignInWithRecoveryPhraseBtn()
     await ExistingRecoveryPhrasePage.tapRecoveryPhraseBtn()
-    // await ExistingRecoveryPhrasePage.tapForgotPinBtn()
     await AnalyticsConsentPage.tapNoThanksBtn()
     await ExistingRecoveryPhrasePage.enterRecoveryPhrase(recoveryPhrase)
     await ExistingRecoveryPhrasePage.tapSignInBtn()
@@ -22,5 +21,21 @@ class LoginRecoverWallet {
     await commonElsPage.tapGetStartedButton()
     await PortfolioPage.verifyPorfolioScreen()
   }
+
+  async recoverManualLogin() {
+    await CreatePinPage.tapNumpadZero6Times()
+    await commonElsPage.checkIfMainnet()
+  }
+
+  async recoverWalletLogin() {
+    const seedlessBool = process.env.SEEDLESS_TEST
+    if (!seedlessBool || seedlessBool === 'false') {
+      await this.recoverMnemonicWallet()
+    } else {
+      await this.recoverManualLogin()
+      await accountManagePage.switchToFirstAccount()
+    }
+  }
 }
+
 export default new LoginRecoverWallet()

@@ -4,10 +4,22 @@ import NetworksManagePage from '../../pages/networksManage.page'
 import PortfolioPage from '../../pages/portfolio.page'
 import { warmup } from '../../helpers/warmup'
 import AdvancedPage from '../../pages/burgerMenu/advanced.page'
+import commonElsPage from '../../pages/commonEls.page'
 
 describe('Enable Testnet', () => {
   beforeAll(async () => {
     await warmup()
+  })
+
+  afterAll(async () => {
+    if (process.env.SEEDLESS_TEST === 'true') {
+      await AdvancedPage.switchToMainnet()
+    }
+  })
+
+  afterAll(async () => {
+    await commonElsPage.tapBackButton()
+    await AdvancedPage.switchToMainnet()
   })
 
   it('Should verify Avax Network', async () => {

@@ -16,7 +16,6 @@ describe('Address Book', () => {
 
   it('Should verify empty contacts', async () => {
     await LoginRecoverWallet.recoverWalletLogin()
-
     await BurgerMenuPage.tapBurgerMenuButton()
     await Actions.waitForElement(BurgerMenuPage.addressBook)
     await BurgerMenuPage.tapAddressBook()

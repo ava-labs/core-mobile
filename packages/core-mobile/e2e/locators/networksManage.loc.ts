@@ -18,7 +18,7 @@ export default {
   deleteNetwork: 'Delete',
   editNetwork: 'Edit',
   ethereumSepoliaNetwork: 'Ethereum Sepolia',
-  ethTokenOnCustomNetwork: 'ETH',
+  ethTokenOnCustomNetwork: 'Ethereum',
   explorerUrl: 'Explorer URL',
   favoriteNetwork: 'star_svg',
   favoritesTab: 'Favorites',
@@ -30,5 +30,6 @@ export default {
   networksTab: 'Networks',
   networkInfo: 'info_svg',
   saveButton: 'Save',
-  searchBar: 'network_manager__search_input'
+  searchBar: 'network_manager__search_input',
+  networkNotAvailableToast: 'network_not_available_toast'
 }

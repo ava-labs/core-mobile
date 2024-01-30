@@ -11,10 +11,16 @@ describe('Stake: testnet flow', () => {
     await warmup()
   })
 
+  afterAll(async () => {
+    await BottomTabsPage.tapPortfolioTab()
+    await AccountManagePage.switchToFirstAccount()
+    await AdvancedPage.switchToMainnet()
+  })
+
   it('should verify no active stakes screen', async () => {
     await LoginRecoverWallet.recoverWalletLogin()
-    await BottomTabsPage.tapPortfolioTab()
-    await AccountManagePage.createAccount(3)
+    await AccountManagePage.tapCarrotSVG()
+    await AccountManagePage.tap2ndAccountMenu()
     await AdvancedPage.switchToTestnet()
     await BottomTabsPage.tapStakeTab()
     await StakePage.verifyNoActiveStakesScreenItems()

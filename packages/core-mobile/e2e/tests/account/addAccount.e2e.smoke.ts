@@ -2,7 +2,6 @@ import Assert from '../../helpers/assertions'
 import Actions from '../../helpers/actions'
 import LoginRecoverWallet from '../../helpers/loginRecoverWallet'
 import AccountManagePage from '../../pages/accountManage.page'
-import actions from '../../helpers/actions'
 import { warmup } from '../../helpers/warmup'
 
 describe('Add and edit accounts', () => {
@@ -10,12 +9,20 @@ describe('Add and edit accounts', () => {
     await warmup()
   })
 
+  afterAll(async () => {
+    if (process.env.SEEDLESS_TEST === 'true') {
+      await AccountManagePage.tapCarrotSVG()
+      await AccountManagePage.tapFirstAccount()
+    }
+  })
+
   it('should add second account', async () => {
     await LoginRecoverWallet.recoverWalletLogin()
-    await AccountManagePage.tapAccountMenu()
+    await AccountManagePage.tapCarrotSVG()
     await Actions.waitForElement(AccountManagePage.addEditAccount)
     await AccountManagePage.tapAddEditAccounts()
     await AccountManagePage.tapAddAccountButton()
+    await AccountManagePage.tapSecondAccount()
     await AccountManagePage.tapDoneButton()
     await Actions.waitForElement(AccountManagePage.secondAccount, 10000)
   })
@@ -24,20 +31,14 @@ describe('Add and edit accounts', () => {
     await AccountManagePage.tap2ndAccountMenu()
     await AccountManagePage.tapAddEditAccounts()
     await AccountManagePage.tapEditAccount()
-    await AccountManagePage.setNewAccountName()
+    const acctName = await AccountManagePage.setNewAccountName()
     await AccountManagePage.tapSaveNewAccountName()
-    if (
-      (await actions.isVisible(AccountManagePage.saveNewAccountName, 0)) ===
-      true
-    ) {
-      await AccountManagePage.tapSaveNewAccountName()
-    }
-    await Assert.isNotVisible(AccountManagePage.saveNewAccountName)
-    await Assert.isVisible(AccountManagePage.newAccountName)
+    await AccountManagePage.assertAccountName(acctName)
   })
 
   it('should switch to second Account', async () => {
     await AccountManagePage.tapDoneButton()
+    console.log('tapped done button')
     await Assert.isVisible(AccountManagePage.secondAccount)
   })
 })

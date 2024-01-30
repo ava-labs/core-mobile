@@ -8,14 +8,22 @@ import DurationPage from '../../pages/Stake/duration.page'
 import { warmup } from '../../helpers/warmup'
 import GetStartedScreenPage from '../../pages/Stake/getStartedScreen.page'
 import StakePage from '../../pages/Stake/stake.page'
+import accountManagePage from '../../pages/accountManage.page'
 
 describe('Stake: testnet flow', () => {
   beforeAll(async () => {
     await warmup()
   })
 
+  afterAll(async () => {
+    if (process.env.SEEDLESS_TEST === 'true') {
+      await AdvancedPage.switchToMainnet()
+    }
+  })
+
   it('should verify staking amount screen items', async () => {
     await LoginRecoverWallet.recoverWalletLogin()
+    await accountManagePage.switchToFirstAccount()
     await AdvancedPage.switchToTestnet()
     await BottomTabsPage.tapStakeTab()
     await StakePage.tapStakeButton()
