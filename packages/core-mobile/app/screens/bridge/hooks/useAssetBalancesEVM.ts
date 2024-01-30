@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import {
   BitcoinConfigAsset,
   Blockchain,
@@ -36,20 +36,27 @@ export function useAssetBalancesEVM(
   const isAvalanche =
     chain === Blockchain.AVALANCHE || currentBlockchain === Blockchain.AVALANCHE
 
-  const legacyAssets = useMemo(() => {
+  const getFilteredEthereumAssets = useCallback((): EthereumAssets => {
     const filteredEthereumAssets: EthereumAssets = Object.keys(ethereumAssets)
-      .filter(key => ethereumAssets[key]?.symbol !== 'BUSD') // do not allow BUSD.e onboardings
-      .filter(key => ethereumAssets[key]?.symbol !== 'USDC') // do not use Legacy Bridge for USDC onboardings
+      .filter(
+        key =>
+          ethereumAssets[key]?.symbol !== 'BUSD' && // do not allow BUSD.e onboardings
+          ethereumAssets[key]?.symbol !== 'USDC' // do not use Legacy Bridge for USDC onboardings
+      )
       .reduce<EthereumAssets>((obj, key) => {
         const asset = ethereumAssets[key]
         if (asset) obj[key] = asset
         return obj
       }, {})
 
+    return filteredEthereumAssets
+  }, [ethereumAssets])
+
+  const legacyAssets = useMemo(() => {
     return Object.values<
       NativeAsset | EthereumConfigAsset | BitcoinConfigAsset
-    >(isAvalanche ? avalancheAssets : filteredEthereumAssets)
-  }, [avalancheAssets, ethereumAssets, isAvalanche])
+    >(isAvalanche ? avalancheAssets : getFilteredEthereumAssets())
+  }, [isAvalanche, avalancheAssets, getFilteredEthereumAssets])
 
   // Deduplicate the assets since both Unified & legacy SDKs could allow bridging the same assets.
   // unifiedBridgeAssets go first so that they're not the ones removed (we prefer Unified bridge over legacy)
