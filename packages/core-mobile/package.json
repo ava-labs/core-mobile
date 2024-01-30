@@ -22,6 +22,7 @@
     "@avalabs/avalanchejs-v2": "1.4.0-alpha.27",
     "@avalabs/blockcypher-sdk": "2.8.0-alpha.165",
     "@avalabs/bridge-sdk": "2.8.0-alpha.165",
+    "@avalabs/bridge-unified": "2.0.1",
     "@avalabs/chains-sdk": "2.8.0-alpha.165",
     "@avalabs/coingecko-sdk": "2.8.0-alpha.165",
     "@avalabs/covalent-sdk": "2.8.0-alpha.165",

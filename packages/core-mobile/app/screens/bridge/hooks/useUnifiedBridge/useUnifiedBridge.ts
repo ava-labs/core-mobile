@@ -9,6 +9,7 @@ import { selectActiveNetwork, selectNetwork } from 'store/network'
 import Logger from 'utils/Logger'
 import { selectActiveAccount } from 'store/account/slice'
 import { setPendingTransfer } from 'store/unifiedBridge/slice'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import { isUnifiedBridgeAsset } from '../../utils/bridgeUtils'
 import { AssetBalance } from '../../utils/types'
 import { useHasEnoughForGas } from '../useHasEnoughtForGas'
@@ -108,12 +109,6 @@ export const useUnifiedBridge = (
   ])
 
   const transfer = useCallback(async () => {
-    // capture('unifedBridgeTransferStarted', {
-    //   bridgeType: 'CCTP',
-    //   sourceBlockchain: currentBlockchain,
-    //   targetBlockchain
-    // })
-
     if (!selectedAsset) {
       throw new Error('No asset chosen')
     }
@@ -139,6 +134,12 @@ export const useUnifiedBridge = (
       updateListener: updatedTransfer => {
         dispatch(setPendingTransfer(updatedTransfer))
       }
+    })
+
+    AnalyticsService.capture('UnifedBridgeTransferStarted', {
+      bridgeType: 'CCTP',
+      activeChainId: activeNetwork.chainId,
+      targetChainId: targetNetwork.chainId
     })
 
     dispatch(setPendingTransfer(pendingTransfer))

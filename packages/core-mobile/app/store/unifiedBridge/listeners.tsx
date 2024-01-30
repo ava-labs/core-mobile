@@ -21,6 +21,7 @@ import { showSnackBarCustom } from 'components/Snackbar'
 import TransactionToast, {
   TransactionToastType
 } from 'components/toast/TransactionToast'
+import Logger from 'utils/Logger'
 import {
   removePendingTransfer,
   selectPendingTransfers,
@@ -112,6 +113,10 @@ const checkTransferStatus = async (
   if (transfer.completedAt) {
     listenerApi.dispatch(removePendingTransfer(transfer.sourceTxHash))
     showSuccessToast(transfer)
+  }
+
+  if (transfer.errorCode) {
+    Logger.error('bridge unsuccessful', new Error(`${transfer.errorCode}`))
   }
 }
 

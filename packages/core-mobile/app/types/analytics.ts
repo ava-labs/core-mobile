@@ -14,6 +14,8 @@ export type AnalyticsEvents = {
   AnalyticsDisabled: undefined
   ApplicationLaunched: { FontScale: number }
   ApplicationOpened: undefined
+
+  // BRIDGE
   Bridge_TokenSelected: undefined
   BridgeTokenSelectError: { errorMessage: string }
   BridgeTransferRequestError: {
@@ -29,6 +31,14 @@ export type AnalyticsEvents = {
   BridgeTransferStarted: { sourceBlockchain: string; targetBlockchain: string }
   BridgeTransactionHide: undefined
   BridgeTransactionHideCancel: undefined
+
+  // UNIFIED BRIDGE
+  UnifedBridgeTransferStarted: {
+    bridgeType: 'CCTP'
+    activeChainId: number
+    targetChainId: number
+  }
+
   ChangePasswordClicked: undefined
   ChangePasswordSucceeded: undefined
   ChangePasswordFailed: undefined

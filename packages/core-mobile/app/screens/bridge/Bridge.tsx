@@ -828,4 +828,3 @@ const styles = StyleSheet.create({
 })
 
 export default React.memo(Bridge)
-// Bridge.whyDidYouRender = true
