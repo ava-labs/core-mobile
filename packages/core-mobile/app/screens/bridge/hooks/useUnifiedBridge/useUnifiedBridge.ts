@@ -12,7 +12,6 @@ import { setPendingTransfer } from 'store/unifiedBridge/slice'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { isUnifiedBridgeAsset } from '../../utils/bridgeUtils'
 import { AssetBalance } from '../../utils/types'
-import { useHasEnoughForGas } from '../useHasEnoughtForGas'
 import { useUnifiedBridgeAssets } from '../useUnifiedBridgeAssets'
 import { useAssetBalancesEVM } from '../useAssetBalancesEVM'
 import { BridgeAdapter } from '../useBridge'
@@ -65,8 +64,6 @@ export const useUnifiedBridge = (
     () => getSourceBalance(selectedAsset, assetsWithBalances),
     [selectedAsset, assetsWithBalances]
   )
-
-  const hasEnoughForNetworkFee = useHasEnoughForGas()
 
   const [txHash, setTxHash] = useState<string>()
 
@@ -159,7 +156,6 @@ export const useUnifiedBridge = (
     sourceBalance,
     loading,
     assetsWithBalances,
-    hasEnoughForNetworkFee,
     receiveAmount,
     bridgeFee,
     maximum,

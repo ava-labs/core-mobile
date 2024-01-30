@@ -6,7 +6,6 @@ import { useAssetBalancesEVM } from 'screens/bridge/hooks/useAssetBalancesEVM'
 import Big from 'big.js'
 import { useSelector } from 'react-redux'
 import { selectActiveNetwork } from 'store/network'
-import { useHasEnoughForGas } from './useHasEnoughtForGas'
 
 /**
  * Hook for when the source is Avalanche
@@ -33,7 +32,6 @@ export function useAvalancheBridge(
   )
 
   const network = useSelector(selectActiveNetwork)
-  const hasEnoughForNetworkFee = useHasEnoughForGas()
 
   const maximum = sourceBalance?.balance || BIG_ZERO
   const receiveAmount = amount.gt(minimum) ? amount.minus(bridgeFee) : BIG_ZERO
@@ -78,7 +76,6 @@ export function useAvalancheBridge(
   return {
     sourceBalance,
     assetsWithBalances,
-    hasEnoughForNetworkFee,
     loading,
     receiveAmount,
     maximum,

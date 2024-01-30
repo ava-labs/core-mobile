@@ -1,26 +1,30 @@
 import Big from 'big.js'
 import { useNetworkFee } from 'hooks/useNetworkFee'
-import { useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { TokenType, selectTokensWithBalance } from 'store/balance'
+import { selectActiveNetwork } from 'store/network'
+import { isBitcoinNetwork } from 'utils/network/isBitcoinNetwork'
 
 export const useHasEnoughForGas = (): boolean => {
   const tokens = useSelector(selectTokensWithBalance)
+  const activeNetwork = useSelector(selectActiveNetwork)
   const { data: networkFee } = useNetworkFee()
 
   const [hasEnough, setHasEnough] = useState(true)
 
-  useMemo(() => {
-    if (!tokens || !networkFee) return
+  useEffect(() => {
+    if (!tokens || !networkFee || isBitcoinNetwork(activeNetwork)) return
+
     const token = tokens.find(x => x.type === TokenType.NATIVE)
     // get gasPrice of network
     const balance = token && token.balance
     const estimatedGasCost = networkFee.low
-    // check if balance > gasPrice
+    // compare balance and gasPrice
     if (balance && estimatedGasCost) {
       setHasEnough(new Big(balance.toString()).gte(estimatedGasCost.toString()))
     }
-  }, [tokens, networkFee])
+  }, [tokens, networkFee, activeNetwork])
 
   return hasEnough
 }

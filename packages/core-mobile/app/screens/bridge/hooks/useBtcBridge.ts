@@ -246,7 +246,6 @@ export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
     sourceBalance: btcBalance,
     targetBalance: btcBalanceAvalanche,
     assetsWithBalances,
-    hasEnoughForNetworkFee: true, // minimum calc covers this
     loading,
     networkFee,
     receiveAmount,

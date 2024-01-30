@@ -16,7 +16,6 @@ import { selectActiveNetwork } from 'store/network'
 import { selectActiveAccount } from 'store/account'
 import { useEthereumProvider } from 'hooks/networkProviderHooks'
 import { selectBridgeAppConfig } from 'store/bridge'
-import { useHasEnoughForGas } from './useHasEnoughtForGas'
 
 /**
  * Hook for when the bridge source chain is Ethereum
@@ -46,7 +45,6 @@ export function useEthBridge(
   const activeAccount = useSelector(selectActiveAccount)
   const config = useSelector(selectBridgeAppConfig)
   const ethereumProvider = useEthereumProvider()
-  const hasEnoughForNetworkFee = useHasEnoughForGas()
   const [wrapStatus, setWrapStatus] = useState<WrapStatus>(WrapStatus.INITIAL)
   const [txHash, setTxHash] = useState<string>()
 
@@ -101,7 +99,6 @@ export function useEthBridge(
   return {
     sourceBalance,
     assetsWithBalances,
-    hasEnoughForNetworkFee,
     loading,
     receiveAmount,
     maximum,

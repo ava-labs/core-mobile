@@ -18,13 +18,14 @@ import Big from 'big.js'
 import { useSelector } from 'react-redux'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { useUnifiedBridge } from './useUnifiedBridge/useUnifiedBridge'
+import { useHasEnoughForGas } from './useHasEnoughtForGas'
 
 export interface BridgeAdapter {
   address?: string
   sourceBalance?: AssetBalance
   targetBalance?: AssetBalance
   assetsWithBalances?: AssetBalance[]
-  hasEnoughForNetworkFee: boolean
+  hasEnoughForNetworkFee?: boolean
   loading?: boolean
   networkFee?: Big
   bridgeFee?: Big
@@ -46,7 +47,6 @@ export interface BridgeAdapter {
 interface Bridge extends BridgeAdapter {
   amount: Big
   setAmount: (amount: Big) => void
-  bridgeFee?: Big
   price: Big
   provider: BridgeProvider
 }
@@ -73,6 +73,8 @@ export default function useBridge(selectedAsset?: AssetBalance): Bridge {
   const bridgeFee = useBridgeFeeEstimate(amount) || BIG_ZERO
   const minimum = useMinimumTransferAmount(amount)
 
+  const hasEnoughForNetworkFee = useHasEnoughForGas()
+
   const btc = useBtcBridge(amount)
   const eth = useEthBridge(amount, bridgeFee, minimum)
   const avalanche = useAvalancheBridge(amount, bridgeFee, minimum)
@@ -84,12 +86,11 @@ export default function useBridge(selectedAsset?: AssetBalance): Bridge {
     bridgeFee,
     price,
     minimum,
+    hasEnoughForNetworkFee,
     provider: BridgeProvider.LEGACY
   }
 
-  const shouldUseUnifiedBridge = unified.isAssetSupported
-
-  if (shouldUseUnifiedBridge) {
+  if (unified.isAssetSupported) {
     return {
       ...defaults,
       ...unified,
@@ -98,7 +99,8 @@ export default function useBridge(selectedAsset?: AssetBalance): Bridge {
   } else if (currentBlockchain === Blockchain.BITCOIN) {
     return {
       ...defaults,
-      ...btc
+      ...btc,
+      hasEnoughForNetworkFee: true // minimum calc covers this
     }
   } else if (currentBlockchain === Blockchain.ETHEREUM) {
     return {
@@ -113,7 +115,6 @@ export default function useBridge(selectedAsset?: AssetBalance): Bridge {
   } else {
     return {
       ...defaults,
-      hasEnoughForNetworkFee: true,
       transfer: () => Promise.reject('invalid bridge')
     }
   }
