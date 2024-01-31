@@ -1,4 +1,4 @@
-import React, { FC } from 'react'
+import React, { FC, useMemo } from 'react'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { BridgeTransaction } from '@avalabs/bridge-sdk'
 import AvaText from 'components/AvaText'
@@ -9,12 +9,17 @@ import { StyleSheet, View } from 'react-native'
 import Spinner from 'components/animation/Spinner'
 import LinkSVG from 'components/svg/LinkSVG'
 import { Space } from 'components/Space'
-import { isPendingBridgeTransaction } from 'screens/bridge/utils/bridgeUtils'
+import {
+  isPendingBridgeTransaction,
+  isUnifiedBridgeTransfer
+} from 'screens/bridge/utils/bridgeUtils'
 import { useBlockchainNames } from 'screens/activity/hooks/useBlockchainNames'
 import { Transaction } from 'store/transaction'
+import { BridgeTransfer } from '@avalabs/bridge-unified'
+import { bigintToBig } from '@avalabs/utils-sdk'
 
 interface BridgeTransactionItemProps {
-  item: Transaction | BridgeTransaction
+  item: Transaction | BridgeTransaction | BridgeTransfer
   onPress: () => void
 }
 
@@ -25,6 +30,16 @@ const BridgeTransactionItem: FC<BridgeTransactionItemProps> = ({
   const pending = isPendingBridgeTransaction(item)
   const theme = useApplicationContext().theme
   const { sourceBlockchain, targetBlockchain } = useBlockchainNames(item)
+
+  const amount = useMemo(() => {
+    if (!pending) return item.amount
+
+    if (isUnifiedBridgeTransfer(item)) {
+      return bigintToBig(item.amount, item.amountDecimals).toString()
+    }
+
+    return item.amount.toString()
+  }, [item, pending])
 
   return (
     <AvaListItem.Base
@@ -49,8 +64,7 @@ const BridgeTransactionItem: FC<BridgeTransactionItemProps> = ({
       rightComponent={
         <View style={{ justifyContent: 'center', alignItems: 'flex-end' }}>
           <AvaText.ActivityTotal ellipsizeMode={'tail'}>
-            {pending ? item.amount.toString() : item.amount}{' '}
-            {pending ? item.symbol : item.token?.symbol}
+            {amount} {pending ? item.symbol : item.token?.symbol}
           </AvaText.ActivityTotal>
           {'explorerLink' in item && item?.explorerLink && (
             <>

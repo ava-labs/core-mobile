@@ -7,7 +7,7 @@ import { isAnyOf } from '@reduxjs/toolkit'
 import { addAppListener } from 'store/middleware/listener'
 import { useFocusEffect } from '@react-navigation/native'
 import { popBridgeTransaction, selectBridgeCriticalConfig } from 'store/bridge'
-import { selectIsLocked } from 'store/app'
+import { selectIsLocked } from 'store/app/slice'
 import { useGetRecentsTransactionsQuery } from '../api'
 import { Transaction } from '../types'
 
@@ -31,7 +31,12 @@ const emptyArr: Transaction[] = []
  *  - refetch transactions whenever the app is switched from another screen to portfolio screen
  *    except from react-native-tab-view screens
  */
-export const useGetRecentTransactions = () => {
+export const useGetRecentTransactions = (): {
+  transactions: Transaction[]
+  isLoading: boolean
+  isRefreshing: boolean
+  refresh: () => void
+} => {
   const dispatch = useDispatch()
   const [isRefreshing, setIsRefreshing] = useState(false)
   const network = useSelector(selectActiveNetwork)
@@ -39,7 +44,6 @@ export const useGetRecentTransactions = () => {
   const isAppLocked = useSelector(selectIsLocked)
   const isFocused = useIsFocused()
   const criticalConfig = useSelector(selectBridgeCriticalConfig)
-
   const {
     currentData: data,
     isFetching,

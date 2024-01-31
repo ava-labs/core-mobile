@@ -18,8 +18,6 @@ import {
 } from '@avalabs/bridge-sdk'
 import Big from 'big.js'
 import { useTransferAsset } from 'screens/bridge/hooks/useTransferAsset'
-import { PartialBridgeTransaction } from 'screens/bridge/handlers/createBridgeTransaction'
-import { BridgeState } from 'store/bridge/types'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import {
@@ -43,6 +41,16 @@ import TransactionToast, {
 } from 'components/toast/TransactionToast'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 
+type PartialBridgeTransaction = Pick<
+  BridgeTransaction,
+  | 'sourceChain'
+  | 'sourceTxHash'
+  | 'sourceStartedAt'
+  | 'targetChain'
+  | 'amount'
+  | 'symbol'
+>
+
 export enum TransferEventType {
   WRAP_STATUS = 'wrap_status',
   TX_HASH = 'tx_hash',
@@ -54,8 +62,6 @@ interface BridgeContext {
     tx: PartialBridgeTransaction,
     network: Network
   ): Promise<void | { error: string }>
-
-  bridgeTransactions: BridgeState['bridgeTransactions']
   transferAsset: (
     amount: Big,
     asset: Asset,
@@ -192,6 +198,7 @@ function LocalBridgeProvider({
       asset: Asset,
       onStatusChange: (status: WrapStatus) => void,
       onTxHashChange: (txHash: string) => void
+      // eslint-disable-next-line max-params
     ) => {
       events.on(TransferEventType.WRAP_STATUS, status => {
         onStatusChange(status)
@@ -291,7 +298,6 @@ function LocalBridgeProvider({
   return (
     <bridgeContext.Provider
       value={{
-        bridgeTransactions,
         createBridgeTransaction,
         transferAsset
       }}>

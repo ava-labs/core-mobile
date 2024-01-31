@@ -1,6 +1,7 @@
 import { getErc20Txs, getNormalTxs } from '@avalabs/etherscan-sdk'
 import { isEthereumNetwork } from 'services/network/utils/isEthereumNetwork'
 import { glacierSdk } from 'utils/network/glacier'
+import UnifiedBridgeService from 'services/bridge/UnifiedBridgeService'
 import {
   ActivityResponse,
   GetActivitiesForAddressParams,
@@ -10,7 +11,9 @@ import { convertTransaction } from './utils/evmTransactionConverter'
 import * as EtherscanConverter from './utils/etherscanTransactionConverter'
 
 export class EvmActivityService implements NetworkActivityService {
-  async getActivities(params: GetActivitiesForAddressParams) {
+  async getActivities(
+    params: GetActivitiesForAddressParams
+  ): Promise<ActivityResponse> {
     return isEthereumNetwork(params.network)
       ? getTransactionsFromEtherscan(params)
       : getTransactionsFromGlacier(params)
@@ -21,8 +24,7 @@ async function getTransactionsFromGlacier({
   network,
   address,
   nextPageToken,
-  pageSize,
-  criticalConfig
+  pageSize
 }: GetActivitiesForAddressParams): Promise<ActivityResponse> {
   const response = await glacierSdk.evmTransactions.listTransactions({
     chainId: network.chainId.toString(),
@@ -31,12 +33,16 @@ async function getTransactionsFromGlacier({
     pageSize
   })
 
+  const bridgeAddresses = UnifiedBridgeService.getBridgeAddresses().map(item =>
+    item.toLowerCase()
+  )
+
   const transactions = response.transactions.map(item =>
     convertTransaction({
       item,
       network,
       address,
-      criticalConfig
+      bridgeAddresses
     })
   )
 
@@ -72,6 +78,10 @@ async function getTransactionsFromEtherscan({
       : []
   ).map(tx => EtherscanConverter.convertTransactionNormal(tx, network, address))
 
+  const bridgeAddresses = UnifiedBridgeService.getBridgeAddresses().map(item =>
+    item.toLowerCase()
+  )
+
   const erc20Hist = (
     queries.includes('erc20')
       ? await getErc20Txs(address, !network.isTestnet, undefined, {
@@ -80,12 +90,13 @@ async function getTransactionsFromEtherscan({
         })
       : []
   ).map(tx =>
-    EtherscanConverter.convertTransactionERC20(
+    EtherscanConverter.convertTransactionERC20({
       tx,
       network,
       address,
-      criticalConfig
-    )
+      criticalConfig,
+      bridgeAddresses
+    })
   )
 
   // Filter erc20 transactions from normal tx list
