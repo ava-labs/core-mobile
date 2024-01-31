@@ -31,8 +31,6 @@ const BridgeTransactionItem: FC<BridgeTransactionItemProps> = ({
   const theme = useApplicationContext().theme
   const { sourceBlockchain, targetBlockchain } = useBlockchainNames(item)
 
-  pending ? item.amount.toString() : item.amount
-
   const amount = useMemo(() => {
     if (!pending) return item.amount
 
