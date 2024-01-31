@@ -29,6 +29,7 @@ const RadioGroup: FC<RadioGroupProps> = ({
       }
 
       const clone = React.cloneElement(child, {
+        // @ts-expect-error color is a valid prop
         color: selected === child.key ? theme.colorBg2 : theme.colorIcon2
       })
 

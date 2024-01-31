@@ -18,6 +18,7 @@ import { addWCListeners as addWCListenersV2 } from 'store/walletConnectV2/listen
 import Logger from 'utils/Logger'
 import { addNotificationsListeners } from 'store/notifications/listeners/listeners'
 import { addSeedlessListeners } from 'seedless/store'
+import { addUnifiedBridgeListeners } from 'store/unifiedBridge/listeners'
 
 export type AppStartListening = TypedStartListening<RootState, AppDispatch>
 export type AppAddListener = TypedAddListener<RootState, AppDispatch>
@@ -42,6 +43,8 @@ addNetworkListeners(startListening)
 addNftListeners(startListening)
 
 addBridgeListeners(startListening)
+
+addUnifiedBridgeListeners(startListening)
 
 addPosthogListeners(startListening)
 
