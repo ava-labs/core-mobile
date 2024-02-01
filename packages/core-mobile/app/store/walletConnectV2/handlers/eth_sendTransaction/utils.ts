@@ -39,6 +39,7 @@ export type TransactionParams = {
   data: string
   value?: string
   gas?: string
-  gasPrice?: string
+  maxFeePerGas?: bigint
+  maxPriorityFeePerGas?: bigint
   nonce?: string
 }

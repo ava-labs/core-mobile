@@ -131,8 +131,8 @@ export default function ReviewSend({
             content={
               <PoppableGasAndLimit
                 gasLimit={fees.gasLimit ?? 0}
-                maxPricePerGas={'TODO'}
-                maxPriorityFeePerGas={'TODO'}
+                maxFeePerGas={fees.maxFeePerGas.toFeeUnit()}
+                maxPriorityFeePerGas={fees.maxPriorityFeePerGas.toFeeUnit()}
               />
             }
             position={'right'}

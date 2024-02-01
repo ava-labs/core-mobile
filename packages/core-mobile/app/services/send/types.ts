@@ -23,7 +23,7 @@ export interface SendState<T extends TokenWithBalance = TokenWithBalance> {
   address?: string
   error?: SendError
   sendFee?: BN
-  maxPricePerGas?: bigint
+  maxFeePerGas?: bigint
   maxPriorityFeePerGas?: bigint
   gasLimit?: number
   canSubmit?: boolean
@@ -35,7 +35,7 @@ export type ValidSendState = SendState &
   Required<
     Pick<
       SendState,
-      'amount' | 'address' | 'maxPricePerGas' | 'maxPriorityFeePerGas'
+      'amount' | 'address' | 'maxFeePerGas' | 'maxPriorityFeePerGas'
     >
   > & {
     canSubmit: true
