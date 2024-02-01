@@ -56,7 +56,7 @@ const UniversalTokenSelector: FC<Props> = ({
   const navigation = useNavigation<NavigationProp>()
   const hasError = !!error
 
-  const openTokenSelectorBottomSheet = () => {
+  const openTokenSelectorBottomSheet = (): void => {
     navigation.navigate(AppNavigation.Modal.SelectToken, {
       hideZeroBalance: hideZeroBalanceTokens,
       onTokenSelected: onTokenChange

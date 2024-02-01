@@ -102,16 +102,7 @@ const NetworkFeeSelector = ({
       })
     }
     setCalculatedFees(newFees)
-    if (newFees) {
-      onFeesChange?.(
-        {
-          maxFeePerGas: newFees.maxFeePerGas,
-          maxPriorityFeePerGas: newFees.maxPriorityFeePerGas,
-          gasLimit
-        },
-        preset
-      )
-    }
+    newFees && onFeesChange?.(newFees, preset)
   }
 
   function handleSetCustomFees(fees: Eip1559Fees<NetworkTokenUnit>): void {
@@ -121,18 +112,11 @@ const NetworkFeeSelector = ({
       maxFeePerGas: fees.maxFeePerGas,
       maxPriorityFeePerGas: fees.maxPriorityFeePerGas,
       tokenPrice: nativeTokenPrice,
-      gasLimit
+      gasLimit: fees.gasLimit
     })
     setCustomFees(newFees)
     setCalculatedFees(newFees)
-    onFeesChange?.(
-      {
-        maxFeePerGas: newFees.maxFeePerGas,
-        maxPriorityFeePerGas: newFees.maxPriorityFeePerGas,
-        gasLimit
-      },
-      FeePreset.Custom
-    )
+    onFeesChange?.(newFees, FeePreset.Custom)
   }
 
   const displayGasValues = useMemo(() => {
@@ -195,7 +179,7 @@ const NetworkFeeSelector = ({
                     customFees?.maxPriorityFeePerGas ??
                     networkFee.low.maxPriorityFeePerGas ??
                     NetworkTokenUnit.fromNetwork(activeNetwork),
-                  gasLimit: gasLimit
+                  gasLimit
                 })
               }}>
               <SettingsCogSVG />

@@ -106,7 +106,7 @@ const EditFees = ({
   const handleOnSave = (): void => {
     if (newGasLimit) {
       onSave({
-        gasLimit: newFees.gasLimit,
+        gasLimit: Number(newGasLimit),
         maxFeePerGas: newFees.maxFeePerGas,
         maxPriorityFeePerGas: newFees.maxPriorityFeePerGas
       })

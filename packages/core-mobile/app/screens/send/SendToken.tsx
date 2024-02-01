@@ -58,6 +58,7 @@ const SendToken: FC<Props> = ({
     fees: {
       sendFeeNative,
       gasLimit,
+      setCustomGasLimit,
       setSelectedFeePreset,
       setMaxFeePerGas,
       setMaxPriorityFeePerGas,
@@ -165,10 +166,12 @@ const SendToken: FC<Props> = ({
       }
       setMaxFeePerGas(fees.maxFeePerGas)
       setMaxPriorityFeePerGas(fees.maxPriorityFeePerGas)
+      setCustomGasLimit(fees.gasLimit)
       setSelectedFeePreset(feePreset)
     },
     [
       selectedFeePreset,
+      setCustomGasLimit,
       setMaxFeePerGas,
       setMaxPriorityFeePerGas,
       setSelectedFeePreset

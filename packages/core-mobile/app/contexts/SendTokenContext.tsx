@@ -32,8 +32,8 @@ import SentryWrapper from 'services/sentry/SentryWrapper'
 import { formatUriImageToPng } from 'utils/Contentful'
 import Logger from 'utils/Logger'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { Amount } from 'types/amount'
 import { NetworkTokenUnit } from 'types'
+import { Amount } from 'types/Amount'
 
 export interface SendTokenContextState {
   sendToken: TokenWithBalance | undefined
@@ -281,6 +281,7 @@ export const SendTokenContextProvider = ({
       setCanSubmit(false)
       return
     }
+
     sendService
       .validateStateAndCalculateFees(
         {
