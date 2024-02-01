@@ -28,7 +28,9 @@ describe('Add and edit accounts', () => {
 
   it('should edit first account', async () => {
     await AccountManagePage.tap2ndAccountMenu()
-    await AccountManagePage.tapAddEditAccounts()
+    if (Actions.platform() === 'ios') {
+      await AccountManagePage.tapAddEditAccounts()
+    }
     await AccountManagePage.tapEditAccount()
     const acctName = await AccountManagePage.setNewAccountName()
     await AccountManagePage.tapSaveNewAccountName()
