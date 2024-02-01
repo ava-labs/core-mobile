@@ -41,15 +41,16 @@ export class SendServiceEVM implements SendServiceHelper {
     return SentryWrapper.createSpanFor(sentryTrx)
       .setContext('svc.send.evm.validate_and_calc_fees')
       .executeAsync(async () => {
-        const { amount, address, gasPrice, token } = sendState
+        const { amount, address, maxPricePerGas, maxPriorityFeePerGas, token } =
+          sendState
 
         // This *should* always be defined and set by the UI
         if (!token)
           return SendServiceEVM.getErrorState(sendState, 'Invalid token')
 
         const gasLimit = await this.getGasLimit(sendState)
-        const sendFee = gasPrice
-          ? new BN(gasLimit).mul(new BN(gasPrice.toString()))
+        const sendFee = maxPricePerGas
+          ? new BN(gasLimit).mul(new BN(maxPricePerGas.toString()))
           : undefined
         const maxAmount =
           token.type === TokenType.NATIVE
@@ -61,7 +62,8 @@ export class SendServiceEVM implements SendServiceHelper {
           canSubmit: true,
           error: undefined,
           gasLimit,
-          gasPrice,
+          maxPricePerGas,
+          maxPriorityFeePerGas,
           maxAmount,
           sendFee
         }
@@ -78,7 +80,7 @@ export class SendServiceEVM implements SendServiceHelper {
             SendErrorMessage.INVALID_ADDRESS
           )
 
-        if (!gasPrice || gasPrice === 0n)
+        if (!maxPricePerGas || maxPricePerGas === 0n)
           return SendServiceEVM.getErrorState(
             newState,
             SendErrorMessage.INVALID_NETWORK_FEE
@@ -132,7 +134,8 @@ export class SendServiceEVM implements SendServiceHelper {
           ...unsignedTx,
           chainId,
           gasLimit,
-          gasPrice: sendState.gasPrice,
+          maxFeePerGas: sendState.maxPricePerGas,
+          maxPriorityFeePerGas: sendState.maxPriorityFeePerGas,
           nonce
         }
       })

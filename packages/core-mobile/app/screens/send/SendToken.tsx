@@ -25,11 +25,11 @@ import { NetworkVMType } from '@avalabs/chains-sdk'
 import NetworkFeeSelector from 'components/NetworkFeeSelector'
 import { bnToLocaleString } from '@avalabs/utils-sdk'
 import UniversalTokenSelector from 'components/UniversalTokenSelector'
-import { getMaxAvailableBalance } from 'utils/Utils'
-import { Amount } from 'screens/swap/SwapView'
-import { BN } from 'bn.js'
+import { Eip1559Fees, getMaxAvailableBalance } from 'utils/Utils'
 import { AddrBookItemType, Contact } from 'store/addressBook'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import { NetworkTokenUnit } from 'types'
+import { Amount } from 'types/amount'
 import { FeePreset } from '../../components/NetworkFeeSelector'
 
 type Props = {
@@ -58,9 +58,9 @@ const SendToken: FC<Props> = ({
     fees: {
       sendFeeNative,
       gasLimit,
-      setCustomGasLimit,
       setSelectedFeePreset,
-      setCustomGasPrice,
+      setMaxPricePerGas,
+      setMaxPriorityFeePerGas,
       selectedFeePreset
     },
     canSubmit,
@@ -156,17 +156,23 @@ const SendToken: FC<Props> = ({
     }
   }, [sendFeeNative, sendToken, setSendAmount])
 
-  const handleGasPriceChange = useCallback(
-    (gasPrice1: bigint, feePreset: FeePreset) => {
+  const handleFeeChange = useCallback(
+    (fees: Eip1559Fees<NetworkTokenUnit>, feePreset: FeePreset) => {
       if (feePreset !== selectedFeePreset) {
         AnalyticsService.capture('SendFeeOptionChanged', {
           modifier: feePreset
         })
       }
-      setCustomGasPrice(new BN(gasPrice1.toString()))
+      setMaxPricePerGas(fees.maxFeePerGas.toSubUnit())
+      setMaxPriorityFeePerGas(fees.maxPriorityFeePerGas.toSubUnit())
       setSelectedFeePreset(feePreset)
     },
-    [selectedFeePreset, setCustomGasPrice, setSelectedFeePreset]
+    [
+      selectedFeePreset,
+      setMaxPricePerGas,
+      setMaxPriorityFeePerGas,
+      setSelectedFeePreset
+    ]
   )
 
   return (
@@ -250,9 +256,11 @@ const SendToken: FC<Props> = ({
             <Space y={8} />
             <NetworkFeeSelector
               gasLimit={gasLimit ?? 0}
-              onGasPriceChange={handleGasPriceChange}
-              onGasLimitChange={setCustomGasLimit}
-              maxGasPrice={maxGasPrice}
+              onFeesChange={handleFeeChange}
+              maxNetworkFee={NetworkTokenUnit.fromNetwork(
+                activeNetwork,
+                maxGasPrice
+              )}
             />
           </View>
           <FlexSpacer />
