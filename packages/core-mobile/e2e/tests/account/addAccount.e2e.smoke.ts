@@ -23,7 +23,6 @@ describe('Add and edit accounts', () => {
     await AccountManagePage.tapAddEditAccounts()
     await AccountManagePage.tapAddAccountButton()
     await AccountManagePage.tapSecondAccount()
-    await AccountManagePage.tapDoneButton()
     await Actions.waitForElement(AccountManagePage.secondAccount, 10000)
   })
 

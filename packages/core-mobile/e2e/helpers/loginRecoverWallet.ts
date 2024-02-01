@@ -30,6 +30,7 @@ class LoginRecoverWallet {
   async recoverWalletLogin() {
     const seedlessBool = process.env.SEEDLESS_TEST
     if (!seedlessBool || seedlessBool === 'false') {
+      console.log(process.env.E2E_MNEMONIC, ' process.env.E2E_MNEMONIC')
       await this.recoverMnemonicWallet()
     } else {
       await this.recoverManualLogin()

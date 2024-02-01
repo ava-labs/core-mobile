@@ -62,17 +62,12 @@ class AccountManagePage {
 
   async createSecondAccount() {
     await this.tapCarrotSVG()
-    try {
-      return await this.getSecondAvaxAddress()
-    } catch (e) {
-      console.log('Second account does not exist, creating one...')
-      await this.tapAddEditAccounts()
-      await this.tapAddAccountButton()
-      const result = await this.getSecondAvaxAddress()
-      await this.tapAccountMenu()
-      await this.tapDoneButton()
-      return result
-    }
+    await this.tapAddEditAccounts()
+    await this.tapAddAccountButton()
+    const result = await this.getSecondAvaxAddress()
+    await this.tapAccountMenu()
+    await this.tapDoneButton()
+    return result
   }
 
   async switchToSecondAccount() {
@@ -102,7 +97,12 @@ class AccountManagePage {
 
   async getFirstAvaxAddress() {
     const result: any = await Action.getAttributes(this.avaxAddress, 0)
-    return result.elements[0].text.toLowerCase()
+    if (Action.platform() === 'android') {
+      return result.text.toLowerCase()
+    } else {
+      console.log(result, ' this is the result')
+      return result.elements[0].text.toLowerCase()
+    }
   }
 
   async getSecondAvaxAddress() {
@@ -166,11 +166,20 @@ class AccountManagePage {
   }
 
   async tapSecondAccount() {
-    await Action.tapElementAtIndex(this.secondAccount, 1)
+    if (Action.platform() === 'android') {
+      await Action.waitForElement(this.secondAccount, 10000, 0)
+      await Action.tapElementAtIndex(this.secondAccount, 0)
+    } else {
+      await Action.tapElementAtIndex(this.secondAccount, 1)
+    }
   }
 
   async tapCarrotSVG() {
-    await Action.tapElementAtIndex(this.carrotSVG, 0)
+    if (Action.platform() === 'android') {
+      await this.tapFirstAccount()
+    } else {
+      await Action.tapElementAtIndex(this.carrotSVG, 0)
+    }
   }
 
   async checkAccountNameIsCorrect() {

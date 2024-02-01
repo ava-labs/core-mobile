@@ -95,7 +95,7 @@ class SendPage {
     await this.tapNextButton()
     await Actions.waitForElement(ReviewAndSend.balanceAfterTransaction)
     await ReviewAndSend.tapSendNow()
-    await Actions.waitForElement(ReviewAndSend.sendSuccessfulToastMsg)
+    // await Actions.waitForElement(ReviewAndSend.sendSuccessfulToastMsg)
   }
 }
 

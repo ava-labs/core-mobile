@@ -84,7 +84,11 @@ class ActivityTabPage {
   }
 
   async tapHeaderBack() {
-    await Action.tapElementAtIndex(this.headerBack, 0)
+    if (Action.platform() === 'ios') {
+      await Action.tapElementAtIndex(this.headerBack, 0)
+    } else {
+      await device.pressBack()
+    }
   }
 
   async tapBridgeFilterOption() {
@@ -113,7 +117,9 @@ class ActivityTabPage {
 
   async verifyIncomingTransaction(transactionValue: string) {
     await AccountManagePage.tapCarrotSVG()
-    await AccountManagePage.tapCarrotSVG()
+    if (Action.platform() === 'ios') {
+      await AccountManagePage.tapCarrotSVG()
+    }
     const firstAccountAddress = await AccountManagePage.getFirstAvaxAddress()
     await AccountManagePage.tapSecondAccount()
     await PortfolioPage.tapAvaxNetwork()
