@@ -35,10 +35,7 @@ class CreatePinPage {
   }
 
   async tapNumpadZero() {
-    for (let i = 0; i < 6; i++) {
-      console.log('tapping numpad zero' + i)
-      await Action.tap(this.numpadZero)
-    }
+    await Action.multiTap(this.numpadZero, 6, 0)
   }
 
   async tapNumpadOne() {
