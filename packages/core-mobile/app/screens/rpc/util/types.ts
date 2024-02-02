@@ -8,7 +8,8 @@ import { TransactionDescription } from 'ethers'
 import { NetworkTokenUnit } from 'types'
 
 export interface DisplayValueParserProps {
-  gasPrice: bigint
+  maxFeePerGas: NetworkTokenUnit
+  maxPriorityFeePerGas: NetworkTokenUnit
   token: NetworkTokenWithBalance
   tokenPrice: number
   site?: PeerMeta | null | undefined
