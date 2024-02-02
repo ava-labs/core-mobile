@@ -166,12 +166,8 @@ class AccountManagePage {
   }
 
   async tapSecondAccount() {
-    if (Action.platform() === 'android') {
-      await Action.waitForElement(this.secondAccount, 10000, 0)
-      await Action.tapElementAtIndex(this.secondAccount, 0)
-    } else {
-      await Action.tapElementAtIndex(this.secondAccount, 1)
-    }
+    await Action.waitForElement(this.secondAccount, 10000, 0)
+    await Action.tapElementAtIndex(this.secondAccount, 0)
   }
 
   async tapCarrotSVG() {

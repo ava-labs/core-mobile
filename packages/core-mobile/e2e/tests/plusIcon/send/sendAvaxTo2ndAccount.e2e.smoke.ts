@@ -16,6 +16,7 @@ describe('Send Avax to another account', () => {
     await LoginRecoverWallet.recoverWalletLogin()
     const secondAccountAddress = await AccountManagePage.createSecondAccount()
     await AccountManagePage.tapFirstAccount()
+    await AccountManagePage.tapFirstAccount()
     await SendPage.sendTokenTo2ndAccount(
       sendLoc.avaxToken,
       sendLoc.sendingAmount
