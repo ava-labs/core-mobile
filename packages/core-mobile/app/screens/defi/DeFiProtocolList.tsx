@@ -17,12 +17,12 @@ import { openURL } from 'utils/openURL'
 import BigList from 'components/BigList'
 import { useExchangedAmount } from 'hooks/defi/useExchangedAmount'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import Logger from 'utils/Logger'
 import { ErrorState } from './components/ErrorState'
 import { ZeroState } from './components/ZeroState'
 import { ProtocolLogo } from './components/ProtocolLogo'
 import { NetworkLogo } from './components/NetworkLogo'
 import { sortDeFiItems } from './utils'
-import Logger from 'utils/Logger'
 
 type ScreenProps = PortfolioScreenProps<
   typeof AppNavigation.Portfolio.Portfolio

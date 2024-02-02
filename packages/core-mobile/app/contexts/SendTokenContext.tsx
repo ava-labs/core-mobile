@@ -32,8 +32,7 @@ import SentryWrapper from 'services/sentry/SentryWrapper'
 import { formatUriImageToPng } from 'utils/Contentful'
 import Logger from 'utils/Logger'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { NetworkTokenUnit } from 'types'
-import { Amount } from 'types/Amount'
+import { NetworkTokenUnit, Amount } from 'types'
 
 export interface SendTokenContextState {
   sendToken: TokenWithBalance | undefined

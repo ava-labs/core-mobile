@@ -28,8 +28,7 @@ import UniversalTokenSelector from 'components/UniversalTokenSelector'
 import { Eip1559Fees, getMaxAvailableBalance } from 'utils/Utils'
 import { AddrBookItemType, Contact } from 'store/addressBook'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { NetworkTokenUnit } from 'types'
-import { Amount } from 'types/amount'
+import { NetworkTokenUnit, Amount } from 'types'
 import { FeePreset } from '../../components/NetworkFeeSelector'
 
 type Props = {
