@@ -23,6 +23,7 @@ import { ZeroState } from './components/ZeroState'
 import { ProtocolLogo } from './components/ProtocolLogo'
 import { NetworkLogo } from './components/NetworkLogo'
 import { sortDeFiItems } from './utils'
+import Logger from 'utils/Logger'
 
 type ScreenProps = PortfolioScreenProps<
   typeof AppNavigation.Portfolio.Portfolio
