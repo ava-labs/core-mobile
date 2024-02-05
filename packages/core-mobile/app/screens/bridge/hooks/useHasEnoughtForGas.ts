@@ -1,4 +1,3 @@
-import Big from 'big.js'
 import { useNetworkFee } from 'hooks/useNetworkFee'
 import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
@@ -22,7 +21,7 @@ export const useHasEnoughForGas = (): boolean => {
     const estimatedGasCost = networkFee.low
     // compare balance and gasPrice
     if (balance && estimatedGasCost) {
-      setHasEnough(new Big(balance.toString()).gte(estimatedGasCost.toString()))
+      setHasEnough(estimatedGasCost.maxFeePerGas.lt(balance))
     }
   }, [tokens, networkFee, activeNetwork])
 

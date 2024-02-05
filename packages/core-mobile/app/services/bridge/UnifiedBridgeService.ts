@@ -20,6 +20,7 @@ import NetworkFeeService from 'services/networkFee/NetworkFeeService'
 import { assertNotUndefined } from 'utils/assertions'
 import Logger from 'utils/Logger'
 import { noop } from '@avalabs/utils-sdk'
+import { NetworkTokenUnit } from 'types'
 
 type BridgeService = ReturnType<typeof createUnifiedBridgeService>
 
@@ -149,15 +150,20 @@ export class UnifiedBridgeService {
           network: activeNetwork
         })
 
-        const feeData = await provider.getFeeData()
+        const feeData = await NetworkFeeService.getNetworkFee(
+          activeNetwork,
+          NetworkTokenUnit.getConstructor(activeNetwork)
+        )
+
         const txData: TransactionRequest = {
           from,
           to,
           data,
           chainId: activeNetwork.chainId,
           gasLimit,
-          maxFeePerGas: feeData.maxFeePerGas,
-          maxPriorityFeePerGas: feeData.maxPriorityFeePerGas,
+          maxFeePerGas: feeData?.low.maxFeePerGas.toSubUnit() ?? 0n,
+          maxPriorityFeePerGas:
+            feeData?.low.maxPriorityFeePerGas?.toSubUnit() ?? 0n,
           nonce
         }
 
