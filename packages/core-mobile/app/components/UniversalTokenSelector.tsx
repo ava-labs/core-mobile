@@ -4,7 +4,6 @@ import { TokenWithBalance } from 'store/balance'
 import { AssetBalance } from 'screens/bridge/utils/types'
 import BN from 'bn.js'
 import { bnToBig } from '@avalabs/utils-sdk'
-import { Amount } from 'screens/swap/SwapView'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Row } from 'components/Row'
 import AvaText from 'components/AvaText'
@@ -18,6 +17,7 @@ import { useNavigation } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
 import { WalletScreenProps } from 'navigation/types'
 import { formatLargeCurrency } from 'utils/Utils'
+import { Amount } from 'types'
 
 interface Props {
   selectedToken?: TokenWithBalance
@@ -25,7 +25,7 @@ interface Props {
   onMax?: () => void
   hideInput?: boolean
   inputAmount?: BN
-  onAmountChange: (amount: { amount: string; bn: BN }) => void
+  onAmountChange: (amount: Amount) => void
   error?: string
   label?: string
   isValueLoading?: boolean

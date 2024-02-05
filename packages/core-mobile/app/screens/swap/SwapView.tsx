@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { ScrollView, StyleSheet, View } from 'react-native'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
@@ -21,12 +21,19 @@ import { FeePreset } from 'components/NetworkFeeSelector'
 import UniversalTokenSelector from 'components/UniversalTokenSelector'
 import SwapTransactionDetail from 'screens/swap/components/SwapTransactionDetails'
 import { calculateRate } from 'swap/utils'
-import { calculateGasAndFees, getMaxAvailableBalance } from 'utils/Utils'
+import {
+  Eip1559Fees,
+  calculateGasAndFees,
+  getMaxAvailableBalance,
+  truncateBN
+} from 'utils/Utils'
 import { selectActiveNetwork } from 'store/network'
 import { useNetworkFee } from 'hooks/useNetworkFee'
 import Logger from 'utils/Logger'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { Avax, NetworkTokenUnit } from 'types'
+import { Amount, NetworkTokenUnit } from 'types'
+import BN from 'bn.js'
+import { bnToLocaleString } from '@avalabs/utils-sdk'
 
 type NavigationProp = SwapScreenProps<
   typeof AppNavigation.Swap.Swap
@@ -45,11 +52,13 @@ export default function SwapView(): JSX.Element {
     toToken,
     setToToken,
     gasLimit,
-    gasPrice,
+    maxFeePerGas,
+    maxPriorityFeePerGas,
     destination,
     optimalRate,
     setCustomGasLimit,
-    setGasPrice,
+    setMaxFeePerGas,
+    setMaxPriorityFeePerGas,
     setDestination,
     slippage,
     setSlippage,
@@ -58,21 +67,14 @@ export default function SwapView(): JSX.Element {
     isFetchingOptimalRate,
     getOptimalRateForAmount
   } = useSwapContext()
-  const [maxFromValue, setMaxFromValue] = useState<
-    NetworkTokenUnit | undefined
-  >()
-  const [fromTokenValue, setFromTokenValue] = useState<NetworkTokenUnit>()
-  const [toTokenValue, setToTokenValue] = useState<NetworkTokenUnit>()
+  const [maxFromValue, setMaxFromValue] = useState<BN | undefined>()
+  const [fromTokenValue, setFromTokenValue] = useState<Amount>()
+  const [toTokenValue, setToTokenValue] = useState<Amount>()
   const [isCalculatingMax, setIsCalculatingMax] = useState(false)
 
   const [localError, setLocalError] = useState<string>('')
   const [selectedGasFee, setSelectedGasFee] = useState<FeePreset>(
     FeePreset.Instant
-  )
-  const fromTokenBalance = useMemo(
-    () =>
-      fromToken ? NetworkTokenUnit.fromBalanceToken(fromToken) : undefined,
-    [fromToken]
   )
 
   const canSwap: boolean =
@@ -91,16 +93,17 @@ export default function SwapView(): JSX.Element {
     avaxPrice,
     fromToken,
     gasLimit,
-    gasPrice
+    maxFeePerGas,
+    maxPriorityFeePerGas
   ])
 
   function validateInputsFx(): void {
-    if (fromTokenValue && fromTokenValue.isZero()) {
+    if (fromTokenValue && fromTokenValue.bn.isZero()) {
       setLocalError('Please enter an amount')
     } else if (
       maxFromValue &&
       fromTokenValue &&
-      fromTokenValue.gt(maxFromValue)
+      fromTokenValue.bn.gt(maxFromValue)
     ) {
       setLocalError('Insufficient balance.')
     } else {
@@ -111,13 +114,15 @@ export default function SwapView(): JSX.Element {
   function applyOptimalRateFx(): void {
     if (optimalRate && toToken && fromToken) {
       if (optimalRate.side === SwapSide.SELL) {
-        setToTokenValue(
-          NetworkTokenUnit.fromBalanceToken(toToken, optimalRate.destAmount)
-        )
+        setToTokenValue({
+          bn: new BN(optimalRate.destAmount),
+          amount: optimalRate.destAmount
+        })
       } else {
-        setFromTokenValue(
-          NetworkTokenUnit.fromBalanceToken(fromToken, optimalRate.srcAmount)
-        )
+        setFromTokenValue({
+          bn: new BN(optimalRate.srcAmount),
+          amount: optimalRate.srcAmount
+        })
       }
     }
   }
@@ -125,19 +130,24 @@ export default function SwapView(): JSX.Element {
   function calculateGasAndMaxFx(): void {
     if (!fromToken) return
 
-    if (gasPrice && gasLimit && fromToken.type === TokenType.NATIVE) {
+    if (maxFeePerGas && gasLimit && fromToken.type === TokenType.NATIVE) {
       const newFees = calculateGasAndFees({
-        maxFeePerGas: gasPrice,
+        maxFeePerGas,
         gasLimit,
-        maxPriorityFeePerGas: Avax.fromBase(0),
+        maxPriorityFeePerGas,
         tokenPrice: avaxPrice ?? 0
       })
 
-      const max = getMaxAvailableBalance(fromToken, newFees.maxTotalFee)
+      console.log('newFees', newFees.maxTotalFee.toFeeUnit())
+
+      const max = getMaxAvailableBalance(
+        fromToken,
+        newFees.maxTotalFee.toFeeUnit()
+      )
       setMaxFromValue(max)
       return
     }
-    setMaxFromValue(NetworkTokenUnit.fromBalanceToken(fromToken))
+    setMaxFromValue(fromToken?.balance)
   }
 
   const swapTokens = (): void => {
@@ -155,35 +165,37 @@ export default function SwapView(): JSX.Element {
     setFromToken(from)
     setToToken(to)
     setDestination(SwapSide.SELL)
-    setFromTokenValue(toTokenValue)
+    setFromTokenValue(toTokenValue ? { ...toTokenValue } : undefined)
     setToTokenValue(undefined)
     toTokenValue && setAmount(toTokenValue)
     setMaxFromValue(undefined)
   }
 
-  const onGasChange = useCallback(
-    (feePerGas: Avax, feeType: FeePreset) => {
-      setGasPrice(feePerGas)
+  const handleFeesChange = useCallback(
+    (fees: Eip1559Fees<NetworkTokenUnit>, feeType: FeePreset) => {
+      setMaxFeePerGas(fees.maxFeePerGas)
+      setMaxPriorityFeePerGas(maxPriorityFeePerGas)
+      setCustomGasLimit(fees.gasLimit)
       setSelectedGasFee(feeType)
     },
-    [setGasPrice]
-  )
-
-  const onGasLimitChange = useCallback(
-    (customGasLimit: number) => {
-      setCustomGasLimit(customGasLimit)
-    },
-    [setCustomGasLimit]
+    [
+      maxPriorityFeePerGas,
+      setCustomGasLimit,
+      setMaxFeePerGas,
+      setMaxPriorityFeePerGas
+    ]
   )
 
   const reviewOrder = (): void => {
     if (optimalRate) {
-      setGasPrice(gasPrice)
+      setMaxFeePerGas(maxFeePerGas)
+      setMaxPriorityFeePerGas(maxPriorityFeePerGas)
       navigate(AppNavigation.Swap.Review)
       AnalyticsService.capture('SwapReviewOrder', {
         destinationInputField: destination,
         slippageTolerance: slippage,
-        customGasPrice: gasPrice?.toString()
+        customMaxFeePerGas: maxFeePerGas.toString(),
+        customMaxPriorityFeePerGas: maxPriorityFeePerGas.toString()
       })
     }
   }
@@ -193,32 +205,41 @@ export default function SwapView(): JSX.Element {
       return
     }
 
-    if (fromToken.type !== TokenType.NATIVE && fromTokenBalance) {
+    const totalBalance = {
+      bn: fromToken.balance,
+      amount: bnToLocaleString(fromToken.balance, fromToken?.decimals)
+    } as Amount
+
+    if (fromToken.type !== TokenType.NATIVE) {
       // no calculations needed for non-native tokens
-      setFromTokenValue(fromTokenBalance)
+      setFromTokenValue(totalBalance)
       setDestination(SwapSide.SELL)
-      setAmount(fromTokenBalance)
+      setAmount(totalBalance)
       return
     }
 
     setIsCalculatingMax(true)
     // first let's fetch swap rates and fees for total balance amount, then we can
     // calculate max available amount for swap
-    getOptimalRateForAmount(fromTokenBalance)
+    getOptimalRateForAmount(totalBalance)
       .then(([{ optimalRate: optRate, error }, { customGasLimit }]) => {
         if (error) {
           setLocalError(error)
         } else if (optRate) {
           const limit = customGasLimit || parseInt(optRate.gasCost)
-          const maxFees = gasPrice.mul(limit)
-          let availableBalance = getMaxAvailableBalance(fromToken, maxFees)
-          if (availableBalance) {
+          const fee = maxFeePerGas.mul(limit)
+          let maxBn = getMaxAvailableBalance(fromToken, fee.toFeeUnit())
+          if (maxBn) {
             // there's high probability that on next call swap fees will change so let's lower
             // max amount just a bit more for safety margin by chopping off some decimals
-            availableBalance = availableBalance?.cut(6)
-            setFromTokenValue(availableBalance)
+            maxBn = truncateBN(maxBn, fromToken.decimals, 6)
+            const amount = {
+              bn: maxBn,
+              amount: bnToLocaleString(maxBn, fromToken?.decimals)
+            } as Amount
+            setFromTokenValue(amount)
             setDestination(SwapSide.SELL)
-            setAmount(availableBalance)
+            setAmount(amount)
           }
         }
       })
@@ -228,9 +249,8 @@ export default function SwapView(): JSX.Element {
       })
   }, [
     fromToken,
-    fromTokenBalance,
-    gasPrice,
     getOptimalRateForAmount,
+    maxFeePerGas,
     setAmount,
     setDestination
   ])
@@ -259,7 +279,7 @@ export default function SwapView(): JSX.Element {
               setAmount(value)
             }}
             selectedToken={fromToken}
-            inputAmount={fromTokenValue}
+            inputAmount={fromTokenValue?.bn}
             hideErrorMessage
             error={localError || swapError}
             isValueLoading={
@@ -296,7 +316,7 @@ export default function SwapView(): JSX.Element {
               setAmount(value)
             }}
             selectedToken={toToken}
-            inputAmount={toTokenValue}
+            inputAmount={toTokenValue?.bn}
             hideErrorMessage
             isValueLoading={
               destination === SwapSide.SELL && isFetchingOptimalRate
@@ -306,13 +326,12 @@ export default function SwapView(): JSX.Element {
             fromTokenSymbol={fromToken?.symbol}
             toTokenSymbol={toToken?.symbol}
             rate={optimalRate ? calculateRate(optimalRate) : 0}
-            onGasChange={onGasChange}
-            onGasLimitChange={onGasLimitChange}
             gasLimit={gasLimit}
-            gasPrice={gasPrice}
+            maxFeePerGas={maxFeePerGas}
             slippage={slippage}
             setSlippage={value => setSlippage(value)}
             selectedGasFee={selectedGasFee}
+            onFeesChange={handleFeesChange}
           />
         </>
       </ScrollView>

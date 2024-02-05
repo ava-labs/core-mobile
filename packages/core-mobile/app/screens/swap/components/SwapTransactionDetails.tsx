@@ -4,12 +4,12 @@ import { View } from 'react-native'
 import { Space } from 'components/Space'
 import AvaText from 'components/AvaText'
 import InputText from 'components/InputText'
-import { FeePreset } from 'components/NetworkFeeSelector'
+import NetworkFeeSelector, { FeePreset } from 'components/NetworkFeeSelector'
 import { Row } from 'components/Row'
-import Big from 'big.js'
 import { useNetworkFee } from 'hooks/useNetworkFee'
 import { Tooltip } from 'components/Tooltip'
 import { NetworkTokenUnit } from 'types'
+import { Eip1559Fees } from 'utils/Utils'
 
 const isSlippageValid = (value: string): boolean => {
   return Boolean(
@@ -26,10 +26,11 @@ interface SwapTransactionDetailProps {
   toTokenSymbol?: string
   rate: number
   gasLimit: number
-  gasPrice: NetworkTokenUnit
+  maxFeePerGas: NetworkTokenUnit
   slippage: number
   setSlippage?: (slippage: number) => void
   selectedGasFee?: FeePreset
+  onFeesChange?(fees: Eip1559Fees<NetworkTokenUnit>, feePreset: FeePreset): void
 }
 
 const slippageInfoMessage =
@@ -41,9 +42,10 @@ const SwapTransactionDetail: FC<SwapTransactionDetailProps> = ({
   toTokenSymbol,
   rate,
   gasLimit,
-  gasPrice,
+  maxFeePerGas,
   slippage,
-  setSlippage
+  setSlippage,
+  onFeesChange
 }): JSX.Element => {
   const { theme } = useApplicationContext()
   const { data: networkFee } = useNetworkFee()
@@ -111,13 +113,15 @@ const SwapTransactionDetail: FC<SwapTransactionDetailProps> = ({
               Network Fee
             </Tooltip>
             <AvaText.Heading3>
-              {new Big(gasPrice.toString())
-                .mul(gasLimit)
-                .div(10 ** 18)
-                .toFixed(6)}{' '}
-              AVAX
+              {maxFeePerGas.mul(gasLimit)} AVAX
             </AvaText.Heading3>
           </Row>
+        </>
+      )}
+      {!review && (
+        <>
+          <Space y={16} />
+          <NetworkFeeSelector gasLimit={gasLimit} onFeesChange={onFeesChange} />
         </>
       )}
     </View>
