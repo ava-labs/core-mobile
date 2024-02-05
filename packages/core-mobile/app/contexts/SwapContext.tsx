@@ -29,6 +29,7 @@ import { performSwap } from '@avalabs/paraswap-sdk'
 import { selectActiveNetwork } from 'store/network'
 import { selectActiveAccount } from 'store/account'
 import { useNetworkFee } from 'hooks/useNetworkFee'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 
 export type SwapStatus = 'Idle' | 'Preparing' | 'Swapping' | 'Success' | 'Fail'
 
@@ -217,8 +218,18 @@ export const SwapContextProvider = ({
           slippage: swapSlippage,
           activeNetwork,
           provider: avalancheProvider,
-          transactionSend: signedTx =>
-            NetworkService.sendTransaction(signedTx, activeNetwork),
+          transactionSend: async signedTx => {
+            const txHash = await NetworkService.sendTransaction(
+              signedTx,
+              activeNetwork
+            )
+            AnalyticsService.captureWithEncryption('SwapRequestSucceeded', {
+              txHash: txHash,
+              chainId: activeNetwork.chainId
+            })
+
+            return txHash
+          },
           transactionSign: tx =>
             WalletService.sign(tx, activeAccount.index, activeNetwork),
           userAddress: activeAccount.address,

@@ -202,5 +202,8 @@ export type AnalyticsEvents = {
       addressCoreEth: string
     }[]
   }
-  CollectTransactionHash: { txHash: string; chainName: string; chainId: number }
+  SendRequestSucceeded: { txHash: string; chainId: number }
+  SwapRequestSucceeded: { txHash: string; chainId: number }
+  StakeRequestSucceeded: { txHash: string; chainId: number }
+  BridgeRequestSucceeded: { txHash: string; chainId: number }
 }

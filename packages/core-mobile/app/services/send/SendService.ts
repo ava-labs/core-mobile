@@ -9,10 +9,12 @@ import BN from 'bn.js'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { Transaction } from '@sentry/types'
 import { isErc721 } from 'services/nft/utils'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import { isValidSendState, SendServiceHelper, SendState } from './types'
 import sendServiceBTC from './SendServiceBTC'
 
 class SendService {
+  // eslint-disable-next-line max-params
   async send(
     sendState: SendState,
     activeNetwork: Network,
@@ -60,15 +62,23 @@ class SendService {
           sentryTrx
         )
         onTxSigned?.()
-        return await networkService.sendTransaction(
+        const txHash = await networkService.sendTransaction(
           signedTx,
           activeNetwork,
           false,
           sentryTrx
         )
+
+        AnalyticsService.captureWithEncryption('SendRequestSucceeded', {
+          chainId: activeNetwork.chainId,
+          txHash: txHash
+        })
+
+        return txHash
       })
   }
 
+  // eslint-disable-next-line max-params
   async validateStateAndCalculateFees(
     sendState: SendState,
     activeNetwork: Network,

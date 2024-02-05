@@ -61,7 +61,7 @@ const initAccounts = async (
   }
 
   if (isDeveloperMode === false) {
-    AnalyticsService.capture('CollectAccountAddresses', {
+    AnalyticsService.captureWithEncryption('CollectAccountAddresses', {
       addresses: accounts.map(acc => ({
         address: acc.address,
         addressBtc: acc.addressBtc,
@@ -90,7 +90,7 @@ const reloadAccounts = async (
   listenerApi.dispatch(setAccounts(reloadedAccounts))
 
   if (isDeveloperMode === false) {
-    AnalyticsService.capture('CollectAccountAddresses', {
+    AnalyticsService.captureWithEncryption('CollectAccountAddresses', {
       addresses: Object.values(reloadedAccounts).map(acc => ({
         address: acc.address,
         addressBtc: acc.addressBtc,
