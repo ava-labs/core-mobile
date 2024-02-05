@@ -98,9 +98,11 @@ export const useExplainTransactionShared = (
           txParams: {
             ...currentTransaction.txParams,
             gas: '0x' + feeDisplayValues.gasLimit.toString(16),
-            maxFeePerGas: feeDisplayValues.maxFeePerGas.toSubUnit(), // test this,
+            maxFeePerGas:
+              '0x' + feeDisplayValues.maxFeePerGas.toSubUnit().toString(16), // test this,
             maxPriorityFeePerGas:
-              feeDisplayValues.maxPriorityFeePerGas.toSubUnit()
+              '0x' +
+              feeDisplayValues.maxPriorityFeePerGas.toSubUnit().toString(16)
           }
         } as Transaction
       })

@@ -343,7 +343,7 @@ const SignTransaction = (): JSX.Element => {
           }}>
           <AvaButton.PrimaryLarge
             onPress={onHandleApprove}
-            disabled={submitting || !displayData?.gasPrice}>
+            disabled={submitting || !displayData?.maxFeePerGas}>
             {submitting && <ActivityIndicator />} Approve
           </AvaButton.PrimaryLarge>
           <Space y={20} />
@@ -380,7 +380,7 @@ const SignTransaction = (): JSX.Element => {
                 </Row>
               </AvaButton.Base>
             </Row>
-            {!displayData?.gasPrice ? (
+            {!displayData?.maxFeePerGas ? (
               <View>
                 <ActivityIndicator size={'large'} />
               </View>
