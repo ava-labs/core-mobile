@@ -74,6 +74,7 @@ const SwapReview = ({ onCancel, onBackToParent }: Props): JSX.Element => {
       optimalRate &&
       gasLimit &&
       maxFeePerGas &&
+      maxPriorityFeePerGas &&
       slippage
     ) {
       swap({
@@ -219,6 +220,7 @@ const SwapReview = ({ onCancel, onBackToParent }: Props): JSX.Element => {
         <SwapTransactionDetail
           review
           maxFeePerGas={maxFeePerGas}
+          maxPriorityFeePerGas={maxPriorityFeePerGas}
           gasLimit={gasLimit}
           rate={optimalRate ? calculateRate(optimalRate) : 0}
           slippage={slippage}

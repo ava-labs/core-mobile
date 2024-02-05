@@ -129,17 +129,17 @@ export abstract class TokenBaseUnit<T extends TokenBaseUnit<T>> {
   static toBig<T extends TokenBaseUnit<T>>(value: AcceptedTypes | T): Big {
     switch (typeof value) {
       case 'bigint':
-        return Big(BigInt(value as bigint).toString())
+        return Big(BigInt(value).toString())
       case 'string':
-        return Big(value as string)
+        return Big(value)
       case 'number':
-        return Big(value as number)
+        return Big(value)
       case 'object':
         if (value instanceof BN) {
-          return Big((value as BN).toString())
+          return Big(value.toString())
         }
         if (value instanceof Big) {
-          return value as Big
+          return value
         }
         return value.value
     }

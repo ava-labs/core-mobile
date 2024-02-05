@@ -6,10 +6,10 @@ import AvaText from 'components/AvaText'
 import InputText from 'components/InputText'
 import NetworkFeeSelector, { FeePreset } from 'components/NetworkFeeSelector'
 import { Row } from 'components/Row'
-import { useNetworkFee } from 'hooks/useNetworkFee'
 import { Tooltip } from 'components/Tooltip'
 import { NetworkTokenUnit } from 'types'
 import { Eip1559Fees } from 'utils/Utils'
+import PoppableGasAndLimit from 'components/PoppableGasAndLimit'
 
 const isSlippageValid = (value: string): boolean => {
   return Boolean(
@@ -27,6 +27,7 @@ interface SwapTransactionDetailProps {
   rate: number
   gasLimit: number
   maxFeePerGas: NetworkTokenUnit
+  maxPriorityFeePerGas: NetworkTokenUnit
   slippage: number
   setSlippage?: (slippage: number) => void
   selectedGasFee?: FeePreset
@@ -43,16 +44,12 @@ const SwapTransactionDetail: FC<SwapTransactionDetailProps> = ({
   rate,
   gasLimit,
   maxFeePerGas,
+  maxPriorityFeePerGas,
   slippage,
   setSlippage,
   onFeesChange
 }): JSX.Element => {
   const { theme } = useApplicationContext()
-  const { data: networkFee } = useNetworkFee()
-
-  const netFeeInfoMessage = `Gas limit: ${gasLimit} \nGas price: ${
-    networkFee?.low.maxFeePerGas?.toFeeUnit() ?? '-'
-  } nAVAX`
 
   return (
     <View style={{ flex: 1, paddingHorizontal: 16 }}>
@@ -106,14 +103,20 @@ const SwapTransactionDetail: FC<SwapTransactionDetailProps> = ({
           <Row
             style={{ justifyContent: 'space-between', alignItems: 'center' }}>
             <Tooltip
-              content={netFeeInfoMessage}
+              content={
+                <PoppableGasAndLimit
+                  gasLimit={gasLimit}
+                  maxFeePerGas={maxFeePerGas.toFeeUnit()}
+                  maxPriorityFeePerGas={maxPriorityFeePerGas.toFeeUnit()}
+                />
+              }
               position={'right'}
-              style={{ width: 180 }}
+              style={{ width: 250 }}
               textStyle={{ color: theme.white }}>
               Network Fee
             </Tooltip>
             <AvaText.Heading3>
-              {maxFeePerGas.mul(gasLimit)} AVAX
+              {maxFeePerGas.mul(gasLimit).toDisplay(6)} AVAX
             </AvaText.Heading3>
           </Row>
         </>

@@ -6,7 +6,8 @@ export interface OngoingSwap {
   toToken?: TokenWithBalance
   optimalRate?: OptimalRate
   gasLimit?: number
-  gasPrice?: number // nAvax is used for gasPrice
+  maxFeePerGas?: number // nAvax is used for maxFeePerGas
+  maxPriorityFeePerGas?: number // nAvax is used for maxPriorityFeePerGas
   rate?: number
   slippage?: number
 }
@@ -21,7 +22,8 @@ export const initialState: SwapState = {
     toToken: undefined,
     optimalRate: undefined,
     gasLimit: undefined,
-    gasPrice: undefined,
+    maxFeePerGas: undefined,
+    maxPriorityFeePerGas: undefined,
     rate: undefined,
     slippage: undefined
   }

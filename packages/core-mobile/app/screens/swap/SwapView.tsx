@@ -172,16 +172,11 @@ export default function SwapView(): JSX.Element {
   const handleFeesChange = useCallback(
     (fees: Eip1559Fees<NetworkTokenUnit>, feeType: FeePreset) => {
       setMaxFeePerGas(fees.maxFeePerGas)
-      setMaxPriorityFeePerGas(maxPriorityFeePerGas)
+      setMaxPriorityFeePerGas(fees.maxPriorityFeePerGas)
       setCustomGasLimit(fees.gasLimit)
       setSelectedGasFee(feeType)
     },
-    [
-      maxPriorityFeePerGas,
-      setCustomGasLimit,
-      setMaxFeePerGas,
-      setMaxPriorityFeePerGas
-    ]
+    [setCustomGasLimit, setMaxFeePerGas, setMaxPriorityFeePerGas]
   )
 
   const reviewOrder = (): void => {
@@ -326,6 +321,7 @@ export default function SwapView(): JSX.Element {
             rate={optimalRate ? calculateRate(optimalRate) : 0}
             gasLimit={gasLimit}
             maxFeePerGas={maxFeePerGas}
+            maxPriorityFeePerGas={maxPriorityFeePerGas}
             slippage={slippage}
             setSlippage={value => setSlippage(value)}
             selectedGasFee={selectedGasFee}

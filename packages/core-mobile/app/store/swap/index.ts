@@ -15,7 +15,8 @@ const swapSlice = createSlice({
 })
 
 // selectors
-export const selectCurrentSwap = (state: RootState) => state.swap.currentSwap
+export const selectCurrentSwap = (state: RootState): OngoingSwap =>
+  state.swap.currentSwap
 
 // actions
 export const { updateCurrentSwap } = swapSlice.actions

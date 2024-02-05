@@ -39,7 +39,7 @@ export default function PoppableGasAndLimit({
           alignItems: 'center'
         }}>
         <AvaText.Body3 textStyle={{ color: theme.neutral900 }}>
-          Max Price Per Gas
+          Max Fee Per Gas
         </AvaText.Body3>
         <AvaText.Body3 textStyle={{ color: theme.neutral900 }}>
           {maxFeePerGas}
