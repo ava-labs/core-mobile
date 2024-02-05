@@ -33,6 +33,7 @@ import {
   getBitcoinNetwork
 } from 'services/network/utils/providerUtils'
 import { Btc } from 'types/Btc'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 
 export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
   const activeNetwork = useSelector(selectActiveNetwork)
@@ -217,6 +218,12 @@ export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
     }
 
     const hash = await networkService.sendTransaction(signedTx, bitcoinNetwork)
+
+    AnalyticsService.captureWithEncryption('BridgeTransactionStarted', {
+      chainId: bitcoinNetwork.chainId,
+      sourceTxHash: hash,
+      fromAddress: btcAddress
+    })
 
     createBridgeTransaction(
       {

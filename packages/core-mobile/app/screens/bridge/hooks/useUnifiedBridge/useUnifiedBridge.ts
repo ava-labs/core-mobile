@@ -139,6 +139,13 @@ export const useUnifiedBridge = (
       targetChainId: targetNetwork.chainId
     })
 
+    AnalyticsService.captureWithEncryption('BridgeTransactionStarted', {
+      chainId: activeNetwork.chainId,
+      sourceTxHash: pendingTransfer.sourceTxHash,
+      fromAddress: pendingTransfer.fromAddress,
+      toAddress: pendingTransfer.toAddress
+    })
+
     dispatch(setPendingTransfer(pendingTransfer))
     setTxHash(pendingTransfer.sourceTxHash)
 

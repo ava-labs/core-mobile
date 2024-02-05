@@ -69,7 +69,7 @@ class SendService {
           sentryTrx
         )
 
-        AnalyticsService.captureWithEncryption('SendRequestSucceeded', {
+        AnalyticsService.captureWithEncryption('SendTransactionStarted', {
           chainId: activeNetwork.chainId,
           txHash: txHash
         })

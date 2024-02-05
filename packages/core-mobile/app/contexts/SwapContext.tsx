@@ -223,7 +223,7 @@ export const SwapContextProvider = ({
               signedTx,
               activeNetwork
             )
-            AnalyticsService.captureWithEncryption('SwapRequestSucceeded', {
+            AnalyticsService.captureWithEncryption('SwapTransactionStarted', {
               txHash: txHash,
               chainId: activeNetwork.chainId
             })
