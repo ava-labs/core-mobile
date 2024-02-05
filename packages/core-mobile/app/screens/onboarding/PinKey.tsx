@@ -1,7 +1,12 @@
 import React from 'react'
-import { StyleSheet, TouchableNativeFeedback } from 'react-native'
-import { useApplicationContext } from 'contexts/ApplicationContext'
-import { View, Text, Icons } from '@avalabs/k2-mobile'
+import {
+  StyleSheet,
+  TouchableNativeFeedback,
+  Platform,
+  Pressable
+} from 'react-native'
+import { View, Text, Icons, alpha, useTheme } from '@avalabs/k2-mobile'
+import { K2Theme } from '@avalabs/k2-mobile/src/theme/theme'
 
 export enum PinKeys {
   Key1,
@@ -18,7 +23,7 @@ export enum PinKeys {
 }
 
 type Props = {
-  keyboardKey: PinKeys
+  keyboardKey: PinKeys | undefined
   onPress: (key: PinKeys) => void
   disabled?: boolean
 }
@@ -37,25 +42,26 @@ const keymap: Map<PinKeys, string> = new Map([
   [PinKeys.Backspace, '<']
 ])
 
+const getHighlighColor = (theme: K2Theme): string => {
+  return alpha(theme.colors.$neutral800, 0.8)
+}
+
 export default function PinKey({
   keyboardKey,
   onPress,
   disabled
-}: Props | Readonly<Props>): JSX.Element {
-  const context = useApplicationContext()
-  const theme = context.theme
+}: Props | Readonly<Props>): JSX.Element | null {
   const isBackspace = keyboardKey === PinKeys.Backspace
-  if (keyboardKey === undefined) {
-    return <View />
-  }
-  return (
-    <TouchableNativeFeedback
-      useForeground={true}
-      disabled={disabled}
-      onPress={() => onPress(keyboardKey)}
-      background={TouchableNativeFeedback.Ripple(theme.buttonRipple, true)}>
-      <View style={[styles.button, disabled && { opacity: 0.5 }]}>
-        {isBackspace && <Icons.Content.IconBackspace color={theme.white} />}
+  const { theme } = useTheme()
+
+  if (keyboardKey === undefined) return null
+
+  const renderContent = (): JSX.Element => {
+    return (
+      <>
+        {isBackspace && (
+          <Icons.Content.IconBackspace color={theme.colors.$white} />
+        )}
         {!isBackspace && (
           <Text
             variant="heading2"
@@ -64,6 +70,46 @@ export default function PinKey({
             {keymap.get(keyboardKey)}
           </Text>
         )}
+      </>
+    )
+  }
+
+  // simulate a circular touchable highlight effect on iOS
+  if (Platform.OS === 'ios') {
+    return (
+      <Pressable onPress={() => onPress(keyboardKey)} disabled={disabled}>
+        {({ pressed }) => (
+          <>
+            <View style={styles.button}>{renderContent()}</View>
+            <View
+              style={{
+                display: pressed ? 'flex' : 'none',
+                backgroundColor: getHighlighColor(theme),
+                position: 'absolute',
+                left: 4.5,
+                top: -13.5,
+                width: 74,
+                height: 74,
+                borderRadius: 37
+              }}
+            />
+          </>
+        )}
+      </Pressable>
+    )
+  }
+
+  return (
+    <TouchableNativeFeedback
+      useForeground={true}
+      disabled={disabled}
+      onPress={() => onPress(keyboardKey)}
+      background={TouchableNativeFeedback.Ripple(
+        theme.colors.$neutral800,
+        true
+      )}>
+      <View style={[styles.button, disabled && { opacity: 0.5 }]}>
+        {renderContent()}
       </View>
     </TouchableNativeFeedback>
   )

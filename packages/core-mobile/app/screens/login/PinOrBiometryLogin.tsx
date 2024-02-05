@@ -148,7 +148,7 @@ export default function PinOrBiometryLogin({
       keys.push(
         <View key={key} style={styles.pinKey}>
           <PinKey
-            keyboardKey={keymap.get(value) as PinKeys}
+            keyboardKey={keymap.get(value)}
             onPress={onEnterPin}
             disabled={disableKeypad}
           />
