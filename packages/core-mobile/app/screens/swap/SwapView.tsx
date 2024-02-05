@@ -94,7 +94,7 @@ export default function SwapView(): JSX.Element {
     !!networkFee
 
   useEffect(validateInputsFx, [fromTokenValue, maxFromValue])
-  useEffect(applyOptimalRateFx, [fromToken, optimalRate, toToken])
+  useEffect(applyOptimalRateFx, [optimalRate])
   useEffect(calculateGasAndMaxFx, [
     activeNetwork?.networkToken?.decimals,
     avaxPrice,
@@ -119,7 +119,7 @@ export default function SwapView(): JSX.Element {
   }
 
   function applyOptimalRateFx(): void {
-    if (optimalRate && toToken && fromToken) {
+    if (optimalRate) {
       if (optimalRate.side === SwapSide.SELL) {
         setToTokenValue(
           NetworkTokenUnit.fromBalanceToken(toToken, optimalRate.destAmount)
