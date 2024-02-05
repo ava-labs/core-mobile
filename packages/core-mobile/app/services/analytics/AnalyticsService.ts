@@ -53,7 +53,11 @@ class AnalyticsService {
       ANALYTICS_ENCRYPTION_KEY_ID
     )
 
-    return PostHogService.capture(eventName, { data: encrypted, enc })
+    return PostHogService.capture(eventName, {
+      data: encrypted,
+      enc,
+      keyID: ANALYTICS_ENCRYPTION_KEY_ID
+    })
   }
 }
 
