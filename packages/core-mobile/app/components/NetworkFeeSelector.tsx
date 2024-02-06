@@ -76,7 +76,7 @@ const NetworkFeeSelector = ({
         maxFeePerGas: networkFee.low.maxFeePerGas,
         maxPriorityFeePerGas:
           networkFee.low.maxPriorityFeePerGas ??
-          NetworkTokenUnit.fromNetwork(activeNetwork, 0),
+          NetworkTokenUnit.fromNetwork(activeNetwork),
         tokenPrice: nativeTokenPrice,
         gasLimit
       })
@@ -96,7 +96,7 @@ const NetworkFeeSelector = ({
         maxFeePerGas: presetFeeRate.maxFeePerGas,
         maxPriorityFeePerGas:
           presetFeeRate.maxPriorityFeePerGas ??
-          NetworkTokenUnit.fromNetwork(activeNetwork, 0),
+          NetworkTokenUnit.fromNetwork(activeNetwork),
         tokenPrice: nativeTokenPrice,
         gasLimit
       })

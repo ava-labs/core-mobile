@@ -62,6 +62,7 @@ const EditFees = ({
     useState<string>(initMaxPriorityFeePerGas.toFeeUnit().toString())
   const tokenPrice = useNativeTokenPriceForNetwork(network).nativeTokenPrice
   const [feeError, setFeeError] = useState('')
+  const [gasLimitError, setGasLimitError] = useState('')
   const [newFees, setNewFees] = useState<GasAndFees<NetworkTokenUnit>>(
     calculateGasAndFees({
       maxFeePerGas: initMaxFeePerGas,
@@ -86,16 +87,19 @@ const EditFees = ({
         gasLimit: isNaN(parseInt(newGasLimit)) ? 0 : parseInt(newGasLimit)
       })
       setNewFees(fees)
-      if (fees.gasLimit === 0) {
-        setFeeError('Please enter a valid gas limit')
-      } else {
-        feeError && setFeeError('')
-      }
+      setGasLimitError(
+        fees.gasLimit <= 0 ? 'Please enter a valid gas limit' : ''
+      )
+      setFeeError(
+        fees.maxFeePerGas.lt(initMaxFeePerGas) ? 'Max base fee is too low' : ''
+      )
     } catch (e) {
       setFeeError('Gas Limit is too much')
     }
   }, [
     feeError,
+    initMaxFeePerGas,
+    gasLimitError,
     newGasLimit,
     newMaxFeePerGas,
     newMaxPriorityFeePerGas,
@@ -131,7 +135,6 @@ const EditFees = ({
         popOverInfoText={maxBaseFeeInfoMessage}
         onChangeText={setNewMaxFeePerGas}
         errorText={feeError}
-        currency={'USD'}
       />
       <InputText
         label={'Max Priority Fee'}
@@ -139,7 +142,6 @@ const EditFees = ({
         text={newMaxPriorityFeePerGas}
         popOverInfoText={maxPriorityFeeInfoMessage}
         onChangeText={setNewMaxPriorityFeePerGas}
-        errorText={feeError}
       />
       <InputText
         label={'Gas Limit'}
@@ -147,7 +149,7 @@ const EditFees = ({
         text={newGasLimit}
         popOverInfoText={gasLimitInfoMessage}
         onChangeText={setNewGasLimit}
-        errorText={feeError}
+        errorText={gasLimitError}
       />
       <View sx={{ paddingHorizontal: 16, marginTop: 20, marginBottom: 16 }}>
         <DividerLine />

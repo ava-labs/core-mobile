@@ -99,10 +99,10 @@ export const SendNFTContextProvider = ({
     FeePreset.Normal
   )
   const [maxFeePerGas, setMaxFeePerGas] = useState(
-    NetworkTokenUnit.fromNetwork(activeNetwork, 0n)
+    NetworkTokenUnit.fromNetwork(activeNetwork)
   )
   const [maxPriorityFeePerGas, setMaxPriorityFeePerGas] = useState(
-    NetworkTokenUnit.fromNetwork(activeNetwork, 0n)
+    NetworkTokenUnit.fromNetwork(activeNetwork)
   )
   const [sendStatus, setSendStatus] = useState<SendStatus>('Idle')
   const [sendStatusMsg, setSendStatusMsg] = useState('')

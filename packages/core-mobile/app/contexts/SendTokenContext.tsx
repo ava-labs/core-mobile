@@ -107,10 +107,10 @@ export const SendTokenContextProvider = ({
   )
 
   const [maxFeePerGas, setMaxFeePerGas] = useState<NetworkTokenUnit>(
-    NetworkTokenUnit.fromNetwork(activeNetwork, 0n)
+    NetworkTokenUnit.fromNetwork(activeNetwork)
   )
   const [maxPriorityFeePerGas, setMaxPriorityFeePerGas] =
-    useState<NetworkTokenUnit>(NetworkTokenUnit.fromNetwork(activeNetwork, 0n))
+    useState<NetworkTokenUnit>(NetworkTokenUnit.fromNetwork(activeNetwork))
 
   const balanceAfterTrx = useMemo(() => {
     //since fee is paid in native token only, for non-native tokens we should not subtract

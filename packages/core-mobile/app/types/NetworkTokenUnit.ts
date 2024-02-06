@@ -25,7 +25,7 @@ export class NetworkTokenUnit extends TokenBaseUnit<NetworkTokenUnit> {
       ? TokenBaseUnit.toBig(valueInSmallestDenomination).div(
           Big(10).pow(network.networkToken.decimals)
         )
-      : 0
+      : Big(0)
     return new NetworkTokenUnit(
       baseValue,
       network.networkToken.decimals,
