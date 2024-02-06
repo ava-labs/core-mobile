@@ -116,7 +116,7 @@ const SwapTransactionDetail: FC<SwapTransactionDetailProps> = ({
               Network Fee
             </Tooltip>
             <AvaText.Heading3>
-              {maxFeePerGas.mul(gasLimit).toDisplay(6)} AVAX
+              {maxFeePerGas.mul(gasLimit).toString()} AVAX
             </AvaText.Heading3>
           </Row>
         </>

@@ -63,7 +63,7 @@ const NetworkFeeSelector = ({
     selectedCurrency.toLowerCase() as VsCurrencyType
   )
   const isBtcNetwork = Boolean(network?.vmName === NetworkVMType.BITCOIN)
-  const [selectedPreset, setSelectedPreset] = useState(FeePreset.Instant)
+  const [selectedPreset, setSelectedPreset] = useState(FeePreset.Normal)
   const [calculatedFees, setCalculatedFees] =
     useState<GasAndFees<NetworkTokenUnit>>()
   const [customFees, setCustomFees] = useState<GasAndFees<NetworkTokenUnit>>()
@@ -81,8 +81,17 @@ const NetworkFeeSelector = ({
         gasLimit
       })
       setCustomFees(initialCustomFees)
+      setCalculatedFees(initialCustomFees)
+      onFeesChange?.(initialCustomFees, FeePreset.Normal)
     }
-  }, [activeNetwork, customFees, gasLimit, nativeTokenPrice, networkFee])
+  }, [
+    activeNetwork,
+    customFees,
+    gasLimit,
+    nativeTokenPrice,
+    networkFee,
+    onFeesChange
+  ])
 
   function handleSelectedPreset(preset: FeePreset): void {
     setSelectedPreset(preset)

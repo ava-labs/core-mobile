@@ -75,7 +75,7 @@ export const useExplainTransactionShared = (
     limitType: Limit.DEFAULT
   })
   const [selectedGasFee, setSelectedGasFee] = useState<FeePreset>(
-    FeePreset.Instant
+    FeePreset.Normal
   )
 
   const setCustomFee = useCallback(

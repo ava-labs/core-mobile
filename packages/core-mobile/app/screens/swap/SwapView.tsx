@@ -74,7 +74,7 @@ export default function SwapView(): JSX.Element {
 
   const [localError, setLocalError] = useState<string>('')
   const [selectedGasFee, setSelectedGasFee] = useState<FeePreset>(
-    FeePreset.Instant
+    FeePreset.Normal
   )
 
   const canSwap: boolean =
@@ -221,7 +221,8 @@ export default function SwapView(): JSX.Element {
         } else if (optRate) {
           const limit = customGasLimit || parseInt(optRate.gasCost)
           const fee = maxFeePerGas.mul(limit)
-          let maxBn = getMaxAvailableBalance(fromToken, fee.toFeeUnit())
+
+          let maxBn = getMaxAvailableBalance(fromToken, fee.toString())
           if (maxBn) {
             // there's high probability that on next call swap fees will change so let's lower
             // max amount just a bit more for safety margin by chopping off some decimals
