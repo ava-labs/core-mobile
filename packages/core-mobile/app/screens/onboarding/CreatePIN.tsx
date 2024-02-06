@@ -78,8 +78,7 @@ export default function CreatePIN({
       keys.push(
         <View key={key} style={styles.pinKey}>
           <PinKey
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            keyboardKey={keymap.get(value)!}
+            keyboardKey={keymap.get(value)}
             onPress={
               isChosenPinEntered ? onEnterConfirmedPin : onEnterChosenPin
             }
