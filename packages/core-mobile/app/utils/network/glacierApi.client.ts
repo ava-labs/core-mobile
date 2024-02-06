@@ -1049,7 +1049,7 @@ const FullNativeTransactionDetails = z
     txType: z.number(),
     gasLimit: z.string(),
     gasUsed: z.string(),
-    gasPrice: z.string(),
+    gasPrice: z.string().optional(),
     nonce: z.string(),
     from: RichAddress,
     to: RichAddress,

@@ -110,7 +110,7 @@ const dispatchWalletConnectSession = (
   // link is a valid wallet connect uri
   const versionStr = version.toString()
   if (versionStr === WalletConnectVersions.V1) {
-    showSimpleToast('WalletConnectV1 is not supported')
+    showSimpleToast('WalletConnect V1 is not supported')
   } else if (versionStr === WalletConnectVersions.V2) {
     dispatch(newSessionV2(uri))
   }

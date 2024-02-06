@@ -19,6 +19,7 @@ import {
   useEthereumProvider
 } from 'hooks/networkProviderHooks'
 import { selectBridgeAppConfig, selectBridgeCriticalConfig } from 'store/bridge'
+import { TransactionResponse } from 'ethers'
 import { blockchainToNetwork } from '../utils/bridgeUtils'
 
 const events = new EventEmitter()
@@ -26,7 +27,13 @@ const events = new EventEmitter()
 /**
  * prepares asset to be transferred by check creating a TransactionRequest, signing with wallet.signEvm;
  */
-export function useTransferAsset() {
+export function useTransferAsset(): {
+  transferHandler: (
+    amount: Big,
+    asset: Asset
+  ) => Promise<TransactionResponse | undefined>
+  events: EventEmitter
+} {
   const activeAccount = useSelector(selectActiveAccount)
   const allNetworks = useSelector(selectNetworks)
   const config = useSelector(selectBridgeAppConfig)
@@ -54,10 +61,10 @@ export function useTransferAsset() {
         return Promise.reject('Wallet not ready')
       }
 
-      const handleStatusChange = (status: WrapStatus) => {
+      const handleStatusChange = (status: WrapStatus): void => {
         events.emit(TransferEventType.WRAP_STATUS, status)
       }
-      const handleTxHashChange = (txHash: string) => {
+      const handleTxHashChange = (txHash: string): void => {
         events.emit(TransferEventType.TX_HASH, txHash)
       }
 

@@ -124,8 +124,6 @@ export function titleToInitials(title: string): string {
 export type GasAndFees<T extends TokenBaseUnit<T>> = {
   maxTotalFee: T
   maxTotalFeeInCurrency: string
-  /** @deprecated For legacy, non eip-1559 transactions. Those places should be replaced with maxFeePerGas **/
-  gasPrice: T
 } & Eip1559Fees<T>
 
 export type Eip1559Fees<T extends TokenBaseUnit<T>> = {
@@ -148,8 +146,7 @@ export function calculateGasAndFees<T extends TokenBaseUnit<T>>({
     maxPriorityFeePerGas,
     gasLimit,
     maxTotalFee,
-    maxTotalFeeInCurrency: maxTotalFee.mul(tokenPrice).toFixed(2),
-    gasPrice: maxFeePerGas
+    maxTotalFeeInCurrency: maxTotalFee.mul(tokenPrice).toFixed(2)
   }
 }
 
