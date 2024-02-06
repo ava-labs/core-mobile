@@ -44,8 +44,8 @@ export class SendServiceEVM implements SendServiceHelper {
         const { amount, address, maxFeePerGas, maxPriorityFeePerGas, token } =
           sendState
 
-        // This *should* always be defined and set by the UI
-        if (!token) return
+        // Set canSubmit to false if token is not set
+        if (!token) return SendServiceEVM.getErrorState(sendState, '')
 
         const gasLimit = await this.getGasLimit(sendState)
         const sendFee = maxFeePerGas
