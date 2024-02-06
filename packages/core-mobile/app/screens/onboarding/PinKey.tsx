@@ -79,21 +79,23 @@ export default function PinKey({
     return (
       <Pressable onPress={() => onPress(keyboardKey)} disabled={disabled}>
         {({ pressed }) => (
-          <>
+          <View
+            style={{
+              justifyContent: 'center',
+              alignItems: 'center'
+            }}>
             <View style={styles.button}>{renderContent()}</View>
             <View
               style={{
                 display: pressed ? 'flex' : 'none',
                 backgroundColor: getHighlighColor(theme),
                 position: 'absolute',
-                left: 4.5,
-                top: -13.5,
                 width: 74,
                 height: 74,
                 borderRadius: 37
               }}
             />
-          </>
+          </View>
         )}
       </Pressable>
     )
