@@ -13,15 +13,19 @@ const suite = new CipherSuite({
 
 export async function encrypt(
   message: string,
-  key: string,
-  keyID: string
+  publicKey: string,
+  keyID?: string
 ): Promise<{ encrypted: string; enc: string }> {
-  const publicKey = await suite.kem.deserializePublicKey(
-    Buffer.from(key, 'base64')
+  if (!crypto.subtle) {
+    throw new Error('crypto.subtle is not available')
+  }
+
+  const deserializedPublicKey = await suite.kem.deserializePublicKey(
+    Buffer.from(publicKey, 'base64')
   )
 
   const sender = await suite.createSenderContext({
-    recipientPublicKey: publicKey
+    recipientPublicKey: deserializedPublicKey
   })
 
   const aad = keyID !== undefined ? new TextEncoder().encode(keyID) : undefined

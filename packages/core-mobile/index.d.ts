@@ -9,6 +9,7 @@ declare global {
   // eslint-disable-next-line no-var
   var toast: ToastType
   const navigator: Navigator
+  const crypto: Crypto
 
   namespace ReactNavigation {
     // eslint-disable-next-line @typescript-eslint/no-empty-interface
