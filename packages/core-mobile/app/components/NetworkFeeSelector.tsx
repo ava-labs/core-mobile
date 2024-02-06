@@ -8,7 +8,7 @@ import React, { FC, useEffect, useMemo, useState } from 'react'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Opacity50 } from 'resources/Constants'
 import { useSelector } from 'react-redux'
-import { NetworkVMType } from '@avalabs/chains-sdk'
+import { Network, NetworkVMType } from '@avalabs/chains-sdk'
 import { useNavigation } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
 import { WalletScreenProps } from 'navigation/types'
@@ -71,7 +71,7 @@ const NetworkFeeSelector = ({
   // customFees init value.
   // NetworkFee is not immediately available hence the useEffect
   useEffect(() => {
-    if (!customFees && networkFee && gasLimit) {
+    if (!customFees && networkFee && gasLimit > 0) {
       const initialCustomFees = calculateGasAndFees<NetworkTokenUnit>({
         maxFeePerGas: networkFee.low.maxFeePerGas,
         maxPriorityFeePerGas:
@@ -140,24 +140,18 @@ const NetworkFeeSelector = ({
     }
   }, [customFees?.maxFeePerGas, networkFee])
 
-  function calcRelativeFeeIncrease(value: string): void {
-    if (!value) return
-    if (!networkFee || !customFees) return
-    const zeroNetworkTokenUnit = NetworkTokenUnit.fromNetwork(activeNetwork)
-    const customMaxFeePerGas = zeroNetworkTokenUnit.add(value).div(10 ** 9)
-    const customFeeRelativeChange = customMaxFeePerGas.sub(
-      networkFee.low.maxFeePerGas
-    )
-    let customPriorityFee =
-      networkFee.low.maxPriorityFeePerGas?.add(customFeeRelativeChange) ??
-      zeroNetworkTokenUnit
-    if (customPriorityFee.lt(0)) {
-      customPriorityFee = zeroNetworkTokenUnit
-    }
-    handleSetCustomFees({
-      gasLimit: customFees.gasLimit,
-      maxFeePerGas: customMaxFeePerGas,
-      maxPriorityFeePerGas: customPriorityFee
+  const goToEditGasLimit = (n: Network): void => {
+    if (!networkFee) return
+    navigate(AppNavigation.Modal.EditGasLimit, {
+      network: n,
+      onSave: handleSetCustomFees,
+      lowMaxFeePerGas: networkFee.low.maxFeePerGas,
+      maxFeePerGas: customFees?.maxFeePerGas ?? networkFee.low.maxFeePerGas,
+      maxPriorityFeePerGas:
+        customFees?.maxPriorityFeePerGas ??
+        networkFee.low.maxPriorityFeePerGas ??
+        NetworkTokenUnit.fromNetwork(activeNetwork),
+      gasLimit
     })
   }
 
@@ -176,21 +170,7 @@ const NetworkFeeSelector = ({
         )}
         {network?.vmName === NetworkVMType.EVM && (
           <View>
-            <AvaButton.Icon
-              onPress={() => {
-                if (!networkFee) return
-                navigate(AppNavigation.Modal.EditGasLimit, {
-                  network,
-                  onSave: handleSetCustomFees,
-                  maxFeePerGas:
-                    customFees?.maxFeePerGas ?? networkFee.low.maxFeePerGas,
-                  maxPriorityFeePerGas:
-                    customFees?.maxPriorityFeePerGas ??
-                    networkFee.low.maxPriorityFeePerGas ??
-                    NetworkTokenUnit.fromNetwork(activeNetwork),
-                  gasLimit
-                })
-              }}>
+            <AvaButton.Icon onPress={() => goToEditGasLimit(network)}>
               <SettingsCogSVG />
             </AvaButton.Icon>
           </View>
@@ -224,17 +204,19 @@ const NetworkFeeSelector = ({
               value={displayGasValues?.[FeePreset.Instant]}
             />
             <FeeSelector
-              editable
               label={FeePreset.Custom}
               selected={selectedPreset === FeePreset.Custom}
-              onSelect={() => handleSelectedPreset(FeePreset.Custom)}
+              onSelect={() => {
+                handleSelectedPreset(FeePreset.Custom)
+                network?.vmName === NetworkVMType.EVM &&
+                  goToEditGasLimit(network)
+              }}
               placeholder={displayGasValues?.[FeePreset.Normal]}
               value={
                 selectedPreset !== FeePreset.Custom && !customFees
                   ? displayGasValues?.[FeePreset.Normal]
                   : displayGasValues?.[FeePreset.Custom]
               }
-              onValueEntered={calcRelativeFeeIncrease}
             />
           </>
         )}

@@ -18,6 +18,7 @@ type EditFeesProps<T extends TokenBaseUnit<T>> = {
   network: Network
   onSave: (customFees: Eip1559Fees<T>) => void
   onClose?: () => void
+  lowMaxFeePerGas: NetworkTokenUnit
 } & Eip1559Fees<T>
 
 const maxBaseFeeInfoMessage =
@@ -38,6 +39,7 @@ function CurrencyHelperText({ text }: { text: string }): JSX.Element {
 }
 
 const EditFees = ({
+  lowMaxFeePerGas,
   maxFeePerGas: initMaxFeePerGas,
   maxPriorityFeePerGas: initMaxPriorityFeePerGas,
   gasLimit: initGasLimit,
@@ -91,7 +93,7 @@ const EditFees = ({
         fees.gasLimit <= 0 ? 'Please enter a valid gas limit' : ''
       )
       setFeeError(
-        fees.maxFeePerGas.lt(initMaxFeePerGas) ? 'Max base fee is too low' : ''
+        fees.maxFeePerGas.lt(lowMaxFeePerGas) ? 'Max base fee is too low' : ''
       )
     } catch (e) {
       setFeeError('Gas Limit is too much')
@@ -104,7 +106,8 @@ const EditFees = ({
     newMaxFeePerGas,
     newMaxPriorityFeePerGas,
     tokenPrice,
-    typeCreator
+    typeCreator,
+    lowMaxFeePerGas
   ])
 
   const handleOnSave = (): void => {

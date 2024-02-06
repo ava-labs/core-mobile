@@ -240,6 +240,7 @@ const EditGasLimit = (): JSX.Element => {
       onClose={goBack}
       onSave={params.onSave}
       network={params.network}
+      lowMaxFeePerGas={params.lowMaxFeePerGas}
     />
   )
 }
