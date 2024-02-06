@@ -5,6 +5,8 @@ import commonElsPage from '../pages/commonEls.page'
 import nameWalletPage from '../pages/nameWallet.page'
 import ExistingRecoveryPhrasePage from '../pages/existingRecoveryPhrase.page'
 import accountManagePage from '../pages/accountManage.page'
+import existingRecoveryPhrasePage from '../pages/existingRecoveryPhrase.page'
+import Actions from '../helpers/actions'
 
 class LoginRecoverWallet {
   async recoverMnemonicWallet() {
@@ -22,19 +24,23 @@ class LoginRecoverWallet {
     await PortfolioPage.verifyPorfolioScreen()
   }
 
-  async recoverManualLogin() {
+  async enterPin() {
     await CreatePinPage.tapNumpadZero6Times()
     await commonElsPage.checkIfMainnet()
   }
 
   async recoverWalletLogin() {
-    const seedlessBool = process.env.SEEDLESS_TEST
-    if (!seedlessBool || seedlessBool === 'false') {
-      console.log(process.env.E2E_MNEMONIC, ' process.env.E2E_MNEMONIC')
-      await this.recoverMnemonicWallet()
-    } else {
-      await this.recoverManualLogin()
+    const isVisisbleNo = await Actions.expectToBeVisible(
+      existingRecoveryPhrasePage.forgotPinBtn
+    )
+
+    if (isVisisbleNo) {
+      console.log(isVisisbleNo, 'isVisisbleNo Yes')
+      await this.enterPin()
       await accountManagePage.switchToFirstAccount()
+    } else {
+      console.log(isVisisbleNo, 'isVisisbleNo No')
+      await this.recoverMnemonicWallet()
     }
   }
 }

@@ -1,4 +1,3 @@
-import LoginRecoverWallet from '../../helpers/loginRecoverWallet'
 import AccountManagePage from '../../pages/accountManage.page'
 import Actions from '../../helpers/actions'
 import PortfolioPage from '../../pages/portfolio.page'
@@ -12,9 +11,8 @@ describe('Send Avax to another account', () => {
   })
 
   it('Should verify NFT Details items', async () => {
-    await LoginRecoverWallet.recoverWalletLogin()
-    await AccountManagePage.tapAccountMenu()
-    await AccountManagePage.tapAccountMenu()
+    await AccountManagePage.tapCarrotSVG()
+    await AccountManagePage.tapFirstAccount()
     await AccountManagePage.createSecondAccount()
     await PortfolioPage.tapCollectiblesTab()
     await Actions.waitForElement(CollectiblesPage.gridItem, 5000)

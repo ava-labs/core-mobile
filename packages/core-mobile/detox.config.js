@@ -220,6 +220,17 @@ module.exports = {
         rootDir: './e2e/artifacts/android'
       }
     },
+    'android.internal.debug.seedless': {
+      device: 'emulator',
+      app: 'android.internal.debug',
+      args: {
+        detoxDebugVisibility: 'YES',
+        config: 'e2e/seedless_config.json'
+      },
+      artifacts: {
+        rootDir: './e2e/artifacts/android'
+      }
+    },
     'android.internal.smoke.debug': {
       device: 'emulator',
       app: 'android.internal.debug',

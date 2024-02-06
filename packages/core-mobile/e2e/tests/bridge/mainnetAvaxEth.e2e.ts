@@ -1,4 +1,3 @@
-import LoginRecoverWallet from '../../helpers/loginRecoverWallet'
 import BridgeTabPage from '../../pages/bridgeTab.page'
 import { warmup } from '../../helpers/warmup'
 
@@ -8,7 +7,6 @@ describe('Bridge transfer AVAX -> ETH', () => {
   })
 
   it('Should verify Transaction Status Items', async () => {
-    await LoginRecoverWallet.recoverWalletLogin()
     await BridgeTabPage.switchToNetwork('Avalanche')
     await BridgeTabPage.tapSelectTokenDropdown()
     await BridgeTabPage.tapWrappedEther()

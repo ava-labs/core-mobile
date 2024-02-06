@@ -1,5 +1,4 @@
 import Assert from '../../helpers/assertions'
-import LoginRecoverWallet from '../../helpers/loginRecoverWallet'
 import NetworksManagePage from '../../pages/networksManage.page'
 import PortfolioPage from '../../pages/portfolio.page'
 import { warmup } from '../../helpers/warmup'
@@ -23,7 +22,6 @@ describe('Enable Testnet', () => {
   })
 
   it('Should verify Avax Network', async () => {
-    await LoginRecoverWallet.recoverWalletLogin()
     await AdvancedPage.switchToTestnet()
     await PortfolioPage.tapAvaxNetwork()
     await Assert.isVisible(PortfolioPage.avaxNetwork)

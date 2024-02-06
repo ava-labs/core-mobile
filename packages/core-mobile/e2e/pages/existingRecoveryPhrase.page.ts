@@ -108,10 +108,10 @@ class ExistingRecoveryPhrasePage {
   }
 
   async recoverWallet(recoveryPhrase: string) {
-    if (process.env.SEEDLESS_TEST === 'false') {
-      await this.recoverMnemonicWallet(recoveryPhrase)
-    } else {
+    if (await Action.expectToBeVisible(this.forgotPinBtn)) {
       await this.recoverManualWallet()
+    } else {
+      await this.recoverMnemonicWallet(recoveryPhrase)
     }
   }
 }

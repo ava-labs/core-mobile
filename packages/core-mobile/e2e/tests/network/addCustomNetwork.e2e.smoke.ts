@@ -4,7 +4,6 @@
  */
 import Assert from '../../helpers/assertions'
 import Actions from '../../helpers/actions'
-import LoginRecoverWallet from '../../helpers/loginRecoverWallet'
 import PortfolioPage from '../../pages/portfolio.page'
 import NetworksManagePage from '../../pages/networksManage.page'
 import NetworksManageLoc from '../../locators/networksManage.loc'
@@ -26,7 +25,6 @@ describe('Add custom network', () => {
   })
 
   it('should add custom network', async () => {
-    await LoginRecoverWallet.recoverWalletLogin()
     await PortfolioPage.tapNetworksDropdown()
     await Actions.waitForElement(PortfolioPage.manageNetworks)
     await PortfolioPage.tapManageNetworks()

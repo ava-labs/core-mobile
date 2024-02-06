@@ -8,7 +8,6 @@ describe('Bridge transfer AVAX -> BTC', () => {
   })
 
   it('Should verify Transaction Status Items', async () => {
-    await LoginRecoverWallet.recoverWalletLogin()
     await BridgeTabPage.switchToNetwork('Avalanche')
     await BridgeTabPage.tapSelectTokenDropdown()
     await BridgeTabPage.tapBtcToken()

@@ -1,6 +1,5 @@
 import Actions from '../../helpers/actions'
 import AccountManagePage from '../../pages/accountManage.page'
-import LoginRecoverWallet from '../../helpers/loginRecoverWallet'
 import BottomTabsPage from '../../pages/bottomTabs.page'
 import { warmup } from '../../helpers/warmup'
 import PortfolioPage from '../../pages/portfolio.page'
@@ -20,7 +19,6 @@ describe('Stake: wrong network', () => {
   })
 
   it('should verify wrong network screen for staking on mainnet', async () => {
-    await LoginRecoverWallet.recoverWalletLogin()
     await PortfolioPage.tapNetworksDropdown()
     await PortfolioPage.tapNetworksDropdownETH()
     await BottomTabsPage.tapStakeTab()

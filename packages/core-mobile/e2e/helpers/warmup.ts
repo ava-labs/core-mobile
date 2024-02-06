@@ -3,6 +3,7 @@ import CommonElsPage from '../pages/commonEls.page'
 import Assert from '../helpers/assertions'
 import Action from './actions'
 import { Platform } from './constants'
+import loginRecoverWallet from './loginRecoverWallet'
 
 export const warmup = async () => {
   await device.launchApp({
@@ -21,4 +22,6 @@ export const warmup = async () => {
     )
     console.log('Jailbroken warning handled!!!')
   }
+
+  await loginRecoverWallet.recoverWalletLogin()
 }

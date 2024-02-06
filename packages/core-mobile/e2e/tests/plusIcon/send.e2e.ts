@@ -8,7 +8,6 @@ import ActivityTabPage from '../../pages/activityTab.page'
 import ActivityTabLoc from '../../locators/activityTab.loc'
 import PortfolioPage from '../../pages/portfolio.page'
 import { warmup } from '../../helpers/warmup'
-import loginRecoverWallet from '../../helpers/loginRecoverWallet'
 
 describe('Send AVAX', () => {
   beforeAll(async () => {
@@ -28,7 +27,6 @@ describe('Send AVAX', () => {
     })
   } else {
     it('should navigate to send screen after entering pin', async () => {
-      await loginRecoverWallet.recoverWalletLogin()
       await AccountManagePage.switchToFirstAccount()
     })
   }

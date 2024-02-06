@@ -1,6 +1,5 @@
 import Actions from '../../helpers/actions'
 import ConfirmStakingPage from '../../pages/Stake/confirmStaking.page'
-import LoginRecoverWallet from '../../helpers/loginRecoverWallet'
 import BottomTabsPage from '../../pages/bottomTabs.page'
 import DurationPage from '../../pages/Stake/duration.page'
 import { warmup } from '../../helpers/warmup'
@@ -14,7 +13,6 @@ describe('Stake mainnet flow', () => {
   })
 
   it('should verify staking amount screen items on mainnet', async () => {
-    await LoginRecoverWallet.recoverWalletLogin()
     await accountManagePage.switchToFirstAccount()
     await BottomTabsPage.tapStakeTab()
     await StakePage.tapStakeButton()

@@ -1,5 +1,4 @@
 import Actions from '../../helpers/actions'
-import LoginRecoverWallet from '../../helpers/loginRecoverWallet'
 import BottomTabsPage from '../../pages/bottomTabs.page'
 import AccountManagePage from '../../pages/accountManage.page'
 import { warmup } from '../../helpers/warmup'
@@ -21,7 +20,6 @@ describe('Stake: not enough Avax', () => {
   })
 
   it('should verify not enough avax screen items on Mainnet', async () => {
-    await LoginRecoverWallet.recoverWalletLogin()
     if (process.env.SEEDLESS_TEST === 'false' || !process.env.SEEDLESS_TEST) {
       await AccountManagePage.createAccount(4)
     } else {

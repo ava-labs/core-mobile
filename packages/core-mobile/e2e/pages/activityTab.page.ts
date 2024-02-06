@@ -7,6 +7,7 @@ import { Platform } from '../helpers/constants'
 import ReviewAndSend from '../pages/reviewAndSend.page'
 import PortfolioPage from '../pages/portfolio.page'
 import TransactionDetailsPage from '../pages/transactionDetails.page'
+import commonElsPage from './commonEls.page'
 
 const platformIndex = Action.platform() === Platform.iOS ? 1 : 0
 
@@ -84,11 +85,7 @@ class ActivityTabPage {
   }
 
   async tapHeaderBack() {
-    if (Action.platform() === 'ios') {
-      await Action.tapElementAtIndex(this.headerBack, 0)
-    } else {
-      await device.pressBack()
-    }
+    await device.pressBack()
   }
 
   async tapBridgeFilterOption() {
@@ -116,11 +113,16 @@ class ActivityTabPage {
   }
 
   async verifyIncomingTransaction(transactionValue: string) {
-    await AccountManagePage.tapCarrotSVG()
+    if (Action.platform() === 'ios') {
+      await commonElsPage.tapBackButton()
+    } else {
+      await device.pressBack()
+    }
     if (Action.platform() === 'ios') {
       await AccountManagePage.tapCarrotSVG()
     }
     const firstAccountAddress = await AccountManagePage.getFirstAvaxAddress()
+    await AccountManagePage.tapCarrotSVG()
     await AccountManagePage.tapSecondAccount()
     await PortfolioPage.tapAvaxNetwork()
     await PortfolioPage.tapActivityTab()

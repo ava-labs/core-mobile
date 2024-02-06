@@ -80,6 +80,15 @@ const waitForElement = async (
   await waitFor(element(item).atIndex(index)).toBeVisible().withTimeout(timeout)
 }
 
+const expectToBeVisible = async (item: Detox.NativeMatcher, index = 0) => {
+  try {
+    await waitFor(element(item).atIndex(index)).toBeVisible().withTimeout(1000)
+    return true
+  } catch (e) {
+    return false
+  }
+}
+
 // waitForElementNoSync function can be used to handle idle timeout error for Android devices, should be used only if Idle timeout error presents
 
 const waitForElementNoSync = async (
@@ -232,5 +241,6 @@ export default {
   platform,
   isVisible,
   getCurrentDateTime,
-  writeQrCodeToFile
+  writeQrCodeToFile,
+  expectToBeVisible
 }

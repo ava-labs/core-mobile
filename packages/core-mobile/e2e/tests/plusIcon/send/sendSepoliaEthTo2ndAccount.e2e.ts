@@ -1,7 +1,6 @@
 import AccountManagePage from '../../../pages/accountManage.page'
 import ActivityTabPage from '../../../pages/activityTab.page'
 import ActivityTabLoc from '../../../locators/activityTab.loc'
-import LoginRecoverWallet from '../../../helpers/loginRecoverWallet'
 import NetworksManagePage from '../../../pages/networksManage.page'
 import PortfolioPage from '../../../pages/portfolio.page'
 import SendPage from '../../../pages/send.page'
@@ -15,7 +14,6 @@ describe('Send Sepolia Eth to another account', () => {
   })
 
   it('Should send Sepolia Eth to second account', async () => {
-    await LoginRecoverWallet.recoverWalletLogin()
     await AdvancedPage.switchToTestnet()
     await NetworksManagePage.switchToEthereumSepoliaNetwork()
     await AccountManagePage.switchToFirstAccount()

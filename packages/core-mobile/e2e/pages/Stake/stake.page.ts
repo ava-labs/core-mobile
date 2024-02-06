@@ -196,6 +196,10 @@ class StakePage {
     return by.text(stakeScreenLoc.maxText)
   }
 
+  async tapActiveTab() {
+    await Actions.tap(this.activeTab)
+  }
+
   async tapHistoryTab() {
     await Actions.tap(this.historyTab)
   }

@@ -3,7 +3,6 @@ import Actions from '../../helpers/actions'
 import Assert from '../../helpers/assertions'
 import AdvancedPage from '../../pages/burgerMenu/advanced.page'
 import { Platform } from '../../helpers/constants'
-import LoginRecoverWallet from '../../helpers/loginRecoverWallet'
 import BottomTabsPage from '../../pages/bottomTabs.page'
 import { warmup } from '../../helpers/warmup'
 import StakePage from '../../pages/Stake/stake.page'
@@ -22,7 +21,6 @@ describe('Stake: testnet flow', () => {
   })
 
   it('should claim & verify claim screen items on testnet', async () => {
-    await LoginRecoverWallet.recoverWalletLogin()
     await accountManagePage.switchToFirstAccount()
     await BottomTabsPage.tapPortfolioTab()
     await AdvancedPage.switchToTestnet()

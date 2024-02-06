@@ -3,6 +3,7 @@ import Action from '../helpers/actions'
 import accountManage from '../locators/accountManage.loc'
 import { Platform } from '../helpers/constants'
 import Assert from '../helpers/assertions'
+import actions from '../helpers/actions'
 
 class AccountManagePage {
   get account() {
@@ -62,12 +63,19 @@ class AccountManagePage {
 
   async createSecondAccount() {
     await this.tapCarrotSVG()
-    await this.tapAddEditAccounts()
-    await this.tapAddAccountButton()
-    const result = await this.getSecondAvaxAddress()
-    await this.tapAccountMenu()
-    await this.tapDoneButton()
-    return result
+    if (!(await actions.expectToBeVisible(this.secondAccount))) {
+      await this.tapAddEditAccounts()
+      await this.tapAddAccountButton()
+      const result = await this.getSecondAvaxAddress()
+      await this.tapAccountMenu()
+      await this.tapDoneButton()
+      return result
+    } else {
+      const result = await this.getSecondAvaxAddress()
+      await this.tapFirstAccount()
+      await this.tapCarrotSVG()
+      return result
+    }
   }
 
   async switchToSecondAccount() {
@@ -76,14 +84,8 @@ class AccountManagePage {
   }
 
   async switchToFirstAccount() {
-    if (process.env.SEEDLESS_TEST === 'true') {
-      try {
-        await Assert.isVisible(this.account)
-      } catch (e) {
-        await this.tapCarrotSVG()
-        await this.tapFirstAccount()
-      }
-    }
+    await this.tapCarrotSVG()
+    await this.tapFirstAccount()
   }
 
   async createAccount(accountNumber: number) {
@@ -101,7 +103,7 @@ class AccountManagePage {
       return result.text.toLowerCase()
     } else {
       console.log(result, ' this is the result')
-      return result.elements[0].text.toLowerCase()
+      return result.text.toLowerCase()
     }
   }
 
@@ -167,7 +169,11 @@ class AccountManagePage {
 
   async tapSecondAccount() {
     await Action.waitForElement(this.secondAccount, 10000, 0)
-    await Action.tapElementAtIndex(this.secondAccount, 1)
+    await Action.tapElementAtIndex(this.secondAccount, 0)
+  }
+
+  async tapSecondAccountMenu() {
+    await Action.tapElementAtIndex(this.secondAccount, 0)
   }
 
   async tapCarrotSVG() {

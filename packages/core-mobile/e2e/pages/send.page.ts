@@ -87,7 +87,7 @@ class SendPage {
 
     await this.tapAddressBook()
     await this.tapMyAccounts()
-    await AccountManagePage.tapSecondAccount()
+    await AccountManagePage.tapSecondAccountMenu()
     await this.tapCarrotSVG()
     await this.selectToken(token)
     await this.enterAmount(sendingAmmount)

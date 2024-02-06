@@ -1,7 +1,6 @@
 import AccountManagePage from '../../../pages/accountManage.page'
 import ActivityTabPage from '../../../pages/activityTab.page'
 import ActivityTabLoc from '../../../locators/activityTab.loc'
-import LoginRecoverWallet from '../../../helpers/loginRecoverWallet'
 import PortfolioPage from '../../../pages/portfolio.page'
 import SendPage from '../../../pages/send.page'
 import sendLoc from '../../../locators/send.loc'
@@ -20,7 +19,6 @@ describe('Send Eth to another account', () => {
   })
 
   it('Should send Eth to second account', async () => {
-    await LoginRecoverWallet.recoverWalletLogin()
     await AccountManagePage.switchToFirstAccount()
     const secondAccountAddress = await AccountManagePage.createSecondAccount()
     await AccountManagePage.tapFirstAccount()

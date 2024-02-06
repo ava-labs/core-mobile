@@ -2,7 +2,6 @@ import Actions from '../../helpers/actions'
 import Assert from '../../helpers/assertions'
 import AdvancedPage from '../../pages/burgerMenu/advanced.page'
 import ConfirmStakingPage from '../../pages/Stake/confirmStaking.page'
-import LoginRecoverWallet from '../../helpers/loginRecoverWallet'
 import BottomTabsPage from '../../pages/bottomTabs.page'
 import DurationPage from '../../pages/Stake/duration.page'
 import { warmup } from '../../helpers/warmup'
@@ -22,7 +21,6 @@ describe('Stake: testnet flow', () => {
   })
 
   it('should verify staking amount screen items', async () => {
-    await LoginRecoverWallet.recoverWalletLogin()
     await accountManagePage.switchToFirstAccount()
     await AdvancedPage.switchToTestnet()
     await BottomTabsPage.tapStakeTab()

@@ -1,5 +1,4 @@
 import Actions from '../../helpers/actions'
-import LoginRecoverWallet from '../../helpers/loginRecoverWallet'
 import BottomTabsPage from '../../pages/bottomTabs.page'
 import AccountManagePage from '../../pages/accountManage.page'
 import { warmup } from '../../helpers/warmup'
@@ -15,7 +14,6 @@ describe('Stake get started screen', () => {
   })
 
   it('should verify get started screen on Mainnet', async () => {
-    await LoginRecoverWallet.recoverWalletLogin()
     await AccountManagePage.switchToFirstAccount()
     await AccountManagePage.createAccount(4)
     await BottomTabsPage.tapStakeTab()

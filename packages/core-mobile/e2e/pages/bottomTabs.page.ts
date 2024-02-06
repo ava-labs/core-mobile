@@ -32,9 +32,9 @@ class BottomsTabsPage {
   }
 
   async tapPlusIcon() {
-    if (device.getPlatform() === 'ios') {
+    try {
       await Actions.tapElementAtIndex(this.plusIcon, 1)
-    } else {
+    } catch {
       await Actions.tapElementAtIndex(this.plusIcon, 0)
     }
   }
