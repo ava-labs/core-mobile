@@ -25,6 +25,7 @@ import { WalletType } from 'services/wallet/types'
 import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation } from '@react-navigation/native'
 import { noop } from '@avalabs/utils-sdk'
+import { isIphoneSE } from 'utils/device/isIphoneSE'
 import { usePinOrBiometryLogin } from './PinOrBiometryLoginViewModel'
 
 const WINDOW_HEIGHT = Dimensions.get('window').height
@@ -43,7 +44,10 @@ const keymap: Map<string, PinKeys> = new Map([
   ['<', PinKeys.Backspace]
 ])
 const LOGO_HEIGHT = 100
-const TOP_SPACE = 64
+
+// on iphone SE, we need to reduce the top spacing
+// or else the forgot pin button will be hidden due to the small screen size
+const TOP_SPACE = isIphoneSE() ? 24 : 64
 
 type Props = {
   onSignInWithRecoveryPhrase?: () => void
