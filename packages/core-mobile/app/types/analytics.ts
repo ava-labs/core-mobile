@@ -203,7 +203,7 @@ export type AnalyticsEvents = {
     }[]
   }
   SendTransactionStarted: { txHash: string; chainId: number }
-  SwapTransactionStarted: { txHash: string; chainId: number }
+  SwapTransactionSucceeded: { txHash: string; chainId: number }
   StakeTransactionStarted: { txHash: string; chainId: number }
   BridgeTransactionStarted: {
     sourceTxHash: string

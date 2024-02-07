@@ -218,18 +218,8 @@ export const SwapContextProvider = ({
           slippage: swapSlippage,
           activeNetwork,
           provider: avalancheProvider,
-          transactionSend: async signedTx => {
-            const txHash = await NetworkService.sendTransaction(
-              signedTx,
-              activeNetwork
-            )
-            AnalyticsService.captureWithEncryption('SwapTransactionStarted', {
-              txHash: txHash,
-              chainId: activeNetwork.chainId
-            })
-
-            return txHash
-          },
+          transactionSend: async signedTx =>
+            NetworkService.sendTransaction(signedTx, activeNetwork),
           transactionSign: tx =>
             WalletService.sign(tx, activeAccount.index, activeNetwork),
           userAddress: activeAccount.address,
@@ -261,6 +251,11 @@ export const SwapContextProvider = ({
                 />
               ),
               duration: 'short'
+            })
+
+            AnalyticsService.captureWithEncryption('SwapTransactionSucceeded', {
+              txHash: result?.swapTxHash ?? '',
+              chainId: activeNetwork.chainId
             })
           }
         })
