@@ -16,6 +16,7 @@ import { selectActiveNetwork } from 'store/network'
 import { selectActiveAccount } from 'store/account'
 import { useEthereumProvider } from 'hooks/networkProviderHooks'
 import { selectBridgeAppConfig } from 'store/bridge'
+import { useNetworkFee } from 'hooks/useNetworkFee'
 
 /**
  * Hook for when the bridge source chain is Ethereum
@@ -42,6 +43,7 @@ export function useEthBridge(
   )
 
   const network = useSelector(selectActiveNetwork)
+  const { data: networkFee } = useNetworkFee(network)
   const activeAccount = useSelector(selectActiveAccount)
   const config = useSelector(selectBridgeAppConfig)
   const ethereumProvider = useEthereumProvider()
@@ -71,7 +73,8 @@ export function useEthBridge(
       amount,
       currentAssetData,
       setWrapStatus,
-      setTxHash
+      setTxHash,
+      networkFee?.low.maxFeePerGas
     )
 
     createBridgeTransaction(
@@ -93,6 +96,7 @@ export function useEthBridge(
     config,
     transferAsset,
     amount,
+    networkFee?.low.maxFeePerGas,
     createBridgeTransaction
   ])
 

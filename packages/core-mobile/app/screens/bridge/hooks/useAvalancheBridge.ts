@@ -6,6 +6,7 @@ import { useAssetBalancesEVM } from 'screens/bridge/hooks/useAssetBalancesEVM'
 import Big from 'big.js'
 import { useSelector } from 'react-redux'
 import { selectActiveNetwork } from 'store/network'
+import { useNetworkFee } from 'hooks/useNetworkFee'
 
 /**
  * Hook for when the source is Avalanche
@@ -32,6 +33,7 @@ export function useAvalancheBridge(
   )
 
   const network = useSelector(selectActiveNetwork)
+  const { data: networkFee } = useNetworkFee(network)
 
   const maximum = sourceBalance?.balance || BIG_ZERO
   const receiveAmount = amount.gt(minimum) ? amount.minus(bridgeFee) : BIG_ZERO
@@ -48,7 +50,8 @@ export function useAvalancheBridge(
       () => {
         //not used
       },
-      setTxHash
+      setTxHash,
+      networkFee?.low.maxFeePerGas
     )
 
     createBridgeTransaction(
@@ -65,11 +68,12 @@ export function useAvalancheBridge(
 
     return result?.hash
   }, [
-    amount,
-    createBridgeTransaction,
     currentAssetData,
-    targetBlockchain,
     transferAsset,
+    amount,
+    networkFee?.low.maxFeePerGas,
+    createBridgeTransaction,
+    targetBlockchain,
     network
   ])
 
