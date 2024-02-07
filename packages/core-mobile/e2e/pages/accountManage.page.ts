@@ -106,11 +106,12 @@ class AccountManagePage {
 
   async getFirstAvaxAddress() {
     const result: any = await Action.getAttributes(this.avaxAddress, 0)
+    console.log(result, ' this is the result')
     if (Action.platform() === 'android') {
       return result.text.toLowerCase()
     } else {
       console.log(result, ' this is the result')
-      return result.text.toLowerCase()
+      return result.elements[0].text.toLowerCase()
     }
   }
 

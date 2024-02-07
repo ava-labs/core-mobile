@@ -119,10 +119,12 @@ class ActivityTabPage {
       await device.pressBack()
     }
     if (Action.platform() === 'ios') {
-      await AccountManagePage.tapCarrotSVG()
+      await AccountManagePage.tapAccountDropdownTitle()
     }
     const firstAccountAddress = await AccountManagePage.getFirstAvaxAddress()
-    await AccountManagePage.tapCarrotSVG()
+    if (Action.platform() === 'android') {
+      await AccountManagePage.tapAccountDropdownTitle()
+    }
     await AccountManagePage.tapSecondAccount()
     await PortfolioPage.tapAvaxNetwork()
     await PortfolioPage.tapActivityTab()
