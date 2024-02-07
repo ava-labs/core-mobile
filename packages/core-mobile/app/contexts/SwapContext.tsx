@@ -198,10 +198,7 @@ export const SwapContextProvider = ({
 
     InteractionManager.runAfterInteractions(async () => {
       const sentryTrx = SentryWrapper.startTransaction('swap')
-      if (!avalancheProvider) {
-        return
-      }
-      if (!activeAccount) {
+      if (!avalancheProvider || !activeAccount) {
         return
       }
 
