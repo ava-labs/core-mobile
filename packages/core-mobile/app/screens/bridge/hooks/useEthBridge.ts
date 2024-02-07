@@ -17,6 +17,7 @@ import { selectActiveAccount } from 'store/account'
 import { useEthereumProvider } from 'hooks/networkProviderHooks'
 import { selectBridgeAppConfig } from 'store/bridge'
 import { useNetworkFee } from 'hooks/useNetworkFee'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 
 /**
  * Hook for when the bridge source chain is Ethereum
@@ -77,6 +78,12 @@ export function useEthBridge(
       networkFee?.low.maxFeePerGas
     )
 
+    AnalyticsService.captureWithEncryption('BridgeTransactionStarted', {
+      chainId: network.chainId,
+      sourceTxHash: result?.hash ?? '',
+      fromAddress: activeAccount?.address
+    })
+
     createBridgeTransaction(
       {
         sourceChain: Blockchain.ETHEREUM,
@@ -97,7 +104,8 @@ export function useEthBridge(
     transferAsset,
     amount,
     networkFee?.low.maxFeePerGas,
-    createBridgeTransaction
+    createBridgeTransaction,
+    activeAccount
   ])
 
   return {

@@ -33,9 +33,6 @@ export type SeedlessExportStackParamList = {
 
 const SeedlessExportS = createStackNavigator<SeedlessExportStackParamList>()
 
-// @ts-expect-error lazy import is fine but typescript doesn't like it
-const PolyfillCrypto = React.lazy(() => import('react-native-webview-crypto'))
-
 const SeedlessExportStack: FC = () => {
   return (
     <>
@@ -71,7 +68,6 @@ const SeedlessExportStack: FC = () => {
           />
         </SeedlessExportS.Group>
       </SeedlessExportS.Navigator>
-      <PolyfillCrypto />
     </>
   )
 }

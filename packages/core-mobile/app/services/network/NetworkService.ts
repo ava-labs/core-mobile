@@ -16,7 +16,6 @@ import {
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { Transaction } from '@sentry/types'
 import { avaxSerial } from '@avalabs/avalanchejs-v2'
-import AnalyticsService from 'services/analytics/AnalyticsService'
 import { getBitcoinProvider, getEvmProvider } from './utils/providerUtils'
 
 class NetworkService {
@@ -55,6 +54,7 @@ class NetworkService {
     throw new Error(`Unsupported network type: ${network.vmName}`)
   }
 
+  // eslint-disable-next-line max-params
   async sendTransaction(
     signedTx: string | avaxSerial.SignedTx,
     network: Network,
@@ -91,14 +91,6 @@ class NetworkService {
 
         if (txID === undefined) {
           throw new Error('No provider found')
-        }
-
-        if (!network.isTestnet) {
-          AnalyticsService.capture('CollectTransactionHash', {
-            txHash: txID,
-            chainId: network.chainId,
-            chainName: network.chainName
-          })
         }
 
         return txID

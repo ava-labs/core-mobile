@@ -7,6 +7,8 @@ import Big from 'big.js'
 import { useSelector } from 'react-redux'
 import { selectActiveNetwork } from 'store/network'
 import { useNetworkFee } from 'hooks/useNetworkFee'
+import AnalyticsService from 'services/analytics/AnalyticsService'
+import { selectActiveAccount } from 'store/account'
 
 /**
  * Hook for when the source is Avalanche
@@ -19,6 +21,7 @@ export function useAvalancheBridge(
   const { targetBlockchain, currentAssetData } = useBridgeSDK()
   const { createBridgeTransaction, transferAsset } = useBridgeContext()
   const [txHash, setTxHash] = useState<string>()
+  const activeAccount = useSelector(selectActiveAccount)
 
   const { assetsWithBalances, loading } = useAssetBalancesEVM(
     Blockchain.AVALANCHE
@@ -54,6 +57,12 @@ export function useAvalancheBridge(
       networkFee?.low.maxFeePerGas
     )
 
+    AnalyticsService.captureWithEncryption('BridgeTransactionStarted', {
+      chainId: network.chainId,
+      sourceTxHash: result?.hash ?? '',
+      fromAddress: activeAccount?.address
+    })
+
     createBridgeTransaction(
       {
         sourceChain: Blockchain.AVALANCHE,
@@ -74,7 +83,8 @@ export function useAvalancheBridge(
     networkFee?.low.maxFeePerGas,
     createBridgeTransaction,
     targetBlockchain,
-    network
+    network,
+    activeAccount
   ])
 
   return {

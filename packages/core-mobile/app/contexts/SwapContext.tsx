@@ -29,6 +29,7 @@ import { performSwap } from '@avalabs/paraswap-sdk'
 import { selectActiveNetwork } from 'store/network'
 import { selectActiveAccount } from 'store/account'
 import { useNetworkFee } from 'hooks/useNetworkFee'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 
 export type SwapStatus = 'Idle' | 'Preparing' | 'Swapping' | 'Success' | 'Fail'
 
@@ -197,10 +198,7 @@ export const SwapContextProvider = ({
 
     InteractionManager.runAfterInteractions(async () => {
       const sentryTrx = SentryWrapper.startTransaction('swap')
-      if (!avalancheProvider) {
-        return
-      }
-      if (!activeAccount) {
+      if (!avalancheProvider || !activeAccount) {
         return
       }
 
@@ -250,6 +248,11 @@ export const SwapContextProvider = ({
                 />
               ),
               duration: 'short'
+            })
+
+            AnalyticsService.captureWithEncryption('SwapTransactionSucceeded', {
+              txHash: result?.swapTxHash ?? '',
+              chainId: activeNetwork.chainId
             })
           }
         })
