@@ -3,7 +3,6 @@ import {
   CubeSignerResponse,
   Environment,
   IdentityProof,
-  KeyInfoApi,
   MfaFidoChallenge,
   MfaReceipt,
   OidcClient,
@@ -40,15 +39,18 @@ if (!envInterface) {
   throw Error('SEEDLESS_ENVIRONMENT is incorrect. Please check your env file.')
 }
 
-class SeedlessSessionManager {
+class SeedlessBaseService {
   private totpChallenge?: TotpChallenge
   private scopes: string[]
-  sessionStorage: SessionStorage<SignerSessionData>
+  protected sessionStorage: SessionStorage<SignerSessionData>
 
-  constructor(
-    scopes: string[],
+  constructor({
+    scopes,
+    sessionStorage
+  }: {
+    scopes: string[]
     sessionStorage: SessionStorage<SignerSessionData>
-  ) {
+  }) {
     this.scopes = scopes
     this.sessionStorage = sessionStorage
   }
@@ -271,11 +273,10 @@ class SeedlessSessionManager {
     return { success: true, value: response }
   }
 
-  // PRIVATE METHODS
   /**
    * Returns a CubeSigner instance
    */
-  async getCubeSignerClient(): Promise<CubeSignerClient> {
+  private async getCubeSignerClient(): Promise<CubeSignerClient> {
     const sessionManager = await this.getSessionManager()
     return new CubeSignerClient(sessionManager, SEEDLESS_ORG_ID)
   }
@@ -295,23 +296,18 @@ class SeedlessSessionManager {
   }
 
   /**
-   * Returns the list of keys that this session has access to.
-   */
-  async getSessionKeysList(): Promise<KeyInfoApi[]> {
-    const signerSession = await this.getSignerSession()
-    return signerSession.sessionKeysList()
-  }
-
-  /**
    * Get current cubist environment
    */
-  get environment(): Environment {
+  static get environment(): Environment {
     return SEEDLESS_ENVIRONMENT as Environment
   }
 
+  /**
+   * Get current cubist org id
+   */
   get orgID(): string {
     return SEEDLESS_ORG_ID
   }
 }
 
-export default SeedlessSessionManager
+export default SeedlessBaseService

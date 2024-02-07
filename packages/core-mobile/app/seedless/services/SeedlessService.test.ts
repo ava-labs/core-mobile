@@ -39,7 +39,7 @@ const cubistResponseHasMfa = {
 describe('SeedlessService', () => {
   jest
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    .spyOn(SeedlessService, 'getCubeSigner' as any)
+    .spyOn(SeedlessService, 'getCubeSignerClient' as any)
     .mockImplementation(async () => {
       return {
         userTotpResetInit: () => cubistResponseNoMfa
@@ -55,7 +55,7 @@ describe('SeedlessService', () => {
     it('should return error if there is active mfa', async () => {
       jest
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .spyOn(SeedlessService, 'getCubeSigner' as any)
+        .spyOn(SeedlessService, 'getCubeSignerClient' as any)
         .mockImplementation(async () => {
           return {
             userTotpResetInit: () => cubistResponseHasMfa
@@ -71,7 +71,7 @@ describe('SeedlessService', () => {
     it('should throw wrong mfa code error from existing mfa', async () => {
       jest
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .spyOn(SeedlessService, 'getCubeSigner' as any)
+        .spyOn(SeedlessService, 'getCubeSignerClient' as any)
         .mockImplementation(async () => {
           return {
             userTotpResetInit: () => cubistResponseNoMfa
@@ -98,7 +98,7 @@ describe('SeedlessService', () => {
     it('should require valid code from existing mfa and succeed', async () => {
       jest
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .spyOn(SeedlessService, 'getCubeSigner' as any)
+        .spyOn(SeedlessService, 'getCubeSignerClient' as any)
         .mockImplementation(async () => {
           return {
             userTotpResetInit: () => cubistResponseNoMfa

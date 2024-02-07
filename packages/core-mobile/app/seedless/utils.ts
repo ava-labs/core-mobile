@@ -10,10 +10,10 @@ import GoogleSigninService from 'services/socialSignIn/google/GoogleSigninServic
 import * as Navigation from 'utils/Navigation'
 import AppNavigation from 'navigation/AppNavigation'
 import { OidcProviders } from './consts'
-import SeedlessSessionManager from './services/SeedlessSessionManager'
+import SeedlessBaseService from './services/SeedlessBaseService'
 
 export async function startRefreshSeedlessTokenFlow(
-  sessionManager: SeedlessSessionManager
+  seedlessService: SeedlessBaseService
 ): Promise<Result<void, RefreshSeedlessTokenFlowErrors>> {
   const oidcProvider = await SecureStorageService.load(KeySlot.OidcProvider)
   const oidcUserId = await SecureStorageService.load(KeySlot.OidcUserId).catch(
@@ -38,7 +38,7 @@ export async function startRefreshSeedlessTokenFlow(
       }
   }
 
-  const identity = await sessionManager.oidcProveIdentity(
+  const identity = await seedlessService.oidcProveIdentity(
     oidcTokenResult.oidcToken
   )
 
@@ -55,10 +55,10 @@ export async function startRefreshSeedlessTokenFlow(
   const result = await CoreSeedlessAPIService.register(identity)
 
   if (result === SeedlessUserRegistrationResult.ALREADY_REGISTERED) {
-    const loginResult = await sessionManager.requestOidcAuth(
+    const loginResult = await seedlessService.requestOidcAuth(
       oidcTokenResult.oidcToken
     )
-    const userMfa = await sessionManager.userMfa()
+    const userMfa = await seedlessService.userMfa()
     const usesTotp = userMfa.some(value => value.type === 'totp')
     const usesFido = userMfa.some(value => value.type === 'fido')
     //we prioritize fido over totp
@@ -66,14 +66,14 @@ export async function startRefreshSeedlessTokenFlow(
       return await fidoRefreshFlow(
         oidcTokenResult.oidcToken,
         loginResult.mfaId(),
-        sessionManager
+        seedlessService
       )
     }
     if (usesTotp) {
       return await totpRefreshFlow(
         oidcTokenResult.oidcToken,
         loginResult.mfaId(),
-        sessionManager
+        seedlessService
       )
     }
 
@@ -94,10 +94,10 @@ export async function startRefreshSeedlessTokenFlow(
 async function fidoRefreshFlow(
   oidcToken: string,
   mfaId: string,
-  sessionManager: SeedlessSessionManager
+  seedlessService: SeedlessBaseService
 ): Promise<Result<void, RefreshSeedlessTokenFlowErrors>> {
   try {
-    await sessionManager.approveFido(
+    await seedlessService.approveFido(
       oidcToken,
       mfaId,
       false //FIXME: this parameter is not needed, should refactor approveFido to remove it,
@@ -119,13 +119,13 @@ async function fidoRefreshFlow(
 async function totpRefreshFlow(
   oidcToken: string,
   mfaId: string,
-  sessionManager: SeedlessSessionManager
+  seedlessService: SeedlessBaseService
 ): Promise<Result<void, RefreshSeedlessTokenFlowErrors>> {
   const onVerifySuccessPromise = new Promise((resolve, reject) => {
     const onVerifyCode = (
       code: string
     ): Promise<Result<undefined, TotpErrors>> => {
-      return sessionManager.verifyCode(oidcToken, mfaId, code)
+      return seedlessService.verifyCode(oidcToken, mfaId, code)
     }
     Navigation.navigate({
       name: AppNavigation.Root.RefreshToken,

@@ -9,14 +9,14 @@ import {
   userExportKeygen
 } from '@cubist-labs/cubesigner-sdk'
 import { UserExportResponse } from 'seedless/types'
-import SeedlessSessionManager from './SeedlessSessionManager'
+import SeedlessBaseService from './SeedlessBaseService'
 
-class SeedlessExportService extends SeedlessSessionManager {
+class SeedlessExportService extends SeedlessBaseService {
   constructor() {
-    super(
-      ['export:*', 'manage:*'],
-      new MemorySessionStorage<SignerSessionData>()
-    )
+    super({
+      scopes: ['export:*', 'manage:*'],
+      sessionStorage: new MemorySessionStorage<SignerSessionData>()
+    })
   }
 
   /**
@@ -110,4 +110,4 @@ class SeedlessExportService extends SeedlessSessionManager {
   }
 }
 
-export default new SeedlessExportService()
+export default SeedlessExportService
