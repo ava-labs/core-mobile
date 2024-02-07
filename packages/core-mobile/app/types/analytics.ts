@@ -193,7 +193,7 @@ export type AnalyticsEvents = {
   TxSubmittedToDapp: undefined
 
   // CP-7989 - Address and Tx Hash Analytics Collection
-  CollectAccountAddresses: {
+  AccountAddressesUpdated: {
     addresses: {
       address: string
       addressBtc: string
@@ -202,5 +202,13 @@ export type AnalyticsEvents = {
       addressCoreEth: string
     }[]
   }
-  CollectTransactionHash: { txHash: string; chainName: string; chainId: number }
+  SendTransactionSucceeded: { txHash: string; chainId: number }
+  SwapTransactionSucceeded: { txHash: string; chainId: number }
+  StakeTransactionStarted: { txHash: string; chainId: number }
+  BridgeTransactionStarted: {
+    sourceTxHash: string
+    chainId: number
+    fromAddress?: string
+    toAddress?: string
+  }
 }
