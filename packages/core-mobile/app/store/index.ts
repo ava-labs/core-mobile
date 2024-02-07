@@ -23,7 +23,6 @@ import { nftReducer as nft } from './nft'
 import { addressBookReducer as addressBook } from './addressBook'
 import { viewOnceReducer as viewOnce } from './viewOnce'
 import settings from './settings'
-import swap from './swap'
 import { transactionApi } from './transaction'
 import { walletConnectReducer as walletConnectV2 } from './walletConnectV2'
 import { BridgeBlacklistTransform } from './transforms/BridgeBlacklistTransform'
@@ -55,7 +54,6 @@ const combinedReducer = combineReducers({
   unifiedBridge,
   customToken,
   posthog,
-  swap,
   nft,
   security,
   walletConnectV2,

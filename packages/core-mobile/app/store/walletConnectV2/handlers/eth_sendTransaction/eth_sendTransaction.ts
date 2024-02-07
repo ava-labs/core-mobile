@@ -13,6 +13,7 @@ import { selectAccountByAddress } from 'store/account'
 import { queryClient } from 'contexts/ReactQueryProvider'
 import { NetworkFee } from 'services/networkFee/types'
 import { getQueryKey, prefetchNetworkFee } from 'hooks/useNetworkFee'
+import { NetworkTokenUnit } from 'types'
 import { updateRequestStatus } from '../../slice'
 import { RpcMethod, SessionRequest } from '../../types'
 import {
@@ -127,17 +128,21 @@ class EthSendTransactionHandler
     const nonce = await getEvmProvider(network).getTransactionCount(params.from)
 
     try {
-      const networkFees = queryClient.getQueryData<NetworkFee>(
+      const networkFees = queryClient.getQueryData(
         getQueryKey(network)
-      )
+      ) as NetworkFee<NetworkTokenUnit>
 
-      const evmParams = await txToCustomEvmTx(networkFees?.low ?? 0n, params)
+      const evmParams = await txToCustomEvmTx(
+        networkFees?.low.maxFeePerGas.toSubUnit() ?? 0n,
+        params
+      )
 
       const signedTx = await WalletService.sign(
         {
           nonce,
           chainId: network.chainId,
-          gasPrice: evmParams.gasPrice,
+          maxFeePerGas: evmParams.maxFeePerGas,
+          maxPriorityFeePerGas: evmParams.maxPriorityFeePerGas,
           gasLimit: evmParams.gasLimit,
           data: evmParams.data,
           to: params.to,

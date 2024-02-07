@@ -7,7 +7,7 @@ import {
 } from 'screens/rpc/util/types'
 import { MaxUint256, Result, TransactionDescription } from 'ethers'
 import { FeePreset } from 'components/NetworkFeeSelector'
-import { calculateGasAndFees } from 'utils/Utils'
+import { Eip1559Fees, calculateGasAndFees } from 'utils/Utils'
 import { bnToLocaleString, hexToBN } from '@avalabs/utils-sdk'
 import {
   getTxInfo,
@@ -31,6 +31,7 @@ import { CoreTypes } from '@walletconnect/types'
 import { TransactionParams } from 'store/walletConnectV2/handlers/eth_sendTransaction/utils'
 import { useNetworkFee } from 'hooks/useNetworkFee'
 import { useNativeTokenPriceForNetwork } from 'hooks/useNativeTokenPriceForNetwork'
+import { NetworkTokenUnit } from 'types'
 
 export const UNLIMITED_SPEND_LIMIT_LABEL = 'Unlimited'
 
@@ -40,9 +41,8 @@ interface ExplainTransactionSharedTypes {
   selectedGasFee: FeePreset
   displayData: TransactionDisplayValues
   setCustomFee: (
-    gasPrice: bigint,
-    modifier: FeePreset,
-    gasLimit: number
+    fees: Eip1559Fees<NetworkTokenUnit>,
+    modifier: FeePreset
   ) => void
   transaction: Transaction | null
   customSpendLimit: SpendLimit
@@ -67,28 +67,26 @@ export const useExplainTransactionShared = (
 
   const [transaction, setTransaction] = useState<Transaction | null>(null)
 
-  const [customGas, setCustomGas] = useState<{
-    gasLimit: number
-    gasPrice: bigint
-  } | null>(null)
+  const [customGas, setCustomGas] =
+    useState<Eip1559Fees<NetworkTokenUnit> | null>(null)
   const [defaultSpendLimit, setDefaultSpendLimit] = useState<BN>()
 
   const [customSpendLimit, setCustomSpendLimit] = useState<SpendLimit>({
     limitType: Limit.DEFAULT
   })
   const [selectedGasFee, setSelectedGasFee] = useState<FeePreset>(
-    FeePreset.Instant
+    FeePreset.Normal
   )
 
   const setCustomFee = useCallback(
-    (gasPrice: bigint, modifier: FeePreset, gasLimit: number) => {
-      setCustomGas({ gasLimit, gasPrice })
+    (fees: Eip1559Fees<NetworkTokenUnit>, modifier: FeePreset) => {
+      setCustomGas(fees)
       setSelectedGasFee(modifier)
       const feeDisplayValues = calculateGasAndFees({
-        gasPrice,
-        gasLimit,
-        tokenPrice,
-        tokenDecimals: network?.networkToken.decimals
+        maxFeePerGas: fees.maxFeePerGas,
+        maxPriorityFeePerGas: fees.maxPriorityFeePerGas,
+        gasLimit: fees.gasLimit,
+        tokenPrice
       })
 
       // update transaction
@@ -100,12 +98,16 @@ export const useExplainTransactionShared = (
           txParams: {
             ...currentTransaction.txParams,
             gas: '0x' + feeDisplayValues.gasLimit.toString(16),
-            gasPrice: '0x' + feeDisplayValues.gasPrice.toString(16) // test this
+            maxFeePerGas:
+              '0x' + feeDisplayValues.maxFeePerGas.toSubUnit().toString(16), // test this,
+            maxPriorityFeePerGas:
+              '0x' +
+              feeDisplayValues.maxPriorityFeePerGas.toSubUnit().toString(16)
           }
         } as Transaction
       })
     },
-    [tokenPrice, network?.networkToken?.decimals]
+    [tokenPrice]
   )
 
   const setSpendLimit = useCallback(
@@ -171,6 +173,7 @@ export const useExplainTransactionShared = (
   /******************************************************************************
    * Load transaction information
    *****************************************************************************/
+  // eslint-disable-next-line sonarjs/cognitive-complexity
   useEffect(() => {
     // TODO: determine why loadTx render multiple times on Token Spend Approval
     async function loadTx(): Promise<void> {
@@ -185,7 +188,12 @@ export const useExplainTransactionShared = (
 
       // These are the default props we'll feed into the display parser later on
       const displayValueProps: DisplayValueParserProps = {
-        gasPrice: networkFees.low,
+        maxFeePerGas:
+          networkFees?.low.maxFeePerGas ??
+          NetworkTokenUnit.fromNetwork(network, 0n),
+        maxPriorityFeePerGas:
+          networkFees?.low.maxPriorityFeePerGas ??
+          NetworkTokenUnit.fromNetwork(network, 0n),
         tokenPrice, // price in currency
         token: token as NetworkTokenWithBalance,
         site: peerMeta
@@ -281,22 +289,27 @@ export const useExplainTransactionShared = (
 
   const feeDisplayValues = useMemo(() => {
     return (
+      network &&
       networkFees &&
       transaction?.displayValues?.gasLimit &&
       calculateGasAndFees({
-        gasPrice: customGas?.gasPrice ?? networkFees.low,
+        maxFeePerGas: customGas?.maxFeePerGas ?? networkFees.low.maxFeePerGas,
+        maxPriorityFeePerGas:
+          customGas?.maxPriorityFeePerGas ??
+          networkFees.low.maxPriorityFeePerGas ??
+          NetworkTokenUnit.fromNetwork(network, 0n),
         gasLimit: customGas?.gasLimit ?? transaction.displayValues.gasLimit,
-        tokenPrice,
-        tokenDecimals: network?.networkToken.decimals
+        tokenPrice
       })
     )
   }, [
-    network?.networkToken.decimals,
-    customGas?.gasLimit,
-    customGas?.gasPrice,
     networkFees,
-    tokenPrice,
-    transaction?.displayValues?.gasLimit
+    transaction?.displayValues.gasLimit,
+    customGas?.maxFeePerGas,
+    customGas?.maxPriorityFeePerGas,
+    customGas?.gasLimit,
+    network,
+    tokenPrice
   ])
 
   const displayData: TransactionDisplayValues = useMemo(() => {

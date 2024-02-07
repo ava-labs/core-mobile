@@ -22,7 +22,8 @@ export function ApproveTransaction({
   txParams,
   displaySpendLimit,
   defaultSpendAmount,
-  gasPrice,
+  maxFeePerGas,
+  maxPriorityFeePerGas,
   gasLimit,
   onCustomFeeSet,
   selectedGasFee,
@@ -33,7 +34,7 @@ export function ApproveTransaction({
 }: ApproveTransactionData & {
   setShowCustomSpendLimit?: Dispatch<boolean>
   customSpendLimit: SpendLimit
-}) {
+}): JSX.Element {
   const theme = useApplicationContext().theme
   const account = useSelector(selectAccountByAddress(rest.fromAddress))
   const selectedCurrency = useSelector(selectSelectedCurrency)

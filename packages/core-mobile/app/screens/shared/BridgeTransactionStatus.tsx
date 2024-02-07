@@ -160,8 +160,8 @@ const BridgeTransactionStatus: FC<Props> = ({ txHash, showHideButton }) => {
                   <Row>
                     <AvaText.Heading3>
                       {isUnifiedBridgeTransfer(bridgeTransaction)
-                        ? amount?.toNumber()
-                        : bridgeTransaction.amount.toNumber()}
+                        ? amount?.toNumber().toFixed(6)
+                        : bridgeTransaction.amount.toNumber().toFixed(6)}
                     </AvaText.Heading3>
                     <AvaText.Heading3 color={theme.colorText3}>
                       {' ' + bridgeTransaction.symbol}
