@@ -13,9 +13,6 @@ describe('Send Avax to another account', () => {
 
   it('Should send AVAX to second account', async () => {
     const secondAccountAddress = await AccountManagePage.createSecondAccount()
-    await AccountManagePage.tapFirstAccount()
-    await AccountManagePage.tapFirstAccount()
-    await AccountManagePage.tapCarrotSVG()
     await SendPage.sendTokenTo2ndAccount(
       sendLoc.avaxToken,
       sendLoc.sendingAmount

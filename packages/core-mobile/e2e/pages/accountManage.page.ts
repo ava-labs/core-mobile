@@ -75,13 +75,12 @@ class AccountManagePage {
       await this.tapAddEditAccounts()
       await this.tapAddAccountButton()
       const result = await this.getSecondAvaxAddress()
-      await this.tapAccountMenu()
+      await this.tapFirstAccount()
       await this.tapDoneButton()
       return result
     } else {
       const result = await this.getSecondAvaxAddress()
       await this.tapFirstAccount()
-      await this.tapCarrotSVG()
       return result
     }
   }
