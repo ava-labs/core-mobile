@@ -17,6 +17,7 @@ import { openURL } from 'utils/openURL'
 import BigList from 'components/BigList'
 import { useExchangedAmount } from 'hooks/defi/useExchangedAmount'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import Logger from 'utils/Logger'
 import { ErrorState } from './components/ErrorState'
 import { ZeroState } from './components/ZeroState'
 import { ProtocolLogo } from './components/ProtocolLogo'
@@ -71,7 +72,7 @@ export const DeFiProtocolList: FC = () => {
   }
 
   const handleExploreEcosystem = (): void => {
-    openURL('https://core.app/discover/')
+    openURL('https://core.app/discover/').catch(Logger.error)
   }
 
   if (isLoading) return <PortfolioDeFiHomeLoader />

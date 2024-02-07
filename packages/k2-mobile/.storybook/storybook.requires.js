@@ -56,6 +56,7 @@ try {
 const getStories = () => {
   return {
     "./src/components/Button/Button.stories.tsx": require("../src/components/Button/Button.stories.tsx"),
+    "./src/components/DividerLine/DividerLine.stories.tsx": require("../src/components/DividerLine/DividerLine.stories.tsx"),
     "./src/components/TextField/TextField.stories.tsx": require("../src/components/TextField/TextField.stories.tsx"),
     "./src/theme/tokens/Colors.stories.tsx": require("../src/theme/tokens/Colors.stories.tsx"),
     "./src/theme/tokens/Icons.stories.tsx": require("../src/theme/tokens/Icons.stories.tsx"),

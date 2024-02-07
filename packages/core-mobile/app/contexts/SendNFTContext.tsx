@@ -27,9 +27,9 @@ import BN from 'bn.js'
 import { InteractionManager } from 'react-native'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { RootState } from 'store'
-import { bnToBigint } from 'utils/bigNumbers/bnToBigint'
 import Logger from 'utils/Logger'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import { NetworkTokenUnit } from 'types'
 
 export interface SendNFTContextState {
   sendToken: NFTItemData
@@ -98,10 +98,11 @@ export const SendNFTContextProvider = ({
   const [selectedFeePreset, setSelectedFeePreset] = useState<FeePreset>(
     FeePreset.Normal
   )
-  const [customGasPrice, setCustomGasPrice] = useState(new BN(0))
-  const customGasPriceBig = useMemo(
-    () => bnToBigint(customGasPrice),
-    [customGasPrice]
+  const [maxFeePerGas, setMaxFeePerGas] = useState(
+    NetworkTokenUnit.fromNetwork(activeNetwork)
+  )
+  const [maxPriorityFeePerGas, setMaxPriorityFeePerGas] = useState(
+    NetworkTokenUnit.fromNetwork(activeNetwork)
   )
   const [sendStatus, setSendStatus] = useState<SendStatus>('Idle')
   const [sendStatusMsg, setSendStatusMsg] = useState('')
@@ -112,11 +113,12 @@ export const SendNFTContextProvider = ({
     activeAccount,
     activeNetwork,
     nativeTokenBalance,
-    customGasPriceBig,
     trueGasLimit,
     selectedCurrency,
     sendToAddress,
-    sendToken
+    sendToken,
+    maxFeePerGas,
+    maxPriorityFeePerGas
   ])
 
   function onSendNow(): void {
@@ -136,7 +138,8 @@ export const SendNFTContextProvider = ({
 
     const sendState = {
       address: sendToAddress,
-      gasPrice: customGasPriceBig,
+      maxFeePerGas: maxFeePerGas.toSubUnit(),
+      maxPriorityFeePerGas: maxPriorityFeePerGas.toSubUnit(),
       gasLimit: trueGasLimit,
       token: sendService.mapTokenFromNFT(sendToken)
     } as SendState
@@ -216,7 +219,8 @@ export const SendNFTContextProvider = ({
         {
           token: sendService.mapTokenFromNFT(sendToken),
           address: sendToAddress,
-          gasPrice: customGasPriceBig,
+          maxFeePerGas: maxFeePerGas.toSubUnit(),
+          maxPriorityFeePerGas: maxPriorityFeePerGas.toSubUnit(),
           gasLimit: trueGasLimit
         } as SendState,
         activeNetwork,
@@ -248,8 +252,10 @@ export const SendNFTContextProvider = ({
     fees: {
       sendFeeNative,
       sendFeeInCurrency: sendFeeInCurrency,
-      customGasPrice,
-      setCustomGasPrice,
+      maxFeePerGas,
+      setMaxFeePerGas,
+      maxPriorityFeePerGas,
+      setMaxPriorityFeePerGas,
       gasLimit: trueGasLimit,
       setCustomGasLimit,
       setSelectedFeePreset,
@@ -282,8 +288,10 @@ export interface Account {
 export interface Fees {
   sendFeeNative: string | undefined
   sendFeeInCurrency: number | undefined
-  customGasPrice: BN
-  setCustomGasPrice: Dispatch<BN>
+  maxFeePerGas: NetworkTokenUnit
+  setMaxFeePerGas: Dispatch<NetworkTokenUnit>
+  maxPriorityFeePerGas: NetworkTokenUnit
+  setMaxPriorityFeePerGas: Dispatch<NetworkTokenUnit>
   gasLimit: number | undefined
   setCustomGasLimit: Dispatch<number>
   setSelectedFeePreset: Dispatch<FeePreset>

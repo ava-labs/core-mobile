@@ -6,22 +6,21 @@ import AvaText from 'components/AvaText'
 import React, { useEffect, useState } from 'react'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Platform } from 'react-native'
-import { DenominationNAvax } from 'types/denominations'
 import limitInput, { getMaxDecimals } from 'screens/earn/limitInput'
 import { TokenBaseUnitInput } from 'components/TokenBaseUnitInput'
 import { Avax } from 'types/Avax'
 
 const EarnInputAmount = ({
   inputAmount,
-  decimals,
   handleAmountChange
 }: {
   inputAmount?: Avax
-  decimals: DenominationNAvax
   handleAmountChange?: (amount: Avax) => void
-}) => {
+}): JSX.Element => {
   const { theme } = useApplicationContext()
-  const [maxDecimals, setMaxDecimals] = useState(decimals.valueOf())
+  const [maxDecimals, setMaxDecimals] = useState(
+    inputAmount?.getMaxDecimals ?? 0
+  )
 
   const isAndroid = Platform.OS === 'android'
 
@@ -30,13 +29,14 @@ const EarnInputAmount = ({
     if (sanitized && inputAmount && !sanitized.eq(inputAmount)) {
       handleAmountChange?.(sanitized)
     }
-  }, [decimals, handleAmountChange, inputAmount])
+  }, [handleAmountChange, inputAmount])
 
   useEffect(() => {
-    setMaxDecimals(getMaxDecimals(inputAmount) ?? decimals.valueOf())
-  }, [decimals, inputAmount])
+    if (!inputAmount) return
+    setMaxDecimals(getMaxDecimals(inputAmount) ?? inputAmount.getMaxDecimals())
+  }, [inputAmount])
 
-  const interceptAmountChange = (amount: Avax) => {
+  const interceptAmountChange = (amount: Avax): void => {
     const sanitized = limitInput(amount) ?? Avax.fromBase(0)
     handleAmountChange?.(sanitized)
   }

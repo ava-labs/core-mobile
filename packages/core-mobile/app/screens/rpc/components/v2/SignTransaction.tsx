@@ -39,6 +39,8 @@ import { hexToBN } from '@avalabs/utils-sdk'
 import { Tooltip } from 'components/Tooltip'
 import { selectIsSeedlessSigningBlocked } from 'store/posthog'
 import FeatureBlocked from 'screens/posthog/FeatureBlocked'
+import { NetworkTokenUnit } from 'types'
+import { Eip1559Fees } from 'utils/Utils'
 import RpcRequestBottomSheet from '../shared/RpcRequestBottomSheet'
 
 const defaultErrMessage = 'Transaction failed'
@@ -137,18 +139,11 @@ const SignTransaction = (): JSX.Element => {
     requestResult &&
     getExplorerAddressByNetwork(network, requestResult)
 
-  const handleGasPriceChange = useCallback(
-    (gasPrice: bigint, feePreset: FeePreset) => {
-      setCustomFee(gasPrice, feePreset, displayData?.gasLimit ?? 0)
+  const handleFeesChange = useCallback(
+    (fees: Eip1559Fees<NetworkTokenUnit>, feePreset: FeePreset) => {
+      setCustomFee(fees, feePreset)
     },
-    [displayData?.gasLimit, setCustomFee]
-  )
-
-  const handleGasLimitChange = useCallback(
-    (customGasLimit: number) => {
-      setCustomFee(displayData?.gasPrice ?? 0n, selectedGasFee, customGasLimit)
-    },
-    [displayData?.gasPrice, selectedGasFee, setCustomFee]
+    [setCustomFee]
   )
 
   const netFeeInfoMessage = `Gas limit: ${displayData?.gasLimit} \nGas price: ${displayData?.fee} nAVAX`
@@ -348,7 +343,7 @@ const SignTransaction = (): JSX.Element => {
           }}>
           <AvaButton.PrimaryLarge
             onPress={onHandleApprove}
-            disabled={submitting || !displayData?.gasPrice}>
+            disabled={submitting || !displayData?.maxFeePerGas}>
             {submitting && <ActivityIndicator />} Approve
           </AvaButton.PrimaryLarge>
           <Space y={20} />
@@ -385,7 +380,7 @@ const SignTransaction = (): JSX.Element => {
                 </Row>
               </AvaButton.Base>
             </Row>
-            {!displayData?.gasPrice ? (
+            {!displayData?.maxFeePerGas ? (
               <View>
                 <ActivityIndicator size={'large'} />
               </View>
@@ -393,12 +388,11 @@ const SignTransaction = (): JSX.Element => {
               renderTransactionInfo()
             )}
           </View>
-          {!requestResult && displayData?.gasPrice && (
+          {!requestResult && displayData?.maxFeePerGas && (
             <NetworkFeeSelector
               chainId={chainId}
               gasLimit={displayData?.gasLimit ?? 0}
-              onGasPriceChange={handleGasPriceChange}
-              onGasLimitChange={handleGasLimitChange}
+              onFeesChange={handleFeesChange}
             />
           )}
           {requestResult

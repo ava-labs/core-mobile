@@ -8,6 +8,7 @@ import Logger from 'utils/Logger'
 import { navigateToClaimRewards } from 'services/earn/utils'
 import { ProcessedFeatureFlags } from 'store/posthog'
 import { parseUri } from '@walletconnect/utils'
+import { showSimpleToast } from 'components/Snackbar'
 import { ACTIONS, DeepLink, PROTOCOLS } from '../types'
 
 export const handleDeeplink = (
@@ -109,7 +110,7 @@ const dispatchWalletConnectSession = (
   // link is a valid wallet connect uri
   const versionStr = version.toString()
   if (versionStr === WalletConnectVersions.V1) {
-    Logger.info('WalletConnectV1 is not supported')
+    showSimpleToast('WalletConnect V1 is not supported')
   } else if (versionStr === WalletConnectVersions.V2) {
     dispatch(newSessionV2(uri))
   }

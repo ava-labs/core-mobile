@@ -150,6 +150,9 @@ const Bridge: FC = () => {
 
   const hasValidAmount = !isAmountTooLow && amount.gt(BIG_ZERO)
 
+  const hasInvalidReceiveAmount =
+    hasValidAmount && !!receiveAmount && receiveAmount.eq(BIG_ZERO)
+
   const formattedAmountCurrency = hasValidAmount
     ? `${currencyFormatter(price.mul(amount).toNumber())} ${selectedCurrency}`
     : '-'
@@ -170,7 +173,8 @@ const Bridge: FC = () => {
     isPending ||
     isAmountTooLow ||
     BIG_ZERO.eq(amount) ||
-    !hasEnoughForNetworkFee
+    !hasEnoughForNetworkFee ||
+    hasInvalidReceiveAmount
 
   // Derive bridge Blockchain from active network
   useEffect(() => {
@@ -565,7 +569,10 @@ const Bridge: FC = () => {
 
   const renderError = (): JSX.Element | false => {
     return (
-      (!!bridgeError || isAmountTooLow || !hasEnoughForNetworkFee) && (
+      (!!bridgeError ||
+        isAmountTooLow ||
+        !hasEnoughForNetworkFee ||
+        hasInvalidReceiveAmount) && (
         <>
           {!hasEnoughForNetworkFee && (
             <Text
@@ -594,6 +601,15 @@ const Bridge: FC = () => {
                 color: '$dangerDark'
               }}>
               {bridgeError}
+            </Text>
+          )}
+          {hasInvalidReceiveAmount && (
+            <Text
+              variant="caption"
+              sx={{
+                color: '$dangerDark'
+              }}>
+              {`Receive amount can't be 0`}
             </Text>
           )}
         </>

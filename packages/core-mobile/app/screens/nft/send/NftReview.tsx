@@ -20,7 +20,6 @@ import {
 } from 'hooks/useBeforeRemoveListener'
 import { Row } from 'components/Row'
 import PoppableGasAndLimit from 'components/PoppableGasAndLimit'
-import { bnToLocaleString } from '@avalabs/utils-sdk'
 import { Tooltip } from 'components/Tooltip'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 
@@ -121,11 +120,12 @@ export default function NftReview({
             content={
               <PoppableGasAndLimit
                 gasLimit={fees.gasLimit ?? 0}
-                gasPrice={bnToLocaleString(fees.customGasPrice)}
+                maxFeePerGas={fees.maxFeePerGas.toFeeUnit()}
+                maxPriorityFeePerGas={fees.maxPriorityFeePerGas.toFeeUnit()}
               />
             }
             position={'right'}
-            style={{ width: 200 }}>
+            style={{ width: 250 }}>
             Network Fee
           </Tooltip>
           <AvaText.Heading2 currency>{fees.sendFeeInCurrency}</AvaText.Heading2>

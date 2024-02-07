@@ -7,19 +7,18 @@ import { TransactionDescription } from 'ethers'
 import { CoreTypes } from '@walletconnect/types'
 import { bigintToBig } from 'utils/bigNumbers/bigintToBig'
 import Big from 'big.js'
+import { NetworkTokenUnit } from 'types'
 
 interface DisplayValueTypes {
   displayValue: string
   gasLimit: number
-  bnFee: bigint
   site: CoreTypes.Metadata | null | undefined
-  fee: string
-  feeInCurrency: number
   name: string
   description: TransactionDescription | undefined
   fromAddress: string
   toAddress: string
-  gasPrice: bigint
+  maxFeePerGas: NetworkTokenUnit
+  maxPriorityFeePerGas: NetworkTokenUnit
 }
 
 export function isTxParams(
@@ -61,10 +60,10 @@ export function parseDisplayValues(
     toAddress: txParams.to,
     fromAddress: txParams.from,
     ...calculateGasAndFees({
-      gasPrice: props.gasPrice,
-      gasLimit: txParams.gas,
-      tokenPrice: props.tokenPrice,
-      tokenDecimals
+      maxFeePerGas: props.maxFeePerGas,
+      maxPriorityFeePerGas: props.maxPriorityFeePerGas,
+      gasLimit: Number(txParams.gas) ?? 0,
+      tokenPrice: props.tokenPrice
     }),
     site: props.site,
     description,

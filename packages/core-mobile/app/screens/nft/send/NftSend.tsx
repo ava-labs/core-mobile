@@ -20,9 +20,10 @@ import { useSelector } from 'react-redux'
 import { selectActiveNetwork } from 'store/network'
 import { NetworkVMType } from '@avalabs/chains-sdk'
 import { SvgXml } from 'react-native-svg'
-import { BN } from 'bn.js'
 import { AddrBookItemType, Contact } from 'store/addressBook'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import { Eip1559Fees } from 'utils/Utils'
+import { NetworkTokenUnit } from 'types'
 
 export type NftSendScreenProps = {
   onNext: () => void
@@ -40,7 +41,8 @@ export default function NftSend({
     canSubmit,
     sdkError,
     fees: {
-      setCustomGasPrice,
+      setMaxFeePerGas,
+      setMaxPriorityFeePerGas,
       setSelectedFeePreset,
       setCustomGasLimit,
       gasLimit,
@@ -105,24 +107,25 @@ export default function NftSend({
     })
   }
 
-  const handleGasPriceChange = useCallback(
-    (gasPrice1: bigint, feePreset: FeePreset) => {
+  const handleFeesChange = useCallback(
+    (fees: Eip1559Fees<NetworkTokenUnit>, feePreset: FeePreset) => {
       if (feePreset !== selectedFeePreset) {
         AnalyticsService.capture('NftSendFeeOptionChanged', {
           modifier: feePreset
         })
       }
-      setCustomGasPrice(new BN(gasPrice1.toString()))
+      setMaxFeePerGas(fees.maxFeePerGas)
+      setMaxPriorityFeePerGas(fees.maxPriorityFeePerGas)
+      setCustomGasLimit(fees.gasLimit)
       setSelectedFeePreset(feePreset)
     },
-    [setCustomGasPrice, setSelectedFeePreset, selectedFeePreset]
-  )
-
-  const handleGasLimitChange = useCallback(
-    customGasLimit => {
-      setCustomGasLimit(customGasLimit)
-    },
-    [setCustomGasLimit]
+    [
+      selectedFeePreset,
+      setCustomGasLimit,
+      setMaxFeePerGas,
+      setMaxPriorityFeePerGas,
+      setSelectedFeePreset
+    ]
   )
 
   return (
@@ -168,8 +171,7 @@ export default function NftSend({
           <CollectibleItem nft={nft} />
           <NetworkFeeSelector
             gasLimit={gasLimit ?? 0}
-            onGasPriceChange={handleGasPriceChange}
-            onGasLimitChange={handleGasLimitChange}
+            onFeesChange={handleFeesChange}
           />
           <Space y={8} />
           <AvaText.Body3 textStyle={{ color: theme.colorError }}>

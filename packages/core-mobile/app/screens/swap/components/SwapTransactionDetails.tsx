@@ -6,10 +6,10 @@ import AvaText from 'components/AvaText'
 import InputText from 'components/InputText'
 import NetworkFeeSelector, { FeePreset } from 'components/NetworkFeeSelector'
 import { Row } from 'components/Row'
-import Big from 'big.js'
-import { bigintToBig } from 'utils/bigNumbers/bigintToBig'
-import { useNetworkFee } from 'hooks/useNetworkFee'
 import { Tooltip } from 'components/Tooltip'
+import { NetworkTokenUnit } from 'types'
+import { Eip1559Fees } from 'utils/Utils'
+import PoppableGasAndLimit from 'components/PoppableGasAndLimit'
 
 const isSlippageValid = (value: string): boolean => {
   return Boolean(
@@ -25,14 +25,13 @@ interface SwapTransactionDetailProps {
   fromTokenSymbol?: string
   toTokenSymbol?: string
   rate: number
-  onGasChange?: (gasPrice: bigint, feeType: FeePreset) => void
-  onGasLimitChange?: (gasLimit: number) => void
   gasLimit: number
-  gasPrice: bigint
+  maxFeePerGas: NetworkTokenUnit
+  maxPriorityFeePerGas: NetworkTokenUnit
   slippage: number
   setSlippage?: (slippage: number) => void
   selectedGasFee?: FeePreset
-  maxGasPrice?: string
+  onFeesChange?(fees: Eip1559Fees<NetworkTokenUnit>, feePreset: FeePreset): void
 }
 
 const slippageInfoMessage =
@@ -43,20 +42,14 @@ const SwapTransactionDetail: FC<SwapTransactionDetailProps> = ({
   fromTokenSymbol,
   toTokenSymbol,
   rate,
-  onGasChange,
-  onGasLimitChange,
   gasLimit,
-  gasPrice,
+  maxFeePerGas,
+  maxPriorityFeePerGas,
   slippage,
-  setSlippage
+  setSlippage,
+  onFeesChange
 }): JSX.Element => {
   const { theme } = useApplicationContext()
-  const { data: networkFee } = useNetworkFee()
-
-  const netFeeInfoMessage = `Gas limit: ${gasLimit} \nGas price: ${bigintToBig(
-    gasPrice,
-    networkFee.displayDecimals
-  ).toFixed(0)} nAVAX`
 
   return (
     <View style={{ flex: 1, paddingHorizontal: 16 }}>
@@ -110,18 +103,20 @@ const SwapTransactionDetail: FC<SwapTransactionDetailProps> = ({
           <Row
             style={{ justifyContent: 'space-between', alignItems: 'center' }}>
             <Tooltip
-              content={netFeeInfoMessage}
+              content={
+                <PoppableGasAndLimit
+                  gasLimit={gasLimit}
+                  maxFeePerGas={maxFeePerGas.toFeeUnit()}
+                  maxPriorityFeePerGas={maxPriorityFeePerGas.toFeeUnit()}
+                />
+              }
               position={'right'}
-              style={{ width: 180 }}
+              style={{ width: 250 }}
               textStyle={{ color: theme.white }}>
               Network Fee
             </Tooltip>
             <AvaText.Heading3>
-              {new Big(gasPrice.toString())
-                .mul(gasLimit)
-                .div(10 ** 18)
-                .toFixed(6)}{' '}
-              AVAX
+              {maxFeePerGas.mul(gasLimit).toString()} AVAX
             </AvaText.Heading3>
           </Row>
         </>
@@ -129,11 +124,7 @@ const SwapTransactionDetail: FC<SwapTransactionDetailProps> = ({
       {!review && (
         <>
           <Space y={16} />
-          <NetworkFeeSelector
-            gasLimit={gasLimit}
-            onGasPriceChange={onGasChange}
-            onGasLimitChange={onGasLimitChange}
-          />
+          <NetworkFeeSelector gasLimit={gasLimit} onFeesChange={onFeesChange} />
         </>
       )}
     </View>

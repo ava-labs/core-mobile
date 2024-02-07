@@ -253,14 +253,7 @@ export default class SeedlessWallet implements Wallet {
       this.#session,
       { provider }
     )
-
-    // set type 0 to indicate legacy transaction, since mobile doesn't support EIP-1559 yet
-    const legacyTx = {
-      ...transaction,
-      type: 0
-    }
-
-    return signer.signTransaction(legacyTx)
+    return signer.signTransaction(transaction)
   }
 
   public async getPublicKey(): Promise<PubKeyType> {
