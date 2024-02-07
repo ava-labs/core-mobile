@@ -4,6 +4,8 @@ import PortfolioPage from '../../pages/portfolio.page'
 import { warmup } from '../../helpers/warmup'
 import AdvancedPage from '../../pages/burgerMenu/advanced.page'
 import commonElsPage from '../../pages/commonEls.page'
+import actions from '../../helpers/actions'
+import accountManagePage from '../../pages/accountManage.page'
 
 describe('Enable Testnet', () => {
   beforeAll(async () => {
@@ -11,13 +13,12 @@ describe('Enable Testnet', () => {
   })
 
   afterAll(async () => {
-    if (process.env.SEEDLESS_TEST === 'true') {
-      await AdvancedPage.switchToMainnet()
-    }
-  })
-
-  afterAll(async () => {
     await commonElsPage.tapBackButton()
+    if (actions.platform() === 'android') {
+      await commonElsPage.tapDeviceBackButton()
+    } else {
+      await accountManagePage.tapCarrotSVG()
+    }
     await AdvancedPage.switchToMainnet()
   })
 

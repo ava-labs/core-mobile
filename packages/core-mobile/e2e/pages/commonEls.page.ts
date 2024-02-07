@@ -69,6 +69,10 @@ class CommonElsPage {
     }
   }
 
+  async tapDeviceBackButton() {
+    await device.pressBack()
+  }
+
   async checkIfMainnet() {
     if (process.env.SEEDLESS_TEST === 'true') {
       try {
