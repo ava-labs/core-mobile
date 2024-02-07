@@ -9,5 +9,6 @@ export default {
   editAccount: 'Edit',
   saveNewAccountName: 'Save',
   secondAccount: 'Account 2',
-  fourthaccount: 'Account 4'
+  fourthaccount: 'Account 4',
+  accountDropdownTitle: 'account_dropdown_title'
 }

@@ -11,8 +11,6 @@ describe('Send Avax to another account', () => {
   })
 
   it('Should verify NFT Details items', async () => {
-    await AccountManagePage.tapCarrotSVG()
-    await AccountManagePage.tapFirstAccount()
     await AccountManagePage.createSecondAccount()
     await PortfolioPage.tapCollectiblesTab()
     await Actions.waitForElement(CollectiblesPage.gridItem, 5000)

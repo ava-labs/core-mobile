@@ -5,7 +5,6 @@ import DurationPage from '../../pages/Stake/duration.page'
 import { warmup } from '../../helpers/warmup'
 import GetStartedScreenPage from '../../pages/Stake/getStartedScreen.page'
 import StakePage from '../../pages/Stake/stake.page'
-import accountManagePage from '../../pages/accountManage.page'
 
 describe('Stake mainnet flow', () => {
   beforeAll(async () => {
@@ -13,7 +12,6 @@ describe('Stake mainnet flow', () => {
   })
 
   it('should verify staking amount screen items on mainnet', async () => {
-    await accountManagePage.switchToFirstAccount()
     await BottomTabsPage.tapStakeTab()
     await StakePage.tapStakeButton()
     await GetStartedScreenPage.tapNextButton()

@@ -10,6 +10,10 @@ class AccountManagePage {
     return by.text(accountManage.account)
   }
 
+  get accountDropdownTitle() {
+    return by.id(accountManage.accountDropdownTitle)
+  }
+
   get editedAccount() {
     return by.text(accountManage.editedAccount)
   }
@@ -50,6 +54,10 @@ class AccountManagePage {
     return by.text(accountManage.fourthaccount)
   }
 
+  async tapAccountDropdownTitle() {
+    await Action.tap(this.accountDropdownTitle)
+  }
+
   async tapFourthAccount() {
     try {
       await Assert.isVisible(this.fourthAccount)
@@ -62,7 +70,7 @@ class AccountManagePage {
   }
 
   async createSecondAccount() {
-    await this.tapCarrotSVG()
+    await this.tapAccountDropdownTitle()
     if (!(await actions.expectToBeVisible(this.secondAccount))) {
       await this.tapAddEditAccounts()
       await this.tapAddAccountButton()
@@ -79,17 +87,17 @@ class AccountManagePage {
   }
 
   async switchToSecondAccount() {
-    await this.tapCarrotSVG()
+    await this.tapAccountDropdownTitle()
     await this.tapSecondAccount()
   }
 
   async switchToFirstAccount() {
-    await this.tapCarrotSVG()
+    await this.tapAccountDropdownTitle()
     await this.tapFirstAccount()
   }
 
   async createAccount(accountNumber: number) {
-    await this.tapCarrotSVG()
+    await this.tapAccountDropdownTitle()
     await this.tapAddEditAccounts()
     for (let i = 0; i < accountNumber - 1; i++) {
       await this.tapAddAccountButton()
@@ -178,7 +186,11 @@ class AccountManagePage {
 
   async tapCarrotSVG() {
     if (Action.platform() === 'android') {
-      await this.tapFirstAccount()
+      try {
+        await this.tapFirstAccount()
+      } catch (e) {
+        await this.tap2ndAccountMenu()
+      }
     } else {
       await Action.tapElementAtIndex(this.carrotSVG, 0)
     }
@@ -191,7 +203,7 @@ class AccountManagePage {
       try {
         await Assert.isVisible(this.editedAccount)
       } catch (error) {
-        await this.tapCarrotSVG()
+        await this.tapAccountDropdownTitle()
         await this.tapFirstAccount()
       }
     }

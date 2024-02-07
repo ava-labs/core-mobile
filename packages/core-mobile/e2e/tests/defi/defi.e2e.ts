@@ -9,8 +9,6 @@ describe('Defi Tab', () => {
   })
 
   it('Should verify Defi Items', async () => {
-    await AccountManagePage.tapCarrotSVG()
-    await AccountManagePage.tapFirstAccount()
     await PortfolioPage.tapDefiTab()
     await DefiPage.verifyDefiListItems()
   })
@@ -22,17 +20,7 @@ describe('Defi Tab', () => {
   })
 
   it('Should verify empty screen Defi Items', async () => {
-    if (!process.env.SEEDLESS_TEST || process.env.SEEDLESS_TEST === 'false') {
-      await AccountManagePage.createAccount(2)
-    } else {
-      try {
-        await AccountManagePage.tapCarrotSVG()
-        await AccountManagePage.tap2ndAccountMenu()
-      } catch {
-        await AccountManagePage.tapCarrotSVG()
-        await AccountManagePage.createAccount(2)
-      }
-    }
+    await AccountManagePage.createAccount(2)
     await DefiPage.verifyEmptyScreenItems()
   })
 })

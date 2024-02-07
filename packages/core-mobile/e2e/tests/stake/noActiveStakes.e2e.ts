@@ -12,12 +12,11 @@ describe('Stake: testnet flow', () => {
 
   afterAll(async () => {
     await BottomTabsPage.tapPortfolioTab()
-    await AccountManagePage.switchToFirstAccount()
     await AdvancedPage.switchToMainnet()
   })
 
   it('should verify no active stakes screen', async () => {
-    await AccountManagePage.tapCarrotSVG()
+    await AccountManagePage.tapAccountDropdownTitle()
     await AccountManagePage.tap2ndAccountMenu()
     await AdvancedPage.switchToTestnet()
     await BottomTabsPage.tapStakeTab()

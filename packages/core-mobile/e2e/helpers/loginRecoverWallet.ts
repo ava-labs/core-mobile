@@ -35,11 +35,9 @@ class LoginRecoverWallet {
     )
 
     if (isVisisbleNo) {
-      console.log(isVisisbleNo, 'isVisisbleNo Yes')
       await this.enterPin()
       await accountManagePage.switchToFirstAccount()
     } else {
-      console.log(isVisisbleNo, 'isVisisbleNo No')
       await this.recoverMnemonicWallet()
     }
   }

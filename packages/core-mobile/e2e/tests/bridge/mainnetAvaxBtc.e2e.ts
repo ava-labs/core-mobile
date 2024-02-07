@@ -1,4 +1,3 @@
-import LoginRecoverWallet from '../../helpers/loginRecoverWallet'
 import BridgeTabPage from '../../pages/bridgeTab.page'
 import { warmup } from '../../helpers/warmup'
 

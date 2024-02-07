@@ -121,12 +121,14 @@ module.exports = {
         }
       }
     },
-    'ios.internal.debug.seedless': {
+    'ios.internal.debug.reuse_state': {
       device: 'simulator',
       app: 'ios.internal.debug',
-      args: {
-        detoxDebugVisibility: 'YES',
-        config: 'e2e/seedless_config.json'
+      testRunner: {
+        $0: 'jest',
+        args: {
+          config: 'e2e/reuse_state_config.json'
+        }
       },
       artifacts: {
         rootDir: './e2e/artifacts/ios',
@@ -220,12 +222,14 @@ module.exports = {
         rootDir: './e2e/artifacts/android'
       }
     },
-    'android.internal.debug.seedless': {
+    'android.internal.debug.reuse_state': {
       device: 'emulator',
       app: 'android.internal.debug',
-      args: {
-        detoxDebugVisibility: 'YES',
-        config: 'e2e/seedless_config.json'
+      testRunner: {
+        $0: 'jest',
+        args: {
+          config: 'e2e/reuse_state_config.json'
+        }
       },
       artifacts: {
         rootDir: './e2e/artifacts/android'

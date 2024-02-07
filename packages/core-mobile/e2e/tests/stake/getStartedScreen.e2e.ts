@@ -9,12 +9,7 @@ describe('Stake get started screen', () => {
     await warmup()
   })
 
-  afterAll(async () => {
-    AccountManagePage.switchToFirstAccount()
-  })
-
   it('should verify get started screen on Mainnet', async () => {
-    await AccountManagePage.switchToFirstAccount()
     await AccountManagePage.createAccount(4)
     await BottomTabsPage.tapStakeTab()
     await Actions.waitForElement(GetStartedScreenPage.getStartedTitle)

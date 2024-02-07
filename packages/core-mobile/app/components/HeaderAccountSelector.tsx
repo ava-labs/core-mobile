@@ -15,14 +15,16 @@ export default function HeaderAccountSelector({
 }: {
   onPressed?: () => void
   direction?: Direction
+  testID?: string
 }): JSX.Element {
   const activeAccount = useSelector(selectActiveAccount)
   const theme = useApplicationContext().theme
 
   return (
-    <AvaButton.Base onPress={onPressed}>
-      <View style={[styles.accountTitleContainer]}>
+    <AvaButton.Base onPress={onPressed} testID="account_dropdown">
+      <View style={[styles.accountTitleContainer]} testID="account_dropdown">
         <AvaText.Heading3
+          testID="account_dropdown_title"
           ellipsizeMode={'middle'}
           textStyle={{
             marginRight: 11,

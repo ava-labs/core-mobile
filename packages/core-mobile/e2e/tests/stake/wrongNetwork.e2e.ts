@@ -14,7 +14,6 @@ describe('Stake: wrong network', () => {
 
   afterAll(async () => {
     await commonElsPage.tapBackButton2()
-    await AccountManagePage.switchToFirstAccount()
     await networksManagePage.switchToAvalancheNetwork()
   })
 

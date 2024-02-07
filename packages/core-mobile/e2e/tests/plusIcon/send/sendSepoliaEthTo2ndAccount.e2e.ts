@@ -16,7 +16,6 @@ describe('Send Sepolia Eth to another account', () => {
   it('Should send Sepolia Eth to second account', async () => {
     await AdvancedPage.switchToTestnet()
     await NetworksManagePage.switchToEthereumSepoliaNetwork()
-    await AccountManagePage.switchToFirstAccount()
     const secondAccountAddress = await AccountManagePage.createSecondAccount()
     await AccountManagePage.tapFirstAccount()
     await SendPage.sendTokenTo2ndAccount(
