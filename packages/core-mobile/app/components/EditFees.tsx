@@ -123,6 +123,8 @@ const EditFees = ({
 
   const saveDisabled = !!feeError || newFees.gasLimit === 0
 
+  const sanitized = (text: string): string => text.replace(/[^0-9]/g, '')
+
   return (
     <View style={{ flex: 1, paddingBottom: 16 }}>
       <Text
@@ -136,7 +138,7 @@ const EditFees = ({
         mode={'amount'}
         text={newMaxFeePerGas}
         popOverInfoText={maxBaseFeeInfoMessage}
-        onChangeText={setNewMaxFeePerGas}
+        onChangeText={text => setNewMaxFeePerGas(sanitized(text))}
         errorText={feeError}
       />
       <InputText
@@ -144,14 +146,14 @@ const EditFees = ({
         mode={'amount'}
         text={newMaxPriorityFeePerGas}
         popOverInfoText={maxPriorityFeeInfoMessage}
-        onChangeText={setNewMaxPriorityFeePerGas}
+        onChangeText={text => setNewMaxPriorityFeePerGas(sanitized(text))}
       />
       <InputText
         label={'Gas Limit'}
         mode={'amount'}
         text={newGasLimit}
         popOverInfoText={gasLimitInfoMessage}
-        onChangeText={setNewGasLimit}
+        onChangeText={text => setNewGasLimit(sanitized(text))}
         errorText={gasLimitError}
       />
       <View sx={{ paddingHorizontal: 16, marginTop: 20, marginBottom: 16 }}>

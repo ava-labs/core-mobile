@@ -58,6 +58,9 @@ import CircleLogo from 'assets/icons/circle_logo.svg'
 import { Tooltip } from 'components/Tooltip'
 import { DOCS_BRIDGE_FAQS } from 'resources/Constants'
 import { selectSelectedCurrency } from 'store/settings/currency/slice'
+import NetworkFeeSelector, { FeePreset } from 'components/NetworkFeeSelector'
+import { NetworkTokenUnit } from 'types'
+import { Eip1559Fees } from 'utils/Utils'
 import { AssetBalance, BridgeProvider } from './utils/types'
 
 const blockchainTitleMaxWidth = Dimensions.get('window').width * 0.5
@@ -100,7 +103,13 @@ const Bridge: FC = () => {
     wrapStatus,
     transfer,
     bridgeFee,
-    provider
+    provider,
+    eip1559Fees,
+    setEip1559Fees,
+    selectedFeePreset,
+    setSelectedFeePreset,
+    denomination,
+    amountBN
   } = useBridge(selectedAsset)
 
   const {
@@ -112,21 +121,9 @@ const Bridge: FC = () => {
   const { getTokenSymbolOnNetwork } = useGetTokenSymbolOnNetwork()
   const networks = useSelector(selectNetworks)
   const activeNetwork = useSelector(selectActiveNetwork)
-  const [bridgeError, setBridgeError] = useState<string>('')
-  const [isPending, setIsPending] = useState<boolean>(false)
+  const [bridgeError, setBridgeError] = useState('')
+  const [isPending, setIsPending] = useState(false)
   const tokenInfoData = useTokenInfoContext()
-
-  const denomination = useMemo(() => {
-    if (!sourceBalance) {
-      return 0
-    }
-
-    if (isUnifiedBridgeAsset(sourceBalance.asset)) {
-      return sourceBalance.asset.decimals
-    }
-
-    return sourceBalance.asset.denomination
-  }, [sourceBalance])
 
   const selectedAssetSymbol = useMemo(
     () =>
@@ -141,10 +138,6 @@ const Bridge: FC = () => {
 
   const { bridgeBtcBlocked, bridgeEthBlocked } = usePosthogContext()
   const { currencyFormatter } = useApplicationContext().appHook
-  const amountBN = useMemo(
-    () => bigToBN(amount, denomination),
-    [amount, denomination]
-  )
   const isAmountTooLow =
     amount && !amount.eq(BIG_ZERO) && amount.lt(minimum || BIG_ZERO)
 
@@ -718,6 +711,19 @@ const Bridge: FC = () => {
     })
   }
 
+  const handleFeesChange = useCallback(
+    (fees: Eip1559Fees<NetworkTokenUnit>, feePreset: FeePreset) => {
+      if (feePreset !== selectedFeePreset) {
+        AnalyticsService.capture('BridgeGasFeeOptionChanged', {
+          modifier: feePreset
+        })
+      }
+      setEip1559Fees(fees)
+      setSelectedFeePreset(feePreset)
+    },
+    [selectedFeePreset, setEip1559Fees, setSelectedFeePreset]
+  )
+
   const renderCCTPPopoverInfoText = (): JSX.Element => (
     <View
       sx={{
@@ -786,6 +792,10 @@ const Bridge: FC = () => {
           {renderToggleBtn()}
           {renderToSection()}
         </View>
+        <NetworkFeeSelector
+          gasLimit={eip1559Fees.gasLimit ?? 0}
+          onFeesChange={handleFeesChange}
+        />
       </ScrollViewList>
       {renderTransferBtn()}
       {provider === BridgeProvider.UNIFIED && renderCircleBadge()}

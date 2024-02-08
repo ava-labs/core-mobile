@@ -16,11 +16,11 @@ import { Account } from 'store/account/types'
 import { isBitcoinNetwork } from 'utils/network/isBitcoinNetwork'
 import NetworkService from 'services/network/NetworkService'
 import WalletService from 'services/wallet/WalletService'
-import NetworkFeeService from 'services/networkFee/NetworkFeeService'
 import { assertNotUndefined } from 'utils/assertions'
 import Logger from 'utils/Logger'
 import { noop } from '@avalabs/utils-sdk'
 import { NetworkTokenUnit } from 'types'
+import { Eip1559Fees } from 'utils/Utils'
 
 type BridgeService = ReturnType<typeof createUnifiedBridgeService>
 
@@ -109,7 +109,8 @@ export class UnifiedBridgeService {
     targetNetwork,
     activeNetwork,
     activeAccount,
-    updateListener
+    updateListener,
+    eip1559Fees
   }: {
     asset: BridgeAsset
     amount: bigint
@@ -117,6 +118,7 @@ export class UnifiedBridgeService {
     activeNetwork: Network
     activeAccount: Account
     updateListener: (transfer: BridgeTransfer) => void
+    eip1559Fees: Eip1559Fees<NetworkTokenUnit>
   }): Promise<BridgeTransfer> {
     if (isBitcoinNetwork(activeNetwork)) {
       throw ethErrors.rpc.invalidParams({
@@ -143,27 +145,14 @@ export class UnifiedBridgeService {
       sign: async ({ from, to, data }) => {
         const nonce = await provider.getTransactionCount(from)
 
-        const gasLimit = await NetworkFeeService.estimateGasLimit({
-          from,
-          to: to as string,
-          data: data as string,
-          network: activeNetwork
-        })
-
-        const feeData = await NetworkFeeService.getNetworkFee(
-          activeNetwork,
-          NetworkTokenUnit.getConstructor(activeNetwork)
-        )
-
         const txData: TransactionRequest = {
           from,
           to,
           data,
           chainId: activeNetwork.chainId,
-          gasLimit,
-          maxFeePerGas: feeData?.low.maxFeePerGas.toSubUnit() ?? 0n,
-          maxPriorityFeePerGas:
-            feeData?.low.maxPriorityFeePerGas?.toSubUnit() ?? 0n,
+          gasLimit: eip1559Fees.gasLimit,
+          maxFeePerGas: eip1559Fees.maxFeePerGas.toSubUnit(),
+          maxPriorityFeePerGas: eip1559Fees.maxPriorityFeePerGas?.toSubUnit(),
           nonce
         }
 
