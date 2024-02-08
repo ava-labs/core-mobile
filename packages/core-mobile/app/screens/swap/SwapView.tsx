@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { ScrollView, StyleSheet, View } from 'react-native'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
@@ -67,21 +67,14 @@ export default function SwapView(): JSX.Element {
     isFetchingOptimalRate,
     getOptimalRateForAmount
   } = useSwapContext()
-  const [maxFromValue, setMaxFromValue] = useState<
-    NetworkTokenUnit | undefined
-  >()
-  const [fromTokenValue, setFromTokenValue] = useState<NetworkTokenUnit>()
-  const [toTokenValue, setToTokenValue] = useState<NetworkTokenUnit>()
+  const [maxFromValue, setMaxFromValue] = useState<BN | undefined>()
+  const [fromTokenValue, setFromTokenValue] = useState<Amount>()
+  const [toTokenValue, setToTokenValue] = useState<Amount>()
   const [isCalculatingMax, setIsCalculatingMax] = useState(false)
 
   const [localError, setLocalError] = useState<string>('')
   const [selectedGasFee, setSelectedGasFee] = useState<FeePreset>(
     FeePreset.Normal
-  )
-  const fromTokenBalance = useMemo(
-    () =>
-      fromToken ? NetworkTokenUnit.fromBalanceToken(fromToken) : undefined,
-    [fromToken]
   )
 
   const canSwap: boolean =
@@ -105,7 +98,7 @@ export default function SwapView(): JSX.Element {
   ])
 
   function validateInputsFx(): void {
-    if (fromTokenValue && fromTokenValue.isZero()) {
+    if (fromTokenValue && fromTokenValue.bn.isZero()) {
       setLocalError('Please enter an amount')
     } else if (
       maxFromValue &&
@@ -121,13 +114,15 @@ export default function SwapView(): JSX.Element {
   function applyOptimalRateFx(): void {
     if (optimalRate) {
       if (optimalRate.side === SwapSide.SELL) {
-        setToTokenValue(
-          NetworkTokenUnit.fromBalanceToken(toToken, optimalRate.destAmount)
-        )
+        setToTokenValue({
+          bn: new BN(optimalRate.destAmount),
+          amount: optimalRate.destAmount
+        })
       } else {
-        setFromTokenValue(
-          NetworkTokenUnit.fromBalanceToken(fromToken, optimalRate.srcAmount)
-        )
+        setFromTokenValue({
+          bn: new BN(optimalRate.srcAmount),
+          amount: optimalRate.srcAmount
+        })
       }
     }
   }
@@ -150,7 +145,7 @@ export default function SwapView(): JSX.Element {
       setMaxFromValue(max)
       return
     }
-    setMaxFromValue(NetworkTokenUnit.fromBalanceToken(fromToken))
+    setMaxFromValue(fromToken?.balance)
   }
 
   const swapTokens = (): void => {
@@ -168,7 +163,7 @@ export default function SwapView(): JSX.Element {
     setFromToken(from)
     setToToken(to)
     setDestination(SwapSide.SELL)
-    setFromTokenValue(toTokenValue)
+    setFromTokenValue(toTokenValue ? { ...toTokenValue } : undefined)
     setToTokenValue(undefined)
     toTokenValue && setAmount(toTokenValue)
     setMaxFromValue(undefined)
@@ -203,18 +198,23 @@ export default function SwapView(): JSX.Element {
       return
     }
 
-    if (fromToken.type !== TokenType.NATIVE && fromTokenBalance) {
+    const totalBalance = {
+      bn: fromToken.balance,
+      amount: bnToLocaleString(fromToken.balance, fromToken?.decimals)
+    } as Amount
+
+    if (fromToken.type !== TokenType.NATIVE) {
       // no calculations needed for non-native tokens
-      setFromTokenValue(fromTokenBalance)
+      setFromTokenValue(totalBalance)
       setDestination(SwapSide.SELL)
-      setAmount(fromTokenBalance)
+      setAmount(totalBalance)
       return
     }
 
     setIsCalculatingMax(true)
     // first let's fetch swap rates and fees for total balance amount, then we can
     // calculate max available amount for swap
-    getOptimalRateForAmount(fromTokenBalance)
+    getOptimalRateForAmount(totalBalance)
       .then(([{ optimalRate: optRate, error }, { customGasLimit }]) => {
         if (error) {
           setLocalError(error)
@@ -226,10 +226,14 @@ export default function SwapView(): JSX.Element {
           if (maxBn) {
             // there's high probability that on next call swap fees will change so let's lower
             // max amount just a bit more for safety margin by chopping off some decimals
-            availableBalance = availableBalance?.cut(6)
-            setFromTokenValue(availableBalance)
+            maxBn = truncateBN(maxBn, fromToken.decimals, 6)
+            const amount = {
+              bn: maxBn,
+              amount: bnToLocaleString(maxBn, fromToken?.decimals)
+            } as Amount
+            setFromTokenValue(amount)
             setDestination(SwapSide.SELL)
-            setAmount(availableBalance)
+            setAmount(amount)
           }
         }
       })
@@ -269,7 +273,7 @@ export default function SwapView(): JSX.Element {
               setAmount(value)
             }}
             selectedToken={fromToken}
-            inputAmount={fromTokenValue}
+            inputAmount={fromTokenValue?.bn}
             hideErrorMessage
             error={localError || swapError}
             isValueLoading={
@@ -306,7 +310,7 @@ export default function SwapView(): JSX.Element {
               setAmount(value)
             }}
             selectedToken={toToken}
-            inputAmount={toTokenValue}
+            inputAmount={toTokenValue?.bn}
             hideErrorMessage
             isValueLoading={
               destination === SwapSide.SELL && isFetchingOptimalRate

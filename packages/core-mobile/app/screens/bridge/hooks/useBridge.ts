@@ -8,7 +8,7 @@ import {
   usePrice,
   WrapStatus
 } from '@avalabs/bridge-sdk'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { VsCurrencyType } from '@avalabs/coingecko-sdk'
 import { useBtcBridge } from 'screens/bridge/hooks/useBtcBridge'
 import { useEthBridge } from 'screens/bridge/hooks/useEthBridge'
@@ -17,18 +17,6 @@ import { AssetBalance, BridgeProvider } from 'screens/bridge/utils/types'
 import Big from 'big.js'
 import { useSelector } from 'react-redux'
 import { selectSelectedCurrency } from 'store/settings/currency'
-import { Eip1559Fees } from 'utils/Utils'
-import { NetworkTokenUnit } from 'types'
-import { selectActiveNetwork, selectNetworks } from 'store/network'
-import { FeePreset } from 'components/NetworkFeeSelector'
-import { selectActiveAccount } from 'store/account'
-import { bigToBN } from '@avalabs/utils-sdk'
-import Logger from 'utils/Logger'
-import BN from 'bn.js'
-import BridgeService from 'services/bridge/BridgeService'
-import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { selectBridgeAppConfig } from 'store/bridge'
-import { isUnifiedBridgeAsset } from '../utils/bridgeUtils'
 import { useUnifiedBridge } from './useUnifiedBridge/useUnifiedBridge'
 import { useHasEnoughForGas } from './useHasEnoughtForGas'
 
@@ -62,24 +50,11 @@ interface Bridge extends BridgeAdapter {
   price: Big
   provider: BridgeProvider
   bridgeFee: Big
-  eip1559Fees: Eip1559Fees<NetworkTokenUnit>
-  setEip1559Fees: (fees: Eip1559Fees<NetworkTokenUnit>) => void
-  selectedFeePreset: FeePreset
-  setSelectedFeePreset: (preset: FeePreset) => void
-  denomination: number
-  amountBN: BN
-  sendFee: BN
 }
 
-// eslint-disable-next-line sonarjs/cognitive-complexity
 export default function useBridge(selectedAsset?: AssetBalance): Bridge {
-  const config = useSelector(selectBridgeAppConfig)
-  const isTestnet = useSelector(selectIsDeveloperMode)
-  const allNetworks = useSelector(selectNetworks)
   const currency = useSelector(selectSelectedCurrency)
-  const activeNetwork = useSelector(selectActiveNetwork)
-  const activeAccount = useSelector(selectActiveAccount)
-  const [sourceBalance, setSourceBalance] = useState<AssetBalance>()
+
   const { currentBlockchain, currentAsset, currentAssetData, setCurrentAsset } =
     useBridgeSDK()
 
@@ -91,16 +66,6 @@ export default function useBridge(selectedAsset?: AssetBalance): Bridge {
   }, [setCurrentAsset])
 
   const [amount, setAmount] = useState<Big>(new Big(0))
-  const [selectedFeePreset, setSelectedFeePreset] = useState<FeePreset>(
-    FeePreset.Normal
-  )
-  const [eip1559Fees, setEip1559Fees] = useState<Eip1559Fees<NetworkTokenUnit>>(
-    {
-      gasLimit: 0,
-      maxFeePerGas: NetworkTokenUnit.fromNetwork(activeNetwork),
-      maxPriorityFeePerGas: NetworkTokenUnit.fromNetwork(activeNetwork)
-    }
-  )
   const price = usePrice(
     currentAssetData?.assetType === AssetType.BTC ? 'bitcoin' : currentAsset,
     currency.toLowerCase() as VsCurrencyType
@@ -108,88 +73,13 @@ export default function useBridge(selectedAsset?: AssetBalance): Bridge {
 
   const bridgeFee = useBridgeFeeEstimate(amount) || BIG_ZERO
   const minimum = useMinimumTransferAmount(amount)
-  const [sendFee, setSendFee] = useState<BN>(new BN(0))
+
   const hasEnoughForNetworkFee = useHasEnoughForGas()
 
   const btc = useBtcBridge(amount)
-  const eth = useEthBridge({ amount, bridgeFee, minimum, eip1559Fees })
-  const avalanche = useAvalancheBridge({
-    amount,
-    bridgeFee,
-    minimum,
-    eip1559Fees
-  })
-  const unified = useUnifiedBridge(amount, eip1559Fees, selectedAsset)
-  const denomination = useMemo(() => {
-    if (!sourceBalance) {
-      return 0
-    }
-
-    if (isUnifiedBridgeAsset(sourceBalance.asset)) {
-      return sourceBalance.asset.decimals
-    }
-
-    return sourceBalance.asset.denomination
-  }, [sourceBalance])
-
-  const amountBN = useMemo(
-    () => bigToBN(amount, denomination),
-    [amount, denomination]
-  )
-
-  useEffect(() => {
-    if (unified.isAssetSupported) {
-      setSourceBalance(unified.sourceBalance)
-    } else if (currentBlockchain === Blockchain.BITCOIN) {
-      setSourceBalance(btc.sourceBalance)
-    } else if (currentBlockchain === Blockchain.ETHEREUM) {
-      setSourceBalance(eth.sourceBalance)
-    } else if (currentBlockchain === Blockchain.AVALANCHE) {
-      setSourceBalance(avalanche.sourceBalance)
-    } else {
-      setSourceBalance(undefined)
-    }
-  }, [btc, eth, avalanche, unified, currentBlockchain])
-
-  useEffect(() => {
-    const getEstimatedGasLimit = async (): Promise<bigint | undefined> => {
-      if (!activeAccount || !selectedAsset || !currentAssetData) return
-      const estimatedGasLimit = await BridgeService.estimateGas({
-        currentBlockchain,
-        amount,
-        activeAccount,
-        activeNetwork,
-        currency,
-        allNetworks,
-        asset: currentAssetData,
-        isTestnet,
-        config
-      })
-      if (estimatedGasLimit) {
-        const fee = new BN(Number(estimatedGasLimit)).mul(
-          new BN(eip1559Fees.maxFeePerGas.toFeeUnit())
-        )
-        setSendFee(fee)
-        setEip1559Fees(prev => ({
-          ...prev,
-          gasLimit: Number(estimatedGasLimit)
-        }))
-      }
-    }
-    getEstimatedGasLimit().catch(Logger.error)
-  }, [
-    activeAccount,
-    activeNetwork,
-    allNetworks,
-    amount,
-    config,
-    currency,
-    currentAssetData,
-    currentBlockchain,
-    eip1559Fees.maxFeePerGas,
-    isTestnet,
-    selectedAsset
-  ])
+  const eth = useEthBridge(amount, bridgeFee, minimum)
+  const avalanche = useAvalancheBridge(amount, bridgeFee, minimum)
+  const unified = useUnifiedBridge(amount, selectedAsset)
 
   const defaults = {
     amount,
@@ -198,14 +88,7 @@ export default function useBridge(selectedAsset?: AssetBalance): Bridge {
     price,
     minimum,
     hasEnoughForNetworkFee,
-    provider: BridgeProvider.LEGACY,
-    eip1559Fees,
-    setEip1559Fees,
-    selectedFeePreset,
-    setSelectedFeePreset,
-    denomination,
-    amountBN,
-    sendFee
+    provider: BridgeProvider.LEGACY
   }
 
   if (unified.isAssetSupported) {
