@@ -16,10 +16,12 @@ import {
 } from '@cubist-labs/cubesigner-sdk'
 import { hoursToSeconds, minutesToSeconds } from 'date-fns'
 import Config from 'react-native-config'
-import { TotpErrors } from 'seedless/errors'
+import { TokenRefreshErrors, TotpErrors } from 'seedless/errors'
 import PasskeyService from 'services/passkey/PasskeyService'
 import { Result } from 'types/result'
 import { MFA } from 'seedless/types'
+import Logger from 'utils/Logger'
+import { RetryBackoffPolicy, retry } from 'utils/js/retry'
 
 if (!Config.SEEDLESS_ORG_ID) {
   throw Error('SEEDLESS_ORG_ID is missing. Please check your env file.')
@@ -42,7 +44,7 @@ if (!envInterface) {
 class SeedlessSessionService {
   private totpChallenge?: TotpChallenge
   private scopes: string[]
-  protected sessionStorage: SessionStorage<SignerSessionData>
+  private sessionStorage: SessionStorage<SignerSessionData>
 
   constructor({
     scopes,
@@ -134,6 +136,64 @@ class SeedlessSessionService {
     }
 
     return signResponse
+  }
+
+  async refreshToken(): Promise<Result<void, TokenRefreshErrors>> {
+    const sessionMgr = await SignerSessionManager.loadFromStorage(
+      this.sessionStorage
+    ).catch(reason => {
+      Logger.error('Failed to load session manager from storage', reason)
+      return undefined
+    })
+
+    if (!sessionMgr) {
+      return {
+        success: false,
+        error: {
+          name: 'RefreshFailed',
+          message: 'Failed to load session manager from storage'
+        }
+      }
+    }
+    const refreshResult = await retry({
+      operation: async _ => {
+        return await sessionMgr.refresh().catch(err => {
+          //if status is 403 means the token has expired and we need to refresh it
+
+          if ('status' in err && err.status === 403) {
+            return {
+              success: false,
+              error: new TokenRefreshErrors({
+                name: 'TokenExpired',
+                message: 'Token refresh failed'
+              })
+            }
+          }
+          //otherwise propagate error to retry()
+          throw err
+        })
+      },
+      backoffPolicy: RetryBackoffPolicy.constant(1),
+      isSuccess: result => {
+        //stop retry if refresh() passed without problems or we intercepted it in 403 logic
+        return result === undefined || 'success' in result
+      },
+      maxRetries: 10
+    }).catch(_ => {
+      //if retry() exceeded max retry catch it here
+      return {
+        success: false,
+        error: new TokenRefreshErrors({
+          name: 'RefreshFailed',
+          message: 'Token refresh failed'
+        })
+      }
+    })
+
+    return (refreshResult || { success: true, value: undefined }) as Result<
+      void,
+      TokenRefreshErrors
+    >
   }
 
   /**
