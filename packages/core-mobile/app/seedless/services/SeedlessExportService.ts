@@ -13,7 +13,7 @@ import SeedlessSessionManager from './SeedlessSessionManager'
 
 class SeedlessExportService {
   sessionManager = new SeedlessSessionManager({
-    scopes: ['export:*', 'manage:*'],
+    scopes: ['export:user:*', 'manage:*'],
     sessionStorage: new MemorySessionStorage<SignerSessionData>()
   })
 

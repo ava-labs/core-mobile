@@ -8,7 +8,7 @@ import SeedlessSessionManager from './SeedlessSessionManager'
  */
 class SeedlessService {
   sessionManager = new SeedlessSessionManager({
-    scopes: ['sign:*'],
+    scopes: ['manage:mfa', 'sign:*'],
     sessionStorage: new SeedlessSessionStorage()
   })
 

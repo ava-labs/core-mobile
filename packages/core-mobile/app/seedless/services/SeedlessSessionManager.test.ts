@@ -38,7 +38,7 @@ const cubistResponseHasMfa = {
 } as CubeSignerResponse<TotpChallenge>
 
 const seedlessSessionManager = new SeedlessSessionManager({
-  scopes: ['sign:*'],
+  scopes: ['manage:mfa', 'sign:*'],
   sessionStorage: new SeedlessSessionStorage()
 })
 
