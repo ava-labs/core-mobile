@@ -10,8 +10,8 @@ import GoogleSigninService from 'services/socialSignIn/google/GoogleSigninServic
 import * as Navigation from 'utils/Navigation'
 import AppNavigation from 'navigation/AppNavigation'
 import Logger from 'utils/Logger'
-import { OidcProviders } from './consts'
-import SeedlessSessionManager from './services/SeedlessSessionManager'
+import { OidcProviders } from '../consts'
+import SeedlessSessionManager from '../services/SeedlessSessionManager'
 
 export async function startRefreshSeedlessTokenFlow(
   sessionManager: SeedlessSessionManager

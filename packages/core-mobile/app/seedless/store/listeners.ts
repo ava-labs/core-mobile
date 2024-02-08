@@ -20,7 +20,7 @@ import { AppListenerEffectAPI } from 'store'
 import { onTokenExpired } from 'seedless/store/slice'
 import { ErrResponse, GlobalEvents } from '@cubist-labs/cubesigner-sdk'
 import { initWalletServiceAndUnlock } from 'hooks/useWallet'
-import { startRefreshSeedlessTokenFlow } from 'seedless/utils'
+import { startRefreshSeedlessTokenFlow } from 'seedless/utils/startRefreshSeedlessTokenFlow'
 
 const refreshSeedlessToken = async (): Promise<void> => {
   if (WalletService.walletType !== WalletType.SEEDLESS) {
