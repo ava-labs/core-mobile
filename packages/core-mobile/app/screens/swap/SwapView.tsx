@@ -103,7 +103,7 @@ export default function SwapView(): JSX.Element {
     } else if (
       maxFromValue &&
       fromTokenValue &&
-      fromTokenValue.gt(maxFromValue)
+      fromTokenValue.bn.gt(maxFromValue)
     ) {
       setLocalError('Insufficient balance.')
     } else {
