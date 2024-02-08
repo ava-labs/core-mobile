@@ -31,6 +31,7 @@ export type AnalyticsEvents = {
   BridgeTransferStarted: { sourceBlockchain: string; targetBlockchain: string }
   BridgeTransactionHide: undefined
   BridgeTransactionHideCancel: undefined
+  BridgeGasFeeOptionChanged: { modifier: string }
 
   // UNIFIED BRIDGE
   UnifedBridgeTransferStarted: {

@@ -1,3 +1,4 @@
+import { BlockCypherProvider, JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
 import { useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import {
@@ -7,7 +8,7 @@ import {
 } from 'services/network/utils/providerUtils'
 import { selectActiveNetwork, selectNetworks } from 'store/network'
 
-export function useEthereumProvider() {
+export function useEthereumProvider(): JsonRpcBatchInternal | undefined {
   const networks = useSelector(selectNetworks)
   const network = useSelector(selectActiveNetwork)
 
@@ -17,13 +18,13 @@ export function useEthereumProvider() {
   )
 }
 
-export function useBitcoinProvider() {
+export function useBitcoinProvider(): BlockCypherProvider {
   const network = useSelector(selectActiveNetwork)
 
   return useMemo(() => getBitcoinProvider(network.isTestnet), [network])
 }
 
-export function useAvalancheProvider() {
+export function useAvalancheProvider(): JsonRpcBatchInternal | undefined {
   const networks = useSelector(selectNetworks)
   const network = useSelector(selectActiveNetwork)
 
