@@ -39,7 +39,7 @@ export const AuthenticatorSetup = (): JSX.Element => {
 
   useEffect(() => {
     const init = async (): Promise<void> => {
-      const result = await SeedlessService.setTotp()
+      const result = await SeedlessService.sessionManager.setTotp()
       if (result.success && result.value) {
         const totpCode = new URL(result.value).searchParams.get('secret')
         totpCode && setCode(totpCode)

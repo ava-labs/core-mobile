@@ -9,6 +9,7 @@ import AppNavigation from 'navigation/AppNavigation'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { TotpErrors } from 'seedless/errors'
 import SeedlessExportService from 'seedless/services/SeedlessExportService'
+import SeedlessSessionManager from 'seedless/services/SeedlessSessionManager'
 import { UserExportResponse } from 'seedless/types'
 import { startRefreshSeedlessTokenFlow } from 'seedless/utils'
 import AnalyticsService from 'services/analytics/AnalyticsService'
@@ -28,7 +29,7 @@ const HOURS_48 = 60 * 60 * 48
 const ONE_MINUTE = 60
 
 const EXPORT_DELAY =
-  SeedlessExportService.environment === 'prod' ? HOURS_48 : ONE_MINUTE
+  SeedlessSessionManager.environment === 'prod' ? HOURS_48 : ONE_MINUTE
 
 type OnVerifyMfaSuccess<T> = (response: T) => Promise<void>
 
@@ -78,9 +79,10 @@ export const useSeedlessMnemonicExport = (keyId: string): ReturnProps => {
       response: UserExportResponse
     ): Promise<UserExportResponse | undefined> => {
       try {
-        const challenge = await seedlessExportService.fidoApproveStart(
-          response.mfaId()
-        )
+        const challenge =
+          await seedlessExportService.sessionManager.fidoApproveStart(
+            response.mfaId()
+          )
         const credential = await PasskeyService.authenticate(
           challenge.options,
           true
@@ -113,7 +115,10 @@ export const useSeedlessMnemonicExport = (keyId: string): ReturnProps => {
       const onVerifyCode = (
         code: string
       ): Promise<Result<UserExportResponse, TotpErrors>> => {
-        return seedlessExportService.verifyApprovalCode(response, code)
+        return seedlessExportService.sessionManager.verifyApprovalCode(
+          response,
+          code
+        )
       }
       if (mfaType === 'totp') {
         Navigation.navigate({
@@ -240,7 +245,7 @@ export const useSeedlessMnemonicExport = (keyId: string): ReturnProps => {
       setPendingRequest(pendingExport)
     }
 
-    startRefreshSeedlessTokenFlow(seedlessExportService)
+    startRefreshSeedlessTokenFlow(seedlessExportService.sessionManager)
       .then(() => {
         checkPendingExports()
       })

@@ -9,15 +9,13 @@ import {
   userExportKeygen
 } from '@cubist-labs/cubesigner-sdk'
 import { UserExportResponse } from 'seedless/types'
-import SeedlessSessionService from './SeedlessSessionService'
+import SeedlessSessionManager from './SeedlessSessionManager'
 
-class SeedlessExportService extends SeedlessSessionService {
-  constructor() {
-    super({
-      scopes: ['export:*', 'manage:*'],
-      sessionStorage: new MemorySessionStorage<SignerSessionData>()
-    })
-  }
+class SeedlessExportService {
+  sessionManager = new SeedlessSessionManager({
+    scopes: ['export:*', 'manage:*'],
+    sessionStorage: new MemorySessionStorage<SignerSessionData>()
+  })
 
   /**
    * Initiate user export
@@ -26,7 +24,7 @@ class SeedlessExportService extends SeedlessSessionService {
     keyId: string,
     mfaReceipt?: MfaReceipt
   ): Promise<CubeSignerResponse<UserExportInitResponse>> {
-    const signerSession = await this.getSignerSession()
+    const signerSession = await this.sessionManager.getSignerSession()
     return signerSession.userExportInit(keyId, mfaReceipt)
   }
 
@@ -34,7 +32,7 @@ class SeedlessExportService extends SeedlessSessionService {
    * Detele user export
    */
   async userExportDelete(keyId: string, userId?: string): Promise<void> {
-    const signerSession = await this.getSignerSession()
+    const signerSession = await this.sessionManager.getSignerSession()
     return signerSession.userExportDelete(keyId, userId)
   }
 
@@ -42,7 +40,7 @@ class SeedlessExportService extends SeedlessSessionService {
    * List user export
    */
   async userExportList(): Promise<UserExportInitResponse | undefined> {
-    const signerSession = await this.getSignerSession()
+    const signerSession = await this.sessionManager.getSignerSession()
     const paginator = signerSession.userExportList()
     const [userExport] = await paginator.fetchAll()
     return userExport
@@ -55,7 +53,7 @@ class SeedlessExportService extends SeedlessSessionService {
     keyId: string,
     pubKey: string
   ): Promise<CubeSignerResponse<UserExportCompleteResponse>> {
-    const signerSession = await this.getSignerSession()
+    const signerSession = await this.sessionManager.getSignerSession()
     return signerSession.userExportComplete(keyId, pubKey)
   }
 
@@ -90,7 +88,7 @@ class SeedlessExportService extends SeedlessSessionService {
    * Returns MFA type
    */
   async getMfaType(): Promise<'totp' | 'fido' | undefined> {
-    const signerSession = await this.getSignerSession()
+    const signerSession = await this.sessionManager.getSignerSession()
     const identity = await signerSession.identityProve()
     return identity.user_info?.configured_mfa?.[0]?.type
   }
@@ -104,7 +102,7 @@ class SeedlessExportService extends SeedlessSessionService {
   ): Promise<UserExportResponse> {
     return userExportResponse.signWithMfaApproval({
       mfaId: userExportResponse.mfaId(),
-      mfaOrgId: this.orgID,
+      mfaOrgId: this.sessionManager.orgID,
       mfaConf: mfaReceiptConfirmation
     })
   }

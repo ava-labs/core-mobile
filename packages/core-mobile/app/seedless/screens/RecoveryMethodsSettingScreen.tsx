@@ -24,7 +24,8 @@ export const RecoveryMethodsSettingScreen = (): JSX.Element => {
   }
 
   useEffect(() => {
-    SeedlessService.userMfa()
+    SeedlessService.sessionManager
+      .userMfa()
       .then(mfa => {
         setRecoveryMethods(mfa)
       })

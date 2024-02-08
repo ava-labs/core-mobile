@@ -43,9 +43,13 @@ export const useSeedlessRegister = (): ReturnType => {
 
     try {
       const { oidcToken } = await getOidcToken()
-      const identity = await SeedlessService.oidcProveIdentity(oidcToken)
+      const identity = await SeedlessService.sessionManager.oidcProveIdentity(
+        oidcToken
+      )
       const result = await CoreSeedlessAPIService.register(identity)
-      const signResponse = await SeedlessService.requestOidcAuth(oidcToken)
+      const signResponse = await SeedlessService.sessionManager.requestOidcAuth(
+        oidcToken
+      )
       const isMfaRequired = signResponse.requiresMfa()
 
       // persist email and provider for later use with refresh token flow

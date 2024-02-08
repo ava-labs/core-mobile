@@ -27,7 +27,7 @@ const refreshSeedlessToken = async (): Promise<void> => {
     return
   }
   //refreshToken will trigger onSessionExpired if fails for that reason
-  const refreshTokenResult = await SeedlessService.refreshToken()
+  const refreshTokenResult = await SeedlessService.sessionManager.refreshToken()
   if (refreshTokenResult.success) {
     Logger.trace('Refresh token success')
     return
@@ -73,7 +73,7 @@ function handleRetry(listenerApi: AppListenerEffectAPI): void {
       screen: AppNavigation.RefreshToken.OwlLoader
     }
   })
-  startRefreshSeedlessTokenFlow(SeedlessService)
+  startRefreshSeedlessTokenFlow(SeedlessService.sessionManager)
     .then(result => {
       if (result.success) {
         //dismiss Loader screen

@@ -60,11 +60,18 @@ export const AddRecoveryMethods = (): JSX.Element => {
     try {
       const withSecurityKey = fidoType === FidoType.YUBI_KEY
 
-      await SeedlessService.registerFido(passkeyName, withSecurityKey)
+      await SeedlessService.sessionManager.registerFido(
+        passkeyName,
+        withSecurityKey
+      )
 
       AnalyticsService.capture('SeedlessMfaAdded')
 
-      await SeedlessService.approveFido(oidcToken, mfaId, withSecurityKey)
+      await SeedlessService.sessionManager.approveFido(
+        oidcToken,
+        mfaId,
+        withSecurityKey
+      )
 
       AnalyticsService.capture('SeedlessMfaVerified', { type: fidoType })
 
