@@ -9,9 +9,9 @@ import {
   userExportKeygen
 } from '@cubist-labs/cubesigner-sdk'
 import { UserExportResponse } from 'seedless/types'
-import SeedlessBaseService from './SeedlessBaseService'
+import SeedlessSessionService from './SeedlessSessionService'
 
-class SeedlessExportService extends SeedlessBaseService {
+class SeedlessExportService extends SeedlessSessionService {
   constructor() {
     super({
       scopes: ['export:*', 'manage:*'],

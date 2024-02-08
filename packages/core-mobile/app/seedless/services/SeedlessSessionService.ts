@@ -39,7 +39,7 @@ if (!envInterface) {
   throw Error('SEEDLESS_ENVIRONMENT is incorrect. Please check your env file.')
 }
 
-class SeedlessBaseService {
+class SeedlessSessionService {
   private totpChallenge?: TotpChallenge
   private scopes: string[]
   protected sessionStorage: SessionStorage<SignerSessionData>
@@ -310,4 +310,4 @@ class SeedlessBaseService {
   }
 }
 
-export default SeedlessBaseService
+export default SeedlessSessionService

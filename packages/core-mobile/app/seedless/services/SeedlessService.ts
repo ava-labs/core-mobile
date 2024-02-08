@@ -4,13 +4,13 @@ import { Result } from 'types/result'
 import { retry, RetryBackoffPolicy } from 'utils/js/retry'
 import Logger from 'utils/Logger'
 import { SeedlessSessionStorage } from './storage/SeedlessSessionStorage'
-import SeedlessBaseService from './SeedlessBaseService'
+import SeedlessSessionService from './SeedlessSessionService'
 
 /**
  * Service for cubesigner-sdk
  * https://github.com/cubist-labs/CubeSigner-TypeScript-SDK
  */
-class SeedlessService extends SeedlessBaseService {
+class SeedlessService extends SeedlessSessionService {
   constructor() {
     super({ scopes: ['sign:*'], sessionStorage: new SeedlessSessionStorage() })
   }
