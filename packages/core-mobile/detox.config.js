@@ -179,7 +179,7 @@ module.exports = {
         }
       }
     },
-    'ios.internal.release.smoke.ci': {
+    'ios.internal.release.smoke.ci.reuse_state': {
       device: 'simulator',
       app: 'ios.internal.release.ci',
       artifacts: {
@@ -191,7 +191,7 @@ module.exports = {
       testRunner: {
         $0: 'jest',
         args: {
-          config: 'e2e/smoke_test_config.json'
+          config: 'e2e/smoke_test_config_reuse_state.json'
         }
       }
     },
