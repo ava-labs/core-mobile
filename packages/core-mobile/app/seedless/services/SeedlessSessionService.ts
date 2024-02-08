@@ -106,9 +106,6 @@ class SeedlessSessionService {
   ): Promise<CubeSignerResponse<SignerSessionData>> {
     const oidcClient = this.getOidcClient(oidcToken)
     const signResponse = await oidcClient.sessionCreate(
-      // TODO: reduce the scopes once we have a proper/stable permission system
-      // https://ava-labs.atlassian.net/browse/CP-7891
-      // ['sign:*', 'manage:*', 'export:*'],
       this.scopes,
       {
         // How long singing with a particular token works from the token creation
