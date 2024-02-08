@@ -793,7 +793,7 @@ const Bridge: FC = () => {
           {renderToSection()}
         </View>
         <NetworkFeeSelector
-          gasLimit={eip1559Fees.gasLimit ?? 0}
+          gasLimit={eip1559Fees.gasLimit}
           onFeesChange={handleFeesChange}
         />
       </ScrollViewList>
