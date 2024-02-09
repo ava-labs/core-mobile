@@ -16,7 +16,9 @@ import SeedlessSessionManager from '../services/SeedlessSessionManager'
 export async function startRefreshSeedlessTokenFlow(
   sessionManager: SeedlessSessionManager
 ): Promise<Result<void, RefreshSeedlessTokenFlowErrors>> {
-  const oidcProvider = await SecureStorageService.load(KeySlot.OidcProvider)
+  const oidcProvider = await SecureStorageService.load(
+    KeySlot.OidcProvider
+  ).catch(Logger.error)
   const oidcUserId = await SecureStorageService.load(KeySlot.OidcUserId).catch(
     Logger.error
   )

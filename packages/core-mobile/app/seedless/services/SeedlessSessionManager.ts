@@ -79,14 +79,14 @@ class SeedlessSessionManager {
    * @param {string} oidcToken The OIDC token to include in 'Authorization' header.
    * @return {OidcClient} CubeSigner API client for methods that require OIDC authorization.
    */
-  getOidcClient(oidcToken: string): OidcClient {
+  private getOidcClient(oidcToken: string): OidcClient {
     return new OidcClient(envInterface, SEEDLESS_ORG_ID, oidcToken)
   }
 
   /**
    * Retrieves information about the current user.
    */
-  async aboutMe(): Promise<UserInfo> {
+  private async aboutMe(): Promise<UserInfo> {
     return (await this.getCubeSignerClient()).userGet()
   }
 

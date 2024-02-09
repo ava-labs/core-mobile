@@ -246,10 +246,19 @@ export const useSeedlessMnemonicExport = (keyId: string): ReturnProps => {
     }
 
     startRefreshSeedlessTokenFlow(seedlessExportService.sessionManager)
-      .then(() => {
-        checkPendingExports()
+      .then(result => {
+        if (result.success) {
+          checkPendingExports()
+        } else {
+          if (result.error.name !== 'USER_CANCELED') {
+            showSimpleToast('Unable to start export request. Please try again.')
+          }
+          Navigation.goBack()
+        }
       })
-      .catch(() => {
+      .catch(e => {
+        Logger.error('startRefreshSeedlessTokenFlow error', e)
+        showSimpleToast('Unable to start export request. Please try again.')
         Navigation.goBack()
       })
   }, [seedlessExportService])
