@@ -253,10 +253,6 @@ workflows:
           title: Detox
           inputs:
             - file_path: scripts/bitrise/detox/androidInternalE2eReuseAppState.sh
-      - script-runner@0:
-          title: Detox
-          inputs:
-            - file_path: scripts/bitrise/detox/androidInternalE2e.sh
   _pull_app_files:
     steps:
     - pull-intermediate-files@1:
@@ -726,7 +722,4 @@ workflows:
         title: Detox
         inputs:
         - file_path: scripts/bitrise/detox/iosInternalE2eReuseAppState.sh
-    - script-runner@0:
-        title: Detox
-        inputs:
-        - file_path: scripts/bitrise/detox/iosInternalE2e.sh
+    
