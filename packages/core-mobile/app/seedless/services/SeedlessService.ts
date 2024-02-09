@@ -7,8 +7,11 @@ import SeedlessSessionManager from './SeedlessSessionManager'
  * https://github.com/cubist-labs/CubeSigner-TypeScript-SDK
  */
 class SeedlessService {
+  // According to Cubist, CubeSigner creates a temporary session with the scopes manage:mfa:vote:fido and manage:mfa:vote:totp,
+  // enabling users to approve or deny login attempts using MFA. Therefore, specifying only sign:* allows users
+  // to proceed with signing up or signing in through MFA verification.
   sessionManager = new SeedlessSessionManager({
-    scopes: ['manage:mfa', 'sign:*'],
+    scopes: ['sign:*'],
     sessionStorage: new SeedlessSessionStorage()
   })
 
