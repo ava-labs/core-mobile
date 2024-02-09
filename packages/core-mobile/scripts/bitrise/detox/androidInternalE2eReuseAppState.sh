@@ -9,7 +9,7 @@ set -x
 yarn start &
 
 npm rebuild detox
-QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test --configuration android.internal.release.smoke.ci --headless --retries 1; test_result=$?
+QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test --configuration android.internal.release.smoke.reuse_state.ci --reuse --headless --retries 1; test_result=$?
 
 if ((test_result != 0)); then
   exit 1
