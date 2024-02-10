@@ -179,6 +179,22 @@ module.exports = {
         }
       }
     },
+    'ios.internal.smoke.ci': {
+      device: 'simulator',
+      app: 'ios.internal.release.ci',
+      artifacts: {
+        rootDir: './e2e/artifacts/ios',
+        plugins: {
+          instruments: 'all'
+        }
+      },
+      testRunner: {
+        $0: 'jest',
+        args: {
+          config: 'e2e/smoke_test_config.json'
+        }
+      }
+    },
     'ios.internal.release.smoke.ci.reuse_state': {
       device: 'simulator',
       app: 'ios.internal.release.ci',
