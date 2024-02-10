@@ -181,7 +181,7 @@ module.exports = {
     },
     'ios.internal.smoke.ci': {
       device: 'simulator',
-      app: 'ios.internal.release.ci',
+      app: 'ios.internal.release.smoke.ci',
       artifacts: {
         rootDir: './e2e/artifacts/ios',
         plugins: {
