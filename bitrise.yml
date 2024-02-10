@@ -721,5 +721,5 @@ workflows:
     - script-runner@0:
         title: Detox
         inputs:
-        - file_path: scripts/bitrise/detox/iosInternalE2e.sh
+        - file_path: scripts/bitrise/detox/iosInternalE2eReuseAppState.sh
     
