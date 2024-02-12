@@ -1,14 +1,9 @@
 import Big from 'big.js'
-import {
-  bigToBN,
-  bigToLocaleString,
-  bnToBig,
-  stringToBN
-} from '@avalabs/utils-sdk'
+import { bigToBN, bnToBig, stringToBN } from '@avalabs/utils-sdk'
 import { TokenType, TokenWithBalance } from 'store/balance'
 import { APIError } from 'paraswap'
 import BN from 'bn.js'
-import { bigintToBig } from './bigNumbers/bigintToBig'
+import { TokenBaseUnit } from 'types/TokenBaseUnit'
 
 export const truncateAddress = (address: string, size = 6): string => {
   const firstChunk = address.substring(0, size)
@@ -49,7 +44,7 @@ export function formatTokenAmount(amount: Big, denomination = 2): string {
  * @param digits - default: 2 - fraction digits to be used by large and normal amounts.
  */
 // adapted from: https://stackoverflow.com/a/9462382
-export function formatLargeNumber(num: number | string, digits = 2) {
+export function formatLargeNumber(num: number | string, digits = 2): string {
   const number = typeof num === 'number' ? num : Number(num)
 
   const lookup = [
@@ -77,7 +72,7 @@ export function formatLargeNumber(num: number | string, digits = 2) {
  * @param currencyNum
  * @param digits - default: 2 - fraction digits to be used by large and normal amounts.
  */
-export function formatLargeCurrency(currencyNum: string, digits = 2) {
+export function formatLargeCurrency(currencyNum: string, digits = 2): string {
   const match = currencyNum.match(/^(-)?([^0-9]+)?([0-9,.]+) ?([A-Z]+)?$/)
   if (!match) return currencyNum
   const [_, negative, symbol, amount, code] = match
@@ -91,13 +86,13 @@ export function formatLargeCurrency(currencyNum: string, digits = 2) {
   return `${negative || ''}${symbol || ''}${newAmount}${codeString}`
 }
 
-export const formatTimer = (time: number) =>
-  `${String(Math.floor(time / 60)).padStart(2, '0')}:${String(
-    time % 60
+export const formatTimer = (seconds: number): string =>
+  `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(
+    seconds % 60
   ).padStart(2, '0')}`
 
 // from https://stackoverflow.com/a/25105589
-export function arrayHash(array: string[]) {
+export function arrayHash(array: string[]): string {
   let i,
     sum = 0
   for (i = 0; i < array.length; i++) {
@@ -107,7 +102,7 @@ export function arrayHash(array: string[]) {
   return ('' + sum).slice(0, 16)
 }
 
-function charsum(s: string) {
+function charsum(s: string): number {
   let i,
     sum = 0
   for (i = 0; i < s.length; i++) {
@@ -116,7 +111,7 @@ function charsum(s: string) {
   return sum
 }
 
-export function titleToInitials(title: string) {
+export function titleToInitials(title: string): string {
   return (
     title?.split(' ').reduce((previousValue, currentValue) => {
       return currentValue.length > 0
@@ -126,37 +121,39 @@ export function titleToInitials(title: string) {
   )
 }
 
-export type GasAndFees = {
-  gasPrice: bigint
+export type GasAndFees<T extends TokenBaseUnit<T>> = {
+  maxTotalFee: T
+  maxTotalFeeInCurrency: string
+} & Eip1559Fees<T>
+
+export type Eip1559Fees<T extends TokenBaseUnit<T>> = {
+  maxFeePerGas: T
+  maxPriorityFeePerGas: T
   gasLimit: number
-  fee: string
-  bnFee: bigint
-  feeInCurrency: number
 }
 
-export function calculateGasAndFees({
-  gasPrice,
+export function calculateGasAndFees<T extends TokenBaseUnit<T>>({
+  maxFeePerGas,
+  maxPriorityFeePerGas,
   tokenPrice,
-  tokenDecimals = 18,
   gasLimit
-}: {
-  gasPrice: bigint
+}: Eip1559Fees<T> & {
   tokenPrice: number
-  tokenDecimals?: number
-  gasLimit?: number | string
-}): GasAndFees {
-  const bnFee = gasLimit ? gasPrice * BigInt(gasLimit) : gasPrice
-  const fee = bigToLocaleString(bigintToBig(bnFee, tokenDecimals), 8)
+}): GasAndFees<T> {
+  const maxTotalFee = maxFeePerGas.mul(gasLimit)
   return {
-    gasPrice: gasPrice,
-    gasLimit: Number(gasLimit) || 0,
-    fee,
-    bnFee,
-    feeInCurrency: parseFloat((parseFloat(fee) * tokenPrice).toFixed(4))
+    maxFeePerGas,
+    maxPriorityFeePerGas,
+    gasLimit,
+    maxTotalFee,
+    maxTotalFeeInCurrency: maxTotalFee.mul(tokenPrice).toFixed(2)
   }
 }
 
-export const getMaxValue = (token?: TokenWithBalance, fee?: string) => {
+export const getMaxAvailableBalance = (
+  token?: TokenWithBalance,
+  fee?: string
+): BN | undefined => {
   if (!token || !fee) {
     return
   }

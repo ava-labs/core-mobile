@@ -63,7 +63,7 @@ export const SelectRecoveryMethods = (): JSX.Element => {
     showOwl()
 
     try {
-      await SeedlessService.approveFido(oidcToken, mfaId, false)
+      await SeedlessService.sessionManager.approveFido(oidcToken, mfaId, false)
 
       AnalyticsService.capture('SeedlessMfaVerified', { type: 'Fido' })
 

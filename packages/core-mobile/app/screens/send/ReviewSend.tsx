@@ -14,7 +14,6 @@ import AppNavigation from 'navigation/AppNavigation'
 import { SendTokensScreenProps } from 'navigation/types'
 import { formatLargeNumber } from 'utils/Utils'
 import SendRow from 'components/SendRow'
-import { bnToLocaleString } from '@avalabs/utils-sdk'
 import PoppableGasAndLimit from 'components/PoppableGasAndLimit'
 import { ActivityIndicator } from 'components/ActivityIndicator'
 import {
@@ -132,11 +131,12 @@ export default function ReviewSend({
             content={
               <PoppableGasAndLimit
                 gasLimit={fees.gasLimit ?? 0}
-                gasPrice={bnToLocaleString(fees.customGasPrice)}
+                maxFeePerGas={fees.maxFeePerGas.toFeeUnit()}
+                maxPriorityFeePerGas={fees.maxPriorityFeePerGas.toFeeUnit()}
               />
             }
             position={'right'}
-            style={{ width: 200 }}>
+            style={{ width: 250 }}>
             Network Fee
           </Tooltip>
           <AvaText.Heading2 testID="review_and_send__network_fee" currency>

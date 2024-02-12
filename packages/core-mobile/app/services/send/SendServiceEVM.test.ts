@@ -35,7 +35,8 @@ describe('validateStateAndCalculateFees', () => {
     const sendState = {
       token: token,
       address: mockActiveAccount.address,
-      gasPrice: 1n,
+      maxFeePerGas: 1n,
+      maxPriorityFeePerGas: 1n,
       gasLimit: 1
     } as SendState
 
@@ -64,7 +65,7 @@ describe('validateStateAndCalculateFees', () => {
     it('should fail for missing network fee', async () => {
       const newState = await serviceToTest.validateStateAndCalculateFees({
         ...params,
-        sendState: { ...sendState, gasPrice: 0n }
+        sendState: { ...sendState, maxFeePerGas: 0n }
       })
 
       expect(newState.canSubmit).toBe(false)
@@ -95,7 +96,8 @@ describe('validateStateAndCalculateFees', () => {
     const sendState = {
       token: token,
       address: mockActiveAccount.address,
-      gasPrice: 1n,
+      maxFeePerGas: 1n,
+      maxPriorityFeePerGas: 1n,
       gasLimit: 1,
       amount: new BN(10)
     } as SendState
@@ -125,7 +127,7 @@ describe('validateStateAndCalculateFees', () => {
     it('should fail for missing network fee', async () => {
       const newState = await serviceToTest.validateStateAndCalculateFees({
         ...params,
-        sendState: { ...params.sendState, gasPrice: 0n }
+        sendState: { ...params.sendState, maxFeePerGas: 0n }
       })
 
       expect(newState.canSubmit).toBe(false)

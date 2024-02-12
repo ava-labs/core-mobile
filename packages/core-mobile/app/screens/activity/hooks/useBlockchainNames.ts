@@ -11,20 +11,34 @@ import { isAvalancheNetwork } from 'services/network/utils/isAvalancheNetwork'
 import { Transaction } from 'store/transaction'
 import { useSelector } from 'react-redux'
 import { selectActiveNetwork } from 'store/network'
+import { BridgeTransfer } from '@avalabs/bridge-unified'
 
 /**
  * Get the source and target blockchain names to display a Bridge transaction.
  * @param tx Assumed to be a Bridge transaction for the active network
  */
-export function useBlockchainNames(tx: Transaction | BridgeTransaction) {
+export function useBlockchainNames(
+  tx: Transaction | BridgeTransaction | BridgeTransfer
+): {
+  sourceBlockchain: string
+  targetBlockchain: string
+} {
   const pending = isPendingBridgeTransaction(tx)
   const { avalancheAssets } = useBridgeSDK()
   const activeNetwork = useSelector(selectActiveNetwork)
 
   if (pending) {
     return {
-      sourceBlockchain: titleCase(tx.sourceChain),
-      targetBlockchain: titleCase(tx.targetChain)
+      sourceBlockchain: titleCase(
+        typeof tx.sourceChain === 'object'
+          ? tx.sourceChain.chainName
+          : tx.sourceChain
+      ),
+      targetBlockchain: titleCase(
+        typeof tx.targetChain === 'object'
+          ? tx.targetChain.chainName
+          : tx.targetChain
+      )
     }
   }
 
@@ -43,7 +57,7 @@ export function useBlockchainNames(tx: Transaction | BridgeTransaction) {
   }
 }
 
-function titleCase(name: string) {
+function titleCase(name: string): string {
   if (name.length === 0) return ''
   return name[0]?.toUpperCase() + name.slice(1)
 }

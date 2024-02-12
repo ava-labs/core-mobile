@@ -1,5 +1,6 @@
 import { BlockCypherProvider } from '@avalabs/wallets-sdk'
 import NetworkService from 'services/network/NetworkService'
+import { Transaction } from 'store/transaction'
 import { GetActivitiesForAddressParams, NetworkActivityService } from './types'
 import { convertTransaction } from './utils/btcTransactionConverter'
 
@@ -8,7 +9,9 @@ export class BtcActivityService implements NetworkActivityService {
     network,
     address,
     criticalConfig
-  }: GetActivitiesForAddressParams) {
+  }: GetActivitiesForAddressParams): Promise<{
+    transactions: Transaction[]
+  }> {
     const provider = NetworkService.getProviderForNetwork(
       network
     ) as BlockCypherProvider

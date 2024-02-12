@@ -14,6 +14,8 @@ export type AnalyticsEvents = {
   AnalyticsDisabled: undefined
   ApplicationLaunched: { FontScale: number }
   ApplicationOpened: undefined
+
+  // BRIDGE
   Bridge_TokenSelected: undefined
   BridgeTokenSelectError: { errorMessage: string }
   BridgeTransferRequestError: {
@@ -29,6 +31,14 @@ export type AnalyticsEvents = {
   BridgeTransferStarted: { sourceBlockchain: string; targetBlockchain: string }
   BridgeTransactionHide: undefined
   BridgeTransactionHideCancel: undefined
+
+  // UNIFIED BRIDGE
+  UnifedBridgeTransferStarted: {
+    bridgeType: 'CCTP'
+    activeChainId: number
+    targetChainId: number
+  }
+
   ChangePasswordClicked: undefined
   ChangePasswordSucceeded: undefined
   ChangePasswordFailed: undefined
@@ -139,7 +149,8 @@ export type AnalyticsEvents = {
   SwapReviewOrder: {
     destinationInputField: string
     slippageTolerance: number
-    customGasPrice: string
+    customMaxFeePerGas: string
+    customMaxPriorityFeePerGas: string
   }
   SwapReviewTimerRestarted: undefined
   Swap_TokenSelected: undefined
@@ -182,7 +193,7 @@ export type AnalyticsEvents = {
   TxSubmittedToDapp: undefined
 
   // CP-7989 - Address and Tx Hash Analytics Collection
-  CollectAccountAddresses: {
+  AccountAddressesUpdated: {
     addresses: {
       address: string
       addressBtc: string
@@ -191,5 +202,13 @@ export type AnalyticsEvents = {
       addressCoreEth: string
     }[]
   }
-  CollectTransactionHash: { txHash: string; chainName: string; chainId: number }
+  SendTransactionSucceeded: { txHash: string; chainId: number }
+  SwapTransactionSucceeded: { txHash: string; chainId: number }
+  StakeTransactionStarted: { txHash: string; chainId: number }
+  BridgeTransactionStarted: {
+    sourceTxHash: string
+    chainId: number
+    fromAddress?: string
+    toAddress?: string
+  }
 }

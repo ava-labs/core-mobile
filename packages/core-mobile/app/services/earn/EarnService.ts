@@ -40,6 +40,7 @@ import { getInfoApi } from 'utils/network/info'
 import { GetPeersResponse } from '@avalabs/avalanchejs-v2/dist/info/model'
 import { isOnGoing } from 'utils/earn/status'
 import { glacierApi } from 'utils/network/glacier'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import {
   getTransformedTransactions,
   maxGetAtomicUTXOsRetries,
@@ -141,6 +142,7 @@ class EarnService {
    * @param activeAccount
    * @param isDevMode
    */
+  // eslint-disable-next-line max-params
   async claimRewards(
     pChainBalance: Avax,
     requiredAmount: Avax,
@@ -167,6 +169,7 @@ class EarnService {
    * @param delegationFee in percent
    * @param isDeveloperMode
    */
+  // eslint-disable-next-line max-params
   calcReward(
     amount: Avax,
     duration: Seconds,
@@ -233,6 +236,11 @@ class EarnService {
     const signedTx = UnsignedTx.fromJSON(signedTxJson).getSignedTx()
 
     const txID = await NetworkService.sendTransaction(signedTx, avaxXPNetwork)
+
+    AnalyticsService.captureWithEncryption('StakeTransactionStarted', {
+      txHash: txID,
+      chainId: avaxXPNetwork.chainId
+    })
     Logger.trace('txID', txID)
 
     const avaxProvider = NetworkService.getProviderForNetwork(

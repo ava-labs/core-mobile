@@ -37,7 +37,8 @@ const SwapReview = ({ onCancel, onBackToParent }: Props): JSX.Element => {
     toToken,
     optimalRate,
     gasLimit,
-    gasPrice,
+    maxFeePerGas,
+    maxPriorityFeePerGas,
     slippage,
     refresh,
     swap,
@@ -72,7 +73,8 @@ const SwapReview = ({ onCancel, onBackToParent }: Props): JSX.Element => {
       toToken &&
       optimalRate &&
       gasLimit &&
-      gasPrice &&
+      maxFeePerGas &&
+      maxPriorityFeePerGas &&
       slippage
     ) {
       swap({
@@ -82,7 +84,8 @@ const SwapReview = ({ onCancel, onBackToParent }: Props): JSX.Element => {
         isDestTokenNative: toToken.type === TokenType.NATIVE,
         priceRoute: optimalRate,
         swapGasLimit: gasLimit,
-        swapGasPrice: gasPrice,
+        swapMaxFeePerGas: maxFeePerGas,
+        swapMaxPriorityFeePerGas: maxPriorityFeePerGas,
         swapSlippage: slippage
       })
     }
@@ -216,7 +219,8 @@ const SwapReview = ({ onCancel, onBackToParent }: Props): JSX.Element => {
         <Separator style={{ marginHorizontal: 16, marginVertical: 24 }} />
         <SwapTransactionDetail
           review
-          gasPrice={gasPrice}
+          maxFeePerGas={maxFeePerGas}
+          maxPriorityFeePerGas={maxPriorityFeePerGas}
           gasLimit={gasLimit}
           rate={optimalRate ? calculateRate(optimalRate) : 0}
           slippage={slippage}

@@ -49,7 +49,6 @@ export default function StakingAmount(): JSX.Element {
     ? ChainId.AVALANCHE_TESTNET_ID
     : ChainId.AVALANCHE_MAINNET_ID
   const avaxNetwork = useSelector(selectNetwork(chainId))
-  const nativeTokenDecimals = 9
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { nativeTokenPrice } = useNativeTokenPriceForNetwork(
     avaxNetwork,
@@ -113,7 +112,6 @@ export default function StakingAmount(): JSX.Element {
       <EarnInputAmount
         handleAmountChange={handleAmountChange}
         inputAmount={inputAmount}
-        decimals={nativeTokenDecimals}
       />
       <Row style={{ justifyContent: 'center' }}>
         <AvaText.Caption currency textStyle={{ color: theme.white }}>

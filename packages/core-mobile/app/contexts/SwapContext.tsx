@@ -17,7 +17,7 @@ import TransactionToast, {
   TransactionToastType
 } from 'components/toast/TransactionToast'
 import { resolve } from '@avalabs/utils-sdk'
-import { Amount } from 'screens/swap/SwapView'
+import { Amount, NetworkTokenUnit } from 'types'
 import { InteractionManager } from 'react-native'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { humanizeSwapErrors } from 'localization/errors'
@@ -29,6 +29,7 @@ import { performSwap } from '@avalabs/paraswap-sdk'
 import { selectActiveNetwork } from 'store/network'
 import { selectActiveAccount } from 'store/account'
 import { useNetworkFee } from 'hooks/useNetworkFee'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 
 export type SwapStatus = 'Idle' | 'Preparing' | 'Swapping' | 'Success' | 'Fail'
 
@@ -39,7 +40,8 @@ export type SwapParams = {
   isDestTokenNative: boolean
   priceRoute: OptimalRate
   swapGasLimit: number
-  swapGasPrice: bigint
+  swapMaxFeePerGas: NetworkTokenUnit
+  swapMaxPriorityFeePerGas: NetworkTokenUnit
   swapSlippage: number
 }
 
@@ -51,8 +53,10 @@ export interface SwapContextState {
   optimalRate?: OptimalRate
   refresh: () => void
   swap(params: SwapParams): void
-  gasPrice: bigint
-  setGasPrice: Dispatch<bigint>
+  maxFeePerGas: NetworkTokenUnit
+  setMaxFeePerGas: Dispatch<NetworkTokenUnit>
+  maxPriorityFeePerGas: NetworkTokenUnit
+  setMaxPriorityFeePerGas: Dispatch<NetworkTokenUnit>
   gasLimit: number
   setCustomGasLimit: Dispatch<number>
   slippage: number
@@ -80,7 +84,11 @@ export const SwapContext = createContext<SwapContextState>(
   {} as SwapContextState
 )
 
-export const SwapContextProvider = ({ children }: { children: ReactNode }) => {
+export const SwapContextProvider = ({
+  children
+}: {
+  children: ReactNode
+}): JSX.Element => {
   const activeAccount = useSelector(selectActiveAccount)
   const activeNetwork = useSelector(selectActiveNetwork)
   const avalancheProvider = useAvalancheProvider()
@@ -94,11 +102,15 @@ export const SwapContextProvider = ({ children }: { children: ReactNode }) => {
     undefined
   )
   const trueGasLimit = customGasLimit || gasLimit
-  const [gasPrice, setGasPrice] = useState<bigint>(0n)
+  const [maxFeePerGas, setMaxFeePerGas] = useState<NetworkTokenUnit>(
+    NetworkTokenUnit.fromNetwork(activeNetwork)
+  )
+  const [maxPriorityFeePerGas, setMaxPriorityFeePerGas] =
+    useState<NetworkTokenUnit>(NetworkTokenUnit.fromNetwork(activeNetwork))
   const [slippage, setSlippage] = useState<number>(1)
   const [destination, setDestination] = useState<SwapSide>(SwapSide.SELL)
   const [swapStatus, setSwapStatus] = useState<SwapStatus>('Idle')
-  const [amount, setAmount] = useState<Amount | undefined>(undefined) //the amount that's gonna be passed to paraswap
+  const [amount, setAmount] = useState<Amount | undefined>() //the amount that's gonna be passed to paraswap
   const [isFetchingOptimalRate, setIsFetchingOptimalRate] = useState(false)
 
   const getOptimalRateForAmount = useCallback(
@@ -167,9 +179,10 @@ export const SwapContextProvider = ({ children }: { children: ReactNode }) => {
     isDestTokenNative,
     priceRoute,
     swapGasLimit,
-    swapGasPrice,
-    swapSlippage
-  }: SwapParams) {
+    swapSlippage,
+    swapMaxFeePerGas,
+    swapMaxPriorityFeePerGas
+  }: SwapParams): void {
     setSwapStatus('Preparing')
     setSwapStatus('Swapping')
 
@@ -185,10 +198,7 @@ export const SwapContextProvider = ({ children }: { children: ReactNode }) => {
 
     InteractionManager.runAfterInteractions(async () => {
       const sentryTrx = SentryWrapper.startTransaction('swap')
-      if (!avalancheProvider) {
-        return
-      }
-      if (!activeAccount) {
+      if (!avalancheProvider || !activeAccount) {
         return
       }
 
@@ -200,7 +210,8 @@ export const SwapContextProvider = ({ children }: { children: ReactNode }) => {
           isDestTokenNative,
           priceRoute,
           gasLimit: swapGasLimit,
-          gasPrice: swapGasPrice,
+          maxFeePerGas: swapMaxFeePerGas.toSubUnit(),
+          maxPriorityFeePerGas: swapMaxPriorityFeePerGas.toSubUnit(),
           slippage: swapSlippage,
           activeNetwork,
           provider: avalancheProvider,
@@ -209,7 +220,7 @@ export const SwapContextProvider = ({ children }: { children: ReactNode }) => {
           transactionSign: tx =>
             WalletService.sign(tx, activeAccount.index, activeNetwork),
           userAddress: activeAccount.address,
-          networkGasPrice: networkFee.low
+          networkGasPrice: networkFee?.low.maxFeePerGas.toSubUnit() ?? 0n
         })
       )
         .then(([result, err]) => {
@@ -238,6 +249,11 @@ export const SwapContextProvider = ({ children }: { children: ReactNode }) => {
               ),
               duration: 'short'
             })
+
+            AnalyticsService.captureWithEncryption('SwapTransactionSucceeded', {
+              txHash: result?.swapTxHash ?? '',
+              chainId: activeNetwork.chainId
+            })
           }
         })
         .catch(Logger.error)
@@ -254,8 +270,10 @@ export const SwapContextProvider = ({ children }: { children: ReactNode }) => {
     setToToken,
     optimalRate,
     refresh,
-    gasPrice,
-    setGasPrice,
+    maxFeePerGas,
+    setMaxFeePerGas,
+    maxPriorityFeePerGas,
+    setMaxPriorityFeePerGas,
     gasLimit: trueGasLimit,
     setCustomGasLimit,
     slippage,
@@ -273,6 +291,6 @@ export const SwapContextProvider = ({ children }: { children: ReactNode }) => {
   return <SwapContext.Provider value={state}>{children}</SwapContext.Provider>
 }
 
-export function useSwapContext() {
+export function useSwapContext(): SwapContextState {
   return useContext(SwapContext)
 }

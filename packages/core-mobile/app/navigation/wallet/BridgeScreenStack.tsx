@@ -22,7 +22,7 @@ export type BridgeStackParamList = {
   [AppNavigation.Bridge.Bridge]: undefined
   [AppNavigation.Bridge.BridgeTransactionStatus]: BridgeTransactionStatusParams
   [AppNavigation.Modal.BridgeSelectToken]: {
-    onTokenSelected: (token: string) => void
+    onTokenSelected: (token: AssetBalance) => void
     bridgeTokenList: AssetBalance[] | undefined
   }
   [AppNavigation.Bridge.HideWarning]: undefined

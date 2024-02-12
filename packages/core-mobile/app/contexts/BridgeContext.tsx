@@ -18,8 +18,6 @@ import {
 } from '@avalabs/bridge-sdk'
 import Big from 'big.js'
 import { useTransferAsset } from 'screens/bridge/hooks/useTransferAsset'
-import { PartialBridgeTransaction } from 'screens/bridge/handlers/createBridgeTransaction'
-import { BridgeState } from 'store/bridge/types'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import {
@@ -42,6 +40,17 @@ import TransactionToast, {
   TransactionToastType
 } from 'components/toast/TransactionToast'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import { NetworkTokenUnit } from 'types'
+
+type PartialBridgeTransaction = Pick<
+  BridgeTransaction,
+  | 'sourceChain'
+  | 'sourceTxHash'
+  | 'sourceStartedAt'
+  | 'targetChain'
+  | 'amount'
+  | 'symbol'
+>
 
 export enum TransferEventType {
   WRAP_STATUS = 'wrap_status',
@@ -54,13 +63,12 @@ interface BridgeContext {
     tx: PartialBridgeTransaction,
     network: Network
   ): Promise<void | { error: string }>
-
-  bridgeTransactions: BridgeState['bridgeTransactions']
   transferAsset: (
     amount: Big,
     asset: Asset,
     onStatusChange: (status: WrapStatus) => void,
-    onTxHashChange: (txHash: string) => void
+    onTxHashChange: (txHash: string) => void,
+    maxFeePerGas?: NetworkTokenUnit
   ) => Promise<TransactionResponse | undefined>
 }
 
@@ -191,7 +199,9 @@ function LocalBridgeProvider({
       amount: Big,
       asset: Asset,
       onStatusChange: (status: WrapStatus) => void,
-      onTxHashChange: (txHash: string) => void
+      onTxHashChange: (txHash: string) => void,
+      maxFeePerGas?: NetworkTokenUnit
+      // eslint-disable-next-line max-params
     ) => {
       events.on(TransferEventType.WRAP_STATUS, status => {
         onStatusChange(status)
@@ -200,7 +210,7 @@ function LocalBridgeProvider({
         onTxHashChange(txHash)
       })
 
-      return transferHandler(amount, asset)
+      return transferHandler(amount, asset, maxFeePerGas)
     },
     [events, transferHandler]
   )
@@ -291,7 +301,6 @@ function LocalBridgeProvider({
   return (
     <bridgeContext.Provider
       value={{
-        bridgeTransactions,
         createBridgeTransaction,
         transferAsset
       }}>

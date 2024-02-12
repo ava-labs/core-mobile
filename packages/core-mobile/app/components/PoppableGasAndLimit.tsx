@@ -7,12 +7,14 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 
 type Props = {
   gasLimit: number
-  gasPrice: string
+  maxFeePerGas: string
+  maxPriorityFeePerGas: string
 }
 
 export default function PoppableGasAndLimit({
   gasLimit,
-  gasPrice
+  maxFeePerGas,
+  maxPriorityFeePerGas
 }: Props): JSX.Element {
   const { theme } = useApplicationContext()
 
@@ -37,10 +39,22 @@ export default function PoppableGasAndLimit({
           alignItems: 'center'
         }}>
         <AvaText.Body3 textStyle={{ color: theme.neutral900 }}>
-          Gas Price
+          Max Fee Per Gas
         </AvaText.Body3>
         <AvaText.Body3 textStyle={{ color: theme.neutral900 }}>
-          {gasPrice}
+          {maxFeePerGas}
+        </AvaText.Body3>
+      </Row>
+      <Row
+        style={{
+          justifyContent: 'space-between',
+          alignItems: 'center'
+        }}>
+        <AvaText.Body3 textStyle={{ color: theme.neutral900 }}>
+          Max Priority Fee Per Gas
+        </AvaText.Body3>
+        <AvaText.Body3 textStyle={{ color: theme.neutral900 }}>
+          {maxPriorityFeePerGas}
         </AvaText.Body3>
       </Row>
     </View>

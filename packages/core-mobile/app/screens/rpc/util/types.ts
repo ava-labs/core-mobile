@@ -5,9 +5,11 @@ import { FindToken } from 'contracts/contractParsers/utils/useFindToken'
 import { PeerMeta } from 'services/walletconnectv2/types'
 import { TransactionParams } from 'store/walletConnectV2/handlers/eth_sendTransaction/utils'
 import { TransactionDescription } from 'ethers'
+import { NetworkTokenUnit } from 'types'
 
 export interface DisplayValueParserProps {
-  gasPrice: bigint
+  maxFeePerGas: NetworkTokenUnit
+  maxPriorityFeePerGas: NetworkTokenUnit
   token: NetworkTokenWithBalance
   tokenPrice: number
   site?: PeerMeta | null | undefined
@@ -16,7 +18,8 @@ export interface DisplayValueParserProps {
 export interface TransactionDisplayValues {
   fromAddress?: string
   toAddress?: string
-  gasPrice?: bigint
+  maxFeePerGas?: NetworkTokenUnit
+  maxPriorityFeePerGas?: NetworkTokenUnit
   contractType?: ContractCall
   gasLimit?: number
   fee?: string

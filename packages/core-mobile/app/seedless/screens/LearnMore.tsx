@@ -38,7 +38,7 @@ export const LearnMore = (): JSX.Element => {
         setCode(totpCode)
         return
       }
-      const result = await SeedlessService.setTotp()
+      const result = await SeedlessService.sessionManager.setTotp()
       if (result.success && result.value) {
         const newCode = new URL(result.value).searchParams.get('secret')
         newCode && setCode(newCode)

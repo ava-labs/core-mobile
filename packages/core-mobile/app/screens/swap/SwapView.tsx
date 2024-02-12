@@ -11,40 +11,39 @@ import AppNavigation from 'navigation/AppNavigation'
 import { SwapScreenProps } from 'navigation/types'
 import {
   selectAvaxPrice,
-  selectTokensWithBalance,
   selectTokensWithZeroBalance,
   TokenType,
   TokenWithBalance
 } from 'store/balance'
 import { useSelector } from 'react-redux'
 import { SwapSide } from 'paraswap-core'
-import BN from 'bn.js'
 import { FeePreset } from 'components/NetworkFeeSelector'
 import UniversalTokenSelector from 'components/UniversalTokenSelector'
 import SwapTransactionDetail from 'screens/swap/components/SwapTransactionDetails'
 import { calculateRate } from 'swap/utils'
-import { calculateGasAndFees, getMaxValue, truncateBN } from 'utils/Utils'
-import { bnToLocaleString } from '@avalabs/utils-sdk'
+import {
+  Eip1559Fees,
+  calculateGasAndFees,
+  getMaxAvailableBalance,
+  truncateBN
+} from 'utils/Utils'
 import { selectActiveNetwork } from 'store/network'
 import { useNetworkFee } from 'hooks/useNetworkFee'
 import Logger from 'utils/Logger'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import { Amount, NetworkTokenUnit } from 'types'
+import BN from 'bn.js'
+import { bnToLocaleString } from '@avalabs/utils-sdk'
 
 type NavigationProp = SwapScreenProps<
   typeof AppNavigation.Swap.Swap
 >['navigation']
-
-export type Amount = {
-  bn: BN
-  amount: string
-}
 
 export default function SwapView(): JSX.Element {
   const { theme } = useApplicationContext()
   const { navigate } = useNavigation<NavigationProp>()
   const activeNetwork = useSelector(selectActiveNetwork)
   const { data: networkFee } = useNetworkFee()
-  const tokensWithBalance = useSelector(selectTokensWithBalance)
   const tokensWithZeroBalance = useSelector(selectTokensWithZeroBalance)
   const avaxPrice = useSelector(selectAvaxPrice)
   const {
@@ -53,11 +52,13 @@ export default function SwapView(): JSX.Element {
     toToken,
     setToToken,
     gasLimit,
-    gasPrice,
+    maxFeePerGas,
+    maxPriorityFeePerGas,
     destination,
     optimalRate,
     setCustomGasLimit,
-    setGasPrice,
+    setMaxFeePerGas,
+    setMaxPriorityFeePerGas,
     setDestination,
     slippage,
     setSlippage,
@@ -73,7 +74,7 @@ export default function SwapView(): JSX.Element {
 
   const [localError, setLocalError] = useState<string>('')
   const [selectedGasFee, setSelectedGasFee] = useState<FeePreset>(
-    FeePreset.Instant
+    FeePreset.Normal
   )
 
   const canSwap: boolean =
@@ -92,7 +93,8 @@ export default function SwapView(): JSX.Element {
     avaxPrice,
     fromToken,
     gasLimit,
-    gasPrice
+    maxFeePerGas,
+    maxPriorityFeePerGas
   ])
 
   function validateInputsFx(): void {
@@ -126,15 +128,20 @@ export default function SwapView(): JSX.Element {
   }
 
   function calculateGasAndMaxFx(): void {
-    if (gasPrice && gasLimit && fromToken?.type === TokenType.NATIVE) {
+    if (!fromToken) return
+
+    if (maxFeePerGas && gasLimit && fromToken.type === TokenType.NATIVE) {
       const newFees = calculateGasAndFees({
-        gasPrice,
+        maxFeePerGas,
         gasLimit,
-        tokenPrice: avaxPrice ?? 0,
-        tokenDecimals: activeNetwork?.networkToken?.decimals
+        maxPriorityFeePerGas,
+        tokenPrice: avaxPrice ?? 0
       })
 
-      const max = getMaxValue(fromToken, newFees.fee)
+      const max = getMaxAvailableBalance(
+        fromToken,
+        newFees.maxTotalFee.toString()
+      )
       setMaxFromValue(max)
       return
     }
@@ -162,36 +169,26 @@ export default function SwapView(): JSX.Element {
     setMaxFromValue(undefined)
   }
 
-  const onGasChange = useCallback(
-    (price: bigint, feeType: FeePreset) => {
-      setGasPrice(price)
+  const handleFeesChange = useCallback(
+    (fees: Eip1559Fees<NetworkTokenUnit>, feeType: FeePreset) => {
+      setMaxFeePerGas(fees.maxFeePerGas)
+      setMaxPriorityFeePerGas(fees.maxPriorityFeePerGas)
+      setCustomGasLimit(fees.gasLimit)
       setSelectedGasFee(feeType)
     },
-    [setGasPrice]
+    [setCustomGasLimit, setMaxFeePerGas, setMaxPriorityFeePerGas]
   )
-
-  const onGasLimitChange = useCallback(
-    (customGasLimit: number) => {
-      setCustomGasLimit(customGasLimit)
-    },
-    [setCustomGasLimit]
-  )
-
-  const maxGasPrice =
-    fromToken?.type === TokenType.NATIVE && fromTokenValue
-      ? fromToken.balance.sub(fromTokenValue.bn).toString()
-      : tokensWithBalance
-          .find(t => t.type === TokenType.NATIVE)
-          ?.balance.toString() ?? '0'
 
   const reviewOrder = (): void => {
     if (optimalRate) {
-      setGasPrice(gasPrice)
+      setMaxFeePerGas(maxFeePerGas)
+      setMaxPriorityFeePerGas(maxPriorityFeePerGas)
       navigate(AppNavigation.Swap.Review)
       AnalyticsService.capture('SwapReviewOrder', {
         destinationInputField: destination,
         slippageTolerance: slippage,
-        customGasPrice: gasPrice?.toString()
+        customMaxFeePerGas: maxFeePerGas.toString(),
+        customMaxPriorityFeePerGas: maxPriorityFeePerGas.toString()
       })
     }
   }
@@ -223,12 +220,9 @@ export default function SwapView(): JSX.Element {
           setLocalError(error)
         } else if (optRate) {
           const limit = customGasLimit || parseInt(optRate.gasCost)
-          const feeBig = gasPrice * BigInt(limit)
-          const feeString = bnToLocaleString(
-            new BN(feeBig.toString()),
-            fromToken?.decimals
-          )
-          let maxBn = getMaxValue(fromToken, feeString)
+          const fee = maxFeePerGas.mul(limit)
+
+          let maxBn = getMaxAvailableBalance(fromToken, fee.toString())
           if (maxBn) {
             // there's high probability that on next call swap fees will change so let's lower
             // max amount just a bit more for safety margin by chopping off some decimals
@@ -247,7 +241,13 @@ export default function SwapView(): JSX.Element {
       .finally(() => {
         setIsCalculatingMax(false)
       })
-  }, [fromToken, getOptimalRateForAmount, setDestination, setAmount, gasPrice])
+  }, [
+    fromToken,
+    getOptimalRateForAmount,
+    maxFeePerGas,
+    setAmount,
+    setDestination
+  ])
 
   return (
     <View style={styles.container}>
@@ -320,14 +320,13 @@ export default function SwapView(): JSX.Element {
             fromTokenSymbol={fromToken?.symbol}
             toTokenSymbol={toToken?.symbol}
             rate={optimalRate ? calculateRate(optimalRate) : 0}
-            onGasChange={onGasChange}
-            onGasLimitChange={onGasLimitChange}
             gasLimit={gasLimit}
-            gasPrice={gasPrice}
-            maxGasPrice={maxGasPrice}
+            maxFeePerGas={maxFeePerGas}
+            maxPriorityFeePerGas={maxPriorityFeePerGas}
             slippage={slippage}
             setSlippage={value => setSlippage(value)}
             selectedGasFee={selectedGasFee}
+            onFeesChange={handleFeesChange}
           />
         </>
       </ScrollView>

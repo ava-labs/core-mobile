@@ -232,15 +232,15 @@ const EditGasLimit = (): JSX.Element => {
   const { goBack } = useNavigation<EditGasLimitScreenProps['navigation']>()
   const { params } = useRoute<EditGasLimitScreenProps['route']>()
 
-  const onSave = (newGasLimit: number): void => params.onSave(newGasLimit)
-
   return (
     <EditGasLimitBottomSheet
-      onClose={goBack}
-      onSave={onSave}
       gasLimit={params.gasLimit}
-      gasPrice={params.gasPrice}
+      maxFeePerGas={params.maxFeePerGas}
+      maxPriorityFeePerGas={params.maxPriorityFeePerGas}
+      onClose={goBack}
+      onSave={params.onSave}
       network={params.network}
+      lowMaxFeePerGas={params.lowMaxFeePerGas}
     />
   )
 }

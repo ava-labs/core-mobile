@@ -1,16 +1,20 @@
+import { useCallback, useMemo } from 'react'
 import {
+  BitcoinConfigAsset,
   Blockchain,
+  EthereumAssets,
+  EthereumConfigAsset,
+  NativeAsset,
   useBridgeSDK,
   useGetTokenSymbolOnNetwork
 } from '@avalabs/bridge-sdk'
-import { useEffect, useMemo, useState } from 'react'
-import { getEthereumBalances } from 'screens/bridge/handlers/getEthereumBalances'
-import { getAvalancheBalances } from 'screens/bridge/handlers/getAvalancheBalances'
 import { AssetBalance } from 'screens/bridge/utils/types'
 import { useSelector } from 'react-redux'
 import { selectTokensWithBalance } from 'store/balance'
-import { useEthereumProvider } from 'hooks/networkProviderHooks'
-import { selectActiveAccount } from 'store/account'
+import { uniqBy } from 'lodash'
+import { isUnifiedBridgeAsset } from '../utils/bridgeUtils'
+import { getEVMAssetBalances } from '../handlers/getEVMAssetBalances'
+import { useUnifiedBridgeAssets } from './useUnifiedBridgeAssets'
 
 /**
  * Get for the current chain.
@@ -23,77 +27,65 @@ export function useAssetBalancesEVM(
   assetsWithBalances: AssetBalance[]
   loading: boolean
 } {
-  const [loading, setLoading] = useState(false)
-  const [ethBalances, setEthBalances] = useState<AssetBalance[]>([])
-  // TODO update this when adding support for /convert
-  const showDeprecated = false
-
   const tokens = useSelector(selectTokensWithBalance)
-  const activeAccount = useSelector(selectActiveAccount)
   const { avalancheAssets, ethereumAssets, currentBlockchain } = useBridgeSDK()
+  const { assets: unifiedBridgeAssets } = useUnifiedBridgeAssets()
 
   const { getTokenSymbolOnNetwork } = useGetTokenSymbolOnNetwork()
-  const ethereumProvider = useEthereumProvider()
 
-  // For balances on the Avalanche side, for all bridge assets on avalanche
-  const avalancheBalances = useMemo(() => {
-    if (
-      chain !== Blockchain.AVALANCHE ||
-      currentBlockchain !== Blockchain.AVALANCHE
-    ) {
-      return []
-    }
-    return getAvalancheBalances(avalancheAssets, tokens).map(token => ({
-      ...token,
-      symbolOnNetwork: getTokenSymbolOnNetwork(
-        token.symbol,
-        Blockchain.AVALANCHE
+  const isAvalanche =
+    chain === Blockchain.AVALANCHE || currentBlockchain === Blockchain.AVALANCHE
+
+  const getFilteredEthereumAssets = useCallback((): EthereumAssets => {
+    const filteredEthereumAssets: EthereumAssets = Object.keys(ethereumAssets)
+      .filter(
+        key =>
+          ethereumAssets[key]?.symbol !== 'BUSD' && // do not allow BUSD.e onboardings
+          ethereumAssets[key]?.symbol !== 'USDC' // do not use Legacy Bridge for USDC onboardings
       )
-    }))
-  }, [
-    chain,
-    currentBlockchain,
-    avalancheAssets,
-    tokens,
-    getTokenSymbolOnNetwork
-  ])
+      .reduce<EthereumAssets>((obj, key) => {
+        const asset = ethereumAssets[key]
+        if (asset) obj[key] = asset
+        return obj
+      }, {})
 
-  // Fetch balances from Ethereum (including native)
-  useEffect(() => {
-    if (
-      chain !== Blockchain.ETHEREUM ||
-      currentBlockchain !== Blockchain.ETHEREUM ||
-      !ethereumProvider
-    ) {
-      return
-    }
-    setLoading(true)
-    ;(async function getBalances() {
-      const balances = await getEthereumBalances(
-        ethereumAssets,
-        activeAccount?.address ?? '',
-        showDeprecated,
-        ethereumProvider
-      )
-      setLoading(false)
-      setEthBalances(balances)
-    })()
-  }, [
-    activeAccount?.address,
-    ethereumAssets,
-    ethereumProvider,
-    chain,
-    showDeprecated,
-    currentBlockchain
-  ])
+    return filteredEthereumAssets
+  }, [ethereumAssets])
 
-  const assetsWithBalances = (
-    chain === Blockchain.AVALANCHE
-      ? avalancheBalances
-      : chain === Blockchain.ETHEREUM
-      ? ethBalances
-      : []
-  ).sort((asset1, asset2) => asset2.balance?.cmp(asset1.balance || 0) || 0)
+  const legacyAssets = useMemo(() => {
+    return Object.values<
+      NativeAsset | EthereumConfigAsset | BitcoinConfigAsset
+    >(isAvalanche ? avalancheAssets : getFilteredEthereumAssets())
+  }, [isAvalanche, avalancheAssets, getFilteredEthereumAssets])
 
-  return { assetsWithBalances, loading }
+  // Deduplicate the assets since both Unified & legacy SDKs could allow bridging the same assets.
+  // unifiedBridgeAssets go first so that they're not the ones removed (we prefer Unified bridge over legacy)
+  const allAssets = useMemo(
+    () =>
+      uniqBy([...unifiedBridgeAssets, ...legacyAssets], asset => {
+        return isUnifiedBridgeAsset(asset)
+          ? asset.symbol
+          : getTokenSymbolOnNetwork(asset.symbol, chain)
+      }),
+    [chain, getTokenSymbolOnNetwork, legacyAssets, unifiedBridgeAssets]
+  )
+
+  const assetsWithBalances = useMemo(
+    () =>
+      getEVMAssetBalances(allAssets, tokens).map(token => {
+        return {
+          ...token,
+          symbolOnNetwork: isUnifiedBridgeAsset(token.asset)
+            ? token.asset.symbol
+            : getTokenSymbolOnNetwork(token.symbol, chain)
+        }
+      }),
+    [allAssets, chain, getTokenSymbolOnNetwork, tokens]
+  )
+
+  const sortedAssetsWithBalances = assetsWithBalances.sort(
+    (asset1, asset2) => asset2.balance?.cmp(asset1.balance || 0) || 0
+  )
+
+  return { assetsWithBalances: sortedAssetsWithBalances, loading: false }
 }

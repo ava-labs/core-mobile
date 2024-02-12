@@ -101,6 +101,9 @@ import AdvancedStackScreen, {
 } from '../wallet/AdvancedStackScreen'
 import { createModals } from './createModals'
 
+// @ts-expect-error lazy import is fine but typescript doesn't like it
+const PolyfillCrypto = React.lazy(() => import('react-native-webview-crypto'))
+
 type Props = {
   onExit: () => void
 }
@@ -417,6 +420,7 @@ function WalletScreenStack(props: Props): JSX.Element {
         />
         {createModals(WalletScreenS)}
       </WalletScreenS.Navigator>
+      <PolyfillCrypto />
     </>
   )
 }

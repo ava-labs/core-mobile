@@ -1,5 +1,4 @@
 import BN from 'bn.js'
-import { CriticalConfig } from '@avalabs/bridge-sdk'
 import { Network } from '@avalabs/chains-sdk'
 import {
   TransactionDetails,
@@ -7,15 +6,15 @@ import {
   Erc20TransferDetails
 } from '@avalabs/glacier-sdk'
 import { balanceToDisplayValue } from '@avalabs/utils-sdk'
-import { isBridgeTransactionEVM } from 'screens/bridge/utils/bridgeUtils'
 import { Transaction } from 'store/transaction'
 import { getExplorerAddressByNetwork } from 'utils/ExplorerUtils'
+import { NULL_ADDRESS } from 'screens/bridge/utils/bridgeUtils'
 
 type ConvertTransactionParams = {
   item: TransactionDetails
   network: Network
   address: string
-  criticalConfig?: CriticalConfig
+  bridgeAddresses: string[]
 }
 
 type ConvertTransactionWithERC20Params = {
@@ -23,7 +22,7 @@ type ConvertTransactionWithERC20Params = {
   erc20Transfer: Erc20TransferDetails
   network: Network
   address: string
-  criticalConfig: CriticalConfig | undefined
+  bridgeAddresses: string[]
 }
 
 type ConvertNativeTransactionParams = {
@@ -37,12 +36,11 @@ const convertTransactionWithERC20 = ({
   erc20Transfer,
   network,
   address,
-  criticalConfig
-}: ConvertTransactionWithERC20Params) => {
+  bridgeAddresses
+}: ConvertTransactionWithERC20Params): Transaction => {
   const { txHash, blockTimestamp, gasPrice, gasUsed } = nativeTransaction
   const {
     erc20Token: {
-      address: contractAddress,
       decimals: tokenDecimals,
       name: tokenName,
       symbol: tokenSymbol
@@ -58,10 +56,10 @@ const convertTransactionWithERC20 = ({
 
   const amountDisplayValue = balanceToDisplayValue(new BN(value), tokenDecimals)
 
-  const isBridge = isBridgeTransactionEVM(
-    { contractAddress, to, from },
-    network,
-    criticalConfig
+  const addressesToCheck = [to.toLowerCase(), from.toLowerCase()]
+
+  const isBridge = addressesToCheck.some(item =>
+    [NULL_ADDRESS, ...bridgeAddresses].includes(item)
   )
 
   const token = {
@@ -93,7 +91,7 @@ const convertNativeTransaction = ({
   nativeTransaction,
   network,
   address
-}: ConvertNativeTransactionParams) => {
+}: ConvertNativeTransactionParams): Transaction => {
   const { networkToken } = network
   const {
     txHash,
@@ -145,7 +143,7 @@ export const convertTransaction = ({
   item,
   network,
   address,
-  criticalConfig
+  bridgeAddresses
 }: ConvertTransactionParams): Transaction => {
   const { nativeTransaction, erc20Transfers } = item
 
@@ -157,7 +155,7 @@ export const convertTransaction = ({
       erc20Transfer,
       network,
       address,
-      criticalConfig
+      bridgeAddresses
     })
   }
 

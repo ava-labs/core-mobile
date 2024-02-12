@@ -7,6 +7,8 @@ const transactionSchema = z.object({
   value: z.string().startsWith('0x').optional(),
   gas: z.string().startsWith('0x').optional(),
   gasPrice: z.string().startsWith('0x').optional(),
+  maxFeePerGas: z.string().startsWith('0x').optional(),
+  maxPriorityFeePerGas: z.string().startsWith('0x').optional(),
   nonce: z.string().startsWith('0x').optional()
 })
 
@@ -40,5 +42,7 @@ export type TransactionParams = {
   value?: string
   gas?: string
   gasPrice?: string
+  maxFeePerGas?: string
+  maxPriorityFeePerGas?: string
   nonce?: string
 }

@@ -3,6 +3,7 @@ import { combineReducers } from 'redux'
 import { AnyAction, configureStore, ListenerEffectAPI } from '@reduxjs/toolkit'
 import { createMigrate, persistReducer, persistStore } from 'redux-persist'
 import { bridgeReducer as bridge } from 'store/bridge'
+import { unifiedBridgeReducer as unifiedBridge } from 'store/unifiedBridge'
 import { nftsApi } from 'store/nft/api'
 import { migrations } from 'store/migrations'
 import DevDebuggingConfig from 'utils/debugging/DevDebuggingConfig'
@@ -22,7 +23,6 @@ import { nftReducer as nft } from './nft'
 import { addressBookReducer as addressBook } from './addressBook'
 import { viewOnceReducer as viewOnce } from './viewOnce'
 import settings from './settings'
-import swap from './swap'
 import { transactionApi } from './transaction'
 import { walletConnectReducer as walletConnectV2 } from './walletConnectV2'
 import { BridgeBlacklistTransform } from './transforms/BridgeBlacklistTransform'
@@ -51,9 +51,9 @@ const combinedReducer = combineReducers({
   notifications,
   addressBook,
   bridge,
+  unifiedBridge,
   customToken,
   posthog,
-  swap,
   nft,
   security,
   walletConnectV2,

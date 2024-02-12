@@ -1,7 +1,6 @@
-import * as cs from '@cubist-labs/cubesigner-sdk'
 import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKeysStorage'
 import SeedlessWallet from 'seedless/services/wallet/SeedlessWallet'
-import { SeedlessSessionStorage } from 'seedless/services/storage/SeedlessSessionStorage'
+import SeedlessService from 'seedless/services/SeedlessService'
 import { Wallet, WalletType } from './types'
 import MnemonicWalletInstance from './MnemonicWallet'
 
@@ -23,8 +22,8 @@ class WalletFactory {
           throw new Error(`Public key not available for index ${accountIndex}`)
         }
 
-        const sessionStorage = new SeedlessSessionStorage()
-        const session = await cs.CubeSigner.loadSignerSession(sessionStorage)
+        const session = await SeedlessService.sessionManager.getSignerSession()
+
         return new SeedlessWallet(session, addressPublicKey)
       }
       case WalletType.MNEMONIC:

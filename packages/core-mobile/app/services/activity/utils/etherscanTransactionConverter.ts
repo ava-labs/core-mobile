@@ -7,12 +7,19 @@ import { Transaction } from 'store/transaction'
 import { getExplorerAddressByNetwork } from 'utils/ExplorerUtils'
 import { isBridgeTransactionEVM } from 'screens/bridge/utils/bridgeUtils'
 
-export function convertTransactionERC20(
-  tx: Erc20Tx,
-  network: Network,
-  address: string,
+export function convertTransactionERC20({
+  tx,
+  network,
+  address,
+  criticalConfig,
+  bridgeAddresses
+}: {
+  tx: Erc20Tx
+  network: Network
+  address: string
   criticalConfig: CriticalConfig | undefined
-): Transaction {
+  bridgeAddresses: string[]
+}): Transaction {
   const isSender = tx.from.toLowerCase() === address.toLowerCase()
   const timestamp = parseInt(tx.timeStamp) * 1000
   const decimals = parseInt(tx.tokenDecimal)
@@ -21,7 +28,12 @@ export function convertTransactionERC20(
   const fee = getFeeString(tx)
 
   return {
-    isBridge: isBridgeTransactionEVM(tx, network, criticalConfig),
+    isBridge: isBridgeTransactionEVM({
+      tx,
+      network,
+      criticalConfig,
+      bridgeAddresses
+    }),
     isIncoming: !isSender,
     isOutgoing: isSender,
     isContractCall: false,
@@ -78,7 +90,7 @@ export function convertTransactionNormal(
   }
 }
 
-function isContractCall(tx: NormalTx) {
+function isContractCall(tx: NormalTx): boolean {
   return tx.input !== '0x'
 }
 

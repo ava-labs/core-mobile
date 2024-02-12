@@ -125,7 +125,7 @@ function VerifyCodeScreen(): JSX.Element {
   const handleOnVerifyCode = (
     code: string
   ): Promise<Result<undefined, TotpErrors>> => {
-    return SeedlessService.verifyCode(oidcToken, mfaId, code)
+    return SeedlessService.sessionManager.verifyCode(oidcToken, mfaId, code)
   }
 
   useLayoutEffect(() => {

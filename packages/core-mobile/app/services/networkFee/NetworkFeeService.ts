@@ -1,47 +1,78 @@
 import { Network, NetworkVMType } from '@avalabs/chains-sdk'
 import { NetworkFee } from 'services/networkFee/types'
-import Big from 'big.js'
 import { BigNumberish } from 'ethers'
 import { isSwimmer } from 'services/network/utils/isSwimmerNetwork'
-import { isEthereumNetwork } from 'services/network/utils/isEthereumNetwork'
 import {
   getBitcoinProvider,
   getEvmProvider
 } from 'services/network/utils/providerUtils'
+import { AcceptedTypes, TokenBaseUnit } from 'types/TokenBaseUnit'
 
 class NetworkFeeService {
-  async getNetworkFee(network: Network): Promise<NetworkFee | null> {
+  async getNetworkFee<T extends TokenBaseUnit<T>>(
+    network: Network,
+    tokenCreator: (value: AcceptedTypes) => T
+  ): Promise<NetworkFee<T> | undefined> {
     if (network.vmName === NetworkVMType.EVM) {
-      const provider = getEvmProvider(network)
-      const price = await provider.getFeeData()
-      const bigPrice = new Big(price.gasPrice?.toString() || '0')
-      const unit = isEthereumNetwork(network) ? 'gWEI' : 'nAVAX'
-
-      return {
-        displayDecimals: 9,
-        nativeTokenDecimals: 18,
-        unit,
-        low: price.gasPrice ?? 0n,
-        medium: BigInt(bigPrice.mul(1.05).toFixed(0)),
-        high: BigInt(bigPrice.mul(1.15).toFixed(0)),
-        isFixedFee: isSwimmer(network),
-        nativeTokenSymbol: network.networkToken.symbol
-      }
+      return await this.getFeesForEVM(network, tokenCreator)
     } else if (network.vmName === NetworkVMType.BITCOIN) {
-      const provider = getBitcoinProvider(network.isTestnet)
-      const rates = await provider.getFeeRates()
-      return {
-        displayDecimals: 0, // display btc fees in satoshi
-        nativeTokenDecimals: 8,
-        unit: 'satoshi',
-        low: BigInt(rates.low),
-        medium: BigInt(rates.medium),
-        high: BigInt(rates.high),
-        isFixedFee: false,
-        nativeTokenSymbol: network.networkToken.symbol
-      }
+      return await this.getFeesForBtc(network, tokenCreator)
     }
-    return null
+    return undefined
+  }
+
+  private async getFeesForBtc<T extends TokenBaseUnit<T>>(
+    network: Network,
+    tokenCreator: (value: AcceptedTypes) => T
+  ): Promise<NetworkFee<T>> {
+    const provider = getBitcoinProvider(network.isTestnet)
+    const rates = await provider.getFeeRates()
+    return {
+      low: {
+        maxFeePerGas: tokenCreator(rates.low)
+      },
+      medium: {
+        maxFeePerGas: tokenCreator(rates.medium)
+      },
+      high: {
+        maxFeePerGas: tokenCreator(rates.high)
+      },
+      isFixedFee: false
+    }
+  }
+
+  private async getFeesForEVM<T extends TokenBaseUnit<T>>(
+    network: Network,
+    tokenCreator: (value: AcceptedTypes) => T
+  ): Promise<NetworkFee<T> | undefined> {
+    const provider = getEvmProvider(network)
+    const { maxFeePerGas, maxPriorityFeePerGas } = await provider.getFeeData()
+    if (!maxFeePerGas || !maxPriorityFeePerGas) {
+      return undefined
+    }
+
+    const baseFeePerGasInUnit = tokenCreator(maxFeePerGas)
+    const basePriorityFeePerGas = tokenCreator(500000000) //0.5 Gwei
+
+    const lowMaxTip = basePriorityFeePerGas
+    const mediumMaxTip = basePriorityFeePerGas.mul(4)
+    const highMaxTip = basePriorityFeePerGas.mul(6)
+    return {
+      baseFee: baseFeePerGasInUnit,
+      low: {
+        maxFeePerGas: baseFeePerGasInUnit.add(lowMaxTip),
+        maxPriorityFeePerGas: lowMaxTip
+      },
+      medium: {
+        maxFeePerGas: baseFeePerGasInUnit.add(mediumMaxTip),
+        maxPriorityFeePerGas: mediumMaxTip
+      },
+      high: {
+        maxFeePerGas: baseFeePerGasInUnit.add(highMaxTip),
+        maxPriorityFeePerGas: highMaxTip
+      },
+      isFixedFee: isSwimmer(network)
+    }
   }
 
   async estimateGasLimit({
