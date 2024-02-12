@@ -131,14 +131,11 @@ async function totpRefreshFlow(
       return sessionManager.verifyCode(oidcToken, mfaId, code)
     }
     Navigation.navigate({
-      name: AppNavigation.Root.RefreshToken,
+      name: AppNavigation.Root.VerifyTotpCode,
       params: {
-        screen: AppNavigation.RefreshToken.VerifyCode,
-        params: {
-          onVerifyCode,
-          onVerifySuccess: resolve,
-          onBack: () => reject('USER_CANCELED')
-        }
+        onVerifyCode,
+        onVerifySuccess: resolve,
+        onBack: () => reject('USER_CANCELED')
       }
     })
   })

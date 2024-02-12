@@ -1,11 +1,17 @@
-import { Icons, Text, View, useTheme } from '@avalabs/k2-mobile'
-import { useNavigation } from '@react-navigation/native'
+import {
+  Button,
+  Icons,
+  ScrollView,
+  Text,
+  View,
+  useTheme
+} from '@avalabs/k2-mobile'
+import { useNavigation, useRoute } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
 import { RecoveryMethodsScreenProps } from 'navigation/types'
-import React, { useContext } from 'react'
+import React from 'react'
 import SeedlessService from 'seedless/services/SeedlessService'
 import PasskeyService from 'services/passkey/PasskeyService'
-import { RecoveryMethodsContext } from 'navigation/onboarding/RecoveryMethodsStack'
 import Logger from 'utils/Logger'
 import { FidoType } from 'services/passkey/types'
 import { showSimpleToast } from 'components/Snackbar'
@@ -17,6 +23,7 @@ import {
   selectIsSeedlessMfaYubikeyBlocked
 } from 'store/posthog'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import useSeedlessManageMFA from 'seedless/hooks/useSeedlessManageMFA'
 import { Card } from '../components/Card'
 
 type AddRecoveryMethodsScreenProps = RecoveryMethodsScreenProps<
@@ -24,12 +31,13 @@ type AddRecoveryMethodsScreenProps = RecoveryMethodsScreenProps<
 >
 
 export const AddRecoveryMethods = (): JSX.Element => {
-  const { navigate, goBack } =
+  const { navigate, getParent } =
     useNavigation<AddRecoveryMethodsScreenProps['navigation']>()
   const {
     theme: { colors }
   } = useTheme()
-  const { mfaId, oidcToken } = useContext(RecoveryMethodsContext)
+  const { mfas, oidcAuth, onAccountVerified } =
+    useRoute<AddRecoveryMethodsScreenProps['route']>().params
   const isSeedlessMfaPasskeyBlocked = useSelector(
     selectIsSeedlessMfaPasskeyBlocked
   )
@@ -39,9 +47,16 @@ export const AddRecoveryMethods = (): JSX.Element => {
   const isSeedlessMfaYubikeyBlocked = useSelector(
     selectIsSeedlessMfaYubikeyBlocked
   )
+  const { fidoRegisterInit } = useSeedlessManageMFA()
 
-  const goToAuthenticatorSetup = (): void => {
-    navigate(AppNavigation.RecoveryMethods.AuthenticatorSetup)
+  const canAddAuthenticator =
+    (mfas ?? []).some(mfa => mfa.type === 'totp') === false
+
+  const handleAuthenticator = (): void => {
+    navigate(AppNavigation.RecoveryMethods.AuthenticatorSetup, {
+      oidcAuth,
+      onAccountVerified
+    })
 
     AnalyticsService.capture('SeedlessAddMfa', { type: 'Authenticator' })
   }
@@ -60,24 +75,30 @@ export const AddRecoveryMethods = (): JSX.Element => {
     try {
       const withSecurityKey = fidoType === FidoType.YUBI_KEY
 
-      await SeedlessService.sessionManager.registerFido(
-        passkeyName,
-        withSecurityKey
-      )
+      fidoRegisterInit(passkeyName, async challenge => {
+        const credential = await PasskeyService.register(
+          challenge.options,
+          withSecurityKey
+        )
 
-      AnalyticsService.capture('SeedlessMfaAdded')
+        await challenge.answer(credential)
 
-      await SeedlessService.sessionManager.approveFido(
-        oidcToken,
-        mfaId,
-        withSecurityKey
-      )
+        AnalyticsService.capture('SeedlessMfaAdded')
 
-      AnalyticsService.capture('SeedlessMfaVerified', { type: fidoType })
+        if (oidcAuth) {
+          await SeedlessService.sessionManager.approveFido(
+            oidcAuth.oidcToken,
+            oidcAuth.mfaId,
+            withSecurityKey
+          )
 
-      goBack()
+          AnalyticsService.capture('SeedlessMfaVerified', { type: fidoType })
+        }
 
-      navigate(AppNavigation.Onboard.NameYourWallet)
+        getParent()?.goBack()
+
+        onAccountVerified(true)
+      })
     } catch (e) {
       Logger.error(`${fidoType} registration failed`, e)
       showSimpleToast(`Unable to register ${fidoType}`)
@@ -114,38 +135,54 @@ export const AddRecoveryMethods = (): JSX.Element => {
     AnalyticsService.capture('SeedlessAddMfa', { type: FidoType.YUBI_KEY })
   }
 
+  const handleSetupLater = (): void => {
+    getParent()?.goBack()
+
+    onAccountVerified(false)
+  }
+
   return (
-    <View sx={{ marginHorizontal: 16, flex: 1 }}>
-      <Text variant="heading3">Add Recovery Methods</Text>
-      <Text variant="body1" sx={{ color: '$neutral50', marginVertical: 8 }}>
-        Add <Text variant="heading6">one</Text> recovery method to continue.
-      </Text>
-      {PasskeyService.isSupported && !isSeedlessMfaPasskeyBlocked && (
-        <Card
-          onPress={handlePasskey}
-          icon={<Icons.Communication.IconKey color={colors.$neutral50} />}
-          title="Passkey"
-          body="Add a Passkey as a recovery method."
-          showCaret
-        />
-      )}
-      {!isSeedlessMfaAuthenticatorBlocked && (
-        <Card
-          onPress={goToAuthenticatorSetup}
-          icon={<Icons.Communication.IconQRCode color={colors.$neutral50} />}
-          title="Authenticator"
-          body="Add an Authenticator app as a recovery method."
-          showCaret
-        />
-      )}
-      {PasskeyService.isSupported && !isSeedlessMfaYubikeyBlocked && (
-        <Card
-          onPress={handleYubikey}
-          icon={<Icons.Device.IconUSB color={colors.$neutral50} />}
-          title="YubiKey"
-          body="Add a YubiKey as a recovery method."
-          showCaret
-        />
+    <View sx={{ flex: 1 }}>
+      <ScrollView contentContainerSx={{ marginHorizontal: 16, flex: 1 }}>
+        <Text variant="heading3">Add Recovery Methods</Text>
+        <Text variant="body1" sx={{ color: '$neutral50', marginVertical: 8 }}>
+          Add <Text variant="heading6">optional</Text> recovery method to
+          continue.
+        </Text>
+        {PasskeyService.isSupported && !isSeedlessMfaPasskeyBlocked && (
+          <Card
+            onPress={handlePasskey}
+            icon={<Icons.Communication.IconKey color={colors.$neutral50} />}
+            title="Passkey"
+            body="Add a Passkey as a recovery method."
+            showCaret
+          />
+        )}
+        {!isSeedlessMfaAuthenticatorBlocked && canAddAuthenticator && (
+          <Card
+            onPress={handleAuthenticator}
+            icon={<Icons.Communication.IconQRCode color={colors.$neutral50} />}
+            title="Authenticator"
+            body="Add an Authenticator app as a recovery method."
+            showCaret
+          />
+        )}
+        {PasskeyService.isSupported && !isSeedlessMfaYubikeyBlocked && (
+          <Card
+            onPress={handleYubikey}
+            icon={<Icons.Device.IconUSB color={colors.$neutral50} />}
+            title="YubiKey"
+            body="Add a YubiKey as a recovery method."
+            showCaret
+          />
+        )}
+      </ScrollView>
+      {oidcAuth === undefined && (
+        <View sx={{ padding: 16, marginBottom: 30 }}>
+          <Button type="primary" size="xlarge" onPress={handleSetupLater}>
+            Set Up Later
+          </Button>
+        </View>
       )}
     </View>
   )

@@ -128,8 +128,8 @@ __metadata:
     "@babel/preset-typescript": 7.22.11
     "@babel/runtime": 7.22.11
     "@coinbase/cbpay-js": 1.6.0
-    "@cubist-labs/cubesigner-sdk": 0.3.11
-    "@cubist-labs/cubesigner-sdk-ethers-v6": 0.3.11
+    "@cubist-labs/cubesigner-sdk": 0.3.23
+    "@cubist-labs/cubesigner-sdk-ethers-v6": 0.3.23
     "@datadog/mobile-react-native": 1.9.0
     "@datadog/mobile-react-navigation": 1.9.0
     "@dlenroc/testrail": 1.7.2
@@ -2422,27 +2422,26 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@cubist-labs/cubesigner-sdk-ethers-v6@npm:0.3.11":
-  version: 0.3.11
-  resolution: "@cubist-labs/cubesigner-sdk-ethers-v6@npm:0.3.11"
-  dependencies:
-    ethers: 6.7.1
+"@cubist-labs/cubesigner-sdk-ethers-v6@npm:0.3.23":
+  version: 0.3.23
+  resolution: "@cubist-labs/cubesigner-sdk-ethers-v6@npm:0.3.23"
   peerDependencies:
-    "@cubist-labs/cubesigner-sdk": ^0.3.11
-  checksum: 6e48e8eaa8cc4c9f9087ac090f306092793bbbe44b5fb1afc54d752b20ff84528761b0639e709dbab2e27852dee29dd6ecd01d83a7cb26334e667b634cd7d0df
+    "@cubist-labs/cubesigner-sdk": ^0.3.23
+    ethers: 6.7.1
+  checksum: 58fc6c7c1633daa36cdde9ab0b2d047040e4b18dcfac5df50c376032bbd799e907e95e92cccbcb1bfabb6361a8f9e7246c3feca08b3b13b8df33f785cfe49c5d
   languageName: node
   linkType: hard
 
-"@cubist-labs/cubesigner-sdk@npm:0.3.11":
-  version: 0.3.11
-  resolution: "@cubist-labs/cubesigner-sdk@npm:0.3.11"
+"@cubist-labs/cubesigner-sdk@npm:0.3.23":
+  version: 0.3.23
+  resolution: "@cubist-labs/cubesigner-sdk@npm:0.3.23"
   dependencies:
-    "@hpke/core": ^1.2.5
+    "@hpke/core": ^1.2.7
     openapi-fetch: 0.6.1
   dependenciesMeta:
     "@hpke/core":
       optional: true
-  checksum: ac1a971cba860afaadbd89e7dbcd864e29352a0658b82199639f47056eb39c83f374ca8ec07be348ee70b31684ad7ff7d7e7a43d4d46239c4b4d4da02701939f
+  checksum: 26097e834103a8c8911dbffc5fe4c31f5d2f87856c53895b8cd24c002c96bd2f8227b6760c381dfac5f9d1d43ff0fe73098bfef2952aa53a5d22d6e9682a5eb2
   languageName: node
   linkType: hard
 
@@ -2997,10 +2996,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@hpke/core@npm:^1.2.5":
-  version: 1.2.5
-  resolution: "@hpke/core@npm:1.2.5"
-  checksum: a0acd45b3c5080539963780640d66fb3da2f255617a60eb6d4fcf0ed54e664f59581289932ba432b378f84d4b60e28163ce4fbd829af8363e4004a81efd69dc9
+"@hpke/core@npm:^1.2.7":
+  version: 1.2.7
+  resolution: "@hpke/core@npm:1.2.7"
+  checksum: 3b900e2a088bc6c3c98c13888a37fe05383d5f6d05aeac1817a7394dd19d9e1bc422b1fc1228cff9b74b21c4785ca9ee084e006eb3a2d439532f051f1ca3603e
   languageName: node
   linkType: hard
 

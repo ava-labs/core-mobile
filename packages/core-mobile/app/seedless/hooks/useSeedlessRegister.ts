@@ -12,10 +12,12 @@ import Logger from 'utils/Logger'
 type RegisterProps = {
   getOidcToken: () => Promise<OidcPayload>
   oidcProvider: OidcProviders
-  onRegisterMfaMethods: (oidcToken: string, mfaId: string) => void
+  onRegisterMfaMethods: (oidcAuth?: {
+    oidcToken: string
+    mfaId: string
+  }) => void
   onVerifyMfaMethod: (
-    oidcToken: string,
-    mfaId: string,
+    oidcAuth: { oidcToken: string; mfaId: string },
     mfaMethods: MFA[]
   ) => void
 }
@@ -64,28 +66,34 @@ export const useSeedlessRegister = (): ReturnType => {
           const mfaMethods = identity.user_info?.configured_mfa
 
           if (mfaMethods && mfaMethods.length > 0) {
-            onVerifyMfaMethod(oidcToken, mfaId, mfaMethods)
+            onVerifyMfaMethod({ oidcToken, mfaId }, mfaMethods)
             AnalyticsService.capture('SeedlessSignIn', {
               oidcProvider: oidcProvider
             })
           } else {
-            onRegisterMfaMethods(oidcToken, mfaId)
+            onRegisterMfaMethods({ oidcToken, mfaId })
             AnalyticsService.capture('SeedlessSignUp', {
               oidcProvider: oidcProvider
             })
           }
         } else {
-          // TODO: handle ALREADY_REGISTERED without mfa
+          onRegisterMfaMethods()
+          AnalyticsService.capture('SeedlessSignIn', {
+            oidcProvider: oidcProvider
+          })
         }
       } else if (result === SeedlessUserRegistrationResult.APPROVED) {
         if (isMfaRequired) {
           const mfaId = signResponse.mfaId()
-          onRegisterMfaMethods(oidcToken, mfaId)
+          onRegisterMfaMethods({ oidcToken, mfaId })
           AnalyticsService.capture('SeedlessSignUp', {
             oidcProvider: oidcProvider
           })
         } else {
-          // TODO: handle APPROVED without mfa
+          onRegisterMfaMethods()
+          AnalyticsService.capture('SeedlessSignUp', {
+            oidcProvider: oidcProvider
+          })
         }
       } else {
         throw new Error(SeedlessUserRegistrationResult.ERROR)

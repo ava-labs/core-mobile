@@ -1,11 +1,9 @@
-import React, { useContext } from 'react'
+import React from 'react'
 import { Icons, Text, View, useTheme } from '@avalabs/k2-mobile'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
-import { RecoveryMethodsScreenProps } from 'navigation/types'
+import { RootStackScreenProps } from 'navigation/types'
 import PasskeyService from 'services/passkey/PasskeyService'
-import SeedlessService from 'seedless/services/SeedlessService'
-import { RecoveryMethodsContext } from 'navigation/onboarding/RecoveryMethodsStack'
 import Logger from 'utils/Logger'
 import { showSimpleToast } from 'components/Snackbar'
 import { hideOwl, showOwl } from 'components/GlobalOwlLoader'
@@ -16,22 +14,22 @@ import {
   selectIsSeedlessMfaYubikeyBlocked
 } from 'store/posthog'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import useVerifyMFA from 'seedless/hooks/useVerifyMFA'
+import SeedlessService from 'seedless/services/SeedlessService'
 import { Card } from '../components/Card'
 
-type SelectRecoveryMethodsScreenProps = RecoveryMethodsScreenProps<
-  typeof AppNavigation.RecoveryMethods.SelectRecoveryMethods
+type SelectRecoveryMethodsScreenProps = RootStackScreenProps<
+  typeof AppNavigation.Root.SelectRecoveryMethods
 >
 
 export const SelectRecoveryMethods = (): JSX.Element => {
-  const { navigate, goBack } =
+  const { getParent } =
     useNavigation<SelectRecoveryMethodsScreenProps['navigation']>()
-  const { mfaId, oidcToken } = useContext(RecoveryMethodsContext)
   const {
     theme: { colors }
   } = useTheme()
-  const {
-    params: { mfaMethods }
-  } = useRoute<SelectRecoveryMethodsScreenProps['route']>()
+  const { mfaMethods, onAccountVerified, onVerifyFido, onVerifyTotpCode } =
+    useRoute<SelectRecoveryMethodsScreenProps['route']>().params
   const isSeedlessMfaAuthenticatorBlocked = useSelector(
     selectIsSeedlessMfaAuthenticatorBlocked
   )
@@ -41,12 +39,22 @@ export const SelectRecoveryMethods = (): JSX.Element => {
   const isSeedlessMfaYubikeyBlocked = useSelector(
     selectIsSeedlessMfaYubikeyBlocked
   )
+  const { verifyTotp } = useVerifyMFA(SeedlessService.sessionManager)
 
   const handleTotp = async (): Promise<void> => {
     if (isSeedlessMfaAuthenticatorBlocked) {
       showSimpleToast('Authenticator is not available at the moment')
     } else {
-      navigate(AppNavigation.RecoveryMethods.VerifyCode)
+      verifyTotp({
+        onVerifyCode: onVerifyTotpCode,
+        onVerifySuccess: () => {
+          getParent()?.goBack()
+          onAccountVerified(true)
+          AnalyticsService.capture('SeedlessMfaVerified', {
+            type: 'Authenticator'
+          })
+        }
+      })
     }
   }
 
@@ -63,13 +71,12 @@ export const SelectRecoveryMethods = (): JSX.Element => {
     showOwl()
 
     try {
-      await SeedlessService.sessionManager.approveFido(oidcToken, mfaId, false)
+      await onVerifyFido()
 
       AnalyticsService.capture('SeedlessMfaVerified', { type: 'Fido' })
 
-      goBack()
-
-      navigate(AppNavigation.Onboard.NameYourWallet)
+      getParent()?.goBack()
+      onAccountVerified(true)
     } catch (e) {
       Logger.error('passkey authentication failed', e)
       showSimpleToast('Unable to authenticate')

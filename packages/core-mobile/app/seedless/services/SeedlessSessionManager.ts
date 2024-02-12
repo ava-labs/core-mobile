@@ -1,6 +1,8 @@
 import {
+  AddFidoChallenge,
   CubeSignerClient,
   CubeSignerResponse,
+  Empty,
   Environment,
   IdentityProof,
   MfaFidoChallenge,
@@ -42,7 +44,6 @@ if (!envInterface) {
 }
 
 class SeedlessSessionManager {
-  private totpChallenge?: TotpChallenge
   private scopes: string[]
   private sessionStorage: SessionStorage<SignerSessionData>
 
@@ -193,49 +194,22 @@ class SeedlessSessionManager {
     >
   }
 
-  /**
-   * setTotp is used to initiate registration of Authenticator app to Cubist.
-   * it creates a request to change user's TOTP. This request returns a new TOTP challenge
-   * that must be answered by calling resetTotpComplete
-   */
-  async setTotp(): Promise<Result<string, TotpErrors>> {
+  async totpResetInit(): Promise<CubeSignerResponse<TotpChallenge>> {
     const cubeSignerClient = await this.getCubeSignerClient()
-    const response = await cubeSignerClient.userTotpResetInit('Core')
-    if (response.requiresMfa()) {
-      return {
-        success: false,
-        error: new TotpErrors({
-          name: 'RequiresMfa',
-          message: 'Registering Authenticator failed, please try again.'
-        })
-      }
-    }
-    const challenge = response.data()
-    if (!challenge.totpUrl) {
-      return {
-        success: false,
-        error: new TotpErrors({
-          name: 'UnexpectedError',
-          message: 'Registering Authenticator failed, please try again.'
-        })
-      }
-    }
-    this.totpChallenge = challenge
-    return { success: true, value: challenge.totpUrl }
+
+    return await cubeSignerClient.userTotpResetInit('Core')
   }
 
-  async registerFido(name: string, withSecurityKey: boolean): Promise<void> {
+  async fidoRegisterInit(
+    name: string
+  ): Promise<CubeSignerResponse<AddFidoChallenge>> {
     const cubeSignerClient = await this.getCubeSignerClient()
-    const signResponse = await cubeSignerClient.userFidoRegisterInit(name)
+    return await cubeSignerClient.userFidoRegisterInit(name)
+  }
 
-    const challenge = signResponse.data()
-
-    const credential = await PasskeyService.register(
-      challenge.options,
-      withSecurityKey
-    )
-
-    await challenge.answer(credential)
+  async deleteFido(fidoId: string): Promise<CubeSignerResponse<Empty>> {
+    const cubeSignerClient = await this.getCubeSignerClient()
+    return await cubeSignerClient.userFidoDelete(fidoId)
   }
 
   async approveFido(
@@ -273,9 +247,6 @@ class SeedlessSessionManager {
     code: string
   ): Promise<Result<undefined, TotpErrors>> {
     try {
-      await this.totpChallenge?.answer(code)
-      this.totpChallenge = undefined
-
       const mfaSession = await SignerSession.loadSignerSession(
         this.sessionStorage
       )
@@ -360,10 +331,26 @@ class SeedlessSessionManager {
   }
 
   /**
-   * Get current cubist org id
+   * Returns MFA type
    */
-  get orgID(): string {
-    return SEEDLESS_ORG_ID
+  async getMfaType(): Promise<'totp' | 'fido' | undefined> {
+    const signerSession = await this.getSignerSession()
+    const identity = await signerSession.identityProve()
+    return identity.user_info?.configured_mfa?.[0]?.type
+  }
+
+  /**
+   * Returns the result of signing after MFA approval
+   */
+  static async signWithMfaApproval<T>(
+    response: CubeSignerResponse<T>,
+    mfaReceiptConfirmation: string
+  ): Promise<CubeSignerResponse<T>> {
+    return response.signWithMfaApproval({
+      mfaId: response.mfaId(),
+      mfaOrgId: SEEDLESS_ORG_ID,
+      mfaConf: mfaReceiptConfirmation
+    })
   }
 }
 

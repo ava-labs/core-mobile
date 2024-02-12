@@ -14,6 +14,9 @@ import Logger from 'utils/Logger'
 import { OidcProviders } from 'seedless/consts'
 import { hideOwl, showOwl } from 'components/GlobalOwlLoader'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import { Result } from 'types/result'
+import { TotpErrors } from 'seedless/errors'
+import SeedlessService from 'seedless/services/SeedlessService'
 
 type NavigationProp = OnboardScreenProps<
   typeof AppNavigation.Onboard.Signin
@@ -36,24 +39,51 @@ const SigninScreen: FC = () => {
     AnalyticsService.capture('SignInWithRecoveryPhraseClicked')
   }
 
-  const onRegisterMfaMethods = (oidcToken: string, mfaId: string): void => {
-    navigate(AppNavigation.Onboard.RecoveryMethods, {
+  const handleAccountVerified = (): void => {
+    navigate(AppNavigation.Onboard.NameYourWallet)
+  }
+
+  const handleRegisterMfaMethods = (oidcAuth?: {
+    oidcToken: string
+    mfaId: string
+  }): void => {
+    navigate(AppNavigation.Root.RecoveryMethods, {
       screen: AppNavigation.RecoveryMethods.AddRecoveryMethods,
-      oidcToken,
-      mfaId
+      params: {
+        oidcAuth,
+        onAccountVerified: handleAccountVerified
+      }
     })
   }
 
-  const onVerifyMfaMethod = (
+  const handleVerifyTotpCode = (
     oidcToken: string,
     mfaId: string,
+    code: string
+  ): Promise<Result<undefined, TotpErrors>> => {
+    return SeedlessService.sessionManager.verifyCode(oidcToken, mfaId, code)
+  }
+
+  const handleVerifyFido = (
+    oidcToken: string,
+    mfaId: string
+  ): Promise<void> => {
+    return SeedlessService.sessionManager.approveFido(oidcToken, mfaId, false)
+  }
+
+  const handleVerifyMfaMethod = (
+    oidcAuth: {
+      oidcToken: string
+      mfaId: string
+    },
     mfaMethods: MFA[]
   ): void => {
-    navigate(AppNavigation.Onboard.RecoveryMethods, {
-      screen: AppNavigation.RecoveryMethods.SelectRecoveryMethods,
-      params: { mfaMethods },
-      oidcToken,
-      mfaId
+    navigate(AppNavigation.Root.SelectRecoveryMethods, {
+      mfaMethods,
+      onAccountVerified: handleAccountVerified,
+      onVerifyTotpCode: code =>
+        handleVerifyTotpCode(oidcAuth.oidcToken, oidcAuth.mfaId, code),
+      onVerifyFido: () => handleVerifyFido(oidcAuth.oidcToken, oidcAuth.mfaId)
     })
   }
 
@@ -92,8 +122,8 @@ const SigninScreen: FC = () => {
               register({
                 getOidcToken: GoogleSigninService.signin,
                 oidcProvider: OidcProviders.GOOGLE,
-                onRegisterMfaMethods,
-                onVerifyMfaMethod
+                onRegisterMfaMethods: handleRegisterMfaMethods,
+                onVerifyMfaMethod: handleVerifyMfaMethod
               }).catch(error => {
                 Logger.error('Unable to sign in with Google: ', error)
                 showSimpleToast('Unable to sign in with Google')
@@ -103,8 +133,8 @@ const SigninScreen: FC = () => {
               register({
                 getOidcToken: AppleSignInService.signIn,
                 oidcProvider: OidcProviders.APPLE,
-                onRegisterMfaMethods,
-                onVerifyMfaMethod
+                onRegisterMfaMethods: handleRegisterMfaMethods,
+                onVerifyMfaMethod: handleVerifyMfaMethod
               }).catch(error => {
                 Logger.error('Unable to sign in with Apple: ', error)
                 showSimpleToast('Unable to sign in with Apple')

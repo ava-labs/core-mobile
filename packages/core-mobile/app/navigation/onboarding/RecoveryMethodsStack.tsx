@@ -1,36 +1,31 @@
 import AppNavigation from 'navigation/AppNavigation'
-import React, {
-  createContext,
-  useContext,
-  useLayoutEffect,
-  useState
-} from 'react'
+import React from 'react'
 import { createStackNavigator } from '@react-navigation/stack'
-import { AuthenticatorSetup } from 'seedless/screens/AuthenticatorSetup'
-import { ScanQrCode } from 'seedless/screens/ScanQrCode'
-import { LearnMore } from 'seedless/screens/LearnMore'
-import { VerifyCode } from 'seedless/screens/VerifyCode'
 import { MainHeaderOptions } from 'navigation/NavUtils'
 import { AddRecoveryMethods } from 'seedless/screens/AddRecoveryMethods'
-import { useRoute } from '@react-navigation/native'
-import { OnboardScreenProps } from 'navigation/types'
-import { SelectRecoveryMethods } from 'seedless/screens/SelectRecoveryMethods'
 import { MFA } from 'seedless/types'
 import { FIDONameInputScreen } from 'seedless/screens/FIDONameInputScreen'
-import { useNavigation } from '@react-navigation/native'
-import { RecoveryMethodsScreenProps } from 'navigation/types'
-import SeedlessService from 'seedless/services/SeedlessService'
-import { Result } from 'types/result'
-import { TotpErrors } from 'seedless/errors'
-import AnalyticsService from 'services/analytics/AnalyticsService'
+import { TotpChallenge } from '@cubist-labs/cubesigner-sdk'
+import { AuthenticatorSetupScreen } from 'seedless/screens/AuthenticatorSetupScreen'
+import { ScanQrCodeScreen } from 'seedless/screens/ScanQrCodeScreen'
+import { LearnMoreScreen } from 'seedless/screens/LearnMoreScreen'
 
 export type RecoveryMethodsStackParamList = {
-  [AppNavigation.RecoveryMethods.AddRecoveryMethods]: undefined
-  [AppNavigation.RecoveryMethods.SelectRecoveryMethods]: { mfaMethods: MFA[] }
-  [AppNavigation.RecoveryMethods.AuthenticatorSetup]: undefined
-  [AppNavigation.RecoveryMethods.ScanQrCode]: undefined
-  [AppNavigation.RecoveryMethods.LearnMore]: { totpCode?: string }
-  [AppNavigation.RecoveryMethods.VerifyCode]: undefined
+  [AppNavigation.RecoveryMethods.AddRecoveryMethods]: {
+    oidcAuth?: { oidcToken: string; mfaId: string }
+    mfas?: MFA[]
+    onAccountVerified: (withMfa: boolean) => void
+  }
+  [AppNavigation.RecoveryMethods.AuthenticatorSetup]: {
+    oidcAuth?: { oidcToken: string; mfaId: string }
+    onAccountVerified: (withMfa: boolean) => void
+  }
+  [AppNavigation.RecoveryMethods.ScanQrCode]: {
+    oidcAuth?: { oidcToken: string; mfaId: string }
+    totpChallenge: TotpChallenge
+    onAccountVerified: (withMfa: boolean) => void
+  }
+  [AppNavigation.RecoveryMethods.LearnMore]: { totpKey: string }
   [AppNavigation.RecoveryMethods.FIDONameInput]: {
     title: string
     description: string
@@ -42,109 +37,41 @@ export type RecoveryMethodsStackParamList = {
 
 const RecoveryMethodsS = createStackNavigator<RecoveryMethodsStackParamList>()
 
-type RecoveryMethodsContextState = {
-  oidcToken: string
-  mfaId: string
-}
-
-export const RecoveryMethodsContext = createContext(
-  {} as RecoveryMethodsContextState
-)
-
-type RecoveryMethodsStackProps = OnboardScreenProps<
-  typeof AppNavigation.Onboard.RecoveryMethods
->
-
 const RecoveryMethodsStack = (): JSX.Element => {
-  const { params } = useRoute<RecoveryMethodsStackProps['route']>()
-  const [oidcToken] = useState(params.oidcToken)
-  const [mfaId] = useState(params.mfaId)
-
   return (
-    <RecoveryMethodsContext.Provider value={{ oidcToken, mfaId }}>
-      <RecoveryMethodsS.Navigator>
+    <RecoveryMethodsS.Navigator>
+      <RecoveryMethodsS.Screen
+        options={MainHeaderOptions()}
+        name={AppNavigation.RecoveryMethods.AddRecoveryMethods}
+        component={AddRecoveryMethods}
+      />
+      <RecoveryMethodsS.Group>
+        {/* Screens for authenticator setup */}
         <RecoveryMethodsS.Screen
           options={MainHeaderOptions()}
-          name={AppNavigation.RecoveryMethods.AddRecoveryMethods}
-          component={AddRecoveryMethods}
+          name={AppNavigation.RecoveryMethods.AuthenticatorSetup}
+          component={AuthenticatorSetupScreen}
         />
         <RecoveryMethodsS.Screen
           options={MainHeaderOptions()}
-          name={AppNavigation.RecoveryMethods.SelectRecoveryMethods}
-          component={SelectRecoveryMethods}
+          name={AppNavigation.RecoveryMethods.ScanQrCode}
+          component={ScanQrCodeScreen}
         />
-        <RecoveryMethodsS.Group>
-          {/* Screens for authenticator setup */}
-          <RecoveryMethodsS.Screen
-            options={MainHeaderOptions()}
-            name={AppNavigation.RecoveryMethods.AuthenticatorSetup}
-            component={AuthenticatorSetup}
-          />
-          <RecoveryMethodsS.Screen
-            options={MainHeaderOptions()}
-            name={AppNavigation.RecoveryMethods.ScanQrCode}
-            component={ScanQrCode}
-          />
-          <RecoveryMethodsS.Screen
-            options={MainHeaderOptions()}
-            name={AppNavigation.RecoveryMethods.LearnMore}
-            component={LearnMore}
-          />
-          <RecoveryMethodsS.Screen
-            options={{ presentation: 'transparentModal' }}
-            name={AppNavigation.RecoveryMethods.VerifyCode}
-            component={VerifyCodeScreen}
-          />
-        </RecoveryMethodsS.Group>
-        <RecoveryMethodsS.Group>
-          <RecoveryMethodsS.Screen
-            options={{ presentation: 'modal' }}
-            name={AppNavigation.RecoveryMethods.FIDONameInput}
-            component={FIDONameInputScreen}
-          />
-        </RecoveryMethodsS.Group>
-      </RecoveryMethodsS.Navigator>
-    </RecoveryMethodsContext.Provider>
+        <RecoveryMethodsS.Screen
+          options={MainHeaderOptions()}
+          name={AppNavigation.RecoveryMethods.LearnMore}
+          component={LearnMoreScreen}
+        />
+      </RecoveryMethodsS.Group>
+      <RecoveryMethodsS.Group>
+        <RecoveryMethodsS.Screen
+          options={{ presentation: 'modal' }}
+          name={AppNavigation.RecoveryMethods.FIDONameInput}
+          component={FIDONameInputScreen}
+        />
+      </RecoveryMethodsS.Group>
+    </RecoveryMethodsS.Navigator>
   )
 }
 
-type VerifyCodeScreenProps = RecoveryMethodsScreenProps<
-  typeof AppNavigation.RecoveryMethods.LearnMore
->
-function VerifyCodeScreen(): JSX.Element {
-  const { oidcToken, mfaId } = useContext(RecoveryMethodsContext)
-  const { canGoBack, goBack, replace, setOptions } =
-    useNavigation<VerifyCodeScreenProps['navigation']>()
-
-  const handleVerifySuccess = (): void => {
-    replace(AppNavigation.Onboard.NameYourWallet)
-
-    AnalyticsService.capture('SeedlessMfaVerified', { type: 'Authenticator' })
-  }
-
-  const handleOnVerifyCode = (
-    code: string
-  ): Promise<Result<undefined, TotpErrors>> => {
-    return SeedlessService.sessionManager.verifyCode(oidcToken, mfaId, code)
-  }
-
-  useLayoutEffect(() => {
-    setOptions({
-      headerShown: false
-    })
-  }, [setOptions])
-
-  const handleOnBack = (): void => {
-    if (canGoBack()) {
-      goBack()
-    }
-  }
-  return (
-    <VerifyCode
-      onVerifyCode={handleOnVerifyCode}
-      onVerifySuccess={handleVerifySuccess}
-      onBack={handleOnBack}
-    />
-  )
-}
 export default RecoveryMethodsStack
