@@ -147,6 +147,13 @@ describe('getSimpleSortedValidators function', () => {
     const result = getSimpleSortedValidators([])
     expect(result.length).toBe(0)
   })
+
+  it('should return validator with lowest delegation fee', () => {
+    const result = getSimpleSortedValidators(
+      mockValidators.validators as unknown as NodeValidators
+    )
+    expect(Number(result[0]?.delegationFee)).toStrictEqual(2)
+  })
 })
 
 describe('getRandomValidator function', () => {
