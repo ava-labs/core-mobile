@@ -6,10 +6,12 @@ import {
 import { showSimpleToast } from 'components/Snackbar'
 import { formatDistanceToNow } from 'date-fns'
 import AppNavigation from 'navigation/AppNavigation'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { TotpErrors } from 'seedless/errors'
-import SeedlessService from 'seedless/services/SeedlessService'
+import SeedlessExportService from 'seedless/services/SeedlessExportService'
+import SeedlessSessionManager from 'seedless/services/SeedlessSessionManager'
 import { UserExportResponse } from 'seedless/types'
+import { startRefreshSeedlessTokenFlow } from 'seedless/utils/startRefreshSeedlessTokenFlow'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import PasskeyService from 'services/passkey/PasskeyService'
 import { Result } from 'types/result'
@@ -27,7 +29,7 @@ const HOURS_48 = 60 * 60 * 48
 const ONE_MINUTE = 60
 
 const EXPORT_DELAY =
-  SeedlessService.getEnvironment() === 'prod' ? HOURS_48 : ONE_MINUTE
+  SeedlessSessionManager.environment === 'prod' ? HOURS_48 : ONE_MINUTE
 
 type OnVerifyMfaSuccess<T> = (response: T) => Promise<void>
 
@@ -44,22 +46,23 @@ interface ReturnProps {
   ) => Promise<UserExportResponse | undefined>
 }
 
-export const useSeedlessMnemonicExport = (): ReturnProps => {
+export const useSeedlessMnemonicExport = (keyId: string): ReturnProps => {
   const [pendingRequest, setPendingRequest] = useState<UserExportInitResponse>()
   const [mnemonic, setMnemonic] = useState<string>()
   const [state, setState] = useState<ExportState>(ExportState.Loading)
   const [progress, setProgress] = useState(0)
-  const [keyId, setKeyId] = useState('')
   const [timeLeft, setTimeLeft] = useState('')
+
+  const seedlessExportService = useMemo(() => new SeedlessExportService(), [])
 
   const deleteExport = useCallback(async (): Promise<void> => {
     try {
-      const pending = await SeedlessService.userExportList()
+      const pending = await seedlessExportService.userExportList()
       if (!pending) {
         Logger.error('deleteExport: no pending export request')
         return
       }
-      await SeedlessService.userExportDelete(keyId)
+      await seedlessExportService.userExportDelete(keyId)
       setPendingRequest(undefined)
       setMnemonic(undefined)
       setState(ExportState.NotInitiated)
@@ -69,35 +72,41 @@ export const useSeedlessMnemonicExport = (): ReturnProps => {
       AnalyticsService.capture('SeedlessExportCancelFailed')
       showSimpleToast('Unable to delete export request')
     }
-  }, [keyId])
+  }, [keyId, seedlessExportService])
 
-  const handleFidoVerify = async (
-    response: UserExportResponse
-  ): Promise<UserExportResponse | undefined> => {
-    try {
-      const challenge = await SeedlessService.fidoApproveStart(response.mfaId())
-      const credential = await PasskeyService.authenticate(
-        challenge.options,
-        true
-      )
-      const mfaRequestInfo = await challenge.answer(credential)
+  const handleFidoVerify = useCallback(
+    async (
+      response: UserExportResponse
+    ): Promise<UserExportResponse | undefined> => {
+      try {
+        const challenge =
+          await seedlessExportService.sessionManager.fidoApproveStart(
+            response.mfaId()
+          )
+        const credential = await PasskeyService.authenticate(
+          challenge.options,
+          true
+        )
+        const mfaRequestInfo = await challenge.answer(credential)
 
-      if (!mfaRequestInfo.receipt?.confirmation) {
-        throw new Error('FIDO authentication failed')
+        if (!mfaRequestInfo.receipt?.confirmation) {
+          throw new Error('FIDO authentication failed')
+        }
+        return seedlessExportService.signWithMfaApproval(
+          response,
+          mfaRequestInfo.receipt.confirmation
+        )
+      } catch (e) {
+        Logger.error('handleFidoVerify error: ', e)
+        showSimpleToast('FIDO authentication failed')
       }
-      return SeedlessService.signWithMfaApproval(
-        response,
-        mfaRequestInfo.receipt.confirmation
-      )
-    } catch (e) {
-      Logger.error('handleFidoVerify error: ', e)
-      showSimpleToast('FIDO authentication failed')
-    }
-  }
+    },
+    [seedlessExportService]
+  )
 
   const onVerifyMfa = useCallback(
     async (response, onVerifySuccess): Promise<void> => {
-      const mfaType = await SeedlessService.getMfaType()
+      const mfaType = await seedlessExportService.getMfaType()
       if (mfaType === undefined) {
         Logger.error(`Unsupported MFA type: ${mfaType}`)
         showSimpleToast(`Unsupported MFA type: ${mfaType}`)
@@ -106,7 +115,10 @@ export const useSeedlessMnemonicExport = (): ReturnProps => {
       const onVerifyCode = (
         code: string
       ): Promise<Result<UserExportResponse, TotpErrors>> => {
-        return SeedlessService.verifyApprovalCode(response, code)
+        return seedlessExportService.sessionManager.verifyApprovalCode(
+          response,
+          code
+        )
       }
       if (mfaType === 'totp') {
         Navigation.navigate({
@@ -134,18 +146,20 @@ export const useSeedlessMnemonicExport = (): ReturnProps => {
         )
       }
     },
-    []
+    [seedlessExportService, handleFidoVerify]
   )
 
   const initExport = useCallback(async (): Promise<void> => {
     try {
-      const pending = await SeedlessService.userExportList()
+      const pending = await seedlessExportService.userExportList()
 
       if (pending) {
         throw new Error('initExport:pendingRequest in progress')
       }
 
-      const exportInitResponse = await SeedlessService.userExportInit(keyId)
+      const exportInitResponse = await seedlessExportService.userExportInit(
+        keyId
+      )
 
       if (!exportInitResponse.requiresMfa()) {
         throw new Error('initExport:must require mfa')
@@ -161,13 +175,13 @@ export const useSeedlessMnemonicExport = (): ReturnProps => {
       Logger.error('initExport error: ', e)
       showSimpleToast('Unable to start export request')
     }
-  }, [keyId, onVerifyMfa])
+  }, [keyId, onVerifyMfa, seedlessExportService])
 
   const completeExport = useCallback(async (): Promise<void> => {
     setMnemonic(undefined)
     try {
-      const keyPair = await SeedlessService.userExportGenerateKeyPair()
-      const exportReponse = await SeedlessService.userExportComplete(
+      const keyPair = await seedlessExportService.userExportGenerateKeyPair()
+      const exportReponse = await seedlessExportService.userExportComplete(
         keyId,
         keyPair.publicKey
       )
@@ -179,7 +193,7 @@ export const useSeedlessMnemonicExport = (): ReturnProps => {
       const onVerifySuccess: OnVerifyMfaSuccess<
         CubeSignerResponse<UserExportCompleteResponse>
       > = async response => {
-        const decryptedMnemonic = await SeedlessService.userExportDecrypt(
+        const decryptedMnemonic = await seedlessExportService.userExportDecrypt(
           keyPair.privateKey,
           response.data()
         )
@@ -191,7 +205,7 @@ export const useSeedlessMnemonicExport = (): ReturnProps => {
       Logger.error('failed to complete export request error: ', e)
       showSimpleToast('Unable to complete export request')
     }
-  }, [keyId, onVerifyMfa])
+  }, [keyId, onVerifyMfa, seedlessExportService])
 
   const updateProgress = useCallback(async () => {
     if (!pendingRequest) {
@@ -215,27 +229,39 @@ export const useSeedlessMnemonicExport = (): ReturnProps => {
       setState(ExportState.ReadyToExport)
       setTimeLeft(formatDistanceToNow(new Date(availableUntil * 1000)))
     } else {
-      await SeedlessService.userExportDelete(keyId)
+      await seedlessExportService.userExportDelete(keyId)
       setState(ExportState.NotInitiated)
     }
 
     setProgress(
       Math.min(Math.max(0, (secondsPassed / EXPORT_DELAY) * 100), 100)
     )
-  }, [keyId, pendingRequest])
+  }, [keyId, pendingRequest, seedlessExportService])
 
   useEffect(() => {
     const checkPendingExports = async (): Promise<void> => {
-      const key = await SeedlessService.getMnemonicKeysList()
-      if (key?.key_id) {
-        setKeyId(key.key_id)
-      }
-      const pendingExport = await SeedlessService.userExportList()
+      const pendingExport = await seedlessExportService.userExportList()
       setState(pendingExport ? ExportState.Pending : ExportState.NotInitiated)
       setPendingRequest(pendingExport)
     }
-    checkPendingExports()
-  }, [])
+
+    startRefreshSeedlessTokenFlow(seedlessExportService.sessionManager)
+      .then(result => {
+        if (result.success) {
+          checkPendingExports()
+        } else {
+          if (result.error.name !== 'USER_CANCELED') {
+            showSimpleToast('Unable to start export request. Please try again.')
+          }
+          Navigation.goBack()
+        }
+      })
+      .catch(e => {
+        Logger.error('startRefreshSeedlessTokenFlow error', e)
+        showSimpleToast('Unable to start export request. Please try again.')
+        Navigation.goBack()
+      })
+  }, [seedlessExportService])
 
   useEffect(() => {
     if (!pendingRequest) {

@@ -14,6 +14,7 @@ import { copyToClipboard } from 'utils/DeviceTools'
 import Logger from 'utils/Logger'
 import { BackButton } from 'components/BackButton'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import SeedlessService from 'seedless/services/SeedlessService'
 import { SeedlessExportInstructions } from './SeedlessExportInstructions'
 import { RecoveryPhrasePending } from './RecoveryPhrasePending'
 
@@ -25,6 +26,7 @@ export const SeedlessExportInitial = (): JSX.Element => {
   const [hideMnemonic, setHideMnemonic] = useState(true)
   const { navigate, setOptions, goBack, canGoBack } =
     useNavigation<SeedlessExportInitialScreenProps['navigation']>()
+  const [keyId, setKeyId] = useState('')
 
   const {
     state,
@@ -34,7 +36,7 @@ export const SeedlessExportInitial = (): JSX.Element => {
     initExport,
     deleteExport,
     completeExport
-  } = useSeedlessMnemonicExport()
+  } = useSeedlessMnemonicExport(keyId)
 
   const onCancelExportRequest = (): void => {
     navigate(AppNavigation.SeedlessExport.ConfirmCancelModal, {
@@ -81,6 +83,17 @@ export const SeedlessExportInitial = (): JSX.Element => {
   useEffect(() => {
     mnemonic && setHideMnemonic(false)
   }, [mnemonic])
+
+  useEffect(() => {
+    const getKeyId = async (): Promise<void> => {
+      const key = await SeedlessService.getMnemonicKeysList()
+
+      if (key?.key_id) {
+        setKeyId(key.key_id)
+      }
+    }
+    getKeyId()
+  }, [])
 
   const buttonOverride = (): JSX.Element => {
     return (
