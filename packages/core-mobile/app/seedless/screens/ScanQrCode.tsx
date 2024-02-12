@@ -33,7 +33,7 @@ export const ScanQrCode = (): JSX.Element => {
 
   useEffect(() => {
     const getTotpUrl = async (): Promise<void> => {
-      const result = await SeedlessService.setTotp()
+      const result = await SeedlessService.sessionManager.setTotp()
       if (result.success && result.value) {
         setTotpUrl(result.value)
       }
