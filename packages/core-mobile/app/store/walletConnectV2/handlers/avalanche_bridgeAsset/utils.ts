@@ -66,7 +66,8 @@ const paramsSchema = z.tuple([
 const approveDataSchema = z.object({
   amountStr: z.string(),
   asset: assetSchema,
-  currentBlockchain: blockchainSchema
+  currentBlockchain: blockchainSchema,
+  maxFeePerGas: z.bigint().optional()
 })
 
 export const parseRequestParams = (params: unknown) => {

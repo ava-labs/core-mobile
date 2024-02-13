@@ -72,7 +72,7 @@ class AvalancheBridgeAssetHandler
     const activeAccount = selectActiveAccount(state)
     const allNetworks = selectNetworks(state)
     const bridgeAppConfig = selectBridgeAppConfig(state)
-    const { currentBlockchain, amountStr, asset } = result.data
+    const { currentBlockchain, amountStr, asset, maxFeePerGas } = result.data
     const denomination = asset.denomination
 
     const amount = bnToBig(stringToBN(amountStr, denomination), denomination)
@@ -85,7 +85,8 @@ class AvalancheBridgeAssetHandler
         config: bridgeAppConfig,
         activeAccount,
         allNetworks,
-        isTestnet: isDeveloperMode
+        isTestnet: isDeveloperMode,
+        maxFeePerGas
       })
       if (!txn) {
         throw Error('transaction not found')
