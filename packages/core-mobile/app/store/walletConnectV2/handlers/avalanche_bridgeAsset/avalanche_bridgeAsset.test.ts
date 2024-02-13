@@ -195,7 +195,8 @@ describe('avalanche_bridgeAsset handler', () => {
           data: {
             amountStr: '0.01',
             asset: testAsset,
-            currentBlockchain: 'avalanche'
+            currentBlockchain: 'avalanche',
+            maxFeePerGas: BigInt(100)
           }
         },
         mockListenerApi
@@ -208,7 +209,8 @@ describe('avalanche_bridgeAsset handler', () => {
         config: mockBridgeConfig,
         activeAccount: mockActiveAccount,
         allNetworks: mockNetworks,
-        isTestnet: mockIsDeveloperMode
+        isTestnet: mockIsDeveloperMode,
+        maxFeePerGas: BigInt(100)
       })
 
       expect(result).toEqual({ success: true, value: mockTx })
