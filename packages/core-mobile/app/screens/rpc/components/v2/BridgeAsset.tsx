@@ -13,6 +13,8 @@ import { useDappConnectionV2 } from 'hooks/useDappConnectionV2'
 import { useSelector } from 'react-redux'
 import { selectIsSeedlessSigningBlocked } from 'store/posthog'
 import FeatureBlocked from 'screens/posthog/FeatureBlocked'
+import { useNetworkFee } from 'hooks/useNetworkFee'
+import { selectActiveNetwork } from 'store/network'
 import SimplePrompt from '../shared/SimplePrompt'
 
 type BridgeAssetScreenProps = WalletScreenProps<
@@ -22,6 +24,8 @@ type BridgeAssetScreenProps = WalletScreenProps<
 const BridgeAsset = (): JSX.Element => {
   const isSeedlessSigningBlocked = useSelector(selectIsSeedlessSigningBlocked)
   const { goBack } = useNavigation<BridgeAssetScreenProps['navigation']>()
+  const network = useSelector(selectActiveNetwork)
+  const { data: networkFee } = useNetworkFee(network)
 
   const { request, asset, amountStr, currentBlockchain } =
     useRoute<BridgeAssetScreenProps['route']>().params
@@ -46,9 +50,22 @@ const BridgeAsset = (): JSX.Element => {
   }, [goBack, onReject, request])
 
   const approveAndClose = useCallback(() => {
-    onApprove(request, { currentBlockchain, amountStr, asset })
+    onApprove(request, {
+      currentBlockchain,
+      amountStr,
+      asset,
+      maxFeePerGas: networkFee?.low.maxFeePerGas.toSubUnit()
+    })
     goBack()
-  }, [amountStr, asset, currentBlockchain, goBack, onApprove, request])
+  }, [
+    amountStr,
+    asset,
+    currentBlockchain,
+    goBack,
+    networkFee?.low.maxFeePerGas,
+    onApprove,
+    request
+  ])
 
   const renderIcon = (): JSX.Element => (
     <Avatar.Custom

@@ -21,6 +21,7 @@ import {
 import { noop } from '@avalabs/utils-sdk'
 import { Networks } from 'store/network'
 import { TransactionResponse } from 'ethers'
+import { omit } from 'lodash'
 
 type TransferAssetParams = {
   currentBlockchain: Blockchain
@@ -30,6 +31,7 @@ type TransferAssetParams = {
   activeAccount: Account | undefined
   allNetworks: Networks
   isTestnet: boolean
+  maxFeePerGas?: bigint
 }
 
 export class BridgeService {
@@ -47,7 +49,8 @@ export class BridgeService {
     config,
     activeAccount,
     allNetworks,
-    isTestnet
+    isTestnet,
+    maxFeePerGas
   }: TransferAssetParams): Promise<TransactionResponse | undefined> {
     if (!config) {
       throw new Error('missing bridge config')
@@ -84,8 +87,13 @@ export class BridgeService {
       config,
       noop,
       noop,
-      txData =>
-        WalletService.sign(txData, activeAccount.index, blockchainNetwork)
+      txData => {
+        const tx = {
+          ...omit(txData, 'gasPrice'),
+          maxFeePerGas
+        }
+        return WalletService.sign(tx, activeAccount.index, blockchainNetwork)
+      }
     )
   }
 }
