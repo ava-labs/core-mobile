@@ -19,7 +19,11 @@ import { useSelector } from 'react-redux'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { Eip1559Fees } from 'utils/Utils'
 import { NetworkTokenUnit } from 'types'
-import { selectActiveNetwork, selectNetworks } from 'store/network'
+import {
+  selectActiveNetwork,
+  selectNetwork,
+  selectNetworks
+} from 'store/network'
 import { FeePreset } from 'components/NetworkFeeSelector'
 import { selectActiveAccount } from 'store/account'
 import { bigToBN } from '@avalabs/utils-sdk'
@@ -28,9 +32,11 @@ import BN from 'bn.js'
 import BridgeService from 'services/bridge/BridgeService'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectBridgeAppConfig } from 'store/bridge'
+import UnifiedBridgeService from 'services/bridge/UnifiedBridgeService'
 import { isUnifiedBridgeAsset } from '../utils/bridgeUtils'
 import { useUnifiedBridge } from './useUnifiedBridge/useUnifiedBridge'
 import { useHasEnoughForGas } from './useHasEnoughtForGas'
+import { getTargetChainId } from './useUnifiedBridge/utils'
 
 export interface BridgeAdapter {
   address?: string
@@ -68,7 +74,6 @@ interface Bridge extends BridgeAdapter {
   setSelectedFeePreset: (preset: FeePreset) => void
   denomination: number
   amountBN: BN
-  sendFee: BN
 }
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
@@ -80,8 +85,20 @@ export default function useBridge(selectedAsset?: AssetBalance): Bridge {
   const activeNetwork = useSelector(selectActiveNetwork)
   const activeAccount = useSelector(selectActiveAccount)
   const [sourceBalance, setSourceBalance] = useState<AssetBalance>()
-  const { currentBlockchain, currentAsset, currentAssetData, setCurrentAsset } =
-    useBridgeSDK()
+  const {
+    currentBlockchain,
+    currentAsset,
+    currentAssetData,
+    setCurrentAsset,
+    targetBlockchain
+  } = useBridgeSDK()
+
+  const targetChainId = useMemo(
+    () => getTargetChainId(isTestnet, targetBlockchain),
+    [isTestnet, targetBlockchain]
+  )
+
+  const targetNetwork = useSelector(selectNetwork(targetChainId))
 
   // reset current asset when unmounting
   useEffect(() => {
@@ -108,7 +125,6 @@ export default function useBridge(selectedAsset?: AssetBalance): Bridge {
 
   const bridgeFee = useBridgeFeeEstimate(amount) || BIG_ZERO
   const minimum = useMinimumTransferAmount(amount)
-  const [sendFee, setSendFee] = useState<BN>(new BN(0))
   const hasEnoughForNetworkFee = useHasEnoughForGas()
 
   const btc = useBtcBridge(amount)
@@ -154,29 +170,39 @@ export default function useBridge(selectedAsset?: AssetBalance): Bridge {
   useEffect(() => {
     const getEstimatedGasLimit = async (): Promise<bigint | undefined> => {
       if (!activeAccount || !selectedAsset || !currentAssetData) return
-      const estimatedGasLimit = await BridgeService.estimateGas({
-        currentBlockchain,
-        amount,
-        activeAccount,
-        activeNetwork,
-        currency,
-        allNetworks,
-        asset: currentAssetData,
-        isTestnet,
-        config
-      })
-      if (estimatedGasLimit) {
-        const fee = new BN(Number(estimatedGasLimit)).mul(
-          new BN(eip1559Fees.maxFeePerGas.toFeeUnit())
-        )
-        setSendFee(fee)
-        setEip1559Fees(prev => ({
-          ...prev,
-          gasLimit: Number(estimatedGasLimit)
-        }))
+      let estimatedGasLimit: bigint | undefined
+
+      if (unified.isAssetSupported) {
+        if (amount.gt(BIG_ZERO)) {
+          estimatedGasLimit = await UnifiedBridgeService.estimateGas({
+            asset: selectedAsset.asset,
+            amount,
+            activeAccount,
+            sourceNetwork: activeNetwork,
+            targetNetwork
+          })
+        }
+      } else {
+        estimatedGasLimit = await BridgeService.estimateGas({
+          currentBlockchain,
+          amount,
+          activeAccount,
+          activeNetwork,
+          currency,
+          allNetworks,
+          asset: currentAssetData,
+          isTestnet,
+          config
+        })
       }
+      setEip1559Fees(prev => ({
+        ...prev,
+        gasLimit: Number(estimatedGasLimit ?? 0)
+      }))
     }
-    getEstimatedGasLimit().catch(Logger.error)
+    getEstimatedGasLimit().catch(e => {
+      Logger.error('Failed to estimate gas limit', e)
+    })
   }, [
     activeAccount,
     activeNetwork,
@@ -186,9 +212,10 @@ export default function useBridge(selectedAsset?: AssetBalance): Bridge {
     currency,
     currentAssetData,
     currentBlockchain,
-    eip1559Fees.maxFeePerGas,
     isTestnet,
-    selectedAsset
+    selectedAsset,
+    targetNetwork,
+    unified.isAssetSupported
   ])
 
   const defaults = {
@@ -204,8 +231,7 @@ export default function useBridge(selectedAsset?: AssetBalance): Bridge {
     selectedFeePreset,
     setSelectedFeePreset,
     denomination,
-    amountBN,
-    sendFee
+    amountBN
   }
 
   if (unified.isAssetSupported) {

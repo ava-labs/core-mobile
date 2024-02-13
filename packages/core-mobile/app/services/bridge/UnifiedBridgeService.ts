@@ -18,9 +18,12 @@ import NetworkService from 'services/network/NetworkService'
 import WalletService from 'services/wallet/WalletService'
 import { assertNotUndefined } from 'utils/assertions'
 import Logger from 'utils/Logger'
-import { noop } from '@avalabs/utils-sdk'
+import { bigToBigInt, noop } from '@avalabs/utils-sdk'
 import { NetworkTokenUnit } from 'types'
 import { Eip1559Fees } from 'utils/Utils'
+import { isUnifiedBridgeAsset } from 'screens/bridge/utils/bridgeUtils'
+import { Asset } from '@avalabs/bridge-sdk'
+import Big from 'big.js'
 
 type BridgeService = ReturnType<typeof createUnifiedBridgeService>
 
@@ -181,6 +184,53 @@ export class UnifiedBridgeService {
     this.service.trackTransfer({
       bridgeTransfer,
       updateListener
+    })
+  }
+
+  async estimateGas({
+    asset,
+    amount,
+    activeAccount,
+    sourceNetwork,
+    targetNetwork
+  }: {
+    asset: Asset | BridgeAsset
+    amount: Big
+    activeAccount: Account
+    sourceNetwork: Network
+    targetNetwork?: Network
+  }): Promise<bigint> {
+    if (!activeAccount) {
+      throw new Error('no active account found')
+    }
+
+    if (!targetNetwork) {
+      throw new Error('no target network found')
+    }
+
+    if (isBitcoinNetwork(sourceNetwork)) {
+      throw ethErrors.rpc.invalidParams({
+        data: {
+          reason: 'unsupported network'
+        }
+      })
+    }
+
+    if (!isUnifiedBridgeAsset(asset)) {
+      throw new Error('Asset is not supported ')
+    }
+
+    const sourceChain = await this.buildChain(sourceNetwork)
+    const targetChain = await this.buildChain(targetNetwork)
+
+    const fromAddress = activeAccount.address as `0x${string}`
+
+    return await this.service.estimateGas({
+      asset,
+      fromAddress,
+      amount: bigToBigInt(amount, asset.decimals),
+      sourceChain,
+      targetChain
     })
   }
 
