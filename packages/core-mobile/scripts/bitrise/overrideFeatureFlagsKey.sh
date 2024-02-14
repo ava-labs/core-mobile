@@ -3,8 +3,6 @@
 set -e
 # make pipelines' return status equal the last command to exit with a non-zero status, or zero if all commands exit successfully
 set -o pipefail
-# debug log
-set -x
 
 # Check if the environment variable USE_TEST_FEATURE_FLAGS is set to "true"
 if [ "$USE_TEST_FEATURE_FLAGS" = "true" ]; then
