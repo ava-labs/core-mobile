@@ -6,6 +6,14 @@ set -o pipefail
 # debug log
 set -x
 
+if ! cat /etc/issue 2>/dev/null
+then
+    # do nothing
+    :
+else 
+  stack=$( cat /etc/issue )
+fi
+
 # Check if the environment variable USE_SEEDLESS_GAMMA is set to "true"
 if [ "$USE_SEEDLESS_GAMMA" = "true" ]; then
 
@@ -17,8 +25,16 @@ if [ "$USE_SEEDLESS_GAMMA" = "true" ]; then
 
         # Check if the value is not empty (found in .env.development)
         if [ -n "$value" ]; then
+
             # Replace the value in .env
-            sed -i '' "s|$field=.*|$field=$value|g" ".env"
+            if [[ $stack == *Ubuntu* ]]
+            then
+                # on ubuntu, the command doesn't need the empty string extension
+                sed -i -e "s|$field=.*|$field=$value|g" ".env"
+            else
+                sed -i '' -e "s|$field=.*|$field=$value|g" ".env"
+            fi
+           
         fi
 
     done
