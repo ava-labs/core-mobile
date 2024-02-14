@@ -795,6 +795,7 @@ const Bridge: FC = () => {
         <NetworkFeeSelector
           gasLimit={eip1559Fees.gasLimit}
           onFeesChange={handleFeesChange}
+          isGasLimitEditable={false}
         />
       </ScrollViewList>
       {renderTransferBtn()}
