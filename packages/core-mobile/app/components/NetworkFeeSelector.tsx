@@ -43,12 +43,14 @@ const NetworkFeeSelector = ({
   chainId,
   gasLimit,
   onFeesChange,
-  maxNetworkFee
+  maxNetworkFee,
+  isGasLimitEditable = true
 }: {
   chainId?: number
   gasLimit: number
   onFeesChange?(fees: Eip1559Fees<NetworkTokenUnit>, feePreset: FeePreset): void
   maxNetworkFee?: NetworkTokenUnit
+  isGasLimitEditable?: boolean
 }): JSX.Element => {
   const { navigate } = useNavigation<NavigationProp>()
   const { theme } = useApplicationContext()
@@ -151,7 +153,8 @@ const NetworkFeeSelector = ({
         customFees?.maxPriorityFeePerGas ??
         networkFee.low.maxPriorityFeePerGas ??
         NetworkTokenUnit.fromNetwork(activeNetwork),
-      gasLimit
+      gasLimit,
+      isGasLimitEditable
     })
   }
 

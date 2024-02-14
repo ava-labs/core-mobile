@@ -12,6 +12,7 @@ type Props<T extends TokenBaseUnit<T>> = {
   onSave: (customFees: Eip1559Fees<T>) => void
   network: Network
   lowMaxFeePerGas: NetworkTokenUnit
+  isGasLimitEditable?: boolean
 } & Eip1559Fees<T>
 
 const EditGasLimitBottomSheet = ({
@@ -21,7 +22,8 @@ const EditGasLimitBottomSheet = ({
   maxPriorityFeePerGas,
   maxFeePerGas,
   network,
-  lowMaxFeePerGas
+  lowMaxFeePerGas,
+  isGasLimitEditable
 }: Props<NetworkTokenUnit>): JSX.Element => {
   return (
     <Sheet onClose={onClose || noop}>
@@ -35,6 +37,7 @@ const EditGasLimitBottomSheet = ({
         maxFeePerGas={maxFeePerGas}
         maxPriorityFeePerGas={maxPriorityFeePerGas}
         lowMaxFeePerGas={lowMaxFeePerGas}
+        isGasLimitEditable={isGasLimitEditable}
       />
     </Sheet>
   )

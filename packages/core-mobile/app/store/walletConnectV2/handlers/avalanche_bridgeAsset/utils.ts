@@ -67,7 +67,8 @@ const approveDataSchema = z.object({
   amountStr: z.string(),
   asset: assetSchema,
   currentBlockchain: blockchainSchema,
-  maxFeePerGas: z.bigint().optional()
+  maxFeePerGas: z.bigint(),
+  maxPriorityFeePerGas: z.bigint().optional()
 })
 
 export const parseRequestParams = (params: unknown) => {

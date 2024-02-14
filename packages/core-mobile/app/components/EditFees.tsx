@@ -19,6 +19,7 @@ type EditFeesProps<T extends TokenBaseUnit<T>> = {
   onSave: (customFees: Eip1559Fees<T>) => void
   onClose?: () => void
   lowMaxFeePerGas: NetworkTokenUnit
+  isGasLimitEditable?: boolean
 } & Eip1559Fees<T>
 
 const maxBaseFeeInfoMessage =
@@ -45,7 +46,8 @@ const EditFees = ({
   gasLimit: initGasLimit,
   network,
   onSave,
-  onClose
+  onClose,
+  isGasLimitEditable
 }: EditFeesProps<NetworkTokenUnit>): JSX.Element => {
   const selectedCurrency = useSelector(
     selectSelectedCurrency
@@ -152,6 +154,7 @@ const EditFees = ({
         label={'Gas Limit'}
         mode={'amount'}
         text={newGasLimit}
+        editable={isGasLimitEditable}
         popOverInfoText={gasLimitInfoMessage}
         onChangeText={text => setNewGasLimit(sanitized(text))}
         errorText={gasLimitError}

@@ -132,7 +132,6 @@ describe('avalanche_bridgeAsset handler', () => {
   })
 
   describe('handle', () => {
-    // eslint-disable-next-line jest/expect-expect
     it('should return error when params are invalid', async () => {
       const invalidParamsScenarios = [
         null,
@@ -171,7 +170,6 @@ describe('avalanche_bridgeAsset handler', () => {
   })
 
   describe('approve', () => {
-    // eslint-disable-next-line jest/expect-expect
     it('should return error when approve data is invalid', async () => {
       const invalidDataScenarios = [
         null,
@@ -196,7 +194,8 @@ describe('avalanche_bridgeAsset handler', () => {
             amountStr: '0.01',
             asset: testAsset,
             currentBlockchain: 'avalanche',
-            maxFeePerGas: BigInt(100)
+            maxFeePerGas: 100n,
+            maxPriorityFeePerGas: 100n
           }
         },
         mockListenerApi
@@ -210,7 +209,8 @@ describe('avalanche_bridgeAsset handler', () => {
         activeAccount: mockActiveAccount,
         allNetworks: mockNetworks,
         isTestnet: mockIsDeveloperMode,
-        maxFeePerGas: BigInt(100)
+        maxFeePerGas: 100n,
+        maxPriorityFeePerGas: 100n
       })
 
       expect(result).toEqual({ success: true, value: mockTx })
@@ -230,7 +230,8 @@ describe('avalanche_bridgeAsset handler', () => {
           data: {
             amountStr: '0.01',
             asset: testAsset,
-            currentBlockchain: 'avalanche'
+            currentBlockchain: 'avalanche',
+            maxFeePerGas: 100n
           }
         },
         mockListenerApi
@@ -243,7 +244,9 @@ describe('avalanche_bridgeAsset handler', () => {
         config: mockBridgeConfig,
         activeAccount: mockActiveAccount,
         allNetworks: mockNetworks,
-        isTestnet: mockIsDeveloperMode
+        isTestnet: mockIsDeveloperMode,
+        maxFeePerGas: 100n,
+        maxPriorityFeePerGas: undefined
       })
 
       expect(mockCaptureException).toHaveBeenCalledWith(testError, {

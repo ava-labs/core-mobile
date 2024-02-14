@@ -39,7 +39,8 @@ type TransferAssetParams = {
   activeAccount: Account | undefined
   allNetworks: Networks
   isTestnet: boolean
-  maxFeePerGas?: bigint
+  maxFeePerGas: bigint
+  maxPriorityFeePerGas?: bigint
 }
 
 export class BridgeService {
@@ -58,7 +59,8 @@ export class BridgeService {
     activeAccount,
     allNetworks,
     isTestnet,
-    maxFeePerGas
+    maxFeePerGas,
+    maxPriorityFeePerGas
   }: TransferAssetParams): Promise<TransactionResponse | undefined> {
     if (!config) {
       throw new Error('missing bridge config')
@@ -98,7 +100,8 @@ export class BridgeService {
       txData => {
         const tx = {
           ...omit(txData, 'gasPrice'),
-          maxFeePerGas
+          maxFeePerGas,
+          maxPriorityFeePerGas
         }
         return WalletService.sign(tx, activeAccount.index, blockchainNetwork)
       }
