@@ -27,11 +27,11 @@ import { Avax } from 'types/Avax'
 import { bnToBigint } from 'utils/bigNumbers/bnToBigint'
 import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKeysStorage'
 import SeedlessWallet from 'seedless/services/wallet/SeedlessWallet'
-import { PChainId } from '@avalabs/glacier-sdk'
 import { isAvalancheTransactionRequest, isBtcTransactionRequest } from './utils'
 import WalletInitializer from './WalletInitializer'
 import WalletFactory from './WalletFactory'
 import MnemonicWalletInstance from './MnemonicWallet'
+import { PChainId } from '@avalabs/glacier-sdk'
 
 type InitProps = {
   mnemonic: string
