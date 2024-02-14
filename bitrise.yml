@@ -340,6 +340,10 @@ workflows:
         title: Override Feature Flags Key
         inputs:
         - file_path: scripts/bitrise/overrideFeatureFlagsKey.sh
+    - script-runner@0:
+        title: Override Seedless Envs
+        inputs:
+        - file_path: scripts/bitrise/overrideSeedlessEnvs.sh
   _install-node-18:
     steps:
     - restore-cache@1:
