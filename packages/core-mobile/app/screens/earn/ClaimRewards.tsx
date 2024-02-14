@@ -8,8 +8,6 @@ import { useIsFocused, useNavigation, useRoute } from '@react-navigation/native'
 import Separator from 'components/Separator'
 import AvaText from 'components/AvaText'
 import { Row } from 'components/Row'
-import { useSelector } from 'react-redux'
-import { selectActiveNetwork } from 'store/network'
 import { useNAvaxFormatter } from 'hooks/formatter/useNAvaxFormatter'
 import { Space } from 'components/Space'
 import { useClaimRewards } from 'hooks/earn/useClaimRewards'
@@ -30,7 +28,6 @@ const ClaimRewards = (): JSX.Element | null => {
   const { theme } = useApplicationContext()
   const { navigate, goBack } = useNavigation<ScreenProps['navigation']>()
   const onBack = useRoute<ScreenProps['route']>().params?.onBack
-  const activeNetwork = useSelector(selectActiveNetwork)
   const { data } = usePChainBalance()
   const { totalFees } = useClaimFees()
   const nAvaxFormatter = useNAvaxFormatter()
@@ -60,8 +57,6 @@ const ClaimRewards = (): JSX.Element | null => {
   if (data.unlockedUnstaked[0]?.amount === undefined) {
     return <EmptyClaimRewards />
   }
-
-  const tokenSymbol = activeNetwork.networkToken.symbol
 
   const [claimableAmountInAvax, claimableAmountInCurrency] = nAvaxFormatter(
     data.unlockedUnstaked[0]?.amount,
@@ -137,7 +132,7 @@ const ClaimRewards = (): JSX.Element | null => {
           <AvaText.Heading1
             textStyle={{ marginTop: -2 }}
             testID="claimable_balance">
-            {claimableAmountInAvax + ' ' + tokenSymbol}
+            {claimableAmountInAvax + ' AVAX'}
           </AvaText.Heading1>
         </Row>
         <Space y={4} />
