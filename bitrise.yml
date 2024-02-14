@@ -63,6 +63,9 @@ workflows:
     - USE_TEST_FEATURE_FLAGS: "true"
       opts:
         is_expand: false
+    - USE_SEEDLESS_GAMMA: "true"
+      opts:
+        is_expand: false
     steps:
     - install-missing-android-tools@3:
         inputs:
@@ -141,6 +144,9 @@ workflows:
     - USE_TEST_FEATURE_FLAGS: "true"
       opts:
         is_expand: false
+    - USE_SEEDLESS_GAMMA: "true"
+      opts:
+        is_expand: false
     - POST_TO_TESTRAIL: "true"
       opts:
         is_expand: false
@@ -184,6 +190,9 @@ workflows:
     - USE_TEST_FEATURE_FLAGS: "true"
       opts:
         is_expand: false
+    - USE_SEEDLESS_GAMMA: "true"
+      opts:
+        is_expand: false
     - POST_TO_TESTRAIL: "true"
       opts:
         is_expand: false
@@ -225,6 +234,9 @@ workflows:
       opts:
         is_expand: false
     - USE_TEST_FEATURE_FLAGS: "true"
+      opts:
+        is_expand: false
+    - USE_SEEDLESS_GAMMA: "true"
       opts:
         is_expand: false
     - POST_TO_TESTRAIL: "true"
@@ -521,6 +533,9 @@ workflows:
     - USE_TEST_FEATURE_FLAGS: "true"
       opts:
         is_expand: false
+    - USE_SEEDLESS_GAMMA: "true"
+      opts:
+        is_expand: false
     steps:
     - deploy-to-bitrise-io@2: {}
     - create-install-page-qr-code@1: {}
@@ -548,6 +563,9 @@ workflows:
       opts:
         is_expand: false
     - USE_TEST_FEATURE_FLAGS: "true"
+      opts:
+        is_expand: false
+    - USE_SEEDLESS_GAMMA: "true"
       opts:
         is_expand: false
     before_run:
@@ -647,6 +665,9 @@ workflows:
     - USE_TEST_FEATURE_FLAGS: "true"
       opts:
         is_expand: false
+    - USE_SEEDLESS_GAMMA: "true"
+      opts:
+        is_expand: false
     steps:
     - deploy-to-itunesconnect-application-loader@1:
         inputs:
@@ -681,6 +702,9 @@ workflows:
     - USE_TEST_FEATURE_FLAGS: "true"
       opts:
         is_expand: false
+    - USE_SEEDLESS_GAMMA: "true"
+      opts:
+        is_expand: false
     - POST_TO_TESTRAIL: "true"
       opts:
         is_expand: false
@@ -712,6 +736,9 @@ workflows:
       opts:
         is_expand: false
     - USE_TEST_FEATURE_FLAGS: "true"
+      opts:
+        is_expand: false
+    - USE_SEEDLESS_GAMMA: "true"
       opts:
         is_expand: false
     - POST_TO_TESTRAIL: "true"
