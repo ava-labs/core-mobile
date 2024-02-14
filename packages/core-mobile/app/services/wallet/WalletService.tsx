@@ -27,6 +27,7 @@ import { Avax } from 'types/Avax'
 import { bnToBigint } from 'utils/bigNumbers/bnToBigint'
 import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKeysStorage'
 import SeedlessWallet from 'seedless/services/wallet/SeedlessWallet'
+import { PChainId } from '@avalabs/glacier-sdk'
 import { isAvalancheTransactionRequest, isBtcTransactionRequest } from './utils'
 import WalletInitializer from './WalletInitializer'
 import WalletFactory from './WalletFactory'
@@ -458,19 +459,16 @@ class WalletService {
     )
 
     const utxoSet = await readOnlySigner.getUTXOs('P')
-    const config = {
-      rewardAddress
-    }
-
     const network = NetworkService.getAvalancheNetworkXP(isDevMode)
-
-    const unsignedTx = readOnlySigner.addDelegator(
+    const unsignedTx = readOnlySigner.addPermissionlessDelegator(
       utxoSet,
       nodeId,
-      stakeAmount,
       BigInt(startDate),
       BigInt(endDate),
-      config
+      stakeAmount,
+      PChainId._11111111111111111111111111111111LPO_YY,
+      undefined,
+      [rewardAddress]
     )
 
     shouldValidateBurnedAmount &&
