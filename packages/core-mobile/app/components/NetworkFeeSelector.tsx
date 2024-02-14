@@ -1,12 +1,7 @@
 import { Row } from 'components/Row'
-import AvaText from 'components/AvaText'
-import { View } from 'react-native'
-import AvaButton from 'components/AvaButton'
-import SettingsCogSVG from 'components/svg/SettingsCogSVG'
+import Settings from 'assets/icons/settings.svg'
 import { Space } from 'components/Space'
 import React, { FC, useEffect, useMemo, useState } from 'react'
-import { useApplicationContext } from 'contexts/ApplicationContext'
-import { Opacity50 } from 'resources/Constants'
 import { useSelector } from 'react-redux'
 import { Network, NetworkVMType } from '@avalabs/chains-sdk'
 import { useNavigation } from '@react-navigation/native'
@@ -19,6 +14,8 @@ import { calculateGasAndFees, Eip1559Fees, GasAndFees } from 'utils/Utils'
 import { useNetworkFee } from 'hooks/useNetworkFee'
 import { useNativeTokenPriceForNetwork } from 'hooks/useNativeTokenPriceForNetwork'
 import { NetworkTokenUnit } from 'types'
+import { Button, Text, View, alpha, useTheme } from '@avalabs/k2-mobile'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Tooltip } from './Tooltip'
 import InputText from './InputText'
 
@@ -52,8 +49,10 @@ const NetworkFeeSelector = ({
   maxNetworkFee?: NetworkTokenUnit
   isGasLimitEditable?: boolean
 }): JSX.Element => {
+  const {
+    appHook: { currencyFormatter }
+  } = useApplicationContext()
   const { navigate } = useNavigation<NavigationProp>()
-  const { theme } = useApplicationContext()
   const activeNetwork = useSelector(selectActiveNetwork)
   const requestedNetwork = useSelector(selectNetwork(chainId))
   const network = chainId ? requestedNetwork : activeNetwork
@@ -161,92 +160,118 @@ const NetworkFeeSelector = ({
   return (
     <>
       <Row style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-        {!isBtcNetwork && (
+        {isBtcNetwork ? (
+          <View sx={{ paddingVertical: 12 }}>
+            <Text variant="body2" sx={{ color: '$neutral50' }}>
+              Network Fee
+            </Text>
+          </View>
+        ) : (
           <Tooltip
             content={
               'Core estimates the maximum gas (maxFeePerGas) a transaction could consume based on network conditions. This transaction will likely consume less gas than estimated.'
             }
             position={'right'}
             style={{ width: 200 }}>
-            <AvaText.Body2>Maximum Network Fee</AvaText.Body2>
+            <Text variant="body2" sx={{ color: '$neutral50' }}>
+              Maximum Network Fee
+            </Text>
           </Tooltip>
         )}
-        {network?.vmName === NetworkVMType.EVM && (
-          <View>
-            <AvaButton.Icon onPress={() => goToEditGasLimit(network)}>
-              <SettingsCogSVG />
-            </AvaButton.Icon>
-          </View>
+        {network?.vmName === NetworkVMType.EVM && !isBtcNetwork && (
+          <Button
+            size="medium"
+            type="tertiary"
+            style={{ marginTop: 8 }}
+            onPress={() => goToEditGasLimit(network)}>
+            <Settings />
+          </Button>
         )}
       </Row>
       <Space y={4} />
 
-      <Row
-        style={{
-          justifyContent: 'space-between',
-          alignItems: 'center'
+      <View
+        sx={{
+          backgroundColor: '$neutral900',
+          padding: 16,
+          borderRadius: 8,
+          marginBottom: 16
         }}>
-        <FeeSelector
-          label={isBtcNetwork ? 'Slow' : FeePreset.Normal}
-          selected={selectedPreset === FeePreset.Normal}
-          onSelect={() => handleSelectedPreset(FeePreset.Normal)}
-          value={displayGasValues?.[FeePreset.Normal]}
-        />
-        {!networkFee?.isFixedFee && (
-          <>
-            <FeeSelector
-              label={isBtcNetwork ? 'Medium' : FeePreset.Fast}
-              selected={selectedPreset === FeePreset.Fast}
-              onSelect={() => handleSelectedPreset(FeePreset.Fast)}
-              value={displayGasValues?.[FeePreset.Fast]}
-            />
-            <FeeSelector
-              label={isBtcNetwork ? 'Fast' : FeePreset.Instant}
-              selected={selectedPreset === FeePreset.Instant}
-              onSelect={() => handleSelectedPreset(FeePreset.Instant)}
-              value={displayGasValues?.[FeePreset.Instant]}
-            />
-            <FeeSelector
-              label={FeePreset.Custom}
-              selected={selectedPreset === FeePreset.Custom}
-              onSelect={() => {
-                handleSelectedPreset(FeePreset.Custom)
-                network?.vmName === NetworkVMType.EVM &&
-                  goToEditGasLimit(network)
-              }}
-              placeholder={displayGasValues?.[FeePreset.Normal]}
-              value={
-                selectedPreset !== FeePreset.Custom && !customFees
-                  ? displayGasValues?.[FeePreset.Normal]
-                  : displayGasValues?.[FeePreset.Custom]
-              }
-            />
-          </>
+        <Row
+          style={{
+            justifyContent: 'space-between',
+            alignItems: 'center'
+          }}>
+          <FeeSelector
+            label={isBtcNetwork ? 'Slow' : FeePreset.Normal}
+            selected={selectedPreset === FeePreset.Normal}
+            onSelect={() => handleSelectedPreset(FeePreset.Normal)}
+            value={displayGasValues?.[FeePreset.Normal]}
+          />
+          {!networkFee?.isFixedFee && (
+            <>
+              <FeeSelector
+                label={isBtcNetwork ? 'Medium' : FeePreset.Fast}
+                selected={selectedPreset === FeePreset.Fast}
+                onSelect={() => handleSelectedPreset(FeePreset.Fast)}
+                value={displayGasValues?.[FeePreset.Fast]}
+              />
+              <FeeSelector
+                label={isBtcNetwork ? 'Fast' : FeePreset.Instant}
+                selected={selectedPreset === FeePreset.Instant}
+                onSelect={() => handleSelectedPreset(FeePreset.Instant)}
+                value={displayGasValues?.[FeePreset.Instant]}
+              />
+              <FeeSelector
+                label={FeePreset.Custom}
+                selected={selectedPreset === FeePreset.Custom}
+                onSelect={() => {
+                  handleSelectedPreset(FeePreset.Custom)
+                  network?.vmName === NetworkVMType.EVM &&
+                    goToEditGasLimit(network)
+                }}
+                placeholder={displayGasValues?.[FeePreset.Normal]}
+                value={
+                  selectedPreset !== FeePreset.Custom && !customFees
+                    ? displayGasValues?.[FeePreset.Normal]
+                    : displayGasValues?.[FeePreset.Custom]
+                }
+              />
+            </>
+          )}
+        </Row>
+        <Space y={20} />
+        <Row style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+          <Text variant="body2" sx={{ color: '$neutral400' }}>
+            Fee Amount
+          </Text>
+          <View sx={{ flexDirection: 'row' }}>
+            <Text sx={{ color: '$neutral50' }}>
+              {`${calculatedFees?.maxTotalFee.toDisplay(4) ?? 0} `}
+            </Text>
+            <Text variant="body1" sx={{ color: '$neutral400' }}>
+              {network?.networkToken?.symbol}
+            </Text>
+          </View>
+        </Row>
+        <Row style={{ justifyContent: 'flex-end' }}>
+          <Text variant="body3" sx={{ color: '$neutral400' }}>
+            {currencyFormatter(calculatedFees?.maxTotalFeeInCurrency ?? 0) +
+              ' ' +
+              selectedCurrency}
+          </Text>
+        </Row>
+
+        {maxNetworkFee && calculatedFees?.maxTotalFee.gt(maxNetworkFee) && (
+          <Text variant="body3" sx={{ color: '$dangerMain' }}>
+            Insufficient balance to cover gas costs. {'\n'}
+            {network?.networkToken?.symbol
+              ? `Please add ${network.networkToken.symbol}`
+              : ''}
+            .
+          </Text>
         )}
-      </Row>
-      <Space y={20} />
-      <Row style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-        <AvaText.Body2>Fee Amount</AvaText.Body2>
-        <AvaText.Heading3>
-          {calculatedFees?.maxTotalFee.toDisplay(4)}{' '}
-          {network?.networkToken?.symbol}
-        </AvaText.Heading3>
-      </Row>
-      <AvaText.Body3
-        currency
-        color={theme.colorText2}
-        textStyle={{ marginTop: 4, alignSelf: 'flex-end' }}>
-        {calculatedFees?.maxTotalFeeInCurrency}
-      </AvaText.Body3>
-      {maxNetworkFee && calculatedFees?.maxTotalFee.gt(maxNetworkFee) && (
-        <AvaText.Body3 color={theme.colorError}>
-          Insufficient balance to cover gas costs. {'\n'}
-          {network?.networkToken?.symbol
-            ? `Please add ${network.networkToken.symbol}`
-            : ''}
-          .
-        </AvaText.Body3>
-      )}
+      </View>
     </>
   )
 }
@@ -268,7 +293,9 @@ export const FeeSelector: FC<{
   placeholder,
   editable = false
 }) => {
-  const { theme } = useApplicationContext()
+  const {
+    theme: { colors }
+  } = useTheme()
   const [showInput, setShowInput] = useState(false)
 
   useEffect(() => {
@@ -303,7 +330,7 @@ export const FeeSelector: FC<{
         onChangeText={text => onValueEntered?.(text)}
         keyboardType={'numeric'}
         textStyle={{
-          backgroundColor: theme.colorText1,
+          backgroundColor: colors.$neutral900,
           borderWidth: 0,
           fontFamily: 'Inter-SemiBold',
           textAlign: 'center',
@@ -312,7 +339,7 @@ export const FeeSelector: FC<{
           paddingBottom: 0,
           paddingLeft: 0,
           paddingRight: 0,
-          color: theme.colorBg2,
+          color: colors.$white,
           fontSize: 14,
           lineHeight: 18
         }}
@@ -321,29 +348,50 @@ export const FeeSelector: FC<{
       />
     </ButtonWrapper>
   ) : (
-    <AvaButton.Base onPress={handleSelect}>
-      <ButtonWrapper selected={selected}>
+    <Button
+      type="tertiary"
+      size="small"
+      style={{
+        paddingLeft: 0,
+        paddingHorizontal: 0,
+        width: 75,
+        height: 48,
+        borderRadius: 8,
+        backgroundColor: selected
+          ? colors.$white
+          : alpha(colors.$neutral700, 0.5),
+        justifyContent: 'center'
+      }}
+      onPress={handleSelect}>
+      <View
+        style={{
+          flexDirection: 'column',
+          alignItems: 'center'
+        }}>
         <ButtonText selected={selected}>{label}</ButtonText>
         <ButtonText selected={selected}>{value}</ButtonText>
-      </ButtonWrapper>
-    </AvaButton.Base>
+      </View>
+    </Button>
   )
 }
 
 const ButtonWrapper: FC<{ selected: boolean }> = ({ children, selected }) => {
-  const { theme } = useApplicationContext()
+  const {
+    theme: { colors }
+  } = useTheme()
+
   return (
     <View
       focusable
-      style={{
+      sx={{
         width: 75,
         height: 48,
         borderRadius: 8,
         alignItems: 'center',
         justifyContent: 'center',
         backgroundColor: selected
-          ? theme.colorText1
-          : theme.colorBg3 + Opacity50
+          ? colors.$white
+          : alpha(colors.$neutral700, 0.5)
       }}>
       {children}
     </View>
@@ -351,16 +399,16 @@ const ButtonWrapper: FC<{ selected: boolean }> = ({ children, selected }) => {
 }
 
 const ButtonText: FC<{ selected: boolean }> = ({ children, selected }) => {
-  const { theme } = useApplicationContext()
   return (
-    <AvaText.ButtonMedium
-      textStyle={{
-        color: selected ? theme.colorBg2 : theme.colorText2,
-        fontSize: selected ? 14 : 12,
-        lineHeight: 18
+    <Text
+      variant="buttonSmall"
+      numberOfLines={1}
+      sx={{
+        color: selected ? '$neutral900' : '$neutral50',
+        fontSize: selected ? 14 : 12
       }}>
       {children}
-    </AvaText.ButtonMedium>
+    </Text>
   )
 }
 
