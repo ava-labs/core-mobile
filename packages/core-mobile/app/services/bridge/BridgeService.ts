@@ -26,7 +26,6 @@ import {
 import { noop } from '@avalabs/utils-sdk'
 import { Networks } from 'store/network'
 import { TransactionResponse } from 'ethers'
-import { omit } from 'lodash'
 import { getBtcBalance } from 'screens/bridge/hooks/getBtcBalance'
 import { omit } from 'lodash'
 
