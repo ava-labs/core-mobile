@@ -1,5 +1,4 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react'
-import { View } from 'react-native'
 import { ScrollView } from 'react-native-gesture-handler'
 import { ApplicationContext } from 'contexts/ApplicationContext'
 import AvaText from 'components/AvaText'
@@ -24,6 +23,7 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectBridgeAppConfig } from 'store/bridge'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import Logger from 'utils/Logger'
+import { View } from '@avalabs/k2-mobile'
 import SimplePrompt from '../shared/SimplePrompt'
 
 type BridgeAssetScreenProps = WalletScreenProps<
@@ -125,7 +125,7 @@ const BridgeAsset = (): JSX.Element => {
 
   const renderContent = (): JSX.Element => {
     return (
-      <View style={{ flexShrink: 1 }}>
+      <ScrollView>
         <AvaText.Body1
           color={theme.colorPrimary1}
           textStyle={{ alignSelf: 'center' }}>
@@ -134,7 +134,7 @@ const BridgeAsset = (): JSX.Element => {
         <Space y={8} />
         <AvaText.Heading3>Message:</AvaText.Heading3>
         <Space y={8} />
-        <ScrollView
+        <View
           style={{
             flexGrow: 1,
             backgroundColor: theme.colorBg3,
@@ -144,13 +144,14 @@ const BridgeAsset = (): JSX.Element => {
           <AvaText.Body1>{`You are about to bridge ${amountStr} ${symbol} on ${humanize(
             currentBlockchain
           )} Network`}</AvaText.Body1>
-        </ScrollView>
+        </View>
+        <Space y={12} />
         <NetworkFeeSelector
           gasLimit={gasLimit}
           onFeesChange={handleFeesChange}
           isGasLimitEditable={false}
         />
-      </View>
+      </ScrollView>
     )
   }
 
