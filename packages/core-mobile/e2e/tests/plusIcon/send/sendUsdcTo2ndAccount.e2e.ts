@@ -14,7 +14,6 @@ describe('Send USDC to another account', () => {
   it('Should send USDC to second account', async () => {
     await AccountManagePage.switchToFirstAccount()
     const secondAccountAddress = await AccountManagePage.createSecondAccount()
-    await AccountManagePage.tapFirstAccount()
     await SendPage.sendTokenTo2ndAccount(
       sendLoc.usdcToken,
       sendLoc.sendingAmount

@@ -106,6 +106,14 @@ class NetworksPage {
     return by.id(networksManage.networkNotAvailableToast)
   }
 
+  get bitcoin() {
+    return by.text(networksManage.bitcoin)
+  }
+
+  async tapBitcoin() {
+    await Action.tapElementAtIndex(this.bitcoin, 0)
+  }
+
   async addBtcNetwork() {
     await Action.tapElementAtIndex(this.favoriteNetwork, 0)
   }

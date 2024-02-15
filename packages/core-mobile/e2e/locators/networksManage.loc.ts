@@ -31,5 +31,6 @@ export default {
   networkInfo: 'info_svg',
   saveButton: 'Save',
   searchBar: 'network_manager__search_input',
-  networkNotAvailableToast: 'network_not_available_toast'
+  networkNotAvailableToast: 'network_not_available_toast',
+  bitcoin: 'Bitcoin'
 }
