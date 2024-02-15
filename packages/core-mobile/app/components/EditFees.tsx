@@ -139,6 +139,7 @@ const EditFees = ({
         label={'Max Base Fee'}
         mode={'amount'}
         text={newMaxFeePerGas}
+        keyboardType="numeric"
         popOverInfoText={maxBaseFeeInfoMessage}
         onChangeText={text => setNewMaxFeePerGas(sanitized(text))}
         errorText={feeError}
@@ -146,6 +147,7 @@ const EditFees = ({
       <InputText
         label={'Max Priority Fee'}
         mode={'amount'}
+        keyboardType="numeric"
         text={newMaxPriorityFeePerGas}
         popOverInfoText={maxPriorityFeeInfoMessage}
         onChangeText={text => setNewMaxPriorityFeePerGas(sanitized(text))}
@@ -154,6 +156,7 @@ const EditFees = ({
         label={'Gas Limit'}
         mode={'amount'}
         text={newGasLimit}
+        keyboardType="numeric"
         editable={isGasLimitEditable}
         popOverInfoText={gasLimitInfoMessage}
         onChangeText={text => setNewGasLimit(sanitized(text))}
