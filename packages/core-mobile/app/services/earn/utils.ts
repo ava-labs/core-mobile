@@ -224,7 +224,7 @@ export const getSimpleSortedValidators = (
   return [...validators].sort(
     (a, b): number =>
       Number(b.uptime) - Number(a.uptime) ||
-      Number(b.delegationFee) - Number(a.delegationFee) ||
+      Number(a.delegationFee) - Number(b.delegationFee) ||
       (peers === undefined
         ? 0
         : comparePeerVersion(
