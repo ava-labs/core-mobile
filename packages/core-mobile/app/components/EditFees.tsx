@@ -169,6 +169,7 @@ const EditFees = ({
             onChangeText={text => setNewGasLimit(sanitized(text))}
             errorText={gasLimitError}
             backgroundColor={colors.$neutral900}
+            borderColor={colors.$neutral800}
           />
         </>
       )}
