@@ -7,6 +7,7 @@ import sendLoc from '../../../locators/send.loc'
 import { warmup } from '../../../helpers/warmup'
 import networksManagePage from '../../../pages/networksManage.page'
 import commonElsPage from '../../../pages/commonEls.page'
+import bottomTabsPage from '../../../pages/bottomTabs.page'
 
 describe('Send Eth to another account', () => {
   beforeAll(async () => {
@@ -14,7 +15,11 @@ describe('Send Eth to another account', () => {
   })
 
   afterAll(async () => {
-    await commonElsPage.tapBackButton2()
+    if (process.env.PLATFORM === 'android') {
+      await commonElsPage.tapBackButton2()
+    } else {
+      bottomTabsPage.tapPortfolioTab()
+    }
     await networksManagePage.switchToAvalancheNetwork()
   })
 

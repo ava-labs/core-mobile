@@ -220,10 +220,8 @@ class NetworksPage {
   }
 
   async switchToAvalancheNetwork() {
-    if (process.env.SEEDLESS_TEST === 'true') {
-      await PortfolioPage.tapNetworksDropdown()
-      await PortfolioPage.tapNetworksDropdownAVAX()
-    }
+    await PortfolioPage.tapNetworksDropdown()
+    await PortfolioPage.tapNetworksDropdownAVAX()
   }
 }
 
