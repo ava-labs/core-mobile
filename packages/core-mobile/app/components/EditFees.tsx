@@ -6,7 +6,7 @@ import { Row } from 'components/Row'
 import { calculateGasAndFees, Eip1559Fees, GasAndFees } from 'utils/Utils'
 import { Network } from '@avalabs/chains-sdk'
 import { useNativeTokenPriceForNetwork } from 'hooks/useNativeTokenPriceForNetwork'
-import { Button, DividerLine, Text, View } from '@avalabs/k2-mobile'
+import { Button, DividerLine, Text, View, useTheme } from '@avalabs/k2-mobile'
 import { Tooltip } from 'components/Tooltip'
 import { TokenBaseUnit } from 'types/TokenBaseUnit'
 import { NetworkTokenUnit } from 'types'
@@ -19,6 +19,8 @@ type EditFeesProps<T extends TokenBaseUnit<T>> = {
   onSave: (customFees: Eip1559Fees<T>) => void
   onClose?: () => void
   lowMaxFeePerGas: NetworkTokenUnit
+  isGasLimitEditable?: boolean
+  isBtcNetwork?: boolean
 } & Eip1559Fees<T>
 
 const maxBaseFeeInfoMessage =
@@ -45,8 +47,13 @@ const EditFees = ({
   gasLimit: initGasLimit,
   network,
   onSave,
-  onClose
+  onClose,
+  isGasLimitEditable,
+  isBtcNetwork
 }: EditFeesProps<NetworkTokenUnit>): JSX.Element => {
+  const {
+    theme: { colors }
+  } = useTheme()
   const selectedCurrency = useSelector(
     selectSelectedCurrency
   ).toLowerCase() as VsCurrencyType
@@ -123,6 +130,8 @@ const EditFees = ({
 
   const saveDisabled = !!feeError || newFees.gasLimit === 0
 
+  const sanitized = (text: string): string => text.replace(/[^0-9]/g, '')
+
   return (
     <View style={{ flex: 1, paddingBottom: 16 }}>
       <Text
@@ -132,40 +141,52 @@ const EditFees = ({
       </Text>
       <Space y={24} />
       <InputText
-        label={'Max Base Fee'}
+        label={isBtcNetwork ? 'Network Fee' : 'Max Base Fee'}
         mode={'amount'}
         text={newMaxFeePerGas}
-        popOverInfoText={maxBaseFeeInfoMessage}
-        onChangeText={setNewMaxFeePerGas}
+        keyboardType="numeric"
+        popOverInfoText={isBtcNetwork ? undefined : maxBaseFeeInfoMessage}
+        onChangeText={text => setNewMaxFeePerGas(sanitized(text))}
         errorText={feeError}
       />
-      <InputText
-        label={'Max Priority Fee'}
-        mode={'amount'}
-        text={newMaxPriorityFeePerGas}
-        popOverInfoText={maxPriorityFeeInfoMessage}
-        onChangeText={setNewMaxPriorityFeePerGas}
-      />
-      <InputText
-        label={'Gas Limit'}
-        mode={'amount'}
-        text={newGasLimit}
-        popOverInfoText={gasLimitInfoMessage}
-        onChangeText={setNewGasLimit}
-        errorText={gasLimitError}
-      />
+      {!isBtcNetwork && (
+        <>
+          <InputText
+            label={'Max Priority Fee'}
+            mode={'amount'}
+            keyboardType="numeric"
+            text={newMaxPriorityFeePerGas}
+            popOverInfoText={maxPriorityFeeInfoMessage}
+            onChangeText={text => setNewMaxPriorityFeePerGas(sanitized(text))}
+          />
+          <InputText
+            label={'Gas Limit'}
+            mode={'amount'}
+            text={newGasLimit}
+            keyboardType="numeric"
+            editable={isGasLimitEditable}
+            popOverInfoText={gasLimitInfoMessage}
+            onChangeText={text => setNewGasLimit(sanitized(text))}
+            errorText={gasLimitError}
+            backgroundColor={colors.$neutral900}
+            borderColor={colors.$neutral800}
+          />
+        </>
+      )}
       <View sx={{ paddingHorizontal: 16, marginTop: 20, marginBottom: 16 }}>
         <DividerLine />
       </View>
       <Row style={{ marginHorizontal: 12, alignItems: 'baseline' }}>
-        <Tooltip
-          style={{ width: 220 }}
-          content={`Total Network Fee = (Current Base Fee + Max Priority Fee) * Gas Limit.\n\nIt will never be higher than Max Base Fee * Gas Limit.`}
-          position={'bottom'}>
-          <Text variant="caption" sx={{ color: '$neutral500' }}>
-            Total Network Fee
-          </Text>
-        </Tooltip>
+        {isBtcNetwork ? (
+          <TotalNetworkFeeText />
+        ) : (
+          <Tooltip
+            style={{ width: 220 }}
+            content={`Total Network Fee = (Current Base Fee + Max Priority Fee) * Gas Limit.\n\nIt will never be higher than Max Base Fee * Gas Limit.`}
+            position={'bottom'}>
+            <TotalNetworkFeeText />
+          </Tooltip>
+        )}
         <FlexSpacer />
         <Text variant="heading5" sx={{ color: '$neutral50' }}>
           {maxTotalFee}
@@ -192,4 +213,11 @@ const EditFees = ({
     </View>
   )
 }
+
+const TotalNetworkFeeText = (): JSX.Element => (
+  <Text variant="caption" sx={{ color: '$neutral500' }}>
+    Total Network Fee
+  </Text>
+)
+
 export default EditFees

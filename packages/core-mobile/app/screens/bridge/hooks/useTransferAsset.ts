@@ -22,6 +22,7 @@ import { selectBridgeAppConfig, selectBridgeCriticalConfig } from 'store/bridge'
 import { TransactionResponse } from 'ethers'
 import { NetworkTokenUnit } from 'types'
 import { omit } from 'lodash'
+import { Eip1559Fees } from 'utils/Utils'
 import { blockchainToNetwork } from '../utils/bridgeUtils'
 
 const events = new EventEmitter()
@@ -33,7 +34,7 @@ export function useTransferAsset(): {
   transferHandler: (
     amount: Big,
     asset: Asset,
-    maxFeePerGas?: NetworkTokenUnit
+    eip1559Fees?: Eip1559Fees<NetworkTokenUnit>
   ) => Promise<TransactionResponse | undefined>
   events: EventEmitter
 } {
@@ -48,7 +49,11 @@ export function useTransferAsset(): {
   const address = activeAccount?.address ?? ''
 
   const transferHandler = useCallback(
-    async (amount: Big, asset: Asset, maxFeePerGas?: NetworkTokenUnit) => {
+    async (
+      amount: Big,
+      asset: Asset,
+      eip1559Fees?: Eip1559Fees<NetworkTokenUnit>
+    ) => {
       const blockchainNetwork = blockchainToNetwork(
         currentBlockchain,
         allNetworks,
@@ -84,11 +89,10 @@ export function useTransferAsset(): {
         handleStatusChange,
         handleTxHashChange,
         async txData => {
-          // TODO: once we have the NetworkSelector for bridge, we need to pass in the custom gas settings in here for EIP-1559 txs
-          // for now, we will just use the default gas settings (low) for the EIP-1559 bridge transactions
           const tx = {
             ...omit(txData, 'gasPrice'),
-            maxFeePerGas: maxFeePerGas?.toSubUnit()
+            maxFeePerGas: eip1559Fees?.maxFeePerGas?.toSubUnit(),
+            maxPriorityFeePerGas: eip1559Fees?.maxPriorityFeePerGas?.toSubUnit()
           }
           return await walletService.sign(
             tx,
