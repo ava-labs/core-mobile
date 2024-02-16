@@ -19,7 +19,6 @@ describe('Send Eth to another account', () => {
   })
 
   it('Should send Eth to second account', async () => {
-    await AccountManagePage.switchToFirstAccount()
     const secondAccountAddress = await AccountManagePage.createSecondAccount()
     await AccountManagePage.tapFirstAccount()
     await PortfolioPage.tapNetworksDropdown()

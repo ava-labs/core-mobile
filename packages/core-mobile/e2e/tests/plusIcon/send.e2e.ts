@@ -1,7 +1,4 @@
-import Assert from '../../helpers/assertions'
 import AccountManagePage from '../../pages/accountManage.page'
-import WatchListPage from '../../pages/watchlist.page'
-import ExistingRecoveryPhrasePage from '../../pages/existingRecoveryPhrase.page'
 import SendPage from '../../pages/send.page'
 import sendLoc from '../../locators/send.loc'
 import ActivityTabPage from '../../pages/activityTab.page'
@@ -14,22 +11,6 @@ describe('Send AVAX', () => {
     await warmup()
   })
 
-  if (process.env.SEEDLESS_TEST === 'false') {
-    it('should validate watchlist is shown', async () => {
-      await Assert.isVisible(WatchListPage.newWalletIcon, 1)
-      await Assert.isVisible(WatchListPage.newWalletBtn)
-      await Assert.isVisible(WatchListPage.walletSVG, 1)
-    })
-
-    it('should navigate to send screen', async () => {
-      const recoveryPhrase: string = process.env.E2E_MNEMONIC as string
-      await ExistingRecoveryPhrasePage.recoverWallet(recoveryPhrase)
-    })
-  } else {
-    it('should navigate to send screen after entering pin', async () => {
-      await AccountManagePage.switchToFirstAccount()
-    })
-  }
   it('should successfully navigate to send and review screen', async () => {
     const secondAccountAddress = await AccountManagePage.createSecondAccount()
     await AccountManagePage.tapFirstAccount()

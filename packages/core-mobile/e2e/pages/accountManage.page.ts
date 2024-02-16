@@ -70,7 +70,6 @@ class AccountManagePage {
   }
 
   async createSecondAccount() {
-    await this.tapAccountDropdownTitle()
     if (!(await actions.expectToBeVisible(this.secondAccount))) {
       await this.tapAddEditAccounts()
       await this.tapAddAccountButton()
@@ -81,6 +80,9 @@ class AccountManagePage {
     } else {
       const result = await this.getSecondAvaxAddress()
       await this.tapFirstAccount()
+      if (Action.platform() === 'ios') {
+        await this.tapCarrotSVG()
+      }
       return result
     }
   }
@@ -172,6 +174,9 @@ class AccountManagePage {
     } catch (e) {
       console.log('Account name is not testWallet1')
       await Action.tapElementAtIndex(this.editedAccount, 0)
+    }
+    if (Action.platform() === 'ios') {
+      await this.tapAccountMenu()
     }
   }
 
