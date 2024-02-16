@@ -1,0 +1,2 @@
+# we don't want to auto prettify the bitrise.yml because it makes it very hard to follow changes
+bitrise.yml
