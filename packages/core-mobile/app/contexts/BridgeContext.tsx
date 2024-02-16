@@ -41,6 +41,7 @@ import TransactionToast, {
 } from 'components/toast/TransactionToast'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { NetworkTokenUnit } from 'types'
+import { Eip1559Fees } from 'utils/Utils'
 
 type PartialBridgeTransaction = Pick<
   BridgeTransaction,
@@ -68,7 +69,7 @@ interface BridgeContext {
     asset: Asset,
     onStatusChange: (status: WrapStatus) => void,
     onTxHashChange: (txHash: string) => void,
-    maxFeePerGas?: NetworkTokenUnit
+    eip1559Fees?: Eip1559Fees<NetworkTokenUnit>
   ) => Promise<TransactionResponse | undefined>
 }
 
@@ -200,7 +201,7 @@ function LocalBridgeProvider({
       asset: Asset,
       onStatusChange: (status: WrapStatus) => void,
       onTxHashChange: (txHash: string) => void,
-      maxFeePerGas?: NetworkTokenUnit
+      eip1559Fees?: Eip1559Fees<NetworkTokenUnit>
       // eslint-disable-next-line max-params
     ) => {
       events.on(TransferEventType.WRAP_STATUS, status => {
@@ -210,7 +211,7 @@ function LocalBridgeProvider({
         onTxHashChange(txHash)
       })
 
-      return transferHandler(amount, asset, maxFeePerGas)
+      return transferHandler(amount, asset, eip1559Fees)
     },
     [events, transferHandler]
   )
