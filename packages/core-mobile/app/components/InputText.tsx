@@ -122,7 +122,7 @@ const InputText = forwardRef<TextInput, InputTextProps>(
       inputTextContainerStyle,
       onLayout,
       clearBtnContainerSx,
-      borderColor
+      borderColor = 'transparent'
     },
     ref
   ) => {
