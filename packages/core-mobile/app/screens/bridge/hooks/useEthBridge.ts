@@ -16,17 +16,24 @@ import { selectActiveNetwork } from 'store/network'
 import { selectActiveAccount } from 'store/account'
 import { useEthereumProvider } from 'hooks/networkProviderHooks'
 import { selectBridgeAppConfig } from 'store/bridge'
-import { useNetworkFee } from 'hooks/useNetworkFee'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import { Eip1559Fees } from 'utils/Utils'
+import { NetworkTokenUnit } from 'types'
 
 /**
  * Hook for when the bridge source chain is Ethereum
  */
-export function useEthBridge(
-  amount: Big,
-  bridgeFee: Big,
+export function useEthBridge({
+  amount,
+  bridgeFee,
+  minimum,
+  eip1559Fees
+}: {
+  amount: Big
+  bridgeFee: Big
   minimum: Big
-): BridgeAdapter {
+  eip1559Fees: Eip1559Fees<NetworkTokenUnit>
+}): BridgeAdapter {
   const { currentAssetData } = useBridgeSDK()
 
   const { createBridgeTransaction, transferAsset } = useBridgeContext()
@@ -44,7 +51,6 @@ export function useEthBridge(
   )
 
   const network = useSelector(selectActiveNetwork)
-  const { data: networkFee } = useNetworkFee(network)
   const activeAccount = useSelector(selectActiveAccount)
   const config = useSelector(selectBridgeAppConfig)
   const ethereumProvider = useEthereumProvider()
@@ -75,7 +81,7 @@ export function useEthBridge(
       currentAssetData,
       setWrapStatus,
       setTxHash,
-      networkFee?.low.maxFeePerGas
+      eip1559Fees
     )
 
     AnalyticsService.captureWithEncryption('BridgeTransactionStarted', {
@@ -103,9 +109,9 @@ export function useEthBridge(
     config,
     transferAsset,
     amount,
-    networkFee?.low.maxFeePerGas,
-    createBridgeTransaction,
-    activeAccount
+    eip1559Fees,
+    activeAccount?.address,
+    createBridgeTransaction
   ])
 
   return {

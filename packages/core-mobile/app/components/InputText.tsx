@@ -81,6 +81,7 @@ export type InputTextProps = {
   inputTextContainerStyle?: SxProp
   onLayout?: (event: LayoutChangeEvent) => void
   clearBtnContainerSx?: SxProp
+  borderColor?: string
 }
 
 const InputText = forwardRef<TextInput, InputTextProps>(
@@ -120,7 +121,8 @@ const InputText = forwardRef<TextInput, InputTextProps>(
       autoCorrect,
       inputTextContainerStyle,
       onLayout,
-      clearBtnContainerSx
+      clearBtnContainerSx,
+      borderColor = 'transparent'
     },
     ref
   ) => {
@@ -248,6 +250,7 @@ const InputText = forwardRef<TextInput, InputTextProps>(
                 fontSize: 16,
                 borderWidth: 1,
                 borderRadius: 8,
+                borderColor,
                 textAlignVertical: multiline ? 'top' : 'center',
                 backgroundColor:
                   backgroundColor || alpha(colors.$neutral800, 0.5),
