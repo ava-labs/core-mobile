@@ -684,24 +684,22 @@ const Bridge: FC = () => {
 
   const renderTransferBtn = (): JSX.Element => {
     return (
-      <>
-        <Button
-          type="primary"
-          size="xlarge"
-          style={{ marginHorizontal: 16, marginBottom: 10 }}
-          disabled={transferDisabled}
-          onPress={() => {
-            handleTransfer()
-          }}>
-          {isPending ? (
-            <>
-              <ActivityIndicator /> Transferring...
-            </>
-          ) : (
-            'Transfer'
-          )}
-        </Button>
-      </>
+      <Button
+        type="primary"
+        size="xlarge"
+        style={{ marginHorizontal: 16, marginBottom: 10, marginTop: 16 }}
+        disabled={transferDisabled}
+        onPress={() => {
+          handleTransfer()
+        }}>
+        {isPending ? (
+          <>
+            <ActivityIndicator /> Transferring...
+          </>
+        ) : (
+          'Transfer'
+        )}
+      </Button>
     )
   }
 

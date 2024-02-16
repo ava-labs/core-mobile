@@ -52,11 +52,6 @@ export const text = {
     fontSize: 14,
     lineHeight: 20
   },
-  body3: {
-    fontFamily: 'Inter-Regular',
-    fontSize: 12,
-    lineHeight: 15
-  },
   caption: {
     fontFamily: 'Inter-Regular',
     fontSize: 12,

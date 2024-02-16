@@ -141,8 +141,8 @@ const NetworkFeeSelector = ({
     }
   }, [customFees?.maxFeePerGas, networkFee])
 
-  const goToEditGasLimit = (n: Network): void => {
-    if (!networkFee) return
+  const goToEditGasLimit = (n?: Network): void => {
+    if (networkFee === undefined || n === undefined) return
     navigate(AppNavigation.Modal.EditGasLimit, {
       network: n,
       onSave: handleSetCustomFees,
@@ -153,7 +153,8 @@ const NetworkFeeSelector = ({
         networkFee.low.maxPriorityFeePerGas ??
         NetworkTokenUnit.fromNetwork(activeNetwork),
       gasLimit,
-      isGasLimitEditable
+      isGasLimitEditable,
+      isBtcNetwork
     })
   }
 
@@ -178,15 +179,13 @@ const NetworkFeeSelector = ({
             </Text>
           </Tooltip>
         )}
-        {network?.vmName === NetworkVMType.EVM && !isBtcNetwork && (
-          <Button
-            size="medium"
-            type="tertiary"
-            style={{ marginTop: 8 }}
-            onPress={() => goToEditGasLimit(network)}>
-            <Settings />
-          </Button>
-        )}
+        <Button
+          size="medium"
+          type="tertiary"
+          style={{ marginTop: 8 }}
+          onPress={() => goToEditGasLimit(network)}>
+          <Settings />
+        </Button>
       </Row>
       <Space y={4} />
 
@@ -227,8 +226,7 @@ const NetworkFeeSelector = ({
                 selected={selectedPreset === FeePreset.Custom}
                 onSelect={() => {
                   handleSelectedPreset(FeePreset.Custom)
-                  network?.vmName === NetworkVMType.EVM &&
-                    goToEditGasLimit(network)
+                  goToEditGasLimit(network)
                 }}
                 placeholder={displayGasValues?.[FeePreset.Normal]}
                 value={
@@ -255,7 +253,7 @@ const NetworkFeeSelector = ({
           </View>
         </Row>
         <Row style={{ justifyContent: 'flex-end' }}>
-          <Text variant="body3" sx={{ color: '$neutral400' }}>
+          <Text variant="caption" sx={{ color: '$neutral400', lineHeight: 15 }}>
             {currencyFormatter(calculatedFees?.maxTotalFeeInCurrency ?? 0) +
               ' ' +
               selectedCurrency}
@@ -263,7 +261,7 @@ const NetworkFeeSelector = ({
         </Row>
 
         {maxNetworkFee && calculatedFees?.maxTotalFee.gt(maxNetworkFee) && (
-          <Text variant="body3" sx={{ color: '$dangerMain' }}>
+          <Text variant="caption" sx={{ color: '$dangerMain', lineHeight: 15 }}>
             Insufficient balance to cover gas costs. {'\n'}
             {network?.networkToken?.symbol
               ? `Please add ${network.networkToken.symbol}`
