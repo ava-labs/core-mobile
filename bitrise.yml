@@ -49,7 +49,7 @@ workflows:
         - keystore_alias: $ANDROID_KEY_ALIAS
         - private_key_password: $ANDROID_KEY_PASSWORD
         - keystore_url: $BITRISEIO_ANDROID_KEY_STORE_URL
-  _build-android-for-testing: 
+  _build-android-for-testing:
     envs:
     - ENVIRONMENT: production
       opts:
@@ -80,7 +80,7 @@ workflows:
         inputs:
         - file_path: scripts/bitrise/detox/createAndroidTestRun.sh
         - variables:
-            - TESTRAIL_RUN_ID=$TESTRAIL_RUN_ID
+          - TESTRAIL_RUN_ID=$TESTRAIL_RUN_ID
     - script-runner@0:
         title: Create Tests To Run Arrays
         inputs:
@@ -116,163 +116,25 @@ workflows:
         - keystore_password: $ANDROID_STORE_PASSWORD
         - keystore_alias: $ANDROID_KEY_ALIAS
         - private_key_password: $ANDROID_KEY_PASSWORD
-    - deploy-to-bitrise-io@2: 
+    - deploy-to-bitrise-io@2:
         inputs:
-        - pipeline_intermediate_files: |-
-            $BITRISE_DEPLOY_DIR/app-internal-e2e-bitrise-signed.apk:BITRISE_APK_PATH
-            $BITRISE_DEPLOY_DIR/app-internal-e2e-androidTest-bitrise-signed.apk:BITRISE_TEST_APK_PATH	
-  android-internal-e2e-run-pixel4:
-    envs:
-    - TESTS_TO_RUN: $TESTS_TO_RUN_GROUP_1
-      opts:
-        is_expand: false
-    - ENVIRONMENT: production
-      opts:
-        is_expand: false
-    - PLATFORM: Android
-      opts:
-        is_expand: false
-    - ANDROID_BUILD_VARIANT: internalE2e
-      opts:
-        is_expand: false
-    - APP_TITLE: Core Mobile Internal
-      opts:
-        is_expand: false
-    - E2E: "true"
-      opts:
-        is_expand: false
-    - USE_TEST_FEATURE_FLAGS: "true"
-      opts:
-        is_expand: false
-    - USE_SEEDLESS_GAMMA: "true"
-      opts:
-        is_expand: false
-    - POST_TO_TESTRAIL: "true"
-      opts:
-        is_expand: false
-    steps:
-    - avd-manager@1.2:
-        inputs:
-        - api_level: "30"
-        - emulator_id: emulator-5554
-        - emulator_channel: "0"
-        - create_command_flags: --sdcard 512M
-        - tag: default
-        - abi: x86_64
-        - profile: pixel_4
-    - wait-for-android-emulator@1: {}
-    before_run:
-    - _install-and-set-env
-    - _pull_app_files
-    after_run:
-    - _run_android_tests
-    - _send-test-result-notification-slack
-  android-internal-e2e-run-pixel3:
-    envs:
-    - TESTS_TO_RUN: $TESTS_TO_RUN_GROUP_2
-      opts:
-        is_expand: false
-    - ENVIRONMENT: production
-      opts:
-        is_expand: false
-    - PLATFORM: Android
-      opts:
-        is_expand: false
-    - ANDROID_BUILD_VARIANT: internalE2e
-      opts:
-        is_expand: false
-    - APP_TITLE: Core Mobile Internal
-      opts:
-        is_expand: false
-    - E2E: "true"
-      opts:
-        is_expand: false
-    - USE_TEST_FEATURE_FLAGS: "true"
-      opts:
-        is_expand: false
-    - USE_SEEDLESS_GAMMA: "true"
-      opts:
-        is_expand: false
-    - POST_TO_TESTRAIL: "true"
-      opts:
-        is_expand: false
-    steps:
-    - avd-manager@1.2:
-        inputs:
-        - api_level: "28"
-        - emulator_id: emulator-5554
-        - emulator_channel: "0"
-        - create_command_flags: --sdcard 512M
-        - tag: default
-        - abi: x86_64
-        - profile: pixel_3
-    - wait-for-android-emulator@1: {}
-    before_run:
-    - _install-and-set-env
-    - _pull_app_files
-    after_run:
-    - _run_android_tests
-    - _send-test-result-notification-slack
-  android-internal-e2e-run-pixel5:
-    envs:
-    - TESTS_TO_RUN: $TESTS_TO_RUN_GROUP_3
-      opts:
-        is_expand: false
-    - ENVIRONMENT: production
-      opts:
-        is_expand: false
-    - PLATFORM: Android
-      opts:
-        is_expand: false
-    - ANDROID_BUILD_VARIANT: internalE2e
-      opts:
-        is_expand: false
-    - APP_TITLE: Core Mobile Internal
-      opts:
-        is_expand: false
-    - E2E: "true"
-      opts:
-        is_expand: false
-    - USE_TEST_FEATURE_FLAGS: "true"
-      opts:
-        is_expand: false
-    - USE_SEEDLESS_GAMMA: "true"
-      opts:
-        is_expand: false
-    - POST_TO_TESTRAIL: "true"
-      opts:
-        is_expand: false
-    steps:
-    - avd-manager@1.2:
-        inputs:
-        - api_level: "30"
-        - emulator_id: emulator-5554
-        - emulator_channel: "0"
-        - create_command_flags: --sdcard 512M
-        - tag: default
-        - abi: x86_64
-        - profile: pixel_5
-    - wait-for-android-emulator@1: {}
-    before_run:
-    - _install-and-set-env
-    - _pull_app_files
-    after_run:
-    - _run_android_tests
-    - _send-test-result-notification-slack
-  _run_android_tests:
-    steps:
-      - script-runner@0:
-          title: Detox
-          inputs:
-            - file_path: scripts/bitrise/detox/androidInternalE2e.sh
-  _pull_app_files:
-    steps:
-    - pull-intermediate-files@1:
-        inputs:
-        - artifact_sources: .*
+        - pipeline_intermediate_files: "$BITRISE_DEPLOY_DIR/app-internal-e2e-bitrise-signed.apk:BITRISE_APK_PATH\n$BITRISE_DEPLOY_DIR/app-internal-e2e-androidTest-bitrise-signed.apk:BITRISE_TEST_APK_PATH\t"
   _build-ios:
     steps:
     - restore-cocoapods-cache@1: {}
+    - script@1:
+        title: Copy Gemfile to iOS folder
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            # fail if any commands fails
+            set -e
+            # make pipelines' return status equal the last command to exit with a non-zero status, or zero if all commands exit successfully
+            set -o pipefail
+
+            # we need to do this to make sure the cocoapods install step consider our Gemfile
+            cp Gemfile ios
+            cp Gemfile.lock ios
     - cocoapods-install@2:
         inputs:
         - verbose: "true"
@@ -302,10 +164,9 @@ workflows:
         - configuration: $IOS_CONFIGURATION
         - project_path: $IOS_PROJECT_PATH
         - code_signing_allowed: "yes"
-    - deploy-to-bitrise-io@2: 
+    - deploy-to-bitrise-io@2:
         inputs:
-        - pipeline_intermediate_files: |-
-            $BITRISE_APP_DIR_PATH:BITRISE_APP_DIR_PATH
+        - pipeline_intermediate_files: $BITRISE_APP_DIR_PATH:BITRISE_APP_DIR_PATH
   _install-and-set-env:
     before_run:
     - _install-node-18
@@ -361,6 +222,17 @@ workflows:
             /root/.nvm/*
         - is_key_unique: "true"
         - key: node-18-{{ .OS }}-{{ .Arch }}
+  _pull_app_files:
+    steps:
+    - pull-intermediate-files@1:
+        inputs:
+        - artifact_sources: .*
+  _run_android_tests:
+    steps:
+    - script-runner@0:
+        title: Detox
+        inputs:
+        - file_path: scripts/bitrise/detox/androidInternalE2e.sh
   _send-notification-slack:
     steps:
     - slack@3:
@@ -550,6 +422,12 @@ workflows:
         - track: internal
         - service_account_json_key_path: $BITRISEIO_AVALABS_GOOGLE_PLAY_SERVICE_ACCOUNT_JSON_KEY_URL
   android-internal-e2e:
+    before_run:
+    - _install-and-set-env
+    - _set-version
+    - _build-android-for-testing
+    after_run:
+    - _upload-detox-artifacts
     envs:
     - ENVIRONMENT: production
       opts:
@@ -572,12 +450,144 @@ workflows:
     - USE_SEEDLESS_GAMMA: "true"
       opts:
         is_expand: false
+  android-internal-e2e-run-pixel3:
     before_run:
     - _install-and-set-env
-    - _set-version
-    - _build-android-for-testing
+    - _pull_app_files
     after_run:
-    - _upload-detox-artifacts
+    - _run_android_tests
+    - _send-test-result-notification-slack
+    envs:
+    - TESTS_TO_RUN: $TESTS_TO_RUN_GROUP_2
+      opts:
+        is_expand: false
+    - ENVIRONMENT: production
+      opts:
+        is_expand: false
+    - PLATFORM: Android
+      opts:
+        is_expand: false
+    - ANDROID_BUILD_VARIANT: internalE2e
+      opts:
+        is_expand: false
+    - APP_TITLE: Core Mobile Internal
+      opts:
+        is_expand: false
+    - E2E: "true"
+      opts:
+        is_expand: false
+    - USE_TEST_FEATURE_FLAGS: "true"
+      opts:
+        is_expand: false
+    - USE_SEEDLESS_GAMMA: "true"
+      opts:
+        is_expand: false
+    - POST_TO_TESTRAIL: "true"
+      opts:
+        is_expand: false
+    steps:
+    - avd-manager@1.2:
+        inputs:
+        - api_level: "28"
+        - emulator_id: emulator-5554
+        - emulator_channel: "0"
+        - create_command_flags: --sdcard 512M
+        - tag: default
+        - abi: x86_64
+        - profile: pixel_3
+    - wait-for-android-emulator@1: {}
+  android-internal-e2e-run-pixel4:
+    before_run:
+    - _install-and-set-env
+    - _pull_app_files
+    after_run:
+    - _run_android_tests
+    - _send-test-result-notification-slack
+    envs:
+    - TESTS_TO_RUN: $TESTS_TO_RUN_GROUP_1
+      opts:
+        is_expand: false
+    - ENVIRONMENT: production
+      opts:
+        is_expand: false
+    - PLATFORM: Android
+      opts:
+        is_expand: false
+    - ANDROID_BUILD_VARIANT: internalE2e
+      opts:
+        is_expand: false
+    - APP_TITLE: Core Mobile Internal
+      opts:
+        is_expand: false
+    - E2E: "true"
+      opts:
+        is_expand: false
+    - USE_TEST_FEATURE_FLAGS: "true"
+      opts:
+        is_expand: false
+    - USE_SEEDLESS_GAMMA: "true"
+      opts:
+        is_expand: false
+    - POST_TO_TESTRAIL: "true"
+      opts:
+        is_expand: false
+    steps:
+    - avd-manager@1.2:
+        inputs:
+        - api_level: "30"
+        - emulator_id: emulator-5554
+        - emulator_channel: "0"
+        - create_command_flags: --sdcard 512M
+        - tag: default
+        - abi: x86_64
+        - profile: pixel_4
+    - wait-for-android-emulator@1: {}
+  android-internal-e2e-run-pixel5:
+    before_run:
+    - _install-and-set-env
+    - _pull_app_files
+    after_run:
+    - _run_android_tests
+    - _send-test-result-notification-slack
+    envs:
+    - TESTS_TO_RUN: $TESTS_TO_RUN_GROUP_3
+      opts:
+        is_expand: false
+    - ENVIRONMENT: production
+      opts:
+        is_expand: false
+    - PLATFORM: Android
+      opts:
+        is_expand: false
+    - ANDROID_BUILD_VARIANT: internalE2e
+      opts:
+        is_expand: false
+    - APP_TITLE: Core Mobile Internal
+      opts:
+        is_expand: false
+    - E2E: "true"
+      opts:
+        is_expand: false
+    - USE_TEST_FEATURE_FLAGS: "true"
+      opts:
+        is_expand: false
+    - USE_SEEDLESS_GAMMA: "true"
+      opts:
+        is_expand: false
+    - POST_TO_TESTRAIL: "true"
+      opts:
+        is_expand: false
+    steps:
+    - avd-manager@1.2:
+        inputs:
+        - api_level: "30"
+        - emulator_id: emulator-5554
+        - emulator_channel: "0"
+        - create_command_flags: --sdcard 512M
+        - tag: default
+        - abi: x86_64
+        - profile: pixel_5
+    - wait-for-android-emulator@1: {}
   ios:
     before_run:
     - _install-and-set-env
