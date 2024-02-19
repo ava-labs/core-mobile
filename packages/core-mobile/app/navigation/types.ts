@@ -74,7 +74,7 @@ export type EditGasLimitParams = {
   lowMaxFeePerGas: NetworkTokenUnit
   isGasLimitEditable?: boolean
   isBtcNetwork?: boolean
-  customGasLimitError?: string
+  noGasLimitError?: string
 } & Eip1559Fees<NetworkTokenUnit>
 
 export type SessionProposalV2Params = {

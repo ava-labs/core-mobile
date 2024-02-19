@@ -29,7 +29,7 @@ type EditFeesProps<T extends TokenBaseUnit<T>> = {
   lowMaxFeePerGas: NetworkTokenUnit
   isGasLimitEditable?: boolean
   isBtcNetwork?: boolean
-  customGasLimitError?: string
+  noGasLimitError?: string
 } & Eip1559Fees<T>
 
 const maxBaseFeeInfoMessage =
@@ -59,9 +59,9 @@ const EditFees = ({
   onClose,
   isGasLimitEditable,
   isBtcNetwork,
-  customGasLimitError
+  noGasLimitError
 }: EditFeesProps<NetworkTokenUnit>): JSX.Element => {
-  const _gasLimitError = customGasLimitError ?? 'Please enter a valid gas limit'
+  const _gasLimitError = noGasLimitError ?? 'Please enter a valid gas limit'
   const {
     theme: { colors }
   } = useTheme()

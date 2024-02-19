@@ -794,7 +794,7 @@ const Bridge: FC = () => {
           gasLimit={eip1559Fees.gasLimit}
           onFeesChange={handleFeesChange}
           isGasLimitEditable={false}
-          customGasLimitError={
+          noGasLimitError={
             provider === BridgeProvider.UNIFIED
               ? 'Please select a token and enter a transfer amount'
               : 'Please select a token'
