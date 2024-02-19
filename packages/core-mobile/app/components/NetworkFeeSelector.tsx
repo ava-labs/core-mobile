@@ -41,13 +41,15 @@ const NetworkFeeSelector = ({
   gasLimit,
   onFeesChange,
   maxNetworkFee,
-  isGasLimitEditable = true
+  isGasLimitEditable = true,
+  customGasLimitError
 }: {
   chainId?: number
   gasLimit: number
   onFeesChange?(fees: Eip1559Fees<NetworkTokenUnit>, feePreset: FeePreset): void
   maxNetworkFee?: NetworkTokenUnit
   isGasLimitEditable?: boolean
+  customGasLimitError?: string
 }): JSX.Element => {
   const {
     appHook: { currencyFormatter }
@@ -154,7 +156,8 @@ const NetworkFeeSelector = ({
         NetworkTokenUnit.fromNetwork(activeNetwork),
       gasLimit,
       isGasLimitEditable,
-      isBtcNetwork
+      isBtcNetwork,
+      customGasLimitError
     })
   }
 
