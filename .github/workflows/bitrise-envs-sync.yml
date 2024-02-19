@@ -1,0 +1,48 @@
+name: Bitrise Envs Sync
+
+on:
+  pull_request:
+    # The branches below must be a subset of the branches above
+    branches: ['development']
+  workflow_dispatch:
+
+jobs:
+  upload-envs-to-bitrise:
+    name: Upload envs to Bitrise
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4.0.2
+        with:
+          aws-region: us-east-2
+          role-to-assume: arn:aws:iam::975050371175:role/github-sa-role
+          role-session-name: githubsa
+
+      - name: Get envs from AWS
+        uses: aws-actions/aws-secretsmanager-get-secrets@v1
+        with:
+          secret-ids: |
+            ENV_DEV, core/dev/mobile/.env.development
+            ENV_DEV_E2E, core/dev/mobile/.env.development.e2e
+            ENV_PROD, core/dev/mobile/.env.production
+            ENV_PROD_E2E, core/dev/mobile/.env.production.e2e
+
+      - name: Wrtie envs to files
+        working-directory: packages/core-mobile/scripts/github
+        run: |
+          ../common/writeEnvsToFile.sh "$ENV_DEV" ".env.development"
+          ../common/writeEnvsToFile.sh "$ENV_DEV_E2E" ".env.development.e2e"
+          ../common/writeEnvsToFile.sh "$ENV_PROD" ".env.production"
+          ../common/writeEnvsToFile.sh "$ENV_PROD_E2E" ".env.production.e2e"
+
+      - name: Upload envs to Bitrise
+        working-directory: packages/core-mobile/scripts/github
+        run: |
+          ./uploadEnvsToBitrise.sh ${{ secrets.BITRISE_ACCESS_TOKEN }}
