@@ -301,7 +301,8 @@ class EarnService {
 
     return transactions.filter(
       transaction =>
-        transaction.txType === PChainTransactionType.ADD_DELEGATOR_TX
+        transaction.txType ===
+        PChainTransactionType.ADD_PERMISSIONLESS_DELEGATOR_TX
     )
   }
 
