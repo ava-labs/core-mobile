@@ -91,9 +91,7 @@ class WalletConnectService {
           .toLowerCase()
           .includes('missing or invalid. pair() uri#relay-protocol')
       ) {
-        Logger.info(
-          'pairing already exists, ignore this wallet connect v1 pairing error'
-        )
+        Logger.info('ignore invalid link')
         return
       }
 
