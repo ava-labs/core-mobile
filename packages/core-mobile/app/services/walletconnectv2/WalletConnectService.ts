@@ -77,13 +77,22 @@ class WalletConnectService {
     } catch (error) {
       if (
         error instanceof Error &&
-        (error.message.toLowerCase().includes('pairing already exists') ||
-          error?.message
-            ?.toLowerCase()
-            .includes('missing or invalid. pair() uri#relay-protocol'))
+        error.message.toLowerCase().includes('pairing already exists')
       ) {
         Logger.info(
           'pairing already exists, wc will reuse it automatically to prompt a new session'
+        )
+        return
+      }
+
+      if (
+        error instanceof Error &&
+        error.message
+          .toLowerCase()
+          .includes('missing or invalid. pair() uri#relay-protocol')
+      ) {
+        Logger.info(
+          'pairing already exists, ignore this wallet connect v1 pairing error'
         )
         return
       }
