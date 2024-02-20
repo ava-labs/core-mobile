@@ -1,10 +1,15 @@
 import {
   AppConfig,
   Asset,
+  BitcoinConfigAsset,
   Blockchain,
+  BridgeConfig,
+  btcToSatoshi,
   Environment,
+  estimateGas,
   EthereumConfigAsset,
   fetchConfig,
+  getBtcTransaction,
   NativeAsset,
   setBridgeEnvironment,
   transferAsset as transferAssetSDK
@@ -21,6 +26,7 @@ import {
 import { noop } from '@avalabs/utils-sdk'
 import { Networks } from 'store/network'
 import { TransactionResponse } from 'ethers'
+import { getBtcBalance } from 'screens/bridge/hooks/getBtcBalance'
 import { omit } from 'lodash'
 
 type TransferAssetParams = {
@@ -31,11 +37,12 @@ type TransferAssetParams = {
   activeAccount: Account | undefined
   allNetworks: Networks
   isTestnet: boolean
-  maxFeePerGas?: bigint
+  maxFeePerGas: bigint
+  maxPriorityFeePerGas?: bigint
 }
 
 export class BridgeService {
-  async getConfig(activeNetwork: Network) {
+  async getConfig(activeNetwork: Network): Promise<BridgeConfig> {
     setBridgeEnvironment(
       activeNetwork.isTestnet ? Environment.TEST : Environment.PROD
     )
@@ -50,7 +57,8 @@ export class BridgeService {
     activeAccount,
     allNetworks,
     isTestnet,
-    maxFeePerGas
+    maxFeePerGas,
+    maxPriorityFeePerGas
   }: TransferAssetParams): Promise<TransactionResponse | undefined> {
     if (!config) {
       throw new Error('missing bridge config')
@@ -90,11 +98,83 @@ export class BridgeService {
       txData => {
         const tx = {
           ...omit(txData, 'gasPrice'),
-          maxFeePerGas
+          maxFeePerGas,
+          maxPriorityFeePerGas
         }
         return WalletService.sign(tx, activeAccount.index, blockchainNetwork)
       }
     )
+  }
+
+  async estimateGas({
+    currentBlockchain,
+    amount,
+    asset,
+    allNetworks,
+    isTestnet,
+    config,
+    activeNetwork,
+    activeAccount,
+    currency
+  }: {
+    currentBlockchain: Blockchain
+    amount: Big
+    asset: Asset
+    allNetworks: Networks
+    isTestnet: boolean
+    activeNetwork: Network
+    activeAccount?: Account
+    config?: AppConfig
+    currency: string
+  }): Promise<bigint | undefined> {
+    if (!config) {
+      throw new Error('missing bridge config')
+    }
+    if (!activeAccount) {
+      throw new Error('no active account found')
+    }
+
+    if (currentBlockchain === Blockchain.BITCOIN) {
+      const token = await getBtcBalance(
+        !activeNetwork.isTestnet,
+        activeAccount?.addressBtc,
+        currency
+      )
+
+      // Bitcoin's formula for fee is `transactionByteLength * feeRate`.
+      // By setting the feeRate here to 1, we'll receive the transaction's byte length,
+      // which is what we need to have the dynamic fee calculations in the UI.
+      // Think of the byteLength as gasLimit for EVM transactions.
+      const feeRate = 1
+      const { fee: byteLength } = getBtcTransaction(
+        config,
+        activeAccount.addressBtc,
+        token?.utxos ?? [],
+        btcToSatoshi(amount),
+        feeRate
+      )
+
+      return BigInt(byteLength)
+    } else {
+      const avalancheProvider = getAvalancheProvider(allNetworks, isTestnet)
+      const ethereumProvider = getEthereumProvider(allNetworks, isTestnet)
+
+      if (!avalancheProvider || !ethereumProvider) {
+        throw new Error('no providers available')
+      }
+
+      return estimateGas(
+        amount,
+        activeAccount.address,
+        asset as Exclude<Asset, BitcoinConfigAsset>,
+        {
+          ethereum: ethereumProvider,
+          avalanche: avalancheProvider
+        },
+        config,
+        currentBlockchain
+      )
+    }
   }
 }
 

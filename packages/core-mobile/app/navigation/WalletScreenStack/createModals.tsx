@@ -241,6 +241,9 @@ const EditGasLimit = (): JSX.Element => {
       onSave={params.onSave}
       network={params.network}
       lowMaxFeePerGas={params.lowMaxFeePerGas}
+      isGasLimitEditable={params.isGasLimitEditable}
+      isBtcNetwork={params.isBtcNetwork}
+      noGasLimitError={params.noGasLimitError}
     />
   )
 }
