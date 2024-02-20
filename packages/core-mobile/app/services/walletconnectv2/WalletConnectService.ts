@@ -85,6 +85,16 @@ class WalletConnectService {
         return
       }
 
+      if (
+        error instanceof Error &&
+        error.message
+          .toLowerCase()
+          .includes('missing or invalid. pair() uri#relay-protocol')
+      ) {
+        Logger.info('ignore invalid link')
+        return
+      }
+
       // rethrow for all other errors
       throw error
     }

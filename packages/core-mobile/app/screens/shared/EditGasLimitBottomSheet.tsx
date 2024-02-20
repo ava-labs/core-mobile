@@ -14,6 +14,7 @@ type Props<T extends TokenBaseUnit<T>> = {
   lowMaxFeePerGas: NetworkTokenUnit
   isGasLimitEditable?: boolean
   isBtcNetwork?: boolean
+  noGasLimitError?: string
 } & Eip1559Fees<T>
 
 const EditGasLimitBottomSheet = ({
@@ -25,7 +26,8 @@ const EditGasLimitBottomSheet = ({
   network,
   lowMaxFeePerGas,
   isGasLimitEditable,
-  isBtcNetwork
+  isBtcNetwork,
+  noGasLimitError
 }: Props<NetworkTokenUnit>): JSX.Element => {
   return (
     <Sheet onClose={onClose || noop}>
@@ -41,6 +43,7 @@ const EditGasLimitBottomSheet = ({
         lowMaxFeePerGas={lowMaxFeePerGas}
         isGasLimitEditable={isGasLimitEditable}
         isBtcNetwork={isBtcNetwork}
+        noGasLimitError={noGasLimitError}
       />
     </Sheet>
   )
