@@ -591,7 +591,7 @@ workflows:
         - abi: x86_64
         - profile: pixel_5
     - wait-for-android-emulator@1: {}
-  android-internal-e2e-run-nexus9:
+  android-internal-e2e-run-pixel2-arm:
     before_run:
     - _install-and-set-env
     - _pull_app_files
@@ -599,9 +599,6 @@ workflows:
     - _run_android_tests
     - _send-test-result-notification-slack
     envs:
-    - TESTS_TO_RUN: $TESTS_TO_RUN_GROUP_2
-      opts:
-        is_expand: false
     - ENVIRONMENT: production
       opts:
         is_expand: false
@@ -629,13 +626,13 @@ workflows:
     steps:
     - avd-manager@1.2:
         inputs:
-        - api_level: "28"
+        - api_level: "33"
         - emulator_id: emulator-5554
         - emulator_channel: "0"
         - create_command_flags: --sdcard 512M
         - tag: default
         - abi: x86_64
-        - profile: pixel_3
+        - profile: pixel2.arm
     - wait-for-android-emulator@1: {}
   ios:
     before_run:
