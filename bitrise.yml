@@ -236,6 +236,12 @@ workflows:
         title: Detox
         inputs:
         - file_path: scripts/bitrise/detox/androidInternalE2e.sh
+  _run_android_tests_reuse_app_state:
+    steps:
+    - script-runner@0:
+        title: Detox
+        inputs:
+        - file_path: scripts/bitrise/detox/androidInternalE2eReuseAppState.sh
   _send-notification-slack:
     steps:
     - slack@3:
@@ -458,7 +464,7 @@ workflows:
     - _install-and-set-env
     - _pull_app_files
     after_run:
-    - _run_android_tests
+    - _run_android_tests_reuse_app_state
     - _send-test-result-notification-slack
     envs:
     - TESTS_TO_RUN: $TESTS_TO_RUN_GROUP_2
@@ -504,7 +510,7 @@ workflows:
     - _install-and-set-env
     - _pull_app_files
     after_run:
-    - _run_android_tests
+    - _run_android_tests_reuse_app_state
     - _send-test-result-notification-slack
     envs:
     - TESTS_TO_RUN: $TESTS_TO_RUN_GROUP_1
@@ -550,7 +556,7 @@ workflows:
     - _install-and-set-env
     - _pull_app_files
     after_run:
-    - _run_android_tests
+    - _run_android_tests_reuse_app_state
     - _send-test-result-notification-slack
     envs:
     - TESTS_TO_RUN: $TESTS_TO_RUN_GROUP_3
