@@ -9,6 +9,10 @@ set -x
 yarn start &
 
 npm rebuild detox
+
+adb install -r $BITRISE_APK_PATH
+adb install -r $BITRISE_TEST_APK_PATH
+
 QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test --configuration android.internal.release.smoke.reuse_state.ci --reuse --headless --retries 1; test_result=$?
 
 if ((test_result != 0)); then
