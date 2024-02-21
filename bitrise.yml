@@ -638,7 +638,7 @@ workflows:
         - create_command_flags: --sdcard 512M
         - tag: default
         - abi: x86_64
-        - profile: pixel2.arm
+        - profile: pixel2
     - wait-for-android-emulator@1: {}
   ios:
     before_run:
