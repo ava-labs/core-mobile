@@ -175,9 +175,6 @@ class AccountManagePage {
       console.log('Account name is not testWallet1')
       await Action.tapElementAtIndex(this.editedAccount, 0)
     }
-    if (Action.platform() === 'ios') {
-      await this.tapAccountMenu()
-    }
   }
 
   async tapSecondAccount() {

@@ -270,6 +270,19 @@ module.exports = {
         }
       }
     },
+    'android.internal.smoke.debug.no_reuse_state': {
+      device: 'emulator',
+      app: 'android.internal.debug',
+      artifacts: {
+        rootDir: './e2e/artifacts/android'
+      },
+      testRunner: {
+        $0: 'jest',
+        args: {
+          config: 'e2e/smoke_test_config.json'
+        }
+      }
+    },
     'android.internal.smoke.debug': {
       device: 'emulator',
       app: 'android.internal.debug',
@@ -306,8 +319,7 @@ module.exports = {
       testRunner: {
         $0: 'jest',
         args: {
-          config: 'e2e/smoke_test_config.json',
-          _: [process.env.TESTS_TO_RUN]
+          config: 'e2e/smoke_test_config.json'
         }
       }
     },

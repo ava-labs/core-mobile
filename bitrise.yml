@@ -591,6 +591,52 @@ workflows:
         - abi: x86_64
         - profile: pixel_5
     - wait-for-android-emulator@1: {}
+  android-internal-e2e-run-nexus9:
+    before_run:
+    - _install-and-set-env
+    - _pull_app_files
+    after_run:
+    - _run_android_tests
+    - _send-test-result-notification-slack
+    envs:
+    - TESTS_TO_RUN: $TESTS_TO_RUN_GROUP_2
+      opts:
+        is_expand: false
+    - ENVIRONMENT: production
+      opts:
+        is_expand: false
+    - PLATFORM: Android
+      opts:
+        is_expand: false
+    - ANDROID_BUILD_VARIANT: internalE2e
+      opts:
+        is_expand: false
+    - APP_TITLE: Core Mobile Internal
+      opts:
+        is_expand: false
+    - E2E: "true"
+      opts:
+        is_expand: false
+    - USE_TEST_FEATURE_FLAGS: "true"
+      opts:
+        is_expand: false
+    - USE_SEEDLESS_GAMMA: "true"
+      opts:
+        is_expand: false
+    - POST_TO_TESTRAIL: "true"
+      opts:
+        is_expand: false
+    steps:
+    - avd-manager@1.2:
+        inputs:
+        - api_level: "28"
+        - emulator_id: emulator-5554
+        - emulator_channel: "0"
+        - create_command_flags: --sdcard 512M
+        - tag: default
+        - abi: x86_64
+        - profile: pixel_3
+    - wait-for-android-emulator@1: {}
   ios:
     before_run:
     - _install-and-set-env

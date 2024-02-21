@@ -26,8 +26,6 @@
   "testPathIgnorePatterns": [
     "./e2e/tests/bridge",
     "./e2e/tests/plusIcon/walletConnect/traderjoe.e2e.ts",
-    "./e2e/tests/plusIcon/send/sendSepoliaEthTo2ndAccount.e2e.ts",
-    "./e2e/tests/plusIcon/send/sendEthTo2ndAccount.e2e.ts",
     "./e2e/tests/network/addCustomToken.smoke.e2e.ts",
     "./e2e/tests/plusIcon/walletConnect/dappIntegrations.e2e.ts",
     "./e2e/tests/plusIcon/walletConnect/dappEthIntegrations.e2e.ts",
@@ -37,6 +35,7 @@
     "./e2e/tests/settings/showRecoveryPhrase.e2e.smoke.ts",
     "./e2e/tests/login/recoverMetaMaskWallet.e2e.smoke.ts",
     "./e2e/tests/login/unlockWithRecoveryPhrase.e2e.ts",
-    "./e2e/tests/login/createNewWallet.e2e.smoke.ts"
+    "./e2e/tests/login/createNewWallet.e2e.smoke.ts",
+    "./e2e/tests/performance/performanceLaunchApp.e2e.ts"
   ]
 }
