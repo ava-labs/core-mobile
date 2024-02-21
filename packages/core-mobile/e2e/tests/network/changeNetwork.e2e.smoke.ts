@@ -7,6 +7,7 @@ import Actions from '../../helpers/actions'
 import PortfolioPage from '../../pages/portfolio.page'
 import NetworksManagePage from '../../pages/networksManage.page'
 import { warmup } from '../../helpers/warmup'
+import commonElsPage from '../../pages/commonEls.page'
 
 describe('Change Network', () => {
   beforeAll(async () => {
@@ -14,6 +15,11 @@ describe('Change Network', () => {
   })
 
   afterAll(async () => {
+    await PortfolioPage.tapNetworksDropdown()
+    await PortfolioPage.tapManageNetworks()
+    await NetworksManagePage.tapNetworksTab()
+    await NetworksManagePage.tapStarSvgByIndex(1)
+    await commonElsPage.tapBackButton()
     await NetworksManagePage.switchToAvalancheNetwork()
   })
 

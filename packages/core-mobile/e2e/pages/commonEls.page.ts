@@ -37,7 +37,11 @@ class CommonElsPage {
   }
 
   async tapBackButton(index = 0) {
-    await Actions.tapElementAtIndex(this.backButton, index)
+    if (Actions.platform() === 'android') {
+      await device.pressBack()
+    } else {
+      await Actions.tapElementAtIndex(this.backButton, index)
+    }
   }
 
   async tapBackButton2() {
