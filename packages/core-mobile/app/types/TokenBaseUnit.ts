@@ -119,9 +119,9 @@ export abstract class TokenBaseUnit<T extends TokenBaseUnit<T>> {
     return new this.childConstructor(value ?? 0, this.maxDecimals, this.symbol)
   }
 
-  newFromFeeUnit(value?: AcceptedTypes): T {
+  newFromFeeUnit(value?: AcceptedTypes, denomination?: number): T {
     const baseValue = TokenBaseUnit.toBig(value ? value : 0).div(
-      Big(10).pow(FEE_UNIT_DENOMINATION)
+      Big(10).pow(denomination ?? FEE_UNIT_DENOMINATION)
     )
     return new this.childConstructor(baseValue, this.maxDecimals, this.symbol)
   }

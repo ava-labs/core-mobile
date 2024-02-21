@@ -127,7 +127,7 @@ export default function useBridge(selectedAsset?: AssetBalance): Bridge {
   const minimum = useMinimumTransferAmount(amount)
   const hasEnoughForNetworkFee = useHasEnoughForGas()
 
-  const btc = useBtcBridge(amount)
+  const btc = useBtcBridge(amount, Number(eip1559Fees.maxFeePerGas.toSubUnit()))
   const eth = useEthBridge({ amount, bridgeFee, minimum, eip1559Fees })
   const avalanche = useAvalancheBridge({
     amount,
