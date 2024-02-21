@@ -10,14 +10,15 @@ import AnalyticsConsentPage from '../../pages/analyticsConsent.page'
 import VerifyPhrasePage from '../../pages/verifyPhrase.page'
 import CreatePinPage from '../../pages/createPin.page'
 import BottomTabsPage from '../../pages/bottomTabs.page'
-import { warmup } from '../../helpers/warmup'
+import { handleJailbrokenWarning } from '../../helpers/warmup'
 import existingRecoveryPhrasePage from '../../pages/existingRecoveryPhrase.page'
 import commonElsPage from '../../pages/commonEls.page'
 import nameWalletPage from '../../pages/nameWallet.page'
 
 describe('Create new wallet', () => {
   beforeAll(async () => {
-    await warmup()
+    await device.launchApp()
+    await handleJailbrokenWarning()
   })
 
   it('should view proper page title and action icons', async () => {
