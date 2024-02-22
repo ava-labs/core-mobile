@@ -193,6 +193,8 @@ async function generatePlatformResults(
       )
     }
 
+    console.log('The result array is ' + resultArray)
+
     const testResults = []
     for (let i = 0; i < resultArray.length; i++) {
       const resultObject = resultArray[i]
