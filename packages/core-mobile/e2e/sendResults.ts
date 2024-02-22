@@ -193,8 +193,6 @@ async function generatePlatformResults(
       )
     }
 
-    console.log('The result array is ' + JSON.stringify(resultArray))
-
     const testResults = []
     for (let i = 0; i < resultArray.length; i++) {
       const resultObject = resultArray[i]
@@ -207,6 +205,7 @@ async function generatePlatformResults(
           status_id: statusId,
           comment: comment
         }
+        console.log('The test result is ' + JSON.stringify(testResult))
         testResults.push(testResult)
       }
     }
