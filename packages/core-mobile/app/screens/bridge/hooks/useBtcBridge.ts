@@ -77,7 +77,7 @@ export function useBtcBridge(amountInBtc: Big, fee: number): BridgeAdapter {
       activeAccount.addressBtc,
       feeRate
     )
-    return satoshiToBtc(maxAmt * 0.95)
+    return satoshiToBtc(maxAmt)
   }, [utxos, bridgeConfig, feeRate, activeAccount])
 
   const amountInSatoshis = btcToSatoshi(amountInBtc)

@@ -156,12 +156,11 @@ const NetworkFeeSelector = ({
   const displayGasValues = useMemo(() => {
     if (!networkFee) return undefined
 
-    const customBtcFee =
-      customFees?.maxFeePerGas.toSubUnit().toString() ??
-      networkFee.low.maxFeePerGas.toSubUnit().toString()
-    const customFee =
-      customFees?.maxFeePerGas.toFeeUnit() ??
-      networkFee.low.maxFeePerGas.toFeeUnit().toString()
+    const customFee = isBtcNetwork
+      ? customFees?.maxFeePerGas.toSubUnit().toString() ??
+        networkFee.low.maxFeePerGas.toSubUnit().toString()
+      : customFees?.maxFeePerGas.toFeeUnit() ??
+        networkFee.low.maxFeePerGas.toFeeUnit().toString()
 
     return {
       [FeePreset.Normal]: isBtcNetwork
@@ -173,7 +172,7 @@ const NetworkFeeSelector = ({
       [FeePreset.Instant]: isBtcNetwork
         ? networkFee.high.maxFeePerGas.toSubUnit().toString()
         : networkFee.high.maxFeePerGas.toFeeUnit(),
-      [FeePreset.Custom]: isBtcNetwork ? customBtcFee : customFee
+      [FeePreset.Custom]: customFee
     }
   }, [customFees?.maxFeePerGas, networkFee, isBtcNetwork])
 
