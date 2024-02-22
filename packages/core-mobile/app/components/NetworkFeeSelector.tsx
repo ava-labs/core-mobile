@@ -17,6 +17,7 @@ import { NetworkTokenUnit } from 'types'
 import { Button, Text, View, alpha, useTheme } from '@avalabs/k2-mobile'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { NetworkFee } from 'services/networkFee/types'
+import { useBridgeSDK } from '@avalabs/bridge-sdk'
 import { Tooltip } from './Tooltip'
 import InputText from './InputText'
 
@@ -60,6 +61,8 @@ const NetworkFeeSelector = ({
   const requestedNetwork = useSelector(selectNetwork(chainId))
   const network = chainId ? requestedNetwork : activeNetwork
   const { data: networkFee } = useNetworkFee(network)
+  const { currentBlockchain } = useBridgeSDK()
+  const [prevBlockChain, setPrevBlockchain] = useState(currentBlockchain)
 
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { nativeTokenPrice } = useNativeTokenPriceForNetwork(
@@ -87,12 +90,13 @@ const NetworkFeeSelector = ({
   )
 
   useEffect(() => {
-    if (networkFee) {
-      const initialCustomFees = getInitialCustomFees(networkFee)
+    if (prevBlockChain !== currentBlockchain) {
+      const initialCustomFees = networkFee && getInitialCustomFees(networkFee)
       setCustomFees(initialCustomFees)
+      setPrevBlockchain(currentBlockchain)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeNetwork, networkFee])
+  }, [currentBlockchain, getInitialCustomFees, prevBlockChain])
 
   // customFees init value.
   // NetworkFee is not immediately available hence the useEffect
