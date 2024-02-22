@@ -205,7 +205,6 @@ async function generatePlatformResults(
           status_id: statusId,
           comment: comment
         }
-        console.log('The test result is ' + JSON.stringify(testResult))
         testResults.push(testResult)
       }
     }
@@ -224,7 +223,7 @@ async function generatePlatformResults(
           }
           // Attaches the screenshot to the corressponding case in the test run
           const attachmentID = await api.addAttachmentToResult(
-            testResult.id,
+            testResults[i].id,
             failedPayload
           )
           console.log(`${attachmentID.attachment_id} is the attachment ID...`)
