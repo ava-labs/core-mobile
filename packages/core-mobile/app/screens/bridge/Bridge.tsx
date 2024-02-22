@@ -144,7 +144,10 @@ const Bridge: FC = () => {
   const hasValidAmount = !isAmountTooLow && amount.gt(BIG_ZERO)
 
   const hasInvalidReceiveAmount =
-    hasValidAmount && !!receiveAmount && receiveAmount.eq(BIG_ZERO)
+    provider === BridgeProvider.UNIFIED &&
+    hasValidAmount &&
+    !!receiveAmount &&
+    receiveAmount.eq(BIG_ZERO)
 
   const formattedAmountCurrency = hasValidAmount
     ? `${currencyFormatter(price.mul(amount).toNumber())} ${selectedCurrency}`

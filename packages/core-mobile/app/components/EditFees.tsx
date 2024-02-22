@@ -76,7 +76,9 @@ const EditFees = ({
     initGasLimit.toString()
   )
   const [newMaxFeePerGas, setNewMaxFeePerGas] = useState<string>(
-    initMaxFeePerGas.toFeeUnit().toString()
+    isBtcNetwork
+      ? initMaxFeePerGas.toSubUnit().toString()
+      : initMaxFeePerGas.toFeeUnit()
   )
   const [newMaxPriorityFeePerGas, setNewMaxPriorityFeePerGas] =
     useState<string>(initMaxPriorityFeePerGas.toFeeUnit().toString())
@@ -100,7 +102,10 @@ const EditFees = ({
     try {
       const fees = calculateGasAndFees({
         tokenPrice,
-        maxFeePerGas: typeCreator.newFromFeeUnit(newMaxFeePerGas),
+        maxFeePerGas: typeCreator.newFromFeeUnit(
+          newMaxFeePerGas,
+          isBtcNetwork ? 8 : undefined
+        ),
         maxPriorityFeePerGas: typeCreator.newFromFeeUnit(
           newMaxPriorityFeePerGas
         ),
@@ -124,7 +129,8 @@ const EditFees = ({
     tokenPrice,
     typeCreator,
     lowMaxFeePerGas,
-    _gasLimitError
+    _gasLimitError,
+    isBtcNetwork
   ])
 
   const handleOnSave = (): void => {
