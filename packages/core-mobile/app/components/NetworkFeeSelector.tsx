@@ -1,7 +1,7 @@
 import { Row } from 'components/Row'
 import Settings from 'assets/icons/settings.svg'
 import { Space } from 'components/Space'
-import React, { FC, useEffect, useMemo, useState } from 'react'
+import React, { FC, useCallback, useEffect, useMemo, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Network, NetworkVMType } from '@avalabs/chains-sdk'
 import { useNavigation } from '@react-navigation/native'
@@ -16,6 +16,8 @@ import { useNativeTokenPriceForNetwork } from 'hooks/useNativeTokenPriceForNetwo
 import { NetworkTokenUnit } from 'types'
 import { Button, Text, View, alpha, useTheme } from '@avalabs/k2-mobile'
 import { useApplicationContext } from 'contexts/ApplicationContext'
+import { NetworkFee } from 'services/networkFee/types'
+import { useBridgeSDK } from '@avalabs/bridge-sdk'
 import { Tooltip } from './Tooltip'
 import InputText from './InputText'
 
@@ -59,6 +61,8 @@ const NetworkFeeSelector = ({
   const requestedNetwork = useSelector(selectNetwork(chainId))
   const network = chainId ? requestedNetwork : activeNetwork
   const { data: networkFee } = useNetworkFee(network)
+  const { currentBlockchain } = useBridgeSDK()
+  const [prevBlockChain, setPrevBlockchain] = useState(currentBlockchain)
 
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { nativeTokenPrice } = useNativeTokenPriceForNetwork(
@@ -71,18 +75,34 @@ const NetworkFeeSelector = ({
     useState<GasAndFees<NetworkTokenUnit>>()
   const [customFees, setCustomFees] = useState<GasAndFees<NetworkTokenUnit>>()
 
-  // customFees init value.
-  // NetworkFee is not immediately available hence the useEffect
-  useEffect(() => {
-    if (!customFees && networkFee && gasLimit > 0) {
-      const initialCustomFees = calculateGasAndFees<NetworkTokenUnit>({
-        maxFeePerGas: networkFee.low.maxFeePerGas,
+  const getInitialCustomFees = useCallback(
+    (fee: NetworkFee<NetworkTokenUnit>): GasAndFees<NetworkTokenUnit> => {
+      return calculateGasAndFees({
+        maxFeePerGas: fee.low.maxFeePerGas,
         maxPriorityFeePerGas:
-          networkFee.low.maxPriorityFeePerGas ??
+          fee.low.maxPriorityFeePerGas ??
           NetworkTokenUnit.fromNetwork(activeNetwork),
         tokenPrice: nativeTokenPrice,
         gasLimit
       })
+    },
+    [activeNetwork, gasLimit, nativeTokenPrice]
+  )
+
+  useEffect(() => {
+    if (prevBlockChain !== currentBlockchain) {
+      const initialCustomFees = networkFee && getInitialCustomFees(networkFee)
+      setCustomFees(initialCustomFees)
+      setPrevBlockchain(currentBlockchain)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentBlockchain, getInitialCustomFees, prevBlockChain])
+
+  // customFees init value.
+  // NetworkFee is not immediately available hence the useEffect
+  useEffect(() => {
+    if (!customFees && networkFee && gasLimit > 0) {
+      const initialCustomFees = getInitialCustomFees(networkFee)
       setCustomFees(initialCustomFees)
       setCalculatedFees(initialCustomFees)
       onFeesChange?.(initialCustomFees, FeePreset.Normal)
@@ -91,9 +111,11 @@ const NetworkFeeSelector = ({
     activeNetwork,
     customFees,
     gasLimit,
+    getInitialCustomFees,
     nativeTokenPrice,
     networkFee,
-    onFeesChange
+    onFeesChange,
+    setCustomFees
   ])
 
   function handleSelectedPreset(preset: FeePreset): void {
@@ -133,15 +155,26 @@ const NetworkFeeSelector = ({
 
   const displayGasValues = useMemo(() => {
     if (!networkFee) return undefined
-    return {
-      [FeePreset.Normal]: networkFee.low.maxFeePerGas.toFeeUnit().toString(),
-      [FeePreset.Fast]: networkFee.medium.maxFeePerGas.toFeeUnit().toString(),
-      [FeePreset.Instant]: networkFee.high.maxFeePerGas.toFeeUnit().toString(),
-      [FeePreset.Custom]:
-        customFees?.maxFeePerGas.toFeeUnit().toString() ??
+
+    const customFee = isBtcNetwork
+      ? customFees?.maxFeePerGas.toSubUnit().toString() ??
+        networkFee.low.maxFeePerGas.toSubUnit().toString()
+      : customFees?.maxFeePerGas.toFeeUnit() ??
         networkFee.low.maxFeePerGas.toFeeUnit().toString()
+
+    return {
+      [FeePreset.Normal]: isBtcNetwork
+        ? networkFee.low.maxFeePerGas.toSubUnit().toString()
+        : networkFee.low.maxFeePerGas.toFeeUnit(),
+      [FeePreset.Fast]: isBtcNetwork
+        ? networkFee.medium.maxFeePerGas.toSubUnit().toString()
+        : networkFee.medium.maxFeePerGas.toFeeUnit(),
+      [FeePreset.Instant]: isBtcNetwork
+        ? networkFee.high.maxFeePerGas.toSubUnit().toString()
+        : networkFee.high.maxFeePerGas.toFeeUnit(),
+      [FeePreset.Custom]: customFee
     }
-  }, [customFees?.maxFeePerGas, networkFee])
+  }, [customFees?.maxFeePerGas, networkFee, isBtcNetwork])
 
   const goToEditGasLimit = (n?: Network): void => {
     if (networkFee === undefined || n === undefined) return

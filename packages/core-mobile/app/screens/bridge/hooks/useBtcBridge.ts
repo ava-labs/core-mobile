@@ -35,7 +35,7 @@ import {
 import { Btc } from 'types/Btc'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 
-export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
+export function useBtcBridge(amountInBtc: Big, fee: number): BridgeAdapter {
   const activeNetwork = useSelector(selectActiveNetwork)
   const activeAccount = useSelector(selectActiveAccount)
   const currency = useSelector(selectSelectedCurrency)
@@ -187,7 +187,7 @@ export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
       !bridgeConfig ||
       !activeNetwork ||
       !amountInSatoshis ||
-      !feeRate
+      !fee
     ) {
       return Promise.reject()
     }
@@ -200,7 +200,7 @@ export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
       btcAddress,
       utxos,
       amountInSatoshis,
-      feeRate
+      fee
     )
 
     const [signedTx, error] = await resolve(
@@ -246,7 +246,7 @@ export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
     activeAccount,
     activeNetwork,
     amountInSatoshis,
-    feeRate,
+    fee,
     currentAsset,
     amountInBtc,
     createBridgeTransaction
