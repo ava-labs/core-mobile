@@ -146,6 +146,7 @@ export async function isResultExistsInTestrail(runID: number, caseId: number) {
 }
 
 // Updates the results for an existing test run or an empty test run
+// eslint-disable-next-line max-params
 async function generatePlatformResults(
   testCasesToSend: any,
   resultsToSendToTestrail: [],
@@ -171,7 +172,6 @@ async function generatePlatformResults(
       })
       // Adds the existing test case results to the results array so they are not overwritten in testrail when using the updateRun endpoint
       resultArray = resultArray.concat(existingTestCases)
-      console.log(resultArray, ' is the result array')
       // Add already existing test cases to the testCasesToSend array
       if (existingTestCases.length > 0) {
         existingTestCases.forEach((testCase: number) => {
@@ -180,10 +180,7 @@ async function generatePlatformResults(
       }
       // Takes the array of test cases and adds them to the test run
       await api.updateRun(Number(runId), testCasesToSend)
-      console.log(
-        'Test cases have been sent to the test run...' +
-          testCasesToSend.case_ids
-      )
+      console.log('Test cases have been sent to the test run...')
     } catch (TestRailException) {
       console.log(
         'Invalid test case ids found in ' +
@@ -222,11 +219,7 @@ async function generatePlatformResults(
             value: await fs.createReadStream(failScreenshot)
           }
           // Attaches the screenshot to the corressponding case in the test run
-          const attachmentID = await api.addAttachmentToResult(
-            testResults[i].id,
-            failedPayload
-          )
-          console.log(`${attachmentID.attachment_id} is the attachment ID...`)
+          await api.addAttachmentToResult(testResults[i].id, failedPayload)
         }
       }
     }
