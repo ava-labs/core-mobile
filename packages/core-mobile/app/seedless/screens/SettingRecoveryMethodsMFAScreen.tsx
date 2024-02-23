@@ -9,7 +9,6 @@ import {
 import React from 'react'
 import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation, useRoute } from '@react-navigation/native'
-import { Card } from 'seedless/components/Card'
 import { Space } from 'components/Space'
 import { SettingRecoveryMethodsScreenProps } from 'navigation/types'
 
@@ -63,7 +62,20 @@ export const SettingRecoveryMethodsMFAScreen = (): JSX.Element => {
             {mfa.type === 'totp' ? 'Authenticator App' : 'Passkey'}
           </Text>
           <Space y={20} />
-          <Card icon={icon} title={title} />
+          <View
+            sx={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              backgroundColor: '$neutral900',
+              padding: 16,
+              borderRadius: 8
+            }}>
+            {icon}
+            <Space x={16} />
+            <Text variant="buttonMedium" sx={{ color: '$neutral50' }}>
+              {title}
+            </Text>
+          </View>
         </View>
       </ScrollView>
       <View sx={{ padding: 16, marginBottom: 30 }}>

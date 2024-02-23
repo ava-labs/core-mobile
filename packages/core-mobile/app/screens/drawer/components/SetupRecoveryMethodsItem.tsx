@@ -1,6 +1,5 @@
 import React from 'react'
 import AvaListItem from 'components/AvaListItem'
-import CarrotSVG from 'components/svg/CarrotSVG'
 import { WalletScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation } from '@react-navigation/native'
@@ -49,8 +48,9 @@ export default function SetupRecoveryMethodsItem(): JSX.Element {
 
   return (
     <AvaListItem.Base
-      title={'Set Up Recovery Methods'}
-      rightComponent={<CarrotSVG />}
+      title="Set Up Recovery Methods"
+      showNavigationArrow
+      rightComponentVerticalAlignment="center"
       leftComponent={icon()}
       onPress={handlePress}
     />
