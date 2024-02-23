@@ -51,19 +51,23 @@ yarn envs
 
 ## Custom fonts
 
-To add custom fonts, add it to app/assets/fonts folder and then run:
+To add custom fonts, add it to `app/assets/fonts` folder and then run:
 
 ```zsh
 yarn link
 ```
 
+## Env Workflows
+
+[Documentation](https://ava-labs.atlassian.net/wiki/spaces/EN/pages/2500493313/Env+Workflows)
+
 ## Navigation System
 
-https://whimsical.com/mobile-navigation-system-4WaXLt2DgAutCmbfFF6wpS
+[Documentation](https://whimsical.com/mobile-navigation-system-4WaXLt2DgAutCmbfFF6wpS)
 
 ## Wallet Connect Flows
 
-https://whimsical.com/wallet-connect-flows-9QqTTDNdktBePx6vDR9oeX
+[Documentation](https://whimsical.com/wallet-connect-flows-9QqTTDNdktBePx6vDR9oeX)
 
 ## App Signing
 
