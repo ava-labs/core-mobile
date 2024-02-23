@@ -30,11 +30,11 @@ class LoginRecoverWallet {
   }
 
   async recoverWalletLogin() {
-    const isVisisbleNo = await Actions.expectToBeVisible(
+    const isVisibleNo = await Actions.expectToBeVisible(
       existingRecoveryPhrasePage.forgotPinBtn
     )
 
-    if (isVisisbleNo) {
+    if (isVisibleNo) {
       await this.enterPin()
       await accountManagePage.switchToFirstAccount()
     } else {
