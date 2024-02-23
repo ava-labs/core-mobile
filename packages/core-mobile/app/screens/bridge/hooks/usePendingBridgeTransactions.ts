@@ -15,24 +15,28 @@ const usePendingLegacyBridgeTransactions = (
 ): BridgeTransaction[] => {
   const pendingBridgeByTxId = useSelector(selectBridgeTransactions)
 
-  if (!network) {
-    return Object.values(pendingBridgeByTxId)
-  }
+  return useMemo(() => {
+    if (!network) {
+      return Object.values(pendingBridgeByTxId)
+    }
 
-  const networkNameToCheck = isBitcoinNetwork(network)
-    ? BridgeNetwork.BITCOIN
-    : isAvalancheNetwork(network)
-    ? BridgeNetwork.AVALANCHE
-    : isEthereumNetwork(network)
-    ? BridgeNetwork.ETHEREUM
-    : null
+    const networkNameToCheck = isBitcoinNetwork(network)
+      ? BridgeNetwork.BITCOIN
+      : isAvalancheNetwork(network)
+      ? BridgeNetwork.AVALANCHE
+      : isEthereumNetwork(network)
+      ? BridgeNetwork.ETHEREUM
+      : null
 
-  return Object.values(pendingBridgeByTxId).filter(
-    tx =>
-      (tx.sourceChain.valueOf() === networkNameToCheck ||
-        tx.targetChain.valueOf() === networkNameToCheck) &&
-      tx.environment === (network.isTestnet ? 'test' : 'main')
-  )
+    return [
+      ...Object.values(pendingBridgeByTxId).filter(
+        tx =>
+          (tx.sourceChain.valueOf() === networkNameToCheck ||
+            tx.targetChain.valueOf() === networkNameToCheck) &&
+          tx.environment === (network.isTestnet ? 'test' : 'main')
+      )
+    ]
+  }, [network, pendingBridgeByTxId])
 }
 
 const usePendingUnifiedBridgeTransactions = (
