@@ -70,7 +70,11 @@ const SignupScreen: FC = () => {
   }): void => {
     navigate(AppNavigation.Root.RecoveryMethods, {
       screen: AppNavigation.RecoveryMethods.AddRecoveryMethods,
-      params: { oidcAuth, onAccountVerified: handleAccountVerified }
+      params: {
+        oidcAuth,
+        onAccountVerified: handleAccountVerified,
+        allowsUserToAddLater: true
+      }
     })
   }
 

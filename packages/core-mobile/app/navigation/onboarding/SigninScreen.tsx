@@ -51,7 +51,8 @@ const SigninScreen: FC = () => {
       screen: AppNavigation.RecoveryMethods.AddRecoveryMethods,
       params: {
         oidcAuth,
-        onAccountVerified: handleAccountVerified
+        onAccountVerified: handleAccountVerified,
+        allowsUserToAddLater: true
       }
     })
   }

@@ -36,7 +36,7 @@ export const AddRecoveryMethods = (): JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
-  const { mfas, oidcAuth, onAccountVerified } =
+  const { mfas, oidcAuth, onAccountVerified, allowsUserToAddLater } =
     useRoute<AddRecoveryMethodsScreenProps['route']>().params
   const isSeedlessMfaPasskeyBlocked = useSelector(
     selectIsSeedlessMfaPasskeyBlocked
@@ -177,7 +177,7 @@ export const AddRecoveryMethods = (): JSX.Element => {
           />
         )}
       </ScrollView>
-      {oidcAuth === undefined && (
+      {oidcAuth === undefined && allowsUserToAddLater === true && (
         <View sx={{ padding: 16, marginBottom: 30 }}>
           <Button type="primary" size="xlarge" onPress={handleSetupLater}>
             Set Up Later

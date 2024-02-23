@@ -15,6 +15,7 @@ export type RecoveryMethodsStackParamList = {
     oidcAuth?: { oidcToken: string; mfaId: string }
     mfas?: MFA[]
     onAccountVerified: (withMfa: boolean) => void
+    allowsUserToAddLater?: boolean
   }
   [AppNavigation.RecoveryMethods.AuthenticatorSetup]: {
     oidcAuth?: { oidcToken: string; mfaId: string }
