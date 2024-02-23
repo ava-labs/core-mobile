@@ -108,6 +108,8 @@ const BridgeTransactionStatus: FC<Props> = ({ txHash, showHideButton }) => {
 
   useEffect(
     function cacheBridgeTransaction() {
+      if (bridgeTransaction !== undefined) return
+
       const transaction = bridgeTransactions.find(
         tx => tx.sourceTxHash === txHash
       )
@@ -116,7 +118,7 @@ const BridgeTransactionStatus: FC<Props> = ({ txHash, showHideButton }) => {
         // the tx should still be shown after completion.
         setBridgeTransaction(transaction)
     },
-    [bridgeTransactions, txHash]
+    [bridgeTransaction, bridgeTransactions, txHash]
   )
 
   useEffect(
