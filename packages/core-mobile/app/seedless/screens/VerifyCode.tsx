@@ -63,7 +63,7 @@ export const VerifyCode = ({
     : undefined
 
   return (
-    <Sheet onClose={onBack} title="VerifyCode">
+    <Sheet onClose={onBack} title="Verify Code">
       <View
         sx={{ marginHorizontal: 16, justifyContent: 'space-between', flex: 1 }}>
         {isVerifying && (
