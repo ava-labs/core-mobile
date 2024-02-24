@@ -31,7 +31,7 @@ jobs:
             ENV_PROD, core/dev/mobile/.env.production
             ENV_PROD_E2E, core/dev/mobile/.env.production.e2e
 
-      - name: Wrtie envs to files
+      - name: Write envs to files
         working-directory: packages/core-mobile/scripts/github
         run: |
           ../common/writeEnvsToFile.sh "$ENV_DEV" ".env.development"
