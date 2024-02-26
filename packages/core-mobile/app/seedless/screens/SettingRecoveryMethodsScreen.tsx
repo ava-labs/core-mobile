@@ -61,6 +61,7 @@ export const SettingRecoveryMethodsScreen = (): JSX.Element => {
       <AvaListItem.Base
         title={item.type === 'totp' ? 'Authenticator' : 'Passkey'}
         showNavigationArrow={true}
+        rightComponentVerticalAlignment="center"
         onPress={() => handleRecoveryMethod(item)}
       />
     )
@@ -70,7 +71,11 @@ export const SettingRecoveryMethodsScreen = (): JSX.Element => {
     <Loader />
   ) : (
     <View sx={{ flex: 1 }}>
-      <FlatList data={recoveryMethods} renderItem={renderItem} />
+      <FlatList
+        style={{ marginTop: 16 }}
+        data={recoveryMethods}
+        renderItem={renderItem}
+      />
       <View sx={{ padding: 16, marginBottom: 30 }}>
         <Button
           leftIcon="add"
