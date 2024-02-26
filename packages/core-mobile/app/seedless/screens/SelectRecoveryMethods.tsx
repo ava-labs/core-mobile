@@ -10,67 +10,11 @@ type SelectRecoveryMethodsScreenProps = RootStackScreenProps<
 >
 
 export const SelectRecoveryMethods = (): JSX.Element => {
-  // const { getParent } =
-  //   useNavigation<SelectRecoveryMethodsScreenProps['navigation']>()
   const {
     theme: { colors }
   } = useTheme()
   const { mfaMethods, onMFASelected } =
     useRoute<SelectRecoveryMethodsScreenProps['route']>().params
-  // const isSeedlessMfaAuthenticatorBlocked = useSelector(
-  //   selectIsSeedlessMfaAuthenticatorBlocked
-  // )
-  // const isSeedlessMfaPasskeyBlocked = useSelector(
-  //   selectIsSeedlessMfaPasskeyBlocked
-  // )
-  // const isSeedlessMfaYubikeyBlocked = useSelector(
-  //   selectIsSeedlessMfaYubikeyBlocked
-  // )
-  // const { verifyTotp } = useVerifyMFA(SeedlessService.sessionManager)
-
-  // const handleTotp = async (): Promise<void> => {
-  //   if (isSeedlessMfaAuthenticatorBlocked) {
-  //     showSimpleToast('Authenticator is not available at the moment')
-  //   } else {
-  //     verifyTotp({
-  //       onVerifyCode: onVerifyTotpCode,
-  //       onVerifySuccess: () => {
-  //         getParent()?.goBack()
-  //         onAccountVerified(true)
-  //         AnalyticsService.capture('SeedlessMfaVerified', {
-  //           type: 'Authenticator'
-  //         })
-  //       }
-  //     })
-  //   }
-  // }
-
-  // const handleFido = async (): Promise<void> => {
-  //   if (PasskeyService.isSupported === false) {
-  //     showSimpleToast('Passkey/Yubikey is not supported on this device')
-  //     return
-  //   }
-
-  //   if (isSeedlessMfaPasskeyBlocked && isSeedlessMfaYubikeyBlocked) {
-  //     showSimpleToast('AuthenPasskey/Yubikey is not available at the moment')
-  //   }
-
-  //   showOwl()
-
-  //   try {
-  //     await onVerifyFido()
-
-  //     AnalyticsService.capture('SeedlessMfaVerified', { type: 'Fido' })
-
-  //     getParent()?.goBack()
-  //     onAccountVerified(true)
-  //   } catch (e) {
-  //     Logger.error('passkey authentication failed', e)
-  //     showSimpleToast('Unable to authenticate')
-  //   } finally {
-  //     hideOwl()
-  //   }
-  // }
 
   return (
     <View sx={{ marginHorizontal: 16, flex: 1 }}>
