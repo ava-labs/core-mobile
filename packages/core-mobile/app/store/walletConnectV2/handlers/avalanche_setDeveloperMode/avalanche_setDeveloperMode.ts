@@ -31,7 +31,13 @@ class AvalancheSetDeveloperModeHandler
       }
     }
     const enableDeveloperMode = result.data[0]
-    isDeveloperMode !== enableDeveloperMode && dispatch(toggleDeveloperMode())
+    if (isDeveloperMode === enableDeveloperMode) {
+      return {
+        success: true,
+        value: `Developer Mode is already set to ${enableDeveloperMode}`
+      }
+    }
+    dispatch(toggleDeveloperMode())
     return {
       success: true,
       value: `Developer Mode set to ${enableDeveloperMode}`
