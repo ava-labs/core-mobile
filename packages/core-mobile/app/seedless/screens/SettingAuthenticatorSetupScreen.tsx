@@ -16,7 +16,7 @@ type SettingAuthenticatorSetupScreenProps = SettingRecoveryMethodsScreenProps<
 export const SettingAuthenticatorSetupScreen = (): JSX.Element => {
   const { totpChallenge } =
     useRoute<SettingAuthenticatorSetupScreenProps['route']>().params
-  const { navigate, replace } =
+  const { navigate } =
     useNavigation<SettingAuthenticatorSetupScreenProps['navigation']>()
   const { verifyTotp } = useVerifyMFA(SeedlessService.sessionManager)
 
@@ -42,7 +42,7 @@ export const SettingAuthenticatorSetupScreen = (): JSX.Element => {
         return { success: true, value: undefined }
       },
       onVerifySuccess: () => {
-        replace(AppNavigation.SecurityPrivacy.SettingRecoveryMethods)
+        navigate(AppNavigation.SettingRecoveryMethods.SettingRecoveryMethods)
         ShowSnackBar(<SnackBarMessage message="Authenticator Changed" />)
       }
     })

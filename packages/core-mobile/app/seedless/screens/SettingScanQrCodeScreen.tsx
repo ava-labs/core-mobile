@@ -15,7 +15,7 @@ type SettingScanQrCodeScreenProps = SettingRecoveryMethodsScreenProps<
 export const SettingScanQrCodeScreen = (): JSX.Element => {
   const { totpChallenge } =
     useRoute<SettingScanQrCodeScreenProps['route']>().params
-  const { replace, goBack } =
+  const { goBack, navigate } =
     useNavigation<SettingScanQrCodeScreenProps['navigation']>()
   const { verifyTotp } = useVerifyMFA(SeedlessService.sessionManager)
 
@@ -27,7 +27,7 @@ export const SettingScanQrCodeScreen = (): JSX.Element => {
         return { success: true, value: undefined }
       },
       onVerifySuccess: () => {
-        replace(AppNavigation.SecurityPrivacy.SettingRecoveryMethods)
+        navigate(AppNavigation.SettingRecoveryMethods.SettingRecoveryMethods)
         ShowSnackBar(<SnackBarMessage message="Authenticator Changed" />)
       }
     })
