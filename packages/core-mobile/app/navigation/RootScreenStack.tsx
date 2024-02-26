@@ -65,6 +65,7 @@ export type RootScreenStackParamList = {
   [AppNavigation.Root.SelectRecoveryMethods]: {
     mfaMethods: MFA[]
     onMFASelected: (mfa: MFA) => void
+    onBack?: () => void
   }
 }
 
