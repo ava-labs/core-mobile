@@ -11,12 +11,12 @@ Ava Labs Mobile
 
 This repository is a monorepo that we manage using [Yarn workspaces](https://yarnpkg.com/features/workspaces).
 
-| Package             |                                         Description |
-| :---                |                                            :---     |
-| [@avalabs/core-mobile](https://github.com/ava-labs/avalanche-wallet-apps/tree/develop/packages/core-mobile)        | Core Mobile app                                               |
-| [@avalabs/k2-mobile](https://github.com/ava-labs/avalanche-wallet-apps/tree/develop/packages/k2-mobile) | Mobile Design System (under 🚧👷‍♂️🚧)   | 
-| [eslint-plugin-avalabs-mobile](https://github.com/ava-labs/avalanche-wallet-apps/tree/develop/packages/eslint-mobile) | Shared Eslint plugin        | 
-| [@avalabs/tsconfig-mobile](https://github.com/ava-labs/avalanche-wallet-apps/tree/develop/packages/tsconfig-mobile) | Shared Typescript config       | 
+| Package                                                                                                               | Description                         |
+| :-------------------------------------------------------------------------------------------------------------------- | :---------------------------------- |
+| [@avalabs/core-mobile](https://github.com/ava-labs/avalanche-wallet-apps/tree/develop/packages/core-mobile)           | Core Mobile app                     |
+| [@avalabs/k2-mobile](https://github.com/ava-labs/avalanche-wallet-apps/tree/develop/packages/k2-mobile)               | Mobile Design System (under 🚧👷‍♂️🚧) |
+| [eslint-plugin-avalabs-mobile](https://github.com/ava-labs/avalanche-wallet-apps/tree/develop/packages/eslint-mobile) | Shared Eslint plugin                |
+| [@avalabs/tsconfig-mobile](https://github.com/ava-labs/avalanche-wallet-apps/tree/develop/packages/tsconfig-mobile)   | Shared Typescript config            |
 
 ## ⚡ Quickstart
 
@@ -25,12 +25,18 @@ This repository is a monorepo that we manage using [Yarn workspaces](https://yar
    ```
    brew install yarn
    ```
-4. Install required dependencies for all packages
+3. Set up `$NPM_TOKEN`
+
+   To install all dependencies, you will need to generate an `NPM token` from your NPM.js account and add that as an environment variable named `NPM_TOKEN` on your machine (for example, `.zshenv` if using zsh or `.bash_profile` if not).
+
+4. Install dependencies for all packages
 
    In the root directory, run:
+
    ```
    yarn install && yarn setup
    ```
+
 5. Follow the specific instructions in each package to build/run it
 
 ## 📖 Tips

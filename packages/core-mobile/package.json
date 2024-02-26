@@ -3,6 +3,7 @@
   "private": true,
   "scripts": {
     "setup": "yarn allow-scripts",
+    "envs": "./scripts/getEnvs.sh",
     "android": "ENVFILE=.env.development react-native run-android --variant=internalDebug",
     "podInstall": "bundle _2.1.4_ install && cd ios && bundle exec pod install",
     "ios": "ENVFILE=.env.development react-native run-ios",
