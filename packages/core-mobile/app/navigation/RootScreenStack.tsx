@@ -64,9 +64,7 @@ export type RootScreenStackParamList = {
     .RecoveryMethods]: NavigatorScreenParams<RecoveryMethodsStackParamList>
   [AppNavigation.Root.SelectRecoveryMethods]: {
     mfaMethods: MFA[]
-    onVerifyTotpCode: (code: string) => Promise<Result<undefined, TotpErrors>>
-    onVerifyFido: () => Promise<void>
-    onAccountVerified: (withMfa: boolean) => void
+    onMFASelected: (mfa: MFA) => void
   }
 }
 

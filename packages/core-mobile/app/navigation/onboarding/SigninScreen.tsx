@@ -14,9 +14,6 @@ import Logger from 'utils/Logger'
 import { OidcProviders } from 'seedless/consts'
 import { hideOwl, showOwl } from 'components/GlobalOwlLoader'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { Result } from 'types/result'
-import { TotpErrors } from 'seedless/errors'
-import SeedlessService from 'seedless/services/SeedlessService'
 
 type NavigationProp = OnboardScreenProps<
   typeof AppNavigation.Onboard.Signin
@@ -27,7 +24,7 @@ const SigninScreen: FC = () => {
   const {
     theme: { colors }
   } = useTheme()
-  const { register, isRegistering } = useSeedlessRegister()
+  const { register, isRegistering, verify } = useSeedlessRegister()
 
   const handleSigninWithMnemonic = (): void => {
     navigate(AppNavigation.Onboard.Welcome, {
@@ -57,21 +54,6 @@ const SigninScreen: FC = () => {
     })
   }
 
-  const handleVerifyTotpCode = (
-    oidcToken: string,
-    mfaId: string,
-    code: string
-  ): Promise<Result<undefined, TotpErrors>> => {
-    return SeedlessService.sessionManager.verifyCode(oidcToken, mfaId, code)
-  }
-
-  const handleVerifyFido = (
-    oidcToken: string,
-    mfaId: string
-  ): Promise<void> => {
-    return SeedlessService.sessionManager.approveFido(oidcToken, mfaId, false)
-  }
-
   const handleVerifyMfaMethod = (
     oidcAuth: {
       oidcToken: string
@@ -81,10 +63,9 @@ const SigninScreen: FC = () => {
   ): void => {
     navigate(AppNavigation.Root.SelectRecoveryMethods, {
       mfaMethods,
-      onAccountVerified: handleAccountVerified,
-      onVerifyTotpCode: code =>
-        handleVerifyTotpCode(oidcAuth.oidcToken, oidcAuth.mfaId, code),
-      onVerifyFido: () => handleVerifyFido(oidcAuth.oidcToken, oidcAuth.mfaId)
+      onMFASelected: mfa => {
+        verify(mfa, oidcAuth, handleAccountVerified)
+      }
     })
   }
 

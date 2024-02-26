@@ -17,9 +17,6 @@ import GoogleSigninService from 'services/socialSignIn/google/GoogleSigninServic
 import { showSimpleToast } from 'components/Snackbar'
 import { hideOwl, showOwl } from 'components/GlobalOwlLoader'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import SeedlessService from 'seedless/services/SeedlessService'
-import { Result } from 'types/result'
-import { TotpErrors } from 'seedless/errors'
 
 type NavigationProp = OnboardScreenProps<
   typeof AppNavigation.Onboard.Signup
@@ -30,7 +27,7 @@ const SignupScreen: FC = () => {
     selectIsSeedlessOnboardingBlocked
   )
   const { navigate } = useNavigation<NavigationProp>()
-  const { register, isRegistering } = useSeedlessRegister()
+  const { register, isRegistering, verify } = useSeedlessRegister()
 
   useEffect(() => {
     isRegistering ? showOwl() : hideOwl()
@@ -78,21 +75,6 @@ const SignupScreen: FC = () => {
     })
   }
 
-  const handleVerifyTotpCode = (
-    oidcToken: string,
-    mfaId: string,
-    code: string
-  ): Promise<Result<undefined, TotpErrors>> => {
-    return SeedlessService.sessionManager.verifyCode(oidcToken, mfaId, code)
-  }
-
-  const handleVerifyFido = (
-    oidcToken: string,
-    mfaId: string
-  ): Promise<void> => {
-    return SeedlessService.sessionManager.approveFido(oidcToken, mfaId, false)
-  }
-
   const handleVerifyMfaMethod = (
     oidcAuth: {
       oidcToken: string
@@ -102,10 +84,9 @@ const SignupScreen: FC = () => {
   ): void => {
     navigate(AppNavigation.Root.SelectRecoveryMethods, {
       mfaMethods,
-      onAccountVerified: handleAccountVerified,
-      onVerifyTotpCode: code =>
-        handleVerifyTotpCode(oidcAuth.oidcToken, oidcAuth.mfaId, code),
-      onVerifyFido: () => handleVerifyFido(oidcAuth.oidcToken, oidcAuth.mfaId)
+      onMFASelected: mfa => {
+        verify(mfa, oidcAuth, handleAccountVerified)
+      }
     })
   }
 

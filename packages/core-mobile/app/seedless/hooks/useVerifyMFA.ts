@@ -8,6 +8,7 @@ import {
 } from 'navigation/types'
 import { TotpErrors } from 'seedless/errors'
 import SeedlessSessionManager from 'seedless/services/SeedlessSessionManager'
+import { MFA } from 'seedless/types'
 import PasskeyService from 'services/passkey/PasskeyService'
 import { Result } from 'types/result'
 import Logger from 'utils/Logger'
@@ -22,21 +23,12 @@ function useVerifyMFA(sessionManager: SeedlessSessionManager): {
       RootStackScreenProps<keyof RootScreenStackParamList>['navigation']
     >()
 
-  const verifyMFA: VerifyMFAFunction = async <T>({
-    response,
-    onVerifySuccess
-  }: {
-    response: CubeSignerResponse<T>
+  const handleMfa = async <T>(
+    mfa: MFA,
+    response: CubeSignerResponse<T>,
     onVerifySuccess: (response: T) => void
-  }) => {
-    const mfaType = await sessionManager.getMfaType()
-    if (mfaType === undefined) {
-      Logger.error(`Unsupported MFA type: ${mfaType}`)
-      showSimpleToast(`Unsupported MFA type: ${mfaType}`)
-      return
-    }
-
-    if (mfaType === 'totp') {
+  ): Promise<void> => {
+    if (mfa.type === 'totp') {
       verifyTotp({
         onVerifyCode: async code => {
           return sessionManager.verifyApprovalCode(response, code)
@@ -47,10 +39,36 @@ function useVerifyMFA(sessionManager: SeedlessSessionManager): {
           }
         }
       })
-    } else if (mfaType === 'fido') {
+    } else if (mfa.type === 'fido') {
       verifyFido({
         response,
         onVerifySuccess
+      })
+    }
+  }
+
+  const verifyMFA: VerifyMFAFunction = async <T>({
+    response,
+    onVerifySuccess
+  }: {
+    response: CubeSignerResponse<T>
+    onVerifySuccess: (response: T) => void
+  }) => {
+    const mfaMethods = await sessionManager.userMfa()
+
+    if (mfaMethods.length === 0) {
+      Logger.error(`verifyMFA: No MFA methods available`)
+      showSimpleToast(`No MFA methods available`)
+    } else if (mfaMethods.length === 1) {
+      if (mfaMethods[0]) {
+        handleMfa(mfaMethods[0], response, onVerifySuccess)
+      }
+    } else {
+      navigate(AppNavigation.Root.SelectRecoveryMethods, {
+        mfaMethods,
+        onMFASelected: mfa => {
+          handleMfa(mfa, response, onVerifySuccess)
+        }
       })
     }
   }
