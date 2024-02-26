@@ -331,15 +331,6 @@ class SeedlessSessionManager {
   }
 
   /**
-   * Returns MFA type
-   */
-  async getMfaType(): Promise<'totp' | 'fido' | undefined> {
-    const signerSession = await this.getSignerSession()
-    const identity = await signerSession.identityProve()
-    return identity.user_info?.configured_mfa?.[0]?.type
-  }
-
-  /**
    * Returns the result of signing after MFA approval
    */
   static async signWithMfaApproval<T>(
