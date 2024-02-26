@@ -2,11 +2,13 @@
 
 ## Setup dev environment
 
-1. Set up React Native environment (https://reactnative.dev/docs/environment-setup)
+1. Set up [React Native environment](https://reactnative.dev/docs/environment-setup)
 
-2. Run `yarn envs` to fetch and create all the necessary .env files
+2. Set up [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
 
-3. Run `yarn install && yarn setup` if you haven't
+3. Run `yarn envs` to fetch and create all the necessary .env files
+
+4. Run `yarn install && yarn setup` if you haven't
 
 ## Build the app
 

@@ -1,9 +1,11 @@
 #!/bin/bash
 
+PROFILE_NAME="sso"
+
 # Retrieve secret by id from AWS Secrets Manager
 getSecretFromAWS() {
     local secret_id="$1"
-    sudo aws secretsmanager get-secret-value --secret-id "$secret_id" | grep SecretString | sed 's/.*"SecretString": "\(.*\)".*/\1/'
+    sudo aws --profile $PROFILE_NAME secretsmanager get-secret-value --secret-id "$secret_id" | grep SecretString | sed 's/.*"SecretString": "\(.*\)".*/\1/'
 }
 
 # Check if a AWS profile exists
@@ -19,18 +21,18 @@ awsConfigurationExists() {
 }
 
 # Check if profile "default" exists. If not, ask to create one
-if ! $(awsConfigurationExists "default"); then
-    echo 'Profile "default" does not exist. Please create one first!'
-    sudo aws configure sso
+if ! $(awsConfigurationExists $PROFILE_NAME); then
+    echo "Profile '$PROFILE_NAME' does not exist. Please create one first!"
+    sudo aws configure sso --profile $PROFILE_NAME
 fi
 
 # Check if the session is still valid. If not, ask to re-login
-ACCOUNT=$(sudo aws sts get-caller-identity --query "Account")
+ACCOUNT=$(sudo aws --profile $PROFILE_NAME sts get-caller-identity --query "Account")
 
 # Account is valid if account is a 12 digit account number plus surrounding double-quotes
 if [ ${#ACCOUNT} -ne 14 ]; then
-    echo 'logging in with profile "default"'
-    sudo aws sso login --profile default
+    echo "logging in with profile '$PROFILE_NAME'"
+    sudo aws sso login --profile $PROFILE_NAME
 fi
 
 # Retrieve all envs from AWS
