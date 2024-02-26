@@ -175,7 +175,8 @@ const RootScreenStack: FC = () => {
         component={SelectRecoveryMethods}
         options={{
           ...MainHeaderOptions(),
-          animationEnabled: true
+          animationEnabled: true,
+          presentation: 'modal'
         }}
       />
       <RootStack.Group screenOptions={{ presentation: 'transparentModal' }}>
