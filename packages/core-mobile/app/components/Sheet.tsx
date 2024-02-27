@@ -16,7 +16,7 @@ import {
 
 interface SheetProps {
   title?: string
-  onClose: () => void
+  onClose?: () => void
 }
 
 /**
@@ -40,9 +40,16 @@ export const Sheet: FC<SheetProps> = ({ title, onClose, children }) => {
     // onClose is called for the initial render, so we need to check if the bottom sheet is actually open
     // https://github.com/gorhom/react-native-bottom-sheet/issues/1541
     if (bottomSheetIndex !== -1) {
-      onClose()
+      onClose?.()
     }
   }
+
+  const headerJustifyContent =
+    onClose !== undefined && title
+      ? 'space-between'
+      : title
+      ? 'flex-start'
+      : 'flex-end'
 
   return (
     <BottomSheet
@@ -54,22 +61,26 @@ export const Sheet: FC<SheetProps> = ({ title, onClose, children }) => {
       onClose={handleClose}
       onChange={handleChange}
       enableContentPanningGesture={true}>
-      <View
-        sx={{
-          paddingHorizontal: 16,
-          paddingBottom: 12,
-          flexDirection: 'row',
-          justifyContent: 'space-between'
-        }}>
-        <Text variant="heading4">{title}</Text>
-        <TouchableOpacity onPress={handleClose}>
-          <Icons.Navigation.Cancel
-            color={colors.$neutral700}
-            width={30}
-            height={30}
-          />
-        </TouchableOpacity>
-      </View>
+      {(!!onClose || title) && (
+        <View
+          sx={{
+            paddingHorizontal: 16,
+            paddingBottom: 12,
+            flexDirection: 'row',
+            justifyContent: headerJustifyContent
+          }}>
+          {title && <Text variant="heading4">{title}</Text>}
+          {!!onClose && (
+            <TouchableOpacity onPress={handleClose}>
+              <Icons.Navigation.Cancel
+                color={colors.$neutral700}
+                width={30}
+                height={30}
+              />
+            </TouchableOpacity>
+          )}
+        </View>
+      )}
       {children}
     </BottomSheet>
   )

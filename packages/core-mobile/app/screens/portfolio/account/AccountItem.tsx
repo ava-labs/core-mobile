@@ -19,6 +19,9 @@ import {
 import ReloadSVG from 'components/svg/ReloadSVG'
 import { ActivityIndicator } from 'components/ActivityIndicator'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import { selectWalletType } from 'store/app'
+import { WalletType } from 'services/wallet/types'
+import SeedlessService from 'seedless/services/SeedlessService'
 
 type Props = {
   account: Account
@@ -35,6 +38,7 @@ function AccountItem({
   selected,
   blurred
 }: Props): JSX.Element {
+  const walletType = useSelector(selectWalletType)
   const context = useApplicationContext()
   const accountBalance = useSelector(
     selectBalanceTotalInCurrencyForAccount(account.index)
@@ -74,8 +78,11 @@ function AccountItem({
           accountIndex: account.index
         })
       )
+      if (walletType === WalletType.SEEDLESS && account.index === 0) {
+        SeedlessService.setMetadata(newAccountName)
+      }
     },
-    [account.index, dispatch]
+    [account.index, dispatch, walletType]
   )
 
   const handleLoadBalance = useCallback(() => {
