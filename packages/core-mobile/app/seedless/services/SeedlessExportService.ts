@@ -8,7 +8,6 @@ import {
   userExportDecrypt,
   userExportKeygen
 } from '@cubist-labs/cubesigner-sdk'
-import { UserExportResponse } from 'seedless/types'
 import SeedlessSessionManager from './SeedlessSessionManager'
 
 class SeedlessExportService {
@@ -82,29 +81,6 @@ class SeedlessExportService {
     ReturnType<typeof userExportKeygen>
   > {
     return userExportKeygen()
-  }
-
-  /**
-   * Returns MFA type
-   */
-  async getMfaType(): Promise<'totp' | 'fido' | undefined> {
-    const signerSession = await this.sessionManager.getSignerSession()
-    const identity = await signerSession.identityProve()
-    return identity.user_info?.configured_mfa?.[0]?.type
-  }
-
-  /**
-   * Returns the result of signing after MFA approval
-   */
-  async signWithMfaApproval(
-    userExportResponse: UserExportResponse,
-    mfaReceiptConfirmation: string
-  ): Promise<UserExportResponse> {
-    return userExportResponse.signWithMfaApproval({
-      mfaId: userExportResponse.mfaId(),
-      mfaOrgId: this.sessionManager.orgID,
-      mfaConf: mfaReceiptConfirmation
-    })
   }
 }
 

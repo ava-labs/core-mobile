@@ -28,15 +28,6 @@ const cubistResponseNoMfa = {
   }
 } as CubeSignerResponse<TotpChallenge>
 
-const cubistResponseHasMfa = {
-  requiresMfa(): boolean {
-    return true
-  },
-  data(): TotpChallenge {
-    return mockTotpChallenge
-  }
-} as CubeSignerResponse<TotpChallenge>
-
 const seedlessSessionManager = new SeedlessSessionManager({
   scopes: ['manage:mfa', 'sign:*'],
   sessionStorage: new SeedlessSessionStorage()
@@ -51,27 +42,11 @@ describe('SeedlessSessionManager', () => {
         userTotpResetInit: () => cubistResponseNoMfa
       }
     })
-  describe('setTotp', () => {
+  describe('totpResetInit', () => {
     it('should return the totp challenge url', async () => {
-      const result = await seedlessSessionManager.setTotp()
-      assert(result.success)
-      expect(result.value).toBe(mockTotpChallenge.totpUrl)
-    })
-
-    it('should return error if there is active mfa', async () => {
-      jest
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .spyOn(seedlessSessionManager, 'getCubeSignerClient' as any)
-        .mockImplementation(async () => {
-          return {
-            userTotpResetInit: () => cubistResponseHasMfa
-          }
-        })
-
-      const result = await seedlessSessionManager.setTotp()
-      assert(!result.success)
-      expect(result.error).toBeInstanceOf(TotpErrors)
-      expect(result.error.name).toBe('RequiresMfa')
+      const response = await seedlessSessionManager.totpResetInit()
+      const result = response.data()
+      expect(result.totpUrl).toBe(mockTotpChallenge.totpUrl)
     })
 
     it('should throw wrong mfa code error from existing mfa', async () => {
@@ -89,7 +64,10 @@ describe('SeedlessSessionManager', () => {
           throw new Error('WrongMfaCode')
         })
 
-      await seedlessSessionManager.setTotp()
+      const response = await seedlessSessionManager.totpResetInit()
+      const challenge = response.data()
+      await challenge.answer(INVALID_MFA_CODE)
+
       const result = await seedlessSessionManager.verifyCode(
         'oidcToken',
         'mfaId',
@@ -124,7 +102,11 @@ describe('SeedlessSessionManager', () => {
         .spyOn(seedlessSessionManager, 'requestOidcAuth')
         .mockReturnValueOnce('loggedin' as never)
 
-      await seedlessSessionManager.setTotp()
+      const response = await seedlessSessionManager.totpResetInit()
+      const challenge = response.data()
+
+      await challenge.answer(VALID_MFA_CODE)
+
       const result = await seedlessSessionManager.verifyCode(
         'oidcToken',
         'mfaId',

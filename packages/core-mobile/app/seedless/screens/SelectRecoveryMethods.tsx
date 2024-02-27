@@ -1,82 +1,38 @@
-import React, { useContext } from 'react'
+import React, { useCallback, useEffect } from 'react'
 import { Icons, Text, View, useTheme } from '@avalabs/k2-mobile'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
-import { RecoveryMethodsScreenProps } from 'navigation/types'
-import PasskeyService from 'services/passkey/PasskeyService'
-import SeedlessService from 'seedless/services/SeedlessService'
-import { RecoveryMethodsContext } from 'navigation/onboarding/RecoveryMethodsStack'
-import Logger from 'utils/Logger'
-import { showSimpleToast } from 'components/Snackbar'
-import { hideOwl, showOwl } from 'components/GlobalOwlLoader'
-import { useSelector } from 'react-redux'
-import {
-  selectIsSeedlessMfaAuthenticatorBlocked,
-  selectIsSeedlessMfaPasskeyBlocked,
-  selectIsSeedlessMfaYubikeyBlocked
-} from 'store/posthog'
-import AnalyticsService from 'services/analytics/AnalyticsService'
+import { RootStackScreenProps } from 'navigation/types'
+import { MFA } from 'seedless/types'
+import { BackButton } from 'components/BackButton'
 import { Card } from '../components/Card'
 
-type SelectRecoveryMethodsScreenProps = RecoveryMethodsScreenProps<
-  typeof AppNavigation.RecoveryMethods.SelectRecoveryMethods
+type SelectRecoveryMethodsScreenProps = RootStackScreenProps<
+  typeof AppNavigation.Root.SelectRecoveryMethods
 >
 
 export const SelectRecoveryMethods = (): JSX.Element => {
-  const { navigate, goBack } =
-    useNavigation<SelectRecoveryMethodsScreenProps['navigation']>()
-  const { mfaId, oidcToken } = useContext(RecoveryMethodsContext)
   const {
     theme: { colors }
   } = useTheme()
-  const {
-    params: { mfaMethods }
-  } = useRoute<SelectRecoveryMethodsScreenProps['route']>()
-  const isSeedlessMfaAuthenticatorBlocked = useSelector(
-    selectIsSeedlessMfaAuthenticatorBlocked
-  )
-  const isSeedlessMfaPasskeyBlocked = useSelector(
-    selectIsSeedlessMfaPasskeyBlocked
-  )
-  const isSeedlessMfaYubikeyBlocked = useSelector(
-    selectIsSeedlessMfaYubikeyBlocked
-  )
+  const { mfaMethods, onMFASelected, onBack } =
+    useRoute<SelectRecoveryMethodsScreenProps['route']>().params
+  const { goBack, setOptions } = useNavigation()
 
-  const handleTotp = async (): Promise<void> => {
-    if (isSeedlessMfaAuthenticatorBlocked) {
-      showSimpleToast('Authenticator is not available at the moment')
-    } else {
-      navigate(AppNavigation.RecoveryMethods.VerifyCode)
-    }
+  const handleSelectMFA = (mfa: MFA): void => {
+    goBack()
+    onMFASelected(mfa)
   }
 
-  const handleFido = async (): Promise<void> => {
-    if (PasskeyService.isSupported === false) {
-      showSimpleToast('Passkey/Yubikey is not supported on this device')
-      return
-    }
+  const handlePressBack = useCallback((): void => {
+    goBack()
+    onBack?.()
+  }, [goBack, onBack])
 
-    if (isSeedlessMfaPasskeyBlocked && isSeedlessMfaYubikeyBlocked) {
-      showSimpleToast('AuthenPasskey/Yubikey is not available at the moment')
-    }
-
-    showOwl()
-
-    try {
-      await SeedlessService.sessionManager.approveFido(oidcToken, mfaId, false)
-
-      AnalyticsService.capture('SeedlessMfaVerified', { type: 'Fido' })
-
-      goBack()
-
-      navigate(AppNavigation.Onboard.NameYourWallet)
-    } catch (e) {
-      Logger.error('passkey authentication failed', e)
-      showSimpleToast('Unable to authenticate')
-    } finally {
-      hideOwl()
-    }
-  }
+  useEffect(() => {
+    // eslint-disable-next-line react/no-unstable-nested-components
+    setOptions({ headerLeft: () => <BackButton onPress={handlePressBack} /> })
+  }, [setOptions, handlePressBack])
 
   return (
     <View sx={{ marginHorizontal: 16, flex: 1 }}>
@@ -88,7 +44,7 @@ export const SelectRecoveryMethods = (): JSX.Element => {
         if (mfa.type === 'totp') {
           return (
             <Card
-              onPress={handleTotp}
+              onPress={() => handleSelectMFA(mfa)}
               icon={<Icons.Communication.IconKey color={colors.$neutral50} />}
               title="Authenticator"
               body="Use your authenticator app as your recovery method."
@@ -99,7 +55,7 @@ export const SelectRecoveryMethods = (): JSX.Element => {
         } else if (mfa.type === 'fido') {
           return (
             <Card
-              onPress={handleFido}
+              onPress={() => handleSelectMFA(mfa)}
               icon={<Icons.Communication.IconKey color={colors.$neutral50} />}
               title={mfa.name}
               body="Use your Passkey (or YubiKey) as your recovery method."

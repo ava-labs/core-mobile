@@ -25,14 +25,17 @@ class CoreSeedlessAPIService {
     identityProof: IdentityProof
   ): Promise<SeedlessUserRegistrationResult> {
     try {
-      const response = await fetch(Config.SEEDLESS_URL + '/v1/register', {
-        method: 'POST',
-        body: JSON.stringify(identityProof),
-        headers: {
-          Authorization: `${Config.SEEDLESS_API_KEY}`,
-          'Content-Type': 'application/json'
+      const response = await fetch(
+        Config.SEEDLESS_URL + '/v1/register?mfa-required=false',
+        {
+          method: 'POST',
+          body: JSON.stringify(identityProof),
+          headers: {
+            Authorization: `${Config.SEEDLESS_API_KEY}`,
+            'Content-Type': 'application/json'
+          }
         }
-      })
+      )
 
       const status = response.status
       const body = await response.json()
