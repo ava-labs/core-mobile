@@ -1,20 +1,31 @@
 import AccountManagePage from '../../../pages/accountManage.page'
 import ActivityTabPage from '../../../pages/activityTab.page'
 import ActivityTabLoc from '../../../locators/activityTab.loc'
-import LoginRecoverWallet from '../../../helpers/loginRecoverWallet'
 import PortfolioPage from '../../../pages/portfolio.page'
 import SendPage from '../../../pages/send.page'
 import sendLoc from '../../../locators/send.loc'
 import { warmup } from '../../../helpers/warmup'
+import networksManagePage from '../../../pages/networksManage.page'
+import commonElsPage from '../../../pages/commonEls.page'
+import bottomTabsPage from '../../../pages/bottomTabs.page'
 
 describe('Send Eth to another account', () => {
   beforeAll(async () => {
     await warmup()
   })
 
+  afterAll(async () => {
+    if (process.env.PLATFORM === 'android') {
+      await commonElsPage.tapBackButton2()
+    } else {
+      bottomTabsPage.tapPortfolioTab()
+    }
+    await networksManagePage.switchToAvalancheNetwork()
+  })
+
   it('Should send Eth to second account', async () => {
-    await LoginRecoverWallet.recoverWalletLogin()
     const secondAccountAddress = await AccountManagePage.createSecondAccount()
+    await AccountManagePage.tapFirstAccount()
     await PortfolioPage.tapNetworksDropdown()
     await PortfolioPage.tapNetworksDropdownETH()
     await SendPage.sendTokenTo2ndAccount(

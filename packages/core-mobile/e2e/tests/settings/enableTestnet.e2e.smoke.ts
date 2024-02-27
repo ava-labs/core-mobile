@@ -1,17 +1,28 @@
 import Assert from '../../helpers/assertions'
-import LoginRecoverWallet from '../../helpers/loginRecoverWallet'
 import NetworksManagePage from '../../pages/networksManage.page'
 import PortfolioPage from '../../pages/portfolio.page'
 import { warmup } from '../../helpers/warmup'
 import AdvancedPage from '../../pages/burgerMenu/advanced.page'
+import commonElsPage from '../../pages/commonEls.page'
+import actions from '../../helpers/actions'
+import accountManagePage from '../../pages/accountManage.page'
 
 describe('Enable Testnet', () => {
   beforeAll(async () => {
     await warmup()
   })
 
+  afterAll(async () => {
+    await commonElsPage.tapBackButton()
+    if (actions.platform() === 'android') {
+      await commonElsPage.tapDeviceBackButton()
+    } else {
+      await accountManagePage.tapCarrotSVG()
+    }
+    await AdvancedPage.switchToMainnet()
+  })
+
   it('Should verify Avax Network', async () => {
-    await LoginRecoverWallet.recoverWalletLogin()
     await AdvancedPage.switchToTestnet()
     await PortfolioPage.tapAvaxNetwork()
     await Assert.isVisible(PortfolioPage.avaxNetwork)

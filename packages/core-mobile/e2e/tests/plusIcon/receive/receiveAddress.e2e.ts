@@ -3,7 +3,6 @@ import ReceivePage from '../../../pages/receive.page'
 import { warmup } from '../../../helpers/warmup'
 import bottomTabsPage from '../../../pages/bottomTabs.page'
 import plusMenuPage from '../../../pages/plusMenu.page'
-import LoginRecoverWallet from '../../../helpers/loginRecoverWallet'
 import portfolioPage from '../../../pages/portfolio.page'
 import actions from '../../../helpers/actions'
 
@@ -13,7 +12,6 @@ describe('Receive Address', () => {
   })
 
   it('should validate receive address screen', async () => {
-    await LoginRecoverWallet.recoverWalletLogin()
     await bottomTabsPage.tapPlusIcon()
     await plusMenuPage.tapReceiveButton()
     await ReceivePage.verifyReceiveAddressPage()

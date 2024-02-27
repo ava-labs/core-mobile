@@ -1,5 +1,4 @@
 import Assert from '../../helpers/assertions'
-import LoginRecoverWallet from '../../helpers/loginRecoverWallet'
 import BridgeTabPage from '../../pages/bridgeTab.page'
 import { warmup } from '../../helpers/warmup'
 
@@ -9,7 +8,6 @@ describe('Bridge transfer BTC -> AVAX', () => {
   })
 
   it('Should verify Transaction Status Items', async () => {
-    await LoginRecoverWallet.recoverWalletLogin()
     await BridgeTabPage.switchToNetwork('Bitcoin')
     await BridgeTabPage.inputTokenAmmountBtcAvax()
     await Assert.isNotVisible(BridgeTabPage.amountToLowBtcAvaxMessage)
