@@ -12,6 +12,5 @@ type RefreshSeedlessTokenFlowErrorName =
   | 'NOT_REGISTERED'
   | 'USER_CANCELED'
   | 'UNEXPECTED_ERROR'
-  | 'MFA_REQUIRED'
 
 export class RefreshSeedlessTokenFlowErrors extends ErrorBase<RefreshSeedlessTokenFlowErrorName> {}

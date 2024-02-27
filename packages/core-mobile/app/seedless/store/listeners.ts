@@ -92,8 +92,6 @@ function handleRetry(listenerApi: AppListenerEffectAPI): void {
         case 'NOT_REGISTERED':
         case 'UNEXPECTED_ERROR':
           throw new Error(result.error.name)
-        case 'MFA_REQUIRED':
-          throw result.error
       }
     })
     .catch(e => {

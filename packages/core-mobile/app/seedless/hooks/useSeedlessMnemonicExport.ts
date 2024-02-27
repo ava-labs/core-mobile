@@ -158,6 +158,15 @@ export const useSeedlessMnemonicExport = (keyId: string): ReturnProps => {
 
   useEffect(() => {
     const checkPendingExports = async (): Promise<void> => {
+      const mfa = await seedlessExportService.sessionManager.userMfa()
+      if (mfa.length === 0) {
+        showSimpleToast(
+          'MFA is required for this action. Please set up recovery methods in your settings.'
+        )
+        Navigation.goBack()
+        return
+      }
+
       const pendingExport = await seedlessExportService.userExportList()
       setState(pendingExport ? ExportState.Pending : ExportState.NotInitiated)
       setPendingRequest(pendingExport)
@@ -168,9 +177,7 @@ export const useSeedlessMnemonicExport = (keyId: string): ReturnProps => {
         if (result.success) {
           checkPendingExports()
         } else {
-          if (result.error.name === 'MFA_REQUIRED') {
-            showSimpleToast(result.error.message)
-          } else if (result.error.name !== 'USER_CANCELED') {
+          if (result.error.name !== 'USER_CANCELED') {
             showSimpleToast('Unable to start export request. Please try again.')
           }
           Navigation.goBack()

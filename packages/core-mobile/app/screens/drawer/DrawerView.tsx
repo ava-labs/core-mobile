@@ -58,19 +58,19 @@ const DrawerView = (): JSX.Element => {
 const Main = (): JSX.Element => {
   const isNotificationBlocked = useSelector(selectIsNotificationBlocked)
 
-  const [hasRecoverMethods, setHasRecoverMethods] = useState<boolean>()
+  const [hasRecoveryMethods, setHasRecoveryMethods] = useState<boolean>()
 
   useFocusEffect(
     useCallback(() => {
-      if (hasRecoverMethods !== true) {
+      if (hasRecoveryMethods !== true) {
         SeedlessService.sessionManager
           .userMfa()
           .then(mfa => {
-            setHasRecoverMethods(mfa.length > 0)
+            setHasRecoveryMethods(mfa.length > 0)
           })
           .catch(Logger.error)
       }
-    }, [hasRecoverMethods])
+    }, [hasRecoveryMethods])
   )
 
   return (
@@ -79,7 +79,7 @@ const Main = (): JSX.Element => {
         flex: 1
       }}>
       <ScrollView>
-        {hasRecoverMethods === false && (
+        {hasRecoveryMethods === false && (
           <>
             <SetupRecoveryMethodsItem />
             <Separator style={{ marginHorizontal: 16 }} />
