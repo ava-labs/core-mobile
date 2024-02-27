@@ -1,27 +1,19 @@
-import {
-  alpha,
-  Pressable,
-  Text,
-  TextInput,
-  useTheme,
-  View
-} from '@avalabs/k2-mobile'
+import { alpha, Text, TextInput, useTheme, View } from '@avalabs/k2-mobile'
 import React, { useState } from 'react'
-import { BottomSheet } from 'components/BottomSheet'
-import ClearSVG from 'components/svg/ClearSVG'
 import { Space } from 'components/Space'
 import Logger from 'utils/Logger'
 import Loader from 'components/Loader'
 import { TotpErrors } from 'seedless/errors'
 import { Result } from 'types/result'
-import { UserExportResponse } from 'seedless/types'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import { Sheet } from 'components/Sheet'
+import { CubeSignerResponse } from '@cubist-labs/cubesigner-sdk'
 
 export type VerifyCodeParams = {
-  onVerifyCode: (
+  onVerifyCode: <T>(
     code: string
-  ) => Promise<Result<UserExportResponse | undefined, TotpErrors>>
-  onVerifySuccess: (cubeSignerResponse?: UserExportResponse) => void
+  ) => Promise<Result<CubeSignerResponse<T> | undefined, TotpErrors>>
+  onVerifySuccess: <T>(cubeSignerResponse?: T) => void
   onBack: () => void
 }
 
@@ -52,7 +44,7 @@ export const VerifyCode = ({
         throw new Error(result.error.message)
       }
       setIsVerifying(false)
-      onVerifySuccess(result.value)
+      onVerifySuccess(result.value?.data())
       AnalyticsService.capture('TotpValidationSuccess')
     } catch (error) {
       setShowError(true)
@@ -71,7 +63,7 @@ export const VerifyCode = ({
     : undefined
 
   return (
-    <BottomSheet snapPoints={['99%']}>
+    <Sheet onClose={onBack} title="Verify Code">
       <View
         sx={{ marginHorizontal: 16, justifyContent: 'space-between', flex: 1 }}>
         {isVerifying && (
@@ -87,22 +79,6 @@ export const VerifyCode = ({
           </View>
         )}
         <View>
-          <View
-            sx={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              alignItems: 'center'
-            }}>
-            <Text variant="heading4">VerifyCode</Text>
-            <Pressable onPress={onBack}>
-              <ClearSVG
-                backgroundColor={alpha(colors.$neutral700, 0.5)}
-                color={colors.$neutral500}
-                size={30}
-              />
-            </Pressable>
-          </View>
-          <Space y={24} />
           <Text variant="body1">
             Enter the code generated from your authenticator app.
           </Text>
@@ -138,6 +114,6 @@ export const VerifyCode = ({
           )}
         </View>
       </View>
-    </BottomSheet>
+    </Sheet>
   )
 }

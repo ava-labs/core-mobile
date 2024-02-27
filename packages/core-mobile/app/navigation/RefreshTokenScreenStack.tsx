@@ -2,28 +2,20 @@ import React, { FC } from 'react'
 import AppNavigation from 'navigation/AppNavigation'
 import { createStackNavigator } from '@react-navigation/stack'
 import OwlLoader from 'components/OwlLoader'
-import { useNavigation, useRoute } from '@react-navigation/native'
+import { useRoute } from '@react-navigation/native'
 import SessionTimeout, {
   SessionTimeoutParams
 } from 'seedless/screens/SessionTimeout'
-import { VerifyCode } from 'seedless/screens/VerifyCode'
 import { useTheme } from '@avalabs/k2-mobile'
 import { RefreshTokenScreenProps } from 'navigation/types'
 import WrongSocialAccount, {
   WrongSocialAccountParams
 } from 'seedless/screens/WrongSocialAccount'
-import { TotpErrors } from 'seedless/errors'
-import { Result } from 'types/result'
 
 export type RefreshTokenScreenStackParamList = {
   [AppNavigation.RefreshToken.OwlLoader]: undefined
   [AppNavigation.RefreshToken.SessionTimeout]: SessionTimeoutParams
   [AppNavigation.RefreshToken.WrongSocialAccount]: WrongSocialAccountParams
-  [AppNavigation.RefreshToken.VerifyCode]: {
-    onVerifyCode: (code: string) => Promise<Result<undefined, TotpErrors>>
-    onVerifySuccess: (response?: undefined) => void
-    onBack: () => void
-  }
 }
 
 const RefreshTokenScreenS =
@@ -52,11 +44,6 @@ const RefreshTokenScreenStack: FC = () => {
         name={AppNavigation.RefreshToken.WrongSocialAccount}
         component={WrongSocialAccountScreen}
       />
-      <RefreshTokenScreenS.Screen
-        options={{ presentation: 'modal' }}
-        name={AppNavigation.RefreshToken.VerifyCode}
-        component={VerifyCodeScreen}
-      />
     </RefreshTokenScreenS.Navigator>
   )
 }
@@ -77,39 +64,6 @@ type WrongSocialAccountScreenProps = RefreshTokenScreenProps<
 function WrongSocialAccountScreen(): JSX.Element {
   const { params } = useRoute<WrongSocialAccountScreenProps['route']>()
   return <WrongSocialAccount onRetry={params.onRetry} />
-}
-
-type VerifyCodeScreenProps = RefreshTokenScreenProps<
-  typeof AppNavigation.RefreshToken.VerifyCode
->
-
-function VerifyCodeScreen(): JSX.Element {
-  const { goBack } = useNavigation<VerifyCodeScreenProps['navigation']>()
-  const { params } = useRoute<VerifyCodeScreenProps['route']>()
-
-  function handleOnVerifySuccess(): void {
-    params.onVerifySuccess()
-    goBack()
-  }
-
-  function handleOnBack(): void {
-    params.onBack()
-    goBack()
-  }
-
-  function handleOnVerifyCode(
-    code: string
-  ): Promise<Result<undefined, TotpErrors>> {
-    return params.onVerifyCode(code)
-  }
-
-  return (
-    <VerifyCode
-      onVerifyCode={handleOnVerifyCode}
-      onVerifySuccess={handleOnVerifySuccess}
-      onBack={handleOnBack}
-    />
-  )
 }
 
 export default RefreshTokenScreenStack

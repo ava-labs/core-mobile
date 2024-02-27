@@ -17,9 +17,6 @@ import SignupScreen from './onboarding/SignupScreen'
 import { WelcomeScreenStackParamList } from './onboarding/WelcomeScreenStack'
 import { OnboardScreenProps } from './types'
 import SigninScreen from './onboarding/SigninScreen'
-import RecoveryMethodsStack, {
-  RecoveryMethodsStackParamList
-} from './onboarding/RecoveryMethodsStack'
 import { MainHeaderOptions } from './NavUtils'
 
 type NavigationProp = OnboardScreenProps<
@@ -72,10 +69,6 @@ const OnboardScreenStack: FC = () => {
         component={WelcomeScreenStack}
       />
       <OnboardingScreenS.Screen
-        name={AppNavigation.Onboard.RecoveryMethods}
-        component={RecoveryMethodsStack}
-      />
-      <OnboardingScreenS.Screen
         options={MainHeaderOptions()}
         name={AppNavigation.Onboard.NameYourWallet}
         component={NameYourWalletScreen}
@@ -93,11 +86,6 @@ export type OnboardingScreenStackParamList = {
   [AppNavigation.Onboard.Signin]: undefined
   [AppNavigation.Onboard
     .Welcome]: NavigatorScreenParams<WelcomeScreenStackParamList>
-  [AppNavigation.Onboard
-    .RecoveryMethods]: NavigatorScreenParams<RecoveryMethodsStackParamList> & {
-    oidcToken: string
-    mfaId: string
-  }
   [AppNavigation.Onboard.NameYourWallet]: undefined
   [AppNavigation.Onboard.RecoverWithMnemonicStack]: undefined
 }
