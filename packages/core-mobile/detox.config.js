@@ -34,6 +34,12 @@ module.exports = {
       device: {
         avdName: 'emulator-5554'
       }
+    },
+    android_real_device: {
+      type: 'android.attached',
+      device: {
+        adbName: 'R5CN709H42E'
+      }
     }
   },
 
@@ -284,7 +290,7 @@ module.exports = {
       }
     },
     'android.internal.smoke.debug': {
-      device: 'emulator',
+      device: 'android_real_device',
       app: 'android.internal.debug',
       artifacts: {
         rootDir: './e2e/artifacts/android'

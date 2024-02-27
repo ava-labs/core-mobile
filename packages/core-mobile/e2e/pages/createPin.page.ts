@@ -30,6 +30,14 @@ class CreatePinPage {
     return by.id(createPinLoc.signInWithRecoveryPhraseBtn)
   }
 
+  get fingerprint() {
+    return by.text(createPinLoc.fingerprint)
+  }
+
+  get skipBtn() {
+    return by.text(createPinLoc.skipBtn)
+  }
+
   async tapSignInWithRecoveryPhraseBtn() {
     await Action.tap(this.signInWithRecoveryPhraseBtn)
   }
@@ -46,8 +54,17 @@ class CreatePinPage {
     await Action.tap(this.nextBtn)
   }
 
+  async tapSkipBtn() {
+    await Action.tap(this.skipBtn)
+  }
+
   async tapAgreeAndContinueBtn() {
-    await Action.tapElementAtIndex(this.agreeAndContinueBtn, 0)
+    if (await Action.isVisible(this.fingerprint, 0)) {
+      await this.tapSkipBtn()
+      await Action.tapElementAtIndex(this.agreeAndContinueBtn, 0)
+    } else {
+      await Action.tapElementAtIndex(this.agreeAndContinueBtn, 0)
+    }
   }
 
   async tapNumpadZero6Times() {
