@@ -33,6 +33,7 @@ export default function NetworkDetails({
     showSnackBarCustom({
       component: (
         <GeneralToast
+          testID="network_not_available_toast"
           message={`Ooops, seems this network is not available. Please try adding it again.`}
         />
       ),

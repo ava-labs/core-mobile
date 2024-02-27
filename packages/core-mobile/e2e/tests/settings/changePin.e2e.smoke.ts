@@ -4,7 +4,6 @@
  */
 import Assert from '../../helpers/assertions'
 import Actions from '../../helpers/actions'
-import LoginRecoverWallet from '../../helpers/loginRecoverWallet'
 import BurgerMenuPage from '../../pages/burgerMenu/burgerMenu.page'
 import { warmup } from '../../helpers/warmup'
 import CreatePinPage from '../../pages/createPin.page'
@@ -16,7 +15,6 @@ describe('Change Pin', () => {
   })
 
   it('Should set new Pin & verify pin Headers', async () => {
-    await LoginRecoverWallet.recoverWalletLogin()
     await BurgerMenuPage.tapBurgerMenuButton()
     await BurgerMenuPage.tapSecurityAndPrivacy()
     await Actions.waitForElement(SecurityAndPrivacyPage.changePin)

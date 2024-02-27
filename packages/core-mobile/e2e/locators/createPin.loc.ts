@@ -7,5 +7,7 @@ export default {
   setNewPinHeader: 'Set new pin',
   firstMnemonicWord: 'rebel',
   lastMnemonicWord: 'embark',
-  signInWithRecoveryPhraseBtn: 'btnTextMedium'
+  signInWithRecoveryPhraseBtn: 'btnTextMedium',
+  fingerprint: 'Fingerprint',
+  skipBtn: 'Skip'
 }

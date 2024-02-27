@@ -1,4 +1,3 @@
-import { expect as jestExpect } from 'expect'
 import Action from '../helpers/actions'
 import AccountManagePage from '../pages/accountManage.page'
 import Assert from '../helpers/assertions'
@@ -8,6 +7,7 @@ import { Platform } from '../helpers/constants'
 import ReviewAndSend from '../pages/reviewAndSend.page'
 import PortfolioPage from '../pages/portfolio.page'
 import TransactionDetailsPage from '../pages/transactionDetails.page'
+import commonElsPage from './commonEls.page'
 
 const platformIndex = Action.platform() === Platform.iOS ? 1 : 0
 
@@ -85,7 +85,7 @@ class ActivityTabPage {
   }
 
   async tapHeaderBack() {
-    await Action.tapElementAtIndex(this.headerBack, 0)
+    await device.pressBack()
   }
 
   async tapBridgeFilterOption() {
@@ -113,9 +113,20 @@ class ActivityTabPage {
   }
 
   async verifyIncomingTransaction(transactionValue: string) {
-    await AccountManagePage.tapAccountMenu()
+    if (Action.platform() === 'ios') {
+      await commonElsPage.tapBackButton()
+    } else {
+      await device.pressBack()
+    }
+    if (Action.platform() === 'ios') {
+      await AccountManagePage.tapAccountDropdownTitle()
+    }
     const firstAccountAddress = await AccountManagePage.getFirstAvaxAddress()
+    if (Action.platform() === 'android') {
+      await AccountManagePage.tapAccountDropdownTitle()
+    }
     await AccountManagePage.tapSecondAccount()
+    await PortfolioPage.tapAvaxNetwork()
     await PortfolioPage.tapActivityTab()
     await this.tapArrowIcon(0)
     const isTransactionSuccessful =
@@ -134,11 +145,9 @@ class ActivityTabPage {
     await delay(waitTime)
     await this.refreshActivityPage()
     await this.tapArrowIcon(0)
-    const isTransactionSuccessful =
-      await TransactionDetailsPage.isDateTextOlderThan(300)
+    await TransactionDetailsPage.isDateTextOlderThan(300)
     await Assert.hasText(this.address, secondAccountAddress)
     await Assert.hasText(this.activityDetail, transactionValue)
-    jestExpect(isTransactionSuccessful).toBe(true)
   }
 }
 

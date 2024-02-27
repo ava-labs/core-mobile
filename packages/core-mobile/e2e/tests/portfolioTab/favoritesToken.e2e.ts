@@ -6,7 +6,6 @@ import BottomTabsPage from '../../pages/bottomTabs.page'
 import Actions from '../../helpers/actions'
 import Assert from '../../helpers/assertions'
 import WatchListPage from '../../pages/watchlist.page'
-import LoginRecoverWallet from '../../helpers/loginRecoverWallet'
 import PortfolioPage from '../../pages/portfolio.page'
 import TokenDetailPage from '../../pages/tokenDetail.page'
 import { warmup } from '../../helpers/warmup'
@@ -17,7 +16,6 @@ describe('Favorites Token', () => {
   })
 
   it('should verify adding token to favorite', async () => {
-    await LoginRecoverWallet.recoverWalletLogin()
     await PortfolioPage.tapAddToWatchlist()
     await WatchListPage.tapWatchListToken('btc')
     await Actions.waitForElement(TokenDetailPage.favorite)

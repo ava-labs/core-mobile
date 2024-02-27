@@ -4,19 +4,27 @@
  */
 import Assert from '../../helpers/assertions'
 import Actions from '../../helpers/actions'
-import LoginRecoverWallet from '../../helpers/loginRecoverWallet'
 import PortfolioPage from '../../pages/portfolio.page'
 import NetworksManagePage from '../../pages/networksManage.page'
 import NetworksManageLoc from '../../locators/networksManage.loc'
 import { warmup } from '../../helpers/warmup'
+import commonElsPage from '../../pages/commonEls.page'
 
 describe('Add custom network', () => {
   beforeAll(async () => {
     await warmup()
   })
 
+  afterAll(async () => {
+    await Actions.waitForElementNotVisible(
+      NetworksManagePage.networkNotAvailableToast,
+      60000
+    )
+    await commonElsPage.tapBackButton()
+    await NetworksManagePage.switchToAvalancheNetwork()
+  })
+
   it('should add custom network', async () => {
-    await LoginRecoverWallet.recoverWalletLogin()
     await PortfolioPage.tapNetworksDropdown()
     await Actions.waitForElement(PortfolioPage.manageNetworks)
     await PortfolioPage.tapManageNetworks()

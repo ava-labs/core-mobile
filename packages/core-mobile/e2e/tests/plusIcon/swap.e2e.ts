@@ -2,7 +2,6 @@ import { expect as jestExpect } from 'expect'
 import Actions from '../../helpers/actions'
 import activityTabPage from '../../pages/activityTab.page'
 import delay from '../../helpers/waits'
-import LoginRecoverWallet from '../../helpers/loginRecoverWallet'
 import BottomTabsPage from '../../pages/bottomTabs.page'
 import TransactionDetailsPage from '../../pages/transactionDetails.page'
 import { warmup } from '../../helpers/warmup'
@@ -16,7 +15,6 @@ describe('Send Avax to another account', () => {
   })
 
   it('Should swap AVAX to USDC', async () => {
-    await LoginRecoverWallet.recoverWalletLogin()
     await BottomTabsPage.tapPlusIcon()
     await PlusMenuPage.tapSwapButton()
     await SwapTabPage.tapSelectTokenDropdown()

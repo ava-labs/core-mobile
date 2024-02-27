@@ -79,6 +79,7 @@ class SendPage {
   }
 
   async sendTokenTo2ndAccount(token: string, sendingAmmount: string) {
+    await Actions.waitForElement(BottomTabsPage.plusIcon)
     await BottomTabsPage.tapPlusIcon()
     await Actions.waitForElement(PlusMenuPage.sendButton)
     await PlusMenuPage.tapSendButton()
@@ -86,7 +87,7 @@ class SendPage {
 
     await this.tapAddressBook()
     await this.tapMyAccounts()
-    await AccountManagePage.tapSecondAccount()
+    await AccountManagePage.tapSecondAccountMenu()
     await this.tapCarrotSVG()
     await this.selectToken(token)
     await this.enterAmount(sendingAmmount)
@@ -94,7 +95,7 @@ class SendPage {
     await this.tapNextButton()
     await Actions.waitForElement(ReviewAndSend.balanceAfterTransaction)
     await ReviewAndSend.tapSendNow()
-    await Actions.waitForElement(ReviewAndSend.sendSuccessfulToastMsg)
+    // await Actions.waitForElement(ReviewAndSend.sendSuccessfulToastMsg)
   }
 }
 

@@ -4,18 +4,26 @@
  */
 import Assert from '../../helpers/assertions'
 import Actions from '../../helpers/actions'
-import LoginRecoverWallet from '../../helpers/loginRecoverWallet'
 import PortfolioPage from '../../pages/portfolio.page'
 import NetworksManagePage from '../../pages/networksManage.page'
 import { warmup } from '../../helpers/warmup'
+import commonElsPage from '../../pages/commonEls.page'
 
 describe('Change Network', () => {
   beforeAll(async () => {
     await warmup()
   })
 
+  afterAll(async () => {
+    await PortfolioPage.tapNetworksDropdown()
+    await PortfolioPage.tapManageNetworks()
+    await NetworksManagePage.tapNetworksTab()
+    await NetworksManagePage.tapStarSvgByIndex(1)
+    await commonElsPage.tapBackButton()
+    await NetworksManagePage.switchToAvalancheNetwork()
+  })
+
   it('should verify changing Active network to ETH', async () => {
-    await LoginRecoverWallet.recoverWalletLogin()
     await PortfolioPage.tapNetworksDropdown()
     await PortfolioPage.tapNetworksDropdownETH()
     await Actions.waitForElement(PortfolioPage.ethNetwork)
