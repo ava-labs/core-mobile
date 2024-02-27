@@ -1,9 +1,13 @@
 import { RpcMethod } from 'store/walletConnectV2/types'
 import mockSession from 'tests/fixtures/walletConnect/session.json'
 import { ethErrors } from 'eth-rpc-errors'
+import * as Navigation from 'utils/Navigation'
+import { DEFERRED_RESULT } from '../types'
 import { avalancheSetDeveloperModeHandler } from './avalanche_setDeveloperMode'
 import { AvalancheSetDeveloperModeRpcRequest } from './types'
 
+const mockNavigate = jest.fn()
+jest.spyOn(Navigation, 'navigate').mockImplementation(mockNavigate)
 jest.mock('../index')
 
 const createRequest = (
@@ -47,8 +51,9 @@ describe('avalanche_setDeveloperMode.ts', () => {
           message: 'avalanche_setDeveloperMode param is invalid'
         })
       })
+      expect(mockNavigate).not.toHaveBeenCalled()
     })
-    it('returns already on correct developer mode if param is same as current developer mode', async () => {
+    it('returns true if param is same as current developer mode', async () => {
       const mockListenerApi = {
         getState: () => ({
           settings: { advanced: { developerMode: true } }
@@ -63,10 +68,17 @@ describe('avalanche_setDeveloperMode.ts', () => {
       )
       expect(result).toEqual({
         success: true,
-        value: 'Developer Mode is already set to true'
+        value: DEFERRED_RESULT
+      })
+      expect(mockNavigate).toHaveBeenCalledWith({
+        name: 'Root.Wallet',
+        params: {
+          screen: 'ModalScreens.AvalancheSetDeveloperMode',
+          params: { request, data: { enabled: true } }
+        }
       })
     })
-    it('should update developer mode and return message developer mode is set to true', async () => {
+    it('returns true if param is different from the current deveoper mode', async () => {
       const mockListenerApi = {
         getState: () => ({
           settings: { advanced: { developerMode: false } }
@@ -81,7 +93,60 @@ describe('avalanche_setDeveloperMode.ts', () => {
       )
       expect(result).toEqual({
         success: true,
-        value: 'Developer Mode set to true'
+        value: DEFERRED_RESULT
+      })
+      expect(mockNavigate).toHaveBeenCalledWith({
+        name: 'Root.Wallet',
+        params: {
+          screen: 'ModalScreens.AvalancheSetDeveloperMode',
+          params: { request, data: { enabled: true } }
+        }
+      })
+    })
+
+    describe('handle', () => {
+      it('should update developer mode and return message developer mode is set to true', async () => {
+        const mockListenerApi = {
+          getState: () => ({
+            settings: { advanced: { developerMode: false } }
+          }),
+          dispatch: jest.fn()
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } as any
+        const request = createRequest([true])
+        const result = await avalancheSetDeveloperModeHandler.approve(
+          {
+            request,
+            data: { enabled: true }
+          },
+          mockListenerApi
+        )
+        expect(result).toEqual({
+          success: true,
+          value: 'Developer Mode set to true'
+        })
+      })
+
+      it('should return message developer mode is already set to true', async () => {
+        const mockListenerApi = {
+          getState: () => ({
+            settings: { advanced: { developerMode: true } }
+          }),
+          dispatch: jest.fn()
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } as any
+        const request = createRequest([true])
+        const result = await avalancheSetDeveloperModeHandler.approve(
+          {
+            request,
+            data: { enabled: true }
+          },
+          mockListenerApi
+        )
+        expect(result).toEqual({
+          success: true,
+          value: 'Developer Mode is already set to true'
+        })
       })
     })
   })
