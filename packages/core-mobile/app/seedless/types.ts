@@ -1,9 +1,3 @@
-import {
-  CubeSignerResponse,
-  UserExportCompleteResponse,
-  UserExportInitResponse
-} from '@cubist-labs/cubesigner-sdk'
-
 export type MFA =
   | {
       /** type for authenticator */
@@ -21,7 +15,3 @@ export type MFA =
 export type OidcPayload = {
   oidcToken: string
 }
-
-export type UserExportResponse = CubeSignerResponse<
-  UserExportCompleteResponse | UserExportInitResponse
->

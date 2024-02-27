@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Alert, Pressable, StyleSheet, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import CurrencyItem from 'screens/drawer/components/CurrencyItem'
@@ -19,6 +19,10 @@ import NotificationsItem from 'screens/drawer/components/NotificationsItem'
 import { useSelector } from 'react-redux'
 import { selectIsNotificationBlocked, selectUseDarkMode } from 'store/posthog'
 import FeedbackItem from 'screens/drawer/components/FeedbackItem'
+import SeedlessService from 'seedless/services/SeedlessService'
+import Logger from 'utils/Logger'
+import { useFocusEffect } from '@react-navigation/native'
+import SetupRecoveryMethodsItem from './components/SetupRecoveryMethodsItem'
 
 const DrawerView = (): JSX.Element => {
   const context = useApplicationContext()
@@ -54,12 +58,31 @@ const DrawerView = (): JSX.Element => {
 const Main = (): JSX.Element => {
   const isNotificationBlocked = useSelector(selectIsNotificationBlocked)
 
+  const [hasRecoverMethods, setHasRecoverMethods] = useState<boolean>()
+
+  useFocusEffect(() => {
+    if (hasRecoverMethods !== true) {
+      SeedlessService.sessionManager
+        .userMfa()
+        .then(mfa => {
+          setHasRecoverMethods(mfa.length > 0)
+        })
+        .catch(Logger.error)
+    }
+  })
+
   return (
     <View
       style={{
         flex: 1
       }}>
       <ScrollView>
+        {hasRecoverMethods === false && (
+          <>
+            <SetupRecoveryMethodsItem />
+            <Separator style={{ marginHorizontal: 16 }} />
+          </>
+        )}
         <AddressBookItem />
         <CurrencyItem />
         <AdvancedItem />

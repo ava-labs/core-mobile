@@ -56,6 +56,7 @@ import { PortfolioStackParamList } from './wallet/PortfolioScreenStack'
 import { StakeSetupStackParamList } from './wallet/EarnScreenStack/StakeSetupScreenStack'
 import { RecoveryMethodsStackParamList } from './onboarding/RecoveryMethodsStack'
 import { SeedlessExportStackParamList } from './wallet/SeedlessExportStack'
+import { SettingRecoveryMethodsStackParamList } from './wallet/SettingRecoveryMethodsStack'
 
 export type { RootScreenStackParamList }
 
@@ -193,7 +194,7 @@ export type RecoveryMethodsScreenProps<
   T extends keyof RecoveryMethodsStackParamList
 > = CompositeScreenProps<
   StackScreenProps<RecoveryMethodsStackParamList, T>,
-  OnboardScreenProps<keyof OnboardingScreenStackParamList>
+  RootStackScreenProps<keyof RootScreenStackParamList>
 >
 
 /** ROOT -> WALLET **/
@@ -315,3 +316,11 @@ export type BrowserScreenProps<T extends keyof BrowserStackParamList> =
     StackScreenProps<BrowserStackParamList, T>,
     WalletScreenProps<keyof WalletScreenStackParams>
   >
+
+/** ROOT -> WALLET -> SECURITY PRIVACY -> RECOVERY METHODS **/
+export type SettingRecoveryMethodsScreenProps<
+  T extends keyof SettingRecoveryMethodsStackParamList
+> = CompositeScreenProps<
+  StackScreenProps<SettingRecoveryMethodsStackParamList, T>,
+  SecurityPrivacyScreenProps<keyof SecurityStackParamList>
+>

@@ -1,7 +1,7 @@
 import React, { FC } from 'react'
 import ModalContainer from 'components/ModalContainer'
 import AvaText from 'components/AvaText'
-import AvaButton from 'components/AvaButton'
+import { Button } from '@avalabs/k2-mobile'
 
 interface Props {
   onAction?: () => void
@@ -11,6 +11,7 @@ interface Props {
   actionText?: string
   dismissText?: string
   testID?: string
+  primaryButtonType?: 'primary' | 'primaryDanger'
 }
 
 const WarningModal: FC<Props> = ({
@@ -19,7 +20,8 @@ const WarningModal: FC<Props> = ({
   actionText = 'Ok',
   dismissText = 'Back',
   onAction,
-  onDismiss
+  onDismiss,
+  primaryButtonType = 'primary'
 }) => {
   return (
     <ModalContainer>
@@ -34,20 +36,24 @@ const WarningModal: FC<Props> = ({
         {message}
       </AvaText.Body2>
       {onAction && (
-        <AvaButton.PrimaryLarge
+        <Button
+          type={primaryButtonType}
+          size="xlarge"
           style={{ marginTop: 28 }}
           onPress={onAction}
           testID="warning_modal__i_understand_button">
           {actionText}
-        </AvaButton.PrimaryLarge>
+        </Button>
       )}
       {onDismiss && (
-        <AvaButton.TextLarge
+        <Button
+          type="tertiary"
+          size="xlarge"
           style={{ marginTop: 16 }}
           onPress={onDismiss}
           testID="warning_modal__back_button">
           {dismissText}
-        </AvaButton.TextLarge>
+        </Button>
       )}
     </ModalContainer>
   )

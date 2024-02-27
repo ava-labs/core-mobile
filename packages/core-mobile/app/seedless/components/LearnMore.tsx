@@ -1,55 +1,21 @@
 import { Button, Text, View } from '@avalabs/k2-mobile'
-import React, { useEffect, useState } from 'react'
-import { RecoveryMethodsScreenProps } from 'navigation/types'
-import AppNavigation from 'navigation/AppNavigation'
-import { useNavigation, useRoute } from '@react-navigation/native'
+import React from 'react'
 import { Space } from 'components/Space'
 import { copyToClipboard } from 'utils/DeviceTools'
-import Logger from 'utils/Logger'
-import SeedlessService from 'seedless/services/SeedlessService'
-import AnalyticsService from 'services/analytics/AnalyticsService'
 import ContentCopy from '../assets/ContentCopy.svg'
-import { Card } from '../components/Card'
-import { SnackBarMessage } from '../components/SnackBarMessage'
+import { Card } from './Card'
+import { SnackBarMessage } from './SnackBarMessage'
 
-type LearnMoreScreenProps = RecoveryMethodsScreenProps<
-  typeof AppNavigation.RecoveryMethods.LearnMore
->
-
-export const LearnMore = (): JSX.Element => {
-  const { totpCode } = useRoute<LearnMoreScreenProps['route']>().params
-  const [code, setCode] = useState<string>()
-  const { canGoBack, goBack } =
-    useNavigation<LearnMoreScreenProps['navigation']>()
-
-  const onGoBack = (): void => {
-    if (canGoBack()) {
-      goBack()
-    }
-  }
-
+export const LearnMore = ({
+  totpKey,
+  onGoBack
+}: {
+  totpKey: string
+  onGoBack: () => void
+}): JSX.Element => {
   const copyCode = (): void => {
-    copyToClipboard(code, <SnackBarMessage message="Key Copied" />)
+    copyToClipboard(totpKey, <SnackBarMessage message="Key Copied" />)
   }
-
-  useEffect(() => {
-    const init = async (): Promise<void> => {
-      if (totpCode) {
-        setCode(totpCode)
-        return
-      }
-      const result = await SeedlessService.sessionManager.setTotp()
-      if (result.success && result.value) {
-        const newCode = new URL(result.value).searchParams.get('secret')
-        newCode && setCode(newCode)
-      }
-    }
-    init().catch(reason => {
-      Logger.error('LearnMore AuthenticatorService.setTotp error', reason)
-
-      AnalyticsService.capture('SeedlessRegisterTOTPStartFailed')
-    })
-  }, [totpCode])
 
   return (
     <View
@@ -63,12 +29,12 @@ export const LearnMore = (): JSX.Element => {
           </Text>
         </View>
 
-        {code && (
+        {totpKey && (
           <Card
             onPress={copyCode}
             icon={<ContentCopy />}
             title="Copy Code"
-            body={code}
+            body={totpKey}
             bodyVariant="buttonLarge"
           />
         )}

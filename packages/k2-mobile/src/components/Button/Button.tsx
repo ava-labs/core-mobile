@@ -46,7 +46,7 @@ export type ButtonType =
   | 'tertiaryDanger'
 export type ButtonSize = 'small' | 'medium' | 'large' | 'xlarge'
 
-type ButtonIconType = 'check' | 'expandMore' | 'copy'
+type ButtonIconType = 'check' | 'expandMore' | 'copy' | 'add'
 
 interface ButtonProps extends BaseButtonProps {
   type: ButtonType
@@ -202,5 +202,7 @@ const getIcon = (
       return <Icons.Navigation.ExpandMore color={color} style={style} />
     case 'copy':
       return <Icons.Content.ContentCopy color={color} style={style} />
+    case 'add':
+      return <Icons.Content.Add color={color} style={style} />
   }
 }
