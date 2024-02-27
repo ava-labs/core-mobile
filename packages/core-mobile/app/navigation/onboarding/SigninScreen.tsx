@@ -39,9 +39,9 @@ const SigninScreen: FC = () => {
 
   const handleAccountVerified = async (): Promise<void> => {
     showOwl()
-    const metadata = await SeedlessService.getMetadata()
+    const walletName = await SeedlessService.getMetadata()
     hideOwl()
-    if (metadata) {
+    if (walletName) {
       return navigate(AppNavigation.Root.Onboard, {
         screen: AppNavigation.Onboard.Welcome,
         params: {
