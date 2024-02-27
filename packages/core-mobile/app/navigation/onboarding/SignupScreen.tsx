@@ -118,7 +118,8 @@ const SignupScreen: FC = () => {
               getOidcToken: GoogleSigninService.signin,
               oidcProvider: OidcProviders.GOOGLE,
               onRegisterMfaMethods: handleRegisterMfaMethods,
-              onVerifyMfaMethod: handleVerifyMfaMethod
+              onVerifyMfaMethod: handleVerifyMfaMethod,
+              onAccountVerified: handleAccountVerified
             }).catch(error => {
               Logger.error('Unable to sign up with Google: ', error)
               showSimpleToast('Unable to sign up with Google')
@@ -129,7 +130,8 @@ const SignupScreen: FC = () => {
               getOidcToken: AppleSignInService.signIn,
               oidcProvider: OidcProviders.APPLE,
               onRegisterMfaMethods: handleRegisterMfaMethods,
-              onVerifyMfaMethod: handleVerifyMfaMethod
+              onVerifyMfaMethod: handleVerifyMfaMethod,
+              onAccountVerified: handleAccountVerified
             }).catch(error => {
               Logger.error('Unable to sign up with Apple: ', error)
               showSimpleToast('Unable to sign up with Apple')

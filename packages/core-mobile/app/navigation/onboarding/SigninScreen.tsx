@@ -105,7 +105,8 @@ const SigninScreen: FC = () => {
                 getOidcToken: GoogleSigninService.signin,
                 oidcProvider: OidcProviders.GOOGLE,
                 onRegisterMfaMethods: handleRegisterMfaMethods,
-                onVerifyMfaMethod: handleVerifyMfaMethod
+                onVerifyMfaMethod: handleVerifyMfaMethod,
+                onAccountVerified: handleAccountVerified
               }).catch(error => {
                 Logger.error('Unable to sign in with Google: ', error)
                 showSimpleToast('Unable to sign in with Google')
@@ -116,7 +117,8 @@ const SigninScreen: FC = () => {
                 getOidcToken: AppleSignInService.signIn,
                 oidcProvider: OidcProviders.APPLE,
                 onRegisterMfaMethods: handleRegisterMfaMethods,
-                onVerifyMfaMethod: handleVerifyMfaMethod
+                onVerifyMfaMethod: handleVerifyMfaMethod,
+                onAccountVerified: handleAccountVerified
               }).catch(error => {
                 Logger.error('Unable to sign in with Apple: ', error)
                 showSimpleToast('Unable to sign in with Apple')

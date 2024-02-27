@@ -62,11 +62,22 @@ export async function startRefreshSeedlessTokenFlow(
       oidcTokenResult.oidcToken
     )
 
-    return await verifyUserWithMFA(
-      oidcTokenResult.oidcToken,
-      loginResult.mfaId(),
-      sessionManager
-    )
+    if (loginResult.requiresMfa()) {
+      return await verifyUserWithMFA(
+        oidcTokenResult.oidcToken,
+        loginResult.mfaId(),
+        sessionManager
+      )
+    } else {
+      return {
+        success: false,
+        error: new RefreshSeedlessTokenFlowErrors({
+          name: 'MFA_REQUIRED',
+          message:
+            'MFA is required for this action. Please set up recovery methods in your settings.'
+        })
+      }
+    }
   }
 
   return {
