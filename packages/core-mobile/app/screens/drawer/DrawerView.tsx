@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import { Alert, Pressable, StyleSheet, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import CurrencyItem from 'screens/drawer/components/CurrencyItem'
@@ -60,16 +60,18 @@ const Main = (): JSX.Element => {
 
   const [hasRecoverMethods, setHasRecoverMethods] = useState<boolean>()
 
-  useFocusEffect(() => {
-    if (hasRecoverMethods !== true) {
-      SeedlessService.sessionManager
-        .userMfa()
-        .then(mfa => {
-          setHasRecoverMethods(mfa.length > 0)
-        })
-        .catch(Logger.error)
-    }
-  })
+  useFocusEffect(
+    useCallback(() => {
+      if (hasRecoverMethods !== true) {
+        SeedlessService.sessionManager
+          .userMfa()
+          .then(mfa => {
+            setHasRecoverMethods(mfa.length > 0)
+          })
+          .catch(Logger.error)
+      }
+    }, [hasRecoverMethods])
+  )
 
   return (
     <View
