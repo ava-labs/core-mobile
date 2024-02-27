@@ -42,7 +42,7 @@ const SigninScreen: FC = () => {
     const walletName = await SeedlessService.getMetadata()
     hideOwl()
     if (walletName) {
-      return navigate(AppNavigation.Root.Onboard, {
+      navigate(AppNavigation.Root.Onboard, {
         screen: AppNavigation.Onboard.Welcome,
         params: {
           screen: AppNavigation.Onboard.AnalyticsConsent,
@@ -51,6 +51,7 @@ const SigninScreen: FC = () => {
           }
         }
       })
+      return
     }
     navigate(AppNavigation.Onboard.NameYourWallet)
   }
