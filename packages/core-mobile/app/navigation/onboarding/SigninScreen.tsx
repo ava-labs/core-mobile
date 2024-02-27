@@ -14,6 +14,7 @@ import Logger from 'utils/Logger'
 import { OidcProviders } from 'seedless/consts'
 import { hideOwl, showOwl } from 'components/GlobalOwlLoader'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import SeedlessService from 'seedless/services/SeedlessService'
 
 type NavigationProp = OnboardScreenProps<
   typeof AppNavigation.Onboard.Signin
@@ -36,7 +37,19 @@ const SigninScreen: FC = () => {
     AnalyticsService.capture('SignInWithRecoveryPhraseClicked')
   }
 
-  const handleAccountVerified = (): void => {
+  const handleAccountVerified = async (): Promise<void> => {
+    const metadata = await SeedlessService.getMetadata()
+    if (metadata) {
+      return navigate(AppNavigation.Root.Onboard, {
+        screen: AppNavigation.Onboard.Welcome,
+        params: {
+          screen: AppNavigation.Onboard.AnalyticsConsent,
+          params: {
+            nextScreen: AppNavigation.Onboard.CreatePin
+          }
+        }
+      })
+    }
     navigate(AppNavigation.Onboard.NameYourWallet)
   }
 
@@ -48,7 +61,9 @@ const SigninScreen: FC = () => {
       screen: AppNavigation.RecoveryMethods.AddRecoveryMethods,
       params: {
         oidcAuth,
-        onAccountVerified: handleAccountVerified,
+        onAccountVerified: () => {
+          handleAccountVerified()
+        },
         allowsUserToAddLater: true
       }
     })

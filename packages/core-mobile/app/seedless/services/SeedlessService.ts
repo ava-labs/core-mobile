@@ -1,4 +1,5 @@
-import { KeyInfoApi } from '@cubist-labs/cubesigner-sdk'
+import { Key, KeyInfoApi } from '@cubist-labs/cubesigner-sdk'
+import Logger from 'utils/Logger'
 import { SeedlessSessionStorage } from './storage/SeedlessSessionStorage'
 import SeedlessSessionManager from './SeedlessSessionManager'
 
@@ -11,7 +12,7 @@ class SeedlessService {
   // enabling users to approve or deny login attempts using MFA. Therefore, specifying only sign:* allows users
   // to proceed with signing up or signing in through MFA verification.
   sessionManager = new SeedlessSessionManager({
-    scopes: ['sign:*', 'manage:mfa'],
+    scopes: ['sign:*', 'manage:mfa', 'manage:key:update:metadata'],
     sessionStorage: new SeedlessSessionStorage()
   })
 
@@ -29,6 +30,34 @@ class SeedlessService {
   async getMnemonicKeysList(): Promise<KeyInfoApi | undefined> {
     const keysList = await this.getSessionKeysList()
     return keysList.find(k => k.key_type === 'Mnemonic')
+  }
+
+  /**
+   * Returns the metadata of the mnemonic key.
+   */
+  async getMetadata(): Promise<string | undefined> {
+    try {
+      const key = await this.getMnemonicKeysList()
+      return key?.metadata
+    } catch (error) {
+      Logger.error('Failed to get metadata', error)
+    }
+  }
+
+  /**
+   * Sets the metadata of the mnemonic key.
+   */
+  async setMetadata(name: string): Promise<void> {
+    try {
+      const key = await this.getMnemonicKeysList()
+      if (key) {
+        const client = await this.sessionManager.getCubeSignerClient()
+        const newKey = new Key(client, key)
+        newKey.setMetadata(name)
+      }
+    } catch (error) {
+      Logger.error(`Failed to set metadata`, error)
+    }
   }
 }
 

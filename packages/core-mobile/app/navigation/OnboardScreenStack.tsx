@@ -13,6 +13,7 @@ import { NameYourWallet } from 'seedless/screens/NameYourWallet'
 import EnterWithMnemonicStack from 'navigation/onboarding/EnterWithMnemonicStack'
 import { isPinRecovery, setPinRecovery } from 'utils/Navigation'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import SeedlessService from 'seedless/services/SeedlessService'
 import SignupScreen from './onboarding/SignupScreen'
 import { WelcomeScreenStackParamList } from './onboarding/WelcomeScreenStack'
 import { OnboardScreenProps } from './types'
@@ -99,8 +100,9 @@ type NameYourWalletNavigationProp = OnboardScreenProps<
 const NameYourWalletScreen = (): JSX.Element => {
   const { navigate } = useNavigation<NameYourWalletNavigationProp>()
 
-  const onSetWalletName = (): void => {
+  const onSetWalletName = async (name: string): Promise<void> => {
     AnalyticsService.capture('Onboard:WalletNameSet')
+    await SeedlessService.setMetadata(name)
     navigate(AppNavigation.Root.Onboard, {
       screen: AppNavigation.Onboard.Welcome,
       params: {
@@ -111,7 +113,13 @@ const NameYourWalletScreen = (): JSX.Element => {
       }
     })
   }
-  return <NameYourWallet onSetWalletName={onSetWalletName} />
+  return (
+    <NameYourWallet
+      onSetWalletName={(name: string) => {
+        onSetWalletName(name)
+      }}
+    />
+  )
 }
 
 export default OnboardScreenStack

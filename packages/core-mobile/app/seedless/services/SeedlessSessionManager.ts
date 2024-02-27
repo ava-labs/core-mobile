@@ -311,7 +311,7 @@ class SeedlessSessionManager {
   /**
    * Returns a CubeSigner instance
    */
-  private async getCubeSignerClient(): Promise<CubeSignerClient> {
+  async getCubeSignerClient(): Promise<CubeSignerClient> {
     const sessionManager = await this.getSessionManager()
     return new CubeSignerClient(sessionManager, SEEDLESS_ORG_ID)
   }

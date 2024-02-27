@@ -28,6 +28,7 @@ import { WalletType } from 'services/wallet/types'
 import { useWallet } from 'hooks/useWallet'
 import { NameYourWallet } from 'seedless/screens/NameYourWallet'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import { setWalletName } from 'store/account'
 import { CreateWalletScreenProps } from '../types'
 
 export type CreateWalletStackParamList = {
@@ -178,10 +179,12 @@ type NameYourWalletNavigationProp = CreateWalletScreenProps<
 >['navigation']
 
 const NameYourWalletScreen = (): JSX.Element => {
+  const dispatch = useDispatch()
   const { navigate } = useNavigation<NameYourWalletNavigationProp>()
 
-  const onSetWalletName = (): void => {
+  const onSetWalletName = (name: string): void => {
     AnalyticsService.capture('CreateWallet:WalletNameSet')
+    dispatch(setWalletName({ name }))
     navigate(AppNavigation.CreateWallet.CreatePin)
   }
   return <NameYourWallet onSetWalletName={onSetWalletName} />
