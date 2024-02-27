@@ -1,4 +1,4 @@
-import { Key, KeyInfoApi } from '@cubist-labs/cubesigner-sdk'
+import { KeyInfoApi } from '@cubist-labs/cubesigner-sdk'
 import Logger from 'utils/Logger'
 import { SeedlessSessionStorage } from './storage/SeedlessSessionStorage'
 import SeedlessSessionManager from './SeedlessSessionManager'
@@ -49,11 +49,10 @@ class SeedlessService {
    */
   async setMetadata(name: string): Promise<void> {
     try {
-      const key = await this.getMnemonicKeysList()
-      if (key) {
-        const client = await this.sessionManager.getCubeSignerClient()
-        const newKey = new Key(client, key)
-        newKey.setMetadata(name)
+      const keyInfo = await this.getMnemonicKeysList()
+      if (keyInfo) {
+        const key = await this.sessionManager.getKey(keyInfo)
+        key.setMetadata(name)
       }
     } catch (error) {
       Logger.error(`Failed to set metadata`, error)

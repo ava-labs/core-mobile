@@ -6,6 +6,8 @@ import {
   Empty,
   Environment,
   IdentityProof,
+  Key,
+  KeyInfoApi,
   MfaFidoChallenge,
   MfaReceipt,
   OidcClient,
@@ -311,7 +313,7 @@ class SeedlessSessionManager {
   /**
    * Returns a CubeSigner instance
    */
-  async getCubeSignerClient(): Promise<CubeSignerClient> {
+  private async getCubeSignerClient(): Promise<CubeSignerClient> {
     const sessionManager = await this.getSessionManager()
     return new CubeSignerClient(sessionManager, SEEDLESS_ORG_ID)
   }
@@ -372,6 +374,14 @@ class SeedlessSessionManager {
     handler: (data: T) => void
   ): void {
     this.eventEmitter.off(event, handler)
+  }
+
+  /**
+   * Get Key from keyInfoApi
+   */
+  async getKey(keyInfo: KeyInfoApi): Promise<Key> {
+    const client = await this.getCubeSignerClient()
+    return new Key(client, keyInfo)
   }
 }
 
