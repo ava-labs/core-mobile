@@ -30,6 +30,7 @@ type RegisterProps = {
     oidcAuth: { oidcToken: string; mfaId: string },
     mfaMethods: MFA[]
   ) => void
+  onAccountVerified: () => void
 }
 
 type ReturnType = {
@@ -38,7 +39,8 @@ type ReturnType = {
     getOidcToken,
     oidcProvider,
     onRegisterMfaMethods,
-    onVerifyMfaMethod
+    onVerifyMfaMethod,
+    onAccountVerified
   }: RegisterProps) => Promise<void>
   verify: (
     mfa: MFA,
@@ -68,7 +70,8 @@ export const useSeedlessRegister = (): ReturnType => {
     getOidcToken,
     oidcProvider,
     onRegisterMfaMethods,
-    onVerifyMfaMethod
+    onVerifyMfaMethod,
+    onAccountVerified
   }: RegisterProps): Promise<void> => {
     setIsRegistering(true)
 
@@ -106,7 +109,7 @@ export const useSeedlessRegister = (): ReturnType => {
             })
           }
         } else {
-          onRegisterMfaMethods()
+          onAccountVerified()
           AnalyticsService.capture('SeedlessSignIn', {
             oidcProvider: oidcProvider
           })
