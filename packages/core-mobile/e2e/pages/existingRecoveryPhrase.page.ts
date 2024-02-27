@@ -7,6 +7,7 @@ import PortfolioPage from './portfolio.page'
 import BottomTabsPage from './bottomTabs.page'
 import commonElsPage from './commonEls.page'
 import nameWalletPage from './nameWallet.page'
+import accountManagePage from './accountManage.page'
 
 class ExistingRecoveryPhrasePage {
   get recoveryPhraseTextInput() {
@@ -76,7 +77,7 @@ class ExistingRecoveryPhrasePage {
     await Action.tap(this.signInBtn)
   }
 
-  async recoverWallet(recoveryPhrase: string) {
+  async recoverMnemonicWallet(recoveryPhrase: string) {
     // await this.tapForgotPinBtn()
     //await this.tapSignInWithRecoveryPhraseBtn()
     await this.tapAlreadyHaveAWalletBtn()
@@ -95,6 +96,23 @@ class ExistingRecoveryPhrasePage {
     await Action.waitForElement(PortfolioPage.colectiblesTab)
     await PortfolioPage.verifyPorfolioScreen()
     await BottomTabsPage.verifyBottomTabs()
+  }
+
+  async recoverManualWallet() {
+    await CreatePinPage.tapNumpadZero()
+    await Action.waitForElement(PortfolioPage.colectiblesTab)
+    await PortfolioPage.verifyPorfolioScreen()
+    await BottomTabsPage.verifyBottomTabs()
+    await commonElsPage.checkIfMainnet()
+    await accountManagePage.checkAccountNameIsCorrect()
+  }
+
+  async recoverWallet(recoveryPhrase: string) {
+    if (await Action.expectToBeVisible(this.forgotPinBtn)) {
+      await this.recoverManualWallet()
+    } else {
+      await this.recoverMnemonicWallet(recoveryPhrase)
+    }
   }
 }
 

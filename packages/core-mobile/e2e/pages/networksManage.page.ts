@@ -102,6 +102,26 @@ class NetworksPage {
     return by.id(networksManage.searchBar)
   }
 
+  get networkNotAvailableToast() {
+    return by.id(networksManage.networkNotAvailableToast)
+  }
+
+  get bitcoin() {
+    return by.text(networksManage.bitcoin)
+  }
+
+  get starSvg() {
+    return by.id(networksManage.starSvg)
+  }
+
+  async tapStarSvgByIndex(index: number) {
+    await Action.tapElementAtIndex(this.starSvg, index)
+  }
+
+  async tapBitcoin() {
+    await Action.tapElementAtIndex(this.bitcoin, 0)
+  }
+
   async addBtcNetwork() {
     await Action.tapElementAtIndex(this.favoriteNetwork, 0)
   }
@@ -205,6 +225,17 @@ class NetworksPage {
       await Action.swipeUp(this.bitcoinTestnet, 'slow', 0.5, 0)
     }
     await this.tapEthereumSepoliaNetwork()
+  }
+
+  async switchToAvalancheNetwork() {
+    try {
+      await PortfolioPage.tapNetworksDropdown()
+    } catch (error) {
+      console.log(
+        'Networks dropdown is not visible, or has already been tapped'
+      )
+    }
+    await PortfolioPage.tapNetworksDropdownAVAX()
   }
 }
 

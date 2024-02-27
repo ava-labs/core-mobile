@@ -1,9 +1,6 @@
 import Actions from '../helpers/actions'
 import bottomTabsLoc from '../locators/bottomTabs.loc'
 import Assert from '../helpers/assertions'
-import { Platform } from '../helpers/constants'
-
-const platformIndex = Actions.platform() === Platform.Android ? 0 : 1
 
 class BottomsTabsPage {
   get watchlistIcon() {
@@ -35,7 +32,19 @@ class BottomsTabsPage {
   }
 
   async tapPlusIcon() {
-    await Actions.tapElementAtIndex(this.plusIcon, platformIndex)
+    if (Actions.platform() === 'ios') {
+      try {
+        await Actions.tapElementAtIndex(this.plusIcon, 1)
+      } catch {
+        await Actions.tapElementAtIndex(this.plusIcon, 0)
+      }
+    } else {
+      try {
+        await Actions.tapElementAtIndex(this.plusIcon, 0)
+      } catch {
+        await Actions.tapElementAtIndex(this.plusIcon, 1)
+      }
+    }
   }
 
   async tapPortfolioTab() {
@@ -43,7 +52,7 @@ class BottomsTabsPage {
   }
 
   async tapStakeTab() {
-    await Actions.tapElementAtIndex(this.stakeTab, 1)
+    await Actions.tapElementAtIndex(this.stakeTab, 0)
   }
 
   async tapWatchlistTab() {

@@ -9,6 +9,9 @@ import WatchListPage from '../../pages/watchlist.page'
 import PortfolioPage from '../../pages/portfolio.page'
 import BottomTabsPage from '../../pages/bottomTabs.page'
 import delay from '../../helpers/waits'
+import nameWalletPage from '../../pages/nameWallet.page'
+import commonElsPage from '../../pages/commonEls.page'
+import analyticsConsentPage from '../../pages/analyticsConsent.page'
 
 describe('Unlock app with recovery phrase', () => {
   beforeAll(async () => {
@@ -32,9 +35,12 @@ describe('Unlock app with recovery phrase', () => {
     const recoveryPhrase: string = process.env.E2E_MNEMONIC as string
     await ExistingRecoveryPhrasePage.enterRecoveryPhrase(recoveryPhrase)
     await ExistingRecoveryPhrasePage.tapSignInBtn()
+    await nameWalletPage.enterWalletName('testWallet1\n')
     await CreatePinPage.tapNumpadZero()
     await CreatePinPage.tapNumpadZero()
-    await CreatePinPage.tapNextBtn()
+    await CreatePinPage.tapAgreeAndContinueBtn()
+    await commonElsPage.tapGetStartedButton()
+    await analyticsConsentPage.tapIAgreeBtn()
     await PortfolioPage.verifyPorfolioScreen()
     await BottomTabsPage.verifyBottomTabs()
   })

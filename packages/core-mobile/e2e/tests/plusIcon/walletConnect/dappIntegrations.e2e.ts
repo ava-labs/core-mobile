@@ -2,7 +2,6 @@
 /**
  * @jest-environment ./environment.ts
  */
-import LoginRecoverWallet from '../../../helpers/loginRecoverWallet'
 import { warmup } from '../../../helpers/warmup'
 import BottomTabsPage from '../../../pages/bottomTabs.page'
 import PlusMenuPage from '../../../pages/plusMenu.page'
@@ -22,7 +21,6 @@ describe('Connect to dApp using WalletConnect', () => {
   })
 
   it('should navigate to wallet connect screen', async () => {
-    await LoginRecoverWallet.recoverWalletLogin()
     await actions.waitForElement(BottomTabsPage.plusIcon, 10, 1)
     await ConnectToSitePage.tapPlusIcon()
     await PlusMenuPage.tapWalletConnectButton()

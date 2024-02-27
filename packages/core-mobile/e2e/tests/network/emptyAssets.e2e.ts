@@ -1,6 +1,5 @@
 import Assert from '../../helpers/assertions'
 import actions from '../../helpers/actions'
-import LoginRecoverWallet from '../../helpers/loginRecoverWallet'
 import PortfolioPage from '../../pages/portfolio.page'
 import NetworksManagePage from '../../pages/networksManage.page'
 import NetworksManageLoc from '../../locators/networksManage.loc'
@@ -11,8 +10,11 @@ describe('Empty Assets', () => {
     await warmup()
   })
 
+  afterAll(async () => {
+    await NetworksManagePage.switchToAvalancheNetwork()
+  })
+
   it('should check empty assets on custom Network', async () => {
-    await LoginRecoverWallet.recoverWalletLogin()
     await PortfolioPage.tapNetworksDropdown()
     await PortfolioPage.tapManageNetworks()
     await NetworksManagePage.tapAddNetwork()

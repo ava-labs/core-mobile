@@ -2,12 +2,13 @@
 /**
  * @jest-environment ./jestCustomEnv
  */
-import { warmup } from '../../helpers/warmup'
+import { handleJailbrokenWarning } from '../../helpers/warmup'
 import ExistingRecoveryPhrasePage from '../../pages/existingRecoveryPhrase.page'
 
 describe('Add existing wallet', () => {
   beforeAll(async () => {
-    await warmup()
+    await device.launchApp()
+    await handleJailbrokenWarning()
   })
 
   it('should successfully add an existing wallet', async () => {
