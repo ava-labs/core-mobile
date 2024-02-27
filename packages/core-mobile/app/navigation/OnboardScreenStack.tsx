@@ -14,12 +14,12 @@ import EnterWithMnemonicStack from 'navigation/onboarding/EnterWithMnemonicStack
 import { isPinRecovery, setPinRecovery } from 'utils/Navigation'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import SeedlessService from 'seedless/services/SeedlessService'
+import { setWalletName } from 'store/account'
 import SignupScreen from './onboarding/SignupScreen'
 import { WelcomeScreenStackParamList } from './onboarding/WelcomeScreenStack'
 import { OnboardScreenProps } from './types'
 import SigninScreen from './onboarding/SigninScreen'
 import { MainHeaderOptions } from './NavUtils'
-import { setWalletName } from 'store/account'
 
 type NavigationProp = OnboardScreenProps<
   typeof AppNavigation.Onboard.RecoverWithMnemonicStack
