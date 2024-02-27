@@ -1,25 +1,40 @@
 import { AppListenerEffectAPI } from 'store'
 import { ethErrors } from 'eth-rpc-errors'
-import { RpcMethod, SessionRequest } from 'store/walletConnectV2'
-import { toggleDeveloperMode } from 'store/settings/advanced'
+import { RpcMethod } from 'store/walletConnectV2'
+import {
+  selectIsDeveloperMode,
+  toggleDeveloperMode
+} from 'store/settings/advanced'
 import Logger from 'utils/Logger'
-import { HandleResponse, RpcRequestHandler } from '../types'
+import * as Navigation from 'utils/Navigation'
+import AppNavigation from 'navigation/AppNavigation'
+import {
+  ApproveResponse,
+  DEFERRED_RESULT,
+  HandleResponse,
+  RpcRequestHandler
+} from '../types'
 import { parseRequestParams } from './utils'
-
-export type AvalancheSetDeveloperModeRpcRequest =
-  SessionRequest<RpcMethod.AVALANCHE_SET_DEVELOPER_MODE>
+import {
+  AvalancheSetDeveloperModeApproveData,
+  AvalancheSetDeveloperModeRpcRequest
+} from './types'
 
 class AvalancheSetDeveloperModeHandler
-  implements RpcRequestHandler<AvalancheSetDeveloperModeRpcRequest>
+  implements
+    RpcRequestHandler<
+      AvalancheSetDeveloperModeRpcRequest,
+      never,
+      string,
+      AvalancheSetDeveloperModeApproveData
+    >
 {
   methods = [RpcMethod.AVALANCHE_SET_DEVELOPER_MODE]
 
   handle = async (
     request: AvalancheSetDeveloperModeRpcRequest,
-    listenerApi: AppListenerEffectAPI
-  ): HandleResponse => {
-    const { dispatch, getState } = listenerApi
-    const isDeveloperMode = getState().settings.advanced.developerMode
+    _: AppListenerEffectAPI
+  ): HandleResponse<never> => {
     const result = parseRequestParams(request.data.params.request.params)
     if (!result.success) {
       Logger.error('invalid params', result.error)
@@ -30,7 +45,32 @@ class AvalancheSetDeveloperModeHandler
         })
       }
     }
-    const enableDeveloperMode = result.data[0]
+    const enabled = result.data[0]
+    const data: AvalancheSetDeveloperModeApproveData = {
+      enabled
+    }
+
+    Navigation.navigate({
+      name: AppNavigation.Root.Wallet,
+      params: {
+        screen: AppNavigation.Modal.AvalancheSetDeveloperMode,
+        params: { request, data }
+      }
+    })
+    return { success: true, value: DEFERRED_RESULT }
+  }
+
+  approve = async (
+    payload: {
+      request: AvalancheSetDeveloperModeRpcRequest
+      data: AvalancheSetDeveloperModeApproveData
+    },
+    listenerApi: AppListenerEffectAPI
+  ): ApproveResponse<string> => {
+    const { dispatch, getState } = listenerApi
+    const isDeveloperMode = selectIsDeveloperMode(getState())
+
+    const enableDeveloperMode = payload.data.enabled
     if (isDeveloperMode === enableDeveloperMode) {
       return {
         success: true,

@@ -1,10 +1,8 @@
 import { RpcMethod } from 'store/walletConnectV2/types'
 import mockSession from 'tests/fixtures/walletConnect/session.json'
 import { ethErrors } from 'eth-rpc-errors'
-import {
-  AvalancheSetDeveloperModeRpcRequest,
-  avalancheSetDeveloperModeHandler
-} from './avalanche_setDeveloperMode'
+import { avalancheSetDeveloperModeHandler } from './avalanche_setDeveloperMode'
+import { AvalancheSetDeveloperModeRpcRequest } from './types'
 
 jest.mock('../index')
 

@@ -36,6 +36,10 @@ import { RefreshTokenScreenStackParamList } from 'navigation/RefreshTokenScreenS
 import { BrowserStackParamList } from 'navigation/wallet/BrowserScreenStack'
 import { Eip1559Fees } from 'utils/Utils'
 import { NetworkTokenUnit } from 'types'
+import {
+  AvalancheSetDeveloperModeApproveData,
+  AvalancheSetDeveloperModeRpcRequest
+} from '../store/walletConnectV2/handlers/avalanche_setDeveloperMode/types'
 import { RootScreenStackParamList } from './RootScreenStack'
 import { OnboardingScreenStackParamList } from './OnboardScreenStack'
 import { WelcomeScreenStackParamList } from './onboarding/WelcomeScreenStack'
@@ -116,6 +120,11 @@ export type AvalancheSendTransactionV2Params = {
 export type AvalancheSignTransactionV2Params = {
   request: AvalancheSignTransactionRpcRequestV2
   data: AvalancheSignTransactionApproveDataV2
+}
+
+export type AvalancheSetDeveloperModeParams = {
+  request: AvalancheSetDeveloperModeRpcRequest
+  data: AvalancheSetDeveloperModeApproveData
 }
 
 export type SignMessageV2Params = {
