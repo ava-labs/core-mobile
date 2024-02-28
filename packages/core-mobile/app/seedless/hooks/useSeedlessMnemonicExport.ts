@@ -11,6 +11,7 @@ import { startRefreshSeedlessTokenFlow } from 'seedless/utils/startRefreshSeedle
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import Logger from 'utils/Logger'
 import * as Navigation from 'utils/Navigation'
+import { Alert } from 'react-native'
 import useVerifyMFA from './useVerifyMFA'
 
 export enum ExportState {
@@ -160,8 +161,8 @@ export const useSeedlessMnemonicExport = (keyId: string): ReturnProps => {
     const checkPendingExports = async (): Promise<void> => {
       const mfa = await seedlessExportService.sessionManager.userMfa()
       if (mfa.length === 0) {
-        showSimpleToast(
-          'MFA is required for this action. Please set up recovery methods in your settings.'
+        Alert.alert(
+          'Multi-factor authentication is required for this action. Please set up at least one in Settings > Security & Privacy > Recovery Methods.'
         )
         Navigation.goBack()
         return
