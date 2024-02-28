@@ -1,5 +1,6 @@
 import { AppStartListening } from 'store/middleware/listener'
 import {
+  onAppUnlocked,
   onLogOut,
   onRehydrationComplete,
   selectWalletState,
@@ -19,6 +20,20 @@ import { onTokenExpired } from 'seedless/store/slice'
 import { ErrResponse, GlobalEvents } from '@cubist-labs/cubesigner-sdk'
 import { initWalletServiceAndUnlock } from 'hooks/useWallet'
 import { startRefreshSeedlessTokenFlow } from 'seedless/utils/startRefreshSeedlessTokenFlow'
+import WalletService from 'services/wallet/WalletService'
+
+const refreshSeedlessToken = async (): Promise<void> => {
+  if (WalletService.walletType !== WalletType.SEEDLESS) {
+    return
+  }
+  //refreshToken will trigger onSessionExpired if fails for that reason
+  const refreshTokenResult = await SeedlessService.sessionManager.refreshToken()
+  if (refreshTokenResult.success) {
+    Logger.trace('Refresh token success')
+    return
+  }
+  Logger.error('refresh failed', refreshTokenResult.error)
+}
 
 const registerTokenExpireHandler = async (
   _: Action,
@@ -109,6 +124,10 @@ const signOutSocial = async (_: Action): Promise<void> => {
 export const addSeedlessListeners = (
   startListening: AppStartListening
 ): void => {
+  startListening({
+    actionCreator: onAppUnlocked,
+    effect: refreshSeedlessToken
+  })
   startListening({
     actionCreator: onTokenExpired,
     effect: handleTokenExpired
