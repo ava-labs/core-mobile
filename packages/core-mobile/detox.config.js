@@ -34,6 +34,12 @@ module.exports = {
       device: {
         avdName: 'emulator-5554'
       }
+    },
+    android_real_device: {
+      type: 'android.attached',
+      device: {
+        adbName: 'R5CN709H42E'
+      }
     }
   },
 
@@ -121,6 +127,38 @@ module.exports = {
         }
       }
     },
+    'ios.internal.debug.reuse_state': {
+      device: 'simulator',
+      app: 'ios.internal.debug',
+      testRunner: {
+        $0: 'jest',
+        args: {
+          config: 'e2e/reuse_state_config.json'
+        }
+      },
+      artifacts: {
+        rootDir: './e2e/artifacts/ios',
+        plugins: {
+          instruments: 'all'
+        }
+      }
+    },
+    'ios.internal.smoke.debug.reuse_state': {
+      device: 'simulator',
+      app: 'ios.internal.debug',
+      artifacts: {
+        rootDir: './e2e/artifacts/ios',
+        plugins: {
+          instruments: 'all'
+        }
+      },
+      testRunner: {
+        $0: 'jest',
+        args: {
+          config: 'e2e/smoke_test_config_reuse_state.json'
+        }
+      }
+    },
     'ios.internal.smoke.debug': {
       device: 'simulator',
       app: 'ios.internal.debug',
@@ -163,6 +201,22 @@ module.exports = {
         }
       }
     },
+    'ios.internal.release.smoke.ci.reuse_state': {
+      device: 'simulator',
+      app: 'ios.internal.release.ci',
+      artifacts: {
+        rootDir: './e2e/artifacts/ios',
+        plugins: {
+          instruments: 'all'
+        }
+      },
+      testRunner: {
+        $0: 'jest',
+        args: {
+          config: 'e2e/smoke_test_config_reuse_state.json'
+        }
+      }
+    },
     'ios.external.release.ci': {
       device: 'simulator',
       app: 'ios.external.release.ci',
@@ -196,7 +250,33 @@ module.exports = {
         rootDir: './e2e/artifacts/android'
       }
     },
-    'android.internal.smoke.debug': {
+    'android.internal.debug.reuse_state': {
+      device: 'emulator',
+      app: 'android.internal.debug',
+      testRunner: {
+        $0: 'jest',
+        args: {
+          config: 'e2e/reuse_state_config.json'
+        }
+      },
+      artifacts: {
+        rootDir: './e2e/artifacts/android'
+      }
+    },
+    'android.internal.smoke.debug.reuse_state': {
+      device: 'emulator',
+      app: 'android.internal.debug',
+      artifacts: {
+        rootDir: './e2e/artifacts/android'
+      },
+      testRunner: {
+        $0: 'jest',
+        args: {
+          config: 'e2e/smoke_test_config_reuse_state.json'
+        }
+      }
+    },
+    'android.internal.smoke.debug.no_reuse_state': {
       device: 'emulator',
       app: 'android.internal.debug',
       artifacts: {
@@ -209,6 +289,33 @@ module.exports = {
         }
       }
     },
+    'android.internal.smoke.debug': {
+      device: 'android_real_device',
+      app: 'android.internal.debug',
+      artifacts: {
+        rootDir: './e2e/artifacts/android'
+      },
+      testRunner: {
+        $0: 'jest',
+        args: {
+          config: 'e2e/smoke_test_config.json'
+        }
+      }
+    },
+    'android.internal.release.smoke.reuse_state.ci': {
+      device: 'emulator_ci',
+      app: 'android.internal.release.ci',
+      artifacts: {
+        rootDir: './e2e/artifacts/android'
+      },
+      testRunner: {
+        $0: 'jest',
+        args: {
+          config: 'e2e/smoke_test_config_reuse_state.json',
+          _: [process.env.TESTS_TO_RUN]
+        }
+      }
+    },
     'android.internal.release.smoke.ci': {
       device: 'emulator_ci',
       app: 'android.internal.release.ci',
@@ -218,8 +325,7 @@ module.exports = {
       testRunner: {
         $0: 'jest',
         args: {
-          config: 'e2e/smoke_test_config.json',
-          _: [process.env.TESTS_TO_RUN]
+          config: 'e2e/smoke_test_config.json'
         }
       }
     },

@@ -6,7 +6,8 @@ set -o pipefail
 yarn start &
 
 npm rebuild detox
-QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test --configuration android.internal.release.smoke.ci --headless --retries 1; test_result=$?
+
+QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test createNewWallet.e2e.smoke.ts unlockWithRecoveryPhrase.e2e.ts recoverMetaMaskWallet.e2e.smoke.ts showRecoveryPhrase.e2e.smoke.ts performanceHelpUsImproveScreen.e2e.ts recoverWallet.e2e.smoke.ts --configuration android.internal.release.smoke.ci --headless --retries 1; test_result=$?
 
 if ((test_result != 0)); then
   exit 1

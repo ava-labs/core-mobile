@@ -2,6 +2,7 @@ import Assert from '../helpers/assertions'
 import Action from '../helpers/actions'
 import portfolio from '../locators/portfolio.loc'
 import { Platform } from '../helpers/constants'
+import networksManagePage from './networksManage.page'
 
 const platformIndex = Action.platform() === Platform.iOS ? 1 : 0
 const platformIndex2 = Action.platform() === Platform.iOS ? 0 : 1
@@ -163,11 +164,22 @@ class PortfolioPage {
   }
 
   async tapNetworksDropdown() {
-    await Action.tapElementAtIndex(this.networksDropdown, 0)
+    try {
+      await Action.tapElementAtIndex(this.networksDropdown, 0)
+    } catch (error) {
+      console.log('Networks dropdown not found or is already tapped')
+    }
   }
 
   async tapNetworksDropdownBTC() {
-    await Action.tapElementAtIndex(this.networksDropdownBTC, platformIndex)
+    try {
+      await Action.tapElementAtIndex(this.networksDropdownBTC, platformIndex)
+    } catch (error) {
+      console.log(error)
+      await Action.tapElementAtIndex(this.manageNetworks, 1)
+      await Action.tapElementAtIndex(networksManagePage.networksTab, 1)
+      await networksManagePage.tapBitcoin()
+    }
   }
 
   async tapNetworksDropdownETH() {

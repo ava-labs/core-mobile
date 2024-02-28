@@ -1,7 +1,6 @@
 import Assert from '../../helpers/assertions'
 import actions from '../../helpers/actions'
 import ActivityTabPage from '../../pages/activityTab.page'
-import LoginRecoverWallet from '../../helpers/loginRecoverWallet'
 import TransactionDetailsPage from '../../pages/transactionDetails.page'
 import PortfolioPage from '../../pages/portfolio.page'
 import { warmup } from '../../helpers/warmup'
@@ -12,7 +11,6 @@ describe('Activity Tab', () => {
   })
 
   it('should show contract call only in activity list', async () => {
-    await LoginRecoverWallet.recoverWalletLogin()
     await PortfolioPage.tapAvaxNetwork()
     await PortfolioPage.tapActivityTab()
     await actions.waitForElement(ActivityTabPage.arrowSVG, 10000, 1)
