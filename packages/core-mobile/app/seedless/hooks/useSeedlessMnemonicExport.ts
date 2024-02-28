@@ -162,9 +162,18 @@ export const useSeedlessMnemonicExport = (keyId: string): ReturnProps => {
       const mfa = await seedlessExportService.sessionManager.userMfa()
       if (mfa.length === 0) {
         Alert.alert(
-          'Multi-factor authentication is required for this action. Please set up at least one in Settings > Security & Privacy > Recovery Methods.'
+          'Multi-factor authentication required',
+          'Please set up at least one in Settings > Security & Privacy > Recovery Methods.',
+          [
+            {
+              text: 'OK',
+              onPress: () => {
+                Navigation.goBack()
+              }
+            }
+          ],
+          { cancelable: false }
         )
-        Navigation.goBack()
         return
       }
 
