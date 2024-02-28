@@ -126,16 +126,11 @@ export default function PinOrBiometryLogin({
     if (mnemonic) {
       logoTranslateY.value = (WINDOW_HEIGHT - LOGO_HEIGHT) / 2 - TOP_SPACE * 3
       opacity.value = 0
-    }
-  }, [logoTranslateY, mnemonic, opacity])
-
-  useEffect(() => {
-    if (mnemonic) {
       setTimeout(() => {
         onLoginSuccess(mnemonic)
       }, LOGO_ANIMATION_DURATION)
     }
-  }, [onLoginSuccess, mnemonic])
+  }, [logoTranslateY, mnemonic, onLoginSuccess, opacity])
 
   const generatePinDots = (): Element[] => {
     const dots: Element[] = []
