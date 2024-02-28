@@ -71,6 +71,7 @@ class AccountManagePage {
 
   async createSecondAccount() {
     if (!(await actions.expectToBeVisible(this.secondAccount))) {
+      await this.tapAccountDropdownTitle()
       await this.tapAddEditAccounts()
       await this.tapAddAccountButton()
       const result = await this.getSecondAvaxAddress()
