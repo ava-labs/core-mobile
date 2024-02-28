@@ -44,6 +44,7 @@ const keymap: Map<string, PinKeys> = new Map([
   ['<', PinKeys.Backspace]
 ])
 const LOGO_HEIGHT = 100
+const LOGO_ANIMATION_DURATION = 500
 
 // on iphone SE, we need to reduce the top spacing
 // or else the forgot pin button will be hidden due to the small screen size
@@ -89,7 +90,7 @@ export default function PinOrBiometryLogin({
       transform: [
         {
           translateY: withTiming(logoTranslateY.value, {
-            duration: 500,
+            duration: LOGO_ANIMATION_DURATION,
             easing: Easing.inOut(Easing.ease)
           })
         }
@@ -125,11 +126,16 @@ export default function PinOrBiometryLogin({
     if (mnemonic) {
       logoTranslateY.value = (WINDOW_HEIGHT - LOGO_HEIGHT) / 2 - TOP_SPACE * 3
       opacity.value = 0
+    }
+  }, [logoTranslateY, mnemonic, opacity])
+
+  useEffect(() => {
+    if (mnemonic) {
       setTimeout(() => {
         onLoginSuccess(mnemonic)
-      }, 500)
+      }, LOGO_ANIMATION_DURATION)
     }
-  }, [logoTranslateY, mnemonic, onLoginSuccess, opacity])
+  }, [onLoginSuccess, mnemonic])
 
   const generatePinDots = (): Element[] => {
     const dots: Element[] = []
