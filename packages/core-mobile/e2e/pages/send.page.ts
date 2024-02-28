@@ -70,8 +70,10 @@ class SendPage {
     await Actions.setInputText(this.textInputField, address, 0)
   }
 
-  async selectToken(tokenName: string) {
-    await element(by.text(`${tokenName}`)).tap()
+  async selectToken(tokenName: string, index = 0) {
+    await element(by.text(`${tokenName}`))
+      .atIndex(index)
+      .tap()
   }
 
   async enterAmount(amount: string) {
