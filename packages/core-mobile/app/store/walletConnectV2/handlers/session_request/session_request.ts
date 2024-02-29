@@ -158,8 +158,8 @@ class SessionRequestHandler implements RpcRequestHandler<SessionProposal> {
       return isNetworkSupported(supportedNetworks, Number(chainId))
     })
 
-    // list of chain IDs to approve
-    const chainIds = [...requiredChains, ...optionalChains]
+    // list of unique chain IDs to approve
+    const chainIds = [...new Set([...requiredChains, ...optionalChains])]
       ?.map(chain => chain.split(':')[1])
       ?.filter((chainId): chainId is string => !!chainId)
       ?.map(chainId => Number(chainId))
