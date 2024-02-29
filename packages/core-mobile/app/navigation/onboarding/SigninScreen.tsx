@@ -10,7 +10,6 @@ import { useSeedlessRegister } from 'seedless/hooks/useSeedlessRegister'
 import { MFA } from 'seedless/types'
 import AppleSignInService from 'services/socialSignIn/apple/AppleSignInService'
 import GoogleSigninService from 'services/socialSignIn/google/GoogleSigninService'
-import Logger from 'utils/Logger'
 import { OidcProviders } from 'seedless/consts'
 import { hideOwl, showOwl } from 'components/GlobalOwlLoader'
 import AnalyticsService from 'services/analytics/AnalyticsService'
@@ -107,8 +106,7 @@ const SigninScreen: FC = () => {
                 onRegisterMfaMethods: handleRegisterMfaMethods,
                 onVerifyMfaMethod: handleVerifyMfaMethod,
                 onAccountVerified: handleAccountVerified
-              }).catch(error => {
-                Logger.error('Unable to sign in with Google: ', error)
+              }).catch(() => {
                 showSimpleToast('Unable to sign in with Google')
               })
             }}
@@ -119,8 +117,7 @@ const SigninScreen: FC = () => {
                 onRegisterMfaMethods: handleRegisterMfaMethods,
                 onVerifyMfaMethod: handleVerifyMfaMethod,
                 onAccountVerified: handleAccountVerified
-              }).catch(error => {
-                Logger.error('Unable to sign in with Apple: ', error)
+              }).catch(() => {
                 showSimpleToast('Unable to sign in with Apple')
               })
             }}
