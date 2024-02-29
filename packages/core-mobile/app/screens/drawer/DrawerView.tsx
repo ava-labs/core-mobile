@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { Alert, Pressable, StyleSheet, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import CurrencyItem from 'screens/drawer/components/CurrencyItem'
@@ -22,6 +22,7 @@ import FeedbackItem from 'screens/drawer/components/FeedbackItem'
 import SeedlessService from 'seedless/services/SeedlessService'
 import Logger from 'utils/Logger'
 import { useFocusEffect } from '@react-navigation/native'
+import { SeedlessSessionManagerEvent } from 'seedless/services/SeedlessSessionManager'
 import SetupRecoveryMethodsItem from './components/SetupRecoveryMethodsItem'
 
 const DrawerView = (): JSX.Element => {
@@ -58,18 +59,39 @@ const DrawerView = (): JSX.Element => {
 const Main = (): JSX.Element => {
   const isNotificationBlocked = useSelector(selectIsNotificationBlocked)
 
-  const [hasRecoverMethods, setHasRecoverMethods] = useState<boolean>()
+  const [hasRecoveryMethodsFetched, setHasRecoveryMethodsFetched] =
+    useState(false)
+  const [hasRecoveryMethods, setHasRecoveryMethods] = useState<boolean>(false)
+  const [isSeedlessTokenValid, setIsSeedlessTokenValid] =
+    useState<boolean>(false)
 
-  useFocusEffect(() => {
-    if (hasRecoverMethods !== true) {
-      SeedlessService.sessionManager
-        .userMfa()
-        .then(mfa => {
-          setHasRecoverMethods(mfa.length > 0)
-        })
-        .catch(Logger.error)
+  useEffect(() => {
+    SeedlessService.sessionManager.addListener(
+      SeedlessSessionManagerEvent.TokenStatusUpdated,
+      setIsSeedlessTokenValid
+    )
+
+    return () => {
+      SeedlessService.sessionManager.removeListener(
+        SeedlessSessionManagerEvent.TokenStatusUpdated,
+        setIsSeedlessTokenValid
+      )
     }
-  })
+  }, [])
+
+  useFocusEffect(
+    useCallback(() => {
+      if (hasRecoveryMethods !== true && isSeedlessTokenValid) {
+        SeedlessService.sessionManager
+          .userMfa()
+          .then(mfa => {
+            setHasRecoveryMethods(mfa.length > 0)
+            setHasRecoveryMethodsFetched(true)
+          })
+          .catch(Logger.error)
+      }
+    }, [hasRecoveryMethods, isSeedlessTokenValid])
+  )
 
   return (
     <View
@@ -77,7 +99,7 @@ const Main = (): JSX.Element => {
         flex: 1
       }}>
       <ScrollView>
-        {hasRecoverMethods === false && (
+        {hasRecoveryMethodsFetched && hasRecoveryMethods === false && (
           <>
             <SetupRecoveryMethodsItem />
             <Separator style={{ marginHorizontal: 16 }} />

@@ -38,6 +38,7 @@ module.exports = {
     android_real_device: {
       type: 'android.attached',
       device: {
+        // Run 'adb devices' in terminal to get the device name and replace it here
         adbName: 'R5CN709H42E'
       }
     }
@@ -289,7 +290,7 @@ module.exports = {
         }
       }
     },
-    'android.internal.smoke.debug': {
+    'android.internal.smoke.debug.real_device': {
       device: 'android_real_device',
       app: 'android.internal.debug',
       artifacts: {
@@ -298,7 +299,20 @@ module.exports = {
       testRunner: {
         $0: 'jest',
         args: {
-          config: 'e2e/smoke_test_config.json'
+          config: 'e2e/smoke_test_config_reuse_state.json'
+        }
+      }
+    },
+    'android.internal.smoke.debug.no_reuse_state.real_device': {
+      device: 'android_real_device',
+      app: 'android.internal.debug',
+      artifacts: {
+        rootDir: './e2e/artifacts/android'
+      },
+      testRunner: {
+        $0: 'jest',
+        args: {
+          config: 'e2e/smoke_test_config_no_reuse_state.json'
         }
       }
     },
