@@ -355,7 +355,7 @@ class SeedlessSessionManager {
     this.isTokenValid = isTokenValid
 
     this.eventEmitter.emit(
-      SeedlessSessionManagerEvent.TokenRefreshed,
+      SeedlessSessionManagerEvent.TokenStatusUpdated,
       this.isTokenValid
     )
   }
@@ -376,7 +376,7 @@ class SeedlessSessionManager {
 }
 
 export enum SeedlessSessionManagerEvent {
-  TokenRefreshed = 'TokenRefreshed'
+  TokenStatusUpdated = 'TokenStatusUpdated'
 }
 
 export default SeedlessSessionManager
