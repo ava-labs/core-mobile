@@ -50,17 +50,17 @@ function useVerifyMFA(sessionManager: SeedlessSessionManager): {
   const verifyMFA: VerifyMFAFunction = async <T>({
     response,
     onVerifySuccess,
-    excludeMfaId
+    excludeFidoMfaId
   }: {
     response: CubeSignerResponse<T>
     onVerifySuccess: (response: T) => void
-    excludeMfaId?: string
+    excludeFidoMfaId?: string
   }) => {
     let mfaMethods = await sessionManager.userMfa()
 
-    if (excludeMfaId) {
+    if (excludeFidoMfaId) {
       mfaMethods = mfaMethods.filter(
-        mfa => mfa.type === 'totp' || mfa.id !== excludeMfaId
+        mfa => mfa.type === 'totp' || mfa.id !== excludeFidoMfaId
       )
     }
 
@@ -132,11 +132,11 @@ function useVerifyMFA(sessionManager: SeedlessSessionManager): {
 type VerifyMFAFunction = <T>({
   response,
   onVerifySuccess,
-  excludeMfaId
+  excludeFidoMfaId
 }: {
   response: CubeSignerResponse<T>
   onVerifySuccess: (response: T) => void
-  excludeMfaId?: string
+  excludeFidoMfaId?: string
 }) => Promise<void>
 
 type VerifyTotpFunction = <T>({
