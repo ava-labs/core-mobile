@@ -65,20 +65,20 @@ const Main = (): JSX.Element => {
   const [isSeedlessTokenValid, setIsSeedlessTokenValid] =
     useState<boolean>(false)
 
-  const TokenStatusUpdated = (isTokenValid: boolean): void => {
+  const tokenStatusUpdated = (isTokenValid: boolean): void => {
     setIsSeedlessTokenValid(isTokenValid)
   }
 
   useEffect(() => {
     SeedlessService.sessionManager.addListener(
       SeedlessSessionManagerEvent.TokenStatusUpdated,
-      TokenStatusUpdated
+      tokenStatusUpdated
     )
 
     return () => {
       SeedlessService.sessionManager.removeListener(
         SeedlessSessionManagerEvent.TokenStatusUpdated,
-        TokenStatusUpdated
+        tokenStatusUpdated
       )
     }
   }, [])
