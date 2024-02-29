@@ -49,12 +49,20 @@ function useVerifyMFA(sessionManager: SeedlessSessionManager): {
 
   const verifyMFA: VerifyMFAFunction = async <T>({
     response,
-    onVerifySuccess
+    onVerifySuccess,
+    excludeMfaId
   }: {
     response: CubeSignerResponse<T>
     onVerifySuccess: (response: T) => void
+    excludeMfaId?: string
   }) => {
-    const mfaMethods = await sessionManager.userMfa()
+    let mfaMethods = await sessionManager.userMfa()
+
+    if (excludeMfaId) {
+      mfaMethods = mfaMethods.filter(
+        mfa => mfa.type === 'totp' || mfa.id !== excludeMfaId
+      )
+    }
 
     if (mfaMethods.length === 0) {
       Logger.error(`verifyMFA: No MFA methods available`)
@@ -123,10 +131,12 @@ function useVerifyMFA(sessionManager: SeedlessSessionManager): {
 
 type VerifyMFAFunction = <T>({
   response,
-  onVerifySuccess
+  onVerifySuccess,
+  excludeMfaId
 }: {
   response: CubeSignerResponse<T>
   onVerifySuccess: (response: T) => void
+  excludeMfaId?: string
 }) => Promise<void>
 
 type VerifyTotpFunction = <T>({
