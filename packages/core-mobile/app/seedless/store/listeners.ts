@@ -1,5 +1,6 @@
 import { AppStartListening } from 'store/middleware/listener'
 import {
+  onAppLocked,
   onAppUnlocked,
   onLogOut,
   onRehydrationComplete,
@@ -33,6 +34,10 @@ const refreshSeedlessToken = async (): Promise<void> => {
     return
   }
   Logger.error('refresh failed', refreshTokenResult.error)
+}
+
+const invalidateSeedlessToken = async (): Promise<void> => {
+  SeedlessService.sessionManager.setIsTokenValid(false)
 }
 
 const registerTokenExpireHandler = async (
@@ -127,6 +132,10 @@ export const addSeedlessListeners = (
   startListening({
     actionCreator: onAppUnlocked,
     effect: refreshSeedlessToken
+  })
+  startListening({
+    actionCreator: onAppLocked,
+    effect: invalidateSeedlessToken
   })
   startListening({
     actionCreator: onTokenExpired,

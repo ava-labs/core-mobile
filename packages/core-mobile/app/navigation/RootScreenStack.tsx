@@ -202,6 +202,13 @@ const LoginWithPinOrBiometryScreen = (): JSX.Element => {
   const { unlock } = useWallet()
   const { signOut } = useApplicationContext().appHook
 
+  const handleLoginSuccess = useCallback(
+    (mnemonic: string) => {
+      unlock({ mnemonic }).catch(Logger.error)
+    },
+    [unlock]
+  )
+
   return (
     <PinOrBiometryLogin
       onSignOut={signOut}
@@ -209,9 +216,7 @@ const LoginWithPinOrBiometryScreen = (): JSX.Element => {
         setPinRecovery(true)
         signOut()
       }}
-      onLoginSuccess={mnemonic => {
-        unlock({ mnemonic }).catch(Logger.error)
-      }}
+      onLoginSuccess={handleLoginSuccess}
     />
   )
 }
