@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { Account, AccountCollection, AccountsState } from 'store/account/types'
 import { RootState } from 'store/index'
+import { WalletType } from '../../services/wallet/types'
 
 export const reducerName = 'account'
 
@@ -22,7 +23,11 @@ const accountsSlice = createSlice({
     },
     setAccountTitle: (
       state,
-      action: PayloadAction<{ accountIndex: number; title: string }>
+      action: PayloadAction<{
+        accountIndex: number
+        title: string
+        walletType: WalletType
+      }>
     ) => {
       const { accountIndex, title } = action.payload
       const acc = state.accounts[accountIndex] as Account
@@ -33,7 +38,14 @@ const accountsSlice = createSlice({
     setActiveAccountIndex: (state, action: PayloadAction<number>) => {
       state.activeAccountIndex = action.payload
     },
-    setWalletName: (state, action: PayloadAction<{ name: string }>) => {
+    setWalletName: (
+      state,
+      action: PayloadAction<{
+        name: string
+        walletType?: WalletType
+        skipSetMetadata?: boolean
+      }>
+    ) => {
       state.walletName = action.payload.name
     }
   }

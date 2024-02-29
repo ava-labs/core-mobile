@@ -20,8 +20,6 @@ import ReloadSVG from 'components/svg/ReloadSVG'
 import { ActivityIndicator } from 'components/ActivityIndicator'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { selectWalletType } from 'store/app'
-import { WalletType } from 'services/wallet/types'
-import SeedlessService from 'seedless/services/SeedlessService'
 
 type Props = {
   account: Account
@@ -75,12 +73,10 @@ function AccountItem({
       dispatch(
         setAccountTitleStore({
           title: newAccountName,
-          accountIndex: account.index
+          accountIndex: account.index,
+          walletType
         })
       )
-      if (walletType === WalletType.SEEDLESS && account.index === 0) {
-        SeedlessService.setMetadata(newAccountName)
-      }
     },
     [account.index, dispatch, walletType]
   )

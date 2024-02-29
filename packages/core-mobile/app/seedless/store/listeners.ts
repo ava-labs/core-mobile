@@ -22,6 +22,7 @@ import { onTokenExpired } from 'seedless/store/slice'
 import { ErrResponse, GlobalEvents } from '@cubist-labs/cubesigner-sdk'
 import { initWalletServiceAndUnlock } from 'hooks/useWallet'
 import { startRefreshSeedlessTokenFlow } from 'seedless/utils/startRefreshSeedlessTokenFlow'
+import { setAccountTitle, setWalletName } from 'store/account'
 
 const refreshSeedlessToken = async (): Promise<void> => {
   if (WalletService.walletType !== WalletType.SEEDLESS) {
@@ -66,6 +67,21 @@ const handleTokenExpired = async (
       } as SessionTimeoutParams
     }
   })
+}
+
+const handleSetAccountName = async ({
+  accountIndex,
+  name,
+  walletType = WalletType.UNSET,
+  skipSetMetadata = false
+}: {
+  accountIndex: number
+  name: string
+  walletType?: WalletType
+  skipSetMetadata?: boolean
+}): Promise<void> => {
+  if (walletType !== WalletType.SEEDLESS || skipSetMetadata) return
+  SeedlessService.setNameForDerivedPath(name, accountIndex)
 }
 
 function handleRetry(listenerApi: AppListenerEffectAPI): void {
@@ -148,5 +164,27 @@ export const addSeedlessListeners = (
   startListening({
     actionCreator: onLogOut,
     effect: signOutSocial
+  })
+  startListening({
+    actionCreator: setWalletName,
+    effect: async action => {
+      handleSetAccountName({
+        accountIndex: 0,
+        name: action.payload.name,
+        walletType: action.payload.walletType,
+        skipSetMetadata: action.payload.skipSetMetadata
+      })
+    }
+  })
+
+  startListening({
+    actionCreator: setAccountTitle,
+    effect: async action => {
+      handleSetAccountName({
+        accountIndex: action.payload.accountIndex,
+        name: action.payload.title,
+        walletType: action.payload.walletType
+      })
+    }
   })
 }

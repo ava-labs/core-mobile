@@ -39,7 +39,7 @@ const SigninScreen: FC = () => {
 
   const handleAccountVerified = async (): Promise<void> => {
     showOwl()
-    const walletName = await SeedlessService.getMetadata()
+    const walletName = await SeedlessService.getNameforDerivedPath()
     hideOwl()
     if (walletName) {
       navigate(AppNavigation.Root.Onboard, {
@@ -64,9 +64,7 @@ const SigninScreen: FC = () => {
       screen: AppNavigation.RecoveryMethods.AddRecoveryMethods,
       params: {
         oidcAuth,
-        onAccountVerified: () => {
-          handleAccountVerified()
-        },
+        onAccountVerified: handleAccountVerified,
         allowsUserToAddLater: true
       }
     })

@@ -12,6 +12,7 @@ import { WalletType } from 'services/wallet/types'
 import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKeysStorage'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import SeedlessService from 'seedless/services/SeedlessService'
+import { Secp256k1 } from '@cubist-labs/cubesigner-sdk'
 import {
   selectAccounts,
   selectWalletName,
@@ -26,6 +27,7 @@ const initAccounts = async (
   const state = listenerApi.getState()
   const isDeveloperMode = selectIsDeveloperMode(state)
   const walletType = selectWalletType(state)
+  const walletName = selectWalletName(state)
 
   const accounts = []
 
@@ -39,21 +41,22 @@ const initAccounts = async (
      */
     const pubKeysStorage = new SeedlessPubKeysStorage()
     const pubKeys = await pubKeysStorage.retrieve()
-
-    const walletName = await SeedlessService.getMetadata()
+    const seedlessKeyInfoList = await SeedlessService.getSessionKeysList(
+      Secp256k1.Ava
+    )
 
     for (let i = 0; i < pubKeys.length; i++) {
       const acc = await accountService.createNextAccount(isDeveloperMode, i)
-      const accountTitle =
-        acc.index === 0 && walletName && walletName.length > 0
-          ? walletName
-          : acc.title
+      const title = SeedlessService.getMetadataFromKeys(
+        seedlessKeyInfoList,
+        i
+      )?.metadata
+      const accountTitle = title ?? acc.title
       listenerApi.dispatch(setAccount({ ...acc, title: accountTitle }))
 
       accounts.push(acc)
     }
   } else if (walletType === WalletType.MNEMONIC) {
-    const walletName = selectWalletName(state)
     // only add the first account for mnemonic wallet
     const acc = await accountService.createNextAccount(isDeveloperMode, 0)
     const accountTitle =

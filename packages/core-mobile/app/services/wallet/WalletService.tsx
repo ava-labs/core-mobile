@@ -28,6 +28,8 @@ import { bnToBigint } from 'utils/bigNumbers/bnToBigint'
 import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKeysStorage'
 import SeedlessWallet from 'seedless/services/wallet/SeedlessWallet'
 import { PChainId } from '@avalabs/glacier-sdk'
+import { KeyInfoApi, Secp256k1 } from '@cubist-labs/cubesigner-sdk'
+import SeedlessService from 'seedless/services/SeedlessService'
 import { isAvalancheTransactionRequest, isBtcTransactionRequest } from './utils'
 import WalletInitializer from './WalletInitializer'
 import WalletFactory from './WalletFactory'
@@ -537,6 +539,13 @@ class WalletService {
       Boolean(network.isTestnet)
     )
     return wallet.getReadOnlyAvaSigner({ accountIndex, provXP })
+  }
+
+  async getKeyInfoList(): Promise<KeyInfoApi[]> {
+    if (this.walletType !== WalletType.SEEDLESS) {
+      return []
+    }
+    return SeedlessService.getSessionKeysList(Secp256k1.Ava)
   }
 }
 

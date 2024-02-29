@@ -184,7 +184,7 @@ const NameYourWalletScreen = (): JSX.Element => {
 
   const onSetWalletName = (name: string): void => {
     AnalyticsService.capture('CreateWallet:WalletNameSet')
-    dispatch(setWalletName({ name }))
+    dispatch(setWalletName({ name, walletType: WalletType.MNEMONIC }))
     navigate(AppNavigation.CreateWallet.CreatePin)
   }
   return <NameYourWallet onSetWalletName={onSetWalletName} />
