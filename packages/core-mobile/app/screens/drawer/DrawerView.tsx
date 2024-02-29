@@ -62,11 +62,11 @@ const Main = (): JSX.Element => {
   const [hasRecoveryMethodsFetched, setHasRecoveryMethodsFetched] =
     useState(false)
   const [hasRecoveryMethods, setHasRecoveryMethods] = useState<boolean>(false)
-  const [hasSeedlessTokenRefreshed, setHasSeedlessTokenRefreshed] =
+  const [isSeedlessTokenValid, setIsSeedlessTokenValid] =
     useState<boolean>(false)
 
-  const tokenRefreshedCallback = (hasTokenRefreshed: boolean): void => {
-    setHasSeedlessTokenRefreshed(hasTokenRefreshed)
+  const tokenRefreshedCallback = (isTokenValid: boolean): void => {
+    setIsSeedlessTokenValid(isTokenValid)
   }
 
   useEffect(() => {
@@ -85,7 +85,7 @@ const Main = (): JSX.Element => {
 
   useFocusEffect(
     useCallback(() => {
-      if (hasRecoveryMethods !== true && hasSeedlessTokenRefreshed) {
+      if (hasRecoveryMethods !== true && isSeedlessTokenValid) {
         SeedlessService.sessionManager
           .userMfa()
           .then(mfa => {
@@ -94,7 +94,7 @@ const Main = (): JSX.Element => {
           })
           .catch(Logger.error)
       }
-    }, [hasRecoveryMethods, hasSeedlessTokenRefreshed])
+    }, [hasRecoveryMethods, isSeedlessTokenValid])
   )
 
   return (

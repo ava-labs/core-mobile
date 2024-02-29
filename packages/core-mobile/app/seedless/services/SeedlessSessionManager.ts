@@ -48,7 +48,7 @@ class SeedlessSessionManager {
   private scopes: string[]
   private sessionStorage: SessionStorage<SignerSessionData>
   private eventEmitter = new EventEmitter()
-  private hasTokenRefreshed = false
+  private isTokenValid = false
 
   constructor({
     scopes,
@@ -140,6 +140,8 @@ class SeedlessSessionManager {
   }
 
   async refreshToken(): Promise<Result<void, TokenRefreshErrors>> {
+    this.setIsTokenValid(false)
+
     const sessionMgr = await SignerSessionManager.loadFromStorage(
       this.sessionStorage
     ).catch(reason => {
@@ -191,7 +193,7 @@ class SeedlessSessionManager {
       }
     })
 
-    this.setHasTokenRefreshed(true)
+    this.setIsTokenValid(true)
 
     return (refreshResult || { success: true, value: undefined }) as Result<
       void,
@@ -349,12 +351,12 @@ class SeedlessSessionManager {
     })
   }
 
-  setHasTokenRefreshed(hasTokenRefreshed: boolean): void {
-    this.hasTokenRefreshed = hasTokenRefreshed
+  setIsTokenValid(isTokenValid: boolean): void {
+    this.isTokenValid = isTokenValid
 
     this.eventEmitter.emit(
       SeedlessSessionManagerEvent.TokenRefreshed,
-      this.hasTokenRefreshed
+      this.isTokenValid
     )
   }
 

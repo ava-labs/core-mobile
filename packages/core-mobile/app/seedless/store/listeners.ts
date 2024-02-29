@@ -36,8 +36,8 @@ const refreshSeedlessToken = async (): Promise<void> => {
   Logger.error('refresh failed', refreshTokenResult.error)
 }
 
-const resetSeedlessTokenRefreshed = async (): Promise<void> => {
-  SeedlessService.sessionManager.setHasTokenRefreshed(false)
+const invalidateSeedlessToken = async (): Promise<void> => {
+  SeedlessService.sessionManager.setIsTokenValid(false)
 }
 
 const registerTokenExpireHandler = async (
@@ -135,7 +135,7 @@ export const addSeedlessListeners = (
   })
   startListening({
     actionCreator: onAppLocked,
-    effect: resetSeedlessTokenRefreshed
+    effect: invalidateSeedlessToken
   })
   startListening({
     actionCreator: onTokenExpired,
