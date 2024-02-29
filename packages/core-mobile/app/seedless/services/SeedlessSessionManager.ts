@@ -46,6 +46,7 @@ if (!envInterface) {
 class SeedlessSessionManager {
   private scopes: string[]
   private sessionStorage: SessionStorage<SignerSessionData>
+  hasTokenRefreshed = false
 
   constructor({
     scopes,
@@ -187,6 +188,8 @@ class SeedlessSessionManager {
         })
       }
     })
+
+    this.hasTokenRefreshed = true
 
     return (refreshResult || { success: true, value: undefined }) as Result<
       void,

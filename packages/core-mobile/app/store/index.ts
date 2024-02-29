@@ -8,7 +8,6 @@ import { nftsApi } from 'store/nft/api'
 import { migrations } from 'store/migrations'
 import DevDebuggingConfig from 'utils/debugging/DevDebuggingConfig'
 import { EncryptThenMacTransform } from 'store/transforms/EncryptThenMacTransform'
-import { seedlessReducer as seedless } from 'seedless/store'
 import { networkReducer as network } from './network'
 import { balanceReducer as balance } from './balance'
 import { appReducer as app, onLogOut, onRehydrationComplete } from './app'
@@ -40,7 +39,6 @@ const blacklist = [
   'balance',
   'swap',
   'walletConnectV2',
-  'seedless',
   transactionApi.reducerPath,
   nftsApi.reducerPath
 ]
@@ -62,7 +60,6 @@ const combinedReducer = combineReducers({
   viewOnce,
   browser,
   snapshots,
-  seedless,
 
   // user preferences
   settings,

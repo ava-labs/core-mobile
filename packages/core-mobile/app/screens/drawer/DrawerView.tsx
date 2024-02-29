@@ -22,7 +22,6 @@ import FeedbackItem from 'screens/drawer/components/FeedbackItem'
 import SeedlessService from 'seedless/services/SeedlessService'
 import Logger from 'utils/Logger'
 import { useFocusEffect } from '@react-navigation/native'
-import { selectHasSeedlessTokenRefreshed } from 'seedless/store'
 import SetupRecoveryMethodsItem from './components/SetupRecoveryMethodsItem'
 
 const DrawerView = (): JSX.Element => {
@@ -60,12 +59,12 @@ const Main = (): JSX.Element => {
   const isNotificationBlocked = useSelector(selectIsNotificationBlocked)
 
   const [hasRecoveryMethods, setHasRecoveryMethods] = useState<boolean>(false)
-
-  const hasTokenRefreshed = useSelector(selectHasSeedlessTokenRefreshed)
+  const hasSeedlessTokenRefreshed =
+    SeedlessService.sessionManager.hasTokenRefreshed
 
   useFocusEffect(
     useCallback(() => {
-      if (hasRecoveryMethods === false && hasTokenRefreshed) {
+      if (hasRecoveryMethods === false && hasSeedlessTokenRefreshed) {
         SeedlessService.sessionManager
           .userMfa()
           .then(mfa => {
@@ -73,7 +72,7 @@ const Main = (): JSX.Element => {
           })
           .catch(Logger.error)
       }
-    }, [hasRecoveryMethods, hasTokenRefreshed])
+    }, [hasRecoveryMethods, hasSeedlessTokenRefreshed])
   )
 
   return (
