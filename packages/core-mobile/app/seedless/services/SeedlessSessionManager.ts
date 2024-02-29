@@ -1,3 +1,4 @@
+import EventEmitter from 'events'
 import {
   AddFidoChallenge,
   CubeSignerClient,
@@ -46,7 +47,8 @@ if (!envInterface) {
 class SeedlessSessionManager {
   private scopes: string[]
   private sessionStorage: SessionStorage<SignerSessionData>
-  hasTokenRefreshed = false
+  private eventEmitter = new EventEmitter()
+  private hasTokenRefreshed = false
 
   constructor({
     scopes,
@@ -189,7 +191,7 @@ class SeedlessSessionManager {
       }
     })
 
-    this.hasTokenRefreshed = true
+    this.setHasTokenRefreshed(true)
 
     return (refreshResult || { success: true, value: undefined }) as Result<
       void,
@@ -346,6 +348,33 @@ class SeedlessSessionManager {
       mfaConf: mfaReceiptConfirmation
     })
   }
+
+  setHasTokenRefreshed(hasTokenRefreshed: boolean): void {
+    this.hasTokenRefreshed = hasTokenRefreshed
+
+    this.eventEmitter.emit(
+      SeedlessSessionManagerEvent.TokenRefreshed,
+      this.hasTokenRefreshed
+    )
+  }
+
+  addListener<T>(
+    event: SeedlessSessionManagerEvent,
+    callback: (data: T) => void
+  ): void {
+    this.eventEmitter.on(event, callback)
+  }
+
+  removeListener<T>(
+    event: SeedlessSessionManagerEvent,
+    handler: (data: T) => void
+  ): void {
+    this.eventEmitter.off(event, handler)
+  }
+}
+
+export enum SeedlessSessionManagerEvent {
+  TokenRefreshed = 'TokenRefreshed'
 }
 
 export default SeedlessSessionManager

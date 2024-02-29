@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { Alert, Pressable, StyleSheet, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import CurrencyItem from 'screens/drawer/components/CurrencyItem'
@@ -22,6 +22,7 @@ import FeedbackItem from 'screens/drawer/components/FeedbackItem'
 import SeedlessService from 'seedless/services/SeedlessService'
 import Logger from 'utils/Logger'
 import { useFocusEffect } from '@react-navigation/native'
+import { SeedlessSessionManagerEvent } from 'seedless/services/SeedlessSessionManager'
 import SetupRecoveryMethodsItem from './components/SetupRecoveryMethodsItem'
 
 const DrawerView = (): JSX.Element => {
@@ -58,13 +59,31 @@ const DrawerView = (): JSX.Element => {
 const Main = (): JSX.Element => {
   const isNotificationBlocked = useSelector(selectIsNotificationBlocked)
 
-  const [hasRecoveryMethods, setHasRecoveryMethods] = useState<boolean>(false)
-  const hasSeedlessTokenRefreshed =
-    SeedlessService.sessionManager.hasTokenRefreshed
+  const [hasRecoveryMethods, setHasRecoveryMethods] = useState<boolean>()
+  const [hasSeedlessTokenRefreshed, setHasSeedlessTokenRefreshed] =
+    useState<boolean>(false)
+
+  const tokenRefreshedCallback = (hasTokenRefreshed: boolean): void => {
+    setHasSeedlessTokenRefreshed(hasTokenRefreshed)
+  }
+
+  useEffect(() => {
+    SeedlessService.sessionManager.addListener(
+      SeedlessSessionManagerEvent.TokenRefreshed,
+      tokenRefreshedCallback
+    )
+
+    return () => {
+      SeedlessService.sessionManager.removeListener(
+        SeedlessSessionManagerEvent.TokenRefreshed,
+        tokenRefreshedCallback
+      )
+    }
+  }, [])
 
   useFocusEffect(
     useCallback(() => {
-      if (hasRecoveryMethods === false && hasSeedlessTokenRefreshed) {
+      if (hasRecoveryMethods !== true && hasSeedlessTokenRefreshed) {
         SeedlessService.sessionManager
           .userMfa()
           .then(mfa => {

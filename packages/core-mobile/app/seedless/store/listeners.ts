@@ -37,7 +37,7 @@ const refreshSeedlessToken = async (): Promise<void> => {
 }
 
 const resetSeedlessTokenRefreshed = async (): Promise<void> => {
-  SeedlessService.sessionManager.hasTokenRefreshed = false
+  SeedlessService.sessionManager.setHasTokenRefreshed(false)
 }
 
 const registerTokenExpireHandler = async (
