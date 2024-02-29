@@ -59,7 +59,9 @@ const DrawerView = (): JSX.Element => {
 const Main = (): JSX.Element => {
   const isNotificationBlocked = useSelector(selectIsNotificationBlocked)
 
-  const [hasRecoveryMethods, setHasRecoveryMethods] = useState<boolean>()
+  const [hasRecoveryMethodsFetched, setHasRecoveryMethodsFetched] =
+    useState(false)
+  const [hasRecoveryMethods, setHasRecoveryMethods] = useState<boolean>(false)
   const [hasSeedlessTokenRefreshed, setHasSeedlessTokenRefreshed] =
     useState<boolean>(false)
 
@@ -88,6 +90,7 @@ const Main = (): JSX.Element => {
           .userMfa()
           .then(mfa => {
             setHasRecoveryMethods(mfa.length > 0)
+            setHasRecoveryMethodsFetched(true)
           })
           .catch(Logger.error)
       }
@@ -100,7 +103,7 @@ const Main = (): JSX.Element => {
         flex: 1
       }}>
       <ScrollView>
-        {hasRecoveryMethods === false && (
+        {hasRecoveryMethodsFetched && hasRecoveryMethods === false && (
           <>
             <SetupRecoveryMethodsItem />
             <Separator style={{ marginHorizontal: 16 }} />
