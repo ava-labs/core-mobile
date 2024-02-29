@@ -61,6 +61,7 @@ import { StakeSetupStackParamList } from './wallet/EarnScreenStack/StakeSetupScr
 import { RecoveryMethodsStackParamList } from './onboarding/RecoveryMethodsStack'
 import { SeedlessExportStackParamList } from './wallet/SeedlessExportStack'
 import { SettingRecoveryMethodsStackParamList } from './wallet/SettingRecoveryMethodsStack'
+import { WalletGetEthereumChainRpcRequest } from 'store/walletConnectV2/handlers/chain/wallet_getEthereumChain/wallet_getEthereumChain'
 
 export type { RootScreenStackParamList }
 
@@ -149,6 +150,11 @@ export type AddEthereumChainV2Params = {
 
 export type SwitchEthereumChainV2Params = {
   request: WalletSwitchEthereumChainRpcRequestV2
+  network: Network
+}
+
+export type GetEthereumChainParams = {
+  request: WalletGetEthereumChainRpcRequest
   network: Network
 }
 
