@@ -9,7 +9,6 @@ import { useSelector } from 'react-redux'
 import AuthButtons from 'seedless/components/AuthButtons'
 import { useSeedlessRegister } from 'seedless/hooks/useSeedlessRegister'
 import { selectIsSeedlessOnboardingBlocked } from 'store/posthog'
-import Logger from 'utils/Logger'
 import { OidcProviders } from 'seedless/consts'
 import { MFA } from 'seedless/types'
 import AppleSignInService from 'services/socialSignIn/apple/AppleSignInService'
@@ -120,8 +119,7 @@ const SignupScreen: FC = () => {
               onRegisterMfaMethods: handleRegisterMfaMethods,
               onVerifyMfaMethod: handleVerifyMfaMethod,
               onAccountVerified: handleAccountVerified
-            }).catch(error => {
-              Logger.error('Unable to sign up with Google: ', error)
+            }).catch(() => {
               showSimpleToast('Unable to sign up with Google')
             })
           }}
@@ -132,8 +130,7 @@ const SignupScreen: FC = () => {
               onRegisterMfaMethods: handleRegisterMfaMethods,
               onVerifyMfaMethod: handleVerifyMfaMethod,
               onAccountVerified: handleAccountVerified
-            }).catch(error => {
-              Logger.error('Unable to sign up with Apple: ', error)
+            }).catch(() => {
               showSimpleToast('Unable to sign up with Apple')
             })
           }}
