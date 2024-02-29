@@ -14,6 +14,7 @@ import { SessionTimeoutParams } from 'seedless/screens/SessionTimeout'
 import { SEEDLESS_MNEMONIC_STUB } from 'seedless/consts'
 import SeedlessService from 'seedless/services/SeedlessService'
 import GoogleSigninService from 'services/socialSignIn/google/GoogleSigninService'
+import WalletService from 'services/wallet/WalletService'
 import { WalletType } from 'services/wallet/types'
 import { Action } from '@reduxjs/toolkit'
 import { AppListenerEffectAPI } from 'store'
@@ -21,7 +22,6 @@ import { onTokenExpired } from 'seedless/store/slice'
 import { ErrResponse, GlobalEvents } from '@cubist-labs/cubesigner-sdk'
 import { initWalletServiceAndUnlock } from 'hooks/useWallet'
 import { startRefreshSeedlessTokenFlow } from 'seedless/utils/startRefreshSeedlessTokenFlow'
-import WalletService from 'services/wallet/WalletService'
 
 const refreshSeedlessToken = async (): Promise<void> => {
   if (WalletService.walletType !== WalletType.SEEDLESS) {
@@ -29,7 +29,6 @@ const refreshSeedlessToken = async (): Promise<void> => {
   }
   //refreshToken will trigger onSessionExpired if fails for that reason
   const refreshTokenResult = await SeedlessService.sessionManager.refreshToken()
-
   if (refreshTokenResult.success) {
     Logger.trace('Refresh token success')
     return
