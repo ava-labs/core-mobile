@@ -36,6 +36,7 @@ import { RefreshTokenScreenStackParamList } from 'navigation/RefreshTokenScreenS
 import { BrowserStackParamList } from 'navigation/wallet/BrowserScreenStack'
 import { Eip1559Fees } from 'utils/Utils'
 import { NetworkTokenUnit } from 'types'
+import { WalletGetEthereumChainRpcRequest } from 'store/walletConnectV2/handlers/chain/wallet_getEthereumChain/wallet_getEthereumChain'
 import {
   AvalancheSetDeveloperModeApproveData,
   AvalancheSetDeveloperModeRpcRequest
@@ -149,6 +150,11 @@ export type AddEthereumChainV2Params = {
 
 export type SwitchEthereumChainV2Params = {
   request: WalletSwitchEthereumChainRpcRequestV2
+  network: Network
+}
+
+export type GetEthereumChainParams = {
+  request: WalletGetEthereumChainRpcRequest
   network: Network
 }
 
