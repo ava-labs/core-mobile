@@ -1,10 +1,11 @@
 import { Network } from '@avalabs/chains-sdk'
 import { AddEthereumChainParameter } from '@avalabs/bridge-sdk'
+import { intToHex } from 'ethereumjs-util'
 
 export const networkToGetEthChainResponse = (
   network: Network
 ): AddEthereumChainParameter & { isTestnet?: boolean } => ({
-  chainId: `0x${network.chainId.toString(16)}`,
+  chainId: intToHex(network.chainId),
   chainName: network.chainName,
   rpcUrls: [network.rpcUrl],
   nativeCurrency: {
