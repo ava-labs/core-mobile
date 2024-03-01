@@ -67,7 +67,7 @@ describe('avalanche_setDeveloperMode.ts', () => {
         mockListenerApi
       )
       expect(result).toEqual({
-        success: false,
+        success: true,
         error: ethErrors.rpc.invalidParams({
           message: `Developer Mode is already set to true`
         })

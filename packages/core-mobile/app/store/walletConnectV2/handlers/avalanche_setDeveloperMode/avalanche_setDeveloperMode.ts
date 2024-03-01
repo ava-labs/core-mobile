@@ -51,7 +51,7 @@ class AvalancheSetDeveloperModeHandler
     const enabled = result.data[0]
     if (isDeveloperMode === enabled) {
       return {
-        success: false,
+        success: true,
         error: ethErrors.rpc.invalidParams({
           message: `Developer Mode is already set to ${enabled}`
         })
