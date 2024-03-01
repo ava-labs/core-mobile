@@ -36,6 +36,7 @@ import { RefreshTokenScreenStackParamList } from 'navigation/RefreshTokenScreenS
 import { BrowserStackParamList } from 'navigation/wallet/BrowserScreenStack'
 import { Eip1559Fees } from 'utils/Utils'
 import { NetworkTokenUnit } from 'types'
+import { WalletGetEthereumChainRpcRequest } from 'store/walletConnectV2/handlers/chain/wallet_getEthereumChain/wallet_getEthereumChain'
 import {
   AvalancheSetDeveloperModeApproveData,
   AvalancheSetDeveloperModeRpcRequest
@@ -61,7 +62,6 @@ import { StakeSetupStackParamList } from './wallet/EarnScreenStack/StakeSetupScr
 import { RecoveryMethodsStackParamList } from './onboarding/RecoveryMethodsStack'
 import { SeedlessExportStackParamList } from './wallet/SeedlessExportStack'
 import { SettingRecoveryMethodsStackParamList } from './wallet/SettingRecoveryMethodsStack'
-import { WalletGetEthereumChainRpcRequest } from 'store/walletConnectV2/handlers/chain/wallet_getEthereumChain/wallet_getEthereumChain'
 
 export type { RootScreenStackParamList }
 
