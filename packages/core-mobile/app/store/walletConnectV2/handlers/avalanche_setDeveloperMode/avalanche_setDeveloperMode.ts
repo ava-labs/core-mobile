@@ -8,12 +8,7 @@ import {
 import Logger from 'utils/Logger'
 import * as Navigation from 'utils/Navigation'
 import AppNavigation from 'navigation/AppNavigation'
-import {
-  ApproveResponse,
-  DEFERRED_RESULT,
-  HandleResponse,
-  RpcRequestHandler
-} from '../types'
+import { ApproveResponse, HandleResponse, RpcRequestHandler } from '../types'
 import { parseRequestParams } from './utils'
 import {
   AvalancheSetDeveloperModeApproveData,
@@ -52,7 +47,7 @@ class AvalancheSetDeveloperModeHandler
     if (isDeveloperMode === enabled) {
       return {
         success: true,
-        value: DEFERRED_RESULT
+        value: null as never
       }
     }
 
@@ -67,7 +62,7 @@ class AvalancheSetDeveloperModeHandler
         params: { request, data }
       }
     })
-    return { success: true, value: DEFERRED_RESULT }
+    return { success: true, value: null as never }
   }
 
   approve = async (
