@@ -15,7 +15,7 @@ const fetchConfigPeriodically = async (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   action: any,
   listenerApi: AppListenerEffectAPI
-) => {
+): Promise<void> => {
   const { fork, dispatch, getState, cancelActiveListeners, condition } =
     listenerApi
 
@@ -45,11 +45,11 @@ const fetchConfigPeriodically = async (
         await forkApi.delay(CONFIG_FETCH_INTERVAL)
       }
     } catch (err) {
-      Logger.error('failed to fetch bridge config', err)
-
       if (err instanceof TaskAbortError) {
         // task got cancelled or the listener got cancelled
         Logger.info(`stopped task ${taskId}`)
+      } else {
+        Logger.error('failed to fetch bridge config', err)
       }
     }
   })
@@ -58,7 +58,7 @@ const fetchConfigPeriodically = async (
   pollingTask.cancel()
 }
 
-export const addBridgeListeners = (startListening: AppStartListening) => {
+export const addBridgeListeners = (startListening: AppStartListening): void => {
   startListening({
     matcher: isAnyOf(onAppUnlocked, toggleDeveloperMode),
     effect: fetchConfigPeriodically

@@ -94,7 +94,8 @@ function useSeedlessManageMFA(): {
 
       verifyMFA({
         response: fidoDeleteResponse,
-        onVerifySuccess: handleVerifySuccess
+        onVerifySuccess: handleVerifySuccess,
+        excludeFidoMfaId: fidoId
       })
     } else {
       throw new Error('fidoDelete requires MFA')
