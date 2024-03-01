@@ -16,20 +16,14 @@ import {
 } from './types'
 
 class AvalancheSetDeveloperModeHandler
-  implements
-    RpcRequestHandler<
-      AvalancheSetDeveloperModeRpcRequest,
-      never,
-      string,
-      AvalancheSetDeveloperModeApproveData
-    >
+  implements RpcRequestHandler<AvalancheSetDeveloperModeRpcRequest>
 {
   methods = [RpcMethod.AVALANCHE_SET_DEVELOPER_MODE]
 
   handle = async (
     request: AvalancheSetDeveloperModeRpcRequest,
     listenerApi: AppListenerEffectAPI
-  ): HandleResponse<never> => {
+  ): HandleResponse => {
     const { getState } = listenerApi
     const result = parseRequestParams(request.data.params.request.params)
     const isDeveloperMode = selectIsDeveloperMode(getState())
@@ -47,7 +41,7 @@ class AvalancheSetDeveloperModeHandler
     if (isDeveloperMode === enabled) {
       return {
         success: true,
-        value: null as never
+        value: null
       }
     }
 
@@ -62,19 +56,22 @@ class AvalancheSetDeveloperModeHandler
         params: { request, data }
       }
     })
-    return { success: true, value: null as never }
+    return { success: true, value: null }
   }
 
   approve = async (
     payload: {
       request: AvalancheSetDeveloperModeRpcRequest
-      data: AvalancheSetDeveloperModeApproveData
+      data: unknown
     },
     listenerApi: AppListenerEffectAPI
-  ): ApproveResponse<string> => {
+  ): ApproveResponse => {
     const { dispatch } = listenerApi
 
-    const enableDeveloperMode = payload.data.enabled
+    const enableDeveloperMode = (
+      payload.data as AvalancheSetDeveloperModeApproveData
+    ).enabled
+
     dispatch(toggleDeveloperMode())
     return {
       success: true,
