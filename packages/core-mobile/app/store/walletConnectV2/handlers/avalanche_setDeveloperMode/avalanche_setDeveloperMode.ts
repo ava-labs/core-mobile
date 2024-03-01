@@ -33,9 +33,12 @@ class AvalancheSetDeveloperModeHandler
 
   handle = async (
     request: AvalancheSetDeveloperModeRpcRequest,
-    _: AppListenerEffectAPI
+    listenerApi: AppListenerEffectAPI
   ): HandleResponse<never> => {
+    const { getState } = listenerApi
     const result = parseRequestParams(request.data.params.request.params)
+    const isDeveloperMode = selectIsDeveloperMode(getState())
+
     if (!result.success) {
       Logger.error('invalid params', result.error)
       return {
@@ -46,6 +49,15 @@ class AvalancheSetDeveloperModeHandler
       }
     }
     const enabled = result.data[0]
+    if (isDeveloperMode === enabled) {
+      return {
+        success: false,
+        error: ethErrors.rpc.invalidParams({
+          message: `Developer Mode is already set to ${enabled}`
+        })
+      }
+    }
+
     const data: AvalancheSetDeveloperModeApproveData = {
       enabled
     }
@@ -67,16 +79,9 @@ class AvalancheSetDeveloperModeHandler
     },
     listenerApi: AppListenerEffectAPI
   ): ApproveResponse<string> => {
-    const { dispatch, getState } = listenerApi
-    const isDeveloperMode = selectIsDeveloperMode(getState())
+    const { dispatch } = listenerApi
 
     const enableDeveloperMode = payload.data.enabled
-    if (isDeveloperMode === enableDeveloperMode) {
-      return {
-        success: true,
-        value: `Developer Mode is already set to ${enableDeveloperMode}`
-      }
-    }
     dispatch(toggleDeveloperMode())
     return {
       success: true,

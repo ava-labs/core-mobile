@@ -53,7 +53,7 @@ describe('avalanche_setDeveloperMode.ts', () => {
       })
       expect(mockNavigate).not.toHaveBeenCalled()
     })
-    it('returns true if param is same as current developer mode', async () => {
+    it('returns false if param is same as current developer mode', async () => {
       const mockListenerApi = {
         getState: () => ({
           settings: { advanced: { developerMode: true } }
@@ -67,15 +67,10 @@ describe('avalanche_setDeveloperMode.ts', () => {
         mockListenerApi
       )
       expect(result).toEqual({
-        success: true,
-        value: DEFERRED_RESULT
-      })
-      expect(mockNavigate).toHaveBeenCalledWith({
-        name: 'Root.Wallet',
-        params: {
-          screen: 'ModalScreens.AvalancheSetDeveloperMode',
-          params: { request, data: { enabled: true } }
-        }
+        success: false,
+        error: ethErrors.rpc.invalidParams({
+          message: `Developer Mode is already set to true`
+        })
       })
     })
     it('returns true if param is different from the current deveoper mode', async () => {
@@ -104,7 +99,7 @@ describe('avalanche_setDeveloperMode.ts', () => {
       })
     })
 
-    describe('handle', () => {
+    describe('approve', () => {
       it('should update developer mode and return message developer mode is set to true', async () => {
         const mockListenerApi = {
           getState: () => ({
@@ -124,28 +119,6 @@ describe('avalanche_setDeveloperMode.ts', () => {
         expect(result).toEqual({
           success: true,
           value: 'Developer Mode set to true'
-        })
-      })
-
-      it('should return message developer mode is already set to true', async () => {
-        const mockListenerApi = {
-          getState: () => ({
-            settings: { advanced: { developerMode: true } }
-          }),
-          dispatch: jest.fn()
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } as any
-        const request = createRequest([true])
-        const result = await avalancheSetDeveloperModeHandler.approve(
-          {
-            request,
-            data: { enabled: true }
-          },
-          mockListenerApi
-        )
-        expect(result).toEqual({
-          success: true,
-          value: 'Developer Mode is already set to true'
         })
       })
     })
