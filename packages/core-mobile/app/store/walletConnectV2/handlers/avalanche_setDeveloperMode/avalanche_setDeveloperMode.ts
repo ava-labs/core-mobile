@@ -52,9 +52,7 @@ class AvalancheSetDeveloperModeHandler
     if (isDeveloperMode === enabled) {
       return {
         success: true,
-        error: ethErrors.rpc.invalidParams({
-          message: `Developer Mode is already set to ${enabled}`
-        })
+        value: DEFERRED_RESULT
       }
     }
 

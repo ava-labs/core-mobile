@@ -68,9 +68,7 @@ describe('avalanche_setDeveloperMode.ts', () => {
       )
       expect(result).toEqual({
         success: true,
-        error: ethErrors.rpc.invalidParams({
-          message: `Developer Mode is already set to true`
-        })
+        value: DEFERRED_RESULT
       })
     })
     it('returns true if param is different from the current deveoper mode', async () => {
