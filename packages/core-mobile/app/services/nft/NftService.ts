@@ -4,6 +4,8 @@ import { findAsyncSequential } from 'utils/Utils'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { Transaction } from '@sentry/types'
 import { NftResponse } from 'store/nft'
+import { Erc1155Token, Erc721Token } from '@avalabs/glacier-sdk'
+import { glacierSdk } from 'utils/network/glacier'
 
 export class NftService {
   providers: NftProvider[] = [glacierNftProvider]
@@ -24,17 +26,22 @@ export class NftService {
   /**
    * @throws {@link Error}
    */
-  async fetchNft(
-    chainId: number,
-    address: string,
+  async fetchNft({
+    chainId,
+    address,
+    pageToken,
+    sentryTrx
+  }: {
+    chainId: number
+    address: string
     pageToken?:
       | {
           erc1155?: string
           erc721?: string
         }
-      | string,
+      | string
     sentryTrx?: Transaction
-  ): Promise<NftResponse> {
+  }): Promise<NftResponse> {
     return SentryWrapper.createSpanFor(sentryTrx)
       .setContext('svc.nft.fetch')
       .executeAsync(async () => {
@@ -45,6 +52,20 @@ export class NftService {
 
         return await provider.fetchNfts(chainId, address, pageToken)
       })
+  }
+
+  async reindexNfts(
+    address: string,
+    chainId: string,
+    tokenId: string
+  ): Promise<Erc721Token | Erc1155Token> {
+    await glacierSdk.nfTs.reindexNft({ address, chainId, tokenId })
+
+    return await glacierSdk.nfTs.getTokenDetails({
+      address,
+      chainId,
+      tokenId
+    })
   }
 }
 

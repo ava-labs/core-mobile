@@ -14,11 +14,11 @@ export const nftsApi = createApi({
 
         const t = SentryWrapper.startTransaction('get-nfts')
         try {
-          const nftPagedData = await nftService.fetchNft(
-            network.chainId,
-            account.address,
-            nextPageToken
-          )
+          const nftPagedData = await nftService.fetchNft({
+            chainId: network.chainId,
+            address: account.address,
+            pageToken: nextPageToken
+          })
 
           const responseData: NftResponse = {
             nfts: nftPagedData.nfts,

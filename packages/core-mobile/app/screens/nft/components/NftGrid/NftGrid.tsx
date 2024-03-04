@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { FlatList, StyleSheet } from 'react-native'
 import ZeroState from 'components/ZeroState'
 import { NFTItemData } from 'store/nft'
+import { RefreshControl } from 'components/RefreshControl'
 import { FetchingNextIndicator } from '../FetchingNextIndicator'
 import { GridItem } from './GridItem'
 import { NftGridLoader } from './NftGridLoader'
@@ -24,10 +25,10 @@ export const NftGrid = ({
   isFetchingNext,
   refresh,
   isRefreshing
-}: Props) => {
+}: Props): JSX.Element => {
   const [endReachedDuringMomentum, setEndReachedDuringMomentum] = useState(true)
 
-  const onEndReached = () => {
+  const onEndReached = (): void => {
     // using endReachedDuringMomentum to prevent onEndReached from firing multiple times
     // this is a bug with mansorylist
     // https://github.com/hyochan/react-native-masonry-list/issues/11
@@ -55,6 +56,9 @@ export const NftGrid = ({
       indicatorStyle="white"
       onRefresh={refresh}
       refreshing={isRefreshing}
+      refreshControl={
+        <RefreshControl onRefresh={refresh} refreshing={isRefreshing} />
+      }
     />
   )
 }
@@ -62,7 +66,7 @@ export const NftGrid = ({
 const renderItem = (
   item: NFTItemData,
   onItemSelected: (item: NFTItemData) => void
-) => {
+): JSX.Element => {
   return <GridItem item={item} onItemSelected={onItemSelected} />
 }
 
