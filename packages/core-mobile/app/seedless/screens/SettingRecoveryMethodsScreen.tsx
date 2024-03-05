@@ -59,7 +59,8 @@ export const SettingRecoveryMethodsScreen = (): JSX.Element => {
   const renderItem = ({ item }: { item: MFA }): JSX.Element => {
     return (
       <AvaListItem.Base
-        title={item.type === 'totp' ? 'Authenticator' : 'Passkey'}
+        title={item.type === 'totp' ? 'Authenticator' : `Passkey`}
+        subtitle={item.type === 'fido' ? item.name : undefined}
         showNavigationArrow={true}
         rightComponentVerticalAlignment="center"
         onPress={() => handleRecoveryMethod(item)}
