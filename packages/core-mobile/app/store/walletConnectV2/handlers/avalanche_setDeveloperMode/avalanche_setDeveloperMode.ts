@@ -8,7 +8,12 @@ import {
 import Logger from 'utils/Logger'
 import * as Navigation from 'utils/Navigation'
 import AppNavigation from 'navigation/AppNavigation'
-import { ApproveResponse, HandleResponse, RpcRequestHandler } from '../types'
+import {
+  ApproveResponse,
+  DEFERRED_RESULT,
+  HandleResponse,
+  RpcRequestHandler
+} from '../types'
 import { parseRequestParams } from './utils'
 import {
   AvalancheSetDeveloperModeApproveData,
@@ -16,14 +21,20 @@ import {
 } from './types'
 
 class AvalancheSetDeveloperModeHandler
-  implements RpcRequestHandler<AvalancheSetDeveloperModeRpcRequest>
+  implements
+    RpcRequestHandler<
+      AvalancheSetDeveloperModeRpcRequest,
+      never | string,
+      string,
+      AvalancheSetDeveloperModeApproveData
+    >
 {
   methods = [RpcMethod.AVALANCHE_SET_DEVELOPER_MODE]
 
   handle = async (
     request: AvalancheSetDeveloperModeRpcRequest,
     listenerApi: AppListenerEffectAPI
-  ): HandleResponse => {
+  ): HandleResponse<never | string> => {
     const { getState } = listenerApi
     const result = parseRequestParams(request.data.params.request.params)
     const isDeveloperMode = selectIsDeveloperMode(getState())
@@ -41,7 +52,7 @@ class AvalancheSetDeveloperModeHandler
     if (isDeveloperMode === enabled) {
       return {
         success: true,
-        value: null
+        value: `Developer Mode set to ${isDeveloperMode}`
       }
     }
 
@@ -56,21 +67,19 @@ class AvalancheSetDeveloperModeHandler
         params: { request, data }
       }
     })
-    return { success: true, value: null }
+    return { success: true, value: DEFERRED_RESULT }
   }
 
   approve = async (
     payload: {
       request: AvalancheSetDeveloperModeRpcRequest
-      data: unknown
+      data: AvalancheSetDeveloperModeApproveData
     },
     listenerApi: AppListenerEffectAPI
-  ): ApproveResponse => {
+  ): ApproveResponse<string> => {
     const { dispatch } = listenerApi
 
-    const enableDeveloperMode = (
-      payload.data as AvalancheSetDeveloperModeApproveData
-    ).enabled
+    const enableDeveloperMode = payload.data.enabled
 
     dispatch(toggleDeveloperMode())
     return {
