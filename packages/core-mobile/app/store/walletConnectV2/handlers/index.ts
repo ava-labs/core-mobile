@@ -14,6 +14,8 @@ import { RpcRequestHandler } from './types'
 import { avalancheSendTransactionHandler } from './avalanche_sendTransaction/avalanche_sendTransaction'
 import { avalancheGetAccountPubKeyHandler } from './avalanche_getAccountPubKey/avalanche_getAccountPubKey'
 import { avalancheSignTransactionHandler } from './avalanche_signTransaction/avalanche_signTransaction'
+import { avalancheSetDeveloperModeHandler } from './avalanche_setDeveloperMode/avalanche_setDeveloperMode'
+import { walletGetEthereumChainHandler } from './chain/wallet_getEthereumChain/wallet_getEthereumChain'
 
 const handlerMap = [
   avalancheSelectAccountHandler,
@@ -28,9 +30,11 @@ const handlerMap = [
   sessionRequestHandler,
   walletAddEthereumChainHandler,
   walletSwitchEthereumChainHandler,
+  walletGetEthereumChainHandler,
   avalancheSendTransactionHandler,
   avalancheSignTransactionHandler,
-  avalancheGetAccountPubKeyHandler
+  avalancheGetAccountPubKeyHandler,
+  avalancheSetDeveloperModeHandler
 ].reduce((acc, current) => {
   current.methods.forEach(method => {
     acc.set(method, current)
