@@ -24,7 +24,7 @@ class AvalancheSetDeveloperModeHandler
   implements
     RpcRequestHandler<
       AvalancheSetDeveloperModeRpcRequest,
-      never | string,
+      string | null,
       string,
       AvalancheSetDeveloperModeApproveData
     >
@@ -34,7 +34,7 @@ class AvalancheSetDeveloperModeHandler
   handle = async (
     request: AvalancheSetDeveloperModeRpcRequest,
     listenerApi: AppListenerEffectAPI
-  ): HandleResponse<never | string> => {
+  ): HandleResponse<string | null> => {
     const { getState } = listenerApi
     const result = parseRequestParams(request.data.params.request.params)
     const isDeveloperMode = selectIsDeveloperMode(getState())
@@ -52,7 +52,7 @@ class AvalancheSetDeveloperModeHandler
     if (isDeveloperMode === enabled) {
       return {
         success: true,
-        value: `Developer Mode is already set to ${isDeveloperMode}`
+        value: null
       }
     }
 
