@@ -2,9 +2,9 @@ import { RpcMethod } from 'store/walletConnectV2/types'
 import mockSession from 'tests/fixtures/walletConnect/session.json'
 import { ethErrors } from 'eth-rpc-errors'
 import * as Navigation from 'utils/Navigation'
+import { DEFERRED_RESULT } from '../types'
 import { avalancheSetDeveloperModeHandler } from './avalanche_setDeveloperMode'
 import { AvalancheSetDeveloperModeRpcRequest } from './types'
-import { DEFERRED_RESULT } from '../types'
 
 const mockNavigate = jest.fn()
 jest.spyOn(Navigation, 'navigate').mockImplementation(mockNavigate)
