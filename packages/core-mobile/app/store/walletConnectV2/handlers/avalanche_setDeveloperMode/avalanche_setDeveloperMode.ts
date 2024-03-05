@@ -52,7 +52,7 @@ class AvalancheSetDeveloperModeHandler
     if (isDeveloperMode === enabled) {
       return {
         success: true,
-        value: `Developer Mode set to ${isDeveloperMode}`
+        value: `Developer Mode is already set to ${isDeveloperMode}`
       }
     }
 

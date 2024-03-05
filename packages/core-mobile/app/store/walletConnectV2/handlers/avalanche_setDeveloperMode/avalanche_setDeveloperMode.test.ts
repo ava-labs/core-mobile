@@ -4,6 +4,7 @@ import { ethErrors } from 'eth-rpc-errors'
 import * as Navigation from 'utils/Navigation'
 import { avalancheSetDeveloperModeHandler } from './avalanche_setDeveloperMode'
 import { AvalancheSetDeveloperModeRpcRequest } from './types'
+import { DEFERRED_RESULT } from '../types'
 
 const mockNavigate = jest.fn()
 jest.spyOn(Navigation, 'navigate').mockImplementation(mockNavigate)
@@ -67,7 +68,7 @@ describe('avalanche_setDeveloperMode.ts', () => {
       )
       expect(result).toEqual({
         success: true,
-        value: null
+        value: 'Developer Mode is already set to true'
       })
     })
     it('returns true if param is different from the current deveoper mode', async () => {
@@ -85,7 +86,7 @@ describe('avalanche_setDeveloperMode.ts', () => {
       )
       expect(result).toEqual({
         success: true,
-        value: null
+        value: DEFERRED_RESULT
       })
       expect(mockNavigate).toHaveBeenCalledWith({
         name: 'Root.Wallet',
