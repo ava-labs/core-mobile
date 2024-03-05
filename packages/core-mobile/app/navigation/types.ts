@@ -36,6 +36,11 @@ import { RefreshTokenScreenStackParamList } from 'navigation/RefreshTokenScreenS
 import { BrowserStackParamList } from 'navigation/wallet/BrowserScreenStack'
 import { Eip1559Fees } from 'utils/Utils'
 import { NetworkTokenUnit } from 'types'
+import { WalletGetEthereumChainRpcRequest } from 'store/walletConnectV2/handlers/chain/wallet_getEthereumChain/wallet_getEthereumChain'
+import {
+  AvalancheSetDeveloperModeApproveData,
+  AvalancheSetDeveloperModeRpcRequest
+} from '../store/walletConnectV2/handlers/avalanche_setDeveloperMode/types'
 import { RootScreenStackParamList } from './RootScreenStack'
 import { OnboardingScreenStackParamList } from './OnboardScreenStack'
 import { WelcomeScreenStackParamList } from './onboarding/WelcomeScreenStack'
@@ -117,6 +122,11 @@ export type AvalancheSignTransactionV2Params = {
   data: AvalancheSignTransactionApproveDataV2
 }
 
+export type AvalancheSetDeveloperModeParams = {
+  request: AvalancheSetDeveloperModeRpcRequest
+  data: AvalancheSetDeveloperModeApproveData
+}
+
 export type SignMessageV2Params = {
   request: EthSignRpcRequestV2
   network: Network
@@ -139,6 +149,11 @@ export type AddEthereumChainV2Params = {
 
 export type SwitchEthereumChainV2Params = {
   request: WalletSwitchEthereumChainRpcRequestV2
+  network: Network
+}
+
+export type GetEthereumChainParams = {
+  request: WalletGetEthereumChainRpcRequest
   network: Network
 }
 

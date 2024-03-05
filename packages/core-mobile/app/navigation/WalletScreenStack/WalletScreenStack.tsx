@@ -80,6 +80,7 @@ import { BridgeStackParamList } from '../wallet/BridgeScreenStack'
 import {
   AddEthereumChainV2Params,
   AvalancheSendTransactionV2Params,
+  AvalancheSetDeveloperModeParams,
   AvalancheSignTransactionV2Params,
   BridgeAssetV2Params,
   BridgeTransactionStatusParams,
@@ -174,6 +175,8 @@ export type WalletScreenStackParams = {
     .AvalancheSendTransactionV2]: AvalancheSendTransactionV2Params
   [AppNavigation.Modal
     .AvalancheSignTransactionV2]: AvalancheSignTransactionV2Params
+  [AppNavigation.Modal
+    .AvalancheSetDeveloperMode]: AvalancheSetDeveloperModeParams
   [AppNavigation.Modal.StakeDisclaimer]: undefined
   [AppNavigation.Wallet.DeFiProtocolDetails]: { protocolId: string }
   [AppNavigation.Modal.CoreIntro]: undefined

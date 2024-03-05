@@ -197,6 +197,7 @@ enum ModalScreens {
   SignTransactionV2 = 'ModalScreens.SignTransactionV2',
   AvalancheSendTransactionV2 = 'ModalScreens.AvalancheSendTransactionV2',
   AvalancheSignTransactionV2 = 'ModalScreens.AvalancheSignTransactionV2',
+  AvalancheSetDeveloperMode = 'ModalScreens.AvalancheSetDeveloperMode',
   StakeDisclaimer = 'ModalScreens.StakeDisclaimer',
   CoreIntro = 'ModalScreens.CoreIntro',
   BrowserTabsList = 'ModalScreens.BrowserTabsList',
