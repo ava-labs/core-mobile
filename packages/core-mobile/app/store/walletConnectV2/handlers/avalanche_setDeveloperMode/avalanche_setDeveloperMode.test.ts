@@ -68,7 +68,7 @@ describe('avalanche_setDeveloperMode.ts', () => {
       )
       expect(result).toEqual({
         success: true,
-        value: 'Developer Mode is already set to true'
+        value: null
       })
     })
     it('returns true if param is different from the current deveoper mode', async () => {
