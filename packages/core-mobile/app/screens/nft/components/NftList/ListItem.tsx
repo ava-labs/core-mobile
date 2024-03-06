@@ -5,15 +5,22 @@ import { Opacity85 } from 'resources/Constants'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import Avatar from 'components/Avatar'
 import AvaText from 'components/AvaText'
-import { NFTItemData } from 'store/nft'
+import { NFTItemData, NFTImageData, NFTMetadata } from 'store/nft'
 import { isErc1155 } from 'services/nft/utils'
 
 type Props = {
   item: NFTItemData
+  metadata: NFTMetadata
   onItemSelected: (item: NFTItemData) => void
+  imageData?: NFTImageData
 }
 
-export const ListItem = ({ item, onItemSelected }: Props) => {
+export const ListItem = ({
+  item,
+  metadata,
+  imageData,
+  onItemSelected
+}: Props): JSX.Element => {
   const { theme } = useApplicationContext()
 
   return (
@@ -32,15 +39,13 @@ export const ListItem = ({ item, onItemSelected }: Props) => {
           </AvaText.Heading2>
         }
         subtitle={
-          <AvaText.Body2 ellipsizeMode={'tail'}>
-            {item.metadata.name}
-          </AvaText.Body2>
+          <AvaText.Body2 ellipsizeMode={'tail'}>{metadata.name}</AvaText.Body2>
         }
         leftComponent={
           <Avatar.Custom
             size={40}
-            name={item.metadata.name ?? ''}
-            logoUri={item.metadata.imageUri}
+            name={metadata.name ?? ''}
+            logoUri={imageData?.image}
           />
         }
         rightComponentVerticalAlignment={'center'}

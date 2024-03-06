@@ -3,7 +3,7 @@ import { NftProvider } from 'services/nft/types'
 import { findAsyncSequential } from 'utils/Utils'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { Transaction } from '@sentry/types'
-import { NftResponse } from 'store/nft'
+import { NFTItemData, NftResponse } from 'store/nft'
 import { Erc1155Token, Erc721Token } from '@avalabs/glacier-sdk'
 import { glacierSdk } from 'utils/network/glacier'
 
@@ -26,7 +26,7 @@ export class NftService {
   /**
    * @throws {@link Error}
    */
-  async fetchNft({
+  async fetchNfts({
     chainId,
     address,
     pageToken,
@@ -43,7 +43,7 @@ export class NftService {
     sentryTrx?: Transaction
   }): Promise<NftResponse> {
     return SentryWrapper.createSpanFor(sentryTrx)
-      .setContext('svc.nft.fetch')
+      .setContext('svc.nft.fetchNfts')
       .executeAsync(async () => {
         //TODO: providers cant mix, so if suddenly one becomes unavailable we need to reset pageToken to undefined
         const provider = await this.getProvider(chainId)
@@ -54,16 +54,42 @@ export class NftService {
       })
   }
 
+  async fetchNft({
+    chainId,
+    address,
+    tokenId,
+    sentryTrx
+  }: {
+    chainId: number
+    address: string
+    tokenId: string
+    sentryTrx?: Transaction
+  }): Promise<NFTItemData> {
+    return SentryWrapper.createSpanFor(sentryTrx)
+      .setContext('svc.nft.fetchNft')
+      .executeAsync(async () => {
+        const provider = await this.getProvider(chainId)
+
+        if (!provider) throw Error('no available providers')
+
+        return await provider.fetchNft(chainId, address, tokenId)
+      })
+  }
+
   async reindexNfts(
     address: string,
-    chainId: string,
+    chainId: number,
     tokenId: string
   ): Promise<Erc721Token | Erc1155Token> {
-    await glacierSdk.nfTs.reindexNft({ address, chainId, tokenId })
+    await glacierSdk.nfTs.reindexNft({
+      address,
+      chainId: String(chainId),
+      tokenId
+    })
 
     return await glacierSdk.nfTs.getTokenDetails({
       address,
-      chainId,
+      chainId: String(chainId),
       tokenId
     })
   }

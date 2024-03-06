@@ -1,8 +1,13 @@
 import React, { useCallback } from 'react'
-import { FlatList, StyleSheet, View } from 'react-native'
+import { FlatList, StyleSheet } from 'react-native'
 import ZeroState from 'components/ZeroState'
-import { NFTItemData } from 'store/nft'
+import { NFTItemData, NFTImageData, NFTMetadata } from 'store/nft'
 import { RefreshControl } from 'components/RefreshControl'
+import {
+  useGetNftImageData,
+  useGetNftMetadata
+} from 'screens/nft/hooks/useGetNftMetadata'
+import { View } from '@avalabs/k2-mobile'
 import { FetchingNextIndicator } from '../FetchingNextIndicator'
 import { NftListLoader } from './NftListLoader'
 import { ListItem } from './ListItem'
@@ -11,8 +16,9 @@ type Props = {
   nfts: NFTItemData[]
   onItemSelected: (item: NFTItemData) => void
   isLoading: boolean
-  fetchNext: () => void
-  isFetchingNext: boolean
+  fetchNextPage: () => void
+  hasNextPage: boolean
+  isFetchingNextPage: boolean
   refresh: () => void
   isRefreshing: boolean
 }
@@ -21,19 +27,29 @@ export const NftList = ({
   nfts,
   onItemSelected,
   isLoading,
-  fetchNext,
-  isFetchingNext,
+  fetchNextPage,
+  hasNextPage,
+  isFetchingNextPage,
   refresh,
   isRefreshing
-}: Props) => {
+}: Props): JSX.Element => {
+  const { getNftImageData } = useGetNftImageData()
+  const { getNftMetadata } = useGetNftMetadata()
+
   const onEndReached = useCallback(
     ({ distanceFromEnd }: { distanceFromEnd: number }) => {
-      if (distanceFromEnd > 0) fetchNext()
+      if (distanceFromEnd > 0 && hasNextPage && !isFetchingNextPage)
+        fetchNextPage()
     },
-    [fetchNext]
+    [fetchNextPage, hasNextPage, isFetchingNextPage]
   )
 
-  if (isLoading) return <NftListLoader />
+  if (isLoading)
+    return (
+      <View sx={{ paddingHorizontal: 16 }}>
+        <NftListLoader />
+      </View>
+    )
 
   return (
     <FlatList
@@ -45,8 +61,17 @@ export const NftList = ({
       ListEmptyComponent={<ZeroState.Collectibles />}
       keyExtractor={item => item.uid}
       ItemSeparatorComponent={Separator}
-      ListFooterComponent={<FetchingNextIndicator isVisible={isFetchingNext} />}
-      renderItem={info => renderItem(info.item, onItemSelected)}
+      ListFooterComponent={
+        <FetchingNextIndicator isVisible={isFetchingNextPage} />
+      }
+      renderItem={info =>
+        renderItem({
+          item: info.item,
+          metadata: getNftMetadata(info.item),
+          onItemSelected,
+          imageData: getNftImageData(info.item)
+        })
+      }
       indicatorStyle="white"
       refreshControl={
         <RefreshControl onRefresh={refresh} refreshing={isRefreshing} />
@@ -55,18 +80,33 @@ export const NftList = ({
   )
 }
 
-const renderItem = (
-  item: NFTItemData,
+const renderItem = ({
+  item,
+  metadata,
+  onItemSelected,
+  imageData
+}: {
+  item: NFTItemData
+  metadata: NFTMetadata
   onItemSelected: (item: NFTItemData) => void
-) => {
-  return <ListItem item={item} onItemSelected={onItemSelected} />
+  imageData?: NFTImageData
+}): JSX.Element => {
+  return (
+    <ListItem
+      item={item}
+      metadata={metadata}
+      onItemSelected={onItemSelected}
+      imageData={imageData}
+    />
+  )
 }
 
-const Separator = () => <View style={{ margin: 4 }} />
+const Separator = (): JSX.Element => <View style={{ margin: 4 }} />
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
   contentContainer: {
+    paddingHorizontal: 16,
     paddingBottom: '20%'
   }
 })

@@ -4,7 +4,6 @@ import { AnyAction, configureStore, ListenerEffectAPI } from '@reduxjs/toolkit'
 import { createMigrate, persistReducer, persistStore } from 'redux-persist'
 import { bridgeReducer as bridge } from 'store/bridge'
 import { unifiedBridgeReducer as unifiedBridge } from 'store/unifiedBridge'
-import { nftsApi } from 'store/nft/api'
 import { migrations } from 'store/migrations'
 import DevDebuggingConfig from 'utils/debugging/DevDebuggingConfig'
 import { EncryptThenMacTransform } from 'store/transforms/EncryptThenMacTransform'
@@ -39,8 +38,7 @@ const blacklist = [
   'balance',
   'swap',
   'walletConnectV2',
-  transactionApi.reducerPath,
-  nftsApi.reducerPath
+  transactionApi.reducerPath
 ]
 
 const combinedReducer = combineReducers({
@@ -67,8 +65,7 @@ const combinedReducer = combineReducers({
   portfolio,
 
   // apis
-  [transactionApi.reducerPath]: transactionApi.reducer,
-  [nftsApi.reducerPath]: nftsApi.reducer
+  [transactionApi.reducerPath]: transactionApi.reducer
 })
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-function-return-type
@@ -113,11 +110,7 @@ export function configureEncryptedStore(secretKey: string, macSecret: string) {
         immutableCheck: false
       })
 
-      const middlewares = [
-        ...defaultMiddleWare,
-        transactionApi.middleware,
-        nftsApi.middleware
-      ]
+      const middlewares = [...defaultMiddleWare, transactionApi.middleware]
 
       // when storybook is enabled, no need to set up listeners
       if (!DevDebuggingConfig.STORYBOOK_ENABLED) {

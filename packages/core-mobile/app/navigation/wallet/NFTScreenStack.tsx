@@ -6,7 +6,7 @@ import NftFullScreen from 'screens/nft/NftFullScreen'
 import NFTSendScreenStack, {
   NFTSendStackParamList
 } from 'navigation/wallet/NFTSendStack'
-import { NFTItemData } from 'store/nft'
+import { NFTItemData, NFTImageData } from 'store/nft'
 import NftDetailsScreen from 'screens/nft/NftDetailsScreen'
 
 export type NFTStackParamList = {
@@ -14,10 +14,7 @@ export type NFTStackParamList = {
   [AppNavigation.Nft.Send]:
     | { nft: NFTItemData }
     | NavigatorScreenParams<NFTSendStackParamList>
-  [AppNavigation.Nft.FullScreen]: {
-    url: string
-    isSvg: boolean
-  }
+  [AppNavigation.Nft.FullScreen]: { imageData: NFTImageData }
 }
 
 const NFTStack = createStackNavigator<NFTStackParamList>()

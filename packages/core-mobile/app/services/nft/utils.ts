@@ -2,12 +2,11 @@ import { Erc1155TokenBalance, Erc721TokenBalance } from '@avalabs/glacier-sdk'
 import { NFTItemData, NftTokenTypes } from 'store/nft'
 import { ipfsResolver } from '@avalabs/utils-sdk'
 import Logger from 'utils/Logger'
-import NftProcessor from './NftProcessor'
 import { NftUID } from './types'
 
 const CLOUDFLARE_IPFS_URL = 'https://cloudflare-ipfs.com'
 
-export const convertIPFSResolver = (url: string) => {
+export const convertIPFSResolver = (url: string): string => {
   try {
     return ipfsResolver(url, CLOUDFLARE_IPFS_URL)
   } catch (e) {
@@ -16,27 +15,10 @@ export const convertIPFSResolver = (url: string) => {
   }
 }
 
-export const applyImageAndAspect = async (nft: NFTItemData) => {
-  if (!nft.metadata.imageUri) {
-    return nft
-  }
-
-  const [image, aspect, isSvg] = await NftProcessor.fetchImageAndAspect(
-    nft.metadata.imageUri
-  )
-
-  return {
-    ...nft,
-    aspect,
-    isSvg,
-    metadata: {
-      ...nft.metadata,
-      imageUri: image
-    }
-  }
-}
-
-export const addMissingFields = (nft: NftTokenTypes, address: string) => {
+export const addMissingFields = (
+  nft: { address: string; tokenId: string },
+  address: string
+): NFTItemData => {
   return {
     ...nft,
     uid: getNftUID(nft),
@@ -44,7 +26,10 @@ export const addMissingFields = (nft: NftTokenTypes, address: string) => {
   } as NFTItemData
 }
 
-export const getNftUID = (nft: NftTokenTypes): NftUID => {
+export const getNftUID = (nft: {
+  address: string
+  tokenId: string
+}): NftUID => {
   return nft.address + nft.tokenId
 }
 

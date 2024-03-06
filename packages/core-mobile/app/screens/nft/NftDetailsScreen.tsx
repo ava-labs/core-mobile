@@ -1,11 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import {
-  Dimensions,
-  Image,
-  Platform,
-  ScrollView,
-  StyleSheet
-} from 'react-native'
+import { Dimensions, Platform, ScrollView, StyleSheet } from 'react-native'
 import { View } from '@avalabs/k2-mobile'
 import AvaText from 'components/AvaText'
 import AvaButton from 'components/AvaButton'
@@ -27,6 +21,17 @@ import { Icons, Pressable, useTheme } from '@avalabs/k2-mobile'
 import { useSelector } from 'react-redux'
 import { selectActiveNetwork } from 'store/network'
 import NftService from 'services/nft/NftService'
+import { ShowSnackBar } from 'components/Snackbar'
+import Loader from 'components/Loader'
+import { SnackBarMessage } from 'seedless/components/SnackBarMessage'
+import { Tooltip } from 'components/Tooltip'
+import NftProcessor from 'services/nft/NftProcessor'
+import {
+  useGetNftImageData,
+  useGetNftMetadata
+} from 'screens/nft/hooks/useGetNftMetadata'
+import FastImage from 'react-native-fast-image'
+import { useNft } from 'screens/nft/hooks/useNfts'
 
 type NftDetailsScreenProps = NFTDetailsScreenProps<
   typeof AppNavigation.Nft.Details
@@ -35,7 +40,15 @@ type NftDetailsScreenProps = NFTDetailsScreenProps<
 const NftDetailsScreen = (): JSX.Element => {
   const { navigate, setOptions } =
     useNavigation<NftDetailsScreenProps['navigation']>()
-  const { nft } = useRoute<NftDetailsScreenProps['route']>().params
+  const activeNetwork = useSelector(selectActiveNetwork)
+  const { nft: routeNft } = useRoute<NftDetailsScreenProps['route']>().params
+  const { nft: freshNft } = useNft(
+    activeNetwork.chainId,
+    routeNft.address,
+    routeNft.tokenId
+  )
+
+  const nft = useMemo(() => freshNft ?? routeNft, [freshNft, routeNft])
 
   const [imgLoadFailed, setImgLoadFailed] = useState(false)
   const { theme } = useApplicationContext()
@@ -47,13 +60,14 @@ const NftDetailsScreen = (): JSX.Element => {
     ? truncateAddress(nft.owner)
     : nft.owner
 
-  const activeNetwork = useSelector(selectActiveNetwork)
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isReindexing, setIsReindexing] = useState(false)
   const [wasReindexed, setWasReindexed] = useState(false)
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { getNftMetadata } = useGetNftMetadata()
+  const { getNftImageData } = useGetNftImageData()
+  const imageData = getNftImageData(nft)
+  const metadata = getNftMetadata(nft)
+
   const canReindex = useMemo(() => {
     const currentTimestamp = Math.floor(Date.now() / 1000)
     const reindexBackoff = 3600
@@ -82,14 +96,11 @@ const NftDetailsScreen = (): JSX.Element => {
   }
 
   const handlePressImage = (): void => {
-    if (!nft.metadata.imageUri) {
+    if (!imageData) {
       return
     }
 
-    navigate(AppNavigation.Nft.FullScreen, {
-      url: nft.metadata.imageUri,
-      isSvg: nft.isSvg
-    })
+    navigate(AppNavigation.Nft.FullScreen, { imageData })
   }
 
   const handlePressSend = (): void => {
@@ -107,86 +118,97 @@ const NftDetailsScreen = (): JSX.Element => {
     setIsReindexing(true)
 
     try {
-      // const response = await glacierApi.reindexNft(undefined, {
-      //   params: {
-      //     reindex: true,
-      //     address: nft.address,
-      //     chainId: String(activeNetwork.chainId),
-      //     tokenId: nft.tokenId
-      //   }
-      // })
-
-      await NftService.reindexNfts(
+      const result = await NftService.reindexNfts(
         nft.address,
-        String(activeNetwork.chainId),
+        activeNetwork.chainId,
         nft.tokenId
       )
 
-      // toast.success(t('NFT refreshed successfully!'))
+      if (
+        nft.address !== result.address ||
+        nft.tokenId !== result.tokenId ||
+        !result.metadata
+      ) {
+        return
+      }
+
+      const updatedNft = {
+        ...nft,
+        metadata: {
+          ...result.metadata
+        }
+      }
+
+      NftProcessor.process([updatedNft], true)
+
+      ShowSnackBar(<SnackBarMessage message="NFT refreshed successfully" />)
       setWasReindexed(true)
     } finally {
       setIsReindexing(false)
     }
   }, [activeNetwork, nft])
 
-  const renderHeaderRight = useCallback(
-    () => (
-      <Pressable onPress={handleRefresh}>
-        <View
-          sx={{
-            padding: 8,
-            paddingRight: 12
-          }}>
-          <Icons.Navigation.Refresh color={colors.$neutral50} />
-        </View>
+  const renderHeaderRight = useCallback(() => {
+    const disabled = !canReindex || isReindexing
+
+    const refresIcon = (): JSX.Element => (
+      <View
+        sx={{
+          padding: 8,
+          paddingRight: 12
+        }}>
+        <Icons.Navigation.Refresh
+          color={disabled ? colors.$neutral700 : colors.$neutral50}
+        />
+      </View>
+    )
+
+    return canReindex ? (
+      <Pressable onPress={handleRefresh} disabled={disabled}>
+        {refresIcon()}
       </Pressable>
-    ),
-    [colors, handleRefresh]
-  )
+    ) : (
+      <Tooltip
+        content="Refresh is only available once per hour."
+        position="bottom"
+        style={{ width: 150 }}
+        icon={refresIcon()}
+      />
+    )
+  }, [colors, handleRefresh, canReindex, isReindexing])
 
-  useEffect(() => {
-    setOptions({
-      headerRight: renderHeaderRight
-    })
-  }, [setOptions, renderHeaderRight])
+  const renderImage = (): JSX.Element => {
+    if (imgLoadFailed || !imageData?.image) {
+      return renderImageFailure()
+    }
 
-  return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <AvaText.Heading1 testID="NftTokenTitle">
-        {nft.metadata.name} #{nft.tokenId}
-      </AvaText.Heading1>
-      <AvaButton.Base
-        style={{ marginTop: 16, marginBottom: 24 }}
-        onPress={handlePressImage}>
-        {nft.isSvg && (
+    if (!imageData || isReindexing) {
+      return renderLoading()
+    }
+
+    return (
+      <AvaButton.Base onPress={handlePressImage}>
+        {imageData.isSvg && (
           <View style={{ alignItems: 'center' }}>
             <SvgXml
-              xml={nft.metadata.imageUri ?? null}
+              xml={imageData.image ?? null}
               width={imageWidth}
-              height={imageWidth * (nft.aspect ?? 1)}
+              height={imageWidth * (imageData.aspect ?? 1)}
             />
           </View>
         )}
-        {!nft.isSvg && nft.metadata.imageUri && !imgLoadFailed && (
-          <Image
-            onError={_ => setImgLoadFailed(true)}
-            style={styles.imageStyle}
-            width={imageWidth}
-            height={imageWidth * (nft.aspect ?? 1)}
-            source={{ uri: nft.metadata.imageUri }}
+        {!imageData.isSvg && imageData.image && !imgLoadFailed && (
+          <FastImage
+            onError={() => setImgLoadFailed(true)}
+            style={[
+              styles.imageStyle,
+              {
+                width: imageWidth,
+                height: imageWidth * (imageData.aspect ?? 1)
+              }
+            ]}
+            source={{ uri: imageData.image }}
           />
-        )}
-        {(imgLoadFailed || !nft.metadata.imageUri) && (
-          <View
-            style={{
-              padding: 10,
-              justifyContent: 'center'
-            }}>
-            <AvaText.Heading3
-              textStyle={{ color: theme.colorError, textAlign: 'center' }}>
-              Could not load image
-            </AvaText.Heading3>
-          </View>
         )}
 
         {isErc1155(nft) && (
@@ -207,6 +229,48 @@ const NftDetailsScreen = (): JSX.Element => {
           </OvalTagBg>
         )}
       </AvaButton.Base>
+    )
+  }
+
+  const renderLoading = (): JSX.Element => {
+    return (
+      <View
+        sx={{
+          width: imageWidth,
+          height: imageWidth * (imageData?.aspect ?? 1)
+        }}>
+        <Loader />
+      </View>
+    )
+  }
+
+  const renderImageFailure = (): JSX.Element => {
+    return (
+      <View
+        style={{
+          padding: 10,
+          justifyContent: 'center'
+        }}>
+        <AvaText.Heading3
+          textStyle={{ color: theme.colorError, textAlign: 'center' }}>
+          Could not load image
+        </AvaText.Heading3>
+      </View>
+    )
+  }
+
+  useEffect(() => {
+    setOptions({
+      headerRight: renderHeaderRight
+    })
+  }, [setOptions, renderHeaderRight])
+
+  return (
+    <ScrollView contentContainerStyle={styles.container}>
+      <AvaText.Heading1 testID="NftTokenTitle">
+        {metadata.name} #{nft.tokenId}
+      </AvaText.Heading1>
+      <View sx={{ marginTop: 16, marginBottom: 24 }}>{renderImage()}</View>
       {renderSendBtn()}
       <Space y={24} />
       <AvaText.Heading2>Description</AvaText.Heading2>
@@ -224,21 +288,21 @@ const NftDetailsScreen = (): JSX.Element => {
         </View>
       </Row>
       <Space y={24} />
-      <AvaText.Heading2>Properties</AvaText.Heading2>
-      <Space y={8} />
-      {renderProps(nft.attributes)}
+      {metadata.attributes.length > 0 && (
+        <>
+          <AvaText.Heading2>Properties</AvaText.Heading2>
+          <Space y={8} />
+          {renderProps(metadata.attributes)}
+        </>
+      )}
     </ScrollView>
   )
 }
 
 const imageWidth = Dimensions.get('window').width - 32
-
 const renderProps = (
-  attributes?: NFTItemExternalDataAttribute[]
+  attributes: NFTItemExternalDataAttribute[]
 ): JSX.Element[] => {
-  if (!attributes) {
-    return []
-  }
   const props = []
   for (let i = 0; i < attributes.length; i += 2) {
     const nftAttribute1 = attributes[i]

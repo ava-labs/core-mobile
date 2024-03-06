@@ -24,6 +24,10 @@ import { AddrBookItemType, Contact } from 'store/addressBook'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { Eip1559Fees } from 'utils/Utils'
 import { NetworkTokenUnit } from 'types'
+import {
+  useGetNftImageData,
+  useGetNftMetadata
+} from 'screens/nft/hooks/useGetNftMetadata'
 
 export type NftSendScreenProps = {
   onNext: () => void
@@ -194,6 +198,11 @@ export default function NftSend({
 const CollectibleItem = ({ nft }: { nft: NFTItemData }): JSX.Element => {
   const { theme } = useApplicationContext()
 
+  const { getNftImageData } = useGetNftImageData()
+  const { getNftMetadata } = useGetNftMetadata()
+  const imageData = getNftImageData(nft)
+  const metadata = getNftMetadata(nft)
+
   return (
     <View
       style={[
@@ -204,18 +213,18 @@ const CollectibleItem = ({ nft }: { nft: NFTItemData }): JSX.Element => {
       ]}>
       <Row>
         <View style={{ borderRadius: 8 }}>
-          {nft.isSvg ? (
+          {imageData?.isSvg ? (
             <View style={{ alignItems: 'center' }}>
               <SvgXml
-                xml={nft.metadata.imageUri ?? null}
+                xml={imageData.image ?? null}
                 width={80}
-                height={80 * nft.aspect}
+                height={80 * imageData.aspect ?? 1}
               />
             </View>
           ) : (
             <Image
               style={styles.nftImage}
-              source={{ uri: nft.metadata.imageUri }}
+              source={{ uri: imageData?.image }}
               width={80}
               height={80}
             />
@@ -233,7 +242,7 @@ const CollectibleItem = ({ nft }: { nft: NFTItemData }): JSX.Element => {
             testID="NftTokenName"
             numberOfLines={1}
             ellipsizeMode="tail">
-            {nft.metadata.name}
+            {metadata.name}
           </AvaText.Heading6>
         </View>
       </Row>

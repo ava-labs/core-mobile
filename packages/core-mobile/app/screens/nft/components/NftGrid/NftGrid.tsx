@@ -1,8 +1,13 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { FlatList, StyleSheet } from 'react-native'
 import ZeroState from 'components/ZeroState'
-import { NFTItemData } from 'store/nft'
+import { NFTImageData, NFTItemData, NFTMetadata } from 'store/nft'
 import { RefreshControl } from 'components/RefreshControl'
+import {
+  useGetNftImageData,
+  useGetNftMetadata
+} from 'screens/nft/hooks/useGetNftMetadata'
+import { View } from '@avalabs/k2-mobile'
 import { FetchingNextIndicator } from '../FetchingNextIndicator'
 import { GridItem } from './GridItem'
 import { NftGridLoader } from './NftGridLoader'
@@ -11,8 +16,9 @@ type Props = {
   nfts: NFTItemData[]
   onItemSelected: (item: NFTItemData) => void
   isLoading: boolean
-  fetchNext: () => void
-  isFetchingNext: boolean
+  fetchNextPage: () => void
+  hasNextPage: boolean
+  isFetchingNextPage: boolean
   refresh: () => void
   isRefreshing: boolean
 }
@@ -21,24 +27,27 @@ export const NftGrid = ({
   nfts,
   onItemSelected,
   isLoading,
-  fetchNext,
-  isFetchingNext,
+  fetchNextPage,
+  hasNextPage,
+  isFetchingNextPage,
   refresh,
   isRefreshing
 }: Props): JSX.Element => {
-  const [endReachedDuringMomentum, setEndReachedDuringMomentum] = useState(true)
+  const { getNftImageData } = useGetNftImageData()
+  const { getNftMetadata } = useGetNftMetadata()
 
   const onEndReached = (): void => {
-    // using endReachedDuringMomentum to prevent onEndReached from firing multiple times
-    // this is a bug with mansorylist
-    // https://github.com/hyochan/react-native-masonry-list/issues/11
-    if (!endReachedDuringMomentum) {
-      fetchNext()
-      setEndReachedDuringMomentum(true)
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage()
     }
   }
 
-  if (isLoading) return <NftGridLoader />
+  if (isLoading)
+    return (
+      <View sx={{ paddingHorizontal: 16 }}>
+        <NftGridLoader />
+      </View>
+    )
 
   return (
     <FlatList
@@ -46,13 +55,21 @@ export const NftGrid = ({
       contentContainerStyle={styles.contentContainer}
       onEndReached={onEndReached}
       onEndReachedThreshold={0.4}
-      onMomentumScrollBegin={() => setEndReachedDuringMomentum(false)}
       keyExtractor={item => item.uid}
       ListEmptyComponent={<ZeroState.Collectibles />}
-      ListFooterComponent={<FetchingNextIndicator isVisible={isFetchingNext} />}
+      ListFooterComponent={
+        <FetchingNextIndicator isVisible={isFetchingNextPage} />
+      }
       numColumns={2}
       showsVerticalScrollIndicator={true}
-      renderItem={info => renderItem(info.item, onItemSelected)}
+      renderItem={info =>
+        renderItem({
+          item: info.item,
+          metadata: getNftMetadata(info.item),
+          onItemSelected,
+          imageData: getNftImageData(info.item)
+        })
+      }
       indicatorStyle="white"
       onRefresh={refresh}
       refreshing={isRefreshing}
@@ -63,15 +80,30 @@ export const NftGrid = ({
   )
 }
 
-const renderItem = (
-  item: NFTItemData,
+const renderItem = ({
+  item,
+  metadata,
+  onItemSelected,
+  imageData
+}: {
+  item: NFTItemData
+  metadata: NFTMetadata
   onItemSelected: (item: NFTItemData) => void
-): JSX.Element => {
-  return <GridItem item={item} onItemSelected={onItemSelected} />
+  imageData?: NFTImageData
+}): JSX.Element => {
+  return (
+    <GridItem
+      item={item}
+      metadata={metadata}
+      imageData={imageData}
+      onItemSelected={onItemSelected}
+    />
+  )
 }
 
 const styles = StyleSheet.create({
   contentContainer: {
+    paddingHorizontal: 16,
     paddingBottom: '20%'
   }
 })
