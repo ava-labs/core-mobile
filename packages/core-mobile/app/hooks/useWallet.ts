@@ -13,6 +13,7 @@ import WalletService from 'services/wallet/WalletService'
 import { Dispatch } from '@reduxjs/toolkit'
 import Logger from 'utils/Logger'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import { useCallback } from 'react'
 
 type InitWalletServiceAndUnlockProps = {
   mnemonic: string
@@ -57,14 +58,17 @@ export function useWallet(): UseWallet {
    * Initializes wallet with the specified mnemonic and wallet type
    * and navigates to the unlocked wallet screen
    */
-  const unlock = async ({ mnemonic }: { mnemonic: string }): Promise<void> => {
-    await initWalletServiceAndUnlock({
-      dispatch,
-      mnemonic,
-      walletType: cachedWalletType,
-      isLoggingIn: false
-    })
-  }
+  const unlock = useCallback(
+    async ({ mnemonic }: { mnemonic: string }): Promise<void> => {
+      await initWalletServiceAndUnlock({
+        dispatch,
+        mnemonic,
+        walletType: cachedWalletType,
+        isLoggingIn: false
+      })
+    },
+    [dispatch, cachedWalletType]
+  )
 
   const login = async (
     mnemonic: string,

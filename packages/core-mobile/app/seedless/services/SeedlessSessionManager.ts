@@ -1,3 +1,4 @@
+import EventEmitter from 'events'
 import {
   AddFidoChallenge,
   CubeSignerClient,
@@ -46,6 +47,8 @@ if (!envInterface) {
 class SeedlessSessionManager {
   private scopes: string[]
   private sessionStorage: SessionStorage<SignerSessionData>
+  private eventEmitter = new EventEmitter()
+  private isTokenValid = false
 
   constructor({
     scopes,
@@ -137,6 +140,8 @@ class SeedlessSessionManager {
   }
 
   async refreshToken(): Promise<Result<void, TokenRefreshErrors>> {
+    this.setIsTokenValid(false)
+
     const sessionMgr = await SignerSessionManager.loadFromStorage(
       this.sessionStorage
     ).catch(reason => {
@@ -187,6 +192,8 @@ class SeedlessSessionManager {
         })
       }
     })
+
+    this.setIsTokenValid(true)
 
     return (refreshResult || { success: true, value: undefined }) as Result<
       void,
@@ -343,6 +350,33 @@ class SeedlessSessionManager {
       mfaConf: mfaReceiptConfirmation
     })
   }
+
+  setIsTokenValid(isTokenValid: boolean): void {
+    this.isTokenValid = isTokenValid
+
+    this.eventEmitter.emit(
+      SeedlessSessionManagerEvent.TokenStatusUpdated,
+      this.isTokenValid
+    )
+  }
+
+  addListener<T>(
+    event: SeedlessSessionManagerEvent,
+    callback: (data: T) => void
+  ): void {
+    this.eventEmitter.on(event, callback)
+  }
+
+  removeListener<T>(
+    event: SeedlessSessionManagerEvent,
+    handler: (data: T) => void
+  ): void {
+    this.eventEmitter.off(event, handler)
+  }
+}
+
+export enum SeedlessSessionManagerEvent {
+  TokenStatusUpdated = 'TokenStatusUpdated'
 }
 
 export default SeedlessSessionManager

@@ -70,12 +70,8 @@ export async function startRefreshSeedlessTokenFlow(
       )
     } else {
       return {
-        success: false,
-        error: new RefreshSeedlessTokenFlowErrors({
-          name: 'MFA_REQUIRED',
-          message:
-            'MFA is required for this action. Please set up recovery methods in your settings.'
-        })
+        success: true,
+        value: undefined
       }
     }
   }

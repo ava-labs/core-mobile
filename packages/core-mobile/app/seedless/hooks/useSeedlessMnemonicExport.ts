@@ -11,6 +11,7 @@ import { startRefreshSeedlessTokenFlow } from 'seedless/utils/startRefreshSeedle
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import Logger from 'utils/Logger'
 import * as Navigation from 'utils/Navigation'
+import { Alert } from 'react-native'
 import useVerifyMFA from './useVerifyMFA'
 
 export enum ExportState {
@@ -158,6 +159,24 @@ export const useSeedlessMnemonicExport = (keyId: string): ReturnProps => {
 
   useEffect(() => {
     const checkPendingExports = async (): Promise<void> => {
+      const mfa = await seedlessExportService.sessionManager.userMfa()
+      if (mfa.length === 0) {
+        Alert.alert(
+          'Multi-factor authentication required',
+          'Please set up at least one in Settings > Security & Privacy > Recovery Methods.',
+          [
+            {
+              text: 'OK',
+              onPress: () => {
+                Navigation.goBack()
+              }
+            }
+          ],
+          { cancelable: false }
+        )
+        return
+      }
+
       const pendingExport = await seedlessExportService.userExportList()
       setState(pendingExport ? ExportState.Pending : ExportState.NotInitiated)
       setPendingRequest(pendingExport)
@@ -168,9 +187,7 @@ export const useSeedlessMnemonicExport = (keyId: string): ReturnProps => {
         if (result.success) {
           checkPendingExports()
         } else {
-          if (result.error.name === 'MFA_REQUIRED') {
-            showSimpleToast(result.error.message)
-          } else if (result.error.name !== 'USER_CANCELED') {
+          if (result.error.name !== 'USER_CANCELED') {
             showSimpleToast('Unable to start export request. Please try again.')
           }
           Navigation.goBack()

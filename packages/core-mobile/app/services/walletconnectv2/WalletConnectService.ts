@@ -259,7 +259,7 @@ class WalletConnectService {
       this.updateSession({ session, chainId, address }),
       UPDATE_SESSION_TIMEOUT
     ).catch(e => {
-      Logger.error(
+      Logger.warn(
         `unable to update WC session '${session.peer.metadata.name}'`,
         e
       )
