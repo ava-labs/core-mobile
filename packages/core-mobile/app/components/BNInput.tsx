@@ -50,10 +50,7 @@ export function BNInput({
       return
     }
 
-    if (
-      (valueBig && !valueAsString) ||
-      (valueBig && valueAsString && !new Big(valueAsString).eq(valueBig))
-    ) {
+    if (valueBig && (!valueAsString || !new Big(valueAsString).eq(valueBig))) {
       setValueAsString(valueBig.toString())
     }
   }, [valueBig, valueAsString, value])
