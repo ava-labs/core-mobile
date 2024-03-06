@@ -28,6 +28,33 @@ const ethereumConfigAssetSchema = assetBaseSchema.extend({
   deprecatedTokenContractAddress: z.string().optional()
 })
 
+const ethereumDynamicFeeAssetConfigSchema = assetBaseSchema.extend({
+  assetType: z.literal(AssetType.ERC20),
+  avaxPromotionDollarThreshold: z.number(),
+  avaxPromotionAmount: z.string(),
+  chainlinkFeedAddress: z.string().optional(),
+  chainlinkFeedNetwork: z.string().optional(),
+  ipfsHash: z.string().optional(),
+  transferGasLimit: z.number().optional(),
+  nativeContractAddress: z.string(),
+  wrappedContractAddress: z.string(),
+  wrappedNetwork: z.string(),
+  deprecatedTokenContractAddress: z.string().optional(),
+  offboardFeeProcessThreshold: z.string(),
+  offboardFeeConfiguration: z.object({
+    feePercentage: z.number(),
+    feePercentageDecimals: z.number(),
+    maximumFeeDollars: z.number(),
+    minimumFeeDollars: z.number()
+  }),
+  onboardFeeConfiguration: z.object({
+    feePercentage: z.number(),
+    feePercentageDecimals: z.number(),
+    maximumFeeDollars: z.number(),
+    minimumFeeDollars: z.number()
+  })
+})
+
 const nativeAssetSchema = assetBaseSchema.extend({
   assetType: z.literal(AssetType.NATIVE),
   wrappedAssetSymbol: z.string(),
@@ -51,10 +78,39 @@ const bitcoinConfigAssetSchema = assetBaseSchema.extend({
   wrappedNetwork: z.string()
 })
 
+const bitcoinDynamicFeeConfigAssetSchema = assetBaseSchema.extend({
+  assetType: z.literal(AssetType.BTC),
+  additionalTxFeeAmount: z.number(),
+  avaxPromotionAmount: z.string(),
+  avaxPromotionDollarThreshold: z.number(),
+  bech32AddressPrefix: z.string(),
+  operatorAddress: z.string(),
+  privateKeyPrefix: z.string(),
+  reserveBalanceHighWaterMark: z.number(),
+  reserveBalanceLowWaterMark: z.number(),
+  targetChangeAmount: z.number(),
+  wrappedContractAddress: z.string(),
+  wrappedNetwork: z.string(),
+  offboardFeeConfiguration: z.object({
+    feePercentage: z.number(),
+    feePercentageDecimals: z.number(),
+    maximumFeeDollars: z.number(),
+    minimumFeeDollars: z.number()
+  }),
+  onboardFeeConfiguration: z.object({
+    feePercentage: z.number(),
+    feePercentageDecimals: z.number(),
+    maximumFeeDollars: z.number(),
+    minimumFeeDollars: z.number()
+  })
+})
+
 const assetSchema = z.union([
+  ethereumDynamicFeeAssetConfigSchema,
   ethereumConfigAssetSchema,
   nativeAssetSchema,
-  bitcoinConfigAssetSchema
+  bitcoinConfigAssetSchema,
+  bitcoinDynamicFeeConfigAssetSchema
 ])
 
 const paramsSchema = z.tuple([
