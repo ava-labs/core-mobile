@@ -4,5 +4,6 @@ export default {
   activityTab: 'navutils_normal_tab_button__activity',
   watchlistTab: 'navutils_normal_tab_button__watchlist',
   stakeTab: 'earnSVG',
-  plusButton: 'add_svg'
+  plusButton: 'add_svg',
+  browserTab: 'BrowserSVG'
 }

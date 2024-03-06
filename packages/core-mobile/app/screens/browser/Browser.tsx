@@ -158,6 +158,7 @@ export default function Browser({ tabId }: { tabId: string }): JSX.Element {
         </View>
       </View>
       <WebView
+        testID="webview"
         ref={webViewRef}
         pullToRefreshEnabled={true}
         injectedJavaScript={injectGetDescriptionAndFavicon + injectCoreAsRecent}
