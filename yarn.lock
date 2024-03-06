@@ -280,7 +280,7 @@ __metadata:
     react-native-qrcode-svg: 6.1.2
     react-native-quick-base64: 2.0.5
     react-native-quick-crypto: 0.4.6
-    react-native-reanimated: 3.4.0
+    react-native-reanimated: 3.0.2
     react-native-redash: 18.1.0
     react-native-restart: 0.0.24
     react-native-root-siblings: 5.0.1
@@ -17006,7 +17006,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lodash.isequal@npm:4.5.0":
+"lodash.isequal@npm:4.5.0, lodash.isequal@npm:^4.5.0":
   version: 4.5.0
   resolution: "lodash.isequal@npm:4.5.0"
   checksum: da27515dc5230eb1140ba65ff8de3613649620e8656b19a6270afe4866b7bd461d9ba2ac8a48dcc57f7adac4ee80e1de9f965d89d4d81a0ad52bb3eec2609644
@@ -20933,24 +20933,22 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-reanimated@npm:3.4.0":
-  version: 3.4.0
-  resolution: "react-native-reanimated@npm:3.4.0"
+"react-native-reanimated@npm:3.0.2":
+  version: 3.0.2
+  resolution: "react-native-reanimated@npm:3.0.2"
   dependencies:
     "@babel/plugin-transform-object-assign": ^7.16.7
     "@babel/preset-typescript": ^7.16.7
-    convert-source-map: ^2.0.0
+    convert-source-map: ^1.7.0
     invariant: ^2.2.4
+    lodash.isequal: ^4.5.0
+    setimmediate: ^1.0.5
+    string-hash-64: ^1.0.3
   peerDependencies:
     "@babel/core": ^7.0.0-0
-    "@babel/plugin-proposal-nullish-coalescing-operator": ^7.0.0-0
-    "@babel/plugin-proposal-optional-chaining": ^7.0.0-0
-    "@babel/plugin-transform-arrow-functions": ^7.0.0-0
-    "@babel/plugin-transform-shorthand-properties": ^7.0.0-0
-    "@babel/plugin-transform-template-literals": ^7.0.0-0
     react: "*"
     react-native: "*"
-  checksum: 60312602dfe471153a5cc151aca2d359aaf55ec81db342defa67fa983d77c577ee5b22ec3fd744a281aacc3e560b52777d449cdbb9447cf596cf7a8dc231e61d
+  checksum: 7635d6d490eecdf74d3b3560e0696df14c8528f58b4c79d680bb623053e6a13e51e05f62aa9d40e1d53e9b2c90d67ac77ff1f4128400f14ab4a524ef3dec036b
   languageName: node
   linkType: hard
 
@@ -23011,6 +23009,13 @@ __metadata:
   version: 2.0.0
   resolution: "string-format@npm:2.0.0"
   checksum: dada2ef95f6d36c66562c673d95315f80457fa7dce2f3609a2e75d1190b98c88319028cf0a5b6c043d01c18d581b2641579f79480584ba030d6ac6fceb30bc55
+  languageName: node
+  linkType: hard
+
+"string-hash-64@npm:^1.0.3":
+  version: 1.0.3
+  resolution: "string-hash-64@npm:1.0.3"
+  checksum: 79de8431b4fa3e85a2429cd52a34f7948221ff167b7a094e05d6bcfd0173474b232e0c9845c96f74b0d7b6b0c8bbe2c3532a4cacb21635293ef0cf3cc8e77f06
   languageName: node
   linkType: hard
 
