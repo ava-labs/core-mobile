@@ -10,6 +10,9 @@ import { selectBridgeAppConfig } from 'store/bridge/slice'
 import * as Navigation from 'utils/Navigation'
 import AppNavigation from 'navigation/AppNavigation'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { Blockchain } from '@avalabs/bridge-sdk'
+import { VsCurrencyType } from '@avalabs/coingecko-sdk'
+import { selectSelectedCurrency } from 'store/settings/currency'
 import { RpcMethod, SessionRequest } from '../../types'
 import {
   ApproveResponse,
@@ -71,6 +74,7 @@ class AvalancheBridgeAssetHandler
     const isDeveloperMode = selectIsDeveloperMode(state)
     const activeAccount = selectActiveAccount(state)
     const allNetworks = selectNetworks(state)
+    const currency = selectSelectedCurrency(state)
     const bridgeAppConfig = selectBridgeAppConfig(state)
     const {
       currentBlockchain,
@@ -84,17 +88,29 @@ class AvalancheBridgeAssetHandler
     const amount = bnToBig(stringToBN(amountStr, denomination), denomination)
 
     try {
-      const txn = await BridgeService.transferAsset({
-        currentBlockchain,
-        amount,
-        asset,
-        config: bridgeAppConfig,
-        activeAccount,
-        allNetworks,
-        isTestnet: isDeveloperMode,
-        maxFeePerGas,
-        maxPriorityFeePerGas
-      })
+      let txn
+      if (currentBlockchain === Blockchain.BITCOIN) {
+        txn = await BridgeService.transferBtcAsset({
+          amount,
+          currency: currency.toLowerCase() as VsCurrencyType,
+          config: bridgeAppConfig,
+          activeAccount,
+          isTestnet: isDeveloperMode,
+          maxFeePerGas
+        })
+      } else {
+        txn = await BridgeService.transferAsset({
+          currentBlockchain,
+          amount,
+          asset,
+          config: bridgeAppConfig,
+          activeAccount,
+          allNetworks,
+          isTestnet: isDeveloperMode,
+          maxFeePerGas,
+          maxPriorityFeePerGas
+        })
+      }
       if (!txn) {
         throw Error('transaction not found')
       }
