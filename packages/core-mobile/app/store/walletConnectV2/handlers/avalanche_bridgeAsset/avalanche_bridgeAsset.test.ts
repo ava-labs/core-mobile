@@ -16,6 +16,7 @@ import {
   EthereumDynamicFeeAssetConfig,
   EthereumStaticFeeAssetConfig
 } from '@avalabs/bridge-sdk'
+import { VsCurrencyType } from '@avalabs/coingecko-sdk'
 import { avalancheBridgeAssetHandler as handler } from './avalanche_bridgeAsset'
 
 const mockActiveAccount = mockAccounts[0]
@@ -44,6 +45,14 @@ jest.mock('store/settings/advanced', () => {
   }
 })
 
+jest.mock('store/settings/currency', () => {
+  const actual = jest.requireActual('store/settings/currency')
+  return {
+    ...actual,
+    selectSelectedCurrency: () => 'usd' as VsCurrencyType
+  }
+})
+
 jest.mock('store/bridge/slice', () => {
   const actual = jest.requireActual('store/bridge/slice')
   return {
@@ -54,8 +63,15 @@ jest.mock('store/bridge/slice', () => {
 
 const mockTx = { a: 1 }
 const mockTransferAsset = jest.fn()
+const mockTransferBtcAsset = jest.fn()
+
 jest.spyOn(BridgeService, 'transferAsset').mockImplementation(mockTransferAsset)
+jest
+  .spyOn(BridgeService, 'transferBtcAsset')
+  .mockImplementation(mockTransferBtcAsset)
+
 mockTransferAsset.mockResolvedValue(mockTx)
+mockTransferBtcAsset.mockResolvedValue(mockTx)
 
 const mockCaptureException = jest.fn()
 jest.spyOn(Sentry, 'captureException').mockImplementation(mockCaptureException)
@@ -361,6 +377,27 @@ describe('avalanche_bridgeAsset handler', () => {
         maxPriorityFeePerGas: 100n
       })
 
+      expect(result).toEqual({ success: true, value: mockTx })
+    })
+
+    it('should transfer btc asset and return success with transaction', async () => {
+      const testRequest = createRequest(testBtcDynamicFeeParams)
+
+      const result = await handler.approve(
+        {
+          request: testRequest,
+          data: {
+            amountStr: '0.01',
+            asset: testBtcDynamicFeeAsset,
+            currentBlockchain: 'bitcoin',
+            maxFeePerGas: 100n,
+            maxPriorityFeePerGas: 100n
+          }
+        },
+        mockListenerApi
+      )
+
+      expect(mockTransferBtcAsset).toHaveBeenCalled()
       expect(result).toEqual({ success: true, value: mockTx })
     })
 

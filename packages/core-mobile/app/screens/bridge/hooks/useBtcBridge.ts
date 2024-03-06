@@ -34,6 +34,7 @@ import {
 } from 'services/network/utils/providerUtils'
 import { Btc } from 'types/Btc'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import { getErrorMessage } from 'utils/getErrorMessage'
 
 export function useBtcBridge(amountInBtc: Big, fee: number): BridgeAdapter {
   const activeNetwork = useSelector(selectActiveNetwork)
@@ -271,12 +272,6 @@ export function useBtcBridge(amountInBtc: Big, fee: number): BridgeAdapter {
     maximum,
     transfer
   }
-}
-
-const getErrorMessage = (error: unknown): string => {
-  return typeof error === 'object' && error !== null
-    ? error.toString()
-    : 'Unexpected error'
 }
 
 const getIsBitcoinBridge = (
