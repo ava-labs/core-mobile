@@ -43,7 +43,7 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { NetworkTokenUnit } from 'types'
 import { Eip1559Fees } from 'utils/Utils'
 
-type PartialBridgeTransaction = Pick<
+export type PartialBridgeTransaction = Pick<
   BridgeTransaction,
   | 'sourceChain'
   | 'sourceTxHash'

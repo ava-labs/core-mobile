@@ -21,6 +21,7 @@ import { blockchainToNetwork } from 'screens/bridge/utils/bridgeUtils'
 import { Network } from '@avalabs/chains-sdk'
 import {
   getAvalancheProvider,
+  getBitcoinNetwork,
   getEthereumProvider
 } from 'services/network/utils/providerUtils'
 import { noop } from '@avalabs/utils-sdk'
@@ -28,6 +29,12 @@ import { Networks } from 'store/network'
 import { TransactionResponse } from 'ethers'
 import { getBtcBalance } from 'screens/bridge/hooks/getBtcBalance'
 import { omit } from 'lodash'
+import NetworkService from 'services/network/NetworkService'
+import { Avalanche, JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
+import { VsCurrencyType } from '@avalabs/coingecko-sdk'
+import Logger from 'utils/Logger'
+import AnalyticsService from 'services/analytics/AnalyticsService'
+import { getErrorMessage } from 'utils/getErrorMessage'
 
 type TransferAssetParams = {
   currentBlockchain: Blockchain
@@ -47,6 +54,86 @@ export class BridgeService {
       activeNetwork.isTestnet ? Environment.TEST : Environment.PROD
     )
     return fetchConfig()
+  }
+
+  async transferBtcAsset({
+    amount,
+    config,
+    activeAccount,
+    isTestnet,
+    maxFeePerGas,
+    currency
+  }: {
+    amount: Big
+    config: AppConfig | undefined
+    activeAccount: Account | undefined
+    isTestnet: boolean
+    maxFeePerGas: bigint
+    currency: VsCurrencyType
+    maxPriorityFeePerGas?: bigint
+  }): Promise<string | undefined> {
+    if (config === undefined) {
+      throw new Error('Missing bridge config')
+    }
+
+    if (activeAccount === undefined) {
+      throw new Error('No active account found')
+    }
+    const btcAddress = activeAccount?.addressBtc
+    if (btcAddress === undefined) {
+      throw new Error('No active account found')
+    }
+    const bitcoinNetwork = getBitcoinNetwork(isTestnet)
+    const provider = NetworkService.getProviderForNetwork(bitcoinNetwork)
+    if (
+      provider instanceof JsonRpcBatchInternal ||
+      provider instanceof Avalanche.JsonRpcProvider
+    ) {
+      throw new Error('Wrong provider found.')
+    }
+    const amountInSatoshis = btcToSatoshi(amount)
+
+    const token = await getBtcBalance(
+      !isTestnet,
+      btcAddress,
+      currency as VsCurrencyType
+    )
+
+    const utxos = token?.utxos ?? []
+
+    const { inputs, outputs } = getBtcTransaction(
+      config,
+      btcAddress,
+      utxos,
+      amountInSatoshis,
+      Number(maxFeePerGas)
+    )
+
+    try {
+      const signedTx = await WalletService.sign(
+        { inputs, outputs },
+        activeAccount.index,
+        bitcoinNetwork
+      )
+
+      const hash = await NetworkService.sendTransaction(
+        signedTx,
+        bitcoinNetwork
+      )
+
+      AnalyticsService.captureWithEncryption('BridgeTransactionStarted', {
+        chainId: bitcoinNetwork.chainId,
+        sourceTxHash: hash,
+        fromAddress: btcAddress
+      })
+      return hash
+    } catch (error) {
+      if (error) {
+        const errMsg = getErrorMessage(error)
+        Logger.error('failed to transfer', errMsg)
+        throw new Error(errMsg)
+      }
+    }
   }
 
   async transferAsset({
@@ -135,6 +222,9 @@ export class BridgeService {
     }
 
     if (currentBlockchain === Blockchain.BITCOIN) {
+      if (btcToSatoshi(amount) === 0) {
+        throw new Error(`Receive amount can't be 0`)
+      }
       const token = await getBtcBalance(
         !activeNetwork.isTestnet,
         activeAccount?.addressBtc,
