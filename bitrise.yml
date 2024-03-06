@@ -827,4 +827,8 @@ workflows:
         title: Detox
         inputs:
         - file_path: scripts/bitrise/detox/iosInternalE2e.sh
+    - script-runner@0:
+        title: Detox
+        inputs:
+        - file_path: packages/core-mobile/e2e/tests/plusIcon/walletConnect/core_web_test_runner.sh
     
