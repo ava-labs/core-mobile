@@ -135,6 +135,9 @@ export class BridgeService {
     }
 
     if (currentBlockchain === Blockchain.BITCOIN) {
+      if (btcToSatoshi(amount) === 0) {
+        throw new Error(`Receive amount can't be 0`)
+      }
       const token = await getBtcBalance(
         !activeNetwork.isTestnet,
         activeAccount?.addressBtc,

@@ -144,7 +144,13 @@ export function useBtcBridge(amountInBtc: Big, fee: number): BridgeAdapter {
   ])
 
   useEffect(() => {
-    if (!isBitcoinBridge || !bridgeConfig || !btcAddress || !utxos) {
+    if (
+      !isBitcoinBridge ||
+      !bridgeConfig ||
+      !btcAddress ||
+      !utxos ||
+      amountInSatoshis === 0
+    ) {
       return
     }
 
@@ -174,7 +180,8 @@ export function useBtcBridge(amountInBtc: Big, fee: number): BridgeAdapter {
     isBitcoinBridge,
     utxos,
     activeNetwork,
-    feeRate
+    feeRate,
+    amountInBtc
   ])
 
   const transfer = useCallback(async () => {
@@ -187,6 +194,7 @@ export function useBtcBridge(amountInBtc: Big, fee: number): BridgeAdapter {
       !bridgeConfig ||
       !activeNetwork ||
       !amountInSatoshis ||
+      amountInSatoshis === 0 ||
       !fee
     ) {
       return Promise.reject()
