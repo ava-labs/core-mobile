@@ -30,6 +30,8 @@ export const AvalancheSetDeveloperMode = (): JSX.Element => {
     new URL(peerMeta?.url ?? '').hostname +
     ` is requesting to turn Testnet Mode ${OnOrOffText}`
 
+  const title = `Turn Testnet Mode ${OnOrOffText}?`
+
   const rejectAndClose = useCallback(() => {
     onReject(request)
     goBack()
@@ -76,7 +78,7 @@ export const AvalancheSetDeveloperMode = (): JSX.Element => {
   const renderContent = (): JSX.Element => {
     return (
       <View style={{ alignItems: 'center', marginTop: 16 }}>
-        <Text variant="buttonLarge">Activate Testnet Mode?</Text>
+        <Text variant="buttonLarge">{title}</Text>
         <Text variant="caption" sx={{ color: '$neutral400', marginTop: 4 }}>
           {description}
         </Text>
