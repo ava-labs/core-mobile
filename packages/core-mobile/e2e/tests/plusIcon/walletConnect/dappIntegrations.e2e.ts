@@ -36,7 +36,7 @@ describe('Connect to dApp using WalletConnect', () => {
     await BurgerMenuPage.tapSecurityAndPrivacy()
     await CommonElsPage.waitForToastMsgGone(1)
     await SecurityAndPrivacyPage.tapConnectedSites()
-    delay(1000)
+    await delay(1000)
     await SecurityAndPrivacyPage.tapConnectedSites()
     await ConnectedSitesPage.tapManageBtn()
     await ConnectedSitesPage.tapSelectAllChkBox()
