@@ -16,6 +16,14 @@ const tap = async (item: Detox.NativeMatcher) => {
   await element(item).tap()
 }
 
+const multiTap = async (
+  item: Detox.NativeMatcher,
+  count: number,
+  index: number
+) => {
+  await element(item).atIndex(index).multiTap(count)
+}
+
 const tapElementAtIndex = async (item: Detox.NativeMatcher, num: number) => {
   await element(item).atIndex(num).tap()
 }
@@ -70,6 +78,16 @@ const waitForElement = async (
   index = 0
 ) => {
   await waitFor(element(item).atIndex(index)).toBeVisible().withTimeout(timeout)
+}
+
+const expectToBeVisible = async (item: Detox.NativeMatcher, index = 0) => {
+  try {
+    await waitFor(element(item).atIndex(index)).toBeVisible().withTimeout(1000)
+    return true
+  } catch (e) {
+    console.log('Element is not visible ' + e)
+    return false
+  }
 }
 
 // waitForElementNoSync function can be used to handle idle timeout error for Android devices, should be used only if Idle timeout error presents
@@ -206,6 +224,7 @@ async function writeQrCodeToFile(clipboardValue: string) {
 export default {
   balanceToNumber,
   tap,
+  multiTap,
   longPress,
   waitForElement,
   waitForElementNoSync,
@@ -223,5 +242,6 @@ export default {
   platform,
   isVisible,
   getCurrentDateTime,
-  writeQrCodeToFile
+  writeQrCodeToFile,
+  expectToBeVisible
 }

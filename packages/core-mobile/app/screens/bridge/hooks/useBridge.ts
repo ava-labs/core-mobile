@@ -127,7 +127,9 @@ export default function useBridge(selectedAsset?: AssetBalance): Bridge {
   const minimum = useMinimumTransferAmount(amount)
   const hasEnoughForNetworkFee = useHasEnoughForGas()
 
-  const btc = useBtcBridge(amount)
+  // btc does not have the concept of gas, maxFeePerGas value below is just the fee rate
+  // user set in the network fee selector
+  const btc = useBtcBridge(amount, Number(eip1559Fees.maxFeePerGas.toSubUnit()))
   const eth = useEthBridge({ amount, bridgeFee, minimum, eip1559Fees })
   const avalanche = useAvalancheBridge({
     amount,
@@ -169,19 +171,23 @@ export default function useBridge(selectedAsset?: AssetBalance): Bridge {
 
   useEffect(() => {
     const getEstimatedGasLimit = async (): Promise<bigint | undefined> => {
-      if (!activeAccount || !selectedAsset || !currentAssetData) return
+      if (
+        !activeAccount ||
+        !selectedAsset ||
+        !currentAssetData ||
+        amount.eq(BIG_ZERO)
+      )
+        return
       let estimatedGasLimit: bigint | undefined
 
       if (unified.isAssetSupported) {
-        if (amount.gt(BIG_ZERO)) {
-          estimatedGasLimit = await UnifiedBridgeService.estimateGas({
-            asset: selectedAsset.asset,
-            amount,
-            activeAccount,
-            sourceNetwork: activeNetwork,
-            targetNetwork
-          })
-        }
+        estimatedGasLimit = await UnifiedBridgeService.estimateGas({
+          asset: selectedAsset.asset,
+          amount,
+          activeAccount,
+          sourceNetwork: activeNetwork,
+          targetNetwork
+        })
       } else {
         estimatedGasLimit = await BridgeService.estimateGas({
           currentBlockchain,

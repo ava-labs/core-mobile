@@ -17,23 +17,20 @@ import ConnectedDapps from 'screens/rpc/ConnectedDapps/ConnectedDapps'
 import CaptureDappQR from 'screens/shared/CaptureDappQR'
 import Logger from 'utils/Logger'
 import { useWallet } from 'hooks/useWallet'
-import { RecoveryMethodsSettingScreen } from 'seedless/screens/RecoveryMethodsSettingScreen'
-import { RecoveryMethodsSettingMFAScreen } from 'seedless/screens/RecoveryMethodsSettingMFAScreen'
-import { MFA } from 'seedless/types'
 import { WalletType } from 'services/wallet/types'
 import walletService from 'services/wallet/WalletService'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import SeedlessExportStack, {
   SeedlessExportStackParamList
 } from './SeedlessExportStack'
+import SettingRecoveryMethodsStack from './SettingRecoveryMethodsStack'
 
 export type SecurityStackParamList = {
   [AppNavigation.SecurityPrivacy.SecurityPrivacy]: undefined
   [AppNavigation.SecurityPrivacy.PinChange]: undefined
   [AppNavigation.SecurityPrivacy.CreatePin]: { mnemonic: string }
   [AppNavigation.SecurityPrivacy.ShowRecoveryPhrase]: undefined
-  [AppNavigation.SecurityPrivacy.RecoveryMethods]: undefined
-  [AppNavigation.SecurityPrivacy.MFASetting]: { mfa: MFA }
+  [AppNavigation.SecurityPrivacy.SettingRecoveryMethods]: undefined
   [AppNavigation.SecurityPrivacy.TurnOnBiometrics]: undefined
   [AppNavigation.SecurityPrivacy.RecoveryPhrase]: { mnemonic: string }
   [AppNavigation.SecurityPrivacy.DappList]: undefined
@@ -62,14 +59,9 @@ function SecurityPrivacyStackScreen(): JSX.Element {
           component={DappConnectionsList}
         />
         <SecurityStack.Screen
-          options={MainHeaderOptions({ title: 'Recovery Methods' })}
-          name={AppNavigation.SecurityPrivacy.RecoveryMethods}
-          component={RecoveryMethodsSettingScreen}
-        />
-        <SecurityStack.Screen
-          options={MainHeaderOptions()}
-          name={AppNavigation.SecurityPrivacy.MFASetting}
-          component={RecoveryMethodsSettingMFAScreen}
+          options={{ headerShown: false }}
+          name={AppNavigation.SecurityPrivacy.SettingRecoveryMethods}
+          component={SettingRecoveryMethodsStack}
         />
         <SecurityStack.Screen
           options={MainHeaderOptions()}
@@ -137,7 +129,7 @@ const SecurityPrivacyScreen = (): JSX.Element => {
         nav.navigate(AppNavigation.SecurityPrivacy.ShowRecoveryPhrase)
       }}
       onRecoveryMethods={() => {
-        nav.navigate(AppNavigation.SecurityPrivacy.RecoveryMethods)
+        nav.navigate(AppNavigation.SecurityPrivacy.SettingRecoveryMethods)
       }}
       onTurnOnBiometrics={() =>
         nav.navigate(AppNavigation.SecurityPrivacy.TurnOnBiometrics)

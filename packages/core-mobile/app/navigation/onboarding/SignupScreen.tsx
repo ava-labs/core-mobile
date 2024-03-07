@@ -9,7 +9,6 @@ import { useSelector } from 'react-redux'
 import AuthButtons from 'seedless/components/AuthButtons'
 import { useSeedlessRegister } from 'seedless/hooks/useSeedlessRegister'
 import { selectIsSeedlessOnboardingBlocked } from 'store/posthog'
-import Logger from 'utils/Logger'
 import { OidcProviders } from 'seedless/consts'
 import { MFA } from 'seedless/types'
 import AppleSignInService from 'services/socialSignIn/apple/AppleSignInService'
@@ -27,7 +26,7 @@ const SignupScreen: FC = () => {
     selectIsSeedlessOnboardingBlocked
   )
   const { navigate } = useNavigation<NavigationProp>()
-  const { register, isRegistering } = useSeedlessRegister()
+  const { register, isRegistering, verify } = useSeedlessRegister()
 
   useEffect(() => {
     isRegistering ? showOwl() : hideOwl()
@@ -57,24 +56,36 @@ const SignupScreen: FC = () => {
     AnalyticsService.capture('AlreadyHaveAWalletClicked')
   }
 
-  const onRegisterMfaMethods = (oidcToken: string, mfaId: string): void => {
-    navigate(AppNavigation.Onboard.RecoveryMethods, {
+  const handleAccountVerified = (): void => {
+    navigate(AppNavigation.Onboard.NameYourWallet)
+  }
+
+  const handleRegisterMfaMethods = (oidcAuth?: {
+    oidcToken: string
+    mfaId: string
+  }): void => {
+    navigate(AppNavigation.Root.RecoveryMethods, {
       screen: AppNavigation.RecoveryMethods.AddRecoveryMethods,
-      oidcToken,
-      mfaId
+      params: {
+        oidcAuth,
+        onAccountVerified: handleAccountVerified,
+        allowsUserToAddLater: true
+      }
     })
   }
 
-  const onVerifyMfaMethod = (
-    oidcToken: string,
-    mfaId: string,
+  const handleVerifyMfaMethod = (
+    oidcAuth: {
+      oidcToken: string
+      mfaId: string
+    },
     mfaMethods: MFA[]
   ): void => {
-    navigate(AppNavigation.Onboard.RecoveryMethods, {
-      screen: AppNavigation.RecoveryMethods.SelectRecoveryMethods,
-      params: { mfaMethods },
-      oidcToken,
-      mfaId
+    navigate(AppNavigation.Root.SelectRecoveryMethods, {
+      mfaMethods,
+      onMFASelected: mfa => {
+        verify(mfa, oidcAuth, handleAccountVerified)
+      }
     })
   }
 
@@ -105,10 +116,10 @@ const SignupScreen: FC = () => {
             register({
               getOidcToken: GoogleSigninService.signin,
               oidcProvider: OidcProviders.GOOGLE,
-              onRegisterMfaMethods,
-              onVerifyMfaMethod
-            }).catch(error => {
-              Logger.error('Unable to sign up with Google: ', error)
+              onRegisterMfaMethods: handleRegisterMfaMethods,
+              onVerifyMfaMethod: handleVerifyMfaMethod,
+              onAccountVerified: handleAccountVerified
+            }).catch(() => {
               showSimpleToast('Unable to sign up with Google')
             })
           }}
@@ -116,10 +127,10 @@ const SignupScreen: FC = () => {
             register({
               getOidcToken: AppleSignInService.signIn,
               oidcProvider: OidcProviders.APPLE,
-              onRegisterMfaMethods,
-              onVerifyMfaMethod
-            }).catch(error => {
-              Logger.error('Unable to sign up with Apple: ', error)
+              onRegisterMfaMethods: handleRegisterMfaMethods,
+              onVerifyMfaMethod: handleVerifyMfaMethod,
+              onAccountVerified: handleAccountVerified
+            }).catch(() => {
               showSimpleToast('Unable to sign up with Apple')
             })
           }}

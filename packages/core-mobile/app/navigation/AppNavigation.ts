@@ -3,7 +3,10 @@ enum Root {
   Onboard = 'Root.Onboard',
   RefreshToken = 'Root.RefreshToken',
   CopyPhraseWarning = 'Root.CopyPhraseWarning',
-  ForgotPin = 'Root.ForgotPin'
+  ForgotPin = 'Root.ForgotPin',
+  VerifyTotpCode = 'Root.VerifyTotpCode',
+  RecoveryMethods = 'Root.RecoveryMethods',
+  SelectRecoveryMethods = 'Root.SelectRecoveryMethods'
 }
 
 enum OnboardScreens {
@@ -14,7 +17,6 @@ enum OnboardScreens {
   CreateWalletStack = 'OnboardScreens.CreateWalletStack',
   EnterWithMnemonicStack = 'OnboardScreens.EnterWithMnemonicStack',
   RecoverWithMnemonicStack = 'OnboardScreens.RecoverWithMnemonicStack',
-  RecoveryMethods = 'OnboardScreens.RecoveryMethods',
   CreatePin = 'OnboardScreens.CreatePin',
   NameYourWallet = 'OnboardScreens.NameYourWallet'
 }
@@ -22,8 +24,7 @@ enum OnboardScreens {
 enum RefreshTokenScreens {
   OwlLoader = 'RefreshTokenScreens.OwlLoader',
   SessionTimeout = 'RefreshTokenScreens.SessionTimeout',
-  WrongSocialAccount = 'RefreshTokenScreens.WrongSocialAccount',
-  VerifyCode = 'RefreshTokenScreens.VerifyCode'
+  WrongSocialAccount = 'RefreshTokenScreens.WrongSocialAccount'
 }
 
 enum CreateWalletNavigationScreens {
@@ -140,14 +141,13 @@ enum SecurityPrivacyScreens {
   PinChange = 'SecurityPrivacyScreens.PinChange',
   CreatePin = 'SecurityPrivacyScreens.CreatePin',
   ShowRecoveryPhrase = 'SecurityPrivacyScreens.ShowRecoveryPhrase',
-  RecoveryMethods = 'SecurityPrivacyScreens.RecoveryMethods',
-  MFASetting = 'SecurityPrivacyScreens.MFASetting',
   TurnOnBiometrics = 'SecurityPrivacyScreens.TurnOnBiometrics',
   RecoveryPhrase = 'SecurityPrivacyScreens.RecoveryPhrase',
   DappList = 'SecurityPrivacyScreens.DappList',
   DappConnectModal = 'SecurityPrivacyScreens.DappConnectModal',
   QRCode = 'SecurityPrivacyScreens.QRCode',
-  SeedlessExport = 'SecurityPrivacyScreens.SeedlessExport'
+  SeedlessExport = 'SecurityPrivacyScreens.SeedlessExport',
+  SettingRecoveryMethods = 'SecurityPrivacyScreens.SettingRecoveryMethods'
 }
 
 enum LegalScreens {
@@ -197,6 +197,7 @@ enum ModalScreens {
   SignTransactionV2 = 'ModalScreens.SignTransactionV2',
   AvalancheSendTransactionV2 = 'ModalScreens.AvalancheSendTransactionV2',
   AvalancheSignTransactionV2 = 'ModalScreens.AvalancheSignTransactionV2',
+  AvalancheSetDeveloperMode = 'ModalScreens.AvalancheSetDeveloperMode',
   StakeDisclaimer = 'ModalScreens.StakeDisclaimer',
   CoreIntro = 'ModalScreens.CoreIntro',
   BrowserTabsList = 'ModalScreens.BrowserTabsList',
@@ -234,7 +235,6 @@ enum RecoveryMethodsScreens {
   AuthenticatorSetup = 'RecoveryMethodsScreens.AuthenticatorSetup',
   ScanQrCode = 'RecoveryMethodsScreens.ScanQrCode',
   LearnMore = 'RecoveryMethodsScreens.LearnMore',
-  VerifyCode = 'RecoveryMethodsScreens.VerifyCode',
   PasskeySetup = 'RecoveryMethodsScreens.PasskeySetup',
   FIDONameInput = 'RecoveryMethodsScreens.FIDONameInput'
 }
@@ -243,12 +243,21 @@ enum SeedlessExportScreens {
   InitialScreen = 'SeedlessExportScreens.InitialScreen',
   Instructions = 'SeedlessExportScreens.Instructions',
   WaitingPeriodModal = 'SeedlessExportScreens.WaitingPeriodModal',
-  VerifyCode = 'SeedlessExportScreens.VerifyCode',
   RecoveryPhrasePending = 'SeedlessExportScreens.RecoveryPhrasePending',
   RecoveryPhrase = 'SeedlessExportScreens.RecoveryPhrase',
   ConfirmCancelModal = 'SeedlessExportScreens.ConfirmCancelModal',
   ConfirmCloseModal = 'SeedlessExportScreens.ConfirmCloseModal',
   OwlLoader = 'SeedlessExportScreens.OwlLoader'
+}
+
+enum SettingRecoveryMethodsScreens {
+  SettingRecoveryMethods = 'SettingRecoveryMethodsScreens.SettingRecoveryMethods',
+  SettingMFA = 'SettingRecoveryMethodsScreens.SettingMFA',
+  SettingAuthenticatorSetup = 'SettingRecoveryMethodsScreens.SettingAuthenticatorSetup',
+  SettingScanQrCode = 'SettingRecoveryMethodsScreens.SettingScanQrCode',
+  SettingLearnMore = 'SettingRecoveryMethodsScreens.SettingLearnMore',
+  ChangeTotpConfirmation = 'SettingRecoveryMethodsScreens.ChangeTotpConfirmation',
+  RemovePasskeyConfirmation = 'SettingRecoveryMethodsScreens.RemovePasskeyConfirmation'
 }
 
 const AppNavigation = {
@@ -278,7 +287,8 @@ const AppNavigation = {
   Notifications: NotificationsScreens,
   SendFeedback: SendFeedbackScreens,
   RecoveryMethods: RecoveryMethodsScreens,
-  SeedlessExport: SeedlessExportScreens
+  SeedlessExport: SeedlessExportScreens,
+  SettingRecoveryMethods: SettingRecoveryMethodsScreens
 }
 
 export default AppNavigation

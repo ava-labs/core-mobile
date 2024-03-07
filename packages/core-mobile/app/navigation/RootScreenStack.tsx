@@ -27,7 +27,17 @@ import { useWallet } from 'hooks/useWallet'
 import PinOrBiometryLogin from 'screens/login/PinOrBiometryLogin'
 import Logger from 'utils/Logger'
 import { setPinRecovery } from 'utils/Navigation'
+import { Result } from 'types/result'
+import { TotpErrors } from 'seedless/errors'
+import VerifyTotpCodeScreen from 'screens/shared/VerifyTotpCodeScreen'
+import { MFA } from 'seedless/types'
+import { SelectRecoveryMethods } from 'seedless/screens/SelectRecoveryMethods'
+import { MainHeaderOptions } from 'navigation/NavUtils'
+import { CubeSignerResponse } from '@cubist-labs/cubesigner-sdk'
 import { PrivacyScreen } from './wallet/PrivacyScreen'
+import RecoveryMethodsStack, {
+  RecoveryMethodsStackParamList
+} from './onboarding/RecoveryMethodsStack'
 
 export type RootScreenStackParamList = {
   [AppNavigation.Root
@@ -42,6 +52,20 @@ export type RootScreenStackParamList = {
     onConfirm: () => void
     title: string
     message: string
+  }
+  [AppNavigation.Root.VerifyTotpCode]: {
+    onVerifyCode: <T>(
+      code: string
+    ) => Promise<Result<undefined | CubeSignerResponse<T>, TotpErrors>>
+    onVerifySuccess: <T>(response?: T) => void
+    onBack?: () => void
+  }
+  [AppNavigation.Root
+    .RecoveryMethods]: NavigatorScreenParams<RecoveryMethodsStackParamList>
+  [AppNavigation.Root.SelectRecoveryMethods]: {
+    mfaMethods: MFA[]
+    onMFASelected: (mfa: MFA) => void
+    onBack?: () => void
   }
 }
 
@@ -139,6 +163,22 @@ const RootScreenStack: FC = () => {
           animationEnabled: false
         }}
       />
+      <RootStack.Screen
+        name={AppNavigation.Root.RecoveryMethods}
+        component={RecoveryMethodsStack}
+        options={{
+          animationEnabled: true
+        }}
+      />
+      <RootStack.Screen
+        name={AppNavigation.Root.SelectRecoveryMethods}
+        component={SelectRecoveryMethods}
+        options={{
+          ...MainHeaderOptions(),
+          animationEnabled: true,
+          presentation: 'modal'
+        }}
+      />
       <RootStack.Group screenOptions={{ presentation: 'transparentModal' }}>
         <RootStack.Screen
           name={AppNavigation.Root.CopyPhraseWarning}
@@ -147,6 +187,11 @@ const RootScreenStack: FC = () => {
         <RootStack.Screen
           name={AppNavigation.Root.ForgotPin}
           component={ForgotPinModal}
+        />
+        <RootStack.Screen
+          options={{ presentation: 'modal' }}
+          name={AppNavigation.Root.VerifyTotpCode}
+          component={VerifyTotpCodeScreen}
         />
       </RootStack.Group>
     </RootStack.Navigator>
@@ -157,6 +202,13 @@ const LoginWithPinOrBiometryScreen = (): JSX.Element => {
   const { unlock } = useWallet()
   const { signOut } = useApplicationContext().appHook
 
+  const handleLoginSuccess = useCallback(
+    (mnemonic: string) => {
+      unlock({ mnemonic }).catch(Logger.error)
+    },
+    [unlock]
+  )
+
   return (
     <PinOrBiometryLogin
       onSignOut={signOut}
@@ -164,9 +216,7 @@ const LoginWithPinOrBiometryScreen = (): JSX.Element => {
         setPinRecovery(true)
         signOut()
       }}
-      onLoginSuccess={mnemonic => {
-        unlock({ mnemonic }).catch(Logger.error)
-      }}
+      onLoginSuccess={handleLoginSuccess}
     />
   )
 }

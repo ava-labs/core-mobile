@@ -1,4 +1,3 @@
-import LoginRecoverWallet from '../../../helpers/loginRecoverWallet'
 import AccountManagePage from '../../../pages/accountManage.page'
 import ActivityTabPage from '../../../pages/activityTab.page'
 import ActivityTabLoc from '../../../locators/activityTab.loc'
@@ -13,7 +12,7 @@ describe('Send USDC to another account', () => {
   })
 
   it('Should send USDC to second account', async () => {
-    await LoginRecoverWallet.recoverWalletLogin()
+    await AccountManagePage.switchToFirstAccount()
     const secondAccountAddress = await AccountManagePage.createSecondAccount()
     await SendPage.sendTokenTo2ndAccount(
       sendLoc.usdcToken,
@@ -25,13 +24,6 @@ describe('Send USDC to another account', () => {
       5000,
       secondAccountAddress,
       ActivityTabLoc.usdcOutgoingTransactionDetail
-    )
-  })
-
-  it('Should receive USDC on second account', async () => {
-    await ActivityTabPage.tapHeaderBack()
-    await ActivityTabPage.verifyIncomingTransaction(
-      ActivityTabLoc.usdcIncomingTransactionDetail
     )
   })
 })

@@ -1,4 +1,3 @@
-import LoginRecoverWallet from '../../helpers/loginRecoverWallet'
 import AccountManagePage from '../../pages/accountManage.page'
 import PortfolioPage from '../../pages/portfolio.page'
 import { warmup } from '../../helpers/warmup'
@@ -10,7 +9,6 @@ describe('Defi Tab', () => {
   })
 
   it('Should verify Defi Items', async () => {
-    await LoginRecoverWallet.recoverWalletLogin()
     await PortfolioPage.tapDefiTab()
     await DefiPage.verifyDefiListItems()
   })

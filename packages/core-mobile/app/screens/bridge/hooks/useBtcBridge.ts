@@ -34,8 +34,9 @@ import {
 } from 'services/network/utils/providerUtils'
 import { Btc } from 'types/Btc'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import { getErrorMessage } from 'utils/getErrorMessage'
 
-export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
+export function useBtcBridge(amountInBtc: Big, fee: number): BridgeAdapter {
   const activeNetwork = useSelector(selectActiveNetwork)
   const activeAccount = useSelector(selectActiveAccount)
   const currency = useSelector(selectSelectedCurrency)
@@ -144,7 +145,13 @@ export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
   ])
 
   useEffect(() => {
-    if (!isBitcoinBridge || !bridgeConfig || !btcAddress || !utxos) {
+    if (
+      !isBitcoinBridge ||
+      !bridgeConfig ||
+      !btcAddress ||
+      !utxos ||
+      amountInSatoshis === 0
+    ) {
       return
     }
 
@@ -174,7 +181,8 @@ export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
     isBitcoinBridge,
     utxos,
     activeNetwork,
-    feeRate
+    feeRate,
+    amountInBtc
   ])
 
   const transfer = useCallback(async () => {
@@ -187,7 +195,8 @@ export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
       !bridgeConfig ||
       !activeNetwork ||
       !amountInSatoshis ||
-      !feeRate
+      amountInSatoshis === 0 ||
+      !fee
     ) {
       return Promise.reject()
     }
@@ -200,7 +209,7 @@ export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
       btcAddress,
       utxos,
       amountInSatoshis,
-      feeRate
+      fee
     )
 
     const [signedTx, error] = await resolve(
@@ -246,7 +255,7 @@ export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
     activeAccount,
     activeNetwork,
     amountInSatoshis,
-    feeRate,
+    fee,
     currentAsset,
     amountInBtc,
     createBridgeTransaction
@@ -263,12 +272,6 @@ export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
     maximum,
     transfer
   }
-}
-
-const getErrorMessage = (error: unknown): string => {
-  return typeof error === 'object' && error !== null
-    ? error.toString()
-    : 'Unexpected error'
 }
 
 const getIsBitcoinBridge = (

@@ -10,7 +10,6 @@ import { useSeedlessRegister } from 'seedless/hooks/useSeedlessRegister'
 import { MFA } from 'seedless/types'
 import AppleSignInService from 'services/socialSignIn/apple/AppleSignInService'
 import GoogleSigninService from 'services/socialSignIn/google/GoogleSigninService'
-import Logger from 'utils/Logger'
 import { OidcProviders } from 'seedless/consts'
 import { hideOwl, showOwl } from 'components/GlobalOwlLoader'
 import AnalyticsService from 'services/analytics/AnalyticsService'
@@ -24,7 +23,7 @@ const SigninScreen: FC = () => {
   const {
     theme: { colors }
   } = useTheme()
-  const { register, isRegistering } = useSeedlessRegister()
+  const { register, isRegistering, verify } = useSeedlessRegister()
 
   const handleSigninWithMnemonic = (): void => {
     navigate(AppNavigation.Onboard.Welcome, {
@@ -36,24 +35,36 @@ const SigninScreen: FC = () => {
     AnalyticsService.capture('SignInWithRecoveryPhraseClicked')
   }
 
-  const onRegisterMfaMethods = (oidcToken: string, mfaId: string): void => {
-    navigate(AppNavigation.Onboard.RecoveryMethods, {
+  const handleAccountVerified = (): void => {
+    navigate(AppNavigation.Onboard.NameYourWallet)
+  }
+
+  const handleRegisterMfaMethods = (oidcAuth?: {
+    oidcToken: string
+    mfaId: string
+  }): void => {
+    navigate(AppNavigation.Root.RecoveryMethods, {
       screen: AppNavigation.RecoveryMethods.AddRecoveryMethods,
-      oidcToken,
-      mfaId
+      params: {
+        oidcAuth,
+        onAccountVerified: handleAccountVerified,
+        allowsUserToAddLater: true
+      }
     })
   }
 
-  const onVerifyMfaMethod = (
-    oidcToken: string,
-    mfaId: string,
+  const handleVerifyMfaMethod = (
+    oidcAuth: {
+      oidcToken: string
+      mfaId: string
+    },
     mfaMethods: MFA[]
   ): void => {
-    navigate(AppNavigation.Onboard.RecoveryMethods, {
-      screen: AppNavigation.RecoveryMethods.SelectRecoveryMethods,
-      params: { mfaMethods },
-      oidcToken,
-      mfaId
+    navigate(AppNavigation.Root.SelectRecoveryMethods, {
+      mfaMethods,
+      onMFASelected: mfa => {
+        verify(mfa, oidcAuth, handleAccountVerified)
+      }
     })
   }
 
@@ -92,10 +103,10 @@ const SigninScreen: FC = () => {
               register({
                 getOidcToken: GoogleSigninService.signin,
                 oidcProvider: OidcProviders.GOOGLE,
-                onRegisterMfaMethods,
-                onVerifyMfaMethod
-              }).catch(error => {
-                Logger.error('Unable to sign in with Google: ', error)
+                onRegisterMfaMethods: handleRegisterMfaMethods,
+                onVerifyMfaMethod: handleVerifyMfaMethod,
+                onAccountVerified: handleAccountVerified
+              }).catch(() => {
                 showSimpleToast('Unable to sign in with Google')
               })
             }}
@@ -103,10 +114,10 @@ const SigninScreen: FC = () => {
               register({
                 getOidcToken: AppleSignInService.signIn,
                 oidcProvider: OidcProviders.APPLE,
-                onRegisterMfaMethods,
-                onVerifyMfaMethod
-              }).catch(error => {
-                Logger.error('Unable to sign in with Apple: ', error)
+                onRegisterMfaMethods: handleRegisterMfaMethods,
+                onVerifyMfaMethod: handleVerifyMfaMethod,
+                onAccountVerified: handleAccountVerified
+              }).catch(() => {
                 showSimpleToast('Unable to sign in with Apple')
               })
             }}

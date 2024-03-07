@@ -4,6 +4,7 @@ import React, { FC } from 'react'
 const TestnetBanner: FC = () => {
   return (
     <View
+      testID="testnet_banner"
       sx={{
         backgroundColor: '$warningMain',
         paddingVertical: 4,

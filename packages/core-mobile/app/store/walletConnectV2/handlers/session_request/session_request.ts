@@ -44,7 +44,8 @@ const supportedMethods = [
   RpcMethod.PERSONAL_SIGN,
   RpcMethod.ETH_SIGN,
   RpcMethod.WALLET_ADD_ETHEREUM_CHAIN,
-  RpcMethod.WALLET_SWITCH_ETHEREUM_CHAIN
+  RpcMethod.WALLET_SWITCH_ETHEREUM_CHAIN,
+  RpcMethod.WALLET_GET_ETHEREUM_CHAIN
 ]
 
 class SessionRequestHandler implements RpcRequestHandler<SessionProposal> {
@@ -158,8 +159,8 @@ class SessionRequestHandler implements RpcRequestHandler<SessionProposal> {
       return isNetworkSupported(supportedNetworks, Number(chainId))
     })
 
-    // list of chain IDs to approve
-    const chainIds = [...requiredChains, ...optionalChains]
+    // list of unique chain IDs to approve
+    const chainIds = [...new Set([...requiredChains, ...optionalChains])]
       ?.map(chain => chain.split(':')[1])
       ?.filter((chainId): chainId is string => !!chainId)
       ?.map(chainId => Number(chainId))

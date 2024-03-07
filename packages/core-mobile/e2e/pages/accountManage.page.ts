@@ -2,10 +2,24 @@
 import Action from '../helpers/actions'
 import accountManage from '../locators/accountManage.loc'
 import { Platform } from '../helpers/constants'
+import Assert from '../helpers/assertions'
+import actions from '../helpers/actions'
 
 class AccountManagePage {
   get account() {
     return by.text(accountManage.account)
+  }
+
+  get accountDropdownTitle() {
+    return by.id(accountManage.accountDropdownTitle)
+  }
+
+  get editedAccount() {
+    return by.text(accountManage.editedAccount)
+  }
+
+  get carrotSVG() {
+    return by.id(accountManage.carrotSVG)
   }
 
   get addAccountButton() {
@@ -28,10 +42,6 @@ class AccountManagePage {
     return by.text(accountManage.editAccount)
   }
 
-  get newAccountName() {
-    return by.text(accountManage.newAccountName)
-  }
-
   get saveNewAccountName() {
     return by.text(accountManage.saveNewAccountName)
   }
@@ -44,18 +54,52 @@ class AccountManagePage {
     return by.text(accountManage.fourthaccount)
   }
 
+  async tapAccountDropdownTitle() {
+    await Action.tap(this.accountDropdownTitle)
+  }
+
+  async tapFourthAccount() {
+    try {
+      await Assert.isVisible(this.fourthAccount)
+      await Action.tapElementAtIndex(this.fourthAccount, 0)
+    } catch (e) {
+      console.log(e, ' fourth account does not exist, creating one...')
+      await this.createAccount(4)
+      await Action.tapElementAtIndex(this.fourthAccount, 0)
+    }
+  }
+
   async createSecondAccount() {
-    await this.tapAccountMenu()
-    await this.tapAddEditAccounts()
-    await this.tapAddAccountButton()
-    const result = await this.getSecondAvaxAddress()
-    await this.tapAccountMenu()
-    await this.tapDoneButton()
-    return result
+    if (!(await actions.expectToBeVisible(this.secondAccount))) {
+      await this.tapAccountDropdownTitle()
+      await this.tapAddEditAccounts()
+      await this.tapAddAccountButton()
+      const result = await this.getSecondAvaxAddress()
+      await this.tapFirstAccount()
+      await this.tapDoneButton()
+      return result
+    } else {
+      const result = await this.getSecondAvaxAddress()
+      await this.tapFirstAccount()
+      if (Action.platform() === 'ios') {
+        await this.tapCarrotSVG()
+      }
+      return result
+    }
+  }
+
+  async switchToSecondAccount() {
+    await this.tapAccountDropdownTitle()
+    await this.tapSecondAccount()
+  }
+
+  async switchToFirstAccount() {
+    await this.tapAccountDropdownTitle()
+    await this.tapFirstAccount()
   }
 
   async createAccount(accountNumber: number) {
-    await this.tapAccountMenu()
+    await this.tapAccountDropdownTitle()
     await this.tapAddEditAccounts()
     for (let i = 0; i < accountNumber - 1; i++) {
       await this.tapAddAccountButton()
@@ -65,9 +109,11 @@ class AccountManagePage {
 
   async getFirstAvaxAddress() {
     const result: any = await Action.getAttributes(this.avaxAddress, 0)
-    return Action.platform() === Platform.Android
-      ? result.text.toLowerCase()
-      : result.elements[0].text.toLowerCase()
+    if (Action.platform() === 'android') {
+      return result.text.toLowerCase()
+    } else {
+      return result.elements[0].text.toLowerCase()
+    }
   }
 
   async getSecondAvaxAddress() {
@@ -78,7 +124,18 @@ class AccountManagePage {
   }
 
   async setNewAccountName() {
-    await Action.setInputText(this.account, accountManage.newAccountName, 0)
+    try {
+      await Assert.isVisible(this.account)
+      await Action.setInputText(this.account, 'AvaxWallet', 0)
+      return 'AvaxWallet'
+    } catch (e) {
+      await Action.setInputText(this.editedAccount, 'testWallet1', 0)
+      return 'testWallet1'
+    }
+  }
+
+  async assertAccountName(walletName: string) {
+    await Assert.isVisible(by.text(walletName))
   }
 
   async tapAddAccountButton() {
@@ -110,11 +167,47 @@ class AccountManagePage {
   }
 
   async tapFirstAccount() {
-    await Action.tapElementAtIndex(this.account, 0)
+    try {
+      await Action.tapElementAtIndex(this.account, 0)
+      console.log('Account name is testWallet1')
+    } catch (e) {
+      console.log('Account name is not testWallet1')
+      await Action.tapElementAtIndex(this.editedAccount, 0)
+    }
   }
 
   async tapSecondAccount() {
+    await Action.waitForElement(this.secondAccount, 10000, 0)
     await Action.tapElementAtIndex(this.secondAccount, 0)
+  }
+
+  async tapSecondAccountMenu() {
+    await Action.tapElementAtIndex(this.secondAccount, 0)
+  }
+
+  async tapCarrotSVG() {
+    if (Action.platform() === 'android') {
+      try {
+        await this.tapFirstAccount()
+      } catch (e) {
+        await this.tap2ndAccountMenu()
+      }
+    } else {
+      await Action.tapElementAtIndex(this.carrotSVG, 0)
+    }
+  }
+
+  async checkAccountNameIsCorrect() {
+    try {
+      await Assert.isVisible(this.account)
+    } catch (e) {
+      try {
+        await Assert.isVisible(this.editedAccount)
+      } catch (error) {
+        await this.tapAccountDropdownTitle()
+        await this.tapFirstAccount()
+      }
+    }
   }
 }
 

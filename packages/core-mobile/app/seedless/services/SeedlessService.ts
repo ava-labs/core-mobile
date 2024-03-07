@@ -11,7 +11,7 @@ class SeedlessService {
   // enabling users to approve or deny login attempts using MFA. Therefore, specifying only sign:* allows users
   // to proceed with signing up or signing in through MFA verification.
   sessionManager = new SeedlessSessionManager({
-    scopes: ['sign:*'],
+    scopes: ['sign:*', 'manage:mfa'],
     sessionStorage: new SeedlessSessionStorage()
   })
 

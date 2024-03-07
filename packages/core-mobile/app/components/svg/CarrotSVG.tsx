@@ -7,6 +7,7 @@ interface Prop {
   color?: string
   size?: number
   direction?: 'up' | 'down' | 'left' //default is `right`
+  testID?: string
 }
 
 function CarrotSVG({ color, size = 14, direction }: Prop) {

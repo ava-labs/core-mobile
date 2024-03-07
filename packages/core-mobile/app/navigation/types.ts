@@ -36,6 +36,11 @@ import { RefreshTokenScreenStackParamList } from 'navigation/RefreshTokenScreenS
 import { BrowserStackParamList } from 'navigation/wallet/BrowserScreenStack'
 import { Eip1559Fees } from 'utils/Utils'
 import { NetworkTokenUnit } from 'types'
+import { WalletGetEthereumChainRpcRequest } from 'store/walletConnectV2/handlers/chain/wallet_getEthereumChain/wallet_getEthereumChain'
+import {
+  AvalancheSetDeveloperModeApproveData,
+  AvalancheSetDeveloperModeRpcRequest
+} from '../store/walletConnectV2/handlers/avalanche_setDeveloperMode/types'
 import { RootScreenStackParamList } from './RootScreenStack'
 import { OnboardingScreenStackParamList } from './OnboardScreenStack'
 import { WelcomeScreenStackParamList } from './onboarding/WelcomeScreenStack'
@@ -56,6 +61,7 @@ import { PortfolioStackParamList } from './wallet/PortfolioScreenStack'
 import { StakeSetupStackParamList } from './wallet/EarnScreenStack/StakeSetupScreenStack'
 import { RecoveryMethodsStackParamList } from './onboarding/RecoveryMethodsStack'
 import { SeedlessExportStackParamList } from './wallet/SeedlessExportStack'
+import { SettingRecoveryMethodsStackParamList } from './wallet/SettingRecoveryMethodsStack'
 
 export type { RootScreenStackParamList }
 
@@ -117,6 +123,11 @@ export type AvalancheSignTransactionV2Params = {
   data: AvalancheSignTransactionApproveDataV2
 }
 
+export type AvalancheSetDeveloperModeParams = {
+  request: AvalancheSetDeveloperModeRpcRequest
+  data: AvalancheSetDeveloperModeApproveData
+}
+
 export type SignMessageV2Params = {
   request: EthSignRpcRequestV2
   network: Network
@@ -139,6 +150,11 @@ export type AddEthereumChainV2Params = {
 
 export type SwitchEthereumChainV2Params = {
   request: WalletSwitchEthereumChainRpcRequestV2
+  network: Network
+}
+
+export type GetEthereumChainParams = {
+  request: WalletGetEthereumChainRpcRequest
   network: Network
 }
 
@@ -193,7 +209,7 @@ export type RecoveryMethodsScreenProps<
   T extends keyof RecoveryMethodsStackParamList
 > = CompositeScreenProps<
   StackScreenProps<RecoveryMethodsStackParamList, T>,
-  OnboardScreenProps<keyof OnboardingScreenStackParamList>
+  RootStackScreenProps<keyof RootScreenStackParamList>
 >
 
 /** ROOT -> WALLET **/
@@ -315,3 +331,11 @@ export type BrowserScreenProps<T extends keyof BrowserStackParamList> =
     StackScreenProps<BrowserStackParamList, T>,
     WalletScreenProps<keyof WalletScreenStackParams>
   >
+
+/** ROOT -> WALLET -> SECURITY PRIVACY -> RECOVERY METHODS **/
+export type SettingRecoveryMethodsScreenProps<
+  T extends keyof SettingRecoveryMethodsStackParamList
+> = CompositeScreenProps<
+  StackScreenProps<SettingRecoveryMethodsStackParamList, T>,
+  SecurityPrivacyScreenProps<keyof SecurityStackParamList>
+>

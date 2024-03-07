@@ -29,6 +29,7 @@ import { Animated } from 'react-native'
 import TabsListScreen from 'screens/browser/TabsListScreen'
 import { AreYouSureModal } from 'screens/browser/AreYouSureModal'
 import AnalyticsConsentSheet from 'screens/mainView/AnalyticsConsentSheet'
+import { AvalancheSetDeveloperMode } from 'screens/rpc/components/v2/AvalancheSetDeveloperMode'
 import { SignOutModalScreen, WalletScreenSType } from './WalletScreenStack'
 
 export const createModals = (WalletScreenS: WalletScreenSType): JSX.Element => {
@@ -79,6 +80,10 @@ export const createModals = (WalletScreenS: WalletScreenSType): JSX.Element => {
       <WalletScreenS.Screen
         name={AppNavigation.Modal.AvalancheSignTransactionV2}
         component={AvalancheSendTransactionV2}
+      />
+      <WalletScreenS.Screen
+        name={AppNavigation.Modal.AvalancheSetDeveloperMode}
+        component={AvalancheSetDeveloperMode}
       />
       <WalletScreenS.Group
         screenOptions={{
