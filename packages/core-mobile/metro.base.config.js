@@ -1,12 +1,15 @@
 const { getDefaultConfig } = require('metro-config')
+const { createSentryMetroSerializer } = require('@sentry/react-native/metro')
 
-// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 const getBaseConfig = async () => {
   const {
     resolver: { sourceExts, assetExts }
   } = await getDefaultConfig()
 
   return {
+    serializer: {
+      customSerializer: createSentryMetroSerializer()
+    },
     resolver: {
       extraNodeModules: {
         // this is for any modules that use require('crypto')
