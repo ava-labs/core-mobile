@@ -110,7 +110,7 @@ export class MnemonicWallet implements Wallet {
       case NetworkVMType.PVM:
         if (!(provider instanceof Avalanche.JsonRpcProvider)) {
           throw new Error(
-            `Unable to get signer: wrong provider obtained for network ${NetworkVMType.PVM}`
+            `Unable to get signer: wrong provider obtained for network ${network.vmName}`
           )
         }
         return this.getAvaSigner(accountIndex, provider)

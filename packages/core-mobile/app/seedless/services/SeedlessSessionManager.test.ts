@@ -2,6 +2,7 @@ import assert from 'assert'
 import {
   CubeSignerApi,
   CubeSignerResponse,
+  OidcClient,
   SignerSession,
   TotpChallenge
 } from '@cubist-labs/cubesigner-sdk'
@@ -132,6 +133,18 @@ describe('SeedlessSessionManager', () => {
       )
       expect(mockAnswer).toHaveBeenCalledWith(VALID_MFA_CODE)
       assert(result.success)
+    })
+  })
+
+  it('should return identity proof', async () => {
+    jest.spyOn(OidcClient.prototype, 'identityProve').mockResolvedValueOnce({
+      exp_epoch: 0,
+      id: 'test'
+    })
+    const result = await seedlessSessionManager.oidcProveIdentity('oidcToken')
+    expect(result).toEqual({
+      exp_epoch: 0,
+      id: 'test'
     })
   })
 })
