@@ -29,7 +29,6 @@ workflows:
         inputs:
         - project_location: $ANDROID_PROJECT_LOCATION
         - module: $ANDROID_MODULE
-        - arguments: :app:assembleInternalE2eAndroidTest
         - build_type: aab
         - cache_level: all
         - variant: $ANDROID_BUILD_VARIANT
