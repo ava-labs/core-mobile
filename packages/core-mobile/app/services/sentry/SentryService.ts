@@ -2,8 +2,14 @@ import Config from 'react-native-config'
 import * as Sentry from '@sentry/react-native'
 import { DefaultSampleRate } from 'services/sentry/SentryWrapper'
 import { scrub } from 'utils/data/scrubber'
+import DevDebuggingConfig from 'utils/debugging/DevDebuggingConfig'
 
-const isAvailable = Config.SENTRY_DSN !== undefined && !__DEV__
+if (Config.SENTRY_DSN === undefined)
+  throw new Error('SENTRY_DSN is not defined')
+
+// if development then only enable if spotlight is enabled
+// otherwise enable if not development
+const isAvailable = (__DEV__ && DevDebuggingConfig.SENTRY_SPOTLIGHT) || !__DEV__
 
 const init = (): void => {
   if (isAvailable) {
@@ -11,6 +17,7 @@ const init = (): void => {
       dsn: Config.SENTRY_DSN,
       environment: Config.ENVIRONMENT,
       debug: false,
+      enableSpotlight: DevDebuggingConfig.SENTRY_SPOTLIGHT,
       beforeSend: event => {
         /**
          * eliminating breadcrumbs. This should eliminate
