@@ -77,7 +77,7 @@ const getBaseConfig = async () => {
        * 1. react native metro bundler uses uglify-es, which doesn't support bigint syntax (0n, 1n,...)
        * 2. metro-minify-esbuild is ~46x faster
        */
-      minifierPath: require.resolve('metro-minify-esbuild'),
+      minifierPath: require.resolve('metro-minify-terser'),
       minifierConfig: {},
       babelTransformerPath: require.resolve('react-native-svg-transformer')
     }
