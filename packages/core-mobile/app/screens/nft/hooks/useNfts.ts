@@ -1,15 +1,15 @@
 import { useSelector } from 'react-redux'
 import { selectActiveNetwork } from 'store/network'
 import { selectActiveAccount } from 'store/account'
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
+import { useInfiniteQuery } from '@tanstack/react-query'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import NftService from 'services/nft/NftService'
 import Logger from 'utils/Logger'
 import { useCallback, useEffect, useMemo } from 'react'
 import NftProcessor from 'services/nft/NftProcessor'
-import { NFTItemData, NftPageParam } from '../../../store/nft/types'
+import { NftPageParam } from '../../../store/nft/types'
 
-// a hook to get NFTs with pagination support for the current active network & account & currency
+// a hook to get NFTs with pagination support for the current active network & account
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export const useNfts = () => {
   const network = useSelector(selectActiveNetwork)
@@ -76,49 +76,4 @@ export const useNfts = () => {
     ...query,
     nfts
   }
-}
-
-export const useNft = (
-  chainId: number,
-  address: string,
-  tokenId: string
-): { nft: NFTItemData | undefined } => {
-  const fetchNft = useCallback(async () => {
-    const t = SentryWrapper.startTransaction('get-nfts')
-    try {
-      return await NftService.fetchNft({
-        chainId: chainId,
-        address: address,
-        tokenId: tokenId
-      })
-    } catch (err) {
-      Logger.error(`failed to get nfts for chain ${chainId}`, err)
-      return undefined
-    } finally {
-      SentryWrapper.finish(t)
-    }
-  }, [chainId, address, tokenId])
-
-  const query = useQuery({
-    queryKey: [
-      'nft',
-      {
-        chainId: chainId,
-        address: address,
-        tokenId
-      }
-    ],
-    retry: false,
-    queryFn: fetchNft
-  })
-
-  const nft = query.data
-
-  useEffect(() => {
-    if (nft) {
-      NftProcessor.process([nft], true)
-    }
-  }, [nft])
-
-  return { nft }
 }

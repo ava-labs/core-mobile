@@ -145,5 +145,9 @@ export const migrations = {
         }
       }
     }
+  },
+  11: async (state: any) => {
+    delete state.nfts
+    return state
   }
 }

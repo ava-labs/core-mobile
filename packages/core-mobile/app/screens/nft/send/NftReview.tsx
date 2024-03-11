@@ -22,10 +22,8 @@ import { Row } from 'components/Row'
 import PoppableGasAndLimit from 'components/PoppableGasAndLimit'
 import { Tooltip } from 'components/Tooltip'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import {
-  useGetNftImageData,
-  useGetNftMetadata
-} from 'screens/nft/hooks/useGetNftMetadata'
+import { useGetNftImageData } from '../hooks/useGetNftImageData'
+import { useGetNftMetadata } from '../hooks/useGetNftMetadata'
 
 type NavigationProp = NFTDetailsSendScreenProps<
   typeof AppNavigation.NftSend.Review

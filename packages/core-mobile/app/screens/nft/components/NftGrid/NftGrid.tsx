@@ -3,11 +3,9 @@ import { FlatList, StyleSheet } from 'react-native'
 import ZeroState from 'components/ZeroState'
 import { NFTImageData, NFTItemData, NFTMetadata } from 'store/nft'
 import { RefreshControl } from 'components/RefreshControl'
-import {
-  useGetNftImageData,
-  useGetNftMetadata
-} from 'screens/nft/hooks/useGetNftMetadata'
 import { View } from '@avalabs/k2-mobile'
+import { useGetNftImageData } from 'screens/nft/hooks/useGetNftImageData'
+import { useGetNftMetadata } from 'screens/nft/hooks/useGetNftMetadata'
 import { FetchingNextIndicator } from '../FetchingNextIndicator'
 import { GridItem } from './GridItem'
 import { NftGridLoader } from './NftGridLoader'

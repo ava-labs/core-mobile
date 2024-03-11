@@ -24,10 +24,8 @@ import { AddrBookItemType, Contact } from 'store/addressBook'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { Eip1559Fees } from 'utils/Utils'
 import { NetworkTokenUnit } from 'types'
-import {
-  useGetNftImageData,
-  useGetNftMetadata
-} from 'screens/nft/hooks/useGetNftMetadata'
+import { useGetNftImageData } from '../hooks/useGetNftImageData'
+import { useGetNftMetadata } from '../hooks/useGetNftMetadata'
 
 export type NftSendScreenProps = {
   onNext: () => void

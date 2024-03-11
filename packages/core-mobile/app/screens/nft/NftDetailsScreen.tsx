@@ -26,12 +26,10 @@ import Loader from 'components/Loader'
 import { SnackBarMessage } from 'seedless/components/SnackBarMessage'
 import { Tooltip } from 'components/Tooltip'
 import NftProcessor from 'services/nft/NftProcessor'
-import {
-  useGetNftImageData,
-  useGetNftMetadata
-} from 'screens/nft/hooks/useGetNftMetadata'
 import FastImage from 'react-native-fast-image'
-import { useNft } from 'screens/nft/hooks/useNfts'
+import { useGetNftImageData } from './hooks/useGetNftImageData'
+import { useGetNftMetadata } from './hooks/useGetNftMetadata'
+import { useNft } from './hooks/useNft'
 
 type NftDetailsScreenProps = NFTDetailsScreenProps<
   typeof AppNavigation.Nft.Details
