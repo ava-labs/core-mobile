@@ -69,7 +69,7 @@ const handleTokenExpired = async (
   })
 }
 
-const handleSetAccountName = async ({
+const handleSetAccountTitle = async ({
   accountIndex,
   name,
   walletType = WalletType.UNSET
@@ -167,7 +167,7 @@ export const addSeedlessListeners = (
   startListening({
     actionCreator: setAccountTitle,
     effect: async action => {
-      handleSetAccountName({
+      handleSetAccountTitle({
         accountIndex: action.payload.accountIndex,
         name: action.payload.title,
         walletType: action.payload.walletType
