@@ -104,25 +104,25 @@ describe('SeedlessService', () => {
     expect(keysList).toEqual(MOCK_SESSION_KEYS_LIST[0])
   })
 
-  describe('getNameforDerivedPath', () => {
+  describe('getAccountName', () => {
     it('should have returned account name for the primary signing key', async () => {
-      const keysList = await SeedlessService.getNameforDerivedPath(0)
+      const keysList = await SeedlessService.getAccountName(0)
       expect(keysList).toEqual(
         MOCK_SESSION_KEYS_LIST[1]?.metadata?.account_name
       )
     })
     it('should have returned undefined if metadata does not exist', async () => {
-      const keysList = await SeedlessService.getNameforDerivedPath(1)
+      const keysList = await SeedlessService.getAccountName(1)
       expect(keysList).toBeUndefined()
     })
     it('should have returned undefined if metadata is typeof string', async () => {
-      const keysList = await SeedlessService.getNameforDerivedPath(2)
+      const keysList = await SeedlessService.getAccountName(2)
       expect(keysList).toBeUndefined()
     })
     it('should have thrown if key type SecpAvaAddr does not exist', async () => {
       mockSessionKeysList.mockRejectedValueOnce(new Error('rejected'))
       try {
-        await SeedlessService.getNameforDerivedPath(0)
+        await SeedlessService.getAccountName(0)
       } catch (error) {
         expect((error as Error).message).toBe(
           `Failed to get name for the account index, ${error}`
@@ -131,15 +131,15 @@ describe('SeedlessService', () => {
     })
   })
 
-  describe('setNameForDerivedPath', () => {
+  describe('setAcountName', () => {
     it('should have set account name correctly', async () => {
-      await SeedlessService.setNameForDerivedPath('test', 0)
+      await SeedlessService.setAcountName('test', 0)
       expect(mockSetMetadataProperty).toHaveBeenCalledWith(ACCOUNT_NAME, 'test')
     })
     it('should have thrown if key type SecpAvaAddr does not exist', async () => {
       mockSessionKeysList.mockRejectedValueOnce(new Error('rejected'))
       try {
-        await SeedlessService.setNameForDerivedPath('test', 0)
+        await SeedlessService.setAcountName('test', 0)
       } catch (error) {
         expect((error as Error).message).toBe(
           `Failed to set metadata, ${error}`
@@ -148,7 +148,7 @@ describe('SeedlessService', () => {
     })
     it('should have thrown if key info does not exist in account index', async () => {
       try {
-        await SeedlessService.setNameForDerivedPath('test', 100)
+        await SeedlessService.setAcountName('test', 100)
       } catch (error) {
         expect((error as Error).message).toBe(
           `Failed to set metadata, ${error}`

@@ -13,7 +13,7 @@ class AccountsService {
     for (const index of Object.keys(accounts)) {
       const key = parseInt(index)
       const addresses = await WalletService.getAddresses(key, isTestnet)
-      const title = await SeedlessService.getNameforDerivedPath(key)
+      const title = await SeedlessService.getAccountName(key)
 
       const account = accounts[key]
       if (account) {

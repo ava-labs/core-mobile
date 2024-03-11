@@ -13,7 +13,7 @@ import { NameYourWallet } from 'seedless/screens/NameYourWallet'
 import EnterWithMnemonicStack from 'navigation/onboarding/EnterWithMnemonicStack'
 import { isPinRecovery, setPinRecovery } from 'utils/Navigation'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { setWalletName } from 'store/account'
+import { setAccountTitle } from 'store/account'
 import { WalletType } from 'services/wallet/types'
 import SignupScreen from './onboarding/SignupScreen'
 import { WelcomeScreenStackParamList } from './onboarding/WelcomeScreenStack'
@@ -104,7 +104,13 @@ const NameYourWalletScreen = (): JSX.Element => {
 
   const onSetWalletName = (name: string): void => {
     AnalyticsService.capture('Onboard:WalletNameSet')
-    dispatch(setWalletName({ name, walletType: WalletType.SEEDLESS }))
+    dispatch(
+      setAccountTitle({
+        title: name,
+        walletType: WalletType.SEEDLESS,
+        accountIndex: 0
+      })
+    )
     navigate(AppNavigation.Root.Onboard, {
       screen: AppNavigation.Onboard.Welcome,
       params: {

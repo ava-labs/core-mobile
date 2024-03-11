@@ -43,7 +43,7 @@ const initAccounts = async (
 
     for (let i = 0; i < pubKeys.length; i++) {
       const acc = await accountService.createNextAccount(isDeveloperMode, i)
-      const title = await SeedlessService.getNameforDerivedPath(i)
+      const title = await SeedlessService.getAccountName(i)
       const accountTitle = title ?? acc.title
       listenerApi.dispatch(setAccount({ ...acc, title: accountTitle }))
 

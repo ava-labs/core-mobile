@@ -47,10 +47,10 @@ class SeedlessService {
    * @param accountIndex - The account index to get the account name for
    * @returns The acount name of the key
    */
-  async getNameforDerivedPath(accountIndex = 0): Promise<string | undefined> {
+  async getAccountName(accountIndex = 0): Promise<string | undefined> {
     try {
       const keys = await this.getSessionKeysList(Secp256k1.Ava)
-      const metadata = this.getMetadataFromKeys(keys, accountIndex)?.metadata
+      const metadata = this.getKeyInfo(keys, accountIndex)?.metadata
       return this.getAccountNameInMetadata(metadata)
     } catch (error) {
       Logger.warn('Failed to get name for the account index', error)
@@ -62,13 +62,10 @@ class SeedlessService {
    * @param name - The name to set for the key.
    * @param accountIndex - The account index to set the name for
    */
-  async setNameForDerivedPath(
-    name: string,
-    accountIndex: number
-  ): Promise<void> {
+  async setAcountName(name: string, accountIndex: number): Promise<void> {
     try {
       const keys = await this.getSessionKeysList(Secp256k1.Ava)
-      const keyInfo = this.getMetadataFromKeys(keys, accountIndex)
+      const keyInfo = this.getKeyInfo(keys, accountIndex)
       if (keyInfo === undefined) {
         throw Error()
       }
@@ -80,7 +77,7 @@ class SeedlessService {
     }
   }
 
-  private getMetadataFromKeys = (
+  private getKeyInfo = (
     keys: KeyInfoApi[],
     accountIndex: number
   ): KeyInfoApi | undefined => {
