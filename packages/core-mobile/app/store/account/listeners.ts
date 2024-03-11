@@ -11,6 +11,7 @@ import { onLogIn, selectWalletType } from 'store/app/slice'
 import { WalletType } from 'services/wallet/types'
 import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKeysStorage'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import SeedlessService from 'seedless/services/SeedlessService'
 import {
   selectAccounts,
   selectWalletName,
@@ -42,10 +43,8 @@ const initAccounts = async (
 
     for (let i = 0; i < pubKeys.length; i++) {
       const acc = await accountService.createNextAccount(isDeveloperMode, i)
-      const accountTitle =
-        acc.index === 0 && walletName && walletName.length > 0
-          ? walletName
-          : acc.title
+      const title = await SeedlessService.getAccountName(i)
+      const accountTitle = title ?? acc.title
       listenerApi.dispatch(setAccount({ ...acc, title: accountTitle }))
 
       accounts.push(acc)
