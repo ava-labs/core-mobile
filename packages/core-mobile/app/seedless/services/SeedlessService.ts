@@ -50,33 +50,11 @@ class SeedlessService {
   async getNameforDerivedPath(accountIndex = 0): Promise<string | undefined> {
     try {
       const keys = await this.getSessionKeysList(Secp256k1.Ava)
-      const metadata = await this.getMetadataFromKeys(keys, accountIndex)
-        ?.metadata
-
-      if (
-        metadata !== null &&
-        metadata !== undefined &&
-        typeof metadata === 'object' &&
-        ACCOUNT_NAME in metadata &&
-        typeof metadata.account_name === 'string'
-      ) {
-        return metadata[ACCOUNT_NAME]
-      }
-      return undefined
+      const metadata = this.getMetadataFromKeys(keys, accountIndex)?.metadata
+      return this.getAccountNameInMetadata(metadata)
     } catch (error) {
       Logger.warn('Failed to get name for the account index', error)
     }
-  }
-
-  getMetadataFromKeys = (
-    keys: KeyInfoApi[],
-    accountIndex: number
-  ): KeyInfoApi | undefined => {
-    return keys.find(
-      k =>
-        Number(k.derivation_info?.derivation_path.split('/').pop()) ===
-        accountIndex
-    )
   }
 
   /**
@@ -100,6 +78,32 @@ class SeedlessService {
       // if this throws, we shouldn't block the user from using the app
       Logger.warn(`Failed to set metadata`, error)
     }
+  }
+
+  private getMetadataFromKeys = (
+    keys: KeyInfoApi[],
+    accountIndex: number
+  ): KeyInfoApi | undefined => {
+    return keys.find(
+      k =>
+        Number(k.derivation_info?.derivation_path.split('/').pop()) ===
+        accountIndex
+    )
+  }
+
+  private getAccountNameInMetadata = (
+    metadata: unknown
+  ): string | undefined => {
+    if (
+      metadata !== null &&
+      metadata !== undefined &&
+      typeof metadata === 'object' &&
+      ACCOUNT_NAME in metadata &&
+      typeof metadata.account_name === 'string'
+    ) {
+      return metadata.account_name
+    }
+    return undefined
   }
 }
 
