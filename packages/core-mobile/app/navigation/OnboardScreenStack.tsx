@@ -6,13 +6,15 @@ import { createStackNavigator } from '@react-navigation/stack'
 import { NavigatorScreenParams, useNavigation } from '@react-navigation/native'
 import { useDeeplink } from 'contexts/DeeplinkContext/DeeplinkContext'
 import { selectIsLocked, selectWalletState, WalletState } from 'store/app'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { showSnackBarCustom } from 'components/Snackbar'
 import GeneralToast from 'components/toast/GeneralToast'
 import { NameYourWallet } from 'seedless/screens/NameYourWallet'
 import EnterWithMnemonicStack from 'navigation/onboarding/EnterWithMnemonicStack'
 import { isPinRecovery, setPinRecovery } from 'utils/Navigation'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import { setAccountTitle } from 'store/account'
+import { WalletType } from 'services/wallet/types'
 import SignupScreen from './onboarding/SignupScreen'
 import { WelcomeScreenStackParamList } from './onboarding/WelcomeScreenStack'
 import { OnboardScreenProps } from './types'
@@ -97,10 +99,18 @@ type NameYourWalletNavigationProp = OnboardScreenProps<
 >['navigation']
 
 const NameYourWalletScreen = (): JSX.Element => {
+  const dispatch = useDispatch()
   const { navigate } = useNavigation<NameYourWalletNavigationProp>()
 
-  const onSetWalletName = (): void => {
+  const onSetWalletName = (name: string): void => {
     AnalyticsService.capture('Onboard:WalletNameSet')
+    dispatch(
+      setAccountTitle({
+        title: name,
+        walletType: WalletType.SEEDLESS,
+        accountIndex: 0
+      })
+    )
     navigate(AppNavigation.Root.Onboard, {
       screen: AppNavigation.Onboard.Welcome,
       params: {

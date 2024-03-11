@@ -1,15 +1,15 @@
 import React from 'react'
 import AccountView from 'screens/portfolio/account/AccountView'
 import { useNavigation } from '@react-navigation/native'
-import { BottomSheet } from 'components/BottomSheet'
+import { Sheet } from 'components/Sheet'
 
 function AccountBottomSheet(): JSX.Element {
   const { goBack } = useNavigation()
 
   return (
-    <BottomSheet>
+    <Sheet>
       <AccountView onDone={() => goBack()} />
-    </BottomSheet>
+    </Sheet>
   )
 }
 

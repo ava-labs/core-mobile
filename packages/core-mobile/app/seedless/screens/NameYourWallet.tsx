@@ -3,17 +3,13 @@ import { useFocusEffect } from '@react-navigation/native'
 import InputText from 'components/InputText'
 import React, { useCallback, useRef, useState } from 'react'
 import { TextInput } from 'react-native'
-import { useDispatch } from 'react-redux'
-import AnalyticsService from 'services/analytics/AnalyticsService'
-import { setWalletName } from 'store/account'
 
 export const NameYourWallet = ({
   onSetWalletName
 }: {
-  onSetWalletName: () => void
+  onSetWalletName: (name: string) => void
 }): JSX.Element => {
   const textInputRef = useRef<TextInput>(null)
-  const dispatch = useDispatch()
   const [name, setName] = useState('')
   const {
     theme: { colors }
@@ -25,9 +21,7 @@ export const NameYourWallet = ({
 
   const handleSubmit = (): void => {
     const trimmed = name.trim()
-    dispatch(setWalletName({ name: trimmed }))
-    onSetWalletName()
-    AnalyticsService.capture('WalletNameAdded')
+    onSetWalletName(trimmed)
   }
 
   const shouldShowLongText = textWidth >= containerWidth
