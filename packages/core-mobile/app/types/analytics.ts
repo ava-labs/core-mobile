@@ -168,7 +168,6 @@ export type AnalyticsEvents = {
     optionalNamespaces?: string
     dappUrl: string
   }
-  WalletNameAdded: undefined
 
   // CP-7638 - DeFi aggregator
   DeFiAggregatorsCount: { count: number }
