@@ -12,7 +12,6 @@ import { WalletType } from 'services/wallet/types'
 import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKeysStorage'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import SeedlessService from 'seedless/services/SeedlessService'
-import { Secp256k1 } from '@cubist-labs/cubesigner-sdk'
 import {
   selectAccounts,
   selectWalletName,
