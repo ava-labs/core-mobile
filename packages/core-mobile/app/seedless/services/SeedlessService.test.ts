@@ -1,6 +1,6 @@
 // @ts-nocheck
 import SeedlessService from 'seedless/services/SeedlessService'
-import { ACCOUNT_NAME } from './consts'
+import { ACCOUNT_NAME } from 'seedless/consts'
 
 const MOCK_SESSION_KEYS_LIST = [
   {

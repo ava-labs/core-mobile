@@ -1,8 +1,8 @@
 import { KeyInfoApi, KeyType, Secp256k1 } from '@cubist-labs/cubesigner-sdk'
 import Logger from 'utils/Logger'
+import { ACCOUNT_NAME } from '../consts'
 import { SeedlessSessionStorage } from './storage/SeedlessSessionStorage'
 import SeedlessSessionManager from './SeedlessSessionManager'
-import { ACCOUNT_NAME } from './consts'
 
 // AVAX_ACCOUNT_EXT_PUB_KEY_DERIV_PATH
 /**
