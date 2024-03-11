@@ -41,16 +41,10 @@ const initAccounts = async (
      */
     const pubKeysStorage = new SeedlessPubKeysStorage()
     const pubKeys = await pubKeysStorage.retrieve()
-    const seedlessKeyInfoList = await SeedlessService.getSessionKeysList(
-      Secp256k1.Ava
-    )
 
     for (let i = 0; i < pubKeys.length; i++) {
       const acc = await accountService.createNextAccount(isDeveloperMode, i)
-      const title = SeedlessService.getMetadataFromKeys(
-        seedlessKeyInfoList,
-        i
-      )?.metadata
+      const title = await SeedlessService.getNameforDerivedPath(i)
       const accountTitle = title ?? acc.title
       listenerApi.dispatch(setAccount({ ...acc, title: accountTitle }))
 

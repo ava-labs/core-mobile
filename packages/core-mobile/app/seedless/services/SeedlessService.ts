@@ -2,6 +2,7 @@ import { KeyInfoApi, KeyType, Secp256k1 } from '@cubist-labs/cubesigner-sdk'
 import Logger from 'utils/Logger'
 import { SeedlessSessionStorage } from './storage/SeedlessSessionStorage'
 import SeedlessSessionManager from './SeedlessSessionManager'
+import { ACCOUNT_NAME } from './consts'
 
 // AVAX_ACCOUNT_EXT_PUB_KEY_DERIV_PATH
 /**
@@ -13,7 +14,12 @@ class SeedlessService {
   // enabling users to approve or deny login attempts using MFA. Therefore, specifying only sign:* allows users
   // to proceed with signing up or signing in through MFA verification.
   sessionManager = new SeedlessSessionManager({
-    scopes: ['sign:*', 'manage:mfa', 'manage:key:update:metadata'],
+    scopes: [
+      'sign:*',
+      'manage:mfa',
+      'manage:key:update:metadata',
+      'manage:key:get'
+    ],
     sessionStorage: new SeedlessSessionStorage()
   })
 
@@ -37,14 +43,26 @@ class SeedlessService {
   }
 
   /**
-   * Returns the names for the primary signing key (avax).
-   * @param accountIndex - The account index to get the name for
-   * @returns The name of the key
+   * Returns the account name for the primary signing key (Secp256k1.Ava).
+   * @param accountIndex - The account index to get the account name for
+   * @returns The acount name of the key
    */
   async getNameforDerivedPath(accountIndex = 0): Promise<string | undefined> {
     try {
       const keys = await this.getSessionKeysList(Secp256k1.Ava)
-      return this.getMetadataFromKeys(keys, accountIndex)?.metadata
+      const metadata = await this.getMetadataFromKeys(keys, accountIndex)
+        ?.metadata
+
+      if (
+        metadata !== null &&
+        metadata !== undefined &&
+        typeof metadata === 'object' &&
+        ACCOUNT_NAME in metadata &&
+        typeof metadata.account_name === 'string'
+      ) {
+        return metadata[ACCOUNT_NAME]
+      }
+      return undefined
     } catch (error) {
       Logger.warn('Failed to get name for the account index', error)
     }
@@ -77,7 +95,7 @@ class SeedlessService {
         throw Error()
       }
       const key = await this.sessionManager.getKey(keyInfo)
-      key.setMetadata(name)
+      key.setMetadataProperty(ACCOUNT_NAME, name)
     } catch (error) {
       // if this throws, we shouldn't block the user from using the app
       Logger.warn(`Failed to set metadata`, error)

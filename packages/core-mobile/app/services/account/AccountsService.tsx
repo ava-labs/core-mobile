@@ -10,15 +10,10 @@ class AccountsService {
   ): Promise<AccountCollection> {
     const reloadedAccounts: AccountCollection = {}
 
-    const seedlessKeyInfoList = await WalletService.getKeyInfoList()
-
     for (const index of Object.keys(accounts)) {
       const key = parseInt(index)
       const addresses = await WalletService.getAddresses(key, isTestnet)
-      const title = SeedlessService.getMetadataFromKeys(
-        seedlessKeyInfoList,
-        key
-      )?.metadata
+      const title = await SeedlessService.getNameforDerivedPath(key)
 
       const account = accounts[key]
       if (account) {
