@@ -70,6 +70,10 @@ class SeedlessService {
         throw Error()
       }
       const key = await this.sessionManager.getKey(keyInfo)
+      // we don't await this because we don't want to block the user from using the app,
+      // this request can take a bit of time
+      // and in the case of metadata is updated concurrently in extension,
+      // this request will retry a couple of times
       key.setMetadataProperty(ACCOUNT_NAME, name)
     } catch (error) {
       // if this throws, we shouldn't block the user from using the app
