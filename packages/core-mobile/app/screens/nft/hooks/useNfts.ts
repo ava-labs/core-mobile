@@ -6,7 +6,7 @@ import SentryWrapper from 'services/sentry/SentryWrapper'
 import NftService from 'services/nft/NftService'
 import Logger from 'utils/Logger'
 import { useCallback, useEffect, useMemo } from 'react'
-import NftProcessor from 'services/nft/NftProcessor'
+import { useNftMetadataContext } from 'contexts/NFTMetadataContext'
 import { NftPageParam } from '../../../store/nft/types'
 
 // a hook to get NFTs with pagination support for the current active network & account
@@ -14,6 +14,7 @@ import { NftPageParam } from '../../../store/nft/types'
 export const useNfts = () => {
   const network = useSelector(selectActiveNetwork)
   const account = useSelector(selectActiveAccount)
+  const { process } = useNftMetadataContext()
 
   const fetchNfts = useCallback(
     async ({ pageParam }: { pageParam: NftPageParam }) => {
@@ -69,8 +70,8 @@ export const useNfts = () => {
   }, [query.data?.pages])
 
   useEffect(() => {
-    NftProcessor.process(nfts)
-  }, [nfts])
+    process(nfts)
+  }, [nfts, process])
 
   return {
     ...query,

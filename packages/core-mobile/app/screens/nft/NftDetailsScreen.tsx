@@ -25,10 +25,8 @@ import { ShowSnackBar } from 'components/Snackbar'
 import Loader from 'components/Loader'
 import { SnackBarMessage } from 'seedless/components/SnackBarMessage'
 import { Tooltip } from 'components/Tooltip'
-import NftProcessor from 'services/nft/NftProcessor'
 import FastImage from 'react-native-fast-image'
-import { useGetNftImageData } from './hooks/useGetNftImageData'
-import { useGetNftMetadata } from './hooks/useGetNftMetadata'
+import { useNftMetadataContext } from 'contexts/NFTMetadataContext'
 import { useNft } from './hooks/useNft'
 
 type NftDetailsScreenProps = NFTDetailsScreenProps<
@@ -47,6 +45,7 @@ const NftDetailsScreen = (): JSX.Element => {
   )
 
   const nft = useMemo(() => freshNft ?? routeNft, [freshNft, routeNft])
+  const { getNftMetadata, getNftImageData, process } = useNftMetadataContext()
 
   const [imgLoadFailed, setImgLoadFailed] = useState(false)
   const { theme } = useApplicationContext()
@@ -61,8 +60,6 @@ const NftDetailsScreen = (): JSX.Element => {
   const [isReindexing, setIsReindexing] = useState(false)
   const [wasReindexed, setWasReindexed] = useState(false)
 
-  const { getNftMetadata } = useGetNftMetadata()
-  const { getNftImageData } = useGetNftImageData()
   const imageData = getNftImageData(nft)
   const metadata = getNftMetadata(nft)
 
@@ -137,14 +134,14 @@ const NftDetailsScreen = (): JSX.Element => {
         }
       }
 
-      NftProcessor.process([updatedNft], true)
+      process([updatedNft], true)
 
       ShowSnackBar(<SnackBarMessage message="NFT refreshed successfully" />)
       setWasReindexed(true)
     } finally {
       setIsReindexing(false)
     }
-  }, [activeNetwork, nft])
+  }, [activeNetwork, nft, process])
 
   const renderHeaderRight = useCallback(() => {
     const disabled = !canReindex || isReindexing

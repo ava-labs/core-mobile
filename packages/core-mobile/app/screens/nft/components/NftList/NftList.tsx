@@ -4,8 +4,7 @@ import ZeroState from 'components/ZeroState'
 import { NFTItemData, NFTImageData, NFTMetadata } from 'store/nft'
 import { RefreshControl } from 'components/RefreshControl'
 import { View } from '@avalabs/k2-mobile'
-import { useGetNftImageData } from 'screens/nft/hooks/useGetNftImageData'
-import { useGetNftMetadata } from 'screens/nft/hooks/useGetNftMetadata'
+import { useNftMetadataContext } from 'contexts/NFTMetadataContext'
 import { FetchingNextIndicator } from '../FetchingNextIndicator'
 import { NftListLoader } from './NftListLoader'
 import { ListItem } from './ListItem'
@@ -31,8 +30,7 @@ export const NftList = ({
   refresh,
   isRefreshing
 }: Props): JSX.Element => {
-  const { getNftImageData } = useGetNftImageData()
-  const { getNftMetadata } = useGetNftMetadata()
+  const { getNftImageData, getNftMetadata } = useNftMetadataContext()
 
   const onEndReached = useCallback(
     ({ distanceFromEnd }: { distanceFromEnd: number }) => {

@@ -24,8 +24,7 @@ import { AddrBookItemType, Contact } from 'store/addressBook'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { Eip1559Fees } from 'utils/Utils'
 import { NetworkTokenUnit } from 'types'
-import { useGetNftImageData } from '../hooks/useGetNftImageData'
-import { useGetNftMetadata } from '../hooks/useGetNftMetadata'
+import { useNftMetadataContext } from 'contexts/NFTMetadataContext'
 
 export type NftSendScreenProps = {
   onNext: () => void
@@ -196,8 +195,7 @@ export default function NftSend({
 const CollectibleItem = ({ nft }: { nft: NFTItemData }): JSX.Element => {
   const { theme } = useApplicationContext()
 
-  const { getNftImageData } = useGetNftImageData()
-  const { getNftMetadata } = useGetNftMetadata()
+  const { getNftImageData, getNftMetadata } = useNftMetadataContext()
   const imageData = getNftImageData(nft)
   const metadata = getNftMetadata(nft)
 

@@ -17,9 +17,8 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useNfts } from 'screens/nft/hooks/useNfts'
 import { RefreshControl } from 'components/RefreshControl'
 import { View } from '@avalabs/k2-mobile'
+import { useNftMetadataContext } from 'contexts/NFTMetadataContext'
 import { FetchingNextIndicator } from './components/FetchingNextIndicator'
-import { useGetNftImageData } from './hooks/useGetNftImageData'
-import { useGetNftMetadata } from './hooks/useGetNftMetadata'
 
 const NftManage = (): JSX.Element => {
   const [searchText, setSearchText] = useState('')
@@ -33,8 +32,7 @@ const NftManage = (): JSX.Element => {
     refetch,
     isRefetching
   } = useNfts()
-  const { getNftImageData } = useGetNftImageData()
-  const { getNftMetadata } = useGetNftMetadata()
+  const { getNftImageData, getNftMetadata } = useNftMetadataContext()
 
   const filteredData = useMemo(() => {
     return nfts.filter(nft => {

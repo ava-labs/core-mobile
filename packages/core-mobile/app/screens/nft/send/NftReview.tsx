@@ -22,8 +22,7 @@ import { Row } from 'components/Row'
 import PoppableGasAndLimit from 'components/PoppableGasAndLimit'
 import { Tooltip } from 'components/Tooltip'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { useGetNftImageData } from '../hooks/useGetNftImageData'
-import { useGetNftMetadata } from '../hooks/useGetNftMetadata'
+import { useNftMetadataContext } from 'contexts/NFTMetadataContext'
 
 type NavigationProp = NFTDetailsSendScreenProps<
   typeof AppNavigation.NftSend.Review
@@ -48,8 +47,7 @@ export default function NftReview({
     fees
   } = useSendNFTContext()
 
-  const { getNftImageData } = useGetNftImageData()
-  const { getNftMetadata } = useGetNftMetadata()
+  const { getNftImageData, getNftMetadata } = useNftMetadataContext()
   const imageData = getNftImageData(nft)
   const metadata = getNftMetadata(nft)
 

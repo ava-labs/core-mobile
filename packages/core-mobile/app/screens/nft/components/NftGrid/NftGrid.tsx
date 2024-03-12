@@ -4,8 +4,7 @@ import ZeroState from 'components/ZeroState'
 import { NFTImageData, NFTItemData, NFTMetadata } from 'store/nft'
 import { RefreshControl } from 'components/RefreshControl'
 import { View } from '@avalabs/k2-mobile'
-import { useGetNftImageData } from 'screens/nft/hooks/useGetNftImageData'
-import { useGetNftMetadata } from 'screens/nft/hooks/useGetNftMetadata'
+import { useNftMetadataContext } from 'contexts/NFTMetadataContext'
 import { FetchingNextIndicator } from '../FetchingNextIndicator'
 import { GridItem } from './GridItem'
 import { NftGridLoader } from './NftGridLoader'
@@ -31,8 +30,7 @@ export const NftGrid = ({
   refresh,
   isRefreshing
 }: Props): JSX.Element => {
-  const { getNftImageData } = useGetNftImageData()
-  const { getNftMetadata } = useGetNftMetadata()
+  const { getNftImageData, getNftMetadata } = useNftMetadataContext()
 
   const onEndReached = (): void => {
     if (hasNextPage && !isFetchingNextPage) {
