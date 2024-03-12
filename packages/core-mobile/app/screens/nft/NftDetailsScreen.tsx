@@ -116,7 +116,7 @@ const NftDetailsScreen = (): JSX.Element => {
     setIsReindexing(true)
 
     try {
-      const result = await NftService.reindexNfts(
+      const result = await NftService.reindexNft(
         nft.address,
         activeNetwork.chainId,
         nft.tokenId

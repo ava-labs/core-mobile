@@ -1,5 +1,7 @@
 import { NftProvider } from 'services/nft/types'
 import {
+  Erc1155Token,
+  Erc721Token,
   ListErc1155BalancesResponse,
   ListErc721BalancesResponse
 } from '@avalabs/glacier-sdk'
@@ -124,6 +126,24 @@ export class GlacierNftProvider implements NftProvider {
     const healthStatus = await glacierSdk.healthCheck.healthCheck()
     const status = healthStatus?.status?.toString()
     return status === 'ok'
+  }
+
+  async reindexNft(
+    address: string,
+    chainId: number,
+    tokenId: string
+  ): Promise<Erc721Token | Erc1155Token> {
+    await glacierSdk.nfTs.reindexNft({
+      address,
+      chainId: chainId.toString(),
+      tokenId
+    })
+
+    return await glacierSdk.nfTs.getTokenDetails({
+      chainId: chainId.toString(),
+      address,
+      tokenId
+    })
   }
 }
 
