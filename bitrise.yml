@@ -247,6 +247,12 @@ workflows:
         title: Detox
         inputs:
         - file_path: scripts/bitrise/detox/androidInternalE2e.sh
+  _run_android_core_web_tests:
+    steps:
+    - script-runner@0:
+        title: Detox
+        inputs:
+        - file_path: e2e/tests/plusIcon/walletConnect/android_core_web_test_runner.sh
   _run_android_tests_reuse_app_state:
     steps:
     - script-runner@0:
@@ -614,6 +620,7 @@ workflows:
     - _pull_app_files
     after_run:
     - _run_android_tests
+    - _run_android_core_web_tests
     - _send-test-result-notification-slack
     envs:
     - ENVIRONMENT: production
