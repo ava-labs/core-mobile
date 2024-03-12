@@ -134,7 +134,7 @@ const NftDetailsScreen = (): JSX.Element => {
         }
       }
 
-      process([updatedNft], true)
+      process([updatedNft])
 
       ShowSnackBar(<SnackBarMessage message="NFT refreshed successfully" />)
       setWasReindexed(true)

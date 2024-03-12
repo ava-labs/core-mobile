@@ -46,7 +46,7 @@ export const useNft = (
 
   useEffect(() => {
     if (nft) {
-      process([nft], true)
+      process([nft])
     }
   }, [nft, process])
 

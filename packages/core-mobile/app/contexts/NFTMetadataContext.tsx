@@ -8,7 +8,7 @@ import Logger from 'utils/Logger'
 type NFTMetadataContextState = {
   getNftImageData: (nft: NFTItemData) => NFTImageData | undefined
   getNftMetadata: (nft: NFTItemData) => NFTMetadata
-  process: (nfts: NFTItemData[], shouldUpdate?: boolean) => void
+  process: (nfts: NFTItemData[]) => void
 }
 
 export const NFTMetadataContext = createContext<NFTMetadataContextState>(
@@ -23,31 +23,23 @@ export const NFTMetadataProvider = ({
   const [metadata, setMetadata] = useState<Record<string, NFTMetadata>>({})
   const [imageData, setImageData] = useState<Record<string, NFTImageData>>({})
 
-  const processImageData = useCallback(
-    (items: NFTItemData[], shouldUpdate: boolean): void => {
-      items.forEach(nft => {
-        if (imageData[nft.uid] && shouldUpdate !== true) {
-          return
-        }
-
-        if (nft.metadata.imageUri) {
-          NftProcessor.fetchImageAndAspect(nft.metadata.imageUri)
-            .then(result => {
-              setImageData(prevData => ({
-                ...prevData,
-                [nft.uid]: result
-              }))
-            })
-            .catch(Logger.error)
-        }
-      })
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
-  )
+  const processImageData = useCallback((items: NFTItemData[]): void => {
+    items.forEach(nft => {
+      if (nft.metadata.imageUri) {
+        NftProcessor.fetchImageAndAspect(nft.metadata.imageUri)
+          .then(result => {
+            setImageData(prevData => ({
+              ...prevData,
+              [nft.uid]: result
+            }))
+          })
+          .catch(Logger.error)
+      }
+    })
+  }, [])
 
   const processUnindexedNftMetadata = useCallback(
-    (nft: NFTItemData, shouldUpdate: boolean): void => {
+    (nft: NFTItemData): void => {
       NftProcessor.fetchMetadata(getTokenUri(nft))
         .then(result => {
           const updatedNft: NFTItemData = {
@@ -63,7 +55,7 @@ export const NFTMetadataProvider = ({
           }
 
           if (updatedNft.metadata.imageUri) {
-            processImageData([updatedNft], shouldUpdate)
+            processImageData([updatedNft])
           }
 
           const newMetadata: NFTMetadata = {
@@ -107,20 +99,15 @@ export const NFTMetadataProvider = ({
   }, [])
 
   const processMetadata = useCallback(
-    (items: NFTItemData[], shouldUpdate: boolean): void => {
+    (items: NFTItemData[]): void => {
       items.forEach(nft => {
-        if (metadata[nft.uid] && shouldUpdate !== true) {
-          return
-        }
-
         if (nft.metadata.indexStatus === NftTokenMetadataStatus.INDEXED) {
           processIndexedNftMetadata(nft)
         } else {
-          processUnindexedNftMetadata(nft, shouldUpdate)
+          processUnindexedNftMetadata(nft)
         }
       })
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [processUnindexedNftMetadata, processIndexedNftMetadata]
   )
 
@@ -144,9 +131,9 @@ export const NFTMetadataProvider = ({
   )
 
   const process = useCallback(
-    (items: NFTItemData[], shouldUpdate = false): void => {
-      processMetadata(items, shouldUpdate)
-      processImageData(items, shouldUpdate)
+    (items: NFTItemData[]): void => {
+      processMetadata(items)
+      processImageData(items)
     },
     [processImageData, processMetadata]
   )

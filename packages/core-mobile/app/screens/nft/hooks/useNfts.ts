@@ -70,8 +70,12 @@ export const useNfts = () => {
   }, [query.data?.pages])
 
   useEffect(() => {
-    process(nfts)
-  }, [nfts, process])
+    const lastPageNfts = query.data?.pages.at(-1)?.nfts ?? []
+
+    if (lastPageNfts.length > 0) {
+      process(lastPageNfts)
+    }
+  }, [query.data, process])
 
   return {
     ...query,
