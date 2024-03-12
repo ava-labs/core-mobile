@@ -14,7 +14,7 @@ export const useNft = (
   const { process } = useNftMetadataContext()
 
   const fetchNft = useCallback(async () => {
-    const t = SentryWrapper.startTransaction('get-nfts')
+    const t = SentryWrapper.startTransaction('get-nft')
     try {
       return await NftService.fetchNft({
         chainId: chainId,
@@ -46,7 +46,6 @@ export const useNft = (
 
   useEffect(() => {
     if (nft) {
-      //   console.log('process single nft')
       process([nft], true)
     }
   }, [nft, process])

@@ -3,6 +3,7 @@
  */
 export type TransactionName =
   | 'get-balances'
+  | 'get-nft'
   | 'get-nfts'
   | 'send-erc20'
   | 'send-erc721'
