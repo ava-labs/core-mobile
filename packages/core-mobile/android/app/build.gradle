@@ -167,7 +167,7 @@ android {
         buildConfigField "boolean", "IS_NEW_ARCHITECTURE_ENABLED", isNewArchitectureEnabled().toString()
         buildConfigField "boolean", "FLIPPER_ENABLED", flipperEnabled.toString()
 
-        testBuildType System.getProperty('testBuildType', 'e2e')  // To control the test apk build type
+        testBuildType System.getProperty('testBuildType', 'debug')  // To control the test apk build type
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
 
         missingDimensionStrategy 'react-native-camera', 'general'
@@ -203,7 +203,7 @@ android {
                 proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
             }
             e2e {
-                initWith release
+                initWith debug
                 matchingFallbacks = ['release']
                 // this is for libraries without an e2e build to know to fall back to release
 
@@ -266,7 +266,7 @@ dependencies {
         }
     }
 
-    androidTestImplementation('com.wix:detox:+')
+    androidTestImplementation('com.wix:detox-legacy:+')
 
     implementation 'androidx.appcompat:appcompat:1.3.1'
     implementation 'com.google.android.material:material:1.8.0'

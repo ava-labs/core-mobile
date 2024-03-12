@@ -23,11 +23,11 @@ describe('Connect to dApp using WalletConnect', () => {
   })
 
   it('should connect to dApp', async () => {
-    delay(10000)
-    const myWebView = web(by.id('webview'))
-    const connectBtn = myWebView.element(
-      by.web.xpath('(//button[@data-test-id="connect-wallet-button"])[0]')
-    )
+    await delay(10000)
+    const webview = web(by.id('myWebview'))
+    const connectBtn = webview
+      .element(by.web.xpath('//*[@data-testid="connect-wallet-button"]'))
+      .atIndex(1)
     await connectBtn.tap()
   })
 

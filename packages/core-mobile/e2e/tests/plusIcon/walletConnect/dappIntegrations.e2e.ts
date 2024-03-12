@@ -28,7 +28,7 @@ describe('Connect to dApp using WalletConnect', () => {
 
   it('should connect to dApp', async () => {
     await ScanQrCodePage.enterQrCode()
-    await delay(1000)
+    await delay(20000)
     await ConnectToSitePage.tapSelectAccountsDropdown()
     await ConnectedSitesPage.tapSelectAllChkBox()
     await ConnectToSitePage.tapApproveBtn()
