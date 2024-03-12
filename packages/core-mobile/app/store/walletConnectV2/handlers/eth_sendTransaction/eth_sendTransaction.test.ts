@@ -281,7 +281,7 @@ describe('eth_sendTransaction handler', () => {
       expect(mockSendTransaction).toHaveBeenCalledWith(
         mockSignedTx,
         mockNetwork,
-        false
+        true
       )
 
       expect(mockDispatch).toHaveBeenCalledWith(
@@ -328,7 +328,7 @@ describe('eth_sendTransaction handler', () => {
       expect(mockSendTransaction).toHaveBeenCalledWith(
         mockSignedTx,
         mockNetwork,
-        false
+        true
       )
 
       expect(mockDispatch).toHaveBeenCalledWith(
