@@ -16,6 +16,7 @@ import GoogleSigninService from 'services/socialSignIn/google/GoogleSigninServic
 import { showSimpleToast } from 'components/Snackbar'
 import { hideOwl, showOwl } from 'components/GlobalOwlLoader'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import SeedlessService from 'seedless/services/SeedlessService'
 
 type NavigationProp = OnboardScreenProps<
   typeof AppNavigation.Onboard.Signup
@@ -56,7 +57,22 @@ const SignupScreen: FC = () => {
     AnalyticsService.capture('AlreadyHaveAWalletClicked')
   }
 
-  const handleAccountVerified = (): void => {
+  const handleAccountVerified = async (): Promise<void> => {
+    showOwl()
+    const walletName = await SeedlessService.getAccountName()
+    hideOwl()
+    if (walletName) {
+      navigate(AppNavigation.Root.Onboard, {
+        screen: AppNavigation.Onboard.Welcome,
+        params: {
+          screen: AppNavigation.Onboard.AnalyticsConsent,
+          params: {
+            nextScreen: AppNavigation.Onboard.CreatePin
+          }
+        }
+      })
+      return
+    }
     navigate(AppNavigation.Onboard.NameYourWallet)
   }
 

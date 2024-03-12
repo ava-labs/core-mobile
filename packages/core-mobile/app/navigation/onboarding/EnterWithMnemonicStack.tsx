@@ -27,6 +27,7 @@ import { WalletType } from 'services/wallet/types'
 import { useWallet } from 'hooks/useWallet'
 import { NameYourWallet } from 'seedless/screens/NameYourWallet'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import { setAccountTitle } from 'store/account'
 import { EnterWithMnemonicScreenProps } from '../types'
 
 export type EnterWithMnemonicStackParamList = {
@@ -136,10 +137,18 @@ type NameYourWalletNavigationProp = EnterWithMnemonicScreenProps<
 >['navigation']
 
 const NameYourWalletScreen = (): JSX.Element => {
+  const dispatch = useDispatch()
   const { navigate } = useNavigation<NameYourWalletNavigationProp>()
 
-  const onSetWalletName = (): void => {
+  const onSetWalletName = (name: string): void => {
     AnalyticsService.capture('LoginWithMnemonic:WalletNameSet')
+    dispatch(
+      setAccountTitle({
+        title: name,
+        walletType: WalletType.MNEMONIC,
+        accountIndex: 0
+      })
+    )
     navigate(AppNavigation.LoginWithMnemonic.CreatePin)
   }
   return <NameYourWallet onSetWalletName={onSetWalletName} />

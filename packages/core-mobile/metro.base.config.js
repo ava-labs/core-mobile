@@ -1,12 +1,15 @@
 const { getDefaultConfig } = require('metro-config')
+const { createSentryMetroSerializer } = require('@sentry/react-native/metro')
 
-// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 const getBaseConfig = async () => {
   const {
     resolver: { sourceExts, assetExts }
   } = await getDefaultConfig()
 
   return {
+    serializer: {
+      customSerializer: createSentryMetroSerializer()
+    },
     resolver: {
       extraNodeModules: {
         // this is for any modules that use require('crypto')
@@ -74,7 +77,7 @@ const getBaseConfig = async () => {
        * 1. react native metro bundler uses uglify-es, which doesn't support bigint syntax (0n, 1n,...)
        * 2. metro-minify-esbuild is ~46x faster
        */
-      minifierPath: require.resolve('metro-minify-esbuild'),
+      minifierPath: require.resolve('metro-minify-terser'),
       minifierConfig: {},
       babelTransformerPath: require.resolve('react-native-svg-transformer')
     }

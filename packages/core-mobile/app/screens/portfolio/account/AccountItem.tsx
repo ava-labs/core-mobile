@@ -19,6 +19,7 @@ import {
 import ReloadSVG from 'components/svg/ReloadSVG'
 import { ActivityIndicator } from 'components/ActivityIndicator'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import { selectWalletType } from 'store/app'
 
 type Props = {
   account: Account
@@ -35,6 +36,7 @@ function AccountItem({
   selected,
   blurred
 }: Props): JSX.Element {
+  const walletType = useSelector(selectWalletType)
   const context = useApplicationContext()
   const accountBalance = useSelector(
     selectBalanceTotalInCurrencyForAccount(account.index)
@@ -71,11 +73,12 @@ function AccountItem({
       dispatch(
         setAccountTitleStore({
           title: newAccountName,
-          accountIndex: account.index
+          accountIndex: account.index,
+          walletType
         })
       )
     },
-    [account.index, dispatch]
+    [account.index, dispatch, walletType]
   )
 
   const handleLoadBalance = useCallback(() => {
