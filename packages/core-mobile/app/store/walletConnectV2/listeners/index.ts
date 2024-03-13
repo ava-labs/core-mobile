@@ -9,7 +9,8 @@ import {
   onDisconnect,
   onRequest,
   onSendRpcError,
-  onSendRpcResult
+  onSendRpcResult,
+  waitForTransactionReceiptAsync
 } from '../slice'
 import {
   handleAccountChange,
@@ -22,6 +23,7 @@ import {
 } from './sessions'
 import { processRequest } from './requests'
 import { sendRpcError, sendRpcResult } from './responses'
+import { handleWaitForTransactionReceiptAsync } from './utils'
 
 export const addWCListeners = (startListening: AppStartListening): void => {
   /*********************
@@ -80,5 +82,16 @@ export const addWCListeners = (startListening: AppStartListening): void => {
   startListening({
     actionCreator: onSendRpcError,
     effect: sendRpcError
+  })
+
+  startListening({
+    actionCreator: waitForTransactionReceiptAsync,
+    effect: async (action, listenerApi) => {
+      await handleWaitForTransactionReceiptAsync(
+        listenerApi,
+        action.payload.txResponse,
+        action.payload.requestId
+      )
+    }
   })
 }

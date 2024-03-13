@@ -1,5 +1,5 @@
 import { ethErrors } from 'eth-rpc-errors'
-import { RpcMethod } from 'store/walletConnectV2'
+import { ConfirmationReceiptStatus, RpcMethod } from 'store/walletConnectV2'
 import mockSession from 'tests/fixtures/walletConnect/session.json'
 import mockAccounts from 'tests/fixtures/accounts.json'
 import mockNetworks from 'tests/fixtures/networks.json'
@@ -278,16 +278,22 @@ describe('eth_sendTransaction handler', () => {
         mockNetwork
       )
 
-      expect(mockSendTransaction).toHaveBeenCalledWith(
-        mockSignedTx,
-        mockNetwork,
-        false
-      )
+      expect(mockSendTransaction).toHaveBeenCalledWith({
+        signedTx: mockSignedTx,
+        network: mockNetwork,
+        waitToPost: true,
+        handleWaitToPost: expect.any(Function)
+      })
 
       expect(mockDispatch).toHaveBeenCalledWith(
         updateRequestStatus({
           id: testRequest.data.id,
-          status: { result: mockTxHash }
+          status: {
+            result: {
+              txHash: mockTxHash,
+              confirmationReceiptStatus: ConfirmationReceiptStatus.Pending
+            }
+          }
         })
       )
 
@@ -325,11 +331,12 @@ describe('eth_sendTransaction handler', () => {
         mockNetwork
       )
 
-      expect(mockSendTransaction).toHaveBeenCalledWith(
-        mockSignedTx,
-        mockNetwork,
-        false
-      )
+      expect(mockSendTransaction).toHaveBeenCalledWith({
+        signedTx: mockSignedTx,
+        network: mockNetwork,
+        waitToPost: true,
+        handleWaitToPost: expect.any(Function)
+      })
 
       expect(mockDispatch).toHaveBeenCalledWith(
         updateRequestStatus({

@@ -165,10 +165,10 @@ export class UnifiedBridgeService {
           activeNetwork
         )
 
-        return (await NetworkService.sendTransaction(
-          result,
-          activeNetwork
-        )) as `0x${string}`
+        return (await NetworkService.sendTransaction({
+          signedTx: result,
+          network: activeNetwork
+        })) as `0x${string}`
       }
     })
 
