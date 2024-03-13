@@ -1,10 +1,7 @@
 import { showSimpleToast } from 'components/Snackbar'
 import { TransactionResponse } from 'ethers'
 import { AppListenerEffectAPI } from 'store'
-import {
-  ConfirmationReceiptStatus,
-  updateRequestStatus
-} from 'store/walletConnectV2'
+import { updateRequestStatus } from 'store/walletConnectV2'
 import { createPublicClient, http } from 'viem'
 import { avalanche } from 'viem/chains'
 
@@ -23,8 +20,7 @@ export const waitForTransactionReceiptAsync = async (
     hash: txResponse.hash as `0x${string}`
   })
 
-  const status =
-    confirmationReceipt?.status === ConfirmationReceiptStatus.Success
+  const status = confirmationReceipt?.status === 'success'
   showSimpleToast(status ? 'Transaction Confirmed' : 'Transaction Reverted')
   dispatch(
     updateRequestStatus({
@@ -32,9 +28,7 @@ export const waitForTransactionReceiptAsync = async (
       status: {
         result: {
           txHash: txResponse.hash,
-          confirmationReceiptStatus: status
-            ? ConfirmationReceiptStatus.Success
-            : ConfirmationReceiptStatus.Revert
+          confirmationReceiptStatus: status ? 'Success' : 'Reverted'
         }
       }
     })

@@ -19,7 +19,7 @@ describe('walletConnect - reducer', () => {
         status: {
           result: {
             txHash: 'some result',
-            confirmationReceiptStatus: ConfirmationReceiptStatus.Pending
+            confirmationReceiptStatus: 'Pending'
           }
         }
       })
@@ -30,7 +30,7 @@ describe('walletConnect - reducer', () => {
           12: {
             error: undefined,
             result: {
-              confirmationReceiptStatus: 'pending',
+              confirmationReceiptStatus: 'Pending',
               txHash: 'some result'
             }
           }
@@ -60,7 +60,7 @@ describe('walletConnect - reducer', () => {
           12: {
             result: {
               txHash: 'some result',
-              confirmationReceiptStatus: ConfirmationReceiptStatus.Pending
+              confirmationReceiptStatus: 'Pending' as ConfirmationReceiptStatus
             }
           }
         }
@@ -70,7 +70,7 @@ describe('walletConnect - reducer', () => {
         status: {
           result: {
             txHash: 'some result',
-            confirmationReceiptStatus: ConfirmationReceiptStatus.Success
+            confirmationReceiptStatus: 'Success' as ConfirmationReceiptStatus
           }
         }
       })
@@ -81,7 +81,7 @@ describe('walletConnect - reducer', () => {
           12: {
             result: {
               txHash: 'some result',
-              confirmationReceiptStatus: ConfirmationReceiptStatus.Success
+              confirmationReceiptStatus: 'Success'
             }
           }
         }

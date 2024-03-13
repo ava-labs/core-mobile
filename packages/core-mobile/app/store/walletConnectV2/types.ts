@@ -84,8 +84,4 @@ export enum WalletConnectVersions {
   V2 = '2'
 }
 
-export enum ConfirmationReceiptStatus {
-  Revert = 'reverted',
-  Success = 'success',
-  Pending = 'pending'
-}
+export type ConfirmationReceiptStatus = 'Reverted' | 'Success' | 'Pending'

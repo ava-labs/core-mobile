@@ -30,10 +30,7 @@ import { WalletScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import { useSelector } from 'react-redux'
-import {
-  ConfirmationReceiptStatus,
-  selectRequestStatus
-} from 'store/walletConnectV2'
+import { selectRequestStatus } from 'store/walletConnectV2'
 import { useDappConnectionV2 } from 'hooks/useDappConnectionV2'
 import { selectNetwork } from 'store/network'
 import { NetworkLogo } from 'screens/network/NetworkLogo'
@@ -75,10 +72,10 @@ const SignTransaction = (): JSX.Element => {
   const confirmationReceiptStatus =
     requestStatus?.result?.confirmationReceiptStatus
   const transactionStatus =
-    confirmationReceiptStatus === ConfirmationReceiptStatus.Revert ||
+    confirmationReceiptStatus === 'Reverted' ||
     confirmationReceiptStatus === undefined
       ? 'Reverted'
-      : confirmationReceiptStatus === ConfirmationReceiptStatus.Success
+      : confirmationReceiptStatus === 'Success'
       ? 'Confirmed'
       : 'Pending'
 

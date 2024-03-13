@@ -18,11 +18,7 @@ import {
   updateRequestStatus,
   waitForTransactionReceiptAsync
 } from '../../slice'
-import {
-  ConfirmationReceiptStatus,
-  RpcMethod,
-  SessionRequest
-} from '../../types'
+import { RpcMethod, SessionRequest } from '../../types'
 import {
   ApproveResponse,
   DEFERRED_RESULT,
@@ -178,7 +174,7 @@ class EthSendTransactionHandler
           status: {
             result: {
               txHash: transactionHash,
-              confirmationReceiptStatus: ConfirmationReceiptStatus.Pending
+              confirmationReceiptStatus: 'Pending'
             }
           }
         })

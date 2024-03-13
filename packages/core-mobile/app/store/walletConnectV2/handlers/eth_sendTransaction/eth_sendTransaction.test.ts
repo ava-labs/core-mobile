@@ -1,5 +1,5 @@
 import { ethErrors } from 'eth-rpc-errors'
-import { ConfirmationReceiptStatus, RpcMethod } from 'store/walletConnectV2'
+import { RpcMethod } from 'store/walletConnectV2'
 import mockSession from 'tests/fixtures/walletConnect/session.json'
 import mockAccounts from 'tests/fixtures/accounts.json'
 import mockNetworks from 'tests/fixtures/networks.json'
@@ -290,7 +290,7 @@ describe('eth_sendTransaction handler', () => {
           status: {
             result: {
               txHash: mockTxHash,
-              confirmationReceiptStatus: ConfirmationReceiptStatus.Pending
+              confirmationReceiptStatus: 'Pending'
             }
           }
         })
