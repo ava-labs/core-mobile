@@ -12,7 +12,6 @@ import {
   onSendRpcResult,
   waitForTransactionReceiptAsync
 } from '../slice'
-import { waitForTransactionReceiptAsync as handleWaitForTransactionReceiptAsync } from '../../../utils/waitForTransactionReceiptAsync'
 import {
   handleAccountChange,
   handleDisconnect,
@@ -24,6 +23,7 @@ import {
 } from './sessions'
 import { processRequest } from './requests'
 import { sendRpcError, sendRpcResult } from './responses'
+import { handleWaitForTransactionReceiptAsync } from './utils'
 
 export const addWCListeners = (startListening: AppStartListening): void => {
   /*********************

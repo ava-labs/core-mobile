@@ -3,7 +3,7 @@ import { WalletConnectState } from 'store/walletConnectV2'
 import { RootState } from 'store/index'
 import { PeerMeta, Session } from 'services/walletconnectv2/types'
 import { TransactionResponse } from 'ethers'
-import { ConfirmationReceiptStatus, Request, RpcError } from './types'
+import { Request, RequestStatus, RpcError } from './types'
 
 export const reducerName = 'walletConnectV2'
 
@@ -19,13 +19,7 @@ const walletConnectSlice = createSlice({
       state,
       action: PayloadAction<{
         id: number
-        status: {
-          result?: {
-            txHash: string
-            confirmationReceiptStatus?: ConfirmationReceiptStatus
-          }
-          error?: Error
-        }
+        status: RequestStatus
       }>
     ) => {
       const {

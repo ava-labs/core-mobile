@@ -22,16 +22,7 @@ export type SessionRequest<Method> = {
 export type Request = SessionProposal | SessionRequest<string>
 
 export type WalletConnectState = {
-  requestStatuses: Record<
-    string,
-    {
-      result?: {
-        txHash: string
-        confirmationReceiptStatus?: ConfirmationReceiptStatus
-      }
-      error?: Error
-    }
-  >
+  requestStatuses: Record<string, RequestStatus>
 }
 
 export enum RpcMethod {
@@ -85,3 +76,11 @@ export enum WalletConnectVersions {
 }
 
 export type ConfirmationReceiptStatus = 'Reverted' | 'Success' | 'Pending'
+
+export type RequestStatus = {
+  result?: {
+    txHash: string
+    confirmationReceiptStatus?: ConfirmationReceiptStatus
+  }
+  error?: Error
+}
