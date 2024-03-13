@@ -162,7 +162,6 @@ class EthSendTransactionHandler
       const transactionHash = await NetworkService.sendTransaction({
         signedTx,
         network,
-        waitToPost: true,
         handleWaitToPost: txResponse => {
           dispatch(
             waitForTransactionReceiptAsync({

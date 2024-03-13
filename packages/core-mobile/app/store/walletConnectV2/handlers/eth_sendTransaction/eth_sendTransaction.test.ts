@@ -281,7 +281,6 @@ describe('eth_sendTransaction handler', () => {
       expect(mockSendTransaction).toHaveBeenCalledWith({
         signedTx: mockSignedTx,
         network: mockNetwork,
-        waitToPost: true,
         handleWaitToPost: expect.any(Function)
       })
 
@@ -334,7 +333,6 @@ describe('eth_sendTransaction handler', () => {
       expect(mockSendTransaction).toHaveBeenCalledWith({
         signedTx: mockSignedTx,
         network: mockNetwork,
-        waitToPost: true,
         handleWaitToPost: expect.any(Function)
       })
 

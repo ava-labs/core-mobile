@@ -56,7 +56,6 @@ class NetworkService {
   }
 
   async sendTransaction({
-    waitToPost = false,
     signedTx,
     network,
     sentryTrx,
@@ -64,7 +63,6 @@ class NetworkService {
   }: {
     signedTx: string | avaxSerial.SignedTx
     network: Network
-    waitToPost?: boolean
     sentryTrx?: Transaction
     handleWaitToPost?: (txResponse: TransactionResponse) => void
   }): Promise<string> {
@@ -86,7 +84,7 @@ class NetworkService {
         } else if (typeof signedTx === 'string') {
           if (provider instanceof JsonRpcBatchInternal) {
             const tx = await provider.broadcastTransaction(signedTx)
-            waitToPost && handleWaitToPost?.(tx)
+            handleWaitToPost?.(tx)
             txID = tx.hash
           } else if (provider instanceof BlockCypherProvider) {
             txID = (await provider.issueRawTx(signedTx)).hash
