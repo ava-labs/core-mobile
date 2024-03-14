@@ -5,13 +5,16 @@ import {
   PublicClientConfig,
   WaitForTransactionReceiptReturnType
 } from 'viem'
-import { avalanche, avalancheFuji, mainnet } from 'viem/chains'
+import { avalanche, avalancheFuji, mainnet, sepolia } from 'viem/chains'
 import { isAvalancheNetwork } from 'services/network/utils/isAvalancheNetwork'
 import { addGlacierAPIKeyIfNeeded } from './network/glacier'
 
-const getEthereumNetworkConfig = (network: Network): PublicClientConfig => {
+const getEthereumNetworkConfig = (
+  network: Network,
+  isTestnet: boolean
+): PublicClientConfig => {
   const url = addGlacierAPIKeyIfNeeded(network.rpcUrl)
-  return { chain: mainnet, transport: http(url) }
+  return { chain: isTestnet ? mainnet : sepolia, transport: http(url) }
 }
 
 const getAvalancheNetworkConfig = (isTestnet: boolean): PublicClientConfig => {
@@ -26,7 +29,7 @@ export const getTxConfirmationReceipt = async (
   const publicClient = createPublicClient(
     isAvalancheNetwork(network)
       ? getAvalancheNetworkConfig(isTestnet)
-      : getEthereumNetworkConfig(network)
+      : getEthereumNetworkConfig(network, isTestnet)
   )
 
   return publicClient.waitForTransactionReceipt({
