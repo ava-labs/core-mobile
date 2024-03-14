@@ -46,22 +46,22 @@ class Logger {
   trace = (message: string, value?: any): void => {
     if (this.shouldLog(LogLevel.TRACE)) {
       console.groupCollapsed(...formatMessage(message, 'grey'))
-      console.trace(message, value ?? '')
+      value && console.trace(value)
       console.groupEnd()
     }
   }
 
   info = (message: string, value?: any): void => {
     if (this.shouldLog(LogLevel.INFO)) {
-      console.info(...formatMessage(message))
-      console.info(message, value ?? '')
+      message && console.info(...formatMessage(message))
+      value && console.info(value)
     }
   }
 
   warn = (message: string, value?: any): void => {
     if (this.shouldLog(LogLevel.WARN)) {
       console.groupCollapsed(...formatMessage(message, 'yellow'))
-      console.warn(message, value ?? '')
+      value && console.warn(value)
       console.groupEnd()
     }
   }
@@ -69,7 +69,7 @@ class Logger {
   error = (message: string, value?: any): void => {
     if (this.shouldLog(LogLevel.ERROR)) {
       console.groupCollapsed(...formatMessage(message, 'red'))
-      console.error(message, value ?? '')
+      value && console.error(value)
       console.groupEnd()
 
       if (this.shouldLogErrorToSentry) {
