@@ -12,7 +12,7 @@ import { BytesLike, TransactionRequest, getBytes, hashMessage } from 'ethers'
 import { networks } from 'bitcoinjs-lib'
 import {
   Avalanche,
-  BlockCypherProvider,
+  BitcoinProvider,
   JsonRpcBatchInternal,
   createPsbt,
   getBtcAddressFromPubKey,
@@ -176,7 +176,7 @@ export default class SeedlessWallet implements Wallet {
     provider
   }: {
     transaction: BtcTransactionRequest
-    provider: BlockCypherProvider
+    provider: BitcoinProvider
   }): Promise<string> {
     const btcNetwork = provider.getNetwork()
     const psbt = createPsbt(transaction.inputs, transaction.outputs, btcNetwork)

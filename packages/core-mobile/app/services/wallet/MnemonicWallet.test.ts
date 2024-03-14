@@ -2,7 +2,7 @@
 import {
   Avalanche,
   BitcoinWallet,
-  BlockCypherProvider
+  BitcoinProvider
 } from '@avalabs/wallets-sdk'
 import { BaseWallet } from 'ethers'
 import { RpcMethod } from 'store/walletConnectV2'
@@ -82,7 +82,7 @@ describe('MnemonicWallet', () => {
       await MnemonicWallet.getSigner({
         accountIndex: 0,
         network: { vmName: 'BITCOIN' },
-        provider: new BlockCypherProvider()
+        provider: new BitcoinProvider()
       })
       expect(MnemonicWallet.getBtcSigner).toHaveBeenCalled()
     })
@@ -262,7 +262,7 @@ describe('MnemonicWallet', () => {
         accountIndex: 0,
         transaction: {},
         network: { vmName: 'BITCOIN' },
-        provider: new BlockCypherProvider()
+        provider: new BitcoinProvider()
       })
       expect(signedTx).toBe('signedTx')
     })

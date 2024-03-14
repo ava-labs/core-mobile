@@ -1,6 +1,6 @@
 import {
   Avalanche,
-  BlockCypherProvider,
+  BitcoinProvider,
   JsonRpcBatchInternal
 } from '@avalabs/wallets-sdk'
 import {
@@ -33,7 +33,7 @@ class NetworkService {
 
   getProviderForNetwork(
     network: Network
-  ): JsonRpcBatchInternal | BlockCypherProvider | Avalanche.JsonRpcProvider {
+  ): JsonRpcBatchInternal | BitcoinProvider | Avalanche.JsonRpcProvider {
     if (network.vmName === NetworkVMType.BITCOIN) {
       return getBitcoinProvider(network.isTestnet)
     }
@@ -84,8 +84,8 @@ class NetworkService {
               await tx.wait()
             }
             txID = tx.hash
-          } else if (provider instanceof BlockCypherProvider) {
-            txID = (await provider.issueRawTx(signedTx)).hash
+          } else if (provider instanceof BitcoinProvider) {
+            txID = (await provider.issueRawTx(signedTx))
           }
         }
 

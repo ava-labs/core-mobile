@@ -3,7 +3,7 @@ import {
   Avalanche,
   BitcoinInputUTXO,
   BitcoinOutputUTXO,
-  BlockCypherProvider,
+  BitcoinProvider,
   JsonRpcBatchInternal
 } from '@avalabs/wallets-sdk'
 import { UnsignedTx } from '@avalabs/avalanchejs-v2'
@@ -119,11 +119,11 @@ export interface Wallet {
   }): Promise<string>
 
   /**
-   * Signs a Bitcoin transaction using the specified account, transaction request, network, and BlockCypher provider.
+   * Signs a Bitcoin transaction using the specified account, transaction request, network, and Bitcoin provider.
    * @param accountIndex - The index of the account.
    * @param transaction - The Bitcoin transaction request.
    * @param network - The network type.
-   * @param provider - The BlockCypher provider.
+   * @param provider - The Bitcoin provider.
    */
   signBtcTransaction({
     accountIndex,
@@ -134,7 +134,7 @@ export interface Wallet {
     accountIndex: number
     transaction: BtcTransactionRequest
     network: Network
-    provider: BlockCypherProvider
+    provider: BitcoinProvider
   }): Promise<string>
 
   /**

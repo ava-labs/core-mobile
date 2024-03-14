@@ -1,6 +1,6 @@
 import {
   Avalanche,
-  BlockCypherProvider,
+  BitcoinProvider,
   JsonRpcBatchInternal
 } from '@avalabs/wallets-sdk'
 import {
@@ -79,7 +79,7 @@ class WalletService {
         )
 
         if (isBtcTransactionRequest(transaction)) {
-          if (!(provider instanceof BlockCypherProvider))
+          if (!(provider instanceof BitcoinProvider))
             throw new Error(
               'Unable to sign btc transaction: wrong provider obtained'
             )

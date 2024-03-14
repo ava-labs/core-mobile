@@ -1,5 +1,5 @@
 import { InfuraProvider, ethers } from 'ethers'
-import { BlockCypherProvider, JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
+import { BitcoinProvider, JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
 import { balanceToDisplayValue, bigToBN } from '@avalabs/utils-sdk'
 import {
   NetworkTokenWithBalance,
@@ -45,7 +45,7 @@ export class EvmBalanceService implements BalanceServiceProvider {
         const tokenAddresses = activeTokenList.map(token => token.address)
         const provider = NetworkService.getProviderForNetwork(
           network
-        ) as JsonRpcBatchInternal & BlockCypherProvider
+        ) as JsonRpcBatchInternal & BitcoinProvider
 
         const assetPlatformId =
           network.pricingProviders?.coingecko?.assetPlatformId ?? ''

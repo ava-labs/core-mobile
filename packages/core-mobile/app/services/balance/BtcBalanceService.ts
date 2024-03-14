@@ -9,7 +9,7 @@ import { Network, NetworkVMType } from '@avalabs/chains-sdk'
 import { VsCurrencyType } from '@avalabs/coingecko-sdk'
 import { BalanceServiceProvider } from 'services/balance/types'
 import NetworkService from 'services/network/NetworkService'
-import { BlockCypherProvider, JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
+import { BitcoinProvider, JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
 import { Transaction } from '@sentry/types'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import TokenService from 'services/token/TokenService'
@@ -31,7 +31,7 @@ export class BtcBalanceService implements BalanceServiceProvider {
         const { networkToken } = network
         const provider = NetworkService.getProviderForNetwork(
           network
-        ) as JsonRpcBatchInternal & BlockCypherProvider
+        ) as JsonRpcBatchInternal & BitcoinProvider
 
         const nativeTokenId =
           network.pricingProviders?.coingecko?.nativeTokenId ?? ''
