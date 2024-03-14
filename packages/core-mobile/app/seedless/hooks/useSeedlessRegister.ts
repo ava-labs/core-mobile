@@ -186,13 +186,12 @@ export const useSeedlessRegister = (): ReturnType => {
         )
 
         AnalyticsService.capture('SeedlessMfaVerified', { type: 'Fido' })
-
+        hideOwl()
         onAccountVerified()
       } catch (e) {
+        hideOwl()
         Logger.error('passkey authentication failed', e)
         showSimpleToast('Unable to authenticate')
-      } finally {
-        hideOwl()
       }
     }
   }
