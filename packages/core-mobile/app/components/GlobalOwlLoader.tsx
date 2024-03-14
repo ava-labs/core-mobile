@@ -10,6 +10,7 @@ let rootNode: RootSiblingsManager | null = null
 const showModal = (element: JSX.Element): void => {
   // if there is already a modal shown, hide it first
   if (rootNode !== null && __DEV__) {
+    // eslint-disable-next-line no-console
     console.warn(`there is already a modal shown, you should hide it first`)
   }
   rootNode = new RootSiblingsManager(element)
