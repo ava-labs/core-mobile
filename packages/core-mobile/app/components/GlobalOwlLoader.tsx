@@ -2,6 +2,7 @@ import React from 'react'
 import { StyleSheet, View, Dimensions } from 'react-native'
 import RootSiblingsManager from 'react-native-root-siblings'
 import CoreOwlSVG from 'components/svg/CoreOwlSVG'
+import Logger from 'utils/Logger'
 
 const { height: screenHeight } = Dimensions.get('window')
 
@@ -9,9 +10,8 @@ let rootNode: RootSiblingsManager | null = null
 
 const showModal = (element: JSX.Element): void => {
   // if there is already a modal shown, hide it first
-  if (rootNode !== null && __DEV__) {
-    // eslint-disable-next-line no-console
-    console.warn(`there is already a modal shown, you should hide it first`)
+  if (rootNode !== null) {
+    Logger.warn('there is already a modal shown, you should hide it first')
   }
   rootNode = new RootSiblingsManager(element)
 }
