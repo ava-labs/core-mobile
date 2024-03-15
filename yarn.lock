@@ -269,7 +269,7 @@ __metadata:
     react-native-localize: 2.2.6
     react-native-modal-datetime-picker: 15.0.1
     react-native-os: 1.2.6
-    react-native-pager-view: 5.4.25
+    react-native-pager-view: 6.2.3
     react-native-passkey: 2.1.1
     react-native-performance: 4.0.0
     react-native-performance-flipper-reporter: 4.0.0
@@ -5799,18 +5799,18 @@ __metadata:
   linkType: hard
 
 "@react-navigation/core@npm:^6.4.14":
-  version: 6.4.14
-  resolution: "@react-navigation/core@npm:6.4.14"
+  version: 6.4.15
+  resolution: "@react-navigation/core@npm:6.4.15"
   dependencies:
     "@react-navigation/routers": ^6.1.9
     escape-string-regexp: ^4.0.0
     nanoid: ^3.1.23
     query-string: ^7.1.3
     react-is: ^16.13.0
-    use-latest-callback: ^0.1.7
+    use-latest-callback: ^0.1.9
   peerDependencies:
     react: "*"
-  checksum: 2822c537c427c022f0079298941e4972ae8a60ed7e423aeac2435c0f29627228e4a193158feb20cd764ff9acfcc643260a24524c42b0ba352d91ca62b79ba6aa
+  checksum: 5c108456fc601db8738e505928092a13864f2f8f871461184612b835c9e1499a224674c768291f1508f65dd1090c719883340ddc1ef713bef48ddf559872a56c
   languageName: node
   linkType: hard
 
@@ -21509,13 +21509,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-pager-view@npm:5.4.25":
-  version: 5.4.25
-  resolution: "react-native-pager-view@npm:5.4.25"
+"react-native-pager-view@npm:6.2.3":
+  version: 6.2.3
+  resolution: "react-native-pager-view@npm:6.2.3"
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 2b5c8667b40897001d30ff2b19545cac34637c9dfa1ff54cad8e8ddedc3b3437a45af951b19f8e3c6a114cb6fdcff68f4ce18cf46752ed5fefde42d4e0461578
+  checksum: e82a7a485045727c82b9d93d759118d5c1b12d11c3a0e3d644d638041a2bfb96e998472e245fa6e09806667ec188a8f1c7a951895ae88fc6ca614f80df939fc2
   languageName: node
   linkType: hard
 
@@ -25181,16 +25181,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"use-latest-callback@npm:^0.1.5":
-  version: 0.1.6
-  resolution: "use-latest-callback@npm:0.1.6"
-  peerDependencies:
-    react: ">=16.8"
-  checksum: d94bea5cc5910d5967b12c766355c11812c1f57b5993d4b429dd6e580ac5904087ce732891d4fb3a855e0e56e6a7900b9af2084ede1d86df8e381afe47c2947a
-  languageName: node
-  linkType: hard
-
-"use-latest-callback@npm:^0.1.7":
+"use-latest-callback@npm:^0.1.5, use-latest-callback@npm:^0.1.9":
   version: 0.1.9
   resolution: "use-latest-callback@npm:0.1.9"
   peerDependencies:

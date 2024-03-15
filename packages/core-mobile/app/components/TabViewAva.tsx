@@ -169,6 +169,7 @@ const TabViewAva: TabViewAvaFC = ({
 
   return (
     <TabView
+      animationEnabled={true}
       onIndexChange={handleIndexChange}
       navigationState={navState}
       renderScene={scenes}
