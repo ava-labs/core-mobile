@@ -93,7 +93,11 @@ const InactiveNetworkCard: FC<Props> = ({ network }) => {
           )}
         </View>
         <View sx={{ flex: 1, marginLeft: 8, alignItems: 'flex-end' }}>
-          <Text variant="buttonSmall" ellipsizeMode={'tail'} numberOfLines={2}>
+          <Text
+            variant="buttonSmall"
+            sx={{ textAlign: 'right' }}
+            ellipsizeMode={'tail'}
+            numberOfLines={2}>
             {network.chainName}
           </Text>
           <Space y={5} />
@@ -103,7 +107,6 @@ const InactiveNetworkCard: FC<Props> = ({ network }) => {
           <MarketTrend
             priceChange={priceChange}
             percentChange={(priceChange / totalBalance) * 100}
-            isVertical={false}
           />
         </View>
       </View>

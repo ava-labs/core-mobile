@@ -1,7 +1,5 @@
 import React from 'react'
-import { StyleSheet, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
 import { useSelector } from 'react-redux'
 import {
@@ -13,8 +11,12 @@ import { ActivityIndicator } from 'components/ActivityIndicator'
 import { NetworkLogo } from 'screens/network/NetworkLogo'
 import { selectActiveNetwork } from 'store/network'
 import { selectActiveAccount } from 'store/account'
+import { Text, View } from '@avalabs/k2-mobile'
+import MarketTrend from 'screens/watchlist/components/MarketTrend'
+import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList'
+import { useTokensPriceChange } from 'hooks/useTokensPriceChange'
 
-const NetworkTokensHeader = () => {
+const NetworkTokensHeader = (): JSX.Element => {
   const {
     appHook: { currencyFormatter }
   } = useApplicationContext()
@@ -29,51 +31,44 @@ const NetworkTokensHeader = () => {
 
   const isBalanceLoading = isLoadingBalance || isRefetchingBalance
 
+  const { filteredTokenList: tokens } = useSearchableTokenList()
+  const { priceChange } = useTokensPriceChange(tokens)
+
   return (
-    <View style={styles.container}>
-      <View style={styles.networkContainer}>
-        <NetworkLogo logoUri={logoUri} size={48} style={styles.logo} />
-        <View style={styles.textContainer}>
-          <AvaText.Heading1 ellipsizeMode="tail" numberOfLines={2}>
+    <View
+      sx={{
+        paddingVertical: 8,
+        paddingHorizontal: 16
+      }}>
+      <View
+        sx={{
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexDirection: 'row'
+        }}>
+        <NetworkLogo logoUri={logoUri} size={24} />
+        <View sx={{ flex: 1, marginLeft: 8, marginRight: 50 }}>
+          <Text variant="buttonLarge" ellipsizeMode="tail" numberOfLines={2}>
             {chainName}
-          </AvaText.Heading1>
-          <Space y={4} />
-          {isBalanceLoading ? (
-            <ActivityIndicator
-              style={{ alignSelf: 'flex-start' }}
-              size="small"
-            />
-          ) : (
-            <AvaText.Body1 ellipsizeMode={'tail'}>
-              {formattedTotalBalance}
-            </AvaText.Body1>
-          )}
+          </Text>
         </View>
+      </View>
+      <Space y={4} />
+      <View>
+        {isBalanceLoading ? (
+          <ActivityIndicator style={{ alignSelf: 'flex-start' }} size="small" />
+        ) : (
+          <Text variant="heading4" ellipsizeMode={'tail'}>
+            {formattedTotalBalance}
+          </Text>
+        )}
+        <MarketTrend
+          priceChange={priceChange}
+          percentChange={(priceChange / balanceTotal) * 100}
+        />
       </View>
     </View>
   )
 }
-
-const styles = StyleSheet.create({
-  container: {
-    marginHorizontal: 16,
-    marginBottom: 16
-  },
-  networkContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexDirection: 'row',
-    marginTop: 25
-  },
-  textContainer: {
-    flex: 1,
-    marginLeft: 16,
-    marginRight: 50
-  },
-  logo: {
-    alignSelf: 'flex-start',
-    marginTop: 3
-  }
-})
 
 export default NetworkTokensHeader

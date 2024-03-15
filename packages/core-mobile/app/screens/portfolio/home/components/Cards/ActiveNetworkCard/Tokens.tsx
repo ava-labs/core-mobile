@@ -5,8 +5,7 @@ import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList
 import Avatar from 'components/Avatar'
 import { Text, View } from '@avalabs/k2-mobile'
 import MarketTrend from 'screens/watchlist/components/MarketTrend'
-import { selectWatchlistCharts, selectWatchlistTokens } from 'store/watchlist'
-import { useFocusedSelector } from 'utils/performance/useFocusedSelector'
+import { useGetTokenPercentChange } from 'hooks/useGetTokenPercentChange'
 
 const Tokens = (): JSX.Element => {
   const { filteredTokenList: tokens } = useSearchableTokenList()
@@ -14,10 +13,9 @@ const Tokens = (): JSX.Element => {
     appHook: { currencyFormatter }
   } = useApplicationContext()
 
-  const watchlistTokens = useFocusedSelector(selectWatchlistTokens)
-  const charts = useFocusedSelector(selectWatchlistCharts)
-
   const tokensToDisplay = tokens.slice(0, 4)
+
+  const { getTokenPercentChange } = useGetTokenPercentChange()
 
   const renderToken = (
     token: TokenWithBalance,
@@ -31,20 +29,7 @@ const Tokens = (): JSX.Element => {
       ? currencyFormatter(balanceInCurrency)
       : `${balanceDisplayValue} ${symbol}`
 
-    const tokenInWatchlist = watchlistTokens.find(
-      watchlistToken => watchlistToken.symbol === token.symbol.toLowerCase()
-    )
-
-    const diffValue = tokenInWatchlist?.id
-      ? charts[tokenInWatchlist.id]?.ranges.diffValue ?? 0
-      : 0
-
-    let percentChange = tokenInWatchlist?.id
-      ? charts[tokenInWatchlist.id]?.ranges.percentChange ?? 0
-      : 0
-
-    percentChange = diffValue < 0 ? -percentChange : percentChange
-
+    const percentChange = getTokenPercentChange(token.symbol)
     const priceChange = (balanceInCurrency * percentChange) / 100
 
     return (
@@ -63,11 +48,10 @@ const Tokens = (): JSX.Element => {
         </View>
         <View sx={{ alignItems: 'flex-end' }}>
           <Text variant="buttonMedium">{formattedBalance}</Text>
-          {percentChange !== undefined && diffValue !== undefined && (
+          {percentChange !== undefined && (
             <MarketTrend
               priceChange={priceChange}
               percentChange={percentChange}
-              isVertical={false}
             />
           )}
         </View>

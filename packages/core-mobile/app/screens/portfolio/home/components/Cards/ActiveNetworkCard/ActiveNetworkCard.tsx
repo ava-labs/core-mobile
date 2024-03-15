@@ -102,7 +102,6 @@ const ActiveNetworkCard = (): JSX.Element => {
             <MarketTrend
               priceChange={priceChange}
               percentChange={(priceChange / totalBalanceInCurrency) * 100}
-              isVertical={false}
             />
           </View>
         </View>

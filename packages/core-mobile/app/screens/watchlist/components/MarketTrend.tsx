@@ -7,7 +7,7 @@ import { Text, View, useTheme } from '@avalabs/k2-mobile'
 interface Props {
   priceChange: number
   percentChange: number
-  isVertical?: boolean
+  isHorizontal?: boolean
   textVariant?: 'overline' | 'buttonSmall'
   testID?: string
 }
@@ -15,7 +15,7 @@ interface Props {
 const MarketTrend: FC<Props> = ({
   priceChange,
   percentChange,
-  isVertical = true,
+  isHorizontal = true,
   textVariant = 'overline'
 }) => {
   const { currencyFormatter } = useApplicationContext().appHook
@@ -28,9 +28,9 @@ const MarketTrend: FC<Props> = ({
     2
   )
 
-  const formattedPercent = `${isVertical ? '' : ' '}${
+  const formattedPercent = `${isHorizontal ? ' ' : ''}${
     priceChange < 0 ? '-' : '+'
-  }${Math.abs(percentChange).toFixed(2)}%`
+  }${Math.abs(isNaN(percentChange) ? 0 : percentChange).toFixed(2)}%`
 
   const tintColor =
     priceChange < 0
@@ -42,12 +42,12 @@ const MarketTrend: FC<Props> = ({
   return (
     <View
       sx={
-        isVertical
-          ? { alignItems: 'center' }
-          : {
+        isHorizontal
+          ? {
               flexDirection: 'row',
               alignItems: 'center'
             }
+          : { alignItems: 'center' }
       }>
       <View sx={{ flexDirection: 'row', alignItems: 'center' }}>
         <MarketTriangleSVG negative={priceChange < 0} color={tintColor} />
@@ -64,7 +64,7 @@ const MarketTrend: FC<Props> = ({
         variant={textVariant}
         sx={{
           color: '$neutral400',
-          marginTop: isVertical ? -4 : 0
+          marginTop: isHorizontal ? 0 : -4
         }}>
         {formattedPercent}
       </Text>

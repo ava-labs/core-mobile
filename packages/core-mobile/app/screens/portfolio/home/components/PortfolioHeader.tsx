@@ -1,6 +1,5 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { Space } from 'components/Space'
 import { useSelector } from 'react-redux'
 import {
   selectBalanceTotalInCurrencyForAccount,
@@ -29,50 +28,57 @@ function PortfolioHeader(): JSX.Element {
     selectTokensWithBalanceForAccount(activeAccount?.index)
   )
   const { priceChange } = useTokensPriceChange(tokens)
+  const [contentHeight, setContentHeight] = useState(0)
 
   const renderContent = (): JSX.Element => {
     if (isBalanceLoading) return <PortfolioHeaderLoader />
 
     if (isRefetchingBalance)
-      return <ActivityIndicator style={{ alignSelf: 'center' }} size="small" />
+      return (
+        <ActivityIndicator
+          style={{ alignSelf: 'center', height: contentHeight }}
+          size="small"
+        />
+      )
 
     return (
-      <>
-        <Text variant="heading3">
-          {currencyBalance.replace(selectedCurrency, '')}
-        </Text>
-        <Text
-          variant="body1"
+      <View
+        sx={{ alignItems: 'center' }}
+        onLayout={event => {
+          setContentHeight(event.nativeEvent.layout.height)
+        }}>
+        <View
           sx={{
-            paddingBottom: 4,
-            marginLeft: 4,
-            color: '$neutral400'
+            alignItems: 'flex-end',
+            justifyContent: 'center',
+            flexDirection: 'row',
+            height: 44
           }}>
-          {selectedCurrency}
-        </Text>
-      </>
+          <Text variant="heading3">
+            {currencyBalance.replace(selectedCurrency, '')}
+          </Text>
+          <Text
+            variant="body1"
+            sx={{
+              paddingBottom: 4,
+              marginLeft: 4,
+              color: '$neutral400'
+            }}>
+            {selectedCurrency}
+          </Text>
+        </View>
+        <MarketTrend
+          priceChange={priceChange}
+          percentChange={(priceChange / balanceTotalInCurrency) * 100}
+          textVariant="buttonSmall"
+        />
+      </View>
     )
   }
 
   return (
-    <View sx={{ alignItems: 'center' }} pointerEvents="box-none">
-      <View
-        sx={{
-          alignItems: 'flex-end',
-          justifyContent: 'center',
-          flexDirection: 'row',
-          height: 44,
-          marginTop: 25
-        }}>
-        {renderContent()}
-      </View>
-      <MarketTrend
-        priceChange={priceChange}
-        percentChange={(priceChange / balanceTotalInCurrency) * 100}
-        isVertical={false}
-        textVariant="buttonSmall"
-      />
-      <Space y={18} />
+    <View sx={{ paddingVertical: 8 }} pointerEvents="box-none">
+      {renderContent()}
     </View>
   )
 }

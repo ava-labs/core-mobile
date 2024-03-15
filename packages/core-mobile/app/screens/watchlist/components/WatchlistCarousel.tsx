@@ -6,15 +6,12 @@ import {
   StyleSheet,
   View
 } from 'react-native'
-import { useApplicationContext } from 'contexts/ApplicationContext'
 import Avatar from 'components/Avatar'
-import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
 import AvaButton from 'components/AvaButton'
 import AddSVG from 'components/svg/AddSVG'
 import { useNavigation } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
-import { Opacity85 } from 'resources/Constants'
 import { PortfolioScreenProps } from 'navigation/types'
 import { useDispatch, useSelector } from 'react-redux'
 import {
@@ -23,6 +20,7 @@ import {
   selectWatchlistChart,
   selectWatchlistFavorites
 } from 'store/watchlist'
+import { Text, useTheme } from '@avalabs/k2-mobile'
 import MarketTrend from './MarketTrend'
 
 interface Props {
@@ -33,8 +31,8 @@ type NavigationProp = PortfolioScreenProps<
   typeof AppNavigation.Portfolio.Portfolio
 >['navigation']
 
-const WatchlistCarrousel: FC<Props> = () => {
-  const { theme } = useApplicationContext()
+const WatchlistCarousel: FC<Props> = () => {
+  const { theme } = useTheme()
   const watchlistFavorites = useSelector(selectWatchlistFavorites)
   const navigation = useNavigation<NavigationProp>()
   const dispatch = useDispatch()
@@ -51,18 +49,18 @@ const WatchlistCarrousel: FC<Props> = () => {
     () => (
       <AvaButton.Base
         onPress={goToWatchlist}
-        style={[style.item, { backgroundColor: theme.colorBg2 + Opacity85 }]}>
+        style={[style.item, { backgroundColor: theme.colors.$neutral900 }]}>
         <Space y={14} />
         <AddSVG circleColor={'white'} size={24} />
         <Space y={4} />
-        <AvaText.ButtonSmall
-          textStyle={{
-            color: theme.colorText1,
+        <Text
+          variant="buttonSmall"
+          sx={{
             textAlign: 'center',
             paddingVertical: 8
           }}>
           Add to Watchlist
-        </AvaText.ButtonSmall>
+        </Text>
         <Space y={16} />
       </AvaButton.Base>
     ),
@@ -73,7 +71,7 @@ const WatchlistCarrousel: FC<Props> = () => {
   const renderItem = (item: ListRenderItemInfo<MarketToken>): JSX.Element => {
     const token = item.item
     return (
-      <CarrouselItem
+      <CarouselItem
         token={token}
         onPress={() => {
           navigation.navigate(AppNavigation.Wallet.TokenDetail, {
@@ -101,13 +99,13 @@ const WatchlistCarrousel: FC<Props> = () => {
 
 const Separator = (): JSX.Element => <View style={{ margin: 4 }} />
 
-interface CarrouselItemProps {
+interface CarouselItemProps {
   token: MarketToken
   onPress: () => void
 }
 
-const CarrouselItem: FC<CarrouselItemProps> = ({ token, onPress }) => {
-  const { theme } = useApplicationContext()
+const CarouselItem: FC<CarouselItemProps> = ({ token, onPress }) => {
+  const { theme } = useTheme()
   const chartData = useSelector(selectWatchlistChart(token.id))
 
   const priceChange = chartData?.ranges?.diffValue ?? 0
@@ -117,18 +115,20 @@ const CarrouselItem: FC<CarrouselItemProps> = ({ token, onPress }) => {
     <AvaButton.Base
       key={token.id}
       onPress={onPress}
-      style={[style.item, { backgroundColor: theme.colorBg2 }]}>
+      style={[style.item, { backgroundColor: theme.colors.$neutral900 }]}>
       <Avatar.Token
         name={token.name}
         symbol={token.symbol}
         logoUri={token.logoUri}
       />
       <Space y={4} />
-      <AvaText.ButtonSmall textStyle={{ color: theme.colorText1 }}>
-        {token?.symbol?.toUpperCase()}
-      </AvaText.ButtonSmall>
+      <Text variant="buttonSmall">{token?.symbol?.toUpperCase()}</Text>
       <Space y={8} />
-      <MarketTrend priceChange={priceChange} percentChange={percentChange} />
+      <MarketTrend
+        priceChange={priceChange}
+        percentChange={percentChange}
+        isHorizontal={false}
+      />
     </AvaButton.Base>
   )
 }
@@ -142,4 +142,4 @@ const style = StyleSheet.create({
   }
 })
 
-export default WatchlistCarrousel
+export default WatchlistCarousel

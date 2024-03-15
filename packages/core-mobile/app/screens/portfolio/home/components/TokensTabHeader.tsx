@@ -6,7 +6,7 @@ import { PortfolioScreenProps } from 'navigation/types'
 import { Platform, View } from 'react-native'
 import AvaText from 'components/AvaText'
 import AvaButton from 'components/AvaButton'
-import WatchlistCarrousel from 'screens/watchlist/components/WatchlistCarrousel'
+import WatchlistCarousel from 'screens/watchlist/components/WatchlistCarousel'
 import { Space } from 'components/Space'
 import Animated, { FlipInEasyX, FlipOutEasyX } from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
@@ -17,13 +17,13 @@ type NavigationProp = PortfolioScreenProps<
   typeof AppNavigation.Portfolio.Portfolio
 >['navigation']
 
-export const TokensTabHeader = () => {
+export const TokensTabHeader = (): JSX.Element => {
   const { theme } = useApplicationContext()
   const { navigate } = useNavigation<NavigationProp>()
   const viewAllBtnColor = theme.colorPrimary1
   const network = useSelector(selectActiveNetwork)
 
-  const goToWatchList = () => {
+  const goToWatchList = (): void => {
     navigate(AppNavigation.Tabs.Watchlist)
   }
 
@@ -44,7 +44,7 @@ export const TokensTabHeader = () => {
           View All
         </AvaButton.TextLink>
       </View>
-      <WatchlistCarrousel />
+      <WatchlistCarousel />
       <AvaText.Heading3 textStyle={{ marginVertical: 16 }} testID="networks">
         Networks
       </AvaText.Heading3>
