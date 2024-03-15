@@ -4,13 +4,13 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import AppNavigation from 'navigation/AppNavigation'
 import { PortfolioScreenProps } from 'navigation/types'
 import { Platform, View } from 'react-native'
-import AvaText from 'components/AvaText'
 import AvaButton from 'components/AvaButton'
 import WatchlistCarousel from 'screens/watchlist/components/WatchlistCarousel'
 import { Space } from 'components/Space'
 import Animated, { FlipInEasyX, FlipOutEasyX } from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
 import { selectActiveNetwork } from 'store/network'
+import { Text } from '@avalabs/k2-mobile'
 import ActiveNetworkCard from './Cards/ActiveNetworkCard/ActiveNetworkCard'
 
 type NavigationProp = PortfolioScreenProps<
@@ -35,7 +35,9 @@ export const TokensTabHeader = (): JSX.Element => {
           alignItems: 'center',
           justifyContent: 'space-between'
         }}>
-        <AvaText.Heading3 testID="favorites">Favorites</AvaText.Heading3>
+        <Text variant="heading6" testID="favorites">
+          Favorites
+        </Text>
         <AvaButton.TextLink
           testID="viewAll"
           style={{ paddingRight: -16 }}
@@ -45,9 +47,9 @@ export const TokensTabHeader = (): JSX.Element => {
         </AvaButton.TextLink>
       </View>
       <WatchlistCarousel />
-      <AvaText.Heading3 textStyle={{ marginVertical: 16 }} testID="networks">
+      <Text variant="heading6" sx={{ marginVertical: 16 }} testID="networks">
         Networks
-      </AvaText.Heading3>
+      </Text>
       <Animated.View
         sharedTransitionTag={
           Platform.OS === 'ios' ? 'active-network-card' : undefined
