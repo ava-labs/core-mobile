@@ -91,10 +91,7 @@ export class MnemonicWallet implements Wallet {
   }: {
     accountIndex: number
     network: Network
-    provider:
-      | JsonRpcBatchInternal
-      | BitcoinProvider
-      | Avalanche.JsonRpcProvider
+    provider: JsonRpcBatchInternal | BitcoinProvider | Avalanche.JsonRpcProvider
   }): Promise<BitcoinWallet | BaseWallet | Avalanche.StaticSigner> {
     switch (network.vmName) {
       case NetworkVMType.EVM:

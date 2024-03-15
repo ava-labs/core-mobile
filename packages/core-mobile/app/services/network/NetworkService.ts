@@ -85,7 +85,7 @@ class NetworkService {
             }
             txID = tx.hash
           } else if (provider instanceof BitcoinProvider) {
-            txID = (await provider.issueRawTx(signedTx))
+            txID = await provider.issueRawTx(signedTx)
           }
         }
 
