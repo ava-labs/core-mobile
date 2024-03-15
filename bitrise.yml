@@ -21,8 +21,12 @@ app:
 workflows:
   _build-android:
     steps:
+    - set-java-version@1:
+        inputs:
+        - set_java_version: "17"
     - install-missing-android-tools@3:
         inputs:
+        - ndk_version: 25.1.8937393
         - gradlew_path: $ANDROID_PROJECT_LOCATION/gradlew
     - restore-gradle-cache@1: {}
     - android-build@1:
