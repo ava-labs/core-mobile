@@ -1,17 +1,15 @@
 diff --git a/node_modules/react-native-svg/apple/Elements/RNSVGSvgView.mm b/node_modules/react-native-svg/apple/Elements/RNSVGSvgView.mm
-index 9306b04..8e6d73b 100644
+index 3047b4b..1415b92 100644
 --- a/node_modules/react-native-svg/apple/Elements/RNSVGSvgView.mm
 +++ b/node_modules/react-native-svg/apple/Elements/RNSVGSvgView.mm
-@@ -290,8 +290,12 @@ - (void)drawRect:(CGRect)rect
-   }
+@@ -299,7 +299,11 @@ using namespace facebook::react;
    _boundingBox = rect;
    CGContextRef context = UIGraphicsGetCurrentContext();
--
--  [self drawToContext:context withRect:rect];
+ 
+-  [self drawToContext:context withRect:[self bounds]];
 +  @try {
-+    [self drawToContext:context withRect:rect];
-+  }
-+  @catch (NSException *exception) {
++    [self drawToContext:context withRect:[self bounds]];
++  } @catch (NSException *exception) {
 +    RCTLogWarn(@"[RNSVGSvgView drawRect] %@", exception.reason);
 +  }
  }
