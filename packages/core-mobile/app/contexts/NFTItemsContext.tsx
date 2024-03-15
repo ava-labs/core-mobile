@@ -138,10 +138,15 @@ export const NFTMetadataProvider = ({
   const query = useNfts(nftVisited)
 
   useEffect(() => {
-    const lastPageNfts = query.data?.pages.at(-1)?.nfts ?? []
+    if (query.data && query.data.pages.length > 0) {
+      // It runs every time new data is fetched by useInfiniteQuery, specifically
+      // when a new page is added, to ensure the newly fetched NFTs are processed.
+      const lastPageIndex = query.data.pages.length - 1
 
-    if (lastPageNfts.length > 0) {
-      process(lastPageNfts)
+      const lastPageNfts = query.data.pages[lastPageIndex]?.nfts ?? []
+      if (lastPageNfts.length > 0) {
+        process(lastPageNfts)
+      }
     }
   }, [query.data, process])
 

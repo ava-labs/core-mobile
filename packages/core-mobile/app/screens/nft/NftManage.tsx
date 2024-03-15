@@ -26,14 +26,14 @@ const NftManage = (): JSX.Element => {
     isRefetching
   } = useNftItemsContext()
   const filteredData = useMemo(() => {
+    const keyword = searchText.toLowerCase()
+
     return nfts.filter(nft => {
       return (
         searchText.length === 0 ||
-        nft.tokenId.toLowerCase().includes(searchText.toLowerCase()) ||
-        nft.metadata.name?.toLowerCase().includes(searchText.toLowerCase()) ||
-        nft.processedMetadata.name
-          ?.toLowerCase()
-          .includes(searchText.toLowerCase())
+        nft.tokenId.toLowerCase().includes(keyword) ||
+        nft.metadata.name?.toLowerCase().includes(keyword) ||
+        nft.processedMetadata.name?.toLowerCase().includes(keyword)
       )
     })
   }, [nfts, searchText])
