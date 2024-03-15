@@ -26,7 +26,7 @@ import Loader from 'components/Loader'
 import { SnackBarMessage } from 'seedless/components/SnackBarMessage'
 import { Tooltip } from 'components/Tooltip'
 import FastImage from 'react-native-fast-image'
-import { useNftMetadataContext } from 'contexts/NFTMetadataContext'
+import { useNftItemsContext } from 'contexts/NFTItemsContext'
 import { useNft } from './hooks/useNft'
 
 type NftDetailsScreenProps = NFTDetailsScreenProps<
@@ -44,7 +44,7 @@ const NftDetailsScreen = (): JSX.Element => {
     routeNft.tokenId
   )
 
-  const { process, getNftItem } = useNftMetadataContext()
+  const { process, getNftItem } = useNftItemsContext()
   const nft = useMemo(
     () => getNftItem(routeNft.uid) ?? routeNft,
     [getNftItem, routeNft]

@@ -13,10 +13,11 @@ import { getTokenUri, isErc721 } from 'services/nft/utils'
 import { NFTImageData, NFTItem, NFTItemData, NFTMetadata } from 'store/nft'
 import Logger from 'utils/Logger'
 
-type NFTMetadataContextState = {
+type NFTItemsContextState = {
   process: (nfts: NFTItemData[]) => void
   nftItems: NFTItem[]
   getNftItem: (uid: string) => NFTItem | undefined
+  setNftVisited: (visited: boolean) => void
   fetchNextPage: () => void
   hasNextPage: boolean
   isFetchingNextPage: boolean
@@ -25,8 +26,8 @@ type NFTMetadataContextState = {
   isLoading: boolean
 }
 
-export const NFTMetadataContext = createContext<NFTMetadataContextState>(
-  {} as NFTMetadataContextState
+export const NFTItemsContext = createContext<NFTItemsContextState>(
+  {} as NFTItemsContextState
 )
 
 export const NFTMetadataProvider = ({
@@ -36,6 +37,7 @@ export const NFTMetadataProvider = ({
 }): JSX.Element => {
   const [metadata, setMetadata] = useState<Record<string, NFTMetadata>>({})
   const [imageData, setImageData] = useState<Record<string, NFTImageData>>({})
+  const [nftVisited, setNftVisited] = useState<boolean>(false)
 
   const processImageData = useCallback((items: NFTItemData[]): void => {
     items.forEach(nft => {
@@ -133,7 +135,7 @@ export const NFTMetadataProvider = ({
     [processImageData, processMetadata]
   )
 
-  const query = useNfts()
+  const query = useNfts(nftVisited)
 
   useEffect(() => {
     const lastPageNfts = query.data?.pages.at(-1)?.nfts ?? []
@@ -164,18 +166,19 @@ export const NFTMetadataProvider = ({
   )
 
   return (
-    <NFTMetadataContext.Provider
+    <NFTItemsContext.Provider
       value={{
         process,
-        ...query,
         nftItems,
-        getNftItem
+        getNftItem,
+        setNftVisited,
+        ...query
       }}>
       {children}
-    </NFTMetadataContext.Provider>
+    </NFTItemsContext.Provider>
   )
 }
 
-export function useNftMetadataContext(): NFTMetadataContextState {
-  return useContext(NFTMetadataContext)
+export function useNftItemsContext(): NFTItemsContextState {
+  return useContext(NFTItemsContext)
 }

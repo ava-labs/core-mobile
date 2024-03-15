@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 import RadioGroup from 'components/RadioGroup'
 import GridSVG from 'components/svg/GridSVG'
@@ -8,7 +8,7 @@ import ListSVG from 'components/svg/ListSVG'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { NFTItem, selectHiddenNftUIDs } from 'store/nft'
 import { useSelector } from 'react-redux'
-import { useNftMetadataContext } from 'contexts/NFTMetadataContext'
+import { useNftItemsContext } from 'contexts/NFTItemsContext'
 import { NftList } from './components/NftList/NftList'
 import { NftGrid } from './components/NftGrid/NftGrid'
 
@@ -30,8 +30,9 @@ export default function NftListView({
     isFetchingNextPage,
     hasNextPage,
     refetch,
-    isRefetching
-  } = useNftMetadataContext()
+    isRefetching,
+    setNftVisited
+  } = useNftItemsContext()
 
   const [listType, setListType] = useState<ListType>()
   const { theme } = useApplicationContext()
@@ -51,6 +52,10 @@ export default function NftListView({
     refresh: refetch,
     isRefreshing: isRefetching
   }
+
+  useEffect(() => {
+    setNftVisited(true)
+  }, [setNftVisited])
 
   return (
     <View style={styles.container}>

@@ -10,7 +10,7 @@ import { selectHiddenNftUIDs, setHidden, NFTItem } from 'store/nft'
 import { useDispatch, useSelector } from 'react-redux'
 import { RefreshControl } from 'components/RefreshControl'
 import { View } from '@avalabs/k2-mobile'
-import { useNftMetadataContext } from 'contexts/NFTMetadataContext'
+import { useNftItemsContext } from 'contexts/NFTItemsContext'
 import { FetchingNextIndicator } from './components/FetchingNextIndicator'
 
 const NftManage = (): JSX.Element => {
@@ -24,7 +24,7 @@ const NftManage = (): JSX.Element => {
     isFetchingNextPage,
     refetch,
     isRefetching
-  } = useNftMetadataContext()
+  } = useNftItemsContext()
   const filteredData = useMemo(() => {
     return nfts.filter(nft => {
       return (
