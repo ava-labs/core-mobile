@@ -6,16 +6,16 @@ import { Row } from 'components/Row'
 import AvaButton from 'components/AvaButton'
 import ListSVG from 'components/svg/ListSVG'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { NFTItemData, selectHiddenNftUIDs } from 'store/nft'
-import { useNfts } from 'screens/nft/hooks/useNfts'
+import { NFTItem, selectHiddenNftUIDs } from 'store/nft'
 import { useSelector } from 'react-redux'
+import { useNftMetadataContext } from 'contexts/NFTMetadataContext'
 import { NftList } from './components/NftList/NftList'
 import { NftGrid } from './components/NftGrid/NftGrid'
 
 type ListType = 'grid' | 'list'
 
 type Props = {
-  onItemSelected: (item: NFTItemData) => void
+  onItemSelected: (item: NFTItem) => void
   onManagePressed: () => void
 }
 
@@ -24,14 +24,14 @@ export default function NftListView({
   onManagePressed
 }: Props): JSX.Element {
   const {
-    nfts,
+    nftItems: nfts,
     isLoading,
     fetchNextPage,
     isFetchingNextPage,
     hasNextPage,
     refetch,
     isRefetching
-  } = useNfts()
+  } = useNftMetadataContext()
 
   const [listType, setListType] = useState<ListType>()
   const { theme } = useApplicationContext()

@@ -22,7 +22,6 @@ import { Row } from 'components/Row'
 import PoppableGasAndLimit from 'components/PoppableGasAndLimit'
 import { Tooltip } from 'components/Tooltip'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { useNftMetadataContext } from 'contexts/NFTMetadataContext'
 
 type NavigationProp = NFTDetailsSendScreenProps<
   typeof AppNavigation.NftSend.Review
@@ -46,10 +45,6 @@ export default function NftReview({
     fromAccount,
     fees
   } = useSendNFTContext()
-
-  const { getNftImageData, getNftMetadata } = useNftMetadataContext()
-  const imageData = getNftImageData(nft)
-  const metadata = getNftMetadata(nft)
 
   useEffect(() => {
     if (sendStatus === 'Sending') {
@@ -82,8 +77,8 @@ export default function NftReview({
         </View>
         <Avatar.Custom
           size={56}
-          name={metadata.name ?? ''}
-          logoUri={imageData?.image}
+          name={nft.processedMetadata.name ?? ''}
+          logoUri={nft.imageData?.image}
         />
       </View>
       <View
@@ -105,7 +100,7 @@ export default function NftReview({
         </AvaText.Heading1>
         <Space y={4} />
         <AvaText.Heading3 textStyle={{ alignSelf: 'center' }}>
-          {metadata.name}
+          {nft.processedMetadata.name}
         </AvaText.Heading3>
         <Space y={18} />
         <SendRow

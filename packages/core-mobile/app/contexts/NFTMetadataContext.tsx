@@ -1,14 +1,28 @@
 import { NftTokenMetadataStatus } from '@avalabs/glacier-sdk'
-import React, { createContext, useCallback, useContext, useState } from 'react'
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState
+} from 'react'
+import { useNfts } from 'screens/nft/hooks/useNfts'
 import NftProcessor from 'services/nft/NftProcessor'
 import { getTokenUri, isErc721 } from 'services/nft/utils'
-import { NFTImageData, NFTItemData, NFTMetadata } from 'store/nft'
+import { NFTImageData, NFTItem, NFTItemData, NFTMetadata } from 'store/nft'
 import Logger from 'utils/Logger'
 
 type NFTMetadataContextState = {
-  getNftImageData: (nft: NFTItemData) => NFTImageData | undefined
-  getNftMetadata: (nft: NFTItemData) => NFTMetadata
   process: (nfts: NFTItemData[]) => void
+  nftItems: NFTItem[]
+  getNftItem: (uid: string) => NFTItem | undefined
+  fetchNextPage: () => void
+  hasNextPage: boolean
+  isFetchingNextPage: boolean
+  refetch: () => void
+  isRefetching: boolean
+  isLoading: boolean
 }
 
 export const NFTMetadataContext = createContext<NFTMetadataContextState>(
@@ -111,25 +125,6 @@ export const NFTMetadataProvider = ({
     [processUnindexedNftMetadata, processIndexedNftMetadata]
   )
 
-  const getNftMetadata = useCallback(
-    (nft: NFTItemData): NFTMetadata => {
-      return (
-        metadata[nft.uid] ?? {
-          ...nft.metadata,
-          attributes: []
-        }
-      )
-    },
-    [metadata]
-  )
-
-  const getNftImageData = useCallback(
-    (nft: NFTItemData): NFTImageData | undefined => {
-      return imageData[nft.uid]
-    },
-    [imageData]
-  )
-
   const process = useCallback(
     (items: NFTItemData[]): void => {
       processMetadata(items)
@@ -138,12 +133,43 @@ export const NFTMetadataProvider = ({
     [processImageData, processMetadata]
   )
 
+  const query = useNfts()
+
+  useEffect(() => {
+    const lastPageNfts = query.data?.pages.at(-1)?.nfts ?? []
+
+    if (lastPageNfts.length > 0) {
+      process(lastPageNfts)
+    }
+  }, [query.data, process])
+
+  const nftItems = useMemo(
+    () =>
+      query.nfts.map(nft => ({
+        ...nft,
+        imageData: imageData[nft.uid],
+        processedMetadata: metadata[nft.uid] ?? {
+          ...nft.metadata,
+          attributes: []
+        }
+      })),
+    [query.nfts, imageData, metadata]
+  )
+
+  const getNftItem = useCallback(
+    (uid: string): NFTItem | undefined => {
+      return nftItems.find(nft => nft.uid === uid)
+    },
+    [nftItems]
+  )
+
   return (
     <NFTMetadataContext.Provider
       value={{
-        getNftImageData,
-        getNftMetadata,
-        process
+        process,
+        ...query,
+        nftItems,
+        getNftItem
       }}>
       {children}
     </NFTMetadataContext.Provider>

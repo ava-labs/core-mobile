@@ -34,6 +34,11 @@ export type NFTMetadata = (Erc721TokenMetadata | Erc1155TokenMetadata) & {
   attributes: NFTItemExternalDataAttribute[]
 }
 
+export type NFTItem = NFTItemData & {
+  imageData: NFTImageData | undefined
+  processedMetadata: NFTMetadata
+}
+
 export type NFTItemExternalData = {
   name: string
   image: string

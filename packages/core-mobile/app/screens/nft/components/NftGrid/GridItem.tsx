@@ -4,7 +4,7 @@ import AvaButton from 'components/AvaButton'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Opacity15 } from 'resources/Constants'
 import AvaText from 'components/AvaText'
-import { NFTImageData, NFTItemData, NFTMetadata } from 'store/nft'
+import { NFTItem } from 'store/nft'
 import { SvgXml } from 'react-native-svg'
 import OvalTagBg from 'components/OvalTagBg'
 import { isErc1155 } from 'services/nft/utils'
@@ -44,14 +44,10 @@ const ErrorFallback = ({
 export const GridItem = React.memo(
   ({
     item,
-    metadata,
-    imageData,
     onItemSelected
   }: {
-    item: NFTItemData
-    metadata: NFTMetadata
-    onItemSelected: (item: NFTItemData) => void
-    imageData?: NFTImageData
+    item: NFTItem
+    onItemSelected: (item: NFTItem) => void
   }) => {
     const [imgLoadFailed, setImgLoadFailed] = useState(false)
     const theme = useApplicationContext().theme
@@ -67,7 +63,10 @@ export const GridItem = React.memo(
 
     const renderFallback = (): JSX.Element => {
       return (
-        <ErrorFallback title={`#${item.tokenId}`} subtitle={metadata.name} />
+        <ErrorFallback
+          title={`#${item.tokenId}`}
+          subtitle={item.processedMetadata.name}
+        />
       )
     }
 
@@ -76,8 +75,8 @@ export const GridItem = React.memo(
         return renderFallback()
       }
 
-      if (!imageData) {
-        if (metadata.imageUri) {
+      if (!item.imageData) {
+        if (item.metadata.imageUri) {
           return (
             <View style={{ width: GRID_ITEM_WIDTH, height: GRID_ITEM_WIDTH }} />
           )
@@ -86,21 +85,21 @@ export const GridItem = React.memo(
         }
       }
 
-      return imageData.isSvg ? (
+      return item.imageData.isSvg ? (
         <SvgXml
-          xml={imageData.image ?? null}
+          xml={item.imageData.image ?? null}
           width={GRID_ITEM_WIDTH}
-          height={GRID_ITEM_WIDTH * (imageData.aspect ?? 1)}
+          height={GRID_ITEM_WIDTH * (item.imageData.aspect ?? 1)}
         />
       ) : (
         <Animated.View style={{ opacity: opacity }}>
           <FastImage
             style={{
               width: GRID_ITEM_WIDTH,
-              height: GRID_ITEM_WIDTH * (imageData.aspect ?? 1),
+              height: GRID_ITEM_WIDTH * (item.imageData.aspect ?? 1),
               borderRadius: 8
             }}
-            source={{ uri: imageData.image }}
+            source={{ uri: item.imageData.image }}
             onLoadEnd={handleFadeIn}
             onError={() => {
               setImgLoadFailed(true)

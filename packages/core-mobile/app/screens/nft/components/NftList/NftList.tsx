@@ -1,17 +1,16 @@
 import React, { useCallback } from 'react'
 import { FlatList, StyleSheet } from 'react-native'
 import ZeroState from 'components/ZeroState'
-import { NFTItemData, NFTImageData, NFTMetadata } from 'store/nft'
+import { NFTItem } from 'store/nft'
 import { RefreshControl } from 'components/RefreshControl'
 import { View } from '@avalabs/k2-mobile'
-import { useNftMetadataContext } from 'contexts/NFTMetadataContext'
 import { FetchingNextIndicator } from '../FetchingNextIndicator'
 import { NftListLoader } from './NftListLoader'
 import { ListItem } from './ListItem'
 
 type Props = {
-  nfts: NFTItemData[]
-  onItemSelected: (item: NFTItemData) => void
+  nfts: NFTItem[]
+  onItemSelected: (item: NFTItem) => void
   isLoading: boolean
   fetchNextPage: () => void
   hasNextPage: boolean
@@ -30,8 +29,6 @@ export const NftList = ({
   refresh,
   isRefreshing
 }: Props): JSX.Element => {
-  const { getNftImageData, getNftMetadata } = useNftMetadataContext()
-
   const onEndReached = useCallback(
     ({ distanceFromEnd }: { distanceFromEnd: number }) => {
       if (distanceFromEnd > 0 && hasNextPage && !isFetchingNextPage)
@@ -63,9 +60,7 @@ export const NftList = ({
       renderItem={info =>
         renderItem({
           item: info.item,
-          metadata: getNftMetadata(info.item),
-          onItemSelected,
-          imageData: getNftImageData(info.item)
+          onItemSelected
         })
       }
       indicatorStyle="white"
@@ -78,23 +73,12 @@ export const NftList = ({
 
 const renderItem = ({
   item,
-  metadata,
-  onItemSelected,
-  imageData
+  onItemSelected
 }: {
-  item: NFTItemData
-  metadata: NFTMetadata
-  onItemSelected: (item: NFTItemData) => void
-  imageData?: NFTImageData
+  item: NFTItem
+  onItemSelected: (item: NFTItem) => void
 }): JSX.Element => {
-  return (
-    <ListItem
-      item={item}
-      metadata={metadata}
-      onItemSelected={onItemSelected}
-      imageData={imageData}
-    />
-  )
+  return <ListItem item={item} onItemSelected={onItemSelected} />
 }
 
 const Separator = (): JSX.Element => <View style={{ margin: 4 }} />

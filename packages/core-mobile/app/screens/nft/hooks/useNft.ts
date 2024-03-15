@@ -1,18 +1,15 @@
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import NftService from 'services/nft/NftService'
 import Logger from 'utils/Logger'
-import { useCallback, useEffect } from 'react'
+import { useCallback } from 'react'
 import { NFTItemData } from 'store/nft'
 import { useQuery } from '@tanstack/react-query'
-import { useNftMetadataContext } from 'contexts/NFTMetadataContext'
 
 export const useNft = (
   chainId: number,
   address: string,
   tokenId: string
 ): { nft: NFTItemData | undefined } => {
-  const { process } = useNftMetadataContext()
-
   const fetchNft = useCallback(async () => {
     const t = SentryWrapper.startTransaction('get-nft')
     try {
@@ -43,12 +40,6 @@ export const useNft = (
   })
 
   const nft = query.data
-
-  useEffect(() => {
-    if (nft) {
-      process([nft])
-    }
-  }, [nft, process])
 
   return { nft }
 }

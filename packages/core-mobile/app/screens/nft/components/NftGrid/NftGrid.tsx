@@ -1,17 +1,16 @@
 import React from 'react'
 import { FlatList, StyleSheet } from 'react-native'
 import ZeroState from 'components/ZeroState'
-import { NFTImageData, NFTItemData, NFTMetadata } from 'store/nft'
+import { NFTItem } from 'store/nft'
 import { RefreshControl } from 'components/RefreshControl'
 import { View } from '@avalabs/k2-mobile'
-import { useNftMetadataContext } from 'contexts/NFTMetadataContext'
 import { FetchingNextIndicator } from '../FetchingNextIndicator'
 import { GridItem } from './GridItem'
 import { NftGridLoader } from './NftGridLoader'
 
 type Props = {
-  nfts: NFTItemData[]
-  onItemSelected: (item: NFTItemData) => void
+  nfts: NFTItem[]
+  onItemSelected: (item: NFTItem) => void
   isLoading: boolean
   fetchNextPage: () => void
   hasNextPage: boolean
@@ -30,8 +29,6 @@ export const NftGrid = ({
   refresh,
   isRefreshing
 }: Props): JSX.Element => {
-  const { getNftImageData, getNftMetadata } = useNftMetadataContext()
-
   const onEndReached = (): void => {
     if (hasNextPage && !isFetchingNextPage) {
       fetchNextPage()
@@ -61,9 +58,7 @@ export const NftGrid = ({
       renderItem={info =>
         renderItem({
           item: info.item,
-          metadata: getNftMetadata(info.item),
-          onItemSelected,
-          imageData: getNftImageData(info.item)
+          onItemSelected
         })
       }
       indicatorStyle="white"
@@ -78,23 +73,12 @@ export const NftGrid = ({
 
 const renderItem = ({
   item,
-  metadata,
-  onItemSelected,
-  imageData
+  onItemSelected
 }: {
-  item: NFTItemData
-  metadata: NFTMetadata
-  onItemSelected: (item: NFTItemData) => void
-  imageData?: NFTImageData
+  item: NFTItem
+  onItemSelected: (item: NFTItem) => void
 }): JSX.Element => {
-  return (
-    <GridItem
-      item={item}
-      metadata={metadata}
-      imageData={imageData}
-      onItemSelected={onItemSelected}
-    />
-  )
+  return <GridItem item={item} onItemSelected={onItemSelected} />
 }
 
 const styles = StyleSheet.create({

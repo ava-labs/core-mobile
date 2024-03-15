@@ -6,15 +6,8 @@ import ZeroState from 'components/ZeroState'
 import AvaListItem from 'components/AvaListItem'
 import Avatar from 'components/Avatar'
 import Switch from 'components/Switch'
-import {
-  NFTItemData,
-  NFTImageData,
-  NFTMetadata,
-  selectHiddenNftUIDs,
-  setHidden
-} from 'store/nft'
+import { selectHiddenNftUIDs, setHidden, NFTItem } from 'store/nft'
 import { useDispatch, useSelector } from 'react-redux'
-import { useNfts } from 'screens/nft/hooks/useNfts'
 import { RefreshControl } from 'components/RefreshControl'
 import { View } from '@avalabs/k2-mobile'
 import { useNftMetadataContext } from 'contexts/NFTMetadataContext'
@@ -25,32 +18,31 @@ const NftManage = (): JSX.Element => {
   const dispatch = useDispatch()
   const hiddenNftUIDs = useSelector(selectHiddenNftUIDs)
   const {
-    nfts,
+    nftItems: nfts,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
     refetch,
     isRefetching
-  } = useNfts()
-  const { getNftImageData, getNftMetadata } = useNftMetadataContext()
-
+  } = useNftMetadataContext()
   const filteredData = useMemo(() => {
     return nfts.filter(nft => {
-      const metadata = getNftMetadata(nft)
       return (
         searchText.length === 0 ||
         nft.tokenId.toLowerCase().includes(searchText.toLowerCase()) ||
         nft.metadata.name?.toLowerCase().includes(searchText.toLowerCase()) ||
-        metadata.name?.toLowerCase().includes(searchText.toLowerCase())
+        nft.processedMetadata.name
+          ?.toLowerCase()
+          .includes(searchText.toLowerCase())
       )
     })
-  }, [nfts, searchText, getNftMetadata])
+  }, [nfts, searchText])
 
   const updateSearch = (searchVal: string): void => {
     setSearchText(searchVal)
   }
 
-  const handleItemHidden = (item: NFTItemData): void => {
+  const handleItemHidden = (item: NFTItem): void => {
     dispatch(setHidden({ tokenUid: item.uid }))
   }
 
@@ -76,10 +68,8 @@ const NftManage = (): JSX.Element => {
         renderItem={info =>
           renderItemList({
             item: info.item,
-            metadata: getNftMetadata(info.item),
             isHidden: hiddenNftUIDs[info.item.uid] ?? false,
-            onHiddenToggle: handleItemHidden,
-            imageData: getNftImageData(info.item)
+            onHiddenToggle: handleItemHidden
           })
         }
         indicatorStyle="white"
@@ -98,16 +88,12 @@ const Separator = (): JSX.Element => <View style={{ margin: 4 }} />
 
 const renderItemList = ({
   item,
-  metadata,
   isHidden,
-  onHiddenToggle,
-  imageData
+  onHiddenToggle
 }: {
-  item: NFTItemData
-  metadata: NFTMetadata
+  item: NFTItem
   isHidden: boolean
-  onHiddenToggle: (item: NFTItemData) => void
-  imageData?: NFTImageData
+  onHiddenToggle: (item: NFTItem) => void
 }): JSX.Element => {
   return (
     <View
@@ -118,11 +104,11 @@ const renderItemList = ({
       }}>
       <AvaListItem.Base
         title={item.tokenId}
-        subtitle={metadata.name}
+        subtitle={item.processedMetadata.name}
         leftComponent={
           <Avatar.Custom
-            name={metadata.name ?? ''}
-            logoUri={imageData?.image}
+            name={item.processedMetadata.name ?? ''}
+            logoUri={item.imageData?.image}
           />
         }
         rightComponent={

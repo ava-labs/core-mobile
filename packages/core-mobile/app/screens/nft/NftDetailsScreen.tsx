@@ -38,14 +38,17 @@ const NftDetailsScreen = (): JSX.Element => {
     useNavigation<NftDetailsScreenProps['navigation']>()
   const activeNetwork = useSelector(selectActiveNetwork)
   const { nft: routeNft } = useRoute<NftDetailsScreenProps['route']>().params
-  const { nft: freshNft } = useNft(
+  const { nft: freshNftData } = useNft(
     activeNetwork.chainId,
     routeNft.address,
     routeNft.tokenId
   )
 
-  const nft = useMemo(() => freshNft ?? routeNft, [freshNft, routeNft])
-  const { getNftMetadata, getNftImageData, process } = useNftMetadataContext()
+  const { process, getNftItem } = useNftMetadataContext()
+  const nft = useMemo(
+    () => getNftItem(routeNft.uid) ?? routeNft,
+    [getNftItem, routeNft]
+  )
 
   const [imgLoadFailed, setImgLoadFailed] = useState(false)
   const { theme } = useApplicationContext()
@@ -59,9 +62,6 @@ const NftDetailsScreen = (): JSX.Element => {
 
   const [isReindexing, setIsReindexing] = useState(false)
   const [wasReindexed, setWasReindexed] = useState(false)
-
-  const imageData = getNftImageData(nft)
-  const metadata = getNftMetadata(nft)
 
   const canReindex = useMemo(() => {
     const currentTimestamp = Math.floor(Date.now() / 1000)
@@ -91,11 +91,11 @@ const NftDetailsScreen = (): JSX.Element => {
   }
 
   const handlePressImage = (): void => {
-    if (!imageData) {
+    if (!nft.imageData) {
       return
     }
 
-    navigate(AppNavigation.Nft.FullScreen, { imageData })
+    navigate(AppNavigation.Nft.FullScreen, { imageData: nft.imageData })
   }
 
   const handlePressSend = (): void => {
@@ -173,36 +173,36 @@ const NftDetailsScreen = (): JSX.Element => {
   }, [colors, handleRefresh, canReindex, isReindexing])
 
   const renderImage = (): JSX.Element => {
-    if (imgLoadFailed || !imageData?.image) {
+    if (imgLoadFailed || !nft.imageData?.image) {
       return renderImageFailure()
     }
 
-    if (!imageData || isReindexing) {
+    if (!nft.imageData || isReindexing) {
       return renderLoading()
     }
 
     return (
       <AvaButton.Base onPress={handlePressImage}>
-        {imageData.isSvg && (
+        {nft.imageData.isSvg && (
           <View style={{ alignItems: 'center' }}>
             <SvgXml
-              xml={imageData.image ?? null}
+              xml={nft.imageData.image ?? null}
               width={imageWidth}
-              height={imageWidth * (imageData.aspect ?? 1)}
+              height={imageWidth * (nft.imageData.aspect ?? 1)}
             />
           </View>
         )}
-        {!imageData.isSvg && imageData.image && !imgLoadFailed && (
+        {!nft.imageData.isSvg && nft.imageData.image && !imgLoadFailed && (
           <FastImage
             onError={() => setImgLoadFailed(true)}
             style={[
               styles.imageStyle,
               {
                 width: imageWidth,
-                height: imageWidth * (imageData.aspect ?? 1)
+                height: imageWidth * (nft.imageData.aspect ?? 1)
               }
             ]}
-            source={{ uri: imageData.image }}
+            source={{ uri: nft.imageData.image }}
           />
         )}
 
@@ -232,7 +232,7 @@ const NftDetailsScreen = (): JSX.Element => {
       <View
         sx={{
           width: imageWidth,
-          height: imageWidth * (imageData?.aspect ?? 1)
+          height: imageWidth * (nft.imageData?.aspect ?? 1)
         }}>
         <Loader />
       </View>
@@ -260,10 +260,16 @@ const NftDetailsScreen = (): JSX.Element => {
     })
   }, [setOptions, renderHeaderRight])
 
+  useEffect(() => {
+    if (freshNftData) {
+      process([freshNftData])
+    }
+  }, [freshNftData, process])
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <AvaText.Heading1 testID="NftTokenTitle">
-        {metadata.name} #{nft.tokenId}
+        {nft.processedMetadata.name} #{nft.tokenId}
       </AvaText.Heading1>
       <View sx={{ marginTop: 16, marginBottom: 24 }}>{renderImage()}</View>
       {renderSendBtn()}
@@ -283,11 +289,11 @@ const NftDetailsScreen = (): JSX.Element => {
         </View>
       </Row>
       <Space y={24} />
-      {metadata.attributes.length > 0 && (
+      {nft.processedMetadata.attributes.length > 0 && (
         <>
           <AvaText.Heading2>Properties</AvaText.Heading2>
           <Space y={8} />
-          {renderProps(metadata.attributes)}
+          {renderProps(nft.processedMetadata.attributes)}
         </>
       )}
     </ScrollView>

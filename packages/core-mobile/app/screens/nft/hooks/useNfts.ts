@@ -5,8 +5,7 @@ import { useInfiniteQuery } from '@tanstack/react-query'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import NftService from 'services/nft/NftService'
 import Logger from 'utils/Logger'
-import { useCallback, useEffect, useMemo } from 'react'
-import { useNftMetadataContext } from 'contexts/NFTMetadataContext'
+import { useCallback, useMemo } from 'react'
 import { NftPageParam } from '../../../store/nft/types'
 
 // a hook to get NFTs with pagination support for the current active network & account
@@ -14,7 +13,6 @@ import { NftPageParam } from '../../../store/nft/types'
 export const useNfts = () => {
   const network = useSelector(selectActiveNetwork)
   const account = useSelector(selectActiveAccount)
-  const { process } = useNftMetadataContext()
 
   const fetchNfts = useCallback(
     async ({ pageParam }: { pageParam: NftPageParam }) => {
@@ -68,14 +66,6 @@ export const useNfts = () => {
       new Map(flattenedNfts.map(nft => [nft.uid, nft])).values()
     )
   }, [query.data?.pages])
-
-  useEffect(() => {
-    const lastPageNfts = query.data?.pages.at(-1)?.nfts ?? []
-
-    if (lastPageNfts.length > 0) {
-      process(lastPageNfts)
-    }
-  }, [query.data, process])
 
   return {
     ...query,
