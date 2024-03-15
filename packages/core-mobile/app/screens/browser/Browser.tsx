@@ -84,8 +84,10 @@ export default function Browser({ tabId }: { tabId: string }): JSX.Element {
   }
 
   useEffect(() => {
-    activeHistory?.url && setUrlToLoad(activeHistory.url)
-  }, [activeHistory?.url])
+    if (activeHistory?.url && urlEntry !== activeHistory.url) {
+      setUrlToLoad(activeHistory.url)
+    }
+  }, [activeHistory?.url, urlEntry])
 
   useEffect(() => {
     //initiate deep link if user copies WC link to clipboard
