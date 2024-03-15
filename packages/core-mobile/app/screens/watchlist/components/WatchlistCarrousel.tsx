@@ -14,7 +14,6 @@ import AvaButton from 'components/AvaButton'
 import AddSVG from 'components/svg/AddSVG'
 import { useNavigation } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
-import MarketMovement from 'screens/watchlist/components/MarketMovement'
 import { Opacity85 } from 'resources/Constants'
 import { PortfolioScreenProps } from 'navigation/types'
 import { useDispatch, useSelector } from 'react-redux'
@@ -24,6 +23,7 @@ import {
   selectWatchlistChart,
   selectWatchlistFavorites
 } from 'store/watchlist'
+import MarketTrend from './MarketTrend'
 
 interface Props {
   style?: StyleProp<View>
@@ -110,12 +110,15 @@ const CarrouselItem: FC<CarrouselItemProps> = ({ token, onPress }) => {
   const { theme } = useApplicationContext()
   const chartData = useSelector(selectWatchlistChart(token.id))
 
+  const priceChange = chartData?.ranges?.diffValue ?? 0
+  const percentChange = chartData?.ranges?.percentChange ?? 0
+
   return (
     <AvaButton.Base
       key={token.id}
       onPress={onPress}
       style={[style.item, { backgroundColor: theme.colorBg2 }]}>
-      <Avatar.Custom
+      <Avatar.Token
         name={token.name}
         symbol={token.symbol}
         logoUri={token.logoUri}
@@ -124,19 +127,14 @@ const CarrouselItem: FC<CarrouselItemProps> = ({ token, onPress }) => {
       <AvaText.ButtonSmall textStyle={{ color: theme.colorText1 }}>
         {token?.symbol?.toUpperCase()}
       </AvaText.ButtonSmall>
-      <Space y={16} />
-      <MarketMovement
-        priceChange={chartData?.ranges?.diffValue ?? 0}
-        percentChange={chartData?.ranges?.percentChange ?? 0}
-        hideDifference
-      />
+      <Space y={8} />
+      <MarketTrend priceChange={priceChange} percentChange={percentChange} />
     </AvaButton.Base>
   )
 }
 
 const style = StyleSheet.create({
   item: {
-    height: 96,
     width: 72,
     alignItems: 'center',
     borderRadius: 10,
