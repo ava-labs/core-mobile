@@ -17,7 +17,6 @@ import { useDispatch, useSelector } from 'react-redux'
 import {
   MarketToken,
   fetchWatchlist,
-  selectWatchlistChart,
   selectWatchlistFavorites
 } from 'store/watchlist'
 import { Text, useTheme } from '@avalabs/k2-mobile'
@@ -106,10 +105,6 @@ interface CarouselItemProps {
 
 const CarouselItem: FC<CarouselItemProps> = ({ token, onPress }) => {
   const { theme } = useTheme()
-  const chartData = useSelector(selectWatchlistChart(token.id))
-
-  const priceChange = chartData?.ranges?.diffValue ?? 0
-  const percentChange = chartData?.ranges?.percentChange ?? 0
 
   return (
     <AvaButton.Base
@@ -125,8 +120,8 @@ const CarouselItem: FC<CarouselItemProps> = ({ token, onPress }) => {
       <Text variant="buttonSmall">{token?.symbol?.toUpperCase()}</Text>
       <Space y={8} />
       <MarketTrend
-        priceChange={priceChange}
-        percentChange={percentChange}
+        priceChange={token?.priceChange24h ?? 0}
+        percentChange={token?.priceChangePercentage24h ?? 0}
         isHorizontal={false}
       />
     </AvaButton.Base>
