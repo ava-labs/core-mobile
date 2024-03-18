@@ -5,7 +5,7 @@ import Avatar from 'components/Avatar'
 import { ActivityIndicator } from 'components/ActivityIndicator'
 import { Text, View } from '@avalabs/k2-mobile'
 import MarketTrend from 'screens/watchlist/components/MarketTrend'
-import { useGetTokenPercentChange } from 'hooks/useGetTokenPercentChange'
+import { useGetMarketToken } from 'hooks/useGetMarketToken'
 import { Space } from './Space'
 
 interface Props {
@@ -54,8 +54,9 @@ const PortfolioListItem: FC<Props> = ({
     />
   )
 
-  const { getTokenPercentChange } = useGetTokenPercentChange()
-  const percentChange = getTokenPercentChange(symbol)
+  const { getMarketToken } = useGetMarketToken()
+  const marketToken = getMarketToken(symbol)
+  const percentChange = marketToken?.priceChangePercentage24h ?? 0
   const priceChange = (tokenPriceInCurrency * percentChange) / 100
 
   return (

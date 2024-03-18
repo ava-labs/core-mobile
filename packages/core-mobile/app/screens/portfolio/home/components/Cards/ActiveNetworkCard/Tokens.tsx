@@ -5,7 +5,7 @@ import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList
 import Avatar from 'components/Avatar'
 import { Text, View } from '@avalabs/k2-mobile'
 import MarketTrend from 'screens/watchlist/components/MarketTrend'
-import { useGetTokenPercentChange } from 'hooks/useGetTokenPercentChange'
+import { useGetMarketToken } from 'hooks/useGetMarketToken'
 
 const Tokens = (): JSX.Element => {
   const { filteredTokenList: tokens } = useSearchableTokenList()
@@ -15,7 +15,7 @@ const Tokens = (): JSX.Element => {
 
   const tokensToDisplay = tokens.slice(0, 4)
 
-  const { getTokenPercentChange } = useGetTokenPercentChange()
+  const { getMarketToken } = useGetMarketToken()
 
   const renderToken = (
     token: TokenWithBalance,
@@ -29,7 +29,8 @@ const Tokens = (): JSX.Element => {
       ? currencyFormatter(balanceInCurrency)
       : `${balanceDisplayValue} ${symbol}`
 
-    const percentChange = getTokenPercentChange(token.symbol)
+    const marketToken = getMarketToken(symbol)
+    const percentChange = marketToken?.priceChangePercentage24h ?? 0
     const priceChange = (balanceInCurrency * percentChange) / 100
 
     return (

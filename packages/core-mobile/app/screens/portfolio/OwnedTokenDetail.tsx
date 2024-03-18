@@ -19,7 +19,7 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { Button, Text, View } from '@avalabs/k2-mobile'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import MarketTrend from 'screens/watchlist/components/MarketTrend'
-import { useGetTokenPercentChange } from 'hooks/useGetTokenPercentChange'
+import { useGetMarketToken } from 'hooks/useGetMarketToken'
 import Separator from 'components/Separator'
 
 type ScreenProps = WalletScreenProps<
@@ -68,10 +68,11 @@ const OwnedTokenDetail: FC = () => {
     </Row>
   )
 
-  const { getTokenPercentChange } = useGetTokenPercentChange()
+  const { getMarketToken } = useGetMarketToken()
 
   const renderMarketTrend = (balance: number, symbol: string): JSX.Element => {
-    const percentChange = getTokenPercentChange(symbol)
+    const marketToken = getMarketToken(symbol)
+    const percentChange = marketToken?.priceChangePercentage24h ?? 0
     const priceChange = (balance * percentChange) / 100
 
     return (

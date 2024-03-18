@@ -1,18 +1,15 @@
 import { LocalTokenWithBalance } from 'store/balance'
-import { MarketToken, selectWatchlistTokens } from 'store/watchlist'
-import { useFocusedSelector } from 'utils/performance/useFocusedSelector'
+import { MarketToken } from 'store/watchlist'
+import { useGetMarketToken } from './useGetMarketToken'
 
 export const useTokensPriceChange = (
   tokens: LocalTokenWithBalance[]
 ): { priceChange: number } => {
-  const watchlistTokenDictionary = useFocusedSelector(selectWatchlistTokens)
-  const watchlistTokens = Object.values(watchlistTokenDictionary)
+  const { getMarketToken } = useGetMarketToken()
 
   const tokensWithPrices = tokens
     .map(token => {
-      const tokenInWatchlist = watchlistTokens.find(
-        t2 => t2.symbol === token.symbol.toLowerCase()
-      )
+      const tokenInWatchlist = getMarketToken(token.symbol)
 
       if (tokenInWatchlist) {
         return { ...token, ...tokenInWatchlist }
@@ -23,9 +20,9 @@ export const useTokensPriceChange = (
     .filter((x): x is LocalTokenWithBalance & MarketToken => x !== undefined)
 
   const priceChange = tokensWithPrices.reduce((acc, token) => {
-    const diff =
+    const priceDiff =
       (token.balanceInCurrency * (token.priceChangePercentage24h ?? 0)) / 100
-    return acc + diff
+    return acc + priceDiff
   }, 0)
 
   return { priceChange }
