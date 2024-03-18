@@ -20,7 +20,7 @@ import {
   useTheme,
   alpha
 } from '@avalabs/k2-mobile'
-import MarketTrend from 'screens/watchlist/components/MarketTrend'
+import PriceChangeIndicator from 'screens/watchlist/components/PriceChangeIndicator'
 import { useTokenPortfolioPriceChange } from 'hooks/useTokenPortfolioPriceChange'
 import ZeroState from './ZeroState'
 import Tokens from './Tokens'
@@ -99,7 +99,7 @@ const ActiveNetworkCard = (): JSX.Element => {
           </View>
           <View sx={{ alignItems: 'flex-end' }}>
             <Text variant="buttonMedium">{balance}</Text>
-            <MarketTrend
+            <PriceChangeIndicator
               priceChange={tokenPortfolioPriceChange}
               percentChange={
                 (tokenPortfolioPriceChange / totalBalanceInCurrency) * 100

@@ -20,7 +20,7 @@ import {
   selectWatchlistFavorites
 } from 'store/watchlist'
 import { Text, useTheme } from '@avalabs/k2-mobile'
-import MarketTrend from './MarketTrend'
+import PriceChangeIndicator from './PriceChangeIndicator'
 
 interface Props {
   style?: StyleProp<View>
@@ -119,7 +119,7 @@ const CarouselItem: FC<CarouselItemProps> = ({ token, onPress }) => {
       <Space y={4} />
       <Text variant="buttonSmall">{token?.symbol?.toUpperCase()}</Text>
       <Space y={8} />
-      <MarketTrend
+      <PriceChangeIndicator
         priceChange={token?.priceChange24h ?? 0}
         percentChange={token?.priceChangePercentage24h ?? 0}
         isHorizontal={false}

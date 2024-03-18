@@ -12,7 +12,7 @@ interface Props {
   testID?: string
 }
 
-const MarketTrend: FC<Props> = ({
+const PriceChangeIndicator: FC<Props> = ({
   priceChange,
   percentChange,
   isHorizontal = true,
@@ -75,4 +75,4 @@ const MarketTrend: FC<Props> = ({
   )
 }
 
-export default MarketTrend
+export default PriceChangeIndicator

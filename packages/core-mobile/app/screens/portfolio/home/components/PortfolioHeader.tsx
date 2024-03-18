@@ -9,7 +9,7 @@ import {
 } from 'store/balance'
 import { selectActiveAccount } from 'store/account'
 import { ActivityIndicator } from 'components/ActivityIndicator'
-import MarketTrend from 'screens/watchlist/components/MarketTrend'
+import PriceChangeIndicator from 'screens/watchlist/components/PriceChangeIndicator'
 import { Text, View } from '@avalabs/k2-mobile'
 import { useTokenPortfolioPriceChange } from 'hooks/useTokenPortfolioPriceChange'
 import { PortfolioHeaderLoader } from './Loaders/PortfolioHeaderLoader'
@@ -67,7 +67,7 @@ function PortfolioHeader(): JSX.Element {
             {selectedCurrency}
           </Text>
         </View>
-        <MarketTrend
+        <PriceChangeIndicator
           priceChange={tokenPortfolioPriceChange}
           percentChange={
             (tokenPortfolioPriceChange / balanceTotalInCurrency) * 100

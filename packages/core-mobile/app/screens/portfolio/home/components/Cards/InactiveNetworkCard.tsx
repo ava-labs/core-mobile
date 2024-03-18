@@ -19,7 +19,7 @@ import usePendingBridgeTransactions from 'screens/bridge/hooks/usePendingBridgeT
 import TopRightBadge from 'components/TopRightBadge'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { Text } from '@avalabs/k2-mobile'
-import MarketTrend from 'screens/watchlist/components/MarketTrend'
+import PriceChangeIndicator from 'screens/watchlist/components/PriceChangeIndicator'
 import { useTokenPortfolioPriceChange } from 'hooks/useTokenPortfolioPriceChange'
 
 const windowWidth = Dimensions.get('window').width
@@ -104,7 +104,7 @@ const InactiveNetworkCard: FC<Props> = ({ network }) => {
           <Text variant="buttonSmall" ellipsizeMode={'tail'}>
             {balance}
           </Text>
-          <MarketTrend
+          <PriceChangeIndicator
             priceChange={tokenPortfolioPriceChange}
             percentChange={(tokenPortfolioPriceChange / totalBalance) * 100}
           />

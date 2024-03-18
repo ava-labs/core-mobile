@@ -12,7 +12,7 @@ import { NetworkLogo } from 'screens/network/NetworkLogo'
 import { selectActiveNetwork } from 'store/network'
 import { selectActiveAccount } from 'store/account'
 import { Text, View } from '@avalabs/k2-mobile'
-import MarketTrend from 'screens/watchlist/components/MarketTrend'
+import PriceChangeIndicator from 'screens/watchlist/components/PriceChangeIndicator'
 import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList'
 import { useTokenPortfolioPriceChange } from 'hooks/useTokenPortfolioPriceChange'
 
@@ -62,7 +62,7 @@ const NetworkTokensHeader = (): JSX.Element => {
             {formattedTotalBalance}
           </Text>
         )}
-        <MarketTrend
+        <PriceChangeIndicator
           priceChange={tokenPortfolioPriceChange}
           percentChange={(tokenPortfolioPriceChange / balanceTotal) * 100}
         />

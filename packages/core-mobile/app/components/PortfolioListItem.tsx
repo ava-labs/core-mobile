@@ -4,7 +4,7 @@ import AvaListItem from 'components/AvaListItem'
 import Avatar from 'components/Avatar'
 import { ActivityIndicator } from 'components/ActivityIndicator'
 import { Text, View } from '@avalabs/k2-mobile'
-import MarketTrend from 'screens/watchlist/components/MarketTrend'
+import PriceChangeIndicator from 'screens/watchlist/components/PriceChangeIndicator'
 import { useGetMarketToken } from 'hooks/useGetMarketToken'
 import { Space } from './Space'
 
@@ -92,7 +92,7 @@ const PortfolioListItem: FC<Props> = ({
                 {currencyFormatter(tokenPriceInCurrency)}
               </Text>
               <Space y={4} />
-              <MarketTrend
+              <PriceChangeIndicator
                 priceChange={priceChange}
                 percentChange={percentChange}
               />

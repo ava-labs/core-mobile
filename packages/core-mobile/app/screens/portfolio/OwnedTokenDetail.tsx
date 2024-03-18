@@ -18,7 +18,7 @@ import { selectActiveNetwork } from 'store/network'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { Button, Text, View } from '@avalabs/k2-mobile'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import MarketTrend from 'screens/watchlist/components/MarketTrend'
+import PriceChangeIndicator from 'screens/watchlist/components/PriceChangeIndicator'
 import { useGetMarketToken } from 'hooks/useGetMarketToken'
 import Separator from 'components/Separator'
 
@@ -76,7 +76,7 @@ const OwnedTokenDetail: FC = () => {
     const priceChange = (balance * percentChange) / 100
 
     return (
-      <MarketTrend
+      <PriceChangeIndicator
         priceChange={priceChange}
         percentChange={percentChange}
         textVariant="buttonSmall"

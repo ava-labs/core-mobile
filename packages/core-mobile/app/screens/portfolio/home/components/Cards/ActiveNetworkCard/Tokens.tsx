@@ -4,7 +4,7 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList'
 import Avatar from 'components/Avatar'
 import { Text, View } from '@avalabs/k2-mobile'
-import MarketTrend from 'screens/watchlist/components/MarketTrend'
+import PriceChangeIndicator from 'screens/watchlist/components/PriceChangeIndicator'
 import { useGetMarketToken } from 'hooks/useGetMarketToken'
 
 const Tokens = (): JSX.Element => {
@@ -50,7 +50,7 @@ const Tokens = (): JSX.Element => {
         <View sx={{ alignItems: 'flex-end' }}>
           <Text variant="buttonMedium">{formattedBalance}</Text>
           {percentChange !== undefined && (
-            <MarketTrend
+            <PriceChangeIndicator
               priceChange={priceChange}
               percentChange={percentChange}
             />
