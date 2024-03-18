@@ -62,12 +62,11 @@ class SendService {
           sentryTrx
         )
         onTxSigned?.()
-        const txHash = await networkService.sendTransaction(
+        const txHash = await networkService.sendTransaction({
           signedTx,
-          activeNetwork,
-          false,
+          network: activeNetwork,
           sentryTrx
-        )
+        })
 
         AnalyticsService.captureWithEncryption('SendTransactionSucceeded', {
           chainId: activeNetwork.chainId,

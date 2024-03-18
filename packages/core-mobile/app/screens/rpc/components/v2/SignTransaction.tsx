@@ -68,7 +68,16 @@ const SignTransaction = (): JSX.Element => {
   const [showData, setShowData] = useState(false)
   const [showCustomSpendLimit, setShowCustomSpendLimit] = useState(false)
 
-  const requestResult = requestStatus?.result as string | undefined
+  const txHash = requestStatus?.result?.txHash
+  const confirmationReceiptStatus =
+    requestStatus?.result?.confirmationReceiptStatus
+  const transactionStatus =
+    confirmationReceiptStatus === 'Reverted' ||
+    confirmationReceiptStatus === undefined
+      ? 'Reverted'
+      : confirmationReceiptStatus === 'Success'
+      ? 'Confirmed'
+      : 'Pending'
 
   const rejectAndClose = useCallback(
     (message?: string) => {
@@ -107,13 +116,13 @@ const SignTransaction = (): JSX.Element => {
   useEffect(() => {
     if (!requestStatus) return
 
-    if (requestStatus.result) {
+    if (txHash) {
       setSubmitting(false)
     } else if (requestStatus.error) {
       setSubmitting(false)
       goBack()
     }
-  }, [goBack, requestStatus])
+  }, [goBack, requestStatus, txHash])
 
   // TODO CP-4894 move this logic to eth_sign handler once we have moved useExplainTransactionV2 hook logic to redux
   useEffect(() => {
@@ -135,9 +144,7 @@ const SignTransaction = (): JSX.Element => {
   ])
 
   const explorerUrl =
-    network &&
-    requestResult &&
-    getExplorerAddressByNetwork(network, requestResult)
+    network && txHash && getExplorerAddressByNetwork(network, txHash)
 
   const handleFeesChange = useCallback(
     (fees: Eip1559Fees<NetworkTokenUnit>, feePreset: FeePreset) => {
@@ -300,7 +307,9 @@ const SignTransaction = (): JSX.Element => {
             style={{
               alignItems: 'flex-end'
             }}>
-            <AvaText.Heading3>{displayData.fee} AVAX</AvaText.Heading3>
+            <AvaText.Heading3>
+              {displayData.maxTotalFee?.toString()} AVAX
+            </AvaText.Heading3>
             <AvaText.Body3 currency>{displayData.feeInCurrency}</AvaText.Body3>
           </View>
         </Row>
@@ -310,6 +319,13 @@ const SignTransaction = (): JSX.Element => {
             Transaction hash
           </AvaText.Body2>
           <TokenAddress address={transactionHash} copyIconEnd />
+        </Row>
+        <Space y={16} />
+        <Row style={{ justifyContent: 'space-between' }}>
+          <AvaText.Body2 color={theme.colorText1}>
+            Transaction status
+          </AvaText.Body2>
+          <AvaText.Heading3>{transactionStatus}</AvaText.Heading3>
         </Row>
         <Space y={24} />
         <View
@@ -358,7 +374,7 @@ const SignTransaction = (): JSX.Element => {
   return (
     <>
       <RpcRequestBottomSheet
-        onClose={() => (requestResult ? close() : rejectAndClose())}>
+        onClose={() => (txHash ? close() : rejectAndClose())}>
         <ScrollView contentContainerStyle={txStyles.scrollView}>
           <View>
             <AvaText.Heading1>{txTitle()}</AvaText.Heading1>
@@ -388,15 +404,15 @@ const SignTransaction = (): JSX.Element => {
               renderTransactionInfo()
             )}
           </View>
-          {!requestResult && displayData?.maxFeePerGas && (
+          {!txHash && displayData?.maxFeePerGas && (
             <NetworkFeeSelector
               chainId={chainId}
               gasLimit={displayData?.gasLimit ?? 0}
               onFeesChange={handleFeesChange}
             />
           )}
-          {requestResult
-            ? renderTransactionResult(requestResult)
+          {txHash
+            ? renderTransactionResult(txHash)
             : renderApproveRejectButtons()}
         </ScrollView>
       </RpcRequestBottomSheet>
