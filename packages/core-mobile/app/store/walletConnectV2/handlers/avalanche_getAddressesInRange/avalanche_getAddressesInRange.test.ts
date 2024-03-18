@@ -6,15 +6,12 @@ import { avalancheGetAddressesInRangeHandler } from './avalanche_getAddressesInR
 import { avalancheGetAddressesInRangeRpcRequest } from './types'
 
 jest.mock('../index')
-jest.spyOn(WalletService, 'getAddresses').mockImplementation((index, _) =>
-  Promise.resolve({
-    AVM: `X-avax${index}`,
-    PVM: `P-avax${index}`,
-    EVM: '',
-    BITCOIN: '',
-    CoreEth: ''
-  })
-)
+jest
+  .spyOn(WalletService, 'getAddressesByIndices')
+  .mockImplementation(
+    ({ indices }: { indices: number[] }): Promise<string[]> =>
+      Promise.resolve(indices.map(index => `X-avax${index}`))
+  )
 
 const createRequest = (
   params: unknown

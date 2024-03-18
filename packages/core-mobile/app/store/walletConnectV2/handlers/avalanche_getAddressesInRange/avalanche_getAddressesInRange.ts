@@ -43,31 +43,33 @@ class AvalancheGetAddressesInRangeHandler
     try {
       const correctedExternalLimit = getCorrectedLimit(externalLimit)
       const correctedInternalLimit = getCorrectedLimit(internalLimit)
-      if (correctedExternalLimit > 0) {
-        for (
-          let index = externalStart;
-          index < externalStart + correctedExternalLimit;
-          index++
-        ) {
-          const xAddr = (
-            await WalletService.getAddresses(index, isDeveloperMode)
-          ).AVM.split('-')[1] as string
-          addresses.external.push(xAddr)
-        }
-      }
 
-      if (correctedInternalLimit > 0) {
-        for (
-          let index = internalStart;
-          index < internalStart + correctedInternalLimit;
-          index++
-        ) {
-          const pAddr = (
-            await WalletService.getAddresses(index, isDeveloperMode)
-          ).PVM.split('-')[1] as string
-          addresses.internal.push(pAddr)
-        }
-      }
+      const externalIndices = Array.from(
+        { length: correctedExternalLimit },
+        (_, i) => externalStart + i
+      )
+      addresses.external = (
+        await WalletService.getAddressesByIndices({
+          indices: externalIndices ?? [],
+          chainAlias: 'X',
+          isChange: false,
+          isTestnet: isDeveloperMode
+        })
+      ).map(address => address.split('-')[1] as string)
+
+      const internalIndices = Array.from(
+        { length: correctedInternalLimit },
+        (_, i) => internalStart + i
+      )
+
+      addresses.internal = (
+        await WalletService.getAddressesByIndices({
+          indices: internalIndices ?? [],
+          chainAlias: 'X',
+          isChange: true,
+          isTestnet: isDeveloperMode
+        })
+      ).map(address => address.split('-')[1] as string)
     } catch (e) {
       return {
         success: false,
