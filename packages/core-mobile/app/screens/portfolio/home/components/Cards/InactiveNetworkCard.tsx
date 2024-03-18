@@ -20,7 +20,7 @@ import TopRightBadge from 'components/TopRightBadge'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { Text } from '@avalabs/k2-mobile'
 import MarketTrend from 'screens/watchlist/components/MarketTrend'
-import { useTokensPriceChange } from 'hooks/useTokensPriceChange'
+import { useTokenPortfolioPriceChange } from 'hooks/useTokenPortfolioPriceChange'
 
 const windowWidth = Dimensions.get('window').width
 
@@ -52,7 +52,7 @@ const InactiveNetworkCard: FC<Props> = ({ network }) => {
   const pendingBridgeTxs = usePendingBridgeTransactions(network)
 
   const tokens = useSelector(selectTokensWithBalanceByNetwork(network))
-  const { priceChange } = useTokensPriceChange(tokens)
+  const { tokenPortfolioPriceChange } = useTokenPortfolioPriceChange(tokens)
 
   const navigateToNetworkTokens = (): void => {
     AnalyticsService.capture('PortfolioSecondaryNetworkClicked', {
@@ -105,8 +105,8 @@ const InactiveNetworkCard: FC<Props> = ({ network }) => {
             {balance}
           </Text>
           <MarketTrend
-            priceChange={priceChange}
-            percentChange={(priceChange / totalBalance) * 100}
+            priceChange={tokenPortfolioPriceChange}
+            percentChange={(tokenPortfolioPriceChange / totalBalance) * 100}
           />
         </View>
       </View>

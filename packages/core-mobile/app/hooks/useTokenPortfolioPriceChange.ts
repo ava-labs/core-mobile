@@ -2,9 +2,9 @@ import { LocalTokenWithBalance } from 'store/balance'
 import { MarketToken } from 'store/watchlist'
 import { useGetMarketToken } from './useGetMarketToken'
 
-export const useTokensPriceChange = (
+export const useTokenPortfolioPriceChange = (
   tokens: LocalTokenWithBalance[]
-): { priceChange: number } => {
+): { tokenPortfolioPriceChange: number } => {
   const { getMarketToken } = useGetMarketToken()
 
   const tokensWithPrices = tokens
@@ -19,11 +19,11 @@ export const useTokensPriceChange = (
     })
     .filter((x): x is LocalTokenWithBalance & MarketToken => x !== undefined)
 
-  const priceChange = tokensWithPrices.reduce((acc, token) => {
+  const tokenPortfolioPriceChange = tokensWithPrices.reduce((acc, token) => {
     const priceDiff =
       (token.balanceInCurrency * (token.priceChangePercentage24h ?? 0)) / 100
     return acc + priceDiff
   }, 0)
 
-  return { priceChange }
+  return { tokenPortfolioPriceChange }
 }

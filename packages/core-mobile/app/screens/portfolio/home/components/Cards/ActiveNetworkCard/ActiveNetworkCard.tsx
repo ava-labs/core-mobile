@@ -21,7 +21,7 @@ import {
   alpha
 } from '@avalabs/k2-mobile'
 import MarketTrend from 'screens/watchlist/components/MarketTrend'
-import { useTokensPriceChange } from 'hooks/useTokensPriceChange'
+import { useTokenPortfolioPriceChange } from 'hooks/useTokenPortfolioPriceChange'
 import ZeroState from './ZeroState'
 import Tokens from './Tokens'
 
@@ -47,7 +47,7 @@ const ActiveNetworkCard = (): JSX.Element => {
   const { theme } = useTheme()
   const backgroundColor = theme.colors.$neutral900
   const pendingBridgeTxs = usePendingBridgeTransactions(network)
-  const { priceChange } = useTokensPriceChange(tokens)
+  const { tokenPortfolioPriceChange } = useTokenPortfolioPriceChange(tokens)
 
   const navigateToNetworkTokens = (): void => {
     AnalyticsService.capture('PortfolioPrimaryNetworkClicked', {
@@ -100,8 +100,10 @@ const ActiveNetworkCard = (): JSX.Element => {
           <View sx={{ alignItems: 'flex-end' }}>
             <Text variant="buttonMedium">{balance}</Text>
             <MarketTrend
-              priceChange={priceChange}
-              percentChange={(priceChange / totalBalanceInCurrency) * 100}
+              priceChange={tokenPortfolioPriceChange}
+              percentChange={
+                (tokenPortfolioPriceChange / totalBalanceInCurrency) * 100
+              }
             />
           </View>
         </View>

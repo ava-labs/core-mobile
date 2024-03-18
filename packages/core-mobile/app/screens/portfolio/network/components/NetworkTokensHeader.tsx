@@ -14,7 +14,7 @@ import { selectActiveAccount } from 'store/account'
 import { Text, View } from '@avalabs/k2-mobile'
 import MarketTrend from 'screens/watchlist/components/MarketTrend'
 import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList'
-import { useTokensPriceChange } from 'hooks/useTokensPriceChange'
+import { useTokenPortfolioPriceChange } from 'hooks/useTokenPortfolioPriceChange'
 
 const NetworkTokensHeader = (): JSX.Element => {
   const {
@@ -32,7 +32,7 @@ const NetworkTokensHeader = (): JSX.Element => {
   const isBalanceLoading = isLoadingBalance || isRefetchingBalance
 
   const { filteredTokenList: tokens } = useSearchableTokenList()
-  const { priceChange } = useTokensPriceChange(tokens)
+  const { tokenPortfolioPriceChange } = useTokenPortfolioPriceChange(tokens)
 
   return (
     <View
@@ -63,8 +63,8 @@ const NetworkTokensHeader = (): JSX.Element => {
           </Text>
         )}
         <MarketTrend
-          priceChange={priceChange}
-          percentChange={(priceChange / balanceTotal) * 100}
+          priceChange={tokenPortfolioPriceChange}
+          percentChange={(tokenPortfolioPriceChange / balanceTotal) * 100}
         />
       </View>
     </View>

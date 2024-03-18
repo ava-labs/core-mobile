@@ -11,7 +11,7 @@ import { selectActiveAccount } from 'store/account'
 import { ActivityIndicator } from 'components/ActivityIndicator'
 import MarketTrend from 'screens/watchlist/components/MarketTrend'
 import { Text, View } from '@avalabs/k2-mobile'
-import { useTokensPriceChange } from 'hooks/useTokensPriceChange'
+import { useTokenPortfolioPriceChange } from 'hooks/useTokenPortfolioPriceChange'
 import { PortfolioHeaderLoader } from './Loaders/PortfolioHeaderLoader'
 
 function PortfolioHeader(): JSX.Element {
@@ -27,7 +27,7 @@ function PortfolioHeader(): JSX.Element {
   const tokens = useSelector(
     selectTokensWithBalanceForAccount(activeAccount?.index)
   )
-  const { priceChange } = useTokensPriceChange(tokens)
+  const { tokenPortfolioPriceChange } = useTokenPortfolioPriceChange(tokens)
   const [contentHeight, setContentHeight] = useState(0)
 
   const renderContent = (): JSX.Element => {
@@ -68,8 +68,10 @@ function PortfolioHeader(): JSX.Element {
           </Text>
         </View>
         <MarketTrend
-          priceChange={priceChange}
-          percentChange={(priceChange / balanceTotalInCurrency) * 100}
+          priceChange={tokenPortfolioPriceChange}
+          percentChange={
+            (tokenPortfolioPriceChange / balanceTotalInCurrency) * 100
+          }
           textVariant="buttonSmall"
         />
       </View>
