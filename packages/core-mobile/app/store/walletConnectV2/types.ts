@@ -22,7 +22,7 @@ export type SessionRequest<Method> = {
 export type Request = SessionProposal | SessionRequest<string>
 
 export type WalletConnectState = {
-  requestStatuses: Record<string, { result?: unknown; error?: Error }>
+  requestStatuses: Record<string, RequestStatus>
 }
 
 export enum RpcMethod {
@@ -73,4 +73,14 @@ export type RpcError = EthereumRpcError<string> | EthereumProviderError<string>
 export enum WalletConnectVersions {
   V1 = '1',
   V2 = '2'
+}
+
+export type ConfirmationReceiptStatus = 'Reverted' | 'Success' | 'Pending'
+
+export type RequestStatus = {
+  result?: {
+    txHash: string
+    confirmationReceiptStatus?: ConfirmationReceiptStatus
+  }
+  error?: Error
 }

@@ -16,6 +16,7 @@ import {
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { Transaction } from '@sentry/types'
 import { avaxSerial } from '@avalabs/avalanchejs-v2'
+import { TransactionResponse } from 'ethers'
 import { getBitcoinProvider, getEvmProvider } from './utils/providerUtils'
 
 class NetworkService {
@@ -54,13 +55,17 @@ class NetworkService {
     throw new Error(`Unsupported network type: ${network.vmName}`)
   }
 
-  // eslint-disable-next-line max-params
-  async sendTransaction(
-    signedTx: string | avaxSerial.SignedTx,
-    network: Network,
-    waitToPost = false,
+  async sendTransaction({
+    signedTx,
+    network,
+    sentryTrx,
+    handleWaitToPost
+  }: {
+    signedTx: string | avaxSerial.SignedTx
+    network: Network
     sentryTrx?: Transaction
-  ): Promise<string> {
+    handleWaitToPost?: (txResponse: TransactionResponse) => void
+  }): Promise<string> {
     return SentryWrapper.createSpanFor(sentryTrx)
       .setContext('svc.network.send_transaction')
       .executeAsync(async () => {
@@ -79,10 +84,7 @@ class NetworkService {
         } else if (typeof signedTx === 'string') {
           if (provider instanceof JsonRpcBatchInternal) {
             const tx = await provider.broadcastTransaction(signedTx)
-
-            if (waitToPost) {
-              await tx.wait()
-            }
+            handleWaitToPost?.(tx)
             txID = tx.hash
           } else if (provider instanceof BlockCypherProvider) {
             txID = (await provider.issueRawTx(signedTx)).hash

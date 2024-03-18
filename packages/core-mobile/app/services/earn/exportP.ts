@@ -45,7 +45,10 @@ export async function exportP({
   )
   const signedTx = UnsignedTx.fromJSON(signedTxJson).getSignedTx()
 
-  const txID = await NetworkService.sendTransaction(signedTx, avaxXPNetwork)
+  const txID = await NetworkService.sendTransaction({
+    signedTx,
+    network: avaxXPNetwork
+  })
   Logger.trace('txID', txID)
 
   const avaxProvider = NetworkService.getProviderForNetwork(
