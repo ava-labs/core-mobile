@@ -50,7 +50,10 @@ const MarketTrend: FC<Props> = ({
           : { alignItems: 'center' }
       }>
       <View sx={{ flexDirection: 'row', alignItems: 'center' }}>
-        <MarketTriangleSVG negative={priceChange < 0} color={tintColor} />
+        <MarketTriangleSVG
+          direction={priceChange < 0 ? 'down' : 'up'}
+          color={tintColor}
+        />
         <Text
           variant={textVariant}
           sx={{
