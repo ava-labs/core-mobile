@@ -235,7 +235,10 @@ class EarnService {
     )
     const signedTx = UnsignedTx.fromJSON(signedTxJson).getSignedTx()
 
-    const txID = await NetworkService.sendTransaction(signedTx, avaxXPNetwork)
+    const txID = await NetworkService.sendTransaction({
+      signedTx,
+      network: avaxXPNetwork
+    })
 
     AnalyticsService.captureWithEncryption('StakeTransactionStarted', {
       txHash: txID,

@@ -116,10 +116,10 @@ export class BridgeService {
         bitcoinNetwork
       )
 
-      const hash = await NetworkService.sendTransaction(
+      const hash = await NetworkService.sendTransaction({
         signedTx,
-        bitcoinNetwork
-      )
+        network: bitcoinNetwork
+      })
 
       AnalyticsService.captureWithEncryption('BridgeTransactionStarted', {
         chainId: bitcoinNetwork.chainId,

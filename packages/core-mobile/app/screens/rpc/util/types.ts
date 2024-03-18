@@ -20,6 +20,7 @@ export interface TransactionDisplayValues {
   toAddress?: string
   maxFeePerGas?: NetworkTokenUnit
   maxPriorityFeePerGas?: NetworkTokenUnit
+  maxTotalFee?: NetworkTokenUnit
   contractType?: ContractCall
   gasLimit?: number
   fee?: string
