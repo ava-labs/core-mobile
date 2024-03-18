@@ -10,14 +10,19 @@ import Separator from 'components/Separator'
 import { useSelector } from 'react-redux'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { selectAvaxPrice } from 'store/balance'
-import { isPrimarySubnet } from 'utils/isPrimarySubnet'
+import { isPrimarySubnet } from 'utils/network/isPrimarySubnet'
 import { Text, useTheme } from '@avalabs/k2-mobile'
 import CopySVG from 'components/svg/CopySVG'
 import { copyToClipboard } from 'utils/DeviceTools'
 import AvaButton from 'components/AvaButton'
 import { getDateInMmmDdYyyyHhMmA } from 'utils/date/getDateInMmmDdYyyyHhMmA'
-import { AddPermissionlessDelegatorTx } from './types'
+import { Avalanche } from '@avalabs/wallets-sdk'
 import { TxFee } from './components/TxFee'
+
+type AddPermissionlessDelegatorTx = Pick<
+  Avalanche.AddPermissionlessDelegatorTx,
+  'nodeID' | 'start' | 'end' | 'stake' | 'subnetID' | 'txFee'
+>
 
 export const AddPermissionlessDelegatorTxView = ({
   tx

@@ -1,4 +1,3 @@
-import AvaText from 'components/AvaText'
 import React from 'react'
 import { StyleSheet, View } from 'react-native'
 import { Space } from 'components/Space'
@@ -16,9 +15,22 @@ import { getDateInMmmDdYyyyHhMmA } from 'utils/date/getDateInMmmDdYyyyHhMmA'
 import AvaButton from 'components/AvaButton'
 import { copyToClipboard } from 'utils/DeviceTools'
 import CopySVG from 'components/svg/CopySVG'
-import { isPrimarySubnet } from 'utils/isPrimarySubnet'
-import { AddPermissionlessValidatorTx } from './types'
+import { isPrimarySubnet } from 'utils/network/isPrimarySubnet'
+import { Avalanche } from '@avalabs/wallets-sdk'
 import { TxFee } from './components/TxFee'
+
+type AddPermissionlessValidatorTx = Pick<
+  Avalanche.AddPermissionlessValidatorTx,
+  | 'nodeID'
+  | 'start'
+  | 'end'
+  | 'stake'
+  | 'delegationFee'
+  | 'txFee'
+  | 'subnetID'
+  | 'publicKey'
+  | 'signature'
+>
 
 export const AddPermissionlessValidatorTxView = ({
   tx
@@ -48,7 +60,7 @@ export const AddPermissionlessValidatorTxView = ({
 
   return (
     <View>
-      <AvaText.Heading4>Add Validator</AvaText.Heading4>
+      <Text variant="heading4">Add Validator</Text>
       <Space y={28} />
       <Text variant="body2" sx={{ color: '$neutral50' }}>
         Staking Details
