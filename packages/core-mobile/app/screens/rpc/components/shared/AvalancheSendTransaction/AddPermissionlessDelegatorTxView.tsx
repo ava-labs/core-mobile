@@ -15,7 +15,7 @@ import { Text, useTheme } from '@avalabs/k2-mobile'
 import CopySVG from 'components/svg/CopySVG'
 import { copyToClipboard } from 'utils/DeviceTools'
 import AvaButton from 'components/AvaButton'
-import { getSimpleDateFormat } from 'utils/date/getSimpleDateFormat'
+import { getDateInMmmDdYyyyHhMmA } from 'utils/date/getDateInMmmDdYyyyHhMmA'
 import { AddPermissionlessDelegatorTx } from './types'
 import { TxFee } from './components/TxFee'
 
@@ -30,8 +30,8 @@ export const AddPermissionlessDelegatorTxView = ({
   const avaxPrice = useSelector(selectAvaxPrice)
   const { tokenInCurrencyFormatter } = useApplicationContext().appHook
   const { nodeID, start, end, stake, txFee, subnetID } = tx
-  const startDate = getSimpleDateFormat(parseInt(start))
-  const endDate = getSimpleDateFormat(parseInt(end))
+  const startDate = getDateInMmmDdYyyyHhMmA(parseInt(start))
+  const endDate = getDateInMmmDdYyyyHhMmA(parseInt(end))
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const isPrimaryNetwork = isPrimarySubnet(subnetID)
 

@@ -6,7 +6,7 @@ import { DeFiVestingItem } from 'services/defi/types'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { useExchangedAmount } from 'hooks/defi/useExchangedAmount'
 import { Space } from 'components/Space'
-import { getSimpleDateFormat } from 'utils/date/getSimpleDateFormat'
+import { getDateInMmmDdYyyyHhMmA } from 'utils/date/getDateInMmmDdYyyyHhMmA'
 
 type Props = {
   items: DeFiVestingItem[]
@@ -27,7 +27,7 @@ export const DeFiPortfolioVesting = ({ items }: Props): JSX.Element => {
       </Row>
       <View>
         {items.map(({ token, netUsdValue, endAt }, index) => {
-          const endDate = endAt ? getSimpleDateFormat(endAt) : undefined
+          const endDate = endAt ? getDateInMmmDdYyyyHhMmA(endAt) : undefined
 
           return (
             <View

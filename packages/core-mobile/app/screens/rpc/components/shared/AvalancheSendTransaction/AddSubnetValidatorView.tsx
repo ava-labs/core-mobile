@@ -8,7 +8,7 @@ import Card from 'components/Card'
 import { truncateNodeId } from 'utils/Utils'
 import Separator from 'components/Separator'
 import { Avalanche } from '@avalabs/wallets-sdk'
-import { getSimpleDateFormat } from 'utils/date/getSimpleDateFormat'
+import { getDateInMmmDdYyyyHhMmA } from 'utils/date/getDateInMmmDdYyyyHhMmA'
 import { TxFee } from './components/TxFee'
 
 const AddSubnetValidatorTxView = ({
@@ -18,8 +18,8 @@ const AddSubnetValidatorTxView = ({
 }): JSX.Element => {
   const { theme } = useApplicationContext()
   const { txFee, nodeID, start, end, subnetID } = tx
-  const startDate = getSimpleDateFormat(parseInt(start))
-  const endDate = getSimpleDateFormat(parseInt(end))
+  const startDate = getDateInMmmDdYyyyHhMmA(parseInt(start))
+  const endDate = getDateInMmmDdYyyyHhMmA(parseInt(end))
 
   return (
     <View>

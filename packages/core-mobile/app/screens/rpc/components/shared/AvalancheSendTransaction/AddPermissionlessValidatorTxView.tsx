@@ -12,7 +12,7 @@ import { selectSelectedCurrency } from 'store/settings/currency'
 import { useSelector } from 'react-redux'
 import { selectAvaxPrice } from 'store/balance'
 import { Text, useTheme } from '@avalabs/k2-mobile'
-import { getSimpleDateFormat } from 'utils/date/getSimpleDateFormat'
+import { getDateInMmmDdYyyyHhMmA } from 'utils/date/getDateInMmmDdYyyyHhMmA'
 import AvaButton from 'components/AvaButton'
 import { copyToClipboard } from 'utils/DeviceTools'
 import CopySVG from 'components/svg/CopySVG'
@@ -41,8 +41,8 @@ export const AddPermissionlessValidatorTxView = ({
     signature,
     publicKey
   } = tx
-  const startDate = getSimpleDateFormat(parseInt(start))
-  const endDate = getSimpleDateFormat(parseInt(end))
+  const startDate = getDateInMmmDdYyyyHhMmA(parseInt(start))
+  const endDate = getDateInMmmDdYyyyHhMmA(parseInt(end))
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const isPrimaryNetwork = isPrimarySubnet(subnetID)
 

@@ -8,7 +8,7 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import { useExchangedAmount } from 'hooks/defi/useExchangedAmount'
 import { Space } from 'components/Space'
 import { Tooltip } from 'components/Tooltip'
-import { getSimpleDateFormat } from 'utils/date/getSimpleDateFormat'
+import { getDateInMmmDdYyyyHhMmA } from 'utils/date/getDateInMmmDdYyyyHhMmA'
 
 interface Props {
   items: DeFiInsuranceBuyerItem[]
@@ -31,7 +31,7 @@ export const DeFiPortfolioInsuranceBuyer: FC<Props> = ({ items }) => {
       {items.map((item, index) => {
         const description = item.description
         const expiredAt = item.expiredAt
-          ? getSimpleDateFormat(item.expiredAt)
+          ? getDateInMmmDdYyyyHhMmA(item.expiredAt)
           : undefined
 
         return (
