@@ -216,7 +216,10 @@ export const SwapContextProvider = ({
           activeNetwork,
           provider: avalancheProvider,
           transactionSend: signedTx =>
-            NetworkService.sendTransaction(signedTx, activeNetwork),
+            NetworkService.sendTransaction({
+              signedTx,
+              network: activeNetwork
+            }),
           transactionSign: tx =>
             WalletService.sign(tx, activeAccount.index, activeNetwork),
           userAddress: activeAccount.address,

@@ -45,7 +45,8 @@ export async function importP({
   let txID: string
   try {
     txID = await retry({
-      operation: () => NetworkService.sendTransaction(signedTx, avaxXPNetwork),
+      operation: () =>
+        NetworkService.sendTransaction({ signedTx, network: avaxXPNetwork }),
       isSuccess: result => result !== '',
       maxRetries: maxTransactionCreationRetries
     })

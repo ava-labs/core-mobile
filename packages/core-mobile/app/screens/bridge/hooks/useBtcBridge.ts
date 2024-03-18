@@ -226,7 +226,10 @@ export function useBtcBridge(amountInBtc: Big, fee: number): BridgeAdapter {
       return Promise.reject(errMsg)
     }
 
-    const hash = await networkService.sendTransaction(signedTx, bitcoinNetwork)
+    const hash = await networkService.sendTransaction({
+      signedTx,
+      network: bitcoinNetwork
+    })
 
     AnalyticsService.captureWithEncryption('BridgeTransactionStarted', {
       chainId: bitcoinNetwork.chainId,

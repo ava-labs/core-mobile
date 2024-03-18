@@ -14,7 +14,10 @@ import { queryClient } from 'contexts/ReactQueryProvider'
 import { NetworkFee } from 'services/networkFee/types'
 import { getQueryKey, prefetchNetworkFee } from 'hooks/useNetworkFee'
 import { NetworkTokenUnit } from 'types'
-import { updateRequestStatus } from '../../slice'
+import {
+  updateRequestStatus,
+  waitForTransactionReceiptAsync
+} from '../../slice'
 import { RpcMethod, SessionRequest } from '../../types'
 import {
   ApproveResponse,
@@ -152,16 +155,28 @@ class EthSendTransactionHandler
         network
       )
 
-      const transactionHash = await NetworkService.sendTransaction(
+      const transactionHash = await NetworkService.sendTransaction({
         signedTx,
         network,
-        false
-      )
+        handleWaitToPost: txResponse => {
+          dispatch(
+            waitForTransactionReceiptAsync({
+              txResponse,
+              requestId: request.data.id
+            })
+          )
+        }
+      })
 
       dispatch(
         updateRequestStatus({
           id: request.data.id,
-          status: { result: transactionHash }
+          status: {
+            result: {
+              txHash: transactionHash,
+              confirmationReceiptStatus: 'Pending'
+            }
+          }
         })
       )
 

@@ -66,10 +66,10 @@ export async function exportC({
   )
   const signedTxWithFee = UnsignedTx.fromJSON(signedTxWithFeeJson).getSignedTx()
 
-  const txID = await NetworkService.sendTransaction(
-    signedTxWithFee,
-    avaxXPNetwork
-  )
+  const txID = await NetworkService.sendTransaction({
+    signedTx: signedTxWithFee,
+    network: avaxXPNetwork
+  })
   Logger.trace('txID', txID)
 
   try {
