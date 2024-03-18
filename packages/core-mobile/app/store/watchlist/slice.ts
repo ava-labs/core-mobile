@@ -83,12 +83,6 @@ export const selectWatchlistFavoritesIsEmpty = (state: RootState): boolean =>
 export const selectWatchlistTokens = (state: RootState): MarketToken[] =>
   Object.values(state.watchlist.tokens)
 
-export const selectWatchlistToken: (
-  coingeckoId: string
-) => (state: RootState) => MarketToken | undefined =
-  (coingeckoId: string) => (state: RootState) =>
-    state.watchlist.tokens[coingeckoId]
-
 export const selectWatchlistPrices = (state: RootState): Prices =>
   state.watchlist.prices
 
