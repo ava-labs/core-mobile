@@ -23,7 +23,7 @@ export interface NftProvider {
     tokenId: string
   ): Promise<NFTItemData>
 
-  reindexNft(
+  refreshNftMetadata(
     address: string,
     chainId: number,
     tokenId: string

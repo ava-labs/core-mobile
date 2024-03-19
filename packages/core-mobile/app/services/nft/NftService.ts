@@ -75,7 +75,7 @@ export class NftService {
       })
   }
 
-  async reindexNft(
+  async refreshNftMetadata(
     address: string,
     chainId: number,
     tokenId: string
@@ -84,7 +84,7 @@ export class NftService {
 
     if (!provider) throw Error('no available providers')
 
-    return await provider.reindexNft(address, chainId, tokenId)
+    return await provider.refreshNftMetadata(address, chainId, tokenId)
   }
 }
 

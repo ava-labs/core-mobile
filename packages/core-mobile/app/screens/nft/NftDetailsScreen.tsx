@@ -21,7 +21,7 @@ import { Icons, Pressable, useTheme } from '@avalabs/k2-mobile'
 import { useSelector } from 'react-redux'
 import { selectActiveNetwork } from 'store/network'
 import NftService from 'services/nft/NftService'
-import { ShowSnackBar } from 'components/Snackbar'
+import { ShowSnackBar, showSimpleToast } from 'components/Snackbar'
 import Loader from 'components/Loader'
 import { SnackBarMessage } from 'seedless/components/SnackBarMessage'
 import { Tooltip } from 'components/Tooltip'
@@ -60,21 +60,21 @@ const NftDetailsScreen = (): JSX.Element => {
     ? truncateAddress(nft.owner)
     : nft.owner
 
-  const [isReindexing, setIsReindexing] = useState(false)
-  const [wasReindexed, setWasReindexed] = useState(false)
+  const [isRefreshing, setIsRefreshing] = useState(false)
+  const [wasRefreshed, setWasRefreshed] = useState(false)
 
-  const canReindex = useMemo(() => {
+  const canRefreshMetadata = useMemo(() => {
     const currentTimestamp = Math.floor(Date.now() / 1000)
     const reindexBackoff = 3600
 
-    if (!nft || wasReindexed) {
+    if (!nft || wasRefreshed) {
       return false
     }
 
-    const updatedAt = nft.metadata.metadataLastUpdatedTimestamp
+    const updatedAt = nft.processedMetadata.metadataLastUpdatedTimestamp
 
     return !updatedAt || currentTimestamp > updatedAt + reindexBackoff
-  }, [nft, wasReindexed])
+  }, [nft, wasRefreshed])
 
   const renderSendBtn = (): null | JSX.Element => {
     const shouldHide =
@@ -106,14 +106,14 @@ const NftDetailsScreen = (): JSX.Element => {
   }
 
   const handleRefresh = useCallback(async (): Promise<void> => {
-    if (!nft) {
+    if (!nft || !freshNftData) {
       return
     }
 
-    setIsReindexing(true)
+    setIsRefreshing(true)
 
     try {
-      const result = await NftService.reindexNft(
+      const result = await NftService.refreshNftMetadata(
         nft.address,
         activeNetwork.chainId,
         nft.tokenId
@@ -128,7 +128,7 @@ const NftDetailsScreen = (): JSX.Element => {
       }
 
       const updatedNft = {
-        ...nft,
+        ...freshNftData,
         metadata: {
           ...result.metadata
         }
@@ -137,14 +137,18 @@ const NftDetailsScreen = (): JSX.Element => {
       process([updatedNft])
 
       ShowSnackBar(<SnackBarMessage message="NFT refreshed successfully" />)
-      setWasReindexed(true)
+      setWasRefreshed(true)
+    } catch (error) {
+      showSimpleToast(
+        'This is taking longer than expected. Please try again later.'
+      )
     } finally {
-      setIsReindexing(false)
+      setIsRefreshing(false)
     }
-  }, [activeNetwork, nft, process])
+  }, [activeNetwork, nft, process, freshNftData])
 
   const renderHeaderRight = useCallback(() => {
-    const disabled = !canReindex || isReindexing
+    const disabled = !canRefreshMetadata || isRefreshing
 
     const refresIcon = (): JSX.Element => (
       <View
@@ -158,7 +162,7 @@ const NftDetailsScreen = (): JSX.Element => {
       </View>
     )
 
-    return canReindex ? (
+    return canRefreshMetadata ? (
       <Pressable onPress={handleRefresh} disabled={disabled}>
         {refresIcon()}
       </Pressable>
@@ -170,14 +174,14 @@ const NftDetailsScreen = (): JSX.Element => {
         icon={refresIcon()}
       />
     )
-  }, [colors, handleRefresh, canReindex, isReindexing])
+  }, [colors, handleRefresh, canRefreshMetadata, isRefreshing])
 
   const renderImage = (): JSX.Element => {
     if (imgLoadFailed || !nft.imageData?.image) {
       return renderImageFailure()
     }
 
-    if (!nft.imageData || isReindexing) {
+    if (!nft.imageData || isRefreshing) {
       return renderLoading()
     }
 

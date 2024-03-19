@@ -150,18 +150,16 @@ export const NFTMetadataProvider = ({
     }
   }, [query.data, process])
 
-  const nftItems = useMemo(
-    () =>
-      query.nfts.map(nft => ({
-        ...nft,
-        imageData: imageData[nft.uid],
-        processedMetadata: metadata[nft.uid] ?? {
-          ...nft.metadata,
-          attributes: []
-        }
-      })),
-    [query.nfts, imageData, metadata]
-  )
+  const nftItems = useMemo(() => {
+    return query.nfts.map(nft => ({
+      ...nft,
+      imageData: imageData[nft.uid],
+      processedMetadata: metadata[nft.uid] ?? {
+        ...nft.metadata,
+        attributes: []
+      }
+    }))
+  }, [query.nfts, imageData, metadata])
 
   const getNftItem = useCallback(
     (uid: string): NFTItem | undefined => {
