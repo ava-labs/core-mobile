@@ -66,9 +66,13 @@ const NftDetailsScreen = (): JSX.Element => {
     const currentTimestamp = Math.floor(Date.now() / 1000)
     const reindexBackoff = 3600
 
-    const updatedAt = nftItem.processedMetadata.metadataLastUpdatedTimestamp
+    const metadata = nftItem.processedMetadata
+    const updatedAt = metadata.metadataLastUpdatedTimestamp
 
-    return !updatedAt || currentTimestamp > updatedAt + reindexBackoff
+    return (
+      (!updatedAt || currentTimestamp > updatedAt + reindexBackoff) &&
+      metadata.indexStatus === 'INDEXED'
+    )
   }, [nftItem])
 
   const renderSendBtn = (): null | JSX.Element => {
