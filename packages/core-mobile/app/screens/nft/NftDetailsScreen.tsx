@@ -38,11 +38,11 @@ const NftDetailsScreen = (): JSX.Element => {
     useNavigation<NftDetailsScreenProps['navigation']>()
   const activeNetwork = useSelector(selectActiveNetwork)
   const { nft: routeNft } = useRoute<NftDetailsScreenProps['route']>().params
-  const { nft: freshNftData } = useNft(
-    activeNetwork.chainId,
-    routeNft.address,
-    routeNft.tokenId
-  )
+  const { nft: freshNftData } = useNft({
+    chainId: activeNetwork.chainId,
+    address: routeNft.address,
+    tokenId: routeNft.tokenId
+  })
 
   const { process, getNftItem } = useNftItemsContext()
   const nft = useMemo(

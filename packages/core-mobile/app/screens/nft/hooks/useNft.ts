@@ -5,11 +5,19 @@ import { useCallback } from 'react'
 import { NFTItemData } from 'store/nft'
 import { useQuery } from '@tanstack/react-query'
 
-export const useNft = (
-  chainId: number,
-  address: string,
+export const useNft = ({
+  chainId,
+  address,
+  tokenId,
+  staleTime = 0,
+  gcTime = 0
+}: {
+  chainId: number
+  address: string
   tokenId: string
-): { nft: NFTItemData | undefined } => {
+  staleTime?: number
+  gcTime?: number
+}): { nft: NFTItemData | undefined } => {
   const fetchNft = useCallback(async () => {
     const t = SentryWrapper.startTransaction('get-nft')
     try {
@@ -30,13 +38,15 @@ export const useNft = (
     queryKey: [
       'nft',
       {
-        chainId: chainId,
-        address: address,
+        chainId,
+        address,
         tokenId
       }
     ],
     retry: false,
-    queryFn: fetchNft
+    queryFn: fetchNft,
+    staleTime,
+    gcTime
   })
 
   const nft = query.data
