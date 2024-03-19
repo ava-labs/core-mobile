@@ -106,7 +106,7 @@ const NftDetailsScreen = (): JSX.Element => {
   }
 
   const handleRefresh = useCallback(async (): Promise<void> => {
-    if (!nftItem || !freshNftData) {
+    if (!freshNftData) {
       return
     }
 
@@ -114,14 +114,14 @@ const NftDetailsScreen = (): JSX.Element => {
 
     try {
       const result = await NftService.refreshNftMetadata(
-        nftItem.address,
+        freshNftData.address,
         activeNetwork.chainId,
-        nftItem.tokenId
+        freshNftData.tokenId
       )
 
       if (
-        nftItem.address !== result.address ||
-        nftItem.tokenId !== result.tokenId ||
+        freshNftData.address !== result.address ||
+        freshNftData.tokenId !== result.tokenId ||
         !result.metadata
       ) {
         return
@@ -144,7 +144,7 @@ const NftDetailsScreen = (): JSX.Element => {
     } finally {
       setIsRefreshing(false)
     }
-  }, [activeNetwork, nftItem, process, freshNftData])
+  }, [activeNetwork, process, freshNftData])
 
   const renderHeaderRight = useCallback(() => {
     const disabled = !canRefreshMetadata || isRefreshing
