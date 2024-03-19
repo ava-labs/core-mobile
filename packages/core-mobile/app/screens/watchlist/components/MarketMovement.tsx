@@ -65,7 +65,10 @@ const MarketMovement: FC<Props> = ({
 
   return (
     <Row style={styles.container}>
-      <MarketTriangleSVG negative={negative} />
+      <MarketTriangleSVG
+        direction={negative ? 'down' : 'up'}
+        color={textColor}
+      />
       <AvaText.Caption textStyle={textStyle}>
         {' ' + textToDisplay}
       </AvaText.Caption>

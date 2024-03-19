@@ -21,7 +21,8 @@ export const watchListCacheClient = new Zodios(
       path: '/markets',
       parameters: [
         { name: 'currency', type: 'Query', schema: string() },
-        { name: 'topMarkets', type: 'Query', schema: boolean().optional() }
+        { name: 'topMarkets', type: 'Query', schema: boolean().optional() },
+        { name: 'timestamp', type: 'Query', schema: string().optional() }
       ],
       alias: 'markets',
       response: array(CoinMarketSchema)
