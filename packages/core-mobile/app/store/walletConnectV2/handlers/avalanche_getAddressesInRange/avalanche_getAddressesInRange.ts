@@ -6,15 +6,15 @@ import WalletService from 'services/wallet/WalletService'
 import Logger from 'utils/Logger'
 import { HandleResponse, RpcRequestHandler } from '../types'
 import { getCorrectedLimit, parseRequestParams } from './utils'
-import { RequestParams, avalancheGetAddressesInRangeRpcRequest } from './types'
+import { RequestParams, AvalancheGetAddressesInRangeRpcRequest } from './types'
 
 class AvalancheGetAddressesInRangeHandler
-  implements RpcRequestHandler<avalancheGetAddressesInRangeRpcRequest>
+  implements RpcRequestHandler<AvalancheGetAddressesInRangeRpcRequest>
 {
   methods = [RpcMethod.AVALANCHE_GET_ADDRESSES_IN_RANGE]
 
   handle = async (
-    request: avalancheGetAddressesInRangeRpcRequest,
+    request: AvalancheGetAddressesInRangeRpcRequest,
     listenerApi: AppListenerEffectAPI
   ): HandleResponse => {
     const { getState } = listenerApi

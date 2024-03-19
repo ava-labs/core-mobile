@@ -3,7 +3,7 @@ import mockSession from 'tests/fixtures/walletConnect/session.json'
 import { ethErrors } from 'eth-rpc-errors'
 import WalletService from 'services/wallet/WalletService'
 import { avalancheGetAddressesInRangeHandler } from './avalanche_getAddressesInRange'
-import { avalancheGetAddressesInRangeRpcRequest } from './types'
+import { AvalancheGetAddressesInRangeRpcRequest } from './types'
 
 jest.mock('../index')
 jest
@@ -15,7 +15,7 @@ jest
 
 const createRequest = (
   params: unknown
-): avalancheGetAddressesInRangeRpcRequest => {
+): AvalancheGetAddressesInRangeRpcRequest => {
   return {
     method: RpcMethod.AVALANCHE_GET_ADDRESSES_IN_RANGE,
     data: {
