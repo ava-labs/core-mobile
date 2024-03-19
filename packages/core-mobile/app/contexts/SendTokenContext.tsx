@@ -138,9 +138,10 @@ export const SendTokenContextProvider = ({
   const balanceAfterTrxInCurrency = useMemo(
     () =>
       (
-        nativeTokenPrice * mustNumber(() => parseFloat(balanceAfterTrx), 0)
+        tokenPriceInSelectedCurrency *
+        mustNumber(() => parseFloat(balanceAfterTrx), 0)
       ).toFixed(2),
-    [balanceAfterTrx, nativeTokenPrice]
+    [balanceAfterTrx, tokenPriceInSelectedCurrency]
   )
 
   const [sendStatus, setSendStatus] = useState<SendStatus>('Idle')
