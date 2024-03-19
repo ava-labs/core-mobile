@@ -9,6 +9,7 @@ import React, {
 } from 'react'
 import { useNfts } from 'screens/nft/hooks/useNfts'
 import NftProcessor from 'services/nft/NftProcessor'
+import NftService from 'services/nft/NftService'
 import { getTokenUri, isErc721 } from 'services/nft/utils'
 import { NFTImageData, NFTItem, NFTItemData, NFTMetadata } from 'store/nft'
 import Logger from 'utils/Logger'
@@ -18,6 +19,7 @@ type NFTItemsContextState = {
   nftItems: NFTItem[]
   getNftItem: (uid: string) => NFTItem | undefined
   setNftVisited: (visited: boolean) => void
+  refreshNftMetadata: (nftData: NFTItemData, chainId: number) => Promise<void>
   fetchNextPage: () => void
   hasNextPage: boolean
   isFetchingNextPage: boolean
@@ -137,19 +139,6 @@ export const NFTMetadataProvider = ({
 
   const query = useNfts(nftVisited)
 
-  useEffect(() => {
-    if (query.data && query.data.pages.length > 0) {
-      // It runs every time new data is fetched by useInfiniteQuery, specifically
-      // when a new page is added, to ensure the newly fetched NFTs are processed.
-      const lastPageIndex = query.data.pages.length - 1
-
-      const lastPageNfts = query.data.pages[lastPageIndex]?.nfts ?? []
-      if (lastPageNfts.length > 0) {
-        process(lastPageNfts)
-      }
-    }
-  }, [query.data, process])
-
   const nftItems = useMemo(() => {
     return query.nfts.map(nft => ({
       ...nft,
@@ -168,6 +157,47 @@ export const NFTMetadataProvider = ({
     [nftItems]
   )
 
+  const refreshNftMetadata = useCallback(
+    async (nftData: NFTItemData, chainId: number) => {
+      const result = await NftService.refreshNftMetadata(
+        nftData.address,
+        chainId,
+        nftData.tokenId
+      )
+
+      if (
+        nftData.address !== result.address ||
+        nftData.tokenId !== result.tokenId ||
+        !result.metadata
+      ) {
+        return
+      }
+
+      const updatedNft = {
+        ...nftData,
+        metadata: {
+          ...result.metadata
+        }
+      }
+
+      process([updatedNft])
+    },
+    [process]
+  )
+
+  useEffect(() => {
+    if (query.data && query.data.pages.length > 0) {
+      // It runs every time new data is fetched by useInfiniteQuery, specifically
+      // when a new page is added, to ensure the newly fetched NFTs are processed.
+      const lastPageIndex = query.data.pages.length - 1
+
+      const lastPageNfts = query.data.pages[lastPageIndex]?.nfts ?? []
+      if (lastPageNfts.length > 0) {
+        process(lastPageNfts)
+      }
+    }
+  }, [query.data, process])
+
   return (
     <NFTItemsContext.Provider
       value={{
@@ -175,6 +205,7 @@ export const NFTMetadataProvider = ({
         nftItems,
         getNftItem,
         setNftVisited,
+        refreshNftMetadata,
         ...query
       }}>
       {children}

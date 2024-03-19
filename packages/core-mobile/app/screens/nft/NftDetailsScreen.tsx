@@ -20,7 +20,6 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { Icons, Pressable, useTheme } from '@avalabs/k2-mobile'
 import { useSelector } from 'react-redux'
 import { selectActiveNetwork } from 'store/network'
-import NftService from 'services/nft/NftService'
 import { ShowSnackBar, showSimpleToast } from 'components/Snackbar'
 import Loader from 'components/Loader'
 import { SnackBarMessage } from 'seedless/components/SnackBarMessage'
@@ -45,7 +44,7 @@ const NftDetailsScreen = (): JSX.Element => {
     tokenId: routeNftItem.tokenId
   })
 
-  const { process, getNftItem } = useNftItemsContext()
+  const { process, getNftItem, refreshNftMetadata } = useNftItemsContext()
   const nftItem = useMemo(
     () => getNftItem(routeNftItem.uid) ?? routeNftItem,
     [getNftItem, routeNftItem]
@@ -66,10 +65,6 @@ const NftDetailsScreen = (): JSX.Element => {
   const canRefreshMetadata = useMemo(() => {
     const currentTimestamp = Math.floor(Date.now() / 1000)
     const reindexBackoff = 3600
-
-    if (!nftItem) {
-      return false
-    }
 
     const updatedAt = nftItem.processedMetadata.metadataLastUpdatedTimestamp
 
@@ -113,28 +108,7 @@ const NftDetailsScreen = (): JSX.Element => {
     setIsRefreshing(true)
 
     try {
-      const result = await NftService.refreshNftMetadata(
-        freshNftData.address,
-        activeNetwork.chainId,
-        freshNftData.tokenId
-      )
-
-      if (
-        freshNftData.address !== result.address ||
-        freshNftData.tokenId !== result.tokenId ||
-        !result.metadata
-      ) {
-        return
-      }
-
-      const updatedNft = {
-        ...freshNftData,
-        metadata: {
-          ...result.metadata
-        }
-      }
-
-      process([updatedNft])
+      await refreshNftMetadata(freshNftData, activeNetwork.chainId)
 
       ShowSnackBar(<SnackBarMessage message="NFT refreshed successfully" />)
     } catch (error) {
@@ -144,12 +118,12 @@ const NftDetailsScreen = (): JSX.Element => {
     } finally {
       setIsRefreshing(false)
     }
-  }, [activeNetwork, process, freshNftData])
+  }, [activeNetwork.chainId, refreshNftMetadata, freshNftData])
 
   const renderHeaderRight = useCallback(() => {
     const disabled = !canRefreshMetadata || isRefreshing
 
-    const refresIcon = (): JSX.Element => (
+    const refreshIcon = (): JSX.Element => (
       <View
         sx={{
           padding: 8,
@@ -163,14 +137,14 @@ const NftDetailsScreen = (): JSX.Element => {
 
     return canRefreshMetadata ? (
       <Pressable onPress={handleRefresh} disabled={disabled}>
-        {refresIcon()}
+        {refreshIcon()}
       </Pressable>
     ) : (
       <Tooltip
         content="Refresh is only available once per hour."
         position="bottom"
         style={{ width: 150 }}
-        icon={refresIcon()}
+        icon={refreshIcon()}
       />
     )
   }, [colors, handleRefresh, canRefreshMetadata, isRefreshing])
