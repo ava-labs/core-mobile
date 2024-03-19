@@ -10,7 +10,7 @@ import { NFTImageData, NFTItem } from 'store/nft'
 import NftDetailsScreen from 'screens/nft/NftDetailsScreen'
 
 export type NFTStackParamList = {
-  [AppNavigation.Nft.Details]: { nft: NFTItem }
+  [AppNavigation.Nft.Details]: { nftItem: NFTItem }
   [AppNavigation.Nft.Send]:
     | { nft: NFTItem }
     | NavigatorScreenParams<NFTSendStackParamList>

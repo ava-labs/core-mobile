@@ -141,7 +141,7 @@ const NftTab = (): JSX.Element => {
     })
     navigate(AppNavigation.Wallet.NFTDetails, {
       screen: AppNavigation.Nft.Details,
-      params: { nft: item }
+      params: { nftItem: item }
     })
   }
   const openNftManage = (): void => {

@@ -37,17 +37,18 @@ const NftDetailsScreen = (): JSX.Element => {
   const { navigate, setOptions } =
     useNavigation<NftDetailsScreenProps['navigation']>()
   const activeNetwork = useSelector(selectActiveNetwork)
-  const { nft: routeNft } = useRoute<NftDetailsScreenProps['route']>().params
+  const { nftItem: routeNftItem } =
+    useRoute<NftDetailsScreenProps['route']>().params
   const { nft: freshNftData } = useNft({
     chainId: activeNetwork.chainId,
-    address: routeNft.address,
-    tokenId: routeNft.tokenId
+    address: routeNftItem.address,
+    tokenId: routeNftItem.tokenId
   })
 
   const { process, getNftItem } = useNftItemsContext()
-  const nft = useMemo(
-    () => getNftItem(routeNft.uid) ?? routeNft,
-    [getNftItem, routeNft]
+  const nftItem = useMemo(
+    () => getNftItem(routeNftItem.uid) ?? routeNftItem,
+    [getNftItem, routeNftItem]
   )
 
   const [imgLoadFailed, setImgLoadFailed] = useState(false)
@@ -56,25 +57,24 @@ const NftDetailsScreen = (): JSX.Element => {
     theme: { colors }
   } = useTheme()
   const { sendNftBlockediOS, sendNftBlockedAndroid } = usePosthogContext()
-  const createdByTxt = isAddress(nft.owner)
-    ? truncateAddress(nft.owner)
-    : nft.owner
+  const createdByTxt = isAddress(nftItem.owner)
+    ? truncateAddress(nftItem.owner)
+    : nftItem.owner
 
   const [isRefreshing, setIsRefreshing] = useState(false)
-  const [wasRefreshed, setWasRefreshed] = useState(false)
 
   const canRefreshMetadata = useMemo(() => {
     const currentTimestamp = Math.floor(Date.now() / 1000)
     const reindexBackoff = 3600
 
-    if (!nft || wasRefreshed) {
+    if (!nftItem) {
       return false
     }
 
-    const updatedAt = nft.processedMetadata.metadataLastUpdatedTimestamp
+    const updatedAt = nftItem.processedMetadata.metadataLastUpdatedTimestamp
 
     return !updatedAt || currentTimestamp > updatedAt + reindexBackoff
-  }, [nft, wasRefreshed])
+  }, [nftItem])
 
   const renderSendBtn = (): null | JSX.Element => {
     const shouldHide =
@@ -91,22 +91,22 @@ const NftDetailsScreen = (): JSX.Element => {
   }
 
   const handlePressImage = (): void => {
-    if (!nft.imageData) {
+    if (!nftItem.imageData) {
       return
     }
 
-    navigate(AppNavigation.Nft.FullScreen, { imageData: nft.imageData })
+    navigate(AppNavigation.Nft.FullScreen, { imageData: nftItem.imageData })
   }
 
   const handlePressSend = (): void => {
     AnalyticsService.capture('CollectibleSendClicked', {
-      chainId: nft.chainId
+      chainId: nftItem.chainId
     })
-    navigate(AppNavigation.Nft.Send, { nft })
+    navigate(AppNavigation.Nft.Send, { nft: nftItem })
   }
 
   const handleRefresh = useCallback(async (): Promise<void> => {
-    if (!nft || !freshNftData) {
+    if (!nftItem || !freshNftData) {
       return
     }
 
@@ -114,14 +114,14 @@ const NftDetailsScreen = (): JSX.Element => {
 
     try {
       const result = await NftService.refreshNftMetadata(
-        nft.address,
+        nftItem.address,
         activeNetwork.chainId,
-        nft.tokenId
+        nftItem.tokenId
       )
 
       if (
-        nft.address !== result.address ||
-        nft.tokenId !== result.tokenId ||
+        nftItem.address !== result.address ||
+        nftItem.tokenId !== result.tokenId ||
         !result.metadata
       ) {
         return
@@ -137,7 +137,6 @@ const NftDetailsScreen = (): JSX.Element => {
       process([updatedNft])
 
       ShowSnackBar(<SnackBarMessage message="NFT refreshed successfully" />)
-      setWasRefreshed(true)
     } catch (error) {
       showSimpleToast(
         'This is taking longer than expected. Please try again later.'
@@ -145,7 +144,7 @@ const NftDetailsScreen = (): JSX.Element => {
     } finally {
       setIsRefreshing(false)
     }
-  }, [activeNetwork, nft, process, freshNftData])
+  }, [activeNetwork, nftItem, process, freshNftData])
 
   const renderHeaderRight = useCallback(() => {
     const disabled = !canRefreshMetadata || isRefreshing
@@ -177,40 +176,40 @@ const NftDetailsScreen = (): JSX.Element => {
   }, [colors, handleRefresh, canRefreshMetadata, isRefreshing])
 
   const renderImage = (): JSX.Element => {
-    if (imgLoadFailed || !nft.imageData?.image) {
+    if (imgLoadFailed || !nftItem.imageData?.image) {
       return renderImageFailure()
     }
 
-    if (!nft.imageData || isRefreshing) {
+    if (!nftItem.imageData || isRefreshing) {
       return renderLoading()
     }
 
     return (
       <AvaButton.Base onPress={handlePressImage}>
-        {nft.imageData.isSvg && (
+        {nftItem.imageData.isSvg && (
           <View style={{ alignItems: 'center' }}>
             <SvgXml
-              xml={nft.imageData.image ?? null}
+              xml={nftItem.imageData.image ?? null}
               width={imageWidth}
-              height={imageWidth * (nft.imageData.aspect ?? 1)}
+              height={imageWidth * (nftItem.imageData.aspect ?? 1)}
             />
           </View>
         )}
-        {!nft.imageData.isSvg && nft.imageData.image && !imgLoadFailed && (
+        {!nftItem.imageData.isSvg && nftItem.imageData.image && !imgLoadFailed && (
           <FastImage
             onError={() => setImgLoadFailed(true)}
             style={[
               styles.imageStyle,
               {
                 width: imageWidth,
-                height: imageWidth * (nft.imageData.aspect ?? 1)
+                height: imageWidth * (nftItem.imageData.aspect ?? 1)
               }
             ]}
-            source={{ uri: nft.imageData.image }}
+            source={{ uri: nftItem.imageData.image }}
           />
         )}
 
-        {isErc1155(nft) && (
+        {isErc1155(nftItem) && (
           <OvalTagBg
             style={{
               position: 'absolute',
@@ -223,7 +222,7 @@ const NftDetailsScreen = (): JSX.Element => {
             }}>
             <AvaText.Body2
               textStyle={{ fontWeight: '600', color: theme.colorText1 }}>
-              {nft.balance}
+              {nftItem.balance}
             </AvaText.Body2>
           </OvalTagBg>
         )}
@@ -236,7 +235,7 @@ const NftDetailsScreen = (): JSX.Element => {
       <View
         sx={{
           width: imageWidth,
-          height: imageWidth * (nft.imageData?.aspect ?? 1)
+          height: imageWidth * (nftItem.imageData?.aspect ?? 1)
         }}>
         <Loader />
       </View>
@@ -273,7 +272,7 @@ const NftDetailsScreen = (): JSX.Element => {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <AvaText.Heading1 testID="NftTokenTitle">
-        {nft.processedMetadata.name} #{nft.tokenId}
+        {nftItem.processedMetadata.name} #{nftItem.tokenId}
       </AvaText.Heading1>
       <View sx={{ marginTop: 16, marginBottom: 24 }}>{renderImage()}</View>
       {renderSendBtn()}
@@ -293,11 +292,11 @@ const NftDetailsScreen = (): JSX.Element => {
         </View>
       </Row>
       <Space y={24} />
-      {nft.processedMetadata.attributes.length > 0 && (
+      {nftItem.processedMetadata.attributes.length > 0 && (
         <>
           <AvaText.Heading2>Properties</AvaText.Heading2>
           <Space y={8} />
-          {renderProps(nft.processedMetadata.attributes)}
+          {renderProps(nftItem.processedMetadata.attributes)}
         </>
       )}
     </ScrollView>
