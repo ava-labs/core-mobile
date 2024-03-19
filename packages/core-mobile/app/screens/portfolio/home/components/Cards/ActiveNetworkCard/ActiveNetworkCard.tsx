@@ -1,12 +1,8 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
-import { StyleSheet, Text, TouchableHighlight, View } from 'react-native'
 import { selectBalanceTotalInCurrencyForNetworkAndAccount } from 'store/balance'
-import AvaText from 'components/AvaText'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { Opacity20, Opacity85 } from 'resources/Constants'
 import Separator from 'components/Separator'
-import { Space } from 'components/Space'
 import AppNavigation from 'navigation/AppNavigation'
 import { PortfolioScreenProps } from 'navigation/types'
 import { useNavigation } from '@react-navigation/native'
@@ -14,10 +10,18 @@ import { NetworkLogo } from 'screens/network/NetworkLogo'
 import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList'
 import { selectActiveNetwork } from 'store/network'
 import { selectActiveAccount } from 'store/account'
-import { getCardHighLightColor } from 'utils/color/getCardHighLightColor'
 import usePendingBridgeTransactions from 'screens/bridge/hooks/usePendingBridgeTransactions'
 import TopRightBadge from 'components/TopRightBadge'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import {
+  Text,
+  View,
+  TouchableHighlight,
+  useTheme,
+  alpha
+} from '@avalabs/k2-mobile'
+import PriceChangeIndicator from 'screens/watchlist/components/PriceChangeIndicator'
+import { useTokenPortfolioPriceChange } from 'hooks/useTokenPortfolioPriceChange'
 import ZeroState from './ZeroState'
 import Tokens from './Tokens'
 
@@ -38,12 +42,12 @@ const ActiveNetworkCard = (): JSX.Element => {
   )
   const { navigate } = useNavigation<NavigationProp>()
   const {
-    appHook: { currencyFormatter },
-    theme
+    appHook: { currencyFormatter }
   } = useApplicationContext()
-  const cardBgColor = theme.colorBg2 + Opacity85
-  const highlighColor = getCardHighLightColor(theme)
+  const { theme } = useTheme()
+  const backgroundColor = theme.colors.$neutral900
   const pendingBridgeTxs = usePendingBridgeTransactions(network)
+  const { tokenPortfolioPriceChange } = useTokenPortfolioPriceChange(tokens)
 
   const navigateToNetworkTokens = (): void => {
     AnalyticsService.capture('PortfolioPrimaryNetworkClicked', {
@@ -53,53 +57,68 @@ const ActiveNetworkCard = (): JSX.Element => {
   }
 
   const renderHeader = (): JSX.Element => {
-    const balanceTextColor = theme.colorText3
-    const tagTextColor = theme.colorBg2
-    const tagBgColor = theme.colorText3
     const balance = currencyFormatter(totalBalanceInCurrency)
 
     return (
-      <View style={styles.headerContainer}>
+      <View
+        sx={{
+          flexDirection: 'row'
+        }}>
         <View>
-          <NetworkLogo
-            logoUri={network.logoUri}
-            size={40}
-            style={styles.bigIcon}
-          />
+          <NetworkLogo logoUri={network.logoUri} size={32} />
           {pendingBridgeTxs.length > 0 && (
             <TopRightBadge
               text={pendingBridgeTxs.length.toString()}
               style={{
-                borderColor: theme.colorBg2,
+                borderColor: theme.colors.$neutral900,
                 borderWidth: 2
               }}
               offset={{ x: 3, y: 3 }}
             />
           )}
         </View>
-        <View style={styles.headerTextContainer}>
-          <AvaText.Heading2 ellipsizeMode={'tail'} numberOfLines={2}>
-            {network.chainName}
-          </AvaText.Heading2>
-          <Space y={4} />
-          <AvaText.TextLink
-            ellipsizeMode={'tail'}
-            textStyle={{ color: balanceTextColor }}>
-            {balance}
-          </AvaText.TextLink>
-        </View>
-        <View style={[styles.tagContainer, { backgroundColor: tagBgColor }]}>
-          <Text style={[styles.tagText, { color: tagTextColor }]}>Active</Text>
+        <View sx={{ flexDirection: 'row', flex: 1, alignItems: 'center' }}>
+          <View sx={{ flex: 1, marginHorizontal: 16 }}>
+            <Text variant="heading6" ellipsizeMode="tail">
+              {network.chainName}
+            </Text>
+            <View
+              sx={{
+                alignSelf: 'flex-start',
+                paddingHorizontal: 8,
+                borderRadius: 66,
+                backgroundColor: '$neutral850'
+              }}>
+              <Text
+                variant="overline"
+                ellipsizeMode="tail"
+                sx={{ color: '$white', fontWeight: '500' }}>
+                Active Network
+              </Text>
+            </View>
+          </View>
+          <View sx={{ alignItems: 'flex-end' }}>
+            <Text variant="buttonMedium">{balance}</Text>
+            <PriceChangeIndicator
+              priceChange={tokenPortfolioPriceChange}
+              percentChange={
+                (tokenPortfolioPriceChange / totalBalanceInCurrency) * 100
+              }
+            />
+          </View>
         </View>
       </View>
     )
   }
 
   const renderSeparator = (): JSX.Element => {
-    const separatorColor = theme.colorText3 + Opacity20
     return (
       <Separator
-        style={[styles.separator, { backgroundColor: separatorColor }]}
+        style={{
+          height: 0.5,
+          marginVertical: 8,
+          backgroundColor: theme.colors.$neutral800
+        }}
       />
     )
   }
@@ -112,9 +131,8 @@ const ActiveNetworkCard = (): JSX.Element => {
 
   return (
     <TouchableHighlight
-      style={[styles.container, { backgroundColor: cardBgColor }]}
-      activeOpacity={1}
-      underlayColor={highlighColor}
+      sx={{ borderRadius: 10, backgroundColor, padding: 16 }}
+      underlayColor={alpha(backgroundColor, 0.7)}
       onPress={navigateToNetworkTokens}>
       <View>
         {renderHeader()}
@@ -124,37 +142,5 @@ const ActiveNetworkCard = (): JSX.Element => {
     </TouchableHighlight>
   )
 }
-
-const styles = StyleSheet.create({
-  container: {
-    padding: 16,
-    borderRadius: 10
-  },
-  headerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center'
-  },
-  headerTextContainer: {
-    flex: 1,
-    marginHorizontal: 16
-  },
-  bigIcon: {
-    alignSelf: 'flex-start'
-  },
-  separator: {
-    height: 0.5,
-    marginVertical: 16
-  },
-  tagContainer: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: 8,
-    borderRadius: 66
-  },
-  tagText: {
-    fontFamily: 'Inter-Bold',
-    fontSize: 10,
-    lineHeight: 16
-  }
-})
 
 export default ActiveNetworkCard
