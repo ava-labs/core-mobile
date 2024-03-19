@@ -4,7 +4,7 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import Dropdown from 'components/Dropdown'
 import AvaText from 'components/AvaText'
 import {
-  defaultChartData,
+  MarketToken,
   defaultPrice,
   selectWatchlistCharts,
   selectWatchlistPrices,
@@ -14,16 +14,16 @@ import { useFocusedSelector } from 'utils/performance/useFocusedSelector'
 import { WatchListLoader } from 'screens/watchlist/components/WatchListLoader'
 import isEmpty from 'lodash.isempty'
 import { selectSelectedCurrency } from 'store/settings/currency'
-import { ChartData } from 'services/token/types'
 import { useTokenSearch } from 'screens/watchlist/useTokenSearch'
 import { WatchlistFilter } from './types'
 import WatchList from './components/WatchList'
 
-const comparePercentChange = (chartData1: ChartData, chartData2: ChartData) => {
-  const percentChange1 =
-    Math.sign(chartData1.ranges.diffValue) * chartData1.ranges.percentChange
-  const percentChange2 =
-    Math.sign(chartData2.ranges.diffValue) * chartData2.ranges.percentChange
+const comparePercentChange = (
+  token1: MarketToken,
+  token2: MarketToken
+): number => {
+  const percentChange1 = token1.priceChangePercentage24h ?? 0
+  const percentChange2 = token2.priceChangePercentage24h ?? 0
 
   return percentChange1 - percentChange2
 }
@@ -43,7 +43,7 @@ const filterPriceOptions = [
   WatchlistFilter.LOSERS
 ]
 
-const SelectionItem = ({ title }: { title: string }) => {
+const SelectionItem = ({ title }: { title: string }): JSX.Element => {
   const theme = useApplicationContext().theme
 
   return (
@@ -53,9 +53,9 @@ const SelectionItem = ({ title }: { title: string }) => {
   )
 }
 
-const renderPriceFilterSelection = (selectedItem: WatchlistFilter) => (
-  <SelectionItem title={`Sort by: ${selectedItem}`} />
-)
+const renderPriceFilterSelection = (
+  selectedItem: WatchlistFilter
+): JSX.Element => <SelectionItem title={`Sort by: ${selectedItem}`} />
 
 const WatchlistView: React.FC<Props> = ({ searchText }) => {
   const tokens = useFocusedSelector(selectWatchlistTokens)
@@ -83,9 +83,7 @@ const WatchlistView: React.FC<Props> = ({ searchText }) => {
 
     return tokensToDisplay.slice().sort((a, b) => {
       const priceB = prices[b.id] ?? defaultPrice
-      const chartB = charts[b.id] ?? defaultChartData
       const priceA = prices[a.id] ?? defaultPrice
-      const chartA = charts[a.id] ?? defaultChartData
 
       switch (filterBy) {
         case WatchlistFilter.MARKET_CAP:
@@ -93,15 +91,15 @@ const WatchlistView: React.FC<Props> = ({ searchText }) => {
         case WatchlistFilter.VOLUME:
           return priceB.vol24 - priceA.vol24
         case WatchlistFilter.GAINERS:
-          return comparePercentChange(chartB, chartA)
+          return comparePercentChange(b, a)
         case WatchlistFilter.LOSERS:
-          return comparePercentChange(chartA, chartB)
+          return comparePercentChange(a, b)
         case WatchlistFilter.PRICE:
         default:
           return priceB.priceInCurrency - priceA.priceInCurrency
       }
     })
-  }, [charts, filterBy, prices, tokensToDisplay])
+  }, [filterBy, prices, tokensToDisplay])
 
   const selectedPriceFilter = filterPriceOptions.findIndex(
     item => item === filterBy

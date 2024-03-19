@@ -59,7 +59,9 @@ class WatchlistService {
         id: token.id,
         symbol: token.symbol,
         name: token.name,
-        logoUri: token.image
+        logoUri: token.image,
+        priceChange24h: token.price_change_24h ?? undefined,
+        priceChangePercentage24h: token.price_change_percentage_24h ?? undefined
       }
 
       tokens[token.id] = tokenToAdd
