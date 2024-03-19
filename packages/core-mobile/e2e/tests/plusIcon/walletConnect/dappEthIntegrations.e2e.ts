@@ -33,7 +33,7 @@ describe('Connect to dApp using WalletConnect', () => {
   it('should connect to dApp', async () => {
     await ScanQrCodePage.enterQrCode()
     await ConnectToSitePage.tapSelectAccountsDropdown()
-    delay(1000)
+    await delay(1000)
     await ConnectedSitesPage.tapSelectAllChkBox()
     await ConnectToSitePage.tapApproveBtn()
     await BurgerMenuPage.tapBurgerMenuButton()
@@ -48,6 +48,6 @@ describe('Connect to dApp using WalletConnect', () => {
   })
 
   afterAll(async () => {
-    actions.writeQrCodeToFile('')
+    await actions.writeQrCodeToFile('')
   })
 })

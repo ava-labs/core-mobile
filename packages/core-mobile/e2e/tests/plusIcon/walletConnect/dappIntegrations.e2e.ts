@@ -45,6 +45,6 @@ describe('Connect to dApp using WalletConnect', () => {
   })
 
   afterAll(async () => {
-    actions.writeQrCodeToFile('')
+    await actions.writeQrCodeToFile('')
   })
 })
