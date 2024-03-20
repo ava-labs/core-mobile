@@ -30,8 +30,7 @@ export default function NftListView({
     isFetchingNextPage,
     hasNextPage,
     refetch,
-    isRefetching,
-    setNftVisited
+    isRefetching
   } = useNftItemsContext()
 
   const [listType, setListType] = useState<ListType>()
@@ -54,8 +53,8 @@ export default function NftListView({
   }
 
   useEffect(() => {
-    setNftVisited(true)
-  }, [setNftVisited])
+    refetch()
+  }, [refetch])
 
   return (
     <View style={styles.container}>

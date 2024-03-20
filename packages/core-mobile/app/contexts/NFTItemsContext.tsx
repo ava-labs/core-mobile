@@ -20,7 +20,6 @@ type NFTItemsContextState = {
   process: (nfts: NFTItemData[]) => void
   nftItems: NFTItem[]
   getNftItem: (uid: string) => NFTItem | undefined
-  setNftVisited: (visited: boolean) => void
   refreshNftMetadata: (nftData: NFTItemData, chainId: number) => Promise<void>
   isNftRefreshing: (uid: string) => boolean
   checkIfNftRefreshed: (nftData: NFTItemData) => void
@@ -43,7 +42,6 @@ export const NFTMetadataProvider = ({
 }): JSX.Element => {
   const [metadata, setMetadata] = useState<Record<string, NFTMetadata>>({})
   const [imageData, setImageData] = useState<Record<string, NFTImageData>>({})
-  const [nftVisited, setNftVisited] = useState<boolean>(false)
   const [reindexedAt, setReindexedAt] = useState<Record<string, number>>({})
 
   const processImageData = useCallback((items: NFTItemData[]): void => {
@@ -142,7 +140,7 @@ export const NFTMetadataProvider = ({
     [processImageData, processMetadata]
   )
 
-  const query = useNfts(nftVisited)
+  const query = useNfts()
 
   const nftItems = useMemo(() => {
     return query.nfts.map(nft => ({
@@ -237,11 +235,15 @@ export const NFTMetadataProvider = ({
         process,
         nftItems,
         getNftItem,
-        setNftVisited,
         refreshNftMetadata,
         isNftRefreshing,
         checkIfNftRefreshed,
-        ...query
+        fetchNextPage: query.fetchNextPage,
+        hasNextPage: query.hasNextPage,
+        isFetchingNextPage: query.isFetchingNextPage,
+        refetch: query.refetch,
+        isRefetching: query.isRefetching,
+        isLoading: query.isLoading
       }}>
       {children}
     </NFTItemsContext.Provider>
