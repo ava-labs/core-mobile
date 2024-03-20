@@ -1,6 +1,5 @@
 import React from 'react'
 import { bigIntToString } from '@avalabs/utils-sdk'
-import AvaText from 'components/AvaText'
 import Card from 'components/Card'
 import { Row } from 'components/Row'
 import { Space } from 'components/Space'
@@ -9,32 +8,34 @@ import { StyleSheet, View } from 'react-native'
 import { useSelector } from 'react-redux'
 import { selectAvaxPrice } from 'store/balance'
 import { selectSelectedCurrency } from 'store/settings/currency'
+import { Text } from '@avalabs/k2-mobile'
 
-const TxFee = ({ txFee }: { txFee: bigint }) => {
-  const { theme } = useApplicationContext()
+export const TxFee = ({ txFee }: { txFee: bigint }): JSX.Element => {
   const avaxPrice = useSelector(selectAvaxPrice)
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { tokenInCurrencyFormatter } = useApplicationContext().appHook
 
   return (
     <>
-      <AvaText.Body2 color={theme.colorText1} textStyle={{ lineHeight: 20 }}>
+      <Text variant="body2" sx={{ color: '$neutral50' }}>
         Network Fee
-      </AvaText.Body2>
+      </Text>
       <Space y={8} />
       <Card style={styles.cardContainer}>
         <Row style={styles.rowContainer}>
-          <AvaText.Caption color={theme.colorText1}>Fee Amount</AvaText.Caption>
+          <Text variant="caption" sx={{ color: '$neutral400' }}>
+            Fee Amount
+          </Text>
           <View style={styles.feeContainer}>
-            <AvaText.Subtitle2 color={theme.neutral50}>
+            <Text variant="subtitle2" sx={{ color: '$neutral50' }}>
               {Number(bigIntToString(txFee, 9))} AVAX
-            </AvaText.Subtitle2>
+            </Text>
             <Space y={2} />
-            <AvaText.Caption color={theme.neutral400}>
+            <Text variant="caption" sx={{ color: '$neutral400' }}>
               {`${tokenInCurrencyFormatter(
                 Number(bigIntToString(txFee, 9)) * avaxPrice
               )} ${selectedCurrency}`}
-            </AvaText.Caption>
+            </Text>
           </View>
         </Row>
       </Card>
@@ -55,5 +56,3 @@ const styles = StyleSheet.create({
     padding: 16
   }
 })
-
-export default TxFee
