@@ -93,8 +93,8 @@ const PortfolioListItem: FC<Props> = ({
               </Text>
               <Space y={4} />
               <PriceChangeIndicator
-                priceChange={priceChange}
-                percentChange={percentChange}
+                price={priceChange}
+                percent={percentChange}
               />
             </View>
           )

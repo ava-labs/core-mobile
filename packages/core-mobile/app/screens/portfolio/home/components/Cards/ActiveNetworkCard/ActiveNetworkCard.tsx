@@ -100,8 +100,8 @@ const ActiveNetworkCard = (): JSX.Element => {
           <View sx={{ alignItems: 'flex-end' }}>
             <Text variant="buttonMedium">{balance}</Text>
             <PriceChangeIndicator
-              priceChange={tokenPortfolioPriceChange}
-              percentChange={
+              price={tokenPortfolioPriceChange}
+              percent={
                 (tokenPortfolioPriceChange / totalBalanceInCurrency) * 100
               }
             />

@@ -77,8 +77,8 @@ const OwnedTokenDetail: FC = () => {
 
     return (
       <PriceChangeIndicator
-        priceChange={priceChange}
-        percentChange={percentChange}
+        price={priceChange}
+        percent={percentChange}
         textVariant="buttonSmall"
       />
     )

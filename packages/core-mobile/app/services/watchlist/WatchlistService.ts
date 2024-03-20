@@ -60,6 +60,7 @@ class WatchlistService {
         symbol: token.symbol,
         name: token.name,
         logoUri: token.image,
+        currentPrice: token.current_price ?? undefined,
         priceChange24h: token.price_change_24h ?? undefined,
         priceChangePercentage24h: token.price_change_percentage_24h ?? undefined
       }

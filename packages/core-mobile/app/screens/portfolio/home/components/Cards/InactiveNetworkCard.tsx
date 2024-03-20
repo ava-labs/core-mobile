@@ -105,8 +105,8 @@ const InactiveNetworkCard: FC<Props> = ({ network }) => {
             {balance}
           </Text>
           <PriceChangeIndicator
-            priceChange={tokenPortfolioPriceChange}
-            percentChange={(tokenPortfolioPriceChange / totalBalance) * 100}
+            price={tokenPortfolioPriceChange}
+            percent={(tokenPortfolioPriceChange / totalBalance) * 100}
           />
         </View>
       </View>
