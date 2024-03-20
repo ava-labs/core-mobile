@@ -68,10 +68,8 @@ function PortfolioHeader(): JSX.Element {
           </Text>
         </View>
         <PriceChangeIndicator
-          priceChange={tokenPortfolioPriceChange}
-          percentChange={
-            (tokenPortfolioPriceChange / balanceTotalInCurrency) * 100
-          }
+          price={tokenPortfolioPriceChange}
+          percent={(tokenPortfolioPriceChange / balanceTotalInCurrency) * 100}
           textVariant="buttonSmall"
         />
       </View>

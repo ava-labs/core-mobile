@@ -5,16 +5,16 @@ import { formatLargeCurrency } from 'utils/Utils'
 import { Text, View, useTheme } from '@avalabs/k2-mobile'
 
 interface Props {
-  priceChange: number
-  percentChange: number
+  price: number
+  percent: number
   isHorizontal?: boolean
   textVariant?: 'overline' | 'buttonSmall'
   testID?: string
 }
 
 const PriceChangeIndicator: FC<Props> = ({
-  priceChange,
-  percentChange,
+  price,
+  percent,
   isHorizontal = true,
   textVariant = 'overline'
 }) => {
@@ -24,18 +24,18 @@ const PriceChangeIndicator: FC<Props> = ({
   } = useTheme()
 
   const formattedPrice = formatLargeCurrency(
-    currencyFormatter(Math.abs(priceChange)),
+    currencyFormatter(Math.abs(price)),
     2
   )
 
   const formattedPercent = `${isHorizontal ? ' ' : ''}${
-    priceChange < 0 ? '-' : '+'
-  }${Math.abs(isNaN(percentChange) ? 0 : percentChange).toFixed(2)}%`
+    percent < 0 ? '-' : '+'
+  }${Math.abs(isNaN(percent) ? 0 : percent).toFixed(2)}%`
 
   const tintColor =
-    priceChange < 0
+    percent < 0
       ? colors.$dangerLight
-      : priceChange === 0
+      : percent === 0
       ? colors.$neutral400
       : colors.$successMain
 
@@ -51,7 +51,7 @@ const PriceChangeIndicator: FC<Props> = ({
       }>
       <View sx={{ flexDirection: 'row', alignItems: 'center' }}>
         <MarketTriangleSVG
-          direction={priceChange < 0 ? 'down' : 'up'}
+          direction={percent < 0 ? 'down' : 'up'}
           color={tintColor}
         />
         <Text

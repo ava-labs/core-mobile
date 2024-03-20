@@ -63,8 +63,8 @@ const NetworkTokensHeader = (): JSX.Element => {
           </Text>
         )}
         <PriceChangeIndicator
-          priceChange={tokenPortfolioPriceChange}
-          percentChange={(tokenPortfolioPriceChange / balanceTotal) * 100}
+          price={tokenPortfolioPriceChange}
+          percent={(tokenPortfolioPriceChange / balanceTotal) * 100}
         />
       </View>
     </View>
