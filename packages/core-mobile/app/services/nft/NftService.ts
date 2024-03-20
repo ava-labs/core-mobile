@@ -4,7 +4,6 @@ import { findAsyncSequential } from 'utils/Utils'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { Transaction } from '@sentry/types'
 import { NFTItemData, NftResponse } from 'store/nft'
-import { Erc1155Token, Erc721Token } from '@avalabs/glacier-sdk'
 
 export class NftService {
   providers: NftProvider[] = [glacierNftProvider]
@@ -75,16 +74,16 @@ export class NftService {
       })
   }
 
-  async refreshNftMetadata(
+  async reindexNft(
     address: string,
     chainId: number,
     tokenId: string
-  ): Promise<Erc721Token | Erc1155Token> {
+  ): Promise<void> {
     const provider = await this.getProvider(chainId)
 
     if (!provider) throw Error('no available providers')
 
-    return await provider.refreshNftMetadata(address, chainId, tokenId)
+    await provider.reindexNft(address, chainId, tokenId)
   }
 }
 

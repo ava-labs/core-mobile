@@ -1,4 +1,3 @@
-import { Erc1155Token, Erc721Token } from '@avalabs/glacier-sdk'
 import { NFTItemData, NftResponse } from 'store/nft'
 
 export type NftUID = string
@@ -23,9 +22,5 @@ export interface NftProvider {
     tokenId: string
   ): Promise<NFTItemData>
 
-  refreshNftMetadata(
-    address: string,
-    chainId: number,
-    tokenId: string
-  ): Promise<Erc721Token | Erc1155Token>
+  reindexNft(address: string, chainId: number, tokenId: string): Promise<void>
 }

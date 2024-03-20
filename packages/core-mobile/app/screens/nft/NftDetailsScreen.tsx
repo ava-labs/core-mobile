@@ -11,7 +11,7 @@ import { SvgXml } from 'react-native-svg'
 import { truncateAddress } from '@avalabs/utils-sdk'
 import { isAddress } from 'ethers'
 import { usePosthogContext } from 'contexts/PosthogContext'
-import { isErc1155 } from 'services/nft/utils'
+import { getNftTitle, isErc1155 } from 'services/nft/utils'
 import OvalTagBg from 'components/OvalTagBg'
 import { NFTDetailsScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
@@ -20,9 +20,7 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { Icons, Pressable, useTheme } from '@avalabs/k2-mobile'
 import { useSelector } from 'react-redux'
 import { selectActiveNetwork } from 'store/network'
-import { ShowSnackBar, showSimpleToast } from 'components/Snackbar'
 import Loader from 'components/Loader'
-import { SnackBarMessage } from 'seedless/components/SnackBarMessage'
 import { Tooltip } from 'components/Tooltip'
 import FastImage from 'react-native-fast-image'
 import { useNftItemsContext } from 'contexts/NFTItemsContext'
@@ -38,13 +36,27 @@ const NftDetailsScreen = (): JSX.Element => {
   const activeNetwork = useSelector(selectActiveNetwork)
   const { nftItem: routeNftItem } =
     useRoute<NftDetailsScreenProps['route']>().params
-  const { nft: freshNftData } = useNft({
+
+  const {
+    process,
+    getNftItem,
+    refreshNftMetadata,
+    isNftRefreshing,
+    checkIfNftRefreshed
+  } = useNftItemsContext()
+
+  const isRefreshing = useMemo(() => {
+    return isNftRefreshing(routeNftItem.uid)
+  }, [isNftRefreshing, routeNftItem.uid])
+
+  const { nft: freshNftData, nftUpdatedAt } = useNft({
     chainId: activeNetwork.chainId,
     address: routeNftItem.address,
-    tokenId: routeNftItem.tokenId
+    tokenId: routeNftItem.tokenId,
+    // when refreshing, poll every 2 seconds until the metadata is updated
+    refetchInterval: isRefreshing ? 2000 : undefined
   })
 
-  const { process, getNftItem, refreshNftMetadata } = useNftItemsContext()
   const nftItem = useMemo(
     () => getNftItem(routeNftItem.uid) ?? routeNftItem,
     [getNftItem, routeNftItem]
@@ -60,8 +72,6 @@ const NftDetailsScreen = (): JSX.Element => {
     ? truncateAddress(nftItem.owner)
     : nftItem.owner
 
-  const [isRefreshing, setIsRefreshing] = useState(false)
-
   const canRefreshMetadata = useMemo(() => {
     const currentTimestamp = Math.floor(Date.now() / 1000)
     const reindexBackoff = 3600
@@ -71,7 +81,7 @@ const NftDetailsScreen = (): JSX.Element => {
 
     return (
       (!updatedAt || currentTimestamp > updatedAt + reindexBackoff) &&
-      metadata.indexStatus === 'INDEXED'
+      metadata.indexStatus !== 'UNINDEXED'
     )
   }, [nftItem])
 
@@ -109,19 +119,7 @@ const NftDetailsScreen = (): JSX.Element => {
       return
     }
 
-    setIsRefreshing(true)
-
-    try {
-      await refreshNftMetadata(freshNftData, activeNetwork.chainId)
-
-      ShowSnackBar(<SnackBarMessage message="NFT refreshed successfully" />)
-    } catch (error) {
-      showSimpleToast(
-        'This is taking longer than expected. Please try again later.'
-      )
-    } finally {
-      setIsRefreshing(false)
-    }
+    await refreshNftMetadata(freshNftData, activeNetwork.chainId)
   }, [activeNetwork.chainId, refreshNftMetadata, freshNftData])
 
   const renderHeaderRight = useCallback(() => {
@@ -247,10 +245,16 @@ const NftDetailsScreen = (): JSX.Element => {
     }
   }, [freshNftData, process])
 
+  useEffect(() => {
+    if (freshNftData) {
+      checkIfNftRefreshed(freshNftData)
+    }
+  }, [freshNftData, checkIfNftRefreshed, nftUpdatedAt])
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <AvaText.Heading1 testID="NftTokenTitle">
-        {nftItem.processedMetadata.name} #{nftItem.tokenId}
+        {getNftTitle(nftItem)}
       </AvaText.Heading1>
       <View sx={{ marginTop: 16, marginBottom: 24 }}>{renderImage()}</View>
       {renderSendBtn()}

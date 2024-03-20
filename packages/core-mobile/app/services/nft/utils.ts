@@ -1,5 +1,5 @@
 import { Erc1155TokenBalance, Erc721TokenBalance } from '@avalabs/glacier-sdk'
-import { NFTItemData, NftTokenTypes } from 'store/nft'
+import { NFTItem, NFTItemData, NftTokenTypes } from 'store/nft'
 import { ipfsResolver } from '@avalabs/utils-sdk'
 import Logger from 'utils/Logger'
 import { NftUID } from './types'
@@ -44,4 +44,12 @@ export const isErc1155 = (nft: NftTokenTypes): nft is Erc1155TokenBalance => {
 export const getTokenUri = (nft: NftTokenTypes): string => {
   // Some Opensea ERC-1155s have an `0x{id}` placeholder in their URL
   return nft.tokenUri.replace(/0x{id}|{id}/g, nft.tokenId)
+}
+
+export const getNftTitle = (nftItem: NFTItem): string | undefined => {
+  if (isErc721(nftItem)) {
+    return nftItem.name
+  }
+
+  return nftItem.processedMetadata.name ?? nftItem.metadata.name
 }

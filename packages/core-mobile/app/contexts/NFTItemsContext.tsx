@@ -1,4 +1,5 @@
 import { NftTokenMetadataStatus } from '@avalabs/glacier-sdk'
+import { ShowSnackBar, showSimpleToast } from 'components/Snackbar'
 import React, {
   createContext,
   useCallback,
@@ -8,6 +9,7 @@ import React, {
   useState
 } from 'react'
 import { useNfts } from 'screens/nft/hooks/useNfts'
+import { SnackBarMessage } from 'seedless/components/SnackBarMessage'
 import NftProcessor from 'services/nft/NftProcessor'
 import NftService from 'services/nft/NftService'
 import { getTokenUri, isErc721 } from 'services/nft/utils'
@@ -20,6 +22,8 @@ type NFTItemsContextState = {
   getNftItem: (uid: string) => NFTItem | undefined
   setNftVisited: (visited: boolean) => void
   refreshNftMetadata: (nftData: NFTItemData, chainId: number) => Promise<void>
+  isNftRefreshing: (uid: string) => boolean
+  checkIfNftRefreshed: (nftData: NFTItemData) => void
   fetchNextPage: () => void
   hasNextPage: boolean
   isFetchingNextPage: boolean
@@ -40,6 +44,7 @@ export const NFTMetadataProvider = ({
   const [metadata, setMetadata] = useState<Record<string, NFTMetadata>>({})
   const [imageData, setImageData] = useState<Record<string, NFTImageData>>({})
   const [nftVisited, setNftVisited] = useState<boolean>(false)
+  const [reindexedAt, setReindexedAt] = useState<Record<string, number>>({})
 
   const processImageData = useCallback((items: NFTItemData[]): void => {
     items.forEach(nft => {
@@ -157,32 +162,60 @@ export const NFTMetadataProvider = ({
     [nftItems]
   )
 
-  const refreshNftMetadata = useCallback(
-    async (nftData: NFTItemData, chainId: number) => {
-      const result = await NftService.refreshNftMetadata(
-        nftData.address,
-        chainId,
-        nftData.tokenId
-      )
+  const refreshNftMetadata = async (
+    nftData: NFTItemData,
+    chainId: number
+  ): Promise<void> => {
+    await NftService.reindexNft(nftData.address, chainId, nftData.tokenId)
 
-      if (
-        nftData.address !== result.address ||
-        nftData.tokenId !== result.tokenId ||
-        !result.metadata
-      ) {
+    setReindexedAt(prevData => ({
+      ...prevData,
+      [nftData.uid]: Math.floor(Date.now() / 1000)
+    }))
+  }
+
+  const isNftRefreshing = useCallback(
+    (uid: string) => {
+      return reindexedAt[uid] !== undefined
+    },
+    [reindexedAt]
+  )
+
+  const checkIfNftRefreshed = useCallback(
+    (nftData: NFTItemData) => {
+      const nftReindexedAt = reindexedAt[nftData.uid]
+      if (!nftReindexedAt) {
         return
       }
 
-      const updatedNft = {
-        ...nftData,
-        metadata: {
-          ...result.metadata
-        }
-      }
+      const currentTimestamp = Math.floor(Date.now() / 1000)
+      const metadataUpdatedAt = nftData?.metadata.metadataLastUpdatedTimestamp
+      if (
+        metadataUpdatedAt !== undefined &&
+        metadataUpdatedAt > nftReindexedAt
+      ) {
+        setReindexedAt(prevData => {
+          const newReindexedAt = { ...prevData }
+          delete newReindexedAt[nftData.uid]
+          return newReindexedAt
+        })
 
-      process([updatedNft])
+        ShowSnackBar(<SnackBarMessage message="NFT refreshed successfully" />)
+      } else if (nftReindexedAt < currentTimestamp - 20) {
+        // If the metadata was not updated after 20 seconds, we assume the
+        // reindexing failed and remove the refresh request.
+        setReindexedAt(prevData => {
+          const newReindexedAt = { ...prevData }
+          delete newReindexedAt[nftData.uid]
+          return newReindexedAt
+        })
+
+        showSimpleToast(
+          'This is taking longer than expected. Please try again later.'
+        )
+      }
     },
-    [process]
+    [reindexedAt]
   )
 
   useEffect(() => {
@@ -206,6 +239,8 @@ export const NFTMetadataProvider = ({
         getNftItem,
         setNftVisited,
         refreshNftMetadata,
+        isNftRefreshing,
+        checkIfNftRefreshed,
         ...query
       }}>
       {children}

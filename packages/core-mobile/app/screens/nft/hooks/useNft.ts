@@ -9,15 +9,17 @@ export const useNft = ({
   chainId,
   address,
   tokenId,
+  refetchInterval,
   staleTime = 0,
   gcTime = 0
 }: {
   chainId: number
   address: string
   tokenId: string
+  refetchInterval?: number
   staleTime?: number
   gcTime?: number
-}): { nft: NFTItemData | undefined } => {
+}): { nft: NFTItemData | undefined; nftUpdatedAt: number } => {
   const fetchNft = useCallback(async () => {
     const t = SentryWrapper.startTransaction('get-nft')
     try {
@@ -45,11 +47,10 @@ export const useNft = ({
     ],
     retry: false,
     queryFn: fetchNft,
+    refetchInterval: refetchInterval,
     staleTime,
     gcTime
   })
 
-  const nft = query.data
-
-  return { nft }
+  return { nft: query.data, nftUpdatedAt: query.dataUpdatedAt }
 }

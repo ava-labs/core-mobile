@@ -1,7 +1,5 @@
 import { NftProvider } from 'services/nft/types'
 import {
-  Erc1155Token,
-  Erc721Token,
   ListErc1155BalancesResponse,
   ListErc721BalancesResponse
 } from '@avalabs/glacier-sdk'
@@ -9,7 +7,6 @@ import { NFTItemData, NftResponse } from 'store/nft'
 import Logger from 'utils/Logger'
 import DevDebuggingConfig from 'utils/debugging/DevDebuggingConfig'
 import { glacierSdk } from 'utils/network/glacier'
-import { wait } from '@avalabs/utils-sdk'
 import { addMissingFields } from './utils'
 
 const demoAddress = '0x188c30e9a6527f5f0c3f7fe59b72ac7253c62f28'
@@ -129,50 +126,16 @@ export class GlacierNftProvider implements NftProvider {
     return status === 'ok'
   }
 
-  async refreshNftMetadata(
+  async reindexNft(
     address: string,
     chainId: number,
     tokenId: string
-  ): Promise<Erc721Token | Erc1155Token> {
-    const requestTimestamp = Math.floor(Date.now() / 1000)
-    const maxAttempts = 10 // Amount of fetches after which we give up.
-
+  ): Promise<void> {
     await glacierSdk.nfTs.reindexNft({
       address,
       chainId: chainId.toString(),
       tokenId
     })
-
-    let token: Erc721Token | Erc1155Token | null = null
-    let fetchCount = 0
-    let shouldPoll = true
-
-    do {
-      await wait(2000) // Wait 2 seconds before trying to fetch refreshed data.
-      fetchCount += 1
-
-      token = await glacierSdk.nfTs.getTokenDetails({
-        address,
-        chainId: chainId.toString(),
-        tokenId
-      })
-
-      // Glacier is supposed to update "metadataLastUpdatedTimestamp" field even
-      // if re-indexing fails for whatever reason, so if it is undefined, the NFT
-      // was likely never indexed before. After a successful indexing, the field
-      // should be populated.
-      shouldPoll =
-        typeof token.metadata.metadataLastUpdatedTimestamp === 'undefined' ||
-        token.metadata.metadataLastUpdatedTimestamp < requestTimestamp
-
-      // If we reached max. attempts and NFT is still not updated,
-      // throw a recognizable error.
-      if (shouldPoll && fetchCount >= maxAttempts) {
-        throw new Error('Request timeout')
-      }
-    } while (shouldPoll)
-
-    return token
   }
 }
 
