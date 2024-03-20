@@ -483,6 +483,7 @@ workflows:
     - _pull_app_files
     after_run:
     - _run_android_tests_reuse_app_state
+    - _upload-detox-artifacts
     - _send-test-result-notification-slack
     envs:
     - TESTS_TO_RUN: $TESTS_TO_RUN_GROUP_2
@@ -529,6 +530,7 @@ workflows:
     - _pull_app_files
     after_run:
     - _run_android_tests_reuse_app_state
+    - _upload-detox-artifacts
     - _send-test-result-notification-slack
     envs:
     - TESTS_TO_RUN: $TESTS_TO_RUN_GROUP_1
@@ -575,6 +577,7 @@ workflows:
     - _pull_app_files
     after_run:
     - _run_android_tests_reuse_app_state
+    - _upload-detox-artifacts
     - _send-test-result-notification-slack
     envs:
     - TESTS_TO_RUN: $TESTS_TO_RUN_GROUP_3
