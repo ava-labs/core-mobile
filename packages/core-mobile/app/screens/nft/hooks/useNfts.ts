@@ -6,6 +6,7 @@ import SentryWrapper from 'services/sentry/SentryWrapper'
 import NftService from 'services/nft/NftService'
 import Logger from 'utils/Logger'
 import { useCallback, useMemo } from 'react'
+import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { NftPageParam } from '../../../store/nft/types'
 
 // a hook to get NFTs with pagination support for the current active network & account
@@ -44,7 +45,7 @@ export const useNfts = (enabled: boolean) => {
 
   const query = useInfiniteQuery({
     queryKey: [
-      'nfts',
+      ReactQueryKeys.NFTS,
       {
         chainId: network.chainId,
         accountAddress: account?.address

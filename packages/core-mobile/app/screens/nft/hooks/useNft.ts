@@ -4,6 +4,7 @@ import Logger from 'utils/Logger'
 import { useCallback } from 'react'
 import { NFTItemData } from 'store/nft'
 import { useQuery } from '@tanstack/react-query'
+import { ReactQueryKeys } from 'consts/reactQueryKeys'
 
 export const useNft = ({
   chainId,
@@ -38,7 +39,7 @@ export const useNft = ({
 
   const query = useQuery({
     queryKey: [
-      'nft',
+      ReactQueryKeys.NFT,
       {
         chainId,
         address,
