@@ -1,9 +1,9 @@
 import Actions from '../helpers/actions'
-import ReceiveLoc from '../locators/browser.loc'
+import BrowserLoc from '../locators/browser.loc'
 
-class ReceiveAddressPage {
+class BrowserPage {
   get searchBar() {
-    return by.id(ReceiveLoc.searchBar)
+    return by.id(BrowserLoc.searchBar)
   }
 
   async tapSearchBar() {
@@ -16,4 +16,4 @@ class ReceiveAddressPage {
   }
 }
 
-export default new ReceiveAddressPage()
+export default new BrowserPage()
