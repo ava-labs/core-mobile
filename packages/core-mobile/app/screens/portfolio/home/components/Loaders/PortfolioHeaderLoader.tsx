@@ -6,14 +6,15 @@ import { useSkeletonColors } from 'hooks/colors/useSkeletonColors'
 const deviceWidth = Dimensions.get('screen').width
 const aspectRatio = 279 / 56
 
-export const PortfolioHeaderLoader = () => {
+export const PortfolioHeaderLoader = (): JSX.Element => {
   const { backgroundColor, foregroundColor } = useSkeletonColors()
 
   return (
     <View
       style={{
         width: deviceWidth * 0.744,
-        aspectRatio: aspectRatio
+        aspectRatio: aspectRatio,
+        alignSelf: 'center'
       }}>
       <ContentLoader
         speed={1}
