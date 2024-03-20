@@ -21,7 +21,6 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import FlipperAsyncStorage from 'rn-flipper-async-storage-advanced'
 import { ReactQueryProvider } from 'contexts/ReactQueryProvider'
 import SentryService from 'services/sentry/SentryService'
-import { NFTMetadataProvider } from 'contexts/NFTItemsContext'
 
 function setToast(toast: Toast): void {
   global.toast = toast
@@ -37,9 +36,7 @@ const ContextProviders: FC = ({ children }) => (
         <K2ThemeProvider>
           <ApplicationContextProvider>
             <DeeplinkContextProvider>
-              <NFTMetadataProvider>
-                <BridgeProvider>{children}</BridgeProvider>
-              </NFTMetadataProvider>
+              <BridgeProvider>{children}</BridgeProvider>
             </DeeplinkContextProvider>
           </ApplicationContextProvider>
         </K2ThemeProvider>
