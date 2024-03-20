@@ -1,104 +1,86 @@
-import React, { FC, memo } from 'react'
-import { StyleSheet, View } from 'react-native'
+import React, { useState } from 'react'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import AvaText from 'components/AvaText'
-import { Space } from 'components/Space'
 import { useSelector } from 'react-redux'
 import {
   selectBalanceTotalInCurrencyForAccount,
   selectIsLoadingBalances,
-  selectIsRefetchingBalances
+  selectIsRefetchingBalances,
+  selectTokensWithBalanceForAccount
 } from 'store/balance'
 import { selectActiveAccount } from 'store/account'
 import { ActivityIndicator } from 'components/ActivityIndicator'
+import PriceChangeIndicator from 'screens/watchlist/components/PriceChangeIndicator'
+import { Text, View } from '@avalabs/k2-mobile'
+import { useTokenPortfolioPriceChange } from 'hooks/useTokenPortfolioPriceChange'
 import { PortfolioHeaderLoader } from './Loaders/PortfolioHeaderLoader'
 
-function PortfolioHeaderContainer() {
+function PortfolioHeader(): JSX.Element {
   const context = useApplicationContext()
   const activeAccount = useSelector(selectActiveAccount)
-  const isLoadingBalance = useSelector(selectIsLoadingBalances)
+  const isBalanceLoading = useSelector(selectIsLoadingBalances)
   const isRefetchingBalance = useSelector(selectIsRefetchingBalances)
   const balanceTotalInCurrency = useSelector(
     selectBalanceTotalInCurrencyForAccount(activeAccount?.index ?? 0)
   )
   const { selectedCurrency, currencyFormatter } = context.appHook
   const currencyBalance = currencyFormatter(balanceTotalInCurrency)
-
-  return (
-    <PortfolioHeader
-      balanceTotalInCurrency={currencyBalance}
-      isBalanceLoading={isLoadingBalance}
-      isBalanceRefreshing={isRefetchingBalance}
-      currencyCode={selectedCurrency}
-    />
+  const tokens = useSelector(
+    selectTokensWithBalanceForAccount(activeAccount?.index)
   )
-}
+  const { tokenPortfolioPriceChange } = useTokenPortfolioPriceChange(tokens)
+  const [contentHeight, setContentHeight] = useState(0)
 
-interface PortfolioHeaderProps {
-  balanceTotalInCurrency: string
-  isBalanceLoading: boolean
-  isBalanceRefreshing: boolean
-  currencyCode: string
-}
+  const renderContent = (): JSX.Element => {
+    if (isBalanceLoading) return <PortfolioHeaderLoader />
 
-const PortfolioHeader: FC<PortfolioHeaderProps> = memo(
-  ({
-    balanceTotalInCurrency = '0',
-    isBalanceLoading = false,
-    isBalanceRefreshing = false,
-    currencyCode
-  }) => {
-    const { theme } = useApplicationContext()
-
-    const renderContent = () => {
-      if (isBalanceLoading) return <PortfolioHeaderLoader />
-
-      if (isBalanceRefreshing)
-        return (
-          <ActivityIndicator style={{ alignSelf: 'center' }} size="small" />
-        )
-
+    if (isRefetchingBalance)
       return (
-        <>
-          <AvaText.LargeTitleBold>
-            {balanceTotalInCurrency.replace(currencyCode, '')}
-          </AvaText.LargeTitleBold>
-          <AvaText.Heading3
-            textStyle={{
-              paddingBottom: 4,
-              marginLeft: 4,
-              color: theme.colorText2
-            }}>
-            {currencyCode}
-          </AvaText.Heading3>
-        </>
+        <ActivityIndicator
+          style={{ alignSelf: 'center', height: contentHeight }}
+          size="small"
+        />
       )
-    }
 
     return (
-      <View pointerEvents="box-none">
-        <View style={styles.balanceContainer}>{renderContent()}</View>
-        <Space y={18} />
+      <View
+        sx={{ alignItems: 'center' }}
+        onLayout={event => {
+          setContentHeight(event.nativeEvent.layout.height)
+        }}>
+        <View
+          sx={{
+            alignItems: 'flex-end',
+            justifyContent: 'center',
+            flexDirection: 'row',
+            height: 44
+          }}>
+          <Text variant="heading3">
+            {currencyBalance.replace(selectedCurrency, '')}
+          </Text>
+          <Text
+            variant="body1"
+            sx={{
+              paddingBottom: 4,
+              marginLeft: 4,
+              color: '$neutral400'
+            }}>
+            {selectedCurrency}
+          </Text>
+        </View>
+        <PriceChangeIndicator
+          price={tokenPortfolioPriceChange}
+          percent={(tokenPortfolioPriceChange / balanceTotalInCurrency) * 100}
+          textVariant="buttonSmall"
+        />
       </View>
     )
   }
-)
 
-const styles = StyleSheet.create({
-  copyAddressContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 10,
-    width: 150,
-    alignSelf: 'center'
-  },
-  balanceContainer: {
-    alignItems: 'flex-end',
-    justifyContent: 'center',
-    flexDirection: 'row',
-    height: 44,
-    marginTop: 25
-  }
-})
+  return (
+    <View sx={{ paddingVertical: 8 }} pointerEvents="box-none">
+      {renderContent()}
+    </View>
+  )
+}
 
-export default PortfolioHeaderContainer
+export default PortfolioHeader

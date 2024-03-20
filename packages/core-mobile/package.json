@@ -175,6 +175,7 @@
     "url": "0.11.0",
     "uuid": "8.3.2",
     "v8-android-jit": "10.100.1",
+    "viem": "2.8.5",
     "vm-browserify": "0.0.4",
     "web3": "1.7.5",
     "xss": "1.0.14",
@@ -293,7 +294,9 @@
       "babel-loader>webpack>watchpack>watchpack-chokidar2>chokidar>fsevents": false,
       "@avalabs/k2-mobile": false,
       "@datadog/mobile-react-native": false,
-      "@avalabs/wallets-sdk>@ledgerhq/hw-app-btc>tiny-secp256k1": false
+      "@avalabs/wallets-sdk>@ledgerhq/hw-app-btc>tiny-secp256k1": false,
+      "viem>ws>bufferutil": false,
+      "viem>ws>utf-8-validate": false
     }
   },
   "react-native": {

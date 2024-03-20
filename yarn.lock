@@ -320,6 +320,7 @@ __metadata:
     url: 0.11.0
     uuid: 8.3.2
     v8-android-jit: 10.100.1
+    viem: 2.8.5
     vm-browserify: 0.0.4
     web3: 1.7.5
     xss: 1.0.14
@@ -7999,6 +8000,21 @@ __metadata:
     zod:
       optional: true
   checksum: d7d887f29d6821e3f7a400de9620511b80ead3f85c5c87308aaec97965d3493e6687ed816e88722b4f512249bd66dee9e69231b49af0e1db8f69400a62c87cf6
+  languageName: node
+  linkType: hard
+
+"abitype@npm:1.0.0":
+  version: 1.0.0
+  resolution: "abitype@npm:1.0.0"
+  peerDependencies:
+    typescript: ">=5.0.4"
+    zod: ^3 >=3.22.0
+  peerDependenciesMeta:
+    typescript:
+      optional: true
+    zod:
+      optional: true
+  checksum: ea2c0548c3ba58c37a6de7483d63389074da498e63d803b742bbe94eb4eaa1f51a35d000c424058b2583aef56698cf07c696eb3bc4dd0303bc20c6f0826a241a
   languageName: node
   linkType: hard
 
@@ -24880,6 +24896,27 @@ __metadata:
     typescript:
       optional: true
   checksum: 0a1c6037c76ce43f170def42eff7d0a76cf3934700ac5e6e673d1661805fed83f86d2ea0741fd73becfc9c37206929fe8250e345e477d8fcae4d889aaf25203d
+  languageName: node
+  linkType: hard
+
+"viem@npm:2.8.5":
+  version: 2.8.5
+  resolution: "viem@npm:2.8.5"
+  dependencies:
+    "@adraffy/ens-normalize": 1.10.0
+    "@noble/curves": 1.2.0
+    "@noble/hashes": 1.3.2
+    "@scure/bip32": 1.3.2
+    "@scure/bip39": 1.2.1
+    abitype: 1.0.0
+    isows: 1.0.3
+    ws: 8.13.0
+  peerDependencies:
+    typescript: ">=5.0.4"
+  peerDependenciesMeta:
+    typescript:
+      optional: true
+  checksum: 447b4dfb0341fc4a26132bbe528d274f7a69d9665dc7e9dfdaeafd77e3a943d0d12a78af7e233554511d3e5d8521193cf42ca9e8372b3b88f83c4de3e68f33b4
   languageName: node
   linkType: hard
 

@@ -1,13 +1,11 @@
 import React, { useCallback, useEffect } from 'react'
-import { ScrollView, View } from 'react-native'
+import { ScrollView } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Space } from 'components/Space'
-import AvaText from 'components/AvaText'
 import { useNavigation } from '@react-navigation/native'
 import DotSVG from 'components/svg/DotSVG'
 import Separator from 'components/Separator'
 import { Row } from 'components/Row'
-import AvaButton from 'components/AvaButton'
 import FlexSpacer from 'components/FlexSpacer'
 import { useSendTokenContext } from 'contexts/SendTokenContext'
 import AppNavigation from 'navigation/AppNavigation'
@@ -22,6 +20,9 @@ import {
 } from 'hooks/useBeforeRemoveListener'
 import { Tooltip } from 'components/Tooltip'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import { Button, Text, View } from '@avalabs/k2-mobile'
+import { useSelector } from 'react-redux'
+import { selectActiveNetwork } from 'store/network'
 
 type NavigationProp = SendTokensScreenProps<
   typeof AppNavigation.Send.Review
@@ -32,7 +33,11 @@ export default function ReviewSend({
 }: {
   onSuccess: () => void
 }): JSX.Element {
-  const { theme } = useApplicationContext()
+  const {
+    theme,
+    appHook: { currencyFormatter }
+  } = useApplicationContext()
+  const activeNetwork = useSelector(selectActiveNetwork)
   const { goBack } = useNavigation<NavigationProp>()
   const {
     sendToken,
@@ -67,25 +72,25 @@ export default function ReviewSend({
 
   return (
     <ScrollView contentContainerStyle={{ minHeight: '100%' }}>
-      <AvaText.LargeTitleBold textStyle={{ marginHorizontal: 16 }}>
+      <Text variant="heading3" sx={{ marginHorizontal: 16, fontSize: 36 }}>
         Send
-      </AvaText.LargeTitleBold>
+      </Text>
       <View
-        style={{
+        sx={{
           width: '100%',
           alignItems: 'center',
           justifyContent: 'center',
           marginBottom: -36,
           zIndex: 2
         }}>
-        <View style={{ position: 'absolute' }}>
+        <View sx={{ position: 'absolute' }}>
           <DotSVG fillColor={theme.colorBg1} size={72} />
         </View>
         {tokenLogo()}
       </View>
       <View
-        style={{
-          backgroundColor: theme.colorBg2,
+        sx={{
+          backgroundColor: '$neutral900',
           paddingTop: 48,
           paddingHorizontal: 16,
           paddingBottom: 16,
@@ -94,23 +99,32 @@ export default function ReviewSend({
           borderTopRightRadius: 8
         }}>
         <Row style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-          <AvaText.Body2 textStyle={{ textAlign: 'center' }}>
+          <Text
+            variant="body2"
+            sx={{ textAlign: 'center', color: '$neutral400' }}>
             Amount
-          </AvaText.Body2>
+          </Text>
           <Row style={{ alignItems: 'baseline' }}>
-            <AvaText.Heading1 testID="review_and_send__amount">
+            <Text
+              testID="review_and_send__amount"
+              variant="heading4"
+              sx={{ lineHeight: 29 }}>
               {formatLargeNumber(sendAmount.amount, 4)}
-            </AvaText.Heading1>
+            </Text>
             <Space x={4} />
-            <AvaText.Heading3 textStyle={{ color: theme.colorText2 }}>
+            <Text
+              variant="subtitle1"
+              sx={{ lineHeight: 24, color: '$neutral400' }}>
               {sendToken?.symbol ?? ''}
-            </AvaText.Heading3>
+            </Text>
           </Row>
         </Row>
         <Row style={{ justifyContent: 'flex-end' }}>
-          <AvaText.Heading3 currency textStyle={{ color: theme.colorText2 }}>
-            {sendAmountInCurrency}
-          </AvaText.Heading3>
+          <Text
+            variant="subtitle1"
+            sx={{ lineHeight: 24, color: '$neutral400' }}>
+            {currencyFormatter(sendAmountInCurrency ?? 0)}
+          </Text>
         </Row>
         <Space y={8} />
         <SendRow
@@ -126,7 +140,7 @@ export default function ReviewSend({
           address={toAccount.address}
         />
         <Space y={16} />
-        <Row style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+        <Row style={{ justifyContent: 'space-between' }}>
           <Tooltip
             content={
               <PoppableGasAndLimit
@@ -139,36 +153,52 @@ export default function ReviewSend({
             style={{ width: 250 }}>
             Network Fee
           </Tooltip>
-          <AvaText.Heading2 testID="review_and_send__network_fee" currency>
-            {fees.sendFeeInCurrency}
-          </AvaText.Heading2>
+          <View sx={{ flexDirection: 'column', alignItems: 'flex-end' }}>
+            <Text sx={{ color: '$neutral50' }}>
+              {`${fees?.sendFeeNative} ${activeNetwork.networkToken.symbol}`}
+            </Text>
+            <Text variant="body1" sx={{ color: '$neutral400' }}>
+              {currencyFormatter(fees?.sendFeeInCurrency ?? 0)}
+            </Text>
+          </View>
         </Row>
         <Space y={16} />
         <Separator />
         <Space y={16} />
         <Row style={{ justifyContent: 'space-between' }}>
-          <AvaText.Body2>Balance After Transaction</AvaText.Body2>
-          <AvaText.Heading2 testID="review_and_send__bal_after_transaction">
+          <Text variant="body2" sx={{ color: '$neutral400' }}>
+            Balance After Transaction
+          </Text>
+          <Text
+            variant="heading6"
+            testID="review_and_send__bal_after_transaction"
+            sx={{ color: '$neutral50', fontSize: 18, lineHeight: 22 }}>
             {fromAccount.balanceAfterTrx} {sendToken?.symbol ?? ''}
-          </AvaText.Heading2>
+          </Text>
         </Row>
-        <AvaText.Body3 textStyle={{ alignSelf: 'flex-end' }} currency>
-          {fromAccount.balanceAfterTrxInCurrency}
-        </AvaText.Body3>
+        <Text
+          variant="caption"
+          sx={{ color: '$neutral50', alignSelf: 'flex-end', lineHeight: 15 }}>
+          {currencyFormatter(fromAccount.balanceAfterTrxInCurrency ?? 0)}
+        </Text>
         <FlexSpacer />
         {sendStatus === 'Idle' && (
           <>
-            <AvaButton.PrimaryLarge
+            <Button
+              type="primary"
+              size="xlarge"
               onPress={handleSend}
               testID="review_and_send__send_now_button">
               Send Now
-            </AvaButton.PrimaryLarge>
+            </Button>
             <Space y={16} />
-            <AvaButton.SecondaryLarge
+            <Button
+              type="secondary"
+              size="xlarge"
               onPress={() => goBack()}
               testID="review_and_send__cancel_button">
               Cancel
-            </AvaButton.SecondaryLarge>
+            </Button>
           </>
         )}
         {sendStatus === 'Preparing' && (
@@ -178,11 +208,9 @@ export default function ReviewSend({
           </>
         )}
         {sendStatus === 'Fail' && (
-          <>
-            <AvaText.Body2 textStyle={{ color: theme.colorError }}>
-              {sendStatusMsg.toString()}
-            </AvaText.Body2>
-          </>
+          <Text variant="body2" sx={{ color: '$dangerMain' }}>
+            {sendStatusMsg.toString()}
+          </Text>
         )}
       </View>
     </ScrollView>

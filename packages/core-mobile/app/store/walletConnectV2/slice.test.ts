@@ -1,4 +1,5 @@
 import { walletConnectReducer as reducer, updateRequestStatus } from './slice'
+import { ConfirmationReceiptStatus } from './types'
 
 const initialState = {
   requestStatuses: {}
@@ -15,13 +16,24 @@ describe('walletConnect - reducer', () => {
       const currentState = initialState
       const action = updateRequestStatus({
         id: 12,
-        status: { result: 'some result' }
+        status: {
+          result: {
+            txHash: 'some result',
+            confirmationReceiptStatus: 'Pending'
+          }
+        }
       })
       const state = reducer(currentState, action)
 
       expect(state).toEqual({
         requestStatuses: {
-          12: { result: 'some result' }
+          12: {
+            error: undefined,
+            result: {
+              confirmationReceiptStatus: 'Pending',
+              txHash: 'some result'
+            }
+          }
         }
       })
     })
@@ -45,18 +57,33 @@ describe('walletConnect - reducer', () => {
     it('should update result', () => {
       const currentState = {
         requestStatuses: {
-          12: { result: 'some result' }
+          12: {
+            result: {
+              txHash: 'some result',
+              confirmationReceiptStatus: 'Pending' as ConfirmationReceiptStatus
+            }
+          }
         }
       }
       const action = updateRequestStatus({
         id: 12,
-        status: { result: 'some result 2' }
+        status: {
+          result: {
+            txHash: 'some result',
+            confirmationReceiptStatus: 'Success' as ConfirmationReceiptStatus
+          }
+        }
       })
       const state = reducer(currentState, action)
 
       expect(state).toEqual({
         requestStatuses: {
-          12: { result: 'some result 2' }
+          12: {
+            result: {
+              txHash: 'some result',
+              confirmationReceiptStatus: 'Success'
+            }
+          }
         }
       })
     })

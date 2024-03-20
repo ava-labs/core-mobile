@@ -1,13 +1,10 @@
-import { View } from 'react-native'
 import { Space } from 'components/Space'
 import React, { FC, useEffect, useState } from 'react'
-import AvaText from 'components/AvaText'
 import AvaListItem from 'components/AvaListItem'
 import Avatar from 'components/Avatar'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList'
 import { Row } from 'components/Row'
-import AvaButton from 'components/AvaButton'
 import AppNavigation from 'navigation/AppNavigation'
 import {
   BridgeTransactionStatusParams,
@@ -19,6 +16,11 @@ import { Transaction } from 'store/transaction'
 import { useSelector } from 'react-redux'
 import { selectActiveNetwork } from 'store/network'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import { Button, Text, View } from '@avalabs/k2-mobile'
+import { useApplicationContext } from 'contexts/ApplicationContext'
+import PriceChangeIndicator from 'screens/watchlist/components/PriceChangeIndicator'
+import { useGetMarketToken } from 'hooks/useGetMarketToken'
+import Separator from 'components/Separator'
 
 type ScreenProps = WalletScreenProps<
   typeof AppNavigation.Wallet.OwnedTokenDetail
@@ -30,6 +32,9 @@ const OwnedTokenDetail: FC = () => {
   const { filteredTokenList } = useSearchableTokenList()
   const [token, setToken] = useState<TokenWithBalance>()
   const activeNetwork = useSelector(selectActiveNetwork)
+  const {
+    appHook: { currencyFormatter }
+  } = useApplicationContext()
 
   useEffect(loadToken, [filteredTokenList, token, tokenId])
 
@@ -56,53 +61,66 @@ const OwnedTokenDetail: FC = () => {
 
   const subtitle = (
     <Row style={{ alignItems: 'center' }}>
-      <AvaText.Body1>{token?.balanceDisplayValue ?? '0'}</AvaText.Body1>
-      <AvaText.Body2>{' ' + token?.symbol}</AvaText.Body2>
+      <Text variant="body2">{token?.balanceDisplayValue ?? '0'}</Text>
+      <Text variant="body2" sx={{ color: '$neutral400' }}>
+        {' ' + token?.symbol}
+      </Text>
     </Row>
   )
+
+  const { getMarketToken } = useGetMarketToken()
+
+  const renderMarketTrend = (balance: number, symbol: string): JSX.Element => {
+    const marketToken = getMarketToken(symbol)
+    const percentChange = marketToken?.priceChangePercentage24h ?? 0
+    const priceChange = (balance * percentChange) / 100
+
+    return (
+      <PriceChangeIndicator
+        price={priceChange}
+        percent={percentChange}
+        textVariant="buttonSmall"
+      />
+    )
+  }
+
   return (
-    <View style={{ paddingHorizontal: 16, flex: 1 }}>
-      <AvaText.LargeTitleBold>Token Details</AvaText.LargeTitleBold>
+    <View sx={{ paddingHorizontal: 16, flex: 1 }}>
+      <Text variant="heading3">Token Details</Text>
       <Space y={8} />
-      <View style={{ marginHorizontal: -16 }}>
+      <View sx={{ marginHorizontal: -16 }}>
         <AvaListItem.Base
-          title={<AvaText.Heading1>{token?.name}</AvaText.Heading1>}
+          title={<Text variant="heading5">{token?.name}</Text>}
           titleAlignment={'flex-start'}
           subtitle={subtitle}
           leftComponent={
-            <Avatar.Custom
-              name={token?.name ?? ''}
-              symbol={token?.symbol}
-              logoUri={token?.logoUri}
-              size={40}
-            />
+            token && (
+              <Avatar.Token
+                name={token.name}
+                symbol={token.symbol}
+                logoUri={token.logoUri}
+                size={48}
+              />
+            )
           }
           rightComponent={
-            <AvaText.Body1
-              textStyle={{ marginTop: 4 }}
-              currency
-              ellipsizeMode={'tail'}>
-              {token?.balanceCurrencyDisplayValue ?? '0'}
-            </AvaText.Body1>
+            <View sx={{ alignItems: 'flex-end' }}>
+              <Text variant="heading5" ellipsizeMode={'tail'}>
+                {currencyFormatter(token?.balanceCurrencyDisplayValue ?? '0')}
+              </Text>
+              {token?.symbol && token?.balanceInCurrency
+                ? renderMarketTrend(token.balanceInCurrency, token.symbol)
+                : null}
+            </View>
           }
         />
       </View>
       <Space y={16} />
       <Row>
-        <View style={{ flex: 1 }}>
-          <AvaButton.SecondaryMedium
-            onPress={() => {
-              AnalyticsService.capture('TokenReceiveClicked', {
-                chainId: activeNetwork.chainId
-              })
-              navigate(AppNavigation.Wallet.ReceiveTokens)
-            }}>
-            Receive
-          </AvaButton.SecondaryMedium>
-        </View>
-        <Space x={16} />
-        <View style={{ flex: 1 }}>
-          <AvaButton.SecondaryMedium
+        <View sx={{ flex: 1 }}>
+          <Button
+            type="secondary"
+            size="large"
             onPress={() => {
               AnalyticsService.capture('TokenSendClicked', {
                 chainId: activeNetwork.chainId
@@ -113,12 +131,28 @@ const OwnedTokenDetail: FC = () => {
               })
             }}>
             Send
-          </AvaButton.SecondaryMedium>
+          </Button>
+        </View>
+        <Space x={16} />
+        <View sx={{ flex: 1 }}>
+          <Button
+            type="secondary"
+            size="large"
+            onPress={() => {
+              AnalyticsService.capture('TokenReceiveClicked', {
+                chainId: activeNetwork.chainId
+              })
+              navigate(AppNavigation.Wallet.ReceiveTokens)
+            }}>
+            Receive
+          </Button>
         </View>
       </Row>
       <Space y={24} />
-      <AvaText.Heading2>Activity</AvaText.Heading2>
-      <View style={{ marginHorizontal: -16, flex: 1 }}>
+      <Separator />
+      <Space y={24} />
+      <Text variant="heading5">Activity</Text>
+      <View sx={{ marginHorizontal: -16, flex: 1 }}>
         <ActivityList
           tokenSymbolFilter={token?.symbol}
           openTransactionDetails={openTransactionDetails}

@@ -71,6 +71,7 @@ export const CoinMarketSchema = object({
   })
     .nullable()
     .optional(),
+  price_change_24h: number().optional().nullable(),
   price_change_percentage_24h: number().optional().nullable(),
   price_change_percentage_1h_in_currency: number().optional().nullable(),
   price_change_percentage_24h_in_currency: number().optional().nullable(),
@@ -78,7 +79,8 @@ export const CoinMarketSchema = object({
   market_cap: number().nullable().optional(),
   total_volume: number().nullable().optional(),
   circulating_supply: number().nullable().optional(),
-  current_price: number().optional().nullable()
+  current_price: number().optional().nullable(),
+  last_updated: string().optional().nullable()
 })
 
 export type CoinMarket = z.infer<typeof CoinMarketSchema>

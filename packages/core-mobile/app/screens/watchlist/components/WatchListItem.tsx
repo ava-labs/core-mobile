@@ -55,6 +55,7 @@ const WatchListItem: FC<Props> = ({
       }
       rightComponent={
         <RightComponent
+          token={token}
           chartData={chartData}
           value={value}
           filterBy={filterBy}
@@ -71,7 +72,11 @@ type LeftComponentProps = {
   testID?: string
 }
 
-const LeftComponent = ({ token, rank, testID }: LeftComponentProps) => {
+const LeftComponent = ({
+  token,
+  rank,
+  testID
+}: LeftComponentProps): JSX.Element => {
   const { logoUri, symbol, name } = token
   return (
     <View
@@ -99,21 +104,23 @@ const LeftComponent = ({ token, rank, testID }: LeftComponentProps) => {
 }
 
 type RightComponentProps = {
+  token: MarketToken
   chartData: ChartData
   value?: string
   filterBy: WatchlistFilter
 }
 
 const RightComponent = ({
+  token,
   chartData,
   value,
   filterBy
-}: RightComponentProps) => {
+}: RightComponentProps): JSX.Element | null => {
   const { theme, appHook } = useApplicationContext()
   const { selectedCurrency } = appHook
   const { dataPoints, ranges } = chartData
 
-  const renderMiddleComponent = () => {
+  const renderMiddleComponent = (): JSX.Element | null => {
     if (dataPoints.length === 0) return null
 
     return <MiddleComponent dataPoints={dataPoints} ranges={ranges} />
@@ -141,8 +148,8 @@ const RightComponent = ({
         </Row>
         <MarketMovement
           hideCurrencyCode
-          priceChange={ranges.diffValue}
-          percentChange={ranges.percentChange}
+          priceChange={token.priceChange24h ?? 0}
+          percentChange={token.priceChangePercentage24h ?? 0}
           filterBy={filterBy}
         />
       </View>
@@ -155,7 +162,10 @@ type MiddleComponentProps = {
   ranges: ChartData['ranges']
 }
 
-const MiddleComponent = ({ dataPoints, ranges }: MiddleComponentProps) => {
+const MiddleComponent = ({
+  dataPoints,
+  ranges
+}: MiddleComponentProps): JSX.Element => {
   return (
     <View
       style={{
