@@ -120,8 +120,8 @@ const CarouselItem: FC<CarouselItemProps> = ({ token, onPress }) => {
       <Text variant="buttonSmall">{token?.symbol?.toUpperCase()}</Text>
       <Space y={8} />
       <PriceChangeIndicator
-        priceChange={token?.priceChange24h ?? 0}
-        percentChange={token?.priceChangePercentage24h ?? 0}
+        price={token?.currentPrice ?? 0}
+        percent={token?.priceChangePercentage24h ?? 0}
         isHorizontal={false}
       />
     </AvaButton.Base>

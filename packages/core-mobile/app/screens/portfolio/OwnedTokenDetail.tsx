@@ -77,8 +77,8 @@ const OwnedTokenDetail: FC = () => {
 
     return (
       <PriceChangeIndicator
-        priceChange={priceChange}
-        percentChange={percentChange}
+        price={priceChange}
+        percent={percentChange}
         textVariant="buttonSmall"
       />
     )
@@ -108,9 +108,9 @@ const OwnedTokenDetail: FC = () => {
               <Text variant="heading5" ellipsizeMode={'tail'}>
                 {currencyFormatter(token?.balanceCurrencyDisplayValue ?? '0')}
               </Text>
-              {token?.symbol &&
-                token?.balanceInCurrency &&
-                renderMarketTrend(token.balanceInCurrency, token.symbol)}
+              {token?.symbol && token?.balanceInCurrency
+                ? renderMarketTrend(token.balanceInCurrency, token.symbol)
+                : null}
             </View>
           }
         />

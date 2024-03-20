@@ -50,10 +50,7 @@ const Tokens = (): JSX.Element => {
         <View sx={{ alignItems: 'flex-end' }}>
           <Text variant="buttonMedium">{formattedBalance}</Text>
           {percentChange !== undefined && (
-            <PriceChangeIndicator
-              priceChange={priceChange}
-              percentChange={percentChange}
-            />
+            <PriceChangeIndicator price={priceChange} percent={percentChange} />
           )}
         </View>
       </View>
