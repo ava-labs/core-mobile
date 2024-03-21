@@ -240,10 +240,10 @@ const NftDetailsScreen = (): JSX.Element => {
   }, [setOptions, renderHeaderRight])
 
   useEffect(() => {
-    if (freshNftData) {
+    if (freshNftData && !isRefreshing) {
       process([freshNftData])
     }
-  }, [freshNftData, process])
+  }, [freshNftData, process, isRefreshing])
 
   useEffect(() => {
     if (freshNftData) {
