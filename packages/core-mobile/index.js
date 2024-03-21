@@ -42,23 +42,6 @@ if (DevDebuggingConfig.API_MOCKING || process.env.API_MOCKING) {
   })
 }
 
-// in your project root index.js
-let n = 0
-const setTimeoutOrg = setTimeout
-// eslint-disable-next-line no-global-assign
-setTimeout = (...args) => {
-  n++
-  const id = setTimeoutOrg(...args)
-  console.log('timer started', id)
-  if (n > 200) {
-    // set this to a value high enough that you can get to your relevant screen but low enough that you don't have to wait forever
-    throw new Error(
-      'Abort, abort! Look at the stack trace displayed in the app.'
-    )
-  }
-  return id
-}
-
 if (process.env.PERF_ENABLED) {
   require('react-native-performance-flipper-reporter').setupDefaultFlipperReporter()
 }

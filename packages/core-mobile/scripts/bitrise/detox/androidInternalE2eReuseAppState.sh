@@ -10,14 +10,8 @@ yarn start &
 
 npm rebuild detox
 
-adb kill-server
-adb start-server
-
 adb install -r $BITRISE_APK_PATH
 adb install -r $BITRISE_TEST_APK_PATH
-
-adb kill-server
-adb start-server
 
 QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test --configuration android.internal.release.smoke.reuse_state.ci --reuse --headless --retries 1 --loglevel trace; test_result=$?
 
