@@ -221,8 +221,6 @@ export const NFTMetadataProvider = ({
           return newReindexedAt
         })
 
-        process([nftData])
-
         showSimpleToast(
           'This is taking longer than expected. Please try again later.'
         )
