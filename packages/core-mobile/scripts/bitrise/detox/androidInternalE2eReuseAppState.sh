@@ -13,6 +13,8 @@ npm rebuild detox
 adb install -r $BITRISE_APK_PATH
 adb install -r $BITRISE_TEST_APK_PATH
 
+adb reverse tcp:8081 tcp:8081
+
 QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test --configuration android.internal.release.smoke.reuse_state.ci --reuse --headless --retries 1 --loglevel trace; test_result=$?
 
 if ((test_result != 0)); then
