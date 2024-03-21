@@ -38,7 +38,6 @@ const NftDetailsScreen = (): JSX.Element => {
     useRoute<NftDetailsScreenProps['route']>().params
 
   const {
-    process,
     getNftItem,
     refreshNftMetadata,
     isNftRefreshing,
@@ -238,12 +237,6 @@ const NftDetailsScreen = (): JSX.Element => {
       headerRight: renderHeaderRight
     })
   }, [setOptions, renderHeaderRight])
-
-  useEffect(() => {
-    if (freshNftData && !isRefreshing) {
-      process([freshNftData])
-    }
-  }, [freshNftData, process, isRefreshing])
 
   useEffect(() => {
     if (freshNftData) {

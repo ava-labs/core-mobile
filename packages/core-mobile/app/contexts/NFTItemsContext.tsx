@@ -192,6 +192,9 @@ export const NFTMetadataProvider = ({
     (nftData: NFTItemData) => {
       const nftReindexedAt = reindexedAt[nftData.uid]
       if (!nftReindexedAt) {
+        // If the NFT was not requested to be refreshed, it might have been failed
+        // due to an error. We process it to check if it has been indexed.
+        process([nftData])
         return
       }
 
@@ -207,6 +210,8 @@ export const NFTMetadataProvider = ({
           return newReindexedAt
         })
 
+        process([nftData])
+
         ShowSnackBar(<SnackBarMessage message="NFT refreshed successfully" />)
       } else if (nftReindexedAt < currentTimestamp - 20) {
         // If the metadata was not updated after 20 seconds, we assume the
@@ -217,12 +222,14 @@ export const NFTMetadataProvider = ({
           return newReindexedAt
         })
 
+        process([nftData])
+
         showSimpleToast(
           'This is taking longer than expected. Please try again later.'
         )
       }
     },
-    [reindexedAt]
+    [reindexedAt, process]
   )
 
   const filteredNftItems = useMemo(() => {
