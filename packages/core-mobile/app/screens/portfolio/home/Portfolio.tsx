@@ -12,7 +12,7 @@ import { selectInactiveNetworks } from 'store/network'
 import { Network } from '@avalabs/chains-sdk'
 import { Space } from 'components/Space'
 import { RefreshControl } from 'components/RefreshControl'
-import { NFTItemData } from 'store/nft'
+import { NFTItem } from 'store/nft'
 import { PortfolioScreenProps } from 'navigation/types'
 import Animated, { FadeInDown, FadeOutUp } from 'react-native-reanimated'
 import { TokensTabHeader } from 'screens/portfolio/home/components/TokensTabHeader'
@@ -135,13 +135,13 @@ const TokensTab = (): JSX.Element => {
 const NftTab = (): JSX.Element => {
   const { navigate } = useNavigation<PortfolioNavigationProp['navigation']>()
 
-  const openNftDetails = (item: NFTItemData): void => {
+  const openNftDetails = (item: NFTItem): void => {
     AnalyticsService.capture('CollectibleItemClicked', {
       chainId: item.chainId
     })
     navigate(AppNavigation.Wallet.NFTDetails, {
       screen: AppNavigation.Nft.Details,
-      params: { nft: item }
+      params: { nftItem: item }
     })
   }
   const openNftManage = (): void => {

@@ -153,7 +153,6 @@ const initialState = {
         address: '0x48bcac480f22A2Dfe42026DdE212585e917b7142',
         chainId: '43114',
         ercType: 'ERC-721',
-        isFullLoading: true,
         name: 'Aggregate Humanity',
         owner: '0x341b0073b66bfc19FCB54308861f604F5Eb8f51b',
         symbol: 'Ah',
