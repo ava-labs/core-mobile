@@ -7,8 +7,6 @@ import loginRecoverWallet from './loginRecoverWallet'
 
 export const warmup = async () => {
   await device.launchApp({
-    newInstance: true,
-    launchArgs: { detoxEnableSynchronization: 0 },
     permissions: { notifications: 'YES', camera: 'YES' }
   })
   // if we are running Android e2e on Bitrise, we also need to handle the Jailbroken overlay
