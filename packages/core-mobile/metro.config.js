@@ -22,8 +22,10 @@ const baseConfig = {
   },
   resolver: {
     extraNodeModules: {
-      // this is for any modules that use require('crypto')
-      crypto: require.resolve('react-native-quick-crypto')
+      // react-native-quick-crypto integration
+      crypto: require.resolve('react-native-quick-crypto'),
+      stream: require.resolve('./node_modules/stream-browserify'),
+      buffer: require.resolve('./node_modules/@craftzdog/react-native-buffer')
     },
     // sbmodern is needed for storybook
     resolverMainFields: ['sbmodern', 'react-native', 'browser', 'main'],
