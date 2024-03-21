@@ -3,7 +3,7 @@ import { NftProvider } from 'services/nft/types'
 import { findAsyncSequential } from 'utils/Utils'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { Transaction } from '@sentry/types'
-import { NftResponse } from 'store/nft'
+import { NFTItemData, NftResponse } from 'store/nft'
 
 export class NftService {
   providers: NftProvider[] = [glacierNftProvider]
@@ -24,19 +24,24 @@ export class NftService {
   /**
    * @throws {@link Error}
    */
-  async fetchNft(
-    chainId: number,
-    address: string,
+  async fetchNfts({
+    chainId,
+    address,
+    pageToken,
+    sentryTrx
+  }: {
+    chainId: number
+    address: string
     pageToken?:
       | {
           erc1155?: string
           erc721?: string
         }
-      | string,
+      | string
     sentryTrx?: Transaction
-  ): Promise<NftResponse> {
+  }): Promise<NftResponse> {
     return SentryWrapper.createSpanFor(sentryTrx)
-      .setContext('svc.nft.fetch')
+      .setContext('svc.nft.fetchNfts')
       .executeAsync(async () => {
         //TODO: providers cant mix, so if suddenly one becomes unavailable we need to reset pageToken to undefined
         const provider = await this.getProvider(chainId)
@@ -45,6 +50,40 @@ export class NftService {
 
         return await provider.fetchNfts(chainId, address, pageToken)
       })
+  }
+
+  async fetchNft({
+    chainId,
+    address,
+    tokenId,
+    sentryTrx
+  }: {
+    chainId: number
+    address: string
+    tokenId: string
+    sentryTrx?: Transaction
+  }): Promise<NFTItemData> {
+    return SentryWrapper.createSpanFor(sentryTrx)
+      .setContext('svc.nft.fetchNft')
+      .executeAsync(async () => {
+        const provider = await this.getProvider(chainId)
+
+        if (!provider) throw Error('no available providers')
+
+        return await provider.fetchNft(chainId, address, tokenId)
+      })
+  }
+
+  async reindexNft(
+    address: string,
+    chainId: number,
+    tokenId: string
+  ): Promise<void> {
+    const provider = await this.getProvider(chainId)
+
+    if (!provider) throw Error('no available providers')
+
+    await provider.reindexNft(address, chainId, tokenId)
   }
 }
 

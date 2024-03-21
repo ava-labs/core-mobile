@@ -76,6 +76,7 @@ import { selectHasBeenViewedOnce, ViewOnceKey } from 'store/viewOnce'
 import { useSelector } from 'react-redux'
 import TestnetBanner from 'components/TestnetBanner'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { NFTMetadataProvider } from 'contexts/NFTItemsContext'
 import { BridgeStackParamList } from '../wallet/BridgeScreenStack'
 import {
   AddEthereumChainV2Params,
@@ -243,7 +244,7 @@ function WalletScreenStack(props: Props): JSX.Element {
   )
 
   return (
-    <>
+    <NFTMetadataProvider>
       {isTestnet && <TestnetBanner />}
       <WalletScreenS.Navigator
         screenOptions={{
@@ -424,7 +425,7 @@ function WalletScreenStack(props: Props): JSX.Element {
         {createModals(WalletScreenS)}
       </WalletScreenS.Navigator>
       <PolyfillCrypto />
-    </>
+    </NFTMetadataProvider>
   )
 }
 

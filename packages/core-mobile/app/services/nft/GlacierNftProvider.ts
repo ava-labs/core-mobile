@@ -3,11 +3,11 @@ import {
   ListErc1155BalancesResponse,
   ListErc721BalancesResponse
 } from '@avalabs/glacier-sdk'
-import { NftResponse } from 'store/nft'
+import { NFTItemData, NftResponse } from 'store/nft'
 import Logger from 'utils/Logger'
 import DevDebuggingConfig from 'utils/debugging/DevDebuggingConfig'
 import { glacierSdk } from 'utils/network/glacier'
-import { addMissingFields, convertIPFSResolver } from './utils'
+import { addMissingFields } from './utils'
 
 const demoAddress = '0x188c30e9a6527f5f0c3f7fe59b72ac7253c62f28'
 
@@ -74,19 +74,8 @@ export class GlacierNftProvider implements NftProvider {
     ]
 
     const fullNftData = nftBalances.map(nft => {
-      const imageUri = nft.metadata.imageUri
-
       return {
-        ...addMissingFields(nft, address),
-        // also try to resolve ipfs image uri if there is one
-        // this allows the app to display the image right away
-        // instead of waiting for all the background processing (fetch metadata, image aspect,...) to finish
-        ...(imageUri && {
-          metadata: {
-            ...nft.metadata,
-            imageUri: convertIPFSResolver(imageUri)
-          }
-        })
+        ...addMissingFields(nft, address)
       }
     })
 
@@ -115,10 +104,38 @@ export class GlacierNftProvider implements NftProvider {
     }
   }
 
+  async fetchNft(
+    chainId: number,
+    address: string,
+    tokenId: string
+  ): Promise<NFTItemData> {
+    const response = await glacierSdk.nfTs.getTokenDetails({
+      chainId: chainId.toString(),
+      address: DevDebuggingConfig.SHOW_DEMO_NFTS ? demoAddress : address,
+      tokenId: tokenId
+    })
+
+    return {
+      ...addMissingFields(response, address)
+    }
+  }
+
   private async isHealthy(): Promise<boolean> {
     const healthStatus = await glacierSdk.healthCheck.healthCheck()
     const status = healthStatus?.status?.toString()
     return status === 'ok'
+  }
+
+  async reindexNft(
+    address: string,
+    chainId: number,
+    tokenId: string
+  ): Promise<void> {
+    await glacierSdk.nfTs.reindexNft({
+      address,
+      chainId: chainId.toString(),
+      tokenId
+    })
   }
 }
 
