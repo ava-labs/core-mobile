@@ -7,9 +7,10 @@ import loginRecoverWallet from './loginRecoverWallet'
 
 export const warmup = async () => {
   await device.launchApp({
+    newInstance: true,
+    launchArgs: { detoxEnableSynchronization: 0 },
     permissions: { notifications: 'YES', camera: 'YES' }
   })
-  await device.disableSynchronization()
   // if we are running Android e2e on Bitrise, we also need to handle the Jailbroken overlay
   if (process.env.E2E === 'true' && Action.platform() === Platform.Android) {
     console.log('Handling Jailbroken warning...', process.env.E2E)
@@ -23,7 +24,6 @@ export const warmup = async () => {
     )
     console.log('Jailbroken warning handled!!!')
   }
-  await device.enableSynchronization()
   await loginRecoverWallet.recoverWalletLogin()
 }
 
