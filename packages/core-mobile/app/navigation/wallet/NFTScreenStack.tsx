@@ -1,29 +1,20 @@
 import React from 'react'
 import AppNavigation from 'navigation/AppNavigation'
 import { createStackNavigator } from '@react-navigation/stack'
-import {
-  NavigatorScreenParams,
-  useNavigation,
-  useRoute
-} from '@react-navigation/native'
-import NftDetails from 'screens/nft/NftDetails'
+import { NavigatorScreenParams } from '@react-navigation/native'
 import NftFullScreen from 'screens/nft/NftFullScreen'
 import NFTSendScreenStack, {
   NFTSendStackParamList
 } from 'navigation/wallet/NFTSendStack'
-import { NFTDetailsScreenProps } from 'navigation/types'
-import { NFTItemData } from 'store/nft'
-import AnalyticsService from 'services/analytics/AnalyticsService'
+import { NFTImageData, NFTItem } from 'store/nft'
+import NftDetailsScreen from 'screens/nft/NftDetailsScreen'
 
 export type NFTStackParamList = {
-  [AppNavigation.Nft.Details]: { nft: NFTItemData }
+  [AppNavigation.Nft.Details]: { nftItem: NFTItem }
   [AppNavigation.Nft.Send]:
-    | { nft: NFTItemData }
+    | { nft: NFTItem }
     | NavigatorScreenParams<NFTSendStackParamList>
-  [AppNavigation.Nft.FullScreen]: {
-    url: string
-    isSvg: boolean
-  }
+  [AppNavigation.Nft.FullScreen]: { imageData: NFTImageData }
 }
 
 const NFTStack = createStackNavigator<NFTStackParamList>()
@@ -55,34 +46,6 @@ function NFTScreenStack(): JSX.Element {
         component={NftFullScreen}
       />
     </NFTStack.Navigator>
-  )
-}
-
-type NftDetailsScreenProps = NFTDetailsScreenProps<
-  typeof AppNavigation.Nft.Details
->
-
-const NftDetailsScreen = (): JSX.Element => {
-  const { navigate } = useNavigation<NftDetailsScreenProps['navigation']>()
-  const { params } = useRoute<NftDetailsScreenProps['route']>()
-
-  const openImageFull = (url: string, isSvg: boolean): void => {
-    navigate(AppNavigation.Nft.FullScreen, { url, isSvg })
-  }
-
-  const openSendNftScreen = (item: NFTItemData): void => {
-    AnalyticsService.capture('CollectibleSendClicked', {
-      chainId: item.chainId
-    })
-    navigate(AppNavigation.Nft.Send, { nft: item })
-  }
-
-  return (
-    <NftDetails
-      nft={params.nft}
-      onPicturePressed={openImageFull}
-      onSendPressed={openSendNftScreen}
-    />
   )
 }
 

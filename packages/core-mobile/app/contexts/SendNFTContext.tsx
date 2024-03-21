@@ -10,7 +10,7 @@ import React, {
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import { selectActiveNetwork } from 'store/network'
-import { NFTItemData } from 'store/nft'
+import { NFTItem } from 'store/nft'
 import { bnToLocaleString } from '@avalabs/utils-sdk'
 import { FeePreset } from 'components/NetworkFeeSelector'
 import { selectSelectedCurrency } from 'store/settings/currency'
@@ -32,7 +32,7 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { NetworkTokenUnit } from 'types'
 
 export interface SendNFTContextState {
-  sendToken: NFTItemData
+  sendToken: NFTItem
   fromAccount: Account
   toAccount: Account
   fees: Fees
@@ -53,7 +53,7 @@ export const SendNFTContextProvider = ({
   nft,
   children
 }: {
-  nft: NFTItemData
+  nft: NFTItem
   children: ReactNode
 }): JSX.Element => {
   const activeAccount = useSelector(selectActiveAccount)
@@ -71,7 +71,7 @@ export const SendNFTContextProvider = ({
     selectedCurrency.toLowerCase() as VsCurrencyType
   )
 
-  const [sendToken] = useState<NFTItemData>(nft)
+  const [sendToken] = useState<NFTItem>(nft)
 
   const [sendToAddress, setSendToAddress] = useState('')
   const [sendToTitle, setSendToTitle] = useState('')

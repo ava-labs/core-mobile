@@ -14,7 +14,7 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Row } from 'components/Row'
 import { useSendNFTContext } from 'contexts/SendNFTContext'
 import { Account } from 'store/account'
-import { NFTItemData } from 'store/nft'
+import { NFTItem } from 'store/nft'
 import NetworkFeeSelector, { FeePreset } from 'components/NetworkFeeSelector'
 import { useSelector } from 'react-redux'
 import { selectActiveNetwork } from 'store/network'
@@ -191,7 +191,7 @@ export default function NftSend({
   )
 }
 
-const CollectibleItem = ({ nft }: { nft: NFTItemData }): JSX.Element => {
+const CollectibleItem = ({ nft }: { nft: NFTItem }): JSX.Element => {
   const { theme } = useApplicationContext()
 
   return (
@@ -204,18 +204,18 @@ const CollectibleItem = ({ nft }: { nft: NFTItemData }): JSX.Element => {
       ]}>
       <Row>
         <View style={{ borderRadius: 8 }}>
-          {nft.isSvg ? (
+          {nft.imageData?.isSvg ? (
             <View style={{ alignItems: 'center' }}>
               <SvgXml
-                xml={nft.metadata.imageUri ?? null}
+                xml={nft.imageData.image ?? null}
                 width={80}
-                height={80 * nft.aspect}
+                height={80 * nft.imageData.aspect ?? 1}
               />
             </View>
           ) : (
             <Image
               style={styles.nftImage}
-              source={{ uri: nft.metadata.imageUri }}
+              source={{ uri: nft.imageData?.image }}
               width={80}
               height={80}
             />
@@ -233,7 +233,7 @@ const CollectibleItem = ({ nft }: { nft: NFTItemData }): JSX.Element => {
             testID="NftTokenName"
             numberOfLines={1}
             ellipsizeMode="tail">
-            {nft.metadata.name}
+            {nft.processedMetadata.name}
           </AvaText.Heading6>
         </View>
       </Row>
