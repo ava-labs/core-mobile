@@ -7,7 +7,6 @@ import loginRecoverWallet from './loginRecoverWallet'
 
 export const warmup = async () => {
   await device.launchApp({
-    launchArgs: { detoxEnableSynchronization: 0 },
     newInstance: true,
     permissions: { notifications: 'YES', camera: 'YES' }
   })
