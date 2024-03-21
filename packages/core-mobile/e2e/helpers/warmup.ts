@@ -6,10 +6,11 @@ import { Platform } from './constants'
 import loginRecoverWallet from './loginRecoverWallet'
 
 export const warmup = async () => {
+  await device.disableSynchronization()
   await device.launchApp({
-    newInstance: true,
     permissions: { notifications: 'YES', camera: 'YES' }
   })
+  await device.enableSynchronization()
 
   // if we are running Android e2e on Bitrise, we also need to handle the Jailbroken overlay
   if (process.env.E2E === 'true' && Action.platform() === Platform.Android) {
