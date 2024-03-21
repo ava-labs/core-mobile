@@ -24,7 +24,6 @@ import {
 import Logger from 'utils/Logger'
 
 type NFTItemsContextState = {
-  process: (nfts: NFTItemData[]) => void
   nftItems: NFTItem[]
   filteredNftItems: NFTItem[]
   getNftItem: (uid: string) => NFTItem | undefined
@@ -252,7 +251,6 @@ export const NFTMetadataProvider = ({
   return (
     <NFTItemsContext.Provider
       value={{
-        process,
         nftItems,
         filteredNftItems,
         getNftItem,
