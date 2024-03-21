@@ -22,8 +22,8 @@ const NftManage = (): JSX.Element => {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-    refetch,
-    isRefetching
+    refetchNfts,
+    isNftsRefetching
   } = useNftItemsContext()
   const filteredData = useMemo(() => {
     const keyword = searchText.toLowerCase()
@@ -74,7 +74,10 @@ const NftManage = (): JSX.Element => {
         }
         indicatorStyle="white"
         refreshControl={
-          <RefreshControl onRefresh={refetch} refreshing={isRefetching} />
+          <RefreshControl
+            onRefresh={refetchNfts}
+            refreshing={isNftsRefetching}
+          />
         }
         ListFooterComponent={
           <FetchingNextIndicator isVisible={isFetchingNextPage} />
