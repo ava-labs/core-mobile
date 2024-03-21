@@ -4,38 +4,33 @@ import ZeroState from 'components/ZeroState'
 import { NFTItem } from 'store/nft'
 import { RefreshControl } from 'components/RefreshControl'
 import { View } from '@avalabs/k2-mobile'
+import { useNftItemsContext } from 'contexts/NFTItemsContext'
 import { FetchingNextIndicator } from '../FetchingNextIndicator'
 import { GridItem } from './GridItem'
 import { NftGridLoader } from './NftGridLoader'
 
 type Props = {
-  nfts: NFTItem[]
   onItemSelected: (item: NFTItem) => void
-  isLoading: boolean
-  fetchNextPage: () => void
-  hasNextPage: boolean
-  isFetchingNextPage: boolean
-  refresh: () => void
-  isRefreshing: boolean
 }
 
-export const NftGrid = ({
-  nfts,
-  onItemSelected,
-  isLoading,
-  fetchNextPage,
-  hasNextPage,
-  isFetchingNextPage,
-  refresh,
-  isRefreshing
-}: Props): JSX.Element => {
+export const NftGrid = ({ onItemSelected }: Props): JSX.Element => {
+  const {
+    filteredNftItems,
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+    isNftsLoading,
+    isNftsRefetching,
+    refetchNfts
+  } = useNftItemsContext()
+
   const onEndReached = (): void => {
     if (hasNextPage && !isFetchingNextPage) {
       fetchNextPage()
     }
   }
 
-  if (isLoading)
+  if (isNftsLoading)
     return (
       <View sx={{ paddingHorizontal: 16 }}>
         <NftGridLoader />
@@ -44,7 +39,7 @@ export const NftGrid = ({
 
   return (
     <FlatList
-      data={nfts}
+      data={filteredNftItems}
       contentContainerStyle={styles.contentContainer}
       onEndReached={onEndReached}
       onEndReachedThreshold={0.4}
@@ -62,10 +57,10 @@ export const NftGrid = ({
         })
       }
       indicatorStyle="white"
-      onRefresh={refresh}
-      refreshing={isRefreshing}
+      onRefresh={refetchNfts}
+      refreshing={isNftsRefetching}
       refreshControl={
-        <RefreshControl onRefresh={refresh} refreshing={isRefreshing} />
+        <RefreshControl onRefresh={refetchNfts} refreshing={isNftsRefetching} />
       }
     />
   )

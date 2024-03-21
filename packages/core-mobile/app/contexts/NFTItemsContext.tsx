@@ -8,17 +8,25 @@ import React, {
   useMemo,
   useState
 } from 'react'
+import { useSelector } from 'react-redux'
 import { useNfts } from 'screens/nft/hooks/useNfts'
 import { SnackBarMessage } from 'seedless/components/SnackBarMessage'
 import NftProcessor from 'services/nft/NftProcessor'
 import NftService from 'services/nft/NftService'
 import { getTokenUri, isErc721 } from 'services/nft/utils'
-import { NFTImageData, NFTItem, NFTItemData, NFTMetadata } from 'store/nft'
+import {
+  NFTImageData,
+  NFTItem,
+  NFTItemData,
+  NFTMetadata,
+  selectHiddenNftUIDs
+} from 'store/nft'
 import Logger from 'utils/Logger'
 
 type NFTItemsContextState = {
   process: (nfts: NFTItemData[]) => void
   nftItems: NFTItem[]
+  filteredNftItems: NFTItem[]
   getNftItem: (uid: string) => NFTItem | undefined
   refreshNftMetadata: (nftData: NFTItemData, chainId: number) => Promise<void>
   isNftRefreshing: (uid: string) => boolean
@@ -26,9 +34,9 @@ type NFTItemsContextState = {
   fetchNextPage: () => void
   hasNextPage: boolean
   isFetchingNextPage: boolean
-  refetch: () => void
-  isRefetching: boolean
-  isLoading: boolean
+  refetchNfts: () => void
+  isNftsRefetching: boolean
+  isNftsLoading: boolean
 }
 
 export const NFTItemsContext = createContext<NFTItemsContextState>(
@@ -43,6 +51,7 @@ export const NFTMetadataProvider = ({
   const [metadata, setMetadata] = useState<Record<string, NFTMetadata>>({})
   const [imageData, setImageData] = useState<Record<string, NFTImageData>>({})
   const [reindexedAt, setReindexedAt] = useState<Record<string, number>>({})
+  const hiddenNfts = useSelector(selectHiddenNftUIDs)
 
   const processImageData = useCallback((items: NFTItemData[]): void => {
     items.forEach(nft => {
@@ -216,6 +225,10 @@ export const NFTMetadataProvider = ({
     [reindexedAt]
   )
 
+  const filteredNftItems = useMemo(() => {
+    return nftItems.filter(value => !hiddenNfts[value.uid])
+  }, [hiddenNfts, nftItems])
+
   useEffect(() => {
     if (query.data && query.data.pages.length > 0) {
       // It runs every time new data is fetched by useInfiniteQuery, specifically
@@ -234,6 +247,7 @@ export const NFTMetadataProvider = ({
       value={{
         process,
         nftItems,
+        filteredNftItems,
         getNftItem,
         refreshNftMetadata,
         isNftRefreshing,
@@ -241,9 +255,9 @@ export const NFTMetadataProvider = ({
         fetchNextPage: query.fetchNextPage,
         hasNextPage: query.hasNextPage,
         isFetchingNextPage: query.isFetchingNextPage,
-        refetch: query.refetch,
-        isRefetching: query.isRefetching,
-        isLoading: query.isLoading
+        refetchNfts: query.refetch,
+        isNftsRefetching: query.isRefetching,
+        isNftsLoading: query.isLoading
       }}>
       {children}
     </NFTItemsContext.Provider>

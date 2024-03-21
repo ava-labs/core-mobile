@@ -4,31 +4,26 @@ import ZeroState from 'components/ZeroState'
 import { NFTItem } from 'store/nft'
 import { RefreshControl } from 'components/RefreshControl'
 import { View } from '@avalabs/k2-mobile'
+import { useNftItemsContext } from 'contexts/NFTItemsContext'
 import { FetchingNextIndicator } from '../FetchingNextIndicator'
 import { NftListLoader } from './NftListLoader'
 import { ListItem } from './ListItem'
 
 type Props = {
-  nfts: NFTItem[]
   onItemSelected: (item: NFTItem) => void
-  isLoading: boolean
-  fetchNextPage: () => void
-  hasNextPage: boolean
-  isFetchingNextPage: boolean
-  refresh: () => void
-  isRefreshing: boolean
 }
 
-export const NftList = ({
-  nfts,
-  onItemSelected,
-  isLoading,
-  fetchNextPage,
-  hasNextPage,
-  isFetchingNextPage,
-  refresh,
-  isRefreshing
-}: Props): JSX.Element => {
+export const NftList = ({ onItemSelected }: Props): JSX.Element => {
+  const {
+    filteredNftItems,
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+    isNftsLoading,
+    isNftsRefetching,
+    refetchNfts
+  } = useNftItemsContext()
+
   const onEndReached = useCallback(
     ({ distanceFromEnd }: { distanceFromEnd: number }) => {
       if (distanceFromEnd > 0 && hasNextPage && !isFetchingNextPage)
@@ -37,7 +32,7 @@ export const NftList = ({
     [fetchNextPage, hasNextPage, isFetchingNextPage]
   )
 
-  if (isLoading)
+  if (isNftsLoading)
     return (
       <View sx={{ paddingHorizontal: 16 }}>
         <NftListLoader />
@@ -50,7 +45,7 @@ export const NftList = ({
       contentContainerStyle={styles.contentContainer}
       onEndReached={onEndReached}
       onEndReachedThreshold={0.8}
-      data={nfts}
+      data={filteredNftItems}
       ListEmptyComponent={<ZeroState.Collectibles />}
       keyExtractor={item => item.uid}
       ItemSeparatorComponent={Separator}
@@ -65,7 +60,7 @@ export const NftList = ({
       }
       indicatorStyle="white"
       refreshControl={
-        <RefreshControl onRefresh={refresh} refreshing={isRefreshing} />
+        <RefreshControl onRefresh={refetchNfts} refreshing={isNftsRefetching} />
       }
     />
   )

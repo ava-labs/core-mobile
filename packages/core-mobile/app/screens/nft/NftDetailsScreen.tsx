@@ -6,7 +6,6 @@ import AvaButton from 'components/AvaButton'
 import { Space } from 'components/Space'
 import { Row } from 'components/Row'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { NFTItemExternalDataAttribute } from 'store/nft'
 import { SvgXml } from 'react-native-svg'
 import { truncateAddress } from '@avalabs/utils-sdk'
 import { isAddress } from 'ethers'
@@ -25,6 +24,7 @@ import { Tooltip } from 'components/Tooltip'
 import FastImage from 'react-native-fast-image'
 import { useNftItemsContext } from 'contexts/NFTItemsContext'
 import { useNft } from './hooks/useNft'
+import NftAttributes from './components/NftAttributes'
 
 type NftDetailsScreenProps = NFTDetailsScreenProps<
   typeof AppNavigation.Nft.Details
@@ -125,7 +125,7 @@ const NftDetailsScreen = (): JSX.Element => {
   const renderHeaderRight = useCallback(() => {
     const disabled = !canRefreshMetadata || isRefreshing
 
-    const refreshIcon = (): JSX.Element => (
+    const refreshIcon = (
       <View
         sx={{
           padding: 8,
@@ -139,14 +139,14 @@ const NftDetailsScreen = (): JSX.Element => {
 
     return canRefreshMetadata ? (
       <Pressable onPress={handleRefresh} disabled={disabled}>
-        {refreshIcon()}
+        {refreshIcon}
       </Pressable>
     ) : (
       <Tooltip
         content="Refresh is only available once per hour."
         position="bottom"
         style={{ width: 150 }}
-        icon={refreshIcon()}
+        icon={refreshIcon}
       />
     )
   }, [colors, handleRefresh, canRefreshMetadata, isRefreshing])
@@ -278,7 +278,7 @@ const NftDetailsScreen = (): JSX.Element => {
         <>
           <AvaText.Heading2>Properties</AvaText.Heading2>
           <Space y={8} />
-          {renderProps(nftItem.processedMetadata.attributes)}
+          <NftAttributes attributes={nftItem.processedMetadata.attributes} />
         </>
       )}
     </ScrollView>
@@ -286,42 +286,6 @@ const NftDetailsScreen = (): JSX.Element => {
 }
 
 const imageWidth = Dimensions.get('window').width - 32
-const renderProps = (
-  attributes: NFTItemExternalDataAttribute[]
-): JSX.Element[] => {
-  const props = []
-  for (let i = 0; i < attributes.length; i += 2) {
-    const nftAttribute1 = attributes[i]
-    const nftAttribute2 = attributes[i + 1]
-    if (!nftAttribute1 || !nftAttribute2) {
-      continue
-    }
-    props.push(
-      <View key={i} style={{ marginVertical: 8 }}>
-        <Space key={i + 1} y={4} />
-        <Row key={i}>
-          {nftAttribute1 && (
-            <View style={{ flex: 1 }}>
-              <AvaText.Body2>{nftAttribute1.trait_type}</AvaText.Body2>
-              <Space y={4} />
-              <AvaText.Heading3 textStyle={{ marginRight: 16 }}>
-                {nftAttribute1.value}
-              </AvaText.Heading3>
-            </View>
-          )}
-          {nftAttribute2 && (
-            <View style={{ flex: 1 }}>
-              <AvaText.Body2>{nftAttribute2.trait_type}</AvaText.Body2>
-              <Space y={4} />
-              <AvaText.Heading3>{nftAttribute2.value}</AvaText.Heading3>
-            </View>
-          )}
-        </Row>
-      </View>
-    )
-  }
-  return props
-}
 
 const styles = StyleSheet.create({
   container: {

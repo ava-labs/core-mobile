@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 import RadioGroup from 'components/RadioGroup'
 import GridSVG from 'components/svg/GridSVG'
@@ -6,8 +6,7 @@ import { Row } from 'components/Row'
 import AvaButton from 'components/AvaButton'
 import ListSVG from 'components/svg/ListSVG'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { NFTItem, selectHiddenNftUIDs } from 'store/nft'
-import { useSelector } from 'react-redux'
+import { NFTItem } from 'store/nft'
 import { useNftItemsContext } from 'contexts/NFTItemsContext'
 import { NftList } from './components/NftList/NftList'
 import { NftGrid } from './components/NftGrid/NftGrid'
@@ -23,34 +22,10 @@ export default function NftListView({
   onItemSelected,
   onManagePressed
 }: Props): JSX.Element {
-  const {
-    nftItems: nfts,
-    isLoading,
-    fetchNextPage,
-    isFetchingNextPage,
-    hasNextPage,
-    refetch,
-    isRefetching
-  } = useNftItemsContext()
+  const { refetchNfts: refetch } = useNftItemsContext()
 
   const [listType, setListType] = useState<ListType>()
   const { theme } = useApplicationContext()
-  const hiddenNfts = useSelector(selectHiddenNftUIDs)
-
-  const filteredData = useMemo(() => {
-    return nfts.filter(value => !hiddenNfts[value.uid])
-  }, [hiddenNfts, nfts])
-
-  const props = {
-    nfts: filteredData,
-    onItemSelected,
-    isLoading,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    refresh: refetch,
-    isRefreshing: isRefetching
-  }
 
   useEffect(() => {
     refetch()
@@ -72,7 +47,11 @@ export default function NftListView({
           Manage
         </AvaButton.TextLink>
       </Row>
-      {listType === 'list' ? <NftList {...props} /> : <NftGrid {...props} />}
+      {listType === 'list' ? (
+        <NftList onItemSelected={onItemSelected} />
+      ) : (
+        <NftGrid onItemSelected={onItemSelected} />
+      )}
     </View>
   )
 }
