@@ -4,16 +4,11 @@ import Assert from '../helpers/assertions'
 import Action from './actions'
 import { Platform } from './constants'
 import loginRecoverWallet from './loginRecoverWallet'
-import delay from './waits'
 
 export const warmup = async () => {
-  await device.disableSynchronization()
-  await delay(20000)
   await device.launchApp({
     permissions: { notifications: 'YES', camera: 'YES' }
   })
-  await delay(20000)
-  await device.enableSynchronization()
   // if we are running Android e2e on Bitrise, we also need to handle the Jailbroken overlay
   if (process.env.E2E === 'true' && Action.platform() === Platform.Android) {
     console.log('Handling Jailbroken warning...', process.env.E2E)

@@ -32,8 +32,6 @@ workflows:
         - build_type: aab
         - cache_level: all
         - variant: $ANDROID_BUILD_VARIANT
-        - arguments: :app:assembleInternalE2eAndroidTest
-
     - save-gradle-cache@1: {}
     - sign-apk@1:
         inputs:
