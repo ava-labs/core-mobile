@@ -6,13 +6,12 @@ import Assert from '../../helpers/assertions'
 import Actions from '../../helpers/actions'
 import PortfolioPage from '../../pages/portfolio.page'
 import NetworksManagePage from '../../pages/networksManage.page'
-import { handleJailbrokenWarning } from '../../helpers/warmup'
 import commonElsPage from '../../pages/commonEls.page'
+import { warmup } from '../../helpers/warmup'
 
 describe('Change Network', () => {
   beforeAll(async () => {
-    await device.launchApp()
-    await handleJailbrokenWarning()
+    await warmup()
   })
 
   afterAll(async () => {

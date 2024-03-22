@@ -10,9 +10,13 @@ export const warmup = async () => {
     permissions: { notifications: 'YES', camera: 'YES' }
   })
   // if we are running Android e2e on Bitrise, we also need to handle the Jailbroken overlay
-  if (process.env.E2E === 'true' && Action.platform() === Platform.Android) {
+  const jailbrokenWarningPrsent = CommonElsPage.jailbrokenWarning
+  if (
+    process.env.E2E === 'true' &&
+    Action.platform() === Platform.Android &&
+    (await Action.isVisible(jailbrokenWarningPrsent, 0))
+  ) {
     console.log('Handling Jailbroken warning...', process.env.E2E)
-    await Action.waitForElement(CommonElsPage.jailbrokenWarning, 2000, 0)
     await Assert.isVisible(CommonElsPage.jailbrokenWarning, 0)
     await Action.tapElementAtIndex(by.text('Ok'), 0)
     await Action.waitForElementNotVisible(
