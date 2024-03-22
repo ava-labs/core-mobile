@@ -10,6 +10,7 @@ yarn start &
 
 npm rebuild detox
 
+adb install -r $BITRISE_APK_PATH
 adb install -r $BITRISE_TEST_APK_PATH
 
 
