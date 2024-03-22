@@ -12,7 +12,7 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import useDevDebugging from 'utils/debugging/DevDebugging'
 import 'utils/debugging/wdyr'
 import { navigationRef } from 'utils/Navigation'
-import SentryService from 'services/sentry/SentryService'
+//import SentryService from 'services/sentry/SentryService'
 import DataDogService from 'services/datadog/DataDogService'
 import Logger, { LogLevel } from 'utils/Logger'
 
@@ -25,7 +25,7 @@ LogBox.ignoreLogs([
   'Non-serializable'
 ])
 
-SentryService.init()
+//SentryService.init()
 
 Platform.OS === 'android' &&
   UIManager.setLayoutAnimationEnabledExperimental &&
