@@ -16,8 +16,6 @@ QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test --configuration android.inte
 
 echo "sleeping for debug for 999999 seconds"
 
-& sleep 999999
-
 if ((test_result != 0)); then
   exit 1
 fi
