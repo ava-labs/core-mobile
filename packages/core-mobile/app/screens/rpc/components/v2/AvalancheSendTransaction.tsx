@@ -1,5 +1,3 @@
-// noinspection JSUnusedLocalSymbols
-
 import React, { useCallback, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { Space } from 'components/Space'
@@ -9,7 +7,7 @@ import { ScrollView } from 'react-native-gesture-handler'
 import { WalletScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation, useRoute } from '@react-navigation/native'
-import AddDelegatorTxView from 'screens/rpc/components/shared/AvalancheSendTransaction/AddDelegatorTxView'
+import { AddPermissionlessDelegatorTxView } from 'screens/rpc/components/shared/AvalancheSendTransaction/AddPermissionlessDelegatorTxView'
 import { useDappConnectionV2 } from 'hooks/useDappConnectionV2'
 import RpcRequestBottomSheet from 'screens/rpc/components/shared/RpcRequestBottomSheet'
 import { useApplicationContext } from 'contexts/ApplicationContext'
@@ -20,10 +18,11 @@ import { selectIsSeedlessSigningBlocked } from 'store/posthog'
 import ExportTxView from '../shared/AvalancheSendTransaction/ExportTxView'
 import ImportTxView from '../shared/AvalancheSendTransaction/ImportTxView'
 import BaseTxView from '../shared/AvalancheSendTransaction/BaseTxView'
-import AddValidatorTxView from '../shared/AvalancheSendTransaction/AddValidatorTxView'
+import { AddPermissionlessValidatorTxView } from '../shared/AvalancheSendTransaction/AddPermissionlessValidatorTxView'
 import AddSubnetValidatorTxView from '../shared/AvalancheSendTransaction/AddSubnetValidatorView'
 import CreateChainTxView from '../shared/AvalancheSendTransaction/CreateChainView'
 import CreateSubnetTxView from '../shared/AvalancheSendTransaction/CreateSubnetView'
+import { RemoveSubnetValidatorTxView } from '../shared/AvalancheSendTransaction/RemoveSubnetValidatorTxView'
 
 type AvalancheSendTransactionV2ScreenProps = WalletScreenProps<
   typeof AppNavigation.Modal.AvalancheSendTransactionV2
@@ -94,16 +93,18 @@ const AvalancheSendTransactionV2 = (): JSX.Element => {
         )
       case 'base':
         return <BaseTxView tx={data.txData} />
-      case 'add_validator':
-        return <AddValidatorTxView tx={data.txData} />
-      case 'add_delegator':
-        return <AddDelegatorTxView tx={data.txData} />
       case 'add_subnet_validator':
         return <AddSubnetValidatorTxView tx={data.txData} />
       case 'create_chain':
         return <CreateChainTxView tx={data.txData} />
       case 'create_subnet':
         return <CreateSubnetTxView tx={data.txData} />
+      case 'add_permissionless_validator':
+        return <AddPermissionlessValidatorTxView tx={data.txData} />
+      case 'add_permissionless_delegator':
+        return <AddPermissionlessDelegatorTxView tx={data.txData} />
+      case 'remove_subnet_validator':
+        return <RemoveSubnetValidatorTxView tx={data.txData} />
     }
   }
 

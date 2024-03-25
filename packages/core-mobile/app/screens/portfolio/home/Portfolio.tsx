@@ -7,12 +7,12 @@ import AvaText from 'components/AvaText'
 import TabViewAva from 'components/TabViewAva'
 import NftListView from 'screens/nft/NftListView'
 import { UI, useIsUIDisabled } from 'hooks/useIsUIDisabled'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { selectInactiveNetworks } from 'store/network'
 import { Network } from '@avalabs/chains-sdk'
 import { Space } from 'components/Space'
 import { RefreshControl } from 'components/RefreshControl'
-import { NFTItemData } from 'store/nft'
+import { NFTItem } from 'store/nft'
 import { PortfolioScreenProps } from 'navigation/types'
 import Animated, { FadeInDown, FadeOutUp } from 'react-native-reanimated'
 import { TokensTabHeader } from 'screens/portfolio/home/components/TokensTabHeader'
@@ -20,6 +20,7 @@ import { PortfolioTabs } from 'consts/portfolio'
 import { selectIsDeFiBlocked } from 'store/posthog'
 import { DeFiProtocolList } from 'screens/defi/DeFiProtocolList'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import { onWatchlistRefresh } from 'store/watchlist'
 import InactiveNetworkCard from './components/Cards/InactiveNetworkCard'
 import { PortfolioTokensLoader } from './components/Loaders/PortfolioTokensLoader'
 import PortfolioHeader from './components/PortfolioHeader'
@@ -81,6 +82,7 @@ const Separator = (): JSX.Element => <Space y={16} />
 const TokensTab = (): JSX.Element => {
   const { isLoading, isRefetching, refetch } = useSearchableTokenList()
   const inactiveNetworks = useSelector(selectInactiveNetworks)
+  const dispatch = useDispatch()
 
   const renderInactiveNetwork = (
     item: ListRenderItemInfo<Network>
@@ -97,6 +99,11 @@ const TokensTab = (): JSX.Element => {
         <InactiveNetworkCard network={item.item} />
       </Animated.View>
     )
+  }
+
+  const refresh = (): void => {
+    refetch()
+    dispatch(onWatchlistRefresh)
   }
 
   if (isLoading) return <PortfolioTokensLoader />
@@ -118,7 +125,7 @@ const TokensTab = (): JSX.Element => {
         ItemSeparatorComponent={Separator}
         ListHeaderComponent={<TokensTabHeader />}
         refreshControl={
-          <RefreshControl onRefresh={refetch} refreshing={isRefetching} />
+          <RefreshControl onRefresh={refresh} refreshing={isRefetching} />
         }
       />
     </>
@@ -128,13 +135,13 @@ const TokensTab = (): JSX.Element => {
 const NftTab = (): JSX.Element => {
   const { navigate } = useNavigation<PortfolioNavigationProp['navigation']>()
 
-  const openNftDetails = (item: NFTItemData): void => {
+  const openNftDetails = (item: NFTItem): void => {
     AnalyticsService.capture('CollectibleItemClicked', {
       chainId: item.chainId
     })
     navigate(AppNavigation.Wallet.NFTDetails, {
       screen: AppNavigation.Nft.Details,
-      params: { nft: item }
+      params: { nftItem: item }
     })
   }
   const openNftManage = (): void => {

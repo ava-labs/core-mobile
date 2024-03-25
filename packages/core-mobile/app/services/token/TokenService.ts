@@ -115,11 +115,12 @@ export class TokenService {
     data = getCache(cacheId)
 
     if (data === undefined) {
+      const timestamp = new Date().toISOString()
       const topMarketsPromise = watchListCacheClient.markets({
-        queries: { currency, topMarkets: true }
+        queries: { currency, topMarkets: true, timestamp }
       })
       const additionalMarketsPromise = watchListCacheClient.markets({
-        queries: { currency, topMarkets: false }
+        queries: { currency, topMarkets: false, timestamp }
       })
 
       const [topMarkets, additionalMarkets] = await Promise.all([

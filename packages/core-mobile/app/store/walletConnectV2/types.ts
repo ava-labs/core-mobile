@@ -22,7 +22,7 @@ export type SessionRequest<Method> = {
 export type Request = SessionProposal | SessionRequest<string>
 
 export type WalletConnectState = {
-  requestStatuses: Record<string, { result?: unknown; error?: Error }>
+  requestStatuses: Record<string, RequestStatus>
 }
 
 export enum RpcMethod {
@@ -50,7 +50,8 @@ export enum RpcMethod {
   AVALANCHE_SET_DEVELOPER_MODE = 'avalanche_setDeveloperMode',
   AVALANCHE_UPDATE_CONTACT = 'avalanche_updateContact',
   AVALANCHE_SEND_TRANSACTION = 'avalanche_sendTransaction',
-  AVALANCHE_SIGN_TRANSACTION = 'avalanche_signTransaction'
+  AVALANCHE_SIGN_TRANSACTION = 'avalanche_signTransaction',
+  AVALANCHE_GET_ADDRESSES_IN_RANGE = 'avalanche_getAddressesInRange'
 }
 
 export const CORE_ONLY_METHODS = [
@@ -65,7 +66,8 @@ export const CORE_ONLY_METHODS = [
   RpcMethod.AVALANCHE_SET_DEVELOPER_MODE,
   RpcMethod.AVALANCHE_UPDATE_CONTACT,
   RpcMethod.AVALANCHE_SEND_TRANSACTION,
-  RpcMethod.AVALANCHE_SIGN_TRANSACTION
+  RpcMethod.AVALANCHE_SIGN_TRANSACTION,
+  RpcMethod.AVALANCHE_GET_ADDRESSES_IN_RANGE
 ]
 
 export type RpcError = EthereumRpcError<string> | EthereumProviderError<string>
@@ -73,4 +75,14 @@ export type RpcError = EthereumRpcError<string> | EthereumProviderError<string>
 export enum WalletConnectVersions {
   V1 = '1',
   V2 = '2'
+}
+
+export type ConfirmationReceiptStatus = 'Reverted' | 'Success' | 'Pending'
+
+export type RequestStatus = {
+  result?: {
+    txHash: string
+    confirmationReceiptStatus?: ConfirmationReceiptStatus
+  }
+  error?: Error
 }

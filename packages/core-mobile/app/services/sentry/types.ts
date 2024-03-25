@@ -3,6 +3,7 @@
  */
 export type TransactionName =
   | 'get-balances'
+  | 'get-nft'
   | 'get-nfts'
   | 'send-erc20'
   | 'send-erc721'
@@ -19,7 +20,8 @@ export type OpName =
   | 'svc.balance.glacier.get'
   | 'svc.network.send_transaction'
   | 'svc.nft.get_provider'
-  | 'svc.nft.fetch'
+  | 'svc.nft.fetchNfts'
+  | 'svc.nft.fetchNft'
   | 'svc.send.send'
   | 'svc.send.btc.get_trx_request'
   | 'svc.send.btc.validate_and_calc_fees'

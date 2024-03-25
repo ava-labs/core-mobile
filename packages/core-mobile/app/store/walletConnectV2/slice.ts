@@ -2,7 +2,8 @@ import { createAction, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { WalletConnectState } from 'store/walletConnectV2'
 import { RootState } from 'store/index'
 import { PeerMeta, Session } from 'services/walletconnectv2/types'
-import { Request, RpcError } from './types'
+import { TransactionResponse } from 'ethers'
+import { Request, RequestStatus, RpcError } from './types'
 
 export const reducerName = 'walletConnectV2'
 
@@ -18,7 +19,7 @@ const walletConnectSlice = createSlice({
       state,
       action: PayloadAction<{
         id: number
-        status: { result?: unknown; error?: Error }
+        status: RequestStatus
       }>
     ) => {
       const {
@@ -65,6 +66,11 @@ export const onSendRpcError = createAction<{
 }>(`${reducerName}/onSendRpcError`)
 
 export const newSession = createAction<string>(`${reducerName}/newSession`)
+
+export const waitForTransactionReceiptAsync = createAction<{
+  txResponse: TransactionResponse
+  requestId: number
+}>(`${reducerName}/waitForTransactionReceiptAsync`)
 
 export const killSessions = createAction<Session[]>(
   `${reducerName}/killSessions`

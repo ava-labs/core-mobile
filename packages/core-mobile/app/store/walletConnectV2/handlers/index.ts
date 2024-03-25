@@ -16,6 +16,7 @@ import { avalancheGetAccountPubKeyHandler } from './avalanche_getAccountPubKey/a
 import { avalancheSignTransactionHandler } from './avalanche_signTransaction/avalanche_signTransaction'
 import { avalancheSetDeveloperModeHandler } from './avalanche_setDeveloperMode/avalanche_setDeveloperMode'
 import { walletGetEthereumChainHandler } from './chain/wallet_getEthereumChain/wallet_getEthereumChain'
+import { avalancheGetAddressesInRangeHandler } from './avalanche_getAddressesInRange/avalanche_getAddressesInRange'
 
 const handlerMap = [
   avalancheSelectAccountHandler,
@@ -34,7 +35,8 @@ const handlerMap = [
   avalancheSendTransactionHandler,
   avalancheSignTransactionHandler,
   avalancheGetAccountPubKeyHandler,
-  avalancheSetDeveloperModeHandler
+  avalancheSetDeveloperModeHandler,
+  avalancheGetAddressesInRangeHandler
 ].reduce((acc, current) => {
   current.methods.forEach(method => {
     acc.set(method, current)

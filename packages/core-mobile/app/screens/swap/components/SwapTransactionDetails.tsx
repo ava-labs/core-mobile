@@ -10,6 +10,8 @@ import { Tooltip } from 'components/Tooltip'
 import { NetworkTokenUnit } from 'types'
 import { Eip1559Fees } from 'utils/Utils'
 import PoppableGasAndLimit from 'components/PoppableGasAndLimit'
+import { useSelector } from 'react-redux'
+import { selectActiveNetwork } from 'store/network'
 
 const isSlippageValid = (value: string): boolean => {
   return Boolean(
@@ -50,6 +52,7 @@ const SwapTransactionDetail: FC<SwapTransactionDetailProps> = ({
   onFeesChange
 }): JSX.Element => {
   const { theme } = useApplicationContext()
+  const activeNetwork = useSelector(selectActiveNetwork)
 
   return (
     <View style={{ flex: 1, paddingHorizontal: 16 }}>
@@ -116,7 +119,9 @@ const SwapTransactionDetail: FC<SwapTransactionDetailProps> = ({
               Network Fee
             </Tooltip>
             <AvaText.Heading3>
-              {maxFeePerGas.mul(gasLimit).toString()} AVAX
+              {maxFeePerGas.mul(gasLimit).toString() +
+                ' ' +
+                activeNetwork.networkToken.symbol}
             </AvaText.Heading3>
           </Row>
         </>

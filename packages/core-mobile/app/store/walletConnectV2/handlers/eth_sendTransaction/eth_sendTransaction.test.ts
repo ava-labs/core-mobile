@@ -278,16 +278,21 @@ describe('eth_sendTransaction handler', () => {
         mockNetwork
       )
 
-      expect(mockSendTransaction).toHaveBeenCalledWith(
-        mockSignedTx,
-        mockNetwork,
-        false
-      )
+      expect(mockSendTransaction).toHaveBeenCalledWith({
+        signedTx: mockSignedTx,
+        network: mockNetwork,
+        handleWaitToPost: expect.any(Function)
+      })
 
       expect(mockDispatch).toHaveBeenCalledWith(
         updateRequestStatus({
           id: testRequest.data.id,
-          status: { result: mockTxHash }
+          status: {
+            result: {
+              txHash: mockTxHash,
+              confirmationReceiptStatus: 'Pending'
+            }
+          }
         })
       )
 
@@ -325,11 +330,11 @@ describe('eth_sendTransaction handler', () => {
         mockNetwork
       )
 
-      expect(mockSendTransaction).toHaveBeenCalledWith(
-        mockSignedTx,
-        mockNetwork,
-        false
-      )
+      expect(mockSendTransaction).toHaveBeenCalledWith({
+        signedTx: mockSignedTx,
+        network: mockNetwork,
+        handleWaitToPost: expect.any(Function)
+      })
 
       expect(mockDispatch).toHaveBeenCalledWith(
         updateRequestStatus({
