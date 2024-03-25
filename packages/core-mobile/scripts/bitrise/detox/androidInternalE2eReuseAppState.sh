@@ -5,9 +5,10 @@ set -o pipefail
 
 yarn start &
 
-npm rebuild detox & sleep 999999999
+npm rebuild detox
 
 adb install -r $BITRISE_TEST_APK_PATH
+adb install -r $BITRISE_APK_PATH & sleep 999999999
 
 ./node_modules/.bin/detox test --listTests --configuration android.internal.release.smoke.reuse_state.ci 
 
