@@ -20,9 +20,7 @@ describe('Add custom network', () => {
       NetworksManagePage.networkNotAvailableToast,
       60000
     )
-    if (Actions.platform() === 'ios') {
-      await commonElsPage.tapBackButton()
-    }
+    await commonElsPage.tapBackButton()
     await NetworksManagePage.switchToAvalancheNetwork()
   })
 
