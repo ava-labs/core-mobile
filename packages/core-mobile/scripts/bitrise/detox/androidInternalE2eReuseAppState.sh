@@ -12,7 +12,7 @@ adb install -r $BITRISE_APK_PATH
 
 ./node_modules/.bin/detox test --listTests --configuration android.internal.release.smoke.reuse_state.ci 
 
-QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test --configuration android.internal.release.smoke.reuse_state.ci --headless; test_result=$?
+QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test $TESTS_TO_RUN --configuration android.internal.release.smoke.reuse_state.ci --headless; test_result=$?
 
 echo "sleeping for debug for 999999 seconds"
 
