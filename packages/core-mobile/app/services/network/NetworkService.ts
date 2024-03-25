@@ -15,7 +15,7 @@ import {
 } from '@avalabs/chains-sdk'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { Transaction } from '@sentry/types'
-import { avaxSerial } from '@avalabs/avalanchejs-v2'
+import { avaxSerial } from '@avalabs/avalanchejs'
 import { TransactionResponse } from 'ethers'
 import { getBitcoinProvider, getEvmProvider } from './utils/providerUtils'
 

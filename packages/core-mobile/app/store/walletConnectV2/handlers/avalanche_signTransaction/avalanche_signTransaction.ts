@@ -8,7 +8,7 @@ import {
   UnsignedTx,
   utils,
   VM
-} from '@avalabs/avalanchejs-v2'
+} from '@avalabs/avalanchejs'
 import { ethErrors } from 'eth-rpc-errors'
 import { selectActiveAccount } from 'store/account'
 import networkService from 'services/network/NetworkService'

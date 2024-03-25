@@ -19,7 +19,7 @@ import {
   getEvmAddressFromPubKey
 } from '@avalabs/wallets-sdk'
 import { sha256 } from '@noble/hashes/sha256'
-import { EVM, hexToBuffer } from '@avalabs/avalanchejs-v2'
+import { EVM, utils } from '@avalabs/avalanchejs'
 import {
   SignTypedDataVersion,
   TypedDataUtils,
@@ -236,7 +236,7 @@ export default class SeedlessWallet implements Wallet {
       )
     })
 
-    transaction.tx.addSignature(hexToBuffer(response.data().signature))
+    transaction.tx.addSignature(utils.hexToBuffer(response.data().signature))
 
     return JSON.stringify(transaction.tx.toJSON())
   }

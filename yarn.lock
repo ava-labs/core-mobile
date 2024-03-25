@@ -29,18 +29,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/avalanchejs-v2@npm:1.4.0-alpha.34":
-  version: 1.4.0-alpha.34
-  resolution: "@avalabs/avalanchejs-v2@npm:1.4.0-alpha.34"
-  dependencies:
-    "@noble/hashes": 1.3.3
-    "@noble/secp256k1": 2.0.0
-    "@scure/base": 1.1.5
-    micro-eth-signer: 0.7.2
-  checksum: 8ea8ecd346a4a55057232a479e5834fc9761d88e2766fe954fda9374b7e00ded28f4f0ab7b5eba11841562fcd9936aa6b594cf74a62c2c286cac2989233f5d5c
-  languageName: node
-  linkType: hard
-
 "@avalabs/avalanchejs@npm:4.0.5":
   version: 4.0.5
   resolution: "@avalabs/avalanchejs@npm:4.0.5"
@@ -104,7 +92,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@avalabs/core-mobile@workspace:packages/core-mobile"
   dependencies:
-    "@avalabs/avalanchejs-v2": 1.4.0-alpha.34
+    "@avalabs/avalanchejs": 4.0.5
     "@avalabs/bridge-sdk": 2.8.0-canary.3895003.0
     "@avalabs/bridge-unified": 2.1.0
     "@avalabs/chains-sdk": 2.8.0-canary.3895003.0

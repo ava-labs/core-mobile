@@ -1,4 +1,4 @@
-import { pvm } from '@avalabs/avalanchejs-v2'
+import { pvm } from '@avalabs/avalanchejs'
 import {
   AVALANCHE_MAINNET_API_URL,
   AVALANCHE_TESTNET_API_URL
