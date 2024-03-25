@@ -509,7 +509,7 @@ workflows:
     - USE_SEEDLESS_GAMMA: "true"
       opts:
         is_expand: false
-    - POST_TO_TESTRAIL: "true"
+    - POST_TO_TESTRAIL: "false"
       opts:
         is_expand: false
     steps:
@@ -556,7 +556,7 @@ workflows:
     - USE_SEEDLESS_GAMMA: "true"
       opts:
         is_expand: false
-    - POST_TO_TESTRAIL: "true"
+    - POST_TO_TESTRAIL: "false"
       opts:
         is_expand: false
     steps:
@@ -603,7 +603,7 @@ workflows:
     - USE_SEEDLESS_GAMMA: "true"
       opts:
         is_expand: false
-    - POST_TO_TESTRAIL: "true"
+    - POST_TO_TESTRAIL: "false"
       opts:
         is_expand: false
     steps:
@@ -647,7 +647,7 @@ workflows:
     - USE_SEEDLESS_GAMMA: "true"
       opts:
         is_expand: false
-    - POST_TO_TESTRAIL: "true"
+    - POST_TO_TESTRAIL: "false"
       opts:
         is_expand: false
     steps:
