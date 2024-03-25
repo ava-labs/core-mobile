@@ -10,6 +10,10 @@ class AccountManagePage {
     return by.text(accountManage.account)
   }
 
+  get accountOne() {
+    return by.text(accountManage.accountOne)
+  }
+
   get accountDropdownTitle() {
     return by.id(accountManage.accountDropdownTitle)
   }
@@ -172,7 +176,11 @@ class AccountManagePage {
       console.log('Account name is testWallet1')
     } catch (e) {
       console.log('Account name is not testWallet1')
-      await Action.tapElementAtIndex(this.editedAccount, 0)
+      try {
+        await Action.tapElementAtIndex(this.editedAccount, 0)
+      } catch (error) {
+        await Action.tapElementAtIndex(this.accountOne, 0)
+      }
     }
   }
 
