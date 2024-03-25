@@ -24,7 +24,8 @@ module.exports = {
     'inline-dotenv',
     'react-native-reanimated/plugin',
     '@babel/plugin-transform-class-static-block',
-    '@babel/plugin-transform-export-namespace-from'
+    '@babel/plugin-transform-export-namespace-from',
+    ['@babel/plugin-transform-private-methods', { loose: true }] // required by @avalabs/wallets-sdk
   ],
   overrides: [
     {
