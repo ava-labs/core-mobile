@@ -41,3 +41,7 @@ to prevent type conflicts between cubist sdk and ours
 forcing web3 to be 1.7.5 so that we can apply a patch to prevent it
 from apply promise polyfill, which breaks our app. React Native already
 supports promise out of the box
+
+### "@hpke/core": "1.2.7"
+
+@avalabs/utils-sdk depends on @hpke/core 1.2.5 while core mobile depends on 1.2.7. we need to force it to 1.2.7 so that we can apply the same patch to @hpke/core.

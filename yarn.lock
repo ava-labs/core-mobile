@@ -2987,14 +2987,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@hpke/core@npm:1.2.5":
-  version: 1.2.5
-  resolution: "@hpke/core@npm:1.2.5"
-  checksum: a0acd45b3c5080539963780640d66fb3da2f255617a60eb6d4fcf0ed54e664f59581289932ba432b378f84d4b60e28163ce4fbd829af8363e4004a81efd69dc9
-  languageName: node
-  linkType: hard
-
-"@hpke/core@npm:^1.2.7":
+"@hpke/core@npm:1.2.7":
   version: 1.2.7
   resolution: "@hpke/core@npm:1.2.7"
   checksum: 3b900e2a088bc6c3c98c13888a37fe05383d5f6d05aeac1817a7394dd19d9e1bc422b1fc1228cff9b74b21c4785ca9ee084e006eb3a2d439532f051f1ca3603e
