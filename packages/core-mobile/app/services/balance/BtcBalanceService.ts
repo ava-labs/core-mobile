@@ -19,6 +19,7 @@ export class BtcBalanceService implements BalanceServiceProvider {
     return network.vmName === NetworkVMType.BITCOIN
   }
 
+  // eslint-disable-next-line max-params
   async getBalances(
     network: Network,
     userAddress: string,
@@ -47,7 +48,7 @@ export class BtcBalanceService implements BalanceServiceProvider {
         )
         const denomination = networkToken.decimals
         const { balance: balanceSatoshis, utxos } =
-          await provider.getUtxoBalance(userAddress)
+          await provider.getUtxoBalance(userAddress, false)
         const balanceBig = satoshiToBtc(balanceSatoshis)
         const balanceNum = balanceBig.toNumber()
         const balance = bigToBN(balanceBig, denomination)
