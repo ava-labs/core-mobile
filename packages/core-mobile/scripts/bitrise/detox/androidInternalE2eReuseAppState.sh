@@ -9,9 +9,11 @@ npm rebuild detox
 
 adb install -r $BITRISE_TEST_APK_PATH
 
-./node_modules/.bin/detox test --listTests --configuration android.internal.release.smoke.reuse_state.ci && sleep 999999999
+./node_modules/.bin/detox test --listTests --configuration android.internal.release.smoke.reuse_state.ci 
 
 QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test --configuration android.internal.release.smoke.reuse_state.ci --headless --loglevel trace; test_result=$?
+
+sleep 999999
 
 if ((test_result != 0)); then
   exit 1
