@@ -7,6 +7,8 @@ yarn start &
 
 npm rebuild detox
 
+envman add --key POST_TO_TESTRAIL --value false
+
 adb install -r $BITRISE_TEST_APK_PATH
 adb install -r $BITRISE_APK_PATH
 
