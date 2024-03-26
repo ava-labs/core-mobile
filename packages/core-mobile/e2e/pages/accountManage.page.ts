@@ -59,7 +59,7 @@ class AccountManagePage {
   }
 
   async tapAccountDropdownTitle() {
-    await Action.tap(this.accountDropdownTitle)
+    await Action.tapElementAtIndex(this.accountDropdownTitle, 0)
   }
 
   async tapFourthAccount() {
@@ -103,7 +103,6 @@ class AccountManagePage {
   }
 
   async createAccount(accountNumber: number) {
-    await this.tapAccountDropdownTitle()
     await this.tapAddEditAccounts()
     for (let i = 0; i < accountNumber - 1; i++) {
       await this.tapAddAccountButton()
