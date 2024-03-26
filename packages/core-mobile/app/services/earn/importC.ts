@@ -5,7 +5,7 @@ import WalletService from 'services/wallet/WalletService'
 import NetworkService from 'services/network/NetworkService'
 import { Account } from 'store/account'
 import { AvalancheTransactionRequest } from 'services/wallet/types'
-import { UnsignedTx } from '@avalabs/avalanchejs-v2'
+import { UnsignedTx } from '@avalabs/avalanchejs'
 import { Avax } from 'types/Avax'
 import { FundsStuckError } from 'hooks/earn/errors'
 import {

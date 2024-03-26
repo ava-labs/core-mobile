@@ -46,7 +46,7 @@ export const convertTransaction = ({
     isIncoming: !item.isSender,
     isOutgoing: item.isSender,
     isContractCall: false,
-    timestamp: new Date(item.receivedTime).getTime(),
+    timestamp: new Date(item.receivedTime * 1000).getTime(),
     hash: item.hash,
     amount: bitcoinAmount(item.amount, denomination),
     isSender: item.isSender,

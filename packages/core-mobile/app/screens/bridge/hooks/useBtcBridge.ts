@@ -6,7 +6,7 @@ import {
   Blockchain,
   btcToSatoshi,
   getBtcAsset,
-  getBtcTransaction,
+  getBtcTransactionDetails,
   satoshiToBtc,
   useBridgeSDK
 } from '@avalabs/bridge-sdk'
@@ -14,7 +14,10 @@ import { useBridgeContext } from 'contexts/BridgeContext'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { getBtcBalance } from 'screens/bridge/hooks/getBtcBalance'
 import { AssetBalance } from 'screens/bridge/utils/types'
-import { BitcoinInputUTXO, getMaxTransferAmount } from '@avalabs/wallets-sdk'
+import {
+  BitcoinInputUTXOWithOptionalScript,
+  getMaxTransferAmount
+} from '@avalabs/wallets-sdk'
 import { NetworkFee } from 'services/networkFee/types'
 import networkFeeService from 'services/networkFee/NetworkFeeService'
 import walletService from 'services/wallet/WalletService'
@@ -35,6 +38,7 @@ import {
 import { Btc } from 'types/Btc'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { getErrorMessage } from 'utils/getErrorMessage'
+import { useBitcoinProvider } from 'hooks/networkProviderHooks'
 
 export function useBtcBridge(amountInBtc: Big, fee: number): BridgeAdapter {
   const activeNetwork = useSelector(selectActiveNetwork)
@@ -56,10 +60,11 @@ export function useBtcBridge(amountInBtc: Big, fee: number): BridgeAdapter {
     currentBlockchain,
     targetBlockchain
   )
+  const bitcoinProvider = useBitcoinProvider()
 
   const [btcBalance, setBtcBalance] = useState<AssetBalance>()
   const [btcBalanceAvalanche, setBtcBalanceAvalanche] = useState<AssetBalance>()
-  const [utxos, setUtxos] = useState<BitcoinInputUTXO[]>()
+  const [utxos, setUtxos] = useState<BitcoinInputUTXOWithOptionalScript[]>()
   const [feeRates, setFeeRates] = useState<NetworkFee<Btc> | undefined>()
   const [networkFee, setNetworkFee] = useState<Big>(BIG_ZERO)
   const [receiveAmount, setReceiveAmount] = useState<Big>(BIG_ZERO)
@@ -156,7 +161,7 @@ export function useBtcBridge(amountInBtc: Big, fee: number): BridgeAdapter {
     }
 
     try {
-      const transaction = getBtcTransaction(
+      const transaction = getBtcTransactionDetails(
         bridgeConfig,
         btcAddress,
         utxos,
@@ -204,7 +209,7 @@ export function useBtcBridge(amountInBtc: Big, fee: number): BridgeAdapter {
 
     const timestamp = Date.now()
     const symbol = currentAsset || ''
-    const { inputs, outputs } = getBtcTransaction(
+    const { inputs, outputs } = getBtcTransactionDetails(
       bridgeConfig,
       btcAddress,
       utxos,
@@ -212,9 +217,11 @@ export function useBtcBridge(amountInBtc: Big, fee: number): BridgeAdapter {
       fee
     )
 
+    const inputsWithScripts = await bitcoinProvider.getScriptsForUtxos(inputs)
+
     const [signedTx, error] = await resolve(
       walletService.sign(
-        { inputs, outputs },
+        { inputs: inputsWithScripts, outputs },
         activeAccount.index,
         bitcoinNetwork
       )
@@ -260,8 +267,9 @@ export function useBtcBridge(amountInBtc: Big, fee: number): BridgeAdapter {
     amountInSatoshis,
     fee,
     currentAsset,
-    amountInBtc,
-    createBridgeTransaction
+    bitcoinProvider,
+    createBridgeTransaction,
+    amountInBtc
   ])
 
   return {

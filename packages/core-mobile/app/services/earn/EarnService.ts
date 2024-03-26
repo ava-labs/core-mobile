@@ -12,7 +12,7 @@ import {
   AvalancheTransactionRequest
 } from 'services/wallet/types'
 import NetworkService from 'services/network/NetworkService'
-import { UnsignedTx } from '@avalabs/avalanchejs-v2'
+import { UnsignedTx } from '@avalabs/avalanchejs'
 import Logger from 'utils/Logger'
 import { Avalanche } from '@avalabs/wallets-sdk'
 import { retry, RetryBackoffPolicy } from 'utils/js/retry'
@@ -26,7 +26,7 @@ import { getUnixTime } from 'date-fns'
 import {
   GetCurrentSupplyResponse,
   GetCurrentValidatorsResponse
-} from '@avalabs/avalanchejs-v2/dist/vms/pvm'
+} from '@avalabs/avalanchejs/dist/vms/pvm'
 import { Seconds } from 'types/siUnits'
 import {
   BlockchainId,
@@ -37,7 +37,7 @@ import {
 } from '@avalabs/glacier-sdk'
 import { Avax } from 'types/Avax'
 import { getInfoApi } from 'utils/network/info'
-import { GetPeersResponse } from '@avalabs/avalanchejs-v2/dist/info/model'
+import { GetPeersResponse } from '@avalabs/avalanchejs/dist/info/model'
 import { isOnGoing } from 'utils/earn/status'
 import { glacierApi } from 'utils/network/glacier'
 import AnalyticsService from 'services/analytics/AnalyticsService'

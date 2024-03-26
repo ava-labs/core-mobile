@@ -1,6 +1,6 @@
 import {
   Avalanche,
-  BlockCypherProvider,
+  BitcoinProvider,
   JsonRpcBatchInternal
 } from '@avalabs/wallets-sdk'
 import {
@@ -15,7 +15,7 @@ import {
 } from '@avalabs/chains-sdk'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { Transaction } from '@sentry/types'
-import { avaxSerial } from '@avalabs/avalanchejs-v2'
+import { avaxSerial } from '@avalabs/avalanchejs'
 import { TransactionResponse } from 'ethers'
 import { getBitcoinProvider, getEvmProvider } from './utils/providerUtils'
 
@@ -34,7 +34,7 @@ class NetworkService {
 
   getProviderForNetwork(
     network: Network
-  ): JsonRpcBatchInternal | BlockCypherProvider | Avalanche.JsonRpcProvider {
+  ): JsonRpcBatchInternal | BitcoinProvider | Avalanche.JsonRpcProvider {
     if (network.vmName === NetworkVMType.BITCOIN) {
       return getBitcoinProvider(network.isTestnet)
     }
@@ -86,8 +86,8 @@ class NetworkService {
             const tx = await provider.broadcastTransaction(signedTx)
             handleWaitToPost?.(tx)
             txID = tx.hash
-          } else if (provider instanceof BlockCypherProvider) {
-            txID = (await provider.issueRawTx(signedTx)).hash
+          } else if (provider instanceof BitcoinProvider) {
+            txID = await provider.issueRawTx(signedTx)
           }
         }
 

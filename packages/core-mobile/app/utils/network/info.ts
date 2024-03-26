@@ -1,4 +1,4 @@
-import { Info } from '@avalabs/avalanchejs-v2'
+import { Info } from '@avalabs/avalanchejs'
 import {
   AVALANCHE_MAINNET_API_URL,
   AVALANCHE_TESTNET_API_URL
