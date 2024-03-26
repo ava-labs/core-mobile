@@ -12,17 +12,18 @@ import { PollingConfig } from 'store/balance'
 import { Networks } from 'store/network'
 import { addGlacierAPIKeyIfNeeded } from 'utils/network/glacier'
 
-const BITCOIN_NODE_PROXY_URL = `${Config.PROXY_URL}/proxy/btc`
-const BITCOIN_EXPLORER_PROXY_URL = `${Config.PROXY_URL}/proxy/btcbook`
+const BITCOIN_NODE_PROXY_URL = `${Config.PROXY_URL}/proxy/nownodes/btc`
+const BITCOIN_EXPLORER_PROXY_URL = `${Config.PROXY_URL}/proxy/nownodes/btcbook`
 
 export function getBitcoinProvider(
   isTest: boolean | undefined
 ): BitcoinProvider {
   return new BitcoinProvider(
     !isTest,
-    Config.GLACIER_API_KEY,
+    undefined,
     `${BITCOIN_EXPLORER_PROXY_URL}${isTest ? '-testnet' : ''}`,
-    `${BITCOIN_NODE_PROXY_URL}${isTest ? '-testnet' : ''}`
+    `${BITCOIN_NODE_PROXY_URL}${isTest ? '-testnet' : ''}`,
+    Config.GLACIER_API_KEY ? { token: Config.GLACIER_API_KEY } : {}
   )
 }
 
