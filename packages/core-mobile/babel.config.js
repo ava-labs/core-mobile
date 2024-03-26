@@ -24,12 +24,11 @@ module.exports = {
     'inline-dotenv',
     'react-native-reanimated/plugin',
     '@babel/plugin-transform-class-static-block',
-    '@babel/plugin-transform-export-namespace-from',
-    ['@babel/plugin-transform-private-methods', { loose: true }] // required by @avalabs/wallets-sdk
+    '@babel/plugin-transform-export-namespace-from'
   ],
   overrides: [
     {
-      include: /node_modules\/(@tanstack|ethers)/,
+      include: /node_modules\/(@tanstack|ethers|@avalabs\/wallets-sdk)/,
       plugins: [['@babel/plugin-transform-private-methods', { loose: true }]]
     }
   ]
