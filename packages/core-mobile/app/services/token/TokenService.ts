@@ -29,7 +29,7 @@ import Logger from 'utils/Logger'
 import {
   ChartData,
   CoinMarket,
-  Error,
+  Error as CoingeckoError,
   GetMarketsParams,
   PriceWithMarketData,
   SimplePriceResponse,
@@ -436,7 +436,7 @@ export class TokenService {
   private async fetchCoinInfo(
     coingeckoId: string,
     useCoingeckoProxy = false
-  ): Promise<CoinsInfoResponse | Error> {
+  ): Promise<CoinsInfoResponse | CoingeckoError> {
     if (useCoingeckoProxy) {
       return coingeckoProxyClient.marketDataByCoinId(undefined, {
         params: {
@@ -445,7 +445,7 @@ export class TokenService {
       })
     }
     return coinsInfo(coingeckoBasicClient, {
-      assetPlatformId: coingeckoId
+      coinId: coingeckoId
     })
   }
 
@@ -459,7 +459,7 @@ export class TokenService {
     currency: VsCurrencyType
     days?: number
     useCoingeckoProxy?: boolean
-  }): Promise<ChartData | Error | undefined> {
+  }): Promise<ChartData | CoingeckoError | undefined> {
     let rawData: ContractMarketChartResponse | undefined
     if (useCoingeckoProxy) {
       rawData = await coingeckoProxyClient.marketChartByCoinId(undefined, {
@@ -473,7 +473,7 @@ export class TokenService {
       })
     } else {
       rawData = await coinsMarketChart(coingeckoBasicClient, {
-        assetPlatformId: coingeckoId,
+        coinId: coingeckoId,
         currency,
         days
       })
@@ -489,7 +489,7 @@ export class TokenService {
     page,
     useCoingeckoProxy = false
   }: GetMarketsParams & { useCoingeckoProxy?: boolean }): Promise<
-    CoinMarket[] | Error
+    CoinMarket[] | CoingeckoError
   > {
     if (useCoingeckoProxy) {
       return coingeckoProxyClient.coinsMarket(undefined, {
@@ -520,7 +520,7 @@ export class TokenService {
     lastUpdated = false,
     useCoingeckoProxy = false
   }: SimplePriceParams & { useCoingeckoProxy?: boolean }): Promise<
-    SimplePriceResponse | Error
+    SimplePriceResponse | CoingeckoError
   > {
     if (useCoingeckoProxy) {
       const rawData = await coingeckoProxyClient.simplePrice(undefined, {
@@ -549,7 +549,7 @@ export class TokenService {
   private async searchCoins(
     query: string,
     useCoingeckoProxy = false
-  ): Promise<CoinsSearchResponse | Error> {
+  ): Promise<CoinsSearchResponse | CoingeckoError> {
     if (useCoingeckoProxy) {
       return coingeckoProxyClient.searchCoins(undefined, {
         queries: {
@@ -572,7 +572,7 @@ export class TokenService {
     tokenAddresses: string[]
     currency: VsCurrencyType
     useCoingeckoProxy?: boolean
-  }): Promise<SimplePriceResponse | Error> {
+  }): Promise<SimplePriceResponse | CoingeckoError> {
     if (useCoingeckoProxy) {
       return coingeckoProxyClient.simplePriceByContractAddresses(undefined, {
         params: {

@@ -1,5 +1,5 @@
 import { NetworkContractToken, NetworkToken } from '@avalabs/chains-sdk'
-import { BitcoinInputUTXO } from '@avalabs/wallets-sdk'
+import { BitcoinInputUTXOWithOptionalScript } from '@avalabs/wallets-sdk'
 import BN from 'bn.js'
 
 export type LocalTokenId = string
@@ -18,7 +18,7 @@ type TokenBalanceData = {
   balanceDisplayValue: string
   balanceCurrencyDisplayValue: string
   priceInCurrency: number
-  utxos?: BitcoinInputUTXO[]
+  utxos?: BitcoinInputUTXOWithOptionalScript[]
 }
 
 type TokenMarketData = {

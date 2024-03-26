@@ -1,4 +1,4 @@
-import { AVM, EVM, PVM, VM } from '@avalabs/avalanchejs-v2'
+import { AVM, EVM, PVM, VM } from '@avalabs/avalanchejs'
 import { Account } from 'store/account/types'
 
 export function getAddressByVM(

@@ -12,14 +12,14 @@ import { BytesLike, TransactionRequest, getBytes, hashMessage } from 'ethers'
 import { networks } from 'bitcoinjs-lib'
 import {
   Avalanche,
-  BlockCypherProvider,
+  BitcoinProvider,
   JsonRpcBatchInternal,
   createPsbt,
   getBtcAddressFromPubKey,
   getEvmAddressFromPubKey
 } from '@avalabs/wallets-sdk'
 import { sha256 } from '@noble/hashes/sha256'
-import { EVM, hexToBuffer } from '@avalabs/avalanchejs-v2'
+import { EVM, utils } from '@avalabs/avalanchejs'
 import {
   SignTypedDataVersion,
   TypedDataUtils,
@@ -176,7 +176,7 @@ export default class SeedlessWallet implements Wallet {
     provider
   }: {
     transaction: BtcTransactionRequest
-    provider: BlockCypherProvider
+    provider: BitcoinProvider
   }): Promise<string> {
     const btcNetwork = provider.getNetwork()
     const psbt = createPsbt(transaction.inputs, transaction.outputs, btcNetwork)
@@ -236,7 +236,7 @@ export default class SeedlessWallet implements Wallet {
       )
     })
 
-    transaction.tx.addSignature(hexToBuffer(response.data().signature))
+    transaction.tx.addSignature(utils.hexToBuffer(response.data().signature))
 
     return JSON.stringify(transaction.tx.toJSON())
   }

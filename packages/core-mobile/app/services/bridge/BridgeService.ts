@@ -9,7 +9,7 @@ import {
   estimateGas,
   EthereumConfigAsset,
   fetchConfig,
-  getBtcTransaction,
+  getBtcTransactionDetails,
   NativeAsset,
   setBridgeEnvironment,
   transferAsset as transferAssetSDK
@@ -101,7 +101,7 @@ export class BridgeService {
 
     const utxos = token?.utxos ?? []
 
-    const { inputs, outputs } = getBtcTransaction(
+    const { inputs, outputs } = getBtcTransactionDetails(
       config,
       btcAddress,
       utxos,
@@ -109,9 +109,11 @@ export class BridgeService {
       Number(maxFeePerGas)
     )
 
+    const inputsWithScripts = await provider.getScriptsForUtxos(inputs)
+
     try {
       const signedTx = await WalletService.sign(
-        { inputs, outputs },
+        { inputs: inputsWithScripts, outputs },
         activeAccount.index,
         bitcoinNetwork
       )
@@ -236,7 +238,7 @@ export class BridgeService {
       // which is what we need to have the dynamic fee calculations in the UI.
       // Think of the byteLength as gasLimit for EVM transactions.
       const feeRate = 1
-      const { fee: byteLength } = getBtcTransaction(
+      const { fee: byteLength } = getBtcTransactionDetails(
         config,
         activeAccount.addressBtc,
         token?.utxos ?? [],

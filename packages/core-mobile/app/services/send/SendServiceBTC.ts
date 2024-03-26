@@ -142,6 +142,7 @@ class SendServiceBTC implements SendServiceHelper {
       })
   }
 
+  // eslint-disable-next-line max-params
   private async getBalance(
     isMainnet: boolean,
     address: string,
@@ -151,6 +152,7 @@ class SendServiceBTC implements SendServiceHelper {
     balance: number
     utxos: BitcoinInputUTXO[]
   }> {
+    const provider = getBitcoinProvider(!isMainnet)
     const token = await balanceService.getBalancesForAddress(
       isMainnet ? BITCOIN_NETWORK : BITCOIN_TEST_NETWORK,
       address,
@@ -158,9 +160,13 @@ class SendServiceBTC implements SendServiceHelper {
       sentryTrx
     )
 
+    const utxosWithScripts = await provider.getScriptsForUtxos(
+      token?.[0]?.utxos || []
+    )
+
     return {
       balance: token?.[0]?.balance.toNumber() || 0,
-      utxos: token?.[0]?.utxos || []
+      utxos: utxosWithScripts
     }
   }
 
