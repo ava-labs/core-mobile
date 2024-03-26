@@ -1,4 +1,4 @@
-import { BlockCypherProvider, JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
+import { BitcoinProvider, JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
 import { useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import {
@@ -18,7 +18,7 @@ export function useEthereumProvider(): JsonRpcBatchInternal | undefined {
   )
 }
 
-export function useBitcoinProvider(): BlockCypherProvider {
+export function useBitcoinProvider(): BitcoinProvider {
   const network = useSelector(selectActiveNetwork)
 
   return useMemo(() => getBitcoinProvider(network.isTestnet), [network])

@@ -50,6 +50,7 @@ describe('avalanche_getAccounts handler', () => {
         success: true,
         value: [
           {
+            id: '0',
             index: 0,
             name: 'Account 1',
             addressAVM: 'X-fuji1e0r9s2lf6v9mfqyy6pxrpkar8dm5jxqcvhg99n',
@@ -58,9 +59,12 @@ describe('avalanche_getAccounts handler', () => {
             addressPVM: 'P-fuji1e0r9s2lf6v9mfqyy6pxrpkar8dm5jxqcvhg99n',
             addressCoreEth: 'C-fuji1y76a8lk4ym3af4u45f7fghuqc6ftfh7l4jsrgz',
             active: true,
-            type: 'primary'
+            type: 'primary',
+            walletId: '',
+            walletType: 'mnemonic'
           },
           {
+            id: '1',
             index: 1,
             name: 'Account 2',
             addressAVM: '',
@@ -69,7 +73,9 @@ describe('avalanche_getAccounts handler', () => {
             addressCoreEth: '',
             addressPVM: '',
             active: false,
-            type: 'primary'
+            type: 'primary',
+            walletId: '',
+            walletType: 'mnemonic'
           }
         ]
       })

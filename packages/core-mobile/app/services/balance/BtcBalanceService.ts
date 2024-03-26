@@ -9,7 +9,7 @@ import { Network, NetworkVMType } from '@avalabs/chains-sdk'
 import { VsCurrencyType } from '@avalabs/coingecko-sdk'
 import { BalanceServiceProvider } from 'services/balance/types'
 import NetworkService from 'services/network/NetworkService'
-import { BlockCypherProvider, JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
+import { BitcoinProvider, JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
 import { Transaction } from '@sentry/types'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import TokenService from 'services/token/TokenService'
@@ -19,6 +19,7 @@ export class BtcBalanceService implements BalanceServiceProvider {
     return network.vmName === NetworkVMType.BITCOIN
   }
 
+  // eslint-disable-next-line max-params
   async getBalances(
     network: Network,
     userAddress: string,
@@ -31,7 +32,7 @@ export class BtcBalanceService implements BalanceServiceProvider {
         const { networkToken } = network
         const provider = NetworkService.getProviderForNetwork(
           network
-        ) as JsonRpcBatchInternal & BlockCypherProvider
+        ) as JsonRpcBatchInternal & BitcoinProvider
 
         const nativeTokenId =
           network.pricingProviders?.coingecko?.nativeTokenId ?? ''
@@ -47,7 +48,7 @@ export class BtcBalanceService implements BalanceServiceProvider {
         )
         const denomination = networkToken.decimals
         const { balance: balanceSatoshis, utxos } =
-          await provider.getUtxoBalance(userAddress)
+          await provider.getUtxoBalance(userAddress, false)
         const balanceBig = satoshiToBtc(balanceSatoshis)
         const balanceNum = balanceBig.toNumber()
         const balance = bigToBN(balanceBig, denomination)

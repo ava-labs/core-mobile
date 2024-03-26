@@ -5,7 +5,7 @@ import {
   utils,
   Credential,
   avaxSerial
-} from '@avalabs/avalanchejs-v2'
+} from '@avalabs/avalanchejs'
 import { Avalanche } from '@avalabs/wallets-sdk'
 import { RpcMethod } from 'store/walletConnectV2/types'
 import mockSession from 'tests/fixtures/walletConnect/session.json'
@@ -23,7 +23,7 @@ import {
   avalancheSignTransactionHandler
 } from './avalanche_signTransaction'
 
-jest.mock('@avalabs/avalanchejs-v2')
+jest.mock('@avalabs/avalanchejs')
 jest.mock('@avalabs/wallets-sdk')
 jest.mock('store/settings/advanced')
 jest.mock('store/account', () => {

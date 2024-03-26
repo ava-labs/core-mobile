@@ -1,4 +1,4 @@
-import { UnsignedTx } from '@avalabs/avalanchejs-v2'
+import { UnsignedTx } from '@avalabs/avalanchejs'
 import { Avax } from 'types/Avax'
 
 /**

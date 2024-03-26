@@ -5,22 +5,25 @@ import {
   Network,
   NetworkVMType
 } from '@avalabs/chains-sdk'
-import { BlockCypherProvider, JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
+import { BitcoinProvider, JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
 import { Network as EthersNetwork } from 'ethers'
 import Config from 'react-native-config'
 import { PollingConfig } from 'store/balance'
 import { Networks } from 'store/network'
 import { addGlacierAPIKeyIfNeeded } from 'utils/network/glacier'
 
-const BLOCKCYPHER_PROXY_URL = `${Config.PROXY_URL}/proxy/blockcypher`
+const BITCOIN_NODE_PROXY_URL = `${Config.PROXY_URL}/proxy/nownodes/btc`
+const BITCOIN_EXPLORER_PROXY_URL = `${Config.PROXY_URL}/proxy/nownodes/btcbook`
 
 export function getBitcoinProvider(
   isTest: boolean | undefined
-): BlockCypherProvider {
-  return new BlockCypherProvider(
+): BitcoinProvider {
+  return new BitcoinProvider(
     !isTest,
-    Config.GLACIER_API_KEY,
-    BLOCKCYPHER_PROXY_URL
+    undefined,
+    `${BITCOIN_EXPLORER_PROXY_URL}${isTest ? '-testnet' : ''}`,
+    `${BITCOIN_NODE_PROXY_URL}${isTest ? '-testnet' : ''}`,
+    Config.GLACIER_API_KEY ? { token: Config.GLACIER_API_KEY } : {}
   )
 }
 

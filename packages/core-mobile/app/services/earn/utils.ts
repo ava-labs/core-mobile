@@ -15,7 +15,7 @@ import * as Navigation from 'utils/Navigation'
 import AppNavigation from 'navigation/AppNavigation'
 import Logger from 'utils/Logger'
 import { valid, compare } from 'semver'
-import { Peer } from '@avalabs/avalanchejs-v2/dist/info/model'
+import { Peer } from '@avalabs/avalanchejs/dist/info/model'
 import { PChainTransaction } from '@avalabs/glacier-sdk'
 import EarnService from './EarnService'
 
