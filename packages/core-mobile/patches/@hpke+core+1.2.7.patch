@@ -1,5 +1,5 @@
 diff --git a/node_modules/@hpke/core/package.json b/node_modules/@hpke/core/package.json
-index b4c437b..45372c7 100644
+index b4c437b..955c504 100644
 --- a/node_modules/@hpke/core/package.json
 +++ b/node_modules/@hpke/core/package.json
 @@ -20,13 +20,13 @@
