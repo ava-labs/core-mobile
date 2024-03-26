@@ -25,53 +25,6 @@ index 16870e5..3836414 100644
            ),
          }),
        );
-diff --git a/node_modules/react-native/ReactCommon/jsi/JSCRuntime.cpp b/node_modules/react-native/ReactCommon/jsi/JSCRuntime.cpp
-index 5d8487b..37c6a49 100644
---- a/node_modules/react-native/ReactCommon/jsi/JSCRuntime.cpp
-+++ b/node_modules/react-native/ReactCommon/jsi/JSCRuntime.cpp
-@@ -285,6 +285,9 @@ class JSCRuntime : public jsi::Runtime {
- #if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_10_0
- #define _JSC_NO_ARRAY_BUFFERS
- #endif
-+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 160400
-+#define _JSC_HAS_INSPECTABLE
-+#endif
- #endif
- #if defined(__MAC_OS_X_VERSION_MIN_REQUIRED)
- #if __MAC_OS_X_VERSION_MIN_REQUIRED >= __MAC_10_11
-@@ -381,6 +384,13 @@ JSCRuntime::JSCRuntime(JSGlobalContextRef ctx)
-       stringCounter_(0)
- #endif
- {
-+#ifndef NDEBUG
-+#ifdef _JSC_HAS_INSPECTABLE
-+  if (__builtin_available(macOS 13.3, iOS 16.4, tvOS 16.4, *)) {
-+    JSGlobalContextSetInspectable(ctx_, true);
-+  }
-+#endif
-+#endif
- }
- 
- JSCRuntime::~JSCRuntime() {
-@@ -392,12 +402,12 @@ JSCRuntime::~JSCRuntime() {
-   // has started.
-   ctxInvalid_ = true;
-   JSGlobalContextRelease(ctx_);
--#ifndef NDEBUG
--  assert(
--      objectCounter_ == 0 && "JSCRuntime destroyed with a dangling API object");
--  assert(
--      stringCounter_ == 0 && "JSCRuntime destroyed with a dangling API string");
--#endif
-+// #ifndef NDEBUG
-+//   assert(
-+//       objectCounter_ == 0 && "JSCRuntime destroyed with a dangling API object");
-+//   assert(
-+//       stringCounter_ == 0 && "JSCRuntime destroyed with a dangling API string");
-+// #endif
- }
- 
- std::shared_ptr<const jsi::PreparedJavaScript> JSCRuntime::prepareJavaScript(
 diff --git a/node_modules/react-native/index.js b/node_modules/react-native/index.js
 index d59ba34..3f51111 100644
 --- a/node_modules/react-native/index.js
