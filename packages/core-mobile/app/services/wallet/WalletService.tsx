@@ -1,6 +1,6 @@
 import {
   Avalanche,
-  BlockCypherProvider,
+  BitcoinProvider,
   JsonRpcBatchInternal
 } from '@avalabs/wallets-sdk'
 import {
@@ -20,7 +20,7 @@ import { Transaction as SentryTransaction } from '@sentry/types'
 import { Account } from 'store/account'
 import { RpcMethod } from 'store/walletConnectV2/types'
 import Logger from 'utils/Logger'
-import { UnsignedTx, utils } from '@avalabs/avalanchejs-v2'
+import { UnsignedTx, utils } from '@avalabs/avalanchejs'
 import { fromUnixTime, getUnixTime } from 'date-fns'
 import { getMinimumStakeEndTime } from 'services/earn/utils'
 import { Avax } from 'types/Avax'
@@ -63,6 +63,7 @@ class WalletService {
     this.walletType = walletType
   }
 
+  // eslint-disable-next-line max-params
   public async sign(
     transaction: SignTransactionRequest,
     accountIndex: number,
@@ -79,7 +80,7 @@ class WalletService {
         )
 
         if (isBtcTransactionRequest(transaction)) {
-          if (!(provider instanceof BlockCypherProvider))
+          if (!(provider instanceof BitcoinProvider))
             throw new Error(
               'Unable to sign btc transaction: wrong provider obtained'
             )

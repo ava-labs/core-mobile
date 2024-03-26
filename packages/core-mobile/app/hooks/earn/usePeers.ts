@@ -1,4 +1,4 @@
-import { Peer } from '@avalabs/avalanchejs-v2/dist/info/model'
+import { Peer } from '@avalabs/avalanchejs/dist/info/model'
 import { UseQueryResult, useQuery } from '@tanstack/react-query'
 import { useSelector } from 'react-redux'
 import EarnService from 'services/earn/EarnService'

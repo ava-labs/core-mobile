@@ -1,4 +1,4 @@
-import { BlockCypherProvider } from '@avalabs/wallets-sdk'
+import { BitcoinProvider } from '@avalabs/wallets-sdk'
 import NetworkService from 'services/network/NetworkService'
 import { Transaction } from 'store/transaction'
 import { GetActivitiesForAddressParams, NetworkActivityService } from './types'
@@ -14,8 +14,8 @@ export class BtcActivityService implements NetworkActivityService {
   }> {
     const provider = NetworkService.getProviderForNetwork(
       network
-    ) as BlockCypherProvider
-    const response = await provider.getTxHistory(address, { limit: 50 }) // TODO support pagination
+    ) as BitcoinProvider
+    const response = await provider.getTxHistory(address) // returns the 25 most reacent transactions
 
     const bitcoinWalletAddresses =
       criticalConfig?.criticalBitcoin?.walletAddresses

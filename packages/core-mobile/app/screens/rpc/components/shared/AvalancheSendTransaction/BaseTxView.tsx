@@ -6,11 +6,11 @@ import { Row } from 'components/Row'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import Card from 'components/Card'
 import { bigIntToString } from '@avalabs/utils-sdk'
-import { GetAssetDescriptionResponse } from '@avalabs/avalanchejs-v2/dist/vms/common'
 import Separator from 'components/Separator'
 import { truncateAddress } from 'utils/Utils'
 import { Avalanche } from '@avalabs/wallets-sdk'
 import { AvalancheChainStrings } from 'store/walletConnectV2/handlers/types'
+import { GetAssetDescriptionResponse } from '@avalabs/avalanchejs/dist/vms/common'
 import { TxFee } from './components/TxFee'
 
 const BaseTxView = ({ tx }: { tx: Avalanche.BaseTx }): JSX.Element => {

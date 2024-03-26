@@ -28,7 +28,7 @@ module.exports = {
   ],
   overrides: [
     {
-      include: /node_modules\/(@tanstack|ethers)/,
+      include: /node_modules\/(@tanstack|ethers|@avalabs\/wallets-sdk)/,
       plugins: [['@babel/plugin-transform-private-methods', { loose: true }]]
     }
   ]

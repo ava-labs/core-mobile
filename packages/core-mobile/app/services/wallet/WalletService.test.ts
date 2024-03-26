@@ -1,7 +1,7 @@
 import { AddDelegatorProps, WalletType } from 'services/wallet/types'
 import WalletService from 'services/wallet/WalletService'
 import { add, getUnixTime, sub } from 'date-fns'
-import { Utxo } from '@avalabs/avalanchejs-v2'
+import { Utxo } from '@avalabs/avalanchejs'
 import { AVALANCHE_XP_TEST_NETWORK } from '@avalabs/chains-sdk'
 import { Avax } from 'types/Avax'
 import { PChainId } from '@avalabs/glacier-sdk'

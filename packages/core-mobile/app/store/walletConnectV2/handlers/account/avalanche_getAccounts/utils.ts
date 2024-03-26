@@ -1,4 +1,4 @@
-import { CoreAccountType, CorePrimaryAccount } from '@avalabs/types'
+import { CoreAccountType, CorePrimaryAccount, WalletType } from '@avalabs/types'
 import { Account } from 'store/account'
 
 export const mapAccountToCoreWebAccount = (
@@ -13,5 +13,8 @@ export const mapAccountToCoreWebAccount = (
   addressPVM: account.addressPVM ?? '',
   addressCoreEth: account.addressCoreEth ?? '',
   active: account.index === activeIndex,
+  walletType: WalletType.Mnemonic,
+  walletId: '',
+  id: account.index.toString(),
   type: CoreAccountType.PRIMARY
 })

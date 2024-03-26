@@ -1,7 +1,7 @@
 import {
   Avalanche,
   BitcoinWallet,
-  BlockCypherProvider,
+  BitcoinProvider,
   DerivationPath,
   JsonRpcBatchInternal,
   getAddressDerivationPath,
@@ -46,7 +46,7 @@ export class MnemonicWallet implements Wallet {
 
   private async getBtcSigner(
     accountIndex: number,
-    provider: BlockCypherProvider
+    provider: BitcoinProvider
   ): Promise<BitcoinWallet> {
     Logger.info('btcWallet', now())
     const btcWallet = await BitcoinWallet.fromMnemonic(
@@ -91,16 +91,13 @@ export class MnemonicWallet implements Wallet {
   }: {
     accountIndex: number
     network: Network
-    provider:
-      | JsonRpcBatchInternal
-      | BlockCypherProvider
-      | Avalanche.JsonRpcProvider
+    provider: JsonRpcBatchInternal | BitcoinProvider | Avalanche.JsonRpcProvider
   }): Promise<BitcoinWallet | BaseWallet | Avalanche.StaticSigner> {
     switch (network.vmName) {
       case NetworkVMType.EVM:
         return this.getEvmSigner(accountIndex)
       case NetworkVMType.BITCOIN:
-        if (!(provider instanceof BlockCypherProvider)) {
+        if (!(provider instanceof BitcoinProvider)) {
           throw new Error(
             'Unable to get signer: wrong provider obtained for BTC network'
           )
@@ -226,7 +223,7 @@ export class MnemonicWallet implements Wallet {
     accountIndex: number
     transaction: BtcTransactionRequest
     network: Network
-    provider: BlockCypherProvider
+    provider: BitcoinProvider
   }): Promise<string> {
     const signer = await this.getSigner({ accountIndex, network, provider })
 
