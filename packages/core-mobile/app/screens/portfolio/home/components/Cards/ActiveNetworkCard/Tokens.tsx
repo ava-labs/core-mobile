@@ -6,6 +6,7 @@ import Avatar from 'components/Avatar'
 import { Text, View } from '@avalabs/k2-mobile'
 import PriceChangeIndicator from 'screens/watchlist/components/PriceChangeIndicator'
 import { useGetMarketToken } from 'hooks/useGetMarketToken'
+import { Space } from 'components/Space'
 
 const Tokens = (): JSX.Element => {
   const { filteredTokenList: tokens } = useSearchableTokenList()
@@ -30,12 +31,18 @@ const Tokens = (): JSX.Element => {
       : `${balanceDisplayValue} ${symbol}`
 
     const marketToken = getMarketToken(symbol)
-    const percentChange = marketToken?.priceChangePercentage24h ?? 0
-    const priceChange = (balanceInCurrency * percentChange) / 100
+    const percentChange = marketToken?.priceChangePercentage24h ?? undefined
+    const priceChange = percentChange
+      ? (balanceInCurrency * percentChange) / 100
+      : undefined
 
     return (
       <View
-        sx={{ marginBottom, flexDirection: 'row', alignItems: 'center' }}
+        sx={{
+          marginBottom,
+          flexDirection: 'row',
+          alignItems: 'center'
+        }}
         key={index.toString()}>
         <Avatar.Token
           size={24}
@@ -43,15 +50,47 @@ const Tokens = (): JSX.Element => {
           symbol={token.symbol}
           logoUri={token.logoUri}
         />
-        <View sx={{ marginLeft: 8, marginRight: 16, flex: 1 }}>
-          <Text variant="buttonMedium">{token.name}</Text>
-          <Text variant="overline">{token.symbol}</Text>
-        </View>
-        <View sx={{ alignItems: 'flex-end' }}>
-          <Text variant="buttonMedium">{formattedBalance}</Text>
-          {percentChange !== undefined && (
-            <PriceChangeIndicator price={priceChange} percent={percentChange} />
-          )}
+        <View
+          sx={{
+            flexGrow: 1,
+            flexShrink: 1,
+            flexDirection: 'row',
+            justifyContent: 'space-between'
+          }}>
+          <View
+            sx={{
+              marginLeft: 8,
+              marginRight: 16,
+              flexShrink: 1
+            }}>
+            <Text variant="buttonMedium" numberOfLines={1}>
+              {token.name}
+            </Text>
+            <View sx={{ flexDirection: 'row', flexShrink: 1 }}>
+              <Text
+                variant="overline"
+                sx={{ color: '$neutral50' }}
+                ellipsizeMode="tail">
+                {token.balanceDisplayValue}
+              </Text>
+              <Space x={4} />
+              <Text variant="overline" numberOfLines={1} ellipsizeMode="tail">
+                {token.symbol}
+              </Text>
+            </View>
+          </View>
+          <View
+            sx={{
+              alignItems: 'flex-end',
+              flexShrink: 1
+            }}>
+            <Text variant="buttonMedium" numberOfLines={1} sx={{}}>
+              {formattedBalance}
+            </Text>
+            {priceChange !== undefined && (
+              <PriceChangeIndicator price={priceChange} />
+            )}
+          </View>
         </View>
       </View>
     )

@@ -56,8 +56,10 @@ const PortfolioListItem: FC<Props> = ({
 
   const { getMarketToken } = useGetMarketToken()
   const marketToken = getMarketToken(symbol)
-  const percentChange = marketToken?.priceChangePercentage24h ?? 0
-  const priceChange = (tokenPriceInCurrency * percentChange) / 100
+  const percentChange = marketToken?.priceChangePercentage24h ?? undefined
+  const priceChange = percentChange
+    ? (tokenPriceInCurrency * percentChange) / 100
+    : undefined
 
   return (
     <View
@@ -82,20 +84,24 @@ const PortfolioListItem: FC<Props> = ({
             size={40}
           />
         }
-        rightComponentVerticalAlignment={'center'}
         rightComponent={
           showLoading ? (
             <ActivityIndicator size="small" />
           ) : (
-            <View sx={{ alignItems: 'flex-end', marginLeft: 8 }}>
+            <View
+              sx={{
+                alignItems: 'flex-end',
+                marginLeft: 8
+              }}>
               <Text variant="heading6" ellipsizeMode={'tail'}>
                 {currencyFormatter(tokenPriceInCurrency)}
               </Text>
-              <Space y={4} />
-              <PriceChangeIndicator
-                price={priceChange}
-                percent={percentChange}
-              />
+              {priceChange !== undefined && (
+                <>
+                  <Space y={4} />
+                  <PriceChangeIndicator price={priceChange} />
+                </>
+              )}
             </View>
           )
         }
