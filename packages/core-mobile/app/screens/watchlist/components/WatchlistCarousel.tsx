@@ -115,6 +115,7 @@ const CarouselItem: FC<CarouselItemProps> = ({ token, onPress }) => {
         name={token.name}
         symbol={token.symbol}
         logoUri={token.logoUri}
+        size={24}
       />
       <Space y={4} />
       <Text variant="buttonSmall">{token?.symbol?.toUpperCase()}</Text>
