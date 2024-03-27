@@ -84,7 +84,7 @@ const Tokens = (): JSX.Element => {
               alignItems: 'flex-end',
               flexShrink: 1
             }}>
-            <Text variant="buttonMedium" numberOfLines={1} sx={{}}>
+            <Text variant="buttonMedium" numberOfLines={1}>
               {formattedBalance}
             </Text>
             {priceChange !== undefined && (

@@ -103,7 +103,7 @@ const ActiveNetworkCard = (): JSX.Element => {
             flexDirection: 'row',
             justifyContent: 'space-between'
           }}>
-          <View sx={{}}>
+          <View>
             <Text variant="heading5" ellipsizeMode="tail">
               {network.chainName}
             </Text>

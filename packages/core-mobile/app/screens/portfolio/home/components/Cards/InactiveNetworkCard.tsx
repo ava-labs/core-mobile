@@ -90,7 +90,7 @@ const InactiveNetworkCard: FC<Props> = ({ network }) => {
           )}
         </View>
         <Space y={8} />
-        <View sx={{}}>
+        <View>
           <Text
             variant="buttonLarge"
             ellipsizeMode={'tail'}
