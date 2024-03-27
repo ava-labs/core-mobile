@@ -6,9 +6,9 @@ import { Text, View, useTheme } from '@avalabs/k2-mobile'
 
 interface Props {
   price: number
-  percent: number
+  percent?: number
   isHorizontal?: boolean
-  textVariant?: 'overline' | 'buttonSmall'
+  textVariant?: 'overline' | 'buttonSmall' | 'buttonMedium'
   testID?: string
 }
 
@@ -28,14 +28,16 @@ const PriceChangeIndicator: FC<Props> = ({
     2
   )
 
-  const formattedPercent = `${isHorizontal ? ' ' : ''}${
-    percent < 0 ? '-' : '+'
-  }${Math.abs(isNaN(percent) ? 0 : percent).toFixed(2)}%`
+  const formattedPercent = percent
+    ? `${isHorizontal ? ' ' : ''}${percent < 0 ? '-' : '+'}${Math.abs(
+        isNaN(percent) ? 0 : percent
+      ).toFixed(2)}%`
+    : undefined
 
   const tintColor =
-    percent < 0
+    price < 0
       ? colors.$dangerLight
-      : percent === 0
+      : price === 0
       ? colors.$neutral400
       : colors.$successMain
 
@@ -51,7 +53,7 @@ const PriceChangeIndicator: FC<Props> = ({
       }>
       <View sx={{ flexDirection: 'row', alignItems: 'center' }}>
         <MarketTriangleSVG
-          direction={percent < 0 ? 'down' : 'up'}
+          direction={price < 0 ? 'down' : 'up'}
           color={tintColor}
         />
         <Text
@@ -63,14 +65,16 @@ const PriceChangeIndicator: FC<Props> = ({
           {formattedPrice}
         </Text>
       </View>
-      <Text
-        variant={textVariant}
-        sx={{
-          color: '$neutral400',
-          marginTop: isHorizontal ? 0 : -4
-        }}>
-        {formattedPercent}
-      </Text>
+      {formattedPercent !== undefined && (
+        <Text
+          variant={textVariant}
+          sx={{
+            color: '$neutral400',
+            marginTop: isHorizontal ? 0 : -4
+          }}>
+          {formattedPercent}
+        </Text>
+      )}
     </View>
   )
 }
