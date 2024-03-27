@@ -11,7 +11,7 @@ import { NftPageParam } from '../../../store/nft/types'
 
 // a hook to get NFTs with pagination support for the current active network & account
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-export const useNfts = () => {
+export const useNfts = (enabled: boolean) => {
   const network = useSelector(selectActiveNetwork)
   const account = useSelector(selectActiveAccount)
 
@@ -51,7 +51,7 @@ export const useNfts = () => {
         accountAddress: account?.address
       }
     ],
-    enabled: false,
+    enabled,
     retry: false,
     queryFn: fetchNfts,
     initialPageParam: {},
