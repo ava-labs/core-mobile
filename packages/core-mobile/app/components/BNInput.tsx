@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import InputText, { InputTextProps } from 'components/InputText'
 import Big from 'big.js'
 import BN from 'bn.js'
-import { BIG_ZERO, bigToBN, bnToBig } from '@avalabs/utils-sdk'
+import { bigToBN, bnToBig } from '@avalabs/utils-sdk'
 
 interface BNInputProps extends Omit<InputTextProps, 'text'> {
   value?: BN
@@ -45,11 +45,6 @@ export function BNInput({
   useEffect(() => {
     // When deleting zeros after decimal, all zeros delete without this check.
     // This also preserves zeros in the input ui.
-    if (valueBig === undefined || valueBig.eq(BIG_ZERO)) {
-      setValueAsString('')
-      return
-    }
-
     if (valueBig && (!valueAsString || !new Big(valueAsString).eq(valueBig))) {
       setValueAsString(valueBig.toString())
     }
