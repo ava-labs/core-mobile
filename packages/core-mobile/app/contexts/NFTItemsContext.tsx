@@ -202,7 +202,7 @@ export const NFTMetadataProvider = ({
       const metadataUpdatedAt = nftData?.metadata.metadataLastUpdatedTimestamp
       if (
         metadataUpdatedAt !== undefined &&
-        metadataUpdatedAt > nftReindexedAt
+        metadataUpdatedAt >= nftReindexedAt
       ) {
         setReindexedAt(prevData => {
           const newReindexedAt = { ...prevData }
