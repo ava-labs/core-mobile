@@ -1,6 +1,7 @@
 export default {
   gridItem: 'baseGridItem',
   sendButton: 'btnSecondary',
+  saveBtn: 'Save',
   addressInput: 'input_text',
   addressBook: 'address_book',
   cancelButton: 'btnSecondary',

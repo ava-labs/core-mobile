@@ -14,7 +14,7 @@ describe('Send WETH to another account', () => {
   it('Should send WETH to second account', async () => {
     await AccountManagePage.switchToFirstAccount()
     const secondAccountAddress = await AccountManagePage.createSecondAccount()
-    await AccountManagePage.tapFirstAccount()
+    // await AccountManagePage.tapFirstAccount()
     await SendPage.sendTokenTo2ndAccount(
       sendLoc.wethToken,
       sendLoc.sendingAmount

@@ -11,6 +11,10 @@ class CollectiblesPage {
     return by.id(Collectibles.sendButton)
   }
 
+  get saveBtn() {
+    return by.text(Collectibles.saveBtn)
+  }
+
   get gridItem() {
     return by.id(Collectibles.gridItem)
   }
@@ -115,6 +119,10 @@ class CollectiblesPage {
     return by.text(Collectibles.warningInsufficientFee)
   }
 
+  async tapSaveButton() {
+    await Action.tapElementAtIndex(this.saveBtn, 0)
+  }
+
   async tapAddressBook() {
     await Action.tapElementAtIndex(this.addressBook, 0)
   }
@@ -215,7 +223,9 @@ class CollectiblesPage {
 
   async inputCustomFee() {
     await Action.setInputText(this.customFeeInput, '25000000', 1)
-    await Action.tap(this.sendTitle)
+    await Action.setInputText(this.customFeeInput, '1000', 3)
+    await this.tapSaveButton()
+    await Action.tapElementAtIndex(this.sendTitle, 0)
   }
 }
 

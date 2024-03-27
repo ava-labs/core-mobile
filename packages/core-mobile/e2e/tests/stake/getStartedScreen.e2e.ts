@@ -10,7 +10,13 @@ describe('Stake get started screen', () => {
   })
 
   it('should verify get started screen on Mainnet', async () => {
-    await AccountManagePage.createAccount(4)
+    await AccountManagePage.tapAccountDropdownTitle()
+    if (!(await Actions.isVisible(AccountManagePage.fourthAccount, 0))) {
+      await AccountManagePage.createAccount(4)
+    } else {
+      await AccountManagePage.tapFourthAccount()
+      await AccountManagePage.tapAccountDropdownTitle()
+    }
     await BottomTabsPage.tapStakeTab()
     await Actions.waitForElement(GetStartedScreenPage.getStartedTitle)
     await GetStartedScreenPage.verifyGetStartedScreenItems()

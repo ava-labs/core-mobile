@@ -13,7 +13,6 @@ describe('Stake: wrong network', () => {
   })
 
   afterAll(async () => {
-    await commonElsPage.tapBackButton2()
     await networksManagePage.switchToAvalancheNetwork()
   })
 
@@ -32,11 +31,18 @@ describe('Stake: wrong network', () => {
 
   it('should verify wrong network screen (no stakes mainnet)', async () => {
     await BottomTabsPage.tapPortfolioTab()
-    await AccountManagePage.createAccount(4)
+    await AccountManagePage.tapAccountDropdownTitle()
+    if (!(await Actions.isVisible(AccountManagePage.fourthAccount, 0))) {
+      await AccountManagePage.createAccount(4)
+    } else {
+      await AccountManagePage.tapAccountDropdownTitle()
+    }
     await PortfolioPage.tapNetworksDropdown()
     await PortfolioPage.tapNetworksDropdownETH()
     await BottomTabsPage.tapStakeTab()
     await Actions.waitForElement(StakePage.switchNetworkTitle)
     await StakePage.verifySwitchNetworkScreenItems()
+    await StakePage.tapSwitchNetworkButton()
+    await commonElsPage.tapBackButton2()
   })
 })
