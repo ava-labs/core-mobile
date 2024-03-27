@@ -71,10 +71,7 @@ const InactiveNetworkCard: FC<Props> = ({ network }) => {
     const balance = currencyFormatter(totalBalance)
 
     return (
-      <View
-        sx={{
-          flexDirection: 'row'
-        }}>
+      <View>
         <View>
           <NetworkLogo
             logoUri={network.logoUri}
@@ -92,21 +89,22 @@ const InactiveNetworkCard: FC<Props> = ({ network }) => {
             />
           )}
         </View>
-        <View sx={{ flex: 1, marginLeft: 8, alignItems: 'flex-end' }}>
+        <Space y={8} />
+        <View>
           <Text
-            variant="buttonSmall"
-            sx={{ textAlign: 'right' }}
+            variant="buttonLarge"
             ellipsizeMode={'tail'}
-            numberOfLines={2}>
+            numberOfLines={2}
+            sx={{ color: '$neutral400', marginBottom: -2 }}>
             {network.chainName}
           </Text>
-          <Space y={5} />
-          <Text variant="buttonSmall" ellipsizeMode={'tail'}>
+          <Text variant="buttonLarge" ellipsizeMode={'tail'}>
             {balance}
           </Text>
+          <Space y={4} />
           <PriceChangeIndicator
             price={tokenPortfolioPriceChange}
-            percent={(tokenPortfolioPriceChange / totalBalance) * 100}
+            textVariant="buttonMedium"
           />
         </View>
       </View>

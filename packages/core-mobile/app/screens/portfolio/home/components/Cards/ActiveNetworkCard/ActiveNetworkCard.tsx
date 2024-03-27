@@ -18,10 +18,12 @@ import {
   View,
   TouchableHighlight,
   useTheme,
-  alpha
+  alpha,
+  Icons
 } from '@avalabs/k2-mobile'
 import PriceChangeIndicator from 'screens/watchlist/components/PriceChangeIndicator'
 import { useTokenPortfolioPriceChange } from 'hooks/useTokenPortfolioPriceChange'
+import { Space } from 'components/Space'
 import ZeroState from './ZeroState'
 import Tokens from './Tokens'
 
@@ -60,11 +62,8 @@ const ActiveNetworkCard = (): JSX.Element => {
     const balance = currencyFormatter(totalBalanceInCurrency)
 
     return (
-      <View
-        sx={{
-          flexDirection: 'row'
-        }}>
-        <View>
+      <View>
+        <View sx={{ flexDirection: 'row', justifyContent: 'space-between' }}>
           <NetworkLogo logoUri={network.logoUri} size={32} />
           {pendingBridgeTxs.length > 0 && (
             <TopRightBadge
@@ -76,34 +75,44 @@ const ActiveNetworkCard = (): JSX.Element => {
               offset={{ x: 3, y: 3 }}
             />
           )}
+          <View
+            sx={{
+              alignSelf: 'flex-start',
+              paddingHorizontal: 8,
+              borderRadius: 66,
+              backgroundColor: '$neutral850',
+              flexDirection: 'row',
+              alignItems: 'center'
+            }}>
+            <Icons.Navigation.Check
+              width={16}
+              height={16}
+              color={theme.colors.$successLight}
+            />
+            <Text
+              variant="overline"
+              ellipsizeMode="tail"
+              sx={{ color: '$successLight', fontWeight: '500', marginLeft: 4 }}>
+              Active
+            </Text>
+          </View>
         </View>
-        <View sx={{ flexDirection: 'row', flex: 1, alignItems: 'center' }}>
-          <View sx={{ flex: 1, marginHorizontal: 16 }}>
-            <Text variant="heading6" ellipsizeMode="tail">
+        <Space y={8} />
+        <View
+          sx={{
+            flexDirection: 'row',
+            justifyContent: 'space-between'
+          }}>
+          <View>
+            <Text variant="heading5" ellipsizeMode="tail">
               {network.chainName}
             </Text>
-            <View
-              sx={{
-                alignSelf: 'flex-start',
-                paddingHorizontal: 8,
-                borderRadius: 66,
-                backgroundColor: '$neutral850'
-              }}>
-              <Text
-                variant="overline"
-                ellipsizeMode="tail"
-                sx={{ color: '$white', fontWeight: '500' }}>
-                Active Network
-              </Text>
-            </View>
           </View>
           <View sx={{ alignItems: 'flex-end' }}>
-            <Text variant="buttonMedium">{balance}</Text>
+            <Text variant="heading6">{balance}</Text>
             <PriceChangeIndicator
               price={tokenPortfolioPriceChange}
-              percent={
-                (tokenPortfolioPriceChange / totalBalanceInCurrency) * 100
-              }
+              textVariant="buttonSmall"
             />
           </View>
         </View>
@@ -116,7 +125,7 @@ const ActiveNetworkCard = (): JSX.Element => {
       <Separator
         style={{
           height: 0.5,
-          marginVertical: 8,
+          marginVertical: 16,
           backgroundColor: theme.colors.$neutral800
         }}
       />
