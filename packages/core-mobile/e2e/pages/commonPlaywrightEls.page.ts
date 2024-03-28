@@ -15,8 +15,8 @@ class CommonElsPage {
     return this.page.getByText(commonEls.walletConnectBtn).first()
   }
 
-  get w3mWalletUri() {
-    return this.page.locator(commonEls.w3mUri)
+  get wuiQrCodeUri() {
+    return this.page.locator(commonEls.wuiQrCode)
   }
 
   get wcmWalletUri() {
@@ -31,7 +31,7 @@ class CommonElsPage {
     if (locator === 'wcm') {
       return await this.wcmWalletUri.getAttribute('uri')
     } else {
-      return await this.w3mWalletUri.getAttribute('uri')
+      return await this.wuiQrCodeUri.getAttribute('uri')
     }
   }
 

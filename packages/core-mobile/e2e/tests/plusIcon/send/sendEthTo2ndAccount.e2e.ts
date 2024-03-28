@@ -18,7 +18,7 @@ describe('Send Eth to another account', () => {
     if (process.env.PLATFORM === 'android') {
       await commonElsPage.tapBackButton2()
     } else {
-      bottomTabsPage.tapPortfolioTab()
+      await bottomTabsPage.tapPortfolioTab()
     }
     await networksManagePage.switchToAvalancheNetwork()
   })

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Command that returns the test files to be run and stores in TESTS_TO_BE_RUN
-TESTS_TO_BE_RUN=$(./node_modules/.bin/detox test --configuration android.internal.smoke.debug --listTests)
+TESTS_TO_BE_RUN=$(./node_modules/.bin/detox test --configuration android.internal.release.smoke.reuse_state.ci --listTests)
 
 # This splits the string into an array of strings based on the newline character
 IFS=$'\n' read -r -d '' -a array <<< "$TESTS_TO_BE_RUN"

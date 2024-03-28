@@ -1,7 +1,6 @@
 import fs from 'fs'
 import ReviewAndSendLoc from '../locators/scanQrCode.loc'
 import Actions from '../helpers/actions'
-import ConnectToSitePage from './connectToSite.page'
 
 class ReviewAndSend {
   get uriInputField() {
@@ -15,7 +14,6 @@ class ReviewAndSend {
   async enterQrCode() {
     const qrCode = this.getQrCode().toString()
     await Actions.setInputText(this.uriInputField, qrCode, 0)
-    await Actions.waitForElement(ConnectToSitePage.approveBtn, 10000)
   }
 }
 

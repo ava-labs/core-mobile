@@ -11,11 +11,11 @@ describe('Stake: not enough Avax', () => {
   })
 
   it('should verify not enough avax screen items on Mainnet', async () => {
-    if (process.env.SEEDLESS_TEST === 'false' || !process.env.SEEDLESS_TEST) {
-      await AccountManagePage.createAccount(4)
-    } else {
-      await AccountManagePage.tapAccountDropdownTitle()
+    await AccountManagePage.tapAccountDropdownTitle()
+    if (await Actions.isVisible(AccountManagePage.fourthAccount, 0)) {
       await AccountManagePage.tapFourthAccount()
+    } else {
+      await AccountManagePage.createAccount(4)
     }
     await BottomTabsPage.tapStakeTab()
     await GetStartedScreenPage.tapNextButton()
