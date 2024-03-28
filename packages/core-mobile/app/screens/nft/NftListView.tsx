@@ -22,14 +22,14 @@ export default function NftListView({
   onItemSelected,
   onManagePressed
 }: Props): JSX.Element {
-  const { refetchNfts: refetch } = useNftItemsContext()
+  const { setNftsLoadEnabled } = useNftItemsContext()
 
   const [listType, setListType] = useState<ListType>()
   const { theme } = useApplicationContext()
 
   useEffect(() => {
-    refetch()
-  }, [refetch])
+    setNftsLoadEnabled(true)
+  }, [setNftsLoadEnabled])
 
   return (
     <View style={styles.container}>
