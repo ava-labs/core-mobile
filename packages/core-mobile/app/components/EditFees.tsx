@@ -144,7 +144,7 @@ const EditFees = ({
     }
   }
 
-  const saveDisabled = !!feeError || newFees.gasLimit === 0
+  const saveDisabled = !!feeError || (newFees.gasLimit === 0 && !isBtcNetwork)
 
   const sanitized = (text: string): string => text.replace(/[^0-9]/g, '')
 
