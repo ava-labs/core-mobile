@@ -23,6 +23,7 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { Button, Text, View } from '@avalabs/k2-mobile'
 import { useSelector } from 'react-redux'
 import { selectActiveNetwork } from 'store/network'
+import { NetworkVMType } from '@avalabs/chains-sdk'
 
 type NavigationProp = SendTokensScreenProps<
   typeof AppNavigation.Send.Review
@@ -38,6 +39,7 @@ export default function ReviewSend({
     appHook: { currencyFormatter }
   } = useApplicationContext()
   const activeNetwork = useSelector(selectActiveNetwork)
+  const isBtcNetwork = Boolean(activeNetwork?.vmName === NetworkVMType.BITCOIN)
   const { goBack } = useNavigation<NavigationProp>()
   const {
     sendToken,
@@ -51,6 +53,14 @@ export default function ReviewSend({
     sendStatus,
     sendStatusMsg
   } = useSendTokenContext()
+
+  const maxFeePerGas = isBtcNetwork
+    ? fees.maxFeePerGas.toSubUnit().toString()
+    : fees.maxFeePerGas.toFeeUnit()
+
+  const maxPriorityFeePerGas = isBtcNetwork
+    ? fees.maxPriorityFeePerGas.toSubUnit().toString()
+    : fees.maxPriorityFeePerGas.toFeeUnit()
 
   function handleSend(): void {
     onSendNow()
@@ -145,8 +155,8 @@ export default function ReviewSend({
             content={
               <PoppableGasAndLimit
                 gasLimit={fees.gasLimit ?? 0}
-                maxFeePerGas={fees.maxFeePerGas.toFeeUnit()}
-                maxPriorityFeePerGas={fees.maxPriorityFeePerGas.toFeeUnit()}
+                maxFeePerGas={maxFeePerGas}
+                maxPriorityFeePerGas={maxPriorityFeePerGas}
               />
             }
             position={'right'}
