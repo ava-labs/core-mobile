@@ -36,6 +36,7 @@ type NFTItemsContextState = {
   refetchNfts: () => void
   isNftsRefetching: boolean
   isNftsLoading: boolean
+  setNftsLoadEnabled: React.Dispatch<React.SetStateAction<boolean>>
 }
 
 export const NFTItemsContext = createContext<NFTItemsContextState>(
@@ -50,8 +51,8 @@ export const NFTMetadataProvider = ({
   const [metadata, setMetadata] = useState<Record<string, NFTMetadata>>({})
   const [imageData, setImageData] = useState<Record<string, NFTImageData>>({})
   const [reindexedAt, setReindexedAt] = useState<Record<string, number>>({})
+  const [nftsLoadEnabled, setNftsLoadEnabled] = useState<boolean>(false)
   const hiddenNfts = useSelector(selectHiddenNftUIDs)
-
   const processImageData = useCallback((items: NFTItemData[]): void => {
     items.forEach(nft => {
       if (nft.metadata.imageUri) {
@@ -148,7 +149,7 @@ export const NFTMetadataProvider = ({
     [processImageData, processMetadata]
   )
 
-  const query = useNfts()
+  const query = useNfts(nftsLoadEnabled)
 
   const nftItems = useMemo(() => {
     return query.nfts.map(nft => ({
@@ -201,7 +202,7 @@ export const NFTMetadataProvider = ({
       const metadataUpdatedAt = nftData?.metadata.metadataLastUpdatedTimestamp
       if (
         metadataUpdatedAt !== undefined &&
-        metadataUpdatedAt > nftReindexedAt
+        metadataUpdatedAt >= nftReindexedAt
       ) {
         setReindexedAt(prevData => {
           const newReindexedAt = { ...prevData }
@@ -260,7 +261,8 @@ export const NFTMetadataProvider = ({
         isFetchingNextPage: query.isFetchingNextPage,
         refetchNfts: query.refetch,
         isNftsRefetching: query.isRefetching,
-        isNftsLoading: query.isLoading
+        isNftsLoading: query.isLoading,
+        setNftsLoadEnabled
       }}>
       {children}
     </NFTItemsContext.Provider>

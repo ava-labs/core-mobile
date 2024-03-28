@@ -40,7 +40,11 @@ export class NftProcessor {
             imageUrl,
             (width: number, height: number) => {
               const aspect = height / width
-              resolve({ image: imageUrl, aspect, isSvg: false })
+              resolve({
+                image: imageUrl,
+                aspect: isNaN(aspect) ? 1 : aspect,
+                isSvg: false
+              })
             },
             _ => {
               resolve({ image: imageUrl, aspect: 1, isSvg: false })
