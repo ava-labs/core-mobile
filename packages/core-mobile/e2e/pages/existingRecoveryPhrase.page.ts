@@ -10,6 +10,10 @@ import nameWalletPage from './nameWallet.page'
 import accountManagePage from './accountManage.page'
 
 class ExistingRecoveryPhrasePage {
+  get continueBtn() {
+    return by.text(recoveryPhraseLoc.continueButton)
+  }
+
   get recoveryPhraseTextInput() {
     return by.id(recoveryPhraseLoc.recoveryPhraseInput)
   }
@@ -44,6 +48,10 @@ class ExistingRecoveryPhrasePage {
 
   get recoveryPhrase() {
     return by.text(recoveryPhraseLoc.recoveryPhrase)
+  }
+
+  async tapContinueBtn() {
+    await Action.tap(this.continueBtn)
   }
 
   async tapForgotPinBtn() {

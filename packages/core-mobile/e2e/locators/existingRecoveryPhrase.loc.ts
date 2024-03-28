@@ -1,4 +1,5 @@
 export default {
+  continueButton: 'Continue',
   recoveryPhraseInput: `text_area__recovery_phrase`,
   signInBtn: `Sign in`,
   recoveryPhraseHeader: 'recovery_phrase__header',

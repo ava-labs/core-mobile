@@ -2,6 +2,7 @@ import Assert from '../helpers/assertions'
 import Action from '../helpers/actions'
 import portfolio from '../locators/portfolio.loc'
 import { Platform } from '../helpers/constants'
+import delay from '../helpers/waits'
 import networksManagePage from './networksManage.page'
 
 const platformIndex = Action.platform() === Platform.iOS ? 1 : 0
@@ -124,6 +125,7 @@ class PortfolioPage {
   }
 
   async tapActivityTab() {
+    await delay(400)
     await Action.tapElementAtIndex(this.activityTab, 0)
   }
 

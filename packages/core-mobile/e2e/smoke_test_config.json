@@ -25,6 +25,7 @@
     "./e2e/tests/plusIcon/walletConnect/traderjoe.e2e.ts",
     "./e2e/tests/plusIcon/send/sendSepoliaEthTo2ndAccount.e2e.ts",
     "./e2e/tests/plusIcon/send/sendEthTo2ndAccount.e2e.ts",
-    "./e2e/tests/network/addCustomToken.smoke.e2e.ts"
+    "./e2e/tests/network/addCustomToken.smoke.e2e.ts",
+    "./e2e/tests/inAppBrowser/coreWebWCIntegration.e2e.smoke.ts"
   ]
 }

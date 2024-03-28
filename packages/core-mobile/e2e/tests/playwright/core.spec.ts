@@ -17,7 +17,9 @@ test('check wallet connect button', async ({ page }) => {
   await coreAppPage.clickAcceptTermsCheckbox()
   await expect(coreAppPage.continueBtn).toBeVisible()
   await coreAppPage.clickContinueBtn()
-  await expect(commonEls.w3mWalletUri).toBeVisible()
+  await expect(commonEls.walletConnectBtn).toBeVisible()
+  await commonEls.clickWalletConnectBtn()
+  await expect(commonEls.wuiQrCodeUri).toBeVisible()
   const qrUri = await commonEls.qrUriValue('w3m')
 
   if (qrUri) {

@@ -27,6 +27,14 @@ class BottomsTabsPage {
     return by.id(bottomTabsLoc.stakeTab)
   }
 
+  get browserTab() {
+    return by.id(bottomTabsLoc.browserTab)
+  }
+
+  async tapBrowserTab() {
+    await Actions.tapElementAtIndex(this.browserTab, 0)
+  }
+
   async tapActivityTab() {
     await Actions.tapElementAtIndex(this.activityTab, 1)
   }

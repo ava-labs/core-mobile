@@ -31,11 +31,11 @@ class PangolinPage {
         console.log(err)
       }
       const qr = new QrCode()
-      qr.callback = function (error: any, value: { result: any }) {
+      qr.callback = async function (error: any, value: { result: any }) {
         if (error) {
           console.error(err)
         }
-        actions.writeQrCodeToFile(value.result)
+        await actions.writeQrCodeToFile(value.result)
         console.log(value.result)
       }
 

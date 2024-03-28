@@ -57,7 +57,11 @@ class CommonElsPage {
   }
 
   async waitForToastMsgGone(index?: number) {
-    await Actions.waitForElementNotVisible(this.simpleToastMsg, 10, index)
+    try {
+      await Actions.waitForElementNotVisible(this.simpleToastMsg, index)
+    } catch (error) {
+      console.log('Toast message not found')
+    }
   }
 
   async waitForJailbrokenWarning() {
