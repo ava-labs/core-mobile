@@ -106,12 +106,6 @@ interface CarouselItemProps {
 const CarouselItem: FC<CarouselItemProps> = ({ token, onPress }) => {
   const { theme } = useTheme()
 
-  const priceChangePercentage24h = token.priceChangePercentage24h ?? 0
-  let currentPrice = token.currentPrice ?? 0
-  if (priceChangePercentage24h < 0) {
-    currentPrice = -currentPrice
-  }
-
   return (
     <AvaButton.Base
       key={token.id}
@@ -127,8 +121,8 @@ const CarouselItem: FC<CarouselItemProps> = ({ token, onPress }) => {
       <Text variant="buttonSmall">{token?.symbol?.toUpperCase()}</Text>
       <Space y={8} />
       <PriceChangeIndicator
-        price={currentPrice}
-        percent={priceChangePercentage24h}
+        price={token?.currentPrice ?? 0}
+        percent={token?.priceChangePercentage24h ?? 0}
         isHorizontal={false}
       />
     </AvaButton.Base>
