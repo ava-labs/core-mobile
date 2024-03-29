@@ -34,10 +34,11 @@ const PriceChangeIndicator: FC<Props> = ({
       ).toFixed(2)}%`
     : undefined
 
+  const signIndicator = percent ?? price
   const tintColor =
-    price < 0
+    signIndicator < 0
       ? colors.$dangerLight
-      : price === 0
+      : signIndicator === 0
       ? colors.$neutral400
       : colors.$successMain
 
@@ -53,7 +54,7 @@ const PriceChangeIndicator: FC<Props> = ({
       }>
       <View sx={{ flexDirection: 'row', alignItems: 'center' }}>
         <MarketTriangleSVG
-          direction={price < 0 ? 'down' : 'up'}
+          direction={signIndicator < 0 ? 'down' : 'up'}
           color={tintColor}
         />
         <Text
