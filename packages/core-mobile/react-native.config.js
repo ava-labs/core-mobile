@@ -8,6 +8,13 @@ module.exports = {
     },
     'react-native-performance': {
       platforms: {
+        ios: null,
+        android: null
+      }
+    },
+    'react-native-flipper': {
+      platforms: {
+        ios: null,
         android: null
       }
     }
