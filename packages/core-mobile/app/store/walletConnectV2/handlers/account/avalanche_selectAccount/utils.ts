@@ -10,7 +10,9 @@ export const accountSchema = z.object({
   addressCoreEth: z.string().optional()
 })
 
-const paramsSchema = z.tuple([z.coerce.number().nonnegative()])
+const paramsSchema = z.tuple([
+  z.union([z.string(), z.number()]).pipe(z.coerce.number().nonnegative())
+])
 
 const approveDataSchema = z.object({
   account: accountSchema
