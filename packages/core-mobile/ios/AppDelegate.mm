@@ -24,8 +24,7 @@
   RCTRootView * rootView = (RCTRootView *)[super createRootViewWithBridge:bridge moduleName:moduleName initProps:initProps];
   UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"LaunchScreen" bundle:nil];
   [rootView setLoadingView:[[storyboard instantiateInitialViewController] view]];
-  rootView.loadingViewFadeDelay = 0.5;
-  rootView.loadingViewFadeDuration = 0.5;
+  rootView.backgroundColor = [UIColor blackColor];
   
   return rootView;
 }
