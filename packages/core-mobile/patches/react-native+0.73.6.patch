@@ -34,9 +34,22 @@ index 03ae287..05f4ebe 100644
          }),
        );
 diff --git a/node_modules/react-native/ReactCommon/jsc/JSCRuntime.cpp b/node_modules/react-native/ReactCommon/jsc/JSCRuntime.cpp
-index 362d76d..7dc4cbc 100644
+index 362d76d..dea40fd 100644
 --- a/node_modules/react-native/ReactCommon/jsc/JSCRuntime.cpp
 +++ b/node_modules/react-native/ReactCommon/jsc/JSCRuntime.cpp
+@@ -369,9 +369,9 @@ JSCRuntime::JSCRuntime(JSGlobalContextRef ctx)
+ {
+ #ifndef NDEBUG
+ #ifdef _JSC_HAS_INSPECTABLE
+-  if (__builtin_available(macOS 13.3, iOS 16.4, tvOS 16.4, *)) {
+-    JSGlobalContextSetInspectable(ctx_, true);
+-  }
++  // if (__builtin_available(macOS 13.3, iOS 16.4, tvOS 16.4, *)) {
++  //   JSGlobalContextSetInspectable(ctx_, true);
++  // }
+ #endif
+ #endif
+ }
 @@ -385,12 +385,12 @@ JSCRuntime::~JSCRuntime() {
    // has started.
    ctxInvalid_ = true;

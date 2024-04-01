@@ -29,42 +29,33 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/avalanchejs-v2@npm:1.4.0-alpha.34":
-  version: 1.4.0-alpha.34
-  resolution: "@avalabs/avalanchejs-v2@npm:1.4.0-alpha.34"
+"@avalabs/avalanchejs@npm:4.0.5":
+  version: 4.0.5
+  resolution: "@avalabs/avalanchejs@npm:4.0.5"
   dependencies:
+    "@noble/curves": 1.3.0
     "@noble/hashes": 1.3.3
     "@noble/secp256k1": 2.0.0
     "@scure/base": 1.1.5
     micro-eth-signer: 0.7.2
-  checksum: 8ea8ecd346a4a55057232a479e5834fc9761d88e2766fe954fda9374b7e00ded28f4f0ab7b5eba11841562fcd9936aa6b594cf74a62c2c286cac2989233f5d5c
+  checksum: 2da6288bb2c444bcdd2c6e392a5ae4e4aa05a81ca78611d33916009fb7301d893753985d2c9d0c9127325f30a66e5d1db05a1b2513f62f79264b35616984957c
   languageName: node
   linkType: hard
 
-"@avalabs/blockcypher-sdk@npm:2.8.0-alpha.171":
-  version: 2.8.0-alpha.171
-  resolution: "@avalabs/blockcypher-sdk@npm:2.8.0-alpha.171"
+"@avalabs/bridge-sdk@npm:v2.8.0-alpha.179":
+  version: 2.8.0-alpha.179
+  resolution: "@avalabs/bridge-sdk@npm:2.8.0-alpha.179"
   dependencies:
-    "@avalabs/utils-sdk": 2.8.0-alpha.171
-  checksum: d5417db83ff02370ecddedcd5a072703aa6344a77829c01ace81995a087983579e9f8b78c1c2f1cb72f9d487963dcd4e5661866d44225813b8b60d57a14cc577
-  languageName: node
-  linkType: hard
-
-"@avalabs/bridge-sdk@npm:2.8.0-alpha.171":
-  version: 2.8.0-alpha.171
-  resolution: "@avalabs/bridge-sdk@npm:2.8.0-alpha.171"
-  dependencies:
-    "@avalabs/blockcypher-sdk": 2.8.0-alpha.171
-    "@avalabs/coingecko-sdk": 2.8.0-alpha.171
-    "@avalabs/utils-sdk": 2.8.0-alpha.171
-    "@avalabs/wallets-sdk": 2.8.0-alpha.171
+    "@avalabs/coingecko-sdk": 2.8.0-alpha.179
+    "@avalabs/utils-sdk": 2.8.0-alpha.179
+    "@avalabs/wallets-sdk": 2.8.0-alpha.179
   peerDependencies:
     big.js: ^6.2.1
     bitcoinjs-lib: ^5.2.0
     coinselect: ^3.1.12
     ethers: ^6.7.1
     react: ^17.0.2
-  checksum: 6140404ecbae11b5cdc4893c77691dc8607b1a01408c8a0e8be3f93eeb923777843036cef3f6507930d9669e508a8ce3afc9785022482f3e1803ae770035adf7
+  checksum: f7c07483c013d950d50a5f2c7c881ef983f81e39881ee1db1233505e42e2bce90d3bf05566284186c446bde8bbe584a32da88c35147518ba89456d887c33261d
   languageName: node
   linkType: hard
 
@@ -79,21 +70,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/chains-sdk@npm:2.8.0-alpha.171":
-  version: 2.8.0-alpha.171
-  resolution: "@avalabs/chains-sdk@npm:2.8.0-alpha.171"
+"@avalabs/chains-sdk@npm:2.8.0-alpha.179, @avalabs/chains-sdk@npm:v2.8.0-alpha.179":
+  version: 2.8.0-alpha.179
+  resolution: "@avalabs/chains-sdk@npm:2.8.0-alpha.179"
   dependencies:
-    "@avalabs/utils-sdk": 2.8.0-alpha.171
-  checksum: 83579ce05c387466656305917d627670ce08b7dd895b90946de70c823115aeacbb5ff5a19d8e6d1584a713a4ebc48aaf0a1f28aa71640a3b651c9b016a7be53f
+    "@avalabs/utils-sdk": 2.8.0-alpha.179
+  checksum: 814fcd075d2705337eb698c6e5372e81a5af000467a655074b5f66848d611a8aa8ba1f22105d2604cc1fc56b80c7b3f8ac9d2eb63427e650a821e46d27a411e6
   languageName: node
   linkType: hard
 
-"@avalabs/coingecko-sdk@npm:2.8.0-alpha.171":
-  version: 2.8.0-alpha.171
-  resolution: "@avalabs/coingecko-sdk@npm:2.8.0-alpha.171"
+"@avalabs/coingecko-sdk@npm:2.8.0-alpha.179, @avalabs/coingecko-sdk@npm:v2.8.0-alpha.179":
+  version: 2.8.0-alpha.179
+  resolution: "@avalabs/coingecko-sdk@npm:2.8.0-alpha.179"
   dependencies:
-    "@avalabs/utils-sdk": 2.8.0-alpha.171
-  checksum: e19d36919dff73e11fe830336ac2d9b0120338dc4496d8bd3fe41a6eecae897b3cf165b3a94dcbf8d11e41098fad80ae5af1ddf279f6d521c9af40a9d9ece846
+    "@avalabs/utils-sdk": 2.8.0-alpha.179
+  checksum: 2d6def9f93f217cef28059e4730f079d17a7a00e55a8d5074a4edbc0529c061fb6e5bda62f1c1aa65c0c488efa0c7a853c77697ad827f5551db96aae57beef2e
   languageName: node
   linkType: hard
 
@@ -101,23 +92,22 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@avalabs/core-mobile@workspace:packages/core-mobile"
   dependencies:
-    "@avalabs/avalanchejs-v2": 1.4.0-alpha.34
-    "@avalabs/blockcypher-sdk": 2.8.0-alpha.171
-    "@avalabs/bridge-sdk": 2.8.0-alpha.171
+    "@avalabs/avalanchejs": 4.0.5
+    "@avalabs/bridge-sdk": v2.8.0-alpha.179
     "@avalabs/bridge-unified": 2.1.0
-    "@avalabs/chains-sdk": 2.8.0-alpha.171
-    "@avalabs/coingecko-sdk": 2.8.0-alpha.171
-    "@avalabs/covalent-sdk": 2.8.0-alpha.171
-    "@avalabs/etherscan-sdk": 2.8.0-alpha.171
-    "@avalabs/glacier-sdk": 2.8.0-alpha.171
+    "@avalabs/chains-sdk": v2.8.0-alpha.179
+    "@avalabs/coingecko-sdk": v2.8.0-alpha.179
+    "@avalabs/covalent-sdk": v2.8.0-alpha.179
+    "@avalabs/etherscan-sdk": v2.8.0-alpha.179
+    "@avalabs/glacier-sdk": v2.8.0-alpha.179
     "@avalabs/k2-mobile": "workspace:*"
-    "@avalabs/paraswap-sdk": 2.8.0-alpha.171
-    "@avalabs/snowtrace-sdk": 2.8.0-alpha.171
-    "@avalabs/token-prices-sdk": 2.8.0-alpha.171
+    "@avalabs/paraswap-sdk": v2.8.0-alpha.179
+    "@avalabs/snowtrace-sdk": v2.8.0-alpha.179
+    "@avalabs/token-prices-sdk": v2.8.0-alpha.179
     "@avalabs/tsconfig-mobile": "workspace:*"
-    "@avalabs/types": 2.8.0-alpha.171
-    "@avalabs/utils-sdk": 2.8.0-alpha.171
-    "@avalabs/wallets-sdk": 2.8.0-alpha.171
+    "@avalabs/types": v2.8.0-alpha.179
+    "@avalabs/utils-sdk": v2.8.0-alpha.179
+    "@avalabs/wallets-sdk": v2.8.0-alpha.179
     "@babel/core": 7.24.0
     "@babel/plugin-proposal-nullish-coalescing-operator": 7.18.6
     "@babel/plugin-syntax-object-rest-spread": 7.8.3
@@ -128,7 +118,7 @@ __metadata:
     "@babel/preset-typescript": 7.22.11
     "@babel/runtime": 7.24.0
     "@coinbase/cbpay-js": 1.6.0
-    "@cubist-labs/cubesigner-sdk": 0.3.23
+    "@cubist-labs/cubesigner-sdk": 0.3.28
     "@cubist-labs/cubesigner-sdk-ethers-v6": 0.3.23
     "@datadog/mobile-react-native": 2.2.0
     "@datadog/mobile-react-navigation": 2.2.0
@@ -144,7 +134,7 @@ __metadata:
     "@noble/secp256k1": 2.0.0
     "@notifee/react-native": 7.8.0
     "@openzeppelin/contracts": 4.9.3
-    "@playwright/test": 1.34.3
+    "@playwright/test": 1.42.1
     "@react-native-async-storage/async-storage": 1.18.1
     "@react-native-clipboard/clipboard": 1.13.2
     "@react-native-community/blur": "maxhungry/react-native-blur#a7d77a415a8693d1d49588a04a09970ef26113c1"
@@ -174,7 +164,7 @@ __metadata:
     "@storybook/addon-ondevice-backgrounds": 6.5.3
     "@storybook/addon-ondevice-controls": 6.5.3
     "@storybook/react-native": 6.5.3
-    "@tanstack/react-query": 5.0.0-alpha.57
+    "@tanstack/react-query": 5.24.8
     "@tradle/react-native-http": 2.0.1
     "@typechain/ethers-v6": 0.5.0
     "@types/big.js": 6.1.3
@@ -314,6 +304,7 @@ __metadata:
     typescript: 5.2.2
     url: 0.11.0
     uuid: 8.3.2
+    viem: 2.8.5
     vm-browserify: 0.0.4
     web3: 1.7.5
     xss: 1.0.14
@@ -321,28 +312,28 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@avalabs/covalent-sdk@npm:2.8.0-alpha.171":
-  version: 2.8.0-alpha.171
-  resolution: "@avalabs/covalent-sdk@npm:2.8.0-alpha.171"
+"@avalabs/covalent-sdk@npm:v2.8.0-alpha.179":
+  version: 2.8.0-alpha.179
+  resolution: "@avalabs/covalent-sdk@npm:2.8.0-alpha.179"
   dependencies:
-    "@avalabs/utils-sdk": 2.8.0-alpha.171
-  checksum: 071af8a7fd8f89d02a881e8a191b29a8df45479442b5caac4b6073da58eb51dc396f8c43d620e618f4c424a72d53a9337a8f54596bf26d04246f4f92c5fddf55
+    "@avalabs/utils-sdk": 2.8.0-alpha.179
+  checksum: e92fdf89196a29b7e2a9f67e93b94c3de5679850cb7684bfe941cba5048a29f5796cfa85744d792936d1bdbf9037e5d93fe1552d9bb97e8c26ec167295a0940a
   languageName: node
   linkType: hard
 
-"@avalabs/etherscan-sdk@npm:2.8.0-alpha.171":
-  version: 2.8.0-alpha.171
-  resolution: "@avalabs/etherscan-sdk@npm:2.8.0-alpha.171"
+"@avalabs/etherscan-sdk@npm:v2.8.0-alpha.179":
+  version: 2.8.0-alpha.179
+  resolution: "@avalabs/etherscan-sdk@npm:2.8.0-alpha.179"
   dependencies:
-    "@avalabs/utils-sdk": 2.8.0-alpha.171
-  checksum: 26888c3d054c0150a8988dbd2581f68a83242131c5b9debf315cda0d53ec7a0f8fc0e7f01b32c7d559a7eafbb22479bcac9c3730f2ff1563f51ca7603e6363aa
+    "@avalabs/utils-sdk": 2.8.0-alpha.179
+  checksum: 8d74bc1697df8b25568c9491641153245cfad2ba708a52c91e64a8410aae792c5d5ca9045a53616d6ce9195ec17f16898930eb9ffdd38f93314bd5787ddaf145
   languageName: node
   linkType: hard
 
-"@avalabs/glacier-sdk@npm:2.8.0-alpha.171":
-  version: 2.8.0-alpha.171
-  resolution: "@avalabs/glacier-sdk@npm:2.8.0-alpha.171"
-  checksum: 520cc6015642ff12d049419d894dd7dc1c37c52b83fe9febb8003ed15b9341155bd5a7c118f8a28ee9b3ecb3345669f0e103d64fe575462e20d857b0acb57a65
+"@avalabs/glacier-sdk@npm:2.8.0-alpha.179, @avalabs/glacier-sdk@npm:v2.8.0-alpha.179":
+  version: 2.8.0-alpha.179
+  resolution: "@avalabs/glacier-sdk@npm:2.8.0-alpha.179"
+  checksum: 99491bba968149125d3b89ab2a4b1cf2de8c9fdd943086308136e6ca039d12730ddde9a32a0d0c3400cfdb4f38b3967956eba2a5221f952cce0048ce1a8aa12e
   languageName: node
   linkType: hard
 
@@ -408,12 +399,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@avalabs/paraswap-sdk@npm:2.8.0-alpha.171":
-  version: 2.8.0-alpha.171
-  resolution: "@avalabs/paraswap-sdk@npm:2.8.0-alpha.171"
+"@avalabs/paraswap-sdk@npm:v2.8.0-alpha.179":
+  version: 2.8.0-alpha.179
+  resolution: "@avalabs/paraswap-sdk@npm:2.8.0-alpha.179"
   dependencies:
-    "@avalabs/utils-sdk": 2.8.0-alpha.171
-    "@avalabs/wallets-sdk": 2.8.0-alpha.171
+    "@avalabs/utils-sdk": 2.8.0-alpha.179
+    "@avalabs/wallets-sdk": 2.8.0-alpha.179
   peerDependencies:
     big.js: ^6.2.1
     bitcoinjs-lib: ^5.2.0
@@ -421,26 +412,26 @@ __metadata:
     ethers: ^6.7.1
     paraswap: 5.2.0
     react: ^17.0.2
-  checksum: 2d4b1a7ad0803877e99599887480c9fd1c01864b59c784cdace6f623aa36d8bf64519d2eeb2db75ab0af5ea1e9a432820bd566f7f2abd7d5166bef3ac729bb59
+  checksum: c52ca55a181c04e2d684497838c71cc344474dfc2262721a49700f0195c84f84c3983fa7d6f333ca96ae7116f6fed68483ae4526b6b2bf8431ad3cbeb7481fd1
   languageName: node
   linkType: hard
 
-"@avalabs/snowtrace-sdk@npm:2.8.0-alpha.171":
-  version: 2.8.0-alpha.171
-  resolution: "@avalabs/snowtrace-sdk@npm:2.8.0-alpha.171"
+"@avalabs/snowtrace-sdk@npm:v2.8.0-alpha.179":
+  version: 2.8.0-alpha.179
+  resolution: "@avalabs/snowtrace-sdk@npm:2.8.0-alpha.179"
   dependencies:
-    "@avalabs/utils-sdk": 2.8.0-alpha.171
-  checksum: ceeff10a5adca25bc599eeaa2b0dab78ef991f408a26879664634b6c4a8d134b83618ea1971a6f749f427918b3e93c17cd300d20df607c63f1a6fcc482edeecb
+    "@avalabs/utils-sdk": 2.8.0-alpha.179
+  checksum: fcc47e9a7ffe8066efca11d5d83905f72ad3920f758b35c9f8f7cc35a32f6000319bd53e134c578d58edae8559d9b4bc0d02c012627296f5dc94705a7796879b
   languageName: node
   linkType: hard
 
-"@avalabs/token-prices-sdk@npm:2.8.0-alpha.171":
-  version: 2.8.0-alpha.171
-  resolution: "@avalabs/token-prices-sdk@npm:2.8.0-alpha.171"
+"@avalabs/token-prices-sdk@npm:v2.8.0-alpha.179":
+  version: 2.8.0-alpha.179
+  resolution: "@avalabs/token-prices-sdk@npm:2.8.0-alpha.179"
   dependencies:
-    "@avalabs/coingecko-sdk": 2.8.0-alpha.171
-    "@avalabs/utils-sdk": 2.8.0-alpha.171
-  checksum: 90633cba849a9c4ef892047b7d29dec5d3d08282f4b192791c6f9a7891cd9e1cb574ab0defba3d2c5a83ee68271bd8262c6d4fe36c4c17781455b239b84afdf9
+    "@avalabs/coingecko-sdk": 2.8.0-alpha.179
+    "@avalabs/utils-sdk": 2.8.0-alpha.179
+  checksum: 6181e7dde48d94f3128c3a308a5b62412123c433c1a3e332b23b3a134a8ad503ea6ba25dd0911b17898fa11cc3c07e00a40a21346e412504e5205987ed119be8
   languageName: node
   linkType: hard
 
@@ -450,35 +441,35 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@avalabs/types@npm:2.8.0-alpha.171":
-  version: 2.8.0-alpha.171
-  resolution: "@avalabs/types@npm:2.8.0-alpha.171"
-  checksum: 80f51a9ffe72ce545cdd1d79d05ead87efcb7e7cbea33c57c39d8f3bcac59ec0a1c22e5279d07c41f0aa302f30bde647eef235276be2e6457680048430e0502e
+"@avalabs/types@npm:v2.8.0-alpha.179":
+  version: 2.8.0-alpha.179
+  resolution: "@avalabs/types@npm:2.8.0-alpha.179"
+  checksum: 18dd01ad33d64ff68b34d811ca7b2639815f765d7963c6a96420b4bdc5d8b3dfaff0219bde7538e14aa686ab578d220fe4dfd80434365e13895286eb23f96db0
   languageName: node
   linkType: hard
 
-"@avalabs/utils-sdk@npm:2.8.0-alpha.171":
-  version: 2.8.0-alpha.171
-  resolution: "@avalabs/utils-sdk@npm:2.8.0-alpha.171"
+"@avalabs/utils-sdk@npm:2.8.0-alpha.179, @avalabs/utils-sdk@npm:v2.8.0-alpha.179":
+  version: 2.8.0-alpha.179
+  resolution: "@avalabs/utils-sdk@npm:2.8.0-alpha.179"
   dependencies:
-    "@avalabs/avalanchejs-v2": 1.4.0-alpha.34
+    "@avalabs/avalanchejs": 4.0.5
+    "@hpke/core": 1.2.5
     is-ipfs: 6.0.2
   peerDependencies:
     big.js: ^6.2.1
     bn.js: ^5.2.1
     ethers: ^6.7.1
-  checksum: e492aaaf5905194d8cdd69594f58a9b885900bab9aa8136a96d8c8043789cab75d293d777d0552ff95c1ee85f761fcf3ac59f79a4b019ebcfd849d1a6b29528a
+  checksum: 10a934f609fd21c7ceba43961b8a746d581857f67780fd02457e7ebb1f53bf179ec2f123e6a4d559a03ac1aa4780ee91864ffc405e3127ba8e860a4884b2b310
   languageName: node
   linkType: hard
 
-"@avalabs/wallets-sdk@npm:2.8.0-alpha.171":
-  version: 2.8.0-alpha.171
-  resolution: "@avalabs/wallets-sdk@npm:2.8.0-alpha.171"
+"@avalabs/wallets-sdk@npm:2.8.0-alpha.179, @avalabs/wallets-sdk@npm:v2.8.0-alpha.179":
+  version: 2.8.0-alpha.179
+  resolution: "@avalabs/wallets-sdk@npm:2.8.0-alpha.179"
   dependencies:
-    "@avalabs/avalanchejs-v2": 1.4.0-alpha.34
-    "@avalabs/blockcypher-sdk": 2.8.0-alpha.171
-    "@avalabs/chains-sdk": 2.8.0-alpha.171
-    "@avalabs/glacier-sdk": 2.8.0-alpha.171
+    "@avalabs/avalanchejs": 4.0.5
+    "@avalabs/chains-sdk": 2.8.0-alpha.179
+    "@avalabs/glacier-sdk": 2.8.0-alpha.179
     "@avalabs/hw-app-avalanche": 0.13.0
     "@ledgerhq/hw-app-btc": 10.0.8
     "@ledgerhq/hw-app-eth": 6.32.1
@@ -496,7 +487,7 @@ __metadata:
     xss: 1.0.14
   peerDependencies:
     ethers: ^6.7.1
-  checksum: 4f55274acb3ada980462f6d70f6f1147c51cdea77fbf117984a9b5a7683f18d3ec316ab5f173bc867ab41b970022adf51b830467a9f1d9d2dea6ec09a86e64a3
+  checksum: 4189f2c17795eab61492c3d8885b9b810848245f3a904b7c09883e8b6d1bbba40f90362f134850971be944e6cc968f63667bdc1ece68c58b16a2fb673bf5b866
   languageName: node
   linkType: hard
 
@@ -3287,16 +3278,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@cubist-labs/cubesigner-sdk@npm:0.3.23":
-  version: 0.3.23
-  resolution: "@cubist-labs/cubesigner-sdk@npm:0.3.23"
+"@cubist-labs/cubesigner-sdk@npm:0.3.28":
+  version: 0.3.28
+  resolution: "@cubist-labs/cubesigner-sdk@npm:0.3.28"
   dependencies:
     "@hpke/core": ^1.2.7
     openapi-fetch: 0.6.1
   dependenciesMeta:
     "@hpke/core":
       optional: true
-  checksum: 26097e834103a8c8911dbffc5fe4c31f5d2f87856c53895b8cd24c002c96bd2f8227b6760c381dfac5f9d1d43ff0fe73098bfef2952aa53a5d22d6e9682a5eb2
+  checksum: 20bedd49689bcc419e0738a6c2e203f7f0cd95a594bd626e7ac39d48fdbe0f5042474e07823b6303082991149d9a594c718ec4cd67a8de5ad5c212c81225da64
   languageName: node
   linkType: hard
 
@@ -3837,7 +3828,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@hpke/core@npm:^1.2.7":
+"@hpke/core@npm:1.2.7":
   version: 1.2.7
   resolution: "@hpke/core@npm:1.2.7"
   checksum: 3b900e2a088bc6c3c98c13888a37fe05383d5f6d05aeac1817a7394dd19d9e1bc422b1fc1228cff9b74b21c4785ca9ee084e006eb3a2d439532f051f1ca3603e
@@ -4961,7 +4952,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@noble/curves@npm:~1.3.0":
+"@noble/curves@npm:1.3.0, @noble/curves@npm:~1.3.0":
   version: 1.3.0
   resolution: "@noble/curves@npm:1.3.0"
   dependencies:
@@ -5256,19 +5247,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@playwright/test@npm:1.34.3":
-  version: 1.34.3
-  resolution: "@playwright/test@npm:1.34.3"
+"@playwright/test@npm:1.42.1":
+  version: 1.42.1
+  resolution: "@playwright/test@npm:1.42.1"
   dependencies:
-    "@types/node": "*"
-    fsevents: 2.3.2
-    playwright-core: 1.34.3
-  dependenciesMeta:
-    fsevents:
-      optional: true
+    playwright: 1.42.1
   bin:
     playwright: cli.js
-  checksum: b387d85f09d275ed49aac4f600c0657205b4c20979108a52e7072ef0c43ea9b2d3d6d7206869230634680ab1f8e7b03373c63555899da4293cae700320bd31e1
+  checksum: a41505f02a4dac358e645452a190cac620b8d4eae79ab5d90ea1fb7ca06d86a9f5749b1a803dea789b662d1cbfd216380f722bed72093897e18b4238f4a07a4d
   languageName: node
   linkType: hard
 
@@ -7360,28 +7346,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tanstack/query-core@npm:^5.0.0-alpha.43":
-  version: 5.0.0
-  resolution: "@tanstack/query-core@npm:5.0.0"
-  checksum: 19ef7a26d114b03f5899d209ec88c815fc4887c3b3682aca2ec7765b3430bcd085ddccd8434a702affe9ce22c2f3fd5575b823d01ea1f6497c16bb05ec83d668
+"@tanstack/query-core@npm:5.24.8":
+  version: 5.24.8
+  resolution: "@tanstack/query-core@npm:5.24.8"
+  checksum: 622f13628bd79f3b6619913c4b4fb70fcdf9bbe90188c2be38f813f14c8ed42ec4f38821c0a7b2a71c9382909a4beb50a122704df48b6e6cbffd8940a3b16075
   languageName: node
   linkType: hard
 
-"@tanstack/react-query@npm:5.0.0-alpha.57":
-  version: 5.0.0-alpha.57
-  resolution: "@tanstack/react-query@npm:5.0.0-alpha.57"
+"@tanstack/react-query@npm:5.24.8":
+  version: 5.24.8
+  resolution: "@tanstack/react-query@npm:5.24.8"
   dependencies:
-    "@tanstack/query-core": ^5.0.0-alpha.43
+    "@tanstack/query-core": 5.24.8
   peerDependencies:
     react: ^18.0.0
-    react-dom: ^18.0.0
-    react-native: "*"
-  peerDependenciesMeta:
-    react-dom:
-      optional: true
-    react-native:
-      optional: true
-  checksum: 1e80a1187858ab35946f64b0117f5484549c51b33783255be2f6be578143845cb8a933426b5e8ef3793c97392683e6062e8ff66347c9fb5a99ca078ab80b2673
+  checksum: a6b86e925e1c26dc83a640ff8bb215692d2aa952a713c0909335b1f42f0e686cbee2e5d2367242074c1436162132f198b334e209fe6dbbec2e87e53805b427a0
   languageName: node
   linkType: hard
 
@@ -8955,6 +8934,21 @@ __metadata:
     zod:
       optional: true
   checksum: d7d887f29d6821e3f7a400de9620511b80ead3f85c5c87308aaec97965d3493e6687ed816e88722b4f512249bd66dee9e69231b49af0e1db8f69400a62c87cf6
+  languageName: node
+  linkType: hard
+
+"abitype@npm:1.0.0":
+  version: 1.0.0
+  resolution: "abitype@npm:1.0.0"
+  peerDependencies:
+    typescript: ">=5.0.4"
+    zod: ^3 >=3.22.0
+  peerDependenciesMeta:
+    typescript:
+      optional: true
+    zod:
+      optional: true
+  checksum: ea2c0548c3ba58c37a6de7483d63389074da498e63d803b742bbe94eb4eaa1f51a35d000c424058b2583aef56698cf07c696eb3bc4dd0303bc20c6f0826a241a
   languageName: node
   linkType: hard
 
@@ -20348,12 +20342,27 @@ __metadata:
   languageName: node
   linkType: hard
 
-"playwright-core@npm:1.34.3":
-  version: 1.34.3
-  resolution: "playwright-core@npm:1.34.3"
+"playwright-core@npm:1.42.1":
+  version: 1.42.1
+  resolution: "playwright-core@npm:1.42.1"
   bin:
     playwright-core: cli.js
-  checksum: eaf9e9b2d77b9726867dcbc641a1c72b0e8f680cdd71ff904366deea1c96141ff7563f6c6fb29f9975309d1b87dead97ea93f6f44953b59946882fb785b34867
+  checksum: e7081ff0f43b4b9053255109eb1d82164b7c6b55c7d022e25fca935d0f4fc547cb2e02a7b64f0c2a9462729be7bb45edb082f8b038306415944f1061d00d9c90
+  languageName: node
+  linkType: hard
+
+"playwright@npm:1.42.1":
+  version: 1.42.1
+  resolution: "playwright@npm:1.42.1"
+  dependencies:
+    fsevents: 2.3.2
+    playwright-core: 1.42.1
+  dependenciesMeta:
+    fsevents:
+      optional: true
+  bin:
+    playwright: cli.js
+  checksum: 06c16bcd07d03993126ee6c168bde28c59d3cab7f7d4721eaf57bd5c51e9c929e10a286758de062b5fc02874413ceae2684d14cbb7865c0a51fc8df6d9001ad1
   languageName: node
   linkType: hard
 
@@ -25195,6 +25204,27 @@ __metadata:
     typescript:
       optional: true
   checksum: 0a1c6037c76ce43f170def42eff7d0a76cf3934700ac5e6e673d1661805fed83f86d2ea0741fd73becfc9c37206929fe8250e345e477d8fcae4d889aaf25203d
+  languageName: node
+  linkType: hard
+
+"viem@npm:2.8.5":
+  version: 2.8.5
+  resolution: "viem@npm:2.8.5"
+  dependencies:
+    "@adraffy/ens-normalize": 1.10.0
+    "@noble/curves": 1.2.0
+    "@noble/hashes": 1.3.2
+    "@scure/bip32": 1.3.2
+    "@scure/bip39": 1.2.1
+    abitype: 1.0.0
+    isows: 1.0.3
+    ws: 8.13.0
+  peerDependencies:
+    typescript: ">=5.0.4"
+  peerDependenciesMeta:
+    typescript:
+      optional: true
+  checksum: 447b4dfb0341fc4a26132bbe528d274f7a69d9665dc7e9dfdaeafd77e3a943d0d12a78af7e233554511d3e5d8521193cf42ca9e8372b3b88f83c4de3e68f33b4
   languageName: node
   linkType: hard
 
