@@ -148,7 +148,7 @@ __metadata:
     "@react-native-async-storage/async-storage": 1.18.1
     "@react-native-clipboard/clipboard": 1.13.2
     "@react-native-community/blur": "maxhungry/react-native-blur#a7d77a415a8693d1d49588a04a09970ef26113c1"
-    "@react-native-community/datetimepicker": 7.1.0
+    "@react-native-community/datetimepicker": 7.6.3
     "@react-native-community/netinfo": 9.3.10
     "@react-native-community/slider": 4.4.2
     "@react-native-google-signin/google-signin": 10.1.0
@@ -5496,6 +5496,15 @@ __metadata:
   dependencies:
     invariant: ^2.2.4
   checksum: c88d19213daec1dc5c6101ad8c694386d79167087e1058c44c2699585dc97c4630c18de214d0607a5e5acd84846a9bb1401fece04fa78b8a010a0290b715040d
+  languageName: node
+  linkType: hard
+
+"@react-native-community/datetimepicker@npm:7.6.3":
+  version: 7.6.3
+  resolution: "@react-native-community/datetimepicker@npm:7.6.3"
+  dependencies:
+    invariant: ^2.2.4
+  checksum: 7d69d8ec89a0573d7f4f250c0f78c4c69c0e522c907c19b2302abf437b9e5a01f10a530cad99c1e5dfebc7197938fdf3811ef97230439d8af5cf2ec6edce83d3
   languageName: node
   linkType: hard
 

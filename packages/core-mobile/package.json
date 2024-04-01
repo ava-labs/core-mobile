@@ -53,7 +53,7 @@
     "@react-native-async-storage/async-storage": "1.18.1",
     "@react-native-clipboard/clipboard": "1.13.2",
     "@react-native-community/blur": "maxhungry/react-native-blur#a7d77a415a8693d1d49588a04a09970ef26113c1",
-    "@react-native-community/datetimepicker": "7.1.0",
+    "@react-native-community/datetimepicker": "7.6.3",
     "@react-native-community/netinfo": "9.3.10",
     "@react-native-community/slider": "4.4.2",
     "@react-native-google-signin/google-signin": "10.1.0",
