@@ -13,7 +13,7 @@ const { assetExts, sourceExts } = defaultConfig.resolver
  * @type {import('metro-config').MetroConfig}
  */
 const baseConfig = {
-  resetCache: true,
+  resetCache: false,
   serializer: {
     customSerializer: createSentryMetroSerializer()
   },
