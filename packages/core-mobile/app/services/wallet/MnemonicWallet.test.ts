@@ -65,6 +65,10 @@ describe('MnemonicWallet', () => {
       const wallet = MnemonicWallet.getAvaSigner(0, {})
       expect(wallet).toBeInstanceOf(Avalanche.StaticSigner)
     })
+    it('should have returned Avalanche.SimpleSigner', () => {
+      const wallet = MnemonicWallet.getAvaSigner(0)
+      expect(wallet).toBeInstanceOf(Avalanche.SimpleSigner)
+    })
     it('should have called getEvmSigner for EVM network', async () => {
       await MnemonicWallet.getSigner({
         accountIndex: 0,
@@ -230,6 +234,15 @@ describe('MnemonicWallet', () => {
     jest.spyOn(BitcoinWallet.prototype, 'signTx').mockImplementation(() => {
       return { toHex: () => 'signedTx' }
     })
+    jest
+      .spyOn(Avalanche.SimpleSigner.prototype, 'signTx')
+      .mockImplementation(() => {
+        return {
+          toJSON: () => {
+            return { signedTx: 'signedTx' }
+          }
+        }
+      })
     jest
       .spyOn(Avalanche.StaticSigner.prototype, 'signTx')
       .mockImplementation(() => {
