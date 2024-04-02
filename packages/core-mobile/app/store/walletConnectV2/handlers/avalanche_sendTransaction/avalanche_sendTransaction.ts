@@ -20,6 +20,7 @@ import * as Sentry from '@sentry/react-native'
 import Logger from 'utils/Logger'
 import { Avalanche } from '@avalabs/wallets-sdk'
 import { getAddressByVM } from 'store/account/utils'
+import { getProvidedUtxos } from 'utils/getProvidedUtxos'
 import {
   ApproveResponse,
   DEFERRED_RESULT,
@@ -36,6 +37,7 @@ export type AvalancheTxParams = {
   chainAlias: 'X' | 'P' | 'C'
   externalIndices?: number[]
   internalIndices?: number[]
+  utxos?: string[]
 }
 
 export type SendTransactionApproveData = {
@@ -75,8 +77,13 @@ class AvalancheSendTransactionHandler
       }
     }
 
-    const { transactionHex, chainAlias, externalIndices, internalIndices } =
-      result.data
+    const {
+      transactionHex,
+      chainAlias,
+      externalIndices,
+      internalIndices,
+      utxos: providedUtxoHexes
+    } = result.data
 
     const vm = Avalanche.getVmByChainAlias(chainAlias)
     const txBytes = utils.hexToBuffer(transactionHex)
@@ -94,13 +101,20 @@ class AvalancheSendTransactionHandler
       }
     }
 
-    const utxos = await Avalanche.getUtxosByTxFromGlacier({
-      transactionHex,
-      chainAlias,
-      isTestnet: isDevMode,
-      url: GLACIER_URL as string,
-      token: GLACIER_API_KEY
+    const providedUtxos = getProvidedUtxos({
+      utxoHexes: providedUtxoHexes,
+      vm
     })
+
+    const utxos = providedUtxos.length
+      ? providedUtxos
+      : await Avalanche.getUtxosByTxFromGlacier({
+          transactionHex,
+          chainAlias,
+          isTestnet: isDevMode,
+          url: GLACIER_URL as string,
+          token: GLACIER_API_KEY
+        })
 
     if (chainAlias === 'C') {
       unsignedTx = await Avalanche.createAvalancheEvmUnsignedTx({
