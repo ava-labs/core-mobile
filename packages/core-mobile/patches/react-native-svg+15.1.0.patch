@@ -14,3 +14,20 @@ index e28c609..f1dea05 100644
  
    if fabric_enabled
      install_modules_dependencies(s)
+diff --git a/node_modules/react-native-svg/apple/Elements/RNSVGSvgView.mm b/node_modules/react-native-svg/apple/Elements/RNSVGSvgView.mm
+index 3047b4b..1415b92 100644
+--- a/node_modules/react-native-svg/apple/Elements/RNSVGSvgView.mm
++++ b/node_modules/react-native-svg/apple/Elements/RNSVGSvgView.mm
+@@ -299,7 +299,11 @@ using namespace facebook::react;
+   _boundingBox = rect;
+   CGContextRef context = UIGraphicsGetCurrentContext();
+ 
+-  [self drawToContext:context withRect:[self bounds]];
++  @try {
++    [self drawToContext:context withRect:[self bounds]];
++  } @catch (NSException *exception) {
++    RCTLogWarn(@"[RNSVGSvgView drawRect] %@", exception.reason);
++  }
+ }
+ 
+ - (RNSVGPlatformView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event
