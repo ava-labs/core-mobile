@@ -4,11 +4,11 @@ import {
   BitcoinProvider,
   DerivationPath,
   JsonRpcBatchInternal,
-  getAddressDerivationPath,
   getAddressFromXPub,
   getAddressPublicKeyFromXPub,
   getBech32AddressFromXPub,
-  getWalletFromMnemonic
+  getWalletFromMnemonic,
+  getAddressDerivationPath
 } from '@avalabs/wallets-sdk'
 import { now } from 'moment'
 import {
@@ -74,14 +74,17 @@ export class MnemonicWallet implements Wallet {
 
   private getAvaSigner(
     accountIndex: number,
-    provider: Avalanche.JsonRpcProvider
-  ): Avalanche.StaticSigner {
-    return Avalanche.StaticSigner.fromMnemonic(
-      this.mnemonic,
-      getAddressDerivationPath(accountIndex, DerivationPath.BIP44, 'AVM'),
-      getAddressDerivationPath(accountIndex, DerivationPath.BIP44, 'EVM'),
-      provider
-    )
+    provider?: Avalanche.JsonRpcProvider
+  ): Avalanche.StaticSigner | Avalanche.SimpleSigner {
+    if (provider) {
+      return Avalanche.StaticSigner.fromMnemonic(
+        this.mnemonic,
+        getAddressDerivationPath(accountIndex, DerivationPath.BIP44, 'AVM'),
+        getAddressDerivationPath(accountIndex, DerivationPath.BIP44, 'EVM'),
+        provider
+      )
+    }
+    return new Avalanche.SimpleSigner(this.mnemonic, accountIndex)
   }
 
   private async getSigner({
@@ -92,7 +95,7 @@ export class MnemonicWallet implements Wallet {
     accountIndex: number
     network: Network
     provider: JsonRpcBatchInternal | BitcoinProvider | Avalanche.JsonRpcProvider
-  }): Promise<BitcoinWallet | BaseWallet | Avalanche.StaticSigner> {
+  }): Promise<BitcoinWallet | BaseWallet | Avalanche.SimpleSigner> {
     switch (network.vmName) {
       case NetworkVMType.EVM:
         return this.getEvmSigner(accountIndex)
@@ -110,7 +113,7 @@ export class MnemonicWallet implements Wallet {
             `Unable to get signer: wrong provider obtained for network ${network.vmName}`
           )
         }
-        return this.getAvaSigner(accountIndex, provider)
+        return this.getAvaSigner(accountIndex) as Avalanche.SimpleSigner
       default:
         throw new Error('Unable to get signer: network not supported')
     }
@@ -252,7 +255,7 @@ export class MnemonicWallet implements Wallet {
   }): Promise<string> {
     const signer = await this.getSigner({ accountIndex, network, provider })
 
-    if (!(signer instanceof Avalanche.StaticSigner)) {
+    if (!(signer instanceof Avalanche.SimpleSigner)) {
       throw new Error('Unable to sign avalanche transaction: invalid signer')
     }
 
@@ -341,7 +344,7 @@ export class MnemonicWallet implements Wallet {
     accountIndex: number
     provXP: Avalanche.JsonRpcProvider
   }): Avalanche.StaticSigner {
-    return this.getAvaSigner(accountIndex, provXP)
+    return this.getAvaSigner(accountIndex, provXP) as Avalanche.StaticSigner
   }
 }
 
