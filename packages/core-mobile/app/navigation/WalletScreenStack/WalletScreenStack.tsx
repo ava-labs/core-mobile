@@ -184,6 +184,7 @@ export type WalletScreenStackParams = {
   [AppNavigation.Modal.BrowserTabsList]: undefined
   [AppNavigation.Modal.BrowserTabCloseAll]: { onConfirm: () => void }
   [AppNavigation.Modal.AnalyticsConsentSheet]: undefined
+  [AppNavigation.Modal.UseWalletConnect]: { onContinue: () => void }
 }
 
 const WalletScreenS = createStackNavigator<WalletScreenStackParams>()
