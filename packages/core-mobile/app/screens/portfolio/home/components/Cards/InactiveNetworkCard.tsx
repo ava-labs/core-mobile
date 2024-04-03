@@ -72,22 +72,27 @@ const InactiveNetworkCard: FC<Props> = ({ network }) => {
 
     return (
       <View>
-        <View>
-          <NetworkLogo
-            logoUri={network.logoUri}
-            size={32}
-            style={{ alignSelf: 'flex-start' }}
-          />
-          {pendingBridgeTxs.length > 0 && (
-            <TopRightBadge
-              text={pendingBridgeTxs.length.toString()}
-              style={{
-                borderColor: theme.colors.$neutral900,
-                borderWidth: 2
-              }}
-              offset={{ x: 3, y: 3 }}
+        <View
+          sx={{
+            flexDirection: 'row'
+          }}>
+          <View>
+            <NetworkLogo
+              logoUri={network.logoUri}
+              size={32}
+              style={{ alignSelf: 'flex-start' }}
             />
-          )}
+            {pendingBridgeTxs.length > 0 && (
+              <TopRightBadge
+                text={pendingBridgeTxs.length.toString()}
+                style={{
+                  borderColor: theme.colors.$neutral900,
+                  borderWidth: 2
+                }}
+                offset={{ x: 3, y: 3 }}
+              />
+            )}
+          </View>
         </View>
         <Space y={8} />
         <View>
