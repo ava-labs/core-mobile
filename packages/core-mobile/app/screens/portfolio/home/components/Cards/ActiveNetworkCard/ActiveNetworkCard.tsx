@@ -64,17 +64,19 @@ const ActiveNetworkCard = (): JSX.Element => {
     return (
       <View>
         <View sx={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-          <NetworkLogo logoUri={network.logoUri} size={32} />
-          {pendingBridgeTxs.length > 0 && (
-            <TopRightBadge
-              text={pendingBridgeTxs.length.toString()}
-              style={{
-                borderColor: theme.colors.$neutral900,
-                borderWidth: 2
-              }}
-              offset={{ x: 3, y: 3 }}
-            />
-          )}
+          <View>
+            <NetworkLogo logoUri={network.logoUri} size={32} />
+            {pendingBridgeTxs.length > 0 && (
+              <TopRightBadge
+                text={pendingBridgeTxs.length.toString()}
+                style={{
+                  borderColor: theme.colors.$neutral900,
+                  borderWidth: 2
+                }}
+                offset={{ x: 3, y: 3 }}
+              />
+            )}
+          </View>
           <View
             sx={{
               alignSelf: 'flex-start',
