@@ -4,7 +4,7 @@ import { useNavigation } from '@react-navigation/native'
 import CreatePIN from 'screens/onboarding/CreatePIN'
 import BiometricLogin from 'screens/onboarding/BiometricLogin'
 import { createStackNavigator } from '@react-navigation/stack'
-import { MainHeaderOptions } from 'navigation/NavUtils'
+import { MainHeaderOptions, getModalOptions } from 'navigation/NavUtils'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import TermsNConditionsModal from 'components/TermsNConditionsModal'
 import OwlLoader from 'components/OwlLoader'
@@ -38,7 +38,9 @@ const CreatePinStack: () => JSX.Element = () => {
         component={BiometricLoginScreen}
       />
       <CreatePinS.Screen
-        options={{ presentation: 'transparentModal' }}
+        options={{
+          ...getModalOptions()
+        }}
         name={AppNavigation.CreateWallet.TermsNConditions}
         component={TermsNConditionsModalScreen}
       />
