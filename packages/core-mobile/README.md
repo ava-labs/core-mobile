@@ -48,7 +48,7 @@ yarn lint
 
 # fetch envs from aws and populate .env files
 # do this when you first set up the project and whenever you need to sync the .env files
-yarn envs
+yarn envs # will ask for sudo password
 ```
 
 ## Custom fonts
