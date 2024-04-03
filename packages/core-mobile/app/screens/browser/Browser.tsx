@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { Icons, View } from '@avalabs/k2-mobile'
-import WebView from 'react-native-webview'
+import WebView, { WebViewMessageEvent } from 'react-native-webview'
 import Logger from 'utils/Logger'
 import { useDispatch, useSelector } from 'react-redux'
 import {
@@ -17,10 +17,11 @@ import { DeepLink, DeepLinkOrigin } from 'contexts/DeeplinkContext/types'
 import { AddHistoryPayload } from 'store/browser'
 import InputText from 'components/InputText'
 import useClipboardWatcher from 'hooks/useClipboardWatcher'
-import useRecentWalletHack, {
-  GetDescriptionAndFavicon
+import {
+  GetDescriptionAndFavicon,
+  InjectedJsMessageWrapper,
+  useInjectedJavascript
 } from 'hooks/browser/useInjectedJavascript'
-import { updateMetadataForActiveTab } from 'store/browser/slices/globalHistory'
 import { useGoogleSearch } from 'hooks/browser/useGoogleSearch'
 import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation } from '@react-navigation/native'
@@ -28,6 +29,7 @@ import { BrowserScreenProps } from 'navigation/types'
 import { selectIsFavorited } from 'store/browser/slices/favorites'
 import { LayoutAnimation } from 'react-native'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import { updateMetadataForActiveTab } from 'store/browser/slices/globalHistory'
 import { isValidHttpUrl, normalizeUrlWithHttps } from './utils'
 import { TabIcon } from './components/TabIcon'
 import { MoreMenu } from './components/MoreMenu'
@@ -43,8 +45,11 @@ export default function Browser({ tabId }: { tabId: string }): JSX.Element {
   const [urlEntry, setUrlEntry] = useState('')
   const [urlToLoad, setUrlToLoad] = useState('')
   const clipboard = useClipboardWatcher()
-  const { injectCoreAsRecent, injectGetDescriptionAndFavicon } =
-    useRecentWalletHack()
+  const {
+    injectCoreAsRecent,
+    injectGetDescriptionAndFavicon,
+    coreConnectInterceptor
+  } = useInjectedJavascript()
   const activeHistory = useSelector(selectTab(tabId))?.activeHistory
   const webViewRef = useRef<WebView>(null)
   const [favicon, setFavicon] = useState<string | undefined>(undefined)
@@ -69,12 +74,12 @@ export default function Browser({ tabId }: { tabId: string }): JSX.Element {
   }
 
   const navigateToTabList = (): void => {
-    AnalyticsService.capture('BrowserTabsOpened')
+    AnalyticsService.capture('BrowserTabsOpened').catch(Logger.error)
     navigate(AppNavigation.Modal.BrowserTabsList)
   }
 
   function handleUrlSubmit(): void {
-    AnalyticsService.capture('BrowserSearchSubmitted')
+    AnalyticsService.capture('BrowserSearchSubmitted').catch(Logger.error)
     const normalized = normalizeUrlWithHttps(urlEntry)
     if (isValidHttpUrl(normalized)) {
       setUrlToLoad(normalized)
@@ -101,6 +106,34 @@ export default function Browser({ tabId }: { tabId: string }): JSX.Element {
 
   function handleRefresh(): void {
     webViewRef.current?.reload()
+  }
+
+  function parseDescriptionAndFavicon(
+    wrapper: InjectedJsMessageWrapper,
+    event: WebViewMessageEvent
+  ): void {
+    const { favicon: favi, description: desc } = JSON.parse(
+      wrapper.payload
+    ) as GetDescriptionAndFavicon
+    if (favi || desc) {
+      setFavicon(favi)
+      setDescription(desc)
+      dispatch(
+        updateMetadataForActiveTab({
+          url: event.nativeEvent.url,
+          favicon: favi,
+          description: desc
+        })
+      )
+    }
+  }
+
+  function showWalletConnectDialog(): void {
+    navigate(AppNavigation.Modal.UseWalletConnect, {
+      onContinue: () => {
+        //noop, for now
+      }
+    })
   }
 
   return (
@@ -164,7 +197,11 @@ export default function Browser({ tabId }: { tabId: string }): JSX.Element {
         testID="myWebview"
         ref={webViewRef}
         pullToRefreshEnabled={true}
-        injectedJavaScript={injectGetDescriptionAndFavicon + injectCoreAsRecent}
+        injectedJavaScript={
+          injectGetDescriptionAndFavicon +
+          injectCoreAsRecent +
+          coreConnectInterceptor
+        }
         source={{ uri: urlToLoad }}
         setSupportMultipleWindows={false}
         onError={event => {
@@ -188,21 +225,19 @@ export default function Browser({ tabId }: { tabId: string }): JSX.Element {
           dispatch(addHistoryForActiveTab(history))
           setUrlEntry(event.nativeEvent.url)
         }}
-        onMessage={event => {
-          const parsedJson = JSON.parse(
+        onMessage={(event: WebViewMessageEvent) => {
+          const wrapper = JSON.parse(
             event.nativeEvent.data
-          ) as GetDescriptionAndFavicon
-
-          if (parsedJson.favicon || parsedJson.description) {
-            setFavicon(parsedJson.favicon)
-            setDescription(parsedJson.description)
-            dispatch(
-              updateMetadataForActiveTab({
-                url: event.nativeEvent.url,
-                favicon: parsedJson.favicon,
-                description: parsedJson.description
-              })
-            )
+          ) as InjectedJsMessageWrapper
+          switch (wrapper.method) {
+            case 'desc_and_favicon':
+              parseDescriptionAndFavicon(wrapper, event)
+              break
+            case 'window_ethereum_used':
+              showWalletConnectDialog()
+              break
+            default:
+              break
           }
 
           //do not remove this listener, https://github.com/react-native-webview/react-native-webview/blob/master/docs/Reference.md#injectedjavascript

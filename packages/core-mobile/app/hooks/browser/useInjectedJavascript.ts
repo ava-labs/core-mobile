@@ -6,6 +6,12 @@ export type InjectedJavascripts = {
    */
   injectLogRecentWallet: string
   injectGetDescriptionAndFavicon: string
+  coreConnectInterceptor: string
+}
+
+export type InjectedJsMessageWrapper = {
+  method: 'window_ethereum_used' | 'recent_wallet' | 'desc_and_favicon'
+  payload: string
 }
 
 export type GetDescriptionAndFavicon = {
@@ -21,7 +27,7 @@ export type GetDescriptionAndFavicon = {
  * [WalletConnect modal]{@link https://github.com/WalletConnect/modal/blob/95571fb4e96bd2a5c36214e657dc66aae0f1c8b4/packages/modal-ui/src/utils/UiUtil.ts#L146}
  * and it sets this wallet as first in the list of supported wallets.
  */
-export default function useInjectedJavascript(): InjectedJavascripts {
+export function useInjectedJavascript(): InjectedJavascripts {
   const coreMobileWalletConnectObject = `
     {
       id: 'f323633c1f67055a45aac84e321af6ffe46322da677ffdd32f9bc1e33bafe29c',
@@ -72,7 +78,11 @@ export default function useInjectedJavascript(): InjectedJavascripts {
   const injectLogRecentWallet = `(async function(){
     let printRecentWallet = async function(){
       const recentWallet = window.localStorage.getItem('WCM_RECENT_WALLET_DATA');
-      window.ReactNativeWebView.postMessage(recentWallet)
+      const message = {
+        method: 'recent_wallet',
+        payload: recentWallet
+      }
+      window.ReactNativeWebView.postMessage(JSON.stringify(message))
       await new Promise(r => setTimeout(r, 2000));
     }
     while (true){
@@ -102,12 +112,30 @@ export default function useInjectedJavascript(): InjectedJavascripts {
         favicon = nodeList[i].getAttribute("href");
       }
     }
-    window.ReactNativeWebView.postMessage(JSON.stringify({favicon, description}));
+    const message = {
+        method: 'desc_and_favicon',
+        payload: JSON.stringify({favicon, description})
+      }
+    window.ReactNativeWebView.postMessage(JSON.stringify(message));
+  })();`
+
+  const coreConnectInterceptor = `(async function(){     
+    window.ethereum = {
+      request: function (json) {
+        console.log(json);
+        // if anything is called from here pass it back to WebView
+        const message = {
+          method: 'window_ethereum_used'
+        }
+        window.ReactNativeWebView.postMessage(JSON.stringify(message));
+      } 
+    }; 
   })();`
 
   return {
     injectCoreAsRecent,
     injectLogRecentWallet,
-    injectGetDescriptionAndFavicon
+    injectGetDescriptionAndFavicon,
+    coreConnectInterceptor
   }
 }
