@@ -3,7 +3,7 @@
   "compilerOptions": {
     "baseUrl": "./app",
     "paths": {
-      "tests/*": ["../tests/*"],
+      "tests/*": ["../tests/*"]
     }
   },
   "include": [
@@ -17,7 +17,5 @@
     ".prettierrc.js",
     "../k2-mobile/src/theme.d.ts"
   ],
-  "exclude": [
-    "node_modules",
-  ],
+  "exclude": ["node_modules"]
 }

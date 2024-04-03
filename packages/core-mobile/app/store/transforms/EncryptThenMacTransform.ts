@@ -1,4 +1,4 @@
-import * as Crypto from 'crypto'
+import Crypto from 'react-native-quick-crypto'
 import { createTransform } from 'redux-persist'
 import { encryptTransform } from 'redux-persist-transform-encrypt'
 import { RawRootState } from 'store'

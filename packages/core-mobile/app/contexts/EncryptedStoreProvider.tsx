@@ -14,6 +14,7 @@ const MAC_KEY = 'sec-store-provider-mac'
  */
 export const EncryptedStoreProvider: FC = ({ children }) => {
   const encryptedStore = useEncryptedStore()
+
   if (!encryptedStore) return null
 
   return (

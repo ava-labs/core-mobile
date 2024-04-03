@@ -12,7 +12,7 @@ import CheckMnemonic from 'screens/onboarding/CheckMnemonic'
 import CreatePIN from 'screens/onboarding/CreatePIN'
 import BiometricLogin from 'screens/onboarding/BiometricLogin'
 import { createStackNavigator } from '@react-navigation/stack'
-import { MainHeaderOptions } from 'navigation/NavUtils'
+import { getModalOptions, MainHeaderOptions } from 'navigation/NavUtils'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import WarningModal from 'components/WarningModal'
 import TermsNConditionsModal from 'components/TermsNConditionsModal'
@@ -86,7 +86,7 @@ const CreateWalletStack: () => JSX.Element = () => {
           component={BiometricLoginScreen}
         />
         <CreateWalletS.Screen
-          options={{ presentation: 'transparentModal' }}
+          options={{ ...getModalOptions() }}
           name={AppNavigation.CreateWallet.TermsNConditions}
           component={TermsNConditionsModalScreen}
         />
