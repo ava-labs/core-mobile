@@ -67,12 +67,14 @@ const Erc1155Token = z
 const ListNftTokens = z
   .object({
     nextPageToken: z.string().optional(),
-    tokens: z.union([z.array(Erc721Token), z.array(Erc1155Token)])
+    tokens: z.array(z.union([Erc721Token, Erc1155Token]))
   })
   .passthrough()
 const OperationType = z.enum([
-  'TRANSACTION_EXPORT_EVM',
-  'TRANSACTION_EXPORT_PRIMARY_NETWORK'
+  'TRANSACTION_EXPORT_PRIMARY_NETWORK',
+  'TRANSACTION_EXPORT_PRIMARY_NETWORK_STAKING',
+  'TRANSACTION_EXPORT_PRIMARY_NETWORK_SIMPLE',
+  'TRANSACTION_EXPORT_EVM'
 ])
 const OperationStatus = z.enum([
   'RUNNING',
@@ -104,6 +106,7 @@ const OperationStatusResponse = z
     updatedAtTimestamp: z.number()
   })
   .passthrough()
+const EVMOperationType = z.literal('TRANSACTION_EXPORT_EVM')
 const EvmNetworkOptions = z
   .object({
     addresses: z.array(z.string()),
@@ -112,7 +115,7 @@ const EvmNetworkOptions = z
   .passthrough()
 const CreateEvmTransactionExportRequest = z
   .object({
-    type: z.literal('TRANSACTION_EXPORT_EVM'),
+    type: EVMOperationType,
     firstDate: z.string(),
     lastDate: z.string(),
     startDate: z.string(),
@@ -120,9 +123,14 @@ const CreateEvmTransactionExportRequest = z
     options: EvmNetworkOptions
   })
   .passthrough()
+const PrimaryNetworkOperationType = z.enum([
+  'TRANSACTION_EXPORT_PRIMARY_NETWORK',
+  'TRANSACTION_EXPORT_PRIMARY_NETWORK_STAKING',
+  'TRANSACTION_EXPORT_PRIMARY_NETWORK_SIMPLE'
+])
 const PrimaryNetworkOptions = z
   .object({
-    addresses: z.array(z.string()),
+    addresses: z.array(z.string()).optional(),
     cChainEvmAddresses: z.array(z.string()).optional(),
     includeChains: z.array(
       z.enum([
@@ -140,7 +148,7 @@ const PrimaryNetworkOptions = z
   .passthrough()
 const CreatePrimaryNetworkTransactionExportRequest = z
   .object({
-    type: z.literal('TRANSACTION_EXPORT_PRIMARY_NETWORK'),
+    type: PrimaryNetworkOperationType,
     firstDate: z.string(),
     lastDate: z.string(),
     startDate: z.string(),
@@ -154,48 +162,67 @@ const postTransactionExportJob_Body = z.union([
 ])
 const PChainTransactionType = z.enum([
   'AddValidatorTx',
-  'AddDelegatorTx',
-  'AddPermissionlessValidatorTx',
-  'AddPermissionlessDelegatorTx',
   'AddSubnetValidatorTx',
-  'RemoveSubnetValidatorTx',
-  'RewardValidatorTx',
+  'AddDelegatorTx',
   'CreateChainTx',
   'CreateSubnetTx',
   'ImportTx',
   'ExportTx',
   'AdvanceTimeTx',
+  'RewardValidatorTx',
+  'RemoveSubnetValidatorTx',
+  'TransformSubnetTx',
+  'AddPermissionlessValidatorTx',
+  'AddPermissionlessDelegatorTx',
+  'BaseTx',
+  'TransferSubnetOwnershipTx',
   'UNKNOWN'
 ])
-const UtxoType = z.enum(['STAKE', 'TRANSFER'])
+const PrimaryNetworkAssetType = z.enum(['secp256k1', 'nft'])
+const AssetAmount = z
+  .object({
+    assetId: z.string(),
+    name: z.string(),
+    symbol: z.string(),
+    denomination: z.number(),
+    type: PrimaryNetworkAssetType,
+    amount: z.string()
+  })
+  .passthrough()
 const RewardType = z.enum(['VALIDATOR', 'DELEGATOR', 'VALIDATOR_FEE'])
+const UtxoType = z.enum(['STAKE', 'TRANSFER'])
 const PChainUtxo = z
   .object({
     addresses: z.array(z.string()),
+    asset: AssetAmount,
+    consumedOnChainId: z.string(),
+    consumingTxHash: z.string().optional(),
+    createdOnChainId: z.string(),
     utxoId: z.string(),
-    txHash: z.string(),
-    outputIndex: z.number(),
+    amount: z.string(),
+    assetId: z.string(),
     blockNumber: z.string(),
     blockTimestamp: z.number(),
-    consumingTxHash: z.string().optional(),
-    consumingBlockTimestamp: z.number().optional(),
     consumingBlockNumber: z.string().optional(),
-    assetId: z.string(),
-    utxoType: UtxoType,
-    amount: z.string(),
-    stakeableLocktime: z.number().optional(),
+    consumingBlockTimestamp: z.number().optional(),
     platformLocktime: z.number().optional(),
-    threshold: z.number().optional(),
-    createdOnChainId: z.string(),
-    consumedOnChainId: z.string(),
+    outputIndex: z.number(),
+    rewardType: RewardType.optional(),
+    stakeableLocktime: z.number().optional(),
     staked: z.boolean().optional(),
-    utxoStartTimestamp: z.number().optional(),
+    threshold: z.number().optional(),
+    txHash: z.string(),
     utxoEndTimestamp: z.number().optional(),
-    rewardType: RewardType.optional()
+    utxoStartTimestamp: z.number().optional(),
+    utxoType: UtxoType
   })
   .passthrough()
-const PChainAsset = z
-  .object({ assetId: z.string(), amount: z.string() })
+const SubnetOwnershipInfo = z
+  .object({
+    locktime: z.number(),
+    threshold: z.number(),
+    addresses: z.array(z.string())
+  })
   .passthrough()
 const PChainTransaction = z
   .object({
@@ -208,9 +235,9 @@ const PChainTransaction = z
     emittedUtxos: z.array(PChainUtxo),
     sourceChain: z.string().optional(),
     destinationChain: z.string().optional(),
-    value: z.array(PChainAsset),
-    amountBurned: z.array(PChainAsset),
-    amountStaked: z.array(PChainAsset),
+    value: z.array(AssetAmount),
+    amountBurned: z.array(AssetAmount),
+    amountStaked: z.array(AssetAmount),
     startTimestamp: z.number().optional(),
     endTimestamp: z.number().optional(),
     delegationFeePercent: z.string().optional(),
@@ -220,7 +247,8 @@ const PChainTransaction = z
     rewardTxHash: z.string().optional(),
     rewardAddresses: z.array(z.string()).optional(),
     memo: z.string().optional(),
-    stakingTxHash: z.string().optional()
+    stakingTxHash: z.string().optional(),
+    subnetOwnershipInfo: SubnetOwnershipInfo.optional()
   })
   .passthrough()
 const XChainTransactionType = z.enum([
@@ -231,49 +259,40 @@ const XChainTransactionType = z.enum([
   'ExportTx',
   'UNKNOWN'
 ])
-const Asset = z
-  .object({
-    assetId: z.string(),
-    name: z.string(),
-    symbol: z.string(),
-    denomination: z.number(),
-    type: z.string(),
-    amount: z.string()
-  })
-  .passthrough()
 const UtxoCredential = z
   .object({ signature: z.string(), publicKey: z.string() })
   .partial()
   .passthrough()
 const Utxo = z
   .object({
-    utxoId: z.string(),
-    asset: Asset,
-    utxoType: z.string(),
-    createdOnChainId: z.string(),
-    consumedOnChainId: z.string(),
-    creationTxHash: z.string(),
-    consumingTxHash: z.string().optional(),
-    consumingTxTimestamp: z.number().optional(),
-    outputIndex: z.string(),
-    timestamp: z.number(),
-    locktime: z.number(),
-    threshold: z.number(),
     addresses: z.array(z.string()),
-    payload: z.string().optional(),
+    asset: AssetAmount,
+    consumedOnChainId: z.string(),
+    consumingTxHash: z.string().optional(),
+    createdOnChainId: z.string(),
+    utxoId: z.string(),
+    consumingTxTimestamp: z.number().optional(),
+    creationTxHash: z.string(),
+    credentials: z.array(UtxoCredential).optional(),
     groupId: z.number().optional(),
-    credentials: z.array(UtxoCredential).optional()
+    locktime: z.number(),
+    outputIndex: z.string(),
+    payload: z.string().optional(),
+    threshold: z.number(),
+    timestamp: z.number(),
+    utxoType: z.string()
   })
   .passthrough()
+const PrimaryNetworkAssetCap = z.enum(['fixed', 'variable'])
 const XChainAssetDetails = z
   .object({
     assetId: z.string(),
     name: z.string(),
     symbol: z.string(),
     denomination: z.number(),
-    type: z.string(),
+    type: PrimaryNetworkAssetType,
     createdAtTimestamp: z.number(),
-    cap: z.string()
+    cap: PrimaryNetworkAssetCap
   })
   .passthrough()
 const TransactionVertexDetail = z
@@ -288,8 +307,8 @@ const XChainNonLinearTransaction = z
     memo: z.string(),
     consumedUtxos: z.array(Utxo),
     emittedUtxos: z.array(Utxo),
-    amountUnlocked: z.array(Asset),
-    amountCreated: z.array(Asset),
+    amountUnlocked: z.array(AssetAmount),
+    amountCreated: z.array(AssetAmount),
     sourceChain: z.string().optional(),
     destinationChain: z.string().optional(),
     assetCreated: XChainAssetDetails.optional(),
@@ -305,8 +324,8 @@ const XChainLinearTransaction = z
     memo: z.string(),
     consumedUtxos: z.array(Utxo),
     emittedUtxos: z.array(Utxo),
-    amountUnlocked: z.array(Asset),
-    amountCreated: z.array(Asset),
+    amountUnlocked: z.array(AssetAmount),
+    amountCreated: z.array(AssetAmount),
     sourceChain: z.string().optional(),
     destinationChain: z.string().optional(),
     assetCreated: XChainAssetDetails.optional(),
@@ -317,7 +336,7 @@ const XChainLinearTransaction = z
 const EVMInput = z
   .object({
     fromAddress: z.string(),
-    asset: Asset,
+    asset: AssetAmount,
     credentials: z.array(UtxoCredential)
   })
   .passthrough()
@@ -328,8 +347,8 @@ const CChainExportTransaction = z
     blockHash: z.string(),
     timestamp: z.number(),
     memo: z.string(),
-    amountUnlocked: z.array(Asset),
-    amountCreated: z.array(Asset),
+    amountUnlocked: z.array(AssetAmount),
+    amountCreated: z.array(AssetAmount),
     sourceChain: z.string(),
     destinationChain: z.string(),
     txType: z.literal('ExportTx'),
@@ -338,7 +357,7 @@ const CChainExportTransaction = z
   })
   .passthrough()
 const EVMOutput = z
-  .object({ toAddress: z.string(), asset: Asset })
+  .object({ toAddress: z.string(), asset: AssetAmount })
   .passthrough()
 const CChainImportTransaction = z
   .object({
@@ -347,8 +366,8 @@ const CChainImportTransaction = z
     blockHash: z.string(),
     timestamp: z.number(),
     memo: z.string(),
-    amountUnlocked: z.array(Asset),
-    amountCreated: z.array(Asset),
+    amountUnlocked: z.array(AssetAmount),
+    amountCreated: z.array(AssetAmount),
     sourceChain: z.string(),
     destinationChain: z.string(),
     txType: z.literal('ImportTx'),
@@ -397,13 +416,43 @@ const PendingReward = z
     endTimestamp: z.number(),
     rewardType: RewardType,
     progress: z.number(),
-    estimatedReward: PChainAsset
+    estimatedReward: AssetAmount
   })
   .passthrough()
 const ListPendingRewardsResponse = z
   .object({
     nextPageToken: z.string().optional(),
     pendingRewards: z.array(PendingReward)
+  })
+  .passthrough()
+const CurrencyCode = z.enum([
+  'usd',
+  'eur',
+  'aud',
+  'cad',
+  'chf',
+  'clp',
+  'cny',
+  'czk',
+  'dkk',
+  'gbp',
+  'hkd',
+  'huf',
+  'jpy',
+  'nzd'
+])
+const Money = z
+  .object({ currencyCode: CurrencyCode, value: z.number() })
+  .passthrough()
+const AssetWithPriceInfo = z
+  .object({
+    assetId: z.string(),
+    name: z.string(),
+    symbol: z.string(),
+    denomination: z.number(),
+    type: PrimaryNetworkAssetType,
+    amount: z.string(),
+    historicalPrice: Money.optional()
   })
   .passthrough()
 const HistoricalReward = z
@@ -417,7 +466,7 @@ const HistoricalReward = z
     rewardType: RewardType,
     utxoId: z.string(),
     outputIndex: z.number(),
-    reward: PChainAsset,
+    reward: AssetWithPriceInfo,
     rewardTxHash: z.string()
   })
   .passthrough()
@@ -441,22 +490,38 @@ const ListUtxosResponse = z
     chainInfo: PrimaryNetworkChainInfo
   })
   .passthrough()
+const AggregatedAssetAmount = z
+  .object({
+    assetId: z.string(),
+    name: z.string(),
+    symbol: z.string(),
+    denomination: z.number(),
+    type: PrimaryNetworkAssetType,
+    amount: z.string(),
+    utxoCount: z.number()
+  })
+  .passthrough()
 const PChainSharedAsset = z
   .object({
     assetId: z.string(),
+    name: z.string(),
+    symbol: z.string(),
+    denomination: z.number(),
+    type: PrimaryNetworkAssetType,
     amount: z.string(),
+    utxoCount: z.number(),
     sharedWithChainId: z.string(),
     status: z.string()
   })
   .passthrough()
 const PChainBalance = z
   .object({
-    unlockedUnstaked: z.array(PChainAsset),
-    unlockedStaked: z.array(PChainAsset),
-    lockedPlatform: z.array(PChainAsset),
-    lockedStakeable: z.array(PChainAsset),
-    lockedStaked: z.array(PChainAsset),
-    pendingStaked: z.array(PChainAsset),
+    unlockedUnstaked: z.array(AggregatedAssetAmount),
+    unlockedStaked: z.array(AggregatedAssetAmount),
+    lockedPlatform: z.array(AggregatedAssetAmount),
+    lockedStakeable: z.array(AggregatedAssetAmount),
+    lockedStaked: z.array(AggregatedAssetAmount),
+    pendingStaked: z.array(AggregatedAssetAmount),
     atomicMemoryUnlocked: z.array(PChainSharedAsset),
     atomicMemoryLocked: z.array(PChainSharedAsset)
   })
@@ -464,24 +529,13 @@ const PChainBalance = z
 const ListPChainBalancesResponse = z
   .object({ balances: PChainBalance, chainInfo: PrimaryNetworkChainInfo })
   .passthrough()
-const XChainAssetBalance = z
-  .object({
-    assetId: z.string(),
-    name: z.string(),
-    symbol: z.string(),
-    denomination: z.number(),
-    type: z.string(),
-    amount: z.string(),
-    utxoCount: z.number()
-  })
-  .passthrough()
 const XChainSharedAssetBalance = z
   .object({
     assetId: z.string(),
     name: z.string(),
     symbol: z.string(),
     denomination: z.number(),
-    type: z.string(),
+    type: PrimaryNetworkAssetType,
     amount: z.string(),
     utxoCount: z.number(),
     sharedWithChainId: z.string()
@@ -489,8 +543,8 @@ const XChainSharedAssetBalance = z
   .passthrough()
 const XChainBalances = z
   .object({
-    locked: z.array(XChainAssetBalance),
-    unlocked: z.array(XChainAssetBalance),
+    locked: z.array(AggregatedAssetAmount),
+    unlocked: z.array(AggregatedAssetAmount),
     atomicMemoryUnlocked: z.array(XChainSharedAssetBalance),
     atomicMemoryLocked: z.array(XChainSharedAssetBalance)
   })
@@ -504,7 +558,7 @@ const CChainSharedAssetBalance = z
     name: z.string(),
     symbol: z.string(),
     denomination: z.number(),
-    type: z.string(),
+    type: PrimaryNetworkAssetType,
     amount: z.string(),
     utxoCount: z.number(),
     sharedWithChainId: z.string()
@@ -649,6 +703,7 @@ const Subnet = z
     ownerAddresses: z.array(z.string()),
     threshold: z.number(),
     locktime: z.number(),
+    subnetOwnershipInfo: SubnetOwnershipInfo,
     blockchains: z.array(BlockchainInfo)
   })
   .passthrough()
@@ -717,6 +772,20 @@ const PendingValidatorDetails = z
     validationStatus: z.literal('pending')
   })
   .passthrough()
+const RemovedValidatorDetails = z
+  .object({
+    txHash: z.string(),
+    nodeId: z.string(),
+    subnetId: z.string(),
+    amountStaked: z.string(),
+    delegationFee: z.string().optional(),
+    startTimestamp: z.number(),
+    endTimestamp: z.number(),
+    removeTxHash: z.string(),
+    removeTimestamp: z.number(),
+    validationStatus: z.literal('removed')
+  })
+  .passthrough()
 const ListValidatorDetailsResponse = z
   .object({
     nextPageToken: z.string().optional(),
@@ -724,7 +793,8 @@ const ListValidatorDetailsResponse = z
       z.discriminatedUnion('validationStatus', [
         CompletedValidatorDetails,
         ActiveValidatorDetails,
-        PendingValidatorDetails
+        PendingValidatorDetails,
+        RemovedValidatorDetails
       ])
     )
   })
@@ -785,14 +855,19 @@ const ListDelegatorDetailsResponse = z
   .passthrough()
 const EventType = z.literal('address_activity')
 const AddressActivityMetadata = z
-  .object({ address: z.string(), topic0: z.string().optional() })
+  .object({
+    addresses: z.array(z.array(z.any())),
+    eventSignatures: z.array(z.string()).optional()
+  })
   .passthrough()
 const RegisterWebhookRequest = z
   .object({
     url: z.string(),
     chainId: z.string(),
     eventType: EventType,
-    metadata: AddressActivityMetadata
+    metadata: AddressActivityMetadata,
+    includeInternalTxs: z.boolean().optional(),
+    includeLogs: z.boolean().optional()
   })
   .passthrough()
 const WebhookStatusType = z.enum(['active', 'inactive'])
@@ -801,10 +876,14 @@ const WebhookResponse = z
     id: z.string(),
     eventType: EventType,
     metadata: AddressActivityMetadata,
+    includeInternalTxs: z.boolean().optional(),
+    includeLogs: z.boolean().optional(),
     url: z.string(),
     chainId: z.string(),
     status: WebhookStatusType,
-    createdAt: z.number()
+    createdAt: z.number(),
+    name: z.string(),
+    description: z.string()
   })
   .passthrough()
 const ListWebhooksResponse = z
@@ -813,24 +892,109 @@ const ListWebhooksResponse = z
     webhooks: z.array(WebhookResponse)
   })
   .passthrough()
-const CurrencyCode = z.enum([
-  'usd',
-  'eur',
-  'aud',
-  'cad',
-  'chf',
-  'clp',
-  'cny',
-  'czk',
-  'dkk',
-  'gbp',
-  'hkd',
-  'huf',
-  'jpy',
-  'nzd'
-])
-const Money = z
-  .object({ currencyCode: CurrencyCode, value: z.number() })
+const UpdateWebhookRequest = z
+  .object({
+    name: z.string(),
+    description: z.string(),
+    url: z.string(),
+    status: WebhookStatusType,
+    includeInternalTxs: z.boolean(),
+    includeLogs: z.boolean()
+  })
+  .partial()
+  .passthrough()
+const SharedSecretsResponse = z.object({ secret: z.string() }).passthrough()
+const AddressesChangeRequest = z
+  .object({ addresses: z.array(z.array(z.any())) })
+  .passthrough()
+const TeleporterReceipt = z
+  .object({
+    receivedMessageNonce: z.string(),
+    relayerRewardAddress: z.string()
+  })
+  .passthrough()
+const TeleporterRewardDetails = z
+  .object({
+    address: z.string(),
+    name: z.string(),
+    symbol: z.string(),
+    decimals: z.number(),
+    logoUri: z.string().optional(),
+    ercType: z.literal('ERC-20'),
+    price: Money.optional(),
+    value: z.string()
+  })
+  .passthrough()
+const TeleporterSourceTransaction = z
+  .object({ txHash: z.string(), timestamp: z.number(), gasSpent: z.string() })
+  .passthrough()
+const PendingTeleporterMessage = z
+  .object({
+    messageId: z.string(),
+    teleporterContractAddress: z.string(),
+    sourceBlockchainId: z.string(),
+    destinationBlockchainId: z.string(),
+    messageNonce: z.string(),
+    from: z.string(),
+    to: z.string(),
+    data: z.string().optional(),
+    messageExecuted: z.boolean(),
+    receipts: z.array(TeleporterReceipt),
+    receiptDelivered: z.boolean(),
+    rewardDetails: TeleporterRewardDetails,
+    sourceTransaction: TeleporterSourceTransaction,
+    status: z.literal('pending')
+  })
+  .passthrough()
+const TeleporterDestinationTransaction = z
+  .object({
+    txHash: z.string(),
+    timestamp: z.number(),
+    gasSpent: z.string(),
+    rewardRedeemer: z.string(),
+    delivererAddress: z.string()
+  })
+  .passthrough()
+const DeliveredTeleporterMessage = z
+  .object({
+    messageId: z.string(),
+    teleporterContractAddress: z.string(),
+    sourceBlockchainId: z.string(),
+    destinationBlockchainId: z.string(),
+    messageNonce: z.string(),
+    from: z.string(),
+    to: z.string(),
+    data: z.string().optional(),
+    messageExecuted: z.boolean(),
+    receipts: z.array(TeleporterReceipt),
+    receiptDelivered: z.boolean(),
+    rewardDetails: TeleporterRewardDetails,
+    sourceTransaction: TeleporterSourceTransaction,
+    destinationTransaction: TeleporterDestinationTransaction,
+    status: z.literal('delivered')
+  })
+  .passthrough()
+const DeliveredSourceNotIndexedTeleporterMessage = z
+  .object({
+    messageId: z.string(),
+    teleporterContractAddress: z.string(),
+    sourceBlockchainId: z.string(),
+    destinationBlockchainId: z.string(),
+    messageNonce: z.string(),
+    from: z.string(),
+    to: z.string(),
+    data: z.string().optional(),
+    messageExecuted: z.boolean(),
+    receipts: z.array(TeleporterReceipt),
+    receiptDelivered: z.boolean(),
+    rewardDetails: TeleporterRewardDetails,
+    destinationTransaction: TeleporterDestinationTransaction,
+    status: z.literal('delivered_source_not_indexed')
+  })
+  .passthrough()
+const NextPageToken = z
+  .object({ nextPageToken: z.string() })
+  .partial()
   .passthrough()
 const NativeTokenBalance = z
   .object({
@@ -1049,7 +1213,7 @@ const FullNativeTransactionDetails = z
     txType: z.number(),
     gasLimit: z.string(),
     gasUsed: z.string(),
-    gasPrice: z.string().optional(),
+    gasPrice: z.string(),
     nonce: z.string(),
     from: RichAddress,
     to: RichAddress,
@@ -1296,7 +1460,8 @@ const ChainInfo = z
     utilityAddresses: UtilityAddresses.optional(),
     networkToken: NetworkToken,
     chainLogoUri: z.string().optional(),
-    private: z.boolean().optional()
+    private: z.boolean().optional(),
+    enabledFeatures: z.array(z.enum(['nftIndexing', 'webhooks'])).optional()
   })
   .passthrough()
 const ListChainsResponse = z
@@ -1319,7 +1484,8 @@ const GetChainResponse = z
     utilityAddresses: UtilityAddresses.optional(),
     networkToken: NetworkToken,
     chainLogoUri: z.string().optional(),
-    private: z.boolean().optional()
+    private: z.boolean().optional(),
+    enabledFeatures: z.array(z.enum(['nftIndexing', 'webhooks'])).optional()
   })
   .passthrough()
 const Erc20Transfer = z
@@ -1363,11 +1529,9 @@ const Erc1155Transfer = z
 const ListTransfersResponse = z
   .object({
     nextPageToken: z.string().optional(),
-    transfers: z.union([
-      z.array(Erc20Transfer),
-      z.array(Erc721Transfer),
-      z.array(Erc1155Transfer)
-    ])
+    transfers: z.array(
+      z.union([Erc20Transfer, Erc721Transfer, Erc1155Transfer])
+    )
   })
   .passthrough()
 const NativeTransaction = z
@@ -1449,6 +1613,47 @@ const ListInternalTransactionsResponse = z
     transactions: z.array(InternalTransaction)
   })
   .passthrough()
+const RpcRequestBodyDto = z
+  .object({
+    method: z.string(),
+    params: z
+      .union([
+        z.array(
+          z.union([
+            z.string(),
+            z.number(),
+            z.object({}).partial().passthrough()
+          ])
+        ),
+        z.object({}).partial().passthrough()
+      ])
+      .optional(),
+    id: z.union([z.string(), z.number()]).optional(),
+    jsonrpc: z.string().optional()
+  })
+  .passthrough()
+const rpc_Body = z.union([RpcRequestBodyDto, z.array(RpcRequestBodyDto)])
+const RpcSuccessResponseDto = z
+  .object({
+    jsonrpc: z.string(),
+    id: z.union([z.string(), z.number()]).optional(),
+    result: z.object({}).partial().passthrough()
+  })
+  .passthrough()
+const RpcErrorDto = z
+  .object({
+    code: z.number(),
+    message: z.string(),
+    data: z.object({}).partial().passthrough().optional()
+  })
+  .passthrough()
+const RpcErrorResponseDto = z
+  .object({
+    jsonrpc: z.string(),
+    id: z.union([z.string(), z.number()]).optional(),
+    error: RpcErrorDto
+  })
+  .passthrough()
 
 export const schemas = {
   NftTokenMetadataStatus,
@@ -1462,21 +1667,25 @@ export const schemas = {
   OperationStatusCode,
   TransactionExportMetadata,
   OperationStatusResponse,
+  EVMOperationType,
   EvmNetworkOptions,
   CreateEvmTransactionExportRequest,
+  PrimaryNetworkOperationType,
   PrimaryNetworkOptions,
   CreatePrimaryNetworkTransactionExportRequest,
   postTransactionExportJob_Body,
   PChainTransactionType,
-  UtxoType,
+  PrimaryNetworkAssetType,
+  AssetAmount,
   RewardType,
+  UtxoType,
   PChainUtxo,
-  PChainAsset,
+  SubnetOwnershipInfo,
   PChainTransaction,
   XChainTransactionType,
-  Asset,
   UtxoCredential,
   Utxo,
+  PrimaryNetworkAssetCap,
   XChainAssetDetails,
   TransactionVertexDetail,
   XChainNonLinearTransaction,
@@ -1494,14 +1703,17 @@ export const schemas = {
   ListCChainAtomicTransactionsResponse,
   PendingReward,
   ListPendingRewardsResponse,
+  CurrencyCode,
+  Money,
+  AssetWithPriceInfo,
   HistoricalReward,
   ListHistoricalRewardsResponse,
   ListPChainUtxosResponse,
   ListUtxosResponse,
+  AggregatedAssetAmount,
   PChainSharedAsset,
   PChainBalance,
   ListPChainBalancesResponse,
-  XChainAssetBalance,
   XChainSharedAssetBalance,
   XChainBalances,
   ListXChainBalancesResponse,
@@ -1531,6 +1743,7 @@ export const schemas = {
   ValidatorHealthDetails,
   ActiveValidatorDetails,
   PendingValidatorDetails,
+  RemovedValidatorDetails,
   ListValidatorDetailsResponse,
   CompletedDelegatorDetails,
   ActiveDelegatorDetails,
@@ -1542,8 +1755,17 @@ export const schemas = {
   WebhookStatusType,
   WebhookResponse,
   ListWebhooksResponse,
-  CurrencyCode,
-  Money,
+  UpdateWebhookRequest,
+  SharedSecretsResponse,
+  AddressesChangeRequest,
+  TeleporterReceipt,
+  TeleporterRewardDetails,
+  TeleporterSourceTransaction,
+  PendingTeleporterMessage,
+  TeleporterDestinationTransaction,
+  DeliveredTeleporterMessage,
+  DeliveredSourceNotIndexedTeleporterMessage,
+  NextPageToken,
   NativeTokenBalance,
   GetNativeBalanceResponse,
   Erc20TokenBalance,
@@ -1603,7 +1825,12 @@ export const schemas = {
   ListErc721TransactionsResponse,
   ListErc1155TransactionsResponse,
   InternalTransaction,
-  ListInternalTransactionsResponse
+  ListInternalTransactionsResponse,
+  RpcRequestBodyDto,
+  rpc_Body,
+  RpcSuccessResponseDto,
+  RpcErrorDto,
+  RpcErrorResponseDto
 }
 
 const endpoints = makeApi([
@@ -1618,6 +1845,11 @@ const endpoints = makeApi([
         name: 'network',
         type: 'Query',
         schema: z.enum(['mainnet', 'testnet']).optional()
+      },
+      {
+        name: 'feature',
+        type: 'Query',
+        schema: z.enum(['nftIndexing', 'webhooks']).optional()
       }
     ],
     response: ListChainsResponse
@@ -1721,14 +1953,14 @@ Balance for a specific contract can be retrieved with the &#x60;contractAddress&
     requestFormat: 'json',
     parameters: [
       {
-        name: 'pageSize',
-        type: 'Query',
-        schema: z.number().int().gte(1).lte(100).optional().default(10)
-      },
-      {
         name: 'pageToken',
         type: 'Query',
         schema: z.string().optional()
+      },
+      {
+        name: 'pageSize',
+        type: 'Query',
+        schema: z.number().int().gte(1).lte(100).optional().default(10)
       },
       {
         name: 'chainId',
@@ -1765,14 +1997,14 @@ Balance for a specific contract can be retrieved with the &#x60;contractAddress&
         schema: z.string().optional()
       },
       {
-        name: 'pageSize',
-        type: 'Query',
-        schema: z.number().int().gte(1).lte(100).optional().default(10)
-      },
-      {
         name: 'pageToken',
         type: 'Query',
         schema: z.string().optional()
+      },
+      {
+        name: 'pageSize',
+        type: 'Query',
+        schema: z.number().int().gte(1).lte(100).optional().default(10)
       },
       {
         name: 'chainId',
@@ -1809,14 +2041,14 @@ Balance for specific contracts can be retrieved with the &#x60;contractAddresses
         schema: z.string().optional()
       },
       {
-        name: 'pageSize',
-        type: 'Query',
-        schema: z.number().int().gte(1).lte(100).optional().default(10)
-      },
-      {
         name: 'pageToken',
         type: 'Query',
         schema: z.string().optional()
+      },
+      {
+        name: 'pageSize',
+        type: 'Query',
+        schema: z.number().int().gte(1).lte(100).optional().default(10)
       },
       {
         name: 'chainId',
@@ -1868,14 +2100,14 @@ Balance for a specific contract can be retrieved with the &#x60;contractAddress&
     requestFormat: 'json',
     parameters: [
       {
-        name: 'pageSize',
-        type: 'Query',
-        schema: z.number().int().gte(1).lte(100).optional().default(10)
-      },
-      {
         name: 'pageToken',
         type: 'Query',
         schema: z.string().optional()
+      },
+      {
+        name: 'pageSize',
+        type: 'Query',
+        schema: z.number().int().gte(1).lte(100).optional().default(10)
       },
       {
         name: 'chainId',
@@ -1905,14 +2137,14 @@ Filterable by block ranges.`,
     requestFormat: 'json',
     parameters: [
       {
-        name: 'pageSize',
-        type: 'Query',
-        schema: z.number().int().gte(1).lte(100).optional().default(10)
-      },
-      {
         name: 'pageToken',
         type: 'Query',
         schema: z.string().optional()
+      },
+      {
+        name: 'pageSize',
+        type: 'Query',
+        schema: z.number().int().gte(1).lte(100).optional().default(10)
       },
       {
         name: 'startBlock',
@@ -1960,14 +2192,14 @@ Filterable by block ranges.`,
         schema: z.number().optional()
       },
       {
-        name: 'pageSize',
-        type: 'Query',
-        schema: z.number().int().gte(1).lte(100).optional().default(10)
-      },
-      {
         name: 'pageToken',
         type: 'Query',
         schema: z.string().optional()
+      },
+      {
+        name: 'pageSize',
+        type: 'Query',
+        schema: z.number().int().gte(1).lte(100).optional().default(10)
       },
       {
         name: 'chainId',
@@ -2000,14 +2232,14 @@ Filterable by block ranges.`,
         schema: z.number().optional()
       },
       {
-        name: 'pageSize',
-        type: 'Query',
-        schema: z.number().int().gte(1).lte(100).optional().default(10)
-      },
-      {
         name: 'pageToken',
         type: 'Query',
         schema: z.string().optional()
+      },
+      {
+        name: 'pageSize',
+        type: 'Query',
+        schema: z.number().int().gte(1).lte(100).optional().default(10)
       },
       {
         name: 'chainId',
@@ -2040,14 +2272,14 @@ Filterable by block ranges.`,
         schema: z.number().optional()
       },
       {
-        name: 'pageSize',
-        type: 'Query',
-        schema: z.number().int().gte(1).lte(100).optional().default(10)
-      },
-      {
         name: 'pageToken',
         type: 'Query',
         schema: z.string().optional()
+      },
+      {
+        name: 'pageSize',
+        type: 'Query',
+        schema: z.number().int().gte(1).lte(100).optional().default(10)
       },
       {
         name: 'chainId',
@@ -2082,14 +2314,14 @@ Note that the internal transactions list only contains &#x60;CALL&#x60; or &#x60
         schema: z.number().optional()
       },
       {
-        name: 'pageSize',
-        type: 'Query',
-        schema: z.number().int().gte(1).lte(100).optional().default(10)
-      },
-      {
         name: 'pageToken',
         type: 'Query',
         schema: z.string().optional()
+      },
+      {
+        name: 'pageSize',
+        type: 'Query',
+        schema: z.number().int().gte(1).lte(100).optional().default(10)
       },
       {
         name: 'chainId',
@@ -2122,14 +2354,14 @@ Note that the internal transactions list only contains &#x60;CALL&#x60; or &#x60
         schema: z.number().optional()
       },
       {
-        name: 'pageSize',
-        type: 'Query',
-        schema: z.number().int().gte(1).lte(100).optional().default(10)
-      },
-      {
         name: 'pageToken',
         type: 'Query',
         schema: z.string().optional()
+      },
+      {
+        name: 'pageSize',
+        type: 'Query',
+        schema: z.number().int().gte(1).lte(100).optional().default(10)
       },
       {
         name: 'chainId',
@@ -2152,14 +2384,14 @@ Note that the internal transactions list only contains &#x60;CALL&#x60; or &#x60
     requestFormat: 'json',
     parameters: [
       {
-        name: 'pageSize',
-        type: 'Query',
-        schema: z.number().int().gte(1).lte(100).optional().default(10)
-      },
-      {
         name: 'pageToken',
         type: 'Query',
         schema: z.string().optional()
+      },
+      {
+        name: 'pageSize',
+        type: 'Query',
+        schema: z.number().int().gte(1).lte(100).optional().default(10)
       },
       {
         name: 'chainId',
@@ -2242,14 +2474,14 @@ Note that the internal transactions list only contains &#x60;CALL&#x60; or &#x60
     requestFormat: 'json',
     parameters: [
       {
-        name: 'pageSize',
-        type: 'Query',
-        schema: z.number().int().gte(1).lte(100).optional().default(10)
-      },
-      {
         name: 'pageToken',
         type: 'Query',
         schema: z.string().optional()
+      },
+      {
+        name: 'pageSize',
+        type: 'Query',
+        schema: z.number().int().gte(1).lte(100).optional().default(10)
       },
       {
         name: 'chainId',
@@ -2314,14 +2546,14 @@ Note that the internal transactions list only contains &#x60;CALL&#x60; or &#x60
     requestFormat: 'json',
     parameters: [
       {
-        name: 'pageSize',
-        type: 'Query',
-        schema: z.number().int().gte(1).lte(100).optional().default(10)
-      },
-      {
         name: 'pageToken',
         type: 'Query',
         schema: z.string().optional()
+      },
+      {
+        name: 'pageSize',
+        type: 'Query',
+        schema: z.number().int().gte(1).lte(100).optional().default(10)
       },
       {
         name: 'chainId',
@@ -2404,14 +2636,14 @@ Note that the internal transactions list only contains &#x60;CALL&#x60; or &#x60
         schema: z.number().optional()
       },
       {
-        name: 'pageSize',
-        type: 'Query',
-        schema: z.number().int().gte(1).lte(100).optional().default(10)
-      },
-      {
         name: 'pageToken',
         type: 'Query',
         schema: z.string().optional()
+      },
+      {
+        name: 'pageSize',
+        type: 'Query',
+        schema: z.number().int().gte(1).lte(100).optional().default(10)
       },
       {
         name: 'chainId',
@@ -2434,14 +2666,14 @@ Note that the internal transactions list only contains &#x60;CALL&#x60; or &#x60
     requestFormat: 'json',
     parameters: [
       {
-        name: 'pageSize',
-        type: 'Query',
-        schema: z.number().int().gte(1).lte(100).optional().default(10)
-      },
-      {
         name: 'pageToken',
         type: 'Query',
         schema: z.string().optional()
+      },
+      {
+        name: 'pageSize',
+        type: 'Query',
+        schema: z.number().int().gte(1).lte(100).optional().default(10)
       },
       {
         name: 'chainId',
@@ -2475,6 +2707,37 @@ Note that the internal transactions list only contains &#x60;CALL&#x60; or &#x60
       }
     ],
     response: GetTransactionResponse
+  },
+  {
+    method: 'post',
+    path: '/v1/ext/bc/:chainId/rpc',
+    alias: 'rpc',
+    description: `Calls JSON-RPC method.`,
+    requestFormat: 'json',
+    parameters: [
+      {
+        name: 'body',
+        type: 'Body',
+        schema: rpc_Body
+      },
+      {
+        name: 'chainId',
+        type: 'Path',
+        schema: z.string()
+      }
+    ],
+    response: z.union([
+      RpcSuccessResponseDto,
+      RpcErrorResponseDto,
+      z.array(z.union([RpcSuccessResponseDto, RpcErrorResponseDto]))
+    ]),
+    errors: [
+      {
+        status: 504,
+        description: `Request timed out`,
+        schema: z.void()
+      }
+    ]
   },
   {
     method: 'get',
@@ -2556,14 +2819,14 @@ Note that the internal transactions list only contains &#x60;CALL&#x60; or &#x60
     requestFormat: 'json',
     parameters: [
       {
-        name: 'pageSize',
-        type: 'Query',
-        schema: z.number().int().gte(1).lte(100).optional().default(10)
-      },
-      {
         name: 'pageToken',
         type: 'Query',
         schema: z.string().optional()
+      },
+      {
+        name: 'pageSize',
+        type: 'Query',
+        schema: z.number().int().gte(1).lte(100).optional().default(10)
       },
       {
         name: 'network',
@@ -2630,14 +2893,14 @@ Note that the internal transactions list only contains &#x60;CALL&#x60; or &#x60
         schema: z.number().int().gte(0).optional()
       },
       {
-        name: 'pageSize',
-        type: 'Query',
-        schema: z.number().int().gte(1).lte(100).optional().default(10)
-      },
-      {
         name: 'pageToken',
         type: 'Query',
         schema: z.string().optional()
+      },
+      {
+        name: 'pageSize',
+        type: 'Query',
+        schema: z.number().int().gte(1).lte(100).optional().default(10)
       },
       {
         name: 'blockchainId',
@@ -2714,14 +2977,14 @@ C-Chain balances returned are only the shared atomic memory balance. For EVM bal
     requestFormat: 'json',
     parameters: [
       {
-        name: 'pageSize',
-        type: 'Query',
-        schema: z.number().int().gte(1).lte(100).optional().default(10)
-      },
-      {
         name: 'pageToken',
         type: 'Query',
         schema: z.string().optional()
+      },
+      {
+        name: 'pageSize',
+        type: 'Query',
+        schema: z.number().int().gte(1).lte(100).optional().default(10)
       },
       {
         name: 'blockchainId',
@@ -2787,14 +3050,14 @@ C-Chain balances returned are only the shared atomic memory balance. For EVM bal
     requestFormat: 'json',
     parameters: [
       {
-        name: 'pageSize',
-        type: 'Query',
-        schema: z.number().int().gte(1).lte(100).optional().default(10)
-      },
-      {
         name: 'pageToken',
         type: 'Query',
         schema: z.string().optional()
+      },
+      {
+        name: 'pageSize',
+        type: 'Query',
+        schema: z.number().int().gte(1).lte(100).optional().default(10)
       },
       {
         name: 'blockchainId',
@@ -2829,7 +3092,7 @@ C-Chain balances returned are only the shared atomic memory balance. For EVM bal
     alias: 'listLatestPrimaryNetworkTransactions',
     description: `Lists the latest transactions on one of the Primary Network chains.
 
-Transactions are filterable by addresses.
+Transactions are filterable by addresses, txTypes, and timestamps. When querying for latest transactions without an address parameter, filtering by txTypes and timestamps is not supported. An address filter must be provided to utilize txTypes and timestamp filters.
 
 Given that each transaction may return a large number of UTXO objects, bounded only by the maximum transaction size, the query may return less transactions than the provided page size. The result will contain less results than the page size if the number of utxos contained in the resulting transactions reach a performance threshold.`,
     requestFormat: 'json',
@@ -2855,14 +3118,14 @@ Given that each transaction may return a large number of UTXO objects, bounded o
         schema: z.number().int().gte(0).optional()
       },
       {
-        name: 'pageSize',
-        type: 'Query',
-        schema: z.number().int().gte(1).lte(100).optional().default(10)
-      },
-      {
         name: 'pageToken',
         type: 'Query',
         schema: z.string().optional()
+      },
+      {
+        name: 'pageSize',
+        type: 'Query',
+        schema: z.number().int().gte(1).lte(100).optional().default(10)
       },
       {
         name: 'blockchainId',
@@ -2923,14 +3186,14 @@ Given that each transaction may return a large number of UTXO objects, bounded o
         schema: z.number().int().gte(0).optional()
       },
       {
-        name: 'pageSize',
-        type: 'Query',
-        schema: z.number().int().gte(1).lte(100).optional().default(10)
-      },
-      {
         name: 'pageToken',
         type: 'Query',
         schema: z.string().optional()
+      },
+      {
+        name: 'pageSize',
+        type: 'Query',
+        schema: z.number().int().gte(1).lte(100).optional().default(10)
       },
       {
         name: 'blockchainId',
@@ -3003,14 +3266,14 @@ Given that each transaction may return a large number of UTXO objects, bounded o
         schema: z.string().optional()
       },
       {
-        name: 'pageSize',
-        type: 'Query',
-        schema: z.number().int().gte(1).lte(100).optional().default(10)
-      },
-      {
         name: 'pageToken',
         type: 'Query',
         schema: z.string().optional()
+      },
+      {
+        name: 'pageSize',
+        type: 'Query',
+        schema: z.number().int().gte(1).lte(100).optional().default(10)
       },
       {
         name: 'blockchainId',
@@ -3057,14 +3320,14 @@ Given that each transaction may return a large number of UTXO objects, bounded o
     requestFormat: 'json',
     parameters: [
       {
-        name: 'pageSize',
-        type: 'Query',
-        schema: z.number().int().gte(1).lte(100).optional().default(10)
-      },
-      {
         name: 'pageToken',
         type: 'Query',
         schema: z.string().optional()
+      },
+      {
+        name: 'pageSize',
+        type: 'Query',
+        schema: z.number().int().gte(1).lte(100).optional().default(10)
       },
       {
         name: 'blockchainId',
@@ -3096,14 +3359,14 @@ Given that each transaction may return a large number of UTXO objects, bounded o
         schema: z.number().int().gte(0)
       },
       {
-        name: 'pageSize',
-        type: 'Query',
-        schema: z.number().int().gte(1).lte(100).optional().default(10)
-      },
-      {
         name: 'pageToken',
         type: 'Query',
         schema: z.string().optional()
+      },
+      {
+        name: 'pageSize',
+        type: 'Query',
+        schema: z.number().int().gte(1).lte(100).optional().default(10)
       },
       {
         name: 'blockchainId',
@@ -3164,14 +3427,14 @@ Given that each transaction may return a large number of UTXO objects, bounded o
     requestFormat: 'json',
     parameters: [
       {
-        name: 'pageSize',
-        type: 'Query',
-        schema: z.number().int().gte(1).lte(100).optional().default(10)
-      },
-      {
         name: 'pageToken',
         type: 'Query',
         schema: z.string().optional()
+      },
+      {
+        name: 'pageSize',
+        type: 'Query',
+        schema: z.number().int().gte(1).lte(100).optional().default(10)
       },
       {
         name: 'rewardAddresses',
@@ -3214,14 +3477,14 @@ Given that each transaction may return a large number of UTXO objects, bounded o
         schema: z.string().optional()
       },
       {
-        name: 'pageSize',
-        type: 'Query',
-        schema: z.number().int().gte(1).lte(100).optional().default(10)
-      },
-      {
         name: 'pageToken',
         type: 'Query',
         schema: z.string().optional()
+      },
+      {
+        name: 'pageSize',
+        type: 'Query',
+        schema: z.number().int().gte(1).lte(100).optional().default(10)
       },
       {
         name: 'network',
@@ -3237,6 +3500,28 @@ Given that each transaction may return a large number of UTXO objects, bounded o
         name: 'sortOrder',
         type: 'Query',
         schema: z.enum(['asc', 'desc']).optional()
+      },
+      {
+        name: 'currency',
+        type: 'Query',
+        schema: z
+          .enum([
+            'usd',
+            'eur',
+            'aud',
+            'cad',
+            'chf',
+            'clp',
+            'cny',
+            'czk',
+            'dkk',
+            'gbp',
+            'hkd',
+            'huf',
+            'jpy',
+            'nzd'
+          ])
+          .optional()
       }
     ],
     response: ListHistoricalRewardsResponse
@@ -3254,14 +3539,14 @@ Given that each transaction may return a large number of UTXO objects, bounded o
         schema: z.string().optional()
       },
       {
-        name: 'pageSize',
-        type: 'Query',
-        schema: z.number().int().gte(1).lte(100).optional().default(10)
-      },
-      {
         name: 'pageToken',
         type: 'Query',
         schema: z.string().optional()
+      },
+      {
+        name: 'pageSize',
+        type: 'Query',
+        schema: z.number().int().gte(1).lte(100).optional().default(10)
       },
       {
         name: 'network',
@@ -3289,14 +3574,14 @@ Given that each transaction may return a large number of UTXO objects, bounded o
     requestFormat: 'json',
     parameters: [
       {
-        name: 'pageSize',
-        type: 'Query',
-        schema: z.number().int().gte(1).lte(100).optional().default(10)
-      },
-      {
         name: 'pageToken',
         type: 'Query',
         schema: z.string().optional()
+      },
+      {
+        name: 'pageSize',
+        type: 'Query',
+        schema: z.number().int().gte(1).lte(100).optional().default(10)
       },
       {
         name: 'network',
@@ -3319,44 +3604,14 @@ Given that each transaction may return a large number of UTXO objects, bounded o
     requestFormat: 'json',
     parameters: [
       {
-        name: 'pageSize',
-        type: 'Query',
-        schema: z.number().int().gte(1).lte(100).optional().default(10)
-      },
-      {
         name: 'pageToken',
         type: 'Query',
         schema: z.string().optional()
       },
       {
-        name: 'minTimeRemaining',
+        name: 'pageSize',
         type: 'Query',
-        schema: z.unknown().optional()
-      },
-      {
-        name: 'maxTimeRemaining',
-        type: 'Query',
-        schema: z.unknown().optional().default(2147483647)
-      },
-      {
-        name: 'minDelegationCapacity',
-        type: 'Query',
-        schema: z.number().int().optional()
-      },
-      {
-        name: 'maxDelegationCapacity',
-        type: 'Query',
-        schema: z.number().int().optional()
-      },
-      {
-        name: 'minFeePercentage',
-        type: 'Query',
-        schema: z.unknown().optional()
-      },
-      {
-        name: 'maxFeePercentage',
-        type: 'Query',
-        schema: z.unknown().optional()
+        schema: z.number().int().gte(1).lte(100).optional().default(10)
       },
       {
         name: 'network',
@@ -3376,12 +3631,42 @@ Given that each transaction may return a large number of UTXO objects, bounded o
       {
         name: 'validationStatus',
         type: 'Query',
-        schema: z.enum(['completed', 'active', 'pending']).optional()
+        schema: z.enum(['completed', 'active', 'pending', 'removed']).optional()
+      },
+      {
+        name: 'minDelegationCapacity',
+        type: 'Query',
+        schema: z.string().optional()
+      },
+      {
+        name: 'maxDelegationCapacity',
+        type: 'Query',
+        schema: z.string().optional()
+      },
+      {
+        name: 'minTimeRemaining',
+        type: 'Query',
+        schema: z.number().gte(0).lte(2147483647).optional()
+      },
+      {
+        name: 'maxTimeRemaining',
+        type: 'Query',
+        schema: z.number().gte(0).lte(2147483647).optional()
+      },
+      {
+        name: 'minFeePercentage',
+        type: 'Query',
+        schema: z.number().gte(2).lte(100).optional()
+      },
+      {
+        name: 'maxFeePercentage',
+        type: 'Query',
+        schema: z.number().gte(2).lte(100).optional()
       },
       {
         name: 'subnetId',
         type: 'Query',
-        schema: z.string().optional()
+        schema: z.unknown().optional()
       }
     ],
     response: ListValidatorDetailsResponse
@@ -3394,14 +3679,14 @@ Given that each transaction may return a large number of UTXO objects, bounded o
     requestFormat: 'json',
     parameters: [
       {
-        name: 'pageSize',
-        type: 'Query',
-        schema: z.number().int().gte(1).lte(100).optional().default(10)
-      },
-      {
         name: 'pageToken',
         type: 'Query',
         schema: z.string().optional()
+      },
+      {
+        name: 'pageSize',
+        type: 'Query',
+        schema: z.number().int().gte(1).lte(100).optional().default(10)
       },
       {
         name: 'network',
@@ -3421,7 +3706,7 @@ Given that each transaction may return a large number of UTXO objects, bounded o
       {
         name: 'validationStatus',
         type: 'Query',
-        schema: z.enum(['completed', 'active', 'pending']).optional()
+        schema: z.enum(['completed', 'active', 'pending', 'removed']).optional()
       }
     ],
     response: ListValidatorDetailsResponse
@@ -3459,6 +3744,76 @@ The transaction export operation runs asynchronously in the background. The stat
     response: OperationStatusResponse
   },
   {
+    method: 'get',
+    path: '/v1/teleporter/messages',
+    alias: 'listTeleporterMessages',
+    description: `Lists teleporter messages. Ordered by timestamp in descending order.`,
+    requestFormat: 'json',
+    parameters: [
+      {
+        name: 'pageToken',
+        type: 'Query',
+        schema: z.string().optional()
+      },
+      {
+        name: 'pageSize',
+        type: 'Query',
+        schema: z.number().int().gte(1).lte(100).optional().default(10)
+      },
+      {
+        name: 'sourceBlockchainId',
+        type: 'Query',
+        schema: z.string().optional()
+      },
+      {
+        name: 'destinationBlockchainId',
+        type: 'Query',
+        schema: z.string().optional()
+      },
+      {
+        name: 'to',
+        type: 'Query',
+        schema: z.string().optional()
+      },
+      {
+        name: 'from',
+        type: 'Query',
+        schema: z.string().optional()
+      }
+    ],
+    response: z
+      .object({
+        messages: z.array(
+          z.discriminatedUnion('status', [
+            PendingTeleporterMessage,
+            DeliveredTeleporterMessage
+          ])
+        )
+      })
+      .partial()
+      .passthrough()
+      .and(NextPageToken)
+  },
+  {
+    method: 'get',
+    path: '/v1/teleporter/messages/:messageId',
+    alias: 'getTeleporterMessage',
+    description: `Gets a teleporter message by message ID.`,
+    requestFormat: 'json',
+    parameters: [
+      {
+        name: 'messageId',
+        type: 'Path',
+        schema: z.string()
+      }
+    ],
+    response: z.discriminatedUnion('status', [
+      PendingTeleporterMessage,
+      DeliveredTeleporterMessage,
+      DeliveredSourceNotIndexedTeleporterMessage
+    ])
+  },
+  {
     method: 'post',
     path: '/v1/webhooks',
     alias: 'registerWebhook',
@@ -3481,14 +3836,14 @@ The transaction export operation runs asynchronously in the background. The stat
     requestFormat: 'json',
     parameters: [
       {
-        name: 'pageSize',
-        type: 'Query',
-        schema: z.number().int().gte(1).lte(100).optional().default(10)
-      },
-      {
         name: 'pageToken',
         type: 'Query',
         schema: z.string().optional()
+      },
+      {
+        name: 'pageSize',
+        type: 'Query',
+        schema: z.number().int().gte(1).lte(100).optional().default(10)
       },
       {
         name: 'status',
@@ -3499,12 +3854,83 @@ The transaction export operation runs asynchronously in the background. The stat
     response: ListWebhooksResponse
   },
   {
+    method: 'post',
+    path: '/v1/webhooks:generateOrRotateSharedSecret',
+    alias: 'generateSharedSecret',
+    description: `Generates a new shared secret.`,
+    requestFormat: 'json',
+    response: z.object({ secret: z.string() }).passthrough()
+  },
+  {
+    method: 'get',
+    path: '/v1/webhooks:getSharedSecret',
+    alias: 'getSharedSecret',
+    description: `Get a previously generated shared secret.`,
+    requestFormat: 'json',
+    response: z.object({ secret: z.string() }).passthrough()
+  },
+  {
+    method: 'get',
+    path: '/v1/webhooks/:id',
+    alias: 'getWebhook',
+    description: `Retrieves a webhook by ID.`,
+    requestFormat: 'json',
+    parameters: [
+      {
+        name: 'id',
+        type: 'Path',
+        schema: z.string()
+      }
+    ],
+    response: WebhookResponse
+  },
+  {
     method: 'delete',
     path: '/v1/webhooks/:id',
     alias: 'deactivateWebhook',
     description: `Deactivates a webhook by ID.`,
     requestFormat: 'json',
     parameters: [
+      {
+        name: 'id',
+        type: 'Path',
+        schema: z.string()
+      }
+    ],
+    response: WebhookResponse
+  },
+  {
+    method: 'patch',
+    path: '/v1/webhooks/:id',
+    alias: 'updateWebhook',
+    description: `Updates an existing webhook.`,
+    requestFormat: 'json',
+    parameters: [
+      {
+        name: 'body',
+        type: 'Body',
+        schema: UpdateWebhookRequest
+      },
+      {
+        name: 'id',
+        type: 'Path',
+        schema: z.string()
+      }
+    ],
+    response: WebhookResponse
+  },
+  {
+    method: 'patch',
+    path: '/v1/webhooks/:id/addresses:addAddresses',
+    alias: 'addAddressesToWebhook',
+    description: `Adding address(es) to a given webhook.`,
+    requestFormat: 'json',
+    parameters: [
+      {
+        name: 'body',
+        type: 'Body',
+        schema: AddressesChangeRequest
+      },
       {
         name: 'id',
         type: 'Path',
