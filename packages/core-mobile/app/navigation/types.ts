@@ -40,7 +40,9 @@ import {
   AvalancheSetDeveloperModeApproveData,
   AvalancheSetDeveloperModeRpcRequest
 } from 'store/rpc/handlers/avalanche_setDeveloperMode/types'
+import { AvalancheSignMessageRpcRequest } from 'store/walletConnectV2/handlers/avalanche_signMessage/avalanche_signMessage'
 import { WCSessionProposal } from 'store/walletConnectV2/types'
+import { AvalancheSignMessageApproveData } from '../store/walletConnectV2/handlers/avalanche_signMessage/avalanche_signMessage'
 import { RootScreenStackParamList } from './RootScreenStack'
 import { OnboardingScreenStackParamList } from './OnboardScreenStack'
 import { WelcomeScreenStackParamList } from './onboarding/WelcomeScreenStack'
@@ -133,6 +135,11 @@ export type SignMessageV2Params = {
   network: Network
   account: Account
   data: string | TypedData | OldTypedData
+}
+
+export type AvalancheSignMessageParams = {
+  request: AvalancheSignMessageRpcRequest
+  data: AvalancheSignMessageApproveData
 }
 
 export type BridgeAssetV2Params = {

@@ -184,6 +184,7 @@ export class MnemonicWallet implements Wallet {
     }
 
     switch (rpcMethod) {
+      case RpcMethod.AVALANCHE_SIGN_MESSAGE:
       case RpcMethod.ETH_SIGN:
       case RpcMethod.PERSONAL_SIGN:
         return personalSign({ privateKey: key, data })

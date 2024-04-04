@@ -59,6 +59,7 @@ export enum RpcMethod {
   AVALANCHE_SEND_TRANSACTION = 'avalanche_sendTransaction',
   AVALANCHE_SIGN_TRANSACTION = 'avalanche_signTransaction',
   AVALANCHE_GET_ADDRESSES_IN_RANGE = 'avalanche_getAddressesInRange',
+  AVALANCHE_SIGN_MESSAGE = 'avalanche_signMessage',
 
   /* custom methods that only apply to Wallet Connect*/
   WC_SESSION_REQUEST = 'wc_sessionRequest'
@@ -77,7 +78,8 @@ export const CORE_ONLY_METHODS = [
   RpcMethod.AVALANCHE_UPDATE_CONTACT,
   RpcMethod.AVALANCHE_SEND_TRANSACTION,
   RpcMethod.AVALANCHE_SIGN_TRANSACTION,
-  RpcMethod.AVALANCHE_GET_ADDRESSES_IN_RANGE
+  RpcMethod.AVALANCHE_GET_ADDRESSES_IN_RANGE,
+  RpcMethod.AVALANCHE_SIGN_MESSAGE
 ]
 
 export type RpcError = EthereumRpcError<string> | EthereumProviderError<string>

@@ -143,6 +143,7 @@ export default class SeedlessWallet implements Wallet {
     ).toLowerCase()
 
     switch (rpcMethod) {
+      case RpcMethod.AVALANCHE_SIGN_MESSAGE:
       case RpcMethod.ETH_SIGN:
       case RpcMethod.PERSONAL_SIGN:
         return this.signBlob(

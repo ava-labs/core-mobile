@@ -82,6 +82,7 @@ import {
   AddEthereumChainV2Params,
   AvalancheSendTransactionV2Params,
   AvalancheSetDeveloperModeParams,
+  AvalancheSignMessageParams,
   AvalancheSignTransactionV2Params,
   BridgeAssetV2Params,
   BridgeTransactionStatusParams,
@@ -163,6 +164,7 @@ export type WalletScreenStackParams = {
   [AppNavigation.Modal.EditGasLimit]: EditGasLimitParams
   [AppNavigation.Modal.BuyCarefully]: BuyCarefullyParams
   // rpc prompts for wallet connect v2
+  [AppNavigation.Modal.AvalancheSignMessage]: AvalancheSignMessageParams
   [AppNavigation.Modal.SessionProposalV2]: SessionProposalV2Params
   [AppNavigation.Modal.SignMessageV2]: SignMessageV2Params
   [AppNavigation.Modal.CreateRemoveContactV2]: CreateRemoveContactV2Params
