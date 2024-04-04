@@ -3,12 +3,16 @@ import { useNavigation, useRoute } from '@react-navigation/native'
 import WarningModal from 'components/WarningModal'
 import { WalletScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
+import { Icons, useTheme, View } from '@avalabs/k2-mobile'
 
 type ScreenProps = WalletScreenProps<
   typeof AppNavigation.Modal.UseWalletConnect
 >
 
 export const UseWalletConnectModal: () => JSX.Element = () => {
+  const {
+    theme: { colors }
+  } = useTheme()
   const {
     params: { onContinue }
   } = useRoute<ScreenProps['route']>()
@@ -30,6 +34,11 @@ export const UseWalletConnectModal: () => JSX.Element = () => {
       }
       actionText={'Continue'}
       onAction={handleContinue}
+      header={
+        <View style={{ alignItems: 'center' }}>
+          <Icons.Logos.WalletConnect color={colors.$white} />
+        </View>
+      }
     />
   )
 }
