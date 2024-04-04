@@ -236,6 +236,9 @@ export default function Browser({ tabId }: { tabId: string }): JSX.Element {
             case 'window_ethereum_used':
               showWalletConnectDialog()
               break
+            case 'log':
+              Logger.trace('------> wrapper.payload', wrapper.payload)
+              break
             default:
               break
           }

@@ -10,7 +10,7 @@ export type InjectedJavascripts = {
 }
 
 export type InjectedJsMessageWrapper = {
-  method: 'window_ethereum_used' | 'recent_wallet' | 'desc_and_favicon'
+  method: 'window_ethereum_used' | 'recent_wallet' | 'desc_and_favicon' | 'log'
   payload: string
 }
 
@@ -120,16 +120,26 @@ export function useInjectedJavascript(): InjectedJavascripts {
   })();`
 
   const coreConnectInterceptor = `(async function(){     
-    window.ethereum = {
-      request: function (json) {
-        console.log(json);
-        // if anything is called from here pass it back to WebView
+    setTimeout(() => {
+      const request = function (json) {
         const message = {
           method: 'window_ethereum_used'
-        }
+        };
         window.ReactNativeWebView.postMessage(JSON.stringify(message));
-      } 
-    }; 
+      };
+      if (!window.ethereum) {
+        window.ethereum = {};
+      }
+      window.ethereum.request = request;
+      window.ethereum.enable = request;
+      window.ethereum.networkVersion = '43114'
+      window.ethereum.on = function (eventName, f){ return true; }
+      const message = {
+        method: 'log',
+        payload: 'coreConnectInterceptor ok!'
+      };
+      window.ReactNativeWebView.postMessage(JSON.stringify(message));
+    }, 500); //add delay to make sure we don't get overridden by something else
   })();`
 
   return {
