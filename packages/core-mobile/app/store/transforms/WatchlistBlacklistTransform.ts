@@ -2,7 +2,7 @@ import { createTransform } from 'redux-persist'
 import { RawRootState } from 'store'
 import { WatchListState, reducerName } from 'store/watchlist'
 
-// a transform for watchlist to blacklist prices and charts
+// a transform for watchlist to blacklist tokens, prices and charts
 export const WatchlistBlacklistTransform = createTransform<
   WatchListState,
   WatchListState,
@@ -13,7 +13,7 @@ export const WatchlistBlacklistTransform = createTransform<
   (inboundState: WatchListState) => {
     return {
       favorites: inboundState.favorites,
-      tokens: inboundState.tokens,
+      tokens: {},
       prices: {},
       charts: {}
     }
@@ -22,7 +22,7 @@ export const WatchlistBlacklistTransform = createTransform<
   (outboundState: WatchListState) => {
     return {
       favorites: outboundState.favorites,
-      tokens: outboundState.tokens,
+      tokens: {},
       prices: {},
       charts: {}
     }

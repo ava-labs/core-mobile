@@ -1,4 +1,3 @@
-import AsyncStorage from '@react-native-async-storage/async-storage'
 import { Action, isAnyOf } from '@reduxjs/toolkit'
 import { differenceInSeconds } from 'date-fns'
 import { AppState, AppStateStatus, Platform } from 'react-native'
@@ -20,6 +19,7 @@ import DeviceInfo from 'react-native-device-info'
 import { WalletType } from 'services/wallet/types'
 import SecureStorageService from 'security/SecureStorageService'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import { MMKVStorage } from 'store/MMKVStorage'
 import {
   onAppLocked,
   onAppUnlocked,
@@ -158,7 +158,7 @@ const clearData = async (
   await SecureStorageService.clearAll().catch(e =>
     Logger.error('failed to clear secure store', e)
   )
-  await AsyncStorage.clear().catch(e =>
+  await MMKVStorage.clear().catch(e =>
     Logger.error('failed to clear async store', e)
   )
 }

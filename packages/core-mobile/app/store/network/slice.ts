@@ -23,7 +23,7 @@ export const alwaysFavoriteNetworks = [
   ChainsSDKChainId.AVALANCHE_TESTNET_ID
 ]
 
-const reducerName = 'network'
+export const reducerName = 'network'
 
 const initialState: NetworkState = {
   networks: {},

@@ -3,7 +3,6 @@ import { View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaListItem from 'components/AvaListItem'
 import BiometricsSDK from 'utils/BiometricsSDK'
-import AsyncStorage from '@react-native-async-storage/async-storage'
 import { SECURE_ACCESS_SET } from 'resources/Constants'
 import Switch from 'components/Switch'
 import { useDispatch, useSelector } from 'react-redux'
@@ -14,6 +13,7 @@ import {
 import Logger from 'utils/Logger'
 import WalletService from 'services/wallet/WalletService'
 import { WalletType } from 'services/wallet/types'
+import { MMKVStorage } from 'store/MMKVStorage'
 
 function SecurityPrivacy({
   onChangePin,
@@ -42,8 +42,8 @@ function SecurityPrivacy({
       })
       .catch(Logger.error)
 
-    AsyncStorage.getItem(SECURE_ACCESS_SET)
-      .then(type => {
+    MMKVStorage.getItem(SECURE_ACCESS_SET)
+      .then((type: string) => {
         setIsBiometricSwitchEnabled(type === 'BIO')
       })
       .catch(Logger.error)
@@ -54,7 +54,7 @@ function SecurityPrivacy({
     if (value) {
       onTurnOnBiometrics()
     } else {
-      AsyncStorage.setItem(SECURE_ACCESS_SET, 'PIN')
+      MMKVStorage.setItem(SECURE_ACCESS_SET, 'PIN')
     }
   }
 

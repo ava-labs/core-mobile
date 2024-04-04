@@ -6,7 +6,6 @@ import React, {
   useEffect,
   useState
 } from 'react'
-import AsyncStorage from '@react-native-async-storage/async-storage'
 import useAppBackgroundTracker from 'hooks/useAppBackgroundTracker'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { useSelector, useDispatch } from 'react-redux'
@@ -24,6 +23,7 @@ import {
   toggleAnalytics
 } from 'store/posthog'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import { MMKVStorage } from 'store/MMKVStorage'
 
 export const PosthogContext = createContext<PosthogContextState>(
   {} as PosthogContextState
@@ -62,8 +62,8 @@ export const PosthogContextProvider = ({
 
   const { timeoutPassed } = useAppBackgroundTracker({
     timeoutMs: 30 * 60 * 1000,
-    getTime: async () => AsyncStorage.getItem('POSTHOG_SUSPENDED'),
-    setTime: async time => AsyncStorage.setItem('POSTHOG_SUSPENDED', time)
+    getTime: async () => MMKVStorage.getItem('POSTHOG_SUSPENDED'),
+    setTime: async time => MMKVStorage.setItem('POSTHOG_SUSPENDED', time)
   })
 
   const [analyticsConsent, setAnalyticsConsent] = useState<

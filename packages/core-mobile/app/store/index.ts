@@ -1,4 +1,3 @@
-import AsyncStorage from '@react-native-async-storage/async-storage'
 import { combineReducers } from 'redux'
 import { AnyAction, configureStore, ListenerEffectAPI } from '@reduxjs/toolkit'
 import { createMigrate, persistReducer, persistStore } from 'redux-persist'
@@ -29,6 +28,8 @@ import { WatchlistBlacklistTransform } from './transforms/WatchlistBlacklistTran
 import { AppBlacklistTransform } from './transforms/AppBlacklistTransform'
 import { combinedReducer as browser } from './browser'
 import { snapshotsReducer as snapshots } from './snapshots/slice'
+import { MMKVStorage } from './MMKVStorage'
+import { NetworkTransform } from './transforms/NetworkTransform'
 
 const VERSION = 10
 
@@ -86,13 +87,14 @@ const rootReducer = (state: any, action: AnyAction) => {
 export function configureEncryptedStore(secretKey: string, macSecret: string) {
   const persistConfig = {
     key: 'root',
-    storage: AsyncStorage,
+    storage: MMKVStorage,
     blacklist,
     rootReducer,
     transforms: [
       AppBlacklistTransform,
       BridgeBlacklistTransform,
       WatchlistBlacklistTransform,
+      NetworkTransform,
       EncryptThenMacTransform(secretKey, macSecret) // last!
     ],
     migrate: createMigrate(migrations, { debug: __DEV__ }),
