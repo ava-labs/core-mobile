@@ -91,3 +91,10 @@ export const Device = (): JSX.Element =>
     resourceURL:
       'https://www.figma.com/file/hDSl4OUgXorDAtqPZtCUhB/K2-Foundation?type=design&node-id=376-17725&mode=design&t=CmN8i9XpOWpJzqsg-4'
   })
+
+export const Logos = (): JSX.Element =>
+  Template({
+    icons: [Icons.Logos.WalletConnect],
+    resourceURL:
+      'https://www.figma.com/file/hDSl4OUgXorDAtqPZtCUhB/K2-Foundation?type=design&node-id=4077-18641&mode=design&t=nUpymAzmHG0hgmLO-4'
+  })
