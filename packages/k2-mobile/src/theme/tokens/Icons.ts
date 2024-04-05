@@ -3,6 +3,7 @@ import IconExpandMore from '../../assets/icons/expand_more.svg'
 import IconQRCode from '../../assets/icons/qr_code.svg'
 import IconKey from '../../assets/icons/key.svg'
 import IconUSB from '../../assets/icons/usb.svg'
+import IconWC from '../../assets/icons/wc.svg'
 import IconBackspace from '../../assets/icons/backspace.svg'
 import IconCopy from '../../assets/icons/content_copy.svg'
 import IconMoreHoriz from '../../assets/icons/more_horiz.svg'
@@ -39,5 +40,8 @@ export const Icons = {
     MoreHoriz: IconMoreHoriz,
     MoreVert: IconMoreVert,
     Refresh: IconRefresh
+  },
+  Logos: {
+    WalletConnect: IconWC
   }
 }
