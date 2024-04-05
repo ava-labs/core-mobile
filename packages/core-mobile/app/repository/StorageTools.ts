@@ -1,19 +1,19 @@
-import { ReduxStorage } from 'store/mmkv/ReduxStorage'
+import { reduxStorage } from 'store/utils/mmkv'
 import Logger from 'utils/Logger'
 
 class StorageTools {
   static async loadFromStorageAsMap<K, V>(key: string): Promise<Map<K, V>> {
-    const raw = await ReduxStorage.getItem(key)
+    const raw = await reduxStorage.getItem(key)
     return raw ? (new Map(JSON.parse(raw)) as Map<K, V>) : new Map<K, V>()
   }
 
   static async loadFromStorageAsObj<T>(key: string): Promise<T | undefined> {
-    const raw = await ReduxStorage.getItem(key)
+    const raw = await reduxStorage.getItem(key)
     return raw ? (JSON.parse(raw) as T) : undefined
   }
 
   static async loadFromStorageAsArray<T>(key: string): Promise<T[]> {
-    const raw = await ReduxStorage.getItem(key)
+    const raw = await reduxStorage.getItem(key)
     return raw ? (JSON.parse(raw) as T[]) : ([] as T[])
   }
 
@@ -25,7 +25,7 @@ class StorageTools {
     if (stringified === undefined) {
       Logger.error('Could not stringify: ', map)
     } else {
-      await ReduxStorage.setItem(key, stringified)
+      await reduxStorage.setItem(key, stringified)
     }
   }
 
@@ -34,7 +34,7 @@ class StorageTools {
     if (stringified === undefined) {
       Logger.error('Could not stringify: ', obj)
     } else {
-      await ReduxStorage.setItem(key, stringified)
+      await reduxStorage.setItem(key, stringified)
     }
   }
 }

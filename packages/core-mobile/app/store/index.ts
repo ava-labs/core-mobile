@@ -28,7 +28,7 @@ import { WatchlistBlacklistTransform } from './transforms/WatchlistBlacklistTran
 import { AppBlacklistTransform } from './transforms/AppBlacklistTransform'
 import { combinedReducer as browser } from './browser'
 import { snapshotsReducer as snapshots } from './snapshots/slice'
-import { ReduxStorage } from './mmkv/ReduxStorage'
+import { reduxStorage } from './utils/mmkv'
 
 const VERSION = 10
 
@@ -86,7 +86,7 @@ const rootReducer = (state: any, action: AnyAction) => {
 export function configureEncryptedStore(secretKey: string, macSecret: string) {
   const persistConfig = {
     key: 'root',
-    storage: ReduxStorage,
+    storage: reduxStorage,
     blacklist,
     rootReducer,
     transforms: [

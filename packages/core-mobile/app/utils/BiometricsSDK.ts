@@ -5,7 +5,7 @@ import Keychain, {
 } from 'react-native-keychain'
 import { SECURE_ACCESS_SET } from 'resources/Constants'
 import { Platform } from 'react-native'
-import { ReduxStorage } from 'store/mmkv/ReduxStorage'
+import { commonStorage } from 'store/utils/mmkv'
 import Logger from './Logger'
 
 const SERVICE_KEY = 'sec-storage-service'
@@ -56,7 +56,7 @@ class BiometricsSDK {
 
   async getAccessType(): Promise<string | null> {
     try {
-      return ReduxStorage.getItem(SECURE_ACCESS_SET)
+      return commonStorage.getItem(SECURE_ACCESS_SET)
     } catch (e) {
       return Promise.reject(null)
     }
@@ -73,7 +73,7 @@ class BiometricsSDK {
     // to change the type back to PIN the need to toggle the switch in
     // security & privacy
     if (!isResetting) {
-      await ReduxStorage.setItem(SECURE_ACCESS_SET, 'PIN')
+      await commonStorage.setItem(SECURE_ACCESS_SET, 'PIN')
     }
     return Keychain.setGenericPassword(
       'wallet',
@@ -92,7 +92,7 @@ class BiometricsSDK {
    * @param key - mnemonic to store
    */
   async storeWalletWithBiometry(key: string): Promise<boolean> {
-    await ReduxStorage.setItem(SECURE_ACCESS_SET, 'BIO')
+    await commonStorage.setItem(SECURE_ACCESS_SET, 'BIO')
     // try to store with biometry
     try {
       await Keychain.setGenericPassword(
@@ -130,7 +130,7 @@ class BiometricsSDK {
       .then(() =>
         Keychain.resetGenericPassword(KeystoreConfig.KEYSTORE_BIO_OPTIONS)
       )
-      .then(() => ReduxStorage.removeItem(SECURE_ACCESS_SET))
+      .then(() => commonStorage.removeItem(SECURE_ACCESS_SET))
       .catch(Logger.error)
   }
 
