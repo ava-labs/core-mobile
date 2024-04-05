@@ -19,7 +19,7 @@ import Logger, { LogLevel } from 'utils/Logger'
 import {
   hasMigratedFromAsyncStorage,
   migrateFromAsyncStorage
-} from 'store/MMKVStorage'
+} from 'store/mmkv/ReduxStorage'
 import Loader from 'components/Loader'
 
 Logger.setLevel(__DEV__ ? LogLevel.TRACE : LogLevel.ERROR)
