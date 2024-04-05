@@ -13,7 +13,7 @@ import {
 import Logger from 'utils/Logger'
 import WalletService from 'services/wallet/WalletService'
 import { WalletType } from 'services/wallet/types'
-import { MMKVStorage } from 'store/MMKVStorage'
+import { ReduxStorage } from 'store/mmkv/ReduxStorage'
 
 function SecurityPrivacy({
   onChangePin,
@@ -42,7 +42,7 @@ function SecurityPrivacy({
       })
       .catch(Logger.error)
 
-    MMKVStorage.getItem(SECURE_ACCESS_SET)
+    ReduxStorage.getItem(SECURE_ACCESS_SET)
       .then((type: string) => {
         setIsBiometricSwitchEnabled(type === 'BIO')
       })
@@ -54,7 +54,7 @@ function SecurityPrivacy({
     if (value) {
       onTurnOnBiometrics()
     } else {
-      MMKVStorage.setItem(SECURE_ACCESS_SET, 'PIN')
+      ReduxStorage.setItem(SECURE_ACCESS_SET, 'PIN')
     }
   }
 

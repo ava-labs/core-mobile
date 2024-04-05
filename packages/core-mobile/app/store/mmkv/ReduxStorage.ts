@@ -3,9 +3,11 @@ import { MMKV } from 'react-native-mmkv'
 import Logger from 'utils/Logger'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
-const storage = new MMKV()
+const storage = new MMKV({
+  id: `reduxStorage`
+})
 
-export const MMKVStorage: Storage & { clear: () => Promise<void> } = {
+export const ReduxStorage: Storage & { clear: () => Promise<void> } = {
   setItem: (key, value) => {
     storage.set(key, value)
     return Promise.resolve(true)
@@ -42,7 +44,7 @@ export async function migrateFromAsyncStorage(): Promise<void> {
         } else {
           storage.set(key, value)
         }
-        AsyncStorage.removeItem(key)
+        await AsyncStorage.removeItem(key)
       }
     } catch (error) {
       Logger.error(

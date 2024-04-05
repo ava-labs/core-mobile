@@ -23,7 +23,7 @@ import {
   toggleAnalytics
 } from 'store/posthog'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { MMKVStorage } from 'store/MMKVStorage'
+import { ReduxStorage } from 'store/mmkv/ReduxStorage'
 
 export const PosthogContext = createContext<PosthogContextState>(
   {} as PosthogContextState
@@ -62,8 +62,8 @@ export const PosthogContextProvider = ({
 
   const { timeoutPassed } = useAppBackgroundTracker({
     timeoutMs: 30 * 60 * 1000,
-    getTime: async () => MMKVStorage.getItem('POSTHOG_SUSPENDED'),
-    setTime: async time => MMKVStorage.setItem('POSTHOG_SUSPENDED', time)
+    getTime: async () => ReduxStorage.getItem('POSTHOG_SUSPENDED'),
+    setTime: async time => ReduxStorage.setItem('POSTHOG_SUSPENDED', time)
   })
 
   const [analyticsConsent, setAnalyticsConsent] = useState<

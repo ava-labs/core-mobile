@@ -12,7 +12,7 @@ export const NetworkTransform = createTransform<
   // transform state before it gets serialized and persisted
   (inboundState: NetworkState) => {
     return {
-      networks: {},
+      networks: inboundState.networks,
       customNetworks: inboundState.customNetworks,
       favorites: inboundState.favorites,
       active: inboundState.active
@@ -21,7 +21,7 @@ export const NetworkTransform = createTransform<
   // transform state after it gets rehydrated
   (outboundState: NetworkState) => {
     return {
-      networks: {},
+      networks: outboundState.networks,
       customNetworks: outboundState.customNetworks,
       favorites: outboundState.favorites,
       active: outboundState.active
