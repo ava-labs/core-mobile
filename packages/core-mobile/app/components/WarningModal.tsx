@@ -12,6 +12,7 @@ interface Props {
   dismissText?: string
   testID?: string
   primaryButtonType?: 'primary' | 'primaryDanger'
+  header?: JSX.Element
 }
 
 const WarningModal: FC<Props> = ({
@@ -21,10 +22,12 @@ const WarningModal: FC<Props> = ({
   dismissText = 'Back',
   onAction,
   onDismiss,
-  primaryButtonType = 'primary'
+  primaryButtonType = 'primary',
+  header
 }) => {
   return (
     <ModalContainer>
+      {header}
       <AvaText.Heading2
         textStyle={{ marginTop: 8, textAlign: 'center' }}
         testID="warning_modal__title">
