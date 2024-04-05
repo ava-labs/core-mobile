@@ -36,22 +36,14 @@ export async function migrateFromAsyncStorage(): Promise<void> {
   Logger.info('Migration from AsyncStorage -> MMKKV started!')
   const keys = await AsyncStorage.getAllKeys()
   for (const key of keys) {
-    try {
-      const value = await AsyncStorage.getItem(key)
-      if (value != null) {
-        if (['true', 'false'].includes(value)) {
-          storage.set(key, value === 'true')
-        } else {
-          storage.set(key, value)
-        }
-        await AsyncStorage.removeItem(key)
+    const value = await AsyncStorage.getItem(key)
+    if (value != null) {
+      if (['true', 'false'].includes(value)) {
+        storage.set(key, value === 'true')
+      } else {
+        storage.set(key, value)
       }
-    } catch (error) {
-      Logger.error(
-        `Failed to migrate key "${key}" from AsyncStorage to MMKV!`,
-        error
-      )
-      throw error
+      await AsyncStorage.removeItem(key).catch(Logger.error)
     }
   }
   storage.set('hasMigratedFromAsyncStorage', true)
