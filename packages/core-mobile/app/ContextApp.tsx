@@ -13,7 +13,7 @@ import { K2ThemeProvider } from '@avalabs/k2-mobile'
 import JailbrokenWarning from 'screens/onboarding/JailbrokenWarning'
 import { BridgeProvider } from 'contexts/BridgeContext'
 import { PosthogContextProvider } from 'contexts/PosthogContext'
-import { StatusBar } from 'react-native'
+import { InteractionManager, StatusBar, View } from 'react-native'
 import { DeeplinkContextProvider } from 'contexts/DeeplinkContext/DeeplinkContext'
 import { EncryptedStoreProvider } from 'contexts/EncryptedStoreProvider'
 import { TopLevelErrorFallback } from 'components/TopLevelErrorFallback'
@@ -21,6 +21,11 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import FlipperAsyncStorage from 'rn-flipper-async-storage-advanced'
 import { ReactQueryProvider } from 'contexts/ReactQueryProvider'
 import SentryService from 'services/sentry/SentryService'
+import {
+  hasMigratedFromAsyncStorage,
+  migrateFromAsyncStorage
+} from 'store/mmkv/ReduxStorage'
+import CoreSplash from 'assets/icons/core_splash.svg'
 
 function setToast(toast: Toast): void {
   global.toast = toast
@@ -46,26 +51,50 @@ const ContextProviders: FC = ({ children }) => (
 )
 
 const ContextApp = (): JSX.Element => {
+  const [hasMigrated, setHasMigrated] = useState(hasMigratedFromAsyncStorage)
+
+  useEffect(() => {
+    if (!hasMigratedFromAsyncStorage) {
+      InteractionManager.runAfterInteractions(async () => {
+        try {
+          await migrateFromAsyncStorage()
+          setHasMigrated(true)
+        } catch (e) {
+          // don't do anything if it fails
+          // it will perform migration for the
+          // remaining keys on the next app launch
+        }
+      })
+    }
+  }, [])
+
   return (
     <Sentry.ErrorBoundary fallback={<TopLevelErrorFallback />}>
       <StatusBar barStyle={'light-content'} backgroundColor="black" />
       {__DEV__ && <FlipperAsyncStorage />}
-      <ContextProviders>
-        <JailBrokenCheck>
-          <GestureHandlerRootView style={{ flex: 1 }}>
-            <RootSiblingParent>
-              <App />
-            </RootSiblingParent>
-          </GestureHandlerRootView>
-        </JailBrokenCheck>
-        <Toast
-          ref={ref => {
-            ref && setToast(ref)
-          }}
-          offsetTop={30}
-          normalColor={'00FFFFFF'}
-        />
-      </ContextProviders>
+      {hasMigrated ? (
+        <ContextProviders>
+          <JailBrokenCheck>
+            <GestureHandlerRootView style={{ flex: 1 }}>
+              <RootSiblingParent>
+                <App />
+              </RootSiblingParent>
+            </GestureHandlerRootView>
+          </JailBrokenCheck>
+          <Toast
+            ref={ref => {
+              ref && setToast(ref)
+            }}
+            offsetTop={30}
+            normalColor={'00FFFFFF'}
+          />
+        </ContextProviders>
+      ) : (
+        <View
+          style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <CoreSplash />
+        </View>
+      )}
     </Sentry.ErrorBoundary>
   )
 }
