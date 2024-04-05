@@ -1,30 +1,13 @@
-import { Storage } from 'redux-persist'
 import { MMKV } from 'react-native-mmkv'
 import Logger from 'utils/Logger'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import { baseStorage } from './baseStorage'
 
 const storage = new MMKV({
-  id: `reduxStorage`
+  id: `redux`
 })
 
-export const ReduxStorage: Storage & { clear: () => Promise<void> } = {
-  setItem: (key, value) => {
-    storage.set(key, value)
-    return Promise.resolve(true)
-  },
-  getItem: key => {
-    const value = storage.getString(key)
-    return Promise.resolve(value)
-  },
-  removeItem: key => {
-    storage.delete(key)
-    return Promise.resolve()
-  },
-  clear: () => {
-    storage.clearAll()
-    return Promise.resolve()
-  }
-}
+export const reduxStorage = baseStorage(storage)
 
 // TODO: Remove `hasMigratedFromAsyncStorage` after a while (when everyone has migrated)
 export const hasMigratedFromAsyncStorage = storage.getBoolean(
