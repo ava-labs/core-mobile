@@ -29,7 +29,6 @@ import { AppBlacklistTransform } from './transforms/AppBlacklistTransform'
 import { combinedReducer as browser } from './browser'
 import { snapshotsReducer as snapshots } from './snapshots/slice'
 import { ReduxStorage } from './mmkv/ReduxStorage'
-import { NetworkTransform } from './transforms/NetworkTransform'
 
 const VERSION = 10
 
@@ -94,7 +93,6 @@ export function configureEncryptedStore(secretKey: string, macSecret: string) {
       AppBlacklistTransform,
       BridgeBlacklistTransform,
       WatchlistBlacklistTransform,
-      NetworkTransform,
       EncryptThenMacTransform(secretKey, macSecret) // last!
     ],
     migrate: createMigrate(migrations, { debug: __DEV__ }),
