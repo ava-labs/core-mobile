@@ -34,7 +34,6 @@ export const warmup = async () => {
     )
     console.log('Jailbroken warning handled!!!')
   }
-  await device.enableSynchronization()
   await loginRecoverWallet.recoverWalletLogin()
 }
 
