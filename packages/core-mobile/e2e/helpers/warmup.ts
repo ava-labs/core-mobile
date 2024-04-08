@@ -8,6 +8,7 @@ import loginRecoverWallet from './loginRecoverWallet'
 export const warmup = async () => {
   await device.launchApp({
     permissions: { notifications: 'YES', camera: 'YES' },
+    newInstance: true,
     launchArgs: {
       DTXEnableVerboseSyncSystem: 'YES',
       DTXEnableVerboseSyncResources: 'YES'
