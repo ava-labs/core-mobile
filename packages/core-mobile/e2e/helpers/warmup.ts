@@ -9,7 +9,6 @@ export const warmup = async () => {
   console.log('Warming up the app and disabling sync for detox...')
   await device.launchApp({
     permissions: { notifications: 'YES', camera: 'YES' },
-    newInstance: true,
     launchArgs: {
       DTXEnableVerboseSyncSystem: 'YES',
       DTXEnableVerboseSyncResources: 'YES'

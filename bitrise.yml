@@ -313,6 +313,12 @@ workflows:
             View Build|${BITRISE_BUILD_URL}
             View Test Run|https://avalabs.testrail.io/index.php?/runs/view/${TESTRAIL_RUN_ID}&group_by=cases:section_id&group_order=asc
         - webhook_url: $SLACK_TEST_RESULT_WEBHOOK_URL
+  _start-ios-simulator:
+    steps:
+    - xcode-start-simulator@0:
+        inputs:
+        - destination: platform=iOS Simulator,name=iPhone 14, OS=latest
+        - wait_for_boot_timeout: 300
   _set-version:
     steps:
     - script-runner@0:
@@ -800,6 +806,9 @@ workflows:
     - _install-and-set-env
     - _set-version
     - _pull_app_files
+    - _start-ios-simulator
+    - _start-ios-simulator
+    - _start-ios-simulator
     after_run:
     - _upload-detox-artifacts
     - _send-test-result-notification-slack
