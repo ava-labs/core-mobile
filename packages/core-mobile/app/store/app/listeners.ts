@@ -158,7 +158,9 @@ const clearData = async (
   await SecureStorageService.clearAll().catch(e =>
     Logger.error('failed to clear secure store', e)
   )
-  reduxStorage.clear()
+  await reduxStorage
+    .clear()
+    .catch(e => Logger.error('failed to clear reduxStorage', e))
   commonStorage.clear()
 }
 
