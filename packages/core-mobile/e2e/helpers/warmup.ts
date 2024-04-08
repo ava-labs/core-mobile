@@ -11,14 +11,14 @@ export const warmup = async () => {
     permissions: { notifications: 'YES', camera: 'YES' },
     launchArgs: {
       DTXEnableVerboseSyncSystem: 'YES',
-      DTXEnableVerboseSyncResources: 'YES'
+      DTXEnableVerboseSyncResources: 'YES',
+      detoxPrintBusyIdleResources: 'YES',
+      detoxEnableSynchronization: 0
     }
   })
-  await device.disableSynchronization()
 
   // if we are running Android e2e on Bitrise, we also need to handle the Jailbroken overlay
   const jailbrokenWarningPrsent = CommonElsPage.jailbrokenWarning
-  await device.setURLBlacklist(['*app.posthog*', '*browser-intake-datadoghq*'])
   if (
     process.env.E2E === 'true' &&
     Action.platform() === Platform.Android &&
