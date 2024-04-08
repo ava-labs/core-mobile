@@ -4,7 +4,8 @@ import { reduxStorage, reduxStorageKeys } from 'store/reduxStorage'
 import { commonStorage, commonStorageKeys } from './storages'
 
 // TODO: Remove `hasMigratedFromAsyncStorage` after a while (when everyone has migrated)
-export const hasMigratedFromAsyncStorage = (): boolean | undefined => false //commonStorage.getBoolean('hasMigratedFromAsyncStorage')
+export const hasMigratedFromAsyncStorage = (): boolean | undefined =>
+  commonStorage.getBoolean('hasMigratedFromAsyncStorage')
 
 // TODO: Remove `hasMigratedFromAsyncStorage` after a while (when everyone has migrated)
 export async function migrateFromAsyncStorage(): Promise<void> {
