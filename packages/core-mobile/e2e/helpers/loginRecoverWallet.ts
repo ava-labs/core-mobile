@@ -10,6 +10,7 @@ import Actions from '../helpers/actions'
 
 class LoginRecoverWallet {
   async recoverMnemonicWallet() {
+    console.log('disabling sync for detox')
     await device.disableSynchronization()
     const recoveryPhrase: string = process.env.E2E_MNEMONIC as string
     await Actions.waitForElement(
@@ -45,6 +46,7 @@ class LoginRecoverWallet {
     await Actions.waitForElement(PortfolioPage.colectiblesTab, 10000, 0)
     await PortfolioPage.verifyPorfolioScreen()
     await device.enableSynchronization()
+    console.log('enabling sync for detox')
   }
 
   async enterPin() {

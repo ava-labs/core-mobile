@@ -16,11 +16,8 @@ export const warmup = async () => {
   })
   // if we are running Android e2e on Bitrise, we also need to handle the Jailbroken overlay
   const jailbrokenWarningPrsent = CommonElsPage.jailbrokenWarning
-  await device.setURLBlacklist([
-    '*clients3.google*',
-    '*app.posthog*',
-    '*browser-intake-datadoghq*'
-  ])
+  await device.disableSynchronization()
+  await device.setURLBlacklist(['*app.posthog*', '*browser-intake-datadoghq*'])
   if (
     process.env.E2E === 'true' &&
     Action.platform() === Platform.Android &&
@@ -36,6 +33,7 @@ export const warmup = async () => {
     )
     console.log('Jailbroken warning handled!!!')
   }
+  await device.enableSynchronization()
   await loginRecoverWallet.recoverWalletLogin()
 }
 
