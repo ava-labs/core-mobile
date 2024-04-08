@@ -10,8 +10,10 @@ import Actions from '../helpers/actions'
 
 class LoginRecoverWallet {
   async recoverMnemonicWallet() {
+    await device.disableSynchronization()
     const recoveryPhrase: string = process.env.E2E_MNEMONIC as string
     await ExistingRecoveryPhrasePage.tapAlreadyHaveAWalletBtn()
+    await device.enableSynchronization()
     await ExistingRecoveryPhrasePage.tapRecoveryPhraseBtn()
     await AnalyticsConsentPage.tapNoThanksBtn()
     await ExistingRecoveryPhrasePage.enterRecoveryPhrase(recoveryPhrase)
