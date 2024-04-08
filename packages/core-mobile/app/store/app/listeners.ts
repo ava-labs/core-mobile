@@ -158,13 +158,8 @@ const clearData = async (
   await SecureStorageService.clearAll().catch(e =>
     Logger.error('failed to clear secure store', e)
   )
-  await reduxStorage
-    .clear()
-    .catch(e => Logger.error('failed to clear redux store', e))
-
-  await commonStorage
-    .clear()
-    .catch(e => Logger.error('failed to clear common store', e))
+  reduxStorage.clear()
+  commonStorage.clear()
 }
 
 export const addAppListeners = (startListening: AppStartListening): void => {

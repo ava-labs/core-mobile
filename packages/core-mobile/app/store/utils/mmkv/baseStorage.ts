@@ -33,20 +33,24 @@ export const hasMigratedFromAsyncStorage = commonStorage.getBoolean(
 // TODO: Remove `hasMigratedFromAsyncStorage` after a while (when everyone has migrated)
 export async function migrateFromAsyncStorage(): Promise<void> {
   Logger.info('Migration from AsyncStorage -> MMKKV started!')
-  const keys = await AsyncStorage.getAllKeys()
-  for (const key of keys) {
-    const value = await AsyncStorage.getItem(key)
-    if (value != null) {
-      if (commonStorageKeys.includes(key)) {
-        setItem(commonStorage, key, value)
-      } else {
-        setItem(reduxStorage, key, value)
+  try {
+    const keys = await AsyncStorage.getAllKeys()
+    const values = await AsyncStorage.multiGet(keys)
+    values.forEach(([key, value]) => {
+      if (value != null) {
+        if (commonStorageKeys.includes(key)) {
+          setItem(commonStorage, key, value)
+        } else {
+          setItem(reduxStorage, key, value)
+        }
       }
-      await AsyncStorage.removeItem(key).catch(Logger.error)
-    }
+    })
+    await AsyncStorage.clear().catch(Logger.error)
+    commonStorage.setItem('hasMigratedFromAsyncStorage', true)
+    Logger.info(`Migration from AsyncStorage -> MMKV completed!`)
+  } catch (error) {
+    Logger.error('Error migrating from AsyncStorage to MMKV:', error)
   }
-  commonStorage.setItem('hasMigratedFromAsyncStorage', true)
-  Logger.info(`Migration from AsyncStorage -> MMKV completed!`)
 }
 
 const setItem = (mmkvStorage: TStorage, key: string, value: string): void => {
