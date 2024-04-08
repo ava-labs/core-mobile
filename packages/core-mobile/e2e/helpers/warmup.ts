@@ -6,7 +6,6 @@ import { Platform } from './constants'
 import loginRecoverWallet from './loginRecoverWallet'
 
 export const warmup = async () => {
-  await device.disableSynchronization()
   console.log('Warming up the app and disabling sync for detox...')
   await device.launchApp({
     permissions: { notifications: 'YES', camera: 'YES' },
@@ -16,6 +15,8 @@ export const warmup = async () => {
       DTXEnableVerboseSyncResources: 'YES'
     }
   })
+  await device.disableSynchronization()
+
   // if we are running Android e2e on Bitrise, we also need to handle the Jailbroken overlay
   const jailbrokenWarningPrsent = CommonElsPage.jailbrokenWarning
   await device.setURLBlacklist(['*app.posthog*', '*browser-intake-datadoghq*'])
