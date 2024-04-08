@@ -36,12 +36,15 @@ export async function migrateFromAsyncStorage(): Promise<void> {
   try {
     const keys = await AsyncStorage.getAllKeys()
     const values = await AsyncStorage.multiGet(keys)
-    values.forEach(([key, value]) => {
+    values.forEach(async ([key, value]) => {
       if (value != null) {
+        const newValue = ['true', 'false'].includes(value)
+          ? value === 'true'
+          : value
         if (commonStorageKeys.includes(key)) {
-          setItem(commonStorage, key, value)
+          commonStorage.setItem(key, newValue)
         } else {
-          setItem(reduxStorage, key, value)
+          await reduxStorage.setItem(key, newValue)
         }
       }
     })
@@ -50,13 +53,5 @@ export async function migrateFromAsyncStorage(): Promise<void> {
     Logger.info(`Migration from AsyncStorage -> MMKV completed!`)
   } catch (error) {
     Logger.error('Error migrating from AsyncStorage to MMKV:', error)
-  }
-}
-
-const setItem = (mmkvStorage: TStorage, key: string, value: string): void => {
-  if (['true', 'false'].includes(value)) {
-    mmkvStorage.setItem(key, value === 'true')
-  } else {
-    mmkvStorage.setItem(key, value)
   }
 }
