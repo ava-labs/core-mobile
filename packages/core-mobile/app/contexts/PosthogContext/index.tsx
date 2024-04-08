@@ -62,8 +62,8 @@ export const PosthogContextProvider = ({
 
   const { timeoutPassed } = useAppBackgroundTracker({
     timeoutMs: 30 * 60 * 1000,
-    getTime: async () => commonStorage.getItem('POSTHOG_SUSPENDED'),
-    setTime: async time => commonStorage.setItem('POSTHOG_SUSPENDED', time)
+    getTime: () => commonStorage.getString('POSTHOG_SUSPENDED'),
+    setTime: time => commonStorage.set('POSTHOG_SUSPENDED', time)
   })
 
   const [analyticsConsent, setAnalyticsConsent] = useState<

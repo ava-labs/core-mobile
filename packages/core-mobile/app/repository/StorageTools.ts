@@ -1,4 +1,4 @@
-import { reduxStorage } from 'store/utils/mmkv'
+import { reduxStorage } from 'store/reduxStorage'
 import Logger from 'utils/Logger'
 
 class StorageTools {

@@ -5,17 +5,17 @@ import {
 } from 'store/utils/mmkv'
 
 export const useMigrateFromAsyncStorage = (): boolean | undefined => {
-  const [hasMigrated, setHasMigrated] = useState(hasMigratedFromAsyncStorage)
+  const [hasMigrated, setHasMigrated] = useState(hasMigratedFromAsyncStorage())
 
   useEffect(() => {
     const runAsyncStorageMigration = async (): Promise<void> => {
-      if (!hasMigratedFromAsyncStorage) {
+      if (!hasMigrated) {
         await migrateFromAsyncStorage()
         setHasMigrated(true)
       }
     }
     runAsyncStorageMigration()
-  }, [])
+  }, [hasMigrated])
 
   return hasMigrated
 }

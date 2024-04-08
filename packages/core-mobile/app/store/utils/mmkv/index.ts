@@ -1,6 +1,2 @@
-export { reduxStorage } from './reduxStorage'
-export { commonStorage } from './commonStorage'
-export {
-  hasMigratedFromAsyncStorage,
-  migrateFromAsyncStorage
-} from './baseStorage'
+export { commonStorage } from './storages'
+export { hasMigratedFromAsyncStorage, migrateFromAsyncStorage } from './utils'

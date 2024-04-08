@@ -19,7 +19,8 @@ import DeviceInfo from 'react-native-device-info'
 import { WalletType } from 'services/wallet/types'
 import SecureStorageService from 'security/SecureStorageService'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { commonStorage, reduxStorage } from 'store/utils/mmkv'
+import { commonStorage } from 'store/utils/mmkv'
+import { reduxStorage } from 'store/reduxStorage'
 import {
   onAppLocked,
   onAppUnlocked,
@@ -161,7 +162,7 @@ const clearData = async (
   await reduxStorage
     .clear()
     .catch(e => Logger.error('failed to clear reduxStorage', e))
-  commonStorage.clear()
+  commonStorage.clearAll()
 }
 
 export const addAppListeners = (startListening: AppStartListening): void => {

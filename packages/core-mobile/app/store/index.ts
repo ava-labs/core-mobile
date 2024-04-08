@@ -28,7 +28,7 @@ import { WatchlistBlacklistTransform } from './transforms/WatchlistBlacklistTran
 import { AppBlacklistTransform } from './transforms/AppBlacklistTransform'
 import { combinedReducer as browser } from './browser'
 import { snapshotsReducer as snapshots } from './snapshots/slice'
-import { reduxStorage } from './utils/mmkv'
+import { reduxStorage } from './reduxStorage'
 
 const VERSION = 10
 

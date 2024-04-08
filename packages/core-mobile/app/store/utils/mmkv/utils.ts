@@ -1,34 +1,10 @@
-import { MMKV } from 'react-native-mmkv'
 import Logger from 'utils/Logger'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import { TStorage } from './types'
-import { commonStorage, commonStorageKeys } from './commonStorage'
-import { reduxStorage } from './reduxStorage'
-
-export const baseStorage = (storage: MMKV): TStorage => {
-  return {
-    setItem: (key, value) => {
-      return storage.set(key, value)
-    },
-    getItem: key => {
-      return storage.getString(key)
-    },
-    removeItem: key => {
-      storage.delete(key)
-    },
-    getBoolean: key => {
-      return storage.getBoolean(key)
-    },
-    clear: () => {
-      storage.clearAll()
-    }
-  }
-}
+import { reduxStorage, reduxStorageKeys } from 'store/reduxStorage'
+import { commonStorage, commonStorageKeys } from './storages'
 
 // TODO: Remove `hasMigratedFromAsyncStorage` after a while (when everyone has migrated)
-export const hasMigratedFromAsyncStorage = commonStorage.getBoolean(
-  'hasMigratedFromAsyncStorage'
-)
+export const hasMigratedFromAsyncStorage = (): boolean | undefined => false //commonStorage.getBoolean('hasMigratedFromAsyncStorage')
 
 // TODO: Remove `hasMigratedFromAsyncStorage` after a while (when everyone has migrated)
 export async function migrateFromAsyncStorage(): Promise<void> {
@@ -42,14 +18,20 @@ export async function migrateFromAsyncStorage(): Promise<void> {
           ? value === 'true'
           : value
         if (commonStorageKeys.includes(key)) {
-          commonStorage.setItem(key, newValue)
-        } else {
+          commonStorage.set(key, newValue)
+          await AsyncStorage.removeItem(key).catch(error => {
+            Logger.error(`Error removing key ${key} from AsyncStorage:`, error)
+          })
+        }
+        if (reduxStorageKeys.includes(key)) {
           await reduxStorage.setItem(key, newValue)
+          await AsyncStorage.removeItem(key).catch(error => {
+            Logger.error(`Error removing key ${key} from AsyncStorage:`, error)
+          })
         }
       }
     })
-    await AsyncStorage.clear().catch(Logger.error)
-    commonStorage.setItem('hasMigratedFromAsyncStorage', true)
+    commonStorage.set('hasMigratedFromAsyncStorage', true)
     Logger.info(`Migration from AsyncStorage -> MMKV completed!`)
   } catch (error) {
     Logger.error('Error migrating from AsyncStorage to MMKV:', error)

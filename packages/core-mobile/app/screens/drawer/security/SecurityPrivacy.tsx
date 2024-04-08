@@ -42,12 +42,12 @@ function SecurityPrivacy({
       })
       .catch(Logger.error)
 
-    commonStorage
-      .getItem(SECURE_ACCESS_SET)
-      .then((type: string) => {
-        setIsBiometricSwitchEnabled(type === 'BIO')
-      })
-      .catch(Logger.error)
+    const type = commonStorage.getString(SECURE_ACCESS_SET)
+    if (type) {
+      setIsBiometricSwitchEnabled(type === 'BIO')
+    } else {
+      Logger.error('Secure access type not found')
+    }
   }, [])
 
   const handleSwitchChange = (value: boolean): void => {
@@ -55,7 +55,7 @@ function SecurityPrivacy({
     if (value) {
       onTurnOnBiometrics()
     } else {
-      commonStorage.setItem(SECURE_ACCESS_SET, 'PIN')
+      commonStorage.set(SECURE_ACCESS_SET, 'PIN')
     }
   }
 
