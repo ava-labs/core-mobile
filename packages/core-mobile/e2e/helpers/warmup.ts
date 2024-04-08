@@ -17,9 +17,9 @@ export const warmup = async () => {
   // if we are running Android e2e on Bitrise, we also need to handle the Jailbroken overlay
   const jailbrokenWarningPrsent = CommonElsPage.jailbrokenWarning
   await device.setURLBlacklist([
-    '*clients3.google.com/*',
-    '*app.posthog.com/*',
-    '*browser-intake-datadoghq.com/*'
+    '*clients3.google*',
+    '*app.posthog*',
+    '*browser-intake-datadoghq*'
   ])
   if (
     process.env.E2E === 'true' &&
