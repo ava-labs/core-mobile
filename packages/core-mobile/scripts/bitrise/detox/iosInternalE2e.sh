@@ -3,6 +3,12 @@
 # make pipelines' return status equal the last command to exit with a non-zero status, or zero if all commands exit successfully
 set -o pipefail
 
+brew tap wix/brew
+brew install wix/brew/applesimutils
+detox clean-framework-cache && detox build-framework-cache
+
+detox build 
+
 npm rebuild detox
 ./node_modules/.bin/detox test --configuration ios.internal.release.smoke.ci --retries 1 --debug-synchronization 3000 --loglevel verbose; test_result=$?
 
