@@ -15,6 +15,7 @@ export async function migrateFromAsyncStorage(): Promise<void> {
     if (keys.length === 0) {
       commonStorage.set('hasMigratedFromAsyncStorage', true)
       Logger.info(`Skip AsyncStorage Migration: No keys found in AsyncStorage!`)
+      return
     }
     const values = await AsyncStorage.multiGet(keys)
     values.forEach(async ([key, value]) => {
