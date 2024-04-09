@@ -21,9 +21,11 @@ export default function useAppBackgroundTracker({
   setTime
 }: {
   timeoutMs: number
-  getTime: () => Promise<string | null>
-  setTime: (time: string) => Promise<void>
-}) {
+  getTime: () => string | undefined
+  setTime: (time: string) => void
+}): {
+  timeoutPassed: boolean
+} {
   const appState = useRef(AppState.currentState)
   const [timeoutPassed, setTimeoutPassed] = useState(false)
 
@@ -39,11 +41,11 @@ export default function useAppBackgroundTracker({
   const handleAppStateChange = useCallback(
     async (nextAppState: any) => {
       if (isGoingToBackground(appState, nextAppState)) {
-        await setTime(moment().toISOString())
+        setTime(moment().toISOString())
         setTimeoutPassed(false)
       } else if (
         (await isForegroundAndLoggedIn(appState, nextAppState)) &&
-        (await isOverTimeout(getTime, timeoutMs))
+        isOverTimeout(getTime, timeoutMs)
       ) {
         setTimeoutPassed(true)
       }
@@ -89,11 +91,11 @@ async function isForegroundAndLoggedIn(
   )
 }
 
-async function isOverTimeout(
-  getTime: () => Promise<string | null>,
+function isOverTimeout(
+  getTime: () => string | undefined,
   timeoutMs: number
-) {
-  const timeAppWasSuspended = await getTime()
+): boolean {
+  const timeAppWasSuspended = getTime()
   const suspended = timeAppWasSuspended ?? moment().toISOString()
   return moment().diff(moment(suspended)) >= timeoutMs
 }

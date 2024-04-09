@@ -4,7 +4,7 @@
   "scripts": {
     "setup": "yarn allow-scripts",
     "envs": "./scripts/getEnvs.sh",
-    "android": "ENVFILE=.env.development react-native run-android --variant=internalDebug",
+    "android": "ENVFILE=.env.development react-native run-android --mode=internalDebug",
     "podInstall": "bundle _2.1.4_ install && cd ios && bundle exec pod install",
     "ios": "ENVFILE=.env.development react-native run-ios",
     "start": "react-native start",
@@ -131,6 +131,7 @@
     "react-native-keychain": "8.1.1",
     "react-native-level-fs": "3.0.0",
     "react-native-localize": "2.2.6",
+    "react-native-mmkv": "2.12.2",
     "react-native-modal-datetime-picker": "15.0.1",
     "react-native-os": "1.2.6",
     "react-native-pager-view": "6.2.3",
