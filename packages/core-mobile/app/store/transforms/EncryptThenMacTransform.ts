@@ -25,6 +25,7 @@ const HASH_ALGORITHM = 'sha256'
 const ENCRYPT_OUTPUT_ENCODING = 'base64'
 const DECRYPT_INPUT_ENCODING = ENCRYPT_OUTPUT_ENCODING
 const SECRET_KEY_ENCODING = 'hex'
+const UTF8 = 'utf8'
 
 /**
  * EncryptThenMacTransform is used to encrypt and decrypt redux store.
@@ -61,11 +62,12 @@ export const EncryptThenMacTransform: (
         iv
       )
 
-      const ciphertext = Buffer.concat([
-        cipher.update(serializeJson(inboundState), 'utf8'),
-        cipher.final()
-      ]).toString(ENCRYPT_OUTPUT_ENCODING)
-
+      const buffer = cipher.update(
+        serializeJson(inboundState),
+        UTF8,
+        ENCRYPT_OUTPUT_ENCODING
+      )
+      const ciphertext = buffer + cipher.final(ENCRYPT_OUTPUT_ENCODING)
       const mac = getMac(macKey, ciphertext)
 
       return {
@@ -116,11 +118,12 @@ export const EncryptThenMacTransform: (
         iv
       )
       try {
-        const cleartext = Buffer.concat([
-          decipher.update(outboundState.ciphertext, DECRYPT_INPUT_ENCODING),
-          decipher.final()
-        ]).toString()
-
+        const buffer = decipher.update(
+          outboundState.ciphertext,
+          DECRYPT_INPUT_ENCODING,
+          UTF8
+        )
+        const cleartext = (buffer + decipher.final(UTF8)).toString()
         return deserializeJson(cleartext)
       } catch (e) {
         Logger.error('Failed to decipher', e)

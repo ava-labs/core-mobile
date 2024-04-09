@@ -1,4 +1,3 @@
-import AsyncStorage from '@react-native-async-storage/async-storage'
 import { Action, isAnyOf } from '@reduxjs/toolkit'
 import { differenceInSeconds } from 'date-fns'
 import { AppState, AppStateStatus, Platform } from 'react-native'
@@ -20,6 +19,9 @@ import DeviceInfo from 'react-native-device-info'
 import { WalletType } from 'services/wallet/types'
 import SecureStorageService from 'security/SecureStorageService'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import { commonStorage } from 'store/utils/mmkv'
+import { reduxStorage } from 'store/reduxStorage'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import {
   onAppLocked,
   onAppUnlocked,
@@ -158,9 +160,17 @@ const clearData = async (
   await SecureStorageService.clearAll().catch(e =>
     Logger.error('failed to clear secure store', e)
   )
+  await reduxStorage
+    .clear()
+    .catch(e => Logger.error('failed to clear reduxStorage', e))
   await AsyncStorage.clear().catch(e =>
     Logger.error('failed to clear async store', e)
   )
+  try {
+    commonStorage.clearAll()
+  } catch (e) {
+    Logger.error('failed to clear common storage', e)
+  }
 }
 
 export const addAppListeners = (startListening: AppStartListening): void => {
