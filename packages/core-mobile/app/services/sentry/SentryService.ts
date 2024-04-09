@@ -9,7 +9,7 @@ if (Config.SENTRY_DSN === undefined)
 
 // if development then only enable if spotlight is enabled
 // otherwise enable if not development
-const isAvailable = (__DEV__ && DevDebuggingConfig.SENTRY_SPOTLIGHT) || !__DEV__
+const isAvailable = false
 
 const init = (): void => {
   if (isAvailable) {
@@ -17,7 +17,7 @@ const init = (): void => {
       dsn: Config.SENTRY_DSN,
       environment: Config.ENVIRONMENT,
       debug: false,
-      enableSpotlight: false,
+      enableSpotlight: DevDebuggingConfig.SENTRY_SPOTLIGHT,
       beforeSend: event => {
         /**
          * eliminating breadcrumbs. This should eliminate
