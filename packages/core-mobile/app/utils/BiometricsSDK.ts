@@ -54,8 +54,8 @@ class BiometricsSDK {
     await Keychain.getAllGenericPasswordServices()
   }
 
-  getAccessType(): string | undefined {
-    return commonStorage.getString(SECURE_ACCESS_SET)
+  getAccessType(): string {
+    return commonStorage.getString(SECURE_ACCESS_SET) ?? 'PIN'
   }
 
   async storeWalletWithPin(

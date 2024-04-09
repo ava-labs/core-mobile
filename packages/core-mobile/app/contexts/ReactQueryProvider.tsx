@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { PropsWithChildren, useEffect } from 'react'
 import {
   QueryCache,
   QueryClient,
@@ -19,11 +19,13 @@ export const queryClient = new QueryClient({
   }
 })
 
-const onAppStateChange = (status: AppStateStatus) => {
+const onAppStateChange = (status: AppStateStatus): void => {
   focusManager.setFocused(status === 'active')
 }
 
-export const ReactQueryProvider: React.FC = ({ children }) => {
+export const ReactQueryProvider: React.FC<PropsWithChildren> = ({
+  children
+}) => {
   // manage online status
   useEffect(() => {
     return NetInfo.addEventListener(state => {

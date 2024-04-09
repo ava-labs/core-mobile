@@ -1,4 +1,4 @@
-import React, { FC, ReactNode } from 'react'
+import React, { FC, PropsWithChildren, ReactNode } from 'react'
 import {
   Pressable,
   StyleProp,
@@ -12,7 +12,7 @@ import { Space } from 'components/Space'
 import { Opacity12, Opacity15 } from 'resources/Constants'
 import AvaText from './AvaText'
 
-interface BaseProps {
+interface BaseProps extends PropsWithChildren {
   onPress?: () => void
   disabled?: boolean
   style?: StyleProp<ViewStyle>
@@ -257,7 +257,7 @@ const BtnSecondaryMedium: FC<BaseProps> = ({
     color: disabled ? theme.colorDisabled : theme.colorText1
   }
 
-  const renderIcon = () => (
+  const renderIcon = (): JSX.Element => (
     <>
       {icon}
       <Space x={8} />

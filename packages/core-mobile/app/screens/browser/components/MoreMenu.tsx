@@ -1,4 +1,4 @@
-import React, { FC, useMemo } from 'react'
+import React, { FC, PropsWithChildren, useMemo } from 'react'
 import { MenuView } from '@react-native-menu/menu'
 import { Platform, Share as ShareApi } from 'react-native'
 import { useTheme } from '@avalabs/k2-mobile'
@@ -28,7 +28,7 @@ interface Props {
   isFavorited?: boolean
 }
 
-export const MoreMenu: FC<Props> = ({
+export const MoreMenu: FC<Props & PropsWithChildren> = ({
   children,
   isFavorited = false
 }): JSX.Element => {

@@ -1,5 +1,5 @@
 import React, { FC } from 'react'
-import { Dimensions, StyleSheet, View } from 'react-native'
+import { DimensionValue, Dimensions, StyleSheet, View } from 'react-native'
 import LottieView from 'lottie-react-native'
 import isString from 'lodash.isstring'
 import OwlAnimation from '../assets/lotties/owl_short.json'
@@ -18,7 +18,7 @@ const styles = StyleSheet.create({
 })
 
 interface Props {
-  size?: number | 'small' | 'large'
+  size?: 'small' | 'large' | number
   finalState?: boolean
 }
 
@@ -37,8 +37,8 @@ const CoreXLogoAnimated: FC<Props> = ({ size = 50, finalState }) => {
           loop={false}
           source={OwlAnimation}
           style={{
-            width: customSize,
-            height: customSize
+            width: customSize as DimensionValue,
+            height: customSize as DimensionValue
           }}
         />
       </View>

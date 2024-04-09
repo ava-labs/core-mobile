@@ -132,8 +132,8 @@ export default function PinOrBiometryLogin({
     }
   }, [logoTranslateY, mnemonic, onLoginSuccess, opacity])
 
-  const generatePinDots = (): Element[] => {
-    const dots: Element[] = []
+  const generatePinDots = (): JSX.Element[] => {
+    const dots: JSX.Element[] = []
 
     pinDots.forEach((value, key) => {
       dots.push(
@@ -147,8 +147,8 @@ export default function PinOrBiometryLogin({
     return dots
   }
 
-  const keyboard = (): Element[] => {
-    const keys: Element[] = []
+  const keyboard = (): JSX.Element[] => {
+    const keys: JSX.Element[] = []
     '123456789 0<'.split('').forEach((value, key) => {
       keys.push(
         <View key={key} style={styles.pinKey}>
