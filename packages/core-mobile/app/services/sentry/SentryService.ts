@@ -17,7 +17,7 @@ const init = (): void => {
       dsn: Config.SENTRY_DSN,
       environment: Config.ENVIRONMENT,
       debug: false,
-      enableSpotlight: DevDebuggingConfig.SENTRY_SPOTLIGHT,
+      enableSpotlight: false,
       beforeSend: event => {
         /**
          * eliminating breadcrumbs. This should eliminate
