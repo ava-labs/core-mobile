@@ -23,7 +23,7 @@ import {
 import { showSnackBarCustom } from 'components/Snackbar'
 import GeneralToast from 'components/toast/GeneralToast'
 
-export function NetworkDetailsAction() {
+export function NetworkDetailsAction(): JSX.Element {
   const { chainId } = useRoute<NetworkDetailsScreenProps['route']>().params
   const isCustomNetwork = useSelector(selectIsCustomNetwork(chainId))
 
@@ -47,7 +47,7 @@ type NetworkDetailsScreenProps = WalletScreenProps<
   typeof AppNavigation.Wallet.NetworkDetails
 >
 
-function ToggleFavoriteNetwork({ chainId }: { chainId: number }) {
+function ToggleFavoriteNetwork({ chainId }: { chainId: number }): JSX.Element {
   const favoriteNetworks = useSelector(selectFavoriteNetworks)
   const dispatch = useDispatch()
   const isFavorite = favoriteNetworks.some(
@@ -61,21 +61,21 @@ function ToggleFavoriteNetwork({ chainId }: { chainId: number }) {
   )
 }
 
-function CustomNetworkDropdown() {
+function CustomNetworkDropdown(): JSX.Element {
   const dispatch = useDispatch()
   const { params } = useRoute<NetworkDetailsScreenProps['route']>()
   const { navigate } = useNavigation<NetworkSelectorScreenProps['navigation']>()
   const networks = useSelector(selectNetworks)
   const network = networks[params.chainId]
 
-  function handleEdit() {
+  function handleEdit(): void {
     navigate(AppNavigation.Wallet.NetworkAddEdit, {
       mode: 'edit',
       network
     })
   }
 
-  function handleDelete() {
+  function handleDelete(): void {
     if (!network) {
       showSnackBarCustom({
         component: (
@@ -106,7 +106,7 @@ function CustomNetworkDropdown() {
     )
   }
 
-  function renderOption({ item }: { item: DropdownItem }) {
+  function renderOption({ item }: { item: DropdownItem }): JSX.Element {
     return <Option item={item} />
   }
 
@@ -144,12 +144,12 @@ function CustomNetworkDropdown() {
 
 type DropdownItem = {
   name: string
-  icon: Element
+  icon: JSX.Element
   action: () => void
   color?: string
 }
 
-function Option({ item }: { item: DropdownItem }) {
+function Option({ item }: { item: DropdownItem }): JSX.Element {
   return (
     <Row
       style={{

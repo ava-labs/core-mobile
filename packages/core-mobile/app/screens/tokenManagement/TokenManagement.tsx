@@ -31,7 +31,9 @@ function TokenManagement(): JSX.Element {
 
   const navigation = useNavigation<NavigationProp>()
 
-  const renderItem = (item: ListRenderItemInfo<LocalTokenWithBalance>) => {
+  const renderItem = (
+    item: ListRenderItemInfo<LocalTokenWithBalance>
+  ): JSX.Element => {
     const token = item.item
     const logoUri = token.logoUri
 
@@ -47,7 +49,7 @@ function TokenManagement(): JSX.Element {
 
   const emptyView = <ZeroState.Basic title="No results found" />
 
-  const handleSearch = (text: string) => {
+  const handleSearch = (text: string): void => {
     setSearchText(text)
   }
 
@@ -82,7 +84,11 @@ function TokenManagement(): JSX.Element {
   )
 }
 
-const AddCustomTokenButton = ({ onPress }: { onPress: () => void }) => {
+const AddCustomTokenButton = ({
+  onPress
+}: {
+  onPress: () => void
+}): JSX.Element => {
   const { theme } = useApplicationContext()
   return (
     <AvaButton.Base

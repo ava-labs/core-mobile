@@ -29,6 +29,7 @@ import { format } from 'date-fns'
 import { StarButton } from 'components/StarButton'
 import { AnimatedText } from 'components/AnimatedText'
 import { useDispatch, useSelector } from 'react-redux'
+import { GraphPoint } from 'react-native-graph'
 import { DataItem } from './DataItem'
 import { Overlay } from './Overlay'
 
@@ -57,7 +58,7 @@ const TokenDetail: FC = () => {
   const animatedPrice = useSharedValue('')
 
   const updatePriceAndDate = useCallback(
-    p => {
+    (p: GraphPoint) => {
       const amountInCurrency = tokenInCurrencyFormatter(p.value)
       animatedPrice.value = amountInCurrency
       animatedDate.value = format(p.date, 'E, MMM dd, yyyy, H:mm aa')

@@ -1,4 +1,4 @@
-import React, { FC } from 'react'
+import React, { FC, PropsWithChildren } from 'react'
 import { MenuView } from '@react-native-menu/menu'
 import { Platform } from 'react-native'
 import { useTheme } from '@avalabs/k2-mobile'
@@ -13,7 +13,7 @@ interface Props {
   onViewHistory: () => void
 }
 
-const TabsListToolbarMenu: FC<Props> = ({
+const TabsListToolbarMenu: FC<Props & PropsWithChildren> = ({
   onCloseAll,
   onViewHistory,
   children

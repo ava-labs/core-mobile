@@ -1,10 +1,14 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import {
+  useMutation,
+  useQueryClient,
+  QueryClient,
+  UseMutationResult
+} from '@tanstack/react-query'
 import { useSelector } from 'react-redux'
 import EarnService from 'services/earn/EarnService'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectActiveAccount } from 'store/account'
 import { selectSelectedCurrency } from 'store/settings/currency'
-import { QueryClient } from '@tanstack/query-core'
 import { Avax } from 'types/Avax'
 import { calculateAmountForCrossChainTransfer } from 'hooks/earn/useGetAmountForCrossChainTransfer'
 import Logger from 'utils/Logger'
@@ -17,7 +21,19 @@ export const useIssueDelegation = (
   onSuccess: (txId: string) => void,
   onError: (error: Error) => void,
   onFundsStuck: (error: Error) => void
-) => {
+): {
+  issueDelegationMutation: UseMutationResult<
+    string,
+    Error,
+    {
+      nodeId: string
+      stakingAmount: Avax
+      startDate: Date
+      endDate: Date
+    },
+    unknown
+  >
+} => {
   const queryClient = useQueryClient()
   const activeAccount = useSelector(selectActiveAccount)
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
@@ -124,7 +140,7 @@ export const refetchQueries = ({
   pAddress: string
   cAddress: string
   selectedCurrency: string
-}) => {
+}): void => {
   setTimeout(() => {
     queryClient.invalidateQueries({
       queryKey: ['stakes', isDeveloperMode, pAddress]

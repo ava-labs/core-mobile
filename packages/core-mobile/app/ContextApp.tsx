@@ -2,7 +2,7 @@
  * Context wrapper for App
  **/
 
-import React, { FC, useEffect, useState } from 'react'
+import React, { FC, PropsWithChildren, useEffect, useState } from 'react'
 import * as Sentry from '@sentry/react-native'
 import App from 'App'
 import { ApplicationContextProvider } from 'contexts/ApplicationContext'
@@ -31,7 +31,7 @@ function setToast(toast: Toast): void {
 /**
  * Aggregate all the top-level context providers for better readability.
  */
-const ContextProviders: FC = ({ children }) => (
+const ContextProviders: FC<PropsWithChildren> = ({ children }) => (
   <EncryptedStoreProvider>
     <ReactQueryProvider>
       <PosthogContextProvider>
@@ -81,7 +81,7 @@ const ContextApp = (): JSX.Element => {
   )
 }
 
-const JailBrokenCheck: FC = ({ children }) => {
+const JailBrokenCheck: FC<PropsWithChildren> = ({ children }) => {
   const [showJailBroken, setShowJailBroken] = useState(false)
 
   useEffect(() => {
