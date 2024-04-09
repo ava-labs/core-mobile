@@ -12,6 +12,10 @@ export async function migrateFromAsyncStorage(): Promise<void> {
   Logger.info('Migration from AsyncStorage -> MMKKV started!')
   try {
     const keys = await AsyncStorage.getAllKeys()
+    if (keys.length === 0) {
+      commonStorage.set('hasMigratedFromAsyncStorage', true)
+      Logger.info(`Skip AsyncStorage Migration: No keys found in AsyncStorage!`)
+    }
     const values = await AsyncStorage.multiGet(keys)
     values.forEach(async ([key, value]) => {
       if (value != null) {
