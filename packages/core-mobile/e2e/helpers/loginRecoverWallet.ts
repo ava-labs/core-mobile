@@ -11,17 +11,7 @@ import Actions from '../helpers/actions'
 class LoginRecoverWallet {
   async recoverMnemonicWallet() {
     const recoveryPhrase: string = process.env.E2E_MNEMONIC as string
-    await Actions.waitForElement(
-      ExistingRecoveryPhrasePage.alreadyHaveAWalletBtn,
-      10000,
-      0
-    )
     await ExistingRecoveryPhrasePage.tapAlreadyHaveAWalletBtn()
-    await Actions.waitForElement(
-      ExistingRecoveryPhrasePage.recoveryPhrase,
-      10000,
-      0
-    )
     await ExistingRecoveryPhrasePage.tapRecoveryPhraseBtn()
     await AnalyticsConsentPage.tapNoThanksBtn()
     await ExistingRecoveryPhrasePage.enterRecoveryPhrase(recoveryPhrase)
