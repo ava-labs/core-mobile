@@ -6,14 +6,8 @@ import { Platform } from './constants'
 import loginRecoverWallet from './loginRecoverWallet'
 
 export const warmup = async () => {
-  console.log('Warming up the app and disabling sync for detox...')
   await device.launchApp({
-    permissions: { notifications: 'YES', camera: 'YES' },
-    launchArgs: {
-      DTXEnableVerboseSyncSystem: 'YES',
-      DTXEnableVerboseSyncResources: 'YES',
-      detoxPrintBusyIdleResources: 'YES'
-    }
+    permissions: { notifications: 'YES', camera: 'YES' }
   })
 
   // if we are running Android e2e on Bitrise, we also need to handle the Jailbroken overlay

@@ -4,7 +4,7 @@
 set -o pipefail
 
 npm rebuild detox
-./node_modules/.bin/detox test --maxWorkers 3 --configuration ios.internal.release.smoke.ci --retries 2; test_result=$?
+./node_modules/.bin/detox test --maxWorkers 2 --configuration ios.internal.release.smoke.ci --retries 1; test_result=$?
 
 RUN_ID=$(head -n 1 ./e2e/testrailRunId.txt) 
 
