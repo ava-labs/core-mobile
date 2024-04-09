@@ -1,10 +1,14 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import {
+  UseMutationResult,
+  useMutation,
+  useQueryClient,
+  QueryClient
+} from '@tanstack/react-query'
 import { useSelector } from 'react-redux'
 import EarnService from 'services/earn/EarnService'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectActiveAccount } from 'store/account'
 import { selectSelectedCurrency } from 'store/settings/currency'
-import { QueryClient } from '@tanstack/query-core'
 import { Avax } from 'types/Avax'
 import Logger from 'utils/Logger'
 import { FundsStuckError } from 'hooks/earn/errors'
@@ -22,7 +26,7 @@ export const useClaimRewards = (
   onSuccess: () => void,
   onError: (error: Error) => void,
   onFundsStuck: (error: Error) => void
-) => {
+): UseMutationResult<void, Error, void, unknown> => {
   const queryClient = useQueryClient()
   const activeAccount = useSelector(selectActiveAccount)
   const isDeveloperMode = useSelector(selectIsDeveloperMode)

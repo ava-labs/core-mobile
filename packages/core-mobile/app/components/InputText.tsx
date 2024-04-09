@@ -162,7 +162,7 @@ const InputText = forwardRef<TextInput, InputTextProps>(
     }
 
     const handleBlur = useCallback(
-      args => {
+      (args: NativeSyntheticEvent<TextInputFocusEventData>) => {
         setSelection({ start: 0 })
         onBlur?.(args)
         setIsFocused(false)
@@ -171,7 +171,7 @@ const InputText = forwardRef<TextInput, InputTextProps>(
     )
 
     const handleFocus = useCallback(
-      args => {
+      (args: NativeSyntheticEvent<TextInputFocusEventData>) => {
         // set cursor at end of text
         setSelection({ start: text.length })
 

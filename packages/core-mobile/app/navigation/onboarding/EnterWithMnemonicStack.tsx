@@ -112,7 +112,7 @@ const LoginWithMnemonicScreen = (): JSX.Element => {
   )
 
   const onEnterWallet = useCallback(
-    m => {
+    (m: string) => {
       // if a wallet already existed, we want to clear out
       // existing data first before entering with this new wallet
       if (isWalletExisted) {

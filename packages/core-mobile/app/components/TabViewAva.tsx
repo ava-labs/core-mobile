@@ -1,4 +1,11 @@
-import React, { FC, useCallback, useEffect, useMemo, useState } from 'react'
+import React, {
+  FC,
+  PropsWithChildren,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState
+} from 'react'
 import {
   NavigationState,
   SceneRendererProps,
@@ -25,18 +32,19 @@ type TabViewAvaItemProps = {
   testID?: string
 }
 
-type TabViewAvaFC = FC<{
-  renderCustomLabel?: (
-    title: string,
-    selected: boolean,
-    color: string
-  ) => React.ReactNode
-  currentTabIndex?: number
-  testID?: string
-  onTabIndexChange?: (tabIndex: number) => void
-  lazy?: boolean
-  hideSingleTab?: boolean
-}> & { Item: FC<TabViewAvaItemProps> }
+type TabViewAvaFC = FC<
+  {
+    renderCustomLabel?: (
+      title: string,
+      selected: boolean,
+      color: string
+    ) => React.ReactNode
+    currentTabIndex?: number
+    testID?: string
+    onTabIndexChange?: (tabIndex: number) => void
+    lazy?: boolean
+  } & PropsWithChildren
+> & { Item: FC<TabViewAvaItemProps & PropsWithChildren> }
 
 /**
  * If there's only one route available TabBar won't be displayed

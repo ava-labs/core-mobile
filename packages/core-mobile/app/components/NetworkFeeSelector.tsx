@@ -1,7 +1,14 @@
 import { Row } from 'components/Row'
 import Settings from 'assets/icons/settings.svg'
 import { Space } from 'components/Space'
-import React, { FC, useCallback, useEffect, useMemo, useState } from 'react'
+import React, {
+  FC,
+  PropsWithChildren,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState
+} from 'react'
 import { useSelector } from 'react-redux'
 import { Network } from '@avalabs/chains-sdk'
 import { useNavigation } from '@react-navigation/native'
@@ -417,7 +424,10 @@ export const FeeSelector: FC<{
   )
 }
 
-const ButtonWrapper: FC<{ selected: boolean }> = ({ children, selected }) => {
+const ButtonWrapper: FC<{ selected: boolean } & PropsWithChildren> = ({
+  children,
+  selected
+}) => {
   const {
     theme: { colors }
   } = useTheme()
@@ -440,7 +450,10 @@ const ButtonWrapper: FC<{ selected: boolean }> = ({ children, selected }) => {
   )
 }
 
-const ButtonText: FC<{ selected: boolean }> = ({ children, selected }) => {
+const ButtonText: FC<{ selected: boolean } & PropsWithChildren> = ({
+  children,
+  selected
+}) => {
   return (
     <Text
       variant="buttonSmall"

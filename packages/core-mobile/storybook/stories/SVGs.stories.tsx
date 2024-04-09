@@ -1,9 +1,9 @@
-import React, { FC } from 'react'
+import React, { FC, PropsWithChildren } from 'react'
 import { type Meta } from '@storybook/react-native'
 import StakeLogoBigSVG from 'components/svg/StakeLogoBigSVG'
 import StakeLogoSmallSVG from 'components/svg/StakeLogoSmallSVG'
 import ClockSVG from 'components/svg/ClockSVG'
-import { View } from 'react-native'
+import { View } from '@avalabs/k2-mobile'
 import AccountSVG from 'components/svg/AccountSVG'
 import AddressBookSVG from 'components/svg/AddressBookSVG'
 import AvaText from 'components/AvaText'
@@ -82,14 +82,16 @@ export default {
   title: 'SVGs'
 } as Meta
 
-const IconContainer: FC<{
-  name: string
-  height?: string | number
-  width?: string | number
-}> = ({ children, name, height, width }) => {
+const IconContainer: FC<
+  {
+    name: string
+    height?: string | number
+    width?: string | number
+  } & PropsWithChildren
+> = ({ children, name, height, width }) => {
   return (
     <View
-      style={{
+      sx={{
         margin: 8,
         alignItems: 'center',
         justifyContent: 'flex-end',
@@ -103,7 +105,7 @@ const IconContainer: FC<{
   )
 }
 
-export const SVGList = () => {
+export const SVGList = (): JSX.Element => {
   return (
     <ScrollView
       contentContainerStyle={{
