@@ -10,8 +10,6 @@ import Actions from '../helpers/actions'
 
 class LoginRecoverWallet {
   async recoverMnemonicWallet() {
-    console.log('disabling sync for detox')
-    await device.disableSynchronization()
     const recoveryPhrase: string = process.env.E2E_MNEMONIC as string
     await Actions.waitForElement(
       ExistingRecoveryPhrasePage.alreadyHaveAWalletBtn,
@@ -25,28 +23,15 @@ class LoginRecoverWallet {
       0
     )
     await ExistingRecoveryPhrasePage.tapRecoveryPhraseBtn()
-    await Actions.waitForElement(AnalyticsConsentPage.noThanksBtn, 10000, 0)
     await AnalyticsConsentPage.tapNoThanksBtn()
-    await Actions.waitForElement(
-      ExistingRecoveryPhrasePage.recoveryPhraseTextInput,
-      10000,
-      0
-    )
     await ExistingRecoveryPhrasePage.enterRecoveryPhrase(recoveryPhrase)
     await ExistingRecoveryPhrasePage.tapSignInBtn()
-    await Actions.waitForElement(nameWalletPage.nameWalletInput, 10000, 0)
     await nameWalletPage.enterWalletName('testWallet1\n')
-    await Actions.waitForElement(CreatePinPage.numpadZero, 10000, 0)
     await CreatePinPage.tapNumpadZero()
     await CreatePinPage.tapNumpadZero()
-    await Actions.waitForElement(CreatePinPage.agreeAndContinueBtn, 10000, 0)
     await CreatePinPage.tapAgreeAndContinueBtn()
-    await Actions.waitForElement(commonElsPage.getStartedButton, 10000, 0)
     await commonElsPage.tapGetStartedButton()
-    await Actions.waitForElement(PortfolioPage.colectiblesTab, 10000, 0)
     await PortfolioPage.verifyPorfolioScreen()
-    await device.enableSynchronization()
-    console.log('enabling sync for detox')
   }
 
   async enterPin() {

@@ -12,8 +12,7 @@ export const warmup = async () => {
     launchArgs: {
       DTXEnableVerboseSyncSystem: 'YES',
       DTXEnableVerboseSyncResources: 'YES',
-      detoxPrintBusyIdleResources: 'YES',
-      detoxEnableSynchronization: 0
+      detoxPrintBusyIdleResources: 'YES'
     }
   })
 
