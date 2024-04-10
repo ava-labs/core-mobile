@@ -9,6 +9,7 @@ export const warmup = async () => {
   await device.launchApp({
     permissions: { notifications: 'YES', camera: 'YES' }
   })
+
   // if we are running Android e2e on Bitrise, we also need to handle the Jailbroken overlay
   const jailbrokenWarningPrsent = CommonElsPage.jailbrokenWarning
   if (
