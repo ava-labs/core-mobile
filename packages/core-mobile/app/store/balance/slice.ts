@@ -6,8 +6,6 @@ import {
 } from '@reduxjs/toolkit'
 import { RootState } from 'store'
 import { selectActiveAccount } from 'store/account'
-import { selectActiveNetwork, selectIsTestnet } from 'store/network'
-import { selectIsDeveloperMode } from 'store/settings/advanced'
 import BN from 'bn.js'
 import { Network } from '@avalabs/chains-sdk'
 import {
@@ -59,9 +57,8 @@ export const selectBalanceStatus = (state: RootState): QueryStatus =>
   state.balance.status
 
 export const selectIsBalanceLoadedForAddress =
-  (accountIndex: number) => (state: RootState) => {
-    const network = selectActiveNetwork(state)
-    return !!state.balance.balances[getKey(network.chainId, accountIndex)]
+  (accountIndex: number, chainId: number) => (state: RootState) => {
+    return !!state.balance.balances[getKey(chainId, accountIndex)]
   }
 
 export const selectIsLoadingBalances = (state: RootState): boolean =>
@@ -72,17 +69,16 @@ export const selectIsRefetchingBalances = (state: RootState): boolean =>
 
 // get the list of tokens for the active network
 // each token will have info such as: balance, price, market cap,...
-export const selectTokensWithBalance = (
-  state: RootState
-): LocalTokenWithBalance[] => {
-  const network = selectActiveNetwork(state)
-  const activeAccount = selectActiveAccount(state)
+export const selectTokensWithBalance =
+  (chainId: number) =>
+  (state: RootState): LocalTokenWithBalance[] => {
+    const activeAccount = selectActiveAccount(state)
 
-  if (!activeAccount) return []
+    if (!activeAccount) return []
 
-  const key = getKey(network.chainId, activeAccount.index)
-  return state.balance.balances[key]?.tokens ?? []
-}
+    const key = getKey(chainId, activeAccount.index)
+    return state.balance.balances[key]?.tokens ?? []
+  }
 
 export const selectTokensWithBalanceByNetwork =
   (network?: Network) => (state: RootState) => {
@@ -95,12 +91,12 @@ export const selectTokensWithBalanceByNetwork =
     return state.balance.balances[key]?.tokens ?? []
   }
 
-export const selectTokensWithZeroBalance = (
-  state: RootState
-): LocalTokenWithBalance[] => {
-  const allTokens = selectTokensWithBalance(state)
-  return allTokens.filter(t => t.balance.eq(BN_ZERO))
-}
+export const selectTokensWithZeroBalance =
+  (chainId: number) =>
+  (state: RootState): LocalTokenWithBalance[] => {
+    const allTokens = selectTokensWithBalance(chainId)(state)
+    return allTokens.filter(t => t.balance.eq(BN_ZERO))
+  }
 
 export const selectAvaxPrice = (state: RootState): number => {
   const balances = Object.values(state.balance.balances)
@@ -144,32 +140,6 @@ export const selectTokensWithBalanceForAccount =
 
     const balances = selectBalancesForAccount(accountIndex)(state)
     return balances.flatMap(b => b.tokens)
-  }
-
-export const selectBalanceTotalInCurrencyForAccount =
-  (accountIndex: number) => (state: RootState) => {
-    const balances = selectBalancesForAccount(accountIndex)(state)
-
-    const isDeveloperMode = selectIsDeveloperMode(state)
-
-    let totalInCurrency = 0
-
-    for (const balance of balances) {
-      const isTestnet = selectIsTestnet(balance.chainId)(state)
-
-      // when developer mode is on, only add testnet balances
-      // when developer mode is off, only add mainnet balances
-      if (
-        (isDeveloperMode && isTestnet) ||
-        (!isDeveloperMode && isTestnet === false)
-      ) {
-        for (const token of balance.tokens) {
-          totalInCurrency += token.balanceInCurrency ?? 0
-        }
-      }
-    }
-
-    return totalInCurrency
   }
 
 export const selectBalanceTotalInCurrencyForNetwork =

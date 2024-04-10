@@ -13,13 +13,14 @@ import {
   fetchBalanceForAccount,
   QueryStatus,
   selectBalanceStatus,
-  selectBalanceTotalInCurrencyForAccount,
   selectIsBalanceLoadedForAddress
 } from 'store/balance'
 import ReloadSVG from 'components/svg/ReloadSVG'
 import { ActivityIndicator } from 'components/ActivityIndicator'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { selectWalletType } from 'store/app'
+import { useNetworks } from 'hooks/useNetworks'
+import { useBalanceTotalInCurrencyForAccount } from 'hooks/useBalanceTotalInCurrencyForAccount'
 
 type Props = {
   account: Account
@@ -36,13 +37,13 @@ function AccountItem({
   selected,
   blurred
 }: Props): JSX.Element {
+  const { selectActiveNetwork } = useNetworks()
+  const activeNetwork = selectActiveNetwork()
   const walletType = useSelector(selectWalletType)
   const context = useApplicationContext()
-  const accountBalance = useSelector(
-    selectBalanceTotalInCurrencyForAccount(account.index)
-  )
+  const accountBalance = useBalanceTotalInCurrencyForAccount(account.index)
   const isBalanceLoaded = useSelector(
-    selectIsBalanceLoadedForAddress(account.index)
+    selectIsBalanceLoadedForAddress(account.index, activeNetwork.chainId)
   )
   const balanceStatus = useSelector(selectBalanceStatus)
   const isBalanceLoading = balanceStatus !== QueryStatus.IDLE

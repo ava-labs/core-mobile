@@ -8,12 +8,12 @@ import AppNavigation from 'navigation/AppNavigation'
 import Logger from 'utils/Logger'
 import { ethErrors } from 'eth-rpc-errors'
 import * as Sentry from '@sentry/react-native'
-import { selectNetwork } from 'store/network'
 import { selectAccountByAddress } from 'store/account'
 import { queryClient } from 'contexts/ReactQueryProvider'
 import { NetworkFee } from 'services/networkFee/types'
 import { getQueryKey, prefetchNetworkFee } from 'hooks/useNetworkFee'
 import { NetworkTokenUnit } from 'types'
+import { getSelectNetwork } from 'utils/getSelectNetwork'
 import {
   updateRequestStatus,
   waitForTransactionReceiptAsync
@@ -68,7 +68,7 @@ class EthSendTransactionHandler
     // pre-fetch network fees for tx parsing and approval screen
     const state = listenerApi.getState()
     const chainId = getChainIdFromRequest(request)
-    const requestedNetwork = selectNetwork(Number(chainId))(state)
+    const requestedNetwork = await getSelectNetwork(Number(chainId), state)
     prefetchNetworkFee(requestedNetwork)
 
     // TODO CP-4894 decode transaction data here instead of in SignTransaction component/useExplainTransaction hook
@@ -112,7 +112,7 @@ class EthSendTransactionHandler
     const params = result.data.txParams
     const address = params.from
 
-    const network = selectNetwork(Number(chainId))(state)
+    const network = await getSelectNetwork(Number(chainId), state)
 
     if (!network)
       return {

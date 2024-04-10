@@ -1,5 +1,4 @@
 import { useSelector } from 'react-redux'
-import { selectActiveNetwork } from 'store/network'
 import { selectActiveAccount } from 'store/account'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import SentryWrapper from 'services/sentry/SentryWrapper'
@@ -7,12 +6,14 @@ import NftService from 'services/nft/NftService'
 import Logger from 'utils/Logger'
 import { useCallback, useMemo } from 'react'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
+import { useNetworks } from 'hooks/useNetworks'
 import { NftPageParam } from '../../../store/nft/types'
 
 // a hook to get NFTs with pagination support for the current active network & account
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export const useNfts = (enabled: boolean) => {
-  const network = useSelector(selectActiveNetwork)
+  const { selectActiveNetwork } = useNetworks()
+  const network = selectActiveNetwork()
   const account = useSelector(selectActiveAccount)
 
   const fetchNfts = useCallback(

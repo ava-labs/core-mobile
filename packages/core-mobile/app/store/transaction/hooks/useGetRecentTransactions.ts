@@ -1,6 +1,5 @@
 import { useDispatch, useSelector } from 'react-redux'
 import { useIsFocused } from '@react-navigation/native'
-import { selectActiveNetwork } from 'store/network'
 import { useState, useCallback } from 'react'
 import { selectActiveAccount } from 'store/account'
 import { isAnyOf } from '@reduxjs/toolkit'
@@ -8,6 +7,7 @@ import { addAppListener } from 'store/middleware/listener'
 import { useFocusEffect } from '@react-navigation/native'
 import { popBridgeTransaction, selectBridgeCriticalConfig } from 'store/bridge'
 import { selectIsLocked } from 'store/app/slice'
+import { useNetworks } from 'hooks/useNetworks'
 import { useGetRecentsTransactionsQuery } from '../api'
 import { Transaction } from '../types'
 
@@ -39,7 +39,8 @@ export const useGetRecentTransactions = (): {
 } => {
   const dispatch = useDispatch()
   const [isRefreshing, setIsRefreshing] = useState(false)
-  const network = useSelector(selectActiveNetwork)
+  const { selectActiveNetwork } = useNetworks()
+  const network = selectActiveNetwork()
   const account = useSelector(selectActiveAccount)
   const isAppLocked = useSelector(selectIsLocked)
   const isFocused = useIsFocused()

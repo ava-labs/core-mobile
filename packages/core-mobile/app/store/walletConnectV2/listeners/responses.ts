@@ -5,9 +5,9 @@ import { ethErrors } from 'eth-rpc-errors'
 import { showSimpleToast, showDappToastError } from 'components/Snackbar'
 import Logger from 'utils/Logger'
 import { selectActiveAccount } from 'store/account'
-import { selectActiveNetwork } from 'store/network'
 import { UPDATE_SESSION_DELAY } from 'consts/walletConnect'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import { getActiveNetwork } from 'utils/getActiveNetwork'
 import { onSendRpcError, onSendRpcResult } from '../slice'
 import { isSessionProposal } from './utils'
 
@@ -57,7 +57,7 @@ export const sendRpcResult = async (
        */
       const state = getState()
       const address = selectActiveAccount(state)?.address
-      const { chainId } = selectActiveNetwork(state)
+      const { chainId } = await getActiveNetwork(state)
       address &&
         setTimeout(() => {
           WalletConnectService.updateSessionWithTimeout({

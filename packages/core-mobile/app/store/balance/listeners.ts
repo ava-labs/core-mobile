@@ -13,11 +13,7 @@ import {
 import { onAppLocked, onAppUnlocked, onLogOut } from 'store/app'
 import { addCustomToken } from 'store/customToken'
 import { AppStartListening } from 'store/middleware/listener'
-import {
-  selectActiveNetwork,
-  selectFavoriteNetworks,
-  setNetworks
-} from 'store/network'
+import { setNetworks } from 'store/network'
 import {
   selectSelectedCurrency,
   setSelectedCurrency
@@ -25,6 +21,8 @@ import {
 import Logger from 'utils/Logger'
 import { getLocalTokenId } from 'store/balance/utils'
 import SentryWrapper from 'services/sentry/SentryWrapper'
+import { getActiveNetwork } from 'utils/getActiveNetwork'
+import { getFavoriteNetworks } from 'utils/getFavoriteNetworks'
 import {
   fetchBalanceForAccount,
   getKey,
@@ -56,18 +54,18 @@ const onBalanceUpdate = async (
   queryStatus: QueryStatus,
   listenerApi: AppListenerEffectAPI,
   fetchActiveOnly: boolean
-) => {
+): Promise<void> => {
   const state = listenerApi.getState()
-  const activeNetwork = selectActiveNetwork(state)
+  const activeNetwork = await getActiveNetwork(state)
 
-  let networksToFetch
+  let networksToFetch: Network[]
   const activeAccount = selectActiveAccount(state)
   const accountsToFetch = activeAccount ? [activeAccount] : []
 
   if (fetchActiveOnly) {
     networksToFetch = [activeNetwork]
   } else {
-    networksToFetch = selectFavoriteNetworks(state)
+    networksToFetch = await getFavoriteNetworks(state)
     // Just in case the active network has not been favorited
     if (!networksToFetch.map(n => n.chainId).includes(activeNetwork.chainId)) {
       networksToFetch.push(activeNetwork)
@@ -87,7 +85,7 @@ const onBalanceUpdateCore = async (
   listenerApi: AppListenerEffectAPI,
   networks: Network[],
   accounts: Account[]
-) => {
+): Promise<void> => {
   const { getState, dispatch } = listenerApi
   const state = getState()
   const currentStatus = selectBalanceStatus(state)
@@ -158,7 +156,7 @@ const fetchBalancePeriodically = async (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   action: any,
   listenerApi: AppListenerEffectAPI
-) => {
+): Promise<void> => {
   const { condition } = listenerApi
 
   onBalanceUpdate(QueryStatus.LOADING, listenerApi, false)
@@ -205,14 +203,14 @@ const fetchBalancePeriodically = async (
 const handleFetchBalanceForAccount = async (
   listenerApi: AppListenerEffectAPI,
   accountIndex: number
-) => {
+): Promise<void> => {
   const state = listenerApi.getState()
-  const activeNetwork = selectActiveNetwork(state)
+  const activeNetwork = await getActiveNetwork(state)
 
   const accounts = selectAccounts(state)
   const accountToFetchFor = accounts[accountIndex]
   const accountsToFetch = accountToFetchFor ? [accountToFetchFor] : []
-  const networksToFetch = selectFavoriteNetworks(state)
+  const networksToFetch = await getFavoriteNetworks(state)
   // Just in case the active network has not been favorited
   if (!networksToFetch.map(n => n.chainId).includes(activeNetwork.chainId)) {
     networksToFetch.push(activeNetwork)
@@ -226,7 +224,9 @@ const handleFetchBalanceForAccount = async (
   )
 }
 
-export const addBalanceListeners = (startListening: AppStartListening) => {
+export const addBalanceListeners = (
+  startListening: AppStartListening
+): void => {
   startListening({
     actionCreator: onAppUnlocked,
     effect: fetchBalancePeriodically

@@ -3,7 +3,7 @@ import { TransactionResponse } from 'ethers'
 import { getTxConfirmationReceipt } from 'utils/getTxConfirmationReceipt'
 import { showSimpleToast } from 'components/Snackbar'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { selectActiveNetwork } from 'store/network'
+import { getActiveNetwork } from 'utils/getActiveNetwork'
 import { Request, RpcMethod, SessionProposal } from '../types'
 import { updateRequestStatus } from '../slice'
 
@@ -20,7 +20,7 @@ export const handleWaitForTransactionReceiptAsync = async (
 ): Promise<void> => {
   const { dispatch, getState } = listenerApi
   const state = getState()
-  const network = selectActiveNetwork(state)
+  const network = await getActiveNetwork(state)
   const isTestnet = selectIsDeveloperMode(state)
 
   const confirmationReceipt = await getTxConfirmationReceipt(

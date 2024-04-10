@@ -27,13 +27,13 @@ import {
   getMaxAvailableBalance,
   truncateBN
 } from 'utils/Utils'
-import { selectActiveNetwork } from 'store/network'
 import { useNetworkFee } from 'hooks/useNetworkFee'
 import Logger from 'utils/Logger'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { Amount, NetworkTokenUnit } from 'types'
 import BN from 'bn.js'
 import { bnToLocaleString } from '@avalabs/utils-sdk'
+import { useNetworks } from 'hooks/useNetworks'
 
 type NavigationProp = SwapScreenProps<
   typeof AppNavigation.Swap.Swap
@@ -42,9 +42,12 @@ type NavigationProp = SwapScreenProps<
 export default function SwapView(): JSX.Element {
   const { theme } = useApplicationContext()
   const { navigate } = useNavigation<NavigationProp>()
-  const activeNetwork = useSelector(selectActiveNetwork)
+  const { selectActiveNetwork } = useNetworks()
+  const activeNetwork = selectActiveNetwork()
   const { data: networkFee } = useNetworkFee()
-  const tokensWithZeroBalance = useSelector(selectTokensWithZeroBalance)
+  const tokensWithZeroBalance = useSelector(
+    selectTokensWithZeroBalance(activeNetwork.chainId)
+  )
   const avaxPrice = useSelector(selectAvaxPrice)
   const {
     fromToken,

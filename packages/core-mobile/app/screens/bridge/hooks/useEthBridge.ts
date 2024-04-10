@@ -12,13 +12,13 @@ import { useBridgeContext } from 'contexts/BridgeContext'
 import { useAssetBalancesEVM } from 'screens/bridge/hooks/useAssetBalancesEVM'
 import { useCallback, useMemo, useState } from 'react'
 import { useSelector } from 'react-redux'
-import { selectActiveNetwork } from 'store/network'
 import { selectActiveAccount } from 'store/account'
 import { useEthereumProvider } from 'hooks/networkProviderHooks'
 import { selectBridgeAppConfig } from 'store/bridge'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { Eip1559Fees } from 'utils/Utils'
 import { NetworkTokenUnit } from 'types'
+import { useNetworks } from 'hooks/useNetworks'
 
 /**
  * Hook for when the bridge source chain is Ethereum
@@ -50,7 +50,8 @@ export function useEthBridge({
     [assetsWithBalances, currentAssetData?.symbol]
   )
 
-  const network = useSelector(selectActiveNetwork)
+  const { selectActiveNetwork } = useNetworks()
+  const network = selectActiveNetwork()
   const activeAccount = useSelector(selectActiveAccount)
   const config = useSelector(selectBridgeAppConfig)
   const ethereumProvider = useEthereumProvider()

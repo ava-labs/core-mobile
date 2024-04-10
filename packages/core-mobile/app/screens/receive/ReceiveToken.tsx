@@ -6,10 +6,10 @@ import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
 import AvaxQACode from 'components/AvaxQRCode'
 import TokenAddress from 'components/TokenAddress'
-import { selectActiveNetwork } from 'store/network'
 import { ChainId } from '@avalabs/chains-sdk'
 import { selectActiveAccount } from 'store/account'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import { useNetworks } from 'hooks/useNetworks'
 
 type Props = {
   embedded: boolean
@@ -17,8 +17,9 @@ type Props = {
 
 const ReceiveToken: FC<Props> = memo(props => {
   const theme = useApplicationContext().theme
+  const { selectActiveNetwork } = useNetworks()
   const embedded = !!props?.embedded
-  const activeNetwork = useSelector(selectActiveNetwork)
+  const activeNetwork = selectActiveNetwork()
   const activeAccount = useSelector(selectActiveAccount)
   const { chainId, networkToken, chainName } = activeNetwork
   const addressC = activeAccount?.address

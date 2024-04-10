@@ -10,7 +10,6 @@ import {
 import Big from 'big.js'
 import { TransferEventType } from 'contexts/BridgeContext'
 import { useSelector } from 'react-redux'
-import { selectNetworks } from 'store/network'
 import walletService from 'services/wallet/WalletService'
 import { selectActiveAccount } from 'store/account'
 import { useCallback } from 'react'
@@ -23,6 +22,7 @@ import { TransactionResponse } from 'ethers'
 import { NetworkTokenUnit } from 'types'
 import { omit } from 'lodash'
 import { Eip1559Fees } from 'utils/Utils'
+import { useNetworks } from 'hooks/useNetworks'
 import { blockchainToNetwork } from '../utils/bridgeUtils'
 
 const events = new EventEmitter()
@@ -38,8 +38,9 @@ export function useTransferAsset(): {
   ) => Promise<TransactionResponse | undefined>
   events: EventEmitter
 } {
+  const { selectNetworks } = useNetworks()
   const activeAccount = useSelector(selectActiveAccount)
-  const allNetworks = useSelector(selectNetworks)
+  const allNetworks = selectNetworks()
   const config = useSelector(selectBridgeAppConfig)
   const criticalConfig = useSelector(selectBridgeCriticalConfig)
   const { currentBlockchain } = useBridgeSDK()

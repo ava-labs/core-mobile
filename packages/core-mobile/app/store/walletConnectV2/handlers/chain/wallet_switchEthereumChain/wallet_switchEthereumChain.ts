@@ -1,10 +1,6 @@
 import { ethErrors } from 'eth-rpc-errors'
 import { AppListenerEffectAPI } from 'store'
-import {
-  selectActiveNetwork,
-  selectAllNetworks,
-  setActive
-} from 'store/network'
+import { setActive } from 'store/network'
 import * as Navigation from 'utils/Navigation'
 import AppNavigation from 'navigation/AppNavigation'
 import Logger from 'utils/Logger'
@@ -12,6 +8,8 @@ import {
   selectIsDeveloperMode,
   toggleDeveloperMode
 } from 'store/settings/advanced'
+import { getActiveNetwork } from 'utils/getActiveNetwork'
+import { getAllNetworks } from 'utils/getAllNetworks'
 import { RpcMethod, SessionRequest } from '../../../types'
 import {
   ApproveResponse,
@@ -50,10 +48,10 @@ class WalletSwitchEthereumChainHandler
 
     const targetChainIDInHex = result.data[0].chainId // chain ID is hex with 0x prefix
     const targetChainID = Number(targetChainIDInHex)
-    const networks = selectAllNetworks(store)
+    const networks = await getAllNetworks(store)
 
     const supportedNetwork = networks[Number(targetChainID)]
-    const currentActiveNetwork = selectActiveNetwork(store)
+    const currentActiveNetwork = await getActiveNetwork(store)
 
     // Verify if the wallet is not currently on the requested network.
     // If it is, we just need to return early to prevent an unnecessary UX

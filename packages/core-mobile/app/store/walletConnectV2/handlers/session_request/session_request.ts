@@ -3,10 +3,11 @@ import AppNavigation from 'navigation/AppNavigation'
 import { ProposalTypes, SessionTypes } from '@walletconnect/types'
 import { AppListenerEffectAPI } from 'store'
 import { ethErrors } from 'eth-rpc-errors'
-import { selectActiveNetwork, selectAllNetworks } from 'store/network'
 import { EVM_IDENTIFIER } from 'consts/walletConnect'
 import { addNamespaceToChain } from 'services/walletconnectv2/utils'
 import { normalizeNamespaces } from '@walletconnect/utils'
+import { getActiveNetwork } from 'utils/getActiveNetwork'
+import { getAllNetworks } from 'utils/getAllNetworks'
 import { SessionProposal, RpcMethod, CORE_ONLY_METHODS } from '../../types'
 import {
   RpcRequestHandler,
@@ -102,7 +103,7 @@ class SessionRequestHandler implements RpcRequestHandler<SessionProposal> {
     const normalizedOptional = normalizeNamespaces(optionalNamespaces)
 
     if (Object.keys(normalizedRequired).length === 0) {
-      const { chainId } = selectActiveNetwork(state)
+      const { chainId } = await getActiveNetwork(state)
       normalizedRequired = {
         [EVM_IDENTIFIER]: {
           chains: [addNamespaceToChain(chainId)],
@@ -123,7 +124,7 @@ class SessionRequestHandler implements RpcRequestHandler<SessionProposal> {
     }
 
     const eip155NameSpace = normalizedRequired[EVM_IDENTIFIER]
-    const supportedNetworks = selectAllNetworks(state)
+    const supportedNetworks = await getAllNetworks(state)
 
     const requiredChains = eip155NameSpace.chains
 

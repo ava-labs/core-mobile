@@ -16,14 +16,13 @@ import { useSendNFTContext } from 'contexts/SendNFTContext'
 import { Account } from 'store/account'
 import { NFTItem } from 'store/nft'
 import NetworkFeeSelector, { FeePreset } from 'components/NetworkFeeSelector'
-import { useSelector } from 'react-redux'
-import { selectActiveNetwork } from 'store/network'
 import { NetworkVMType } from '@avalabs/chains-sdk'
 import { SvgXml } from 'react-native-svg'
 import { AddrBookItemType, Contact } from 'store/addressBook'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { Eip1559Fees } from 'utils/Utils'
 import { NetworkTokenUnit } from 'types'
+import { useNetworks } from 'hooks/useNetworks'
 
 export type NftSendScreenProps = {
   onNext: () => void
@@ -49,7 +48,8 @@ export default function NftSend({
       selectedFeePreset
     }
   } = useSendNFTContext()
-  const activeNetwork = useSelector(selectActiveNetwork)
+  const { selectActiveNetwork } = useNetworks()
+  const activeNetwork = selectActiveNetwork()
   const placeholder =
     activeNetwork.vmName === NetworkVMType.EVM
       ? 'Enter 0x Address'

@@ -12,7 +12,6 @@ import ActivityListItem from 'screens/activity/ActivityListItem'
 import BridgeTransactionItem from 'screens/bridge/components/BridgeTransactionItem'
 import { BridgeTransactionStatusParams } from 'navigation/types'
 import useInAppBrowser from 'hooks/useInAppBrowser'
-import { useSelector } from 'react-redux'
 import { Transaction } from 'store/transaction'
 import ZeroState from 'components/ZeroState'
 import { BridgeTransaction } from '@avalabs/bridge-sdk'
@@ -22,9 +21,9 @@ import FlashList from 'components/FlashList'
 import { getDayString } from 'utils/date/getDayString'
 import { isPendingBridgeTransaction } from 'screens/bridge/utils/bridgeUtils'
 import usePendingBridgeTransactions from 'screens/bridge/hooks/usePendingBridgeTransactions'
-import { selectActiveNetwork } from 'store/network'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { BridgeTransfer } from '@avalabs/bridge-unified'
+import { useNetworks } from 'hooks/useNetworks'
 
 const SCREEN_WIDTH = Dimensions.get('window').width
 const BOTTOM_PADDING = SCREEN_WIDTH * 0.3
@@ -55,8 +54,9 @@ const Transactions: FC<Props> = ({
   openTransactionStatus
 }) => {
   const { openUrl } = useInAppBrowser()
+  const { selectActiveNetwork } = useNetworks()
   const bridgeDisabled = useIsUIDisabled(UI.Bridge)
-  const activeNetwork = useSelector(selectActiveNetwork)
+  const activeNetwork = selectActiveNetwork()
   const pendingBridgeTxs = usePendingBridgeTransactions(activeNetwork)
   const combinedData = useMemo(() => {
     function isPendingBridge(tx: Transaction): boolean {

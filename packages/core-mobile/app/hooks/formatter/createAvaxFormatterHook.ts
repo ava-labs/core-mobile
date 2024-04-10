@@ -2,8 +2,8 @@ import { ChainId } from '@avalabs/chains-sdk'
 import { VsCurrencyType } from '@avalabs/coingecko-sdk'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { useNativeTokenPriceForNetwork } from 'hooks/useNativeTokenPriceForNetwork'
+import { useNetworks } from 'hooks/useNetworks'
 import { useSelector } from 'react-redux'
-import { selectNetwork } from 'store/network'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { Avax } from 'types/Avax'
@@ -36,13 +36,13 @@ export const createAvaxFormatterHook =
     const {
       appHook: { tokenInCurrencyFormatter }
     } = useApplicationContext()
-
+    const { selectNetwork } = useNetworks()
     const selectedCurrency = useSelector(selectSelectedCurrency)
     const isDeveloperMode = useSelector(selectIsDeveloperMode)
     const chainId = isDeveloperMode
       ? ChainId.AVALANCHE_TESTNET_ID
       : ChainId.AVALANCHE_MAINNET_ID
-    const avaxNetwork = useSelector(selectNetwork(chainId))
+    const avaxNetwork = selectNetwork(chainId)
 
     const { nativeTokenPrice: avaxPrice } = useNativeTokenPriceForNetwork(
       avaxNetwork,

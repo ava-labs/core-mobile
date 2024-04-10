@@ -8,7 +8,6 @@ import TabViewAva from 'components/TabViewAva'
 import NftListView from 'screens/nft/NftListView'
 import { UI, useIsUIDisabled } from 'hooks/useIsUIDisabled'
 import { useDispatch, useSelector } from 'react-redux'
-import { selectInactiveNetworks } from 'store/network'
 import { Network } from '@avalabs/chains-sdk'
 import { Space } from 'components/Space'
 import { RefreshControl } from 'components/RefreshControl'
@@ -21,6 +20,7 @@ import { selectIsDeFiBlocked } from 'store/posthog'
 import { DeFiProtocolList } from 'screens/defi/DeFiProtocolList'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { onWatchlistRefresh } from 'store/watchlist'
+import { useNetworks } from 'hooks/useNetworks'
 import InactiveNetworkCard from './components/Cards/InactiveNetworkCard'
 import { PortfolioTokensLoader } from './components/Loaders/PortfolioTokensLoader'
 import PortfolioHeader from './components/PortfolioHeader'
@@ -80,8 +80,9 @@ const Portfolio = (): JSX.Element => {
 const Separator = (): JSX.Element => <Space y={16} />
 
 const TokensTab = (): JSX.Element => {
+  const { selectInactiveNetworks } = useNetworks()
   const { isLoading, isRefetching, refetch } = useSearchableTokenList()
-  const inactiveNetworks = useSelector(selectInactiveNetworks)
+  const inactiveNetworks = selectInactiveNetworks()
   const dispatch = useDispatch()
 
   const renderInactiveNetwork = (

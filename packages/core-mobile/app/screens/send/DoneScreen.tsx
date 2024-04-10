@@ -6,10 +6,9 @@ import LinkSVG from 'components/svg/LinkSVG'
 import { Space } from 'components/Space'
 import ClearSVG from 'components/svg/ClearSVG'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { useSelector } from 'react-redux'
-import { selectActiveNetwork } from 'store/network'
 import useInAppBrowser from 'hooks/useInAppBrowser'
 import { getExplorerAddressByNetwork } from 'utils/ExplorerUtils'
+import { useNetworks } from 'hooks/useNetworks'
 
 interface DoneProps {
   transactionId: string
@@ -20,8 +19,9 @@ export default function DoneScreen({
   onClose,
   transactionId
 }: DoneProps): JSX.Element {
+  const { selectActiveNetwork } = useNetworks()
   const theme = useApplicationContext().theme
-  const network = useSelector(selectActiveNetwork)
+  const network = selectActiveNetwork()
   const { openUrl } = useInAppBrowser()
 
   return (

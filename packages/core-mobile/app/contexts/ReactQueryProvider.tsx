@@ -1,22 +1,38 @@
 import React, { PropsWithChildren, useEffect } from 'react'
+import { QueryClient, focusManager } from '@tanstack/react-query'
 import {
-  QueryCache,
-  QueryClient,
-  QueryClientProvider,
-  focusManager
-} from '@tanstack/react-query'
+  PersistQueryClientProvider,
+  removeOldestQuery
+} from '@tanstack/react-query-persist-client'
 import NetInfo from '@react-native-community/netinfo'
 import { onlineManager } from '@tanstack/react-query'
 import { AppState, AppStateStatus } from 'react-native'
+import { queryStorage } from 'store/utils/mmkv'
+import { ReactQueryKeys } from 'consts/reactQueryKeys'
+import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister'
 
-const queryCache = new QueryCache()
 export const queryClient = new QueryClient({
-  queryCache: queryCache,
   defaultOptions: {
     queries: {
-      staleTime: 10000
+      staleTime: 10000,
+      gcTime: Infinity
     }
   }
+})
+
+const clientPersister = createSyncStoragePersister({
+  storage: {
+    getItem: (key: string) => {
+      return queryStorage.getString(key) || null
+    },
+    setItem: (key: string, value: string) => {
+      return queryStorage.set(key, value)
+    },
+    removeItem: (key: string) => {
+      return queryStorage.delete(key)
+    }
+  },
+  retry: removeOldestQuery
 })
 
 const onAppStateChange = (status: AppStateStatus): void => {
@@ -47,6 +63,21 @@ export const ReactQueryProvider: React.FC<PropsWithChildren> = ({
   }, [])
 
   return (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    <PersistQueryClientProvider
+      client={queryClient}
+      persistOptions={{
+        persister: clientPersister,
+        maxAge: Infinity,
+        dehydrateOptions: {
+          shouldDehydrateQuery: ({
+            queryKey
+          }: {
+            queryKey: ReactQueryKeys
+            state: unknown
+          }) => queryKey.includes(ReactQueryKeys.NETWORKS)
+        }
+      }}>
+      {children}
+    </PersistQueryClientProvider>
   )
 }

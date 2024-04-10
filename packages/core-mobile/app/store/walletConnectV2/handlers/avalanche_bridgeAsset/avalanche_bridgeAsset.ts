@@ -4,7 +4,6 @@ import { ethErrors } from 'eth-rpc-errors'
 import BridgeService from 'services/bridge/BridgeService'
 import { bnToBig, stringToBN } from '@avalabs/utils-sdk'
 import { selectActiveAccount } from 'store/account'
-import { selectNetworks } from 'store/network'
 import Logger from 'utils/Logger'
 import { selectBridgeAppConfig } from 'store/bridge/slice'
 import * as Navigation from 'utils/Navigation'
@@ -13,6 +12,7 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { Blockchain } from '@avalabs/bridge-sdk'
 import { VsCurrencyType } from '@avalabs/coingecko-sdk'
 import { selectSelectedCurrency } from 'store/settings/currency'
+import { getSelectNetworks } from 'utils/getSelectNetworks'
 import { RpcMethod, SessionRequest } from '../../types'
 import {
   ApproveResponse,
@@ -73,7 +73,7 @@ class AvalancheBridgeAssetHandler
     const state = listenerApi.getState()
     const isDeveloperMode = selectIsDeveloperMode(state)
     const activeAccount = selectActiveAccount(state)
-    const allNetworks = selectNetworks(state)
+    const allNetworks = await getSelectNetworks(state)
     const currency = selectSelectedCurrency(state)
     const bridgeAppConfig = selectBridgeAppConfig(state)
     const {

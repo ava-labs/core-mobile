@@ -1,17 +1,17 @@
 import AvaText from 'components/AvaText'
-import React from 'react'
+import React, { JSX } from 'react'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { useSelector } from 'react-redux'
-import { selectSomeNetworks } from 'store/network'
 import { Row } from 'components/Row'
 import { NetworkLogo } from 'screens/network/NetworkLogo'
+import { useNetworks } from 'hooks/useNetworks'
 
 type Props = {
   chainIds: number[]
 }
 
-const Networks = ({ chainIds }: Props) => {
-  const networks = useSelector(selectSomeNetworks(chainIds))
+const Networks = ({ chainIds }: Props): JSX.Element => {
+  const { selectSomeNetworks } = useNetworks()
+  const networks = selectSomeNetworks(chainIds)
   const theme = useApplicationContext().theme
 
   return (

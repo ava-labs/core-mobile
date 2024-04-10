@@ -1,6 +1,6 @@
 import { ethErrors } from 'eth-rpc-errors'
 import { AppListenerEffectAPI } from 'store'
-import { selectActiveNetwork } from 'store/network'
+import { getActiveNetwork } from 'utils/getActiveNetwork'
 import { RpcMethod, SessionRequest } from '../../../types'
 import { HandleResponse, RpcRequestHandler } from '../../types'
 import { networkToGetEthChainResponse } from './utils'
@@ -18,7 +18,7 @@ class WalletGetEthereumChainHandler
     listenerApi: AppListenerEffectAPI
   ): HandleResponse => {
     const state = listenerApi.getState()
-    const activeNetwork = selectActiveNetwork(state)
+    const activeNetwork = await getActiveNetwork(state)
     if (!activeNetwork) {
       return {
         success: false,

@@ -161,7 +161,9 @@ __metadata:
     "@storybook/addon-ondevice-backgrounds": 7.6.17
     "@storybook/addon-ondevice-controls": 7.6.17
     "@storybook/react-native": 7.6.17
+    "@tanstack/query-sync-storage-persister": 5.28.13
     "@tanstack/react-query": 5.24.8
+    "@tanstack/react-query-persist-client": 5.28.14
     "@tradle/react-native-http": 2.0.1
     "@typechain/ethers-v6": 0.5.0
     "@types/big.js": 6.1.3
@@ -7106,6 +7108,44 @@ __metadata:
   version: 5.24.8
   resolution: "@tanstack/query-core@npm:5.24.8"
   checksum: 622f13628bd79f3b6619913c4b4fb70fcdf9bbe90188c2be38f813f14c8ed42ec4f38821c0a7b2a71c9382909a4beb50a122704df48b6e6cbffd8940a3b16075
+  languageName: node
+  linkType: hard
+
+"@tanstack/query-core@npm:5.28.13":
+  version: 5.28.13
+  resolution: "@tanstack/query-core@npm:5.28.13"
+  checksum: 38608889edb2ef5c3699573185b99e9e858829d2076c5f1fc6362b51ac1bdde152dfed5b1031172395d13563f17c2f4cabc57f34f1def030ca7faa7a4a1b73f5
+  languageName: node
+  linkType: hard
+
+"@tanstack/query-persist-client-core@npm:5.28.13":
+  version: 5.28.13
+  resolution: "@tanstack/query-persist-client-core@npm:5.28.13"
+  dependencies:
+    "@tanstack/query-core": 5.28.13
+  checksum: b2cdfc14b2b8485958b68f4d3659500f0c77425b015a82548a167829bacad89ab43cf41a853a457a063190578ca063adffc82ef71d5c9eda4817e8ff5fb128e6
+  languageName: node
+  linkType: hard
+
+"@tanstack/query-sync-storage-persister@npm:5.28.13":
+  version: 5.28.13
+  resolution: "@tanstack/query-sync-storage-persister@npm:5.28.13"
+  dependencies:
+    "@tanstack/query-core": 5.28.13
+    "@tanstack/query-persist-client-core": 5.28.13
+  checksum: bf44a3774394d171bd31c92a50b77f431e32c6dbf3b3b07e91e98b59f27b02a977680b7acf6df2f2f8a0d52a8f55b202de143edc2df94a834b3df8af8e3e1a1b
+  languageName: node
+  linkType: hard
+
+"@tanstack/react-query-persist-client@npm:5.28.14":
+  version: 5.28.14
+  resolution: "@tanstack/react-query-persist-client@npm:5.28.14"
+  dependencies:
+    "@tanstack/query-persist-client-core": 5.28.13
+  peerDependencies:
+    "@tanstack/react-query": ^5.28.14
+    react: ^18.0.0
+  checksum: 748002a59794e460263f706984d0ce45ece1127b1b39ffe7dbeda71853e7fc146ec00cfb7f728991dabf96cd7ea7e48652822393e9da526285f4418ddb98d8d1
   languageName: node
   linkType: hard
 

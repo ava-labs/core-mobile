@@ -14,7 +14,6 @@ import { Network, NetworkVMType } from '@avalabs/chains-sdk'
 import { useNavigation } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
 import { WalletScreenProps } from 'navigation/types'
-import { selectActiveNetwork, selectNetwork } from 'store/network'
 import { VsCurrencyType } from '@avalabs/coingecko-sdk'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { calculateGasAndFees, Eip1559Fees, GasAndFees } from 'utils/Utils'
@@ -25,6 +24,7 @@ import { Button, Text, View, alpha, useTheme } from '@avalabs/k2-mobile'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { NetworkFee } from 'services/networkFee/types'
 import { useBridgeSDK } from '@avalabs/bridge-sdk'
+import { useNetworks } from 'hooks/useNetworks'
 import { Tooltip } from './Tooltip'
 import InputText from './InputText'
 
@@ -63,9 +63,10 @@ const NetworkFeeSelector = ({
   const {
     appHook: { currencyFormatter }
   } = useApplicationContext()
+  const { selectActiveNetwork, selectNetwork } = useNetworks()
   const { navigate } = useNavigation<NavigationProp>()
-  const activeNetwork = useSelector(selectActiveNetwork)
-  const requestedNetwork = useSelector(selectNetwork(chainId))
+  const activeNetwork = selectActiveNetwork()
+  const requestedNetwork = selectNetwork(chainId)
   const network = chainId ? requestedNetwork : activeNetwork
   const { data: networkFee } = useNetworkFee(network)
   const { currentBlockchain } = useBridgeSDK()

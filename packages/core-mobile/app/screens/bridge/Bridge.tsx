@@ -26,12 +26,7 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { BridgeScreenProps } from 'navigation/types'
 import { usePosthogContext } from 'contexts/PosthogContext'
-import {
-  selectActiveNetwork,
-  selectNetworks,
-  setActive,
-  TokenSymbol
-} from 'store/network'
+import { setActive, TokenSymbol } from 'store/network'
 import {
   bigToBN,
   bigToLocaleString,
@@ -61,6 +56,7 @@ import { selectSelectedCurrency } from 'store/settings/currency/slice'
 import NetworkFeeSelector, { FeePreset } from 'components/NetworkFeeSelector'
 import { NetworkTokenUnit } from 'types'
 import { Eip1559Fees } from 'utils/Utils'
+import { useNetworks } from 'hooks/useNetworks'
 import { AssetBalance, BridgeProvider } from './utils/types'
 
 const blockchainTitleMaxWidth = Dimensions.get('window').width * 0.5
@@ -118,9 +114,10 @@ const Bridge: FC = () => {
     setCurrentBlockchain: setCurrentBlockchainSDK,
     targetBlockchain
   } = useBridgeSDK()
+  const { selectActiveNetwork, selectNetworks } = useNetworks()
   const { getTokenSymbolOnNetwork } = useGetTokenSymbolOnNetwork()
-  const networks = useSelector(selectNetworks)
-  const activeNetwork = useSelector(selectActiveNetwork)
+  const networks = selectNetworks()
+  const activeNetwork = selectActiveNetwork()
   const [bridgeError, setBridgeError] = useState('')
   const [isPending, setIsPending] = useState(false)
   const tokenInfoData = useTokenInfoContext()

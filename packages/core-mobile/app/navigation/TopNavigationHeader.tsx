@@ -14,7 +14,7 @@ import { NetworkVMType } from '@avalabs/chains-sdk'
 import { selectActiveAccount } from 'store/account'
 import CarrotSVG from 'components/svg/CarrotSVG'
 import { Row } from 'components/Row'
-import { selectActiveNetwork } from 'store/network'
+import { useNetworks } from 'hooks/useNetworks'
 
 type Props = {
   showAddress?: boolean
@@ -38,10 +38,11 @@ const TopNavigationHeader: FC<Props> = ({
   showMenu = true,
   onBack
 }) => {
+  const { selectActiveNetwork } = useNetworks()
   const { theme } = useApplicationContext()
   const navigation = useNavigation<NavigationProp>()
   const activeAccount = useSelector(selectActiveAccount)
-  const activeNetwork = useSelector(selectActiveNetwork)
+  const activeNetwork = selectActiveNetwork()
 
   const address =
     activeNetwork.vmName === NetworkVMType.BITCOIN

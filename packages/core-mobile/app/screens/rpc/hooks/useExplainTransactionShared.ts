@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
-  ContractCall,
   DisplayValueParserProps,
   Transaction,
   TransactionDisplayValues
@@ -32,21 +31,9 @@ import { TransactionParams } from 'store/walletConnectV2/handlers/eth_sendTransa
 import { useNetworkFee } from 'hooks/useNetworkFee'
 import { useNativeTokenPriceForNetwork } from 'hooks/useNativeTokenPriceForNetwork'
 import { NetworkTokenUnit } from 'types'
+import { ExplainTransactionSharedTypes } from './types'
 
 export const UNLIMITED_SPEND_LIMIT_LABEL = 'Unlimited'
-
-interface ExplainTransactionSharedTypes {
-  setSpendLimit: (customSpendData: SpendLimit) => void
-  contractType: ContractCall | undefined
-  selectedGasFee: FeePreset
-  displayData: TransactionDisplayValues
-  setCustomFee: (
-    fees: Eip1559Fees<NetworkTokenUnit>,
-    modifier: FeePreset
-  ) => void
-  transaction: Transaction | null
-  customSpendLimit: SpendLimit
-}
 
 type Args = {
   txParams: TransactionParams | undefined

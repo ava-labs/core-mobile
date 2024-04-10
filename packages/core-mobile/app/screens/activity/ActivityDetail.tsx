@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, JSX } from 'react'
 import { Pressable, StyleSheet, View } from 'react-native'
 import AvaText from 'components/AvaText'
 import AvaListItem from 'components/AvaListItem'
@@ -17,19 +17,20 @@ import AppNavigation from 'navigation/AppNavigation'
 import { WalletScreenProps } from 'navigation/types'
 import { useSelector } from 'react-redux'
 import { Contact, selectContacts } from 'store/addressBook'
-import { selectActiveNetwork, selectTokenInfo } from 'store/network'
 import { balanceToDisplayValue, numberToBN } from '@avalabs/utils-sdk'
+import { useNetworks } from 'hooks/useNetworks'
 
 type RouteProp = WalletScreenProps<
   typeof AppNavigation.Wallet.ActivityDetail
 >['route']
 
-function ActivityDetail() {
+function ActivityDetail(): JSX.Element {
+  const { selectActiveNetwork, selectTokenInfo } = useNetworks()
   const theme = useApplicationContext().theme
-  const network = useSelector(selectActiveNetwork)
+  const network = selectActiveNetwork()
   const contacts = useSelector(selectContacts)
   const txItem = useRoute<RouteProp>().params.tx
-  const tokenInfo = useSelector(selectTokenInfo(txItem?.token?.symbol ?? ''))
+  const tokenInfo = selectTokenInfo(txItem?.token?.symbol ?? '')
   const date = moment(txItem?.timestamp).format('MMM DD, YYYY HH:mm')
   const { openUrl } = useInAppBrowser()
   const [contact, setContact] = useState<Contact>()
@@ -42,7 +43,7 @@ function ActivityDetail() {
 
   useEffect(getContactMatchFx, [contacts, txItem])
 
-  function getContactMatchFx() {
+  function getContactMatchFx(): void {
     const address = txItem?.isSender ? txItem.to : txItem?.from
     const filtered = Object.values(contacts).filter(
       value => value.address === address
@@ -52,7 +53,7 @@ function ActivityDetail() {
     }
   }
 
-  const tokenLogo = () => {
+  const tokenLogo = (): JSX.Element | undefined => {
     if (txItem && txItem.token) {
       const { name, symbol } = txItem.token
       return (

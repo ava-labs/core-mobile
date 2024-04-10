@@ -32,7 +32,6 @@ import { useNavigation, useRoute } from '@react-navigation/native'
 import { useSelector } from 'react-redux'
 import { selectRequestStatus } from 'store/walletConnectV2'
 import { useDappConnectionV2 } from 'hooks/useDappConnectionV2'
-import { selectNetwork } from 'store/network'
 import { NetworkLogo } from 'screens/network/NetworkLogo'
 import { isAddressApproved } from 'store/walletConnectV2/handlers/eth_sign/utils/isAddressApproved'
 import { hexToBN } from '@avalabs/utils-sdk'
@@ -41,6 +40,7 @@ import { selectIsSeedlessSigningBlocked } from 'store/posthog'
 import FeatureBlocked from 'screens/posthog/FeatureBlocked'
 import { NetworkTokenUnit } from 'types'
 import { Eip1559Fees } from 'utils/Utils'
+import { useNetworks } from 'hooks/useNetworks'
 import RpcRequestBottomSheet from '../shared/RpcRequestBottomSheet'
 
 const defaultErrMessage = 'Transaction failed'
@@ -57,10 +57,10 @@ const SignTransaction = (): JSX.Element => {
 
   const { onUserApproved: onApprove, onUserRejected: onReject } =
     useDappConnectionV2()
-
+  const { selectNetwork } = useNetworks()
   const requestStatus = useSelector(selectRequestStatus(request.data.id))
   const chainId = Number(request.data.params.chainId.split(':')[1])
-  const network = useSelector(selectNetwork(chainId))
+  const network = selectNetwork(chainId)
 
   const { openUrl } = useInAppBrowser()
   const theme = useApplicationContext().theme

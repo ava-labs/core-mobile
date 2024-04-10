@@ -10,11 +10,11 @@ import {
 import { useDispatch, useSelector } from 'react-redux'
 import { selectTokenBlacklist } from 'store/portfolio'
 import BN from 'bn.js'
-import { selectAllNetworkTokensAsLocal } from 'store/network'
+import { useNetworks } from 'hooks/useNetworks'
 
 const bnZero = new BN(0)
 
-const isGreaterThanZero = (token: LocalTokenWithBalance) =>
+const isGreaterThanZero = (token: LocalTokenWithBalance): boolean =>
   token.balance?.gt(bnZero)
 
 const isNotBlacklisted =
@@ -41,13 +41,17 @@ export function useSearchableTokenList(
   refetch: () => void
   isRefetching: boolean
 } {
+  const { selectAllNetworkTokensAsLocal, selectActiveNetwork } = useNetworks()
+  const activeNetwork = selectActiveNetwork()
   const dispatch = useDispatch()
   const [searchText, setSearchText] = useState('')
   const tokenBlacklist = useSelector(selectTokenBlacklist)
   const isLoadingBalances = useSelector(selectIsLoadingBalances)
   const isRefetchingBalances = useSelector(selectIsRefetchingBalances)
-  const tokensWithBalance = useSelector(selectTokensWithBalance)
-  const allNetworkTokens = useSelector(selectAllNetworkTokensAsLocal)
+  const tokensWithBalance = useSelector(
+    selectTokensWithBalance(activeNetwork.chainId)
+  )
+  const allNetworkTokens = selectAllNetworkTokensAsLocal()
 
   // 1. merge tokens with balance with the remaining
   // zero balance tokens from the active network
@@ -93,7 +97,7 @@ export function useSearchableTokenList(
     [tokensFiltered]
   )
 
-  const refetch = () => {
+  const refetch = (): void => {
     dispatch(refetchBalance())
   }
 

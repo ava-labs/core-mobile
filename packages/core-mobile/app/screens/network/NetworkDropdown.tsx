@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import Dropdown from 'components/Dropdown'
 import { View } from 'react-native'
@@ -11,14 +11,11 @@ import FlexSpacer from 'components/FlexSpacer'
 import AppNavigation from 'navigation/AppNavigation'
 import { DrawerScreenProps } from 'navigation/types'
 import { useNavigation } from '@react-navigation/native'
-import {
-  selectActiveNetwork,
-  selectFavoriteNetworks,
-  setActive
-} from 'store/network'
+import { setActive } from 'store/network'
 import { arrayHash } from 'utils/Utils'
 import SettingsCogSVG from 'components/svg/SettingsCogSVG'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import { useNetworks } from 'hooks/useNetworks'
 import { NetworkLogo } from './NetworkLogo'
 
 const ManageNetworks = 'Manage networks'
@@ -28,8 +25,9 @@ type NetworkDropdownNavigationProp = DrawerScreenProps<
 >['navigation']
 
 export default function NetworkDropdown(): JSX.Element {
-  const favoriteNetworks = useSelector(selectFavoriteNetworks)
-  const activeNetwork = useSelector(selectActiveNetwork)
+  const { selectFavoriteNetworks, selectActiveNetwork } = useNetworks()
+  const favoriteNetworks = selectFavoriteNetworks()
+  const activeNetwork = selectActiveNetwork()
   const dispatch = useDispatch()
   const { theme } = useApplicationContext()
   const navigation = useNavigation<NetworkDropdownNavigationProp>()
@@ -62,11 +60,13 @@ export default function NetworkDropdown(): JSX.Element {
     item => item.chainId === activeNetwork.chainId
   )
 
-  const renderSelection = (selectedItem: typeof data[0]): JSX.Element => (
+  // eslint-disable-next-line prettier/prettier
+  const renderSelection = (selectedItem: (typeof data)[0]): JSX.Element => (
     <Selection logoUri={selectedItem.logoUri} />
   )
 
-  const renderOption = ({ item }: { item: typeof data[0] }): JSX.Element => (
+  // eslint-disable-next-line prettier/prettier
+  const renderOption = ({ item }: { item: (typeof data)[0] }): JSX.Element => (
     <Option
       networkName={item.name}
       networkLogo={item.logoUri}

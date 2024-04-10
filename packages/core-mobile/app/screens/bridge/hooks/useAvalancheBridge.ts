@@ -5,11 +5,11 @@ import { useCallback, useMemo, useState } from 'react'
 import { useAssetBalancesEVM } from 'screens/bridge/hooks/useAssetBalancesEVM'
 import Big from 'big.js'
 import { useSelector } from 'react-redux'
-import { selectActiveNetwork } from 'store/network'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { selectActiveAccount } from 'store/account'
 import { NetworkTokenUnit } from 'types'
 import { Eip1559Fees } from 'utils/Utils'
+import { useNetworks } from 'hooks/useNetworks'
 
 /**
  * Hook for when the source is Avalanche
@@ -25,6 +25,7 @@ export function useAvalancheBridge({
   minimum: Big
   eip1559Fees: Eip1559Fees<NetworkTokenUnit>
 }): BridgeAdapter {
+  const { selectActiveNetwork } = useNetworks()
   const { targetBlockchain, currentAssetData } = useBridgeSDK()
   const { createBridgeTransaction, transferAsset } = useBridgeContext()
   const [txHash, setTxHash] = useState<string>()
@@ -42,7 +43,7 @@ export function useAvalancheBridge({
     [assetsWithBalances, currentAssetData?.symbol]
   )
 
-  const network = useSelector(selectActiveNetwork)
+  const network = selectActiveNetwork()
 
   const maximum = sourceBalance?.balance || BIG_ZERO
   const receiveAmount = amount.gt(minimum) ? amount.minus(bridgeFee) : BIG_ZERO

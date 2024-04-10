@@ -6,9 +6,9 @@ import {
   ethErrors
 } from 'eth-rpc-errors'
 import Logger from 'utils/Logger'
-import { selectNetwork } from 'store/network'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { onAppUnlocked, selectWalletState, WalletState } from 'store/app'
+import { getSelectNetwork } from 'utils/getSelectNetwork'
 import {
   onRequest,
   onRequestApproved,
@@ -64,7 +64,7 @@ export const processRequest = async (
   }
 
   try {
-    validateRequest(request, listenerApi)
+    await validateRequest(request, listenerApi)
   } catch (error) {
     Logger.error('rpc request is invalid', error)
 
@@ -135,10 +135,10 @@ export const processRequest = async (
   }
 }
 
-export const validateRequest = (
+export const validateRequest = async (
   request: Request,
   listenerApi: AppListenerEffectAPI
-): void => {
+): Promise<void> => {
   if (isSessionProposal(request)) return
 
   if (chainAgnosticMethods.includes(request.method as RpcMethod)) return
@@ -149,7 +149,7 @@ export const validateRequest = (
 
   // validate chain against the current developer mode
   const chainId = request.data.params.chainId.split(':')[1] ?? ''
-  const network = selectNetwork(Number(chainId))(state)
+  const network = await getSelectNetwork(Number(chainId), state)
   const isTestnet = Boolean(network?.isTestnet)
 
   if (isTestnet !== isDeveloperMode) {

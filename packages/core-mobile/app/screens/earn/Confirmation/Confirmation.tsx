@@ -21,7 +21,6 @@ import { format, getUnixTime } from 'date-fns'
 import { useEarnCalcEstimatedRewards } from 'hooks/earn/useEarnCalcEstimatedRewards'
 import { useDispatch, useSelector } from 'react-redux'
 import { getReadableDateDuration } from 'utils/date/getReadableDateDuration'
-import { selectActiveNetwork } from 'store/network'
 import { useGetValidatorByNodeId } from 'hooks/earn/useGetValidatorByNodeId'
 import { useIssueDelegation } from 'hooks/earn/useIssueDelegation'
 import { showSimpleToast, showSnackBarCustom } from 'components/Snackbar'
@@ -45,6 +44,7 @@ import { selectActiveAccount } from 'store/account'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { Tooltip } from 'components/Tooltip'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import { useNetworks } from 'hooks/useNetworks'
 import { ConfirmScreen } from '../components/ConfirmScreen'
 import UnableToEstimate from '../components/UnableToEstimate'
 import { useValidateStakingEndTime } from './useValidateStakingEndTime'
@@ -54,6 +54,7 @@ type ScreenProps = StakeSetupScreenProps<
 >
 
 export const Confirmation = (): JSX.Element | null => {
+  const { selectActiveNetwork } = useNetworks()
   const dispatch = useDispatch()
   const { minStakeAmount } = useStakingParams()
   const avaxFormatter = useAvaxFormatter()
@@ -69,7 +70,7 @@ export const Confirmation = (): JSX.Element | null => {
     previousRoute && previousRoute.name === AppNavigation.StakeSetup.SelectNode
   const validator = useGetValidatorByNodeId(nodeId)
   const { theme } = useApplicationContext()
-  const activeNetwork = useSelector(selectActiveNetwork)
+  const activeNetwork = selectActiveNetwork()
   const tokenSymbol = activeNetwork.networkToken.symbol
   const { issueDelegationMutation } = useIssueDelegation(
     onDelegationSuccess,

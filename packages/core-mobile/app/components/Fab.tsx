@@ -5,11 +5,11 @@ import AppNavigation from 'navigation/AppNavigation'
 import { TabsScreenProps } from 'navigation/types'
 import React, { FC, useMemo, useState } from 'react'
 import { useSelector } from 'react-redux'
-import { selectActiveNetwork } from 'store/network'
 import { selectIsLeftHanded } from 'store/settings/advanced'
 import { Pressable, SxProp, View, alpha, useTheme } from '@avalabs/k2-mobile'
 import { DeepLinkOrigin } from 'contexts/DeeplinkContext/types'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import { useNetworks } from 'hooks/useNetworks'
 import { ActionProp } from './fab/types'
 import ArrowSVG from './svg/ArrowSVG'
 import QRCodeSVG from './svg/QRCodeSVG'
@@ -27,13 +27,14 @@ type FabNavigationProp = TabsScreenProps<
 >['navigation']
 
 export const Fab: FC = () => {
+  const { selectActiveNetwork } = useNetworks()
   const swapDisabled = useIsUIDisabled(UI.Swap)
   const buyDisabled = useIsUIDisabled(UI.Buy)
   const wcDisabled = useIsUIDisabled(UI.WalletConnect)
   const isBridgeDisabled = useIsUIDisabled(UI.Bridge)
   const navigation = useNavigation<FabNavigationProp>()
   const { setPendingDeepLink } = useDeeplink()
-  const activeNetwork = useSelector(selectActiveNetwork)
+  const activeNetwork = selectActiveNetwork()
   const [expanded, setExpanded] = useState(false)
   const isLeftHanded = useSelector(selectIsLeftHanded)
   const {

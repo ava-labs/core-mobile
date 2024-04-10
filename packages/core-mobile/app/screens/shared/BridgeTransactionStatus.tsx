@@ -13,8 +13,6 @@ import BridgeConfirmations from 'screens/bridge/components/BridgeConfirmations'
 import { VsCurrencyType } from '@avalabs/coingecko-sdk'
 import { useNavigation } from '@react-navigation/native'
 import Logger from 'utils/Logger'
-import { useSelector } from 'react-redux'
-import { selectActiveNetwork } from 'store/network'
 import {
   getBlockchainDisplayName,
   getNativeTokenSymbol,
@@ -29,6 +27,7 @@ import { BridgeTransfer } from '@avalabs/bridge-unified'
 import { humanize } from 'utils/string/humanize'
 import { useBridgeAmounts } from 'screens/bridge/hooks/useBridgeAmounts'
 import { useBridgeNetworkPrice } from 'screens/bridge/hooks/useBridgeNetworkPrice'
+import { useNetworks } from 'hooks/useNetworks'
 
 type Props = {
   txHash: string
@@ -39,8 +38,8 @@ const BridgeTransactionStatus: FC<Props> = ({ txHash, showHideButton }) => {
   const [bridgeTransaction, setBridgeTransaction] = useState<
     BridgeTransaction | BridgeTransfer
   >()
-
-  const network = useSelector(selectActiveNetwork)
+  const { selectActiveNetwork } = useNetworks()
+  const network = selectActiveNetwork()
   const tokenInfo = useTokenForBridgeTransaction(
     bridgeTransaction,
     network.isTestnet === true

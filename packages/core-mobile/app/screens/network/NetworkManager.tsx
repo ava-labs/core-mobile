@@ -1,14 +1,7 @@
 import React, { useCallback, useMemo, useState } from 'react'
 import { FlatList, View } from 'react-native'
-import { useDispatch, useSelector } from 'react-redux'
-import {
-  ChainID,
-  selectCustomNetworks,
-  selectFavoriteNetworks,
-  selectNetworks,
-  setActive,
-  toggleFavorite
-} from 'store/network'
+import { useDispatch } from 'react-redux'
+import { ChainID, setActive, toggleFavorite } from 'store/network'
 import SearchBar from 'components/SearchBar'
 import AvaText from 'components/AvaText'
 import TabViewAva from 'components/TabViewAva'
@@ -17,6 +10,7 @@ import { NetworkListItem } from 'screens/network/NetworkListItem'
 import { Network } from '@avalabs/chains-sdk'
 import { useNavigation } from '@react-navigation/native'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import { useNetworks } from 'hooks/useNetworks'
 
 type Props = {
   onShowInfo: (chainId: ChainID) => void
@@ -24,9 +18,11 @@ type Props = {
 
 export default function NetworkManager({ onShowInfo }: Props): JSX.Element {
   const { goBack } = useNavigation()
-  const networks = useSelector(selectNetworks)
-  const customNetworks = useSelector(selectCustomNetworks)
-  const favoriteNetworks = useSelector(selectFavoriteNetworks)
+  const { selectNetworks, selectFavoriteNetworks, selectCustomNetworks } =
+    useNetworks()
+  const networks = selectNetworks()
+  const customNetworks = selectCustomNetworks()
+  const favoriteNetworks = selectFavoriteNetworks()
   const dispatch = useDispatch()
   const [searchText, setSearchText] = useState('')
   const title = 'Networks'
@@ -41,14 +37,14 @@ export default function NetworkManager({ onShowInfo }: Props): JSX.Element {
     [searchText]
   )
 
-  const filteredNetworks = useMemo(
-    () =>
-      Object.values(networks)
-        .filter(network => !customNetworkChainIds.includes(network.chainId))
-        .filter(filterBySearchText)
-        .sort(sortNetworks),
-    [customNetworkChainIds, filterBySearchText, networks]
-  )
+  const filteredNetworks = useMemo(() => {
+    if (networks === undefined) return []
+    return Object.values(networks)
+      .filter(network => !customNetworkChainIds.includes(network.chainId))
+      .filter(filterBySearchText)
+      .sort(sortNetworks)
+  }, [customNetworkChainIds, filterBySearchText, networks])
+
   const filteredCustomNetworks = useMemo(
     () =>
       Object.values(customNetworks)

@@ -1,12 +1,13 @@
-import { createSelector, createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from 'store'
 import {
+  AppConfig,
   BridgeConfig,
   BridgeTransaction,
   CriticalConfig
 } from '@avalabs/bridge-sdk'
-import { selectActiveNetwork } from 'store/network/slice'
 import { BridgeState, initialState } from 'store/bridge/types'
+import { Network } from '@avalabs/chains-sdk'
 
 export const reducerName = 'bridge'
 
@@ -28,12 +29,19 @@ export const bridgeSlice = createSlice({
   }
 })
 
-const selectTransactions = (state: RootState) => state.bridge.bridgeTransactions
+const selectTransactions = (
+  state: RootState
+): {
+  [key: string]: BridgeTransaction
+} => state.bridge.bridgeTransactions
 
-export const selectBridgeConfig = (state: RootState) => state.bridge.config
+export const selectBridgeConfig = (
+  state: RootState
+): BridgeConfig | undefined => state.bridge.config
 
-export const selectBridgeAppConfig = (state: RootState) =>
-  state.bridge.config?.config
+export const selectBridgeAppConfig = (
+  state: RootState
+): AppConfig | undefined => state.bridge.config?.config
 
 export const selectBridgeCriticalConfig = (
   state: RootState
@@ -46,9 +54,9 @@ export const selectBridgeCriticalConfig = (
   }
 }
 
-export const selectBridgeTransactions = createSelector(
-  [selectTransactions, selectActiveNetwork],
-  (bridgeTransactions, activeNetwork) => {
+export const selectBridgeTransactions =
+  (activeNetwork: Network) => (state: RootState) => {
+    const bridgeTransactions = selectTransactions(state)
     return Object.values(bridgeTransactions).reduce<
       BridgeState['bridgeTransactions']
     >((txs, btx) => {
@@ -61,7 +69,6 @@ export const selectBridgeTransactions = createSelector(
       return txs
     }, {})
   }
-)
 
 export const { addBridgeTransaction, popBridgeTransaction, setConfig } =
   bridgeSlice.actions

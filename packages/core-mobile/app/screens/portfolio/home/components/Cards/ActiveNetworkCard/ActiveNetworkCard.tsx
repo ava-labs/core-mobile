@@ -8,7 +8,6 @@ import { PortfolioScreenProps } from 'navigation/types'
 import { useNavigation } from '@react-navigation/native'
 import { NetworkLogo } from 'screens/network/NetworkLogo'
 import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList'
-import { selectActiveNetwork } from 'store/network'
 import { selectActiveAccount } from 'store/account'
 import usePendingBridgeTransactions from 'screens/bridge/hooks/usePendingBridgeTransactions'
 import TopRightBadge from 'components/TopRightBadge'
@@ -24,6 +23,7 @@ import {
 import PriceChangeIndicator from 'screens/watchlist/components/PriceChangeIndicator'
 import { useTokenPortfolioPriceChange } from 'hooks/useTokenPortfolioPriceChange'
 import { Space } from 'components/Space'
+import { useNetworks } from 'hooks/useNetworks'
 import ZeroState from './ZeroState'
 import Tokens from './Tokens'
 
@@ -33,8 +33,8 @@ type NavigationProp = PortfolioScreenProps<
 
 const ActiveNetworkCard = (): JSX.Element => {
   const { filteredTokenList: tokens } = useSearchableTokenList()
-
-  const network = useSelector(selectActiveNetwork)
+  const { selectActiveNetwork } = useNetworks()
+  const network = selectActiveNetwork()
   const account = useSelector(selectActiveAccount)
   const totalBalanceInCurrency = useSelector(
     selectBalanceTotalInCurrencyForNetworkAndAccount(

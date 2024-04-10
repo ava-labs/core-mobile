@@ -6,14 +6,14 @@ import {
   NetworkContractToken,
   NetworkToken
 } from '@avalabs/chains-sdk'
+import { useNetworks } from 'hooks/useNetworks'
 import { useMemo } from 'react'
-import { useSelector } from 'react-redux'
-import { selectNetworkContractTokens } from 'store/network'
 
 export function useTokenForBridgeTransaction(
   bridgeTransaction: BridgeTransaction | BridgeTransfer | undefined,
   isTestnet: boolean
 ): NetworkContractToken | NetworkToken | undefined {
+  const { selectNetworkContractTokens } = useNetworks()
   const chainId = useMemo(() => {
     switch (bridgeTransaction?.sourceChain) {
       case Blockchain.BITCOIN:
@@ -29,7 +29,7 @@ export function useTokenForBridgeTransaction(
     }
   }, [bridgeTransaction, isTestnet])
 
-  const tokens = useSelector(selectNetworkContractTokens(chainId))
+  const tokens = selectNetworkContractTokens(chainId)
 
   return useMemo(() => {
     const token = tokens.find(t => t.symbol === bridgeTransaction?.symbol)

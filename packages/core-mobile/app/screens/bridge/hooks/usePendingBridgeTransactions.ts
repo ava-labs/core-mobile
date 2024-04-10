@@ -1,6 +1,7 @@
 import { BridgeTransaction } from '@avalabs/bridge-sdk'
 import { BridgeTransfer } from '@avalabs/bridge-unified'
 import { Network } from '@avalabs/chains-sdk'
+import { useNetworks } from 'hooks/useNetworks'
 import { useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import { isAvalancheNetwork } from 'services/network/utils/isAvalancheNetwork'
@@ -13,7 +14,11 @@ import { isBitcoinNetwork } from 'utils/network/isBitcoinNetwork'
 const usePendingLegacyBridgeTransactions = (
   network?: Network
 ): BridgeTransaction[] => {
-  const pendingBridgeByTxId = useSelector(selectBridgeTransactions)
+  const { selectActiveNetwork } = useNetworks()
+  const activeNetwork = selectActiveNetwork()
+  const pendingBridgeByTxId = useSelector(
+    selectBridgeTransactions(activeNetwork)
+  )
 
   return useMemo(() => {
     if (!network) {
