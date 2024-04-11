@@ -71,8 +71,8 @@ module.exports = {
     },
     'android.internal.release.ci': {
       type: 'android.apk',
-      binaryPath: process.env.BITRISE_APK_PATH,
-      testBinaryPath: process.env.BITRISE_TEST_APK_PATH
+      binaryPath: `${process.env.BITRISE_DEPLOY_DIR}/app-internal-e2e-unsigned.apk`,
+      testBinaryPath: `${process.env.BITRISE_DEPLOY_DIR}/app-internal-e2e-androidTest.apk`
     },
     'android.external.release.ci': {
       type: 'android.apk',
@@ -325,7 +325,7 @@ module.exports = {
       testRunner: {
         $0: 'jest',
         args: {
-          config: 'e2e/smoke_test_config_reuse_state.json',
+          config: './e2e/smoke_test_config_reuse_state.json',
           _: [process.env.TESTS_TO_RUN]
         }
       }
