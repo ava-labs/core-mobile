@@ -2,6 +2,7 @@
 
 # Command that returns the test files to be run and stores in TESTS_TO_BE_RUN
 TESTS_TO_BE_RUN=$(./node_modules/.bin/detox test --configuration android.internal.release.smoke.reuse_state.ci --listTests)
+# TESTS_TO_BE_RUN=$(./node_modules/.bin/detox test --configuration android.internal.debug --listTests)
 
 # This splits the string into an array of strings based on the newline character
 IFS=$'\n' read -r -d '' -a array <<< "$TESTS_TO_BE_RUN"
@@ -19,6 +20,10 @@ secondThird=$(awk "BEGIN {print $roundedUpFirstThird * 2}")
 testCnt1="${array[@]:0:$roundedUpFirstThird}"
 testCnt2="${array[@]:$roundedUpFirstThird:$roundedUpFirstThird}"
 testCnt3="${array[@]:$secondThird:$roundedFirstThird}"
+
+echo "Test count1: $testCnt1\n"
+echo "Test count2: $testCnt2\n"
+echo "Test count3: $testCnt3\n"
 
 # These env vars are passed to the test emulators via the detox config TESTS_ONE to ui_test_pixel_4_one, TESTS_TWO to ui_test_pixel_4_two, and TESTS_THREE to ui_test_pixel_4_three
 envman add --key TESTS_ONE --value "$testCnt1"
