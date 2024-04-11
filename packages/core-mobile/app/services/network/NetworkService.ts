@@ -28,7 +28,9 @@ class NetworkService {
     return {
       ...erc20Networks,
       [ChainId.BITCOIN]: BITCOIN_NETWORK,
-      [ChainId.BITCOIN_TESTNET]: BITCOIN_TEST_NETWORK
+      [ChainId.BITCOIN_TESTNET]: BITCOIN_TEST_NETWORK,
+      [ChainId.AVALANCHE_XP]: this.getAvalancheNetworkP(false),
+      [ChainId.AVALANCHE_TEST_XP]: this.getAvalancheNetworkP(true)
     }
   }
 
@@ -100,17 +102,58 @@ class NetworkService {
   }
 
   /**
-   * Returns the network object for Avalanche X/P Chains
+   * Returns the network object for Avalanche X/P Chain
+   * @deprecated - Please use {@link getAvalancheNetworkX} or {@link getAvalancheNetworkP}
    */
   getAvalancheNetworkXP(isDeveloperMode: boolean): Network {
     return isDeveloperMode ? AVALANCHE_XP_TEST_NETWORK : AVALANCHE_XP_NETWORK
   }
 
   /**
+   * Returns the network object for Avalanche X Chain
+   */
+  getAvalancheNetworkX(isDeveloperMode: boolean): Network {
+    return isDeveloperMode ? AVALANCHE_XP_TEST_NETWORK : AVALANCHE_XP_NETWORK
+  }
+
+  /**
+   * Returns the network object for Avalanche P Chain
+   */
+  getAvalancheNetworkP(isDeveloperMode: boolean): Network {
+    const pChain = {
+      ...AVALANCHE_XP_NETWORK,
+      isTestnet: false,
+      vmName: NetworkVMType.PVM,
+      chainName: 'Avalanche (P-chain)',
+      logoUri:
+        'https://images.ctfassets.net/gcj8jwzm6086/42aMwoCLblHOklt6Msi6tm/1e64aa637a8cead39b2db96fe3225c18/pchain-square.svg',
+      networkToken: {
+        ...AVALANCHE_XP_NETWORK.networkToken,
+        logoUri:
+          'https://glacier-api.avax.network/proxy/chain-assets/cb14a1f/chains/43114/token-logo.png'
+      }
+    } as Network
+    const pChainTest = {
+      ...AVALANCHE_XP_TEST_NETWORK,
+      isTestnet: true,
+      vmName: NetworkVMType.PVM,
+      chainName: 'Avalanche (P-chain)',
+      logoUri:
+        'https://images.ctfassets.net/gcj8jwzm6086/42aMwoCLblHOklt6Msi6tm/1e64aa637a8cead39b2db96fe3225c18/pchain-square.svg',
+      networkToken: {
+        ...AVALANCHE_XP_TEST_NETWORK.networkToken,
+        logoUri:
+          'https://glacier-api.avax.network/proxy/chain-assets/cb14a1f/chains/43114/token-logo.png'
+      }
+    } as Network
+    return isDeveloperMode ? pChainTest : pChain
+  }
+
+  /**
    * Returns the provider used by Avalanche X/P/CoreEth chains.
    */
   getAvalancheProviderXP(isDeveloperMode: boolean): Avalanche.JsonRpcProvider {
-    const network = this.getAvalancheNetworkXP(isDeveloperMode)
+    const network = this.getAvalancheNetworkX(isDeveloperMode)
     return this.getProviderForNetwork(network) as Avalanche.JsonRpcProvider
   }
 }
