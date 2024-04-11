@@ -4,7 +4,7 @@
   "testRunner": "jest-circus/runner",
   "testTimeout": 120000,
   "rootDir": "..",
-  "testMatch": ["**/*.e2e.smoke.ts"],
+  "testMatch": ["<rootDir>/e2e/tests/**/*.e2e.smoke.ts"],
   "reporters": ["detox/runners/jest/reporter"],
   "verbose": true,
   "globalTeardown": "./e2e/sendResultsTeardown.ts",

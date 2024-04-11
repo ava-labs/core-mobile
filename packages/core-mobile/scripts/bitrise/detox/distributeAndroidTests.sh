@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Command that returns the test files to be run and stores in TESTS_TO_BE_RUN
-TESTS_TO_BE_RUN=$(./node_modules/.bin/detox test --configuration android.internal.release.smoke.reuse_state.ci --listTests)
+TESTS_TO_BE_RUN=$(./node_modules/.bin/detox test --configuration android.internal.release.smoke.ci --listTests)
 # TESTS_TO_BE_RUN=$(./node_modules/.bin/detox test --configuration android.internal.debug --listTests)
 
 echo "Tests to be run: $TESTS_TO_BE_RUN"
