@@ -56,8 +56,8 @@ const SignMessage = (): JSX.Element | null => {
     goBack()
   }, [onApprove, request, data, network, account, goBack])
 
-  const dappName = request.session.peer.metadata.name
-  const dappLogoUri = request.session.peer.metadata.icons[0]
+  const dappName = request.peerMeta.name
+  const dappLogoUri = request.peerMeta.icons[0]
 
   if (!account || !network) return null
 

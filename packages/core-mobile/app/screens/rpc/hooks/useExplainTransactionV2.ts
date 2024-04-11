@@ -11,7 +11,7 @@ export function useExplainTransactionV2(
 ) {
   const chainId = request.data.params.chainId.split(':')[1]
   const network = useSelector(selectNetwork(Number(chainId)))
-  const peerMeta = request.session.peer.metadata
+  const peerMeta = request.peerMeta
   const args = { network, txParams, peerMeta, onError }
 
   return useExplainTransactionShared(args)

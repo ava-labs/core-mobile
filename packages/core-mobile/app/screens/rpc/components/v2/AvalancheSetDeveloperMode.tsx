@@ -23,7 +23,7 @@ export const AvalancheSetDeveloperMode = (): JSX.Element => {
     useDappConnectionV2()
 
   const enabledDeveloperMode = data.enabled
-  const peerMeta = request.session.peer.metadata
+  const peerMeta = request.peerMeta
   const OnOrOffText = enabledDeveloperMode ? 'ON' : 'OFF'
 
   const description =
