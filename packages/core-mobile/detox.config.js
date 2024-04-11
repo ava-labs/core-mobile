@@ -27,7 +27,7 @@ module.exports = {
     },
     simulator: {
       type: 'ios.simulator',
-      device: { type: 'iPhone 14' }
+      device: { type: 'iPhone 15 Pro' }
     },
     emulator_ci: {
       type: 'android.emulator',
@@ -71,8 +71,8 @@ module.exports = {
     },
     'android.internal.release.ci': {
       type: 'android.apk',
-      binaryPath: `${process.env.BITRISE_DEPLOY_DIR}/app-internal-e2e-unsigned.apk`,
-      testBinaryPath: `${process.env.BITRISE_DEPLOY_DIR}/app-internal-e2e-androidTest.apk`
+      binaryPath: process.env.BITRISE_APK_PATH,
+      testBinaryPath: process.env.BITRISE_TEST_APK_PATH
     },
     'android.external.release.ci': {
       type: 'android.apk',
@@ -125,6 +125,16 @@ module.exports = {
         rootDir: './e2e/artifacts/ios',
         plugins: {
           instruments: 'all'
+        }
+      },
+      testRunner: {
+        $0: 'jest',
+        args: {
+          config: 'e2e/reuse_state_config.json'
+        },
+        jest: {
+          setupTimeout: 300000,
+          testTimeout: 300000
         }
       }
     },
