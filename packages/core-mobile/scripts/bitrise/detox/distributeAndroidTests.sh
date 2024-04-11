@@ -6,8 +6,6 @@ TESTS_TO_BE_RUN=$(./node_modules/.bin/detox test --configuration android.interna
 
 echo "Tests to be run: $TESTS_TO_BE_RUN"
 
-sleep 999999999
-
 # This splits the string into an array of strings based on the newline character
 IFS=$'\n' read -r -d '' -a array <<< "$TESTS_TO_BE_RUN"
 
