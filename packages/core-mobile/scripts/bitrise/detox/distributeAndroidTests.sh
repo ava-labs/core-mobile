@@ -4,6 +4,8 @@
 TESTS_TO_BE_RUN=$(./node_modules/.bin/detox test --configuration android.internal.release.smoke.reuse_state.ci --listTests)
 # TESTS_TO_BE_RUN=$(./node_modules/.bin/detox test --configuration android.internal.debug --listTests)
 
+echo "Tests to be run: $TESTS_TO_BE_RUN"
+
 # This splits the string into an array of strings based on the newline character
 IFS=$'\n' read -r -d '' -a array <<< "$TESTS_TO_BE_RUN"
 
