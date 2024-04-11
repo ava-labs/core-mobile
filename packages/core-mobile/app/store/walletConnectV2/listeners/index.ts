@@ -8,10 +8,9 @@ import {
   newSession,
   onDisconnect,
   onRequest,
-  onSendRpcError,
-  onSendRpcResult,
-  waitForTransactionReceiptAsync
+  waitForTransactionReceipt
 } from '../slice'
+import { handleWaitForTransactionReceipt } from './handleWaitForTransactionReceipt'
 import {
   handleAccountChange,
   handleDisconnect,
@@ -22,8 +21,6 @@ import {
   startSession
 } from './sessions'
 import { processRequest } from './requests'
-import { sendRpcError, sendRpcResult } from './responses'
-import { handleWaitForTransactionReceiptAsync } from './utils'
 
 export const addWCListeners = (startListening: AppStartListening): void => {
   /*********************
@@ -75,19 +72,9 @@ export const addWCListeners = (startListening: AppStartListening): void => {
   //  * RPC RESPONSE LISTENERS *
   //  *************************/
   startListening({
-    actionCreator: onSendRpcResult,
-    effect: sendRpcResult
-  })
-
-  startListening({
-    actionCreator: onSendRpcError,
-    effect: sendRpcError
-  })
-
-  startListening({
-    actionCreator: waitForTransactionReceiptAsync,
+    actionCreator: waitForTransactionReceipt,
     effect: async (action, listenerApi) =>
-      handleWaitForTransactionReceiptAsync(
+      handleWaitForTransactionReceipt(
         listenerApi,
         action.payload.txResponse,
         action.payload.requestId

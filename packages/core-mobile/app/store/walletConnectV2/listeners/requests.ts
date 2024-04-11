@@ -6,20 +6,11 @@ import {
   ethErrors
 } from 'eth-rpc-errors'
 import Logger from 'utils/Logger'
-import { selectNetwork } from 'store/network'
-import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { onAppUnlocked, selectWalletState, WalletState } from 'store/app'
-import {
-  onRequest,
-  onRequestApproved,
-  onRequestRejected,
-  onSendRpcError,
-  onSendRpcResult
-} from '../slice'
+import { onRequest, onRequestApproved, onRequestRejected } from '../slice'
 import { DEFERRED_RESULT } from '../handlers/types'
 import handlerMap from '../handlers'
-import { Request, RpcMethod } from '../types'
-import { isSessionProposal } from './utils'
+import providerMap from '../providers'
 
 // check if request is either onRequestApproved or onRequestRejected
 // and also if the request is the one we are waiting for
@@ -36,35 +27,41 @@ export const processRequest = async (
   addRequestAction: ReturnType<typeof onRequest>,
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
-  const { dispatch, take, condition } = listenerApi
-
-  const request = addRequestAction.payload
+  const { take, condition } = listenerApi
+  const { provider, request } = addRequestAction.payload
   const method = request.method
   const requestId = request.data.id
   const handler = handlerMap.get(method)
-
+  const rpcProvider = providerMap.get(provider)
   const state = listenerApi.getState()
+
   if (selectWalletState(state) === WalletState.INACTIVE) {
-    //Wait until app is unlocked
+    // wait until app is unlocked
     await condition(isAnyOf(onAppUnlocked))
   }
 
   Logger.info('processing request', request)
 
+  if (!rpcProvider) {
+    Logger.error(`RPC Provider ${provider} not supported`)
+
+    return
+  }
+
   if (!handler) {
     Logger.error(`RPC method ${method} not supported`)
 
-    dispatch(
-      onSendRpcError({
-        request,
-        error: ethErrors.rpc.methodNotSupported()
-      })
-    )
+    rpcProvider.onError({
+      request,
+      error: ethErrors.rpc.methodNotSupported(),
+      listenerApi
+    })
+
     return
   }
 
   try {
-    validateRequest(request, listenerApi)
+    rpcProvider.validateRequest(request, listenerApi)
   } catch (error) {
     Logger.error('rpc request is invalid', error)
 
@@ -72,12 +69,11 @@ export const processRequest = async (
       error instanceof EthereumRpcError ||
       error instanceof EthereumProviderError
     ) {
-      dispatch(
-        onSendRpcError({
-          request,
-          error
-        })
-      )
+      rpcProvider.onError({
+        request,
+        error,
+        listenerApi
+      })
 
       return
     }
@@ -86,17 +82,20 @@ export const processRequest = async (
   const handleResponse = await handler.handle(request, listenerApi)
 
   if (!handleResponse.success) {
-    dispatch(
-      onSendRpcError({
-        request,
-        error: handleResponse.error
-      })
-    )
+    rpcProvider.onError({
+      request,
+      error: handleResponse.error,
+      listenerApi
+    })
     return
   }
 
   if (handleResponse.value !== DEFERRED_RESULT) {
-    dispatch(onSendRpcResult({ request, result: handleResponse.value }))
+    rpcProvider.onSuccess({
+      request,
+      result: handleResponse.value,
+      listenerApi
+    })
     return
   }
 
@@ -107,12 +106,11 @@ export const processRequest = async (
 
   if (onRequestRejected.match(action)) {
     Logger.info('user rejected request', request)
-    dispatch(
-      onSendRpcError({
-        request,
-        error: action.payload.error
-      })
-    )
+    rpcProvider.onError({
+      request,
+      error: action.payload.error,
+      listenerApi
+    })
     return
   }
   Logger.info('user approved request', request)
@@ -123,56 +121,17 @@ export const processRequest = async (
     )
 
     if (!approveResponse.success) {
-      dispatch(
-        onSendRpcError({
-          request,
-          error: approveResponse.error
-        })
-      )
+      rpcProvider.onError({
+        request,
+        error: approveResponse.error,
+        listenerApi
+      })
     } else {
-      dispatch(onSendRpcResult({ request, result: approveResponse.value }))
+      rpcProvider.onSuccess({
+        request,
+        result: approveResponse.value,
+        listenerApi
+      })
     }
   }
 }
-
-export const validateRequest = (
-  request: Request,
-  listenerApi: AppListenerEffectAPI
-): void => {
-  if (isSessionProposal(request)) return
-
-  if (chainAgnosticMethods.includes(request.method as RpcMethod)) return
-
-  const { getState } = listenerApi
-  const state = getState()
-  const isDeveloperMode = selectIsDeveloperMode(state)
-
-  // validate chain against the current developer mode
-  const chainId = request.data.params.chainId.split(':')[1] ?? ''
-  const network = selectNetwork(Number(chainId))(state)
-  const isTestnet = Boolean(network?.isTestnet)
-
-  if (isTestnet !== isDeveloperMode) {
-    const message = isDeveloperMode
-      ? 'Invalid environment. Please turn off developer mode and try again'
-      : 'Invalid environment. Please turn on developer mode and try again'
-
-    throw ethErrors.rpc.internal({
-      message
-    })
-  }
-}
-
-const chainAgnosticMethods = [
-  RpcMethod.AVALANCHE_CREATE_CONTACT,
-  RpcMethod.AVALANCHE_GET_CONTACTS,
-  RpcMethod.AVALANCHE_REMOVE_CONTACT,
-  RpcMethod.AVALANCHE_UPDATE_CONTACT,
-  RpcMethod.AVALANCHE_GET_ACCOUNTS,
-  RpcMethod.AVALANCHE_SELECT_ACCOUNT,
-  RpcMethod.WALLET_ADD_ETHEREUM_CHAIN,
-  RpcMethod.WALLET_SWITCH_ETHEREUM_CHAIN,
-  RpcMethod.AVALANCHE_GET_ACCOUNT_PUB_KEY,
-  RpcMethod.AVALANCHE_SET_DEVELOPER_MODE,
-  RpcMethod.AVALANCHE_GET_ADDRESSES_IN_RANGE
-]

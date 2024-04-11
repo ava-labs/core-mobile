@@ -14,7 +14,7 @@ import { selectActiveNetwork, setActive } from 'store/network'
 import { selectActiveAccount, setActiveAccountIndex } from 'store/account'
 import { UPDATE_SESSION_DELAY } from 'consts/walletConnect'
 import { killSessions, newSession, onDisconnect, onRequest } from '../slice'
-import { RpcMethod } from '../types'
+import { RpcMethod, RpcProvider } from '../types'
 
 const callbacks = (
   listenerApi: AppListenerEffectAPI
@@ -25,16 +25,19 @@ const callbacks = (
     onSessionProposal: data =>
       dispatch(
         onRequest({
-          method: RpcMethod.SESSION_REQUEST,
-          data
+          provider: RpcProvider.WALLET_CONNECT,
+          request: { method: RpcMethod.SESSION_REQUEST, data }
         })
       ),
-    onSessionRequest: (data, session) =>
+    onSessionRequest: (data, peerMeta) =>
       dispatch(
         onRequest({
-          method: data.params.request.method,
-          data,
-          session
+          provider: RpcProvider.WALLET_CONNECT,
+          request: {
+            method: data.params.request.method,
+            data,
+            peerMeta
+          }
         })
       ),
     onDisconnect: data => dispatch(onDisconnect(data))
@@ -44,7 +47,7 @@ const callbacks = (
 export const initWalletConnect = async (
   action: AnyAction,
   listenerApi: AppListenerEffectAPI
-) => {
+): Promise<void> => {
   try {
     const state = listenerApi.getState()
 
@@ -73,7 +76,7 @@ export const initWalletConnect = async (
 export const updateSessions = async (
   chainId: number,
   address: string | undefined
-) => {
+): Promise<void> => {
   try {
     if (!address) return
 
@@ -86,7 +89,9 @@ export const updateSessions = async (
   }
 }
 
-export const startSession = async (action: ReturnType<typeof newSession>) => {
+export const startSession = async (
+  action: ReturnType<typeof newSession>
+): Promise<void> => {
   const uri = action.payload
 
   try {
@@ -97,12 +102,12 @@ export const startSession = async (action: ReturnType<typeof newSession>) => {
   }
 }
 
-export const killAllSessions = async () =>
+export const killAllSessions = async (): Promise<void> =>
   WalletConnectService.killAllSessions()
 
 export const killSomeSessions = async (
   action: ReturnType<typeof killSessions>
-) => {
+): Promise<void> => {
   const sessionsToKill = action.payload
   const topics = sessionsToKill.map(session => session.topic)
 
@@ -111,7 +116,7 @@ export const killSomeSessions = async (
 
 export const handleDisconnect = async (
   action: ReturnType<typeof onDisconnect>
-) => {
+): Promise<void> => {
   const peerMeta = action.payload
 
   InteractionManager.runAfterInteractions(() => {
@@ -122,7 +127,7 @@ export const handleDisconnect = async (
 export const handleNetworkChange = async (
   action: ReturnType<typeof setActive>,
   listenerApi: AppListenerEffectAPI
-) => {
+): Promise<void> => {
   const state = listenerApi.getState()
   const address = selectActiveAccount(state)?.address
   const chainId = action.payload
@@ -133,7 +138,7 @@ export const handleNetworkChange = async (
 export const handleAccountChange = async (
   action: ReturnType<typeof setActiveAccountIndex>,
   listenerApi: AppListenerEffectAPI
-) => {
+): Promise<void> => {
   const state = listenerApi.getState()
   const { chainId } = selectActiveNetwork(state)
   const address = selectActiveAccount(state)?.address

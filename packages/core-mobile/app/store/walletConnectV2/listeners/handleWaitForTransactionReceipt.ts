@@ -4,16 +4,9 @@ import { getTxConfirmationReceipt } from 'utils/getTxConfirmationReceipt'
 import { showSimpleToast } from 'components/Snackbar'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectActiveNetwork } from 'store/network'
-import { Request, RpcMethod, SessionProposal } from '../types'
 import { updateRequestStatus } from '../slice'
 
-export const isSessionProposal = (
-  request: Request
-): request is SessionProposal => {
-  return request.method === RpcMethod.SESSION_REQUEST
-}
-
-export const handleWaitForTransactionReceiptAsync = async (
+export const handleWaitForTransactionReceipt = async (
   listenerApi: AppListenerEffectAPI,
   txResponse: TransactionResponse,
   requestId: number
