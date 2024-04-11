@@ -80,25 +80,6 @@ workflows:
         - file_path: scripts/bitrise/detox/createAndroidTestRun.sh
         - variables:
           - TESTRAIL_RUN_ID=$TESTRAIL_RUN_ID
-    - script-runner@0:
-        title: Create Tests To Run Arrays
-        inputs:
-        - file_path: scripts/bitrise/detox/distributeAndroidTests.sh
-    - share-pipeline-variable@1:
-        inputs:
-        - variables: |-
-            TESTRAIL_PROJECT_ID=$TESTRAIL_PROJECT_ID
-            TESTRAIL_RUN_ID=$TESTRAIL_RUN_ID
-            TESTS_TO_RUN_GROUP_1=$TESTS_ONE
-            TESTS_TO_RUN_GROUP_2=$TESTS_TWO
-            TESTS_TO_RUN_GROUP_3=$TESTS_THREE
-        - api_level: "28"
-        - emulator_id: emulator-5554
-        - emulator_channel: "0"
-        - create_command_flags: --sdcard 2048M
-        - tag: default
-        - abi: x86_64
-        - profile: pixel_4
     - android-build-for-ui-testing@0:
         inputs:
         - module: $ANDROID_MODULE
@@ -120,6 +101,25 @@ workflows:
         - pipeline_intermediate_files: |-
             $BITRISE_DEPLOY_DIR/app-internal-e2e-bitrise-signed.apk:BITRISE_APK_PATH
             $BITRISE_DEPLOY_DIR/app-internal-e2e-androidTest-bitrise-signed.apk:BITRISE_TEST_APK_PATH	
+    - script-runner@0:
+        title: Create Tests To Run Arrays
+        inputs:
+        - file_path: scripts/bitrise/detox/distributeAndroidTests.sh
+    - share-pipeline-variable@1:
+        inputs:
+        - variables: |-
+            TESTRAIL_PROJECT_ID=$TESTRAIL_PROJECT_ID
+            TESTRAIL_RUN_ID=$TESTRAIL_RUN_ID
+            TESTS_TO_RUN_GROUP_1=$TESTS_ONE
+            TESTS_TO_RUN_GROUP_2=$TESTS_TWO
+            TESTS_TO_RUN_GROUP_3=$TESTS_THREE
+        - api_level: "28"
+        - emulator_id: emulator-5554
+        - emulator_channel: "0"
+        - create_command_flags: --sdcard 2048M
+        - tag: default
+        - abi: x86_64
+        - profile: pixel_4
   _pull_app_files:
     steps:
     - pull-intermediate-files@1:

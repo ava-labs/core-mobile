@@ -21,9 +21,9 @@ testCnt1="${array[@]:0:$roundedUpFirstThird}"
 testCnt2="${array[@]:$roundedUpFirstThird:$roundedUpFirstThird}"
 testCnt3="${array[@]:$secondThird:$roundedFirstThird}"
 
-echo "Test count1: $testCnt1\n"
-echo "Test count2: $testCnt2\n"
-echo "Test count3: $testCnt3\n"
+echo "Test count1: $testCnt1"
+echo "Test count2: $testCnt2"
+echo "Test count3: $testCnt3"
 
 # These env vars are passed to the test emulators via the detox config TESTS_ONE to ui_test_pixel_4_one, TESTS_TWO to ui_test_pixel_4_two, and TESTS_THREE to ui_test_pixel_4_three
 envman add --key TESTS_ONE --value "$testCnt1"
