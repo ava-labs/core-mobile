@@ -11,7 +11,7 @@
     "test": "jest --passWithNoTests",
     "lint": "eslint .",
     "tsc": "tsc -p .",
-    "storybook-generate": "sb-rn-get-stories",
+    "storybook-generate": "sb-rn-get-stories --v6-store",
     "storybook-watch": "sb-rn-watcher"
   },
   "dependencies": {
@@ -34,12 +34,10 @@
     "@react-native/babel-preset": "0.73.21",
     "@react-native/metro-config": "0.73.5",
     "@rushstack/eslint-patch": "1.5.1",
-    "@storybook/addon-actions": "6.5.16",
-    "@storybook/addon-ondevice-actions": "6.5.3",
-    "@storybook/addon-ondevice-backgrounds": "6.5.3",
-    "@storybook/addon-ondevice-controls": "6.5.3",
-    "@storybook/core-common": "6.5.16",
-    "@storybook/react-native": "6.5.3",
+    "@storybook/addon-ondevice-actions": "7.6.17",
+    "@storybook/addon-ondevice-backgrounds": "7.6.17",
+    "@storybook/addon-ondevice-controls": "7.6.17",
+    "@storybook/react-native": "7.6.17",
     "@types/jest": "29.5.6",
     "@types/react": "18.2.6",
     "@types/react-dom": "18.2.21",
@@ -65,7 +63,7 @@
   "lavamoat": {
     "allowScripts": {
       "$root$": true,
-      "@storybook/react-native>@storybook/core-client>webpack>watchpack>watchpack-chokidar2>chokidar>fsevents": false
+      "@storybook/react-native>@storybook/core-common>esbuild": false
     }
   }
 }

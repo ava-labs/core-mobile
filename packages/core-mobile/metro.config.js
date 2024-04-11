@@ -18,6 +18,7 @@ const baseConfig = {
     customSerializer: createSentryMetroSerializer()
   },
   transformer: {
+    unstable_allowRequireContext: true,
     babelTransformerPath: require.resolve('react-native-svg-transformer')
   },
   resolver: {
