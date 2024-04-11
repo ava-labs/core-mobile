@@ -14,10 +14,7 @@ import { queryClient } from 'contexts/ReactQueryProvider'
 import { NetworkFee } from 'services/networkFee/types'
 import { getQueryKey, prefetchNetworkFee } from 'hooks/useNetworkFee'
 import { NetworkTokenUnit } from 'types'
-import {
-  updateRequestStatus,
-  waitForTransactionReceiptAsync
-} from '../../slice'
+import { updateRequestStatus, waitForTransactionReceipt } from '../../slice'
 import { RpcMethod, SessionRequest } from '../../types'
 import {
   ApproveResponse,
@@ -111,7 +108,6 @@ class EthSendTransactionHandler
     const chainId = getChainIdFromRequest(request)
     const params = result.data.txParams
     const address = params.from
-
     const network = selectNetwork(Number(chainId))(state)
 
     if (!network)
@@ -160,7 +156,7 @@ class EthSendTransactionHandler
         network,
         handleWaitToPost: txResponse => {
           dispatch(
-            waitForTransactionReceiptAsync({
+            waitForTransactionReceipt({
               txResponse,
               requestId: request.data.id
             })

@@ -1,22 +1,33 @@
-import { SignClientTypes } from '@walletconnect/types'
 import { EthereumProviderError, EthereumRpcError } from 'eth-rpc-errors'
-import { Session, SessionProposalData } from 'services/walletconnectv2/types'
+import { PeerMeta, SessionProposalData } from 'services/walletconnectv2/types'
+import { AppListenerEffectAPI } from 'store'
 
 export type SessionProposal = {
   data: SessionProposalData
   method: RpcMethod.SESSION_REQUEST
 }
 
+export interface PeerMetadata {
+  name: string
+  description: string
+  url: string
+  icons: string[]
+}
+
 export type SessionRequest<Method> = {
-  data: SignClientTypes.BaseEventArgs<{
-    request: {
-      method: Method
-      params: unknown
+  data: {
+    id: number
+    topic: string
+    params: {
+      request: {
+        method: Method
+        params: unknown
+      }
+      chainId: string
     }
-    chainId: string
-  }>
+  }
   method: Method
-  session: Session
+  peerMeta: PeerMeta
 }
 
 export type Request = SessionProposal | SessionRequest<string>
@@ -26,7 +37,7 @@ export type WalletConnectState = {
 }
 
 export enum RpcMethod {
-  SESSION_REQUEST = 'session_request',
+  /* standard methods */
   ETH_SEND_TRANSACTION = 'eth_sendTransaction',
   SIGN_TYPED_DATA_V3 = 'eth_signTypedData_v3',
   SIGN_TYPED_DATA_V4 = 'eth_signTypedData_v4',
@@ -51,7 +62,10 @@ export enum RpcMethod {
   AVALANCHE_UPDATE_CONTACT = 'avalanche_updateContact',
   AVALANCHE_SEND_TRANSACTION = 'avalanche_sendTransaction',
   AVALANCHE_SIGN_TRANSACTION = 'avalanche_signTransaction',
-  AVALANCHE_GET_ADDRESSES_IN_RANGE = 'avalanche_getAddressesInRange'
+  AVALANCHE_GET_ADDRESSES_IN_RANGE = 'avalanche_getAddressesInRange',
+
+  /* custom methods that only apply to Wallet Connect*/
+  SESSION_REQUEST = 'session_request'
 }
 
 export const CORE_ONLY_METHODS = [
@@ -85,4 +99,32 @@ export type RequestStatus = {
     confirmationReceiptStatus?: ConfirmationReceiptStatus
   }
   error?: Error
+}
+
+export enum RpcProvider {
+  WALLET_CONNECT = 'wallet_connect',
+  CORE_MOBILE = 'core_mobile'
+}
+
+export interface AgnosticRpcProvider {
+  provider: RpcProvider
+  onError: ({
+    request,
+    error,
+    listenerApi
+  }: {
+    request: Request
+    error: RpcError
+    listenerApi: AppListenerEffectAPI
+  }) => Promise<void>
+  onSuccess: ({
+    request,
+    result,
+    listenerApi
+  }: {
+    request: Request
+    result: unknown
+    listenerApi: AppListenerEffectAPI
+  }) => Promise<void>
+  validateRequest: (request: Request, listenerApi: AppListenerEffectAPI) => void
 }

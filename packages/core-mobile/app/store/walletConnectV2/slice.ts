@@ -3,7 +3,7 @@ import { WalletConnectState } from 'store/walletConnectV2'
 import { RootState } from 'store/index'
 import { PeerMeta, Session } from 'services/walletconnectv2/types'
 import { TransactionResponse } from 'ethers'
-import { Request, RequestStatus, RpcError } from './types'
+import { RpcProvider, Request, RequestStatus, RpcError } from './types'
 
 export const reducerName = 'walletConnectV2'
 
@@ -43,7 +43,10 @@ export const onDisconnect = createAction<PeerMeta>(
   `${reducerName}/onDisconnect`
 )
 
-export const onRequest = createAction<Request>(`${reducerName}/onRequest`)
+export const onRequest = createAction<{
+  request: Request
+  provider: RpcProvider
+}>(`${reducerName}/onRequest`)
 
 export const onRequestApproved = createAction<{
   request: Request
@@ -55,22 +58,12 @@ export const onRequestRejected = createAction<{
   error: RpcError
 }>(`${reducerName}/onRequestRejected`)
 
-export const onSendRpcResult = createAction<{
-  request: Request
-  result?: unknown
-}>(`${reducerName}/onSendRpcResult`)
-
-export const onSendRpcError = createAction<{
-  request: Request
-  error: RpcError
-}>(`${reducerName}/onSendRpcError`)
-
 export const newSession = createAction<string>(`${reducerName}/newSession`)
 
-export const waitForTransactionReceiptAsync = createAction<{
+export const waitForTransactionReceipt = createAction<{
   txResponse: TransactionResponse
   requestId: number
-}>(`${reducerName}/waitForTransactionReceiptAsync`)
+}>(`${reducerName}/waitForTransactionReceipt`)
 
 export const killSessions = createAction<Session[]>(
   `${reducerName}/killSessions`

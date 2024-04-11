@@ -62,7 +62,8 @@ class WalletConnectService {
 
     this.client.on('session_request', requestEvent => {
       const requestSession = this.getSession(requestEvent.topic)
-      requestSession && callbacks.onSessionRequest(requestEvent, requestSession)
+      requestSession &&
+        callbacks.onSessionRequest(requestEvent, requestSession.peer.metadata)
     })
 
     this.client.on('session_delete', requestEvent => {
