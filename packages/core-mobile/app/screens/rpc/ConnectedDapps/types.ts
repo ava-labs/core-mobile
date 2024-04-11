@@ -1,5 +1,5 @@
 import { Session } from 'services/walletconnectv2/types'
-import { WalletConnectVersions } from 'store/walletConnectV2'
+import { WalletConnectVersions } from 'store/rpc'
 
 export type Dapp = {
   id: string // the session topic

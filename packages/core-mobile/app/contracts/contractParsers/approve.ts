@@ -8,7 +8,7 @@ import { parseDisplayValues } from 'screens/rpc/util/parseDisplayValues'
 import { FindToken } from 'contracts/contractParsers/utils/useFindToken'
 import { Network } from '@avalabs/chains-sdk'
 import { Result, TransactionDescription } from 'ethers'
-import { TransactionParams } from 'store/walletConnectV2/handlers/eth_sendTransaction/utils'
+import { TransactionParams } from 'store/rpc/handlers/eth_sendTransaction/utils'
 import { bigIntToHex } from '@ethereumjs/util'
 
 export async function approveTxHandler(

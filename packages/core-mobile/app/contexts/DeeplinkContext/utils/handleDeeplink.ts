@@ -1,9 +1,6 @@
 import { CORE_UNIVERSAL_LINK_HOSTS } from 'resources/Constants'
 import { AnyAction, Dispatch } from '@reduxjs/toolkit'
-import {
-  WalletConnectVersions,
-  newSession as newSessionV2
-} from 'store/walletConnectV2'
+import { WalletConnectVersions, newSession as newSessionV2 } from 'store/rpc'
 import Logger from 'utils/Logger'
 import { navigateToClaimRewards } from 'services/earn/utils'
 import { ProcessedFeatureFlags } from 'store/posthog'

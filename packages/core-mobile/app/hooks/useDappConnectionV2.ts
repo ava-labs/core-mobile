@@ -8,7 +8,7 @@ import {
   onRequestRejected,
   killSessions as killSessionsAction,
   Request
-} from 'store/walletConnectV2'
+} from 'store/rpc'
 
 export const useDappConnectionV2 = (): {
   onUserApproved: (request: Request, data?: unknown) => void

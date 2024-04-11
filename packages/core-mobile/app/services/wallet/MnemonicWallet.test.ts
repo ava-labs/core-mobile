@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { Avalanche, BitcoinWallet, BitcoinProvider } from '@avalabs/wallets-sdk'
 import { BaseWallet } from 'ethers'
-import { RpcMethod } from 'store/walletConnectV2'
+import { RpcMethod } from 'store/rpc'
 import * as ethSignUtil from '@metamask/eth-sig-util'
 import MnemonicWallet from './MnemonicWallet'
 
