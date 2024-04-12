@@ -1,12 +1,12 @@
 import { ethErrors } from 'eth-rpc-errors'
 import { AppListenerEffectAPI } from 'store'
 import { selectActiveNetwork } from 'store/network'
-import { RpcMethod, SessionRequest } from '../../../types'
+import { RpcMethod, RpcRequest } from '../../../types'
 import { HandleResponse, RpcRequestHandler } from '../../types'
 import { networkToGetEthChainResponse } from './utils'
 
 export type WalletGetEthereumChainRpcRequest =
-  SessionRequest<RpcMethod.WALLET_GET_ETHEREUM_CHAIN>
+  RpcRequest<RpcMethod.WALLET_GET_ETHEREUM_CHAIN>
 
 class WalletGetEthereumChainHandler
   implements RpcRequestHandler<WalletGetEthereumChainRpcRequest>

@@ -15,7 +15,7 @@ import {
   selectIsDeveloperMode,
   toggleDeveloperMode
 } from 'store/settings/advanced'
-import { RpcMethod, SessionRequest } from '../../../types'
+import { RpcMethod, RpcRequest } from '../../../types'
 import {
   ApproveResponse,
   DEFERRED_RESULT,
@@ -25,7 +25,7 @@ import {
 import { parseApproveData, parseRequestParams } from './utils'
 
 export type WalletAddEthereumChainRpcRequest =
-  SessionRequest<RpcMethod.WALLET_ADD_ETHEREUM_CHAIN>
+  RpcRequest<RpcMethod.WALLET_ADD_ETHEREUM_CHAIN>
 
 class WalletAddEthereumChainHandler
   implements RpcRequestHandler<WalletAddEthereumChainRpcRequest>

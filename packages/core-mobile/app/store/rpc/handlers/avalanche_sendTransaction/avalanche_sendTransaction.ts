@@ -15,7 +15,7 @@ import { selectActiveAccount } from 'store/account'
 import networkService from 'services/network/NetworkService'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import walletService from 'services/wallet/WalletService'
-import { RpcMethod, SessionRequest } from 'store/rpc/types'
+import { RpcMethod, RpcRequest } from 'store/rpc/types'
 import * as Sentry from '@sentry/react-native'
 import Logger from 'utils/Logger'
 import { Avalanche } from '@avalabs/wallets-sdk'
@@ -47,7 +47,7 @@ export type SendTransactionApproveData = {
 }
 
 export type AvalancheSendTransactionRpcRequest =
-  SessionRequest<RpcMethod.AVALANCHE_SEND_TRANSACTION>
+  RpcRequest<RpcMethod.AVALANCHE_SEND_TRANSACTION>
 
 class AvalancheSendTransactionHandler
   implements

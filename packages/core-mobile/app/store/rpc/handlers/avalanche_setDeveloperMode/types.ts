@@ -1,7 +1,7 @@
-import { RpcMethod, SessionRequest } from 'store/rpc/types'
+import { RpcMethod, RpcRequest } from 'store/rpc/types'
 
 export type AvalancheSetDeveloperModeRpcRequest =
-  SessionRequest<RpcMethod.AVALANCHE_SET_DEVELOPER_MODE>
+  RpcRequest<RpcMethod.AVALANCHE_SET_DEVELOPER_MODE>
 
 export type AvalancheSetDeveloperModeApproveData = {
   enabled: boolean

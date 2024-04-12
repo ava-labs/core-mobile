@@ -1,20 +1,15 @@
 import { EthereumProviderError, EthereumRpcError } from 'eth-rpc-errors'
-import { PeerMeta, SessionProposalData } from 'services/walletconnectv2/types'
 import { AppListenerEffectAPI } from 'store'
+import { WCSessionProposal } from 'store/walletConnectV2/types'
 
-export type SessionProposal = {
-  data: SessionProposalData
-  method: RpcMethod.SESSION_REQUEST
-}
-
-export interface PeerMetadata {
+export interface PeerMeta {
   name: string
   description: string
   url: string
   icons: string[]
 }
 
-export type SessionRequest<Method> = {
+export type RpcRequest<Method> = {
   data: {
     id: number
     topic: string
@@ -30,9 +25,9 @@ export type SessionRequest<Method> = {
   peerMeta: PeerMeta
 }
 
-export type Request = SessionProposal | SessionRequest<string>
+export type Request = RpcRequest<string> | WCSessionProposal
 
-export type WalletConnectState = {
+export type RpcState = {
   requestStatuses: Record<string, RequestStatus>
 }
 
@@ -85,11 +80,6 @@ export const CORE_ONLY_METHODS = [
 ]
 
 export type RpcError = EthereumRpcError<string> | EthereumProviderError<string>
-
-export enum WalletConnectVersions {
-  V1 = '1',
-  V2 = '2'
-}
 
 export type ConfirmationReceiptStatus = 'Reverted' | 'Success' | 'Pending'
 

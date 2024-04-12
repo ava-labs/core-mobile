@@ -15,7 +15,7 @@ import { NetworkFee } from 'services/networkFee/types'
 import { getQueryKey, prefetchNetworkFee } from 'hooks/useNetworkFee'
 import { NetworkTokenUnit } from 'types'
 import { updateRequestStatus, waitForTransactionReceipt } from '../../slice'
-import { RpcMethod, SessionRequest } from '../../types'
+import { RpcMethod, RpcRequest } from '../../types'
 import {
   ApproveResponse,
   DEFERRED_RESULT,
@@ -25,7 +25,7 @@ import {
 import { parseApproveData, parseRequestParams } from './utils'
 
 export type EthSendTransactionRpcRequest =
-  SessionRequest<RpcMethod.ETH_SEND_TRANSACTION>
+  RpcRequest<RpcMethod.ETH_SEND_TRANSACTION>
 
 const getChainIdFromRequest = (
   request: EthSendTransactionRpcRequest

@@ -12,19 +12,7 @@ import { ethErrors } from 'eth-rpc-errors'
 import { typedData } from 'tests/fixtures/rpc/typedData'
 import { selectIsDeveloperMode } from 'store/settings/advanced/slice'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import {
-  rpcReducer,
-  reducerName,
-  newSession,
-  killSessions,
-  onDisconnect,
-  onRequest,
-  onRequestApproved,
-  onRequestRejected
-} from '../slice'
-import { Request, RpcMethod } from '../types'
-import handlerMap from '../handlers'
-import { DEFERRED_RESULT } from '../handlers/types'
+import { reducerName, newSession, killSessions, onDisconnect } from '../slice'
 import { addWCListeners } from './index'
 
 // mocks

@@ -113,6 +113,7 @@ export const processRequest = async (
     })
     return
   }
+
   Logger.info('user approved request', request)
   if (handler.approve) {
     const approveResponse = await handler.approve(

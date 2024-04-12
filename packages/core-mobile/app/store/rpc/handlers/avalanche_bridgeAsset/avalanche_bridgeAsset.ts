@@ -13,7 +13,7 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { Blockchain } from '@avalabs/bridge-sdk'
 import { VsCurrencyType } from '@avalabs/coingecko-sdk'
 import { selectSelectedCurrency } from 'store/settings/currency'
-import { RpcMethod, SessionRequest } from '../../types'
+import { RpcMethod, RpcRequest } from '../../types'
 import {
   ApproveResponse,
   DEFERRED_RESULT,
@@ -23,7 +23,7 @@ import {
 import { parseApproveData, parseRequestParams } from './utils'
 
 export type AvalancheBridgeAssetRequest =
-  SessionRequest<RpcMethod.AVALANCHE_BRIDGE_ASSET>
+  RpcRequest<RpcMethod.AVALANCHE_BRIDGE_ASSET>
 
 class AvalancheBridgeAssetHandler
   implements RpcRequestHandler<AvalancheBridgeAssetRequest>

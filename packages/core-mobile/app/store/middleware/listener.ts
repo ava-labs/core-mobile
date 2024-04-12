@@ -13,7 +13,8 @@ import { addBridgeListeners } from 'store/bridge/listeners'
 import { addBrowserListener } from 'store/browser/listener'
 import { addPosthogListeners } from 'store/posthog/listeners'
 import { addWatchlistListeners } from 'store/watchlist/listeners'
-import { addWCListeners as addWCListenersV2 } from 'store/rpc/listeners'
+import { addWCListeners } from 'store/walletConnectV2/listeners'
+import { addRpcListeners } from 'store/rpc/listeners'
 import Logger from 'utils/Logger'
 import { addNotificationsListeners } from 'store/notifications/listeners/listeners'
 import { addSeedlessListeners } from 'seedless/store'
@@ -47,7 +48,9 @@ addPosthogListeners(startListening)
 
 addWatchlistListeners(startListening)
 
-addWCListenersV2(startListening)
+addRpcListeners(startListening)
+
+addWCListeners(startListening)
 
 addNotificationsListeners(startListening)
 

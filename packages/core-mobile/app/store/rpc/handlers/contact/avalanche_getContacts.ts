@@ -1,12 +1,12 @@
 import { AppListenerEffectAPI } from 'store'
 import { selectContacts } from 'store/addressBook'
 import { Contact as SharedContact } from '@avalabs/types'
-import { RpcMethod, SessionRequest } from '../../types'
+import { RpcMethod, RpcRequest } from '../../types'
 import { HandleResponse, RpcRequestHandler } from '../types'
 import { mapContactToSharedContact } from './utils'
 
 export type AvalancheGetContactsRpcRequest =
-  SessionRequest<RpcMethod.AVALANCHE_GET_CONTACTS>
+  RpcRequest<RpcMethod.AVALANCHE_GET_CONTACTS>
 
 class AvalancheGetContactsHandler
   implements RpcRequestHandler<AvalancheGetContactsRpcRequest>

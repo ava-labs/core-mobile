@@ -1,11 +1,11 @@
 import { AppListenerEffectAPI } from 'store'
 import { selectAccounts, selectActiveAccount } from 'store/account/slice'
-import { RpcMethod, SessionRequest } from '../../../types'
+import { RpcMethod, RpcRequest } from '../../../types'
 import { HandleResponse, RpcRequestHandler } from '../../types'
 import { mapAccountToCoreWebAccount } from './utils'
 
 export type AvalancheGetAccountsRpcRequest =
-  SessionRequest<RpcMethod.AVALANCHE_GET_ACCOUNTS>
+  RpcRequest<RpcMethod.AVALANCHE_GET_ACCOUNTS>
 
 class AvalancheGetAccountsHandler
   implements RpcRequestHandler<AvalancheGetAccountsRpcRequest>

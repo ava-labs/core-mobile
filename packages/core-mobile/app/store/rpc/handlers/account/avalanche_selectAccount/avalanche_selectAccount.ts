@@ -8,7 +8,7 @@ import {
 import * as Navigation from 'utils/Navigation'
 import AppNavigation from 'navigation/AppNavigation'
 import Logger from 'utils/Logger'
-import { RpcMethod, SessionRequest } from '../../../types'
+import { RpcMethod, RpcRequest } from '../../../types'
 import {
   ApproveResponse,
   DEFERRED_RESULT,
@@ -18,7 +18,7 @@ import {
 import { parseApproveData, parseRequestParams } from './utils'
 
 export type AvalancheSelectAccountRequest =
-  SessionRequest<RpcMethod.AVALANCHE_SELECT_ACCOUNT>
+  RpcRequest<RpcMethod.AVALANCHE_SELECT_ACCOUNT>
 
 class AvalancheSelectAccountHandler
   implements RpcRequestHandler<AvalancheSelectAccountRequest>

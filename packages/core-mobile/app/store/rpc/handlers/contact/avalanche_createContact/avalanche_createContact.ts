@@ -5,7 +5,7 @@ import { addContact } from 'store/addressBook'
 import * as Navigation from 'utils/Navigation'
 import AppNavigation from 'navigation/AppNavigation'
 import Logger from 'utils/Logger'
-import { RpcMethod, SessionRequest } from '../../../types'
+import { RpcMethod, RpcRequest } from '../../../types'
 import {
   ApproveResponse,
   DEFERRED_RESULT,
@@ -15,7 +15,7 @@ import {
 import { parseRequestParams, parseApproveData } from './utils'
 
 export type AvalancheCreateContactRequest =
-  SessionRequest<RpcMethod.AVALANCHE_CREATE_CONTACT>
+  RpcRequest<RpcMethod.AVALANCHE_CREATE_CONTACT>
 
 class AvalancheCreateContactHandler
   implements RpcRequestHandler<AvalancheCreateContactRequest>

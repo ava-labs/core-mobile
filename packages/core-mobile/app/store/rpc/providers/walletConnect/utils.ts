@@ -1,7 +1,8 @@
-import { Request, RpcMethod, SessionProposal } from '../../types'
+import { WCSessionProposal } from 'store/walletConnectV2/types'
+import { Request, RpcMethod } from '../../types'
 
 export const isSessionProposal = (
   request: Request
-): request is SessionProposal => {
+): request is WCSessionProposal => {
   return request.method === RpcMethod.SESSION_REQUEST
 }

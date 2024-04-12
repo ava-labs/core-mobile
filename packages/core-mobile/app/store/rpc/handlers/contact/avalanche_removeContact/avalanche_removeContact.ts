@@ -4,7 +4,7 @@ import { removeContact, selectContacts } from 'store/addressBook'
 import * as Navigation from 'utils/Navigation'
 import AppNavigation from 'navigation/AppNavigation'
 import Logger from 'utils/Logger'
-import { RpcMethod, SessionRequest } from '../../../types'
+import { RpcMethod, RpcRequest } from '../../../types'
 import {
   ApproveResponse,
   DEFERRED_RESULT,
@@ -15,7 +15,7 @@ import { mapContactToSharedContact } from '../utils'
 import { parseApproveData, parseRequestParams } from './utils'
 
 export type AvalancheRemoveContactRequest =
-  SessionRequest<RpcMethod.AVALANCHE_REMOVE_CONTACT>
+  RpcRequest<RpcMethod.AVALANCHE_REMOVE_CONTACT>
 
 class AvalancheRemoveContactHandler
   implements RpcRequestHandler<AvalancheRemoveContactRequest>

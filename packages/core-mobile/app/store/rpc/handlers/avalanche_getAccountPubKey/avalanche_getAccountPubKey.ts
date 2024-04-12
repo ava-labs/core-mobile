@@ -2,12 +2,12 @@ import { AppListenerEffectAPI } from 'store'
 import { selectActiveAccount } from 'store/account'
 import walletService from 'services/wallet/WalletService'
 import { ethErrors } from 'eth-rpc-errors'
-import { RpcMethod, SessionRequest } from 'store/rpc'
+import { RpcMethod, RpcRequest } from 'store/rpc'
 import { PubKeyType } from 'services/wallet/types'
 import { HandleResponse, RpcRequestHandler } from '../types'
 
 export type AvalancheGetAccountPubKeyRpcRequest =
-  SessionRequest<RpcMethod.AVALANCHE_GET_ACCOUNT_PUB_KEY>
+  RpcRequest<RpcMethod.AVALANCHE_GET_ACCOUNT_PUB_KEY>
 
 class AvalancheGetAccountPubKeyHandler
   implements RpcRequestHandler<AvalancheGetAccountPubKeyRpcRequest, PubKeyType>

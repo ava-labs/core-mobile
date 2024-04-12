@@ -7,7 +7,7 @@ import AppNavigation from 'navigation/AppNavigation'
 import Logger from 'utils/Logger'
 import * as Sentry from '@sentry/react-native'
 import { selectAccountByAddress } from 'store/account'
-import { RpcMethod, SessionRequest } from '../../types'
+import { RpcMethod, RpcRequest } from '../../types'
 import {
   ApproveResponse,
   DEFERRED_RESULT,
@@ -17,7 +17,7 @@ import {
 import { parseRequestParams } from './utils/parseRequestParams'
 import { parseApproveData } from './utils/parseApproveData'
 
-export type EthSignRpcRequest = SessionRequest<
+export type EthSignRpcRequest = RpcRequest<
   | RpcMethod.ETH_SIGN
   | RpcMethod.PERSONAL_SIGN
   | RpcMethod.SIGN_TYPED_DATA

@@ -1,6 +1,7 @@
 import { AppListenerEffectAPI } from 'store'
 import { Result } from 'types/result'
-import { SessionProposal, SessionRequest, RpcMethod, RpcError } from '../types'
+import { WCSessionProposal } from 'store/walletConnectV2/types'
+import { RpcRequest, RpcMethod, RpcError } from '../types'
 
 export type HandleResponse<Response = unknown> = Promise<
   Result<symbol | Response, RpcError>
@@ -11,7 +12,7 @@ export type ApproveResponse<Response = unknown> = Promise<
 >
 
 export interface RpcRequestHandler<
-  Request extends SessionProposal | SessionRequest<RpcMethod>,
+  Request extends WCSessionProposal | RpcRequest<RpcMethod>,
   HandleResponseType = unknown,
   ApproveResponseType = unknown,
   ApproveDataType = unknown | undefined

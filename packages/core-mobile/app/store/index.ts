@@ -23,7 +23,7 @@ import { addressBookReducer as addressBook } from './addressBook'
 import { viewOnceReducer as viewOnce } from './viewOnce'
 import settings from './settings'
 import { transactionApi } from './transaction'
-import { walletConnectReducer as walletConnectV2 } from './rpc'
+import { rpcReducer as rpc } from './rpc'
 import { BridgeBlacklistTransform } from './transforms/BridgeBlacklistTransform'
 import { WatchlistBlacklistTransform } from './transforms/WatchlistBlacklistTransform'
 import { AppBlacklistTransform } from './transforms/AppBlacklistTransform'
@@ -34,12 +34,7 @@ const VERSION = 10
 
 // list of reducers that don't need to be persisted
 // for nested/partial blacklist, please use transform
-const blacklist = [
-  'balance',
-  'swap',
-  'walletConnectV2',
-  transactionApi.reducerPath
-]
+const blacklist = ['balance', 'swap', 'rpc', transactionApi.reducerPath]
 
 const combinedReducer = combineReducers({
   app,
@@ -54,7 +49,7 @@ const combinedReducer = combineReducers({
   posthog,
   nft,
   security,
-  walletConnectV2,
+  rpc,
   viewOnce,
   browser,
   snapshots,

@@ -13,8 +13,9 @@ import { WalletConnectCallbacks } from 'services/walletconnectv2/types'
 import { selectActiveNetwork, setActive } from 'store/network'
 import { selectActiveAccount, setActiveAccountIndex } from 'store/account'
 import { UPDATE_SESSION_DELAY } from 'consts/walletConnect'
-import { killSessions, newSession, onDisconnect, onRequest } from '../slice'
-import { RpcMethod, RpcProvider } from '../types'
+import { onRequest } from 'store/rpc/slice'
+import { killSessions, newSession, onDisconnect } from '../slice'
+import { RpcMethod, RpcProvider } from '../../rpc/types'
 
 const callbacks = (
   listenerApi: AppListenerEffectAPI

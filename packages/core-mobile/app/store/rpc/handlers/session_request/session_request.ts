@@ -7,7 +7,8 @@ import { selectActiveNetwork, selectAllNetworks } from 'store/network'
 import { EVM_IDENTIFIER } from 'consts/walletConnect'
 import { addNamespaceToChain } from 'services/walletconnectv2/utils'
 import { normalizeNamespaces } from '@walletconnect/utils'
-import { SessionProposal, RpcMethod, CORE_ONLY_METHODS } from '../../types'
+import { WCSessionProposal } from 'store/walletConnectV2/types'
+import { RpcMethod, CORE_ONLY_METHODS } from '../../types'
 import {
   RpcRequestHandler,
   DEFERRED_RESULT,
@@ -48,7 +49,7 @@ const supportedMethods = [
   RpcMethod.WALLET_GET_ETHEREUM_CHAIN
 ]
 
-class SessionRequestHandler implements RpcRequestHandler<SessionProposal> {
+class SessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
   methods = [RpcMethod.SESSION_REQUEST]
 
   private getApprovedMethods = (dappUrl: string): RpcMethod[] => {
@@ -91,7 +92,7 @@ class SessionRequestHandler implements RpcRequestHandler<SessionProposal> {
   }
 
   handle = async (
-    request: SessionProposal,
+    request: WCSessionProposal,
     listenerApi: AppListenerEffectAPI
   ): HandleResponse => {
     const state = listenerApi.getState()
@@ -190,7 +191,7 @@ class SessionRequestHandler implements RpcRequestHandler<SessionProposal> {
   }
 
   approve = async (payload: {
-    request: SessionProposal
+    request: WCSessionProposal
     data?: unknown
   }): ApproveResponse => {
     const result = parseApproveData(payload.data)

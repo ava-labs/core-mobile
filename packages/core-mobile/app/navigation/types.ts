@@ -17,7 +17,6 @@ import { EthSignRpcRequest as EthSignRpcRequestV2 } from 'store/rpc/handlers/eth
 import { WalletAddEthereumChainRpcRequest as WalletAddEthereumChainRpcRequestV2 } from 'store/rpc/handlers/chain/wallet_addEthereumChain/wallet_addEthereumChain'
 import { Network } from '@avalabs/chains-sdk'
 import { WalletSwitchEthereumChainRpcRequest as WalletSwitchEthereumChainRpcRequestV2 } from 'store/rpc/handlers/chain/wallet_switchEthereumChain/wallet_switchEthereumChain'
-import { SessionProposal } from 'store/rpc'
 import { TransactionParams } from 'store/rpc/handlers/eth_sendTransaction/utils'
 import {
   OldTypedData,
@@ -40,7 +39,8 @@ import { WalletGetEthereumChainRpcRequest } from 'store/rpc/handlers/chain/walle
 import {
   AvalancheSetDeveloperModeApproveData,
   AvalancheSetDeveloperModeRpcRequest
-} from '../store/rpc/handlers/avalanche_setDeveloperMode/types'
+} from 'store/rpc/handlers/avalanche_setDeveloperMode/types'
+import { WCSessionProposal } from 'store/walletConnectV2/types'
 import { RootScreenStackParamList } from './RootScreenStack'
 import { OnboardingScreenStackParamList } from './OnboardScreenStack'
 import { WelcomeScreenStackParamList } from './onboarding/WelcomeScreenStack'
@@ -84,7 +84,7 @@ export type EditGasLimitParams = {
 } & Eip1559Fees<NetworkTokenUnit>
 
 export type SessionProposalV2Params = {
-  request: SessionProposal
+  request: WCSessionProposal
   chainIds: number[]
 }
 
