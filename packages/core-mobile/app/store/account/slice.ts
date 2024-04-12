@@ -46,10 +46,15 @@ export const selectAccounts = (state: RootState): AccountCollection =>
   state.account.accounts
 
 export const selectAccountByAddress =
-  (address?: string) => (state: RootState) =>
-    Object.values(state.account.accounts).find(
+  (address?: string) =>
+  (state: RootState): Account | undefined => {
+    const accounts: Account[] = Object.values(state.account.accounts)
+
+    return accounts.find(
       acc => acc.address.toLowerCase() === address?.toLowerCase()
     )
+  }
+
 export const selectActiveAccount = (state: RootState): Account | undefined =>
   state.account.accounts[state.account.activeAccountIndex]
 
