@@ -35,6 +35,7 @@ type TabViewAvaFC = FC<{
   testID?: string
   onTabIndexChange?: (tabIndex: number) => void
   lazy?: boolean
+  hideSingleTab?: boolean
 }> & { Item: FC<TabViewAvaItemProps> }
 
 /**
@@ -45,6 +46,7 @@ const TabViewAva: TabViewAvaFC = ({
   currentTabIndex = 0,
   onTabIndexChange,
   lazy = true,
+  hideSingleTab = true,
   children
 }) => {
   const [currentIndex, setCurrentIndex] = useState(currentTabIndex)
@@ -127,7 +129,10 @@ const TabViewAva: TabViewAvaFC = ({
   const tabBar = useCallback(
     (tabBarProps: SceneRendererProps & { navigationState: State }) => {
       return (
-        <View style={{ display: routes.length === 1 ? 'none' : 'flex' }}>
+        <View
+          style={{
+            display: routes.length === 1 && hideSingleTab ? 'none' : 'flex'
+          }}>
           <TabBar
             {...tabBarProps}
             style={{
@@ -158,6 +163,7 @@ const TabViewAva: TabViewAvaFC = ({
       )
     },
     [
+      hideSingleTab,
       renderCustomLabel,
       routes.length,
       tabBarItem,

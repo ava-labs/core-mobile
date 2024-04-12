@@ -34,6 +34,7 @@ const Portfolio = (): JSX.Element => {
   const { setParams } = useNavigation<PortfolioNavigationProp['navigation']>()
 
   const collectiblesDisabled = useIsUIDisabled(UI.Collectibles)
+  const defiDisabled = useIsUIDisabled(UI.DeFi)
   const defiBlocked = useSelector(selectIsDeFiBlocked)
 
   function captureAnalyticsEvents(tabIndex: number): void {
@@ -58,6 +59,7 @@ const Portfolio = (): JSX.Element => {
           setParams({ tabIndex })
           captureAnalyticsEvents(tabIndex)
         }}
+        hideSingleTab={false}
         renderCustomLabel={renderCustomLabel}>
         <TabViewAva.Item title={'Assets'}>
           <TokensTab />
@@ -67,7 +69,7 @@ const Portfolio = (): JSX.Element => {
             <NftTab />
           </TabViewAva.Item>
         )}
-        {!defiBlocked && (
+        {!defiBlocked && !defiDisabled && (
           <TabViewAva.Item title={'DeFi'}>
             <DeFiTab />
           </TabViewAva.Item>
