@@ -1,5 +1,9 @@
 import { Network } from '@avalabs/chains-sdk'
-import { NetworkTokenWithBalance, TokenWithBalanceERC20 } from 'store/balance'
+import {
+  NetworkTokenWithBalance,
+  TokenWithBalanceERC20,
+  XPTokenWithBalance
+} from 'store/balance'
 import { Transaction } from '@sentry/types'
 
 export type TokenListDict = {
@@ -16,15 +20,23 @@ export type TokenListERC20 = {
 }
 
 export type TokenAddress = string
-export type ChartDays = number
+
+export type GetBalancesParams = {
+  network: Network
+  accountAddress: string
+  currency: string
+  sentryTrx?: Transaction
+}
 
 export interface BalanceServiceProvider {
   isProviderFor(network: Network): Promise<boolean>
 
-  getBalances(
-    network: Network,
-    userAddress: string,
-    currency: string,
-    sentryTrx?: Transaction
-  ): Promise<(NetworkTokenWithBalance | TokenWithBalanceERC20)[]>
+  getBalances({
+    network,
+    accountAddress,
+    currency,
+    sentryTrx
+  }: GetBalancesParams): Promise<
+    (NetworkTokenWithBalance | TokenWithBalanceERC20 | XPTokenWithBalance)[]
+  >
 }
