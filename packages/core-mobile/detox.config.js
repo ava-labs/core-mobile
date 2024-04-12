@@ -126,6 +126,16 @@ module.exports = {
         plugins: {
           instruments: 'all'
         }
+      },
+      testRunner: {
+        $0: 'jest',
+        args: {
+          config: 'e2e/reuse_state_config.json'
+        },
+        jest: {
+          setupTimeout: 300000,
+          testTimeout: 300000
+        }
       }
     },
     'ios.internal.debug.reuse_state': {
@@ -325,7 +335,7 @@ module.exports = {
       testRunner: {
         $0: 'jest',
         args: {
-          config: 'e2e/smoke_test_config_reuse_state.json',
+          config: './e2e/smoke_test_config_reuse_state.json',
           _: [process.env.TESTS_TO_RUN]
         }
       }
