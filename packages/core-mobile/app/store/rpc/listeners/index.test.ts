@@ -644,7 +644,7 @@ describe('walletConnect - listeners', () => {
 
     describe('for session proposal requests', () => {
       const testRequest = {
-        method: 'session_request' as RpcMethod.SESSION_REQUEST,
+        method: 'session_request' as RpcMethod.WC_SESSION_REQUEST,
         data: {
           id: 1678303290160528,
           params: {

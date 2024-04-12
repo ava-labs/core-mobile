@@ -5,7 +5,7 @@ import { avalancheCreateContactHandler } from './contact/avalanche_createContact
 import { avalancheRemoveContactHandler } from './contact/avalanche_removeContact/avalanche_removeContact'
 import { ethSendTransactionHandler } from './eth_sendTransaction/eth_sendTransaction'
 import { ethSignHandler } from './eth_sign/eth_sign'
-import { sessionRequestHandler } from './session_request/session_request'
+import { wcSessionRequestHandler } from './wc_sessionRequest/wc_sessionRequest'
 import { walletAddEthereumChainHandler } from './chain/wallet_addEthereumChain/wallet_addEthereumChain'
 import { walletSwitchEthereumChainHandler } from './chain/wallet_switchEthereumChain/wallet_switchEthereumChain'
 import { avalancheBridgeAssetHandler } from './avalanche_bridgeAsset/avalanche_bridgeAsset'
@@ -28,7 +28,7 @@ const handlerMap = [
   avalancheGetContactsHandler,
   ethSendTransactionHandler,
   ethSignHandler,
-  sessionRequestHandler,
+  wcSessionRequestHandler,
   walletAddEthereumChainHandler,
   walletSwitchEthereumChainHandler,
   walletGetEthereumChainHandler,

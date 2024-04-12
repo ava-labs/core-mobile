@@ -4,5 +4,5 @@ import { Request, RpcMethod } from '../../types'
 export const isSessionProposal = (
   request: Request
 ): request is WCSessionProposal => {
-  return request.method === RpcMethod.SESSION_REQUEST
+  return request.method === RpcMethod.WC_SESSION_REQUEST
 }

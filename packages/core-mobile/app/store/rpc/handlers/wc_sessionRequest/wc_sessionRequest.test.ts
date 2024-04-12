@@ -4,7 +4,7 @@ import mockNetworks from 'tests/fixtures/networks.json'
 import AppNavigation from 'navigation/AppNavigation'
 import * as Navigation from 'utils/Navigation'
 import { ProposalTypes } from '@walletconnect/types'
-import { sessionRequestHandler as handler } from './session_request'
+import { wcSessionRequestHandler as handler } from './wc_sessionRequest'
 
 jest.mock('store/network', () => {
   const actual = jest.requireActual('store/network')
@@ -23,7 +23,7 @@ const mockListenerApi = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 } as any
 
-const testMethod = 'session_request' as RpcMethod.SESSION_REQUEST
+const testMethod = 'wc_sessionRequest' as RpcMethod.WC_SESSION_REQUEST
 
 const validRequiredNamespaces = {
   eip155: {

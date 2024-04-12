@@ -3,7 +3,7 @@ import { RpcMethod } from 'store/rpc/types'
 
 export type WCSessionProposal = {
   data: SessionProposalData
-  method: RpcMethod.SESSION_REQUEST
+  method: RpcMethod.WC_SESSION_REQUEST
 }
 
 export enum WalletConnectVersions {

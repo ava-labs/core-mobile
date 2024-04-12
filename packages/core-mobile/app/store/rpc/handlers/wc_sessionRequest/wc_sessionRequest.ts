@@ -49,8 +49,8 @@ const supportedMethods = [
   RpcMethod.WALLET_GET_ETHEREUM_CHAIN
 ]
 
-class SessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
-  methods = [RpcMethod.SESSION_REQUEST]
+class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
+  methods = [RpcMethod.WC_SESSION_REQUEST]
 
   private getApprovedMethods = (dappUrl: string): RpcMethod[] => {
     const isCoreApp = isCoreDomain(dappUrl)
@@ -230,4 +230,4 @@ class SessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
   }
 }
 
-export const sessionRequestHandler = new SessionRequestHandler()
+export const wcSessionRequestHandler = new WCSessionRequestHandler()

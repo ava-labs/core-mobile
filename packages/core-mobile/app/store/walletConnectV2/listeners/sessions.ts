@@ -27,7 +27,7 @@ const callbacks = (
       dispatch(
         onRequest({
           provider: RpcProvider.WALLET_CONNECT,
-          request: { method: RpcMethod.SESSION_REQUEST, data }
+          request: { method: RpcMethod.WC_SESSION_REQUEST, data }
         })
       ),
     onSessionRequest: (data, peerMeta) =>
@@ -35,8 +35,17 @@ const callbacks = (
         onRequest({
           provider: RpcProvider.WALLET_CONNECT,
           request: {
-            method: data.params.request.method,
-            data,
+            method: data.params.request.method as RpcMethod,
+            data: {
+              ...data,
+              params: {
+                ...data.params,
+                request: {
+                  ...data.params.request,
+                  method: data.params.request.method as RpcMethod
+                }
+              }
+            },
             peerMeta
           }
         })

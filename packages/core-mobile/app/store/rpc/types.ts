@@ -1,6 +1,6 @@
 import { EthereumProviderError, EthereumRpcError } from 'eth-rpc-errors'
-import { AppListenerEffectAPI } from 'store'
 import { WCSessionProposal } from 'store/walletConnectV2/types'
+import { AppListenerEffectAPI } from 'store'
 
 export interface PeerMeta {
   name: string
@@ -9,7 +9,7 @@ export interface PeerMeta {
   icons: string[]
 }
 
-export type RpcRequest<Method> = {
+export type RpcRequest<Method extends RpcMethod> = {
   data: {
     id: number
     topic: string
@@ -25,7 +25,7 @@ export type RpcRequest<Method> = {
   peerMeta: PeerMeta
 }
 
-export type Request = RpcRequest<string> | WCSessionProposal
+export type Request = RpcRequest<RpcMethod> | WCSessionProposal
 
 export type RpcState = {
   requestStatuses: Record<string, RequestStatus>
@@ -60,7 +60,7 @@ export enum RpcMethod {
   AVALANCHE_GET_ADDRESSES_IN_RANGE = 'avalanche_getAddressesInRange',
 
   /* custom methods that only apply to Wallet Connect*/
-  SESSION_REQUEST = 'session_request'
+  WC_SESSION_REQUEST = 'wc_sessionRequest'
 }
 
 export const CORE_ONLY_METHODS = [
