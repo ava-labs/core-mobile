@@ -1,5 +1,4 @@
 import React from 'react'
-import type { Meta } from '@storybook/react-native'
 import { useTheme } from '@avalabs/k2-mobile'
 import IntroModal from 'screens/onboarding/IntroModal'
 import { ViewOnceKey } from 'store/viewOnce'
@@ -12,7 +11,7 @@ import { withProviders } from '../decorators/withProviders'
 export default {
   title: 'Browser/IntroScreen',
   decorators: [withProviders]
-} as Meta
+}
 
 export const Basic = (): JSX.Element => {
   const {

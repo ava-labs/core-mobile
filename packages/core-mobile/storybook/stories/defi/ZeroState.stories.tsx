@@ -1,5 +1,5 @@
 import React from 'react'
-import type { Meta } from '@storybook/react-native'
+
 import { ZeroState } from 'screens/defi/components/ZeroState'
 import { noop } from '@avalabs/utils-sdk'
 import { withCenterView } from '../../decorators/withCenterView'
@@ -7,7 +7,7 @@ import { withCenterView } from '../../decorators/withCenterView'
 export default {
   title: 'DeFi/ZeroState',
   decorators: [withCenterView]
-} as Meta
+}
 
 export const ProtocolList = () => (
   <ZeroState

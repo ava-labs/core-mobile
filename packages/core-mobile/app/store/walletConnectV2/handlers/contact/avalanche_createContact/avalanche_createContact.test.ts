@@ -79,7 +79,6 @@ describe('avalanche_createContact handler', () => {
   })
 
   describe('handle', () => {
-    // eslint-disable-next-line jest/expect-expect
     it('should return error when params are invalid', async () => {
       const invalidParamsScenarios = [null, [], [null], [{ name: 'Bob' }]]
 
@@ -118,7 +117,6 @@ describe('avalanche_createContact handler', () => {
   })
 
   describe('approve', () => {
-    // eslint-disable-next-line jest/expect-expect
     it('should return error when approve data is invalid', async () => {
       const invalidDataScenarios = [
         null,

@@ -7,7 +7,6 @@ import TokenAddress from 'components/TokenAddress'
 import { Space } from 'components/Space'
 import { Row } from 'components/Row'
 import MarketMovement from 'screens/watchlist/components/MarketMovement'
-import type { ComponentStory, Meta } from '@storybook/react-native'
 import { withProviders } from '../decorators/withProviders'
 
 const styles = StyleSheet.create({
@@ -202,13 +201,12 @@ const BaseDemo = (): JSX.Element => {
 export default {
   title: 'AvaListItem',
   decorators: [withProviders]
-} as Meta
+}
 
 export const BaseExamples = BaseDemo
 
-export const CurrencyAmount: ComponentStory<
-  typeof AvaListItem.CurrencyAmount
-> = args => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const CurrencyAmount = (args: any): React.JSX.Element => {
   return <AvaListItem.CurrencyAmount {...args} />
 }
 

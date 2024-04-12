@@ -1,6 +1,5 @@
 import React from 'react'
 import { StyleSheet, View } from 'react-native'
-import { Story as SBStory } from '@storybook/react-native'
 
 const styles = StyleSheet.create({
   main: {
@@ -10,7 +9,8 @@ const styles = StyleSheet.create({
   }
 })
 
-export const withCenterView = (Story: SBStory) => (
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const withCenterView = (Story: any): React.JSX.Element => (
   <View style={styles.main}>
     <Story />
   </View>

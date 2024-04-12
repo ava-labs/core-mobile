@@ -1,5 +1,4 @@
-import { ChainId } from '@avalabs/chains-sdk'
-import { AnyAction, addListener, isAnyOf } from '@reduxjs/toolkit'
+import { addListener, isAnyOf } from '@reduxjs/toolkit'
 import { UseQueryResult, useQuery } from '@tanstack/react-query'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { queryClient } from 'contexts/ReactQueryProvider'

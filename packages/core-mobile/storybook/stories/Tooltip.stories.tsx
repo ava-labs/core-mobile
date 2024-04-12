@@ -1,5 +1,4 @@
 import React, { useState } from 'react'
-import type { Meta } from '@storybook/react-native'
 import { Tooltip } from 'components/Tooltip'
 import AvaButton from 'components/AvaButton'
 import { Space } from 'components/Space'
@@ -8,7 +7,7 @@ import { withCenterView } from '../decorators/withCenterView'
 export default {
   title: 'Tooltip',
   decorators: [withCenterView]
-} as Meta
+}
 
 export const Default = (): JSX.Element => {
   const [position, setPosition] = useState<
