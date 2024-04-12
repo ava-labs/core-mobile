@@ -7,13 +7,14 @@ import TokenAddress from 'components/TokenAddress'
 import { Space } from 'components/Space'
 import AvaButton from 'components/AvaButton'
 import Avatar from 'components/Avatar'
-import React, { Dispatch } from 'react'
+import React, { Dispatch, useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import { selectAccountByAddress } from 'store/account'
 import { Limit, SpendLimit } from 'components/EditSpendLimit'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { UNLIMITED_SPEND_LIMIT_LABEL } from 'screens/rpc/hooks/useExplainTransactionShared'
-import { formatCurrency } from 'utils/FormatCurrency'
+import { balanceToDisplayValue, bnToBig } from '@avalabs/utils-sdk'
+import { formatLargeCurrency } from 'utils/Utils'
 import { sharedStyles } from './styles'
 
 export function ApproveTransaction({
@@ -35,10 +36,38 @@ export function ApproveTransaction({
   setShowCustomSpendLimit?: Dispatch<boolean>
   customSpendLimit: SpendLimit
 }): JSX.Element {
+  const { currencyFormatter } = useApplicationContext().appHook
   const account = useSelector(selectAccountByAddress(rest.fromAddress))
   const selectedCurrency = useSelector(selectSelectedCurrency)
 
-  const limitValueAmount = customSpendLimit.value?.amount
+  const limitValueAmount = useMemo(() => {
+    if (!customSpendLimit.value?.bn || !tokenToBeApproved?.decimals) {
+      return '0'
+    }
+    return balanceToDisplayValue(
+      customSpendLimit.value?.bn,
+      tokenToBeApproved.decimals
+    )
+  }, [customSpendLimit.value?.bn, tokenToBeApproved.decimals])
+
+  const limitValueAmountInCurrency = useMemo(() => {
+    if (!customSpendLimit.value?.bn || !tokenToBeApproved?.decimals) {
+      return ''
+    }
+    const bnNumber = bnToBig(
+      customSpendLimit.value.bn,
+      tokenToBeApproved.decimals
+    ).toNumber()
+    return formatLargeCurrency(
+      currencyFormatter(bnNumber * tokenToBeApproved.priceInCurrency),
+      4
+    )
+  }, [
+    currencyFormatter,
+    customSpendLimit.value?.bn,
+    tokenToBeApproved?.decimals,
+    tokenToBeApproved?.priceInCurrency
+  ])
 
   const hideEdit: boolean =
     limitValueAmount === '0' && !!setShowCustomSpendLimit
@@ -51,11 +80,7 @@ export function ApproveTransaction({
 
   const fiatValue = isUnlimited
     ? `${UNLIMITED_SPEND_LIMIT_LABEL} ${selectedCurrency}`
-    : formatCurrency({
-        amount: Number(limitValueAmount),
-        currency: selectedCurrency,
-        boostSmallNumberPrecision: true
-      })
+    : limitValueAmountInCurrency
 
   return (
     <ApproveTransactionView
@@ -125,7 +150,7 @@ export const ApproveTransactionView = ({
         {toAddress && (
           <Row style={{ justifyContent: 'space-between' }}>
             <AvaText.Body2>Contract</AvaText.Body2>
-            <TokenAddress address={toAddress} />
+            <TokenAddress textType="ButtonMedium" address={toAddress} />
           </Row>
         )}
         <Space y={8} />
