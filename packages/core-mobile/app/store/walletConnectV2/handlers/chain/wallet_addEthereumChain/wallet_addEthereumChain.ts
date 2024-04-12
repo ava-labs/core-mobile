@@ -10,8 +10,8 @@ import {
   selectIsDeveloperMode,
   toggleDeveloperMode
 } from 'store/settings/advanced'
-import { getActiveNetwork } from 'utils/getActiveNetwork'
-import { getAllNetworks } from 'utils/getAllNetworks'
+import { getActiveNetworkFromCache } from 'utils/networkFromCache/getActiveNetworkFromCache'
+import { getAllNetworksFromCache } from 'utils/networkFromCache/getAllNetworksFromCache'
 import { RpcMethod, SessionRequest } from '../../../types'
 import {
   ApproveResponse,
@@ -49,8 +49,8 @@ class WalletAddEthereumChainHandler
 
     const requestedChain = result.data[0]
 
-    const chains = await getAllNetworks(state)
-    const currentActiveNetwork = await getActiveNetwork(state)
+    const chains = getAllNetworksFromCache(state)
+    const currentActiveNetwork = getActiveNetworkFromCache(state)
     const requestedChainId = Number(requestedChain.chainId)
 
     const isSameNetwork = requestedChainId === currentActiveNetwork?.chainId

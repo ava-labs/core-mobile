@@ -13,7 +13,7 @@ import { queryClient } from 'contexts/ReactQueryProvider'
 import { NetworkFee } from 'services/networkFee/types'
 import { getQueryKey, prefetchNetworkFee } from 'hooks/useNetworkFee'
 import { NetworkTokenUnit } from 'types'
-import { getSelectNetwork } from 'utils/getSelectNetwork'
+import { getSelectNetworkFromCache } from 'utils/networkFromCache/getSelectNetworkFromCache'
 import {
   updateRequestStatus,
   waitForTransactionReceiptAsync
@@ -68,7 +68,7 @@ class EthSendTransactionHandler
     // pre-fetch network fees for tx parsing and approval screen
     const state = listenerApi.getState()
     const chainId = getChainIdFromRequest(request)
-    const requestedNetwork = await getSelectNetwork(Number(chainId), state)
+    const requestedNetwork = getSelectNetworkFromCache(Number(chainId), state)
     prefetchNetworkFee(requestedNetwork)
 
     // TODO CP-4894 decode transaction data here instead of in SignTransaction component/useExplainTransaction hook
@@ -112,7 +112,7 @@ class EthSendTransactionHandler
     const params = result.data.txParams
     const address = params.from
 
-    const network = await getSelectNetwork(Number(chainId), state)
+    const network = getSelectNetworkFromCache(Number(chainId), state)
 
     if (!network)
       return {

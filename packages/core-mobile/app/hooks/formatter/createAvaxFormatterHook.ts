@@ -36,13 +36,13 @@ export const createAvaxFormatterHook =
     const {
       appHook: { tokenInCurrencyFormatter }
     } = useApplicationContext()
-    const { selectNetwork } = useNetworks()
+    const { getNetwork } = useNetworks()
     const selectedCurrency = useSelector(selectSelectedCurrency)
     const isDeveloperMode = useSelector(selectIsDeveloperMode)
     const chainId = isDeveloperMode
       ? ChainId.AVALANCHE_TESTNET_ID
       : ChainId.AVALANCHE_MAINNET_ID
-    const avaxNetwork = selectNetwork(chainId)
+    const avaxNetwork = getNetwork(chainId)
 
     const { nativeTokenPrice: avaxPrice } = useNativeTokenPriceForNetwork(
       avaxNetwork,

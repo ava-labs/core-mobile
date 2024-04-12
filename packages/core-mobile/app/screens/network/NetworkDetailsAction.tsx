@@ -20,8 +20,8 @@ import { useNetworks } from 'hooks/useNetworks'
 
 export function NetworkDetailsAction(): JSX.Element {
   const { chainId } = useRoute<NetworkDetailsScreenProps['route']>().params
-  const { selectIsCustomNetwork } = useNetworks()
-  const isCustomNetwork = selectIsCustomNetwork(chainId)
+  const { getIsCustomNetwork } = useNetworks()
+  const isCustomNetwork = getIsCustomNetwork(chainId)
 
   return (
     <Row style={{ alignItems: 'center', marginRight: 8 }}>
@@ -44,8 +44,7 @@ type NetworkDetailsScreenProps = WalletScreenProps<
 >
 
 function ToggleFavoriteNetwork({ chainId }: { chainId: number }): JSX.Element {
-  const { selectFavoriteNetworks } = useNetworks()
-  const favoriteNetworks = selectFavoriteNetworks()
+  const { favoriteNetworks } = useNetworks()
   const dispatch = useDispatch()
   const isFavorite = favoriteNetworks.some(
     network => network.chainId === chainId
@@ -62,9 +61,9 @@ function CustomNetworkDropdown(): JSX.Element {
   const dispatch = useDispatch()
   const { params } = useRoute<NetworkDetailsScreenProps['route']>()
   const { navigate } = useNavigation<NetworkSelectorScreenProps['navigation']>()
-  const { selectFromPopulatedNetwork } = useNetworks()
+  const { getFromPopulatedNetwork } = useNetworks()
 
-  const network = selectFromPopulatedNetwork(params.chainId)
+  const network = getFromPopulatedNetwork(params.chainId)
 
   function handleEdit(): void {
     navigate(AppNavigation.Wallet.NetworkAddEdit, {

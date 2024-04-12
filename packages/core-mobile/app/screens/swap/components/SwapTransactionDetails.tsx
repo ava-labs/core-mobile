@@ -51,8 +51,7 @@ const SwapTransactionDetail: FC<SwapTransactionDetailProps> = ({
   onFeesChange
 }): JSX.Element => {
   const { theme } = useApplicationContext()
-  const { selectActiveNetwork } = useNetworks()
-  const activeNetwork = selectActiveNetwork()
+  const { activeNetwork } = useNetworks()
 
   return (
     <View style={{ flex: 1, paddingHorizontal: 16 }}>

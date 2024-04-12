@@ -66,8 +66,7 @@ const SendToken: FC<Props> = ({
     canSubmit,
     sdkError
   } = useSendTokenContext()
-  const { selectActiveNetwork } = useNetworks()
-  const activeNetwork = selectActiveNetwork()
+  const { activeNetwork } = useNetworks()
   const [showQrCamera, setShowQrCamera] = useState(false)
   const [sendError, setSendError] = useState<string>()
   const placeholder =

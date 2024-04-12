@@ -9,9 +9,9 @@ export function useExplainTransactionV2(
   txParams: TransactionParams,
   onError: (error?: string) => void
 ): ExplainTransactionSharedTypes {
-  const { selectNetwork } = useNetworks()
+  const { getNetwork } = useNetworks()
   const chainId = request.data.params.chainId.split(':')[1]
-  const network = selectNetwork(Number(chainId))
+  const network = getNetwork(Number(chainId))
   const peerMeta = request.session.peer.metadata
   const args = { network, txParams, peerMeta, onError }
 

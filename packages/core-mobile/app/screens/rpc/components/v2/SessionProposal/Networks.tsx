@@ -10,8 +10,8 @@ type Props = {
 }
 
 const Networks = ({ chainIds }: Props): JSX.Element => {
-  const { selectSomeNetworks } = useNetworks()
-  const networks = selectSomeNetworks(chainIds)
+  const { getSomeNetworks } = useNetworks()
+  const networks = getSomeNetworks(chainIds)
   const theme = useApplicationContext().theme
 
   return (

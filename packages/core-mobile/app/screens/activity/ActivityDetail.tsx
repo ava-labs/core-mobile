@@ -25,12 +25,11 @@ type RouteProp = WalletScreenProps<
 >['route']
 
 function ActivityDetail(): JSX.Element {
-  const { selectActiveNetwork, selectTokenInfo } = useNetworks()
+  const { activeNetwork, getTokenInfo } = useNetworks()
   const theme = useApplicationContext().theme
-  const network = selectActiveNetwork()
   const contacts = useSelector(selectContacts)
   const txItem = useRoute<RouteProp>().params.tx
-  const tokenInfo = selectTokenInfo(txItem?.token?.symbol ?? '')
+  const tokenInfo = getTokenInfo(txItem?.token?.symbol ?? '')
   const date = moment(txItem?.timestamp).format('MMM DD, YYYY HH:mm')
   const { openUrl } = useInAppBrowser()
   const [contact, setContact] = useState<Contact>()
@@ -38,7 +37,7 @@ function ActivityDetail(): JSX.Element {
   const feeBN = numberToBN(txItem?.fee ?? '', 0)
   const fees = balanceToDisplayValue(
     feeBN,
-    Number(network.networkToken.decimals)
+    Number(activeNetwork.networkToken.decimals)
   )
 
   useEffect(getContactMatchFx, [contacts, txItem])
@@ -100,7 +99,7 @@ function ActivityDetail(): JSX.Element {
               </AvaText.Body1>
             </AvaText.Heading1>
             <Space y={4} />
-            <AvaText.Body2 testID="activity_detail__fee_amount">{` Fee ${fees} ${network.networkToken.symbol}`}</AvaText.Body2>
+            <AvaText.Body2 testID="activity_detail__fee_amount">{` Fee ${fees} ${activeNetwork.networkToken.symbol}`}</AvaText.Body2>
           </View>
           <Space y={16} />
           <AvaListItem.Base

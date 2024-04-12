@@ -12,8 +12,7 @@ import { NftPageParam } from '../../../store/nft/types'
 // a hook to get NFTs with pagination support for the current active network & account
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export const useNfts = (enabled: boolean) => {
-  const { selectActiveNetwork } = useNetworks()
-  const network = selectActiveNetwork()
+  const { activeNetwork } = useNetworks()
   const account = useSelector(selectActiveAccount)
 
   const fetchNfts = useCallback(
@@ -25,7 +24,7 @@ export const useNfts = (enabled: boolean) => {
       const t = SentryWrapper.startTransaction('get-nfts')
       try {
         const nftPagedData = await NftService.fetchNfts({
-          chainId: network.chainId,
+          chainId: activeNetwork.chainId,
           address: account.address,
           pageToken: pageParam
         })
@@ -35,20 +34,23 @@ export const useNfts = (enabled: boolean) => {
           nextPageToken: nftPagedData.nextPageToken
         }
       } catch (err) {
-        Logger.error(`failed to get nfts for chain ${network.chainId}`, err)
+        Logger.error(
+          `failed to get nfts for chain ${activeNetwork.chainId}`,
+          err
+        )
         return { nfts: [], nextPageToken: undefined }
       } finally {
         SentryWrapper.finish(t)
       }
     },
-    [account, network]
+    [account, activeNetwork]
   )
 
   const query = useInfiniteQuery({
     queryKey: [
       ReactQueryKeys.NFTS,
       {
-        chainId: network.chainId,
+        chainId: activeNetwork.chainId,
         accountAddress: account?.address
       }
     ],

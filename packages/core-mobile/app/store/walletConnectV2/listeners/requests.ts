@@ -8,7 +8,7 @@ import {
 import Logger from 'utils/Logger'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { onAppUnlocked, selectWalletState, WalletState } from 'store/app'
-import { getSelectNetwork } from 'utils/getSelectNetwork'
+import { getSelectNetworkFromCache } from 'utils/networkFromCache/getSelectNetworkFromCache'
 import {
   onRequest,
   onRequestApproved,
@@ -135,10 +135,10 @@ export const processRequest = async (
   }
 }
 
-export const validateRequest = async (
+export const validateRequest = (
   request: Request,
   listenerApi: AppListenerEffectAPI
-): Promise<void> => {
+): void => {
   if (isSessionProposal(request)) return
 
   if (chainAgnosticMethods.includes(request.method as RpcMethod)) return
@@ -149,7 +149,7 @@ export const validateRequest = async (
 
   // validate chain against the current developer mode
   const chainId = request.data.params.chainId.split(':')[1] ?? ''
-  const network = await getSelectNetwork(Number(chainId), state)
+  const network = getSelectNetworkFromCache(Number(chainId), state)
   const isTestnet = Boolean(network?.isTestnet)
 
   if (isTestnet !== isDeveloperMode) {

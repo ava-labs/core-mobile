@@ -1,9 +1,9 @@
 import { Networks, selectCustomNetworks } from 'store/network'
 import { RootState } from 'store'
-import { getNetworks } from './getNetworks'
+import { getNetworksFromCache } from './getNetworksFromCache'
 
-export const getAllNetworks = async (state: RootState): Promise<Networks> => {
-  const rawNetworks = await getNetworks()
+export const getAllNetworksFromCache = (state: RootState): Networks => {
+  const rawNetworks = getNetworksFromCache()
   const customNetworks = selectCustomNetworks(state)
   return { ...rawNetworks, ...customNetworks }
 }

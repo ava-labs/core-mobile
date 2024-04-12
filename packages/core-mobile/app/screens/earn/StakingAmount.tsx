@@ -32,7 +32,7 @@ type ScreenProps = StakeSetupScreenProps<
 >
 
 export default function StakingAmount(): JSX.Element {
-  const { selectNetwork } = useNetworks()
+  const { getNetwork } = useNetworks()
   const avaxFormatter = useAvaxFormatter()
   const { theme } = useApplicationContext()
   const { navigate } = useNavigation<ScreenProps['navigation']>()
@@ -49,7 +49,7 @@ export default function StakingAmount(): JSX.Element {
   const chainId = isDeveloperMode
     ? ChainId.AVALANCHE_TESTNET_ID
     : ChainId.AVALANCHE_MAINNET_ID
-  const avaxNetwork = selectNetwork(chainId)
+  const avaxNetwork = getNetwork(chainId)
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { nativeTokenPrice } = useNativeTokenPriceForNetwork(
     avaxNetwork,

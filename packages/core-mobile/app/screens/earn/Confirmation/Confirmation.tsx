@@ -54,7 +54,7 @@ type ScreenProps = StakeSetupScreenProps<
 >
 
 export const Confirmation = (): JSX.Element | null => {
-  const { selectActiveNetwork } = useNetworks()
+  const { activeNetwork } = useNetworks()
   const dispatch = useDispatch()
   const { minStakeAmount } = useStakingParams()
   const avaxFormatter = useAvaxFormatter()
@@ -70,7 +70,6 @@ export const Confirmation = (): JSX.Element | null => {
     previousRoute && previousRoute.name === AppNavigation.StakeSetup.SelectNode
   const validator = useGetValidatorByNodeId(nodeId)
   const { theme } = useApplicationContext()
-  const activeNetwork = selectActiveNetwork()
   const tokenSymbol = activeNetwork.networkToken.symbol
   const { issueDelegationMutation } = useIssueDelegation(
     onDelegationSuccess,

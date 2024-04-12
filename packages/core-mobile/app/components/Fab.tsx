@@ -27,14 +27,13 @@ type FabNavigationProp = TabsScreenProps<
 >['navigation']
 
 export const Fab: FC = () => {
-  const { selectActiveNetwork } = useNetworks()
+  const { activeNetwork } = useNetworks()
   const swapDisabled = useIsUIDisabled(UI.Swap)
   const buyDisabled = useIsUIDisabled(UI.Buy)
   const wcDisabled = useIsUIDisabled(UI.WalletConnect)
   const isBridgeDisabled = useIsUIDisabled(UI.Bridge)
   const navigation = useNavigation<FabNavigationProp>()
   const { setPendingDeepLink } = useDeeplink()
-  const activeNetwork = selectActiveNetwork()
   const [expanded, setExpanded] = useState(false)
   const isLeftHanded = useSelector(selectIsLeftHanded)
   const {

@@ -4,15 +4,13 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { RootState } from 'store'
 import { selectAllCustomTokens } from 'store/customToken'
 import { Networks, selectCustomNetworks } from 'store/network'
-import { getNetworks } from './getNetworks'
+import { getNetworksFromCache } from './getNetworksFromCache'
 
-export const getSelectNetworks = async (
-  state: RootState
-): Promise<Networks> => {
+export const getSelectNetworksFromCache = (state: RootState): Networks => {
   const isDeveloperMode = selectIsDeveloperMode(state)
   const allCustomTokens = selectAllCustomTokens(state)
   const customNetworks = selectCustomNetworks(state)
-  const rawNetworks = await getNetworks()
+  const rawNetworks = getNetworksFromCache()
 
   const populatedNetworks = Object.keys(rawNetworks ?? {}).reduce(
     (reducedNetworks, key) => {

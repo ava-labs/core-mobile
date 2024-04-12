@@ -39,9 +39,7 @@ const BridgeAsset = (): JSX.Element => {
 
   const { onUserApproved: onApprove, onUserRejected: onReject } =
     useDappConnectionV2()
-  const { selectActiveNetwork, selectNetworks } = useNetworks()
-  const activeNetwork = selectActiveNetwork()
-  const allNetworks = selectNetworks()
+  const { activeNetwork, networks } = useNetworks()
   const activeAccount = useSelector(selectActiveAccount)
   const isTestnet = useSelector(selectIsDeveloperMode)
   const config = useSelector(selectBridgeAppConfig)
@@ -100,7 +98,7 @@ const BridgeAsset = (): JSX.Element => {
         currentBlockchain,
         amount: Big(amountStr),
         asset,
-        allNetworks,
+        allNetworks: networks,
         activeNetwork,
         activeAccount,
         isTestnet,
@@ -115,7 +113,7 @@ const BridgeAsset = (): JSX.Element => {
   }, [
     activeAccount,
     activeNetwork,
-    allNetworks,
+    networks,
     amountStr,
     asset,
     config,

@@ -37,8 +37,7 @@ function AccountItem({
   selected,
   blurred
 }: Props): JSX.Element {
-  const { selectActiveNetwork } = useNetworks()
-  const activeNetwork = selectActiveNetwork()
+  const { activeNetwork } = useNetworks()
   const walletType = useSelector(selectWalletType)
   const context = useApplicationContext()
   const accountBalance = useBalanceTotalInCurrencyForAccount(account.index)

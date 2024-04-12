@@ -64,10 +64,9 @@ export const SendTokenContextProvider = ({
 }: {
   children: ReactNode
 }): JSX.Element => {
-  const { selectActiveNetwork } = useNetworks()
+  const { activeNetwork } = useNetworks()
   const { theme } = useApplicationContext()
   const activeAccount = useSelector(selectActiveAccount)
-  const activeNetwork = selectActiveNetwork()
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { nativeTokenPrice } = useNativeTokenPrice(
     selectedCurrency.toLowerCase() as VsCurrencyType

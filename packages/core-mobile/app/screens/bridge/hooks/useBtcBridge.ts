@@ -41,17 +41,15 @@ import { useBitcoinProvider } from 'hooks/networkProviderHooks'
 import { useNetworks } from 'hooks/useNetworks'
 
 export function useBtcBridge(amountInBtc: Big, fee: number): BridgeAdapter {
-  const { selectActiveNetwork, selectNetworks } = useNetworks()
-  const activeNetwork = selectActiveNetwork()
+  const { activeNetwork, networks } = useNetworks()
   const activeAccount = useSelector(selectActiveAccount)
   const currency = useSelector(selectSelectedCurrency)
   const bridgeConfig = useSelector(selectBridgeAppConfig)
   const { createBridgeTransaction } = useBridgeContext()
   const { currentAsset, currentBlockchain, targetBlockchain } = useBridgeSDK()
   const btcAddress = activeAccount?.addressBtc
-  const allNetworks = selectNetworks()
   const avalancheNetwork = getAvalancheNetwork(
-    allNetworks,
+    networks,
     activeNetwork.isTestnet
   )
   const avalancheTokens = useSelector(

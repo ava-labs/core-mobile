@@ -36,10 +36,9 @@ export const useUnifiedBridge = (
   selectedAsset?: AssetBalance
 ): UnifiedBridge => {
   const dispatch = useDispatch()
-  const { selectActiveNetwork, selectNetwork } = useNetworks()
+  const { activeNetwork, getNetwork } = useNetworks()
   const { currentBlockchain, targetBlockchain } = useBridgeSDK()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
-  const activeNetwork = selectActiveNetwork()
   const activeAccount = useSelector(selectActiveAccount)
   const { assets } = useUnifiedBridgeAssets()
   const [receiveAmount, setReceiveAmount] = useState<Big>()
@@ -57,7 +56,7 @@ export const useUnifiedBridge = (
     [isDeveloperMode, targetBlockchain]
   )
 
-  const targetNetwork = selectNetwork(targetChainId)
+  const targetNetwork = getNetwork(targetChainId)
 
   const isAssetSupported = useMemo(
     () => getIsAssetSupported(selectedAsset, assets, targetChainId),

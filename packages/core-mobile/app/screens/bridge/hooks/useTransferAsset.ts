@@ -38,9 +38,8 @@ export function useTransferAsset(): {
   ) => Promise<TransactionResponse | undefined>
   events: EventEmitter
 } {
-  const { selectNetworks } = useNetworks()
+  const { networks } = useNetworks()
   const activeAccount = useSelector(selectActiveAccount)
-  const allNetworks = selectNetworks()
   const config = useSelector(selectBridgeAppConfig)
   const criticalConfig = useSelector(selectBridgeCriticalConfig)
   const { currentBlockchain } = useBridgeSDK()
@@ -57,7 +56,7 @@ export function useTransferAsset(): {
     ) => {
       const blockchainNetwork = blockchainToNetwork(
         currentBlockchain,
-        allNetworks,
+        networks,
         criticalConfig
       )
 
@@ -106,7 +105,7 @@ export function useTransferAsset(): {
     [
       activeAccount?.index,
       address,
-      allNetworks,
+      networks,
       avalancheProvider,
       config,
       criticalConfig,

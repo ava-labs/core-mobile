@@ -8,30 +8,28 @@ import {
 import { useNetworks } from './useNetworks'
 
 export function useEthereumProvider(): JsonRpcBatchInternal | undefined {
-  const { selectActiveNetwork, selectNetworks } = useNetworks()
-  const networks = selectNetworks()
-  const network = selectActiveNetwork()
+  const { activeNetwork, networks } = useNetworks()
 
   return useMemo(
-    () => getEthereumProvider(networks, network.isTestnet),
-    [networks, network]
+    () => getEthereumProvider(networks, activeNetwork.isTestnet),
+    [networks, activeNetwork]
   )
 }
 
 export function useBitcoinProvider(): BitcoinProvider {
-  const { selectActiveNetwork } = useNetworks()
-  const network = selectActiveNetwork()
+  const { activeNetwork } = useNetworks()
 
-  return useMemo(() => getBitcoinProvider(network.isTestnet), [network])
+  return useMemo(
+    () => getBitcoinProvider(activeNetwork.isTestnet),
+    [activeNetwork]
+  )
 }
 
 export function useAvalancheProvider(): JsonRpcBatchInternal | undefined {
-  const { selectActiveNetwork, selectNetworks } = useNetworks()
-  const networks = selectNetworks()
-  const network = selectActiveNetwork()
+  const { activeNetwork, networks } = useNetworks()
 
   return useMemo(
-    () => getAvalancheProvider(networks, network.isTestnet),
-    [networks, network]
+    () => getAvalancheProvider(networks, activeNetwork.isTestnet),
+    [networks, activeNetwork]
   )
 }

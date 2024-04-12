@@ -7,8 +7,7 @@ import { useNetworks } from 'hooks/useNetworks'
 import { networkToBlockchain } from '../utils/bridgeUtils'
 
 export const useBridgeNetworkPrice = (chain?: Blockchain | Chain): Big => {
-  const { selectNetworks } = useNetworks()
-  const networks = selectNetworks()
+  const { networks } = useNetworks()
 
   const blockchain = useMemo(() => {
     // Standardize input to Blockchain type

@@ -18,10 +18,9 @@ type NavigationProp = PortfolioScreenProps<
 
 export const TokensTabHeader = (): JSX.Element => {
   const { theme } = useApplicationContext()
-  const { selectActiveNetwork } = useNetworks()
+  const { activeNetwork } = useNetworks()
   const { navigate } = useNavigation<NavigationProp>()
   const viewAllBtnColor = theme.colorPrimary1
-  const network = selectActiveNetwork()
 
   const goToWatchList = (): void => {
     navigate(AppNavigation.Tabs.Watchlist)
@@ -54,7 +53,7 @@ export const TokensTabHeader = (): JSX.Element => {
         sharedTransitionTag={
           Platform.OS === 'ios' ? 'active-network-card' : undefined
         }
-        key={network.chainId}
+        key={activeNetwork.chainId}
         entering={FlipInEasyX.delay(300)}
         exiting={FlipOutEasyX.duration(300)}>
         <ActiveNetworkCard />

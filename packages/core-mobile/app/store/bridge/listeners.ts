@@ -6,7 +6,7 @@ import { toggleDeveloperMode } from 'store/settings/advanced'
 import { isAnyOf, TaskAbortError } from '@reduxjs/toolkit'
 import Logger from 'utils/Logger'
 import BridgeService from 'services/bridge/BridgeService'
-import { getActiveNetwork } from 'utils/getActiveNetwork'
+import { getActiveNetworkFromCache } from 'utils/networkFromCache/getActiveNetworkFromCache'
 import { setConfig } from './slice'
 
 const CONFIG_FETCH_INTERVAL = 15000
@@ -32,7 +32,7 @@ const fetchConfigPeriodically = async (
       while (true) {
         const state = getState()
 
-        const activeNetwork = await getActiveNetwork(state)
+        const activeNetwork = getActiveNetworkFromCache(state)
 
         // cancellation-aware wait for the fetch to be done
         const config = await forkApi.pause(

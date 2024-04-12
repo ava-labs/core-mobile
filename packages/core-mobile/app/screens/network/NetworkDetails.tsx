@@ -23,9 +23,8 @@ export default function NetworkDetails({
   chainId,
   goBack
 }: NetworkDetailsProps): JSX.Element {
-  const { selectFromPopulatedNetwork, selectActiveNetwork } = useNetworks()
-  const network = selectFromPopulatedNetwork(chainId)
-  const activeNetwork = selectActiveNetwork()
+  const { getFromPopulatedNetwork, activeNetwork } = useNetworks()
+  const network = getFromPopulatedNetwork(chainId)
   const dispatch = useDispatch()
 
   const isConnected = activeNetwork.chainId === chainId

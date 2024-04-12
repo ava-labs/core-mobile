@@ -37,8 +37,7 @@ export const prefetchNetworkFee = (network: Network | undefined): void => {
 export const useNetworkFee = (
   network?: Network
 ): UseQueryResult<NetworkFee<NetworkTokenUnit> | undefined> => {
-  const { selectActiveNetwork } = useNetworks()
-  const activeNetwork = selectActiveNetwork()
+  const { activeNetwork } = useNetworks()
   const networkToRequest = network || activeNetwork
 
   return useQuery({

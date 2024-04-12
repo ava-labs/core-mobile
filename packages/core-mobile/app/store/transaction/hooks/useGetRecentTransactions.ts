@@ -39,8 +39,7 @@ export const useGetRecentTransactions = (): {
 } => {
   const dispatch = useDispatch()
   const [isRefreshing, setIsRefreshing] = useState(false)
-  const { selectActiveNetwork } = useNetworks()
-  const network = selectActiveNetwork()
+  const { activeNetwork } = useNetworks()
   const account = useSelector(selectActiveAccount)
   const isAppLocked = useSelector(selectIsLocked)
   const isFocused = useIsFocused()
@@ -51,7 +50,7 @@ export const useGetRecentTransactions = (): {
     refetch
   } = useGetRecentsTransactionsQuery(
     {
-      network,
+      network: activeNetwork,
       account,
       criticalConfig
     },

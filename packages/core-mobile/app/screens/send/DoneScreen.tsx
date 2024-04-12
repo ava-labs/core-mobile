@@ -19,9 +19,8 @@ export default function DoneScreen({
   onClose,
   transactionId
 }: DoneProps): JSX.Element {
-  const { selectActiveNetwork } = useNetworks()
+  const { activeNetwork } = useNetworks()
   const theme = useApplicationContext().theme
-  const network = selectActiveNetwork()
   const { openUrl } = useInAppBrowser()
 
   return (
@@ -45,7 +44,7 @@ export default function DoneScreen({
           <LinkSVG />
           <AvaButton.TextLarge
             onPress={() => {
-              openUrl(getExplorerAddressByNetwork(network, transactionId))
+              openUrl(getExplorerAddressByNetwork(activeNetwork, transactionId))
             }}>
             View on Explorer
           </AvaButton.TextLarge>

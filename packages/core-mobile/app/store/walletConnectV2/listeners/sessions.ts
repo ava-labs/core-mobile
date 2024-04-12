@@ -13,7 +13,7 @@ import { WalletConnectCallbacks } from 'services/walletconnectv2/types'
 import { setActive } from 'store/network'
 import { selectActiveAccount, setActiveAccountIndex } from 'store/account'
 import { UPDATE_SESSION_DELAY } from 'consts/walletConnect'
-import { getActiveNetwork } from 'utils/getActiveNetwork'
+import { getActiveNetworkFromCache } from 'utils/networkFromCache/getActiveNetworkFromCache'
 import { killSessions, newSession, onDisconnect, onRequest } from '../slice'
 import { RpcMethod } from '../types'
 
@@ -63,7 +63,7 @@ export const initWalletConnect = async (
      *
      * notes: the delay is to allow dapps to settle down after the session is established. wallet connect se sdk also does the same.
      */
-    const { chainId } = await getActiveNetwork(state)
+    const { chainId } = getActiveNetworkFromCache(state)
     const address = selectActiveAccount(state)?.address
     setTimeout(() => updateSessions(chainId, address), UPDATE_SESSION_DELAY)
   } catch (e) {
@@ -138,7 +138,7 @@ export const handleAccountChange = async (
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
   const state = listenerApi.getState()
-  const { chainId } = await getActiveNetwork(state)
+  const { chainId } = getActiveNetworkFromCache(state)
   const address = selectActiveAccount(state)?.address
 
   updateSessions(chainId, address)

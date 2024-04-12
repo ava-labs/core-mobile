@@ -25,9 +25,7 @@ type NetworkDropdownNavigationProp = DrawerScreenProps<
 >['navigation']
 
 export default function NetworkDropdown(): JSX.Element {
-  const { selectFavoriteNetworks, selectActiveNetwork } = useNetworks()
-  const favoriteNetworks = selectFavoriteNetworks()
-  const activeNetwork = selectActiveNetwork()
+  const { favoriteNetworks, activeNetwork } = useNetworks()
   const dispatch = useDispatch()
   const { theme } = useApplicationContext()
   const navigation = useNavigation<NetworkDropdownNavigationProp>()

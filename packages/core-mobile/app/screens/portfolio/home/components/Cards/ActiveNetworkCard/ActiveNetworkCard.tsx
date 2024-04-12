@@ -33,12 +33,11 @@ type NavigationProp = PortfolioScreenProps<
 
 const ActiveNetworkCard = (): JSX.Element => {
   const { filteredTokenList: tokens } = useSearchableTokenList()
-  const { selectActiveNetwork } = useNetworks()
-  const network = selectActiveNetwork()
+  const { activeNetwork } = useNetworks()
   const account = useSelector(selectActiveAccount)
   const totalBalanceInCurrency = useSelector(
     selectBalanceTotalInCurrencyForNetworkAndAccount(
-      network.chainId,
+      activeNetwork.chainId,
       account?.index
     )
   )
@@ -48,12 +47,12 @@ const ActiveNetworkCard = (): JSX.Element => {
   } = useApplicationContext()
   const { theme } = useTheme()
   const backgroundColor = theme.colors.$neutral900
-  const pendingBridgeTxs = usePendingBridgeTransactions(network)
+  const pendingBridgeTxs = usePendingBridgeTransactions(activeNetwork)
   const { tokenPortfolioPriceChange } = useTokenPortfolioPriceChange(tokens)
 
   const navigateToNetworkTokens = (): void => {
     AnalyticsService.capture('PortfolioPrimaryNetworkClicked', {
-      chainId: network.chainId
+      chainId: activeNetwork.chainId
     })
     navigate(AppNavigation.Portfolio.NetworkTokens)
   }
@@ -64,7 +63,7 @@ const ActiveNetworkCard = (): JSX.Element => {
     return (
       <View>
         <View sx={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-          <NetworkLogo logoUri={network.logoUri} size={32} />
+          <NetworkLogo logoUri={activeNetwork.logoUri} size={32} />
           {pendingBridgeTxs.length > 0 && (
             <TopRightBadge
               text={pendingBridgeTxs.length.toString()}
@@ -105,7 +104,7 @@ const ActiveNetworkCard = (): JSX.Element => {
           }}>
           <View>
             <Text variant="heading5" ellipsizeMode="tail">
-              {network.chainName}
+              {activeNetwork.chainName}
             </Text>
           </View>
           <View sx={{ alignItems: 'flex-end' }}>

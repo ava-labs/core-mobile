@@ -48,8 +48,7 @@ export default function NftSend({
       selectedFeePreset
     }
   } = useSendNFTContext()
-  const { selectActiveNetwork } = useNetworks()
-  const activeNetwork = selectActiveNetwork()
+  const { activeNetwork } = useNetworks()
   const placeholder =
     activeNetwork.vmName === NetworkVMType.EVM
       ? 'Enter 0x Address'

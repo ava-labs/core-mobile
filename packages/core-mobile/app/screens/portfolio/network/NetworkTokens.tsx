@@ -42,8 +42,7 @@ const NetworkTokens = (): JSX.Element => {
 
   const manageDisabled = useIsUIDisabled(UI.ManageTokens)
   const manageBtnColor = theme.colorPrimary1
-  const { selectActiveNetwork } = useNetworks()
-  const activeNetwork = selectActiveNetwork()
+  const { activeNetwork } = useNetworks()
   const pendingBridgeTxs = usePendingBridgeTransactions(activeNetwork)
 
   useEffect(() => {

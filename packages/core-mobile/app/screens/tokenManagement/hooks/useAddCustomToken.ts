@@ -59,15 +59,12 @@ type CustomToken = {
 }
 
 const useAddCustomToken = (callback: () => void): CustomToken => {
-  const { selectActiveNetworkContractTokens, selectActiveNetwork } =
-    useNetworks()
+  const { activeNetworkContractTokens: tokens, activeNetwork } = useNetworks()
   const [tokenAddress, setTokenAddress] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
   const [token, setToken] = useState<NetworkContractToken>()
-  const network = selectActiveNetwork()
-  const tokens = selectActiveNetworkContractTokens()
   const dispatch = useDispatch()
-  const chainId = network.chainId
+  const chainId = activeNetwork.chainId
 
   useEffect(() => {
     setErrorMessage('')
@@ -84,7 +81,7 @@ const useAddCustomToken = (callback: () => void): CustomToken => {
           setErrorMessage('Token already exists in the wallet.')
         }
 
-        fetchTokenData(network, tokenAddress)
+        fetchTokenData(activeNetwork, tokenAddress)
           .then(setToken)
           .catch(err => {
             setErrorMessage('Not a valid ERC-20 token address.')
@@ -95,7 +92,7 @@ const useAddCustomToken = (callback: () => void): CustomToken => {
         // do not show error message for too short addresses
         break
     }
-  }, [network, tokenAddress, tokens])
+  }, [activeNetwork, tokenAddress, tokens])
 
   const addCustomToken = (): void => {
     if (token) {

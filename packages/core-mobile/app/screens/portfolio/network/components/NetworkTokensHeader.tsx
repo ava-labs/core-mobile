@@ -20,10 +20,11 @@ const NetworkTokensHeader = (): JSX.Element => {
   const {
     appHook: { currencyFormatter }
   } = useApplicationContext()
-  const { selectActiveNetwork } = useNetworks()
+  const {
+    activeNetwork: { chainName, logoUri, chainId }
+  } = useNetworks()
   const isLoadingBalance = useSelector(selectIsLoadingBalances)
   const isRefetchingBalance = useSelector(selectIsRefetchingBalances)
-  const { chainName, logoUri, chainId } = selectActiveNetwork()
   const account = useSelector(selectActiveAccount)
   const balanceTotal = useSelector(
     selectBalanceTotalInCurrencyForNetworkAndAccount(chainId, account?.index)

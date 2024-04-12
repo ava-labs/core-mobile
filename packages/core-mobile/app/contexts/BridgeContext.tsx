@@ -99,8 +99,7 @@ function LocalBridgeProvider({
 }: {
   children: ReactNode
 }): JSX.Element {
-  const { selectActiveNetwork } = useNetworks()
-  const activeNetwork = selectActiveNetwork()
+  const { activeNetwork } = useNetworks()
   const dispatch = useDispatch()
   const bridgeConfig = useSelector(selectBridgeConfig)
   const config = bridgeConfig?.config

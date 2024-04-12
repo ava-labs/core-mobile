@@ -18,11 +18,7 @@ type Props = {
 
 export default function NetworkManager({ onShowInfo }: Props): JSX.Element {
   const { goBack } = useNavigation()
-  const { selectNetworks, selectFavoriteNetworks, selectCustomNetworks } =
-    useNetworks()
-  const networks = selectNetworks()
-  const customNetworks = selectCustomNetworks()
-  const favoriteNetworks = selectFavoriteNetworks()
+  const { networks, favoriteNetworks, customNetworks } = useNetworks()
   const dispatch = useDispatch()
   const [searchText, setSearchText] = useState('')
   const title = 'Networks'

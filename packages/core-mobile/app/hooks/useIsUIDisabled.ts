@@ -37,8 +37,9 @@ const disabledUIs: Partial<Record<UI, number[]>> = {
 }
 
 export const useIsUIDisabled = (ui: UI): boolean => {
-  const { selectActiveNetwork } = useNetworks()
-  const { chainId } = selectActiveNetwork()
+  const {
+    activeNetwork: { chainId }
+  } = useNetworks()
 
   if (enabledUIs[ui]?.includes(chainId)) {
     return false

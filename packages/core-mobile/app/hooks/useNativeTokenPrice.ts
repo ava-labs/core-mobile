@@ -5,7 +5,6 @@ import { useNetworks } from './useNetworks'
 export function useNativeTokenPrice(customCurrency?: VsCurrencyType): {
   nativeTokenPrice: number
 } {
-  const { selectActiveNetwork } = useNetworks()
-  const activeNetwork = selectActiveNetwork()
+  const { activeNetwork } = useNetworks()
   return useNativeTokenPriceForNetwork(activeNetwork, customCurrency)
 }

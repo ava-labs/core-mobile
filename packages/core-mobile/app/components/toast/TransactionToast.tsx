@@ -46,8 +46,7 @@ const ToastWithViewActivity = ({
   color: string
 }): JSX.Element => {
   const theme = useApplicationContext().theme
-  const { selectActiveNetwork } = useNetworks()
-  const network = selectActiveNetwork()
+  const { activeNetwork: network } = useNetworks()
 
   const openActivityTab = (): void => {
     navigate({

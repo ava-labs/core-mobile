@@ -38,11 +38,10 @@ const TopNavigationHeader: FC<Props> = ({
   showMenu = true,
   onBack
 }) => {
-  const { selectActiveNetwork } = useNetworks()
+  const { activeNetwork } = useNetworks()
   const { theme } = useApplicationContext()
   const navigation = useNavigation<NavigationProp>()
   const activeAccount = useSelector(selectActiveAccount)
-  const activeNetwork = selectActiveNetwork()
 
   const address =
     activeNetwork.vmName === NetworkVMType.BITCOIN

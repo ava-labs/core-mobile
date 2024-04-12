@@ -6,14 +6,14 @@ import { useNetworks } from './useNetworks'
 export const useBalanceTotalInCurrencyForAccount = (
   accountIndex: number
 ): number => {
-  const { selectIsTestnet } = useNetworks()
+  const { getIsTestnet } = useNetworks()
   const balances = useSelector(selectBalancesForAccount(accountIndex))
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
 
   let totalInCurrency = 0
 
   for (const balance of balances) {
-    const isTestnet = selectIsTestnet(balance.chainId)
+    const isTestnet = getIsTestnet(balance.chainId)
 
     // when developer mode is on, only add testnet balances
     // when developer mode is off, only add mainnet balances

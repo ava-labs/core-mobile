@@ -50,8 +50,7 @@ export function useEthBridge({
     [assetsWithBalances, currentAssetData?.symbol]
   )
 
-  const { selectActiveNetwork } = useNetworks()
-  const network = selectActiveNetwork()
+  const { activeNetwork } = useNetworks()
   const activeAccount = useSelector(selectActiveAccount)
   const config = useSelector(selectBridgeAppConfig)
   const ethereumProvider = useEthereumProvider()
@@ -67,7 +66,7 @@ export function useEthBridge({
   const receiveAmount = amount.gt(minimum) ? amount.minus(bridgeFee) : BIG_ZERO
 
   const transfer = useCallback(async () => {
-    if (!currentAssetData || !network || !config) {
+    if (!currentAssetData || !activeNetwork || !config) {
       return Promise.reject()
     }
 
@@ -86,7 +85,7 @@ export function useEthBridge({
     )
 
     AnalyticsService.captureWithEncryption('BridgeTransactionStarted', {
-      chainId: network.chainId,
+      chainId: activeNetwork.chainId,
       sourceTxHash: result?.hash ?? '',
       fromAddress: activeAccount?.address
     })
@@ -100,13 +99,13 @@ export function useEthBridge({
         amount,
         symbol
       },
-      network
+      activeNetwork
     )
 
     return result?.hash
   }, [
     currentAssetData,
-    network,
+    activeNetwork,
     config,
     transferAsset,
     amount,

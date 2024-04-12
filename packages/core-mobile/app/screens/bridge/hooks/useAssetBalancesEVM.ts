@@ -28,9 +28,8 @@ export function useAssetBalancesEVM(
   assetsWithBalances: AssetBalance[]
   loading: boolean
 } {
-  const { selectActiveNetwork } = useNetworks()
-  const network = selectActiveNetwork()
-  const tokens = useSelector(selectTokensWithBalance(network.chainId))
+  const { activeNetwork } = useNetworks()
+  const tokens = useSelector(selectTokensWithBalance(activeNetwork.chainId))
   const { avalancheAssets, ethereumAssets, currentBlockchain } = useBridgeSDK()
   const { assets: unifiedBridgeAssets } = useUnifiedBridgeAssets()
 

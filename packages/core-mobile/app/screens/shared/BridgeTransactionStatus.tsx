@@ -38,14 +38,13 @@ const BridgeTransactionStatus: FC<Props> = ({ txHash, showHideButton }) => {
   const [bridgeTransaction, setBridgeTransaction] = useState<
     BridgeTransaction | BridgeTransfer
   >()
-  const { selectActiveNetwork } = useNetworks()
-  const network = selectActiveNetwork()
+  const { activeNetwork } = useNetworks()
   const tokenInfo = useTokenForBridgeTransaction(
     bridgeTransaction,
-    network.isTestnet === true
+    activeNetwork.isTestnet === true
   )
 
-  const bridgeTransactions = usePendingBridgeTransactions(network)
+  const bridgeTransactions = usePendingBridgeTransactions(activeNetwork)
 
   const { theme, appHook } = useApplicationContext()
   const { selectedCurrency, currencyFormatter } = appHook

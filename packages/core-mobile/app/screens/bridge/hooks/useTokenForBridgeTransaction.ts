@@ -13,7 +13,7 @@ export function useTokenForBridgeTransaction(
   bridgeTransaction: BridgeTransaction | BridgeTransfer | undefined,
   isTestnet: boolean
 ): NetworkContractToken | NetworkToken | undefined {
-  const { selectNetworkContractTokens } = useNetworks()
+  const { getNetworkContractTokens } = useNetworks()
   const chainId = useMemo(() => {
     switch (bridgeTransaction?.sourceChain) {
       case Blockchain.BITCOIN:
@@ -29,7 +29,7 @@ export function useTokenForBridgeTransaction(
     }
   }, [bridgeTransaction, isTestnet])
 
-  const tokens = selectNetworkContractTokens(chainId)
+  const tokens = getNetworkContractTokens(chainId)
 
   return useMemo(() => {
     const token = tokens.find(t => t.symbol === bridgeTransaction?.symbol)

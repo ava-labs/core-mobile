@@ -89,9 +89,8 @@ export const SwapContextProvider = ({
 }: {
   children: ReactNode
 }): JSX.Element => {
-  const { selectActiveNetwork } = useNetworks()
+  const { activeNetwork } = useNetworks()
   const activeAccount = useSelector(selectActiveAccount)
-  const activeNetwork = selectActiveNetwork()
   const avalancheProvider = useAvalancheProvider()
   const { data: networkFee } = useNetworkFee()
   const [fromToken, setFromToken] = useState<TokenWithBalance>()

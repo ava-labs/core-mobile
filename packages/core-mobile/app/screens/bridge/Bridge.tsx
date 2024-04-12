@@ -114,10 +114,8 @@ const Bridge: FC = () => {
     setCurrentBlockchain: setCurrentBlockchainSDK,
     targetBlockchain
   } = useBridgeSDK()
-  const { selectActiveNetwork, selectNetworks } = useNetworks()
+  const { activeNetwork, networks } = useNetworks()
   const { getTokenSymbolOnNetwork } = useGetTokenSymbolOnNetwork()
-  const networks = selectNetworks()
-  const activeNetwork = selectActiveNetwork()
   const [bridgeError, setBridgeError] = useState('')
   const [isPending, setIsPending] = useState(false)
   const tokenInfoData = useTokenInfoContext()

@@ -74,12 +74,10 @@ interface Bridge extends BridgeAdapter {
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
 export default function useBridge(selectedAsset?: AssetBalance): Bridge {
-  const { selectActiveNetwork, selectNetworks, selectNetwork } = useNetworks()
+  const { activeNetwork, networks, getNetwork } = useNetworks()
   const config = useSelector(selectBridgeAppConfig)
   const isTestnet = useSelector(selectIsDeveloperMode)
-  const allNetworks = selectNetworks()
   const currency = useSelector(selectSelectedCurrency)
-  const activeNetwork = selectActiveNetwork()
   const activeAccount = useSelector(selectActiveAccount)
   const [sourceBalance, setSourceBalance] = useState<AssetBalance>()
   const {
@@ -95,7 +93,7 @@ export default function useBridge(selectedAsset?: AssetBalance): Bridge {
     [isTestnet, targetBlockchain]
   )
 
-  const targetNetwork = selectNetwork(targetChainId)
+  const targetNetwork = getNetwork(targetChainId)
 
   // reset current asset when unmounting
   useEffect(() => {
@@ -192,7 +190,7 @@ export default function useBridge(selectedAsset?: AssetBalance): Bridge {
           activeAccount,
           activeNetwork,
           currency,
-          allNetworks,
+          allNetworks: networks,
           asset: currentAssetData,
           isTestnet,
           config
@@ -209,7 +207,7 @@ export default function useBridge(selectedAsset?: AssetBalance): Bridge {
   }, [
     activeAccount,
     activeNetwork,
-    allNetworks,
+    networks,
     amount,
     config,
     currency,

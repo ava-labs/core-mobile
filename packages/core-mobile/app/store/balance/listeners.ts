@@ -21,8 +21,8 @@ import {
 import Logger from 'utils/Logger'
 import { getLocalTokenId } from 'store/balance/utils'
 import SentryWrapper from 'services/sentry/SentryWrapper'
-import { getActiveNetwork } from 'utils/getActiveNetwork'
-import { getFavoriteNetworks } from 'utils/getFavoriteNetworks'
+import { getActiveNetworkFromCache } from 'utils/networkFromCache/getActiveNetworkFromCache'
+import { getFavoriteNetworksFromCache } from 'utils/networkFromCache/getFavoriteNetworksFromCache'
 import {
   fetchBalanceForAccount,
   getKey,
@@ -56,7 +56,7 @@ const onBalanceUpdate = async (
   fetchActiveOnly: boolean
 ): Promise<void> => {
   const state = listenerApi.getState()
-  const activeNetwork = await getActiveNetwork(state)
+  const activeNetwork = getActiveNetworkFromCache(state)
 
   let networksToFetch: Network[]
   const activeAccount = selectActiveAccount(state)
@@ -65,7 +65,7 @@ const onBalanceUpdate = async (
   if (fetchActiveOnly) {
     networksToFetch = [activeNetwork]
   } else {
-    networksToFetch = await getFavoriteNetworks(state)
+    networksToFetch = getFavoriteNetworksFromCache(state)
     // Just in case the active network has not been favorited
     if (!networksToFetch.map(n => n.chainId).includes(activeNetwork.chainId)) {
       networksToFetch.push(activeNetwork)
@@ -205,12 +205,12 @@ const handleFetchBalanceForAccount = async (
   accountIndex: number
 ): Promise<void> => {
   const state = listenerApi.getState()
-  const activeNetwork = await getActiveNetwork(state)
+  const activeNetwork = getActiveNetworkFromCache(state)
 
   const accounts = selectAccounts(state)
   const accountToFetchFor = accounts[accountIndex]
   const accountsToFetch = accountToFetchFor ? [accountToFetchFor] : []
-  const networksToFetch = await getFavoriteNetworks(state)
+  const networksToFetch = getFavoriteNetworksFromCache(state)
   // Just in case the active network has not been favorited
   if (!networksToFetch.map(n => n.chainId).includes(activeNetwork.chainId)) {
     networksToFetch.push(activeNetwork)

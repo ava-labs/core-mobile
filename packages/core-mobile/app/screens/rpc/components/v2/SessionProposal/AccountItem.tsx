@@ -28,12 +28,11 @@ type Props = {
 
 const AccountItem = ({ account, onSelect, selected }: Props): JSX.Element => {
   const { theme } = useApplicationContext()
-  const { selectActiveNetwork } = useNetworks()
-  const network = selectActiveNetwork()
+  const { activeNetwork } = useNetworks()
   const accountBalance = useBalanceTotalInCurrencyForAccount(account.index)
 
   const isBalanceLoaded = useSelector(
-    selectIsBalanceLoadedForAddress(account.index, network.chainId)
+    selectIsBalanceLoadedForAddress(account.index, activeNetwork.chainId)
   )
   const balanceStatus = useSelector(selectBalanceStatus)
   const isBalanceLoading = balanceStatus !== QueryStatus.IDLE

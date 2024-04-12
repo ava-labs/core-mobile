@@ -37,8 +37,7 @@ export default function ReviewSend({
     theme,
     appHook: { currencyFormatter }
   } = useApplicationContext()
-  const { selectActiveNetwork } = useNetworks()
-  const activeNetwork = selectActiveNetwork()
+  const { activeNetwork } = useNetworks()
   const isBtcNetwork = Boolean(activeNetwork?.vmName === NetworkVMType.BITCOIN)
   const { goBack } = useNavigation<NavigationProp>()
   const {

@@ -32,11 +32,10 @@ export default function AddressBookLists({
   navigateToAddressBook,
   onlyBtc = false
 }: AddressBookListsProps): JSX.Element {
-  const { selectActiveNetwork } = useNetworks()
+  const { activeNetwork } = useNetworks()
   const contacts = useSelector(selectContacts)
   const recentContacts = useSelector(selectRecentContacts)
   const accounts = useSelector(selectAccounts)
-  const activeNetwork = selectActiveNetwork()
 
   const addressBookContacts = useMemo(
     () =>

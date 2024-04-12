@@ -26,12 +26,11 @@ type ScreenProps = WalletScreenProps<
 >
 
 const OwnedTokenDetail: FC = () => {
-  const { selectActiveNetwork } = useNetworks()
+  const { activeNetwork } = useNetworks()
   const { tokenId } = useRoute<ScreenProps['route']>().params
   const { navigate } = useNavigation<ScreenProps['navigation']>()
   const { filteredTokenList } = useSearchableTokenList()
   const [token, setToken] = useState<TokenWithBalance>()
-  const activeNetwork = selectActiveNetwork()
   const {
     appHook: { currencyFormatter }
   } = useApplicationContext()

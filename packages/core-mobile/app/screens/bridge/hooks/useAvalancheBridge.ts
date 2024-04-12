@@ -25,7 +25,7 @@ export function useAvalancheBridge({
   minimum: Big
   eip1559Fees: Eip1559Fees<NetworkTokenUnit>
 }): BridgeAdapter {
-  const { selectActiveNetwork } = useNetworks()
+  const { activeNetwork } = useNetworks()
   const { targetBlockchain, currentAssetData } = useBridgeSDK()
   const { createBridgeTransaction, transferAsset } = useBridgeContext()
   const [txHash, setTxHash] = useState<string>()
@@ -42,8 +42,6 @@ export function useAvalancheBridge({
       ),
     [assetsWithBalances, currentAssetData?.symbol]
   )
-
-  const network = selectActiveNetwork()
 
   const maximum = sourceBalance?.balance || BIG_ZERO
   const receiveAmount = amount.gt(minimum) ? amount.minus(bridgeFee) : BIG_ZERO
@@ -65,7 +63,7 @@ export function useAvalancheBridge({
     )
 
     AnalyticsService.captureWithEncryption('BridgeTransactionStarted', {
-      chainId: network.chainId,
+      chainId: activeNetwork.chainId,
       sourceTxHash: result?.hash ?? '',
       fromAddress: activeAccount?.address
     })
@@ -79,7 +77,7 @@ export function useAvalancheBridge({
         amount,
         symbol: currentAssetData.symbol
       },
-      network
+      activeNetwork
     )
 
     return result?.hash
@@ -90,7 +88,7 @@ export function useAvalancheBridge({
     eip1559Fees,
     createBridgeTransaction,
     targetBlockchain,
-    network,
+    activeNetwork,
     activeAccount
   ])
 

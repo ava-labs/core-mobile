@@ -9,8 +9,7 @@ export const useUnifiedBridgeAssets = (): {
   assets: BridgeAsset[]
 } => {
   const [assets, setAssets] = useState<BridgeAsset[]>([])
-  const { selectActiveNetwork } = useNetworks()
-  const activeNetwork = selectActiveNetwork()
+  const { activeNetwork } = useNetworks()
 
   useEffect(() => {
     UnifiedBridgeService.getAssets()

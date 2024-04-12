@@ -63,10 +63,9 @@ const NetworkFeeSelector = ({
   const {
     appHook: { currencyFormatter }
   } = useApplicationContext()
-  const { selectActiveNetwork, selectNetwork } = useNetworks()
+  const { activeNetwork, getNetwork } = useNetworks()
   const { navigate } = useNavigation<NavigationProp>()
-  const activeNetwork = selectActiveNetwork()
-  const requestedNetwork = selectNetwork(chainId)
+  const requestedNetwork = getNetwork(chainId)
   const network = chainId ? requestedNetwork : activeNetwork
   const { data: networkFee } = useNetworkFee(network)
   const { currentBlockchain } = useBridgeSDK()

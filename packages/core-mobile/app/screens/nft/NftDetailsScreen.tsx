@@ -32,8 +32,7 @@ type NftDetailsScreenProps = NFTDetailsScreenProps<
 const NftDetailsScreen = (): JSX.Element => {
   const { navigate, setOptions } =
     useNavigation<NftDetailsScreenProps['navigation']>()
-  const { selectActiveNetwork } = useNetworks()
-  const activeNetwork = selectActiveNetwork()
+  const { activeNetwork } = useNetworks()
   const { nftItem: routeNftItem } =
     useRoute<NftDetailsScreenProps['route']>().params
 

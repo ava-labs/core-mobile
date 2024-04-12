@@ -57,10 +57,10 @@ const SignTransaction = (): JSX.Element => {
 
   const { onUserApproved: onApprove, onUserRejected: onReject } =
     useDappConnectionV2()
-  const { selectNetwork } = useNetworks()
+  const { getNetwork } = useNetworks()
   const requestStatus = useSelector(selectRequestStatus(request.data.id))
   const chainId = Number(request.data.params.chainId.split(':')[1])
-  const network = selectNetwork(chainId)
+  const network = getNetwork(chainId)
 
   const { openUrl } = useInAppBrowser()
   const theme = useApplicationContext().theme

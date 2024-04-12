@@ -35,6 +35,19 @@ const clientPersister = createSyncStoragePersister({
   retry: removeOldestQuery
 })
 
+const persistOptions = {
+  persister: clientPersister,
+  maxAge: Infinity,
+  dehydrateOptions: {
+    shouldDehydrateQuery: ({
+      queryKey
+    }: {
+      queryKey: ReactQueryKeys
+      state: unknown
+    }) => queryKey.includes(ReactQueryKeys.NETWORKS)
+  }
+}
+
 const onAppStateChange = (status: AppStateStatus): void => {
   focusManager.setFocused(status === 'active')
 }
@@ -65,18 +78,7 @@ export const ReactQueryProvider: React.FC<PropsWithChildren> = ({
   return (
     <PersistQueryClientProvider
       client={queryClient}
-      persistOptions={{
-        persister: clientPersister,
-        maxAge: Infinity,
-        dehydrateOptions: {
-          shouldDehydrateQuery: ({
-            queryKey
-          }: {
-            queryKey: ReactQueryKeys
-            state: unknown
-          }) => queryKey.includes(ReactQueryKeys.NETWORKS)
-        }
-      }}>
+      persistOptions={persistOptions}>
       {children}
     </PersistQueryClientProvider>
   )

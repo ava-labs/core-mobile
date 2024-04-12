@@ -54,9 +54,8 @@ const Transactions: FC<Props> = ({
   openTransactionStatus
 }) => {
   const { openUrl } = useInAppBrowser()
-  const { selectActiveNetwork } = useNetworks()
+  const { activeNetwork } = useNetworks()
   const bridgeDisabled = useIsUIDisabled(UI.Bridge)
-  const activeNetwork = selectActiveNetwork()
   const pendingBridgeTxs = usePendingBridgeTransactions(activeNetwork)
   const combinedData = useMemo(() => {
     function isPendingBridge(tx: Transaction): boolean {

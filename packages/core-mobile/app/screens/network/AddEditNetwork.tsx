@@ -37,10 +37,9 @@ export default function AddEditNetwork({
   network,
   onClose
 }: AddEditNetworkProps): JSX.Element {
-  const { selectAllNetworks } = useNetworks()
+  const { allNetworks } = useNetworks()
   const dispatch = useDispatch()
   const isTestnet = useSelector(selectIsDeveloperMode)
-  const allNetworks = selectAllNetworks()
 
   const [rpcUrl, setRpcUrl] = useState(network?.rpcUrl ?? '')
   const [networkName, setNetworkName] = useState(network?.chainName ?? '')

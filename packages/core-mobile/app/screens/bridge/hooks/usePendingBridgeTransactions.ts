@@ -14,8 +14,7 @@ import { isBitcoinNetwork } from 'utils/network/isBitcoinNetwork'
 const usePendingLegacyBridgeTransactions = (
   network?: Network
 ): BridgeTransaction[] => {
-  const { selectActiveNetwork } = useNetworks()
-  const activeNetwork = selectActiveNetwork()
+  const { activeNetwork } = useNetworks()
   const pendingBridgeByTxId = useSelector(
     selectBridgeTransactions(activeNetwork)
   )

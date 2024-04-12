@@ -56,9 +56,8 @@ export const SendNFTContextProvider = ({
   nft: NFTItem
   children: ReactNode
 }): JSX.Element => {
-  const { selectActiveNetwork } = useNetworks()
+  const { activeNetwork } = useNetworks()
   const activeAccount = useSelector(selectActiveAccount)
-  const activeNetwork = selectActiveNetwork()
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const nativeTokenBalance = useSelector((state: RootState) =>
     selectNativeTokenBalanceForNetworkAndAccount(

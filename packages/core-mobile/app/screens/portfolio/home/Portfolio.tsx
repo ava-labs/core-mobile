@@ -80,9 +80,8 @@ const Portfolio = (): JSX.Element => {
 const Separator = (): JSX.Element => <Space y={16} />
 
 const TokensTab = (): JSX.Element => {
-  const { selectInactiveNetworks } = useNetworks()
+  const { inactiveNetworks } = useNetworks()
   const { isLoading, isRefetching, refetch } = useSearchableTokenList()
-  const inactiveNetworks = selectInactiveNetworks()
   const dispatch = useDispatch()
 
   const renderInactiveNetwork = (

@@ -1,11 +1,12 @@
 import { useSelector } from 'react-redux'
 import {
+  Networks,
   selectCustomNetworks as customNetworksSelector,
   defaultNetwork,
   selectActiveChainId,
   selectFavorites
 } from 'store/network'
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 import { selectAllCustomTokens } from 'store/customToken'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { mergeWithCustomTokens } from 'store/network/utils'
@@ -18,19 +19,19 @@ import { useGetNetworks } from './useGetNetworks'
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export const useNetworks = () => {
   const { data: rawNetworks } = useGetNetworks()
-  const customNetworks = useSelector(customNetworksSelector)
+  const _customNetworks = useSelector(customNetworksSelector)
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const allCustomTokens = useSelector(selectAllCustomTokens)
   const activeChainId = useSelector(selectActiveChainId)
   const favorites = useSelector(selectFavorites)
 
-  // get all networks, including custom networks
-  const selectAllNetworks = useCallback(() => {
-    return { ...rawNetworks, ...customNetworks }
-  }, [rawNetworks, customNetworks])
+  // all networks, including custom networks
+  const allNetworks = useMemo((): Networks => {
+    return { ...rawNetworks, ..._customNetworks }
+  }, [rawNetworks, _customNetworks])
 
-  const selectNetworks = useCallback(() => {
-    if (rawNetworks === undefined) return {} as Record<number, Network>
+  const networks = useMemo(() => {
+    if (rawNetworks === undefined) return {} as Networks
 
     const populatedNetworks = Object.keys(rawNetworks).reduce(
       (reducedNetworks, key) => {
@@ -44,13 +45,13 @@ export const useNetworks = () => {
         }
         return reducedNetworks
       },
-      {} as Record<number, Network>
+      {} as Networks
     )
 
-    const populatedCustomNetworks = Object.keys(customNetworks).reduce(
+    const populatedCustomNetworks = Object.keys(_customNetworks).reduce(
       (reducedNetworks, key) => {
         const chainId = parseInt(key)
-        const network = customNetworks[chainId]
+        const network = _customNetworks[chainId]
 
         if (network && network.isTestnet === isDeveloperMode) {
           reducedNetworks[chainId] = mergeWithCustomTokens(
@@ -63,29 +64,26 @@ export const useNetworks = () => {
       {} as Record<number, Network>
     )
     return { ...populatedNetworks, ...populatedCustomNetworks }
-  }, [rawNetworks, customNetworks, isDeveloperMode, allCustomTokens])
+  }, [rawNetworks, _customNetworks, isDeveloperMode, allCustomTokens])
 
-  const selectCustomNetworks = useCallback(() => {
-    const networks = selectNetworks()
+  const customNetworks = useMemo(() => {
     if (networks === undefined) return []
 
-    const customNetworkChainIds = Object.values(customNetworks).map(
+    const customNetworkChainIds = Object.values(_customNetworks).map(
       n => n.chainId
     )
     return Object.values(networks).filter(n =>
       customNetworkChainIds.includes(n.chainId)
     )
-  }, [selectNetworks, customNetworks])
+  }, [networks, _customNetworks])
 
-  const selectActiveNetwork = useCallback(() => {
-    const networks = selectNetworks()
+  const activeNetwork = useMemo(() => {
     if (networks === undefined) return defaultNetwork
     const network = networks[activeChainId]
     return network === undefined ? defaultNetwork : network
-  }, [selectNetworks, activeChainId])
+  }, [networks, activeChainId])
 
-  const selectFavoriteNetworks = useCallback(() => {
-    const networks = selectNetworks()
+  const favoriteNetworks = useMemo(() => {
     if (networks === undefined) return []
 
     return favorites.reduce((acc, chainId) => {
@@ -95,47 +93,20 @@ export const useNetworks = () => {
       }
       return acc
     }, [] as Network[])
-  }, [selectNetworks, favorites, isDeveloperMode])
+  }, [networks, favorites, isDeveloperMode])
 
-  const selectInactiveNetworks = useCallback(() => {
-    const favoriteNetworks = selectFavoriteNetworks()
+  const inactiveNetworks = useMemo(() => {
     return favoriteNetworks.filter(network => network.chainId !== activeChainId)
-  }, [selectFavoriteNetworks, activeChainId])
+  }, [favoriteNetworks, activeChainId])
 
   // get the list of contract tokens for the active network
-  const selectActiveNetworkContractTokens = useCallback(() => {
-    return selectActiveNetwork()?.tokens ?? []
-  }, [selectActiveNetwork])
+  const activeNetworkContractTokens = useMemo(() => {
+    return activeNetwork.tokens ?? []
+  }, [activeNetwork])
 
-  // get token info for a contract token of the active network
-  const selectTokenInfo = useCallback(
-    (symbol: string) => {
-      const tokens = selectActiveNetworkContractTokens()
-      return tokens.find(token => token.symbol === symbol)
-    },
-    [selectActiveNetworkContractTokens]
-  )
-
-  const selectIsTestnet = useCallback(
-    (chainId: number) => {
-      const allNetworks = selectAllNetworks()
-      const network = allNetworks[chainId]
-      return network?.isTestnet
-    },
-    [selectAllNetworks]
-  )
-
-  const selectIsCustomNetwork = useCallback(
-    (chainId: number) => {
-      return !!customNetworks[chainId]
-    },
-    [customNetworks]
-  )
-
-  const selectAllNetworkTokensAsLocal = useCallback(() => {
-    const tokens = selectActiveNetworkContractTokens()
+  const allNetworkTokensAsLocal = useMemo(() => {
     return (
-      tokens?.map(token => {
+      activeNetworkContractTokens.map(token => {
         return {
           ...token,
           localId: getLocalTokenId(token),
@@ -150,60 +121,80 @@ export const useNetworks = () => {
         } as LocalTokenWithBalance
       }) ?? []
     )
-  }, [selectActiveNetworkContractTokens])
+  }, [activeNetworkContractTokens])
 
-  const selectSomeNetworks = useCallback(
+  // get token info for a contract token of the active network
+  const getTokenInfo = useCallback(
+    (symbol: string) => {
+      return activeNetworkContractTokens.find(token => token.symbol === symbol)
+    },
+    [activeNetworkContractTokens]
+  )
+
+  const getIsTestnet = useCallback(
+    (chainId: number) => {
+      const network = allNetworks[chainId]
+      return network?.isTestnet
+    },
+    [allNetworks]
+  )
+
+  const getIsCustomNetwork = useCallback(
+    (chainId: number) => {
+      return !!_customNetworks[chainId]
+    },
+    [_customNetworks]
+  )
+
+  const getSomeNetworks = useCallback(
     (chainIds: number[]) => {
-      const allNetworks = selectAllNetworks()
       return chainIds
         .map(id => allNetworks[id])
         .filter((network): network is Network => !!network)
     },
-    [selectAllNetworks]
+    [allNetworks]
   )
 
-  const selectNetwork = useCallback(
+  const getNetwork = useCallback(
     (chainId?: number) => {
       if (chainId === undefined) return
-      const allNetworks = selectAllNetworks()
       return allNetworks[chainId]
     },
-    [selectAllNetworks]
+    [allNetworks]
   )
 
   // get the list of contract tokens for the network by chainId
-  const selectNetworkContractTokens = useCallback(
+  const getNetworkContractTokens = useCallback(
     (chainId: number) => {
-      const network = selectNetwork(chainId)
+      const network = getNetwork(chainId)
       return network?.tokens ?? []
     },
-    [selectNetwork]
+    [getNetwork]
   )
 
-  const selectFromPopulatedNetwork = useCallback(
+  const getFromPopulatedNetwork = useCallback(
     (chainId?: number) => {
-      const populatedNetworks = selectNetworks()
-      if (chainId === undefined || populatedNetworks === undefined) return
-      return populatedNetworks[chainId]
+      if (chainId === undefined || networks === undefined) return
+      return networks[chainId]
     },
-    [selectNetworks]
+    [networks]
   )
 
   return {
-    selectAllNetworks,
-    selectCustomNetworks,
-    selectNetworks,
-    selectActiveNetwork,
-    selectFavoriteNetworks,
-    selectInactiveNetworks,
-    selectActiveNetworkContractTokens,
-    selectTokenInfo,
-    selectIsTestnet,
-    selectIsCustomNetwork,
-    selectAllNetworkTokensAsLocal,
-    selectSomeNetworks,
-    selectNetwork,
-    selectNetworkContractTokens,
-    selectFromPopulatedNetwork
+    allNetworks,
+    customNetworks,
+    networks,
+    activeNetwork,
+    favoriteNetworks,
+    inactiveNetworks,
+    activeNetworkContractTokens,
+    allNetworkTokensAsLocal,
+    getTokenInfo,
+    getIsTestnet,
+    getIsCustomNetwork,
+    getSomeNetworks,
+    getNetwork,
+    getNetworkContractTokens,
+    getFromPopulatedNetwork
   }
 }

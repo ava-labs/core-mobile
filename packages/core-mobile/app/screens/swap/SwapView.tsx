@@ -42,8 +42,7 @@ type NavigationProp = SwapScreenProps<
 export default function SwapView(): JSX.Element {
   const { theme } = useApplicationContext()
   const { navigate } = useNavigation<NavigationProp>()
-  const { selectActiveNetwork } = useNetworks()
-  const activeNetwork = selectActiveNetwork()
+  const { activeNetwork } = useNetworks()
   const { data: networkFee } = useNetworkFee()
   const tokensWithZeroBalance = useSelector(
     selectTokensWithZeroBalance(activeNetwork.chainId)

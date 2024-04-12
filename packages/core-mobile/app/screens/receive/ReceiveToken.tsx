@@ -17,9 +17,8 @@ type Props = {
 
 const ReceiveToken: FC<Props> = memo(props => {
   const theme = useApplicationContext().theme
-  const { selectActiveNetwork } = useNetworks()
+  const { activeNetwork } = useNetworks()
   const embedded = !!props?.embedded
-  const activeNetwork = selectActiveNetwork()
   const activeAccount = useSelector(selectActiveAccount)
   const { chainId, networkToken, chainName } = activeNetwork
   const addressC = activeAccount?.address

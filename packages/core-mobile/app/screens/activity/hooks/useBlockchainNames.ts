@@ -22,10 +22,9 @@ export function useBlockchainNames(
   sourceBlockchain: string
   targetBlockchain: string
 } {
-  const { selectActiveNetwork } = useNetworks()
+  const { activeNetwork } = useNetworks()
   const pending = isPendingBridgeTransaction(tx)
   const { avalancheAssets } = useBridgeSDK()
-  const activeNetwork = selectActiveNetwork()
 
   if (pending) {
     return {
