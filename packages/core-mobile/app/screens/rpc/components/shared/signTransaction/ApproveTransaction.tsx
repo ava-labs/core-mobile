@@ -35,7 +35,6 @@ export function ApproveTransaction({
   setShowCustomSpendLimit?: Dispatch<boolean>
   customSpendLimit: SpendLimit
 }): JSX.Element {
-  const theme = useApplicationContext().theme
   const account = useSelector(selectAccountByAddress(rest.fromAddress))
   const selectedCurrency = useSelector(selectSelectedCurrency)
 
@@ -59,6 +58,55 @@ export function ApproveTransaction({
       })
 
   return (
+    <ApproveTransactionView
+      title={account?.title}
+      toAddress={rest.toAddress}
+      url={site?.url}
+      editButton={
+        hideEdit ? null : (
+          <AvaButton.Base
+            onPress={() => {
+              setShowCustomSpendLimit?.(true)
+            }}>
+            <AvaText.TextLink>Edit</AvaText.TextLink>
+          </AvaButton.Base>
+        )
+      }
+      tokenName={tokenToBeApproved.name}
+      tokenLogoUri={tokenToBeApproved.logoUri}
+      tokenSymbol={tokenToBeApproved.symbol}
+      tokenValue={tokenValue}
+      fiatValue={fiatValue}
+    />
+  )
+}
+
+type ApproveTransactionViewProps = {
+  title?: string
+  toAddress?: string
+  url?: string
+  editButton: JSX.Element | null
+  tokenName: string
+  tokenLogoUri?: string
+  tokenSymbol: string
+  tokenValue: string
+  fiatValue: string
+}
+
+export const ApproveTransactionView = ({
+  title,
+  toAddress,
+  url,
+  editButton,
+  tokenName,
+  tokenLogoUri,
+  tokenSymbol,
+  tokenValue,
+  fiatValue
+}: ApproveTransactionViewProps): JSX.Element => {
+  const theme = useApplicationContext().theme
+
+  return (
     <>
       <View
         style={[
@@ -70,34 +118,29 @@ export function ApproveTransaction({
         <Row style={{ justifyContent: 'space-between' }}>
           <AvaText.Body2>Account</AvaText.Body2>
           <AvaText.ButtonMedium color={theme.colorText1}>
-            {account?.title}
+            {title}
           </AvaText.ButtonMedium>
         </Row>
         <Space y={8} />
-        {rest.toAddress && (
+        {toAddress && (
           <Row style={{ justifyContent: 'space-between' }}>
             <AvaText.Body2>Contract</AvaText.Body2>
-            <TokenAddress address={rest.toAddress} />
+            <TokenAddress address={toAddress} />
           </Row>
         )}
         <Space y={8} />
         <Row style={{ justifyContent: 'space-between' }}>
           <AvaText.Body2>Website</AvaText.Body2>
-          <AvaText.ButtonMedium color={theme.colorText1}>
-            {site?.url}
+          <AvaText.ButtonMedium
+            textStyle={{ flexShrink: 1, marginLeft: 16 }}
+            color={theme.colorText1}>
+            {url}
           </AvaText.ButtonMedium>
         </Row>
       </View>
       <Row style={{ justifyContent: 'space-between' }}>
         <AvaText.Body2>Spend Limit</AvaText.Body2>
-        {hideEdit || (
-          <AvaButton.Base
-            onPress={() => {
-              setShowCustomSpendLimit?.(true)
-            }}>
-            <AvaText.TextLink>Edit</AvaText.TextLink>
-          </AvaButton.Base>
-        )}
+        {editButton}
       </Row>
       <View
         style={[
@@ -111,26 +154,20 @@ export function ApproveTransaction({
         ]}>
         <Row style={{ justifyContent: 'space-between', alignItems: 'center' }}>
           <Row style={{ alignItems: 'center' }}>
-            {tokenToBeApproved && (
-              <Avatar.Custom
-                name={tokenToBeApproved.name}
-                logoUri={tokenToBeApproved?.logoUri}
-              />
-            )}
+            <Avatar.Custom name={tokenName} logoUri={tokenLogoUri} />
             <Space x={10} />
-            <AvaText.Body1>{tokenToBeApproved?.symbol}</AvaText.Body1>
+            <AvaText.Body1>{tokenSymbol}</AvaText.Body1>
           </Row>
-          {customSpendLimit && (
-            <View
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'flex-end'
-              }}>
-              <AvaText.Body1>{tokenValue}</AvaText.Body1>
-              <AvaText.Body2>{fiatValue}</AvaText.Body2>
-            </View>
-          )}
+          <View
+            style={{
+              flexDirection: 'column',
+              alignItems: 'flex-end',
+              marginLeft: 16,
+              flexShrink: 1
+            }}>
+            <AvaText.Body1>{tokenValue}</AvaText.Body1>
+            <AvaText.Body2>{fiatValue}</AvaText.Body2>
+          </View>
         </Row>
       </View>
     </>
