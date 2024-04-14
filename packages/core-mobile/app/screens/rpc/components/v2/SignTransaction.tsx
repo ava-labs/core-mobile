@@ -30,17 +30,18 @@ import { WalletScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import { useSelector } from 'react-redux'
-import { selectRequestStatus } from 'store/walletConnectV2'
+import { RpcProvider, selectRequestStatus } from 'store/rpc'
 import { useDappConnectionV2 } from 'hooks/useDappConnectionV2'
 import { selectNetwork } from 'store/network'
 import { NetworkLogo } from 'screens/network/NetworkLogo'
-import { isAddressApproved } from 'store/walletConnectV2/handlers/eth_sign/utils/isAddressApproved'
 import { hexToBN } from '@avalabs/utils-sdk'
 import { Tooltip } from 'components/Tooltip'
 import { selectIsSeedlessSigningBlocked } from 'store/posthog'
 import FeatureBlocked from 'screens/posthog/FeatureBlocked'
 import { NetworkTokenUnit } from 'types'
 import { Eip1559Fees } from 'utils/Utils'
+import { isAddressApproved } from 'store/rpc/handlers/eth_sign/utils/isAddressApproved'
+import WalletConnectService from 'services/walletconnectv2/WalletConnectService'
 import RpcRequestBottomSheet from '../shared/RpcRequestBottomSheet'
 
 const defaultErrMessage = 'Transaction failed'
@@ -124,23 +125,35 @@ const SignTransaction = (): JSX.Element => {
     }
   }, [goBack, requestStatus, txHash])
 
-  // TODO CP-4894 move this logic to eth_sign handler once we have moved useExplainTransactionV2 hook logic to redux
+  // TODO #1: moved useExplainTransactionV2 hook logic to redux
+  // TODO #2: move isAddressApproved validation logic to eth_sendTransaction handler
   useEffect(() => {
+    if (request.provider !== RpcProvider.WALLET_CONNECT) return
+
+    // for wallet connect, we need to make sure the requested address is authorized
+    const session = WalletConnectService.getSession(request.data.topic)
+
+    if (!session) {
+      rejectAndClose('Session not found')
+      return
+    }
+
     const fromAddress = transaction?.txParams?.from
 
     if (fromAddress) {
       const requestedAddress = `${request.data.params.chainId}:${transaction.txParams.from}`
 
-      if (!isAddressApproved(requestedAddress, request.session.namespaces)) {
+      if (!isAddressApproved(requestedAddress, session.namespaces)) {
         rejectAndClose('Requested address is not authorized')
       }
     }
   }, [
     chainId,
-    request.session.namespaces,
     rejectAndClose,
     request.data.params.chainId,
-    transaction?.txParams?.from
+    transaction?.txParams.from,
+    request.provider,
+    request.data.topic
   ])
 
   const explorerUrl =
