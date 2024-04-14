@@ -27,27 +27,26 @@ const callbacks = (
       dispatch(
         onRequest({
           provider: RpcProvider.WALLET_CONNECT,
-          request: { method: RpcMethod.WC_SESSION_REQUEST, data }
+          method: RpcMethod.WC_SESSION_REQUEST,
+          data
         })
       ),
     onSessionRequest: (data, peerMeta) =>
       dispatch(
         onRequest({
           provider: RpcProvider.WALLET_CONNECT,
-          request: {
-            method: data.params.request.method as RpcMethod,
-            data: {
-              ...data,
-              params: {
-                ...data.params,
-                request: {
-                  ...data.params.request,
-                  method: data.params.request.method as RpcMethod
-                }
+          method: data.params.request.method as RpcMethod,
+          data: {
+            ...data,
+            params: {
+              ...data.params,
+              request: {
+                ...data.params.request,
+                method: data.params.request.method as RpcMethod
               }
-            },
-            peerMeta
-          }
+            }
+          },
+          peerMeta
         })
       ),
     onDisconnect: data => dispatch(onDisconnect(data))

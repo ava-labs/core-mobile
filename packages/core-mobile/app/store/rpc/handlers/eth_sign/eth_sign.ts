@@ -40,8 +40,7 @@ class EthSignHandler implements RpcRequestHandler<EthSignRpcRequest> {
 
   handle = async (
     request: EthSignRpcRequest,
-    listenerApi: AppListenerEffectAPI,
-    provider: RpcProvider
+    listenerApi: AppListenerEffectAPI
   ): HandleResponse => {
     const state = listenerApi.getState()
     const { method, params } = request.data.params.request
@@ -60,7 +59,7 @@ class EthSignHandler implements RpcRequestHandler<EthSignRpcRequest> {
 
     // when provider is wallet connect we need to check
     // if the requested address is authorized
-    if (provider === RpcProvider.WALLET_CONNECT) {
+    if (request.provider === RpcProvider.WALLET_CONNECT) {
       const session = WalletConnectService.getSession(request.data.topic)
 
       if (!session) {

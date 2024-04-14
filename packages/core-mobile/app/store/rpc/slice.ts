@@ -2,7 +2,7 @@ import { createAction, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RpcState } from 'store/rpc'
 import { RootState } from 'store/index'
 import { TransactionResponse } from 'ethers'
-import { RpcProvider, Request, RequestStatus, RpcError } from './types'
+import { Request, RequestStatus, RpcError } from './types'
 
 export const reducerName = 'rpc'
 
@@ -38,10 +38,7 @@ export const selectRequestStatus =
   }
 
 // actions
-export const onRequest = createAction<{
-  request: Request
-  provider: RpcProvider
-}>(`${reducerName}/onRequest`)
+export const onRequest = createAction<Request>(`${reducerName}/onRequest`)
 
 export const onRequestApproved = createAction<{
   request: Request

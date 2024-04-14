@@ -28,11 +28,11 @@ export const processRequest = async (
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
   const { take, condition } = listenerApi
-  const { provider, request } = addRequestAction.payload
+  const request = addRequestAction.payload
   const method = request.method
   const requestId = request.data.id
   const handler = handlerMap.get(method)
-  const rpcProvider = providerMap.get(provider)
+  const rpcProvider = providerMap.get(request.provider)
   const state = listenerApi.getState()
 
   if (selectWalletState(state) === WalletState.INACTIVE) {
@@ -43,7 +43,7 @@ export const processRequest = async (
   Logger.info('processing request', request)
 
   if (!rpcProvider) {
-    Logger.error(`RPC Provider ${provider} not supported`)
+    Logger.error(`RPC Provider ${request.provider} not supported`)
 
     return
   }
@@ -79,7 +79,7 @@ export const processRequest = async (
     }
   }
 
-  const handleResponse = await handler.handle(request, listenerApi, provider)
+  const handleResponse = await handler.handle(request, listenerApi)
 
   if (!handleResponse.success) {
     rpcProvider.onError({

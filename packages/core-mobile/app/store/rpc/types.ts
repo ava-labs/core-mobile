@@ -23,6 +23,7 @@ export type RpcRequest<Method extends RpcMethod> = {
   }
   method: Method
   peerMeta: PeerMeta
+  provider: RpcProvider
 }
 
 export type Request = RpcRequest<RpcMethod> | WCSessionProposal
