@@ -1,6 +1,6 @@
 import { AppListenerEffectAPI } from 'store'
 import { Result } from 'types/result'
-import { Request, RpcMethod, RpcError } from '../types'
+import { Request, RpcMethod, RpcError, RpcProvider } from '../types'
 
 export type HandleResponse<Response = unknown> = Promise<
   Result<symbol | Response, RpcError>
@@ -19,7 +19,8 @@ export interface RpcRequestHandler<
   methods: RpcMethod[]
   handle: (
     request: R,
-    listenerApi: AppListenerEffectAPI
+    listenerApi: AppListenerEffectAPI,
+    provider: RpcProvider
   ) => HandleResponse<HandleResponseType>
   approve?: (
     payload: { request: R; data: ApproveDataType },

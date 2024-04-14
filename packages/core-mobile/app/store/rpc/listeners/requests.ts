@@ -79,7 +79,7 @@ export const processRequest = async (
     }
   }
 
-  const handleResponse = await handler.handle(request, listenerApi)
+  const handleResponse = await handler.handle(request, listenerApi, provider)
 
   if (!handleResponse.success) {
     rpcProvider.onError({
