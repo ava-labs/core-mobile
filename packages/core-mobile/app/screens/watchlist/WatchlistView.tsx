@@ -68,15 +68,23 @@ const WatchlistView: React.FC<Props> = ({ searchText }) => {
   })
   const showLoader = isSearchingTokens || isFetchingTokens
   const tokensToDisplay = useMemo(() => {
-    return searchResults ?? tokens
-  }, [searchResults, tokens])
+    return searchResults?.tokens ?? tokens
+  }, [searchResults?.tokens, tokens])
+
+  const pricesToDisplay = useMemo(() => {
+    return searchResults?.prices ?? prices
+  }, [searchResults?.prices, prices])
+
+  const chartsToDisplay = useMemo(() => {
+    return searchResults?.charts ?? charts
+  }, [searchResults?.charts, charts])
 
   const sortedTokens = useMemo(() => {
-    if (Object.keys(prices).length === 0) return tokensToDisplay
+    if (Object.keys(pricesToDisplay).length === 0) return tokensToDisplay
 
     return tokensToDisplay.slice().sort((a, b) => {
-      const priceB = prices[b.id] ?? defaultPrice
-      const priceA = prices[a.id] ?? defaultPrice
+      const priceB = pricesToDisplay[b.id] ?? defaultPrice
+      const priceA = pricesToDisplay[a.id] ?? defaultPrice
 
       switch (filterBy) {
         case WatchlistFilter.MARKET_CAP:
@@ -116,8 +124,8 @@ const WatchlistView: React.FC<Props> = ({ searchText }) => {
         <>
           <WatchList
             tokens={sortedTokens}
-            charts={charts}
-            prices={prices}
+            charts={chartsToDisplay}
+            prices={pricesToDisplay}
             filterBy={filterBy}
             isSearching={isSearching}
             testID="watchlist_item"
