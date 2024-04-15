@@ -1,4 +1,4 @@
-import { walletConnectReducer as reducer, updateRequestStatus } from './slice'
+import { rpcReducer as reducer, updateRequestStatus } from './slice'
 import { ConfirmationReceiptStatus } from './types'
 
 const initialState = {

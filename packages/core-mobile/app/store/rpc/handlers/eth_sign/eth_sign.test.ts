@@ -1,5 +1,5 @@
 import { ethErrors } from 'eth-rpc-errors'
-import { RpcMethod } from 'store/rpc'
+import { RpcMethod, RpcProvider, RpcRequest } from 'store/rpc/types'
 import mockSession from 'tests/fixtures/walletConnect/session.json'
 import mockAccounts from 'tests/fixtures/accounts.json'
 import mockNetworks from 'tests/fixtures/networks.json'
@@ -8,11 +8,12 @@ import WalletService from 'services/wallet/WalletService'
 import AppNavigation from 'navigation/AppNavigation'
 import * as Navigation from 'utils/Navigation'
 import * as Sentry from '@sentry/react-native'
+import WalletConnectService from 'services/walletconnectv2/WalletConnectService'
 import { ethSignHandler as handler } from './eth_sign'
 
 const mockSelectAccountByAddress = jest.fn()
-jest.mock('store/account', () => {
-  const actual = jest.requireActual('store/account')
+jest.mock('store/account/slice', () => {
+  const actual = jest.requireActual('store/account/slice')
   return {
     ...actual,
     selectAccountByAddress: () => mockSelectAccountByAddress
@@ -45,12 +46,23 @@ const mockListenerApi = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 } as any
 
+const mockWCGetSession = jest.fn()
+jest
+  .spyOn(WalletConnectService, 'getSession')
+  .mockImplementation(mockWCGetSession)
+
+mockWCGetSession.mockImplementation(() => mockSession)
+
 const approvedAddress = '0xcA0E993876152ccA6053eeDFC753092c8cE712D0'
 
-const testMethod = 'eth_signTypedData_v4' as RpcMethod.SIGN_TYPED_DATA_V4
+const testMethod = RpcMethod.SIGN_TYPED_DATA_V4
 
-const createRequest = (params: unknown) => {
+const createRequest = (
+  params: unknown,
+  provider: RpcProvider = RpcProvider.WALLET_CONNECT
+): RpcRequest<typeof testMethod> => {
   return {
+    provider,
     method: testMethod,
     data: {
       id: 1677366383831712,
@@ -63,7 +75,12 @@ const createRequest = (params: unknown) => {
         chainId: 'eip155:43114'
       }
     },
-    session: mockSession
+    peerMeta: {
+      description: '',
+      url: 'http://127.0.0.1:5173',
+      icons: [],
+      name: 'Playground'
+    }
   }
 }
 
@@ -80,88 +97,212 @@ describe('eth_sign handler', () => {
   })
 
   describe('handle', () => {
-    it('should return error when params are invalid', async () => {
-      const testRequest = createRequest([])
+    describe('wallet connect request', () => {
+      it('should return error when params are invalid', async () => {
+        const testRequest = createRequest([])
 
-      const result = await handler.handle(testRequest, mockListenerApi)
+        const result = await handler.handle(testRequest, mockListenerApi)
 
-      expect(result).toEqual({
-        success: false,
-        error: ethErrors.rpc.invalidParams('Invalid message params')
+        expect(result).toEqual({
+          success: false,
+          error: ethErrors.rpc.invalidParams('Invalid message params')
+        })
       })
-    })
 
-    it('should return error when requested address is not approved', async () => {
-      const testParams = [
-        '0xDA0E993876152ccA6053eeDFC753092c8cE712D0',
-        typedData
-      ]
+      it('should return error when session is not found', async () => {
+        mockWCGetSession.mockImplementationOnce(() => undefined)
 
-      const testRequest = createRequest(testParams)
+        const testParams = [
+          '0xDA0E993876152ccA6053eeDFC753092c8cE712D0',
+          typedData
+        ]
 
-      const result = await handler.handle(testRequest, mockListenerApi)
+        const testRequest = createRequest(testParams)
 
-      expect(result).toEqual({
-        success: false,
-        error: ethErrors.provider.unauthorized(
-          'Requested address is not authorized'
-        )
+        const result = await handler.handle(testRequest, mockListenerApi)
+
+        expect(result).toEqual({
+          success: false,
+          error: ethErrors.rpc.internal('Session not found')
+        })
       })
-    })
 
-    it('should return error when requested network does not exist', async () => {
-      mockSelectNetwork.mockImplementationOnce(() => undefined)
+      it('should return error when requested address is not approved', async () => {
+        const testParams = [
+          '0xDA0E993876152ccA6053eeDFC753092c8cE712D0',
+          typedData
+        ]
 
-      const testParams = [approvedAddress, typedData]
+        const testRequest = createRequest(testParams)
 
-      const testRequest = createRequest(testParams)
+        const result = await handler.handle(testRequest, mockListenerApi)
 
-      const result = await handler.handle(testRequest, mockListenerApi)
-
-      expect(result).toEqual({
-        success: false,
-        error: ethErrors.rpc.resourceNotFound('Network does not exist')
+        expect(result).toEqual({
+          success: false,
+          error: ethErrors.provider.unauthorized(
+            'Requested address is not authorized'
+          )
+        })
       })
-    })
 
-    it('should return error when requested account does not exist', async () => {
-      mockSelectAccountByAddress.mockImplementationOnce(() => undefined)
+      it('should return error when requested network does not exist', async () => {
+        mockSelectNetwork.mockImplementationOnce(() => undefined)
 
-      const testParams = [approvedAddress, typedData]
+        const testParams = [approvedAddress, typedData]
 
-      const testRequest = createRequest(testParams)
+        const testRequest = createRequest(testParams)
 
-      const result = await handler.handle(testRequest, mockListenerApi)
+        const result = await handler.handle(testRequest, mockListenerApi)
 
-      expect(result).toEqual({
-        success: false,
-        error: ethErrors.rpc.resourceNotFound('Account does not exist')
+        expect(result).toEqual({
+          success: false,
+          error: ethErrors.rpc.resourceNotFound('Network does not exist')
+        })
       })
-    })
 
-    it('should display prompt and return success', async () => {
-      mockSelectAccountByAddress.mockImplementationOnce(() => mockAccounts[1])
+      it('should return error when requested account does not exist', async () => {
+        mockSelectAccountByAddress.mockImplementationOnce(() => undefined)
 
-      const testParams = [approvedAddress, typedData]
+        const testParams = [approvedAddress, typedData]
 
-      const testRequest = createRequest(testParams)
+        const testRequest = createRequest(testParams)
 
-      const result = await handler.handle(testRequest, mockListenerApi)
+        const result = await handler.handle(testRequest, mockListenerApi)
 
-      expect(mockNavigate).toHaveBeenCalledWith({
-        name: AppNavigation.Root.Wallet,
-        params: {
-          screen: AppNavigation.Modal.SignMessageV2,
+        expect(result).toEqual({
+          success: false,
+          error: ethErrors.rpc.resourceNotFound('Account does not exist')
+        })
+      })
+
+      it('should display prompt and return success', async () => {
+        mockSelectAccountByAddress.mockImplementationOnce(() => mockAccounts[1])
+
+        const testParams = [approvedAddress, typedData]
+
+        const testRequest = createRequest(testParams)
+
+        const result = await handler.handle(testRequest, mockListenerApi)
+
+        expect(mockNavigate).toHaveBeenCalledWith({
+          name: AppNavigation.Root.Wallet,
           params: {
-            request: testRequest,
-            data: typedData,
-            network: mockNetworks[43114],
-            account: mockAccounts[1]
+            screen: AppNavigation.Modal.SignMessageV2,
+            params: {
+              request: testRequest,
+              data: typedData,
+              network: mockNetworks[43114],
+              account: mockAccounts[1]
+            }
           }
-        }
+        })
+
+        expect(result).toEqual({ success: true, value: expect.any(Symbol) })
+      })
+    })
+
+    describe('non wallet connect request', () => {
+      it('should return error when params are invalid', async () => {
+        const testRequest = createRequest([], RpcProvider.CORE_MOBILE)
+
+        const result = await handler.handle(testRequest, mockListenerApi)
+
+        expect(result).toEqual({
+          success: false,
+          error: ethErrors.rpc.invalidParams('Invalid message params')
+        })
       })
 
-      expect(result).toEqual({ success: true, value: expect.any(Symbol) })
+      it('should not return error when session is not found', async () => {
+        mockWCGetSession.mockImplementationOnce(() => undefined)
+
+        const testParams = [
+          '0xDA0E993876152ccA6053eeDFC753092c8cE712D0',
+          typedData
+        ]
+
+        const testRequest = createRequest(testParams, RpcProvider.CORE_MOBILE)
+
+        const result = await handler.handle(testRequest, mockListenerApi)
+
+        expect(result).not.toEqual({
+          success: false,
+          error: ethErrors.rpc.internal('Session not found')
+        })
+      })
+
+      it('should not return error when requested address is not approved', async () => {
+        const testParams = [
+          '0xDA0E993876152ccA6053eeDFC753092c8cE712D0',
+          typedData
+        ]
+
+        const testRequest = createRequest(testParams, RpcProvider.CORE_MOBILE)
+
+        const result = await handler.handle(testRequest, mockListenerApi)
+
+        expect(result).not.toEqual({
+          success: false,
+          error: ethErrors.provider.unauthorized(
+            'Requested address is not authorized'
+          )
+        })
+      })
+
+      it('should return error when requested network does not exist', async () => {
+        mockSelectNetwork.mockImplementationOnce(() => undefined)
+
+        const testParams = [approvedAddress, typedData]
+
+        const testRequest = createRequest(testParams, RpcProvider.CORE_MOBILE)
+
+        const result = await handler.handle(testRequest, mockListenerApi)
+
+        expect(result).toEqual({
+          success: false,
+          error: ethErrors.rpc.resourceNotFound('Network does not exist')
+        })
+      })
+
+      it('should return error when requested account does not exist', async () => {
+        mockSelectAccountByAddress.mockImplementationOnce(() => undefined)
+
+        const testParams = [approvedAddress, typedData]
+
+        const testRequest = createRequest(testParams, RpcProvider.CORE_MOBILE)
+
+        const result = await handler.handle(testRequest, mockListenerApi)
+
+        expect(result).toEqual({
+          success: false,
+          error: ethErrors.rpc.resourceNotFound('Account does not exist')
+        })
+      })
+
+      it('should display prompt and return success', async () => {
+        mockSelectAccountByAddress.mockImplementationOnce(() => mockAccounts[1])
+
+        const testParams = [approvedAddress, typedData]
+
+        const testRequest = createRequest(testParams, RpcProvider.CORE_MOBILE)
+
+        const result = await handler.handle(testRequest, mockListenerApi)
+
+        expect(mockNavigate).toHaveBeenCalledWith({
+          name: AppNavigation.Root.Wallet,
+          params: {
+            screen: AppNavigation.Modal.SignMessageV2,
+            params: {
+              request: testRequest,
+              data: typedData,
+              network: mockNetworks[43114],
+              account: mockAccounts[1]
+            }
+          }
+        })
+
+        expect(result).toEqual({ success: true, value: expect.any(Symbol) })
+      })
     })
   })
 

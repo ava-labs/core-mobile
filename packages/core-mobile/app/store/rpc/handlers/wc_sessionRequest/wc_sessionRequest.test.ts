@@ -1,9 +1,10 @@
 import { ethErrors } from 'eth-rpc-errors'
-import { RpcMethod } from 'store/rpc/types'
+import { RpcMethod, RpcProvider } from 'store/rpc/types'
 import mockNetworks from 'tests/fixtures/networks.json'
 import AppNavigation from 'navigation/AppNavigation'
 import * as Navigation from 'utils/Navigation'
 import { ProposalTypes } from '@walletconnect/types'
+import { WCSessionProposal } from 'store/walletConnectV2/types'
 import { wcSessionRequestHandler as handler } from './wc_sessionRequest'
 
 jest.mock('store/network', () => {
@@ -40,8 +41,9 @@ const validRequiredNamespaces = {
 const createRequest = (
   requiredNamespaces: ProposalTypes.RequiredNamespaces,
   dappUrl = 'https://core.app'
-) => {
+): WCSessionProposal => {
   return {
+    provider: RpcProvider.WALLET_CONNECT,
     method: testMethod,
     data: {
       id: 1678303290160528,
@@ -92,7 +94,7 @@ const testApproveInvalidData = async (data: unknown) => {
 
 describe('session_request handler', () => {
   it('should contain correct methods', () => {
-    expect(handler.methods).toEqual(['session_request'])
+    expect(handler.methods).toEqual(['wc_sessionRequest'])
   })
 
   describe('handle', () => {

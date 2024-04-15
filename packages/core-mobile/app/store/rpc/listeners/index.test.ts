@@ -3,10 +3,8 @@ import { noop } from 'lodash'
 import WalletConnectService from 'services/walletconnectv2/WalletConnectService'
 import { AppStartListening } from 'store/middleware/listener'
 import * as Snackbar from 'components/Snackbar'
-import mockSessions from 'tests/fixtures/walletConnect/sessions'
 import mockSession from 'tests/fixtures/walletConnect/session.json'
 import mockNetworks from 'tests/fixtures/networks.json'
-import { WalletState } from 'store/app/types'
 import * as appSlice from 'store/app/slice'
 import { ethErrors } from 'eth-rpc-errors'
 import { typedData } from 'tests/fixtures/rpc/typedData'
@@ -15,24 +13,17 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import {
   rpcReducer,
   reducerName,
-  newSession,
-  killSessions,
-  onDisconnect,
   onRequest,
   onRequestApproved,
   onRequestRejected
 } from '../slice'
-import { Request, RpcMethod } from '../types'
+import { Request, RpcMethod, RpcProvider } from '../types'
 import handlerMap from '../handlers'
 import { DEFERRED_RESULT } from '../handlers/types'
-import { addWCListeners } from './index'
+import { addRpcListeners } from './index'
 
 // mocks
 const mockListenerApi = expect.any(Object)
-
-jest.mock('react-native/Libraries/Interaction/InteractionManager', () => ({
-  runAfterInteractions: (callback: () => void) => callback()
-}))
 
 const mockHandle = jest.fn()
 const mockApprove = jest.fn()
@@ -43,22 +34,6 @@ const mockHandler = {
 const mockHandlerMapGet = jest.fn()
 jest.spyOn(handlerMap, 'get').mockImplementation(mockHandlerMapGet)
 mockHandlerMapGet.mockImplementation(() => mockHandler)
-
-const mockWCPair = jest.fn()
-jest.spyOn(WalletConnectService, 'pair').mockImplementation(mockWCPair)
-
-const mockWCInit = jest.fn()
-jest.spyOn(WalletConnectService, 'init').mockImplementation(mockWCInit)
-
-const mockWCKillAllSessions = jest.fn()
-jest
-  .spyOn(WalletConnectService, 'killAllSessions')
-  .mockImplementation(mockWCKillAllSessions)
-
-const mockWCKillSessions = jest.fn()
-jest
-  .spyOn(WalletConnectService, 'killSessions')
-  .mockImplementation(mockWCKillSessions)
 
 const mockWCRejectRequest = jest.fn()
 jest
@@ -126,7 +101,7 @@ const dispatchSpyMiddleware = () => (next: any) => (action: any) => {
 const setupTestStore = () => {
   return configureStore({
     reducer: {
-      [reducerName]: walletConnectReducer
+      [reducerName]: rpcReducer
     },
     middleware: gDM =>
       gDM({
@@ -139,7 +114,7 @@ const setupTestStore = () => {
 
 let store: ReturnType<typeof setupTestStore>
 
-describe('walletConnect - listeners', () => {
+describe('rpc - listeners', () => {
   beforeEach(() => {
     mockSelectIsDeveloperMode.mockImplementation(() => false)
     mockApprove.mockImplementation(async () => {
@@ -154,119 +129,22 @@ describe('walletConnect - listeners', () => {
     store = setupTestStore()
 
     // add listeners
-    addWCListeners(
+    addRpcListeners(
       listenerMiddlewareInstance.startListening as AppStartListening
     )
-  })
-
-  describe('on onLogIn', () => {
-    it('should initialize wallet connect', () => {
-      store.dispatch(appSlice.onLogIn())
-
-      expect(mockWCInit).toHaveBeenCalledWith({
-        onSessionProposal: expect.any(Function),
-        onSessionRequest: expect.any(Function),
-        onDisconnect: expect.any(Function)
-      })
-    })
-  })
-
-  describe('on onRehydrationComplete', () => {
-    it('should not initialize wallet connect when wallet is not created yet', () => {
-      mockSelectWalletState.mockImplementation(() => WalletState.NONEXISTENT)
-      store.dispatch(appSlice.onRehydrationComplete())
-
-      expect(mockWCInit).not.toHaveBeenCalled()
-    })
-
-    it('should initialize wallet connect when wallet is already created and active', () => {
-      mockSelectWalletState.mockImplementationOnce(() => WalletState.ACTIVE)
-      store.dispatch(appSlice.onRehydrationComplete())
-
-      expect(mockWCInit).toHaveBeenCalledWith({
-        onSessionProposal: expect.any(Function),
-        onSessionRequest: expect.any(Function),
-        onDisconnect: expect.any(Function)
-      })
-    })
-
-    it('should initialize wallet connect when wallet is already created and inactive', () => {
-      mockSelectWalletState.mockImplementationOnce(() => WalletState.INACTIVE)
-      store.dispatch(appSlice.onRehydrationComplete())
-
-      expect(mockWCInit).toHaveBeenCalledWith({
-        onSessionProposal: expect.any(Function),
-        onSessionRequest: expect.any(Function),
-        onDisconnect: expect.any(Function)
-      })
-    })
-  })
-
-  describe('on newSession', () => {
-    it('should start a new session', () => {
-      const uri =
-        'wc:e25230f0-df35-4517-adaf-ac4bbcbe884d@1?bridge=https%3A%2F%2F6.bridge.walletconnect.org&key=8b391e780d405773a7388fb683267f71bcec289c05e8b5ff575db6da42c93d6e'
-      store.dispatch(newSession(uri))
-
-      expect(mockWCPair).toHaveBeenCalledWith(uri)
-    })
-
-    it('should show error message when failed to start a new session', () => {
-      const testError = new Error('test error')
-      mockWCPair.mockImplementationOnce(() => {
-        throw testError
-      })
-
-      const uri =
-        'wc:e25230f0-df35-4517-adaf-ac4bbcbe884d@1?bridge=https%3A%2F%2F6.bridge.walletconnect.org&key=8b391e780d405773a7388fb683267f71bcec289c05e8b5ff575db6da42c93d6e'
-      store.dispatch(newSession(uri))
-
-      expect(mockWCPair).toHaveBeenCalledWith(uri)
-      expect(mockShowSimpleToast).toHaveBeenCalledWith(
-        'Unable to pair with dapp'
-      )
-    })
-  })
-
-  describe('on onLogOut', () => {
-    it('should kill all sessions', () => {
-      store.dispatch(appSlice.onLogOut())
-
-      expect(mockWCKillAllSessions).toHaveBeenCalled()
-    })
-  })
-
-  describe('on killSessions', () => {
-    it('should kill specified sessions', () => {
-      store.dispatch(killSessions(mockSessions))
-
-      expect(mockWCKillSessions).toHaveBeenCalledWith(
-        mockSessions.map(session => session.topic)
-      )
-    })
-  })
-
-  describe('on onDisconnect', () => {
-    it('should show disconnected message', () => {
-      const peerMeta = {
-        name: 'dapp name',
-        description: 'some description',
-        url: 'some url',
-        icons: ['url1', 'url2']
-      }
-
-      store.dispatch(onDisconnect(peerMeta))
-
-      expect(mockShowSimpleToast).toHaveBeenCalledWith(
-        'dapp name was disconnected'
-      )
-    })
   })
 
   describe('on onRequest', () => {
     describe('for non session proposal requests', () => {
       const createRequest = (testMethod: RpcMethod, params: unknown) => {
         return {
+          provider: RpcProvider.WALLET_CONNECT,
+          peerMeta: {
+            description: '',
+            url: 'http://127.0.0.1:5173',
+            icons: [],
+            name: 'Playground'
+          },
           method: testMethod,
           data: {
             id: 1677366383831712,
@@ -644,7 +522,8 @@ describe('walletConnect - listeners', () => {
 
     describe('for session proposal requests', () => {
       const testRequest = {
-        method: 'session_request' as RpcMethod.WC_SESSION_REQUEST,
+        provider: RpcProvider.WALLET_CONNECT,
+        method: RpcMethod.WC_SESSION_REQUEST,
         data: {
           id: 1678303290160528,
           params: {
