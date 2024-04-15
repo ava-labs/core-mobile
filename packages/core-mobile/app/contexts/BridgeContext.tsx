@@ -42,7 +42,6 @@ import TransactionToast, {
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { NetworkTokenUnit } from 'types'
 import { Eip1559Fees } from 'utils/Utils'
-import { useNetworks } from 'hooks/useNetworks'
 
 export type PartialBridgeTransaction = Pick<
   BridgeTransaction,
@@ -99,14 +98,11 @@ function LocalBridgeProvider({
 }: {
   children: ReactNode
 }): JSX.Element {
-  const { activeNetwork } = useNetworks()
   const dispatch = useDispatch()
   const bridgeConfig = useSelector(selectBridgeConfig)
   const config = bridgeConfig?.config
   const activeAccount = useSelector(selectActiveAccount)
-  const bridgeTransactions = useSelector(
-    selectBridgeTransactions(activeNetwork)
-  )
+  const bridgeTransactions = useSelector(selectBridgeTransactions)
   const { transferHandler, events } = useTransferAsset()
   const ethereumProvider = useEthereumProvider()
   const bitcoinProvider = useBitcoinProvider()

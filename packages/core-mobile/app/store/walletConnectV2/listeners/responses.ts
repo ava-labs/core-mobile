@@ -7,7 +7,7 @@ import Logger from 'utils/Logger'
 import { selectActiveAccount } from 'store/account'
 import { UPDATE_SESSION_DELAY } from 'consts/walletConnect'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { getActiveNetworkFromCache } from 'utils/networkFromCache/getActiveNetworkFromCache'
+import { selectActiveNetwork } from 'store/network'
 import { onSendRpcError, onSendRpcResult } from '../slice'
 import { isSessionProposal } from './utils'
 
@@ -57,7 +57,7 @@ export const sendRpcResult = async (
        */
       const state = getState()
       const address = selectActiveAccount(state)?.address
-      const { chainId } = getActiveNetworkFromCache(state)
+      const { chainId } = selectActiveNetwork(state)
       address &&
         setTimeout(() => {
           WalletConnectService.updateSessionWithTimeout({

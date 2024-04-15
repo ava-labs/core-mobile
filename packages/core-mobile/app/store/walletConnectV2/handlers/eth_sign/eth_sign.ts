@@ -6,7 +6,7 @@ import AppNavigation from 'navigation/AppNavigation'
 import Logger from 'utils/Logger'
 import * as Sentry from '@sentry/react-native'
 import { selectAccountByAddress } from 'store/account'
-import { getSelectNetworkFromCache } from 'utils/networkFromCache/getSelectNetworkFromCache'
+import { selectNetwork } from 'store/network'
 import { RpcMethod, SessionRequest } from '../../types'
 import {
   ApproveResponse,
@@ -66,10 +66,7 @@ class EthSignHandler implements RpcRequestHandler<EthSignRpcRequest> {
       }
     }
 
-    const network = getSelectNetworkFromCache(
-      Number(chainId.split(':')[1]),
-      state
-    )
+    const network = selectNetwork(Number(chainId.split(':')[1]))(state)
 
     if (!network)
       return {

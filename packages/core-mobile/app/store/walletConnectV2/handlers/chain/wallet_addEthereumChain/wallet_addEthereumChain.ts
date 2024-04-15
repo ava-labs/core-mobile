@@ -2,7 +2,12 @@ import { Network, NetworkVMType } from '@avalabs/chains-sdk'
 import { ethErrors } from 'eth-rpc-errors'
 import { isValidRPCUrl } from 'services/network/utils/isValidRpcUrl'
 import { AppListenerEffectAPI } from 'store'
-import { addCustomNetwork, setActive } from 'store/network'
+import {
+  addCustomNetwork,
+  selectActiveNetwork,
+  selectAllNetworks,
+  setActive
+} from 'store/network'
 import * as Navigation from 'utils/Navigation'
 import AppNavigation from 'navigation/AppNavigation'
 import Logger from 'utils/Logger'
@@ -10,8 +15,6 @@ import {
   selectIsDeveloperMode,
   toggleDeveloperMode
 } from 'store/settings/advanced'
-import { getActiveNetworkFromCache } from 'utils/networkFromCache/getActiveNetworkFromCache'
-import { getAllNetworksFromCache } from 'utils/networkFromCache/getAllNetworksFromCache'
 import { RpcMethod, SessionRequest } from '../../../types'
 import {
   ApproveResponse,
@@ -49,8 +52,8 @@ class WalletAddEthereumChainHandler
 
     const requestedChain = result.data[0]
 
-    const chains = getAllNetworksFromCache(state)
-    const currentActiveNetwork = getActiveNetworkFromCache(state)
+    const chains = selectAllNetworks(state)
+    const currentActiveNetwork = selectActiveNetwork(state)
     const requestedChainId = Number(requestedChain.chainId)
 
     const isSameNetwork = requestedChainId === currentActiveNetwork?.chainId

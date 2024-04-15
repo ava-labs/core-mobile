@@ -6,8 +6,7 @@ import { ethErrors } from 'eth-rpc-errors'
 import { EVM_IDENTIFIER } from 'consts/walletConnect'
 import { addNamespaceToChain } from 'services/walletconnectv2/utils'
 import { normalizeNamespaces } from '@walletconnect/utils'
-import { getActiveNetworkFromCache } from 'utils/networkFromCache/getActiveNetworkFromCache'
-import { getAllNetworksFromCache } from 'utils/networkFromCache/getAllNetworksFromCache'
+import { selectActiveNetwork, selectAllNetworks } from 'store/network'
 import { SessionProposal, RpcMethod, CORE_ONLY_METHODS } from '../../types'
 import {
   RpcRequestHandler,
@@ -103,7 +102,7 @@ class SessionRequestHandler implements RpcRequestHandler<SessionProposal> {
     const normalizedOptional = normalizeNamespaces(optionalNamespaces)
 
     if (Object.keys(normalizedRequired).length === 0) {
-      const { chainId } = getActiveNetworkFromCache(state)
+      const { chainId } = selectActiveNetwork(state)
       normalizedRequired = {
         [EVM_IDENTIFIER]: {
           chains: [addNamespaceToChain(chainId)],
@@ -124,7 +123,7 @@ class SessionRequestHandler implements RpcRequestHandler<SessionProposal> {
     }
 
     const eip155NameSpace = normalizedRequired[EVM_IDENTIFIER]
-    const supportedNetworks = getAllNetworksFromCache(state)
+    const supportedNetworks = selectAllNetworks(state)
 
     const requiredChains = eip155NameSpace.chains
 

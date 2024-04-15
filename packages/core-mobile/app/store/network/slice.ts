@@ -4,8 +4,12 @@ import {
   ChainId as ChainsSDKChainId,
   Network
 } from '@avalabs/chains-sdk'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { selectAllCustomTokens } from 'store/customToken'
+import { getNetworksFromCache } from 'utils/networkFromCache/getNetworksFromCache'
 import { RootState } from '../index'
 import { ChainID, Networks, NetworkState } from './types'
+import { mergeWithCustomTokens } from './utils'
 
 export const defaultNetwork = BITCOIN_NETWORK
 
@@ -70,6 +74,81 @@ export const selectFavorites = (state: RootState): number[] =>
 
 export const selectCustomNetworks = (state: RootState): Networks =>
   state.network.customNetworks
+
+export const selectActiveNetwork = (state: RootState): Network => {
+  const activeChainId = selectActiveChainId(state)
+  const networks = selectNetworks(state)
+  if (networks === undefined) return defaultNetwork
+  const network = networks[activeChainId]
+  return network === undefined ? defaultNetwork : network
+}
+
+export const selectAllNetworks = (state: RootState): Networks => {
+  const rawNetworks = getNetworksFromCache()
+  const customNetworks = selectCustomNetworks(state)
+  return { ...rawNetworks, ...customNetworks }
+}
+
+export const selectNetwork =
+  (chainId: number) =>
+  (state: RootState): Network | undefined => {
+    const allNetworks = selectAllNetworks(state)
+    return allNetworks[chainId]
+  }
+
+export const selectNetworks = (state: RootState): Networks => {
+  const isDeveloperMode = selectIsDeveloperMode(state)
+  const allCustomTokens = selectAllCustomTokens(state)
+  const customNetworks = selectCustomNetworks(state)
+  const rawNetworks = getNetworksFromCache()
+
+  const populatedNetworks = Object.keys(rawNetworks ?? {}).reduce(
+    (reducedNetworks, key) => {
+      const chainId = parseInt(key)
+      const network = rawNetworks?.[chainId]
+      if (network && network.isTestnet === isDeveloperMode) {
+        reducedNetworks[chainId] = mergeWithCustomTokens(
+          network,
+          allCustomTokens
+        )
+      }
+      return reducedNetworks
+    },
+    {} as Record<number, Network>
+  )
+
+  const populatedCustomNetworks = Object.keys(customNetworks).reduce(
+    (reducedNetworks, key) => {
+      const chainId = parseInt(key)
+      const network = customNetworks[chainId]
+
+      if (network && network.isTestnet === isDeveloperMode) {
+        reducedNetworks[chainId] = mergeWithCustomTokens(
+          network,
+          allCustomTokens
+        )
+      }
+      return reducedNetworks
+    },
+    {} as Record<number, Network>
+  )
+  return { ...populatedNetworks, ...populatedCustomNetworks }
+}
+
+export const selectFavoriteNetworks = (state: RootState): Network[] => {
+  const favorites = selectFavorites(state)
+  const isDeveloperMode = selectIsDeveloperMode(state)
+  const networks = getNetworksFromCache()
+
+  if (networks === undefined) return []
+  return favorites.reduce((acc, chainId) => {
+    const network = networks[chainId]
+    if (network && network.isTestnet === isDeveloperMode) {
+      acc.push(network)
+    }
+    return acc
+  }, [] as Network[])
+}
 
 export const setNetworks = createAction(`${reducerName}/setNetworks`)
 

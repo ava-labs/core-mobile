@@ -8,7 +8,7 @@ import {
 import Logger from 'utils/Logger'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { onAppUnlocked, selectWalletState, WalletState } from 'store/app'
-import { getSelectNetworkFromCache } from 'utils/networkFromCache/getSelectNetworkFromCache'
+import { selectNetwork } from 'store/network'
 import {
   onRequest,
   onRequestApproved,
@@ -149,7 +149,7 @@ export const validateRequest = (
 
   // validate chain against the current developer mode
   const chainId = request.data.params.chainId.split(':')[1] ?? ''
-  const network = getSelectNetworkFromCache(Number(chainId), state)
+  const network = selectNetwork(Number(chainId))(state)
   const isTestnet = Boolean(network?.isTestnet)
 
   if (isTestnet !== isDeveloperMode) {

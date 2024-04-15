@@ -13,7 +13,11 @@ import {
 import { onAppLocked, onAppUnlocked, onLogOut } from 'store/app'
 import { addCustomToken } from 'store/customToken'
 import { AppStartListening } from 'store/middleware/listener'
-import { setNetworks } from 'store/network'
+import {
+  selectActiveNetwork,
+  setNetworks,
+  selectFavoriteNetworks
+} from 'store/network'
 import {
   selectSelectedCurrency,
   setSelectedCurrency
@@ -21,8 +25,6 @@ import {
 import Logger from 'utils/Logger'
 import { getLocalTokenId } from 'store/balance/utils'
 import SentryWrapper from 'services/sentry/SentryWrapper'
-import { getActiveNetworkFromCache } from 'utils/networkFromCache/getActiveNetworkFromCache'
-import { getFavoriteNetworksFromCache } from 'utils/networkFromCache/getFavoriteNetworksFromCache'
 import {
   fetchBalanceForAccount,
   getKey,
@@ -56,7 +58,7 @@ const onBalanceUpdate = async (
   fetchActiveOnly: boolean
 ): Promise<void> => {
   const state = listenerApi.getState()
-  const activeNetwork = getActiveNetworkFromCache(state)
+  const activeNetwork = selectActiveNetwork(state)
 
   let networksToFetch: Network[]
   const activeAccount = selectActiveAccount(state)
@@ -65,7 +67,7 @@ const onBalanceUpdate = async (
   if (fetchActiveOnly) {
     networksToFetch = [activeNetwork]
   } else {
-    networksToFetch = getFavoriteNetworksFromCache(state)
+    networksToFetch = selectFavoriteNetworks(state)
     // Just in case the active network has not been favorited
     if (!networksToFetch.map(n => n.chainId).includes(activeNetwork.chainId)) {
       networksToFetch.push(activeNetwork)
@@ -205,12 +207,12 @@ const handleFetchBalanceForAccount = async (
   accountIndex: number
 ): Promise<void> => {
   const state = listenerApi.getState()
-  const activeNetwork = getActiveNetworkFromCache(state)
+  const activeNetwork = selectActiveNetwork(state)
 
   const accounts = selectAccounts(state)
   const accountToFetchFor = accounts[accountIndex]
   const accountsToFetch = accountToFetchFor ? [accountToFetchFor] : []
-  const networksToFetch = getFavoriteNetworksFromCache(state)
+  const networksToFetch = selectFavoriteNetworks(state)
   // Just in case the active network has not been favorited
   if (!networksToFetch.map(n => n.chainId).includes(activeNetwork.chainId)) {
     networksToFetch.push(activeNetwork)

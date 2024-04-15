@@ -12,7 +12,7 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { Blockchain } from '@avalabs/bridge-sdk'
 import { VsCurrencyType } from '@avalabs/coingecko-sdk'
 import { selectSelectedCurrency } from 'store/settings/currency'
-import { getSelectNetworksFromCache } from 'utils/networkFromCache/getSelectNetworksFromCache'
+import { selectNetworks } from 'store/network'
 import { RpcMethod, SessionRequest } from '../../types'
 import {
   ApproveResponse,
@@ -73,7 +73,7 @@ class AvalancheBridgeAssetHandler
     const state = listenerApi.getState()
     const isDeveloperMode = selectIsDeveloperMode(state)
     const activeAccount = selectActiveAccount(state)
-    const allNetworks = getSelectNetworksFromCache(state)
+    const allNetworks = selectNetworks(state)
     const currency = selectSelectedCurrency(state)
     const bridgeAppConfig = selectBridgeAppConfig(state)
     const {

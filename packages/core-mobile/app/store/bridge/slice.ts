@@ -7,7 +7,7 @@ import {
   CriticalConfig
 } from '@avalabs/bridge-sdk'
 import { BridgeState, initialState } from 'store/bridge/types'
-import { Network } from '@avalabs/chains-sdk'
+import { selectActiveNetwork } from 'store/network'
 
 export const reducerName = 'bridge'
 
@@ -54,21 +54,23 @@ export const selectBridgeCriticalConfig = (
   }
 }
 
-export const selectBridgeTransactions =
-  (activeNetwork: Network) => (state: RootState) => {
-    const bridgeTransactions = selectTransactions(state)
-    return Object.values(bridgeTransactions).reduce<
-      BridgeState['bridgeTransactions']
-    >((txs, btx) => {
-      const isMainnet = !activeNetwork.isTestnet
-      // go figure
-      const bridgeTx = btx as BridgeTransaction
-      if (bridgeTx.environment === (isMainnet ? 'main' : 'test')) {
-        txs[bridgeTx.sourceTxHash] = bridgeTx
-      }
-      return txs
-    }, {})
-  }
+export const selectBridgeTransactions = (
+  state: RootState
+): { [key: string]: BridgeTransaction } => {
+  const activeNetwork = selectActiveNetwork(state)
+  const bridgeTransactions = selectTransactions(state)
+  return Object.values(bridgeTransactions).reduce<
+    BridgeState['bridgeTransactions']
+  >((txs, btx) => {
+    const isMainnet = !activeNetwork.isTestnet
+    // go figure
+    const bridgeTx = btx as BridgeTransaction
+    if (bridgeTx.environment === (isMainnet ? 'main' : 'test')) {
+      txs[bridgeTx.sourceTxHash] = bridgeTx
+    }
+    return txs
+  }, {})
+}
 
 export const { addBridgeTransaction, popBridgeTransaction, setConfig } =
   bridgeSlice.actions
