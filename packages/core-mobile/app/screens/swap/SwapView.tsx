@@ -44,9 +44,7 @@ export default function SwapView(): JSX.Element {
   const { navigate } = useNavigation<NavigationProp>()
   const { activeNetwork } = useNetworks()
   const { data: networkFee } = useNetworkFee()
-  const tokensWithZeroBalance = useSelector(
-    selectTokensWithZeroBalance(activeNetwork.chainId)
-  )
+  const tokensWithZeroBalance = useSelector(selectTokensWithZeroBalance)
   const avaxPrice = useSelector(selectAvaxPrice)
   const {
     fromToken,

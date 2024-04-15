@@ -7,7 +7,7 @@ import { isBitcoinNetwork } from 'utils/network/isBitcoinNetwork'
 
 export const useHasEnoughForGas = (): boolean => {
   const { activeNetwork } = useNetworks()
-  const tokens = useSelector(selectTokensWithBalance(activeNetwork.chainId))
+  const tokens = useSelector(selectTokensWithBalance)
   const { data: networkFee } = useNetworkFee()
 
   const [hasEnough, setHasEnough] = useState(true)

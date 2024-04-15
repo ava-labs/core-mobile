@@ -12,7 +12,6 @@ import { AssetBalance } from 'screens/bridge/utils/types'
 import { useSelector } from 'react-redux'
 import { selectTokensWithBalance } from 'store/balance'
 import { uniqBy } from 'lodash'
-import { useNetworks } from 'hooks/useNetworks'
 import { isUnifiedBridgeAsset } from '../utils/bridgeUtils'
 import { getEVMAssetBalances } from '../handlers/getEVMAssetBalances'
 import { useUnifiedBridgeAssets } from './useUnifiedBridgeAssets'
@@ -28,8 +27,7 @@ export function useAssetBalancesEVM(
   assetsWithBalances: AssetBalance[]
   loading: boolean
 } {
-  const { activeNetwork } = useNetworks()
-  const tokens = useSelector(selectTokensWithBalance(activeNetwork.chainId))
+  const tokens = useSelector(selectTokensWithBalance)
   const { avalancheAssets, ethereumAssets, currentBlockchain } = useBridgeSDK()
   const { assets: unifiedBridgeAssets } = useUnifiedBridgeAssets()
 

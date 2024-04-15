@@ -7,6 +7,7 @@ import {
 import { RootState } from 'store'
 import { selectActiveAccount } from 'store/account'
 import BN from 'bn.js'
+import { selectActiveNetwork } from 'store/network'
 import { Network } from '@avalabs/chains-sdk'
 import {
   Balance,
@@ -69,19 +70,21 @@ export const selectIsRefetchingBalances = (state: RootState): boolean =>
 
 // get the list of tokens for the active network
 // each token will have info such as: balance, price, market cap,...
-export const selectTokensWithBalance =
-  (chainId: number) =>
-  (state: RootState): LocalTokenWithBalance[] => {
-    const activeAccount = selectActiveAccount(state)
+export const selectTokensWithBalance = (
+  state: RootState
+): LocalTokenWithBalance[] => {
+  const activeNetwork = selectActiveNetwork(state)
+  const activeAccount = selectActiveAccount(state)
 
-    if (!activeAccount) return []
+  if (!activeAccount) return []
 
-    const key = getKey(chainId, activeAccount.index)
-    return state.balance.balances[key]?.tokens ?? []
-  }
+  const key = getKey(activeNetwork.chainId, activeAccount.index)
+  return state.balance.balances[key]?.tokens ?? []
+}
 
 export const selectTokensWithBalanceByNetwork =
-  (network?: Network) => (state: RootState) => {
+  (network?: Network) =>
+  (state: RootState): LocalTokenWithBalance[] => {
     const activeAccount = selectActiveAccount(state)
 
     if (!network) return []
@@ -91,12 +94,12 @@ export const selectTokensWithBalanceByNetwork =
     return state.balance.balances[key]?.tokens ?? []
   }
 
-export const selectTokensWithZeroBalance =
-  (chainId: number) =>
-  (state: RootState): LocalTokenWithBalance[] => {
-    const allTokens = selectTokensWithBalance(chainId)(state)
-    return allTokens.filter(t => t.balance.eq(BN_ZERO))
-  }
+export const selectTokensWithZeroBalance = (
+  state: RootState
+): LocalTokenWithBalance[] => {
+  const allTokens = selectTokensWithBalance(state)
+  return allTokens.filter(t => t.balance.eq(BN_ZERO))
+}
 
 export const selectAvaxPrice = (state: RootState): number => {
   const balances = Object.values(state.balance.balances)

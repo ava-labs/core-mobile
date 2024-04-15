@@ -34,7 +34,6 @@ export default function NetworkManager({ onShowInfo }: Props): JSX.Element {
   )
 
   const filteredNetworks = useMemo(() => {
-    if (networks === undefined) return []
     return Object.values(networks)
       .filter(network => !customNetworkChainIds.includes(network.chainId))
       .filter(filterBySearchText)

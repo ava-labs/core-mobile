@@ -41,16 +41,13 @@ export function useSearchableTokenList(
   refetch: () => void
   isRefetching: boolean
 } {
-  const { allNetworkTokensAsLocal: allNetworkTokens, activeNetwork } =
-    useNetworks()
+  const { allNetworkTokensAsLocal: allNetworkTokens } = useNetworks()
   const dispatch = useDispatch()
   const [searchText, setSearchText] = useState('')
   const tokenBlacklist = useSelector(selectTokenBlacklist)
   const isLoadingBalances = useSelector(selectIsLoadingBalances)
   const isRefetchingBalances = useSelector(selectIsRefetchingBalances)
-  const tokensWithBalance = useSelector(
-    selectTokensWithBalance(activeNetwork.chainId)
-  )
+  const tokensWithBalance = useSelector(selectTokensWithBalance)
 
   // 1. merge tokens with balance with the remaining
   // zero balance tokens from the active network
