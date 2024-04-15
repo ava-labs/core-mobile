@@ -13,13 +13,10 @@ import AddSVG from 'components/svg/AddSVG'
 import { useNavigation } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
 import { PortfolioScreenProps } from 'navigation/types'
-import { useDispatch, useSelector } from 'react-redux'
-import {
-  MarketToken,
-  fetchWatchlist,
-  selectWatchlistFavorites
-} from 'store/watchlist'
+import { useDispatch } from 'react-redux'
+import { MarketToken, fetchWatchlist } from 'store/watchlist'
 import { Text, useTheme } from '@avalabs/k2-mobile'
+import { useWatchlist } from 'hooks/useWatchlist'
 import PriceChangeIndicator from './PriceChangeIndicator'
 
 interface Props {
@@ -32,7 +29,7 @@ type NavigationProp = PortfolioScreenProps<
 
 const WatchlistCarousel: FC<Props> = () => {
   const { theme } = useTheme()
-  const watchlistFavorites = useSelector(selectWatchlistFavorites)
+  const { favorites: watchlistFavorites } = useWatchlist()
   const navigation = useNavigation<NavigationProp>()
   const dispatch = useDispatch()
 

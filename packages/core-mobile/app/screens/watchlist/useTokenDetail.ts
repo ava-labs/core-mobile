@@ -5,18 +5,19 @@ import { VsCurrencyType } from '@avalabs/coingecko-sdk'
 import { useDispatch, useSelector } from 'react-redux'
 import {
   selectIsWatchlistFavorite,
-  selectWatchlistPrice,
   toggleWatchListFavorite
 } from 'store/watchlist'
 import { InteractionManager } from 'react-native'
 import TokenService from 'services/token/TokenService'
 import { CoinsInfoResponse } from 'services/token/types'
+import { useWatchlist } from 'hooks/useWatchlist'
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export function useTokenDetail(coingeckoId: string) {
   const dispatch = useDispatch()
   const isFavorite = useSelector(selectIsWatchlistFavorite(coingeckoId))
-  const price = useSelector(selectWatchlistPrice(coingeckoId))
+  const { getWatchlistPrice } = useWatchlist()
+  const price = getWatchlistPrice(coingeckoId)
   const { openMoonPay, openUrl } = useInAppBrowser()
   const { selectedCurrency, currencyFormatter } =
     useApplicationContext().appHook

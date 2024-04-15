@@ -1,12 +1,9 @@
-import {
-  appendTokens,
-  MarketToken,
-  setCharts,
-  setPrices
-} from 'store/watchlist'
+import { MarketToken } from 'store/watchlist'
 import watchlistService from 'services/watchlist/WatchlistService'
 import { useEffect, useState } from 'react'
 import { useDispatch } from 'react-redux'
+import { queryClient } from 'contexts/ReactQueryProvider'
+import { ReactQueryKeys } from 'consts/reactQueryKeys'
 
 type Props = {
   isFetchingTokens: boolean
@@ -20,15 +17,16 @@ export function useTokenSearch({
   items,
   searchText,
   currency
-}: Props) {
+}: Props): {
+  isSearchingTokens: boolean
+  searchResults: MarketToken[] | undefined
+} {
   const dispatch = useDispatch()
   const [isSearchingTokens, setIsSearchingTokens] = useState(false)
-  const [searchResults, setSearchResults] = useState<MarketToken[] | undefined>(
-    undefined
-  )
+  const [searchResults, setSearchResults] = useState<MarketToken[]>()
 
   useEffect(() => {
-    async function searchAsync() {
+    async function searchAsync(): Promise<void> {
       if (isFetchingTokens) return
 
       if (searchText && searchText.length > 0) {
@@ -41,21 +39,18 @@ export function useTokenSearch({
         if (filteredItems.length === 0) {
           setIsSearchingTokens(true)
 
-          const searchResult = await watchlistService.tokenSearch(
-            searchText,
-            currency
-          )
+          const searchResult = await queryClient.fetchQuery({
+            queryKey: [
+              ReactQueryKeys.WATCHLIST_TOKEN_SEARCH,
+              currency,
+              searchText
+            ],
+            queryFn: () => watchlistService.tokenSearch(searchText, currency)
+          })
 
           if (searchResult) {
             filteredItems = searchResult.tokens
-            // save results to the list
-            dispatch(appendTokens(searchResult.tokens))
-
-            // also save prices and charts data so we can reuse them in the Favorites tab
-            dispatch(setPrices(searchResult.prices))
-            dispatch(setCharts(searchResult.charts))
           }
-
           setIsSearchingTokens(false)
         }
         setSearchResults(filteredItems)

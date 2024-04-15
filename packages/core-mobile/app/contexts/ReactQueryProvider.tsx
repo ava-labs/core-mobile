@@ -44,7 +44,10 @@ const persistOptions = {
     }: {
       queryKey: ReactQueryKeys
       state: unknown
-    }) => queryKey.includes(ReactQueryKeys.NETWORKS)
+    }) =>
+      queryKey.includes(ReactQueryKeys.NETWORKS) ||
+      queryKey.includes(ReactQueryKeys.WATCHLIST_PRICES) ||
+      queryKey.includes(ReactQueryKeys.WATCHLIST_TOKENS_AND_CHARTS)
   }
 }
 

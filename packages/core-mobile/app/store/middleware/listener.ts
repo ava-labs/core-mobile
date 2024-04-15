@@ -12,7 +12,6 @@ import { addNetworkListeners } from 'store/network/listeners'
 import { addBridgeListeners } from 'store/bridge/listeners'
 import { addBrowserListener } from 'store/browser/listener'
 import { addPosthogListeners } from 'store/posthog/listeners'
-import { addWatchlistListeners } from 'store/watchlist/listeners'
 import { addWCListeners as addWCListenersV2 } from 'store/walletConnectV2/listeners'
 import Logger from 'utils/Logger'
 import { addNotificationsListeners } from 'store/notifications/listeners/listeners'
@@ -44,8 +43,6 @@ addBridgeListeners(startListening)
 addUnifiedBridgeListeners(startListening)
 
 addPosthogListeners(startListening)
-
-addWatchlistListeners(startListening)
 
 addWCListenersV2(startListening)
 

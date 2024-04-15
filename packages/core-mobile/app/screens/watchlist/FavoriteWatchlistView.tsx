@@ -1,13 +1,7 @@
 import React, { Dispatch } from 'react'
-import {
-  selectWatchlistCharts,
-  selectWatchlistFavorites,
-  selectWatchlistPrices,
-  selectWatchlistTokens
-} from 'store/watchlist'
-import { useFocusedSelector } from 'utils/performance/useFocusedSelector'
 import { WatchListLoader } from 'screens/watchlist/components/WatchListLoader'
 import { WatchlistFilter } from 'screens/watchlist/types'
+import { useWatchlist } from 'hooks/useWatchlist'
 import WatchList from './components/WatchList'
 
 interface Props {
@@ -16,10 +10,7 @@ interface Props {
 }
 
 const FavoriteWatchlistView: React.FC<Props> = ({ onTabIndexChanged }) => {
-  const favorites = useFocusedSelector(selectWatchlistFavorites)
-  const tokens = useFocusedSelector(selectWatchlistTokens)
-  const prices = useFocusedSelector(selectWatchlistPrices)
-  const charts = useFocusedSelector(selectWatchlistCharts)
+  const { favorites, tokens, prices, charts } = useWatchlist()
 
   const isFetchingTokens = tokens.length === 0
 

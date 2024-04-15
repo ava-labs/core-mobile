@@ -17,7 +17,7 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { Button, Text, View } from '@avalabs/k2-mobile'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import PriceChangeIndicator from 'screens/watchlist/components/PriceChangeIndicator'
-import { useGetMarketToken } from 'hooks/useGetMarketToken'
+import { useWatchlist } from 'hooks/useWatchlist'
 import Separator from 'components/Separator'
 import { useNetworks } from 'hooks/useNetworks'
 
@@ -67,7 +67,7 @@ const OwnedTokenDetail: FC = () => {
     </Row>
   )
 
-  const { getMarketToken } = useGetMarketToken()
+  const { getMarketToken } = useWatchlist()
 
   const renderMarketTrend = (balance: number, symbol: string): JSX.Element => {
     const marketToken = getMarketToken(symbol)
