@@ -54,7 +54,7 @@ const BridgeAsset = (): JSX.Element => {
   const [gasLimit, setGasLimit] = useState(0)
 
   const theme = useContext(ApplicationContext).theme
-  const peerMeta = request.session.peer.metadata
+  const peerMeta = request.peerMeta
   const symbol = asset.symbol
 
   const header = 'Approve Action'

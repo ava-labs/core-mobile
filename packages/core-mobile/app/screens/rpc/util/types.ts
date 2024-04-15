@@ -2,10 +2,10 @@ import BN from 'bn.js'
 import { NetworkTokenWithBalance, TokenWithBalance } from 'store/balance'
 import { Network } from '@avalabs/chains-sdk'
 import { FindToken } from 'contracts/contractParsers/utils/useFindToken'
-import { PeerMeta } from 'services/walletconnectv2/types'
-import { TransactionParams } from 'store/walletConnectV2/handlers/eth_sendTransaction/utils'
+import { TransactionParams } from 'store/rpc/handlers/eth_sendTransaction/utils'
 import { TransactionDescription } from 'ethers'
 import { NetworkTokenUnit } from 'types'
+import { PeerMeta } from 'store/rpc/types'
 
 export interface DisplayValueParserProps {
   maxFeePerGas: NetworkTokenUnit

@@ -4,7 +4,7 @@ import { Web3Wallet, IWeb3Wallet } from '@walletconnect/web3wallet'
 import { EngineTypes } from '@walletconnect/types'
 import { getSdkError } from '@walletconnect/utils'
 import Config from 'react-native-config'
-import { RpcError } from 'store/walletConnectV2'
+import { RpcError } from 'store/rpc'
 import { assertNotUndefined } from 'utils/assertions'
 import Logger from 'utils/Logger'
 import { EVM_IDENTIFIER } from 'consts/walletConnect'
@@ -62,7 +62,8 @@ class WalletConnectService {
 
     this.client.on('session_request', requestEvent => {
       const requestSession = this.getSession(requestEvent.topic)
-      requestSession && callbacks.onSessionRequest(requestEvent, requestSession)
+      requestSession &&
+        callbacks.onSessionRequest(requestEvent, requestSession.peer.metadata)
     })
 
     this.client.on('session_delete', requestEvent => {

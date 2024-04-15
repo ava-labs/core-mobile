@@ -1,4 +1,5 @@
-import { CoreTypes, SignClientTypes, SessionTypes } from '@walletconnect/types'
+import { SignClientTypes, SessionTypes } from '@walletconnect/types'
+import { PeerMeta } from 'store/rpc/types'
 
 export const CORE_MOBILE_WALLET_ID = 'c3de833a-9cb0-4274-bb52-86e402ecfcd3'
 
@@ -14,8 +15,6 @@ export const CLIENT_METADATA = {
 
 export type Session = SessionTypes.Struct
 
-export type PeerMeta = CoreTypes.Metadata
-
 export type SessionProposalData =
   SignClientTypes.EventArguments['session_proposal']
 
@@ -24,6 +23,6 @@ export type SessionRequestData =
 
 export type WalletConnectCallbacks = {
   onSessionProposal: (data: SessionProposalData) => void
-  onSessionRequest: (data: SessionRequestData, session: Session) => void
+  onSessionRequest: (data: SessionRequestData, peerMeta: PeerMeta) => void
   onDisconnect: (data: PeerMeta) => void
 }

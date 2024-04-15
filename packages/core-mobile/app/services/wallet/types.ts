@@ -9,7 +9,7 @@ import {
 import { UnsignedTx } from '@avalabs/avalanchejs'
 import { Network, NetworkVMType } from '@avalabs/chains-sdk'
 import { Avax } from 'types/Avax'
-import { RpcMethod } from 'store/walletConnectV2/types'
+import { RpcMethod } from 'store/rpc/types'
 
 export type SignTransactionRequest =
   | TransactionRequest

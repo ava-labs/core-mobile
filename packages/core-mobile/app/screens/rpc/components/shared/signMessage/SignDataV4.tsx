@@ -5,7 +5,7 @@ import { ApplicationContext } from 'contexts/ApplicationContext'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
 import { Row } from 'components/Row'
-import { TypedData } from 'store/walletConnectV2/handlers/eth_sign/schemas/ethSignTypedData'
+import { TypedData } from 'store/rpc/handlers/eth_sign/schemas/ethSignTypedData'
 
 interface Props {
   message: TypedData

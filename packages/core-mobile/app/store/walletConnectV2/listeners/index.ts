@@ -3,15 +3,7 @@ import { onLogIn, onLogOut, onRehydrationComplete } from 'store/app'
 import { AppStartListening } from 'store/middleware/listener'
 import { setActive } from 'store/network'
 import { setActiveAccountIndex } from 'store/account'
-import {
-  killSessions,
-  newSession,
-  onDisconnect,
-  onRequest,
-  onSendRpcError,
-  onSendRpcResult,
-  waitForTransactionReceiptAsync
-} from '../slice'
+import { killSessions, newSession, onDisconnect } from '../slice'
 import {
   handleAccountChange,
   handleDisconnect,
@@ -21,14 +13,8 @@ import {
   killSomeSessions,
   startSession
 } from './sessions'
-import { processRequest } from './requests'
-import { sendRpcError, sendRpcResult } from './responses'
-import { handleWaitForTransactionReceiptAsync } from './utils'
 
 export const addWCListeners = (startListening: AppStartListening): void => {
-  /*********************
-   * SESSION LISTENERS *
-   *********************/
   startListening({
     matcher: isAnyOf(onRehydrationComplete, onLogIn),
     effect: initWalletConnect
@@ -62,35 +48,5 @@ export const addWCListeners = (startListening: AppStartListening): void => {
   startListening({
     actionCreator: setActiveAccountIndex,
     effect: handleAccountChange
-  })
-  // /**************************
-  //  * RPC REQUEST LISTENERS *
-  //  *************************/
-  startListening({
-    actionCreator: onRequest,
-    effect: processRequest
-  })
-
-  // /**************************
-  //  * RPC RESPONSE LISTENERS *
-  //  *************************/
-  startListening({
-    actionCreator: onSendRpcResult,
-    effect: sendRpcResult
-  })
-
-  startListening({
-    actionCreator: onSendRpcError,
-    effect: sendRpcError
-  })
-
-  startListening({
-    actionCreator: waitForTransactionReceiptAsync,
-    effect: async (action, listenerApi) =>
-      handleWaitForTransactionReceiptAsync(
-        listenerApi,
-        action.payload.txResponse,
-        action.payload.requestId
-      )
   })
 }

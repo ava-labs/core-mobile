@@ -22,7 +22,7 @@ const SelectAccount = () => {
     useDappConnectionV2()
 
   const theme = useApplicationContext().theme
-  const peerMeta = request.session.peer.metadata
+  const peerMeta = request.peerMeta
 
   const header = `Switch to ${account.title}?`
 

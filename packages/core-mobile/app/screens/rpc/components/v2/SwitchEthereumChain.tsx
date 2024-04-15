@@ -29,7 +29,7 @@ export const SwitchEthereumChain = () => {
     goBack()
   }, [goBack, network, onApprove, request])
 
-  const peerMeta = request.session.peer.metadata
+  const peerMeta = request.peerMeta
   const dappUrl = peerMeta.url
   const dappName = peerMeta.name
   const dappLogo = peerMeta.icons[0]

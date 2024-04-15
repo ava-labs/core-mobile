@@ -10,7 +10,7 @@ import { TokenWithBalanceERC20 } from 'store/balance'
 import { Checkbox } from 'components/Checkbox'
 import { BNInput } from 'components/BNInput'
 import BN from 'bn.js'
-import { PeerMeta } from 'services/walletconnectv2/types'
+import { PeerMeta } from 'store/rpc/types'
 
 export enum Limit {
   DEFAULT = 'DEFAULT',
@@ -42,13 +42,13 @@ const EditSpendLimit = ({
   setSpendLimit,
   site,
   requestedApprovalLimit
-}: Props) => {
+}: Props): JSX.Element => {
   const { theme } = useApplicationContext()
   const [customSpendLimit, setCustomSpendLimit] = useState<SpendLimit>({
     ...spendLimit
   })
 
-  const handleOnSave = () => {
+  const handleOnSave = (): void => {
     setSpendLimit(customSpendLimit)
     onClose()
   }

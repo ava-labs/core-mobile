@@ -24,11 +24,12 @@ import { Session } from 'services/walletconnectv2/types'
 import { useDappConnectionV2 } from 'hooks/useDappConnectionV2'
 import { useDeeplink } from 'contexts/DeeplinkContext/DeeplinkContext'
 import { DeepLinkOrigin } from 'contexts/DeeplinkContext/types'
-import { WalletConnectVersions } from 'store/walletConnectV2'
 import { SessionTypes } from '@walletconnect/types'
 import Logger from 'utils/Logger'
+import { WalletConnectVersions } from 'store/walletConnectV2/types'
 import { Dapp } from './types'
 import { DappItem } from './DappItem'
+
 interface Props {
   goBack: () => void
 }
@@ -59,7 +60,7 @@ const ConnectedDapps: FC<Props> = ({ goBack }) => {
   }))
 
   useEffect(() => {
-    const getSessions = () => {
+    const getSessions = (): void => {
       try {
         const sessions = WalletConnectService.getSessions()
         setApprovedDappsV2(sessions)
@@ -112,7 +113,7 @@ const ConnectedDapps: FC<Props> = ({ goBack }) => {
     })
   }, [getHeaderTitle, navigation])
 
-  async function handleDelete() {
+  async function handleDelete(): Promise<void> {
     const dappsV2ToRemove: Session[] = []
 
     for (const item of dappsToRemove) {
@@ -130,7 +131,7 @@ const ConnectedDapps: FC<Props> = ({ goBack }) => {
     )
   }
 
-  function handleSelect(item: Dapp) {
+  function handleSelect(item: Dapp): void {
     setDappsToRemove(current => {
       if (current.some(it => it.id === item.id)) {
         return current.filter(it => it.id !== item.id)
@@ -140,13 +141,13 @@ const ConnectedDapps: FC<Props> = ({ goBack }) => {
     })
   }
 
-  function handleAdd() {
+  function handleAdd(): void {
     navigation.navigate(AppNavigation.SecurityPrivacy.QRCode, {
       onScanned: handleConnect
     })
   }
 
-  function handleConnect(uri: string) {
+  function handleConnect(uri: string): void {
     setPendingDeepLink({
       url: uri,
       origin: DeepLinkOrigin.ORIGIN_QR_CODE
@@ -154,7 +155,7 @@ const ConnectedDapps: FC<Props> = ({ goBack }) => {
     goBack()
   }
 
-  function handleSelectAll() {
+  function handleSelectAll(): void {
     setAllSelected(currentState => {
       const newState = !currentState
       if (newState) {
@@ -166,14 +167,14 @@ const ConnectedDapps: FC<Props> = ({ goBack }) => {
     })
   }
 
-  const handleClear = async (item: Dapp) => {
+  const handleClear = async (item: Dapp): Promise<void> => {
     killSessionsV2([item.dapp])
     setApprovedDappsV2(dapps =>
       dapps.filter(dapp => dapp.topic !== item.dapp.topic)
     )
   }
 
-  const renderItem = (item: ListRenderItemInfo<Dapp>) => {
+  const renderItem = (item: ListRenderItemInfo<Dapp>): JSX.Element => {
     const selected = dappsToRemove.some(dapp => dapp.id === item.item.id)
 
     return (

@@ -1,4 +1,4 @@
-import { TransactionParams } from 'store/walletConnectV2/handlers/eth_sendTransaction/utils'
+import { TransactionParams } from 'store/rpc/handlers/eth_sendTransaction/utils'
 import { BigNumberish } from 'ethers'
 
 export async function txToCustomEvmTx(
