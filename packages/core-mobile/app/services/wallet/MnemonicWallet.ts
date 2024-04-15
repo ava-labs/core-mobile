@@ -25,7 +25,7 @@ import {
   signTypedData,
   SignTypedDataVersion
 } from '@metamask/eth-sig-util'
-import { RpcMethod } from 'store/walletConnectV2/types'
+import { RpcMethod } from 'store/rpc/types'
 import Logger from 'utils/Logger'
 import { assertNotUndefined } from 'utils/assertions'
 

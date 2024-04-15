@@ -8,7 +8,7 @@ import {
 } from 'screens/rpc/util/types'
 import { parseDisplayValues } from 'screens/rpc/util/parseDisplayValues'
 import { Network } from '@avalabs/chains-sdk'
-import { TransactionParams } from 'store/walletConnectV2/handlers/eth_sendTransaction/utils'
+import { TransactionParams } from 'store/rpc/handlers/eth_sendTransaction/utils'
 import { FindToken } from './utils/useFindToken'
 
 export interface SwapExactTokensForTokenData {

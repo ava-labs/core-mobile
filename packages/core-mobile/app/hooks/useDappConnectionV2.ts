@@ -6,9 +6,10 @@ import { Session } from 'services/walletconnectv2/types'
 import {
   onRequestApproved,
   onRequestRejected,
-  killSessions as killSessionsAction,
-  Request
-} from 'store/walletConnectV2'
+  Request,
+  RpcMethod
+} from 'store/rpc'
+import { killSessions as killSessionsAction } from 'store/walletConnectV2/slice'
 
 export const useDappConnectionV2 = (): {
   onUserApproved: (request: Request, data?: unknown) => void
@@ -19,7 +20,7 @@ export const useDappConnectionV2 = (): {
 
   const onUserApproved = useCallback(
     (request: Request, data?: unknown) => {
-      if (request.method === 'session_request') {
+      if (request.method === RpcMethod.WC_SESSION_REQUEST) {
         AnalyticsService.capture('WalletConnectedToDapp', {
           // @ts-ignore
           dAppUrl: request.data?.verifyContext?.verified?.origin ?? ''

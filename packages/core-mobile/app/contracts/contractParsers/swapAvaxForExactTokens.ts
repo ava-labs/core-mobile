@@ -9,7 +9,7 @@ import {
 } from 'screens/rpc/util/types'
 import { Network } from '@avalabs/chains-sdk'
 import BN from 'bn.js'
-import { TransactionParams } from 'store/walletConnectV2/handlers/eth_sendTransaction/utils'
+import { TransactionParams } from 'store/rpc/handlers/eth_sendTransaction/utils'
 import { FindToken } from './utils/useFindToken'
 
 export interface SwapAVAXForExactTokensData {

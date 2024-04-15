@@ -11,17 +11,18 @@ import Avatar from 'components/Avatar'
 import { useSelector } from 'react-redux'
 import { selectTokenByAddress } from 'store/balance'
 import isEmpty from 'lodash.isempty'
-import { selectActiveAccount } from 'store/account'
+import { selectAccountByAddress } from 'store/account'
 import { sharedStyles } from './styles'
 
 export function GenericTransaction({
   description,
+  fromAddress,
   toAddress,
   displayValue,
   name
-}: TransactionDisplayValues) {
+}: TransactionDisplayValues): JSX.Element {
   const theme = useApplicationContext().theme
-  const activeAccount = useSelector(selectActiveAccount)
+  const account = useSelector(selectAccountByAddress(fromAddress))
   const token = useSelector(selectTokenByAddress(description?.args?.asset))
   return (
     <>
@@ -35,7 +36,7 @@ export function GenericTransaction({
         <Row style={{ justifyContent: 'space-between' }}>
           <AvaText.Body3 color={theme.colorText1}>Account</AvaText.Body3>
           <AvaText.Body3 color={theme.colorText1}>
-            {activeAccount?.title}
+            {account?.title}
           </AvaText.Body3>
         </Row>
         <Space y={8} />

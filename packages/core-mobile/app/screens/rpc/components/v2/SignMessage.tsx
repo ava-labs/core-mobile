@@ -9,7 +9,7 @@ import Avatar from 'components/Avatar'
 import { ScrollView } from 'react-native-gesture-handler'
 import isString from 'lodash.isstring'
 import FlexSpacer from 'components/FlexSpacer'
-import { RpcMethod } from 'store/walletConnectV2'
+import { RpcMethod } from 'store/rpc'
 import { WalletScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation, useRoute } from '@react-navigation/native'
@@ -21,7 +21,7 @@ import { Row } from 'components/Row'
 import {
   oldTypedDataSchema,
   typedDataSchema
-} from 'store/walletConnectV2/handlers/eth_sign/schemas/ethSignTypedData'
+} from 'store/rpc/handlers/eth_sign/schemas/ethSignTypedData'
 import { useSelector } from 'react-redux'
 import { selectIsSeedlessSigningBlocked } from 'store/posthog'
 import FeatureBlocked from 'screens/posthog/FeatureBlocked'
@@ -56,8 +56,8 @@ const SignMessage = (): JSX.Element | null => {
     goBack()
   }, [onApprove, request, data, network, account, goBack])
 
-  const dappName = request.session.peer.metadata.name
-  const dappLogoUri = request.session.peer.metadata.icons[0]
+  const dappName = request.peerMeta.name
+  const dappLogoUri = request.peerMeta.icons[0]
 
   if (!account || !network) return null
 

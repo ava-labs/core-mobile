@@ -9,7 +9,7 @@ import { bigIntToString } from '@avalabs/utils-sdk'
 import Separator from 'components/Separator'
 import { truncateAddress } from 'utils/Utils'
 import { Avalanche } from '@avalabs/wallets-sdk'
-import { AvalancheChainStrings } from 'store/walletConnectV2/handlers/types'
+import { AvalancheChainStrings } from 'store/rpc/handlers/types'
 import { GetAssetDescriptionResponse } from '@avalabs/avalanchejs/dist/vms/common'
 import { TxFee } from './components/TxFee'
 

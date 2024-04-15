@@ -4,43 +4,43 @@ import { BottomTabScreenProps } from '@react-navigation/bottom-tabs'
 import { DrawerScreenProps as RNDrawerScreenProps } from '@react-navigation/drawer'
 import { TokenWithBalance } from 'store/balance'
 import { AdvancedStackParamList } from 'navigation/wallet/AdvancedStackScreen'
-import { AvalancheCreateContactRequest as AvalancheCreateContactRequestV2 } from 'store/walletConnectV2/handlers/contact/avalanche_createContact/avalanche_createContact'
-import { AvalancheRemoveContactRequest as AvalancheRemoveContactRequestV2 } from 'store/walletConnectV2/handlers/contact/avalanche_removeContact/avalanche_removeContact'
+import { AvalancheCreateContactRequest as AvalancheCreateContactRequestV2 } from 'store/rpc/handlers/contact/avalanche_createContact/avalanche_createContact'
+import { AvalancheRemoveContactRequest as AvalancheRemoveContactRequestV2 } from 'store/rpc/handlers/contact/avalanche_removeContact/avalanche_removeContact'
 import { Contact as SharedContact } from '@avalabs/types'
-import { AvalancheUpdateContactRequest as AvalancheUpdateContactRequestV2 } from 'store/walletConnectV2/handlers/contact/avalanche_updateContact/avalanche_updateContact'
-import { AvalancheSelectAccountRequest as AvalancheSelectAccountRequestV2 } from 'store/walletConnectV2/handlers/account/avalanche_selectAccount/avalanche_selectAccount'
+import { AvalancheUpdateContactRequest as AvalancheUpdateContactRequestV2 } from 'store/rpc/handlers/contact/avalanche_updateContact/avalanche_updateContact'
+import { AvalancheSelectAccountRequest as AvalancheSelectAccountRequestV2 } from 'store/rpc/handlers/account/avalanche_selectAccount/avalanche_selectAccount'
 import { Account } from 'store/account'
-import { EthSendTransactionRpcRequest as EthSendTransactionRpcRequestV2 } from 'store/walletConnectV2/handlers/eth_sendTransaction/eth_sendTransaction'
-import { AvalancheBridgeAssetRequest as AvalancheBridgeAssetRequestV2 } from 'store/walletConnectV2/handlers/avalanche_bridgeAsset/avalanche_bridgeAsset'
+import { EthSendTransactionRpcRequest as EthSendTransactionRpcRequestV2 } from 'store/rpc/handlers/eth_sendTransaction/eth_sendTransaction'
+import { AvalancheBridgeAssetRequest as AvalancheBridgeAssetRequestV2 } from 'store/rpc/handlers/avalanche_bridgeAsset/avalanche_bridgeAsset'
 import { Asset, Blockchain } from '@avalabs/bridge-sdk'
-import { EthSignRpcRequest as EthSignRpcRequestV2 } from 'store/walletConnectV2/handlers/eth_sign/eth_sign'
-import { WalletAddEthereumChainRpcRequest as WalletAddEthereumChainRpcRequestV2 } from 'store/walletConnectV2/handlers/chain/wallet_addEthereumChain/wallet_addEthereumChain'
+import { EthSignRpcRequest as EthSignRpcRequestV2 } from 'store/rpc/handlers/eth_sign/eth_sign'
+import { WalletAddEthereumChainRpcRequest as WalletAddEthereumChainRpcRequestV2 } from 'store/rpc/handlers/chain/wallet_addEthereumChain/wallet_addEthereumChain'
 import { Network } from '@avalabs/chains-sdk'
-import { WalletSwitchEthereumChainRpcRequest as WalletSwitchEthereumChainRpcRequestV2 } from 'store/walletConnectV2/handlers/chain/wallet_switchEthereumChain/wallet_switchEthereumChain'
-import { SessionProposal } from 'store/walletConnectV2'
-import { TransactionParams } from 'store/walletConnectV2/handlers/eth_sendTransaction/utils'
+import { WalletSwitchEthereumChainRpcRequest as WalletSwitchEthereumChainRpcRequestV2 } from 'store/rpc/handlers/chain/wallet_switchEthereumChain/wallet_switchEthereumChain'
+import { TransactionParams } from 'store/rpc/handlers/eth_sendTransaction/utils'
 import {
   OldTypedData,
   TypedData
-} from 'store/walletConnectV2/handlers/eth_sign/schemas/ethSignTypedData'
+} from 'store/rpc/handlers/eth_sign/schemas/ethSignTypedData'
 import {
   SendTransactionApproveData,
   AvalancheSendTransactionRpcRequest as AvalancheSendTransactionRpcRequestV2
-} from 'store/walletConnectV2/handlers/avalanche_sendTransaction/avalanche_sendTransaction'
+} from 'store/rpc/handlers/avalanche_sendTransaction/avalanche_sendTransaction'
 import {
   AvalancheSignTransactionApproveData as AvalancheSignTransactionApproveDataV2,
   AvalancheSignTransactionRpcRequest as AvalancheSignTransactionRpcRequestV2
-} from 'store/walletConnectV2/handlers/avalanche_signTransaction/avalanche_signTransaction'
+} from 'store/rpc/handlers/avalanche_signTransaction/avalanche_signTransaction'
 import { EarnStackParamList } from 'navigation/wallet/EarnScreenStack/EarnScreenStack'
 import { RefreshTokenScreenStackParamList } from 'navigation/RefreshTokenScreenStack'
 import { BrowserStackParamList } from 'navigation/wallet/BrowserScreenStack'
 import { Eip1559Fees } from 'utils/Utils'
 import { NetworkTokenUnit } from 'types'
-import { WalletGetEthereumChainRpcRequest } from 'store/walletConnectV2/handlers/chain/wallet_getEthereumChain/wallet_getEthereumChain'
+import { WalletGetEthereumChainRpcRequest } from 'store/rpc/handlers/chain/wallet_getEthereumChain/wallet_getEthereumChain'
 import {
   AvalancheSetDeveloperModeApproveData,
   AvalancheSetDeveloperModeRpcRequest
-} from '../store/walletConnectV2/handlers/avalanche_setDeveloperMode/types'
+} from 'store/rpc/handlers/avalanche_setDeveloperMode/types'
+import { WCSessionProposal } from 'store/walletConnectV2/types'
 import { RootScreenStackParamList } from './RootScreenStack'
 import { OnboardingScreenStackParamList } from './OnboardScreenStack'
 import { WelcomeScreenStackParamList } from './onboarding/WelcomeScreenStack'
@@ -84,7 +84,7 @@ export type EditGasLimitParams = {
 } & Eip1559Fees<NetworkTokenUnit>
 
 export type SessionProposalV2Params = {
-  request: SessionProposal
+  request: WCSessionProposal
   chainIds: number[]
 }
 

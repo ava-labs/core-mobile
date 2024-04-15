@@ -21,7 +21,7 @@ const CreateRemoveContact = () => {
   const { onUserApproved: onApprove, onUserRejected: onReject } =
     useDappConnectionV2()
 
-  const peerMeta = request.session.peer.metadata
+  const peerMeta = request.peerMeta
 
   const header = `${capitalizeFirstLetter(action)} Contact?`
 
