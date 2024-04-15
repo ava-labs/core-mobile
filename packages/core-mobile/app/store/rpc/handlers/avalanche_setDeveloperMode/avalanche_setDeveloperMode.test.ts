@@ -1,4 +1,4 @@
-import { RpcMethod } from 'store/rpc/types'
+import { RpcMethod, RpcProvider } from 'store/rpc/types'
 import mockSession from 'tests/fixtures/walletConnect/session.json'
 import { ethErrors } from 'eth-rpc-errors'
 import * as Navigation from 'utils/Navigation'
@@ -14,6 +14,7 @@ const createRequest = (
   params: unknown
 ): AvalancheSetDeveloperModeRpcRequest => {
   return {
+    provider: RpcProvider.WALLET_CONNECT,
     method: RpcMethod.AVALANCHE_SET_DEVELOPER_MODE,
     data: {
       id: 1,
@@ -26,7 +27,7 @@ const createRequest = (
         chainId: 'eip155:43114'
       }
     },
-    session: mockSession
+    peerMeta: mockSession.peer.metadata
   }
 }
 

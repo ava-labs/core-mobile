@@ -1,4 +1,4 @@
-import { RpcMethod } from 'store/rpc'
+import { RpcMethod, RpcProvider, RpcRequest } from 'store/rpc'
 import mockSession from 'tests/fixtures/walletConnect/session.json'
 import mockContacts from 'tests/fixtures/contacts.json'
 import { avalancheGetContactsHandler as handler } from './avalanche_getContacts'
@@ -18,9 +18,10 @@ const mockListenerApi = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 } as any
 
-const testMethod = 'avalanche_getContacts' as RpcMethod.AVALANCHE_GET_CONTACTS
+const testMethod = RpcMethod.AVALANCHE_GET_CONTACTS
 
-const testRequest = {
+const testRequest: RpcRequest<RpcMethod.AVALANCHE_GET_CONTACTS> = {
+  provider: RpcProvider.WALLET_CONNECT,
   method: testMethod,
   data: {
     id: 1677366383831712,
@@ -33,7 +34,7 @@ const testRequest = {
       chainId: 'eip155:43113'
     }
   },
-  session: mockSession
+  peerMeta: mockSession.peer.metadata
 }
 
 describe('avalanche_getContacts handler', () => {

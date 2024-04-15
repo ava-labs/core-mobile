@@ -1,5 +1,5 @@
 import { ethErrors } from 'eth-rpc-errors'
-import { RpcMethod } from 'store/rpc'
+import { RpcMethod, RpcProvider, RpcRequest } from 'store/rpc'
 import mockSession from 'tests/fixtures/walletConnect/session.json'
 import mockNetworks from 'tests/fixtures/networks.json'
 import AppNavigation from 'navigation/AppNavigation'
@@ -39,11 +39,13 @@ const mockListenerApi = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 } as any
 
-const testMethod =
-  'wallet_switchEthereumChain' as RpcMethod.WALLET_SWITCH_ETHEREUM_CHAIN
+const testMethod = RpcMethod.WALLET_SWITCH_ETHEREUM_CHAIN
 
-const createRequest = (params: unknown) => {
+const createRequest = (
+  params: unknown
+): RpcRequest<RpcMethod.WALLET_SWITCH_ETHEREUM_CHAIN> => {
   return {
+    provider: RpcProvider.WALLET_CONNECT,
     method: testMethod,
     data: {
       id: 1677366383831712,
@@ -56,7 +58,8 @@ const createRequest = (params: unknown) => {
         chainId: 'eip155:43114'
       }
     },
-    session: mockSession
+
+    peerMeta: mockSession.peer.metadata
   }
 }
 

@@ -1,5 +1,5 @@
 import { ethErrors } from 'eth-rpc-errors'
-import { RpcMethod } from 'store/rpc'
+import { RpcMethod, RpcProvider, RpcRequest } from 'store/rpc'
 import mockSession from 'tests/fixtures/walletConnect/session.json'
 import mockAccounts from 'tests/fixtures/accounts.json'
 import mockNetworks from 'tests/fixtures/networks.json'
@@ -76,7 +76,7 @@ const mockListenerApi = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 } as any
 
-const testMethod = 'eth_sendTransaction' as RpcMethod.ETH_SEND_TRANSACTION
+const testMethod = RpcMethod.ETH_SEND_TRANSACTION
 
 const testParams = [
   {
@@ -102,8 +102,11 @@ const testData = {
   }
 }
 
-const createRequest = (params: unknown) => {
+const createRequest = (
+  params: unknown
+): RpcRequest<RpcMethod.ETH_SEND_TRANSACTION> => {
   return {
+    provider: RpcProvider.WALLET_CONNECT,
     method: testMethod,
     data: {
       id: 1677366383831712,
@@ -116,7 +119,7 @@ const createRequest = (params: unknown) => {
         chainId: 'eip155:43113'
       }
     },
-    session: mockSession
+    peerMeta: mockSession.peer.metadata
   }
 }
 

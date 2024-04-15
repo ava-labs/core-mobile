@@ -1,5 +1,5 @@
 import { ethErrors } from 'eth-rpc-errors'
-import { RpcMethod } from 'store/rpc'
+import { RpcMethod, RpcProvider, RpcRequest } from 'store/rpc'
 import mockSession from 'tests/fixtures/walletConnect/session.json'
 import AppNavigation from 'navigation/AppNavigation'
 import * as Navigation from 'utils/Navigation'
@@ -19,11 +19,13 @@ const mockListenerApi = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 } as any
 
-const testMethod =
-  'avalanche_createContact' as RpcMethod.AVALANCHE_CREATE_CONTACT
+const testMethod = RpcMethod.AVALANCHE_CREATE_CONTACT
 
-const createRequest = (params: unknown) => {
+const createRequest = (
+  params: unknown
+): RpcRequest<RpcMethod.AVALANCHE_CREATE_CONTACT> => {
   return {
+    provider: RpcProvider.WALLET_CONNECT,
     method: testMethod,
     data: {
       id: 1677366383831712,
@@ -36,7 +38,7 @@ const createRequest = (params: unknown) => {
         chainId: 'eip155:43113'
       }
     },
-    session: mockSession
+    peerMeta: mockSession.peer.metadata
   }
 }
 

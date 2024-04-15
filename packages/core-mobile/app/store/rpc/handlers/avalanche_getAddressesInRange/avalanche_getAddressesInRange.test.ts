@@ -1,4 +1,4 @@
-import { RpcMethod } from 'store/rpc/types'
+import { RpcMethod, RpcProvider } from 'store/rpc/types'
 import mockSession from 'tests/fixtures/walletConnect/session.json'
 import { ethErrors } from 'eth-rpc-errors'
 import WalletService from 'services/wallet/WalletService'
@@ -17,6 +17,7 @@ const createRequest = (
   params: unknown
 ): AvalancheGetAddressesInRangeRpcRequest => {
   return {
+    provider: RpcProvider.WALLET_CONNECT,
     method: RpcMethod.AVALANCHE_GET_ADDRESSES_IN_RANGE,
     data: {
       id: 1,
@@ -29,7 +30,7 @@ const createRequest = (
         chainId: 'eip155:43114'
       }
     },
-    session: mockSession
+    peerMeta: mockSession.peer.metadata
   }
 }
 

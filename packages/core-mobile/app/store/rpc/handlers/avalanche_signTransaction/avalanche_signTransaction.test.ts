@@ -7,7 +7,7 @@ import {
   avaxSerial
 } from '@avalabs/avalanchejs'
 import { Avalanche } from '@avalabs/wallets-sdk'
-import { RpcMethod } from 'store/rpc/types'
+import { RpcMethod, RpcProvider } from 'store/rpc/types'
 import mockSession from 'tests/fixtures/walletConnect/session.json'
 import { selectActiveAccount } from 'store/account'
 import * as Navigation from 'utils/Navigation'
@@ -52,6 +52,7 @@ const createRequest = (
   params: AvalancheTxParams = { transactionHex: '0x00001', chainAlias: 'X' }
 ): AvalancheSignTransactionRpcRequest => {
   return {
+    provider: RpcProvider.WALLET_CONNECT,
     method: RpcMethod.AVALANCHE_SIGN_TRANSACTION,
     data: {
       id: 1677366383831712,
@@ -64,7 +65,7 @@ const createRequest = (
         chainId: 'eip155:43114'
       }
     },
-    session: mockSession
+    peerMeta: mockSession.peer.metadata
   }
 }
 

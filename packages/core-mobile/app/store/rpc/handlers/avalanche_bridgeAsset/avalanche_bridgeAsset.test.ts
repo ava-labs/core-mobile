@@ -1,5 +1,5 @@
 import { ethErrors } from 'eth-rpc-errors'
-import { RpcMethod } from 'store/rpc'
+import { RpcMethod, RpcProvider, RpcRequest } from 'store/rpc'
 import mockSession from 'tests/fixtures/walletConnect/session.json'
 import mockAccounts from 'tests/fixtures/accounts.json'
 import mockNetworks from 'tests/fixtures/networks.json'
@@ -86,7 +86,7 @@ const mockListenerApi = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 } as any
 
-const testMethod = 'avalanche_bridgeAsset' as RpcMethod.AVALANCHE_BRIDGE_ASSET
+const testMethod = RpcMethod.AVALANCHE_BRIDGE_ASSET
 
 const testNativeAsset = {
   assetType: 1,
@@ -210,8 +210,11 @@ const testEthStaticFeeParams = ['ethereum', '0.01', testEthStaticFeeAsset]
 const testBtcDynamicFeeParams = ['bitcoin', '0.01', testBtcDynamicFeeAsset]
 const testBtcStaticFeeParams = ['bitcoin', '0.01', testBtcStaticFeeAsset]
 
-const createRequest = (params: unknown) => {
+const createRequest = (
+  params: unknown
+): RpcRequest<RpcMethod.AVALANCHE_BRIDGE_ASSET> => {
   return {
+    provider: RpcProvider.WALLET_CONNECT,
     method: testMethod,
     data: {
       id: 1677366383831712,
@@ -224,7 +227,7 @@ const createRequest = (params: unknown) => {
         chainId: 'eip155:43113'
       }
     },
-    session: mockSession
+    peerMeta: mockSession.peer.metadata
   }
 }
 
