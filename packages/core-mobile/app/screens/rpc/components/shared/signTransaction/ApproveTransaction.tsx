@@ -144,7 +144,7 @@ export const ApproveTransactionView = ({
           <AvaText.Body2>Account</AvaText.Body2>
           <AvaText.ButtonMedium
             color={theme.colorText1}
-            textStyle={{ marginTop: -1 }}>
+            textStyle={{ marginTop: -3 }}>
             {title}
           </AvaText.ButtonMedium>
         </Row>
