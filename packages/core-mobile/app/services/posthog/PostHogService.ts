@@ -147,18 +147,13 @@ class PostHogService {
         }
       }
 
-    Logger.info('fetching feature flags')
-
     try {
       const responseJson = await fetchWithPosthogFallback()
-      const featureFlags = sanitizeFeatureFlags(
+
+      return sanitizeFeatureFlags(
         responseJson,
         DeviceInfoService.getAppVersion()
       )
-
-      Logger.info('fetched feature flags', featureFlags)
-
-      return featureFlags
     } catch (e) {
       Logger.error('failed to fetch feature flags', e)
     }
