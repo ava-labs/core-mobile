@@ -89,7 +89,6 @@ describe('avalanche_updateContact handler', () => {
   })
 
   describe('handle', () => {
-    // eslint-disable-next-line jest/expect-expect
     it('should return error when params are invalid', async () => {
       const invalidParamsScenarios = [null, [], [null], [{ name: 'Bob' }]]
 
@@ -146,7 +145,6 @@ describe('avalanche_updateContact handler', () => {
   })
 
   describe('approve', () => {
-    // eslint-disable-next-line jest/expect-expect
     it('should return error when approve data is invalid', async () => {
       const invalidDataScenarios = [
         null,
@@ -171,6 +169,7 @@ describe('avalanche_updateContact handler', () => {
         id: '1aec34f6-308d-4962-ab1b-283504cc0960',
         name: 'Bob2',
         addressBTC: 'tb1qjmapax0vtca726g8kaermd5rzdljql66esxs49',
+        addressPVM: 'P-avax17y8xf7ddfjwv0qg4zvuew0kucmylr749n83n0h',
         address: '0xC7E5ffBd7843EdB88cCB2ebaECAa07EC55c65318'
       }
 
@@ -185,6 +184,7 @@ describe('avalanche_updateContact handler', () => {
         addContact({
           address: testContact.address,
           addressBtc: testContact.addressBTC,
+          addressPVM: testContact.addressPVM,
           title: testContact.name,
           id: testContact.id
         })
