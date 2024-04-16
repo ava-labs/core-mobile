@@ -4,10 +4,10 @@ import PostHogService from './PostHogService'
 import { FeatureGates } from './types'
 
 const mockFetch = jest.fn()
-const mockedAppVersion = '1.59.0'
+const appVersion = '1.59.0'
 
 jest.mock('react-native-device-info', () => mockRNDeviceInfo)
-jest.spyOn(mockRNDeviceInfo, 'getVersion').mockReturnValue(mockedAppVersion)
+jest.spyOn(mockRNDeviceInfo, 'getVersion').mockReturnValue(appVersion)
 
 describe('PostHogService', () => {
   describe('fetchFeatureFlags', () => {
@@ -76,7 +76,7 @@ describe('PostHogService', () => {
 
       expect(fetch).toHaveBeenCalledTimes(1)
       expect(fetch).toHaveBeenCalledWith(
-        `${process.env.PROXY_URL}/proxy/posthog/decide?ip=&_=1234&v=3&ver=${mockedAppVersion}`,
+        `${process.env.PROXY_URL}/proxy/posthog/decide?ip=&_=1234&v=3&ver=${appVersion}`,
         {
           body: 'data=' + encodeURIComponent(data),
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -115,7 +115,7 @@ describe('PostHogService', () => {
       expect(fetch).toHaveBeenCalledTimes(2)
       expect(fetch).toHaveBeenNthCalledWith(
         1,
-        `${process.env.PROXY_URL}/proxy/posthog/decide?ip=&_=1234&v=3&ver=${mockedAppVersion}`,
+        `${process.env.PROXY_URL}/proxy/posthog/decide?ip=&_=1234&v=3&ver=${appVersion}`,
         {
           body: 'data=' + encodeURIComponent(data),
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -124,7 +124,7 @@ describe('PostHogService', () => {
       )
       expect(fetch).toHaveBeenNthCalledWith(
         2,
-        `${Config.POSTHOG_URL}/decide?ip=&_=1234&v=3&ver=${mockedAppVersion}`,
+        `${Config.POSTHOG_URL}/decide?ip=&_=1234&v=3&ver=${appVersion}`,
         {
           body: 'data=' + encodeURIComponent(data),
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },

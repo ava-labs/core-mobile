@@ -60,24 +60,23 @@ export const sanitizeFeatureFlags = (
     const evaluatedFlags = Object.fromEntries(
       Object.entries(value.featureFlagPayloads)
         .filter(([flagName]) => isFeatureGate(flagName) && rawFlags[flagName]) // Only evaluate flags that are enabled
-        .map(([flagName, payload]) => {
-          let range = ''
+        .map(([_flagName, payload]) => {
+          const flagName = _flagName as FeatureGates
 
           try {
-            range = JSON.parse(payload)
+            const range = JSON.parse(payload)
+
+            const versionRange = validRange(range)
+
+            // Default to disabled state if the payload string is not a valid semver range.
+            if (!versionRange) {
+              return [flagName, false]
+            }
+
+            return [flagName, satisfies(version, versionRange)]
           } catch {
-            // If the payload is not JSON-parsable, default to disabled state.
             return [flagName, false]
           }
-
-          const versionRange = validRange(range)
-
-          // Default to disabled state if the payload string is not a valid semver range.
-          if (!versionRange) {
-            return [flagName, false]
-          }
-
-          return [flagName, satisfies(version, versionRange)]
         })
     )
 

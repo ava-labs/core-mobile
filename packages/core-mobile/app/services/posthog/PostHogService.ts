@@ -99,14 +99,6 @@ class PostHogService {
   ): Promise<
     Partial<Record<FeatureGates | FeatureVars, string | boolean>> | undefined
   > {
-    const json_data = JSON.stringify({
-      token: Config.POSTHOG_FEATURE_FLAGS_KEY,
-      distinct_id: distinctId,
-      groups: {}
-    })
-
-    const data = Buffer.from(json_data).toString('base64')
-
     const appVersion = DeviceInfoService.getAppVersion()
 
     const fetchWithPosthogFallback =
@@ -119,13 +111,21 @@ class PostHogService {
             ver: appVersion
           })
 
-          return await (
-            await fetch(`${url}/decide?${params}`, {
-              method: 'POST',
-              body: 'data=' + encodeURIComponent(data),
-              headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+          const data = Buffer.from(
+            JSON.stringify({
+              token: Config.POSTHOG_FEATURE_FLAGS_KEY,
+              distinct_id: distinctId,
+              groups: {}
             })
-          ).json()
+          ).toString('base64')
+
+          const response = await fetch(`${url}/decide?${params}`, {
+            method: 'POST',
+            body: 'data=' + encodeURIComponent(data),
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+          })
+
+          return await response.json()
         }
 
         try {
@@ -150,10 +150,7 @@ class PostHogService {
     try {
       const responseJson = await fetchWithPosthogFallback()
 
-      return sanitizeFeatureFlags(
-        responseJson,
-        DeviceInfoService.getAppVersion()
-      )
+      return sanitizeFeatureFlags(responseJson, appVersion)
     } catch (e) {
       Logger.error('failed to fetch feature flags', e)
     }
