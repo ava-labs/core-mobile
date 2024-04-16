@@ -157,7 +157,7 @@ export const ApproveTransactionView = ({
         <Row style={{ justifyContent: 'space-between' }}>
           <AvaText.Body2>Website</AvaText.Body2>
           <AvaText.ButtonMedium
-            textStyle={{ flexShrink: 1, marginLeft: 16 }}
+            textStyle={{ flexShrink: 1, marginLeft: 16, marginTop: -3 }}
             color={theme.colorText1}>
             {url}
           </AvaText.ButtonMedium>
