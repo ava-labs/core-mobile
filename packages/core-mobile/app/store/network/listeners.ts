@@ -1,14 +1,8 @@
 import { ChainId } from '@avalabs/chains-sdk'
-import NetworkService from 'services/network/NetworkService'
 import { AppListenerEffectAPI } from 'store'
 import { onAppUnlocked } from 'store/app'
 import { AppStartListening } from 'store/middleware/listener'
-import {
-  noActiveNetwork,
-  setActive,
-  setNetworks,
-  toggleFavorite
-} from 'store/network'
+import { noActiveNetwork, setActive, toggleFavorite } from 'store/network'
 import {
   selectIsDeveloperMode,
   toggleDeveloperMode
@@ -17,7 +11,7 @@ import { AnyAction, isAnyOf } from '@reduxjs/toolkit'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 
 const adjustActiveNetwork = (
-  action: AnyAction,
+  _: AnyAction,
   listenerApi: AppListenerEffectAPI
 ): void => {
   const { dispatch, getState } = listenerApi
@@ -31,16 +25,12 @@ const adjustActiveNetwork = (
   dispatch(setActive(chainId))
 }
 
-const getNetworks = async (
-  action: AnyAction,
+const setActiveNetwork = async (
+  _: AnyAction,
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
   const { dispatch, getState } = listenerApi
   const state = getState()
-  const networks = await NetworkService.getNetworks()
-
-  dispatch(setNetworks(networks))
-
   if (state.network.active === noActiveNetwork) {
     dispatch(setActive(ChainId.AVALANCHE_MAINNET_ID))
   }
@@ -72,7 +62,7 @@ export const addNetworkListeners = (
 ): void => {
   startListening({
     matcher: isAnyOf(onAppUnlocked, toggleDeveloperMode),
-    effect: getNetworks
+    effect: setActiveNetwork
   })
 
   startListening({

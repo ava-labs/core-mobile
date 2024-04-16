@@ -1,5 +1,4 @@
 import React, { useState } from 'react'
-import type { ComponentStory, Meta } from '@storybook/react-native'
 import { View } from 'react-native'
 import { CalendarInput } from 'components/CalendarInput'
 import { withCenterView } from '../decorators/withCenterView'
@@ -7,13 +6,13 @@ import { withCenterView } from '../decorators/withCenterView'
 export default {
   title: 'CalendarInput',
   decorators: [withCenterView]
-} as Meta
+}
 
-export const Basic: ComponentStory<typeof CalendarInput> = () => {
+export const Basic = (): React.JSX.Element => {
   const [date, setDate] = useState<Date>()
   const [isDatePickerVisible, setIsDatePickerVisible] = useState(false)
 
-  const onDateSelected = (dateInput: Date) => {
+  const onDateSelected = (dateInput: Date): void => {
     setDate(dateInput)
   }
 

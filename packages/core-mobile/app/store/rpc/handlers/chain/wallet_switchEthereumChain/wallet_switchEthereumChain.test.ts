@@ -96,7 +96,6 @@ describe('wallet_switchEthereumChain handler', () => {
   })
 
   describe('handle', () => {
-    // eslint-disable-next-line jest/expect-expect
     it('should return error when params are invalid', async () => {
       const invalidParamsScenarios = [
         null,
@@ -175,7 +174,6 @@ describe('wallet_switchEthereumChain handler', () => {
       mockSelectIsDeveloperMode.mockImplementation(() => false)
     })
 
-    // eslint-disable-next-line jest/expect-expect
     it('should return error when approve data is invalid', async () => {
       const invalidDataScenarios = [null, {}, { network: null }]
 

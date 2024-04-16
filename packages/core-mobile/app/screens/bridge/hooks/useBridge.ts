@@ -19,11 +19,6 @@ import { useSelector } from 'react-redux'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { Eip1559Fees } from 'utils/Utils'
 import { NetworkTokenUnit } from 'types'
-import {
-  selectActiveNetwork,
-  selectNetwork,
-  selectNetworks
-} from 'store/network'
 import { FeePreset } from 'components/NetworkFeeSelector'
 import { selectActiveAccount } from 'store/account'
 import { bigToBN } from '@avalabs/utils-sdk'
@@ -33,6 +28,7 @@ import BridgeService from 'services/bridge/BridgeService'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectBridgeAppConfig } from 'store/bridge'
 import UnifiedBridgeService from 'services/bridge/UnifiedBridgeService'
+import { useNetworks } from 'hooks/networks/useNetworks'
 import { isUnifiedBridgeAsset } from '../utils/bridgeUtils'
 import { useUnifiedBridge } from './useUnifiedBridge/useUnifiedBridge'
 import { useHasEnoughForGas } from './useHasEnoughtForGas'
@@ -78,11 +74,10 @@ interface Bridge extends BridgeAdapter {
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
 export default function useBridge(selectedAsset?: AssetBalance): Bridge {
+  const { activeNetwork, networks, getNetwork } = useNetworks()
   const config = useSelector(selectBridgeAppConfig)
   const isTestnet = useSelector(selectIsDeveloperMode)
-  const allNetworks = useSelector(selectNetworks)
   const currency = useSelector(selectSelectedCurrency)
-  const activeNetwork = useSelector(selectActiveNetwork)
   const activeAccount = useSelector(selectActiveAccount)
   const [sourceBalance, setSourceBalance] = useState<AssetBalance>()
   const {
@@ -98,7 +93,7 @@ export default function useBridge(selectedAsset?: AssetBalance): Bridge {
     [isTestnet, targetBlockchain]
   )
 
-  const targetNetwork = useSelector(selectNetwork(targetChainId))
+  const targetNetwork = getNetwork(targetChainId)
 
   // reset current asset when unmounting
   useEffect(() => {
@@ -195,7 +190,7 @@ export default function useBridge(selectedAsset?: AssetBalance): Bridge {
           activeAccount,
           activeNetwork,
           currency,
-          allNetworks,
+          allNetworks: networks,
           asset: currentAssetData,
           isTestnet,
           config
@@ -212,7 +207,7 @@ export default function useBridge(selectedAsset?: AssetBalance): Bridge {
   }, [
     activeAccount,
     activeNetwork,
-    allNetworks,
+    networks,
     amount,
     config,
     currency,

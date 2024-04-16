@@ -6,6 +6,19 @@ import { AVALANCHE_XP_TEST_NETWORK } from '@avalabs/chains-sdk'
 import { Avax } from 'types/Avax'
 import { PChainId } from '@avalabs/glacier-sdk'
 
+jest.mock('@avalabs/wallets-sdk', () => ({
+  ...jest.requireActual('@avalabs/wallets-sdk'),
+  getXpubFromMnemonic: () => {
+    return { mnemonic: '1' }
+  },
+  Avalanche: {
+    ...jest.requireActual('@avalabs/wallets-sdk').Avalanche,
+    getXpubFromMnemonic: () => {
+      return { mnemonic: '1' }
+    }
+  }
+}))
+
 describe('WalletService', () => {
   describe('getInstantBaseFee', () => {
     it('should increase base fee by 20%', async () => {

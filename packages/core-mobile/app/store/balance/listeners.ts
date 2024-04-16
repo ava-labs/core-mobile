@@ -15,8 +15,8 @@ import { addCustomToken } from 'store/customToken'
 import { AppStartListening } from 'store/middleware/listener'
 import {
   selectActiveNetwork,
-  selectFavoriteNetworks,
-  setNetworks
+  onNetworksFetched,
+  selectFavoriteNetworks
 } from 'store/network'
 import {
   selectSelectedCurrency,
@@ -60,7 +60,7 @@ const onBalanceUpdate = async (
   const state = listenerApi.getState()
   const activeNetwork = selectActiveNetwork(state)
 
-  let networksToFetch
+  let networksToFetch: Network[]
   const activeAccount = selectActiveAccount(state)
   const accountsToFetch = activeAccount ? [activeAccount] : []
 
@@ -251,7 +251,7 @@ export const addBalanceListeners = (
       setAccounts,
       setActiveAccountIndex,
       addCustomToken,
-      setNetworks
+      onNetworksFetched
     ),
     effect: async (action, listenerApi) =>
       onBalanceUpdate(QueryStatus.LOADING, listenerApi, false)

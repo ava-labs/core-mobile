@@ -1,8 +1,8 @@
 import React from 'react'
-import { Story as SBStory } from '@storybook/react-native'
 import Card from 'components/Card'
 
-export const withCard = (Story: SBStory) => (
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const withCard = (Story: any): React.JSX.Element => (
   <Card style={{ padding: 16, width: '100%' }}>
     <Story />
   </Card>

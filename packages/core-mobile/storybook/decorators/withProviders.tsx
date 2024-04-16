@@ -1,9 +1,9 @@
 import React from 'react'
-import { Story as SBStory } from '@storybook/react-native'
 import { ReactQueryProvider } from 'contexts/ReactQueryProvider'
 import { K2ThemeProvider } from '@avalabs/k2-mobile'
 
-export const withProviders = (Story: SBStory): JSX.Element => (
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const withProviders = (Story: any): React.JSX.Element => (
   <ReactQueryProvider>
     <K2ThemeProvider>
       <Story />

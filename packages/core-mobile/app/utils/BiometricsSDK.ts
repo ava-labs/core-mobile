@@ -5,7 +5,7 @@ import Keychain, {
 } from 'react-native-keychain'
 import { SECURE_ACCESS_SET } from 'resources/Constants'
 import { Platform } from 'react-native'
-import { commonStorage } from 'store/utils/mmkv'
+import { commonStorage } from 'utils/mmkv'
 import Logger from './Logger'
 
 const SERVICE_KEY = 'sec-storage-service'

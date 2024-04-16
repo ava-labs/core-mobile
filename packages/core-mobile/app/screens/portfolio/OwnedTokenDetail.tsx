@@ -13,25 +13,24 @@ import {
 import ActivityList from 'screens/shared/ActivityList/ActivityList'
 import { TokenWithBalance } from 'store/balance'
 import { Transaction } from 'store/transaction'
-import { useSelector } from 'react-redux'
-import { selectActiveNetwork } from 'store/network'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { Button, Text, View } from '@avalabs/k2-mobile'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import PriceChangeIndicator from 'screens/watchlist/components/PriceChangeIndicator'
-import { useGetMarketToken } from 'hooks/useGetMarketToken'
+import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import Separator from 'components/Separator'
+import { useNetworks } from 'hooks/networks/useNetworks'
 
 type ScreenProps = WalletScreenProps<
   typeof AppNavigation.Wallet.OwnedTokenDetail
 >
 
 const OwnedTokenDetail: FC = () => {
+  const { activeNetwork } = useNetworks()
   const { tokenId } = useRoute<ScreenProps['route']>().params
   const { navigate } = useNavigation<ScreenProps['navigation']>()
   const { filteredTokenList } = useSearchableTokenList()
   const [token, setToken] = useState<TokenWithBalance>()
-  const activeNetwork = useSelector(selectActiveNetwork)
   const {
     appHook: { currencyFormatter }
   } = useApplicationContext()
@@ -68,7 +67,7 @@ const OwnedTokenDetail: FC = () => {
     </Row>
   )
 
-  const { getMarketToken } = useGetMarketToken()
+  const { getMarketToken } = useWatchlist()
 
   const renderMarketTrend = (balance: number, symbol: string): JSX.Element => {
     const marketToken = getMarketToken(symbol)

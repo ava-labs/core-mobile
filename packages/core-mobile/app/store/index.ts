@@ -24,13 +24,12 @@ import settings from './settings'
 import { transactionApi } from './transaction'
 import { rpcReducer as rpc } from './rpc'
 import { BridgeBlacklistTransform } from './transforms/BridgeBlacklistTransform'
-import { WatchlistBlacklistTransform } from './transforms/WatchlistBlacklistTransform'
 import { AppBlacklistTransform } from './transforms/AppBlacklistTransform'
 import { combinedReducer as browser } from './browser'
 import { snapshotsReducer as snapshots } from './snapshots/slice'
 import { reduxStorage } from './reduxStorage'
 
-const VERSION = 10
+const VERSION = 12
 
 // list of reducers that don't need to be persisted
 // for nested/partial blacklist, please use transform
@@ -87,7 +86,6 @@ export function configureEncryptedStore(secretKey: string, macSecret: string) {
     transforms: [
       AppBlacklistTransform,
       BridgeBlacklistTransform,
-      WatchlistBlacklistTransform,
       EncryptThenMacTransform(secretKey, macSecret) // last!
     ],
     migrate: createMigrate(migrations, { debug: __DEV__ }),

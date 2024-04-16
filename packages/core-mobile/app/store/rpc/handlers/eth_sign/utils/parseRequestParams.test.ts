@@ -1,4 +1,3 @@
-/* eslint-disable jest/expect-expect */
 import { primitiveTypedData, typedData } from 'tests/fixtures/rpc/typedData'
 import { parseRequestParams } from './parseRequestParams'
 

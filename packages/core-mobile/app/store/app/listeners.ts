@@ -19,7 +19,7 @@ import DeviceInfo from 'react-native-device-info'
 import { WalletType } from 'services/wallet/types'
 import SecureStorageService from 'security/SecureStorageService'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { commonStorage } from 'store/utils/mmkv'
+import { commonStorage } from 'utils/mmkv'
 import { reduxStorage } from 'store/reduxStorage'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import {

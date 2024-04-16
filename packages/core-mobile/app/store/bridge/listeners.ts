@@ -2,11 +2,11 @@ import { v4 as uuidv4 } from 'uuid'
 import { AppListenerEffectAPI } from 'store'
 import { onAppLocked, onAppUnlocked, onLogOut } from 'store/app'
 import { AppStartListening } from 'store/middleware/listener'
-import { selectActiveNetwork } from 'store/network'
 import { toggleDeveloperMode } from 'store/settings/advanced'
 import { isAnyOf, TaskAbortError } from '@reduxjs/toolkit'
 import Logger from 'utils/Logger'
 import BridgeService from 'services/bridge/BridgeService'
+import { selectActiveNetwork } from 'store/network'
 import { setConfig } from './slice'
 
 const CONFIG_FETCH_INTERVAL = 15000
@@ -38,7 +38,6 @@ const fetchConfigPeriodically = async (
         const config = await forkApi.pause(
           BridgeService.getConfig(activeNetwork)
         )
-
         dispatch(setConfig(config))
 
         // cancellation-aware delay

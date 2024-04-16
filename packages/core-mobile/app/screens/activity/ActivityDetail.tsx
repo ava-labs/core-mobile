@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, JSX } from 'react'
 import { Pressable, StyleSheet, View } from 'react-native'
 import AvaText from 'components/AvaText'
 import AvaListItem from 'components/AvaListItem'
@@ -17,19 +17,19 @@ import AppNavigation from 'navigation/AppNavigation'
 import { WalletScreenProps } from 'navigation/types'
 import { useSelector } from 'react-redux'
 import { Contact, selectContacts } from 'store/addressBook'
-import { selectActiveNetwork, selectTokenInfo } from 'store/network'
 import { balanceToDisplayValue, numberToBN } from '@avalabs/utils-sdk'
+import { useNetworks } from 'hooks/networks/useNetworks'
 
 type RouteProp = WalletScreenProps<
   typeof AppNavigation.Wallet.ActivityDetail
 >['route']
 
-function ActivityDetail() {
+function ActivityDetail(): JSX.Element {
+  const { activeNetwork, getTokenInfo } = useNetworks()
   const theme = useApplicationContext().theme
-  const network = useSelector(selectActiveNetwork)
   const contacts = useSelector(selectContacts)
   const txItem = useRoute<RouteProp>().params.tx
-  const tokenInfo = useSelector(selectTokenInfo(txItem?.token?.symbol ?? ''))
+  const tokenInfo = getTokenInfo(txItem?.token?.symbol ?? '')
   const date = moment(txItem?.timestamp).format('MMM DD, YYYY HH:mm')
   const { openUrl } = useInAppBrowser()
   const [contact, setContact] = useState<Contact>()
@@ -37,12 +37,12 @@ function ActivityDetail() {
   const feeBN = numberToBN(txItem?.fee ?? '', 0)
   const fees = balanceToDisplayValue(
     feeBN,
-    Number(network.networkToken.decimals)
+    Number(activeNetwork.networkToken.decimals)
   )
 
   useEffect(getContactMatchFx, [contacts, txItem])
 
-  function getContactMatchFx() {
+  function getContactMatchFx(): void {
     const address = txItem?.isSender ? txItem.to : txItem?.from
     const filtered = Object.values(contacts).filter(
       value => value.address === address
@@ -52,7 +52,7 @@ function ActivityDetail() {
     }
   }
 
-  const tokenLogo = () => {
+  const tokenLogo = (): JSX.Element | undefined => {
     if (txItem && txItem.token) {
       const { name, symbol } = txItem.token
       return (
@@ -99,7 +99,7 @@ function ActivityDetail() {
               </AvaText.Body1>
             </AvaText.Heading1>
             <Space y={4} />
-            <AvaText.Body2 testID="activity_detail__fee_amount">{` Fee ${fees} ${network.networkToken.symbol}`}</AvaText.Body2>
+            <AvaText.Body2 testID="activity_detail__fee_amount">{` Fee ${fees} ${activeNetwork.networkToken.symbol}`}</AvaText.Body2>
           </View>
           <Space y={16} />
           <AvaListItem.Base
