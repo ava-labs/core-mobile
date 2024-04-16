@@ -142,7 +142,9 @@ export const ApproveTransactionView = ({
         ]}>
         <Row style={{ justifyContent: 'space-between' }}>
           <AvaText.Body2>Account</AvaText.Body2>
-          <AvaText.ButtonMedium color={theme.colorText1}>
+          <AvaText.ButtonMedium
+            color={theme.colorText1}
+            textStyle={{ marginTop: -1 }}>
             {title}
           </AvaText.ButtonMedium>
         </Row>
@@ -150,7 +152,9 @@ export const ApproveTransactionView = ({
         {toAddress && (
           <Row style={{ justifyContent: 'space-between' }}>
             <AvaText.Body2>Contract</AvaText.Body2>
-            <TokenAddress textType="ButtonMedium" address={toAddress} />
+            <View style={{ marginTop: -3 }}>
+              <TokenAddress textType="ButtonMedium" address={toAddress} />
+            </View>
           </Row>
         )}
         <Space y={8} />
