@@ -30,7 +30,7 @@ import {
   useAvalancheProvider,
   useBitcoinProvider,
   useEthereumProvider
-} from 'hooks/networkProviderHooks'
+} from 'hooks/networks/networkProviderHooks'
 import { isEqual } from 'lodash'
 import { Network } from '@avalabs/chains-sdk'
 import Logger from 'utils/Logger'

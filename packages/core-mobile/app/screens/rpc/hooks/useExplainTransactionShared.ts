@@ -29,7 +29,7 @@ import BN from 'bn.js'
 import { CoreTypes } from '@walletconnect/types'
 import { TransactionParams } from 'store/walletConnectV2/handlers/eth_sendTransaction/utils'
 import { useNetworkFee } from 'hooks/useNetworkFee'
-import { useNativeTokenPriceForNetwork } from 'hooks/useNativeTokenPriceForNetwork'
+import { useNativeTokenPriceForNetwork } from 'hooks/networks/useNativeTokenPriceForNetwork'
 import { NetworkTokenUnit } from 'types'
 import { ExplainTransactionSharedTypes } from './types'
 

@@ -7,7 +7,7 @@ import {
 import NetInfo from '@react-native-community/netinfo'
 import { onlineManager } from '@tanstack/react-query'
 import { AppState, AppStateStatus } from 'react-native'
-import { queryStorage } from 'store/utils/mmkv'
+import { queryStorage } from 'utils/mmkv'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister'
 

@@ -13,7 +13,7 @@ import { selectActiveAccount } from 'store/account'
 import { Text, View } from '@avalabs/k2-mobile'
 import PriceChangeIndicator from 'screens/watchlist/components/PriceChangeIndicator'
 import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList'
-import { useTokenPortfolioPriceChange } from 'hooks/networks/useTokenPortfolioPriceChange'
+import { useTokenPortfolioPriceChange } from 'hooks/balance/useTokenPortfolioPriceChange'
 import { useNetworks } from 'hooks/networks/useNetworks'
 
 const NetworkTokensHeader = (): JSX.Element => {

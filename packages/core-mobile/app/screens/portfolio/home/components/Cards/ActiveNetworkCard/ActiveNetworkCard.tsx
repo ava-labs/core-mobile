@@ -21,7 +21,7 @@ import {
   Icons
 } from '@avalabs/k2-mobile'
 import PriceChangeIndicator from 'screens/watchlist/components/PriceChangeIndicator'
-import { useTokenPortfolioPriceChange } from 'hooks/networks/useTokenPortfolioPriceChange'
+import { useTokenPortfolioPriceChange } from 'hooks/balance/useTokenPortfolioPriceChange'
 import { Space } from 'components/Space'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import ZeroState from './ZeroState'

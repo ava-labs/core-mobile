@@ -13,7 +13,7 @@ import {
 import Logger from 'utils/Logger'
 import WalletService from 'services/wallet/WalletService'
 import { WalletType } from 'services/wallet/types'
-import { commonStorage } from 'store/utils/mmkv'
+import { commonStorage } from 'utils/mmkv'
 
 function SecurityPrivacy({
   onChangePin,

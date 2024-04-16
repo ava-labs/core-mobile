@@ -10,7 +10,7 @@ import { selectActiveAccount } from 'store/account'
 import { ActivityIndicator } from 'components/ActivityIndicator'
 import PriceChangeIndicator from 'screens/watchlist/components/PriceChangeIndicator'
 import { Text, View } from '@avalabs/k2-mobile'
-import { useTokenPortfolioPriceChange } from 'hooks/networks/useTokenPortfolioPriceChange'
+import { useTokenPortfolioPriceChange } from 'hooks/balance/useTokenPortfolioPriceChange'
 import { useBalanceTotalInCurrencyForAccount } from 'hooks/balance/useBalanceTotalInCurrencyForAccount'
 import { PortfolioHeaderLoader } from './Loaders/PortfolioHeaderLoader'
 

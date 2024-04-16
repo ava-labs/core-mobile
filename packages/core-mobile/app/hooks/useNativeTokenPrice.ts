@@ -1,5 +1,5 @@
 import { VsCurrencyType } from '@avalabs/coingecko-sdk'
-import { useNativeTokenPriceForNetwork } from 'hooks/useNativeTokenPriceForNetwork'
+import { useNativeTokenPriceForNetwork } from 'hooks/networks/useNativeTokenPriceForNetwork'
 import { useNetworks } from './networks/useNetworks'
 
 export function useNativeTokenPrice(customCurrency?: VsCurrencyType): {

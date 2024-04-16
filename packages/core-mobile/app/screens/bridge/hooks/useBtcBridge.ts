@@ -37,7 +37,7 @@ import {
 import { Btc } from 'types/Btc'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { getErrorMessage } from 'utils/getErrorMessage'
-import { useBitcoinProvider } from 'hooks/networkProviderHooks'
+import { useBitcoinProvider } from 'hooks/networks/networkProviderHooks'
 import { useNetworks } from 'hooks/networks/useNetworks'
 
 export function useBtcBridge(amountInBtc: Big, fee: number): BridgeAdapter {

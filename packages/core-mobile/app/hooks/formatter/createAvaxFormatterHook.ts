@@ -1,7 +1,7 @@
 import { ChainId } from '@avalabs/chains-sdk'
 import { VsCurrencyType } from '@avalabs/coingecko-sdk'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { useNativeTokenPriceForNetwork } from 'hooks/useNativeTokenPriceForNetwork'
+import { useNativeTokenPriceForNetwork } from 'hooks/networks/useNativeTokenPriceForNetwork'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced'

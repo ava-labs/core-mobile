@@ -23,7 +23,7 @@ import {
   toggleAnalytics
 } from 'store/posthog'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { commonStorage } from 'store/utils/mmkv'
+import { commonStorage } from 'utils/mmkv'
 
 export const PosthogContext = createContext<PosthogContextState>(
   {} as PosthogContextState

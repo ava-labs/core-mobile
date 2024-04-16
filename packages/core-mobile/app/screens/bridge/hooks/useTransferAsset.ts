@@ -16,7 +16,7 @@ import { useCallback } from 'react'
 import {
   useAvalancheProvider,
   useEthereumProvider
-} from 'hooks/networkProviderHooks'
+} from 'hooks/networks/networkProviderHooks'
 import { selectBridgeAppConfig, selectBridgeCriticalConfig } from 'store/bridge'
 import { TransactionResponse } from 'ethers'
 import { NetworkTokenUnit } from 'types'
