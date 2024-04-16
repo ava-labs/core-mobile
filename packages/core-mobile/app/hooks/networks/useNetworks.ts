@@ -30,6 +30,7 @@ export const useNetworks = () => {
     return { ...rawNetworks, ..._customNetworks }
   }, [rawNetworks, _customNetworks])
 
+  // all networks that match the current developer mode
   const networks = useMemo(() => {
     if (rawNetworks === undefined) return {} as Networks
 
