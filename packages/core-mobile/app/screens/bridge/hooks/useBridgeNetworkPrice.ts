@@ -3,7 +3,7 @@ import { Chain } from '@avalabs/bridge-unified'
 import Big from 'big.js'
 import { useMemo } from 'react'
 import { caipToChainId } from 'utils/data/caip'
-import { useNetworks } from 'hooks/useNetworks'
+import { useNetworks } from 'hooks/networks/useNetworks'
 import { networkToBlockchain } from '../utils/bridgeUtils'
 
 export const useBridgeNetworkPrice = (chain?: Blockchain | Chain): Big => {

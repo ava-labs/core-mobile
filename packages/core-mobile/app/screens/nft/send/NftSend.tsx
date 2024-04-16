@@ -22,7 +22,7 @@ import { AddrBookItemType, Contact } from 'store/addressBook'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { Eip1559Fees } from 'utils/Utils'
 import { NetworkTokenUnit } from 'types'
-import { useNetworks } from 'hooks/useNetworks'
+import { useNetworks } from 'hooks/networks/useNetworks'
 
 export type NftSendScreenProps = {
   onNext: () => void

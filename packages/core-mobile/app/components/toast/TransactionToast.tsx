@@ -8,7 +8,7 @@ import ClearSVG from 'components/svg/ClearSVG'
 import { navigate } from 'utils/Navigation'
 import AppNavigation from 'navigation/AppNavigation'
 import { NetworkTokensTabs } from 'screens/portfolio/network/NetworkTokens'
-import { useNetworks } from 'hooks/useNetworks'
+import { useNetworks } from 'hooks/networks/useNetworks'
 
 const WINDOW_WIDTH = Dimensions.get('window').width
 

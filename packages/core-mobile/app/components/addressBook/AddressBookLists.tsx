@@ -14,7 +14,7 @@ import {
   selectRecentContacts
 } from 'store/addressBook'
 import { Network, NetworkVMType } from '@avalabs/chains-sdk'
-import { useNetworks } from 'hooks/useNetworks'
+import { useNetworks } from 'hooks/networks/useNetworks'
 
 export type AddressBookSource = 'recents' | 'addressBook' | 'accounts'
 

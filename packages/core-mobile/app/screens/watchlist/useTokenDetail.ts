@@ -10,7 +10,7 @@ import {
 import { InteractionManager } from 'react-native'
 import TokenService from 'services/token/TokenService'
 import { CoinsInfoResponse } from 'services/token/types'
-import { useWatchlist } from 'hooks/useWatchlist'
+import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export function useTokenDetail(coingeckoId: string) {

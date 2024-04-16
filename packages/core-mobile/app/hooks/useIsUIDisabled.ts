@@ -1,5 +1,5 @@
 import { ChainId } from '@avalabs/chains-sdk'
-import { useNetworks } from './useNetworks'
+import { useNetworks } from './networks/useNetworks'
 
 export enum UI {
   Collectibles = 'Collectibles',

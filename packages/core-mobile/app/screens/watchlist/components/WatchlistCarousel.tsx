@@ -16,7 +16,7 @@ import { PortfolioScreenProps } from 'navigation/types'
 import { useDispatch } from 'react-redux'
 import { MarketToken, fetchWatchlist } from 'store/watchlist'
 import { Text, useTheme } from '@avalabs/k2-mobile'
-import { useWatchlist } from 'hooks/useWatchlist'
+import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import PriceChangeIndicator from './PriceChangeIndicator'
 
 interface Props {

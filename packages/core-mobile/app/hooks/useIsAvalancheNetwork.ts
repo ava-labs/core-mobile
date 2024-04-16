@@ -1,5 +1,5 @@
 import { ChainId } from '@avalabs/chains-sdk'
-import { useNetworks } from './useNetworks'
+import { useNetworks } from './networks/useNetworks'
 
 export const useIsAvalancheNetwork = (): boolean => {
   const { activeNetwork } = useNetworks()

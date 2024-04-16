@@ -3,7 +3,7 @@ import { BridgeAsset } from '@avalabs/bridge-unified'
 import UnifiedBridgeService from 'services/bridge/UnifiedBridgeService'
 import Logger from 'utils/Logger'
 import { chainIdToCaip } from 'utils/data/caip'
-import { useNetworks } from 'hooks/useNetworks'
+import { useNetworks } from 'hooks/networks/useNetworks'
 
 export const useUnifiedBridgeAssets = (): {
   assets: BridgeAsset[]

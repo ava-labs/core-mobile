@@ -56,7 +56,7 @@ import { selectSelectedCurrency } from 'store/settings/currency/slice'
 import NetworkFeeSelector, { FeePreset } from 'components/NetworkFeeSelector'
 import { NetworkTokenUnit } from 'types'
 import { Eip1559Fees } from 'utils/Utils'
-import { useNetworks } from 'hooks/useNetworks'
+import { useNetworks } from 'hooks/networks/useNetworks'
 import { AssetBalance, BridgeProvider } from './utils/types'
 
 const blockchainTitleMaxWidth = Dimensions.get('window').width * 0.5

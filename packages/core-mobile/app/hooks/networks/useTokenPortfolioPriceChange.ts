@@ -1,6 +1,6 @@
 import { LocalTokenWithBalance } from 'store/balance'
 import { MarketToken } from 'store/watchlist'
-import { useWatchlist } from './useWatchlist'
+import { useWatchlist } from '../watchlist/useWatchlist'
 
 export const useTokenPortfolioPriceChange = (
   tokens: LocalTokenWithBalance[]

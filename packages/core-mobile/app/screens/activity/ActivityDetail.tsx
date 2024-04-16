@@ -18,7 +18,7 @@ import { WalletScreenProps } from 'navigation/types'
 import { useSelector } from 'react-redux'
 import { Contact, selectContacts } from 'store/addressBook'
 import { balanceToDisplayValue, numberToBN } from '@avalabs/utils-sdk'
-import { useNetworks } from 'hooks/useNetworks'
+import { useNetworks } from 'hooks/networks/useNetworks'
 
 type RouteProp = WalletScreenProps<
   typeof AppNavigation.Wallet.ActivityDetail

@@ -43,8 +43,4 @@ export const { toggleFavorite: toggleWatchListFavorite, reorderFavorites } =
 
 export const fetchWatchlist = createAction(`${reducerName}/fetchWatchlist`)
 
-export const onWatchlistRefresh = createAction(
-  `${reducerName}/onWatchlistRefresh`
-)
-
 export const watchlistReducer = watchlistSlice.reducer

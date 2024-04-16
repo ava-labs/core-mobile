@@ -10,7 +10,7 @@ import { NetworkListItem } from 'screens/network/NetworkListItem'
 import { Network } from '@avalabs/chains-sdk'
 import { useNavigation } from '@react-navigation/native'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { useNetworks } from 'hooks/useNetworks'
+import { useNetworks } from 'hooks/networks/useNetworks'
 
 type Props = {
   onShowInfo: (chainId: ChainID) => void

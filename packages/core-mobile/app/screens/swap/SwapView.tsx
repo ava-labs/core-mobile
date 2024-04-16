@@ -33,7 +33,7 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { Amount, NetworkTokenUnit } from 'types'
 import BN from 'bn.js'
 import { bnToLocaleString } from '@avalabs/utils-sdk'
-import { useNetworks } from 'hooks/useNetworks'
+import { useNetworks } from 'hooks/networks/useNetworks'
 
 type NavigationProp = SwapScreenProps<
   typeof AppNavigation.Swap.Swap

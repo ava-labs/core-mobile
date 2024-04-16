@@ -5,7 +5,7 @@ import Avatar from 'components/Avatar'
 import { ActivityIndicator } from 'components/ActivityIndicator'
 import { Text, View } from '@avalabs/k2-mobile'
 import PriceChangeIndicator from 'screens/watchlist/components/PriceChangeIndicator'
-import { useWatchlist } from 'hooks/useWatchlist'
+import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import { Space } from './Space'
 
 interface Props {

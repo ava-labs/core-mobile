@@ -27,7 +27,7 @@ import { BridgeTransfer } from '@avalabs/bridge-unified'
 import { humanize } from 'utils/string/humanize'
 import { useBridgeAmounts } from 'screens/bridge/hooks/useBridgeAmounts'
 import { useBridgeNetworkPrice } from 'screens/bridge/hooks/useBridgeNetworkPrice'
-import { useNetworks } from 'hooks/useNetworks'
+import { useNetworks } from 'hooks/networks/useNetworks'
 
 type Props = {
   txHash: string

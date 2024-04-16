@@ -22,7 +22,7 @@ import { TransactionResponse } from 'ethers'
 import { NetworkTokenUnit } from 'types'
 import { omit } from 'lodash'
 import { Eip1559Fees } from 'utils/Utils'
-import { useNetworks } from 'hooks/useNetworks'
+import { useNetworks } from 'hooks/networks/useNetworks'
 import { blockchainToNetwork } from '../utils/bridgeUtils'
 
 const events = new EventEmitter()

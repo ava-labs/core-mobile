@@ -10,7 +10,7 @@ import { Tooltip } from 'components/Tooltip'
 import { NetworkTokenUnit } from 'types'
 import { Eip1559Fees } from 'utils/Utils'
 import PoppableGasAndLimit from 'components/PoppableGasAndLimit'
-import { useNetworks } from 'hooks/useNetworks'
+import { useNetworks } from 'hooks/networks/useNetworks'
 
 const isSlippageValid = (value: string): boolean => {
   return Boolean(

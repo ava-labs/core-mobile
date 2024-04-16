@@ -19,8 +19,8 @@ import ReloadSVG from 'components/svg/ReloadSVG'
 import { ActivityIndicator } from 'components/ActivityIndicator'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { selectWalletType } from 'store/app'
-import { useNetworks } from 'hooks/useNetworks'
-import { useBalanceTotalInCurrencyForAccount } from 'hooks/useBalanceTotalInCurrencyForAccount'
+import { useNetworks } from 'hooks/networks/useNetworks'
+import { useBalanceTotalInCurrencyForAccount } from 'hooks/balance/useBalanceTotalInCurrencyForAccount'
 
 type Props = {
   account: Account

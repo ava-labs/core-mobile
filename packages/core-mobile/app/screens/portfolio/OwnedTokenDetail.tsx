@@ -17,9 +17,9 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { Button, Text, View } from '@avalabs/k2-mobile'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import PriceChangeIndicator from 'screens/watchlist/components/PriceChangeIndicator'
-import { useWatchlist } from 'hooks/useWatchlist'
+import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import Separator from 'components/Separator'
-import { useNetworks } from 'hooks/useNetworks'
+import { useNetworks } from 'hooks/networks/useNetworks'
 
 type ScreenProps = WalletScreenProps<
   typeof AppNavigation.Wallet.OwnedTokenDetail

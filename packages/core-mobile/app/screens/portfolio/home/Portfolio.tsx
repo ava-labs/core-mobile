@@ -19,8 +19,8 @@ import { PortfolioTabs } from 'consts/portfolio'
 import { selectIsDeFiBlocked } from 'store/posthog'
 import { DeFiProtocolList } from 'screens/defi/DeFiProtocolList'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { onWatchlistRefresh } from 'store/watchlist'
-import { useNetworks } from 'hooks/useNetworks'
+import { fetchWatchlist } from 'store/watchlist'
+import { useNetworks } from 'hooks/networks/useNetworks'
 import InactiveNetworkCard from './components/Cards/InactiveNetworkCard'
 import { PortfolioTokensLoader } from './components/Loaders/PortfolioTokensLoader'
 import PortfolioHeader from './components/PortfolioHeader'
@@ -103,7 +103,7 @@ const TokensTab = (): JSX.Element => {
 
   const refresh = (): void => {
     refetch()
-    dispatch(onWatchlistRefresh)
+    dispatch(fetchWatchlist)
   }
 
   if (isLoading) return <PortfolioTokensLoader />

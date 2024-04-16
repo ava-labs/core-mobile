@@ -24,7 +24,7 @@ import { Button, Text, View, alpha, useTheme } from '@avalabs/k2-mobile'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { NetworkFee } from 'services/networkFee/types'
 import { useBridgeSDK } from '@avalabs/bridge-sdk'
-import { useNetworks } from 'hooks/useNetworks'
+import { useNetworks } from 'hooks/networks/useNetworks'
 import { Tooltip } from './Tooltip'
 import InputText from './InputText'
 

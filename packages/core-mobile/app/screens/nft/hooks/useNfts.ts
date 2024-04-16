@@ -6,7 +6,7 @@ import NftService from 'services/nft/NftService'
 import Logger from 'utils/Logger'
 import { useCallback, useMemo } from 'react'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
-import { useNetworks } from 'hooks/useNetworks'
+import { useNetworks } from 'hooks/networks/useNetworks'
 import { NftPageParam } from '../../../store/nft/types'
 
 // a hook to get NFTs with pagination support for the current active network & account

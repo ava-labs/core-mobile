@@ -9,7 +9,7 @@ import TokenAddress from 'components/TokenAddress'
 import { ChainId } from '@avalabs/chains-sdk'
 import { selectActiveAccount } from 'store/account'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { useNetworks } from 'hooks/useNetworks'
+import { useNetworks } from 'hooks/networks/useNetworks'
 
 type Props = {
   embedded: boolean

@@ -21,7 +21,7 @@ import Loader from 'components/Loader'
 import { Tooltip } from 'components/Tooltip'
 import FastImage from 'react-native-fast-image'
 import { useNftItemsContext } from 'contexts/NFTItemsContext'
-import { useNetworks } from 'hooks/useNetworks'
+import { useNetworks } from 'hooks/networks/useNetworks'
 import { useNft } from './hooks/useNft'
 import NftAttributes from './components/NftAttributes'
 

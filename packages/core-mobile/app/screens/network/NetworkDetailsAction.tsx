@@ -16,7 +16,7 @@ import { useDispatch } from 'react-redux'
 import { removeCustomNetwork, toggleFavorite } from 'store/network'
 import { showSnackBarCustom } from 'components/Snackbar'
 import GeneralToast from 'components/toast/GeneralToast'
-import { useNetworks } from 'hooks/useNetworks'
+import { useNetworks } from 'hooks/networks/useNetworks'
 
 export function NetworkDetailsAction(): JSX.Element {
   const { chainId } = useRoute<NetworkDetailsScreenProps['route']>().params

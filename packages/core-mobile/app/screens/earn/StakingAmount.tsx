@@ -25,7 +25,7 @@ import { ActivityIndicator } from 'components/ActivityIndicator'
 import { useAvaxFormatter } from 'hooks/formatter/useAvaxFormatter'
 import { Tooltip } from 'components/Tooltip'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { useNetworks } from 'hooks/useNetworks'
+import { useNetworks } from 'hooks/networks/useNetworks'
 
 type ScreenProps = StakeSetupScreenProps<
   typeof AppNavigation.StakeSetup.SmartStakeAmount

@@ -5,7 +5,7 @@ import {
   getBitcoinProvider,
   getEthereumProvider
 } from 'services/network/utils/providerUtils'
-import { useNetworks } from './useNetworks'
+import { useNetworks } from './networks/useNetworks'
 
 export function useEthereumProvider(): JsonRpcBatchInternal | undefined {
   const { activeNetwork, networks } = useNetworks()

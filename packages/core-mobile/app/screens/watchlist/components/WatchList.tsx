@@ -12,8 +12,8 @@ import {
   Charts,
   defaultChartData,
   defaultPrice,
+  fetchWatchlist,
   MarketToken,
-  onWatchlistRefresh,
   PriceData,
   Prices,
   reorderFavorites
@@ -27,7 +27,7 @@ import { WatchlistFilter } from '../types'
 const getDisplayValue = (
   price: PriceData,
   currencyFormatter: (num: number | string) => string
-) => {
+): string => {
   const priceInCurrency = price.priceInCurrency
   return currencyFormatter(priceInCurrency)
 }
@@ -121,7 +121,7 @@ const WatchList: React.FC<Props> = ({
         renderItem={item => renderItem(item.item, item.index)}
         ListEmptyComponent={EmptyComponent}
         refreshing={false}
-        onRefresh={() => dispatch(onWatchlistRefresh)}
+        onRefresh={() => dispatch(fetchWatchlist)}
         keyExtractor={keyExtractor}
         estimatedItemSize={64}
       />
@@ -134,7 +134,7 @@ const WatchList: React.FC<Props> = ({
       renderItem={item => renderItem(item.item, item.index)}
       ListEmptyComponent={EmptyComponent}
       refreshing={false}
-      onRefresh={() => dispatch(onWatchlistRefresh)}
+      onRefresh={() => dispatch(fetchWatchlist)}
       keyExtractor={keyExtractor}
       estimatedItemSize={64}
     />

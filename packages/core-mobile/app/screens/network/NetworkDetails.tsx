@@ -11,7 +11,7 @@ import TextFieldBg from 'components/styling/TextFieldBg'
 import { Network } from '@avalabs/chains-sdk'
 import { showSnackBarCustom } from 'components/Snackbar'
 import GeneralToast from 'components/toast/GeneralToast'
-import { useNetworks } from 'hooks/useNetworks'
+import { useNetworks } from 'hooks/networks/useNetworks'
 import { NetworkLogo } from './NetworkLogo'
 
 export type NetworkDetailsProps = {

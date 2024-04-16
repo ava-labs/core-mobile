@@ -44,6 +44,6 @@ export const useGetTokensAndCharts = (): UseQueryResult<
       cachedFavoriteTokenIds
     ],
     queryFn: () => WatchlistService.getTokens(currency, cachedFavoriteTokenIds),
-    refetchInterval: 1000 * 60 * 1 // 1 minutes
+    refetchInterval: 30000 // 30 seconds
   })
 }

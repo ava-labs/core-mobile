@@ -7,7 +7,6 @@ import { AppState, AppStateStatus } from 'react-native'
 import { queryStorage } from 'store/utils/mmkv'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister'
-import { ChartDataSchema } from 'services/token/types'
 
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -29,25 +28,6 @@ const clientPersister = createSyncStoragePersister({
     removeItem: (key: string) => {
       return queryStorage.delete(key)
     }
-  },
-  deserialize: cachedString => {
-    const parsedString = JSON.parse(cachedString)
-    const transformedChartData = parsedString.clientState.queries.find(
-      (query: Query) => {
-        if (query.queryKey.includes(ReactQueryKeys.WATCHLIST_TOKENS_AND_CHARTS))
-          ChartDataSchema.safeParse(query.state.data)
-      }
-    )
-    return {
-      ...parsedString,
-      clientState: {
-        ...parsedString.clientState,
-        queries: {
-          ...parsedString.clientState.queries,
-          ...transformedChartData
-        }
-      }
-    }
   }
 })
 
@@ -59,11 +39,7 @@ const persistOptions = {
       if (query.queryKey.length === 0) return false
       if (query.state.status !== 'success') return false
 
-      return (
-        query.queryKey.includes(ReactQueryKeys.WATCHLIST_PRICES) ||
-        query.queryKey.includes(ReactQueryKeys.WATCHLIST_TOKENS_AND_CHARTS) ||
-        query.queryKey.includes(ReactQueryKeys.NETWORKS)
-      )
+      return query.queryKey.includes(ReactQueryKeys.NETWORKS)
     }
   }
 }

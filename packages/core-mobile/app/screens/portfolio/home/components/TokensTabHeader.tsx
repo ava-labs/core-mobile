@@ -9,7 +9,7 @@ import WatchlistCarousel from 'screens/watchlist/components/WatchlistCarousel'
 import { Space } from 'components/Space'
 import Animated, { FlipInEasyX, FlipOutEasyX } from 'react-native-reanimated'
 import { Text } from '@avalabs/k2-mobile'
-import { useNetworks } from 'hooks/useNetworks'
+import { useNetworks } from 'hooks/networks/useNetworks'
 import ActiveNetworkCard from './Cards/ActiveNetworkCard/ActiveNetworkCard'
 
 type NavigationProp = PortfolioScreenProps<

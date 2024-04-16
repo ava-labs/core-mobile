@@ -3,7 +3,7 @@ import { selectActiveAccount } from 'store/account'
 import { useInfiniteScroll } from 'store/utils/useInfiniteScroll'
 import { ActivityResponse } from 'services/activity/types'
 import { selectBridgeCriticalConfig } from 'store/bridge'
-import { useNetworks } from 'hooks/useNetworks'
+import { useNetworks } from 'hooks/networks/useNetworks'
 import { GetTransactionsArgs, Transaction } from '../types'
 import { useGetTransactionsQuery } from '../api'
 

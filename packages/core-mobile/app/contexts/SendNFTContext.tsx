@@ -29,7 +29,7 @@ import { RootState } from 'store'
 import Logger from 'utils/Logger'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { NetworkTokenUnit } from 'types'
-import { useNetworks } from 'hooks/useNetworks'
+import { useNetworks } from 'hooks/networks/useNetworks'
 
 export interface SendNFTContextState {
   sendToken: NFTItem

@@ -6,7 +6,7 @@ import NetworkFeeService from 'services/networkFee/NetworkFeeService'
 import Logger from 'utils/Logger'
 import { NetworkFee } from 'services/networkFee/types'
 import { NetworkTokenUnit } from 'types'
-import { useNetworks } from './useNetworks'
+import { useNetworks } from './networks/useNetworks'
 
 const REFETCH_INTERVAL = 30000 // 30 seconds
 

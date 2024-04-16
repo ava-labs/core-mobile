@@ -8,7 +8,7 @@ import ClearSVG from 'components/svg/ClearSVG'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import useInAppBrowser from 'hooks/useInAppBrowser'
 import { getExplorerAddressByNetwork } from 'utils/ExplorerUtils'
-import { useNetworks } from 'hooks/useNetworks'
+import { useNetworks } from 'hooks/networks/useNetworks'
 
 interface DoneProps {
   transactionId: string

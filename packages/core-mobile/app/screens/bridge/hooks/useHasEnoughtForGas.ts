@@ -1,5 +1,5 @@
 import { useNetworkFee } from 'hooks/useNetworkFee'
-import { useNetworks } from 'hooks/useNetworks'
+import { useNetworks } from 'hooks/networks/useNetworks'
 import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { TokenType, selectTokensWithBalance } from 'store/balance'

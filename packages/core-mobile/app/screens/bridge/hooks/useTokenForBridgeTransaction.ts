@@ -6,7 +6,7 @@ import {
   NetworkContractToken,
   NetworkToken
 } from '@avalabs/chains-sdk'
-import { useNetworks } from 'hooks/useNetworks'
+import { useNetworks } from 'hooks/networks/useNetworks'
 import { useMemo } from 'react'
 
 export function useTokenForBridgeTransaction(

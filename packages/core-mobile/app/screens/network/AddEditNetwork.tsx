@@ -15,7 +15,7 @@ import { Network, NetworkVMType } from '@avalabs/chains-sdk'
 import InputText from 'components/InputText'
 import { addCustomNetwork } from 'store/network'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { useNetworks } from 'hooks/useNetworks'
+import { useNetworks } from 'hooks/networks/useNetworks'
 
 export type AddEditNetworkProps = {
   mode: 'edit' | 'create'

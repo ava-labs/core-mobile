@@ -23,7 +23,7 @@ import { selectBridgeAppConfig } from 'store/bridge'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import Logger from 'utils/Logger'
 import { View } from '@avalabs/k2-mobile'
-import { useNetworks } from 'hooks/useNetworks'
+import { useNetworks } from 'hooks/networks/useNetworks'
 import SimplePrompt from '../shared/SimplePrompt'
 
 type BridgeAssetScreenProps = WalletScreenProps<

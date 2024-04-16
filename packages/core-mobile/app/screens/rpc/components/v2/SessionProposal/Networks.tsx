@@ -3,7 +3,7 @@ import React, { JSX } from 'react'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Row } from 'components/Row'
 import { NetworkLogo } from 'screens/network/NetworkLogo'
-import { useNetworks } from 'hooks/useNetworks'
+import { useNetworks } from 'hooks/networks/useNetworks'
 
 type Props = {
   chainIds: number[]

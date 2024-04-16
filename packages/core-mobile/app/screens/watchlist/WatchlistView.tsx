@@ -9,7 +9,7 @@ import { WatchListLoader } from 'screens/watchlist/components/WatchListLoader'
 import isEmpty from 'lodash.isempty'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { useTokenSearch } from 'screens/watchlist/useTokenSearch'
-import { useWatchlist } from 'hooks/useWatchlist'
+import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import { WatchlistFilter } from './types'
 import WatchList from './components/WatchList'
 

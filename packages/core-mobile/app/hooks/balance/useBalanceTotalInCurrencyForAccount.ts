@@ -1,7 +1,7 @@
 import { selectBalancesForAccount } from 'store/balance'
 import { useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { useNetworks } from './useNetworks'
+import { useNetworks } from '../networks/useNetworks'
 
 export const useBalanceTotalInCurrencyForAccount = (
   accountIndex: number

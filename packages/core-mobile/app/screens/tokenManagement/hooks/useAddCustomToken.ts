@@ -6,7 +6,7 @@ import { Network, NetworkContractToken } from '@avalabs/chains-sdk'
 import Logger from 'utils/Logger'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import TokenService from 'services/token/TokenService'
-import { useNetworks } from 'hooks/useNetworks'
+import { useNetworks } from 'hooks/networks/useNetworks'
 
 enum AddressValidationStatus {
   Valid,

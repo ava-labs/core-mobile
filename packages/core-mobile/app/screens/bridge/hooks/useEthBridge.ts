@@ -18,7 +18,7 @@ import { selectBridgeAppConfig } from 'store/bridge'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { Eip1559Fees } from 'utils/Utils'
 import { NetworkTokenUnit } from 'types'
-import { useNetworks } from 'hooks/useNetworks'
+import { useNetworks } from 'hooks/networks/useNetworks'
 
 /**
  * Hook for when the bridge source chain is Ethereum

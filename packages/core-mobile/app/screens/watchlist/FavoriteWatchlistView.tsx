@@ -1,7 +1,7 @@
 import React, { Dispatch } from 'react'
 import { WatchListLoader } from 'screens/watchlist/components/WatchListLoader'
 import { WatchlistFilter } from 'screens/watchlist/types'
-import { useWatchlist } from 'hooks/useWatchlist'
+import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import WatchList from './components/WatchList'
 
 interface Props {

@@ -1,6 +1,6 @@
 import { EthSendTransactionRpcRequest } from 'store/walletConnectV2/handlers/eth_sendTransaction/eth_sendTransaction'
 import { TransactionParams } from 'store/walletConnectV2/handlers/eth_sendTransaction/utils'
-import { useNetworks } from 'hooks/useNetworks'
+import { useNetworks } from 'hooks/networks/useNetworks'
 import { useExplainTransactionShared } from './useExplainTransactionShared'
 import { ExplainTransactionSharedTypes } from './types'
 

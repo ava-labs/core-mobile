@@ -5,7 +5,7 @@ import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList
 import Avatar from 'components/Avatar'
 import { Text, View } from '@avalabs/k2-mobile'
 import PriceChangeIndicator from 'screens/watchlist/components/PriceChangeIndicator'
-import { useWatchlist } from 'hooks/useWatchlist'
+import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import { Space } from 'components/Space'
 
 const Tokens = (): JSX.Element => {

@@ -22,7 +22,7 @@ import { Tooltip } from 'components/Tooltip'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { Button, Text, View } from '@avalabs/k2-mobile'
 import { NetworkVMType } from '@avalabs/chains-sdk'
-import { useNetworks } from 'hooks/useNetworks'
+import { useNetworks } from 'hooks/networks/useNetworks'
 
 type NavigationProp = SendTokensScreenProps<
   typeof AppNavigation.Send.Review
