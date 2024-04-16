@@ -6,7 +6,7 @@ import { useEffect } from 'react'
 import { useDispatch } from 'react-redux'
 import NetworkService from 'services/network/NetworkService'
 import { onAppUnlocked } from 'store/app'
-import { Networks, setNetworks } from 'store/network'
+import { Networks, onNetworksFetched } from 'store/network'
 import { toggleDeveloperMode } from 'store/settings/advanced'
 
 export const useGetNetworks = (): UseQueryResult<Networks, Error> => {
@@ -20,7 +20,7 @@ export const useGetNetworks = (): UseQueryResult<Networks, Error> => {
           await queryClient.invalidateQueries({
             queryKey: [ReactQueryKeys.NETWORKS]
           })
-          dispatch(setNetworks)
+          dispatch(onNetworksFetched)
         }
       })
     )

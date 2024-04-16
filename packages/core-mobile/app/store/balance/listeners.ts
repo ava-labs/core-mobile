@@ -15,7 +15,7 @@ import { addCustomToken } from 'store/customToken'
 import { AppStartListening } from 'store/middleware/listener'
 import {
   selectActiveNetwork,
-  setNetworks,
+  onNetworksFetched,
   selectFavoriteNetworks
 } from 'store/network'
 import {
@@ -246,7 +246,7 @@ export const addBalanceListeners = (
       setAccounts,
       setActiveAccountIndex,
       addCustomToken,
-      setNetworks
+      onNetworksFetched
     ),
     effect: async (action, listenerApi) =>
       onBalanceUpdate(QueryStatus.LOADING, listenerApi, false)

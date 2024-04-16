@@ -150,7 +150,9 @@ export const selectFavoriteNetworks = (state: RootState): Network[] => {
   }, [] as Network[])
 }
 
-export const setNetworks = createAction(`${reducerName}/setNetworks`)
+export const onNetworksFetched = createAction(
+  `${reducerName}/onNetworksFetched`
+)
 
 export const {
   setActive,
