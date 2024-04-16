@@ -29,7 +29,7 @@ import { combinedReducer as browser } from './browser'
 import { snapshotsReducer as snapshots } from './snapshots/slice'
 import { reduxStorage } from './reduxStorage'
 
-const VERSION = 10
+const VERSION = 12
 
 // list of reducers that don't need to be persisted
 // for nested/partial blacklist, please use transform
