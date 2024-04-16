@@ -113,7 +113,7 @@ class PostHogService {
       async (): Promise<PostHogDecideResponse> => {
         const fetcher = async (url: string): Promise<PostHogDecideResponse> => {
           const params = new URLSearchParams({
-            ip: '0',
+            ip: '',
             _: Date.now().toString(),
             v: '3',
             ver: appVersion
