@@ -1,6 +1,5 @@
 import { ChainId } from '@avalabs/chains-sdk'
-import { useSelector } from 'react-redux'
-import { selectActiveNetwork } from 'store/network'
+import { useNetworks } from './networks/useNetworks'
 
 export enum UI {
   Collectibles = 'Collectibles',
@@ -38,7 +37,9 @@ const disabledUIs: Partial<Record<UI, number[]>> = {
 }
 
 export const useIsUIDisabled = (ui: UI): boolean => {
-  const { chainId } = useSelector(selectActiveNetwork)
+  const {
+    activeNetwork: { chainId }
+  } = useNetworks()
 
   if (enabledUIs[ui]?.includes(chainId)) {
     return false

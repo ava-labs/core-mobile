@@ -1,8 +1,8 @@
 import React from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import AvaButton from 'components/AvaButton'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { selectActiveNetwork, selectNetworks, setActive } from 'store/network'
+import { setActive } from 'store/network'
 import { ScrollView, View } from 'react-native'
 import { Space } from 'components/Space'
 import AvaText from 'components/AvaText'
@@ -11,6 +11,7 @@ import TextFieldBg from 'components/styling/TextFieldBg'
 import { Network } from '@avalabs/chains-sdk'
 import { showSnackBarCustom } from 'components/Snackbar'
 import GeneralToast from 'components/toast/GeneralToast'
+import { useNetworks } from 'hooks/networks/useNetworks'
 import { NetworkLogo } from './NetworkLogo'
 
 export type NetworkDetailsProps = {
@@ -21,10 +22,9 @@ export type NetworkDetailsProps = {
 export default function NetworkDetails({
   chainId,
   goBack
-}: NetworkDetailsProps) {
-  const networks = useSelector(selectNetworks)
-  const network = networks[chainId]
-  const activeNetwork = useSelector(selectActiveNetwork)
+}: NetworkDetailsProps): JSX.Element {
+  const { getFromPopulatedNetwork, activeNetwork } = useNetworks()
+  const network = getFromPopulatedNetwork(chainId)
   const dispatch = useDispatch()
 
   const isConnected = activeNetwork.chainId === chainId
@@ -42,7 +42,7 @@ export default function NetworkDetails({
     goBack()
   }
 
-  function connect() {
+  function connect(): void {
     dispatch(setActive(chainId))
   }
 
@@ -84,7 +84,13 @@ export default function NetworkDetails({
   )
 }
 
-function DetailItem({ title, value }: { title: string; value: string }) {
+function DetailItem({
+  title,
+  value
+}: {
+  title: string
+  value: string
+}): JSX.Element {
   const { theme } = useApplicationContext()
 
   return (

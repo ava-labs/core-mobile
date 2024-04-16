@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import {
   hasMigratedFromAsyncStorage,
   migrateFromAsyncStorage
-} from 'store/utils/mmkv'
+} from 'utils/mmkv'
 
 export const useMigrateFromAsyncStorage = (): boolean | undefined => {
   const [hasMigrated, setHasMigrated] = useState(hasMigratedFromAsyncStorage())

@@ -137,39 +137,38 @@ export const Button: FC<ButtonProps & PropsWithChildren> = ({
       }}
       disabled={disabled}
       {...rest}>
-      <>
-        {({ pressed }: { pressed: boolean }) => {
-          const color = tintColor(pressed)
-          return (
-            <View
+      {/* @ts-ignore */}
+      {({ pressed }: { pressed: boolean }) => {
+        const color = tintColor(pressed)
+        return (
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              marginHorizontal: 8
+            }}>
+            {leftIcon ? (
+              getIcon(leftIcon, color, { marginRight: 8 })
+            ) : rightIcon ? (
+              <View style={{ width: iconWidth, marginRight: 8 }} />
+            ) : null}
+            <Text
+              numberOfLines={1}
+              variant={textVariant}
               style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                marginHorizontal: 8
+                color: color,
+                flexShrink: 1
               }}>
-              {leftIcon ? (
-                getIcon(leftIcon, color, { marginRight: 8 })
-              ) : rightIcon ? (
-                <View style={{ width: iconWidth, marginRight: 8 }} />
-              ) : null}
-              <Text
-                numberOfLines={1}
-                variant={textVariant}
-                style={{
-                  color: color,
-                  flexShrink: 1
-                }}>
-                {children}
-              </Text>
-              {rightIcon ? (
-                getIcon(rightIcon, color, { marginLeft: 8 })
-              ) : leftIcon ? (
-                <View style={{ width: iconWidth, marginLeft: 8 }} />
-              ) : null}
-            </View>
-          )
-        }}
-      </>
+              {children}
+            </Text>
+            {rightIcon ? (
+              getIcon(rightIcon, color, { marginLeft: 8 })
+            ) : leftIcon ? (
+              <View style={{ width: iconWidth, marginLeft: 8 }} />
+            ) : null}
+          </View>
+        )
+      }}
     </BaseButton>
   )
 }

@@ -21,15 +21,15 @@ import { Amount, NetworkTokenUnit } from 'types'
 import { InteractionManager } from 'react-native'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { humanizeSwapErrors } from 'localization/errors'
-import { useAvalancheProvider } from 'hooks/networkProviderHooks'
+import { useAvalancheProvider } from 'hooks/networks/networkProviderHooks'
 import { useSelector } from 'react-redux'
 import NetworkService from 'services/network/NetworkService'
 import WalletService from 'services/wallet/WalletService'
 import { performSwap } from '@avalabs/paraswap-sdk'
-import { selectActiveNetwork } from 'store/network'
 import { selectActiveAccount } from 'store/account'
 import { useNetworkFee } from 'hooks/useNetworkFee'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import { useNetworks } from 'hooks/networks/useNetworks'
 
 export type SwapStatus = 'Idle' | 'Preparing' | 'Swapping' | 'Success' | 'Fail'
 
@@ -89,8 +89,8 @@ export const SwapContextProvider = ({
 }: {
   children: ReactNode
 }): JSX.Element => {
+  const { activeNetwork } = useNetworks()
   const activeAccount = useSelector(selectActiveAccount)
-  const activeNetwork = useSelector(selectActiveNetwork)
   const avalancheProvider = useAvalancheProvider()
   const { data: networkFee } = useNetworkFee()
   const [fromToken, setFromToken] = useState<TokenWithBalance>()

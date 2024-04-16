@@ -10,6 +10,7 @@ import {
 import { initialState as browserFavoritesInitialState } from './browser/slices/favorites'
 import { getInitialState as browserTabsGetInitialState } from './browser/slices/tabs'
 import { initialState as browserGlobalHistoryInitialState } from './browser/slices/globalHistory'
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export const migrations = {
   1: (state: any) => {
@@ -150,5 +151,18 @@ export const migrations = {
     const newState = { ...state, nft: { ...state.nft } }
     delete newState.nft.nfts
     return newState
+  },
+  12: (state: any) => {
+    return {
+      ...state,
+      network: {
+        customNetworks: state.network.customNetworks,
+        favorites: state.network.favorites,
+        active: state.network.active
+      },
+      watchlist: {
+        favorites: state.watchlist.favorites
+      }
+    }
   }
 }

@@ -1,5 +1,5 @@
 import React from 'react'
-import type { Meta } from '@storybook/react-native'
+
 import { FlatList } from 'react-native'
 import { SvgProps } from 'react-native-svg'
 import Link from '../../utils/Link'
@@ -8,7 +8,7 @@ import { Icons } from './Icons'
 
 export default {
   title: 'Icons'
-} as Meta
+}
 
 export const All = (): JSX.Element => {
   return (

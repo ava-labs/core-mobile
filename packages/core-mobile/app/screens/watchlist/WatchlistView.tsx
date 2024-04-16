@@ -3,18 +3,13 @@ import { StyleSheet, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import Dropdown from 'components/Dropdown'
 import AvaText from 'components/AvaText'
-import {
-  MarketToken,
-  defaultPrice,
-  selectWatchlistCharts,
-  selectWatchlistPrices,
-  selectWatchlistTokens
-} from 'store/watchlist'
+import { MarketToken, defaultPrice } from 'store/watchlist'
 import { useFocusedSelector } from 'utils/performance/useFocusedSelector'
 import { WatchListLoader } from 'screens/watchlist/components/WatchListLoader'
 import isEmpty from 'lodash.isempty'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { useTokenSearch } from 'screens/watchlist/useTokenSearch'
+import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import { WatchlistFilter } from './types'
 import WatchList from './components/WatchList'
 
@@ -58,9 +53,7 @@ const renderPriceFilterSelection = (
 ): JSX.Element => <SelectionItem title={`Sort by: ${selectedItem}`} />
 
 const WatchlistView: React.FC<Props> = ({ searchText }) => {
-  const tokens = useFocusedSelector(selectWatchlistTokens)
-  const prices = useFocusedSelector(selectWatchlistPrices)
-  const charts = useFocusedSelector(selectWatchlistCharts)
+  const { tokens, prices, charts } = useWatchlist()
   const currency = useFocusedSelector(selectSelectedCurrency).toLowerCase()
   const [filterBy, setFilterBy] = useState(WatchlistFilter.MARKET_CAP)
   const isSearching = !isEmpty(searchText)
@@ -75,15 +68,23 @@ const WatchlistView: React.FC<Props> = ({ searchText }) => {
   })
   const showLoader = isSearchingTokens || isFetchingTokens
   const tokensToDisplay = useMemo(() => {
-    return searchResults ? searchResults : tokens
-  }, [searchResults, tokens])
+    return searchResults?.tokens ?? tokens
+  }, [searchResults?.tokens, tokens])
+
+  const pricesToDisplay = useMemo(() => {
+    return searchResults?.prices ?? prices
+  }, [searchResults?.prices, prices])
+
+  const chartsToDisplay = useMemo(() => {
+    return searchResults?.charts ?? charts
+  }, [searchResults?.charts, charts])
 
   const sortedTokens = useMemo(() => {
-    if (Object.keys(prices).length === 0) return tokensToDisplay
+    if (Object.keys(pricesToDisplay).length === 0) return tokensToDisplay
 
     return tokensToDisplay.slice().sort((a, b) => {
-      const priceB = prices[b.id] ?? defaultPrice
-      const priceA = prices[a.id] ?? defaultPrice
+      const priceB = pricesToDisplay[b.id] ?? defaultPrice
+      const priceA = pricesToDisplay[a.id] ?? defaultPrice
 
       switch (filterBy) {
         case WatchlistFilter.MARKET_CAP:
@@ -99,7 +100,7 @@ const WatchlistView: React.FC<Props> = ({ searchText }) => {
           return priceB.priceInCurrency - priceA.priceInCurrency
       }
     })
-  }, [filterBy, prices, tokensToDisplay])
+  }, [filterBy, pricesToDisplay, tokensToDisplay])
 
   const selectedPriceFilter = filterPriceOptions.findIndex(
     item => item === filterBy
@@ -123,8 +124,8 @@ const WatchlistView: React.FC<Props> = ({ searchText }) => {
         <>
           <WatchList
             tokens={sortedTokens}
-            charts={charts}
-            prices={prices}
+            charts={chartsToDisplay}
+            prices={pricesToDisplay}
             filterBy={filterBy}
             isSearching={isSearching}
             testID="watchlist_item"

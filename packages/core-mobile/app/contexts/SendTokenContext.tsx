@@ -12,7 +12,7 @@ import AvaLogoSVG from 'components/svg/AvaLogoSVG'
 import { Image, InteractionManager } from 'react-native'
 import { mustNumber } from 'utils/JsTools'
 import { TokenWithBalance } from 'store/balance'
-import { selectActiveNetwork, TokenSymbol } from 'store/network'
+import { TokenSymbol } from 'store/network'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import sendService from 'services/send/SendService'
@@ -33,6 +33,7 @@ import { formatUriImageToPng } from 'utils/Contentful'
 import Logger from 'utils/Logger'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { NetworkTokenUnit, Amount } from 'types'
+import { useNetworks } from 'hooks/networks/useNetworks'
 
 export interface SendTokenContextState {
   sendToken: TokenWithBalance | undefined
@@ -63,9 +64,9 @@ export const SendTokenContextProvider = ({
 }: {
   children: ReactNode
 }): JSX.Element => {
+  const { activeNetwork } = useNetworks()
   const { theme } = useApplicationContext()
   const activeAccount = useSelector(selectActiveAccount)
-  const activeNetwork = useSelector(selectActiveNetwork)
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { nativeTokenPrice } = useNativeTokenPrice(
     selectedCurrency.toLowerCase() as VsCurrencyType

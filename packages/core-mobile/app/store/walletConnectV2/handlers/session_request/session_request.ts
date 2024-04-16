@@ -3,10 +3,10 @@ import AppNavigation from 'navigation/AppNavigation'
 import { ProposalTypes, SessionTypes } from '@walletconnect/types'
 import { AppListenerEffectAPI } from 'store'
 import { ethErrors } from 'eth-rpc-errors'
-import { selectActiveNetwork, selectAllNetworks } from 'store/network'
 import { EVM_IDENTIFIER } from 'consts/walletConnect'
 import { addNamespaceToChain } from 'services/walletconnectv2/utils'
 import { normalizeNamespaces } from '@walletconnect/utils'
+import { selectActiveNetwork, selectAllNetworks } from 'store/network'
 import { SessionProposal, RpcMethod, CORE_ONLY_METHODS } from '../../types'
 import {
   RpcRequestHandler,

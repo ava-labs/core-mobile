@@ -15,7 +15,6 @@ import FeatureBlocked from 'screens/posthog/FeatureBlocked'
 import NetworkFeeSelector from 'components/NetworkFeeSelector'
 import { Eip1559Fees } from 'utils/Utils'
 import { NetworkTokenUnit } from 'types'
-import { selectActiveNetwork, selectNetworks } from 'store/network'
 import BridgeService from 'services/bridge/BridgeService'
 import Big from 'big.js'
 import { selectActiveAccount } from 'store/account'
@@ -24,6 +23,7 @@ import { selectBridgeAppConfig } from 'store/bridge'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import Logger from 'utils/Logger'
 import { View } from '@avalabs/k2-mobile'
+import { useNetworks } from 'hooks/networks/useNetworks'
 import SimplePrompt from '../shared/SimplePrompt'
 
 type BridgeAssetScreenProps = WalletScreenProps<
@@ -39,8 +39,7 @@ const BridgeAsset = (): JSX.Element => {
 
   const { onUserApproved: onApprove, onUserRejected: onReject } =
     useDappConnectionV2()
-  const activeNetwork = useSelector(selectActiveNetwork)
-  const allNetworks = useSelector(selectNetworks)
+  const { activeNetwork, networks } = useNetworks()
   const activeAccount = useSelector(selectActiveAccount)
   const isTestnet = useSelector(selectIsDeveloperMode)
   const config = useSelector(selectBridgeAppConfig)
@@ -99,7 +98,7 @@ const BridgeAsset = (): JSX.Element => {
         currentBlockchain,
         amount: Big(amountStr),
         asset,
-        allNetworks,
+        allNetworks: networks,
         activeNetwork,
         activeAccount,
         isTestnet,
@@ -114,7 +113,7 @@ const BridgeAsset = (): JSX.Element => {
   }, [
     activeAccount,
     activeNetwork,
-    allNetworks,
+    networks,
     amountStr,
     asset,
     config,

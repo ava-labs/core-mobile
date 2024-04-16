@@ -1,2 +1,2 @@
-export { commonStorage } from './storages'
+export { commonStorage, queryStorage } from './storages'
 export { hasMigratedFromAsyncStorage, migrateFromAsyncStorage } from './utils'

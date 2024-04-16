@@ -1,10 +1,10 @@
 import React, { useState } from 'react'
-import type { Meta } from '@storybook/react-native'
+
 import { ConfirmScreen } from 'screens/earn/components/ConfirmScreen'
 
 export default {
   title: 'Earn/ConfirmScreen'
-} as Meta
+}
 
 export const Basic = () => {
   const [isConfirming, setIsConfirming] = useState(false)

@@ -8,7 +8,6 @@ import { PortfolioScreenProps } from 'navigation/types'
 import { useNavigation } from '@react-navigation/native'
 import { NetworkLogo } from 'screens/network/NetworkLogo'
 import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList'
-import { selectActiveNetwork } from 'store/network'
 import { selectActiveAccount } from 'store/account'
 import usePendingBridgeTransactions from 'screens/bridge/hooks/usePendingBridgeTransactions'
 import TopRightBadge from 'components/TopRightBadge'
@@ -22,8 +21,9 @@ import {
   Icons
 } from '@avalabs/k2-mobile'
 import PriceChangeIndicator from 'screens/watchlist/components/PriceChangeIndicator'
-import { useTokenPortfolioPriceChange } from 'hooks/useTokenPortfolioPriceChange'
+import { useTokenPortfolioPriceChange } from 'hooks/balance/useTokenPortfolioPriceChange'
 import { Space } from 'components/Space'
+import { useNetworks } from 'hooks/networks/useNetworks'
 import ZeroState from './ZeroState'
 import Tokens from './Tokens'
 
@@ -33,12 +33,11 @@ type NavigationProp = PortfolioScreenProps<
 
 const ActiveNetworkCard = (): JSX.Element => {
   const { filteredTokenList: tokens } = useSearchableTokenList()
-
-  const network = useSelector(selectActiveNetwork)
+  const { activeNetwork } = useNetworks()
   const account = useSelector(selectActiveAccount)
   const totalBalanceInCurrency = useSelector(
     selectBalanceTotalInCurrencyForNetworkAndAccount(
-      network.chainId,
+      activeNetwork.chainId,
       account?.index
     )
   )
@@ -48,12 +47,12 @@ const ActiveNetworkCard = (): JSX.Element => {
   } = useApplicationContext()
   const { theme } = useTheme()
   const backgroundColor = theme.colors.$neutral900
-  const pendingBridgeTxs = usePendingBridgeTransactions(network)
+  const pendingBridgeTxs = usePendingBridgeTransactions(activeNetwork)
   const { tokenPortfolioPriceChange } = useTokenPortfolioPriceChange(tokens)
 
   const navigateToNetworkTokens = (): void => {
     AnalyticsService.capture('PortfolioPrimaryNetworkClicked', {
-      chainId: network.chainId
+      chainId: activeNetwork.chainId
     })
     navigate(AppNavigation.Portfolio.NetworkTokens)
   }
@@ -64,7 +63,7 @@ const ActiveNetworkCard = (): JSX.Element => {
     return (
       <View>
         <View sx={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-          <NetworkLogo logoUri={network.logoUri} size={32} />
+          <NetworkLogo logoUri={activeNetwork.logoUri} size={32} />
           {pendingBridgeTxs.length > 0 && (
             <TopRightBadge
               text={pendingBridgeTxs.length.toString()}
@@ -105,7 +104,7 @@ const ActiveNetworkCard = (): JSX.Element => {
           }}>
           <View>
             <Text variant="heading5" ellipsizeMode="tail">
-              {network.chainName}
+              {activeNetwork.chainName}
             </Text>
           </View>
           <View sx={{ alignItems: 'flex-end' }}>

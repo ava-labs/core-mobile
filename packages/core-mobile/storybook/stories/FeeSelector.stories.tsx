@@ -1,6 +1,5 @@
 import { FeeSelector } from 'components/NetworkFeeSelector'
 import React, { useState } from 'react'
-import type { ComponentStory, Meta } from '@storybook/react-native'
 import { withCenterView } from '../decorators/withCenterView'
 
 export default {
@@ -9,14 +8,15 @@ export default {
   argTypes: {
     onSelect: { action: 'onSelect' }
   }
-} as Meta
+}
 
-export const Basic: ComponentStory<typeof FeeSelector> = ({
+export const Basic = ({
   label,
   selected,
   onSelect,
   value
-}) => {
+}: // eslint-disable-next-line @typescript-eslint/no-explicit-any
+any): React.JSX.Element => {
   return (
     <FeeSelector
       label={label}
@@ -33,10 +33,8 @@ Basic.args = {
   value: '34'
 }
 
-export const Editable: ComponentStory<typeof FeeSelector> = ({
-  label,
-  placeholder
-}) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const Editable = ({ label, placeholder }: any): React.JSX.Element => {
   const [value, setValue] = useState('20')
   const [selected, setSelected] = useState(false)
   return (

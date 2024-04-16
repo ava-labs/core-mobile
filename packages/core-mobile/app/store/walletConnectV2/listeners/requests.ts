@@ -6,9 +6,9 @@ import {
   ethErrors
 } from 'eth-rpc-errors'
 import Logger from 'utils/Logger'
-import { selectNetwork } from 'store/network'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { onAppUnlocked, selectWalletState, WalletState } from 'store/app'
+import { selectNetwork } from 'store/network'
 import {
   onRequest,
   onRequestApproved,
@@ -64,7 +64,7 @@ export const processRequest = async (
   }
 
   try {
-    validateRequest(request, listenerApi)
+    await validateRequest(request, listenerApi)
   } catch (error) {
     Logger.error('rpc request is invalid', error)
 

@@ -19,10 +19,9 @@ import AvaText from 'components/AvaText'
 import ActivityList from 'screens/shared/ActivityList/ActivityList'
 import { Transaction } from 'store/transaction'
 import usePendingBridgeTransactions from 'screens/bridge/hooks/usePendingBridgeTransactions'
-import { selectActiveNetwork } from 'store/network'
-import { useSelector } from 'react-redux'
 import TopRightBadge from 'components/TopRightBadge'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import { useNetworks } from 'hooks/networks/useNetworks'
 import NetworkTokensHeader from './components/NetworkTokensHeader'
 
 type NavigationProp = PortfolioScreenProps<
@@ -43,8 +42,7 @@ const NetworkTokens = (): JSX.Element => {
 
   const manageDisabled = useIsUIDisabled(UI.ManageTokens)
   const manageBtnColor = theme.colorPrimary1
-
-  const activeNetwork = useSelector(selectActiveNetwork)
+  const { activeNetwork } = useNetworks()
   const pendingBridgeTxs = usePendingBridgeTransactions(activeNetwork)
 
   useEffect(() => {

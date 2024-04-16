@@ -15,8 +15,8 @@ import { addCustomToken } from 'store/customToken'
 import { AppStartListening } from 'store/middleware/listener'
 import {
   selectActiveNetwork,
-  selectFavoriteNetworks,
-  setNetworks
+  onNetworksFetched,
+  selectFavoriteNetworks
 } from 'store/network'
 import {
   selectSelectedCurrency,
@@ -56,11 +56,11 @@ const onBalanceUpdate = async (
   queryStatus: QueryStatus,
   listenerApi: AppListenerEffectAPI,
   fetchActiveOnly: boolean
-) => {
+): Promise<void> => {
   const state = listenerApi.getState()
   const activeNetwork = selectActiveNetwork(state)
 
-  let networksToFetch
+  let networksToFetch: Network[]
   const activeAccount = selectActiveAccount(state)
   const accountsToFetch = activeAccount ? [activeAccount] : []
 
@@ -87,7 +87,7 @@ const onBalanceUpdateCore = async (
   listenerApi: AppListenerEffectAPI,
   networks: Network[],
   accounts: Account[]
-) => {
+): Promise<void> => {
   const { getState, dispatch } = listenerApi
   const state = getState()
   const currentStatus = selectBalanceStatus(state)
@@ -158,7 +158,7 @@ const fetchBalancePeriodically = async (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   action: any,
   listenerApi: AppListenerEffectAPI
-) => {
+): Promise<void> => {
   const { condition } = listenerApi
 
   onBalanceUpdate(QueryStatus.LOADING, listenerApi, false)
@@ -205,7 +205,7 @@ const fetchBalancePeriodically = async (
 const handleFetchBalanceForAccount = async (
   listenerApi: AppListenerEffectAPI,
   accountIndex: number
-) => {
+): Promise<void> => {
   const state = listenerApi.getState()
   const activeNetwork = selectActiveNetwork(state)
 
@@ -226,7 +226,9 @@ const handleFetchBalanceForAccount = async (
   )
 }
 
-export const addBalanceListeners = (startListening: AppStartListening) => {
+export const addBalanceListeners = (
+  startListening: AppStartListening
+): void => {
   startListening({
     actionCreator: onAppUnlocked,
     effect: fetchBalancePeriodically
@@ -244,7 +246,7 @@ export const addBalanceListeners = (startListening: AppStartListening) => {
       setAccounts,
       setActiveAccountIndex,
       addCustomToken,
-      setNetworks
+      onNetworksFetched
     ),
     effect: async (action, listenerApi) =>
       onBalanceUpdate(QueryStatus.LOADING, listenerApi, false)

@@ -20,7 +20,7 @@ import TopRightBadge from 'components/TopRightBadge'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { Text } from '@avalabs/k2-mobile'
 import PriceChangeIndicator from 'screens/watchlist/components/PriceChangeIndicator'
-import { useTokenPortfolioPriceChange } from 'hooks/useTokenPortfolioPriceChange'
+import { useTokenPortfolioPriceChange } from 'hooks/balance/useTokenPortfolioPriceChange'
 
 const windowWidth = Dimensions.get('window').width
 

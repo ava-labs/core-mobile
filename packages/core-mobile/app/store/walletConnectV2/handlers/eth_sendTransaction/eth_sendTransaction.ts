@@ -8,12 +8,12 @@ import AppNavigation from 'navigation/AppNavigation'
 import Logger from 'utils/Logger'
 import { ethErrors } from 'eth-rpc-errors'
 import * as Sentry from '@sentry/react-native'
-import { selectNetwork } from 'store/network'
 import { selectAccountByAddress } from 'store/account'
 import { queryClient } from 'contexts/ReactQueryProvider'
 import { NetworkFee } from 'services/networkFee/types'
 import { getQueryKey, prefetchNetworkFee } from 'hooks/useNetworkFee'
 import { NetworkTokenUnit } from 'types'
+import { selectNetwork } from 'store/network'
 import {
   updateRequestStatus,
   waitForTransactionReceiptAsync

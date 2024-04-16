@@ -1,5 +1,4 @@
 import React, { FC, PropsWithChildren } from 'react'
-import { type Meta } from '@storybook/react-native'
 import StakeLogoBigSVG from 'components/svg/StakeLogoBigSVG'
 import StakeLogoSmallSVG from 'components/svg/StakeLogoSmallSVG'
 import ClockSVG from 'components/svg/ClockSVG'
@@ -80,7 +79,7 @@ import FaceIdSVG from 'components/svg/FaceIdSVG'
 
 export default {
   title: 'SVGs'
-} as Meta
+}
 
 const IconContainer: FC<
   {

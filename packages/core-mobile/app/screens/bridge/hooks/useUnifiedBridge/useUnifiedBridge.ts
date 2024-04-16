@@ -5,12 +5,12 @@ import { Blockchain, useBridgeSDK } from '@avalabs/bridge-sdk'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import UnifiedBridgeService from 'services/bridge/UnifiedBridgeService'
-import { selectActiveNetwork, selectNetwork } from 'store/network'
 import Logger from 'utils/Logger'
 import { selectActiveAccount } from 'store/account/slice'
 import { setPendingTransfer } from 'store/unifiedBridge/slice'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { NetworkTokenUnit } from 'types'
+import { useNetworks } from 'hooks/networks/useNetworks'
 import { isUnifiedBridgeAsset } from '../../utils/bridgeUtils'
 import { AssetBalance } from '../../utils/types'
 import { useUnifiedBridgeAssets } from '../useUnifiedBridgeAssets'
@@ -36,9 +36,9 @@ export const useUnifiedBridge = (
   selectedAsset?: AssetBalance
 ): UnifiedBridge => {
   const dispatch = useDispatch()
+  const { activeNetwork, getNetwork } = useNetworks()
   const { currentBlockchain, targetBlockchain } = useBridgeSDK()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
-  const activeNetwork = useSelector(selectActiveNetwork)
   const activeAccount = useSelector(selectActiveAccount)
   const { assets } = useUnifiedBridgeAssets()
   const [receiveAmount, setReceiveAmount] = useState<Big>()
@@ -56,7 +56,7 @@ export const useUnifiedBridge = (
     [isDeveloperMode, targetBlockchain]
   )
 
-  const targetNetwork = useSelector(selectNetwork(targetChainId))
+  const targetNetwork = getNetwork(targetChainId)
 
   const isAssetSupported = useMemo(
     () => getIsAssetSupported(selectedAsset, assets, targetChainId),
