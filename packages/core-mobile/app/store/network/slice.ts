@@ -6,7 +6,7 @@ import {
 } from '@avalabs/chains-sdk'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectAllCustomTokens } from 'store/customToken'
-import { getNetworksFromCache } from 'utils/getNetworksFromCache'
+import { getNetworksFromCache } from 'hooks/networks/utils/getNetworksFromCache'
 import { RootState } from '../index'
 import { ChainID, Networks, NetworkState } from './types'
 import { mergeWithCustomTokens } from './utils'

@@ -1,6 +1,9 @@
 import React, { PropsWithChildren, useEffect } from 'react'
 import { Query, QueryClient, focusManager } from '@tanstack/react-query'
-import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client'
+import {
+  PersistQueryClientProvider,
+  removeOldestQuery
+} from '@tanstack/react-query-persist-client'
 import NetInfo from '@react-native-community/netinfo'
 import { onlineManager } from '@tanstack/react-query'
 import { AppState, AppStateStatus } from 'react-native'
@@ -28,7 +31,8 @@ const clientPersister = createSyncStoragePersister({
     removeItem: (key: string) => {
       return queryStorage.delete(key)
     }
-  }
+  },
+  retry: removeOldestQuery
 })
 
 const persistOptions = {
