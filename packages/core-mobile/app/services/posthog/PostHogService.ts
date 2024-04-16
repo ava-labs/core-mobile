@@ -8,7 +8,7 @@ import { getPosthogDeviceInfo } from './utils'
 
 const PostHogCaptureUrl = `${Config.POSTHOG_URL}/capture/`
 
-const PostHogDecideUrl = `${Config.POSTHOG_URL}/decide?v=2`
+const PostHogDecideUrl = `${Config.POSTHOG_URL}/decide?v=3`
 
 class PostHogService {
   distinctId: string | undefined
