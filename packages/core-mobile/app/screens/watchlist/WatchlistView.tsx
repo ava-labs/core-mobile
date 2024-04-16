@@ -100,7 +100,7 @@ const WatchlistView: React.FC<Props> = ({ searchText }) => {
           return priceB.priceInCurrency - priceA.priceInCurrency
       }
     })
-  }, [filterBy, prices, tokensToDisplay])
+  }, [filterBy, pricesToDisplay, tokensToDisplay])
 
   const selectedPriceFilter = filterPriceOptions.findIndex(
     item => item === filterBy

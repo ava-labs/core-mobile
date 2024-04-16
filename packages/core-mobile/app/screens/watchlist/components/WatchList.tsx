@@ -60,9 +60,9 @@ const WatchList: React.FC<Props> = ({
   const { tokenInCurrencyFormatter } = useApplicationContext().appHook
   const dispatch = useDispatch()
 
-  const keyExtractor = (item: MarketToken) => item.id
+  const keyExtractor = (item: MarketToken): string => item.id
 
-  function renderItem(token: MarketToken, index: number) {
+  function renderItem(token: MarketToken, index: number): React.JSX.Element {
     const chartData = charts[token.id] ?? defaultChartData
     const price = prices[token.id] ?? defaultPrice
     const displayValue = getDisplayValue(price, tokenInCurrencyFormatter)
@@ -141,7 +141,7 @@ const WatchList: React.FC<Props> = ({
   )
 }
 
-const SeparatorComponent = () => (
+const SeparatorComponent = (): React.JSX.Element => (
   <Separator style={styles.separator} inset={8} />
 )
 

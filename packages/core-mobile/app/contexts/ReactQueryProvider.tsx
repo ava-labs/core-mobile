@@ -1,15 +1,13 @@
 import React, { PropsWithChildren, useEffect } from 'react'
-import { QueryClient, focusManager } from '@tanstack/react-query'
-import {
-  PersistQueryClientProvider,
-  removeOldestQuery
-} from '@tanstack/react-query-persist-client'
+import { Query, QueryClient, focusManager } from '@tanstack/react-query'
+import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client'
 import NetInfo from '@react-native-community/netinfo'
 import { onlineManager } from '@tanstack/react-query'
 import { AppState, AppStateStatus } from 'react-native'
 import { queryStorage } from 'store/utils/mmkv'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister'
+import { ChartDataSchema } from 'services/token/types'
 
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -32,22 +30,41 @@ const clientPersister = createSyncStoragePersister({
       return queryStorage.delete(key)
     }
   },
-  retry: removeOldestQuery
+  deserialize: cachedString => {
+    const parsedString = JSON.parse(cachedString)
+    const transformedChartData = parsedString.clientState.queries.find(
+      (query: Query) => {
+        if (query.queryKey.includes(ReactQueryKeys.WATCHLIST_TOKENS_AND_CHARTS))
+          ChartDataSchema.safeParse(query.state.data)
+      }
+    )
+    return {
+      ...parsedString,
+      clientState: {
+        ...parsedString.clientState,
+        queries: {
+          ...parsedString.clientState.queries,
+          ...transformedChartData
+        }
+      }
+    }
+  }
 })
 
 const persistOptions = {
   persister: clientPersister,
   maxAge: Infinity,
   dehydrateOptions: {
-    shouldDehydrateQuery: ({
-      queryKey
-    }: {
-      queryKey: ReactQueryKeys
-      state: unknown
-    }) =>
-      queryKey.includes(ReactQueryKeys.NETWORKS) ||
-      queryKey.includes(ReactQueryKeys.WATCHLIST_PRICES) ||
-      queryKey.includes(ReactQueryKeys.WATCHLIST_TOKENS_AND_CHARTS)
+    shouldDehydrateQuery: (query: Query) => {
+      if (query.queryKey.length === 0) return false
+      if (query.state.status !== 'success') return false
+
+      return (
+        query.queryKey.includes(ReactQueryKeys.WATCHLIST_PRICES) ||
+        query.queryKey.includes(ReactQueryKeys.WATCHLIST_TOKENS_AND_CHARTS) ||
+        query.queryKey.includes(ReactQueryKeys.NETWORKS)
+      )
+    }
   }
 }
 

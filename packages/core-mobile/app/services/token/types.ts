@@ -22,7 +22,12 @@ export const ChartDataSchema = object({
     diffValue: number(),
     percentChange: number()
   }),
-  dataPoints: object({ date: date(), value: number() }).array()
+  dataPoints: object({
+    date: string()
+      .or(date())
+      .transform((arg: string | Date) => new Date(arg)),
+    value: number()
+  }).array()
 })
 
 export type ChartData = z.infer<typeof ChartDataSchema>
