@@ -151,7 +151,10 @@ class PostHogService {
 
     try {
       const responseJson = await fetchWithPosthogFallback()
-      const featureFlags = sanitizeFeatureFlags(responseJson)
+      const featureFlags = sanitizeFeatureFlags(
+        responseJson,
+        DeviceInfoService.getAppVersion()
+      )
 
       Logger.info('fetched feature flags', featureFlags)
 

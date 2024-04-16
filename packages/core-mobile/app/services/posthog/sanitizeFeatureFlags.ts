@@ -1,5 +1,4 @@
 import { coerce, satisfies, validRange } from 'semver'
-import DeviceInfoService from 'services/deviceInfo/DeviceInfoService'
 import {
   FeatureGates,
   FeatureVars,
@@ -33,7 +32,10 @@ const assertResponse: AssertResponseFn = value => {
   }
 }
 
-export const sanitizeFeatureFlags = (value: unknown): FeatureFlags => {
+export const sanitizeFeatureFlags = (
+  value: unknown,
+  appVersion?: string
+): FeatureFlags => {
   assertResponse(value)
 
   const rawFlags = allowedKeys.reduce((acc, k) => {
@@ -48,10 +50,10 @@ export const sanitizeFeatureFlags = (value: unknown): FeatureFlags => {
   }, {} as FeatureFlags)
 
   if (value.featureFlagPayloads) {
-    const appVersion = coerce(DeviceInfoService.getAppVersion())
+    const version = coerce(appVersion)
 
     // If we don't know the current Core version, default to whatever was returned by the API
-    if (!appVersion) {
+    if (!version) {
       return rawFlags
     }
 
@@ -75,7 +77,7 @@ export const sanitizeFeatureFlags = (value: unknown): FeatureFlags => {
             return [flagName, false]
           }
 
-          return [flagName, satisfies(appVersion, versionRange)]
+          return [flagName, satisfies(version, versionRange)]
         })
     )
 

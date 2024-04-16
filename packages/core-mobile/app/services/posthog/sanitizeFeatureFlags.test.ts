@@ -1,9 +1,5 @@
-import mockRNDeviceInfo from 'react-native-device-info/jest/react-native-device-info-mock'
 import { sanitizeFeatureFlags } from './sanitizeFeatureFlags'
 import { FeatureFlags, FeatureGates } from './types'
-
-jest.mock('react-native-device-info', () => mockRNDeviceInfo)
-jest.spyOn(mockRNDeviceInfo, 'hasNotch').mockReturnValue(false)
 
 describe('app/contexts/posthogUtils.ts', () => {
   describe('sanitizeFeatureFlags', () => {
@@ -63,18 +59,20 @@ describe('app/contexts/posthogUtils.ts', () => {
     describe('when a feature flag arrives with a custom payload', () => {
       describe('but the payload is not a valid semver range', () => {
         let featureFlags: FeatureFlags
-        jest.spyOn(mockRNDeviceInfo, 'getVersion').mockReturnValue('1.0.0')
         beforeEach(() => {
-          featureFlags = sanitizeFeatureFlags({
-            featureFlags: {
-              [FeatureGates.DEFI]: true,
-              [FeatureGates.SEND]: true,
-              [FeatureGates.SWAP]: false
+          featureFlags = sanitizeFeatureFlags(
+            {
+              featureFlags: {
+                [FeatureGates.DEFI]: true,
+                [FeatureGates.SEND]: true,
+                [FeatureGates.SWAP]: false
+              },
+              featureFlagPayloads: {
+                [FeatureGates.DEFI]: JSON.stringify('a.b.c')
+              }
             },
-            featureFlagPayloads: {
-              [FeatureGates.DEFI]: JSON.stringify('a.b.c')
-            }
-          })
+            '1.0.0'
+          )
         })
         it('the version-specific feature flag should be disabled', () => {
           expect(featureFlags[FeatureGates.DEFI]).toBe(false)
@@ -85,89 +83,86 @@ describe('app/contexts/posthogUtils.ts', () => {
         })
       })
 
-      /*describe('and the payload is a valid semver range', () => {
+      describe('and the payload is a valid semver range', () => {
         it.each([
           {
-            coreVersion: '1.32.8',
-            flagVersionRange: '^1.32',
+            appVersion: '1.32.8',
+            featureFlagPayloads: '^1.32',
             isEnabled: true
           },
           {
-            coreVersion: '1.34.8',
-            flagVersionRange: '^1.32',
-            isEnabled: true
-          }
-          {
-            coreVersion: '1.32.8',
-            flagVersionRange: '~1.32',
+            appVersion: '1.34.8',
+            featureFlagPayloads: '^1.32',
             isEnabled: true
           },
           {
-            coreVersion: '1.33.0',
-            flagVersionRange: '~1.32',
+            appVersion: '1.32.8',
+            featureFlagPayloads: '~1.32',
+            isEnabled: true
+          },
+          {
+            appVersion: '1.33.0',
+            featureFlagPayloads: '~1.32',
             isEnabled: false
           },
           {
-            coreVersion: '1.40.8',
-            flagVersionRange: '>=1.33.7',
+            appVersion: '1.40.8',
+            featureFlagPayloads: '>=1.33.7',
             isEnabled: true
           },
           {
-            coreVersion: '1.40.8',
-            flagVersionRange: '1.33.x',
+            appVersion: '1.40.8',
+            featureFlagPayloads: '1.33.x',
             isEnabled: false
           },
           {
-            coreVersion: '1.40.8',
-            flagVersionRange: '1.40.x',
+            appVersion: '1.40.8',
+            featureFlagPayloads: '1.40.x',
             isEnabled: true
           },
           {
-            coreVersion: '1.40.8',
-            flagVersionRange: '1.33 - 1.41',
+            appVersion: '1.40.8',
+            featureFlagPayloads: '1.33 - 1.41',
             isEnabled: true
           },
           {
-            coreVersion: '1.32.8',
-            flagVersionRange: '1.33 - 1.41',
+            appVersion: '1.32.8',
+            featureFlagPayloads: '1.33 - 1.41',
             isEnabled: false
           },
           {
-            coreVersion: '1.32.8',
-            flagVersionRange: '1.32 || 1.33',
+            appVersion: '1.32.8',
+            featureFlagPayloads: '1.32 || 1.33',
             isEnabled: true
           },
           {
-            coreVersion: '1.99.99',
-            flagVersionRange: '^2',
+            appVersion: '1.99.99',
+            featureFlagPayloads: '^2',
             isEnabled: false
           },
           {
-            coreVersion: '2.0.0',
-            flagVersionRange: '^2',
+            appVersion: '2.0.0',
+            featureFlagPayloads: '^2',
             isEnabled: true
           }
         ])(
           'enables the feature flag if current Core version satisfies configured range',
-          async ({ coreVersion, flagVersionRange, isEnabled }) => {
-            jest
-              .spyOn(mockRNDeviceInfo, 'getVersion')
-              .mockReturnValue(coreVersion)
-
-            const featureFlags = sanitizeFeatureFlags({
-              featureFlags: {
-                [FeatureGates.BRIDGE]: false,
-                [FeatureGates.DEFI]: true,
-                [FeatureGates.SEND]: true,
-                [FeatureGates.SWAP]: false
+          async ({ appVersion, featureFlagPayloads, isEnabled }) => {
+            const featureFlags = sanitizeFeatureFlags(
+              {
+                featureFlags: {
+                  [FeatureGates.BRIDGE]: false,
+                  [FeatureGates.DEFI]: true,
+                  [FeatureGates.SEND]: true,
+                  [FeatureGates.SWAP]: false
+                },
+                featureFlagPayloads: {
+                  [FeatureGates.BRIDGE]: JSON.stringify(featureFlagPayloads),
+                  [FeatureGates.DEFI]: JSON.stringify(featureFlagPayloads)
+                }
               },
-              featureFlagPayloads: {
-                [FeatureGates.BRIDGE]: JSON.stringify(flagVersionRange),
-                [FeatureGates.DEFI]: JSON.stringify(flagVersionRange)
-              }
-            })
-
-            await new Promise(process.nextTick)
+              appVersion
+            )
 
             expect(featureFlags).toEqual({
               [FeatureGates.BRIDGE]: false, // Comes disabled, should stay disabled even though it has a version attached.
@@ -177,7 +172,7 @@ describe('app/contexts/posthogUtils.ts', () => {
             })
           }
         )
-      })*/
+      })
     })
   })
 })
