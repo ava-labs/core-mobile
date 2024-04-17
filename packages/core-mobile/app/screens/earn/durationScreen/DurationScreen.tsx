@@ -162,22 +162,24 @@ export const StakingDuration = (): JSX.Element => {
 
   const renderFooter = (): JSX.Element => (
     <View>
-      <Tooltip
-        content={renderPopoverInfoText()}
-        style={{ width: 246 }}
-        isLabelPopable>
-        <AvaText.Caption
-          textStyle={{
-            color: theme.neutral400,
-            textAlign: 'center',
-            lineHeight: 20,
-            marginHorizontal: 40
-          }}>
-          Estimates are provided for informational purposes only...
-          <Space x={8} />
-          <InfoSVG size={13.33} />
-        </AvaText.Caption>
-      </Tooltip>
+      <View style={{ alignItems: 'center' }}>
+        <Tooltip
+          content={renderPopoverInfoText()}
+          style={{ width: 246 }}
+          isLabelPopable>
+          <AvaText.Caption
+            textStyle={{
+              color: theme.neutral400,
+              textAlign: 'center',
+              lineHeight: 20,
+              marginHorizontal: 40
+            }}>
+            Estimates are provided for informational purposes only...
+            <Space x={8} />
+            <InfoSVG size={13.33} />
+          </AvaText.Caption>
+        </Tooltip>
+      </View>
       <Space y={12} />
       <AvaButton.PrimaryLarge
         disabled={isNextDisabled}
