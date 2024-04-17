@@ -10,6 +10,8 @@ import { AppState, AppStateStatus } from 'react-native'
 import { queryStorage } from 'utils/mmkv'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister'
+import { useNetworksListener } from 'hooks/networks/useNetworksListener'
+import { useWatchlistListener } from 'hooks/watchlist/useWatchlistListener'
 
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -74,6 +76,12 @@ export const ReactQueryProvider: React.FC<PropsWithChildren> = ({
       sub.remove()
     }
   }, [])
+
+  // refetch networks on app unlock or developer mode toggle
+  useNetworksListener()
+
+  // refetch watchlist on developer mode toggle or watchlist fetch
+  useWatchlistListener()
 
   return (
     <PersistQueryClientProvider
