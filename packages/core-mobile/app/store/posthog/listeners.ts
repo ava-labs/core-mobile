@@ -15,7 +15,7 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { AppListenerEffectAPI } from 'store'
 import Logger from 'utils/Logger'
 
-const FEATURE_FLAGS_FETCH_INTERVAL = 60000 // 1 minute
+const FEATURE_FLAGS_FETCH_INTERVAL = 30000 // 30 seconds
 
 const fetchFeatureFlagsPeriodically = async (
   _: Action,

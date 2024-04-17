@@ -33,6 +33,7 @@ export enum FeatureVars {
 // thus, we need to use Partial
 export type PostHogDecideResponse = {
   featureFlags: Partial<Record<FeatureGates | FeatureVars, boolean | string>>
+  featureFlagPayloads: Partial<Record<FeatureGates | FeatureVars, string>>
 }
 
 export type FeatureFlags = PostHogDecideResponse['featureFlags']
