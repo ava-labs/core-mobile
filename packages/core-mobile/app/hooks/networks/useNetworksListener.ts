@@ -10,8 +10,9 @@ import { toggleDeveloperMode } from 'store/settings/advanced'
 export const useNetworksListener = (): void => {
   const dispatch = useDispatch()
 
+  // @ts-ignore
   useEffect(() => {
-    const listener = dispatch(
+    return dispatch(
       addListener({
         matcher: isAnyOf(toggleDeveloperMode, onAppUnlocked),
         effect: async () => {
@@ -22,6 +23,5 @@ export const useNetworksListener = (): void => {
         }
       })
     )
-    return listener.payload.unsubscribe
   }, [dispatch])
 }

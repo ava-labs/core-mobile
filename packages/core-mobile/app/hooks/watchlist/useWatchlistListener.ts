@@ -9,8 +9,9 @@ import { fetchWatchlist } from 'store/watchlist'
 export const useWatchlistListener = (): void => {
   const dispatch = useDispatch()
 
+  // @ts-ignore
   useEffect(() => {
-    const listener = dispatch(
+    return dispatch(
       addListener({
         matcher: isAnyOf(toggleDeveloperMode, fetchWatchlist),
         effect: async () => {
@@ -23,6 +24,5 @@ export const useWatchlistListener = (): void => {
         }
       })
     )
-    return listener.payload.unsubscribe
   }, [dispatch])
 }
