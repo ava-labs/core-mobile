@@ -12,7 +12,7 @@ export const useGetPrices = (
   return useQuery({
     enabled: tokenIds.length > 0,
     queryKey: [ReactQueryKeys.WATCHLIST_PRICES, currency, tokenIds],
-    queryFn: async () => WatchlistService.getPrices(tokenIds, currency),
+    queryFn: () => WatchlistService.getPrices(tokenIds, currency),
     refetchInterval: 30000 // 30 seconds
   })
 }
