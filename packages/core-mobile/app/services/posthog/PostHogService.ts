@@ -3,12 +3,10 @@ import Logger from 'utils/Logger'
 import DeviceInfoService from 'services/deviceInfo/DeviceInfoService'
 import { JsonMap } from 'store/posthog'
 import { sanitizeFeatureFlags } from './sanitizeFeatureFlags'
-import { FeatureGates, FeatureVars } from './types'
+import { FeatureGates, FeatureVars, PostHogDecideResponse } from './types'
 import { getPosthogDeviceInfo } from './utils'
 
 const PostHogCaptureUrl = `${Config.POSTHOG_URL}/capture/`
-
-const PostHogDecideUrl = `${Config.POSTHOG_URL}/decide?v=2`
 
 class PostHogService {
   distinctId: string | undefined
@@ -101,30 +99,58 @@ class PostHogService {
   ): Promise<
     Partial<Record<FeatureGates | FeatureVars, string | boolean>> | undefined
   > {
-    try {
-      Logger.info('fetching feature flags')
-      const response = await fetch(PostHogDecideUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          api_key: Config.POSTHOG_FEATURE_FLAGS_KEY,
-          distinct_id: distinctId,
-          app_version: DeviceInfoService.getAppVersion()
-        })
-      })
+    const appVersion = DeviceInfoService.getAppVersion()
 
-      if (!response.ok) {
-        throw new Error('Something went wrong')
+    const fetchWithPosthogFallback =
+      async (): Promise<PostHogDecideResponse> => {
+        const fetcher = async (url: string): Promise<PostHogDecideResponse> => {
+          const params = new URLSearchParams({
+            ip: '',
+            _: Date.now().toString(),
+            v: '3',
+            ver: appVersion
+          })
+
+          const data = Buffer.from(
+            JSON.stringify({
+              token: Config.POSTHOG_FEATURE_FLAGS_KEY,
+              distinct_id: distinctId,
+              groups: {}
+            })
+          ).toString('base64')
+
+          const response = await fetch(`${url}/decide?${params}`, {
+            method: 'POST',
+            body: 'data=' + encodeURIComponent(data),
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+          })
+
+          return await response.json()
+        }
+
+        try {
+          const response = await fetcher(
+            `${process.env.PROXY_URL}/proxy/posthog`
+          )
+
+          if (!response.featureFlags) {
+            throw new Error('No feature flags found in cached response')
+          }
+
+          return response
+        } catch (e) {
+          if (!Config.POSTHOG_URL) {
+            throw new Error('Invalid Posthog URL')
+          }
+
+          return await fetcher(Config.POSTHOG_URL)
+        }
       }
 
-      const responseJson = await response.json()
-      const featureFlags = sanitizeFeatureFlags(responseJson)
+    try {
+      const responseJson = await fetchWithPosthogFallback()
 
-      Logger.info('fetched feature flags', featureFlags)
-
-      return featureFlags
+      return sanitizeFeatureFlags(responseJson, appVersion)
     } catch (e) {
       Logger.error('failed to fetch feature flags', e)
     }
