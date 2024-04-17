@@ -10,7 +10,7 @@ export const useWatchlistListener = (): void => {
   const dispatch = useDispatch()
 
   useEffect(() => {
-    const unsubscribe = dispatch(
+    const listener = dispatch(
       addListener({
         matcher: isAnyOf(toggleDeveloperMode, fetchWatchlist),
         effect: async () => {
@@ -23,8 +23,6 @@ export const useWatchlistListener = (): void => {
         }
       })
     )
-    return () => {
-      unsubscribe
-    }
+    return listener.payload.unsubscribe
   }, [dispatch])
 }

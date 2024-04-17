@@ -11,7 +11,7 @@ export const useNetworksListener = (): void => {
   const dispatch = useDispatch()
 
   useEffect(() => {
-    const unsubscribe = dispatch(
+    const listener = dispatch(
       addListener({
         matcher: isAnyOf(toggleDeveloperMode, onAppUnlocked),
         effect: async () => {
@@ -22,8 +22,6 @@ export const useNetworksListener = (): void => {
         }
       })
     )
-    return () => {
-      unsubscribe
-    }
+    return listener.payload.unsubscribe
   }, [dispatch])
 }
