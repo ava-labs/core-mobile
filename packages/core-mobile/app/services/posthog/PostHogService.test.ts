@@ -1,3 +1,4 @@
+// @ts-ignore
 import mockRNDeviceInfo from 'react-native-device-info/jest/react-native-device-info-mock'
 import Config from 'react-native-config'
 import PostHogService from './PostHogService'
