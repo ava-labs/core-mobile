@@ -25,7 +25,6 @@ export type PerformSwapParams = {
   networkGasPrice: bigint
   maxFeePerGas?: bigint
   maxPriorityFeePerGas?: bigint
-  fromAddress: string
   signAndSend: (txParams: [TransactionParams]) => Promise<string>
 }
 
@@ -51,7 +50,6 @@ export async function performSwap({
   provider,
   userAddress,
   networkGasPrice,
-  fromAddress,
   signAndSend
 }: PerformSwapParams): Promise<{
   swapTxHash: string
@@ -123,7 +121,7 @@ export async function performSwap({
 
       const txParams: [TransactionParams] = [
         {
-          from: fromAddress,
+          from: userAddress,
           to: sourceTokenAddress,
           maxFeePerGas: bigIntToHex(maxFeePerGas ?? defaultGasPrice),
           maxPriorityFeePerGas: bigIntToHex(maxPriorityFeePerGas),
@@ -190,7 +188,7 @@ export async function performSwap({
 
   const txParams: [TransactionParams] = [
     {
-      from: fromAddress,
+      from: userAddress,
       to: txBuildData.to,
       maxFeePerGas: bigIntToHex(maxFeePerGas ?? defaultGasPrice),
       maxPriorityFeePerGas: bigIntToHex(maxPriorityFeePerGas),
