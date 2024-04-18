@@ -11,6 +11,7 @@ import { Avalanche } from '@avalabs/wallets-sdk'
 import { AvalancheChainStrings } from 'store/rpc/handlers/types'
 import { GetAssetDescriptionResponse } from '@avalabs/avalanchejs/dist/vms/common'
 import { Avax } from 'types'
+import { PVM } from '@avalabs/avalanchejs'
 import { TxFee } from './components/TxFee'
 
 const BaseTxView = ({ tx }: { tx: Avalanche.BaseTx }): JSX.Element => {
@@ -84,11 +85,15 @@ const BaseTxView = ({ tx }: { tx: Avalanche.BaseTx }): JSX.Element => {
       <Space y={16} />
       <TxFee txFee={txFee} />
       <Space y={16} />
-      <AvaText.Body2 color={theme.colorText1}>Memo</AvaText.Body2>
-      <Space y={8} />
-      <Card style={styles.cardContainer}>
-        <AvaText.Caption color={theme.colorText2}>{memo}</AvaText.Caption>
-      </Card>
+      {chain !== PVM && (
+        <>
+          <AvaText.Body2 color={theme.colorText1}>Memo</AvaText.Body2>
+          <Space y={8} />
+          <Card style={styles.cardContainer}>
+            <AvaText.Caption color={theme.colorText2}>{memo}</AvaText.Caption>
+          </Card>
+        </>
+      )}
     </ScrollView>
   )
 }
