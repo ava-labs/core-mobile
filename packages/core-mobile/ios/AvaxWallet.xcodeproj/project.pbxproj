@@ -13,10 +13,10 @@
 		0BAAA735269F480900722C85 /* Inter-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 0BAAA733269F480900722C85 /* Inter-Bold.ttf */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		5487ABA729C7ABF9DC589B13 /* libPods-common-AvaxWallet.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 94355A1BA1F3B46A303DE18E /* libPods-common-AvaxWallet.a */; };
-		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
+		81ACC3932BD1B2860089FEBA /* BootSplash.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81ACC3922BD1B2860089FEBA /* BootSplash.storyboard */; };
+		81ACC3942BD1B2860089FEBA /* BootSplash.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81ACC3922BD1B2860089FEBA /* BootSplash.storyboard */; };
 		859459BEDA16D453D32E4B3C /* libPods-common-AvaxWalletInternal.a in Frameworks */ = {isa = PBXBuildFile; fileRef = CEF338093BCDAACD5DB2788B /* libPods-common-AvaxWalletInternal.a */; };
 		8E858A5A28AFD47300236EF2 /* Inter-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 0BAAA733269F480900722C85 /* Inter-Bold.ttf */; };
-		8E858A5B28AFD47300236EF2 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		8E858A5C28AFD47300236EF2 /* Inter-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 0BAAA732269F480900722C85 /* Inter-Regular.ttf */; };
 		8E858A5D28AFD47300236EF2 /* Inter-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 0B66D74A270B75C3006530A8 /* Inter-SemiBold.ttf */; };
 		8E858A5E28AFD47300236EF2 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
@@ -45,7 +45,7 @@
 		2793FCC827461B9C00B0719A /* AvaxWallet.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = AvaxWallet.entitlements; path = AvaxWallet/AvaxWallet.entitlements; sourceTree = "<group>"; };
 		27981BC628AECFB200672611 /* AvaxWalletRelease.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = AvaxWalletRelease.entitlements; path = AvaxWallet/AvaxWalletRelease.entitlements; sourceTree = "<group>"; };
 		751F23CB0928AC4B64DE5C7D /* Pods-common-AvaxWallet.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-common-AvaxWallet.release.xcconfig"; path = "Target Support Files/Pods-common-AvaxWallet/Pods-common-AvaxWallet.release.xcconfig"; sourceTree = "<group>"; };
-		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = AvaxWallet/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		81ACC3922BD1B2860089FEBA /* BootSplash.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = BootSplash.storyboard; sourceTree = "<group>"; };
 		8E83528A28F09E0900880FD3 /* OpenSSL.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = OpenSSL.xcframework; path = "Pods/OpenSSL-Universal/Frameworks/OpenSSL.xcframework"; sourceTree = "<group>"; };
 		8E858A6628AFD47300236EF2 /* AvaxWalletInternal.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AvaxWalletInternal.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8EA3A00D28EF825900F753C2 /* AppDelegate.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = AppDelegate.mm; sourceTree = "<group>"; };
@@ -103,7 +103,7 @@
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				8EE9988A28B537A40088DE7C /* InfoRelease.plist */,
-				81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */,
+				81ACC3922BD1B2860089FEBA /* BootSplash.storyboard */,
 				0BA5138A27D234C200A25188 /* AvaxWallet-Bridging-Header.h */,
 				8EA3A00E28EF825900F753C2 /* AppDelegate.h */,
 				8EA3A01128EF82E100F753C2 /* main.m */,
@@ -264,8 +264,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				0BAAA735269F480900722C85 /* Inter-Bold.ttf in Resources */,
-				81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */,
 				0BAAA734269F480900722C85 /* Inter-Regular.ttf in Resources */,
+				81ACC3932BD1B2860089FEBA /* BootSplash.storyboard in Resources */,
 				0B66D74B270B75C3006530A8 /* Inter-SemiBold.ttf in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				8EE9988B28B537A40088DE7C /* InfoRelease.plist in Resources */,
@@ -278,8 +278,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				8E858A5A28AFD47300236EF2 /* Inter-Bold.ttf in Resources */,
-				8E858A5B28AFD47300236EF2 /* LaunchScreen.storyboard in Resources */,
 				8E858A5C28AFD47300236EF2 /* Inter-Regular.ttf in Resources */,
+				81ACC3942BD1B2860089FEBA /* BootSplash.storyboard in Resources */,
 				8E858A5D28AFD47300236EF2 /* Inter-SemiBold.ttf in Resources */,
 				8E858A5E28AFD47300236EF2 /* Images.xcassets in Resources */,
 				8EE9988C28B537A40088DE7C /* InfoRelease.plist in Resources */,

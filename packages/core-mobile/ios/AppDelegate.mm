@@ -3,6 +3,7 @@
 #import <React/RCTBundleURLProvider.h>
 #import <React/RCTLinkingManager.h>
 #import <React/RCTRootView.h>
+#import "RNBootSplash.h"
 
 @implementation AppDelegate
 
@@ -22,10 +23,7 @@
                            initProps:(NSDictionary *)initProps
 {
   RCTRootView * rootView = (RCTRootView *)[super createRootViewWithBridge:bridge moduleName:moduleName initProps:initProps];
-  UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"LaunchScreen" bundle:nil];
-  [rootView setLoadingView:[[storyboard instantiateInitialViewController] view]];
-  rootView.backgroundColor = [UIColor blackColor];
-  
+  [RNBootSplash initWithStoryboard:@"BootSplash" rootView:rootView];  
   return rootView;
 }
 

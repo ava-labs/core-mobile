@@ -1153,6 +1153,8 @@ PODS:
   - RNArgon2 (2.0.1):
     - CatCrypto
     - React-Core
+  - RNBootSplash (5.5.3):
+    - React-Core
   - RNCAsyncStorage (1.18.1):
     - React-Core
   - RNCClipboard (1.13.2):
@@ -1300,6 +1302,7 @@ DEPENDENCIES:
   - "ReactNativePerformance (from `../node_modules/@shopify/react-native-performance`)"
   - "RNAppleAuthentication (from `../node_modules/@invertase/react-native-apple-authentication`)"
   - RNArgon2 (from `../node_modules/react-native-argon2`)
+  - RNBootSplash (from `../node_modules/react-native-bootsplash`)
   - "RNCAsyncStorage (from `../node_modules/@react-native-async-storage/async-storage`)"
   - "RNCClipboard (from `../node_modules/@react-native-clipboard/clipboard`)"
   - "RNDateTimePicker (from `../node_modules/@react-native-community/datetimepicker`)"
@@ -1498,6 +1501,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@invertase/react-native-apple-authentication"
   RNArgon2:
     :path: "../node_modules/react-native-argon2"
+  RNBootSplash:
+    :path: "../node_modules/react-native-bootsplash"
   RNCAsyncStorage:
     :path: "../node_modules/@react-native-async-storage/async-storage"
   RNCClipboard:
@@ -1638,6 +1643,7 @@ SPEC CHECKSUMS:
   ReactNativePerformance: ab7dee4c4862623d72c1530a9fc71b55458edf71
   RNAppleAuthentication: e99eaf3c4c01ad8ecb6125dd6f0cfd98871685b5
   RNArgon2: 1481820722fd4af1575c09f7fc9ad67c00ee8a42
+  RNBootSplash: e025d4ee98d942ee6c8b495a6fe66339a6b5f6dd
   RNCAsyncStorage: b90b71f45b8b97be43bc4284e71a6af48ac9f547
   RNCClipboard: 60fed4b71560d7bfe40e9d35dea9762b024da86d
   RNDateTimePicker: 7b38b71bcd7c4cfa1cb95f2dff9a4f1faed2dced
