@@ -13,7 +13,7 @@ import {
   TabBarItemProps,
   TabView
 } from 'react-native-tab-view'
-import { Dimensions, View } from 'react-native'
+import { Dimensions, Platform, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaButton from 'components/AvaButton'
 
@@ -183,7 +183,10 @@ const TabViewAva: TabViewAvaFC = ({
 
   return (
     <TabView
-      animationEnabled={true}
+      // iOS: Disable animation when switching tabs by tapping on the tab
+      // to avoid the UI freeze issue on iOS
+      // related github issue: https://github.com/react-navigation/react-navigation/issues/11596
+      animationEnabled={Platform.OS !== 'ios'}
       onIndexChange={handleIndexChange}
       navigationState={navState}
       renderScene={scenes}
