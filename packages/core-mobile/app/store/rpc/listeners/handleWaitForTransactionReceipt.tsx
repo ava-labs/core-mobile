@@ -1,9 +1,13 @@
+import React from 'react'
 import { AppListenerEffectAPI } from 'store'
 import { TransactionResponse } from 'ethers'
 import { getTxConfirmationReceipt } from 'utils/getTxConfirmationReceipt'
-import { showSimpleToast } from 'components/Snackbar'
+import { showSnackBarCustom } from 'components/Snackbar'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectActiveNetwork } from 'store/network'
+import TransactionToast, {
+  TransactionToastType
+} from 'components/toast/TransactionToast'
 import { updateRequestStatus } from '../slice'
 
 export const handleWaitForTransactionReceipt = async (
@@ -16,6 +20,16 @@ export const handleWaitForTransactionReceipt = async (
   const network = selectActiveNetwork(state)
   const isTestnet = selectIsDeveloperMode(state)
 
+  showSnackBarCustom({
+    component: (
+      <TransactionToast
+        message={'Transaction Pending...'}
+        type={TransactionToastType.PENDING}
+      />
+    ),
+    duration: 'short'
+  })
+
   const confirmationReceipt = await getTxConfirmationReceipt(
     txResponse.hash,
     network,
@@ -23,7 +37,30 @@ export const handleWaitForTransactionReceipt = async (
   )
 
   const status = confirmationReceipt?.status === 'success'
-  showSimpleToast(status ? 'Transaction Confirmed' : 'Transaction Reverted')
+
+  if (status) {
+    showSnackBarCustom({
+      component: (
+        <TransactionToast
+          message={'Transaction Successful'}
+          type={TransactionToastType.SUCCESS}
+          txHash={txResponse.hash}
+        />
+      ),
+      duration: 'long'
+    })
+  } else {
+    showSnackBarCustom({
+      component: (
+        <TransactionToast
+          message={'Transaction Reverted'}
+          type={TransactionToastType.ERROR}
+        />
+      ),
+      duration: 'long'
+    })
+  }
+
   dispatch(
     updateRequestStatus({
       id: requestId,
