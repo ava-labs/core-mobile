@@ -55,6 +55,16 @@ export const waitForTransactionReceipt = createAction<{
   requestId: number
 }>(`${reducerName}/waitForTransactionReceipt`)
 
+export const onInAppRequestSucceeded = createAction<{
+  requestId: number
+  txHash: string
+}>(`${reducerName}/onInAppRequestSucceeded`)
+
+export const onInAppRequestFailed = createAction<{
+  requestId: number
+  error: Error
+}>(`${reducerName}/onInAppRequestFailed`)
+
 export const { updateRequestStatus } = rpcSlice.actions
 
 export const rpcReducer = rpcSlice.reducer
