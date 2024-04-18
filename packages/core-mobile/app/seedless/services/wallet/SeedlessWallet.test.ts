@@ -1,6 +1,6 @@
 import * as cs from '@cubist-labs/cubesigner-sdk'
 import * as WalletSDK from '@avalabs/wallets-sdk'
-import { RpcMethod } from 'store/rpc'
+import { RpcMethod } from 'store/rpc/types'
 import CoreSeedlessAPIService from '../CoreSeedlessAPIService'
 import SeedlessWallet from './SeedlessWallet'
 

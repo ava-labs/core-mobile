@@ -2,13 +2,13 @@ import { isAnyOf } from '@reduxjs/toolkit'
 import { useCallback } from 'react'
 import { useDispatch } from 'react-redux'
 import { addAppListener } from 'store/middleware/listener'
+import { RpcMethod } from 'store/rpc/types'
 import {
-  RpcMethod,
-  createInAppRequest,
   onInAppRequestFailed,
   onInAppRequestSucceeded,
   onRequest
-} from 'store/rpc'
+} from 'store/rpc/slice'
+import { createInAppRequest } from 'store/rpc/utils'
 
 const EVENTS_TO_SUBSCRIBE = isAnyOf(
   onInAppRequestSucceeded,

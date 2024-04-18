@@ -3,12 +3,8 @@ import { useCallback } from 'react'
 import { useDispatch } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { Session } from 'services/walletconnectv2/types'
-import {
-  onRequestApproved,
-  onRequestRejected,
-  Request,
-  RpcMethod
-} from 'store/rpc'
+import { onRequestApproved, onRequestRejected } from 'store/rpc/slice'
+import { Request, RpcMethod } from 'store/rpc/types'
 import { killSessions as killSessionsAction } from 'store/walletConnectV2/slice'
 
 export const useDappConnectionV2 = (): {

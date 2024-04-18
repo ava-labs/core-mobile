@@ -1,6 +1,6 @@
 import { AppListenerEffectAPI } from 'store'
 import { selectAccounts, selectActiveAccount } from 'store/account/slice'
-import { RpcMethod, RpcRequest } from '../../../types'
+import { RpcMethod, RpcRequest } from 'store/rpc/types'
 import { HandleResponse, RpcRequestHandler } from '../../types'
 import { mapAccountToCoreWebAccount } from './utils'
 

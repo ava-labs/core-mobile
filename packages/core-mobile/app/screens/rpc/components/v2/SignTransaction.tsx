@@ -27,7 +27,8 @@ import { WalletScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import { useSelector } from 'react-redux'
-import { RpcProvider, selectRequestStatus } from 'store/rpc'
+import { RpcProvider } from 'store/rpc/types'
+import { selectRequestStatus } from 'store/rpc/slice'
 import { useDappConnectionV2 } from 'hooks/useDappConnectionV2'
 import { selectNetwork } from 'store/network'
 import { NetworkLogo } from 'screens/network/NetworkLogo'
@@ -368,7 +369,7 @@ export const txStyles = StyleSheet.create({
   scrollView: {
     paddingTop: 16,
     paddingHorizontal: 14,
-    paddingBottom: 75,
+    paddingBottom: 24,
     flexGrow: 1
   },
   info: {

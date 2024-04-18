@@ -1,13 +1,13 @@
-import React from 'react'
 import { AppListenerEffectAPI } from 'store'
 import { TransactionResponse } from 'ethers'
 import { getTxConfirmationReceipt } from 'utils/getTxConfirmationReceipt'
-import { showSnackBarCustom } from 'components/Snackbar'
-import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { selectActiveNetwork } from 'store/network'
-import TransactionToast, {
-  TransactionToastType
-} from 'components/toast/TransactionToast'
+import {
+  showTransactionPendingToast,
+  showTransactionRevertedToast,
+  showTransactionSuccessToast
+} from 'components/Snackbar'
+import { selectIsDeveloperMode } from 'store/settings/advanced/slice'
+import { selectActiveNetwork } from 'store/network/slice'
 import { updateRequestStatus } from '../slice'
 
 export const handleWaitForTransactionReceipt = async (
@@ -20,15 +20,7 @@ export const handleWaitForTransactionReceipt = async (
   const network = selectActiveNetwork(state)
   const isTestnet = selectIsDeveloperMode(state)
 
-  showSnackBarCustom({
-    component: (
-      <TransactionToast
-        message={'Transaction Pending...'}
-        type={TransactionToastType.PENDING}
-      />
-    ),
-    duration: 'short'
-  })
+  showTransactionPendingToast()
 
   const confirmationReceipt = await getTxConfirmationReceipt(
     txResponse.hash,
@@ -39,26 +31,9 @@ export const handleWaitForTransactionReceipt = async (
   const status = confirmationReceipt?.status === 'success'
 
   if (status) {
-    showSnackBarCustom({
-      component: (
-        <TransactionToast
-          message={'Transaction Successful'}
-          type={TransactionToastType.SUCCESS}
-          txHash={txResponse.hash}
-        />
-      ),
-      duration: 'long'
-    })
+    showTransactionSuccessToast(txResponse.hash)
   } else {
-    showSnackBarCustom({
-      component: (
-        <TransactionToast
-          message={'Transaction Reverted'}
-          type={TransactionToastType.ERROR}
-        />
-      ),
-      duration: 'long'
-    })
+    showTransactionRevertedToast()
   }
 
   dispatch(
