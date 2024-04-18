@@ -200,7 +200,7 @@ const NetworkFeeSelector = ({
   return (
     <>
       <Row style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-        {isBtcNetwork ? (
+        {isBtcNetwork || isPVM ? (
           <View sx={{ paddingVertical: 12 }}>
             <Text variant="body2" sx={{ color: '$neutral50' }}>
               Network Fee
@@ -218,13 +218,15 @@ const NetworkFeeSelector = ({
             </Text>
           </Tooltip>
         )}
-        <Button
-          size="medium"
-          type="tertiary"
-          style={{ marginTop: 8 }}
-          onPress={() => goToEditGasLimit(network)}>
-          <Settings />
-        </Button>
+        {!isPVM && (
+          <Button
+            size="medium"
+            type="tertiary"
+            style={{ marginTop: 8 }}
+            onPress={() => goToEditGasLimit(network)}>
+            <Settings />
+          </Button>
+        )}
       </Row>
       <Space y={4} />
 
@@ -236,46 +238,48 @@ const NetworkFeeSelector = ({
           marginBottom: 16
         }}>
         {!networkFee?.isFixedFee && (
-          <Row
-            style={{
-              justifyContent: 'space-between',
-              alignItems: 'center'
-            }}>
-            <FeeSelector
-              label={isBtcNetwork ? 'Slow' : FeePreset.Normal}
-              selected={selectedPreset === FeePreset.Normal}
-              onSelect={() => handleSelectedPreset(FeePreset.Normal)}
-              value={displayGasValues?.[FeePreset.Normal]}
-            />
-            <FeeSelector
-              label={isBtcNetwork ? 'Medium' : FeePreset.Fast}
-              selected={selectedPreset === FeePreset.Fast}
-              onSelect={() => handleSelectedPreset(FeePreset.Fast)}
-              value={displayGasValues?.[FeePreset.Fast]}
-            />
-            <FeeSelector
-              label={isBtcNetwork ? 'Fast' : FeePreset.Instant}
-              selected={selectedPreset === FeePreset.Instant}
-              onSelect={() => handleSelectedPreset(FeePreset.Instant)}
-              value={displayGasValues?.[FeePreset.Instant]}
-            />
-            <FeeSelector
-              label={FeePreset.Custom}
-              selected={selectedPreset === FeePreset.Custom}
-              onSelect={() => {
-                handleSelectedPreset(FeePreset.Custom)
-                goToEditGasLimit(network)
-              }}
-              placeholder={displayGasValues?.[FeePreset.Normal]}
-              value={
-                selectedPreset !== FeePreset.Custom && !customFees
-                  ? displayGasValues?.[FeePreset.Normal]
-                  : displayGasValues?.[FeePreset.Custom]
-              }
-            />
-          </Row>
+          <>
+            <Row
+              style={{
+                justifyContent: 'space-between',
+                alignItems: 'center'
+              }}>
+              <FeeSelector
+                label={isBtcNetwork ? 'Slow' : FeePreset.Normal}
+                selected={selectedPreset === FeePreset.Normal}
+                onSelect={() => handleSelectedPreset(FeePreset.Normal)}
+                value={displayGasValues?.[FeePreset.Normal]}
+              />
+              <FeeSelector
+                label={isBtcNetwork ? 'Medium' : FeePreset.Fast}
+                selected={selectedPreset === FeePreset.Fast}
+                onSelect={() => handleSelectedPreset(FeePreset.Fast)}
+                value={displayGasValues?.[FeePreset.Fast]}
+              />
+              <FeeSelector
+                label={isBtcNetwork ? 'Fast' : FeePreset.Instant}
+                selected={selectedPreset === FeePreset.Instant}
+                onSelect={() => handleSelectedPreset(FeePreset.Instant)}
+                value={displayGasValues?.[FeePreset.Instant]}
+              />
+              <FeeSelector
+                label={FeePreset.Custom}
+                selected={selectedPreset === FeePreset.Custom}
+                onSelect={() => {
+                  handleSelectedPreset(FeePreset.Custom)
+                  goToEditGasLimit(network)
+                }}
+                placeholder={displayGasValues?.[FeePreset.Normal]}
+                value={
+                  selectedPreset !== FeePreset.Custom && !customFees
+                    ? displayGasValues?.[FeePreset.Normal]
+                    : displayGasValues?.[FeePreset.Custom]
+                }
+              />
+            </Row>
+            <Space y={20} />
+          </>
         )}
-        <Space y={20} />
         <Row style={{ justifyContent: 'space-between', alignItems: 'center' }}>
           <Text variant="body2" sx={{ color: '$neutral400' }}>
             Fee Amount
