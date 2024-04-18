@@ -23,9 +23,7 @@
                            initProps:(NSDictionary *)initProps
 {
   RCTRootView * rootView = (RCTRootView *)[super createRootViewWithBridge:bridge moduleName:moduleName initProps:initProps];
-  [RNBootSplash initWithStoryboard:@"BootSplash" rootView:rootView];
-  rootView.backgroundColor = [UIColor blackColor];
-  
+  [RNBootSplash initWithStoryboard:@"BootSplash" rootView:rootView];  
   return rootView;
 }
 
