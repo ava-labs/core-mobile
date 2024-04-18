@@ -219,6 +219,10 @@ export const SwapContextProvider = ({
         .then(([result, err]) => {
           if (err || (result && 'error' in result)) {
             setSwapStatus('Fail')
+            AnalyticsService.captureWithEncryption('SwapTransactionFailed', {
+              address: activeAccount.address,
+              chainId: activeNetwork.chainId
+            })
             showSnackBarCustom({
               component: (
                 <TransactionToast

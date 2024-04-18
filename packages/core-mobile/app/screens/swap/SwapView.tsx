@@ -193,7 +193,6 @@ export default function SwapView(): JSX.Element {
       setMaxFeePerGas(maxFeePerGas)
       setMaxPriorityFeePerGas(maxPriorityFeePerGas)
 
-      // TODO should we remove this
       AnalyticsService.capture('SwapReviewOrder', {
         destinationInputField: destination,
         slippageTolerance: slippage,
@@ -210,8 +209,6 @@ export default function SwapView(): JSX.Element {
         maxPriorityFeePerGas &&
         slippage
       ) {
-        AnalyticsService.capture('SwapConfirmed')
-
         swap({
           srcTokenAddress: getTokenAddress(fromToken),
           isSrcTokenNative: fromToken.type === TokenType.NATIVE,

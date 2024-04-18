@@ -145,15 +145,16 @@ export type AnalyticsEvents = {
   StakeSelectAdvancedStaking: undefined
   StakeStartNodeSearch: { from: string; duration: string }
   StakeUseAmountPercentage: { percent: string }
-  SwapCancelled: undefined
-  SwapConfirmed: undefined
+  SwapTransactionFailed: {
+    address: string
+    chainId: number
+  }
   SwapReviewOrder: {
     destinationInputField: string
     slippageTolerance: number
     customMaxFeePerGas: string
     customMaxPriorityFeePerGas: string
   }
-  SwapReviewTimerRestarted: undefined
   Swap_TokenSelected: undefined
   TermsAndConditionsAccepted: undefined
   TermsOfUseClicked: undefined
