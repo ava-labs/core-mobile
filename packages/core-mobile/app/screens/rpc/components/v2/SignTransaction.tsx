@@ -4,7 +4,6 @@ import { ActivityIndicator, StyleSheet, View } from 'react-native'
 import { Space } from 'components/Space'
 import AvaButton from 'components/AvaButton'
 import { Row } from 'components/Row'
-import TokenAddress from 'components/TokenAddress'
 import {
   AddLiquidityDisplayData,
   ApproveTransactionData,
@@ -22,8 +21,6 @@ import { getHexStringToBytes } from 'utils/getHexStringToBytes'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import EditSpendLimit from 'components/EditSpendLimit'
 import CarrotSVG from 'components/svg/CarrotSVG'
-import { getExplorerAddressByNetwork } from 'utils/ExplorerUtils'
-import useInAppBrowser from 'hooks/useInAppBrowser'
 import FlexSpacer from 'components/FlexSpacer'
 import { ScrollView } from 'react-native-gesture-handler'
 import { WalletScreenProps } from 'navigation/types'
@@ -35,7 +32,7 @@ import { useDappConnectionV2 } from 'hooks/useDappConnectionV2'
 import { selectNetwork } from 'store/network'
 import { NetworkLogo } from 'screens/network/NetworkLogo'
 import { hexToBN } from '@avalabs/utils-sdk'
-import { Tooltip } from 'components/Tooltip'
+import { Button } from '@avalabs/k2-mobile'
 import { selectIsSeedlessSigningBlocked } from 'store/posthog'
 import FeatureBlocked from 'screens/posthog/FeatureBlocked'
 import { NetworkTokenUnit } from 'types'
@@ -60,25 +57,14 @@ const SignTransaction = (): JSX.Element => {
     useDappConnectionV2()
 
   const requestStatus = useSelector(selectRequestStatus(request.data.id))
+
   const chainId = Number(request.data.params.chainId.split(':')[1])
   const network = useSelector(selectNetwork(chainId))
 
-  const { openUrl } = useInAppBrowser()
   const theme = useApplicationContext().theme
   const [submitting, setSubmitting] = useState(false)
   const [showData, setShowData] = useState(false)
   const [showCustomSpendLimit, setShowCustomSpendLimit] = useState(false)
-
-  const txHash = requestStatus?.result?.txHash
-  const confirmationReceiptStatus =
-    requestStatus?.result?.confirmationReceiptStatus
-  const transactionStatus =
-    confirmationReceiptStatus === 'Reverted' ||
-    confirmationReceiptStatus === undefined
-      ? 'Reverted'
-      : confirmationReceiptStatus === 'Success'
-      ? 'Confirmed'
-      : 'Pending'
 
   const rejectAndClose = useCallback(
     (message?: string) => {
@@ -87,10 +73,6 @@ const SignTransaction = (): JSX.Element => {
     },
     [goBack, onReject, request]
   )
-
-  const close = useCallback(() => {
-    goBack()
-  }, [goBack])
 
   const onFailedToLoadTransaction = useCallback(
     (error?: string) => {
@@ -113,17 +95,6 @@ const SignTransaction = (): JSX.Element => {
   const requestedApprovalLimit = displayData.approveData
     ? hexToBN(displayData.approveData.limit)
     : undefined
-
-  useEffect(() => {
-    if (!requestStatus) return
-
-    if (txHash) {
-      setSubmitting(false)
-    } else if (requestStatus.error) {
-      setSubmitting(false)
-      goBack()
-    }
-  }, [goBack, requestStatus, txHash])
 
   // TODO #1: moved useExplainTransactionV2 hook logic to redux
   // TODO #2: move isAddressApproved validation logic to eth_sendTransaction handler
@@ -156,8 +127,17 @@ const SignTransaction = (): JSX.Element => {
     request.data.topic
   ])
 
-  const explorerUrl =
-    network && txHash && getExplorerAddressByNetwork(network, txHash)
+  useEffect(() => {
+    if (!requestStatus) return
+
+    const txHash = requestStatus?.result?.txHash
+    const error = requestStatus.error
+
+    if (txHash || error) {
+      setSubmitting(false)
+      goBack()
+    }
+  }, [goBack, requestStatus])
 
   const handleFeesChange = useCallback(
     (fees: Eip1559Fees<NetworkTokenUnit>, feePreset: FeePreset) => {
@@ -165,8 +145,6 @@ const SignTransaction = (): JSX.Element => {
     },
     [setCustomFee]
   )
-
-  const netFeeInfoMessage = `Gas limit: ${displayData?.gasLimit} \nGas price: ${displayData?.fee} nAVAX`
 
   const renderNetwork = (): JSX.Element | undefined => {
     if (!network) return
@@ -304,81 +282,26 @@ const SignTransaction = (): JSX.Element => {
     )
   }
 
-  const renderTransactionResult = (transactionHash: string): JSX.Element => {
-    return (
-      <>
-        <Space y={16} />
-        <Row style={{ justifyContent: 'space-between' }}>
-          <Tooltip
-            content={netFeeInfoMessage}
-            position={'right'}
-            style={{ width: 200 }}
-            textStyle={{ lineHeight: 24, color: theme.white }}>
-            Network Fee
-          </Tooltip>
-          <View
-            style={{
-              alignItems: 'flex-end'
-            }}>
-            <AvaText.Heading3>
-              {displayData.maxTotalFee?.toString()} AVAX
-            </AvaText.Heading3>
-            <AvaText.Body3 currency>{displayData.feeInCurrency}</AvaText.Body3>
-          </View>
-        </Row>
-        <Space y={16} />
-        <Row style={{ justifyContent: 'space-between' }}>
-          <AvaText.Body2 color={theme.colorText1}>
-            Transaction hash
-          </AvaText.Body2>
-          <TokenAddress address={transactionHash} copyIconEnd />
-        </Row>
-        <Space y={16} />
-        <Row style={{ justifyContent: 'space-between' }}>
-          <AvaText.Body2 color={theme.colorText1}>
-            Transaction status
-          </AvaText.Body2>
-          <AvaText.Heading3>{transactionStatus}</AvaText.Heading3>
-        </Row>
-        <Space y={24} />
-        <View
-          style={{
-            paddingVertical: 16,
-            paddingHorizontal: 24
-          }}>
-          <AvaButton.SecondaryLarge
-            onPress={() => explorerUrl && openUrl(explorerUrl)}>
-            View on Explorer
-          </AvaButton.SecondaryLarge>
-          <Space y={20} />
-          <AvaButton.SecondaryLarge
-            style={{ marginBottom: 32 }}
-            onPress={close}>
-            Close
-          </AvaButton.SecondaryLarge>
-        </View>
-      </>
-    )
-  }
-
   const renderApproveRejectButtons = (): JSX.Element => {
     return (
       <>
         <FlexSpacer />
-        <View
-          style={{
-            paddingVertical: 16,
-            paddingHorizontal: 24
-          }}>
-          <AvaButton.PrimaryLarge
+        <View>
+          <Button
+            size="xlarge"
+            type="primary"
             onPress={onHandleApprove}
             disabled={submitting || !displayData?.maxFeePerGas}>
             {submitting && <ActivityIndicator />} Approve
-          </AvaButton.PrimaryLarge>
-          <Space y={20} />
-          <AvaButton.SecondaryLarge onPress={() => rejectAndClose()}>
+          </Button>
+          <Space y={16} />
+          <Button
+            size="xlarge"
+            type="secondary"
+            disabled={submitting}
+            onPress={() => rejectAndClose()}>
             Reject
-          </AvaButton.SecondaryLarge>
+          </Button>
         </View>
       </>
     )
@@ -387,7 +310,9 @@ const SignTransaction = (): JSX.Element => {
   return (
     <>
       <RpcRequestBottomSheet
-        onClose={() => (txHash ? close() : rejectAndClose())}>
+        onClose={() => {
+          rejectAndClose()
+        }}>
         <ScrollView contentContainerStyle={txStyles.scrollView}>
           <View>
             <AvaText.Heading1>{txTitle()}</AvaText.Heading1>
@@ -417,16 +342,14 @@ const SignTransaction = (): JSX.Element => {
               renderTransactionInfo()
             )}
           </View>
-          {!txHash && displayData?.maxFeePerGas && (
+          {displayData?.maxFeePerGas && (
             <NetworkFeeSelector
               chainId={chainId}
               gasLimit={displayData?.gasLimit ?? 0}
               onFeesChange={handleFeesChange}
             />
           )}
-          {txHash
-            ? renderTransactionResult(txHash)
-            : renderApproveRejectButtons()}
+          {renderApproveRejectButtons()}
         </ScrollView>
       </RpcRequestBottomSheet>
       {isSeedlessSigningBlocked && (
@@ -445,7 +368,7 @@ export const txStyles = StyleSheet.create({
   scrollView: {
     paddingTop: 16,
     paddingHorizontal: 14,
-    paddingBottom: 70,
+    paddingBottom: 75,
     flexGrow: 1
   },
   info: {
