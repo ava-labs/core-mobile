@@ -206,7 +206,13 @@ async function generatePlatformResults(
       }
     }
     // Send the results to testrail
-    await api.addResultsForCases(Number(runId), { results: testResults })
+    const resultArray = await api.addResultsForCases(Number(runId), {
+      results: testResults
+    })
+
+    console.log(
+      JSON.stringify(resultArray) + ' results have been sent to testrail'
+    )
 
     // Adds the screenshot to the test case in testrail if the test failed
     for (let i = 0; i < testResults.length; i++) {
@@ -218,8 +224,9 @@ async function generatePlatformResults(
             name: 'failed.png',
             value: await fs.createReadStream(failScreenshot)
           }
+          console.log(JSON.stringify(failedPayload))
           // Attaches the screenshot to the corressponding case in the test run
-          await api.addAttachmentToResult(testResults[i].id, failedPayload)
+          // await api.addAttachmentToResult(testResults[i].id, failedPayload)
         }
       }
     }
