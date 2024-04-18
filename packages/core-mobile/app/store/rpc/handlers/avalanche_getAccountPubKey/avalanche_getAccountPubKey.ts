@@ -2,7 +2,7 @@ import { AppListenerEffectAPI } from 'store'
 import { selectActiveAccount } from 'store/account'
 import walletService from 'services/wallet/WalletService'
 import { ethErrors } from 'eth-rpc-errors'
-import { RpcMethod, RpcRequest } from 'store/rpc'
+import { RpcMethod, RpcRequest } from 'store/rpc/types'
 import { PubKeyType } from 'services/wallet/types'
 import { HandleResponse, RpcRequestHandler } from '../types'
 

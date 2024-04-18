@@ -3,6 +3,7 @@ module.exports = {
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
   clearMocks: true,
   moduleNameMapper: {
+    '^react-native$': '<rootDir>/node_modules/react-native',
     '^uuid$': require.resolve('uuid')
   },
   testPathIgnorePatterns: ['<rootDir>/e2e/tests/playwright/'],
@@ -13,6 +14,8 @@ module.exports = {
   transformIgnorePatterns: [
     'node_modules/(?!' +
       [
+        '@expo',
+        'dripsy',
         'node-fetch',
         'fetch-blob',
         '@react-native',

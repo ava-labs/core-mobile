@@ -3,6 +3,7 @@ import { noop } from 'lodash'
 import WalletConnectService from 'services/walletconnectv2/WalletConnectService'
 import { AppStartListening } from 'store/middleware/listener'
 import * as Snackbar from 'components/Snackbar'
+import * as Toast from 'utils/toast'
 import mockSession from 'tests/fixtures/walletConnect/session.json'
 import mockNetworks from 'tests/fixtures/networks.json'
 import * as appSlice from 'store/app/slice'
@@ -60,6 +61,11 @@ const mockSelectIsDeveloperMode = selectIsDeveloperMode as jest.Mock<
   ReturnType<typeof selectIsDeveloperMode>
 >
 
+const mockSelectWalletState = jest.fn()
+jest
+  .spyOn(appSlice, 'selectWalletState')
+  .mockImplementation(mockSelectWalletState)
+
 const mockSelectNetwork = jest.fn()
 jest.mock('store/network', () => {
   const actual = jest.requireActual('store/network')
@@ -77,10 +83,9 @@ jest
   .mockImplementation(mockShowDappToastError)
 jest.spyOn(Snackbar, 'showSimpleToast').mockImplementation(mockShowSimpleToast)
 
-const mockSelectWalletState = jest.fn()
-jest
-  .spyOn(appSlice, 'selectWalletState')
-  .mockImplementation(mockSelectWalletState)
+jest.spyOn(Toast, 'showTransactionPendingToast').mockImplementation(jest.fn())
+jest.spyOn(Toast, 'showTransactionSuccessToast').mockImplementation(jest.fn())
+jest.spyOn(Toast, 'showTransactionRevertedToast').mockImplementation(jest.fn())
 
 jest.mock('services/walletconnectv2/WalletConnectService')
 

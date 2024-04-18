@@ -1,5 +1,5 @@
 import { CoreAccountType, CorePrimaryAccount, WalletType } from '@avalabs/types'
-import { Account } from 'store/account'
+import { Account } from 'store/account/types'
 
 export const mapAccountToCoreWebAccount = (
   account: Account,

@@ -17,7 +17,7 @@ import { addWCListeners } from 'store/walletConnectV2/listeners'
 import { addRpcListeners } from 'store/rpc/listeners'
 import Logger from 'utils/Logger'
 import { addNotificationsListeners } from 'store/notifications/listeners/listeners'
-import { addSeedlessListeners } from 'seedless/store'
+import { addSeedlessListeners } from 'seedless/store/listeners'
 import { addUnifiedBridgeListeners } from 'store/unifiedBridge/listeners'
 
 export type AppStartListening = TypedStartListening<RootState, AppDispatch>

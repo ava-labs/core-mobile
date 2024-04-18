@@ -7,6 +7,7 @@ import {
 } from '@avalabs/snowtrace-sdk'
 import Logger from 'utils/Logger'
 import { Interface, TransactionDescription } from 'ethers'
+import Config from 'react-native-config'
 
 export function isTxDescriptionError(
   desc: TransactionDescription | { error: string }
@@ -94,7 +95,11 @@ export async function getTxInfo(
 async function getAvalancheABIFromSource(address: string, isMainnet: boolean) {
   let contractSource: ContractSourceCodeResponse
   try {
-    const response = await getSourceForContract(address, isMainnet)
+    const response = await getSourceForContract(
+      address,
+      isMainnet,
+      Config.GLACIER_API_KEY
+    )
 
     if (!response.result[0])
       throw new Error('Missing ContractSourceCodeResponse')
@@ -106,7 +111,11 @@ async function getAvalancheABIFromSource(address: string, isMainnet: boolean) {
   }
   const response = await (contractSource.Proxy === '1' &&
   contractSource.Implementation.length > 0
-    ? getABIForContract(contractSource.Implementation, isMainnet)
+    ? getABIForContract(
+        contractSource.Implementation,
+        isMainnet,
+        Config.GLACIER_API_KEY
+      )
     : Promise.resolve(undefined))
 
   return { result: response?.result, contractSource }

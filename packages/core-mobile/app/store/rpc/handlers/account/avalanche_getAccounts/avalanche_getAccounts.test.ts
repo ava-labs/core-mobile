@@ -1,4 +1,4 @@
-import { RpcMethod, RpcProvider, RpcRequest } from 'store/rpc'
+import { RpcMethod, RpcProvider, RpcRequest } from 'store/rpc/types'
 import mockSession from 'tests/fixtures/walletConnect/session.json'
 import mockAccounts from 'tests/fixtures/accounts.json'
 import { avalancheGetAccountsHandler as handler } from './avalanche_getAccounts'

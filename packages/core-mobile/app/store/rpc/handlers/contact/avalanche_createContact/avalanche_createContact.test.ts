@@ -1,5 +1,5 @@
 import { ethErrors } from 'eth-rpc-errors'
-import { RpcMethod, RpcProvider, RpcRequest } from 'store/rpc'
+import { RpcMethod, RpcProvider, RpcRequest } from 'store/rpc/types'
 import mockSession from 'tests/fixtures/walletConnect/session.json'
 import AppNavigation from 'navigation/AppNavigation'
 import * as Navigation from 'utils/Navigation'
