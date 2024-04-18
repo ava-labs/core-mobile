@@ -30,7 +30,7 @@ type Request = ({
  *
  * Example Usage:
  *
- * const { send } = useSendInAppRequest()
+ * const { request } = useInAppRequest()
  *
  * const txParams = [
  *  {
@@ -41,7 +41,7 @@ type Request = ({
  *  }
  * ]
  *
- * const txHash = await send({
+ * const txHash = await request({
  *    method: RpcMethod.ETH_SEND_TRANSACTION,
  *    params: txParams,
  *    chainId: '43114'
