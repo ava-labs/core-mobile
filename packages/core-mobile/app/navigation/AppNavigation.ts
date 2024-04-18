@@ -120,8 +120,7 @@ enum NotificationsScreens {
 }
 
 enum SwapScreens {
-  Swap = 'SwapScreens.Swap',
-  Review = 'SwapScreens.Review'
+  Swap = 'SwapScreens.Swap'
 }
 
 enum NftScreens {

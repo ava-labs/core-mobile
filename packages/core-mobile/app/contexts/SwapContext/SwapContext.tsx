@@ -23,15 +23,16 @@ import SentryWrapper from 'services/sentry/SentryWrapper'
 import { humanizeSwapErrors } from 'localization/errors'
 import { useAvalancheProvider } from 'hooks/networkProviderHooks'
 import { useSelector } from 'react-redux'
-import NetworkService from 'services/network/NetworkService'
-import WalletService from 'services/wallet/WalletService'
-import { performSwap } from '@avalabs/paraswap-sdk'
 import { selectActiveNetwork } from 'store/network'
 import { selectActiveAccount } from 'store/account'
 import { useNetworkFee } from 'hooks/useNetworkFee'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import { RpcMethod } from 'store/rpc/types'
+import { useInAppRequest } from 'hooks/useInAppRequest'
+import { performSwap } from './performSwap/performSwap'
 
-export type SwapStatus = 'Idle' | 'Preparing' | 'Swapping' | 'Success' | 'Fail'
+// success here just means the transaction was sent, not that it was successful/confirmed
+export type SwapStatus = 'Idle' | 'Swapping' | 'Success' | 'Fail'
 
 export type SwapParams = {
   srcTokenAddress: string
@@ -89,6 +90,7 @@ export const SwapContextProvider = ({
 }: {
   children: ReactNode
 }): JSX.Element => {
+  const { request } = useInAppRequest()
   const activeAccount = useSelector(selectActiveAccount)
   const activeNetwork = useSelector(selectActiveNetwork)
   const avalancheProvider = useAvalancheProvider()
@@ -183,18 +185,7 @@ export const SwapContextProvider = ({
     swapMaxFeePerGas,
     swapMaxPriorityFeePerGas
   }: SwapParams): void {
-    setSwapStatus('Preparing')
     setSwapStatus('Swapping')
-
-    showSnackBarCustom({
-      component: (
-        <TransactionToast
-          message={'Swap Pending...'}
-          type={TransactionToastType.PENDING}
-        />
-      ),
-      duration: 'short'
-    })
 
     InteractionManager.runAfterInteractions(async () => {
       const sentryTrx = SentryWrapper.startTransaction('swap')
@@ -215,13 +206,12 @@ export const SwapContextProvider = ({
           slippage: swapSlippage,
           activeNetwork,
           provider: avalancheProvider,
-          transactionSend: signedTx =>
-            NetworkService.sendTransaction({
-              signedTx,
-              network: activeNetwork
+          signAndSend: txParams =>
+            request({
+              method: RpcMethod.ETH_SEND_TRANSACTION,
+              params: txParams,
+              chainId: activeNetwork.chainId.toString()
             }),
-          transactionSign: tx =>
-            WalletService.sign(tx, activeAccount.index, activeNetwork),
           userAddress: activeAccount.address,
           networkGasPrice: networkFee?.low.maxFeePerGas.toSubUnit() ?? 0n
         })
@@ -229,6 +219,10 @@ export const SwapContextProvider = ({
         .then(([result, err]) => {
           if (err || (result && 'error' in result)) {
             setSwapStatus('Fail')
+            AnalyticsService.captureWithEncryption('SwapTransactionFailed', {
+              address: activeAccount.address,
+              chainId: activeNetwork.chainId
+            })
             showSnackBarCustom({
               component: (
                 <TransactionToast
@@ -240,19 +234,6 @@ export const SwapContextProvider = ({
             })
           } else {
             setSwapStatus('Success')
-            showSnackBarCustom({
-              component: (
-                <TransactionToast
-                  message={'Swap Successful'}
-                  type={TransactionToastType.SUCCESS}
-                  txHash={
-                    result?.swapTxHash === null ? undefined : result?.swapTxHash
-                  }
-                />
-              ),
-              duration: 'short'
-            })
-
             AnalyticsService.captureWithEncryption('SwapTransactionSucceeded', {
               txHash: result?.swapTxHash ?? '',
               chainId: activeNetwork.chainId

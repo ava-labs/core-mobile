@@ -2,13 +2,9 @@ import React, { useCallback, useEffect, useState } from 'react'
 import { ScrollView, StyleSheet, View } from 'react-native'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
-import { useApplicationContext } from 'contexts/ApplicationContext'
 import SwapNarrowSVG from 'components/svg/SwapNarrowSVG'
 import AvaButton from 'components/AvaButton'
-import { useSwapContext } from 'contexts/SwapContext'
-import { useNavigation } from '@react-navigation/native'
-import AppNavigation from 'navigation/AppNavigation'
-import { SwapScreenProps } from 'navigation/types'
+import { useSwapContext } from 'contexts/SwapContext/SwapContext'
 import {
   selectAvaxPrice,
   selectTokensWithZeroBalance,
@@ -34,19 +30,23 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { Amount, NetworkTokenUnit } from 'types'
 import BN from 'bn.js'
 import { bnToLocaleString } from '@avalabs/utils-sdk'
+import { getTokenAddress } from 'swap/getSwapRate'
+import { SwapScreenProps } from 'navigation/types'
+import AppNavigation from 'navigation/AppNavigation'
+import { useTheme } from '@avalabs/k2-mobile'
+import { useNavigation } from '@react-navigation/native'
 
-type NavigationProp = SwapScreenProps<
-  typeof AppNavigation.Swap.Swap
->['navigation']
+type SwapNav = SwapScreenProps<typeof AppNavigation.Swap.Swap>['navigation']
 
 export default function SwapView(): JSX.Element {
-  const { theme } = useApplicationContext()
-  const { navigate } = useNavigation<NavigationProp>()
+  const navigation = useNavigation<SwapNav>()
+  const { theme } = useTheme()
   const activeNetwork = useSelector(selectActiveNetwork)
   const { data: networkFee } = useNetworkFee()
   const tokensWithZeroBalance = useSelector(selectTokensWithZeroBalance)
   const avaxPrice = useSelector(selectAvaxPrice)
   const {
+    swap,
     fromToken,
     setFromToken,
     toToken,
@@ -65,7 +65,8 @@ export default function SwapView(): JSX.Element {
     setAmount,
     error: swapError,
     isFetchingOptimalRate,
-    getOptimalRateForAmount
+    getOptimalRateForAmount,
+    swapStatus
   } = useSwapContext()
   const [maxFromValue, setMaxFromValue] = useState<BN | undefined>()
   const [fromTokenValue, setFromTokenValue] = useState<Amount>()
@@ -85,6 +86,14 @@ export default function SwapView(): JSX.Element {
     !!optimalRate &&
     !!gasLimit &&
     !!networkFee
+
+  const swapInProcess = swapStatus === 'Swapping'
+
+  useEffect(() => {
+    if (swapStatus === 'Success') {
+      navigation.getParent()?.goBack()
+    }
+  }, [navigation, swapStatus])
 
   useEffect(validateInputsFx, [fromTokenValue, maxFromValue])
   useEffect(applyOptimalRateFx, [optimalRate])
@@ -183,13 +192,35 @@ export default function SwapView(): JSX.Element {
     if (optimalRate) {
       setMaxFeePerGas(maxFeePerGas)
       setMaxPriorityFeePerGas(maxPriorityFeePerGas)
-      navigate(AppNavigation.Swap.Review)
+
       AnalyticsService.capture('SwapReviewOrder', {
         destinationInputField: destination,
         slippageTolerance: slippage,
         customMaxFeePerGas: maxFeePerGas.toString(),
         customMaxPriorityFeePerGas: maxPriorityFeePerGas.toString()
       })
+
+      if (
+        fromToken &&
+        toToken &&
+        optimalRate &&
+        gasLimit &&
+        maxFeePerGas &&
+        maxPriorityFeePerGas &&
+        slippage
+      ) {
+        swap({
+          srcTokenAddress: getTokenAddress(fromToken),
+          isSrcTokenNative: fromToken.type === TokenType.NATIVE,
+          destTokenAddress: getTokenAddress(toToken),
+          isDestTokenNative: toToken.type === TokenType.NATIVE,
+          priceRoute: optimalRate,
+          swapGasLimit: gasLimit,
+          swapMaxFeePerGas: maxFeePerGas,
+          swapMaxPriorityFeePerGas: maxPriorityFeePerGas,
+          swapSlippage: slippage
+        })
+      }
     }
   }
 
@@ -287,7 +318,7 @@ export default function SwapView(): JSX.Element {
             style={{
               alignSelf: 'flex-end',
               borderRadius: 50,
-              backgroundColor: theme.colorBg2,
+              backgroundColor: theme.colors.$neutral900,
               width: 40,
               height: 40,
               justifyContent: 'center',
@@ -333,8 +364,8 @@ export default function SwapView(): JSX.Element {
       <AvaButton.PrimaryLarge
         style={{ margin: 16 }}
         onPress={reviewOrder}
-        disabled={!canSwap}>
-        Review Order
+        disabled={!canSwap || swapInProcess}>
+        {!swapInProcess ? 'Review Order' : 'Swapping...'}
       </AvaButton.PrimaryLarge>
     </View>
   )

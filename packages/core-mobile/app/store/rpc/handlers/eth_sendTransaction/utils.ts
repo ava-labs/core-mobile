@@ -9,7 +9,7 @@ const transactionSchema = z.object({
   gasPrice: z.string().startsWith('0x').optional(),
   maxFeePerGas: z.string().startsWith('0x').optional(),
   maxPriorityFeePerGas: z.string().startsWith('0x').optional(),
-  nonce: z.string().startsWith('0x').optional()
+  nonce: z.string().optional()
 })
 
 const paramsSchema = z.tuple([transactionSchema])

@@ -1,9 +1,13 @@
 import { AppListenerEffectAPI } from 'store'
 import { TransactionResponse } from 'ethers'
 import { getTxConfirmationReceipt } from 'utils/getTxConfirmationReceipt'
-import { showSimpleToast } from 'components/Snackbar'
-import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { selectActiveNetwork } from 'store/network'
+import {
+  showTransactionPendingToast,
+  showTransactionRevertedToast,
+  showTransactionSuccessToast
+} from 'utils/toast'
+import { selectIsDeveloperMode } from 'store/settings/advanced/slice'
+import { selectActiveNetwork } from 'store/network/slice'
 import { updateRequestStatus } from '../slice'
 
 export const handleWaitForTransactionReceipt = async (
@@ -16,6 +20,8 @@ export const handleWaitForTransactionReceipt = async (
   const network = selectActiveNetwork(state)
   const isTestnet = selectIsDeveloperMode(state)
 
+  showTransactionPendingToast()
+
   const confirmationReceipt = await getTxConfirmationReceipt(
     txResponse.hash,
     network,
@@ -23,7 +29,13 @@ export const handleWaitForTransactionReceipt = async (
   )
 
   const status = confirmationReceipt?.status === 'success'
-  showSimpleToast(status ? 'Transaction Confirmed' : 'Transaction Reverted')
+
+  if (status) {
+    showTransactionSuccessToast(txResponse.hash)
+  } else {
+    showTransactionRevertedToast()
+  }
+
   dispatch(
     updateRequestStatus({
       id: requestId,

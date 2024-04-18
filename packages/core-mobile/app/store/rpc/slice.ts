@@ -1,8 +1,7 @@
 import { createAction, createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { RpcState } from 'store/rpc'
 import { RootState } from 'store/index'
 import { TransactionResponse } from 'ethers'
-import { Request, RequestStatus, RpcError } from './types'
+import { Request, RequestStatus, RpcState, RpcError } from './types'
 
 export const reducerName = 'rpc'
 
@@ -54,6 +53,16 @@ export const waitForTransactionReceipt = createAction<{
   txResponse: TransactionResponse
   requestId: number
 }>(`${reducerName}/waitForTransactionReceipt`)
+
+export const onInAppRequestSucceeded = createAction<{
+  requestId: number
+  txHash: string
+}>(`${reducerName}/onInAppRequestSucceeded`)
+
+export const onInAppRequestFailed = createAction<{
+  requestId: number
+  error: Error
+}>(`${reducerName}/onInAppRequestFailed`)
 
 export const { updateRequestStatus } = rpcSlice.actions
 

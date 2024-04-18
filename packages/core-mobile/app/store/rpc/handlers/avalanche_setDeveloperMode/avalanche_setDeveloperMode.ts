@@ -1,6 +1,6 @@
 import { AppListenerEffectAPI } from 'store'
 import { ethErrors } from 'eth-rpc-errors'
-import { RpcMethod } from 'store/rpc'
+import { RpcMethod } from 'store/rpc/types'
 import {
   selectIsDeveloperMode,
   toggleDeveloperMode
