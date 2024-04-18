@@ -1,3 +1,3 @@
-const getRandomValues = jest.fn()
-
-export { getRandomValues }
+jest.mock('react-native-quick-crypto', () => {
+  return jest.requireActual('crypto')
+})
