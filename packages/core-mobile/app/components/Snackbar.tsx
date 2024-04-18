@@ -2,9 +2,6 @@ import React from 'react'
 import { ToastOptions } from 'react-native-toast-notifications/lib/typescript/toast'
 import DappToast, { DappToastTypes } from './toast/DappToast'
 import GeneralToast from './toast/GeneralToast'
-import TransactionToast, {
-  TransactionToastType
-} from './toast/TransactionToast'
 
 const LENGTH_SHORT = 3000
 const LENGTH_LONG = 5000
@@ -47,43 +44,6 @@ export const showSimpleToast = (message: string, id?: string): void => {
     component: <GeneralToast message={message} testID="simple_toast_msg" />,
     duration: 'short',
     id
-  })
-}
-
-export const showTransactionPendingToast = (): void => {
-  showSnackBarCustom({
-    component: (
-      <TransactionToast
-        message={'Transaction Pending...'}
-        type={TransactionToastType.PENDING}
-      />
-    ),
-    duration: 'short'
-  })
-}
-
-export const showTransactionSuccessToast = (txHash: string): void => {
-  showSnackBarCustom({
-    component: (
-      <TransactionToast
-        message={'Transaction Successful'}
-        type={TransactionToastType.SUCCESS}
-        txHash={txHash}
-      />
-    ),
-    duration: 'long'
-  })
-}
-
-export const showTransactionRevertedToast = (): void => {
-  showSnackBarCustom({
-    component: (
-      <TransactionToast
-        message={'Transaction Reverted'}
-        type={TransactionToastType.ERROR}
-      />
-    ),
-    duration: 'long'
   })
 }
 

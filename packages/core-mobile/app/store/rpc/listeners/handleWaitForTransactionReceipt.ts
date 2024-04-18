@@ -5,7 +5,7 @@ import {
   showTransactionPendingToast,
   showTransactionRevertedToast,
   showTransactionSuccessToast
-} from 'components/Snackbar'
+} from 'utils/toast'
 import { selectIsDeveloperMode } from 'store/settings/advanced/slice'
 import { selectActiveNetwork } from 'store/network/slice'
 import { updateRequestStatus } from '../slice'
