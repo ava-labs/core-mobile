@@ -13,12 +13,16 @@ class NetworkFeeService {
     network: Network,
     tokenCreator: (value: AcceptedTypes) => T
   ): Promise<NetworkFee<T> | undefined> {
-    if (network.vmName === NetworkVMType.EVM) {
-      return await this.getFeesForEVM(network, tokenCreator)
-    } else if (network.vmName === NetworkVMType.BITCOIN) {
-      return await this.getFeesForBtc(network, tokenCreator)
+    switch (network.vmName) {
+      case NetworkVMType.EVM:
+        return await this.getFeesForEVM(network, tokenCreator)
+      case NetworkVMType.BITCOIN:
+        return await this.getFeesForBtc(network, tokenCreator)
+      case NetworkVMType.PVM:
+        return await this.getFeesForPVM(network, tokenCreator)
+      default:
+        return undefined
     }
-    return undefined
   }
 
   private async getFeesForBtc<T extends TokenBaseUnit<T>>(
@@ -72,6 +76,27 @@ class NetworkFeeService {
         maxPriorityFeePerGas: highMaxTip
       },
       isFixedFee: isSwimmer(network)
+    }
+  }
+
+  private async getFeesForPVM<T extends TokenBaseUnit<T>>(
+    network: Network,
+    tokenCreator: (value: AcceptedTypes) => T
+  ): Promise<NetworkFee<T> | undefined> {
+    const baseFeePerGasInUnit = tokenCreator(0.001 * 10 ** 9)
+
+    return {
+      baseFee: baseFeePerGasInUnit,
+      low: {
+        maxFeePerGas: baseFeePerGasInUnit
+      },
+      medium: {
+        maxFeePerGas: baseFeePerGasInUnit
+      },
+      high: {
+        maxFeePerGas: baseFeePerGasInUnit
+      },
+      isFixedFee: true
     }
   }
 

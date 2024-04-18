@@ -4,14 +4,23 @@ import walletService from 'services/wallet/WalletService'
 import { Account } from 'store/account'
 import { SendServiceEVM } from 'services/send/SendServiceEVM'
 import { NFTItemData } from 'store/nft'
-import { TokenType, NftTokenWithBalance } from 'store/balance'
+import { NftTokenWithBalance, TokenType } from 'store/balance'
 import BN from 'bn.js'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { Transaction } from '@sentry/types'
 import { isErc721 } from 'services/nft/utils'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { isValidSendState, SendServiceHelper, SendState } from './types'
+import { SendServicePVM } from 'services/send/SendServicePVM'
+import { Dispatch } from '@reduxjs/toolkit'
+import {
+  onRequest,
+  Request,
+  RpcMethod,
+  SessionRequest
+} from 'store/walletConnectV2'
+import { SignTransactionRequest } from 'services/wallet/types'
 import sendServiceBTC from './SendServiceBTC'
+import { isValidSendState, SendServiceHelper, SendState } from './types'
 
 class SendService {
   // eslint-disable-next-line max-params
@@ -21,24 +30,35 @@ class SendService {
     account: Account,
     currency: string,
     onTxSigned?: () => void,
-    sentryTrx?: Transaction
-  ): Promise<string> {
+    sentryTrx?: Transaction,
+    dispatch?: Dispatch<{ payload: Request; type: string }>
+  ): Promise<string | undefined> {
     return SentryWrapper.createSpanFor(sentryTrx)
       .setContext('svc.send.send')
       .executeAsync(async () => {
         const fromAddress =
           activeNetwork.vmName === NetworkVMType.BITCOIN
             ? account.addressBtc
+            : activeNetwork.vmName === NetworkVMType.PVM
+            ? account.addressPVM
             : account.address
+        if (!fromAddress) {
+          throw new Error('Source address not set')
+        }
 
-        const service = await this.getService(activeNetwork, fromAddress)
-        sendState = await service.validateStateAndCalculateFees({
+        const service =
+          activeNetwork.vmName === NetworkVMType.PVM
+            ? new SendServicePVM(activeNetwork)
+            : this.getService(activeNetwork, fromAddress)
+        const params = {
           sendState,
           isMainnet: !activeNetwork.isTestnet,
           fromAddress,
           currency,
-          sentryTrx
-        })
+          sentryTrx,
+          accountIndex: account.index
+        }
+        sendState = await service.validateStateAndCalculateFees(params)
 
         if (sendState.error?.error) {
           throw new Error(sendState.error.message)
@@ -53,25 +73,43 @@ class SendService {
           isMainnet: !activeNetwork.isTestnet,
           fromAddress,
           currency,
-          sentryTrx
+          sentryTrx,
+          accountIndex: account.index
         })
-        const signedTx = await walletService.sign(
-          txRequest,
-          account.index,
-          activeNetwork,
-          sentryTrx
-        )
-        onTxSigned?.()
-        const txHash = await networkService.sendTransaction({
-          signedTx,
-          network: activeNetwork,
-          sentryTrx
-        })
-
-        AnalyticsService.captureWithEncryption('SendTransactionSucceeded', {
-          chainId: activeNetwork.chainId,
-          txHash: txHash
-        })
+        let txHash
+        if (activeNetwork.vmName === NetworkVMType.PVM) {
+          dispatch?.(
+            onRequest({
+              data: {
+                params: {
+                  request: {
+                    method: RpcMethod.AVALANCHE_SEND_TRANSACTION,
+                    params: txRequest
+                  },
+                  chainId: `eip155:${activeNetwork.chainId}`
+                }
+              },
+              method: RpcMethod.AVALANCHE_SEND_TRANSACTION
+            } as SessionRequest<string>)
+          )
+        } else {
+          const signedTx = await walletService.sign(
+            txRequest as SignTransactionRequest,
+            account.index,
+            activeNetwork,
+            sentryTrx
+          )
+          onTxSigned?.()
+          txHash = await networkService.sendTransaction({
+            signedTx,
+            network: activeNetwork,
+            sentryTrx
+          })
+          AnalyticsService.captureWithEncryption('SendTransactionSucceeded', {
+            chainId: activeNetwork.chainId,
+            txHash: txHash
+          })
+        }
 
         return txHash
       })
@@ -88,16 +126,26 @@ class SendService {
     const fromAddress =
       activeNetwork.vmName === NetworkVMType.BITCOIN
         ? account.addressBtc
+        : activeNetwork.vmName === NetworkVMType.PVM
+        ? account.addressPVM
         : account.address
 
-    const service = this.getService(activeNetwork, fromAddress)
-    return service.validateStateAndCalculateFees({
+    if (!fromAddress) {
+      throw new Error('Source address not set')
+    }
+    const service =
+      activeNetwork.vmName === NetworkVMType.PVM
+        ? new SendServicePVM(activeNetwork)
+        : this.getService(activeNetwork, fromAddress)
+    const params = {
       sendState,
       isMainnet: !activeNetwork.isTestnet,
       fromAddress,
       currency,
+      accountIndex: account.index,
       nativeTokenBalance
-    })
+    }
+    return service.validateStateAndCalculateFees(params)
   }
 
   mapTokenFromNFT(nft: NFTItemData): NftTokenWithBalance {
@@ -124,13 +172,18 @@ class SendService {
 
   private getService(
     activeNetwork: Network,
-    fromAddress: string
+    fromAddress?: string
   ): SendServiceHelper {
     switch (activeNetwork?.vmName) {
       case NetworkVMType.BITCOIN:
         return sendServiceBTC
       case NetworkVMType.EVM: // we might be able to change this to be a singleton too
+        if (!fromAddress) {
+          throw new Error('fromAddress must be defined')
+        }
         return new SendServiceEVM(activeNetwork, fromAddress)
+      // case NetworkVMType.PVM: // we might be able to change this to be a singleton too
+      //   return new SendServicePVM(activeNetwork)
       default:
         throw new Error('unhandled send helper')
     }

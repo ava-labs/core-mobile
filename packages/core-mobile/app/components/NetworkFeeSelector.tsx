@@ -70,6 +70,7 @@ const NetworkFeeSelector = ({
     selectedCurrency.toLowerCase() as VsCurrencyType
   )
   const isBtcNetwork = Boolean(network?.vmName === NetworkVMType.BITCOIN)
+  const isPVM = Boolean(network?.vmName === NetworkVMType.PVM)
   const [selectedPreset, setSelectedPreset] = useState(FeePreset.Normal)
   const [calculatedFees, setCalculatedFees] =
     useState<GasAndFees<NetworkTokenUnit>>()
@@ -83,10 +84,10 @@ const NetworkFeeSelector = ({
           fee.low.maxPriorityFeePerGas ??
           NetworkTokenUnit.fromNetwork(activeNetwork),
         tokenPrice: nativeTokenPrice,
-        gasLimit
+        gasLimit: isPVM ? 1 : gasLimit
       })
     },
-    [activeNetwork, gasLimit, nativeTokenPrice]
+    [activeNetwork, gasLimit, isPVM, nativeTokenPrice]
   )
 
   useEffect(() => {
@@ -101,7 +102,7 @@ const NetworkFeeSelector = ({
   // customFees init value.
   // NetworkFee is not immediately available hence the useEffect
   useEffect(() => {
-    if (!customFees && networkFee && (gasLimit > 0 || isBtcNetwork)) {
+    if (!customFees && networkFee && (gasLimit > 0 || isBtcNetwork || isPVM)) {
       const initialCustomFees = getInitialCustomFees(networkFee)
       setCustomFees(initialCustomFees)
       setCalculatedFees(initialCustomFees)
@@ -113,6 +114,7 @@ const NetworkFeeSelector = ({
     gasLimit,
     getInitialCustomFees,
     isBtcNetwork,
+    isPVM,
     nativeTokenPrice,
     networkFee,
     onFeesChange,
@@ -233,48 +235,46 @@ const NetworkFeeSelector = ({
           borderRadius: 8,
           marginBottom: 16
         }}>
-        <Row
-          style={{
-            justifyContent: 'space-between',
-            alignItems: 'center'
-          }}>
-          <FeeSelector
-            label={isBtcNetwork ? 'Slow' : FeePreset.Normal}
-            selected={selectedPreset === FeePreset.Normal}
-            onSelect={() => handleSelectedPreset(FeePreset.Normal)}
-            value={displayGasValues?.[FeePreset.Normal]}
-          />
-          {!networkFee?.isFixedFee && (
-            <>
-              <FeeSelector
-                label={isBtcNetwork ? 'Medium' : FeePreset.Fast}
-                selected={selectedPreset === FeePreset.Fast}
-                onSelect={() => handleSelectedPreset(FeePreset.Fast)}
-                value={displayGasValues?.[FeePreset.Fast]}
-              />
-              <FeeSelector
-                label={isBtcNetwork ? 'Fast' : FeePreset.Instant}
-                selected={selectedPreset === FeePreset.Instant}
-                onSelect={() => handleSelectedPreset(FeePreset.Instant)}
-                value={displayGasValues?.[FeePreset.Instant]}
-              />
-              <FeeSelector
-                label={FeePreset.Custom}
-                selected={selectedPreset === FeePreset.Custom}
-                onSelect={() => {
-                  handleSelectedPreset(FeePreset.Custom)
-                  goToEditGasLimit(network)
-                }}
-                placeholder={displayGasValues?.[FeePreset.Normal]}
-                value={
-                  selectedPreset !== FeePreset.Custom && !customFees
-                    ? displayGasValues?.[FeePreset.Normal]
-                    : displayGasValues?.[FeePreset.Custom]
-                }
-              />
-            </>
-          )}
-        </Row>
+        {!networkFee?.isFixedFee && (
+          <Row
+            style={{
+              justifyContent: 'space-between',
+              alignItems: 'center'
+            }}>
+            <FeeSelector
+              label={isBtcNetwork ? 'Slow' : FeePreset.Normal}
+              selected={selectedPreset === FeePreset.Normal}
+              onSelect={() => handleSelectedPreset(FeePreset.Normal)}
+              value={displayGasValues?.[FeePreset.Normal]}
+            />
+            <FeeSelector
+              label={isBtcNetwork ? 'Medium' : FeePreset.Fast}
+              selected={selectedPreset === FeePreset.Fast}
+              onSelect={() => handleSelectedPreset(FeePreset.Fast)}
+              value={displayGasValues?.[FeePreset.Fast]}
+            />
+            <FeeSelector
+              label={isBtcNetwork ? 'Fast' : FeePreset.Instant}
+              selected={selectedPreset === FeePreset.Instant}
+              onSelect={() => handleSelectedPreset(FeePreset.Instant)}
+              value={displayGasValues?.[FeePreset.Instant]}
+            />
+            <FeeSelector
+              label={FeePreset.Custom}
+              selected={selectedPreset === FeePreset.Custom}
+              onSelect={() => {
+                handleSelectedPreset(FeePreset.Custom)
+                goToEditGasLimit(network)
+              }}
+              placeholder={displayGasValues?.[FeePreset.Normal]}
+              value={
+                selectedPreset !== FeePreset.Custom && !customFees
+                  ? displayGasValues?.[FeePreset.Normal]
+                  : displayGasValues?.[FeePreset.Custom]
+              }
+            />
+          </Row>
+        )}
         <Space y={20} />
         <Row style={{ justifyContent: 'space-between', alignItems: 'center' }}>
           <Text variant="body2" sx={{ color: '$neutral400' }}>

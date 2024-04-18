@@ -27,6 +27,8 @@ export type OpName =
   | 'svc.send.btc.validate_and_calc_fees'
   | 'svc.send.evm.validate_and_calc_fees'
   | 'svc.send.evm.get_trx_request'
+  | 'svc.send.pvm.validate_and_calc_fees'
+  | 'svc.send.pvm.get_trx_request'
   | 'svc.swap.get_rate'
   | 'svc.swap.get_paraswap_spender'
   | 'svc.swap.build_trx'

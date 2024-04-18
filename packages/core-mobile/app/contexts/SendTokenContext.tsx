@@ -13,7 +13,7 @@ import { Image, InteractionManager } from 'react-native'
 import { mustNumber } from 'utils/JsTools'
 import { TokenWithBalance } from 'store/balance'
 import { selectActiveNetwork, TokenSymbol } from 'store/network'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import sendService from 'services/send/SendService'
 import { SendState } from 'services/send/types'
@@ -64,6 +64,7 @@ export const SendTokenContextProvider = ({
   children: ReactNode
 }): JSX.Element => {
   const { theme } = useApplicationContext()
+  const dispatch = useDispatch()
   const activeAccount = useSelector(selectActiveAccount)
   const activeNetwork = useSelector(selectActiveNetwork)
   const selectedCurrency = useSelector(selectSelectedCurrency)
@@ -211,7 +212,8 @@ export const SendTokenContextProvider = ({
           activeAccount,
           selectedCurrency.toLowerCase(),
           undefined,
-          sentryTrx
+          sentryTrx,
+          dispatch
         )
         .then(txId => {
           setSendStatus('Success')

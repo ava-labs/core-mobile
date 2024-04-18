@@ -84,6 +84,11 @@ export type CreateImportCTxParams = CommonAvalancheTxParamsBase & {
   sourceChain: 'P' | 'X'
 }
 
+export type CreateSendPTxParams = CommonAvalancheTxParamsBase & {
+  amount: Avax
+  sourceAddress: string
+}
+
 export enum WalletType {
   UNSET = 'UNSET',
   SEEDLESS = 'SEEDLESS',
