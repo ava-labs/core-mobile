@@ -22,6 +22,7 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { commonStorage } from 'utils/mmkv'
 import { reduxStorage } from 'store/reduxStorage'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import BootSplash from 'react-native-bootsplash'
 import {
   onAppLocked,
   onAppUnlocked,
@@ -192,5 +193,12 @@ export const addAppListeners = (startListening: AppStartListening): void => {
   startListening({
     actionCreator: onLogOut,
     effect: clearData
+  })
+
+  startListening({
+    actionCreator: setIsReady,
+    effect: () => {
+      BootSplash.hide()
+    }
   })
 }

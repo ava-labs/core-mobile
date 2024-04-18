@@ -15,7 +15,6 @@ import { navigationRef } from 'utils/Navigation'
 import SentryService from 'services/sentry/SentryService'
 import DataDogService from 'services/datadog/DataDogService'
 import Logger, { LogLevel } from 'utils/Logger'
-import BootSplash from 'react-native-bootsplash'
 
 Logger.setLevel(__DEV__ ? LogLevel.TRACE : LogLevel.ERROR)
 
@@ -52,7 +51,6 @@ export default function App(): JSX.Element {
           theme={context.navContainerTheme}
           ref={navigationRef}
           onReady={() => {
-            BootSplash.hide()
             DataDogService.init(navigationRef).catch(Logger.error)
           }}>
           <RootScreenStack />
