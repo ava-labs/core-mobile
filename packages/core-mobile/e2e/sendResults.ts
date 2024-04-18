@@ -224,9 +224,8 @@ async function generatePlatformResults(
             name: 'failed.png',
             value: await fs.createReadStream(failScreenshot)
           }
-          console.log(JSON.stringify(failedPayload))
           // Attaches the screenshot to the corressponding case in the test run
-          // await api.addAttachmentToResult(testResults[i].id, failedPayload)
+          await api.addAttachmentToResult(testResults[i].id, failedPayload)
         }
       }
     }
