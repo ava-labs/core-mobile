@@ -11,15 +11,15 @@ import { AcceptedTypes, TokenBaseUnit } from 'types/TokenBaseUnit'
 class NetworkFeeService {
   async getNetworkFee<T extends TokenBaseUnit<T>>(
     network: Network,
-    tokenCreator: (value: AcceptedTypes) => T
+    tokenUnitCreator: (value: AcceptedTypes) => T
   ): Promise<NetworkFee<T> | undefined> {
     switch (network.vmName) {
       case NetworkVMType.EVM:
-        return await this.getFeesForEVM(network, tokenCreator)
+        return await this.getFeesForEVM(network, tokenUnitCreator)
       case NetworkVMType.BITCOIN:
-        return await this.getFeesForBtc(network, tokenCreator)
+        return await this.getFeesForBtc(network, tokenUnitCreator)
       case NetworkVMType.PVM:
-        return await this.getFeesForPVM(network, tokenCreator)
+        return await this.getFeesForPVM(tokenUnitCreator)
       default:
         return undefined
     }
@@ -80,10 +80,10 @@ class NetworkFeeService {
   }
 
   private async getFeesForPVM<T extends TokenBaseUnit<T>>(
-    network: Network,
-    tokenCreator: (value: AcceptedTypes) => T
+    tokenUnitCreator: (value: AcceptedTypes) => T
   ): Promise<NetworkFee<T> | undefined> {
-    const baseFeePerGasInUnit = tokenCreator(0.001 * 10 ** 9)
+    // this is 0.001 Avax denominated in nAvax, taken from https://docs.avax.network/reference/standards/guides/txn-fees#fee-schedule
+    const baseFeePerGasInUnit = tokenUnitCreator(0.001 * 10 ** 9)
 
     return {
       baseFee: baseFeePerGasInUnit,
