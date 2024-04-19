@@ -19,6 +19,7 @@ import {
   SessionRequest
 } from 'store/walletConnectV2'
 import { SignTransactionRequest } from 'services/wallet/types'
+import AccountsService from 'services/account/AccountsService'
 import sendServiceBTC from './SendServiceBTC'
 import { isValidSendState, SendServiceHelper, SendState } from './types'
 
@@ -36,12 +37,10 @@ class SendService {
     return SentryWrapper.createSpanFor(sentryTrx)
       .setContext('svc.send.send')
       .executeAsync(async () => {
-        const fromAddress =
-          activeNetwork.vmName === NetworkVMType.BITCOIN
-            ? account.addressBtc
-            : activeNetwork.vmName === NetworkVMType.PVM
-            ? account.addressPVM
-            : account.address
+        const fromAddress = AccountsService.getAddressForNetwork(
+          account,
+          activeNetwork
+        )
         if (!fromAddress) {
           throw new Error('Source address not set')
         }
@@ -123,12 +122,10 @@ class SendService {
     currency: string,
     nativeTokenBalance?: BN
   ): Promise<SendState> {
-    const fromAddress =
-      activeNetwork.vmName === NetworkVMType.BITCOIN
-        ? account.addressBtc
-        : activeNetwork.vmName === NetworkVMType.PVM
-        ? account.addressPVM
-        : account.address
+    const fromAddress = AccountsService.getAddressForNetwork(
+      account,
+      activeNetwork
+    )
 
     if (!fromAddress) {
       throw new Error('Source address not set')
