@@ -18,6 +18,7 @@ import { Button, Text, View, alpha, useTheme } from '@avalabs/k2-mobile'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { NetworkFee } from 'services/networkFee/types'
 import { useBridgeSDK } from '@avalabs/bridge-sdk'
+import { GAS_LIMIT_FOR_XP_CHAIN } from 'consts/fees'
 import { Tooltip } from './Tooltip'
 import InputText from './InputText'
 
@@ -84,7 +85,7 @@ const NetworkFeeSelector = ({
           fee.low.maxPriorityFeePerGas ??
           NetworkTokenUnit.fromNetwork(activeNetwork),
         tokenPrice: nativeTokenPrice,
-        gasLimit: isPVM ? 1 : gasLimit
+        gasLimit: isPVM ? GAS_LIMIT_FOR_XP_CHAIN : gasLimit
       })
     },
     [activeNetwork, gasLimit, isPVM, nativeTokenPrice]

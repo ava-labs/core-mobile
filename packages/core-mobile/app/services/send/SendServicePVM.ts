@@ -13,6 +13,7 @@ import { Avax } from 'types'
 import { Avalanche } from '@avalabs/wallets-sdk'
 import { networkIDs, utils, Utxo } from '@avalabs/avalanchejs'
 import { AvalancheTxParams } from 'store/walletConnectV2/handlers/avalanche_sendTransaction/avalanche_sendTransaction'
+import { GAS_LIMIT_FOR_XP_CHAIN } from 'consts/fees'
 
 export class SendServicePVM {
   constructor(private activeNetwork: Network) {}
@@ -30,7 +31,7 @@ export class SendServicePVM {
         // Set canSubmit to false if token is not set
         if (!token) return SendServicePVM.getErrorState(sendState, '')
 
-        const gasLimit = 1
+        const gasLimit = GAS_LIMIT_FOR_XP_CHAIN
         const sendFee = maxFeePerGas
           ? new BN(gasLimit).mul(new BN(maxFeePerGas.toString()))
           : undefined
