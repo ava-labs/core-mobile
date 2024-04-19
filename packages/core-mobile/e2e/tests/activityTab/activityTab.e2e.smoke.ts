@@ -12,7 +12,7 @@ describe('Activity Tab', () => {
 
   it('should show contract call only in activity list', async () => {
     await PortfolioPage.tapAvaxNetwork()
-    await PortfolioPage.tapActivityTab()
+    // await PortfolioPage.tapActivityTab()
     await actions.waitForElement(ActivityTabPage.arrowSVG, 10000, 1)
     await ActivityTabPage.tapFilterDropdown()
     await ActivityTabPage.tapContractCallFilterOption()
