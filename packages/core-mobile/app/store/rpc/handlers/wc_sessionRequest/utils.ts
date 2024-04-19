@@ -65,9 +65,7 @@ export const isNetworkSupported = (
   chainId: number
 ): boolean => {
   const network = supportedNetworks[Number(chainId)]
-  return Boolean(
-    network && [NetworkVMType.EVM, NetworkVMType.PVM].includes(network.vmName)
-  )
+  return Boolean(network && [NetworkVMType.EVM].includes(network.vmName))
 }
 
 const approveDataSchema = z.object({
