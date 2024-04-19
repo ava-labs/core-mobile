@@ -15,7 +15,6 @@ import ShareSVG from 'components/svg/ShareSVG'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { shareContact } from 'screens/drawer/addressBook/utils'
 import { Contact } from 'store/addressBook'
-import Logger from 'utils/Logger'
 
 const ContactDetails = ({
   contact,
@@ -80,10 +79,6 @@ const ContactDetails = ({
   )
 
   const handleShare = useCallback(() => {
-    if (addresses.length === 0) {
-      Logger.error('List of addresses empty')
-      return
-    }
     if (addresses.length === 1) {
       shareContact({
         name: contact.title,
