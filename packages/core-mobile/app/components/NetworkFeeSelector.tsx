@@ -3,7 +3,7 @@ import Settings from 'assets/icons/settings.svg'
 import { Space } from 'components/Space'
 import React, { FC, useCallback, useEffect, useMemo, useState } from 'react'
 import { useSelector } from 'react-redux'
-import { Network, NetworkVMType } from '@avalabs/chains-sdk'
+import { Network } from '@avalabs/chains-sdk'
 import { useNavigation } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
 import { WalletScreenProps } from 'navigation/types'
@@ -14,11 +14,13 @@ import { calculateGasAndFees, Eip1559Fees, GasAndFees } from 'utils/Utils'
 import { useNetworkFee } from 'hooks/useNetworkFee'
 import { useNativeTokenPriceForNetwork } from 'hooks/useNativeTokenPriceForNetwork'
 import { NetworkTokenUnit } from 'types'
-import { Button, Text, View, alpha, useTheme } from '@avalabs/k2-mobile'
+import { alpha, Button, Text, useTheme, View } from '@avalabs/k2-mobile'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { NetworkFee } from 'services/networkFee/types'
 import { useBridgeSDK } from '@avalabs/bridge-sdk'
 import { GAS_LIMIT_FOR_XP_CHAIN } from 'consts/fees'
+import { isBitcoinNetwork } from 'utils/network/isBitcoinNetwork'
+import { isPvmNetwork } from 'utils/network/isPvmNetwork'
 import { Tooltip } from './Tooltip'
 import InputText from './InputText'
 
@@ -70,8 +72,8 @@ const NetworkFeeSelector = ({
     network,
     selectedCurrency.toLowerCase() as VsCurrencyType
   )
-  const isBtcNetwork = Boolean(network?.vmName === NetworkVMType.BITCOIN)
-  const isPVM = Boolean(network?.vmName === NetworkVMType.PVM)
+  const isBtcNetwork = network ? isBitcoinNetwork(network) : false
+  const isPVM = isPvmNetwork(network)
   const [selectedPreset, setSelectedPreset] = useState(FeePreset.Normal)
   const [calculatedFees, setCalculatedFees] =
     useState<GasAndFees<NetworkTokenUnit>>()
