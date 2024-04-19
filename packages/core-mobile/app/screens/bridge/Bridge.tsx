@@ -64,7 +64,7 @@ import { Eip1559Fees } from 'utils/Utils'
 import { AssetBalance, BridgeProvider } from './utils/types'
 
 const blockchainTitleMaxWidth = Dimensions.get('window').width * 0.5
-const dropdownWith = Dimensions.get('window').width * 0.6
+const dropdownWidth = Dimensions.get('window').width * 0.6
 
 const sourceBlockchains = [
   Blockchain.AVALANCHE,
@@ -450,31 +450,34 @@ const Bridge: FC = () => {
 
   const renderFromSection = (): JSX.Element => {
     return (
-      <>
-        <AvaListItem.Base
-          title={'From'}
-          rightComponentMaxWidth="auto"
-          rightComponent={
-            <View>
-              <DropDown
-                width={dropdownWith}
-                data={availableBlockchains}
-                selectedIndex={availableBlockchains.indexOf(currentBlockchain)}
-                onItemSelected={setCurrentBlockchain}
-                optionsRenderItem={item =>
-                  renderDropdownItem(item.item, currentBlockchain)
-                }
-                selectionRenderItem={() =>
-                  renderFromBlockchain(currentBlockchain)
-                }
-                style={{
-                  top: 22
-                }}
-              />
-            </View>
-          }
-        />
-      </>
+      <Row
+        style={{
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          padding: 16
+        }}>
+        <Text variant={'heading6'}>From</Text>
+        <View>
+          <DropDown
+            width={dropdownWidth}
+            data={availableBlockchains}
+            selectedIndex={availableBlockchains.indexOf(currentBlockchain)}
+            onItemSelected={setCurrentBlockchain}
+            optionsRenderItem={item =>
+              renderDropdownItem(item.item, currentBlockchain)
+            }
+            selectionRenderItem={() => renderFromBlockchain(currentBlockchain)}
+            style={{
+              top: 22
+            }}
+            prompt={
+              <Text variant="buttonMedium" style={styles.tokenSelectorText}>
+                Select Network
+              </Text>
+            }
+          />
+        </View>
+      </Row>
     )
   }
 
