@@ -28,7 +28,12 @@ const enabledUIs: Partial<Record<UI, number[]>> = {
 
 // The list of features we want to disable on certain networks (blacklist)
 const disabledUIs: Partial<Record<UI, number[]>> = {
-  [UI.ManageTokens]: [ChainId.BITCOIN, ChainId.BITCOIN_TESTNET],
+  [UI.ManageTokens]: [
+    ChainId.BITCOIN,
+    ChainId.BITCOIN_TESTNET,
+    ChainId.AVALANCHE_XP,
+    ChainId.AVALANCHE_TEST_XP
+  ],
   [UI.Bridge]: [
     ChainId.DFK,
     ChainId.DFK_TESTNET,
