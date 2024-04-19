@@ -36,6 +36,8 @@ export class GlacierBalanceService implements BalanceServiceProvider {
     const supportedChainsResp = await glacierSdk.evmChains.supportedChains({})
 
     const chainInfos = supportedChainsResp.chains
+    //even though glacier supports X and P chains the SDK doesn't provide 'em as list
+    // so we push them manually
     const chains = chainInfos.map(chain => chain.chainId)
     chains.push(ChainId.AVALANCHE_XP.toString())
     chains.push(ChainId.AVALANCHE_TEST_XP.toString())
