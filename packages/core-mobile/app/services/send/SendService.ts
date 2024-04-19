@@ -169,18 +169,13 @@ class SendService {
 
   private getService(
     activeNetwork: Network,
-    fromAddress?: string
+    fromAddress: string
   ): SendServiceHelper {
     switch (activeNetwork?.vmName) {
       case NetworkVMType.BITCOIN:
         return sendServiceBTC
       case NetworkVMType.EVM: // we might be able to change this to be a singleton too
-        if (!fromAddress) {
-          throw new Error('fromAddress must be defined')
-        }
         return new SendServiceEVM(activeNetwork, fromAddress)
-      // case NetworkVMType.PVM: // we might be able to change this to be a singleton too
-      //   return new SendServicePVM(activeNetwork)
       default:
         throw new Error('unhandled send helper')
     }
