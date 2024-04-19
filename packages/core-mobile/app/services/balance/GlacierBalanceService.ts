@@ -57,20 +57,15 @@ export class GlacierBalanceService implements BalanceServiceProvider {
       .setContext('svc.balance.glacier.get')
       .executeAsync(async () => {
         return await Promise.allSettled([
-          this.getNativeTokenBalanceForNetwork(
+          ...this.getNativeTokenBalancesForNetwork({
             network,
-            accountAddress,
-            currency
-          ),
-          this.getErc20BalanceForNetwork(network, accountAddress, currency),
-          this.getPChainBalance({
-            network,
-            addresses: [accountAddress],
+            address: accountAddress,
             currency,
             sentryTrx
-          })
+          }),
+          this.getErc20BalanceForNetwork(network, accountAddress, currency)
         ])
-          .then(([nativeBalance, erc20Balances, pChainBalance]) => {
+          .then(([nativeBalance, pChainBalance, erc20Balances]) => {
             let results: (
               | NetworkTokenWithBalance
               | TokenWithBalanceERC20
@@ -118,16 +113,28 @@ export class GlacierBalanceService implements BalanceServiceProvider {
       .then(res => res.nativeTokenBalance)
   }
 
-  private getNativeTokenBalanceForNetwork(
-    network: Network,
-    address: string,
+  private getNativeTokenBalancesForNetwork({
+    network,
+    address,
+    currency,
+    sentryTrx
+  }: {
+    network: Network
+    address: string
     currency: string
-  ): Promise<NetworkTokenWithBalance> {
-    return this.getNativeBalance(
-      network.chainId.toString(),
-      address,
-      currency
-    ).then(balance => convertNativeToTokenWithBalance(balance))
+    sentryTrx?: Transaction
+  }): [Promise<NetworkTokenWithBalance>, Promise<XPTokenWithBalance>] {
+    return [
+      this.getNativeBalance(network.chainId.toString(), address, currency).then(
+        balance => convertNativeToTokenWithBalance(balance)
+      ),
+      this.getPChainBalance({
+        network,
+        addresses: [address],
+        currency,
+        sentryTrx
+      })
+    ]
   }
 
   private async getErc20BalanceForNetwork(
