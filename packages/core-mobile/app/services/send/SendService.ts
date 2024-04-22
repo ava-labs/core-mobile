@@ -12,12 +12,7 @@ import { isErc721 } from 'services/nft/utils'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { SendServicePVM } from 'services/send/SendServicePVM'
 import { Dispatch } from '@reduxjs/toolkit'
-import {
-  onRequest,
-  Request,
-  RpcMethod,
-  SessionRequest
-} from 'store/walletConnectV2'
+import { createInAppRequest, onRequest, RpcMethod, Request } from 'store/rpc'
 import { SignTransactionRequest } from 'services/wallet/types'
 import AccountsService from 'services/account/AccountsService'
 import sendServiceBTC from './SendServiceBTC'
@@ -77,20 +72,12 @@ class SendService {
         })
         let txHash
         if (activeNetwork.vmName === NetworkVMType.PVM) {
-          dispatch?.(
-            onRequest({
-              data: {
-                params: {
-                  request: {
-                    method: RpcMethod.AVALANCHE_SEND_TRANSACTION,
-                    params: txRequest
-                  },
-                  chainId: `eip155:${activeNetwork.chainId}`
-                }
-              },
-              method: RpcMethod.AVALANCHE_SEND_TRANSACTION
-            } as SessionRequest<string>)
-          )
+          const request = createInAppRequest({
+            method: RpcMethod.AVALANCHE_SEND_TRANSACTION,
+            params: txRequest,
+            chainId: `eip155:${activeNetwork.chainId}`
+          })
+          dispatch?.(onRequest(request))
         } else {
           const signedTx = await walletService.sign(
             txRequest as SignTransactionRequest,

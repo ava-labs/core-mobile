@@ -12,7 +12,7 @@ import WalletService from 'services/wallet/WalletService'
 import { Avax } from 'types'
 import { Avalanche } from '@avalabs/wallets-sdk'
 import { networkIDs, utils, Utxo } from '@avalabs/avalanchejs'
-import { AvalancheTxParams } from 'store/walletConnectV2/handlers/avalanche_sendTransaction/avalanche_sendTransaction'
+import { AvalancheTxParams } from 'store/rpc/handlers/avalanche_sendTransaction/avalanche_sendTransaction'
 import { GAS_LIMIT_FOR_XP_CHAIN } from 'consts/fees'
 
 export class SendServicePVM {
