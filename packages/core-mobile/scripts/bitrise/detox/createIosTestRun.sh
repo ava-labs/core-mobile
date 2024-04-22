@@ -24,4 +24,4 @@ IOS_TESTRAIL_RUN_ID=$(jq -r ".id" <<< "$TEST_RUN_DETAILS")
 
 echo "Test run id: $IOS_TESTRAIL_RUN_ID"
 
-envman add --key TESTRAIL_RUN_ID --value "$IOS_TESTRAIL_RUN_ID"
+envman add --key IOS_TESTRAIL_RUN_ID --value "$IOS_TESTRAIL_RUN_ID"
