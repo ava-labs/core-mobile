@@ -1,7 +1,6 @@
 import { Core } from '@walletconnect/core'
-import { SessionTypes } from '@walletconnect/types'
-import { Web3Wallet, IWeb3Wallet } from '@walletconnect/web3wallet'
-import { EngineTypes } from '@walletconnect/types'
+import { EngineTypes, SessionTypes } from '@walletconnect/types'
+import { IWeb3Wallet, Web3Wallet } from '@walletconnect/web3wallet'
 import { getSdkError } from '@walletconnect/utils'
 import Config from 'react-native-config'
 import { RpcError } from 'store/rpc/types'
@@ -10,12 +9,13 @@ import Logger from 'utils/Logger'
 import { EVM_IDENTIFIER } from 'consts/walletConnect'
 import promiseWithTimeout from 'utils/js/promiseWithTimeout'
 import { isBitcoinChainId } from 'utils/network/isBitcoinNetwork'
+import { isXPChain } from 'utils/network/isPvmNetwork'
 import { CLIENT_METADATA, WalletConnectCallbacks } from './types'
 import {
-  addNamespaceToChain,
   addNamespaceToAddress,
-  chainAlreadyInSession,
-  addressAlreadyInSession
+  addNamespaceToChain,
+  addressAlreadyInSession,
+  chainAlreadyInSession
 } from './utils'
 
 const UPDATE_SESSION_TIMEOUT = 15000
@@ -276,6 +276,10 @@ class WalletConnectService {
   }): Promise<void> => {
     if (isBitcoinChainId(chainId)) {
       Logger.info('skip updating WC sessions for bitcoin network')
+      return
+    }
+    if (isXPChain(chainId)) {
+      Logger.info('skip updating WC sessions for X/P network')
       return
     }
 
