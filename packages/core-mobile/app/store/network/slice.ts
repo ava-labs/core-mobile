@@ -150,6 +150,12 @@ export const selectFavoriteNetworks = (state: RootState): Network[] => {
   }, [] as Network[])
 }
 
+export const selectIsTestnet = (chainId: number) => (state: RootState) => {
+  const networks = selectAllNetworks(state)
+  const network = networks[chainId]
+  return network?.isTestnet
+}
+
 export const onNetworksFetched = createAction(
   `${reducerName}/onNetworksFetched`
 )

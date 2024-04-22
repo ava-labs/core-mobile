@@ -1,4 +1,4 @@
-import { ChainId } from '@avalabs/chains-sdk'
+import { ChainId, Network } from '@avalabs/chains-sdk'
 import { AppListenerEffectAPI } from 'store'
 import { onAppUnlocked } from 'store/app'
 import { AppStartListening } from 'store/middleware/listener'
@@ -9,6 +9,7 @@ import {
 } from 'store/settings/advanced'
 import { AnyAction, isAnyOf } from '@reduxjs/toolkit'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import { selectCustomNetworks, selectFavorites } from './slice'
 
 const adjustActiveNetwork = (
   _: AnyAction,
@@ -42,12 +43,14 @@ const toggleFavoriteSideEffect = (
 ): void => {
   const chainId = action.payload
   const { getState } = listenerApi
-  const network = getState().network
-  const isCustomNetwork = Object.values(network.customNetworks)
-    .map(n => n.chainId)
+  const state = getState()
+  const customNetworks = selectCustomNetworks(state)
+  const favorites = selectFavorites(state)
+  const isCustomNetwork = Object.values(customNetworks)
+    .map((n: Network) => n.chainId)
     .includes(chainId)
 
-  const event = network.favorites.includes(chainId)
+  const event = favorites.includes(chainId)
     ? 'NetworkFavoriteAdded'
     : 'NetworkFavoriteRemoved'
 
@@ -71,7 +74,7 @@ export const addNetworkListeners = (
   })
 
   startListening({
-    actionCreator: toggleFavorite,
+    matcher: isAnyOf(toggleFavorite),
     effect: toggleFavoriteSideEffect
   })
 }
