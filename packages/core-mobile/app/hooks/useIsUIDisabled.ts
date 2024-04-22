@@ -8,8 +8,7 @@ export enum UI {
   Buy = 'Buy',
   ManageTokens = 'ManageTokens',
   Bridge = 'Bridge',
-  WalletConnect = 'WalletConnect',
-  DeFi = 'DeFi'
+  WalletConnect = 'WalletConnect'
 }
 
 // The list of features we want to enable on certain networks (whitelist)
@@ -39,12 +38,6 @@ const disabledUIs: Partial<Record<UI, number[]>> = {
     ChainId.DFK_TESTNET,
     ChainId.SWIMMER,
     ChainId.SWIMMER_TESTNET
-  ],
-  [UI.DeFi]: [
-    ChainId.BITCOIN,
-    ChainId.BITCOIN_TESTNET,
-    ChainId.AVALANCHE_XP,
-    ChainId.AVALANCHE_TEST_XP
   ],
   [UI.WalletConnect]: [] // empty array means this feature shouldn't be disabled on any network
 }
