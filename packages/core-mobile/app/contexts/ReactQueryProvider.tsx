@@ -1,29 +1,62 @@
-import React, { useEffect } from 'react'
+import React, { PropsWithChildren, useEffect } from 'react'
+import { Query, QueryClient, focusManager } from '@tanstack/react-query'
 import {
-  QueryCache,
-  QueryClient,
-  QueryClientProvider,
-  focusManager
-} from '@tanstack/react-query'
+  PersistQueryClientProvider,
+  removeOldestQuery
+} from '@tanstack/react-query-persist-client'
 import NetInfo from '@react-native-community/netinfo'
 import { onlineManager } from '@tanstack/react-query'
 import { AppState, AppStateStatus } from 'react-native'
+import { queryStorage } from 'utils/mmkv'
+import { ReactQueryKeys } from 'consts/reactQueryKeys'
+import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister'
+import { useNetworksListener } from 'hooks/networks/useNetworksListener'
+import { useWatchlistListener } from 'hooks/watchlist/useWatchlistListener'
 
-const queryCache = new QueryCache()
 export const queryClient = new QueryClient({
-  queryCache: queryCache,
   defaultOptions: {
     queries: {
-      staleTime: 10000
+      staleTime: 10000,
+      gcTime: Infinity
     }
   }
 })
 
-const onAppStateChange = (status: AppStateStatus) => {
+const clientPersister = createSyncStoragePersister({
+  storage: {
+    getItem: (key: string) => {
+      return queryStorage.getString(key) || null
+    },
+    setItem: (key: string, value: string) => {
+      return queryStorage.set(key, value)
+    },
+    removeItem: (key: string) => {
+      return queryStorage.delete(key)
+    }
+  },
+  retry: removeOldestQuery
+})
+
+const persistOptions = {
+  persister: clientPersister,
+  maxAge: Infinity,
+  dehydrateOptions: {
+    shouldDehydrateQuery: (query: Query) => {
+      if (query.queryKey.length === 0) return false
+      if (query.state.status !== 'success') return false
+
+      return query.queryKey.includes(ReactQueryKeys.NETWORKS)
+    }
+  }
+}
+
+const onAppStateChange = (status: AppStateStatus): void => {
   focusManager.setFocused(status === 'active')
 }
 
-export const ReactQueryProvider: React.FC = ({ children }) => {
+export const ReactQueryProvider: React.FC<PropsWithChildren> = ({
+  children
+}) => {
   // manage online status
   useEffect(() => {
     return NetInfo.addEventListener(state => {
@@ -44,7 +77,17 @@ export const ReactQueryProvider: React.FC = ({ children }) => {
     }
   }, [])
 
+  // refetch networks on app unlock or developer mode toggle
+  useNetworksListener()
+
+  // refetch watchlist on developer mode toggle or watchlist fetch
+  useWatchlistListener()
+
   return (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    <PersistQueryClientProvider
+      client={queryClient}
+      persistOptions={persistOptions}>
+      {children}
+    </PersistQueryClientProvider>
   )
 }

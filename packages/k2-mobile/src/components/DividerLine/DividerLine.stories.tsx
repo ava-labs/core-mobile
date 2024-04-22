@@ -1,12 +1,12 @@
 import React from 'react'
-import type { Meta } from '@storybook/react-native'
+
 import { ScrollView, View, Text } from '../Primitives'
 import Link from '../../utils/Link'
 import { DividerLine } from './DividerLine'
 
 export default {
   title: 'DividerLine'
-} as Meta
+}
 
 export const All = (): JSX.Element => {
   return (

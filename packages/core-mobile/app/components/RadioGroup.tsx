@@ -1,4 +1,10 @@
-import React, { FC, useEffect, useMemo, useState } from 'react'
+import React, {
+  FC,
+  PropsWithChildren,
+  useEffect,
+  useMemo,
+  useState
+} from 'react'
 import { Row } from 'components/Row'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaButton from 'components/AvaButton'
@@ -8,7 +14,7 @@ export type RadioGroupProps = {
   onSelected: (selectedKey: string) => void
   preselectedKey?: string
 }
-const RadioGroup: FC<RadioGroupProps> = ({
+const RadioGroup: FC<RadioGroupProps & PropsWithChildren> = ({
   onSelected,
   preselectedKey = '',
   children

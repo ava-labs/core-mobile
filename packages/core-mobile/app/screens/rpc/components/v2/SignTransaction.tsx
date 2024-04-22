@@ -29,7 +29,6 @@ import { useSelector } from 'react-redux'
 import { RpcProvider } from 'store/rpc/types'
 import { selectRequestStatus } from 'store/rpc/slice'
 import { useDappConnectionV2 } from 'hooks/useDappConnectionV2'
-import { selectNetwork } from 'store/network'
 import { NetworkLogo } from 'screens/network/NetworkLogo'
 import { hexToBN } from '@avalabs/utils-sdk'
 import { Button } from '@avalabs/k2-mobile'
@@ -39,6 +38,7 @@ import { NetworkTokenUnit } from 'types'
 import { Eip1559Fees } from 'utils/Utils'
 import { isAddressApproved } from 'store/rpc/handlers/eth_sign/utils/isAddressApproved'
 import WalletConnectService from 'services/walletconnectv2/WalletConnectService'
+import { useNetworks } from 'hooks/networks/useNetworks'
 import RpcRequestBottomSheet from '../shared/RpcRequestBottomSheet'
 
 const defaultErrMessage = 'Transaction failed'
@@ -55,11 +55,11 @@ const SignTransaction = (): JSX.Element => {
 
   const { onUserApproved: onApprove, onUserRejected: onReject } =
     useDappConnectionV2()
-
+  const { getNetwork } = useNetworks()
   const requestStatus = useSelector(selectRequestStatus(request.data.id))
 
   const chainId = Number(request.data.params.chainId.split(':')[1])
-  const network = useSelector(selectNetwork(chainId))
+  const network = getNetwork(chainId)
 
   const theme = useApplicationContext().theme
   const [submitting, setSubmitting] = useState(false)

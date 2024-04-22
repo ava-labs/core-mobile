@@ -5,7 +5,7 @@ import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList
 import Avatar from 'components/Avatar'
 import { Text, View } from '@avalabs/k2-mobile'
 import PriceChangeIndicator from 'screens/watchlist/components/PriceChangeIndicator'
-import { useGetMarketToken } from 'hooks/useGetMarketToken'
+import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import { Space } from 'components/Space'
 
 const Tokens = (): JSX.Element => {
@@ -16,7 +16,7 @@ const Tokens = (): JSX.Element => {
 
   const tokensToDisplay = tokens.slice(0, 4)
 
-  const { getMarketToken } = useGetMarketToken()
+  const { getMarketToken } = useWatchlist()
 
   const renderToken = (
     token: TokenWithBalance,

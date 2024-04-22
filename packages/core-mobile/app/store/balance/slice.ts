@@ -6,10 +6,10 @@ import {
 } from '@reduxjs/toolkit'
 import { RootState } from 'store'
 import { selectActiveAccount } from 'store/account'
-import { selectActiveNetwork, selectIsTestnet } from 'store/network'
-import { selectIsDeveloperMode } from 'store/settings/advanced'
 import BN from 'bn.js'
+import { selectActiveNetwork, selectIsTestnet } from 'store/network'
 import { Network } from '@avalabs/chains-sdk'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 import {
   Balance,
   Balances,
@@ -59,9 +59,8 @@ export const selectBalanceStatus = (state: RootState): QueryStatus =>
   state.balance.status
 
 export const selectIsBalanceLoadedForAddress =
-  (accountIndex: number) => (state: RootState) => {
-    const network = selectActiveNetwork(state)
-    return !!state.balance.balances[getKey(network.chainId, accountIndex)]
+  (accountIndex: number, chainId: number) => (state: RootState) => {
+    return !!state.balance.balances[getKey(chainId, accountIndex)]
   }
 
 export const selectIsLoadingBalances = (state: RootState): boolean =>
@@ -75,17 +74,18 @@ export const selectIsRefetchingBalances = (state: RootState): boolean =>
 export const selectTokensWithBalance = (
   state: RootState
 ): LocalTokenWithBalance[] => {
-  const network = selectActiveNetwork(state)
+  const activeNetwork = selectActiveNetwork(state)
   const activeAccount = selectActiveAccount(state)
 
   if (!activeAccount) return []
 
-  const key = getKey(network.chainId, activeAccount.index)
+  const key = getKey(activeNetwork.chainId, activeAccount.index)
   return state.balance.balances[key]?.tokens ?? []
 }
 
 export const selectTokensWithBalanceByNetwork =
-  (network?: Network) => (state: RootState) => {
+  (network?: Network) =>
+  (state: RootState): LocalTokenWithBalance[] => {
     const activeAccount = selectActiveAccount(state)
 
     if (!network) return []
@@ -146,7 +146,7 @@ export const selectTokensWithBalanceForAccount =
     return balances.flatMap(b => b.tokens)
   }
 
-export const selectBalanceTotalInCurrencyForAccount =
+export const selectBalanceTotalInCurrencyForNetwork =
   (accountIndex: number) => (state: RootState) => {
     const balances = selectBalancesForAccount(accountIndex)(state)
 

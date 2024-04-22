@@ -241,7 +241,7 @@ describe('rpc - listeners', () => {
         )
       })
 
-      it('should not reject request when requested chain does not match developer mode for a chain agnostic method', () => {
+      it('should not reject request when requested chain does not match developer mode for a chain agnostic method', async () => {
         mockSelectIsDeveloperMode.mockImplementation(() => true)
 
         mockHandle.mockImplementation(async () => {
@@ -258,7 +258,7 @@ describe('rpc - listeners', () => {
 
         store.dispatch(onRequest(testRequest))
 
-        jest.runOnlyPendingTimers()
+        await jest.runOnlyPendingTimersAsync()
 
         expect(mockShowDappToastError).not.toHaveBeenCalledWith(
           'Invalid environment. Please turn off developer mode and try again',
@@ -275,7 +275,7 @@ describe('rpc - listeners', () => {
         )
       })
 
-      it('should reject request when there is an error handling the request', () => {
+      it('should reject request when there is an error handling the request', async () => {
         const testError = ethErrors.rpc.invalidParams('Invalid params')
 
         mockHandle.mockImplementation(async () => {
@@ -289,7 +289,7 @@ describe('rpc - listeners', () => {
 
         store.dispatch(onRequest(testRequest))
 
-        jest.runOnlyPendingTimers()
+        await jest.runOnlyPendingTimersAsync()
 
         expect(mockHandle).toHaveBeenCalledWith(testRequest, mockListenerApi)
 
@@ -305,7 +305,7 @@ describe('rpc - listeners', () => {
         )
       })
 
-      it('should approve request immediately when request is not a deferred one', () => {
+      it('should approve request immediately when request is not a deferred one', async () => {
         mockHandle.mockImplementation(async () => {
           return {
             success: true,
@@ -317,7 +317,7 @@ describe('rpc - listeners', () => {
 
         store.dispatch(onRequest(testRequest))
 
-        jest.runOnlyPendingTimers()
+        await jest.runOnlyPendingTimersAsync()
 
         expect(mockHandle).toHaveBeenCalledWith(testRequest, mockListenerApi)
 
@@ -328,7 +328,7 @@ describe('rpc - listeners', () => {
         )
       })
 
-      it('should show error message when failed to approve request', () => {
+      it('should show error message when failed to approve request', async () => {
         mockHandle.mockImplementation(async () => {
           return {
             success: true,
@@ -345,7 +345,7 @@ describe('rpc - listeners', () => {
 
         store.dispatch(onRequest(testRequest))
 
-        jest.runOnlyPendingTimers()
+        await jest.runOnlyPendingTimersAsync()
 
         expect(mockHandle).toHaveBeenCalledWith(testRequest, mockListenerApi)
 
@@ -361,7 +361,7 @@ describe('rpc - listeners', () => {
         )
       })
 
-      it('should approve request after user approves it', () => {
+      it('should approve request after user approves it', async () => {
         mockHandle.mockImplementation(async () => {
           return {
             success: true,
@@ -373,7 +373,7 @@ describe('rpc - listeners', () => {
 
         store.dispatch(onRequest(testRequest))
 
-        jest.runOnlyPendingTimers()
+        await jest.runOnlyPendingTimersAsync()
 
         expect(mockHandle).toHaveBeenCalledWith(testRequest, mockListenerApi)
 
@@ -384,7 +384,7 @@ describe('rpc - listeners', () => {
           onRequestApproved({ request: testRequest, data: testApproveData })
         )
 
-        jest.runOnlyPendingTimers()
+        await jest.runOnlyPendingTimersAsync()
 
         expect(mockApprove).toHaveBeenCalledWith(
           { request: testRequest, data: testApproveData },
@@ -398,7 +398,7 @@ describe('rpc - listeners', () => {
         )
       })
 
-      it('should not approve request when user approves a different request', () => {
+      it('should not approve request when user approves a different request', async () => {
         mockHandle.mockImplementation(async () => {
           return {
             success: true,
@@ -409,7 +409,7 @@ describe('rpc - listeners', () => {
         const testRequest = ethSignRequest
 
         store.dispatch(onRequest(testRequest))
-        jest.runOnlyPendingTimers()
+        await jest.runOnlyPendingTimersAsync()
 
         expect(mockHandle).toHaveBeenCalledWith(testRequest, mockListenerApi)
 
@@ -429,14 +429,14 @@ describe('rpc - listeners', () => {
           })
         )
 
-        jest.runOnlyPendingTimers()
+        await jest.runOnlyPendingTimersAsync()
 
         expect(mockApprove).not.toHaveBeenCalled()
 
         expect(mockWCApproveRequest).not.toHaveBeenCalled()
       })
 
-      it('should reject request when there is an error approving the request', () => {
+      it('should reject request when there is an error approving the request', async () => {
         mockHandle.mockImplementation(async () => {
           return {
             success: true,
@@ -456,7 +456,7 @@ describe('rpc - listeners', () => {
 
         store.dispatch(onRequest(testRequest))
 
-        jest.runOnlyPendingTimers()
+        await jest.runOnlyPendingTimersAsync()
 
         expect(mockHandle).toHaveBeenCalledWith(testRequest, mockListenerApi)
 
@@ -467,7 +467,7 @@ describe('rpc - listeners', () => {
           onRequestApproved({ request: testRequest, data: testApproveData })
         )
 
-        jest.runOnlyPendingTimers()
+        await jest.runOnlyPendingTimersAsync()
 
         expect(mockApprove).toHaveBeenCalledWith(
           { request: testRequest, data: testApproveData },
@@ -486,7 +486,7 @@ describe('rpc - listeners', () => {
         )
       })
 
-      it('should reject request when user rejects the request', () => {
+      it('should reject request when user rejects the request', async () => {
         mockHandle.mockImplementation(async () => {
           return {
             success: true,
@@ -498,7 +498,7 @@ describe('rpc - listeners', () => {
 
         store.dispatch(onRequest(testRequest))
 
-        jest.runOnlyPendingTimers()
+        await jest.runOnlyPendingTimersAsync()
 
         expect(mockHandle).toHaveBeenCalledWith(testRequest, mockListenerApi)
 
@@ -513,7 +513,7 @@ describe('rpc - listeners', () => {
           })
         )
 
-        jest.runOnlyPendingTimers()
+        await jest.runOnlyPendingTimersAsync()
 
         expect(mockShowDappToastError).not.toHaveBeenCalled()
 
@@ -600,10 +600,10 @@ describe('rpc - listeners', () => {
         mockWCApproveSession.mockImplementation(async () => mockSession)
       })
 
-      it('should approve session request after user approves it', () => {
+      it('should approve session request after user approves it', async () => {
         store.dispatch(onRequest(testRequest))
 
-        jest.runOnlyPendingTimers()
+        await jest.runOnlyPendingTimersAsync()
 
         expect(mockHandle).toHaveBeenCalledWith(testRequest, mockListenerApi)
 
@@ -615,7 +615,7 @@ describe('rpc - listeners', () => {
           onRequestApproved({ request: testRequest, data: testApproveData })
         )
 
-        jest.runOnlyPendingTimers()
+        await jest.runOnlyPendingTimersAsync()
 
         expect(mockApprove).toHaveBeenCalledWith(
           { request: testRequest, data: testApproveData },
@@ -643,7 +643,7 @@ describe('rpc - listeners', () => {
         )
       })
 
-      it('should show error message when failed to approve session', () => {
+      it('should show error message when failed to approve session', async () => {
         const testError = new Error('test error')
         mockWCApproveSession.mockImplementation(() => {
           throw testError
@@ -651,7 +651,7 @@ describe('rpc - listeners', () => {
 
         store.dispatch(onRequest(testRequest))
 
-        jest.runOnlyPendingTimers()
+        await jest.runOnlyPendingTimersAsync()
 
         expect(mockHandle).toHaveBeenCalledWith(testRequest, mockListenerApi)
 
@@ -663,7 +663,7 @@ describe('rpc - listeners', () => {
           onRequestApproved({ request: testRequest, data: testApproveData })
         )
 
-        jest.runOnlyPendingTimers()
+        await jest.runOnlyPendingTimersAsync()
 
         expect(mockApprove).toHaveBeenCalledWith(
           { request: testRequest, data: testApproveData },
@@ -694,10 +694,10 @@ describe('rpc - listeners', () => {
         )
       })
 
-      it('should reject session request after user rejects it', () => {
+      it('should reject session request after user rejects it', async () => {
         store.dispatch(onRequest(testRequest))
 
-        jest.runOnlyPendingTimers()
+        await jest.runOnlyPendingTimersAsync()
 
         expect(mockHandle).toHaveBeenCalledWith(testRequest, mockListenerApi)
 
@@ -707,14 +707,14 @@ describe('rpc - listeners', () => {
           onRequestRejected({ request: testRequest, error: testError })
         )
 
-        jest.runOnlyPendingTimers()
+        await jest.runOnlyPendingTimersAsync()
 
         expect(mockShowDappToastError).not.toHaveBeenCalled()
 
         expect(mockWCRejectSession).toHaveBeenCalledWith(1678303290160528)
       })
 
-      it('should show error message when failed to reject session', () => {
+      it('should show error message when failed to reject session', async () => {
         const testError1 = new Error('test error')
         mockWCRejectSession.mockImplementation(() => {
           throw testError1
@@ -722,7 +722,7 @@ describe('rpc - listeners', () => {
 
         store.dispatch(onRequest(testRequest))
 
-        jest.runOnlyPendingTimers()
+        await jest.runOnlyPendingTimersAsync()
 
         expect(mockHandle).toHaveBeenCalledWith(testRequest, mockListenerApi)
 
@@ -732,7 +732,7 @@ describe('rpc - listeners', () => {
           onRequestRejected({ request: testRequest, error: testError2 })
         )
 
-        jest.runOnlyPendingTimers()
+        await jest.runOnlyPendingTimersAsync()
 
         expect(mockShowDappToastError).not.toHaveBeenCalledWith(
           testError2.message,
@@ -747,7 +747,7 @@ describe('rpc - listeners', () => {
         )
       })
 
-      it('should reject session request when there is an error approving the proposal', () => {
+      it('should reject session request when there is an error approving the proposal', async () => {
         const testError = new Error('test error')
         mockApprove.mockImplementation(() => ({
           success: false,
@@ -756,7 +756,7 @@ describe('rpc - listeners', () => {
 
         store.dispatch(onRequest(testRequest))
 
-        jest.runOnlyPendingTimers()
+        await jest.runOnlyPendingTimersAsync()
 
         expect(mockHandle).toHaveBeenCalledWith(testRequest, mockListenerApi)
 
@@ -768,7 +768,7 @@ describe('rpc - listeners', () => {
           onRequestApproved({ request: testRequest, data: testApproveData })
         )
 
-        jest.runOnlyPendingTimers()
+        await jest.runOnlyPendingTimersAsync()
 
         expect(mockShowDappToastError).toHaveBeenCalledWith(
           testError.message,

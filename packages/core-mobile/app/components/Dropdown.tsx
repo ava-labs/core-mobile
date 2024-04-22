@@ -139,7 +139,7 @@ function DropDown<ItemT>({
             paddingHorizontal: 16
           }}>
           <AvaText.Body1 textStyle={{ paddingVertical: 8 }}>
-            {item}
+            {item as JSX.Element}
           </AvaText.Body1>
           {selectedItem === item && <CheckmarkSVG color={'white'} />}
         </Row>

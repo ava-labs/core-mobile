@@ -1,13 +1,13 @@
 import { ethErrors } from 'eth-rpc-errors'
 import WalletService from 'services/wallet/WalletService'
 import { AppListenerEffectAPI } from 'store'
-import { selectNetwork } from 'store/network'
 import * as Navigation from 'utils/Navigation'
 import AppNavigation from 'navigation/AppNavigation'
 import Logger from 'utils/Logger'
 import * as Sentry from '@sentry/react-native'
-import { selectAccountByAddress } from 'store/account/slice'
+import { selectAccountByAddress } from 'store/account'
 import WalletConnectService from 'services/walletconnectv2/WalletConnectService'
+import { selectNetwork } from 'store/network'
 import { RpcMethod, RpcProvider, RpcRequest } from '../../types'
 import {
   ApproveResponse,

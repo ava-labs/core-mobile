@@ -2,7 +2,6 @@ import React, { useMemo, useState } from 'react'
 import { View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { useSelector } from 'react-redux'
-import { selectNetwork } from 'store/network'
 import { ChainId } from '@avalabs/chains-sdk'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { VsCurrencyType } from '@avalabs/coingecko-sdk'
@@ -13,7 +12,7 @@ import FlexSpacer from 'components/FlexSpacer'
 import AvaButton from 'components/AvaButton'
 import PercentButtons from 'screens/earn/PercentButtons'
 import EarnInputAmount from 'screens/earn/EarnInputAmount'
-import { useNativeTokenPriceForNetwork } from 'hooks/useNativeTokenPriceForNetwork'
+import { useNativeTokenPriceForNetwork } from 'hooks/networks/useNativeTokenPriceForNetwork'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import useStakingParams from 'hooks/earn/useStakingParams'
 import { useNavigation } from '@react-navigation/native'
@@ -26,12 +25,14 @@ import { ActivityIndicator } from 'components/ActivityIndicator'
 import { useAvaxFormatter } from 'hooks/formatter/useAvaxFormatter'
 import { Tooltip } from 'components/Tooltip'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import { useNetworks } from 'hooks/networks/useNetworks'
 
 type ScreenProps = StakeSetupScreenProps<
   typeof AppNavigation.StakeSetup.SmartStakeAmount
 >
 
 export default function StakingAmount(): JSX.Element {
+  const { getNetwork } = useNetworks()
   const avaxFormatter = useAvaxFormatter()
   const { theme } = useApplicationContext()
   const { navigate } = useNavigation<ScreenProps['navigation']>()
@@ -48,7 +49,7 @@ export default function StakingAmount(): JSX.Element {
   const chainId = isDeveloperMode
     ? ChainId.AVALANCHE_TESTNET_ID
     : ChainId.AVALANCHE_MAINNET_ID
-  const avaxNetwork = useSelector(selectNetwork(chainId))
+  const avaxNetwork = getNetwork(chainId)
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { nativeTokenPrice } = useNativeTokenPriceForNetwork(
     avaxNetwork,

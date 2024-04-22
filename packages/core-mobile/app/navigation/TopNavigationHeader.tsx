@@ -13,7 +13,7 @@ import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import CarrotSVG from 'components/svg/CarrotSVG'
 import { Row } from 'components/Row'
-import { selectActiveNetwork } from 'store/network'
+import { useNetworks } from 'hooks/networks/useNetworks'
 import AccountsService from 'services/account/AccountsService'
 
 type Props = {
@@ -38,10 +38,10 @@ const TopNavigationHeader: FC<Props> = ({
   showMenu = true,
   onBack
 }) => {
+  const { activeNetwork } = useNetworks()
   const { theme } = useApplicationContext()
   const navigation = useNavigation<NavigationProp>()
   const activeAccount = useSelector(selectActiveAccount)
-  const activeNetwork = useSelector(selectActiveNetwork)
 
   const address = activeAccount
     ? AccountsService.getAddressForNetwork(activeAccount, activeNetwork)

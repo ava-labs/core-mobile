@@ -1,4 +1,4 @@
-import React, { FC, useCallback } from 'react'
+import React, { FC, PropsWithChildren, useCallback } from 'react'
 import Sheet, {
   BottomSheetBackdrop,
   BottomSheetBackdropProps,
@@ -24,7 +24,7 @@ interface BottomSheetProps {
  * @deprecated
  * use `Sheet` instead
  */
-export const BottomSheet: FC<BottomSheetProps> = ({
+export const BottomSheet: FC<BottomSheetProps & PropsWithChildren> = ({
   backdropComponent,
   backgroundComponent,
   handleComponent,
@@ -38,16 +38,19 @@ export const BottomSheet: FC<BottomSheetProps> = ({
   const { goBack } = useNavigation()
   const defaultSnapPoints = ['94%']
 
-  const renderBottomSheetBackdrop = useCallback(props => {
-    return (
-      <BottomSheetBackdrop
-        {...props}
-        opacity={0.6}
-        disappearsOnIndex={-1}
-        appearsOnIndex={0}
-      />
-    )
-  }, [])
+  const renderBottomSheetBackdrop = useCallback(
+    (props: BottomSheetBackdropProps) => {
+      return (
+        <BottomSheetBackdrop
+          {...props}
+          opacity={0.6}
+          disappearsOnIndex={-1}
+          appearsOnIndex={0}
+        />
+      )
+    },
+    []
+  )
 
   return (
     <Sheet

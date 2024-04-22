@@ -1,4 +1,4 @@
-import React, { FC, useState } from 'react'
+import React, { FC, PropsWithChildren, useState } from 'react'
 import BottomSheet, {
   BottomSheetBackdrop,
   BottomSheetBackdropProps,
@@ -23,7 +23,11 @@ interface SheetProps {
  * Sheets implementation for K2
  * https://www.figma.com/file/dAAQpFgjbBImwKZlSQ4IeF/K2-Mobile?type=design&node-id=241%3A7974&mode=design&t=k1ih8FZEFUHITe4H-1
  */
-export const Sheet: FC<SheetProps> = ({ title, onClose, children }) => {
+export const Sheet: FC<SheetProps & PropsWithChildren> = ({
+  title,
+  onClose,
+  children
+}) => {
   const {
     theme: { colors }
   } = useTheme()

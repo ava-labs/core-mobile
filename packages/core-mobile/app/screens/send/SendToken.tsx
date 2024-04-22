@@ -20,7 +20,6 @@ import {
   TokenWithBalance
 } from 'store/balance'
 import { useSelector } from 'react-redux'
-import { selectActiveNetwork } from 'store/network'
 import { NetworkVMType } from '@avalabs/chains-sdk'
 import NetworkFeeSelector from 'components/NetworkFeeSelector'
 import { bnToLocaleString } from '@avalabs/utils-sdk'
@@ -28,8 +27,9 @@ import UniversalTokenSelector from 'components/UniversalTokenSelector'
 import { Eip1559Fees, getMaxAvailableBalance } from 'utils/Utils'
 import { AddrBookItemType, Contact } from 'store/addressBook'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { Amount, NetworkTokenUnit } from 'types'
-import { FeePreset } from 'components/NetworkFeeSelector'
+import { NetworkTokenUnit, Amount } from 'types'
+import { useNetworks } from 'hooks/networks/useNetworks'
+import { FeePreset } from '../../components/NetworkFeeSelector'
 
 type Props = {
   onNext: () => void
@@ -66,7 +66,7 @@ const SendToken: FC<Props> = ({
     canSubmit,
     sdkError
   } = useSendTokenContext()
-  const activeNetwork = useSelector(selectActiveNetwork)
+  const { activeNetwork } = useNetworks()
   const [showQrCamera, setShowQrCamera] = useState(false)
   const [sendError, setSendError] = useState<string>()
   const placeholder =

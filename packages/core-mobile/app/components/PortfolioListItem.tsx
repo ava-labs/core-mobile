@@ -5,7 +5,7 @@ import Avatar from 'components/Avatar'
 import { ActivityIndicator } from 'components/ActivityIndicator'
 import { Text, View } from '@avalabs/k2-mobile'
 import PriceChangeIndicator from 'screens/watchlist/components/PriceChangeIndicator'
-import { useGetMarketToken } from 'hooks/useGetMarketToken'
+import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import { Space } from './Space'
 
 interface Props {
@@ -54,7 +54,7 @@ const PortfolioListItem: FC<Props> = ({
     />
   )
 
-  const { getMarketToken } = useGetMarketToken()
+  const { getMarketToken } = useWatchlist()
   const marketToken = getMarketToken(symbol)
   const percentChange = marketToken?.priceChangePercentage24h ?? undefined
   const priceChange = percentChange

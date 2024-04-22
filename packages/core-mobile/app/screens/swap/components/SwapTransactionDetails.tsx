@@ -10,8 +10,7 @@ import { Tooltip } from 'components/Tooltip'
 import { NetworkTokenUnit } from 'types'
 import { Eip1559Fees } from 'utils/Utils'
 import PoppableGasAndLimit from 'components/PoppableGasAndLimit'
-import { useSelector } from 'react-redux'
-import { selectActiveNetwork } from 'store/network'
+import { useNetworks } from 'hooks/networks/useNetworks'
 
 const isSlippageValid = (value: string): boolean => {
   return Boolean(
@@ -52,7 +51,7 @@ const SwapTransactionDetail: FC<SwapTransactionDetailProps> = ({
   onFeesChange
 }): JSX.Element => {
   const { theme } = useApplicationContext()
-  const activeNetwork = useSelector(selectActiveNetwork)
+  const { activeNetwork } = useNetworks()
 
   return (
     <View style={{ flex: 1, paddingHorizontal: 16 }}>

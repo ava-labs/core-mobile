@@ -1,18 +1,24 @@
 import { Row } from 'components/Row'
 import Settings from 'assets/icons/settings.svg'
 import { Space } from 'components/Space'
-import React, { FC, useCallback, useEffect, useMemo, useState } from 'react'
+import React, {
+  FC,
+  PropsWithChildren,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState
+} from 'react'
 import { useSelector } from 'react-redux'
 import { Network } from '@avalabs/chains-sdk'
 import { useNavigation } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
 import { WalletScreenProps } from 'navigation/types'
-import { selectActiveNetwork, selectNetwork } from 'store/network'
 import { VsCurrencyType } from '@avalabs/coingecko-sdk'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { calculateGasAndFees, Eip1559Fees, GasAndFees } from 'utils/Utils'
 import { useNetworkFee } from 'hooks/useNetworkFee'
-import { useNativeTokenPriceForNetwork } from 'hooks/useNativeTokenPriceForNetwork'
+import { useNativeTokenPriceForNetwork } from 'hooks/networks/useNativeTokenPriceForNetwork'
 import { NetworkTokenUnit } from 'types'
 import { alpha, Button, Text, useTheme, View } from '@avalabs/k2-mobile'
 import { useApplicationContext } from 'contexts/ApplicationContext'
@@ -21,6 +27,7 @@ import { useBridgeSDK } from '@avalabs/bridge-sdk'
 import { GAS_LIMIT_FOR_XP_CHAIN } from 'consts/fees'
 import { isBitcoinNetwork } from 'utils/network/isBitcoinNetwork'
 import { isPvmNetwork } from 'utils/network/isPvmNetwork'
+import { useNetworks } from 'hooks/networks/useNetworks'
 import { Tooltip } from './Tooltip'
 import InputText from './InputText'
 
@@ -59,9 +66,9 @@ const NetworkFeeSelector = ({
   const {
     appHook: { currencyFormatter }
   } = useApplicationContext()
+  const { activeNetwork, getNetwork } = useNetworks()
   const { navigate } = useNavigation<NavigationProp>()
-  const activeNetwork = useSelector(selectActiveNetwork)
-  const requestedNetwork = useSelector(selectNetwork(chainId))
+  const requestedNetwork = getNetwork(chainId)
   const network = chainId ? requestedNetwork : activeNetwork
   const { data: networkFee } = useNetworkFee(network)
   const { currentBlockchain } = useBridgeSDK()
@@ -417,7 +424,10 @@ export const FeeSelector: FC<{
   )
 }
 
-const ButtonWrapper: FC<{ selected: boolean }> = ({ children, selected }) => {
+const ButtonWrapper: FC<{ selected: boolean } & PropsWithChildren> = ({
+  children,
+  selected
+}) => {
   const {
     theme: { colors }
   } = useTheme()
@@ -440,7 +450,10 @@ const ButtonWrapper: FC<{ selected: boolean }> = ({ children, selected }) => {
   )
 }
 
-const ButtonText: FC<{ selected: boolean }> = ({ children, selected }) => {
+const ButtonText: FC<{ selected: boolean } & PropsWithChildren> = ({
+  children,
+  selected
+}) => {
   return (
     <Text
       variant="buttonSmall"

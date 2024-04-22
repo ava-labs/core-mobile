@@ -1,9 +1,10 @@
 import { VsCurrencyType } from '@avalabs/coingecko-sdk'
-import { useSelector } from 'react-redux'
-import { selectActiveNetwork } from 'store/network'
-import { useNativeTokenPriceForNetwork } from 'hooks/useNativeTokenPriceForNetwork'
+import { useNativeTokenPriceForNetwork } from 'hooks/networks/useNativeTokenPriceForNetwork'
+import { useNetworks } from './networks/useNetworks'
 
-export function useNativeTokenPrice(customCurrency?: VsCurrencyType) {
-  const activeNetwork = useSelector(selectActiveNetwork)
+export function useNativeTokenPrice(customCurrency?: VsCurrencyType): {
+  nativeTokenPrice: number
+} {
+  const { activeNetwork } = useNetworks()
   return useNativeTokenPriceForNetwork(activeNetwork, customCurrency)
 }

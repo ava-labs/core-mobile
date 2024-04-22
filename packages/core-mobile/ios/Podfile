@@ -1,22 +1,36 @@
 # to prevent error "Unable to find a specification for `React-hermes` depended upon by `RNSentry`"
 ENV['USE_HERMES'] = '0'
 
-require_relative '../node_modules/react-native/scripts/react_native_pods'
-require_relative '../node_modules/@react-native-community/cli-platform-ios/native_modules'
+use_modular_headers!
+
+# Resolve react_native_pods.rb with node to allow for hoisting
+require Pod::Executable.execute_command('node', ['-p',
+  'require.resolve(
+    "react-native/scripts/react_native_pods.rb",
+    {paths: [process.argv[1]]},
+  )', __dir__]).strip
+
+prepare_react_native_project!
 
 platform :ios, '14'
-install! 'cocoapods', :deterministic_uuids => false
 
 is_local_build = ENV['CI'] != 'true'
 perf_enabled = ENV['PERF_ENABLED'] == 'true'
 
 # enable Flipper for local builds or if PERF_ENABLED env var is set
-flipper_enabled =  is_local_build || perf_enabled
+# flipper_enabled = is_local_build || perf_enabled
+flipper_enabled = false
 
 if flipper_enabled
   flipper_config = FlipperConfiguration.enabled(["Debug", "Release"], { 'Flipper' => '0.163.0' })
 else
   flipper_config = FlipperConfiguration.disabled
+end
+
+linkage = ENV['USE_FRAMEWORKS']
+if linkage != nil
+  Pod::UI.puts "Configuring Pod with #{linkage}ally linked Frameworks".green
+  use_frameworks! :linkage => linkage.to_sym
 end
 
 abstract_target 'common' do
@@ -38,54 +52,54 @@ abstract_target 'common' do
   )
 
   pod 'RNFS', :path => '../node_modules/react-native-fs'
-
   permissions_path = '../node_modules/react-native-permissions/ios'
   pod 'Permission-Camera', :path => "#{permissions_path}/Camera"
 
   # specify OpenSSL version explicitly due to https://github.com/margelo/react-native-quick-crypto/issues/189
   pod "OpenSSL-Universal", "1.1.1100"
-
+  
   target 'AvaxWallet' do
   end
   
   target 'AvaxWalletInternal' do
   end
-end
 
-
-post_install do |installer|
-  react_native_post_install(
-    installer,
-    # Set `mac_catalyst_enabled` to `true` in order to apply patches
-    # necessary for Mac Catalyst builds
-    :mac_catalyst_enabled => false
-  )
-  __apply_Xcode_12_5_M1_post_install_workaround(installer)
-
-  installer.pods_project.targets.each do |target|
-    # https://github.com/facebook/react-native/issues/34106#issuecomment-1417685116
-    target.build_configurations.each do |config|
-      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '12.4'
-    end
-
-    if flipper_enabled
-      # By default, Flipper is enabled only for React-Core Debug configuration
-      # The following is needed to have it enabled for the Release configuration
-      if target.name == 'React-Core'
-        target.build_configurations.each do |config|
-          if config.name == 'Release'
+  post_install do |installer|
+    # https://github.com/facebook/react-native/blob/main/packages/react-native/scripts/react_native_pods.rb#L197-L202
+    react_native_post_install(
+      installer,
+      config[:reactNativePath],
+      :mac_catalyst_enabled => false
+    )
+  
+    installer.pods_project.targets.each do |target|
+      # https://github.com/facebook/react-native/issues/34106#issuecomment-1417685116
+      target.build_configurations.each do |config|
+        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '14'
+      end
+  
+      if flipper_enabled
+        # By default, Flipper is enabled only for React-Core Debug configuration
+        # The following is needed to have it enabled for the Release configuration
+        if target.name == 'React-Core'
+          target.build_configurations.each do |config|
+            if config.name == 'Release'
+              config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] = ['$(inherited)', 'FB_SONARKIT_ENABLED=1']
+            end
+          end
+        end  
+  
+        # react-native-flipper hardcodes the FB_SONARKIT_ENABLED flag no matter what the build configuration is
+        # this is needed to make sure it dynamically sets the flag based on our flipper_enabled var
+        if target.name == 'react-native-flipper'
+          target.build_configurations.each do |config|
             config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] = ['$(inherited)', 'FB_SONARKIT_ENABLED=1']
           end
-        end
+        end  
       end  
-
-      # react-native-flipper hardcodes the FB_SONARKIT_ENABLED flag no matter what the build configuration is
-      # this is needed to make sure it dynamically sets the flag based on our flipper_enabled var
-      if target.name == 'react-native-flipper'
-        target.build_configurations.each do |config|
-          config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] = ['$(inherited)', 'FB_SONARKIT_ENABLED=1']
-        end
-      end  
-    end  
-  end 
+    end 
+  end
+  
 end
+
+

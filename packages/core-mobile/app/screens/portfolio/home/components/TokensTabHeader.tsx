@@ -8,9 +8,8 @@ import AvaButton from 'components/AvaButton'
 import WatchlistCarousel from 'screens/watchlist/components/WatchlistCarousel'
 import { Space } from 'components/Space'
 import Animated, { FlipInEasyX, FlipOutEasyX } from 'react-native-reanimated'
-import { useSelector } from 'react-redux'
-import { selectActiveNetwork } from 'store/network'
 import { Text } from '@avalabs/k2-mobile'
+import { useNetworks } from 'hooks/networks/useNetworks'
 import ActiveNetworkCard from './Cards/ActiveNetworkCard/ActiveNetworkCard'
 
 type NavigationProp = PortfolioScreenProps<
@@ -19,9 +18,9 @@ type NavigationProp = PortfolioScreenProps<
 
 export const TokensTabHeader = (): JSX.Element => {
   const { theme } = useApplicationContext()
+  const { activeNetwork } = useNetworks()
   const { navigate } = useNavigation<NavigationProp>()
   const viewAllBtnColor = theme.colorPrimary1
-  const network = useSelector(selectActiveNetwork)
 
   const goToWatchList = (): void => {
     navigate(AppNavigation.Tabs.Watchlist)
@@ -54,7 +53,7 @@ export const TokensTabHeader = (): JSX.Element => {
         sharedTransitionTag={
           Platform.OS === 'ios' ? 'active-network-card' : undefined
         }
-        key={network.chainId}
+        key={activeNetwork.chainId}
         entering={FlipInEasyX.delay(300)}
         exiting={FlipOutEasyX.duration(300)}>
         <ActiveNetworkCard />

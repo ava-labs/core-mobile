@@ -21,7 +21,7 @@ type ScreenProps = StakeSetupScreenProps<
   typeof AppNavigation.StakeSetup.SelectNode
 >
 
-const SelectNode = () => {
+const SelectNode = (): JSX.Element => {
   const [searchText, setSearchText] = useState('')
   const [filter, setFilter] =
     useState<TAdvancedFilterDropDownItems>(UP_TIME_HIGH_TO_LOW)
@@ -40,7 +40,7 @@ const SelectNode = () => {
       searchText
     })
 
-  const handleSearch = (text: string) => {
+  const handleSearch = (text: string): void => {
     setSearchText(text)
   }
 
@@ -52,15 +52,17 @@ const SelectNode = () => {
     item
   }: {
     item: TAdvancedFilterDropDownItems
-  }) => {
+  }): JSX.Element => {
     return <OptionsRenderItem name={item.key} />
   }
 
-  const renderSelectedFilterOption = (item: TAdvancedFilterDropDownItems) => {
+  const renderSelectedFilterOption = (
+    item: TAdvancedFilterDropDownItems
+  ): JSX.Element => {
     return <SelectionRenderItem item={item} />
   }
 
-  const renderItem = ({ item }: { item: NodeValidator }) => {
+  const renderItem = ({ item }: { item: NodeValidator }): JSX.Element => {
     return (
       <NodeCard
         data={item}
@@ -132,9 +134,9 @@ const SelectNode = () => {
   )
 }
 
-const Separator = () => <Space y={16} />
+const Separator = (): JSX.Element => <Space y={16} />
 
-const OptionsRenderItem = ({ name }: { name: string }) => {
+const OptionsRenderItem = ({ name }: { name: string }): JSX.Element => {
   return (
     <View style={{ paddingHorizontal: 16, paddingVertical: 8 }}>
       <AvaText.Body1>{name}</AvaText.Body1>
@@ -146,7 +148,7 @@ const SelectionRenderItem = ({
   item
 }: {
   item: TAdvancedFilterDropDownItems
-}) => {
+}): JSX.Element => {
   const { theme } = useApplicationContext()
   return (
     <AvaText.ButtonSmall textStyle={{ color: theme.neutral50 }}>

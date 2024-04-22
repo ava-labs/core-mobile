@@ -118,3 +118,12 @@ export const TabButton = ({
     </View>
   )
 }
+
+export const getModalOptions = (): Partial<StackNavigationOptions> => ({
+  presentation: 'transparentModal',
+  // on Android, for some reason, when animation is enabled, the modal will not appear
+  // as a temp solution, we disable the animation on Android for now
+  // this also doesn't seem to be affecting all modals, only some
+  // TODO: remove this when the issue is resolved
+  animationEnabled: Platform.OS === 'android' ? false : true
+})
