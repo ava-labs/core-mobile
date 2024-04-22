@@ -58,6 +58,7 @@ const Portfolio = (): JSX.Element => {
           setParams({ tabIndex })
           captureAnalyticsEvents(tabIndex)
         }}
+        hideSingleTab={false}
         renderCustomLabel={renderCustomLabel}>
         <TabViewAva.Item title={'Assets'}>
           <TokensTab />

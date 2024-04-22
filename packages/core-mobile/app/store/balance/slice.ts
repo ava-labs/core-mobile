@@ -172,23 +172,6 @@ export const selectBalanceTotalInCurrencyForAccount =
     return totalInCurrency
   }
 
-export const selectBalanceTotalInCurrencyForNetwork =
-  (chainId: number) => (state: RootState) => {
-    const balances = Object.values(state.balance.balances).filter(
-      balance => balance.chainId === chainId
-    )
-
-    let totalInCurrency = 0
-
-    for (const balance of balances) {
-      for (const token of balance.tokens) {
-        totalInCurrency += token.balanceInCurrency ?? 0
-      }
-    }
-
-    return totalInCurrency
-  }
-
 export const selectBalanceTotalInCurrencyForNetworkAndAccount =
   (chainId: number, accountIndex: number | undefined) => (state: RootState) => {
     if (accountIndex === undefined) return 0
@@ -236,23 +219,6 @@ export const selectNativeTokenBalanceForNetworkAndAccount = createSelector(
     return nativeToken?.balance ?? BN_ZERO
   }
 )
-
-export const selectBalanceTotalForNetwork =
-  (chainId: number) => (state: RootState) => {
-    const balances = Object.values(state.balance.balances).filter(
-      balance => balance.chainId === chainId
-    )
-
-    let total = new BN(0)
-
-    for (const balance of balances) {
-      for (const token of balance.tokens) {
-        total = total.add(token.balance ?? new BN(0))
-      }
-    }
-
-    return total
-  }
 
 // actions
 export const { setStatus, setBalances } = balanceSlice.actions

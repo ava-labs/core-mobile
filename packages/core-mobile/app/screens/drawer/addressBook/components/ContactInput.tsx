@@ -9,31 +9,37 @@ import { isBech32Address } from '@avalabs/bridge-sdk'
 import AvaButton from 'components/AvaButton'
 import QRScanSVG from 'components/svg/QRScanSVG'
 import QrScannerAva from 'components/QrScannerAva'
+import Logger from 'utils/Logger'
 
 const ContactInput = ({
   name,
   address,
   addressBtc,
+  addressPvm,
   onNameChange,
   onAddressChange,
-  onAddressBtcChange
+  onAddressBtcChange,
+  onAddressPvmChange
 }: {
   name: string
   address: string
   addressBtc: string
+  addressPvm: string
   onNameChange: (name: string) => void
   onAddressChange: (address: string) => void
   onAddressBtcChange: (address: string) => void
-}) => {
+  onAddressPvmChange: (address: string) => void
+}): JSX.Element => {
   const { theme } = useApplicationContext()
   const [addressError, setAddressError] = useState('')
   const [btcAddressError, setBtcAddressError] = useState('')
-  const [showCChainQRScan, setShowCChainQRScan] = useState(false)
-  const [showBtcQRScan, setShowBtcQRScan] = useState(false)
+  const [qrScanChain, setQrScanChain] = useState<'C' | 'P' | 'BTC' | undefined>(
+    undefined
+  )
 
   useEffect(validateInputs, [address, addressBtc])
 
-  function validateInputs() {
+  function validateInputs(): void {
     setAddressError(
       address && !isAddress(address) ? 'Not valid EVM address' : ''
     )
@@ -42,17 +48,20 @@ const ContactInput = ({
     )
   }
 
-  function onCChainScanQR() {
-    setShowCChainQRScan(true)
+  function onCChainScanQR(): void {
+    setQrScanChain('C')
   }
 
-  function onBtcScanQR() {
-    setShowBtcQRScan(true)
+  function onPChainScanQR(): void {
+    setQrScanChain('P')
   }
 
-  function clearQRSCan() {
-    setShowBtcQRScan(false)
-    setShowCChainQRScan(false)
+  function onBtcScanQR(): void {
+    setQrScanChain('BTC')
+  }
+
+  function clearQRSCan(): void {
+    setQrScanChain(undefined)
   }
 
   return (
@@ -107,18 +116,46 @@ const ContactInput = ({
           </View>
         )}
       </View>
+      <Space y={24} />
+      <AvaText.Body2 textStyle={{ color: theme.colorText1 }}>
+        Avalanche P-Chain Address
+      </AvaText.Body2>
+      <View style={{ marginHorizontal: -16 }}>
+        <InputText
+          multiline
+          errorText={btcAddressError}
+          placeholder={'Enter the P- address'}
+          text={addressPvm}
+          onChangeText={onAddressPvmChange}
+        />
+        {!addressPvm && (
+          <View style={styles.qrScan}>
+            <AvaButton.Icon onPress={onPChainScanQR}>
+              <QRScanSVG />
+            </AvaButton.Icon>
+          </View>
+        )}
+      </View>
 
       <Modal
         animationType="slide"
         transparent={true}
         onRequestClose={clearQRSCan}
-        visible={showBtcQRScan || showCChainQRScan}>
+        visible={!!qrScanChain}>
         <QrScannerAva
           onSuccess={data => {
-            if (showCChainQRScan) {
-              onAddressChange(data)
-            } else if (showBtcQRScan) {
-              onAddressBtcChange(data)
+            switch (qrScanChain) {
+              case 'C':
+                onAddressChange(data)
+                break
+              case 'P':
+                onAddressPvmChange(data)
+                break
+              case 'BTC':
+                onAddressBtcChange(data)
+                break
+              default:
+                Logger.error('not handled: ' + qrScanChain)
             }
             clearQRSCan()
           }}

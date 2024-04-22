@@ -15,9 +15,9 @@ import { useAddressBookLists } from 'components/addressBook/useAddressBookLists'
 import QrScannerAva from 'components/QrScannerAva'
 import QRScanSVG from 'components/svg/QRScanSVG'
 import {
+  selectTokensWithBalanceByNetwork,
   TokenType,
-  TokenWithBalance,
-  selectTokensWithBalanceByNetwork
+  TokenWithBalance
 } from 'store/balance'
 import { useSelector } from 'react-redux'
 import { selectActiveNetwork } from 'store/network'
@@ -28,8 +28,8 @@ import UniversalTokenSelector from 'components/UniversalTokenSelector'
 import { Eip1559Fees, getMaxAvailableBalance } from 'utils/Utils'
 import { AddrBookItemType, Contact } from 'store/addressBook'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { NetworkTokenUnit, Amount } from 'types'
-import { FeePreset } from '../../components/NetworkFeeSelector'
+import { Amount, NetworkTokenUnit } from 'types'
+import { FeePreset } from 'components/NetworkFeeSelector'
 
 type Props = {
   onNext: () => void
@@ -72,6 +72,8 @@ const SendToken: FC<Props> = ({
   const placeholder =
     activeNetwork.vmName === NetworkVMType.EVM
       ? 'Enter 0x Address'
+      : activeNetwork.vmName === NetworkVMType.PVM
+      ? 'Enter Avax P address'
       : 'Enter Bitcoin Address'
 
   const tokensWBalances = useSelector(
@@ -129,6 +131,9 @@ const SendToken: FC<Props> = ({
     switch (activeNetwork.vmName) {
       case NetworkVMType.EVM:
         setAddress({ address: item.address, title: item.title })
+        break
+      case NetworkVMType.PVM:
+        setAddress({ address: item.addressPVM ?? '', title: item.title })
         break
       case NetworkVMType.BITCOIN:
         setAddress({

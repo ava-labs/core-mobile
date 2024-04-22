@@ -10,11 +10,11 @@ import NetworkDropdown from 'screens/network/NetworkDropdown'
 import TokenAddress from 'components/TokenAddress'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { useSelector } from 'react-redux'
-import { NetworkVMType } from '@avalabs/chains-sdk'
 import { selectActiveAccount } from 'store/account'
 import CarrotSVG from 'components/svg/CarrotSVG'
 import { Row } from 'components/Row'
 import { selectActiveNetwork } from 'store/network'
+import AccountsService from 'services/account/AccountsService'
 
 type Props = {
   showAddress?: boolean
@@ -43,10 +43,9 @@ const TopNavigationHeader: FC<Props> = ({
   const activeAccount = useSelector(selectActiveAccount)
   const activeNetwork = useSelector(selectActiveNetwork)
 
-  const address =
-    activeNetwork.vmName === NetworkVMType.BITCOIN
-      ? activeAccount?.addressBtc
-      : activeAccount?.address
+  const address = activeAccount
+    ? AccountsService.getAddressForNetwork(activeAccount, activeNetwork)
+    : ''
 
   const renderAddress: () => null | JSX.Element = () => {
     if (!showAddress) return null

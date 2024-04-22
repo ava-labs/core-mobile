@@ -1,7 +1,7 @@
 import { resolve } from '@avalabs/utils-sdk'
 import { JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
 import BN from 'bn.js'
-import { TransactionRequest, isAddress } from 'ethers'
+import { isAddress, TransactionRequest } from 'ethers'
 import {
   GetTransactionRequestParams,
   SendErrorMessage,
@@ -9,12 +9,11 @@ import {
   SendState,
   ValidateStateAndCalculateFeesParams
 } from 'services/send/types'
-import networkService from 'services/network/NetworkService'
 import { Network } from '@avalabs/chains-sdk'
 import {
+  NftTokenWithBalance,
   TokenType,
-  TokenWithBalanceERC20,
-  NftTokenWithBalance
+  TokenWithBalanceERC20
 } from 'store/balance'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import Logger from 'utils/Logger'
@@ -23,15 +22,13 @@ import {
   ERC20__factory,
   ERC721__factory
 } from 'contracts/openzeppelin'
+import { getEvmProvider } from 'services/network/utils/providerUtils'
 
 export class SendServiceEVM implements SendServiceHelper {
   private readonly networkProvider: JsonRpcBatchInternal
 
   constructor(private activeNetwork: Network, private fromAddress: string) {
-    const provider = networkService.getProviderForNetwork(activeNetwork)
-    if (!(provider instanceof JsonRpcBatchInternal))
-      throw new Error('Not EVM provider')
-    this.networkProvider = provider
+    this.networkProvider = getEvmProvider(activeNetwork)
   }
 
   async validateStateAndCalculateFees(

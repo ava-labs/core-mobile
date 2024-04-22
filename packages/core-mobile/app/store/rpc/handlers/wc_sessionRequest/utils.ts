@@ -1,7 +1,14 @@
 import { NetworkVMType } from '@avalabs/chains-sdk'
 import { Networks } from 'store/network/types'
 import { CORE_ONLY_METHODS, RpcMethod } from 'store/rpc/types'
-import { z } from 'zod'
+import {
+  SafeParseError,
+  SafeParseSuccess,
+  z,
+  ZodArray,
+  ZodNumber,
+  ZodString
+} from 'zod'
 
 const CORE_WEB_HOSTNAMES = [
   'localhost',
@@ -28,10 +35,10 @@ const CORE_WEB_URLS_REGEX = [
   'https://[a-zA-Z0-9-]+\\.core-web\\.pages\\.dev' // for all https://*.core-web.pages.dev urls
 ]
 
-export const isCoreMethod = (method: string) =>
+export const isCoreMethod = (method: string): boolean =>
   CORE_ONLY_METHODS.includes(method as RpcMethod)
 
-export const isCoreDomain = (url: string) => {
+export const isCoreDomain = (url: string): boolean => {
   let hostname = ''
   let protocol = ''
 
@@ -56,9 +63,9 @@ export const isCoreDomain = (url: string) => {
 export const isNetworkSupported = (
   supportedNetworks: Networks,
   chainId: number
-) => {
+): boolean => {
   const network = supportedNetworks[Number(chainId)]
-  return Boolean(network && network.vmName === NetworkVMType.EVM)
+  return Boolean(network && [NetworkVMType.EVM].includes(network.vmName))
 }
 
 const approveDataSchema = z.object({
@@ -66,6 +73,14 @@ const approveDataSchema = z.object({
   approvedChainIds: z.array(z.number()).nonempty()
 })
 
-export const parseApproveData = (data: unknown) => {
+export const parseApproveData: (data: unknown) =>
+  | SafeParseSuccess<{
+      selectedAccounts: ZodArray<ZodString, 'atleastone'>['_output']
+      approvedChainIds: ZodArray<ZodNumber, 'atleastone'>['_output']
+    }>
+  | SafeParseError<{
+      selectedAccounts: ZodArray<ZodString, 'atleastone'>['_input']
+      approvedChainIds: ZodArray<ZodNumber, 'atleastone'>['_input']
+    }> = (data: unknown) => {
   return approveDataSchema.safeParse(data)
 }

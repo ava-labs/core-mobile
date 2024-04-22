@@ -153,12 +153,12 @@ class SendServiceBTC implements SendServiceHelper {
     utxos: BitcoinInputUTXO[]
   }> {
     const provider = getBitcoinProvider(!isMainnet)
-    const token = await balanceService.getBalancesForAddress(
-      isMainnet ? BITCOIN_NETWORK : BITCOIN_TEST_NETWORK,
+    const token = await balanceService.getBalancesForAddress({
+      network: isMainnet ? BITCOIN_NETWORK : BITCOIN_TEST_NETWORK,
       address,
       currency,
       sentryTrx
-    )
+    })
 
     const utxosWithScripts = await provider.getScriptsForUtxos(
       token?.[0]?.utxos || []

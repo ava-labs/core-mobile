@@ -14,36 +14,46 @@ import { View } from 'react-native'
 import { Space } from 'components/Space'
 import AvaButton from 'components/AvaButton'
 import { Contact } from 'store/addressBook'
+import { NameAndAddresses } from 'screens/drawer/addressBook/types'
 
 interface Props {
   contact: Contact
-  onContinue: (
-    contactName: string,
-    cChainAddress?: string,
-    btcAddress?: string
-  ) => void
+  onContinue: ({
+    name,
+    cChainAddress,
+    pChainAddress,
+    btcAddress
+  }: NameAndAddresses) => void
   onCancel: () => void
 }
 
-const ContactShareModal = ({ contact, onContinue, onCancel }: Props) => {
+const ContactShareModal = ({
+  contact,
+  onContinue,
+  onCancel
+}: Props): JSX.Element => {
   const [cChainSelected, setCChainSelected] = useState(true)
+  const [pChainSelected, setPChainSelected] = useState(true)
   const [btcSelected, setBtcSelected] = useState(true)
 
   useBeforeRemoveListener(onCancel, [RemoveEvents.GO_BACK], true)
 
   const handleContinue = useCallback(() => {
-    onContinue(
-      contact.title,
-      cChainSelected ? contact.address : undefined,
-      btcSelected ? contact.addressBtc : undefined
-    )
+    onContinue({
+      name: contact.title,
+      cChainAddress: cChainSelected ? contact.address : undefined,
+      pChainAddress: pChainSelected ? contact.addressPVM : undefined,
+      btcAddress: btcSelected ? contact.addressBtc : undefined
+    })
   }, [
-    btcSelected,
-    cChainSelected,
-    contact.address,
-    contact.addressBtc,
+    onContinue,
     contact.title,
-    onContinue
+    contact.address,
+    contact.addressPVM,
+    contact.addressBtc,
+    cChainSelected,
+    pChainSelected,
+    btcSelected
   ])
   return (
     <ModalContainer containerStyle={{ padding: 24 }}>
@@ -60,35 +70,58 @@ const ContactShareModal = ({ contact, onContinue, onCancel }: Props) => {
       </View>
       <Space y={35} />
 
-      <AvaButton.Base onPress={() => setCChainSelected(s => !s)}>
-        <Row>
-          {cChainSelected ? <CheckBoxSVG /> : <CheckBoxEmptySVG />}
-          <Space x={11} />
-          <View>
-            <AvaText.Heading3>{contact.title}</AvaText.Heading3>
-            <AvaText.Body1>Avalanche C-Chain Address</AvaText.Body1>
-          </View>
-        </Row>
-      </AvaButton.Base>
+      {contact.address && (
+        <>
+          <AvaButton.Base onPress={() => setCChainSelected(s => !s)}>
+            <Row>
+              {cChainSelected ? <CheckBoxSVG /> : <CheckBoxEmptySVG />}
+              <Space x={11} />
+              <View>
+                <AvaText.Heading3>{contact.title}</AvaText.Heading3>
+                <AvaText.Body1>Avalanche C-Chain Address</AvaText.Body1>
+              </View>
+            </Row>
+          </AvaButton.Base>
+        </>
+      )}
 
-      <Space y={27} />
+      {contact.addressBtc && (
+        <>
+          <Space y={27} />
+          <AvaButton.Base onPress={() => setBtcSelected(s => !s)}>
+            <Row>
+              {btcSelected ? <CheckBoxSVG /> : <CheckBoxEmptySVG />}
+              <Space x={11} />
+              <View>
+                <AvaText.Heading3>{contact.title}</AvaText.Heading3>
+                <AvaText.Body1>Bitcoin Address</AvaText.Body1>
+              </View>
+            </Row>
+          </AvaButton.Base>
+        </>
+      )}
 
-      <AvaButton.Base onPress={() => setBtcSelected(s => !s)}>
-        <Row>
-          {btcSelected ? <CheckBoxSVG /> : <CheckBoxEmptySVG />}
-          <Space x={11} />
-          <View>
-            <AvaText.Heading3>{contact.title}</AvaText.Heading3>
-            <AvaText.Body1>Bitcoin Address</AvaText.Body1>
-          </View>
-        </Row>
-      </AvaButton.Base>
+      {contact.addressPVM && (
+        <>
+          <Space y={27} />
+          <AvaButton.Base onPress={() => setPChainSelected(s => !s)}>
+            <Row>
+              {pChainSelected ? <CheckBoxSVG /> : <CheckBoxEmptySVG />}
+              <Space x={11} />
+              <View>
+                <AvaText.Heading3>{contact.title}</AvaText.Heading3>
+                <AvaText.Body1>Avalanche P-Chain Address</AvaText.Body1>
+              </View>
+            </Row>
+          </AvaButton.Base>
+        </>
+      )}
 
       <Space y={60} />
       <Row style={{ justifyContent: 'flex-end' }}>
         <AvaButton.TextLarge onPress={onCancel}>Cancel</AvaButton.TextLarge>
         <AvaButton.TextLarge
-          disabled={!cChainSelected && !btcSelected}
+          disabled={!cChainSelected && !btcSelected && !pChainSelected}
           onPress={handleContinue}>
           Continue
         </AvaButton.TextLarge>
