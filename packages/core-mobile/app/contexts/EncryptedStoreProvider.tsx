@@ -1,4 +1,4 @@
-import React, { FC, useEffect, useState } from 'react'
+import React, { FC, PropsWithChildren, useEffect, useState } from 'react'
 import Keychain from 'react-native-keychain'
 import { Provider } from 'react-redux'
 import { PersistGate } from 'redux-persist/integration/react'
@@ -12,8 +12,9 @@ const MAC_KEY = 'sec-store-provider-mac'
 /**
  * Set up the encrypted redux store.
  */
-export const EncryptedStoreProvider: FC = ({ children }) => {
+export const EncryptedStoreProvider: FC<PropsWithChildren> = ({ children }) => {
   const encryptedStore = useEncryptedStore()
+
   if (!encryptedStore) return null
 
   return (

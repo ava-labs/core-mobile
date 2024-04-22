@@ -1,4 +1,11 @@
-import React, { FC, useCallback, useEffect, useMemo, useState } from 'react'
+import React, {
+  FC,
+  PropsWithChildren,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState
+} from 'react'
 import {
   NavigationState,
   SceneRendererProps,
@@ -6,7 +13,7 @@ import {
   TabBarItemProps,
   TabView
 } from 'react-native-tab-view'
-import { Dimensions, View } from 'react-native'
+import { Dimensions, Platform, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaButton from 'components/AvaButton'
 
@@ -25,18 +32,20 @@ type TabViewAvaItemProps = {
   testID?: string
 }
 
-type TabViewAvaFC = FC<{
-  renderCustomLabel?: (
-    title: string,
-    selected: boolean,
-    color: string
-  ) => React.ReactNode
-  currentTabIndex?: number
-  testID?: string
-  onTabIndexChange?: (tabIndex: number) => void
-  lazy?: boolean
-  hideSingleTab?: boolean
-}> & { Item: FC<TabViewAvaItemProps> }
+type TabViewAvaFC = FC<
+  {
+    renderCustomLabel?: (
+      title: string,
+      selected: boolean,
+      color: string
+    ) => React.ReactNode
+    currentTabIndex?: number
+    testID?: string
+    onTabIndexChange?: (tabIndex: number) => void
+    lazy?: boolean
+    hideSingleTab?: boolean
+  } & PropsWithChildren
+> & { Item: FC<TabViewAvaItemProps & PropsWithChildren> }
 
 /**
  * If there's only one route available TabBar won't be displayed
@@ -175,6 +184,10 @@ const TabViewAva: TabViewAvaFC = ({
 
   return (
     <TabView
+      // iOS: Disable animation when switching tabs by tapping on the tab
+      // to avoid the UI freeze issue on iOS
+      // related github issue: https://github.com/react-navigation/react-navigation/issues/11596
+      animationEnabled={Platform.OS !== 'ios'}
       onIndexChange={handleIndexChange}
       navigationState={navState}
       renderScene={scenes}

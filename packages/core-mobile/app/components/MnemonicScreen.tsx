@@ -43,7 +43,7 @@ export default function MnemonicScreen({
     Platform.OS === 'ios' ? '#BFBFBF70' : colors.$neutral900
 
   const mnemonics = (): JSX.Element => {
-    const mnemonicColumns: Element[][] = [[], [], []]
+    const mnemonicColumns: JSX.Element[][] = [[], [], []]
 
     const menomicArray = mnemonic ? mnemonic.split(' ') : EMPTY_MNEMONIC
     menomicArray.forEach((value, key) => {

@@ -59,14 +59,8 @@
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>
 		<false/>
-		<key>NSExceptionDomains</key>
-		<dict>
-			<key>localhost</key>
-			<dict>
-				<key>NSExceptionAllowsInsecureHTTPLoads</key>
-				<false/>
-			</dict>
-		</dict>
+		<key>NSAllowsLocalNetworking</key>
+		<false/>
 	</dict>
 	<key>NSCameraUsageDescription</key>
 	<string>To scan QR we need camera permission.</string>
@@ -82,7 +76,7 @@
 		<string>Inter-ExtraBold.ttf</string>
 	</array>
 	<key>UILaunchStoryboardName</key>
-	<string>LaunchScreen</string>
+	<string>BootSplash</string>
 	<key>UIRequiredDeviceCapabilities</key>
 	<array>
 		<string>armv7</string>

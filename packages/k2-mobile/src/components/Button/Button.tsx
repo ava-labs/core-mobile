@@ -1,4 +1,4 @@
-import React, { FC } from 'react'
+import React, { FC, PropsWithChildren } from 'react'
 import {
   PressableStateCallbackType,
   StyleProp,
@@ -19,13 +19,13 @@ interface BaseButtonProps {
   testID?: string
 }
 
-const BaseButton: FC<BaseButtonProps> = ({
+const BaseButton: FC<BaseButtonProps & PropsWithChildren> = ({
   onPress,
   style,
   disabled,
   children,
   testID
-}) => {
+}): JSX.Element => {
   return (
     <Pressable
       accessible={false}
@@ -56,7 +56,7 @@ interface ButtonProps extends BaseButtonProps {
   style?: ViewStyle
 }
 
-export const Button: FC<ButtonProps> = ({
+export const Button: FC<ButtonProps & PropsWithChildren> = ({
   type,
   size,
   leftIcon,
@@ -137,6 +137,7 @@ export const Button: FC<ButtonProps> = ({
       }}
       disabled={disabled}
       {...rest}>
+      {/* @ts-ignore */}
       {({ pressed }: { pressed: boolean }) => {
         const color = tintColor(pressed)
         return (

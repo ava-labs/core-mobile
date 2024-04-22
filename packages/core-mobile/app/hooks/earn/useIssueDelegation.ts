@@ -1,14 +1,14 @@
 import {
   useMutation,
-  UseMutationResult,
-  useQueryClient
+  useQueryClient,
+  QueryClient,
+  UseMutationResult
 } from '@tanstack/react-query'
 import { useSelector } from 'react-redux'
 import EarnService from 'services/earn/EarnService'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectActiveAccount } from 'store/account'
 import { selectSelectedCurrency } from 'store/settings/currency'
-import { QueryClient } from '@tanstack/query-core'
 import { Avax } from 'types/Avax'
 import { calculateAmountForCrossChainTransfer } from 'hooks/earn/useGetAmountForCrossChainTransfer'
 import Logger from 'utils/Logger'
@@ -26,7 +26,12 @@ export const useIssueDelegation = (
   issueDelegationMutation: UseMutationResult<
     string,
     Error,
-    { nodeId: string; stakingAmount: Avax; startDate: Date; endDate: Date },
+    {
+      nodeId: string
+      stakingAmount: Avax
+      startDate: Date
+      endDate: Date
+    },
     unknown
   >
 } => {

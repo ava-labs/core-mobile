@@ -1,12 +1,11 @@
 import React, { useCallback } from 'react'
 import { runOnJS, useAnimatedReaction } from 'react-native-reanimated'
+import { Line, vec } from '@shopify/react-native-skia'
 import {
-  runSpring,
-  useValue,
-  useComputedValue,
-  Line,
-  vec
-} from '@shopify/react-native-skia'
+  useDerivedValue,
+  useSharedValue,
+  withSpring
+} from 'react-native-reanimated'
 import type { SelectionDotProps } from 'react-native-graph'
 import { CHART_HEIGHT } from './TokenDetails/TokenDetail'
 
@@ -14,19 +13,19 @@ export function SelectionDot({
   isActive,
   circleX
 }: SelectionDotProps): React.ReactElement {
-  const lineOpacity = useValue(0)
+  const lineOpacity = useSharedValue(0)
 
-  const lineP1 = useComputedValue(() => {
-    return vec(circleX.current, CHART_HEIGHT)
+  const lineP1 = useDerivedValue(() => {
+    return vec(circleX.value, CHART_HEIGHT)
   }, [circleX])
 
-  const lineP2 = useComputedValue(() => {
-    return vec(circleX.current, 0)
+  const lineP2 = useDerivedValue(() => {
+    return vec(circleX.value, 0)
   }, [circleX])
 
   const setIsActive = useCallback(
     (active: boolean) => {
-      runSpring(lineOpacity, active ? 1 : 0, {
+      lineOpacity.value = withSpring(active ? 1 : 0, {
         mass: 1,
         stiffness: 1000,
         damping: 50,

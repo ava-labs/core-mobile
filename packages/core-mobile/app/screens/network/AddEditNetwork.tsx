@@ -13,8 +13,9 @@ import AvaText from 'components/AvaText'
 import FlexSpacer from 'components/FlexSpacer'
 import { Network, NetworkVMType } from '@avalabs/chains-sdk'
 import InputText from 'components/InputText'
-import { addCustomNetwork, selectAllNetworks } from 'store/network'
+import { addCustomNetwork } from 'store/network'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { useNetworks } from 'hooks/networks/useNetworks'
 
 export type AddEditNetworkProps = {
   mode: 'edit' | 'create'
@@ -36,9 +37,9 @@ export default function AddEditNetwork({
   network,
   onClose
 }: AddEditNetworkProps): JSX.Element {
+  const { allNetworks } = useNetworks()
   const dispatch = useDispatch()
   const isTestnet = useSelector(selectIsDeveloperMode)
-  const allNetworks = useSelector(selectAllNetworks)
 
   const [rpcUrl, setRpcUrl] = useState(network?.rpcUrl ?? '')
   const [networkName, setNetworkName] = useState(network?.chainName ?? '')

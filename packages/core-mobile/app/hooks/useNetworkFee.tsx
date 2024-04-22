@@ -2,12 +2,11 @@ import { Network } from '@avalabs/chains-sdk'
 import { useQuery, UseQueryResult } from '@tanstack/react-query'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { queryClient } from 'contexts/ReactQueryProvider'
-import { useSelector } from 'react-redux'
 import NetworkFeeService from 'services/networkFee/NetworkFeeService'
-import { selectActiveNetwork } from 'store/network'
 import Logger from 'utils/Logger'
 import { NetworkFee } from 'services/networkFee/types'
 import { NetworkTokenUnit } from 'types'
+import { useNetworks } from './networks/useNetworks'
 
 const REFETCH_INTERVAL = 30000 // 30 seconds
 
@@ -38,7 +37,7 @@ export const prefetchNetworkFee = (network: Network | undefined): void => {
 export const useNetworkFee = (
   network?: Network
 ): UseQueryResult<NetworkFee<NetworkTokenUnit> | undefined> => {
-  const activeNetwork = useSelector(selectActiveNetwork)
+  const { activeNetwork } = useNetworks()
   const networkToRequest = network || activeNetwork
 
   return useQuery({

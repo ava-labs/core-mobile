@@ -1,5 +1,5 @@
 import React from 'react'
-import type { Meta } from '@storybook/react-native'
+
 import { withCenterView } from '../../../storybook/decorators/withCenterView'
 import { ScrollView, View } from '../Primitives'
 import Link from '../../utils/Link'
@@ -8,7 +8,7 @@ import { TextField, TextFieldSize } from './TextField'
 export default {
   title: 'TextField',
   decorators: [withCenterView]
-} as Meta
+}
 
 export const All = (): JSX.Element => {
   const sizes: TextFieldSize[] = ['large', 'medium', 'small']

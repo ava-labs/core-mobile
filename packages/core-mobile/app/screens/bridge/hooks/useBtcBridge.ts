@@ -27,7 +27,6 @@ import { useSelector } from 'react-redux'
 import { selectTokensWithBalanceByNetwork } from 'store/balance'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { VsCurrencyType } from '@avalabs/coingecko-sdk'
-import { selectActiveNetwork, selectNetworks } from 'store/network'
 import Logger from 'utils/Logger'
 import { selectBridgeAppConfig } from 'store/bridge'
 import { selectActiveAccount } from 'store/account'
@@ -38,19 +37,19 @@ import {
 import { Btc } from 'types/Btc'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { getErrorMessage } from 'utils/getErrorMessage'
-import { useBitcoinProvider } from 'hooks/networkProviderHooks'
+import { useBitcoinProvider } from 'hooks/networks/networkProviderHooks'
+import { useNetworks } from 'hooks/networks/useNetworks'
 
 export function useBtcBridge(amountInBtc: Big, fee: number): BridgeAdapter {
-  const activeNetwork = useSelector(selectActiveNetwork)
+  const { activeNetwork, networks } = useNetworks()
   const activeAccount = useSelector(selectActiveAccount)
   const currency = useSelector(selectSelectedCurrency)
   const bridgeConfig = useSelector(selectBridgeAppConfig)
   const { createBridgeTransaction } = useBridgeContext()
   const { currentAsset, currentBlockchain, targetBlockchain } = useBridgeSDK()
   const btcAddress = activeAccount?.addressBtc
-  const allNetworks = useSelector(selectNetworks)
   const avalancheNetwork = getAvalancheNetwork(
-    allNetworks,
+    networks,
     activeNetwork.isTestnet
   )
   const avalancheTokens = useSelector(

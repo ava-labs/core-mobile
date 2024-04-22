@@ -15,7 +15,7 @@ function SelectTokenBottomSheet(): JSX.Element {
   const { goBack } = useNavigation()
   const { params } = useRoute<RouteProp>()
 
-  function onTokenSelected(token: TokenWithBalance) {
+  function onTokenSelected(token: TokenWithBalance): void {
     goBack()
     params.onTokenSelected(token)
   }

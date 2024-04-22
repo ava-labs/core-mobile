@@ -1,5 +1,4 @@
 import React from 'react'
-import { type Meta } from '@storybook/react-native'
 
 import { StackedImages } from 'components/StackedImages'
 import AvaText from 'components/AvaText'
@@ -12,9 +11,9 @@ const IMAGE_URL = 'https://picsum.photos/200'
 export default {
   title: 'Stacked Images',
   decorators: [withCenterView]
-} as Meta
+}
 
-const Stacked = (flexDirection: 'row' | 'column') => {
+const Stacked = (flexDirection: 'row' | 'column'): React.JSX.Element => {
   return (
     <ScrollView>
       <AvaText.Heading1>Default</AvaText.Heading1>
@@ -58,5 +57,5 @@ const Stacked = (flexDirection: 'row' | 'column') => {
   )
 }
 
-export const Horizontal = () => Stacked('row')
-export const Vertical = () => Stacked('column')
+export const Horizontal = (): React.JSX.Element => Stacked('row')
+export const Vertical = (): React.JSX.Element => Stacked('column')

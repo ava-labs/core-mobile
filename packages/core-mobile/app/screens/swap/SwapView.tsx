@@ -23,7 +23,6 @@ import {
   getMaxAvailableBalance,
   truncateBN
 } from 'utils/Utils'
-import { selectActiveNetwork } from 'store/network'
 import { useNetworkFee } from 'hooks/useNetworkFee'
 import Logger from 'utils/Logger'
 import AnalyticsService from 'services/analytics/AnalyticsService'
@@ -35,13 +34,14 @@ import { SwapScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
 import { useTheme } from '@avalabs/k2-mobile'
 import { useNavigation } from '@react-navigation/native'
+import { useNetworks } from 'hooks/networks/useNetworks'
 
 type SwapNav = SwapScreenProps<typeof AppNavigation.Swap.Swap>['navigation']
 
 export default function SwapView(): JSX.Element {
   const navigation = useNavigation<SwapNav>()
   const { theme } = useTheme()
-  const activeNetwork = useSelector(selectActiveNetwork)
+  const { activeNetwork } = useNetworks()
   const { data: networkFee } = useNetworkFee()
   const tokensWithZeroBalance = useSelector(selectTokensWithZeroBalance)
   const avaxPrice = useSelector(selectAvaxPrice)

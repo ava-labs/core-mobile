@@ -5,13 +5,12 @@ import mockNetworks from 'tests/fixtures/networks.json'
 import AppNavigation from 'navigation/AppNavigation'
 import * as networkUtils from 'services/network/utils/isValidRpcUrl'
 import * as Navigation from 'utils/Navigation'
-import { setActive, addCustomNetwork } from 'store/network'
+import { setActive, addCustomNetwork, selectActiveNetwork } from 'store/network'
 import { NetworkVMType } from '@avalabs/chains-sdk'
 import {
   selectIsDeveloperMode,
   toggleDeveloperMode
 } from 'store/settings/advanced'
-import { selectActiveNetwork } from 'store/network'
 import { walletAddEthereumChainHandler as handler } from './wallet_addEthereumChain'
 
 const mockIsValidRPCUrl = jest.fn()

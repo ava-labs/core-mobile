@@ -57,8 +57,8 @@ export default function CreatePIN({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [validPin, title])
 
-  const generatePinDots = (): Element[] => {
-    const dots: Element[] = []
+  const generatePinDots = (): JSX.Element[] => {
+    const dots: JSX.Element[] = []
 
     pinDots.forEach((value, key) => {
       dots.push(
@@ -72,8 +72,8 @@ export default function CreatePIN({
     return dots
   }
 
-  const keyboard = (isChosenPinEntered: boolean): Element[] => {
-    const keys: Element[] = []
+  const keyboard = (isChosenPinEntered: boolean): JSX.Element[] => {
+    const keys: JSX.Element[] = []
     '123456789 0<'.split('').forEach((value, key) => {
       keys.push(
         <View key={key} style={styles.pinKey}>

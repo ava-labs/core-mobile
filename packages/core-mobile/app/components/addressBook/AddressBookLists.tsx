@@ -13,8 +13,8 @@ import {
   selectContacts,
   selectRecentContacts
 } from 'store/addressBook'
-import { selectActiveNetwork } from 'store/network'
 import { Network, NetworkVMType } from '@avalabs/chains-sdk'
+import { useNetworks } from 'hooks/networks/useNetworks'
 
 export type AddressBookSource = 'recents' | 'addressBook' | 'accounts'
 
@@ -32,10 +32,10 @@ export default function AddressBookLists({
   navigateToAddressBook,
   onlyBtc = false
 }: AddressBookListsProps): JSX.Element {
+  const { activeNetwork } = useNetworks()
   const contacts = useSelector(selectContacts)
   const recentContacts = useSelector(selectRecentContacts)
   const accounts = useSelector(selectAccounts)
-  const activeNetwork = useSelector(selectActiveNetwork)
 
   const addressBookContacts = useMemo(
     () =>

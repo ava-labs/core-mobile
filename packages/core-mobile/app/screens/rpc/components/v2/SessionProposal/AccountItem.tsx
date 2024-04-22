@@ -6,7 +6,9 @@ import { Row } from 'components/Row'
 import { Space } from 'components/Space'
 import ReloadSVG from 'components/svg/ReloadSVG'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import React, { useCallback, useEffect, useState } from 'react'
+import { useBalanceTotalInCurrencyForAccount } from 'hooks/balance/useBalanceTotalInCurrencyForAccount'
+import { useNetworks } from 'hooks/networks/useNetworks'
+import React, { useCallback, useEffect, useState, JSX } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 import { Account } from 'store/account'
@@ -14,7 +16,6 @@ import {
   fetchBalanceForAccount,
   QueryStatus,
   selectBalanceStatus,
-  selectBalanceTotalInCurrencyForAccount,
   selectIsBalanceLoadedForAddress
 } from 'store/balance'
 import { truncateAddress } from 'utils/Utils'
@@ -25,13 +26,13 @@ type Props = {
   selected: boolean
 }
 
-const AccountItem = ({ account, onSelect, selected }: Props) => {
+const AccountItem = ({ account, onSelect, selected }: Props): JSX.Element => {
   const { theme } = useApplicationContext()
-  const accountBalance = useSelector(
-    selectBalanceTotalInCurrencyForAccount(account.index)
-  )
+  const { activeNetwork } = useNetworks()
+  const accountBalance = useBalanceTotalInCurrencyForAccount(account.index)
+
   const isBalanceLoaded = useSelector(
-    selectIsBalanceLoadedForAddress(account.index)
+    selectIsBalanceLoadedForAddress(account.index, activeNetwork.chainId)
   )
   const balanceStatus = useSelector(selectBalanceStatus)
   const isBalanceLoading = balanceStatus !== QueryStatus.IDLE

@@ -1,13 +1,13 @@
 import { useNetworkFee } from 'hooks/useNetworkFee'
+import { useNetworks } from 'hooks/networks/useNetworks'
 import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { TokenType, selectTokensWithBalance } from 'store/balance'
-import { selectActiveNetwork } from 'store/network'
 import { isBitcoinNetwork } from 'utils/network/isBitcoinNetwork'
 
 export const useHasEnoughForGas = (): boolean => {
+  const { activeNetwork } = useNetworks()
   const tokens = useSelector(selectTokensWithBalance)
-  const activeNetwork = useSelector(selectActiveNetwork)
   const { data: networkFee } = useNetworkFee()
 
   const [hasEnough, setHasEnough] = useState(true)

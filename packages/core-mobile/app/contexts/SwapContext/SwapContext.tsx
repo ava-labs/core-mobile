@@ -21,14 +21,14 @@ import { Amount, NetworkTokenUnit } from 'types'
 import { InteractionManager } from 'react-native'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { humanizeSwapErrors } from 'localization/errors'
-import { useAvalancheProvider } from 'hooks/networkProviderHooks'
+import { useAvalancheProvider } from 'hooks/networks/networkProviderHooks'
 import { useSelector } from 'react-redux'
-import { selectActiveNetwork } from 'store/network'
 import { selectActiveAccount } from 'store/account'
 import { useNetworkFee } from 'hooks/useNetworkFee'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { RpcMethod } from 'store/rpc/types'
 import { useInAppRequest } from 'hooks/useInAppRequest'
+import { useNetworks } from 'hooks/networks/useNetworks'
 import { performSwap } from './performSwap/performSwap'
 
 // success here just means the transaction was sent, not that it was successful/confirmed
@@ -91,8 +91,8 @@ export const SwapContextProvider = ({
   children: ReactNode
 }): JSX.Element => {
   const { request } = useInAppRequest()
+  const { activeNetwork } = useNetworks()
   const activeAccount = useSelector(selectActiveAccount)
-  const activeNetwork = useSelector(selectActiveNetwork)
   const avalancheProvider = useAvalancheProvider()
   const { data: networkFee } = useNetworkFee()
   const [fromToken, setFromToken] = useState<TokenWithBalance>()

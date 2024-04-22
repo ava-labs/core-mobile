@@ -17,12 +17,11 @@ import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { Icons, Pressable, useTheme } from '@avalabs/k2-mobile'
-import { useSelector } from 'react-redux'
-import { selectActiveNetwork } from 'store/network'
 import Loader from 'components/Loader'
 import { Tooltip } from 'components/Tooltip'
 import FastImage from 'react-native-fast-image'
 import { useNftItemsContext } from 'contexts/NFTItemsContext'
+import { useNetworks } from 'hooks/networks/useNetworks'
 import { useNft } from './hooks/useNft'
 import NftAttributes from './components/NftAttributes'
 
@@ -33,7 +32,7 @@ type NftDetailsScreenProps = NFTDetailsScreenProps<
 const NftDetailsScreen = (): JSX.Element => {
   const { navigate, setOptions } =
     useNavigation<NftDetailsScreenProps['navigation']>()
-  const activeNetwork = useSelector(selectActiveNetwork)
+  const { activeNetwork } = useNetworks()
   const { nftItem: routeNftItem } =
     useRoute<NftDetailsScreenProps['route']>().params
 
@@ -121,6 +120,9 @@ const NftDetailsScreen = (): JSX.Element => {
     await refreshNftMetadata(freshNftData, activeNetwork.chainId)
   }, [activeNetwork.chainId, refreshNftMetadata, freshNftData])
 
+  const shouldRenderFastImage =
+    !nftItem.imageData?.isSvg && nftItem.imageData?.image && !imgLoadFailed
+
   const renderHeaderRight = useCallback(() => {
     const disabled = !canRefreshMetadata || isRefreshing
 
@@ -170,7 +172,7 @@ const NftDetailsScreen = (): JSX.Element => {
             />
           </View>
         )}
-        {!nftItem.imageData.isSvg && nftItem.imageData.image && !imgLoadFailed && (
+        {shouldRenderFastImage && (
           <FastImage
             onError={() => setImgLoadFailed(true)}
             style={[

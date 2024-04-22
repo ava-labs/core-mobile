@@ -28,8 +28,8 @@ import { styles as AvaTextStyles } from 'components/AvaText'
 import { format } from 'date-fns'
 import { StarButton } from 'components/StarButton'
 import { AnimatedText } from 'components/AnimatedText'
-import Delay from 'components/Delay'
 import { useDispatch, useSelector } from 'react-redux'
+import { GraphPoint } from 'react-native-graph'
 import { DataItem } from './DataItem'
 import { Overlay } from './Overlay'
 
@@ -46,6 +46,7 @@ const TokenDetail: FC = () => {
     theme,
     appHook: { tokenInCurrencyFormatter, currencyFormatter }
   } = useApplicationContext()
+
   const hasBeenViewedChart = useSelector(
     selectHasBeenViewedOnce(ViewOnceKey.CHART_INTERACTION)
   )
@@ -57,7 +58,7 @@ const TokenDetail: FC = () => {
   const animatedPrice = useSharedValue('')
 
   const updatePriceAndDate = useCallback(
-    p => {
+    (p: GraphPoint) => {
       const amountInCurrency = tokenInCurrencyFormatter(p.value)
       animatedPrice.value = amountInCurrency
       animatedDate.value = format(p.date, 'E, MMM dd, yyyy, H:mm aa')
@@ -204,19 +205,17 @@ const TokenDetail: FC = () => {
 
         <View style={styles.chartContainer}>
           <View>
-            <Delay>
-              <SparklineChart
-                interactive
-                data={chartData ?? []}
-                yRange={yRange}
-                negative={ranges.diffValue < 0}
-                width={CHART_WIDTH}
-                height={CHART_HEIGHT}
-                lineThickness={CHART_THICKNESS}
-                onPointSelected={updatePriceAndDate}
-                onInteractionEnded={resetPriceAndDate}
-              />
-            </Delay>
+            <SparklineChart
+              interactive
+              data={chartData ?? []}
+              yRange={yRange}
+              negative={ranges.diffValue < 0}
+              width={CHART_WIDTH}
+              height={CHART_HEIGHT}
+              lineThickness={CHART_THICKNESS}
+              onPointSelected={updatePriceAndDate}
+              onInteractionEnded={resetPriceAndDate}
+            />
           </View>
           <Overlay
             chartData={chartData}

@@ -74,7 +74,7 @@ export const initWalletConnect = async (
      *
      * notes: the delay is to allow dapps to settle down after the session is established. wallet connect se sdk also does the same.
      */
-    const chainId = selectActiveNetwork(state).chainId
+    const { chainId } = selectActiveNetwork(state)
     const address = selectActiveAccount(state)?.address
     setTimeout(() => updateSessions(chainId, address), UPDATE_SESSION_DELAY)
   } catch (e) {

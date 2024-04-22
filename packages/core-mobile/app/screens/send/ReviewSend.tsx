@@ -21,9 +21,8 @@ import {
 import { Tooltip } from 'components/Tooltip'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { Button, Text, View } from '@avalabs/k2-mobile'
-import { useSelector } from 'react-redux'
-import { selectActiveNetwork } from 'store/network'
 import { NetworkVMType } from '@avalabs/chains-sdk'
+import { useNetworks } from 'hooks/networks/useNetworks'
 
 type NavigationProp = SendTokensScreenProps<
   typeof AppNavigation.Send.Review
@@ -38,7 +37,7 @@ export default function ReviewSend({
     theme,
     appHook: { currencyFormatter }
   } = useApplicationContext()
-  const activeNetwork = useSelector(selectActiveNetwork)
+  const { activeNetwork } = useNetworks()
   const isBtcNetwork = Boolean(activeNetwork?.vmName === NetworkVMType.BITCOIN)
   const { goBack } = useNavigation<NavigationProp>()
   const {
