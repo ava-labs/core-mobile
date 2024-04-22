@@ -21,6 +21,7 @@ export type CollectTokensForStakingParams = {
   requiredAmount: Avax
   activeAccount: Account
   isDevMode: boolean
+  selectedCurrency: string
 }
 
 export type GetAllStakesParams = {

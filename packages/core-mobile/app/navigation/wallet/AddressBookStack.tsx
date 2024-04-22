@@ -30,6 +30,7 @@ import {
 import ContactShareModal from 'screens/drawer/addressBook/components/ContactShareModal'
 import { showSnackBarCustom } from 'components/Snackbar'
 import GeneralToast from 'components/toast/GeneralToast'
+import { NameAndAddresses } from 'screens/drawer/addressBook/types'
 import { AddressBookScreenProps } from '../types'
 
 export type AddressBookStackParamList = {
@@ -45,7 +46,7 @@ export type AddressBookStackParamList = {
 }
 const Stack = createStackNavigator<AddressBookStackParamList>()
 
-const AddressBookStack = () => {
+const AddressBookStack = (): JSX.Element => {
   return (
     <Stack.Navigator
       screenOptions={{
@@ -96,7 +97,7 @@ type ContactDetailsScreenProps = AddressBookScreenProps<
   typeof AppNavigation.AddressBook.Details
 >
 
-const ContactDetailsComp = () => {
+const ContactDetailsComp = (): JSX.Element => {
   const dispatch = useDispatch()
   const { setParams, setOptions, navigate, push } =
     useNavigation<ContactDetailsScreenProps['navigation']>()
@@ -108,16 +109,18 @@ const ContactDetailsComp = () => {
   const editingContact = useSelector(selectEditingContact)
 
   useEffect(() => {
-    const err = getContactValidationError(
-      editingContact?.title,
-      editingContact?.address,
-      editingContact?.addressBtc
-    )
+    const err = getContactValidationError({
+      name: editingContact?.title,
+      cChainAddress: editingContact?.address,
+      pChainAddress: editingContact?.addressPVM,
+      btcAddress: editingContact?.addressBtc
+    })
     setParams({ editable, isContactValid: err === undefined })
   }, [
     editable,
     editingContact?.address,
     editingContact?.addressBtc,
+    editingContact?.addressPVM,
     editingContact?.title,
     setParams
   ])
@@ -144,7 +147,7 @@ const ContactDetailsComp = () => {
     }
   }, [contact, dispatch])
 
-  function saveContact() {
+  function saveContact(): void {
     dispatch(saveEditingContact())
     setParams({ editable: false, isContactValid })
     setOptions({
@@ -156,7 +159,7 @@ const ContactDetailsComp = () => {
     })
   }
 
-  function onEdit() {
+  function onEdit(): void {
     setParams({ editable: true, isContactValid })
     setOptions({
       ...(MainHeaderOptions({
@@ -206,7 +209,7 @@ type AddContactNavigationProp = AddressBookScreenProps<
   typeof AppNavigation.AddressBook.List
 >['navigation']
 
-const AddAddressBookContact = () => {
+const AddAddressBookContact = (): JSX.Element => {
   const { navigate } = useNavigation<AddContactNavigationProp>()
   return (
     <AvaButton.Icon onPress={() => navigate(AppNavigation.AddressBook.Add)}>
@@ -215,7 +218,11 @@ const AddAddressBookContact = () => {
   )
 }
 
-const EditAddressBookContact = ({ onEdit }: { onEdit: () => void }) => {
+const EditAddressBookContact = ({
+  onEdit
+}: {
+  onEdit: () => void
+}): JSX.Element => {
   const { theme } = useApplicationContext()
 
   return (
@@ -227,7 +234,11 @@ const EditAddressBookContact = ({ onEdit }: { onEdit: () => void }) => {
   )
 }
 
-const SaveAddressBookContact = ({ onSave }: { onSave: () => void }) => {
+const SaveAddressBookContact = ({
+  onSave
+}: {
+  onSave: () => void
+}): JSX.Element => {
   const { theme } = useApplicationContext()
   const { params } = useRoute<ContactDetailsScreenProps['route']>()
   const isContactValid = params?.isContactValid
@@ -248,18 +259,18 @@ type DeleteConfirmModalProps = AddressBookScreenProps<
   typeof AppNavigation.AddressBook.DeleteConfirm
 >
 
-const DeleteConfirmModal = () => {
+const DeleteConfirmModal = (): JSX.Element => {
   const dispatch = useDispatch()
   const { goBack } = useNavigation<DeleteConfirmModalProps['navigation']>()
   const { params } = useRoute<DeleteConfirmModalProps['route']>()
 
-  const onDelete = () => {
+  const onDelete = (): void => {
     dispatch(removeContact(params.contactId))
     goBack() // back to Contact screen
     goBack() // back to Contacts
   }
 
-  const onCancel = () => {
+  const onCancel = (): void => {
     goBack() // back to Contact screen
   }
 
@@ -279,7 +290,7 @@ type ShareModalProps = AddressBookScreenProps<
   typeof AppNavigation.AddressBook.Share
 >
 
-const ShareContactModal = () => {
+const ShareContactModal = (): JSX.Element => {
   const { pop } = useNavigation<ShareModalProps['navigation']>()
   const { params } = useRoute<ShareModalProps['route']>()
   const contact = useSelector(selectContact(params.contactId))
@@ -296,15 +307,16 @@ const ShareContactModal = () => {
     pop()
   }
 
-  const onShare = (
-    contactName: string,
-    cChainAddress?: string,
-    btcAddress?: string
-  ) => {
-    shareContact(contactName, cChainAddress, btcAddress)
+  const onShare = ({
+    name,
+    cChainAddress,
+    pChainAddress,
+    btcAddress
+  }: NameAndAddresses): void => {
+    shareContact({ name, cChainAddress, pChainAddress, btcAddress })
   }
 
-  const onCancel = () => {
+  const onCancel = (): void => {
     pop() // back to Contact screen
   }
 

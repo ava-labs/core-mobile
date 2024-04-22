@@ -9,6 +9,7 @@ import {
   CreateExportPTxParams,
   CreateImportCTxParams,
   CreateImportPTxParams,
+  CreateSendPTxParams,
   PubKeyType,
   SignTransactionRequest,
   WalletType
@@ -43,6 +44,11 @@ const EVM_FEE_TOLERANCE = 50
 
 // We increase C chain base fee by 20% for instant speed
 const BASE_FEE_MULTIPLIER = 0.2
+
+const MAINNET_AVAX_ASSET_ID =
+  'FvwEAhmxKfeiG8SnEvq42hc6whRyY3EFYAvebMqDNDGCgxN5Z'
+const TESTNET_AVAX_ASSET_ID =
+  'U8iRqJoiJm8xZHAacmvYyZVwqQx6uDNtQeP3CQ6fcgQk3JqnK'
 
 class WalletService {
   #walletType: WalletType = WalletType.UNSET
@@ -379,6 +385,48 @@ class WalletService {
     return unsignedTx
   }
 
+  /**
+   * Create UnsignedTx for sending on P-chain
+   */
+  public async createSendPTx({
+    amount,
+    accountIndex,
+    avaxXPNetwork,
+    destinationAddress,
+    sourceAddress
+  }: CreateSendPTxParams): Promise<UnsignedTx> {
+    if (!destinationAddress) {
+      throw new Error('destination address must be set')
+    }
+    const readOnlySigner = await this.getReadOnlyAvaSigner(
+      accountIndex,
+      avaxXPNetwork
+    )
+
+    // P-chain has a tx size limit of 64KB
+    let utxoSet = await readOnlySigner.getUTXOs('P')
+    const filteredUtxos = Avalanche.getMaximumUtxoSet(
+      readOnlySigner,
+      utxoSet.getUTXOs(),
+      Avalanche.SizeSupportedTx.BaseP
+    )
+    utxoSet = new utils.UtxoSet(filteredUtxos)
+    const changeAddress = utils.parse(sourceAddress)[2]
+    return readOnlySigner.baseTX(
+      utxoSet,
+      'P',
+      destinationAddress,
+      {
+        [avaxXPNetwork.isTestnet
+          ? TESTNET_AVAX_ASSET_ID
+          : MAINNET_AVAX_ASSET_ID]: amount.toSubUnit()
+      },
+      {
+        changeAddresses: [changeAddress]
+      }
+    )
+  }
+
   public async createImportCTx({
     accountIndex,
     baseFee,
@@ -460,7 +508,7 @@ class WalletService {
     )
 
     const utxoSet = await readOnlySigner.getUTXOs('P')
-    const network = NetworkService.getAvalancheNetworkXP(isDevMode)
+    const network = NetworkService.getAvalancheNetworkP(isDevMode)
     const unsignedTx = readOnlySigner.addPermissionlessDelegator(
       utxoSet,
       nodeId,

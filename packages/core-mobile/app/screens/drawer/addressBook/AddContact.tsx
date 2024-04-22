@@ -24,22 +24,36 @@ const AddContact = (): JSX.Element => {
   const dispatch = useDispatch()
   const { theme } = useApplicationContext()
   const [title, setTitle] = useState('')
-  const [address, setAddress] = useState('')
+  const [cChainAddress, setCChainAddress] = useState('')
+  const [pChainAddress, setPChainAddress] = useState('')
   const [addressBtc, setAddressBtc] = useState('')
   const [error, setError] = useState('')
 
   const save = useCallback(() => {
-    const err = getContactValidationError(title, address, addressBtc)
+    const err = getContactValidationError({
+      name: title,
+      cChainAddress,
+      pChainAddress,
+      btcAddress: addressBtc
+    })
     if (err) {
       AnalyticsService.capture('AddContactFailed')
       setError(err)
       return
     }
     const id = uuidv4()
-    dispatch(addContact({ id, title, address, addressBtc }))
+    dispatch(
+      addContact({
+        id,
+        title,
+        address: cChainAddress,
+        addressBtc,
+        addressPVM: pChainAddress
+      })
+    )
     AnalyticsService.capture('AddContactSucceeded')
     goBack()
-  }, [address, addressBtc, dispatch, goBack, title])
+  }, [title, cChainAddress, pChainAddress, addressBtc, dispatch, goBack])
 
   return (
     <ScrollView
@@ -52,11 +66,13 @@ const AddContact = (): JSX.Element => {
       <Space y={30} />
       <ContactInput
         name={title}
-        address={address}
+        address={cChainAddress}
         addressBtc={addressBtc}
+        addressPvm={pChainAddress}
         onNameChange={name1 => setTitle(name1)}
-        onAddressChange={address1 => setAddress(address1)}
+        onAddressChange={address1 => setCChainAddress(address1)}
         onAddressBtcChange={address1 => setAddressBtc(address1)}
+        onAddressPvmChange={address1 => setPChainAddress(address1)}
       />
       <FlexSpacer />
       {!!error && (
@@ -64,7 +80,7 @@ const AddContact = (): JSX.Element => {
       )}
       <Space y={16} />
       <AvaButton.PrimaryLarge
-        disabled={!title || (!address && !addressBtc)}
+        disabled={!title || (!cChainAddress && !addressBtc && !pChainAddress)}
         onPress={save}>
         Save
       </AvaButton.PrimaryLarge>

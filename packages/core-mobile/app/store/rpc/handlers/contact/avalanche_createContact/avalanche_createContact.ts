@@ -80,6 +80,7 @@ class AvalancheCreateContactHandler
       addContact({
         address: contact.address,
         addressBtc: contact.addressBTC || '',
+        addressPVM: contact.addressPVM || '',
         title: contact.name,
         id: contact.id
       })

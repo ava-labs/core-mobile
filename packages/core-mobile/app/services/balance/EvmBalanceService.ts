@@ -15,9 +15,11 @@ import {
   SimpleTokenPriceResponse,
   VsCurrencyType
 } from '@avalabs/coingecko-sdk'
-import { BalanceServiceProvider } from 'services/balance/types'
+import {
+  BalanceServiceProvider,
+  GetBalancesParams
+} from 'services/balance/types'
 import NetworkService from 'services/network/NetworkService'
-import { Transaction } from '@sentry/types'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import ERC20 from '@openzeppelin/contracts/build/contracts/ERC20.json'
 import { bigintToBig } from 'utils/bigNumbers/bigintToBig'
@@ -32,12 +34,14 @@ export class EvmBalanceService implements BalanceServiceProvider {
     return network.vmName === NetworkVMType.EVM
   }
 
-  async getBalances(
-    network: Network,
-    userAddress: string,
-    currency: string,
-    sentryTrx?: Transaction
-  ): Promise<(NetworkTokenWithBalance | TokenWithBalanceERC20)[]> {
+  async getBalances({
+    network,
+    accountAddress,
+    currency,
+    sentryTrx
+  }: GetBalancesParams): Promise<
+    (NetworkTokenWithBalance | TokenWithBalanceERC20)[]
+  > {
     return SentryWrapper.createSpanFor(sentryTrx)
       .setContext('svc.balance.evm.get')
       .executeAsync(async () => {
@@ -59,37 +63,42 @@ export class EvmBalanceService implements BalanceServiceProvider {
             ))) ||
           {}
 
-        const nativeToken = await this.getNativeTokenBalance(
+        const nativeToken = await this.getNativeTokenBalance({
           provider,
-          userAddress,
+          accountAddress,
           network,
           currency
-        )
+        })
 
-        const erc20Tokens = await this.getErc20Balances(
+        const erc20Tokens = await this.getErc20Balances({
           provider,
           activeTokenList,
           tokenPriceDict,
-          userAddress,
+          accountAddress,
           currency
-        )
+        })
 
         return [nativeToken, ...erc20Tokens]
       })
   }
 
-  private async getNativeTokenBalance(
-    provider: Provider,
-    userAddress: string,
-    network: Network,
+  private async getNativeTokenBalance({
+    provider,
+    accountAddress,
+    network,
+    currency
+  }: {
+    provider: Provider
+    accountAddress: string
+    network: Network
     currency: string
-  ): Promise<NetworkTokenWithBalance> {
+  }): Promise<NetworkTokenWithBalance> {
     const { networkToken } = network
     const tokenDecimals = networkToken.decimals ?? DEFAULT_DECIMALS
     const nativeTokenId =
       network.pricingProviders?.coingecko?.nativeTokenId ?? ''
 
-    const balanceBigInt = await provider.getBalance(userAddress)
+    const balanceBigInt = await provider.getBalance(accountAddress)
 
     const {
       price: priceInCurrency,
@@ -126,13 +135,19 @@ export class EvmBalanceService implements BalanceServiceProvider {
     }
   }
 
-  private async getErc20Balances(
-    provider: Provider,
-    activeTokenList: NetworkContractToken[],
-    tokenPriceDict: SimpleTokenPriceResponse,
-    userAddress: string,
+  private async getErc20Balances({
+    provider,
+    activeTokenList,
+    tokenPriceDict,
+    accountAddress,
+    currency
+  }: {
+    provider: Provider
+    activeTokenList: NetworkContractToken[]
+    tokenPriceDict: SimpleTokenPriceResponse
+    accountAddress: string
     currency: string
-  ): Promise<TokenWithBalanceERC20[]> {
+  }): Promise<TokenWithBalanceERC20[]> {
     return Promise.allSettled(
       activeTokenList.map(async token => {
         const tokenDecimals = token.decimals ?? DEFAULT_DECIMALS
@@ -141,7 +156,7 @@ export class EvmBalanceService implements BalanceServiceProvider {
             currency as VsCurrencyType
           ]
         const contract = new ethers.Contract(token.address, ERC20.abi, provider)
-        const balanceBigInt = await contract.balanceOf?.(userAddress)
+        const balanceBigInt = await contract.balanceOf?.(accountAddress)
         const balanceBig = bigintToBig(balanceBigInt, tokenDecimals)
         const balance = bigToBN(balanceBig, tokenDecimals)
         const priceUSD = tokenPrice?.price ?? 0

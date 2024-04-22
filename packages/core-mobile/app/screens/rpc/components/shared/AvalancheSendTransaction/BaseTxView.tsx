@@ -5,12 +5,12 @@ import { Space } from 'components/Space'
 import { Row } from 'components/Row'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import Card from 'components/Card'
-import { bigIntToString } from '@avalabs/utils-sdk'
 import Separator from 'components/Separator'
 import { truncateAddress } from 'utils/Utils'
 import { Avalanche } from '@avalabs/wallets-sdk'
 import { AvalancheChainStrings } from 'store/rpc/handlers/types'
 import { GetAssetDescriptionResponse } from '@avalabs/avalanchejs/dist/vms/common'
+import { Avax } from 'types'
 import { TxFee } from './components/TxFee'
 
 const BaseTxView = ({ tx }: { tx: Avalanche.BaseTx }): JSX.Element => {
@@ -29,7 +29,7 @@ const BaseTxView = ({ tx }: { tx: Avalanche.BaseTx }): JSX.Element => {
     return (
       <Card key={output.assetId} style={styles.balanceCardContainer}>
         {output.owners.map(address => (
-          <Row style={styles.rowContainer}>
+          <Row key={address} style={styles.rowContainer}>
             <AvaText.Caption color={theme.colorText1}>To</AvaText.Caption>
             <AvaText.Body2 color={theme.colorText1}>
               {truncateAddress(address)}
@@ -40,12 +40,7 @@ const BaseTxView = ({ tx }: { tx: Avalanche.BaseTx }): JSX.Element => {
         <Row style={styles.rowContainer}>
           <AvaText.Caption color={theme.colorText1}>Amount</AvaText.Caption>
           <AvaText.Subtitle2 color={theme.colorText1}>
-            {`${Number(
-              bigIntToString(
-                output.amount,
-                output.assetDescription?.denomination || 0
-              )
-            )} AVAX`}
+            {`${Avax.fromNanoAvax(output.amount).toDisplay(6)} AVAX`}
           </AvaText.Subtitle2>
         </Row>
         {output.owners.length > 1 && (
@@ -100,7 +95,8 @@ const BaseTxView = ({ tx }: { tx: Avalanche.BaseTx }): JSX.Element => {
 
 const styles = StyleSheet.create({
   rowContainer: {
-    justifyContent: 'space-between'
+    justifyContent: 'space-between',
+    alignItems: 'center'
   },
   separator: {
     marginVertical: 16
