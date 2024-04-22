@@ -117,7 +117,7 @@ export default async function sendResults() {
       )
     }
     if (await isResultPresent('ios')) {
-      const runID = (await currentRunID('ios')).runID
+      const runID = process.env.IOS_TESTRAIL_RUN_ID
       console.log('The run id is ' + runID)
       await generatePlatformResults(
         testCasesToSend,
@@ -209,19 +209,15 @@ async function generatePlatformResults(
     console.log('The results array is ' + JSON.stringify(testResults))
 
     // Send the results to testrail
-    const failedResultArray = await api.addResultsForCases(Number(runId), {
+    await api.addResultsForCases(Number(runId), {
       results: testResults
     })
-
-    console.log(
-      JSON.stringify(failedResultArray) + ' results have been sent to testrail'
-    )
 
     // Adds the screenshot to the test case in testrail if the test failed
     for (let i = 0; i < testResults.length; i++) {
       if (testResults[i].status_id === 5) {
         // This is the path to the screenshot for when the test fails
-        const failScreenshot = `./e2e/artifacts/${platform}/${testResults[i].screenshot}`
+        const failScreenshot = `./e2e/artifacts/${platform}/${testResults[i]}/testFnFailure.png}`
         if (failScreenshot) {
           const failedPayload = {
             name: 'failed.png',
