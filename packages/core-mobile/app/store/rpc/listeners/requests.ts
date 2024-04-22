@@ -40,7 +40,10 @@ export const processRequest = async (
     await condition(isAnyOf(onAppUnlocked))
   }
 
-  Logger.info('processing request', request)
+  Logger.info('processing request', {
+    method: request.method,
+    data: request.data
+  })
 
   if (!rpcProvider) {
     Logger.error(`RPC Provider ${request.provider} not supported`)
