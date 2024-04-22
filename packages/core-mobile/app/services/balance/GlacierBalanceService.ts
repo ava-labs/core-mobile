@@ -26,6 +26,8 @@ import { VsCurrencyType } from '@avalabs/coingecko-sdk'
 import TokenService from 'services/token/TokenService'
 import { Avax } from 'types'
 import BN from 'bn.js'
+import { isBitcoinChainId } from 'utils/network/isBitcoinNetwork'
+import { isXPChain } from 'utils/network/isPvmNetwork'
 
 export class GlacierBalanceService implements BalanceServiceProvider {
   async isProviderFor(network: Network): Promise<boolean> {
@@ -104,6 +106,14 @@ export class GlacierBalanceService implements BalanceServiceProvider {
     address: string,
     currency: string
   ): Promise<NativeTokenBalance> {
+    if (
+      isBitcoinChainId(Number.parseInt(chainId)) ||
+      isXPChain(Number.parseInt(chainId))
+    ) {
+      return Promise.reject(
+        'Chain id not compatible, skipping getNativeBalance'
+      )
+    }
     return glacierSdk.evmBalances
       .getNativeBalance({
         chainId,
@@ -142,6 +152,11 @@ export class GlacierBalanceService implements BalanceServiceProvider {
     address: string,
     selectedCurrency: string
   ): Promise<TokenWithBalanceERC20[]> {
+    if (isBitcoinChainId(network.chainId) || isXPChain(network.chainId)) {
+      return Promise.reject(
+        'Chain id not compatible, skipping getErc20BalanceForNetwork'
+      )
+    }
     const tokensWithBalance: TokenWithBalanceERC20[] = []
     /**
      *  Load all pages to make sure we have all the tokens with balances
@@ -176,6 +191,12 @@ export class GlacierBalanceService implements BalanceServiceProvider {
     currency: string
     sentryTrx?: Transaction
   }): Promise<XPTokenWithBalance> {
+    if (!isXPChain(network.chainId)) {
+      return Promise.reject(
+        'Chain id not compatible, skipping getPChainBalance'
+      )
+    }
+
     const { networkToken } = network
     const nativeTokenId =
       network.pricingProviders?.coingecko?.nativeTokenId ?? ''
