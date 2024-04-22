@@ -75,7 +75,7 @@ class SendService {
           const request = createInAppRequest({
             method: RpcMethod.AVALANCHE_SEND_TRANSACTION,
             params: txRequest,
-            chainId: `eip155:${activeNetwork.chainId}`
+            chainId: activeNetwork.chainId.toString()
           })
           dispatch?.(onRequest(request))
         } else {
