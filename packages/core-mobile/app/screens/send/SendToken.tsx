@@ -73,7 +73,7 @@ const SendToken: FC<Props> = ({
     activeNetwork.vmName === NetworkVMType.EVM
       ? 'Enter 0x Address'
       : activeNetwork.vmName === NetworkVMType.PVM
-      ? 'Enter avax Address'
+      ? 'Enter Avax P address'
       : 'Enter Bitcoin Address'
 
   const tokensWBalances = useSelector(
