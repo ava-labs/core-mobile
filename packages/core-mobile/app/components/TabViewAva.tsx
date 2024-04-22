@@ -43,6 +43,7 @@ type TabViewAvaFC = FC<
     testID?: string
     onTabIndexChange?: (tabIndex: number) => void
     lazy?: boolean
+    hideSingleTab?: boolean
   } & PropsWithChildren
 > & { Item: FC<TabViewAvaItemProps & PropsWithChildren> }
 

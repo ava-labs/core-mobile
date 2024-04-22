@@ -153,7 +153,7 @@ __metadata:
     "@react-navigation/stack": 6.3.27
     "@reduxjs/toolkit": 1.8.1
     "@rushstack/eslint-patch": 1.5.1
-    "@sentry/react-native": 5.19.2
+    "@sentry/react-native": 5.20.0
     "@shopify/flash-list": 1.6.3
     "@shopify/react-native-performance": 4.1.2
     "@shopify/react-native-skia": 0.1.233
@@ -6163,66 +6163,66 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@sentry/cli-darwin@npm:2.25.2":
-  version: 2.25.2
-  resolution: "@sentry/cli-darwin@npm:2.25.2"
+"@sentry/cli-darwin@npm:2.30.0":
+  version: 2.30.0
+  resolution: "@sentry/cli-darwin@npm:2.30.0"
   conditions: os=darwin
   languageName: node
   linkType: hard
 
-"@sentry/cli-linux-arm64@npm:2.25.2":
-  version: 2.25.2
-  resolution: "@sentry/cli-linux-arm64@npm:2.25.2"
+"@sentry/cli-linux-arm64@npm:2.30.0":
+  version: 2.30.0
+  resolution: "@sentry/cli-linux-arm64@npm:2.30.0"
   conditions: (os=linux | os=freebsd) & cpu=arm64
   languageName: node
   linkType: hard
 
-"@sentry/cli-linux-arm@npm:2.25.2":
-  version: 2.25.2
-  resolution: "@sentry/cli-linux-arm@npm:2.25.2"
+"@sentry/cli-linux-arm@npm:2.30.0":
+  version: 2.30.0
+  resolution: "@sentry/cli-linux-arm@npm:2.30.0"
   conditions: (os=linux | os=freebsd) & cpu=arm
   languageName: node
   linkType: hard
 
-"@sentry/cli-linux-i686@npm:2.25.2":
-  version: 2.25.2
-  resolution: "@sentry/cli-linux-i686@npm:2.25.2"
+"@sentry/cli-linux-i686@npm:2.30.0":
+  version: 2.30.0
+  resolution: "@sentry/cli-linux-i686@npm:2.30.0"
   conditions: (os=linux | os=freebsd) & (cpu=x86 | cpu=ia32)
   languageName: node
   linkType: hard
 
-"@sentry/cli-linux-x64@npm:2.25.2":
-  version: 2.25.2
-  resolution: "@sentry/cli-linux-x64@npm:2.25.2"
+"@sentry/cli-linux-x64@npm:2.30.0":
+  version: 2.30.0
+  resolution: "@sentry/cli-linux-x64@npm:2.30.0"
   conditions: (os=linux | os=freebsd) & cpu=x64
   languageName: node
   linkType: hard
 
-"@sentry/cli-win32-i686@npm:2.25.2":
-  version: 2.25.2
-  resolution: "@sentry/cli-win32-i686@npm:2.25.2"
+"@sentry/cli-win32-i686@npm:2.30.0":
+  version: 2.30.0
+  resolution: "@sentry/cli-win32-i686@npm:2.30.0"
   conditions: os=win32 & (cpu=x86 | cpu=ia32)
   languageName: node
   linkType: hard
 
-"@sentry/cli-win32-x64@npm:2.25.2":
-  version: 2.25.2
-  resolution: "@sentry/cli-win32-x64@npm:2.25.2"
+"@sentry/cli-win32-x64@npm:2.30.0":
+  version: 2.30.0
+  resolution: "@sentry/cli-win32-x64@npm:2.30.0"
   conditions: os=win32 & cpu=x64
   languageName: node
   linkType: hard
 
-"@sentry/cli@npm:2.25.2":
-  version: 2.25.2
-  resolution: "@sentry/cli@npm:2.25.2"
+"@sentry/cli@npm:2.30.0":
+  version: 2.30.0
+  resolution: "@sentry/cli@npm:2.30.0"
   dependencies:
-    "@sentry/cli-darwin": 2.25.2
-    "@sentry/cli-linux-arm": 2.25.2
-    "@sentry/cli-linux-arm64": 2.25.2
-    "@sentry/cli-linux-i686": 2.25.2
-    "@sentry/cli-linux-x64": 2.25.2
-    "@sentry/cli-win32-i686": 2.25.2
-    "@sentry/cli-win32-x64": 2.25.2
+    "@sentry/cli-darwin": 2.30.0
+    "@sentry/cli-linux-arm": 2.30.0
+    "@sentry/cli-linux-arm64": 2.30.0
+    "@sentry/cli-linux-i686": 2.30.0
+    "@sentry/cli-linux-x64": 2.30.0
+    "@sentry/cli-win32-i686": 2.30.0
+    "@sentry/cli-win32-x64": 2.30.0
     https-proxy-agent: ^5.0.0
     node-fetch: ^2.6.7
     progress: ^2.0.3
@@ -6245,7 +6245,7 @@ __metadata:
       optional: true
   bin:
     sentry-cli: bin/sentry-cli
-  checksum: ee3955ae03aeae0efcae9babc5d10cb130f5748865e5d24e51ffd91739287710654017a62326fe2ff1df880d0cc8842af9c1f7e584f0c99a427e893a3311ab48
+  checksum: b242f2968fb69354733a6a4430f07f17d52680c130afac9a7e0bde3302d36f55cb1374f930b373e509e698a7ea0e9b3323d8981a8bbd778bab72fd192ddd6730
   languageName: node
   linkType: hard
 
@@ -6282,12 +6282,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@sentry/react-native@npm:5.19.2":
-  version: 5.19.2
-  resolution: "@sentry/react-native@npm:5.19.2"
+"@sentry/react-native@npm:5.20.0":
+  version: 5.20.0
+  resolution: "@sentry/react-native@npm:5.20.0"
   dependencies:
     "@sentry/browser": 7.100.1
-    "@sentry/cli": 2.25.2
+    "@sentry/cli": 2.30.0
     "@sentry/core": 7.100.1
     "@sentry/hub": 7.100.1
     "@sentry/integrations": 7.100.1
@@ -6303,7 +6303,7 @@ __metadata:
       optional: true
   bin:
     sentry-expo-upload-sourcemaps: scripts/expo-upload-sourcemaps.js
-  checksum: 3fbf1600e937eb369c52786d070d219c63343c92d0af4601e28c469a4248084fcb365426e4a5b4e8abc4c4c7975825b474049e12bf45271dcb303c632f12b634
+  checksum: cbec7c069570645189de2d942a75b2924f7a1f42885a179cb7eb9404d56b58ddb8682422d4062a0cfcbb232cdd5ff47773eb16ec7853e9a79b9fc063487d5064
   languageName: node
   linkType: hard
 
