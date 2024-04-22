@@ -17,14 +17,13 @@ import TransactionToast, {
   TransactionToastType
 } from 'components/toast/TransactionToast'
 import { resolve } from '@avalabs/utils-sdk'
-import { Amount, NetworkTokenUnit } from 'types'
+import { Amount } from 'types'
 import { InteractionManager } from 'react-native'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { humanizeSwapErrors } from 'localization/errors'
 import { useAvalancheProvider } from 'hooks/networks/networkProviderHooks'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
-import { useNetworkFee } from 'hooks/useNetworkFee'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { RpcMethod } from 'store/rpc/types'
 import { useInAppRequest } from 'hooks/useInAppRequest'
@@ -40,9 +39,6 @@ export type SwapParams = {
   destTokenAddress: string
   isDestTokenNative: boolean
   priceRoute: OptimalRate
-  swapGasLimit: number
-  swapMaxFeePerGas: NetworkTokenUnit
-  swapMaxPriorityFeePerGas: NetworkTokenUnit
   swapSlippage: number
 }
 
@@ -54,12 +50,6 @@ export interface SwapContextState {
   optimalRate?: OptimalRate
   refresh: () => void
   swap(params: SwapParams): void
-  maxFeePerGas: NetworkTokenUnit
-  setMaxFeePerGas: Dispatch<NetworkTokenUnit>
-  maxPriorityFeePerGas: NetworkTokenUnit
-  setMaxPriorityFeePerGas: Dispatch<NetworkTokenUnit>
-  gasLimit: number
-  setCustomGasLimit: Dispatch<number>
   slippage: number
   setSlippage: Dispatch<number>
   destination: SwapSide
@@ -69,16 +59,6 @@ export interface SwapContextState {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   error: any
   isFetchingOptimalRate: boolean
-  getOptimalRateForAmount: (amnt: Amount | undefined) => Promise<
-    [
-      {
-        optimalRate?: OptimalRate
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        error?: any
-      },
-      { customGasLimit?: number } //needed for calculating maxAmount to swap
-    ]
-  >
 }
 
 export const SwapContext = createContext<SwapContextState>(
@@ -94,21 +74,10 @@ export const SwapContextProvider = ({
   const { activeNetwork } = useNetworks()
   const activeAccount = useSelector(selectActiveAccount)
   const avalancheProvider = useAvalancheProvider()
-  const { data: networkFee } = useNetworkFee()
   const [fromToken, setFromToken] = useState<TokenWithBalance>()
   const [toToken, setToToken] = useState<TokenWithBalance>()
   const [optimalRate, setOptimalRate] = useState<OptimalRate>()
   const [error, setError] = useState('')
-  const [gasLimit, setGasLimit] = useState<number>(0)
-  const [customGasLimit, setCustomGasLimit] = useState<number | undefined>(
-    undefined
-  )
-  const trueGasLimit = customGasLimit || gasLimit
-  const [maxFeePerGas, setMaxFeePerGas] = useState<NetworkTokenUnit>(
-    NetworkTokenUnit.fromNetwork(activeNetwork)
-  )
-  const [maxPriorityFeePerGas, setMaxPriorityFeePerGas] =
-    useState<NetworkTokenUnit>(NetworkTokenUnit.fromNetwork(activeNetwork))
   const [slippage, setSlippage] = useState<number>(1)
   const [destination, setDestination] = useState<SwapSide>(SwapSide.SELL)
   const [swapStatus, setSwapStatus] = useState<SwapStatus>('Idle')
@@ -128,22 +97,12 @@ export const SwapContextProvider = ({
           network: activeNetwork,
           account: activeAccount
         })
-        return Promise.all([
-          swapRatePromise,
-          Promise.resolve({ customGasLimit })
-        ])
+        return Promise.all([swapRatePromise])
       } else {
         return Promise.reject('invalid data')
       }
     },
-    [
-      activeAccount,
-      activeNetwork,
-      customGasLimit,
-      destination,
-      fromToken,
-      toToken
-    ]
+    [activeAccount, activeNetwork, destination, fromToken, toToken]
   )
 
   const getOptimalRate = useCallback(() => {
@@ -153,7 +112,6 @@ export const SwapContextProvider = ({
         .then(([{ optimalRate: opRate, error: err }]) => {
           setError(err)
           setOptimalRate(opRate)
-          setGasLimit(Number(opRate?.gasCost ?? 0))
         })
         .catch(reason => {
           setOptimalRate(undefined)
@@ -180,10 +138,7 @@ export const SwapContextProvider = ({
     destTokenAddress,
     isDestTokenNative,
     priceRoute,
-    swapGasLimit,
-    swapSlippage,
-    swapMaxFeePerGas,
-    swapMaxPriorityFeePerGas
+    swapSlippage
   }: SwapParams): void {
     setSwapStatus('Swapping')
 
@@ -200,9 +155,6 @@ export const SwapContextProvider = ({
           destTokenAddress,
           isDestTokenNative,
           priceRoute,
-          gasLimit: swapGasLimit,
-          maxFeePerGas: swapMaxFeePerGas.toSubUnit(),
-          maxPriorityFeePerGas: swapMaxPriorityFeePerGas.toSubUnit(),
           slippage: swapSlippage,
           activeNetwork,
           provider: avalancheProvider,
@@ -212,8 +164,7 @@ export const SwapContextProvider = ({
               params: txParams,
               chainId: activeNetwork.chainId.toString()
             }),
-          userAddress: activeAccount.address,
-          networkGasPrice: networkFee?.low.maxFeePerGas.toSubUnit() ?? 0n
+          userAddress: activeAccount.address
         })
       )
         .then(([result, err]) => {
@@ -254,12 +205,6 @@ export const SwapContextProvider = ({
     setToToken,
     optimalRate,
     refresh,
-    maxFeePerGas,
-    setMaxFeePerGas,
-    maxPriorityFeePerGas,
-    setMaxPriorityFeePerGas,
-    gasLimit: trueGasLimit,
-    setCustomGasLimit,
     slippage,
     setSlippage,
     destination,
@@ -268,8 +213,7 @@ export const SwapContextProvider = ({
     swapStatus,
     setAmount,
     error,
-    isFetchingOptimalRate,
-    getOptimalRateForAmount
+    isFetchingOptimalRate
   }
 
   return <SwapContext.Provider value={state}>{children}</SwapContext.Provider>

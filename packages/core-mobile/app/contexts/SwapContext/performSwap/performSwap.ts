@@ -17,19 +17,12 @@ export type PerformSwapParams = {
   destTokenAddress: string | undefined
   isDestTokenNative: boolean
   priceRoute: OptimalRate | undefined
-  gasLimit: number | undefined
   slippage: number
   activeNetwork: Network | undefined
   provider: JsonRpcBatchInternal
   userAddress: string | undefined
-  networkGasPrice: bigint
-  maxFeePerGas?: bigint
-  maxPriorityFeePerGas?: bigint
   signAndSend: (txParams: [TransactionParams]) => Promise<string>
 }
-
-const bigIntToHex = (n: bigint | undefined): string =>
-  `0x${BigInt(n ?? 0).toString(16)}`
 
 // copied from https://github.com/ava-labs/avalanche-sdks/tree/alpha-release/packages/paraswap-sdk
 // modified to use our new in app request for now
@@ -42,14 +35,10 @@ export async function performSwap({
   destTokenAddress,
   isDestTokenNative,
   priceRoute,
-  gasLimit,
-  maxFeePerGas,
-  maxPriorityFeePerGas,
   slippage,
   activeNetwork,
   provider,
   userAddress,
-  networkGasPrice,
   signAndSend
 }: PerformSwapParams): Promise<{
   swapTxHash: string
@@ -58,9 +47,7 @@ export async function performSwap({
   assert(srcTokenAddress, 'no source token on request')
   assert(destTokenAddress, 'no destination token on request')
   assert(priceRoute, 'request requires the paraswap priceRoute')
-  assert(gasLimit, 'request requires gas limit from paraswap response')
   assert(userAddress, 'Wallet Error: address not defined')
-  assert(networkGasPrice, 'network gas price not defined')
   assert(activeNetwork, 'Network Init Error: Wrong network')
   assert(!activeNetwork.isTestnet, 'Network Init Error: Wrong network')
 
@@ -70,7 +57,6 @@ export async function performSwap({
   const destinationTokenAddress = isDestTokenNative
     ? ETHER_ADDRESS
     : destTokenAddress
-  const defaultGasPrice = networkGasPrice
 
   const buildOptions = undefined,
     partnerAddress = undefined,
@@ -109,10 +95,6 @@ export async function performSwap({
     }
 
     if (allowance < BigInt(sourceAmount)) {
-      const [approveGasLimit] = await resolve(
-        contract.approve?.estimateGas(spenderAddress, sourceAmount) ??
-          Promise.resolve(null)
-      )
       const { data } =
         (await contract.approve?.populateTransaction(
           spenderAddress,
@@ -123,12 +105,6 @@ export async function performSwap({
         {
           from: userAddress,
           to: sourceTokenAddress,
-          maxFeePerGas: bigIntToHex(maxFeePerGas ?? defaultGasPrice),
-          maxPriorityFeePerGas: bigIntToHex(maxPriorityFeePerGas),
-          gas: bigIntToHex(
-            approveGasLimit ? approveGasLimit : BigInt(gasLimit)
-          ),
-          gasPrice: bigIntToHex(defaultGasPrice),
           data
         }
       ]
@@ -146,11 +122,12 @@ export async function performSwap({
     }
   }
 
-  function checkForErrorsInResult(result: Transaction | APIError) {
+  function checkForErrorsInResult(result: Transaction | APIError): boolean {
     return (
       (result as APIError).message === 'Server too busy' ||
       // paraswap returns responses like this: {error: 'Not enough 0x4f60a160d8c2dddaafe16fcc57566db84d674…}
       // when they are too slow to detect the approval
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (result as any).error
     )
   }
@@ -190,11 +167,6 @@ export async function performSwap({
     {
       from: userAddress,
       to: txBuildData.to,
-      maxFeePerGas: bigIntToHex(maxFeePerGas ?? defaultGasPrice),
-      maxPriorityFeePerGas: bigIntToHex(maxPriorityFeePerGas),
-      // @ts-ignore
-      gas: bigIntToHex(txBuildData.gas), //gas property is not defined in Transaction@paraswap type but api does return this prop
-      gasPrice: bigIntToHex(defaultGasPrice),
       data: txBuildData.data,
       value: isSrcTokenNative
         ? `0x${new BN(sourceAmount).toString('hex')}`
