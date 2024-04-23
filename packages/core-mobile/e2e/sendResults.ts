@@ -105,6 +105,11 @@ export default async function sendResults() {
   const testCasesToSend = preparedFinalResults.testCasesToSend
   const resultsToSendToTestrail = preparedFinalResults.resultsToSendToTestrail
 
+  console.log(
+    'The results to send to testrail are ' +
+      JSON.stringify(resultsToSendToTestrail)
+  )
+
   if (process.env.POST_TO_TESTRAIL === 'true') {
     if (await isResultPresent('android')) {
       const runID = process.env.TESTRAIL_RUN_ID
