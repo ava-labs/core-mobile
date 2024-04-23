@@ -25,6 +25,8 @@
 		8EA3A01328EF82E100F753C2 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 8EA3A01128EF82E100F753C2 /* main.m */; };
 		8EA4B4D028EF9B4D00A06DBA /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 8EA3A01128EF82E100F753C2 /* main.m */; };
 		8EA4B4D128EF9B8300A06DBA /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 8EA3A00D28EF825900F753C2 /* AppDelegate.mm */; };
+		8EACAADB2BD84A3300A987BA /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 8EACAADA2BD84A3300A987BA /* PrivacyInfo.xcprivacy */; };
+		8EACAADC2BD84A3300A987BA /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 8EACAADA2BD84A3300A987BA /* PrivacyInfo.xcprivacy */; };
 		8EE9988B28B537A40088DE7C /* InfoRelease.plist in Resources */ = {isa = PBXBuildFile; fileRef = 8EE9988A28B537A40088DE7C /* InfoRelease.plist */; };
 		8EE9988C28B537A40088DE7C /* InfoRelease.plist in Resources */ = {isa = PBXBuildFile; fileRef = 8EE9988A28B537A40088DE7C /* InfoRelease.plist */; };
 /* End PBXBuildFile section */
@@ -50,6 +52,7 @@
 		8EA3A00D28EF825900F753C2 /* AppDelegate.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = AppDelegate.mm; sourceTree = "<group>"; };
 		8EA3A00E28EF825900F753C2 /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		8EA3A01128EF82E100F753C2 /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		8EACAADA2BD84A3300A987BA /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		8EE9988A28B537A40088DE7C /* InfoRelease.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = InfoRelease.plist; path = AvaxWallet/InfoRelease.plist; sourceTree = "<group>"; };
 		984A40DE1A2D0F4F517B2F17 /* Pods-common-AvaxWalletInternal.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-common-AvaxWalletInternal.debug.xcconfig"; path = "Target Support Files/Pods-common-AvaxWalletInternal/Pods-common-AvaxWalletInternal.debug.xcconfig"; sourceTree = "<group>"; };
 		A1F9CA7DF4E8ED1A314A6B67 /* Pods-common-AvaxWallet.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-common-AvaxWallet.debug.xcconfig"; path = "Target Support Files/Pods-common-AvaxWallet/Pods-common-AvaxWallet.debug.xcconfig"; sourceTree = "<group>"; };
@@ -108,6 +111,7 @@
 				8EA3A00E28EF825900F753C2 /* AppDelegate.h */,
 				8EA3A01128EF82E100F753C2 /* main.m */,
 				8EA3A00D28EF825900F753C2 /* AppDelegate.mm */,
+				8EACAADA2BD84A3300A987BA /* PrivacyInfo.xcprivacy */,
 			);
 			name = AvaxWallet;
 			sourceTree = "<group>";
@@ -269,6 +273,7 @@
 				0B66D74B270B75C3006530A8 /* Inter-SemiBold.ttf in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				8EE9988B28B537A40088DE7C /* InfoRelease.plist in Resources */,
+				8EACAADB2BD84A3300A987BA /* PrivacyInfo.xcprivacy in Resources */,
 				0B1C89B127E4D7EF00C19912 /* Inter-ExtraBold.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -283,6 +288,7 @@
 				8E858A5D28AFD47300236EF2 /* Inter-SemiBold.ttf in Resources */,
 				8E858A5E28AFD47300236EF2 /* Images.xcassets in Resources */,
 				8EE9988C28B537A40088DE7C /* InfoRelease.plist in Resources */,
+				8EACAADC2BD84A3300A987BA /* PrivacyInfo.xcprivacy in Resources */,
 				8E858A5F28AFD47300236EF2 /* Inter-ExtraBold.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
