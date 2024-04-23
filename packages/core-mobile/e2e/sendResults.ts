@@ -224,7 +224,7 @@ async function generatePlatformResults(
     for (let i = 0; i < testResults.length; i++) {
       if (testResults[i].status_id === 5) {
         // This is the path to the screenshot for when the test fails
-        const failScreenshot = `./e2e/artifacts/${platform}/${testResults[i].screenshot}`
+        const failScreenshot = `packages/core-mobile/e2e/artifacts/${platform}/${testResults[i].screenshot}`
         if (failScreenshot) {
           const failedPayload = {
             name: 'failed.png',
