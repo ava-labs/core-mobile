@@ -56,20 +56,23 @@ const CURRENCY_EXCHANGE_RATES_URL =
 const CURRENCY_EXCHANGE_RATES_FALLBACK_URL =
   'https://latest.currency-api.pages.dev/v1/currencies/usd.min.json'
 
-const createExchangeRateApiClient = (url: string): Zodios =>
-  new Zodios(url, [
+export const exchangeRateApiClient = new Zodios(CURRENCY_EXCHANGE_RATES_URL, [
+  {
+    method: 'get',
+    path: '',
+    alias: 'getExchangeRates',
+    response: ExchangeRateSchema
+  }
+])
+
+export const exchangeRateFallbackApiClient = new Zodios(
+  CURRENCY_EXCHANGE_RATES_FALLBACK_URL,
+  [
     {
       method: 'get',
       path: '',
       alias: 'getExchangeRates',
       response: ExchangeRateSchema
     }
-  ])
-
-export const exchangeRateApiClient = createExchangeRateApiClient(
-  CURRENCY_EXCHANGE_RATES_URL
-)
-
-export const exchangeRateFallbackApiClient = createExchangeRateApiClient(
-  CURRENCY_EXCHANGE_RATES_FALLBACK_URL
+  ]
 )
