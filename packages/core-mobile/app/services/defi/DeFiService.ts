@@ -1,9 +1,14 @@
-import { defiApiClient, exchangeRateApiClient } from './apiClient'
+import {
+  defiApiClient,
+  exchangeRateApiClient,
+  exchangeRateFallbackApiClient
+} from './apiClient'
 import {
   DeFiChainObject,
   DeFiProtocolObject,
   DeFiSimpleProtocolObject
 } from './debankTypes'
+import { ExchangeRate } from './types'
 
 class DeFiService {
   static getSupportedChainList = (): Promise<DeFiChainObject[]> =>
@@ -22,7 +27,13 @@ class DeFiService {
   ): Promise<DeFiSimpleProtocolObject[]> =>
     defiApiClient.getDeFiProtocolList({ queries: { id: userAddress } })
 
-  static getExchangeRates = exchangeRateApiClient.getExchangeRates
+  static getExchangeRates = async (): Promise<ExchangeRate> => {
+    try {
+      return await exchangeRateApiClient.getExchangeRates()
+    } catch {
+      return await exchangeRateFallbackApiClient.getExchangeRates()
+    }
+  }
 }
 
 export default DeFiService
