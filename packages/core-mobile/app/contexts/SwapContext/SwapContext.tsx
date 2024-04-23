@@ -87,7 +87,7 @@ export const SwapContextProvider = ({
   const getOptimalRateForAmount = useCallback(
     (amnt: Amount | undefined) => {
       if (activeAccount && amnt) {
-        const swapRatePromise = getSwapRate({
+        return getSwapRate({
           fromTokenAddress: getTokenAddress(fromToken),
           toTokenAddress: getTokenAddress(toToken),
           fromTokenDecimals: fromToken?.decimals,
@@ -97,7 +97,6 @@ export const SwapContextProvider = ({
           network: activeNetwork,
           account: activeAccount
         })
-        return Promise.all([swapRatePromise])
       } else {
         return Promise.reject('invalid data')
       }
@@ -109,7 +108,7 @@ export const SwapContextProvider = ({
     if (activeAccount && amount) {
       setIsFetchingOptimalRate(true)
       getOptimalRateForAmount(amount)
-        .then(([{ optimalRate: opRate, error: err }]) => {
+        .then(({ optimalRate: opRate, error: err }) => {
           setError(err)
           setOptimalRate(opRate)
         })

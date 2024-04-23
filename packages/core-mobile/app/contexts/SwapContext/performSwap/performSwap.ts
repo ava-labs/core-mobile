@@ -24,6 +24,9 @@ export type PerformSwapParams = {
   signAndSend: (txParams: [TransactionParams]) => Promise<string>
 }
 
+const bigIntToHex = (n: bigint | undefined): string =>
+  `0x${BigInt(n ?? 0).toString(16)}`
+
 // copied from https://github.com/ava-labs/avalanche-sdks/tree/alpha-release/packages/paraswap-sdk
 // modified to use our new in app request for now
 // TODO: move this back to the sdk once everything is stable
@@ -95,16 +98,27 @@ export async function performSwap({
     }
 
     if (allowance < BigInt(sourceAmount)) {
+      const [approveGasLimit] = await resolve(
+        contract.approve?.estimateGas(spenderAddress, sourceAmount) ??
+          Promise.resolve(null)
+      )
+
       const { data } =
         (await contract.approve?.populateTransaction(
           spenderAddress,
           sourceAmount
         )) ?? {}
 
+      const gas = bigIntToHex(
+        approveGasLimit
+          ? approveGasLimit
+          : BigInt(Number(priceRoute.gasCost ?? 0))
+      )
       const txParams: [TransactionParams] = [
         {
           from: userAddress,
           to: sourceTokenAddress,
+          gas,
           data
         }
       ]
@@ -167,6 +181,8 @@ export async function performSwap({
     {
       from: userAddress,
       to: txBuildData.to,
+      // @ts-ignore
+      gas: bigIntToHex(txBuildData.gas), //gas property is not defined in Transaction@paraswap type but api does return this prop
       data: txBuildData.data,
       value: isSrcTokenNative
         ? `0x${new BN(sourceAmount).toString('hex')}`
