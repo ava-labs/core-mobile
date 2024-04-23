@@ -219,14 +219,17 @@ async function generatePlatformResults(
     for (let i = 0; i < testResults.length; i++) {
       if (testResults[i].status_id === 5) {
         // This is the path to the screenshot for when the test fails
-        const failScreenshot = testResults[i].screenshot
+        const failScreenshot = `./e2e/artifacts/${platform}/${testResults[i].screenshot}`
         if (failScreenshot) {
           const failedPayload = {
             name: 'failed.png',
             value: await fs.createReadStream(failScreenshot)
           }
           console.log(failScreenshot, ' screenshot path')
-          console.log('Adding screenshot to test case ' + failedPayload.value)
+          console.log(
+            'Adding screenshot to test case ' +
+              JSON.stringify(failedPayload.value)
+          )
           // Attaches the screenshot to the corressponding case in the test run
           // await api.addAttachmentToResult(testResults[i].id, failedPayload)
         }
