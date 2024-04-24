@@ -1,8 +1,7 @@
 import { ethErrors } from 'eth-rpc-errors'
-import { RpcMethod } from 'store/walletConnectV2/types'
-import mockSession from 'tests/fixtures/walletConnect/session.json'
 import * as Navigation from 'utils/Navigation'
-import { DEFERRED_RESULT } from '../types'
+import { DEFERRED_RESULT } from 'store/rpc/handlers/types'
+import { RpcMethod, RpcProvider } from 'store/rpc'
 import {
   AvalancheSignMessageRpcRequest,
   avalancheSignMessageHandler
@@ -35,7 +34,13 @@ const createRequest = (params: unknown): AvalancheSignMessageRpcRequest => {
         chainId: 'eip155:43114'
       }
     },
-    session: mockSession
+    peerMeta: {
+      name: 'Avalanche Wallet',
+      description: 'Avalanche Wallet',
+      url: 'https://wallet.avax.network/',
+      icons: []
+    },
+    provider: RpcProvider.CORE_MOBILE
   }
 }
 

@@ -1,4 +1,4 @@
-import { NetworkVMType } from '@avalabs/chains-sdk'
+import { Network, NetworkVMType } from '@avalabs/chains-sdk'
 import * as cs from '@cubist-labs/cubesigner-sdk'
 import { Signer as CsEthersSigner } from '@cubist-labs/cubesigner-sdk-ethers-v6'
 import {
@@ -26,6 +26,8 @@ import {
   typedSignatureHash
 } from '@metamask/eth-sig-util'
 import { RpcMethod } from 'store/rpc/types'
+import { toUtf8 } from 'ethereumjs-util'
+import NetworkService from 'services/network/NetworkService'
 import CoreSeedlessAPIService from '../CoreSeedlessAPIService'
 import { SeedlessBtcSigner } from './SeedlessBtcSigner'
 
@@ -132,11 +134,13 @@ export default class SeedlessWallet implements Wallet {
   /** WALLET INTERFACE IMPLEMENTATION **/
   public async signMessage({
     rpcMethod,
-    data
+    data,
+    network
   }: {
     rpcMethod: RpcMethod
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     data: any
+    network: Network
   }): Promise<string> {
     const addressEVM = getEvmAddressFromPubKey(
       this.getPubKeyBufferC()
@@ -144,6 +148,7 @@ export default class SeedlessWallet implements Wallet {
 
     switch (rpcMethod) {
       case RpcMethod.AVALANCHE_SIGN_MESSAGE:
+        return this.signAvalancheMessage(data, network.isTestnet)
       case RpcMethod.ETH_SIGN:
       case RpcMethod.PERSONAL_SIGN:
         return this.signBlob(
@@ -300,5 +305,28 @@ export default class SeedlessWallet implements Wallet {
       pubKeyBufferC,
       provXP
     )
+  }
+
+  private signAvalancheMessage = async (
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    data: any,
+    isTestnet = false
+  ): Promise<string> => {
+    const message = toUtf8(data)
+    const xpProvider = NetworkService.getAvalancheProviderXP(isTestnet)
+
+    const xpPubKey = this.getPubKeyBufferXP()
+    const addressAVM = xpProvider.getAddress(xpPubKey, 'X').slice(2) // remove chain prefix
+
+    const buffer = Buffer.from(
+      strip0x(
+        await this.signBlob(
+          addressAVM,
+          `0x${Avalanche.digestMessage(message).toString('hex')}`
+        )
+      ),
+      'hex'
+    )
+    return utils.base58check.encode(buffer)
   }
 }

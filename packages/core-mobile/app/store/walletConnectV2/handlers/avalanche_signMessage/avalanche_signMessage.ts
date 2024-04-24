@@ -3,17 +3,17 @@ import * as Navigation from 'utils/Navigation'
 import AppNavigation from 'navigation/AppNavigation'
 import { ethErrors } from 'eth-rpc-errors'
 import { selectActiveAccount } from 'store/account'
-import { RpcMethod, SessionRequest } from 'store/walletConnectV2/types'
 import Logger from 'utils/Logger'
 import { selectActiveNetwork } from 'store/network'
 import WalletService from 'services/wallet/WalletService'
 import * as Sentry from '@sentry/react-native'
+import { DEFERRED_RESULT } from 'store/rpc/handlers/types'
+import { RpcMethod, RpcRequest } from 'store/rpc/types'
 import {
-  ApproveResponse,
-  DEFERRED_RESULT,
   HandleResponse,
-  RpcRequestHandler
-} from '../types'
+  RpcRequestHandler,
+  ApproveResponse
+} from '../../../rpc/handlers/types'
 import { parseRequestParams } from './utils'
 
 type AvalancheSignMessageResult = string
@@ -24,7 +24,7 @@ export type AvalancheSignMessageApproveData = {
 }
 
 export type AvalancheSignMessageRpcRequest =
-  SessionRequest<RpcMethod.AVALANCHE_SIGN_MESSAGE>
+  RpcRequest<RpcMethod.AVALANCHE_SIGN_MESSAGE>
 
 class AvalancheSignMessageHandler
   implements

@@ -1,3 +1,4 @@
+import { avalancheSignMessageHandler } from 'store/walletConnectV2/handlers/avalanche_signMessage/avalanche_signMessage'
 import { avalancheGetAccountsHandler } from './account/avalanche_getAccounts/avalanche_getAccounts'
 import { avalancheGetContactsHandler } from './contact/avalanche_getContacts'
 import { avalancheUpdateContactHandler } from './contact/avalanche_updateContact/avalanche_updateContact'
@@ -17,7 +18,6 @@ import { avalancheSignTransactionHandler } from './avalanche_signTransaction/ava
 import { avalancheSetDeveloperModeHandler } from './avalanche_setDeveloperMode/avalanche_setDeveloperMode'
 import { walletGetEthereumChainHandler } from './chain/wallet_getEthereumChain/wallet_getEthereumChain'
 import { avalancheGetAddressesInRangeHandler } from './avalanche_getAddressesInRange/avalanche_getAddressesInRange'
-import { avalancheSignMessageHandler } from './avalanche_signMessage/avalanche_signMessage'
 
 const handlerMap = [
   avalancheSelectAccountHandler,

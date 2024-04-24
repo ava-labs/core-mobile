@@ -345,7 +345,8 @@ describe('session_request handler', () => {
             'avalanche_updateContact',
             'avalanche_sendTransaction',
             'avalanche_signTransaction',
-            'avalanche_getAddressesInRange'
+            'avalanche_getAddressesInRange',
+            'avalanche_signMessage'
           ],
           // all requested events
           events: validRequiredNamespaces.eip155.events

@@ -29,6 +29,7 @@ import { bnToBigint } from 'utils/bigNumbers/bnToBigint'
 import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKeysStorage'
 import SeedlessWallet from 'seedless/services/wallet/SeedlessWallet'
 import { PChainId } from '@avalabs/glacier-sdk'
+import SeedlessService from 'seedless/services/SeedlessService'
 import { isAvalancheTransactionRequest, isBtcTransactionRequest } from './utils'
 import WalletInitializer from './WalletInitializer'
 import WalletFactory from './WalletFactory'
@@ -234,10 +235,7 @@ class WalletService {
     isChange: boolean
     isTestnet: boolean
   }): Promise<string[]> {
-    if (
-      this.walletType === WalletType.SEEDLESS ||
-      (isChange && chainAlias !== 'X')
-    ) {
+    if (isChange && chainAlias !== 'X') {
       return []
     }
 
@@ -255,9 +253,15 @@ class WalletService {
       )
     }
 
-    throw new Error(
-      'Unable to get addresses by indices: unsupported wallet type'
-    )
+    if (this.walletType === WalletType.SEEDLESS) {
+      return await SeedlessService.getAvaxAddresses(
+        indices,
+        isTestnet,
+        isChange
+      )
+    }
+
+    return []
   }
 
   /**

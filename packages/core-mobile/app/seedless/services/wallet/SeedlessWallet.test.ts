@@ -148,7 +148,8 @@ describe('SeedlessWallet', () => {
     it('should have signed the message', async () => {
       await wallet.signMessage({
         rpcMethod: RpcMethod.ETH_SIGN,
-        data: '0x03testData'
+        data: '0x03testData',
+        network: {} as any
       })
       // expect(wallet.signBlob).toHaveBeenCalled()
     })

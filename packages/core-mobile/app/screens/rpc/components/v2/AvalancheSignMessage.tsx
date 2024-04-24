@@ -48,8 +48,8 @@ export const AvalancheSignMessage = (): JSX.Element | null => {
     goBack()
   }, [onApprove, request, message, accountIndex, goBack])
 
-  const dappName = request.session.peer.metadata.name
-  const dappLogoUri = request.session.peer.metadata.icons[0]
+  const dappName = request.peerMeta.name
+  const dappLogoUri = request.peerMeta.icons[0]
 
   const renderApproveRejectButtons = (): JSX.Element => {
     return (

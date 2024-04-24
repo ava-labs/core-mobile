@@ -1,6 +1,6 @@
 import { KeyInfoApi, KeyType, Secp256k1 } from '@cubist-labs/cubesigner-sdk'
 import Logger from 'utils/Logger'
-import { ACCOUNT_NAME } from '../consts'
+import { ACCOUNT_NAME, ACCOUNT_PATH_XP } from '../consts'
 import { SeedlessSessionStorage } from './storage/SeedlessSessionStorage'
 import SeedlessSessionManager from './SeedlessSessionManager'
 
@@ -79,6 +79,34 @@ class SeedlessService {
       // if this throws, we shouldn't block the user from using the app
       Logger.warn(`Failed to set metadata`, error)
     }
+  }
+
+  async getAvaxAddresses(
+    indices: number[],
+    isTestnet: boolean,
+    isChange: boolean
+  ): Promise<string[]> {
+    const addresses: string[] = []
+    const keys = await this.getSessionKeysList(
+      isTestnet ? Secp256k1.AvaTest : Secp256k1.Ava
+    )
+    keys.forEach(k => {
+      const pathIndex = k.derivation_info?.derivation_path
+        .replace(ACCOUNT_PATH_XP, '')
+        .split('/')
+      const changeIndex = Number(pathIndex?.[0])
+      const accountIndex = Number(pathIndex?.[1])
+
+      if (indices.includes(accountIndex)) {
+        if (isChange && changeIndex === 1) {
+          addresses.push(k.material_id)
+        }
+        if (!isChange && changeIndex === 0) {
+          addresses.push(k.material_id)
+        }
+      }
+    })
+    return addresses
   }
 
   private getKeyInfo = (

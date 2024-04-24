@@ -28,6 +28,8 @@ import {
 import { RpcMethod } from 'store/rpc/types'
 import Logger from 'utils/Logger'
 import { assertNotUndefined } from 'utils/assertions'
+import { utils } from '@avalabs/avalanchejs'
+import { toUtf8 } from 'ethereumjs-util'
 
 export class MnemonicWallet implements Wallet {
   #mnemonic?: string
@@ -185,6 +187,7 @@ export class MnemonicWallet implements Wallet {
 
     switch (rpcMethod) {
       case RpcMethod.AVALANCHE_SIGN_MESSAGE:
+        return await this.signAvalancheMessage(accountIndex, data)
       case RpcMethod.ETH_SIGN:
       case RpcMethod.PERSONAL_SIGN:
         return personalSign({ privateKey: key, data })
@@ -346,6 +349,20 @@ export class MnemonicWallet implements Wallet {
     provXP: Avalanche.JsonRpcProvider
   }): Avalanche.StaticSigner {
     return this.getAvaSigner(accountIndex, provXP) as Avalanche.StaticSigner
+  }
+
+  private signAvalancheMessage = async (
+    accountIndex: number,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    data: any
+  ): Promise<string> => {
+    const message = toUtf8(data)
+    const signer = this.getAvaSigner(accountIndex) as Avalanche.SimpleSigner
+    const buffer = await signer.signMessage({
+      message,
+      chain: 'X'
+    })
+    return utils.base58check.encode(buffer)
   }
 }
 
