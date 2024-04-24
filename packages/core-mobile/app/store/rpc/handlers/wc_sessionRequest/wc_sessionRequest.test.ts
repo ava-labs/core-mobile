@@ -283,7 +283,8 @@ describe('session_request handler', () => {
             'eth_sign',
             'wallet_addEthereumChain',
             'wallet_switchEthereumChain',
-            'wallet_getEthereumChain'
+            'wallet_getEthereumChain',
+            'bitcoin_sendTransaction'
           ],
           // all requested events
           events: validRequiredNamespaces.eip155.events
@@ -333,6 +334,7 @@ describe('session_request handler', () => {
             'wallet_addEthereumChain',
             'wallet_switchEthereumChain',
             'wallet_getEthereumChain',
+            'bitcoin_sendTransaction',
             'avalanche_bridgeAsset',
             'avalanche_createContact',
             'avalanche_getAccountPubKey',
