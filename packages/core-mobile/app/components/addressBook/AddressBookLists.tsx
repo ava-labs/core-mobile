@@ -13,8 +13,8 @@ import {
   selectContacts,
   selectRecentContacts
 } from 'store/addressBook'
-import { selectActiveNetwork } from 'store/network'
 import { Network, NetworkVMType } from '@avalabs/chains-sdk'
+import { useNetworks } from 'hooks/networks/useNetworks'
 
 export type AddressBookSource = 'recents' | 'addressBook' | 'accounts'
 
@@ -31,11 +31,11 @@ export default function AddressBookLists({
   onContactSelected,
   navigateToAddressBook,
   onlyBtc = false
-}: AddressBookListsProps) {
+}: AddressBookListsProps): JSX.Element {
+  const { activeNetwork } = useNetworks()
   const contacts = useSelector(selectContacts)
   const recentContacts = useSelector(selectRecentContacts)
   const accounts = useSelector(selectAccounts)
-  const activeNetwork = useSelector(selectActiveNetwork)
 
   const addressBookContacts = useMemo(
     () =>
@@ -93,7 +93,7 @@ export default function AddressBookLists({
     title: string,
     selected: boolean,
     color: string
-  ) => {
+  ): JSX.Element => {
     return selected ? (
       <AvaText.ButtonMedium
         ellipsizeMode={'tail'}
@@ -171,20 +171,24 @@ const renderItem = (
   activeNetwork: Network,
   item: { item: Contact | Account; type: AddrBookItemType },
   onPress: (item: Contact | Account, type: AddrBookItemType) => void
-) => {
+): JSX.Element => {
+  let address
+  let addressBtc
+  switch (activeNetwork.vmName) {
+    case NetworkVMType.BITCOIN:
+      addressBtc = item.item.addressBtc
+      break
+    case NetworkVMType.PVM:
+      address = item.item.addressPVM
+      break
+    default:
+      address = item.item.address
+  }
   return (
     <AddressBookItem
       title={item.item.title}
-      address={
-        activeNetwork.vmName !== NetworkVMType.BITCOIN
-          ? item.item.address
-          : undefined
-      }
-      addressBtc={
-        activeNetwork.vmName === NetworkVMType.BITCOIN
-          ? item.item.addressBtc
-          : undefined
-      }
+      address={address}
+      addressBtc={addressBtc}
       onPress={() => {
         onPress(item.item, item.type)
       }}

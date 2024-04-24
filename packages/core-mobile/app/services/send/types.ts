@@ -3,18 +3,9 @@ import { TokenWithBalance } from 'store/balance'
 import { SignTransactionRequest } from 'services/wallet/types'
 import { Transaction } from '@sentry/types'
 
-export enum SendEvent {
-  TX_DETAILS = 'SendEvent: TX_DETAILS'
-}
-
 export interface SendError {
   error: boolean
   message: string
-}
-
-export const DEFAULT_SEND_HOOK_ERROR: SendError = {
-  error: false,
-  message: ''
 }
 
 export interface SendState<T extends TokenWithBalance = TokenWithBalance> {
@@ -47,16 +38,9 @@ export function isValidSendState(
   return sendState.canSubmit === true
 }
 
-export interface SendErrors {
-  amountError: SendError
-  addressError: SendError
-  formError: SendError
-}
-
 export enum SendErrorMessage {
   AMOUNT_REQUIRED = 'Amount required',
   ADDRESS_REQUIRED = 'Address required',
-  C_CHAIN_REQUIRED = 'Must be a C chain address',
   INVALID_ADDRESS = 'Address is invalid',
   INVALID_NETWORK_FEE = 'Network Fee is invalid',
   INSUFFICIENT_BALANCE = 'Insufficient balance.',
@@ -76,6 +60,10 @@ export type GetTransactionRequestParams = SendServiceFuncParams
 
 export type ValidateStateAndCalculateFeesParams = SendServiceFuncParams & {
   nativeTokenBalance?: BN // in wei
+}
+
+export type GetPVMTransactionRequestParams = SendServiceFuncParams & {
+  accountIndex: number
 }
 
 type SendServiceFuncParams = {

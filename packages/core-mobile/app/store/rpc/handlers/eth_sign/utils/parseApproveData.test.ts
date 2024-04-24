@@ -1,4 +1,3 @@
-/* eslint-disable jest/expect-expect */
 import mockAccounts from 'tests/fixtures/accounts.json'
 import mockNetworks from 'tests/fixtures/networks.json'
 import { primitiveTypedData, typedData } from 'tests/fixtures/rpc/typedData'

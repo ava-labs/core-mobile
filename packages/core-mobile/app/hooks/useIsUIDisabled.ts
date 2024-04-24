@@ -1,6 +1,5 @@
 import { ChainId } from '@avalabs/chains-sdk'
-import { useSelector } from 'react-redux'
-import { selectActiveNetwork } from 'store/network'
+import { useNetworks } from './networks/useNetworks'
 
 export enum UI {
   Collectibles = 'Collectibles',
@@ -27,7 +26,12 @@ const enabledUIs: Partial<Record<UI, number[]>> = {
 
 // The list of features we want to disable on certain networks (blacklist)
 const disabledUIs: Partial<Record<UI, number[]>> = {
-  [UI.ManageTokens]: [ChainId.BITCOIN, ChainId.BITCOIN_TESTNET],
+  [UI.ManageTokens]: [
+    ChainId.BITCOIN,
+    ChainId.BITCOIN_TESTNET,
+    ChainId.AVALANCHE_XP,
+    ChainId.AVALANCHE_TEST_XP
+  ],
   [UI.Bridge]: [
     ChainId.DFK,
     ChainId.DFK_TESTNET,
@@ -38,7 +42,9 @@ const disabledUIs: Partial<Record<UI, number[]>> = {
 }
 
 export const useIsUIDisabled = (ui: UI): boolean => {
-  const { chainId } = useSelector(selectActiveNetwork)
+  const {
+    activeNetwork: { chainId }
+  } = useNetworks()
 
   if (enabledUIs[ui]?.includes(chainId)) {
     return false

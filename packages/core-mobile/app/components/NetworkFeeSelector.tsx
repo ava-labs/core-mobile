@@ -1,23 +1,33 @@
 import { Row } from 'components/Row'
 import Settings from 'assets/icons/settings.svg'
 import { Space } from 'components/Space'
-import React, { FC, useCallback, useEffect, useMemo, useState } from 'react'
+import React, {
+  FC,
+  PropsWithChildren,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState
+} from 'react'
 import { useSelector } from 'react-redux'
-import { Network, NetworkVMType } from '@avalabs/chains-sdk'
+import { Network } from '@avalabs/chains-sdk'
 import { useNavigation } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
 import { WalletScreenProps } from 'navigation/types'
-import { selectActiveNetwork, selectNetwork } from 'store/network'
 import { VsCurrencyType } from '@avalabs/coingecko-sdk'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { calculateGasAndFees, Eip1559Fees, GasAndFees } from 'utils/Utils'
 import { useNetworkFee } from 'hooks/useNetworkFee'
-import { useNativeTokenPriceForNetwork } from 'hooks/useNativeTokenPriceForNetwork'
+import { useNativeTokenPriceForNetwork } from 'hooks/networks/useNativeTokenPriceForNetwork'
 import { NetworkTokenUnit } from 'types'
-import { Button, Text, View, alpha, useTheme } from '@avalabs/k2-mobile'
+import { alpha, Button, Text, useTheme, View } from '@avalabs/k2-mobile'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { NetworkFee } from 'services/networkFee/types'
 import { useBridgeSDK } from '@avalabs/bridge-sdk'
+import { GAS_LIMIT_FOR_XP_CHAIN } from 'consts/fees'
+import { isBitcoinNetwork } from 'utils/network/isBitcoinNetwork'
+import { isPvmNetwork } from 'utils/network/isPvmNetwork'
+import { useNetworks } from 'hooks/networks/useNetworks'
 import { Tooltip } from './Tooltip'
 import InputText from './InputText'
 
@@ -56,9 +66,9 @@ const NetworkFeeSelector = ({
   const {
     appHook: { currencyFormatter }
   } = useApplicationContext()
+  const { activeNetwork, getNetwork } = useNetworks()
   const { navigate } = useNavigation<NavigationProp>()
-  const activeNetwork = useSelector(selectActiveNetwork)
-  const requestedNetwork = useSelector(selectNetwork(chainId))
+  const requestedNetwork = getNetwork(chainId)
   const network = chainId ? requestedNetwork : activeNetwork
   const { data: networkFee } = useNetworkFee(network)
   const { currentBlockchain } = useBridgeSDK()
@@ -69,7 +79,8 @@ const NetworkFeeSelector = ({
     network,
     selectedCurrency.toLowerCase() as VsCurrencyType
   )
-  const isBtcNetwork = Boolean(network?.vmName === NetworkVMType.BITCOIN)
+  const isBtcNetwork = network ? isBitcoinNetwork(network) : false
+  const isPVM = isPvmNetwork(network)
   const [selectedPreset, setSelectedPreset] = useState(FeePreset.Normal)
   const [calculatedFees, setCalculatedFees] =
     useState<GasAndFees<NetworkTokenUnit>>()
@@ -83,10 +94,10 @@ const NetworkFeeSelector = ({
           fee.low.maxPriorityFeePerGas ??
           NetworkTokenUnit.fromNetwork(activeNetwork),
         tokenPrice: nativeTokenPrice,
-        gasLimit
+        gasLimit: isPVM ? GAS_LIMIT_FOR_XP_CHAIN : gasLimit
       })
     },
-    [activeNetwork, gasLimit, nativeTokenPrice]
+    [activeNetwork, gasLimit, isPVM, nativeTokenPrice]
   )
 
   useEffect(() => {
@@ -101,7 +112,7 @@ const NetworkFeeSelector = ({
   // customFees init value.
   // NetworkFee is not immediately available hence the useEffect
   useEffect(() => {
-    if (!customFees && networkFee && (gasLimit > 0 || isBtcNetwork)) {
+    if (!customFees && networkFee && (gasLimit > 0 || isBtcNetwork || isPVM)) {
       const initialCustomFees = getInitialCustomFees(networkFee)
       setCustomFees(initialCustomFees)
       setCalculatedFees(initialCustomFees)
@@ -113,6 +124,7 @@ const NetworkFeeSelector = ({
     gasLimit,
     getInitialCustomFees,
     isBtcNetwork,
+    isPVM,
     nativeTokenPrice,
     networkFee,
     onFeesChange,
@@ -198,7 +210,7 @@ const NetworkFeeSelector = ({
   return (
     <>
       <Row style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-        {isBtcNetwork ? (
+        {isBtcNetwork || isPVM ? (
           <View sx={{ paddingVertical: 12 }}>
             <Text variant="body2" sx={{ color: '$neutral50' }}>
               Network Fee
@@ -216,13 +228,15 @@ const NetworkFeeSelector = ({
             </Text>
           </Tooltip>
         )}
-        <Button
-          size="medium"
-          type="tertiary"
-          style={{ marginTop: 8 }}
-          onPress={() => goToEditGasLimit(network)}>
-          <Settings />
-        </Button>
+        {!isPVM && (
+          <Button
+            size="medium"
+            type="tertiary"
+            style={{ marginTop: 8 }}
+            onPress={() => goToEditGasLimit(network)}>
+            <Settings />
+          </Button>
+        )}
       </Row>
       <Space y={4} />
 
@@ -233,19 +247,19 @@ const NetworkFeeSelector = ({
           borderRadius: 8,
           marginBottom: 16
         }}>
-        <Row
-          style={{
-            justifyContent: 'space-between',
-            alignItems: 'center'
-          }}>
-          <FeeSelector
-            label={isBtcNetwork ? 'Slow' : FeePreset.Normal}
-            selected={selectedPreset === FeePreset.Normal}
-            onSelect={() => handleSelectedPreset(FeePreset.Normal)}
-            value={displayGasValues?.[FeePreset.Normal]}
-          />
-          {!networkFee?.isFixedFee && (
-            <>
+        {!networkFee?.isFixedFee && (
+          <>
+            <Row
+              style={{
+                justifyContent: 'space-between',
+                alignItems: 'center'
+              }}>
+              <FeeSelector
+                label={isBtcNetwork ? 'Slow' : FeePreset.Normal}
+                selected={selectedPreset === FeePreset.Normal}
+                onSelect={() => handleSelectedPreset(FeePreset.Normal)}
+                value={displayGasValues?.[FeePreset.Normal]}
+              />
               <FeeSelector
                 label={isBtcNetwork ? 'Medium' : FeePreset.Fast}
                 selected={selectedPreset === FeePreset.Fast}
@@ -272,10 +286,10 @@ const NetworkFeeSelector = ({
                     : displayGasValues?.[FeePreset.Custom]
                 }
               />
-            </>
-          )}
-        </Row>
-        <Space y={20} />
+            </Row>
+            <Space y={20} />
+          </>
+        )}
         <Row style={{ justifyContent: 'space-between', alignItems: 'center' }}>
           <Text variant="body2" sx={{ color: '$neutral400' }}>
             Fee Amount
@@ -410,7 +424,10 @@ export const FeeSelector: FC<{
   )
 }
 
-const ButtonWrapper: FC<{ selected: boolean }> = ({ children, selected }) => {
+const ButtonWrapper: FC<{ selected: boolean } & PropsWithChildren> = ({
+  children,
+  selected
+}) => {
   const {
     theme: { colors }
   } = useTheme()
@@ -433,7 +450,10 @@ const ButtonWrapper: FC<{ selected: boolean }> = ({ children, selected }) => {
   )
 }
 
-const ButtonText: FC<{ selected: boolean }> = ({ children, selected }) => {
+const ButtonText: FC<{ selected: boolean } & PropsWithChildren> = ({
+  children,
+  selected
+}) => {
   return (
     <Text
       variant="buttonSmall"

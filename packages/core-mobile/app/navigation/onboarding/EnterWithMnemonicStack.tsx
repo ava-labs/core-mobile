@@ -12,7 +12,7 @@ import BiometricLogin from 'screens/onboarding/BiometricLogin'
 import HdWalletLogin from 'screens/login/HdWalletLogin'
 import { createStackNavigator } from '@react-navigation/stack'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { MainHeaderOptions } from 'navigation/NavUtils'
+import { getModalOptions, MainHeaderOptions } from 'navigation/NavUtils'
 import TermsNConditionsModal from 'components/TermsNConditionsModal'
 import { selectWalletState, WalletState } from 'store/app'
 import { useDispatch, useSelector } from 'react-redux'
@@ -76,7 +76,9 @@ const EnterWithMnemonicStack = (): JSX.Element => {
           component={BiometricLoginScreen}
         />
         <EnterWithMnemonicS.Screen
-          options={{ presentation: 'transparentModal' }}
+          options={{
+            ...getModalOptions()
+          }}
           name={AppNavigation.LoginWithMnemonic.TermsNConditions}
           component={TermsNConditionsModalScreen}
         />
@@ -110,7 +112,7 @@ const LoginWithMnemonicScreen = (): JSX.Element => {
   )
 
   const onEnterWallet = useCallback(
-    m => {
+    (m: string) => {
       // if a wallet already existed, we want to clear out
       // existing data first before entering with this new wallet
       if (isWalletExisted) {
@@ -169,12 +171,14 @@ const CreatePinScreen = (): JSX.Element => {
       onPinCreated(enterWithMnemonicContext.mnemonic, pin, false)
         .then(value => {
           switch (value) {
-            case 'useBiometry':
+            case 'useBiometry': {
               navigate(AppNavigation.LoginWithMnemonic.BiometricLogin)
               break
-            case 'enterWallet':
+            }
+            case 'enterWallet': {
               navigate(AppNavigation.LoginWithMnemonic.TermsNConditions)
               break
+            }
           }
         })
         .catch(Logger.error)
@@ -197,7 +201,9 @@ const BiometricLoginScreen = (): JSX.Element => {
       onBiometrySet={() => {
         navigate(AppNavigation.LoginWithMnemonic.TermsNConditions)
       }}
-      onSkip={() => navigate(AppNavigation.LoginWithMnemonic.TermsNConditions)}
+      onSkip={() => {
+        navigate(AppNavigation.LoginWithMnemonic.TermsNConditions)
+      }}
     />
   )
 }

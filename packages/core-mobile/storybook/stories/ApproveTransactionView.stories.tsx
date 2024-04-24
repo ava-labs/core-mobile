@@ -1,5 +1,4 @@
 import React from 'react'
-import type { Meta } from '@storybook/react-native'
 import { ApproveTransactionView } from 'screens/rpc/components/shared/signTransaction/ApproveTransaction'
 import { K2ThemeProvider, View } from '@avalabs/k2-mobile'
 import AvaButton from 'components/AvaButton'
@@ -7,7 +6,7 @@ import AvaText from 'components/AvaText'
 
 export default {
   title: 'ApproveTransactionView'
-} as Meta
+}
 
 export const Default = (): JSX.Element => {
   return (

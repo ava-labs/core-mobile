@@ -15,12 +15,11 @@ import { useAddressBookLists } from 'components/addressBook/useAddressBookLists'
 import QrScannerAva from 'components/QrScannerAva'
 import QRScanSVG from 'components/svg/QRScanSVG'
 import {
+  selectTokensWithBalanceByNetwork,
   TokenType,
-  TokenWithBalance,
-  selectTokensWithBalanceByNetwork
+  TokenWithBalance
 } from 'store/balance'
 import { useSelector } from 'react-redux'
-import { selectActiveNetwork } from 'store/network'
 import { NetworkVMType } from '@avalabs/chains-sdk'
 import NetworkFeeSelector from 'components/NetworkFeeSelector'
 import { bnToLocaleString } from '@avalabs/utils-sdk'
@@ -29,6 +28,7 @@ import { Eip1559Fees, getMaxAvailableBalance } from 'utils/Utils'
 import { AddrBookItemType, Contact } from 'store/addressBook'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { NetworkTokenUnit, Amount } from 'types'
+import { useNetworks } from 'hooks/networks/useNetworks'
 import { FeePreset } from '../../components/NetworkFeeSelector'
 
 type Props = {
@@ -66,12 +66,14 @@ const SendToken: FC<Props> = ({
     canSubmit,
     sdkError
   } = useSendTokenContext()
-  const activeNetwork = useSelector(selectActiveNetwork)
+  const { activeNetwork } = useNetworks()
   const [showQrCamera, setShowQrCamera] = useState(false)
   const [sendError, setSendError] = useState<string>()
   const placeholder =
     activeNetwork.vmName === NetworkVMType.EVM
       ? 'Enter 0x Address'
+      : activeNetwork.vmName === NetworkVMType.PVM
+      ? 'Enter Avax P address'
       : 'Enter Bitcoin Address'
 
   const tokensWBalances = useSelector(
@@ -129,6 +131,9 @@ const SendToken: FC<Props> = ({
     switch (activeNetwork.vmName) {
       case NetworkVMType.EVM:
         setAddress({ address: item.address, title: item.title })
+        break
+      case NetworkVMType.PVM:
+        setAddress({ address: item.addressPVM ?? '', title: item.title })
         break
       case NetworkVMType.BITCOIN:
         setAddress({

@@ -7,14 +7,16 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0027A499678BC94835692B7D /* libPods-common-AvaxWalletInternal.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1FC1590126BB2AED20EE41DF /* libPods-common-AvaxWalletInternal.a */; };
 		0B1C89B127E4D7EF00C19912 /* Inter-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 0B1C89B027E4D7EF00C19912 /* Inter-ExtraBold.ttf */; };
 		0B66D74B270B75C3006530A8 /* Inter-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 0B66D74A270B75C3006530A8 /* Inter-SemiBold.ttf */; };
 		0BAAA734269F480900722C85 /* Inter-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 0BAAA732269F480900722C85 /* Inter-Regular.ttf */; };
 		0BAAA735269F480900722C85 /* Inter-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 0BAAA733269F480900722C85 /* Inter-Bold.ttf */; };
+		116830AA7B36E9C1F06DD419 /* libPods-common-AvaxWallet.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B42CF6B946163F51616E8FA9 /* libPods-common-AvaxWallet.a */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
-		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
+		81ACC3932BD1B2860089FEBA /* BootSplash.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81ACC3922BD1B2860089FEBA /* BootSplash.storyboard */; };
+		81ACC3942BD1B2860089FEBA /* BootSplash.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81ACC3922BD1B2860089FEBA /* BootSplash.storyboard */; };
 		8E858A5A28AFD47300236EF2 /* Inter-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 0BAAA733269F480900722C85 /* Inter-Bold.ttf */; };
-		8E858A5B28AFD47300236EF2 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		8E858A5C28AFD47300236EF2 /* Inter-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 0BAAA732269F480900722C85 /* Inter-Regular.ttf */; };
 		8E858A5D28AFD47300236EF2 /* Inter-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 0B66D74A270B75C3006530A8 /* Inter-SemiBold.ttf */; };
 		8E858A5E28AFD47300236EF2 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
@@ -23,10 +25,10 @@
 		8EA3A01328EF82E100F753C2 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 8EA3A01128EF82E100F753C2 /* main.m */; };
 		8EA4B4D028EF9B4D00A06DBA /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 8EA3A01128EF82E100F753C2 /* main.m */; };
 		8EA4B4D128EF9B8300A06DBA /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 8EA3A00D28EF825900F753C2 /* AppDelegate.mm */; };
+		8EACAADB2BD84A3300A987BA /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 8EACAADA2BD84A3300A987BA /* PrivacyInfo.xcprivacy */; };
+		8EACAADC2BD84A3300A987BA /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 8EACAADA2BD84A3300A987BA /* PrivacyInfo.xcprivacy */; };
 		8EE9988B28B537A40088DE7C /* InfoRelease.plist in Resources */ = {isa = PBXBuildFile; fileRef = 8EE9988A28B537A40088DE7C /* InfoRelease.plist */; };
 		8EE9988C28B537A40088DE7C /* InfoRelease.plist in Resources */ = {isa = PBXBuildFile; fileRef = 8EE9988A28B537A40088DE7C /* InfoRelease.plist */; };
-		BD01E09C15A007B8AEFA2303 /* libPods-common-AvaxWalletInternal.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6CCFD994E41A48F4D59B0C1E /* libPods-common-AvaxWalletInternal.a */; };
-		EA5C4B602B306A95E194E318 /* libPods-common-AvaxWallet.a in Frameworks */ = {isa = PBXBuildFile; fileRef = CE0B992FFCD8D0FFFB90F845 /* libPods-common-AvaxWallet.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -37,24 +39,25 @@
 		0BA5138A27D234C200A25188 /* AvaxWallet-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "AvaxWallet-Bridging-Header.h"; sourceTree = "<group>"; };
 		0BAAA732269F480900722C85 /* Inter-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "Inter-Regular.ttf"; path = "../android/app/src/main/assets/fonts/Inter-Regular.ttf"; sourceTree = "<group>"; };
 		0BAAA733269F480900722C85 /* Inter-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "Inter-Bold.ttf"; path = "../android/app/src/main/assets/fonts/Inter-Bold.ttf"; sourceTree = "<group>"; };
-		11E965FF9ACCACA936688635 /* Pods-common-AvaxWallet.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-common-AvaxWallet.release.xcconfig"; path = "Target Support Files/Pods-common-AvaxWallet/Pods-common-AvaxWallet.release.xcconfig"; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* AvaxWallet.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AvaxWallet.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = AvaxWallet/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = AvaxWallet/Info.plist; sourceTree = "<group>"; };
-		204927316FD49572841BF299 /* Pods-common-AvaxWalletInternal.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-common-AvaxWalletInternal.debug.xcconfig"; path = "Target Support Files/Pods-common-AvaxWalletInternal/Pods-common-AvaxWalletInternal.debug.xcconfig"; sourceTree = "<group>"; };
+		1FC1590126BB2AED20EE41DF /* libPods-common-AvaxWalletInternal.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-common-AvaxWalletInternal.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		2793FCC827461B9C00B0719A /* AvaxWallet.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = AvaxWallet.entitlements; path = AvaxWallet/AvaxWallet.entitlements; sourceTree = "<group>"; };
 		27981BC628AECFB200672611 /* AvaxWalletRelease.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = AvaxWalletRelease.entitlements; path = AvaxWallet/AvaxWalletRelease.entitlements; sourceTree = "<group>"; };
-		6CCFD994E41A48F4D59B0C1E /* libPods-common-AvaxWalletInternal.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-common-AvaxWalletInternal.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = AvaxWallet/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		3DE558FF49E888A0002110D6 /* Pods-common-AvaxWallet.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-common-AvaxWallet.release.xcconfig"; path = "Target Support Files/Pods-common-AvaxWallet/Pods-common-AvaxWallet.release.xcconfig"; sourceTree = "<group>"; };
+		81ACC3922BD1B2860089FEBA /* BootSplash.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = BootSplash.storyboard; sourceTree = "<group>"; };
 		8E83528A28F09E0900880FD3 /* OpenSSL.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = OpenSSL.xcframework; path = "Pods/OpenSSL-Universal/Frameworks/OpenSSL.xcframework"; sourceTree = "<group>"; };
 		8E858A6628AFD47300236EF2 /* AvaxWalletInternal.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AvaxWalletInternal.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8EA3A00D28EF825900F753C2 /* AppDelegate.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = AppDelegate.mm; sourceTree = "<group>"; };
 		8EA3A00E28EF825900F753C2 /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		8EA3A01128EF82E100F753C2 /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		8EACAADA2BD84A3300A987BA /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		8EE9988A28B537A40088DE7C /* InfoRelease.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = InfoRelease.plist; path = AvaxWallet/InfoRelease.plist; sourceTree = "<group>"; };
-		CD3B81F7A41188358E856D2E /* Pods-common-AvaxWalletInternal.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-common-AvaxWalletInternal.release.xcconfig"; path = "Target Support Files/Pods-common-AvaxWalletInternal/Pods-common-AvaxWalletInternal.release.xcconfig"; sourceTree = "<group>"; };
-		CE0B992FFCD8D0FFFB90F845 /* libPods-common-AvaxWallet.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-common-AvaxWallet.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		E4423CB2A8737D0CAB62533B /* Pods-common-AvaxWallet.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-common-AvaxWallet.debug.xcconfig"; path = "Target Support Files/Pods-common-AvaxWallet/Pods-common-AvaxWallet.debug.xcconfig"; sourceTree = "<group>"; };
+		984A40DE1A2D0F4F517B2F17 /* Pods-common-AvaxWalletInternal.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-common-AvaxWalletInternal.debug.xcconfig"; path = "Target Support Files/Pods-common-AvaxWalletInternal/Pods-common-AvaxWalletInternal.debug.xcconfig"; sourceTree = "<group>"; };
+		A1F9CA7DF4E8ED1A314A6B67 /* Pods-common-AvaxWallet.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-common-AvaxWallet.debug.xcconfig"; path = "Target Support Files/Pods-common-AvaxWallet/Pods-common-AvaxWallet.debug.xcconfig"; sourceTree = "<group>"; };
+		B3C883B7AAD6C29EC0B9BD41 /* Pods-common-AvaxWalletInternal.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-common-AvaxWalletInternal.release.xcconfig"; path = "Target Support Files/Pods-common-AvaxWalletInternal/Pods-common-AvaxWalletInternal.release.xcconfig"; sourceTree = "<group>"; };
+		B42CF6B946163F51616E8FA9 /* libPods-common-AvaxWallet.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-common-AvaxWallet.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -63,7 +66,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				EA5C4B602B306A95E194E318 /* libPods-common-AvaxWallet.a in Frameworks */,
+				116830AA7B36E9C1F06DD419 /* libPods-common-AvaxWallet.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -71,7 +74,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BD01E09C15A007B8AEFA2303 /* libPods-common-AvaxWalletInternal.a in Frameworks */,
+				0027A499678BC94835692B7D /* libPods-common-AvaxWalletInternal.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -103,11 +106,12 @@
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				8EE9988A28B537A40088DE7C /* InfoRelease.plist */,
-				81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */,
+				81ACC3922BD1B2860089FEBA /* BootSplash.storyboard */,
 				0BA5138A27D234C200A25188 /* AvaxWallet-Bridging-Header.h */,
 				8EA3A00E28EF825900F753C2 /* AppDelegate.h */,
 				8EA3A01128EF82E100F753C2 /* main.m */,
 				8EA3A00D28EF825900F753C2 /* AppDelegate.mm */,
+				8EACAADA2BD84A3300A987BA /* PrivacyInfo.xcprivacy */,
 			);
 			name = AvaxWallet;
 			sourceTree = "<group>";
@@ -117,8 +121,8 @@
 			children = (
 				8E83528A28F09E0900880FD3 /* OpenSSL.xcframework */,
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				CE0B992FFCD8D0FFFB90F845 /* libPods-common-AvaxWallet.a */,
-				6CCFD994E41A48F4D59B0C1E /* libPods-common-AvaxWalletInternal.a */,
+				B42CF6B946163F51616E8FA9 /* libPods-common-AvaxWallet.a */,
+				1FC1590126BB2AED20EE41DF /* libPods-common-AvaxWalletInternal.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -169,10 +173,10 @@
 		F8B72680A82297B40C47D111 /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				E4423CB2A8737D0CAB62533B /* Pods-common-AvaxWallet.debug.xcconfig */,
-				11E965FF9ACCACA936688635 /* Pods-common-AvaxWallet.release.xcconfig */,
-				204927316FD49572841BF299 /* Pods-common-AvaxWalletInternal.debug.xcconfig */,
-				CD3B81F7A41188358E856D2E /* Pods-common-AvaxWalletInternal.release.xcconfig */,
+				A1F9CA7DF4E8ED1A314A6B67 /* Pods-common-AvaxWallet.debug.xcconfig */,
+				3DE558FF49E888A0002110D6 /* Pods-common-AvaxWallet.release.xcconfig */,
+				984A40DE1A2D0F4F517B2F17 /* Pods-common-AvaxWalletInternal.debug.xcconfig */,
+				B3C883B7AAD6C29EC0B9BD41 /* Pods-common-AvaxWalletInternal.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -184,15 +188,15 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "AvaxWallet" */;
 			buildPhases = (
-				DE7A1EC853078111C30E4FC7 /* [CP] Check Pods Manifest.lock */,
+				D1F246C111DE32162BC170CD /* [CP] Check Pods Manifest.lock */,
 				FD10A7F022414F080027D42C /* Start Packager */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				B4F48A60165B43B3BD16ACAF /* Upload Debug Symbols to Sentry */,
-				7F907BBF69265F0916D14261 /* [CP] Embed Pods Frameworks */,
-				9BC4502C5D81410E6C2F4555 /* [CP] Copy Pods Resources */,
+				4E13BB7D23ED7A30EF091D06 /* [CP] Embed Pods Frameworks */,
+				51AA1C033C0CE7089D03C1C0 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -207,15 +211,15 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 8E858A6328AFD47300236EF2 /* Build configuration list for PBXNativeTarget "AvaxWalletInternal" */;
 			buildPhases = (
-				8699DF5942AE7652B61BA5A3 /* [CP] Check Pods Manifest.lock */,
+				3F4749475E4EBD11AF6A6F00 /* [CP] Check Pods Manifest.lock */,
 				8E858A5428AFD47300236EF2 /* Start Packager */,
 				8E858A5528AFD47300236EF2 /* Sources */,
 				8E858A5728AFD47300236EF2 /* Frameworks */,
 				8E858A5928AFD47300236EF2 /* Resources */,
 				8E858A6028AFD47300236EF2 /* Bundle React Native code and images */,
 				8E858A6828B3F10F00236EF2 /* Upload Debug Symbols to Sentry */,
-				6B0B5B215166A2B01E1C0760 /* [CP] Embed Pods Frameworks */,
-				9F9DBFB720BF3E32EC39DAD0 /* [CP] Copy Pods Resources */,
+				619EB25865247DEF0BD88A4A /* [CP] Embed Pods Frameworks */,
+				B0B14020D273105B1D82A417 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -264,11 +268,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				0BAAA735269F480900722C85 /* Inter-Bold.ttf in Resources */,
-				81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */,
 				0BAAA734269F480900722C85 /* Inter-Regular.ttf in Resources */,
+				81ACC3932BD1B2860089FEBA /* BootSplash.storyboard in Resources */,
 				0B66D74B270B75C3006530A8 /* Inter-SemiBold.ttf in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				8EE9988B28B537A40088DE7C /* InfoRelease.plist in Resources */,
+				8EACAADB2BD84A3300A987BA /* PrivacyInfo.xcprivacy in Resources */,
 				0B1C89B127E4D7EF00C19912 /* Inter-ExtraBold.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -278,11 +283,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				8E858A5A28AFD47300236EF2 /* Inter-Bold.ttf in Resources */,
-				8E858A5B28AFD47300236EF2 /* LaunchScreen.storyboard in Resources */,
 				8E858A5C28AFD47300236EF2 /* Inter-Regular.ttf in Resources */,
+				81ACC3942BD1B2860089FEBA /* BootSplash.storyboard in Resources */,
 				8E858A5D28AFD47300236EF2 /* Inter-SemiBold.ttf in Resources */,
 				8E858A5E28AFD47300236EF2 /* Images.xcassets in Resources */,
 				8EE9988C28B537A40088DE7C /* InfoRelease.plist in Resources */,
+				8EACAADC2BD84A3300A987BA /* PrivacyInfo.xcprivacy in Resources */,
 				8E858A5F28AFD47300236EF2 /* Inter-ExtraBold.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -305,41 +311,7 @@
 			shellPath = /bin/sh;
 			shellScript = "set -e\n\nWITH_ENVIRONMENT=\"../node_modules/react-native/scripts/xcode/with-environment.sh\"\nREACT_NATIVE_XCODE=\"../node_modules/react-native/scripts/react-native-xcode.sh\"\n\n/bin/sh -c \"$WITH_ENVIRONMENT \\\"/bin/sh ../node_modules/@sentry/react-native/scripts/sentry-xcode.sh $REACT_NATIVE_XCODE\\\"\"\n";
 		};
-		6B0B5B215166A2B01E1C0760 /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-common-AvaxWalletInternal/Pods-common-AvaxWalletInternal-frameworks-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-common-AvaxWalletInternal/Pods-common-AvaxWalletInternal-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-common-AvaxWalletInternal/Pods-common-AvaxWalletInternal-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		7F907BBF69265F0916D14261 /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-common-AvaxWallet/Pods-common-AvaxWallet-frameworks-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-common-AvaxWallet/Pods-common-AvaxWallet-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-common-AvaxWallet/Pods-common-AvaxWallet-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		8699DF5942AE7652B61BA5A3 /* [CP] Check Pods Manifest.lock */ = {
+		3F4749475E4EBD11AF6A6F00 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -359,6 +331,57 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		4E13BB7D23ED7A30EF091D06 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-common-AvaxWallet/Pods-common-AvaxWallet-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-common-AvaxWallet/Pods-common-AvaxWallet-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-common-AvaxWallet/Pods-common-AvaxWallet-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		51AA1C033C0CE7089D03C1C0 /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-common-AvaxWallet/Pods-common-AvaxWallet-resources-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-common-AvaxWallet/Pods-common-AvaxWallet-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-common-AvaxWallet/Pods-common-AvaxWallet-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		619EB25865247DEF0BD88A4A /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-common-AvaxWalletInternal/Pods-common-AvaxWalletInternal-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-common-AvaxWalletInternal/Pods-common-AvaxWalletInternal-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-common-AvaxWalletInternal/Pods-common-AvaxWalletInternal-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		8E858A5428AFD47300236EF2 /* Start Packager */ = {
@@ -392,7 +415,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "export NODE_BINARY=\"node\"\nexport SENTRY_PROPERTIES=sentry.properties\nexport EXTRA_PACKAGER_ARGS=\"--sourcemap-output $DERIVED_FILE_DIR/main.jsbundle.map\"\nset -e\n\n../node_modules/@sentry/cli/bin/sentry-cli react-native xcode ../node_modules/react-native/scripts/react-native-xcode.sh\n";
+			shellScript = "set -e\n\nWITH_ENVIRONMENT=\"../node_modules/react-native/scripts/xcode/with-environment.sh\"\nREACT_NATIVE_XCODE=\"../node_modules/react-native/scripts/react-native-xcode.sh\"\n\n/bin/sh -c \"$WITH_ENVIRONMENT \\\"/bin/sh ../node_modules/@sentry/react-native/scripts/sentry-xcode.sh $REACT_NATIVE_XCODE\\\"\"\n";
 		};
 		8E858A6828B3F10F00236EF2 /* Upload Debug Symbols to Sentry */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -412,24 +435,7 @@
 			shellPath = /bin/sh;
 			shellScript = "export SENTRY_PROPERTIES=sentry.properties\n../node_modules/@sentry/cli/bin/sentry-cli upload-dsym\n";
 		};
-		9BC4502C5D81410E6C2F4555 /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-common-AvaxWallet/Pods-common-AvaxWallet-resources-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Copy Pods Resources";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-common-AvaxWallet/Pods-common-AvaxWallet-resources-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-common-AvaxWallet/Pods-common-AvaxWallet-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		9F9DBFB720BF3E32EC39DAD0 /* [CP] Copy Pods Resources */ = {
+		B0B14020D273105B1D82A417 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -460,7 +466,7 @@
 			shellPath = /bin/sh;
 			shellScript = "export SENTRY_PROPERTIES=sentry.properties\n../node_modules/@sentry/cli/bin/sentry-cli upload-dsym\n";
 		};
-		DE7A1EC853078111C30E4FC7 /* [CP] Check Pods Manifest.lock */ = {
+		D1F246C111DE32162BC170CD /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -527,7 +533,7 @@
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = E4423CB2A8737D0CAB62533B /* Pods-common-AvaxWallet.debug.xcconfig */;
+			baseConfigurationReference = A1F9CA7DF4E8ED1A314A6B67 /* Pods-common-AvaxWallet.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
@@ -570,7 +576,7 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 11E965FF9ACCACA936688635 /* Pods-common-AvaxWallet.release.xcconfig */;
+			baseConfigurationReference = 3DE558FF49E888A0002110D6 /* Pods-common-AvaxWallet.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
@@ -623,7 +629,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
-				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++20";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
@@ -680,13 +686,12 @@
 				);
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					"-Wl",
-					"-ld_classic",
-				);
+				OTHER_CFLAGS = "$(inherited)";
+				OTHER_CPLUSPLUSFLAGS = "$(inherited)";
+				OTHER_LDFLAGS = "$(inherited)";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
+				USE_HERMES = false;
 			};
 			name = Debug;
 		};
@@ -695,7 +700,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
-				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++20";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
@@ -747,20 +752,19 @@
 					"\"$(inherited)\"",
 				);
 				MTL_ENABLE_DEBUG_INFO = NO;
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					"-Wl",
-					"-ld_classic",
-				);
+				OTHER_CFLAGS = "$(inherited)";
+				OTHER_CPLUSPLUSFLAGS = "$(inherited)";
+				OTHER_LDFLAGS = "$(inherited)";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
+				USE_HERMES = false;
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
 		};
 		8E858A6428AFD47300236EF2 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 204927316FD49572841BF299 /* Pods-common-AvaxWalletInternal.debug.xcconfig */;
+			baseConfigurationReference = 984A40DE1A2D0F4F517B2F17 /* Pods-common-AvaxWalletInternal.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = "AppIcon-Internal";
 				CLANG_ENABLE_MODULES = YES;
@@ -795,7 +799,7 @@
 		};
 		8E858A6528AFD47300236EF2 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = CD3B81F7A41188358E856D2E /* Pods-common-AvaxWalletInternal.release.xcconfig */;
+			baseConfigurationReference = B3C883B7AAD6C29EC0B9BD41 /* Pods-common-AvaxWalletInternal.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = "AppIcon-Internal";
 				CLANG_ENABLE_MODULES = YES;

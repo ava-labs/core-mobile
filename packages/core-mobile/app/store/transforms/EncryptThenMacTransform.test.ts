@@ -22,6 +22,10 @@ const secretKey =
 const secretMacKey =
   '037f948ec4fc19c751a8508744626399768efc81d07e2b9dd5ad298196328123'
 
+jest.mock('react-native-quick-crypto', () => {
+  return jest.requireActual('crypto')
+})
+
 describe('EncryptThenMacTransform functions', () => {
   it('should decode to same encoded object', () => {
     const transform = EncryptThenMacTransform(secretKey, secretMacKey)

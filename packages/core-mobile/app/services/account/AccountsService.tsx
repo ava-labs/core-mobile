@@ -54,7 +54,14 @@ class AccountsService {
       return account.address
     }
 
-    throw new Error('unsupported network')
+    if (network.vmName === NetworkVMType.PVM) {
+      if (!account.addressPVM) {
+        throw new Error('p-chain address not present')
+      }
+      return account.addressPVM
+    }
+
+    throw new Error('unsupported network ' + network.vmName)
   }
 }
 

@@ -1,16 +1,14 @@
 import { satoshiToBtc } from '@avalabs/bridge-sdk'
 import { balanceToDisplayValue, bigToBN } from '@avalabs/utils-sdk'
-import {
-  NetworkTokenWithBalance,
-  TokenType,
-  TokenWithBalanceERC20
-} from 'store/balance'
+import { NetworkTokenWithBalance, TokenType } from 'store/balance'
 import { Network, NetworkVMType } from '@avalabs/chains-sdk'
 import { VsCurrencyType } from '@avalabs/coingecko-sdk'
-import { BalanceServiceProvider } from 'services/balance/types'
+import {
+  BalanceServiceProvider,
+  GetBalancesParams
+} from 'services/balance/types'
 import NetworkService from 'services/network/NetworkService'
 import { BitcoinProvider, JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
-import { Transaction } from '@sentry/types'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import TokenService from 'services/token/TokenService'
 
@@ -19,13 +17,12 @@ export class BtcBalanceService implements BalanceServiceProvider {
     return network.vmName === NetworkVMType.BITCOIN
   }
 
-  // eslint-disable-next-line max-params
-  async getBalances(
-    network: Network,
-    userAddress: string,
-    currency: string,
-    sentryTrx?: Transaction
-  ): Promise<(NetworkTokenWithBalance | TokenWithBalanceERC20)[]> {
+  async getBalances({
+    network,
+    accountAddress,
+    currency,
+    sentryTrx
+  }: GetBalancesParams): Promise<NetworkTokenWithBalance[]> {
     return SentryWrapper.createSpanFor(sentryTrx)
       .setContext('svc.balance.btc.get')
       .executeAsync(async () => {
@@ -48,7 +45,7 @@ export class BtcBalanceService implements BalanceServiceProvider {
         )
         const denomination = networkToken.decimals
         const { balance: balanceSatoshis, utxos } =
-          await provider.getUtxoBalance(userAddress, false)
+          await provider.getUtxoBalance(accountAddress, false)
         const balanceBig = satoshiToBtc(balanceSatoshis)
         const balanceNum = balanceBig.toNumber()
         const balance = bigToBN(balanceBig, denomination)

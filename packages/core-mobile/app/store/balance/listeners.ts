@@ -15,8 +15,8 @@ import { addCustomToken } from 'store/customToken'
 import { AppStartListening } from 'store/middleware/listener'
 import {
   selectActiveNetwork,
-  selectFavoriteNetworks,
-  setNetworks
+  onNetworksFetched,
+  selectFavoriteNetworks
 } from 'store/network'
 import {
   selectSelectedCurrency,
@@ -56,11 +56,11 @@ const onBalanceUpdate = async (
   queryStatus: QueryStatus,
   listenerApi: AppListenerEffectAPI,
   fetchActiveOnly: boolean
-) => {
+): Promise<void> => {
   const state = listenerApi.getState()
   const activeNetwork = selectActiveNetwork(state)
 
-  let networksToFetch
+  let networksToFetch: Network[]
   const activeAccount = selectActiveAccount(state)
   const accountsToFetch = activeAccount ? [activeAccount] : []
 
@@ -74,20 +74,25 @@ const onBalanceUpdate = async (
     }
   }
 
-  onBalanceUpdateCore(
+  onBalanceUpdateCore({
     queryStatus,
     listenerApi,
-    networksToFetch,
-    accountsToFetch
-  )
+    networks: networksToFetch,
+    accounts: accountsToFetch
+  }).catch(Logger.error)
 }
 
-const onBalanceUpdateCore = async (
-  queryStatus: QueryStatus,
-  listenerApi: AppListenerEffectAPI,
-  networks: Network[],
+const onBalanceUpdateCore = async ({
+  queryStatus,
+  listenerApi,
+  networks,
+  accounts
+}: {
+  queryStatus: QueryStatus
+  listenerApi: AppListenerEffectAPI
+  networks: Network[]
   accounts: Account[]
-) => {
+}): Promise<void> => {
   const { getState, dispatch } = listenerApi
   const state = getState()
   const currentStatus = selectBalanceStatus(state)
@@ -111,12 +116,12 @@ const onBalanceUpdateCore = async (
   for (const network of networks) {
     promises.push(
       ...accounts.map(account => {
-        return BalanceService.getBalancesForAccount(
+        return BalanceService.getBalancesForAccount({
           network,
           account,
           currency,
           sentryTrx
-        )
+        })
       })
     )
   }
@@ -158,7 +163,7 @@ const fetchBalancePeriodically = async (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   action: any,
   listenerApi: AppListenerEffectAPI
-) => {
+): Promise<void> => {
   const { condition } = listenerApi
 
   onBalanceUpdate(QueryStatus.LOADING, listenerApi, false)
@@ -205,7 +210,7 @@ const fetchBalancePeriodically = async (
 const handleFetchBalanceForAccount = async (
   listenerApi: AppListenerEffectAPI,
   accountIndex: number
-) => {
+): Promise<void> => {
   const state = listenerApi.getState()
   const activeNetwork = selectActiveNetwork(state)
 
@@ -218,15 +223,17 @@ const handleFetchBalanceForAccount = async (
     networksToFetch.push(activeNetwork)
   }
 
-  onBalanceUpdateCore(
-    QueryStatus.LOADING,
+  onBalanceUpdateCore({
+    queryStatus: QueryStatus.LOADING,
     listenerApi,
-    networksToFetch,
-    accountsToFetch
-  )
+    networks: networksToFetch,
+    accounts: accountsToFetch
+  }).catch(Logger.error)
 }
 
-export const addBalanceListeners = (startListening: AppStartListening) => {
+export const addBalanceListeners = (
+  startListening: AppStartListening
+): void => {
   startListening({
     actionCreator: onAppUnlocked,
     effect: fetchBalancePeriodically
@@ -244,7 +251,7 @@ export const addBalanceListeners = (startListening: AppStartListening) => {
       setAccounts,
       setActiveAccountIndex,
       addCustomToken,
-      setNetworks
+      onNetworksFetched
     ),
     effect: async (action, listenerApi) =>
       onBalanceUpdate(QueryStatus.LOADING, listenerApi, false)

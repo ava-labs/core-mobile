@@ -26,12 +26,7 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { BridgeScreenProps } from 'navigation/types'
 import { usePosthogContext } from 'contexts/PosthogContext'
-import {
-  selectActiveNetwork,
-  selectNetworks,
-  setActive,
-  TokenSymbol
-} from 'store/network'
+import { setActive, TokenSymbol } from 'store/network'
 import {
   bigToBN,
   bigToLocaleString,
@@ -61,10 +56,11 @@ import { selectSelectedCurrency } from 'store/settings/currency/slice'
 import NetworkFeeSelector, { FeePreset } from 'components/NetworkFeeSelector'
 import { NetworkTokenUnit } from 'types'
 import { Eip1559Fees } from 'utils/Utils'
+import { useNetworks } from 'hooks/networks/useNetworks'
 import { AssetBalance, BridgeProvider } from './utils/types'
 
 const blockchainTitleMaxWidth = Dimensions.get('window').width * 0.5
-const dropdownWith = Dimensions.get('window').width * 0.6
+const dropdownWidth = Dimensions.get('window').width * 0.6
 
 const sourceBlockchains = [
   Blockchain.AVALANCHE,
@@ -118,9 +114,8 @@ const Bridge: FC = () => {
     setCurrentBlockchain: setCurrentBlockchainSDK,
     targetBlockchain
   } = useBridgeSDK()
+  const { activeNetwork, networks } = useNetworks()
   const { getTokenSymbolOnNetwork } = useGetTokenSymbolOnNetwork()
-  const networks = useSelector(selectNetworks)
-  const activeNetwork = useSelector(selectActiveNetwork)
   const [bridgeError, setBridgeError] = useState('')
   const [isPending, setIsPending] = useState(false)
   const tokenInfoData = useTokenInfoContext()
@@ -450,31 +445,34 @@ const Bridge: FC = () => {
 
   const renderFromSection = (): JSX.Element => {
     return (
-      <>
-        <AvaListItem.Base
-          title={'From'}
-          rightComponentMaxWidth="auto"
-          rightComponent={
-            <View>
-              <DropDown
-                width={dropdownWith}
-                data={availableBlockchains}
-                selectedIndex={availableBlockchains.indexOf(currentBlockchain)}
-                onItemSelected={setCurrentBlockchain}
-                optionsRenderItem={item =>
-                  renderDropdownItem(item.item, currentBlockchain)
-                }
-                selectionRenderItem={() =>
-                  renderFromBlockchain(currentBlockchain)
-                }
-                style={{
-                  top: 22
-                }}
-              />
-            </View>
-          }
-        />
-      </>
+      <Row
+        style={{
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          padding: 16
+        }}>
+        <Text variant={'heading6'}>From</Text>
+        <View>
+          <DropDown
+            width={dropdownWidth}
+            data={availableBlockchains}
+            selectedIndex={availableBlockchains.indexOf(currentBlockchain)}
+            onItemSelected={setCurrentBlockchain}
+            optionsRenderItem={item =>
+              renderDropdownItem(item.item, currentBlockchain)
+            }
+            selectionRenderItem={() => renderFromBlockchain(currentBlockchain)}
+            style={{
+              top: 22
+            }}
+            prompt={
+              <Text variant="buttonMedium" style={styles.tokenSelectorText}>
+                Select Network
+              </Text>
+            }
+          />
+        </View>
+      </Row>
     )
   }
 

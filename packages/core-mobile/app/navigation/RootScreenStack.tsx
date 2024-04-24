@@ -76,20 +76,18 @@ const WalletScreenStackWithContext: FC = () => {
   const { inBackground } = useBgDetect()
   const walletState = useSelector(selectWalletState)
   const appIsReady = useSelector(selectIsReady)
-  const [shouldRenderOnlyPinScreen, setShouldRenderOnlyPinScreen] =
-    useState(true)
+  const [shouldRenderOnlyPinScreen, setShouldRenderOnlyPinScreen] = useState<
+    null | boolean
+  >(null)
 
   useEffect(() => {
     // set shouldRenderOnlyPinScreen to false once wallet is unlocked
     // do nothing if app is not ready (as we need to sync wallet state after rehydration)
     // or if we have already set shouldRenderOnlyPinScreen to false
-    if (!appIsReady) return
-    if (!shouldRenderOnlyPinScreen) return
+    if (!appIsReady || shouldRenderOnlyPinScreen === false) return
 
-    if (walletState === WalletState.ACTIVE) {
-      setShouldRenderOnlyPinScreen(false)
-    }
-  }, [walletState, shouldRenderOnlyPinScreen, appIsReady])
+    setShouldRenderOnlyPinScreen(walletState !== WalletState.ACTIVE)
+  }, [appIsReady, shouldRenderOnlyPinScreen, walletState])
 
   const doExit = useCallback(() => {
     onExit((confirmExit, cancel) => {
@@ -112,11 +110,13 @@ const WalletScreenStackWithContext: FC = () => {
   }, [onExit])
 
   // on fresh app open, we render only pin screen
-  // we only render the wallet stack once user has unlocked the wallet
-  if (shouldRenderOnlyPinScreen) {
+  // if we haven't determined what to render yet, render nothing
+  if (shouldRenderOnlyPinScreen === null) return null
+  if (shouldRenderOnlyPinScreen === true) {
     return <LoginWithPinOrBiometryScreen />
   }
 
+  // we only render the wallet stack once user has unlocked the wallet
   return (
     <>
       <WalletScreenStack onExit={doExit} />

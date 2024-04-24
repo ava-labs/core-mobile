@@ -5,11 +5,13 @@ import AppNavigation from 'navigation/AppNavigation'
 import { TabsScreenProps } from 'navigation/types'
 import React, { FC, useMemo, useState } from 'react'
 import { useSelector } from 'react-redux'
-import { selectActiveNetwork } from 'store/network'
 import { selectIsLeftHanded } from 'store/settings/advanced'
-import { Pressable, SxProp, View, alpha, useTheme } from '@avalabs/k2-mobile'
+import { alpha, Pressable, SxProp, useTheme, View } from '@avalabs/k2-mobile'
 import { DeepLinkOrigin } from 'contexts/DeeplinkContext/types'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import { NetworkVMType } from '@avalabs/chains-sdk'
+import { selectTokensWithBalanceByNetwork } from 'store/balance'
+import { useNetworks } from 'hooks/networks/useNetworks'
 import { ActionProp } from './fab/types'
 import ArrowSVG from './svg/ArrowSVG'
 import QRCodeSVG from './svg/QRCodeSVG'
@@ -27,15 +29,18 @@ type FabNavigationProp = TabsScreenProps<
 >['navigation']
 
 export const Fab: FC = () => {
+  const { activeNetwork } = useNetworks()
   const swapDisabled = useIsUIDisabled(UI.Swap)
   const buyDisabled = useIsUIDisabled(UI.Buy)
   const wcDisabled = useIsUIDisabled(UI.WalletConnect)
   const isBridgeDisabled = useIsUIDisabled(UI.Bridge)
   const navigation = useNavigation<FabNavigationProp>()
   const { setPendingDeepLink } = useDeeplink()
-  const activeNetwork = useSelector(selectActiveNetwork)
   const [expanded, setExpanded] = useState(false)
   const isLeftHanded = useSelector(selectIsLeftHanded)
+  const tokensWithBalance = useSelector(
+    selectTokensWithBalanceByNetwork(activeNetwork)
+  )
   const {
     theme: { colors }
   } = useTheme()
@@ -57,7 +62,18 @@ export const Fab: FC = () => {
         </View>
       ),
       onPress: () => {
-        navigation.navigate(AppNavigation.Wallet.SendTokens)
+        let preSelectedToken
+        if (
+          activeNetwork.vmName === NetworkVMType.PVM &&
+          tokensWithBalance[0] !== undefined &&
+          tokensWithBalance[0].symbol === 'AVAX'
+        ) {
+          preSelectedToken = tokensWithBalance[0]
+        }
+        navigation.navigate(AppNavigation.Wallet.SendTokens, {
+          screen: AppNavigation.Send.Send,
+          params: { token: preSelectedToken }
+        })
         AnalyticsService.capture('FABItemSelected_Send')
       }
     } as ActionProp
@@ -168,7 +184,9 @@ export const Fab: FC = () => {
     navigation,
     setPendingDeepLink,
     isBridgeDisabled,
-    activeNetwork.chainName
+    activeNetwork.chainName,
+    tokensWithBalance,
+    activeNetwork.vmName
   ])
 
   function dismiss(): void {

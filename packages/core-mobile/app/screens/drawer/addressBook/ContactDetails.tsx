@@ -1,5 +1,5 @@
 import { SafeAreaProvider } from 'react-native-safe-area-context'
-import React, { useCallback } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import AvaText from 'components/AvaText'
 import { ScrollView, StyleSheet, View } from 'react-native'
 import AvaButton from 'components/AvaButton'
@@ -28,8 +28,16 @@ const ContactDetails = ({
   onDelete: (contact: Contact) => void
   onShareDialog: (contact: Contact) => void
   editable?: boolean
-}) => {
+}): JSX.Element => {
   const theme = useApplicationContext().theme
+  const addresses = useMemo(() => {
+    const list = []
+    contact.address && list.push(contact.address)
+    contact.addressBtc && list.push(contact.addressBtc)
+    contact.addressPVM && list.push(contact.addressPVM)
+    return list
+  }, [contact.address, contact.addressBtc, contact.addressPVM])
+
   const handleNameChange = useCallback(
     (name: string) => {
       onChange({
@@ -50,6 +58,16 @@ const ContactDetails = ({
     [contact, onChange]
   )
 
+  const handlePvmAddressChange = useCallback(
+    (addressPVM: string) => {
+      onChange({
+        ...contact,
+        addressPVM
+      })
+    },
+    [contact, onChange]
+  )
+
   const handleBtcAddressChange = useCallback(
     (addressBtc: string) => {
       onChange({
@@ -61,12 +79,17 @@ const ContactDetails = ({
   )
 
   const handleShare = useCallback(() => {
-    if (contact.address && contact.addressBtc) {
-      onShareDialog(contact)
+    if (addresses.length === 1) {
+      shareContact({
+        name: contact.title,
+        cChainAddress: contact.address,
+        pChainAddress: contact.addressPVM,
+        btcAddress: contact.addressBtc
+      })
     } else {
-      shareContact(contact.title, contact.address, contact.addressBtc)
+      onShareDialog(contact)
     }
-  }, [contact, onShareDialog])
+  }, [addresses.length, contact, onShareDialog])
 
   return (
     <SafeAreaProvider style={{ flex: 1 }}>
@@ -87,9 +110,11 @@ const ContactDetails = ({
               name={contact.title}
               address={contact.address}
               addressBtc={contact.addressBtc}
+              addressPvm={contact.addressPVM}
               onNameChange={handleNameChange}
               onAddressChange={handleAddressChange}
               onAddressBtcChange={handleBtcAddressChange}
+              onAddressPvmChange={handlePvmAddressChange}
             />
             <FlexSpacer />
             <AvaButton.TextLarge onPress={() => onDelete(contact)}>
@@ -104,6 +129,14 @@ const ContactDetails = ({
             {!!contact.address && !!contact.addressBtc && <Space y={40} />}
             {!!contact.addressBtc && (
               <AddressView title={'Address BTC'} address={contact.addressBtc} />
+            )}
+            {(!!contact.address || !!contact.addressBtc) &&
+              !!contact.addressPVM && <Space y={40} />}
+            {!!contact.addressPVM && (
+              <AddressView
+                title={'Address P-Chain'}
+                address={contact.addressPVM}
+              />
             )}
             <Space y={34} />
             <Row style={{ alignItems: 'center' }}>
@@ -127,7 +160,7 @@ const AddressView = ({
 }: {
   title: string
   address: string
-}) => {
+}): JSX.Element => {
   return (
     <>
       <AvaText.Body1>{title}</AvaText.Body1>

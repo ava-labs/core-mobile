@@ -18,6 +18,7 @@ import {
 export type ImportPParams = {
   activeAccount: Account
   isDevMode: boolean
+  selectedCurrency: string
 }
 
 export async function importP({
@@ -26,11 +27,11 @@ export async function importP({
 }: ImportPParams): Promise<void> {
   Logger.info('importing P started')
 
-  const avaxXPNetwork = NetworkService.getAvalancheNetworkXP(isDevMode)
+  const avaxPNetwork = NetworkService.getAvalancheNetworkP(isDevMode)
 
   const unsignedTx = await WalletService.createImportPTx({
     accountIndex: activeAccount.index,
-    avaxXPNetwork,
+    avaxXPNetwork: avaxPNetwork,
     sourceChain: 'C',
     destinationAddress: activeAccount.addressPVM
   })
@@ -38,7 +39,7 @@ export async function importP({
   const signedTxJson = await WalletService.sign(
     { tx: unsignedTx } as AvalancheTransactionRequest,
     activeAccount.index,
-    avaxXPNetwork
+    avaxPNetwork
   )
   const signedTx = UnsignedTx.fromJSON(signedTxJson).getSignedTx()
 
@@ -46,7 +47,7 @@ export async function importP({
   try {
     txID = await retry({
       operation: () =>
-        NetworkService.sendTransaction({ signedTx, network: avaxXPNetwork }),
+        NetworkService.sendTransaction({ signedTx, network: avaxPNetwork }),
       isSuccess: result => result !== '',
       maxRetries: maxTransactionCreationRetries
     })
@@ -62,7 +63,7 @@ export async function importP({
   Logger.trace('txID', txID)
 
   const avaxProvider = NetworkService.getProviderForNetwork(
-    avaxXPNetwork
+    avaxPNetwork
   ) as Avalanche.JsonRpcProvider
   try {
     await retry({
@@ -87,26 +88,36 @@ export async function importP({
  */
 export async function importPWithBalanceCheck({
   activeAccount,
-  isDevMode
+  isDevMode,
+  selectedCurrency
 }: ImportPParams): Promise<void> {
   //get P balance now then compare it later to check if balance changed after import
   const addressPVM = activeAccount.addressPVM
   assertNotUndefined(addressPVM)
 
   const balanceBeforeImport = (
-    await GlacierBalanceService.getPChainBalance(isDevMode, [addressPVM])
+    await GlacierBalanceService.getPChainBalance({
+      network: NetworkService.getAvalancheNetworkP(isDevMode),
+      addresses: [addressPVM],
+      currency: selectedCurrency
+    })
   ).unlockedUnstaked[0]?.amount
 
   Logger.trace('balanceBeforeImport', balanceBeforeImport)
 
   await importP({
     activeAccount,
-    isDevMode
+    isDevMode,
+    selectedCurrency
   })
 
   await retry({
     operation: async () =>
-      GlacierBalanceService.getPChainBalance(isDevMode, [addressPVM]),
+      GlacierBalanceService.getPChainBalance({
+        network: NetworkService.getAvalancheNetworkP(isDevMode),
+        addresses: [addressPVM],
+        currency: selectedCurrency
+      }),
     isSuccess: pChainBalance => {
       const balanceAfterImport = pChainBalance.unlockedUnstaked[0]?.amount
       return balanceAfterImport !== balanceBeforeImport

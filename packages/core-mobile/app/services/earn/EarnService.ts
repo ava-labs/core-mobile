@@ -68,10 +68,12 @@ class EarnService {
   async importAnyStuckFunds({
     activeAccount,
     isDevMode,
+    selectedCurrency,
     progressEvents
   }: {
     activeAccount: Account
     isDevMode: boolean
+    selectedCurrency: string
     progressEvents?: (events: RecoveryEvents) => void
   }): Promise<void> {
     Logger.trace('Start importAnyStuckFunds')
@@ -94,7 +96,11 @@ class EarnService {
     progressEvents?.(RecoveryEvents.Idle)
     if (pChainUtxo.getUTXOs().length !== 0) {
       progressEvents?.(RecoveryEvents.ImportPStart)
-      await importPWithBalanceCheck({ activeAccount, isDevMode })
+      await importPWithBalanceCheck({
+        activeAccount,
+        isDevMode,
+        selectedCurrency
+      })
       progressEvents?.(RecoveryEvents.ImportPFinish)
     }
 
@@ -116,7 +122,8 @@ class EarnService {
     cChainBalance,
     requiredAmount,
     activeAccount,
-    isDevMode
+    isDevMode,
+    selectedCurrency
   }: CollectTokensForStakingParams): Promise<void> {
     if (requiredAmount.isZero()) {
       Logger.info('no need to cross chain')
@@ -130,7 +137,8 @@ class EarnService {
     })
     await importP({
       activeAccount,
-      isDevMode
+      isDevMode,
+      selectedCurrency
     })
   }
 

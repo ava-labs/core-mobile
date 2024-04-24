@@ -1,5 +1,4 @@
 import React, { useState } from 'react'
-import type { ComponentStory, Meta } from '@storybook/react-native'
 import { View } from 'react-native'
 import { BottomSheet } from 'components/BottomSheet'
 import AvaButton from 'components/AvaButton'
@@ -8,9 +7,9 @@ import { withCenterView } from '../decorators/withCenterView'
 export default {
   title: 'BottomSheet',
   decorators: [withCenterView]
-} as Meta
+}
 
-export const Basic: ComponentStory<typeof BottomSheet> = () => {
+export const Basic = (): React.JSX.Element => {
   const [toggle, setToggle] = useState(false)
   return (
     <>

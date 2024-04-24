@@ -84,6 +84,10 @@ const AvatarBase: FC<AvatarBaseProps> = ({
     />
   ) : (
     <FastImage
+      // TODO: remove this workaround when we have a proper solution
+      // workaround for images not appearing
+      // https://github.com/DylanVann/react-native-fast-image/issues/974
+      fallback={true}
       style={{
         borderRadius: size,
         width: size,

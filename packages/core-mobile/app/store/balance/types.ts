@@ -1,6 +1,7 @@
 import { NetworkContractToken, NetworkToken } from '@avalabs/chains-sdk'
 import { BitcoinInputUTXOWithOptionalScript } from '@avalabs/wallets-sdk'
 import BN from 'bn.js'
+import { PChainBalance } from '@avalabs/glacier-sdk'
 
 export type LocalTokenId = string
 
@@ -26,6 +27,14 @@ type TokenMarketData = {
   change24: number
   vol24: number
 }
+
+export type XPTokenWithBalance = TokenBalanceData &
+  TokenMarketData &
+  NetworkToken &
+  PChainBalance & {
+    coingeckoId: string
+    type: TokenType.NATIVE
+  }
 
 export type NetworkTokenWithBalance = TokenBalanceData &
   TokenMarketData &
@@ -60,6 +69,7 @@ export type TokenWithBalance =
   | NetworkTokenWithBalance
   | TokenWithBalanceERC20
   | NftTokenWithBalance
+  | XPTokenWithBalance
 
 export type Balance = {
   accountIndex: number

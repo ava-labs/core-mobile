@@ -11,7 +11,6 @@ import { Row } from 'components/Row'
 import MarketMovement from 'screens/watchlist/components/MarketMovement'
 import { MarketToken } from 'store/watchlist'
 import { ChartData } from 'services/token/types'
-import Delay from 'components/Delay'
 
 const DEVICE_WIDTH = Dimensions.get('window').width
 const RIGHT_COMPONENT_MAX_WIDTH = DEVICE_WIDTH * 0.6
@@ -172,16 +171,14 @@ const MiddleComponent = ({
         width: 90,
         alignItems: 'flex-end'
       }}>
-      <Delay>
-        <SparklineChart
-          width={CHART_WIDTH}
-          height={30}
-          interactive={false}
-          lineThickness={3}
-          data={dataPoints}
-          negative={ranges.diffValue < 0}
-        />
-      </Delay>
+      <SparklineChart
+        width={CHART_WIDTH}
+        height={30}
+        interactive={false}
+        lineThickness={3}
+        data={dataPoints}
+        negative={ranges.diffValue < 0}
+      />
     </View>
   )
 }

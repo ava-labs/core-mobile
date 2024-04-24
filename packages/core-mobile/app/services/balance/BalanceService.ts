@@ -1,4 +1,8 @@
-import { NetworkTokenWithBalance, TokenWithBalanceERC20 } from 'store/balance'
+import {
+  NetworkTokenWithBalance,
+  TokenWithBalanceERC20,
+  XPTokenWithBalance
+} from 'store/balance'
 import { Network } from '@avalabs/chains-sdk'
 import { Account } from 'store/account'
 import AccountsService from 'services/account/AccountsService'
@@ -17,16 +21,25 @@ const balanceProviders: BalanceServiceProvider[] = [
 ]
 
 export class BalanceService {
-  async getBalancesForAccount(
-    network: Network,
-    account: Account,
-    currency: string,
+  async getBalancesForAccount({
+    network,
+    account,
+    currency,
+    sentryTrx
+  }: {
+    network: Network
+    account: Account
+    currency: string
     sentryTrx?: Transaction
-  ): Promise<{
+  }): Promise<{
     accountIndex: number
     chainId: number
     accountAddress: string
-    tokens: (NetworkTokenWithBalance | TokenWithBalanceERC20)[]
+    tokens: (
+      | NetworkTokenWithBalance
+      | TokenWithBalanceERC20
+      | XPTokenWithBalance
+    )[]
   }> {
     return SentryWrapper.createSpanFor(sentryTrx)
       .setContext('svc.balance.get_for_account')
@@ -45,12 +58,12 @@ export class BalanceService {
           )
         }
 
-        const tokens = await balanceProvider.getBalances(
+        const tokens = await balanceProvider.getBalances({
           network,
           accountAddress,
           currency,
           sentryTrx
-        )
+        })
 
         return {
           accountIndex: account.index,
@@ -61,12 +74,19 @@ export class BalanceService {
       })
   }
 
-  async getBalancesForAddress(
-    network: Network,
-    address: string,
-    currency: string,
+  async getBalancesForAddress({
+    network,
+    address,
+    currency,
+    sentryTrx
+  }: {
+    network: Network
+    address: string
+    currency: string
     sentryTrx?: Transaction
-  ): Promise<(NetworkTokenWithBalance | TokenWithBalanceERC20)[]> {
+  }): Promise<
+    (NetworkTokenWithBalance | TokenWithBalanceERC20 | XPTokenWithBalance)[]
+  > {
     return SentryWrapper.createSpanFor(sentryTrx)
       .setContext('svc.balance.get_for_address')
       .executeAsync(async () => {
@@ -80,7 +100,11 @@ export class BalanceService {
           )
         }
 
-        return balanceProvider.getBalances(network, address, currency)
+        return balanceProvider.getBalances({
+          network,
+          accountAddress: address,
+          currency
+        })
       })
   }
 }

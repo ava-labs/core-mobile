@@ -7,11 +7,11 @@ export async function getBtcBalance(
   address: string,
   currency: string
 ): Promise<NetworkTokenWithBalance | TokenWithBalanceERC20> {
-  const token = await balanceService.getBalancesForAddress(
-    isMainnet ? BITCOIN_NETWORK : BITCOIN_TEST_NETWORK,
+  const token = await balanceService.getBalancesForAddress({
+    network: isMainnet ? BITCOIN_NETWORK : BITCOIN_TEST_NETWORK,
     address,
     currency
-  )
+  })
 
   if (token.length === 0) {
     return Promise.reject('No balances for address')
