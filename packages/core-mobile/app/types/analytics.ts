@@ -152,8 +152,6 @@ export type AnalyticsEvents = {
   SwapReviewOrder: {
     destinationInputField: string
     slippageTolerance: number
-    customMaxFeePerGas: string
-    customMaxPriorityFeePerGas: string
   }
   Swap_TokenSelected: undefined
   TermsAndConditionsAccepted: undefined

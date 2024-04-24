@@ -48,9 +48,13 @@ export const defiApiClient = new Zodios(
   }
 )
 
+// https://github.com/fawazahmed0/exchange-api/blob/main/README.md#free-currency-exchange-rates-api
 // We're only loading exchange rates for USD at the moment.
 const CURRENCY_EXCHANGE_RATES_URL =
-  'https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/latest/currencies/usd.min.json'
+  'https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.min.json'
+
+const CURRENCY_EXCHANGE_RATES_FALLBACK_URL =
+  'https://latest.currency-api.pages.dev/v1/currencies/usd.min.json'
 
 export const exchangeRateApiClient = new Zodios(CURRENCY_EXCHANGE_RATES_URL, [
   {
@@ -60,3 +64,15 @@ export const exchangeRateApiClient = new Zodios(CURRENCY_EXCHANGE_RATES_URL, [
     response: ExchangeRateSchema
   }
 ])
+
+export const exchangeRateFallbackApiClient = new Zodios(
+  CURRENCY_EXCHANGE_RATES_FALLBACK_URL,
+  [
+    {
+      method: 'get',
+      path: '',
+      alias: 'getExchangeRates',
+      response: ExchangeRateSchema
+    }
+  ]
+)

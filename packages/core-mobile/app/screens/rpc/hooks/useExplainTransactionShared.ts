@@ -188,10 +188,10 @@ export const useExplainTransactionShared = (
         site: peerMeta
       }
 
-      // some requests will have a missing gasLimit so we need to ensure it's there
+      // some requests will have a missing or invalid gasLimit so we need to ensure it's there
       let gasLimit: number | null
 
-      if (txParams.gas) {
+      if (txParams.gas && Number(txParams.gas) > 0) {
         gasLimit = Number(txParams.gas)
       } else {
         gasLimit = await getEstimatedGasLimit(txParams, network).catch(e => {

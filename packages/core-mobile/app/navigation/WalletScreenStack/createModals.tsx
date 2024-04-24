@@ -25,7 +25,7 @@ import Photo from 'assets/icons/photo_placeholder.svg'
 import Swap from 'assets/icons/swap_v2.svg'
 import HeaderAccountSelector from 'components/HeaderAccountSelector'
 import { View } from '@avalabs/k2-mobile'
-import { Animated } from 'react-native'
+import { Animated, Platform } from 'react-native'
 import TabsListScreen from 'screens/browser/TabsListScreen'
 import { AreYouSureModal } from 'screens/browser/AreYouSureModal'
 import AnalyticsConsentSheet from 'screens/mainView/AnalyticsConsentSheet'
@@ -214,11 +214,12 @@ const AccountDropdownComp = (): JSX.Element => {
       },
       headerShown: true,
       headerLeft: () => null,
+      headerTitleAlign: 'center',
       // eslint-disable-next-line react/no-unstable-nested-components
       headerTitle: () => (
         <Animated.View
           style={{
-            marginTop: 4,
+            marginTop: Platform.OS === 'ios' ? 4 : -8,
             backgroundColor: backgroundColorInterpolate
           }}>
           <HeaderAccountSelector
