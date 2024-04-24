@@ -191,6 +191,16 @@ workflows:
         - configuration: $IOS_CONFIGURATION
         - project_path: $IOS_PROJECT_PATH
         - code_signing_allowed: "yes"
+    - script-runner@0:
+        title: Create iOS Test Run
+        inputs:
+        - file_path: scripts/bitrise/detox/createIosTestRun.sh
+        - variables:
+          - IOS_TESTRAIL_RUN_ID=$IOS_TESTRAIL_RUN_ID
+    - share-pipeline-variable@1:
+        inputs:
+        - variables: |-
+            IOS_TESTRAIL_RUN_ID=$IOS_TESTRAIL_RUN_ID
     - deploy-to-bitrise-io@2:
         inputs:
         - pipeline_intermediate_files: $BITRISE_APP_DIR_PATH:BITRISE_APP_DIR_PATH
@@ -836,7 +846,7 @@ workflows:
     - USE_SEEDLESS_GAMMA: "true"
       opts:
         is_expand: false
-    - POST_TO_TESTRAIL: "false"
+    - POST_TO_TESTRAIL: "true"
       opts:
         is_expand: false
     steps:

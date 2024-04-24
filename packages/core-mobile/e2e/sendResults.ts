@@ -7,11 +7,11 @@ import {
   getTestCaseId,
   api,
   createNewTestSectionsAndCases,
-  getTestCasesFromRun,
-  currentRunID
+  getTestCasesFromRun
 } from './generateTestrailObjects'
 import getTestLogs, { isResultPresent } from './getResultsFromLogs'
 const fs = require('fs')
+const path = require('path')
 
 async function parseResultsFile() {
   const jsonResultsArray = await getTestLogs()
@@ -105,6 +105,11 @@ export default async function sendResults() {
   const testCasesToSend = preparedFinalResults.testCasesToSend
   const resultsToSendToTestrail = preparedFinalResults.resultsToSendToTestrail
 
+  console.log(
+    'The results to send to testrail are ' +
+      JSON.stringify(resultsToSendToTestrail)
+  )
+
   if (process.env.POST_TO_TESTRAIL === 'true') {
     if (await isResultPresent('android')) {
       const runID = process.env.TESTRAIL_RUN_ID
@@ -117,7 +122,7 @@ export default async function sendResults() {
       )
     }
     if (await isResultPresent('ios')) {
-      const runID = (await currentRunID('ios')).runID
+      const runID = process.env.IOS_TESTRAIL_RUN_ID
       console.log('The run id is ' + runID)
       await generatePlatformResults(
         testCasesToSend,
@@ -195,31 +200,38 @@ async function generatePlatformResults(
       const resultObject = resultArray[i]
       const statusId = Number(resultObject?.status_id)
       const comment = `Test case result for ${resultObject?.case_id} and has a status of ${statusId} for ${platform}`
+      const screenshotPath = resultObject?.screenshot
 
       if (resultObject) {
         const testResult = {
           case_id: resultObject?.case_id,
           status_id: statusId,
-          comment: comment
+          comment: comment,
+          screenshot: screenshotPath
         }
         testResults.push(testResult)
       }
     }
+
     // Send the results to testrail
-    await api.addResultsForCases(Number(runId), { results: testResults })
+    await api.addResultsForCases(Number(runId), {
+      results: testResults
+    })
 
     // Adds the screenshot to the test case in testrail if the test failed
     for (let i = 0; i < testResults.length; i++) {
-      if (testResults[i].status_id === 5) {
+      if (testResults[i].status_id === 5 && testResults[i].screenshot) {
         // This is the path to the screenshot for when the test fails
-        const failScreenshot = `./e2e/artifacts/${platform}/${testResults[i].screenshot}`
+        const failScreenshot = path.resolve(
+          `./e2e/artifacts/ios/${testResults[i].screenshot}`
+        )
         if (failScreenshot) {
           const failedPayload = {
             name: 'failed.png',
             value: await fs.createReadStream(failScreenshot)
           }
           // Attaches the screenshot to the corressponding case in the test run
-          await api.addAttachmentToResult(testResults[i].id, failedPayload)
+          await api.addAttachmentToCase(testResults[i].case_id, failedPayload)
         }
       }
     }
