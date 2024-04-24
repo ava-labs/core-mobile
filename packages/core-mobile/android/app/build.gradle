@@ -114,24 +114,25 @@ android {
         }
     }
 
-    buildTypes {
-        debug {
-            signingConfig signingConfigs.debug
-        }
 
-        release {
-            minifyEnabled enableProguardInReleaseBuilds
-            proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
-        }
+        buildTypes {
+            debug {
+                signingConfig signingConfigs.debug
+            }
+            release {
+                minifyEnabled enableProguardInReleaseBuilds
+                proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
+            }
+            e2e {
+                useProguard false
+                minifyEnabled false
+                matchingFallbacks = ['release']
+                // this is for libraries without an e2e build to know to fall back to release
 
-        e2e {
-            initWith release
-
-            // this is for libraries without an e2e build to know to fall back to release
-            matchingFallbacks = ['release']
-
-            // Detox-specific additions to pro-guard
-            proguardFile "${rootProject.projectDir}/../node_modules/detox/android/detox/proguard-rules-app.pro"
+                // Detox-specific additions to pro-guard
+                
+                proguardFile "${rootProject.projectDir}/../node_modules/detox/android/detox/proguard-rules-app.pro"
+            }
         }
     }
 
