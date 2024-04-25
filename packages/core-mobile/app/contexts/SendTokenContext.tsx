@@ -18,11 +18,8 @@ import { selectActiveAccount } from 'store/account'
 import sendService from 'services/send/SendService'
 import { SendState } from 'services/send/types'
 import { bnToBig, bnToLocaleString } from '@avalabs/utils-sdk'
-import { useNativeTokenPrice } from 'hooks/useNativeTokenPrice'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { VsCurrencyType } from '@avalabs/coingecko-sdk'
-import { FeePreset } from 'components/NetworkFeeSelector'
 import { showSnackBarCustom } from 'components/Snackbar'
 import TransactionToast, {
   TransactionToastType
@@ -34,6 +31,7 @@ import Logger from 'utils/Logger'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { NetworkTokenUnit, Amount } from 'types'
 import { useNetworks } from 'hooks/networks/useNetworks'
+import { useNetworkFee } from 'hooks/useNetworkFee'
 
 export interface SendTokenContextState {
   sendToken: TokenWithBalance | undefined
@@ -59,6 +57,11 @@ export const SendTokenContext = createContext<SendTokenContextState>(
   {} as SendTokenContextState
 )
 
+const ZERO_AMOUNT = {
+  bn: new BN(0),
+  amount: '0'
+}
+
 export const SendTokenContextProvider = ({
   children
 }: {
@@ -69,16 +72,10 @@ export const SendTokenContextProvider = ({
   const dispatch = useDispatch()
   const activeAccount = useSelector(selectActiveAccount)
   const selectedCurrency = useSelector(selectSelectedCurrency)
-  const { nativeTokenPrice } = useNativeTokenPrice(
-    selectedCurrency.toLowerCase() as VsCurrencyType
-  )
 
   const [sendToken, setSendToken] = useState<TokenWithBalance | undefined>()
   const [maxAmount, setMaxAmount] = useState('')
-  const [sendAmount, setSendAmount] = useState<Amount>({
-    bn: new BN(0),
-    amount: '0'
-  })
+  const [sendAmount, setSendAmount] = useState<Amount>(ZERO_AMOUNT)
 
   const tokenPriceInSelectedCurrency = sendToken?.priceInCurrency ?? 0
   const sendAmountInCurrency =
@@ -90,29 +87,21 @@ export const SendTokenContextProvider = ({
   const sendFromTitle = activeAccount?.name ?? '-'
 
   const [gasLimit, setGasLimit] = useState(0)
-  const [customGasLimit, setCustomGasLimit] = useState<number | undefined>(
-    undefined
-  )
-  const trueGasLimit = customGasLimit || gasLimit
 
   const [sendFeeBN, setSendFeeBN] = useState(new BN(0))
   const sendFeeNative = useMemo(
     () => bnToLocaleString(sendFeeBN, activeNetwork.networkToken.decimals),
     [activeNetwork.networkToken.decimals, sendFeeBN]
   )
-  const sendFeeInCurrency = useMemo(
-    () => (Number.parseFloat(sendFeeNative) * nativeTokenPrice).toFixed(2),
-    [nativeTokenPrice, sendFeeNative]
-  )
-  const [selectedFeePreset, setSelectedFeePreset] = useState<FeePreset>(
-    FeePreset.Normal
-  )
-
-  const [maxFeePerGas, setMaxFeePerGas] = useState<NetworkTokenUnit>(
-    NetworkTokenUnit.fromNetwork(activeNetwork)
-  )
-  const [maxPriorityFeePerGas, setMaxPriorityFeePerGas] =
+  const { data: networkFee } = useNetworkFee(activeNetwork)
+  const [defaultMaxFeePerGas, setDefaultMaxFeePerGas] =
     useState<NetworkTokenUnit>(NetworkTokenUnit.fromNetwork(activeNetwork))
+
+  // setting maxFeePerGas to lowest network fee to calculate max amount in Send screen
+  useEffect(() => {
+    if (!networkFee) return
+    setDefaultMaxFeePerGas(networkFee.low.maxFeePerGas)
+  }, [networkFee])
 
   const balanceAfterTrx = useMemo(() => {
     //since fee is paid in native token only, for non-native tokens we should not subtract
@@ -154,15 +143,22 @@ export const SendTokenContextProvider = ({
   useEffect(validateStateFx, [
     activeAccount,
     activeNetwork,
-    maxPriorityFeePerGas,
     gasLimit,
     selectedCurrency,
     sendAmount,
     sendToAddress,
     sendToken,
-    trueGasLimit,
-    maxFeePerGas
+    defaultMaxFeePerGas
   ])
+
+  const setSendTokenAndResetAmount = useCallback(
+    (token: TokenWithBalance | undefined) => {
+      setSendToken(token)
+      setSendAmount(ZERO_AMOUNT)
+      setMaxAmount('')
+    },
+    []
+  )
 
   function onSendNow(): void {
     if (!activeAccount) {
@@ -176,18 +172,16 @@ export const SendTokenContextProvider = ({
     }
 
     AnalyticsService.capture('SendApproved', {
-      selectedGasFee: selectedFeePreset.toUpperCase(),
       chainId: activeNetwork.chainId
     })
 
-    const sendState = {
+    const sendState: SendState = {
       address: sendToAddress,
       amount: sendAmount.bn,
-      maxFeePerGas: maxFeePerGas.toSubUnit(),
-      maxPriorityFeePerGas: maxPriorityFeePerGas.toSubUnit(),
-      gasLimit: trueGasLimit,
+      defaultMaxFeePerGas: defaultMaxFeePerGas.toSubUnit(),
+      gasLimit,
       token: sendToken
-    } as SendState
+    }
 
     setSendStatus('Preparing')
 
@@ -285,16 +279,17 @@ export const SendTokenContextProvider = ({
       return
     }
 
+    const sendState: SendState = {
+      token: sendToken,
+      amount: sendAmount.bn,
+      address: sendToAddress,
+      defaultMaxFeePerGas: defaultMaxFeePerGas.toSubUnit(),
+      gasLimit
+    }
+
     sendService
       .validateStateAndCalculateFees(
-        {
-          token: sendToken,
-          amount: sendAmount.bn,
-          address: sendToAddress,
-          maxFeePerGas: maxFeePerGas.toSubUnit(),
-          maxPriorityFeePerGas: maxPriorityFeePerGas.toSubUnit(),
-          gasLimit: trueGasLimit
-        } as SendState,
+        sendState,
         activeNetwork,
         activeAccount,
         selectedCurrency
@@ -315,7 +310,7 @@ export const SendTokenContextProvider = ({
 
   const state: SendTokenContextState = {
     sendToken,
-    setSendToken,
+    setSendToken: setSendTokenAndResetAmount,
     sendAmount,
     setSendAmount,
     sendAmountInCurrency,
@@ -335,15 +330,7 @@ export const SendTokenContextProvider = ({
     }, [sendToAddress, sendToTitle]),
     fees: {
       sendFeeNative,
-      sendFeeInCurrency,
-      maxFeePerGas,
-      maxPriorityFeePerGas,
-      setMaxFeePerGas,
-      setMaxPriorityFeePerGas,
-      gasLimit: trueGasLimit,
-      setCustomGasLimit,
-      setSelectedFeePreset,
-      selectedFeePreset
+      gasLimit
     },
     tokenLogo,
     canSubmit,
@@ -375,13 +362,5 @@ export interface Account {
 
 export interface Fees {
   sendFeeNative: string | undefined
-  sendFeeInCurrency: string | undefined
-  maxFeePerGas: NetworkTokenUnit
-  maxPriorityFeePerGas: NetworkTokenUnit
-  setMaxFeePerGas: Dispatch<NetworkTokenUnit>
-  setMaxPriorityFeePerGas: Dispatch<NetworkTokenUnit>
   gasLimit: number | undefined
-  setCustomGasLimit: Dispatch<number>
-  setSelectedFeePreset: Dispatch<FeePreset>
-  selectedFeePreset: FeePreset
 }

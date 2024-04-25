@@ -102,7 +102,7 @@ export type AnalyticsEvents = {
   ReceivePageVisited: undefined
   RecoveryPhraseClicked: undefined
   SendFailed: { errorMessage: string; chainId: number }
-  SendApproved: { selectedGasFee: string; chainId: number }
+  SendApproved: { chainId: number }
   SendSucceeded: { chainId: number }
   SendCancel: undefined
   SendContactSelected: { contactSource: string }
