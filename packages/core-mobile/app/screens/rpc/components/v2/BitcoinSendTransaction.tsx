@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { Image, StyleSheet } from 'react-native'
 import { Space } from 'components/Space'
 import FlexSpacer from 'components/FlexSpacer'
@@ -16,12 +16,18 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import DotSVG from 'components/svg/DotSVG'
 import { formatUriImageToPng } from 'utils/Contentful'
 import { Row } from 'components/Row'
-import { formatLargeNumber } from 'utils/Utils'
+import { Eip1559Fees } from 'utils/Utils'
 import SendRow from 'components/SendRow'
-import { Tooltip } from 'components/Tooltip'
-import PoppableGasAndLimit from 'components/PoppableGasAndLimit'
-import Separator from 'components/Separator'
-import { Button, Text, View } from '@avalabs/k2-mobile'
+import { Button, Text, View, useTheme } from '@avalabs/k2-mobile'
+import NetworkFeeSelector from 'components/NetworkFeeSelector'
+import { NetworkTokenUnit } from 'types'
+import { getBitcoinNetwork } from 'services/network/utils/providerUtils'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { TokenBaseUnit } from 'types/TokenBaseUnit'
+import { BN } from 'bn.js'
+import { selectTokensWithBalanceByNetwork } from 'store/balance'
+import { mustNumber } from 'utils/JsTools'
+import { satoshiToBtc } from '@avalabs/bridge-sdk'
 
 type BitcoinSendTransactionScreenProps = WalletScreenProps<
   typeof AppNavigation.Modal.BitcoinSendTransaction
@@ -31,21 +37,60 @@ const BitcoinSendTransaction = (): JSX.Element => {
   const isSeedlessSigningBlocked = useSelector(selectIsSeedlessSigningBlocked)
   const activeAccount = useSelector(selectActiveAccount)
   const {
-    theme,
-    appHook: { currencyFormatter }
+    appHook: { tokenInCurrencyFormatter }
   } = useApplicationContext()
+  const {
+    theme: { colors }
+  } = useTheme()
   const { goBack } =
     useNavigation<BitcoinSendTransactionScreenProps['navigation']>()
   const { request, data } =
     useRoute<BitcoinSendTransactionScreenProps['route']>().params
   const { onUserApproved: onApprove, onUserRejected: onReject } =
     useDappConnectionV2()
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
+  const btcNetwork = getBitcoinNetwork(isDeveloperMode)
 
   const { sendState } = data
 
-  const tokenPriceInSelectedCurrency = sendState.token?.priceInCurrency ?? 0
+  const [maxFeePerGas, setMaxFeePerGas] = useState<
+    TokenBaseUnit<NetworkTokenUnit>
+  >(NetworkTokenUnit.fromNetwork(btcNetwork, sendState.maxFeePerGas ?? 0))
+
+  const tokens = useSelector(selectTokensWithBalanceByNetwork(btcNetwork))
+
+  const btcToken = tokens.find(t => t.symbol === 'BTC')
+  const tokenPriceInSelectedCurrency = btcToken?.priceInCurrency ?? 0
+  const amountInBtc = satoshiToBtc(Number(sendState.amount) ?? 0)
   const sendAmountInCurrency =
-    tokenPriceInSelectedCurrency * Number(sendState.amount)
+    Number(amountInBtc) * tokenPriceInSelectedCurrency
+
+  const balanceAfterTrx = useMemo(() => {
+    let balanceBN = btcToken?.balance
+    if (activeAccount?.addressBtc !== sendState.address) {
+      balanceBN = balanceBN?.sub(sendState.amount ?? new BN(0))
+    }
+    return NetworkTokenUnit.fromNetwork(btcNetwork, balanceBN)
+      .sub(maxFeePerGas.mul(sendState.gasLimit ?? 0))
+      .toFixed(4)
+  }, [
+    activeAccount?.addressBtc,
+    btcNetwork,
+    btcToken?.balance,
+    maxFeePerGas,
+    sendState.address,
+    sendState.amount,
+    sendState.gasLimit
+  ])
+
+  const balanceAfterTrxInCurrency = useMemo(
+    () =>
+      (
+        tokenPriceInSelectedCurrency *
+        mustNumber(() => parseFloat(balanceAfterTrx), 0)
+      ).toFixed(2),
+    [balanceAfterTrx, tokenPriceInSelectedCurrency]
+  )
 
   const rejectAndClose = useCallback(() => {
     onReject(request)
@@ -53,14 +98,20 @@ const BitcoinSendTransaction = (): JSX.Element => {
   }, [goBack, onReject, request])
 
   const onHandleApprove = (): void => {
-    onApprove(request, data)
+    onApprove(request, { ...sendState, maxFeePerGas: maxFeePerGas.toSubUnit() })
     goBack()
   }
+
+  const handleFeeChange = useCallback(
+    (fees: Eip1559Fees<NetworkTokenUnit>) => {
+      setMaxFeePerGas(fees.maxFeePerGas)
+    },
+    [setMaxFeePerGas]
+  )
 
   return (
     <>
       <RpcRequestBottomSheet onClose={rejectAndClose}>
-        {/* // todo: this is going to be updated as part of the send VM module ticket */}
         <ScrollView contentContainerStyle={{ minHeight: '100%' }}>
           <Text variant="heading3" sx={{ marginHorizontal: 16, fontSize: 36 }}>
             Send
@@ -74,12 +125,12 @@ const BitcoinSendTransaction = (): JSX.Element => {
               zIndex: 2
             }}>
             <View sx={{ position: 'absolute' }}>
-              <DotSVG fillColor={theme.colorBg1} size={72} />
+              <DotSVG fillColor={colors.$black} size={72} />
             </View>
             <Image
               style={{ width: 57, height: 57 }}
               source={{
-                uri: formatUriImageToPng(sendState.token?.logoUri ?? '', 57)
+                uri: formatUriImageToPng(btcNetwork.networkToken.logoUri, 57)
               }}
             />
           </View>
@@ -101,11 +152,8 @@ const BitcoinSendTransaction = (): JSX.Element => {
                 Amount
               </Text>
               <Row style={{ alignItems: 'baseline' }}>
-                <Text
-                  testID="review_and_send__amount"
-                  variant="heading4"
-                  sx={{ lineHeight: 29 }}>
-                  {formatLargeNumber(Number(sendState.amount), 4)}
+                <Text variant="heading4" sx={{ lineHeight: 29 }}>
+                  {Number(amountInBtc)}
                 </Text>
                 <Space x={4} />
                 <Text
@@ -119,59 +167,36 @@ const BitcoinSendTransaction = (): JSX.Element => {
               <Text
                 variant="subtitle1"
                 sx={{ lineHeight: 24, color: '$neutral400' }}>
-                {currencyFormatter(sendAmountInCurrency ?? 0)}
+                {tokenInCurrencyFormatter(sendAmountInCurrency)}
               </Text>
             </Row>
             <Space y={8} />
             <SendRow
-              testID="review_and_send__from"
               label={'From'}
               title={activeAccount?.title ?? ''}
               address={activeAccount?.addressBtc ?? ''}
             />
             <SendRow
-              testID="review_and_send__to"
               label={'To'}
               title={'Address'}
               address={sendState.address ?? ''}
             />
-            <Space y={16} />
-            <Row style={{ justifyContent: 'space-between' }}>
-              <Tooltip
-                content={
-                  <PoppableGasAndLimit
-                    gasLimit={sendState.gasLimit ?? 0}
-                    maxFeePerGas={sendState.maxFeePerGas?.toString() ?? '0'}
-                    maxPriorityFeePerGas={
-                      sendState.maxPriorityFeePerGas?.toString() ?? '0'
-                    }
-                  />
-                }
-                position={'right'}
-                style={{ width: 250 }}>
-                Network Fee
-              </Tooltip>
-              <View sx={{ flexDirection: 'column', alignItems: 'flex-end' }}>
-                <Text sx={{ color: '$neutral50' }}>
-                  {`${sendState.sendFee} ${sendState.token?.symbol}`}
-                </Text>
-                <Text variant="body1" sx={{ color: '$neutral400' }}>
-                  {currencyFormatter(0)}
-                </Text>
-              </View>
-            </Row>
-            <Space y={16} />
-            <Separator />
-            <Space y={16} />
+            <Space y={8} />
+            <NetworkFeeSelector
+              chainId={btcNetwork.chainId}
+              gasLimit={sendState.gasLimit ?? 0}
+              onFeesChange={handleFeeChange}
+              maxNetworkFee={NetworkTokenUnit.fromNetwork(btcNetwork)}
+            />
+
             <Row style={{ justifyContent: 'space-between' }}>
               <Text variant="body2" sx={{ color: '$neutral400' }}>
                 Balance After Transaction
               </Text>
               <Text
                 variant="heading6"
-                testID="review_and_send__bal_after_transaction"
                 sx={{ color: '$neutral50', fontSize: 18, lineHeight: 22 }}>
-                {activeAccount?.address ?? ''} {sendState.token?.symbol ?? ''}
+                {balanceAfterTrx} {btcToken?.symbol ?? ''}
               </Text>
             </Row>
             <Text
@@ -181,22 +206,14 @@ const BitcoinSendTransaction = (): JSX.Element => {
                 alignSelf: 'flex-end',
                 lineHeight: 15
               }}>
-              {currencyFormatter(0)}
+              {tokenInCurrencyFormatter(balanceAfterTrxInCurrency)}
             </Text>
             <FlexSpacer />
-            <Button
-              type="primary"
-              size="xlarge"
-              onPress={onHandleApprove}
-              testID="review_and_send__send_now_button">
-              Send Now
+            <Button type="primary" size="xlarge" onPress={onHandleApprove}>
+              Approve
             </Button>
             <Space y={16} />
-            <Button
-              type="secondary"
-              size="xlarge"
-              onPress={rejectAndClose}
-              testID="review_and_send__cancel_button">
+            <Button type="secondary" size="xlarge" onPress={rejectAndClose}>
               Cancel
             </Button>
           </View>
