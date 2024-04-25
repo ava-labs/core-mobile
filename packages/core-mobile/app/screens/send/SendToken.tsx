@@ -16,12 +16,9 @@ import QrScannerAva from 'components/QrScannerAva'
 import QRScanSVG from 'components/svg/QRScanSVG'
 import { TokenWithBalance } from 'store/balance'
 import { NetworkVMType } from '@avalabs/chains-sdk'
-import { bnToLocaleString } from '@avalabs/utils-sdk'
 import UniversalTokenSelector from 'components/UniversalTokenSelector'
-import { getMaxAvailableBalance } from 'utils/Utils'
 import { AddrBookItemType } from 'store/addressBook'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { Amount } from 'types'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { Contact } from '@avalabs/types'
 import {
@@ -30,7 +27,6 @@ import {
 } from 'store/utils/account&contactGetters'
 
 type Props = {
-  onNext: () => void
   onOpenAddressBook: () => void
   onOpenSelectToken: (
     onTokenSelected: (token: TokenWithBalance) => void
@@ -40,21 +36,16 @@ type Props = {
   testID?: string
 }
 
-const SendToken: FC<Props> = ({
-  onNext,
-  onOpenAddressBook,
-  token,
-  contact
-}) => {
+const SendToken: FC<Props> = ({ onOpenAddressBook, token, contact }) => {
   const {
     setSendToken,
     sendToken,
     setSendAmount,
     sendAmount,
     toAccount,
-    fees: { sendFeeNative },
     canSubmit,
-    sdkError
+    sdkError,
+    maxAmount
   } = useSendTokenContext()
   const { activeNetwork } = useNetworks()
   const [showQrCamera, setShowQrCamera] = useState(false)
@@ -127,18 +118,12 @@ const SendToken: FC<Props> = ({
 
   const onNextPress = (): void => {
     saveRecentContact()
-    onNext()
+    // onNext()
   }
 
   const handleMax = useCallback(() => {
-    const maxBn = getMaxAvailableBalance(sendToken, sendFeeNative)
-    if (maxBn) {
-      setSendAmount({
-        bn: maxBn,
-        amount: bnToLocaleString(maxBn, sendToken?.decimals)
-      } as Amount)
-    }
-  }, [sendFeeNative, sendToken, setSendAmount])
+    setSendAmount(maxAmount)
+  }, [maxAmount, setSendAmount])
 
   return (
     <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
