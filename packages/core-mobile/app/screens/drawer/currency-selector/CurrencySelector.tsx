@@ -9,7 +9,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context'
 import CurrencyListItem from 'screens/drawer/currency-selector/CurrencyListItem'
 import { useDispatch, useSelector } from 'react-redux'
 import {
-  selectCurrencies,
+  currencies,
   selectSelectedCurrency,
   setSelectedCurrency
 } from 'store/settings/currency'
@@ -18,7 +18,6 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 
 const CurrencySelector = (): JSX.Element => {
   const navigation = useNavigation()
-  const currencies = useSelector(selectCurrencies)
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const dispatch = useDispatch()
 
