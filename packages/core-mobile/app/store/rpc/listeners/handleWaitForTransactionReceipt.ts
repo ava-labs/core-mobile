@@ -3,7 +3,7 @@ import { TransactionResponse } from 'ethers'
 import { getTxConfirmationReceipt } from 'utils/getTxConfirmationReceipt'
 import {
   showTransactionPendingToast,
-  showTransactionRevertedToast,
+  showTransactionErrorToast,
   showTransactionSuccessToast
 } from 'utils/toast'
 import { selectIsDeveloperMode } from 'store/settings/advanced/slice'
@@ -33,9 +33,12 @@ export const handleWaitForTransactionReceipt = async (
   const status = confirmationReceipt?.status === 'success'
 
   if (status) {
-    showTransactionSuccessToast(txResponse.hash)
+    showTransactionSuccessToast({
+      message: 'Transaction Successful',
+      txHash: txResponse.hash
+    })
   } else {
-    showTransactionRevertedToast()
+    showTransactionErrorToast({ message: 'Transaction Reverted' })
   }
 
   dispatch(
