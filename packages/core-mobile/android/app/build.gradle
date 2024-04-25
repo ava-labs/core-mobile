@@ -126,7 +126,7 @@ android {
 
         e2e {
             initWith release
-            useProguard false
+            minifyEnabled false
 
             // this is for libraries without an e2e build to know to fall back to release
             matchingFallbacks = ['release']
