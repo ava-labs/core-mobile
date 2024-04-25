@@ -1,4 +1,5 @@
 import Action from '../helpers/actions'
+import delay from '../helpers/waits'
 import analyticsConsentLoc from '../locators/analyticsConsent.loc'
 
 class AnalyticsConsentPage {
@@ -11,7 +12,8 @@ class AnalyticsConsentPage {
   }
 
   async tapNoThanksBtn() {
-    await Action.tap(this.noThanksBtn)
+    await delay(2000)
+    await Action.tapElementAtIndex(this.noThanksBtn, 0)
   }
 
   async tapIAgreeBtn() {
