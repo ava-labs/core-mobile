@@ -223,7 +223,7 @@ async function generatePlatformResults(
       if (testResults[i].status_id === 5 && testResults[i].screenshot) {
         // This is the path to the screenshot for when the test fails
         const failScreenshot = path.resolve(
-          `./e2e/artifacts/ios/${testResults[i].screenshot}`
+          `./e2e/artifacts/${platform}/${testResults[i].screenshot}`
         )
         if (failScreenshot) {
           const failedPayload = {
