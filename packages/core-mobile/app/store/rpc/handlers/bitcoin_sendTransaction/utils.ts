@@ -1,6 +1,10 @@
 import { SafeParseReturnType, z } from 'zod'
 
-const paramsSchema = z.tuple([z.string(), z.string(), z.number()]) // [address, amount, feeRate]
+const paramsSchema = z.tuple([
+  z.string().describe('bitcoin receiving address'),
+  z.string().describe('send amount'),
+  z.number().describe('fee rate')
+])
 
 export const parseRequestParams = (
   params: unknown
