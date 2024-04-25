@@ -164,5 +164,18 @@ export const migrations = {
         favorites: state.watchlist.favorites
       }
     }
+  },
+  13: (state: any) => {
+    const newState = {
+      ...state,
+      settings: {
+        ...state.settings,
+        currency: {
+          ...state.settings.currency
+        }
+      }
+    }
+    delete newState.settings.currency.currencies
+    return newState
   }
 }
