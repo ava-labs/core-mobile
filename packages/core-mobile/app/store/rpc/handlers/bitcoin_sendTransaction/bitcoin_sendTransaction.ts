@@ -7,7 +7,7 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { RpcMethod, RpcRequest } from 'store/rpc/types'
 import * as Sentry from '@sentry/react-native'
 import Logger from 'utils/Logger'
-import { isBtcAddressInNetwork } from 'utils/isBtcAddressInNetwork'
+import { isBtcAddress } from 'utils/isBtcAddress'
 import { BN } from 'bn.js'
 import SendServiceBTC from 'services/send/SendServiceBTC'
 import { SendState, ValidSendState } from 'services/send/types'
@@ -74,7 +74,7 @@ class BitcoinSendTransactionHandler
     const [address, amountSatoshi, feeRate] = parseResult.data
 
     // If destination address is not valid, return error
-    if (!isBtcAddressInNetwork(address ?? '', !isDeveloperMode)) {
+    if (!isBtcAddress(address ?? '', !isDeveloperMode)) {
       return {
         success: false,
         error: ethErrors.rpc.invalidParams({

@@ -9,7 +9,7 @@ import WalletService from 'services/wallet/WalletService'
 import NetworkService from 'services/network/NetworkService'
 import { selectNetwork } from 'store/network'
 import { VsCurrencyType } from '@avalabs/coingecko-sdk'
-import * as utils from 'utils/isBtcAddressInNetwork'
+import * as utils from 'utils/isBtcAddress'
 import * as accountStore from 'store/account/slice'
 import BtcBalanceService from 'services/balance/BtcBalanceService'
 import SendServiceBTC from 'services/send/SendServiceBTC'
@@ -87,10 +87,8 @@ jest.spyOn(Sentry, 'captureException').mockImplementation(mockCaptureException)
 const mockNavigate = jest.fn()
 jest.spyOn(Navigation, 'navigate').mockImplementation(mockNavigate)
 
-const mockIsBtcAddressInNetwork = jest.fn().mockReturnValue(true)
-jest
-  .spyOn(utils, 'isBtcAddressInNetwork')
-  .mockImplementation(mockIsBtcAddressInNetwork)
+const mockIsBtcAddress = jest.fn().mockReturnValue(true)
+jest.spyOn(utils, 'isBtcAddress').mockImplementation(mockIsBtcAddress)
 
 const mockDispatch = jest.fn()
 const mockListenerApi = {
@@ -170,7 +168,7 @@ describe('bitcoin_sendTransaction', () => {
       ])
       mockAccount.mockReturnValue(mockAccounts[0])
       mockSelectAccountByAddress.mockReturnValue(mockAccount)
-      mockIsBtcAddressInNetwork.mockReturnValue(true)
+      mockIsBtcAddress.mockReturnValue(true)
     })
 
     it('should contain correct methods', () => {
@@ -212,7 +210,7 @@ describe('bitcoin_sendTransaction', () => {
     })
 
     it('should return error if address is not btc address', async () => {
-      mockIsBtcAddressInNetwork.mockReturnValue(false)
+      mockIsBtcAddress.mockReturnValue(false)
       const testRequest = createRequest(testParams)
       const result = await handler.handle(testRequest, mockListenerApi)
       expect(result).toEqual({

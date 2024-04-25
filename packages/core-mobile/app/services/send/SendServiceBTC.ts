@@ -19,7 +19,7 @@ import balanceService from 'services/balance/BalanceService'
 import { getBitcoinProvider } from 'services/network/utils/providerUtils'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { Transaction } from '@sentry/types'
-import { isBtcAddressInNetwork } from 'utils/isBtcAddressInNetwork'
+import { isBtcAddress } from 'utils/isBtcAddress'
 
 class SendServiceBTC implements SendServiceHelper {
   async getTransactionRequest(
@@ -104,7 +104,7 @@ class SendServiceBTC implements SendServiceHelper {
           )
 
         // Validate the destination address
-        const isAddressValid = isBtcAddressInNetwork(toAddress, isMainnet)
+        const isAddressValid = isBtcAddress(toAddress, isMainnet)
 
         if (!isAddressValid)
           return this.getErrorState(

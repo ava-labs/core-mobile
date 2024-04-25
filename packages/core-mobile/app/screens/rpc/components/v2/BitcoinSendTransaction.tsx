@@ -27,7 +27,6 @@ import { TokenBaseUnit } from 'types/TokenBaseUnit'
 import { BN } from 'bn.js'
 import { selectTokensWithBalanceByNetwork } from 'store/balance'
 import { mustNumber } from 'utils/JsTools'
-import { satoshiToBtc } from '@avalabs/bridge-sdk'
 
 type BitcoinSendTransactionScreenProps = WalletScreenProps<
   typeof AppNavigation.Modal.BitcoinSendTransaction
@@ -61,9 +60,8 @@ const BitcoinSendTransaction = (): JSX.Element => {
 
   const btcToken = tokens.find(t => t.symbol === 'BTC')
   const tokenPriceInSelectedCurrency = btcToken?.priceInCurrency ?? 0
-  const amountInBtc = satoshiToBtc(Number(sendState.amount) ?? 0)
-  const sendAmountInCurrency =
-    Number(amountInBtc) * tokenPriceInSelectedCurrency
+  const amountInBtc = NetworkTokenUnit.fromNetwork(btcNetwork, sendState.amount)
+  const sendAmountInCurrency = amountInBtc.mul(tokenPriceInSelectedCurrency)
 
   const balanceAfterTrx = useMemo(() => {
     let balanceBN = btcToken?.balance
@@ -170,7 +168,7 @@ const BitcoinSendTransaction = (): JSX.Element => {
               <Text
                 variant="subtitle1"
                 sx={{ lineHeight: 24, color: '$neutral400' }}>
-                {tokenInCurrencyFormatter(sendAmountInCurrency)}
+                {tokenInCurrencyFormatter(sendAmountInCurrency.toDisplay())}
               </Text>
             </Row>
             <Space y={8} />

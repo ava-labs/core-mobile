@@ -8,10 +8,7 @@ import {
  * @param address Bitcoin address, bech32 or b58
  * @param isMainnet Verify address against mainnet or testnet
  */
-export function isBtcAddressInNetwork(
-  address: string,
-  isMainnet: boolean
-): boolean {
+export function isBtcAddress(address: string, isMainnet: boolean): boolean {
   return (
     isBech32AddressInNetwork(address, isMainnet) ||
     isBase58AddressInNetwork(address, isMainnet)
