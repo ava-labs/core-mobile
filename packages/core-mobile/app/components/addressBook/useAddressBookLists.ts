@@ -3,12 +3,20 @@ import { Account } from 'store/account'
 import { useDispatch } from 'react-redux'
 import {
   AddrBookItemType,
-  Contact,
   RecentContact,
   addRecentContact
 } from 'store/addressBook'
+import { Contact } from '@avalabs/types'
 
-export function useAddressBookLists() {
+export function useAddressBookLists(): {
+  onContactSelected: (item: Contact | Account, type: AddrBookItemType) => void
+  showAddressBook: boolean
+  saveRecentContact: () => void
+  reset: () => void
+  setShowAddressBook: (
+    value: ((prevState: boolean) => boolean) | boolean
+  ) => void
+} {
   const dispatch = useDispatch()
   const [showAddressBook, setShowAddressBook] = useState(false)
   const [tempRecentContact, setTempRecentContact] = useState<
@@ -18,7 +26,7 @@ export function useAddressBookLists() {
   const onContactSelected = (
     item: Contact | Account,
     type: AddrBookItemType
-  ) => {
+  ): void => {
     switch (type) {
       case 'account':
         setTempRecentContact({ id: (item as Account).index, type: type })
@@ -29,13 +37,13 @@ export function useAddressBookLists() {
     }
   }
 
-  const saveRecentContact = () => {
+  const saveRecentContact = (): void => {
     if (tempRecentContact) {
       dispatch(addRecentContact(tempRecentContact))
     }
   }
 
-  const reset = () => {
+  const reset = (): void => {
     setTempRecentContact(undefined)
   }
 

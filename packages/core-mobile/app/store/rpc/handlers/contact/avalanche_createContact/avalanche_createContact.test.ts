@@ -143,7 +143,7 @@ describe('avalanche_createContact handler', () => {
         id: '1aec34f6-308d-4962-ab1b-283504cc0960',
         name: 'Bob',
         addressBTC: 'tb1qjmapax0vtca726g8kaermd5rzdljql66esxs49',
-        addressPVM: 'P-avax17y8xf7ddfjwv0qg4zvuew0kucmylr749n83n0h',
+        addressXP: 'avax17y8xf7ddfjwv0qg4zvuew0kucmylr749n83n0h',
         address: '0xC7E5ffBd7843EdB88cCB2ebaECAa07EC55c65318'
       }
 
@@ -163,9 +163,9 @@ describe('avalanche_createContact handler', () => {
       expect(mockDispatch).toHaveBeenCalledWith(
         addContact({
           address: testContact.address,
-          addressPVM: testContact.addressPVM,
-          addressBtc: testContact.addressBTC,
-          title: testContact.name,
+          addressXP: testContact.addressXP,
+          addressBTC: testContact.addressBTC,
+          name: testContact.name,
           id: testContact.id
         })
       )

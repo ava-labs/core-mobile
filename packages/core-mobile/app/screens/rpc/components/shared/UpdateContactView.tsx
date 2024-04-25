@@ -10,16 +10,15 @@ import { NativeViewGestureHandler } from 'react-native-gesture-handler'
 import FlexSpacer from 'components/FlexSpacer'
 import AddressBookSVG from 'components/svg/AddressBookSVG'
 import AddressBookItem from 'components/addressBook/AddressBookItem'
-import { Contact as SharedContact } from '@avalabs/types'
+import { Contact } from '@avalabs/types'
 import RpcRequestBottomSheet from 'screens/rpc/components/shared/RpcRequestBottomSheet'
-import { Contact } from 'store/addressBook'
 
 type Props = {
   onReject: () => void
   onApprove: () => void
   dappUrl: string
   existingContact: Contact | undefined
-  contact: SharedContact
+  contact: Contact
 }
 
 const UpdateContactView = ({
@@ -28,16 +27,19 @@ const UpdateContactView = ({
   dappUrl,
   existingContact,
   contact
-}: Props) => {
+}: Props): JSX.Element => {
   const theme = useApplicationContext().theme
 
-  const renderContacts = (contactToUpdate: Contact, update: SharedContact) => {
+  const renderContacts = (
+    contactToUpdate: Contact,
+    update: Contact
+  ): JSX.Element => {
     return (
       <>
         <AddressBookItem
-          title={contactToUpdate.title}
+          title={contactToUpdate.name}
           address={contactToUpdate.address}
-          addressBtc={contactToUpdate.addressBtc}
+          addressBtc={contactToUpdate.addressBTC}
         />
         <AddressBookItem
           title={update.name}
