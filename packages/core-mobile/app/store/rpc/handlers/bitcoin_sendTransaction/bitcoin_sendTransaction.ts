@@ -17,6 +17,7 @@ import { selectSelectedCurrency } from 'store/settings/currency'
 import WalletService from 'services/wallet/WalletService'
 import NetworkService from 'services/network/NetworkService'
 import BtcBalanceService from 'services/balance/BtcBalanceService'
+import { updateRequestStatus, waitForTransactionReceipt } from 'store/rpc/slice'
 import {
   ApproveResponse,
   DEFERRED_RESULT,
@@ -171,9 +172,10 @@ class BitcoinSendTransactionHandler
     listenerApi: AppListenerEffectAPI
   ): ApproveResponse<string> => {
     try {
-      const { getState } = listenerApi
+      const { getState, dispatch } = listenerApi
       const {
-        data: { sendState }
+        data: { sendState },
+        request
       } = payload
       // Parse the json into a tx object
       const isDeveloperMode = selectIsDeveloperMode(getState())
@@ -205,8 +207,29 @@ class BitcoinSendTransactionHandler
 
       const hash = await NetworkService.sendTransaction({
         signedTx: result,
-        network: btcNetwork
+        network: btcNetwork,
+        handleWaitToPost: txResponse => {
+          dispatch(
+            waitForTransactionReceipt({
+              txResponse,
+              requestId: request.data.id,
+              requestedNetwork: btcNetwork
+            })
+          )
+        }
       })
+
+      dispatch(
+        updateRequestStatus({
+          id: request.data.id,
+          status: {
+            result: {
+              txHash: hash,
+              confirmationReceiptStatus: 'Pending'
+            }
+          }
+        })
+      )
 
       return {
         success: true,

@@ -51,7 +51,7 @@ const BitcoinSendTransaction = (): JSX.Element => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const btcNetwork = getBitcoinNetwork(isDeveloperMode)
 
-  const { sendState } = data
+  const { sendState, balance } = data
 
   const [maxFeePerGas, setMaxFeePerGas] = useState<
     TokenBaseUnit<NetworkTokenUnit>
@@ -98,7 +98,10 @@ const BitcoinSendTransaction = (): JSX.Element => {
   }, [goBack, onReject, request])
 
   const onHandleApprove = (): void => {
-    onApprove(request, { ...sendState, maxFeePerGas: maxFeePerGas.toSubUnit() })
+    onApprove(request, {
+      sendState: { ...sendState, maxFeePerGas: maxFeePerGas.toSubUnit() },
+      balance
+    })
     goBack()
   }
 
