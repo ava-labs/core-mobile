@@ -13,17 +13,20 @@ export function getAddressProperty(obj: Contact | Account): string {
 }
 
 /**
+ * For Contact object it will return whatever is in it's addressXP prop.
+ * For Account it will try to return address from either addressPVM or addressAVM prop,
+ * whichever is not empty.
  * @return x/p address without chain prefix
+ * @throws Error if object is neither Contact nor Account
  */
 export function getAddressXP(obj: Contact | Account): string | undefined {
   if ('addressXP' in obj) {
     return obj.addressXP
   }
-  if ('addressPVM' in obj && obj.addressPVM) {
-    return stripChainAddress(obj.addressPVM)
+  if ('addressPVM' in obj) {
+    return obj.addressPVM
+      ? stripChainAddress(obj.addressPVM)
+      : stripChainAddress(obj.addressAVM)
   }
-  if ('addressAVM' in obj && obj.addressAVM) {
-    return stripChainAddress(obj.addressAVM)
-  }
-  return undefined
+  throw new Error('Invalid input object')
 }
