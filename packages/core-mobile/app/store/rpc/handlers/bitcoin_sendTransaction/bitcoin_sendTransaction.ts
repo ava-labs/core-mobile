@@ -114,7 +114,7 @@ class BitcoinSendTransactionHandler
     const sendState = {
       address,
       amount: new BN(amountSatoshi),
-      maxFeePerGas: BigInt(feeRate)
+      maxFeePerGas: BigInt(feeRate ?? 0)
     }
 
     const verifiedState = await SendServiceBTC.validateStateAndCalculateFees({
