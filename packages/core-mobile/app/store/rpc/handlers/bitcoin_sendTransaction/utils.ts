@@ -3,7 +3,7 @@ import { SafeParseReturnType, z } from 'zod'
 const paramsSchema = z.tuple([
   z.string().describe('bitcoin receiving address'),
   z.string().describe('send amount'),
-  z.number().describe('fee rate')
+  z.number().describe('fee rate').optional()
 ])
 
 export const parseRequestParams = (
@@ -12,4 +12,4 @@ export const parseRequestParams = (
   return paramsSchema.safeParse(params)
 }
 
-export type TransactionParams = [string, string, number]
+export type TransactionParams = [string, string, number | undefined]

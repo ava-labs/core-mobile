@@ -57,11 +57,7 @@ class BitcoinSendTransactionHandler
     const btcNetwork = getBitcoinNetwork(isDeveloperMode)
     const currency = selectSelectedCurrency(state)
 
-    if (
-      !parseResult.success ||
-      parseResult.data[0] === undefined ||
-      parseResult.data[1] === undefined
-    ) {
+    if (!parseResult.success) {
       return {
         success: false,
         error: ethErrors.rpc.invalidParams({
