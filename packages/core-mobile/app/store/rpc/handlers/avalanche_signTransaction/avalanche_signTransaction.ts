@@ -30,11 +30,6 @@ import { parseRequestParams } from './utils'
 const GLACIER_URL = Config.GLACIER_URL
 const GLACIER_API_KEY = Config.GLACIER_API_KEY
 
-export type AvalancheTxParams = {
-  transactionHex: string
-  chainAlias: 'X' | 'P' | 'C'
-}
-
 type AvalancheSignTransactionResult = {
   signedTransactionHex: string
   signatures: {

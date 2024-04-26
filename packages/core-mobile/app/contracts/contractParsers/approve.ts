@@ -9,8 +9,9 @@ import { FindToken } from 'contracts/contractParsers/utils/useFindToken'
 import { Network } from '@avalabs/chains-sdk'
 import { Result, TransactionDescription } from 'ethers'
 import { TransactionParams } from 'store/rpc/handlers/eth_sendTransaction/utils'
-import { bigIntToHex } from '@ethereumjs/util'
+import { bigIntToHex } from 'utils/bigNumbers/bigIntToHex'
 
+// eslint-disable-next-line max-params
 export async function approveTxHandler(
   findToken: FindToken,
   network: Network,
