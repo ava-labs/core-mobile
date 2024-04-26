@@ -25,6 +25,9 @@ import {
   getAddressProperty,
   getAddressXP
 } from 'store/utils/account&contactGetters'
+import { SendTokensScreenProps } from 'navigation/types'
+import AppNavigation from 'navigation/AppNavigation'
+import { useNavigation } from '@react-navigation/native'
 
 type Props = {
   onOpenAddressBook: () => void
@@ -36,6 +39,10 @@ type Props = {
   testID?: string
 }
 
+type SendTokenNavigationProp = SendTokensScreenProps<
+  typeof AppNavigation.Send.Send
+>['navigation']
+
 const SendToken: FC<Props> = ({ onOpenAddressBook, token, contact }) => {
   const {
     setSendToken,
@@ -45,8 +52,10 @@ const SendToken: FC<Props> = ({ onOpenAddressBook, token, contact }) => {
     toAccount,
     canSubmit,
     sdkError,
-    maxAmount
+    maxAmount,
+    onSendNow
   } = useSendTokenContext()
+  const navigation = useNavigation<SendTokenNavigationProp>()
   const { activeNetwork } = useNetworks()
   const [showQrCamera, setShowQrCamera] = useState(false)
   const [sendError, setSendError] = useState<string>()
@@ -118,7 +127,9 @@ const SendToken: FC<Props> = ({ onOpenAddressBook, token, contact }) => {
 
   const onNextPress = (): void => {
     saveRecentContact()
-    // onNext()
+    onSendNow({
+      onSuccess: navigation.goBack
+    })
   }
 
   const handleMax = useCallback(() => {
