@@ -2,6 +2,12 @@ import BN from 'bn.js'
 import { TokenWithBalance } from 'store/balance'
 import { SignTransactionRequest } from 'services/wallet/types'
 import { Transaction } from '@sentry/types'
+import { Dispatch } from '@reduxjs/toolkit'
+import { Network } from '@avalabs/chains-sdk'
+import { Account } from 'store/account/types'
+import { TransactionParams } from 'store/rpc/handlers/eth_sendTransaction/utils'
+import { Request } from 'store/rpc/types'
+import { AvalancheTxParams } from 'store/rpc/handlers/avalanche_sendTransaction/avalanche_sendTransaction'
 
 export interface SendError {
   error: boolean
@@ -44,7 +50,7 @@ export enum SendErrorMessage {
 export interface SendServiceHelper {
   getTransactionRequest(
     params: GetTransactionRequestParams
-  ): Promise<SignTransactionRequest>
+  ): Promise<SignTransactionRequest | AvalancheTxParams>
   validateStateAndCalculateFees(
     params: ValidateStateAndCalculateFeesParams
   ): Promise<SendState>
@@ -58,6 +64,16 @@ export type ValidateStateAndCalculateFeesParams = SendServiceFuncParams & {
 
 export type GetPVMTransactionRequestParams = SendServiceFuncParams & {
   accountIndex: number
+}
+
+export type SendParams = {
+  sendState: SendState
+  network: Network
+  account: Account
+  currency: string
+  signAndSend: (txParams: [TransactionParams]) => Promise<string>
+  sentryTrx?: Transaction
+  dispatch?: Dispatch<{ payload: Request; type: string }>
 }
 
 type SendServiceFuncParams = {
