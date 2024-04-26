@@ -200,6 +200,7 @@ export default function Browser({ tabId }: { tabId: string }): JSX.Element {
         </View>
       </View>
       <WebView
+        allowsInlineMediaPlayback={true}
         javaScriptEnabled={true}
         testID="myWebview"
         ref={webViewRef}
