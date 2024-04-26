@@ -15,11 +15,11 @@ import AppNavigation from 'navigation/AppNavigation'
 import networkService from 'services/network/NetworkService'
 import walletService from 'services/wallet/WalletService'
 import mockAccounts from 'tests/fixtures/accounts.json'
+import { AvalancheTxParams } from '../avalanche_sendTransaction/avalanche_sendTransaction'
 import { DEFERRED_RESULT } from '../types'
 import {
   AvalancheSignTransactionApproveData,
   AvalancheSignTransactionRpcRequest,
-  AvalancheTxParams,
   avalancheSignTransactionHandler
 } from './avalanche_signTransaction'
 

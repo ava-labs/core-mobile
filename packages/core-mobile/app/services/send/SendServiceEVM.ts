@@ -23,6 +23,7 @@ import {
   ERC721__factory
 } from 'contracts/openzeppelin'
 import { getEvmProvider } from 'services/network/utils/providerUtils'
+import { bigIntToHex } from 'utils/bigNumbers/bigIntToHex'
 
 export class SendServiceEVM implements SendServiceHelper {
   private readonly networkProvider: JsonRpcBatchInternal
@@ -57,7 +58,6 @@ export class SendServiceEVM implements SendServiceHelper {
           canSubmit: true,
           error: undefined,
           gasLimit,
-          defaultMaxFeePerGas,
           maxAmount,
           sendFee
         }
@@ -164,7 +164,6 @@ export class SendServiceEVM implements SendServiceHelper {
     if (!sendState.token) throw new Error('Missing token')
 
     if (sendState.token.type === TokenType.NATIVE) {
-      //fixme - check what is real value here
       return this.getUnsignedTxNative(sendState)
     } else if (sendState.token.type === TokenType.ERC20) {
       return this.getUnsignedTxERC20(
@@ -189,7 +188,7 @@ export class SendServiceEVM implements SendServiceHelper {
     return {
       from: this.fromAddress,
       to: sendState.address,
-      value: BigInt(sendState.amount?.toString() || 0n)
+      value: bigIntToHex(BigInt(sendState.amount?.toString() || 0n))
     }
   }
 
@@ -206,9 +205,11 @@ export class SendServiceEVM implements SendServiceHelper {
       sendState.address,
       sendState.amount ? BigInt(sendState.amount.toString()) : 0n
     )
+
     return {
-      ...populatedTransaction, // only includes `to` and `data`
-      from: this.fromAddress
+      from: this.fromAddress,
+      to: populatedTransaction.to,
+      data: populatedTransaction.data
     }
   }
 
@@ -227,8 +228,9 @@ export class SendServiceEVM implements SendServiceHelper {
       sendState.token?.tokenId || ''
     )
     return {
-      ...populatedTransaction, // only includes `to` and `data`
-      from: this.fromAddress
+      from: this.fromAddress,
+      to: populatedTransaction.to,
+      data: populatedTransaction.data
     }
   }
 
@@ -250,8 +252,9 @@ export class SendServiceEVM implements SendServiceHelper {
       )
 
     const unsignedTx: TransactionRequest = {
-      ...populatedTransaction, // only includes `to` and `data`
-      from: this.fromAddress
+      from: this.fromAddress,
+      to: populatedTransaction.to,
+      data: populatedTransaction.data
     }
 
     return unsignedTx

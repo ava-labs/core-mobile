@@ -16,10 +16,6 @@ import sendService from 'services/send/SendService'
 import { SendState } from 'services/send/types'
 import { bnToLocaleString } from '@avalabs/utils-sdk'
 import { selectSelectedCurrency } from 'store/settings/currency'
-import { showSnackBarCustom } from 'components/Snackbar'
-import TransactionToast, {
-  TransactionToastType
-} from 'components/toast/TransactionToast'
 import BN from 'bn.js'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import Logger from 'utils/Logger'
@@ -27,6 +23,8 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { NetworkTokenUnit, Amount } from 'types'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { useNetworkFee } from 'hooks/useNetworkFee'
+import { useInAppRequest } from 'hooks/useInAppRequest'
+import { RpcMethod } from 'store/rpc'
 
 export interface SendTokenContextState {
   sendToken: TokenWithBalance | undefined
@@ -36,14 +34,10 @@ export interface SendTokenContextState {
   toAccount: Account
   fees: Fees
   canSubmit: boolean
-  sendStatus: SendStatus
-  sendStatusMsg: string
-  onSendNow: () => void
+  onSendNow: ({ onSuccess }: { onSuccess?: () => void }) => void
   sdkError: string | undefined
   maxAmount: Amount
 }
-
-export type SendStatus = 'Idle' | 'Preparing' | 'Sending' | 'Success' | 'Fail'
 
 export const SendTokenContext = createContext<SendTokenContextState>(
   {} as SendTokenContextState
@@ -83,10 +77,10 @@ export const SendTokenContextProvider = ({
     setDefaultMaxFeePerGas(networkFee.low.maxFeePerGas)
   }, [networkFee])
 
-  const [sendStatus, setSendStatus] = useState<SendStatus>('Idle')
-  const [sendStatusMsg, setSendStatusMsg] = useState('')
   const [canSubmit, setCanSubmit] = useState(false)
   const [error, setError] = useState<string | undefined>()
+
+  const { request } = useInAppRequest()
 
   useEffect(validateStateFx, [
     activeAccount,
@@ -108,20 +102,16 @@ export const SendTokenContextProvider = ({
     []
   )
 
-  function onSendNow(): void {
+  const onSendNow: SendTokenContextState['onSendNow'] = ({ onSuccess }) => {
+    if (!sendAmount) return
+
     if (!activeAccount) {
-      setSendStatus('Fail')
-      setSendStatusMsg('No active account')
-      AnalyticsService.capture('SendFailed', {
+      AnalyticsService.capture('SendTransactionFailed', {
         errorMessage: 'No active account',
         chainId: activeNetwork.chainId
       })
       return
     }
-
-    AnalyticsService.capture('SendApproved', {
-      chainId: activeNetwork.chainId
-    })
 
     const sendState: SendState = {
       address: sendToAddress,
@@ -131,68 +121,34 @@ export const SendTokenContextProvider = ({
       token: sendToken
     }
 
-    setSendStatus('Preparing')
-
-    setSendStatus('Sending')
-
-    showSnackBarCustom({
-      component: (
-        <TransactionToast
-          testID="send_token_context__send_pending_toast"
-          message={'Send Pending...'}
-          type={TransactionToastType.PENDING}
-        />
-      ),
-      duration: 'short'
-    })
-
     InteractionManager.runAfterInteractions(() => {
-      const sentryTrx = SentryWrapper.startTransaction('send-erc20')
+      const sentryTrx = SentryWrapper.startTransaction('send-token')
       sendService
-        .send(
+        .send({
           sendState,
-          activeNetwork,
-          activeAccount,
-          selectedCurrency.toLowerCase(),
-          undefined,
+          network: activeNetwork,
+          account: activeAccount,
+          currency: selectedCurrency.toLowerCase(),
           sentryTrx,
+          signAndSend: txParams =>
+            request({
+              method: RpcMethod.ETH_SEND_TRANSACTION,
+              params: txParams,
+              chainId: activeNetwork.chainId.toString()
+            }),
           dispatch
-        )
-        .then(txId => {
-          setSendStatus('Success')
-          AnalyticsService.capture('SendSucceeded', {
-            chainId: activeNetwork.chainId
+        })
+        .then(txHash => {
+          AnalyticsService.captureWithEncryption('SendTransactionSucceeded', {
+            chainId: activeNetwork.chainId,
+            txHash
           })
-          showSnackBarCustom({
-            component: (
-              <TransactionToast
-                testID="send_token_context__send_successful_toast"
-                message={'Send Successful'}
-                type={TransactionToastType.SUCCESS}
-                txHash={txId}
-              />
-            ),
-            duration: 'short'
-          })
+          onSuccess?.()
         })
         .catch(reason => {
-          const transactionHash =
-            reason?.transactionHash ?? reason?.error?.transactionHash
-          AnalyticsService.capture('SendFailed', {
-            errorMessage: reason?.error?.message,
+          AnalyticsService.capture('SendTransactionFailed', {
+            errorMessage: reason.message,
             chainId: activeNetwork.chainId
-          })
-
-          showSnackBarCustom({
-            component: (
-              <TransactionToast
-                testID="send_token_context__send_failed_toast"
-                message={'Send Failed'}
-                type={TransactionToastType.ERROR}
-                txHash={transactionHash}
-              />
-            ),
-            duration: 'short'
           })
         })
         .finally(() => {
@@ -202,6 +158,12 @@ export const SendTokenContextProvider = ({
   }
 
   function validateStateFx(): void {
+    if (!sendAmount) {
+      setError('Amount not set')
+      setCanSubmit(false)
+      return
+    }
+
     if (!activeAccount) {
       setError('Account not set')
       setCanSubmit(false)
@@ -254,8 +216,6 @@ export const SendTokenContextProvider = ({
       gasLimit
     },
     canSubmit,
-    sendStatus,
-    sendStatusMsg,
     onSendNow,
     sdkError: error,
     maxAmount
