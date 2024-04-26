@@ -204,7 +204,7 @@ export const migrations = {
         id: id,
         name: oldAccount.title,
         type: CoreAccountType.PRIMARY,
-        active: true,
+        active: accountState.activeAccountIndex === Number(id),
         addressBTC: oldAccount.addressBtc,
         addressAVM: oldAccount.addressAVM,
         addressPVM: oldAccount.addressPVM,
