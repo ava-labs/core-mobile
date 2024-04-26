@@ -60,8 +60,7 @@ class BitcoinSendTransactionHandler
     if (
       !parseResult.success ||
       parseResult.data[0] === undefined ||
-      parseResult.data[1] === undefined ||
-      parseResult.data[2] === undefined
+      parseResult.data[1] === undefined
     ) {
       return {
         success: false,
