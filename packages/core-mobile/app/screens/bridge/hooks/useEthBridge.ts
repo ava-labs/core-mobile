@@ -19,6 +19,7 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { Eip1559Fees } from 'utils/Utils'
 import { NetworkTokenUnit } from 'types'
 import { useNetworks } from 'hooks/networks/useNetworks'
+import Logger from 'utils/Logger'
 
 /**
  * Hook for when the bridge source chain is Ethereum
@@ -60,7 +61,7 @@ export function useEthBridge({
   const maximum =
     useMaxTransferAmount(
       sourceBalance?.balance,
-      activeAccount?.address,
+      activeAccount?.addressC,
       ethereumProvider
     ) || undefined
   const receiveAmount = amount.gt(minimum) ? amount.minus(bridgeFee) : BIG_ZERO
@@ -87,7 +88,7 @@ export function useEthBridge({
     AnalyticsService.captureWithEncryption('BridgeTransactionStarted', {
       chainId: activeNetwork.chainId,
       sourceTxHash: result?.hash ?? '',
-      fromAddress: activeAccount?.address
+      fromAddress: activeAccount?.addressC
     })
 
     createBridgeTransaction(
@@ -100,7 +101,7 @@ export function useEthBridge({
         symbol
       },
       activeNetwork
-    )
+    ).catch(Logger.error)
 
     return result?.hash
   }, [
@@ -110,7 +111,7 @@ export function useEthBridge({
     transferAsset,
     amount,
     eip1559Fees,
-    activeAccount?.address,
+    activeAccount?.addressC,
     createBridgeTransaction
   ])
 

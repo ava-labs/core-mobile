@@ -19,7 +19,7 @@ export function AddLiquidityTransaction({
   fromAddress,
   description,
   name
-}: AddLiquidityDisplayData) {
+}: AddLiquidityDisplayData): JSX.Element {
   const theme = useApplicationContext().theme
   const activeAccount = useSelector(selectAccountByAddress(fromAddress))
 
@@ -34,7 +34,7 @@ export function AddLiquidityTransaction({
         ]}>
         <Row style={{ justifyContent: 'space-between' }}>
           <AvaText.Body3>Account</AvaText.Body3>
-          <AvaText.Body3>{activeAccount?.title}</AvaText.Body3>
+          <AvaText.Body3>{activeAccount?.name}</AvaText.Body3>
         </Row>
         <Space y={8} />
         <Row style={{ justifyContent: 'space-between' }}>

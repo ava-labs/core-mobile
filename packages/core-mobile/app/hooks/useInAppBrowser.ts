@@ -7,6 +7,7 @@ import { selectActiveAccount } from 'store/account'
 import Config from 'react-native-config'
 import { showSimpleToast } from 'components/Snackbar'
 import { generateOnRampURL } from '@coinbase/cbpay-js'
+import Logger from 'utils/Logger'
 
 const moonpayURL = async (address: string): Promise<{ url: string }> => {
   return await fetch(`${Config.PROXY_URL}/moonpay/${address}`).then(response =>
@@ -14,15 +15,19 @@ const moonpayURL = async (address: string): Promise<{ url: string }> => {
   )
 }
 
-const useInAppBrowser = () => {
+const useInAppBrowser = (): {
+  openUrl: (url: string) => Promise<void>
+  openCoinBasePay: (address: string) => Promise<void>
+  openMoonPay: () => Promise<void>
+} => {
   const { theme } = useApplicationContext()
-  const addressC = useSelector(selectActiveAccount)?.address ?? ''
+  const addressC = useSelector(selectActiveAccount)?.addressC ?? ''
 
-  function failSafe(url: string) {
-    Linking.openURL(url)
+  function failSafe(url: string): void {
+    Linking.openURL(url).catch(Logger.error)
   }
 
-  async function openMoonPay() {
+  async function openMoonPay(): Promise<void> {
     const [result, error] = await resolve(moonpayURL(addressC))
     if (error) {
       return showSimpleToast(
@@ -34,7 +39,7 @@ const useInAppBrowser = () => {
     }
   }
 
-  const openCoinBasePay = async (address: string) => {
+  const openCoinBasePay = async (address: string): Promise<void> => {
     const appId = Config.COINBASE_APP_ID
     if (!appId) {
       return showSimpleToast(
@@ -53,7 +58,7 @@ const useInAppBrowser = () => {
     return openUrl(coinbaseUrl)
   }
 
-  async function openUrl(url: string) {
+  async function openUrl(url: string): Promise<void> {
     try {
       if (await InAppBrowser.isAvailable()) {
         InAppBrowser.open(url, {

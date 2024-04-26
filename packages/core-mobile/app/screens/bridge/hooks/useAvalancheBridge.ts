@@ -10,6 +10,7 @@ import { selectActiveAccount } from 'store/account'
 import { NetworkTokenUnit } from 'types'
 import { Eip1559Fees } from 'utils/Utils'
 import { useNetworks } from 'hooks/networks/useNetworks'
+import Logger from 'utils/Logger'
 
 /**
  * Hook for when the source is Avalanche
@@ -65,7 +66,7 @@ export function useAvalancheBridge({
     AnalyticsService.captureWithEncryption('BridgeTransactionStarted', {
       chainId: activeNetwork.chainId,
       sourceTxHash: result?.hash ?? '',
-      fromAddress: activeAccount?.address
+      fromAddress: activeAccount?.addressC
     })
 
     createBridgeTransaction(
@@ -78,7 +79,7 @@ export function useAvalancheBridge({
         symbol: currentAssetData.symbol
       },
       activeNetwork
-    )
+    ).catch(Logger.error)
 
     return result?.hash
   }, [

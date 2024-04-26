@@ -16,6 +16,7 @@ import { PortfolioState } from 'store/portfolio'
 import { RawRootState, RootState } from 'store/index'
 import { encryptTransform } from 'redux-persist-transform-encrypt'
 import { Network } from '@avalabs/chains-sdk'
+import { CoreAccountType, WalletType } from '@avalabs/types'
 
 const secretKey =
   '037f948ec4fc19c751a8508744626399768efc81d07e2b9dd5ad298196328efa'
@@ -114,13 +115,18 @@ const initialState = {
   account: {
     accounts: {
       '0': {
-        address: '0x341b0073b66bfc19FCB54308861f604F5Eb8f51b',
-        addressAVM: 'X-avax17y8xf7ddfjwv0qg4zvuew0kucmylr749n83n0h',
-        addressBtc: 'bc1qctnzrtj8k6f362x34t3n09tk0er0eu4c2e56aq',
-        addressCoreEth: 'C-avax1ctnzrtj8k6f362x34t3n09tk0er0eu4cfp8cqs',
+        addressC: '0x341b0073b66bfc19FCB54308861f604F5Eb8f51b',
         addressPVM: 'P-avax17y8xf7ddfjwv0qg4zvuew0kucmylr749n83n0h',
+        addressAVM: 'X-avax17y8xf7ddfjwv0qg4zvuew0kucmylr749n83n0h',
+        addressBTC: 'bc1qctnzrtj8k6f362x34t3n09tk0er0eu4c2e56aq',
+        addressCoreEth: 'C-avax1ctnzrtj8k6f362x34t3n09tk0er0eu4cfp8cqs',
         index: 0,
-        title: 'Account 1'
+        name: 'Account 1',
+        active: true,
+        type: CoreAccountType.PRIMARY,
+        walletId: 'walletId0',
+        walletType: WalletType.Mnemonic,
+        id: 'id0'
       }
     },
     activeAccountIndex: 0

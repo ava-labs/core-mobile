@@ -15,12 +15,16 @@ type Props = {
   onSelect: (accountIndex: string) => void
 }
 
-const AccountSeparator = () => {
+const AccountSeparator = (): JSX.Element => {
   const { theme } = useApplicationContext()
   return <Separator color={theme.neutral700} />
 }
 
-const SelectAccounts = ({ accounts, selectedAccounts, onSelect }: Props) => {
+const SelectAccounts = ({
+  accounts,
+  selectedAccounts,
+  onSelect
+}: Props): JSX.Element => {
   const { theme } = useApplicationContext()
   const [showAccounts, setShowAccounts] = useState<boolean>(false)
 
@@ -36,7 +40,7 @@ const SelectAccounts = ({ accounts, selectedAccounts, onSelect }: Props) => {
   const renderItem: ListRenderItem<Account> = ({ item }) => (
     <AccountItem
       account={item}
-      selected={selectedAccounts.includes(item.address)}
+      selected={selectedAccounts.includes(item.addressC)}
       onSelect={onSelect}
     />
   )

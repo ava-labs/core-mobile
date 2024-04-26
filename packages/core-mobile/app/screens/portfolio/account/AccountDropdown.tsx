@@ -116,7 +116,7 @@ function AccountItemRenderer({
   const activeAccount = useSelector(selectActiveAccount)
   return (
     <AccountItem
-      key={account.title}
+      key={account.name}
       account={account}
       selected={account.index === activeAccount?.index}
       onSelectAccount={onSelectAccount}

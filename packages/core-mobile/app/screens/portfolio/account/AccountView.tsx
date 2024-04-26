@@ -101,7 +101,7 @@ function AccountItemRenderer({
   const activeAccount = useSelector(selectActiveAccount)
   return (
     <AccountItem
-      key={account.title}
+      key={account.name}
       account={account}
       editable
       selected={activeAccount?.index === account.index}

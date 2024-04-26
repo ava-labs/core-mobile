@@ -19,9 +19,9 @@ class AccountsService {
       if (account) {
         reloadedAccounts[key] = {
           ...account,
-          title: title ?? account.title,
-          addressBtc: addresses[NetworkVMType.BITCOIN],
-          address: addresses[NetworkVMType.EVM],
+          name: title ?? account.name,
+          addressBTC: addresses[NetworkVMType.BITCOIN],
+          addressC: addresses[NetworkVMType.EVM],
           addressAVM: addresses[NetworkVMType.AVM],
           addressPVM: addresses[NetworkVMType.PVM],
           addressCoreEth: addresses[NetworkVMType.CoreEth]
@@ -36,9 +36,9 @@ class AccountsService {
     const addresses = await WalletService.addAddress(index, isTestnet)
     return {
       index,
-      title: `Account ${index + 1}`,
-      addressBtc: addresses[NetworkVMType.BITCOIN],
-      address: addresses[NetworkVMType.EVM],
+      name: `Account ${index + 1}`,
+      addressBTC: addresses[NetworkVMType.BITCOIN],
+      addressC: addresses[NetworkVMType.EVM],
       addressAVM: addresses[NetworkVMType.AVM],
       addressPVM: addresses[NetworkVMType.PVM],
       addressCoreEth: addresses[NetworkVMType.CoreEth]

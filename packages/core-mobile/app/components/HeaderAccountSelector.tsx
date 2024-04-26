@@ -34,7 +34,7 @@ export default function HeaderAccountSelector({
               lineHeight: 22,
               fontSize: 17
             }}>
-            {activeAccount?.title}
+            {activeAccount?.name}
           </Text>
         ) : (
           <ActivityIndicator size="small" color={'$neutral50'} />

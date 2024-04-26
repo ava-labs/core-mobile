@@ -29,7 +29,10 @@ export function useAddressBookLists(): {
   ): void => {
     switch (type) {
       case 'account':
-        setTempRecentContact({ id: (item as Account).index, type: type })
+        setTempRecentContact({
+          id: (item as Account).index,
+          type: type
+        })
         break
       case 'contact':
         setTempRecentContact({ id: (item as Contact).id, type: type })

@@ -67,7 +67,7 @@ export function useFindToken(network: Network | undefined): FindToken {
       }
 
       const contract = new ethers.Contract(address, ERC20.abi, provider)
-      const balance = await contract.balanceOf?.(activeAccount.address)
+      const balance = await contract.balanceOf?.(activeAccount.addressC)
 
       return {
         id: `${network?.chainId} - ${tokenData.address}`,

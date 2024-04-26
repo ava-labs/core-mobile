@@ -109,7 +109,7 @@ export const SwapContextProvider = ({
       setIsFetchingOptimalRate(true)
       getOptimalRateForAmount(amount)
         .then(({ optimalRate: opRate, error: err }) => {
-          setError(err)
+          setError(err ?? '')
           setOptimalRate(opRate)
         })
         .catch(reason => {
@@ -163,14 +163,14 @@ export const SwapContextProvider = ({
               params: txParams,
               chainId: activeNetwork.chainId.toString()
             }),
-          userAddress: activeAccount.address
+          userAddress: activeAccount.addressC
         })
       )
         .then(([result, err]) => {
           if (err || (result && 'error' in result)) {
             setSwapStatus('Fail')
             AnalyticsService.captureWithEncryption('SwapTransactionFailed', {
-              address: activeAccount.address,
+              address: activeAccount.addressC,
               chainId: activeNetwork.chainId
             })
             showSnackBarCustom({

@@ -10,17 +10,23 @@ export function getAddressByVM(
     return
   }
 
-  if (vm === AVM) {
-    return account.addressAVM
-  } else if (vm === PVM) {
-    return account.addressPVM
-  } else if (vm === EVM) {
-    return account.addressCoreEth
+  switch (vm) {
+    case AVM:
+      return account.addressAVM
+    case PVM:
+      return account.addressPVM
+    case EVM:
+      return account.addressCoreEth
   }
 }
 
 export function stripChainAddress(address: string): string {
-  return address.slice(2)
+  if (
+    address.toLowerCase().startsWith('p-') ||
+    address.toLowerCase().startsWith('x-')
+  )
+    return address.slice(2)
+  return address
 }
 
 export function getAddressByNetwork(
@@ -29,23 +35,14 @@ export function getAddressByNetwork(
 ): string {
   switch (network.vmName) {
     case NetworkVMType.EVM:
-      return account.address
+      return account.addressC
     case NetworkVMType.BITCOIN:
-      return account.addressBtc
+      return account.addressBTC
     case NetworkVMType.AVM:
-      if (!account.addressXP) {
-        throw new Error('AVM address not present')
-      }
-      return 'X-' + account.addressXP
+      return account.addressAVM
     case NetworkVMType.PVM:
-      if (!account.addressXP) {
-        throw new Error('PVM address not present')
-      }
-      return 'P-' + account.addressXP
+      return account.addressPVM
     case NetworkVMType.CoreEth:
-      if (!account.addressCoreEth) {
-        throw new Error('CoreEth address not present')
-      }
       return account.addressCoreEth
     default:
       throw new Error('unsupported network ' + network.vmName)

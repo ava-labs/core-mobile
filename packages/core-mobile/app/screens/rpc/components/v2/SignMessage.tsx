@@ -84,7 +84,7 @@ const SignMessage = (): JSX.Element | null => {
   }
 
   const renderAccount = (): JSX.Element => {
-    const accountAddress = ` (${truncateAddress(account.address, 5)})`
+    const accountAddress = ` (${truncateAddress(account.addressC, 5)})`
 
     return (
       <View style={styles.fullWidthContainer}>
@@ -93,7 +93,7 @@ const SignMessage = (): JSX.Element | null => {
           <Space y={4} />
           <Row>
             <AvaText.ButtonMedium textStyle={{ color: theme.colorText1 }}>
-              {account.title}
+              {account.name}
             </AvaText.ButtonMedium>
             <AvaText.ButtonMedium
               textStyle={{ color: theme.colorText1, fontWeight: 'normal' }}>

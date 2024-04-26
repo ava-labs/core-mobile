@@ -70,7 +70,7 @@ describe('earn/exportP', () => {
     })
 
     it('should call walletService.createExportPTx', async () => {
-      await expect(async () => {
+      expect(async () => {
         await exportP({
           pChainBalance: Avax.fromBase(12),
           requiredAmount: Avax.fromBase(10),
@@ -88,7 +88,7 @@ describe('earn/exportP', () => {
     })
 
     it('should call walletService.signAvaxTx', async () => {
-      await expect(async () => {
+      expect(async () => {
         await exportP({
           pChainBalance: Avax.fromBase(12),
           requiredAmount: Avax.fromBase(10),
@@ -100,7 +100,7 @@ describe('earn/exportP', () => {
     })
 
     it('should call networkService.sendTransaction', async () => {
-      await expect(async () => {
+      expect(async () => {
         await exportP({
           pChainBalance: Avax.fromBase(12),
           requiredAmount: Avax.fromBase(10),
