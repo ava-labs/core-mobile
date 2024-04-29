@@ -44,6 +44,7 @@ export enum RpcMethod {
   WALLET_ADD_ETHEREUM_CHAIN = 'wallet_addEthereumChain',
   WALLET_SWITCH_ETHEREUM_CHAIN = 'wallet_switchEthereumChain',
   WALLET_GET_ETHEREUM_CHAIN = 'wallet_getEthereumChain',
+  BITCOIN_SEND_TRANSACTION = 'bitcoin_sendTransaction',
 
   /* custom methods that are proprietary to Core */
   AVALANCHE_BRIDGE_ASSET = 'avalanche_bridgeAsset',
