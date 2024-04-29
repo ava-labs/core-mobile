@@ -8,16 +8,18 @@ import {
 } from 'utils/toast'
 import { selectIsDeveloperMode } from 'store/settings/advanced/slice'
 import { selectActiveNetwork } from 'store/network/slice'
+import { Network } from '@avalabs/chains-sdk'
 import { updateRequestStatus } from '../slice'
 
 export const handleWaitForTransactionReceipt = async (
   listenerApi: AppListenerEffectAPI,
   txResponse: TransactionResponse,
-  requestId: number
+  requestId: number,
+  requestedNetwork?: Network
 ): Promise<void> => {
   const { dispatch, getState } = listenerApi
   const state = getState()
-  const network = selectActiveNetwork(state)
+  const network = requestedNetwork ?? selectActiveNetwork(state)
   const isTestnet = selectIsDeveloperMode(state)
 
   showTransactionPendingToast()

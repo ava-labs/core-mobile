@@ -311,15 +311,19 @@ const NetworkFeeSelector = ({
           </Text>
         </Row>
 
-        {maxNetworkFee && calculatedFees?.maxTotalFee.gt(maxNetworkFee) && (
-          <Text variant="caption" sx={{ color: '$dangerMain', lineHeight: 15 }}>
-            Insufficient balance to cover gas costs. {'\n'}
-            {network?.networkToken?.symbol
-              ? `Please add ${network.networkToken.symbol}`
-              : ''}
-            .
-          </Text>
-        )}
+        {maxNetworkFee &&
+          maxNetworkFee?.gt(0) &&
+          calculatedFees?.maxTotalFee.gt(maxNetworkFee) && (
+            <Text
+              variant="caption"
+              sx={{ color: '$dangerMain', lineHeight: 15 }}>
+              Insufficient balance to cover gas costs. {'\n'}
+              {network?.networkToken?.symbol
+                ? `Please add ${network.networkToken.symbol}`
+                : ''}
+              .
+            </Text>
+          )}
       </View>
     </>
   )
