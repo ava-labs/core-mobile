@@ -1,4 +1,3 @@
-import { isBech32AddressInNetwork } from '@avalabs/bridge-sdk'
 import { BITCOIN_NETWORK, BITCOIN_TEST_NETWORK } from '@avalabs/chains-sdk'
 import {
   BitcoinInputUTXO,
@@ -20,6 +19,7 @@ import balanceService from 'services/balance/BalanceService'
 import { getBitcoinProvider } from 'services/network/utils/providerUtils'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { Transaction } from '@sentry/types'
+import { isBtcAddress } from 'utils/isBtcAddress'
 
 class SendServiceBTC implements SendServiceHelper {
   async getTransactionRequest(
@@ -104,7 +104,7 @@ class SendServiceBTC implements SendServiceHelper {
           )
 
         // Validate the destination address
-        const isAddressValid = isBech32AddressInNetwork(toAddress, isMainnet)
+        const isAddressValid = isBtcAddress(toAddress, isMainnet)
 
         if (!isAddressValid)
           return this.getErrorState(
@@ -126,7 +126,8 @@ class SendServiceBTC implements SendServiceHelper {
           canSubmit: !!psbt,
           error: undefined,
           maxAmount,
-          sendFee: new BN(fee)
+          sendFee: new BN(fee),
+          gasLimit: fee / feeRate
         }
 
         if (!amountInSatoshis)

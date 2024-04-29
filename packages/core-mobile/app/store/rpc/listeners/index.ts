@@ -16,7 +16,8 @@ export const addRpcListeners = (startListening: AppStartListening): void => {
       handleWaitForTransactionReceipt(
         listenerApi,
         action.payload.txResponse,
-        action.payload.requestId
+        action.payload.requestId,
+        action.payload.requestedNetwork
       )
   })
 }
