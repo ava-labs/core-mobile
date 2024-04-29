@@ -2,7 +2,7 @@ import { z } from 'zod'
 import { CoreAccountType, WalletType } from '@avalabs/types'
 
 export const accountSchema = z.object({
-  index: z.number().optional(),
+  index: z.number(),
   name: z.string(),
   addressBTC: z.string(),
   addressC: z.string(),
