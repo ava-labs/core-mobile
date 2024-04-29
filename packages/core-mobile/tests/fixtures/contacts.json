@@ -1,14 +1,14 @@
 {
     "1aec34f6-308d-4962-ab1b-283504cc0960": {
       "id": "1aec34f6-308d-4962-ab1b-283504cc0960", 
-      "title": "Bob",
-      "addressBtc": "tb1qjmapax0vtca726g8kaermd5rzdljql66esxs49",
+      "name": "Bob",
+      "addressBTC": "tb1qjmapax0vtca726g8kaermd5rzdljql66esxs49",
       "address": "0xC7E5ffBd7843EdB88cCB2ebaECAa07EC55c65318"
     },
     "e0949c95-76a1-40ce-90b8-a32198b4dccf": {
       "id": "e0949c95-76a1-40ce-90b8-a32198b4dccf",
-      "title": "Alice",
-      "addressBtc": "tb1qlzsvluv4cahzz8zzwud40x2hn3zq4c7zak6spw",
+      "name": "Alice",
+      "addressBTC": "tb1qlzsvluv4cahzz8zzwud40x2hn3zq4c7zak6spw",
       "address": "0xcA0E993876152ccA6053eeDFC753092c8cE712D0"
     }
   }

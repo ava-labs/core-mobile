@@ -16,8 +16,8 @@ class AvalancheGetContactsHandler
     listenerApi: AppListenerEffectAPI
   ): HandleResponse => {
     const contacts = selectContacts(listenerApi.getState())
-
-    return { success: true, value: contacts }
+    const contactsArray = Object.values(contacts).map(value => value)
+    return { success: true, value: contactsArray }
   }
 }
 
