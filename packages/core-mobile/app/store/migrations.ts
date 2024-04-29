@@ -173,6 +173,19 @@ export const migrations = {
     }
   },
   13: (state: any) => {
+    const newState = {
+      ...state,
+      settings: {
+        ...state.settings,
+        currency: {
+          ...state.settings.currency
+        }
+      }
+    }
+    delete newState.settings.currency.currencies
+    return newState
+  },
+  14: (state: any) => {
     //migrate Account type to CorePrimaryAccount
     type OldAccountType = {
       index: number
@@ -219,7 +232,7 @@ export const migrations = {
     newState.account = accountState
     return newState
   },
-  14: (state: any) => {
+  15: (state: any) => {
     type OldContactType = {
       address: string
       addressBtc: string
