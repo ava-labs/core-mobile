@@ -7,6 +7,7 @@ import {
   isValidUrl,
   normalizeUrlWithHttps,
   removeProtocol,
+  removeTrailingSlash,
   sortDeFiProtocolInformationListByTvl
 } from './utils'
 
@@ -124,5 +125,19 @@ describe('getNextFavColor', () => {
     const controlFavColors = ['#003F5C', '#00628F', '#2F4B7C', '#003F5C']
     const testFavColors = favIds.map(id => getNextFavColor(id))
     expect(testFavColors).toEqual(controlFavColors)
+  })
+})
+
+describe('removeTrailingSlash', () => {
+  it('should remove trailing slash', () => {
+    const url = 'https://core.app/'
+    const result = removeTrailingSlash(url)
+    expect(result).toStrictEqual('https://core.app')
+  })
+
+  it('should not remove trailing slash if it is not there', () => {
+    const url = 'https://core.app'
+    const result = removeTrailingSlash(url)
+    expect(result).toStrictEqual('https://core.app')
   })
 })
