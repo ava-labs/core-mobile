@@ -10,6 +10,7 @@ import {
   ValidateStateAndCalculateFeesParams
 } from 'services/send/types'
 import { Network } from '@avalabs/chains-sdk'
+import { bigIntToHex } from '@ethereumjs/util'
 import {
   NftTokenWithBalance,
   TokenType,
@@ -38,15 +39,14 @@ export class SendServiceEVM implements SendServiceHelper {
     return SentryWrapper.createSpanFor(sentryTrx)
       .setContext('svc.send.evm.validate_and_calc_fees')
       .executeAsync(async () => {
-        const { amount, address, maxFeePerGas, maxPriorityFeePerGas, token } =
-          sendState
+        const { amount, address, defaultMaxFeePerGas, token } = sendState
 
         // Set canSubmit to false if token is not set
         if (!token) return SendServiceEVM.getErrorState(sendState, '')
 
         const gasLimit = await this.getGasLimit(sendState)
-        const sendFee = maxFeePerGas
-          ? new BN(gasLimit).mul(new BN(maxFeePerGas.toString()))
+        const sendFee = defaultMaxFeePerGas
+          ? new BN(gasLimit).mul(new BN(defaultMaxFeePerGas.toString()))
           : undefined
         const maxAmount =
           token.type === TokenType.NATIVE
@@ -58,8 +58,6 @@ export class SendServiceEVM implements SendServiceHelper {
           canSubmit: true,
           error: undefined,
           gasLimit,
-          maxFeePerGas,
-          maxPriorityFeePerGas,
           maxAmount,
           sendFee
         }
@@ -76,7 +74,7 @@ export class SendServiceEVM implements SendServiceHelper {
             SendErrorMessage.INVALID_ADDRESS
           )
 
-        if (!maxFeePerGas || maxFeePerGas === 0n)
+        if (!defaultMaxFeePerGas || defaultMaxFeePerGas === 0n)
           return SendServiceEVM.getErrorState(
             newState,
             SendErrorMessage.INVALID_NETWORK_FEE
@@ -121,18 +119,12 @@ export class SendServiceEVM implements SendServiceHelper {
       .executeAsync(async () => {
         const unsignedTx = await this.getUnsignedTx(sendState)
         const chainId = this.activeNetwork.chainId
-        const nonce = await this.networkProvider.getTransactionCount(
-          this.fromAddress
-        )
         const gasLimit = await this.getGasLimit(sendState)
 
         return {
           ...unsignedTx,
           chainId,
-          gasLimit,
-          maxFeePerGas: sendState.maxFeePerGas,
-          maxPriorityFeePerGas: sendState.maxPriorityFeePerGas,
-          nonce
+          gasLimit
         }
       })
   }
@@ -172,7 +164,6 @@ export class SendServiceEVM implements SendServiceHelper {
     if (!sendState.token) throw new Error('Missing token')
 
     if (sendState.token.type === TokenType.NATIVE) {
-      //fixme - check what is real value here
       return this.getUnsignedTxNative(sendState)
     } else if (sendState.token.type === TokenType.ERC20) {
       return this.getUnsignedTxERC20(
@@ -197,7 +188,7 @@ export class SendServiceEVM implements SendServiceHelper {
     return {
       from: this.fromAddress,
       to: sendState.address,
-      value: BigInt(sendState.amount?.toString() || 0n)
+      value: bigIntToHex(BigInt(sendState.amount?.toString() || 0n))
     }
   }
 
@@ -214,9 +205,11 @@ export class SendServiceEVM implements SendServiceHelper {
       sendState.address,
       sendState.amount ? BigInt(sendState.amount.toString()) : 0n
     )
+
     return {
-      ...populatedTransaction, // only includes `to` and `data`
-      from: this.fromAddress
+      from: this.fromAddress,
+      to: populatedTransaction.to,
+      data: populatedTransaction.data
     }
   }
 
@@ -235,8 +228,9 @@ export class SendServiceEVM implements SendServiceHelper {
       sendState.token?.tokenId || ''
     )
     return {
-      ...populatedTransaction, // only includes `to` and `data`
-      from: this.fromAddress
+      from: this.fromAddress,
+      to: populatedTransaction.to,
+      data: populatedTransaction.data
     }
   }
 
@@ -258,8 +252,9 @@ export class SendServiceEVM implements SendServiceHelper {
       )
 
     const unsignedTx: TransactionRequest = {
-      ...populatedTransaction, // only includes `to` and `data`
-      from: this.fromAddress
+      from: this.fromAddress,
+      to: populatedTransaction.to,
+      data: populatedTransaction.data
     }
 
     return unsignedTx

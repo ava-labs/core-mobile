@@ -16,11 +16,20 @@ export const showTransactionPendingToast = (): void => {
   })
 }
 
-export const showTransactionSuccessToast = (txHash: string): void => {
+export const showTransactionSuccessToast = ({
+  message,
+  txHash,
+  testID
+}: {
+  message: string
+  txHash?: string
+  testID?: string
+}): void => {
   showSnackBarCustom({
     component: (
       <TransactionToast
-        message={'Transaction Successful'}
+        testID={testID}
+        message={message}
         type={TransactionToastType.SUCCESS}
         txHash={txHash}
       />
@@ -29,13 +38,14 @@ export const showTransactionSuccessToast = (txHash: string): void => {
   })
 }
 
-export const showTransactionRevertedToast = (): void => {
+export const showTransactionErrorToast = ({
+  message
+}: {
+  message: string
+}): void => {
   showSnackBarCustom({
     component: (
-      <TransactionToast
-        message={'Transaction Reverted'}
-        type={TransactionToastType.ERROR}
-      />
+      <TransactionToast message={message} type={TransactionToastType.ERROR} />
     ),
     duration: 'long'
   })

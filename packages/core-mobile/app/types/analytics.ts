@@ -81,6 +81,7 @@ export type AnalyticsEvents = {
   NftSendSucceeded: { chainId: number }
   NftSendContactSelected: { contactSource: string }
   NftSendFeeOptionChanged: { modifier: string }
+  NftSendCancel: undefined
   'Onboard:WalletNameSet': undefined
   OnboardingAnalyticsAccepted: undefined
   OnboardingAnalyticsRejected: undefined
@@ -101,12 +102,8 @@ export type AnalyticsEvents = {
   PrivacyPolicyClicked: undefined
   ReceivePageVisited: undefined
   RecoveryPhraseClicked: undefined
-  SendFailed: { errorMessage: string; chainId: number }
-  SendApproved: { selectedGasFee: string; chainId: number }
-  SendSucceeded: { chainId: number }
-  SendCancel: undefined
+  SendTransactionFailed: { errorMessage: string; chainId: number }
   SendContactSelected: { contactSource: string }
-  SendFeeOptionChanged: { modifier: string }
   Send_TokenSelected: undefined
   sendFeedbackClicked: undefined
   SeedlessAddMfa: { type: string }

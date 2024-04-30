@@ -36,11 +36,8 @@ export function BNInput({
   hideErrorMessage,
   ..._props
 }: BNInputProps): JSX.Element {
-  const sanitizedValue = value?.isZero() ? undefined : value
   const [valueAsString, setValueAsString] = useState('')
-  const valueBig = sanitizedValue
-    ? bnToBig(sanitizedValue, denomination)
-    : undefined
+  const valueBig = value ? bnToBig(value, denomination) : undefined
 
   useEffect(() => {
     // When deleting zeros after decimal, all zeros delete without this check.

@@ -14,30 +14,22 @@ import { Account } from 'store/account'
 import { useAddressBookLists } from 'components/addressBook/useAddressBookLists'
 import QrScannerAva from 'components/QrScannerAva'
 import QRScanSVG from 'components/svg/QRScanSVG'
-import {
-  selectTokensWithBalanceByNetwork,
-  TokenType,
-  TokenWithBalance
-} from 'store/balance'
-import { useSelector } from 'react-redux'
+import { TokenWithBalance } from 'store/balance'
 import { NetworkVMType } from '@avalabs/chains-sdk'
-import NetworkFeeSelector from 'components/NetworkFeeSelector'
-import { bnToLocaleString } from '@avalabs/utils-sdk'
 import UniversalTokenSelector from 'components/UniversalTokenSelector'
-import { Eip1559Fees, getMaxAvailableBalance } from 'utils/Utils'
 import { AddrBookItemType } from 'store/addressBook'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { NetworkTokenUnit, Amount } from 'types'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { Contact } from '@avalabs/types'
 import {
   getAddressProperty,
   getAddressXP
 } from 'store/utils/account&contactGetters'
-import { FeePreset } from 'components/NetworkFeeSelector'
+import { SendTokensScreenProps } from 'navigation/types'
+import AppNavigation from 'navigation/AppNavigation'
+import { useNavigation } from '@react-navigation/native'
 
 type Props = {
-  onNext: () => void
   onOpenAddressBook: () => void
   onOpenSelectToken: (
     onTokenSelected: (token: TokenWithBalance) => void
@@ -47,30 +39,23 @@ type Props = {
   testID?: string
 }
 
-const SendToken: FC<Props> = ({
-  onNext,
-  onOpenAddressBook,
-  token,
-  contact
-}) => {
+type SendTokenNavigationProp = SendTokensScreenProps<
+  typeof AppNavigation.Send.Send
+>['navigation']
+
+const SendToken: FC<Props> = ({ onOpenAddressBook, token, contact }) => {
   const {
     setSendToken,
     sendToken,
     setSendAmount,
     sendAmount,
     toAccount,
-    fees: {
-      sendFeeNative,
-      gasLimit,
-      setCustomGasLimit,
-      setSelectedFeePreset,
-      setMaxFeePerGas,
-      setMaxPriorityFeePerGas,
-      selectedFeePreset
-    },
     canSubmit,
-    sdkError
+    sdkError,
+    maxAmount,
+    onSendNow
   } = useSendTokenContext()
+  const navigation = useNavigation<SendTokenNavigationProp>()
   const { activeNetwork } = useNetworks()
   const [showQrCamera, setShowQrCamera] = useState(false)
   const [sendError, setSendError] = useState<string>()
@@ -80,17 +65,6 @@ const SendToken: FC<Props> = ({
       : activeNetwork.vmName === NetworkVMType.PVM
       ? 'Enter Avax P address'
       : 'Enter Bitcoin Address'
-
-  const tokensWBalances = useSelector(
-    selectTokensWithBalanceByNetwork(activeNetwork)
-  )
-
-  const maxGasPrice =
-    token?.type === TokenType.NATIVE && sendAmount
-      ? token.balance.sub(sendAmount.bn).toString()
-      : tokensWBalances
-          .find(t => t.type === TokenType.NATIVE)
-          ?.balance.toString() || '0'
 
   const sendDisabled = !canSubmit || !!(sdkError || sendError)
 
@@ -153,39 +127,14 @@ const SendToken: FC<Props> = ({
 
   const onNextPress = (): void => {
     saveRecentContact()
-    onNext()
+    onSendNow({
+      onSuccess: navigation.goBack
+    })
   }
 
   const handleMax = useCallback(() => {
-    const maxBn = getMaxAvailableBalance(sendToken, sendFeeNative)
-    if (maxBn) {
-      setSendAmount({
-        bn: maxBn,
-        amount: bnToLocaleString(maxBn, sendToken?.decimals)
-      } as Amount)
-    }
-  }, [sendFeeNative, sendToken, setSendAmount])
-
-  const handleFeeChange = useCallback(
-    (fees: Eip1559Fees<NetworkTokenUnit>, feePreset: FeePreset) => {
-      if (feePreset !== selectedFeePreset) {
-        AnalyticsService.capture('SendFeeOptionChanged', {
-          modifier: feePreset
-        })
-      }
-      setMaxFeePerGas(fees.maxFeePerGas)
-      setMaxPriorityFeePerGas(fees.maxPriorityFeePerGas)
-      setCustomGasLimit(fees.gasLimit)
-      setSelectedFeePreset(feePreset)
-    },
-    [
-      selectedFeePreset,
-      setCustomGasLimit,
-      setMaxFeePerGas,
-      setMaxPriorityFeePerGas,
-      setSelectedFeePreset
-    ]
-  )
+    setSendAmount(maxAmount)
+  }, [maxAmount, setSendAmount])
 
   return (
     <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
@@ -264,17 +213,6 @@ const SendToken: FC<Props> = ({
             hideErrorMessage
             error={sendError ?? sdkError}
           />
-          <View style={{ paddingHorizontal: 16 }}>
-            <Space y={8} />
-            <NetworkFeeSelector
-              gasLimit={gasLimit ?? 0}
-              onFeesChange={handleFeeChange}
-              maxNetworkFee={NetworkTokenUnit.fromNetwork(
-                activeNetwork,
-                maxGasPrice
-              )}
-            />
-          </View>
           <FlexSpacer />
         </>
       )}
