@@ -125,7 +125,7 @@ class PortfolioPage {
   }
 
   async tapActivityTab() {
-    await delay(400)
+    await delay(2000)
     await Action.tapElementAtIndex(this.activityTab, 0)
   }
 
