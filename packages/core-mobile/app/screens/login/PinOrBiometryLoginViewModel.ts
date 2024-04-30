@@ -180,7 +180,7 @@ export function usePinOrBiometryLogin(): {
     (): Observable<WalletLoadingResults> => {
       return timer(0, asyncScheduler).pipe(
         //timer is here to give UI opportunity to draw everything
-        concatMap(() => BiometricsSDK.getAccessType()),
+        concatMap(() => of(BiometricsSDK.getAccessType())),
         concatMap((value: string | null) => {
           if (value && value === 'BIO') {
             return BiometricsSDK.loadWalletKey({
