@@ -116,6 +116,10 @@ class PortfolioPage {
     return by.text(portfolio.polygonNetwork)
   }
 
+  get sendPendingToast() {
+    return by.id(portfolio.sendPendingToast)
+  }
+
   async verifyPorfolioScreen() {
     await Assert.isVisible(this.viewAllBtn)
     await Assert.isVisible(this.favoritesHeader)
@@ -125,7 +129,7 @@ class PortfolioPage {
   }
 
   async tapActivityTab() {
-    await delay(2000)
+    await Action.waitForElementNotVisible(this.sendPendingToast, 10000)
     await Action.tapElementAtIndex(this.activityTab, 0)
   }
 
