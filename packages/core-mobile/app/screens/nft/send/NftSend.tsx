@@ -18,11 +18,13 @@ import { NFTItem } from 'store/nft'
 import NetworkFeeSelector, { FeePreset } from 'components/NetworkFeeSelector'
 import { NetworkVMType } from '@avalabs/chains-sdk'
 import { SvgXml } from 'react-native-svg'
-import { AddrBookItemType, Contact } from 'store/addressBook'
+import { AddrBookItemType } from 'store/addressBook'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { Eip1559Fees } from 'utils/Utils'
 import { NetworkTokenUnit } from 'types'
 import { useNetworks } from 'hooks/networks/useNetworks'
+import { Contact } from '@avalabs/types'
+import { getAddressProperty } from 'store/utils/account&contactGetters'
 
 export type NftSendScreenProps = {
   onNext: () => void
@@ -91,12 +93,12 @@ export default function NftSend({
   ): void => {
     switch (activeNetwork.vmName) {
       case NetworkVMType.EVM:
-        setAddress({ address: item.address, title: item.title })
+        setAddress({ address: getAddressProperty(item), title: item.name })
         break
       case NetworkVMType.BITCOIN:
         setAddress({
-          address: item.addressBtc,
-          title: item.title
+          address: item.addressBTC ?? '',
+          title: item.name
         })
         break
     }

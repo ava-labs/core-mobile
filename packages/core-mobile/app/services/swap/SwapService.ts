@@ -19,6 +19,38 @@ const NETWORK_UNSUPPORTED_ERROR = new Error(
   'Fuji network is not supported by Paraswap'
 )
 
+interface BuildTxParams {
+  network: string
+  srcToken: Address
+  destToken: Address
+  srcAmount: PriceString
+  destAmount: PriceString
+  priceRoute: OptimalRate
+  userAddress: Address
+  partner?: string
+  partnerAddress?: string
+  partnerFeeBps?: number
+  receiver?: Address
+  options?: BuildOptions
+  srcDecimals?: number
+  destDecimals?: number
+  permit?: string
+  deadline?: string
+  sentryTrx?: SentryTransaction
+}
+
+interface SwapRate {
+  srcToken: string
+  srcDecimals: number
+  destToken: string
+  destDecimals: number
+  srcAmount: string
+  swapSide: SwapSide
+  network: Network
+  account: Account
+  sentryTrx?: SentryTransaction
+}
+
 class SwapService {
   private paraSwap = new ParaSwap(
     ChainId.AVALANCHE_MAINNET_ID,
@@ -31,17 +63,17 @@ class SwapService {
     return (this.paraSwap as any).apiURL
   }
 
-  async getSwapRate(
-    srcToken: string,
-    srcDecimals: number,
-    destToken: string,
-    destDecimals: number,
-    srcAmount: string,
-    swapSide: SwapSide,
-    network: Network,
-    account: Account,
-    sentryTrx?: SentryTransaction
-  ): Promise<OptimalRate | APIError> {
+  async getSwapRate({
+    srcToken,
+    srcDecimals,
+    destToken,
+    destDecimals,
+    srcAmount,
+    swapSide,
+    network,
+    account,
+    sentryTrx
+  }: SwapRate): Promise<OptimalRate | APIError> {
     return SentryWrapper.createSpanFor(sentryTrx)
       .setContext('svc.swap.get_rate')
       .executeAsync(async () => {
@@ -52,12 +84,12 @@ class SwapService {
           throw new Error('Account address missing')
         }
 
-        const optimalRates = async () => {
+        const optimalRates = async (): Promise<OptimalRate | APIError> => {
           return await this.paraSwap.getRate(
             srcToken,
             destToken,
             srcAmount,
-            account.address,
+            account.addressC,
             swapSide,
             {},
             srcDecimals,
@@ -83,25 +115,24 @@ class SwapService {
       })
   }
 
-  async buildTx(
-    network: string,
-    srcToken: Address,
-    destToken: Address,
-    srcAmount: PriceString,
-    destAmount: PriceString,
-    priceRoute: OptimalRate,
-    userAddress: Address,
-    partner?: string,
-    partnerAddress?: string,
-    partnerFeeBps?: number,
-    receiver?: Address,
-    options?: BuildOptions,
-    srcDecimals?: number,
-    destDecimals?: number,
-    permit?: string,
-    deadline?: string,
-    sentryTrx?: SentryTransaction
-  ): Promise<APIError | Transaction> {
+  async buildTx({
+    srcToken,
+    destToken,
+    srcAmount,
+    destAmount,
+    priceRoute,
+    userAddress,
+    partner,
+    partnerAddress,
+    partnerFeeBps,
+    receiver,
+    options,
+    srcDecimals,
+    destDecimals,
+    permit,
+    deadline,
+    sentryTrx
+  }: BuildTxParams): Promise<APIError | Transaction> {
     return SentryWrapper.createSpanFor(sentryTrx)
       .setContext('svc.swap.build_trx')
       .executeAsync(async () => {

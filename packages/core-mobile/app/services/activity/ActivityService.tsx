@@ -1,5 +1,5 @@
 import { Network, NetworkVMType } from '@avalabs/chains-sdk'
-import AccountService from 'services/account/AccountsService'
+import { getAddressByNetwork } from 'store/account/utils'
 import BtcActivityService from './BtcActivityService'
 import EvmActivityService from './EvmActivityService'
 import {
@@ -14,13 +14,15 @@ const serviceMap: { [K in NetworkVMType]?: NetworkActivityService } = {
 }
 
 class ActivityServiceFactory {
-  static getService(k: NetworkVMType) {
+  static getService(k: NetworkVMType): NetworkActivityService | undefined {
     return serviceMap[k]
   }
 }
 
 export class ActivityService {
-  private getActivityServiceForNetwork(network: Network) {
+  private getActivityServiceForNetwork(
+    network: Network
+  ): NetworkActivityService {
     const balanceService = ActivityServiceFactory.getService(network.vmName)
 
     if (!balanceService)
@@ -39,7 +41,7 @@ export class ActivityService {
     criticalConfig
   }: GetActivitiesForAccountParams): Promise<ActivityResponse> {
     const activityService = this.getActivityServiceForNetwork(network)
-    const address = AccountService.getAddressForNetwork(account, network)
+    const address = getAddressByNetwork(account, network)
 
     return activityService.getActivities({
       network,

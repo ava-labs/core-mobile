@@ -36,7 +36,7 @@ export function GenericTransaction({
         <Row style={{ justifyContent: 'space-between' }}>
           <AvaText.Body3 color={theme.colorText1}>Account</AvaText.Body3>
           <AvaText.Body3 color={theme.colorText1}>
-            {account?.title}
+            {account?.name}
           </AvaText.Body3>
         </Row>
         <Space y={8} />

@@ -8,7 +8,7 @@ import { ReactQueryKeys } from 'consts/reactQueryKeys'
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export const useDeFiProtocol = (protocolId: string) => {
-  const addressC = useSelector(selectActiveAccount)?.address ?? ''
+  const addressC = useSelector(selectActiveAccount)?.addressC ?? ''
 
   return useRefreshableQuery({
     refetchInterval: refetchIntervals.defi,

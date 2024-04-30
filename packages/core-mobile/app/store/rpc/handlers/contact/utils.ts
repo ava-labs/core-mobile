@@ -1,8 +1,6 @@
-import { Contact as SharedContact } from '@avalabs/types'
 import { z } from 'zod'
 import { isAddress } from 'ethers'
 import { isBech32Address } from '@avalabs/bridge-sdk'
-import { Contact } from 'store/addressBook'
 import { Avalanche } from '@avalabs/wallets-sdk'
 
 export const sharedContactSchema = z.object({
@@ -19,21 +17,14 @@ export const sharedContactSchema = z.object({
     .refine(val => (val ? isBech32Address(val) : true), {
       message: 'invalid BTC address'
     }),
-  addressPVM: z
+  addressXP: z
     .string()
     .optional()
-    .refine(val => (val ? Avalanche.isBech32Address(val, true) : true), {
-      message: 'invalid PVM address'
+    .refine(val => (val ? Avalanche.isBech32Address(val, false) : true), {
+      message: 'invalid X/P address'
     })
 })
 
 const hasIDSchema = z.object({ id: z.string().min(1) })
 
 export const sharedContactWithIdSchema = sharedContactSchema.merge(hasIDSchema)
-
-export const mapContactToSharedContact = (contact: Contact): SharedContact => ({
-  id: contact.id,
-  name: contact.title,
-  address: contact.address,
-  addressBTC: contact.addressBtc
-})

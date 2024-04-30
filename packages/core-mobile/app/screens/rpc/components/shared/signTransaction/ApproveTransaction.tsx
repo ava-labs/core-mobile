@@ -84,7 +84,7 @@ export function ApproveTransaction({
 
   return (
     <ApproveTransactionView
-      title={account?.title}
+      title={account?.name}
       toAddress={rest.toAddress}
       url={site?.url}
       editButton={

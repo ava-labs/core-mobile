@@ -25,11 +25,16 @@ import NetworkFeeSelector from 'components/NetworkFeeSelector'
 import { bnToLocaleString } from '@avalabs/utils-sdk'
 import UniversalTokenSelector from 'components/UniversalTokenSelector'
 import { Eip1559Fees, getMaxAvailableBalance } from 'utils/Utils'
-import { AddrBookItemType, Contact } from 'store/addressBook'
+import { AddrBookItemType } from 'store/addressBook'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { NetworkTokenUnit, Amount } from 'types'
 import { useNetworks } from 'hooks/networks/useNetworks'
-import { FeePreset } from '../../components/NetworkFeeSelector'
+import { Contact } from '@avalabs/types'
+import {
+  getAddressProperty,
+  getAddressXP
+} from 'store/utils/account&contactGetters'
+import { FeePreset } from 'components/NetworkFeeSelector'
 
 type Props = {
   onNext: () => void
@@ -90,9 +95,9 @@ const SendToken: FC<Props> = ({
   const sendDisabled = !canSubmit || !!(sdkError || sendError)
 
   const setAddress = useCallback(
-    ({ address, title }: { address: string; title: string }) => {
+    ({ address, name }: { address: string; name: string }) => {
       toAccount.setAddress?.(address)
-      toAccount.setTitle?.(title)
+      toAccount.setTitle?.(name)
     },
     [toAccount]
   )
@@ -130,15 +135,15 @@ const SendToken: FC<Props> = ({
   ): void => {
     switch (activeNetwork.vmName) {
       case NetworkVMType.EVM:
-        setAddress({ address: item.address, title: item.title })
+        setAddress({ address: getAddressProperty(item), name: item.name })
         break
       case NetworkVMType.PVM:
-        setAddress({ address: item.addressPVM ?? '', title: item.title })
+        setAddress({ address: getAddressXP(item) ?? '', name: item.name })
         break
       case NetworkVMType.BITCOIN:
         setAddress({
-          address: item.addressBtc,
-          title: item.title
+          address: item.addressBTC ?? '',
+          name: item.name
         })
         break
     }
@@ -287,7 +292,7 @@ const SendToken: FC<Props> = ({
         visible={showQrCamera}>
         <QrScannerAva
           onSuccess={data => {
-            setAddress({ address: data, title: '' })
+            setAddress({ address: data, name: '' })
             setShowQrCamera(false)
           }}
           onCancel={() => setShowQrCamera(false)}

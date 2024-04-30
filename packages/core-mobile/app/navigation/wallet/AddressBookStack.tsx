@@ -15,7 +15,6 @@ import AvaText from 'components/AvaText'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { useDispatch, useSelector } from 'react-redux'
 import {
-  Contact,
   removeContact,
   saveEditingContact,
   selectContact,
@@ -31,6 +30,7 @@ import ContactShareModal from 'screens/drawer/addressBook/components/ContactShar
 import { showSnackBarCustom } from 'components/Snackbar'
 import GeneralToast from 'components/toast/GeneralToast'
 import { NameAndAddresses } from 'screens/drawer/addressBook/types'
+import { Contact } from '@avalabs/types'
 import { AddressBookScreenProps } from '../types'
 
 export type AddressBookStackParamList = {
@@ -110,18 +110,18 @@ const ContactDetailsComp = (): JSX.Element => {
 
   useEffect(() => {
     const err = getContactValidationError({
-      name: editingContact?.title,
+      name: editingContact?.name,
       cChainAddress: editingContact?.address,
-      pChainAddress: editingContact?.addressPVM,
-      btcAddress: editingContact?.addressBtc
+      xpChainAddress: editingContact?.addressXP,
+      btcAddress: editingContact?.addressBTC
     })
     setParams({ editable, isContactValid: err === undefined })
   }, [
     editable,
     editingContact?.address,
-    editingContact?.addressBtc,
-    editingContact?.addressPVM,
-    editingContact?.title,
+    editingContact?.addressBTC,
+    editingContact?.addressXP,
+    editingContact?.name,
     setParams
   ])
 
@@ -196,7 +196,7 @@ const ContactDetailsComp = (): JSX.Element => {
       editable={editable}
       contact={
         editingContact ??
-        ({ id: '', title: '', address: '', addressBtc: '' } as Contact)
+        ({ id: '', name: '', address: '', addressBTC: '' } as Contact)
       }
       onChange={onChange}
       onDelete={deleteContact}
@@ -310,10 +310,10 @@ const ShareContactModal = (): JSX.Element => {
   const onShare = ({
     name,
     cChainAddress,
-    pChainAddress,
+    xpChainAddress,
     btcAddress
   }: NameAndAddresses): void => {
-    shareContact({ name, cChainAddress, pChainAddress, btcAddress })
+    shareContact({ name, cChainAddress, xpChainAddress, btcAddress })
   }
 
   const onCancel = (): void => {

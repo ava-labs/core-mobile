@@ -48,7 +48,7 @@ function AccountItem({
   const isBalanceLoading = balanceStatus !== QueryStatus.IDLE
 
   const [editAccount, setEditAccount] = useState(false)
-  const [editedAccountTitle, setEditedAccountTitle] = useState(account.title)
+  const [editedAccountTitle, setEditedAccountTitle] = useState(account.name)
   const [showLoader, setShowLoader] = useState(false)
   const dispatch = useDispatch()
 
@@ -111,7 +111,7 @@ function AccountItem({
                 onSubmit={() => saveAccountTitle(editedAccountTitle)}
               />
             ) : (
-              <Title title={account.title} />
+              <Title title={account.name} />
             )}
             <Space y={4} />
             {showLoader && (
@@ -156,7 +156,7 @@ function AccountItem({
           </View>
           <View>
             <TokenAddress
-              address={account.address}
+              address={account.addressC}
               showIcon
               onCopyAddress={() =>
                 AnalyticsService.capture('AccountSelectorEthAddressCopied')
@@ -164,7 +164,7 @@ function AccountItem({
             />
             <Space y={6} />
             <TokenAddress
-              address={account.addressBtc}
+              address={account.addressBTC}
               showIcon
               onCopyAddress={() =>
                 AnalyticsService.capture('AccountSelectorBtcAddressCopied')

@@ -10,9 +10,19 @@
 
 4. Run `yarn install && yarn setup` if you haven't
 
+### Minimum requirements
+Java version >= 17
+```shell 
+java -version
+```
+cocoapods >= 1.15.2
+```shell 
+pod --version
+```
+
 ## Build the app
 
-#### For iOS
+### For iOS
 
 1. Install iOS dependencies:
 
@@ -26,13 +36,17 @@
    yarn ios
    ```
 
-#### For Android
+### For Android
 
 Launch android emulator and build
 
 ```zsh
 yarn android
 ```
+
+### Known issues
+#### iOS build fails with PhaseScriptExecution failed
+Check if your `.xcode.env.local` file points to valid node binary. `yarn podInstall` may generate invalid path, see https://github.com/facebook/react-native/issues/43285
 
 ## Common commands
 

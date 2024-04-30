@@ -120,9 +120,9 @@ describe('avalanche_removeContact handler', () => {
             request: testRequest,
             contact: {
               id: testContact.id,
-              name: testContact.title,
+              name: testContact.name,
               address: testContact.address,
-              addressBTC: testContact.addressBtc
+              addressBTC: testContact.addressBTC
             },
             action: 'remove'
           }

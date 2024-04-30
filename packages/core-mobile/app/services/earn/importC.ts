@@ -39,7 +39,7 @@ export async function importC({
     baseFee: instantBaseFee,
     avaxXPNetwork,
     sourceChain: 'P',
-    destinationAddress: activeAccount.address
+    destinationAddress: activeAccount.addressC
   })
 
   const signedTxJson = await WalletService.sign(

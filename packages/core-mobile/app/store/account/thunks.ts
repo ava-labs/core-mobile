@@ -33,8 +33,8 @@ export const addAccount = createAsyncThunk<void, void, ThunkApi>(
 
       AnalyticsService.captureWithEncryption('AccountAddressesUpdated', {
         addresses: allAccounts.map(account => ({
-          address: account.address,
-          addressBtc: account.addressBtc,
+          address: account.addressC,
+          addressBtc: account.addressBTC,
           addressAVM: account.addressAVM ?? '',
           addressPVM: account.addressPVM ?? '',
           addressCoreEth: account.addressCoreEth ?? ''

@@ -1,7 +1,14 @@
 import { ChainId } from '@avalabs/chains-sdk'
 import StorageTools from 'repository/StorageTools'
 import BiometricsSDK from 'utils/BiometricsSDK'
+import {
+  Contact,
+  CoreAccountType,
+  WalletType as CoreWalletType
+} from '@avalabs/types'
+import { Account, AccountsState } from 'store/account'
 import { WalletType } from 'services/wallet/types'
+import { AddressBookState } from 'store/addressBook'
 import { initialState as watchlistInitialState } from './watchlist'
 import {
   DefaultFeatureFlagConfig,
@@ -176,6 +183,80 @@ export const migrations = {
       }
     }
     delete newState.settings.currency.currencies
+    return newState
+  },
+  14: (state: any) => {
+    //migrate Account type to CorePrimaryAccount
+    type OldAccountType = {
+      index: number
+      title: string
+      addressBtc: string
+      address: string
+      addressAVM?: string
+      addressPVM?: string
+      addressCoreEth?: string
+    }
+    const newState = { ...state }
+    const accountState = newState.account as AccountsState
+    const walletTypeMapping = {
+      [WalletType.MNEMONIC]: CoreWalletType.Mnemonic,
+      [WalletType.SEEDLESS]: CoreWalletType.Seedless,
+      [WalletType.UNSET]: undefined
+    }
+    const walletType = state.app.walletType as WalletType
+    const newWalletType = walletTypeMapping[walletType]
+
+    Object.entries(accountState.accounts).forEach(([id, account]) => {
+      const oldAccount = account as unknown as OldAccountType
+      if (!newWalletType) {
+        throw new Error(
+          'invalid db state: has accounts but wallet type is not set!'
+        )
+      }
+      accountState.accounts[Number(id)] = {
+        id: id,
+        name: oldAccount.title,
+        type: CoreAccountType.PRIMARY,
+        active: accountState.activeAccountIndex === Number(id),
+        addressBTC: oldAccount.addressBtc,
+        addressAVM: oldAccount.addressAVM,
+        addressPVM: oldAccount.addressPVM,
+        addressC: oldAccount.address,
+        addressCoreEth: oldAccount.addressCoreEth,
+        walletId: accountState.walletName,
+        index: Number(id),
+        walletType: newWalletType
+      } as Account
+    })
+
+    newState.account = accountState
+    return newState
+  },
+  15: (state: any) => {
+    type OldContactType = {
+      address: string
+      addressBtc: string
+      addressPVM: string
+      title: string
+      id: string
+    }
+    //migrate Contact type to @avalanche/Contact
+    const newState = { ...state }
+    const addressBookState = newState.addressBook as AddressBookState
+
+    Object.entries(addressBookState.contacts).forEach(([uid, contact]) => {
+      const oldContact = contact as unknown as OldContactType
+      addressBookState.contacts[uid] = {
+        id: oldContact.id,
+        name: oldContact.title,
+        address: oldContact.address,
+        addressXP: oldContact.addressPVM,
+        addressBTC: oldContact.addressBtc,
+        isKnown: true
+      } as Contact
+    })
+
+    newState.addressBook = addressBookState
     return newState
   }
 }
