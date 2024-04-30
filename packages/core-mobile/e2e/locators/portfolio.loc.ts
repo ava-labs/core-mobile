@@ -26,5 +26,6 @@ export default {
   noAssetsHeader: 'No assets',
   polygonNetwork: 'Polygon Mainnet',
   viewAll: 'View All',
-  sendPendingToast: 'send_token_context__send_pending_toast'
+  sendPendingToast: 'send_token_context__send_pending_toast',
+  sendSuccessToast: 'send_token_context__send_successful_toast'
 }

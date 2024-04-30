@@ -2,7 +2,6 @@ import Assert from '../helpers/assertions'
 import Action from '../helpers/actions'
 import portfolio from '../locators/portfolio.loc'
 import { Platform } from '../helpers/constants'
-import delay from '../helpers/waits'
 import networksManagePage from './networksManage.page'
 
 const platformIndex = Action.platform() === Platform.iOS ? 1 : 0
@@ -120,6 +119,10 @@ class PortfolioPage {
     return by.id(portfolio.sendPendingToast)
   }
 
+  get sendSuccessToast() {
+    return by.id(portfolio.sendSuccessToast)
+  }
+
   async verifyPorfolioScreen() {
     await Assert.isVisible(this.viewAllBtn)
     await Assert.isVisible(this.favoritesHeader)
@@ -129,7 +132,7 @@ class PortfolioPage {
   }
 
   async tapActivityTab() {
-    await Action.waitForElementNotVisible(this.sendPendingToast, 10000)
+    await Action.waitForElementNotVisible(this.sendSuccessToast, 10000)
     await Action.tapElementAtIndex(this.activityTab, 0)
   }
 
