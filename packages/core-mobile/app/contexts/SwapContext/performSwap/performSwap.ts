@@ -8,8 +8,8 @@ import { BN } from 'bn.js'
 import { APIError, ETHER_ADDRESS, Transaction } from 'paraswap'
 import { OptimalRate } from 'paraswap-core'
 import { promiseResolveWithBackoff, resolve } from '@avalabs/utils-sdk'
+import { bigIntToHex } from '@ethereumjs/util'
 import { TransactionParams } from 'store/rpc/handlers/eth_sendTransaction/utils'
-import { bigIntToHex } from 'utils/bigNumbers/bigIntToHex'
 import { buildTx, getParaswapSpender } from './paraswapUtils'
 
 export type PerformSwapParams = {

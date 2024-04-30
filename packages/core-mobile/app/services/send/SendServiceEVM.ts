@@ -10,6 +10,7 @@ import {
   ValidateStateAndCalculateFeesParams
 } from 'services/send/types'
 import { Network } from '@avalabs/chains-sdk'
+import { bigIntToHex } from '@ethereumjs/util'
 import {
   NftTokenWithBalance,
   TokenType,
@@ -23,7 +24,6 @@ import {
   ERC721__factory
 } from 'contracts/openzeppelin'
 import { getEvmProvider } from 'services/network/utils/providerUtils'
-import { bigIntToHex } from 'utils/bigNumbers/bigIntToHex'
 
 export class SendServiceEVM implements SendServiceHelper {
   private readonly networkProvider: JsonRpcBatchInternal
