@@ -54,15 +54,15 @@ export const useInAppRequest = (): { request: Request } => {
     ({ method, params, chainId }) => {
       return new Promise((resolve, reject) => {
         // create and dispatch the request
-        const request = createInAppRequest({ method, params, chainId })
-        dispatch(onRequest(request))
+        const inAppRequest = createInAppRequest({ method, params, chainId })
+        dispatch(onRequest(inAppRequest))
 
         // wait for the success/fail action and resolve/reject accordingly
         const unsubscribe = dispatch(
           addAppListener({
             matcher: EVENTS_TO_SUBSCRIBE,
             effect: action => {
-              if (action.payload.requestId === request.data.id) {
+              if (action.payload.requestId === inAppRequest.data.id) {
                 if (onInAppRequestSucceeded.match(action)) {
                   // @ts-ignore unsubcribe is a valid function
                   unsubscribe()

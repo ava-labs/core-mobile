@@ -54,7 +54,9 @@ const BitcoinSendTransaction = (): JSX.Element => {
 
   const [maxFeePerGas, setMaxFeePerGas] = useState<
     TokenBaseUnit<NetworkTokenUnit>
-  >(NetworkTokenUnit.fromNetwork(btcNetwork, sendState.maxFeePerGas ?? 0))
+  >(
+    NetworkTokenUnit.fromNetwork(btcNetwork, sendState.defaultMaxFeePerGas ?? 0)
+  )
 
   const tokens = useSelector(selectTokensWithBalanceByNetwork(btcNetwork))
 

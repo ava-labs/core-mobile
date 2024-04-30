@@ -147,9 +147,9 @@ export const SendNFTContextProvider = ({
     setSendStatus('Preparing')
 
     InteractionManager.runAfterInteractions(() => {
-      const sentryTrx = SentryWrapper.startTransaction('send-erc721')
+      const sentryTrx = SentryWrapper.startTransaction('send-nft')
       sendService
-        .send(
+        .sendDeprecated(
           sendState,
           activeNetwork,
           activeAccount,

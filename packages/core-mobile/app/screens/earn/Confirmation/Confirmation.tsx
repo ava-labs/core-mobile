@@ -23,10 +23,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { getReadableDateDuration } from 'utils/date/getReadableDateDuration'
 import { useGetValidatorByNodeId } from 'hooks/earn/useGetValidatorByNodeId'
 import { useIssueDelegation } from 'hooks/earn/useIssueDelegation'
-import { showSimpleToast, showSnackBarCustom } from 'components/Snackbar'
-import TransactionToast, {
-  TransactionToastType
-} from 'components/toast/TransactionToast'
+import { showSimpleToast } from 'components/Snackbar'
 import Logger from 'utils/Logger'
 import { DOCS_STAKING } from 'resources/Constants'
 import { useEstimateStakingFees } from 'hooks/earn/useEstimateStakingFees'
@@ -45,10 +42,10 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { Tooltip } from 'components/Tooltip'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { useNetworks } from 'hooks/networks/useNetworks'
+import { showTransactionSuccessToast } from 'utils/toast'
 import { ConfirmScreen } from '../components/ConfirmScreen'
 import UnableToEstimate from '../components/UnableToEstimate'
 import { useValidateStakingEndTime } from './useValidateStakingEndTime'
-
 type ScreenProps = StakeSetupScreenProps<
   typeof AppNavigation.StakeSetup.Confirmation
 >
@@ -157,15 +154,8 @@ export const Confirmation = (): JSX.Element | null => {
 
   function onDelegationSuccess(txHash: string): void {
     AnalyticsService.capture('StakeDelegationSuccess')
-    showSnackBarCustom({
-      component: (
-        <TransactionToast
-          message={'Staking successful!'}
-          type={TransactionToastType.SUCCESS}
-        />
-      ),
-      duration: 'long'
-    })
+    showTransactionSuccessToast({ message: 'Staking successful!' })
+
     getParent()?.goBack()
     dispatch(maybePromptEarnNotification)
     dispatch(

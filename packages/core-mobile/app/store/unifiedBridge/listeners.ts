@@ -1,4 +1,3 @@
-import React from 'react'
 import { AppListenerEffectAPI } from 'store'
 import { WalletState, onAppUnlocked, selectWalletState } from 'store/app'
 import { AppStartListening } from 'store/middleware/listener'
@@ -17,10 +16,7 @@ import {
   selectIsUnifiedBridgeCCTPBlocked,
   setFeatureFlags
 } from 'store/posthog'
-import { showSnackBarCustom } from 'components/Snackbar'
-import TransactionToast, {
-  TransactionToastType
-} from 'components/toast/TransactionToast'
+import { showTransactionSuccessToast } from 'utils/toast'
 import Logger from 'utils/Logger'
 import {
   removePendingTransfer,
@@ -29,15 +25,9 @@ import {
 } from './slice'
 
 const showSuccessToast = (tx: BridgeTransfer): void => {
-  showSnackBarCustom({
-    component: (
-      <TransactionToast
-        message={'Bridge Successful'}
-        type={TransactionToastType.SUCCESS}
-        txHash={tx.sourceTxHash}
-      />
-    ),
-    duration: 'short'
+  showTransactionSuccessToast({
+    message: 'Bridge Successful',
+    txHash: tx.sourceTxHash
   })
 }
 
