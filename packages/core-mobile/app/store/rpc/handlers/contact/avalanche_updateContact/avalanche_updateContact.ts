@@ -88,9 +88,9 @@ class AvalancheUpdateContactHandler
     dispatch(
       addContact({
         address: contact.address,
-        addressBtc: contact.addressBTC || '',
-        addressPVM: contact.addressPVM || '',
-        title: contact.name,
+        addressBTC: contact.addressBTC || '',
+        addressXP: contact.addressXP || '',
+        name: contact.name,
         id: contact.id
       })
     )

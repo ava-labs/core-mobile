@@ -229,7 +229,7 @@ describe('bitcoin_sendTransaction', () => {
       })
     })
     it('should return error if no btc address', async () => {
-      mockAccount.mockReturnValue({ ...mockAccount(), addressBtc: undefined })
+      mockAccount.mockReturnValue({ ...mockAccount(), addressBTC: undefined })
       const testRequest = createRequest(testParams)
       const result = await handler.handle(testRequest, mockListenerApi)
       expect(result).toEqual({
@@ -297,7 +297,7 @@ describe('bitcoin_sendTransaction', () => {
     })
 
     it('should return error when active account has no btc address', async () => {
-      mockAccount.mockReturnValue({ ...mockAccount(), addressBtc: undefined })
+      mockAccount.mockReturnValue({ ...mockAccount(), addressBTC: undefined })
       const testRequest = createRequest(testParams)
       const result = await handler.approve(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any

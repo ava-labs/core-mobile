@@ -110,7 +110,7 @@ class WalletConnectProvider implements AgnosticRpcProvider {
          * notes: the delay is to allow dapps to settle down after session approval. wallet connect se sdk also does the same.
          */
         const state = getState()
-        const address = selectActiveAccount(state)?.address
+        const address = selectActiveAccount(state)?.addressC
         const { chainId } = selectActiveNetwork(state)
         address &&
           setTimeout(() => {

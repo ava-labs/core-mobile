@@ -82,7 +82,7 @@ describe('earn/exportC', () => {
     })
 
     it('should call walletService.createExportCTx', async () => {
-      await expect(async () => {
+      expect(async () => {
         await exportC({
           cChainBalance: Avax.fromBase(1),
           requiredAmount: Avax.fromBase(0.1),
@@ -101,7 +101,7 @@ describe('earn/exportC', () => {
     })
 
     it('should call walletService.signAvaxTx', async () => {
-      await expect(async () => {
+      expect(async () => {
         await exportC({
           cChainBalance: Avax.fromBase(1),
           requiredAmount: Avax.fromBase(0.1),
@@ -113,7 +113,7 @@ describe('earn/exportC', () => {
     })
 
     it('should call networkService.sendTransaction', async () => {
-      await expect(async () => {
+      expect(async () => {
         await exportC({
           cChainBalance: Avax.fromBase(1),
           requiredAmount: Avax.fromBase(0.1),

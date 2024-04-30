@@ -4,8 +4,6 @@ import {
   Erc721TokenMetadata,
   Erc1155TokenMetadata
 } from '@avalabs/glacier-sdk'
-import { Network } from '@avalabs/chains-sdk'
-import { Account } from 'store/account'
 import { NftUID } from 'services/nft/types'
 
 export const initialState = {
@@ -53,12 +51,6 @@ export type NFTItemExternalDataAttribute = {
   trait_type: string
   value: string
   percentOwned: number
-}
-
-export type GetNftArgs = {
-  network: Network
-  account?: Account
-  nextPageToken?: NftPageParam
 }
 
 export type NftResponse = {

@@ -65,14 +65,14 @@ const BitcoinSendTransaction = (): JSX.Element => {
 
   const balanceAfterTrx = useMemo(() => {
     let balanceBN = btcToken?.balance
-    if (activeAccount?.addressBtc !== sendState.address) {
+    if (activeAccount?.addressBTC !== sendState.address) {
       balanceBN = balanceBN?.sub(sendState.amount ?? new BN(0))
     }
     return NetworkTokenUnit.fromNetwork(btcNetwork, balanceBN)
       .sub(maxFeePerGas.mul(sendState.gasLimit ?? 0))
       .toFixed(4)
   }, [
-    activeAccount?.addressBtc,
+    activeAccount?.addressBTC,
     btcNetwork,
     btcToken?.balance,
     maxFeePerGas,
@@ -174,8 +174,8 @@ const BitcoinSendTransaction = (): JSX.Element => {
             <Space y={8} />
             <SendRow
               label={'From'}
-              title={activeAccount?.title ?? ''}
-              address={activeAccount?.addressBtc ?? ''}
+              title={activeAccount?.name ?? ''}
+              address={activeAccount?.addressBTC ?? ''}
             />
             <SendRow
               label={'To'}

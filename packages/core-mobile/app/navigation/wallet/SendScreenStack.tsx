@@ -9,10 +9,10 @@ import { SendTokensScreenProps } from 'navigation/types'
 import FeatureBlocked from 'screens/posthog/FeatureBlocked'
 import { TokenWithBalance } from 'store/balance'
 import { SubHeaderOptions } from 'navigation/NavUtils'
-import { Contact } from 'store/addressBook'
 import { useSelector } from 'react-redux'
 import { selectIsSendBlocked } from 'store/posthog'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import { Contact } from '@avalabs/types'
 
 export type SendStackParamList = {
   [AppNavigation.Send.Send]:

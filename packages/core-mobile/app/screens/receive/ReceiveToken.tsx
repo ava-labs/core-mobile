@@ -21,8 +21,8 @@ const ReceiveToken: FC<Props> = memo(props => {
   const embedded = !!props?.embedded
   const activeAccount = useSelector(selectActiveAccount)
   const { chainId, networkToken, chainName } = activeNetwork
-  const addressC = activeAccount?.address
-  const btcAddress = activeAccount?.addressBtc
+  const addressC = activeAccount?.addressC
+  const btcAddress = activeAccount?.addressBTC
 
   useEffect(() => {
     AnalyticsService.capture('ReceivePageVisited')

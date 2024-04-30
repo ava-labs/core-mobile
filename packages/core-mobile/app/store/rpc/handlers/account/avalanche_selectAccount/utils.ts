@@ -1,13 +1,19 @@
 import { z } from 'zod'
+import { CoreAccountType, WalletType } from '@avalabs/types'
 
 export const accountSchema = z.object({
   index: z.number(),
-  title: z.string(),
-  addressBtc: z.string(),
-  address: z.string(),
-  addressAVM: z.string().optional(),
-  addressPVM: z.string().optional(),
-  addressCoreEth: z.string().optional()
+  name: z.string(),
+  addressBTC: z.string(),
+  addressC: z.string(),
+  addressAVM: z.string(),
+  addressPVM: z.string(),
+  addressCoreEth: z.string(),
+  active: z.boolean(),
+  id: z.string(),
+  type: z.nativeEnum(CoreAccountType),
+  walletId: z.string().optional(),
+  walletType: z.nativeEnum(WalletType).optional()
 })
 
 const paramsSchema = z.tuple([

@@ -87,7 +87,7 @@ class BitcoinSendTransactionHandler
       }
     }
 
-    if (!activeAccount.addressBtc) {
+    if (!activeAccount.addressBTC) {
       return {
         success: false,
         error: ethErrors.rpc.invalidRequest({
@@ -98,7 +98,7 @@ class BitcoinSendTransactionHandler
 
     const balances = await BtcBalanceService.getBalances({
       network: btcNetwork,
-      accountAddress: activeAccount.addressBtc,
+      accountAddress: activeAccount.addressBTC,
       currency
     })
 
@@ -120,7 +120,7 @@ class BitcoinSendTransactionHandler
     const verifiedState = await SendServiceBTC.validateStateAndCalculateFees({
       sendState,
       isMainnet: !isDeveloperMode,
-      fromAddress: activeAccount.addressBtc
+      fromAddress: activeAccount.addressBTC
     })
 
     // If we cant construct the transaction return error
@@ -178,7 +178,7 @@ class BitcoinSendTransactionHandler
       const activeAccount = selectActiveAccount(getState())
       const btcNetwork = getBitcoinNetwork(isDeveloperMode)
 
-      if (!activeAccount?.addressBtc) {
+      if (!activeAccount?.addressBTC) {
         return {
           success: false,
           error: ethErrors.rpc.invalidRequest({
@@ -190,7 +190,7 @@ class BitcoinSendTransactionHandler
       const txRequest = await SendServiceBTC.getTransactionRequest({
         sendState,
         isMainnet: !isDeveloperMode,
-        fromAddress: activeAccount.addressBtc,
+        fromAddress: activeAccount.addressBTC,
         currency
       })
 
