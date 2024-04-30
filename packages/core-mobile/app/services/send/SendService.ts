@@ -10,9 +10,7 @@ import SentryWrapper from 'services/sentry/SentryWrapper'
 import { isErc721 } from 'services/nft/utils'
 import { SendServicePVM } from 'services/send/SendServicePVM'
 import { SignTransactionRequest } from 'services/wallet/types'
-import { getAddressByNetwork } from 'store/account/utils'
 import { createInAppRequest, onRequest, RpcMethod } from 'store/rpc'
-import AccountsService from 'services/account/AccountsService'
 import {
   isAvalancheTransactionRequest,
   isAvalancheTxParams,
@@ -22,6 +20,7 @@ import { TransactionParams } from 'store/rpc/handlers/eth_sendTransaction/utils'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import NetworkService from 'services/network/NetworkService'
 import WalletService from 'services/wallet/WalletService'
+import { getAddressByNetwork } from 'store/account/utils'
 import sendServiceBTC from './SendServiceBTC'
 import {
   isValidSendState,
@@ -110,10 +109,7 @@ class SendService {
         .setContext('svc.send.send')
         // eslint-disable-next-line sonarjs/cognitive-complexity
         .executeAsync(async () => {
-          const fromAddress = AccountsService.getAddressForNetwork(
-            account,
-            network
-          )
+          const fromAddress = getAddressByNetwork(account, network)
           if (!fromAddress) {
             throw new Error('Source address not set')
           }
