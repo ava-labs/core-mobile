@@ -10,9 +10,9 @@ interface Props {
 }
 
 const FavoriteWatchlistView: React.FC<Props> = ({ onTabIndexChanged }) => {
-  const { favorites, prices, charts } = useWatchlist()
+  const { favorites, prices, charts, tokens } = useWatchlist()
 
-  const isFetchingTokens = favorites.length === 0
+  const isFetchingTokens = tokens.length === 0
 
   return (
     <>
