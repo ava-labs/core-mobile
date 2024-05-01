@@ -86,6 +86,7 @@ class SendPage {
 
   async enterAmount(amount: string) {
     await Actions.setInputText(this.textInputField, amount, 1)
+    await element(this.textInputField).atIndex(1).tapReturnKey()
   }
 
   async sendTokenTo2ndAccount(token: string, sendingAmmount: string) {
@@ -101,9 +102,6 @@ class SendPage {
     await this.tapCarrotSVG()
     await this.selectToken(token)
     await this.enterAmount(sendingAmmount)
-    if (Actions.platform() === 'android') {
-      await device.pressBack()
-    }
     // await this.tapSendTitle()
     await this.tapNextButton()
     await Actions.waitForElement(ReviewAndSend.balanceAfterTransaction)
