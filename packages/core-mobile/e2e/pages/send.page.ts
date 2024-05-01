@@ -38,6 +38,10 @@ class SendPage {
     return by.text(Send.sendTitle)
   }
 
+  get approveButton() {
+    return by.text(Send.approveBtn)
+  }
+
   async tapAddressBook() {
     await Actions.tap(this.addressBook)
   }
@@ -64,6 +68,10 @@ class SendPage {
 
   async tapTokenDropdown() {
     await Actions.tap(this.tokenDropdown)
+  }
+
+  async tapApproveButton() {
+    await Actions.tap(this.approveButton)
   }
 
   async enterWalletAddress(address: string) {
@@ -95,8 +103,12 @@ class SendPage {
     await this.enterAmount(sendingAmmount)
     await this.tapSendTitle()
     await this.tapNextButton()
-    await Actions.waitForElement(ReviewAndSend.balanceAfterTransaction)
-    await ReviewAndSend.tapSendNow()
+    if (Actions.platform() === 'ios') {
+      await Actions.waitForElement(ReviewAndSend.balanceAfterTransaction)
+      await ReviewAndSend.tapSendNow()
+    } else {
+      await this.tapApproveButton()
+    }
     // await Actions.waitForElement(ReviewAndSend.sendSuccessfulToastMsg)
   }
 }
