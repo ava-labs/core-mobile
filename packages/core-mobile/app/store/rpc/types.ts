@@ -44,7 +44,6 @@ export enum RpcMethod {
   WALLET_ADD_ETHEREUM_CHAIN = 'wallet_addEthereumChain',
   WALLET_SWITCH_ETHEREUM_CHAIN = 'wallet_switchEthereumChain',
   WALLET_GET_ETHEREUM_CHAIN = 'wallet_getEthereumChain',
-  BITCOIN_SEND_TRANSACTION = 'bitcoin_sendTransaction',
 
   /* custom methods that are proprietary to Core */
   AVALANCHE_BRIDGE_ASSET = 'avalanche_bridgeAsset',
@@ -60,6 +59,7 @@ export enum RpcMethod {
   AVALANCHE_SEND_TRANSACTION = 'avalanche_sendTransaction',
   AVALANCHE_SIGN_TRANSACTION = 'avalanche_signTransaction',
   AVALANCHE_GET_ADDRESSES_IN_RANGE = 'avalanche_getAddressesInRange',
+  BITCOIN_SEND_TRANSACTION = 'bitcoin_sendTransaction',
 
   /* custom methods that only apply to Wallet Connect*/
   WC_SESSION_REQUEST = 'wc_sessionRequest'
@@ -78,7 +78,8 @@ export const CORE_ONLY_METHODS = [
   RpcMethod.AVALANCHE_UPDATE_CONTACT,
   RpcMethod.AVALANCHE_SEND_TRANSACTION,
   RpcMethod.AVALANCHE_SIGN_TRANSACTION,
-  RpcMethod.AVALANCHE_GET_ADDRESSES_IN_RANGE
+  RpcMethod.AVALANCHE_GET_ADDRESSES_IN_RANGE,
+  RpcMethod.BITCOIN_SEND_TRANSACTION
 ]
 
 export type RpcError = EthereumRpcError<string> | EthereumProviderError<string>

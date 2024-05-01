@@ -1,7 +1,6 @@
 import React, { useCallback, useMemo, useState } from 'react'
-import { Image, StyleSheet } from 'react-native'
+import { Image } from 'react-native'
 import { Space } from 'components/Space'
-import FlexSpacer from 'components/FlexSpacer'
 import { ScrollView } from 'react-native-gesture-handler'
 import { WalletScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
@@ -27,6 +26,8 @@ import { TokenBaseUnit } from 'types/TokenBaseUnit'
 import { BN } from 'bn.js'
 import { selectTokensWithBalanceByNetwork } from 'store/balance'
 import { mustNumber } from 'utils/JsTools'
+import { BitcoinSendTransactionApproveData } from 'store/rpc/handlers/bitcoin_sendTransaction/bitcoin_sendTransaction'
+import { SendState } from 'services/send/types'
 
 type BitcoinSendTransactionScreenProps = WalletScreenProps<
   typeof AppNavigation.Modal.BitcoinSendTransaction
@@ -50,13 +51,11 @@ const BitcoinSendTransaction = (): JSX.Element => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const btcNetwork = getBitcoinNetwork(isDeveloperMode)
 
-  const { sendState, balance } = data
+  const { sendState } = data
 
   const [maxFeePerGas, setMaxFeePerGas] = useState<
     TokenBaseUnit<NetworkTokenUnit>
-  >(
-    NetworkTokenUnit.fromNetwork(btcNetwork, sendState.defaultMaxFeePerGas ?? 0)
-  )
+  >(NetworkTokenUnit.fromNetwork(btcNetwork, sendState.defaultMaxFeePerGas))
 
   const tokens = useSelector(selectTokensWithBalanceByNetwork(btcNetwork))
 
@@ -99,9 +98,11 @@ const BitcoinSendTransaction = (): JSX.Element => {
 
   const onHandleApprove = (): void => {
     onApprove(request, {
-      sendState: { ...sendState, maxFeePerGas: maxFeePerGas.toSubUnit() },
-      balance
-    })
+      sendState: {
+        ...sendState,
+        defaultMaxFeePerGas: maxFeePerGas.toSubUnit()
+      } as SendState
+    } as BitcoinSendTransactionApproveData)
     goBack()
   }
 
@@ -162,7 +163,7 @@ const BitcoinSendTransaction = (): JSX.Element => {
                 <Text
                   variant="subtitle1"
                   sx={{ lineHeight: 24, color: '$neutral400' }}>
-                  {sendState.token?.symbol ?? ''}
+                  {'BTC'}
                 </Text>
               </Row>
             </Row>
@@ -191,7 +192,6 @@ const BitcoinSendTransaction = (): JSX.Element => {
               onFeesChange={handleFeeChange}
               maxNetworkFee={NetworkTokenUnit.fromNetwork(btcNetwork)}
             />
-
             <Row style={{ justifyContent: 'space-between' }}>
               <Text variant="body2" sx={{ color: '$neutral400' }}>
                 Balance After Transaction
@@ -211,16 +211,22 @@ const BitcoinSendTransaction = (): JSX.Element => {
               }}>
               {tokenInCurrencyFormatter(balanceAfterTrxInCurrency)}
             </Text>
-            <FlexSpacer />
-            <Button type="primary" size="xlarge" onPress={onHandleApprove}>
-              Approve
-            </Button>
-            <Space y={16} />
-            <Button type="secondary" size="xlarge" onPress={rejectAndClose}>
-              Cancel
-            </Button>
           </View>
         </ScrollView>
+        <View
+          sx={{
+            backgroundColor: '$neutral900',
+            paddingVertical: 16,
+            marginHorizontal: 16
+          }}>
+          <Button type="primary" size="xlarge" onPress={onHandleApprove}>
+            Approve
+          </Button>
+          <Space y={16} />
+          <Button type="secondary" size="xlarge" onPress={rejectAndClose}>
+            Reject
+          </Button>
+        </View>
       </RpcRequestBottomSheet>
       {isSeedlessSigningBlocked && (
         <FeatureBlocked
@@ -233,18 +239,5 @@ const BitcoinSendTransaction = (): JSX.Element => {
     </>
   )
 }
-
-export const txStyles = StyleSheet.create({
-  scrollView: {
-    flex: 1,
-    paddingTop: 16,
-    paddingHorizontal: 14
-  },
-  actionContainer: {
-    flex: 0,
-    paddingVertical: 40,
-    paddingHorizontal: 14
-  }
-})
 
 export default BitcoinSendTransaction

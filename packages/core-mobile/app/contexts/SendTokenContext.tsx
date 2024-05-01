@@ -10,7 +10,7 @@ import React, {
 } from 'react'
 import { InteractionManager } from 'react-native'
 import { TokenWithBalance } from 'store/balance'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import sendService from 'services/send/SendService'
 import { SendState } from 'services/send/types'
@@ -24,7 +24,14 @@ import { NetworkTokenUnit, Amount } from 'types'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { useNetworkFee } from 'hooks/useNetworkFee'
 import { useInAppRequest } from 'hooks/useInAppRequest'
-import { RpcMethod } from 'store/rpc'
+import { NetworkVMType } from '@avalabs/chains-sdk'
+import {
+  showTransactionErrorToast,
+  showTransactionSuccessToast
+} from 'utils/toast'
+import { isUserRejectedError } from 'store/rpc/providers/walletConnect/utils'
+
+export type SendStatus = 'Idle' | 'Sending' | 'Success' | 'Fail'
 
 export interface SendTokenContextState {
   sendToken: TokenWithBalance | undefined
@@ -34,7 +41,8 @@ export interface SendTokenContextState {
   toAccount: Account
   fees: Fees
   canSubmit: boolean
-  onSendNow: ({ onSuccess }: { onSuccess?: () => void }) => void
+  sendStatus: SendStatus
+  onSendNow: () => void
   sdkError: string | undefined
   maxAmount: Amount
 }
@@ -54,7 +62,6 @@ export const SendTokenContextProvider = ({
   children: ReactNode
 }): JSX.Element => {
   const { activeNetwork } = useNetworks()
-  const dispatch = useDispatch()
   const activeAccount = useSelector(selectActiveAccount)
   const selectedCurrency = useSelector(selectSelectedCurrency)
 
@@ -62,12 +69,15 @@ export const SendTokenContextProvider = ({
   const [maxAmount, setMaxAmount] = useState<Amount>(ZERO_AMOUNT)
   const [sendAmount, setSendAmount] = useState<Amount>(ZERO_AMOUNT)
 
+  const [sendStatus, setSendStatus] = useState<SendStatus>('Idle')
+
   const [sendToAddress, setSendToAddress] = useState('')
   const [sendToTitle, setSendToTitle] = useState('')
 
   const [gasLimit, setGasLimit] = useState(0)
 
   const { data: networkFee } = useNetworkFee(activeNetwork)
+
   const [defaultMaxFeePerGas, setDefaultMaxFeePerGas] =
     useState<NetworkTokenUnit>(NetworkTokenUnit.fromNetwork(activeNetwork))
 
@@ -102,7 +112,7 @@ export const SendTokenContextProvider = ({
     []
   )
 
-  const onSendNow: SendTokenContextState['onSendNow'] = ({ onSuccess }) => {
+  const onSendNow = (): void => {
     if (!sendAmount) return
 
     if (!activeAccount) {
@@ -123,6 +133,7 @@ export const SendTokenContextProvider = ({
 
     InteractionManager.runAfterInteractions(() => {
       const sentryTrx = SentryWrapper.startTransaction('send-token')
+      setSendStatus('Sending')
       sendService
         .send({
           sendState,
@@ -130,22 +141,36 @@ export const SendTokenContextProvider = ({
           account: activeAccount,
           currency: selectedCurrency.toLowerCase(),
           sentryTrx,
-          signAndSend: txParams =>
-            request({
-              method: RpcMethod.ETH_SEND_TRANSACTION,
-              params: txParams,
-              chainId: activeNetwork.chainId.toString()
-            }),
-          dispatch
+          request
         })
         .then(txHash => {
+          setSendStatus('Success')
+
+          // for bitcoin network, we show success/error toast right away
+          // for evm network, we show toast after the transaction is finally confirmed/reverted
+          // which happens in redux listener
+          if (activeNetwork.vmName === NetworkVMType.BITCOIN) {
+            showTransactionSuccessToast({
+              message: 'Transaction Successful',
+              txHash
+            })
+          }
+
           AnalyticsService.captureWithEncryption('SendTransactionSucceeded', {
             chainId: activeNetwork.chainId,
             txHash
           })
-          onSuccess?.()
         })
         .catch(reason => {
+          setSendStatus('Fail')
+
+          if (
+            !isUserRejectedError(reason) &&
+            activeNetwork.vmName === NetworkVMType.BITCOIN
+          ) {
+            showTransactionErrorToast({ message: 'Transaction Failed' })
+          }
+
           AnalyticsService.capture('SendTransactionFailed', {
             errorMessage: reason.message,
             chainId: activeNetwork.chainId
@@ -216,6 +241,7 @@ export const SendTokenContextProvider = ({
       gasLimit
     },
     canSubmit,
+    sendStatus,
     onSendNow,
     sdkError: error,
     maxAmount

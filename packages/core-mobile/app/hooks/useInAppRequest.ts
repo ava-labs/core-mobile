@@ -15,14 +15,14 @@ const EVENTS_TO_SUBSCRIBE = isAnyOf(
   onInAppRequestFailed
 )
 
-type Request = ({
+export type Request = ({
   method,
   params,
   chainId
 }: {
   method: RpcMethod
   params: unknown
-  chainId: string
+  chainId?: string
 }) => Promise<string>
 
 /**

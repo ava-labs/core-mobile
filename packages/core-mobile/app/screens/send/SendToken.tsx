@@ -51,6 +51,7 @@ const SendToken: FC<Props> = ({ onOpenAddressBook, token, contact }) => {
     sendAmount,
     toAccount,
     canSubmit,
+    sendStatus,
     sdkError,
     maxAmount,
     onSendNow
@@ -66,6 +67,7 @@ const SendToken: FC<Props> = ({ onOpenAddressBook, token, contact }) => {
       ? 'Enter Avax P address'
       : 'Enter Bitcoin Address'
 
+  const sendInProcess = sendStatus === 'Sending'
   const sendDisabled = !canSubmit || !!(sdkError || sendError)
 
   const setAddress = useCallback(
@@ -102,6 +104,12 @@ const SendToken: FC<Props> = ({ onOpenAddressBook, token, contact }) => {
     }
   }, [setShowAddressBook, toAccount.address])
 
+  useEffect(() => {
+    if (sendStatus === 'Success') {
+      navigation.goBack()
+    }
+  }, [navigation, sendStatus])
+
   const onContactSelected = (
     item: Contact | Account,
     type: AddrBookItemType,
@@ -127,15 +135,12 @@ const SendToken: FC<Props> = ({ onOpenAddressBook, token, contact }) => {
 
   const onNextPress = (): void => {
     saveRecentContact()
-    onSendNow({
-      onSuccess: navigation.goBack
-    })
+    onSendNow()
   }
 
   const handleMax = useCallback(() => {
     setSendAmount(maxAmount)
   }, [maxAmount, setSendAmount])
-
   return (
     <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
       <AvaText.LargeTitleBold textStyle={{ marginHorizontal: 16 }}>
@@ -217,12 +222,11 @@ const SendToken: FC<Props> = ({ onOpenAddressBook, token, contact }) => {
         </>
       )}
       <AvaButton.PrimaryLarge
-        disabled={sendDisabled}
+        disabled={sendDisabled || sendInProcess}
         onPress={onNextPress}
         style={{ margin: 16 }}>
         Next
       </AvaButton.PrimaryLarge>
-
       <Modal
         animationType="slide"
         transparent={true}
