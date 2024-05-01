@@ -43,6 +43,10 @@ class AddressBook {
     return by.text(addressBookLoc.saveButton)
   }
 
+  get newContactTitle() {
+    return by.text(addressBookLoc.newContact)
+  }
+
   async tapDelete() {
     await Actions.tapElementAtIndex(this.delete, 0)
   }
@@ -99,7 +103,7 @@ class AddressBook {
     try {
       await Actions.tapElementAtIndex(this.saveButton, 0)
     } catch (error) {
-      await Actions.swipeUp(commonElsPage.inputTextField, 'slow', 0.0, 2)
+      await Actions.tapElementAtIndex(this.newContactTitle, 0)
       await Actions.tapElementAtIndex(this.saveButton, 0)
     }
   }
