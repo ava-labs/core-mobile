@@ -2,13 +2,15 @@ import {
   NetworkTokenWithBalance,
   TokenType,
   TokenWithBalanceERC20,
-  XPTokenWithBalance
+  XPTokenWithBalance,
+  XTokenWithBalance
 } from 'store/balance'
-import { ChainId, Network } from '@avalabs/chains-sdk'
+import { ChainId, Network, NetworkVMType } from '@avalabs/chains-sdk'
 import {
   BlockchainId,
   CurrencyCode,
   ListPChainBalancesResponse,
+  ListXChainBalancesResponse,
   NativeTokenBalance,
   Network as NetworkName
 } from '@avalabs/glacier-sdk'
@@ -27,7 +29,7 @@ import TokenService from 'services/token/TokenService'
 import { Avax } from 'types'
 import BN from 'bn.js'
 import { isBitcoinChainId } from 'utils/network/isBitcoinNetwork'
-import { isXPChain } from 'utils/network/isPvmNetwork'
+import { absoluteChain, isXPChain } from 'utils/network/isAvalancheNetwork'
 
 export class GlacierBalanceService implements BalanceServiceProvider {
   async isProviderFor(network: Network): Promise<boolean> {
@@ -44,7 +46,9 @@ export class GlacierBalanceService implements BalanceServiceProvider {
     chains.push(ChainId.AVALANCHE_XP.toString())
     chains.push(ChainId.AVALANCHE_TEST_XP.toString())
 
-    return chains.some(value => value === network.chainId.toString())
+    return chains.some(
+      value => value === absoluteChain(network.chainId).toString()
+    )
   }
 
   async getBalances({
@@ -53,7 +57,12 @@ export class GlacierBalanceService implements BalanceServiceProvider {
     currency,
     sentryTrx
   }: GetBalancesParams): Promise<
-    (NetworkTokenWithBalance | TokenWithBalanceERC20 | XPTokenWithBalance)[]
+    (
+      | NetworkTokenWithBalance
+      | TokenWithBalanceERC20
+      | XPTokenWithBalance
+      | XTokenWithBalance
+    )[]
   > {
     return SentryWrapper.createSpanFor(sentryTrx)
       .setContext('svc.balance.glacier.get')
@@ -67,22 +76,30 @@ export class GlacierBalanceService implements BalanceServiceProvider {
           }),
           this.getErc20BalanceForNetwork(network, accountAddress, currency)
         ])
-          .then(([nativeBalance, pChainBalance, erc20Balances]) => {
-            let results: (
-              | NetworkTokenWithBalance
-              | TokenWithBalanceERC20
-              | XPTokenWithBalance
-            )[] =
-              nativeBalance.status === 'fulfilled' ? [nativeBalance.value] : []
+          .then(
+            ([nativeBalance, pChainBalance, xChainBalance, erc20Balances]) => {
+              let results: (
+                | NetworkTokenWithBalance
+                | TokenWithBalanceERC20
+                | XPTokenWithBalance
+                | XTokenWithBalance
+              )[] =
+                nativeBalance.status === 'fulfilled'
+                  ? [nativeBalance.value]
+                  : []
 
-            if (erc20Balances.status === 'fulfilled') {
-              results = [...results, ...erc20Balances.value]
+              if (erc20Balances.status === 'fulfilled') {
+                results = [...results, ...erc20Balances.value]
+              }
+              if (pChainBalance.status === 'fulfilled') {
+                results = [...results, pChainBalance.value]
+              }
+              if (xChainBalance.status === 'fulfilled') {
+                results = [...results, xChainBalance.value]
+              }
+              return results
             }
-            if (pChainBalance.status === 'fulfilled') {
-              results = [...results, pChainBalance.value]
-            }
-            return results
-          })
+          )
           .catch(reason => {
             Logger.error(reason)
             return []
@@ -133,12 +150,22 @@ export class GlacierBalanceService implements BalanceServiceProvider {
     address: string
     currency: string
     sentryTrx?: Transaction
-  }): [Promise<NetworkTokenWithBalance>, Promise<XPTokenWithBalance>] {
+  }): [
+    Promise<NetworkTokenWithBalance>,
+    Promise<XPTokenWithBalance>,
+    Promise<XTokenWithBalance>
+  ] {
     return [
       this.getNativeBalance(network.chainId.toString(), address, currency).then(
         balance => convertNativeToTokenWithBalance(balance)
       ),
       this.getPChainBalance({
+        network,
+        addresses: [address],
+        currency,
+        sentryTrx
+      }),
+      this.getXChainBalance({
         network,
         addresses: [address],
         currency,
@@ -191,10 +218,8 @@ export class GlacierBalanceService implements BalanceServiceProvider {
     currency: string
     sentryTrx?: Transaction
   }): Promise<XPTokenWithBalance> {
-    if (!isXPChain(network.chainId)) {
-      return Promise.reject(
-        'Chain id not compatible, skipping getPChainBalance'
-      )
+    if (network.vmName !== NetworkVMType.PVM) {
+      return Promise.reject('network not compatible, skipping getPChainBalance')
     }
 
     const { networkToken } = network
@@ -243,6 +268,68 @@ export class GlacierBalanceService implements BalanceServiceProvider {
       ...networkToken,
       ...pChainBalance
     } as XPTokenWithBalance
+  }
+
+  async getXChainBalance({
+    network,
+    addresses,
+    currency
+  }: {
+    network: Network
+    addresses: string[]
+    currency: string
+    sentryTrx?: Transaction
+  }): Promise<XTokenWithBalance> {
+    if (network.vmName !== NetworkVMType.AVM) {
+      return Promise.reject('network not compatible, skipping getXChainBalance')
+    }
+
+    const { networkToken } = network
+    const nativeTokenId =
+      network.pricingProviders?.coingecko?.nativeTokenId ?? ''
+
+    const xChainBalance = await glacierSdk.primaryNetworkBalances
+      .getBalancesByAddresses({
+        blockchainId: BlockchainId.X_CHAIN,
+        network: network.isTestnet ? NetworkName.FUJI : NetworkName.MAINNET,
+        addresses: addresses.join(',')
+      })
+      .then(value => (value as ListXChainBalancesResponse).balances)
+
+    const {
+      price: priceInCurrency,
+      marketCap,
+      vol24,
+      change24
+    } = await TokenService.getPriceWithMarketDataByCoinId(
+      nativeTokenId,
+      currency.toLocaleLowerCase() as VsCurrencyType
+    )
+
+    const balance = Avax.fromNanoAvax(
+      BigInt(xChainBalance.unlocked[0]?.amount ?? 0)
+    )
+    const balanceDisplayValue = balance.toDisplay()
+    const balanceInCurrency = Number.parseFloat(
+      balance.mul(priceInCurrency).toString()
+    )
+    const balanceCurrencyDisplayValue = balance.mul(priceInCurrency).toFixed(2)
+
+    const balanceBN = new BN(balance.toSubUnit(true).toString())
+    return {
+      balance: balanceBN,
+      balanceDisplayValue,
+      balanceInCurrency,
+      balanceCurrencyDisplayValue,
+      priceInCurrency,
+      marketCap,
+      vol24,
+      change24,
+      coingeckoId: nativeTokenId,
+      type: TokenType.NATIVE,
+      ...networkToken,
+      ...xChainBalance
+    } as XTokenWithBalance
   }
 
   async getCChainBalance(
