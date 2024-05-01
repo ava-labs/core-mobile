@@ -52,7 +52,6 @@ class SendPage {
   }
 
   async tapNextButton() {
-    await delay(2000)
     await Actions.tapElementAtIndex(this.nextButton, 0)
   }
 
@@ -103,14 +102,13 @@ class SendPage {
     await this.tapCarrotSVG()
     await this.selectToken(token)
     await this.enterAmount(sendingAmmount)
-    await this.tapSendTitle()
-    await this.tapNextButton()
-    if (Actions.platform() === 'ios') {
-      await Actions.waitForElement(ReviewAndSend.balanceAfterTransaction)
-      await ReviewAndSend.tapSendNow()
-    } else {
-      await this.tapApproveButton()
+    if (Actions.platform() === 'android') {
+      await device.pressBack()
     }
+    // await this.tapSendTitle()
+    await this.tapNextButton()
+    await Actions.waitForElement(ReviewAndSend.balanceAfterTransaction)
+    await this.tapApproveButton()
     // await Actions.waitForElement(ReviewAndSend.sendSuccessfulToastMsg)
   }
 }
