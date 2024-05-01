@@ -86,7 +86,6 @@ class SendPage {
 
   async enterAmount(amount: string) {
     await Actions.setInputText(this.textInputField, amount, 1)
-    await element(this.textInputField).atIndex(1).tapReturnKey()
   }
 
   async sendTokenTo2ndAccount(token: string, sendingAmmount: string) {
