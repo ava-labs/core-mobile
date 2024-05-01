@@ -96,7 +96,7 @@ class AddressBook {
       addressBookLoc.contactBtcAddress,
       2
     )
-    await element(commonElsPage.inputTextField).tapReturnKey()
+    await element(commonElsPage.inputTextField).atIndex(2).tapReturnKey()
   }
 
   async tapSave() {
