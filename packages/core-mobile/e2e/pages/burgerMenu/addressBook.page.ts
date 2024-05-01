@@ -99,7 +99,7 @@ class AddressBook {
     try {
       await Actions.tapElementAtIndex(this.saveButton, 0)
     } catch (error) {
-      await Actions.swipeUp(commonElsPage.inputTextField, 'slow', 100, 2)
+      await Actions.swipeUp(commonElsPage.inputTextField, 'slow', 0.0, 2)
       await Actions.tapElementAtIndex(this.saveButton, 0)
     }
   }
