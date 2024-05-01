@@ -4,6 +4,7 @@ import BottomTabsPage from '../pages/bottomTabs.page'
 import PlusMenuPage from '../pages/plusMenu.page'
 import ReviewAndSend from '../pages/reviewAndSend.page'
 import Send from '../locators/send.loc'
+import delay from '../helpers/waits'
 
 class SendPage {
   get addressBook() {
@@ -51,7 +52,8 @@ class SendPage {
   }
 
   async tapNextButton() {
-    await Actions.tapElementAtIndex(this.nextButton, 1)
+    await delay(2000)
+    await Actions.tapElementAtIndex(this.nextButton, 0)
   }
 
   async tapCarrotSVG() {
