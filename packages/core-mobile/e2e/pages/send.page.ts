@@ -51,7 +51,7 @@ class SendPage {
   }
 
   async tapNextButton() {
-    await Actions.tap(this.nextButton)
+    await Actions.tapElementAtIndex(this.nextButton, 1)
   }
 
   async tapCarrotSVG() {
