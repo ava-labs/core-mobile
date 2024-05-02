@@ -22,6 +22,10 @@ import { Avalanche } from '@avalabs/wallets-sdk'
 import { getAddressByVM } from 'store/account/utils'
 import { getProvidedUtxos } from 'utils/getProvidedUtxos'
 import {
+  showTransactionErrorToast,
+  showTransactionSuccessToast
+} from 'utils/toast'
+import {
   ApproveResponse,
   DEFERRED_RESULT,
   HandleResponse,
@@ -261,9 +265,14 @@ class AvalancheSendTransactionHandler
 
       // Submit the transaction and return the tx id
       const provider = await networkService.getAvalancheProviderXP(isDevMode)
-      const result = await provider.issueTxHex(signedTransactionHex, vm)
+      const { txID } = await provider.issueTxHex(signedTransactionHex, vm)
 
-      return { success: true, value: result.txID }
+      showTransactionSuccessToast({
+        message: 'Transaction Successful',
+        txHash: txID
+      })
+
+      return { success: true, value: txID }
     } catch (e) {
       Logger.error(
         'Unable to approve send transaction request',
@@ -274,6 +283,8 @@ class AvalancheSendTransactionHandler
         'message' in (e as Error)
           ? (e as Error).message
           : 'Send transaction error'
+
+      showTransactionErrorToast({ message: 'Transaction Failed' })
 
       Sentry.captureException(e, {
         tags: { dapps: 'sendTransactionV2' }
