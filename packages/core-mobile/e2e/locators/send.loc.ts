@@ -11,5 +11,6 @@ export default {
   testInputField: 'input_text',
   tokenDropdown: 'send_token__token_dropdown',
   usdcToken: 'USDC',
-  wethToken: 'WETH.e'
+  wethToken: 'WETH.e',
+  approveBtn: 'Approve'
 }
