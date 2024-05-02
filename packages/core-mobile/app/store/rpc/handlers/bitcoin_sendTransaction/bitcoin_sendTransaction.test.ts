@@ -13,8 +13,18 @@ import * as utils from 'utils/isBtcAddress'
 import * as accountStore from 'store/account/slice'
 import BtcBalanceService from 'services/balance/BtcBalanceService'
 import SendServiceBTC from 'services/send/SendServiceBTC'
+import * as Toast from 'utils/toast'
 import { DEFERRED_RESULT } from '../types'
 import { bitcoinSendTransactionHandler as handler } from './bitcoin_sendTransaction'
+
+const mockShowTransactionSuccessToast = jest.fn()
+const mockShowTransactionErrorToast = jest.fn()
+jest
+  .spyOn(Toast, 'showTransactionSuccessToast')
+  .mockImplementation(mockShowTransactionSuccessToast)
+jest
+  .spyOn(Toast, 'showTransactionErrorToast')
+  .mockImplementation(mockShowTransactionErrorToast)
 
 const mockIsDeveloperMode = true
 jest.mock('store/settings/advanced', () => {
@@ -141,11 +151,6 @@ const approvedTestData = {
     fee: '1',
     nonce: 1,
     canSubmit: true
-  },
-  balance: {
-    balance: '100',
-    availableBalance: '100',
-    lockedBalance: '0'
   }
 }
 describe('bitcoin_sendTransaction', () => {
@@ -239,17 +244,7 @@ describe('bitcoin_sendTransaction', () => {
         )
       })
     })
-    it('should return error if no available btc balance', async () => {
-      mockGetBalances.mockReturnValue([])
-      const testRequest = createRequest(testParams)
-      const result = await handler.handle(testRequest, mockListenerApi)
-      expect(result).toEqual({
-        success: false,
-        error: ethErrors.rpc.internal(
-          'No balance found for the active account.'
-        )
-      })
-    })
+
     it('should return error if sendState has error ', async () => {
       mockValidateStateAndCalculateFees.mockReturnValue({
         error: {
@@ -290,6 +285,11 @@ describe('bitcoin_sendTransaction', () => {
         mockListenerApi
       )
 
+      expect(mockShowTransactionSuccessToast).toHaveBeenCalledWith({
+        message: 'Transaction Successful',
+        txHash: '0x123'
+      })
+
       expect(result).toEqual({
         success: true,
         value: '0x123'
@@ -304,6 +304,11 @@ describe('bitcoin_sendTransaction', () => {
         { request: testRequest, data: approvedTestData as any },
         mockListenerApi
       )
+
+      expect(mockShowTransactionErrorToast).toHaveBeenCalledWith({
+        message: 'Transaction Failed'
+      })
+
       expect(result).toEqual({
         success: false,
         error: ethErrors.rpc.internal(
@@ -320,6 +325,11 @@ describe('bitcoin_sendTransaction', () => {
         { request: testRequest, data: approvedTestData as any },
         mockListenerApi
       )
+
+      expect(mockShowTransactionErrorToast).toHaveBeenCalledWith({
+        message: 'Transaction Failed'
+      })
+
       expect(result).toEqual({
         success: false,
         error: ethErrors.rpc.internal('error')
@@ -334,6 +344,11 @@ describe('bitcoin_sendTransaction', () => {
         { request: testRequest, data: approvedTestData as any },
         mockListenerApi
       )
+
+      expect(mockShowTransactionErrorToast).toHaveBeenCalledWith({
+        message: 'Transaction Failed'
+      })
+
       expect(result).toEqual({
         success: false,
         error: ethErrors.rpc.internal('error')
@@ -348,6 +363,11 @@ describe('bitcoin_sendTransaction', () => {
         { request: testRequest, data: approvedTestData as any },
         mockListenerApi
       )
+
+      expect(mockShowTransactionErrorToast).toHaveBeenCalledWith({
+        message: 'Transaction Failed'
+      })
+
       expect(result).toEqual({
         success: false,
         error: ethErrors.rpc.internal('error')

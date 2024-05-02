@@ -10,11 +10,12 @@ import { Avalanche } from '@avalabs/wallets-sdk'
 import { RpcMethod, RpcProvider } from 'store/rpc/types'
 import mockSession from 'tests/fixtures/walletConnect/session.json'
 import mockAccounts from 'tests/fixtures/accounts.json'
-import { selectActiveAccount } from 'store/account'
+import { selectActiveAccount } from 'store/account/slice'
 import * as Navigation from 'utils/Navigation'
 import AppNavigation from 'navigation/AppNavigation'
 import networkService from 'services/network/NetworkService'
 import walletService from 'services/wallet/WalletService'
+import * as Toast from 'utils/toast'
 import { DEFERRED_RESULT } from '../types'
 import {
   AvalancheSendTransactionRpcRequest,
@@ -23,11 +24,19 @@ import {
   avalancheSendTransactionHandler
 } from './avalanche_sendTransaction'
 
+const mockShowTransactionSuccessToast = jest.fn()
+const mockShowTransactionErrorToast = jest.fn()
+jest
+  .spyOn(Toast, 'showTransactionSuccessToast')
+  .mockImplementation(mockShowTransactionSuccessToast)
+jest
+  .spyOn(Toast, 'showTransactionErrorToast')
+  .mockImplementation(mockShowTransactionErrorToast)
+
 jest.mock('@avalabs/avalanchejs')
 jest.mock('@avalabs/wallets-sdk')
-jest.mock('store/settings/advanced')
-jest.mock('store/account', () => {
-  const actual = jest.requireActual('store/account')
+jest.mock('store/account/slice', () => {
+  const actual = jest.requireActual('store/account/slice')
   return {
     ...actual,
     selectActiveAccount: jest.fn()
@@ -38,8 +47,8 @@ jest.mock('services/wallet/WalletService')
 jest.mock('utils/Navigation')
 
 const mockIsDeveloperMode = true
-jest.mock('store/settings/advanced', () => {
-  const actual = jest.requireActual('store/settings/advanced')
+jest.mock('store/settings/advanced/slice', () => {
+  const actual = jest.requireActual('store/settings/advanced/slice')
   return {
     ...actual,
     selectIsDeveloperMode: () => mockIsDeveloperMode
@@ -344,6 +353,7 @@ describe('app/store/walletConnectV2/handlers/avalanche_sendTransaction/avalanche
         payloadMock,
         mockListenerApi
       )
+
       expect(result).toEqual({
         success: false,
         error: new Error(
@@ -374,13 +384,14 @@ describe('app/store/walletConnectV2/handlers/avalanche_sendTransaction/avalanche
         payloadMock,
         mockListenerApi
       )
+
       expect(result).toEqual({
         success: false,
         error: new Error('Signing error, missing signatures.')
       })
     })
 
-    it('sings transactions correctly on C', async () => {
+    it('signs transactions correctly on C', async () => {
       const signedTxHex = '0x000142'
       hasAllSignaturesMock.mockReturnValueOnce(true)
       ;(Avalanche.signedTxToHex as jest.Mock).mockReturnValueOnce(signedTxHex)
@@ -408,12 +419,13 @@ describe('app/store/walletConnectV2/handlers/avalanche_sendTransaction/avalanche
       )
       expect(Avalanche.signedTxToHex).toHaveBeenCalledWith('signedTx')
       expect(issueTxHexMock).toHaveBeenCalledWith(signedTxHex, 'EVM')
+
       expect(result).toEqual({
         success: true,
         value: 1
       })
     })
-    it('sings transactions correctly on X/P', async () => {
+    it('signs transactions correctly on X/P', async () => {
       const signedTxHex = '0x000142'
       hasAllSignaturesMock.mockReturnValueOnce(true)
       ;(Avalanche.signedTxToHex as jest.Mock).mockReturnValueOnce(signedTxHex)
@@ -435,12 +447,13 @@ describe('app/store/walletConnectV2/handlers/avalanche_sendTransaction/avalanche
       )
       expect(Avalanche.signedTxToHex).toHaveBeenCalledWith('signedTx')
       expect(issueTxHexMock).toHaveBeenCalledWith(signedTxHex, 'AVM')
+
       expect(result).toEqual({
         success: true,
         value: 1
       })
     })
-    it('sings transactions correctly on X/P with multiple addresses', async () => {
+    it('signs transactions correctly on X/P with multiple addresses', async () => {
       const signedTxHex = '0x000142'
       hasAllSignaturesMock.mockReturnValueOnce(true)
       ;(Avalanche.signedTxToHex as jest.Mock).mockReturnValueOnce(signedTxHex)
@@ -472,6 +485,7 @@ describe('app/store/walletConnectV2/handlers/avalanche_sendTransaction/avalanche
       )
       expect(Avalanche.signedTxToHex).toHaveBeenCalledWith('signedTx')
       expect(issueTxHexMock).toHaveBeenCalledWith(signedTxHex, 'AVM')
+
       expect(result).toEqual({
         success: true,
         value: 1

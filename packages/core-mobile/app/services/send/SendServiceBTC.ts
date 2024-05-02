@@ -10,8 +10,7 @@ import {
   SendErrorMessage,
   SendServiceHelper,
   SendState,
-  ValidateStateAndCalculateFeesParams,
-  ValidSendState
+  ValidateStateAndCalculateFeesParams
 } from 'services/send/types'
 
 // singleton services
@@ -61,7 +60,7 @@ class SendServiceBTC implements SendServiceHelper {
 
   async validateStateAndCalculateFees(
     params: ValidateStateAndCalculateFeesParams
-  ): Promise<SendState | ValidSendState> {
+  ): Promise<SendState> {
     const { sendState, isMainnet, fromAddress, currency, sentryTrx } = params
     return SentryWrapper.createSpanFor(sentryTrx)
       .setContext('svc.send.btc.validate_and_calc_fees')
@@ -127,6 +126,10 @@ class SendServiceBTC implements SendServiceHelper {
           error: undefined,
           maxAmount,
           sendFee: new BN(fee),
+          // The transaction's byte size is for BTC as gasLimit is for EVM.
+          // Bitcoin's formula for fee is `transactionByteLength * feeRate`.
+          // Since we know the `fee` and the `feeRate`, we can get the transaction's
+          // byte length by division.
           gasLimit: fee / feeRate
         }
 
