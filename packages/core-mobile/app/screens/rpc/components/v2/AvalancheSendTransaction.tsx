@@ -1,8 +1,5 @@
 import React, { useCallback, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
-import { Space } from 'components/Space'
-import AvaButton from 'components/AvaButton'
-import FlexSpacer from 'components/FlexSpacer'
 import { ScrollView } from 'react-native-gesture-handler'
 import { WalletScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
@@ -56,23 +53,6 @@ const AvalancheSendTransactionV2 = (): JSX.Element => {
     sethideActionButtons(value)
   }
 
-  const renderApproveRejectButtons = (): JSX.Element => {
-    return (
-      <>
-        <FlexSpacer />
-        <View style={txStyles.actionContainer}>
-          <AvaButton.PrimaryLarge onPress={onHandleApprove}>
-            Approve
-          </AvaButton.PrimaryLarge>
-          <Space y={16} />
-          <AvaButton.SecondaryLarge onPress={rejectAndClose}>
-            Reject
-          </AvaButton.SecondaryLarge>
-        </View>
-      </>
-    )
-  }
-
   function renderSendDetails(): JSX.Element | undefined {
     switch (data.txData.type) {
       case 'export':
@@ -110,15 +90,17 @@ const AvalancheSendTransactionV2 = (): JSX.Element => {
 
   return (
     <>
-      <RpcRequestBottomSheet onClose={rejectAndClose}>
+      <RpcRequestBottomSheet
+        onClose={rejectAndClose}
+        showButtons={!hideActionButtons}
+        onApprove={onHandleApprove}
+        onReject={rejectAndClose}>
         <ScrollView contentContainerStyle={txStyles.scrollView}>
           <View style={{ flexGrow: 1 }}>{renderSendDetails()}</View>
           <View>
             {data.txData.type === 'base' && (
               <Separator color={theme.neutral800} />
             )}
-
-            {!hideActionButtons && renderApproveRejectButtons()}
           </View>
         </ScrollView>
       </RpcRequestBottomSheet>

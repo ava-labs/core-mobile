@@ -12,10 +12,6 @@ import { SwapSide } from 'paraswap'
 import { OptimalRate } from 'paraswap-core'
 import { TokenWithBalance } from 'store/balance'
 import Logger from 'utils/Logger'
-import { showSnackBarCustom } from 'components/Snackbar'
-import TransactionToast, {
-  TransactionToastType
-} from 'components/toast/TransactionToast'
 import { resolve } from '@avalabs/utils-sdk'
 import { Amount } from 'types'
 import { InteractionManager } from 'react-native'
@@ -28,6 +24,7 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { RpcMethod } from 'store/rpc/types'
 import { useInAppRequest } from 'hooks/useInAppRequest'
 import { useNetworks } from 'hooks/networks/useNetworks'
+import { showTransactionErrorToast } from 'utils/toast'
 import { performSwap } from './performSwap/performSwap'
 
 // success here just means the transaction was sent, not that it was successful/confirmed
@@ -173,15 +170,7 @@ export const SwapContextProvider = ({
               address: activeAccount.addressC,
               chainId: activeNetwork.chainId
             })
-            showSnackBarCustom({
-              component: (
-                <TransactionToast
-                  message={humanizeSwapErrors(err)}
-                  type={TransactionToastType.ERROR}
-                />
-              ),
-              duration: 'long'
-            })
+            showTransactionErrorToast({ message: humanizeSwapErrors(err) })
           } else {
             setSwapStatus('Success')
             AnalyticsService.captureWithEncryption('SwapTransactionSucceeded', {

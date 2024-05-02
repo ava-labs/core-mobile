@@ -2,6 +2,10 @@ import BN from 'bn.js'
 import { TokenWithBalance } from 'store/balance'
 import { SignTransactionRequest } from 'services/wallet/types'
 import { Transaction } from '@sentry/types'
+import { Network } from '@avalabs/chains-sdk'
+import { Account } from 'store/account/types'
+import { AvalancheTxParams } from 'store/rpc/handlers/avalanche_sendTransaction/avalanche_sendTransaction'
+import { Request } from 'hooks/useInAppRequest'
 
 export interface SendError {
   error: boolean
@@ -14,27 +18,14 @@ export interface SendState<T extends TokenWithBalance = TokenWithBalance> {
   address?: string
   error?: SendError
   sendFee?: BN
-  maxFeePerGas?: bigint
-  maxPriorityFeePerGas?: bigint
+  defaultMaxFeePerGas?: bigint // should be the lowest network fee
   gasLimit?: number
   canSubmit?: boolean
   token?: T
   txId?: string
 }
 
-export type ValidSendState = SendState &
-  Required<
-    Pick<
-      SendState,
-      'amount' | 'address' | 'maxFeePerGas' | 'maxPriorityFeePerGas'
-    >
-  > & {
-    canSubmit: true
-  }
-
-export function isValidSendState(
-  sendState: SendState
-): sendState is ValidSendState {
+export function isValidSendState(sendState: SendState): boolean {
   return sendState.canSubmit === true
 }
 
@@ -50,7 +41,7 @@ export enum SendErrorMessage {
 export interface SendServiceHelper {
   getTransactionRequest(
     params: GetTransactionRequestParams
-  ): Promise<SignTransactionRequest>
+  ): Promise<SignTransactionRequest | AvalancheTxParams>
   validateStateAndCalculateFees(
     params: ValidateStateAndCalculateFeesParams
   ): Promise<SendState>
@@ -64,6 +55,15 @@ export type ValidateStateAndCalculateFeesParams = SendServiceFuncParams & {
 
 export type GetPVMTransactionRequestParams = SendServiceFuncParams & {
   accountIndex: number
+}
+
+export type SendParams = {
+  sendState: SendState
+  network: Network
+  account: Account
+  currency: string
+  request: Request
+  sentryTrx?: Transaction
 }
 
 type SendServiceFuncParams = {

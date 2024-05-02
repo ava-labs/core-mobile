@@ -12,6 +12,7 @@ import {
   ScrollView,
   Text,
   View,
+  alpha,
   useTheme
 } from '@avalabs/k2-mobile'
 import { Tooltip } from 'components/Tooltip'
@@ -185,7 +186,11 @@ const EditFees = ({
               popOverInfoText={gasLimitInfoMessage}
               onChangeText={text => setNewGasLimit(sanitized(text))}
               errorText={gasLimitError}
-              backgroundColor={colors.$neutral900}
+              backgroundColor={
+                isGasLimitEditable
+                  ? alpha(colors.$neutral800, 0.5)
+                  : colors.$neutral900
+              }
               borderColor={colors.$neutral800}
             />
           </>

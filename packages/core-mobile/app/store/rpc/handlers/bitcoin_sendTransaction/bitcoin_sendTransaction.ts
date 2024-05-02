@@ -10,25 +10,25 @@ import Logger from 'utils/Logger'
 import { isBtcAddress } from 'utils/isBtcAddress'
 import { BN } from 'bn.js'
 import SendServiceBTC from 'services/send/SendServiceBTC'
-import { SendState, ValidSendState } from 'services/send/types'
-import { TokenWithBalance } from 'store/balance'
+import { SendState } from 'services/send/types'
 import { getBitcoinNetwork } from 'services/network/utils/providerUtils'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import WalletService from 'services/wallet/WalletService'
 import NetworkService from 'services/network/NetworkService'
-import BtcBalanceService from 'services/balance/BtcBalanceService'
-import { updateRequestStatus, waitForTransactionReceipt } from 'store/rpc/slice'
+import {
+  showTransactionErrorToast,
+  showTransactionSuccessToast
+} from 'utils/toast'
 import {
   ApproveResponse,
   DEFERRED_RESULT,
   HandleResponse,
   RpcRequestHandler
 } from '../types'
-import { parseRequestParams } from './utils'
+import { isDAppTransactionParams, parseRequestParams } from './utils'
 
 export type BitcoinSendTransactionApproveData = {
-  sendState: ValidSendState | SendState
-  balance: TokenWithBalance
+  sendState: SendState
 }
 
 export type BitcoinSendTransactionRpcRequest =
@@ -54,8 +54,6 @@ class BitcoinSendTransactionHandler
     const isDeveloperMode = selectIsDeveloperMode(state)
     const activeAccount = selectActiveAccount(state)
     const parseResult = parseRequestParams(request.data.params.request.params)
-    const btcNetwork = getBitcoinNetwork(isDeveloperMode)
-    const currency = selectSelectedCurrency(state)
 
     if (!parseResult.success) {
       return {
@@ -66,62 +64,55 @@ class BitcoinSendTransactionHandler
       }
     }
 
-    const [address, amountSatoshi, feeRate] = parseResult.data
+    let verifiedState: SendState
 
-    // If destination address is not valid, return error
-    if (!isBtcAddress(address ?? '', !isDeveloperMode)) {
-      return {
-        success: false,
-        error: ethErrors.rpc.invalidParams({
-          message: 'Not a valid address.'
-        })
+    if (isDAppTransactionParams(parseResult.data)) {
+      const [address, amountSatoshi, feeRate] = parseResult.data
+
+      // If destination address is not valid, return error
+      if (!isBtcAddress(address ?? '', !isDeveloperMode)) {
+        return {
+          success: false,
+          error: ethErrors.rpc.invalidParams({
+            message: 'Not a valid address.'
+          })
+        }
       }
-    }
 
-    if (!activeAccount) {
-      return {
-        success: false,
-        error: ethErrors.rpc.invalidRequest({
-          message: 'No active account found'
-        })
+      if (!activeAccount) {
+        return {
+          success: false,
+          error: ethErrors.rpc.invalidRequest({
+            message: 'No active account found'
+          })
+        }
       }
-    }
 
-    if (!activeAccount.addressBTC) {
-      return {
-        success: false,
-        error: ethErrors.rpc.invalidRequest({
-          message: 'The active account does not support BTC transactions'
-        })
+      if (!activeAccount.addressBTC) {
+        return {
+          success: false,
+          error: ethErrors.rpc.invalidRequest({
+            message: 'The active account does not support BTC transactions'
+          })
+        }
       }
-    }
 
-    const balances = await BtcBalanceService.getBalances({
-      network: btcNetwork,
-      accountAddress: activeAccount.addressBTC,
-      currency
-    })
-
-    if (balances[0] === undefined) {
-      return {
-        success: false,
-        error: ethErrors.rpc.invalidRequest({
-          message: 'No balance found for the active account.'
-        })
+      const sendState: SendState = {
+        address,
+        amount: new BN(amountSatoshi),
+        defaultMaxFeePerGas: BigInt(feeRate)
       }
-    }
 
-    const sendState = {
-      address,
-      amount: new BN(amountSatoshi),
-      maxFeePerGas: feeRate ? BigInt(feeRate) : undefined
+      verifiedState = await SendServiceBTC.validateStateAndCalculateFees({
+        sendState,
+        isMainnet: !isDeveloperMode,
+        fromAddress: activeAccount.addressBTC
+      })
+    } else {
+      // for in-app request, we already have everything we need so no need to call validateStateAndCalculateFees
+      // to get the full sendState data
+      verifiedState = parseResult.data
     }
-
-    const verifiedState = await SendServiceBTC.validateStateAndCalculateFees({
-      sendState,
-      isMainnet: !isDeveloperMode,
-      fromAddress: activeAccount.addressBTC
-    })
 
     // If we cant construct the transaction return error
     if (verifiedState.error?.error) {
@@ -144,8 +135,7 @@ class BitcoinSendTransactionHandler
     }
 
     const approveData: BitcoinSendTransactionApproveData = {
-      sendState: verifiedState,
-      balance: balances[0]
+      sendState: verifiedState
     }
 
     Navigation.navigate({
@@ -167,11 +157,11 @@ class BitcoinSendTransactionHandler
     listenerApi: AppListenerEffectAPI
   ): ApproveResponse<string> => {
     try {
-      const { getState, dispatch } = listenerApi
+      const { getState } = listenerApi
       const {
-        data: { sendState },
-        request
+        data: { sendState }
       } = payload
+
       // Parse the json into a tx object
       const isDeveloperMode = selectIsDeveloperMode(getState())
       const currency = selectSelectedCurrency(getState())
@@ -179,12 +169,7 @@ class BitcoinSendTransactionHandler
       const btcNetwork = getBitcoinNetwork(isDeveloperMode)
 
       if (!activeAccount?.addressBTC) {
-        return {
-          success: false,
-          error: ethErrors.rpc.invalidRequest({
-            message: 'The active account does not support BTC transactions'
-          })
-        }
+        throw new Error('The active account does not support BTC transactions')
       }
 
       const txRequest = await SendServiceBTC.getTransactionRequest({
@@ -200,50 +185,36 @@ class BitcoinSendTransactionHandler
         btcNetwork
       )
 
-      const hash = await NetworkService.sendTransaction({
+      const txHash = await NetworkService.sendTransaction({
         signedTx: result,
-        network: btcNetwork,
-        handleWaitToPost: txResponse => {
-          dispatch(
-            waitForTransactionReceipt({
-              txResponse,
-              requestId: request.data.id,
-              requestedNetwork: btcNetwork
-            })
-          )
-        }
+        network: btcNetwork
       })
 
-      dispatch(
-        updateRequestStatus({
-          id: request.data.id,
-          status: {
-            result: {
-              txHash: hash,
-              confirmationReceiptStatus: 'Pending'
-            }
-          }
-        })
-      )
+      showTransactionSuccessToast({
+        message: 'Transaction Successful',
+        txHash
+      })
 
       return {
         success: true,
-        value: hash
+        value: txHash
       }
     } catch (e) {
       Logger.error(
-        'Unable to approve send transaction request',
+        'Unable to approve send btc transaction request',
         JSON.stringify(e)
       )
 
       const message =
         'message' in (e as Error)
           ? (e as Error).message
-          : 'Send transaction error'
+          : 'Send Btc transaction error'
 
       Sentry.captureException(e, {
         tags: { dapps: 'bitcoinSendTransaction' }
       })
+
+      showTransactionErrorToast({ message: 'Transaction Failed' })
 
       return {
         success: false,

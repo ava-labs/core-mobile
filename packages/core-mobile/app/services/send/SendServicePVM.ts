@@ -25,15 +25,14 @@ export class SendServicePVM {
     return SentryWrapper.createSpanFor(sentryTrx)
       .setContext('svc.send.pvm.validate_and_calc_fees')
       .executeAsync(async () => {
-        const { amount, address, maxFeePerGas, maxPriorityFeePerGas, token } =
-          sendState
+        const { amount, address, defaultMaxFeePerGas, token } = sendState
 
         // Set canSubmit to false if token is not set
         if (!token) return SendServicePVM.getErrorState(sendState, '')
 
         const gasLimit = GAS_LIMIT_FOR_XP_CHAIN
-        const sendFee = maxFeePerGas
-          ? new BN(gasLimit).mul(new BN(maxFeePerGas.toString()))
+        const sendFee = defaultMaxFeePerGas
+          ? new BN(gasLimit).mul(new BN(defaultMaxFeePerGas.toString()))
           : undefined
         const maxAmount = token.balance.sub(sendFee || new BN(0))
 
@@ -42,8 +41,6 @@ export class SendServicePVM {
           canSubmit: true,
           error: undefined,
           gasLimit,
-          maxFeePerGas,
-          maxPriorityFeePerGas,
           maxAmount,
           sendFee
         }
@@ -60,7 +57,7 @@ export class SendServicePVM {
             SendErrorMessage.INVALID_ADDRESS
           )
 
-        if (!maxFeePerGas || maxFeePerGas === 0n)
+        if (!defaultMaxFeePerGas || defaultMaxFeePerGas === 0n)
           return SendServicePVM.getErrorState(
             newState,
             SendErrorMessage.INVALID_NETWORK_FEE
