@@ -10,6 +10,6 @@ export default {
   contactBtcAddress: 'tb1qwausd68f03kyxcr7qvqwunehut5npl7eeccvna',
   saveButton: 'Save',
   newContactName: 'Avax account 2 New',
-  delete: 'Delete',
+  delete: 'warning_modal__action_text',
   newContact: 'New Contact'
 }

@@ -28,7 +28,7 @@ class AddressBook {
   }
 
   get delete() {
-    return by.text(addressBookLoc.delete)
+    return by.id(addressBookLoc.delete)
   }
 
   get contactName() {
