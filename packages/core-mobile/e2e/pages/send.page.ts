@@ -101,7 +101,7 @@ class SendPage {
     await this.tapCarrotSVG()
     await this.selectToken(token)
     await this.enterAmount(sendingAmmount)
-    // await this.tapSendTitle()
+    await this.tapSendTitle()
     await this.tapNextButton()
     await Actions.waitForElement(ReviewAndSend.balanceAfterTransaction)
     await this.tapApproveButton()
