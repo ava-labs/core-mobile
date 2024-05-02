@@ -169,12 +169,7 @@ class BitcoinSendTransactionHandler
       const btcNetwork = getBitcoinNetwork(isDeveloperMode)
 
       if (!activeAccount?.addressBTC) {
-        return {
-          success: false,
-          error: ethErrors.rpc.invalidRequest({
-            message: 'The active account does not support BTC transactions'
-          })
-        }
+        throw new Error('The active account does not support BTC transactions')
       }
 
       const txRequest = await SendServiceBTC.getTransactionRequest({

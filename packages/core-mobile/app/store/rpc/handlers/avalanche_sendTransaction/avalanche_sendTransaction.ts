@@ -11,9 +11,9 @@ import {
   VM
 } from '@avalabs/avalanchejs'
 import { ethErrors } from 'eth-rpc-errors'
-import { selectActiveAccount } from 'store/account'
+import { selectActiveAccount } from 'store/account/slice'
 import networkService from 'services/network/NetworkService'
-import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { selectIsDeveloperMode } from 'store/settings/advanced/slice'
 import walletService from 'services/wallet/WalletService'
 import { RpcMethod, RpcRequest } from 'store/rpc/types'
 import * as Sentry from '@sentry/react-native'
@@ -289,7 +289,6 @@ class AvalancheSendTransactionHandler
       Sentry.captureException(e, {
         tags: { dapps: 'sendTransactionV2' }
       })
-
       return {
         success: false,
         error: ethErrors.rpc.internal({
