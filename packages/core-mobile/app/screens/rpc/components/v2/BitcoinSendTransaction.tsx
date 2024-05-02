@@ -17,7 +17,7 @@ import { formatUriImageToPng } from 'utils/Contentful'
 import { Row } from 'components/Row'
 import { Eip1559Fees } from 'utils/Utils'
 import SendRow from 'components/SendRow'
-import { Button, Text, View, useTheme } from '@avalabs/k2-mobile'
+import { Text, View, useTheme } from '@avalabs/k2-mobile'
 import NetworkFeeSelector from 'components/NetworkFeeSelector'
 import { NetworkTokenUnit } from 'types'
 import { getBitcoinNetwork } from 'services/network/utils/providerUtils'
@@ -115,7 +115,11 @@ const BitcoinSendTransaction = (): JSX.Element => {
 
   return (
     <>
-      <RpcRequestBottomSheet onClose={rejectAndClose}>
+      <RpcRequestBottomSheet
+        onClose={rejectAndClose}
+        showButtons
+        onApprove={onHandleApprove}
+        onReject={rejectAndClose}>
         <ScrollView contentContainerStyle={{ minHeight: '100%' }}>
           <Text variant="heading3" sx={{ marginHorizontal: 16, fontSize: 36 }}>
             Send
@@ -213,20 +217,6 @@ const BitcoinSendTransaction = (): JSX.Element => {
             </Text>
           </View>
         </ScrollView>
-        <View
-          sx={{
-            backgroundColor: '$neutral900',
-            paddingVertical: 16,
-            marginHorizontal: 16
-          }}>
-          <Button type="primary" size="xlarge" onPress={onHandleApprove}>
-            Approve
-          </Button>
-          <Space y={16} />
-          <Button type="secondary" size="xlarge" onPress={rejectAndClose}>
-            Reject
-          </Button>
-        </View>
       </RpcRequestBottomSheet>
       {isSeedlessSigningBlocked && (
         <FeatureBlocked

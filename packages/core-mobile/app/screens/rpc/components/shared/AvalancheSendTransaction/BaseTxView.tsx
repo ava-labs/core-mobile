@@ -77,11 +77,18 @@ const BaseTxView = ({ tx }: { tx: Avalanche.BaseTx }): JSX.Element => {
         </Row>
       </Card>
       <Space y={16} />
-      <AvaText.Body2 color={theme.colorText1} textStyle={{ lineHeight: 20 }}>
-        Balance Change
-      </AvaText.Body2>
-      <Space y={8} />
-      {outputs.map(output => renderOutputCard(output))}
+      {outputs.length > 0 && (
+        <>
+          <AvaText.Body2
+            color={theme.colorText1}
+            textStyle={{ lineHeight: 20 }}>
+            Balance Change
+          </AvaText.Body2>
+          <Space y={8} />
+          {outputs.map(output => renderOutputCard(output))}
+        </>
+      )}
+
       <Space y={16} />
       <TxFee txFee={txFee} />
       <Space y={16} />
