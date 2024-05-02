@@ -24,12 +24,6 @@ import { NetworkTokenUnit, Amount } from 'types'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { useNetworkFee } from 'hooks/useNetworkFee'
 import { useInAppRequest } from 'hooks/useInAppRequest'
-import { NetworkVMType } from '@avalabs/chains-sdk'
-import {
-  showTransactionErrorToast,
-  showTransactionSuccessToast
-} from 'utils/toast'
-import { isUserRejectedError } from 'store/rpc/providers/walletConnect/utils'
 
 export type SendStatus = 'Idle' | 'Sending' | 'Success' | 'Fail'
 
@@ -146,16 +140,6 @@ export const SendTokenContextProvider = ({
         .then(txHash => {
           setSendStatus('Success')
 
-          // for bitcoin network, we show success/error toast right away
-          // for evm network, we show toast after the transaction is finally confirmed/reverted
-          // which happens in redux listener
-          if (activeNetwork.vmName === NetworkVMType.BITCOIN) {
-            showTransactionSuccessToast({
-              message: 'Transaction Successful',
-              txHash
-            })
-          }
-
           AnalyticsService.captureWithEncryption('SendTransactionSucceeded', {
             chainId: activeNetwork.chainId,
             txHash
@@ -163,13 +147,6 @@ export const SendTokenContextProvider = ({
         })
         .catch(reason => {
           setSendStatus('Fail')
-
-          if (
-            !isUserRejectedError(reason) &&
-            activeNetwork.vmName === NetworkVMType.BITCOIN
-          ) {
-            showTransactionErrorToast({ message: 'Transaction Failed' })
-          }
 
           AnalyticsService.capture('SendTransactionFailed', {
             errorMessage: reason.message,

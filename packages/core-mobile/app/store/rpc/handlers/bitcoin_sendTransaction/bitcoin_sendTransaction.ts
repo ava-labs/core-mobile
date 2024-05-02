@@ -16,6 +16,10 @@ import { selectSelectedCurrency } from 'store/settings/currency'
 import WalletService from 'services/wallet/WalletService'
 import NetworkService from 'services/network/NetworkService'
 import {
+  showTransactionErrorToast,
+  showTransactionSuccessToast
+} from 'utils/toast'
+import {
   ApproveResponse,
   DEFERRED_RESULT,
   HandleResponse,
@@ -186,14 +190,19 @@ class BitcoinSendTransactionHandler
         btcNetwork
       )
 
-      const hash = await NetworkService.sendTransaction({
+      const txHash = await NetworkService.sendTransaction({
         signedTx: result,
         network: btcNetwork
       })
 
+      showTransactionSuccessToast({
+        message: 'Transaction Successful',
+        txHash
+      })
+
       return {
         success: true,
-        value: hash
+        value: txHash
       }
     } catch (e) {
       Logger.error(
@@ -209,6 +218,8 @@ class BitcoinSendTransactionHandler
       Sentry.captureException(e, {
         tags: { dapps: 'bitcoinSendTransaction' }
       })
+
+      showTransactionErrorToast({ message: 'Transaction Failed' })
 
       return {
         success: false,
