@@ -43,6 +43,10 @@ class AddressBook {
     return by.text(addressBookLoc.saveButton)
   }
 
+  get newContactTitle() {
+    return by.text(addressBookLoc.newContact)
+  }
+
   async tapDelete() {
     await Actions.tapElementAtIndex(this.delete, 0)
   }
@@ -92,11 +96,16 @@ class AddressBook {
       addressBookLoc.contactBtcAddress,
       2
     )
-    await Actions.tap(this.nameText)
+    await element(commonElsPage.inputTextField).atIndex(2).tapReturnKey()
   }
 
   async tapSave() {
-    await Actions.tapElementAtIndex(this.saveButton, 0)
+    try {
+      await Actions.tapElementAtIndex(this.saveButton, 0)
+    } catch (error) {
+      await Actions.tapElementAtIndex(this.newContactTitle, 0)
+      await Actions.tapElementAtIndex(this.saveButton, 0)
+    }
   }
 }
 
