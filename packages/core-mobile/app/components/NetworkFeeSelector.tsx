@@ -113,7 +113,7 @@ const NetworkFeeSelector = ({
   // customFees init value.
   // NetworkFee is not immediately available hence the useEffect
   useEffect(() => {
-    if (!customFees && networkFee && (gasLimit > 0 || isBtcNetwork)) {
+    if (!customFees && networkFee && gasLimit > 0) {
       const initialCustomFees = getInitialCustomFees(networkFee)
       setCustomFees(initialCustomFees)
       setCalculatedFees(initialCustomFees)
