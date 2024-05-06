@@ -2,7 +2,7 @@ import {
   NetworkTokenWithBalance,
   TokenType,
   TokenWithBalanceERC20,
-  XPTokenWithBalance,
+  PTokenWithBalance,
   XTokenWithBalance
 } from 'store/balance'
 import { ChainId, Network, NetworkVMType } from '@avalabs/chains-sdk'
@@ -60,7 +60,7 @@ export class GlacierBalanceService implements BalanceServiceProvider {
     (
       | NetworkTokenWithBalance
       | TokenWithBalanceERC20
-      | XPTokenWithBalance
+      | PTokenWithBalance
       | XTokenWithBalance
     )[]
   > {
@@ -81,7 +81,7 @@ export class GlacierBalanceService implements BalanceServiceProvider {
               let results: (
                 | NetworkTokenWithBalance
                 | TokenWithBalanceERC20
-                | XPTokenWithBalance
+                | PTokenWithBalance
                 | XTokenWithBalance
               )[] =
                 nativeBalance.status === 'fulfilled'
@@ -152,7 +152,7 @@ export class GlacierBalanceService implements BalanceServiceProvider {
     sentryTrx?: Transaction
   }): [
     Promise<NetworkTokenWithBalance>,
-    Promise<XPTokenWithBalance>,
+    Promise<PTokenWithBalance>,
     Promise<XTokenWithBalance>
   ] {
     return [
@@ -217,7 +217,7 @@ export class GlacierBalanceService implements BalanceServiceProvider {
     addresses: string[]
     currency: string
     sentryTrx?: Transaction
-  }): Promise<XPTokenWithBalance> {
+  }): Promise<PTokenWithBalance> {
     if (network.vmName !== NetworkVMType.PVM) {
       return Promise.reject('network not compatible, skipping getPChainBalance')
     }
@@ -267,7 +267,7 @@ export class GlacierBalanceService implements BalanceServiceProvider {
       type: TokenType.NATIVE,
       ...networkToken,
       ...pChainBalance
-    } as XPTokenWithBalance
+    } as PTokenWithBalance
   }
 
   async getXChainBalance({

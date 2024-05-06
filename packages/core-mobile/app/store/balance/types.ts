@@ -28,7 +28,7 @@ type TokenMarketData = {
   vol24: number
 }
 
-export type XPTokenWithBalance = TokenBalanceData &
+export type PTokenWithBalance = TokenBalanceData &
   TokenMarketData &
   NetworkToken &
   PChainBalance & {
@@ -77,7 +77,7 @@ export type TokenWithBalance =
   | NetworkTokenWithBalance
   | TokenWithBalanceERC20
   | NftTokenWithBalance
-  | XPTokenWithBalance
+  | PTokenWithBalance
 
 export type Balance = {
   accountIndex: number
