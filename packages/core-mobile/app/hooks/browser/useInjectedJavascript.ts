@@ -7,10 +7,16 @@ export type InjectedJavascripts = {
   injectLogRecentWallet: string
   injectGetDescriptionAndFavicon: string
   coreConnectInterceptor: string
+  injectCustomWindowOpen: string
 }
 
 export type InjectedJsMessageWrapper = {
-  method: 'window_ethereum_used' | 'recent_wallet' | 'desc_and_favicon' | 'log'
+  method:
+    | 'window_ethereum_used'
+    | 'recent_wallet'
+    | 'desc_and_favicon'
+    | 'log'
+    | 'walletConnect_deeplink_blocked'
   payload: string
 }
 
@@ -142,10 +148,28 @@ export function useInjectedJavascript(): InjectedJavascripts {
     }, 500); //add delay to make sure we don't get overridden by something else
   })();`
 
+  // blocks dapp redirects to walletconnect deeplinks
+  // after walletConnect sent a session request
+  const injectCustomWindowOpen = `(async function(){
+    const originalWindowOpen = window.open;
+    window.open = function(url, target, features){
+      if (url.startsWith('core://wc?requestId')){
+        const message = {
+          method: 'walletConnect_deeplink_blocked',
+          payload: url
+        };
+        window.ReactNativeWebView.postMessage(JSON.stringify(message));
+        return null;
+      }
+      return originalWindowOpen(url, target, features);
+    }
+  })();`
+
   return {
     injectCoreAsRecent,
     injectLogRecentWallet,
     injectGetDescriptionAndFavicon,
-    coreConnectInterceptor
+    coreConnectInterceptor,
+    injectCustomWindowOpen
   }
 }
