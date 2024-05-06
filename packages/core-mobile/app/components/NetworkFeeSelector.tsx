@@ -26,10 +26,7 @@ import { NetworkFee } from 'services/networkFee/types'
 import { useBridgeSDK } from '@avalabs/bridge-sdk'
 import { GAS_LIMIT_FOR_XP_CHAIN } from 'consts/fees'
 import { isBitcoinNetwork } from 'utils/network/isBitcoinNetwork'
-import {
-  isAvmNetwork,
-  isAvalancheNetwork
-} from 'utils/network/isAvalancheNetwork'
+import { isAvmNetwork, isPvmNetwork } from 'utils/network/isAvalancheNetwork'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { Tooltip } from './Tooltip'
 import InputText from './InputText'
@@ -83,7 +80,7 @@ const NetworkFeeSelector = ({
     selectedCurrency.toLowerCase() as VsCurrencyType
   )
   const isBtcNetwork = network ? isBitcoinNetwork(network) : false
-  const isPVM = isAvalancheNetwork(network)
+  const isPVM = isPvmNetwork(network)
   const isAVM = isAvmNetwork(network)
   const [selectedPreset, setSelectedPreset] = useState(FeePreset.Normal)
   const [calculatedFees, setCalculatedFees] =

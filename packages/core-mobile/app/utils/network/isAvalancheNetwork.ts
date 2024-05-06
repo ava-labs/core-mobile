@@ -1,6 +1,6 @@
 import { ChainId, Network, NetworkVMType } from '@avalabs/chains-sdk'
 
-export function isAvalancheNetwork(network?: Network): boolean {
+export function isPvmNetwork(network?: Network): boolean {
   return network?.vmName === NetworkVMType.PVM
 }
 export function isAvmNetwork(network?: Network): boolean {
