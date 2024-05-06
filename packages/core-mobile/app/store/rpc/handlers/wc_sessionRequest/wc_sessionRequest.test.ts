@@ -346,7 +346,8 @@ describe('session_request handler', () => {
             'avalanche_sendTransaction',
             'avalanche_signTransaction',
             'avalanche_getAddressesInRange',
-            'bitcoin_sendTransaction'
+            'bitcoin_sendTransaction',
+            'avalanche_signMessage'
           ],
           // all requested events
           events: validRequiredNamespaces.eip155.events

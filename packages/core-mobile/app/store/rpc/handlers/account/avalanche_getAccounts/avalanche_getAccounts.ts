@@ -1,5 +1,5 @@
 import { AppListenerEffectAPI } from 'store'
-import { selectAccounts } from 'store/account/slice'
+import { selectAccounts, selectActiveAccount } from 'store/account/slice'
 import { RpcMethod, RpcRequest } from 'store/rpc/types'
 import { HandleResponse, RpcRequestHandler } from '../../types'
 
@@ -16,7 +16,13 @@ class AvalancheGetAccountsHandler
     listenerApi: AppListenerEffectAPI
   ): HandleResponse => {
     const accounts = selectAccounts(listenerApi.getState())
-    const accountsArray = Object.values(accounts).map(account => account)
+    const activeAccount = selectActiveAccount(listenerApi.getState())
+    if (!activeAccount) throw new Error('no active account')
+
+    const accountsArray = Object.values(accounts).map(account => {
+      account.active = account.index === activeAccount?.index
+      return account
+    })
     return { success: true, value: accountsArray }
   }
 }

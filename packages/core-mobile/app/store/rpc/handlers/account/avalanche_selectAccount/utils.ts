@@ -10,8 +10,8 @@ export const accountSchema = z.object({
   addressPVM: z.string(),
   addressCoreEth: z.string(),
   active: z.boolean(),
-  id: z.string(),
-  type: z.nativeEnum(CoreAccountType),
+  id: z.string().optional(), //optional for personal_sign rpc
+  type: z.nativeEnum(CoreAccountType).optional(), //optional for personal_sign rpc
   walletId: z.string().optional(),
   walletType: z.nativeEnum(WalletType).optional()
 })

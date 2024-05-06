@@ -134,8 +134,7 @@ class WalletService {
     network
   }: {
     rpcMethod: RpcMethod
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    data: any
+    data: string | unknown
     accountIndex: number
     network: Network
   }): Promise<string> {
@@ -145,7 +144,10 @@ class WalletService {
     )
     const provider = NetworkService.getProviderForNetwork(network)
 
-    if (!(provider instanceof JsonRpcBatchInternal))
+    if (
+      !(provider instanceof JsonRpcBatchInternal) &&
+      !(provider instanceof Avalanche.JsonRpcProvider)
+    )
       throw new Error('Unable to sign message: wrong provider obtained')
 
     return wallet.signMessage({
@@ -204,7 +206,10 @@ class WalletService {
     const wallet = await WalletFactory.createWallet(
       accountIndex,
       this.walletType
-    )
+    ).catch(reason => {
+      Logger.error(reason)
+      throw reason
+    })
     const provXP = NetworkService.getAvalancheProviderXP(isTestnet)
 
     return wallet.getAddresses({ accountIndex, isTestnet, provXP })
