@@ -9,7 +9,7 @@ import Logger from 'utils/Logger'
 import { EVM_IDENTIFIER } from 'consts/walletConnect'
 import promiseWithTimeout from 'utils/js/promiseWithTimeout'
 import { isBitcoinChainId } from 'utils/network/isBitcoinNetwork'
-import { isXPChain } from 'utils/network/isPvmNetwork'
+import { isXPChain } from 'utils/network/isAvalancheNetwork'
 import { CLIENT_METADATA, WalletConnectCallbacks } from './types'
 import {
   addNamespaceToAddress,

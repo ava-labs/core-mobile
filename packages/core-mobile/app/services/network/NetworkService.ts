@@ -29,8 +29,10 @@ class NetworkService {
       ...erc20Networks,
       [ChainId.BITCOIN]: BITCOIN_NETWORK,
       [ChainId.BITCOIN_TESTNET]: BITCOIN_TEST_NETWORK,
-      [ChainId.AVALANCHE_XP]: this.getAvalancheNetworkP(false),
-      [ChainId.AVALANCHE_TEST_XP]: this.getAvalancheNetworkP(true)
+      [-ChainId.AVALANCHE_XP]: this.getAvalancheNetworkP(false),
+      [-ChainId.AVALANCHE_TEST_XP]: this.getAvalancheNetworkP(true),
+      [ChainId.AVALANCHE_XP]: this.getAvalancheNetworkX(false),
+      [ChainId.AVALANCHE_TEST_XP]: this.getAvalancheNetworkX(true)
     }
   }
 
@@ -110,18 +112,12 @@ class NetworkService {
   }
 
   /**
-   * Returns the network object for Avalanche X Chain
-   */
-  getAvalancheNetworkX(isDeveloperMode: boolean): Network {
-    return isDeveloperMode ? AVALANCHE_XP_TEST_NETWORK : AVALANCHE_XP_NETWORK
-  }
-
-  /**
    * Returns the network object for Avalanche P Chain
    */
   getAvalancheNetworkP(isDeveloperMode: boolean): Network {
     const pChain = {
       ...AVALANCHE_XP_NETWORK,
+      chainId: -AVALANCHE_XP_NETWORK.chainId,
       isTestnet: false,
       vmName: NetworkVMType.PVM,
       chainName: 'Avalanche (P-chain)',
@@ -135,6 +131,7 @@ class NetworkService {
     } as Network
     const pChainTest = {
       ...AVALANCHE_XP_TEST_NETWORK,
+      chainId: -AVALANCHE_XP_TEST_NETWORK.chainId,
       isTestnet: true,
       vmName: NetworkVMType.PVM,
       chainName: 'Avalanche (P-chain)',
@@ -149,6 +146,24 @@ class NetworkService {
     return isDeveloperMode ? pChainTest : pChain
   }
 
+  /**
+   * Returns the network object for Avalanche X Chain
+   */
+  getAvalancheNetworkX(isDeveloperMode: boolean): Network {
+    const xChain = {
+      ...AVALANCHE_XP_NETWORK,
+      chainName: 'Avalanche (X-chain)',
+      logoUri:
+        'https://images.ctfassets.net/gcj8jwzm6086/5xiGm7IBR6G44eeVlaWrxi/1b253c4744a3ad21a278091e3119feba/xchain-square.svg'
+    } as Network
+    const xChainTest = {
+      ...AVALANCHE_XP_TEST_NETWORK,
+      chainName: 'Avalanche (X-chain)',
+      logoUri:
+        'https://images.ctfassets.net/gcj8jwzm6086/5xiGm7IBR6G44eeVlaWrxi/1b253c4744a3ad21a278091e3119feba/xchain-square.svg'
+    } as Network
+    return isDeveloperMode ? xChainTest : xChain
+  }
   /**
    * Returns the provider used by Avalanche X/P/CoreEth chains.
    * Using either X or P Network will result in same provider.

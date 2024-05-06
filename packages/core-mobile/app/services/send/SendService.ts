@@ -18,6 +18,7 @@ import { getAddressByNetwork } from 'store/account/utils'
 import { InAppTransactionParams as BtcTransactionParams } from 'store/rpc/handlers/bitcoin_sendTransaction/utils'
 import { TransactionParams as EvmTransactionParams } from 'store/rpc/handlers/eth_sendTransaction/utils'
 import { TransactionParams as AvalancheTransactionParams } from 'store/rpc/handlers/avalanche_sendTransaction/utils'
+import { SendServiceAVM } from 'services/send/SendServiceAVM'
 import sendServiceBTC from './SendServiceBTC'
 import {
   isValidSendState,
@@ -151,8 +152,27 @@ class SendService {
           ;[txHash, txError] = await resolve(
             request({
               method: RpcMethod.AVALANCHE_SEND_TRANSACTION,
-              params: txRequest as AvalancheTransactionParams,
-              chainId: network.chainId.toString()
+              params: txRequest as AvalancheTransactionParams
+            })
+          )
+        }
+
+        if (network.vmName === NetworkVMType.AVM) {
+          const txRequest = await (
+            service as SendServiceAVM
+          ).getTransactionRequest({
+            sendState,
+            isMainnet: !network.isTestnet,
+            fromAddress,
+            currency,
+            sentryTrx,
+            accountIndex: account.index
+          })
+
+          ;[txHash, txError] = await resolve(
+            request({
+              method: RpcMethod.AVALANCHE_SEND_TRANSACTION,
+              params: txRequest as AvalancheTransactionParams
             })
           )
         }
@@ -247,6 +267,8 @@ class SendService {
         return new SendServiceEVM(activeNetwork, fromAddress)
       case NetworkVMType.PVM:
         return new SendServicePVM(activeNetwork)
+      case NetworkVMType.AVM:
+        return new SendServiceAVM(activeNetwork)
       default:
         throw new Error('unhandled send helper')
     }
