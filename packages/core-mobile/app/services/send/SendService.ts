@@ -158,6 +158,27 @@ class SendService {
           )
         }
 
+        if (network.vmName === NetworkVMType.AVM) {
+          const txRequest = await (
+            service as SendServiceAVM
+          ).getTransactionRequest({
+            sendState,
+            isMainnet: !network.isTestnet,
+            fromAddress,
+            currency,
+            sentryTrx,
+            accountIndex: account.index
+          })
+
+          ;[txHash, txError] = await resolve(
+            request({
+              method: RpcMethod.AVALANCHE_SEND_TRANSACTION,
+              params: txRequest as AvalancheTransactionParams,
+              chainId: network.chainId.toString()
+            })
+          )
+        }
+
         if (network.vmName === NetworkVMType.EVM) {
           const txRequest = await (
             service as SendServiceEVM
