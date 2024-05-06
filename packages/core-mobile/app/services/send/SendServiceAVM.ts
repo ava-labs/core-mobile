@@ -53,7 +53,10 @@ export class SendServiceAVM {
             SendErrorMessage.ADDRESS_REQUIRED
           )
 
-        if (!Avalanche.isBech32Address(address, false))
+        if (
+          !Avalanche.isBech32Address(address, false) &&
+          !Avalanche.isBech32Address(address, true)
+        )
           return SendServiceAVM.getErrorState(
             newState,
             SendErrorMessage.INVALID_ADDRESS
