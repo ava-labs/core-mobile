@@ -36,5 +36,7 @@ export type OpName =
   | 'svc.wallet.get_wallet'
   | 'svc.swap.contract_allowance'
   | 'svc.swap.contract_estimate_gas'
+  | 'svc.send.avm.get_trx_request'
+  | 'svc.send.avm.validate_and_calc_fees'
 
 export const SentryStorage = 'sentry_sample_rate'
