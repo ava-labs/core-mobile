@@ -152,8 +152,7 @@ class SendService {
           ;[txHash, txError] = await resolve(
             request({
               method: RpcMethod.AVALANCHE_SEND_TRANSACTION,
-              params: txRequest as AvalancheTransactionParams,
-              chainId: network.chainId.toString()
+              params: txRequest as AvalancheTransactionParams
             })
           )
         }
@@ -173,8 +172,7 @@ class SendService {
           ;[txHash, txError] = await resolve(
             request({
               method: RpcMethod.AVALANCHE_SEND_TRANSACTION,
-              params: txRequest as AvalancheTransactionParams,
-              chainId: network.chainId.toString()
+              params: txRequest as AvalancheTransactionParams
             })
           )
         }
