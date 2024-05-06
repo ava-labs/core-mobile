@@ -119,19 +119,7 @@ const NetworkFeeSelector = ({
       setCalculatedFees(initialCustomFees)
       onFeesChange?.(initialCustomFees, FeePreset.Normal)
     }
-  }, [
-    activeNetwork,
-    customFees,
-    gasLimit,
-    getInitialCustomFees,
-    isBtcNetwork,
-    isPVM,
-    isAVM,
-    nativeTokenPrice,
-    networkFee,
-    onFeesChange,
-    setCustomFees
-  ])
+  }, [customFees, gasLimit, getInitialCustomFees, networkFee, onFeesChange])
 
   function handleSelectedPreset(preset: FeePreset): void {
     setSelectedPreset(preset)
