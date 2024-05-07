@@ -4,6 +4,7 @@ import AccountManagePage from '../pages/accountManage.page'
 import BottomTabsPage from '../pages/bottomTabs.page'
 import PlusMenuPage from '../pages/plusMenu.page'
 import Send from '../locators/send.loc'
+import delay from '../helpers/waits'
 
 class SendPage {
   get addressBook() {
@@ -87,6 +88,7 @@ class SendPage {
   }
 
   async selectToken(tokenName: string, index = 0) {
+    await delay(2000)
     await element(by.text(`${tokenName}`))
       .atIndex(index)
       .tap()
@@ -106,7 +108,7 @@ class SendPage {
     await this.tapAddressBook()
     await this.tapMyAccounts()
     await AccountManagePage.tapSecondAccountMenu()
-    await this.tapCarrotSVG()
+    await this.tapTokenDropdown()
     await this.selectToken(token)
     await this.enterAmount(sendingAmmount)
     await this.tapSendTitle()
