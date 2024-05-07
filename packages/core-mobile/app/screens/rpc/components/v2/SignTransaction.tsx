@@ -288,6 +288,7 @@ const SignTransaction = (): JSX.Element => {
         <FlexSpacer />
         <View>
           <Button
+            testID="approve_button"
             size="xlarge"
             type="primary"
             onPress={onHandleApprove}
