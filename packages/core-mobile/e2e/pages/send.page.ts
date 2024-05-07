@@ -2,7 +2,6 @@ import Actions from '../helpers/actions'
 import AccountManagePage from '../pages/accountManage.page'
 import BottomTabsPage from '../pages/bottomTabs.page'
 import PlusMenuPage from '../pages/plusMenu.page'
-import ReviewAndSend from '../pages/reviewAndSend.page'
 import Send from '../locators/send.loc'
 import delay from '../helpers/waits'
 
@@ -40,7 +39,11 @@ class SendPage {
   }
 
   get approveButton() {
-    return by.text(Send.approveBtn)
+    return by.id(Send.approveBtn)
+  }
+
+  get rejectButton() {
+    return by.text(Send.rejectBtn)
   }
 
   async tapAddressBook() {
@@ -72,7 +75,11 @@ class SendPage {
   }
 
   async tapApproveButton() {
-    await Actions.tap(this.approveButton)
+    await Actions.tapElementAtIndex(this.approveButton, 0)
+  }
+
+  async tapRejectButton() {
+    await Actions.tapElementAtIndex(this.rejectButton, 0)
   }
 
   async enterWalletAddress(address: string) {
@@ -105,7 +112,6 @@ class SendPage {
     await this.enterAmount(sendingAmmount)
     await this.tapSendTitle()
     await this.tapNextButton()
-    await Actions.waitForElement(ReviewAndSend.balanceAfterTransaction)
     await this.tapApproveButton()
     // await Actions.waitForElement(ReviewAndSend.sendSuccessfulToastMsg)
   }
