@@ -11,9 +11,11 @@ import SentryWrapper from 'services/sentry/SentryWrapper'
 import WalletService from 'services/wallet/WalletService'
 import { Avax } from 'types'
 import { Avalanche } from '@avalabs/wallets-sdk'
-import { networkIDs, utils, Utxo } from '@avalabs/avalanchejs'
+import { utils } from '@avalabs/avalanchejs'
+import { getInternalExternalAddrs } from 'services/send/utils'
 import { AvalancheTxParams } from 'store/rpc/handlers/avalanche_sendTransaction/avalanche_sendTransaction'
 import { GAS_LIMIT_FOR_XP_CHAIN } from 'consts/fees'
+import { stripChainAddress } from 'store/account/utils'
 
 export class SendServicePVM {
   constructor(private activeNetwork: Network) {}
@@ -25,15 +27,14 @@ export class SendServicePVM {
     return SentryWrapper.createSpanFor(sentryTrx)
       .setContext('svc.send.pvm.validate_and_calc_fees')
       .executeAsync(async () => {
-        const { amount, address, maxFeePerGas, maxPriorityFeePerGas, token } =
-          sendState
+        const { amount, address, defaultMaxFeePerGas, token } = sendState
 
         // Set canSubmit to false if token is not set
         if (!token) return SendServicePVM.getErrorState(sendState, '')
 
         const gasLimit = GAS_LIMIT_FOR_XP_CHAIN
-        const sendFee = maxFeePerGas
-          ? new BN(gasLimit).mul(new BN(maxFeePerGas.toString()))
+        const sendFee = defaultMaxFeePerGas
+          ? new BN(gasLimit).mul(new BN(defaultMaxFeePerGas.toString()))
           : undefined
         const maxAmount = token.balance.sub(sendFee || new BN(0))
 
@@ -42,8 +43,6 @@ export class SendServicePVM {
           canSubmit: true,
           error: undefined,
           gasLimit,
-          maxFeePerGas,
-          maxPriorityFeePerGas,
           maxAmount,
           sendFee
         }
@@ -54,13 +53,16 @@ export class SendServicePVM {
             SendErrorMessage.ADDRESS_REQUIRED
           )
 
-        if (!Avalanche.isBech32Address(address, true))
+        if (
+          !Avalanche.isBech32Address(address, false) &&
+          !Avalanche.isBech32Address(address, true)
+        )
           return SendServicePVM.getErrorState(
             newState,
             SendErrorMessage.INVALID_ADDRESS
           )
 
-        if (!maxFeePerGas || maxFeePerGas === 0n)
+        if (!defaultMaxFeePerGas || defaultMaxFeePerGas === 0n)
           return SendServicePVM.getErrorState(
             newState,
             SendErrorMessage.INVALID_NETWORK_FEE
@@ -104,11 +106,13 @@ export class SendServicePVM {
         if (!fromAddress) {
           throw new Error('fromAddress must be defined')
         }
+        const destinationAddress =
+          'P-' + stripChainAddress(sendState.address ?? '')
         const unsignedTx = await WalletService.createSendPTx({
           accountIndex,
           amount: Avax.fromNanoAvax(sendState.amount || 0),
           avaxXPNetwork: this.activeNetwork,
-          destinationAddress: sendState.address,
+          destinationAddress: destinationAddress,
           sourceAddress: fromAddress ?? ''
         })
 
@@ -141,70 +145,4 @@ export class SendServicePVM {
       canSubmit: false
     }
   }
-}
-
-type SearchSpace = 'i' | 'e'
-type XPAddressData = { index: number; space: SearchSpace }
-type XPAddressDictionary = Record<string, XPAddressData>
-
-const getHrp = (isTestnet: boolean): string =>
-  isTestnet ? networkIDs.FujiHRP : networkIDs.MainnetHRP
-
-/**
- * Formats an `avax…` or `fuji…` style Avalanche address for the correct network.
- * This will throw errors for `['C-', 'X-', 'P-']` prefixed addresses.
- */
-const formatAvalancheAddress = (
-  addressString: string,
-  isTestnet: boolean
-): string => {
-  const [, bytes] = utils.parseBech32(addressString)
-  const hrp = getHrp(isTestnet)
-
-  // Safe cast because otherwise the parse above would throw.
-  return utils.formatBech32(hrp, bytes)
-}
-
-const getInternalExternalAddrs = (
-  utxos: Utxo[],
-  xpAddressDict: XPAddressDictionary,
-  isTestnet: boolean
-): {
-  externalIndices: number[]
-  internalIndices: number[]
-} => {
-  const utxosAddrs = new Set<string>(
-    utxos.flatMap(utxo =>
-      utxo
-        .getOutputOwners()
-        .addrs.map(String)
-        .map(addressString => formatAvalancheAddress(addressString, isTestnet))
-    )
-  )
-
-  return [...utxosAddrs].reduce(
-    (accumulator, address) => {
-      // This can happen when the CoreEth address owns a UTXO.
-      const xpAddressDictElement = xpAddressDict[address]
-      if (xpAddressDictElement === undefined) {
-        return accumulator
-      }
-      const { space, index } = xpAddressDictElement
-
-      return {
-        internalIndices: [
-          ...accumulator.internalIndices,
-          ...(space === 'i' ? [index] : [])
-        ],
-        externalIndices: [
-          ...accumulator.externalIndices,
-          ...(space === 'e' ? [index] : [])
-        ]
-      }
-    },
-    {
-      externalIndices: [] as number[],
-      internalIndices: [] as number[]
-    }
-  )
 }

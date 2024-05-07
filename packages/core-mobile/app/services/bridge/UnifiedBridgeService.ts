@@ -140,7 +140,7 @@ export class UnifiedBridgeService {
 
     const bridgeTransfer = await this.service.transferAsset({
       asset,
-      fromAddress: activeAccount.address,
+      fromAddress: activeAccount.addressC,
       amount,
       sourceChain,
       targetChain,
@@ -223,7 +223,7 @@ export class UnifiedBridgeService {
     const sourceChain = await this.buildChain(sourceNetwork)
     const targetChain = await this.buildChain(targetNetwork)
 
-    const fromAddress = activeAccount.address as `0x${string}`
+    const fromAddress = activeAccount.addressC as `0x${string}`
 
     return await this.service.estimateGas({
       asset,

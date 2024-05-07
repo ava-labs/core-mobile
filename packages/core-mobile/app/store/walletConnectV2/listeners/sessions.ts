@@ -75,7 +75,7 @@ export const initWalletConnect = async (
      * notes: the delay is to allow dapps to settle down after the session is established. wallet connect se sdk also does the same.
      */
     const { chainId } = selectActiveNetwork(state)
-    const address = selectActiveAccount(state)?.address
+    const address = selectActiveAccount(state)?.addressC
     setTimeout(() => updateSessions(chainId, address), UPDATE_SESSION_DELAY)
   } catch (e) {
     Logger.error('Unable to init wallet connect v2', e)
@@ -138,7 +138,7 @@ export const handleNetworkChange = async (
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
   const state = listenerApi.getState()
-  const address = selectActiveAccount(state)?.address
+  const address = selectActiveAccount(state)?.addressC
   const chainId = action.payload
 
   updateSessions(chainId, address)
@@ -150,7 +150,7 @@ export const handleAccountChange = async (
 ): Promise<void> => {
   const state = listenerApi.getState()
   const { chainId } = selectActiveNetwork(state)
-  const address = selectActiveAccount(state)?.address
+  const address = selectActiveAccount(state)?.addressC
 
   updateSessions(chainId, address)
 }

@@ -7,7 +7,7 @@ import Logger from 'utils/Logger'
 import { useCallback, useMemo } from 'react'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { useNetworks } from 'hooks/networks/useNetworks'
-import { NftPageParam } from '../../../store/nft/types'
+import { NftPageParam } from 'store/nft'
 
 // a hook to get NFTs with pagination support for the current active network & account
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
@@ -17,7 +17,7 @@ export const useNfts = (enabled: boolean) => {
 
   const fetchNfts = useCallback(
     async ({ pageParam }: { pageParam: NftPageParam }) => {
-      if (!account?.address) {
+      if (!account?.addressC) {
         throw new Error('unable to get NFTs')
       }
 
@@ -25,7 +25,7 @@ export const useNfts = (enabled: boolean) => {
       try {
         const nftPagedData = await NftService.fetchNfts({
           chainId: activeNetwork.chainId,
-          address: account.address,
+          address: account.addressC,
           pageToken: pageParam
         })
 
@@ -51,7 +51,7 @@ export const useNfts = (enabled: boolean) => {
       ReactQueryKeys.NFTS,
       {
         chainId: activeNetwork.chainId,
-        accountAddress: account?.address
+        accountAddress: account?.addressC
       }
     ],
     enabled,

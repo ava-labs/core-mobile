@@ -23,14 +23,17 @@ const exportPFee = calculatePChainFee()
  * more info about fees here:
  * https://docs.avax.network/quickstart/transaction-fees
  */
-export const useClaimFees = () => {
+export const useClaimFees = (): {
+  totalFees: Avax | undefined
+  exportPFee: Avax
+} => {
   const isDevMode = useSelector(selectIsDeveloperMode)
   const activeAccount = useSelector(selectActiveAccount)
   const [totalFees, setTotalFees] = useState<Avax | undefined>(undefined)
   const cChainBaseFee = useCChainBaseFee()
 
   useEffect(() => {
-    const calculateFees = async () => {
+    const calculateFees = async (): Promise<void> => {
       const baseFeeRaw = cChainBaseFee?.data
       if (!baseFeeRaw) throw new Error('no base fee available')
 
@@ -47,7 +50,7 @@ export const useClaimFees = () => {
         baseFee: instantBaseFee,
         avaxXPNetwork,
         sourceChain: 'P',
-        destinationAddress: activeAccount.address,
+        destinationAddress: activeAccount.addressC,
         // we only need to validate burned amount
         // when the actual submission happens
         shouldValidateBurnedAmount: false

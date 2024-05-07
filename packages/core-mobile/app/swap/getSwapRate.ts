@@ -6,7 +6,7 @@ import { resolve } from '@avalabs/utils-sdk'
 import swapService from 'services/swap/SwapService'
 import { OptimalRate } from 'paraswap-core'
 
-export const getTokenAddress = (token?: TokenWithBalance) => {
+export const getTokenAddress = (token?: TokenWithBalance): string => {
   if (!token) {
     return ''
   }
@@ -31,7 +31,11 @@ export async function getSwapRate({
   swapSide: SwapSide
   account: Account
   network: Network
-}) {
+}): Promise<{
+  destAmount?: string
+  optimalRate?: OptimalRate
+  error?: string
+}> {
   if (!fromTokenAddress || !fromTokenDecimals) {
     return {
       error: 'no source token selected'
@@ -51,16 +55,16 @@ export async function getSwapRate({
   }
 
   const [priceResponse, error] = await resolve(
-    swapService.getSwapRate(
-      fromTokenAddress,
-      fromTokenDecimals,
-      toTokenAddress,
-      toTokenDecimals,
-      amount,
-      swapSide,
-      network,
-      account
-    )
+    swapService.getSwapRate({
+      srcToken: fromTokenAddress,
+      srcDecimals: fromTokenDecimals,
+      destToken: toTokenAddress,
+      destDecimals: toTokenDecimals,
+      srcAmount: amount,
+      swapSide: swapSide,
+      network: network,
+      account: account
+    })
   )
 
   if (error) {

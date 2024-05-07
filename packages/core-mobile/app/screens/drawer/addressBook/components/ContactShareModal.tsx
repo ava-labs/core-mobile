@@ -13,7 +13,7 @@ import { Row } from 'components/Row'
 import { View } from 'react-native'
 import { Space } from 'components/Space'
 import AvaButton from 'components/AvaButton'
-import { Contact } from 'store/addressBook'
+import { Contact } from '@avalabs/types'
 import { NameAndAddresses } from 'screens/drawer/addressBook/types'
 
 interface Props {
@@ -21,7 +21,7 @@ interface Props {
   onContinue: ({
     name,
     cChainAddress,
-    pChainAddress,
+    xpChainAddress,
     btcAddress
   }: NameAndAddresses) => void
   onCancel: () => void
@@ -33,26 +33,26 @@ const ContactShareModal = ({
   onCancel
 }: Props): JSX.Element => {
   const [cChainSelected, setCChainSelected] = useState(true)
-  const [pChainSelected, setPChainSelected] = useState(true)
+  const [xpChainSelected, setXpChainSelected] = useState(true)
   const [btcSelected, setBtcSelected] = useState(true)
 
   useBeforeRemoveListener(onCancel, [RemoveEvents.GO_BACK], true)
 
   const handleContinue = useCallback(() => {
     onContinue({
-      name: contact.title,
+      name: contact.name,
       cChainAddress: cChainSelected ? contact.address : undefined,
-      pChainAddress: pChainSelected ? contact.addressPVM : undefined,
-      btcAddress: btcSelected ? contact.addressBtc : undefined
+      xpChainAddress: xpChainSelected ? contact.addressXP : undefined,
+      btcAddress: btcSelected ? contact.addressBTC : undefined
     })
   }, [
     onContinue,
-    contact.title,
+    contact.name,
     contact.address,
-    contact.addressPVM,
-    contact.addressBtc,
+    contact.addressXP,
+    contact.addressBTC,
     cChainSelected,
-    pChainSelected,
+    xpChainSelected,
     btcSelected
   ])
   return (
@@ -65,7 +65,7 @@ const ContactShareModal = ({
         <BlockchainCircle
           size={80}
           textSize={32}
-          chain={titleToInitials(contact.title)}
+          chain={titleToInitials(contact.name)}
         />
       </View>
       <Space y={35} />
@@ -77,7 +77,7 @@ const ContactShareModal = ({
               {cChainSelected ? <CheckBoxSVG /> : <CheckBoxEmptySVG />}
               <Space x={11} />
               <View>
-                <AvaText.Heading3>{contact.title}</AvaText.Heading3>
+                <AvaText.Heading3>{contact.name}</AvaText.Heading3>
                 <AvaText.Body1>Avalanche C-Chain Address</AvaText.Body1>
               </View>
             </Row>
@@ -85,7 +85,7 @@ const ContactShareModal = ({
         </>
       )}
 
-      {contact.addressBtc && (
+      {contact.addressBTC && (
         <>
           <Space y={27} />
           <AvaButton.Base onPress={() => setBtcSelected(s => !s)}>
@@ -93,7 +93,7 @@ const ContactShareModal = ({
               {btcSelected ? <CheckBoxSVG /> : <CheckBoxEmptySVG />}
               <Space x={11} />
               <View>
-                <AvaText.Heading3>{contact.title}</AvaText.Heading3>
+                <AvaText.Heading3>{contact.name}</AvaText.Heading3>
                 <AvaText.Body1>Bitcoin Address</AvaText.Body1>
               </View>
             </Row>
@@ -101,16 +101,16 @@ const ContactShareModal = ({
         </>
       )}
 
-      {contact.addressPVM && (
+      {contact.addressXP && (
         <>
           <Space y={27} />
-          <AvaButton.Base onPress={() => setPChainSelected(s => !s)}>
+          <AvaButton.Base onPress={() => setXpChainSelected(s => !s)}>
             <Row>
-              {pChainSelected ? <CheckBoxSVG /> : <CheckBoxEmptySVG />}
+              {xpChainSelected ? <CheckBoxSVG /> : <CheckBoxEmptySVG />}
               <Space x={11} />
               <View>
-                <AvaText.Heading3>{contact.title}</AvaText.Heading3>
-                <AvaText.Body1>Avalanche P-Chain Address</AvaText.Body1>
+                <AvaText.Heading3>{contact.name}</AvaText.Heading3>
+                <AvaText.Body1>Avalanche X/P-Chain Address</AvaText.Body1>
               </View>
             </Row>
           </AvaButton.Base>
@@ -121,7 +121,7 @@ const ContactShareModal = ({
       <Row style={{ justifyContent: 'flex-end' }}>
         <AvaButton.TextLarge onPress={onCancel}>Cancel</AvaButton.TextLarge>
         <AvaButton.TextLarge
-          disabled={!cChainSelected && !btcSelected && !pChainSelected}
+          disabled={!cChainSelected && !btcSelected && !xpChainSelected}
           onPress={handleContinue}>
           Continue
         </AvaButton.TextLarge>

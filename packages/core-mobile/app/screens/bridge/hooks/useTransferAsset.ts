@@ -46,7 +46,7 @@ export function useTransferAsset(): {
   const avalancheProvider = useAvalancheProvider()
   const ethereumProvider = useEthereumProvider()
 
-  const address = activeAccount?.address ?? ''
+  const address = activeAccount?.addressC ?? ''
 
   const transferHandler = useCallback(
     async (

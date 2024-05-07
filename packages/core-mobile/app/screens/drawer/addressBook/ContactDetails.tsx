@@ -14,7 +14,7 @@ import { Row } from 'components/Row'
 import ShareSVG from 'components/svg/ShareSVG'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { shareContact } from 'screens/drawer/addressBook/utils'
-import { Contact } from 'store/addressBook'
+import { Contact } from '@avalabs/types'
 
 const ContactDetails = ({
   contact,
@@ -33,16 +33,16 @@ const ContactDetails = ({
   const addresses = useMemo(() => {
     const list = []
     contact.address && list.push(contact.address)
-    contact.addressBtc && list.push(contact.addressBtc)
-    contact.addressPVM && list.push(contact.addressPVM)
+    contact.addressBTC && list.push(contact.addressBTC)
+    contact.addressXP && list.push(contact.addressXP)
     return list
-  }, [contact.address, contact.addressBtc, contact.addressPVM])
+  }, [contact.address, contact.addressBTC, contact.addressXP])
 
   const handleNameChange = useCallback(
     (name: string) => {
       onChange({
         ...contact,
-        title: name
+        name
       })
     },
     [contact, onChange]
@@ -58,21 +58,21 @@ const ContactDetails = ({
     [contact, onChange]
   )
 
-  const handlePvmAddressChange = useCallback(
-    (addressPVM: string) => {
+  const handleXPAddressChange = useCallback(
+    (addressXP: string) => {
       onChange({
         ...contact,
-        addressPVM
+        addressXP
       })
     },
     [contact, onChange]
   )
 
   const handleBtcAddressChange = useCallback(
-    (addressBtc: string) => {
+    (addressBTC: string) => {
       onChange({
         ...contact,
-        addressBtc
+        addressBTC
       })
     },
     [contact, onChange]
@@ -81,10 +81,10 @@ const ContactDetails = ({
   const handleShare = useCallback(() => {
     if (addresses.length === 1) {
       shareContact({
-        name: contact.title,
+        name: contact.name,
         cChainAddress: contact.address,
-        pChainAddress: contact.addressPVM,
-        btcAddress: contact.addressBtc
+        xpChainAddress: contact.addressXP,
+        btcAddress: contact.addressBTC
       })
     } else {
       onShareDialog(contact)
@@ -98,23 +98,23 @@ const ContactDetails = ({
           <BlockchainCircle
             size={80}
             textSize={32}
-            chain={titleToInitials(contact.title)}
+            chain={titleToInitials(contact.name)}
           />
           <Space y={24} />
-          <AvaText.Heading2>{contact.title}</AvaText.Heading2>
+          <AvaText.Heading2>{contact.name}</AvaText.Heading2>
         </View>
         <Space y={40} />
         {editable ? (
           <>
             <ContactInput
-              name={contact.title}
+              name={contact.name}
               address={contact.address}
-              addressBtc={contact.addressBtc}
-              addressPvm={contact.addressPVM}
+              addressBtc={contact.addressBTC ?? ''}
+              addressXP={contact.addressXP ?? ''}
               onNameChange={handleNameChange}
               onAddressChange={handleAddressChange}
               onAddressBtcChange={handleBtcAddressChange}
-              onAddressPvmChange={handlePvmAddressChange}
+              onAddressXPChange={handleXPAddressChange}
             />
             <FlexSpacer />
             <AvaButton.TextLarge onPress={() => onDelete(contact)}>
@@ -126,16 +126,16 @@ const ContactDetails = ({
             {!!contact.address && (
               <AddressView title={'Address'} address={contact.address} />
             )}
-            {!!contact.address && !!contact.addressBtc && <Space y={40} />}
-            {!!contact.addressBtc && (
-              <AddressView title={'Address BTC'} address={contact.addressBtc} />
+            {!!contact.address && !!contact.addressBTC && <Space y={40} />}
+            {!!contact.addressBTC && (
+              <AddressView title={'Address BTC'} address={contact.addressBTC} />
             )}
-            {(!!contact.address || !!contact.addressBtc) &&
-              !!contact.addressPVM && <Space y={40} />}
-            {!!contact.addressPVM && (
+            {(!!contact.address || !!contact.addressBTC) &&
+              !!contact.addressXP && <Space y={40} />}
+            {!!contact.addressXP && (
               <AddressView
-                title={'Address P-Chain'}
-                address={contact.addressPVM}
+                title={'Address X/P-Chain'}
+                address={contact.addressXP}
               />
             )}
             <Space y={34} />

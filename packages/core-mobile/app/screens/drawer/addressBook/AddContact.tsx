@@ -23,18 +23,18 @@ const AddContact = (): JSX.Element => {
   const { goBack } = useNavigation<NavigationProp>()
   const dispatch = useDispatch()
   const { theme } = useApplicationContext()
-  const [title, setTitle] = useState('')
+  const [name, setName] = useState('')
   const [cChainAddress, setCChainAddress] = useState('')
-  const [pChainAddress, setPChainAddress] = useState('')
-  const [addressBtc, setAddressBtc] = useState('')
+  const [xpChainAddress, setXpChainAddress] = useState('')
+  const [btcAddress, setBtcAddress] = useState('')
   const [error, setError] = useState('')
 
   const save = useCallback(() => {
     const err = getContactValidationError({
-      name: title,
+      name,
       cChainAddress,
-      pChainAddress,
-      btcAddress: addressBtc
+      xpChainAddress,
+      btcAddress
     })
     if (err) {
       AnalyticsService.capture('AddContactFailed')
@@ -45,15 +45,15 @@ const AddContact = (): JSX.Element => {
     dispatch(
       addContact({
         id,
-        title,
+        name,
         address: cChainAddress,
-        addressBtc,
-        addressPVM: pChainAddress
+        addressBTC: btcAddress,
+        addressXP: xpChainAddress
       })
     )
     AnalyticsService.capture('AddContactSucceeded')
     goBack()
-  }, [title, cChainAddress, pChainAddress, addressBtc, dispatch, goBack])
+  }, [name, cChainAddress, xpChainAddress, btcAddress, dispatch, goBack])
 
   return (
     <ScrollView
@@ -65,14 +65,14 @@ const AddContact = (): JSX.Element => {
       <AvaText.LargeTitleBold>New Contact</AvaText.LargeTitleBold>
       <Space y={30} />
       <ContactInput
-        name={title}
+        name={name}
         address={cChainAddress}
-        addressBtc={addressBtc}
-        addressPvm={pChainAddress}
-        onNameChange={name1 => setTitle(name1)}
+        addressBtc={btcAddress}
+        addressXP={xpChainAddress}
+        onNameChange={name1 => setName(name1)}
         onAddressChange={address1 => setCChainAddress(address1)}
-        onAddressBtcChange={address1 => setAddressBtc(address1)}
-        onAddressPvmChange={address1 => setPChainAddress(address1)}
+        onAddressBtcChange={address1 => setBtcAddress(address1)}
+        onAddressXPChange={address1 => setXpChainAddress(address1)}
       />
       <FlexSpacer />
       {!!error && (
@@ -80,7 +80,7 @@ const AddContact = (): JSX.Element => {
       )}
       <Space y={16} />
       <AvaButton.PrimaryLarge
-        disabled={!title || (!cChainAddress && !addressBtc && !pChainAddress)}
+        disabled={!name || (!cChainAddress && !btcAddress && !xpChainAddress)}
         onPress={save}>
         Save
       </AvaButton.PrimaryLarge>

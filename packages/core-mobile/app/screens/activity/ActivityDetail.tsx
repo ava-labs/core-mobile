@@ -16,9 +16,11 @@ import Avatar from 'components/Avatar'
 import AppNavigation from 'navigation/AppNavigation'
 import { WalletScreenProps } from 'navigation/types'
 import { useSelector } from 'react-redux'
-import { Contact, selectContacts } from 'store/addressBook'
+import { selectContacts } from 'store/addressBook'
 import { balanceToDisplayValue, numberToBN } from '@avalabs/utils-sdk'
 import { useNetworks } from 'hooks/networks/useNetworks'
+import { Contact } from '@avalabs/types'
+import Logger from 'utils/Logger'
 
 type RouteProp = WalletScreenProps<
   typeof AppNavigation.Wallet.ActivityDetail
@@ -129,7 +131,7 @@ function ActivityDetail(): JSX.Element {
             rightComponent={
               <View style={{ alignItems: 'flex-end' }}>
                 {contact && (
-                  <AvaText.Heading3>{contact?.title}</AvaText.Heading3>
+                  <AvaText.Heading3>{contact?.name}</AvaText.Heading3>
                 )}
                 <AvaText.Body1 testID="address">
                   {truncateAddress(
@@ -155,7 +157,7 @@ function ActivityDetail(): JSX.Element {
               <Pressable
                 style={[styles.explorerLink]}
                 onPress={() => {
-                  openUrl(txItem.explorerLink)
+                  openUrl(txItem.explorerLink).catch(Logger.error)
                 }}>
                 <LinkSVG color={theme.white} />
                 <AvaText.ButtonLarge

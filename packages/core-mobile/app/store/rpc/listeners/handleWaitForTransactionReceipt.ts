@@ -3,21 +3,23 @@ import { TransactionResponse } from 'ethers'
 import { getTxConfirmationReceipt } from 'utils/getTxConfirmationReceipt'
 import {
   showTransactionPendingToast,
-  showTransactionRevertedToast,
+  showTransactionErrorToast,
   showTransactionSuccessToast
 } from 'utils/toast'
 import { selectIsDeveloperMode } from 'store/settings/advanced/slice'
 import { selectActiveNetwork } from 'store/network/slice'
+import { Network } from '@avalabs/chains-sdk'
 import { updateRequestStatus } from '../slice'
 
 export const handleWaitForTransactionReceipt = async (
   listenerApi: AppListenerEffectAPI,
   txResponse: TransactionResponse,
-  requestId: number
+  requestId: number,
+  requestedNetwork?: Network
 ): Promise<void> => {
   const { dispatch, getState } = listenerApi
   const state = getState()
-  const network = selectActiveNetwork(state)
+  const network = requestedNetwork ?? selectActiveNetwork(state)
   const isTestnet = selectIsDeveloperMode(state)
 
   showTransactionPendingToast()
@@ -31,9 +33,12 @@ export const handleWaitForTransactionReceipt = async (
   const status = confirmationReceipt?.status === 'success'
 
   if (status) {
-    showTransactionSuccessToast(txResponse.hash)
+    showTransactionSuccessToast({
+      message: 'Transaction Successful',
+      txHash: txResponse.hash
+    })
   } else {
-    showTransactionRevertedToast()
+    showTransactionErrorToast({ message: 'Transaction Reverted' })
   }
 
   dispatch(

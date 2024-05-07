@@ -6,8 +6,9 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { refetchIntervals } from 'consts/earn'
 
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export const useCChainBalance = () => {
-  const addressC = useSelector(selectActiveAccount)?.address ?? ''
+  const addressC = useSelector(selectActiveAccount)?.addressC ?? ''
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const selectedCurrency = useSelector(selectSelectedCurrency)
 

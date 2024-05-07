@@ -54,7 +54,7 @@ export default function NftReview({
 
   useBeforeRemoveListener(
     useCallback(() => {
-      AnalyticsService.capture('SendCancel')
+      AnalyticsService.capture('NftSendCancel')
     }, []),
     [RemoveEvents.GO_BACK, RemoveEvents.POP]
   )

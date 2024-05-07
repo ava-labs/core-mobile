@@ -1,6 +1,7 @@
 import { createAction, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from 'store/index'
 import { TransactionResponse } from 'ethers'
+import { Network } from '@avalabs/chains-sdk'
 import { Request, RequestStatus, RpcState, RpcError } from './types'
 
 export const reducerName = 'rpc'
@@ -52,6 +53,7 @@ export const onRequestRejected = createAction<{
 export const waitForTransactionReceipt = createAction<{
   txResponse: TransactionResponse
   requestId: number
+  requestedNetwork?: Network
 }>(`${reducerName}/waitForTransactionReceipt`)
 
 export const onInAppRequestSucceeded = createAction<{

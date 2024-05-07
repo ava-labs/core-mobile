@@ -9,12 +9,16 @@ import { Account, selectAccounts } from 'store/account'
 import {
   AccountId,
   AddrBookItemType,
-  Contact,
   selectContacts,
   selectRecentContacts
 } from 'store/addressBook'
 import { Network, NetworkVMType } from '@avalabs/chains-sdk'
 import { useNetworks } from 'hooks/networks/useNetworks'
+import { Contact } from '@avalabs/types'
+import {
+  getAddressProperty,
+  getAddressXP
+} from 'store/utils/account&contactGetters'
 
 export type AddressBookSource = 'recents' | 'addressBook' | 'accounts'
 
@@ -40,7 +44,7 @@ export default function AddressBookLists({
   const addressBookContacts = useMemo(
     () =>
       Object.values(contacts).filter(
-        value => (onlyBtc && value.addressBtc) || !onlyBtc
+        value => (onlyBtc && value.addressBTC) || !onlyBtc
       ),
     [contacts, onlyBtc]
   )
@@ -82,7 +86,7 @@ export default function AddressBookLists({
         )
         .filter(
           value =>
-            (onlyBtc && value.type === 'contact' && value.item.addressBtc) ||
+            (onlyBtc && value.type === 'contact' && value.item.addressBTC) ||
             (onlyBtc && value.type === 'account') ||
             !onlyBtc
         ),
@@ -119,7 +123,7 @@ export default function AddressBookLists({
               onContactSelected(item, type, 'recents')
             )
           }
-          keyExtractor={item => item.item.title + item.item.address}
+          keyExtractor={item => item.item.name + getAddressProperty(item.item)}
           contentContainerStyle={{ paddingHorizontal: 16 }}
           ListEmptyComponent={
             <View style={{ marginVertical: 40 }}>
@@ -176,17 +180,18 @@ const renderItem = (
   let addressBtc
   switch (activeNetwork.vmName) {
     case NetworkVMType.BITCOIN:
-      addressBtc = item.item.addressBtc
+      addressBtc = item.item.addressBTC
       break
     case NetworkVMType.PVM:
-      address = item.item.addressPVM
+    case NetworkVMType.AVM:
+      address = getAddressXP(item.item)
       break
     default:
-      address = item.item.address
+      address = getAddressProperty(item.item)
   }
   return (
     <AddressBookItem
-      title={item.item.title}
+      title={item.item.name}
       address={address}
       addressBtc={addressBtc}
       onPress={() => {

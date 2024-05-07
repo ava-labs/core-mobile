@@ -30,7 +30,11 @@ import { selectIsFavorited } from 'store/browser/slices/favorites'
 import { LayoutAnimation } from 'react-native'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { updateMetadataForActiveTab } from 'store/browser/slices/globalHistory'
-import { isValidHttpUrl, normalizeUrlWithHttps } from './utils'
+import {
+  isValidHttpUrl,
+  normalizeUrlWithHttps,
+  removeTrailingSlash
+} from './utils'
 import { TabIcon } from './components/TabIcon'
 import { MoreMenu } from './components/MoreMenu'
 import NavButton from './components/NavButton'
@@ -48,7 +52,8 @@ export default function Browser({ tabId }: { tabId: string }): JSX.Element {
   const {
     injectCoreAsRecent,
     injectGetDescriptionAndFavicon,
-    coreConnectInterceptor
+    coreConnectInterceptor,
+    injectCustomWindowOpen
   } = useInjectedJavascript()
   const activeHistory = useSelector(selectTab(tabId))?.activeHistory
   const webViewRef = useRef<WebView>(null)
@@ -89,7 +94,10 @@ export default function Browser({ tabId }: { tabId: string }): JSX.Element {
   }
 
   useEffect(() => {
-    if (activeHistory?.url && urlEntry !== activeHistory.url) {
+    if (
+      activeHistory?.url &&
+      removeTrailingSlash(urlEntry) !== removeTrailingSlash(activeHistory.url)
+    ) {
       setUrlToLoad(activeHistory.url)
     }
   }, [activeHistory?.url, urlEntry])
@@ -193,6 +201,7 @@ export default function Browser({ tabId }: { tabId: string }): JSX.Element {
         </View>
       </View>
       <WebView
+        allowsInlineMediaPlayback={true}
         javaScriptEnabled={true}
         testID="myWebview"
         ref={webViewRef}
@@ -200,7 +209,8 @@ export default function Browser({ tabId }: { tabId: string }): JSX.Element {
         injectedJavaScript={
           injectGetDescriptionAndFavicon +
           injectCoreAsRecent +
-          coreConnectInterceptor
+          coreConnectInterceptor +
+          injectCustomWindowOpen
         }
         source={{ uri: urlToLoad }}
         setSupportMultipleWindows={false}
@@ -238,6 +248,12 @@ export default function Browser({ tabId }: { tabId: string }): JSX.Element {
               break
             case 'log':
               Logger.trace('------> wrapper.payload', wrapper.payload)
+              break
+            case 'walletConnect_deeplink_blocked':
+              Logger.info(
+                'walletConnect_deeplink_blocked, url: ',
+                wrapper.payload
+              )
               break
             default:
               break

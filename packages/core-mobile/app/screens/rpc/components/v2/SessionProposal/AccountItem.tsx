@@ -52,7 +52,7 @@ const AccountItem = ({ account, onSelect, selected }: Props): JSX.Element => {
     }
   }, [isBalanceLoading, showLoader])
 
-  const address = truncateAddress(account.address, 5)
+  const address = truncateAddress(account.addressC, 5)
 
   return (
     <Row
@@ -68,7 +68,7 @@ const AccountItem = ({ account, onSelect, selected }: Props): JSX.Element => {
       ]}>
       <View style={styles.accountTitleContainer}>
         <AvaText.ButtonLarge textStyle={{ color: theme.colorText1 }}>
-          {account.title}
+          {account.name}
           <AvaText.ButtonLarge
             textStyle={{ color: theme.colorText1, fontWeight: 'normal' }}>
             {' (' + address + ')'}
@@ -101,7 +101,7 @@ const AccountItem = ({ account, onSelect, selected }: Props): JSX.Element => {
       <Checkbox
         selected={selected}
         onPress={() => {
-          onSelect(account.address)
+          onSelect(account.addressC)
         }}
       />
     </Row>

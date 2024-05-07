@@ -427,6 +427,42 @@ class WalletService {
     )
   }
 
+  /**
+   * Create UnsignedTx for sending on X-chain
+   */
+  public async createSendXTx({
+    amount,
+    accountIndex,
+    avaxXPNetwork,
+    destinationAddress,
+    sourceAddress
+  }: CreateSendPTxParams): Promise<UnsignedTx> {
+    if (!destinationAddress) {
+      throw new Error('destination address must be set')
+    }
+    const readOnlySigner = await this.getReadOnlyAvaSigner(
+      accountIndex,
+      avaxXPNetwork
+    )
+
+    // P-chain has a tx size limit of 64KB
+    const utxoSet = await readOnlySigner.getUTXOs('X')
+    const changeAddress = utils.parse(sourceAddress)[2]
+    return readOnlySigner.baseTX(
+      utxoSet,
+      'X',
+      destinationAddress,
+      {
+        [avaxXPNetwork.isTestnet
+          ? TESTNET_AVAX_ASSET_ID
+          : MAINNET_AVAX_ASSET_ID]: amount.toSubUnit()
+      },
+      {
+        changeAddresses: [changeAddress]
+      }
+    )
+  }
+
   public async createImportCTx({
     accountIndex,
     baseFee,

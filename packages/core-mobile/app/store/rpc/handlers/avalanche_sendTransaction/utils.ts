@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { SafeParseReturnType, z } from 'zod'
 
 const paramsSchema = z.object({
   transactionHex: z.string(),
@@ -8,7 +8,16 @@ const paramsSchema = z.object({
   utxos: z.string().array().optional()
 })
 
-// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-export const parseRequestParams = (params: unknown) => {
+export const parseRequestParams = (
+  params: unknown
+): SafeParseReturnType<unknown, TransactionParams> => {
   return paramsSchema.safeParse(params)
+}
+
+export type TransactionParams = {
+  externalIndices?: number[] | undefined
+  internalIndices?: number[] | undefined
+  utxos?: string[] | undefined
+  transactionHex: string
+  chainAlias: 'X' | 'P' | 'C'
 }

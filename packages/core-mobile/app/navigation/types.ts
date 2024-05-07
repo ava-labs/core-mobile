@@ -41,6 +41,10 @@ import {
   AvalancheSetDeveloperModeRpcRequest
 } from 'store/rpc/handlers/avalanche_setDeveloperMode/types'
 import { WCSessionProposal } from 'store/walletConnectV2/types'
+import {
+  BitcoinSendTransactionApproveData,
+  BitcoinSendTransactionRpcRequest
+} from 'store/rpc/handlers/bitcoin_sendTransaction/bitcoin_sendTransaction'
 import { RootScreenStackParamList } from './RootScreenStack'
 import { OnboardingScreenStackParamList } from './OnboardScreenStack'
 import { WelcomeScreenStackParamList } from './onboarding/WelcomeScreenStack'
@@ -126,6 +130,11 @@ export type AvalancheSignTransactionV2Params = {
 export type AvalancheSetDeveloperModeParams = {
   request: AvalancheSetDeveloperModeRpcRequest
   data: AvalancheSetDeveloperModeApproveData
+}
+
+export type BitcoinSendTransactionParams = {
+  request: BitcoinSendTransactionRpcRequest
+  data: BitcoinSendTransactionApproveData
 }
 
 export type SignMessageV2Params = {

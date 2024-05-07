@@ -75,8 +75,8 @@ export const SendNFTContextProvider = ({
 
   const [sendToAddress, setSendToAddress] = useState('')
   const [sendToTitle, setSendToTitle] = useState('')
-  const sendFromAddress = activeAccount?.address ?? ''
-  const sendFromTitle = activeAccount?.title ?? '-'
+  const sendFromAddress = activeAccount?.addressC ?? ''
+  const sendFromTitle = activeAccount?.name ?? '-'
 
   const [gasLimit, setGasLimit] = useState(0)
   const [customGasLimit, setCustomGasLimit] = useState<number | undefined>(
@@ -147,9 +147,9 @@ export const SendNFTContextProvider = ({
     setSendStatus('Preparing')
 
     InteractionManager.runAfterInteractions(() => {
-      const sentryTrx = SentryWrapper.startTransaction('send-erc721')
+      const sentryTrx = SentryWrapper.startTransaction('send-nft')
       sendService
-        .send(
+        .sendDeprecated(
           sendState,
           activeNetwork,
           activeAccount,

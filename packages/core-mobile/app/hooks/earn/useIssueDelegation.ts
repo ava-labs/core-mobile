@@ -43,7 +43,7 @@ export const useIssueDelegation = (
   const cChainBalance = Avax.fromWei(cChainBalanceRes?.balance ?? 0)
 
   const pAddress = activeAccount?.addressPVM ?? ''
-  const cAddress = activeAccount?.address ?? ''
+  const cAddress = activeAccount?.addressC ?? ''
 
   const issueDelegationMutation = useMutation({
     mutationFn: async (data: {
@@ -63,12 +63,11 @@ export const useIssueDelegation = (
         selectedCurrency
       })
       Logger.trace('getPChainBalance...')
-      const addressPVM = activeAccount.addressPVM
-      assertNotUndefined(addressPVM)
+      assertNotUndefined(pAddress)
 
       const pChainBalance = await GlacierBalanceService.getPChainBalance({
         network: NetworkService.getAvalancheNetworkP(isDeveloperMode),
-        addresses: [addressPVM],
+        addresses: [pAddress],
         currency: selectedCurrency
       })
       const pChainBalanceNAvax = pChainBalance.unlockedUnstaked[0]?.amount

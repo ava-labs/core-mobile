@@ -80,3 +80,7 @@ export function getNextFavColor(id: FavoriteId): string {
   assertNotUndefined(nextColor)
   return nextColor
 }
+
+export const removeTrailingSlash = (url: string): string => {
+  return url.replace(/\/$/, '')
+}

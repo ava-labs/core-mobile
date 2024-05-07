@@ -1,11 +1,11 @@
 import {
   NetworkTokenWithBalance,
   TokenWithBalanceERC20,
-  XPTokenWithBalance
+  PTokenWithBalance
 } from 'store/balance'
 import { Network } from '@avalabs/chains-sdk'
 import { Account } from 'store/account'
-import AccountsService from 'services/account/AccountsService'
+import { getAddressByNetwork } from 'store/account/utils'
 import GlacierBalanceProvider from 'services/balance/GlacierBalanceService'
 import { BalanceServiceProvider } from 'services/balance/types'
 import { findAsyncSequential } from 'utils/Utils'
@@ -38,16 +38,13 @@ export class BalanceService {
     tokens: (
       | NetworkTokenWithBalance
       | TokenWithBalanceERC20
-      | XPTokenWithBalance
+      | PTokenWithBalance
     )[]
   }> {
     return SentryWrapper.createSpanFor(sentryTrx)
       .setContext('svc.balance.get_for_account')
       .executeAsync(async () => {
-        const accountAddress = AccountsService.getAddressForNetwork(
-          account,
-          network
-        )
+        const accountAddress = getAddressByNetwork(account, network)
         const balanceProvider = await findAsyncSequential(
           balanceProviders,
           value => value.isProviderFor(network)
@@ -85,7 +82,7 @@ export class BalanceService {
     currency: string
     sentryTrx?: Transaction
   }): Promise<
-    (NetworkTokenWithBalance | TokenWithBalanceERC20 | XPTokenWithBalance)[]
+    (NetworkTokenWithBalance | TokenWithBalanceERC20 | PTokenWithBalance)[]
   > {
     return SentryWrapper.createSpanFor(sentryTrx)
       .setContext('svc.balance.get_for_address')

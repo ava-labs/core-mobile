@@ -8,20 +8,20 @@ import { NameAndAddresses } from 'screens/drawer/addressBook/types'
 export function getContactValidationError({
   name,
   cChainAddress,
-  pChainAddress,
+  xpChainAddress,
   btcAddress
 }: NameAndAddresses): string | undefined {
   if (!name) {
     return 'Name required'
   }
-  if (!cChainAddress && !btcAddress && !pChainAddress) {
+  if (!cChainAddress && !btcAddress && !xpChainAddress) {
     return 'Address required'
   }
   if (cChainAddress && !isAddress(cChainAddress)) {
     return 'Not valid EVM address'
   }
-  if (pChainAddress && !Avalanche.isBech32Address(pChainAddress, true)) {
-    return 'Not valid P-chain address, must start with P-'
+  if (xpChainAddress && !Avalanche.isBech32Address(xpChainAddress, true)) {
+    return 'Not valid P-chain address, must start with P- '
   }
   if (btcAddress && !isBech32Address(btcAddress)) {
     return 'Invalid BTC address'
@@ -32,7 +32,7 @@ export function getContactValidationError({
 export function shareContact({
   name,
   cChainAddress,
-  pChainAddress,
+  xpChainAddress,
   btcAddress
 }: NameAndAddresses): void {
   Share.share(
@@ -42,7 +42,7 @@ export function shareContact({
         name,
         cChainAddress,
         btcAddress,
-        pChainAddress
+        xpChainAddress
       })
     } as ShareContent,
     {
@@ -55,12 +55,12 @@ export function shareContact({
 function getFormattedShareText({
   name,
   cChainAddress,
-  pChainAddress,
+  xpChainAddress,
   btcAddress
 }: NameAndAddresses): string {
   return `Contact name: ${name} ${
     cChainAddress ? '\nC-Chain: ' + cChainAddress : ''
   } ${btcAddress ? '\nBTC: ' + btcAddress : ''} ${
-    pChainAddress ? '\nP-Chain: ' + pChainAddress : ''
+    xpChainAddress ? '\nP-Chain: ' + xpChainAddress : ''
   }`
 }

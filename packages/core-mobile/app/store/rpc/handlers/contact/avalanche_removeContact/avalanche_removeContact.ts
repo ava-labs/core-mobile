@@ -11,7 +11,6 @@ import {
   HandleResponse,
   RpcRequestHandler
 } from '../../types'
-import { mapContactToSharedContact } from '../utils'
 import { parseApproveData, parseRequestParams } from './utils'
 
 export type AvalancheRemoveContactRequest =
@@ -54,15 +53,13 @@ class AvalancheRemoveContactHandler
       }
     }
 
-    const contact = mapContactToSharedContact(existingContact)
-
     Navigation.navigate({
       name: AppNavigation.Root.Wallet,
       params: {
         screen: AppNavigation.Modal.CreateRemoveContactV2,
         params: {
           request,
-          contact,
+          contact: existingContact,
           action: 'remove'
         }
       }

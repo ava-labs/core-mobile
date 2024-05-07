@@ -85,7 +85,7 @@ jest.spyOn(Snackbar, 'showSimpleToast').mockImplementation(mockShowSimpleToast)
 
 jest.spyOn(Toast, 'showTransactionPendingToast').mockImplementation(jest.fn())
 jest.spyOn(Toast, 'showTransactionSuccessToast').mockImplementation(jest.fn())
-jest.spyOn(Toast, 'showTransactionRevertedToast').mockImplementation(jest.fn())
+jest.spyOn(Toast, 'showTransactionErrorToast').mockImplementation(jest.fn())
 
 jest.mock('services/walletconnectv2/WalletConnectService')
 

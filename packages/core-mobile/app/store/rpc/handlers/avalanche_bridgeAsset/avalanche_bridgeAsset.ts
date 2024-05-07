@@ -9,7 +9,11 @@ import { selectBridgeAppConfig } from 'store/bridge/slice'
 import * as Navigation from 'utils/Navigation'
 import AppNavigation from 'navigation/AppNavigation'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { Blockchain } from '@avalabs/bridge-sdk'
+import {
+  Blockchain,
+  EthereumConfigAsset,
+  NativeAsset
+} from '@avalabs/bridge-sdk'
 import { VsCurrencyType } from '@avalabs/coingecko-sdk'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { selectNetworks } from 'store/network'
@@ -50,7 +54,12 @@ class AvalancheBridgeAssetHandler
       name: AppNavigation.Root.Wallet,
       params: {
         screen: AppNavigation.Modal.BridgeAssetV2,
-        params: { request, amountStr, asset, currentBlockchain }
+        params: {
+          request,
+          amountStr,
+          asset: asset as EthereumConfigAsset | NativeAsset,
+          currentBlockchain
+        }
       }
     })
 
@@ -102,7 +111,7 @@ class AvalancheBridgeAssetHandler
         txn = await BridgeService.transferAsset({
           currentBlockchain,
           amount,
-          asset,
+          asset: asset as EthereumConfigAsset | NativeAsset,
           config: bridgeAppConfig,
           activeAccount,
           allNetworks,

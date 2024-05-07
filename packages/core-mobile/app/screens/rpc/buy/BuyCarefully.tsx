@@ -8,6 +8,7 @@ import { Space } from 'components/Space'
 import useInAppBrowser from 'hooks/useInAppBrowser'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
+import Logger from 'utils/Logger'
 import BuyPrompt from './BuyPrompt'
 
 const MoonPayLogo = require('assets/icons/moonpay-icon.png')
@@ -22,7 +23,7 @@ export enum TokenType {
   MOONPAY = 'moonpay'
 }
 
-const BuyCarefully = () => {
+const BuyCarefully = (): JSX.Element => {
   const activeAccount = useSelector(selectActiveAccount)
   const { goBack } = useNavigation<BuyCarefullyScreenProps['navigation']>()
 
@@ -31,9 +32,9 @@ const BuyCarefully = () => {
   const isCoinbasePay = tokenType === TokenType.COINBASE
   const { openMoonPay, openCoinBasePay } = useInAppBrowser()
 
-  const onCoinBasePay = () => {
-    if (activeAccount?.address) {
-      openCoinBasePay(activeAccount?.address)
+  const onCoinBasePay = (): void => {
+    if (activeAccount?.addressC) {
+      openCoinBasePay(activeAccount?.addressC).catch(Logger.error)
     }
   }
 

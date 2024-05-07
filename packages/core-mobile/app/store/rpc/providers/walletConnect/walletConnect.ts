@@ -10,7 +10,7 @@ import { selectActiveNetwork } from 'store/network'
 import { UPDATE_SESSION_DELAY } from 'consts/walletConnect'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { AgnosticRpcProvider, RpcMethod, RpcProvider } from '../../types'
-import { isSessionProposal } from './utils'
+import { isSessionProposal, isUserRejectedError } from './utils'
 
 const chainAgnosticMethods = [
   RpcMethod.AVALANCHE_CREATE_CONTACT,
@@ -22,8 +22,7 @@ const chainAgnosticMethods = [
   RpcMethod.WALLET_ADD_ETHEREUM_CHAIN,
   RpcMethod.WALLET_SWITCH_ETHEREUM_CHAIN,
   RpcMethod.AVALANCHE_GET_ACCOUNT_PUB_KEY,
-  RpcMethod.AVALANCHE_SET_DEVELOPER_MODE,
-  RpcMethod.AVALANCHE_GET_ADDRESSES_IN_RANGE
+  RpcMethod.AVALANCHE_SET_DEVELOPER_MODE
 ]
 
 class WalletConnectProvider implements AgnosticRpcProvider {
@@ -31,8 +30,7 @@ class WalletConnectProvider implements AgnosticRpcProvider {
 
   onError: AgnosticRpcProvider['onError'] = async ({ request, error }) => {
     // only show error toast if it is not a user rejected error
-    const shouldShowErrorToast =
-      error.code !== ethErrors.provider.userRejectedRequest().code
+    const shouldShowErrorToast = !isUserRejectedError(error)
 
     if (isSessionProposal(request)) {
       const dappName = request.data.params.proposer.metadata.name
@@ -110,7 +108,7 @@ class WalletConnectProvider implements AgnosticRpcProvider {
          * notes: the delay is to allow dapps to settle down after session approval. wallet connect se sdk also does the same.
          */
         const state = getState()
-        const address = selectActiveAccount(state)?.address
+        const address = selectActiveAccount(state)?.addressC
         const { chainId } = selectActiveNetwork(state)
         address &&
           setTimeout(() => {

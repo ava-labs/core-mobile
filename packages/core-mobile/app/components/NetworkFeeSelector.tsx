@@ -26,7 +26,7 @@ import { NetworkFee } from 'services/networkFee/types'
 import { useBridgeSDK } from '@avalabs/bridge-sdk'
 import { GAS_LIMIT_FOR_XP_CHAIN } from 'consts/fees'
 import { isBitcoinNetwork } from 'utils/network/isBitcoinNetwork'
-import { isPvmNetwork } from 'utils/network/isPvmNetwork'
+import { isAvmNetwork, isPvmNetwork } from 'utils/network/isAvalancheNetwork'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { Tooltip } from './Tooltip'
 import InputText from './InputText'
@@ -81,6 +81,7 @@ const NetworkFeeSelector = ({
   )
   const isBtcNetwork = network ? isBitcoinNetwork(network) : false
   const isPVM = isPvmNetwork(network)
+  const isAVM = isAvmNetwork(network)
   const [selectedPreset, setSelectedPreset] = useState(FeePreset.Normal)
   const [calculatedFees, setCalculatedFees] =
     useState<GasAndFees<NetworkTokenUnit>>()
@@ -94,10 +95,10 @@ const NetworkFeeSelector = ({
           fee.low.maxPriorityFeePerGas ??
           NetworkTokenUnit.fromNetwork(activeNetwork),
         tokenPrice: nativeTokenPrice,
-        gasLimit: isPVM ? GAS_LIMIT_FOR_XP_CHAIN : gasLimit
+        gasLimit: isPVM || isAVM ? GAS_LIMIT_FOR_XP_CHAIN : gasLimit
       })
     },
-    [activeNetwork, gasLimit, isPVM, nativeTokenPrice]
+    [activeNetwork, gasLimit, isPVM, isAVM, nativeTokenPrice]
   )
 
   useEffect(() => {
@@ -112,24 +113,13 @@ const NetworkFeeSelector = ({
   // customFees init value.
   // NetworkFee is not immediately available hence the useEffect
   useEffect(() => {
-    if (!customFees && networkFee && (gasLimit > 0 || isBtcNetwork || isPVM)) {
+    if (!customFees && networkFee && gasLimit > 0) {
       const initialCustomFees = getInitialCustomFees(networkFee)
       setCustomFees(initialCustomFees)
       setCalculatedFees(initialCustomFees)
       onFeesChange?.(initialCustomFees, FeePreset.Normal)
     }
-  }, [
-    activeNetwork,
-    customFees,
-    gasLimit,
-    getInitialCustomFees,
-    isBtcNetwork,
-    isPVM,
-    nativeTokenPrice,
-    networkFee,
-    onFeesChange,
-    setCustomFees
-  ])
+  }, [customFees, gasLimit, getInitialCustomFees, networkFee, onFeesChange])
 
   function handleSelectedPreset(preset: FeePreset): void {
     setSelectedPreset(preset)
@@ -210,7 +200,7 @@ const NetworkFeeSelector = ({
   return (
     <>
       <Row style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-        {isBtcNetwork || isPVM ? (
+        {isBtcNetwork || isPVM || isAVM ? (
           <View sx={{ paddingVertical: 12 }}>
             <Text variant="body2" sx={{ color: '$neutral50' }}>
               Network Fee
@@ -228,7 +218,7 @@ const NetworkFeeSelector = ({
             </Text>
           </Tooltip>
         )}
-        {!isPVM && (
+        {!isPVM && !isAVM && (
           <Button
             size="medium"
             type="tertiary"
@@ -311,15 +301,19 @@ const NetworkFeeSelector = ({
           </Text>
         </Row>
 
-        {maxNetworkFee && calculatedFees?.maxTotalFee.gt(maxNetworkFee) && (
-          <Text variant="caption" sx={{ color: '$dangerMain', lineHeight: 15 }}>
-            Insufficient balance to cover gas costs. {'\n'}
-            {network?.networkToken?.symbol
-              ? `Please add ${network.networkToken.symbol}`
-              : ''}
-            .
-          </Text>
-        )}
+        {maxNetworkFee &&
+          maxNetworkFee?.gt(0) &&
+          calculatedFees?.maxTotalFee.gt(maxNetworkFee) && (
+            <Text
+              variant="caption"
+              sx={{ color: '$dangerMain', lineHeight: 15 }}>
+              Insufficient balance to cover gas costs. {'\n'}
+              {network?.networkToken?.symbol
+                ? `Please add ${network.networkToken.symbol}`
+                : ''}
+              .
+            </Text>
+          )}
       </View>
     </>
   )

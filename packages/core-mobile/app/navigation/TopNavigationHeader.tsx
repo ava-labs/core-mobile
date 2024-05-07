@@ -14,7 +14,7 @@ import { selectActiveAccount } from 'store/account'
 import CarrotSVG from 'components/svg/CarrotSVG'
 import { Row } from 'components/Row'
 import { useNetworks } from 'hooks/networks/useNetworks'
-import AccountsService from 'services/account/AccountsService'
+import { getAddressByNetwork } from 'store/account/utils'
 
 type Props = {
   showAddress?: boolean
@@ -44,7 +44,7 @@ const TopNavigationHeader: FC<Props> = ({
   const activeAccount = useSelector(selectActiveAccount)
 
   const address = activeAccount
-    ? AccountsService.getAddressForNetwork(activeAccount, activeNetwork)
+    ? getAddressByNetwork(activeAccount, activeNetwork)
     : ''
 
   const renderAddress: () => null | JSX.Element = () => {

@@ -22,28 +22,27 @@ describe('validateStateAndCalculateFees', () => {
   const mockNetwork = { ...mockNetworks[1], vmName: NetworkVMType.EVM }
   const serviceToTest = new SendServiceEVM(
     mockNetwork,
-    mockActiveAccount.address
+    mockActiveAccount.addressC
   )
 
   describe('when sending NFT', () => {
     const token = {
       ...convertNativeToTokenWithBalance(glacierTokenList[1].tokens[0]),
       type: TokenType.ERC721,
-      address: mockActiveAccount.address,
+      address: mockActiveAccount.addressC,
       tokenId: 1
     }
     const sendState = {
       token: token,
-      address: mockActiveAccount.address,
-      maxFeePerGas: 1n,
-      maxPriorityFeePerGas: 1n,
+      address: mockActiveAccount.addressC,
+      defaultMaxFeePerGas: 1n,
       gasLimit: 1
     } as SendState
 
     const params = {
       sendState,
       isMainnet: false,
-      fromAddress: mockActiveAccount.address
+      fromAddress: mockActiveAccount.addressC
     }
 
     it('should succeed when all requirements met', async () => {
@@ -65,7 +64,7 @@ describe('validateStateAndCalculateFees', () => {
     it('should fail for missing network fee', async () => {
       const newState = await serviceToTest.validateStateAndCalculateFees({
         ...params,
-        sendState: { ...sendState, maxFeePerGas: 0n }
+        sendState: { ...sendState, defaultMaxFeePerGas: 0n }
       })
 
       expect(newState.canSubmit).toBe(false)
@@ -89,15 +88,14 @@ describe('validateStateAndCalculateFees', () => {
     const token = {
       ...convertNativeToTokenWithBalance(glacierTokenList[1].tokens[0]),
       type: TokenType.NATIVE,
-      address: mockActiveAccount.address,
+      address: mockActiveAccount.addressC,
       tokenId: 1,
       balance: new BN(1000)
     }
     const sendState = {
       token: token,
-      address: mockActiveAccount.address,
-      maxFeePerGas: 1n,
-      maxPriorityFeePerGas: 1n,
+      address: mockActiveAccount.addressC,
+      defaultMaxFeePerGas: 1n,
       gasLimit: 1,
       amount: new BN(10)
     } as SendState
@@ -105,7 +103,7 @@ describe('validateStateAndCalculateFees', () => {
     const params = {
       sendState,
       isMainnet: false,
-      fromAddress: mockActiveAccount.address
+      fromAddress: mockActiveAccount.addressC
     }
 
     it('should succeed when all requirements met', async () => {
@@ -127,7 +125,7 @@ describe('validateStateAndCalculateFees', () => {
     it('should fail for missing network fee', async () => {
       const newState = await serviceToTest.validateStateAndCalculateFees({
         ...params,
-        sendState: { ...params.sendState, maxFeePerGas: 0n }
+        sendState: { ...params.sendState, defaultMaxFeePerGas: 0n }
       })
 
       expect(newState.canSubmit).toBe(false)

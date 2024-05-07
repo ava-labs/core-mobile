@@ -17,7 +17,7 @@ export function SwapTransaction({
   path,
   fromAddress,
   toAddress
-}: SwapExactTokensForTokenDisplayValues) {
+}: SwapExactTokensForTokenDisplayValues): JSX.Element {
   const theme = useApplicationContext().theme
   const account = useSelector(selectAccountByAddress(fromAddress))
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -37,7 +37,7 @@ export function SwapTransaction({
         <Row style={{ justifyContent: 'space-between' }}>
           <AvaText.Body3 color={theme.colorText1}>Account</AvaText.Body3>
           <AvaText.Body3 color={theme.colorText1}>
-            {account?.title}
+            {account?.name}
           </AvaText.Body3>
         </Row>
         <Space y={8} />

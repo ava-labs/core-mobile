@@ -44,8 +44,8 @@ const initAccounts = async (
     for (let i = 0; i < pubKeys.length; i++) {
       const acc = await accountService.createNextAccount(isDeveloperMode, i)
       const title = await SeedlessService.getAccountName(i)
-      const accountTitle = title ?? acc.title
-      listenerApi.dispatch(setAccount({ ...acc, title: accountTitle }))
+      const accountTitle = title ?? acc.name
+      listenerApi.dispatch(setAccount({ ...acc, name: accountTitle }))
 
       accounts.push(acc)
     }
@@ -53,8 +53,8 @@ const initAccounts = async (
     // only add the first account for mnemonic wallet
     const acc = await accountService.createNextAccount(isDeveloperMode, 0)
     const accountTitle =
-      walletName && walletName.length > 0 ? walletName : acc.title
-    listenerApi.dispatch(setAccount({ ...acc, title: accountTitle }))
+      walletName && walletName.length > 0 ? walletName : acc.name
+    listenerApi.dispatch(setAccount({ ...acc, name: accountTitle }))
 
     accounts.push(acc)
   }
@@ -62,8 +62,8 @@ const initAccounts = async (
   if (isDeveloperMode === false) {
     AnalyticsService.captureWithEncryption('AccountAddressesUpdated', {
       addresses: accounts.map(acc => ({
-        address: acc.address,
-        addressBtc: acc.addressBtc,
+        address: acc.addressC,
+        addressBtc: acc.addressBTC,
         addressAVM: acc.addressAVM ?? '',
         addressPVM: acc.addressPVM ?? '',
         addressCoreEth: acc.addressCoreEth ?? ''

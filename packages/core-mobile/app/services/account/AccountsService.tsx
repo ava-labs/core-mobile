@@ -1,6 +1,6 @@
 import WalletService from 'services/wallet/WalletService'
 import { Account, AccountCollection } from 'store/account'
-import { Network, NetworkVMType } from '@avalabs/chains-sdk'
+import { NetworkVMType } from '@avalabs/chains-sdk'
 import SeedlessService from 'seedless/services/SeedlessService'
 
 class AccountsService {
@@ -19,9 +19,9 @@ class AccountsService {
       if (account) {
         reloadedAccounts[key] = {
           ...account,
-          title: title ?? account.title,
-          addressBtc: addresses[NetworkVMType.BITCOIN],
-          address: addresses[NetworkVMType.EVM],
+          name: title ?? account.name,
+          addressBTC: addresses[NetworkVMType.BITCOIN],
+          addressC: addresses[NetworkVMType.EVM],
           addressAVM: addresses[NetworkVMType.AVM],
           addressPVM: addresses[NetworkVMType.PVM],
           addressCoreEth: addresses[NetworkVMType.CoreEth]
@@ -36,32 +36,13 @@ class AccountsService {
     const addresses = await WalletService.addAddress(index, isTestnet)
     return {
       index,
-      title: `Account ${index + 1}`,
-      addressBtc: addresses[NetworkVMType.BITCOIN],
-      address: addresses[NetworkVMType.EVM],
+      name: `Account ${index + 1}`,
+      addressBTC: addresses[NetworkVMType.BITCOIN],
+      addressC: addresses[NetworkVMType.EVM],
       addressAVM: addresses[NetworkVMType.AVM],
       addressPVM: addresses[NetworkVMType.PVM],
       addressCoreEth: addresses[NetworkVMType.CoreEth]
     } as Account
-  }
-
-  getAddressForNetwork(account: Account, network: Network): string {
-    if (network.vmName === NetworkVMType.BITCOIN) {
-      return account.addressBtc
-    }
-
-    if (network.vmName === NetworkVMType.EVM) {
-      return account.address
-    }
-
-    if (network.vmName === NetworkVMType.PVM) {
-      if (!account.addressPVM) {
-        throw new Error('p-chain address not present')
-      }
-      return account.addressPVM
-    }
-
-    throw new Error('unsupported network ' + network.vmName)
   }
 }
 

@@ -34,7 +34,7 @@ export const useClaimRewards = (
   const pChainBalance = usePChainBalance()
   const { totalFees, exportPFee } = useClaimFees()
   const pAddress = activeAccount?.addressPVM ?? ''
-  const cAddress = activeAccount?.address ?? ''
+  const cAddress = activeAccount?.addressC ?? ''
 
   return useMutation({
     mutationFn: () => {
@@ -110,7 +110,7 @@ export const refetchQueries = ({
   pAddress: string
   cAddress: string
   selectedCurrency: string
-}) => {
+}): void => {
   setTimeout(() => {
     queryClient.invalidateQueries({
       queryKey: ['pChainBalance', isDeveloperMode, pAddress]

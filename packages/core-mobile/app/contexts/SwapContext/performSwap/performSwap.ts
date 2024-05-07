@@ -8,6 +8,7 @@ import { BN } from 'bn.js'
 import { APIError, ETHER_ADDRESS, Transaction } from 'paraswap'
 import { OptimalRate } from 'paraswap-core'
 import { promiseResolveWithBackoff, resolve } from '@avalabs/utils-sdk'
+import { bigIntToHex } from '@ethereumjs/util'
 import { TransactionParams } from 'store/rpc/handlers/eth_sendTransaction/utils'
 import { buildTx, getParaswapSpender } from './paraswapUtils'
 
@@ -23,9 +24,6 @@ export type PerformSwapParams = {
   userAddress: string | undefined
   signAndSend: (txParams: [TransactionParams]) => Promise<string>
 }
-
-const bigIntToHex = (n: bigint | undefined): string =>
-  `0x${BigInt(n ?? 0).toString(16)}`
 
 // copied from https://github.com/ava-labs/avalanche-sdks/tree/alpha-release/packages/paraswap-sdk
 // modified to use our new in app request for now

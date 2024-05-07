@@ -58,7 +58,7 @@ const ethereumDynamicFeeAssetConfigSchema = assetBaseSchema.extend({
 const nativeAssetSchema = assetBaseSchema.extend({
   assetType: z.literal(AssetType.NATIVE),
   wrappedAssetSymbol: z.string(),
-  coingeckoId: z.string()
+  coingeckoId: z.string().optional()
 })
 
 const bitcoinConfigAssetSchema = assetBaseSchema.extend({
@@ -67,15 +67,16 @@ const bitcoinConfigAssetSchema = assetBaseSchema.extend({
   avaxPromotionAmount: z.string(),
   avaxPromotionDollarThreshold: z.number(),
   bech32AddressPrefix: z.string(),
-  offboardFeeDollars: z.number(),
-  onboardFeeDollars: z.number(),
+  offboardFeeDollars: z.number().optional(),
+  onboardFeeDollars: z.number().optional(),
   operatorAddress: z.string(),
   privateKeyPrefix: z.string(),
   reserveBalanceHighWaterMark: z.number(),
   reserveBalanceLowWaterMark: z.number(),
-  targetChangeAmount: z.number(),
+  targetChangeAmount: z.number().optional(),
   wrappedContractAddress: z.string(),
-  wrappedNetwork: z.string()
+  wrappedNetwork: z.string(),
+  legacyBtcAddressPrefix: z.string().optional()
 })
 
 const bitcoinDynamicFeeConfigAssetSchema = assetBaseSchema.extend({
@@ -88,7 +89,7 @@ const bitcoinDynamicFeeConfigAssetSchema = assetBaseSchema.extend({
   privateKeyPrefix: z.string(),
   reserveBalanceHighWaterMark: z.number(),
   reserveBalanceLowWaterMark: z.number(),
-  targetChangeAmount: z.number(),
+  targetChangeAmount: z.number().optional(),
   wrappedContractAddress: z.string(),
   wrappedNetwork: z.string(),
   offboardFeeConfiguration: z.object({
@@ -127,10 +128,12 @@ const approveDataSchema = z.object({
   maxPriorityFeePerGas: z.bigint().optional()
 })
 
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export const parseRequestParams = (params: unknown) => {
   return paramsSchema.safeParse(params)
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export const parseApproveData = (data: unknown) => {
   return approveDataSchema.safeParse(data)
 }

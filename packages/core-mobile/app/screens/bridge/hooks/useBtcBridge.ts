@@ -47,7 +47,7 @@ export function useBtcBridge(amountInBtc: Big, fee: number): BridgeAdapter {
   const bridgeConfig = useSelector(selectBridgeAppConfig)
   const { createBridgeTransaction } = useBridgeContext()
   const { currentAsset, currentBlockchain, targetBlockchain } = useBridgeSDK()
-  const btcAddress = activeAccount?.addressBtc
+  const btcAddress = activeAccount?.addressBTC
   const avalancheNetwork = getAvalancheNetwork(
     networks,
     activeNetwork.isTestnet
@@ -79,7 +79,7 @@ export function useBtcBridge(amountInBtc: Big, fee: number): BridgeAdapter {
     const maxAmt = getMaxTransferAmount(
       utxos ?? [],
       bridgeConfig.criticalBitcoin.walletAddresses.btc,
-      activeAccount.addressBtc,
+      activeAccount.addressBTC,
       feeRate
     )
     return satoshiToBtc(maxAmt)

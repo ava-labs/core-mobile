@@ -79,7 +79,7 @@ export class BridgeService {
     if (activeAccount === undefined) {
       throw new Error('No active account found')
     }
-    const btcAddress = activeAccount?.addressBtc
+    const btcAddress = activeAccount?.addressBTC
     if (btcAddress === undefined) {
       throw new Error('No active account found')
     }
@@ -166,9 +166,9 @@ export class BridgeService {
       throw new Error('no network found')
     }
 
-    const avalancheProvider = await getAvalancheProvider(allNetworks, isTestnet)
+    const avalancheProvider = getAvalancheProvider(allNetworks, isTestnet)
 
-    const ethereumProvider = await getEthereumProvider(allNetworks, isTestnet)
+    const ethereumProvider = getEthereumProvider(allNetworks, isTestnet)
 
     if (!avalancheProvider || !ethereumProvider) {
       throw new Error('no providers available')
@@ -177,7 +177,7 @@ export class BridgeService {
     return await transferAssetSDK(
       currentBlockchain,
       amount,
-      activeAccount.address,
+      activeAccount.addressC,
       asset as EthereumConfigAsset | NativeAsset, // TODO fix in sdk (should be Asset),
       avalancheProvider,
       ethereumProvider,
@@ -229,7 +229,7 @@ export class BridgeService {
       }
       const token = await getBtcBalance(
         !activeNetwork.isTestnet,
-        activeAccount?.addressBtc,
+        activeAccount?.addressBTC,
         currency
       )
 
@@ -240,7 +240,7 @@ export class BridgeService {
       const feeRate = 1
       const { fee: byteLength } = getBtcTransactionDetails(
         config,
-        activeAccount.addressBtc,
+        activeAccount.addressBTC,
         token?.utxos ?? [],
         btcToSatoshi(amount),
         feeRate
@@ -257,7 +257,7 @@ export class BridgeService {
 
       return estimateGas(
         amount,
-        activeAccount.address,
+        activeAccount.addressC,
         asset as Exclude<Asset, BitcoinConfigAsset>,
         {
           ethereum: ethereumProvider,

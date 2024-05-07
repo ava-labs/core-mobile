@@ -1,4 +1,10 @@
-import React, { useCallback, useContext, useEffect, useState } from 'react'
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState
+} from 'react'
 import { ScrollView } from 'react-native-gesture-handler'
 import { ApplicationContext } from 'contexts/ApplicationContext'
 import AvaText from 'components/AvaText'
@@ -24,6 +30,7 @@ import { selectSelectedCurrency } from 'store/settings/currency'
 import Logger from 'utils/Logger'
 import { View } from '@avalabs/k2-mobile'
 import { useNetworks } from 'hooks/networks/useNetworks'
+import { getTargetChainId } from 'screens/bridge/hooks/useUnifiedBridge/utils'
 import SimplePrompt from '../shared/SimplePrompt'
 
 type BridgeAssetScreenProps = WalletScreenProps<
@@ -33,9 +40,14 @@ type BridgeAssetScreenProps = WalletScreenProps<
 const BridgeAsset = (): JSX.Element => {
   const isSeedlessSigningBlocked = useSelector(selectIsSeedlessSigningBlocked)
   const { goBack } = useNavigation<BridgeAssetScreenProps['navigation']>()
-
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const { request, asset, amountStr, currentBlockchain } =
     useRoute<BridgeAssetScreenProps['route']>().params
+
+  const targetChainId = useMemo(
+    () => getTargetChainId(isDeveloperMode, currentBlockchain),
+    [isDeveloperMode, currentBlockchain]
+  )
 
   const { onUserApproved: onApprove, onUserRejected: onReject } =
     useDappConnectionV2()
@@ -149,6 +161,7 @@ const BridgeAsset = (): JSX.Element => {
           gasLimit={gasLimit}
           onFeesChange={handleFeesChange}
           isGasLimitEditable={false}
+          chainId={targetChainId}
         />
       </ScrollView>
     )

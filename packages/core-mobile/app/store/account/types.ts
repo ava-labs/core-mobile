@@ -1,17 +1,10 @@
-export type AccountCollection = { [accountIndex: number]: Account }
+import { CorePrimaryAccount } from '@avalabs/types'
+
+export type AccountCollection = { [accountIndex: number]: CorePrimaryAccount }
 
 export type AccountsState = {
   accounts: AccountCollection
   activeAccountIndex: number
   walletName?: string
 }
-
-export type Account = {
-  index: number
-  title: string
-  addressBtc: string
-  address: string //TODO: rename to addressC (c-chain address)
-  addressAVM?: string
-  addressPVM?: string
-  addressCoreEth?: string
-}
+export type Account = CorePrimaryAccount

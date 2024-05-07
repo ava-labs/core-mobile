@@ -238,8 +238,8 @@ function LocalBridgeProvider({
         symbol
       } = partialBridgeTransaction
 
-      const addressC = activeAccount.address
-      const addressBTC = activeAccount.addressBtc
+      const addressC = activeAccount.addressC
+      const addressBTC = activeAccount.addressBTC
 
       if (!addressBTC) return { error: 'missing addressBTC' }
       if (!addressC) return { error: 'missing addressC' }

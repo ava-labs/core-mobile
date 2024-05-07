@@ -11,9 +11,9 @@ import {
   VM
 } from '@avalabs/avalanchejs'
 import { ethErrors } from 'eth-rpc-errors'
-import { selectActiveAccount } from 'store/account'
+import { selectActiveAccount } from 'store/account/slice'
 import networkService from 'services/network/NetworkService'
-import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { selectIsDeveloperMode } from 'store/settings/advanced/slice'
 import walletService from 'services/wallet/WalletService'
 import { RpcMethod, RpcRequest } from 'store/rpc/types'
 import * as Sentry from '@sentry/react-native'
@@ -21,6 +21,10 @@ import Logger from 'utils/Logger'
 import { Avalanche } from '@avalabs/wallets-sdk'
 import { getAddressByVM } from 'store/account/utils'
 import { getProvidedUtxos } from 'utils/getProvidedUtxos'
+import {
+  showTransactionErrorToast,
+  showTransactionSuccessToast
+} from 'utils/toast'
 import {
   ApproveResponse,
   DEFERRED_RESULT,
@@ -261,9 +265,14 @@ class AvalancheSendTransactionHandler
 
       // Submit the transaction and return the tx id
       const provider = await networkService.getAvalancheProviderXP(isDevMode)
-      const result = await provider.issueTxHex(signedTransactionHex, vm)
+      const { txID } = await provider.issueTxHex(signedTransactionHex, vm)
 
-      return { success: true, value: result.txID }
+      showTransactionSuccessToast({
+        message: 'Transaction Successful',
+        txHash: txID
+      })
+
+      return { success: true, value: txID }
     } catch (e) {
       Logger.error(
         'Unable to approve send transaction request',
@@ -275,10 +284,11 @@ class AvalancheSendTransactionHandler
           ? (e as Error).message
           : 'Send transaction error'
 
+      showTransactionErrorToast({ message: 'Transaction Failed' })
+
       Sentry.captureException(e, {
         tags: { dapps: 'sendTransactionV2' }
       })
-
       return {
         success: false,
         error: ethErrors.rpc.internal({

@@ -15,27 +15,27 @@ const ContactInput = ({
   name,
   address,
   addressBtc,
-  addressPvm,
+  addressXP,
   onNameChange,
   onAddressChange,
   onAddressBtcChange,
-  onAddressPvmChange
+  onAddressXPChange
 }: {
   name: string
   address: string
   addressBtc: string
-  addressPvm: string
+  addressXP: string
   onNameChange: (name: string) => void
   onAddressChange: (address: string) => void
   onAddressBtcChange: (address: string) => void
-  onAddressPvmChange: (address: string) => void
+  onAddressXPChange: (address: string) => void
 }): JSX.Element => {
   const { theme } = useApplicationContext()
   const [addressError, setAddressError] = useState('')
   const [btcAddressError, setBtcAddressError] = useState('')
-  const [qrScanChain, setQrScanChain] = useState<'C' | 'P' | 'BTC' | undefined>(
-    undefined
-  )
+  const [qrScanChain, setQrScanChain] = useState<
+    'C' | 'XP' | 'BTC' | undefined
+  >(undefined)
 
   useEffect(validateInputs, [address, addressBtc])
 
@@ -53,7 +53,7 @@ const ContactInput = ({
   }
 
   function onPChainScanQR(): void {
-    setQrScanChain('P')
+    setQrScanChain('XP')
   }
 
   function onBtcScanQR(): void {
@@ -125,10 +125,10 @@ const ContactInput = ({
           multiline
           errorText={btcAddressError}
           placeholder={'Enter the P- address'}
-          text={addressPvm}
-          onChangeText={onAddressPvmChange}
+          text={addressXP}
+          onChangeText={onAddressXPChange}
         />
-        {!addressPvm && (
+        {!addressXP && (
           <View style={styles.qrScan}>
             <AvaButton.Icon onPress={onPChainScanQR}>
               <QRScanSVG />
@@ -148,8 +148,8 @@ const ContactInput = ({
               case 'C':
                 onAddressChange(data)
                 break
-              case 'P':
-                onAddressPvmChange(data)
+              case 'XP':
+                onAddressXPChange(data)
                 break
               case 'BTC':
                 onAddressBtcChange(data)
