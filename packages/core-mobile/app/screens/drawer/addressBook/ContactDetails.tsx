@@ -117,7 +117,9 @@ const ContactDetails = ({
               onAddressXPChange={handleXPAddressChange}
             />
             <FlexSpacer />
-            <AvaButton.TextLarge onPress={() => onDelete(contact)}>
+            <AvaButton.TextLarge
+              onPress={() => onDelete(contact)}
+              testID="delete_contact">
               Delete Contact
             </AvaButton.TextLarge>
           </>
