@@ -112,25 +112,25 @@ const WalletScreenStackWithContext: FC = () => {
   // on fresh app open, we render only pin screen
   // if we haven't determined what to render yet, render nothing
   if (shouldRenderOnlyPinScreen === null) return null
-  if (shouldRenderOnlyPinScreen === true) {
-    return <LoginWithPinOrBiometryScreen />
-  }
+  // if (shouldRenderOnlyPinScreen === true) {
+  //   return <LoginWithPinOrBiometryScreen />
+  // }
 
   // we only render the wallet stack once user has unlocked the wallet
   return (
     <>
       <WalletScreenStack onExit={doExit} />
-      {walletState === WalletState.INACTIVE && <LoginWithPinOrBiometryScreen />}
+      {/* {walletState === WalletState.INACTIVE && <LoginWithPinOrBiometryScreen />} */}
       {/* This protects from leaking last screen in "recent apps" list.                                 */}
       {/* For Android it is additionally implemented natively in MainActivity.java because react-native */}
       {/* isn't fast enough to change layout before system makes screenshot of app for recent apps list */}
-      {inBackground && <PrivacyScreen />}
+      {/* {inBackground && <PrivacyScreen />} */}
     </>
   )
 }
 
 const RootScreenStack: FC = () => {
-  const walletState = useSelector(selectWalletState)
+  // const walletState = useSelector(selectWalletState)
 
   return (
     <RootStack.Navigator
@@ -138,62 +138,14 @@ const RootScreenStack: FC = () => {
         headerShown: false,
         animationEnabled: false
       }}>
-      {walletState === WalletState.NONEXISTENT ? (
-        <RootStack.Screen
-          name={AppNavigation.Root.Onboard}
-          component={OnboardScreenStack}
-          options={{
-            animationEnabled: false
-          }}
-        />
-      ) : (
-        <RootStack.Screen
-          name={AppNavigation.Root.Wallet}
-          component={WalletScreenStackWithContext}
-          options={{
-            animationEnabled: false,
-            presentation: 'card'
-          }}
-        />
-      )}
       <RootStack.Screen
-        name={AppNavigation.Root.RefreshToken}
-        component={RefreshTokenScreenStack}
+        name={AppNavigation.Root.Wallet}
+        component={WalletScreenStackWithContext}
         options={{
-          animationEnabled: false
+          animationEnabled: false,
+          presentation: 'card'
         }}
       />
-      <RootStack.Screen
-        name={AppNavigation.Root.RecoveryMethods}
-        component={RecoveryMethodsStack}
-        options={{
-          animationEnabled: true
-        }}
-      />
-      <RootStack.Screen
-        name={AppNavigation.Root.SelectRecoveryMethods}
-        component={SelectRecoveryMethods}
-        options={{
-          ...MainHeaderOptions(),
-          animationEnabled: true,
-          presentation: 'modal'
-        }}
-      />
-      <RootStack.Group screenOptions={{ presentation: 'transparentModal' }}>
-        <RootStack.Screen
-          name={AppNavigation.Root.CopyPhraseWarning}
-          component={CopyPhraseWarningModal}
-        />
-        <RootStack.Screen
-          name={AppNavigation.Root.ForgotPin}
-          component={ForgotPinModal}
-        />
-        <RootStack.Screen
-          options={{ presentation: 'modal' }}
-          name={AppNavigation.Root.VerifyTotpCode}
-          component={VerifyTotpCodeScreen}
-        />
-      </RootStack.Group>
     </RootStack.Navigator>
   )
 }
