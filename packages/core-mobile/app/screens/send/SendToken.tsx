@@ -65,6 +65,8 @@ const SendToken: FC<Props> = ({ onOpenAddressBook, token, contact }) => {
       ? 'Enter 0x Address'
       : activeNetwork.vmName === NetworkVMType.PVM
       ? 'Enter Avax P address'
+      : activeNetwork.vmName === NetworkVMType.AVM
+      ? 'Enter Avax X address'
       : 'Enter Bitcoin Address'
 
   const sendInProcess = sendStatus === 'Sending'
@@ -120,6 +122,7 @@ const SendToken: FC<Props> = ({ onOpenAddressBook, token, contact }) => {
         setAddress({ address: getAddressProperty(item), name: item.name })
         break
       case NetworkVMType.PVM:
+      case NetworkVMType.AVM:
         setAddress({ address: getAddressXP(item) ?? '', name: item.name })
         break
       case NetworkVMType.BITCOIN:

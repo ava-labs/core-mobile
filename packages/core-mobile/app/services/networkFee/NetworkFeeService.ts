@@ -19,6 +19,7 @@ class NetworkFeeService {
       case NetworkVMType.BITCOIN:
         return await this.getFeesForBtc(network, tokenUnitCreator)
       case NetworkVMType.PVM:
+      case NetworkVMType.AVM:
         return await this.getFeesForPVM(tokenUnitCreator)
       default:
         return undefined
