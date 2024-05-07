@@ -6,6 +6,7 @@ import { createStackNavigator } from '@react-navigation/stack'
 import { Alert, Vibration } from 'react-native'
 import {
   NavigatorScreenParams,
+  useFocusEffect,
   useNavigation,
   useRoute
 } from '@react-navigation/native'
@@ -79,6 +80,7 @@ const WalletScreenStackWithContext: FC = () => {
   const [shouldRenderOnlyPinScreen, setShouldRenderOnlyPinScreen] = useState<
     null | boolean
   >(null)
+  const [enabledPrivacyScreen, setEnabledPrivacyScreen] = useState(false)
 
   useEffect(() => {
     // set shouldRenderOnlyPinScreen to false once wallet is unlocked
@@ -88,6 +90,14 @@ const WalletScreenStackWithContext: FC = () => {
 
     setShouldRenderOnlyPinScreen(walletState !== WalletState.ACTIVE)
   }, [appIsReady, shouldRenderOnlyPinScreen, walletState])
+
+  useFocusEffect(
+    useCallback(() => {
+      setTimeout(() => {
+        setEnabledPrivacyScreen(inBackground)
+      }, 0)
+    }, [inBackground])
+  )
 
   const doExit = useCallback(() => {
     onExit((confirmExit, cancel) => {
@@ -120,11 +130,12 @@ const WalletScreenStackWithContext: FC = () => {
   return (
     <>
       <WalletScreenStack onExit={doExit} />
+
       {walletState === WalletState.INACTIVE && <LoginWithPinOrBiometryScreen />}
       {/* This protects from leaking last screen in "recent apps" list.                                 */}
       {/* For Android it is additionally implemented natively in MainActivity.java because react-native */}
       {/* isn't fast enough to change layout before system makes screenshot of app for recent apps list */}
-      {inBackground && <PrivacyScreen />}
+      {enabledPrivacyScreen && <PrivacyScreen />}
     </>
   )
 }
