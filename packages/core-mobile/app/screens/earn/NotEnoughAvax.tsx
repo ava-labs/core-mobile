@@ -7,6 +7,7 @@ import { Row } from 'components/Row'
 import AvaButton from 'components/AvaButton'
 import InfoSVG from 'components/svg/InfoSVG'
 import { UI, useIsUIDisabled } from 'hooks/useIsUIDisabled'
+import useStakingParams from 'hooks/earn/useStakingParams'
 
 export default function NotEnoughAvax({
   onBuyAvax,
@@ -16,10 +17,11 @@ export default function NotEnoughAvax({
   onBuyAvax: () => void
   onSwap: () => void
   onReceive: () => void
-}) {
+}): React.JSX.Element {
   const { theme } = useApplicationContext()
   const buyDisabled = useIsUIDisabled(UI.Buy)
   const swapDisabled = useIsUIDisabled(UI.Swap)
+  const { minStakeAmount } = useStakingParams()
 
   return (
     <View style={{ padding: 16, flex: 1 }}>
@@ -32,7 +34,7 @@ export default function NotEnoughAvax({
           <AvaText.Heading5>You don’t have enough AVAX!</AvaText.Heading5>
           <Space y={8} />
           <AvaText.Body2 textStyle={{ textAlign: 'center', lineHeight: 20 }}>
-            {'Buy or Swap AVAX to begin staking.'}
+            {`You need at least ${minStakeAmount.toFixed()} AVAX to stake. Use the options below to get started.`}
           </AvaText.Body2>
         </View>
       </View>
@@ -49,7 +51,7 @@ export default function NotEnoughAvax({
         </AvaButton.SecondaryLarge>
         {!buyDisabled && (
           <>
-            <Space y={16} />
+            <Space x={16} />
             <AvaButton.SecondaryLarge onPress={onBuyAvax} style={{ flex: 1 }}>
               Buy AVAX
             </AvaButton.SecondaryLarge>
