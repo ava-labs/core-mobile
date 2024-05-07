@@ -12,6 +12,7 @@ import { prefetchNetworkFee } from 'hooks/useNetworkFee'
 import { selectNetwork } from 'store/network'
 import { updateRequestStatus } from '../../slice'
 import { ethSendTransactionHandler as handler } from './eth_sendTransaction'
+import { getChainIdFromRequest } from './utils'
 
 const mockTransactionCount = 20
 jest.mock('services/network/utils/providerUtils', () => {
@@ -184,7 +185,7 @@ describe('eth_sendTransaction handler', () => {
       const result = await handler.handle(testRequest, mockListenerApi)
 
       expect(mockSelectNetwork).toHaveBeenCalledWith(
-        Number(testRequest.data.params.chainId.split(':')[1])
+        getChainIdFromRequest(testRequest)
       )
 
       expect(prefetchNetworkFee).toHaveBeenCalledWith(mockNetwork)

@@ -3,8 +3,6 @@ import { getEvmProvider } from 'services/network/utils/providerUtils'
 import WalletService from 'services/wallet/WalletService'
 import NetworkService from 'services/network/NetworkService'
 import { AppListenerEffectAPI } from 'store'
-import * as Navigation from 'utils/Navigation'
-import AppNavigation from 'navigation/AppNavigation'
 import Logger from 'utils/Logger'
 import { ethErrors } from 'eth-rpc-errors'
 import * as Sentry from '@sentry/react-native'
@@ -22,14 +20,15 @@ import {
   HandleResponse,
   RpcRequestHandler
 } from '../types'
-import { parseApproveData, parseRequestParams } from './utils'
+import {
+  getChainIdFromRequest,
+  parseApproveData,
+  parseRequestParams,
+  verifyAndSignTransaction
+} from './utils'
 
 export type EthSendTransactionRpcRequest =
   RpcRequest<RpcMethod.ETH_SEND_TRANSACTION>
-
-const getChainIdFromRequest = (
-  request: EthSendTransactionRpcRequest
-): string | undefined => request.data.params.chainId.split(':')[1]
 
 class EthSendTransactionHandler
   implements RpcRequestHandler<EthSendTransactionRpcRequest>
@@ -65,21 +64,11 @@ class EthSendTransactionHandler
     // pre-fetch network fees for tx parsing and approval screen
     const state = listenerApi.getState()
     const chainId = getChainIdFromRequest(request)
-    const requestedNetwork = selectNetwork(Number(chainId))(state)
+    const requestedNetwork = selectNetwork(chainId)(state)
     prefetchNetworkFee(requestedNetwork)
 
     // TODO CP-4894 decode transaction data here instead of in SignTransaction component/useExplainTransaction hook
-
-    Navigation.navigate({
-      name: AppNavigation.Root.Wallet,
-      params: {
-        screen: AppNavigation.Modal.SignTransactionV2,
-        params: {
-          request,
-          transaction
-        }
-      }
-    })
+    verifyAndSignTransaction(request, transaction)
 
     return { success: true, value: DEFERRED_RESULT }
   }
@@ -108,7 +97,7 @@ class EthSendTransactionHandler
     const chainId = getChainIdFromRequest(request)
     const params = result.data.txParams
     const address = params.from
-    const network = selectNetwork(Number(chainId))(state)
+    const network = selectNetwork(chainId)(state)
 
     if (!network)
       return {

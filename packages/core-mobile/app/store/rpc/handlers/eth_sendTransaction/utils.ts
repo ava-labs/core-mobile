@@ -1,4 +1,10 @@
 import { SafeParseReturnType, z } from 'zod'
+import * as Navigation from 'utils/Navigation'
+import AppNavigation from 'navigation/AppNavigation'
+import BlockaidService from 'services/blockaid/BlockaidService'
+import { TransactionValidationResult } from 'services/blockaid/types'
+import { RpcMethod, RpcRequest } from '../../types'
+import { EthSendTransactionRpcRequest } from './eth_sendTransaction'
 
 const transactionSchema = z.object({
   from: z.string().length(42),
@@ -45,4 +51,54 @@ export type TransactionParams = {
   maxFeePerGas?: string
   maxPriorityFeePerGas?: string
   nonce?: string
+}
+
+export const getChainIdFromRequest = (
+  request: RpcRequest<RpcMethod>
+): number => {
+  if (!request.data.params.chainId) {
+    throw new Error('chainId is missing from the request')
+  }
+
+  const parts = request.data.params.chainId.split(':')
+  if (parts.length < 2 || isNaN(Number(parts[1]))) {
+    throw new Error('chainId is not in a valid format')
+  }
+
+  return Number(parts[1])
+}
+
+export const verifyAndSignTransaction = async (
+  request: EthSendTransactionRpcRequest,
+  txParam: TransactionParams
+): Promise<void> => {
+  try {
+    const chainId = getChainIdFromRequest(request)
+    const validationResult = await BlockaidService.validateTransaction(
+      chainId,
+      txParam
+    )
+
+    navigateToSignTransaction(request, txParam, validationResult)
+  } catch (error) {
+    navigateToSignTransaction(request, txParam)
+  }
+}
+
+const navigateToSignTransaction = (
+  request: EthSendTransactionRpcRequest,
+  txParam: TransactionParams,
+  validationResult?: TransactionValidationResult
+): void => {
+  Navigation.navigate({
+    name: AppNavigation.Root.Wallet,
+    params: {
+      screen: AppNavigation.Modal.SignTransactionV2,
+      params: {
+        request,
+        transaction: txParam,
+        validationResult
+      }
+    }
+  })
 }
