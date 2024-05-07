@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { View } from 'react-native'
 import AvaText from 'components/AvaText'
 import { useApplicationContext } from 'contexts/ApplicationContext'
@@ -7,6 +7,9 @@ import { Row } from 'components/Row'
 import AvaButton from 'components/AvaButton'
 import InfoSVG from 'components/svg/InfoSVG'
 import { UI, useIsUIDisabled } from 'hooks/useIsUIDisabled'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { useSelector } from 'react-redux'
+import { Avax } from 'types/Avax'
 
 export default function NotEnoughAvax({
   onBuyAvax,
@@ -16,10 +19,16 @@ export default function NotEnoughAvax({
   onBuyAvax: () => void
   onSwap: () => void
   onReceive: () => void
-}) {
+}): React.JSX.Element {
   const { theme } = useApplicationContext()
   const buyDisabled = useIsUIDisabled(UI.Buy)
   const swapDisabled = useIsUIDisabled(UI.Swap)
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
+
+  const minStakeAmount = useMemo(
+    () => (isDeveloperMode ? Avax.fromBase(1) : Avax.fromBase(25)),
+    [isDeveloperMode]
+  )
 
   return (
     <View style={{ padding: 16, flex: 1 }}>
@@ -32,9 +41,7 @@ export default function NotEnoughAvax({
           <AvaText.Heading5>You don’t have enough AVAX!</AvaText.Heading5>
           <Space y={8} />
           <AvaText.Body2 textStyle={{ textAlign: 'center', lineHeight: 20 }}>
-            {
-              'You need at least 25 AVAX to stake. Use the options below to get started.'
-            }
+            {`You need at least ${minStakeAmount.toFixed()} AVAX to stake. Use the options below to get started.`}
           </AvaText.Body2>
         </View>
       </View>
