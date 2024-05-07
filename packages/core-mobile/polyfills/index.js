@@ -28,3 +28,16 @@ import './ethers'
 
 //   global.Promise = FakePromise // If running in Node.js
 // }, 7000)
+
+setTimeout(() => {
+  const Promise = require('es6-promise').Promise
+
+  const {
+    polyfillGlobal
+  } = require('react-native/Libraries/Utilities/PolyfillFunctions')
+
+  polyfillGlobal('Promise', () => Promise)
+
+  // eslint-disable-next-line no-alert
+  alert('polyfill Promise done')
+}, 7000)
