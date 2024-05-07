@@ -1,4 +1,3 @@
-import delay from '../helpers/waits'
 import Actions from '../helpers/actions'
 import AccountManagePage from '../pages/accountManage.page'
 import BottomTabsPage from '../pages/bottomTabs.page'
