@@ -111,7 +111,6 @@ class SendPage {
     await this.enterAmount(sendingAmmount)
     await this.tapSendTitle()
     await this.tapNextButton()
-    await delay(2000)
     await this.tapApproveButton()
     // await Actions.waitForElement(ReviewAndSend.sendSuccessfulToastMsg)
   }
