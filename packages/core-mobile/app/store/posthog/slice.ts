@@ -300,6 +300,16 @@ export const selectIsLogErrorsWithSentryBlocked = (
   )
 }
 
+export const selectIsBlocakaidTransactionValidationBlocked = (
+  state: RootState
+): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    !featureFlags[FeatureGates.BLOCKAID_TRANSACTION_VALIDATION] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
 // actions
 export const { regenerateUserId, toggleAnalytics, setFeatureFlags } =
   posthogSlice.actions

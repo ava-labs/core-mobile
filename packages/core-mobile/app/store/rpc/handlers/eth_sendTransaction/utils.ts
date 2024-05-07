@@ -68,10 +68,16 @@ export const getChainIdFromRequest = (
   return Number(parts[1])
 }
 
-export const verifyAndSignTransaction = async (
+export const validateAndSignTransaction = async (
   request: EthSendTransactionRpcRequest,
-  txParam: TransactionParams
+  txParam: TransactionParams,
+  isValidationDisabled: boolean
 ): Promise<void> => {
+  if (isValidationDisabled) {
+    navigateToSignTransaction(request, txParam)
+    return
+  }
+
   try {
     const chainId = getChainIdFromRequest(request)
     const validationResult = await BlockaidService.validateTransaction(
