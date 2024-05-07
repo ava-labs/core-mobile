@@ -286,7 +286,8 @@ const BtnTextLarge: FC<BaseProps> = ({
   disabled,
   textColor,
   children,
-  style
+  style,
+  testID
 }) => {
   const theme = useApplicationContext().theme
   return (
@@ -302,7 +303,7 @@ const BtnTextLarge: FC<BaseProps> = ({
             ? textColor
             : theme.colorPrimary1
         }}
-        testID="btnTextLarge">
+        testID={testID}>
         {children}
       </AvaText.ButtonLarge>
     </BtnText>

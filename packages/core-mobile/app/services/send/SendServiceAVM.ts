@@ -12,12 +12,12 @@ import WalletService from 'services/wallet/WalletService'
 import { Avax } from 'types'
 import { Avalanche } from '@avalabs/wallets-sdk'
 import { utils } from '@avalabs/avalanchejs'
-import { getInternalExternalAddrs } from 'services/send/utils'
 import { AvalancheTxParams } from 'store/rpc/handlers/avalanche_sendTransaction/avalanche_sendTransaction'
 import { GAS_LIMIT_FOR_XP_CHAIN } from 'consts/fees'
+import { getInternalExternalAddrs } from 'services/send/utils'
 import { stripChainAddress } from 'store/account/utils'
 
-export class SendServicePVM {
+export class SendServiceAVM {
   constructor(private activeNetwork: Network) {}
 
   async validateStateAndCalculateFees(
@@ -25,12 +25,12 @@ export class SendServicePVM {
   ): Promise<SendState> {
     const { sendState, nativeTokenBalance, sentryTrx } = params
     return SentryWrapper.createSpanFor(sentryTrx)
-      .setContext('svc.send.pvm.validate_and_calc_fees')
+      .setContext('svc.send.avm.validate_and_calc_fees')
       .executeAsync(async () => {
         const { amount, address, defaultMaxFeePerGas, token } = sendState
 
         // Set canSubmit to false if token is not set
-        if (!token) return SendServicePVM.getErrorState(sendState, '')
+        if (!token) return SendServiceAVM.getErrorState(sendState, '')
 
         const gasLimit = GAS_LIMIT_FOR_XP_CHAIN
         const sendFee = defaultMaxFeePerGas
@@ -48,7 +48,7 @@ export class SendServicePVM {
         }
 
         if (!address)
-          return SendServicePVM.getErrorState(
+          return SendServiceAVM.getErrorState(
             newState,
             SendErrorMessage.ADDRESS_REQUIRED
           )
@@ -57,25 +57,25 @@ export class SendServicePVM {
           !Avalanche.isBech32Address(address, false) &&
           !Avalanche.isBech32Address(address, true)
         )
-          return SendServicePVM.getErrorState(
+          return SendServiceAVM.getErrorState(
             newState,
             SendErrorMessage.INVALID_ADDRESS
           )
 
         if (!defaultMaxFeePerGas || defaultMaxFeePerGas === 0n)
-          return SendServicePVM.getErrorState(
+          return SendServiceAVM.getErrorState(
             newState,
             SendErrorMessage.INVALID_NETWORK_FEE
           )
 
         if (!amount || amount.isZero())
-          return SendServicePVM.getErrorState(
+          return SendServiceAVM.getErrorState(
             newState,
             SendErrorMessage.AMOUNT_REQUIRED
           )
 
         if (amount?.gt(maxAmount))
-          return SendServicePVM.getErrorState(
+          return SendServiceAVM.getErrorState(
             newState,
             SendErrorMessage.INSUFFICIENT_BALANCE
           )
@@ -85,7 +85,7 @@ export class SendServicePVM {
           sendFee &&
           nativeTokenBalance?.lt(sendFee)
         )
-          return SendServicePVM.getErrorState(
+          return SendServiceAVM.getErrorState(
             newState,
             SendErrorMessage.INSUFFICIENT_BALANCE_FOR_FEE
           )
@@ -101,14 +101,14 @@ export class SendServicePVM {
     fromAddress
   }: GetPVMTransactionRequestParams): Promise<AvalancheTxParams> {
     return SentryWrapper.createSpanFor(sentryTrx)
-      .setContext('svc.send.pvm.get_trx_request')
+      .setContext('svc.send.avm.get_trx_request')
       .executeAsync(async () => {
         if (!fromAddress) {
           throw new Error('fromAddress must be defined')
         }
         const destinationAddress =
-          'P-' + stripChainAddress(sendState.address ?? '')
-        const unsignedTx = await WalletService.createSendPTx({
+          'X-' + stripChainAddress(sendState.address ?? '')
+        const unsignedTx = await WalletService.createSendXTx({
           accountIndex,
           amount: Avax.fromNanoAvax(sendState.amount || 0),
           avaxXPNetwork: this.activeNetwork,
@@ -122,7 +122,7 @@ export class SendServicePVM {
 
         return {
           transactionHex: utils.bufferToHex(unsignedTxBytes),
-          chainAlias: 'P',
+          chainAlias: 'X',
           utxos: unsignedTx.utxos.map(utxo =>
             utils.bufferToHex(utxo.toBytes(codec))
           ),

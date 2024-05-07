@@ -52,7 +52,8 @@ export default function Browser({ tabId }: { tabId: string }): JSX.Element {
   const {
     injectCoreAsRecent,
     injectGetDescriptionAndFavicon,
-    coreConnectInterceptor
+    coreConnectInterceptor,
+    injectCustomWindowOpen
   } = useInjectedJavascript()
   const activeHistory = useSelector(selectTab(tabId))?.activeHistory
   const webViewRef = useRef<WebView>(null)
@@ -208,7 +209,8 @@ export default function Browser({ tabId }: { tabId: string }): JSX.Element {
         injectedJavaScript={
           injectGetDescriptionAndFavicon +
           injectCoreAsRecent +
-          coreConnectInterceptor
+          coreConnectInterceptor +
+          injectCustomWindowOpen
         }
         source={{ uri: urlToLoad }}
         setSupportMultipleWindows={false}
@@ -246,6 +248,12 @@ export default function Browser({ tabId }: { tabId: string }): JSX.Element {
               break
             case 'log':
               Logger.trace('------> wrapper.payload', wrapper.payload)
+              break
+            case 'walletConnect_deeplink_blocked':
+              Logger.info(
+                'walletConnect_deeplink_blocked, url: ',
+                wrapper.payload
+              )
               break
             default:
               break
