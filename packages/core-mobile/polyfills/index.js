@@ -29,15 +29,30 @@ import './ethers'
 //   global.Promise = FakePromise // If running in Node.js
 // }, 7000)
 
-setTimeout(() => {
-  const Promise = require('es6-promise').Promise
+const Promise = require('es6-promise').Promise
 
-  const {
-    polyfillGlobal
-  } = require('react-native/Libraries/Utilities/PolyfillFunctions')
+Promise.allSettled =
+  Promise.allSettled ||
+  (promises =>
+    Promise.all(
+      promises.map(p =>
+        p
+          .then(value => ({
+            status: 'fulfilled',
+            value
+          }))
+          .catch(reason => ({
+            status: 'rejected',
+            reason
+          }))
+      )
+    ))
 
-  polyfillGlobal('Promise', () => Promise)
+const {
+  polyfillGlobal
+} = require('react-native/Libraries/Utilities/PolyfillFunctions')
 
-  // eslint-disable-next-line no-alert
-  alert('polyfill Promise done')
-}, 7000)
+polyfillGlobal('Promise', () => Promise)
+
+// eslint-disable-next-line no-alert
+alert('polyfill Promise done')
