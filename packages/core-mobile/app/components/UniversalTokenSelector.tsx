@@ -49,7 +49,8 @@ const UniversalTokenSelector: FC<Props> = ({
   label,
   isValueLoading,
   hideErrorMessage,
-  hideZeroBalanceTokens = false
+  hideZeroBalanceTokens = false,
+  testID
 }) => {
   const theme = useApplicationContext().theme
   const { currencyFormatter } = useApplicationContext().appHook
@@ -123,7 +124,7 @@ const UniversalTokenSelector: FC<Props> = ({
               <AvaText.Heading2>{selectedToken.symbol}</AvaText.Heading2>
             </>
           ) : (
-            <AvaText.Heading2>Select</AvaText.Heading2>
+            <AvaText.Heading2 testID={testID}>Select</AvaText.Heading2>
           )}
           <Space x={8} />
           <CarrotSVG direction={'down'} size={12} color={theme.colorText1} />

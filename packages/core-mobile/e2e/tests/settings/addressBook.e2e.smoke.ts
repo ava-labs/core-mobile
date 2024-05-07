@@ -47,7 +47,9 @@ describe('Address Book', () => {
 
   it('Should delete contact', async () => {
     await AddressBookPage.tapEdit()
-    await Actions.swipeUp(commonElsPage.inputTextField, 'fast', 0.25, 0)
+    if (device.getPlatform() === 'android') {
+      await Actions.swipeUp(commonElsPage.inputTextField, 'fast', 0.25, 0)
+    }
     await AddressBookPage.tapDeleteContact()
     await AddressBookPage.tapDelete()
     await Assert.isNotVisible(AddressBookPage.newContactName)

@@ -64,7 +64,9 @@ export const Fab: FC = () => {
       onPress: () => {
         let preSelectedToken
         if (
-          activeNetwork.vmName === NetworkVMType.PVM &&
+          [NetworkVMType.PVM, NetworkVMType.AVM].includes(
+            activeNetwork.vmName
+          ) &&
           tokensWithBalance[0] !== undefined &&
           tokensWithBalance[0].symbol === 'AVAX'
         ) {
