@@ -32,7 +32,9 @@ export default function NotEnoughAvax({
           <AvaText.Heading5>You don’t have enough AVAX!</AvaText.Heading5>
           <Space y={8} />
           <AvaText.Body2 textStyle={{ textAlign: 'center', lineHeight: 20 }}>
-            {'Buy or Swap AVAX to begin staking.'}
+            {
+              'You need at least 25 AVAX to stake. Use the options below to get started.'
+            }
           </AvaText.Body2>
         </View>
       </View>
@@ -49,7 +51,7 @@ export default function NotEnoughAvax({
         </AvaButton.SecondaryLarge>
         {!buyDisabled && (
           <>
-            <Space y={16} />
+            <Space x={16} />
             <AvaButton.SecondaryLarge onPress={onBuyAvax} style={{ flex: 1 }}>
               Buy AVAX
             </AvaButton.SecondaryLarge>
