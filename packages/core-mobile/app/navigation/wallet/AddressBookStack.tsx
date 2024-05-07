@@ -282,6 +282,7 @@ const DeleteConfirmModal = (): JSX.Element => {
       dismissText="Cancel"
       onAction={onDelete}
       onDismiss={onCancel}
+      testID="delete-contact-modal"
     />
   )
 }
