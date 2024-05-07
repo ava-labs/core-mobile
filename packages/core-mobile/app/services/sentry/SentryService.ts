@@ -16,6 +16,9 @@ const isAvailable =
 const init = (): void => {
   if (isAvailable) {
     Sentry.init({
+      // disabling promise patching since it is affecting app performance
+      // instead, we are patching promise ourselves with es6-promise
+      patchGlobalPromise: false,
       dsn: Config.SENTRY_DSN,
       environment: Config.ENVIRONMENT,
       debug: false,
