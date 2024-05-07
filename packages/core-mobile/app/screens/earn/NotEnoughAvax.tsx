@@ -21,7 +21,7 @@ export default function NotEnoughAvax({
   const { theme } = useApplicationContext()
   const buyDisabled = useIsUIDisabled(UI.Buy)
   const swapDisabled = useIsUIDisabled(UI.Swap)
-  const minStakeAmount = useStakingParams()
+  const { minStakeAmount } = useStakingParams()
 
   return (
     <View style={{ padding: 16, flex: 1 }}>
