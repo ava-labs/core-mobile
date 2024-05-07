@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React from 'react'
 import { View } from 'react-native'
 import AvaText from 'components/AvaText'
 import { useApplicationContext } from 'contexts/ApplicationContext'
@@ -7,9 +7,7 @@ import { Row } from 'components/Row'
 import AvaButton from 'components/AvaButton'
 import InfoSVG from 'components/svg/InfoSVG'
 import { UI, useIsUIDisabled } from 'hooks/useIsUIDisabled'
-import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { useSelector } from 'react-redux'
-import { Avax } from 'types/Avax'
+import useStakingParams from 'hooks/earn/useStakingParams'
 
 export default function NotEnoughAvax({
   onBuyAvax,
@@ -23,12 +21,7 @@ export default function NotEnoughAvax({
   const { theme } = useApplicationContext()
   const buyDisabled = useIsUIDisabled(UI.Buy)
   const swapDisabled = useIsUIDisabled(UI.Swap)
-  const isDeveloperMode = useSelector(selectIsDeveloperMode)
-
-  const minStakeAmount = useMemo(
-    () => (isDeveloperMode ? Avax.fromBase(1) : Avax.fromBase(25)),
-    [isDeveloperMode]
-  )
+  const minStakeAmount = useStakingParams()
 
   return (
     <View style={{ padding: 16, flex: 1 }}>
