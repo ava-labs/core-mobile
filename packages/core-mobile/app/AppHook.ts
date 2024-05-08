@@ -56,7 +56,7 @@ export function useApp(): AppHook {
     })
     confirmExitPromise
       .then(_ => {
-        dispatch(immediateAppLock)
+        dispatch(immediateAppLock())
         setTimeout(() => BackHandler.exitApp(), 0)
       })
       .catch(_ => {

@@ -19,7 +19,7 @@ export const useNetworksListener = (): void => {
           await queryClient.invalidateQueries({
             queryKey: [ReactQueryKeys.NETWORKS]
           })
-          dispatch(onNetworksFetched)
+          dispatch(onNetworksFetched())
         }
       })
     )

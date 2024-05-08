@@ -1,11 +1,6 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { createSelector, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from 'store'
-import {
-  AppConfig,
-  BridgeConfig,
-  BridgeTransaction,
-  CriticalConfig
-} from '@avalabs/bridge-sdk'
+import { AppConfig, BridgeConfig, BridgeTransaction } from '@avalabs/bridge-sdk'
 import { BridgeState, initialState } from 'store/bridge/types'
 import { selectActiveNetwork } from 'store/network'
 
@@ -43,34 +38,32 @@ export const selectBridgeAppConfig = (
   state: RootState
 ): AppConfig | undefined => state.bridge.config?.config
 
-export const selectBridgeCriticalConfig = (
-  state: RootState
-): CriticalConfig | undefined => {
-  if (state.bridge.config && state.bridge.config.config) {
+export const selectBridgeCriticalConfig = createSelector(
+  [selectBridgeConfig, selectBridgeAppConfig],
+  (bridgeConfig, bridgeAppConfig) => {
     return {
-      critical: state.bridge.config.config.critical,
-      criticalBitcoin: state.bridge.config.config.criticalBitcoin
+      critical: bridgeConfig?.config?.critical,
+      criticalBitcoin: bridgeAppConfig?.criticalBitcoin
     }
   }
-}
+)
 
-export const selectBridgeTransactions = (
-  state: RootState
-): { [key: string]: BridgeTransaction } => {
-  const activeNetwork = selectActiveNetwork(state)
-  const bridgeTransactions = selectTransactions(state)
-  return Object.values(bridgeTransactions).reduce<
-    BridgeState['bridgeTransactions']
-  >((txs, btx) => {
-    const isMainnet = !activeNetwork.isTestnet
-    // go figure
-    const bridgeTx = btx as BridgeTransaction
-    if (bridgeTx.environment === (isMainnet ? 'main' : 'test')) {
-      txs[bridgeTx.sourceTxHash] = bridgeTx
-    }
-    return txs
-  }, {})
-}
+export const selectBridgeTransactions = createSelector(
+  [selectTransactions, selectActiveNetwork],
+  (bridgeTransactions, activeNetwork) => {
+    return Object.values(bridgeTransactions).reduce<
+      BridgeState['bridgeTransactions']
+    >((txs, btx) => {
+      const isMainnet = !activeNetwork.isTestnet
+      // go figure
+      const bridgeTx = btx as BridgeTransaction
+      if (bridgeTx.environment === (isMainnet ? 'main' : 'test')) {
+        txs[bridgeTx.sourceTxHash] = bridgeTx
+      }
+      return txs
+    }, {})
+  }
+)
 
 export const { addBridgeTransaction, popBridgeTransaction, setConfig } =
   bridgeSlice.actions

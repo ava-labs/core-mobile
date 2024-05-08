@@ -48,7 +48,7 @@ const registerTokenExpireHandler = async (
   const { dispatch } = listenerApi
   const onSessionExpiredHandler = async (e: ErrResponse): Promise<void> => {
     if (e.status === 403 && !e.isUserMfaError()) {
-      dispatch(onTokenExpired)
+      dispatch(onTokenExpired())
     }
   }
   GlobalEvents.onError(onSessionExpiredHandler)
@@ -132,7 +132,7 @@ function handleRetry(listenerApi: AppListenerEffectAPI): void {
       Logger.error('startRefreshSeedlessTokenFlow error', e)
       //dismiss Loader screen
       Navigation.goBack()
-      dispatch(onLogOut)
+      dispatch(onLogOut())
     })
 }
 

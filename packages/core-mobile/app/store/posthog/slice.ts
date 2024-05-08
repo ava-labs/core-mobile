@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { createSelector, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from 'store'
 import { v4 as uuidv4 } from 'uuid'
 import { FeatureGates, FeatureFlags, FeatureVars } from 'services/posthog/types'
@@ -30,38 +30,6 @@ export const selectDistinctID = (state: RootState): string =>
   state.posthog.distinctID
 export const selectIsAnalyticsEnabled = (state: RootState): boolean =>
   state.posthog.isAnalyticsEnabled
-export const selectFeatureFlags = (state: RootState): ProcessedFeatureFlags => {
-  const swapBlocked = selectIsSwapBlocked(state)
-  const bridgeBlocked = selectIsBridgeBlocked(state)
-  const bridgeBtcBlocked = selectIsBridgeBtcBlocked(state)
-  const bridgeEthBlocked = selectIsBridgeEthBlocked(state)
-  const earnBlocked = selectIsEarnBlocked(state)
-  const sendBlocked = selectIsSendBlocked(state)
-  const sendNftBlockediOS = selectIsSendNftBlockediOS(state)
-  const sendNftBlockedAndroid = selectIsSendNftBlockedAndroid(state)
-  const eventsBlocked = selectIsEventsBlocked(state)
-  const sentrySampleRate = selectSentrySampleRate(state)
-  const coinbasePayBlocked = selectIsCoinbasePayBlocked(state)
-  const defiBlocked = selectIsDeFiBlocked(state)
-  const leftFab = selectUseLeftFab(state)
-  const darkMode = selectUseDarkMode(state)
-  return {
-    swapBlocked,
-    bridgeBlocked,
-    bridgeBtcBlocked,
-    bridgeEthBlocked,
-    earnBlocked,
-    sendBlocked,
-    sendNftBlockediOS,
-    sendNftBlockedAndroid,
-    eventsBlocked,
-    sentrySampleRate,
-    coinbasePayBlocked,
-    defiBlocked,
-    leftFab,
-    darkMode
-  }
-}
 
 const isSeedlessSigningBlocked = (featureFlags: FeatureFlags): boolean => {
   return (
@@ -309,6 +277,59 @@ export const selectIsBlockaidTransactionValidationBlocked = (
     !featureFlags[FeatureGates.EVERYTHING]
   )
 }
+
+export const selectFeatureFlags = createSelector(
+  [
+    selectIsSwapBlocked,
+    selectIsBridgeBlocked,
+    selectIsBridgeBtcBlocked,
+    selectIsBridgeEthBlocked,
+    selectIsEarnBlocked,
+    selectIsSendBlocked,
+    selectIsSendNftBlockediOS,
+    selectIsSendNftBlockedAndroid,
+    selectIsEventsBlocked,
+    selectSentrySampleRate,
+    selectIsCoinbasePayBlocked,
+    selectIsDeFiBlocked,
+    selectUseLeftFab,
+    selectUseDarkMode
+  ],
+  (
+    swapBlocked,
+    bridgeBlocked,
+    bridgeBtcBlocked,
+    bridgeEthBlocked,
+    earnBlocked,
+    sendBlocked,
+    sendNftBlockediOS,
+    sendNftBlockedAndroid,
+    eventsBlocked,
+    sentrySampleRate,
+    coinbasePayBlocked,
+    defiBlocked,
+    leftFab,
+    darkMode
+    // eslint-disable-next-line max-params
+  ): ProcessedFeatureFlags => {
+    return {
+      swapBlocked,
+      bridgeBlocked,
+      bridgeBtcBlocked,
+      bridgeEthBlocked,
+      earnBlocked,
+      sendBlocked,
+      sendNftBlockediOS,
+      sendNftBlockedAndroid,
+      eventsBlocked,
+      sentrySampleRate,
+      coinbasePayBlocked,
+      defiBlocked,
+      leftFab,
+      darkMode
+    }
+  }
+)
 
 // actions
 export const { regenerateUserId, toggleAnalytics, setFeatureFlags } =

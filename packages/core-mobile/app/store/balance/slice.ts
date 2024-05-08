@@ -55,6 +55,9 @@ export const balanceSlice = createSlice({
 })
 
 // selectors
+export const selectBalances = (state: RootState): Balances =>
+  state.balance.balances
+
 export const selectBalanceStatus = (state: RootState): QueryStatus =>
   state.balance.status
 
@@ -70,18 +73,15 @@ export const selectIsRefetchingBalances = (state: RootState): boolean =>
   state.balance.status === QueryStatus.REFETCHING
 
 // get the list of tokens for the active network
-// each token will have info such as: balance, price, market cap,...
-export const selectTokensWithBalance = (
-  state: RootState
-): LocalTokenWithBalance[] => {
-  const activeNetwork = selectActiveNetwork(state)
-  const activeAccount = selectActiveAccount(state)
+export const selectTokensWithBalance = createSelector(
+  [selectActiveAccount, selectActiveNetwork, selectBalances],
+  (activeAccount, activeNetwork, balances) => {
+    if (!activeAccount) return []
 
-  if (!activeAccount) return []
-
-  const key = getKey(activeNetwork.chainId, activeAccount.index)
-  return state.balance.balances[key]?.tokens ?? []
-}
+    const key = getKey(activeNetwork.chainId, activeAccount.index)
+    return balances[key]?.tokens ?? []
+  }
+)
 
 export const selectTokensWithBalanceByNetwork =
   (network?: Network) =>
@@ -95,17 +95,16 @@ export const selectTokensWithBalanceByNetwork =
     return state.balance.balances[key]?.tokens ?? []
   }
 
-export const selectTokensWithZeroBalance = (
-  state: RootState
-): LocalTokenWithBalance[] => {
-  const allTokens = selectTokensWithBalance(state)
-  return allTokens.filter(t => t.balance.eq(BN_ZERO))
-}
+export const selectTokensWithZeroBalance = createSelector(
+  [selectTokensWithBalance],
+  allTokens => {
+    return allTokens.filter(t => t.balance.eq(BN_ZERO))
+  }
+)
 
-export const selectAvaxPrice = (state: RootState): number => {
-  const balances = Object.values(state.balance.balances)
-
-  for (const balance of balances) {
+export const selectAvaxPrice = createSelector([selectBalances], balances => {
+  const balancesValues = Object.values(balances)
+  for (const balance of balancesValues) {
     for (const token of balance.tokens) {
       if (
         'type' in token &&
@@ -118,7 +117,7 @@ export const selectAvaxPrice = (state: RootState): number => {
     }
   }
   return 0
-}
+})
 
 export const selectTokenByAddress = (address: string) => (state: RootState) => {
   const balances = Object.values(state.balance.balances)

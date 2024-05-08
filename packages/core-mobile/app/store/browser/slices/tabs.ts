@@ -1,6 +1,8 @@
 import {
   createAction,
+  createSelector,
   createSlice,
+  EntityId,
   EntityState,
   PayloadAction
 } from '@reduxjs/toolkit'
@@ -40,7 +42,7 @@ export const getInitialState = (): TabState => {
           lastVisited: getUnixTime(new Date())
         }
       }
-    } as EntityState<Tab>),
+    } as EntityState<Tab, EntityId>),
     activeTabId: tabId
   }
 }
@@ -184,23 +186,21 @@ const tabSlice = createSlice({
   }
 })
 
-// selectors
-export const selectIsTabEmpty = (state: RootState): boolean => {
-  return (selectActiveTab(state)?.activeHistoryIndex ?? -1) === -1
-}
+const selectTabs = (state: RootState): EntityState<Tab, EntityId> =>
+  state.browser.tabs
 
-export const selectAllTabs = (state: RootState): Tab[] =>
-  tabAdapter.getSelectors().selectAll(state.browser.tabs)
+const activeTabId = (state: RootState): TabId | undefined =>
+  state.browser.tabs.activeTabId
+
+// selectors
+export const selectAllTabs = createSelector([selectTabs], tabs => {
+  return tabAdapter.getSelectors().selectAll(tabs)
+})
 
 export const selectTab =
   (tabId: TabId) =>
   (state: RootState): Tab | undefined =>
     tabAdapter.getSelectors().selectById(state.browser.tabs, tabId)
-
-export const selectCanGoBack = (state: RootState): boolean => {
-  const activeTab = selectActiveTab(state)
-  return !!activeTab && activeTab.activeHistoryIndex >= 0
-}
 
 export const selectCanGoForward = (state: RootState): boolean => {
   const activeTab = selectActiveTab(state)
@@ -210,20 +210,31 @@ export const selectCanGoForward = (state: RootState): boolean => {
   )
 }
 
-export const selectActiveTab = (state: RootState): Tab | undefined => {
-  if (state.browser.tabs.activeTabId === undefined) return
-  return tabAdapter
-    .getSelectors()
-    .selectById(state.browser.tabs, state.browser.tabs.activeTabId)
-}
+export const selectActiveTab = createSelector(
+  [selectTabs, activeTabId],
+  (tabs, activeId) => {
+    if (activeId === undefined) return
+    return tabAdapter.getSelectors().selectById(tabs, activeId)
+  }
+)
+
+export const selectIsTabEmpty = createSelector([selectActiveTab], activeTab => {
+  return (activeTab?.activeHistoryIndex ?? -1) === -1
+})
+
+export const selectCanGoBack = createSelector([selectActiveTab], activeTab => {
+  return !!activeTab && activeTab.activeHistoryIndex >= 0
+})
 
 /**
  * Selects currently active history from currently active tab
  */
-export const selectActiveHistory = (state: RootState): History | undefined => {
-  const activeTab = selectActiveTab(state)
-  return activeTab?.activeHistory
-}
+export const selectActiveHistory = createSelector(
+  [selectActiveTab],
+  activeTab => {
+    return activeTab?.activeHistory
+  }
+)
 
 // actions
 export const goForward = createAction(`${reducerName}/goForward`)

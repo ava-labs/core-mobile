@@ -104,7 +104,7 @@ const TokensTab = (): JSX.Element => {
 
   const refresh = (): void => {
     refetch()
-    dispatch(fetchWatchlist)
+    dispatch(fetchWatchlist())
   }
 
   if (isLoading) return <PortfolioTokensLoader />
