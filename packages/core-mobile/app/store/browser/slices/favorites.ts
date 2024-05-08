@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { createSelector, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { FavoriteState, Favorite, HistoryId } from 'store/browser/types'
 import { createHash } from 'utils/createHash'
 import { RootState } from 'store'
@@ -25,8 +25,15 @@ const favoriteSlice = createSlice({
 })
 
 // selectors
-export const selectAllFavorites = (state: RootState): Favorite[] =>
-  favoriteAdapter.getSelectors().selectAll(state.browser.favorites)
+const selectFavorites = (state: RootState): FavoriteState =>
+  state.browser.favorites
+
+export const selectAllFavorites = createSelector(
+  [selectFavorites],
+  favorites => {
+    return favoriteAdapter.getSelectors().selectAll(favorites)
+  }
+)
 
 export const selectIsFavorited =
   (id?: HistoryId) =>

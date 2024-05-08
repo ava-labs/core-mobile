@@ -1,4 +1,10 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import {
+  createSelector,
+  createSlice,
+  EntityId,
+  EntityState,
+  PayloadAction
+} from '@reduxjs/toolkit'
 import { createHash } from 'utils/createHash'
 import { RootState } from 'store'
 import { getUnixTime } from 'date-fns'
@@ -66,6 +72,11 @@ const globalHistorySlice = createSlice({
 })
 
 // selectors
+
+const selectGlobalHistory = (
+  state: RootState
+): EntityState<History, EntityId> => state.browser.globalHistory
+
 export const selectHistory =
   (id?: HistoryId) =>
   (state: RootState): History | undefined => {
@@ -75,9 +86,12 @@ export const selectHistory =
       .selectById(state.browser.globalHistory, id)
   }
 
-export const selectAllHistories = (state: RootState): History[] => {
-  return historyAdapter.getSelectors().selectAll(state.browser.globalHistory)
-}
+export const selectAllHistories = createSelector(
+  [selectGlobalHistory],
+  globalHistory => {
+    return historyAdapter.getSelectors().selectAll(globalHistory)
+  }
+)
 
 // actions
 export const { removeAllHistories, removeHistory, updateMetadataForActiveTab } =
