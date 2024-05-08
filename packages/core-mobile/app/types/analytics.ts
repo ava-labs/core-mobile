@@ -79,7 +79,6 @@ export type AnalyticsEvents = {
   NftSendFailed: { errorMessage: string; chainId: number }
   NftSendSucceeded: { chainId: number }
   NftSendContactSelected: { contactSource: string }
-  NftSendCancel: undefined
   'Onboard:WalletNameSet': undefined
   OnboardingAnalyticsAccepted: undefined
   OnboardingAnalyticsRejected: undefined
