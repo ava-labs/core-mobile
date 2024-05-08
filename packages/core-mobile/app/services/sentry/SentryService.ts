@@ -18,6 +18,7 @@ const init = (): void => {
     Sentry.init({
       // disabling promise patching since it is affecting app performance
       // instead, we are patching promise ourselves with es6-promise
+      // TODO: renable patchGlobalPromise here https://ava-labs.atlassian.net/browse/CP-8616
       patchGlobalPromise: false,
       dsn: Config.SENTRY_DSN,
       environment: Config.ENVIRONMENT,
