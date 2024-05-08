@@ -1,7 +1,6 @@
 import {
   createSelector,
   createSlice,
-  EntityId,
   EntityState,
   PayloadAction
 } from '@reduxjs/toolkit'
@@ -73,9 +72,8 @@ const globalHistorySlice = createSlice({
 
 // selectors
 
-const selectGlobalHistory = (
-  state: RootState
-): EntityState<History, EntityId> => state.browser.globalHistory
+const selectGlobalHistory = (state: RootState): EntityState<History> =>
+  state.browser.globalHistory
 
 export const selectHistory =
   (id?: HistoryId) =>

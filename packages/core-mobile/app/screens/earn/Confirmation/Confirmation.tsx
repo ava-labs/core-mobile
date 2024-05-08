@@ -157,7 +157,7 @@ export const Confirmation = (): JSX.Element | null => {
     showTransactionSuccessToast({ message: 'Staking successful!' })
 
     getParent()?.goBack()
-    dispatch(maybePromptEarnNotification)
+    dispatch(maybePromptEarnNotification())
     dispatch(
       scheduleStakingCompleteNotifications([
         {

@@ -1,6 +1,11 @@
 import { createSelector, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from 'store'
-import { AppConfig, BridgeConfig, BridgeTransaction } from '@avalabs/bridge-sdk'
+import {
+  AppConfig,
+  BridgeConfig,
+  BridgeTransaction,
+  CriticalConfig
+} from '@avalabs/bridge-sdk'
 import { BridgeState, initialState } from 'store/bridge/types'
 import { selectActiveNetwork } from 'store/network'
 
@@ -38,15 +43,26 @@ export const selectBridgeAppConfig = (
   state: RootState
 ): AppConfig | undefined => state.bridge.config?.config
 
-export const selectBridgeCriticalConfig = createSelector(
-  [selectBridgeConfig, selectBridgeAppConfig],
-  (bridgeConfig, bridgeAppConfig) => {
+export const selectBridgeCriticalConfig = (
+  state: RootState
+): CriticalConfig | undefined => {
+  if (state.bridge.config && state.bridge.config.config) {
     return {
-      critical: bridgeConfig?.config?.critical,
-      criticalBitcoin: bridgeAppConfig?.criticalBitcoin
+      critical: state.bridge.config.config.critical,
+      criticalBitcoin: state.bridge.config.config.criticalBitcoin
     }
   }
-)
+}
+
+// export const selectBridgeCriticalConfig = createSelector(
+//   [selectBridgeConfig, selectBridgeAppConfig],
+//   (bridgeConfig, bridgeAppConfig) => {
+//     return {
+//       critical: bridgeConfig?.config?.critical,
+//       criticalBitcoin: bridgeAppConfig?.criticalBitcoin
+//     }
+//   }
+// )
 
 export const selectBridgeTransactions = createSelector(
   [selectTransactions, selectActiveNetwork],

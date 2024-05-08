@@ -2,7 +2,6 @@ import {
   createAction,
   createSelector,
   createSlice,
-  EntityId,
   EntityState,
   PayloadAction
 } from '@reduxjs/toolkit'
@@ -42,7 +41,7 @@ export const getInitialState = (): TabState => {
           lastVisited: getUnixTime(new Date())
         }
       }
-    } as EntityState<Tab, EntityId>),
+    } as EntityState<Tab>),
     activeTabId: tabId
   }
 }
@@ -186,8 +185,7 @@ const tabSlice = createSlice({
   }
 })
 
-const selectTabs = (state: RootState): EntityState<Tab, EntityId> =>
-  state.browser.tabs
+const selectTabs = (state: RootState): EntityState<Tab> => state.browser.tabs
 
 const activeTabId = (state: RootState): TabId | undefined =>
   state.browser.tabs.activeTabId

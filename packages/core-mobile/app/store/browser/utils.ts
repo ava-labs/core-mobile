@@ -17,7 +17,9 @@ export const getLatestTab = (tabs: Tab[]): Tab => {
   return latestTab
 }
 
-export const tabAdapter = createEntityAdapter<Tab>({ selectId: tab => tab.id })
+export const tabAdapter = createEntityAdapter<Tab>({
+  selectId: tab => tab.id
+})
 export const historyAdapter = createEntityAdapter<History>({
   selectId: history => history.id
 })
