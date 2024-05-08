@@ -1,3 +1,4 @@
+import './promise'
 import 'react-native-gesture-handler'
 import 'react-native-quick-crypto' // to override the global.crypto object
 import '@walletconnect/react-native-compat'
