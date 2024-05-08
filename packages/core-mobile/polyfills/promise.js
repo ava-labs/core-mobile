@@ -1,4 +1,5 @@
 // there seems to be a performance issue with React Native's promise so we are polyfilling it with es6-promise
+// TODO: remove this polyfill and use bridgeless mode https://ava-labs.atlassian.net/browse/CP-8616
 const {
   polyfillGlobal
 } = require('react-native/Libraries/Utilities/PolyfillFunctions')
