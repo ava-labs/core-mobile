@@ -74,6 +74,12 @@ export class SendServiceEVM implements SendServiceHelper {
             SendErrorMessage.INVALID_ADDRESS
           )
 
+        if (gasLimit === 0)
+          return SendServiceEVM.getErrorState(
+            newState,
+            SendErrorMessage.INVALID_GAS_LIMIT
+          )
+
         if (!defaultMaxFeePerGas || defaultMaxFeePerGas === 0n)
           return SendServiceEVM.getErrorState(
             newState,
@@ -137,6 +143,7 @@ export class SendServiceEVM implements SendServiceHelper {
     const [gasLimit, error] = await resolve(
       this.networkProvider.estimateGas(unsignedTx)
     )
+
     if (
       error &&
       !(error as Error).toString().includes('insufficient funds for gas')

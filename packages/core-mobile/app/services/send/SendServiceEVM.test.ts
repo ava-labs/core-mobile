@@ -9,13 +9,10 @@ import { TokenType } from 'store/balance'
 import { JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
 import { SendErrorMessage, SendState } from './types'
 
+const mockEstimateGas = jest.fn()
 jest
   .spyOn(JsonRpcBatchInternal.prototype, 'estimateGas')
-  .mockImplementation(_ => {
-    return new Promise(resolve => {
-      resolve(10n)
-    })
-  })
+  .mockImplementation(mockEstimateGas)
 
 describe('validateStateAndCalculateFees', () => {
   const mockActiveAccount = mockAccounts[0]
@@ -24,6 +21,18 @@ describe('validateStateAndCalculateFees', () => {
     mockNetwork,
     mockActiveAccount.addressC
   )
+
+  afterEach(() => {
+    mockEstimateGas.mockClear()
+  })
+
+  beforeEach(() => {
+    mockEstimateGas.mockImplementation(_ => {
+      return new Promise(resolve => {
+        resolve(10n)
+      })
+    })
+  })
 
   describe('when sending NFT', () => {
     const token = {
@@ -69,6 +78,22 @@ describe('validateStateAndCalculateFees', () => {
 
       expect(newState.canSubmit).toBe(false)
       expect(newState.error?.message).toBe(SendErrorMessage.INVALID_NETWORK_FEE)
+    })
+
+    it('should fail for missing gas limit', async () => {
+      mockEstimateGas.mockImplementationOnce(_ => {
+        return new Promise(resolve => {
+          resolve(0n)
+        })
+      })
+
+      const newState = await serviceToTest.validateStateAndCalculateFees({
+        ...params,
+        sendState: { ...sendState }
+      })
+
+      expect(newState.canSubmit).toBe(false)
+      expect(newState.error?.message).toBe(SendErrorMessage.INVALID_GAS_LIMIT)
     })
 
     it('should fail for insufficent balance for network fee', async () => {
@@ -130,6 +155,22 @@ describe('validateStateAndCalculateFees', () => {
 
       expect(newState.canSubmit).toBe(false)
       expect(newState.error?.message).toBe(SendErrorMessage.INVALID_NETWORK_FEE)
+    })
+
+    it('should fail for missing gas limit', async () => {
+      mockEstimateGas.mockImplementationOnce(_ => {
+        return new Promise(resolve => {
+          resolve(0n)
+        })
+      })
+
+      const newState = await serviceToTest.validateStateAndCalculateFees({
+        ...params,
+        sendState: { ...sendState }
+      })
+
+      expect(newState.canSubmit).toBe(false)
+      expect(newState.error?.message).toBe(SendErrorMessage.INVALID_GAS_LIMIT)
     })
 
     it('should fail for missing amount', async () => {
