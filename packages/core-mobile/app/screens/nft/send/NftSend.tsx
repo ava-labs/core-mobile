@@ -25,7 +25,6 @@ import { getAddressProperty } from 'store/utils/account&contactGetters'
 import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation } from '@react-navigation/native'
 import { NFTDetailsSendScreenProps } from 'navigation/types'
-import { PortfolioTabs } from 'consts/portfolio'
 
 type NftSendScreenProps = {
   onOpenAddressBook: () => void
@@ -74,9 +73,12 @@ export default function NftSend({
   useEffect(() => {
     if (sendStatus === 'Success') {
       // go back to Portfolio - Collectibles screen
-      // @ts-ignore
-      navigation.navigate(AppNavigation.Portfolio.Portfolio, {
-        tabIndex: PortfolioTabs.NFT
+      navigation.navigate(AppNavigation.Wallet.Drawer, {
+        screen: AppNavigation.Wallet.Tabs,
+        params: {
+          screen: AppNavigation.Tabs.Portfolio,
+          params: {}
+        }
       })
     }
   }, [navigation, sendStatus])
