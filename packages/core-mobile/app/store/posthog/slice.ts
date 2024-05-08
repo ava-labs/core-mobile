@@ -300,7 +300,7 @@ export const selectIsLogErrorsWithSentryBlocked = (
   )
 }
 
-export const selectIsBlocakaidTransactionValidationBlocked = (
+export const selectIsBlockaidTransactionValidationBlocked = (
   state: RootState
 ): boolean => {
   const { featureFlags } = state.posthog

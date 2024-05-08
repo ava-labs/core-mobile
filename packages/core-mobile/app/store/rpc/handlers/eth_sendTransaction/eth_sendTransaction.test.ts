@@ -10,6 +10,7 @@ import WalletService from 'services/wallet/WalletService'
 import NetworkService from 'services/network/NetworkService'
 import { prefetchNetworkFee } from 'hooks/useNetworkFee'
 import { selectNetwork } from 'store/network'
+import { selectIsBlockaidTransactionValidationBlocked } from 'store/posthog'
 import { updateRequestStatus } from '../../slice'
 import { ethSendTransactionHandler as handler } from './eth_sendTransaction'
 import { getChainIdFromRequest } from './utils'
@@ -49,6 +50,20 @@ jest.mock('store/network', () => {
     selectNetwork: jest.fn()
   }
 })
+
+jest.mock('store/posthog', () => {
+  const actual = jest.requireActual('store/posthog')
+  return {
+    ...actual,
+    selectIsBlockaidTransactionValidationBlocked: jest.fn()
+  }
+})
+
+const mockIsBlockaidTransactionValidationBlocked =
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  selectIsBlockaidTransactionValidationBlocked as jest.MockedFunction<any>
+mockIsBlockaidTransactionValidationBlocked.mockReturnValue(true)
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const mockSelectNetwork = selectNetwork as jest.MockedFunction<any>
 mockSelectNetwork.mockImplementation(() => () => mockNetwork)

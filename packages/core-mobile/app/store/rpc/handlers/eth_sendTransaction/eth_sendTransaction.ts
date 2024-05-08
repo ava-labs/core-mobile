@@ -12,7 +12,7 @@ import { NetworkFee } from 'services/networkFee/types'
 import { getQueryKey, prefetchNetworkFee } from 'hooks/useNetworkFee'
 import { NetworkTokenUnit } from 'types'
 import { selectNetwork } from 'store/network'
-import { selectIsBlocakaidTransactionValidationBlocked } from 'store/posthog'
+import { selectIsBlockaidTransactionValidationBlocked } from 'store/posthog'
 import { updateRequestStatus, waitForTransactionReceipt } from '../../slice'
 import { RpcMethod, RpcRequest } from '../../types'
 import {
@@ -69,7 +69,7 @@ class EthSendTransactionHandler
     prefetchNetworkFee(requestedNetwork)
 
     const isValidationDisabled =
-      selectIsBlocakaidTransactionValidationBlocked(state)
+      selectIsBlockaidTransactionValidationBlocked(state)
 
     // TODO CP-4894 decode transaction data here instead of in SignTransaction component/useExplainTransaction hook
     validateAndSignTransaction(request, transaction, isValidationDisabled)
