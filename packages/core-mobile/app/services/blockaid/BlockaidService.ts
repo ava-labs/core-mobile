@@ -32,10 +32,8 @@ class BlockaidService {
 
   private static getNetworkPath = (chainId: number): string => {
     switch (chainId) {
-      case ChainId.ETHEREUM_TEST_SEPOLIA:
       case ChainId.ETHEREUM_HOMESTEAD:
         return 'ethereum'
-      case ChainId.AVALANCHE_TESTNET_ID:
       case ChainId.AVALANCHE_MAINNET_ID:
         return 'avalanche'
       default:
