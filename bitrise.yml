@@ -849,9 +849,6 @@ workflows:
     - POST_TO_TESTRAIL: "true"
       opts:
         is_expand: false 
-    - TESTRAIL_RUN_ID: $IOS_TESTRAIL_RUN_ID
-      opts:
-        is_expand: false
     steps:
     - script-runner@0:
         title: Detox

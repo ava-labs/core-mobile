@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+echo "IOS test run id: $IOS_TESTRAIL_RUN_ID"
+
 # make pipelines' return status equal the last command to exit with a non-zero status, or zero if all commands exit successfully
 set -o pipefail
 
