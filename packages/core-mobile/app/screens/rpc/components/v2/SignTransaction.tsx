@@ -1,16 +1,9 @@
-import AvaText from 'components/AvaText'
 import React, { useCallback, useEffect, useState } from 'react'
-import { ActivityIndicator, StyleSheet, View, ScrollView } from 'react-native'
+import { ActivityIndicator, StyleSheet, ScrollView } from 'react-native'
 import { Space } from 'components/Space'
 import AvaButton from 'components/AvaButton'
 import { Row } from 'components/Row'
-import {
-  AddLiquidityDisplayData,
-  ApproveTransactionData,
-  ContractCall,
-  SwapExactTokensForTokenDisplayValues,
-  TransactionDisplayValues
-} from 'screens/rpc/util/types'
+import { ApproveTransactionData, ContractCall } from 'screens/rpc/util/types'
 import { useExplainTransactionV2 } from 'screens/rpc/hooks/useExplainTransactionV2'
 import { ApproveTransaction } from 'screens/rpc/components/shared/signTransaction/ApproveTransaction'
 import { AddLiquidityTransaction } from 'screens/rpc/components/shared/signTransaction/AddLiquidity'
@@ -18,7 +11,6 @@ import { GenericTransaction } from 'screens/rpc/components/shared/signTransactio
 import { SwapTransaction } from 'screens/rpc/components/shared/signTransaction/SwapTransaction'
 import NetworkFeeSelector, { FeePreset } from 'components/NetworkFeeSelector'
 import { getHexStringToBytes } from 'utils/getHexStringToBytes'
-import { useApplicationContext } from 'contexts/ApplicationContext'
 import EditSpendLimit from 'components/EditSpendLimit'
 import CarrotSVG from 'components/svg/CarrotSVG'
 import FlexSpacer from 'components/FlexSpacer'
@@ -31,7 +23,7 @@ import { selectRequestStatus } from 'store/rpc/slice'
 import { useDappConnectionV2 } from 'hooks/useDappConnectionV2'
 import { NetworkLogo } from 'screens/network/NetworkLogo'
 import { hexToBN } from '@avalabs/utils-sdk'
-import { Button } from '@avalabs/k2-mobile'
+import { Button, Text, View, useTheme } from '@avalabs/k2-mobile'
 import { selectIsSeedlessSigningBlocked } from 'store/posthog'
 import FeatureBlocked from 'screens/posthog/FeatureBlocked'
 import { NetworkTokenUnit } from 'types'
@@ -39,7 +31,9 @@ import { Eip1559Fees } from 'utils/Utils'
 import { isAddressApproved } from 'store/rpc/handlers/eth_sign/utils/isAddressApproved'
 import WalletConnectService from 'services/walletconnectv2/WalletConnectService'
 import { useNetworks } from 'hooks/networks/useNetworks'
+import { getChainIdFromRequest } from 'store/rpc/handlers/eth_sendTransaction/utils'
 import RpcRequestBottomSheet from '../shared/RpcRequestBottomSheet'
+import BalanceChange from '../shared/signTransaction/BalanceChange'
 
 const defaultErrMessage = 'Transaction failed'
 
@@ -50,18 +44,23 @@ type SignTransactionScreenProps = WalletScreenProps<
 const SignTransaction = (): JSX.Element => {
   const isSeedlessSigningBlocked = useSelector(selectIsSeedlessSigningBlocked)
   const { goBack } = useNavigation<SignTransactionScreenProps['navigation']>()
-  const { request, transaction: txParams } =
-    useRoute<SignTransactionScreenProps['route']>().params
+  const {
+    request,
+    transaction: txParams,
+    validationResult
+  } = useRoute<SignTransactionScreenProps['route']>().params
 
   const { onUserApproved: onApprove, onUserRejected: onReject } =
     useDappConnectionV2()
   const { getNetwork } = useNetworks()
   const requestStatus = useSelector(selectRequestStatus(request.data.id))
 
-  const chainId = Number(request.data.params.chainId.split(':')[1])
+  const chainId = getChainIdFromRequest(request)
   const network = getNetwork(chainId)
 
-  const theme = useApplicationContext().theme
+  const {
+    theme: { colors }
+  } = useTheme()
   const [submitting, setSubmitting] = useState(false)
   const [showData, setShowData] = useState(false)
   const [showCustomSpendLimit, setShowCustomSpendLimit] = useState(false)
@@ -152,17 +151,15 @@ const SignTransaction = (): JSX.Element => {
     return (
       <View style={txStyles.fullWidthContainer}>
         <Row style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-          <AvaText.Body2 color={theme.colorText1}>Network:</AvaText.Body2>
-          <Row>
+          <Text variant="body2">Network:</Text>
+          <Row style={{ alignItems: 'center' }}>
             <NetworkLogo
               key={network.chainId.toString()}
               logoUri={network.logoUri}
               size={24}
               style={{ marginRight: 8 }}
             />
-            <AvaText.ButtonMedium textStyle={{ color: theme.colorText1 }}>
-              {network.chainName}
-            </AvaText.ButtonMedium>
+            <Text variant="buttonMedium">{network.chainName}</Text>
           </Row>
         </Row>
         <Space y={16} />
@@ -179,24 +176,25 @@ const SignTransaction = (): JSX.Element => {
               <CarrotSVG direction={'left'} size={23} />
             </AvaButton.Base>
             <Space x={14} />
-            <AvaText.Heading1>Transaction Data</AvaText.Heading1>
+            <Text variant="heading4">Transaction Data</Text>
           </Row>
           <Space y={16} />
           <Row style={{ justifyContent: 'space-between' }}>
-            <AvaText.Body1>Hex Data:</AvaText.Body1>
-            <AvaText.Body1>
+            <Text variant="body1">Hex Data:</Text>
+            <Text variant="body1">
               {getHexStringToBytes(displayData?.txParams?.data)} Bytes
-            </AvaText.Body1>
+            </Text>
           </Row>
           <View style={{ paddingVertical: 14 }}>
-            <AvaText.Body1
-              textStyle={{
+            <Text
+              variant="body1"
+              sx={{
                 padding: 16,
-                backgroundColor: theme.colorBg3,
+                backgroundColor: '$neutral800',
                 borderRadius: 15
               }}>
               {displayData?.txParams?.data}
-            </AvaText.Body1>
+            </Text>
           </View>
         </View>
       </RpcRequestBottomSheet>
@@ -254,29 +252,14 @@ const SignTransaction = (): JSX.Element => {
         )) ||
           ((contractType === ContractCall.ADD_LIQUIDITY ||
             contractType === ContractCall.ADD_LIQUIDITY_AVAX) && (
-            <AddLiquidityTransaction
-              {...(displayData as AddLiquidityDisplayData)}
-              onCustomFeeSet={setCustomFee}
-              selectedGasFee={selectedGasFee}
-              setShowTxData={setShowData}
-            />
+            <AddLiquidityTransaction {...displayData} />
           )) ||
           (contractType === ContractCall.SWAP_EXACT_TOKENS_FOR_TOKENS && (
-            <SwapTransaction
-              {...(displayData as SwapExactTokensForTokenDisplayValues)}
-              onCustomFeeSet={setCustomFee}
-              selectedGasFee={selectedGasFee}
-              setShowTxData={setShowData}
-            />
+            <SwapTransaction {...displayData} />
           )) ||
           ((contractType === ContractCall.UNKNOWN ||
             contractType === undefined) && (
-            <GenericTransaction
-              {...(displayData as TransactionDisplayValues)}
-              onCustomFeeSet={setCustomFee}
-              selectedGasFee={selectedGasFee}
-              setShowTxData={setShowData}
-            />
+            <GenericTransaction {...displayData} />
           ))}
       </>
     )
@@ -316,22 +299,20 @@ const SignTransaction = (): JSX.Element => {
         }}>
         <ScrollView contentContainerStyle={txStyles.scrollView}>
           <View>
-            <AvaText.Heading1>{txTitle()}</AvaText.Heading1>
+            <Text variant="heading4">{txTitle()}</Text>
             <Space y={24} />
             {renderNetwork()}
             <Row
               style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-              <AvaText.Body2 color={theme.colorText1}>
-                Transaction Details
-              </AvaText.Body2>
+              <Text variant="body2">Transaction Details</Text>
               <AvaButton.Base onPress={() => setShowData(true)}>
                 <Row>
                   <CarrotSVG
-                    color={theme.colorText1}
+                    color={colors.$neutral50}
                     direction={'left'}
                     size={12}
                   />
-                  <CarrotSVG color={theme.colorText1} size={12} />
+                  <CarrotSVG color={colors.$neutral50} size={12} />
                 </Row>
               </AvaButton.Base>
             </Row>
@@ -342,6 +323,10 @@ const SignTransaction = (): JSX.Element => {
             ) : (
               renderTransactionInfo()
             )}
+            <BalanceChange
+              displayData={displayData}
+              simulationResult={validationResult?.simulation}
+            />
           </View>
           {displayData?.maxFeePerGas && (
             <NetworkFeeSelector
