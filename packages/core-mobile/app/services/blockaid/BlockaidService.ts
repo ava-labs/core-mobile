@@ -20,15 +20,14 @@ class BlockaidService {
 
   static validateTransaction = async (
     chainId: number,
-    params: TransactionParams
+    params: TransactionParams,
+    domain?: string
   ): Promise<TransactionValidationResult> => {
     const network = BlockaidService.getNetworkPath(chainId)
 
     const data = await createBlockaidAPIClient(network).validateTransaction({
       options: ['validation', 'simulation'],
-      metadata: {
-        domain: 'https://core.app' // todo: what domain?
-      },
+      metadata: domain && domain.length > 0 ? { domain } : { non_dapp: true },
       data: {
         from: params.from,
         to: params.to,

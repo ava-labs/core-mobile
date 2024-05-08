@@ -82,7 +82,8 @@ export const validateAndSignTransaction = async (
     const chainId = getChainIdFromRequest(request)
     const validationResult = await BlockaidService.validateTransaction(
       chainId,
-      txParam
+      txParam,
+      request.peerMeta.url
     )
 
     navigateToSignTransaction(request, txParam, validationResult)

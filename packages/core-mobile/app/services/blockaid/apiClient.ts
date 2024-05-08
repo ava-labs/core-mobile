@@ -1,6 +1,6 @@
 import { Zodios } from '@zodios/core'
 import Config from 'react-native-config'
-import { array, string, object, literal, union } from 'zod'
+import { array, string, object, literal, union, boolean } from 'zod'
 import { TransactionValidationSimulationSchema } from './types'
 
 if (!Config.PROXY_URL) throw Error('PROXY_URL is missing')
@@ -10,7 +10,8 @@ const baseUrl = Config.PROXY_URL + '/proxy/blockaid/'
 const BlockaidTransactionSchema = object({
   options: array(union([literal('simulation'), literal('validation')])),
   metadata: object({
-    domain: string()
+    domain: string().optional(),
+    non_dapp: boolean().optional()
   }),
   data: object({
     from: string(),
