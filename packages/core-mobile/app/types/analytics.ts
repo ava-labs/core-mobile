@@ -76,11 +76,9 @@ export type AnalyticsEvents = {
   NetworkFavoriteAdded: { networkChainId: string; isCustom: boolean }
   NetworkFavoriteRemoved: { networkChainId: string; isCustom: boolean }
   NetworkSwitcherOpened: undefined
-  NftSendApproved: { selectedGasFee: string }
   NftSendFailed: { errorMessage: string; chainId: number }
   NftSendSucceeded: { chainId: number }
   NftSendContactSelected: { contactSource: string }
-  NftSendFeeOptionChanged: { modifier: string }
   NftSendCancel: undefined
   'Onboard:WalletNameSet': undefined
   OnboardingAnalyticsAccepted: undefined
