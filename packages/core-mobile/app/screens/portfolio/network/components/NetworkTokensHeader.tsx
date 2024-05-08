@@ -9,12 +9,13 @@ import {
 } from 'store/balance'
 import { ActivityIndicator } from 'components/ActivityIndicator'
 import { NetworkLogo } from 'screens/network/NetworkLogo'
-import { selectActiveAccount } from 'store/account'
 import { Text, View } from '@avalabs/k2-mobile'
 import PriceChangeIndicator from 'screens/watchlist/components/PriceChangeIndicator'
 import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList'
 import { useTokenPortfolioPriceChange } from 'hooks/balance/useTokenPortfolioPriceChange'
 import { useNetworks } from 'hooks/networks/useNetworks'
+import { RootState } from 'store'
+import { selectActiveAccount } from 'store/account'
 
 const NetworkTokensHeader = (): JSX.Element => {
   const {
@@ -25,9 +26,12 @@ const NetworkTokensHeader = (): JSX.Element => {
   } = useNetworks()
   const isLoadingBalance = useSelector(selectIsLoadingBalances)
   const isRefetchingBalance = useSelector(selectIsRefetchingBalances)
-  const account = useSelector(selectActiveAccount)
-  const balanceTotal = useSelector(
-    selectBalanceTotalInCurrencyForNetworkAndAccount(chainId, account?.index)
+  const activeAccount = useSelector(selectActiveAccount)
+  const balanceTotal = useSelector((state: RootState) =>
+    selectBalanceTotalInCurrencyForNetworkAndAccount(state, {
+      chainId,
+      accountIndex: activeAccount?.index
+    })
   )
   const formattedTotalBalance = currencyFormatter(balanceTotal)
 

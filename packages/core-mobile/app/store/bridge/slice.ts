@@ -43,26 +43,17 @@ export const selectBridgeAppConfig = (
   state: RootState
 ): AppConfig | undefined => state.bridge.config?.config
 
-export const selectBridgeCriticalConfig = (
-  state: RootState
-): CriticalConfig | undefined => {
-  if (state.bridge.config && state.bridge.config.config) {
-    return {
-      critical: state.bridge.config.config.critical,
-      criticalBitcoin: state.bridge.config.config.criticalBitcoin
+export const selectBridgeCriticalConfig = createSelector(
+  [selectBridgeConfig, selectBridgeAppConfig],
+  (bridgeConfig, bridgeAppConfig): CriticalConfig | undefined => {
+    if (bridgeConfig?.config && bridgeAppConfig) {
+      return {
+        critical: bridgeConfig.config.critical,
+        criticalBitcoin: bridgeAppConfig.criticalBitcoin
+      }
     }
   }
-}
-
-// export const selectBridgeCriticalConfig = createSelector(
-//   [selectBridgeConfig, selectBridgeAppConfig],
-//   (bridgeConfig, bridgeAppConfig) => {
-//     return {
-//       critical: bridgeConfig?.config?.critical,
-//       criticalBitcoin: bridgeAppConfig?.criticalBitcoin
-//     }
-//   }
-// )
+)
 
 export const selectBridgeTransactions = createSelector(
   [selectTransactions, selectActiveNetwork],

@@ -66,11 +66,19 @@ export const selectIsBalanceLoadedForAddress =
     return !!state.balance.balances[getKey(chainId, accountIndex)]
   }
 
-export const selectIsLoadingBalances = (state: RootState): boolean =>
-  state.balance.status === QueryStatus.LOADING
+export const selectIsLoadingBalances = createSelector(
+  [selectBalanceStatus],
+  status => {
+    return status === QueryStatus.LOADING
+  }
+)
 
-export const selectIsRefetchingBalances = (state: RootState): boolean =>
-  state.balance.status === QueryStatus.REFETCHING
+export const selectIsRefetchingBalances = createSelector(
+  [selectBalanceStatus],
+  status => {
+    return status === QueryStatus.REFETCHING
+  }
+)
 
 // get the list of tokens for the active network
 export const selectTokensWithBalance = createSelector(
@@ -130,24 +138,30 @@ export const selectTokenByAddress = (address: string) => (state: RootState) => {
   return undefined
 }
 
-export const selectBalancesForAccount =
-  (accountIndex: number) => (state: RootState) => {
-    return Object.values(state.balance.balances).filter(
+const selectAccountIndex = (
+  _state: RootState,
+  accountIndex?: number
+): number | undefined => accountIndex
+
+export const selectBalancesForAccount = createSelector(
+  [selectBalances, selectAccountIndex],
+  (balances, accountIndex) => {
+    return Object.values(balances).filter(
       balance => balance.accountIndex === accountIndex
     )
   }
+)
 
-export const selectTokensWithBalanceForAccount =
-  (accountIndex: number | undefined) => (state: RootState) => {
-    if (accountIndex === undefined) return []
-
-    const balances = selectBalancesForAccount(accountIndex)(state)
+export const selectTokensWithBalanceForAccount = createSelector(
+  [selectBalancesForAccount],
+  balances => {
     return balances.flatMap(b => b.tokens)
   }
+)
 
 export const selectBalanceTotalInCurrencyForNetwork =
   (accountIndex: number) => (state: RootState) => {
-    const balances = selectBalancesForAccount(accountIndex)(state)
+    const balances = selectBalancesForAccount(state, accountIndex)
 
     const isDeveloperMode = selectIsDeveloperMode(state)
 
@@ -171,18 +185,27 @@ export const selectBalanceTotalInCurrencyForNetwork =
     return totalInCurrency
   }
 
-export const selectBalanceTotalInCurrencyForNetworkAndAccount =
-  (chainId: number, accountIndex: number | undefined) => (state: RootState) => {
+export const selectBalanceTotalInCurrencyForNetworkAndAccount = createSelector(
+  [
+    selectBalances,
+    (
+      _state,
+      { chainId, accountIndex }: { chainId: number; accountIndex?: number }
+    ) => {
+      return { chainId, accountIndex }
+    }
+  ],
+  (balances, { chainId, accountIndex }) => {
     if (accountIndex === undefined) return 0
 
-    const balances = Object.values(state.balance.balances).filter(
+    const filteredBalances = Object.values(balances).filter(
       balance =>
         balance.chainId === chainId && balance.accountIndex === accountIndex
     )
 
     let totalInCurrency = 0
 
-    for (const balance of balances) {
+    for (const balance of filteredBalances) {
       for (const token of balance.tokens) {
         totalInCurrency += token.balanceInCurrency ?? 0
       }
@@ -190,6 +213,7 @@ export const selectBalanceTotalInCurrencyForNetworkAndAccount =
 
     return totalInCurrency
   }
+)
 
 const _selectAllBalances = (state: RootState): Balances =>
   state.balance.balances

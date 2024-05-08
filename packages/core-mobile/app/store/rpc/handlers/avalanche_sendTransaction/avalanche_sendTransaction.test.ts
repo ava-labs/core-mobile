@@ -126,7 +126,8 @@ describe('app/store/walletConnectV2/handlers/avalanche_sendTransaction/avalanche
       unsignedTxMock
     )
     ;(utils.hexToBuffer as jest.Mock).mockReturnValue(txBytes)
-    ;(selectActiveAccount as jest.Mock).mockReturnValue(mockAccounts[0])
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ;(selectActiveAccount as any).mockReturnValue(mockAccounts[0])
     ;(Avalanche.getUtxosByTxFromGlacier as jest.Mock).mockReturnValue(utxosMock)
   })
 
@@ -171,7 +172,8 @@ describe('app/store/walletConnectV2/handlers/avalanche_sendTransaction/avalanche
 
     it('returns error if there is no active account', async () => {
       const request = createRequest()
-      ;(selectActiveAccount as jest.Mock).mockReturnValue(undefined)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ;(selectActiveAccount as any).mockReturnValue(undefined)
       const result = await avalancheSendTransactionHandler.handle(
         request,
         mockListenerApi

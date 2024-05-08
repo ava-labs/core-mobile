@@ -75,15 +75,6 @@ const globalHistorySlice = createSlice({
 const selectGlobalHistory = (state: RootState): EntityState<History> =>
   state.browser.globalHistory
 
-export const selectHistory =
-  (id?: HistoryId) =>
-  (state: RootState): History | undefined => {
-    if (id === undefined) return
-    return historyAdapter
-      .getSelectors()
-      .selectById(state.browser.globalHistory, id)
-  }
-
 export const selectAllHistories = createSelector(
   [selectGlobalHistory],
   globalHistory => {

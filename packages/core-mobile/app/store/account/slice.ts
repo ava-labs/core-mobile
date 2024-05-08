@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { createSelector, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { Account, AccountCollection, AccountsState } from 'store/account/types'
 import { RootState } from 'store/index'
 import { WalletType } from 'services/wallet/types'
@@ -45,6 +45,9 @@ const accountsSlice = createSlice({
 export const selectAccounts = (state: RootState): AccountCollection =>
   state.account.accounts
 
+export const selectActiveAccountIndex = (state: RootState): number =>
+  state.account.activeAccountIndex
+
 export const selectAccountByAddress =
   (address?: string) =>
   (state: RootState): Account | undefined => {
@@ -55,8 +58,12 @@ export const selectAccountByAddress =
     )
   }
 
-export const selectActiveAccount = (state: RootState): Account | undefined =>
-  state.account.accounts[state.account.activeAccountIndex]
+export const selectActiveAccount = createSelector(
+  [selectAccounts, selectActiveAccountIndex],
+  (accounts, activeAccountIndex) => {
+    return accounts[activeAccountIndex]
+  }
+)
 
 export const selectWalletName = (state: RootState): string | undefined =>
   state.account.walletName

@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { createSelector, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from 'store'
 import { currencies, DEFAULT_CURRENCY, initialState } from './types'
 
@@ -15,18 +15,18 @@ export const currencySlice = createSlice({
 })
 
 // selectors
-export const selectSelectedCurrency = (state: RootState): string => {
-  const selectedCurrency = state.settings.currency.selected
+const selectedCurrency = (state: RootState): string =>
+  state.settings.currency.selected
 
-  if (
-    currencies.findIndex(currency => currency.symbol === selectedCurrency) ===
-    -1
-  ) {
-    return DEFAULT_CURRENCY
+export const selectSelectedCurrency = createSelector(
+  [selectedCurrency],
+  curr => {
+    if (currencies.findIndex(currency => currency.symbol === curr) === -1) {
+      return DEFAULT_CURRENCY
+    }
+    return curr
   }
-
-  return selectedCurrency
-}
+)
 
 // actions
 export const { setSelectedCurrency } = currencySlice.actions

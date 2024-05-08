@@ -12,6 +12,7 @@ import PriceChangeIndicator from 'screens/watchlist/components/PriceChangeIndica
 import { Text, View } from '@avalabs/k2-mobile'
 import { useTokenPortfolioPriceChange } from 'hooks/balance/useTokenPortfolioPriceChange'
 import { useBalanceTotalInCurrencyForAccount } from 'hooks/balance/useBalanceTotalInCurrencyForAccount'
+import { RootState } from 'store'
 import { PortfolioHeaderLoader } from './Loaders/PortfolioHeaderLoader'
 
 function PortfolioHeader(): JSX.Element {
@@ -24,8 +25,8 @@ function PortfolioHeader(): JSX.Element {
   )
   const { selectedCurrency, currencyFormatter } = context.appHook
   const currencyBalance = currencyFormatter(balanceTotalInCurrency)
-  const tokens = useSelector(
-    selectTokensWithBalanceForAccount(activeAccount?.index)
+  const tokens = useSelector((state: RootState) =>
+    selectTokensWithBalanceForAccount(state, activeAccount?.index)
   )
   const { tokenPortfolioPriceChange } = useTokenPortfolioPriceChange(tokens)
   const [contentHeight, setContentHeight] = useState(0)

@@ -30,6 +30,10 @@ export const selectDistinctID = (state: RootState): string =>
   state.posthog.distinctID
 export const selectIsAnalyticsEnabled = (state: RootState): boolean =>
   state.posthog.isAnalyticsEnabled
+export const selectRawFeatureFlags = (state: RootState): FeatureFlags =>
+  state.posthog.featureFlags
+export const selectWalletType = (state: RootState): WalletType =>
+  state.app.walletType
 
 const isSeedlessSigningBlocked = (featureFlags: FeatureFlags): boolean => {
   return (
@@ -38,245 +42,283 @@ const isSeedlessSigningBlocked = (featureFlags: FeatureFlags): boolean => {
   )
 }
 
-export const selectIsSeedlessSigningBlocked = (state: RootState): boolean => {
-  const isSeedlessWallet = state.app.walletType === WalletType.SEEDLESS
+export const selectIsSeedlessSigningBlocked = createSelector(
+  [selectRawFeatureFlags, selectWalletType],
+  (featureFlags, walletType) => {
+    const isSeedlessWallet = walletType === WalletType.SEEDLESS
 
-  if (!isSeedlessWallet) {
-    return false
-  }
+    if (!isSeedlessWallet) {
+      return false
+    }
 
-  return isSeedlessSigningBlocked(state.posthog.featureFlags)
-}
-
-export const selectIsSwapBlocked = (state: RootState): boolean => {
-  const { featureFlags } = state.posthog
-
-  const isSeedlessWallet = state.app.walletType === WalletType.SEEDLESS
-
-  if (isSeedlessWallet) {
     return isSeedlessSigningBlocked(featureFlags)
   }
+)
 
-  return (
-    !featureFlags[FeatureGates.SWAP] || !featureFlags[FeatureGates.EVERYTHING]
-  )
-}
+export const selectIsSwapBlocked = createSelector(
+  [selectRawFeatureFlags, selectWalletType],
+  (featureFlags, walletType) => {
+    const isSeedlessWallet = walletType === WalletType.SEEDLESS
 
-export const selectIsBridgeBlocked = (state: RootState): boolean => {
-  const { featureFlags } = state.posthog
+    if (isSeedlessWallet) {
+      return isSeedlessSigningBlocked(featureFlags)
+    }
 
-  const isSeedlessWallet = state.app.walletType === WalletType.SEEDLESS
-
-  if (isSeedlessWallet) {
-    return isSeedlessSigningBlocked(featureFlags)
+    return (
+      !featureFlags[FeatureGates.SWAP] || !featureFlags[FeatureGates.EVERYTHING]
+    )
   }
+)
 
-  return (
-    !featureFlags[FeatureGates.BRIDGE] || !featureFlags[FeatureGates.EVERYTHING]
-  )
-}
+export const selectIsBridgeBlocked = createSelector(
+  [selectRawFeatureFlags, selectWalletType],
+  (featureFlags, walletType) => {
+    const isSeedlessWallet = walletType === WalletType.SEEDLESS
 
-export const selectIsBridgeBtcBlocked = (state: RootState): boolean => {
-  const { featureFlags } = state.posthog
-  return (
-    !featureFlags[FeatureGates.BRIDGE_BTC] ||
-    !featureFlags[FeatureGates.EVERYTHING]
-  )
-}
+    if (isSeedlessWallet) {
+      return isSeedlessSigningBlocked(featureFlags)
+    }
 
-export const selectIsBridgeEthBlocked = (state: RootState): boolean => {
-  const { featureFlags } = state.posthog
-  return (
-    !featureFlags[FeatureGates.BRIDGE_ETH] ||
-    !featureFlags[FeatureGates.EVERYTHING]
-  )
-}
-
-export const selectIsSendBlocked = (state: RootState): boolean => {
-  const { featureFlags } = state.posthog
-
-  const isSeedlessWallet = state.app.walletType === WalletType.SEEDLESS
-
-  if (isSeedlessWallet) {
-    return isSeedlessSigningBlocked(featureFlags)
+    return (
+      !featureFlags[FeatureGates.BRIDGE] ||
+      !featureFlags[FeatureGates.EVERYTHING]
+    )
   }
+)
 
-  return (
-    !featureFlags[FeatureGates.SEND] || !featureFlags[FeatureGates.EVERYTHING]
-  )
-}
+export const selectIsBridgeBtcBlocked = createSelector(
+  [selectRawFeatureFlags],
+  featureFlags => {
+    return (
+      !featureFlags[FeatureGates.BRIDGE_BTC] ||
+      !featureFlags[FeatureGates.EVERYTHING]
+    )
+  }
+)
 
-export const selectIsEarnBlocked = (state: RootState): boolean => {
-  const { featureFlags } = state.posthog
-  return (
-    !featureFlags[FeatureGates.EARN] || !featureFlags[FeatureGates.EVERYTHING]
-  )
-}
+export const selectIsBridgeEthBlocked = createSelector(
+  [selectRawFeatureFlags],
+  featureFlags => {
+    return (
+      !featureFlags[FeatureGates.BRIDGE_ETH] ||
+      !featureFlags[FeatureGates.EVERYTHING]
+    )
+  }
+)
 
-export const selectIsNotificationBlocked = (state: RootState): boolean => {
-  // in the future, other feature required notifications should go here
-  return selectIsEarnBlocked(state)
-}
+export const selectIsSendBlocked = createSelector(
+  [selectRawFeatureFlags, selectWalletType],
+  (featureFlags, walletType) => {
+    const isSeedlessWallet = walletType === WalletType.SEEDLESS
 
-export const selectIsSendNftBlockediOS = (state: RootState): boolean => {
-  const { featureFlags } = state.posthog
-  return (
-    !featureFlags[FeatureGates.SEND_NFT_IOS] ||
-    !featureFlags[FeatureGates.EVERYTHING]
-  )
-}
+    if (isSeedlessWallet) {
+      return isSeedlessSigningBlocked(featureFlags)
+    }
 
-export const selectIsSendNftBlockedAndroid = (state: RootState): boolean => {
-  const { featureFlags } = state.posthog
-  return (
-    !featureFlags[FeatureGates.SEND_NFT_ANDROID] ||
-    !featureFlags[FeatureGates.EVERYTHING]
-  )
-}
+    return (
+      !featureFlags[FeatureGates.SEND] || !featureFlags[FeatureGates.EVERYTHING]
+    )
+  }
+)
 
-export const selectIsEventsBlocked = (state: RootState): boolean => {
-  const { featureFlags } = state.posthog
-  return (
-    !featureFlags[FeatureGates.EVENTS] || !featureFlags[FeatureGates.EVERYTHING]
-  )
-}
+export const selectIsEarnBlocked = createSelector(
+  [selectRawFeatureFlags],
+  featureFlags => {
+    return (
+      !featureFlags[FeatureGates.EARN] || !featureFlags[FeatureGates.EVERYTHING]
+    )
+  }
+)
 
-export const selectIsCoinbasePayBlocked = (state: RootState): boolean => {
-  const { featureFlags } = state.posthog
-  return (
-    !featureFlags[FeatureGates.BUY_COINBASE_PAY] ||
-    !featureFlags[FeatureGates.EVERYTHING]
-  )
-}
+export const selectIsNotificationBlocked = createSelector(
+  [selectIsEarnBlocked],
+  isEarnBlocked => {
+    // in the future, other feature required notifications should go here
+    return isEarnBlocked
+  }
+)
 
-export const selectIsBrowserBlocked = (state: RootState): boolean => {
-  const { featureFlags } = state.posthog
-  return (
-    !featureFlags[FeatureGates.BROWSER] ||
-    !featureFlags[FeatureGates.EVERYTHING]
-  )
-}
+export const selectIsSendNftBlockediOS = createSelector(
+  [selectRawFeatureFlags],
+  featureFlags => {
+    return (
+      !featureFlags[FeatureGates.SEND_NFT_IOS] ||
+      !featureFlags[FeatureGates.EVERYTHING]
+    )
+  }
+)
 
-export const selectIsDeFiBlocked = (state: RootState): boolean => {
-  const { featureFlags } = state.posthog
-  return (
-    !featureFlags[FeatureGates.DEFI] || !featureFlags[FeatureGates.EVERYTHING]
-  )
-}
+export const selectIsSendNftBlockedAndroid = createSelector(
+  [selectRawFeatureFlags],
+  featureFlags => {
+    return (
+      !featureFlags[FeatureGates.SEND_NFT_ANDROID] ||
+      !featureFlags[FeatureGates.EVERYTHING]
+    )
+  }
+)
 
-export const selectSentrySampleRate = (state: RootState): number => {
-  const { featureFlags } = state.posthog
-  return (
-    parseInt((featureFlags[FeatureVars.SENTRY_SAMPLE_RATE] as string) ?? '0') /
-    100
-  )
-}
+export const selectIsEventsBlocked = createSelector(
+  [selectRawFeatureFlags],
+  featureFlags => {
+    return (
+      !featureFlags[FeatureGates.EVENTS] ||
+      !featureFlags[FeatureGates.EVERYTHING]
+    )
+  }
+)
 
-export const selectUseLeftFab = (state: RootState): boolean => {
-  const { featureFlags } = state.posthog
-  return (
-    Boolean(featureFlags[FeatureGates.LEFT_FAB]) ||
-    !featureFlags[FeatureGates.EVERYTHING]
-  )
-}
+export const selectIsCoinbasePayBlocked = createSelector(
+  [selectRawFeatureFlags],
+  featureFlags => {
+    return (
+      !featureFlags[FeatureGates.BUY_COINBASE_PAY] ||
+      !featureFlags[FeatureGates.EVERYTHING]
+    )
+  }
+)
 
-export const selectUseDarkMode = (state: RootState): boolean => {
-  const { featureFlags } = state.posthog
-  return (
-    Boolean(featureFlags[FeatureGates.DARK_MODE]) ||
-    !featureFlags[FeatureGates.EVERYTHING]
-  )
-}
+export const selectIsBrowserBlocked = createSelector(
+  [selectRawFeatureFlags],
+  featureFlags => {
+    return (
+      !featureFlags[FeatureGates.BROWSER] ||
+      !featureFlags[FeatureGates.EVERYTHING]
+    )
+  }
+)
 
-export const selectIsSeedlessOnboardingBlocked = (
-  state: RootState
-): boolean => {
-  const { featureFlags } = state.posthog
-  return (
-    (!featureFlags[FeatureGates.SEEDLESS_ONBOARDING_APPLE] &&
-      !featureFlags[FeatureGates.SEEDLESS_ONBOARDING_GOOGLE]) ||
-    !featureFlags[FeatureGates.SEEDLESS_ONBOARDING] ||
-    !featureFlags[FeatureGates.EVERYTHING]
-  )
-}
+export const selectIsDeFiBlocked = createSelector(
+  [selectRawFeatureFlags],
+  featureFlags => {
+    return (
+      !featureFlags[FeatureGates.DEFI] || !featureFlags[FeatureGates.EVERYTHING]
+    )
+  }
+)
 
-export const selectIsSeedlessOnboardingAppleBlocked = (
-  state: RootState
-): boolean => {
-  const { featureFlags } = state.posthog
-  return (
-    !featureFlags[FeatureGates.SEEDLESS_ONBOARDING_APPLE] ||
-    !featureFlags[FeatureGates.EVERYTHING]
-  )
-}
+export const selectSentrySampleRate = createSelector(
+  [selectRawFeatureFlags],
+  featureFlags => {
+    return (
+      parseInt(
+        (featureFlags[FeatureVars.SENTRY_SAMPLE_RATE] as string) ?? '0'
+      ) / 100
+    )
+  }
+)
 
-export const selectIsSeedlessOnboardingGoogleBlocked = (
-  state: RootState
-): boolean => {
-  const { featureFlags } = state.posthog
-  return (
-    !featureFlags[FeatureGates.SEEDLESS_ONBOARDING_GOOGLE] ||
-    !featureFlags[FeatureGates.EVERYTHING]
-  )
-}
+export const selectUseLeftFab = createSelector(
+  [selectRawFeatureFlags],
+  featureFlags => {
+    return (
+      Boolean(featureFlags[FeatureGates.LEFT_FAB]) ||
+      !featureFlags[FeatureGates.EVERYTHING]
+    )
+  }
+)
 
-export const selectIsSeedlessMfaPasskeyBlocked = (
-  state: RootState
-): boolean => {
-  const { featureFlags } = state.posthog
-  return (
-    !featureFlags[FeatureGates.SEEDLESS_MFA_PASSKEY] ||
-    !featureFlags[FeatureGates.EVERYTHING]
-  )
-}
+export const selectUseDarkMode = createSelector(
+  [selectRawFeatureFlags],
+  featureFlags => {
+    return (
+      Boolean(featureFlags[FeatureGates.DARK_MODE]) ||
+      !featureFlags[FeatureGates.EVERYTHING]
+    )
+  }
+)
 
-export const selectIsSeedlessMfaAuthenticatorBlocked = (
-  state: RootState
-): boolean => {
-  const { featureFlags } = state.posthog
-  return (
-    !featureFlags[FeatureGates.SEEDLESS_MFA_AUTHENTICATOR] ||
-    !featureFlags[FeatureGates.EVERYTHING]
-  )
-}
+export const selectIsSeedlessOnboardingBlocked = createSelector(
+  [selectRawFeatureFlags],
+  featureFlags => {
+    return (
+      (!featureFlags[FeatureGates.SEEDLESS_ONBOARDING_APPLE] &&
+        !featureFlags[FeatureGates.SEEDLESS_ONBOARDING_GOOGLE]) ||
+      !featureFlags[FeatureGates.SEEDLESS_ONBOARDING] ||
+      !featureFlags[FeatureGates.EVERYTHING]
+    )
+  }
+)
 
-export const selectIsSeedlessMfaYubikeyBlocked = (
-  state: RootState
-): boolean => {
-  const { featureFlags } = state.posthog
-  return (
-    !featureFlags[FeatureGates.SEEDLESS_MFA_YUBIKEY] ||
-    !featureFlags[FeatureGates.EVERYTHING]
-  )
-}
+export const selectIsSeedlessOnboardingAppleBlocked = createSelector(
+  [selectRawFeatureFlags],
+  featureFlags => {
+    return (
+      !featureFlags[FeatureGates.SEEDLESS_ONBOARDING_APPLE] ||
+      !featureFlags[FeatureGates.EVERYTHING]
+    )
+  }
+)
 
-export const selectIsUnifiedBridgeCCTPBlocked = (state: RootState): boolean => {
-  const { featureFlags } = state.posthog
-  return (
-    !featureFlags[FeatureGates.UNIFIED_BRIDGE_CCTP] ||
-    !featureFlags[FeatureGates.EVERYTHING]
-  )
-}
+export const selectIsSeedlessOnboardingGoogleBlocked = createSelector(
+  [selectRawFeatureFlags],
+  featureFlags => {
+    return (
+      !featureFlags[FeatureGates.SEEDLESS_ONBOARDING_GOOGLE] ||
+      !featureFlags[FeatureGates.EVERYTHING]
+    )
+  }
+)
 
-export const selectIsLogErrorsWithSentryBlocked = (
-  state: RootState
-): boolean => {
-  const { featureFlags } = state.posthog
-  return (
-    !featureFlags[FeatureGates.LOG_ERRORS_TO_SENTRY] ||
-    !featureFlags[FeatureGates.EVERYTHING]
-  )
-}
+export const selectIsSeedlessMfaPasskeyBlocked = createSelector(
+  [selectRawFeatureFlags],
+  featureFlags => {
+    return (
+      !featureFlags[FeatureGates.SEEDLESS_MFA_PASSKEY] ||
+      !featureFlags[FeatureGates.EVERYTHING]
+    )
+  }
+)
 
-export const selectIsBlockaidTransactionValidationBlocked = (
-  state: RootState
-): boolean => {
-  const { featureFlags } = state.posthog
-  return (
-    !featureFlags[FeatureGates.BLOCKAID_TRANSACTION_VALIDATION] ||
-    !featureFlags[FeatureGates.EVERYTHING]
-  )
-}
+export const selectIsSeedlessMfaAuthenticatorBlocked = createSelector(
+  [selectRawFeatureFlags],
+  featureFlags => {
+    return (
+      !featureFlags[FeatureGates.SEEDLESS_MFA_AUTHENTICATOR] ||
+      !featureFlags[FeatureGates.EVERYTHING]
+    )
+  }
+)
+
+export const selectIsSeedlessMfaYubikeyBlocked = createSelector(
+  [selectRawFeatureFlags],
+  featureFlags => {
+    return (
+      !featureFlags[FeatureGates.SEEDLESS_MFA_YUBIKEY] ||
+      !featureFlags[FeatureGates.EVERYTHING]
+    )
+  }
+)
+
+export const selectIsUnifiedBridgeCCTPBlocked = createSelector(
+  [selectRawFeatureFlags],
+  featureFlags => {
+    return (
+      !featureFlags[FeatureGates.UNIFIED_BRIDGE_CCTP] ||
+      !featureFlags[FeatureGates.EVERYTHING]
+    )
+  }
+)
+
+export const selectIsLogErrorsWithSentryBlocked = createSelector(
+  [selectRawFeatureFlags],
+  featureFlags => {
+    return (
+      !featureFlags[FeatureGates.LOG_ERRORS_TO_SENTRY] ||
+      !featureFlags[FeatureGates.EVERYTHING]
+    )
+  }
+)
+
+export const selectIsBlockaidTransactionValidationBlocked = createSelector(
+  [selectRawFeatureFlags],
+  featureFlags => {
+    return (
+      !featureFlags[FeatureGates.BLOCKAID_TRANSACTION_VALIDATION] ||
+      !featureFlags[FeatureGates.EVERYTHING]
+    )
+  }
+)
 
 export const selectFeatureFlags = createSelector(
   [

@@ -21,6 +21,7 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { Text } from '@avalabs/k2-mobile'
 import PriceChangeIndicator from 'screens/watchlist/components/PriceChangeIndicator'
 import { useTokenPortfolioPriceChange } from 'hooks/balance/useTokenPortfolioPriceChange'
+import { RootState } from 'store'
 
 const windowWidth = Dimensions.get('window').width
 
@@ -40,12 +41,12 @@ const InactiveNetworkCard: FC<Props> = ({ network }) => {
   } = useApplicationContext()
   const { theme } = useTheme()
   const { navigate } = useNavigation<NavigationProp>()
-  const account = useSelector(selectActiveAccount)
-  const totalBalance = useSelector(
-    selectBalanceTotalInCurrencyForNetworkAndAccount(
-      network.chainId,
-      account?.index
-    )
+  const activeAccount = useSelector(selectActiveAccount)
+  const totalBalance = useSelector((state: RootState) =>
+    selectBalanceTotalInCurrencyForNetworkAndAccount(state, {
+      chainId: network.chainId,
+      accountIndex: activeAccount?.index
+    })
   )
 
   const backgroundColor = theme.colors.$neutral900

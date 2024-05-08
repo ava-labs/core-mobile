@@ -200,19 +200,21 @@ export const selectTab =
   (state: RootState): Tab | undefined =>
     tabAdapter.getSelectors().selectById(state.browser.tabs, tabId)
 
-export const selectCanGoForward = (state: RootState): boolean => {
-  const activeTab = selectActiveTab(state)
-  return (
-    !!activeTab &&
-    activeTab.activeHistoryIndex < activeTab.historyIds.length - 1
-  )
-}
-
 export const selectActiveTab = createSelector(
   [selectTabs, activeTabId],
   (tabs, activeId) => {
     if (activeId === undefined) return
     return tabAdapter.getSelectors().selectById(tabs, activeId)
+  }
+)
+
+export const selectCanGoForward = createSelector(
+  [selectActiveTab],
+  activeTab => {
+    return (
+      !!activeTab &&
+      activeTab.activeHistoryIndex < activeTab.historyIds.length - 1
+    )
   }
 )
 

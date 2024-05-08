@@ -119,7 +119,8 @@ describe('app/store/walletConnectV2/handlers/avalanche_signTransaction/avalanche
     ;(utils.getManagerForVM as jest.Mock).mockReturnValue(codecManagerMock)
     txMock.getSigIndices.mockReturnValue([])
     unsignedTxMock.toJSON.mockReturnValue(unsignedTxJson)
-    ;(selectActiveAccount as jest.Mock).mockReturnValue(mockAccounts[0])
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ;(selectActiveAccount as any).mockReturnValue(mockAccounts[0])
     ;(networkService.getAvalancheProviderXP as jest.Mock).mockReturnValue(
       providerMock
     )
@@ -170,7 +171,8 @@ describe('app/store/walletConnectV2/handlers/avalanche_signTransaction/avalanche
 
     it('returns error if there is no active account', async () => {
       const request = createRequest()
-      ;(selectActiveAccount as jest.Mock).mockReturnValue(undefined)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ;(selectActiveAccount as any).mockReturnValue(undefined)
 
       const result = await avalancheSignTransactionHandler.handle(
         request,
@@ -579,7 +581,8 @@ describe('app/store/walletConnectV2/handlers/avalanche_signTransaction/avalanche
 
     const signedTransactionHex = '0x9999999'
     it('returns error if no active account', async () => {
-      ;(selectActiveAccount as jest.Mock).mockReturnValue(undefined)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ;(selectActiveAccount as any).mockReturnValue(undefined)
 
       const result = await avalancheSignTransactionHandler.approve(
         payloadMock,

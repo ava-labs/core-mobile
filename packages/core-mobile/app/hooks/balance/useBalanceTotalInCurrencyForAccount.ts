@@ -1,13 +1,16 @@
 import { selectBalancesForAccount } from 'store/balance'
 import { useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { RootState } from 'store'
 import { useNetworks } from '../networks/useNetworks'
 
 export const useBalanceTotalInCurrencyForAccount = (
   accountIndex: number
 ): number => {
   const { getIsTestnet } = useNetworks()
-  const balances = useSelector(selectBalancesForAccount(accountIndex))
+  const balances = useSelector((state: RootState) =>
+    selectBalancesForAccount(state, accountIndex)
+  )
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
 
   let totalInCurrency = 0

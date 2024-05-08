@@ -1,4 +1,9 @@
-import { createAction, createSlice, PayloadAction } from '@reduxjs/toolkit'
+import {
+  createAction,
+  createSelector,
+  createSlice,
+  PayloadAction
+} from '@reduxjs/toolkit'
 import { RootState } from 'store'
 import { initialState } from './types'
 
@@ -34,8 +39,10 @@ export const selectWatchlistFavoriteIds = (state: RootState): string[] => {
   return state.watchlist.favorites
 }
 
-export const selectWatchlistFavoritesIsEmpty = (state: RootState): boolean =>
-  state.watchlist.favorites.length === 0
+export const selectWatchlistFavoritesIsEmpty = createSelector(
+  [selectWatchlistFavoriteIds],
+  favorites => favorites.length === 0
+)
 
 // actions
 export const { toggleFavorite: toggleWatchListFavorite, reorderFavorites } =
