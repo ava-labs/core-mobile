@@ -130,6 +130,8 @@ const TransactionSimulationResultBalanceChangeContent = ({
         displayValue = balanceToDisplayValue(valueBN, asset.decimals)
       }
 
+      const assetDiffColor = isOut ? '$dangerLight' : '$successLight'
+
       return (
         <View
           key={key}
@@ -157,14 +159,18 @@ const TransactionSimulationResultBalanceChangeContent = ({
           </View>
           <View sx={{ alignItems: 'flex-end' }}>
             {displayValue !== undefined && (
-              <Text
-                variant="body2"
-                sx={{ color: isOut ? '$dangerLight' : '$successLight' }}>
+              <Text variant="body2" sx={{ color: assetDiffColor }}>
                 {isOut ? '-' : ''}
                 {displayValue} {asset.symbol}
               </Text>
             )}
-            <Text variant="body2" sx={{ color: '$neutral400' }}>
+            <Text
+              variant="body2"
+              sx={{
+                color:
+                  displayValue !== undefined ? '$neutral400' : assetDiffColor
+              }}>
+              {displayValue === undefined && (isOut ? '-' : '')}
               {currencyFormatter(Number(assetDiff.usdPrice))}
             </Text>
           </View>
