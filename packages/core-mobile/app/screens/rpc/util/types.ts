@@ -82,3 +82,15 @@ export interface AddLiquidityDisplayData extends TransactionDisplayValues {
 export interface ApproveTransactionData extends TransactionDisplayValues {
   tokenToBeApproved: TokenWithBalance
 }
+
+export const isAddLiquidityDisplayData = (
+  data: TransactionDisplayValues
+): data is AddLiquidityDisplayData => {
+  return 'poolTokens' in data
+}
+
+export const isSwapExactTokensForTokenDisplayValues = (
+  data: TransactionDisplayValues
+): data is SwapExactTokensForTokenDisplayValues => {
+  return 'path' in data
+}
