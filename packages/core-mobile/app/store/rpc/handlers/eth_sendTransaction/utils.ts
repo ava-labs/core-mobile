@@ -3,6 +3,7 @@ import * as Navigation from 'utils/Navigation'
 import AppNavigation from 'navigation/AppNavigation'
 import BlockaidService from 'services/blockaid/BlockaidService'
 import { TransactionValidationResult } from 'services/blockaid/types'
+import Logger from 'utils/Logger'
 import { RpcMethod, RpcRequest } from '../../types'
 import { EthSendTransactionRpcRequest } from './eth_sendTransaction'
 
@@ -88,6 +89,8 @@ export const validateAndSignTransaction = async (
 
     navigateToSignTransaction(request, txParam, validationResult)
   } catch (error) {
+    Logger.error('[Blockaid]Failed to validate transaction', error)
+
     navigateToSignTransaction(request, txParam)
   }
 }

@@ -7,17 +7,6 @@ import {
 } from './types'
 
 class BlockaidService {
-  static getNetworkPath = (chainId: number): string => {
-    switch (chainId) {
-      case ChainId.ETHEREUM_HOMESTEAD:
-        return 'ethereum'
-      case ChainId.AVALANCHE_MAINNET_ID:
-        return 'avalanche'
-      default:
-        throw new Error(`[Blockaid] Unsupported chainId: ${chainId}`)
-    }
-  }
-
   static validateTransaction = async (
     chainId: number,
     params: TransactionParams,
@@ -39,6 +28,19 @@ class BlockaidService {
     })
 
     return TransactionValidationSimulationCamelCase.parse(data)
+  }
+
+  private static getNetworkPath = (chainId: number): string => {
+    switch (chainId) {
+      case ChainId.ETHEREUM_TEST_SEPOLIA:
+      case ChainId.ETHEREUM_HOMESTEAD:
+        return 'ethereum'
+      case ChainId.AVALANCHE_TESTNET_ID:
+      case ChainId.AVALANCHE_MAINNET_ID:
+        return 'avalanche'
+      default:
+        throw new Error(`[Blockaid] Unsupported chainId: ${chainId}`)
+    }
   }
 }
 
