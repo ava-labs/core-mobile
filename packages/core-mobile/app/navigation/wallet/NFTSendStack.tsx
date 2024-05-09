@@ -3,21 +3,17 @@ import AppNavigation from 'navigation/AppNavigation'
 import { createStackNavigator } from '@react-navigation/stack'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import NftSend from 'screens/nft/send/NftSend'
-import NftReview from 'screens/nft/send/NftReview'
 import { SendNFTContextProvider } from 'contexts/SendNFTContext'
 import {
   NFTDetailsScreenProps,
   NFTDetailsSendScreenProps
 } from 'navigation/types'
-import DoneScreen from 'screens/send/DoneScreen'
 import FeatureBlocked from 'screens/posthog/FeatureBlocked'
 import { useSelector } from 'react-redux'
 import { selectIsSendBlocked } from 'store/posthog'
 
 export type NFTSendStackParamList = {
   [AppNavigation.NftSend.AddressPick]: undefined
-  [AppNavigation.NftSend.Review]: undefined
-  [AppNavigation.NftSend.Success]: { transactionId: string }
 }
 
 const NFTSendStack = createStackNavigator<NFTSendStackParamList>()
@@ -46,14 +42,6 @@ export default function NFTSendScreenStack(): JSX.Element | null {
           name={AppNavigation.NftSend.AddressPick}
           component={NftSendScreen}
         />
-        <NFTSendStack.Screen
-          name={AppNavigation.NftSend.Review}
-          component={NftReviewScreen}
-        />
-        <NFTSendStack.Screen
-          name={AppNavigation.NftSend.Success}
-          component={SuccessScreen}
-        />
       </NFTSendStack.Navigator>
       {isSendBlocked && (
         <FeatureBlocked
@@ -73,39 +61,10 @@ type AddressPickNavigationProp = NFTDetailsSendScreenProps<
 
 const NftSendScreen = (): JSX.Element => {
   const { navigate } = useNavigation<AddressPickNavigationProp>()
-  const showReviewScreen = (): void => {
-    navigate(AppNavigation.NftSend.Review)
-  }
 
   return (
     <NftSend
-      onNext={showReviewScreen}
       onOpenAddressBook={() => navigate(AppNavigation.Wallet.AddressBook)}
     />
   )
-}
-
-type ReviewNavigationProp = NFTDetailsSendScreenProps<
-  typeof AppNavigation.NftSend.Review
->['navigation']
-
-const NftReviewScreen = (): JSX.Element => {
-  const navigation = useNavigation<ReviewNavigationProp>()
-
-  const onSuccess = (): void => {
-    navigation.getParent()?.getParent()?.goBack()
-  }
-  return <NftReview onSuccess={onSuccess} />
-}
-
-type SuccessScreenProp = NFTDetailsSendScreenProps<
-  typeof AppNavigation.NftSend.Success
->
-
-const SuccessScreen = (): JSX.Element => {
-  const { goBack } = useNavigation<SuccessScreenProp['navigation']>()
-
-  const { transactionId } = useRoute<SuccessScreenProp['route']>().params
-
-  return <DoneScreen onClose={() => goBack()} transactionId={transactionId} />
 }
