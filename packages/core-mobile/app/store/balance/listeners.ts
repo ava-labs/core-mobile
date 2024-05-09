@@ -68,11 +68,13 @@ const onBalanceUpdate = async (
   if (fetchActiveOnly) {
     networksToFetch = [activeNetwork]
   } else {
-    networksToFetch = selectFavoriteNetworks(state)
+    const favoriteNetworks = selectFavoriteNetworks(state)
     // Just in case the active network has not been favorited
-    if (!networksToFetch.map(n => n.chainId).includes(activeNetwork.chainId)) {
-      networksToFetch.push(activeNetwork)
+    if (!favoriteNetworks.map(n => n.chainId).includes(activeNetwork.chainId)) {
+      // move the active network to the front of the list
+      favoriteNetworks.unshift(activeNetwork)
     }
+    networksToFetch = favoriteNetworks
   }
 
   onBalanceUpdateCore({
@@ -94,9 +96,10 @@ const onBalanceUpdateCore = async ({
   networks: Network[]
   accounts: Account[]
 }): Promise<void> => {
+  if (networks.length === 0) return
+
   const { getState, dispatch } = listenerApi
   const state = getState()
-  const activeNetwork = selectActiveNetwork(state)
   const currentStatus = selectBalanceStatus(state)
 
   if (
@@ -113,30 +116,31 @@ const onBalanceUpdateCore = async ({
 
   const currency = selectSelectedCurrency(state).toLowerCase()
 
-  const activeNetworkPromises: Promise<BalancesForAccount>[] = []
+  // fetch the first network balances first
+  const network = networks.shift()
+  if (network === undefined) return
+
+  const promises = accounts.map(account => {
+    return BalanceService.getBalancesForAccount({
+      network,
+      account,
+      currency,
+      sentryTrx
+    })
+  })
+  const balances = await fetchBalanceForAccounts(promises)
+  dispatch(setBalances(balances))
+
+  // fetch all other network balances
+  if (networks.length === 0) return
+
   const inactiveNetworkPromises: Promise<BalancesForAccount>[] = []
 
-  // move the active network to the front of the list
-  networks = networks.filter(n => n !== activeNetwork)
-  networks.unshift(activeNetwork)
-
-  for (const network of networks) {
-    if (network.chainId === activeNetwork.chainId) {
-      activeNetworkPromises.push(
-        ...accounts.map(account => {
-          return BalanceService.getBalancesForAccount({
-            network,
-            account,
-            currency,
-            sentryTrx
-          })
-        })
-      )
-    }
+  for (const n of networks) {
     inactiveNetworkPromises.push(
       ...accounts.map(account => {
         return BalanceService.getBalancesForAccount({
-          network,
+          network: n,
           account,
           currency,
           sentryTrx
@@ -144,19 +148,12 @@ const onBalanceUpdateCore = async ({
       })
     )
   }
-
-  const activeNetworkbalances = await fetchBalanceForAccounts(
-    activeNetworkPromises
-  )
-  dispatch(setBalances(activeNetworkbalances))
-
   const inactiveNetworkbalances = await fetchBalanceForAccounts(
     inactiveNetworkPromises
   )
   dispatch(setBalances(inactiveNetworkbalances))
 
   dispatch(setStatus(QueryStatus.IDLE))
-
   SentryWrapper.finish(sentryTrx)
 }
 
