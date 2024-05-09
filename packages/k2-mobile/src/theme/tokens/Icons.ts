@@ -15,6 +15,8 @@ import IconArrowBackIOSNew from '../../assets/icons/arrow_back_ios_new.svg'
 import IconArrowForwardIOS from '../../assets/icons/arrow_forward_ios.svg'
 import IconArrowBack from '../../assets/icons/arrow_back.svg'
 import IconArrowForward from '../../assets/icons/arrow_forward.svg'
+import IconRemoveModerator from '../../assets/icons/remove_moderator.svg'
+import IconGPPMaybe from '../../assets/icons/gpp_maybe.svg'
 
 export const Icons = {
   Communication: {
@@ -27,6 +29,7 @@ export const Icons = {
     ContentCopy: IconCopy
   },
   Device: {
+    IconGPPMaybe: IconGPPMaybe,
     IconUSB: IconUSB
   },
   Navigation: {
@@ -40,6 +43,9 @@ export const Icons = {
     MoreHoriz: IconMoreHoriz,
     MoreVert: IconMoreVert,
     Refresh: IconRefresh
+  },
+  Social: {
+    RemoveModerator: IconRemoveModerator
   },
   Logos: {
     WalletConnect: IconWC

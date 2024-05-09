@@ -97,16 +97,21 @@ export const scanAndSignTransaction = async (
 
 const navigateToSignTransaction = (
   request: EthSendTransactionRpcRequest,
-  txParam: TransactionParams,
+  transaction: TransactionParams,
   scanResponse?: TransactionScanResponse
 ): void => {
+  const screen =
+    scanResponse?.validation?.result_type === 'Malicious'
+      ? AppNavigation.Modal.MaliciousTransactionWarning
+      : AppNavigation.Modal.SignTransactionV2
+
   Navigation.navigate({
     name: AppNavigation.Root.Wallet,
     params: {
-      screen: AppNavigation.Modal.SignTransactionV2,
+      screen,
       params: {
         request,
-        transaction: txParam,
+        transaction,
         scanResponse
       }
     }
