@@ -4,25 +4,15 @@ import React, {
   ReactNode,
   useContext,
   useEffect,
-  useMemo,
   useState
 } from 'react'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import { NFTItem } from 'store/nft'
-import { bnToLocaleString } from '@avalabs/utils-sdk'
-import { FeePreset } from 'components/NetworkFeeSelector'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { selectNativeTokenBalanceForNetworkAndAccount } from 'store/balance'
 import { SendState } from 'services/send/types'
 import sendService from 'services/send/SendService'
-import { useNativeTokenPrice } from 'hooks/useNativeTokenPrice'
-import { VsCurrencyType } from '@avalabs/coingecko-sdk'
-import { showSnackBarCustom } from 'components/Snackbar'
-import TransactionToast, {
-  TransactionToastType
-} from 'components/toast/TransactionToast'
-import BN from 'bn.js'
 import { InteractionManager } from 'react-native'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { RootState } from 'store'
@@ -30,15 +20,15 @@ import Logger from 'utils/Logger'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { NetworkTokenUnit } from 'types'
 import { useNetworks } from 'hooks/networks/useNetworks'
+import { useNetworkFee } from 'hooks/useNetworkFee'
+import { useInAppRequest } from 'hooks/useInAppRequest'
 
 export interface SendNFTContextState {
   sendToken: NFTItem
   fromAccount: Account
   toAccount: Account
-  fees: Fees
   canSubmit: boolean
   sendStatus: SendStatus
-  sendStatusMsg: string
   onSendNow: () => void
   sdkError: string | undefined
 }
@@ -47,8 +37,7 @@ export const SendNFTContext = createContext<SendNFTContextState>(
   {} as SendNFTContextState
 )
 
-export type SendStatus = 'Idle' | 'Preparing' | 'Sending' | 'Success' | 'Fail'
-
+export type SendStatus = 'Idle' | 'Sending' | 'Success' | 'Fail'
 export const SendNFTContextProvider = ({
   nft,
   children
@@ -67,10 +56,6 @@ export const SendNFTContextProvider = ({
     )
   )
 
-  const { nativeTokenPrice } = useNativeTokenPrice(
-    selectedCurrency.toLowerCase() as VsCurrencyType
-  )
-
   const [sendToken] = useState<NFTItem>(nft)
 
   const [sendToAddress, setSendToAddress] = useState('')
@@ -79,52 +64,37 @@ export const SendNFTContextProvider = ({
   const sendFromTitle = activeAccount?.name ?? '-'
 
   const [gasLimit, setGasLimit] = useState(0)
-  const [customGasLimit, setCustomGasLimit] = useState<number | undefined>(
-    undefined
-  )
-  const trueGasLimit = customGasLimit || gasLimit
 
-  const [sendFeeBN, setSendFeeBN] = useState(new BN(0))
-  const sendFeeNative = useMemo(
-    () => bnToLocaleString(sendFeeBN, activeNetwork.networkToken.decimals),
-    [activeNetwork.networkToken.decimals, sendFeeBN]
-  )
-
-  const sendFeeInCurrency = useMemo(
-    () => Number.parseFloat(sendFeeNative) * nativeTokenPrice,
-    [nativeTokenPrice, sendFeeNative]
-  )
-
-  const [selectedFeePreset, setSelectedFeePreset] = useState<FeePreset>(
-    FeePreset.Normal
-  )
-  const [maxFeePerGas, setMaxFeePerGas] = useState(
-    NetworkTokenUnit.fromNetwork(activeNetwork)
-  )
-  const [maxPriorityFeePerGas, setMaxPriorityFeePerGas] = useState(
-    NetworkTokenUnit.fromNetwork(activeNetwork)
-  )
   const [sendStatus, setSendStatus] = useState<SendStatus>('Idle')
-  const [sendStatusMsg, setSendStatusMsg] = useState('')
   const [canSubmit, setCanSubmit] = useState(false)
   const [error, setError] = useState<string | undefined>()
+
+  const { data: networkFee } = useNetworkFee(activeNetwork)
+  const [defaultMaxFeePerGas, setDefaultMaxFeePerGas] =
+    useState<NetworkTokenUnit>(NetworkTokenUnit.fromNetwork(activeNetwork))
+
+  const { request } = useInAppRequest()
+
+  // setting maxFeePerGas to lowest network fee to calculate max amount in Send screen
+  useEffect(() => {
+    if (!networkFee) return
+    setDefaultMaxFeePerGas(networkFee.low.maxFeePerGas)
+  }, [networkFee])
 
   useEffect(validateStateFx, [
     activeAccount,
     activeNetwork,
     nativeTokenBalance,
-    trueGasLimit,
     selectedCurrency,
     sendToAddress,
     sendToken,
-    maxFeePerGas,
-    maxPriorityFeePerGas
+    defaultMaxFeePerGas,
+    gasLimit
   ])
 
   function onSendNow(): void {
     if (!activeAccount) {
       setSendStatus('Fail')
-      setSendStatusMsg('No active account')
       AnalyticsService.capture('NftSendFailed', {
         errorMessage: 'No active account',
         chainId: activeNetwork.chainId
@@ -132,56 +102,29 @@ export const SendNFTContextProvider = ({
       return
     }
 
-    AnalyticsService.capture('NftSendApproved', {
-      selectedGasFee: selectedFeePreset.toUpperCase()
-    })
-
     const sendState = {
       address: sendToAddress,
-      maxFeePerGas: maxFeePerGas.toSubUnit(),
-      maxPriorityFeePerGas: maxPriorityFeePerGas.toSubUnit(),
-      gasLimit: trueGasLimit,
+      defaultMaxFeePerGas: defaultMaxFeePerGas.toSubUnit(),
+      gasLimit,
       token: sendService.mapTokenFromNFT(sendToken)
     } as SendState
 
-    setSendStatus('Preparing')
-
     InteractionManager.runAfterInteractions(() => {
+      setSendStatus('Sending')
       const sentryTrx = SentryWrapper.startTransaction('send-nft')
       sendService
-        .sendDeprecated(
+        .send({
           sendState,
-          activeNetwork,
-          activeAccount,
-          selectedCurrency.toLowerCase(),
-          () => {
-            setSendStatus('Sending')
-            showSnackBarCustom({
-              component: (
-                <TransactionToast
-                  message={'Send Pending...'}
-                  type={TransactionToastType.PENDING}
-                />
-              ),
-              duration: 'short'
-            })
-          },
-          sentryTrx
-        )
-        .then(txId => {
+          network: activeNetwork,
+          account: activeAccount,
+          currency: selectedCurrency.toLowerCase(),
+          sentryTrx,
+          request
+        })
+        .then(() => {
           setSendStatus('Success')
           AnalyticsService.capture('NftSendSucceeded', {
             chainId: activeNetwork.chainId
-          })
-          showSnackBarCustom({
-            component: (
-              <TransactionToast
-                message={'Send Successful'}
-                type={TransactionToastType.SUCCESS}
-                txHash={txId}
-              />
-            ),
-            duration: 'short'
           })
         })
         .catch(reason => {
@@ -190,19 +133,10 @@ export const SendNFTContextProvider = ({
             errorMessage: reason?.error?.message,
             chainId: activeNetwork.chainId
           })
-          showSnackBarCustom({
-            component: (
-              <TransactionToast
-                message={'Send Failed'}
-                type={TransactionToastType.ERROR}
-              />
-            ),
-            duration: 'short'
-          })
-          setSendStatusMsg(reason)
         })
         .finally(() => {
           SentryWrapper.finish(sentryTrx)
+          setSendStatus('Idle')
         })
     })
   }
@@ -214,15 +148,16 @@ export const SendNFTContextProvider = ({
       return
     }
 
+    const sendState: SendState = {
+      token: sendService.mapTokenFromNFT(sendToken),
+      address: sendToAddress,
+      defaultMaxFeePerGas: defaultMaxFeePerGas.toSubUnit(),
+      gasLimit
+    }
+
     sendService
       .validateStateAndCalculateFees(
-        {
-          token: sendService.mapTokenFromNFT(sendToken),
-          address: sendToAddress,
-          maxFeePerGas: maxFeePerGas.toSubUnit(),
-          maxPriorityFeePerGas: maxPriorityFeePerGas.toSubUnit(),
-          gasLimit: trueGasLimit
-        } as SendState,
+        sendState,
         activeNetwork,
         activeAccount,
         selectedCurrency,
@@ -230,7 +165,6 @@ export const SendNFTContextProvider = ({
       )
       .then(state => {
         setGasLimit(state.gasLimit ?? 0)
-        setSendFeeBN(state.sendFee ?? new BN(0))
         setError(state.error ? state.error.message : undefined)
         setCanSubmit(state.canSubmit ?? false)
       })
@@ -249,21 +183,8 @@ export const SendNFTContextProvider = ({
       setTitle: setSendToTitle,
       setAddress: setSendToAddress
     },
-    fees: {
-      sendFeeNative,
-      sendFeeInCurrency: sendFeeInCurrency,
-      maxFeePerGas,
-      setMaxFeePerGas,
-      maxPriorityFeePerGas,
-      setMaxPriorityFeePerGas,
-      gasLimit: trueGasLimit,
-      setCustomGasLimit,
-      setSelectedFeePreset,
-      selectedFeePreset
-    },
     canSubmit,
     sendStatus,
-    sendStatusMsg,
     onSendNow,
     sdkError: error
   }
@@ -281,19 +202,4 @@ export interface Account {
   setTitle?: Dispatch<string>
   address: string
   setAddress?: Dispatch<string>
-  balanceAfterTrx?: string
-  balanceAfterTrxInCurrency?: string
-}
-
-export interface Fees {
-  sendFeeNative: string | undefined
-  sendFeeInCurrency: number | undefined
-  maxFeePerGas: NetworkTokenUnit
-  setMaxFeePerGas: Dispatch<NetworkTokenUnit>
-  maxPriorityFeePerGas: NetworkTokenUnit
-  setMaxPriorityFeePerGas: Dispatch<NetworkTokenUnit>
-  gasLimit: number | undefined
-  setCustomGasLimit: Dispatch<number>
-  setSelectedFeePreset: Dispatch<FeePreset>
-  selectedFeePreset: FeePreset
 }

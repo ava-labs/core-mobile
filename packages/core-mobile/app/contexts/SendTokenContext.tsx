@@ -33,7 +33,6 @@ export interface SendTokenContextState {
   sendAmount: Amount
   setSendAmount: Dispatch<Amount>
   toAccount: Account
-  fees: Fees
   canSubmit: boolean
   sendStatus: SendStatus
   onSendNow: () => void
@@ -107,9 +106,13 @@ export const SendTokenContextProvider = ({
   )
 
   const onSendNow = (): void => {
-    if (!sendAmount) return
+    if (!sendAmount) {
+      setSendStatus('Fail')
+      return
+    }
 
     if (!activeAccount) {
+      setSendStatus('Fail')
       AnalyticsService.capture('SendTransactionFailed', {
         errorMessage: 'No active account',
         chainId: activeNetwork.chainId
@@ -155,6 +158,7 @@ export const SendTokenContextProvider = ({
         })
         .finally(() => {
           SentryWrapper.finish(sentryTrx)
+          setSendStatus('Idle')
         })
     })
   }
@@ -214,9 +218,6 @@ export const SendTokenContextProvider = ({
         setAddress: setSendToAddress
       }
     }, [sendToAddress, sendToTitle]),
-    fees: {
-      gasLimit
-    },
     canSubmit,
     sendStatus,
     onSendNow,
@@ -239,8 +240,4 @@ export interface Account {
   setTitle?: Dispatch<string>
   address: string
   setAddress?: Dispatch<string>
-}
-
-export interface Fees {
-  gasLimit: number | undefined
 }
