@@ -21,9 +21,10 @@ import { DeFiProtocolList } from 'screens/defi/DeFiProtocolList'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { fetchWatchlist } from 'store/watchlist'
 import { useNetworks } from 'hooks/networks/useNetworks'
+import { selectIsLoadingBalances } from 'store/balance'
 import InactiveNetworkCard from './components/Cards/InactiveNetworkCard'
-import { PortfolioTokensLoader } from './components/Loaders/PortfolioTokensLoader'
 import PortfolioHeader from './components/PortfolioHeader'
+import { PortfolioInactiveNetworksLoader } from './components/Loaders/PortfolioInactiveNetworksLoader'
 
 type PortfolioNavigationProp = PortfolioScreenProps<
   typeof AppNavigation.Portfolio.Portfolio
@@ -82,13 +83,16 @@ const Separator = (): JSX.Element => <Space y={16} />
 
 const TokensTab = (): JSX.Element => {
   const { inactiveNetworks } = useNetworks()
-  const { isLoading, isRefetching, refetch } = useSearchableTokenList()
+  const { isRefetching, refetch } = useSearchableTokenList()
   const dispatch = useDispatch()
+  const isLoadingBalances = useSelector(selectIsLoadingBalances)
 
   const renderInactiveNetwork = (
     item: ListRenderItemInfo<Network>
   ): JSX.Element => {
-    return (
+    return isLoadingBalances ? (
+      <PortfolioInactiveNetworksLoader />
+    ) : (
       <Animated.View
         sharedTransitionTag={
           Platform.OS === 'ios'
@@ -106,8 +110,6 @@ const TokensTab = (): JSX.Element => {
     refetch()
     dispatch(fetchWatchlist)
   }
-
-  if (isLoading) return <PortfolioTokensLoader />
 
   return (
     <>

@@ -13,10 +13,15 @@ import AddSVG from 'components/svg/AddSVG'
 import { useNavigation } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
 import { PortfolioScreenProps } from 'navigation/types'
-import { useDispatch } from 'react-redux'
-import { MarketToken, fetchWatchlist } from 'store/watchlist'
+import { useDispatch, useSelector } from 'react-redux'
+import {
+  MarketToken,
+  fetchWatchlist,
+  selectWatchlistFavoriteIds
+} from 'store/watchlist'
 import { Text, useTheme } from '@avalabs/k2-mobile'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
+import { PortfolioFavoritesLoader } from 'screens/portfolio/home/components/Loaders/PortfolioFavoritesLoader'
 import PriceChangeIndicator from './PriceChangeIndicator'
 
 interface Props {
@@ -32,6 +37,7 @@ const WatchlistCarousel: FC<Props> = () => {
   const { favorites: watchlistFavorites } = useWatchlist()
   const navigation = useNavigation<NavigationProp>()
   const dispatch = useDispatch()
+  const favoriteIds = useSelector(selectWatchlistFavoriteIds)
 
   useEffect(() => {
     dispatch(fetchWatchlist())
@@ -76,6 +82,10 @@ const WatchlistCarousel: FC<Props> = () => {
         }}
       />
     )
+  }
+
+  if (watchlistFavorites.length === 0 && favoriteIds.length !== 0) {
+    return <PortfolioFavoritesLoader />
   }
 
   return (

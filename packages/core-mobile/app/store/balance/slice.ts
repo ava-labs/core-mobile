@@ -63,6 +63,19 @@ export const selectIsBalanceLoadedForAddress =
     return !!state.balance.balances[getKey(chainId, accountIndex)]
   }
 
+export const selectIsBalanceLoadedForActiveNetwork = (
+  state: RootState
+): boolean => {
+  const activeNetwork = selectActiveNetwork(state)
+  const activeAccount = selectActiveAccount(state)
+
+  if (!activeAccount) return false
+
+  return !!state.balance.balances[
+    getKey(activeNetwork.chainId, activeAccount.index)
+  ]
+}
+
 export const selectIsLoadingBalances = (state: RootState): boolean =>
   state.balance.status === QueryStatus.LOADING
 

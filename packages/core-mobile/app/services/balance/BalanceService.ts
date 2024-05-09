@@ -20,6 +20,17 @@ const balanceProviders: BalanceServiceProvider[] = [
   EvmBalanceService
 ]
 
+export type BalancesForAccount = {
+  accountIndex: number
+  chainId: number
+  accountAddress: string
+  tokens: (
+    | NetworkTokenWithBalance
+    | TokenWithBalanceERC20
+    | PTokenWithBalance
+  )[]
+}
+
 export class BalanceService {
   async getBalancesForAccount({
     network,
@@ -31,16 +42,7 @@ export class BalanceService {
     account: Account
     currency: string
     sentryTrx?: Transaction
-  }): Promise<{
-    accountIndex: number
-    chainId: number
-    accountAddress: string
-    tokens: (
-      | NetworkTokenWithBalance
-      | TokenWithBalanceERC20
-      | PTokenWithBalance
-    )[]
-  }> {
+  }): Promise<BalancesForAccount> {
     return SentryWrapper.createSpanFor(sentryTrx)
       .setContext('svc.balance.get_for_account')
       .executeAsync(async () => {

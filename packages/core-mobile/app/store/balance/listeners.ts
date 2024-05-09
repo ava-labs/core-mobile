@@ -25,6 +25,7 @@ import {
 import Logger from 'utils/Logger'
 import { getLocalTokenId } from 'store/balance/utils'
 import SentryWrapper from 'services/sentry/SentryWrapper'
+import { BalancesForAccount } from '../../services/balance/BalanceService'
 import {
   fetchBalanceForAccount,
   getKey,
@@ -95,6 +96,7 @@ const onBalanceUpdateCore = async ({
 }): Promise<void> => {
   const { getState, dispatch } = listenerApi
   const state = getState()
+  const activeNetwork = selectActiveNetwork(state)
   const currentStatus = selectBalanceStatus(state)
 
   if (
@@ -111,10 +113,23 @@ const onBalanceUpdateCore = async ({
 
   const currency = selectSelectedCurrency(state).toLowerCase()
 
-  const promises = []
+  const activeNetworkPromises: Promise<BalancesForAccount>[] = []
+  const inactiveNetworkPromises: Promise<BalancesForAccount>[] = []
 
   for (const network of networks) {
-    promises.push(
+    if (network === activeNetwork) {
+      activeNetworkPromises.push(
+        ...accounts.map(account => {
+          return BalanceService.getBalancesForAccount({
+            network,
+            account,
+            currency,
+            sentryTrx
+          })
+        })
+      )
+    }
+    inactiveNetworkPromises.push(
       ...accounts.map(account => {
         return BalanceService.getBalancesForAccount({
           network,
@@ -126,34 +141,16 @@ const onBalanceUpdateCore = async ({
     )
   }
 
-  const balances = (await Promise.allSettled(promises)).reduce<Balances>(
-    (acc, result) => {
-      if (result.status === 'rejected') {
-        Logger.warn('failed to get balance', result.reason)
-        return acc
-      }
-
-      const { accountIndex, chainId, tokens } = result.value
-
-      const tokensWithBalance = tokens.map(token => {
-        return {
-          ...token,
-          localId: getLocalTokenId(token)
-        } as LocalTokenWithBalance
-      })
-      return {
-        ...acc,
-        [getKey(chainId, accountIndex)]: {
-          accountIndex,
-          chainId,
-          tokens: tokensWithBalance
-        }
-      }
-    },
-    {}
+  const activeNetworkbalances = await fetchBalanceForAccounts(
+    activeNetworkPromises
   )
+  dispatch(setBalances(activeNetworkbalances))
 
-  dispatch(setBalances(balances))
+  const inactiveNetworkbalances = await fetchBalanceForAccounts(
+    inactiveNetworkPromises
+  )
+  dispatch(setBalances(inactiveNetworkbalances))
+
   dispatch(setStatus(QueryStatus.IDLE))
 
   SentryWrapper.finish(sentryTrx)
@@ -165,6 +162,7 @@ const fetchBalancePeriodically = async (
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
   const { condition } = listenerApi
+  onBalanceUpdate(QueryStatus.LOADING, listenerApi, false)
 
   onBalanceUpdate(QueryStatus.LOADING, listenerApi, false)
 
@@ -229,6 +227,37 @@ const handleFetchBalanceForAccount = async (
     networks: networksToFetch,
     accounts: accountsToFetch
   }).catch(Logger.error)
+}
+
+const fetchBalanceForAccounts = async (
+  promises: Promise<BalancesForAccount>[]
+): Promise<Balances> => {
+  return (await Promise.allSettled(promises)).reduce<Balances>(
+    (acc, result) => {
+      if (result.status === 'rejected') {
+        Logger.warn('failed to get balance', result.reason)
+        return acc
+      }
+
+      const { accountIndex, chainId, tokens } = result.value
+
+      const tokensWithBalance = tokens.map(token => {
+        return {
+          ...token,
+          localId: getLocalTokenId(token)
+        } as LocalTokenWithBalance
+      })
+      return {
+        ...acc,
+        [getKey(chainId, accountIndex)]: {
+          accountIndex,
+          chainId,
+          tokens: tokensWithBalance
+        }
+      }
+    },
+    {}
+  )
 }
 
 export const addBalanceListeners = (
