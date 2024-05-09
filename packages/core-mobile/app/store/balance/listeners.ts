@@ -121,7 +121,7 @@ const onBalanceUpdateCore = async ({
   networks.unshift(activeNetwork)
 
   for (const network of networks) {
-    if (network === activeNetwork) {
+    if (network.chainId === activeNetwork.chainId) {
       activeNetworkPromises.push(
         ...accounts.map(account => {
           return BalanceService.getBalancesForAccount({
@@ -166,8 +166,6 @@ const fetchBalancePeriodically = async (
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
   const { condition } = listenerApi
-  onBalanceUpdate(QueryStatus.LOADING, listenerApi, false)
-
   onBalanceUpdate(QueryStatus.LOADING, listenerApi, false)
 
   const pollingTask = listenerApi.fork(async forkApi => {
