@@ -87,12 +87,20 @@ const TokensTab = (): JSX.Element => {
   const dispatch = useDispatch()
   const isLoadingBalances = useSelector(selectIsLoadingBalances)
 
+  const itemsToRender =
+    isLoadingBalances && inactiveNetworks.length > 0
+      ? // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        [inactiveNetworks[0]!]
+      : inactiveNetworks
+
+  const renderInactiveNetworkLoader = (): React.JSX.Element => {
+    return <PortfolioInactiveNetworksLoader />
+  }
+
   const renderInactiveNetwork = (
     item: ListRenderItemInfo<Network>
   ): JSX.Element => {
-    return isLoadingBalances ? (
-      <PortfolioInactiveNetworksLoader />
-    ) : (
+    return (
       <Animated.View
         sharedTransitionTag={
           Platform.OS === 'ios'
@@ -122,8 +130,12 @@ const TokensTab = (): JSX.Element => {
           paddingBottom: 100
         }}
         numColumns={2}
-        data={inactiveNetworks}
-        renderItem={renderInactiveNetwork}
+        data={itemsToRender}
+        renderItem={
+          isLoadingBalances
+            ? renderInactiveNetworkLoader
+            : renderInactiveNetwork
+        }
         keyExtractor={item => item.chainId.toString()}
         ItemSeparatorComponent={Separator}
         ListHeaderComponent={<TokensTabHeader />}
