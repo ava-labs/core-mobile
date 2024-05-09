@@ -87,6 +87,9 @@ const TokensTab = (): JSX.Element => {
   const dispatch = useDispatch()
   const isLoadingBalances = useSelector(selectIsLoadingBalances)
 
+  // set item to render to the first inactive network as dummy single value array
+  // in order to show the loader while the balances are still loading
+  // * the loader consist of 4 content reactangle loaders
   const itemsToRender =
     isLoadingBalances && inactiveNetworks.length > 0
       ? // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
