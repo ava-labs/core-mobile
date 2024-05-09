@@ -11,14 +11,16 @@ export const useGetTokensAndCharts = (): UseQueryResult<
 > => {
   const currency = useSelector(selectSelectedCurrency)
   const cachedFavoriteTokenIds = useSelector(selectWatchlistFavoriteIds)
+  const sortedCachedFavoriteTokenIds = Array.from(cachedFavoriteTokenIds).sort()
 
   return useQuery({
     queryKey: [
       ReactQueryKeys.WATCHLIST_TOKENS_AND_CHARTS,
       currency,
-      cachedFavoriteTokenIds
+      sortedCachedFavoriteTokenIds
     ],
-    queryFn: () => WatchlistService.getTokens(currency, cachedFavoriteTokenIds),
+    queryFn: () =>
+      WatchlistService.getTokens(currency, sortedCachedFavoriteTokenIds),
     refetchInterval: 30000 // 30 seconds
   })
 }
