@@ -47,7 +47,7 @@ const SignTransaction = (): JSX.Element => {
   const {
     request,
     transaction: txParams,
-    validationResult
+    scanResponse
   } = useRoute<SignTransactionScreenProps['route']>().params
 
   const { onUserApproved: onApprove, onUserRejected: onReject } =
@@ -325,7 +325,11 @@ const SignTransaction = (): JSX.Element => {
             )}
             <BalanceChange
               displayData={displayData}
-              simulationResult={validationResult?.simulation}
+              transactionSimulation={
+                scanResponse?.simulation?.status === 'Success'
+                  ? scanResponse?.simulation
+                  : undefined
+              }
             />
           </View>
           {displayData?.maxFeePerGas && (

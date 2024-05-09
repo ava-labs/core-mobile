@@ -2,8 +2,8 @@ import { Text, View, useTheme } from '@avalabs/k2-mobile'
 import React, { useCallback, useMemo } from 'react'
 import {
   Asset,
-  Diff,
-  TransactionSimulationResult
+  AssetDiff,
+  TransactionSimulation
 } from 'services/blockaid/types'
 import Avatar from 'components/Avatar'
 import { useApplicationContext } from 'contexts/ApplicationContext'
@@ -29,11 +29,11 @@ import { sharedStyles } from './styles'
 const BalanceChange = ({
   contractType,
   displayData,
-  simulationResult
+  transactionSimulation
 }: {
   contractType?: ContractCall
   displayData: TransactionDisplayValues
-  simulationResult?: TransactionSimulationResult
+  transactionSimulation?: TransactionSimulation
 }): JSX.Element | null => {
   const {
     theme: { colors }
@@ -42,12 +42,12 @@ const BalanceChange = ({
 
   const content = useMemo(() => {
     if (
-      simulationResult &&
-      simulationResult.accountSummary.assetsDiffs.length > 0
+      transactionSimulation &&
+      transactionSimulation.account_summary.assets_diffs.length > 0
     ) {
       return (
         <TransactionSimulationResultBalanceChangeContent
-          simulationResult={simulationResult}
+          transactionSimulation={transactionSimulation}
         />
       )
     }
@@ -74,7 +74,7 @@ const BalanceChange = ({
     ) {
       return <GenericTransactionBalanceChangeContent data={displayData} />
     }
-  }, [displayData, simulationResult, contractType])
+  }, [displayData, transactionSimulation, contractType])
 
   if (!content) {
     return null
@@ -106,9 +106,9 @@ const BalanceChange = ({
 }
 
 const TransactionSimulationResultBalanceChangeContent = ({
-  simulationResult
+  transactionSimulation
 }: {
-  simulationResult: TransactionSimulationResult
+  transactionSimulation: TransactionSimulation
 }): JSX.Element => {
   const { currencyFormatter } = useApplicationContext().appHook
 
@@ -120,7 +120,7 @@ const TransactionSimulationResultBalanceChangeContent = ({
       key
     }: {
       asset: Asset
-      assetDiff: Diff
+      assetDiff: AssetDiff
       isOut: boolean
       key: string
     }): JSX.Element => {
@@ -151,7 +151,7 @@ const TransactionSimulationResultBalanceChangeContent = ({
               <Avatar.Token
                 name={asset.name}
                 symbol={asset.symbol}
-                logoUri={asset.logoUrl}
+                logoUri={asset.logo_url}
                 size={32}
               />
             )}
@@ -171,7 +171,7 @@ const TransactionSimulationResultBalanceChangeContent = ({
                   displayValue !== undefined ? '$neutral400' : assetDiffColor
               }}>
               {displayValue === undefined && (isOut ? '-' : '')}
-              {currencyFormatter(Number(assetDiff.usdPrice))}
+              {currencyFormatter(Number(assetDiff.usd_price))}
             </Text>
           </View>
         </View>
@@ -182,34 +182,36 @@ const TransactionSimulationResultBalanceChangeContent = ({
 
   return (
     <>
-      {simulationResult.accountSummary.assetsDiffs.map((assetDiff, index) => {
-        const asset = assetDiff.asset
+      {transactionSimulation.account_summary.assets_diffs.map(
+        (assetDiff, index) => {
+          const asset = assetDiff.asset
 
-        return (
-          <View key={index.toString()} sx={{ flexDirection: 'row' }}>
-            <>
-              {assetDiff.out.map((outAssetDiff, i) =>
-                renderAssetDiff({
-                  asset,
-                  assetDiff: outAssetDiff,
-                  isOut: true,
-                  key: i.toString()
-                })
-              )}
-            </>
-            <>
-              {assetDiff.in.map((inAssetDiff, i) =>
-                renderAssetDiff({
-                  asset,
-                  assetDiff: inAssetDiff,
-                  isOut: false,
-                  key: i.toString()
-                })
-              )}
-            </>
-          </View>
-        )
-      })}
+          return (
+            <View key={index.toString()} sx={{ flexDirection: 'row' }}>
+              <>
+                {assetDiff.out.map((outAssetDiff, i) =>
+                  renderAssetDiff({
+                    asset,
+                    assetDiff: outAssetDiff,
+                    isOut: true,
+                    key: i.toString()
+                  })
+                )}
+              </>
+              <>
+                {assetDiff.in.map((inAssetDiff, i) =>
+                  renderAssetDiff({
+                    asset,
+                    assetDiff: inAssetDiff,
+                    isOut: false,
+                    key: i.toString()
+                  })
+                )}
+              </>
+            </View>
+          )
+        }
+      )}
     </>
   )
 }

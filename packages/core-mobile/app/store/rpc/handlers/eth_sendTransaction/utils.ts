@@ -2,7 +2,7 @@ import { SafeParseReturnType, z } from 'zod'
 import * as Navigation from 'utils/Navigation'
 import AppNavigation from 'navigation/AppNavigation'
 import BlockaidService from 'services/blockaid/BlockaidService'
-import { TransactionValidationResult } from 'services/blockaid/types'
+import { TransactionScanResponse } from 'services/blockaid/types'
 import Logger from 'utils/Logger'
 import { RpcMethod, RpcRequest } from '../../types'
 import { EthSendTransactionRpcRequest } from './eth_sendTransaction'
@@ -69,7 +69,7 @@ export const getChainIdFromRequest = (
   return Number(parts[1])
 }
 
-export const validateAndSignTransaction = async (
+export const scanAndSignTransaction = async (
   request: EthSendTransactionRpcRequest,
   txParam: TransactionParams,
   isValidationDisabled: boolean
@@ -81,13 +81,13 @@ export const validateAndSignTransaction = async (
 
   try {
     const chainId = getChainIdFromRequest(request)
-    const validationResult = await BlockaidService.validateTransaction(
+    const scanTransactionResponse = await BlockaidService.scanTransaction(
       chainId,
       txParam,
       request.peerMeta.url
     )
 
-    navigateToSignTransaction(request, txParam, validationResult)
+    navigateToSignTransaction(request, txParam, scanTransactionResponse)
   } catch (error) {
     Logger.error('[Blockaid]Failed to validate transaction', error)
 
@@ -98,7 +98,7 @@ export const validateAndSignTransaction = async (
 const navigateToSignTransaction = (
   request: EthSendTransactionRpcRequest,
   txParam: TransactionParams,
-  validationResult?: TransactionValidationResult
+  scanResponse?: TransactionScanResponse
 ): void => {
   Navigation.navigate({
     name: AppNavigation.Root.Wallet,
@@ -107,7 +107,7 @@ const navigateToSignTransaction = (
       params: {
         request,
         transaction: txParam,
-        validationResult
+        scanResponse
       }
     }
   })
