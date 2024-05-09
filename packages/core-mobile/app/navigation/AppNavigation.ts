@@ -130,9 +130,7 @@ enum NftScreens {
 }
 
 enum NftSendScreens {
-  AddressPick = 'NftSendScreens.AddressPick',
-  Review = 'NftSendScreens.Review',
-  Success = 'NftSendScreens.Success'
+  AddressPick = 'NftSendScreens.AddressPick'
 }
 
 enum SecurityPrivacyScreens {
