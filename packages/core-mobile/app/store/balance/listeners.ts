@@ -116,6 +116,10 @@ const onBalanceUpdateCore = async ({
   const activeNetworkPromises: Promise<BalancesForAccount>[] = []
   const inactiveNetworkPromises: Promise<BalancesForAccount>[] = []
 
+  // move the active network to the front of the list
+  networks = networks.filter(n => n !== activeNetwork)
+  networks.unshift(activeNetwork)
+
   for (const network of networks) {
     if (network === activeNetwork) {
       activeNetworkPromises.push(
