@@ -3,7 +3,7 @@ import OnboardScreenStack, {
   OnboardingScreenStackParamList
 } from 'navigation/OnboardScreenStack'
 import { createStackNavigator } from '@react-navigation/stack'
-import { Alert, Vibration } from 'react-native'
+import { Alert, Platform, Vibration } from 'react-native'
 import {
   NavigatorScreenParams,
   useFocusEffect,
@@ -39,6 +39,8 @@ import { PrivacyScreen } from './wallet/PrivacyScreen'
 import RecoveryMethodsStack, {
   RecoveryMethodsStackParamList
 } from './onboarding/RecoveryMethodsStack'
+
+const DELAY = Platform.OS === 'android' ? 0 : 100
 
 export type RootScreenStackParamList = {
   [AppNavigation.Root
@@ -95,7 +97,7 @@ const WalletScreenStackWithContext: FC = () => {
     useCallback(() => {
       setTimeout(() => {
         setEnabledPrivacyScreen(inBackground)
-      }, 0)
+      }, DELAY)
     }, [inBackground])
   )
 
