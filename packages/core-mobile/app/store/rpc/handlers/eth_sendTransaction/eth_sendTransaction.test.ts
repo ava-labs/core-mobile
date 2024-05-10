@@ -92,16 +92,6 @@ const mockListenerApi = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 } as any
 
-jest.mock('@blockaid/client', () => {
-  return jest.fn().mockImplementation(() => ({
-    evm: {
-      transaction: {
-        scan: jest.fn()
-      }
-    }
-  }))
-})
-
 const testMethod = RpcMethod.ETH_SEND_TRANSACTION
 
 const testParams = [
