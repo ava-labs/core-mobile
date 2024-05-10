@@ -21,6 +21,7 @@ class AvalancheGetAccountsHandler
 
     const accountsArray = Object.values(accounts).map(account => {
       account.active = account.index === activeAccount?.index
+      account.walletId = 'test' //TODO: implement this properly
       return account
     })
     return { success: true, value: accountsArray }
