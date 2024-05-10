@@ -17,6 +17,7 @@ import { useDispatch } from 'react-redux'
 import { MarketToken, fetchWatchlist } from 'store/watchlist'
 import { Text, useTheme } from '@avalabs/k2-mobile'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
+import { PortfolioFavoritesLoader } from 'screens/portfolio/home/components/Loaders/PortfolioFavoritesLoader'
 import PriceChangeIndicator from './PriceChangeIndicator'
 
 interface Props {
@@ -29,7 +30,7 @@ type NavigationProp = PortfolioScreenProps<
 
 const WatchlistCarousel: FC<Props> = () => {
   const { theme } = useTheme()
-  const { favorites: watchlistFavorites } = useWatchlist()
+  const { favorites: watchlistFavorites, isLoadingFavorites } = useWatchlist()
   const navigation = useNavigation<NavigationProp>()
   const dispatch = useDispatch()
 
@@ -76,6 +77,10 @@ const WatchlistCarousel: FC<Props> = () => {
         }}
       />
     )
+  }
+
+  if (isLoadingFavorites) {
+    return <PortfolioFavoritesLoader />
   }
 
   return (
