@@ -9,6 +9,8 @@ import {
 import { Account, AccountsState } from 'store/account'
 import { WalletType } from 'services/wallet/types'
 import { AddressBookState } from 'store/addressBook'
+import { uuid } from 'utils/uuid'
+import { CORE_MOBILE_WALLET_ID } from 'services/walletconnectv2/types'
 import { initialState as watchlistInitialState } from './watchlist'
 import {
   DefaultFeatureFlagConfig,
@@ -206,26 +208,27 @@ export const migrations = {
     const walletType = state.app.walletType as WalletType
     const newWalletType = walletTypeMapping[walletType]
 
-    Object.entries(accountState.accounts).forEach(([id, account]) => {
+    Object.entries(accountState.accounts).forEach(([accIndex, account]) => {
       const oldAccount = account as unknown as OldAccountType
       if (!newWalletType) {
         throw new Error(
           'invalid db state: has accounts but wallet type is not set!'
         )
       }
-      accountState.accounts[Number(id)] = {
-        id: id,
+
+      accountState.accounts[Number(accIndex)] = {
+        index: Number(accIndex),
+        id: uuid(),
+        walletId: CORE_MOBILE_WALLET_ID,
         name: oldAccount.title,
         type: CoreAccountType.PRIMARY,
-        active: accountState.activeAccountIndex === Number(id),
+        walletType: newWalletType,
+        active: accountState.activeAccountIndex === Number(accIndex),
         addressBTC: oldAccount.addressBtc,
         addressAVM: oldAccount.addressAVM,
         addressPVM: oldAccount.addressPVM,
         addressC: oldAccount.address,
-        addressCoreEth: oldAccount.addressCoreEth,
-        walletId: accountState.walletName,
-        index: Number(id),
-        walletType: newWalletType
+        addressCoreEth: oldAccount.addressCoreEth
       } as Account
     })
 
