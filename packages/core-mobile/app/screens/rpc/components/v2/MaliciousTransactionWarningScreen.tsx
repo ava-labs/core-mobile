@@ -60,7 +60,7 @@ const MaliciousTransactionWarningScreen = (): JSX.Element => {
           Reject Transaction
         </Button>
         <Button type="tertiary" size="xlarge" onPress={handleProceed}>
-          Proceed Anyway
+          <Text variant="buttonLarge">Proceed Anyway</Text>
         </Button>
       </View>
     </Sheet>
