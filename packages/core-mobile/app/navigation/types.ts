@@ -45,7 +45,7 @@ import {
   BitcoinSendTransactionApproveData,
   BitcoinSendTransactionRpcRequest
 } from 'store/rpc/handlers/bitcoin_sendTransaction/bitcoin_sendTransaction'
-import { TransactionValidationResult } from 'services/blockaid/types'
+import { TransactionScanResponse } from 'services/blockaid/types'
 import { RootScreenStackParamList } from './RootScreenStack'
 import { OnboardingScreenStackParamList } from './OnboardScreenStack'
 import { WelcomeScreenStackParamList } from './onboarding/WelcomeScreenStack'
@@ -116,7 +116,7 @@ export type BuyCarefullyParams = {
 export type SignTransactionV2Params = {
   request: EthSendTransactionRpcRequestV2
   transaction: TransactionParams
-  validationResult?: TransactionValidationResult
+  scanResponse?: TransactionScanResponse
 }
 
 export type AvalancheSendTransactionV2Params = {

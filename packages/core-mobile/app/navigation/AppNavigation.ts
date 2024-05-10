@@ -201,7 +201,8 @@ enum ModalScreens {
   BrowserTabsList = 'ModalScreens.BrowserTabsList',
   BrowserTabCloseAll = 'ModalScreens.BrowserTabCloseAll',
   AnalyticsConsentSheet = 'ModalScreens.AnalyticsConsentSheet',
-  UseWalletConnect = 'ModalScreens.UseWalletConnect'
+  UseWalletConnect = 'ModalScreens.UseWalletConnect',
+  MaliciousTransactionWarning = 'ModalScreens.MaliciousTransactionWarning'
 }
 
 enum SendScreens {
