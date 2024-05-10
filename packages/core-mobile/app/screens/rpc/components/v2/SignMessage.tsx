@@ -3,12 +3,10 @@ import { StyleSheet, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
-import AvaButton from 'components/AvaButton'
 import OvalTagBg from 'components/OvalTagBg'
 import Avatar from 'components/Avatar'
 import { ScrollView } from 'react-native-gesture-handler'
 import isString from 'lodash.isstring'
-import FlexSpacer from 'components/FlexSpacer'
 import { RpcMethod } from 'store/rpc/types'
 import { WalletScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
@@ -135,7 +133,11 @@ const SignMessage = (): JSX.Element | null => {
 
   return (
     <>
-      <RpcRequestBottomSheet onClose={rejectAndClose}>
+      <RpcRequestBottomSheet
+        onClose={rejectAndClose}
+        showButtons
+        onApprove={approveAndClose}
+        onReject={rejectAndClose}>
         <ScrollView contentContainerStyle={styles.scrollView}>
           <AvaText.LargeTitleBold>Sign Message</AvaText.LargeTitleBold>
           <Space y={30} />
@@ -162,16 +164,6 @@ const SignMessage = (): JSX.Element | null => {
             {renderMessage()}
           </View>
           <Space y={24} />
-          <FlexSpacer />
-          <View style={styles.actionContainer}>
-            <AvaButton.PrimaryMedium onPress={approveAndClose}>
-              Approve
-            </AvaButton.PrimaryMedium>
-            <Space y={21} />
-            <AvaButton.SecondaryMedium onPress={rejectAndClose}>
-              Reject
-            </AvaButton.SecondaryMedium>
-          </View>
         </ScrollView>
       </RpcRequestBottomSheet>
       {isSeedlessSigningBlocked && (
