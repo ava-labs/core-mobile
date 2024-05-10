@@ -34,6 +34,7 @@ import { useNetworks } from 'hooks/networks/useNetworks'
 import { getChainIdFromRequest } from 'store/rpc/handlers/eth_sendTransaction/utils'
 import RpcRequestBottomSheet from '../shared/RpcRequestBottomSheet'
 import BalanceChange from '../shared/signTransaction/BalanceChange'
+import TransactionWarning from './TransactionWarning'
 
 const defaultErrMessage = 'Transaction failed'
 
@@ -47,7 +48,7 @@ const SignTransaction = (): JSX.Element => {
   const {
     request,
     transaction: txParams,
-    validationResult
+    scanResponse
   } = useRoute<SignTransactionScreenProps['route']>().params
 
   const { onUserApproved: onApprove, onUserRejected: onReject } =
@@ -291,6 +292,8 @@ const SignTransaction = (): JSX.Element => {
     )
   }
 
+  const validationResultType = scanResponse?.validation?.result_type
+
   return (
     <>
       <RpcRequestBottomSheet
@@ -300,7 +303,15 @@ const SignTransaction = (): JSX.Element => {
         <ScrollView contentContainerStyle={txStyles.scrollView}>
           <View>
             <Text variant="heading4">{txTitle()}</Text>
-            <Space y={24} />
+            <Space y={8} />
+            {(validationResultType === 'Malicious' ||
+              validationResultType === 'Warning') && (
+              <>
+                <Space y={32} />
+                <TransactionWarning type={validationResultType} />
+              </>
+            )}
+            <Space y={16} />
             {renderNetwork()}
             <Row
               style={{ justifyContent: 'space-between', alignItems: 'center' }}>
@@ -325,7 +336,11 @@ const SignTransaction = (): JSX.Element => {
             )}
             <BalanceChange
               displayData={displayData}
-              simulationResult={validationResult?.simulation}
+              transactionSimulation={
+                scanResponse?.simulation?.status === 'Success'
+                  ? scanResponse?.simulation
+                  : undefined
+              }
             />
           </View>
           {displayData?.maxFeePerGas && (

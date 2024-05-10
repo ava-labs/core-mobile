@@ -32,6 +32,7 @@ import AnalyticsConsentSheet from 'screens/mainView/AnalyticsConsentSheet'
 import { AvalancheSetDeveloperMode } from 'screens/rpc/components/v2/AvalancheSetDeveloperMode'
 import { UseWalletConnectModal } from 'screens/browser/UseWalletConnectModal'
 import BitcoinSendTransaction from 'screens/rpc/components/v2/BitcoinSendTransaction'
+import MaliciousTransactionWarningScreen from 'screens/rpc/components/v2/MaliciousTransactionWarningScreen'
 import { SignOutModalScreen, WalletScreenSType } from './WalletScreenStack'
 
 export const createModals = (WalletScreenS: WalletScreenSType): JSX.Element => {
@@ -90,6 +91,10 @@ export const createModals = (WalletScreenS: WalletScreenSType): JSX.Element => {
       <WalletScreenS.Screen
         name={AppNavigation.Modal.AvalancheSetDeveloperMode}
         component={AvalancheSetDeveloperMode}
+      />
+      <WalletScreenS.Screen
+        name={AppNavigation.Modal.MaliciousTransactionWarning}
+        component={MaliciousTransactionWarningScreen}
       />
       <WalletScreenS.Group
         screenOptions={{

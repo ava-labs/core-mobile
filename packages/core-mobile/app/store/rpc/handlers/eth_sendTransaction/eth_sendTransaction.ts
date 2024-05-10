@@ -25,7 +25,7 @@ import {
   getChainIdFromRequest,
   parseApproveData,
   parseRequestParams,
-  validateAndSignTransaction
+  scanAndSignTransaction
 } from './utils'
 
 export type EthSendTransactionRpcRequest =
@@ -72,7 +72,7 @@ class EthSendTransactionHandler
       selectIsBlockaidTransactionValidationBlocked(state)
 
     // TODO CP-4894 decode transaction data here instead of in SignTransaction component/useExplainTransaction hook
-    validateAndSignTransaction(request, transaction, isValidationDisabled)
+    scanAndSignTransaction(request, transaction, isValidationDisabled)
 
     return { success: true, value: DEFERRED_RESULT }
   }
