@@ -20,13 +20,16 @@ type UseWatchListReturnType = {
   getWatchlistPrice: (coingeckoId: string) => PriceData | undefined
   getWatchlistChart: (coingeckoId: string) => ChartData
   getMarketToken: (symbol: string) => MarketToken | undefined
+  isLoadingFavorites: boolean
 }
 
 export const useWatchlist = (): UseWatchListReturnType => {
   const favoriteIds = useSelector(selectWatchlistFavoriteIds)
-  const { data } = useGetTokensAndCharts()
+  const { data, isLoading } = useGetTokensAndCharts()
   const tokenIds = Object.values(data?.tokens ?? {}).map(token => token.id)
   const { data: prices } = useGetPrices(tokenIds)
+
+  const isLoadingFavorites = favoriteIds.length > 0 && isLoading
 
   const favorites = useMemo(() => {
     return favoriteIds.reduce((acc, id) => {
@@ -69,6 +72,7 @@ export const useWatchlist = (): UseWatchListReturnType => {
     charts: data?.charts ?? {},
     getWatchlistPrice,
     getWatchlistChart,
-    getMarketToken
+    getMarketToken,
+    isLoadingFavorites
   }
 }
