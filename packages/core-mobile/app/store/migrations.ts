@@ -10,6 +10,7 @@ import { Account, AccountsState } from 'store/account'
 import { WalletType } from 'services/wallet/types'
 import { AddressBookState } from 'store/addressBook'
 import { uuid } from 'utils/uuid'
+import { CORE_MOBILE_WALLET_ID } from 'services/walletconnectv2/types'
 import { initialState as watchlistInitialState } from './watchlist'
 import {
   DefaultFeatureFlagConfig,
@@ -218,7 +219,7 @@ export const migrations = {
       accountState.accounts[Number(accIndex)] = {
         index: Number(accIndex),
         id: uuid(),
-        walletId: uuid(),
+        walletId: CORE_MOBILE_WALLET_ID,
         name: oldAccount.title,
         type: CoreAccountType.PRIMARY,
         walletType: newWalletType,

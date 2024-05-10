@@ -5,6 +5,7 @@ import SeedlessService from 'seedless/services/SeedlessService'
 import { CoreAccountType, WalletType as CoreWalletType } from '@avalabs/types'
 import { uuid } from 'utils/uuid'
 import { WalletType } from 'services/wallet/types'
+import { CORE_MOBILE_WALLET_ID } from 'services/walletconnectv2/types'
 
 class AccountsService {
   async reloadAccounts(
@@ -58,7 +59,7 @@ class AccountsService {
     return {
       index,
       id: uuid(),
-      walletId: uuid(),
+      walletId: CORE_MOBILE_WALLET_ID,
       name: `Account ${index + 1}`,
       type: CoreAccountType.PRIMARY,
       active: index === activeAccountIndex,
