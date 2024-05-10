@@ -30,6 +30,7 @@ import Logger from 'utils/Logger'
 import { assertNotUndefined } from 'utils/assertions'
 import { utils } from '@avalabs/avalanchejs'
 import { toUtf8 } from 'ethereumjs-util'
+import { getChainAliasFromNetwork } from 'services/network/utils/getChainAliasFromNetwork'
 
 export class MnemonicWallet implements Wallet {
   #mnemonic?: string
@@ -186,8 +187,11 @@ export class MnemonicWallet implements Wallet {
     }
 
     switch (rpcMethod) {
-      case RpcMethod.AVALANCHE_SIGN_MESSAGE:
-        return await this.signAvalancheMessage(accountIndex, data)
+      case RpcMethod.AVALANCHE_SIGN_MESSAGE: {
+        const chainAlias = getChainAliasFromNetwork(network)
+        if (!chainAlias) throw new Error('invalid chain alias')
+        return await this.signAvalancheMessage(accountIndex, data, chainAlias)
+      }
       case RpcMethod.ETH_SIGN:
       case RpcMethod.PERSONAL_SIGN:
         return personalSign({ privateKey: key, data })
@@ -354,13 +358,14 @@ export class MnemonicWallet implements Wallet {
   private signAvalancheMessage = async (
     accountIndex: number,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    data: any
+    data: any,
+    chainAlias: Avalanche.ChainIDAlias
   ): Promise<string> => {
     const message = toUtf8(data)
     const signer = this.getAvaSigner(accountIndex) as Avalanche.SimpleSigner
     const buffer = await signer.signMessage({
       message,
-      chain: 'X'
+      chain: chainAlias
     })
     return utils.base58check.encode(buffer)
   }
