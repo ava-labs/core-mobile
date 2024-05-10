@@ -13,6 +13,7 @@ import {
   AvalancheSignMessageRpcRequest
 } from 'store/rpc/handlers/avalanche_signMessage/types'
 import { selectActiveAccount } from 'store/account'
+import NetworkService from 'services/network/NetworkService'
 import {
   ApproveResponse,
   DEFERRED_RESULT,
@@ -82,7 +83,12 @@ class AvalancheSignMessageHandler
         data: { message, accountIndex }
       } = payload
       const activeAccount = selectActiveAccount(getState())
-      const network = selectActiveNetwork(getState())
+      const activeNetwork = selectActiveNetwork(getState())
+      // this is assumption that AVALANCHE_SIGN_MESSAGE is used only by X and P chains
+      // so here we use one of those, doesn't matter which since both work on same address
+      const network = NetworkService.getAvalancheNetworkX(
+        activeNetwork.isTestnet === true
+      )
 
       if (!activeAccount) {
         throw new Error('Unable to submit transaction, no active account.')
