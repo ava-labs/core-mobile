@@ -69,11 +69,17 @@ const onBalanceUpdate = async (
     networksToFetch = [activeNetwork]
   } else {
     const favoriteNetworks = selectFavoriteNetworks(state)
-    // Just in case the active network has not been favorited
-    if (!favoriteNetworks.map(n => n.chainId).includes(activeNetwork.chainId)) {
+
+    if (
+      // in case the active network has not been favorited
+      !favoriteNetworks.map(n => n.chainId).includes(activeNetwork.chainId) ||
+      // or the active network is not the first in the list
+      favoriteNetworks[0]?.chainId !== activeNetwork.chainId
+    ) {
       // move the active network to the front of the list
-      favoriteNetworks.unshift(activeNetwork)
+      networksToFetch = [activeNetwork, ...favoriteNetworks]
     }
+
     networksToFetch = favoriteNetworks
   }
 
@@ -116,42 +122,44 @@ const onBalanceUpdateCore = async ({
 
   const currency = selectSelectedCurrency(state).toLowerCase()
 
+  const [firstNetwork, ...restNetworks] = networks
+
   // fetch the first network balances first
-  const network = networks.shift()
-  if (network === undefined) return
+  if (firstNetwork === undefined) return
 
   const promises = accounts.map(account => {
     return BalanceService.getBalancesForAccount({
-      network,
+      network: firstNetwork,
       account,
       currency,
       sentryTrx
     })
   })
   const balances = await fetchBalanceForAccounts(promises)
+
   dispatch(setBalances(balances))
 
   // fetch all other network balances
-  if (networks.length === 0) return
+  if (restNetworks.length > 0) {
+    const inactiveNetworkPromises: Promise<BalancesForAccount>[] = []
 
-  const inactiveNetworkPromises: Promise<BalancesForAccount>[] = []
-
-  for (const n of networks) {
-    inactiveNetworkPromises.push(
-      ...accounts.map(account => {
-        return BalanceService.getBalancesForAccount({
-          network: n,
-          account,
-          currency,
-          sentryTrx
+    for (const n of restNetworks) {
+      inactiveNetworkPromises.push(
+        ...accounts.map(account => {
+          return BalanceService.getBalancesForAccount({
+            network: n,
+            account,
+            currency,
+            sentryTrx
+          })
         })
-      })
+      )
+    }
+    const inactiveNetworkbalances = await fetchBalanceForAccounts(
+      inactiveNetworkPromises
     )
+    dispatch(setBalances(inactiveNetworkbalances))
   }
-  const inactiveNetworkbalances = await fetchBalanceForAccounts(
-    inactiveNetworkPromises
-  )
-  dispatch(setBalances(inactiveNetworkbalances))
 
   dispatch(setStatus(QueryStatus.IDLE))
   SentryWrapper.finish(sentryTrx)

@@ -21,7 +21,7 @@ import { DeFiProtocolList } from 'screens/defi/DeFiProtocolList'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { fetchWatchlist } from 'store/watchlist'
 import { useNetworks } from 'hooks/networks/useNetworks'
-import { selectIsLoadingBalances } from 'store/balance'
+import { selectIsBalanceLoadedForNetworks } from 'store/balance/slice'
 import InactiveNetworkCard from './components/Cards/InactiveNetworkCard'
 import PortfolioHeader from './components/PortfolioHeader'
 import { PortfolioInactiveNetworksLoader } from './components/Loaders/PortfolioInactiveNetworksLoader'
@@ -85,13 +85,18 @@ const TokensTab = (): JSX.Element => {
   const { inactiveNetworks } = useNetworks()
   const { isRefetching, refetch } = useSearchableTokenList()
   const dispatch = useDispatch()
-  const isLoadingBalances = useSelector(selectIsLoadingBalances)
+
+  const isBalanceLoadedForInactiveNetworks = useSelector(
+    selectIsBalanceLoadedForNetworks(
+      inactiveNetworks.map(network => network.chainId)
+    )
+  )
 
   // set item to render to the first inactive network as dummy single value array
   // in order to show the loader while the balances are still loading
   // * the loader consist of 4 content reactangle loaders
   const itemsToRender =
-    isLoadingBalances && inactiveNetworks.length > 0
+    !isBalanceLoadedForInactiveNetworks && inactiveNetworks.length > 0
       ? // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         [inactiveNetworks[0]!]
       : inactiveNetworks
@@ -135,7 +140,7 @@ const TokensTab = (): JSX.Element => {
         numColumns={2}
         data={itemsToRender}
         renderItem={
-          isLoadingBalances
+          !isBalanceLoadedForInactiveNetworks
             ? renderInactiveNetworkLoader
             : renderInactiveNetwork
         }
