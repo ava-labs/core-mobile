@@ -20,7 +20,7 @@ import {
   isNetworkSupported,
   navigateToSessionProposal,
   parseApproveData,
-  scanAndConnectSession
+  scanAndSessionProposal
 } from './utils'
 
 const DEFAULT_EVENTS = ['chainChanged', 'accountsChanged']
@@ -184,7 +184,7 @@ class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
     if (isScanDisabled) {
       navigateToSessionProposal(request, chainIds)
     } else {
-      scanAndConnectSession(dappUrl, request, chainIds)
+      scanAndSessionProposal(dappUrl, request, chainIds)
     }
     return { success: true, value: DEFERRED_RESULT }
   }

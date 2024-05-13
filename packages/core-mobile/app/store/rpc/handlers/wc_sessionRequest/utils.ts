@@ -91,7 +91,7 @@ export const parseApproveData: (data: unknown) =>
   return approveDataSchema.safeParse(data)
 }
 
-export const scanAndConnectSession = async (
+export const scanAndSessionProposal = async (
   dappUrl: string,
   request: WCSessionProposal,
   chainIds: number[]
