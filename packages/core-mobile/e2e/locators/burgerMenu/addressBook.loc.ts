@@ -2,7 +2,7 @@ export default {
   addAddressButton: 'Add Address',
   emptyContacts: 'No Addresses Saved',
   emptyContactsText: 'Tap the button below to add an address.',
-  deleteContact: 'Delete Contact',
+  deleteContact: 'delete_contact',
   edit: 'Edit',
   contactName: 'Avax account 2',
   nameText: 'Name',

@@ -25,6 +25,7 @@ import {
 import Logger from 'utils/Logger'
 import { getLocalTokenId } from 'store/balance/utils'
 import SentryWrapper from 'services/sentry/SentryWrapper'
+import { BalancesForAccount } from '../../services/balance/BalanceService'
 import {
   fetchBalanceForAccount,
   getKey,
@@ -67,11 +68,13 @@ const onBalanceUpdate = async (
   if (fetchActiveOnly) {
     networksToFetch = [activeNetwork]
   } else {
-    networksToFetch = selectFavoriteNetworks(state)
+    const favoriteNetworks = selectFavoriteNetworks(state)
     // Just in case the active network has not been favorited
-    if (!networksToFetch.map(n => n.chainId).includes(activeNetwork.chainId)) {
-      networksToFetch.push(activeNetwork)
+    if (!favoriteNetworks.map(n => n.chainId).includes(activeNetwork.chainId)) {
+      // move the active network to the front of the list
+      favoriteNetworks.unshift(activeNetwork)
     }
+    networksToFetch = favoriteNetworks
   }
 
   onBalanceUpdateCore({
@@ -93,6 +96,8 @@ const onBalanceUpdateCore = async ({
   networks: Network[]
   accounts: Account[]
 }): Promise<void> => {
+  if (networks.length === 0) return
+
   const { getState, dispatch } = listenerApi
   const state = getState()
   const currentStatus = selectBalanceStatus(state)
@@ -111,13 +116,31 @@ const onBalanceUpdateCore = async ({
 
   const currency = selectSelectedCurrency(state).toLowerCase()
 
-  const promises = []
+  // fetch the first network balances first
+  const network = networks.shift()
+  if (network === undefined) return
 
-  for (const network of networks) {
-    promises.push(
+  const promises = accounts.map(account => {
+    return BalanceService.getBalancesForAccount({
+      network,
+      account,
+      currency,
+      sentryTrx
+    })
+  })
+  const balances = await fetchBalanceForAccounts(promises)
+  dispatch(setBalances(balances))
+
+  // fetch all other network balances
+  if (networks.length === 0) return
+
+  const inactiveNetworkPromises: Promise<BalancesForAccount>[] = []
+
+  for (const n of networks) {
+    inactiveNetworkPromises.push(
       ...accounts.map(account => {
         return BalanceService.getBalancesForAccount({
-          network,
+          network: n,
           account,
           currency,
           sentryTrx
@@ -125,37 +148,12 @@ const onBalanceUpdateCore = async ({
       })
     )
   }
-
-  const balances = (await Promise.allSettled(promises)).reduce<Balances>(
-    (acc, result) => {
-      if (result.status === 'rejected') {
-        Logger.warn('failed to get balance', result.reason)
-        return acc
-      }
-
-      const { accountIndex, chainId, tokens } = result.value
-
-      const tokensWithBalance = tokens.map(token => {
-        return {
-          ...token,
-          localId: getLocalTokenId(token)
-        } as LocalTokenWithBalance
-      })
-      return {
-        ...acc,
-        [getKey(chainId, accountIndex)]: {
-          accountIndex,
-          chainId,
-          tokens: tokensWithBalance
-        }
-      }
-    },
-    {}
+  const inactiveNetworkbalances = await fetchBalanceForAccounts(
+    inactiveNetworkPromises
   )
+  dispatch(setBalances(inactiveNetworkbalances))
 
-  dispatch(setBalances(balances))
   dispatch(setStatus(QueryStatus.IDLE))
-
   SentryWrapper.finish(sentryTrx)
 }
 
@@ -165,7 +163,6 @@ const fetchBalancePeriodically = async (
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
   const { condition } = listenerApi
-
   onBalanceUpdate(QueryStatus.LOADING, listenerApi, false)
 
   const pollingTask = listenerApi.fork(async forkApi => {
@@ -229,6 +226,37 @@ const handleFetchBalanceForAccount = async (
     networks: networksToFetch,
     accounts: accountsToFetch
   }).catch(Logger.error)
+}
+
+const fetchBalanceForAccounts = async (
+  promises: Promise<BalancesForAccount>[]
+): Promise<Balances> => {
+  return (await Promise.allSettled(promises)).reduce<Balances>(
+    (acc, result) => {
+      if (result.status === 'rejected') {
+        Logger.warn('failed to get balance', result.reason)
+        return acc
+      }
+
+      const { accountIndex, chainId, tokens } = result.value
+
+      const tokensWithBalance = tokens.map(token => {
+        return {
+          ...token,
+          localId: getLocalTokenId(token)
+        } as LocalTokenWithBalance
+      })
+      return {
+        ...acc,
+        [getKey(chainId, accountIndex)]: {
+          accountIndex,
+          chainId,
+          tokens: tokensWithBalance
+        }
+      }
+    },
+    {}
+  )
 }
 
 export const addBalanceListeners = (

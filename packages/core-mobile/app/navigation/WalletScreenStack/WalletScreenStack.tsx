@@ -189,6 +189,7 @@ export type WalletScreenStackParams = {
   [AppNavigation.Modal.AnalyticsConsentSheet]: undefined
   [AppNavigation.Modal.UseWalletConnect]: { onContinue: () => void }
   [AppNavigation.Modal.BitcoinSendTransaction]: BitcoinSendTransactionParams
+  [AppNavigation.Modal.MaliciousTransactionWarning]: SignTransactionV2Params
 }
 
 const WalletScreenS = createStackNavigator<WalletScreenStackParams>()

@@ -3,9 +3,10 @@ import OnboardScreenStack, {
   OnboardingScreenStackParamList
 } from 'navigation/OnboardScreenStack'
 import { createStackNavigator } from '@react-navigation/stack'
-import { Alert, Vibration } from 'react-native'
+import { Alert, Platform, Vibration } from 'react-native'
 import {
   NavigatorScreenParams,
+  useFocusEffect,
   useNavigation,
   useRoute
 } from '@react-navigation/native'
@@ -38,6 +39,8 @@ import { PrivacyScreen } from './wallet/PrivacyScreen'
 import RecoveryMethodsStack, {
   RecoveryMethodsStackParamList
 } from './onboarding/RecoveryMethodsStack'
+
+const DELAY = Platform.OS === 'android' ? 0 : 100
 
 export type RootScreenStackParamList = {
   [AppNavigation.Root
@@ -79,6 +82,7 @@ const WalletScreenStackWithContext: FC = () => {
   const [shouldRenderOnlyPinScreen, setShouldRenderOnlyPinScreen] = useState<
     null | boolean
   >(null)
+  const [enabledPrivacyScreen, setEnabledPrivacyScreen] = useState(false)
 
   useEffect(() => {
     // set shouldRenderOnlyPinScreen to false once wallet is unlocked
@@ -88,6 +92,14 @@ const WalletScreenStackWithContext: FC = () => {
 
     setShouldRenderOnlyPinScreen(walletState !== WalletState.ACTIVE)
   }, [appIsReady, shouldRenderOnlyPinScreen, walletState])
+
+  useFocusEffect(
+    useCallback(() => {
+      setTimeout(() => {
+        setEnabledPrivacyScreen(inBackground)
+      }, DELAY)
+    }, [inBackground])
+  )
 
   const doExit = useCallback(() => {
     onExit((confirmExit, cancel) => {
@@ -120,11 +132,12 @@ const WalletScreenStackWithContext: FC = () => {
   return (
     <>
       <WalletScreenStack onExit={doExit} />
+
       {walletState === WalletState.INACTIVE && <LoginWithPinOrBiometryScreen />}
       {/* This protects from leaking last screen in "recent apps" list.                                 */}
       {/* For Android it is additionally implemented natively in MainActivity.java because react-native */}
       {/* isn't fast enough to change layout before system makes screenshot of app for recent apps list */}
-      {inBackground && <PrivacyScreen />}
+      {enabledPrivacyScreen && <PrivacyScreen />}
     </>
   )
 }

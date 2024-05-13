@@ -1,4 +1,11 @@
 import { SafeParseReturnType, z } from 'zod'
+import * as Navigation from 'utils/Navigation'
+import AppNavigation from 'navigation/AppNavigation'
+import BlockaidService from 'services/blockaid/BlockaidService'
+import { TransactionScanResponse } from 'services/blockaid/types'
+import Logger from 'utils/Logger'
+import { RpcMethod, RpcRequest } from '../../types'
+import { EthSendTransactionRpcRequest } from './eth_sendTransaction'
 
 const transactionSchema = z.object({
   from: z.string().length(42),
@@ -45,4 +52,68 @@ export type TransactionParams = {
   maxFeePerGas?: string
   maxPriorityFeePerGas?: string
   nonce?: string
+}
+
+export const getChainIdFromRequest = (
+  request: RpcRequest<RpcMethod>
+): number => {
+  if (!request.data.params.chainId) {
+    throw new Error('chainId is missing from the request')
+  }
+
+  const parts = request.data.params.chainId.split(':')
+  if (parts.length < 2 || isNaN(Number(parts[1]))) {
+    throw new Error('chainId is not in a valid format')
+  }
+
+  return Number(parts[1])
+}
+
+export const scanAndSignTransaction = async (
+  request: EthSendTransactionRpcRequest,
+  txParam: TransactionParams,
+  isValidationDisabled: boolean
+): Promise<void> => {
+  if (isValidationDisabled) {
+    navigateToSignTransaction(request, txParam)
+    return
+  }
+
+  try {
+    const chainId = getChainIdFromRequest(request)
+    const scanTransactionResponse = await BlockaidService.scanTransaction(
+      chainId,
+      txParam,
+      request.peerMeta.url
+    )
+
+    navigateToSignTransaction(request, txParam, scanTransactionResponse)
+  } catch (error) {
+    Logger.error('[Blockaid]Failed to validate transaction', error)
+
+    navigateToSignTransaction(request, txParam)
+  }
+}
+
+const navigateToSignTransaction = (
+  request: EthSendTransactionRpcRequest,
+  transaction: TransactionParams,
+  scanResponse?: TransactionScanResponse
+): void => {
+  const screen =
+    scanResponse?.validation?.result_type === 'Malicious'
+      ? AppNavigation.Modal.MaliciousTransactionWarning
+      : AppNavigation.Modal.SignTransactionV2
+
+  Navigation.navigate({
+    name: AppNavigation.Root.Wallet,
+    params: {
+      screen,
+      params: {
+        request,
+        transaction,
+        scanResponse
+      }
+    }
+  })
 }

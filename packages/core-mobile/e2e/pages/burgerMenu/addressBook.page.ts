@@ -16,7 +16,7 @@ class AddressBook {
   }
 
   get deleteContact() {
-    return by.text(addressBookLoc.deleteContact)
+    return by.id(addressBookLoc.deleteContact)
   }
 
   get emptyContacts() {
@@ -64,7 +64,7 @@ class AddressBook {
   }
 
   async tapDeleteContact() {
-    await Actions.tapElementAtIndex(this.deleteContact, 0)
+    await Actions.tap(this.deleteContact)
   }
 
   async inputContactName() {

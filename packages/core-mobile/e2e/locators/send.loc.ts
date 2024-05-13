@@ -12,5 +12,6 @@ export default {
   tokenDropdown: 'send_token__token_dropdown',
   usdcToken: 'USDC',
   wethToken: 'WETH.e',
-  approveBtn: 'Approve'
+  approveBtn: 'approve_button',
+  rejectBtn: 'Reject'
 }

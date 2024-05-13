@@ -9,6 +9,7 @@ import { selectActiveAccount } from 'store/account'
 import { selectActiveNetwork } from 'store/network'
 import { UPDATE_SESSION_DELAY } from 'consts/walletConnect'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import { getChainIdFromRequest } from 'store/rpc/handlers/eth_sendTransaction/utils'
 import { AgnosticRpcProvider, RpcMethod, RpcProvider } from '../../types'
 import { isSessionProposal, isUserRejectedError } from './utils'
 
@@ -152,8 +153,8 @@ class WalletConnectProvider implements AgnosticRpcProvider {
     const isDeveloperMode = selectIsDeveloperMode(state)
 
     // validate chain against the current developer mode
-    const chainId = request.data.params.chainId.split(':')[1] ?? ''
-    const network = selectNetwork(Number(chainId))(state)
+    const chainId = getChainIdFromRequest(request)
+    const network = selectNetwork(chainId)(state)
     const isTestnet = Boolean(network?.isTestnet)
 
     if (isTestnet !== isDeveloperMode) {

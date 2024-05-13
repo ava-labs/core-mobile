@@ -130,9 +130,7 @@ enum NftScreens {
 }
 
 enum NftSendScreens {
-  AddressPick = 'NftSendScreens.AddressPick',
-  Review = 'NftSendScreens.Review',
-  Success = 'NftSendScreens.Success'
+  AddressPick = 'NftSendScreens.AddressPick'
 }
 
 enum SecurityPrivacyScreens {
@@ -204,6 +202,7 @@ enum ModalScreens {
   BrowserTabCloseAll = 'ModalScreens.BrowserTabCloseAll',
   AnalyticsConsentSheet = 'ModalScreens.AnalyticsConsentSheet',
   UseWalletConnect = 'ModalScreens.UseWalletConnect',
+  MaliciousTransactionWarning = 'ModalScreens.MaliciousTransactionWarning',
   AvalancheSignMessage = 'ModalScreens.AvalancheSignMessage'
 }
 
