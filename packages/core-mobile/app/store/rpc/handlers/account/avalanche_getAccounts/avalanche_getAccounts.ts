@@ -1,6 +1,7 @@
 import { AppListenerEffectAPI } from 'store'
 import { selectAccounts, selectActiveAccount } from 'store/account/slice'
 import { RpcMethod, RpcRequest } from 'store/rpc/types'
+import { ethErrors } from 'eth-rpc-errors'
 import { HandleResponse, RpcRequestHandler } from '../../types'
 
 export type AvalancheGetAccountsRpcRequest =
@@ -17,11 +18,13 @@ class AvalancheGetAccountsHandler
   ): HandleResponse => {
     const accounts = selectAccounts(listenerApi.getState())
     const activeAccount = selectActiveAccount(listenerApi.getState())
-    if (!activeAccount) throw new Error('no active account')
+    if (!activeAccount)
+      return {
+        success: false,
+        error: ethErrors.rpc.internal('no active account')
+      }
 
     const accountsArray = Object.values(accounts).map(account => {
-      account.active = account.index === activeAccount?.index
-      account.walletId = 'test' //TODO: implement this properly
       return account
     })
     return { success: true, value: accountsArray }
