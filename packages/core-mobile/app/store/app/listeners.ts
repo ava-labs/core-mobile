@@ -116,6 +116,13 @@ const lockApp = async (
     }
   }
 
+  if (action.type === immediateAppLock.type) {
+    setTimeout(() => {
+      lockTheApp()
+    }, 100)
+    return
+  }
+
   const backgroundStarted = new Date()
 
   await condition(isAnyOf(onForeground))
