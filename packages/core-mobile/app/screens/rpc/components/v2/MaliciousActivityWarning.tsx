@@ -14,11 +14,18 @@ const MaliciousActivityWarning = ({
   } = useTheme()
   const textStyle = { color: '$black', fontSize: 13, lineHeight: 16 }
 
+  const icon = useMemo(() => {
+    if (level === 'Malicious') {
+      return <Icons.Social.RemoveModerator color={colors.$black} />
+    }
+
+    return <Icons.Device.IconGPPMaybe color={colors.$black} />
+  }, [level, colors])
+
   const content = useMemo(() => {
     if (type === 'Transaction') {
       if (level === 'Malicious') {
         return {
-          icon: <Icons.Social.RemoveModerator color={colors.$black} />,
           title: 'Scam Transaction',
           subtitle: 'This transaction is malicious, do not proceed.'
         }
@@ -26,7 +33,6 @@ const MaliciousActivityWarning = ({
 
       if (level === 'Warning') {
         return {
-          icon: <Icons.Device.IconGPPMaybe color={colors.$black} />,
           title: 'Suspicious Transaction',
           subtitle: 'Use caution, this transaction may be malicious.'
         }
@@ -36,7 +42,6 @@ const MaliciousActivityWarning = ({
     if (type === 'SessionProposal') {
       if (level === 'Malicious') {
         return {
-          icon: <Icons.Social.RemoveModerator color={colors.$black} />,
           title: 'Scam Application',
           subtitle: 'This application is malicious, do not proceed.'
         }
@@ -44,7 +49,6 @@ const MaliciousActivityWarning = ({
 
       if (level === 'Warning') {
         return {
-          icon: <Icons.Device.IconGPPMaybe color={colors.$black} />,
           title: 'Suspicious Application',
           subtitle: 'Use caution, this application may be malicious.'
         }
@@ -52,7 +56,7 @@ const MaliciousActivityWarning = ({
     }
 
     throw new Error('[MaliciousActivityWarning] Invalid activity type or level')
-  }, [level, type, colors])
+  }, [level, type])
 
   return (
     <View
@@ -65,7 +69,7 @@ const MaliciousActivityWarning = ({
         alignItems: 'center',
         gap: 13
       }}>
-      {content.icon}
+      {icon}
       <View>
         <Text sx={{ ...textStyle, fontWeight: '600' }}>{content.title}</Text>
         <Text sx={{ ...textStyle }}>{content.subtitle}</Text>
