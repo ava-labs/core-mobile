@@ -1,5 +1,3 @@
-import * as Navigation from 'utils/Navigation'
-import AppNavigation from 'navigation/AppNavigation'
 import { ProposalTypes, SessionTypes } from '@walletconnect/types'
 import { AppListenerEffectAPI } from 'store'
 import { ethErrors } from 'eth-rpc-errors'
@@ -8,6 +6,7 @@ import { addNamespaceToChain } from 'services/walletconnectv2/utils'
 import { normalizeNamespaces } from '@walletconnect/utils'
 import { WCSessionProposal } from 'store/walletConnectV2/types'
 import { selectActiveNetwork, selectAllNetworks } from 'store/network'
+import { selectIsBlockaidDappScanBlocked } from 'store/posthog'
 import { RpcMethod, CORE_ONLY_METHODS } from '../../types'
 import {
   RpcRequestHandler,
@@ -19,7 +18,9 @@ import {
   isCoreDomain,
   isCoreMethod,
   isNetworkSupported,
-  parseApproveData
+  navigateToSessionProposal,
+  parseApproveData,
+  scanAndConnectSession
 } from './utils'
 
 const DEFAULT_EVENTS = ['chainChanged', 'accountsChanged']
@@ -179,14 +180,12 @@ class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
       }
     }
 
-    Navigation.navigate({
-      name: AppNavigation.Root.Wallet,
-      params: {
-        screen: AppNavigation.Modal.SessionProposalV2,
-        params: { request, chainIds }
-      }
-    })
-
+    const isScanDisabled = selectIsBlockaidDappScanBlocked(state)
+    if (isScanDisabled) {
+      navigateToSessionProposal(request, chainIds)
+    } else {
+      scanAndConnectSession(dappUrl, request, chainIds)
+    }
     return { success: true, value: DEFERRED_RESULT }
   }
 

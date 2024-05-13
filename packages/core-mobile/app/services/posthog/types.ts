@@ -23,7 +23,8 @@ export enum FeatureGates {
   SEEDLESS_SIGNING = 'seedless-signing',
   UNIFIED_BRIDGE_CCTP = 'unified-bridge-cctp',
   LOG_ERRORS_TO_SENTRY = 'log-errors-to-sentry',
-  BLOCKAID_TRANSACTION_VALIDATION = 'blockaid-transaction-validation'
+  BLOCKAID_TRANSACTION_VALIDATION = 'blockaid-transaction-validation',
+  BLOCKAID_DAPP_SCAN = 'blockaid-dapp-scan'
 }
 
 export enum FeatureVars {

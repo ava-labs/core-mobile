@@ -242,11 +242,11 @@ describe('eth_sendTransaction handler', () => {
       expect(mockNavigate).toHaveBeenCalledWith({
         name: AppNavigation.Root.Wallet,
         params: {
-          screen: AppNavigation.Modal.MaliciousTransactionWarning,
+          screen: AppNavigation.Modal.MaliciousActivityWarning,
           params: {
+            activityType: 'Transaction',
             request: testRequest,
-            transaction: testParams[0],
-            scanResponse
+            onProceed: expect.any(Function)
           }
         }
       })

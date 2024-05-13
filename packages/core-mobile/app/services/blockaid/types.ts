@@ -11,3 +11,5 @@ export type Asset =
   | Blockaid.NonercTokenDetails
   | Blockaid.NativeAssetDetails
 export type AssetDiff = Blockaid.GeneralAssetDiff
+export type SiteScanResponse = Blockaid.SiteScanResponse
+export type MaliciousActivityType = 'Transaction' | 'SessionProposal'

@@ -34,7 +34,7 @@ import { useNetworks } from 'hooks/networks/useNetworks'
 import { getChainIdFromRequest } from 'store/rpc/handlers/eth_sendTransaction/utils'
 import RpcRequestBottomSheet from '../shared/RpcRequestBottomSheet'
 import BalanceChange from '../shared/signTransaction/BalanceChange'
-import TransactionWarning from './TransactionWarning'
+import MaliciousActivityWarning from './MaliciousActivityWarning'
 
 const defaultErrMessage = 'Transaction failed'
 
@@ -308,7 +308,10 @@ const SignTransaction = (): JSX.Element => {
               validationResultType === 'Warning') && (
               <>
                 <Space y={32} />
-                <TransactionWarning type={validationResultType} />
+                <MaliciousActivityWarning
+                  type={'Transaction'}
+                  level={validationResultType}
+                />
               </>
             )}
             <Space y={16} />

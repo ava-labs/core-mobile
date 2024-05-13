@@ -5,6 +5,7 @@ import AppNavigation from 'navigation/AppNavigation'
 import * as Navigation from 'utils/Navigation'
 import { ProposalTypes } from '@walletconnect/types'
 import { WCSessionProposal } from 'store/walletConnectV2/types'
+import { selectIsBlockaidDappScanBlocked } from 'store/posthog'
 import { wcSessionRequestHandler as handler } from './wc_sessionRequest'
 
 jest.mock('store/network', () => {
@@ -14,6 +15,20 @@ jest.mock('store/network', () => {
     selectAllNetworks: () => mockNetworks
   }
 })
+
+jest.mock('store/posthog', () => {
+  const actual = jest.requireActual('store/posthog')
+  return {
+    ...actual,
+    selectIsBlockaidDappScanBlocked: jest.fn()
+  }
+})
+
+const mockIsBlockaidDappScanBlocked =
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  selectIsBlockaidDappScanBlocked as jest.MockedFunction<any>
+mockIsBlockaidDappScanBlocked.mockReturnValue(true)
+
 const mockNavigate = jest.fn()
 jest.spyOn(Navigation, 'navigate').mockImplementation(mockNavigate)
 
