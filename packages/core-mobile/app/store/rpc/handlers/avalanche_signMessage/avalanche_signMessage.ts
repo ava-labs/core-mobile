@@ -4,7 +4,6 @@ import * as Navigation from 'utils/Navigation'
 import AppNavigation from 'navigation/AppNavigation'
 import { ethErrors } from 'eth-rpc-errors'
 import Logger from 'utils/Logger'
-import { selectActiveNetwork } from 'store/network'
 import WalletService from 'services/wallet/WalletService'
 import * as Sentry from '@sentry/react-native'
 import { parseRequestParams } from 'store/rpc/handlers/avalanche_signMessage/utils'
@@ -14,6 +13,7 @@ import {
 } from 'store/rpc/handlers/avalanche_signMessage/types'
 import { selectActiveAccount } from 'store/account'
 import NetworkService from 'services/network/NetworkService'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 import {
   ApproveResponse,
   DEFERRED_RESULT,
@@ -83,12 +83,10 @@ class AvalancheSignMessageHandler
         data: { message, accountIndex }
       } = payload
       const activeAccount = selectActiveAccount(getState())
-      const activeNetwork = selectActiveNetwork(getState())
+      const isDeveloperMode = selectIsDeveloperMode(getState())
       // this is assumption that AVALANCHE_SIGN_MESSAGE is used only by X and P chains
       // so here we use one of those, doesn't matter which since both work on same address
-      const network = NetworkService.getAvalancheNetworkX(
-        activeNetwork.isTestnet === true
-      )
+      const network = NetworkService.getAvalancheNetworkX(isDeveloperMode)
 
       if (!activeAccount) {
         throw new Error('Unable to submit transaction, no active account.')
