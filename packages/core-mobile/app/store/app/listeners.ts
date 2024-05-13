@@ -116,13 +116,6 @@ const lockApp = async (
     }
   }
 
-  if (action.type === immediateAppLock.type) {
-    setTimeout(() => {
-      lockTheApp()
-    }, 100)
-    return
-  }
-
   const backgroundStarted = new Date()
 
   await condition(isAnyOf(onForeground))
@@ -136,7 +129,11 @@ const lockApp = async (
 
   // when app goes to background, lock the app after [TIME_TO_LOCK_IN_SECONDS] seconds
   const isTimeManipulated = secondsPassed < 0
-  if (isTimeManipulated || secondsPassed >= TIME_TO_LOCK_IN_SECONDS) {
+  if (
+    isTimeManipulated ||
+    secondsPassed >= TIME_TO_LOCK_IN_SECONDS ||
+    action.type === immediateAppLock.type
+  ) {
     lockTheApp()
   }
 }
