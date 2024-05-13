@@ -117,6 +117,8 @@ const lockApp = async (
   }
 
   if (action.type === immediateAppLock.type) {
+    // add a delay to lock the app, to avoid biometric dialog prompt show
+    // before the app is fully in background
     setTimeout(() => {
       lockTheApp()
     }, 100)
@@ -136,11 +138,7 @@ const lockApp = async (
 
   // when app goes to background, lock the app after [TIME_TO_LOCK_IN_SECONDS] seconds
   const isTimeManipulated = secondsPassed < 0
-  if (
-    isTimeManipulated ||
-    secondsPassed >= TIME_TO_LOCK_IN_SECONDS ||
-    action.type === immediateAppLock.type
-  ) {
+  if (isTimeManipulated || secondsPassed >= TIME_TO_LOCK_IN_SECONDS) {
     lockTheApp()
   }
 }
