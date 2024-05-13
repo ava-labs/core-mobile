@@ -7,7 +7,7 @@ function AccountBottomSheet(): JSX.Element {
   const { goBack } = useNavigation()
 
   return (
-    <Sheet>
+    <Sheet onClose={() => goBack()}>
       <AccountView onDone={() => goBack()} />
     </Sheet>
   )
