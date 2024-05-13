@@ -16,7 +16,6 @@ import {
   selectAccounts,
   selectActiveAccount,
   selectWalletName,
-  setAccount,
   setAccounts
 } from './slice'
 
@@ -52,9 +51,7 @@ const initAccounts = async (
 
       const title = await SeedlessService.getAccountName(i)
       const accountTitle = title ?? acc.name
-      listenerApi.dispatch(setAccount({ ...acc, name: accountTitle }))
-
-      accounts.push(acc)
+      accounts.push({ ...acc, name: accountTitle })
     }
   } else if (walletType === WalletType.MNEMONIC) {
     // only add the first account for mnemonic wallet
@@ -67,10 +64,10 @@ const initAccounts = async (
 
     const accountTitle =
       walletName && walletName.length > 0 ? walletName : acc.name
-    listenerApi.dispatch(setAccount({ ...acc, name: accountTitle }))
-
-    accounts.push(acc)
+    accounts.push({ ...acc, name: accountTitle })
   }
+
+  listenerApi.dispatch(setAccounts(accounts))
 
   if (isDeveloperMode === false) {
     AnalyticsService.captureWithEncryption('AccountAddressesUpdated', {
