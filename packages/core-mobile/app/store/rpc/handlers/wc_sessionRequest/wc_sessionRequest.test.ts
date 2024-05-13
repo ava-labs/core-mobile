@@ -6,6 +6,8 @@ import * as Navigation from 'utils/Navigation'
 import { ProposalTypes } from '@walletconnect/types'
 import { WCSessionProposal } from 'store/walletConnectV2/types'
 import { selectIsBlockaidDappScanBlocked } from 'store/posthog'
+import BlockaidService from 'services/blockaid/BlockaidService'
+import { SiteScanResponse } from 'services/blockaid/types'
 import { wcSessionRequestHandler as handler } from './wc_sessionRequest'
 
 jest.mock('store/network', () => {
@@ -91,6 +93,28 @@ const createRequest = (
       }
     }
   }
+}
+
+const scanDappMaliciousResponse: SiteScanResponse = {
+  status: 'hit',
+  is_malicious: true,
+  attack_types: {},
+  contract_read: {
+    contract_addresses: [],
+    functions: {}
+  },
+  contract_write: {
+    contract_addresses: [],
+    functions: {}
+  },
+  is_web3_site: true,
+  is_reachable: true,
+  json_rpc_operations: [],
+  malicious_score: 100,
+  network_operations: [],
+  scan_end_time: '',
+  scan_start_time: '',
+  url: ''
 }
 
 const testApproveInvalidData = async (data: unknown) => {
@@ -225,7 +249,7 @@ describe('session_request handler', () => {
       })
     })
 
-    it('should display prompt and return success', async () => {
+    it('should navigate to session proposal screen and return success', async () => {
       const testRequest = createRequest(validRequiredNamespaces)
 
       const result = await handler.handle(testRequest, mockListenerApi)
@@ -239,6 +263,50 @@ describe('session_request handler', () => {
       })
 
       expect(result).toEqual({ success: true, value: expect.any(Symbol) })
+    })
+
+    it('should navigate to malicious activity warning screen when dApp scan result is malicous', async () => {
+      mockIsBlockaidDappScanBlocked.mockReturnValue(false)
+      jest
+        .spyOn(BlockaidService, 'scanSite')
+        .mockResolvedValue(scanDappMaliciousResponse)
+
+      const testRequest = createRequest(validRequiredNamespaces)
+
+      await handler.handle(testRequest, mockListenerApi)
+
+      expect(mockNavigate).toHaveBeenCalledWith({
+        name: AppNavigation.Root.Wallet,
+        params: {
+          screen: AppNavigation.Modal.MaliciousActivityWarning,
+          params: {
+            activityType: 'SessionProposal',
+            request: testRequest,
+            onProceed: expect.any(Function)
+          }
+        }
+      })
+    })
+
+    it('should navigate to session proposal screen when dApp scan result is not malicous', async () => {
+      mockIsBlockaidDappScanBlocked.mockReturnValue(false)
+      const scanResponse = {
+        ...scanDappMaliciousResponse,
+        is_malicious: false
+      }
+      jest.spyOn(BlockaidService, 'scanSite').mockResolvedValue(scanResponse)
+
+      const testRequest = createRequest(validRequiredNamespaces)
+
+      await handler.handle(testRequest, mockListenerApi)
+
+      expect(mockNavigate).toHaveBeenCalledWith({
+        name: AppNavigation.Root.Wallet,
+        params: {
+          screen: AppNavigation.Modal.SessionProposalV2,
+          params: { request: testRequest, chainIds: [43114, 1], scanResponse }
+        }
+      })
     })
   })
 
