@@ -117,7 +117,9 @@ const lockApp = async (
   }
 
   if (action.type === immediateAppLock.type) {
-    lockTheApp()
+    setTimeout(() => {
+      lockTheApp()
+    }, 100)
     return
   }
 
