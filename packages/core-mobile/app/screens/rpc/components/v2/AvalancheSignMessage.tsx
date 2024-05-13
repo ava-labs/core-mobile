@@ -12,9 +12,7 @@ import { useDappConnectionV2 } from 'hooks/useDappConnectionV2'
 import { useSelector } from 'react-redux'
 import { selectIsSeedlessSigningBlocked } from 'store/posthog'
 import FeatureBlocked from 'screens/posthog/FeatureBlocked'
-import { selectActiveNetwork } from 'store/network'
-import { selectActiveAccount } from 'store/account'
-import { Button, Text, View, useTheme } from '@avalabs/k2-mobile'
+import { Button, Text, useTheme, View } from '@avalabs/k2-mobile'
 import { Sheet } from 'components/Sheet'
 import PersonalSign from '../shared/signMessage/PersonalSign'
 
@@ -23,8 +21,6 @@ type AvalancheSignMessageScreenProps = WalletScreenProps<
 >
 
 export const AvalancheSignMessage = (): JSX.Element | null => {
-  const account = useSelector(selectActiveAccount)
-  const network = useSelector(selectActiveNetwork)
   const isSeedlessSigningBlocked = useSelector(selectIsSeedlessSigningBlocked)
   const { goBack } =
     useNavigation<AvalancheSignMessageScreenProps['navigation']>()
@@ -67,8 +63,6 @@ export const AvalancheSignMessage = (): JSX.Element | null => {
       </>
     )
   }
-
-  if (!account || !network) return null
 
   return (
     <>
