@@ -28,7 +28,7 @@ const MaliciousTransactionWarningScreen = (): JSX.Element => {
   }
 
   return (
-    <Sheet>
+    <Sheet onClose={handleReject}>
       <View
         sx={{
           flex: 1,
