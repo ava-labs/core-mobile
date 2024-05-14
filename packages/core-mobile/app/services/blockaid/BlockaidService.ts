@@ -19,9 +19,8 @@ const blockaid = new Blockaid({
 })
 
 class BlockaidService {
-  static scanSite = async (url: string): Promise<SiteScanResponse> => {
-    return await blockaid.site.scan({ url })
-  }
+  static scanSite = async (url: string): Promise<SiteScanResponse> =>
+    blockaid.site.scan({ url })
 
   static scanTransaction = async (
     chainId: number,
