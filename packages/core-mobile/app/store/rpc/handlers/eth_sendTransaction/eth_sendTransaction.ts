@@ -23,6 +23,7 @@ import {
 } from '../types'
 import {
   getChainIdFromRequest,
+  navigateToSignTransaction,
   parseApproveData,
   parseRequestParams,
   scanAndSignTransaction
@@ -72,7 +73,11 @@ class EthSendTransactionHandler
       selectIsBlockaidTransactionValidationBlocked(state)
 
     // TODO CP-4894 decode transaction data here instead of in SignTransaction component/useExplainTransaction hook
-    scanAndSignTransaction(request, transaction, isValidationDisabled)
+    if (isValidationDisabled) {
+      navigateToSignTransaction({ request, transaction })
+    } else {
+      scanAndSignTransaction(request, transaction)
+    }
 
     return { success: true, value: DEFERRED_RESULT }
   }

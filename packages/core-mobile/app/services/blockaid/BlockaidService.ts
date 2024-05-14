@@ -2,7 +2,11 @@ import { TransactionParams } from 'store/rpc/handlers/eth_sendTransaction/utils'
 import { ChainId } from '@avalabs/chains-sdk'
 import Blockaid from '@blockaid/client'
 import Config from 'react-native-config'
-import { TransactionScanResponse, TransactionScanSupportedChain } from './types'
+import {
+  SiteScanResponse,
+  TransactionScanResponse,
+  TransactionScanSupportedChain
+} from './types'
 
 if (!Config.PROXY_URL) throw Error('PROXY_URL is missing')
 
@@ -14,6 +18,10 @@ const blockaid = new Blockaid({
 })
 
 class BlockaidService {
+  static scanSite = async (url: string): Promise<SiteScanResponse> => {
+    return await blockaid.site.scan({ url })
+  }
+
   static scanTransaction = async (
     chainId: number,
     params: TransactionParams,

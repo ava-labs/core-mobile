@@ -2,8 +2,8 @@ import { SafeParseReturnType, z } from 'zod'
 import * as Navigation from 'utils/Navigation'
 import AppNavigation from 'navigation/AppNavigation'
 import BlockaidService from 'services/blockaid/BlockaidService'
-import { TransactionScanResponse } from 'services/blockaid/types'
 import Logger from 'utils/Logger'
+import { SignTransactionV2Params } from 'navigation/types'
 import { RpcMethod, RpcRequest } from '../../types'
 import { EthSendTransactionRpcRequest } from './eth_sendTransaction'
 
@@ -71,49 +71,48 @@ export const getChainIdFromRequest = (
 
 export const scanAndSignTransaction = async (
   request: EthSendTransactionRpcRequest,
-  txParam: TransactionParams,
-  isValidationDisabled: boolean
+  transaction: TransactionParams
 ): Promise<void> => {
-  if (isValidationDisabled) {
-    navigateToSignTransaction(request, txParam)
-    return
-  }
-
   try {
     const chainId = getChainIdFromRequest(request)
-    const scanTransactionResponse = await BlockaidService.scanTransaction(
+    const scanResponse = await BlockaidService.scanTransaction(
       chainId,
-      txParam,
+      transaction,
       request.peerMeta.url
     )
 
-    navigateToSignTransaction(request, txParam, scanTransactionResponse)
+    if (scanResponse?.validation?.result_type === 'Malicious') {
+      Navigation.navigate({
+        name: AppNavigation.Root.Wallet,
+        params: {
+          screen: AppNavigation.Modal.MaliciousActivityWarning,
+          params: {
+            activityType: 'Transaction',
+            request,
+            onProceed: () => {
+              navigateToSignTransaction({ request, transaction, scanResponse })
+            }
+          }
+        }
+      })
+    } else {
+      navigateToSignTransaction({ request, transaction, scanResponse })
+    }
   } catch (error) {
     Logger.error('[Blockaid]Failed to validate transaction', error)
 
-    navigateToSignTransaction(request, txParam)
+    navigateToSignTransaction({ request, transaction })
   }
 }
 
-const navigateToSignTransaction = (
-  request: EthSendTransactionRpcRequest,
-  transaction: TransactionParams,
-  scanResponse?: TransactionScanResponse
+export const navigateToSignTransaction = (
+  params: SignTransactionV2Params
 ): void => {
-  const screen =
-    scanResponse?.validation?.result_type === 'Malicious'
-      ? AppNavigation.Modal.MaliciousTransactionWarning
-      : AppNavigation.Modal.SignTransactionV2
-
   Navigation.navigate({
     name: AppNavigation.Root.Wallet,
     params: {
-      screen,
-      params: {
-        request,
-        transaction,
-        scanResponse
-      }
+      screen: AppNavigation.Modal.SignTransactionV2,
+      params
     }
   })
 }

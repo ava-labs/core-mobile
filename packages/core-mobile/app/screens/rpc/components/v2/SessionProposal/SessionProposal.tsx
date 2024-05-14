@@ -14,8 +14,9 @@ import { useNavigation, useRoute } from '@react-navigation/native'
 import { useDappConnectionV2 } from 'hooks/useDappConnectionV2'
 import { useSelector } from 'react-redux'
 import { selectAccounts, selectActiveAccount } from 'store/account'
-import { Button } from '@avalabs/k2-mobile'
+import { Button, Text } from '@avalabs/k2-mobile'
 import RpcRequestBottomSheet from '../../shared/RpcRequestBottomSheet'
+import MaliciousActivityWarning from '../MaliciousActivityWarning'
 import SelectAccounts from './SelectAccounts'
 import Networks from './Networks'
 
@@ -29,7 +30,7 @@ type SessionProposalScreenProps = WalletScreenProps<
 
 const SessionProposal = (): JSX.Element => {
   const { goBack } = useNavigation<SessionProposalScreenProps['navigation']>()
-  const { request, chainIds } =
+  const { request, chainIds, scanResponse } =
     useRoute<SessionProposalScreenProps['route']>().params
 
   const { onUserApproved: onApprove, onUserRejected: onReject } =
@@ -67,12 +68,25 @@ const SessionProposal = (): JSX.Element => {
       setSelectedAccounts(current => current.filter(item => item !== address))
   }
 
+  const isDappMalicious =
+    scanResponse?.status === 'hit' && scanResponse?.is_malicious
+
   return (
     <RpcRequestBottomSheet onClose={rejectAndClose}>
       <NativeViewGestureHandler>
         <ScrollView contentContainerStyle={styles.container}>
-          <AvaText.LargeTitleBold>Connect Wallet?</AvaText.LargeTitleBold>
-          <Space y={30} />
+          <Text variant="heading4">Connect Wallet?</Text>
+          <Space y={8} />
+          {isDappMalicious && (
+            <>
+              <Space y={32} />
+              <MaliciousActivityWarning
+                activity="SessionProposal"
+                result="Malicious"
+              />
+            </>
+          )}
+          <Space y={48} />
           <View style={styles.iconContainer}>
             <OvalTagBg
               style={{

@@ -90,6 +90,7 @@ import {
   BuyCarefullyParams,
   CreateRemoveContactV2Params,
   EditGasLimitParams,
+  MaliciousActivityWarningParams,
   QRCodeParams,
   SelectAccountV2Params,
   SessionProposalV2Params,
@@ -189,7 +190,7 @@ export type WalletScreenStackParams = {
   [AppNavigation.Modal.AnalyticsConsentSheet]: undefined
   [AppNavigation.Modal.UseWalletConnect]: { onContinue: () => void }
   [AppNavigation.Modal.BitcoinSendTransaction]: BitcoinSendTransactionParams
-  [AppNavigation.Modal.MaliciousTransactionWarning]: SignTransactionV2Params
+  [AppNavigation.Modal.MaliciousActivityWarning]: MaliciousActivityWarningParams
 }
 
 const WalletScreenS = createStackNavigator<WalletScreenStackParams>()
