@@ -74,7 +74,7 @@ class EthSendTransactionHandler
 
     // TODO CP-4894 decode transaction data here instead of in SignTransaction component/useExplainTransaction hook
     if (isValidationDisabled) {
-      navigateToSignTransaction(request, transaction)
+      navigateToSignTransaction({ request, transaction })
     } else {
       scanAndSignTransaction(request, transaction)
     }

@@ -182,7 +182,7 @@ class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
 
     const isScanDisabled = selectIsBlockaidDappScanBlocked(state)
     if (isScanDisabled) {
-      navigateToSessionProposal(request, chainIds)
+      navigateToSessionProposal({ request, chainIds })
     } else {
       scanAndSessionProposal(dappUrl, request, chainIds)
     }

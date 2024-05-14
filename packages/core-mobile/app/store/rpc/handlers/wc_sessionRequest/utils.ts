@@ -14,7 +14,7 @@ import * as Navigation from 'utils/Navigation'
 import { WCSessionProposal } from 'store/walletConnectV2/types'
 import Logger from 'utils/Logger'
 import BlockaidService from 'services/blockaid/BlockaidService'
-import { SiteScanResponse } from 'services/blockaid/types'
+import { SessionProposalV2Params } from 'navigation/types'
 
 const CORE_WEB_HOSTNAMES = [
   'localhost',
@@ -108,35 +108,29 @@ export const scanAndSessionProposal = async (
             activityType: 'SessionProposal',
             request,
             onProceed: () => {
-              navigateToSessionProposal(request, chainIds, scanResponse)
+              navigateToSessionProposal({ request, chainIds, scanResponse })
             }
           }
         }
       })
     } else {
-      navigateToSessionProposal(request, chainIds, scanResponse)
+      navigateToSessionProposal({ request, chainIds, scanResponse })
     }
   } catch (error) {
     Logger.error('[Blockaid]Failed to validate transaction', error)
 
-    navigateToSessionProposal(request, chainIds)
+    navigateToSessionProposal({ request, chainIds })
   }
 }
 
 export const navigateToSessionProposal = (
-  request: WCSessionProposal,
-  chainIds: number[],
-  scanResponse?: SiteScanResponse
+  params: SessionProposalV2Params
 ): void => {
   Navigation.navigate({
     name: AppNavigation.Root.Wallet,
     params: {
       screen: AppNavigation.Modal.SessionProposalV2,
-      params: {
-        request,
-        chainIds,
-        scanResponse
-      }
+      params
     }
   })
 }

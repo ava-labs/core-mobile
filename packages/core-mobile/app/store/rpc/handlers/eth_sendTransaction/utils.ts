@@ -2,8 +2,8 @@ import { SafeParseReturnType, z } from 'zod'
 import * as Navigation from 'utils/Navigation'
 import AppNavigation from 'navigation/AppNavigation'
 import BlockaidService from 'services/blockaid/BlockaidService'
-import { TransactionScanResponse } from 'services/blockaid/types'
 import Logger from 'utils/Logger'
+import { SignTransactionV2Params } from 'navigation/types'
 import { RpcMethod, RpcRequest } from '../../types'
 import { EthSendTransactionRpcRequest } from './eth_sendTransaction'
 
@@ -71,13 +71,13 @@ export const getChainIdFromRequest = (
 
 export const scanAndSignTransaction = async (
   request: EthSendTransactionRpcRequest,
-  txParam: TransactionParams
+  transaction: TransactionParams
 ): Promise<void> => {
   try {
     const chainId = getChainIdFromRequest(request)
     const scanResponse = await BlockaidService.scanTransaction(
       chainId,
-      txParam,
+      transaction,
       request.peerMeta.url
     )
 
@@ -90,35 +90,29 @@ export const scanAndSignTransaction = async (
             activityType: 'Transaction',
             request,
             onProceed: () => {
-              navigateToSignTransaction(request, txParam, scanResponse)
+              navigateToSignTransaction({ request, transaction, scanResponse })
             }
           }
         }
       })
     } else {
-      navigateToSignTransaction(request, txParam, scanResponse)
+      navigateToSignTransaction({ request, transaction, scanResponse })
     }
   } catch (error) {
     Logger.error('[Blockaid]Failed to validate transaction', error)
 
-    navigateToSignTransaction(request, txParam)
+    navigateToSignTransaction({ request, transaction })
   }
 }
 
 export const navigateToSignTransaction = (
-  request: EthSendTransactionRpcRequest,
-  transaction: TransactionParams,
-  scanResponse?: TransactionScanResponse
+  params: SignTransactionV2Params
 ): void => {
   Navigation.navigate({
     name: AppNavigation.Root.Wallet,
     params: {
       screen: AppNavigation.Modal.SignTransactionV2,
-      params: {
-        request,
-        transaction,
-        scanResponse
-      }
+      params
     }
   })
 }
