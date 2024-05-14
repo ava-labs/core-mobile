@@ -46,8 +46,13 @@ import {
   BitcoinSendTransactionApproveData,
   BitcoinSendTransactionRpcRequest
 } from 'store/rpc/handlers/bitcoin_sendTransaction/bitcoin_sendTransaction'
-import { TransactionScanResponse } from 'services/blockaid/types'
 import { AvalancheSignMessageRpcRequest } from 'store/rpc/handlers/avalanche_signMessage/types'
+import {
+  MaliciousActivityType,
+  SiteScanResponse,
+  TransactionScanResponse
+} from 'services/blockaid/types'
+import { Request } from 'store/rpc/types'
 import { RootScreenStackParamList } from './RootScreenStack'
 import { OnboardingScreenStackParamList } from './OnboardScreenStack'
 import { WelcomeScreenStackParamList } from './onboarding/WelcomeScreenStack'
@@ -93,6 +98,7 @@ export type EditGasLimitParams = {
 export type SessionProposalV2Params = {
   request: WCSessionProposal
   chainIds: number[]
+  scanResponse?: SiteScanResponse
 }
 
 export type CreateRemoveContactV2Params = {
@@ -174,6 +180,12 @@ export type SwitchEthereumChainV2Params = {
 export type GetEthereumChainParams = {
   request: WalletGetEthereumChainRpcRequest
   network: Network
+}
+
+export type MaliciousActivityWarningParams = {
+  activityType: MaliciousActivityType
+  request: Request
+  onProceed: () => void
 }
 
 export type QRCodeParams = {

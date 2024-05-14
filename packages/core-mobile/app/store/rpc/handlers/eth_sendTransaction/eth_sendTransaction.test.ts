@@ -221,7 +221,7 @@ describe('eth_sendTransaction handler', () => {
       expect(result).toEqual({ success: true, value: expect.any(Symbol) })
     })
 
-    it('should navigate to malicious transaction warning screen if transaction validation result is malicious', async () => {
+    it('should navigate to malicious activity warning screen if transaction validation result is malicious', async () => {
       mockIsBlockaidTransactionValidationBlocked.mockReturnValue(false)
       const scanResponse: TransactionScanResponse = {
         validation: {
@@ -242,11 +242,11 @@ describe('eth_sendTransaction handler', () => {
       expect(mockNavigate).toHaveBeenCalledWith({
         name: AppNavigation.Root.Wallet,
         params: {
-          screen: AppNavigation.Modal.MaliciousTransactionWarning,
+          screen: AppNavigation.Modal.MaliciousActivityWarning,
           params: {
+            activityType: 'Transaction',
             request: testRequest,
-            transaction: testParams[0],
-            scanResponse
+            onProceed: expect.any(Function)
           }
         }
       })

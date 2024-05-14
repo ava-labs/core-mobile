@@ -1,4 +1,5 @@
 import { NetworkVMType } from '@avalabs/chains-sdk'
+import AppNavigation from 'navigation/AppNavigation'
 import { Networks } from 'store/network/types'
 import { CORE_ONLY_METHODS, RpcMethod } from 'store/rpc/types'
 import {
@@ -9,6 +10,11 @@ import {
   ZodNumber,
   ZodString
 } from 'zod'
+import * as Navigation from 'utils/Navigation'
+import { WCSessionProposal } from 'store/walletConnectV2/types'
+import Logger from 'utils/Logger'
+import BlockaidService from 'services/blockaid/BlockaidService'
+import { SessionProposalV2Params } from 'navigation/types'
 
 const CORE_WEB_HOSTNAMES = [
   'localhost',
@@ -83,4 +89,48 @@ export const parseApproveData: (data: unknown) =>
       approvedChainIds: ZodArray<ZodNumber, 'atleastone'>['_input']
     }> = (data: unknown) => {
   return approveDataSchema.safeParse(data)
+}
+
+export const scanAndSessionProposal = async (
+  dappUrl: string,
+  request: WCSessionProposal,
+  chainIds: number[]
+): Promise<void> => {
+  try {
+    const scanResponse = await BlockaidService.scanSite('klmining.net')
+
+    if (scanResponse.status === 'hit' && scanResponse.is_malicious) {
+      Navigation.navigate({
+        name: AppNavigation.Root.Wallet,
+        params: {
+          screen: AppNavigation.Modal.MaliciousActivityWarning,
+          params: {
+            activityType: 'SessionProposal',
+            request,
+            onProceed: () => {
+              navigateToSessionProposal({ request, chainIds, scanResponse })
+            }
+          }
+        }
+      })
+    } else {
+      navigateToSessionProposal({ request, chainIds, scanResponse })
+    }
+  } catch (error) {
+    Logger.error('[Blockaid]Failed to validate transaction', error)
+
+    navigateToSessionProposal({ request, chainIds })
+  }
+}
+
+export const navigateToSessionProposal = (
+  params: SessionProposalV2Params
+): void => {
+  Navigation.navigate({
+    name: AppNavigation.Root.Wallet,
+    params: {
+      screen: AppNavigation.Modal.SessionProposalV2,
+      params
+    }
+  })
 }
