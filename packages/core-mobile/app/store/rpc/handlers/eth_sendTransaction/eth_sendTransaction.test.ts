@@ -11,6 +11,8 @@ import NetworkService from 'services/network/NetworkService'
 import { prefetchNetworkFee } from 'hooks/useNetworkFee'
 import { selectNetwork } from 'store/network'
 import { selectIsBlockaidTransactionValidationBlocked } from 'store/posthog'
+import { TransactionScanResponse } from 'services/blockaid/types'
+import BlockaidService from 'services/blockaid/BlockaidService'
 import { updateRequestStatus } from '../../slice'
 import { ethSendTransactionHandler as handler } from './eth_sendTransaction'
 import { getChainIdFromRequest } from './utils'
@@ -217,6 +219,68 @@ describe('eth_sendTransaction handler', () => {
       })
 
       expect(result).toEqual({ success: true, value: expect.any(Symbol) })
+    })
+
+    it('should navigate to malicious activity warning screen if transaction validation result is malicious', async () => {
+      mockIsBlockaidTransactionValidationBlocked.mockReturnValue(false)
+      const scanResponse: TransactionScanResponse = {
+        validation: {
+          result_type: 'Malicious',
+          features: []
+        },
+        block: '0x123',
+        chain: 'ethereum'
+      }
+      jest
+        .spyOn(BlockaidService, 'scanTransaction')
+        .mockResolvedValue(scanResponse)
+
+      const testRequest = createRequest(testParams)
+
+      await handler.handle(testRequest, mockListenerApi)
+
+      expect(mockNavigate).toHaveBeenCalledWith({
+        name: AppNavigation.Root.Wallet,
+        params: {
+          screen: AppNavigation.Modal.MaliciousActivityWarning,
+          params: {
+            activityType: 'Transaction',
+            request: testRequest,
+            onProceed: expect.any(Function)
+          }
+        }
+      })
+    })
+  })
+
+  it('should navigate to sign transaction screen if transaction validation result is not malicious', async () => {
+    mockIsBlockaidTransactionValidationBlocked.mockReturnValue(false)
+    const scanResponse: TransactionScanResponse = {
+      validation: {
+        result_type: 'Benign',
+        features: []
+      },
+      block: '0x123',
+      chain: 'ethereum'
+    }
+    jest
+      .spyOn(BlockaidService, 'scanTransaction')
+      .mockResolvedValue(scanResponse)
+
+    const testRequest = createRequest(testParams)
+
+    await handler.handle(testRequest, mockListenerApi)
+
+    expect(mockNavigate).toHaveBeenCalledWith({
+      name: AppNavigation.Root.Wallet,
+      params: {
+        screen: AppNavigation.Modal.SignTransactionV2,
+        params: {
+          request: testRequest,
+          transaction: testParams[0],
+          scanResponse
+        }
+      }
     })
   })
 

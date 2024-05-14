@@ -21,9 +21,10 @@ import { DeFiProtocolList } from 'screens/defi/DeFiProtocolList'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { fetchWatchlist } from 'store/watchlist'
 import { useNetworks } from 'hooks/networks/useNetworks'
+import { selectIsBalanceLoadedForNetworks } from 'store/balance/slice'
 import InactiveNetworkCard from './components/Cards/InactiveNetworkCard'
-import { PortfolioTokensLoader } from './components/Loaders/PortfolioTokensLoader'
 import PortfolioHeader from './components/PortfolioHeader'
+import { PortfolioInactiveNetworksLoader } from './components/Loaders/PortfolioInactiveNetworksLoader'
 
 type PortfolioNavigationProp = PortfolioScreenProps<
   typeof AppNavigation.Portfolio.Portfolio
@@ -82,8 +83,27 @@ const Separator = (): JSX.Element => <Space y={16} />
 
 const TokensTab = (): JSX.Element => {
   const { inactiveNetworks } = useNetworks()
-  const { isLoading, isRefetching, refetch } = useSearchableTokenList()
+  const { isRefetching, refetch } = useSearchableTokenList()
   const dispatch = useDispatch()
+
+  const isBalanceLoadedForInactiveNetworks = useSelector(
+    selectIsBalanceLoadedForNetworks(
+      inactiveNetworks.map(network => network.chainId)
+    )
+  )
+
+  // set item to render to the first inactive network as dummy single value array
+  // in order to show the loader while the balances are still loading
+  // * the loader consist of 4 content reactangle loaders
+  const itemsToRender =
+    !isBalanceLoadedForInactiveNetworks && inactiveNetworks.length > 0
+      ? // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        [inactiveNetworks[0]!]
+      : inactiveNetworks
+
+  const renderInactiveNetworkLoader = (): React.JSX.Element => {
+    return <PortfolioInactiveNetworksLoader />
+  }
 
   const renderInactiveNetwork = (
     item: ListRenderItemInfo<Network>
@@ -107,8 +127,6 @@ const TokensTab = (): JSX.Element => {
     dispatch(fetchWatchlist)
   }
 
-  if (isLoading) return <PortfolioTokensLoader />
-
   return (
     <>
       <Animated.FlatList
@@ -120,8 +138,12 @@ const TokensTab = (): JSX.Element => {
           paddingBottom: 100
         }}
         numColumns={2}
-        data={inactiveNetworks}
-        renderItem={renderInactiveNetwork}
+        data={itemsToRender}
+        renderItem={
+          !isBalanceLoadedForInactiveNetworks
+            ? renderInactiveNetworkLoader
+            : renderInactiveNetwork
+        }
         keyExtractor={item => item.chainId.toString()}
         ItemSeparatorComponent={Separator}
         ListHeaderComponent={<TokensTabHeader />}

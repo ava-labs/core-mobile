@@ -3,10 +3,9 @@ import { WalletScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import { useDappConnectionV2 } from 'hooks/useDappConnectionV2'
-import { Text, View } from '@avalabs/k2-mobile'
+import { Button, Text, View } from '@avalabs/k2-mobile'
 import DeveloperModeSVG from 'assets/icons/developer_mode.svg'
 import FlexSpacer from 'components/FlexSpacer'
-import AvaButton from 'components/AvaButton'
 import { Space } from 'components/Space'
 import { Sheet } from 'components/Sheet'
 
@@ -62,14 +61,14 @@ export const AvalancheSetDeveloperMode = (): JSX.Element => {
     return (
       <>
         <FlexSpacer />
-        <View style={{ flex: 0, paddingVertical: 40, paddingHorizontal: 14 }}>
-          <AvaButton.PrimaryLarge onPress={onHandleApprove}>
+        <View sx={{ flex: 0, paddingVertical: 40, paddingHorizontal: 14 }}>
+          <Button type="primary" size="xlarge" onPress={onHandleApprove}>
             Approve
-          </AvaButton.PrimaryLarge>
+          </Button>
           <Space y={16} />
-          <AvaButton.SecondaryLarge onPress={rejectAndClose}>
+          <Button type="secondary" size="xlarge" onPress={rejectAndClose}>
             Reject
-          </AvaButton.SecondaryLarge>
+          </Button>
         </View>
       </>
     )
@@ -77,7 +76,7 @@ export const AvalancheSetDeveloperMode = (): JSX.Element => {
 
   const renderContent = (): JSX.Element => {
     return (
-      <View style={{ alignItems: 'center', marginTop: 16 }}>
+      <View sx={{ alignItems: 'center', marginTop: 16 }}>
         <Text variant="buttonLarge">{title}</Text>
         <Text variant="caption" sx={{ color: '$neutral400', marginTop: 4 }}>
           {description}

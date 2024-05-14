@@ -1,7 +1,6 @@
 import { AppStartListening } from 'store/middleware/listener'
 import accountService from 'services/account/AccountsService'
 import {
-  reloadAccounts as reloadAccountsAction,
   selectIsDeveloperMode,
   toggleDeveloperMode
 } from 'store/settings/advanced'
@@ -14,8 +13,8 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import SeedlessService from 'seedless/services/SeedlessService'
 import {
   selectAccounts,
+  selectActiveAccount,
   selectWalletName,
-  setAccount,
   setAccounts
 } from './slice'
 
@@ -27,7 +26,7 @@ const initAccounts = async (
   const isDeveloperMode = selectIsDeveloperMode(state)
   const walletType = selectWalletType(state)
   const walletName = selectWalletName(state)
-
+  const activeAccountIndex = selectActiveAccount(state)?.index ?? 0
   const accounts = []
 
   if (walletType === WalletType.SEEDLESS) {
@@ -42,22 +41,32 @@ const initAccounts = async (
     const pubKeys = await pubKeysStorage.retrieve()
 
     for (let i = 0; i < pubKeys.length; i++) {
-      const acc = await accountService.createNextAccount(isDeveloperMode, i)
+      const acc = await accountService.createNextAccount({
+        isTestnet: isDeveloperMode,
+        index: i,
+        activeAccountIndex,
+        walletType
+      })
+
       const title = await SeedlessService.getAccountName(i)
       const accountTitle = title ?? acc.name
-      listenerApi.dispatch(setAccount({ ...acc, name: accountTitle }))
-
-      accounts.push(acc)
+      accounts.push({ ...acc, name: accountTitle })
     }
   } else if (walletType === WalletType.MNEMONIC) {
     // only add the first account for mnemonic wallet
-    const acc = await accountService.createNextAccount(isDeveloperMode, 0)
+    const acc = await accountService.createNextAccount({
+      isTestnet: isDeveloperMode,
+      index: 0,
+      activeAccountIndex,
+      walletType
+    })
+
     const accountTitle =
       walletName && walletName.length > 0 ? walletName : acc.name
-    listenerApi.dispatch(setAccount({ ...acc, name: accountTitle }))
-
-    accounts.push(acc)
+    accounts.push({ ...acc, name: accountTitle })
   }
+
+  listenerApi.dispatch(setAccounts(accounts))
 
   if (isDeveloperMode === false) {
     AnalyticsService.captureWithEncryption('AccountAddressesUpdated', {
@@ -98,7 +107,7 @@ export const addAccountListeners = (
   })
 
   startListening({
-    matcher: isAnyOf(toggleDeveloperMode, reloadAccountsAction),
+    matcher: isAnyOf(toggleDeveloperMode),
     effect: reloadAccounts
   })
 }

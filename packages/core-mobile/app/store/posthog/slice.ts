@@ -310,6 +310,14 @@ export const selectIsBlockaidTransactionValidationBlocked = (
   )
 }
 
+export const selectIsBlockaidDappScanBlocked = (state: RootState): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    !featureFlags[FeatureGates.BLOCKAID_DAPP_SCAN] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
 // actions
 export const { regenerateUserId, toggleAnalytics, setFeatureFlags } =
   posthogSlice.actions

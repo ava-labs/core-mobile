@@ -2,8 +2,8 @@ import { SafeParseReturnType, z } from 'zod'
 import * as Navigation from 'utils/Navigation'
 import AppNavigation from 'navigation/AppNavigation'
 import BlockaidService from 'services/blockaid/BlockaidService'
-import { TransactionValidationResult } from 'services/blockaid/types'
 import Logger from 'utils/Logger'
+import { SignTransactionV2Params } from 'navigation/types'
 import { RpcMethod, RpcRequest } from '../../types'
 import { EthSendTransactionRpcRequest } from './eth_sendTransaction'
 
@@ -69,46 +69,50 @@ export const getChainIdFromRequest = (
   return Number(parts[1])
 }
 
-export const validateAndSignTransaction = async (
+export const scanAndSignTransaction = async (
   request: EthSendTransactionRpcRequest,
-  txParam: TransactionParams,
-  isValidationDisabled: boolean
+  transaction: TransactionParams
 ): Promise<void> => {
-  if (isValidationDisabled) {
-    navigateToSignTransaction(request, txParam)
-    return
-  }
-
   try {
     const chainId = getChainIdFromRequest(request)
-    const validationResult = await BlockaidService.validateTransaction(
+    const scanResponse = await BlockaidService.scanTransaction(
       chainId,
-      txParam,
+      transaction,
       request.peerMeta.url
     )
 
-    navigateToSignTransaction(request, txParam, validationResult)
+    if (scanResponse?.validation?.result_type === 'Malicious') {
+      Navigation.navigate({
+        name: AppNavigation.Root.Wallet,
+        params: {
+          screen: AppNavigation.Modal.MaliciousActivityWarning,
+          params: {
+            activityType: 'Transaction',
+            request,
+            onProceed: () => {
+              navigateToSignTransaction({ request, transaction, scanResponse })
+            }
+          }
+        }
+      })
+    } else {
+      navigateToSignTransaction({ request, transaction, scanResponse })
+    }
   } catch (error) {
     Logger.error('[Blockaid]Failed to validate transaction', error)
 
-    navigateToSignTransaction(request, txParam)
+    navigateToSignTransaction({ request, transaction })
   }
 }
 
-const navigateToSignTransaction = (
-  request: EthSendTransactionRpcRequest,
-  txParam: TransactionParams,
-  validationResult?: TransactionValidationResult
+export const navigateToSignTransaction = (
+  params: SignTransactionV2Params
 ): void => {
   Navigation.navigate({
     name: AppNavigation.Root.Wallet,
     params: {
       screen: AppNavigation.Modal.SignTransactionV2,
-      params: {
-        request,
-        transaction: txParam,
-        validationResult
-      }
+      params
     }
   })
 }

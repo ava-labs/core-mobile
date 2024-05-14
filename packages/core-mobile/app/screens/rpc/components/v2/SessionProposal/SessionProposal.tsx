@@ -5,7 +5,6 @@ import Avatar from 'components/Avatar'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import OvalTagBg from 'components/OvalTagBg'
 import { Space } from 'components/Space'
-import AvaButton from 'components/AvaButton'
 import { NativeViewGestureHandler } from 'react-native-gesture-handler'
 import FlexSpacer from 'components/FlexSpacer'
 import { showSimpleToast } from 'components/Snackbar'
@@ -15,11 +14,13 @@ import { useNavigation, useRoute } from '@react-navigation/native'
 import { useDappConnectionV2 } from 'hooks/useDappConnectionV2'
 import { useSelector } from 'react-redux'
 import { selectAccounts, selectActiveAccount } from 'store/account'
+import { Button, Text } from '@avalabs/k2-mobile'
 import RpcRequestBottomSheet from '../../shared/RpcRequestBottomSheet'
+import MaliciousActivityWarning from '../MaliciousActivityWarning'
 import SelectAccounts from './SelectAccounts'
 import Networks from './Networks'
 
-const showNoActiveAccountMessage = () => {
+const showNoActiveAccountMessage = (): void => {
   showSimpleToast('There is no active account.')
 }
 
@@ -27,9 +28,9 @@ type SessionProposalScreenProps = WalletScreenProps<
   typeof AppNavigation.Modal.SessionProposalV2
 >
 
-const SessionProposal = () => {
+const SessionProposal = (): JSX.Element => {
   const { goBack } = useNavigation<SessionProposalScreenProps['navigation']>()
-  const { request, chainIds } =
+  const { request, chainIds, scanResponse } =
     useRoute<SessionProposalScreenProps['route']>().params
 
   const { onUserApproved: onApprove, onUserRejected: onReject } =
@@ -60,19 +61,32 @@ const SessionProposal = () => {
     goBack()
   }, [goBack, onApprove, request, selectedAccounts, chainIds])
 
-  const onSelect = (address: string) => {
+  const onSelect = (address: string): void => {
     if (!selectedAccounts.includes(address))
       setSelectedAccounts(current => [...current, address])
     else
       setSelectedAccounts(current => current.filter(item => item !== address))
   }
 
+  const isDappMalicious =
+    scanResponse?.status === 'hit' && scanResponse?.is_malicious
+
   return (
     <RpcRequestBottomSheet onClose={rejectAndClose}>
       <NativeViewGestureHandler>
         <ScrollView contentContainerStyle={styles.container}>
-          <AvaText.LargeTitleBold>Connect Wallet?</AvaText.LargeTitleBold>
-          <Space y={30} />
+          <Text variant="heading4">Connect Wallet?</Text>
+          <Space y={8} />
+          {isDappMalicious && (
+            <>
+              <Space y={32} />
+              <MaliciousActivityWarning
+                activity="SessionProposal"
+                result="Malicious"
+              />
+            </>
+          )}
+          <Space y={48} />
           <View style={styles.iconContainer}>
             <OvalTagBg
               style={{
@@ -111,15 +125,18 @@ const SessionProposal = () => {
             Only connect to sites that you trust
           </AvaText.Body2>
           <View style={styles.actionContainer}>
-            <AvaButton.PrimaryMedium
+            <Button
+              type="primary"
+              size="xlarge"
               onPress={approveAndClose}
               disabled={approveDisabled}>
               Approve
-            </AvaButton.PrimaryMedium>
-            <Space y={21} />
-            <AvaButton.SecondaryMedium onPress={rejectAndClose}>
+            </Button>
+            <Space y={16} />
+            <Button type="secondary" size="xlarge" onPress={rejectAndClose}>
               Reject
-            </AvaButton.SecondaryMedium>
+            </Button>
+            <Space y={16} />
           </View>
         </ScrollView>
       </NativeViewGestureHandler>
@@ -139,8 +156,7 @@ const styles = StyleSheet.create({
   },
   actionContainer: {
     flex: 0,
-    paddingVertical: 16,
-    paddingHorizontal: 24
+    paddingVertical: 16
   },
   domainUrlContainer: {
     alignItems: 'center',

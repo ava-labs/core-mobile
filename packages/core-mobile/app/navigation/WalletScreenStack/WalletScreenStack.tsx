@@ -82,6 +82,7 @@ import {
   AddEthereumChainV2Params,
   AvalancheSendTransactionV2Params,
   AvalancheSetDeveloperModeParams,
+  AvalancheSignMessageParams,
   AvalancheSignTransactionV2Params,
   BitcoinSendTransactionParams,
   BridgeAssetV2Params,
@@ -89,6 +90,7 @@ import {
   BuyCarefullyParams,
   CreateRemoveContactV2Params,
   EditGasLimitParams,
+  MaliciousActivityWarningParams,
   QRCodeParams,
   SelectAccountV2Params,
   SessionProposalV2Params,
@@ -164,6 +166,7 @@ export type WalletScreenStackParams = {
   [AppNavigation.Modal.EditGasLimit]: EditGasLimitParams
   [AppNavigation.Modal.BuyCarefully]: BuyCarefullyParams
   // rpc prompts for wallet connect v2
+  [AppNavigation.Modal.AvalancheSignMessage]: AvalancheSignMessageParams
   [AppNavigation.Modal.SessionProposalV2]: SessionProposalV2Params
   [AppNavigation.Modal.SignMessageV2]: SignMessageV2Params
   [AppNavigation.Modal.CreateRemoveContactV2]: CreateRemoveContactV2Params
@@ -187,6 +190,7 @@ export type WalletScreenStackParams = {
   [AppNavigation.Modal.AnalyticsConsentSheet]: undefined
   [AppNavigation.Modal.UseWalletConnect]: { onContinue: () => void }
   [AppNavigation.Modal.BitcoinSendTransaction]: BitcoinSendTransactionParams
+  [AppNavigation.Modal.MaliciousActivityWarning]: MaliciousActivityWarningParams
 }
 
 const WalletScreenS = createStackNavigator<WalletScreenStackParams>()

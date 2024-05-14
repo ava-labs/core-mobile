@@ -12,8 +12,8 @@ export const accountSchema = z.object({
   active: z.boolean(),
   id: z.string(),
   type: z.nativeEnum(CoreAccountType),
-  walletId: z.string().optional(),
-  walletType: z.nativeEnum(WalletType).optional()
+  walletId: z.string(),
+  walletType: z.nativeEnum(WalletType)
 })
 
 const paramsSchema = z.tuple([
