@@ -45,7 +45,7 @@ class BlockaidService {
     })
   }
 
-  static scanJSONRPC = async ({
+  static scanJsonRpc = async ({
     chainId,
     accountAddress,
     data,

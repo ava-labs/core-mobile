@@ -28,7 +28,7 @@ export const scanAndSignMessage = async ({
 }): Promise<void> => {
   try {
     const chainId = getChainIdFromRequest(request)
-    const scanResponse = await BlockaidService.scanJSONRPC({
+    const scanResponse = await BlockaidService.scanJsonRpc({
       chainId,
       accountAddress: address,
       data: request.data.params.request as JsonRpcRequestData,
