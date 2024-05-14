@@ -40,12 +40,14 @@ import {
   AvalancheSetDeveloperModeApproveData,
   AvalancheSetDeveloperModeRpcRequest
 } from 'store/rpc/handlers/avalanche_setDeveloperMode/types'
+import { AvalancheSignMessageApproveData } from 'store/rpc/handlers/avalanche_signMessage/avalanche_signMessage'
 import { WCSessionProposal } from 'store/walletConnectV2/types'
 import {
   BitcoinSendTransactionApproveData,
   BitcoinSendTransactionRpcRequest
 } from 'store/rpc/handlers/bitcoin_sendTransaction/bitcoin_sendTransaction'
 import { TransactionScanResponse } from 'services/blockaid/types'
+import { AvalancheSignMessageRpcRequest } from 'store/rpc/handlers/avalanche_signMessage/types'
 import { RootScreenStackParamList } from './RootScreenStack'
 import { OnboardingScreenStackParamList } from './OnboardScreenStack'
 import { WelcomeScreenStackParamList } from './onboarding/WelcomeScreenStack'
@@ -144,6 +146,11 @@ export type SignMessageV2Params = {
   network: Network
   account: Account
   data: string | TypedData | OldTypedData
+}
+
+export type AvalancheSignMessageParams = {
+  request: AvalancheSignMessageRpcRequest
+  data: AvalancheSignMessageApproveData
 }
 
 export type BridgeAssetV2Params = {

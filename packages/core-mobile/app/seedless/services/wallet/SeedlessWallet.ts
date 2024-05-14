@@ -1,4 +1,4 @@
-import { NetworkVMType } from '@avalabs/chains-sdk'
+import { Network, NetworkVMType } from '@avalabs/chains-sdk'
 import * as cs from '@cubist-labs/cubesigner-sdk'
 import { Signer as CsEthersSigner } from '@cubist-labs/cubesigner-sdk-ethers-v6'
 import {
@@ -21,11 +21,17 @@ import {
 import { sha256 } from '@noble/hashes/sha256'
 import { EVM, utils } from '@avalabs/avalanchejs'
 import {
+  MessageTypes,
   SignTypedDataVersion,
   TypedDataUtils,
+  TypedMessage,
   typedSignatureHash
 } from '@metamask/eth-sig-util'
 import { RpcMethod } from 'store/rpc/types'
+import { toUtf8 } from 'ethereumjs-util'
+import { getChainAliasFromNetwork } from 'services/network/utils/getChainAliasFromNetwork'
+import { TypedDataV1Field } from '@metamask/eth-sig-util/dist/sign-typed-data'
+import { stripChainAddress } from 'store/account/utils'
 import CoreSeedlessAPIService from '../CoreSeedlessAPIService'
 import { SeedlessBtcSigner } from './SeedlessBtcSigner'
 
@@ -132,33 +138,59 @@ export default class SeedlessWallet implements Wallet {
   /** WALLET INTERFACE IMPLEMENTATION **/
   public async signMessage({
     rpcMethod,
-    data
+    data,
+    network,
+    provider
   }: {
     rpcMethod: RpcMethod
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    data: any
+    data: string | unknown
+    accountIndex: number
+    network: Network
+    provider: JsonRpcBatchInternal | Avalanche.JsonRpcProvider
   }): Promise<string> {
     const addressEVM = getEvmAddressFromPubKey(
       this.getPubKeyBufferC()
     ).toLowerCase()
 
     switch (rpcMethod) {
+      case RpcMethod.AVALANCHE_SIGN_MESSAGE: {
+        if (typeof data !== 'string')
+          throw new Error(`Invalid message type ${typeof data}`)
+        const chainAlias = getChainAliasFromNetwork(network)
+        if (!chainAlias)
+          throw new Error(`Unsupported network ${network.vmName}`)
+
+        if (!(provider instanceof Avalanche.JsonRpcProvider))
+          throw new Error(`Unsupported provider`)
+
+        return this.signAvalancheMessage({
+          message: data,
+          chainAlias,
+          isTestnet: !!network.isTestnet,
+          provider
+        })
+      }
       case RpcMethod.ETH_SIGN:
       case RpcMethod.PERSONAL_SIGN:
+        if (typeof data !== 'string')
+          throw new Error(`Invalid message type ${typeof data}`)
         return this.signBlob(
           addressEVM,
           hashMessage(Uint8Array.from(Buffer.from(strip0x(data), 'hex')))
         )
       case RpcMethod.SIGN_TYPED_DATA:
       case RpcMethod.SIGN_TYPED_DATA_V1:
-        return this.signBlob(addressEVM, typedSignatureHash(data))
+        return this.signBlob(
+          addressEVM,
+          typedSignatureHash(data as TypedDataV1Field[])
+        )
       case RpcMethod.SIGN_TYPED_DATA_V3:
       case RpcMethod.SIGN_TYPED_DATA_V4: {
         // Not using cs.ethers.Signer.signTypedData due to the strict type verification in Ethers
         // dApps in many cases have requests with extra unused types. In these cases ethers throws an error, rightfully.
         // However since MM supports these malformed messages, we have to as well. Otherwise Core would look broken.
         const hash = TypedDataUtils.eip712Hash(
-          data,
+          data as TypedMessage<MessageTypes>,
           rpcMethod === RpcMethod.SIGN_TYPED_DATA_V3
             ? SignTypedDataVersion.V3
             : SignTypedDataVersion.V4
@@ -299,5 +331,30 @@ export default class SeedlessWallet implements Wallet {
       pubKeyBufferC,
       provXP
     )
+  }
+
+  private signAvalancheMessage = async ({
+    message,
+    isTestnet,
+    chainAlias,
+    provider
+  }: {
+    message: string
+    isTestnet: boolean
+    chainAlias: Avalanche.ChainIDAlias
+    provider: Avalanche.JsonRpcProvider
+  }): Promise<string> => {
+    const addresses = this.getAddresses({ isTestnet, provXP: provider })
+    const address = addresses[Avalanche.getVmByChainAlias(chainAlias)]
+    const buffer = Buffer.from(
+      strip0x(
+        await this.signBlob(
+          stripChainAddress(address),
+          `0x${Avalanche.digestMessage(toUtf8(message)).toString('hex')}`
+        )
+      ),
+      'hex'
+    )
+    return utils.base58check.encode(buffer)
   }
 }

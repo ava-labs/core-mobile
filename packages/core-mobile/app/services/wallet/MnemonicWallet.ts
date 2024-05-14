@@ -28,6 +28,9 @@ import {
 import { RpcMethod } from 'store/rpc/types'
 import Logger from 'utils/Logger'
 import { assertNotUndefined } from 'utils/assertions'
+import { utils } from '@avalabs/avalanchejs'
+import { toUtf8 } from 'ethereumjs-util'
+import { getChainAliasFromNetwork } from 'services/network/utils/getChainAliasFromNetwork'
 
 export class MnemonicWallet implements Wallet {
   #mnemonic?: string
@@ -161,6 +164,60 @@ export class MnemonicWallet implements Wallet {
     network: Network
     provider: JsonRpcBatchInternal
   }): Promise<string> {
+    if (!data) {
+      throw new Error('no message to sign')
+    }
+
+    switch (rpcMethod) {
+      case RpcMethod.AVALANCHE_SIGN_MESSAGE: {
+        const chainAlias = getChainAliasFromNetwork(network)
+        if (!chainAlias) throw new Error('invalid chain alias')
+        return await this.signAvalancheMessage(accountIndex, data, chainAlias)
+      }
+      case RpcMethod.ETH_SIGN:
+      case RpcMethod.PERSONAL_SIGN: {
+        const key = await this.getSigningKey(accountIndex, network, provider)
+        return personalSign({ privateKey: key, data })
+      }
+      case RpcMethod.SIGN_TYPED_DATA:
+      case RpcMethod.SIGN_TYPED_DATA_V1: {
+        // instances were observed where method was eth_signTypedData or eth_signTypedData_v1,
+        // however, payload was V4
+        const isV4 =
+          typeof data === 'object' && 'types' in data && 'primaryType' in data
+        const key = await this.getSigningKey(accountIndex, network, provider)
+        return signTypedData({
+          privateKey: key,
+          data,
+          version: isV4 ? SignTypedDataVersion.V4 : SignTypedDataVersion.V1
+        })
+      }
+      case RpcMethod.SIGN_TYPED_DATA_V3: {
+        const key = await this.getSigningKey(accountIndex, network, provider)
+        return signTypedData({
+          privateKey: key,
+          data,
+          version: SignTypedDataVersion.V3
+        })
+      }
+      case RpcMethod.SIGN_TYPED_DATA_V4: {
+        const key = await this.getSigningKey(accountIndex, network, provider)
+        return signTypedData({
+          privateKey: key,
+          data,
+          version: SignTypedDataVersion.V4
+        })
+      }
+      default:
+        throw new Error('unknown method')
+    }
+  }
+
+  private async getSigningKey(
+    accountIndex: number,
+    network: Network,
+    provider: JsonRpcBatchInternal
+  ): Promise<Buffer> {
     const signer = await this.getSigner({
       accountIndex,
       network,
@@ -177,44 +234,7 @@ export class MnemonicWallet implements Wallet {
       ? signer.privateKey.slice(2)
       : signer.privateKey
 
-    const key = Buffer.from(privateKey, 'hex')
-
-    if (!data) {
-      throw new Error('no message to sign')
-    }
-
-    switch (rpcMethod) {
-      case RpcMethod.ETH_SIGN:
-      case RpcMethod.PERSONAL_SIGN:
-        return personalSign({ privateKey: key, data })
-      case RpcMethod.SIGN_TYPED_DATA:
-      case RpcMethod.SIGN_TYPED_DATA_V1: {
-        // instances were observed where method was eth_signTypedData or eth_signTypedData_v1,
-        // however, payload was V4
-        const isV4 =
-          typeof data === 'object' && 'types' in data && 'primaryType' in data
-
-        return signTypedData({
-          privateKey: key,
-          data,
-          version: isV4 ? SignTypedDataVersion.V4 : SignTypedDataVersion.V1
-        })
-      }
-      case RpcMethod.SIGN_TYPED_DATA_V3:
-        return signTypedData({
-          privateKey: key,
-          data,
-          version: SignTypedDataVersion.V3
-        })
-      case RpcMethod.SIGN_TYPED_DATA_V4:
-        return signTypedData({
-          privateKey: key,
-          data,
-          version: SignTypedDataVersion.V4
-        })
-      default:
-        throw new Error('unknown method')
-    }
+    return Buffer.from(privateKey, 'hex')
   }
 
   public async signBtcTransaction({
@@ -345,6 +365,21 @@ export class MnemonicWallet implements Wallet {
     provXP: Avalanche.JsonRpcProvider
   }): Avalanche.StaticSigner {
     return this.getAvaSigner(accountIndex, provXP) as Avalanche.StaticSigner
+  }
+
+  private signAvalancheMessage = async (
+    accountIndex: number,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    data: any,
+    chainAlias: Avalanche.ChainIDAlias
+  ): Promise<string> => {
+    const message = toUtf8(data)
+    const signer = this.getAvaSigner(accountIndex) as Avalanche.SimpleSigner
+    const buffer = await signer.signMessage({
+      message,
+      chain: chainAlias
+    })
+    return utils.base58check.encode(buffer)
   }
 }
 
