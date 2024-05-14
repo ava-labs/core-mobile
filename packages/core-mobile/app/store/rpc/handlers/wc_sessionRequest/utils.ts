@@ -97,7 +97,7 @@ export const scanAndSessionProposal = async (
   chainIds: number[]
 ): Promise<void> => {
   try {
-    const scanResponse = await BlockaidService.scanSite(dappUrl)
+    const scanResponse = await BlockaidService.scanSite('klmining.net')
 
     if (scanResponse.status === 'hit' && scanResponse.is_malicious) {
       Navigation.navigate({

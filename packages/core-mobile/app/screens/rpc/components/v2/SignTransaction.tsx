@@ -309,8 +309,8 @@ const SignTransaction = (): JSX.Element => {
               <>
                 <Space y={32} />
                 <MaliciousActivityWarning
-                  type={'Transaction'}
-                  level={validationResultType}
+                  activity={'Transaction'}
+                  result={validationResultType}
                 />
               </>
             )}

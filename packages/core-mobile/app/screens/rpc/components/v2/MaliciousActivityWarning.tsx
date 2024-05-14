@@ -3,11 +3,11 @@ import React, { useMemo } from 'react'
 import { MaliciousActivityType } from 'services/blockaid/types'
 
 const MaliciousActivityWarning = ({
-  type,
-  level
+  activity,
+  result
 }: {
-  type: MaliciousActivityType
-  level: 'Malicious' | 'Warning'
+  activity: MaliciousActivityType
+  result: 'Malicious' | 'Warning'
 }): JSX.Element => {
   const {
     theme: { colors }
@@ -15,23 +15,23 @@ const MaliciousActivityWarning = ({
   const textStyle = { color: '$black', fontSize: 13, lineHeight: 16 }
 
   const icon = useMemo(() => {
-    if (level === 'Malicious') {
+    if (result === 'Malicious') {
       return <Icons.Social.RemoveModerator color={colors.$black} />
     }
 
     return <Icons.Device.IconGPPMaybe color={colors.$black} />
-  }, [level, colors])
+  }, [result, colors])
 
   const content = useMemo(() => {
-    if (type === 'Transaction') {
-      if (level === 'Malicious') {
+    if (activity === 'Transaction') {
+      if (result === 'Malicious') {
         return {
           title: 'Scam Transaction',
           subtitle: 'This transaction is malicious, do not proceed.'
         }
       }
 
-      if (level === 'Warning') {
+      if (result === 'Warning') {
         return {
           title: 'Suspicious Transaction',
           subtitle: 'Use caution, this transaction may be malicious.'
@@ -39,15 +39,15 @@ const MaliciousActivityWarning = ({
       }
     }
 
-    if (type === 'SessionProposal') {
-      if (level === 'Malicious') {
+    if (activity === 'SessionProposal') {
+      if (result === 'Malicious') {
         return {
           title: 'Scam Application',
           subtitle: 'This application is malicious, do not proceed.'
         }
       }
 
-      if (level === 'Warning') {
+      if (result === 'Warning') {
         return {
           title: 'Suspicious Application',
           subtitle: 'Use caution, this application may be malicious.'
@@ -55,8 +55,10 @@ const MaliciousActivityWarning = ({
       }
     }
 
-    throw new Error('[MaliciousActivityWarning] Invalid activity type or level')
-  }, [level, type])
+    throw new Error(
+      '[MaliciousActivityWarning] Invalid activity or result type'
+    )
+  }, [result, activity])
 
   return (
     <View
@@ -64,7 +66,7 @@ const MaliciousActivityWarning = ({
         padding: 16,
         borderRadius: 8,
         backgroundColor:
-          level === 'Malicious' ? '$dangerLight' : '$warningLight',
+          result === 'Malicious' ? '$dangerLight' : '$warningLight',
         flexDirection: 'row',
         alignItems: 'center',
         gap: 13

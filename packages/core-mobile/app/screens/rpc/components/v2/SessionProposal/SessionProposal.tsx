@@ -81,8 +81,8 @@ const SessionProposal = (): JSX.Element => {
             <>
               <Space y={32} />
               <MaliciousActivityWarning
-                type="SessionProposal"
-                level="Malicious"
+                activity="SessionProposal"
+                result="Malicious"
               />
             </>
           )}
