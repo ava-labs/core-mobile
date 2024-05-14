@@ -1,6 +1,4 @@
 import * as cs from '@cubist-labs/cubesigner-sdk'
-import * as WalletSDK from '@avalabs/wallets-sdk'
-import { RpcMethod } from 'store/rpc/types'
 import CoreSeedlessAPIService from '../CoreSeedlessAPIService'
 import SeedlessWallet from './SeedlessWallet'
 
@@ -138,19 +136,6 @@ describe('SeedlessWallet', () => {
           'Cannot retrieve the mnemonic id'
         )
       }
-    })
-  })
-
-  describe.skip('signMessage', () => {
-    jest
-      .spyOn(WalletSDK, 'getEvmAddressFromPubKey')
-      .mockReturnValue('0xtestAddress')
-    it('should have signed the message', async () => {
-      await wallet.signMessage({
-        rpcMethod: RpcMethod.ETH_SIGN,
-        data: '0x03testData'
-      })
-      // expect(wallet.signBlob).toHaveBeenCalled()
     })
   })
 })

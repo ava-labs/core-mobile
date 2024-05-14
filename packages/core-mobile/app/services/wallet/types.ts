@@ -116,11 +116,10 @@ export interface Wallet {
     provider
   }: {
     rpcMethod: RpcMethod
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    data: any
+    data: string | unknown
     accountIndex: number
     network: Network
-    provider: JsonRpcBatchInternal
+    provider: JsonRpcBatchInternal | Avalanche.JsonRpcProvider
   }): Promise<string>
 
   /**
