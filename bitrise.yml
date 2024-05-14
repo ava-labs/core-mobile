@@ -822,6 +822,9 @@ workflows:
     - _upload-detox-artifacts
     - _send-test-result-notification-slack
     envs:
+    - TESTRAIL_RUN_ID: $IOS_TESTRAIL_RUN_ID
+      opts:
+        is_expand: false
     - ENVIRONMENT: production
       opts:
         is_expand: false
