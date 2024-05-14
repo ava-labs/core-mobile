@@ -42,6 +42,9 @@ const accountsSlice = createSlice({
       Object.values(state.accounts).forEach(acc => {
         acc.active = acc.index === action.payload
       })
+    },
+    setWalletName: (state, action: PayloadAction<string>) => {
+      state.walletName = action.payload
     }
   }
 })
@@ -71,7 +74,8 @@ export const {
   setAccountTitle,
   setActiveAccountIndex,
   setAccount,
-  setAccounts
+  setAccounts,
+  setWalletName
 } = accountsSlice.actions
 
 export const accountsReducer = accountsSlice.reducer
