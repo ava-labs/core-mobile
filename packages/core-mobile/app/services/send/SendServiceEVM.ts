@@ -48,10 +48,12 @@ export class SendServiceEVM implements SendServiceHelper {
         const sendFee = defaultMaxFeePerGas
           ? new BN(gasLimit).mul(new BN(defaultMaxFeePerGas.toString()))
           : undefined
-        const maxAmount =
+        let maxAmount =
           token.type === TokenType.NATIVE
             ? token.balance.sub(sendFee || new BN(0))
             : token.balance
+
+        maxAmount = BN.max(maxAmount, new BN(0))
 
         const newState: SendState = {
           ...sendState,

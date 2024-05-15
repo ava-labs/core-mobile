@@ -36,7 +36,8 @@ export class SendServicePVM {
         const sendFee = defaultMaxFeePerGas
           ? new BN(gasLimit).mul(new BN(defaultMaxFeePerGas.toString()))
           : undefined
-        const maxAmount = token.balance.sub(sendFee || new BN(0))
+        let maxAmount = token.balance.sub(sendFee || new BN(0))
+        maxAmount = BN.max(maxAmount, new BN(0))
 
         const newState: SendState = {
           ...sendState,
