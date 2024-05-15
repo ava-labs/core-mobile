@@ -19,7 +19,6 @@ export function NetworkLogo({
 }): JSX.Element {
   style = [
     {
-      borderRadius: size / 2,
       width: size,
       height: size
     },
