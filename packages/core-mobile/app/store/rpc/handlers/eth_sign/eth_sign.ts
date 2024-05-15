@@ -1,13 +1,12 @@
 import { ethErrors } from 'eth-rpc-errors'
 import WalletService from 'services/wallet/WalletService'
 import { AppListenerEffectAPI } from 'store'
-import * as Navigation from 'utils/Navigation'
-import AppNavigation from 'navigation/AppNavigation'
 import Logger from 'utils/Logger'
 import * as Sentry from '@sentry/react-native'
 import { selectAccountByAddress } from 'store/account'
 import WalletConnectService from 'services/walletconnectv2/WalletConnectService'
 import { selectNetwork } from 'store/network'
+import { selectIsBlockaidTransactionValidationBlocked } from 'store/posthog'
 import { RpcMethod, RpcProvider, RpcRequest } from '../../types'
 import {
   ApproveResponse,
@@ -18,6 +17,10 @@ import {
 import { parseRequestParams } from './utils/parseRequestParams'
 import { parseApproveData } from './utils/parseApproveData'
 import { isAddressApproved } from './utils/isAddressApproved'
+import {
+  navigateToSignMessage,
+  scanAndSignMessage
+} from './utils/scanAndSignMessage'
 
 export type EthSignRpcRequest = RpcRequest<
   | RpcMethod.ETH_SIGN
@@ -97,18 +100,26 @@ class EthSignHandler implements RpcRequestHandler<EthSignRpcRequest> {
         error: ethErrors.rpc.resourceNotFound('Account does not exist')
       }
 
-    Navigation.navigate({
-      name: AppNavigation.Root.Wallet,
-      params: {
-        screen: AppNavigation.Modal.SignMessageV2,
-        params: {
-          request,
-          data: result.data.data,
-          network,
-          account
-        }
-      }
-    })
+    const isValidationDisabled =
+      selectIsBlockaidTransactionValidationBlocked(state)
+
+    // TODO CP-4894 decode transaction data here instead of in SignTransaction component/useExplainTransaction hook
+    if (isValidationDisabled) {
+      navigateToSignMessage({
+        request,
+        data: result.data.data,
+        network,
+        account
+      })
+    } else {
+      scanAndSignMessage({
+        request,
+        data: result.data.data,
+        network,
+        account,
+        address: result.data.address
+      })
+    }
 
     return { success: true, value: DEFERRED_RESULT }
   }

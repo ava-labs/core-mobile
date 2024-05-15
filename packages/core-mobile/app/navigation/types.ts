@@ -152,6 +152,7 @@ export type SignMessageV2Params = {
   network: Network
   account: Account
   data: string | TypedData | OldTypedData
+  scanResponse?: TransactionScanResponse
 }
 
 export type AvalancheSignMessageParams = {
