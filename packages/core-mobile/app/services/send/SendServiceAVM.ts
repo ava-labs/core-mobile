@@ -37,10 +37,8 @@ export class SendServiceAVM {
           ? new BN(gasLimit).mul(new BN(defaultMaxFeePerGas.toString()))
           : undefined
         let maxAmount = token.balance.sub(sendFee || new BN(0))
+        maxAmount = BN.max(maxAmount, new BN(0))
 
-        if (maxAmount.lt(new BN(0))) {
-          maxAmount = new BN(0)
-        }
         const newState: SendState = {
           ...sendState,
           canSubmit: true,
