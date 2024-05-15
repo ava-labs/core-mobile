@@ -12,6 +12,7 @@ import { Network } from '@avalabs/chains-sdk'
 import { showSnackBarCustom } from 'components/Snackbar'
 import GeneralToast from 'components/toast/GeneralToast'
 import { useNetworks } from 'hooks/networks/useNetworks'
+import { absoluteChain } from 'utils/network/isAvalancheNetwork'
 import { NetworkLogo } from './NetworkLogo'
 
 export type NetworkDetailsProps = {
@@ -58,7 +59,10 @@ export default function NetworkDetails({
           <Space y={40} />
           <DetailItem title={'Network RPC URL'} value={network.rpcUrl} />
           <Space y={24} />
-          <DetailItem title={'Chain ID'} value={chainId.toString()} />
+          <DetailItem
+            title={'Chain ID'}
+            value={absoluteChain(chainId).toString()}
+          />
           <Space y={24} />
           <DetailItem
             title={'Network Token Symbol'}
