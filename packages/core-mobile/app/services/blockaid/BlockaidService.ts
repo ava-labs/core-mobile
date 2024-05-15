@@ -26,8 +26,8 @@ class BlockaidService {
     chainId: number,
     params: TransactionParams,
     domain?: string
-  ): Promise<TransactionScanResponse> => {
-    return await blockaid.evm.transaction.scan({
+  ): Promise<TransactionScanResponse> =>
+    blockaid.evm.transaction.scan({
       account_address: params.from,
       chain: BlockaidService.getNetworkPath(chainId),
       options: ['validation', 'simulation'],
@@ -42,7 +42,6 @@ class BlockaidService {
       // @ts-ignore
       metadata: domain && domain.length > 0 ? { domain } : { non_dapp: true }
     })
-  }
 
   static scanJsonRpc = async ({
     chainId,
@@ -54,8 +53,8 @@ class BlockaidService {
     accountAddress: string
     data: JsonRpcRequestData
     domain?: string
-  }): Promise<TransactionScanResponse> => {
-    return await blockaid.evm.jsonRpc.scan({
+  }): Promise<TransactionScanResponse> =>
+    blockaid.evm.jsonRpc.scan({
       chain: BlockaidService.getNetworkPath(chainId),
       options: ['validation', 'simulation'],
       account_address: accountAddress,
@@ -63,7 +62,6 @@ class BlockaidService {
       // @ts-ignore
       metadata: domain && domain.length > 0 ? { domain } : { non_dapp: true }
     })
-  }
 
   private static getNetworkPath = (
     chainId: number
