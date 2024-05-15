@@ -15,7 +15,7 @@ import { useDappConnectionV2 } from 'hooks/useDappConnectionV2'
 import { useSelector } from 'react-redux'
 import { selectAccounts, selectActiveAccount } from 'store/account'
 import { Button, Text } from '@avalabs/k2-mobile'
-import { isScanResponseMalicious } from 'store/rpc/handlers/wc_sessionRequest/utils'
+import { isSiteScanResponseMalicious } from 'store/rpc/handlers/wc_sessionRequest/utils'
 import RpcRequestBottomSheet from '../../shared/RpcRequestBottomSheet'
 import MaliciousActivityWarning from '../MaliciousActivityWarning'
 import SelectAccounts from './SelectAccounts'
@@ -75,7 +75,7 @@ const SessionProposal = (): JSX.Element => {
         <ScrollView contentContainerStyle={styles.container}>
           <Text variant="heading4">Connect Wallet?</Text>
           <Space y={8} />
-          {scanResponse && isScanResponseMalicious(scanResponse) && (
+          {scanResponse && isSiteScanResponseMalicious(scanResponse) && (
             <>
               <Space y={32} />
               <MaliciousActivityWarning

@@ -100,7 +100,7 @@ export const scanAndSessionProposal = async (
   try {
     const scanResponse = await BlockaidService.scanSite(dappUrl)
 
-    if (isScanResponseMalicious(scanResponse)) {
+    if (isSiteScanResponseMalicious(scanResponse)) {
       Navigation.navigate({
         name: AppNavigation.Root.Wallet,
         params: {
@@ -136,6 +136,6 @@ export const navigateToSessionProposal = (
   })
 }
 
-export const isScanResponseMalicious = (
+export const isSiteScanResponseMalicious = (
   scanResponse: SiteScanResponse
 ): boolean => scanResponse.status === 'hit' && scanResponse.is_malicious
