@@ -99,7 +99,7 @@ export const scanAndSignTransaction = async (
       navigateToSignTransaction({ request, transaction, scanResponse })
     }
   } catch (error) {
-    Logger.error('[Blockaid]Failed to validate transaction', error)
+    Logger.error('[Blockaid] Failed to validate transaction', error)
 
     navigateToSignTransaction({ request, transaction })
   }

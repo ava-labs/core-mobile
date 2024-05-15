@@ -27,6 +27,7 @@ import EthSign from '../shared/signMessage/EthSign'
 import SignDataV4 from '../shared/signMessage/SignDataV4'
 import PersonalSign from '../shared/signMessage/PersonalSign'
 import SignDataV1 from '../shared/signMessage/SignDataV1'
+import MaliciousActivityWarning from './MaliciousActivityWarning'
 
 type SignMessageScreenProps = WalletScreenProps<
   typeof AppNavigation.Modal.SignMessageV2
@@ -36,7 +37,7 @@ const SignMessage = (): JSX.Element | null => {
   const isSeedlessSigningBlocked = useSelector(selectIsSeedlessSigningBlocked)
   const { goBack } = useNavigation<SignMessageScreenProps['navigation']>()
 
-  const { request, data, network, account } =
+  const { request, data, network, account, scanResponse } =
     useRoute<SignMessageScreenProps['route']>().params
 
   const { onUserApproved: onApprove, onUserRejected: onReject } =
@@ -131,6 +132,8 @@ const SignMessage = (): JSX.Element | null => {
     }
   }
 
+  const validationResultType = scanResponse?.validation?.result_type
+
   return (
     <>
       <RpcRequestBottomSheet
@@ -140,6 +143,16 @@ const SignMessage = (): JSX.Element | null => {
         onReject={rejectAndClose}>
         <ScrollView contentContainerStyle={styles.scrollView}>
           <AvaText.LargeTitleBold>Sign Message</AvaText.LargeTitleBold>
+          {(validationResultType === 'Malicious' ||
+            validationResultType === 'Warning') && (
+            <>
+              <Space y={30} />
+              <MaliciousActivityWarning
+                activity={'Transaction'}
+                result={validationResultType}
+              />
+            </>
+          )}
           <Space y={30} />
           <View style={{ justifyContent: 'center', alignItems: 'center' }}>
             <OvalTagBg

@@ -9,6 +9,9 @@ import AppNavigation from 'navigation/AppNavigation'
 import * as Navigation from 'utils/Navigation'
 import * as Sentry from '@sentry/react-native'
 import WalletConnectService from 'services/walletconnectv2/WalletConnectService'
+import { selectIsBlockaidTransactionValidationBlocked } from 'store/posthog'
+import { TransactionScanResponse } from 'services/blockaid/types'
+import BlockaidService from 'services/blockaid/BlockaidService'
 import { ethSignHandler as handler } from './eth_sign'
 
 const mockSelectAccountByAddress = jest.fn()
@@ -29,6 +32,19 @@ jest.mock('store/network', () => {
   }
 })
 mockSelectNetwork.mockImplementation(() => mockNetworks[43114])
+
+jest.mock('store/posthog', () => {
+  const actual = jest.requireActual('store/posthog')
+  return {
+    ...actual,
+    selectIsBlockaidTransactionValidationBlocked: jest.fn()
+  }
+})
+
+const mockIsBlockaidTransactionValidationBlocked =
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  selectIsBlockaidTransactionValidationBlocked as jest.MockedFunction<any>
+mockIsBlockaidTransactionValidationBlocked.mockReturnValue(true)
 
 const mockSignMessage = jest.fn()
 jest.spyOn(WalletService, 'signMessage').mockImplementation(mockSignMessage)
@@ -176,6 +192,7 @@ describe('eth_sign handler', () => {
       })
 
       it('should display prompt and return success', async () => {
+        mockIsBlockaidTransactionValidationBlocked.mockReturnValue(true)
         mockSelectAccountByAddress.mockImplementationOnce(() => mockAccounts[1])
 
         const testParams = [approvedAddress, typedData]
@@ -198,6 +215,76 @@ describe('eth_sign handler', () => {
         })
 
         expect(result).toEqual({ success: true, value: expect.any(Symbol) })
+      })
+
+      it('should navigate to malicious activity warning screen if transaction validation result is malicious', async () => {
+        mockIsBlockaidTransactionValidationBlocked.mockReturnValue(false)
+        mockSelectAccountByAddress.mockImplementationOnce(() => mockAccounts[1])
+
+        const scanResponse: TransactionScanResponse = {
+          validation: {
+            result_type: 'Malicious',
+            features: []
+          },
+          block: '0x123',
+          chain: 'ethereum'
+        }
+        jest
+          .spyOn(BlockaidService, 'scanJsonRpc')
+          .mockResolvedValue(scanResponse)
+
+        const testParams = [approvedAddress, typedData]
+
+        const testRequest = createRequest(testParams)
+
+        await handler.handle(testRequest, mockListenerApi)
+
+        expect(mockNavigate).toHaveBeenCalledWith({
+          name: AppNavigation.Root.Wallet,
+          params: {
+            screen: AppNavigation.Modal.MaliciousActivityWarning,
+            params: {
+              activityType: 'Transaction',
+              request: testRequest,
+              onProceed: expect.any(Function)
+            }
+          }
+        })
+      })
+    })
+
+    it('should navigate to sign message screen if transaction validation result is not malicious', async () => {
+      mockIsBlockaidTransactionValidationBlocked.mockReturnValue(false)
+      mockSelectAccountByAddress.mockImplementationOnce(() => mockAccounts[1])
+
+      const scanResponse: TransactionScanResponse = {
+        validation: {
+          result_type: 'Benign',
+          features: []
+        },
+        block: '0x123',
+        chain: 'ethereum'
+      }
+      jest.spyOn(BlockaidService, 'scanJsonRpc').mockResolvedValue(scanResponse)
+
+      const testParams = [approvedAddress, typedData]
+
+      const testRequest = createRequest(testParams)
+
+      await handler.handle(testRequest, mockListenerApi)
+
+      expect(mockNavigate).toHaveBeenCalledWith({
+        name: AppNavigation.Root.Wallet,
+        params: {
+          screen: AppNavigation.Modal.SignMessageV2,
+          params: {
+            request: testRequest,
+            data: typedData,
+            network: mockNetworks[43114],
+            account: mockAccounts[1],
+            scanResponse
+          }
+        }
       })
     })
 
@@ -280,6 +367,7 @@ describe('eth_sign handler', () => {
       })
 
       it('should display prompt and return success', async () => {
+        mockIsBlockaidTransactionValidationBlocked.mockReturnValue(true)
         mockSelectAccountByAddress.mockImplementationOnce(() => mockAccounts[1])
 
         const testParams = [approvedAddress, typedData]
