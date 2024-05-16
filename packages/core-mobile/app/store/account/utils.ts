@@ -23,6 +23,7 @@ export function getAddressByVM(
 export function stripChainAddress(address: string): string {
   if (
     address.toLowerCase().startsWith('p-') ||
+    address.toLowerCase().startsWith('c-') ||
     address.toLowerCase().startsWith('x-')
   )
     return address.slice(2)
