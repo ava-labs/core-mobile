@@ -29,6 +29,7 @@ export abstract class TokenBaseUnit<T extends TokenBaseUnit<T>> {
     l: string
   ) => T
 
+  // eslint-disable-next-line max-params
   protected constructor(
     value: AcceptedTypes,
     maxDecimals: number,
@@ -39,6 +40,10 @@ export abstract class TokenBaseUnit<T extends TokenBaseUnit<T>> {
     this.maxDecimals = maxDecimals
     this.symbol = symbol
     this.childConstructor = childConstructor
+  }
+
+  getSymbol(): string {
+    return this.symbol
   }
 
   getMaxDecimals(): number {
