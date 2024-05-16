@@ -2,6 +2,7 @@ import { Network, NetworkVMType } from '@avalabs/chains-sdk'
 import { getAddressByNetwork } from 'store/account/utils'
 import BtcActivityService from './BtcActivityService'
 import EvmActivityService from './EvmActivityService'
+import PrimaryActivityService from './PrimaryActivityService'
 import {
   GetActivitiesForAccountParams,
   ActivityResponse,
@@ -10,7 +11,8 @@ import {
 
 const serviceMap: { [K in NetworkVMType]?: NetworkActivityService } = {
   [NetworkVMType.BITCOIN]: BtcActivityService,
-  [NetworkVMType.EVM]: EvmActivityService
+  [NetworkVMType.EVM]: EvmActivityService,
+  [NetworkVMType.PVM]: PrimaryActivityService
 }
 
 class ActivityServiceFactory {

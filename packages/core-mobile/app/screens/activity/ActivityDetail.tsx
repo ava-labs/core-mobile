@@ -17,10 +17,11 @@ import AppNavigation from 'navigation/AppNavigation'
 import { WalletScreenProps } from 'navigation/types'
 import { useSelector } from 'react-redux'
 import { selectContacts } from 'store/addressBook'
-import { balanceToDisplayValue, numberToBN } from '@avalabs/utils-sdk'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { Contact } from '@avalabs/types'
 import Logger from 'utils/Logger'
+import { NetworkTokenUnit } from 'types'
+import { getTransactionTypeTitle } from 'services/activity/utils/primaryTransactionConverter'
 
 type RouteProp = WalletScreenProps<
   typeof AppNavigation.Wallet.ActivityDetail
@@ -36,12 +37,11 @@ function ActivityDetail(): JSX.Element {
   const { openUrl } = useInAppBrowser()
   const [contact, setContact] = useState<Contact>()
 
-  const feeBN = numberToBN(txItem?.fee ?? '', 0)
-  const fees = balanceToDisplayValue(
-    feeBN,
-    Number(activeNetwork.networkToken.decimals)
+  const fee = new NetworkTokenUnit(
+    txItem?.fee ?? 0,
+    activeNetwork.networkToken.decimals,
+    activeNetwork.networkToken.symbol
   )
-
   useEffect(getContactMatchFx, [contacts, txItem])
 
   function getContactMatchFx(): void {
@@ -101,7 +101,7 @@ function ActivityDetail(): JSX.Element {
               </AvaText.Body1>
             </AvaText.Heading1>
             <Space y={4} />
-            <AvaText.Body2 testID="activity_detail__fee_amount">{` Fee ${fees} ${activeNetwork.networkToken.symbol}`}</AvaText.Body2>
+            <AvaText.Body2 testID="activity_detail__fee_amount">{` Fee ${fee} ${fee.getSymbol()}`}</AvaText.Body2>
           </View>
           <Space y={16} />
           <AvaListItem.Base
@@ -147,7 +147,8 @@ function ActivityDetail(): JSX.Element {
             titleAlignment={'flex-start'}
             rightComponent={
               <AvaText.Body1 testID="activity_detail__transaction_type">
-                {txItem.isSender ? 'Outgoing Transfer' : 'Incoming Transfer'}
+                {getTransactionTypeTitle(txItem.txType) ??
+                  (txItem.isSender ? 'Outgoing Transfer' : 'Incoming Transfer')}
               </AvaText.Body1>
             }
           />
