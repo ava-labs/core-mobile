@@ -24,8 +24,11 @@ import PriceChangeIndicator from 'screens/watchlist/components/PriceChangeIndica
 import { useTokenPortfolioPriceChange } from 'hooks/balance/useTokenPortfolioPriceChange'
 import { Space } from 'components/Space'
 import { useNetworks } from 'hooks/networks/useNetworks'
+import { isAvmNetwork, isPvmNetwork } from 'utils/network/isAvalancheNetwork'
 import ZeroState from './ZeroState'
 import Tokens from './Tokens'
+import { PChainAssets } from './PChainAssets'
+import { XChainAssets } from './XChainAssets'
 
 type NavigationProp = PortfolioScreenProps<
   typeof AppNavigation.Portfolio.Portfolio
@@ -136,6 +139,12 @@ const ActiveNetworkCard = (): JSX.Element => {
   const renderContent = (): JSX.Element => {
     if (tokens.length === 0) return <ZeroState />
 
+    if (isPvmNetwork(activeNetwork)) {
+      return <PChainAssets />
+    }
+    if (isAvmNetwork(activeNetwork)) {
+      return <XChainAssets />
+    }
     return <Tokens />
   }
 

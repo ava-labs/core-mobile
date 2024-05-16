@@ -28,20 +28,24 @@ type TokenMarketData = {
   vol24: number
 }
 
-export type PTokenWithBalance = TokenBalanceData &
+export type PTokenWithBalance = Omit<TokenBalanceData, 'utxos'> &
   TokenMarketData &
   NetworkToken &
   PChainBalance & {
     coingeckoId: string
     type: TokenType.NATIVE
+    utxos: PChainBalance
+    utxoBalances: PChainUtxoBalances
   }
 
-export type XTokenWithBalance = TokenBalanceData &
+export type XTokenWithBalance = Omit<TokenBalanceData, 'utxos'> &
   TokenMarketData &
   NetworkToken &
   XChainBalances & {
     coingeckoId: string
     type: TokenType.NATIVE
+    utxos: XChainBalances
+    utxoBalances: XChainUtxoBalances
   }
 
 export type NetworkTokenWithBalance = TokenBalanceData &
@@ -78,6 +82,7 @@ export type TokenWithBalance =
   | TokenWithBalanceERC20
   | NftTokenWithBalance
   | PTokenWithBalance
+  | XTokenWithBalance
 
 export type Balance = {
   accountIndex: number
@@ -117,4 +122,22 @@ export enum QueryStatus {
 export type BalanceState = {
   status: QueryStatus
   balances: Balances
+}
+
+export interface PChainUtxoBalances {
+  lockedStaked?: number
+  lockedStakeable?: number
+  lockedPlatform?: number
+  atomicMemoryLocked?: number
+  atomicMemoryUnlocked?: number
+  unlockedUnstaked?: number
+  unlockedStaked?: number
+  pendingStaked?: number
+}
+
+export interface XChainUtxoBalances {
+  unlocked?: number
+  locked?: number
+  atomicMemoryUnlocked?: number
+  atomicMemoryLocked?: number
 }

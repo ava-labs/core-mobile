@@ -26,14 +26,16 @@ import {
   setSelectedCurrency
 } from 'store/settings/currency'
 import Logger from 'utils/Logger'
-import { getLocalTokenId } from 'store/balance/utils'
+import { calculateTotalBalance, getLocalTokenId } from 'store/balance/utils'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { selectHasBeenViewedOnce, ViewOnceKey } from 'store/viewOnce'
 import PrimaryActivityService from 'services/activity/PrimaryActivityService'
 import NetworkService from 'services/network/NetworkService'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { ActivityResponse } from 'services/activity/types'
-import { Balances, LocalTokenWithBalance, QueryStatus } from './types'
+import { AggregatedAssetAmount } from '@avalabs/glacier-sdk'
+import { Avax } from 'types'
+import { isPChain, isXChain } from 'utils/network/isAvalancheNetwork'
 import {
   fetchBalanceForAccount,
   getKey,
@@ -42,6 +44,13 @@ import {
   setBalances,
   setStatus
 } from './slice'
+import {
+  Balances,
+  LocalTokenWithBalance,
+  PTokenWithBalance,
+  QueryStatus,
+  XTokenWithBalance
+} from './types'
 
 /**
  * In production:
@@ -256,11 +265,18 @@ const fetchBalanceForAccounts = async (
       const { accountIndex, chainId, tokens } = result.value
 
       const tokensWithBalance = tokens.map(token => {
+        if (isPChain(chainId)) {
+          return convertToBalancePchain(token as PTokenWithBalance)
+        }
+        if (isXChain(chainId)) {
+          return convertToBalanceXchain(token as XTokenWithBalance)
+        }
         return {
           ...token,
           localId: getLocalTokenId(token)
-        } as LocalTokenWithBalance
+        }
       })
+
       return {
         ...acc,
         [getKey(chainId, accountIndex)]: {
@@ -317,6 +333,129 @@ const maybePromptForAddingPChainToPortfolio = async (
 
   Logger.info('Adding P-Chain to favorites')
   dispatch(toggleFavorite(avalancheNetworkP.chainId))
+}
+
+const convertToBalanceXchain = (
+  token: XTokenWithBalance
+): LocalTokenWithBalance => {
+  const balancePerType: Record<string, Avax> = {}
+  const tokenPrice = token.priceInCurrency
+
+  const utxos = {
+    unlocked: token.unlocked,
+    locked: token.locked,
+    atomicMemoryUnlocked: token.atomicMemoryUnlocked,
+    atomicMemoryLocked: token.atomicMemoryLocked
+  }
+
+  for (const balanceType in utxos) {
+    // @ts-ignore: extract balances for each type by generic key
+    const balancesToAdd = utxos?.[balanceType]
+    if (!balancesToAdd || !balancesToAdd.length) {
+      balancePerType[balanceType] = new Avax(0)
+      continue
+    }
+
+    balancesToAdd.forEach((uxto: AggregatedAssetAmount) => {
+      const previousBalance = balancePerType[balanceType] ?? new Avax(0)
+      const newBalance = previousBalance.add(uxto.amount)
+      balancePerType[balanceType] = newBalance
+    })
+  }
+
+  const totalBalance = calculateTotalBalance(utxos)
+  const balanceDisplayValue = totalBalance.toFixed()
+  const balanceInCurrency = Number(totalBalance.mul(tokenPrice).toFixed())
+  const balanceCurrencyDisplayValue = balanceInCurrency.toFixed(2)
+
+  return {
+    ...token,
+    balanceInCurrency,
+    balance: totalBalance.toWei(),
+    balanceDisplayValue,
+    balanceCurrencyDisplayValue,
+    utxos: token,
+    unlocked: utxos.unlocked,
+    locked: utxos.locked,
+    atomicMemoryUnlocked: utxos.atomicMemoryUnlocked,
+    atomicMemoryLocked: utxos.atomicMemoryLocked,
+    localId: token.symbol + '-x',
+    utxoBalances: {
+      unlocked: Number(balancePerType.unlocked?.toFixed()),
+      locked: Number(balancePerType.locked?.toFixed()),
+      atomicMemoryUnlocked: Number(
+        balancePerType.atomicMemoryUnlocked?.toFixed()
+      ),
+      atomicMemoryLocked: Number(balancePerType.atomicMemoryLocked?.toFixed())
+    }
+  }
+}
+
+const convertToBalancePchain = (
+  token: PTokenWithBalance
+): LocalTokenWithBalance => {
+  const balancePerType: Record<string, Avax> = {}
+  const tokenPrice = token.priceInCurrency
+  const utxos = {
+    unlockedUnstaked: token.unlockedUnstaked,
+    unlockedStaked: token.unlockedStaked,
+    pendingStaked: token.pendingStaked,
+    lockedStaked: token.lockedStaked,
+    lockedStakeable: token.lockedStakeable,
+    lockedPlatform: token.lockedPlatform,
+    atomicMemoryLocked: token.atomicMemoryLocked,
+    atomicMemoryUnlocked: token.atomicMemoryUnlocked
+  }
+
+  for (const balanceType in utxos) {
+    // @ts-ignore
+    const balancesToAdd = utxos?.[balanceType]
+    if (!balancesToAdd || !balancesToAdd.length) {
+      balancePerType[balanceType] = new Avax(0)
+      continue
+    }
+
+    balancesToAdd.forEach((uxto: AggregatedAssetAmount) => {
+      const previousBalance = balancePerType[balanceType] ?? new Avax(0)
+      const newBalance = previousBalance.add(uxto.amount)
+      balancePerType[balanceType] = newBalance
+    })
+  }
+
+  const totalBalance = calculateTotalBalance(utxos)
+  const balanceDisplayValue = totalBalance.toFixed()
+  const balanceInCurrency = Number(totalBalance.mul(tokenPrice).toFixed())
+  const balanceCurrencyDisplayValue = balanceInCurrency.toFixed(2)
+
+  return {
+    ...token,
+    balanceInCurrency,
+    balance: totalBalance.toWei(),
+    balanceDisplayValue,
+    balanceCurrencyDisplayValue,
+    utxos: token,
+    lockedStaked: utxos.lockedStaked,
+    lockedStakeable: utxos.lockedStakeable,
+    lockedPlatform: utxos.lockedPlatform,
+    atomicMemoryLocked: utxos.atomicMemoryLocked,
+    atomicMemoryUnlocked: utxos.atomicMemoryUnlocked,
+    unlockedUnstaked: utxos.unlockedUnstaked,
+    unlockedStaked: utxos.unlockedStaked,
+    pendingStaked: utxos.pendingStaked,
+    localId: token.symbol + '-p',
+    utxoBalances: {
+      lockedStaked: Number(balancePerType.lockedStaked?.toFixed()),
+      lockedStakeable: Number(balancePerType.lockedStakeable?.toFixed()),
+      lockedPlatform: Number(balancePerType.lockedPlatform?.toFixed()),
+      atomicMemoryLocked: Number(balancePerType.atomicMemoryLocked?.toFixed()),
+      atomicMemoryUnlocked: Number(
+        balancePerType.atomicMemoryUnlocked?.toFixed()
+      ),
+      unlockedUnstaked: Number(balancePerType.unlockedUnstaked?.toFixed()),
+      unlockedStaked: Number(balancePerType.unlockedStaked?.toFixed()),
+      pendingStaked: Number(balancePerType.pendingStaked?.toFixed())
+    }
+  }
 }
 
 export const addBalanceListeners = (
