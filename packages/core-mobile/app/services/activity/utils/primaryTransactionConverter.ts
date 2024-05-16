@@ -1,5 +1,5 @@
 import { Network } from '@avalabs/chains-sdk'
-import { PChainTransaction } from '@avalabs/glacier-sdk'
+import { PChainTransaction, PChainTransactionType } from '@avalabs/glacier-sdk'
 import { Transaction } from 'store/transaction'
 import { getExplorerAddressByNetwork } from 'utils/ExplorerUtils'
 import Big from 'big.js'
@@ -77,8 +77,8 @@ export function convertPChainTransaction(
     hash: tx.txHash,
     isBridge: false,
     isContractCall: false,
-    isIncoming: false,
-    isOutgoing: false,
+    isIncoming: !isSender,
+    isOutgoing: isSender,
     from: [...froms.values()].join(','),
     to: [...tos.values()].join(','),
     isSender,
@@ -89,7 +89,8 @@ export function convertPChainTransaction(
       symbol: network.networkToken.symbol
     },
     fee: fee.toDisplay(),
-    explorerLink: getExplorerAddressByNetwork(network, tx.txHash, 'tx')
+    explorerLink: getExplorerAddressByNetwork(network, tx.txHash, 'tx'),
+    txType: tx.txType
   }
 }
 
@@ -132,4 +133,43 @@ function getAvaxAssetId(isTestnet: boolean): string {
   return isTestnet
     ? Avalanche.FujiContext.avaxAssetID
     : Avalanche.MainnetContext.avaxAssetID
+}
+
+export function getTransactionTypeTitle(
+  txType: string | undefined
+): string | undefined {
+  switch (txType) {
+    case PChainTransactionType.ADD_DELEGATOR_TX:
+      return 'Add Delegator'
+    case PChainTransactionType.ADD_SUBNET_VALIDATOR_TX:
+      return 'Add Subnet Validator'
+    case PChainTransactionType.ADD_PERMISSIONLESS_VALIDATOR_TX:
+      return 'Add Permissionless Validator'
+    case PChainTransactionType.ADD_PERMISSIONLESS_DELEGATOR_TX:
+      return 'Add Permissionless Delegator'
+    case PChainTransactionType.ADD_VALIDATOR_TX:
+      return 'Add Validator'
+    case PChainTransactionType.ADVANCE_TIME_TX:
+      return 'Advance Time'
+    case PChainTransactionType.BASE_TX:
+      return 'BaseTx'
+    case PChainTransactionType.CREATE_CHAIN_TX:
+      return 'Create Chain'
+    case PChainTransactionType.CREATE_SUBNET_TX:
+      return 'Create Subnet'
+    case PChainTransactionType.EXPORT_TX:
+      return 'Export'
+    case PChainTransactionType.IMPORT_TX:
+      return 'Import'
+    case PChainTransactionType.REWARD_VALIDATOR_TX:
+      return 'Reward Validator'
+    case PChainTransactionType.REMOVE_SUBNET_VALIDATOR_TX:
+      return 'Remove Subnet Validator'
+    case PChainTransactionType.TRANSFER_SUBNET_OWNERSHIP_TX:
+      return 'Transfer Subnet Ownership'
+    case PChainTransactionType.TRANSFORM_SUBNET_TX:
+      return 'Transform Subnet'
+    default:
+      return undefined
+  }
 }

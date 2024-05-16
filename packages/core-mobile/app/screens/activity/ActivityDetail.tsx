@@ -21,6 +21,7 @@ import { useNetworks } from 'hooks/networks/useNetworks'
 import { Contact } from '@avalabs/types'
 import Logger from 'utils/Logger'
 import { NetworkTokenUnit } from 'types'
+import { getTransactionTypeTitle } from 'services/activity/utils/primaryTransactionConverter'
 
 type RouteProp = WalletScreenProps<
   typeof AppNavigation.Wallet.ActivityDetail
@@ -146,7 +147,8 @@ function ActivityDetail(): JSX.Element {
             titleAlignment={'flex-start'}
             rightComponent={
               <AvaText.Body1 testID="activity_detail__transaction_type">
-                {txItem.isSender ? 'Outgoing Transfer' : 'Incoming Transfer'}
+                {getTransactionTypeTitle(txItem.txType) ??
+                  (txItem.isSender ? 'Outgoing Transfer' : 'Incoming Transfer')}
               </AvaText.Body1>
             }
           />
