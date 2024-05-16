@@ -27,8 +27,8 @@ import { useNetworks } from 'hooks/networks/useNetworks'
 import { isAvmNetwork, isPvmNetwork } from 'utils/network/isAvalancheNetwork'
 import ZeroState from './ZeroState'
 import Tokens from './Tokens'
-import { PChainAssets } from './PChainAssets'
-import { XChainAssets } from './XChainAssets'
+import { PChainAssetList } from './PChainAssetList'
+import { XChainAssetList } from './XChainAssetList'
 
 type NavigationProp = PortfolioScreenProps<
   typeof AppNavigation.Portfolio.Portfolio
@@ -140,10 +140,14 @@ const ActiveNetworkCard = (): JSX.Element => {
     if (tokens.length === 0) return <ZeroState />
 
     if (isPvmNetwork(activeNetwork)) {
-      return <PChainAssets />
+      return (
+        <PChainAssetList scrollEnabled={false} ItemSeparator={ItemSeparator} />
+      )
     }
     if (isAvmNetwork(activeNetwork)) {
-      return <XChainAssets />
+      return (
+        <XChainAssetList scrollEnabled={false} ItemSeparator={ItemSeparator} />
+      )
     }
     return <Tokens />
   }
@@ -163,3 +167,7 @@ const ActiveNetworkCard = (): JSX.Element => {
 }
 
 export default ActiveNetworkCard
+
+const ItemSeparator = (): React.JSX.Element => {
+  return <Space y={16} />
+}

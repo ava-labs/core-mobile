@@ -24,10 +24,9 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { isAvmNetwork, isPvmNetwork } from 'utils/network/isAvalancheNetwork'
 import { View } from '@avalabs/k2-mobile'
-import { XChainAssets } from '../home/components/Cards/ActiveNetworkCard/XChainAssets'
-import { PChainAssets } from '../home/components/Cards/ActiveNetworkCard/PChainAssets'
+import { XChainAssetList } from '../home/components/Cards/ActiveNetworkCard/XChainAssetList'
+import { PChainAssetList } from '../home/components/Cards/ActiveNetworkCard/PChainAssetList'
 import NetworkTokensHeader from './components/NetworkTokensHeader'
-import { XpNetworkCardWrapper } from './XpNetworkCardWrapper'
 
 type NavigationProp = PortfolioScreenProps<
   typeof AppNavigation.Portfolio.NetworkTokens
@@ -186,16 +185,29 @@ const NetworkTokens = (): JSX.Element => {
 
     if (isPvmNetwork(activeNetwork)) {
       return (
-        <XpNetworkCardWrapper>
-          <PChainAssets />
-        </XpNetworkCardWrapper>
+        <PChainAssetList
+          scrollEnabled
+          sx={{
+            marginTop: 16,
+            marginHorizontal: 16,
+            padding: 16,
+            borderRadius: 8
+          }}
+        />
       )
     }
     if (isAvmNetwork(activeNetwork)) {
       return (
-        <XpNetworkCardWrapper>
-          <XChainAssets />
-        </XpNetworkCardWrapper>
+        <XChainAssetList
+          scrollEnabled
+          sx={{
+            marginBottom: 0,
+            marginTop: 16,
+            marginHorizontal: 16,
+            padding: 16,
+            borderRadius: 8
+          }}
+        />
       )
     }
 
