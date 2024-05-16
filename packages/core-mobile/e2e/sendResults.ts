@@ -221,18 +221,18 @@ async function generatePlatformResults(
     // Adds the screenshot to the test case in testrail if the test failed
     for (let i = 0; i < testResults.length; i++) {
       if (testResults[i].status_id === 5 && testResults[i].screenshot) {
-        // This is the path to the screenshot for when the test fails
-        const failScreenshot = path.resolve(
-          `./e2e/artifacts/${platform}/${testResults[i].screenshot}`
-        )
-        if (failScreenshot) {
-          const failedPayload = {
-            name: 'failed.png',
-            value: await fs.createReadStream(failScreenshot)
-          }
-          // Attaches the screenshot to the corressponding case in the test run
-          await api.addAttachmentToCase(testResults[i].case_id, failedPayload)
-        }
+        //   // This is the path to the screenshot for when the test fails
+        // const failScreenshot = path.resolve(
+        //   `./e2e/artifacts/${platform}/${testResults[i].screenshot}`
+        // )
+        // if (failScreenshot) {
+        //   const failedPayload = {
+        //     name: 'failed.png',
+        //     value: await fs.createReadStream(failScreenshot)
+        //   }
+        //   // Attaches the screenshot to the corressponding case in the test run
+        //   await api.addAttachmentToCase(testResults[i].case_id, failedPayload)
+        // }
       }
     }
   } catch (error) {
