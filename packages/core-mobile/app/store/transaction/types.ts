@@ -34,4 +34,5 @@ export type Transaction = {
   explorerLink: string
   fee: string
   testID?: string
+  txType?: string
 }
