@@ -86,12 +86,25 @@ export abstract class TokenBaseUnit<T extends TokenBaseUnit<T>> {
     return this.value.toFixed(dp, rm)
   }
 
+  /**
+   * Tries to display token unit in most meaningful way.
+   * Precision of displaying token units makes sense only to up to
+   * *maxDecimals* decimal points, just as you would display US dollars up to 2 decimals.
+   * However, there's no point in showing all *maxDecimals* decimals if total
+   * value is huge, e.g. instead of displaying 1,000,000.000,000,001 we want to
+   * display 1,000,000. So in that effort this function will display maximum of
+   * **[maxDecimals - wholeDigits]** decimals, where *wholeDigits* is the number of digits
+   * of only whole portion of value.
+   * @param roundDp
+   */
   toDisplay(roundDp?: number): string {
     const wholeDigits = this.value.round(0).toString().length
     if (this.maxDecimals > wholeDigits) {
       return roundDp
         ? this.value.round(roundDp).toFixed()
-        : this.value.toFixed(this.maxDecimals - wholeDigits, Big.roundHalfUp)
+        : this.value
+            .round(this.maxDecimals - wholeDigits, Big.roundHalfUp)
+            .toFixed()
     }
     return this.value.toFixed(0, Big.roundHalfUp)
   }
