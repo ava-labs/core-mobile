@@ -31,7 +31,7 @@ export const XChainAssetList = ({
     return Object.keys(token.utxoBalances)
       .sort((a, b) =>
         Number(
-          Avax.fromNanoAvax(token.utxoBalances[b])?.sub(
+          Avax.fromNanoAvax(token.utxoBalances[b] ?? '0')?.sub(
             Avax.fromNanoAvax(token.utxoBalances[a] ?? '0')
           )
         )
