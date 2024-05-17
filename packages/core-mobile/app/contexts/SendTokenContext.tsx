@@ -9,7 +9,10 @@ import React, {
   useState
 } from 'react'
 import { InteractionManager } from 'react-native'
-import { TokenWithBalance } from 'store/balance'
+import {
+  selectNativeTokenBalanceForNetworkAndAccount,
+  TokenWithBalance
+} from 'store/balance'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import sendService from 'services/send/SendService'
@@ -24,6 +27,7 @@ import { NetworkTokenUnit, Amount } from 'types'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { useNetworkFee } from 'hooks/useNetworkFee'
 import { useInAppRequest } from 'hooks/useInAppRequest'
+import { RootState } from 'store'
 
 export type SendStatus = 'Idle' | 'Sending' | 'Success' | 'Fail'
 
@@ -57,6 +61,13 @@ export const SendTokenContextProvider = ({
   const { activeNetwork } = useNetworks()
   const activeAccount = useSelector(selectActiveAccount)
   const selectedCurrency = useSelector(selectSelectedCurrency)
+  const nativeTokenBalance = useSelector((state: RootState) =>
+    selectNativeTokenBalanceForNetworkAndAccount(
+      state,
+      activeNetwork.chainId,
+      activeAccount?.index
+    )
+  )
 
   const [sendToken, setSendToken] = useState<TokenWithBalance | undefined>()
   const [maxAmount, setMaxAmount] = useState<Amount>(ZERO_AMOUNT)
@@ -93,7 +104,8 @@ export const SendTokenContextProvider = ({
     sendAmount,
     sendToAddress,
     sendToken,
-    defaultMaxFeePerGas
+    defaultMaxFeePerGas,
+    nativeTokenBalance
   ])
 
   const setSendTokenAndResetAmount = useCallback(
@@ -189,7 +201,8 @@ export const SendTokenContextProvider = ({
         sendState,
         activeNetwork,
         activeAccount,
-        selectedCurrency
+        selectedCurrency,
+        nativeTokenBalance
       )
       .then(state => {
         setGasLimit(state.gasLimit ?? 0)
