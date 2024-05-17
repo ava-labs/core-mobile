@@ -20,3 +20,13 @@ export function isXPChain(chainId: number): boolean {
 export function absoluteChain(chainId: number): number {
   return chainId < 0 ? chainId * -1 : chainId
 }
+
+export function isPChain(chainId: number): boolean {
+  return [ChainId.AVALANCHE_XP * -1, ChainId.AVALANCHE_TEST_XP * -1].includes(
+    chainId
+  )
+}
+
+export function isXChain(chainId: number): boolean {
+  return [ChainId.AVALANCHE_XP, ChainId.AVALANCHE_TEST_XP].includes(chainId)
+}
