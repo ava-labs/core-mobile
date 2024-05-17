@@ -28,7 +28,11 @@ import {
 import Logger from 'utils/Logger'
 import { calculateTotalBalance, getLocalTokenId } from 'store/balance/utils'
 import SentryWrapper from 'services/sentry/SentryWrapper'
-import { selectHasBeenViewedOnce, ViewOnceKey } from 'store/viewOnce'
+import {
+  selectHasBeenViewedOnce,
+  setViewOnce,
+  ViewOnceKey
+} from 'store/viewOnce'
 import PrimaryActivityService from 'services/activity/PrimaryActivityService'
 import NetworkService from 'services/network/NetworkService'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
@@ -304,7 +308,7 @@ const maybePromptForAddingPChainToPortfolio = async (
   const hasPromptedToAddPChainToFavorites = selectHasBeenViewedOnce(
     ViewOnceKey.P_CHAIN_FAVORITE
   )(state)
-  if (!hasPromptedToAddPChainToFavorites) {
+  if (hasPromptedToAddPChainToFavorites) {
     Logger.trace('Already prompted for P-chain fav')
     return
   }
@@ -336,6 +340,7 @@ const maybePromptForAddingPChainToPortfolio = async (
 
   Logger.info('Adding P-Chain to favorites')
   dispatch(toggleFavorite(avalancheNetworkP.chainId))
+  dispatch(setViewOnce(ViewOnceKey.P_CHAIN_FAVORITE))
 }
 
 const convertToBalanceXchain = (
