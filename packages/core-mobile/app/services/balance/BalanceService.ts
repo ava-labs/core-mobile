@@ -1,7 +1,8 @@
 import {
   NetworkTokenWithBalance,
   TokenWithBalanceERC20,
-  PTokenWithBalance
+  PTokenWithBalance,
+  XTokenWithBalance
 } from 'store/balance'
 import { Network } from '@avalabs/chains-sdk'
 import { Account } from 'store/account'
@@ -28,6 +29,7 @@ export type BalancesForAccount = {
     | NetworkTokenWithBalance
     | TokenWithBalanceERC20
     | PTokenWithBalance
+    | XTokenWithBalance
   )[]
 }
 
@@ -84,7 +86,12 @@ export class BalanceService {
     currency: string
     sentryTrx?: Transaction
   }): Promise<
-    (NetworkTokenWithBalance | TokenWithBalanceERC20 | PTokenWithBalance)[]
+    (
+      | NetworkTokenWithBalance
+      | TokenWithBalanceERC20
+      | PTokenWithBalance
+      | XTokenWithBalance
+    )[]
   > {
     return SentryWrapper.createSpanFor(sentryTrx)
       .setContext('svc.balance.get_for_address')
