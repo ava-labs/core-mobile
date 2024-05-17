@@ -1,14 +1,10 @@
 import React, { FC } from 'react'
 import { Network } from '@avalabs/chains-sdk'
-import { Dimensions, Platform } from 'react-native'
+import { Dimensions, LayoutChangeEvent } from 'react-native'
 import { View, alpha, useTheme, TouchableHighlight } from '@avalabs/k2-mobile'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Space } from 'components/Space'
-import { PortfolioScreenProps } from 'navigation/types'
-import AppNavigation from 'navigation/AppNavigation'
-import { useNavigation } from '@react-navigation/native'
-import { useDispatch, useSelector } from 'react-redux'
-import { setActive } from 'store/network'
+import { useSelector } from 'react-redux'
 import {
   selectBalanceTotalInCurrencyForNetworkAndAccount,
   selectTokensWithBalanceByNetwork
@@ -17,7 +13,6 @@ import { NetworkLogo } from 'screens/network/NetworkLogo'
 import { selectActiveAccount } from 'store/account'
 import usePendingBridgeTransactions from 'screens/bridge/hooks/usePendingBridgeTransactions'
 import TopRightBadge from 'components/TopRightBadge'
-import AnalyticsService from 'services/analytics/AnalyticsService'
 import { Text } from '@avalabs/k2-mobile'
 import PriceChangeIndicator from 'screens/watchlist/components/PriceChangeIndicator'
 import { useTokenPortfolioPriceChange } from 'hooks/balance/useTokenPortfolioPriceChange'
@@ -26,20 +21,21 @@ const windowWidth = Dimensions.get('window').width
 
 type Props = {
   network: Network
+  onPress: (network: Network) => void
+  onContentLayout?: (event: LayoutChangeEvent) => void
+  height?: number
 }
 
-type NavigationProp = PortfolioScreenProps<
-  typeof AppNavigation.Portfolio.Portfolio
->['navigation']
-
-const InactiveNetworkCard: FC<Props> = ({ network }) => {
-  const dispatch = useDispatch()
-
+const InactiveNetworkCard: FC<Props> = ({
+  network,
+  onPress,
+  onContentLayout,
+  height
+}) => {
   const {
     appHook: { currencyFormatter }
   } = useApplicationContext()
   const { theme } = useTheme()
-  const { navigate } = useNavigation<NavigationProp>()
   const account = useSelector(selectActiveAccount)
   const totalBalance = useSelector(
     selectBalanceTotalInCurrencyForNetworkAndAccount(
@@ -53,25 +49,14 @@ const InactiveNetworkCard: FC<Props> = ({ network }) => {
 
   const tokens = useSelector(selectTokensWithBalanceByNetwork(network))
   const { tokenPortfolioPriceChange } = useTokenPortfolioPriceChange(tokens)
-
-  const navigateToNetworkTokens = (): void => {
-    AnalyticsService.capture('PortfolioSecondaryNetworkClicked', {
-      chainId: network.chainId
-    })
-    dispatch(setActive(network.chainId))
-    setTimeout(
-      () => {
-        navigate(AppNavigation.Portfolio.NetworkTokens)
-      },
-      Platform.OS === 'ios' ? 700 : 0
-    )
-  }
-
   const renderContent = (): JSX.Element => {
     const balance = currencyFormatter(totalBalance)
-
     return (
-      <View>
+      <View
+        sx={{
+          padding: 16
+        }}
+        onLayout={onContentLayout}>
         <View
           sx={{
             flexDirection: 'row'
@@ -121,13 +106,12 @@ const InactiveNetworkCard: FC<Props> = ({ network }) => {
       sx={{
         backgroundColor,
         width: (windowWidth - 16 * 2) / 2 - 8.5,
-        paddingHorizontal: 16,
-        paddingVertical: 16,
-        borderRadius: 10
+        borderRadius: 10,
+        height
       }}
       activeOpacity={1}
       underlayColor={alpha(backgroundColor, 0.7)}
-      onPress={navigateToNetworkTokens}>
+      onPress={() => onPress(network)}>
       {renderContent()}
     </TouchableHighlight>
   )
