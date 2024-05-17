@@ -90,6 +90,12 @@ export class SendServiceEVM implements SendServiceHelper {
               SendErrorMessage.INVALID_NETWORK_FEE
             )
 
+          if (maxAmount.isZero())
+            return SendServiceEVM.getErrorState(
+              newState,
+              SendErrorMessage.INSUFFICIENT_BALANCE
+            )
+
           if (
             token.type !== TokenType.ERC721 &&
             token.type !== TokenType.ERC1155 &&
