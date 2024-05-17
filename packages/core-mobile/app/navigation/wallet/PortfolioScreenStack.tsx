@@ -6,17 +6,19 @@ import NetworkTokens, {
 } from 'screens/portfolio/network/NetworkTokens'
 import { createStackNavigator } from '@react-navigation/stack'
 import { PortfolioTabs } from 'consts/portfolio'
+import { PChainFavoriteModal } from 'screens/portfolio/PChainFavoriteModal'
 
 export type PortfolioStackParamList = {
   [AppNavigation.Portfolio.Portfolio]: { tabIndex?: PortfolioTabs }
   [AppNavigation.Portfolio.NetworkTokens]:
     | { tabIndex?: NetworkTokensTabs }
     | undefined
+  [AppNavigation.Portfolio.AddPChainPrompt]: undefined
 }
 
 const PortfolioStack = createStackNavigator<PortfolioStackParamList>()
 
-function PortfolioScreenStack() {
+function PortfolioScreenStack(): JSX.Element {
   return (
     <PortfolioStack.Navigator
       screenOptions={{
@@ -29,6 +31,11 @@ function PortfolioScreenStack() {
       <PortfolioStack.Screen
         name={AppNavigation.Portfolio.NetworkTokens}
         component={NetworkTokens}
+      />
+      <PortfolioStack.Screen
+        options={{ presentation: 'transparentModal' }}
+        name={AppNavigation.Portfolio.AddPChainPrompt}
+        component={PChainFavoriteModal}
       />
     </PortfolioStack.Navigator>
   )

@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid'
 import { Network } from '@avalabs/chains-sdk'
-import { isAnyOf, TaskAbortError } from '@reduxjs/toolkit'
+import { Action, isAnyOf, TaskAbortError } from '@reduxjs/toolkit'
 import BalanceService from 'services/balance/BalanceService'
 import { AppListenerEffectAPI } from 'store'
 import {
@@ -14,8 +14,8 @@ import { onAppLocked, onAppUnlocked, onLogOut } from 'store/app'
 import { addCustomToken } from 'store/customToken'
 import { AppStartListening } from 'store/middleware/listener'
 import {
-  selectActiveNetwork,
   onNetworksFetched,
+  selectActiveNetwork,
   selectFavoriteNetworks
 } from 'store/network'
 import {
@@ -25,7 +25,15 @@ import {
 import Logger from 'utils/Logger'
 import { getLocalTokenId } from 'store/balance/utils'
 import SentryWrapper from 'services/sentry/SentryWrapper'
-import { BalancesForAccount } from '../../services/balance/BalanceService'
+import * as Navigation from 'utils/Navigation'
+import AppNavigation from 'navigation/AppNavigation'
+import { selectHasBeenViewedOnce, ViewOnceKey } from 'store/viewOnce'
+import PrimaryActivityService from 'services/activity/PrimaryActivityService'
+import NetworkService from 'services/network/NetworkService'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { ActivityResponse } from 'services/activity/types'
+import { BalancesForAccount } from 'services/balance/BalanceService'
+import { Balances, LocalTokenWithBalance, QueryStatus } from './types'
 import {
   fetchBalanceForAccount,
   getKey,
@@ -34,7 +42,6 @@ import {
   setBalances,
   setStatus
 } from './slice'
-import { Balances, LocalTokenWithBalance, QueryStatus } from './types'
 
 /**
  * In production:
@@ -267,6 +274,52 @@ const fetchBalanceForAccounts = async (
   )
 }
 
+const maybePromptForAddingPChainToPortfolio = async (
+  action: Action,
+  listenerApi: AppListenerEffectAPI
+): Promise<void> => {
+  const state = listenerApi.getState()
+
+  //check if we prompted before
+  const hasPromptedToAddPChainToFavorites = selectHasBeenViewedOnce(
+    ViewOnceKey.P_CHAIN_FAVORITE
+  )(state)
+  if (hasPromptedToAddPChainToFavorites) {
+    Logger.trace('Already prompted for P-chain fav')
+    return
+  }
+  //check if P chain already in favorites list
+  const isDeveloperMode = selectIsDeveloperMode(state)
+  const avalancheNetworkP = NetworkService.getAvalancheNetworkP(isDeveloperMode)
+  const favoriteNetworks = selectFavoriteNetworks(state)
+  if (
+    favoriteNetworks.find(
+      value => value.chainId === avalancheNetworkP.chainId
+    ) !== undefined
+  ) {
+    Logger.trace('P-chain already in fav list')
+    return
+  }
+
+  //check if any activity on P chain
+  const activeAccount = selectActiveAccount(state)
+  const activities: ActivityResponse =
+    await PrimaryActivityService.getActivities({
+      network: avalancheNetworkP,
+      address: activeAccount?.addressPVM ?? '',
+      criticalConfig: undefined
+    })
+  if (activities.transactions.length === 0) {
+    Logger.trace('No activities, skipping prompt for P-chain')
+    return
+  }
+
+  Navigation.navigate({
+    // @ts-ignore
+    name: AppNavigation.Portfolio.AddPChainPrompt
+  })
+}
+
 export const addBalanceListeners = (
   startListening: AppStartListening
 ): void => {
@@ -298,5 +351,10 @@ export const addBalanceListeners = (
     effect: async (action, listenerApi) => {
       handleFetchBalanceForAccount(listenerApi, action.payload.accountIndex)
     }
+  })
+
+  startListening({
+    actionCreator: onAppUnlocked,
+    effect: maybePromptForAddingPChainToPortfolio
   })
 }
