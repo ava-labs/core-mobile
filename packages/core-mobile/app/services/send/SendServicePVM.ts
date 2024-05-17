@@ -82,9 +82,10 @@ export class SendServicePVM {
           )
 
         if (
-          token.type !== TokenType.NATIVE &&
           sendFee &&
-          nativeTokenBalance?.lt(sendFee)
+          ((token.type !== TokenType.NATIVE &&
+            nativeTokenBalance?.lt(sendFee)) ||
+            (token.type === TokenType.NATIVE && token.balance.lt(sendFee)))
         )
           return SendServicePVM.getErrorState(
             newState,

@@ -36,86 +36,90 @@ export class SendServiceEVM implements SendServiceHelper {
     params: ValidateStateAndCalculateFeesParams
   ): Promise<SendState> {
     const { sendState, nativeTokenBalance, sentryTrx } = params
-    return SentryWrapper.createSpanFor(sentryTrx)
-      .setContext('svc.send.evm.validate_and_calc_fees')
-      .executeAsync(async () => {
-        const { amount, address, defaultMaxFeePerGas, token } = sendState
+    return (
+      SentryWrapper.createSpanFor(sentryTrx)
+        .setContext('svc.send.evm.validate_and_calc_fees')
+        // eslint-disable-next-line sonarjs/cognitive-complexity
+        .executeAsync(async () => {
+          const { amount, address, defaultMaxFeePerGas, token } = sendState
 
-        // Set canSubmit to false if token is not set
-        if (!token) return SendServiceEVM.getErrorState(sendState, '')
+          // Set canSubmit to false if token is not set
+          if (!token) return SendServiceEVM.getErrorState(sendState, '')
 
-        const gasLimit = await this.getGasLimit(sendState)
-        const sendFee = defaultMaxFeePerGas
-          ? new BN(gasLimit).mul(new BN(defaultMaxFeePerGas.toString()))
-          : undefined
-        let maxAmount =
-          token.type === TokenType.NATIVE
-            ? token.balance.sub(sendFee || new BN(0))
-            : token.balance
+          const gasLimit = await this.getGasLimit(sendState)
+          const sendFee = defaultMaxFeePerGas
+            ? new BN(gasLimit).mul(new BN(defaultMaxFeePerGas.toString()))
+            : undefined
+          let maxAmount =
+            token.type === TokenType.NATIVE
+              ? token.balance.sub(sendFee || new BN(0))
+              : token.balance
 
-        maxAmount = BN.max(maxAmount, new BN(0))
+          maxAmount = BN.max(maxAmount, new BN(0))
 
-        const newState: SendState = {
-          ...sendState,
-          canSubmit: true,
-          error: undefined,
-          gasLimit,
-          maxAmount,
-          sendFee
-        }
+          const newState: SendState = {
+            ...sendState,
+            canSubmit: true,
+            error: undefined,
+            gasLimit,
+            maxAmount,
+            sendFee
+          }
 
-        if (!address)
-          return SendServiceEVM.getErrorState(
-            newState,
-            SendErrorMessage.ADDRESS_REQUIRED
+          if (!address)
+            return SendServiceEVM.getErrorState(
+              newState,
+              SendErrorMessage.ADDRESS_REQUIRED
+            )
+
+          if (!isAddress(address))
+            return SendServiceEVM.getErrorState(
+              newState,
+              SendErrorMessage.INVALID_ADDRESS
+            )
+
+          if (gasLimit === 0)
+            return SendServiceEVM.getErrorState(
+              newState,
+              SendErrorMessage.INVALID_GAS_LIMIT
+            )
+
+          if (!defaultMaxFeePerGas || defaultMaxFeePerGas === 0n)
+            return SendServiceEVM.getErrorState(
+              newState,
+              SendErrorMessage.INVALID_NETWORK_FEE
+            )
+
+          if (
+            token.type !== TokenType.ERC721 &&
+            token.type !== TokenType.ERC1155 &&
+            (!amount || amount.isZero())
           )
+            return SendServiceEVM.getErrorState(
+              newState,
+              SendErrorMessage.AMOUNT_REQUIRED
+            )
 
-        if (!isAddress(address))
-          return SendServiceEVM.getErrorState(
-            newState,
-            SendErrorMessage.INVALID_ADDRESS
+          if (amount?.gt(maxAmount))
+            return SendServiceEVM.getErrorState(
+              newState,
+              SendErrorMessage.INSUFFICIENT_BALANCE
+            )
+
+          if (
+            sendFee &&
+            ((token.type !== TokenType.NATIVE &&
+              nativeTokenBalance?.lt(sendFee)) ||
+              (token.type === TokenType.NATIVE && token.balance.lt(sendFee)))
           )
+            return SendServiceEVM.getErrorState(
+              newState,
+              SendErrorMessage.INSUFFICIENT_BALANCE_FOR_FEE
+            )
 
-        if (gasLimit === 0)
-          return SendServiceEVM.getErrorState(
-            newState,
-            SendErrorMessage.INVALID_GAS_LIMIT
-          )
-
-        if (!defaultMaxFeePerGas || defaultMaxFeePerGas === 0n)
-          return SendServiceEVM.getErrorState(
-            newState,
-            SendErrorMessage.INVALID_NETWORK_FEE
-          )
-
-        if (
-          token.type !== TokenType.ERC721 &&
-          token.type !== TokenType.ERC1155 &&
-          (!amount || amount.isZero())
-        )
-          return SendServiceEVM.getErrorState(
-            newState,
-            SendErrorMessage.AMOUNT_REQUIRED
-          )
-
-        if (amount?.gt(maxAmount))
-          return SendServiceEVM.getErrorState(
-            newState,
-            SendErrorMessage.INSUFFICIENT_BALANCE
-          )
-
-        if (
-          token.type !== TokenType.NATIVE &&
-          sendFee &&
-          nativeTokenBalance?.lt(sendFee)
-        )
-          return SendServiceEVM.getErrorState(
-            newState,
-            SendErrorMessage.INSUFFICIENT_BALANCE_FOR_FEE
-          )
-
-        return newState
-      })
+          return newState
+        })
+    )
   }
 
   async getTransactionRequest(
