@@ -16,7 +16,7 @@ export type PortfolioStackParamList = {
 
 const PortfolioStack = createStackNavigator<PortfolioStackParamList>()
 
-function PortfolioScreenStack() {
+function PortfolioScreenStack(): JSX.Element {
   return (
     <PortfolioStack.Navigator
       screenOptions={{
