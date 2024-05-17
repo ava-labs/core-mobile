@@ -2,6 +2,7 @@ import { NetworkContractToken, NetworkToken } from '@avalabs/chains-sdk'
 import { BitcoinInputUTXOWithOptionalScript } from '@avalabs/wallets-sdk'
 import BN from 'bn.js'
 import { PChainBalance, XChainBalances } from '@avalabs/glacier-sdk'
+import { Avax } from 'types'
 
 export type LocalTokenId = string
 
@@ -35,7 +36,7 @@ export type PTokenWithBalance = Omit<TokenBalanceData, 'utxos'> &
     coingeckoId: string
     type: TokenType.NATIVE
     utxos: PChainBalance
-    utxoBalances: PChainUtxoBalances
+    utxoBalances: XPChainUtxoBalances
   }
 
 export type XTokenWithBalance = Omit<TokenBalanceData, 'utxos'> &
@@ -45,7 +46,7 @@ export type XTokenWithBalance = Omit<TokenBalanceData, 'utxos'> &
     coingeckoId: string
     type: TokenType.NATIVE
     utxos: XChainBalances
-    utxoBalances: XChainUtxoBalances
+    utxoBalances: XPChainUtxoBalances
   }
 
 export type NetworkTokenWithBalance = TokenBalanceData &
@@ -125,19 +126,39 @@ export type BalanceState = {
 }
 
 export interface PChainUtxoBalances {
-  lockedStaked?: number
-  lockedStakeable?: number
-  lockedPlatform?: number
-  atomicMemoryLocked?: number
-  atomicMemoryUnlocked?: number
-  unlockedUnstaked?: number
-  unlockedStaked?: number
-  pendingStaked?: number
+  lockedStaked?: Avax
+  lockedStakeable?: Avax
+  lockedPlatform?: Avax
+  atomicMemoryLocked?: Avax
+  atomicMemoryUnlocked?: Avax
+  unlockedUnstaked?: Avax
+  unlockedStaked?: Avax
+  pendingStaked?: Avax
 }
 
 export interface XChainUtxoBalances {
-  unlocked?: number
-  locked?: number
-  atomicMemoryUnlocked?: number
-  atomicMemoryLocked?: number
+  unlocked?: Avax
+  locked?: Avax
+  atomicMemoryUnlocked?: Avax
+  atomicMemoryLocked?: Avax
+}
+
+export type XPChainUtxoBalances = Record<string, Avax>
+
+export const assetPDisplayNames: Record<string, string> = {
+  lockedStaked: 'Locked Staked',
+  lockedStakeable: 'Locked Stakeable',
+  lockedPlatform: 'Locked Platform',
+  atomicMemoryLocked: 'Atomic Memory Locked',
+  atomicMemoryUnlocked: 'Atomic Memory Unlocked',
+  unlockedUnstaked: 'Unlocked Unstaked',
+  unlockedStaked: 'Unlocked Staked',
+  pendingStaked: 'Pending Staked'
+}
+
+export const assetXDisplayNames: Record<string, string> = {
+  locked: 'Locked',
+  unlocked: 'Unlocked',
+  atomicMemoryLocked: 'Atomic Memory Locked',
+  atomicMemoryUnlocked: 'Atomic Memory Unlocked'
 }

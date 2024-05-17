@@ -2,27 +2,18 @@ import { PChainBalance } from '@avalabs/glacier-sdk'
 import { FlatList, Sx, Text, View } from '@avalabs/k2-mobile'
 import { Space } from 'components/Space'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import React from 'react'
+import React, { useMemo } from 'react'
 import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList'
-import { PTokenWithBalance } from 'store/balance'
+import { PTokenWithBalance, assetPDisplayNames } from 'store/balance'
 import { Avax } from 'types'
 
-const assetDisplayNames = {
-  lockedStaked: 'Locked Staked',
-  lockedStakeable: 'Locked Stakeable',
-  lockedPlatform: 'Locked Platform',
-  atomicMemoryLocked: 'Atomic Memory Locked',
-  atomicMemoryUnlocked: 'Atomic Memory Unlocked',
-  unlockedUnstaked: 'Unlocked Unstaked',
-  unlockedStaked: 'Unlocked Staked',
-  pendingStaked: 'Pending Staked'
-}
-
 export const PChainAssetList = ({
+  limit,
   scrollEnabled = true,
   sx,
   ItemSeparator
 }: {
+  limit?: number
   scrollEnabled?: boolean
   sx?: Sx
   ItemSeparator?: React.ComponentType | null
@@ -32,24 +23,35 @@ export const PChainAssetList = ({
   } = useApplicationContext()
   const { filteredTokenList: tokens } = useSearchableTokenList()
 
-  const pTokenWithBalance = tokens.find(
-    token => 'unlockedUnstaked' in (token.utxos as PChainBalance)
+  const token = tokens.find(
+    t => 'unlockedUnstaked' in (t.utxos as PChainBalance)
   ) as PTokenWithBalance
 
-  const tokenPrice = pTokenWithBalance.priceInCurrency
+  const assetTypes = useMemo(() => {
+    return Object.keys(token.utxoBalances)
+      .sort((a, b) =>
+        Number(
+          (token.utxoBalances[b] ?? new Avax(0))?.sub(
+            token.utxoBalances[a] ?? new Avax(0)
+          )
+        )
+      )
+      .filter(k => token.utxoBalances[k]?.gt(0))
+  }, [token])
 
-  const rednerItem = (assetType: string): JSX.Element | null => {
-    // @ts-ignore - we know that the key exists
-    const balance = pTokenWithBalance.utxoBalances[assetType] ?? 0
-    if (balance === 0) {
-      return null
-    }
-    const balanceInAvax = Avax.fromNanoAvax(balance).toFixed()
-    const balanceInCurrency = Avax.fromNanoAvax(balance * tokenPrice).toFixed(2)
+  const shouldLimitAssets = limit && assetTypes.length > limit
+
+  const tokenPrice = token.priceInCurrency
+
+  const rednerItem = (assetType: string): JSX.Element => {
+    const balance = token.utxoBalances[assetType] ?? 0
+    const balanceInAvax = Avax.fromNanoAvax(balance.toString()).toDisplay()
+    const balanceInCurrency = Avax.fromNanoAvax(balance.toString())
+      .mul(tokenPrice)
+      .toDisplay(2)
 
     const formattedBalance = currencyFormatter(balanceInCurrency)
-    // @ts-ignore - we know that the key exists
-    const assetName = assetDisplayNames?.[assetType] ?? assetType
+    const assetName = assetPDisplayNames[assetType]
 
     return (
       <View
@@ -82,7 +84,7 @@ export const PChainAssetList = ({
               </Text>
               <Space x={4} />
               <Text variant="overline" numberOfLines={1} ellipsizeMode="tail">
-                {pTokenWithBalance.symbol}
+                {token.symbol}
               </Text>
             </View>
           </View>
@@ -99,13 +101,30 @@ export const PChainAssetList = ({
     )
   }
 
+  const renderMoreText = (): JSX.Element | null => {
+    const moreText = assetTypes.length - (limit ?? assetTypes.length)
+
+    if (moreText <= 0) return null
+
+    return (
+      <Text
+        variant="buttonSmall"
+        sx={{ marginTop: 4, alignSelf: 'flex-end', color: '$blueMain' }}>
+        + {moreText} more
+      </Text>
+    )
+  }
+
   return (
-    <FlatList
-      scrollEnabled={scrollEnabled}
-      data={Object.keys(pTokenWithBalance.utxoBalances)}
-      keyExtractor={(_, index) => index.toString()}
-      renderItem={item => rednerItem(item.item as string)}
-      ItemSeparatorComponent={ItemSeparator}
-    />
+    <>
+      <FlatList
+        scrollEnabled={scrollEnabled}
+        data={shouldLimitAssets ? assetTypes.slice(0, limit) : assetTypes}
+        keyExtractor={(_, index) => index.toString()}
+        renderItem={item => rednerItem(item.item as string)}
+        ItemSeparatorComponent={ItemSeparator}
+      />
+      {renderMoreText()}
+    </>
   )
 }

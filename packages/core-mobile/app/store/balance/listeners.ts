@@ -49,6 +49,7 @@ import {
   LocalTokenWithBalance,
   PTokenWithBalance,
   QueryStatus,
+  XPChainUtxoBalances,
   XTokenWithBalance
 } from './types'
 
@@ -65,6 +66,9 @@ export const PollingConfig = {
   activeNetwork: __DEV__ ? 30000 : 2000,
   allNetworks: __DEV__ ? 60000 : 30000
 }
+
+const AVAX_X_ID = 'AVAX-X'
+const AVAX_P_ID = 'AVAX-P'
 
 const allNetworksOperand =
   PollingConfig.allNetworks / PollingConfig.activeNetwork
@@ -338,10 +342,10 @@ const maybePromptForAddingPChainToPortfolio = async (
 const convertToBalanceXchain = (
   token: XTokenWithBalance
 ): LocalTokenWithBalance => {
-  const balancePerType: Record<string, Avax> = {}
+  const balancePerType: XPChainUtxoBalances = {}
   const tokenPrice = token.priceInCurrency
 
-  const utxos = {
+  const utxos: Record<string, AggregatedAssetAmount[]> = {
     unlocked: token.unlocked,
     locked: token.locked,
     atomicMemoryUnlocked: token.atomicMemoryUnlocked,
@@ -349,8 +353,7 @@ const convertToBalanceXchain = (
   }
 
   for (const balanceType in utxos) {
-    // @ts-ignore: extract balances for each type by generic key
-    const balancesToAdd = utxos?.[balanceType]
+    const balancesToAdd = utxos[balanceType]
     if (!balancesToAdd || !balancesToAdd.length) {
       balancePerType[balanceType] = new Avax(0)
       continue
@@ -375,28 +378,21 @@ const convertToBalanceXchain = (
     balanceDisplayValue,
     balanceCurrencyDisplayValue,
     utxos: token,
-    unlocked: utxos.unlocked,
-    locked: utxos.locked,
-    atomicMemoryUnlocked: utxos.atomicMemoryUnlocked,
-    atomicMemoryLocked: utxos.atomicMemoryLocked,
-    localId: token.symbol + '-x',
-    utxoBalances: {
-      unlocked: Number(balancePerType.unlocked?.toFixed()),
-      locked: Number(balancePerType.locked?.toFixed()),
-      atomicMemoryUnlocked: Number(
-        balancePerType.atomicMemoryUnlocked?.toFixed()
-      ),
-      atomicMemoryLocked: Number(balancePerType.atomicMemoryLocked?.toFixed())
-    }
+    unlocked: token.unlocked,
+    locked: token.locked,
+    atomicMemoryUnlocked: token.atomicMemoryUnlocked,
+    atomicMemoryLocked: token.atomicMemoryLocked,
+    localId: AVAX_X_ID,
+    utxoBalances: balancePerType
   }
 }
 
 const convertToBalancePchain = (
   token: PTokenWithBalance
 ): LocalTokenWithBalance => {
-  const balancePerType: Record<string, Avax> = {}
+  const balancePerType: XPChainUtxoBalances = {}
   const tokenPrice = token.priceInCurrency
-  const utxos = {
+  const utxos: Record<string, AggregatedAssetAmount[]> = {
     unlockedUnstaked: token.unlockedUnstaked,
     unlockedStaked: token.unlockedStaked,
     pendingStaked: token.pendingStaked,
@@ -408,8 +404,7 @@ const convertToBalancePchain = (
   }
 
   for (const balanceType in utxos) {
-    // @ts-ignore
-    const balancesToAdd = utxos?.[balanceType]
+    const balancesToAdd = utxos[balanceType]
     if (!balancesToAdd || !balancesToAdd.length) {
       balancePerType[balanceType] = new Avax(0)
       continue
@@ -434,27 +429,16 @@ const convertToBalancePchain = (
     balanceDisplayValue,
     balanceCurrencyDisplayValue,
     utxos: token,
-    lockedStaked: utxos.lockedStaked,
-    lockedStakeable: utxos.lockedStakeable,
-    lockedPlatform: utxos.lockedPlatform,
-    atomicMemoryLocked: utxos.atomicMemoryLocked,
-    atomicMemoryUnlocked: utxos.atomicMemoryUnlocked,
-    unlockedUnstaked: utxos.unlockedUnstaked,
-    unlockedStaked: utxos.unlockedStaked,
-    pendingStaked: utxos.pendingStaked,
-    localId: token.symbol + '-p',
-    utxoBalances: {
-      lockedStaked: Number(balancePerType.lockedStaked?.toFixed()),
-      lockedStakeable: Number(balancePerType.lockedStakeable?.toFixed()),
-      lockedPlatform: Number(balancePerType.lockedPlatform?.toFixed()),
-      atomicMemoryLocked: Number(balancePerType.atomicMemoryLocked?.toFixed()),
-      atomicMemoryUnlocked: Number(
-        balancePerType.atomicMemoryUnlocked?.toFixed()
-      ),
-      unlockedUnstaked: Number(balancePerType.unlockedUnstaked?.toFixed()),
-      unlockedStaked: Number(balancePerType.unlockedStaked?.toFixed()),
-      pendingStaked: Number(balancePerType.pendingStaked?.toFixed())
-    }
+    lockedStaked: token.lockedStaked,
+    lockedStakeable: token.lockedStakeable,
+    lockedPlatform: token.lockedPlatform,
+    atomicMemoryLocked: token.atomicMemoryLocked,
+    atomicMemoryUnlocked: token.atomicMemoryUnlocked,
+    unlockedUnstaked: token.unlockedUnstaked,
+    unlockedStaked: token.unlockedStaked,
+    pendingStaked: token.pendingStaked,
+    localId: AVAX_P_ID,
+    utxoBalances: balancePerType
   }
 }
 

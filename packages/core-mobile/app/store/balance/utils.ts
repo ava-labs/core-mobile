@@ -5,7 +5,7 @@ import {
   XTokenWithBalance
 } from 'store/balance/types'
 import { NetworkContractToken } from '@avalabs/chains-sdk'
-import { PChainBalance, XChainBalances } from '@avalabs/glacier-sdk'
+import { AggregatedAssetAmount } from '@avalabs/glacier-sdk'
 import { Avax } from 'types'
 
 export function getLocalTokenId(
@@ -20,14 +20,13 @@ export function getLocalTokenId(
 }
 
 export function calculateTotalBalance(
-  uxtos: PChainBalance | XChainBalances
+  uxtos: Record<string, AggregatedAssetAmount[]>
 ): Avax {
   return Object.values(uxtos).reduce(function (totalAcc, utxoList) {
     const typeSum = utxoList.reduce(function (typeAcc, utxo) {
       const balanceToAdd = Avax.fromNanoAvax(utxo.amount)
       return balanceToAdd.add(typeAcc)
     }, new Avax(0))
-
     return typeSum.add(totalAcc)
   }, new Avax(0))
 }

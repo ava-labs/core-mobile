@@ -141,7 +141,11 @@ const ActiveNetworkCard = (): JSX.Element => {
 
     if (isPvmNetwork(activeNetwork)) {
       return (
-        <PChainAssetList scrollEnabled={false} ItemSeparator={ItemSeparator} />
+        <PChainAssetList
+          scrollEnabled={false}
+          ItemSeparator={ItemSeparator}
+          limit={4}
+        />
       )
     }
     if (isAvmNetwork(activeNetwork)) {

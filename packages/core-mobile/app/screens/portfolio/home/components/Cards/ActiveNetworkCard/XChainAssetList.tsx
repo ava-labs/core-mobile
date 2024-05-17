@@ -2,17 +2,10 @@ import { XChainBalances } from '@avalabs/glacier-sdk'
 import { FlatList, Sx, Text, View } from '@avalabs/k2-mobile'
 import { Space } from 'components/Space'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import React from 'react'
+import React, { useMemo } from 'react'
 import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList'
-import { XTokenWithBalance } from 'store/balance'
+import { XTokenWithBalance, assetXDisplayNames } from 'store/balance'
 import { Avax } from 'types'
-
-const assetDisplayNames = {
-  locked: 'Locked',
-  unlocked: 'Unlocked',
-  atomicMemoryLocked: 'Atomic Memory Locked',
-  atomicMemoryUnlocked: 'Atomic Memory Unlocked'
-}
 
 export const XChainAssetList = ({
   scrollEnabled = true,
@@ -28,24 +21,33 @@ export const XChainAssetList = ({
   } = useApplicationContext()
   const { filteredTokenList: tokens } = useSearchableTokenList()
 
-  const xTokenWithBalance = tokens.find(
-    token => 'unlocked' in (token.utxos as XChainBalances)
+  const token = tokens.find(
+    t => 'unlocked' in (t.utxos as XChainBalances)
   ) as XTokenWithBalance
 
-  const tokenPrice = xTokenWithBalance.priceInCurrency
+  const tokenPrice = token.priceInCurrency
 
-  const rednerItem = (assetType: string): JSX.Element | null => {
-    // @ts-ignore - we know that the key exists
-    const balance = xTokenWithBalance.utxoBalances[assetType] ?? 0
-    if (balance === 0) {
-      return null
-    }
-    const balanceInAvax = Avax.fromNanoAvax(balance).toFixed()
-    const balanceInCurrency = Avax.fromNanoAvax(balance * tokenPrice).toFixed(2)
+  const assetTypes = useMemo(() => {
+    return Object.keys(token.utxoBalances)
+      .sort((a, b) =>
+        Number(
+          (token.utxoBalances[b] ?? new Avax(0))?.sub(
+            token.utxoBalances[a] ?? new Avax(0)
+          )
+        )
+      )
+      .filter(k => token.utxoBalances[k]?.gt(0))
+  }, [token])
+
+  const renderItem = (assetType: string): JSX.Element => {
+    const balance = token.utxoBalances[assetType] ?? 0
+    const balanceInAvax = Avax.fromNanoAvax(balance.toString()).toDisplay()
+    const balanceInCurrency = Avax.fromNanoAvax(balance.toString())
+      .mul(tokenPrice)
+      .toDisplay(2)
 
     const formattedBalance = currencyFormatter(balanceInCurrency)
-    // @ts-ignore - we know that the key exists
-    const assetName = assetDisplayNames?.[assetType] ?? assetType
+    const assetName = assetXDisplayNames[assetType]
 
     return (
       <View
@@ -80,7 +82,7 @@ export const XChainAssetList = ({
               </Text>
               <Space x={4} />
               <Text variant="overline" numberOfLines={1} ellipsizeMode="tail">
-                {xTokenWithBalance.symbol}
+                {token.symbol}
               </Text>
             </View>
           </View>
@@ -100,9 +102,9 @@ export const XChainAssetList = ({
   return (
     <FlatList
       scrollEnabled={scrollEnabled}
-      data={Object.keys(xTokenWithBalance.utxoBalances)}
+      data={assetTypes}
       keyExtractor={(_, index) => index.toString()}
-      renderItem={item => rednerItem(item.item as string)}
+      renderItem={item => renderItem(item.item as string)}
       ItemSeparatorComponent={ItemSeparator}
     />
   )
