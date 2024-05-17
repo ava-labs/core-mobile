@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { FlatList, ListRenderItemInfo, View } from 'react-native'
+import { FlatList, ListRenderItemInfo } from 'react-native'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList'
 import AppNavigation from 'navigation/AppNavigation'
@@ -22,6 +22,10 @@ import usePendingBridgeTransactions from 'screens/bridge/hooks/usePendingBridgeT
 import TopRightBadge from 'components/TopRightBadge'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { useNetworks } from 'hooks/networks/useNetworks'
+import { isAvmNetwork, isPvmNetwork } from 'utils/network/isAvalancheNetwork'
+import { View } from '@avalabs/k2-mobile'
+import { XChainAssetList } from '../home/components/Cards/ActiveNetworkCard/XChainAssetList'
+import { PChainAssetList } from '../home/components/Cards/ActiveNetworkCard/PChainAssetList'
 import NetworkTokensHeader from './components/NetworkTokensHeader'
 
 type NavigationProp = PortfolioScreenProps<
@@ -178,6 +182,34 @@ const NetworkTokens = (): JSX.Element => {
 
   const renderTokenTab = (): JSX.Element => {
     if (tokenList.length === 0) return renderZeroState()
+
+    if (isPvmNetwork(activeNetwork)) {
+      return (
+        <PChainAssetList
+          scrollEnabled
+          sx={{
+            marginTop: 16,
+            marginHorizontal: 16,
+            padding: 16,
+            borderRadius: 8
+          }}
+        />
+      )
+    }
+    if (isAvmNetwork(activeNetwork)) {
+      return (
+        <XChainAssetList
+          scrollEnabled
+          sx={{
+            marginBottom: 0,
+            marginTop: 16,
+            marginHorizontal: 16,
+            padding: 16,
+            borderRadius: 8
+          }}
+        />
+      )
+    }
 
     return renderTokens()
   }
