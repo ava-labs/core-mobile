@@ -31,12 +31,12 @@ export const XChainAssetList = ({
     return Object.keys(token.utxoBalances)
       .sort((a, b) =>
         Number(
-          (token.utxoBalances[b] ?? new Avax(0))?.sub(
-            token.utxoBalances[a] ?? new Avax(0)
+          Avax.fromNanoAvax(token.utxoBalances[b])?.sub(
+            Avax.fromNanoAvax(token.utxoBalances[a] ?? '0')
           )
         )
       )
-      .filter(k => token.utxoBalances[k]?.gt(0))
+      .filter(k => Avax.fromNanoAvax(token.utxoBalances[k] ?? '0')?.gt(0))
   }, [token])
 
   const renderItem = (assetType: string): JSX.Element => {

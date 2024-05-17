@@ -49,7 +49,6 @@ import {
   LocalTokenWithBalance,
   PTokenWithBalance,
   QueryStatus,
-  XPChainUtxoBalances,
   XTokenWithBalance
 } from './types'
 
@@ -342,7 +341,7 @@ const maybePromptForAddingPChainToPortfolio = async (
 const convertToBalanceXchain = (
   token: XTokenWithBalance
 ): LocalTokenWithBalance => {
-  const balancePerType: XPChainUtxoBalances = {}
+  const balancePerType: Record<string, Avax> = {}
   const tokenPrice = token.priceInCurrency
 
   const utxos: Record<string, AggregatedAssetAmount[]> = {
@@ -371,6 +370,13 @@ const convertToBalanceXchain = (
   const balanceInCurrency = Number(totalBalance.mul(tokenPrice).toFixed())
   const balanceCurrencyDisplayValue = balanceInCurrency.toFixed(2)
 
+  const utxoBalances = {
+    unlocked: balancePerType.unlocked?.toDisplay(),
+    locked: balancePerType.locked?.toDisplay(),
+    atomicMemoryUnlocked: balancePerType.atomicMemoryUnlocked?.toDisplay(),
+    atomicMemoryLocked: balancePerType.atomicMemoryLocked?.toDisplay()
+  }
+
   return {
     ...token,
     balanceInCurrency,
@@ -383,14 +389,14 @@ const convertToBalanceXchain = (
     atomicMemoryUnlocked: token.atomicMemoryUnlocked,
     atomicMemoryLocked: token.atomicMemoryLocked,
     localId: AVAX_X_ID,
-    utxoBalances: balancePerType
+    utxoBalances
   }
 }
 
 const convertToBalancePchain = (
   token: PTokenWithBalance
 ): LocalTokenWithBalance => {
-  const balancePerType: XPChainUtxoBalances = {}
+  const balancePerType: Record<string, Avax> = {}
   const tokenPrice = token.priceInCurrency
   const utxos: Record<string, AggregatedAssetAmount[]> = {
     unlockedUnstaked: token.unlockedUnstaked,
@@ -422,6 +428,17 @@ const convertToBalancePchain = (
   const balanceInCurrency = Number(totalBalance.mul(tokenPrice).toFixed())
   const balanceCurrencyDisplayValue = balanceInCurrency.toFixed(2)
 
+  const utxoBalances = {
+    unlockedUnstaked: balancePerType.unlockedUnstaked?.toDisplay(),
+    unlockedStaked: balancePerType.unlockedStaked?.toDisplay(),
+    pendingStaked: balancePerType.pendingStaked?.toDisplay(),
+    lockedStaked: balancePerType.lockedStaked?.toDisplay(),
+    lockedStakeable: balancePerType.lockedStakeable?.toDisplay(),
+    lockedPlatform: balancePerType.lockedPlatform?.toDisplay(),
+    atomicMemoryLocked: balancePerType.atomicMemoryLocked?.toDisplay(),
+    atomicMemoryUnlocked: balancePerType.atomicMemoryUnlocked?.toDisplay()
+  }
+
   return {
     ...token,
     balanceInCurrency,
@@ -438,7 +455,7 @@ const convertToBalancePchain = (
     unlockedStaked: token.unlockedStaked,
     pendingStaked: token.pendingStaked,
     localId: AVAX_P_ID,
-    utxoBalances: balancePerType
+    utxoBalances
   }
 }
 

@@ -31,12 +31,12 @@ export const PChainAssetList = ({
     return Object.keys(token.utxoBalances)
       .sort((a, b) =>
         Number(
-          (token.utxoBalances[b] ?? new Avax(0))?.sub(
-            token.utxoBalances[a] ?? new Avax(0)
+          Avax.fromNanoAvax(token.utxoBalances[b] ?? '0')?.sub(
+            Avax.fromNanoAvax(token.utxoBalances[a] ?? '0')
           )
         )
       )
-      .filter(k => token.utxoBalances[k]?.gt(0))
+      .filter(k => Avax.fromNanoAvax(token.utxoBalances[k] ?? '0')?.gt(0))
   }, [token])
 
   const shouldLimitAssets = limit && assetTypes.length > limit

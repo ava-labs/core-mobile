@@ -143,7 +143,7 @@ export interface XChainUtxoBalances {
   atomicMemoryLocked?: Avax
 }
 
-export type XPChainUtxoBalances = Record<string, Avax>
+export type XPChainUtxoBalances = Record<string, string | undefined>
 
 export const assetPDisplayNames: Record<string, string> = {
   lockedStaked: 'Locked Staked',
