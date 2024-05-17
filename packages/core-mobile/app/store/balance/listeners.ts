@@ -1,7 +1,9 @@
 import { v4 as uuidv4 } from 'uuid'
 import { Network } from '@avalabs/chains-sdk'
 import { Action, isAnyOf, TaskAbortError } from '@reduxjs/toolkit'
-import BalanceService from 'services/balance/BalanceService'
+import BalanceService, {
+  BalancesForAccount
+} from 'services/balance/BalanceService'
 import { AppListenerEffectAPI } from 'store'
 import {
   Account,
@@ -16,7 +18,8 @@ import { AppStartListening } from 'store/middleware/listener'
 import {
   onNetworksFetched,
   selectActiveNetwork,
-  selectFavoriteNetworks
+  selectFavoriteNetworks,
+  toggleFavorite
 } from 'store/network'
 import {
   selectSelectedCurrency,
@@ -25,14 +28,11 @@ import {
 import Logger from 'utils/Logger'
 import { getLocalTokenId } from 'store/balance/utils'
 import SentryWrapper from 'services/sentry/SentryWrapper'
-import * as Navigation from 'utils/Navigation'
-import AppNavigation from 'navigation/AppNavigation'
 import { selectHasBeenViewedOnce, ViewOnceKey } from 'store/viewOnce'
 import PrimaryActivityService from 'services/activity/PrimaryActivityService'
 import NetworkService from 'services/network/NetworkService'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { ActivityResponse } from 'services/activity/types'
-import { BalancesForAccount } from 'services/balance/BalanceService'
 import { Balances, LocalTokenWithBalance, QueryStatus } from './types'
 import {
   fetchBalanceForAccount,
@@ -278,7 +278,8 @@ const maybePromptForAddingPChainToPortfolio = async (
   action: Action,
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
-  const state = listenerApi.getState()
+  const { getState, dispatch } = listenerApi
+  const state = getState()
 
   //check if we prompted before
   const hasPromptedToAddPChainToFavorites = selectHasBeenViewedOnce(
@@ -314,10 +315,8 @@ const maybePromptForAddingPChainToPortfolio = async (
     return
   }
 
-  Navigation.navigate({
-    // @ts-ignore
-    name: AppNavigation.Portfolio.AddPChainPrompt
-  })
+  Logger.info('Adding P-Chain to favorites')
+  dispatch(toggleFavorite(avalancheNetworkP.chainId))
 }
 
 export const addBalanceListeners = (
