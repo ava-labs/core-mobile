@@ -285,7 +285,7 @@ const maybePromptForAddingPChainToPortfolio = async (
   const hasPromptedToAddPChainToFavorites = selectHasBeenViewedOnce(
     ViewOnceKey.P_CHAIN_FAVORITE
   )(state)
-  if (hasPromptedToAddPChainToFavorites) {
+  if (!hasPromptedToAddPChainToFavorites) {
     Logger.trace('Already prompted for P-chain fav')
     return
   }
@@ -339,7 +339,8 @@ export const addBalanceListeners = (
       setAccounts,
       setActiveAccountIndex,
       addCustomToken,
-      onNetworksFetched
+      onNetworksFetched,
+      toggleFavorite
     ),
     effect: async (action, listenerApi) =>
       onBalanceUpdate(QueryStatus.LOADING, listenerApi, false)
