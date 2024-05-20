@@ -116,7 +116,9 @@ export default function GetStarted({
         </View>
       </Row>
       <Space y={40} />
-      <AvaButton.PrimaryLarge onPress={onNext}>Next</AvaButton.PrimaryLarge>
+      <AvaButton.PrimaryLarge testID="next_btn" onPress={onNext}>
+        Next
+      </AvaButton.PrimaryLarge>
       <Space y={16} />
       <Pressable
         style={{ marginHorizontal: 16, marginBottom: 32 }}

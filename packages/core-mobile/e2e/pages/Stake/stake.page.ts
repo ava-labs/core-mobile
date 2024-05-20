@@ -234,7 +234,7 @@ class StakePage {
     if ((await Actions.isVisible(this.stakePrimaryButton, 0)) === true) {
       await Actions.tapElementAtIndex(this.stakePrimaryButton, 0)
     } else {
-      let platformIndex = 0
+      let platformIndex = 1
       if (Actions.platform() === Platform.Android) {
         platformIndex = 1
       }

@@ -1,5 +1,6 @@
 import createPinLoc from '../locators/createPin.loc'
 import Action from '../helpers/actions'
+import delay from '../helpers/waits'
 
 class CreatePinPage {
   get numpadZero() {
@@ -43,7 +44,11 @@ class CreatePinPage {
   }
 
   async tapNumpadZero() {
-    await Action.multiTap(this.numpadZero, 5, 0)
+    await Action.multiTap(this.numpadZero, 6, 0)
+  }
+
+  async tapNumpadZero5Times() {
+    await element(this.numpadZero).multiTap(5)
   }
 
   async tapNumpadOne() {
@@ -73,6 +78,7 @@ class CreatePinPage {
 
   async createPin() {
     for (let i = 0; i < 2; i++) {
+      await delay(1000)
       await this.tapNumpadZero6Times()
     }
   }
