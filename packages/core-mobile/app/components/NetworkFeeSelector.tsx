@@ -20,7 +20,14 @@ import { calculateGasAndFees, Eip1559Fees, GasAndFees } from 'utils/Utils'
 import { useNetworkFee } from 'hooks/useNetworkFee'
 import { useNativeTokenPriceForNetwork } from 'hooks/networks/useNativeTokenPriceForNetwork'
 import { NetworkTokenUnit } from 'types'
-import { alpha, Button, Text, useTheme, View } from '@avalabs/k2-mobile'
+import {
+  alpha,
+  Button,
+  Text,
+  TouchableOpacity,
+  useTheme,
+  View
+} from '@avalabs/k2-mobile'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { NetworkFee } from 'services/networkFee/types'
 import { useBridgeSDK } from '@avalabs/bridge-sdk'
@@ -391,9 +398,7 @@ export const FeeSelector: FC<{
       />
     </ButtonWrapper>
   ) : (
-    <Button
-      type="tertiary"
-      size="small"
+    <TouchableOpacity
       style={{
         paddingLeft: 0,
         paddingHorizontal: 0,
@@ -414,7 +419,7 @@ export const FeeSelector: FC<{
         <ButtonText selected={selected}>{label}</ButtonText>
         <ButtonText selected={selected}>{value}</ButtonText>
       </View>
-    </Button>
+    </TouchableOpacity>
   )
 }
 
