@@ -162,6 +162,7 @@ export default function AddEditNetwork({
         value={rpcUrl}
         error={getError('rpcUrl')}
         onChange={value => setRpcUrl(value)}
+        testID="networkRpcUrl"
       />
       <Space y={8} />
       <DetailItem
@@ -169,6 +170,7 @@ export default function AddEditNetwork({
         value={networkName.toString()}
         error={getError('networkName')}
         onChange={value => setNetworkName(value)}
+        testID="networkName"
       />
       <Space y={8} />
       <DetailItem
@@ -176,6 +178,7 @@ export default function AddEditNetwork({
         value={chainId.toString()}
         error={getError('chainId')}
         onChange={value => setChainId(value)}
+        testID="chainId"
       />
       <Space y={8} />
       <DetailItem
@@ -183,11 +186,13 @@ export default function AddEditNetwork({
         value={nativeTokenSymbol}
         error={getError('nativeTokenSymbol')}
         onChange={value => setNativeTokenSymbol(value)}
+        testID="nativeTokenSymbol"
       />
       <DetailItem
         title={'Native Token Name (Optional)'}
         value={nativeTokenName}
         onChange={value => setNativeTokenName(value)}
+        testID="nativeTokenName"
       />
       <Space y={8} />
       <DetailItem
@@ -195,15 +200,19 @@ export default function AddEditNetwork({
         value={explorerUrl}
         error={getError('explorerUrl')}
         onChange={value => setExplorerUrl(value)}
+        testID="explorerUrl"
       />
       <Space y={8} />
       <DetailItem
         title={'Logo URL (Optional)'}
         value={logoUri}
         onChange={value => setLogoUri(value)}
+        testID="logoUri"
       />
       <FlexSpacer minHeight={24} />
-      <AvaButton.PrimaryLarge onPress={save}>Save</AvaButton.PrimaryLarge>
+      <AvaButton.PrimaryLarge testID="save_btn" onPress={save}>
+        Save
+      </AvaButton.PrimaryLarge>
     </ScrollView>
   )
 }
@@ -212,15 +221,18 @@ function DetailItem({
   title,
   value,
   onChange,
-  error
+  error,
+  testID
 }: {
   title: string
   value: string
   onChange: (value: string) => void
   error?: string
+  testID?: string
 }): JSX.Element {
   return (
     <InputText
+      testID={testID}
       label={title}
       text={value}
       errorText={error}

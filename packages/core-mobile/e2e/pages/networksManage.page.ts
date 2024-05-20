@@ -15,7 +15,7 @@ class NetworksPage {
   }
 
   get chainID() {
-    return by.text(networksManage.chainID)
+    return by.id(networksManage.chainID)
   }
 
   get dropdown() {
@@ -39,7 +39,7 @@ class NetworksPage {
   }
 
   get explorerUrl() {
-    return by.text(networksManage.explorerUrl)
+    return by.id(networksManage.explorerUrl)
   }
 
   get favoriteNetwork() {
@@ -59,19 +59,15 @@ class NetworksPage {
   }
 
   get nativeTokenSymbol() {
-    return by.text(networksManage.nativeTokenSymbol)
+    return by.id(networksManage.nativeTokenSymbol)
   }
 
   get networksTab() {
-    return by.text(networksManage.networksTab)
-  }
-
-  get networkName() {
-    return by.text(networksManage.networkName)
+    return by.id(networksManage.networksTab)
   }
 
   get networkRpcUrl() {
-    return by.text(networksManage.networkRpcUrl)
+    return by.id(networksManage.networkRpcUrl)
   }
 
   get networkInfo() {
@@ -91,11 +87,15 @@ class NetworksPage {
   }
 
   get saveButton() {
-    return by.text(networksManage.saveButton)
+    return by.id(networksManage.saveButton)
   }
 
   get arbCustomNetwork() {
     return by.text(networksManage.arbCustomNetworkName)
+  }
+
+  get networkName() {
+    return by.id(networksManage.networkName)
   }
 
   get searchBar() {
@@ -112,6 +112,10 @@ class NetworksPage {
 
   get starSvg() {
     return by.id(networksManage.starSvg)
+  }
+
+  get chainIdText() {
+    return by.text(networksManage.chainIdText)
   }
 
   async tapStarSvgByIndex(index: number) {
@@ -168,6 +172,7 @@ class NetworksPage {
 
   async tapSaveButton() {
     await Action.tapElementAtIndex(this.saveButton, 0)
+    await Action.tapElementAtIndex(this.saveButton, 0)
   }
 
   async tapArbCustomNetwork() {
@@ -179,28 +184,28 @@ class NetworksPage {
   }
 
   async inputNetworkRpcUrl(customRpcUrl: string) {
-    await Action.setInputText(this.inputTextField, customRpcUrl, 0)
-    await Action.tap(this.networkRpcUrl)
+    await Action.setInputText(this.networkRpcUrl, customRpcUrl, 0)
   }
 
   async inputNetworkName(customNetworkName: string) {
-    await Action.setInputText(this.inputTextField, customNetworkName, 1)
-    await Action.tap(this.networkName)
+    await Action.setInputText(this.networkName, customNetworkName, 0)
   }
 
   async inputChainId(customChainID: string) {
-    await Action.setInputText(this.inputTextField, customChainID, 2)
-    await Action.tap(this.chainID)
+    await Action.setInputText(this.chainID, customChainID, 0)
   }
 
   async inputNativeTokenSymbol(customNativeTokenSymbol: string) {
-    await Action.setInputText(this.inputTextField, customNativeTokenSymbol, 3)
+    await Action.setInputText(
+      this.nativeTokenSymbol,
+      customNativeTokenSymbol,
+      0
+    )
     await Action.tap(this.nativeTokenSymbol)
   }
 
   async inputExplorerUrl(customExplorerUrl: string) {
-    await Action.setInputText(this.inputTextField, customExplorerUrl, 5)
-    await Action.tap(this.explorerUrl)
+    await Action.setInputText(this.explorerUrl, customExplorerUrl, 0)
   }
 
   async searchNetworks(network: string) {
@@ -208,7 +213,7 @@ class NetworksPage {
   }
 
   async swipeUp() {
-    await Action.swipeUp(this.nativeTokenSymbol, 'fast', 0.5, 0)
+    await Action.swipeUp(this.chainIdText, 'fast', 0.5, 0)
   }
 
   async switchToEthereumSepoliaNetwork() {
