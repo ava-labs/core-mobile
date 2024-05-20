@@ -40,6 +40,7 @@ import { ActivityResponse } from 'services/activity/types'
 import { AggregatedAssetAmount } from '@avalabs/glacier-sdk'
 import { Avax } from 'types'
 import { isPChain, isXChain } from 'utils/network/isAvalancheNetwork'
+import { BN } from 'bn.js'
 import {
   fetchBalanceForAccount,
   getKey,
@@ -385,7 +386,7 @@ const convertToBalanceXchain = (
   return {
     ...token,
     balanceInCurrency,
-    balance: totalBalance.toWei(),
+    balance: new BN(totalBalance.toSubUnit().toString()),
     balanceDisplayValue,
     balanceCurrencyDisplayValue,
     utxos: token,
@@ -447,7 +448,7 @@ const convertToBalancePchain = (
   return {
     ...token,
     balanceInCurrency,
-    balance: totalBalance.toWei(),
+    balance: new BN(totalBalance.toSubUnit().toString()),
     balanceDisplayValue,
     balanceCurrencyDisplayValue,
     utxos: token,
