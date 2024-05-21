@@ -16,9 +16,7 @@ export const accountSchema = z.object({
   walletType: z.nativeEnum(WalletType)
 })
 
-const paramsSchema = z.tuple([
-  z.union([z.string(), z.number()]).pipe(z.coerce.number().nonnegative())
-])
+const paramsSchema = z.tuple([z.string()])
 
 const approveDataSchema = z.object({
   account: accountSchema
@@ -26,7 +24,7 @@ const approveDataSchema = z.object({
 
 export const parseRequestParams = (
   params: unknown
-): z.SafeParseReturnType<[number], [number]> => {
+): z.SafeParseReturnType<string[], string[]> => {
   return paramsSchema.safeParse(params)
 }
 

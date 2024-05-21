@@ -39,24 +39,25 @@ class AvalancheSelectAccountHandler
       return {
         success: false,
         error: ethErrors.rpc.invalidParams({
-          message: 'Account index is invalid'
+          message: 'Account id is invalid'
         })
       }
     }
 
-    const accountIndex = result.data[0]
+    const accountId = result.data[0] as string
 
     const activeAccount = selectActiveAccount(getState())
     const accounts = selectAccounts(getState())
 
-    const accountAlreadyActive =
-      activeAccount && activeAccount.index === accountIndex
+    const accountAlreadyActive = activeAccount && activeAccount.id === accountId
 
     if (accountAlreadyActive) {
       return { success: true, value: null }
     }
 
-    const requestedAccount = accounts[accountIndex]
+    const requestedAccount = Object.values(accounts).find(
+      account => account.id === accountId
+    )
 
     if (requestedAccount === undefined) {
       return {
