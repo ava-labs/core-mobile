@@ -44,7 +44,7 @@ class AvalancheSelectAccountHandler
       }
     }
 
-    const accountId = result.data[0] as string
+    const accountId = result.data[0]
 
     const activeAccount = selectActiveAccount(getState())
     const accounts = selectAccounts(getState())
