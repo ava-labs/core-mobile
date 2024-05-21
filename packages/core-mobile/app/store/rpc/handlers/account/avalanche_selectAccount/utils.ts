@@ -24,7 +24,7 @@ const approveDataSchema = z.object({
 
 export const parseRequestParams = (
   params: unknown
-): z.SafeParseReturnType<string[], string[]> => {
+): z.SafeParseReturnType<[string], [string]> => {
   return paramsSchema.safeParse(params)
 }
 
