@@ -133,7 +133,8 @@ const WalletScreenStackWithContext: FC = () => {
     <>
       <WalletScreenStack onExit={doExit} />
 
-      {walletState === WalletState.INACTIVE && <LoginWithPinOrBiometryScreen />}
+      {walletState === WalletState.INACTIVE &&
+        enabledPrivacyScreen !== true && <LoginWithPinOrBiometryScreen />}
       {/* This protects from leaking last screen in "recent apps" list.                                 */}
       {/* For Android it is additionally implemented natively in MainActivity.java because react-native */}
       {/* isn't fast enough to change layout before system makes screenshot of app for recent apps list */}
