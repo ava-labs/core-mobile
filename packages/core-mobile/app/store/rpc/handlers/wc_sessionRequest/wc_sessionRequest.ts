@@ -1,13 +1,13 @@
 import { ProposalTypes, SessionTypes } from '@walletconnect/types'
 import { AppListenerEffectAPI } from 'store'
 import { ethErrors } from 'eth-rpc-errors'
-import { EVM_IDENTIFIER } from 'consts/walletConnect'
 import { addNamespaceToChain } from 'services/walletconnectv2/utils'
 import { normalizeNamespaces } from '@walletconnect/utils'
 import { WCSessionProposal } from 'store/walletConnectV2/types'
 import { selectActiveNetwork, selectAllNetworks } from 'store/network'
 import { selectIsBlockaidDappScanBlocked } from 'store/posthog'
 import { RpcMethod, CORE_ONLY_METHODS } from '../../types'
+import { EVM_IDENTIFIER } from '../../types'
 import {
   RpcRequestHandler,
   DEFERRED_RESULT,
