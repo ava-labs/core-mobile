@@ -20,6 +20,9 @@ import { bigToBigInt, noop } from '@avalabs/utils-sdk'
 import { isUnifiedBridgeAsset } from 'screens/bridge/utils/bridgeUtils'
 import { Asset } from '@avalabs/bridge-sdk'
 import Big from 'big.js'
+import { TransactionParams } from 'store/rpc/handlers/eth_sendTransaction/utils'
+import { Request } from 'store/rpc/utils/createInAppRequest'
+import { RpcMethod } from 'store/rpc/types'
 
 type BridgeService = ReturnType<typeof createUnifiedBridgeService>
 
@@ -109,7 +112,7 @@ export class UnifiedBridgeService {
     activeNetwork,
     activeAccount,
     updateListener,
-    sign
+    request
   }: {
     asset: BridgeAsset
     amount: bigint
@@ -117,7 +120,7 @@ export class UnifiedBridgeService {
     activeNetwork: Network
     activeAccount: Account
     updateListener: (transfer: BridgeTransfer) => void
-    sign: Signer
+    request: Request
   }): Promise<BridgeTransfer> {
     if (isBitcoinNetwork(activeNetwork)) {
       throw ethErrors.rpc.invalidParams({
@@ -129,6 +132,24 @@ export class UnifiedBridgeService {
 
     const sourceChain = await this.buildChain(activeNetwork)
     const targetChain = await this.buildChain(targetNetwork)
+
+    const sign: Signer = async ({ from, to, data }) => {
+      if (typeof to !== 'string') throw new Error('invalid to field')
+
+      const txParams: [TransactionParams] = [
+        {
+          from,
+          to,
+          data: data ?? undefined
+        }
+      ]
+
+      return request({
+        method: RpcMethod.ETH_SEND_TRANSACTION,
+        params: txParams,
+        chainId: activeNetwork.chainId.toString()
+      }) as Promise<`0x${string}`>
+    }
 
     const bridgeTransfer = await this.service.transferAsset({
       asset,
