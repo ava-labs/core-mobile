@@ -24,4 +24,8 @@ export type AppState = {
 
   // indicates the type of wallet (unset, seedless or mnemonic)
   walletType: WalletType
+
+  exitStatus: ExitStatus
 }
+
+export type ExitStatus = 'idle' | 'exiting'

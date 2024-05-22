@@ -117,11 +117,7 @@ const lockApp = async (
   }
 
   if (action.type === immediateAppLock.type) {
-    // add a delay to lock the app, to avoid biometric dialog prompt show
-    // before the app is fully in background
-    setTimeout(() => {
-      lockTheApp()
-    }, 100)
+    lockTheApp()
     return
   }
 

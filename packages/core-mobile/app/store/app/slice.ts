@@ -2,7 +2,7 @@ import { createAction, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { AppStateStatus } from 'react-native'
 import { RootState } from 'store'
 import { WalletType } from 'services/wallet/types'
-import { AppState, WalletState } from './types'
+import { AppState, ExitStatus, WalletState } from './types'
 
 export const reducerName = 'app'
 
@@ -11,7 +11,8 @@ export const initialState: AppState = {
   isLocked: true,
   appState: 'active',
   walletState: WalletState.NONEXISTENT,
-  walletType: WalletType.UNSET
+  walletType: WalletType.UNSET,
+  exitStatus: 'idle'
 }
 
 export const appSlice = createSlice({
@@ -32,6 +33,9 @@ export const appSlice = createSlice({
     },
     setWalletType: (state, action: PayloadAction<WalletType>) => {
       state.walletType = action.payload
+    },
+    setExitStatus: (state, action: PayloadAction<ExitStatus>) => {
+      state.exitStatus = action.payload
     }
   }
 })
@@ -49,6 +53,9 @@ export const selectWalletState = (state: RootState): WalletState =>
 
 export const selectWalletType = (state: RootState): WalletType =>
   state.app.walletType
+
+export const selectExitStatus = (state: RootState): ExitStatus =>
+  state.app.exitStatus
 
 // actions
 // when app rehydration is complete
@@ -79,7 +86,8 @@ export const {
   setIsLocked,
   setAppState,
   setWalletState,
-  setWalletType
+  setWalletType,
+  setExitStatus
 } = appSlice.actions
 
 export const appReducer = appSlice.reducer
