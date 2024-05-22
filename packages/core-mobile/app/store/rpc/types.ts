@@ -1,4 +1,5 @@
 import { EthereumProviderError, EthereumRpcError } from 'eth-rpc-errors'
+import { v4 as uuidv4 } from 'uuid'
 import { WCSessionProposal } from 'store/walletConnectV2/types'
 import { AppListenerEffectAPI } from 'store'
 
@@ -123,3 +124,16 @@ export interface AgnosticRpcProvider {
   }) => Promise<void>
   validateRequest: (request: Request, listenerApi: AppListenerEffectAPI) => void
 }
+
+// this is the session id for all Core Mobile in-app requests
+// it stays the same during an app session
+export const CORE_MOBILE_TOPIC = uuidv4()
+
+export const CORE_MOBILE_META: PeerMeta = {
+  name: 'Core',
+  description: 'Core Mobile Wallet',
+  url: 'https://core.app/',
+  icons: []
+}
+
+export const EVM_IDENTIFIER = 'eip155'
