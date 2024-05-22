@@ -15,7 +15,7 @@ export const generateInAppRequestPayload = ({
 }: {
   method: RpcMethod
   params: unknown
-  chainId?: string
+  chainId?: number
 }): RpcRequest<RpcMethod> => ({
   provider: RpcProvider.CORE_MOBILE,
   method: method,

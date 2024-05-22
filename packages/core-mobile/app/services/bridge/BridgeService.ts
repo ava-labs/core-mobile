@@ -219,7 +219,7 @@ export class BridgeService {
         return request({
           method: RpcMethod.ETH_SEND_TRANSACTION,
           params: txParams,
-          chainId: blockchainNetwork.chainId.toString()
+          chainId: blockchainNetwork.chainId
         })
       }
 

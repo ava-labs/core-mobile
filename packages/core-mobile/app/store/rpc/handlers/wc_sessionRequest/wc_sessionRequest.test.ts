@@ -14,7 +14,9 @@ jest.mock('store/network', () => {
   const actual = jest.requireActual('store/network')
   return {
     ...actual,
-    selectAllNetworks: () => mockNetworks
+    selectAllNetworks: () => mockNetworks,
+    selectActiveNetwork: () => mockNetworks[43114],
+    selectFavoriteNetworks: () => [mockNetworks[43114]]
   }
 })
 
@@ -40,6 +42,12 @@ const mockListenerApi = {
   dispatch: mockDispatch
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 } as any
+
+jest.mock('store/rpc/utils', () => {
+  return {
+    requestInApp: jest.fn()
+  }
+})
 
 const testMethod = 'wc_sessionRequest' as RpcMethod.WC_SESSION_REQUEST
 
@@ -190,7 +198,12 @@ describe('session_request handler', () => {
           events: ['chainChanged', 'accountsChanged']
         }
       }
+
       const testRequest = createRequest(testRequiredNamespaces)
+
+      jest
+        .spyOn(require('store/rpc/utils'), 'requestInApp')
+        .mockRejectedValue({ message: 'User rejected' })
 
       const result = await handler.handle(testRequest, mockListenerApi)
 
@@ -210,7 +223,12 @@ describe('session_request handler', () => {
           events: ['chainChanged', 'accountsChanged']
         }
       }
+
       const testRequest = createRequest(testRequiredNamespaces)
+
+      jest
+        .spyOn(require('store/rpc/utils'), 'requestInApp')
+        .mockRejectedValue({ message: 'User rejected' })
 
       const result = await handler.handle(testRequest, mockListenerApi)
 
@@ -219,6 +237,34 @@ describe('session_request handler', () => {
         error: ethErrors.rpc.invalidParams({
           message: 'Requested network eip155:4503599627370475 is not supported'
         })
+      })
+    })
+
+    it(`should ask user to switch to required network when active network is not one of them`, async () => {
+      const testRequiredNamespaces = {
+        eip155: {
+          methods: ['eth_sendTransaction'],
+          chains: ['eip155:43114', 'eip155:1'],
+          events: ['chainChanged', 'accountsChanged']
+        }
+      }
+      const testRequest = createRequest(testRequiredNamespaces)
+
+      jest
+        .spyOn(require('store/network'), 'selectActiveNetwork')
+        .mockReturnValueOnce(mockNetworks[4503599627370475])
+
+      await handler.handle(testRequest, mockListenerApi)
+
+      const { requestInApp } = require('store/rpc/utils')
+      expect(requestInApp).toHaveBeenCalledWith({
+        dispatch: mockDispatch,
+        method: RpcMethod.WALLET_SWITCH_ETHEREUM_CHAIN,
+        params: [
+          {
+            chainId: '43114'
+          }
+        ]
       })
     })
 

@@ -20,7 +20,7 @@ export type Request = ({
 }: {
   method: RpcMethod
   params: unknown
-  chainId?: string
+  chainId?: number
 }) => Promise<string>
 
 /**
