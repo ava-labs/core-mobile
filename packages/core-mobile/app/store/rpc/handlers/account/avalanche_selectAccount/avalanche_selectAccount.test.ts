@@ -57,7 +57,7 @@ const testHandleInvalidParams = async (params: unknown) => {
   expect(result).toEqual({
     success: false,
     error: ethErrors.rpc.invalidParams({
-      message: 'Account index is invalid'
+      message: 'Account id is invalid'
     })
   })
 }
@@ -91,7 +91,7 @@ describe('avalanche_selectAccount handler', () => {
     })
 
     it('should return success when requested account is already active', async () => {
-      const testRequest = createRequest([0])
+      const testRequest = createRequest(['0'])
 
       const result = await handler.handle(testRequest, mockListenerApi)
 
@@ -99,7 +99,7 @@ describe('avalanche_selectAccount handler', () => {
     })
 
     it('should return error when requested account does not exist', async () => {
-      const testRequest = createRequest([22])
+      const testRequest = createRequest(['2'])
 
       const result = await handler.handle(testRequest, mockListenerApi)
 
@@ -112,7 +112,7 @@ describe('avalanche_selectAccount handler', () => {
     })
 
     it('should display prompt and return success', async () => {
-      const testRequest = createRequest([1])
+      const testRequest = createRequest(['1'])
 
       const result = await handler.handle(testRequest, mockListenerApi)
 
