@@ -6,21 +6,17 @@ import {
   BridgeAsset,
   ChainAssetMap,
   Chain,
-  TokenType
+  TokenType,
+  Signer
 } from '@avalabs/bridge-unified'
 import { Network } from '@avalabs/chains-sdk'
 import { ethErrors } from 'eth-rpc-errors'
-import { JsonRpcApiProvider, TransactionRequest } from 'ethers'
 import { chainIdToCaip } from 'utils/data/caip'
 import { Account } from 'store/account/types'
 import { isBitcoinNetwork } from 'utils/network/isBitcoinNetwork'
-import NetworkService from 'services/network/NetworkService'
-import WalletService from 'services/wallet/WalletService'
 import { assertNotUndefined } from 'utils/assertions'
 import Logger from 'utils/Logger'
 import { bigToBigInt, noop } from '@avalabs/utils-sdk'
-import { NetworkTokenUnit } from 'types'
-import { Eip1559Fees } from 'utils/Utils'
 import { isUnifiedBridgeAsset } from 'screens/bridge/utils/bridgeUtils'
 import { Asset } from '@avalabs/bridge-sdk'
 import Big from 'big.js'
@@ -113,7 +109,7 @@ export class UnifiedBridgeService {
     activeNetwork,
     activeAccount,
     updateListener,
-    eip1559Fees
+    sign
   }: {
     asset: BridgeAsset
     amount: bigint
@@ -121,7 +117,7 @@ export class UnifiedBridgeService {
     activeNetwork: Network
     activeAccount: Account
     updateListener: (transfer: BridgeTransfer) => void
-    eip1559Fees: Eip1559Fees<NetworkTokenUnit>
+    sign: Signer
   }): Promise<BridgeTransfer> {
     if (isBitcoinNetwork(activeNetwork)) {
       throw ethErrors.rpc.invalidParams({
@@ -134,42 +130,14 @@ export class UnifiedBridgeService {
     const sourceChain = await this.buildChain(activeNetwork)
     const targetChain = await this.buildChain(targetNetwork)
 
-    const provider = NetworkService.getProviderForNetwork(
-      activeNetwork
-    ) as JsonRpcApiProvider
-
     const bridgeTransfer = await this.service.transferAsset({
       asset,
       fromAddress: activeAccount.addressC,
       amount,
       sourceChain,
       targetChain,
-      onStepChange: noop, // this is not needed since we don't show multiple approvals like extension does
-      sign: async ({ from, to, data }) => {
-        const nonce = await provider.getTransactionCount(from)
-
-        const txData: TransactionRequest = {
-          from,
-          to,
-          data,
-          chainId: activeNetwork.chainId,
-          gasLimit: eip1559Fees.gasLimit,
-          maxFeePerGas: eip1559Fees.maxFeePerGas.toSubUnit(),
-          maxPriorityFeePerGas: eip1559Fees.maxPriorityFeePerGas?.toSubUnit(),
-          nonce
-        }
-
-        const result = await WalletService.sign(
-          txData,
-          activeAccount.index,
-          activeNetwork
-        )
-
-        return (await NetworkService.sendTransaction({
-          signedTx: result,
-          network: activeNetwork
-        })) as `0x${string}`
-      }
+      onStepChange: noop,
+      sign
     })
 
     this.trackTransfer(bridgeTransfer, updateListener)

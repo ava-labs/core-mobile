@@ -7,192 +7,60 @@ import {
   btcToSatoshi,
   Environment,
   estimateGas,
-  EthereumConfigAsset,
   fetchConfig,
   getBtcTransactionDetails,
-  NativeAsset,
   setBridgeEnvironment,
-  transferAsset as transferAssetSDK
+  transferAssetBTC,
+  TransferAssetBTCParams,
+  transferAssetEVM,
+  TransferAssetEVMParams,
+  WrapStatus
 } from '@avalabs/bridge-sdk'
+import { bigIntToHex } from '@ethereumjs/util'
 import Big from 'big.js'
-import { Account } from 'store/account'
-import WalletService from 'services/wallet/WalletService'
-import { blockchainToNetwork } from 'screens/bridge/utils/bridgeUtils'
+import { Account } from 'store/account/types'
 import { Network } from '@avalabs/chains-sdk'
 import {
   getAvalancheProvider,
-  getBitcoinNetwork,
   getEthereumProvider
 } from 'services/network/utils/providerUtils'
-import { noop } from '@avalabs/utils-sdk'
-import { Networks } from 'store/network'
-import { TransactionResponse } from 'ethers'
+import { Networks } from 'store/network/types'
 import { getBtcBalance } from 'screens/bridge/hooks/getBtcBalance'
-import { omit } from 'lodash'
-import NetworkService from 'services/network/NetworkService'
-import { Avalanche, JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
-import { VsCurrencyType } from '@avalabs/coingecko-sdk'
-import Logger from 'utils/Logger'
-import AnalyticsService from 'services/analytics/AnalyticsService'
-import { getErrorMessage } from 'utils/getErrorMessage'
+import { blockchainToNetwork } from 'screens/bridge/utils/bridgeUtils'
+import { TransactionParams } from 'store/rpc/handlers/eth_sendTransaction/utils'
+import { Request } from 'store/rpc/utils/createInAppRequest'
+import { RpcMethod } from 'store/rpc/types'
+import { bnToBig, noop, stringToBN } from '@avalabs/utils-sdk'
 
-type TransferAssetParams = {
-  currentBlockchain: Blockchain
-  amount: Big
+type TransferBTCParams = {
+  amount: string
+  feeRate: number
+  config: AppConfig
+  onStatusChange?: (status: WrapStatus) => void
+  onTxHashChange?: (txHash: string) => void
+  request: Request
+}
+
+type TransferEVMParams = {
+  currentBlockchain: Blockchain.AVALANCHE | Blockchain.ETHEREUM
+  amount: string
   asset: Asset
-  config: AppConfig | undefined
-  activeAccount: Account | undefined
+  config: AppConfig
+  activeAccount: Account
   allNetworks: Networks
   isTestnet: boolean
-  maxFeePerGas: bigint
-  maxPriorityFeePerGas?: bigint
+  onStatusChange?: (status: WrapStatus) => void
+  onTxHashChange?: (txHash: string) => void
+  request: Request
 }
 
 export class BridgeService {
-  async getConfig(activeNetwork: Network): Promise<BridgeConfig> {
-    setBridgeEnvironment(
-      activeNetwork.isTestnet ? Environment.TEST : Environment.PROD
-    )
+  setBridgeEnvironment(isTestnet: boolean): void {
+    setBridgeEnvironment(isTestnet ? Environment.TEST : Environment.PROD)
+  }
+
+  async getConfig(): Promise<BridgeConfig> {
     return fetchConfig()
-  }
-
-  async transferBtcAsset({
-    amount,
-    config,
-    activeAccount,
-    isTestnet,
-    maxFeePerGas,
-    currency
-  }: {
-    amount: Big
-    config: AppConfig | undefined
-    activeAccount: Account | undefined
-    isTestnet: boolean
-    maxFeePerGas: bigint
-    currency: VsCurrencyType
-    maxPriorityFeePerGas?: bigint
-  }): Promise<string | undefined> {
-    if (config === undefined) {
-      throw new Error('Missing bridge config')
-    }
-
-    if (activeAccount === undefined) {
-      throw new Error('No active account found')
-    }
-    const btcAddress = activeAccount?.addressBTC
-    if (btcAddress === undefined) {
-      throw new Error('No active account found')
-    }
-    const bitcoinNetwork = getBitcoinNetwork(isTestnet)
-    const provider = NetworkService.getProviderForNetwork(bitcoinNetwork)
-    if (
-      provider instanceof JsonRpcBatchInternal ||
-      provider instanceof Avalanche.JsonRpcProvider
-    ) {
-      throw new Error('Wrong provider found.')
-    }
-    const amountInSatoshis = btcToSatoshi(amount)
-
-    const token = await getBtcBalance(
-      !isTestnet,
-      btcAddress,
-      currency as VsCurrencyType
-    )
-
-    const utxos = token?.utxos ?? []
-
-    const { inputs, outputs } = getBtcTransactionDetails(
-      config,
-      btcAddress,
-      utxos,
-      amountInSatoshis,
-      Number(maxFeePerGas)
-    )
-
-    const inputsWithScripts = await provider.getScriptsForUtxos(inputs)
-
-    try {
-      const signedTx = await WalletService.sign(
-        { inputs: inputsWithScripts, outputs },
-        activeAccount.index,
-        bitcoinNetwork
-      )
-
-      const hash = await NetworkService.sendTransaction({
-        signedTx,
-        network: bitcoinNetwork
-      })
-
-      AnalyticsService.captureWithEncryption('BridgeTransactionStarted', {
-        chainId: bitcoinNetwork.chainId,
-        sourceTxHash: hash,
-        fromAddress: btcAddress
-      })
-      return hash
-    } catch (error) {
-      if (error) {
-        const errMsg = getErrorMessage(error)
-        Logger.error('failed to transfer', errMsg)
-        throw new Error(errMsg)
-      }
-    }
-  }
-
-  async transferAsset({
-    currentBlockchain,
-    amount,
-    asset,
-    config,
-    activeAccount,
-    allNetworks,
-    isTestnet,
-    maxFeePerGas,
-    maxPriorityFeePerGas
-  }: TransferAssetParams): Promise<TransactionResponse | undefined> {
-    if (!config) {
-      throw new Error('missing bridge config')
-    }
-    if (!activeAccount) {
-      throw new Error('no active account found')
-    }
-
-    const blockchainNetwork = blockchainToNetwork(
-      currentBlockchain,
-      allNetworks,
-      config
-    )
-
-    if (!blockchainNetwork) {
-      throw new Error('no network found')
-    }
-
-    const avalancheProvider = getAvalancheProvider(allNetworks, isTestnet)
-
-    const ethereumProvider = getEthereumProvider(allNetworks, isTestnet)
-
-    if (!avalancheProvider || !ethereumProvider) {
-      throw new Error('no providers available')
-    }
-
-    return await transferAssetSDK(
-      currentBlockchain,
-      amount,
-      activeAccount.addressC,
-      asset as EthereumConfigAsset | NativeAsset, // TODO fix in sdk (should be Asset),
-      avalancheProvider,
-      ethereumProvider,
-      config,
-      noop,
-      noop,
-      txData => {
-        const tx = {
-          ...omit(txData, 'gasPrice'),
-          maxFeePerGas,
-          maxPriorityFeePerGas
-        }
-        return WalletService.sign(tx, activeAccount.index, blockchainNetwork)
-      }
-    )
   }
 
   async estimateGas({
@@ -225,7 +93,7 @@ export class BridgeService {
 
     if (currentBlockchain === Blockchain.BITCOIN) {
       if (btcToSatoshi(amount) === 0) {
-        throw new Error(`Receive amount can't be 0`)
+        throw new Error(`Amount can't be 0`)
       }
       const token = await getBtcBalance(
         !activeNetwork.isTestnet,
@@ -267,6 +135,116 @@ export class BridgeService {
         currentBlockchain
       )
     }
+  }
+
+  async transferBTC({
+    amount,
+    config,
+    feeRate,
+    onStatusChange,
+    onTxHashChange,
+    request
+  }: TransferBTCParams): Promise<string> {
+    const signAndSendBTC: TransferAssetBTCParams['signAndSendBTC'] =
+      async txData => {
+        return request({
+          method: RpcMethod.BITCOIN_SEND_TRANSACTION,
+          params: txData
+        })
+      }
+
+    return transferAssetBTC({
+      amount,
+      feeRate,
+      config,
+      onStatusChange: onStatusChange ?? noop,
+      onTxHashChange: onTxHashChange ?? noop,
+      signAndSendBTC
+    })
+  }
+
+  async transferEVM({
+    currentBlockchain,
+    amount,
+    asset,
+    config,
+    activeAccount,
+    allNetworks,
+    isTestnet,
+    onStatusChange,
+    onTxHashChange,
+    request
+  }: TransferEVMParams): Promise<string> {
+    const blockchainNetwork = blockchainToNetwork(
+      currentBlockchain,
+      allNetworks,
+      config
+    )
+
+    if (!blockchainNetwork) {
+      throw new Error('Invalid blockchain')
+    }
+
+    const avalancheProvider = getAvalancheProvider(allNetworks, isTestnet)
+
+    const ethereumProvider = getEthereumProvider(allNetworks, isTestnet)
+
+    if (!avalancheProvider || !ethereumProvider) {
+      throw new Error('No providers available')
+    }
+
+    const signAndSendEVM: TransferAssetEVMParams['signAndSendEVM'] =
+      async txData => {
+        if (typeof txData.gasLimit !== 'bigint')
+          throw new Error('invalid gasLimit field')
+
+        if (typeof txData.from !== 'string')
+          throw new Error('invalid from field')
+
+        if (typeof txData.to !== 'string') throw new Error('invalid to field')
+
+        const txParams: [TransactionParams] = [
+          {
+            from: txData.from,
+            to: txData.to,
+            gas: bigIntToHex(txData.gasLimit),
+            data: txData.data ?? undefined,
+            value:
+              typeof txData.value === 'bigint'
+                ? bigIntToHex(txData.value)
+                : undefined
+          }
+        ]
+
+        return request({
+          method: RpcMethod.ETH_SEND_TRANSACTION,
+          params: txParams,
+          chainId: blockchainNetwork.chainId.toString()
+        })
+      }
+
+    const denomination = asset.denomination
+
+    const amountBig = bnToBig(stringToBN(amount, denomination), denomination)
+
+    const txHash = await transferAssetEVM({
+      currentBlockchain,
+      amount: amountBig,
+      account: activeAccount.addressC,
+      asset: asset as Asset,
+      avalancheProvider,
+      ethereumProvider,
+      config,
+      onStatusChange: onStatusChange ?? noop,
+      onTxHashChange: onTxHashChange ?? noop,
+      signAndSendEVM
+    })
+
+    if (!txHash) {
+      throw new Error('transaction hash not found')
+    }
+
+    return txHash
   }
 }
 
