@@ -124,8 +124,7 @@ const approveDataSchema = z.object({
   amountStr: z.string(),
   asset: assetSchema,
   currentBlockchain: blockchainSchema,
-  maxFeePerGas: z.bigint(),
-  maxPriorityFeePerGas: z.bigint().optional()
+  maxFeePerGas: z.bigint()
 })
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
