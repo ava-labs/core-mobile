@@ -32,6 +32,8 @@ export const chainAlreadyInSession = (
 export const addressAlreadyInSession = (
   session: SessionTypes.Struct,
   account: string
-): boolean | undefined => {
-  return session.namespaces?.[EVM_IDENTIFIER]?.accounts?.includes(account)
+): boolean => {
+  return Boolean(
+    session.namespaces?.[EVM_IDENTIFIER]?.accounts?.includes(account)
+  )
 }
