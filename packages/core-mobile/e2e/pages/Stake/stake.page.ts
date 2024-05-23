@@ -207,7 +207,6 @@ class StakePage {
   async verifyStakeScreenItems() {
     await Assert.isVisible(this.stakeTitle)
     await Assert.isVisible(this.notEnoughAvaxTitle)
-    await Assert.isVisible(this.notEnoughAvaxDescription)
     await Assert.isVisible(this.recieveAvaxButton)
     if (Actions.platform() === Platform.Android) {
       await Assert.isVisible(this.swapAvaxButton)

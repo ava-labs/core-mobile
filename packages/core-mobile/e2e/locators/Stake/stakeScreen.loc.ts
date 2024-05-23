@@ -36,7 +36,7 @@ export default {
   stakeButtonPrimary: 'stake_btn',
   stakeButtonSecondary: 'stake_btn_secondary',
   stakeButtonText: 'Stake',
-  stakeNow: 'btnPrimary',
+  stakeNow: 'confirm_btn',
   stakingAmountTitle: 'Staking Amount',
   stakingAmountDescription: 'How many AVAX would you like to stake?',
   inputAmount: 'token_base_unit_input',
