@@ -16,12 +16,7 @@ import WalletScreenStack, {
 } from 'navigation/WalletScreenStack/WalletScreenStack'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { useSelector } from 'react-redux'
-import {
-  selectWalletState,
-  WalletState,
-  selectIsReady,
-  selectExitStatus
-} from 'store/app'
+import { selectWalletState, WalletState, selectIsReady } from 'store/app'
 import { useBgDetect } from 'navigation/useBgDetect'
 import { RootStackScreenProps } from 'navigation/types'
 import WarningModal from 'components/WarningModal'
@@ -82,7 +77,6 @@ const RootStack = createStackNavigator<RootScreenStackParamList>()
 const WalletScreenStackWithContext: FC = () => {
   const { onExit } = useApplicationContext().appHook
   const { inBackground } = useBgDetect()
-  const exitStatus = useSelector(selectExitStatus)
   const walletState = useSelector(selectWalletState)
   const appIsReady = useSelector(selectIsReady)
   const [shouldRenderOnlyPinScreen, setShouldRenderOnlyPinScreen] = useState<
@@ -139,9 +133,7 @@ const WalletScreenStackWithContext: FC = () => {
     <>
       <WalletScreenStack onExit={doExit} />
 
-      {walletState === WalletState.INACTIVE && exitStatus !== 'exiting' && (
-        <LoginWithPinOrBiometryScreen />
-      )}
+      {walletState === WalletState.INACTIVE && <LoginWithPinOrBiometryScreen />}
       {/* This protects from leaking last screen in "recent apps" list.                                 */}
       {/* For Android it is additionally implemented natively in MainActivity.java because react-native */}
       {/* isn't fast enough to change layout before system makes screenshot of app for recent apps list */}

@@ -111,14 +111,10 @@ const lockApp = async (
   const lockTheApp = (): void => {
     dispatch(setIsLocked(true))
     dispatch(onAppLocked())
-    if (walletState === WalletState.ACTIVE) {
-      dispatch(setWalletState(WalletState.INACTIVE))
-    }
   }
 
   if (action.type === immediateAppLock.type) {
     lockTheApp()
-    return
   }
 
   const backgroundStarted = new Date()
@@ -134,8 +130,15 @@ const lockApp = async (
 
   // when app goes to background, lock the app after [TIME_TO_LOCK_IN_SECONDS] seconds
   const isTimeManipulated = secondsPassed < 0
-  if (isTimeManipulated || secondsPassed >= TIME_TO_LOCK_IN_SECONDS) {
+  if (
+    isTimeManipulated ||
+    secondsPassed >= TIME_TO_LOCK_IN_SECONDS ||
+    action.type === immediateAppLock.type
+  ) {
     lockTheApp()
+    if (walletState === WalletState.ACTIVE) {
+      dispatch(setWalletState(WalletState.INACTIVE))
+    }
   }
 }
 
