@@ -15,8 +15,7 @@ export default function SessionTimeout({
 }: SessionTimeoutParams): JSX.Element {
   useFocusEffect(
     useCallback(() => {
-      const onBackPress = (): boolean =>
-        !SeedlessService.sessionManager.isTokenValid()
+      const onBackPress = (): boolean => true
       BackHandler.addEventListener('hardwareBackPress', onBackPress)
 
       return () =>
