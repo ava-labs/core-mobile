@@ -20,9 +20,11 @@ export const addNamespaceToAddress = (
 export const chainAlreadyInSession = (
   session: SessionTypes.Struct,
   chainId: number
-): boolean | undefined => {
-  return session.namespaces?.[EVM_IDENTIFIER]?.chains?.includes(
-    addNamespaceToChain(chainId)
+): boolean => {
+  return Boolean(
+    session.namespaces?.[EVM_IDENTIFIER]?.chains?.includes(
+      addNamespaceToChain(chainId)
+    )
   )
 }
 
