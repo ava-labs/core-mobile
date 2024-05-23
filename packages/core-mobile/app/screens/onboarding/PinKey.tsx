@@ -81,6 +81,7 @@ export default function PinKey({
         {({ pressed }) => (
           <View
             style={{
+              paddingVertical: 16,
               justifyContent: 'center',
               alignItems: 'center'
             }}>

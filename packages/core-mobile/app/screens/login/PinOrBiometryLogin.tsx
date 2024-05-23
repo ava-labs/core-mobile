@@ -264,6 +264,6 @@ const styles = StyleSheet.create({
   },
   pinKey: {
     flexBasis: '33%',
-    padding: 16
+    padding: 1
   }
 })
