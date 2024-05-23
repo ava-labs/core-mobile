@@ -4,7 +4,6 @@ import TimerSVG from 'components/svg/TimerSVG'
 import FlexSpacer from 'components/FlexSpacer'
 import { Button, Text, View } from '@avalabs/k2-mobile'
 import { useFocusEffect } from '@react-navigation/native'
-import SeedlessService from 'seedless/services/SeedlessService'
 import { BackHandler } from 'react-native'
 
 export type SessionTimeoutParams = {
