@@ -53,7 +53,7 @@
     "@openzeppelin/contracts": "4.9.3",
     "@react-native-async-storage/async-storage": "1.18.1",
     "@react-native-clipboard/clipboard": "1.13.2",
-    "@react-native-community/blur": "maxhungry/react-native-blur#a7d77a415a8693d1d49588a04a09970ef26113c1",
+    "@react-native-community/blur": "github:maxhungry/react-native-blur#a7d77a415a8693d1d49588a04a09970ef26113c1",
     "@react-native-community/datetimepicker": "7.6.3",
     "@react-native-community/netinfo": "9.3.10",
     "@react-native-community/slider": "4.4.2",
@@ -127,7 +127,7 @@
     "react-native-dialog": "8.2.0",
     "react-native-document-picker": "5.3.0",
     "react-native-fast-image": "8.6.3",
-    "react-native-flipper": "0.187.1",
+    "react-native-flipper": "0.212.0",
     "react-native-flipper-performance-plugin": "0.4.0",
     "react-native-fs": "2.19.0",
     "react-native-gesture-handler": "2.15.0",
@@ -325,5 +325,16 @@
     "stream": "stream-browserify",
     "vm": "vm-browserify",
     "zlib": "browserify-zlib"
-  }
+  },
+  "types": "./index.d.ts",
+  "description": "## Setup dev environment",
+  "version": "1.0.0",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
 }

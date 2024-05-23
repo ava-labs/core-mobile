@@ -60,8 +60,9 @@ class MainApplication : Application(), ReactApplication {
             load()
         }
 
-
-        initializeFlipper(this, reactNativeHost.reactInstanceManager)
+        if (BuildConfig.DEBUG) {
+            initializeFlipper(this, reactNativeHost.reactInstanceManager)
+        }
     }
 
     /**
@@ -76,7 +77,7 @@ class MainApplication : Application(), ReactApplication {
         reactInstanceManager: ReactInstanceManager
     ) {
         if (BuildConfig.FLIPPER_ENABLED) {
-            // ReactNativeFlipper.initializeFlipper(context, reactInstanceManager)
+            ReactNativeFlipper.initializeFlipper(context, reactInstanceManager)
         }
     }
 }

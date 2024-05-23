@@ -138,7 +138,7 @@ __metadata:
     "@playwright/test": 1.42.1
     "@react-native-async-storage/async-storage": 1.18.1
     "@react-native-clipboard/clipboard": 1.13.2
-    "@react-native-community/blur": "maxhungry/react-native-blur#a7d77a415a8693d1d49588a04a09970ef26113c1"
+    "@react-native-community/blur": "github:maxhungry/react-native-blur#a7d77a415a8693d1d49588a04a09970ef26113c1"
     "@react-native-community/datetimepicker": 7.6.3
     "@react-native-community/netinfo": 9.3.10
     "@react-native-community/slider": 4.4.2
@@ -249,7 +249,7 @@ __metadata:
     react-native-dialog: 8.2.0
     react-native-document-picker: 5.3.0
     react-native-fast-image: 8.6.3
-    react-native-flipper: 0.187.1
+    react-native-flipper: 0.212.0
     react-native-flipper-performance-plugin: 0.4.0
     react-native-fs: 2.19.0
     react-native-gesture-handler: 2.15.0
@@ -5445,7 +5445,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-native-community/blur@maxhungry/react-native-blur#a7d77a415a8693d1d49588a04a09970ef26113c1":
+"@react-native-community/blur@github:maxhungry/react-native-blur#a7d77a415a8693d1d49588a04a09970ef26113c1":
   version: 3.6.1
   resolution: "@react-native-community/blur@https://github.com/maxhungry/react-native-blur.git#commit=a7d77a415a8693d1d49588a04a09970ef26113c1"
   dependencies:
@@ -20156,13 +20156,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-flipper@npm:0.187.1":
-  version: 0.187.1
-  resolution: "react-native-flipper@npm:0.187.1"
+"react-native-flipper@npm:0.212.0":
+  version: 0.212.0
+  resolution: "react-native-flipper@npm:0.212.0"
   peerDependencies:
     react: ^16.8.0 || ^17.0.0 || ^18.0.0
     react-native: ">0.62.0"
-  checksum: 2c031afd48d6dfd678eaa51f283807c4912402cb5a97c554ca20eed909f4d864c579aac29553bc5b5b46be06ec32af509204501cddd5028cbcc8ceb64a1d0619
+  checksum: 41841277b1760d19adc3eaf52e16241ab9050e83185cce394db5ab864480fb46fb9cd2f856ccb4d4762988c91b85a582d121403804aad31522af1a931c9dd89a
   languageName: node
   linkType: hard
 

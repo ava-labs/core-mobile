@@ -167,7 +167,15 @@ dependencies {
     androidTestImplementation('com.wix:detox:+')
 
     if (flipperEnabled) {
-        implementation("com.facebook.react:flipper-integration")
+        debugImplementation("com.facebook.flipper:flipper:${FLIPPER_VERSION}") {
+            exclude group:'com.facebook.fbjni'
+        }
+
+        debugImplementation("com.facebook.flipper:flipper-network-plugin:${FLIPPER_VERSION}") {
+            exclude group:'com.facebook.flipper'
+        }
+        debugImplementation "com.facebook.soloader:soloader:0.11.0"
+        releaseImplementation "com.facebook.flipper:flipper-noop:${FLIPPER_VERSION}"
     }
 
     if (hermesEnabled.toBoolean()) {

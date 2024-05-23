@@ -3,6 +3,33 @@ ENV['USE_HERMES'] = '0'
 
 use_modular_headers!
 
+# flipperkit_version = '0.212.0' # should match the version of your Flipper client app
+
+def flipper_pods()
+  flipperkit_version = '0.252.0' # should match the version of your Flipper client app
+
+  pod 'FlipperKit', '~>' + flipperkit_version, :configuration => 'Debug'
+  pod 'FlipperKit/FlipperKitLayoutPlugin', '~>' + flipperkit_version, :configuration => 'Debug'
+  pod 'FlipperKit/SKIOSNetworkPlugin', '~>' + flipperkit_version, :configuration => 'Debug'
+  pod 'FlipperKit/FlipperKitUserDefaultsPlugin', '~>' + flipperkit_version, :configuration => 'Debug'
+  pod 'FlipperKit/FlipperKitReactPlugin', '~>' + flipperkit_version, :configuration => 'Debug'
+
+  # pod 'FlipperKit', '~>' + flipperkit_version, :configuration => 'Debug'
+  # pod 'FlipperKit/FlipperKitLayoutComponentKitSupport', '~>' + flipperkit_version, :configuration => 'Debug'
+  # pod 'FlipperKit/SKIOSNetworkPlugin', '~>' + flipperkit_version, :configuration => 'Debug'
+  # pod 'FlipperKit/FlipperKitUserDefaultsPlugin', '~>' + flipperkit_version, :configuration => 'Debug'
+  # # ...unfortunately at this time that means you'll need to explicitly mark
+  # # transitive dependencies as being for debug build only as well:
+  # pod 'Flipper-DoubleConversion', :configuration => 'Debug'
+  # pod 'Flipper-Folly', :configuration => 'Debug'
+  # pod 'Flipper-Glog', :configuration => 'Debug'
+  # pod 'Flipper-PeerTalk', :configuration => 'Debug'
+  # pod 'CocoaLibEvent', :configuration => 'Debug'
+  # pod 'boost-for-react-native', :configuration => 'Debug'
+  # pod 'CocoaAsyncSocket', :configuration => 'Debug'
+  # pod 'ComponentKit', '~> 0.31'
+end
+
 # Resolve react_native_pods.rb with node to allow for hoisting
 require Pod::Executable.execute_command('node', ['-p',
   'require.resolve(
@@ -18,14 +45,13 @@ is_local_build = ENV['CI'] != 'true'
 perf_enabled = ENV['PERF_ENABLED'] == 'true'
 
 # enable Flipper for local builds or if PERF_ENABLED env var is set
-# flipper_enabled = is_local_build || perf_enabled
-flipper_enabled = false
+flipper_enabled = is_local_build || perf_enabled
 
-if flipper_enabled
-  flipper_config = FlipperConfiguration.enabled(["Debug", "Release"], { 'Flipper' => '0.163.0' })
-else
-  flipper_config = FlipperConfiguration.disabled
-end
+# if flipper_enabled
+#   flipper_config = FlipperConfiguration.enabled(["Debug", "Release"], { 'Flipper' => flipperkit_version  })
+# else
+#   flipper_config = FlipperConfiguration.disabled
+# end
 
 linkage = ENV['USE_FRAMEWORKS']
 if linkage != nil
@@ -39,6 +65,7 @@ abstract_target 'common' do
 
   # Flags change depending on the env values.
   flags = get_default_flags()
+  pod 'Yoga', :path => '../node_modules/react-native/ReactCommon/yoga', :modular_headers => true
 
   use_react_native!(
     :path => config[:reactNativePath],
@@ -46,10 +73,12 @@ abstract_target 'common' do
     :hermes_enabled => false,
     :fabric_enabled => flags[:fabric_enabled],
     # Enables/disables Flipper
-    :flipper_configuration => flipper_config,
+    # :flipper_configuration => flipper_config,
     # An absolute path to your application root.
     :app_path => "#{Pod::Config.instance.installation_root}/.."
   )
+
+  flipper_pods()
 
   pod 'RNFS', :path => '../node_modules/react-native-fs'
   permissions_path = '../node_modules/react-native-permissions/ios'
