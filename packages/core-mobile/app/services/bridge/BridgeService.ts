@@ -227,7 +227,7 @@ export class BridgeService {
 
     const amountBig = bnToBig(stringToBN(amount, denomination), denomination)
 
-    const txHash = await transferAssetEVM({
+    return transferAssetEVM({
       currentBlockchain,
       amount: amountBig,
       account: activeAccount.addressC,
@@ -239,12 +239,6 @@ export class BridgeService {
       onTxHashChange: onTxHashChange ?? noop,
       signAndSendEVM
     })
-
-    if (!txHash) {
-      throw new Error('transaction hash not found')
-    }
-
-    return txHash
   }
 }
 
