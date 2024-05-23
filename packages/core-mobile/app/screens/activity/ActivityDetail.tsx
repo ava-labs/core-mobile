@@ -21,7 +21,7 @@ import { useNetworks } from 'hooks/networks/useNetworks'
 import { Contact } from '@avalabs/types'
 import Logger from 'utils/Logger'
 import { NetworkTokenUnit } from 'types'
-import { getTransactionTypeTitle } from 'services/activity/utils/primaryTransactionConverter'
+import { getTransactionTypeTitle } from 'services/activity/utils/convertPChainTransaction'
 
 type RouteProp = WalletScreenProps<
   typeof AppNavigation.Wallet.ActivityDetail

@@ -12,7 +12,8 @@ import {
 const serviceMap: { [K in NetworkVMType]?: NetworkActivityService } = {
   [NetworkVMType.BITCOIN]: BtcActivityService,
   [NetworkVMType.EVM]: EvmActivityService,
-  [NetworkVMType.PVM]: PrimaryActivityService
+  [NetworkVMType.PVM]: PrimaryActivityService,
+  [NetworkVMType.AVM]: PrimaryActivityService
 }
 
 class ActivityServiceFactory {
