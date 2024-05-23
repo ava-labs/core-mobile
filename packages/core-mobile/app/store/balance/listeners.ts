@@ -299,7 +299,7 @@ const fetchBalanceForAccounts = async (
 }
 
 const maybePromptForAddingPChainToPortfolio = async (
-  action: Action,
+  _: Action,
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
   const { getState, dispatch } = listenerApi
@@ -342,6 +342,55 @@ const maybePromptForAddingPChainToPortfolio = async (
   Logger.info('Adding P-Chain to favorites')
   dispatch(toggleFavorite(avalancheNetworkP.chainId))
   dispatch(setViewOnce(ViewOnceKey.P_CHAIN_FAVORITE))
+}
+
+const maybePromptForAddingXChainToPortfolio = async (
+  _: Action,
+  listenerApi: AppListenerEffectAPI
+): Promise<void> => {
+  const { getState, dispatch } = listenerApi
+  const state = getState()
+
+  //check if we prompted before
+  const hasPromptedToAddXChainToFavorites = selectHasBeenViewedOnce(
+    ViewOnceKey.X_CHAIN_FAVORITE
+  )(state)
+
+  if (hasPromptedToAddXChainToFavorites) {
+    Logger.trace('Already prompted for X-chain fav')
+    return
+  }
+  //check if X chain already in favorites list
+  const isDeveloperMode = selectIsDeveloperMode(state)
+  const avalancheNetworkX = NetworkService.getAvalancheNetworkX(isDeveloperMode)
+  const favoriteNetworks = selectFavoriteNetworks(state)
+
+  if (
+    favoriteNetworks.find(
+      value => value.chainId === avalancheNetworkX.chainId
+    ) !== undefined
+  ) {
+    Logger.trace('X-chain already in fav list')
+    return
+  }
+
+  //check if any activity on X chain
+  const activeAccount = selectActiveAccount(state)
+  const activities: ActivityResponse =
+    await PrimaryActivityService.getActivities({
+      network: avalancheNetworkX,
+      address: activeAccount?.addressAVM ?? '',
+      criticalConfig: undefined
+    })
+
+  if (activities.transactions.length === 0) {
+    Logger.trace('No activities, skipping prompt for X-chain')
+    return
+  }
+
+  Logger.info('Adding X-Chain to favorites')
+  dispatch(toggleFavorite(avalancheNetworkX.chainId))
+  dispatch(setViewOnce(ViewOnceKey.X_CHAIN_FAVORITE))
 }
 
 const convertToBalanceXchain = (
@@ -500,7 +549,12 @@ export const addBalanceListeners = (
   })
 
   startListening({
-    actionCreator: onAppUnlocked,
+    matcher: isAnyOf(onAppUnlocked, setAccounts),
     effect: maybePromptForAddingPChainToPortfolio
+  })
+
+  startListening({
+    matcher: isAnyOf(onAppUnlocked, setAccounts),
+    effect: maybePromptForAddingXChainToPortfolio
   })
 }
