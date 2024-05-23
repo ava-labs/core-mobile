@@ -9,7 +9,8 @@ import {
   SortOrder
 } from '@avalabs/glacier-sdk'
 import { Transaction } from 'store/transaction'
-import { convertPChainTransaction } from 'services/activity/utils/primaryTransactionConverter'
+import { convertXChainTransaction } from 'services/activity/utils/convertXChainTransaction'
+import { convertPChainTransaction } from 'services/activity/utils/convertPChainTransaction'
 import {
   ActivityResponse,
   GetActivitiesForAddressParams,
@@ -39,6 +40,11 @@ export class PrimaryActivityService implements NetworkActivityService {
         convertPChainTransaction(value, network, address)
       )
     }
+    if (this.isXChainTransactions(response)) {
+      transactions = response.transactions.map(value =>
+        convertXChainTransaction(value, network, address)
+      )
+    }
 
     return {
       transactions,
@@ -53,6 +59,15 @@ export class PrimaryActivityService implements NetworkActivityService {
       | ListCChainAtomicTransactionsResponse
   ): value is ListPChainTransactionsResponse {
     return value.chainInfo.chainName === PrimaryNetworkChainName.P_CHAIN
+  }
+
+  isXChainTransactions(
+    value:
+      | ListPChainTransactionsResponse
+      | ListXChainTransactionsResponse
+      | ListCChainAtomicTransactionsResponse
+  ): value is ListXChainTransactionsResponse {
+    return value.chainInfo.chainName === PrimaryNetworkChainName.X_CHAIN
   }
 }
 
