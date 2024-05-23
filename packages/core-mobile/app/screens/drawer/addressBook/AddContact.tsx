@@ -80,6 +80,7 @@ const AddContact = (): JSX.Element => {
       )}
       <Space y={16} />
       <AvaButton.PrimaryLarge
+        testID="save_btn"
         disabled={!name || (!cChainAddress && !btcAddress && !xpChainAddress)}
         onPress={save}>
         Save

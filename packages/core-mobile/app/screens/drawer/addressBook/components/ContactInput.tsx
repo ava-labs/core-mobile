@@ -71,6 +71,7 @@ const ContactInput = ({
       </AvaText.Body2>
       <View style={{ marginHorizontal: -16 }}>
         <InputText
+          testID="contact_input__name"
           placeholder={'Enter contact name'}
           text={name}
           onChangeText={onNameChange}
@@ -82,6 +83,7 @@ const ContactInput = ({
       </AvaText.Body2>
       <View style={{ marginHorizontal: -16 }}>
         <InputText
+          testID="contact_input__address"
           multiline
           errorText={addressError}
           placeholder={'Enter the address'}
@@ -102,6 +104,7 @@ const ContactInput = ({
       </AvaText.Body2>
       <View style={{ marginHorizontal: -16 }}>
         <InputText
+          testID="contact_input__btc_address"
           multiline
           errorText={btcAddressError}
           placeholder={'Enter the Bitcoin address'}
@@ -122,9 +125,10 @@ const ContactInput = ({
       </AvaText.Body2>
       <View style={{ marginHorizontal: -16 }}>
         <InputText
+          testID="contact_input__p_chain_address"
           multiline
           errorText={btcAddressError}
-          placeholder={'Enter the P- address'}
+          placeholder={'Enter the P-chain address'}
           text={addressXP}
           onChangeText={onAddressXPChange}
         />

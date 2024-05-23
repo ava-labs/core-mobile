@@ -47,6 +47,22 @@ class AddressBook {
     return by.text(addressBookLoc.newContact)
   }
 
+  get nameField() {
+    return by.id(addressBookLoc.nameField)
+  }
+
+  get addressField() {
+    return by.id(addressBookLoc.addressField)
+  }
+
+  get btcAddressField() {
+    return by.id(addressBookLoc.btcAddressField)
+  }
+
+  get pChainAddressField() {
+    return by.id(addressBookLoc.pChainAddressField)
+  }
+
   async tapDelete() {
     await Actions.tapElementAtIndex(this.delete, 0)
   }
@@ -60,7 +76,7 @@ class AddressBook {
   }
 
   async tapContactName() {
-    await Actions.tapElementAtIndex(this.contactName, 0)
+    await Actions.tapElementAtIndex(this.nameField, 0)
   }
 
   async tapDeleteContact() {
@@ -68,33 +84,27 @@ class AddressBook {
   }
 
   async inputContactName() {
-    await commonElsPage.enterTextInput(0, addressBookLoc.contactName)
+    await Actions.setInputText(this.nameField, addressBookLoc.contactName)
     await Actions.tap(this.nameText)
   }
 
   async inputNewContactName() {
-    await Actions.setInputText(
-      commonElsPage.inputTextField,
-      addressBookLoc.newContactName,
-      0
-    )
+    await Actions.setInputText(this.nameField, addressBookLoc.newContactName, 0)
     await Actions.tap(this.nameText)
   }
 
   async inputAvaxAddress() {
     await Actions.setInputText(
-      commonElsPage.inputTextField,
-      addressBookLoc.contactAvaxAddress,
-      1
+      this.addressField,
+      addressBookLoc.contactAvaxAddress
     )
     await Actions.tap(this.nameText)
   }
 
   async inputBtcAddress() {
     await Actions.setInputText(
-      commonElsPage.inputTextField,
-      addressBookLoc.contactBtcAddress,
-      2
+      this.btcAddressField,
+      addressBookLoc.contactBtcAddress
     )
     await element(commonElsPage.inputTextField).atIndex(2).tapReturnKey()
   }
