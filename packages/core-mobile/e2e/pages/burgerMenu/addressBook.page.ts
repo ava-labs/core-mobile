@@ -1,6 +1,5 @@
 import addressBookLoc from '../../locators/burgerMenu/addressBook.loc'
 import Actions from '../../helpers/actions'
-import commonElsPage from '../commonEls.page'
 
 class AddressBook {
   get addAddressButton() {
@@ -39,8 +38,12 @@ class AddressBook {
     return by.text(addressBookLoc.newContactName)
   }
 
+  get contactNameText() {
+    return by.text(addressBookLoc.contactName)
+  }
+
   get saveButton() {
-    return by.text(addressBookLoc.saveButton)
+    return by.id(addressBookLoc.saveButton)
   }
 
   get newContactTitle() {
@@ -76,7 +79,7 @@ class AddressBook {
   }
 
   async tapContactName() {
-    await Actions.tapElementAtIndex(this.nameField, 0)
+    await Actions.tapElementAtIndex(this.contactNameText, 0)
   }
 
   async tapDeleteContact() {
@@ -106,16 +109,11 @@ class AddressBook {
       this.btcAddressField,
       addressBookLoc.contactBtcAddress
     )
-    await element(commonElsPage.inputTextField).atIndex(2).tapReturnKey()
+    await this.tapSave()
   }
 
   async tapSave() {
-    try {
-      await Actions.tapElementAtIndex(this.saveButton, 0)
-    } catch (error) {
-      await Actions.tapElementAtIndex(this.newContactTitle, 0)
-      await Actions.tapElementAtIndex(this.saveButton, 0)
-    }
+    await Actions.tapElementAtIndex(this.saveButton, 0)
   }
 }
 

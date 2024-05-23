@@ -246,6 +246,7 @@ const SaveAddressBookContact = ({
   return (
     <AvaButton.Icon disabled={!isContactValid} onPress={() => onSave()}>
       <AvaText.ButtonLarge
+        testID="save_btn"
         textStyle={{
           color: isContactValid ? theme.colorPrimary1 : theme.colorDisabled
         }}>
