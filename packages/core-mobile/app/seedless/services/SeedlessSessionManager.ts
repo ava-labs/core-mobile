@@ -50,7 +50,7 @@ class SeedlessSessionManager {
   private scopes: string[]
   private sessionStorage: SessionStorage<SignerSessionData>
   private eventEmitter = new EventEmitter()
-  private isTokenValid = false
+  private _isTokenValid = false
 
   constructor({
     scopes,
@@ -354,12 +354,16 @@ class SeedlessSessionManager {
   }
 
   setIsTokenValid(isTokenValid: boolean): void {
-    this.isTokenValid = isTokenValid
+    this._isTokenValid = isTokenValid
 
     this.eventEmitter.emit(
       SeedlessSessionManagerEvent.TokenStatusUpdated,
       this.isTokenValid
     )
+  }
+
+  isTokenValid(): boolean {
+    return this._isTokenValid
   }
 
   addListener<T>(

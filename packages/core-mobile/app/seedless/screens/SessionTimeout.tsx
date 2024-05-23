@@ -1,8 +1,11 @@
-import React from 'react'
+import React, { useCallback } from 'react'
 import { Space } from 'components/Space'
 import TimerSVG from 'components/svg/TimerSVG'
 import FlexSpacer from 'components/FlexSpacer'
 import { Button, Text, View } from '@avalabs/k2-mobile'
+import { useFocusEffect } from '@react-navigation/native'
+import SeedlessService from 'seedless/services/SeedlessService'
+import { BackHandler } from 'react-native'
 
 export type SessionTimeoutParams = {
   onRetry: () => void
@@ -10,6 +13,17 @@ export type SessionTimeoutParams = {
 export default function SessionTimeout({
   onRetry
 }: SessionTimeoutParams): JSX.Element {
+  useFocusEffect(
+    useCallback(() => {
+      const onBackPress = (): boolean =>
+        !SeedlessService.sessionManager.isTokenValid()
+      BackHandler.addEventListener('hardwareBackPress', onBackPress)
+
+      return () =>
+        BackHandler.removeEventListener('hardwareBackPress', onBackPress)
+    }, [])
+  )
+
   return (
     <View style={{ padding: 16, flex: 1 }}>
       <FlexSpacer />
