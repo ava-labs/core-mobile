@@ -24,13 +24,11 @@ import { VsCurrencyType } from '@avalabs/coingecko-sdk'
 import Logger from 'utils/Logger'
 import { selectBridgeAppConfig } from 'store/bridge'
 import { selectActiveAccount } from 'store/account'
-import {
-  getAvalancheNetwork,
-  getBitcoinNetwork
-} from 'services/network/utils/providerUtils'
+import { getBitcoinNetwork } from 'services/network/utils/providerUtils'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { useNetworkFee } from 'hooks/useNetworkFee'
+import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import { useTransferAssetBTC } from './useTransferAssetBTC'
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
@@ -43,7 +41,7 @@ export function useBtcBridge({
   bridgeFee: Big
   minimum: Big
 }): BridgeAdapter {
-  const { activeNetwork, networks } = useNetworks()
+  const { activeNetwork } = useNetworks()
   const activeAccount = useSelector(selectActiveAccount)
   const currency = useSelector(selectSelectedCurrency)
   const bridgeConfig = useSelector(selectBridgeAppConfig)
@@ -51,10 +49,7 @@ export function useBtcBridge({
   const { transfer: transferBTC } = useTransferAssetBTC()
   const { currentAsset, currentBlockchain, targetBlockchain } = useBridgeSDK()
   const btcAddress = activeAccount?.addressBTC
-  const avalancheNetwork = getAvalancheNetwork(
-    networks,
-    activeNetwork.isTestnet
-  )
+  const avalancheNetwork = useCChainNetwork()
   const avalancheTokens = useSelector(
     selectTokensWithBalanceByNetwork(avalancheNetwork)
   )
