@@ -41,8 +41,8 @@ import { selectActiveAccount } from 'store/account'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { Tooltip } from 'components/Tooltip'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { useNetworks } from 'hooks/networks/useNetworks'
 import { showTransactionSuccessToast } from 'utils/toast'
+import useCChainNetworkToken from 'hooks/earn/useCChainNetworkToken'
 import { ConfirmScreen } from '../components/ConfirmScreen'
 import UnableToEstimate from '../components/UnableToEstimate'
 import { useValidateStakingEndTime } from './useValidateStakingEndTime'
@@ -51,7 +51,6 @@ type ScreenProps = StakeSetupScreenProps<
 >
 
 export const Confirmation = (): JSX.Element | null => {
-  const { activeNetwork } = useNetworks()
   const dispatch = useDispatch()
   const { minStakeAmount } = useStakingParams()
   const avaxFormatter = useAvaxFormatter()
@@ -67,7 +66,8 @@ export const Confirmation = (): JSX.Element | null => {
     previousRoute && previousRoute.name === AppNavigation.StakeSetup.SelectNode
   const validator = useGetValidatorByNodeId(nodeId)
   const { theme } = useApplicationContext()
-  const tokenSymbol = activeNetwork.networkToken.symbol
+  const token = useCChainNetworkToken()
+  const tokenSymbol = token?.symbol
   const { issueDelegationMutation } = useIssueDelegation(
     onDelegationSuccess,
     onDelegationError,

@@ -6,7 +6,8 @@ import AvaText from 'components/AvaText'
 import DotSVG from 'components/svg/DotSVG'
 import AvaButton from 'components/AvaButton'
 import FlexSpacer from 'components/FlexSpacer'
-import AvaLogoSVG from 'components/svg/AvaLogoSVG'
+import Avatar from 'components/Avatar'
+import useCChainNetworkToken from 'hooks/earn/useCChainNetworkToken'
 
 type Props = {
   isConfirming: boolean
@@ -30,8 +31,9 @@ export const ConfirmScreen = ({
   cancelBtnTitle,
   confirmBtnDisabled = false,
   children
-}: Props) => {
+}: Props): JSX.Element => {
   const { theme } = useApplicationContext()
+  const token = useCChainNetworkToken()
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -42,11 +44,14 @@ export const ConfirmScreen = ({
         <View style={styles.dotContainer}>
           <DotSVG fillColor={theme.colorBg1} size={72} />
         </View>
-        <AvaLogoSVG
-          backgroundColor={theme.tokenLogoBg}
-          logoColor={theme.tokenLogoColor}
-          size={57}
-        />
+        {token !== undefined && (
+          <Avatar.Token
+            name={token.name}
+            symbol={token.symbol}
+            logoUri={token.logoUri}
+            size={57}
+          />
+        )}
       </View>
       <View
         style={[
