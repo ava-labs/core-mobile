@@ -128,7 +128,7 @@ class SendService {
             request({
               method: RpcMethod.ETH_SEND_TRANSACTION,
               params: [txRequest] as [EvmTransactionParams],
-              chainId: network.chainId
+              chainId: network.chainId.toString()
             })
           )
         }

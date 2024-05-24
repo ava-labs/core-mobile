@@ -147,7 +147,7 @@ export class UnifiedBridgeService {
       return request({
         method: RpcMethod.ETH_SEND_TRANSACTION,
         params: txParams,
-        chainId: activeNetwork.chainId
+        chainId: activeNetwork.chainId.toString()
       }) as Promise<`0x${string}`>
     }
 

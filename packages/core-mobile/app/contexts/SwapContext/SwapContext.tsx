@@ -158,7 +158,7 @@ export const SwapContextProvider = ({
             request({
               method: RpcMethod.ETH_SEND_TRANSACTION,
               params: txParams,
-              chainId: activeNetwork.chainId
+              chainId: activeNetwork.chainId.toString()
             }),
           userAddress: activeAccount.addressC
         })
