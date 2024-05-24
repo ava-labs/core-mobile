@@ -1,18 +1,14 @@
-import { ChainId, Network } from '@avalabs/chains-sdk'
+import { Network } from '@avalabs/chains-sdk'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { useMemo } from 'react'
+import { getAvalancheNetwork } from 'services/network/utils/providerUtils'
 
 const useCChainNetwork = (): Network | undefined => {
-  const { activeNetwork, getNetwork } = useNetworks()
+  const { activeNetwork, networks } = useNetworks()
 
   return useMemo(
-    () =>
-      getNetwork(
-        activeNetwork.isTestnet
-          ? ChainId.AVALANCHE_TESTNET_ID
-          : ChainId.AVALANCHE_MAINNET_ID
-      ),
-    [activeNetwork, getNetwork]
+    () => getAvalancheNetwork(networks, activeNetwork.isTestnet),
+    [activeNetwork, networks]
   )
 }
 
