@@ -81,7 +81,6 @@ export default function PinKey({
         {({ pressed }) => (
           <View
             style={{
-              paddingVertical: 16,
               justifyContent: 'center',
               alignItems: 'center'
             }}>
@@ -120,7 +119,7 @@ export default function PinKey({
 
 const styles = StyleSheet.create({
   button: {
-    height: 44,
+    height: 72,
     justifyContent: 'center',
     alignItems: 'center',
     width: '100%'
