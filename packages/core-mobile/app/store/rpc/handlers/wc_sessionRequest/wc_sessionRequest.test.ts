@@ -43,9 +43,9 @@ const mockListenerApi = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 } as any
 
-jest.mock('store/rpc/utils', () => {
+jest.mock('store/rpc/utils/createInAppRequest', () => {
   return {
-    requestInApp: jest.fn()
+    createInAppRequest: jest.fn()
   }
 })
 
@@ -200,11 +200,6 @@ describe('session_request handler', () => {
       }
 
       const testRequest = createRequest(testRequiredNamespaces)
-
-      jest
-        .spyOn(require('store/rpc/utils'), 'requestInApp')
-        .mockRejectedValue({ message: 'User rejected' })
-
       const result = await handler.handle(testRequest, mockListenerApi)
 
       expect(result).toEqual({
@@ -225,11 +220,6 @@ describe('session_request handler', () => {
       }
 
       const testRequest = createRequest(testRequiredNamespaces)
-
-      jest
-        .spyOn(require('store/rpc/utils'), 'requestInApp')
-        .mockRejectedValue({ message: 'User rejected' })
-
       const result = await handler.handle(testRequest, mockListenerApi)
 
       expect(result).toEqual({
@@ -254,11 +244,16 @@ describe('session_request handler', () => {
         .spyOn(require('store/network'), 'selectActiveNetwork')
         .mockReturnValueOnce(mockNetworks[4503599627370475])
 
+      const mockRequest = jest.fn().mockResolvedValue({})
+      const {
+        createInAppRequest
+      } = require('store/rpc/utils/createInAppRequest')
+
+      createInAppRequest.mockReturnValue(mockRequest)
+
       await handler.handle(testRequest, mockListenerApi)
 
-      const { requestInApp } = require('store/rpc/utils')
-      expect(requestInApp).toHaveBeenCalledWith({
-        dispatch: mockDispatch,
+      expect(mockRequest).toHaveBeenCalledWith({
         method: RpcMethod.WALLET_SWITCH_ETHEREUM_CHAIN,
         params: [
           {
