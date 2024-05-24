@@ -57,7 +57,9 @@ export function useApp(): AppHook {
     confirmExitPromise
       .then(_ => {
         dispatch(immediateAppLock)
-        setTimeout(() => BackHandler.exitApp(), 0)
+        setTimeout(() => {
+          BackHandler.exitApp()
+        }, 0)
       })
       .catch(_ => {
         Logger.trace('User canceled app exit')
