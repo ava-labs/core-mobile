@@ -8,7 +8,7 @@ import { Platform } from 'react-native'
 import limitInput, { getMaxDecimals } from 'screens/earn/limitInput'
 import { TokenBaseUnitInput } from 'components/TokenBaseUnitInput'
 import { Avax } from 'types/Avax'
-import useCChainNetworkToken from 'hooks/earn/useCChainNetworkToken'
+import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import Avatar from 'components/Avatar'
 
 const EarnInputAmount = ({
@@ -22,7 +22,7 @@ const EarnInputAmount = ({
   const [maxDecimals, setMaxDecimals] = useState(
     inputAmount?.getMaxDecimals ?? 0
   )
-  const token = useCChainNetworkToken()
+  const network = useCChainNetwork()
 
   const isAndroid = Platform.OS === 'android'
 
@@ -76,12 +76,12 @@ const EarnInputAmount = ({
           paddingVertical: 4
         }}>
         <Row style={{ alignItems: 'center' }}>
-          {token !== undefined && (
+          {network?.networkToken !== undefined && (
             <Avatar.Token
               size={16}
-              name={token.name}
-              symbol={token.symbol}
-              logoUri={token.logoUri}
+              name={network.networkToken.name}
+              symbol={network.networkToken.symbol}
+              logoUri={network.networkToken.logoUri}
             />
           )}
           <Space x={4} />

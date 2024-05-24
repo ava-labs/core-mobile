@@ -42,7 +42,7 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { Tooltip } from 'components/Tooltip'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { showTransactionSuccessToast } from 'utils/toast'
-import useCChainNetworkToken from 'hooks/earn/useCChainNetworkToken'
+import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import { ConfirmScreen } from '../components/ConfirmScreen'
 import UnableToEstimate from '../components/UnableToEstimate'
 import { useValidateStakingEndTime } from './useValidateStakingEndTime'
@@ -66,8 +66,8 @@ export const Confirmation = (): JSX.Element | null => {
     previousRoute && previousRoute.name === AppNavigation.StakeSetup.SelectNode
   const validator = useGetValidatorByNodeId(nodeId)
   const { theme } = useApplicationContext()
-  const token = useCChainNetworkToken()
-  const tokenSymbol = token?.symbol
+  const network = useCChainNetwork()
+  const tokenSymbol = network?.networkToken?.symbol
   const { issueDelegationMutation } = useIssueDelegation(
     onDelegationSuccess,
     onDelegationError,

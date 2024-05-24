@@ -16,7 +16,7 @@ import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation } from '@react-navigation/core'
 import { ScrollView } from 'react-native-gesture-handler'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import useCChainNetworkToken from 'hooks/earn/useCChainNetworkToken'
+import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import Avatar from 'components/Avatar'
 
 type ScreenProps = StakeSetupScreenProps<
@@ -30,7 +30,7 @@ export default function GetStarted({
 }): JSX.Element {
   const { theme } = useApplicationContext()
   const { navigate } = useNavigation<ScreenProps>()
-  const token = useCChainNetworkToken()
+  const network = useCChainNetwork()
 
   function goToStakingDocs(): void {
     AnalyticsService.capture('StakeOpenStakingDocs', {
@@ -54,12 +54,12 @@ export default function GetStarted({
       <AvaText.LargeTitleBold>Get Started</AvaText.LargeTitleBold>
       <Space y={31} />
       <View style={{ alignItems: 'center' }}>
-        {token !== undefined && (
+        {network?.networkToken !== undefined && (
           <Avatar.Token
             size={56}
-            name={token.name}
-            symbol={token.symbol}
-            logoUri={token.logoUri}
+            name={network.networkToken.name}
+            symbol={network.networkToken.symbol}
+            logoUri={network.networkToken.logoUri}
           />
         )}
         <Space y={16} />

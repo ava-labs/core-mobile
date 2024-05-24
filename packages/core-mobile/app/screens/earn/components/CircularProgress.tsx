@@ -4,7 +4,7 @@ import { Canvas, Path, Shadow, Skia } from '@shopify/react-native-skia'
 import { PixelRatio, StyleSheet, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { StakingBalanceType } from 'services/earn/types'
-import useCChainNetworkToken from 'hooks/earn/useCChainNetworkToken'
+import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import Avatar from 'components/Avatar'
 import { getStakePrimaryColor, getStakeShadowColor } from '../utils'
 
@@ -21,7 +21,7 @@ interface CircularProgressProps {
 
 export const CircularProgress: FC<CircularProgressProps> = ({ data }) => {
   const { theme } = useApplicationContext()
-  const token = useCChainNetworkToken()
+  const network = useCChainNetwork()
 
   let start = 0
   let end = 0
@@ -73,12 +73,12 @@ export const CircularProgress: FC<CircularProgressProps> = ({ data }) => {
         })}
       </Canvas>
       <View style={styles.iconContainer}>
-        {token !== undefined && (
+        {network?.networkToken !== undefined && (
           <Avatar.Token
             size={48}
-            name={token.name}
-            symbol={token.symbol}
-            logoUri={token.logoUri}
+            name={network.networkToken.name}
+            symbol={network.networkToken.symbol}
+            logoUri={network.networkToken.logoUri}
           />
         )}
       </View>
