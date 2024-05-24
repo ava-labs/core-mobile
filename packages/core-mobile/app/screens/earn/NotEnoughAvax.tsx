@@ -27,7 +27,7 @@ export default function NotEnoughAvax({
         style={{
           flex: 1,
           justifyContent: 'center',
-          paddingBottom: 0,
+          paddingBottom: 80,
           gap: 24
         }}>
         <Icons.Alert.IconErrorOutline
