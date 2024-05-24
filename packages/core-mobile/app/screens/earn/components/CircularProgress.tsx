@@ -2,9 +2,10 @@ import React, { FC, useMemo } from 'react'
 
 import { Canvas, Path, Shadow, Skia } from '@shopify/react-native-skia'
 import { PixelRatio, StyleSheet, View } from 'react-native'
-import AvaLogoSVG from 'components/svg/AvaLogoSVG'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { StakingBalanceType } from 'services/earn/types'
+import useCChainNetwork from 'hooks/earn/useCChainNetwork'
+import Avatar from 'components/Avatar'
 import { getStakePrimaryColor, getStakeShadowColor } from '../utils'
 
 const radius = PixelRatio.roundToNearestPixel(48)
@@ -20,6 +21,7 @@ interface CircularProgressProps {
 
 export const CircularProgress: FC<CircularProgressProps> = ({ data }) => {
   const { theme } = useApplicationContext()
+  const network = useCChainNetwork()
 
   let start = 0
   let end = 0
@@ -71,11 +73,14 @@ export const CircularProgress: FC<CircularProgressProps> = ({ data }) => {
         })}
       </Canvas>
       <View style={styles.iconContainer}>
-        <AvaLogoSVG
-          size={48}
-          logoColor={theme.tokenLogoColor}
-          backgroundColor={theme.tokenLogoBg}
-        />
+        {network?.networkToken !== undefined && (
+          <Avatar.Token
+            size={48}
+            name={network.networkToken.name}
+            symbol={network.networkToken.symbol}
+            logoUri={network.networkToken.logoUri}
+          />
+        )}
       </View>
     </View>
   )
