@@ -3,10 +3,6 @@ import { useJigglyPinIndicator } from 'utils/JigglyPinIndicatorHook'
 import { Animated } from 'react-native'
 import { PinKeys } from './PinKey'
 
-export type DotView = {
-  filled: boolean
-}
-
 const keymap: Map<PinKeys, string> = new Map([
   [PinKeys.Key1, '1'],
   [PinKeys.Key2, '2'],
@@ -22,7 +18,7 @@ const keymap: Map<PinKeys, string> = new Map([
 
 export type UseCreatePinProps = {
   title: string
-  pinDots: DotView[]
+  pinLength: number
   onEnterChosenPin: (pinKey: PinKeys) => void
   onEnterConfirmedPin: (pinKey: PinKeys) => void
   chosenPinEntered: boolean
@@ -37,19 +33,11 @@ export function useCreatePin(
   const [title, setTitle] = useState('Create Pin')
   const [chosenPin, setChosenPin] = useState('')
   const [confirmedPin, setConfirmedPin] = useState('')
-  const [pinDots, setPinDots] = useState<DotView[]>([])
+  const [pinLength, setPinLength] = useState<number>(0)
   const [chosenPinEntered, setChosenPinEntered] = useState(false)
   const [confirmedPinEntered, setConfirmedPinEntered] = useState(false)
   const [validPin, setValidPin] = useState<string | undefined>(undefined)
   const { jiggleAnim, fireJiggleAnimation } = useJigglyPinIndicator()
-
-  useEffect(() => {
-    if (chosenPinEntered) {
-      setPinDots(getPinDots(confirmedPin))
-    } else {
-      setPinDots(getPinDots(chosenPin))
-    }
-  }, [chosenPin, confirmedPin, chosenPinEntered])
 
   useEffect(() => {
     if (isResettingPin) {
@@ -57,9 +45,9 @@ export function useCreatePin(
     } else {
       setTitle(chosenPinEntered ? 'Confirm Pin' : 'Create Pin')
     }
-  }, [chosenPinEntered])
+  }, [chosenPinEntered, isResettingPin])
 
-  function resetConfirmPinProcess() {
+  function resetConfirmPinProcess(): void {
     setValidPin(undefined)
     setConfirmedPinEntered(false)
     setConfirmedPin('')
@@ -75,31 +63,30 @@ export function useCreatePin(
         fireJiggleAnimation()
       }
     }
-  }, [chosenPinEntered, confirmedPinEntered])
-
-  const getPinDots = (pin: string): DotView[] => {
-    const dots: DotView[] = []
-    for (let i = 0; i < 6; i++) {
-      if (i < pin.length) {
-        dots.push({ filled: true })
-      } else {
-        dots.push({ filled: false })
-      }
-    }
-    return dots
-  }
+  }, [
+    chosenPin,
+    chosenPinEntered,
+    confirmedPin,
+    confirmedPinEntered,
+    fireJiggleAnimation,
+    onResetPinFailed
+  ])
 
   const onEnterChosenPin = (pinKey: PinKeys): void => {
     if (pinKey === PinKeys.Backspace) {
-      setChosenPin(chosenPin.slice(0, -1))
+      const pin = chosenPin.slice(0, -1)
+      setPinLength(pin.length)
+      setChosenPin(pin)
     } else {
       if (chosenPin.length === 6) {
         return
       }
-      const newPin = chosenPin + keymap.get(pinKey)!
+      const newPin = chosenPin + keymap.get(pinKey)
+      setPinLength(newPin.length)
       setChosenPin(newPin)
       if (newPin.length === 6) {
         setTimeout(() => {
+          setPinLength(0)
           setChosenPinEntered(true)
         }, 300)
       }
@@ -108,12 +95,15 @@ export function useCreatePin(
 
   const onEnterConfirmedPin = (pinKey: PinKeys): void => {
     if (pinKey === PinKeys.Backspace) {
-      setConfirmedPin(confirmedPin.slice(0, -1))
+      const pin = confirmedPin.slice(0, -1)
+      setPinLength(pin.length)
+      setConfirmedPin(pin)
     } else {
       if (confirmedPin.length === 6) {
         return
       }
-      const newPin = confirmedPin + keymap.get(pinKey)!
+      const newPin = confirmedPin + keymap.get(pinKey)
+      setPinLength(newPin.length)
       setConfirmedPin(newPin)
       if (newPin.length === 6) {
         setConfirmedPinEntered(true)
@@ -123,7 +113,7 @@ export function useCreatePin(
 
   return {
     title,
-    pinDots,
+    pinLength,
     onEnterChosenPin,
     onEnterConfirmedPin,
     chosenPinEntered,

@@ -127,9 +127,10 @@ export function useInjectedJavascript(): InjectedJavascripts {
 
   const coreConnectInterceptor = `(async function(){     
     setTimeout(() => {
-      const request = function (json) {
+      const request = async function (json) {
         const message = {
-          method: 'window_ethereum_used'
+          method: 'window_ethereum_used',
+          payload: json
         };
         window.ReactNativeWebView.postMessage(JSON.stringify(message));
       };
@@ -138,7 +139,6 @@ export function useInjectedJavascript(): InjectedJavascripts {
       }
       window.ethereum.request = request;
       window.ethereum.enable = request;
-      window.ethereum.networkVersion = '43114'
       window.ethereum.on = function (eventName, f){ return true; }
       const message = {
         method: 'log',
