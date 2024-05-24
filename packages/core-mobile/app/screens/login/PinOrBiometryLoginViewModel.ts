@@ -40,7 +40,6 @@ export function usePinOrBiometryLogin(): {
   timeRemaining: string
 } {
   const [enteredPin, setEnteredPin] = useState('')
-  const [pinLength, setPinLength] = useState<number>(0)
   const [pinEntered, setPinEntered] = useState(false)
   const [mnemonic, setMnemonic] = useState<string | undefined>(undefined)
   const [disableKeypad, setDisableKeypad] = useState(false)
@@ -81,7 +80,6 @@ export function usePinOrBiometryLogin(): {
 
   const resetConfirmPinProcess = useCallback(() => {
     setEnteredPin('')
-    setPinLength(0)
     setMnemonic(undefined)
   }, [])
 
@@ -147,14 +145,12 @@ export function usePinOrBiometryLogin(): {
     if (pinKey === PinKeys.Backspace) {
       const pin = enteredPin.slice(0, -1)
       setEnteredPin(pin)
-      setPinLength(pin.length)
     } else {
       if (enteredPin.length === 6) {
         return
       }
       const newPin = enteredPin + keymap.get(pinKey)
       setEnteredPin(newPin)
-      setPinLength(newPin.length)
       if (newPin.length === 6) {
         setPinEntered(true)
       }
@@ -202,7 +198,7 @@ export function usePinOrBiometryLogin(): {
     }
 
   return {
-    pinLength,
+    pinLength: enteredPin.length,
     onEnterPin,
     mnemonic,
     promptForWalletLoadingIfExists,
