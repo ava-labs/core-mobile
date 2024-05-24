@@ -298,19 +298,19 @@ const fetchBalanceForAccounts = async (
   )
 }
 
-const maybePromptForAddingPChainToPortfolio = async (
+const addPChainToFavoritesIfNeeded = async (
   _: Action,
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
   const { getState, dispatch } = listenerApi
   const state = getState()
 
-  //check if we prompted before
-  const hasPromptedToAddPChainToFavorites = selectHasBeenViewedOnce(
+  //check if we've added P chain before
+  const hadAddedPChainToFavorites = selectHasBeenViewedOnce(
     ViewOnceKey.P_CHAIN_FAVORITE
   )(state)
-  if (hasPromptedToAddPChainToFavorites) {
-    Logger.trace('Already prompted for P-chain fav')
+  if (hadAddedPChainToFavorites) {
+    Logger.trace('Already added P-chain to favorites')
     return
   }
   //check if P chain already in favorites list
@@ -335,7 +335,7 @@ const maybePromptForAddingPChainToPortfolio = async (
       criticalConfig: undefined
     })
   if (activities.transactions.length === 0) {
-    Logger.trace('No activities, skipping prompt for P-chain')
+    Logger.trace('No activities, skipping add for P-chain')
     return
   }
 
@@ -344,20 +344,20 @@ const maybePromptForAddingPChainToPortfolio = async (
   dispatch(setViewOnce(ViewOnceKey.P_CHAIN_FAVORITE))
 }
 
-const maybePromptForAddingXChainToPortfolio = async (
+const addXChainToFavoritesIfNeeded = async (
   _: Action,
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
   const { getState, dispatch } = listenerApi
   const state = getState()
 
-  //check if we prompted before
-  const hasPromptedToAddXChainToFavorites = selectHasBeenViewedOnce(
+  //check if we've added X chain before
+  const hadAddedXChainToFavorites = selectHasBeenViewedOnce(
     ViewOnceKey.X_CHAIN_FAVORITE
   )(state)
 
-  if (hasPromptedToAddXChainToFavorites) {
-    Logger.trace('Already prompted for X-chain fav')
+  if (hadAddedXChainToFavorites) {
+    Logger.trace('Already added X-chain to favorites')
     return
   }
   //check if X chain already in favorites list
@@ -384,7 +384,7 @@ const maybePromptForAddingXChainToPortfolio = async (
     })
 
   if (activities.transactions.length === 0) {
-    Logger.trace('No activities, skipping prompt for X-chain')
+    Logger.trace('No activities, skipping add for X-chain')
     return
   }
 
@@ -550,11 +550,11 @@ export const addBalanceListeners = (
 
   startListening({
     matcher: isAnyOf(onAppUnlocked, setAccounts),
-    effect: maybePromptForAddingPChainToPortfolio
+    effect: addPChainToFavoritesIfNeeded
   })
 
   startListening({
     matcher: isAnyOf(onAppUnlocked, setAccounts),
-    effect: maybePromptForAddingXChainToPortfolio
+    effect: addXChainToFavoritesIfNeeded
   })
 }
