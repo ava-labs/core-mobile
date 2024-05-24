@@ -146,7 +146,7 @@ export function calculateGasAndFees<T extends TokenBaseUnit<T>>({
     maxPriorityFeePerGas,
     gasLimit,
     maxTotalFee,
-    maxTotalFeeInCurrency: maxTotalFee.mul(tokenPrice).toFixed(2)
+    maxTotalFeeInCurrency: maxTotalFee.mul(tokenPrice).toFixed()
   }
 }
 

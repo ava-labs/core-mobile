@@ -14,31 +14,28 @@ import { useCallback, useMemo, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import { useEthereumProvider } from 'hooks/networks/networkProviderHooks'
-import { selectBridgeAppConfig } from 'store/bridge'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { Eip1559Fees } from 'utils/Utils'
-import { NetworkTokenUnit } from 'types'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import Logger from 'utils/Logger'
+import { noop } from '@avalabs/utils-sdk'
+import { useTransferAssetEVM } from './useTransferAssetEVM'
 
 /**
- * Hook for when the bridge source chain is Ethereum
+ * Hook for transferring assets from Ethereum to Avalanche (wrapping)
  */
 export function useEthBridge({
   amount,
   bridgeFee,
-  minimum,
-  eip1559Fees
+  minimum
 }: {
   amount: Big
   bridgeFee: Big
   minimum: Big
-  eip1559Fees: Eip1559Fees<NetworkTokenUnit>
 }): BridgeAdapter {
   const { currentAssetData } = useBridgeSDK()
 
-  const { createBridgeTransaction, transferAsset } = useBridgeContext()
-
+  const { createBridgeTransaction } = useBridgeContext()
+  const { transfer: transferEVM } = useTransferAssetEVM()
   const { assetsWithBalances, loading } = useAssetBalancesEVM(
     Blockchain.ETHEREUM
   )
@@ -53,10 +50,8 @@ export function useEthBridge({
 
   const { activeNetwork } = useNetworks()
   const activeAccount = useSelector(selectActiveAccount)
-  const config = useSelector(selectBridgeAppConfig)
   const ethereumProvider = useEthereumProvider()
   const [wrapStatus, setWrapStatus] = useState<WrapStatus>(WrapStatus.INITIAL)
-  const [txHash, setTxHash] = useState<string>()
 
   const maximum =
     useMaxTransferAmount(
@@ -64,37 +59,39 @@ export function useEthBridge({
       activeAccount?.addressC,
       ethereumProvider
     ) || undefined
+
   const receiveAmount = amount.gt(minimum) ? amount.minus(bridgeFee) : BIG_ZERO
 
   const transfer = useCallback(async () => {
-    if (!currentAssetData || !activeNetwork || !config) {
-      return Promise.reject()
-    }
+    if (!activeAccount) return Promise.reject('Active account not found')
+
+    if (!currentAssetData) return Promise.reject('Asset not found')
 
     const timestamp = Date.now()
     const symbol = isNativeAsset(currentAssetData)
       ? currentAssetData.wrappedAssetSymbol
       : currentAssetData.symbol
 
-    //this transfer is part of the Bridge context
-    const result = await transferAsset(
+    // this transfer is part of the Bridge context
+    const transactionHash = await transferEVM({
       amount,
-      currentAssetData,
-      setWrapStatus,
-      setTxHash,
-      eip1559Fees
-    )
+      asset: currentAssetData,
+      onStatusChange: setWrapStatus,
+      onTxHashChange: noop
+    })
+
+    if (!transactionHash) return Promise.reject('Failed to transfer')
 
     AnalyticsService.captureWithEncryption('BridgeTransactionStarted', {
       chainId: activeNetwork.chainId,
-      sourceTxHash: result?.hash ?? '',
+      sourceTxHash: transactionHash,
       fromAddress: activeAccount?.addressC
     })
 
     createBridgeTransaction(
       {
         sourceChain: Blockchain.ETHEREUM,
-        sourceTxHash: result?.hash ?? '',
+        sourceTxHash: transactionHash,
         sourceStartedAt: timestamp,
         targetChain: Blockchain.AVALANCHE,
         amount,
@@ -103,15 +100,13 @@ export function useEthBridge({
       activeNetwork
     ).catch(Logger.error)
 
-    return result?.hash
+    return transactionHash
   }, [
+    activeAccount,
     currentAssetData,
-    activeNetwork,
-    config,
-    transferAsset,
+    transferEVM,
     amount,
-    eip1559Fees,
-    activeAccount?.addressC,
+    activeNetwork,
     createBridgeTransaction
   ])
 
@@ -122,7 +117,6 @@ export function useEthBridge({
     receiveAmount,
     maximum,
     wrapStatus,
-    txHash,
     transfer
   }
 }

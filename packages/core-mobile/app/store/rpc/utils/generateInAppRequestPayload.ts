@@ -1,20 +1,14 @@
-import { v4 as uuidv4 } from 'uuid'
-import { EVM_IDENTIFIER } from 'consts/walletConnect'
 import { generateRandomNumberId } from 'utils/generateRandomNumberId'
-import { PeerMeta, RpcMethod, RpcProvider, RpcRequest } from './types'
+import {
+  RpcMethod,
+  RpcProvider,
+  RpcRequest,
+  CORE_MOBILE_META,
+  CORE_MOBILE_TOPIC,
+  EVM_IDENTIFIER
+} from '../types'
 
-// this is the session id for all Core Mobile in-app requests
-// it stays the same during an app session
-const CORE_MOBILE_TOPIC = uuidv4()
-
-const CORE_MOBILE_META: PeerMeta = {
-  name: 'Core',
-  description: 'Core Mobile Wallet',
-  url: 'https://core.app/',
-  icons: []
-}
-
-export const createInAppRequest = ({
+export const generateInAppRequestPayload = ({
   method,
   params,
   chainId

@@ -2,21 +2,16 @@ import * as Sentry from '@sentry/react-native'
 import { AppListenerEffectAPI } from 'store'
 import { ethErrors } from 'eth-rpc-errors'
 import BridgeService from 'services/bridge/BridgeService'
-import { bnToBig, stringToBN } from '@avalabs/utils-sdk'
-import { selectActiveAccount } from 'store/account'
+import { noop } from '@avalabs/utils-sdk'
+import { selectActiveAccount } from 'store/account/slice'
 import Logger from 'utils/Logger'
 import { selectBridgeAppConfig } from 'store/bridge/slice'
 import * as Navigation from 'utils/Navigation'
 import AppNavigation from 'navigation/AppNavigation'
-import { selectIsDeveloperMode } from 'store/settings/advanced'
-import {
-  Blockchain,
-  EthereumConfigAsset,
-  NativeAsset
-} from '@avalabs/bridge-sdk'
-import { VsCurrencyType } from '@avalabs/coingecko-sdk'
-import { selectSelectedCurrency } from 'store/settings/currency'
-import { selectNetworks } from 'store/network'
+import { selectIsDeveloperMode } from 'store/settings/advanced/slice'
+import { Blockchain, Asset } from '@avalabs/bridge-sdk'
+import { selectNetworks } from 'store/network/slice'
+import { createInAppRequest } from 'store/rpc/utils/createInAppRequest'
 import { RpcMethod, RpcRequest } from '../../types'
 import {
   ApproveResponse,
@@ -57,7 +52,7 @@ class AvalancheBridgeAssetHandler
         params: {
           request,
           amountStr,
-          asset: asset as EthereumConfigAsset | NativeAsset,
+          asset: asset as Asset,
           currentBlockchain
         }
       }
@@ -83,47 +78,60 @@ class AvalancheBridgeAssetHandler
     const isDeveloperMode = selectIsDeveloperMode(state)
     const activeAccount = selectActiveAccount(state)
     const allNetworks = selectNetworks(state)
-    const currency = selectSelectedCurrency(state)
     const bridgeAppConfig = selectBridgeAppConfig(state)
-    const {
-      currentBlockchain,
-      amountStr,
-      asset,
-      maxFeePerGas,
-      maxPriorityFeePerGas
-    } = result.data
-    const denomination = asset.denomination
+    const request = createInAppRequest(listenerApi.dispatch)
 
-    const amount = bnToBig(stringToBN(amountStr, denomination), denomination)
+    const { currentBlockchain, amountStr, asset, maxFeePerGas } = result.data
+
+    if (!activeAccount) {
+      return {
+        success: false,
+        error: ethErrors.rpc.internal('No active account')
+      }
+    }
+
+    if (!bridgeAppConfig) {
+      return {
+        success: false,
+        error: ethErrors.rpc.internal('Invalid bridge config')
+      }
+    }
+
+    if (currentBlockchain === Blockchain.UNKNOWN) {
+      return {
+        success: false,
+        error: ethErrors.rpc.internal('Invalid blockchain')
+      }
+    }
 
     try {
-      let txn
+      let txHash
+
       if (currentBlockchain === Blockchain.BITCOIN) {
-        txn = await BridgeService.transferBtcAsset({
-          amount,
-          currency: currency.toLowerCase() as VsCurrencyType,
+        txHash = await BridgeService.transferBTC({
+          amount: amountStr,
           config: bridgeAppConfig,
-          activeAccount,
-          isTestnet: isDeveloperMode,
-          maxFeePerGas
+          feeRate: Number(maxFeePerGas),
+          onStatusChange: noop,
+          onTxHashChange: noop,
+          request
         })
       } else {
-        txn = await BridgeService.transferAsset({
+        txHash = await BridgeService.transferEVM({
           currentBlockchain,
-          amount,
-          asset: asset as EthereumConfigAsset | NativeAsset,
+          amount: amountStr,
+          asset: asset as Asset,
           config: bridgeAppConfig,
           activeAccount,
           allNetworks,
           isTestnet: isDeveloperMode,
-          maxFeePerGas,
-          maxPriorityFeePerGas
+          onStatusChange: noop,
+          onTxHashChange: noop,
+          request
         })
       }
-      if (!txn) {
-        throw Error('transaction not found')
-      }
-      return { success: true, value: txn }
+
+      return { success: true, value: { hash: txHash } }
     } catch (e) {
       Logger.error('Unable to transfer asset', e)
 

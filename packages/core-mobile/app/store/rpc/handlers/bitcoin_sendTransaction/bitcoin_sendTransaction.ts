@@ -25,7 +25,7 @@ import {
   HandleResponse,
   RpcRequestHandler
 } from '../types'
-import { isDAppTransactionParams, parseRequestParams } from './utils'
+import { parseRequestParams } from './utils'
 
 export type BitcoinSendTransactionApproveData = {
   sendState: SendState
@@ -64,55 +64,47 @@ class BitcoinSendTransactionHandler
       }
     }
 
-    let verifiedState: SendState
+    const [address, amountSatoshi, feeRate] = parseResult.data
 
-    if (isDAppTransactionParams(parseResult.data)) {
-      const [address, amountSatoshi, feeRate] = parseResult.data
-
-      // If destination address is not valid, return error
-      if (!isBtcAddress(address ?? '', !isDeveloperMode)) {
-        return {
-          success: false,
-          error: ethErrors.rpc.invalidParams({
-            message: 'Not a valid address.'
-          })
-        }
+    // If destination address is not valid, return error
+    if (!isBtcAddress(address ?? '', !isDeveloperMode)) {
+      return {
+        success: false,
+        error: ethErrors.rpc.invalidParams({
+          message: 'Not a valid address.'
+        })
       }
-
-      if (!activeAccount) {
-        return {
-          success: false,
-          error: ethErrors.rpc.invalidRequest({
-            message: 'No active account found'
-          })
-        }
-      }
-
-      if (!activeAccount.addressBTC) {
-        return {
-          success: false,
-          error: ethErrors.rpc.invalidRequest({
-            message: 'The active account does not support BTC transactions'
-          })
-        }
-      }
-
-      const sendState: SendState = {
-        address,
-        amount: new BN(amountSatoshi),
-        defaultMaxFeePerGas: BigInt(feeRate)
-      }
-
-      verifiedState = await SendServiceBTC.validateStateAndCalculateFees({
-        sendState,
-        isMainnet: !isDeveloperMode,
-        fromAddress: activeAccount.addressBTC
-      })
-    } else {
-      // for in-app request, we already have everything we need so no need to call validateStateAndCalculateFees
-      // to get the full sendState data
-      verifiedState = parseResult.data
     }
+
+    if (!activeAccount) {
+      return {
+        success: false,
+        error: ethErrors.rpc.invalidRequest({
+          message: 'No active account found'
+        })
+      }
+    }
+
+    if (!activeAccount.addressBTC) {
+      return {
+        success: false,
+        error: ethErrors.rpc.invalidRequest({
+          message: 'The active account does not support BTC transactions'
+        })
+      }
+    }
+
+    const sendState: SendState = {
+      address,
+      amount: new BN(amountSatoshi),
+      defaultMaxFeePerGas: BigInt(feeRate)
+    }
+
+    const verifiedState = await SendServiceBTC.validateStateAndCalculateFees({
+      sendState,
+      isMainnet: !isDeveloperMode,
+      fromAddress: activeAccount.addressBTC
+    })
 
     // If we cant construct the transaction return error
     if (verifiedState.error?.error) {

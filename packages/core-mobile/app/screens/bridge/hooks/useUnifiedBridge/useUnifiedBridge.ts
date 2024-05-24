@@ -9,20 +9,18 @@ import Logger from 'utils/Logger'
 import { selectActiveAccount } from 'store/account/slice'
 import { setPendingTransfer } from 'store/unifiedBridge/slice'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { NetworkTokenUnit } from 'types'
 import { useNetworks } from 'hooks/networks/useNetworks'
+import { useInAppRequest } from 'hooks/useInAppRequest'
 import { isUnifiedBridgeAsset } from '../../utils/bridgeUtils'
 import { AssetBalance } from '../../utils/types'
 import { useUnifiedBridgeAssets } from '../useUnifiedBridgeAssets'
 import { useAssetBalancesEVM } from '../useAssetBalancesEVM'
 import { BridgeAdapter } from '../useBridge'
-import { Eip1559Fees } from '../../../../utils/Utils'
 import {
   getIsAssetSupported,
   getSourceBalance,
   getTargetChainId
 } from './utils'
-
 interface UnifiedBridge extends BridgeAdapter {
   isAssetSupported: boolean
 }
@@ -32,9 +30,9 @@ interface UnifiedBridge extends BridgeAdapter {
  */
 export const useUnifiedBridge = (
   amount: Big,
-  eip1559Fees: Eip1559Fees<NetworkTokenUnit>,
   selectedAsset?: AssetBalance
 ): UnifiedBridge => {
+  const { request } = useInAppRequest()
   const dispatch = useDispatch()
   const { activeNetwork, getNetwork } = useNetworks()
   const { currentBlockchain, targetBlockchain } = useBridgeSDK()
@@ -67,8 +65,6 @@ export const useUnifiedBridge = (
     () => getSourceBalance(selectedAsset, assetsWithBalances),
     [selectedAsset, assetsWithBalances]
   )
-
-  const [txHash, setTxHash] = useState<string>()
 
   const maximum = sourceBalance?.balance
 
@@ -134,7 +130,7 @@ export const useUnifiedBridge = (
       updateListener: updatedTransfer => {
         dispatch(setPendingTransfer(updatedTransfer))
       },
-      eip1559Fees
+      request
     })
 
     AnalyticsService.capture('UnifedBridgeTransferStarted', {
@@ -151,7 +147,6 @@ export const useUnifiedBridge = (
     })
 
     dispatch(setPendingTransfer(pendingTransfer))
-    setTxHash(pendingTransfer.sourceTxHash)
 
     return pendingTransfer.sourceTxHash
   }, [
@@ -160,8 +155,8 @@ export const useUnifiedBridge = (
     activeAccount,
     amount,
     activeNetwork,
-    eip1559Fees,
-    dispatch
+    dispatch,
+    request
   ])
 
   return {
@@ -172,7 +167,6 @@ export const useUnifiedBridge = (
     bridgeFee,
     maximum,
     minimum,
-    txHash,
     transfer,
     isAssetSupported
   }
