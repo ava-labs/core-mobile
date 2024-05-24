@@ -17,10 +17,6 @@ import Logger from 'utils/Logger'
 import { useRateLimiter } from 'screens/login/hooks/useRateLimiter'
 import { formatTimer } from 'utils/Utils'
 
-export type DotView = {
-  filled: boolean
-}
-
 const keymap: Map<PinKeys, string> = new Map([
   [PinKeys.Key1, '1'],
   [PinKeys.Key2, '2'],
@@ -35,7 +31,7 @@ const keymap: Map<PinKeys, string> = new Map([
 ])
 
 export function usePinOrBiometryLogin(): {
-  pinDots: DotView[]
+  pinLength: number
   onEnterPin: (pinKey: PinKeys) => void
   mnemonic: string | undefined
   promptForWalletLoadingIfExists: () => Observable<WalletLoadingResults>
@@ -44,7 +40,7 @@ export function usePinOrBiometryLogin(): {
   timeRemaining: string
 } {
   const [enteredPin, setEnteredPin] = useState('')
-  const [pinDots, setPinDots] = useState<DotView[]>([])
+  const [pinLength, setPinLength] = useState<number>(0)
   const [pinEntered, setPinEntered] = useState(false)
   const [mnemonic, setMnemonic] = useState<string | undefined>(undefined)
   const [disableKeypad, setDisableKeypad] = useState(false)
@@ -57,10 +53,6 @@ export function usePinOrBiometryLogin(): {
     reset: resetRateLimiter,
     remainingSeconds
   } = useRateLimiter()
-
-  useEffect(() => {
-    setPinDots(getPinDots(enteredPin))
-  }, [enteredPin])
 
   // get formatted time based on time ticker and rest interval
   useEffect(() => {
@@ -87,10 +79,11 @@ export function usePinOrBiometryLogin(): {
     [signOut]
   )
 
-  function resetConfirmPinProcess(): void {
+  const resetConfirmPinProcess = useCallback(() => {
     setEnteredPin('')
+    setPinLength(0)
     setMnemonic(undefined)
-  }
+  }, [])
 
   useEffect(() => {
     async function checkPinEntered(): Promise<void> {
@@ -146,30 +139,22 @@ export function usePinOrBiometryLogin(): {
     fireJiggleAnimation,
     increaseAttempt,
     pinEntered,
+    resetConfirmPinProcess,
     resetRateLimiter
   ])
 
-  const getPinDots = (pin: string): DotView[] => {
-    const dots: DotView[] = []
-    for (let i = 0; i < 6; i++) {
-      if (i < pin.length) {
-        dots.push({ filled: true })
-      } else {
-        dots.push({ filled: false })
-      }
-    }
-    return dots
-  }
-
   const onEnterPin = (pinKey: PinKeys): void => {
     if (pinKey === PinKeys.Backspace) {
-      setEnteredPin(enteredPin.slice(0, -1))
+      const pin = enteredPin.slice(0, -1)
+      setEnteredPin(pin)
+      setPinLength(pin.length)
     } else {
       if (enteredPin.length === 6) {
         return
       }
       const newPin = enteredPin + keymap.get(pinKey)
       setEnteredPin(newPin)
+      setPinLength(newPin.length)
       if (newPin.length === 6) {
         setPinEntered(true)
       }
@@ -217,7 +202,7 @@ export function usePinOrBiometryLogin(): {
     }
 
   return {
-    pinDots,
+    pinLength,
     onEnterPin,
     mnemonic,
     promptForWalletLoadingIfExists,
@@ -229,14 +214,6 @@ export function usePinOrBiometryLogin(): {
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface WalletLoadingResults {}
-
-export class MnemonicLoaded implements WalletLoadingResults {
-  mnemonic: string
-
-  constructor(mnemonic: string) {
-    this.mnemonic = mnemonic
-  }
-}
 
 export class PrivateKeyLoaded implements WalletLoadingResults {
   privateKey: string

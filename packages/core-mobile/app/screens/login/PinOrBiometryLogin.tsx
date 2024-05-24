@@ -8,7 +8,6 @@ import {
 } from 'react-native'
 import PinKey, { PinKeys } from 'screens/onboarding/PinKey'
 import { Space } from 'components/Space'
-import DotSVG from 'components/svg/DotSVG'
 import CoreXLogoAnimated from 'components/CoreXLogoAnimated'
 import { Subscription } from 'rxjs'
 import ReAnimated, {
@@ -26,6 +25,7 @@ import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation } from '@react-navigation/native'
 import { noop } from '@avalabs/utils-sdk'
 import { isIphoneSE } from 'utils/device/isIphoneSE'
+import { PinDots } from 'screens/login/PinDots'
 import { usePinOrBiometryLogin } from './PinOrBiometryLoginViewModel'
 
 const WINDOW_HEIGHT = Dimensions.get('window').height
@@ -71,7 +71,7 @@ export default function PinOrBiometryLogin({
 }: Props | Readonly<Props>): JSX.Element {
   const { theme } = useTheme()
   const {
-    pinDots,
+    pinLength,
     onEnterPin,
     mnemonic,
     promptForWalletLoadingIfExists,
@@ -131,21 +131,6 @@ export default function PinOrBiometryLogin({
       }, LOGO_ANIMATION_DURATION)
     }
   }, [logoTranslateY, mnemonic, onLoginSuccess, opacity])
-
-  const generatePinDots = (): JSX.Element[] => {
-    const dots: JSX.Element[] = []
-
-    pinDots.forEach((value, key) => {
-      dots.push(
-        <DotSVG
-          fillColor={value.filled ? theme.colors.$blueMain : undefined}
-          borderColor={theme.colors.$neutral400}
-          key={key}
-        />
-      )
-    })
-    return dots
-  }
 
   const keyboard = (): JSX.Element[] => {
     const keys: JSX.Element[] = []
@@ -211,7 +196,9 @@ export default function PinOrBiometryLogin({
                   ]
                 }
               ]}>
-              <View style={styles.dots}>{generatePinDots()}</View>
+              <View style={styles.dots}>
+                <PinDots pinLength={pinLength} />
+              </View>
             </Animated.View>
             {disableKeypad && (
               <View style={{ justifyContent: 'center', alignItems: 'center' }}>
