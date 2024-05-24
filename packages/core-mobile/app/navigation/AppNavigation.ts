@@ -226,8 +226,7 @@ enum BridgeScreens {
 
 enum PortfolioScreens {
   Portfolio = 'PortfolioScreens.Portfolio',
-  NetworkTokens = 'PortfolioScreens.NetworkTokens',
-  AddPChainPrompt = 'PortfolioScreens.AddPChainPrompt'
+  NetworkTokens = 'PortfolioScreens.NetworkTokens'
 }
 
 enum RecoveryMethodsScreens {
