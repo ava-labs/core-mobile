@@ -2,13 +2,14 @@ import React, { FC, useEffect, useLayoutEffect, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaText from 'components/AvaText'
-import { Blockchain, BridgeTransaction, usePrice } from '@avalabs/bridge-sdk'
+import { Blockchain, BridgeTransaction } from '@avalabs/bridge-sdk'
 import DotSVG from 'components/svg/DotSVG'
 import Avatar from 'components/Avatar'
 import AvaListItem from 'components/AvaListItem'
 import { Row } from 'components/Row'
 import { Space } from 'components/Space'
 import Separator from 'components/Separator'
+import { useCoinGeckoId } from 'hooks/useCoinGeckoId'
 import BridgeConfirmations from 'screens/bridge/components/BridgeConfirmations'
 import { VsCurrencyType } from '@avalabs/coingecko-sdk'
 import { useNavigation } from '@react-navigation/native'
@@ -28,6 +29,7 @@ import { humanize } from 'utils/string/humanize'
 import { useBridgeAmounts } from 'screens/bridge/hooks/useBridgeAmounts'
 import { useBridgeNetworkPrice } from 'screens/bridge/hooks/useBridgeNetworkPrice'
 import { useNetworks } from 'hooks/networks/useNetworks'
+import { useSimplePrice } from 'hooks/useSimplePrice'
 
 type Props = {
   txHash: string
@@ -50,8 +52,10 @@ const BridgeTransactionStatus: FC<Props> = ({ txHash, showHideButton }) => {
   const { selectedCurrency, currencyFormatter } = appHook
   const { navigate, getParent, dispatch, setOptions } = useNavigation()
 
-  const assetPrice = usePrice(
-    bridgeTransaction?.symbol,
+  const coingeckoId = useCoinGeckoId(bridgeTransaction?.symbol)
+
+  const assetPrice = useSimplePrice(
+    coingeckoId,
     selectedCurrency.toLowerCase() as VsCurrencyType
   )
 

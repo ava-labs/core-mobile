@@ -53,10 +53,10 @@ import CircleLogo from 'assets/icons/circle_logo.svg'
 import { Tooltip } from 'components/Tooltip'
 import { DOCS_BRIDGE_FAQS } from 'resources/Constants'
 import { selectSelectedCurrency } from 'store/settings/currency/slice'
-import NetworkFeeSelector, { FeePreset } from 'components/NetworkFeeSelector'
-import { NetworkTokenUnit } from 'types'
-import { Eip1559Fees } from 'utils/Utils'
 import { useNetworks } from 'hooks/networks/useNetworks'
+import { selectNativeTokenBalanceForNetworkAndAccount } from 'store/balance'
+import { RootState } from 'store'
+import { selectActiveAccount } from 'store/account/slice'
 import { AssetBalance, BridgeProvider } from './utils/types'
 
 const blockchainTitleMaxWidth = Dimensions.get('window').width * 0.5
@@ -69,6 +69,8 @@ const sourceBlockchains = [
 ]
 
 const TRANSFER_ERROR = 'There was a problem with the transfer.'
+
+const NO_AMOUNT = '-'
 
 const formatBalance = (balance: Big | undefined): string | undefined => {
   return balance && formatTokenAmount(balance, 6)
@@ -90,7 +92,7 @@ const Bridge: FC = () => {
     amount,
     setAmount,
     assetsWithBalances,
-    hasEnoughForNetworkFee,
+    networkFee,
     loading,
     price,
     maximum,
@@ -100,10 +102,6 @@ const Bridge: FC = () => {
     transfer,
     bridgeFee,
     provider,
-    eip1559Fees,
-    setEip1559Fees,
-    selectedFeePreset,
-    setSelectedFeePreset,
     denomination,
     amountBN
   } = useBridge(selectedAsset)
@@ -115,11 +113,18 @@ const Bridge: FC = () => {
     targetBlockchain
   } = useBridgeSDK()
   const { activeNetwork, networks } = useNetworks()
+  const activeAccount = useSelector(selectActiveAccount)
   const { getTokenSymbolOnNetwork } = useGetTokenSymbolOnNetwork()
   const [bridgeError, setBridgeError] = useState('')
   const [isPending, setIsPending] = useState(false)
   const tokenInfoData = useTokenInfoContext()
-
+  const nativeTokenBalance = useSelector((state: RootState) =>
+    selectNativeTokenBalanceForNetworkAndAccount(
+      state,
+      activeNetwork.chainId,
+      activeAccount?.index
+    )
+  )
   const selectedAssetSymbol = useMemo(
     () =>
       isUnifiedBridgeAsset(selectedAsset?.asset)
@@ -134,37 +139,45 @@ const Bridge: FC = () => {
   const { bridgeBtcBlocked, bridgeEthBlocked } = usePosthogContext()
   const { currencyFormatter } = useApplicationContext().appHook
   const isAmountTooLow =
-    amount && !amount.eq(BIG_ZERO) && amount.lt(minimum || BIG_ZERO)
+    amount && !amount.eq(BIG_ZERO) && minimum && amount.lt(minimum)
+
+  const isAmountTooLarge =
+    amount && !amount.eq(BIG_ZERO) && maximum && amount.gt(maximum)
+
+  const isNativeBalanceNotEnoughForNetworkFee = Boolean(
+    amount &&
+      !amount.eq(BIG_ZERO) &&
+      networkFee &&
+      bnToBig(nativeTokenBalance, activeNetwork.networkToken.decimals).lt(
+        networkFee
+      )
+  )
 
   const hasValidAmount = !isAmountTooLow && amount.gt(BIG_ZERO)
 
   const hasInvalidReceiveAmount =
-    provider === BridgeProvider.UNIFIED &&
-    hasValidAmount &&
-    !!receiveAmount &&
-    receiveAmount.eq(BIG_ZERO)
+    hasValidAmount && !!receiveAmount && receiveAmount.eq(BIG_ZERO)
 
   const formattedAmountCurrency = hasValidAmount
-    ? `${currencyFormatter(price.mul(amount).toNumber())} ${selectedCurrency}`
-    : '-'
+    ? currencyFormatter(price.mul(amount).toNumber())
+    : NO_AMOUNT
+
   const formattedReceiveAmount =
     hasValidAmount && receiveAmount
-      ? `${bigToLocaleString(receiveAmount)} ${selectedAssetSymbol}`
-      : '-'
+      ? bigToLocaleString(receiveAmount)
+      : NO_AMOUNT
   const formattedReceiveAmountCurrency =
     hasValidAmount && price && receiveAmount
-      ? `${currencyFormatter(
-          price.mul(receiveAmount).toNumber()
-        )} ${selectedCurrency}`
-      : '-'
+      ? currencyFormatter(price.mul(receiveAmount).toNumber())
+      : NO_AMOUNT
 
   const transferDisabled =
-    bridgeError.length > 0 ||
     loading ||
     isPending ||
     isAmountTooLow ||
+    isAmountTooLarge ||
+    isNativeBalanceNotEnoughForNetworkFee ||
     BIG_ZERO.eq(amount) ||
-    !hasEnoughForNetworkFee ||
     hasInvalidReceiveAmount
 
   // Derive bridge Blockchain from active network
@@ -483,11 +496,10 @@ const Bridge: FC = () => {
       <Text
         variant="caption"
         sx={{ color: '$neutral300', alignSelf: 'flex-end', paddingEnd: 16 }}>
-        Balance:
+        {`Balance: `}
         {shouldRenderBalance
-          ? ` ${formatBalance(sourceBalance?.balance)}`
+          ? `${formatBalance(sourceBalance?.balance)}  ${selectedAssetSymbol}`
           : selectedAsset && <ActivityIndicator size={'small'} />}
-        {' ' + selectedAssetSymbol}
       </Text>
     )
   }
@@ -535,8 +547,10 @@ const Bridge: FC = () => {
           placeholder={'0.0'}
           onChange={handleAmountChanged}
           textStyle={{ borderWidth: 0 }}
-          style={{
-            minWidth: 160
+          inputTextContainerStyle={{
+            minWidth: 160,
+            maxWidth: 200,
+            paddingRight: 8
           }}
         />
         {loading && (
@@ -561,54 +575,69 @@ const Bridge: FC = () => {
     </View>
   )
 
-  const renderError = (): JSX.Element | false => {
-    return (
-      (!!bridgeError ||
-        isAmountTooLow ||
-        !hasEnoughForNetworkFee ||
-        hasInvalidReceiveAmount) && (
-        <>
-          {!hasEnoughForNetworkFee && (
-            <Text
-              variant="caption"
-              sx={{
-                color: '$dangerDark'
-              }}>{`Insufficient balance to cover gas costs.\nPlease add ${
-              currentBlockchain === Blockchain.AVALANCHE
-                ? TokenSymbol.AVAX
-                : TokenSymbol.ETH
-            }.`}</Text>
-          )}
-          {isAmountTooLow && (
-            <Text
-              variant="caption"
-              sx={{
-                color: '$dangerDark'
-              }}>
-              {`Amount too low -- minimum is ${minimum?.toFixed(9)}`}
-            </Text>
-          )}
-          {!!bridgeError && (
-            <Text
-              variant="caption"
-              sx={{
-                color: '$dangerDark'
-              }}>
-              {bridgeError}
-            </Text>
-          )}
-          {hasInvalidReceiveAmount && (
-            <Text
-              variant="caption"
-              sx={{
-                color: '$dangerDark'
-              }}>
-              {`Receive amount can't be 0`}
-            </Text>
-          )}
-        </>
+  const renderError = (): JSX.Element | null => {
+    if (amount.eq(BIG_ZERO)) return null
+
+    if (isAmountTooLow)
+      return (
+        <Text
+          variant="caption"
+          sx={{
+            color: '$dangerDark'
+          }}>
+          {`Amount too low -- minimum is ${minimum?.toFixed(9)}`}
+        </Text>
       )
-    )
+
+    if (isAmountTooLarge)
+      return (
+        <Text
+          variant="caption"
+          sx={{
+            color: '$dangerDark'
+          }}>
+          Insufficient balance
+        </Text>
+      )
+
+    if (bridgeError)
+      return (
+        <Text
+          variant="caption"
+          sx={{
+            color: '$dangerDark'
+          }}>
+          {bridgeError}
+        </Text>
+      )
+
+    if (hasInvalidReceiveAmount)
+      return (
+        <Text
+          variant="caption"
+          sx={{
+            color: '$dangerDark'
+          }}>
+          {`Receive amount can't be 0`}
+        </Text>
+      )
+
+    if (isNativeBalanceNotEnoughForNetworkFee)
+      return (
+        <Text
+          variant="caption"
+          sx={{
+            color: '$dangerDark'
+          }}>{`Insufficient balance to cover gas costs.\nPlease add ${
+          currentBlockchain === Blockchain.AVALANCHE
+            ? TokenSymbol.AVAX
+            : currentBlockchain === Blockchain.ETHEREUM
+            ? TokenSymbol.ETH
+            : TokenSymbol.BTC
+        }.`}</Text>
+      )
+
+    return null
   }
 
   const renderSelectSection = (): JSX.Element => {
@@ -621,24 +650,29 @@ const Bridge: FC = () => {
         </Row>
 
         <Row style={styles.errorAndPriceRow}>
-          <View style={styles.errorContainer}>
-            {renderError()}
-
-            {wrapStatus === WrapStatus.WAITING_FOR_DEPOSIT && (
-              <Text
-                variant="caption"
-                sx={{
-                  color: '$dangerDark'
-                }}>
-                Waiting for deposit confirmation
-              </Text>
-            )}
-          </View>
+          <View style={styles.errorContainer}>{renderError()}</View>
 
           {/* Amount in currency */}
-          <Text variant="caption" sx={{ color: '$neutral300' }}>
-            {formattedAmountCurrency}
-          </Text>
+          <View
+            style={{
+              alignItems: 'flex-end',
+              width: '50%',
+              marginLeft: 16
+            }}>
+            <Row>
+              <Text
+                variant="caption"
+                sx={{ color: '$neutral300', marginRight: 4 }}
+                numberOfLines={1}>
+                {formattedAmountCurrency}
+              </Text>
+              {formattedAmountCurrency !== NO_AMOUNT && (
+                <Text variant="caption" sx={{ color: '$neutral300' }}>
+                  {selectedCurrency}
+                </Text>
+              )}
+            </Row>
+          </View>
         </Row>
       </View>
     )
@@ -670,13 +704,37 @@ const Bridge: FC = () => {
               Estimated (minus transfer fees)
             </Text>
           </View>
-          <View style={{ alignItems: 'flex-end' }}>
+          <View
+            style={{
+              alignItems: 'flex-end',
+              width: '40%'
+            }}>
             {/* receive amount */}
-            <Text variant="body1">{formattedReceiveAmount}</Text>
+            <Row>
+              <Text variant="body1" numberOfLines={1} sx={{ marginRight: 4 }}>
+                {formattedReceiveAmount}
+              </Text>
+              {formattedReceiveAmount !== NO_AMOUNT && (
+                <Text variant="body1">{selectedAssetSymbol}</Text>
+              )}
+            </Row>
             {/* estimate amount */}
-            <Text variant="caption" sx={{ marginTop: 4, color: '$neutral400' }}>
-              {formattedReceiveAmountCurrency}
-            </Text>
+            <Row>
+              <Text
+                variant="caption"
+                numberOfLines={1}
+                sx={{ marginTop: 4, color: '$neutral400', marginRight: 4 }}>
+                {formattedReceiveAmountCurrency}
+              </Text>
+              {formattedReceiveAmountCurrency !== NO_AMOUNT && (
+                <Text
+                  variant="caption"
+                  numberOfLines={1}
+                  sx={{ marginTop: 4, color: '$neutral400' }}>
+                  {selectedCurrency}
+                </Text>
+              )}
+            </Row>
           </View>
         </Row>
       </View>
@@ -709,19 +767,6 @@ const Bridge: FC = () => {
       Logger.error(DOCS_BRIDGE_FAQS, e)
     })
   }
-
-  const handleFeesChange = useCallback(
-    (fees: Eip1559Fees<NetworkTokenUnit>, feePreset: FeePreset) => {
-      if (feePreset !== selectedFeePreset) {
-        AnalyticsService.capture('BridgeGasFeeOptionChanged', {
-          modifier: feePreset
-        })
-      }
-      setEip1559Fees(fees)
-      setSelectedFeePreset(feePreset)
-    },
-    [selectedFeePreset, setEip1559Fees, setSelectedFeePreset]
-  )
 
   const renderCCTPPopoverInfoText = (): JSX.Element => (
     <View
@@ -791,17 +836,17 @@ const Bridge: FC = () => {
           {renderToggleBtn()}
           {renderToSection()}
         </View>
-        <NetworkFeeSelector
-          gasLimit={eip1559Fees.gasLimit}
-          onFeesChange={handleFeesChange}
-          isGasLimitEditable={false}
-          noGasLimitError={
-            provider === BridgeProvider.UNIFIED
-              ? 'Please select a token and enter a transfer amount'
-              : 'Please select a token'
-          }
-        />
       </ScrollViewList>
+      {wrapStatus === WrapStatus.WAITING_FOR_DEPOSIT && (
+        <Text
+          variant="body2"
+          sx={{
+            alignSelf: 'center',
+            color: '$neutral300'
+          }}>
+          Waiting for deposit confirmation
+        </Text>
+      )}
       {renderTransferBtn()}
       {provider === BridgeProvider.UNIFIED && renderCircleBadge()}
     </SafeAreaProvider>

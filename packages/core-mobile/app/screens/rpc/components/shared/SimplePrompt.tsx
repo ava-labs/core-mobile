@@ -1,12 +1,12 @@
 import AvaText from 'components/AvaText'
 import React, { FC } from 'react'
-import { ActivityIndicator, StyleSheet, View } from 'react-native'
+import { ActivityIndicator, StyleSheet } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import OvalTagBg from 'components/OvalTagBg'
 import { Space } from 'components/Space'
-import AvaButton from 'components/AvaButton'
 import { NativeViewGestureHandler } from 'react-native-gesture-handler'
 import FlexSpacer from 'components/FlexSpacer'
+import { Button, View } from '@avalabs/k2-mobile'
 import RpcRequestBottomSheet from './RpcRequestBottomSheet'
 
 interface Props {
@@ -53,14 +53,22 @@ const SimplePrompt: FC<Props> = ({
           </View>
           {renderContent?.()}
           <FlexSpacer />
-          <View style={styles.actionContainer}>
-            <AvaButton.PrimaryMedium disabled={isApproving} onPress={onApprove}>
+          <View
+            sx={{
+              backgroundColor: '$neutral900',
+              paddingVertical: 16
+            }}>
+            <Button
+              type="primary"
+              size="xlarge"
+              onPress={onApprove}
+              disabled={isApproving}>
               {isApproving && <ActivityIndicator />} Approve
-            </AvaButton.PrimaryMedium>
-            <Space y={21} />
-            <AvaButton.SecondaryMedium onPress={onReject}>
+            </Button>
+            <Space y={16} />
+            <Button type="secondary" size="xlarge" onPress={onReject}>
               Reject
-            </AvaButton.SecondaryMedium>
+            </Button>
           </View>
         </View>
       </NativeViewGestureHandler>
@@ -80,11 +88,6 @@ const styles = StyleSheet.create({
   },
   subTileText: {
     textAlign: 'center'
-  },
-  actionContainer: {
-    flex: 0,
-    paddingVertical: 16,
-    paddingHorizontal: 24
   }
 })
 
