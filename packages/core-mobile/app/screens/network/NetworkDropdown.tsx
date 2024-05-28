@@ -16,7 +16,6 @@ import { arrayHash } from 'utils/Utils'
 import SettingsCogSVG from 'components/svg/SettingsCogSVG'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { useNetworks } from 'hooks/networks/useNetworks'
-import { isAvalancheChainId } from 'services/network/utils/isAvalancheNetwork'
 import { NetworkLogo } from './NetworkLogo'
 
 const ManageNetworks = 'Manage networks'
@@ -31,36 +30,24 @@ export default function NetworkDropdown(): JSX.Element {
   const { theme } = useApplicationContext()
   const navigation = useNavigation<NetworkDropdownNavigationProp>()
 
-  const data = useMemo(() => {
-    let inactiveFavoritedNetworks = favoriteNetworks
-      .filter(item => item.chainId !== activeNetwork.chainId)
-      .map(item => ({
-        name: item.chainName,
-        chainId: item.chainId,
-        logoUri: item.logoUri
-      }))
-
-    // sort all C/X/P networks to the top
-    inactiveFavoritedNetworks = inactiveFavoritedNetworks.sort((a, b) => {
-      if (isAvalancheChainId(a.chainId) && !isAvalancheChainId(b.chainId)) {
-        return -1
-      }
-      if (!isAvalancheChainId(a.chainId) && isAvalancheChainId(b.chainId)) {
-        return 1
-      }
-      return 0
-    })
-
-    return [
+  const data = useMemo(
+    () => [
       {
         name: activeNetwork.chainName,
         chainId: activeNetwork.chainId,
         logoUri: activeNetwork.logoUri
       },
-      ...inactiveFavoritedNetworks,
+      ...favoriteNetworks
+        .filter(item => item.chainId !== activeNetwork.chainId)
+        .map(item => ({
+          name: item.chainName,
+          chainId: item.chainId,
+          logoUri: item.logoUri
+        })),
       { name: ManageNetworks, chainId: 0, logoUri: '' }
-    ]
-  }, [activeNetwork, favoriteNetworks])
+    ],
+    [activeNetwork, favoriteNetworks]
+  )
 
   const dropdownUniqueId = useMemo(() => {
     const chainIds = data.map(item => item.chainId.toString())
