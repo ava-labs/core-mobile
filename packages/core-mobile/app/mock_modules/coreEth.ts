@@ -1,7 +1,11 @@
-import { NetworkVMType } from '@avalabs/chains-sdk'
-import { Module } from './types'
+import { Module, parseManifest } from './types'
 
 export const coreEth: Module = {
+  getManifest: () => {
+    const manifest = require('./coreEth.manifest.json')
+    const result = parseManifest(manifest)
+    return result.success ? result.data : undefined
+  },
   getBalances: () => {
     return Promise.resolve('CoreEth balances')
   },
@@ -13,8 +17,5 @@ export const coreEth: Module = {
   },
   getAddress: () => {
     return Promise.resolve('CoreEth address')
-  },
-  getVMType: () => {
-    return NetworkVMType.CoreEth
   }
 }

@@ -1,7 +1,11 @@
-import { NetworkVMType } from '@avalabs/chains-sdk'
-import { Module } from './types'
+import { Module, parseManifest } from './types'
 
 export const avm: Module = {
+  getManifest: () => {
+    const manifest = require('./avm.manifest.json')
+    const result = parseManifest(manifest)
+    return result.success ? result.data : undefined
+  },
   getBalances: () => {
     return Promise.resolve('Avm balances')
   },
@@ -13,8 +17,5 @@ export const avm: Module = {
   },
   getAddress: () => {
     return Promise.resolve('Avm address')
-  },
-  getVMType: () => {
-    return NetworkVMType.AVM
   }
 }

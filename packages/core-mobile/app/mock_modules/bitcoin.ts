@@ -1,7 +1,11 @@
-import { NetworkVMType } from '@avalabs/chains-sdk'
-import { Module } from './types'
+import { Module, parseManifest } from './types'
 
 export const bitcoin: Module = {
+  getManifest: () => {
+    const manifest = require('./bitcoin.manifest.json')
+    const result = parseManifest(manifest)
+    return result.success ? result.data : undefined
+  },
   getBalances: () => {
     return Promise.resolve('Bitcoin balances')
   },
@@ -13,8 +17,5 @@ export const bitcoin: Module = {
   },
   getAddress: () => {
     return Promise.resolve('Bitcoin address')
-  },
-  getVMType: () => {
-    return NetworkVMType.BITCOIN
   }
 }

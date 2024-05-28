@@ -1,15 +1,14 @@
-import { NetworkVMType } from '@avalabs/chains-sdk'
 import { object, string, boolean, z } from 'zod'
 
 export type Module = {
+  getManifest: () => Manifest | undefined
   getBalances: () => Promise<string>
   getTransactionHistory: () => Promise<string>
   getNetworkFee: () => Promise<string>
   getAddress: () => Promise<string>
-  getVMType: () => NetworkVMType
 }
 
-export const SourceSchema = object({
+const sourceSchema = object({
   checksum: string(),
   location: object({
     npm: object({
@@ -19,15 +18,14 @@ export const SourceSchema = object({
     })
   })
 })
-export type Source = z.infer<typeof SourceSchema>
 
-export const ManifestSchema = object({
+const manifestSchema = object({
   name: string(),
   version: string(),
   description: string(),
   sources: object({
-    module: SourceSchema,
-    provider: SourceSchema
+    module: sourceSchema,
+    provider: sourceSchema.optional()
   }),
   network: object({
     chainIds: string().array(),
@@ -43,5 +41,10 @@ export const ManifestSchema = object({
   manifestVersion: string()
 })
 
-export type Manifest = z.infer<typeof ManifestSchema>
-export type Manifests = Record<NetworkVMType, Manifest>
+type Manifest = z.infer<typeof manifestSchema>
+
+export const parseManifest = (
+  params: unknown
+): z.SafeParseReturnType<unknown, Manifest> => {
+  return manifestSchema.safeParse(params)
+}
