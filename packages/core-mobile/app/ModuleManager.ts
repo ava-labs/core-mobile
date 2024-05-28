@@ -177,4 +177,4 @@ class ModuleManager {
   }
 }
 
-export default ModuleManager
+export default new ModuleManager()
