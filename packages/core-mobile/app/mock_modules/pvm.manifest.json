@@ -1,0 +1,39 @@
+{
+  "name": "PVM",
+  "description": "",
+  "version": "0.0.1",
+  "sources": {
+    "module": {
+      "checksum": "",
+      "location": {
+        "npm": {
+          "filePath": "dist/bundle.js",
+          "packageName": "@avalabs/pvm-module",
+          "registry": "https://registry.npmjs.org"
+        }
+      }
+    },
+    "provider": {
+      "checksum": "",
+      "location": {
+        "npm": {
+          "filePath": "dist/provider.js",
+          "packageName": "@avalabs/pvm-module",
+          "registry": "https://registry.npmjs.org"
+        }
+      }
+    }
+  },
+  "network": {
+    "chainIds": ["eip155:4503599627370411, eip155:4503599627370410"],
+    "namespaces": ["eip155"]
+  },
+  "cointype": "60",
+  "permissions": {
+    "rpc": {
+      "dapps": true,
+      "methods": ["avalanche_sendTransaction", "avalanche_*"]
+    }
+  },
+  "manifestVersion": "0.0"
+}
