@@ -14,6 +14,7 @@ import { type Network } from '@avalabs/chains-sdk'
 import { BN } from 'bn.js'
 import { LocalTokenWithBalance } from 'store/balance'
 import { getLocalTokenId } from 'store/balance/utils'
+import { isAvalancheChainId } from 'services/network/utils/isAvalancheNetwork'
 import { useGetNetworks } from './useGetNetworks'
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
@@ -87,13 +88,24 @@ export const useNetworks = () => {
   const favoriteNetworks = useMemo(() => {
     if (networks === undefined) return []
 
-    return favorites.reduce((acc, chainId) => {
+    const favoritedNetworks = favorites.reduce((acc, chainId) => {
       const network = networks[chainId]
       if (network && network.isTestnet === isDeveloperMode) {
         acc.push(network)
       }
       return acc
     }, [] as Network[])
+
+    // sort all C/X/P networks to the top
+    return favoritedNetworks.sort((a, b) => {
+      if (isAvalancheChainId(a.chainId) && !isAvalancheChainId(b.chainId)) {
+        return -1
+      }
+      if (!isAvalancheChainId(a.chainId) && isAvalancheChainId(b.chainId)) {
+        return 1
+      }
+      return 0
+    })
   }, [networks, favorites, isDeveloperMode])
 
   const inactiveNetworks = useMemo(() => {

@@ -31,7 +31,7 @@ function PortfolioHeader(): JSX.Element {
   const [contentHeight, setContentHeight] = useState(0)
 
   const renderContent = (): JSX.Element => {
-    if (isBalanceLoading) return <PortfolioHeaderLoader />
+    if (isBalanceLoading || !activeAccount) return <PortfolioHeaderLoader />
 
     if (isRefetchingBalance)
       return (
