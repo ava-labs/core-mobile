@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo } from 'react'
 import { usePosthogContext } from 'contexts/PosthogContext'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectSelectedCurrency } from 'store/settings/currency'
-import { immediateAppLock, onLogOut } from 'store/app'
+import { onLogOut } from 'store/app'
 import { resetLoginAttempt } from 'store/security'
 import { formatCurrency } from 'utils/FormatCurrency'
 import { selectCoreAnalyticsConsent } from 'store/settings/securityPrivacy'
@@ -56,7 +56,6 @@ export function useApp(): AppHook {
     })
     confirmExitPromise
       .then(_ => {
-        dispatch(immediateAppLock)
         setTimeout(() => {
           BackHandler.exitApp()
         }, 0)
