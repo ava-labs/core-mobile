@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react'
 import { Animated, StyleSheet } from 'react-native'
-import { useTheme, View, Text } from '@avalabs/k2-mobile'
+import { View, Text } from '@avalabs/k2-mobile'
 import { Space } from 'components/Space'
-import DotSVG from 'components/svg/DotSVG'
+import { PinDots } from 'screens/login/PinDots'
 import { useCreatePin } from './CreatePinViewModel'
 import PinKey, { PinKeys } from './PinKey'
 
@@ -39,10 +39,9 @@ export default function CreatePIN({
   isResettingPin,
   onResetPinFailed
 }: Props): JSX.Element {
-  const { theme } = useTheme()
   const {
     title,
-    pinDots,
+    pinLength,
     onEnterChosenPin,
     onEnterConfirmedPin,
     chosenPinEntered,
@@ -56,21 +55,6 @@ export default function CreatePIN({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [validPin, title])
-
-  const generatePinDots = (): JSX.Element[] => {
-    const dots: JSX.Element[] = []
-
-    pinDots.forEach((value, key) => {
-      dots.push(
-        <DotSVG
-          fillColor={value.filled ? theme.colors.$blueMain : undefined}
-          borderColor={theme.colors.$neutral400}
-          key={key}
-        />
-      )
-    })
-    return dots
-  }
 
   const keyboard = (isChosenPinEntered: boolean): JSX.Element[] => {
     const keys: JSX.Element[] = []
@@ -110,7 +94,9 @@ export default function CreatePIN({
             ]
           }
         ]}>
-        <View style={styles.dots}>{generatePinDots()}</View>
+        <View style={styles.dots}>
+          <PinDots pinLength={pinLength} />
+        </View>
       </Animated.View>
       <View style={styles.keyboard}>{keyboard(chosenPinEntered)}</View>
     </View>

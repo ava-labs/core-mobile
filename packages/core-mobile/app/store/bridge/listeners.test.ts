@@ -19,13 +19,6 @@ const getBridgeConfig = BridgeService.getConfig as jest.Mock<
   ReturnType<typeof BridgeService.getConfig>
 >
 
-jest.mock('store/network', () => {
-  const actual = jest.requireActual('store/network')
-  return {
-    selectActiveNetwork: jest.fn().mockReturnValue(actual.defaultNetwork)
-  }
-})
-
 jest.mock('services/bridge/BridgeService')
 
 jest.useFakeTimers()

@@ -77,7 +77,7 @@ export default function PinKey({
   // simulate a circular touchable highlight effect on iOS
   if (Platform.OS === 'ios') {
     return (
-      <Pressable onPress={() => onPress(keyboardKey)} disabled={disabled}>
+      <Pressable onPressIn={() => onPress(keyboardKey)} disabled={disabled}>
         {({ pressed }) => (
           <View
             style={{
@@ -105,7 +105,7 @@ export default function PinKey({
     <TouchableNativeFeedback
       useForeground={true}
       disabled={disabled}
-      onPress={() => onPress(keyboardKey)}
+      onPressIn={() => onPress(keyboardKey)}
       background={TouchableNativeFeedback.Ripple(
         theme.colors.$neutral800,
         true
@@ -119,7 +119,7 @@ export default function PinKey({
 
 const styles = StyleSheet.create({
   button: {
-    height: 44,
+    height: 72,
     justifyContent: 'center',
     alignItems: 'center',
     width: '100%'

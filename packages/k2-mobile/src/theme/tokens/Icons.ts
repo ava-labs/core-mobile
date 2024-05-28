@@ -17,8 +17,12 @@ import IconArrowBack from '../../assets/icons/arrow_back.svg'
 import IconArrowForward from '../../assets/icons/arrow_forward.svg'
 import IconRemoveModerator from '../../assets/icons/remove_moderator.svg'
 import IconGPPMaybe from '../../assets/icons/gpp_maybe.svg'
+import IconErrorOutline from '../../assets/icons/error_outline.svg'
 
 export const Icons = {
+  Alert: {
+    IconErrorOutline: IconErrorOutline
+  },
   Communication: {
     IconKey: IconKey,
     IconQRCode: IconQRCode

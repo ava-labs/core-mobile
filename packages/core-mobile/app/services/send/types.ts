@@ -5,7 +5,7 @@ import { Transaction } from '@sentry/types'
 import { Network } from '@avalabs/chains-sdk'
 import { Account } from 'store/account/types'
 import { AvalancheTxParams } from 'store/rpc/handlers/avalanche_sendTransaction/avalanche_sendTransaction'
-import { Request } from 'hooks/useInAppRequest'
+import { Request } from 'store/rpc/utils/createInAppRequest'
 
 export interface SendError {
   error: boolean

@@ -10,7 +10,7 @@ import RpcRequestBottomSheet from 'screens/rpc/components/shared/RpcRequestBotto
 import FeatureBlocked from 'screens/posthog/FeatureBlocked'
 import { useSelector } from 'react-redux'
 import { selectIsSeedlessSigningBlocked } from 'store/posthog'
-import { selectActiveAccount } from 'store/account'
+import { selectAccounts, selectActiveAccount } from 'store/account/slice'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import DotSVG from 'components/svg/DotSVG'
 import { formatUriImageToPng } from 'utils/Contentful'
@@ -52,6 +52,11 @@ const BitcoinSendTransaction = (): JSX.Element => {
   const btcNetwork = getBitcoinNetwork(isDeveloperMode)
 
   const { sendState } = data
+
+  const allAccounts = useSelector(selectAccounts)
+  const toAccountName =
+    Object.values(allAccounts).find(a => a.addressBTC === sendState.address)
+      ?.name ?? 'Address'
 
   const [maxFeePerGas, setMaxFeePerGas] = useState<
     TokenBaseUnit<NetworkTokenUnit>
@@ -186,7 +191,7 @@ const BitcoinSendTransaction = (): JSX.Element => {
             />
             <SendRow
               label={'To'}
-              title={'Address'}
+              title={toAccountName}
               address={sendState.address ?? ''}
             />
             <Space y={8} />

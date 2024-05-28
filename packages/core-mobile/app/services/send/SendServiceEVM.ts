@@ -117,6 +117,12 @@ export class SendServiceEVM implements SendServiceHelper {
               SendErrorMessage.INSUFFICIENT_BALANCE_FOR_FEE
             )
 
+          if (gasLimit === 0)
+            return SendServiceEVM.getErrorState(
+              newState,
+              SendErrorMessage.INVALID_GAS_LIMIT
+            )
+
           return newState
         })
     )
@@ -240,6 +246,7 @@ export class SendServiceEVM implements SendServiceHelper {
       sendState.address || '',
       sendState.token?.tokenId || ''
     )
+
     return {
       from: this.fromAddress,
       to: populatedTransaction.to,
