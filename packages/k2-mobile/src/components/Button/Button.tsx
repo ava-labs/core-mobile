@@ -155,6 +155,7 @@ export const Button: FC<ButtonProps & PropsWithChildren> = ({
             <Text
               numberOfLines={1}
               variant={textVariant}
+              adjustsFontSizeToFit={true}
               style={{
                 color: color,
                 flexShrink: 1
