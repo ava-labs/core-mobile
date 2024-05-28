@@ -3,7 +3,6 @@ import { differenceInSeconds } from 'date-fns'
 import { AppState, AppStateStatus, Platform } from 'react-native'
 import { AppListenerEffectAPI } from 'store'
 import {
-  immediateAppLock,
   onRehydrationComplete,
   selectWalletState,
   setAppState,
@@ -121,11 +120,7 @@ const lockApp = async (
 
   // when app goes to background, lock the app after [TIME_TO_LOCK_IN_SECONDS] seconds
   const isTimeManipulated = secondsPassed < 0
-  if (
-    isTimeManipulated ||
-    secondsPassed >= TIME_TO_LOCK_IN_SECONDS ||
-    action.type === immediateAppLock.type
-  ) {
+  if (isTimeManipulated || secondsPassed >= TIME_TO_LOCK_IN_SECONDS) {
     dispatch(setIsLocked(true))
     dispatch(onAppLocked())
     if (walletState === WalletState.ACTIVE) {
@@ -176,7 +171,7 @@ export const addAppListeners = (startListening: AppStartListening): void => {
   })
 
   startListening({
-    matcher: isAnyOf(onBackground, immediateAppLock),
+    actionCreator: onBackground,
     effect: lockApp
   })
 
