@@ -4,10 +4,11 @@ import { coreEth } from 'mock_modules/coreEth'
 import { evm } from 'mock_modules/evm'
 import { pvm } from 'mock_modules/pvm'
 import { Module } from 'mock_modules/types'
-import { RpcMethod } from 'store/rpc'
 import Logger from 'utils/Logger'
 
-class ModuleManager {
+const modules: Module[] = [evm, pvm, avm, bitcoin, coreEth]
+
+export class ModuleManager {
   loadModule = async (
     chainId: string,
     method: string
@@ -18,7 +19,11 @@ class ModuleManager {
     }
 
     if (!this.isMethodPermitted(module, method)) {
-      throw new Error(`Method ${method} is not supported for module ${module}`)
+      throw new Error(
+        `Method ${method} is not supported in ${
+          module.getManifest()?.name
+        } module`
+      )
     }
 
     return module
@@ -30,7 +35,6 @@ class ModuleManager {
       Logger.error('No namespace found for chainId: ', chainId)
       return undefined
     }
-
     return (
       (await this.getModuleByChainId(chainId)) ??
       (await this.getModuleByNamespace(namespace))
@@ -40,50 +44,31 @@ class ModuleManager {
   private getModuleByChainId = async (
     chainId: string
   ): Promise<Module | undefined> => {
-    if (evm.getManifest()?.network.chainIds.includes(chainId)) {
-      return evm
-    }
-    if (pvm.getManifest()?.network.chainIds.includes(chainId)) {
-      return pvm
-    }
-    if (avm.getManifest()?.network.chainIds.includes(chainId)) {
-      return avm
-    }
-    if (bitcoin.getManifest()?.network.chainIds.includes(chainId)) {
-      return bitcoin
-    }
-    if (coreEth.getManifest()?.network.chainIds.includes(chainId)) {
-      return coreEth
-    }
-    return undefined
+    return modules.find(module =>
+      module.getManifest()?.network.chainIds.includes(chainId)
+    )
   }
 
   private getModuleByNamespace = async (
     namespace: string
   ): Promise<Module | undefined> => {
-    if (evm.getManifest()?.network.namespaces.includes(namespace)) {
-      return evm
-    }
-    if (pvm.getManifest()?.network.namespaces.includes(namespace)) {
-      return pvm
-    }
-    if (avm.getManifest()?.network.namespaces.includes(namespace)) {
-      return avm
-    }
-    if (bitcoin.getManifest()?.network.namespaces.includes(namespace)) {
-      return bitcoin
-    }
-    if (coreEth.getManifest()?.network.namespaces.includes(namespace)) {
-      return coreEth
-    }
-    return undefined
+    return modules.find(module =>
+      module.getManifest()?.network.namespaces.includes(namespace)
+    )
   }
 
   private isMethodPermitted = (module: Module, method: string): boolean => {
-    return (
-      module.getManifest()?.permissions.rpc.methods.includes(method) ?? false
-    )
+    const methods = module.getManifest()?.permissions.rpc.methods
+    if (methods === undefined) {
+      return false
+    }
+    return methods.some(m => {
+      if (m === method) {
+        return true
+      }
+      if (m.endsWith('*')) {
+        return method.startsWith(m.slice(0, -1))
+      }
+    })
   }
 }
-
-export default new ModuleManager()

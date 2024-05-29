@@ -1,8 +1,8 @@
 import { Module, parseManifest } from './types'
+import manifest from './avm.manifest.json'
 
 export const avm: Module = {
   getManifest: () => {
-    const manifest = require('./avm.manifest.json')
     const result = parseManifest(manifest)
     return result.success ? result.data : undefined
   },

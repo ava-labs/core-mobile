@@ -1,8 +1,8 @@
 import { Module, parseManifest } from './types'
+import manifest from './pvm.manifest.json'
 
 export const pvm: Module = {
   getManifest: () => {
-    const manifest = require('./pvm.manifest.json')
     const result = parseManifest(manifest)
     return result.success ? result.data : undefined
   },

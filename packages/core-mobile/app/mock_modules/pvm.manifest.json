@@ -25,7 +25,10 @@
     }
   },
   "network": {
-    "chainIds": ["avax:4503599627370411, avax:4503599627370410"],
+    "chainIds": [
+      "avax:11111111111111111111111111111111LpoYY",
+      "avax:fuji-11111111111111111111111111111111LpoYY"
+    ],
     "namespaces": ["avax"]
   },
   "cointype": "60",

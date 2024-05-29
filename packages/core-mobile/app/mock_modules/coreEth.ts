@@ -1,8 +1,8 @@
 import { Module, parseManifest } from './types'
+import manifest from './coreEth.manifest.json'
 
 export const coreEth: Module = {
   getManifest: () => {
-    const manifest = require('./coreEth.manifest.json')
     const result = parseManifest(manifest)
     return result.success ? result.data : undefined
   },
