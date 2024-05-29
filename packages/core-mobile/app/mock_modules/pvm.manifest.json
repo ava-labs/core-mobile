@@ -25,8 +25,8 @@
     }
   },
   "network": {
-    "chainIds": ["eip155:4503599627370411, eip155:4503599627370410"],
-    "namespaces": ["eip155"]
+    "chainIds": ["avalanche:4503599627370411, avalanche:4503599627370410"],
+    "namespaces": ["avalanche"]
   },
   "cointype": "60",
   "permissions": {

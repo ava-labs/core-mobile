@@ -25,7 +25,7 @@
     }
   },
   "network": {
-    "chainIds": ["eip155:1"],
+    "chainIds": ["eip155:1", "eip155:43114", "eip155:43113"],
     "namespaces": ["eip155"]
   },
   "cointype": "60",
