@@ -3,11 +3,10 @@ import { DeFiPortfolioPerpetual } from 'screens/defi/components/DeFiPortfolioPer
 import { defiPerpetualItem } from 'tests/fixtures/defi/defiPerpetualItems'
 import { withCenterView } from '../../decorators/withCenterView'
 import { withCard } from '../../decorators/withCard'
-import { withProviders } from '../../decorators/withProviders'
 
 export default {
   title: 'DeFi/PortfolioPerpetual',
-  decorators: [withCard, withCenterView, withProviders]
+  decorators: [withCard, withCenterView]
 }
 
 export const Basic = (): React.JSX.Element => {

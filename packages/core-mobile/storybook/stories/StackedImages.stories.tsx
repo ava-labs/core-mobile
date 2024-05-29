@@ -3,7 +3,7 @@ import React from 'react'
 import { StackedImages } from 'components/StackedImages'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
-import { ScrollView } from 'react-native-gesture-handler'
+import { ScrollView } from '@avalabs/k2-mobile'
 import { withCenterView } from '../decorators/withCenterView'
 
 const IMAGE_URL = 'https://picsum.photos/200'
