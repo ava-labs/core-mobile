@@ -25,9 +25,15 @@ class ModuleManager {
   }
 
   private getModule = async (chainId: string): Promise<Module | undefined> => {
+    const namespace = chainId.split(':')[0]
+    if (namespace === undefined) {
+      Logger.error('No namespace found for chainId: ', chainId)
+      return undefined
+    }
+
     return (
       (await this.getModuleByChainId(chainId)) ??
-      (await this.getModuleByNamespace(chainId))
+      (await this.getModuleByNamespace(namespace))
     )
   }
 
@@ -53,14 +59,8 @@ class ModuleManager {
   }
 
   private getModuleByNamespace = async (
-    chainId: string
+    namespace: string
   ): Promise<Module | undefined> => {
-    const namespace = chainId.split(':')[0]
-    if (namespace === undefined) {
-      Logger.error('No namespace found for chainId: ', chainId)
-      return undefined
-    }
-
     if (evm.getManifest()?.network.namespaces.includes(namespace)) {
       return evm
     }
