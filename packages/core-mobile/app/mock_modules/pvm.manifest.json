@@ -25,8 +25,8 @@
     }
   },
   "network": {
-    "chainIds": ["avalanche:4503599627370411, avalanche:4503599627370410"],
-    "namespaces": ["avalanche"]
+    "chainIds": ["avax:4503599627370411, avax:4503599627370410"],
+    "namespaces": ["avax"]
   },
   "cointype": "60",
   "permissions": {
