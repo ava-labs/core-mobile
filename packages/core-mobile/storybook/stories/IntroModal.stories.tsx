@@ -6,11 +6,9 @@ import WalletConnectSVG from 'components/svg/WalletConnectSVG'
 import CoreOwl from 'assets/icons/core_owl.svg'
 import RocketLaunch from 'assets/icons/rocket_launch.svg'
 import SearchIcon from 'assets/icons/search.svg'
-import { withProviders } from '../decorators/withProviders'
 
 export default {
-  title: 'Browser/IntroScreen',
-  decorators: [withProviders]
+  title: 'Browser/IntroScreen'
 }
 
 export const Basic = (): JSX.Element => {

@@ -3,12 +3,11 @@ import React from 'react'
 import { DeFiPortfolioInsuranceBuyer as Component } from 'screens/defi/components/DeFiPortfolioInsuranceBuyer'
 import { DEFI_INSURANCE_BUYER_ITEMS } from 'tests/fixtures/defi/defiInsuranceBuyerItems'
 import { withCenterView } from '../../decorators/withCenterView'
-import { withProviders } from '../../decorators/withProviders'
 import { withCard } from '../../decorators/withCard'
 
 export default {
   title: 'DeFi/DeFiPortfolioInsuranceBuyer',
-  decorators: [withCard, withCenterView, withProviders]
+  decorators: [withCard, withCenterView]
 }
 
 export const Default = () => {
