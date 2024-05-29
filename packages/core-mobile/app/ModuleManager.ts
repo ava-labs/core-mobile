@@ -10,7 +10,7 @@ import Logger from 'utils/Logger'
 class ModuleManager {
   loadModule = async (
     chainId: string,
-    method: RpcMethod
+    method: string
   ): Promise<Module | undefined> => {
     const module = await this.getModule(chainId)
     if (module === undefined) {
