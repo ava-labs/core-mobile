@@ -1,5 +1,9 @@
 import { CriticalConfig } from '@avalabs/bridge-sdk'
 import { Network } from '@avalabs/chains-sdk'
+import {
+  PChainTransactionType,
+  XChainTransactionType
+} from '@avalabs/glacier-sdk'
 import { Account } from 'store/account'
 
 export type GetTransactionsArgs = {
@@ -34,5 +38,9 @@ export type Transaction = {
   explorerLink: string
   fee: string
   testID?: string
-  txType?: string
+  txType?:
+    | PChainTransactionType
+    | XChainTransactionType
+    | 'CreateAssetTx'
+    | 'OperationTx'
 }
