@@ -130,10 +130,6 @@ const InputText = forwardRef<TextInput, InputTextProps>(
     const [toggleShowText, setToggleShowText] = useState('Show')
     const [isFocused, setIsFocused] = useState(false)
 
-    const [selection, setSelection] = useState<{ start: number } | undefined>({
-      start: 0
-    })
-
     useEffect(() => {
       const sub1 = Keyboard.addListener('keyboardWillShow', _ => {
         keyboardWillShow?.()
@@ -163,7 +159,6 @@ const InputText = forwardRef<TextInput, InputTextProps>(
 
     const handleBlur = useCallback(
       (args: NativeSyntheticEvent<TextInputFocusEventData>) => {
-        setSelection({ start: 0 })
         onBlur?.(args)
         setIsFocused(false)
       },
@@ -172,16 +167,11 @@ const InputText = forwardRef<TextInput, InputTextProps>(
 
     const handleFocus = useCallback(
       (args: NativeSyntheticEvent<TextInputFocusEventData>) => {
-        // set cursor at end of text
-        setSelection({ start: text.length })
-
-        // disable selection so that user can position cursor on its own
-        setTimeout(() => setSelection(undefined), 100)
         setIsFocused(true)
 
         onFocus?.(args)
       },
-      [onFocus, text.length]
+      [onFocus]
     )
     const {
       theme: { colors }
@@ -265,7 +255,6 @@ const InputText = forwardRef<TextInput, InputTextProps>(
             ]}
             onBlur={handleBlur}
             onFocus={handleFocus}
-            selection={selection}
             onChangeText={onTextChanged}
             value={text}
           />
