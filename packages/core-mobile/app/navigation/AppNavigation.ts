@@ -92,8 +92,7 @@ enum EarnScreens {
   ClaimRewards = 'EarnScreens.ClaimRewards',
   FeeUnavailable = 'EarnScreens.FeeUnavailable',
   EarnNotificationsPrompt = 'EarnScreens.EarnNotificationsPrompt',
-  FundsStuck = 'EarnScreens.FundsStuck',
-  WrongNetwork = 'EarnScrens.WrongNetwork'
+  FundsStuck = 'EarnScreens.FundsStuck'
 }
 
 enum BrowserScreens {
@@ -226,8 +225,7 @@ enum BridgeScreens {
 
 enum PortfolioScreens {
   Portfolio = 'PortfolioScreens.Portfolio',
-  NetworkTokens = 'PortfolioScreens.NetworkTokens',
-  AddPChainPrompt = 'PortfolioScreens.AddPChainPrompt'
+  NetworkTokens = 'PortfolioScreens.NetworkTokens'
 }
 
 enum RecoveryMethodsScreens {

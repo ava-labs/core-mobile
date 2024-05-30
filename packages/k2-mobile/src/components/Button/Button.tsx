@@ -1,5 +1,6 @@
 import React, { FC, PropsWithChildren } from 'react'
 import {
+  Platform,
   PressableStateCallbackType,
   StyleProp,
   StyleSheet,
@@ -155,6 +156,7 @@ export const Button: FC<ButtonProps & PropsWithChildren> = ({
             <Text
               numberOfLines={1}
               variant={textVariant}
+              adjustsFontSizeToFit={Platform.OS === 'ios'}
               style={{
                 color: color,
                 flexShrink: 1

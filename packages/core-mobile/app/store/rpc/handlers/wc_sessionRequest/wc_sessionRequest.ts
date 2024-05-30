@@ -1,13 +1,18 @@
 import { ProposalTypes, SessionTypes } from '@walletconnect/types'
 import { AppListenerEffectAPI } from 'store'
 import { ethErrors } from 'eth-rpc-errors'
-import { EVM_IDENTIFIER } from 'consts/walletConnect'
 import { addNamespaceToChain } from 'services/walletconnectv2/utils'
 import { normalizeNamespaces } from '@walletconnect/utils'
 import { WCSessionProposal } from 'store/walletConnectV2/types'
-import { selectActiveNetwork, selectAllNetworks } from 'store/network'
+import {
+  selectActiveNetwork,
+  selectAllNetworks,
+  selectFavoriteNetworks
+} from 'store/network'
 import { selectIsBlockaidDappScanBlocked } from 'store/posthog'
+import { createInAppRequest } from 'store/rpc/utils/createInAppRequest'
 import { RpcMethod, CORE_ONLY_METHODS } from '../../types'
+import { EVM_IDENTIFIER } from '../../types'
 import {
   RpcRequestHandler,
   DEFERRED_RESULT,
@@ -75,10 +80,6 @@ class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
     ]
   }
 
-  private getApprovedChainIds = (approvedChains: number[]): number[] => {
-    return approvedChains
-  }
-
   private getApprovedAccounts = (
     selectedAccounts: string[],
     approvedChains: string[]
@@ -92,6 +93,89 @@ class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
     return approvedAccounts
   }
 
+  private switchToSupportedNetwork = async (
+    chainIdsToApprove: number[],
+    listenerApi: AppListenerEffectAPI
+  ): Promise<void> => {
+    const state = listenerApi.getState()
+    const activeNetwork = selectActiveNetwork(state)
+    const supportedNetworks = selectAllNetworks(state)
+
+    if (chainIdsToApprove.includes(activeNetwork.chainId)) {
+      // already on one of the requested networks. no need to switch
+      return
+    }
+
+    const favoritedNetworksChainIds = selectFavoriteNetworks(state).map(
+      network => network.chainId
+    )
+    const supportedChainIds = [
+      ...favoritedNetworksChainIds,
+      ...Object.values(supportedNetworks)
+        .map(network => network.chainId)
+        .filter(chainId => !favoritedNetworksChainIds.includes(chainId))
+    ]
+
+    const chainIdtoSwitch =
+      supportedChainIds.filter(chainId =>
+        chainIdsToApprove.includes(chainId)
+      )[0] ?? chainIdsToApprove[0]
+
+    if (chainIdtoSwitch === undefined) {
+      throw new Error('No supported network found')
+    }
+
+    try {
+      const request = createInAppRequest(listenerApi.dispatch)
+      await request({
+        method: RpcMethod.WALLET_SWITCH_ETHEREUM_CHAIN,
+        params: [
+          {
+            chainId: chainIdtoSwitch.toString()
+          }
+        ]
+      })
+    } catch (error) {
+      throw new Error(`Failed to switch to network ${chainIdtoSwitch}`)
+    }
+  }
+
+  private getChainIdsToApprove = (
+    requiredChains: string[],
+    optionalChains: string[],
+    listenerApi: AppListenerEffectAPI
+  ): number[] => {
+    const state = listenerApi.getState()
+    const supportedNetworks = selectAllNetworks(state)
+
+    // make sure we support all the required eip155 networks requested
+    for (const chain of requiredChains) {
+      const chainId = chain.split(':')[1] ?? ''
+
+      if (!isNetworkSupported(supportedNetworks, Number(chainId))) {
+        throw new Error(`Requested network ${chain} is not supported`)
+      }
+    }
+
+    // also add optional chains (if available and only for chains that are supported)
+    // to the list of chains to approve
+    const supportedOptionalChains = optionalChains.filter(chain => {
+      const chainId = chain.split(':')[1] ?? ''
+      return isNetworkSupported(supportedNetworks, Number(chainId))
+    })
+
+    // list of unique chain IDs to approve
+    return [
+      ...requiredChains,
+      ...supportedOptionalChains.filter(
+        chain => !requiredChains.includes(chain)
+      )
+    ]
+      .map(chain => chain.split(':')[1])
+      ?.filter((chainId): chainId is string => !!chainId)
+      ?.map(chainId => Number(chainId))
+  }
+
   handle = async (
     request: WCSessionProposal,
     listenerApi: AppListenerEffectAPI
@@ -100,93 +184,58 @@ class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
     const { params } = request.data
     const { proposer, requiredNamespaces, optionalNamespaces } = params
 
-    let normalizedRequired = normalizeNamespaces(requiredNamespaces)
+    const normalizedRequired = normalizeNamespaces(requiredNamespaces)
     const normalizedOptional = normalizeNamespaces(optionalNamespaces)
 
-    if (Object.keys(normalizedRequired).length === 0) {
-      const { chainId } = selectActiveNetwork(state)
-      normalizedRequired = {
-        [EVM_IDENTIFIER]: {
-          chains: [addNamespaceToChain(chainId)],
-          methods: [],
-          events: []
-        }
+    try {
+      // make sure only eip155 namespace is requested for required namespaces
+      if (
+        Object.keys(normalizedRequired).length > 0 &&
+        !hasOnlyEIP155(normalizedRequired)
+      ) {
+        throw new Error('Only eip155 namespace is supported')
       }
-    }
 
-    // make sure only eip155 namespace is requested
-    if (!hasOnlyEIP155(normalizedRequired)) {
+      // make sure Core methods are only requested by either Core Web, Internal Playground or Localhost
+      const dappUrl = proposer.metadata.url
+      const hasCoreMethod =
+        normalizedRequired[EVM_IDENTIFIER]?.methods.some(isCoreMethod) ?? false
+
+      if (hasCoreMethod && !isCoreDomain(dappUrl)) {
+        throw new Error('Requested method is not authorized')
+      }
+
+      const requiredChains = normalizedRequired[EVM_IDENTIFIER]?.chains ?? []
+      const optionalChains = normalizedOptional[EVM_IDENTIFIER]?.chains ?? []
+      const chainIdsToApprove = this.getChainIdsToApprove(
+        requiredChains,
+        optionalChains,
+        listenerApi
+      )
+
+      if (chainIdsToApprove.length === 0) {
+        throw new Error('Networks not specified')
+      }
+
+      await this.switchToSupportedNetwork(chainIdsToApprove, listenerApi)
+
+      const isScanDisabled = selectIsBlockaidDappScanBlocked(state)
+      if (isScanDisabled) {
+        navigateToSessionProposal({ request, chainIds: chainIdsToApprove })
+      } else {
+        scanAndSessionProposal(dappUrl, request, chainIdsToApprove)
+      }
+      return { success: true, value: DEFERRED_RESULT }
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error'
       return {
         success: false,
         error: ethErrors.rpc.invalidParams({
-          message: 'Only eip155 namespace is supported'
+          message: errorMessage
         })
       }
     }
-
-    const eip155NameSpace = normalizedRequired[EVM_IDENTIFIER]
-    const supportedNetworks = selectAllNetworks(state)
-
-    const requiredChains = eip155NameSpace.chains
-
-    if (requiredChains === undefined || requiredChains.length === 0) {
-      return {
-        success: false,
-        error: ethErrors.rpc.invalidParams({
-          message: `Networks not specified`
-        })
-      }
-    }
-
-    // make sure we support all the required eip155 networks requested
-    for (const chain of requiredChains) {
-      const chainId = chain.split(':')[1] ?? ''
-
-      if (!isNetworkSupported(supportedNetworks, Number(chainId))) {
-        return {
-          success: false,
-          error: ethErrors.rpc.invalidParams({
-            message: `Requested network ${chain} is not supported`
-          })
-        }
-      }
-    }
-
-    // also add optional chains (if available and only for chains that are supported)
-    // to the list of chains to approve
-    const optionalChains = (
-      normalizedOptional[EVM_IDENTIFIER]?.chains ?? []
-    ).filter(chain => {
-      const chainId = chain.split(':')[1] ?? ''
-      return isNetworkSupported(supportedNetworks, Number(chainId))
-    })
-
-    // list of unique chain IDs to approve
-    const chainIds = [...new Set([...requiredChains, ...optionalChains])]
-      ?.map(chain => chain.split(':')[1])
-      ?.filter((chainId): chainId is string => !!chainId)
-      ?.map(chainId => Number(chainId))
-
-    // make sure Core methods are only requested by either Core Web, Internal Playground or Localhost
-    const dappUrl = proposer.metadata.url
-    const hasCoreMethod = eip155NameSpace.methods.some(isCoreMethod)
-
-    if (hasCoreMethod && !isCoreDomain(dappUrl)) {
-      return {
-        success: false,
-        error: ethErrors.rpc.invalidParams({
-          message: `Requested method is not authorized`
-        })
-      }
-    }
-
-    const isScanDisabled = selectIsBlockaidDappScanBlocked(state)
-    if (isScanDisabled) {
-      navigateToSessionProposal({ request, chainIds })
-    } else {
-      scanAndSessionProposal(dappUrl, request, chainIds)
-    }
-    return { success: true, value: DEFERRED_RESULT }
   }
 
   approve = async (payload: {
@@ -210,8 +259,7 @@ class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
     const events = this.getApprovedEvents(requiredNamespaces)
 
     const approvedChainIds = result.data.approvedChainIds
-    const chains =
-      this.getApprovedChainIds(approvedChainIds).map(addNamespaceToChain)
+    const chains = approvedChainIds.map(addNamespaceToChain)
 
     const selectedAccounts = result.data.selectedAccounts
     const accounts = this.getApprovedAccounts(selectedAccounts, chains)

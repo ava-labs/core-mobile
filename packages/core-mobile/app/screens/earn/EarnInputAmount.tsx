@@ -1,6 +1,5 @@
 import OvalTagBg from 'components/OvalTagBg'
 import { Row } from 'components/Row'
-import AvaLogoSVG from 'components/svg/AvaLogoSVG'
 import { Space } from 'components/Space'
 import AvaText from 'components/AvaText'
 import React, { useEffect, useState } from 'react'
@@ -9,6 +8,8 @@ import { Platform } from 'react-native'
 import limitInput, { getMaxDecimals } from 'screens/earn/limitInput'
 import { TokenBaseUnitInput } from 'components/TokenBaseUnitInput'
 import { Avax } from 'types/Avax'
+import useCChainNetwork from 'hooks/earn/useCChainNetwork'
+import Avatar from 'components/Avatar'
 
 const EarnInputAmount = ({
   inputAmount,
@@ -21,6 +22,7 @@ const EarnInputAmount = ({
   const [maxDecimals, setMaxDecimals] = useState(
     inputAmount?.getMaxDecimals ?? 0
   )
+  const network = useCChainNetwork()
 
   const isAndroid = Platform.OS === 'android'
 
@@ -74,11 +76,14 @@ const EarnInputAmount = ({
           paddingVertical: 4
         }}>
         <Row style={{ alignItems: 'center' }}>
-          <AvaLogoSVG
-            size={16}
-            logoColor={theme.tokenLogoColor}
-            backgroundColor={theme.tokenLogoBg}
-          />
+          {network?.networkToken !== undefined && (
+            <Avatar.Token
+              size={16}
+              name={network.networkToken.name}
+              symbol={network.networkToken.symbol}
+              logoUri={network.networkToken.logoUri}
+            />
+          )}
           <Space x={4} />
           <AvaText.ButtonSmall>AVAX</AvaText.ButtonSmall>
         </Row>

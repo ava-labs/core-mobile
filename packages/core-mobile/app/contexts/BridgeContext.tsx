@@ -7,17 +7,13 @@ import React, {
   useRef
 } from 'react'
 import {
-  Asset,
   BridgeSDKProvider,
   BridgeTransaction,
   getMinimumConfirmations,
   trackBridgeTransaction,
   TrackerSubscription,
-  useBridgeSDK,
-  WrapStatus
+  useBridgeSDK
 } from '@avalabs/bridge-sdk'
-import Big from 'big.js'
-import { useTransferAsset } from 'screens/bridge/hooks/useTransferAsset'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import {
@@ -34,14 +30,13 @@ import {
 import { isEqual } from 'lodash'
 import { Network } from '@avalabs/chains-sdk'
 import Logger from 'utils/Logger'
-import { TransactionResponse } from 'ethers'
 import { showSnackBarCustom } from 'components/Snackbar'
 import TransactionToast, {
   TransactionToastType
 } from 'components/toast/TransactionToast'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { NetworkTokenUnit } from 'types'
-import { Eip1559Fees } from 'utils/Utils'
+import BridgeService from 'services/bridge/BridgeService'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 
 export type PartialBridgeTransaction = Pick<
   BridgeTransaction,
@@ -53,24 +48,11 @@ export type PartialBridgeTransaction = Pick<
   | 'symbol'
 >
 
-export enum TransferEventType {
-  WRAP_STATUS = 'wrap_status',
-  TX_HASH = 'tx_hash',
-  UPDATED = 'tx_updated'
-}
-
 interface BridgeContext {
   createBridgeTransaction(
     tx: PartialBridgeTransaction,
     network: Network
   ): Promise<void | { error: string }>
-  transferAsset: (
-    amount: Big,
-    asset: Asset,
-    onStatusChange: (status: WrapStatus) => void,
-    onTxHashChange: (txHash: string) => void,
-    eip1559Fees?: Eip1559Fees<NetworkTokenUnit>
-  ) => Promise<TransactionResponse | undefined>
 }
 
 const bridgeContext = createContext<BridgeContext>({} as BridgeContext)
@@ -103,12 +85,17 @@ function LocalBridgeProvider({
   const config = bridgeConfig?.config
   const activeAccount = useSelector(selectActiveAccount)
   const bridgeTransactions = useSelector(selectBridgeTransactions)
-  const { transferHandler, events } = useTransferAsset()
   const ethereumProvider = useEthereumProvider()
   const bitcoinProvider = useBitcoinProvider()
   const avalancheProvider = useAvalancheProvider()
   const { bridgeConfig: bridgeConfigSDK, setBridgeConfig } = useBridgeSDK()
   const isToastVisible = useRef<boolean>()
+
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
+
+  useEffect(() => {
+    BridgeService.setBridgeEnvironment(isDeveloperMode)
+  }, [isDeveloperMode])
 
   const removeBridgeTransaction = useCallback(
     (tx: BridgeTransaction) => {
@@ -193,27 +180,6 @@ function LocalBridgeProvider({
       ethereumProvider,
       removeBridgeTransaction
     ]
-  )
-
-  const transferAsset = useCallback(
-    async (
-      amount: Big,
-      asset: Asset,
-      onStatusChange: (status: WrapStatus) => void,
-      onTxHashChange: (txHash: string) => void,
-      eip1559Fees?: Eip1559Fees<NetworkTokenUnit>
-      // eslint-disable-next-line max-params
-    ) => {
-      events.on(TransferEventType.WRAP_STATUS, status => {
-        onStatusChange(status)
-      })
-      events.on(TransferEventType.TX_HASH, txHash => {
-        onTxHashChange(txHash)
-      })
-
-      return transferHandler(amount, asset, eip1559Fees)
-    },
-    [events, transferHandler]
   )
 
   /**
@@ -302,8 +268,7 @@ function LocalBridgeProvider({
   return (
     <bridgeContext.Provider
       value={{
-        createBridgeTransaction,
-        transferAsset
+        createBridgeTransaction
       }}>
       {children}
     </bridgeContext.Provider>

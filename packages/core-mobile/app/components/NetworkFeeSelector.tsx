@@ -22,7 +22,6 @@ import { useNativeTokenPriceForNetwork } from 'hooks/networks/useNativeTokenPric
 import { NetworkTokenUnit } from 'types'
 import {
   alpha,
-  Button,
   Text,
   TouchableOpacity,
   useTheme,
@@ -30,13 +29,11 @@ import {
 } from '@avalabs/k2-mobile'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { NetworkFee } from 'services/networkFee/types'
-import { useBridgeSDK } from '@avalabs/bridge-sdk'
 import { GAS_LIMIT_FOR_XP_CHAIN } from 'consts/fees'
 import { isBitcoinNetwork } from 'utils/network/isBitcoinNetwork'
 import { isAvmNetwork, isPvmNetwork } from 'utils/network/isAvalancheNetwork'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { Tooltip } from './Tooltip'
-import InputText from './InputText'
 
 export enum FeePreset {
   Normal = 'Normal',
@@ -78,14 +75,13 @@ const NetworkFeeSelector = ({
   const requestedNetwork = getNetwork(chainId)
   const network = chainId ? requestedNetwork : activeNetwork
   const { data: networkFee } = useNetworkFee(network)
-  const { currentBlockchain } = useBridgeSDK()
-  const [prevBlockChain, setPrevBlockchain] = useState(currentBlockchain)
 
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { nativeTokenPrice } = useNativeTokenPriceForNetwork(
     network,
     selectedCurrency.toLowerCase() as VsCurrencyType
   )
+
   const isBtcNetwork = network ? isBitcoinNetwork(network) : false
   const isPVM = isPvmNetwork(network)
   const isAVM = isAvmNetwork(network)
@@ -108,25 +104,16 @@ const NetworkFeeSelector = ({
     [activeNetwork, gasLimit, isPVM, isAVM, nativeTokenPrice]
   )
 
-  useEffect(() => {
-    if (prevBlockChain !== currentBlockchain) {
-      const initialCustomFees = networkFee && getInitialCustomFees(networkFee)
-      setCustomFees(initialCustomFees)
-      setPrevBlockchain(currentBlockchain)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentBlockchain, getInitialCustomFees, prevBlockChain])
-
   // customFees init value.
   // NetworkFee is not immediately available hence the useEffect
   useEffect(() => {
-    if (!customFees && networkFee && gasLimit > 0) {
+    if (networkFee && gasLimit > 0) {
       const initialCustomFees = getInitialCustomFees(networkFee)
       setCustomFees(initialCustomFees)
       setCalculatedFees(initialCustomFees)
       onFeesChange?.(initialCustomFees, FeePreset.Normal)
     }
-  }, [customFees, gasLimit, getInitialCustomFees, networkFee, onFeesChange])
+  }, [gasLimit, getInitialCustomFees, networkFee, onFeesChange])
 
   function handleSelectedPreset(preset: FeePreset): void {
     setSelectedPreset(preset)
@@ -226,13 +213,11 @@ const NetworkFeeSelector = ({
           </Tooltip>
         )}
         {!isPVM && !isAVM && (
-          <Button
-            size="medium"
-            type="tertiary"
-            style={{ marginTop: 8 }}
+          <TouchableOpacity
+            sx={{ marginTop: 8 }}
             onPress={() => goToEditGasLimit(network)}>
             <Settings />
-          </Button>
+          </TouchableOpacity>
         )}
       </Row>
       <Space y={4} />
@@ -276,7 +261,6 @@ const NetworkFeeSelector = ({
                   handleSelectedPreset(FeePreset.Custom)
                   goToEditGasLimit(network)
                 }}
-                placeholder={displayGasValues?.[FeePreset.Normal]}
                 value={
                   selectedPreset !== FeePreset.Custom && !customFees
                     ? displayGasValues?.[FeePreset.Normal]
@@ -293,7 +277,7 @@ const NetworkFeeSelector = ({
           </Text>
           <View sx={{ flexDirection: 'row' }}>
             <Text sx={{ color: '$neutral50' }}>
-              {`${calculatedFees?.maxTotalFee.toDisplay(4) ?? 0} `}
+              {`${calculatedFees?.maxTotalFee.toDisplay() ?? 0} `}
             </Text>
             <Text variant="body1" sx={{ color: '$neutral400' }}>
               {network?.networkToken?.symbol}
@@ -331,75 +315,18 @@ export const FeeSelector: FC<{
   value?: string
   selected: boolean
   onSelect: (value: string) => void
-  placeholder?: string
-  editable?: boolean
-  onValueEntered?: (value: string) => void
-}> = ({
-  label,
-  selected,
-  onSelect,
-  onValueEntered,
-  value,
-  placeholder,
-  editable = false
-}) => {
+}> = ({ label, selected, onSelect, value }) => {
   const {
     theme: { colors }
   } = useTheme()
-  const [showInput, setShowInput] = useState(false)
-
-  useEffect(() => {
-    if (editable) {
-      if (selected) {
-        setShowInput(true)
-      } else {
-        setShowInput(false)
-      }
-    }
-  }, [editable, selected])
 
   const handleSelect = (): void => {
     onSelect(label)
-
-    // if you select Custom fee and then dismiss keyboard, you cannot again edit Custom unless you switch to other preset first
-    // this if statement fixes that
-    if (!showInput && editable && selected) {
-      setShowInput(true)
-    }
   }
 
-  return showInput ? (
-    <ButtonWrapper selected={selected}>
-      <ButtonText selected={selected}>{label}</ButtonText>
-      <InputText
-        text={!value || value === '0' ? '' : value}
-        placeholder={placeholder}
-        autoFocus
-        selectTextOnFocus
-        onBlur={() => setShowInput(false)}
-        onChangeText={text => onValueEntered?.(text)}
-        keyboardType={'numeric'}
-        textStyle={{
-          backgroundColor: colors.$neutral900,
-          borderWidth: 0,
-          fontFamily: 'Inter-SemiBold',
-          textAlign: 'center',
-          textAlignVertical: 'center',
-          paddingTop: 0,
-          paddingBottom: 0,
-          paddingLeft: 0,
-          paddingRight: 0,
-          color: colors.$white,
-          fontSize: 14,
-          lineHeight: 18
-        }}
-        style={{ margin: 0 }}
-        mode={'amount'}
-      />
-    </ButtonWrapper>
-  ) : (
+  return (
     <TouchableOpacity
-      style={{
+      sx={{
         paddingLeft: 0,
         paddingHorizontal: 0,
         width: 75,
@@ -420,32 +347,6 @@ export const FeeSelector: FC<{
         <ButtonText selected={selected}>{value}</ButtonText>
       </View>
     </TouchableOpacity>
-  )
-}
-
-const ButtonWrapper: FC<{ selected: boolean } & PropsWithChildren> = ({
-  children,
-  selected
-}) => {
-  const {
-    theme: { colors }
-  } = useTheme()
-
-  return (
-    <View
-      focusable
-      sx={{
-        width: 75,
-        height: 48,
-        borderRadius: 8,
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: selected
-          ? colors.$white
-          : alpha(colors.$neutral700, 0.5)
-      }}>
-      {children}
-    </View>
   )
 }
 

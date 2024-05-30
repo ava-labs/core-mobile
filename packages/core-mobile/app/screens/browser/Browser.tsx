@@ -30,6 +30,7 @@ import { selectIsFavorited } from 'store/browser/slices/favorites'
 import { LayoutAnimation } from 'react-native'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { updateMetadataForActiveTab } from 'store/browser/slices/globalHistory'
+import WalletConnectService from 'services/walletconnectv2/WalletConnectService'
 import {
   isValidHttpUrl,
   normalizeUrlWithHttps,
@@ -243,9 +244,17 @@ export default function Browser({ tabId }: { tabId: string }): JSX.Element {
             case 'desc_and_favicon':
               parseDescriptionAndFavicon(wrapper, event)
               break
-            case 'window_ethereum_used':
-              showWalletConnectDialog()
+            case 'window_ethereum_used': {
+              const sessions = WalletConnectService.getSessions()
+              if (
+                sessions.find(session =>
+                  urlToLoad.startsWith(session.peer.metadata.url)
+                ) === undefined
+              ) {
+                showWalletConnectDialog()
+              }
               break
+            }
             case 'log':
               Logger.trace('------> wrapper.payload', wrapper.payload)
               break

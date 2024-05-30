@@ -3,7 +3,8 @@ export enum ViewOnceKey {
   BROWSER_INTERACTION,
   CORE_INTRO,
   ANALYTICS_CONSENT,
-  P_CHAIN_FAVORITE
+  P_CHAIN_FAVORITE,
+  X_CHAIN_FAVORITE
 }
 
 export type ViewOnceObjectType = {

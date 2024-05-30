@@ -1,13 +1,8 @@
 import React from 'react'
-import { View } from 'react-native'
-import AvaText from 'components/AvaText'
-import { useApplicationContext } from 'contexts/ApplicationContext'
-import { Space } from 'components/Space'
 import { Row } from 'components/Row'
-import AvaButton from 'components/AvaButton'
-import InfoSVG from 'components/svg/InfoSVG'
 import { UI, useIsUIDisabled } from 'hooks/useIsUIDisabled'
 import useStakingParams from 'hooks/earn/useStakingParams'
+import { Button, Icons, Text, View, useTheme } from '@avalabs/k2-mobile'
 
 export default function NotEnoughAvax({
   onBuyAvax,
@@ -18,46 +13,65 @@ export default function NotEnoughAvax({
   onSwap: () => void
   onReceive: () => void
 }): React.JSX.Element {
-  const { theme } = useApplicationContext()
+  const {
+    theme: { colors }
+  } = useTheme()
   const buyDisabled = useIsUIDisabled(UI.Buy)
   const swapDisabled = useIsUIDisabled(UI.Swap)
   const { minStakeAmount } = useStakingParams()
 
   return (
-    <View style={{ padding: 16, flex: 1 }}>
-      <AvaText.LargeTitleBold>Stake</AvaText.LargeTitleBold>
-      <View style={{ alignItems: 'center' }}>
-        <Space y={80} />
-        <InfoSVG size={56} color={theme.white} />
-        <Space y={24} />
-        <View style={{ paddingHorizontal: 23, alignItems: 'center' }}>
-          <AvaText.Heading5>You don’t have enough AVAX!</AvaText.Heading5>
-          <Space y={8} />
-          <AvaText.Body2 textStyle={{ textAlign: 'center', lineHeight: 20 }}>
-            {`You need at least ${minStakeAmount.toFixed()} AVAX to stake. Use the options below to get started.`}
-          </AvaText.Body2>
+    <View sx={{ padding: 16, flex: 1 }}>
+      <Text variant="heading3">Stake</Text>
+      <View
+        style={{
+          flex: 1,
+          justifyContent: 'center',
+          paddingBottom: 80,
+          gap: 24
+        }}>
+        <Icons.Alert.IconErrorOutline
+          color={colors.$white}
+          width={72}
+          height={72}
+          style={{ alignSelf: 'center' }}
+        />
+        <View sx={{ paddingHorizontal: 23, alignItems: 'center', gap: 8 }}>
+          <Text variant="heading5">
+            {minStakeAmount.toFixed()} AVAX required
+          </Text>
+          <Text
+            variant="body2"
+            sx={{ textAlign: 'center', color: '$neutral400' }}>
+            {`You need at least ${minStakeAmount.toFixed()} AVAX to stake.\nUse the options below to get started.`}
+          </Text>
+        </View>
+        <View sx={{ gap: 16 }}>
+          {!swapDisabled && (
+            <Button type="primary" size="xlarge" onPress={onSwap}>
+              Swap AVAX
+            </Button>
+          )}
+          <Row style={{ gap: 16 }}>
+            <Button
+              type="secondary"
+              size="xlarge"
+              onPress={onReceive}
+              style={{ flex: 1 }}>
+              Receive AVAX
+            </Button>
+            {!buyDisabled && (
+              <Button
+                type="secondary"
+                size="xlarge"
+                onPress={onBuyAvax}
+                style={{ flex: 1 }}>
+                Buy AVAX
+              </Button>
+            )}
+          </Row>
         </View>
       </View>
-      <Space y={24} />
-      {!swapDisabled && (
-        <AvaButton.PrimaryLarge onPress={onSwap}>
-          Swap AVAX
-        </AvaButton.PrimaryLarge>
-      )}
-      <Space y={16} />
-      <Row>
-        <AvaButton.SecondaryLarge onPress={onReceive} style={{ flex: 1 }}>
-          Receive AVAX
-        </AvaButton.SecondaryLarge>
-        {!buyDisabled && (
-          <>
-            <Space x={16} />
-            <AvaButton.SecondaryLarge onPress={onBuyAvax} style={{ flex: 1 }}>
-              Buy AVAX
-            </AvaButton.SecondaryLarge>
-          </>
-        )}
-      </Row>
     </View>
   )
 }
