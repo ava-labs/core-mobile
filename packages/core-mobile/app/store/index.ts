@@ -110,11 +110,6 @@ export function configureEncryptedStore(secretKey: string, macSecret: string) {
         middlewares.unshift(listener.middleware)
       }
 
-      if (__DEV__) {
-        const createDebugger = require('redux-flipper').default
-        middlewares.push(createDebugger())
-      }
-
       return middlewares
     }
   })
