@@ -35,7 +35,6 @@ import { isBitcoinNetwork } from 'utils/network/isBitcoinNetwork'
 import { isAvmNetwork, isPvmNetwork } from 'utils/network/isAvalancheNetwork'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { Tooltip } from './Tooltip'
-import InputText from './InputText'
 
 export enum FeePreset {
   Normal = 'Normal',
@@ -265,7 +264,6 @@ const NetworkFeeSelector = ({
                   handleSelectedPreset(FeePreset.Custom)
                   goToEditGasLimit(network)
                 }}
-                placeholder={displayGasValues?.[FeePreset.Normal]}
                 value={
                   selectedPreset !== FeePreset.Custom && !customFees
                     ? displayGasValues?.[FeePreset.Normal]
@@ -320,73 +318,16 @@ export const FeeSelector: FC<{
   value?: string
   selected: boolean
   onSelect: (value: string) => void
-  placeholder?: string
-  editable?: boolean
-  onValueEntered?: (value: string) => void
-}> = ({
-  label,
-  selected,
-  onSelect,
-  onValueEntered,
-  value,
-  placeholder,
-  editable = false
-}) => {
+}> = ({ label, selected, onSelect, value }) => {
   const {
     theme: { colors }
   } = useTheme()
-  const [showInput, setShowInput] = useState(false)
-
-  useEffect(() => {
-    if (editable) {
-      if (selected) {
-        setShowInput(true)
-      } else {
-        setShowInput(false)
-      }
-    }
-  }, [editable, selected])
 
   const handleSelect = (): void => {
     onSelect(label)
-
-    // if you select Custom fee and then dismiss keyboard, you cannot again edit Custom unless you switch to other preset first
-    // this if statement fixes that
-    if (!showInput && editable && selected) {
-      setShowInput(true)
-    }
   }
 
-  return showInput ? (
-    <ButtonWrapper selected={selected}>
-      <ButtonText selected={selected}>{label}</ButtonText>
-      <InputText
-        text={!value || value === '0' ? '' : value}
-        placeholder={placeholder}
-        autoFocus
-        selectTextOnFocus
-        onBlur={() => setShowInput(false)}
-        onChangeText={text => onValueEntered?.(text)}
-        keyboardType={'numeric'}
-        textStyle={{
-          backgroundColor: colors.$neutral900,
-          borderWidth: 0,
-          fontFamily: 'Inter-SemiBold',
-          textAlign: 'center',
-          textAlignVertical: 'center',
-          paddingTop: 0,
-          paddingBottom: 0,
-          paddingLeft: 0,
-          paddingRight: 0,
-          color: colors.$white,
-          fontSize: 14,
-          lineHeight: 18
-        }}
-        style={{ margin: 0 }}
-        mode={'amount'}
-      />
-    </ButtonWrapper>
-  ) : (
+  return (
     <TouchableOpacity
       style={{
         paddingLeft: 0,
@@ -409,32 +350,6 @@ export const FeeSelector: FC<{
         <ButtonText selected={selected}>{value}</ButtonText>
       </View>
     </TouchableOpacity>
-  )
-}
-
-const ButtonWrapper: FC<{ selected: boolean } & PropsWithChildren> = ({
-  children,
-  selected
-}) => {
-  const {
-    theme: { colors }
-  } = useTheme()
-
-  return (
-    <View
-      focusable
-      sx={{
-        width: 75,
-        height: 48,
-        borderRadius: 8,
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: selected
-          ? colors.$white
-          : alpha(colors.$neutral700, 0.5)
-      }}>
-      {children}
-    </View>
   )
 }
 

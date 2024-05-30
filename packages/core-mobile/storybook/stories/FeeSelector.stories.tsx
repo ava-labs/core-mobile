@@ -1,5 +1,5 @@
 import { FeeSelector } from 'components/NetworkFeeSelector'
-import React, { useState } from 'react'
+import React from 'react'
 import { withCenterView } from '../decorators/withCenterView'
 
 export default {
@@ -31,27 +31,4 @@ Basic.args = {
   label: 'Fee',
   selected: false,
   value: '34'
-}
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const Editable = ({ label, placeholder }: any): React.JSX.Element => {
-  const [value, setValue] = useState('20')
-  const [selected, setSelected] = useState(false)
-  return (
-    <FeeSelector
-      editable
-      label={label}
-      selected={selected}
-      onSelect={() => setSelected(current => !current)}
-      placeholder={placeholder}
-      value={value}
-      onValueEntered={setValue}
-    />
-  )
-}
-
-Editable.args = {
-  label: 'Fee',
-  editable: true,
-  placeholder: 'place holder'
 }
