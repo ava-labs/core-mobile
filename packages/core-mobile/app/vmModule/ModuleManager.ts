@@ -1,29 +1,32 @@
-import { avm } from 'mock_modules/avm'
-import { bitcoin } from 'mock_modules/bitcoin'
-import { coreEth } from 'mock_modules/coreEth'
-import { evm } from 'mock_modules/evm'
-import { pvm } from 'mock_modules/pvm'
-import { Module } from 'mock_modules/types'
+import { avm } from 'vmModule/mock_modules/avm'
+import { bitcoin } from 'vmModule/mock_modules/bitcoin'
+import { coreEth } from 'vmModule/mock_modules/coreEth'
+import { evm } from 'vmModule/mock_modules/evm'
+import { pvm } from 'vmModule/mock_modules/pvm'
+import { Module } from 'vmModule/mock_modules/types'
 import Logger from 'utils/Logger'
+import { ModuleErrors, VmModuleErrors } from './errors'
 
 const modules: Module[] = [evm, pvm, avm, bitcoin, coreEth]
+const NAMESPACE_REGEX = new RegExp('[-a-z0-9]{3,8}')
 
 export class ModuleManager {
-  loadModule = async (
-    chainId: string,
-    method: string
-  ): Promise<Module | undefined> => {
+  loadModule = async (chainId: string, method: string): Promise<Module> => {
     const module = await this.getModule(chainId)
     if (module === undefined) {
-      throw new Error(`No module supported for chainId: ${chainId}`)
+      throw new VmModuleErrors({
+        name: ModuleErrors.unsupportedChainId,
+        message: `No module supported for chainId: ${chainId}`
+      })
     }
 
     if (!this.isMethodPermitted(module, method)) {
-      throw new Error(
-        `Method ${method} is not supported in ${
+      throw new VmModuleErrors({
+        name: ModuleErrors.unsupportedMethod,
+        message: `Method ${method} is not supported in ${
           module.getManifest()?.name
         } module`
-      )
+      })
     }
 
     return module
@@ -31,10 +34,13 @@ export class ModuleManager {
 
   private getModule = async (chainId: string): Promise<Module | undefined> => {
     const namespace = chainId.split(':')[0]
-    if (namespace === undefined) {
-      Logger.error('No namespace found for chainId: ', chainId)
-      return undefined
+    if (!namespace || !NAMESPACE_REGEX.test(namespace)) {
+      Logger.error(
+        `${ModuleErrors.unsupportedNamespace}: namespace is invalid or missing in chainId`
+      )
+      return
     }
+
     return (
       (await this.getModuleByChainId(chainId)) ??
       (await this.getModuleByNamespace(namespace))
