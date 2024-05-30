@@ -22,7 +22,6 @@ import { useNativeTokenPriceForNetwork } from 'hooks/networks/useNativeTokenPric
 import { NetworkTokenUnit } from 'types'
 import {
   alpha,
-  Button,
   Text,
   TouchableOpacity,
   useTheme,
@@ -214,13 +213,11 @@ const NetworkFeeSelector = ({
           </Tooltip>
         )}
         {!isPVM && !isAVM && (
-          <Button
-            size="medium"
-            type="tertiary"
-            style={{ marginTop: 8 }}
+          <TouchableOpacity
+            sx={{ marginTop: 8 }}
             onPress={() => goToEditGasLimit(network)}>
             <Settings />
-          </Button>
+          </TouchableOpacity>
         )}
       </Row>
       <Space y={4} />
@@ -329,7 +326,7 @@ export const FeeSelector: FC<{
 
   return (
     <TouchableOpacity
-      style={{
+      sx={{
         paddingLeft: 0,
         paddingHorizontal: 0,
         width: 75,
