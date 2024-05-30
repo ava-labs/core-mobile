@@ -15,8 +15,6 @@ target 'K2Mobile' do
     # Enables or disables Hermes; if flag is omitted Hermes will be enabled by default.
     :hermes_enabled => false,
     :fabric_enabled => flags[:fabric_enabled],
-    # Enables/disables Flipper
-    :flipper_configuration => FlipperConfiguration.disabled,
     # An absolute path to your application root.
     :app_path => "#{Pod::Config.instance.installation_root}/.."
   )
