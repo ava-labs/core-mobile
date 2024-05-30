@@ -17,7 +17,6 @@ import { DeeplinkContextProvider } from 'contexts/DeeplinkContext/DeeplinkContex
 import { EncryptedStoreProvider } from 'contexts/EncryptedStoreProvider'
 import { TopLevelErrorFallback } from 'components/TopLevelErrorFallback'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
-import FlipperAsyncStorage from 'rn-flipper-async-storage-advanced'
 import { ReactQueryProvider } from 'contexts/ReactQueryProvider'
 import SentryService from 'services/sentry/SentryService'
 import CoreSplash from 'assets/icons/core_splash.svg'
@@ -50,7 +49,6 @@ const ContextApp = (): JSX.Element => {
   return (
     <Sentry.ErrorBoundary fallback={<TopLevelErrorFallback />}>
       <StatusBar barStyle={'light-content'} backgroundColor="black" />
-      {__DEV__ && <FlipperAsyncStorage />}
       {hasMigrated ? (
         <ContextProviders>
           <JailBrokenCheck>
