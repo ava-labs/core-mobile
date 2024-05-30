@@ -50,7 +50,6 @@ describe('Add custom network', () => {
     await NetworksManagePage.inputExplorerUrl(
       NetworksManageLoc.arbCustomExplorerUrl
     )
-    await NetworksManagePage.swipeUp()
     await NetworksManagePage.tapSaveButton()
     await NetworksManagePage.tapCustomTab()
     await Assert.isVisible(NetworksManagePage.arbWrongCustomNetworkName)
