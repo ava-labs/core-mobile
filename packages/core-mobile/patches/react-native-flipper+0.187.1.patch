@@ -1,0 +1,24 @@
+diff --git a/node_modules/react-native-flipper/react-native-flipper.podspec b/node_modules/react-native-flipper/react-native-flipper.podspec
+index f76436e..024997a 100644
+--- a/node_modules/react-native-flipper/react-native-flipper.podspec
++++ b/node_modules/react-native-flipper/react-native-flipper.podspec
+@@ -6,7 +6,7 @@
+ require "json"
+ 
+ package = JSON.parse(File.read(File.join(__dir__, "package.json")))
+-compiler_flags = '-DFB_SONARKIT_ENABLED=1'
++#compiler_flags = '-DFB_SONARKIT_ENABLED=1'
+ 
+ Pod::Spec.new do |s|
+   s.name         = "react-native-flipper"
+@@ -27,8 +27,8 @@ Pod::Spec.new do |s|
+   s.requires_arc = true
+   if ENV['PRODUCTION'] == '1'
+     Pod::UI.puts "#{s.name}: Found PRODUCTION=1, #{s.name} will be disabled for production builds"
+-  else
+-    s.compiler_flags = compiler_flags
++  #else
++  # s.compiler_flags = compiler_flags
+   end
+   s.dependency "React-Core"
+ end

@@ -59,5 +59,24 @@ class MainApplication : Application(), ReactApplication {
             // If you opted-in for the New Architecture, we load the native entry point for this app.
             load()
         }
+
+
+        initializeFlipper(this, reactNativeHost.reactInstanceManager)
+    }
+
+    /**
+     * Loads Flipper in React Native templates. Call this in the onCreate method with something like
+     * initializeFlipper(this, reactNativeHost.reactInstanceManager)
+     *
+     * @param context
+     * @param reactInstanceManager
+     */
+    private fun initializeFlipper(
+        context: Context,
+        reactInstanceManager: ReactInstanceManager
+    ) {
+        if (BuildConfig.FLIPPER_ENABLED) {
+            // ReactNativeFlipper.initializeFlipper(context, reactInstanceManager)
+        }
     }
 }
