@@ -1,10 +1,10 @@
 import { ErrorBase } from 'errors/ErrorBase'
 
 export enum ModuleErrors {
-  unsupportedChainId = 'UNSUPPORTED_CHAIN_ID',
-  unsupportedMethod = 'UNSUPPORTED_METHOD',
-  unsupportedNamespace = 'UNSUPPORTED_NAMESPACE',
-  unexpectedError = 'UNEXPECTED_ERROR'
+  UNSUPPORTED_CHAIN_ID = 'UNSUPPORTED_CHAIN_ID',
+  UNSUPPORTED_METHOD = 'UNSUPPORTED_METHOD',
+  UNSUPPORTED_NAMESPACE = 'UNSUPPORTED_NAMESPACE',
+  UNEXPECTED_ERROR = 'UNEXPECTED_ERROR'
 }
 
 export class VmModuleErrors extends ErrorBase<ModuleErrors> {}

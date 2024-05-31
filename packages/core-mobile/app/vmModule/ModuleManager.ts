@@ -8,6 +8,8 @@ import Logger from 'utils/Logger'
 import { ModuleErrors, VmModuleErrors } from './errors'
 
 const modules: Module[] = [evm, pvm, avm, bitcoin, coreEth]
+// https://github.com/ChainAgnostic/CAIPs/blob/main/CAIPs/caip-2.md
+// Syntax for namespace is defined in CAIP-2
 const NAMESPACE_REGEX = new RegExp('[-a-z0-9]{3,8}')
 
 export class ModuleManager {
@@ -15,14 +17,14 @@ export class ModuleManager {
     const module = await this.getModule(chainId)
     if (module === undefined) {
       throw new VmModuleErrors({
-        name: ModuleErrors.unsupportedChainId,
+        name: ModuleErrors.UNSUPPORTED_CHAIN_ID,
         message: `No module supported for chainId: ${chainId}`
       })
     }
 
     if (!this.isMethodPermitted(module, method)) {
       throw new VmModuleErrors({
-        name: ModuleErrors.unsupportedMethod,
+        name: ModuleErrors.UNSUPPORTED_METHOD,
         message: `Method ${method} is not supported in ${
           module.getManifest()?.name
         } module`
@@ -36,7 +38,7 @@ export class ModuleManager {
     const namespace = chainId.split(':')[0]
     if (!namespace || !NAMESPACE_REGEX.test(namespace)) {
       Logger.error(
-        `${ModuleErrors.unsupportedNamespace}: namespace is invalid or missing in chainId`
+        `${ModuleErrors.UNSUPPORTED_NAMESPACE}: namespace is invalid or missing in chainId`
       )
       return
     }
