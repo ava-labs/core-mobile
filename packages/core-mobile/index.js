@@ -41,3 +41,7 @@ if (DevDebuggingConfig.API_MOCKING || process.env.API_MOCKING) {
     onUnhandledRequest: 'bypass'
   })
 }
+
+if (process.env.PERF_ENABLED) {
+  require('react-native-performance-flipper-reporter').setupDefaultFlipperReporter()
+}
