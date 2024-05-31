@@ -1,11 +1,12 @@
 import { JsonRpcProvider } from 'ethers'
-import { isSwimmer } from 'services/network/utils/isSwimmerNetwork'
-import { Network } from '@avalabs/chains-sdk'
+import { isSwimmerByChainId } from 'services/network/utils/isSwimmerNetwork'
+import { NetworkToken } from '@avalabs/chains-sdk'
 import { TokenBaseUnit2 } from 'types/TokenBaseUnit2'
 
 interface EVMModule {
   provider: JsonRpcProvider
-  network: Network
+  networkToken: NetworkToken
+  chainId: number
 }
 
 type PresetKeys = 'LOW' | 'MEDIUM' | 'HIGH'
@@ -19,7 +20,7 @@ const DEFAULT_PRESETS = {
 const BASE_PRIORITY_FEE_WEI = 500000000 //0.5 GWei
 
 export async function getNetworkFee(
-  { provider, network }: EVMModule,
+  { provider, networkToken, chainId }: EVMModule,
   presetMultipliers: { [T in PresetKeys]: number } = DEFAULT_PRESETS
 ): Promise<
   | {
@@ -38,13 +39,13 @@ export async function getNetworkFee(
 
   const baseFeePerGasInUnit = new TokenBaseUnit2(
     maxFeePerGas,
-    network.networkToken.decimals,
-    network.networkToken.symbol
+    networkToken.decimals,
+    networkToken.symbol
   )
   const basePriorityFeePerGas = new TokenBaseUnit2(
     BASE_PRIORITY_FEE_WEI,
-    network.networkToken.decimals,
-    network.networkToken.symbol
+    networkToken.decimals,
+    networkToken.symbol
   )
 
   const lowMaxTip = basePriorityFeePerGas.mul(presetMultipliers.LOW)
@@ -64,6 +65,6 @@ export async function getNetworkFee(
       maxFeePerGas: baseFeePerGasInUnit.add(highMaxTip).toSubUnit(),
       maxPriorityFeePerGas: highMaxTip.toSubUnit()
     },
-    isFixedFee: isSwimmer(network)
+    isFixedFee: isSwimmerByChainId(chainId)
   }
 }
