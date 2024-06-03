@@ -50,7 +50,7 @@ export function convertXChainTransaction(
       name: network.networkToken.name,
       symbol: network.networkToken.symbol
     },
-    fee: avaxUnlocked.sub(avaxCreated).toDisplay(),
+    fee: avaxUnlocked.sub(avaxCreated).toSubUnit().toString(),
     explorerLink: getExplorerAddressByNetwork(network, tx.txHash, 'tx'),
     txType: tx.txType
   }
