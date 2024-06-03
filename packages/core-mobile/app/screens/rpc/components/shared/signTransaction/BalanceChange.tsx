@@ -129,7 +129,8 @@ const TransactionSimulationResultBalanceChangeContent = ({
         const valueBN = numberToBN(assetDiff.value, asset.decimals)
         displayValue = balanceToDisplayValue(valueBN, asset.decimals)
       } else if (asset.type === 'ERC721' || asset.type === 'ERC1155') {
-        // for NFTs, we don't have a value, so we just display 1 to indicate that a single NFT will be transferred
+        // for NFTs, blockaid doesn't provide the actual value of the NFTs transferred
+        // so we just display 1 to indicate that a single NFT will be transferred
         displayValue = 1
       }
 
