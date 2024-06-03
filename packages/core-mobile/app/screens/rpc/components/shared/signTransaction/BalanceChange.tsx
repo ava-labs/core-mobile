@@ -24,6 +24,7 @@ import ArrowSVG from 'components/svg/ArrowSVG'
 import isEmpty from 'lodash.isempty'
 import { useSelector } from 'react-redux'
 import { selectTokenByAddress } from 'store/balance'
+import { isHexString } from 'ethers'
 import { sharedStyles } from './styles'
 
 const BalanceChange = ({
@@ -125,12 +126,16 @@ const TransactionSimulationResultBalanceChangeContent = ({
       key: string
     }): JSX.Element => {
       let displayValue
-      if ('value' in assetDiff && assetDiff.value && 'decimals' in asset) {
-        const valueBN = numberToBN(assetDiff.value, asset.decimals)
-        displayValue = balanceToDisplayValue(valueBN, asset.decimals)
-      } else if (asset.type === 'ERC721' || asset.type === 'ERC1155') {
-        // for NFTs, blockaid doesn't provide the actual value of the NFTs transferred
-        // so we just display 1 to indicate that a single NFT will be transferred
+      if ('value' in assetDiff && assetDiff.value) {
+        if ('decimals' in asset) {
+          const valueBN = numberToBN(assetDiff.value, asset.decimals)
+          displayValue = balanceToDisplayValue(valueBN, asset.decimals)
+        } else if (isHexString(assetDiff.value)) {
+          // for some token(like ERC1155) blockaid returns value in hex format
+          displayValue = parseInt(assetDiff.value, 16)
+        }
+      } else if (asset.type === 'ERC721') {
+        // for ERC721 type token, we just display 1 to indicate that a single NFT will be transferred
         displayValue = 1
       }
 
