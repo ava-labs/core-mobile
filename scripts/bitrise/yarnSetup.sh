@@ -5,6 +5,9 @@ set -e
 
 set -o pipefail
 
+# enable corepack
+corepack enable
+
 if ! cat /etc/issue 2>/dev/null
 then
 yarn install --immutable && yarn setup
