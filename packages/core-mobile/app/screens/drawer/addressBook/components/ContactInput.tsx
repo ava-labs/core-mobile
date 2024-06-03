@@ -128,7 +128,7 @@ const ContactInput = ({
           testID="contact_input__p_chain_address"
           multiline
           errorText={btcAddressError}
-          placeholder={'Enter the P-chain address'}
+          placeholder={'Enter the P-Chain address'}
           text={addressXP}
           onChangeText={onAddressXPChange}
         />
