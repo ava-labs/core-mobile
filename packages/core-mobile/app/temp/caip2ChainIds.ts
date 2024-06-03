@@ -8,11 +8,11 @@ import { ChainId } from '@avalabs/chains-sdk'
  * @param properties
  */
 export function applyTempChainIdConversion(properties?: JsonMap): void {
-  if (properties && Object.keys(properties).includes('chainId')) {
+  if (properties?.chainId) {
     properties.chainId = updateChainIdIfNeeded(Number(properties.chainId))
   }
 
-  if (properties && Object.keys(properties).includes('networkChainId')) {
+  if (properties?.networkChainId) {
     properties.networkChainId = updateChainIdIfNeeded(
       Number(properties.networkChainId)
     )
