@@ -224,7 +224,8 @@ describe('eth_sign handler', () => {
         const scanResponse: TransactionScanResponse = {
           validation: {
             result_type: 'Malicious',
-            features: []
+            features: [],
+            status: 'Success'
           },
           block: '0x123',
           chain: 'ethereum'
@@ -260,7 +261,8 @@ describe('eth_sign handler', () => {
       const scanResponse: TransactionScanResponse = {
         validation: {
           result_type: 'Benign',
-          features: []
+          features: [],
+          status: 'Success'
         },
         block: '0x123',
         chain: 'ethereum'
