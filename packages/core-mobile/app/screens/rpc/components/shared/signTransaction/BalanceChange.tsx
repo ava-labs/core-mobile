@@ -202,22 +202,26 @@ const TransactionSimulationResultBalanceChangeContent = ({
 
           return (
             <View key={index.toString()} sx={{ gap: 16 }}>
-              {assetDiff.out.map((outAssetDiff, i) =>
-                renderAssetDiff({
-                  asset,
-                  assetDiff: outAssetDiff,
-                  isOut: true,
-                  key: i.toString()
-                })
-              )}
-              {assetDiff.in.map((inAssetDiff, i) =>
-                renderAssetDiff({
-                  asset,
-                  assetDiff: inAssetDiff,
-                  isOut: false,
-                  key: i.toString()
-                })
-              )}
+              <>
+                {assetDiff.out.map((outAssetDiff, i) =>
+                  renderAssetDiff({
+                    asset,
+                    assetDiff: outAssetDiff,
+                    isOut: true,
+                    key: i.toString()
+                  })
+                )}
+              </>
+              <>
+                {assetDiff.in.map((inAssetDiff, i) =>
+                  renderAssetDiff({
+                    asset,
+                    assetDiff: inAssetDiff,
+                    isOut: false,
+                    key: i.toString()
+                  })
+                )}
+              </>
             </View>
           )
         }
