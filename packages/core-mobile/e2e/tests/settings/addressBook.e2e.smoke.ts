@@ -30,7 +30,6 @@ describe('Address Book', () => {
     await AddressBookPage.inputContactName()
     await AddressBookPage.inputAvaxAddress()
     await AddressBookPage.inputBtcAddress()
-    await AddressBookPage.tapSave()
     await Assert.isVisible(AddressBookPage.contactName)
     await Assert.isNotVisible(AddressBookPage.emptyContacts)
     await Assert.isNotVisible(AddressBookPage.emptyContactsText)

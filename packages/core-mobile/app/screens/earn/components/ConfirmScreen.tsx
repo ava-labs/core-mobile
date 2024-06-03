@@ -78,6 +78,7 @@ export const ConfirmScreen = ({
         ) : (
           <>
             <AvaButton.PrimaryLarge
+              testID="confirm_btn"
               onPress={onConfirm}
               disabled={confirmBtnDisabled}>
               {confirmBtnTitle}

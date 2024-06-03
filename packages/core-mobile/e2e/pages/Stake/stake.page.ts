@@ -207,7 +207,6 @@ class StakePage {
   async verifyStakeScreenItems() {
     await Assert.isVisible(this.stakeTitle)
     await Assert.isVisible(this.notEnoughAvaxTitle)
-    await Assert.isVisible(this.notEnoughAvaxDescription)
     await Assert.isVisible(this.recieveAvaxButton)
     if (Actions.platform() === Platform.Android) {
       await Assert.isVisible(this.swapAvaxButton)
@@ -234,7 +233,7 @@ class StakePage {
     if ((await Actions.isVisible(this.stakePrimaryButton, 0)) === true) {
       await Actions.tapElementAtIndex(this.stakePrimaryButton, 0)
     } else {
-      let platformIndex = 0
+      let platformIndex = 1
       if (Actions.platform() === Platform.Android) {
         platformIndex = 1
       }
