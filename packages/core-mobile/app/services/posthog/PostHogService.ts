@@ -2,6 +2,7 @@ import Config from 'react-native-config'
 import Logger from 'utils/Logger'
 import DeviceInfoService from 'services/deviceInfo/DeviceInfoService'
 import { JsonMap } from 'store/posthog'
+import { applyTempChainIdConversion } from 'temp/caip2ChainIds'
 import { sanitizeFeatureFlags } from './sanitizeFeatureFlags'
 import { FeatureGates, FeatureVars, PostHogDecideResponse } from './types'
 import { getPosthogDeviceInfo } from './utils'
@@ -33,6 +34,8 @@ class PostHogService {
         'PostHogService not configured. please call configure() first'
       )
     }
+
+    applyTempChainIdConversion(properties)
 
     const deviceInfo = await getPosthogDeviceInfo()
     const PostHogCaptureFetchOptions = {
