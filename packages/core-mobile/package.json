@@ -245,8 +245,8 @@
     "typescript": "5.2.2"
   },
   "engines": {
-    "node": ">=18.14.1",
-    "yarn": ">=1.22.10"
+    "node": ">=20.11.1",
+    "yarn": ">=3.6.4"
   },
   "lavamoat": {
     "allowScripts": {

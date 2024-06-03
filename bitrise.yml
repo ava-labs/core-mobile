@@ -247,10 +247,10 @@ workflows:
     - restore-cache@1:
         title: Restore Node 18 Cache
         inputs:
-        - key: node-18-{{ .OS }}-{{ .Arch }}
+        - key: node-20-{{ .OS }}-{{ .Arch }}
     - nvm@1:
         inputs:
-        - node_version: 18.14.1
+        - node_version: 20.11.1
     - save-cache@1:
         title: Save Node 18 Cache
         inputs:
@@ -258,7 +258,7 @@ workflows:
             /Users/vagrant/.nvm/*
             /root/.nvm/*
         - is_key_unique: "true"
-        - key: node-18-{{ .OS }}-{{ .Arch }}
+        - key: node-20-{{ .OS }}-{{ .Arch }}
   _run_android_tests:
     steps:
     - script-runner@0:

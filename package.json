@@ -7,10 +7,10 @@
   ],
   "scripts": {
     "prepare": "husky install",
-    "setup": "yarn workspaces foreach -p run setup",
-    "lint": "yarn workspaces foreach -p run lint",
-    "tsc": "yarn workspaces foreach -p run tsc",
-    "test": "yarn workspaces foreach -p run test",
+    "setup": "yarn workspaces foreach --worktree -p run setup",
+    "lint": "yarn workspaces foreach --worktree -p run lint",
+    "tsc": "yarn workspaces foreach --worktree -p run tsc",
+    "test": "yarn workspaces foreach --worktree  -p run test",
     "core": "yarn workspace @avalabs/core-mobile",
     "k2": "yarn workspace @avalabs/k2-mobile"
   },
@@ -38,7 +38,8 @@
     "@noble/secp256k1": "2.0.0"
   },
   "engines": {
-    "node": ">=18.14.1",
-    "yarn": ">=1.22.10"
-  }
+    "node": ">=20.11.1",
+    "yarn": ">=3.6.4"
+  },
+  "packageManager": "yarn@4.1.1"
 }
