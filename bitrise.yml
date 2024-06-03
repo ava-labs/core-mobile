@@ -250,7 +250,7 @@ workflows:
         - key: node-18-{{ .OS }}-{{ .Arch }}
     - nvm@1:
         inputs:
-        - node_version: 18.14.1
+        - node_version: 18.19.1
     - save-cache@1:
         title: Save Node 18 Cache
         inputs:
