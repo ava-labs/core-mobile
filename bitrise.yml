@@ -154,6 +154,10 @@ workflows:
         inputs:
         - verbose: "true"
         - source_root_path: $BITRISE_SOURCE_DIR/ios
+        - command: install
+          value_options:
+            - install
+            - update
     - save-cocoapods-cache@1: {}
     - xcode-archive@4:
         inputs:
