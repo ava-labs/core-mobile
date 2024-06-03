@@ -24,6 +24,7 @@ import ArrowSVG from 'components/svg/ArrowSVG'
 import isEmpty from 'lodash.isempty'
 import { useSelector } from 'react-redux'
 import { selectTokenByAddress } from 'store/balance'
+import { isHexString } from 'ethers'
 import { sharedStyles } from './styles'
 
 const BalanceChange = ({
@@ -125,9 +126,17 @@ const TransactionSimulationResultBalanceChangeContent = ({
       key: string
     }): JSX.Element => {
       let displayValue
-      if ('value' in assetDiff && assetDiff.value && 'decimals' in asset) {
-        const valueBN = numberToBN(assetDiff.value, asset.decimals)
-        displayValue = balanceToDisplayValue(valueBN, asset.decimals)
+      if ('value' in assetDiff && assetDiff.value) {
+        if ('decimals' in asset) {
+          const valueBN = numberToBN(assetDiff.value, asset.decimals)
+          displayValue = balanceToDisplayValue(valueBN, asset.decimals)
+        } else if (isHexString(assetDiff.value)) {
+          // for some token(like ERC1155) blockaid returns value in hex format
+          displayValue = parseInt(assetDiff.value, 16)
+        }
+      } else if (asset.type === 'ERC721') {
+        // for ERC721 type token, we just display 1 to indicate that a single NFT will be transferred
+        displayValue = 1
       }
 
       const assetDiffColor = isOut ? '$dangerLight' : '$successLight'
@@ -145,7 +154,8 @@ const TransactionSimulationResultBalanceChangeContent = ({
             sx={{
               flexDirection: 'row',
               alignItems: 'center',
-              gap: 10
+              gap: 10,
+              flexShrink: 1
             }}>
             {asset.name !== undefined && asset.symbol !== undefined && (
               <Avatar.Token
@@ -155,7 +165,9 @@ const TransactionSimulationResultBalanceChangeContent = ({
                 size={32}
               />
             )}
-            <Text variant="heading6">{asset.name}</Text>
+            <Text variant="heading6" numberOfLines={1} sx={{ flexShrink: 1 }}>
+              {asset.name}
+            </Text>
           </View>
           <View sx={{ alignItems: 'flex-end' }}>
             {displayValue !== undefined && (
@@ -164,15 +176,17 @@ const TransactionSimulationResultBalanceChangeContent = ({
                 {displayValue} {asset.symbol}
               </Text>
             )}
-            <Text
-              variant="body2"
-              sx={{
-                color:
-                  displayValue !== undefined ? '$neutral400' : assetDiffColor
-              }}>
-              {displayValue === undefined && (isOut ? '-' : '')}
-              {currencyFormatter(Number(assetDiff.usd_price))}
-            </Text>
+            {assetDiff.usd_price !== undefined && (
+              <Text
+                variant="body2"
+                sx={{
+                  color:
+                    displayValue !== undefined ? '$neutral400' : assetDiffColor
+                }}>
+                {displayValue === undefined && (isOut ? '-' : '')}
+                {currencyFormatter(Number(assetDiff.usd_price))}
+              </Text>
+            )}
           </View>
         </View>
       )
@@ -187,7 +201,7 @@ const TransactionSimulationResultBalanceChangeContent = ({
           const asset = assetDiff.asset
 
           return (
-            <View key={index.toString()} sx={{ flexDirection: 'row' }}>
+            <View key={index.toString()} sx={{ gap: 16 }}>
               <>
                 {assetDiff.out.map((outAssetDiff, i) =>
                   renderAssetDiff({
