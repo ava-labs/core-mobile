@@ -88,7 +88,7 @@ export function convertPChainTransaction(
       name: network.networkToken.name,
       symbol: network.networkToken.symbol
     },
-    fee: fee.toDisplay(),
+    fee: fee.toSubUnit().toString(),
     explorerLink: getExplorerAddressByNetwork(network, tx.txHash, 'tx'),
     txType: tx.txType
   }
