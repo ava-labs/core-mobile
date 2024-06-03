@@ -78,6 +78,7 @@ export function TokenBaseUnitInput<T extends TokenBaseUnit<T>>({
 
   return (
     <InputText
+      testID="token_base_unit_input"
       {..._props}
       mode={'amount'}
       maxLength={maxLength}
