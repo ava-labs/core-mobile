@@ -189,7 +189,7 @@ export type WalletScreenStackParams = {
   [AppNavigation.Modal.BrowserTabsList]: undefined
   [AppNavigation.Modal.BrowserTabCloseAll]: { onConfirm: () => void }
   [AppNavigation.Modal.AnalyticsConsentSheet]: undefined
-  [AppNavigation.Modal.UseWalletConnect]: { onContinue: () => void }
+  [AppNavigation.Modal.UseWalletConnect]: undefined
   [AppNavigation.Modal.BitcoinSendTransaction]: BitcoinSendTransactionParams
   [AppNavigation.Modal.MaliciousActivityWarning]: MaliciousActivityWarningParams
 }
