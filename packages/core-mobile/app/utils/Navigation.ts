@@ -1,4 +1,4 @@
-import { createNavigationContainerRef } from '@react-navigation/native'
+import { Route, createNavigationContainerRef } from '@react-navigation/native'
 import { RootScreenStackParamList } from 'navigation/types'
 
 let pinRecovery = false
@@ -29,4 +29,8 @@ export const goBack = (): void => {
   if (navigationRef.isReady() && navigationRef.canGoBack()) {
     navigationRef.goBack()
   }
+}
+
+export const getCurrentRoute = (): Route<string> | undefined => {
+  return navigationRef.current?.getCurrentRoute()
 }

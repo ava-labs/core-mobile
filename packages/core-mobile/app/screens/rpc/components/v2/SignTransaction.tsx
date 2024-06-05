@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { ActivityIndicator, StyleSheet, ScrollView } from 'react-native'
 import { Space } from 'components/Space'
 import AvaButton from 'components/AvaButton'
@@ -65,6 +65,7 @@ const SignTransaction = (): JSX.Element => {
   const [submitting, setSubmitting] = useState(false)
   const [showData, setShowData] = useState(false)
   const [showCustomSpendLimit, setShowCustomSpendLimit] = useState(false)
+  const isContractInteraction = useMemo(() => !!txParams.data, [txParams.data])
 
   const rejectAndClose = useCallback(
     (message?: string) => {
@@ -260,7 +261,10 @@ const SignTransaction = (): JSX.Element => {
           )) ||
           ((contractType === ContractCall.UNKNOWN ||
             contractType === undefined) && (
-            <GenericTransaction {...displayData} />
+            <GenericTransaction
+              {...displayData}
+              isContractInteraction={isContractInteraction}
+            />
           ))}
       </>
     )
