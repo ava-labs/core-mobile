@@ -260,7 +260,7 @@ const SignTransaction = (): JSX.Element => {
           )) ||
           ((contractType === ContractCall.UNKNOWN ||
             contractType === undefined) && (
-            <GenericTransaction {...displayData} />
+            <GenericTransaction {...displayData} network={network} />
           ))}
       </>
     )
