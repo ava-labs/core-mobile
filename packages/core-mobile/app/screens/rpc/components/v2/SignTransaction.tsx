@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { ActivityIndicator, StyleSheet, ScrollView } from 'react-native'
 import { Space } from 'components/Space'
 import AvaButton from 'components/AvaButton'
@@ -32,8 +32,6 @@ import { isAddressApproved } from 'store/rpc/handlers/eth_sign/utils/isAddressAp
 import WalletConnectService from 'services/walletconnectv2/WalletConnectService'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { getChainIdFromRequest } from 'store/rpc/handlers/eth_sendTransaction/utils'
-import Logger from 'utils/Logger'
-import { isContractAddress } from 'utils/isContractAddress'
 import RpcRequestBottomSheet from '../shared/RpcRequestBottomSheet'
 import BalanceChange from '../shared/signTransaction/BalanceChange'
 import MaliciousActivityWarning from './MaliciousActivityWarning'
@@ -67,7 +65,7 @@ const SignTransaction = (): JSX.Element => {
   const [submitting, setSubmitting] = useState(false)
   const [showData, setShowData] = useState(false)
   const [showCustomSpendLimit, setShowCustomSpendLimit] = useState(false)
-  const [isToAddressContract, setIsToAddressContract] = useState(false)
+  const isContractInteraction = useMemo(() => !!txParams.data, [txParams.data])
 
   const rejectAndClose = useCallback(
     (message?: string) => {
@@ -141,14 +139,6 @@ const SignTransaction = (): JSX.Element => {
       goBack()
     }
   }, [goBack, requestStatus])
-
-  useEffect(() => {
-    if (transaction?.txParams?.to && network) {
-      isContractAddress(transaction.txParams.to, network)
-        .then(setIsToAddressContract)
-        .catch(Logger.error)
-    }
-  }, [transaction?.txParams?.to, network])
 
   const handleFeesChange = useCallback(
     (fees: Eip1559Fees<NetworkTokenUnit>, feePreset: FeePreset) => {
@@ -273,7 +263,7 @@ const SignTransaction = (): JSX.Element => {
             contractType === undefined) && (
             <GenericTransaction
               {...displayData}
-              isToAddressContract={isToAddressContract}
+              isContractInteraction={isContractInteraction}
             />
           ))}
       </>

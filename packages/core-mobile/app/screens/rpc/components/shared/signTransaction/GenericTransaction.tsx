@@ -14,8 +14,8 @@ export function GenericTransaction({
   description,
   fromAddress,
   toAddress,
-  isToAddressContract
-}: TransactionDisplayValues & { isToAddressContract: boolean }): JSX.Element {
+  isContractInteraction
+}: TransactionDisplayValues & { isContractInteraction: boolean }): JSX.Element {
   const theme = useApplicationContext().theme
   const account = useSelector(selectAccountByAddress(fromAddress))
 
@@ -37,7 +37,7 @@ export function GenericTransaction({
         <Space y={8} />
         <Row style={{ justifyContent: 'space-between' }}>
           <AvaText.Body3>
-            {isToAddressContract || description?.args?.asset
+            {isContractInteraction || description?.args?.asset
               ? 'Contract'
               : 'To'}
           </AvaText.Body3>
