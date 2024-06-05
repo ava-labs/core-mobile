@@ -32,6 +32,8 @@ import { isAddressApproved } from 'store/rpc/handlers/eth_sign/utils/isAddressAp
 import WalletConnectService from 'services/walletconnectv2/WalletConnectService'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { getChainIdFromRequest } from 'store/rpc/handlers/eth_sendTransaction/utils'
+import Logger from 'utils/Logger'
+import { isContractAddress } from 'utils/isContractAddress'
 import RpcRequestBottomSheet from '../shared/RpcRequestBottomSheet'
 import BalanceChange from '../shared/signTransaction/BalanceChange'
 import MaliciousActivityWarning from './MaliciousActivityWarning'
@@ -65,6 +67,7 @@ const SignTransaction = (): JSX.Element => {
   const [submitting, setSubmitting] = useState(false)
   const [showData, setShowData] = useState(false)
   const [showCustomSpendLimit, setShowCustomSpendLimit] = useState(false)
+  const [isToAddressContract, setIsToAddressContract] = useState(false)
 
   const rejectAndClose = useCallback(
     (message?: string) => {
@@ -138,6 +141,14 @@ const SignTransaction = (): JSX.Element => {
       goBack()
     }
   }, [goBack, requestStatus])
+
+  useEffect(() => {
+    if (transaction?.txParams?.to && network) {
+      isContractAddress(transaction.txParams.to, network)
+        .then(setIsToAddressContract)
+        .catch(Logger.error)
+    }
+  }, [transaction?.txParams?.to, network])
 
   const handleFeesChange = useCallback(
     (fees: Eip1559Fees<NetworkTokenUnit>, feePreset: FeePreset) => {
@@ -260,7 +271,10 @@ const SignTransaction = (): JSX.Element => {
           )) ||
           ((contractType === ContractCall.UNKNOWN ||
             contractType === undefined) && (
-            <GenericTransaction {...displayData} network={network} />
+            <GenericTransaction
+              {...displayData}
+              isToAddressContract={isToAddressContract}
+            />
           ))}
       </>
     )
