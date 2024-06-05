@@ -337,12 +337,12 @@ const getTxDescription = async (
       error: string
     }
 > => {
-  return await getTxInfo(
-    txParams?.to?.toLocaleLowerCase() ?? '',
-    txParams?.data ?? '',
-    txParams?.value ?? '',
+  return await getTxInfo({
+    address: txParams?.to?.toLocaleLowerCase() ?? '',
+    data: txParams?.data ?? '',
+    value: txParams?.value,
     network
-  )
+  })
 }
 
 const getFunctionName = (txDescription: TransactionDescription): string => {

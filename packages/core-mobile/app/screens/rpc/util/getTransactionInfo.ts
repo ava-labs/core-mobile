@@ -18,7 +18,7 @@ export function isTxDescriptionError(
 
 function parseDataWithABI(
   data: string,
-  value: string,
+  value: string | undefined,
   contractInterface: Interface
 ):
   | TransactionDescription
@@ -27,8 +27,8 @@ function parseDataWithABI(
     } {
   try {
     const txDescription = contractInterface.parseTransaction({
-      data: data,
-      value: value
+      data,
+      value
     })
     return txDescription ? txDescription : { error: 'error decoding with abi' }
   } catch (e) {
@@ -38,16 +38,21 @@ function parseDataWithABI(
 
 export function isTransactionDescriptionError(
   description: TransactionDescription | { error: string }
-) {
+): boolean {
   return !!description && !('error' in description)
 }
 
-export async function getTxInfo(
-  address: string,
-  data: string,
-  value: string,
+export async function getTxInfo({
+  address,
+  data,
+  value,
+  network
+}: {
+  address: string
+  data: string
+  value: string | undefined
   network: Network
-): Promise<
+}): Promise<
   | TransactionDescription
   | {
       error: string
@@ -78,7 +83,7 @@ export async function getTxInfo(
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const isJson = (str: any) => {
+  const isJson = (str: any): boolean => {
     try {
       JSON.parse(str)
     } catch (e) {
@@ -92,7 +97,14 @@ export async function getTxInfo(
   return parseDataWithABI(data, value, new Interface(abi))
 }
 
-async function getAvalancheABIFromSource(address: string, isMainnet: boolean) {
+async function getAvalancheABIFromSource(
+  address: string,
+  isMainnet: boolean
+): Promise<{
+  result?: string[]
+  contractSource?: ContractSourceCodeResponse
+  error?: string
+}> {
   let contractSource: ContractSourceCodeResponse
   try {
     const response = await getSourceForContract(
