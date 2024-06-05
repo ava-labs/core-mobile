@@ -41,17 +41,25 @@ const invalidateSeedlessToken = async (): Promise<void> => {
   SeedlessService.sessionManager.setIsTokenValid(false)
 }
 
-const registerTokenExpireHandler = async (
+const registerSeedlessErrorHandler = async (
   _: Action,
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
   const { dispatch } = listenerApi
-  const onSessionExpiredHandler = async (e: ErrResponse): Promise<void> => {
+
+  const onErrorHandler = async (e: ErrResponse): Promise<void> => {
+    // log error
+    // note:
+    // we are removing the url to avoid leaking user's address
+    // an example url https://prod.signer.cubist.dev/v1/org/Org%23db7f2cac-7bd0-4e5f-b7c2-b5881a4bb4e7/eth1/sign/0xD0E99cEa490Cdb54ba555922bf325952F0DE38bd
+    Logger.error('seedless error', JSON.stringify({ ...e, url: '' }))
+
+    // handle re-auth for expired token
     if (e.status === 403 && !e.isUserMfaError()) {
       dispatch(onTokenExpired)
     }
   }
-  GlobalEvents.onError(onSessionExpiredHandler)
+  GlobalEvents.onError(onErrorHandler)
 }
 
 const handleTokenExpired = async (
@@ -157,7 +165,7 @@ export const addSeedlessListeners = (
   })
   startListening({
     actionCreator: onRehydrationComplete,
-    effect: registerTokenExpireHandler
+    effect: registerSeedlessErrorHandler
   })
   startListening({
     actionCreator: onLogOut,
