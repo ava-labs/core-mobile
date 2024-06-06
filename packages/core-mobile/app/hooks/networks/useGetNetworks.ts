@@ -7,6 +7,7 @@ export const useGetNetworks = (): UseQueryResult<Networks, Error> => {
   return useQuery({
     queryKey: [ReactQueryKeys.NETWORKS],
     queryFn: () => NetworkService.getNetworks(),
-    staleTime: Infinity
+    staleTime: Infinity,
+    networkMode: 'offlineFirst'
   })
 }
