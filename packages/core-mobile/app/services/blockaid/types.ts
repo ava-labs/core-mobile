@@ -10,7 +10,8 @@ export type Asset =
   | Blockaid.Erc721TokenDetails
   | Blockaid.NonercTokenDetails
   | Blockaid.NativeAssetDetails
-export type AssetDiff = Blockaid.GeneralAssetDiff
+export type AssetDiff = Blockaid.AssetDiff
+export type GeneralAssetDiff = Blockaid.GeneralAssetDiff
 export type SiteScanResponse = Blockaid.SiteScanResponse
 export type MaliciousActivityType = 'Transaction' | 'SessionProposal'
 export type JsonRpcRequestData = Blockaid.Evm.JsonRpcScanParams.Data
