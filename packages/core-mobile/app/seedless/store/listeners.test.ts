@@ -65,7 +65,7 @@ describe('seedless - listeners', () => {
     store.dispatch(onRehydrationComplete())
     GlobalEvents.triggerErrorEvent({
       status: 403,
-      isUserMfaError: () => false
+      isSessionExpiredError: () => true
     } as ErrorEvent)
     expect(mockNavigate).toHaveBeenCalledWith({
       name: 'Root.RefreshToken',
