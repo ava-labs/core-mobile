@@ -13,10 +13,12 @@ import { sharedStyles } from './styles'
 export function GenericTransaction({
   description,
   fromAddress,
-  toAddress
-}: TransactionDisplayValues): JSX.Element {
+  toAddress,
+  isContractInteraction
+}: TransactionDisplayValues & { isContractInteraction: boolean }): JSX.Element {
   const theme = useApplicationContext().theme
   const account = useSelector(selectAccountByAddress(fromAddress))
+
   return (
     <>
       <View
@@ -35,7 +37,9 @@ export function GenericTransaction({
         <Space y={8} />
         <Row style={{ justifyContent: 'space-between' }}>
           <AvaText.Body3>
-            {description?.args?.asset ? 'Contract' : 'To'}
+            {isContractInteraction || description?.args?.asset
+              ? 'Contract'
+              : 'To'}
           </AvaText.Body3>
           <TokenAddress address={description?.args?.asset ?? toAddress} />
         </Row>

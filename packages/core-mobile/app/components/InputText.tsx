@@ -122,7 +122,8 @@ const InputText = forwardRef<TextInput, InputTextProps>(
       inputTextContainerStyle,
       onLayout,
       clearBtnContainerSx,
-      borderColor = 'transparent'
+      borderColor = 'transparent',
+      testID
     },
     ref
   ) => {
@@ -215,7 +216,7 @@ const InputText = forwardRef<TextInput, InputTextProps>(
             onLayout={onLayout}
             selectionColor={colors.$neutral50}
             maxLength={maxLength}
-            testID="input_text"
+            testID={testID}
             keyboardAppearance={Appearance.getColorScheme() || 'default'}
             ref={ref}
             autoCorrect={autoCorrect}

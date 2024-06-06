@@ -1,7 +1,7 @@
 export default {
   emptyScreenTitle: 'No DeFi Transactions',
   emptyScreenDescription: 'Discover top dApps on Avalanche now.',
-  exploreButton: 'btnPrimary',
+  exploreButton: 'explore_ecosystem_btn',
   linkSvg: 'link_svg',
   protocolLogo: 'protocol_logo',
   protocolName: 'protocol_name',
@@ -10,5 +10,5 @@ export default {
   headerBack: 'header_back',
   networkName: 'network_name',
   valueText: 'Value',
-  goToProtocolButton: 'btnPrimary'
+  goToProtocolButton: 'go_to_protocol_btn'
 }

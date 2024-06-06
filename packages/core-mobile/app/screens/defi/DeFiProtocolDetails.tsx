@@ -115,7 +115,9 @@ export const DeFiProtocolDetails = (): JSX.Element => {
         {renderCardContent()}
       </Card>
       <View style={{ marginBottom: 41 }}>
-        <AvaButton.PrimaryLarge onPress={goToProtocolPage}>
+        <AvaButton.PrimaryLarge
+          onPress={goToProtocolPage}
+          testID="go_to_protocol_btn">
           <LinkSVG color={theme.logoColor} />
           <Space x={8} />
           {`Go to ${data?.name ?? protocolId}`}

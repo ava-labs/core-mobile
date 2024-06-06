@@ -81,7 +81,7 @@ export default function CheckMnemonic(
       />
       <FlexSpacer minHeight={20} />
       <View style={{ flex: 1 }} />
-      <View testID="check_mnemonic__verify_phrase_btn">
+      <View>
         <AvaButton.PrimaryLarge
           onPress={onVerify}
           testID="check_mnemonic__verify_phrase_btn">

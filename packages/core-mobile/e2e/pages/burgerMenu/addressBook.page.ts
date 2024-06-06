@@ -1,6 +1,5 @@
 import addressBookLoc from '../../locators/burgerMenu/addressBook.loc'
 import Actions from '../../helpers/actions'
-import commonElsPage from '../commonEls.page'
 
 class AddressBook {
   get addAddressButton() {
@@ -39,12 +38,32 @@ class AddressBook {
     return by.text(addressBookLoc.newContactName)
   }
 
+  get contactNameText() {
+    return by.text(addressBookLoc.contactName)
+  }
+
   get saveButton() {
-    return by.text(addressBookLoc.saveButton)
+    return by.id(addressBookLoc.saveButton)
   }
 
   get newContactTitle() {
     return by.text(addressBookLoc.newContact)
+  }
+
+  get nameField() {
+    return by.id(addressBookLoc.nameField)
+  }
+
+  get addressField() {
+    return by.id(addressBookLoc.addressField)
+  }
+
+  get btcAddressField() {
+    return by.id(addressBookLoc.btcAddressField)
+  }
+
+  get pChainAddressField() {
+    return by.id(addressBookLoc.pChainAddressField)
   }
 
   async tapDelete() {
@@ -60,7 +79,7 @@ class AddressBook {
   }
 
   async tapContactName() {
-    await Actions.tapElementAtIndex(this.contactName, 0)
+    await Actions.tapElementAtIndex(this.contactNameText, 0)
   }
 
   async tapDeleteContact() {
@@ -68,44 +87,33 @@ class AddressBook {
   }
 
   async inputContactName() {
-    await commonElsPage.enterTextInput(0, addressBookLoc.contactName)
+    await Actions.setInputText(this.nameField, addressBookLoc.contactName)
     await Actions.tap(this.nameText)
   }
 
   async inputNewContactName() {
-    await Actions.setInputText(
-      commonElsPage.inputTextField,
-      addressBookLoc.newContactName,
-      0
-    )
+    await Actions.setInputText(this.nameField, addressBookLoc.newContactName, 0)
     await Actions.tap(this.nameText)
   }
 
   async inputAvaxAddress() {
     await Actions.setInputText(
-      commonElsPage.inputTextField,
-      addressBookLoc.contactAvaxAddress,
-      1
+      this.addressField,
+      addressBookLoc.contactAvaxAddress
     )
     await Actions.tap(this.nameText)
   }
 
   async inputBtcAddress() {
     await Actions.setInputText(
-      commonElsPage.inputTextField,
-      addressBookLoc.contactBtcAddress,
-      2
+      this.btcAddressField,
+      addressBookLoc.contactBtcAddress
     )
-    await element(commonElsPage.inputTextField).atIndex(2).tapReturnKey()
+    await this.tapSave()
   }
 
   async tapSave() {
-    try {
-      await Actions.tapElementAtIndex(this.saveButton, 0)
-    } catch (error) {
-      await Actions.tapElementAtIndex(this.newContactTitle, 0)
-      await Actions.tapElementAtIndex(this.saveButton, 0)
-    }
+    await Actions.tapElementAtIndex(this.saveButton, 0)
   }
 }
 

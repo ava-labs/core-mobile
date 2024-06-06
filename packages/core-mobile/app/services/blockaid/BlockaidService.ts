@@ -29,7 +29,7 @@ class BlockaidService {
   ): Promise<TransactionScanResponse> =>
     blockaid.evm.transaction.scan({
       account_address: params.from,
-      chain: BlockaidService.getNetworkPath(chainId),
+      chain: BlockaidService.getTransactionScanSupportedChain(chainId),
       options: ['validation', 'simulation'],
       data: {
         from: params.from,
@@ -55,7 +55,7 @@ class BlockaidService {
     domain?: string
   }): Promise<TransactionScanResponse> =>
     blockaid.evm.jsonRpc.scan({
-      chain: BlockaidService.getNetworkPath(chainId),
+      chain: BlockaidService.getTransactionScanSupportedChain(chainId),
       options: ['validation', 'simulation'],
       account_address: accountAddress,
       data: data,
@@ -63,7 +63,7 @@ class BlockaidService {
       metadata: domain && domain.length > 0 ? { domain } : { non_dapp: true }
     })
 
-  private static getNetworkPath = (
+  private static getTransactionScanSupportedChain = (
     chainId: number
   ): TransactionScanSupportedChain => {
     switch (chainId) {
@@ -71,6 +71,22 @@ class BlockaidService {
         return 'ethereum'
       case ChainId.AVALANCHE_MAINNET_ID:
         return 'avalanche'
+      case 42161:
+        return 'arbitrum'
+      case 8453:
+        return 'base'
+      case 56:
+        return 'bsc'
+      case 137:
+        return 'polygon'
+      case 324:
+        return 'zksync'
+      case 7777777:
+        return 'zora'
+      case 59144:
+        return 'linea'
+      case 238:
+        return 'blast'
       default:
         throw new Error(`[Blockaid] Unsupported chainId: ${chainId}`)
     }
