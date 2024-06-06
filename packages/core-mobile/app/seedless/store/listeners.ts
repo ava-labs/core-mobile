@@ -55,7 +55,7 @@ const registerSeedlessErrorHandler = async (
     Logger.error('seedless error', JSON.stringify({ ...e, url: '' }))
 
     // handle re-auth for expired token
-    if (e.status === 403 && !e.isUserMfaError()) {
+    if (e.isSessionExpiredError()) {
       dispatch(onTokenExpired)
     }
   }
