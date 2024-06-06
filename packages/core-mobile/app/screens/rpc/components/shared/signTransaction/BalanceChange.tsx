@@ -90,13 +90,13 @@ const TransactionSimulationResultBalanceChangeContent = ({
 }: {
   transactionSimulation: TransactionSimulation
 }): JSX.Element => {
-  const outTokenList = useMemo(() => {
+  const outAssetDiffs = useMemo(() => {
     return transactionSimulation.account_summary.assets_diffs
       .filter(assetDiff => assetDiff.out.length > 0)
       .sort((a, b) => a.out.length - b.out.length)
   }, [transactionSimulation.account_summary.assets_diffs])
 
-  const inTokenList = useMemo(() => {
+  const inAssetDiffs = useMemo(() => {
     return transactionSimulation.account_summary.assets_diffs
       .filter(assetDiff => assetDiff.in.length > 0)
       .sort((a, b) => a.in.length - b.in.length)
@@ -104,14 +104,14 @@ const TransactionSimulationResultBalanceChangeContent = ({
 
   return (
     <>
-      {outTokenList.map((assetDiff, index) => (
+      {outAssetDiffs.map((assetDiff, index) => (
         <AssetDiffGroup
           key={index.toString()}
           assetDiff={assetDiff}
           isOut={true}
         />
       ))}
-      {inTokenList.map((assetDiff, index) => (
+      {inAssetDiffs.map((assetDiff, index) => (
         <AssetDiffGroup
           key={index.toString()}
           assetDiff={assetDiff}
