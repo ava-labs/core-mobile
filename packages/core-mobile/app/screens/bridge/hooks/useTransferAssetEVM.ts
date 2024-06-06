@@ -12,6 +12,7 @@ import { selectBridgeAppConfig } from 'store/bridge'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { useInAppRequest } from 'hooks/useInAppRequest'
 import BridgeService from 'services/bridge/BridgeService'
+import { selectIsDeveloperMode } from 'store/settings/advanced/slice'
 
 type TransferParams = {
   amount: Big
@@ -34,6 +35,7 @@ export function useTransferAssetEVM(): {
   const { networks } = useNetworks()
   const activeAccount = useSelector(selectActiveAccount)
   const config = useSelector(selectBridgeAppConfig)
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const { currentBlockchain } = useBridgeSDK()
   const { request } = useInAppRequest()
 
@@ -62,13 +64,20 @@ export function useTransferAssetEVM(): {
         config,
         activeAccount,
         allNetworks: networks,
-        isTestnet: false,
+        isTestnet: isDeveloperMode,
         onStatusChange,
         onTxHashChange,
         request
       })
     },
-    [currentBlockchain, config, activeAccount, networks, request]
+    [
+      currentBlockchain,
+      config,
+      activeAccount,
+      isDeveloperMode,
+      networks,
+      request
+    ]
   )
 
   return {
