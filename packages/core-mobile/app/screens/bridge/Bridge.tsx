@@ -21,7 +21,7 @@ import {
 import AppNavigation from 'navigation/AppNavigation'
 import CarrotSVG from 'components/svg/CarrotSVG'
 import useBridge from 'screens/bridge/hooks/useBridge'
-import { useNavigation } from '@react-navigation/native'
+import { useNavigation, useRoute } from '@react-navigation/native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { BridgeScreenProps } from 'navigation/types'
@@ -76,12 +76,11 @@ const formatBalance = (balance: Big | undefined): string | undefined => {
   return balance && formatTokenAmount(balance, 6)
 }
 
-type NavigationProp = BridgeScreenProps<
-  typeof AppNavigation.Bridge.Bridge
->['navigation']
+type ScreenProps = BridgeScreenProps<typeof AppNavigation.Bridge.Bridge>
 
 const Bridge: FC = () => {
-  const navigation = useNavigation<NavigationProp>()
+  const navigation = useNavigation<ScreenProps['navigation']>()
+  const { params } = useRoute<ScreenProps['route']>()
   const { theme } = useTheme()
   const dispatch = useDispatch()
   const criticalConfig = useSelector(selectBridgeCriticalConfig)
@@ -223,6 +222,27 @@ const Bridge: FC = () => {
     }
   }, [assetsWithBalances, currentBlockchain, selectedAsset])
 
+  const handleSelect = useCallback(
+    (token: AssetBalance): void => {
+      const symbol = token.symbol
+
+      setCurrentAssetSymbol(symbol)
+      setSelectedAsset(token)
+    },
+    [setCurrentAssetSymbol]
+  )
+
+  useEffect(() => {
+    if (params?.initialTokenSymbol) {
+      const token = assetsWithBalances?.find(
+        tk => tk.symbolOnNetwork === params.initialTokenSymbol
+      )
+      if (token) {
+        handleSelect(token)
+      }
+    }
+  }, [params, assetsWithBalances, handleSelect])
+
   // Remove chains turned off by the feature flags
   const filterChains = useCallback(
     (chains: Blockchain[]) =>
@@ -288,13 +308,6 @@ const Bridge: FC = () => {
     if (targetBlockchain) {
       setCurrentBlockchain(targetBlockchain)
     }
-  }
-
-  const handleSelect = (token: AssetBalance): void => {
-    const symbol = token.symbol
-
-    setCurrentAssetSymbol(symbol)
-    setSelectedAsset(token)
   }
 
   /**
