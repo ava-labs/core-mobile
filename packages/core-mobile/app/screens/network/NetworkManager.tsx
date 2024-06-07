@@ -132,7 +132,7 @@ export default function NetworkManager({ onShowInfo }: Props): JSX.Element {
             }
           />
         </TabViewAva.Item>
-        <TabViewAva.Item title={title}>
+        <TabViewAva.Item title={title} testID="networks_tab">
           <FlatList
             data={filteredNetworks}
             renderItem={renderNetwork}
