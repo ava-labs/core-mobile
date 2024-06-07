@@ -26,12 +26,12 @@ import { useTheme } from '@avalabs/k2-mobile'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList'
 
-type ScreenProps = SwapScreenProps<typeof AppNavigation.Swap.Swap>
+type NavigationProps = SwapScreenProps<typeof AppNavigation.Swap.Swap>
 
 export default function SwapView(): JSX.Element {
-  const navigation = useNavigation<ScreenProps['navigation']>()
+  const navigation = useNavigation<NavigationProps['navigation']>()
   const { theme } = useTheme()
-  const { params } = useRoute<ScreenProps['route']>()
+  const { params } = useRoute<NavigationProps['route']>()
   const { filteredTokenList } = useSearchableTokenList()
   const tokensWithZeroBalance = useSelector(selectTokensWithZeroBalance)
   const {

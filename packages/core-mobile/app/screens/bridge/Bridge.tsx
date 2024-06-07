@@ -76,11 +76,11 @@ const formatBalance = (balance: Big | undefined): string | undefined => {
   return balance && formatTokenAmount(balance, 6)
 }
 
-type ScreenProps = BridgeScreenProps<typeof AppNavigation.Bridge.Bridge>
+type NavigationProps = BridgeScreenProps<typeof AppNavigation.Bridge.Bridge>
 
 const Bridge: FC = () => {
-  const navigation = useNavigation<ScreenProps['navigation']>()
-  const { params } = useRoute<ScreenProps['route']>()
+  const navigation = useNavigation<NavigationProps['navigation']>()
+  const { params } = useRoute<NavigationProps['route']>()
   const { theme } = useTheme()
   const dispatch = useDispatch()
   const criticalConfig = useSelector(selectBridgeCriticalConfig)
