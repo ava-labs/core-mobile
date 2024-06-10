@@ -11,7 +11,7 @@ import FeatureBlocked from 'screens/posthog/FeatureBlocked'
 import * as Navigation from 'utils/Navigation'
 
 export type SwapStackParamList = {
-  [AppNavigation.Swap.Swap]: undefined
+  [AppNavigation.Swap.Swap]: { initialTokenId: string } | undefined
 }
 
 const SwapStack = createStackNavigator<SwapStackParamList>()
