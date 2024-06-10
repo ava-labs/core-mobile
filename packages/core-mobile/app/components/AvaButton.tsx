@@ -139,7 +139,8 @@ const BtnSecondary: FC<BaseProps> = ({
   onPress,
   disabled,
   children,
-  style
+  style,
+  testID
 }) => {
   const theme = useApplicationContext().theme
   return (
@@ -155,7 +156,7 @@ const BtnSecondary: FC<BaseProps> = ({
         },
         style
       ]}
-      testID="btnSecondary">
+      testID={testID}>
       {children}
     </AvaButtonBase>
   )
@@ -234,11 +235,13 @@ const BtnSecondaryLarge: FC<BaseProps> = ({
   onPress,
   disabled,
   children,
-  style
+  style,
+  testID
 }) => {
   const theme = useApplicationContext().theme
   return (
     <BtnSecondary
+      testID={testID}
       onPress={onPress}
       disabled={disabled}
       style={[styles.btnSecondaryLarge, style]}>
