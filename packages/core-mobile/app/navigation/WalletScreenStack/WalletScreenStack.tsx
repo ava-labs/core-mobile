@@ -40,7 +40,7 @@ import AddressBookStack, {
 } from 'navigation/wallet/AddressBookStack'
 import TokenDetail from 'screens/watchlist/TokenDetails/TokenDetail'
 import ActivityDetail from 'screens/activity/ActivityDetail'
-import OwnedTokenDetail from 'screens/portfolio/OwnedTokenDetail'
+import OwnedTokenDetail from 'screens/portfolio/ownedTokenDetail/OwnedTokenDetail'
 import BridgeScreenStack from 'navigation/wallet/BridgeScreenStack'
 import NFTScreenStack, {
   NFTStackParamList

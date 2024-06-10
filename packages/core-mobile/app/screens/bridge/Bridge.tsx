@@ -21,7 +21,7 @@ import {
 import AppNavigation from 'navigation/AppNavigation'
 import CarrotSVG from 'components/svg/CarrotSVG'
 import useBridge from 'screens/bridge/hooks/useBridge'
-import { useNavigation } from '@react-navigation/native'
+import { useNavigation, useRoute } from '@react-navigation/native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { BridgeScreenProps } from 'navigation/types'
@@ -40,8 +40,7 @@ import Logger from 'utils/Logger'
 import {
   blockchainToNetwork,
   getBlockchainDisplayName,
-  isUnifiedBridgeAsset,
-  networkToBlockchain
+  isUnifiedBridgeAsset
 } from 'screens/bridge/utils/bridgeUtils'
 import { BNInput } from 'components/BNInput'
 import BN from 'bn.js'
@@ -76,12 +75,11 @@ const formatBalance = (balance: Big | undefined): string | undefined => {
   return balance && formatTokenAmount(balance, 6)
 }
 
-type NavigationProp = BridgeScreenProps<
-  typeof AppNavigation.Bridge.Bridge
->['navigation']
+type NavigationProps = BridgeScreenProps<typeof AppNavigation.Bridge.Bridge>
 
 const Bridge: FC = () => {
-  const navigation = useNavigation<NavigationProp>()
+  const navigation = useNavigation<NavigationProps['navigation']>()
+  const { params } = useRoute<NavigationProps['route']>()
   const { theme } = useTheme()
   const dispatch = useDispatch()
   const criticalConfig = useSelector(selectBridgeCriticalConfig)
@@ -109,7 +107,6 @@ const Bridge: FC = () => {
   const {
     setCurrentAsset: setCurrentAssetSymbol,
     currentBlockchain,
-    setCurrentBlockchain: setCurrentBlockchainSDK,
     targetBlockchain
   } = useBridgeSDK()
   const { activeNetwork, networks } = useNetworks()
@@ -180,14 +177,6 @@ const Bridge: FC = () => {
     BIG_ZERO.eq(amount) ||
     hasInvalidReceiveAmount
 
-  // Derive bridge Blockchain from active network
-  useEffect(() => {
-    const networkBlockchain = networkToBlockchain(activeNetwork)
-    if (currentBlockchain !== networkBlockchain) {
-      setCurrentBlockchainSDK(networkBlockchain)
-    }
-  }, [activeNetwork, currentBlockchain, setCurrentBlockchainSDK])
-
   // Update selected asset for unified bridge whenever currentBlockchain changes
   useEffect(() => {
     if (!selectedAsset) return
@@ -222,6 +211,27 @@ const Bridge: FC = () => {
       setSelectedAsset(correspondingAsset)
     }
   }, [assetsWithBalances, currentBlockchain, selectedAsset])
+
+  const handleSelect = useCallback(
+    (token: AssetBalance): void => {
+      const symbol = token.symbol
+
+      setCurrentAssetSymbol(symbol)
+      setSelectedAsset(token)
+    },
+    [setCurrentAssetSymbol]
+  )
+
+  useEffect(() => {
+    if (params?.initialTokenSymbol) {
+      const token = assetsWithBalances?.find(
+        tk => tk.symbolOnNetwork === params.initialTokenSymbol
+      )
+      if (token) {
+        handleSelect(token)
+      }
+    }
+  }, [params, assetsWithBalances, handleSelect])
 
   // Remove chains turned off by the feature flags
   const filterChains = useCallback(
@@ -288,13 +298,6 @@ const Bridge: FC = () => {
     if (targetBlockchain) {
       setCurrentBlockchain(targetBlockchain)
     }
-  }
-
-  const handleSelect = (token: AssetBalance): void => {
-    const symbol = token.symbol
-
-    setCurrentAssetSymbol(symbol)
-    setSelectedAsset(token)
   }
 
   /**

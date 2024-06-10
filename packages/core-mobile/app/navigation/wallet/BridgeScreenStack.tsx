@@ -19,7 +19,7 @@ import { selectIsBridgeBlocked } from 'store/posthog'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 
 export type BridgeStackParamList = {
-  [AppNavigation.Bridge.Bridge]: undefined
+  [AppNavigation.Bridge.Bridge]: { initialTokenSymbol: string } | undefined
   [AppNavigation.Bridge.BridgeTransactionStatus]: BridgeTransactionStatusParams
   [AppNavigation.Modal.BridgeSelectToken]: {
     onTokenSelected: (token: AssetBalance) => void
