@@ -40,8 +40,7 @@ import Logger from 'utils/Logger'
 import {
   blockchainToNetwork,
   getBlockchainDisplayName,
-  isUnifiedBridgeAsset,
-  networkToBlockchain
+  isUnifiedBridgeAsset
 } from 'screens/bridge/utils/bridgeUtils'
 import { BNInput } from 'components/BNInput'
 import BN from 'bn.js'
@@ -108,7 +107,6 @@ const Bridge: FC = () => {
   const {
     setCurrentAsset: setCurrentAssetSymbol,
     currentBlockchain,
-    setCurrentBlockchain: setCurrentBlockchainSDK,
     targetBlockchain
   } = useBridgeSDK()
   const { activeNetwork, networks } = useNetworks()
@@ -178,14 +176,6 @@ const Bridge: FC = () => {
     isNativeBalanceNotEnoughForNetworkFee ||
     BIG_ZERO.eq(amount) ||
     hasInvalidReceiveAmount
-
-  // Derive bridge Blockchain from active network
-  useEffect(() => {
-    const networkBlockchain = networkToBlockchain(activeNetwork)
-    if (currentBlockchain !== networkBlockchain) {
-      setCurrentBlockchainSDK(networkBlockchain)
-    }
-  }, [activeNetwork, currentBlockchain, setCurrentBlockchainSDK])
 
   // Update selected asset for unified bridge whenever currentBlockchain changes
   useEffect(() => {

@@ -153,6 +153,8 @@ export type AnalyticsEvents = {
   TokenListTokenSelected: { selectedToken: string }
   TokenReceiveClicked: { chainId: number }
   TokenSendClicked: { chainId: number }
+  TokenSwapClicked: { chainId: number }
+  TokenBridgeClicked: { chainId: number }
   TotpValidationFailed: { error: string }
   TotpValidationSuccess: undefined
   WalletConnectSessionApprovedV2: {
