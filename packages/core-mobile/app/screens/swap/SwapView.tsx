@@ -23,13 +23,16 @@ import { getTokenAddress } from 'swap/getSwapRate'
 import { SwapScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
 import { useTheme } from '@avalabs/k2-mobile'
-import { useNavigation } from '@react-navigation/native'
+import { useNavigation, useRoute } from '@react-navigation/native'
+import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList'
 
-type SwapNav = SwapScreenProps<typeof AppNavigation.Swap.Swap>['navigation']
+type NavigationProps = SwapScreenProps<typeof AppNavigation.Swap.Swap>
 
 export default function SwapView(): JSX.Element {
-  const navigation = useNavigation<SwapNav>()
+  const navigation = useNavigation<NavigationProps['navigation']>()
   const { theme } = useTheme()
+  const { params } = useRoute<NavigationProps['route']>()
+  const { filteredTokenList } = useSearchableTokenList()
   const tokensWithZeroBalance = useSelector(selectTokensWithZeroBalance)
   const {
     swap,
@@ -67,6 +70,16 @@ export default function SwapView(): JSX.Element {
   useEffect(validateInputsFx, [fromTokenValue, maxFromValue])
   useEffect(applyOptimalRateFx, [optimalRate])
   useEffect(calculateMaxFx, [fromToken])
+  useEffect(() => {
+    if (params?.initialTokenId) {
+      const token = filteredTokenList.find(
+        tk => tk.localId === params.initialTokenId
+      )
+      if (token) {
+        setFromToken(token)
+      }
+    }
+  }, [params, filteredTokenList, setFromToken])
 
   function validateInputsFx(): void {
     if (fromTokenValue && fromTokenValue.bn.isZero()) {

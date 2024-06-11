@@ -27,7 +27,7 @@ import { useNetworkFee } from 'hooks/useNetworkFee'
 import { bigintToBig } from 'utils/bigNumbers/bigintToBig'
 import { useCoinGeckoId } from 'hooks/useCoinGeckoId'
 import { useSimplePrice } from 'hooks/useSimplePrice'
-import { isUnifiedBridgeAsset } from '../utils/bridgeUtils'
+import { isUnifiedBridgeAsset, networkToBlockchain } from '../utils/bridgeUtils'
 import { useUnifiedBridge } from './useUnifiedBridge/useUnifiedBridge'
 import { getTargetChainId } from './useUnifiedBridge/utils'
 
@@ -73,6 +73,7 @@ export default function useBridge(selectedAsset?: AssetBalance): Bridge {
   const [sourceBalance, setSourceBalance] = useState<AssetBalance>()
   const {
     currentBlockchain,
+    setCurrentBlockchain,
     currentAsset,
     currentAssetData,
     setCurrentAsset,
@@ -217,6 +218,14 @@ export default function useBridge(selectedAsset?: AssetBalance): Bridge {
     networkFeeRate,
     unified.isAssetSupported
   ])
+
+  // Derive bridge Blockchain from active network
+  useEffect(() => {
+    const networkBlockchain = networkToBlockchain(activeNetwork)
+    if (currentBlockchain !== networkBlockchain) {
+      setCurrentBlockchain(networkBlockchain)
+    }
+  }, [activeNetwork, currentBlockchain, setCurrentBlockchain])
 
   const defaults = {
     amount,

@@ -14,12 +14,15 @@ import ActivityList from 'screens/shared/ActivityList/ActivityList'
 import { TokenWithBalance } from 'store/balance'
 import { Transaction } from 'store/transaction'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { Button, Text, View } from '@avalabs/k2-mobile'
+import { Text, View } from '@avalabs/k2-mobile'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import PriceChangeIndicator from 'screens/watchlist/components/PriceChangeIndicator'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import Separator from 'components/Separator'
 import { useNetworks } from 'hooks/networks/useNetworks'
+import { UI, useIsUIDisabled } from 'hooks/useIsUIDisabled'
+import useBridge from 'screens/bridge/hooks/useBridge'
+import OwnedTokenActionButtons from './components/OwnedTokenActionButtons'
 
 type ScreenProps = WalletScreenProps<
   typeof AppNavigation.Wallet.OwnedTokenDetail
@@ -34,6 +37,13 @@ const OwnedTokenDetail: FC = () => {
   const {
     appHook: { currencyFormatter }
   } = useApplicationContext()
+  const isSwapDisabled = useIsUIDisabled(UI.Swap)
+  const isBridgeDisabled = useIsUIDisabled(UI.Bridge)
+  const { assetsWithBalances } = useBridge()
+  const isTokenBridgable = Boolean(
+    assetsWithBalances &&
+      assetsWithBalances.some(asset => asset.symbolOnNetwork === token?.symbol)
+  )
 
   useEffect(loadToken, [filteredTokenList, token, tokenId])
 
@@ -83,6 +93,43 @@ const OwnedTokenDetail: FC = () => {
     )
   }
 
+  const handleSend = (): void => {
+    AnalyticsService.capture('TokenSendClicked', {
+      chainId: activeNetwork.chainId
+    })
+    navigate(AppNavigation.Wallet.SendTokens, {
+      screen: AppNavigation.Send.Send,
+      params: { token: token }
+    })
+  }
+
+  const handleReceive = (): void => {
+    AnalyticsService.capture('TokenReceiveClicked', {
+      chainId: activeNetwork.chainId
+    })
+    navigate(AppNavigation.Wallet.ReceiveTokens)
+  }
+
+  const handleSwap = (): void => {
+    AnalyticsService.capture('TokenSwapClicked', {
+      chainId: activeNetwork.chainId
+    })
+    navigate(AppNavigation.Wallet.Swap, {
+      screen: AppNavigation.Swap.Swap,
+      params: { initialTokenId: tokenId }
+    })
+  }
+
+  const handleBridge = (): void => {
+    AnalyticsService.capture('TokenBridgeClicked', {
+      chainId: activeNetwork.chainId
+    })
+    navigate(AppNavigation.Wallet.Bridge, {
+      screen: AppNavigation.Bridge.Bridge,
+      params: token?.symbol ? { initialTokenSymbol: token.symbol } : undefined
+    })
+  }
+
   return (
     <View sx={{ paddingHorizontal: 16, flex: 1 }}>
       <Text variant="heading3">Token Details</Text>
@@ -115,38 +162,14 @@ const OwnedTokenDetail: FC = () => {
         />
       </View>
       <Space y={16} />
-      <Row>
-        <View sx={{ flex: 1 }}>
-          <Button
-            type="secondary"
-            size="large"
-            onPress={() => {
-              AnalyticsService.capture('TokenSendClicked', {
-                chainId: activeNetwork.chainId
-              })
-              navigate(AppNavigation.Wallet.SendTokens, {
-                screen: AppNavigation.Send.Send,
-                params: { token: token }
-              })
-            }}>
-            Send
-          </Button>
-        </View>
-        <Space x={16} />
-        <View sx={{ flex: 1 }}>
-          <Button
-            type="secondary"
-            size="large"
-            onPress={() => {
-              AnalyticsService.capture('TokenReceiveClicked', {
-                chainId: activeNetwork.chainId
-              })
-              navigate(AppNavigation.Wallet.ReceiveTokens)
-            }}>
-            Receive
-          </Button>
-        </View>
-      </Row>
+      <OwnedTokenActionButtons
+        showSwap={!isSwapDisabled}
+        showBridge={!isBridgeDisabled && isTokenBridgable}
+        onSend={handleSend}
+        onReceive={handleReceive}
+        onBridge={handleBridge}
+        onSwap={handleSwap}
+      />
       <Space y={24} />
       <Separator />
       <Space y={24} />
