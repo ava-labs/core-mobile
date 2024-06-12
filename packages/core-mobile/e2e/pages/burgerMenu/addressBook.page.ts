@@ -109,6 +109,7 @@ class AddressBook {
       this.btcAddressField,
       addressBookLoc.contactBtcAddress
     )
+    await Actions.tap(this.nameText)
     await this.tapSave()
   }
 
