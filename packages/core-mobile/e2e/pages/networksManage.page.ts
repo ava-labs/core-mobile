@@ -63,7 +63,7 @@ class NetworksPage {
   }
 
   get networksTab() {
-    return by.id(networksManage.networksTab)
+    return by.text(networksManage.networksTab)
   }
 
   get networkRpcUrl() {
@@ -127,7 +127,7 @@ class NetworksPage {
   }
 
   async addBtcNetwork() {
-    await Action.tapElementAtIndex(this.favoriteNetwork, 0)
+    await Action.tapElementAtIndex(this.favoriteNetwork, 2)
   }
 
   async tapAddNetwork() {
@@ -159,7 +159,7 @@ class NetworksPage {
   }
 
   async tapNetworksTab() {
-    await Action.tapElementAtIndex(this.networksTab, 1)
+    await Action.tapElementAtIndex(this.networksTab, 0)
   }
 
   async tapNetworkInfo() {

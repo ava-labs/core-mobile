@@ -37,7 +37,8 @@ type TabViewAvaFC = FC<
     renderCustomLabel?: (
       title: string,
       selected: boolean,
-      color: string
+      color: string,
+      testID?: string
     ) => React.ReactNode
     currentTabIndex?: number
     testID?: string
@@ -56,7 +57,8 @@ const TabViewAva: TabViewAvaFC = ({
   onTabIndexChange,
   lazy = true,
   hideSingleTab = true,
-  children
+  children,
+  testID
 }) => {
   const [currentIndex, setCurrentIndex] = useState(currentTabIndex)
   const theme = useApplicationContext().theme
@@ -111,10 +113,12 @@ const TabViewAva: TabViewAvaFC = ({
     (
       props: TabBarItemProps<Route> & {
         key: string
+        testID?: string
       }
     ) => {
       return (
         <AvaButton.Base
+          testID={testID}
           key={props.key}
           style={{
             width: props.defaultTabWidth,
@@ -131,7 +135,7 @@ const TabViewAva: TabViewAvaFC = ({
         </AvaButton.Base>
       )
     },
-    [theme.alternateBackground]
+    [testID, theme.alternateBackground]
   )
 
   //tabBar is hidden if there's only one route
@@ -194,6 +198,7 @@ const TabViewAva: TabViewAvaFC = ({
       renderTabBar={tabBar}
       lazy={lazy}
       initialLayout={initialLayout}
+      testID={testID}
     />
   )
 }

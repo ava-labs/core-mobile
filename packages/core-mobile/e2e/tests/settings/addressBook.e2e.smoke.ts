@@ -7,7 +7,6 @@ import Actions from '../../helpers/actions'
 import BurgerMenuPage from '../../pages/burgerMenu/burgerMenu.page'
 import { warmup } from '../../helpers/warmup'
 import AddressBookPage from '../../pages/burgerMenu/addressBook.page'
-import commonElsPage from '../../pages/commonEls.page'
 
 describe('Address Book', () => {
   beforeAll(async () => {
@@ -47,7 +46,7 @@ describe('Address Book', () => {
   it('Should delete contact', async () => {
     await AddressBookPage.tapEdit()
     if (device.getPlatform() === 'android') {
-      await Actions.swipeUp(commonElsPage.inputTextField, 'fast', 0.25, 0)
+      await Actions.swipeUp(AddressBookPage.addressField, 'fast', 0.25, 0)
     }
     await AddressBookPage.tapDeleteContact()
     await AddressBookPage.tapDelete()

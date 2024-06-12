@@ -230,15 +230,7 @@ class StakePage {
   }
 
   async tapStakeButton() {
-    if ((await Actions.isVisible(this.stakePrimaryButton, 0)) === true) {
-      await Actions.tapElementAtIndex(this.stakePrimaryButton, 0)
-    } else {
-      let platformIndex = 1
-      if (Actions.platform() === Platform.Android) {
-        platformIndex = 1
-      }
-      await Actions.tapElementAtIndex(this.stakeSecondaryButton, platformIndex)
-    }
+    await Actions.tapElementAtIndex(this.stakeSecondaryButton, 0)
   }
 
   async tapStakeNow() {
