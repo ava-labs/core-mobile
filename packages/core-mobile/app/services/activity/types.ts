@@ -29,7 +29,5 @@ export interface NetworkActivityService {
     network,
     address,
     criticalConfig
-  }: GetActivitiesForAddressParams): Promise<{
-    transactions: Transaction[]
-  }>
+  }: GetActivitiesForAddressParams): Promise<ActivityResponse>
 }

@@ -1,13 +1,5 @@
 import { object, string, boolean, z } from 'zod'
 
-export type Module = {
-  getManifest: () => Manifest | undefined
-  getBalances: () => Promise<string>
-  getTransactionHistory: () => Promise<string>
-  getNetworkFee: () => Promise<string>
-  getAddress: () => Promise<string>
-}
-
 const sourceSchema = object({
   checksum: string(),
   location: object({

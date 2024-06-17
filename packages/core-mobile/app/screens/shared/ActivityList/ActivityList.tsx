@@ -36,7 +36,7 @@ const ActivityList = ({
   tokenSymbolFilter,
   openTransactionDetails,
   openTransactionStatus
-}: Props) => {
+}: Props): React.JSX.Element => {
   const { transactions, refresh, isLoading, isRefreshing } =
     useGetRecentTransactions()
   const [filter, setFilter] = useState(ActivityFilter.All)
@@ -61,21 +61,21 @@ const ActivityList = ({
           }
         })
         .filter(tx => {
-          return tokenSymbolFilter && tx.token?.symbol
-            ? tokenSymbolFilter === tx.token.symbol
+          return tokenSymbolFilter && tx.tokens[0]?.symbol
+            ? tokenSymbolFilter === tx.tokens[0].symbol
             : true
         }),
     [transactions, tokenSymbolFilter, filter]
   )
 
-  const renderFilterDropdown = () => {
-    const renderSelection = (selectedItem: ActivityFilter) => (
-      <SelectionRenderItem text={selectedItem} />
-    )
+  const renderFilterDropdown = (): React.JSX.Element => {
+    const renderSelection = (
+      selectedItem: ActivityFilter
+    ): React.JSX.Element => <SelectionRenderItem text={selectedItem} />
 
-    const renderOptions = (item: OptionsItemInfo<ActivityFilter>) => (
-      <OptionsRenderItem text={item.item} />
-    )
+    const renderOptions = (
+      item: OptionsItemInfo<ActivityFilter>
+    ): React.JSX.Element => <OptionsRenderItem text={item.item} />
 
     return (
       <Row
@@ -98,7 +98,7 @@ const ActivityList = ({
     )
   }
 
-  const renderTransactions = () => {
+  const renderTransactions = (): React.JSX.Element => {
     return (
       <Transactions
         testID="transaction"
@@ -113,7 +113,7 @@ const ActivityList = ({
 
   const selectedFilter = filterOptions.findIndex(option => option === filter)
 
-  const renderContents = () => {
+  const renderContents = (): React.JSX.Element => {
     if (isLoading) return <ActivityLoader />
 
     return renderTransactions()
@@ -128,7 +128,7 @@ const ActivityList = ({
   )
 }
 
-const SelectionRenderItem = ({ text }: { text: string }) => {
+const SelectionRenderItem = ({ text }: { text: string }): React.JSX.Element => {
   return (
     <AvaText.ButtonSmall testID={`activity_list__current_filter`}>
       Display: {text}
@@ -136,7 +136,7 @@ const SelectionRenderItem = ({ text }: { text: string }) => {
   )
 }
 
-const OptionsRenderItem = ({ text }: { text: string }) => {
+const OptionsRenderItem = ({ text }: { text: string }): React.JSX.Element => {
   return (
     <View style={{ paddingHorizontal: 16, paddingVertical: 8 }}>
       <AvaText.Body1 testID={`activity_list__filter_${text}`}>

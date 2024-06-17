@@ -1,13 +1,19 @@
-import { avm } from 'vmModule/mock_modules/avm'
-import { bitcoin } from 'vmModule/mock_modules/bitcoin'
-import { coreEth } from 'vmModule/mock_modules/coreEth'
-import { evm } from 'vmModule/mock_modules/evm'
-import { pvm } from 'vmModule/mock_modules/pvm'
-import { Module } from 'vmModule/mock_modules/types'
+import { AVMModule } from 'vmModule/mock_modules/avm'
+import { BitcoinModule } from 'vmModule/mock_modules/bitcoin'
+import { CoreEthModule } from 'vmModule/mock_modules/coreEth'
+import { EvmModule } from '@avalabs/evm-module'
+import { PVMModule } from 'vmModule/mock_modules/pvm'
 import Logger from 'utils/Logger'
+import { Module } from '@internal/types'
 import { ModuleErrors, VmModuleErrors } from './errors'
 
-const modules: Module[] = [evm, pvm, avm, bitcoin, coreEth]
+const modules: Module[] = [
+  new EvmModule(),
+  new BitcoinModule(),
+  new AVMModule(),
+  new CoreEthModule(),
+  new PVMModule()
+]
 // https://github.com/ChainAgnostic/CAIPs/blob/main/CAIPs/caip-2.md
 // Syntax for namespace is defined in CAIP-2
 const NAMESPACE_REGEX = new RegExp('[-a-z0-9]{3,8}')

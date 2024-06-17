@@ -8,6 +8,7 @@ import { getExplorerAddressByNetwork } from 'utils/ExplorerUtils'
 import { Avalanche } from '@avalabs/wallets-sdk'
 import { Avax } from 'types'
 import { stripChainAddress } from 'store/account/utils'
+import { TokenType } from '@internal/types'
 
 export function convertXChainTransaction(
   tx: XChainNonLinearTransaction | XChainLinearTransaction,
@@ -35,7 +36,6 @@ export function convertXChainTransaction(
   const isSender = froms.has(stripChainAddress(address))
 
   return {
-    amount: avaxCreated.toDisplay(),
     hash: tx.txHash,
     isBridge: false,
     isContractCall: false,
@@ -45,13 +45,18 @@ export function convertXChainTransaction(
     to: [...tos.values()].join(','),
     isSender,
     timestamp: tx.timestamp * 1000, // to millis
-    token: {
-      decimal: network.networkToken.decimals.toString(),
-      name: network.networkToken.name,
-      symbol: network.networkToken.symbol
-    },
-    fee: avaxUnlocked.sub(avaxCreated).toSubUnit().toString(),
+    tokens: [
+      {
+        decimal: network.networkToken.decimals.toString(),
+        name: network.networkToken.name,
+        symbol: network.networkToken.symbol,
+        type: TokenType.NATIVE,
+        amount: avaxCreated.toDisplay()
+      }
+    ],
+    gasUsed: avaxUnlocked.sub(avaxCreated).toSubUnit().toString(),
     explorerLink: getExplorerAddressByNetwork(network, tx.txHash, 'tx'),
-    txType: tx.txType
+    txType: tx.txType,
+    chainId: network.chainId.toString()
   }
 }

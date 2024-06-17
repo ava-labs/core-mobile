@@ -1,21 +1,29 @@
-import { Module, parseManifest } from './types'
+import {
+  GetTransactionHistory,
+  Manifest,
+  Module,
+  TransactionHistoryResponse
+} from '@internal/types'
+import { parseManifest } from './types'
 import manifest from './bitcoin.manifest.json'
 
-export const bitcoin: Module = {
-  getManifest: () => {
+export class BitcoinModule implements Module {
+  getManifest(): Manifest | undefined {
     const result = parseManifest(manifest)
     return result.success ? result.data : undefined
-  },
-  getBalances: () => {
+  }
+  getBalances(): Promise<string> {
     return Promise.resolve('Bitcoin balances')
-  },
-  getTransactionHistory: () => {
-    return Promise.resolve('Bitcoin transaction history')
-  },
-  getNetworkFee: () => {
+  }
+  getTransactionHistory(
+    _: GetTransactionHistory
+  ): Promise<TransactionHistoryResponse> {
+    return Promise.resolve({ transactions: [], nextPageToken: '' })
+  }
+  getNetworkFee(): Promise<string> {
     return Promise.resolve('Bitcoin network fee')
-  },
-  getAddress: () => {
+  }
+  getAddress(): Promise<string> {
     return Promise.resolve('Bitcoin address')
   }
 }
