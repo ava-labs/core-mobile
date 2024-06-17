@@ -1,5 +1,5 @@
 import { Blockchain } from '@avalabs/bridge-sdk'
-import { TokenType, TransactionType } from '@avalabs/vm-module-types'
+import { TokenType, TransactionType } from '@internal/types'
 import { BITCOIN_NETWORK, Network } from '@avalabs/chains-sdk'
 import { BitcoinHistoryTx } from '@avalabs/wallets-sdk'
 import { isBridgeTransactionBTC } from 'screens/bridge/utils/bridgeUtils'

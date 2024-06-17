@@ -2,7 +2,7 @@ import {
   Transaction as EvmTransaction,
   TransactionType,
   TokenType
-} from '@avalabs/vm-module-types'
+} from '@internal/types'
 import { NULL_ADDRESS } from 'screens/bridge/utils/bridgeUtils'
 import { Transaction } from 'store/transaction'
 

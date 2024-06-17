@@ -4,18 +4,11 @@ import { CoreEthModule } from 'vmModule/mock_modules/coreEth'
 import { EvmModule } from '@avalabs/evm-module'
 import { PVMModule } from 'vmModule/mock_modules/pvm'
 import Logger from 'utils/Logger'
-import { Module } from '@avalabs/vm-module-types'
-import { NetworkVMType, Network } from '@avalabs/chains-sdk'
-import Config from 'react-native-config'
+import { Module } from '@internal/types'
 import { ModuleErrors, VmModuleErrors } from './errors'
 
-if (!Config.GLACIER_URL) throw Error('GLACIER_URL ENV is missing')
-
-const GLACIER_URL = Config.GLACIER_URL
-const GLACIER_API_KEY = Config.GLACIER_API_KEY
-
 const modules: Module[] = [
-  new EvmModule({ glacierApiUrl: GLACIER_URL, glacierApiKey: GLACIER_API_KEY }),
+  new EvmModule(),
   new BitcoinModule(),
   new AVMModule(),
   new CoreEthModule(),
@@ -25,8 +18,8 @@ const modules: Module[] = [
 // Syntax for namespace is defined in CAIP-2
 const NAMESPACE_REGEX = new RegExp('[-a-z0-9]{3,8}')
 
-class ModuleManager {
-  loadModule = async (chainId: string, method?: string): Promise<Module> => {
+export class ModuleManager {
+  loadModule = async (chainId: string, method: string): Promise<Module> => {
     const module = await this.getModule(chainId)
     if (module === undefined) {
       throw new VmModuleErrors({
@@ -35,7 +28,7 @@ class ModuleManager {
       })
     }
 
-    if (method && !this.isMethodPermitted(module, method)) {
+    if (!this.isMethodPermitted(module, method)) {
       throw new VmModuleErrors({
         name: ModuleErrors.UNSUPPORTED_METHOD,
         message: `Method ${method} is not supported in ${
@@ -45,32 +38,6 @@ class ModuleManager {
     }
 
     return module
-  }
-
-  loadModuleByNetwork = async (
-    network: Network,
-    method?: string
-  ): Promise<Module> => {
-    const caip2ChainId = this.convertChainIdToCaip2(network)
-    return this.loadModule(caip2ChainId, method)
-  }
-
-  convertChainIdToCaip2 = (network: Network): string => {
-    const chainId = network.chainId
-    switch (network.vmName) {
-      case NetworkVMType.BITCOIN:
-        return `bip122:${chainId}`
-      case NetworkVMType.PVM:
-        return `avax:${chainId}`
-      case NetworkVMType.AVM:
-        return `avax:${chainId}`
-      case NetworkVMType.EVM:
-        return `eip155:${chainId}`
-      case NetworkVMType.CoreEth:
-        return `eip155:${chainId}`
-      default:
-        throw new Error('Unsupported network')
-    }
   }
 
   private getModule = async (chainId: string): Promise<Module | undefined> => {
@@ -119,5 +86,3 @@ class ModuleManager {
     })
   }
 }
-
-export default new ModuleManager()

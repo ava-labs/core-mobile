@@ -12,7 +12,7 @@ import {
   PChainTransactionType,
   XChainTransactionType
 } from '@avalabs/glacier-sdk'
-import { TransactionType, Transaction } from '@avalabs/vm-module-types'
+import { TransactionType, Transaction } from '@internal/types'
 import { PrimaryNetworkMethodIcon } from './PrimaryNetworkMethodIcon'
 import { renderNftIcon } from './renderNftIcon'
 

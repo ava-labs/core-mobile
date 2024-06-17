@@ -2,12 +2,9 @@ import {
   GetTransactionHistory,
   Manifest,
   Module,
-  NetworkFees,
-  RpcRequest,
-  RpcResponse,
-  TransactionHistoryResponse,
-  parseManifest
-} from '@avalabs/vm-module-types'
+  TransactionHistoryResponse
+} from '@internal/types'
+import { parseManifest } from './types'
 import manifest from './avm.manifest.json'
 
 export class AVMModule implements Module {
@@ -23,18 +20,10 @@ export class AVMModule implements Module {
   ): Promise<TransactionHistoryResponse> {
     return Promise.resolve({ transactions: [], nextPageToken: '' })
   }
-  getNetworkFee(): Promise<NetworkFees> {
-    return Promise.resolve({
-      low: { maxPriorityFeePerGas: 0n, maxFeePerGas: 0n },
-      medium: { maxPriorityFeePerGas: 0n, maxFeePerGas: 0n },
-      high: { maxPriorityFeePerGas: 0n, maxFeePerGas: 0n },
-      baseFee: 0n
-    })
+  getNetworkFee(): Promise<string> {
+    return Promise.resolve('AVM network fee')
   }
   getAddress(): Promise<string> {
     return Promise.resolve('AVM address')
-  }
-  onRpcRequest(request: RpcRequest): Promise<RpcResponse<unknown, Error>> {
-    throw new Error(`Method not implemented: ${request.method}`)
   }
 }

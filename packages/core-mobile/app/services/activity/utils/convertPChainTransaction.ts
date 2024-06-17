@@ -7,7 +7,7 @@ import { Avalanche } from '@avalabs/wallets-sdk'
 import { Avax } from 'types'
 import { stripChainAddress } from 'store/account/utils'
 import { isEmpty } from 'lodash'
-import { TokenType } from '@avalabs/vm-module-types'
+import { TokenType } from '@internal/types'
 
 export function convertPChainTransaction(
   tx: PChainTransaction,
