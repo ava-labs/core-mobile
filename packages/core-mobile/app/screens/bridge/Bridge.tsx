@@ -223,15 +223,15 @@ const Bridge: FC = () => {
   )
 
   useEffect(() => {
-    if (params?.initialTokenSymbol) {
+    if (params?.initialTokenSymbol && !selectedAsset) {
       const token = assetsWithBalances?.find(
-        tk => tk.symbolOnNetwork === params.initialTokenSymbol
+        tk => (tk.symbolOnNetwork ?? tk.symbol) === params.initialTokenSymbol
       )
       if (token) {
         handleSelect(token)
       }
     }
-  }, [params, assetsWithBalances, handleSelect])
+  }, [params, assetsWithBalances, handleSelect, selectedAsset])
 
   // Remove chains turned off by the feature flags
   const filterChains = useCallback(
