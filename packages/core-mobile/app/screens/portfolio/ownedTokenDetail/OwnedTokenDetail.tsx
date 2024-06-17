@@ -42,7 +42,9 @@ const OwnedTokenDetail: FC = () => {
   const { assetsWithBalances } = useBridge()
   const isTokenBridgable = Boolean(
     assetsWithBalances &&
-      assetsWithBalances.some(asset => asset.symbolOnNetwork === token?.symbol)
+      assetsWithBalances.some(
+        asset => (asset.symbolOnNetwork ?? asset.symbol) === token?.symbol
+      )
   )
 
   useEffect(loadToken, [filteredTokenList, token, tokenId])
