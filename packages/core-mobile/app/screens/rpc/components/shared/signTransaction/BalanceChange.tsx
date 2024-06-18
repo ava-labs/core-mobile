@@ -1,13 +1,8 @@
 import { Text, View, useTheme } from '@avalabs/k2-mobile'
-import React, { useCallback, useMemo } from 'react'
-import {
-  Asset,
-  AssetDiff,
-  TransactionSimulation
-} from 'services/blockaid/types'
+import React, { useMemo } from 'react'
+import { TransactionSimulation } from 'services/blockaid/types'
 import Avatar from 'components/Avatar'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { balanceToDisplayValue, numberToBN } from '@avalabs/utils-sdk'
 import {
   AddLiquidityDisplayData,
   ContractCall,
@@ -16,7 +11,6 @@ import {
   isAddLiquidityDisplayData,
   isSwapExactTokensForTokenDisplayValues
 } from 'screens/rpc/util/types'
-import Separator from 'components/Separator'
 import { Row } from 'components/Row'
 import { Space } from 'components/Space'
 import AddSVG from 'components/svg/AddSVG'
@@ -24,8 +18,8 @@ import ArrowSVG from 'components/svg/ArrowSVG'
 import isEmpty from 'lodash.isempty'
 import { useSelector } from 'react-redux'
 import { selectTokenByAddress } from 'store/balance'
-import { isHexString } from 'ethers'
 import { sharedStyles } from './styles'
+import { AssetDiffGroup } from './AssetDiffGroup'
 
 const BalanceChange = ({
   contractType,
@@ -36,11 +30,6 @@ const BalanceChange = ({
   displayData: TransactionDisplayValues
   transactionSimulation?: TransactionSimulation
 }): JSX.Element | null => {
-  const {
-    theme: { colors }
-  } = useTheme()
-  const transactionType = displayData.name || undefined
-
   const content = useMemo(() => {
     if (
       transactionSimulation &&
@@ -90,16 +79,6 @@ const BalanceChange = ({
           backgroundColor: '$neutral800',
           gap: 10
         }}>
-        {transactionType && (
-          <>
-            <View
-              sx={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-              <Text variant="caption">Transaction type</Text>
-              <Text variant="caption">{transactionType}</Text>
-            </View>
-            <Separator color={colors.$neutral700} />
-          </>
-        )}
         {content}
       </View>
     </>
@@ -111,121 +90,34 @@ const TransactionSimulationResultBalanceChangeContent = ({
 }: {
   transactionSimulation: TransactionSimulation
 }): JSX.Element => {
-  const { currencyFormatter } = useApplicationContext().appHook
+  const outAssetDiffs = useMemo(() => {
+    return transactionSimulation.account_summary.assets_diffs
+      .filter(assetDiff => assetDiff.out.length > 0)
+      .sort((a, b) => a.out.length - b.out.length)
+  }, [transactionSimulation.account_summary.assets_diffs])
 
-  const renderAssetDiff = useCallback(
-    ({
-      asset,
-      assetDiff,
-      isOut,
-      key
-    }: {
-      asset: Asset
-      assetDiff: AssetDiff
-      isOut: boolean
-      key: string
-    }): JSX.Element => {
-      let displayValue
-      if ('value' in assetDiff && assetDiff.value) {
-        if ('decimals' in asset) {
-          const valueBN = numberToBN(assetDiff.value, asset.decimals)
-          displayValue = balanceToDisplayValue(valueBN, asset.decimals)
-        } else if (isHexString(assetDiff.value)) {
-          // for some token(like ERC1155) blockaid returns value in hex format
-          displayValue = parseInt(assetDiff.value, 16)
-        }
-      } else if (asset.type === 'ERC721') {
-        // for ERC721 type token, we just display 1 to indicate that a single NFT will be transferred
-        displayValue = 1
-      }
-
-      const assetDiffColor = isOut ? '$dangerLight' : '$successLight'
-
-      return (
-        <View
-          key={key}
-          sx={{
-            flex: 1,
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between'
-          }}>
-          <View
-            sx={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 10,
-              flexShrink: 1
-            }}>
-            {asset.name !== undefined && asset.symbol !== undefined && (
-              <Avatar.Token
-                name={asset.name}
-                symbol={asset.symbol}
-                logoUri={asset.logo_url}
-                size={32}
-              />
-            )}
-            <Text variant="heading6" numberOfLines={1} sx={{ flexShrink: 1 }}>
-              {asset.name}
-            </Text>
-          </View>
-          <View sx={{ alignItems: 'flex-end' }}>
-            {displayValue !== undefined && (
-              <Text variant="body2" sx={{ color: assetDiffColor }}>
-                {isOut ? '-' : ''}
-                {displayValue} {asset.symbol}
-              </Text>
-            )}
-            {assetDiff.usd_price !== undefined && (
-              <Text
-                variant="body2"
-                sx={{
-                  color:
-                    displayValue !== undefined ? '$neutral400' : assetDiffColor
-                }}>
-                {displayValue === undefined && (isOut ? '-' : '')}
-                {currencyFormatter(Number(assetDiff.usd_price))}
-              </Text>
-            )}
-          </View>
-        </View>
-      )
-    },
-    [currencyFormatter]
-  )
+  const inAssetDiffs = useMemo(() => {
+    return transactionSimulation.account_summary.assets_diffs
+      .filter(assetDiff => assetDiff.in.length > 0)
+      .sort((a, b) => a.in.length - b.in.length)
+  }, [transactionSimulation.account_summary.assets_diffs])
 
   return (
     <>
-      {transactionSimulation.account_summary.assets_diffs.map(
-        (assetDiff, index) => {
-          const asset = assetDiff.asset
-
-          return (
-            <View key={index.toString()} sx={{ gap: 16 }}>
-              <>
-                {assetDiff.out.map((outAssetDiff, i) =>
-                  renderAssetDiff({
-                    asset,
-                    assetDiff: outAssetDiff,
-                    isOut: true,
-                    key: i.toString()
-                  })
-                )}
-              </>
-              <>
-                {assetDiff.in.map((inAssetDiff, i) =>
-                  renderAssetDiff({
-                    asset,
-                    assetDiff: inAssetDiff,
-                    isOut: false,
-                    key: i.toString()
-                  })
-                )}
-              </>
-            </View>
-          )
-        }
-      )}
+      {outAssetDiffs.map((assetDiff, index) => (
+        <AssetDiffGroup
+          key={index.toString()}
+          assetDiff={assetDiff}
+          isOut={true}
+        />
+      ))}
+      {inAssetDiffs.map((assetDiff, index) => (
+        <AssetDiffGroup
+          key={index.toString()}
+          assetDiff={assetDiff}
+          isOut={false}
+        />
+      ))}
     </>
   )
 }
