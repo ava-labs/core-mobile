@@ -38,6 +38,7 @@
     "./e2e/tests/login/createNewWallet.e2e.smoke.ts",
     "./e2e/tests/performance/performanceLaunchApp.e2e.ts",
     "./e2e/tests/watchlist/watchlist.e2e.ts",
-    "./e2e/tests/network/addCustomNetwork.e2e.smoke.ts"
+    "./e2e/tests/network/addCustomNetwork.e2e.smoke.ts",
+    "./e2e/tests/network/addCustomToken.e2e.smoke.ts"
   ]
 }

@@ -5,7 +5,7 @@
 import Assert from '../../helpers/assertions'
 import Actions from '../../helpers/actions'
 import BurgerMenuPage from '../../pages/burgerMenu/burgerMenu.page'
-import { warmup } from '../../helpers/warmup'
+import { handleJailbrokenWarning, warmup } from '../../helpers/warmup'
 import CreatePinPage from '../../pages/createPin.page'
 import SecurityAndPrivacyPage from '../../pages/burgerMenu/securityAndPrivacy.page'
 import portfolioPage from '../../pages/portfolio.page'
@@ -28,13 +28,17 @@ describe('Change Pin', () => {
     await Assert.isVisible(CreatePinPage.setNewPinHeader)
     await CreatePinPage.createNewPin()
     await Assert.isVisible(BurgerMenuPage.securityAndPrivacy)
-    await device.reloadReactNative()
-    await delay(10000)
-    await device.launchApp({ newInstance: false })
-    await CreatePinPage.enterNewCurrentPin()
-    await portfolioPage.verifyPorfolioScreen()
-    await BurgerMenuPage.tapBurgerMenuButton()
-    await BurgerMenuPage.tapSecurityAndPrivacy()
+    const platform = Actions.platform()
+    if (platform === 'android') {
+      await device.reloadReactNative()
+      await delay(10000)
+      await device.launchApp({ newInstance: false })
+      await handleJailbrokenWarning()
+      await CreatePinPage.enterNewCurrentPin()
+      await portfolioPage.verifyPorfolioScreen()
+      await BurgerMenuPage.tapBurgerMenuButton()
+      await BurgerMenuPage.tapSecurityAndPrivacy()
+    }
   })
 
   it('Should set previous Pin', async () => {
