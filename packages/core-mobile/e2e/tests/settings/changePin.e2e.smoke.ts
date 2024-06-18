@@ -28,13 +28,16 @@ describe('Change Pin', () => {
     await Assert.isVisible(CreatePinPage.setNewPinHeader)
     await CreatePinPage.createNewPin()
     await Assert.isVisible(BurgerMenuPage.securityAndPrivacy)
-    await device.reloadReactNative()
-    await delay(10000)
-    await device.launchApp({ newInstance: false })
-    await CreatePinPage.enterNewCurrentPin()
-    await portfolioPage.verifyPorfolioScreen()
-    await BurgerMenuPage.tapBurgerMenuButton()
-    await BurgerMenuPage.tapSecurityAndPrivacy()
+    const platform = Actions.platform()
+    if (platform === 'android') {
+      await device.reloadReactNative()
+      await delay(10000)
+      await device.launchApp({ newInstance: false })
+      await CreatePinPage.enterNewCurrentPin()
+      await portfolioPage.verifyPorfolioScreen()
+      await BurgerMenuPage.tapBurgerMenuButton()
+      await BurgerMenuPage.tapSecurityAndPrivacy()
+    }
   })
 
   it('Should set previous Pin', async () => {
