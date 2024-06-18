@@ -110,6 +110,7 @@ class AddressBook {
       addressBookLoc.contactBtcAddress
     )
     await Actions.tap(this.nameText)
+    await Actions.swipeUp(this.btcAddressField, 'fast', 0.25, 0)
     await this.tapSave()
   }
 
