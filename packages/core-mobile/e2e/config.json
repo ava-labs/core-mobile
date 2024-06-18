@@ -34,6 +34,7 @@
     "./e2e/tests/network/addCustomNetwork.e2e.smoke.ts",
     "./e2e/tests/settings/changePin.e2e.smoke.ts",
     "./e2e/tests/network/addCustomNetwork.e2e.smoke.ts",
-    "./e2e/tests/network/addCustomToken.e2e.smoke.ts"
+    "./e2e/tests/network/addCustomToken.e2e.smoke.ts",
+    ".e2e/tests/stake/claimTestnet.e2e.smoke.ts"
   ]
 }

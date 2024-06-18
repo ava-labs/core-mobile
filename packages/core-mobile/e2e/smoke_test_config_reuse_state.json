@@ -37,6 +37,7 @@
     "./e2e/tests/inAppBrowser/coreWebWCIntegration.e2e.smoke.ts",
     "./e2e/tests/plusIcon/sendAvaxTo2ndAccount.e2e.smoke.ts",
     "./e2e/tests/network/addCustomNetwork.e2e.smoke.ts",
-    "./e2e/tests/network/addCustomToken.e2e.smoke.ts"
+    "./e2e/tests/network/addCustomToken.e2e.smoke.ts",
+    ".e2e/tests/stake/claimTestnet.e2e.smoke.ts"
   ]
 }
