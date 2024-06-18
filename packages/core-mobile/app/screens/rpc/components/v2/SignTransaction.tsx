@@ -13,7 +13,6 @@ import NetworkFeeSelector, { FeePreset } from 'components/NetworkFeeSelector'
 import { getHexStringToBytes } from 'utils/getHexStringToBytes'
 import EditSpendLimit from 'components/EditSpendLimit'
 import CarrotSVG from 'components/svg/CarrotSVG'
-import FlexSpacer from 'components/FlexSpacer'
 import { WalletScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation, useRoute } from '@react-navigation/native'
@@ -272,27 +271,24 @@ const SignTransaction = (): JSX.Element => {
 
   const renderApproveRejectButtons = (): JSX.Element => {
     return (
-      <>
-        <FlexSpacer />
-        <View>
-          <Button
-            testID="approve_button"
-            size="xlarge"
-            type="primary"
-            onPress={onHandleApprove}
-            disabled={submitting || !displayData?.maxFeePerGas}>
-            {submitting && <ActivityIndicator />} Approve
-          </Button>
-          <Space y={16} />
-          <Button
-            size="xlarge"
-            type="secondary"
-            disabled={submitting}
-            onPress={() => rejectAndClose()}>
-            Reject
-          </Button>
-        </View>
-      </>
+      <View sx={{ padding: 16 }}>
+        <Button
+          testID="approve_button"
+          size="xlarge"
+          type="primary"
+          onPress={onHandleApprove}
+          disabled={submitting || !displayData?.maxFeePerGas}>
+          {submitting && <ActivityIndicator />} Approve
+        </Button>
+        <Space y={16} />
+        <Button
+          size="xlarge"
+          type="secondary"
+          disabled={submitting}
+          onPress={() => rejectAndClose()}>
+          Reject
+        </Button>
+      </View>
     )
   }
 
@@ -357,8 +353,8 @@ const SignTransaction = (): JSX.Element => {
               onFeesChange={handleFeesChange}
             />
           )}
-          {renderApproveRejectButtons()}
         </ScrollView>
+        {renderApproveRejectButtons()}
       </RpcRequestBottomSheet>
       {isSeedlessSigningBlocked && (
         <FeatureBlocked

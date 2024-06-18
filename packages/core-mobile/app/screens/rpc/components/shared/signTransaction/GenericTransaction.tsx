@@ -1,49 +1,44 @@
 import { TransactionDisplayValues } from 'screens/rpc/util/types'
-import { useApplicationContext } from 'contexts/ApplicationContext'
-import AvaText from 'components/AvaText'
 import React from 'react'
 import { Row } from 'components/Row'
 import TokenAddress from 'components/TokenAddress'
-import { View } from 'react-native'
-import { Space } from 'components/Space'
 import { useSelector } from 'react-redux'
 import { selectAccountByAddress } from 'store/account'
+import { Text, View } from '@avalabs/k2-mobile'
 import { sharedStyles } from './styles'
 
 export function GenericTransaction({
   description,
   fromAddress,
   toAddress,
+  name,
   isContractInteraction
 }: TransactionDisplayValues & { isContractInteraction: boolean }): JSX.Element {
-  const theme = useApplicationContext().theme
   const account = useSelector(selectAccountByAddress(fromAddress))
 
   return (
-    <>
-      <View
-        style={[
-          sharedStyles.info,
-          {
-            backgroundColor: theme.colorBg3
-          }
-        ]}>
-        <Row style={{ justifyContent: 'space-between' }}>
-          <AvaText.Body3 color={theme.colorText1}>Account</AvaText.Body3>
-          <AvaText.Body3 color={theme.colorText1}>
-            {account?.name}
-          </AvaText.Body3>
-        </Row>
-        <Space y={8} />
-        <Row style={{ justifyContent: 'space-between' }}>
-          <AvaText.Body3>
-            {isContractInteraction || description?.args?.asset
-              ? 'Contract'
-              : 'To'}
-          </AvaText.Body3>
-          <TokenAddress address={description?.args?.asset ?? toAddress} />
-        </Row>
-      </View>
-    </>
+    <View
+      sx={{
+        ...sharedStyles.info,
+        backgroundColor: '$neutral800',
+        gap: 8
+      }}>
+      <Row style={{ justifyContent: 'space-between' }}>
+        <Text variant="caption">Account</Text>
+        <Text variant="caption">{account?.name}</Text>
+      </Row>
+      <Row style={{ justifyContent: 'space-between' }}>
+        <Text variant="caption">
+          {isContractInteraction || description?.args?.asset
+            ? 'Contract'
+            : 'To'}
+        </Text>
+        <TokenAddress address={description?.args?.asset ?? toAddress} />
+      </Row>
+      <Row style={{ justifyContent: 'space-between' }}>
+        <Text variant="caption">Type</Text>
+        <Text variant="caption">{name}</Text>
+      </Row>
+    </View>
   )
 }
