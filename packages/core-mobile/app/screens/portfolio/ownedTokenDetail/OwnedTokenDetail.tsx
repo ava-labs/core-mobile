@@ -2,7 +2,11 @@ import { Space } from 'components/Space'
 import React, { FC, useEffect, useState } from 'react'
 import AvaListItem from 'components/AvaListItem'
 import Avatar from 'components/Avatar'
-import { useNavigation, useRoute } from '@react-navigation/native'
+import {
+  useFocusEffect,
+  useNavigation,
+  useRoute
+} from '@react-navigation/native'
 import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList'
 import { Row } from 'components/Row'
 import AppNavigation from 'navigation/AppNavigation'
@@ -30,8 +34,8 @@ type ScreenProps = WalletScreenProps<
 
 const OwnedTokenDetail: FC = () => {
   const { activeNetwork } = useNetworks()
-  const { tokenId } = useRoute<ScreenProps['route']>().params
-  const { navigate } = useNavigation<ScreenProps['navigation']>()
+  const { chainId, tokenId } = useRoute<ScreenProps['route']>().params
+  const { navigate, pop } = useNavigation<ScreenProps['navigation']>()
   const { filteredTokenList } = useSearchableTokenList()
   const [token, setToken] = useState<TokenWithBalance>()
   const {
@@ -48,6 +52,13 @@ const OwnedTokenDetail: FC = () => {
   )
 
   useEffect(loadToken, [filteredTokenList, token, tokenId])
+
+  useFocusEffect(() => {
+    // This screen shouldn't be accessible if the active network is changed while on it
+    if (activeNetwork.chainId !== chainId) {
+      pop()
+    }
+  })
 
   const openTransactionDetails = (item: Transaction): void => {
     navigate(AppNavigation.Wallet.ActivityDetail, {
