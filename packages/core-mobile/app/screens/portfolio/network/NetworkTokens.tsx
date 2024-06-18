@@ -63,6 +63,7 @@ const NetworkTokens = (): JSX.Element => {
 
   const selectToken = (token: LocalTokenWithBalance): void => {
     navigate(AppNavigation.Wallet.OwnedTokenDetail, {
+      chainId: activeNetwork.chainId,
       tokenId: token.localId
     })
 

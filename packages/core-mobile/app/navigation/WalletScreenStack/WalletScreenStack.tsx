@@ -131,7 +131,7 @@ export type WalletScreenStackParams = {
     | undefined
   [AppNavigation.Wallet.AddCustomToken]: undefined
   [AppNavigation.Wallet.TokenDetail]: { tokenId: string }
-  [AppNavigation.Wallet.OwnedTokenDetail]: { tokenId: string }
+  [AppNavigation.Wallet.OwnedTokenDetail]: { chainId: number; tokenId: string }
   [AppNavigation.Wallet.ActivityDetail]: {
     tx?: Transaction
   }
