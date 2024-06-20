@@ -133,6 +133,7 @@ export function useInjectedJavascript(): InjectedJavascripts {
           payload: json
         };
         window.ReactNativeWebView.postMessage(JSON.stringify(message));
+        return Promise.reject(new Error('not implemented'));
       };
       if (!window.ethereum) {
         window.ethereum = {};
