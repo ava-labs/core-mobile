@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { Icons, View } from '@avalabs/k2-mobile'
 import WebView, { WebViewMessageEvent } from 'react-native-webview'
 import Logger from 'utils/Logger'
@@ -17,7 +17,6 @@ import { DeepLink, DeepLinkOrigin } from 'contexts/DeeplinkContext/types'
 import { AddHistoryPayload } from 'store/browser'
 import InputText from 'components/InputText'
 import useClipboardWatcher from 'hooks/useClipboardWatcher'
-import { getCurrentRoute } from 'utils/Navigation'
 import {
   GetDescriptionAndFavicon,
   InjectedJsMessageWrapper,
@@ -118,67 +117,33 @@ export default function Browser({ tabId }: { tabId: string }): JSX.Element {
     webViewRef.current?.reload()
   }
 
-  const parseDescriptionAndFavicon = useCallback(
-    (wrapper: InjectedJsMessageWrapper, event: WebViewMessageEvent): void => {
-      const { favicon: favi, description: desc } = JSON.parse(
-        wrapper.payload
-      ) as GetDescriptionAndFavicon
-      if (favi || desc) {
-        setFavicon(favi)
-        setDescription(desc)
-        dispatch(
-          updateMetadataForActiveTab({
-            url: event.nativeEvent.url,
-            favicon: favi,
-            description: desc
-          })
-        )
+  function parseDescriptionAndFavicon(
+    wrapper: InjectedJsMessageWrapper,
+    event: WebViewMessageEvent
+  ): void {
+    const { favicon: favi, description: desc } = JSON.parse(
+      wrapper.payload
+    ) as GetDescriptionAndFavicon
+    if (favi || desc) {
+      setFavicon(favi)
+      setDescription(desc)
+      dispatch(
+        updateMetadataForActiveTab({
+          url: event.nativeEvent.url,
+          favicon: favi,
+          description: desc
+        })
+      )
+    }
+  }
+
+  function showWalletConnectDialog(): void {
+    navigate(AppNavigation.Modal.UseWalletConnect, {
+      onContinue: () => {
+        //noop, for now
       }
-    },
-    [dispatch]
-  )
-
-  const showWalletConnectDialog = useCallback((): void => {
-    const currentRoute = getCurrentRoute()?.name
-    if (currentRoute !== AppNavigation.Modal.UseWalletConnect)
-      navigate(AppNavigation.Modal.UseWalletConnect)
-  }, [navigate])
-
-  const onMessage = useCallback(
-    (event: WebViewMessageEvent): void => {
-      const wrapper = JSON.parse(
-        event.nativeEvent.data
-      ) as InjectedJsMessageWrapper
-      switch (wrapper.method) {
-        case 'desc_and_favicon':
-          parseDescriptionAndFavicon(wrapper, event)
-          break
-        case 'window_ethereum_used': {
-          const sessions = WalletConnectService.getSessions()
-          if (
-            sessions.find(session =>
-              urlToLoad.startsWith(session.peer.metadata.url)
-            ) === undefined
-          ) {
-            showWalletConnectDialog()
-          }
-          break
-        }
-        case 'log':
-          Logger.trace('------> wrapper.payload', wrapper.payload)
-          break
-        case 'walletConnect_deeplink_blocked':
-          Logger.info('walletConnect_deeplink_blocked, url: ', wrapper.payload)
-          break
-        default:
-          break
-      }
-
-      //do not remove this listener, https://github.com/react-native-webview/react-native-webview/blob/master/docs/Reference.md#injectedjavascript
-      Logger.trace('WebView onMessage')
-    },
-    [parseDescriptionAndFavicon, showWalletConnectDialog, urlToLoad]
-  )
+    })
+  }
 
   return (
     <View style={{ width: '100%', height: '100%' }}>
@@ -271,7 +236,41 @@ export default function Browser({ tabId }: { tabId: string }): JSX.Element {
           dispatch(addHistoryForActiveTab(history))
           setUrlEntry(event.nativeEvent.url)
         }}
-        onMessage={onMessage}
+        onMessage={(event: WebViewMessageEvent) => {
+          const wrapper = JSON.parse(
+            event.nativeEvent.data
+          ) as InjectedJsMessageWrapper
+          switch (wrapper.method) {
+            case 'desc_and_favicon':
+              parseDescriptionAndFavicon(wrapper, event)
+              break
+            case 'window_ethereum_used': {
+              const sessions = WalletConnectService.getSessions()
+              if (
+                sessions.find(session =>
+                  urlToLoad.startsWith(session.peer.metadata.url)
+                ) === undefined
+              ) {
+                showWalletConnectDialog()
+              }
+              break
+            }
+            case 'log':
+              Logger.trace('------> wrapper.payload', wrapper.payload)
+              break
+            case 'walletConnect_deeplink_blocked':
+              Logger.info(
+                'walletConnect_deeplink_blocked, url: ',
+                wrapper.payload
+              )
+              break
+            default:
+              break
+          }
+
+          //do not remove this listener, https://github.com/react-native-webview/react-native-webview/blob/master/docs/Reference.md#injectedjavascript
+          Logger.trace('WebView onMessage')
+        }}
       />
     </View>
   )
