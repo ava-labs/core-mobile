@@ -17,7 +17,6 @@ import { DeepLink, DeepLinkOrigin } from 'contexts/DeeplinkContext/types'
 import { AddHistoryPayload } from 'store/browser'
 import InputText from 'components/InputText'
 import useClipboardWatcher from 'hooks/useClipboardWatcher'
-import { getCurrentRoute } from 'utils/Navigation'
 import {
   GetDescriptionAndFavicon,
   InjectedJsMessageWrapper,
@@ -119,7 +118,7 @@ export default function Browser({ tabId }: { tabId: string }): JSX.Element {
   }
 
   const parseDescriptionAndFavicon = useCallback(
-    (wrapper: InjectedJsMessageWrapper, event: WebViewMessageEvent): void => {
+    (wrapper: InjectedJsMessageWrapper, event: WebViewMessageEvent) => {
       const { favicon: favi, description: desc } = JSON.parse(
         wrapper.payload
       ) as GetDescriptionAndFavicon
@@ -138,14 +137,16 @@ export default function Browser({ tabId }: { tabId: string }): JSX.Element {
     [dispatch]
   )
 
-  const showWalletConnectDialog = useCallback((): void => {
-    const currentRoute = getCurrentRoute()?.name
-    if (currentRoute !== AppNavigation.Modal.UseWalletConnect)
-      navigate(AppNavigation.Modal.UseWalletConnect)
+  const showWalletConnectDialog = useCallback(() => {
+    navigate(AppNavigation.Modal.UseWalletConnect, {
+      onContinue: () => {
+        //noop, for now
+      }
+    })
   }, [navigate])
 
-  const onMessage = useCallback(
-    (event: WebViewMessageEvent): void => {
+  const onMessageHandler = useCallback(
+    (event: WebViewMessageEvent) => {
       const wrapper = JSON.parse(
         event.nativeEvent.data
       ) as InjectedJsMessageWrapper
@@ -271,7 +272,7 @@ export default function Browser({ tabId }: { tabId: string }): JSX.Element {
           dispatch(addHistoryForActiveTab(history))
           setUrlEntry(event.nativeEvent.url)
         }}
-        onMessage={onMessage}
+        onMessage={onMessageHandler}
       />
     </View>
   )
