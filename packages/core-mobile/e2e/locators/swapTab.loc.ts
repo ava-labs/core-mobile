@@ -3,9 +3,11 @@ export default {
   usdcToken: 'USD Coin',
   tokenValueAvax: '0.01',
   selectTokenDropdown: 'Select',
-  inputTextField: 'input_text',
+  amountField: 'universal_token_selector__amount_field',
   from: 'From',
-  submitButton: 'btnPrimary',
-  toastMessage: 'Swap Successful',
-  linkSvg: 'link_svg'
+  reviewOrderBtn: 'review_order_button',
+  toastMessage: 'Transaction Successful',
+  linkSvg: 'link_svg',
+  approveBtn: 'approve_button',
+  rejectBtn: 'reject_button'
 }

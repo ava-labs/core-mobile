@@ -3,8 +3,8 @@ import { expect as jestExpect } from 'expect'
 import Action from '../helpers/actions'
 import Assert from '../helpers/assertions'
 import Collectibles from '../locators/collectibles.loc'
-import { Platform } from '../helpers/constants'
 import AccountManagePage from './accountManage.page'
+import approveTransactionPage from './approveTransaction.page'
 
 class CollectiblesPage {
   get sendButton() {
@@ -27,26 +27,6 @@ class CollectiblesPage {
     return by.id(Collectibles.addressInput)
   }
 
-  get fromText() {
-    return by.text(Collectibles.fromText)
-  }
-
-  get toText() {
-    return by.text(Collectibles.toText)
-  }
-
-  get networkFeeText() {
-    return by.text(Collectibles.networkFeeText)
-  }
-
-  get sendTitle() {
-    return by.text(Collectibles.sendTitle)
-  }
-
-  get collectibleText() {
-    return by.text(Collectibles.collectibleText)
-  }
-
   get customFeeButton() {
     return by.text(Collectibles.customFeeButton)
   }
@@ -57,14 +37,6 @@ class CollectiblesPage {
 
   get nftlogo() {
     return by.id(Collectibles.nftlogo)
-  }
-
-  get cancelButton() {
-    return by.id(Collectibles.cancelButton)
-  }
-
-  get networkFee() {
-    return by.text(Collectibles.networkFeeText)
   }
 
   get myAccounts() {
@@ -87,14 +59,6 @@ class CollectiblesPage {
     return by.id(Collectibles.nftTokenTitle)
   }
 
-  get sendNowButton() {
-    return by.id(Collectibles.sendNowButton)
-  }
-
-  get sendSuccessfulToastMsg() {
-    return by.text(Collectibles.sendSuccessfulToastMsg)
-  }
-
   get descriptionTitle() {
     return by.text(Collectibles.descriptionTitle)
   }
@@ -108,7 +72,7 @@ class CollectiblesPage {
   }
 
   get propertiesTitle() {
-    return by.text(Collectibles.propertiesTitle)
+    return by.text(Collectibles.transactionDetails)
   }
 
   get warningAddressRequired() {
@@ -139,6 +103,10 @@ class CollectiblesPage {
     await Action.tapElementAtIndex(this.sendButton, 0)
   }
 
+  get paradiseTycoonFurnituresNFT() {
+    return by.id(Collectibles.paradiseTycoonFurnituresNFT)
+  }
+
   async getTextValue(pageElement: string) {
     const atr =
       pageElement === 'nftTokenId'
@@ -151,9 +119,11 @@ class CollectiblesPage {
 
     const result: any = await Action.getAttributes(atr, 0)
 
-    return Action.platform() === Platform.Android
-      ? result.text.toLowerCase()
-      : result.elements[0].text.toLowerCase()
+    return result.text.toLowerCase()
+  }
+
+  async tapParadiseTycoonFurnituresNFT() {
+    await Action.tapElementAtIndex(this.paradiseTycoonFurnituresNFT, 0)
   }
 
   async tapMyAccounts() {
@@ -164,16 +134,12 @@ class CollectiblesPage {
     await Action.tapElementAtIndex(this.nextButton, 0)
   }
 
-  async tapSendNowButton() {
-    await Action.tapElementAtIndex(this.sendNowButton, 0)
-  }
-
   async refreshCollectiblesPage() {
     await Action.swipeDown(by.id('baseGridItem'), 'slow', 0.75, 0)
   }
 
   async scrollToNftDetailsItems() {
-    await Action.swipeUp(by.id('btnSecondary'), 'slow', 0.75, 0)
+    await Action.swipeUp(by.id('send_btn'), 'slow', 0.75, 0)
   }
 
   async verifyReceiveNftToken(nftTokenId: string) {
@@ -188,19 +154,17 @@ class CollectiblesPage {
     await Assert.isVisible(this.descriptionTitle)
     await Assert.isVisible(this.createdByTitle)
     await Assert.isVisible(this.floorPriceTitle)
-    await Assert.isVisible(this.propertiesTitle)
   }
 
   async verifySendNftItems() {
-    await Assert.isVisible(this.fromText)
-    await Assert.isVisible(this.toText)
-    await Assert.isVisible(this.networkFeeText)
-    await Assert.isVisible(this.sendTitle)
-    await Assert.isVisible(this.collectibleText)
+    await Assert.isVisible(approveTransactionPage.accountNumberText)
+    await Assert.isVisible(approveTransactionPage.typeText)
+    await Assert.isVisible(approveTransactionPage.maximumNetworkFeeText)
+    await Assert.isVisible(approveTransactionPage.accountText)
+    await Assert.isVisible(approveTransactionPage.balanceChangeText)
     await Assert.isVisible(this.nftlogo)
-    await Assert.isVisible(this.networkFee)
-    await Assert.isVisible(this.sendNowButton)
-    await Assert.isVisible(this.cancelButton)
+    await Assert.isVisible(approveTransactionPage.approveBtn)
+    await Assert.isVisible(approveTransactionPage.rejectBtn)
   }
 
   async sendNft(account: string, nftTokenId: any = null) {
@@ -217,7 +181,7 @@ class CollectiblesPage {
         (result = await this.getTextValue('nftTokenId')))
     await this.tapNextButton()
     await this.verifySendNftItems()
-    await this.tapSendNowButton()
+    await approveTransactionPage.tapApproveBtn()
     return result
   }
 
@@ -225,7 +189,7 @@ class CollectiblesPage {
     await Action.setInputText(this.customFeeInput, '25000000', 1)
     await Action.setInputText(this.customFeeInput, '1000', 3)
     await this.tapSaveButton()
-    await Action.tapElementAtIndex(this.sendTitle, 0)
+    await approveTransactionPage.tapApproveBtn()
   }
 }
 

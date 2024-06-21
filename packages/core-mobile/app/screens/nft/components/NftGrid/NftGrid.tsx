@@ -73,7 +73,13 @@ const renderItem = ({
   item: NFTItem
   onItemSelected: (item: NFTItem) => void
 }): JSX.Element => {
-  return <GridItem item={item} onItemSelected={onItemSelected} />
+  return (
+    <GridItem
+      item={item}
+      onItemSelected={onItemSelected}
+      testID={`token_id_${item.tokenId}`}
+    />
+  )
 }
 
 const styles = StyleSheet.create({
