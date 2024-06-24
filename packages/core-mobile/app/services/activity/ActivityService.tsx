@@ -48,10 +48,9 @@ export class ActivityService {
   }: GetActivitiesForAccountParams): Promise<ActivityResponse> {
     const address = getAddressByNetwork(account, network)
     try {
-      // todo: remove convertChainIdToCaip2 once all modules are implmeneted
       const caip2ChainId = ModuleManager.convertChainIdToCaip2(network)
-      const module = await ModuleManager.loadModuleByNetwork(network)
-      // todo: remove if statement once all modules are implmeneted
+      const module = await ModuleManager.loadModule(caip2ChainId)
+      // remove if statement once all modules are implmeneted
       if (module.getManifest()?.network.chainIds.includes(caip2ChainId)) {
         const rawTxHistory = await module.getTransactionHistory({
           chainId: network.chainId,
@@ -80,7 +79,7 @@ export class ActivityService {
         }
       }
     } catch (error) {
-      Logger.error('Failed to get transaction', error)
+      Logger.info('Failed to load vm module', error)
     }
 
     const activityService = this.getActivityServiceForNetwork(network)
