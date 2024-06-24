@@ -159,7 +159,7 @@ class NetworksPage {
   }
 
   async tapNetworksTab() {
-    await Action.tapElementAtIndex(this.networksTab, 0)
+    await Action.tapElementAtIndex(this.networksTab, 1)
   }
 
   async tapNetworkInfo() {

@@ -164,6 +164,7 @@ export default function NftSend({
         </>
       )}
       <Button
+        testID="next_btn"
         type="primary"
         size="xlarge"
         onPress={onNextPress}
