@@ -1210,7 +1210,7 @@ PODS:
     - React-Core
   - RNSentry (5.20.0):
     - React-Core
-    - Sentry/HybridSDK (= 8.21.0)
+    - Sentry/HybridSDK (= 8.28.0)
   - RNSVG (15.1.0):
     - React-Core
   - SDWebImage (5.11.1):
@@ -1219,9 +1219,7 @@ PODS:
   - SDWebImageWebPCoder (0.8.5):
     - libwebp (~> 1.0)
     - SDWebImage/Core (~> 5.10)
-  - Sentry/HybridSDK (8.21.0):
-    - SentryPrivate (= 8.21.0)
-  - SentryPrivate (8.21.0)
+  - Sentry/HybridSDK (8.28.0):
   - SocketRocket (0.6.1)
   - Yoga (1.14.0)
 
@@ -1351,7 +1349,6 @@ SPEC REPOS:
     - SDWebImage
     - SDWebImageWebPCoder
     - Sentry
-    - SentryPrivate
     - SocketRocket
 
 EXTERNAL SOURCES:
@@ -1669,7 +1666,6 @@ SPEC CHECKSUMS:
   SDWebImage: a7f831e1a65eb5e285e3fb046a23fcfbf08e696d
   SDWebImageWebPCoder: 908b83b6adda48effe7667cd2b7f78c897e5111d
   Sentry: ebc12276bd17613a114ab359074096b6b3725203
-  SentryPrivate: d651efb234cf385ec9a1cdd3eff94b5e78a0e0fe
   SocketRocket: f32cd54efbe0f095c4d7594881e52619cfe80b17
   Yoga: 47d399a73c0c0caa9ff824e5c657eae31215bfee
 
