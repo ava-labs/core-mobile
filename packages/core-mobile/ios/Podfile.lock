@@ -1208,9 +1208,9 @@ PODS:
     - React-Core
   - RNSensors (7.3.5):
     - React-Core
-  - RNSentry (5.20.0):
+  - RNSentry (5.24.1):
     - React-Core
-    - Sentry/HybridSDK (= 8.28.0)
+    - Sentry/HybridSDK (= 8.29.1)
   - RNSVG (15.1.0):
     - React-Core
   - SDWebImage (5.11.1):
@@ -1219,7 +1219,7 @@ PODS:
   - SDWebImageWebPCoder (0.8.5):
     - libwebp (~> 1.0)
     - SDWebImage/Core (~> 5.10)
-  - Sentry/HybridSDK (8.28.0)
+  - Sentry/HybridSDK (8.29.1)
   - SocketRocket (0.6.1)
   - Yoga (1.14.0)
 
