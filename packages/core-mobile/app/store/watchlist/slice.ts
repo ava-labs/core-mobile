@@ -2,6 +2,8 @@ import { createAction, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from 'store'
 import { initialState } from './types'
 
+const DEFAULT_WATCHLIST_FAVORITES = ['avalanche-2', 'bitcoin', 'ethereum']
+
 export const reducerName = 'watchlist'
 
 export const watchlistSlice = createSlice({
@@ -18,6 +20,13 @@ export const watchlistSlice = createSlice({
         // unset favorite
         state.favorites = state.favorites.filter(id => id !== tokenId)
       }
+    },
+    addDefaultWatchlistFavorites: state => {
+      DEFAULT_WATCHLIST_FAVORITES.forEach(tokenId => {
+        if (!state.favorites.includes(tokenId)) {
+          state.favorites.push(tokenId)
+        }
+      })
     },
     reorderFavorites: (state, action: PayloadAction<string[]>) => {
       state.favorites = action.payload
@@ -38,8 +47,11 @@ export const selectWatchlistFavoritesIsEmpty = (state: RootState): boolean =>
   state.watchlist.favorites.length === 0
 
 // actions
-export const { toggleFavorite: toggleWatchListFavorite, reorderFavorites } =
-  watchlistSlice.actions
+export const {
+  toggleFavorite: toggleWatchListFavorite,
+  reorderFavorites,
+  addDefaultWatchlistFavorites
+} = watchlistSlice.actions
 
 export const fetchWatchlist = createAction(`${reducerName}/fetchWatchlist`)
 
