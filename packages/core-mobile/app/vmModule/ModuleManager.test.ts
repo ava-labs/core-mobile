@@ -1,10 +1,9 @@
 import { NetworkVMType } from '@avalabs/chains-sdk'
-import { ModuleManager } from 'vmModule/ModuleManager'
+import ModuleManager from 'vmModule/ModuleManager'
 import { VmModuleErrors } from './errors'
 
 describe('ModuleManager', () => {
   it('should load the correct modules', async () => {
-    const moduleManager = new ModuleManager()
     const params = [
       {
         chainId: 'eip155:1',
@@ -33,32 +32,29 @@ describe('ModuleManager', () => {
       }
     ]
     params.forEach(async param => {
-      const module = await moduleManager.loadModule(param.chainId, param.method)
+      const module = await ModuleManager.loadModule(param.chainId, param.method)
       expect(module?.getManifest()?.name.toLowerCase()).toContain(
         param.name.toLowerCase()
       )
     })
   })
   it('should have thrown with incorrect chainId', async () => {
-    const moduleManager = new ModuleManager()
     try {
-      await moduleManager.loadModule('eip155:123', 'eth_randomMethod')
+      await ModuleManager.loadModule('eip155:123', 'eth_randomMethod')
     } catch (e) {
       expect((e as VmModuleErrors).name).toBe('UNSUPPORTED_CHAIN_ID')
     }
   })
   it('should have thrown with incorrect method', async () => {
-    const moduleManager = new ModuleManager()
     try {
-      await moduleManager.loadModule('eip155:1', 'evth_randomMethod')
+      await ModuleManager.loadModule('eip155:1', 'evth_randomMethod')
     } catch (e) {
       expect((e as VmModuleErrors).name).toBe('UNSUPPORTED_METHOD')
     }
   })
   it('should have thrown with incorrect namespace', async () => {
-    const moduleManager = new ModuleManager()
     try {
-      await moduleManager.loadModule('avalanche:1', 'eth_method')
+      await ModuleManager.loadModule('avalanche:1', 'eth_method')
     } catch (e) {
       expect((e as VmModuleErrors).name).toBe('UNSUPPORTED_CHAIN_ID')
     }

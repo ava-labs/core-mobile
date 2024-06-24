@@ -17,7 +17,6 @@ import { getSelectedToken } from 'utils/getSelectedToken'
 import TabViewAva from 'components/TabViewAva'
 import AvaText from 'components/AvaText'
 import ActivityList from 'screens/shared/ActivityList/ActivityList'
-import { Transaction } from 'store/transaction'
 import usePendingBridgeTransactions from 'screens/bridge/hooks/usePendingBridgeTransactions'
 import TopRightBadge from 'components/TopRightBadge'
 import AnalyticsService from 'services/analytics/AnalyticsService'
@@ -78,12 +77,6 @@ const NetworkTokens = (): JSX.Element => {
 
   const manageTokens = (): void => {
     navigate(AppNavigation.Wallet.TokenManagement)
-  }
-
-  const openTransactionDetails = (item: Transaction): void => {
-    navigate(AppNavigation.Wallet.ActivityDetail, {
-      tx: item
-    })
   }
 
   const openTransactionStatus = (
@@ -216,12 +209,7 @@ const NetworkTokens = (): JSX.Element => {
   }
 
   const renderActivityTab = (): JSX.Element => {
-    return (
-      <ActivityList
-        openTransactionDetails={openTransactionDetails}
-        openTransactionStatus={openTransactionStatus}
-      />
-    )
+    return <ActivityList openTransactionStatus={openTransactionStatus} />
   }
 
   return (
