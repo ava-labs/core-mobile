@@ -23,7 +23,8 @@ module.exports = {
         'data-uri-to-buffer',
         'formdata-polyfill',
         '@notifee/react-native',
-        '@invertase/react-native-apple-authentication'
+        '@invertase/react-native-apple-authentication',
+        '@avalabs/vm-module-types'
       ].join('|') +
       ')'
   ]

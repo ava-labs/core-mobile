@@ -40,7 +40,6 @@ interface Props {
   onRefresh: () => void
   onEndReached?: () => void
   data: Transaction[]
-  openTransactionDetails: (item: Transaction) => void
   openTransactionStatus: (params: BridgeTransactionStatusParams) => void
   testID?: string
 }
@@ -50,7 +49,6 @@ const Transactions: FC<Props> = ({
   onRefresh,
   onEndReached,
   data,
-  openTransactionDetails,
   openTransactionStatus
 }) => {
   const { openUrl } = useInAppBrowser()
@@ -139,13 +137,8 @@ const Transactions: FC<Props> = ({
       return renderPendingBridgeTransaction(item)
     } else {
       const onPress = (): void => {
-        if (item.isContractCall || item.isBridge) {
-          AnalyticsService.capture('ActivityCardLinkClicked')
-          openUrl(item.explorerLink)
-        } else {
-          AnalyticsService.capture('ActivityCardDetailShown')
-          openTransactionDetails(item)
-        }
+        AnalyticsService.capture('ActivityCardLinkClicked')
+        openUrl(item.explorerLink)
       }
 
       return (

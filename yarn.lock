@@ -99,6 +99,7 @@ __metadata:
     "@avalabs/coingecko-sdk": v2.8.0-alpha.187
     "@avalabs/covalent-sdk": v2.8.0-alpha.187
     "@avalabs/etherscan-sdk": v2.8.0-alpha.187
+    "@avalabs/evm-module": 0.0.9
     "@avalabs/glacier-sdk": v2.8.0-alpha.187
     "@avalabs/k2-mobile": "workspace:*"
     "@avalabs/paraswap-sdk": v2.8.0-alpha.187
@@ -107,6 +108,7 @@ __metadata:
     "@avalabs/tsconfig-mobile": "workspace:*"
     "@avalabs/types": v2.8.0-alpha.187
     "@avalabs/utils-sdk": v2.8.0-alpha.187
+    "@avalabs/vm-module-types": 0.0.9
     "@avalabs/wallets-sdk": v2.8.0-alpha.187
     "@babel/core": 7.24.0
     "@babel/plugin-proposal-nullish-coalescing-operator": 7.18.6
@@ -334,6 +336,24 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@avalabs/evm-module@npm:0.0.9":
+  version: 0.0.9
+  resolution: "@avalabs/evm-module@npm:0.0.9"
+  dependencies:
+    "@avalabs/chains-sdk": v2.8.0-alpha.187
+    "@avalabs/etherscan-sdk": v2.8.0-alpha.187
+    "@avalabs/glacier-sdk": v2.8.0-alpha.187
+    "@avalabs/utils-sdk": v2.8.0-alpha.187
+    "@avalabs/vm-module-types": 0.0.9
+    "@avalabs/wallets-sdk": v2.8.0-alpha.187
+    bn.js: 5.2.1
+    lodash.startcase: 4.4.0
+  peerDependencies:
+    ethers: ^6.8.1
+  checksum: a788160123af7b4978edab3bd7f331e3046d850234cccff3bfbb13748d91ca798ea6ca853876e25be5a8b4d2a7f70f6e002236a1c646bd0d2ab09db5a76663ae
+  languageName: node
+  linkType: hard
+
 "@avalabs/glacier-sdk@npm:2.8.0-alpha.187, @avalabs/glacier-sdk@npm:v2.8.0-alpha.187":
   version: 2.8.0-alpha.187
   resolution: "@avalabs/glacier-sdk@npm:2.8.0-alpha.187"
@@ -463,6 +483,15 @@ __metadata:
     bn.js: ^5.2.1
     ethers: ^6.7.1
   checksum: def827c9d4f8692a6419e2fa4480353c4024b9ad0b33e95769b5aa6c1c0a44091a12a61328f7fc51b9941c2ccc7934f5a0b855e075e451ff38c26381b038dcea
+  languageName: node
+  linkType: hard
+
+"@avalabs/vm-module-types@npm:0.0.9":
+  version: 0.0.9
+  resolution: "@avalabs/vm-module-types@npm:0.0.9"
+  dependencies:
+    zod: 3.23.8
+  checksum: df355d281cc26961f58eca09127915b4276a317db4f7fb0d785e3f3dd7de86b12cf6e681e2bdc9b24c7e43393f7889f5fcf13b590ccccd3b294d18bfa0bff9ba
   languageName: node
   linkType: hard
 
@@ -10004,17 +10033,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"bn.js@npm:5.2.1, bn.js@npm:^5.0.0, bn.js@npm:^5.1.1, bn.js@npm:^5.1.2, bn.js@npm:^5.2.0, bn.js@npm:^5.2.1":
+  version: 5.2.1
+  resolution: "bn.js@npm:5.2.1"
+  checksum: 3dd8c8d38055fedfa95c1d5fc3c99f8dd547b36287b37768db0abab3c239711f88ff58d18d155dd8ad902b0b0cee973747b7ae20ea12a09473272b0201c9edd3
+  languageName: node
+  linkType: hard
+
 "bn.js@npm:^4.0.0, bn.js@npm:^4.1.0, bn.js@npm:^4.11.6, bn.js@npm:^4.11.8, bn.js@npm:^4.11.9":
   version: 4.12.0
   resolution: "bn.js@npm:4.12.0"
   checksum: 39afb4f15f4ea537b55eaf1446c896af28ac948fdcf47171961475724d1bb65118cca49fa6e3d67706e4790955ec0e74de584e45c8f1ef89f46c812bee5b5a12
-  languageName: node
-  linkType: hard
-
-"bn.js@npm:^5.0.0, bn.js@npm:^5.1.1, bn.js@npm:^5.1.2, bn.js@npm:^5.2.0, bn.js@npm:^5.2.1":
-  version: 5.2.1
-  resolution: "bn.js@npm:5.2.1"
-  checksum: 3dd8c8d38055fedfa95c1d5fc3c99f8dd547b36287b37768db0abab3c239711f88ff58d18d155dd8ad902b0b0cee973747b7ae20ea12a09473272b0201c9edd3
   languageName: node
   linkType: hard
 
@@ -16990,6 +17019,13 @@ __metadata:
   version: 4.6.2
   resolution: "lodash.merge@npm:4.6.2"
   checksum: ad580b4bdbb7ca1f7abf7e1bce63a9a0b98e370cf40194b03380a46b4ed799c9573029599caebc1b14e3f24b111aef72b96674a56cfa105e0f5ac70546cdc005
+  languageName: node
+  linkType: hard
+
+"lodash.startcase@npm:4.4.0":
+  version: 4.4.0
+  resolution: "lodash.startcase@npm:4.4.0"
+  checksum: c03a4a784aca653845fe09d0ef67c902b6e49288dc45f542a4ab345a9c406a6dc194c774423fa313ee7b06283950301c1221dd2a1d8ecb2dac8dfbb9ed5606b5
   languageName: node
   linkType: hard
 
@@ -25068,5 +25104,12 @@ __metadata:
   version: 3.20.2
   resolution: "zod@npm:3.20.2"
   checksum: 04172f7e9350372684ccd298d4716908edc9113751295b6c4e1b3ea84e2af8997e504b33ba36f4741417bb2a5dc90bfd40501f6b0e7389df10e42a63d6d8366c
+  languageName: node
+  linkType: hard
+
+"zod@npm:3.23.8":
+  version: 3.23.8
+  resolution: "zod@npm:3.23.8"
+  checksum: 15949ff82118f59c893dacd9d3c766d02b6fa2e71cf474d5aa888570c469dbf5446ac5ad562bb035bf7ac9650da94f290655c194f4a6de3e766f43febd432c5c
   languageName: node
   linkType: hard

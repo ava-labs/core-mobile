@@ -16,7 +16,6 @@ import {
 } from 'navigation/types'
 import ActivityList from 'screens/shared/ActivityList/ActivityList'
 import { TokenWithBalance } from 'store/balance'
-import { Transaction } from 'store/transaction'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { Text, View } from '@avalabs/k2-mobile'
 import { useApplicationContext } from 'contexts/ApplicationContext'
@@ -59,12 +58,6 @@ const OwnedTokenDetail: FC = () => {
       pop()
     }
   })
-
-  const openTransactionDetails = (item: Transaction): void => {
-    navigate(AppNavigation.Wallet.ActivityDetail, {
-      tx: item
-    })
-  }
 
   const openTransactionStatus = (
     params: BridgeTransactionStatusParams
@@ -190,7 +183,6 @@ const OwnedTokenDetail: FC = () => {
       <View sx={{ marginHorizontal: -16, flex: 1 }}>
         <ActivityList
           tokenSymbolFilter={token?.symbol}
-          openTransactionDetails={openTransactionDetails}
           openTransactionStatus={openTransactionStatus}
         />
       </View>
