@@ -6,7 +6,6 @@ import { Row } from 'components/Row'
 import DropDown, { OptionsItemInfo } from 'components/Dropdown'
 import { Space } from 'components/Space'
 import { useGetRecentTransactions } from 'store/transaction'
-import { Transaction } from 'store/transaction'
 import { ActivityLoader } from './ActivityLoader'
 import Transactions from './Transactions'
 
@@ -28,13 +27,11 @@ const filterOptions = [
 
 interface Props {
   tokenSymbolFilter?: string
-  openTransactionDetails: (item: Transaction) => void
   openTransactionStatus: (params: BridgeTransactionStatusParams) => void
 }
 
 const ActivityList = ({
   tokenSymbolFilter,
-  openTransactionDetails,
   openTransactionStatus
 }: Props): React.JSX.Element => {
   const { transactions, refresh, isLoading, isRefreshing } =
@@ -105,7 +102,6 @@ const ActivityList = ({
         data={filteredTransactions}
         isRefreshing={isRefreshing}
         onRefresh={refresh}
-        openTransactionDetails={openTransactionDetails}
         openTransactionStatus={openTransactionStatus}
       />
     )

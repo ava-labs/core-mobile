@@ -40,7 +40,6 @@ interface Props {
   onRefresh: () => void
   onEndReached?: () => void
   data: Transaction[]
-  openTransactionDetails: (item: Transaction) => void
   openTransactionStatus: (params: BridgeTransactionStatusParams) => void
   testID?: string
 }
@@ -50,7 +49,6 @@ const Transactions: FC<Props> = ({
   onRefresh,
   onEndReached,
   data,
-  openTransactionDetails,
   openTransactionStatus
 }) => {
   const { openUrl } = useInAppBrowser()
