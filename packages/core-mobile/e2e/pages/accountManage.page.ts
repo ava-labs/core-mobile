@@ -62,6 +62,14 @@ class AccountManagePage {
     await Action.tapElementAtIndex(this.accountDropdownTitle, 0)
   }
 
+  async switchToReceivedAccount(accountNumber: string) {
+    if (accountNumber === 'second') {
+      await this.tapFirstAccount()
+    } else {
+      await this.tapSecondAccount()
+    }
+  }
+
   async tapFourthAccount() {
     try {
       await Assert.isVisible(this.fourthAccount)

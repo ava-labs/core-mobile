@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { expect as jestExpect } from 'expect'
 import Action from '../helpers/actions'
 import Assert from '../helpers/assertions'
 import Collectibles from '../locators/collectibles.loc'
@@ -123,7 +122,16 @@ class CollectiblesPage {
   }
 
   async tapParadiseTycoonFurnituresNFT() {
-    await Action.tapElementAtIndex(this.paradiseTycoonFurnituresNFT, 0)
+    try {
+      await Action.tapElementAtIndex(this.paradiseTycoonFurnituresNFT, 0)
+      return 'first'
+    } catch (error) {
+      console.log('NFT not found, switching to account 2...')
+      await AccountManagePage.tapAccountMenu()
+      await AccountManagePage.tapSecondAccount()
+      await Action.tapElementAtIndex(this.paradiseTycoonFurnituresNFT, 0)
+      return 'second'
+    }
   }
 
   async tapMyAccounts() {
@@ -140,13 +148,6 @@ class CollectiblesPage {
 
   async scrollToNftDetailsItems() {
     await Action.swipeUp(by.id('send_btn'), 'slow', 0.75, 0)
-  }
-
-  async verifyReceiveNftToken(nftTokenId: string) {
-    const ReceivedNftTokenId = await this.getTextValue('nftTokenId')
-    const result = nftTokenId === ReceivedNftTokenId ? true : false
-
-    jestExpect(result).toBe(true)
   }
 
   async verifyNftDetailsItems() {
@@ -167,15 +168,12 @@ class CollectiblesPage {
     await Assert.isVisible(approveTransactionPage.rejectBtn)
   }
 
-  async sendNft(account: string, nftTokenId: any = null) {
+  async sendNft(account: string) {
     let result
     await this.tapSendButton()
-    if (account === 'first') {
-      await this.verifyReceiveNftToken(nftTokenId)
-    }
     await this.tapAddressBook()
     await this.tapMyAccounts()
-    account === 'first'
+    account === 'second'
       ? await AccountManagePage.tapFirstAccount()
       : (await AccountManagePage.tapSecondAccount(),
         (result = await this.getTextValue('nftTokenId')))

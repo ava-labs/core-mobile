@@ -11,14 +11,13 @@ describe('Send Avax to another account', () => {
     await warmup()
   })
 
-  it('Should verify NFT Details items', async () => {
+  it('Should verify NFT Details items and send NFT', async () => {
     await AccountManagePage.createSecondAccount()
     await PortfolioPage.tapCollectiblesTab()
-    await CollectiblesPage.tapParadiseTycoonFurnituresNFT()
+    const accountNumber =
+      await CollectiblesPage.tapParadiseTycoonFurnituresNFT()
     await CollectiblesPage.verifyNftDetailsItems()
-  })
-
-  it('Should send NFT to second account', async () => {
+    await CollectiblesPage.sendNft(accountNumber)
     await Actions.waitForElement(
       approveTransactionPage.successfulToastMsg,
       120000
@@ -27,10 +26,8 @@ describe('Send Avax to another account', () => {
       approveTransactionPage.successfulToastMsg,
       30000
     )
-
-    await AccountManagePage.tapAccountMenu()
-    await AccountManagePage.tapSecondAccount()
-    await CollectiblesPage.refreshCollectiblesPage()
+    await AccountManagePage.tapAccountDropdownTitle()
+    await AccountManagePage.switchToReceivedAccount(accountNumber)
     await assertions.isVisible(CollectiblesPage.paradiseTycoonFurnituresNFT)
-  })
+  }, 300000)
 })
