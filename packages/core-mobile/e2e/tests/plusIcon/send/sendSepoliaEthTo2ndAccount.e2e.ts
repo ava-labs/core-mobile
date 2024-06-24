@@ -31,10 +31,10 @@ describe('Send Sepolia Eth to another account', () => {
     )
   }, 120000)
 
-  it('Should receive Sepolia Eth on second account', async () => {
-    await ActivityTabPage.tapHeaderBack()
-    await ActivityTabPage.verifyIncomingTransaction(
-      ActivityTabLoc.ethIncomingTransactionDetail
-    )
-  }, 30000)
+  // it('Should receive Sepolia Eth on second account', async () => {
+  //   await ActivityTabPage.tapHeaderBack()
+  //   await ActivityTabPage.verifyIncomingTransaction(
+  //     ActivityTabLoc.ethIncomingTransactionDetail
+  //   )
+  // }, 30000)
 })

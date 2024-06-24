@@ -93,9 +93,6 @@ class AccountManagePage {
     } else {
       const result = await this.getSecondAvaxAddress()
       await this.tapFirstAccount()
-      if (Action.platform() === 'ios') {
-        await this.tapCarrotSVG()
-      }
       return result
     }
   }
