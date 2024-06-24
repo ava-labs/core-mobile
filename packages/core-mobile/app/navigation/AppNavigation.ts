@@ -68,7 +68,6 @@ enum WalletScreens {
   NFTManage = 'WalletScreens.NFTManage',
   TokenDetail = 'WalletScreens.TokenDetail',
   OwnedTokenDetail = 'WalletScreens.OwnedTokenDetail',
-  ActivityDetail = 'WalletScreens.ActivityDetail',
   Bridge = 'WalletScreens.Bridge',
   QRCode = 'WalletScreens.QRCode',
   Earn = 'WalletScreens.Earn',

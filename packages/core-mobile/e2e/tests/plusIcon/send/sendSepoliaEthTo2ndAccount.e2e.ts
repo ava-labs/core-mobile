@@ -1,6 +1,5 @@
 import AccountManagePage from '../../../pages/accountManage.page'
 import ActivityTabPage from '../../../pages/activityTab.page'
-import ActivityTabLoc from '../../../locators/activityTab.loc'
 import NetworksManagePage from '../../../pages/networksManage.page'
 import PortfolioPage from '../../../pages/portfolio.page'
 import SendPage from '../../../pages/send.page'
@@ -24,17 +23,11 @@ describe('Send Sepolia Eth to another account', () => {
     )
     await PortfolioPage.tapEthSepoliaNetwork()
     await PortfolioPage.tapActivityTab()
-    await ActivityTabPage.verifyOutgoingTransaction(
-      60000,
-      secondAccountAddress,
-      ActivityTabLoc.ethOutgoingTransactionDetail
-    )
+    await ActivityTabPage.verifyOutgoingTransaction(60000, secondAccountAddress)
   }, 120000)
 
   it('Should receive Sepolia Eth on second account', async () => {
     await ActivityTabPage.tapHeaderBack()
-    await ActivityTabPage.verifyIncomingTransaction(
-      ActivityTabLoc.ethIncomingTransactionDetail
-    )
+    await ActivityTabPage.verifyIncomingTransaction()
   }, 30000)
 })
