@@ -26,12 +26,13 @@ const modules: Module[] = [
 const NAMESPACE_REGEX = new RegExp('[-a-z0-9]{3,8}')
 
 class ModuleManager {
-  loadModule = async (chainId: string, method?: string): Promise<Module> => {
-    const module = await this.getModule(chainId)
+  loadModule = async (network: Network, method?: string): Promise<Module> => {
+    const caip2ChainId = this.convertChainIdToCaip2(network)
+    const module = await this.getModule(caip2ChainId)
     if (module === undefined) {
       throw new VmModuleErrors({
         name: ModuleErrors.UNSUPPORTED_CHAIN_ID,
-        message: `No module supported for chainId: ${chainId}`
+        message: `No module supported for chainId: ${caip2ChainId}`
       })
     }
 
