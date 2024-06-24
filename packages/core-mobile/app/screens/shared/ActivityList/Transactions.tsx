@@ -139,13 +139,8 @@ const Transactions: FC<Props> = ({
       return renderPendingBridgeTransaction(item)
     } else {
       const onPress = (): void => {
-        if (item.isContractCall || item.isBridge) {
-          AnalyticsService.capture('ActivityCardLinkClicked')
-          openUrl(item.explorerLink)
-        } else {
-          AnalyticsService.capture('ActivityCardDetailShown')
-          openTransactionDetails(item)
-        }
+        AnalyticsService.capture('ActivityCardLinkClicked')
+        openUrl(item.explorerLink)
       }
 
       return (
