@@ -26,13 +26,12 @@ const modules: Module[] = [
 const NAMESPACE_REGEX = new RegExp('[-a-z0-9]{3,8}')
 
 class ModuleManager {
-  loadModule = async (network: Network, method?: string): Promise<Module> => {
-    const caip2ChainId = this.convertChainIdToCaip2(network)
-    const module = await this.getModule(caip2ChainId)
+  loadModule = async (chainId: string, method?: string): Promise<Module> => {
+    const module = await this.getModule(chainId)
     if (module === undefined) {
       throw new VmModuleErrors({
         name: ModuleErrors.UNSUPPORTED_CHAIN_ID,
-        message: `No module supported for chainId: ${caip2ChainId}`
+        message: `No module supported for chainId: ${chainId}`
       })
     }
 
@@ -48,6 +47,14 @@ class ModuleManager {
     return module
   }
 
+  loadModuleByNetwork = async (
+    network: Network,
+    method?: string
+  ): Promise<Module> => {
+    const caip2ChainId = this.convertChainIdToCaip2(network)
+    return this.loadModule(caip2ChainId, method)
+  }
+
   convertChainIdToCaip2 = (network: Network): string => {
     const chainId = network.chainId
     switch (network.vmName) {
@@ -58,6 +65,8 @@ class ModuleManager {
       case NetworkVMType.AVM:
         return `avax:${chainId}`
       case NetworkVMType.EVM:
+        return `eip155:${chainId}`
+      case NetworkVMType.CoreEth:
         return `eip155:${chainId}`
       default:
         throw new Error('Unsupported network')
