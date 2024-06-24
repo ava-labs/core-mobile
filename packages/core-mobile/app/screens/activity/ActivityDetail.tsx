@@ -32,14 +32,14 @@ function ActivityDetail(): JSX.Element {
   const theme = useApplicationContext().theme
   const contacts = useSelector(selectContacts)
   const txItem = useRoute<RouteProp>().params.tx
-  const tokenInfo = getTokenInfo(txItem?.token?.symbol ?? '')
+  const tokenInfo = getTokenInfo(txItem?.tokens[0]?.symbol ?? '')
   const date = moment(txItem?.timestamp).format('MMM DD, YYYY HH:mm')
   const { openUrl } = useInAppBrowser()
   const [contact, setContact] = useState<Contact>()
-
-  const feeBN = numberToBN(txItem?.fee ?? '', 0)
+  const gasPrice = numberToBN(txItem?.gasPrice ?? '', 0)
+  const gasUsed = numberToBN(txItem?.gasUsed ?? '', 0)
   const fees = balanceToDisplayValue(
-    feeBN,
+    gasUsed.mul(gasPrice),
     Number(activeNetwork.networkToken.decimals)
   )
 
@@ -56,8 +56,8 @@ function ActivityDetail(): JSX.Element {
   }
 
   const tokenLogo = (): JSX.Element | undefined => {
-    if (txItem && txItem.token) {
-      const { name, symbol } = txItem.token
+    if (txItem && txItem.tokens[0]) {
+      const { name, symbol } = txItem.tokens[0]
       return (
         <Avatar.Custom
           size={57}
@@ -96,9 +96,9 @@ function ActivityDetail(): JSX.Element {
               textStyle={{ marginTop: 16 }}
               testID="activity_detail__amount">
               {txItem.isSender ? '-' : '+'}
-              {txItem.amount}
+              {txItem.tokens[0]?.amount}
               <AvaText.Body1 color={theme.colorText2}>
-                {` ${txItem.token?.symbol}`}
+                {` ${txItem.tokens[0]?.symbol}`}
               </AvaText.Body1>
             </AvaText.Heading1>
             <Space y={4} />
