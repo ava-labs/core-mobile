@@ -15,9 +15,8 @@ describe('Send Sepolia Eth to another account', () => {
 
   it('Should send Sepolia Eth to second account', async () => {
     await AdvancedPage.switchToTestnet()
-    await NetworksManagePage.switchToEthereumSepoliaNetwork()
     const secondAccountAddress = await AccountManagePage.createSecondAccount()
-    await AccountManagePage.tapFirstAccount()
+    await NetworksManagePage.switchToEthereumSepoliaNetwork()
     await SendPage.sendTokenTo2ndAccount(
       sendLoc.ethToken,
       sendLoc.sendingAmount
@@ -31,10 +30,10 @@ describe('Send Sepolia Eth to another account', () => {
     )
   }, 120000)
 
-  // it('Should receive Sepolia Eth on second account', async () => {
-  //   await ActivityTabPage.tapHeaderBack()
-  //   await ActivityTabPage.verifyIncomingTransaction(
-  //     ActivityTabLoc.ethIncomingTransactionDetail
-  //   )
-  // }, 30000)
+  it('Should receive Sepolia Eth on second account', async () => {
+    await ActivityTabPage.tapHeaderBack()
+    await ActivityTabPage.verifyIncomingTransaction(
+      ActivityTabLoc.ethIncomingTransactionDetail
+    )
+  }, 30000)
 })

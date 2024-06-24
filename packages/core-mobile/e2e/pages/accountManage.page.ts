@@ -3,7 +3,6 @@ import Action from '../helpers/actions'
 import accountManage from '../locators/accountManage.loc'
 import { Platform } from '../helpers/constants'
 import Assert from '../helpers/assertions'
-import actions from '../helpers/actions'
 
 class AccountManagePage {
   get account() {
@@ -82,19 +81,13 @@ class AccountManagePage {
   }
 
   async createSecondAccount() {
-    if (!(await actions.expectToBeVisible(this.secondAccount))) {
-      await this.tapAccountDropdownTitle()
-      await this.tapAddEditAccounts()
-      await this.tapAddAccountButton()
-      const result = await this.getSecondAvaxAddress()
-      await this.tapFirstAccount()
-      await this.tapDoneButton()
-      return result
-    } else {
-      const result = await this.getSecondAvaxAddress()
-      await this.tapFirstAccount()
-      return result
-    }
+    await this.tapAccountDropdownTitle()
+    await this.tapAddEditAccounts()
+    await this.tapAddAccountButton()
+    const result = await this.getSecondAvaxAddress()
+    await this.tapFirstAccount()
+    await this.tapDoneButton()
+    return result
   }
 
   async switchToSecondAccount() {
