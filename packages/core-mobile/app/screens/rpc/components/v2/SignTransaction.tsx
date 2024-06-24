@@ -282,6 +282,7 @@ const SignTransaction = (): JSX.Element => {
         </Button>
         <Space y={16} />
         <Button
+          testID="reject_button"
           size="xlarge"
           type="secondary"
           disabled={submitting}

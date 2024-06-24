@@ -44,10 +44,12 @@ const ErrorFallback = ({
 export const GridItem = React.memo(
   ({
     item,
-    onItemSelected
+    onItemSelected,
+    testID
   }: {
     item: NFTItem
     onItemSelected: (item: NFTItem) => void
+    testID?: string
   }) => {
     const [imgLoadFailed, setImgLoadFailed] = useState(false)
     const theme = useApplicationContext().theme
@@ -115,7 +117,7 @@ export const GridItem = React.memo(
         style={{
           margin: GRID_ITEM_MARGIN
         }}
-        testID="baseGridItem">
+        testID={testID}>
         {renderImage()}
         {isErc1155(item) && (
           <OvalTagBg

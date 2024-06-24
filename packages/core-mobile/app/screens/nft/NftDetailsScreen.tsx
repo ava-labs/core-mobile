@@ -91,7 +91,7 @@ const NftDetailsScreen = (): JSX.Element => {
     if (shouldHide) return null
 
     return (
-      <AvaButton.SecondaryLarge onPress={handlePressSend}>
+      <AvaButton.SecondaryLarge onPress={handlePressSend} testID="send_btn">
         Send
       </AvaButton.SecondaryLarge>
     )
