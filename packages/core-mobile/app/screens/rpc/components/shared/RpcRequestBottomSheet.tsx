@@ -9,6 +9,7 @@ type Props = {
   showButtons?: boolean
   onApprove?: () => void
   onReject?: () => void
+  testID?: string
 }
 
 const RpcRequestBottomSheet: React.FC<Props> = ({
@@ -30,11 +31,19 @@ const RpcRequestBottomSheet: React.FC<Props> = ({
             paddingVertical: 16,
             marginHorizontal: 16
           }}>
-          <Button type="primary" size="xlarge" onPress={onApprove}>
+          <Button
+            type="primary"
+            size="xlarge"
+            onPress={onApprove}
+            testID="approve_btn">
             Approve
           </Button>
           <Space y={16} />
-          <Button type="secondary" size="xlarge" onPress={onReject}>
+          <Button
+            type="secondary"
+            size="xlarge"
+            onPress={onReject}
+            testID="reject_btn">
             Reject
           </Button>
         </View>
