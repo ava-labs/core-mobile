@@ -1,10 +1,8 @@
 import { Network, NetworkVMType } from '@avalabs/chains-sdk'
 import { getAddressByNetwork } from 'store/account/utils'
-import Config from 'react-native-config'
-import { ModuleManager } from 'vmModule/ModuleManager'
+import ModuleManager from 'vmModule/ModuleManager'
 import { NULL_ADDRESS } from 'screens/bridge/utils/bridgeUtils'
 import UnifiedBridgeService from 'services/bridge/UnifiedBridgeService'
-import { RpcMethod } from 'store/rpc'
 import Logger from 'utils/Logger'
 import BtcActivityService from './BtcActivityService'
 import PrimaryActivityService from './PrimaryActivityService'
@@ -14,12 +12,6 @@ import {
   NetworkActivityService
 } from './types'
 import { convertTransaction } from './utils/evmTransactionConverter'
-
-if (!Config.GLACIER_URL) throw Error('GLACIER_URL ENV is missing')
-
-const GLACIER_URL = Config.GLACIER_URL
-
-const moduleManager = new ModuleManager()
 
 const serviceMap: { [K in NetworkVMType]?: NetworkActivityService } = {
   [NetworkVMType.BITCOIN]: BtcActivityService,
@@ -55,12 +47,9 @@ export class ActivityService {
     criticalConfig
   }: GetActivitiesForAccountParams): Promise<ActivityResponse> {
     const address = getAddressByNetwork(account, network)
-    const caip2ChainId = `eip155:${network.chainId.toString()}`
     try {
-      const module = await moduleManager.loadModule(
-        caip2ChainId,
-        RpcMethod.GET_TRANSACTION_HISTORY
-      )
+      const caip2ChainId = ModuleManager.convertChainIdToCaip2(network)
+      const module = await ModuleManager.loadModule(caip2ChainId)
       // remove if statement once all modules are implmeneted
       if (module.getManifest()?.network.chainIds.includes(caip2ChainId)) {
         const rawTxHistory = await module.getTransactionHistory({
@@ -70,8 +59,7 @@ export class ActivityService {
           explorerUrl: network.explorerUrl ?? '',
           address,
           nextPageToken,
-          offset: pageSize,
-          glacierApiUrl: GLACIER_URL
+          offset: pageSize
         })
 
         const bridgeAddresses = [

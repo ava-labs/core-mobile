@@ -8,7 +8,7 @@ import { getExplorerAddressByNetwork } from 'utils/ExplorerUtils'
 import { Avalanche } from '@avalabs/wallets-sdk'
 import { Avax } from 'types'
 import { stripChainAddress } from 'store/account/utils'
-import { TokenType } from '@internal/types'
+import { TokenType } from '@avalabs/vm-module-types'
 
 export function convertXChainTransaction(
   tx: XChainNonLinearTransaction | XChainLinearTransaction,

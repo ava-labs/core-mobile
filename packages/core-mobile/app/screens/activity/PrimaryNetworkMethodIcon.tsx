@@ -18,7 +18,7 @@ import ArrowUp from 'assets/icons/arrowUp.svg'
 import ArrowDown from 'assets/icons/arrowDown.svg'
 import { SvgProps } from 'react-native-svg'
 import { View } from '@avalabs/k2-mobile'
-import { TransactionType } from '@internal/types'
+import { TransactionType } from '@avalabs/vm-module-types'
 import SwapV2 from 'assets/icons/swap_v2.svg'
 import Notes from 'assets/icons/notes.svg'
 

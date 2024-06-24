@@ -8,7 +8,7 @@ import { Account } from 'store/account'
 import {
   TransactionType,
   Transaction as InternalTransaction
-} from '@internal/types'
+} from '@avalabs/vm-module-types'
 
 export type GetTransactionsArgs = {
   nextPageToken?: string
