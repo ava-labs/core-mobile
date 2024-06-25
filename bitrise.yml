@@ -857,7 +857,7 @@ workflows:
         title: Detox
         inputs:
         - file_path: scripts/bitrise/detox/iosInternalE2e.sh
-  ios-internal-e2e-bridge-test:
+  ios-internal-e2e-core-web-test:
       before_run:
       - _install-and-set-env
       - _set-version
@@ -900,6 +900,6 @@ workflows:
       - script-runner@0:
           title: Detox
           inputs:
-          - file_path: scripts/bitrise/detox/iosInternalBridgeTestRunner.sh
+          - file_path: scripts/bitrise/detox/iosCoreWebTestRunner.sh
 
       
