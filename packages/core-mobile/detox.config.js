@@ -130,7 +130,7 @@ module.exports = {
       testRunner: {
         $0: 'jest',
         args: {
-          config: 'e2e/configs/reuseStateConfig.json'
+          config: './e2e/configs/reuseStateConfig.json'
         },
         jest: {
           setupTimeout: 300000,
@@ -144,7 +144,7 @@ module.exports = {
       testRunner: {
         $0: 'jest',
         args: {
-          config: 'e2e/configs/reuseStateConfig.json'
+          config: './e2e/configs/reuseStateConfig.json'
         }
       },
       artifacts: {
@@ -182,7 +182,7 @@ module.exports = {
       testRunner: {
         $0: 'jest',
         args: {
-          config: 'e2e/configs/smokeTestConfig.json'
+          config: './e2e/configs/smokeTestConfig.json'
         }
       }
     },
@@ -208,7 +208,7 @@ module.exports = {
       testRunner: {
         $0: 'jest',
         args: {
-          config: 'e2e/configs/smokeTestConfig.json'
+          config: './e2e/configs/smokeTestConfig.json'
         }
       }
     },
@@ -224,7 +224,7 @@ module.exports = {
       testRunner: {
         $0: 'jest',
         args: {
-          config: 'e2e/configs/bridgeTestConfig.json'
+          config: './e2e/configs/bridgeTestConfig.json'
         }
       }
     },
@@ -256,7 +256,7 @@ module.exports = {
       testRunner: {
         $0: 'jest',
         args: {
-          config: 'e2e/configs/smokeTestConfigReuseState.json'
+          config: './e2e/configs/smokeTestConfigReuseState.json'
         }
       }
     },
@@ -299,7 +299,7 @@ module.exports = {
       testRunner: {
         $0: 'jest',
         args: {
-          config: 'e2e/configs/reuse_state_config.json'
+          config: './e2e/configs/reuse_state_config.json'
         }
       },
       artifacts: {
@@ -315,7 +315,7 @@ module.exports = {
       testRunner: {
         $0: 'jest',
         args: {
-          config: 'e2e/configs/smokeTestConfigReuseState.json'
+          config: './e2e/configs/smokeTestConfigReuseState.json'
         }
       }
     },
@@ -328,7 +328,7 @@ module.exports = {
       testRunner: {
         $0: 'jest',
         args: {
-          config: 'e2e/configs/smokeTestConfig.json'
+          config: './e2e/configs/smokeTestConfig.json'
         }
       }
     },
@@ -341,7 +341,7 @@ module.exports = {
       testRunner: {
         $0: 'jest',
         args: {
-          config: 'e2e/configs/smokeTestConfigReuseState.json'
+          config: './e2e/configs/smokeTestConfigReuseState.json'
         }
       }
     },
@@ -354,7 +354,7 @@ module.exports = {
       testRunner: {
         $0: 'jest',
         args: {
-          config: 'e2e/configs/smokeTestConfigNoReuseState.json'
+          config: './e2e/configs/smokeTestConfigNoReuseState.json'
         }
       }
     },
@@ -381,7 +381,7 @@ module.exports = {
       testRunner: {
         $0: 'jest',
         args: {
-          config: 'e2e/configs/smokeTestConfig.json'
+          config: './e2e/configs/smokeTestConfig.json'
         }
       }
     },
@@ -408,7 +408,7 @@ module.exports = {
       testRunner: {
         $0: 'jest',
         args: {
-          config: 'e2e/configs/smokeTestConfig.json'
+          config: './e2e/configs/smokeTestConfig.json'
         }
       }
     },
