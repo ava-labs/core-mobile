@@ -33,11 +33,13 @@ export default async function getTestLogs(): Promise<
     testResult?: number
   }[]
 > {
-  const folders = await getDirectories('./artifacts/')
+  const folders = await getDirectories('./e2e/artifacts/')
   const testResults = []
 
   for (let i = 0; i < folders.length; i++) {
-    const nonSplitFolders = await getDirectories(`./artifacts/${folders[i]}`)
+    const nonSplitFolders = await getDirectories(
+      `./e2e/artifacts/${folders[i]}`
+    )
     const splitFolder = nonSplitFolders[0]?.split('.')
     if (!splitFolder) {
       console.log('Why is there not splitfolder? ' + nonSplitFolders)
@@ -54,7 +56,7 @@ export default async function getTestLogs(): Promise<
 
     const parsedResultFolder = resultFolders[resultFolders.length - 1]
     const attachmentFolders = await getDirectories(
-      `./artifacts/${folders[i]}/${parsedResultFolder}`
+      `./e2e/artifacts/${folders[i]}/${parsedResultFolder}`
     )
     for (const result of attachmentFolders) {
       const splitTestFolder = await splitTestResult(result)
@@ -86,7 +88,7 @@ export const getScreenshotOnFailure = async (
   )
   for (let i = 0; i < firstFailedTestFolder.length; i++) {
     if (firstFailedTestFolder[i]?.includes('✗')) {
-      const filePath = `./artifacts/${testFolder}/${firstFailedTestFolder[i]}`
+      const filePath = `./e2e/artifacts/${testFolder}/${firstFailedTestFolder[i]}`
       return `${filePath}/testDone.png`
     }
   }
@@ -177,6 +179,6 @@ export const testRunTimestamp = async (platform: any): Promise<any> => {
 }
 
 export async function parseTestRun(platform: any): Promise<any> {
-  const folders: any = await getDirectories(`./artifacts/${platform}`)
+  const folders: any = await getDirectories(`./e2e/artifacts/${platform}`)
   return folders[folders.length - 1].split('.')
 }
