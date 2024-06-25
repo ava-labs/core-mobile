@@ -15,6 +15,7 @@ const showModal = (element: JSX.Element): void => {
       'duplicate owl modal',
       'there is already a modal shown, you should hide it first'
     )
+    hideModal()
   }
   rootNode = new RootSiblingsManager(element)
 }
