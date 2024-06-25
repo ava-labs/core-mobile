@@ -341,11 +341,7 @@ module.exports = {
       testRunner: {
         $0: 'jest',
         args: {
-<<<<<<< Updated upstream
           config: './e2e/configs/smokeTestConfigReuseState.json'
-=======
-          config: 'e2e/reuse_state_config.json'
->>>>>>> Stashed changes
         }
       }
     },
