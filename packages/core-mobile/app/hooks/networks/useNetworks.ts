@@ -9,12 +9,8 @@ import {
 import { useCallback, useMemo } from 'react'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { type Network } from '@avalabs/chains-sdk'
-import { BN } from 'bn.js'
-import { LocalTokenWithBalance } from 'store/balance'
-import { getLocalTokenId } from 'store/balance/utils'
 import { isAvalancheChainId } from 'services/network/utils/isAvalancheNetwork'
 import { useGetNetworks } from './useGetNetworks'
-import { useNetworkContractTokens } from './useNetworkContractTokens'
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export const useNetworks = () => {
@@ -104,28 +100,6 @@ export const useNetworks = () => {
     return favoriteNetworks.filter(network => network.chainId !== activeChainId)
   }, [favoriteNetworks, activeChainId])
 
-  // get the list of contract tokens for the active network
-  const activeNetworkContractTokens = useNetworkContractTokens(activeNetwork)
-
-  const allNetworkTokensAsLocal = useMemo(() => {
-    return (
-      activeNetworkContractTokens.map(token => {
-        return {
-          ...token,
-          localId: getLocalTokenId(token),
-          balance: new BN(0),
-          balanceInCurrency: 0,
-          balanceDisplayValue: '0',
-          balanceCurrencyDisplayValue: '0',
-          priceInCurrency: 0,
-          marketCap: 0,
-          change24: 0,
-          vol24: 0
-        } as LocalTokenWithBalance
-      }) ?? []
-    )
-  }, [activeNetworkContractTokens])
-
   const getIsTestnet = useCallback(
     (chainId: number) => {
       const network = allNetworks[chainId]
@@ -173,8 +147,6 @@ export const useNetworks = () => {
     activeNetwork,
     favoriteNetworks,
     inactiveNetworks,
-    activeNetworkContractTokens,
-    allNetworkTokensAsLocal,
     getIsTestnet,
     getIsCustomNetwork,
     getSomeNetworks,

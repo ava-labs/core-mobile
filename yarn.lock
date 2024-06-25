@@ -338,7 +338,7 @@ __metadata:
 
 "@avalabs/evm-module@file:../../../vm-modules/packages/evm-module::locator=%40avalabs%2Fcore-mobile%40workspace%3Apackages%2Fcore-mobile":
   version: 0.0.9
-  resolution: "@avalabs/evm-module@file:../../../vm-modules/packages/evm-module#../../../vm-modules/packages/evm-module::hash=085ad3&locator=%40avalabs%2Fcore-mobile%40workspace%3Apackages%2Fcore-mobile"
+  resolution: "@avalabs/evm-module@file:../../../vm-modules/packages/evm-module#../../../vm-modules/packages/evm-module::hash=07f02b&locator=%40avalabs%2Fcore-mobile%40workspace%3Apackages%2Fcore-mobile"
   dependencies:
     "@avalabs/chains-sdk": v2.8.0-alpha.187
     "@avalabs/etherscan-sdk": v2.8.0-alpha.187
@@ -350,7 +350,7 @@ __metadata:
     lodash.startcase: 4.4.0
   peerDependencies:
     ethers: ^6.8.1
-  checksum: f0b759fae412d67e4f3c7b6ee87fac56e7ce239a2bcf333b05d9a681dc4b36e45ec11a485875da0ab5a489bae79df8207116d0b59ae82a3b750691b755325f45
+  checksum: 1f5bec2fb40d51aa0563900fe38557f448bda7165b87287dd0fa0303c3aebfa889d9bc320d2460a661fdf8be4dd5e63f086ec10628f5b1c513e9048b35169d60
   languageName: node
   linkType: hard
 
@@ -488,10 +488,10 @@ __metadata:
 
 "@avalabs/vm-module-types@file:../../../vm-modules/packages/types::locator=%40avalabs%2Fcore-mobile%40workspace%3Apackages%2Fcore-mobile":
   version: 0.0.9
-  resolution: "@avalabs/vm-module-types@file:../../../vm-modules/packages/types#../../../vm-modules/packages/types::hash=6f0b47&locator=%40avalabs%2Fcore-mobile%40workspace%3Apackages%2Fcore-mobile"
+  resolution: "@avalabs/vm-module-types@file:../../../vm-modules/packages/types#../../../vm-modules/packages/types::hash=1d9daf&locator=%40avalabs%2Fcore-mobile%40workspace%3Apackages%2Fcore-mobile"
   dependencies:
     zod: 3.23.8
-  checksum: 900850568419908e6f4ad4b9d7bc215787ed4575952eaaf43c7c107b1741d05190380353a66e0937ebe5b1a9af5134b77b3844506a1d46d857da433a14fc66bb
+  checksum: 7b652d8ad53b6bf517b4657e8095be4178e2c1dc6b3ac35a083895fd59ce67666c0010372aef22d1fb704aecbdaf4c5eefb8761b33a94ab3e6af7118a7f14a0c
   languageName: node
   linkType: hard
 

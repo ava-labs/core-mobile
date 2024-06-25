@@ -1,11 +1,7 @@
 import { Blockchain, BridgeTransaction } from '@avalabs/bridge-sdk'
 import { BridgeTransfer } from '@avalabs/bridge-unified'
-import {
-  BITCOIN_NETWORK,
-  ChainId,
-  NetworkContractToken,
-  NetworkToken
-} from '@avalabs/chains-sdk'
+import { BITCOIN_NETWORK, ChainId, NetworkToken } from '@avalabs/chains-sdk'
+import { NetworkContractToken } from '@avalabs/vm-module-types'
 import { useNetworkContractTokens } from 'hooks/networks/useNetworkContractTokens'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { useMemo } from 'react'

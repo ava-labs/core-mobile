@@ -7,5 +7,5 @@ export const getNetworkContractTokens = async (
 ): Promise<NetworkContractToken[]> => {
   const module = await ModuleManager.loadModuleByNetwork(network)
 
-  return module.getTokens({ chainId: network.chainId, isProd: !__DEV__ })
+  return module.getTokens(network.chainId)
 }

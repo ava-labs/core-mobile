@@ -7,7 +7,6 @@ import {
   RpcRequest,
   NetworkFees,
   parseManifest,
-  GetTokens,
   NetworkContractToken
 } from '@avalabs/vm-module-types'
 import manifest from './coreEth.manifest.json'
@@ -36,7 +35,7 @@ export class CoreEthModule implements Module {
   getAddress(): Promise<string> {
     return Promise.resolve('EVM address')
   }
-  getTokens(_: GetTokens): Promise<NetworkContractToken[]> {
+  getTokens(_: number): Promise<NetworkContractToken[]> {
     return Promise.resolve([])
   }
   onRpcRequest(request: RpcRequest): Promise<RpcResponse<unknown, Error>> {

@@ -1,5 +1,4 @@
 import {
-  GetTokens,
   GetTransactionHistory,
   Manifest,
   Module,
@@ -36,7 +35,7 @@ export class PVMModule implements Module {
   getAddress(): Promise<string> {
     return Promise.resolve('PVM address')
   }
-  getTokens(_: GetTokens): Promise<NetworkContractToken[]> {
+  getTokens(_: number): Promise<NetworkContractToken[]> {
     return Promise.resolve([])
   }
   onRpcRequest(request: RpcRequest): Promise<RpcResponse<unknown, Error>> {

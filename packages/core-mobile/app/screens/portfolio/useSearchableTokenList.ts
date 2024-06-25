@@ -10,7 +10,7 @@ import {
 import { useDispatch, useSelector } from 'react-redux'
 import { selectTokenBlacklist } from 'store/portfolio'
 import BN from 'bn.js'
-import { useNetworks } from 'hooks/networks/useNetworks'
+import { useActiveNetworkTokensWithBalance } from 'hooks/networks/useActiveNetworkTokensWithBalance'
 
 const bnZero = new BN(0)
 
@@ -41,7 +41,7 @@ export function useSearchableTokenList(
   refetch: () => void
   isRefetching: boolean
 } {
-  const { allNetworkTokensAsLocal: allNetworkTokens } = useNetworks()
+  const allNetworkTokens = useActiveNetworkTokensWithBalance()
   const dispatch = useDispatch()
   const [searchText, setSearchText] = useState('')
   const tokenBlacklist = useSelector(selectTokenBlacklist)
