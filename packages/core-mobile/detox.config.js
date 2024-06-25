@@ -27,7 +27,7 @@ module.exports = {
     },
     simulator: {
       type: 'ios.simulator',
-      device: { type: 'iPhone 14' }
+      device: { type: 'iPhone 15 Pro' }
     },
     emulator_ci: {
       type: 'android.emulator',
@@ -341,7 +341,11 @@ module.exports = {
       testRunner: {
         $0: 'jest',
         args: {
+<<<<<<< Updated upstream
           config: './e2e/configs/smokeTestConfigReuseState.json'
+=======
+          config: 'e2e/reuse_state_config.json'
+>>>>>>> Stashed changes
         }
       }
     },
