@@ -208,7 +208,7 @@ module.exports = {
       testRunner: {
         $0: 'jest',
         args: {
-          config: './e2e/configs/dappTestConfig.json'
+          config: './e2e/dappTestConfig.json'
         }
       }
     },
