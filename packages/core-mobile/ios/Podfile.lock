@@ -1,9 +1,9 @@
 PODS:
-  - AppAuth (1.7.5):
-    - AppAuth/Core (= 1.7.5)
-    - AppAuth/ExternalUserAgent (= 1.7.5)
-  - AppAuth/Core (1.7.5)
-  - AppAuth/ExternalUserAgent (1.7.5):
+  - AppAuth (1.7.4):
+    - AppAuth/Core (= 1.7.4)
+    - AppAuth/ExternalUserAgent (= 1.7.4)
+  - AppAuth/Core (1.7.4)
+  - AppAuth/ExternalUserAgent (1.7.4):
     - AppAuth/Core
   - boost (1.83.0)
   - CatCrypto (0.3.2)
@@ -68,13 +68,13 @@ PODS:
     - lottie-ios (~> 4.4.1)
     - RCT-Folly (= 2022.05.16.00)
     - React-Core
-  - MMKV (1.3.5):
-    - MMKVCore (~> 1.3.5)
-  - MMKVCore (1.3.5)
+  - MMKV (1.3.4):
+    - MMKVCore (~> 1.3.4)
+  - MMKVCore (1.3.4)
   - OpenSSL-Universal (1.1.1100)
   - Permission-Camera (3.6.0):
     - RNPermissions
-  - PLCrashReporter (1.11.2)
+  - PLCrashReporter (1.11.1)
   - RCT-Folly (2022.05.16.00):
     - boost
     - DoubleConversion
@@ -136,7 +136,7 @@ PODS:
     - React-perflogger
     - React-runtimescheduler
     - React-utils
-    - SocketRocket (= 0.7.0)
+    - SocketRocket (= 0.6.1)
     - Yoga
   - React-Core/CoreModulesHeaders (0.73.7):
     - glog
@@ -149,7 +149,7 @@ PODS:
     - React-perflogger
     - React-runtimescheduler
     - React-utils
-    - SocketRocket (= 0.7.0)
+    - SocketRocket (= 0.6.1)
     - Yoga
   - React-Core/Default (0.73.7):
     - glog
@@ -161,7 +161,7 @@ PODS:
     - React-perflogger
     - React-runtimescheduler
     - React-utils
-    - SocketRocket (= 0.7.0)
+    - SocketRocket (= 0.6.1)
     - Yoga
   - React-Core/DevSupport (0.73.7):
     - glog
@@ -176,7 +176,7 @@ PODS:
     - React-perflogger
     - React-runtimescheduler
     - React-utils
-    - SocketRocket (= 0.7.0)
+    - SocketRocket (= 0.6.1)
     - Yoga
   - React-Core/RCTActionSheetHeaders (0.73.7):
     - glog
@@ -189,7 +189,7 @@ PODS:
     - React-perflogger
     - React-runtimescheduler
     - React-utils
-    - SocketRocket (= 0.7.0)
+    - SocketRocket (= 0.6.1)
     - Yoga
   - React-Core/RCTAnimationHeaders (0.73.7):
     - glog
@@ -202,7 +202,7 @@ PODS:
     - React-perflogger
     - React-runtimescheduler
     - React-utils
-    - SocketRocket (= 0.7.0)
+    - SocketRocket (= 0.6.1)
     - Yoga
   - React-Core/RCTBlobHeaders (0.73.7):
     - glog
@@ -215,7 +215,7 @@ PODS:
     - React-perflogger
     - React-runtimescheduler
     - React-utils
-    - SocketRocket (= 0.7.0)
+    - SocketRocket (= 0.6.1)
     - Yoga
   - React-Core/RCTImageHeaders (0.73.7):
     - glog
@@ -228,7 +228,7 @@ PODS:
     - React-perflogger
     - React-runtimescheduler
     - React-utils
-    - SocketRocket (= 0.7.0)
+    - SocketRocket (= 0.6.1)
     - Yoga
   - React-Core/RCTLinkingHeaders (0.73.7):
     - glog
@@ -241,7 +241,7 @@ PODS:
     - React-perflogger
     - React-runtimescheduler
     - React-utils
-    - SocketRocket (= 0.7.0)
+    - SocketRocket (= 0.6.1)
     - Yoga
   - React-Core/RCTNetworkHeaders (0.73.7):
     - glog
@@ -254,7 +254,7 @@ PODS:
     - React-perflogger
     - React-runtimescheduler
     - React-utils
-    - SocketRocket (= 0.7.0)
+    - SocketRocket (= 0.6.1)
     - Yoga
   - React-Core/RCTSettingsHeaders (0.73.7):
     - glog
@@ -267,7 +267,7 @@ PODS:
     - React-perflogger
     - React-runtimescheduler
     - React-utils
-    - SocketRocket (= 0.7.0)
+    - SocketRocket (= 0.6.1)
     - Yoga
   - React-Core/RCTTextHeaders (0.73.7):
     - glog
@@ -280,7 +280,7 @@ PODS:
     - React-perflogger
     - React-runtimescheduler
     - React-utils
-    - SocketRocket (= 0.7.0)
+    - SocketRocket (= 0.6.1)
     - Yoga
   - React-Core/RCTVibrationHeaders (0.73.7):
     - glog
@@ -293,7 +293,7 @@ PODS:
     - React-perflogger
     - React-runtimescheduler
     - React-utils
-    - SocketRocket (= 0.7.0)
+    - SocketRocket (= 0.6.1)
     - Yoga
   - React-Core/RCTWebSocket (0.73.7):
     - glog
@@ -306,7 +306,7 @@ PODS:
     - React-perflogger
     - React-runtimescheduler
     - React-utils
-    - SocketRocket (= 0.7.0)
+    - SocketRocket (= 0.6.1)
     - Yoga
   - React-CoreModules (0.73.7):
     - RCT-Folly (= 2022.05.16.00)
@@ -318,7 +318,7 @@ PODS:
     - React-RCTBlob
     - React-RCTImage (= 0.73.7)
     - ReactCommon
-    - SocketRocket (= 0.7.0)
+    - SocketRocket (= 0.6.1)
   - React-cxxreact (0.73.7):
     - boost (= 1.83.0)
     - DoubleConversion
@@ -1208,9 +1208,9 @@ PODS:
     - React-Core
   - RNSensors (7.3.5):
     - React-Core
-  - RNSentry (5.24.0):
+  - RNSentry (5.20.0):
     - React-Core
-    - Sentry/HybridSDK (= 8.28.0)
+    - Sentry/HybridSDK (= 8.21.0)
   - RNSVG (15.1.0):
     - React-Core
   - SDWebImage (5.11.1):
@@ -1219,8 +1219,10 @@ PODS:
   - SDWebImageWebPCoder (0.8.5):
     - libwebp (~> 1.0)
     - SDWebImage/Core (~> 5.10)
-  - Sentry/HybridSDK (8.28.0)
-  - SocketRocket (0.7.0)
+  - Sentry/HybridSDK (8.21.0):
+    - SentryPrivate (= 8.21.0)
+  - SentryPrivate (8.21.0)
+  - SocketRocket (0.6.1)
   - Yoga (1.14.0)
 
 DEPENDENCIES:
@@ -1349,6 +1351,7 @@ SPEC REPOS:
     - SDWebImage
     - SDWebImageWebPCoder
     - Sentry
+    - SentryPrivate
     - SocketRocket
 
 EXTERNAL SOURCES:
@@ -1548,7 +1551,7 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
 SPEC CHECKSUMS:
-  AppAuth: 501c04eda8a8d11f179dbe8637b7a91bb7e5d2fa
+  AppAuth: 182c5b88630569df5acb672720534756c29b3358
   boost: d3f49c53809116a5d38da093a8aa78bf551aed09
   CatCrypto: a477899b6be4954e75be4897e732da098cc0a5a8
   DatadogCore: 4a4cdf7beca3aa12b7095bebd926acea1a865a99
@@ -1571,19 +1574,19 @@ SPEC CHECKSUMS:
   libwebp: 1786c9f4ff8a279e4dac1e8f385004d5fc253009
   lottie-ios: fcb5e73e17ba4c983140b7d21095c834b3087418
   lottie-react-native: 13cd0c4782c3e6bb26bfa4cc2d08bfb84f6d1ab6
-  MMKV: 506311d0494023c2f7e0b62cc1f31b7370fa3cfb
-  MMKVCore: 9e2e5fd529b64a9fe15f1a7afb3d73b2e27b4db9
+  MMKV: ed58ad794b3f88c24d604a5b74f3fba17fcbaf74
+  MMKVCore: a67a1cede26175c413176f404a7cedec43f96a0b
   OpenSSL-Universal: ebc357f1e6bc71fa463ccb2fe676756aff50e88c
   Permission-Camera: 0a0fb4341f50ab242f496fb2f73380e0ec454fe7
-  PLCrashReporter: 499c53b0104f95c302d94fd723ebb03c56d9bac8
+  PLCrashReporter: 5d2d3967afe0efad61b3048d617e2199a5d1b787
   RCT-Folly: 7169b2b1c44399c76a47b5deaaba715eeeb476c0
   RCTRequired: 77f73950d15b8c1a2b48ba5b79020c3003d1c9b5
   RCTTypeSafety: ede1e2576424d89471ef553b2aed09fbbcc038e3
   React: 2ddb437e599df2f1bffa9b248de2de4cfa0227f0
   React-callinvoker: 10fc710367985e525e2d65bcc3a73d536c992aea
   React-Codegen: 2dacb065d14fa11ef8f102612601489d6b0fad92
-  React-Core: 49ed0e8f4a234afb728e940600ea8a48d688643d
-  React-CoreModules: 66284ecb2354585d2c0d0b036d4e99bb48d9473f
+  React-Core: 168a3a52c0fbd238d51e4661f0a05cdaa3469ffa
+  React-CoreModules: 97e5860e7e2d8549a5a357c2e0b115e93f25e5e7
   React-cxxreact: 0ace137717686e7cd2d2460071f85512d087b4fc
   React-debug: 2bb2ea6d53636bfdc7cb9009a8e71dd6a96810b5
   React-Fabric: ba59dc25be3c9ec5aeb8beab7846a0449adbda2c
@@ -1661,12 +1664,13 @@ SPEC CHECKSUMS:
   RNReanimated: 00ee495a70897aa9d541e76debec14253133b812
   RNScreens: 17e2f657f1b09a71ec3c821368a04acbb7ebcb46
   RNSensors: e74c8bd9606400c1048ab67af7f41eb2091cb2fc
-  RNSentry: fb7b187516caea5390fdf3845651d3760be06bd0
+  RNSentry: fb15f17d0f074c089c38bb913625ceab8665c8fd
   RNSVG: 0eea30725f92fc53f86d2a427ee75f28bdfb8692
   SDWebImage: a7f831e1a65eb5e285e3fb046a23fcfbf08e696d
   SDWebImageWebPCoder: 908b83b6adda48effe7667cd2b7f78c897e5111d
-  Sentry: 1482a20b132098929714143f436a4fe574ad0517
-  SocketRocket: abac6f5de4d4d62d24e11868d7a2f427e0ef940d
+  Sentry: ebc12276bd17613a114ab359074096b6b3725203
+  SentryPrivate: d651efb234cf385ec9a1cdd3eff94b5e78a0e0fe
+  SocketRocket: f32cd54efbe0f095c4d7594881e52619cfe80b17
   Yoga: 47d399a73c0c0caa9ff824e5c657eae31215bfee
 
 PODFILE CHECKSUM: f07160c0807d103b6909c4fe5d2e763c690c4eae
