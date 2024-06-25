@@ -61,11 +61,9 @@ class ModuleManager {
       case NetworkVMType.BITCOIN:
         return `bip122:${chainId}`
       case NetworkVMType.PVM:
-        return `avax:${chainId}`
       case NetworkVMType.AVM:
         return `avax:${chainId}`
       case NetworkVMType.EVM:
-        return `eip155:${chainId}`
       case NetworkVMType.CoreEth:
         return `eip155:${chainId}`
       default:

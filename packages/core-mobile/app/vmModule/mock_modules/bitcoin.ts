@@ -1,7 +1,9 @@
 import {
+  GetTokens,
   GetTransactionHistory,
   Manifest,
   Module,
+  NetworkContractToken,
   NetworkFees,
   RpcRequest,
   RpcResponse,
@@ -33,6 +35,9 @@ export class BitcoinModule implements Module {
   }
   getAddress(): Promise<string> {
     return Promise.resolve('Bitcoin address')
+  }
+  getTokens(_: GetTokens): Promise<NetworkContractToken[]> {
+    return Promise.resolve([])
   }
   onRpcRequest(request: RpcRequest): Promise<RpcResponse<unknown, Error>> {
     throw new Error(`Method not implemented: ${request.method}`)

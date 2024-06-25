@@ -7,22 +7,20 @@ import {
   selectFavorites
 } from 'store/network'
 import { useCallback, useMemo } from 'react'
-import { selectAllCustomTokens } from 'store/customToken'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { mergeWithCustomTokens } from 'store/network/utils'
 import { type Network } from '@avalabs/chains-sdk'
 import { BN } from 'bn.js'
 import { LocalTokenWithBalance } from 'store/balance'
 import { getLocalTokenId } from 'store/balance/utils'
 import { isAvalancheChainId } from 'services/network/utils/isAvalancheNetwork'
 import { useGetNetworks } from './useGetNetworks'
+import { useNetworkContractTokens } from './useNetworkContractTokens'
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export const useNetworks = () => {
   const { data: rawNetworks } = useGetNetworks()
   const _customNetworks = useSelector(customNetworksSelector)
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
-  const allCustomTokens = useSelector(selectAllCustomTokens)
   const activeChainId = useSelector(selectActiveChainId)
   const favorites = useSelector(selectFavorites)
 
@@ -40,10 +38,7 @@ export const useNetworks = () => {
         const chainId = parseInt(key)
         const network = rawNetworks[chainId]
         if (network && network.isTestnet === isDeveloperMode) {
-          reducedNetworks[chainId] = mergeWithCustomTokens(
-            network,
-            allCustomTokens
-          )
+          reducedNetworks[chainId] = network
         }
         return reducedNetworks
       },
@@ -56,17 +51,14 @@ export const useNetworks = () => {
         const network = _customNetworks[chainId]
 
         if (network && network.isTestnet === isDeveloperMode) {
-          reducedNetworks[chainId] = mergeWithCustomTokens(
-            network,
-            allCustomTokens
-          )
+          reducedNetworks[chainId] = network
         }
         return reducedNetworks
       },
       {} as Record<number, Network>
     )
     return { ...populatedNetworks, ...populatedCustomNetworks }
-  }, [rawNetworks, _customNetworks, isDeveloperMode, allCustomTokens])
+  }, [rawNetworks, _customNetworks, isDeveloperMode])
 
   const customNetworks = useMemo(() => {
     if (networks === undefined) return []
@@ -113,9 +105,7 @@ export const useNetworks = () => {
   }, [favoriteNetworks, activeChainId])
 
   // get the list of contract tokens for the active network
-  const activeNetworkContractTokens = useMemo(() => {
-    return activeNetwork.tokens ?? []
-  }, [activeNetwork])
+  const activeNetworkContractTokens = useNetworkContractTokens(activeNetwork)
 
   const allNetworkTokensAsLocal = useMemo(() => {
     return (
@@ -135,14 +125,6 @@ export const useNetworks = () => {
       }) ?? []
     )
   }, [activeNetworkContractTokens])
-
-  // get token info for a contract token of the active network
-  const getTokenInfo = useCallback(
-    (symbol: string) => {
-      return activeNetworkContractTokens.find(token => token.symbol === symbol)
-    },
-    [activeNetworkContractTokens]
-  )
 
   const getIsTestnet = useCallback(
     (chainId: number) => {
@@ -176,15 +158,6 @@ export const useNetworks = () => {
     [allNetworks]
   )
 
-  // get the list of contract tokens for the network by chainId
-  const getNetworkContractTokens = useCallback(
-    (chainId: number) => {
-      const network = getNetwork(chainId)
-      return network?.tokens ?? []
-    },
-    [getNetwork]
-  )
-
   const getFromPopulatedNetwork = useCallback(
     (chainId?: number) => {
       if (chainId === undefined || networks === undefined) return
@@ -202,12 +175,10 @@ export const useNetworks = () => {
     inactiveNetworks,
     activeNetworkContractTokens,
     allNetworkTokensAsLocal,
-    getTokenInfo,
     getIsTestnet,
     getIsCustomNetwork,
     getSomeNetworks,
     getNetwork,
-    getNetworkContractTokens,
     getFromPopulatedNetwork
   }
 }

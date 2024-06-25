@@ -24,6 +24,7 @@ import SentryWrapper from 'services/sentry/SentryWrapper'
 import ERC20 from '@openzeppelin/contracts/build/contracts/ERC20.json'
 import { bigintToBig } from 'utils/bigNumbers/bigintToBig'
 import TokenService from 'services/token/TokenService'
+import { getNetworkContractTokens } from 'hooks/networks/utils/getNetworkContractTokens'
 
 type Provider = JsonRpcBatchInternal | InfuraProvider
 
@@ -45,7 +46,7 @@ export class EvmBalanceService implements BalanceServiceProvider {
     return SentryWrapper.createSpanFor(sentryTrx)
       .setContext('svc.balance.evm.get')
       .executeAsync(async () => {
-        const activeTokenList = network.tokens ?? []
+        const activeTokenList = await getNetworkContractTokens(network)
         const tokenAddresses = activeTokenList.map(token => token.address)
         const provider = NetworkService.getProviderForNetwork(
           network

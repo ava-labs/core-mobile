@@ -99,7 +99,7 @@ __metadata:
     "@avalabs/coingecko-sdk": v2.8.0-alpha.187
     "@avalabs/covalent-sdk": v2.8.0-alpha.187
     "@avalabs/etherscan-sdk": v2.8.0-alpha.187
-    "@avalabs/evm-module": 0.0.9
+    "@avalabs/evm-module": "file:../../../vm-modules/packages/evm-module"
     "@avalabs/glacier-sdk": v2.8.0-alpha.187
     "@avalabs/k2-mobile": "workspace:*"
     "@avalabs/paraswap-sdk": v2.8.0-alpha.187
@@ -108,7 +108,7 @@ __metadata:
     "@avalabs/tsconfig-mobile": "workspace:*"
     "@avalabs/types": v2.8.0-alpha.187
     "@avalabs/utils-sdk": v2.8.0-alpha.187
-    "@avalabs/vm-module-types": 0.0.9
+    "@avalabs/vm-module-types": "file:../../../vm-modules/packages/types"
     "@avalabs/wallets-sdk": v2.8.0-alpha.187
     "@babel/core": 7.24.0
     "@babel/plugin-proposal-nullish-coalescing-operator": 7.18.6
@@ -336,9 +336,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/evm-module@npm:0.0.9":
+"@avalabs/evm-module@file:../../../vm-modules/packages/evm-module::locator=%40avalabs%2Fcore-mobile%40workspace%3Apackages%2Fcore-mobile":
   version: 0.0.9
-  resolution: "@avalabs/evm-module@npm:0.0.9"
+  resolution: "@avalabs/evm-module@file:../../../vm-modules/packages/evm-module#../../../vm-modules/packages/evm-module::hash=085ad3&locator=%40avalabs%2Fcore-mobile%40workspace%3Apackages%2Fcore-mobile"
   dependencies:
     "@avalabs/chains-sdk": v2.8.0-alpha.187
     "@avalabs/etherscan-sdk": v2.8.0-alpha.187
@@ -350,7 +350,7 @@ __metadata:
     lodash.startcase: 4.4.0
   peerDependencies:
     ethers: ^6.8.1
-  checksum: a788160123af7b4978edab3bd7f331e3046d850234cccff3bfbb13748d91ca798ea6ca853876e25be5a8b4d2a7f70f6e002236a1c646bd0d2ab09db5a76663ae
+  checksum: f0b759fae412d67e4f3c7b6ee87fac56e7ce239a2bcf333b05d9a681dc4b36e45ec11a485875da0ab5a489bae79df8207116d0b59ae82a3b750691b755325f45
   languageName: node
   linkType: hard
 
@@ -483,6 +483,15 @@ __metadata:
     bn.js: ^5.2.1
     ethers: ^6.7.1
   checksum: def827c9d4f8692a6419e2fa4480353c4024b9ad0b33e95769b5aa6c1c0a44091a12a61328f7fc51b9941c2ccc7934f5a0b855e075e451ff38c26381b038dcea
+  languageName: node
+  linkType: hard
+
+"@avalabs/vm-module-types@file:../../../vm-modules/packages/types::locator=%40avalabs%2Fcore-mobile%40workspace%3Apackages%2Fcore-mobile":
+  version: 0.0.9
+  resolution: "@avalabs/vm-module-types@file:../../../vm-modules/packages/types#../../../vm-modules/packages/types::hash=6f0b47&locator=%40avalabs%2Fcore-mobile%40workspace%3Apackages%2Fcore-mobile"
+  dependencies:
+    zod: 3.23.8
+  checksum: 900850568419908e6f4ad4b9d7bc215787ed4575952eaaf43c7c107b1741d05190380353a66e0937ebe5b1a9af5134b77b3844506a1d46d857da433a14fc66bb
   languageName: node
   linkType: hard
 

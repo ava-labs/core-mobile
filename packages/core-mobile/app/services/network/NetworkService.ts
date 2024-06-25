@@ -9,7 +9,6 @@ import {
   BITCOIN_NETWORK,
   BITCOIN_TEST_NETWORK,
   ChainId,
-  getChainsAndTokens,
   Network,
   NetworkVMType
 } from '@avalabs/chains-sdk'
@@ -17,11 +16,15 @@ import SentryWrapper from 'services/sentry/SentryWrapper'
 import { Transaction } from '@sentry/types'
 import { avaxSerial } from '@avalabs/avalanchejs'
 import { TransactionResponse } from 'ethers'
+import { Networks } from 'store/network'
+import Config from 'react-native-config'
 import { getBitcoinProvider, getEvmProvider } from './utils/providerUtils'
 
+if (!Config.PROXY_URL) throw Error('PROXY_URL is missing')
+
 class NetworkService {
-  async getNetworks(): Promise<{ [chainId: number]: Network }> {
-    const erc20Networks = await getChainsAndTokens(!__DEV__)
+  async getNetworks(): Promise<Networks> {
+    const erc20Networks = await this.fetchNetworks()
 
     delete erc20Networks[ChainId.AVALANCHE_LOCAL_ID]
 
@@ -175,6 +178,17 @@ class NetworkService {
   getAvalancheProviderXP(isDeveloperMode: boolean): Avalanche.JsonRpcProvider {
     const network = this.getAvalancheNetworkX(isDeveloperMode)
     return this.getProviderForNetwork(network) as Avalanche.JsonRpcProvider
+  }
+
+  private async fetchNetworks(): Promise<Networks> {
+    const erc20Networks2 = await fetch(`${Config.PROXY_URL}/networks`)
+
+    const networks: Network[] = await erc20Networks2.json()
+
+    return networks.reduce((acc, network) => {
+      acc[network.chainId] = network
+      return acc
+    }, {} as Networks)
   }
 }
 
