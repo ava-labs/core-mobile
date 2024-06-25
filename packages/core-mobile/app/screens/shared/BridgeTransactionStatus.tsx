@@ -63,11 +63,6 @@ const BridgeTransactionStatus: FC<Props> = ({ txHash, showHideButton }) => {
 
   const { amount, sourceNetworkFee } = useBridgeAmounts(bridgeTransaction)
 
-  const formattedNetworkPrice =
-    networkPrice && sourceNetworkFee
-      ? currencyFormatter(networkPrice.mul(sourceNetworkFee).toNumber())
-      : '-'
-
   const {
     isComplete,
     sourceCurrentConfirmations,
@@ -147,6 +142,28 @@ const BridgeTransactionStatus: FC<Props> = ({ txHash, showHideButton }) => {
     </View>
   )
 
+  const renderNetworkFeeRightComponent = (): React.JSX.Element => {
+    if (sourceNetworkFee === undefined) {
+      return <AvaText.Heading3>Pending</AvaText.Heading3>
+    }
+
+    return (
+      <View style={{ alignItems: 'flex-end' }}>
+        <Row>
+          <AvaText.Heading3>
+            {sourceNetworkFee?.toNumber().toFixed(6)}{' '}
+            {getNativeTokenSymbol(
+              bridgeTransaction?.sourceChain ?? Blockchain.UNKNOWN
+            )}
+          </AvaText.Heading3>
+        </Row>
+        <AvaText.Body3 color={theme.colorText1}>
+          {currencyFormatter(networkPrice.mul(sourceNetworkFee).toNumber())}
+        </AvaText.Body3>
+      </View>
+    )
+  }
+
   return (
     <View style={{ flex: 1 }}>
       <View style={[styles.infoContainer, { backgroundColor: theme.colorBg2 }]}>
@@ -195,21 +212,7 @@ const BridgeTransactionStatus: FC<Props> = ({ txHash, showHideButton }) => {
         <AvaListItem.Base
           title={<AvaText.Body2>Network Fee</AvaText.Body2>}
           titleAlignment="flex-start"
-          rightComponent={
-            <View style={{ alignItems: 'flex-end' }}>
-              <Row>
-                <AvaText.Heading3>
-                  {sourceNetworkFee?.toNumber().toFixed(6)}{' '}
-                  {getNativeTokenSymbol(
-                    bridgeTransaction?.sourceChain ?? Blockchain.UNKNOWN
-                  )}
-                </AvaText.Heading3>
-              </Row>
-              <AvaText.Body3 currency color={theme.colorText1}>
-                ~{formattedNetworkPrice}
-              </AvaText.Body3>
-            </View>
-          }
+          rightComponent={renderNetworkFeeRightComponent()}
         />
         <Separator color={theme.colorBg3} inset={16} />
         {bridgeTransaction && (
