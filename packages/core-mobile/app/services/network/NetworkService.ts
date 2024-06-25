@@ -24,7 +24,7 @@ if (!Config.PROXY_URL) throw Error('PROXY_URL is missing')
 
 class NetworkService {
   async getNetworks(): Promise<Networks> {
-    const erc20Networks = await this.fetchNetworks()
+    const erc20Networks = await this.fetchERC20Networks()
 
     delete erc20Networks[ChainId.AVALANCHE_LOCAL_ID]
 
@@ -180,10 +180,9 @@ class NetworkService {
     return this.getProviderForNetwork(network) as Avalanche.JsonRpcProvider
   }
 
-  private async fetchNetworks(): Promise<Networks> {
-    const erc20Networks2 = await fetch(`${Config.PROXY_URL}/networks`)
-
-    const networks: Network[] = await erc20Networks2.json()
+  private async fetchERC20Networks(): Promise<Networks> {
+    const response = await fetch(`${Config.PROXY_URL}/networks`)
+    const networks: Network[] = await response.json()
 
     return networks.reduce((acc, network) => {
       acc[network.chainId] = network
