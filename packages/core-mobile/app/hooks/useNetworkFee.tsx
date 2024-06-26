@@ -19,7 +19,7 @@ const getQueryFn = (network: Network) => () =>
   NetworkFeeService.getNetworkFee(
     network,
     NetworkTokenUnit.getConstructor(network)
-  )
+  ).catch(Logger.error)
 
 export const prefetchNetworkFee = (network: Network | undefined): void => {
   if (network) {
