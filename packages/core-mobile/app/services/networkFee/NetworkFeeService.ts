@@ -7,6 +7,7 @@ import {
 import { AcceptedTypes, TokenBaseUnit } from 'types/TokenBaseUnit'
 import ModuleManager from 'vmModule/ModuleManager'
 import { NetworkFee } from 'services/networkFee/types'
+import { chainIdToCaip } from 'utils/data/caip'
 
 class NetworkFeeService {
   async getNetworkFee<T extends TokenBaseUnit<T>>(
@@ -17,7 +18,7 @@ class NetworkFeeService {
       case NetworkVMType.EVM: {
         const evmModule = await ModuleManager.loadModuleByNetwork(network)
         const networkFees = await evmModule.getNetworkFee({
-          chainId: network.chainId.toString(),
+          chainId: chainIdToCaip(network.chainId),
           chainName: network.chainName,
           rpcUrl: network.rpcUrl,
           isTestnet: network.isTestnet,
