@@ -55,6 +55,7 @@ interface ButtonProps extends BaseButtonProps {
   leftIcon?: ButtonIconType
   rightIcon?: ButtonIconType
   style?: ViewStyle
+  testID?: string
 }
 
 export const Button: FC<ButtonProps & PropsWithChildren> = ({
@@ -65,6 +66,7 @@ export const Button: FC<ButtonProps & PropsWithChildren> = ({
   disabled,
   style,
   children,
+  testID,
   ...rest
 }) => {
   const {
@@ -127,6 +129,7 @@ export const Button: FC<ButtonProps & PropsWithChildren> = ({
 
   return (
     <BaseButton
+      testID={testID}
       style={({ pressed }) => {
         return {
           borderRadius: 1000,

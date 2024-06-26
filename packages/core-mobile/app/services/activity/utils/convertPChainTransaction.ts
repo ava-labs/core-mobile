@@ -7,6 +7,7 @@ import { Avalanche } from '@avalabs/wallets-sdk'
 import { Avax } from 'types'
 import { stripChainAddress } from 'store/account/utils'
 import { isEmpty } from 'lodash'
+import { TokenType } from '@avalabs/vm-module-types'
 
 export function convertPChainTransaction(
   tx: PChainTransaction,
@@ -73,7 +74,6 @@ export function convertPChainTransaction(
   const isSender = froms.has(stripChainAddress(address))
 
   return {
-    amount: amount.toDisplay(),
     hash: tx.txHash,
     isBridge: false,
     isContractCall: false,
@@ -83,14 +83,19 @@ export function convertPChainTransaction(
     to: [...tos.values()].join(','),
     isSender,
     timestamp: tx.blockTimestamp * 1000, // to millis
-    token: {
-      decimal: network.networkToken.decimals.toString(),
-      name: network.networkToken.name,
-      symbol: network.networkToken.symbol
-    },
-    fee: fee.toSubUnit().toString(),
+    tokens: [
+      {
+        decimal: network.networkToken.decimals.toString(),
+        name: network.networkToken.name,
+        symbol: network.networkToken.symbol,
+        type: TokenType.NATIVE,
+        amount: amount.toDisplay()
+      }
+    ],
+    gasUsed: fee.toSubUnit().toString(),
     explorerLink: getExplorerAddressByNetwork(network, tx.txHash, 'tx'),
-    txType: tx.txType
+    txType: tx.txType,
+    chainId: network.chainId.toString()
   }
 }
 

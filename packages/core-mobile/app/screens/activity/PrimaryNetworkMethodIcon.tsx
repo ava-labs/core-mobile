@@ -7,39 +7,50 @@ import React from 'react'
 import ArrowDownLeft from 'assets/icons/arrowDownLeft.svg'
 import ArrowUpRight from 'assets/icons/arrowUpRight.svg'
 import ArrowRight from 'assets/icons/arrowRight.svg'
-import AirDrop from 'assets/icons/airdrop.svg'
+import Airdrop from 'assets/icons/airdrop.svg'
 import AddUser from 'assets/icons/addUser.svg'
 import Share from 'assets/icons/share2.svg'
 import Blockchain from 'assets/icons/blockchain.svg'
 import MinusCircle from 'assets/icons/minusCircle.svg'
 import Clock from 'assets/icons/clock.svg'
 import HelpCircle from 'assets/icons/helpCircle.svg'
-
+import ArrowUp from 'assets/icons/arrowUp.svg'
+import ArrowDown from 'assets/icons/arrowDown.svg'
 import { SvgProps } from 'react-native-svg'
 import { View } from '@avalabs/k2-mobile'
+import { TransactionType } from '@avalabs/vm-module-types'
+import SwapV2 from 'assets/icons/swap_v2.svg'
+import Notes from 'assets/icons/notes.svg'
 
-export interface PrimaryNetworkMethodIconProp {
-  methodName:
-    | PChainTransactionType
-    | XChainTransactionType
-    | 'CreateAssetTx'
-    | 'OperationTx'
-}
-
-const METHOD_NAME_TO_ICON: Record<
+type TransactionTypes =
+  | TransactionType
   | PChainTransactionType
   | XChainTransactionType
   | 'CreateAssetTx'
-  | 'OperationTx',
-  React.FC<SvgProps>
+  | 'OperationTx'
+export interface PrimaryNetworkMethodIconProp {
+  methodName: TransactionTypes
+  isContractCall: boolean
+  isSender: boolean
+}
+
+const Swap = (): React.JSX.Element => <SwapV2 stroke={'currentColor'} />
+
+const METHOD_NAME_TO_ICON: Record<
+  TransactionTypes,
+  React.FC<SvgProps> | undefined
 > = {
+  Swap,
+  Send: ArrowUpRight,
+  Receive: ArrowDownLeft,
+  Airdrop,
   // Both
   ImportTx: ArrowDownLeft,
   ExportTx: ArrowUpRight,
   BaseTx: ArrowRight,
   // X-Chain
-  CreateAssetTx: AirDrop,
-  OperationTx: AirDrop,
+  CreateAssetTx: Airdrop,
+  OperationTx: Airdrop,
   // P-Chain
   AddPermissionlessDelegatorTx: AddUser,
   AddValidatorTx: AddUser,
@@ -51,21 +62,35 @@ const METHOD_NAME_TO_ICON: Record<
   TransformSubnetTx: Blockchain,
   AddPermissionlessValidatorTx: AddUser,
   RemoveSubnetValidatorTx: MinusCircle,
-  RewardValidatorTx: AirDrop,
+  RewardValidatorTx: Airdrop,
   AdvanceTimeTx: Clock,
-  UNKNOWN: HelpCircle
+
+  Bridge: undefined,
+  NFTBuy: undefined,
+  NFTReceive: undefined,
+  NFTSend: undefined,
+  Approve: undefined,
+  Transfer: undefined,
+  FillOrder: undefined,
+  Unwrap: undefined,
+  UNKNOWN: undefined
 }
 
 export const PrimaryNetworkMethodIcon = ({
-  methodName
+  methodName,
+  isContractCall,
+  isSender
 }: PrimaryNetworkMethodIconProp): React.JSX.Element => {
-  const Icon = useMemo(
-    () =>
-      methodName
-        ? METHOD_NAME_TO_ICON[methodName] || METHOD_NAME_TO_ICON.UNKNOWN
-        : METHOD_NAME_TO_ICON.UNKNOWN,
-    [methodName]
-  )
+  const Icon = useMemo(() => {
+    if (methodName && METHOD_NAME_TO_ICON[methodName]) {
+      return METHOD_NAME_TO_ICON[methodName] ?? HelpCircle
+    }
+    if (methodName === TransactionType.TRANSFER) {
+      return isSender ? ArrowUp : ArrowDown
+    }
+    if (isContractCall) return Notes
+    return HelpCircle
+  }, [methodName, isContractCall, isSender])
 
   return (
     <View

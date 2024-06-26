@@ -1,6 +1,5 @@
 import AccountManagePage from '../../../pages/accountManage.page'
 import ActivityTabPage from '../../../pages/activityTab.page'
-import ActivityTabLoc from '../../../locators/activityTab.loc'
 import PortfolioPage from '../../../pages/portfolio.page'
 import SendPage from '../../../pages/send.page'
 import sendLoc from '../../../locators/send.loc'
@@ -19,17 +18,11 @@ describe('Send Avax to another account', () => {
     )
     await PortfolioPage.tapAvaxNetwork()
     await PortfolioPage.tapActivityTab()
-    await ActivityTabPage.verifyOutgoingTransaction(
-      5000,
-      secondAccountAddress,
-      ActivityTabLoc.avaxOutgoingTransactionDetail
-    )
+    await ActivityTabPage.verifyOutgoingTransaction(5000, secondAccountAddress)
   })
 
   it('Should receive AVAX on second account', async () => {
     await ActivityTabPage.tapHeaderBack()
-    await ActivityTabPage.verifyIncomingTransaction(
-      ActivityTabLoc.avaxIncomingTransactionDetail
-    )
+    await ActivityTabPage.verifyIncomingTransaction()
   })
 })

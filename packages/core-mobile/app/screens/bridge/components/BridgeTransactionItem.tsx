@@ -32,7 +32,7 @@ const BridgeTransactionItem: FC<BridgeTransactionItemProps> = ({
   const { sourceBlockchain, targetBlockchain } = useBlockchainNames(item)
 
   const amount = useMemo(() => {
-    if (!pending) return item.amount
+    if (!pending) return item.tokens[0]?.amount
 
     if (isUnifiedBridgeTransfer(item)) {
       return bigintToBig(item.amount, item.amountDecimals).toString()
@@ -64,7 +64,7 @@ const BridgeTransactionItem: FC<BridgeTransactionItemProps> = ({
       rightComponent={
         <View style={{ justifyContent: 'center', alignItems: 'flex-end' }}>
           <AvaText.ActivityTotal ellipsizeMode={'tail'}>
-            {amount} {pending ? item.symbol : item.token?.symbol}
+            {amount} {pending ? item.symbol : item.tokens[0]?.symbol}
           </AvaText.ActivityTotal>
           {'explorerLink' in item && item?.explorerLink && (
             <>
