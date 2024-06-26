@@ -4,9 +4,9 @@ import {
   PTokenWithBalance,
   XTokenWithBalance
 } from 'store/balance/types'
-import { NetworkContractToken } from '@avalabs/chains-sdk'
 import { AggregatedAssetAmount } from '@avalabs/glacier-sdk'
 import { Avax } from 'types'
+import { NetworkContractToken } from '@avalabs/vm-module-types'
 
 export function getLocalTokenId(
   token:
