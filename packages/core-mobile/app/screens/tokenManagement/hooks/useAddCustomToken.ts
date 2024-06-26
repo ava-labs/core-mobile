@@ -2,11 +2,13 @@ import { useDispatch } from 'react-redux'
 import { isAddress } from 'ethers'
 import { addCustomToken as addCustomTokenAction } from 'store/customToken'
 import { useState, useEffect } from 'react'
-import { Network, NetworkContractToken } from '@avalabs/chains-sdk'
+import { Network } from '@avalabs/chains-sdk'
 import Logger from 'utils/Logger'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import TokenService from 'services/token/TokenService'
 import { useNetworks } from 'hooks/networks/useNetworks'
+import { NetworkContractToken } from '@avalabs/vm-module-types'
+import { useNetworkContractTokens } from 'hooks/networks/useNetworkContractTokens'
 
 enum AddressValidationStatus {
   Valid,
@@ -59,7 +61,8 @@ type CustomToken = {
 }
 
 const useAddCustomToken = (callback: () => void): CustomToken => {
-  const { activeNetworkContractTokens: tokens, activeNetwork } = useNetworks()
+  const { activeNetwork } = useNetworks()
+  const tokens = useNetworkContractTokens(activeNetwork)
   const [tokenAddress, setTokenAddress] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
   const [token, setToken] = useState<NetworkContractToken>()

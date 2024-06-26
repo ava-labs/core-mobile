@@ -2,6 +2,7 @@ import {
   GetTransactionHistory,
   Manifest,
   Module,
+  NetworkContractToken,
   NetworkFees,
   RpcRequest,
   RpcResponse,
@@ -33,6 +34,9 @@ export class PVMModule implements Module {
   }
   getAddress(): Promise<string> {
     return Promise.resolve('PVM address')
+  }
+  getTokens(_: number): Promise<NetworkContractToken[]> {
+    return Promise.resolve([])
   }
   onRpcRequest(request: RpcRequest): Promise<RpcResponse<unknown, Error>> {
     throw new Error(`Method not implemented: ${request.method}`)
