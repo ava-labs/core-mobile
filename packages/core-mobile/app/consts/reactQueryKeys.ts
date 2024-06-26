@@ -11,6 +11,7 @@ export enum ReactQueryKeys {
   NFT = 'nft',
 
   NETWORKS = 'networks',
+  NETWORK_CONTRACT_TOKENS = 'networkContractTokens',
   WATCHLIST_TOKENS_AND_CHARTS = 'watchlistTokensAndCharts',
   WATCHLIST_PRICES = 'watchlistPrices',
   WATCHLIST_TOKEN_SEARCH = 'watchlistTokenSearch'

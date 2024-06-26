@@ -10,7 +10,9 @@ import {
 import { useDispatch, useSelector } from 'react-redux'
 import { selectTokenBlacklist } from 'store/portfolio'
 import BN from 'bn.js'
+import { useNetworkContractTokens } from 'hooks/networks/useNetworkContractTokens'
 import { useNetworks } from 'hooks/networks/useNetworks'
+import { getLocalTokenId } from 'store/balance/utils'
 
 const bnZero = new BN(0)
 
@@ -41,7 +43,26 @@ export function useSearchableTokenList(
   refetch: () => void
   isRefetching: boolean
 } {
-  const { allNetworkTokensAsLocal: allNetworkTokens } = useNetworks()
+  const { activeNetwork } = useNetworks()
+  const activeNetworkContractTokens = useNetworkContractTokens(activeNetwork)
+  const allNetworkTokens = useMemo(() => {
+    return (
+      activeNetworkContractTokens.map(token => {
+        return {
+          ...token,
+          localId: getLocalTokenId(token),
+          balance: new BN(0),
+          balanceInCurrency: 0,
+          balanceDisplayValue: '0',
+          balanceCurrencyDisplayValue: '0',
+          priceInCurrency: 0,
+          marketCap: 0,
+          change24: 0,
+          vol24: 0
+        } as LocalTokenWithBalance
+      }) ?? []
+    )
+  }, [activeNetworkContractTokens])
   const dispatch = useDispatch()
   const [searchText, setSearchText] = useState('')
   const tokenBlacklist = useSelector(selectTokenBlacklist)

@@ -1,11 +1,8 @@
 import { Blockchain, BridgeTransaction } from '@avalabs/bridge-sdk'
 import { BridgeTransfer } from '@avalabs/bridge-unified'
-import {
-  BITCOIN_NETWORK,
-  ChainId,
-  NetworkContractToken,
-  NetworkToken
-} from '@avalabs/chains-sdk'
+import { BITCOIN_NETWORK, ChainId, NetworkToken } from '@avalabs/chains-sdk'
+import { NetworkContractToken } from '@avalabs/vm-module-types'
+import { useNetworkContractTokens } from 'hooks/networks/useNetworkContractTokens'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { useMemo } from 'react'
 
@@ -13,7 +10,6 @@ export function useTokenForBridgeTransaction(
   bridgeTransaction: BridgeTransaction | BridgeTransfer | undefined,
   isTestnet: boolean
 ): NetworkContractToken | NetworkToken | undefined {
-  const { getNetworkContractTokens } = useNetworks()
   const chainId = useMemo(() => {
     switch (bridgeTransaction?.sourceChain) {
       case Blockchain.BITCOIN:
@@ -29,7 +25,13 @@ export function useTokenForBridgeTransaction(
     }
   }, [bridgeTransaction, isTestnet])
 
-  const tokens = getNetworkContractTokens(chainId)
+  const { getNetwork } = useNetworks()
+  const network = getNetwork(chainId)
+  if (!network) {
+    throw new Error(`Network not found for chainId: ${chainId}`)
+  }
+
+  const tokens = useNetworkContractTokens(network)
 
   return useMemo(() => {
     const token = tokens.find(t => t.symbol === bridgeTransaction?.symbol)
