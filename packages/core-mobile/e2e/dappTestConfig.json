@@ -5,7 +5,7 @@
   "testTimeout": 120000,
   "rootDir": "..",
   "testMatch": [
-    "<rootDir>/tests/**/*.e2e.dapp.ts"
+    "<rootDir>/e2e/tests/**/*.e2e.dapp.ts"
   ],
   "reporters": ["detox/runners/jest/reporter"],
   "verbose": true,
