@@ -4,7 +4,8 @@ export enum ViewOnceKey {
   CORE_INTRO,
   ANALYTICS_CONSENT,
   P_CHAIN_FAVORITE,
-  X_CHAIN_FAVORITE
+  X_CHAIN_FAVORITE,
+  DEFAULT_WATCHLIST_FAVORITES
 }
 
 export type ViewOnceObjectType = {
