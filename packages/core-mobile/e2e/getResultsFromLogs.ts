@@ -50,7 +50,7 @@ export default async function getTestLogs(): Promise<
     }
     const platform = splitFolder[0]
     const resultFolders = await readdirChronoSorted(
-      `./artifacts/${folders[i]}`,
+      `./e2e/artifacts/${folders[i]}`,
       -1
     )
 
@@ -138,7 +138,7 @@ function removeTestSectionExtraChars(
 
 export async function isResultPresent(platform: any): Promise<boolean> {
   try {
-    const resultsFolder = await getDirectories(`./artifacts/${platform}`)
+    const resultsFolder = await getDirectories(`./e2e/artifacts/${platform}`)
     if (resultsFolder.length > 0) {
       return true
     } else {
