@@ -10,12 +10,17 @@ import Config from 'react-native-config'
 import { ModuleErrors, VmModuleErrors } from './errors'
 
 if (!Config.GLACIER_URL) throw Error('GLACIER_URL ENV is missing')
+if (!Config.PROXY_URL) throw Error('PROXY_URL is missing')
 
 const GLACIER_URL = Config.GLACIER_URL
 const GLACIER_API_KEY = Config.GLACIER_API_KEY
 
 const modules: Module[] = [
-  new EvmModule({ glacierApiUrl: GLACIER_URL, glacierApiKey: GLACIER_API_KEY }),
+  new EvmModule({
+    glacierApiUrl: GLACIER_URL,
+    glacierApiKey: GLACIER_API_KEY,
+    proxyApiUrl: Config.PROXY_URL
+  }),
   new BitcoinModule(),
   new AVMModule(),
   new CoreEthModule(),
@@ -61,12 +66,9 @@ class ModuleManager {
       case NetworkVMType.BITCOIN:
         return `bip122:${chainId}`
       case NetworkVMType.PVM:
-        return `avax:${chainId}`
       case NetworkVMType.AVM:
         return `avax:${chainId}`
       case NetworkVMType.EVM:
-        return `eip155:${chainId}`
-      case NetworkVMType.CoreEth:
         return `eip155:${chainId}`
       default:
         throw new Error('Unsupported network')

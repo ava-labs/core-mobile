@@ -1,6 +1,6 @@
-import { NetworkContractToken } from '@avalabs/chains-sdk'
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from 'store'
+import { NetworkContractToken } from '@avalabs/vm-module-types'
 import { initialState } from './types'
 
 const reducerName = 'customToken'
@@ -23,8 +23,9 @@ export const customTokenSlice = createSlice({
 })
 
 // selectors
-export const selectAllCustomTokens = (state: RootState) =>
-  state.customToken.tokens
+export const selectAllCustomTokens = (
+  state: RootState
+): { [chainId: string]: NetworkContractToken[] } => state.customToken.tokens
 
 // actions
 export const { addCustomToken } = customTokenSlice.actions
