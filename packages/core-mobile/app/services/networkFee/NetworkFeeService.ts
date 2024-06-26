@@ -16,6 +16,7 @@ class NetworkFeeService {
   ): Promise<NetworkFee<T> | undefined> {
     switch (network.vmName) {
       case NetworkVMType.EVM: {
+        //TODO: use the same logic for all networks once we implement modules for other VMs
         const evmModule = await ModuleManager.loadModuleByNetwork(network)
         const networkFees = await evmModule.getNetworkFee({
           chainId: chainIdToCaip(network.chainId),
