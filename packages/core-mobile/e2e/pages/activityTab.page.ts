@@ -20,6 +20,10 @@ class ActivityTabPage {
     return by.id(activityTab.arrowSVG)
   }
 
+  get networkIcon() {
+    return by.id(activityTab.networkIcon)
+  }
+
   get transaction() {
     return by.text(activityTab.transaction)
   }
@@ -72,8 +76,12 @@ class ActivityTabPage {
     await Action.tapElementAtIndex(this.arrowSVG, index)
   }
 
+  async tapNetworkIcon(index: number) {
+    await Action.tapElementAtIndex(this.networkIcon, index)
+  }
+
   async refreshActivityPage() {
-    await Action.swipeDown(by.id('arrow_svg'), 'slow', 0.75, 0)
+    await Action.swipeDown(by.id('activity_tab'), 'slow', 0.25, 0)
   }
 
   async tapTransaction() {
@@ -148,6 +156,27 @@ class ActivityTabPage {
     await TransactionDetailsPage.isDateTextOlderThan(300)
     await Assert.hasText(this.address, secondAccountAddress)
     await Assert.hasText(this.activityDetail, transactionValue)
+  }
+
+  async verifyTransactionDetailWebBrowser() {
+    await this.refreshActivityPage()
+    await this.tapNetworkIcon(0)
+    await Action.waitForElementNotVisible(ReviewAndSend.sendSuccessfulToastMsg)
+    await delay(5000)
+    await Assert.isNotVisible(by.text('Send'))
+    await Assert.isNotVisible(by.id('add_svg'))
+  }
+
+  async getCurrentTransactionsRows(type: string) {
+    await this.refreshActivityPage()
+    const sendRows = await Action.getAttributes(by.text(type))
+    if (sendRows === undefined) {
+      return 0
+    } else if ('elements' in sendRows) {
+      return sendRows.elements.length
+    } else {
+      return 1
+    }
   }
 }
 

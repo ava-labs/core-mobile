@@ -17,6 +17,10 @@ class AccountManagePage {
     return by.id(accountManage.accountDropdownTitle)
   }
 
+  get accountsDropdown() {
+    return by.id(accountManage.accountsDropdown)
+  }
+
   get editedAccount() {
     return by.text(accountManage.editedAccount)
   }
@@ -115,6 +119,10 @@ class AccountManagePage {
     } else {
       return result.elements[0].text.toLowerCase()
     }
+  }
+
+  async dismissAccountsDropDown() {
+    await Action.tap(this.accountsDropdown)
   }
 
   async getSecondAvaxAddress() {

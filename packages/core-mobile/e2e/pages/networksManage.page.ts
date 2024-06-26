@@ -218,7 +218,6 @@ class NetworksPage {
 
   async switchToEthereumSepoliaNetwork() {
     await PortfolioPage.tapNetworksDropdown()
-    await PortfolioPage.tapNetworksDropdown()
     await PortfolioPage.tapManageNetworks()
     await this.tapNetworksTab()
     await this.searchNetworks(networksManage.ethereumSepoliaNetwork)

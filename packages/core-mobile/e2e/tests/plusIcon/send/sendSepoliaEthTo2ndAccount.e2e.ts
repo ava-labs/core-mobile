@@ -1,6 +1,4 @@
 import AccountManagePage from '../../../pages/accountManage.page'
-import ActivityTabPage from '../../../pages/activityTab.page'
-import ActivityTabLoc from '../../../locators/activityTab.loc'
 import NetworksManagePage from '../../../pages/networksManage.page'
 import PortfolioPage from '../../../pages/portfolio.page'
 import SendPage from '../../../pages/send.page'
@@ -14,8 +12,8 @@ describe('Send Sepolia Eth to another account', () => {
   })
 
   it('Should send Sepolia Eth to second account', async () => {
+    await AccountManagePage.createSecondAccount()
     await AdvancedPage.switchToTestnet()
-    const secondAccountAddress = await AccountManagePage.createSecondAccount()
     await NetworksManagePage.switchToEthereumSepoliaNetwork()
     await SendPage.sendTokenTo2ndAccount(
       sendLoc.ethToken,
@@ -23,17 +21,20 @@ describe('Send Sepolia Eth to another account', () => {
     )
     await PortfolioPage.tapEthSepoliaNetwork()
     await PortfolioPage.tapActivityTab()
-    await ActivityTabPage.verifyOutgoingTransaction(
-      60000,
-      secondAccountAddress,
-      ActivityTabLoc.ethOutgoingTransactionDetail
-    )
+    // TODO currently there is an issue with sending ethereum seplia in testnet on simul/emul
+    // we can revisit once CP-8848 is fixed
+
+    // await ActivityTabPage.verifyOutgoingTransaction(
+    //   60000,
+    //   secondAccountAddress,
+    //   ActivityTabLoc.ethOutgoingTransactionDetail
+    // )
   }, 120000)
 
-  it('Should receive Sepolia Eth on second account', async () => {
-    await ActivityTabPage.tapHeaderBack()
-    await ActivityTabPage.verifyIncomingTransaction(
-      ActivityTabLoc.ethIncomingTransactionDetail
-    )
-  }, 30000)
+  // it('Should receive Sepolia Eth on second account', async () => {
+  //   await ActivityTabPage.tapHeaderBack()
+  //   await ActivityTabPage.verifyIncomingTransaction(
+  //     ActivityTabLoc.ethIncomingTransactionDetail
+  //   )
+  // }, 30000)
 })

@@ -16,6 +16,7 @@ export default {
   bridgeTransaction: 'bridge_transaction__item',
   bridgeSVG: 'bridge_svg',
   arrowSVG: 'arrow_svg',
+  networkIcon: 'network_icon',
   linkIcon: 'link_svg',
   usdcOutgoingTransactionDetail: '-0.0001 USDC',
   usdcIncomingTransactionDetail: '+0.0001 USDC',
