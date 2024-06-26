@@ -43,6 +43,7 @@ export class EvmBalanceService implements BalanceServiceProvider {
     return SentryWrapper.createSpanFor(sentryTrx)
       .setContext('svc.balance.evm.get')
       .executeAsync(async () => {
+        // todo: use getTokens function directly when getBalances is implemented in the vm module
         const activeTokenList = await getNetworkContractTokens(network)
         const tokenAddresses = activeTokenList.map(token => token.address)
         const provider = NetworkService.getProviderForNetwork(

@@ -69,7 +69,6 @@ class ModuleManager {
       case NetworkVMType.AVM:
         return `avax:${chainId}`
       case NetworkVMType.EVM:
-      case NetworkVMType.CoreEth:
         return `eip155:${chainId}`
       default:
         throw new Error('Unsupported network')
