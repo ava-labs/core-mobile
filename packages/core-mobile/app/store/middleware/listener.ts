@@ -18,6 +18,7 @@ import Logger from 'utils/Logger'
 import { addNotificationsListeners } from 'store/notifications/listeners/listeners'
 import { addSeedlessListeners } from 'seedless/store/listeners'
 import { addUnifiedBridgeListeners } from 'store/unifiedBridge/listeners'
+import { addWatchlistListeners } from 'store/watchlist/listeners'
 
 export type AppStartListening = TypedStartListening<RootState, AppDispatch>
 export type AppAddListener = TypedAddListener<RootState, AppDispatch>
@@ -54,6 +55,8 @@ addNotificationsListeners(startListening)
 addBrowserListener(startListening)
 
 addSeedlessListeners(startListening)
+
+addWatchlistListeners(startListening)
 
 export const addAppListener = addListener as AppAddListener
 
