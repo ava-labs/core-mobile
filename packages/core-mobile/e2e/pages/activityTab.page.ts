@@ -171,13 +171,19 @@ class ActivityTabPage {
   }
 
   async verifyTransactionDetailWebBrowser() {
-    await this.tapNetworkIcon(0)
-    await Action.waitForElementNotVisible(ReviewAndSend.sendSuccessfulToastMsg)
+    if (device.getPlatform() === 'android') {
+      await device.disableSynchronization()
+      await this.tapNetworkIcon(0)
+      await device.pressBack()
+    } else {
+      await this.tapNetworkIcon(0)
+    }
     await delay(5000)
+    await Action.waitForElementNotVisible(ReviewAndSend.sendSuccessfulToastMsg)
+    await Assert.isNotVisible(AccountManagePage.accountsDropdown)
     await Assert.isNotVisible(by.text('Send'))
     await Assert.isNotVisible(by.id('add_svg'))
   }
-
   async getLatestActivityRow() {
     await delay(5000)
     await this.refreshActivityPage()
