@@ -167,12 +167,13 @@ class ActivityTabPage {
     newRow:
       | Detox.IosElementAttributes
       | Detox.AndroidElementAttributes
-      | undefined
+      | undefined,
+    activity_type: string
   ) {
     if (newRow === undefined) {
       fail('The new row is not added to activity tab')
     } else {
-      assert(newRow.label?.includes('Send'))
+      assert(newRow.label?.includes(activity_type))
     }
   }
 

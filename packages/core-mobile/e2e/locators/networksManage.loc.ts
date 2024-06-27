@@ -22,7 +22,6 @@ export default {
   explorerUrl: 'explorerUrl',
   favoriteNetwork: 'star_svg',
   favoritesTab: 'Favorites',
-  favoritesTabId: 'favorites_tab',
   headerBack: 'header_back',
   inputTextField: 'input_text',
   nativeTokenSymbol: 'nativeTokenSymbol',

@@ -26,7 +26,7 @@ describe('Send AVAX', () => {
 
     // Verify the new Send row is added on activity tab
     const newRow = await ActivityTabPage.getLatestActivityRow()
-    await ActivityTabPage.verifyActivityRow(newRow)
+    await ActivityTabPage.verifyActivityRow(newRow, 'Send')
 
     // Verify you left app but in web browser
     await ActivityTabPage.verifyTransactionDetailWebBrowser()
