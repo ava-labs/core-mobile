@@ -56,17 +56,17 @@ export type TransactionParams = {
 
 export const getChainIdFromRequest = (
   request: RpcRequest<RpcMethod>
-): string => {
+): number => {
   if (!request.data.params.chainId) {
     throw new Error('chainId is missing from the request')
   }
 
   const parts = request.data.params.chainId.split(':')
-  if (parts.length < 2 || parts[1] === undefined || isNaN(Number(parts[1]))) {
+  if (parts.length < 2 || isNaN(Number(parts[1]))) {
     throw new Error('chainId is not in a valid format')
   }
 
-  return parts[1]
+  return Number(parts[1])
 }
 
 export const scanAndSignTransaction = async (

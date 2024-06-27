@@ -21,13 +21,13 @@ class BlockaidService {
     blockaid.site.scan({ url })
 
   static scanTransaction = async (
-    chainId: string,
+    chainId: number,
     params: TransactionParams,
     domain?: string
   ): Promise<TransactionScanResponse> =>
     blockaid.evm.transaction.scan({
       account_address: params.from,
-      chain: chainId,
+      chain: chainId.toString(),
       options: ['validation', 'simulation'],
       data: {
         from: params.from,
@@ -47,13 +47,13 @@ class BlockaidService {
     data,
     domain
   }: {
-    chainId: string
+    chainId: number
     accountAddress: string
     data: JsonRpcRequestData
     domain?: string
   }): Promise<TransactionScanResponse> =>
     blockaid.evm.jsonRpc.scan({
-      chain: chainId,
+      chain: chainId.toString(),
       options: ['validation', 'simulation'],
       account_address: accountAddress,
       data: data,
