@@ -1,4 +1,4 @@
-import { NetworkContractToken } from '@avalabs/chains-sdk'
+import { NetworkContractToken } from '@avalabs/vm-module-types'
 
 export const initialState: CustomTokenState = {
   tokens: {}

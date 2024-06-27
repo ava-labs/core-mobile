@@ -39,7 +39,6 @@ import AddressBookStack, {
   AddressBookStackParamList
 } from 'navigation/wallet/AddressBookStack'
 import TokenDetail from 'screens/watchlist/TokenDetails/TokenDetail'
-import ActivityDetail from 'screens/activity/ActivityDetail'
 import OwnedTokenDetail from 'screens/portfolio/ownedTokenDetail/OwnedTokenDetail'
 import BridgeScreenStack from 'navigation/wallet/BridgeScreenStack'
 import NFTScreenStack, {
@@ -56,7 +55,6 @@ import AddSVG from 'components/svg/AddSVG'
 import AddEditNetwork, {
   AddEditNetworkProps
 } from 'screens/network/AddEditNetwork'
-import { Transaction } from 'store/transaction'
 import LegalStackScreen, {
   LegalStackParamList
 } from 'navigation/wallet/LegalStackScreen'
@@ -132,9 +130,6 @@ export type WalletScreenStackParams = {
   [AppNavigation.Wallet.AddCustomToken]: undefined
   [AppNavigation.Wallet.TokenDetail]: { tokenId: string }
   [AppNavigation.Wallet.OwnedTokenDetail]: { chainId: number; tokenId: string }
-  [AppNavigation.Wallet.ActivityDetail]: {
-    tx?: Transaction
-  }
   [AppNavigation.Wallet.Swap]:
     | NavigatorScreenParams<SwapStackParamList>
     | undefined
@@ -305,17 +300,6 @@ function WalletScreenStack(props: Props): JSX.Element {
             }}
             name={AppNavigation.Wallet.OwnedTokenDetail}
             component={OwnedTokenDetail}
-          />
-          <WalletScreenS.Screen
-            options={{
-              ...SubHeaderOptions(
-                'Transaction Details',
-                undefined,
-                'header_back'
-              )
-            }}
-            name={AppNavigation.Wallet.ActivityDetail}
-            component={ActivityDetail}
           />
           <WalletScreenS.Screen
             options={{

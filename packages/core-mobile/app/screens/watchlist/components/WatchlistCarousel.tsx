@@ -1,4 +1,4 @@
-import React, { FC, useEffect, useMemo } from 'react'
+import React, { FC, useEffect } from 'react'
 import {
   FlatList,
   ListRenderItemInfo,
@@ -9,7 +9,6 @@ import {
 import Avatar from 'components/Avatar'
 import { Space } from 'components/Space'
 import AvaButton from 'components/AvaButton'
-import AddSVG from 'components/svg/AddSVG'
 import { useNavigation } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
 import { PortfolioScreenProps } from 'navigation/types'
@@ -29,7 +28,9 @@ type NavigationProp = PortfolioScreenProps<
 >['navigation']
 
 const WatchlistCarousel: FC<Props> = () => {
-  const { theme } = useTheme()
+  const {
+    theme: { colors }
+  } = useTheme()
   const { favorites: watchlistFavorites, isLoadingFavorites } = useWatchlist()
   const navigation = useNavigation<NavigationProp>()
   const dispatch = useDispatch()
@@ -37,33 +38,6 @@ const WatchlistCarousel: FC<Props> = () => {
   useEffect(() => {
     dispatch(fetchWatchlist())
   }, [dispatch])
-
-  function goToWatchlist(): void {
-    navigation.navigate(AppNavigation.Tabs.Watchlist)
-  }
-
-  const EmptyItem = useMemo(
-    () => (
-      <AvaButton.Base
-        onPress={goToWatchlist}
-        style={[style.item, { backgroundColor: theme.colors.$neutral900 }]}>
-        <Space y={14} />
-        <AddSVG circleColor={'white'} size={24} />
-        <Space y={4} />
-        <Text
-          variant="buttonSmall"
-          sx={{
-            textAlign: 'center',
-            paddingVertical: 8
-          }}>
-          Add to Watchlist
-        </Text>
-        <Space y={16} />
-      </AvaButton.Base>
-    ),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
-  )
 
   const renderItem = (item: ListRenderItemInfo<MarketToken>): JSX.Element => {
     const token = item.item
@@ -79,18 +53,42 @@ const WatchlistCarousel: FC<Props> = () => {
     )
   }
 
+  const goToWatchList = (): void => {
+    navigation.navigate(AppNavigation.Tabs.Watchlist)
+  }
+
   if (isLoadingFavorites) {
     return <PortfolioFavoritesLoader />
   }
 
+  if (watchlistFavorites.length === 0) {
+    return null
+  }
+
   return (
     <View>
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between'
+        }}>
+        <Text variant="heading6" testID="favorites">
+          Favorites
+        </Text>
+        <AvaButton.TextLink
+          testID="viewAll"
+          style={{ paddingRight: -16 }}
+          textColor={colors.$blueMain}
+          onPress={goToWatchList}>
+          View All
+        </AvaButton.TextLink>
+      </View>
       <FlatList
         data={watchlistFavorites}
         renderItem={renderItem}
         horizontal
         bounces
-        ListEmptyComponent={EmptyItem}
         showsHorizontalScrollIndicator={false}
         ItemSeparatorComponent={Separator}
       />

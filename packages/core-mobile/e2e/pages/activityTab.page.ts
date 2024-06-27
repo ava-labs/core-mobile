@@ -29,10 +29,6 @@ class ActivityTabPage {
     return by.text(activityTab.transaction)
   }
 
-  get activityDetail() {
-    return by.id(activityTab.activityDetail)
-  }
-
   get activityListHeader() {
     return by.id(activityTab.activityHeader)
   }
@@ -125,7 +121,7 @@ class ActivityTabPage {
     await Action.tapElementAtIndex(this.bridgeSVG, 1)
   }
 
-  async verifyIncomingTransaction(transactionValue: string) {
+  async verifyIncomingTransaction() {
     if (Action.platform() === 'ios') {
       await commonElsPage.tapBackButton()
     } else {
@@ -146,13 +142,11 @@ class ActivityTabPage {
       await TransactionDetailsPage.isDateTextOlderThan(300)
     console.log(isTransactionSuccessful)
     await Assert.hasText(this.address, firstAccountAddress)
-    await Assert.hasText(this.activityDetail, transactionValue)
   }
 
   async verifyOutgoingTransaction(
     waitTime: number,
-    secondAccountAddress: string,
-    transactionValue: string
+    secondAccountAddress: string
   ) {
     await Action.waitForElementNotVisible(ReviewAndSend.sendSuccessfulToastMsg)
     await delay(waitTime)
@@ -160,7 +154,6 @@ class ActivityTabPage {
     await this.tapArrowIcon(0)
     await TransactionDetailsPage.isDateTextOlderThan(300)
     await Assert.hasText(this.address, secondAccountAddress)
-    await Assert.hasText(this.activityDetail, transactionValue)
   }
 
   async verifyActivityRow(

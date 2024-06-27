@@ -6,7 +6,8 @@ import {
   TransactionHistoryResponse,
   RpcRequest,
   NetworkFees,
-  parseManifest
+  parseManifest,
+  NetworkContractToken
 } from '@avalabs/vm-module-types'
 import manifest from './coreEth.manifest.json'
 
@@ -33,6 +34,9 @@ export class CoreEthModule implements Module {
   }
   getAddress(): Promise<string> {
     return Promise.resolve('EVM address')
+  }
+  getTokens(_: number): Promise<NetworkContractToken[]> {
+    return Promise.resolve([])
   }
   onRpcRequest(request: RpcRequest): Promise<RpcResponse<unknown, Error>> {
     throw new Error(`Method not implemented: ${request.method}`)

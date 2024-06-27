@@ -21,6 +21,7 @@ describe('Send Sepolia Eth to another account', () => {
     )
     await PortfolioPage.tapEthSepoliaNetwork()
     await PortfolioPage.tapActivityTab()
+
     // TODO currently there is an issue with sending ethereum seplia in testnet on simul/emul
     // we can revisit once CP-8848 is fixed
 

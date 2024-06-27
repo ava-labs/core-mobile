@@ -75,6 +75,7 @@ export type AnalyticsEvents = {
   NetworkDetailsClicked: { chainId: number }
   NetworkFavoriteAdded: { networkChainId: string; isCustom: boolean }
   NetworkFavoriteRemoved: { networkChainId: string; isCustom: boolean }
+  DefaultWatchlistFavoritesAdded: undefined
   NetworkSwitcherOpened: undefined
   NftSendFailed: { errorMessage: string; chainId: number }
   NftSendSucceeded: { chainId: number }

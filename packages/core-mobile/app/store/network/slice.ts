@@ -5,11 +5,9 @@ import {
   Network
 } from '@avalabs/chains-sdk'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { selectAllCustomTokens } from 'store/customToken'
 import { getNetworksFromCache } from 'hooks/networks/utils/getNetworksFromCache'
 import { RootState } from '../index'
 import { ChainID, Networks, NetworkState } from './types'
-import { mergeWithCustomTokens } from './utils'
 
 export const defaultNetwork = BITCOIN_NETWORK
 
@@ -98,7 +96,6 @@ export const selectNetwork =
 
 export const selectNetworks = (state: RootState): Networks => {
   const isDeveloperMode = selectIsDeveloperMode(state)
-  const allCustomTokens = selectAllCustomTokens(state)
   const customNetworks = selectCustomNetworks(state)
   const rawNetworks = getNetworksFromCache()
 
@@ -107,10 +104,7 @@ export const selectNetworks = (state: RootState): Networks => {
       const chainId = parseInt(key)
       const network = rawNetworks?.[chainId]
       if (network && network.isTestnet === isDeveloperMode) {
-        reducedNetworks[chainId] = mergeWithCustomTokens(
-          network,
-          allCustomTokens
-        )
+        reducedNetworks[chainId] = network
       }
       return reducedNetworks
     },
@@ -123,10 +117,7 @@ export const selectNetworks = (state: RootState): Networks => {
       const network = customNetworks[chainId]
 
       if (network && network.isTestnet === isDeveloperMode) {
-        reducedNetworks[chainId] = mergeWithCustomTokens(
-          network,
-          allCustomTokens
-        )
+        reducedNetworks[chainId] = network
       }
       return reducedNetworks
     },
