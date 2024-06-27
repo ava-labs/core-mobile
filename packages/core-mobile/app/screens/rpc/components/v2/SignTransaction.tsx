@@ -339,6 +339,7 @@ const SignTransaction = (): JSX.Element => {
               renderTransactionInfo()
             )}
             <BalanceChange
+              contractType={contractType}
               displayData={displayData}
               transactionSimulation={
                 scanResponse?.simulation?.status === 'Success'
