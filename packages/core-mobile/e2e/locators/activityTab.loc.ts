@@ -3,6 +3,7 @@ export default {
   transaction: 'activity_list__Contract Call',
   activityHeader: 'activity_list__header',
   activityDetail: 'activity_detail__amount',
+  activityListItem: 'activityListItem',
   avaxOutgoingTransactionDetail: '-0.0001 AVAX',
   avaxIncomingTransactionDetail: '+0.0001 AVAX',
   ethOutgoingTransactionDetail: '-0.0001 ETH',

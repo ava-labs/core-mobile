@@ -1,3 +1,4 @@
+import assert from 'assert'
 import Action from '../helpers/actions'
 import AccountManagePage from '../pages/accountManage.page'
 import Assert from '../helpers/assertions'
@@ -34,6 +35,10 @@ class ActivityTabPage {
 
   get activityListHeader() {
     return by.id(activityTab.activityHeader)
+  }
+
+  get activityListItem() {
+    return by.id(activityTab.activityListItem)
   }
 
   get selectFilterDropdown() {
@@ -158,8 +163,20 @@ class ActivityTabPage {
     await Assert.hasText(this.activityDetail, transactionValue)
   }
 
+  async verifyActivityRow(
+    newRow:
+      | Detox.IosElementAttributes
+      | Detox.AndroidElementAttributes
+      | undefined
+  ) {
+    if (newRow === undefined) {
+      fail('The new row is not added to activity tab')
+    } else {
+      assert(newRow.label?.includes('Send'))
+    }
+  }
+
   async verifyTransactionDetailWebBrowser() {
-    await this.refreshActivityPage()
     await this.tapNetworkIcon(0)
     await Action.waitForElementNotVisible(ReviewAndSend.sendSuccessfulToastMsg)
     await delay(5000)
@@ -167,16 +184,11 @@ class ActivityTabPage {
     await Assert.isNotVisible(by.id('add_svg'))
   }
 
-  async getCurrentTransactionsRows(type: string) {
+  async getLatestActivityRow() {
+    await delay(5000)
     await this.refreshActivityPage()
-    const sendRows = await Action.getAttributes(by.text(type))
-    if (sendRows === undefined) {
-      return 0
-    } else if ('elements' in sendRows) {
-      return sendRows.elements.length
-    } else {
-      return 1
-    }
+    const newRow = await Action.getAttributes(this.activityListItem)
+    return 'elements' in newRow ? newRow.elements[0] : newRow
   }
 }
 

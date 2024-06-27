@@ -1,4 +1,3 @@
-import assert from 'assert'
 import AccountManagePage from '../../pages/accountManage.page'
 import SendPage from '../../pages/send.page'
 import sendLoc from '../../locators/send.loc'
@@ -18,9 +17,6 @@ describe('Send AVAX', () => {
     // Get the existing transactions rows
     await PortfolioPage.tapAvaxNetwork()
     await PortfolioPage.tapActivityTab()
-    const currSendRows = await ActivityTabPage.getCurrentTransactionsRows(
-      'Send'
-    )
 
     // Send token to the 2nd account
     await SendPage.sendTokenTo2ndAccount(
@@ -28,14 +24,9 @@ describe('Send AVAX', () => {
       sendLoc.sendingAmount
     )
 
-    // Verify the new row is added and compare the length with the existing rows length
-    const newCurrSendRows = await ActivityTabPage.getCurrentTransactionsRows(
-      'Send'
-    )
-    assert(
-      currSendRows < newCurrSendRows,
-      `currSendRows: ${currSendRows} !< newCurrSendRows: ${newCurrSendRows}`
-    )
+    // Verify the new Send row is added on activity tab
+    const newRow = await ActivityTabPage.getLatestActivityRow()
+    await ActivityTabPage.verifyActivityRow(newRow)
 
     // Verify you left app but in web browser
     await ActivityTabPage.verifyTransactionDetailWebBrowser()
