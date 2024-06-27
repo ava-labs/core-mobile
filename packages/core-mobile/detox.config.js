@@ -401,6 +401,20 @@ module.exports = {
         }
       }
     },
+    'android.internal.release.regression.ci': {
+      device: 'emulator_ci',
+      app: 'android.internal.release.ci',
+      artifacts: {
+        rootDir: './e2e/artifacts/android'
+      },
+      testRunner: {
+        $0: 'jest',
+        args: {
+          config: './e2e/configs/regressionConfig.json',
+          _: [process.env.TESTS_TO_RUN]
+        }
+      }
+    },
     'android.internal.release.ci': {
       device: 'emulator_ci',
       app: 'android.internal.release.ci',
