@@ -12,7 +12,7 @@ adb install -r $BITRISE_APK_PATH
 
 ./node_modules/.bin/detox test --listTests --configuration android.internal.release.smoke.reuse_state.ci 
 
-if [$IS_REGRESSION_RUN=="true"] then
+if [[$IS_REGRESSION_RUN=="true"]]; then
   QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test --configuration android.internal.release.regression.ci --headless --reuse --retries 1; test_result=$?
 else
   QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test --configuration android.internal.release.smoke.reuse_state.ci --headless --reuse --retries 1; test_result=$?
