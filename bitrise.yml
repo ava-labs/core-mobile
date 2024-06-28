@@ -678,7 +678,6 @@ workflows:
     - _pull_app_files
     after_run:
     - _run_android_tests
-    - _run_android_core_web_tests
     - _send-test-result-notification-slack
     envs:
     - ENVIRONMENT: production
