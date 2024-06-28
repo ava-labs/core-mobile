@@ -14,19 +14,6 @@ prepare_react_native_project!
 
 platform :ios, '14'
 
-is_local_build = ENV['CI'] != 'true'
-perf_enabled = ENV['PERF_ENABLED'] == 'true'
-
-# enable Flipper for local builds or if PERF_ENABLED env var is set
-# flipper_enabled = is_local_build || perf_enabled
-flipper_enabled = false
-
-if flipper_enabled
-  flipper_config = FlipperConfiguration.enabled(["Debug", "Release"], { 'Flipper' => '0.163.0' })
-else
-  flipper_config = FlipperConfiguration.disabled
-end
-
 linkage = ENV['USE_FRAMEWORKS']
 if linkage != nil
   Pod::UI.puts "Configuring Pod with #{linkage}ally linked Frameworks".green
@@ -45,8 +32,6 @@ abstract_target 'common' do
     # Enables or disables Hermes; if flag is omitted Hermes will be enabled by default.
     :hermes_enabled => false,
     :fabric_enabled => flags[:fabric_enabled],
-    # Enables/disables Flipper
-    :flipper_configuration => flipper_config,
     # An absolute path to your application root.
     :app_path => "#{Pod::Config.instance.installation_root}/.."
   )
@@ -76,26 +61,6 @@ abstract_target 'common' do
       # https://github.com/facebook/react-native/issues/34106#issuecomment-1417685116
       target.build_configurations.each do |config|
         config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '14'
-      end
-  
-      if flipper_enabled
-        # By default, Flipper is enabled only for React-Core Debug configuration
-        # The following is needed to have it enabled for the Release configuration
-        if target.name == 'React-Core'
-          target.build_configurations.each do |config|
-            if config.name == 'Release'
-              config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] = ['$(inherited)', 'FB_SONARKIT_ENABLED=1']
-            end
-          end
-        end  
-  
-        # react-native-flipper hardcodes the FB_SONARKIT_ENABLED flag no matter what the build configuration is
-        # this is needed to make sure it dynamically sets the flag based on our flipper_enabled var
-        if target.name == 'react-native-flipper'
-          target.build_configurations.each do |config|
-            config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] = ['$(inherited)', 'FB_SONARKIT_ENABLED=1']
-          end
-        end  
       end  
     end 
   end
