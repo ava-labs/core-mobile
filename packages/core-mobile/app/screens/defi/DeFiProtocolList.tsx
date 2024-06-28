@@ -1,5 +1,5 @@
 import { useDeFiProtocolList } from 'hooks/defi/useDeFiProtocolList'
-import React, { FC, useEffect } from 'react'
+import React, { FC, useEffect, useMemo } from 'react'
 import { View } from 'react-native'
 import Card from 'components/Card'
 import { DeFiSimpleProtocol } from 'services/defi/types'
@@ -18,6 +18,9 @@ import BigList from 'components/BigList'
 import { useExchangedAmount } from 'hooks/defi/useExchangedAmount'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import Logger from 'utils/Logger'
+import { useNetworks } from 'hooks/networks/useNetworks'
+import { useSelector } from 'react-redux'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { ErrorState } from './components/ErrorState'
 import { ZeroState } from './components/ZeroState'
 import { ProtocolLogo } from './components/ProtocolLogo'
@@ -42,21 +45,35 @@ export const DeFiProtocolList: FC = () => {
     isPaused,
     isSuccess
   } = useDeFiProtocolList()
-
-  const memoizedData = React.useMemo(() => {
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
+  const { networks } = useNetworks()
+  const filteredProtocols = useMemo(() => {
     if (!data) return []
-    return sortDeFiItems(data)
-  }, [data])
+
+    const filtered = data.filter(protocol => {
+      // https://docs.cloud.debank.com/en/readme/api-pro-reference/chain
+      // each protocol has a "chain" property which is not a chain id but the abbreviation of the chain name
+      // we need to map this to the chain id to get the network object
+      const chainId = chainList?.[protocol.chain]?.communityId
+
+      if (chainId) {
+        return isDeveloperMode === networks[chainId]?.isTestnet
+      }
+      return false
+    })
+
+    return sortDeFiItems(filtered)
+  }, [data, chainList, networks, isDeveloperMode])
 
   const getAmount = useExchangedAmount()
 
   useEffect(() => {
     if (isSuccess) {
       AnalyticsService.capture('DeFiAggregatorsCount', {
-        count: memoizedData.length
+        count: filteredProtocols.length
       })
     }
-  }, [memoizedData, isSuccess])
+  }, [filteredProtocols, isSuccess])
 
   const handleGoToDetail = (protocolId: string): void => {
     navigate({
@@ -147,7 +164,7 @@ export const DeFiProtocolList: FC = () => {
 
   return (
     <BigList
-      data={memoizedData}
+      data={filteredProtocols}
       renderItem={renderItem}
       keyExtractor={item => item.id}
       contentContainerStyle={{ padding: 16 }}
