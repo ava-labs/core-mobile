@@ -1,3 +1,4 @@
+import assert from 'assert'
 import Action from '../helpers/actions'
 import AccountManagePage from '../pages/accountManage.page'
 import Assert from '../helpers/assertions'
@@ -20,12 +21,20 @@ class ActivityTabPage {
     return by.id(activityTab.arrowSVG)
   }
 
+  get networkIcon() {
+    return by.id(activityTab.networkIcon)
+  }
+
   get transaction() {
     return by.text(activityTab.transaction)
   }
 
   get activityListHeader() {
     return by.id(activityTab.activityHeader)
+  }
+
+  get activityListItem() {
+    return by.id(activityTab.activityListItem)
   }
 
   get selectFilterDropdown() {
@@ -68,8 +77,12 @@ class ActivityTabPage {
     await Action.tapElementAtIndex(this.arrowSVG, index)
   }
 
+  async tapNetworkIcon(index: number) {
+    await Action.tapElementAtIndex(this.networkIcon, index)
+  }
+
   async refreshActivityPage() {
-    await Action.swipeDown(by.id('arrow_svg'), 'slow', 0.75, 0)
+    await Action.swipeDown(by.id('activity_tab'), 'slow', 0.25, 0)
   }
 
   async tapTransaction() {
@@ -141,6 +154,41 @@ class ActivityTabPage {
     await this.tapArrowIcon(0)
     await TransactionDetailsPage.isDateTextOlderThan(300)
     await Assert.hasText(this.address, secondAccountAddress)
+  }
+
+  async verifyActivityRow(
+    newRow:
+      | Detox.IosElementAttributes
+      | Detox.AndroidElementAttributes
+      | undefined,
+    activity_type: string
+  ) {
+    if (newRow === undefined) {
+      fail('The new row is not added to activity tab')
+    } else {
+      assert(newRow.label?.includes(activity_type))
+    }
+  }
+
+  async verifyTransactionDetailWebBrowser() {
+    if (device.getPlatform() === 'android') {
+      await device.disableSynchronization()
+      await this.tapNetworkIcon(0)
+      await device.pressBack()
+    } else {
+      await this.tapNetworkIcon(0)
+    }
+    await delay(5000)
+    await Action.waitForElementNotVisible(ReviewAndSend.sendSuccessfulToastMsg)
+    await Assert.isNotVisible(AccountManagePage.accountsDropdown)
+    await Assert.isNotVisible(by.text('Send'))
+    await Assert.isNotVisible(by.id('add_svg'))
+  }
+  async getLatestActivityRow() {
+    await delay(5000)
+    await this.refreshActivityPage()
+    const newRow = await Action.getAttributes(this.activityListItem)
+    return 'elements' in newRow ? newRow.elements[0] : newRow
   }
 }
 

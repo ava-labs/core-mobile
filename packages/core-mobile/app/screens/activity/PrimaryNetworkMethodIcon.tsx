@@ -94,6 +94,7 @@ export const PrimaryNetworkMethodIcon = ({
 
   return (
     <View
+      testID="network_icon"
       sx={{
         backgroundColor: '$neutral800',
         paddingHorizontal: 16,
