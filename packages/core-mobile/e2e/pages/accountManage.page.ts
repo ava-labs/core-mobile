@@ -3,7 +3,6 @@ import Action from '../helpers/actions'
 import accountManage from '../locators/accountManage.loc'
 import { Platform } from '../helpers/constants'
 import Assert from '../helpers/assertions'
-import actions from '../helpers/actions'
 
 class AccountManagePage {
   get account() {
@@ -16,6 +15,10 @@ class AccountManagePage {
 
   get accountDropdownTitle() {
     return by.id(accountManage.accountDropdownTitle)
+  }
+
+  get accountsDropdown() {
+    return by.id(accountManage.accountsDropdown)
   }
 
   get editedAccount() {
@@ -82,22 +85,13 @@ class AccountManagePage {
   }
 
   async createSecondAccount() {
-    if (!(await actions.expectToBeVisible(this.secondAccount))) {
-      await this.tapAccountDropdownTitle()
-      await this.tapAddEditAccounts()
-      await this.tapAddAccountButton()
-      const result = await this.getSecondAvaxAddress()
-      await this.tapFirstAccount()
-      await this.tapDoneButton()
-      return result
-    } else {
-      const result = await this.getSecondAvaxAddress()
-      await this.tapFirstAccount()
-      if (Action.platform() === 'ios') {
-        await this.tapCarrotSVG()
-      }
-      return result
-    }
+    await this.tapAccountDropdownTitle()
+    await this.tapAddEditAccounts()
+    await this.tapAddAccountButton()
+    const result = await this.getSecondAvaxAddress()
+    await this.tapFirstAccount()
+    await this.tapDoneButton()
+    return result
   }
 
   async switchToSecondAccount() {
@@ -125,6 +119,10 @@ class AccountManagePage {
     } else {
       return result.elements[0].text.toLowerCase()
     }
+  }
+
+  async dismissAccountsDropDown() {
+    await Action.tap(this.accountsDropdown)
   }
 
   async getSecondAvaxAddress() {
