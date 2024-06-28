@@ -184,14 +184,7 @@ async function generatePlatformResults(
         })
       }
       // Takes the array of test cases and adds them to the test run
-      const testrailUpdateResponse = await api.updateRun(
-        Number(runId),
-        testCasesToSend
-      )
-      console.log(
-        'Test cases have been sent to the test run...',
-        testrailUpdateResponse
-      )
+      await api.updateRun(Number(runId), testCasesToSend)
     } catch (TestRailException) {
       console.log(
         'Invalid test case ids found in ' +
@@ -220,10 +213,9 @@ async function generatePlatformResults(
     }
 
     // Send the results to testrail
-    const resultResponse = await api.addResultsForCases(Number(runId), {
+    await api.addResultsForCases(Number(runId), {
       results: testResults
     })
-    console.log('The results have been sent to testrail...', resultResponse)
 
     // Adds the screenshot to the test case in testrail if the test failed
     for (let i = 0; i < testResults.length; i++) {
