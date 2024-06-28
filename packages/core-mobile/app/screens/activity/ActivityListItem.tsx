@@ -138,6 +138,7 @@ const ActivityListItem: FC<Props> = ({ tx, onPress }) => {
 
   return (
     <AvaListItem.Base
+      testID="activityListItem"
       title={title}
       subtitle={subtitle}
       leftComponent={leftComponent}

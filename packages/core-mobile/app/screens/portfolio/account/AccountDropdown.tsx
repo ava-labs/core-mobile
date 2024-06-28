@@ -62,6 +62,7 @@ function AccountDropdown({
   return (
     <Pressable style={{ flex: 1 }} onPress={goBack}>
       <View
+        testID="accounts_dropdown"
         style={{
           backgroundColor: theme.overlay,
           flex: 1,

@@ -40,7 +40,8 @@ function BaseListItem({
   onPress,
   embedInCard,
   background,
-  paddingVertical = 4
+  paddingVertical = 4,
+  testID = 'baseListItem'
 }: Props): JSX.Element {
   const context = useApplicationContext()
 
@@ -64,7 +65,7 @@ function BaseListItem({
           backgroundColor: background
         }
       ]}
-      testID="baseListItem">
+      testID={testID}>
       <View sx={styles.baseRowContainer}>
         <View style={[styles.baseRow, disabled && { opacity: 0.5 }]}>
           {leftComponent && (

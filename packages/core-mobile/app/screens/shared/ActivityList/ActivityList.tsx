@@ -116,7 +116,7 @@ const ActivityList = ({
   }
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1 }} testID="activity_tab">
       {renderFilterDropdown()}
       <Space y={10} />
       {renderContents()}
