@@ -68,20 +68,11 @@ apply from: "../../node_modules/@sentry/react-native/sentry.gradle"
 def jscFlavor = 'org.webkit:android-jsc-intl:+'
 
 /**
- * Whether to enable Flipper.
- *
- * We enable Flipper for local builds or if PERF_ENABLED env var is set
+ * Run Proguard to shrink the Java bytecode in release builds.
  */
 def isLocalBuild = System.env.CI != 'true'
 def perfEnabled = System.env.PERF_ENABLED == 'true'
-def flipperEnabled = isLocalBuild || perfEnabled
-
-/**
- * Run Proguard to shrink the Java bytecode in release builds.
- *
- * If Flipper is enabled, we don't enable proguard to help with troubleshooting
- */
-def enableProguardInReleaseBuilds = !flipperEnabled
+def enableProguardInReleaseBuilds = !isLocalBuild && !perfEnabled
 
 android {
     ndkVersion rootProject.ext.ndkVersion
@@ -94,7 +85,6 @@ android {
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionName rootProject.ext.appVersionName
         versionCode rootProject.ext.appBuildNumber
-        buildConfigField "boolean", "FLIPPER_ENABLED", flipperEnabled.toString()
 
         testBuildType System.getProperty('testBuildType', 'e2e')  // To control the test apk build type
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
@@ -145,14 +135,6 @@ android {
         external {}
     }
 
-    sourceSets {
-        if (flipperEnabled) {
-            main.java.srcDir 'src/flipper/java'
-        } else {
-            main.java.srcDir 'src/flipperNoop/java'
-        }
-    }
-
     packagingOptions {
         pickFirst '**/*.so'
     }
@@ -165,10 +147,6 @@ dependencies {
     implementation("com.facebook.react:react-android")
 
     androidTestImplementation('com.wix:detox:+')
-
-    if (flipperEnabled) {
-        implementation("com.facebook.react:flipper-integration")
-    }
 
     if (hermesEnabled.toBoolean()) {
         implementation("com.facebook.react:hermes-android")
