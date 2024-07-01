@@ -108,7 +108,7 @@ __metadata:
     "@avalabs/tsconfig-mobile": "workspace:*"
     "@avalabs/types": v2.8.0-alpha.187
     "@avalabs/utils-sdk": v2.8.0-alpha.187
-    "@avalabs/vm-module-types": 0.0.10
+    "@avalabs/vm-module-types": 0.0.11
     "@avalabs/wallets-sdk": v2.8.0-alpha.187
     "@babel/core": 7.24.0
     "@babel/plugin-proposal-nullish-coalescing-operator": 7.18.6
@@ -478,15 +478,6 @@ __metadata:
     bn.js: ^5.2.1
     ethers: ^6.7.1
   checksum: def827c9d4f8692a6419e2fa4480353c4024b9ad0b33e95769b5aa6c1c0a44091a12a61328f7fc51b9941c2ccc7934f5a0b855e075e451ff38c26381b038dcea
-  languageName: node
-  linkType: hard
-
-"@avalabs/vm-module-types@npm:0.0.10":
-  version: 0.0.10
-  resolution: "@avalabs/vm-module-types@npm:0.0.10"
-  dependencies:
-    zod: 3.23.8
-  checksum: a0d66b77613e67793dc54093bf4b5b17e30ea9b1d0c59f0d0b666c7fa242e8086d4afe3bb0ab11e16d7cf6a3bea768d16fb5abd9ece501b4e36fbeab3cd00eda
   languageName: node
   linkType: hard
 
