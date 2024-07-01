@@ -185,7 +185,6 @@ async function generatePlatformResults(
       }
       // Takes the array of test cases and adds them to the test run
       await api.updateRun(Number(runId), testCasesToSend)
-      console.log('Test cases have been sent to the test run...')
     } catch (TestRailException) {
       console.log(
         'Invalid test case ids found in ' +
@@ -221,6 +220,7 @@ async function generatePlatformResults(
     // Adds the screenshot to the test case in testrail if the test failed
     for (let i = 0; i < testResults.length; i++) {
       if (testResults[i].status_id === 5 && testResults[i].screenshot) {
+        return
         //  // This is the path to the screenshot for when the test fails
         // const failScreenshot = path.resolve(
         //   `./e2e/artifacts/${platform}/${testResults[i].screenshot}`

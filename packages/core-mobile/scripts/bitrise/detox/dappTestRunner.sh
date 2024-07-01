@@ -28,49 +28,21 @@ eth_cmds=(
     'npx playwright test e2e/tests/playwright/balancer.spec.ts --project='chromium''
 )
 
-read -p "Did you start your emulator or simulator? (y/n)" reply
-case $reply in 
-    y) echo "Fantastic, you get a gold star!!!";;
-    n) echo "Please start your emulator or simulator and try again"; exit;;
-    *) echo "invalid option"; exit;;
-esac
-
-read -p $'Which dApp tests would you like to run? \n1)ios AVAX \n2)android AVAX\n3)ios ETH\n4)android ETH\n' answer
-case $answer in 
-    1)  echo "Running iOS dApp tests..."
+echo "Running iOS AVAX dApp tests..."
         for cmd in "${cmds[@]}"; do
                     echo "Running ${cmd}..."
                     $cmd
                     echo "${cmd} finished"
                     echo "Now running the iOS detox test..."
-                    node_modules/.bin/detox test dappIntegrations.e2e.ts --configuration ios.internal.debug 
+                    node_modules/.bin/detox test dappIntegrations.e2e.ts --configuration ios.internal.release.ci 
                 done;;
-    2)  echo "Running Android dApp tests..."
-        for cmd in "${cmds[@]}"; do
-                    echo "Running ${cmd}..."
-                    $cmd
-                    echo "${cmd} finished"
-                    echo "Now running the android detox test..."
-                    node_modules/.bin/detox test dappIntegrations.e2e.ts --configuration android.internal.debug 
-                done;;
-    3)  echo "Running iOS ETH dApp tests..."
-        for cmd in "${eth_cmds[@]}"; do
+
+echo "Running iOS ETH dApp tests..."
+        for eth_cmd in "${eth_cmds[@]}"; do
                     echo "Running ${cmd}..."
                     $cmd
                     echo "${cmd} finished"
                     echo "Now running the iOS detox test..."
-                    node_modules/.bin/detox test dappEthIntegrations.e2e.ts --configuration ios.internal.debug 
+                    node_modules/.bin/detox test dappEthIntegrations.e2e.ts --configuration ios.internal.release.ci 
                 done;;
-    4)  echo "Running Android ETH dApp tests..."
-        for cmd in "${eth_cmds[@]}"; do
-                    echo "Running ${cmd}..."
-                    $cmd
-                    echo "${cmd} finished"
-                    echo "Now running the android detox test..."
-                    node_modules/.bin/detox test dappEthIntegrations.e2e.ts --configuration android.internal.debug 
-                done;;
-    *) echo "invalid option"; exit;;
-esac
-
-
-
+    
