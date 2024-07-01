@@ -33,17 +33,17 @@ const ActivityListItem: FC<Props> = ({ tx, onPress }) => {
       case TransactionType.SWAP:
         return 'Swap'
       case TransactionType.SEND:
-        return 'Send'
+        return 'Sent'
       case TransactionType.RECEIVE:
-        return 'Receive'
+        return 'Received'
       case TransactionType.NFT_BUY:
         return 'NFT Buy'
       case TransactionType.TRANSFER:
         return 'Transfer'
       case TransactionType.NFT_SEND:
-        return 'NFT Send'
+        return 'NFT Sent'
       case TransactionType.NFT_RECEIVE:
-        return 'NFT Receive'
+        return 'NFT Received'
       case PChainTransactionType.ADD_DELEGATOR_TX:
         return 'Add Delegator'
       case PChainTransactionType.ADD_SUBNET_VALIDATOR_TX:

@@ -30,7 +30,7 @@ export const NftIcon = ({
         variant="body1"
         sx={{
           color: '$neutral50',
-          fontSize: SIZE / 2,
+          fontSize: SIZE / 3,
           lineHeight: SIZE * 0.75
         }}>
         {initials}
