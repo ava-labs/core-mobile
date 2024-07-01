@@ -1,4 +1,3 @@
-/* eslint-disable sonarjs/cognitive-complexity */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // @ts-nocheck comment at the top of the file
 /* eslint-disable no-var */
@@ -122,7 +121,7 @@ export default async function sendResults() {
       )
     }
     if (await isResultPresent('ios')) {
-      const runID = process.env.IOS_TESTRAIL_RUN_ID
+      const runID = 10308
       console.log('The run id is ' + runID)
       await generatePlatformResults(
         testCasesToSend,
@@ -164,12 +163,8 @@ async function generatePlatformResults(
     )
     try {
       const existingTestCases = await getTestCasesFromRun(runId)
-      resultArray.forEach((result: any) => {
+      resultArray.forEach(() => {
         existingTestCases.forEach((testCase: any) => {
-          if (testCase.case_id === result.case_id && testCase.status_id === 5) {
-            console.log('removed ' + testCase.case_id + ' from the array')
-            existingTestCases.splice(testCase, 1)
-          }
           if (testCase.status_id === 3) {
             existingTestCases.splice(testCase, 1)
           }
@@ -178,8 +173,8 @@ async function generatePlatformResults(
       // Adds the existing test case results to the results array so they are not overwritten in testrail when using the updateRun endpoint
       resultArray = resultArray.concat(existingTestCases)
       // Add already existing test cases to the testCasesToSend array
-      if (existingTestCases.length > 0) {
-        existingTestCases.forEach((testCase: number) => {
+      if (resultArray.length > 0) {
+        resultArray.forEach((testCase: number) => {
           testCasesToSend.case_ids.push(testCase.case_id)
         })
       }
