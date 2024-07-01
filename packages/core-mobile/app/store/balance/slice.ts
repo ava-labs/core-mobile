@@ -156,45 +156,33 @@ export const selectTokenByAddress = (address: string) => (state: RootState) => {
   return undefined
 }
 
-export const selectBalancesForAccount =
-  (accountIndex: number) => (state: RootState) => {
-    return Object.values(state.balance.balances).filter(
-      balance => balance.accountIndex === accountIndex
-    )
-  }
-
 export const selectTokensWithBalanceForAccount =
   (accountIndex: number | undefined) => (state: RootState) => {
     if (accountIndex === undefined) return []
 
-    const balances = selectBalancesForAccount(accountIndex)(state)
+    const isDeveloperMode = selectIsDeveloperMode(state)
+    const balances = Object.values(state.balance.balances)
+      .filter(balance => balance.accountIndex === accountIndex)
+      .filter(balance => {
+        const isTestnet = selectIsTestnet(balance.chainId)(state)
+
+        return (
+          (isDeveloperMode && isTestnet) ||
+          (!isDeveloperMode && isTestnet === false)
+        )
+      })
+
     return balances.flatMap(b => b.tokens)
   }
 
-export const selectBalanceTotalInCurrencyForNetwork =
+export const selectBalanceTotalInCurrencyForAccount =
   (accountIndex: number) => (state: RootState) => {
-    const balances = selectBalancesForAccount(accountIndex)(state)
+    const tokens = selectTokensWithBalanceForAccount(accountIndex)(state)
 
-    const isDeveloperMode = selectIsDeveloperMode(state)
-
-    let totalInCurrency = 0
-
-    for (const balance of balances) {
-      const isTestnet = selectIsTestnet(balance.chainId)(state)
-
-      // when developer mode is on, only add testnet balances
-      // when developer mode is off, only add mainnet balances
-      if (
-        (isDeveloperMode && isTestnet) ||
-        (!isDeveloperMode && isTestnet === false)
-      ) {
-        for (const token of balance.tokens) {
-          totalInCurrency += token.balanceInCurrency ?? 0
-        }
-      }
-    }
-
-    return totalInCurrency
+    return tokens.reduce((total, token) => {
+      total += token.balanceInCurrency ?? 0
+      return total
+    }, 0)
   }
 
 export const selectBalanceTotalInCurrencyForNetworkAndAccount =
