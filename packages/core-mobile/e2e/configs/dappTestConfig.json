@@ -4,10 +4,12 @@
   "testRunner": "jest-circus/runner",
   "testTimeout": 120000,
   "rootDir": "..",
-  "testMatch": ["<rootDir>/e2e/tests/**/*.e2e.smoke.ts"],
+  "testMatch": [
+    "<rootDir>/tests/**/*.e2e.dapp.ts"
+  ],
   "reporters": ["detox/runners/jest/reporter"],
   "verbose": true,
-  "globalTeardown": "./e2e/sendResultsTeardown.ts",
+  "globalTeardown": "<rootDir>/sendResultsTeardown.ts",
   "globalSetup": "detox/runners/jest/globalSetup",
   "transformIgnorePatterns": [
     "node_modules/(?!(jest-)?react-native|@react-native-community|@react-native|@react-navigation)"
@@ -21,12 +23,6 @@
     ]
   },
   "testPathIgnorePatterns": [
-    "*/bridge/*.ts",
-    "traderjoe.e2e.ts",
-    "sendSepoliaEthTo2ndAccount.e2e.ts",
-    "sendEthTo2ndAccount.e2e.ts",
-    "./e2e/tests/network/addCustomNetwork.e2e.smoke.ts",
-    "./e2e/tests/network/addCustomToken.e2e.smoke.ts",
-    ".e2e/tests/stake/claimTestnet.e2e.smoke.ts"
+    
   ]
 }

@@ -5,12 +5,12 @@
   "testTimeout": 120000,
   "rootDir": "..",
   "testMatch": [
-    "<rootDir>/e2e/tests/**/*.e2e.ts",
-    "<rootDir>/e2e/tests/**/*.e2e.smoke.ts"
+    "<rootDir>/tests/**/*.e2e.ts",
+    "<rootDir>/tests/**/*.e2e.smoke.ts"
   ],
   "reporters": ["detox/runners/jest/reporter"],
   "verbose": true,
-  "globalTeardown": "./e2e/sendResultsTeardown.ts",
+  "globalTeardown": "<rootDir>/sendResultsTeardown.ts",
   "globalSetup": "detox/runners/jest/globalSetup",
   "transformIgnorePatterns": [
     "node_modules/(?!(jest-)?react-native|@react-native-community|@react-native|@react-navigation)"

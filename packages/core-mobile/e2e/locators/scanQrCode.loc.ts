@@ -1,3 +1,3 @@
 export default {
-  uri: 'input_text'
+  uri: 'dapp_qr_reader__uri'
 }
