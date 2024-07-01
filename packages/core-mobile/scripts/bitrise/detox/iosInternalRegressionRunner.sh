@@ -7,7 +7,7 @@ yarn start &
 
 npm rebuild detox
 
-QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test -c ios.internal.release.ci --headless --retries 1 --detectOpenHandles; test_result=$?
+QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test --workers 3 -c ios.internal.release.ci --headless --retries 1 --detectOpenHandles; test_result=$?
 
 if ((test_result != 0)); then
   exit 1
