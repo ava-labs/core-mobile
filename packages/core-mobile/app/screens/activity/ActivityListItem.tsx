@@ -14,7 +14,7 @@ import {
 } from '@avalabs/glacier-sdk'
 import { TransactionType, Transaction } from '@avalabs/vm-module-types'
 import { PrimaryNetworkMethodIcon } from './PrimaryNetworkMethodIcon'
-import { renderNftIcon } from './renderNftIcon'
+import { NftIcon } from './NftIcon'
 
 const windowWidth = Dimensions.get('window').width
 
@@ -100,7 +100,7 @@ const ActivityListItem: FC<Props> = ({ tx, onPress }) => {
           tx.txType === TransactionType.NFT_RECEIVE) &&
         tx.tokens[0]?.imageUri
       ) {
-        return renderNftIcon(tx.tokens[0]?.imageUri)
+        return <NftIcon nftUrl={tx.tokens[0]?.imageUri} />
       }
       return (
         <PrimaryNetworkMethodIcon
