@@ -101,7 +101,7 @@ const ActivityListItem: FC<Props> = ({ tx, onPress }) => {
         tx.tokens[0]?.imageUri
       ) {
         return (
-          <NftIcon nftUrl={tx.tokens[0]?.imageUri} title={tx.tokens[0].name} />
+          <NftIcon nftUrl={tx.tokens[0]?.imageUri} title={tx.tokens[0]?.name} />
         )
       }
       return (
