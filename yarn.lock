@@ -99,7 +99,7 @@ __metadata:
     "@avalabs/coingecko-sdk": v2.8.0-alpha.187
     "@avalabs/covalent-sdk": v2.8.0-alpha.187
     "@avalabs/etherscan-sdk": v2.8.0-alpha.187
-    "@avalabs/evm-module": 0.0.10
+    "@avalabs/evm-module": 0.0.11
     "@avalabs/glacier-sdk": v2.8.0-alpha.187
     "@avalabs/k2-mobile": "workspace:*"
     "@avalabs/paraswap-sdk": v2.8.0-alpha.187
@@ -108,7 +108,7 @@ __metadata:
     "@avalabs/tsconfig-mobile": "workspace:*"
     "@avalabs/types": v2.8.0-alpha.187
     "@avalabs/utils-sdk": v2.8.0-alpha.187
-    "@avalabs/vm-module-types": 0.0.10
+    "@avalabs/vm-module-types": 0.0.11
     "@avalabs/wallets-sdk": v2.8.0-alpha.187
     "@babel/core": 7.24.0
     "@babel/plugin-proposal-nullish-coalescing-operator": 7.18.6
@@ -331,21 +331,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/evm-module@npm:0.0.10":
-  version: 0.0.10
-  resolution: "@avalabs/evm-module@npm:0.0.10"
+"@avalabs/evm-module@npm:0.0.11":
+  version: 0.0.11
+  resolution: "@avalabs/evm-module@npm:0.0.11"
   dependencies:
     "@avalabs/chains-sdk": v2.8.0-alpha.187
     "@avalabs/etherscan-sdk": v2.8.0-alpha.187
     "@avalabs/glacier-sdk": v2.8.0-alpha.187
     "@avalabs/utils-sdk": v2.8.0-alpha.187
-    "@avalabs/vm-module-types": 0.0.10
+    "@avalabs/vm-module-types": 0.0.11
     "@avalabs/wallets-sdk": v2.8.0-alpha.187
     bn.js: 5.2.1
     lodash.startcase: 4.4.0
   peerDependencies:
     ethers: ^6.8.1
-  checksum: f633a7b64f55e845e8aa518d21383f4d078f6346986a724e71ef8a386d4063a980d11f5f5307c6ab55ccb15da6c92fce74f700ed1a54a81c17e787b645138b9b
+  checksum: 85e86da2518da2a4c8ac50ec490c04aa3a02fdb43563c3346f50ad10aa5e62e2e734e460d60511ed2b4a691e25292a4ea8261a8e7a139c5f3288fbe695d7f667
   languageName: node
   linkType: hard
 
@@ -481,12 +481,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/vm-module-types@npm:0.0.10":
-  version: 0.0.10
-  resolution: "@avalabs/vm-module-types@npm:0.0.10"
+"@avalabs/vm-module-types@npm:0.0.11":
+  version: 0.0.11
+  resolution: "@avalabs/vm-module-types@npm:0.0.11"
   dependencies:
     zod: 3.23.8
-  checksum: a0d66b77613e67793dc54093bf4b5b17e30ea9b1d0c59f0d0b666c7fa242e8086d4afe3bb0ab11e16d7cf6a3bea768d16fb5abd9ece501b4e36fbeab3cd00eda
+  checksum: 2ebcd6ee62253f80c6ce21c266e1210adb4b5995cc3bd8455fad9bd673341965864308c4c2c8a33258a5bfc29396c8af79c0583252052c821f4fee812c6d4e99
   languageName: node
   linkType: hard
 
