@@ -18,7 +18,7 @@ class ActivityTabPage {
   }
 
   get arrowSVG() {
-    return by.id(activityTab.arrowSVG)
+    return by.id(activityTab.arrowUpSVG)
   }
 
   get networkIcon() {
