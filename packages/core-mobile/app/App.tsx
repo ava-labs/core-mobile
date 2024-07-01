@@ -6,6 +6,7 @@ import {
   SafeAreaView,
   UIManager
 } from 'react-native'
+import * as Sentry from '@sentry/react-native'
 import RootScreenStack from 'navigation/RootScreenStack'
 import { NavigationContainer } from '@react-navigation/native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
@@ -31,7 +32,7 @@ Platform.OS === 'android' &&
   UIManager.setLayoutAnimationEnabledExperimental &&
   UIManager.setLayoutAnimationEnabledExperimental(false)
 
-export default function App(): JSX.Element {
+function App(): JSX.Element {
   const { configure } = useDevDebugging()
   const isProduction = process.env.NODE_ENV === 'production'
   if (!isProduction) {
@@ -51,6 +52,9 @@ export default function App(): JSX.Element {
           theme={context.navContainerTheme}
           ref={navigationRef}
           onReady={() => {
+            SentryService.routingInstrumentation.registerNavigationContainer(
+              navigationRef
+            )
             DataDogService.init(navigationRef).catch(Logger.error)
           }}>
           <RootScreenStack />
@@ -59,3 +63,5 @@ export default function App(): JSX.Element {
     </SafeAreaView>
   )
 }
+
+export default Sentry.wrap(App)
