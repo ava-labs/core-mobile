@@ -10,7 +10,7 @@ const DevDebuggingConfig = {
   LOGBOX_IGNORED_WARNINGS: [],
   SHOW_DEMO_NFTS: false,
   API_MOCKING: false,
-  SENTRY_SPOTLIGHT: true
+  SENTRY_SPOTLIGHT: false
 }
 
 export default DevDebuggingConfig
