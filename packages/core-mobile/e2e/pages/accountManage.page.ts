@@ -121,7 +121,7 @@ class AccountManagePage {
     }
   }
 
-  async dismissAccountsDropDown() {
+  async tapAccountsDropDown() {
     await Action.tap(this.accountsDropdown)
   }
 

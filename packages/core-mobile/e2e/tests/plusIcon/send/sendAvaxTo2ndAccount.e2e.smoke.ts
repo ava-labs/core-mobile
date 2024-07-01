@@ -11,18 +11,35 @@ describe('Send Avax to another account', () => {
   })
 
   it('Should send AVAX to second account', async () => {
-    const secondAccountAddress = await AccountManagePage.createSecondAccount()
+    // Send token to 2nd account
+    await AccountManagePage.createSecondAccount()
     await SendPage.sendTokenTo2ndAccount(
       sendLoc.avaxToken,
       sendLoc.sendingAmount
     )
-    await PortfolioPage.tapAvaxNetwork()
-    await PortfolioPage.tapActivityTab()
-    await ActivityTabPage.verifyOutgoingTransaction(5000, secondAccountAddress)
+
+    // Go to activity tap
+    await PortfolioPage.goToActivityTab()
+
+    // verify send event
+    const newRow = await ActivityTabPage.getLatestActivityRow()
+    await ActivityTabPage.verifyActivityRow(newRow, 'Send')
+    await ActivityTabPage.verifyTransactionDetailWebBrowser('Send')
+    await ActivityTabPage.exitTransactionDetailWebBrowser('Send')
   })
 
   it('Should receive AVAX on second account', async () => {
-    await ActivityTabPage.tapHeaderBack()
-    await ActivityTabPage.verifyIncomingTransaction()
+    // Change default account to the 2nd.
+    await AccountManagePage.tapAccountDropdownTitle()
+    await AccountManagePage.tapSecondAccount()
+
+    // Go to activity tap
+    await PortfolioPage.goToActivityTab()
+
+    // verify receive event
+    const newRow = await ActivityTabPage.getLatestActivityRow()
+    await ActivityTabPage.verifyActivityRow(newRow, 'Receive')
+    await ActivityTabPage.verifyTransactionDetailWebBrowser('Receive')
+    await ActivityTabPage.exitTransactionDetailWebBrowser('Receive')
   })
 })

@@ -3,6 +3,7 @@ import Action from '../helpers/actions'
 import portfolio from '../locators/portfolio.loc'
 import { Platform } from '../helpers/constants'
 import networksManagePage from './networksManage.page'
+import ActivityTabPage from './activityTab.page'
 
 const platformIndex = Action.platform() === Platform.iOS ? 1 : 0
 const platformIndex2 = Action.platform() === Platform.iOS ? 0 : 1
@@ -129,6 +130,12 @@ class PortfolioPage {
     await Assert.isVisible(this.networksHeader)
     await Assert.isVisible(this.assetsTab)
     await Assert.isVisible(this.colectiblesTab)
+  }
+
+  async goToActivityTab() {
+    await this.tapAvaxNetwork()
+    await this.tapActivityTab()
+    await ActivityTabPage.refreshActivityPage()
   }
 
   async tapActivityTab() {
