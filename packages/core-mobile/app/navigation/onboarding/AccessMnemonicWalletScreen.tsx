@@ -95,7 +95,7 @@ const ActionButton = ({
           borderRadius: 18,
           aspectRatio: 1
         }}>
-        <View sx={{}}>{icon}</View>
+        {icon}
         <Text variant="buttonLarge">{text}</Text>
       </View>
     </TouchableOpacity>
