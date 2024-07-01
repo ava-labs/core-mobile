@@ -203,7 +203,9 @@ async function generatePlatformResults(
           comment: comment,
           screenshot: screenshotPath
         }
-        testResults.push(testResult)
+        if (!testResults.includes(testResult)) {
+          testResults.push(testResult)
+        }
       }
     }
 
