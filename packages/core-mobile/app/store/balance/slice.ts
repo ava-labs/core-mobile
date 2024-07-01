@@ -156,30 +156,22 @@ export const selectTokenByAddress = (address: string) => (state: RootState) => {
   return undefined
 }
 
-export const selectBalancesForAccount =
-  (accountIndex: number | undefined) => (state: RootState) => {
-    if (accountIndex === undefined) return []
-
-    const balances = Object.values(state.balance.balances).filter(
-      balance => balance.accountIndex === accountIndex
-    )
-    const isDeveloperMode = selectIsDeveloperMode(state)
-
-    return balances.filter(balance => {
-      const isTestnet = selectIsTestnet(balance.chainId)(state)
-
-      return (
-        (isDeveloperMode && isTestnet) ||
-        (!isDeveloperMode && isTestnet === false)
-      )
-    })
-  }
-
 export const selectTokensWithBalanceForAccount =
   (accountIndex: number | undefined) => (state: RootState) => {
     if (accountIndex === undefined) return []
 
-    const balances = selectBalancesForAccount(accountIndex)(state)
+    const isDeveloperMode = selectIsDeveloperMode(state)
+    const balances = Object.values(state.balance.balances)
+      .filter(balance => balance.accountIndex === accountIndex)
+      .filter(balance => {
+        const isTestnet = selectIsTestnet(balance.chainId)(state)
+
+        return (
+          (isDeveloperMode && isTestnet) ||
+          (!isDeveloperMode && isTestnet === false)
+        )
+      })
+
     return balances.flatMap(b => b.tokens)
   }
 
