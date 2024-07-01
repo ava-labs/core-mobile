@@ -7,6 +7,7 @@ import { SvgUri } from 'react-native-svg'
 import { formatUriImageToPng, isContentfulImageUri } from 'utils/Contentful'
 import FastImage from 'react-native-fast-image'
 import { Text, useTheme, View } from '@avalabs/k2-mobile'
+import { useGetInitials } from 'hooks/useGetInitials'
 
 interface AvatarBaseProps {
   title: string
@@ -158,16 +159,7 @@ function FallbackAvatar({
   fallbackBackgroundColor,
   showBorder
 }: AvatarBaseProps): JSX.Element {
-  const initials = useMemo(() => {
-    const names = (title ?? '').split(' ')
-    const length = names.length
-
-    return length > 1
-      ? `${names[0]?.substring(0, 1) ?? ''}${
-          names[length - 1]?.substring(0, 1) ?? ''
-        }`
-      : names[0]?.substring(0, 1) ?? ''
-  }, [title])
+  const initials = useGetInitials(title)
 
   return (
     <View

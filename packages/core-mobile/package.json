@@ -27,7 +27,7 @@
     "@avalabs/coingecko-sdk": "v2.8.0-alpha.187",
     "@avalabs/covalent-sdk": "v2.8.0-alpha.187",
     "@avalabs/etherscan-sdk": "v2.8.0-alpha.187",
-    "@avalabs/evm-module": "0.0.10",
+    "@avalabs/evm-module": "0.0.11",
     "@avalabs/glacier-sdk": "v2.8.0-alpha.187",
     "@avalabs/k2-mobile": "workspace:*",
     "@avalabs/paraswap-sdk": "v2.8.0-alpha.187",

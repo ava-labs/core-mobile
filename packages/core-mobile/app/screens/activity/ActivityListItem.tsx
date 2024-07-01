@@ -100,7 +100,9 @@ const ActivityListItem: FC<Props> = ({ tx, onPress }) => {
           tx.txType === TransactionType.NFT_RECEIVE) &&
         tx.tokens[0]?.imageUri
       ) {
-        return <NftIcon nftUrl={tx.tokens[0]?.imageUri} />
+        return (
+          <NftIcon nftUrl={tx.tokens[0]?.imageUri} title={tx.tokens[0].name} />
+        )
       }
       return (
         <PrimaryNetworkMethodIcon
