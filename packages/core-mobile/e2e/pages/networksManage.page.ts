@@ -134,8 +134,8 @@ class NetworksPage {
     await Action.tapElementAtIndex(this.addNetwork, 0)
   }
 
-  async tapEthereumSepoliaNetwork() {
-    await Action.tapElementAtIndex(this.ethereumSepoliaNetwork, 0)
+  async tapEthereumSepoliaNetwork(index = 0) {
+    await Action.tapElementAtIndex(this.ethereumSepoliaNetwork, index)
   }
 
   async tapCustomTab() {
@@ -218,18 +218,10 @@ class NetworksPage {
 
   async switchToEthereumSepoliaNetwork() {
     await PortfolioPage.tapNetworksDropdown()
-    if (
-      (await Action.isVisible(PortfolioPage.manageNetworks, platformIndex)) ===
-      false
-    ) {
-      await PortfolioPage.tapNetworksDropdown()
-    }
     await PortfolioPage.tapManageNetworks()
     await this.tapNetworksTab()
-    if ((await Action.isVisible(this.ethereumSepoliaNetwork, 0)) === false) {
-      await Action.swipeUp(this.bitcoinTestnet, 'slow', 0.5, 0)
-    }
-    await this.tapEthereumSepoliaNetwork()
+    await this.searchNetworks(networksManage.ethereumSepoliaNetwork)
+    await this.tapEthereumSepoliaNetwork(1)
   }
 
   async switchToAvalancheNetwork() {

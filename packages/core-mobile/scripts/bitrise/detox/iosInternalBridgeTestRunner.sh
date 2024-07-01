@@ -5,7 +5,7 @@ set -o pipefail
 
 npm rebuild detox
 
-./node_modules/.bin/detox test --maxWorkers 3 --configuration ios.external.release.smoke.ci --retries 1; test_result=$?
+./node_modules/.bin/detox test --configuration ios.internal.release.bridgeTests.ci; test_result=$?
 
 if ((test_result != 0)); then
   exit 1

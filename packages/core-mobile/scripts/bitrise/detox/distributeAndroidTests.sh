@@ -1,8 +1,11 @@
 #!/bin/bash
 
 # Command that returns the test files to be run and stores in TESTS_TO_BE_RUN
-TESTS_TO_BE_RUN=$(./node_modules/.bin/detox test --configuration android.internal.release.smoke.ci --listTests)
-# TESTS_TO_BE_RUN=$(./node_modules/.bin/detox test --configuration android.internal.debug --listTests)
+if (($IS_REGRESSION_RUN=='true')); then
+  TESTS_TO_BE_RUN=$(./node_modules/.bin/detox test --configuration android.internal.release.regression.ci --listTests)
+else
+  TESTS_TO_BE_RUN=$(./node_modules/.bin/detox test --configuration android.internal.release.smoke.ci --listTests)
+fi
 
 echo "Tests to be run: $TESTS_TO_BE_RUN"
 
