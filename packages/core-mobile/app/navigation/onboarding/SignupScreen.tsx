@@ -45,7 +45,7 @@ const SignupScreen: FC = () => {
     AnalyticsService.capture('RecoveryPhraseClicked')
   }
 
-  const handleAccessExistngWallet = (): void => {
+  const handleAccessExistingWallet = (): void => {
     navigate(AppNavigation.Onboard.AccessMnemonicWallet)
     AnalyticsService.capture('AccessExistingWalletClicked')
   }
@@ -110,7 +110,7 @@ const SignupScreen: FC = () => {
         <Button
           type="secondary"
           size="large"
-          onPress={handleAccessExistngWallet}>
+          onPress={handleAccessExistingWallet}>
           Access Existing Wallet
         </Button>
       </View>

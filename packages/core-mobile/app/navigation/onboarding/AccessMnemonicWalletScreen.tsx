@@ -51,7 +51,7 @@ const AccessMnemonicWalletScreen = (): JSX.Element => {
     <ScrollView
       sx={{ flex: 1, backgroundColor: '$black' }}
       contentContainerSx={{ paddingHorizontal: 16 }}>
-      <Text variant="heading3">
+      <Text variant="heading3" sx={{ marginRight: 10 }}>
         How would you like to access your existing wallet?
       </Text>
       <Row style={{ marginTop: 60, gap: 16 }}>
