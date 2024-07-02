@@ -8,6 +8,7 @@ import { findAsyncSequential } from 'utils/Utils'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { Transaction } from '@sentry/types'
 import type {
+  NetworkContractToken,
   NetworkTokenWithBalance,
   TokenWithBalanceERC20
 } from '@avalabs/vm-module-types'
@@ -37,11 +38,13 @@ export class BalanceService {
     network,
     account,
     currency,
-    sentryTrx
+    sentryTrx,
+    customTokens
   }: {
     network: Network
     account: Account
     currency: string
+    customTokens?: NetworkContractToken[]
     sentryTrx?: Transaction
   }): Promise<BalancesForAccount> {
     return SentryWrapper.createSpanFor(sentryTrx)
@@ -62,7 +65,8 @@ export class BalanceService {
           network,
           accountAddress,
           currency,
-          sentryTrx
+          sentryTrx,
+          customTokens
         })
 
         return {

@@ -19,7 +19,8 @@ export class EvmBalanceService implements BalanceServiceProvider {
     network,
     accountAddress,
     currency,
-    sentryTrx
+    sentryTrx,
+    customTokens
   }: GetBalancesParams): Promise<
     (NetworkTokenWithBalance | TokenWithBalanceERC20)[]
   > {
@@ -29,17 +30,10 @@ export class EvmBalanceService implements BalanceServiceProvider {
         const caip2ChainId = ModuleManager.convertChainIdToCaip2(network)
         const module = await ModuleManager.loadModuleByNetwork(network)
         const balancesResponse = await module.getBalances({
-          customTokens: [],
-          coingeckoPlatformId:
-            network.pricingProviders?.coingecko.assetPlatformId,
+          customTokens,
           addresses: [accountAddress],
           currency,
-          chainId: caip2ChainId,
-          chainName: network.chainName,
-          rpcUrl: network.rpcUrl,
-          multiContractAddress: network.utilityAddresses?.multicall,
-          networkToken: network.networkToken,
-          coingeckoTokenId: network.pricingProviders?.coingecko.nativeTokenId
+          chainId: caip2ChainId
         })
         const balances = balancesResponse[accountAddress] ?? {}
         return Object.values(balances)
