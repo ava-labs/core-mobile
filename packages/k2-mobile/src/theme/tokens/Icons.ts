@@ -20,8 +20,12 @@ import IconGPPMaybe from '../../assets/icons/gpp_maybe.svg'
 import IconErrorOutline from '../../assets/icons/error_outline.svg'
 import IconApple from '../../assets/icons/apple.svg'
 import IconGoogle from '../../assets/icons/google.svg'
+import IconAirDrop from '../../assets/icons/airdrop.svg'
 
 export const Icons = {
+  Custom: {
+    Airdrop: IconAirDrop
+  },
   Alert: {
     IconErrorOutline: IconErrorOutline
   },
