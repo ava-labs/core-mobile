@@ -194,14 +194,12 @@ async function generatePlatformResults(
       const resultObject = resultArray[i]
       const statusId = Number(resultObject?.status_id)
       const comment = `Test case result for ${resultObject?.case_id} and has a status of ${statusId} for ${platform}`
-      const screenshotPath = resultObject?.screenshot
 
       if (resultObject) {
         const testResult = {
           case_id: resultObject?.case_id,
           status_id: statusId,
-          comment: comment,
-          screenshot: screenshotPath
+          comment: comment
         }
         if (!testResults.includes(testResult)) {
           testResults.push(testResult)
