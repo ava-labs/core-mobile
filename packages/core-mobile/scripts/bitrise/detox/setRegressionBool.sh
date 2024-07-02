@@ -1,0 +1,3 @@
+IS_REGRESSION_RUN="true"
+
+envman add --key IS_REGRESSION_RUN --value "$IS_REGRESSION_RUN"

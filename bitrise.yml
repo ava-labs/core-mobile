@@ -374,6 +374,12 @@ workflows:
         - is_enable_public_page: "false"
         - deploy_path: $BITRISE_DEPLOY_DIR/detox
         - is_compress: "true"
+  _set_regression_bool:
+    steps:
+    - script-runner@0:
+        title: Set Regression Bool
+        inputs:
+        - file_path: scripts/bitrise/setRegressionBool.sh
   android:
     before_run:
     - _install-and-set-env
@@ -941,6 +947,7 @@ workflows:
     before_run:
     - _install-and-set-env
     - _set-version
+    - _set_regression_bool
     - _build-ios-simulator
     envs:
     - ENVIRONMENT: production
@@ -970,9 +977,11 @@ workflows:
     - POST_TO_TESTRAIL: "true"
       opts:
         is_expand: false
-    - IS_REGRESSION_RUN: "true"
-      opts:
-        is_expand: false
+    steps:
+    - share-pipeline-variable@1:
+        inputs:
+        - variables: |-
+            IS_REGRESSION_RUN=$IS_REGRESSION_RUN
   ios-internal-e2e-regression-run:
       before_run:
       - _install-and-set-env
