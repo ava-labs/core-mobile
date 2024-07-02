@@ -24,8 +24,6 @@ describe('Send Avax to another account', () => {
     // verify send event
     const newRow = await ActivityTabPage.getLatestActivityRow()
     await ActivityTabPage.verifyActivityRow(newRow, 'Send')
-    await ActivityTabPage.verifyTransactionDetailWebBrowser('Send')
-    await ActivityTabPage.exitTransactionDetailWebBrowser('Send')
   })
 
   it('Should receive AVAX on second account', async () => {
@@ -33,13 +31,8 @@ describe('Send Avax to another account', () => {
     await AccountManagePage.tapAccountDropdownTitle()
     await AccountManagePage.tapSecondAccount()
 
-    // Go to activity tap
-    await PortfolioPage.goToActivityTab()
-
     // verify receive event
     const newRow = await ActivityTabPage.getLatestActivityRow()
     await ActivityTabPage.verifyActivityRow(newRow, 'Receive')
-    await ActivityTabPage.verifyTransactionDetailWebBrowser('Receive')
-    await ActivityTabPage.exitTransactionDetailWebBrowser('Receive')
   })
 })

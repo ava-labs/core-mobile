@@ -191,8 +191,6 @@ class ActivityTabPage {
   }
 
   async getLatestActivityRow() {
-    await delay(5000)
-    await this.refreshActivityPage()
     const newRow = await Action.getAttributes(this.activityListItem)
     return 'elements' in newRow ? newRow.elements[0] : newRow
   }
