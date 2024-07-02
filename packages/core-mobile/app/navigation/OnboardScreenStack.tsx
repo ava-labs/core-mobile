@@ -18,8 +18,8 @@ import { WalletType } from 'services/wallet/types'
 import SignupScreen from './onboarding/SignupScreen'
 import { WelcomeScreenStackParamList } from './onboarding/WelcomeScreenStack'
 import { OnboardScreenProps } from './types'
-import SigninScreen from './onboarding/SigninScreen'
 import { MainHeaderOptions } from './NavUtils'
+import AccessMnemonicWalletScreen from './onboarding/AccessMnemonicWalletScreen'
 
 type NavigationProp = OnboardScreenProps<
   typeof AppNavigation.Onboard.RecoverWithMnemonicStack
@@ -63,8 +63,8 @@ const OnboardScreenStack: FC = () => {
         component={SignupScreen}
       />
       <OnboardingScreenS.Screen
-        name={AppNavigation.Onboard.Signin}
-        component={SigninScreen}
+        name={AppNavigation.Onboard.AccessMnemonicWallet}
+        component={AccessMnemonicWalletScreen}
       />
       <OnboardingScreenS.Screen
         name={AppNavigation.Onboard.Welcome}
@@ -85,7 +85,7 @@ const OnboardScreenStack: FC = () => {
 
 export type OnboardingScreenStackParamList = {
   [AppNavigation.Onboard.Signup]: undefined
-  [AppNavigation.Onboard.Signin]: undefined
+  [AppNavigation.Onboard.AccessMnemonicWallet]: undefined
   [AppNavigation.Onboard
     .Welcome]: NavigatorScreenParams<WelcomeScreenStackParamList>
   [AppNavigation.Onboard.NameYourWallet]: undefined
