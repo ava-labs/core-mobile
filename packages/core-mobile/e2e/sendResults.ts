@@ -73,27 +73,28 @@ A 'case id' is the permanent test case in our suite, a 'test case id' is a part 
     var testRunCaseStatusId = testCaseResultObject.status_id
     var testId = testCaseResultObject.test_id
     var platform = testCaseResultObject.platform
-    if (testRunCaseStatusId === 1) {
-      // Sends a passed test to testrail with no comment
-      resultsToSendToTestrail.push({
-        case_id: testId,
-        status_id: testRunCaseStatusId,
-        platform: platform
-      })
-    } else {
-      // If the test failed then it adds the error stack as a comment to the test case in testrail
-      // var failedTest = await this.getLogFilesForFailedTests(testCaseName)
-      // var errorMessage = fs.readFileSync(`./output_logs/${failedTest}`, 'utf8')
-      resultsToSendToTestrail.push({
-        case_id: testId,
-        status_id: testRunCaseStatusId,
-        screenshot: screenshot,
-        platform: platform
-        //comment: `${errorMessage}`
-      })
-    }
+
+    // Sends a passed test to testrail with no comment
+    resultsToSendToTestrail.push({
+      case_id: testId,
+      status_id: testRunCaseStatusId,
+      platform: platform
+    })
+    // } else {
+    //   // If the test failed then it adds the error stack as a comment to the test case in testrail
+    //   // var failedTest = await this.getLogFilesForFailedTests(testCaseName)
+    //   // var errorMessage = fs.readFileSync(`./output_logs/${failedTest}`, 'utf8')
+    //   resultsToSendToTestrail.push({
+    //     case_id: testId,
+    //     status_id: testRunCaseStatusId,
+    //     screenshot: screenshot,
+    //     platform: platform
+    //     //comment: `${errorMessage}`
+    //   })
+    // }
+    // }
+    return { resultsToSendToTestrail, testCasesToSend }
   }
-  return { resultsToSendToTestrail, testCasesToSend }
 }
 
 export default async function sendResults() {
