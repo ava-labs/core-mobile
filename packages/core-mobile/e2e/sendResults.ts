@@ -192,7 +192,7 @@ async function generatePlatformResults(
       const resultObject = resultArray[i]
       const statusId = Number(resultObject?.status_id)
       const comment = `Test case result for ${resultObject?.case_id} and has a status of ${statusId} for ${platform}`
-      if (resultObject) {
+      if (resultObject.status_id !== 3) {
         const testResult = {
           case_id: resultObject?.case_id,
           status_id: statusId,
