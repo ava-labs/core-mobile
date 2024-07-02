@@ -54,6 +54,18 @@ class ExistingRecoveryPhrasePage {
     return by.text(recoveryPhraseLoc.recoveryPhrase)
   }
 
+  get chooseWalletTitle() {
+    return by.text(recoveryPhraseLoc.chooseWalletTitle)
+  }
+
+  get typeRecoveryPhraseBtn() {
+    return by.text(recoveryPhraseLoc.typeRecoverPhaseBtn)
+  }
+
+  get createNewWalletBtn() {
+    return by.text(recoveryPhraseLoc.createNewWalletBtn)
+  }
+
   async tapContinueBtn() {
     await Action.tap(this.continueBtn)
   }
@@ -129,6 +141,20 @@ class ExistingRecoveryPhrasePage {
     } else {
       await this.recoverMnemonicWallet(recoveryPhrase)
     }
+  }
+
+  async verifyChooseYourExistingWalletPage() {
+    await Assert.isVisible(this.chooseWalletTitle)
+    await Assert.isVisible(this.typeRecoveryPhraseBtn)
+    await Assert.isVisible(this.createNewWalletBtn)
+  }
+  
+  async tapTypeInRecoveryPhaseBtn() {
+    await Action.tap(this.typeRecoveryPhraseBtn)
+  }
+
+  async tapCreateNewWalletBtn() {
+    await Action.tap(this.createNewWalletBtn)
   }
 }
 

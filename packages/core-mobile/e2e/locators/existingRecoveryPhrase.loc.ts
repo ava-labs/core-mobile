@@ -9,5 +9,8 @@ export default {
   accessExistingWalletBtn: 'Access Existing Wallet',
   recoveryPhrase: 'Type in a recovery phrase',
   signInWithRecoveryPhrase: 'Sign in with Recovery Phrase',
-  forgotPinButton: 'Forgot PIN?'
+  forgotPinButton: 'Forgot PIN?',
+  chooseWalletTitle: 'How would you like to access your existing wallet?',
+  typeRecoverPhaseBtn: 'Type in a recovery phrase',
+  createNewWalletBtn: 'Create a new wallet'
 }

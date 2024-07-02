@@ -102,12 +102,14 @@ const SignupScreen: FC = () => {
     return (
       <View sx={{ gap: 16 }}>
         <Button
+          testID="manuallyCreateNewWallet"
           type="secondary"
           size="large"
           onPress={handleSignupWithMnemonic}>
           Manually Create New Wallet
         </Button>
         <Button
+          testID="accessExistingWallet"
           type="secondary"
           size="large"
           onPress={handleAccessExistingWallet}>
@@ -157,6 +159,7 @@ const SignupScreen: FC = () => {
       <View sx={{ gap: 16 }}>
         {shouldShowGoogle && (
           <Button
+            testID="continueWithGoogle"
             type="primary"
             size="large"
             disabled={isRegistering}
@@ -167,6 +170,7 @@ const SignupScreen: FC = () => {
         )}
         {shouldShowApple && (
           <Button
+            testID="continueWithApple"
             type="primary"
             size="large"
             disabled={isRegistering}
