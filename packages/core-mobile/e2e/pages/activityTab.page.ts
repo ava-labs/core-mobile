@@ -122,13 +122,6 @@ class ActivityTabPage {
     await Action.tapElementAtIndex(this.bridgeSVG, 1)
   }
 
-  async verifyIncomingTransaction() {
-    await AccountManagePage.tapAccountsDropDown()
-    await AccountManagePage.tapSecondAccount()
-    await PortfolioPage.tapAvaxNetwork()
-    await PortfolioPage.tapActivityTab()
-  }
-
   async verifyOutgoingTransaction(
     waitTime: number,
     secondAccountAddress: string
@@ -156,13 +149,7 @@ class ActivityTabPage {
   }
 
   async verifyTransactionDetailWebBrowser(transactionType: string) {
-    if (device.getPlatform() === 'android') {
-      await device.disableSynchronization()
-      await this.tapNetworkIcon(0)
-      await device.enableSynchronization()
-    } else {
-      await this.tapNetworkIcon(0)
-    }
+    await this.tapNetworkIcon(0)
     await Assert.isNotVisible(by.text(transactionType))
     await Assert.isNotVisible(AccountManagePage.accountsDropdown)
     await Assert.isNotVisible(BottomsTabsPage.plusIcon)

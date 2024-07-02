@@ -37,7 +37,12 @@ describe('Send Eth to another account', () => {
   })
 
   it('Should receive Eth on second account', async () => {
-    await ActivityTabPage.tapHeaderBack()
-    await ActivityTabPage.verifyIncomingTransaction()
+    // Change default account to the 2nd.
+    await AccountManagePage.tapAccountDropdownTitle()
+    await AccountManagePage.tapSecondAccount()
+
+    // verify receive event
+    const newRow = await ActivityTabPage.getLatestActivityRow()
+    await ActivityTabPage.verifyActivityRow(newRow, 'Receive')
   })
 })
