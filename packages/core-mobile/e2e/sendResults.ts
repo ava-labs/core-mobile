@@ -22,7 +22,6 @@ async function parseResultsFile() {
   for (const result of jsonResultsArray) {
     // Todo add more status ids for different results such as skipped tests or untested
     const statusId = result.testResult
-    const failedScreenshot = result.failedScreenshot
 
     const testName = result.testCase
     const testCaseId = await getTestCaseId(result.testCase)
@@ -34,7 +33,6 @@ async function parseResultsFile() {
         test_id: testCaseId,
         status_id: statusId,
         test_name: testName,
-        failed_screenshot: failedScreenshot,
         platform: platform
       })
     }
@@ -74,7 +72,6 @@ A 'case id' is the permanent test case in our suite, a 'test case id' is a part 
   for (var testCaseResultObject of casesToAddToRun) {
     var testRunCaseStatusId = testCaseResultObject.status_id
     var testId = testCaseResultObject.test_id
-    var screenshot = testCaseResultObject.failed_screenshot
     var platform = testCaseResultObject.platform
     if (testRunCaseStatusId === 1) {
       // Sends a passed test to testrail with no comment
