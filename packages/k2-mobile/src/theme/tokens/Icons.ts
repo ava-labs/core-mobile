@@ -18,8 +18,14 @@ import IconArrowForward from '../../assets/icons/arrow_forward.svg'
 import IconRemoveModerator from '../../assets/icons/remove_moderator.svg'
 import IconGPPMaybe from '../../assets/icons/gpp_maybe.svg'
 import IconErrorOutline from '../../assets/icons/error_outline.svg'
+import IconApple from '../../assets/icons/apple.svg'
+import IconGoogle from '../../assets/icons/google.svg'
+import IconAirDrop from '../../assets/icons/airdrop.svg'
 
 export const Icons = {
+  Custom: {
+    Airdrop: IconAirDrop
+  },
   Alert: {
     IconErrorOutline: IconErrorOutline
   },
@@ -52,6 +58,8 @@ export const Icons = {
     RemoveModerator: IconRemoveModerator
   },
   Logos: {
-    WalletConnect: IconWC
+    Apple: IconApple,
+    WalletConnect: IconWC,
+    Google: IconGoogle
   }
 }

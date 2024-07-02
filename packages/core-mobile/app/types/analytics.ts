@@ -9,7 +9,7 @@ export type AnalyticsEvents = {
   AddContactClicked: undefined
   AddContactFailed: undefined
   AddContactSucceeded: undefined
-  AlreadyHaveAWalletClicked: undefined
+  AccessExistingWalletClicked: undefined
   AnalyticsEnabled: undefined
   AnalyticsDisabled: undefined
   ApplicationLaunched: { FontScale: number }

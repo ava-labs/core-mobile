@@ -20,7 +20,7 @@ function AnalyticsConsentSheet(): JSX.Element {
   }
 
   return (
-    <Sheet title={'Help Us Improve Core'} onClose={handleClose}>
+    <Sheet title={'Unlock Airdrops'} onClose={handleClose}>
       <AnalyticsConsent onDone={handleDone} />
     </Sheet>
   )

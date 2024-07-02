@@ -71,7 +71,7 @@ const AnalyticsConsentScreen = (): JSX.Element => {
     navigate(params.nextScreen)
   }
 
-  return <AnalyticsConsent title={'Help Us Improve'} onDone={handleDone} />
+  return <AnalyticsConsent title={'Unlock Airdrops'} onDone={handleDone} />
 }
 
 export default WelcomeScreenStack
