@@ -8,7 +8,9 @@ import {
   RpcResponse,
   TransactionHistoryResponse,
   parseManifest,
-  Network
+  Network,
+  GetBalancesParams,
+  GetBalancesResponse
 } from '@avalabs/vm-module-types'
 import {
   JsonRpcError,
@@ -21,8 +23,8 @@ export class AVMModule implements Module {
     const result = parseManifest(manifest)
     return result.success ? result.data : undefined
   }
-  getBalances(): Promise<string> {
-    return Promise.resolve('AVM balances')
+  getBalances(_: GetBalancesParams): Promise<GetBalancesResponse> {
+    return Promise.resolve({})
   }
   getTransactionHistory(
     _: GetTransactionHistory
@@ -34,7 +36,8 @@ export class AVMModule implements Module {
       low: { maxPriorityFeePerGas: 0n, maxFeePerGas: 0n },
       medium: { maxPriorityFeePerGas: 0n, maxFeePerGas: 0n },
       high: { maxPriorityFeePerGas: 0n, maxFeePerGas: 0n },
-      baseFee: 0n
+      baseFee: 0n,
+      isFixedFee: true
     })
   }
   getAddress(): Promise<string> {

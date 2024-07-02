@@ -19,7 +19,7 @@ import { getBitcoinProvider } from 'services/network/utils/providerUtils'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { Transaction } from '@sentry/types'
 import { isBtcAddress } from 'utils/isBtcAddress'
-import { NetworkTokenWithBalance } from 'store/balance/types'
+import type { NetworkTokenWithBalance } from '@avalabs/vm-module-types'
 
 class SendServiceBTC implements SendServiceHelper {
   async getTransactionRequest(

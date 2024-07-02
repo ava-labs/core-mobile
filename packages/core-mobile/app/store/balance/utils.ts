@@ -1,12 +1,11 @@
-import {
-  NetworkTokenWithBalance,
-  TokenWithBalanceERC20,
-  PTokenWithBalance,
-  XTokenWithBalance
-} from 'store/balance/types'
+import { PTokenWithBalance, XTokenWithBalance } from 'store/balance/types'
 import { AggregatedAssetAmount } from '@avalabs/glacier-sdk'
 import { Avax } from 'types'
-import { NetworkContractToken } from '@avalabs/vm-module-types'
+import type {
+  NetworkContractToken,
+  NetworkTokenWithBalance,
+  TokenWithBalanceERC20
+} from '@avalabs/vm-module-types'
 
 export function getLocalTokenId(
   token:

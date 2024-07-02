@@ -1,17 +1,15 @@
-import { NetworkContractToken, NetworkToken } from '@avalabs/chains-sdk'
+import { NetworkToken } from '@avalabs/chains-sdk'
 import { BitcoinInputUTXOWithOptionalScript } from '@avalabs/wallets-sdk'
 import BN from 'bn.js'
 import { PChainBalance, XChainBalances } from '@avalabs/glacier-sdk'
 import { Avax } from 'types'
+import {
+  NetworkTokenWithBalance,
+  TokenType,
+  TokenWithBalanceERC20
+} from '@avalabs/vm-module-types'
 
 export type LocalTokenId = string
-
-export enum TokenType {
-  NATIVE = 'NATIVE',
-  ERC20 = 'ERC20',
-  ERC721 = 'ERC721',
-  ERC1155 = 'ERC1155'
-}
 
 type TokenBalanceData = {
   type: TokenType
@@ -47,19 +45,6 @@ export type XTokenWithBalance = Omit<TokenBalanceData, 'utxos'> &
     type: TokenType.NATIVE
     utxos: XChainBalances
     utxoBalances: XPChainUtxoBalances
-  }
-
-export type NetworkTokenWithBalance = TokenBalanceData &
-  TokenMarketData &
-  NetworkToken & {
-    coingeckoId: string
-    type: TokenType.NATIVE
-  }
-
-export type TokenWithBalanceERC20 = TokenBalanceData &
-  TokenMarketData &
-  NetworkContractToken & {
-    type: TokenType.ERC20
   }
 
 export type NftTokenWithBalance = TokenBalanceData &

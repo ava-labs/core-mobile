@@ -1,9 +1,4 @@
-import {
-  NetworkTokenWithBalance,
-  TokenWithBalanceERC20,
-  PTokenWithBalance,
-  XTokenWithBalance
-} from 'store/balance/types'
+import { PTokenWithBalance, XTokenWithBalance } from 'store/balance/types'
 import { Network } from '@avalabs/chains-sdk'
 import { Account } from 'store/account/types'
 import { getAddressByNetwork } from 'store/account/utils'
@@ -12,6 +7,10 @@ import { BalanceServiceProvider } from 'services/balance/types'
 import { findAsyncSequential } from 'utils/Utils'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { Transaction } from '@sentry/types'
+import type {
+  NetworkTokenWithBalance,
+  TokenWithBalanceERC20
+} from '@avalabs/vm-module-types'
 import BtcBalanceService from './BtcBalanceService'
 import EvmBalanceService from './EvmBalanceService'
 

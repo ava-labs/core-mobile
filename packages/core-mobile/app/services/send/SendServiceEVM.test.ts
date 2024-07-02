@@ -4,9 +4,9 @@ import mockAccounts from 'tests/fixtures/accounts.json'
 import mockNetworks from 'tests/fixtures/networks.json'
 import BN from 'bn.js'
 import glacierTokenList from 'tests/fixtures/glacierTokenList.json'
-import { convertNativeToTokenWithBalance } from 'services/balance/nativeTokenConverter'
-import { TokenType } from 'store/balance/types'
 import { JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
+import { TokenType } from '@avalabs/vm-module-types'
+import { convertNativeToTokenWithBalance } from 'services/balance/nativeTokenConverter'
 import { SendErrorMessage, SendState } from './types'
 
 const mockEstimateGas = jest.fn()

@@ -1,11 +1,10 @@
 import { Network } from '@avalabs/chains-sdk'
+import { PTokenWithBalance, XTokenWithBalance } from 'store/balance/types'
+import { Transaction } from '@sentry/types'
 import {
   NetworkTokenWithBalance,
-  TokenWithBalanceERC20,
-  PTokenWithBalance,
-  XTokenWithBalance
-} from 'store/balance/types'
-import { Transaction } from '@sentry/types'
+  TokenWithBalanceERC20
+} from '@avalabs/vm-module-types'
 
 export type TokenAddress = string
 

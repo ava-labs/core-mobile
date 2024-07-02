@@ -13,8 +13,9 @@ import SearchBar from 'components/SearchBar'
 import { useNavigation } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
 import { WalletScreenProps } from 'navigation/types'
-import { LocalTokenWithBalance, TokenType } from 'store/balance/types'
+import { LocalTokenWithBalance } from 'store/balance/types'
 import ZeroState from 'components/ZeroState'
+import { TokenType } from '@avalabs/vm-module-types'
 
 type NavigationProp = WalletScreenProps<
   typeof AppNavigation.Wallet.TokenManagement
