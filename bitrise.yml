@@ -984,5 +984,9 @@ workflows:
           title: Detox
           inputs:
           - file_path: scripts/bitrise/detox/iosInternalRegressionRunner.sh
+      - share-pipeline-variable@1:
+          inputs:
+          - variables: |-
+              IS_REGRESSION_RUN=$IS_REGRESSION_RUN
 
       
