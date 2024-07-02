@@ -150,7 +150,7 @@ export async function isResultExistsInTestrail(runID: number, caseId: number) {
 }
 
 // Updates the results for an existing test run or an empty test run
-// eslint-disable-next-line max-params
+// eslint-disable-next-line max-params, sonarjs/cognitive-complexity
 async function generatePlatformResults(
   testCasesToSend: any,
   resultsToSendToTestrail: [],
@@ -194,7 +194,6 @@ async function generatePlatformResults(
       const resultObject = resultArray[i]
       const statusId = Number(resultObject?.status_id)
       const comment = `Test case result for ${resultObject?.case_id} and has a status of ${statusId} for ${platform}`
-
       if (resultObject) {
         const testResult = {
           case_id: resultObject?.case_id,
