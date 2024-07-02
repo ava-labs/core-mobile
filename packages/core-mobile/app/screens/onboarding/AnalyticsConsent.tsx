@@ -1,9 +1,14 @@
 import React, { useEffect } from 'react'
 import { Space } from 'components/Space'
-import { Linking, ScrollView } from 'react-native'
-import { PRIVACY_POLICY_URL } from 'resources/Constants'
 import { useDispatch } from 'react-redux'
-import { Button, Text, View } from '@avalabs/k2-mobile'
+import {
+  Button,
+  Icons,
+  ScrollView,
+  Text,
+  View,
+  useTheme
+} from '@avalabs/k2-mobile'
 import { ViewOnceKey, setViewOnce } from 'store/viewOnce'
 import { useAnalyticsConsent } from 'hooks/useAnalyticsConsent'
 
@@ -15,10 +20,9 @@ type Props = {
 const AnalyticsConsent = ({ title, onDone }: Props): JSX.Element => {
   const dispatch = useDispatch()
   const { accept, reject } = useAnalyticsConsent()
-
-  function openPrivacyPolicy(): void {
-    Linking.openURL(PRIVACY_POLICY_URL)
-  }
+  const {
+    theme: { colors }
+  } = useTheme()
 
   function acceptAnalytics(): void {
     accept()
@@ -39,6 +43,7 @@ const AnalyticsConsent = ({ title, onDone }: Props): JSX.Element => {
   return (
     <>
       <ScrollView
+        sx={{ zIndex: 100 }}
         contentContainerStyle={{
           minHeight: '100%',
           paddingHorizontal: 16,
@@ -49,41 +54,39 @@ const AnalyticsConsent = ({ title, onDone }: Props): JSX.Element => {
             <Text variant="heading3">{title}</Text>
           </>
         )}
-        <Space y={12} />
+        <Space y={24} />
         <Text variant="body1">
-          Core would like to gather data using local storage and similar
-          technologies to help us understand how our users interact with Core.
+          As a Core user, you have the option to opt-in for{' '}
+          <Text variant="body1" sx={{ fontWeight: '700' }}>
+            airdrop rewards
+          </Text>{' '}
+          based on your activity and engagement. Core will collect anonymous
+          interaction data to power this feature.
         </Text>
         <Space y={16} />
         <Text variant="body1">
-          {
-            'This enables us to develop improvements and enhance your experience, to find out more you can read our '
-          }
-          <Text
-            variant="body1"
-            sx={{ color: '$blueMain' }}
-            onPress={openPrivacyPolicy}>
-            Privacy Policy
-          </Text>
-          .
-        </Text>
-        <Space y={16} />
-        <Text variant="body1">
-          You can always opt out by visiting the settings page.
-        </Text>
-        <Space y={16} />
-        <Text variant="body1">
-          Core will <Text sx={{ fontWeight: '700' }}>never</Text> sell or share
-          data.
+          Core is committed to protecting your privacy. We will{' '}
+          <Text variant="body1" sx={{ fontWeight: '700' }}>
+            never
+          </Text>{' '}
+          sell or share your data. If you wish, you can disable this at any time
+          in the settings menu.
         </Text>
       </ScrollView>
       <View sx={{ padding: 16 }}>
+        <View sx={{ position: 'absolute', top: -250, right: -95 }}>
+          <Icons.Custom.Airdrop
+            width={320}
+            height={320}
+            color={colors.$neutral800}
+          />
+        </View>
         <Button
           size="xlarge"
           type="primary"
           onPress={acceptAnalytics}
           testID="iAgreeBtn">
-          I Agree
+          Unlock
         </Button>
         <Space y={16} />
         <Button
