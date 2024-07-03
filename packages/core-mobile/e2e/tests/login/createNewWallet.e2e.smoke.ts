@@ -3,8 +3,6 @@
  * @jest-environment ./environment.ts
  */
 import portfolioPage from '../../pages/portfolio.page'
-// import Assert from '../../helpers/assertions'
-// import Actions from '../../helpers/actions'
 import newRecoveryPhrasePage from '../../pages/newRecoveryPhrase.page'
 import analyticsConsentPage from '../../pages/analyticsConsent.page'
 import verifyPhrasePage from '../../pages/verifyPhrase.page'
@@ -23,15 +21,15 @@ describe('Create new wallet', () => {
   })
 
   it('should view create new wallet via Access Existing Wallet', async () => {
+    // Start with `Access Existing Wallet` flow
     await onboardingPage.verifyOnboardingPage()
     await onboardingPage.tapAccessExistingWallet()
-
+    // Verify `choose your existing wallet` page
     await existingRecoveryPhrasePage.verifyChooseYourExistingWalletPage()
     await existingRecoveryPhrasePage.tapTypeInRecoveryPhaseBtn()
-
+    // Verify `choose your existing wallet` page navigation
     await analyticsConsentPage.verifyAnalysticsContentPage()
     await commonElsPage.tapBackButton()
-
     await existingRecoveryPhrasePage.tapCreateNewWalletBtn()
     await analyticsConsentPage.verifyAnalysticsContentPage()
     await analyticsConsentPage.tapNoThanksBtn()
@@ -39,6 +37,7 @@ describe('Create new wallet', () => {
   })
 
   it('should view proper page title and action icons', async () => {
+    // Start with `Manually Create New Wallet` flow
     await device.launchApp({ newInstance: true })
     await onboardingPage.verifyOnboardingPage()
     await onboardingPage.tapManuallyCreateNewWallet()
