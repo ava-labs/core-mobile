@@ -78,12 +78,6 @@ export class SendServiceEVM implements SendServiceHelper {
               SendErrorMessage.INVALID_ADDRESS
             )
 
-          if (gasLimit === 0)
-            return SendServiceEVM.getErrorState(
-              newState,
-              SendErrorMessage.INVALID_GAS_LIMIT
-            )
-
           if (!defaultMaxFeePerGas || defaultMaxFeePerGas === 0n)
             return SendServiceEVM.getErrorState(
               newState,

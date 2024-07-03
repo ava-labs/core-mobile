@@ -162,7 +162,7 @@ export const SendTokenContextProvider = ({
         })
         .catch(reason => {
           setSendStatus('Fail')
-
+          setError(reason.message)
           AnalyticsService.capture('SendTransactionFailed', {
             errorMessage: reason.message,
             chainId: activeNetwork.chainId
@@ -215,7 +215,10 @@ export const SendTokenContextProvider = ({
         setError(state.error ? state.error.message : undefined)
         setCanSubmit(state.canSubmit ?? false)
       })
-      .catch(Logger.error)
+      .catch(e => {
+        setError(e.message)
+        Logger.error(e)
+      })
   }
 
   const state: SendTokenContextState = {
