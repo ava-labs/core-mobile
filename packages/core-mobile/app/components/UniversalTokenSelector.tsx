@@ -18,6 +18,7 @@ import AppNavigation from 'navigation/AppNavigation'
 import { WalletScreenProps } from 'navigation/types'
 import { formatLargeCurrency } from 'utils/Utils'
 import { Amount } from 'types'
+import { Text } from '@avalabs/k2-mobile'
 
 interface Props {
   selectedToken?: TokenWithBalance
@@ -158,7 +159,9 @@ const UniversalTokenSelector: FC<Props> = ({
       <Space y={8} />
       <Row>
         {hasError && (
-          <AvaText.Body3 color={theme.colorError}>{error}</AvaText.Body3>
+          <Text variant="body2" sx={{ color: '$dangerMain' }}>
+            {error}
+          </Text>
         )}
         <FlexSpacer />
         <AvaText.Body2>
