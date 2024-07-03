@@ -105,7 +105,11 @@ export const PrimaryNetworkMethodIcon = ({
         justifyContent: 'center',
         alignItems: 'center'
       }}>
-      <Icon width={20} height={20} />
+      <Icon
+        width={20}
+        height={20}
+        testID={`primary_network_icon__${methodName}`}
+      />
     </View>
   )
 }
