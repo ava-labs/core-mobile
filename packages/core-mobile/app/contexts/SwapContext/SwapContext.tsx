@@ -25,6 +25,7 @@ import { RpcMethod } from 'store/rpc/types'
 import { useInAppRequest } from 'hooks/useInAppRequest'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { showTransactionErrorToast } from 'utils/toast'
+import { audioFeedback, Audios } from 'utils/AudioFeedback'
 import { performSwap } from './performSwap/performSwap'
 
 // success here just means the transaction was sent, not that it was successful/confirmed
@@ -177,6 +178,7 @@ export const SwapContextProvider = ({
               txHash: result?.swapTxHash ?? '',
               chainId: activeNetwork.chainId
             })
+            audioFeedback(Audios.Send)
           }
         })
         .catch(Logger.error)
