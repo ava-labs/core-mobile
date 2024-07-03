@@ -756,10 +756,10 @@ const Bridge: FC = () => {
         }}>
         {isPending ? (
           <>
-            <ActivityIndicator /> Transferring...
+            <ActivityIndicator /> Bridging...
           </>
         ) : (
-          'Transfer'
+          'Bridge'
         )}
       </Button>
     )
