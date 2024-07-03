@@ -26,7 +26,7 @@ import { mustNumber } from 'utils/JsTools'
 import { BitcoinSendTransactionApproveData } from 'store/rpc/handlers/bitcoin_sendTransaction/bitcoin_sendTransaction'
 import { SendState } from 'services/send/types'
 import { NetworkLogo } from 'screens/network/NetworkLogo'
-import { isBridge } from 'utils/network/isBridge'
+import { isBridge } from 'utils/isBridge'
 
 type BitcoinSendTransactionScreenProps = WalletScreenProps<
   typeof AppNavigation.Modal.BitcoinSendTransaction
