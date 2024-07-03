@@ -1,4 +1,3 @@
-/* eslint-disable sonarjs/cognitive-complexity */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // @ts-nocheck comment at the top of the file
 /* eslint-disable no-var */
@@ -6,12 +5,11 @@
 import {
   getTestCaseId,
   api,
-  createNewTestSectionsAndCases,
-  getTestCasesFromRun
+  createNewTestSectionsAndCases
 } from './generateTestrailObjects'
 import getTestLogs, { isResultPresent } from './getResultsFromLogs'
-// const fs = require('fs')
-// const path = require('path')
+const fs = require('fs')
+const path = require('path')
 
 async function parseResultsFile() {
   const jsonResultsArray = await getTestLogs()
@@ -23,11 +21,11 @@ async function parseResultsFile() {
   for (const result of jsonResultsArray) {
     // Todo add more status ids for different results such as skipped tests or untested
     const statusId = result.testResult
-    const failedScreenshot = result.failedScreenshot
 
     const testName = result.testCase
     const testCaseId = await getTestCaseId(result.testCase)
     const platform = result.platform
+    const screenshot = result.screen_shot
 
     if (testCaseId !== null) {
       testIdArrayForTestrail.push(testCaseId)
@@ -35,8 +33,8 @@ async function parseResultsFile() {
         test_id: testCaseId,
         status_id: statusId,
         test_name: testName,
-        failed_screenshot: failedScreenshot,
-        platform: platform
+        platform: platform,
+        screen_shot: screenshot
       })
     }
   }
@@ -45,7 +43,6 @@ async function parseResultsFile() {
 
 export async function prepareResults() {
   const resultsToSendObject = await parseResultsFile()
-
   const testIdArrayForTestrail = resultsToSendObject.testIdArrayForTestrail
   const casesToAddToRun = resultsToSendObject.casesToAddToRun
 
@@ -64,6 +61,7 @@ export async function prepareFinalResults() {
   const preparedResults = await prepareResults()
   const casesToAddToRun = preparedResults.casesToAddToRun
   const testCasesToSend = preparedResults.testCasesToSend
+
   /*/ 
 Creates an array of test case objects from the current test run in testrail. This is done because a 'test case id' in a test run is different than a 'case id'.
 A 'case id' is the permanent test case in our suite, a 'test case id' is a part of the test run only. It can get confusing so please be sure to ask questions if you need help.
@@ -72,31 +70,35 @@ A 'case id' is the permanent test case in our suite, a 'test case id' is a part 
   var resultsToSendToTestrail = []
 
   // This takes the array of tests in the test run and applies the results to each of the tests
-  for (var testCaseResultObject of casesToAddToRun) {
+  casesToAddToRun.forEach(testCaseResultObject => {
     var testRunCaseStatusId = testCaseResultObject.status_id
     var testId = testCaseResultObject.test_id
-    var screenshot = testCaseResultObject.failed_screenshot
     var platform = testCaseResultObject.platform
-    if (testRunCaseStatusId === 1) {
-      // Sends a passed test to testrail with no comment
-      resultsToSendToTestrail.push({
-        case_id: testId,
-        status_id: testRunCaseStatusId,
-        platform: platform
-      })
-    } else {
-      // If the test failed then it adds the error stack as a comment to the test case in testrail
-      // var failedTest = await this.getLogFilesForFailedTests(testCaseName)
-      // var errorMessage = fs.readFileSync(`./output_logs/${failedTest}`, 'utf8')
-      resultsToSendToTestrail.push({
-        case_id: testId,
-        status_id: testRunCaseStatusId,
-        screenshot: screenshot,
-        platform: platform
-        //comment: `${errorMessage}`
-      })
-    }
-  }
+    var testCaseName = testCaseResultObject.test_name
+    var screenshot = testCaseResultObject.screen_shot
+
+    // Sends a passed test to testrail with no comment
+    resultsToSendToTestrail.push({
+      case_id: testId,
+      status_id: testRunCaseStatusId,
+      platform: platform,
+      test_name: testCaseName,
+      screenshot: screenshot
+    })
+  })
+  // } else {
+  //   // If the test failed then it adds the error stack as a comment to the test case in testrail
+  //   // var failedTest = await this.getLogFilesForFailedTests(testCaseName)
+  //   // var errorMessage = fs.readFileSync(`./output_logs/${failedTest}`, 'utf8')
+  //   resultsToSendToTestrail.push({
+  //     case_id: testId,
+  //     status_id: testRunCaseStatusId,
+  //     screenshot: screenshot,
+  //     platform: platform
+  //     //comment: `${errorMessage}`
+  //   })
+  // }
+  // }
   return { resultsToSendToTestrail, testCasesToSend }
 }
 
@@ -104,11 +106,6 @@ export default async function sendResults() {
   const preparedFinalResults = await prepareFinalResults()
   const testCasesToSend = preparedFinalResults.testCasesToSend
   const resultsToSendToTestrail = preparedFinalResults.resultsToSendToTestrail
-
-  console.log(
-    'The results to send to testrail are ' +
-      JSON.stringify(resultsToSendToTestrail)
-  )
 
   if (process.env.POST_TO_TESTRAIL === 'true') {
     if (await isResultPresent('android')) {
@@ -122,7 +119,7 @@ export default async function sendResults() {
       )
     }
     if (await isResultPresent('ios')) {
-      const runID = process.env.IOS_TESTRAIL_RUN_ID
+      const runID = Number(process.env.IOS_TESTRAIL_RUN_ID)
       console.log('The run id is ' + runID)
       await generatePlatformResults(
         testCasesToSend,
@@ -159,83 +156,72 @@ async function generatePlatformResults(
   runId?: number
 ) {
   try {
-    let resultArray = resultsToSendToTestrail.filter(
-      result => result.platform === platform
+    var resultArray = resultsToSendToTestrail
+    // Gets the existing test cases in the test run
+    // const existingTestCases = await getTestCasesFromRun(runId)
+    // Adds the existing test case results to the results array so they are not overwritten in testrail when using the updateRun endpoint
+    // resultArray = resultArray.concat(existingTestCases)
+    // Add already existing test cases to the testCasesToSend array
+    // Takes the array of test cases and adds them to the test run
+    await api.updateRun(Number(runId), testCasesToSend)
+  } catch (TestRailException) {
+    console.log(
+      'Invalid test case ids found in ' +
+        testCasesToSend.case_ids +
+        ' with run id ' +
+        Number(runId)
     )
-    try {
-      const existingTestCases = await getTestCasesFromRun(runId)
-      resultArray.forEach((result: any) => {
-        existingTestCases.forEach((testCase: any) => {
-          if (testCase.case_id === result.case_id && testCase.status_id === 5) {
-            console.log('removed ' + testCase.case_id + ' from the array')
-            existingTestCases.splice(testCase, 1)
-          }
-          if (testCase.status_id === 3) {
-            existingTestCases.splice(testCase, 1)
-          }
-        })
-      })
-      // Adds the existing test case results to the results array so they are not overwritten in testrail when using the updateRun endpoint
-      resultArray = resultArray.concat(existingTestCases)
-      // Add already existing test cases to the testCasesToSend array
-      if (existingTestCases.length > 0) {
-        existingTestCases.forEach((testCase: number) => {
-          testCasesToSend.case_ids.push(testCase.case_id)
-        })
-      }
-      // Takes the array of test cases and adds them to the test run
-      await api.updateRun(Number(runId), testCasesToSend)
-    } catch (TestRailException) {
-      console.log(
-        'Invalid test case ids found in ' +
-          testCasesToSend.case_ids +
-          ' with run id ' +
-          runId
+  }
+
+  const testResults = []
+  const failedTests = []
+  for (let i = 0; i < resultArray.length; i++) {
+    const resultObject = resultArray[i]
+    const statusId = Number(resultObject?.status_id)
+    const comment = `Test case result for ${resultObject?.case_id} and has a status of ${statusId} for ${platform}`
+    const testName = resultObject?.test_name
+    const screenshot = resultObject?.screenshot
+
+    const failedTest = {
+      case_id: resultObject?.case_id,
+      status_id: statusId,
+      comment: comment,
+      test_name: testName,
+      screenshot: screenshot
+    }
+
+    if (statusId === 5) {
+      failedTests.push(failedTest)
+    }
+
+    const testResult = {
+      case_id: resultObject?.case_id,
+      status_id: statusId,
+      comment: comment
+    }
+    testResults.push(testResult)
+  }
+
+  // Send the results to testrail
+  await api.addResultsForCases(Number(runId), {
+    results: testResults
+  })
+
+  // Adds the screenshot to the test case in testrail if the test failed
+  for (let i = 0; i < failedTests.length; i++) {
+    if (failedTests[i].status_id === 5 && failedTests[i].screenshot) {
+      // This is the path to the screenshot for when the test fails
+      const failScreenshot = path.resolve(
+        `./e2e/artifacts/${platform}/${failedTests[i].screenshot}`
       )
-    }
-
-    const testResults = []
-    for (let i = 0; i < resultArray.length; i++) {
-      const resultObject = resultArray[i]
-      const statusId = Number(resultObject?.status_id)
-      const comment = `Test case result for ${resultObject?.case_id} and has a status of ${statusId} for ${platform}`
-      const screenshotPath = resultObject?.screenshot
-
-      if (resultObject) {
-        const testResult = {
-          case_id: resultObject?.case_id,
-          status_id: statusId,
-          comment: comment,
-          screenshot: screenshotPath
+      if (failScreenshot) {
+        const failedPayload = {
+          name: 'failed.png',
+          value: await fs.createReadStream(failScreenshot)
         }
-        testResults.push(testResult)
+        // Attaches the screenshot to the corressponding case in the test run
+        await api.addAttachmentToCase(failedTests[i].case_id, failedPayload)
       }
     }
-
-    // Send the results to testrail
-    await api.addResultsForCases(Number(runId), {
-      results: testResults
-    })
-
-    // Adds the screenshot to the test case in testrail if the test failed
-    for (let i = 0; i < testResults.length; i++) {
-      if (testResults[i].status_id === 5 && testResults[i].screenshot) {
-        return
-        //  // This is the path to the screenshot for when the test fails
-        // const failScreenshot = path.resolve(
-        //   `./e2e/artifacts/${platform}/${testResults[i].screenshot}`
-        // )
-        // if (failScreenshot) {
-        //   const failedPayload = {
-        //     name: 'failed.png',
-        //     value: await fs.createReadStream(failScreenshot)
-        //   }
-        //   // Attaches the screenshot to the corressponding case in the test run
-        //   await api.addAttachmentToCase(testResults[i].case_id, failedPayload)
-        // }
-      }
-    }
-  } catch (error) {
-    console.log(error)
   }
 }

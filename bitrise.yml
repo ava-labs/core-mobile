@@ -846,7 +846,7 @@ workflows:
     - USE_SEEDLESS_GAMMA: "true"
       opts:
         is_expand: false
-    - POST_TO_TESTRAIL: "false"
+    - POST_TO_TESTRAIL: "true"
       opts:
         is_expand: false
   ios-internal-e2e-run:
@@ -937,6 +937,47 @@ workflows:
           title: Detox
           inputs:
           - file_path: scripts/bitrise/detox/iosCoreWebTestRunner.sh
+  ios-internal-e2e-regression:
+    before_run:
+    - _install-and-set-env
+    - _set-version
+    - _build-ios-simulator
+    envs:
+    - ENVIRONMENT: production
+      opts:
+        is_expand: false
+    - PLATFORM: iOS
+      opts:
+        is_expand: false
+    - IOS_CONFIGURATION: Release
+      opts:
+        is_expand: false
+    - IOS_SCHEME: AvaxWalletInternal
+      opts:
+        is_expand: false
+    - APP_TITLE: Core Mobile Internal
+      opts:
+        is_expand: false
+    - E2E: "true"
+      opts:
+        is_expand: false
+    - USE_TEST_FEATURE_FLAGS: "true"
+      opts:
+        is_expand: false
+    - USE_SEEDLESS_GAMMA: "true"
+      opts:
+        is_expand: false
+    - POST_TO_TESTRAIL: "true"
+      opts:
+        is_expand: false
+    - IS_REGRESSION_RUN: "true"
+      opts:
+        is_expand: false
+    steps:
+    - share-pipeline-variable@1:
+        inputs:
+        - variables: |-
+            IS_REGRESSION_RUN=$IS_REGRESSION_RUN
   ios-internal-e2e-regression-run:
       before_run:
       - _install-and-set-env
@@ -974,6 +1015,9 @@ workflows:
         opts:
           is_expand: false 
       - TESTRAIL_RUN_ID: $IOS_TESTRAIL_RUN_ID
+        opts:
+          is_expand: false
+      - IS_REGRESSION_RUN: "true"
         opts:
           is_expand: false
       steps:
