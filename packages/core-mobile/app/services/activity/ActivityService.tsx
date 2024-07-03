@@ -1,8 +1,6 @@
 import { Network, NetworkVMType } from '@avalabs/chains-sdk'
 import { getAddressByNetwork } from 'store/account/utils'
 import ModuleManager from 'vmModule/ModuleManager'
-import { NULL_ADDRESS } from 'screens/bridge/utils/bridgeUtils'
-import UnifiedBridgeService from 'services/bridge/UnifiedBridgeService'
 import Logger from 'utils/Logger'
 import BtcActivityService from './BtcActivityService'
 import PrimaryActivityService from './PrimaryActivityService'
@@ -63,15 +61,8 @@ export class ActivityService {
           offset: pageSize
         })
 
-        const bridgeAddresses = [
-          ...UnifiedBridgeService.getBridgeAddresses().map(item =>
-            item.toLowerCase()
-          ),
-          NULL_ADDRESS
-        ]
-
         const transactions = rawTxHistory.transactions.map(tx =>
-          convertTransaction(tx, bridgeAddresses)
+          convertTransaction(tx)
         )
 
         return {
