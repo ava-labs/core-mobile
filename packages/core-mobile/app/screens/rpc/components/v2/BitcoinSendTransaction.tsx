@@ -26,7 +26,8 @@ import { mustNumber } from 'utils/JsTools'
 import { BitcoinSendTransactionApproveData } from 'store/rpc/handlers/bitcoin_sendTransaction/bitcoin_sendTransaction'
 import { SendState } from 'services/send/types'
 import { NetworkLogo } from 'screens/network/NetworkLogo'
-import { isBridge } from 'utils/isBridge'
+import { selectBridgeCriticalConfig } from 'store/bridge'
+import { isBtcBridge } from 'utils/isBtcBridge'
 
 type BitcoinSendTransactionScreenProps = WalletScreenProps<
   typeof AppNavigation.Modal.BitcoinSendTransaction
@@ -47,7 +48,7 @@ const BitcoinSendTransaction = (): JSX.Element => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const btcNetwork = getBitcoinNetwork(isDeveloperMode)
   const { sendState } = data
-
+  const bridgeConfig = useSelector(selectBridgeCriticalConfig)
   const allAccounts = useSelector(selectAccounts)
   const toAccountName =
     Object.values(allAccounts).find(a => a.addressBTC === sendState.address)
@@ -114,10 +115,10 @@ const BitcoinSendTransaction = (): JSX.Element => {
   )
 
   const title = useMemo(() => {
-    return sendState.address && isBridge(sendState.address)
-      ? 'Bridge'
+    return sendState.address && isBtcBridge(sendState.address, bridgeConfig)
+      ? 'Confirm Bridge'
       : 'Approve Transaction'
-  }, [sendState.address])
+  }, [bridgeConfig, sendState.address])
 
   const renderNetwork = (): JSX.Element | undefined => {
     return (
