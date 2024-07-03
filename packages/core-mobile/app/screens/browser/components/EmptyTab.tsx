@@ -12,7 +12,6 @@ import { Space } from 'components/Space'
 import React, { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { AddHistoryPayload, History } from 'store/browser'
-import GoogleSVG from 'assets/icons/google.svg'
 import {
   addHistoryForActiveTab,
   selectAllTabs
@@ -103,7 +102,7 @@ export const EmptyTab = (): JSX.Element => {
                   alignItems: 'center',
                   flexDirection: 'row'
                 }}>
-                <GoogleSVG width={24} height={24} />
+                <Icons.Logos.Google width={24} height={24} />
               </View>
               <Text
                 variant="buttonMedium"

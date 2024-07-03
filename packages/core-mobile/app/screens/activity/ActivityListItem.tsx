@@ -14,7 +14,7 @@ import {
 } from '@avalabs/glacier-sdk'
 import { TransactionType, Transaction } from '@avalabs/vm-module-types'
 import { PrimaryNetworkMethodIcon } from './PrimaryNetworkMethodIcon'
-import { renderNftIcon } from './renderNftIcon'
+import { NftIcon } from './NftIcon'
 
 const windowWidth = Dimensions.get('window').width
 
@@ -37,13 +37,13 @@ const ActivityListItem: FC<Props> = ({ tx, onPress }) => {
       case TransactionType.RECEIVE:
         return 'Receive'
       case TransactionType.NFT_BUY:
-        return 'NFT Buy'
+        return 'Buy NFT'
       case TransactionType.TRANSFER:
         return 'Transfer'
       case TransactionType.NFT_SEND:
-        return 'NFT Send'
+        return 'Send NFT'
       case TransactionType.NFT_RECEIVE:
-        return 'NFT Receive'
+        return 'Receive NFT'
       case PChainTransactionType.ADD_DELEGATOR_TX:
         return 'Add Delegator'
       case PChainTransactionType.ADD_SUBNET_VALIDATOR_TX:
@@ -100,7 +100,9 @@ const ActivityListItem: FC<Props> = ({ tx, onPress }) => {
           tx.txType === TransactionType.NFT_RECEIVE) &&
         tx.tokens[0]?.imageUri
       ) {
-        return renderNftIcon(tx.tokens[0]?.imageUri)
+        return (
+          <NftIcon nftUrl={tx.tokens[0]?.imageUri} title={tx.tokens[0]?.name} />
+        )
       }
       return (
         <PrimaryNetworkMethodIcon
