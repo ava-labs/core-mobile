@@ -1206,6 +1206,11 @@ PODS:
   - RNSentry (5.24.1):
     - React-Core
     - Sentry/HybridSDK (= 8.29.1)
+  - RNSound (0.11.2):
+    - React-Core
+    - RNSound/Core (= 0.11.2)
+  - RNSound/Core (0.11.2):
+    - React-Core
   - RNSVG (15.1.0):
     - React-Core
   - SDWebImage (5.11.1):
@@ -1316,6 +1321,7 @@ DEPENDENCIES:
   - RNScreens (from `../node_modules/react-native-screens`)
   - RNSensors (from `../node_modules/react-native-sensors`)
   - "RNSentry (from `../node_modules/@sentry/react-native`)"
+  - RNSound (from `../node_modules/react-native-sound`)
   - RNSVG (from `../node_modules/react-native-svg`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
@@ -1534,6 +1540,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-sensors"
   RNSentry:
     :path: "../node_modules/@sentry/react-native"
+  RNSound:
+    :path: "../node_modules/react-native-sound"
   RNSVG:
     :path: "../node_modules/react-native-svg"
   Yoga:
@@ -1653,6 +1661,7 @@ SPEC CHECKSUMS:
   RNScreens: 17e2f657f1b09a71ec3c821368a04acbb7ebcb46
   RNSensors: e74c8bd9606400c1048ab67af7f41eb2091cb2fc
   RNSentry: 0aefd4f23b45e3c00577c3a18af79b8f8193bcdb
+  RNSound: 6c156f925295bdc83e8e422e7d8b38d33bc71852
   RNSVG: 0eea30725f92fc53f86d2a427ee75f28bdfb8692
   SDWebImage: a7f831e1a65eb5e285e3fb046a23fcfbf08e696d
   SDWebImageWebPCoder: 908b83b6adda48effe7667cd2b7f78c897e5111d
