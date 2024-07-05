@@ -41,6 +41,7 @@ const initAccounts = async (
     const title = await SeedlessService.getAccountName(0)
     const accountTitle = title ?? acc.name
     accounts[acc.index] = { ...acc, name: accountTitle }
+    listenerApi.dispatch(setAccounts(accounts))
 
     // to avoid initial account fetching taking too long,
     // we fetch the remaining accounts in the background
@@ -48,7 +49,8 @@ const initAccounts = async (
       isDeveloperMode,
       walletType,
       activeAccountIndex,
-      listenerApi
+      listenerApi,
+      initialAccounts: accounts // pass the initial account for analytic reporting purposes
     })
   } else if (walletType === WalletType.MNEMONIC) {
     // only add the first account for mnemonic wallet
@@ -62,20 +64,19 @@ const initAccounts = async (
     const accountTitle =
       walletName && walletName.length > 0 ? walletName : acc.name
     accounts[acc.index] = { ...acc, name: accountTitle }
-  }
 
-  listenerApi.dispatch(setAccounts(accounts))
-
-  if (isDeveloperMode === false) {
-    AnalyticsService.captureWithEncryption('AccountAddressesUpdated', {
-      addresses: Object.values(accounts).map(acc => ({
-        address: acc.addressC,
-        addressBtc: acc.addressBTC,
-        addressAVM: acc.addressAVM ?? '',
-        addressPVM: acc.addressPVM ?? '',
-        addressCoreEth: acc.addressCoreEth ?? ''
-      }))
-    })
+    listenerApi.dispatch(setAccounts(accounts))
+    if (isDeveloperMode === false) {
+      AnalyticsService.captureWithEncryption('AccountAddressesUpdated', {
+        addresses: Object.values(accounts).map(account => ({
+          address: account.addressC,
+          addressBtc: account.addressBTC,
+          addressAVM: account.addressAVM ?? '',
+          addressPVM: account.addressPVM ?? '',
+          addressCoreEth: account.addressCoreEth ?? ''
+        }))
+      })
+    }
   }
 }
 
@@ -83,12 +84,14 @@ const fetchingRemainingAccounts = async ({
   isDeveloperMode,
   walletType,
   activeAccountIndex,
-  listenerApi
+  listenerApi,
+  initialAccounts
 }: {
   isDeveloperMode: boolean
   walletType: WalletType
   activeAccountIndex: number
   listenerApi: AppListenerEffectAPI
+  initialAccounts: AccountCollection
 }): Promise<void> => {
   /**
    * note:
@@ -112,9 +115,10 @@ const fetchingRemainingAccounts = async ({
   }
   listenerApi.dispatch(setAccounts(accounts))
 
+  const allAccounts = { ...initialAccounts, ...accounts }
   if (isDeveloperMode === false) {
     AnalyticsService.captureWithEncryption('AccountAddressesUpdated', {
-      addresses: Object.values(accounts).map(acc => ({
+      addresses: Object.values(allAccounts).map(acc => ({
         address: acc.addressC,
         addressBtc: acc.addressBTC,
         addressAVM: acc.addressAVM ?? '',
