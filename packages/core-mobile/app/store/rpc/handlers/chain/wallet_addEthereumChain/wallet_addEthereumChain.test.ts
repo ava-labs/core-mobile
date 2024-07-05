@@ -1,4 +1,4 @@
-import { ethErrors } from 'eth-rpc-errors'
+import { rpcErrors } from '@metamask/rpc-errors'
 import { RpcMethod, RpcProvider, RpcRequest } from 'store/rpc/types'
 import mockSession from 'tests/fixtures/walletConnect/session.json'
 import mockNetworks from 'tests/fixtures/networks.json'
@@ -119,9 +119,7 @@ const testHandleInvalidParams = async (params: unknown) => {
 
   expect(result).toEqual({
     success: false,
-    error: ethErrors.rpc.invalidParams({
-      message: 'Chain info is invalid'
-    })
+    error: rpcErrors.invalidParams('Chain info is invalid')
   })
 }
 
@@ -135,7 +133,7 @@ const testApproveInvalidData = async (data: unknown) => {
 
   expect(result).toEqual({
     success: false,
-    error: ethErrors.rpc.internal('Invalid approve data')
+    error: rpcErrors.internal('Invalid approve data')
   })
 }
 
@@ -246,9 +244,7 @@ describe('wallet_addEthereumChain handler', () => {
 
       expect(result).toEqual({
         success: false,
-        error: ethErrors.rpc.invalidParams({
-          message: 'RPC url is missing'
-        })
+        error: rpcErrors.invalidParams('RPC url is missing')
       })
     })
 
@@ -262,9 +258,9 @@ describe('wallet_addEthereumChain handler', () => {
 
       expect(result).toEqual({
         success: false,
-        error: ethErrors.rpc.invalidParams({
-          message: 'Expected nativeCurrency param to be defined'
-        })
+        error: rpcErrors.invalidParams(
+          'Expected nativeCurrency param to be defined'
+        )
       })
     })
 
@@ -322,9 +318,7 @@ describe('wallet_addEthereumChain handler', () => {
 
       expect(result).toEqual({
         success: false,
-        error: ethErrors.rpc.invalidParams({
-          message: 'ChainID does not match the rpc url'
-        })
+        error: rpcErrors.invalidParams('ChainID does not match the rpc url')
       })
     })
 

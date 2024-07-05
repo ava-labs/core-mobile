@@ -1,6 +1,7 @@
 import {
   Avalanche,
   BitcoinProvider,
+  DerivationPath,
   JsonRpcBatchInternal
 } from '@avalabs/wallets-sdk'
 import {
@@ -18,7 +19,7 @@ import NetworkService from 'services/network/NetworkService'
 import { Network, NetworkVMType } from '@avalabs/chains-sdk'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { Transaction as SentryTransaction } from '@sentry/types'
-import { Account } from 'store/account'
+import { Account } from 'store/account/types'
 import { RpcMethod } from 'store/rpc/types'
 import Logger from 'utils/Logger'
 import { UnsignedTx, utils } from '@avalabs/avalanchejs'
@@ -67,13 +68,19 @@ class WalletService {
     this.walletType = walletType
   }
 
-  // eslint-disable-next-line max-params
-  public async sign(
-    transaction: SignTransactionRequest,
-    accountIndex: number,
-    network: Network,
+  public async sign({
+    transaction,
+    accountIndex,
+    derivationPath,
+    network,
+    sentryTrx
+  }: {
+    transaction: SignTransactionRequest
+    accountIndex: number
+    derivationPath?: DerivationPath
+    network: Network
     sentryTrx?: SentryTransaction
-  ): Promise<string> {
+  }): Promise<string> {
     return SentryWrapper.createSpanFor(sentryTrx)
       .setContext('svc.wallet.sign')
       .executeAsync(async () => {
@@ -120,7 +127,8 @@ class WalletService {
           accountIndex,
           transaction,
           network,
-          provider
+          provider,
+          derivationPath: derivationPath || DerivationPath.BIP44
         })
       })
   }

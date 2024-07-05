@@ -1,4 +1,4 @@
-import { ethErrors } from 'eth-rpc-errors'
+import { rpcErrors } from '@metamask/rpc-errors'
 import {
   UnsignedTx,
   AVM,
@@ -9,7 +9,7 @@ import {
 import { Avalanche } from '@avalabs/wallets-sdk'
 import { RpcMethod, RpcProvider } from 'store/rpc/types'
 import mockSession from 'tests/fixtures/walletConnect/session.json'
-import { selectActiveAccount } from 'store/account'
+import { selectActiveAccount } from 'store/account/slice'
 import * as Navigation from 'utils/Navigation'
 import AppNavigation from 'navigation/AppNavigation'
 import networkService from 'services/network/NetworkService'
@@ -25,9 +25,8 @@ import {
 
 jest.mock('@avalabs/avalanchejs')
 jest.mock('@avalabs/wallets-sdk')
-jest.mock('store/settings/advanced')
-jest.mock('store/account', () => {
-  const actual = jest.requireActual('store/account')
+jest.mock('store/account/slice', () => {
+  const actual = jest.requireActual('store/account/slice')
   return {
     ...actual,
     selectActiveAccount: jest.fn()
@@ -38,8 +37,8 @@ jest.mock('services/wallet/WalletService')
 jest.mock('utils/Navigation')
 
 const mockIsDeveloperMode = true
-jest.mock('store/settings/advanced', () => {
-  const actual = jest.requireActual('store/settings/advanced')
+jest.mock('store/settings/advanced/slice', () => {
+  const actual = jest.requireActual('store/settings/advanced/slice')
   return {
     ...actual,
     selectIsDeveloperMode: () => mockIsDeveloperMode
@@ -143,9 +142,7 @@ describe('app/store/walletConnectV2/handlers/avalanche_signTransaction/avalanche
 
       expect(result).toEqual({
         success: false,
-        error: ethErrors.rpc.invalidParams({
-          message: 'Missing mandatory param(s)'
-        })
+        error: rpcErrors.invalidParams('Missing mandatory param(s)')
       })
     })
 
@@ -162,9 +159,7 @@ describe('app/store/walletConnectV2/handlers/avalanche_signTransaction/avalanche
 
       expect(result).toEqual({
         success: false,
-        error: ethErrors.rpc.invalidParams({
-          message: 'Missing mandatory param(s)'
-        })
+        error: rpcErrors.invalidParams('Missing mandatory param(s)')
       })
     })
 
@@ -179,9 +174,7 @@ describe('app/store/walletConnectV2/handlers/avalanche_signTransaction/avalanche
 
       expect(result).toEqual({
         success: false,
-        error: ethErrors.rpc.invalidRequest({
-          message: 'No active account found'
-        })
+        error: rpcErrors.invalidRequest('No active account found')
       })
 
       expect(Avalanche.getVmByChainAlias).toHaveBeenCalledWith('X')
@@ -199,9 +192,7 @@ describe('app/store/walletConnectV2/handlers/avalanche_signTransaction/avalanche
 
       expect(result).toEqual({
         success: false,
-        error: ethErrors.rpc.invalidRequest({
-          message: 'Missing signer address'
-        })
+        error: rpcErrors.invalidRequest('Missing signer address')
       })
 
       expect(Avalanche.getVmByChainAlias).toHaveBeenCalledWith('X')
@@ -241,9 +232,7 @@ describe('app/store/walletConnectV2/handlers/avalanche_signTransaction/avalanche
 
       expect(result).toEqual({
         success: false,
-        error: ethErrors.rpc.invalidRequest({
-          message: 'This account has nothing to sign'
-        })
+        error: rpcErrors.invalidRequest('This account has nothing to sign')
       })
 
       expect(Avalanche.getUtxosByTxFromGlacier).toHaveBeenCalledWith({
@@ -285,9 +274,7 @@ describe('app/store/walletConnectV2/handlers/avalanche_signTransaction/avalanche
 
       expect(result).toEqual({
         success: false,
-        error: ethErrors.rpc.invalidRequest({
-          message: 'This account has nothing to sign'
-        })
+        error: rpcErrors.invalidRequest('This account has nothing to sign')
       })
 
       expect(Avalanche.getUtxosByTxFromGlacier).toHaveBeenCalledWith({
@@ -332,9 +319,9 @@ describe('app/store/walletConnectV2/handlers/avalanche_signTransaction/avalanche
 
       expect(result).toEqual({
         success: false,
-        error: ethErrors.rpc.invalidRequest({
-          message: 'Unable to parse transaction data. Unsupported tx type'
-        })
+        error: rpcErrors.invalidRequest(
+          'Unable to parse transaction data. Unsupported tx type'
+        )
       })
 
       expect(utils.addressesFromBytes).toHaveBeenCalledWith([
@@ -695,13 +682,13 @@ describe('app/store/walletConnectV2/handlers/avalanche_signTransaction/avalanche
         2,
         signedTransactionJsonMock
       )
-      expect(walletService.sign).toHaveBeenCalledWith(
-        {
+      expect(walletService.sign).toHaveBeenCalledWith({
+        transaction: {
           tx: unsignedTxMock
         },
-        0,
-        'network'
-      )
+        accountIndex: 0,
+        network: 'network'
+      })
       expect(signedTxMock.getCredentials).toHaveBeenCalled()
       expect(unsignedTxMock.getSigIndices).toHaveBeenCalled()
       expect(Credential).toHaveBeenCalledWith([

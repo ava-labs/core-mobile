@@ -4,7 +4,7 @@ import {
   TokenWithBalanceERC20,
   PTokenWithBalance,
   XTokenWithBalance
-} from 'store/balance'
+} from 'store/balance/types'
 import { ChainId, Network, NetworkVMType } from '@avalabs/chains-sdk'
 import {
   BlockchainId,

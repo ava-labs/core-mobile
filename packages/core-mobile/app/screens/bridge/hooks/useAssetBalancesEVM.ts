@@ -10,7 +10,7 @@ import {
 } from '@avalabs/bridge-sdk'
 import { AssetBalance } from 'screens/bridge/utils/types'
 import { useSelector } from 'react-redux'
-import { selectTokensWithBalance } from 'store/balance'
+import { selectTokensWithBalance } from 'store/balance/slice'
 import { uniqBy } from 'lodash'
 import { isUnifiedBridgeAsset } from '../utils/bridgeUtils'
 import { getEVMAssetBalances } from '../handlers/getEVMAssetBalances'

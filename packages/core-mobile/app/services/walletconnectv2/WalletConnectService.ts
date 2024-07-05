@@ -3,7 +3,8 @@ import { EngineTypes, SessionTypes } from '@walletconnect/types'
 import { IWeb3Wallet, Web3Wallet } from '@walletconnect/web3wallet'
 import { getSdkError } from '@walletconnect/utils'
 import Config from 'react-native-config'
-import { EVM_IDENTIFIER, RpcError } from 'store/rpc/types'
+import { RpcError } from '@avalabs/vm-module-types'
+import { EVM_IDENTIFIER } from 'store/rpc/types'
 import { assertNotUndefined } from 'utils/assertions'
 import Logger from 'utils/Logger'
 import promiseWithTimeout from 'utils/js/promiseWithTimeout'
@@ -148,7 +149,10 @@ class WalletConnectService {
     const response = {
       id: requestId,
       jsonrpc: '2.0',
-      error
+      error: {
+        code: error.code,
+        message: error.message
+      }
     }
 
     await this.client.respondSessionRequest({ topic, response })

@@ -9,6 +9,10 @@ import {
   TransactionHistoryResponse,
   parseManifest
 } from '@avalabs/vm-module-types'
+import {
+  JsonRpcError,
+  OptionalDataWithOptionalCause
+} from '@metamask/rpc-errors'
 import manifest from './avm.manifest.json'
 
 export class AVMModule implements Module {
@@ -38,7 +42,11 @@ export class AVMModule implements Module {
   getTokens(_: number): Promise<NetworkContractToken[]> {
     return Promise.resolve([])
   }
-  onRpcRequest(request: RpcRequest): Promise<RpcResponse<unknown, Error>> {
+  onRpcRequest(
+    request: RpcRequest
+  ): Promise<
+    RpcResponse<unknown, JsonRpcError<OptionalDataWithOptionalCause>>
+  > {
     throw new Error(`Method not implemented: ${request.method}`)
   }
 }

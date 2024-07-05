@@ -61,13 +61,16 @@ export class MnemonicWallet implements Wallet {
     return btcWallet
   }
 
-  private getEvmSigner(accountIndex: number): BaseWallet {
+  private getEvmSigner(
+    accountIndex: number,
+    derivationPath: DerivationPath
+  ): BaseWallet {
     const start = now()
 
     const wallet = getWalletFromMnemonic(
       this.mnemonic,
       accountIndex,
-      DerivationPath.BIP44
+      derivationPath
     )
 
     Logger.info('evmWallet getWalletFromMnemonic', now() - start)
@@ -93,15 +96,20 @@ export class MnemonicWallet implements Wallet {
   private async getSigner({
     accountIndex,
     network,
-    provider
+    provider,
+    derivationPath
   }: {
     accountIndex: number
     network: Network
     provider: JsonRpcBatchInternal | BitcoinProvider | Avalanche.JsonRpcProvider
+    derivationPath?: DerivationPath
   }): Promise<BitcoinWallet | BaseWallet | Avalanche.SimpleSigner> {
     switch (network.vmName) {
       case NetworkVMType.EVM:
-        return this.getEvmSigner(accountIndex)
+        return this.getEvmSigner(
+          accountIndex,
+          derivationPath ?? DerivationPath.BIP44
+        )
       case NetworkVMType.BITCOIN:
         if (!(provider instanceof BitcoinProvider)) {
           throw new Error(
@@ -155,7 +163,8 @@ export class MnemonicWallet implements Wallet {
     data,
     accountIndex,
     network,
-    provider
+    provider,
+    derivationPath = DerivationPath.BIP44
   }: {
     rpcMethod: RpcMethod
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -163,6 +172,7 @@ export class MnemonicWallet implements Wallet {
     accountIndex: number
     network: Network
     provider: JsonRpcBatchInternal
+    derivationPath?: DerivationPath
   }): Promise<string> {
     if (!data) {
       throw new Error('no message to sign')
@@ -176,7 +186,12 @@ export class MnemonicWallet implements Wallet {
       }
       case RpcMethod.ETH_SIGN:
       case RpcMethod.PERSONAL_SIGN: {
-        const key = await this.getSigningKey(accountIndex, network, provider)
+        const key = await this.getSigningKey({
+          accountIndex,
+          network,
+          provider,
+          derivationPath
+        })
         return personalSign({ privateKey: key, data })
       }
       case RpcMethod.SIGN_TYPED_DATA:
@@ -185,7 +200,12 @@ export class MnemonicWallet implements Wallet {
         // however, payload was V4
         const isV4 =
           typeof data === 'object' && 'types' in data && 'primaryType' in data
-        const key = await this.getSigningKey(accountIndex, network, provider)
+        const key = await this.getSigningKey({
+          accountIndex,
+          network,
+          provider,
+          derivationPath
+        })
         return signTypedData({
           privateKey: key,
           data,
@@ -193,7 +213,12 @@ export class MnemonicWallet implements Wallet {
         })
       }
       case RpcMethod.SIGN_TYPED_DATA_V3: {
-        const key = await this.getSigningKey(accountIndex, network, provider)
+        const key = await this.getSigningKey({
+          accountIndex,
+          network,
+          provider,
+          derivationPath
+        })
         return signTypedData({
           privateKey: key,
           data,
@@ -201,7 +226,12 @@ export class MnemonicWallet implements Wallet {
         })
       }
       case RpcMethod.SIGN_TYPED_DATA_V4: {
-        const key = await this.getSigningKey(accountIndex, network, provider)
+        const key = await this.getSigningKey({
+          accountIndex,
+          network,
+          provider,
+          derivationPath
+        })
         return signTypedData({
           privateKey: key,
           data,
@@ -213,15 +243,22 @@ export class MnemonicWallet implements Wallet {
     }
   }
 
-  private async getSigningKey(
-    accountIndex: number,
-    network: Network,
+  private async getSigningKey({
+    accountIndex,
+    network,
+    provider,
+    derivationPath
+  }: {
+    accountIndex: number
+    network: Network
     provider: JsonRpcBatchInternal
-  ): Promise<Buffer> {
+    derivationPath: DerivationPath
+  }): Promise<Buffer> {
     const signer = await this.getSigner({
       accountIndex,
       network,
-      provider
+      provider,
+      derivationPath
     })
 
     if (!(signer instanceof BaseWallet)) {
@@ -294,14 +331,21 @@ export class MnemonicWallet implements Wallet {
     accountIndex,
     transaction,
     network,
-    provider
+    provider,
+    derivationPath
   }: {
     accountIndex: number
     transaction: TransactionRequest
     network: Network
     provider: JsonRpcBatchInternal
+    derivationPath: DerivationPath
   }): Promise<string> {
-    const signer = await this.getSigner({ accountIndex, network, provider })
+    const signer = await this.getSigner({
+      accountIndex,
+      network,
+      provider,
+      derivationPath
+    })
 
     if (!(signer instanceof BaseWallet)) {
       throw new Error('Unable to sign evm transaction: invalid signer')

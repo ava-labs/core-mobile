@@ -1,6 +1,6 @@
 import { ProposalTypes, SessionTypes } from '@walletconnect/types'
 import { AppListenerEffectAPI } from 'store'
-import { ethErrors } from 'eth-rpc-errors'
+import { rpcErrors } from '@metamask/rpc-errors'
 import { addNamespaceToChain } from 'services/walletconnectv2/utils'
 import { normalizeNamespaces } from '@walletconnect/utils'
 import { WCSessionProposal } from 'store/walletConnectV2/types'
@@ -9,7 +9,7 @@ import {
   selectAllNetworks,
   selectFavoriteNetworks
 } from 'store/network'
-import { selectIsBlockaidDappScanBlocked } from 'store/posthog'
+import { selectIsBlockaidDappScanBlocked } from 'store/posthog/slice'
 import { createInAppRequest } from 'store/rpc/utils/createInAppRequest'
 import { RpcMethod, CORE_ONLY_METHODS } from '../../types'
 import { EVM_IDENTIFIER } from '../../types'
@@ -223,7 +223,12 @@ class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
       if (isScanDisabled) {
         navigateToSessionProposal({ request, chainIds: chainIdsToApprove })
       } else {
-        scanAndSessionProposal(dappUrl, request, chainIdsToApprove)
+        scanAndSessionProposal({
+          dappUrl,
+          request,
+          chainIds: chainIdsToApprove,
+          dispatch: listenerApi.dispatch
+        })
       }
       return { success: true, value: DEFERRED_RESULT }
     } catch (error) {
@@ -231,9 +236,7 @@ class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
         error instanceof Error ? error.message : 'Unknown error'
       return {
         success: false,
-        error: ethErrors.rpc.invalidParams({
-          message: errorMessage
-        })
+        error: rpcErrors.invalidParams(errorMessage)
       }
     }
   }
@@ -247,7 +250,7 @@ class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
     if (!result.success) {
       return {
         success: false,
-        error: ethErrors.rpc.internal('Invalid approve data')
+        error: rpcErrors.internal('Invalid approve data')
       }
     }
 

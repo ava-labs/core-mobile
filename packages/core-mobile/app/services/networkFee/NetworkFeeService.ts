@@ -24,6 +24,8 @@ class NetworkFeeService {
           rpcUrl: network.rpcUrl,
           isTestnet: network.isTestnet,
           multiContractAddress: network.utilityAddresses?.multicall
+            ? (network.utilityAddresses.multicall as `0x${string}`)
+            : undefined
         })
         return {
           baseFee: tokenUnitCreator(networkFees.baseFee),

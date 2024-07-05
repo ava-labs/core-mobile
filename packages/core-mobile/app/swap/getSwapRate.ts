@@ -1,6 +1,6 @@
 import { APIError, SwapSide } from 'paraswap'
 import { Network } from '@avalabs/chains-sdk'
-import { TokenType, TokenWithBalance } from 'store/balance'
+import { TokenType, TokenWithBalance } from 'store/balance/types'
 import { Account } from 'store/account'
 import { resolve } from '@avalabs/utils-sdk'
 import swapService from 'services/swap/SwapService'

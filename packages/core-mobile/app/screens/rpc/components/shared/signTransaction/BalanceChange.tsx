@@ -17,7 +17,7 @@ import AddSVG from 'components/svg/AddSVG'
 import ArrowSVG from 'components/svg/ArrowSVG'
 import isEmpty from 'lodash.isempty'
 import { useSelector } from 'react-redux'
-import { selectTokenByAddress } from 'store/balance'
+import { selectTokenByAddress } from 'store/balance/slice'
 import { sharedStyles } from './styles'
 import { AssetDiffGroup } from './AssetDiffGroup'
 

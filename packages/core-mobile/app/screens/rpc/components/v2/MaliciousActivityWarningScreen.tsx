@@ -1,40 +1,22 @@
-import React, { useMemo } from 'react'
+import React from 'react'
 import { Sheet } from 'components/Sheet'
 import { Button, Icons, Text, View, useTheme } from '@avalabs/k2-mobile'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import { WalletScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
-import { useDappConnectionV2 } from 'hooks/useDappConnectionV2'
 
 const MaliciousActivityWarningScreen = (): JSX.Element => {
   const { params } = useRoute<MaliciousActivityWarningScreenProps['route']>()
   const navigation =
     useNavigation<MaliciousActivityWarningScreenProps['navigation']>()
-  const { onUserRejected } = useDappConnectionV2()
   const {
     theme: { colors }
   } = useTheme()
 
-  const content = useMemo(() => {
-    if (params.activityType === 'Transaction') {
-      return {
-        title: 'Scam\nTransaction',
-        description: 'This transaction is malicious, do not proceed.',
-        rejectButtonTitle: 'Reject Transaction'
-      }
-    }
-
-    return {
-      title: 'Scam\nApplication',
-      description: 'This application is malicious, do not proceed.',
-      rejectButtonTitle: 'Reject Connection'
-    }
-  }, [params.activityType])
-
   const handleReject = (): void => {
     navigation.goBack()
 
-    onUserRejected(params.request)
+    params.onReject()
   }
 
   const handleProceed = (): void => {
@@ -66,15 +48,15 @@ const MaliciousActivityWarningScreen = (): JSX.Element => {
             fontWeight: '600',
             textAlign: 'center'
           }}>
-          {content.title}
+          {params.title}
         </Text>
         <Text variant="body2" sx={{ textAlign: 'center' }}>
-          {content.description}
+          {params.subTitle}
         </Text>
       </View>
       <View sx={{ gap: 16, padding: 16 }}>
         <Button type="primary" size="xlarge" onPress={handleReject}>
-          {content.rejectButtonTitle}
+          {params.rejectButtonTitle}
         </Button>
         <Button type="tertiary" size="xlarge" onPress={handleProceed}>
           <Text variant="buttonLarge">Proceed Anyway</Text>

@@ -4,6 +4,7 @@ import {
   BitcoinInputUTXO,
   BitcoinOutputUTXO,
   BitcoinProvider,
+  DerivationPath,
   JsonRpcBatchInternal
 } from '@avalabs/wallets-sdk'
 import { UnsignedTx } from '@avalabs/avalanchejs'
@@ -171,12 +172,14 @@ export interface Wallet {
     accountIndex,
     transaction,
     network,
-    provider
+    provider,
+    derivationPath
   }: {
     accountIndex: number
     transaction: TransactionRequest
     network: Network
     provider: JsonRpcBatchInternal
+    derivationPath: DerivationPath
   }): Promise<string>
 
   /**

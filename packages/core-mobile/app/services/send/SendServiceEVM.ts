@@ -15,7 +15,7 @@ import {
   NftTokenWithBalance,
   TokenType,
   TokenWithBalanceERC20
-} from 'store/balance'
+} from 'store/balance/types'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import Logger from 'utils/Logger'
 import {
@@ -130,7 +130,7 @@ export class SendServiceEVM implements SendServiceHelper {
       .setContext('svc.send.evm.get_trx_request')
       .executeAsync(async () => {
         const unsignedTx = await this.getUnsignedTx(sendState)
-        const chainId = this.activeNetwork.chainId
+        const chainId = this.activeNetwork.chainId.toString()
         const gasLimit = await this.getGasLimit(sendState)
 
         return {

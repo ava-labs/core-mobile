@@ -1,5 +1,5 @@
 import { AppListenerEffectAPI } from 'store'
-import { ethErrors } from 'eth-rpc-errors'
+import { rpcErrors } from '@metamask/rpc-errors'
 import { RpcMethod } from 'store/rpc/types'
 import {
   selectIsDeveloperMode,
@@ -43,9 +43,9 @@ class AvalancheSetDeveloperModeHandler
       Logger.error('invalid params', result.error)
       return {
         success: false,
-        error: ethErrors.rpc.invalidParams({
-          message: 'avalanche_setDeveloperMode param is invalid'
-        })
+        error: rpcErrors.invalidParams(
+          'avalanche_setDeveloperMode param is invalid'
+        )
       }
     }
     const enabled = result.data[0]

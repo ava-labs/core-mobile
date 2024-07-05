@@ -1,4 +1,4 @@
-import { ethErrors } from 'eth-rpc-errors'
+import { rpcErrors } from '@metamask/rpc-errors'
 import mockSession from 'tests/fixtures/walletConnect/session.json'
 import * as Navigation from 'utils/Navigation'
 import { avalancheSignMessageHandler } from 'store/rpc/handlers/avalanche_signMessage/avalanche_signMessage'
@@ -13,14 +13,17 @@ import WalletSDK from 'utils/WalletSDK'
 import { Avalanche } from '@avalabs/wallets-sdk'
 import { DEFERRED_RESULT } from '../types'
 
-jest.mock('store/settings/advanced')
+jest.mock('react-native-quick-crypto', () => {
+  return jest.requireActual('crypto')
+})
+
 jest.mock('utils/Navigation')
 const mockNavigate = jest.fn()
 jest.spyOn(Navigation, 'navigate').mockImplementation(mockNavigate)
 
 const mockIsDeveloperMode = true
-jest.mock('store/settings/advanced', () => {
-  const actual = jest.requireActual('store/settings/advanced')
+jest.mock('store/settings/advanced/slice', () => {
+  const actual = jest.requireActual('store/settings/advanced/slice')
   return {
     ...actual,
     selectIsDeveloperMode: () => mockIsDeveloperMode
@@ -86,9 +89,9 @@ describe('avalanche_signMessage', () => {
         )
         expect(result).toEqual({
           success: false,
-          error: ethErrors.rpc.invalidParams({
-            message: 'avalanche_signMessage param is invalid'
-          })
+          error: rpcErrors.invalidParams(
+            'avalanche_signMessage param is invalid'
+          )
         })
       }
     })

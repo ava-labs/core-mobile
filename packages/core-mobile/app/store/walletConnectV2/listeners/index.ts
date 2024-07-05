@@ -1,8 +1,8 @@
 import { isAnyOf } from '@reduxjs/toolkit'
-import { onLogIn, onLogOut, onRehydrationComplete } from 'store/app'
+import { onLogIn, onLogOut, onRehydrationComplete } from 'store/app/slice'
 import { AppStartListening } from 'store/middleware/listener'
-import { setActive } from 'store/network'
-import { setActiveAccountIndex } from 'store/account'
+import { setActive } from 'store/network/slice'
+import { setActiveAccountIndex } from 'store/account/slice'
 import { killSessions, newSession, onDisconnect } from '../slice'
 import {
   handleAccountChange,

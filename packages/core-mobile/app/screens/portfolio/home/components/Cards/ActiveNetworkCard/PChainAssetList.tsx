@@ -4,7 +4,7 @@ import { Space } from 'components/Space'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import React, { useMemo } from 'react'
 import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList'
-import { PTokenWithBalance, assetPDisplayNames } from 'store/balance'
+import { PTokenWithBalance, assetPDisplayNames } from 'store/balance/types'
 import { Avax } from 'types'
 
 export const PChainAssetList = ({

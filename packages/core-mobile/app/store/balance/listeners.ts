@@ -5,37 +5,34 @@ import BalanceService, {
   BalancesForAccount
 } from 'services/balance/BalanceService'
 import { AppListenerEffectAPI } from 'store'
+import { Account } from 'store/account/types'
 import {
-  Account,
   selectAccounts,
   selectActiveAccount,
   setAccounts,
   setActiveAccountIndex
-} from 'store/account'
-import { onAppLocked, onAppUnlocked, onLogOut } from 'store/app'
-import { addCustomToken } from 'store/customToken'
+} from 'store/account/slice'
+import { onAppLocked, onAppUnlocked, onLogOut } from 'store/app/slice'
+import { addCustomToken } from 'store/customToken/slice'
 import { AppStartListening } from 'store/middleware/listener'
 import {
   onNetworksFetched,
   selectActiveNetwork,
   selectFavoriteNetworks,
   toggleFavorite
-} from 'store/network'
+} from 'store/network/slice'
 import {
   selectSelectedCurrency,
   setSelectedCurrency
-} from 'store/settings/currency'
+} from 'store/settings/currency/slice'
 import Logger from 'utils/Logger'
 import { calculateTotalBalance, getLocalTokenId } from 'store/balance/utils'
 import SentryWrapper from 'services/sentry/SentryWrapper'
-import {
-  selectHasBeenViewedOnce,
-  setViewOnce,
-  ViewOnceKey
-} from 'store/viewOnce'
+import { selectHasBeenViewedOnce, setViewOnce } from 'store/viewOnce/slice'
+import { ViewOnceKey } from 'store/viewOnce/types'
 import PrimaryActivityService from 'services/activity/PrimaryActivityService'
 import NetworkService from 'services/network/NetworkService'
-import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { selectIsDeveloperMode } from 'store/settings/advanced/slice'
 import { ActivityResponse } from 'services/activity/types'
 import { AggregatedAssetAmount } from '@avalabs/glacier-sdk'
 import { Avax } from 'types'

@@ -1,12 +1,11 @@
 import { useMemo, useState } from 'react'
 import {
-  LocalTokenId,
-  LocalTokenWithBalance,
   refetchBalance,
   selectIsLoadingBalances,
   selectIsRefetchingBalances,
   selectTokensWithBalance
-} from 'store/balance'
+} from 'store/balance/slice'
+import { LocalTokenId, LocalTokenWithBalance } from 'store/balance/types'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectTokenBlacklist } from 'store/portfolio'
 import BN from 'bn.js'
