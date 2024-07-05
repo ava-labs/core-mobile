@@ -17,6 +17,7 @@ import {
   selectWalletName,
   setAccounts
 } from './slice'
+import { AccountCollection } from './types'
 
 const initAccounts = async (
   _action: AnyAction,
@@ -27,31 +28,28 @@ const initAccounts = async (
   const walletType = selectWalletType(state)
   const walletName = selectWalletName(state)
   const activeAccountIndex = selectActiveAccount(state)?.index ?? 0
-  const accounts = []
+  const accounts: AccountCollection = {}
 
   if (walletType === WalletType.SEEDLESS) {
-    /**
-     * for seedless wallet, we need to add all accounts the user has upon login
-     *
-     * note:
-     * adding accounts cannot be parallelized, they need to be added one-by-one.
-     * otherwise race conditions occur and addresses get mixed up.
-     */
-    const pubKeysStorage = new SeedlessPubKeysStorage()
-    const pubKeys = await pubKeysStorage.retrieve()
+    const acc = await accountService.createNextAccount({
+      isTestnet: isDeveloperMode,
+      index: 0,
+      activeAccountIndex,
+      walletType
+    })
 
-    for (let i = 0; i < pubKeys.length; i++) {
-      const acc = await accountService.createNextAccount({
-        isTestnet: isDeveloperMode,
-        index: i,
-        activeAccountIndex,
-        walletType
-      })
+    const title = await SeedlessService.getAccountName(0)
+    const accountTitle = title ?? acc.name
+    accounts[acc.index] = { ...acc, name: accountTitle }
 
-      const title = await SeedlessService.getAccountName(i)
-      const accountTitle = title ?? acc.name
-      accounts.push({ ...acc, name: accountTitle })
-    }
+    // to avoid initial account fetching taking too long,
+    // we fetch the remaining accounts in the background
+    fetchingRemainingAccounts({
+      isDeveloperMode,
+      walletType,
+      activeAccountIndex,
+      listenerApi
+    })
   } else if (walletType === WalletType.MNEMONIC) {
     // only add the first account for mnemonic wallet
     const acc = await accountService.createNextAccount({
@@ -63,14 +61,60 @@ const initAccounts = async (
 
     const accountTitle =
       walletName && walletName.length > 0 ? walletName : acc.name
-    accounts.push({ ...acc, name: accountTitle })
+    accounts[acc.index] = { ...acc, name: accountTitle }
   }
 
   listenerApi.dispatch(setAccounts(accounts))
 
   if (isDeveloperMode === false) {
     AnalyticsService.captureWithEncryption('AccountAddressesUpdated', {
-      addresses: accounts.map(acc => ({
+      addresses: Object.values(accounts).map(acc => ({
+        address: acc.addressC,
+        addressBtc: acc.addressBTC,
+        addressAVM: acc.addressAVM ?? '',
+        addressPVM: acc.addressPVM ?? '',
+        addressCoreEth: acc.addressCoreEth ?? ''
+      }))
+    })
+  }
+}
+
+const fetchingRemainingAccounts = async ({
+  isDeveloperMode,
+  walletType,
+  activeAccountIndex,
+  listenerApi
+}: {
+  isDeveloperMode: boolean
+  walletType: WalletType
+  activeAccountIndex: number
+  listenerApi: AppListenerEffectAPI
+}): Promise<void> => {
+  /**
+   * note:
+   * adding accounts cannot be parallelized, they need to be added one-by-one.
+   * otherwise race conditions occur and addresses get mixed up.
+   */
+  const pubKeysStorage = new SeedlessPubKeysStorage()
+  const pubKeys = await pubKeysStorage.retrieve()
+  const accounts: AccountCollection = {}
+  // fetch the remaining accounts in the background
+  for (let i = 1; i < pubKeys.length; i++) {
+    const acc = await accountService.createNextAccount({
+      isTestnet: isDeveloperMode,
+      index: i,
+      activeAccountIndex,
+      walletType
+    })
+    const title = await SeedlessService.getAccountName(i)
+    const accountTitle = title ?? acc.name
+    accounts[acc.index] = { ...acc, name: accountTitle }
+  }
+  listenerApi.dispatch(setAccounts(accounts))
+
+  if (isDeveloperMode === false) {
+    AnalyticsService.captureWithEncryption('AccountAddressesUpdated', {
+      addresses: Object.values(accounts).map(acc => ({
         address: acc.addressC,
         addressBtc: acc.addressBTC,
         addressAVM: acc.addressAVM ?? '',
