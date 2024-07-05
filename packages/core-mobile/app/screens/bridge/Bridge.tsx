@@ -56,6 +56,7 @@ import { useNetworks } from 'hooks/networks/useNetworks'
 import { selectNativeTokenBalanceForNetworkAndAccount } from 'store/balance'
 import { RootState } from 'store'
 import { selectActiveAccount } from 'store/account/slice'
+import { Audios, audioFeedback } from 'utils/AudioFeedback'
 import { AssetBalance, BridgeProvider } from './utils/types'
 
 const blockchainTitleMaxWidth = Dimensions.get('window').width * 0.5
@@ -337,6 +338,8 @@ const Bridge: FC = () => {
         })
         return
       }
+
+      audioFeedback(Audios.Send)
 
       // Navigate to transaction status page
       navigation.navigate(AppNavigation.Bridge.BridgeTransactionStatus, {
