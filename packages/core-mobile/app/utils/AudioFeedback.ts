@@ -3,6 +3,7 @@ import Sound from 'react-native-sound'
 import { hapticFeedback } from 'utils/HapticFeedback'
 import Logger from 'utils/Logger'
 
+// Ambient: Follows silent mode, mixes with other app audio, used for background music/effects.
 Sound.setCategory('Ambient', true)
 
 type Audio = {
