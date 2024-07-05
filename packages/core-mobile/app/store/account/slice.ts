@@ -48,6 +48,12 @@ const accountsSlice = createSlice({
     },
     setWalletName: (state, action: PayloadAction<string>) => {
       state.walletName = action.payload
+    },
+    setNonActiveAccounts: (state, action: PayloadAction<AccountCollection>) => {
+      state.accounts = {
+        ...state.accounts,
+        ...action.payload
+      }
     }
   }
 })
@@ -78,7 +84,8 @@ export const {
   setActiveAccountIndex,
   setAccount,
   setAccounts,
-  setWalletName
+  setWalletName,
+  setNonActiveAccounts
 } = accountsSlice.actions
 
 export const accountsReducer = accountsSlice.reducer

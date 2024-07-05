@@ -15,7 +15,8 @@ import {
   selectAccounts,
   selectActiveAccount,
   selectWalletName,
-  setAccounts
+  setAccounts,
+  setNonActiveAccounts
 } from './slice'
 import { AccountCollection } from './types'
 
@@ -113,7 +114,7 @@ const fetchingRemainingAccounts = async ({
     const accountTitle = title ?? acc.name
     accounts[acc.index] = { ...acc, name: accountTitle }
   }
-  listenerApi.dispatch(setAccounts(accounts))
+  listenerApi.dispatch(setNonActiveAccounts(accounts))
 
   const allAccounts = { ...initialAccounts, ...accounts }
   if (isDeveloperMode === false) {
