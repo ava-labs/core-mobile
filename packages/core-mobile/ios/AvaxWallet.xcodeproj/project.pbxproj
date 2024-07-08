@@ -15,6 +15,7 @@
 		116830AA7B36E9C1F06DD419 /* libPods-common-AvaxWallet.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B42CF6B946163F51616E8FA9 /* libPods-common-AvaxWallet.a */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		501C50832C35C63800DAFF77 /* core_send.wav in Resources */ = {isa = PBXBuildFile; fileRef = 501C50822C35C63800DAFF77 /* core_send.wav */; };
+		5084807F2C3C3E78008762B2 /* core_send.wav in Resources */ = {isa = PBXBuildFile; fileRef = 501C50822C35C63800DAFF77 /* core_send.wav */; };
 		81ACC3932BD1B2860089FEBA /* BootSplash.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81ACC3922BD1B2860089FEBA /* BootSplash.storyboard */; };
 		81ACC3942BD1B2860089FEBA /* BootSplash.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81ACC3922BD1B2860089FEBA /* BootSplash.storyboard */; };
 		8E858A5A28AFD47300236EF2 /* Inter-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 0BAAA733269F480900722C85 /* Inter-Bold.ttf */; };
@@ -286,6 +287,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5084807F2C3C3E78008762B2 /* core_send.wav in Resources */,
 				8E858A5A28AFD47300236EF2 /* Inter-Bold.ttf in Resources */,
 				8E858A5C28AFD47300236EF2 /* Inter-Regular.ttf in Resources */,
 				81ACC3942BD1B2860089FEBA /* BootSplash.storyboard in Resources */,
