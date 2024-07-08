@@ -569,6 +569,7 @@ describe('rpc - listeners', () => {
             chainName: mockNetworks[43114].chainName,
             isTestnet: mockNetworks[43114].isTestnet,
             rpcUrl: mockNetworks[43114].rpcUrl,
+            logoUrl: mockNetworks[43114].logoUri,
             multiContractAddress:
               mockNetworks[43114].utilityAddresses.multicall,
             networkToken: {

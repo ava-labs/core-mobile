@@ -37,7 +37,7 @@ const ApprovalPopup = (): JSX.Element => {
   const { request, displayData, signingData, onApprove, onReject } =
     useRoute<ApprovalPopupScreenProps['route']>().params
   const { getNetwork } = useNetworks()
-  const caip2ChainId = displayData.chain.chainId
+  const caip2ChainId = signingData.chainId
   const chainId = Number(caip2ChainId.split(':')[1])
   const network = getNetwork(chainId)
   const account = useSelector(selectAccountByAddress(signingData.account))
@@ -142,8 +142,8 @@ const ApprovalPopup = (): JSX.Element => {
       })
   }
 
-  const renderNetwork = (): JSX.Element | undefined => {
-    if (!network) return
+  const renderNetwork = (): JSX.Element => {
+    const { name, logoUrl } = displayData.chain
 
     return (
       <View style={styles.fullWidthContainer}>
@@ -151,12 +151,11 @@ const ApprovalPopup = (): JSX.Element => {
           <Text variant="buttonMedium">Network:</Text>
           <Row style={{ alignItems: 'center' }}>
             <NetworkLogo
-              key={network.chainId.toString()}
-              logoUri={network.logoUri}
+              logoUri={logoUrl}
               size={24}
               style={{ marginRight: 8 }}
             />
-            <Text variant="buttonMedium">{network.chainName}</Text>
+            <Text variant="buttonMedium">{name}</Text>
           </Row>
         </Row>
         <Space y={16} />

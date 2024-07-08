@@ -52,6 +52,7 @@ export const handleRequestViaVMModule = async ({
     chainId: caip2ChainId,
     chainName: network.chainName,
     isTestnet: network.isTestnet,
+    logoUrl: network.logoUri,
     rpcUrl: network.rpcUrl,
     multiContractAddress: network.utilityAddresses?.multicall
       ? (network.utilityAddresses.multicall as `0x${string}`)
