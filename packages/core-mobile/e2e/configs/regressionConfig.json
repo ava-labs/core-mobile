@@ -24,7 +24,6 @@
     ]
   },
   "testPathIgnorePatterns": [
-    "<rootDir>/tests/bridge",
     "<rootDir>/tests/plusIcon/walletConnect/traderjoe.e2e.ts",
     "<rootDir>/tests/network/addCustomToken.smoke.e2e.ts",
     "<rootDir>/tests/plusIcon/walletConnect/dappEthIntegrations.e2e.ts",

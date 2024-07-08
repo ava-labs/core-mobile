@@ -28,6 +28,7 @@ import { useNetworks } from 'hooks/networks/useNetworks'
 import { useNetworkFee } from 'hooks/useNetworkFee'
 import { useInAppRequest } from 'hooks/useInAppRequest'
 import { RootState } from 'store'
+import { audioFeedback, Audios } from 'utils/AudioFeedback'
 
 export type SendStatus = 'Idle' | 'Sending' | 'Success' | 'Fail'
 
@@ -159,10 +160,12 @@ export const SendTokenContextProvider = ({
             chainId: activeNetwork.chainId,
             txHash
           })
+
+          audioFeedback(Audios.Send)
         })
         .catch(reason => {
           setSendStatus('Fail')
-
+          setError(reason.message)
           AnalyticsService.capture('SendTransactionFailed', {
             errorMessage: reason.message,
             chainId: activeNetwork.chainId
@@ -215,7 +218,10 @@ export const SendTokenContextProvider = ({
         setError(state.error ? state.error.message : undefined)
         setCanSubmit(state.canSubmit ?? false)
       })
-      .catch(Logger.error)
+      .catch(e => {
+        setError(e.message)
+        Logger.error(e)
+      })
   }
 
   const state: SendTokenContextState = {
