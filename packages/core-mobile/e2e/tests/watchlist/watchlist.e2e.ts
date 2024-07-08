@@ -11,6 +11,7 @@ import Actions from '../../helpers/actions'
 describe('Verify Watchlist', () => {
   beforeAll(async () => {
     await warmup()
+    await device.disableSynchronization()
   })
 
   it('should navigate to watchlist', async () => {
@@ -20,7 +21,7 @@ describe('Verify Watchlist', () => {
   })
 
   it('should navigate to token detail screen', async () => {
-    await WatchListPage.tapWatchListToken('btc')
+    await WatchListPage.tapWatchListToken('btc', 1)
     await Actions.waitForElement(tokenDetailPage.oneWeekTab)
   })
 
