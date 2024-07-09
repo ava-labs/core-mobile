@@ -17,9 +17,9 @@ import HelpCircle from 'assets/icons/helpCircle.svg'
 import ArrowUp from 'assets/icons/arrowUp.svg'
 import ArrowDown from 'assets/icons/arrowDown.svg'
 import { SvgProps } from 'react-native-svg'
-import { View } from '@avalabs/k2-mobile'
+import { View, useTheme } from '@avalabs/k2-mobile'
 import { TransactionType } from '@avalabs/vm-module-types'
-import SwapV2 from 'assets/icons/swap_v2.svg'
+import Swap from 'assets/icons/swap_v2.svg'
 import Notes from 'assets/icons/notes.svg'
 
 type TransactionTypes =
@@ -33,8 +33,6 @@ export interface PrimaryNetworkMethodIconProp {
   isContractCall: boolean
   isSender: boolean
 }
-
-const Swap = (): React.JSX.Element => <SwapV2 stroke={'currentColor'} />
 
 const METHOD_NAME_TO_ICON: Record<
   TransactionTypes,
@@ -81,6 +79,9 @@ export const PrimaryNetworkMethodIcon = ({
   isContractCall,
   isSender
 }: PrimaryNetworkMethodIconProp): React.JSX.Element => {
+  const {
+    theme: { colors }
+  } = useTheme()
   const Icon = useMemo(() => {
     if (methodName && METHOD_NAME_TO_ICON[methodName]) {
       return METHOD_NAME_TO_ICON[methodName] ?? HelpCircle
@@ -106,6 +107,7 @@ export const PrimaryNetworkMethodIcon = ({
         alignItems: 'center'
       }}>
       <Icon
+        color={colors.$blueMain}
         width={20}
         height={20}
         testID={`primary_network_icon__${methodName}`}
