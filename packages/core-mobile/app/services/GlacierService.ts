@@ -26,10 +26,6 @@ if (!Config.GLACIER_URL) throw Error('GLACIER_URL ENV is missing')
 
 export const GLACIER_URL = Config.GLACIER_URL
 
-export class GlacierUnhealthyError extends Error {
-  message = 'Glacier is unhealthy. Try again later.'
-}
-
 class GlacierService {
   private glacierSdk = new Glacier({ BASE: process.env.GLACIER_URL })
   private isGlacierHealthy = true

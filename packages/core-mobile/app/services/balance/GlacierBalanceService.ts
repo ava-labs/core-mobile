@@ -29,7 +29,7 @@ import { Avax } from 'types'
 import BN from 'bn.js'
 import { isBitcoinChainId } from 'utils/network/isBitcoinNetwork'
 import { absoluteChain, isXPChain } from 'utils/network/isAvalancheNetwork'
-import GlacierService, { GlacierUnhealthyError } from 'services/GlacierService'
+import GlacierService from 'services/GlacierService'
 
 export class GlacierBalanceService implements BalanceServiceProvider {
   async isProviderFor(network: Network): Promise<boolean> {
@@ -75,17 +75,22 @@ export class GlacierBalanceService implements BalanceServiceProvider {
                 results = [nativeBalance.value]
               } else if (this.isChainUnavailableError(nativeBalance.reason)) {
                 GlacierService.setGlacierToUnhealthy()
-                throw new GlacierUnhealthyError()
               }
 
               if (erc20Balances.status === 'fulfilled') {
                 results = [...results, ...erc20Balances.value]
+              } else if (this.isChainUnavailableError(erc20Balances.reason)) {
+                GlacierService.setGlacierToUnhealthy()
               }
               if (pChainBalance.status === 'fulfilled') {
                 results = [...results, pChainBalance.value]
+              } else if (this.isChainUnavailableError(pChainBalance.reason)) {
+                GlacierService.setGlacierToUnhealthy()
               }
               if (xChainBalance.status === 'fulfilled') {
                 results = [...results, xChainBalance.value]
+              } else if (this.isChainUnavailableError(xChainBalance.reason)) {
+                GlacierService.setGlacierToUnhealthy()
               }
               return results
             }
