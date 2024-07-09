@@ -1,4 +1,3 @@
-import { glacierSdk } from 'utils/network/glacier'
 import { getBlockChainIdForPrimaryNetwork } from 'services/network/utils/getBlockChainIdForPrimaryNetwork'
 import {
   ListCChainAtomicTransactionsResponse,
@@ -11,6 +10,7 @@ import {
 import { Transaction } from 'store/transaction'
 import { convertXChainTransaction } from 'services/activity/utils/convertXChainTransaction'
 import { convertPChainTransaction } from 'services/activity/utils/convertPChainTransaction'
+import GlacierService from 'services/GlacierService'
 import {
   ActivityResponse,
   GetActivitiesForAddressParams,
@@ -22,17 +22,14 @@ export class PrimaryActivityService implements NetworkActivityService {
     params: GetActivitiesForAddressParams
   ): Promise<ActivityResponse> {
     const { address, network, nextPageToken, pageSize } = params
-    const response =
-      await glacierSdk.primaryNetworkTransactions.listLatestPrimaryNetworkTransactions(
-        {
-          addresses: address,
-          blockchainId: getBlockChainIdForPrimaryNetwork(network),
-          network: network.isTestnet ? Network.FUJI : Network.MAINNET,
-          pageSize,
-          pageToken: nextPageToken,
-          sortOrder: SortOrder.DESC
-        }
-      )
+    const response = await GlacierService.listLatestPrimaryNetworkTransactions({
+      addresses: address,
+      blockchainId: getBlockChainIdForPrimaryNetwork(network),
+      network: network.isTestnet ? Network.FUJI : Network.MAINNET,
+      pageSize,
+      pageToken: nextPageToken,
+      sortOrder: SortOrder.DESC
+    })
 
     let transactions: Transaction[] = []
     if (this.isPChainTransactions(response)) {
