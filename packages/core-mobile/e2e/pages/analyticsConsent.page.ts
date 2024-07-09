@@ -35,7 +35,6 @@ class AnalyticsConsentPage {
     await Assert.isVisible(this.unlockBtn)
     await Assert.isVisible(this.noThanksBtn)
   }
-
 }
 
 export default new AnalyticsConsentPage()

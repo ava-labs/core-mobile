@@ -65,7 +65,7 @@ class ExistingRecoveryPhrasePage {
   get createNewWalletBtn() {
     return by.text(recoveryPhraseLoc.createNewWalletBtn)
   }
- 
+
   get manuallyCreateNewWalletBtn() {
     return by.id(recoveryPhraseLoc.manuallyCreateNewWalletBtn)
   }
@@ -153,7 +153,7 @@ class ExistingRecoveryPhrasePage {
     await Assert.isVisible(this.typeRecoveryPhraseBtn)
     await Assert.isVisible(this.createNewWalletBtn)
   }
-  
+
   async tapTypeInRecoveryPhaseBtn() {
     await Action.tap(this.typeRecoveryPhraseBtn)
   }
