@@ -33,7 +33,7 @@ export class EvmBalanceService implements BalanceServiceProvider {
           customTokens,
           addresses: [accountAddress],
           currency,
-          chainId: caip2ChainId
+          network: { ...network, chainId: caip2ChainId }
         })
         const balances = balancesResponse[accountAddress] ?? {}
         return Object.values(balances)
