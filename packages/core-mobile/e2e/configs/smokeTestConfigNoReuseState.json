@@ -21,12 +21,10 @@
     ]
   },
   "testPathIgnorePatterns": [
-    "*/bridge/*.ts",
-    "traderjoe.e2e.ts",
-    "sendSepoliaEthTo2ndAccount.e2e.ts",
-    "sendEthTo2ndAccount.e2e.ts",
+    "./e2e/tests/plusIcon/send/sendSepoliaEthTo2ndAccount.e2e.ts",
+    "./e2e/tests/plusIcon/send/sendEthTo2ndAccount.e2e.ts",
     "./e2e/tests/network/addCustomNetwork.e2e.smoke.ts",
     "./e2e/tests/network/addCustomToken.e2e.smoke.ts",
-    ".e2e/tests/stake/claimTestnet.e2e.smoke.ts"
+    "./e2e/tests/stake/claimTestnet.e2e.smoke.ts"
   ]
 }

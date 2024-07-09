@@ -22,6 +22,7 @@ import { NetworkTokenUnit } from 'types'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { useNetworkFee } from 'hooks/useNetworkFee'
 import { useInAppRequest } from 'hooks/useInAppRequest'
+import { audioFeedback, Audios } from 'utils/AudioFeedback'
 
 export interface SendNFTContextState {
   sendToken: NFTItem
@@ -126,6 +127,8 @@ export const SendNFTContextProvider = ({
           AnalyticsService.capture('NftSendSucceeded', {
             chainId: activeNetwork.chainId
           })
+
+          audioFeedback(Audios.Send)
         })
         .catch(reason => {
           setSendStatus('Fail')

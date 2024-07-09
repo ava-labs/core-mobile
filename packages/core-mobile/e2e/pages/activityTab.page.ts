@@ -8,7 +8,8 @@ import { Platform } from '../helpers/constants'
 import ReviewAndSend from '../pages/reviewAndSend.page'
 import PortfolioPage from '../pages/portfolio.page'
 import TransactionDetailsPage from '../pages/transactionDetails.page'
-import commonElsPage from './commonEls.page'
+import loginRecoverWallet from '../helpers/loginRecoverWallet'
+import BottomsTabsPage from '../pages/bottomTabs.page'
 
 const platformIndex = Action.platform() === Platform.iOS ? 1 : 0
 
@@ -18,7 +19,7 @@ class ActivityTabPage {
   }
 
   get arrowSVG() {
-    return by.id(activityTab.arrowSVG)
+    return by.id(activityTab.arrowUpSVG)
   }
 
   get networkIcon() {
@@ -121,29 +122,6 @@ class ActivityTabPage {
     await Action.tapElementAtIndex(this.bridgeSVG, 1)
   }
 
-  async verifyIncomingTransaction() {
-    if (Action.platform() === 'ios') {
-      await commonElsPage.tapBackButton()
-    } else {
-      await device.pressBack()
-    }
-    if (Action.platform() === 'ios') {
-      await AccountManagePage.tapAccountDropdownTitle()
-    }
-    const firstAccountAddress = await AccountManagePage.getFirstAvaxAddress()
-    if (Action.platform() === 'android') {
-      await AccountManagePage.tapAccountDropdownTitle()
-    }
-    await AccountManagePage.tapSecondAccount()
-    await PortfolioPage.tapAvaxNetwork()
-    await PortfolioPage.tapActivityTab()
-    await this.tapArrowIcon(0)
-    const isTransactionSuccessful =
-      await TransactionDetailsPage.isDateTextOlderThan(300)
-    console.log(isTransactionSuccessful)
-    await Assert.hasText(this.address, firstAccountAddress)
-  }
-
   async verifyOutgoingTransaction(
     waitTime: number,
     secondAccountAddress: string
@@ -170,23 +148,36 @@ class ActivityTabPage {
     }
   }
 
-  async verifyTransactionDetailWebBrowser() {
+  async verifyTransactionDetailWebBrowser(transactionType: string) {
+    await this.tapNetworkIcon(0)
+    await Assert.isNotVisible(by.text(transactionType))
+    await Assert.isNotVisible(AccountManagePage.accountsDropdown)
+    await Assert.isNotVisible(BottomsTabsPage.plusIcon)
+    if (transactionType === 'Send') {
+      await Action.waitForElementNotVisible(
+        ReviewAndSend.sendSuccessfulToastMsg
+      )
+    }
+  }
+
+  async exitTransactionDetailWebBrowser(transactionType: string) {
     if (device.getPlatform() === 'android') {
       await device.disableSynchronization()
-      await this.tapNetworkIcon(0)
       await device.pressBack()
+      await device.enableSynchronization()
+      await Assert.isVisible(AccountManagePage.accountsDropdown)
+      await Assert.isVisible(by.text(transactionType))
     } else {
-      await this.tapNetworkIcon(0)
+      await device.launchApp({ newInstance: true })
+      await loginRecoverWallet.recoverWalletLogin()
+      await Assert.isVisible(PortfolioPage.colectiblesTab)
+      await Assert.isVisible(PortfolioPage.assetsTab)
+      await Assert.isVisible(PortfolioPage.defiTab)
     }
-    await delay(5000)
-    await Action.waitForElementNotVisible(ReviewAndSend.sendSuccessfulToastMsg)
-    await Assert.isNotVisible(AccountManagePage.accountsDropdown)
-    await Assert.isNotVisible(by.text('Send'))
-    await Assert.isNotVisible(by.id('add_svg'))
+    await Assert.isVisible(BottomsTabsPage.plusIcon)
   }
+
   async getLatestActivityRow() {
-    await delay(5000)
-    await this.refreshActivityPage()
     const newRow = await Action.getAttributes(this.activityListItem)
     return 'elements' in newRow ? newRow.elements[0] : newRow
   }
