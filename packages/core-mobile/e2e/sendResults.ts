@@ -173,55 +173,33 @@ async function generatePlatformResults(
     )
   }
 
-  const testResults = []
-  const failedTests = []
   for (let i = 0; i < resultArray.length; i++) {
     const resultObject = resultArray[i]
     const statusId = Number(resultObject?.status_id)
     const comment = `Test case result for ${resultObject?.case_id} and has a status of ${statusId} for ${platform}`
-    const testName = resultObject?.test_name
     const screenshot = resultObject?.screenshot
 
-    const failedTest = {
-      case_id: resultObject?.case_id,
-      status_id: statusId,
-      comment: comment,
-      test_name: testName,
-      screenshot: screenshot
-    }
-
-    if (statusId === 5) {
-      failedTests.push(failedTest)
-    }
-
     const testResult = {
-      case_id: resultObject?.case_id,
       status_id: statusId,
       comment: comment
     }
-    testResults.push(testResult)
-  }
 
-  // Send the results to testrail
-  await api.addResultsForCases(Number(runId), {
-    results: testResults
-  })
+    const resultResp = await api.addResultForCase(runId, resultObject.case_id, {
+      status_id: testResult.status_id,
+      comment: testResult.comment
+    })
 
-  // Adds the screenshot to the test case in testrail if the test failed
-  for (let i = 0; i < failedTests.length; i++) {
-    if (failedTests[i].status_id === 5 && failedTests[i].screenshot) {
-      // This is the path to the screenshot for when the test fails
-      const failScreenshot = path.resolve(
-        `./e2e/artifacts/${platform}/${failedTests[i].screenshot}`
+    const resultID = resultResp.id
+    if (statusId === 5) {
+      const failedScreenshot = path.resolve(
+        `./e2e/artifacts/${platform}/${screenshot}`
       )
-      if (failScreenshot) {
-        const failedPayload = {
-          name: 'failed.png',
-          value: await fs.createReadStream(failScreenshot)
-        }
-        // Attaches the screenshot to the corressponding case in the test run
-        await api.addAttachmentToCase(failedTests[i].case_id, failedPayload)
+      const failedPayload = {
+        name: 'failed.png',
+        value: fs.createReadStream(failedScreenshot)
       }
+      // Attaches the screenshot to the corressponding case in the test run
+      await api.addAttachmentToResult(resultID, failedPayload)
     }
   }
 }
