@@ -12,5 +12,6 @@ export default {
   forgotPinButton: 'Forgot PIN?',
   chooseWalletTitle: 'How would you like to access your existing wallet?',
   typeRecoverPhaseBtn: 'Type in a recovery phrase',
-  createNewWalletBtn: 'Create a new wallet'
+  createNewWalletBtn: 'Create a new wallet',
+  manuallyCreateNewWalletBtn: 'manually_create_new_wallet_button'
 }

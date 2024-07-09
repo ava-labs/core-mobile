@@ -102,7 +102,7 @@ const SignupScreen: FC = () => {
     return (
       <View sx={{ gap: 16 }}>
         <Button
-          testID="manuallyCreateNewWallet"
+          testID="manually_create_new_wallet_button"
           type="secondary"
           size="large"
           onPress={handleSignupWithMnemonic}>

@@ -31,6 +31,7 @@ export default async function getTestLogs(): Promise<
     subsection?: string
     platform?: string
     testResult?: number
+    screenshot?: string
   }[]
 > {
   const folders = await getDirectories('./e2e/artifacts/')
@@ -69,7 +70,7 @@ export default async function getTestLogs(): Promise<
         Object.assign(splitTestFolder, {
           testResult: testResult,
           platform: platform,
-          failedScreenshot
+          screen_shot: failedScreenshot
         })
         testResults.push(splitTestFolder)
       }
@@ -121,7 +122,9 @@ async function splitTestResult(testItem: string | undefined): Promise<
     }
     const sectionName = removeTestSectionExtraChars(rawSectionName)
     const trimmedSectionName = sectionName?.trim()
-    return { sectionName: trimmedSectionName, testCase }
+    if (trimmedSectionName !== '') {
+      return { sectionName: trimmedSectionName, testCase }
+    }
   }
 }
 

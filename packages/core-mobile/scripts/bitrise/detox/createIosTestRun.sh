@@ -4,7 +4,18 @@ set -e
 
 TIMESTAMP=$(date +%s)
 
-TEST_RUN_NAME="iOS Smoke Test run $BITRISE_GIT_BRANCH $TIMESTAMP"
+SMOKE_TEST_RUN_NAME="iOS Smoke Test run $BITRISE_GIT_BRANCH $TIMESTAMP"
+
+REGRESSION_TEST_RUN_NAME="iOS Regression Test run $BITRISE_GIT_BRANCH $TIMESTAMP"
+
+
+if ($IS_REGRESSION_RUN == "true"); then
+  TEST_RUN_NAME=$REGRESSION_TEST_RUN_NAME
+else
+  TEST_RUN_NAME=$SMOKE_TEST_RUN_NAME
+fi
+
+echo "Test run name: $TEST_RUN_NAME"
 
 echo 'Creating new iOS test run...'
 

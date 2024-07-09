@@ -230,7 +230,7 @@ class StakePage {
   }
 
   async tapStakeButton() {
-    await Actions.tapElementAtIndex(this.stakeSecondaryButton, 0)
+    await Actions.tapElementAtIndex(this.stakePrimaryButton, 0)
   }
 
   async tapStakeNow() {
