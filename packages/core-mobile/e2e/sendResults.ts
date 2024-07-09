@@ -183,15 +183,19 @@ async function generatePlatformResults(
     const statusId = Number(resultObject?.status_id)
     const comment = `Test case result for ${resultObject?.case_id} and has a status of ${statusId} for ${platform}`
     const screenshot = resultObject?.screenshot
-    const alreadyPosted = resultObject.already_posted
 
-    const resultResp = await api.addResultForCase(runId, resultObject.case_id, {
+    const testResult = {
       status_id: statusId,
       comment: comment
+    }
+
+    const resultResp = await api.addResultForCase(runId, resultObject.case_id, {
+      status_id: testResult.status_id,
+      comment: testResult.comment
     })
 
     const resultID = resultResp.id
-    if (statusId === 5 && !alreadyPosted) {
+    if (statusId === 5) {
       const failedScreenshot = path.resolve(
         `./e2e/artifacts/${platform}/${screenshot}`
       )
@@ -200,11 +204,7 @@ async function generatePlatformResults(
         value: fs.createReadStream(failedScreenshot)
       }
       // Attaches the screenshot to the corressponding case in the test run
-      const failedResult = await api.addAttachmentToResult(
-        resultID,
-        failedPayload
-      )
-      console.log('The failed result is ' + JSON.stringify(failedResult))
+      await api.addAttachmentToResult(resultID, failedPayload)
     }
   }
 }
