@@ -12,10 +12,6 @@ class CommonElsPage {
     return by.id(commonEls.backButton)
   }
 
-  get backButton2() {
-    return by.id(commonEls.backButton2)
-  }
-
   get getStartedButton() {
     return by.text(commonEls.getStartedBtn)
   }
@@ -37,15 +33,7 @@ class CommonElsPage {
   }
 
   async tapBackButton(index = 0) {
-    if (Actions.platform() === 'android') {
-      await device.pressBack()
-    } else {
-      await Actions.tapElementAtIndex(this.backButton, index)
-    }
-  }
-
-  async tapBackButton2() {
-    await Actions.tapElementAtIndex(this.backButton2, 0)
+    await Actions.tapElementAtIndex(this.backButton, index)
   }
 
   async tapGetStartedButton() {

@@ -61,8 +61,8 @@ class AccountManagePage {
     return by.text(accountManage.fourthaccount)
   }
 
-  async tapAccountDropdownTitle() {
-    await Action.tapElementAtIndex(this.accountDropdownTitle, 0)
+  async tapAccountDropdownTitle(index = 0) {
+    await Action.tapElementAtIndex(this.accountDropdownTitle, index)
   }
 
   async switchToReceivedAccount(accountNumber: string) {

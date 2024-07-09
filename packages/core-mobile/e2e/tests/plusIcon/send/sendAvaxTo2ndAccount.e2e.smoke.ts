@@ -4,6 +4,7 @@ import PortfolioPage from '../../../pages/portfolio.page'
 import SendPage from '../../../pages/send.page'
 import sendLoc from '../../../locators/send.loc'
 import { warmup } from '../../../helpers/warmup'
+import commonElsPage from '../../../pages/commonEls.page'
 
 describe('Send Avax to another account', () => {
   beforeAll(async () => {
@@ -28,10 +29,12 @@ describe('Send Avax to another account', () => {
 
   it('Should receive AVAX on second account', async () => {
     // Change default account to the 2nd.
-    await AccountManagePage.tapAccountDropdownTitle()
+    await commonElsPage.tapBackButton()
+    await AccountManagePage.tapAccountDropdownTitle(0)
     await AccountManagePage.tapSecondAccount()
 
     // verify receive event
+    await PortfolioPage.goToActivityTab()
     const newRow = await ActivityTabPage.getLatestActivityRow()
     await ActivityTabPage.verifyActivityRow(newRow, 'Receive')
   })
