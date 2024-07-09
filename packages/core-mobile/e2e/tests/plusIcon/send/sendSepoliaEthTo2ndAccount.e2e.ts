@@ -29,7 +29,12 @@ describe('Send Sepolia Eth to another account', () => {
   }, 120000)
 
   it('Should receive Sepolia Eth on second account', async () => {
-    await ActivityTabPage.tapHeaderBack()
-    await ActivityTabPage.verifyIncomingTransaction()
+    // Change default account to the 2nd.
+    await AccountManagePage.tapAccountDropdownTitle()
+    await AccountManagePage.tapSecondAccount()
+
+    // verify receive event
+    const newRow = await ActivityTabPage.getLatestActivityRow()
+    await ActivityTabPage.verifyActivityRow(newRow, 'Receive')
   }, 30000)
 })

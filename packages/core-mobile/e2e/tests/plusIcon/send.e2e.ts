@@ -29,6 +29,6 @@ describe('Send AVAX', () => {
     await ActivityTabPage.verifyActivityRow(newRow, 'Send')
 
     // Verify you left app but in web browser
-    await ActivityTabPage.verifyTransactionDetailWebBrowser()
+    await ActivityTabPage.verifyTransactionDetailWebBrowser('Send')
   })
 })
