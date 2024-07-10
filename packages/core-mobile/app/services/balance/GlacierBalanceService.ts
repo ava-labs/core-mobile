@@ -14,7 +14,6 @@ import {
   NativeTokenBalance,
   Network as NetworkName
 } from '@avalabs/glacier-sdk'
-import { glacierSdk } from 'utils/network/glacier'
 import {
   BalanceServiceProvider,
   GetBalancesParams
@@ -30,24 +29,12 @@ import { Avax } from 'types'
 import BN from 'bn.js'
 import { isBitcoinChainId } from 'utils/network/isBitcoinNetwork'
 import { absoluteChain, isXPChain } from 'utils/network/isAvalancheNetwork'
+import GlacierService from 'services/GlacierService'
 
 export class GlacierBalanceService implements BalanceServiceProvider {
   async isProviderFor(network: Network): Promise<boolean> {
-    const isHealthy = await this.isHealthy()
-    if (!isHealthy) {
-      return false
-    }
-    const supportedChainsResp = await glacierSdk.evmChains.supportedChains({})
-
-    const chainInfos = supportedChainsResp.chains
-    //even though glacier supports X and P chains the SDK doesn't provide 'em as list
-    // so we push them manually
-    const chains = chainInfos.map(chain => chain.chainId)
-    chains.push(ChainId.AVALANCHE_XP.toString())
-    chains.push(ChainId.AVALANCHE_TEST_XP.toString())
-
-    return chains.some(
-      value => value === absoluteChain(network.chainId).toString()
+    return await GlacierService.isNetworkSupported(
+      absoluteChain(network.chainId)
     )
   }
 
@@ -83,19 +70,27 @@ export class GlacierBalanceService implements BalanceServiceProvider {
                 | TokenWithBalanceERC20
                 | PTokenWithBalance
                 | XTokenWithBalance
-              )[] =
-                nativeBalance.status === 'fulfilled'
-                  ? [nativeBalance.value]
-                  : []
+              )[] = []
+              if (nativeBalance.status === 'fulfilled') {
+                results = [nativeBalance.value]
+              } else if (this.isChainUnavailableError(nativeBalance.reason)) {
+                GlacierService.setGlacierToUnhealthy()
+              }
 
               if (erc20Balances.status === 'fulfilled') {
                 results = [...results, ...erc20Balances.value]
+              } else if (this.isChainUnavailableError(erc20Balances.reason)) {
+                GlacierService.setGlacierToUnhealthy()
               }
               if (pChainBalance.status === 'fulfilled') {
                 results = [...results, pChainBalance.value]
+              } else if (this.isChainUnavailableError(pChainBalance.reason)) {
+                GlacierService.setGlacierToUnhealthy()
               }
               if (xChainBalance.status === 'fulfilled') {
                 results = [...results, xChainBalance.value]
+              } else if (this.isChainUnavailableError(xChainBalance.reason)) {
+                GlacierService.setGlacierToUnhealthy()
               }
               return results
             }
@@ -105,17 +100,6 @@ export class GlacierBalanceService implements BalanceServiceProvider {
             return []
           })
       })
-  }
-
-  private async isHealthy(): Promise<boolean> {
-    try {
-      const healthStatus = await glacierSdk.healthCheck.healthCheck()
-      const status = healthStatus?.status?.toString()
-      return status === 'ok'
-    } catch (e) {
-      Logger.error('Failed to check glacier health', e)
-      return false
-    }
   }
 
   private getNativeBalance(
@@ -131,13 +115,11 @@ export class GlacierBalanceService implements BalanceServiceProvider {
         'Chain id not compatible, skipping getNativeBalance'
       )
     }
-    return glacierSdk.evmBalances
-      .getNativeBalance({
-        chainId,
-        address,
-        currency: currency.toLocaleLowerCase() as CurrencyCode
-      })
-      .then(res => res.nativeTokenBalance)
+    return GlacierService.getNativeBalance({
+      chainId,
+      address,
+      currency: currency.toLocaleLowerCase() as CurrencyCode
+    }).then(res => res.nativeTokenBalance)
   }
 
   private getNativeTokenBalancesForNetwork({
@@ -190,7 +172,7 @@ export class GlacierBalanceService implements BalanceServiceProvider {
      */
     let nextPageToken: string | undefined
     do {
-      const response = await glacierSdk.evmBalances.listErc20Balances({
+      const response = await GlacierService.listErc20Balances({
         chainId: network.chainId.toString(),
         address,
         currency: selectedCurrency.toLocaleLowerCase() as CurrencyCode,
@@ -226,13 +208,11 @@ export class GlacierBalanceService implements BalanceServiceProvider {
     const nativeTokenId =
       network.pricingProviders?.coingecko?.nativeTokenId ?? ''
 
-    const pChainBalance = await glacierSdk.primaryNetworkBalances
-      .getBalancesByAddresses({
-        blockchainId: BlockchainId.P_CHAIN,
-        network: network.isTestnet ? NetworkName.FUJI : NetworkName.MAINNET,
-        addresses: addresses.join(',')
-      })
-      .then(value => (value as ListPChainBalancesResponse).balances)
+    const pChainBalance = await GlacierService.getChainBalance({
+      blockchainId: BlockchainId.P_CHAIN,
+      network: network.isTestnet ? NetworkName.FUJI : NetworkName.MAINNET,
+      addresses: addresses.join(',')
+    }).then(value => (value as ListPChainBalancesResponse).balances)
 
     const {
       price: priceInCurrency,
@@ -288,13 +268,11 @@ export class GlacierBalanceService implements BalanceServiceProvider {
     const nativeTokenId =
       network.pricingProviders?.coingecko?.nativeTokenId ?? ''
 
-    const xChainBalance = await glacierSdk.primaryNetworkBalances
-      .getBalancesByAddresses({
-        blockchainId: BlockchainId.X_CHAIN,
-        network: network.isTestnet ? NetworkName.FUJI : NetworkName.MAINNET,
-        addresses: addresses.join(',')
-      })
-      .then(value => (value as ListXChainBalancesResponse).balances)
+    const xChainBalance = await GlacierService.getChainBalance({
+      blockchainId: BlockchainId.X_CHAIN,
+      network: network.isTestnet ? NetworkName.FUJI : NetworkName.MAINNET,
+      addresses: addresses.join(',')
+    }).then(value => (value as ListXChainBalancesResponse).balances)
 
     const {
       price: priceInCurrency,
@@ -342,6 +320,12 @@ export class GlacierBalanceService implements BalanceServiceProvider {
       : ChainId.AVALANCHE_MAINNET_ID
 
     return this.getNativeBalance(chainId.toString(), address, selectedCurrency)
+  }
+
+  private isChainUnavailableError(err: unknown): boolean {
+    const message = err instanceof Error ? err.message : String(err)
+
+    return message.includes('Internal Server Error')
   }
 }
 

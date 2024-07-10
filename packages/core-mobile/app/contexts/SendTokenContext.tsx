@@ -28,6 +28,7 @@ import { useNetworks } from 'hooks/networks/useNetworks'
 import { useNetworkFee } from 'hooks/useNetworkFee'
 import { useInAppRequest } from 'hooks/useInAppRequest'
 import { RootState } from 'store'
+import { audioFeedback, Audios } from 'utils/AudioFeedback'
 
 export type SendStatus = 'Idle' | 'Sending' | 'Success' | 'Fail'
 
@@ -159,6 +160,8 @@ export const SendTokenContextProvider = ({
             chainId: activeNetwork.chainId,
             txHash
           })
+
+          audioFeedback(Audios.Send)
         })
         .catch(reason => {
           setSendStatus('Fail')

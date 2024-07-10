@@ -79,8 +79,10 @@ class WatchListPage {
     await Action.tapElementAtIndex(this.walletSVG, 1)
   }
 
-  async tapWatchListToken(tokenSymbol: string) {
-    await element(by.id(`watchlist_item__${tokenSymbol}`)).tap()
+  async tapWatchListToken(tokenSymbol: string, index = 0) {
+    await element(by.id(`watchlist_item__${tokenSymbol}`))
+      .atIndex(index)
+      .tap()
   }
 
   async verifyWatchlistElements() {
