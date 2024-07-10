@@ -1,6 +1,7 @@
 // @ts-nocheck comment at the top of the file
 /* eslint-disable no-var */
 // import * as fs from 'fs'
+import { te } from 'date-fns/locale'
 import {
   getTestCaseId,
   api,
@@ -162,7 +163,9 @@ async function generatePlatformResults(
       const existingTestCases = await getTestCasesFromRun(runId)
       // Adds the existing test case results to the results array so they are not overwritten in testrail when using the updateRun endpoint
       resultArray = resultArray.concat(existingTestCases)
-      testCasesToSend.concat(existingTestCases)
+      resultArray.forEach(testCase => {
+        testCasesToSend.case_ids.push(testCase.case_id)
+      })
     }
     console.log('The test cases to send are ' + JSON.stringify(testCasesToSend))
     await api.updateRun(Number(runId), { testCasesToSend })
