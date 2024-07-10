@@ -18,7 +18,7 @@ const accountsSlice = createSlice({
     setAccounts: (state, action: PayloadAction<AccountCollection>) => {
       // setAccounts does the same thing as setNonActiveAccounts
       // but there are listeners that should only listen and react to setAccounts
-      state.accounts = mergeAccounts(state, action)
+      state.accounts = mergeAccounts(state.accounts, action.payload)
     },
     setAccount: (state, action: PayloadAction<Account>) => {
       const newAccount = action.payload
@@ -50,7 +50,7 @@ const accountsSlice = createSlice({
       state.walletName = action.payload
     },
     setNonActiveAccounts: (state, action: PayloadAction<AccountCollection>) => {
-      state.accounts = mergeAccounts(state, action)
+      state.accounts = mergeAccounts(state.accounts, action.payload)
     }
   }
 })

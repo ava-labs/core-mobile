@@ -1,7 +1,6 @@
 import { AVM, EVM, PVM, VM } from '@avalabs/avalanchejs'
-import { Account, AccountCollection, AccountsState } from 'store/account/types'
+import { Account, AccountCollection } from 'store/account/types'
 import { Network, NetworkVMType } from '@avalabs/chains-sdk'
-import { PayloadAction } from '@reduxjs/toolkit'
 
 export function getAddressByVM(
   vm: VM,
@@ -52,11 +51,11 @@ export function getAddressByNetwork(
 }
 
 export const mergeAccounts = (
-  state: AccountsState,
-  action: PayloadAction<AccountCollection>
+  existingAccounts: AccountCollection,
+  accounts: AccountCollection
 ): AccountCollection => {
   return {
-    ...state.accounts,
-    ...action.payload
+    ...existingAccounts,
+    ...accounts
   }
 }
