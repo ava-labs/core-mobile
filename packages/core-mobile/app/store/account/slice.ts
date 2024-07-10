@@ -2,6 +2,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { Account, AccountCollection, AccountsState } from 'store/account/types'
 import { RootState } from 'store/index'
 import { WalletType } from 'services/wallet/types'
+import { mergeAccounts } from './utils'
 
 export const reducerName = 'account'
 
@@ -15,7 +16,9 @@ const accountsSlice = createSlice({
   initialState,
   reducers: {
     setAccounts: (state, action: PayloadAction<AccountCollection>) => {
-      state.accounts = action.payload
+      // setAccounts does the same thing as setNonActiveAccounts
+      // but there are listeners that should only listen and react to setAccounts
+      state.accounts = mergeAccounts(state.accounts, action.payload)
     },
     setAccount: (state, action: PayloadAction<Account>) => {
       const newAccount = action.payload
@@ -45,6 +48,9 @@ const accountsSlice = createSlice({
     },
     setWalletName: (state, action: PayloadAction<string>) => {
       state.walletName = action.payload
+    },
+    setNonActiveAccounts: (state, action: PayloadAction<AccountCollection>) => {
+      state.accounts = mergeAccounts(state.accounts, action.payload)
     }
   }
 })
@@ -75,7 +81,8 @@ export const {
   setActiveAccountIndex,
   setAccount,
   setAccounts,
-  setWalletName
+  setWalletName,
+  setNonActiveAccounts
 } = accountsSlice.actions
 
 export const accountsReducer = accountsSlice.reducer
