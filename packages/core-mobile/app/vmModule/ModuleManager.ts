@@ -1,13 +1,14 @@
 import { BitcoinModule } from 'vmModule/mock_modules/bitcoin'
-import { CoreEthModule } from 'vmModule/mock_modules/coreEth'
 import { EvmModule } from '@avalabs/evm-module'
-import { AvalancheModule } from '@avalabs/avalanche-module'
 import Logger from 'utils/Logger'
 import { Environment, Module } from '@avalabs/vm-module-types'
 import { NetworkVMType, Network } from '@avalabs/chains-sdk'
 import { assertNotUndefined } from 'utils/assertions'
+import { AvalancheModule } from '@avalabs/avalanche-module'
+import { getBlockChainIdForXpChain } from 'services/network/utils/getBlockChainIdForXpChain'
 import { ModuleErrors, VmModuleErrors } from './errors'
 import { approvalController } from './ApprovalController'
+import { CoreEthModule } from './mock_modules/coreEth'
 
 // https://github.com/ChainAgnostic/CAIPs/blob/main/CAIPs/caip-2.md
 // Syntax for namespace is defined in CAIP-2
@@ -42,9 +43,7 @@ class ModuleManager {
         approvalController
       }),
       new BitcoinModule(),
-      new AvalancheModule({
-        environment
-      }),
+      new AvalancheModule({ environment }),
       new CoreEthModule()
     ]
   }
@@ -79,13 +78,17 @@ class ModuleManager {
   }
 
   convertChainIdToCaip2 = (network: Network): string => {
-    const chainId = network.chainId
+    const xpBlockChainId = getBlockChainIdForXpChain(
+      network.vmName,
+      network.isTestnet ?? false
+    )
+    const chainId = xpBlockChainId ?? network.chainId
     switch (network.vmName) {
       case NetworkVMType.BITCOIN:
         return `bip122:${chainId}`
       case NetworkVMType.PVM:
       case NetworkVMType.AVM:
-        return `avax:${chainId}`
+        return network.isTestnet ? `avaxfuji:${chainId}` : `avax:${chainId}`
       case NetworkVMType.EVM:
       case NetworkVMType.CoreEth:
         return `eip155:${chainId}`

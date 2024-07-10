@@ -30,14 +30,13 @@ import { calculateTotalBalance, getLocalTokenId } from 'store/balance/utils'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { selectHasBeenViewedOnce, setViewOnce } from 'store/viewOnce/slice'
 import { ViewOnceKey } from 'store/viewOnce/types'
-import PrimaryActivityService from 'services/activity/PrimaryActivityService'
 import NetworkService from 'services/network/NetworkService'
 import { selectIsDeveloperMode } from 'store/settings/advanced/slice'
-import { ActivityResponse } from 'services/activity/types'
 import { AggregatedAssetAmount } from '@avalabs/glacier-sdk'
 import { Avax } from 'types'
 import { isPChain, isXChain } from 'utils/network/isAvalancheNetwork'
 import { BN } from 'bn.js'
+import ActivityService from 'services/activity/ActivityService'
 import {
   fetchBalanceForAccount,
   getKey,
@@ -328,12 +327,16 @@ const addPChainToFavoritesIfNeeded = async (
 
   //check if any activity on P chain
   const activeAccount = selectActiveAccount(state)
-  const activities: ActivityResponse =
-    await PrimaryActivityService.getActivities({
-      network: avalancheNetworkP,
-      address: activeAccount?.addressPVM ?? '',
-      criticalConfig: undefined
-    })
+
+  if (activeAccount === undefined) {
+    Logger.trace('No active account, skipping add for P-chain')
+    return
+  }
+  const activities = await ActivityService.getActivities({
+    network: avalancheNetworkP,
+    account: activeAccount,
+    criticalConfig: undefined
+  })
   if (activities.transactions.length === 0) {
     Logger.trace('No activities, skipping add for P-chain')
     return
@@ -376,12 +379,15 @@ const addXChainToFavoritesIfNeeded = async (
 
   //check if any activity on X chain
   const activeAccount = selectActiveAccount(state)
-  const activities: ActivityResponse =
-    await PrimaryActivityService.getActivities({
-      network: avalancheNetworkX,
-      address: activeAccount?.addressAVM ?? '',
-      criticalConfig: undefined
-    })
+  if (activeAccount === undefined) {
+    Logger.trace('No active account, skipping add for X-chain')
+    return
+  }
+  const activities = await ActivityService.getActivities({
+    network: avalancheNetworkX,
+    account: activeAccount,
+    criticalConfig: undefined
+  })
 
   if (activities.transactions.length === 0) {
     Logger.trace('No activities, skipping add for X-chain')

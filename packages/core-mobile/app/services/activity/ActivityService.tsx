@@ -4,7 +4,6 @@ import ModuleManager from 'vmModule/ModuleManager'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 import Logger from 'utils/Logger'
 import BtcActivityService from './BtcActivityService'
-import PrimaryActivityService from './PrimaryActivityService'
 import {
   GetActivitiesForAccountParams,
   ActivityResponse,
@@ -13,9 +12,7 @@ import {
 import { convertTransaction } from './utils/evmTransactionConverter'
 
 const serviceMap: { [K in NetworkVMType]?: NetworkActivityService } = {
-  [NetworkVMType.BITCOIN]: BtcActivityService,
-  [NetworkVMType.PVM]: PrimaryActivityService,
-  [NetworkVMType.AVM]: PrimaryActivityService
+  [NetworkVMType.BITCOIN]: BtcActivityService
 }
 
 class ActivityServiceFactory {
@@ -46,10 +43,14 @@ export class ActivityService {
     criticalConfig
   }: GetActivitiesForAccountParams): Promise<ActivityResponse> {
     const address = getAddressByNetwork(account, network)
-    if (network.vmName === NetworkVMType.EVM) {
+    // todo: remove if statement once all modules are implmeneted
+    if (
+      network.vmName === NetworkVMType.EVM ||
+      network.vmName === NetworkVMType.AVM ||
+      network.vmName === NetworkVMType.PVM
+    ) {
       try {
         const module = await ModuleManager.loadModuleByNetwork(network)
-        // todo: remove if statement once all modules are implmeneted
         const rawTxHistory = await module.getTransactionHistory({
           network: mapToVmNetwork(network),
           address,
@@ -69,7 +70,6 @@ export class ActivityService {
         Logger.error('Failed to get transaction', error)
       }
     }
-
     const activityService = this.getActivityServiceForNetwork(network)
     return activityService.getActivities({
       network,
