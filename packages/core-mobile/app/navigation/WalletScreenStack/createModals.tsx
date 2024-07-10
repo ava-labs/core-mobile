@@ -292,7 +292,7 @@ const CoreIntroModal = (): JSX.Element => {
   const descriptions = [
     { icon: <SearchIcon />, text: 'Explore the Avalanche ecosystem' },
     {
-      icon: <Swap />,
+      icon: <Swap color={'white'} style={{ marginTop: 5 }} />,
       text: 'Interact with assets across multiple chains'
     },
     {
