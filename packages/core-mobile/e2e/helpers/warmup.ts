@@ -9,7 +9,7 @@ export const warmup = async () => {
   await device.launchApp({
     permissions: { notifications: 'YES', camera: 'YES' },
     launchArgs: {
-      detoxURLBlacklistRegex: '\\("https://cloudflare-ipfs.com/*")\\'
+      detoxURLBlacklistRegex: ['.*cloudflare-ipfs.*']
     }
   })
 

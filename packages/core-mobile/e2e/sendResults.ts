@@ -157,11 +157,6 @@ async function generatePlatformResults(
 ) {
   try {
     var resultArray = resultsToSendToTestrail
-    // Gets the existing test cases in the test run
-    // const existingTestCases = await getTestCasesFromRun(runId)
-    // Adds the existing test case results to the results array so they are not overwritten in testrail when using the updateRun endpoint
-    // resultArray = resultArray.concat(existingTestCases)
-    // Add already existing test cases to the testCasesToSend array
     // Takes the array of test cases and adds them to the test run
     await api.updateRun(Number(runId), testCasesToSend)
   } catch (TestRailException) {
@@ -179,14 +174,9 @@ async function generatePlatformResults(
     const comment = `Test case result for ${resultObject?.case_id} and has a status of ${statusId} for ${platform}`
     const screenshot = resultObject?.screenshot
 
-    const testResult = {
+    const resultResp = await api.addResultForCase(runId, resultObject.case_id, {
       status_id: statusId,
       comment: comment
-    }
-
-    const resultResp = await api.addResultForCase(runId, resultObject.case_id, {
-      status_id: testResult.status_id,
-      comment: testResult.comment
     })
 
     const resultID = resultResp.id
@@ -199,7 +189,11 @@ async function generatePlatformResults(
         value: fs.createReadStream(failedScreenshot)
       }
       // Attaches the screenshot to the corressponding case in the test run
-      await api.addAttachmentToResult(resultID, failedPayload)
+      const failedResult = await api.addAttachmentToResult(
+        resultID,
+        failedPayload
+      )
+      console.log('The failed result is ' + JSON.stringify(failedResult))
     }
   }
 }
