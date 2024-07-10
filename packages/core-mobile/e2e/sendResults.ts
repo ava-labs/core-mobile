@@ -171,13 +171,15 @@ async function generatePlatformResults(
         })
       })
     }
+    console.log('The test cases to send are ' + JSON.stringify(testCasesToSend))
     await api.updateRun(Number(runId), testCasesToSend)
   } catch (TestRailException) {
     console.log(
       'Invalid test case ids found in ' +
         testCasesToSend.case_ids +
         ' with run id ' +
-        Number(runId)
+        Number(runId) +
+        TestRailException
     )
   }
 
