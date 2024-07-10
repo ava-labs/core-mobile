@@ -2,6 +2,7 @@
 // @ts-nocheck comment at the top of the file
 /* eslint-disable no-var */
 // import * as fs from 'fs'
+import { pl } from 'date-fns/locale'
 import {
   getTestCaseId,
   api,
@@ -157,7 +158,12 @@ async function generatePlatformResults(
 ) {
   try {
     var resultArray = resultsToSendToTestrail
-    // Takes the array of test cases and adds them to the test run
+    if (platform === 'android') {
+      // Gets the existing test cases in the test run
+      const existingTestCases = await getTestCasesFromRun(runId)
+      // Adds the existing test case results to the results array so they are not overwritten in testrail when using the updateRun endpoint
+      resultArray = resultArray.concat(existingTestCases)
+    }
     await api.updateRun(Number(runId), testCasesToSend)
   } catch (TestRailException) {
     console.log(
@@ -181,6 +187,8 @@ async function generatePlatformResults(
 
     const resultID = resultResp.id
     if (statusId === 5) {
+      console.log('The result id is ' + JSON.stringify(resultID))
+
       const failedScreenshot = path.resolve(
         `./e2e/artifacts/${platform}/${screenshot}`
       )
