@@ -2,11 +2,11 @@
 // @ts-nocheck comment at the top of the file
 /* eslint-disable no-var */
 // import * as fs from 'fs'
-import { pl } from 'date-fns/locale'
 import {
   getTestCaseId,
   api,
-  createNewTestSectionsAndCases
+  createNewTestSectionsAndCases,
+  getTestCasesFromRun
 } from './generateTestrailObjects'
 import getTestLogs, { isResultPresent } from './getResultsFromLogs'
 const fs = require('fs')
