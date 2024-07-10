@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 // @ts-nocheck comment at the top of the file
 /* eslint-disable no-var */
 // import * as fs from 'fs'
@@ -151,7 +150,7 @@ export async function isResultExistsInTestrail(runID: number, caseId: number) {
 // Updates the results for an existing test run or an empty test run
 // eslint-disable-next-line max-params
 async function generatePlatformResults(
-  testCasesToSend: any,
+  testCasesToSend: [],
   resultsToSendToTestrail: [],
   platform: string,
   runId?: number
@@ -163,13 +162,7 @@ async function generatePlatformResults(
       const existingTestCases = await getTestCasesFromRun(runId)
       // Adds the existing test case results to the results array so they are not overwritten in testrail when using the updateRun endpoint
       resultArray = resultArray.concat(existingTestCases)
-      resultArray.forEach(result => {
-        testCasesToSend.push({
-          case_id: result.case_id,
-          title: result.test_name,
-          status_id: result.status_id
-        })
-      })
+      testCasesToSend.concat(existingTestCases)
     }
     console.log('The test cases to send are ' + JSON.stringify(testCasesToSend))
     await api.updateRun(Number(runId), { testCasesToSend })
