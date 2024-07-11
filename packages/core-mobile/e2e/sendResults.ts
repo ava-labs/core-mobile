@@ -1,7 +1,6 @@
 // @ts-nocheck comment at the top of the file
 /* eslint-disable no-var */
 // import * as fs from 'fs'
-import { te } from 'date-fns/locale'
 import {
   getTestCaseId,
   api,
