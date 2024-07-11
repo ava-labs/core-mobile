@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+import assert from 'assert'
 import { expect, element } from 'detox'
 import { Platform } from './constants'
 import Constants from './constants'
@@ -38,10 +39,20 @@ const hasValue = async (item: Detox.NativeMatcher, value: string) => {
   await expect(element(item)).toHaveValue(value)
 }
 
+const count = async (item: Detox.NativeMatcher, value: number) => {
+  const eles = await element(item).getAttributes()
+  let curr = 1
+  if ('elements' in eles) {
+    curr = eles.elements.length
+  }
+  assert(curr === value, `currCount(${curr}) != expectedCount${value} `)
+}
+
 export default {
   isVisible,
   isVisibleNoSync,
   isNotVisible,
   hasText,
-  hasValue
+  hasValue,
+  count
 }

@@ -1,5 +1,5 @@
 export default {
-  backButton: 'back_btn',
+  backButton: 'header_back',
   inputTextField: 'input_text',
   simpleToastMsg: 'simple_toast_msg',
   jailbrokenWarning: 'jailbroken_warning__text',
