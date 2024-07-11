@@ -186,11 +186,12 @@ async function generatePlatformResults(
     const alreadyposted = resultObject.alreadyposted
 
     try {
+      console.log('The result object is ' + JSON.stringify(resultObject))
       const resultResp = await api.addResultForCase(
         runId,
         resultObject.case_id,
         {
-          status_id: status_id,
+          status_id: statusId,
           comment: comment
         }
       )
