@@ -185,7 +185,6 @@ async function generatePlatformResults(
     const comment = `Test case result for ${resultObject?.case_id} and has a status of ${statusId} for ${platform}`
     const screenshot = resultObject?.screenshot
     const alreadyPosted = resultObject.already_posted
-    console.log('The result object is ' + JSON.stringify(resultObject))
 
     const resultResp = await api.addResultForCase(runId, resultObject.case_id, {
       status_id: statusId,
@@ -194,8 +193,6 @@ async function generatePlatformResults(
 
     const resultID = resultResp.id
     if (statusId === 5 && !alreadyPosted) {
-      console.log('The result id is ' + JSON.stringify(resultID))
-
       const failedScreenshot = path.resolve(
         `./e2e/artifacts/${platform}/${screenshot}`
       )
