@@ -571,7 +571,9 @@ export async function getTestCasesFromRun(runId: number): Promise<object[]> {
     titleArray.push({
       case_id: caseId,
       title: testCaseName,
-      status_id: testResult
+      status_id: testResult,
+      // This is so we don't try to attach a screenshot that doesn't exist
+      already_posted: true
     })
   }
   return titleArray
