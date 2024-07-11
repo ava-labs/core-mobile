@@ -188,23 +188,30 @@ async function generatePlatformResults(
       status_id: statusId,
       comment: comment
     }
-
-    const resultResp = await api.addResultForCase(runId, resultObject.case_id, {
-      status_id: testResult.status_id,
-      comment: testResult.comment
-    })
-
-    const resultID = resultResp.id
-    if (statusId === 5) {
-      const failedScreenshot = path.resolve(
-        `./e2e/artifacts/${platform}/${screenshot}`
+    try {
+      const resultResp = await api.addResultForCase(
+        runId,
+        resultObject.case_id,
+        {
+          status_id: testResult.status_id,
+          comment: testResult.comment
+        }
       )
-      const failedPayload = {
-        name: 'failed.png',
-        value: fs.createReadStream(failedScreenshot)
+
+      const resultID = resultResp.id
+      if (statusId === 5) {
+        const failedScreenshot = path.resolve(
+          `./e2e/artifacts/${platform}/${screenshot}`
+        )
+        const failedPayload = {
+          name: 'failed.png',
+          value: fs.createReadStream(failedScreenshot)
+        }
+        // Attaches the screenshot to the corressponding case in the test run
+        await api.addAttachmentToResult(resultID, failedPayload)
       }
-      // Attaches the screenshot to the corressponding case in the test run
-      await api.addAttachmentToResult(resultID, failedPayload)
+    } catch (TestRailException) {
+      console.log(TestRailException + 'this is the error')
     }
   }
 }
