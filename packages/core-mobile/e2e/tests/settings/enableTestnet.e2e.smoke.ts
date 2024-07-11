@@ -4,8 +4,7 @@ import PortfolioPage from '../../pages/portfolio.page'
 import { warmup } from '../../helpers/warmup'
 import AdvancedPage from '../../pages/burgerMenu/advanced.page'
 import commonElsPage from '../../pages/commonEls.page'
-import actions from '../../helpers/actions'
-import accountManagePage from '../../pages/accountManage.page'
+import bottomTabsPage from '../../pages/bottomTabs.page'
 
 describe('Enable Testnet', () => {
   beforeAll(async () => {
@@ -14,11 +13,7 @@ describe('Enable Testnet', () => {
 
   afterAll(async () => {
     await commonElsPage.tapBackButton()
-    if (actions.platform() === 'android') {
-      await commonElsPage.tapDeviceBackButton()
-    } else {
-      await accountManagePage.tapCarrotSVG()
-    }
+    await bottomTabsPage.tapPortfolioTab()
     await AdvancedPage.switchToMainnet()
   })
 
@@ -33,8 +28,8 @@ describe('Enable Testnet', () => {
     await PortfolioPage.tapManageNetworks()
     await NetworksManagePage.tapNetworksTab()
     await NetworksManagePage.searchNetworks('Ethereum Sepolia')
-    await Assert.isVisible(NetworksManagePage.ethereumSepoliaNetwork)
+    await Assert.count(NetworksManagePage.ethereumSepoliaNetwork, 2)
     await NetworksManagePage.searchNetworks('Bitcoin Testnet')
-    await Assert.isVisible(NetworksManagePage.bitcoinTestnet)
+    await Assert.count(NetworksManagePage.bitcoinTestnet, 2)
   })
 })
