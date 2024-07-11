@@ -8,5 +8,6 @@ export default {
   walletSVG: 'wallet_svg',
   enterWalletBtn: 'btnPrimary',
   alreadyHaveAWalletBtn: 'Already Have a Wallet?',
-  recoveryPhrase: 'Recovery Phrase'
+  recoveryPhrase: 'Recovery Phrase',
+  searchBar: 'search_bar__search'
 }
