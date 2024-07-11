@@ -168,7 +168,7 @@ async function generatePlatformResults(
       })
     }
     console.log('The test cases to send are ' + JSON.stringify(testCasesToSend))
-    await api.updateRun(Number(runId), { testCasesToSend })
+    await api.updateRun(Number(runId), testCasesToSend)
   } catch (TestRailException) {
     console.log(
       'Invalid test case ids found in ' +
@@ -184,6 +184,7 @@ async function generatePlatformResults(
     const statusId = Number(resultObject?.status_id)
     const comment = `Test case result for ${resultObject?.case_id} and has a status of ${statusId} for ${platform}`
     const screenshot = resultObject?.screenshot
+    console.log('The result object is ' + JSON.stringify(resultObject))
 
     const resultResp = await api.addResultForCase(runId, resultObject.case_id, {
       status_id: statusId,
