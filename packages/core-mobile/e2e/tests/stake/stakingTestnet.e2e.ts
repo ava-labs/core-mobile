@@ -23,9 +23,10 @@ describe('Stake: testnet flow', () => {
     await AdvancedPage.switchToTestnet()
     await BottomTabsPage.tapStakeTab()
     await StakePage.tapStakeButton()
+    await GetStartedScreenPage.verifyGetStartedScreenItems()
     await GetStartedScreenPage.tapNextButton()
     await StakePage.verifyStakingAmountScreenItems()
-    await StakePage.inputStakingAmount('2')
+    await StakePage.inputStakingAmount('1')
     await StakePage.tapNextButton()
   })
 
