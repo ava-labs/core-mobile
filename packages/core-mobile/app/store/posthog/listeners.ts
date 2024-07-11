@@ -5,7 +5,6 @@ import {
   regenerateUserId,
   selectDistinctID,
   selectIsAnalyticsEnabled,
-  selectIsBlockaidTransactionValidationBlocked,
   selectIsLogErrorsWithSentryBlocked,
   selectUserID,
   setFeatureFlags,
@@ -15,7 +14,6 @@ import PostHogService from 'services/posthog/PostHogService'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { AppListenerEffectAPI } from 'store'
 import Logger from 'utils/Logger'
-import ModuleManager from 'vmModule/ModuleManager'
 
 const FEATURE_FLAGS_FETCH_INTERVAL = 30000 // 30 seconds
 
@@ -73,13 +71,6 @@ const onSetFeatureFlags = async (
 
   const isLogErrorsWithSentryBlocked = selectIsLogErrorsWithSentryBlocked(state)
   Logger.setShouldLogErrorToSentry(!isLogErrorsWithSentryBlocked)
-
-  const isTransactionValidationDisabled =
-    selectIsBlockaidTransactionValidationBlocked(state)
-
-  ModuleManager.init({
-    transactionValidation: !isTransactionValidationDisabled
-  })
 }
 
 export const addPosthogListeners = (

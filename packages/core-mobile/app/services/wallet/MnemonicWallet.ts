@@ -61,16 +61,13 @@ export class MnemonicWallet implements Wallet {
     return btcWallet
   }
 
-  private getEvmSigner(
-    accountIndex: number,
-    derivationPath: DerivationPath
-  ): BaseWallet {
+  private getEvmSigner(accountIndex: number): BaseWallet {
     const start = now()
 
     const wallet = getWalletFromMnemonic(
       this.mnemonic,
       accountIndex,
-      derivationPath
+      DerivationPath.BIP44
     )
 
     Logger.info('evmWallet getWalletFromMnemonic', now() - start)
@@ -96,20 +93,15 @@ export class MnemonicWallet implements Wallet {
   private async getSigner({
     accountIndex,
     network,
-    provider,
-    derivationPath
+    provider
   }: {
     accountIndex: number
     network: Network
     provider: JsonRpcBatchInternal | BitcoinProvider | Avalanche.JsonRpcProvider
-    derivationPath?: DerivationPath
   }): Promise<BitcoinWallet | BaseWallet | Avalanche.SimpleSigner> {
     switch (network.vmName) {
       case NetworkVMType.EVM:
-        return this.getEvmSigner(
-          accountIndex,
-          derivationPath ?? DerivationPath.BIP44
-        )
+        return this.getEvmSigner(accountIndex)
       case NetworkVMType.BITCOIN:
         if (!(provider instanceof BitcoinProvider)) {
           throw new Error(
@@ -163,8 +155,7 @@ export class MnemonicWallet implements Wallet {
     data,
     accountIndex,
     network,
-    provider,
-    derivationPath = DerivationPath.BIP44
+    provider
   }: {
     rpcMethod: RpcMethod
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -172,7 +163,6 @@ export class MnemonicWallet implements Wallet {
     accountIndex: number
     network: Network
     provider: JsonRpcBatchInternal
-    derivationPath?: DerivationPath
   }): Promise<string> {
     if (!data) {
       throw new Error('no message to sign')
@@ -189,8 +179,7 @@ export class MnemonicWallet implements Wallet {
         const key = await this.getSigningKey({
           accountIndex,
           network,
-          provider,
-          derivationPath
+          provider
         })
         return personalSign({ privateKey: key, data })
       }
@@ -203,8 +192,7 @@ export class MnemonicWallet implements Wallet {
         const key = await this.getSigningKey({
           accountIndex,
           network,
-          provider,
-          derivationPath
+          provider
         })
         return signTypedData({
           privateKey: key,
@@ -216,8 +204,7 @@ export class MnemonicWallet implements Wallet {
         const key = await this.getSigningKey({
           accountIndex,
           network,
-          provider,
-          derivationPath
+          provider
         })
         return signTypedData({
           privateKey: key,
@@ -229,8 +216,7 @@ export class MnemonicWallet implements Wallet {
         const key = await this.getSigningKey({
           accountIndex,
           network,
-          provider,
-          derivationPath
+          provider
         })
         return signTypedData({
           privateKey: key,
@@ -246,19 +232,16 @@ export class MnemonicWallet implements Wallet {
   private async getSigningKey({
     accountIndex,
     network,
-    provider,
-    derivationPath
+    provider
   }: {
     accountIndex: number
     network: Network
     provider: JsonRpcBatchInternal
-    derivationPath: DerivationPath
   }): Promise<Buffer> {
     const signer = await this.getSigner({
       accountIndex,
       network,
-      provider,
-      derivationPath
+      provider
     })
 
     if (!(signer instanceof BaseWallet)) {
@@ -331,20 +314,17 @@ export class MnemonicWallet implements Wallet {
     accountIndex,
     transaction,
     network,
-    provider,
-    derivationPath
+    provider
   }: {
     accountIndex: number
     transaction: TransactionRequest
     network: Network
     provider: JsonRpcBatchInternal
-    derivationPath: DerivationPath
   }): Promise<string> {
     const signer = await this.getSigner({
       accountIndex,
       network,
-      provider,
-      derivationPath
+      provider
     })
 
     if (!(signer instanceof BaseWallet)) {

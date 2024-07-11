@@ -1,14 +1,13 @@
 import { rpcErrors } from '@metamask/rpc-errors'
 import {
-  Chain,
   Module,
-  TokenType,
   RpcMethod as VmModuleRpcMethod
 } from '@avalabs/vm-module-types'
 import { AppListenerEffectAPI } from 'store'
 import Logger from 'utils/Logger'
 import { selectNetwork } from 'store/network/slice'
 import { isRpcRequest } from 'store/rpc/utils/isRpcRequest'
+import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 import { AgnosticRpcProvider, Request } from '../../types'
 
 export const handleRequestViaVMModule = async ({
@@ -48,21 +47,6 @@ export const handleRequestViaVMModule = async ({
     return
   }
 
-  const chain: Chain = {
-    chainId: caip2ChainId,
-    chainName: network.chainName,
-    isTestnet: network.isTestnet,
-    logoUrl: network.logoUri,
-    rpcUrl: network.rpcUrl,
-    multiContractAddress: network.utilityAddresses?.multicall
-      ? (network.utilityAddresses.multicall as `0x${string}`)
-      : undefined,
-    networkToken: {
-      ...network.networkToken,
-      type: TokenType.NATIVE
-    }
-  }
-
   const response = await module.onRpcRequest(
     {
       requestId: String(request.data.id),
@@ -76,7 +60,7 @@ export const handleRequestViaVMModule = async ({
       method: request.method as VmModuleRpcMethod,
       params: request.data.params.request.params
     },
-    chain
+    mapToVmNetwork(network)
   )
 
   if ('error' in response) {

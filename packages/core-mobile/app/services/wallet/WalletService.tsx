@@ -1,7 +1,6 @@
 import {
   Avalanche,
   BitcoinProvider,
-  DerivationPath,
   JsonRpcBatchInternal
 } from '@avalabs/wallets-sdk'
 import {
@@ -71,13 +70,11 @@ class WalletService {
   public async sign({
     transaction,
     accountIndex,
-    derivationPath,
     network,
     sentryTrx
   }: {
     transaction: SignTransactionRequest
     accountIndex: number
-    derivationPath?: DerivationPath
     network: Network
     sentryTrx?: SentryTransaction
   }): Promise<string> {
@@ -127,8 +124,7 @@ class WalletService {
           accountIndex,
           transaction,
           network,
-          provider,
-          derivationPath: derivationPath || DerivationPath.BIP44
+          provider
         })
       })
   }

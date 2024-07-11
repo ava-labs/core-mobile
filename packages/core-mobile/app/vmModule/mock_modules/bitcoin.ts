@@ -2,6 +2,7 @@ import {
   GetTransactionHistory,
   Manifest,
   Module,
+  Network,
   NetworkContractToken,
   NetworkFees,
   RpcRequest,
@@ -39,7 +40,7 @@ export class BitcoinModule implements Module {
   getAddress(): Promise<string> {
     return Promise.resolve('Bitcoin address')
   }
-  getTokens(_: number): Promise<NetworkContractToken[]> {
+  getTokens(_: Network): Promise<NetworkContractToken[]> {
     return Promise.resolve([])
   }
   onRpcRequest(

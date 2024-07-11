@@ -13,10 +13,6 @@ describe('ModuleManager', () => {
     })
   })
   describe('initialized', () => {
-    beforeEach(async () => {
-      ModuleManager.init({ transactionValidation: true })
-    })
-
     it('should load the correct modules', async () => {
       const params = [
         {

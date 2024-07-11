@@ -1,11 +1,12 @@
 import { Network } from '@avalabs/chains-sdk'
 import { CorePrimaryAccount } from '@avalabs/types'
 import {
+  Hex,
   ApprovalController as VmModuleApprovalController,
   ApprovalParams,
-  ApprovalResponse
-} from '@avalabs/evm-module'
-import { Hex } from '@avalabs/vm-module-types'
+  ApprovalResponse,
+  SigningDataType
+} from '@avalabs/vm-module-types'
 import AppNavigation from 'navigation/AppNavigation'
 import WalletService from 'services/wallet/WalletService'
 import * as Navigation from 'utils/Navigation'
@@ -45,11 +46,9 @@ class ApprovalController implements VmModuleApprovalController {
         maxPriorityFeePerGas: bigint
       }): Promise<void> => {
         switch (signingData.type) {
-          case 'transaction': {
+          case SigningDataType.EVM_TRANSACTION: {
             const { gasLimit, type, nonce, data, from, to, value } =
               signingData.data
-
-            const derivationPath = signingData.derivationPath
 
             const transaction = {
               nonce,
@@ -68,8 +67,7 @@ class ApprovalController implements VmModuleApprovalController {
               const signedTx = await WalletService.sign({
                 transaction,
                 accountIndex: account.index,
-                network,
-                derivationPath
+                network
               })
 
               resolve({
@@ -84,7 +82,7 @@ class ApprovalController implements VmModuleApprovalController {
             break
           }
 
-          case 'message': // to be implemented
+          case SigningDataType.EVM_MESSAGE_ETH_SIGN: // to be implemented
           default:
             resolve({
               error: providerErrors.unsupportedMethod(
@@ -104,50 +102,51 @@ class ApprovalController implements VmModuleApprovalController {
         })
       }
 
-      if (displayData.transactionValidation) {
-        Navigation.navigate({
-          name: AppNavigation.Root.Wallet,
+      // TODO: use the correct fields for validation
+      // if (displayData.transactionValidation) {
+      //   Navigation.navigate({
+      //     name: AppNavigation.Root.Wallet,
+      //     params: {
+      //       screen: AppNavigation.Modal.MaliciousActivityWarning,
+      //       params: {
+      //         title: displayData.transactionValidation.title,
+      //         subTitle: displayData.transactionValidation.description,
+      //         rejectButtonTitle:
+      //           displayData.transactionValidation.rejectButtonTitle,
+      //         onReject,
+      //         onProceed: () => {
+      //           Navigation.navigate({
+      //             name: AppNavigation.Root.Wallet,
+      //             params: {
+      //               screen: AppNavigation.Modal.ApprovalPopup,
+      //               params: {
+      //                 request,
+      //                 displayData: displayData,
+      //                 signingData: signingData,
+      //                 onApprove,
+      //                 onReject
+      //               }
+      //             }
+      //           })
+      //         }
+      //       }
+      //     }
+      //   })
+      // } else {
+      Navigation.navigate({
+        name: AppNavigation.Root.Wallet,
+        params: {
+          screen: AppNavigation.Modal.ApprovalPopup,
           params: {
-            screen: AppNavigation.Modal.MaliciousActivityWarning,
-            params: {
-              title: displayData.transactionValidation.title,
-              subTitle: displayData.transactionValidation.description,
-              rejectButtonTitle:
-                displayData.transactionValidation.rejectButtonTitle,
-              onReject,
-              onProceed: () => {
-                Navigation.navigate({
-                  name: AppNavigation.Root.Wallet,
-                  params: {
-                    screen: AppNavigation.Modal.ApprovalPopup,
-                    params: {
-                      request,
-                      displayData: displayData,
-                      signingData: signingData,
-                      onApprove,
-                      onReject
-                    }
-                  }
-                })
-              }
-            }
+            request,
+            displayData: displayData,
+            signingData: signingData,
+            onApprove,
+            onReject
           }
-        })
-      } else {
-        Navigation.navigate({
-          name: AppNavigation.Root.Wallet,
-          params: {
-            screen: AppNavigation.Modal.ApprovalPopup,
-            params: {
-              request,
-              displayData: displayData,
-              signingData: signingData,
-              onApprove,
-              onReject
-            }
-          }
-        })
-      }
+        }
+      })
+      // }
     })
   }
 }

@@ -1,5 +1,5 @@
 import { configureStore, createListenerMiddleware } from '@reduxjs/toolkit'
-import { Module } from '@avalabs/vm-module-types'
+import { Module, Network } from '@avalabs/vm-module-types'
 import { noop } from 'lodash'
 import WalletConnectService from 'services/walletconnectv2/WalletConnectService'
 import { AppStartListening } from 'store/middleware/listener'
@@ -564,18 +564,15 @@ describe('rpc - listeners', () => {
 
           await jest.runOnlyPendingTimersAsync()
 
-          const chain = {
-            chainId: 'eip155:43114',
+          const network: Network = {
+            chainId: 43114,
             chainName: mockNetworks[43114].chainName,
             isTestnet: mockNetworks[43114].isTestnet,
             rpcUrl: mockNetworks[43114].rpcUrl,
             logoUrl: mockNetworks[43114].logoUri,
-            multiContractAddress:
-              mockNetworks[43114].utilityAddresses.multicall,
-            networkToken: {
-              ...mockNetworks[43114].networkToken,
-              type: 'NATIVE'
-            }
+            explorerUrl: mockNetworks[43114].explorerUrl,
+            utilityAddresses: mockNetworks[43114].utilityAddresses,
+            networkToken: mockNetworks[43114].networkToken
           }
 
           const request = {
@@ -591,7 +588,7 @@ describe('rpc - listeners', () => {
             params: testRequest.data.params.request.params
           }
 
-          expect(mockOnRpcRequest).toHaveBeenCalledWith(request, chain)
+          expect(mockOnRpcRequest).toHaveBeenCalledWith(request, network)
 
           expect(mockShowDappToastError).toHaveBeenCalledWith(
             'Invalid params',

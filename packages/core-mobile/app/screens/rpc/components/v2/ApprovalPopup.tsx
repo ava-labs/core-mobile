@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { ActivityIndicator, StyleSheet, ScrollView } from 'react-native'
+import { SigningDataType } from '@avalabs/vm-module-types'
 import { Space } from 'components/Space'
 import AvaButton from 'components/AvaButton'
 import { Row } from 'components/Row'
@@ -25,7 +26,7 @@ import TokenAddress from 'components/TokenAddress'
 import { humanize } from 'utils/string/humanize'
 import { isInAppRequest } from 'store/rpc/utils/isInAppRequest'
 import RpcRequestBottomSheet from '../shared/RpcRequestBottomSheet'
-import MaliciousActivityWarning from './MaliciousActivityWarning'
+// import MaliciousActivityWarning from './MaliciousActivityWarning'
 
 type ApprovalPopupScreenProps = WalletScreenProps<
   typeof AppNavigation.Modal.ApprovalPopup
@@ -37,8 +38,7 @@ const ApprovalPopup = (): JSX.Element => {
   const { request, displayData, signingData, onApprove, onReject } =
     useRoute<ApprovalPopupScreenProps['route']>().params
   const { getNetwork } = useNetworks()
-  const caip2ChainId = signingData.chainId
-  const chainId = Number(caip2ChainId.split(':')[1])
+  const chainId = signingData.chainId
   const network = getNetwork(chainId)
   const account = useSelector(selectAccountByAddress(signingData.account))
 
@@ -54,6 +54,10 @@ const ApprovalPopup = (): JSX.Element => {
 
   const approveDisabled =
     !network || !account || !maxFeePerGas || !maxPriorityFeePerGas || submitting
+
+  const showNetworkFeeSelector =
+    displayData.networkFeeSelector &&
+    signingData.type === SigningDataType.EVM_TRANSACTION
 
   const rejectAndClose = useCallback(
     (message?: string) => {
@@ -143,7 +147,7 @@ const ApprovalPopup = (): JSX.Element => {
   }
 
   const renderNetwork = (): JSX.Element => {
-    const { name, logoUrl } = displayData.chain
+    const { name, logoUrl } = displayData.network
 
     return (
       <View style={styles.fullWidthContainer}>
@@ -252,6 +256,7 @@ const ApprovalPopup = (): JSX.Element => {
       </View>
     )
   }
+
   return (
     <>
       <RpcRequestBottomSheet
@@ -262,12 +267,14 @@ const ApprovalPopup = (): JSX.Element => {
           <View>
             <Text variant="heading4">{displayData.title}</Text>
             <Space y={12} />
-            <MaliciousActivityWarning
-              style={{ marginTop: 12, marginBottom: 12 }}
-              result={displayData.transactionValidation?.resultType}
-              title={displayData.transactionValidation?.title ?? ''}
-              subTitle={displayData.transactionValidation?.description ?? ''}
-            />
+            {/* {displayData.transactionValidation && (
+              <MaliciousActivityWarning
+                style={{ marginTop: 12, marginBottom: 12 }}
+                result={displayData.transactionValidation?.resultType}
+                title={displayData.transactionValidation?.title ?? ''}
+                subTitle={displayData.transactionValidation?.description ?? ''}
+              />
+            )} */}
             <Space y={12} />
             {renderNetwork()}
             {renderTransactionDetails()}
@@ -282,18 +289,17 @@ const ApprovalPopup = (): JSX.Element => {
               }
             /> */}
           </View>
-          {displayData.networkFeeSelector &&
-            signingData.type === 'transaction' && (
-              <NetworkFeeSelector
-                chainId={chainId}
-                gasLimit={
-                  signingData.data.gasLimit
-                    ? Number(signingData.data.gasLimit)
-                    : 0
-                }
-                onFeesChange={handleFeesChange}
-              />
-            )}
+          {showNetworkFeeSelector && (
+            <NetworkFeeSelector
+              chainId={chainId}
+              gasLimit={
+                signingData.data.gasLimit
+                  ? Number(signingData.data.gasLimit)
+                  : 0
+              }
+              onFeesChange={handleFeesChange}
+            />
+          )}
         </ScrollView>
         {renderApproveRejectButtons()}
       </RpcRequestBottomSheet>

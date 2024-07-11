@@ -99,7 +99,7 @@ __metadata:
     "@avalabs/coingecko-sdk": v2.8.0-alpha.187
     "@avalabs/covalent-sdk": v2.8.0-alpha.187
     "@avalabs/etherscan-sdk": v2.8.0-alpha.187
-    "@avalabs/evm-module": 0.0.0-eth-send-20240708134341
+    "@avalabs/evm-module": 0.0.0-eth-send-20240711211919
     "@avalabs/glacier-sdk": v2.8.0-alpha.187
     "@avalabs/k2-mobile": "workspace:*"
     "@avalabs/paraswap-sdk": v2.8.0-alpha.187
@@ -108,7 +108,7 @@ __metadata:
     "@avalabs/tsconfig-mobile": "workspace:*"
     "@avalabs/types": v2.8.0-alpha.187
     "@avalabs/utils-sdk": v2.8.0-alpha.187
-    "@avalabs/vm-module-types": 0.0.0-eth-send-20240708134341
+    "@avalabs/vm-module-types": 0.0.0-eth-send-20240711211919
     "@avalabs/wallets-sdk": v2.8.0-alpha.187
     "@babel/core": 7.24.0
     "@babel/plugin-proposal-nullish-coalescing-operator": 7.18.6
@@ -333,24 +333,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/evm-module@npm:0.0.0-eth-send-20240708134341":
-  version: 0.0.0-eth-send-20240708134341
-  resolution: "@avalabs/evm-module@npm:0.0.0-eth-send-20240708134341"
+"@avalabs/evm-module@npm:0.0.0-eth-send-20240711211919":
+  version: 0.0.0-eth-send-20240711211919
+  resolution: "@avalabs/evm-module@npm:0.0.0-eth-send-20240711211919"
   dependencies:
     "@avalabs/chains-sdk": v2.8.0-alpha.187
     "@avalabs/etherscan-sdk": v2.8.0-alpha.187
     "@avalabs/glacier-sdk": v2.8.0-alpha.187
     "@avalabs/utils-sdk": v2.8.0-alpha.187
-    "@avalabs/vm-module-types": 0.0.0-eth-send-20240708134341
+    "@avalabs/vm-module-types": 0.0.0-eth-send-20240711211919
     "@avalabs/wallets-sdk": v2.8.0-alpha.187
     "@metamask/rpc-errors": 6.3.0
     bn.js: 5.2.1
     lodash.startcase: 4.4.0
-    viem: 2.17.0
     zod: 3.23.8
   peerDependencies:
     ethers: ^6.8.1
-  checksum: 35e0e4a62e97fd059a2238d4d33b9d85623254e23cc521903c61179f11573082f351733de98a88a20642c50fcdef9971551edc64c7208d7678c93ee8fb986e82
+  checksum: 121ec079e9621f0b495c51da3f183fcbe44be40f45470293bbd5e47f4a87959132bffcb84660d3bb5f876b59c8b0b25898bdc2076fb1589019abc3d138cd124e
   languageName: node
   linkType: hard
 
@@ -486,14 +485,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/vm-module-types@npm:0.0.0-eth-send-20240708134341":
-  version: 0.0.0-eth-send-20240708134341
-  resolution: "@avalabs/vm-module-types@npm:0.0.0-eth-send-20240708134341"
+"@avalabs/vm-module-types@npm:0.0.0-eth-send-20240711211919":
+  version: 0.0.0-eth-send-20240711211919
+  resolution: "@avalabs/vm-module-types@npm:0.0.0-eth-send-20240711211919"
   dependencies:
     "@metamask/rpc-errors": 6.3.0
-    viem: 2.17.0
+    ethers: 6.8.1
     zod: 3.23.8
-  checksum: 535bec969ec533f7831bab1712d0c36dbcf5e4a42323f541d8cb383aa468ea5c2ea7c6be965f6279b05c0415c37cce8cf86ad9da1d8ce4a792d38601f6ab499f
+  peerDependencies:
+    ethers: ^6.8.1
+  checksum: 2b7ea0df17a65ad084b71f51f3a550578e076a82815e78799f7cf89a05506cba4bab0d19e75ea14f330167ad588d11c7b8a0fbe03f80e76a768e201a8db5bd25
   languageName: node
   linkType: hard
 

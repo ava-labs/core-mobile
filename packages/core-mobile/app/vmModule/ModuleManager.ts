@@ -4,28 +4,24 @@ import { CoreEthModule } from 'vmModule/mock_modules/coreEth'
 import { EvmModule } from '@avalabs/evm-module'
 import { PVMModule } from 'vmModule/mock_modules/pvm'
 import Logger from 'utils/Logger'
-import { Module } from '@avalabs/vm-module-types'
+import { Environment, Module } from '@avalabs/vm-module-types'
 import { NetworkVMType, Network } from '@avalabs/chains-sdk'
-import Config from 'react-native-config'
 import { assertNotUndefined } from 'utils/assertions'
 import { ModuleErrors, VmModuleErrors } from './errors'
 import { approvalController } from './ApprovalController'
-
-if (!Config.GLACIER_URL) throw Error('GLACIER_URL ENV is missing')
-if (!Config.PROXY_URL) throw Error('PROXY_URL is missing')
-
-if (!Config.PROXY_URL) throw Error('PROXY_URL ENV is missing')
-
-const GLACIER_URL = Config.GLACIER_URL
-const GLACIER_API_KEY = Config.GLACIER_API_KEY
-const PROXY_URL = Config.PROXY_URL
 
 // https://github.com/ChainAgnostic/CAIPs/blob/main/CAIPs/caip-2.md
 // Syntax for namespace is defined in CAIP-2
 const NAMESPACE_REGEX = new RegExp('[-a-z0-9]{3,8}')
 
+const isDev = typeof __DEV__ === 'boolean' && __DEV__
+
 class ModuleManager {
   #modules: Module[] | undefined
+
+  constructor() {
+    this.init()
+  }
 
   private get modules(): Module[] {
     assertNotUndefined(this.#modules, 'modules are not initialized')
@@ -36,20 +32,13 @@ class ModuleManager {
     this.#modules = modules
   }
 
-  init = async ({
-    transactionValidation
-  }: {
-    transactionValidation: boolean
-  }): Promise<void> => {
+  init = async (): Promise<void> => {
     if (this.#modules !== undefined) return
 
     this.modules = [
       new EvmModule({
-        glacierApiUrl: GLACIER_URL,
-        glacierApiKey: GLACIER_API_KEY,
-        proxyApiUrl: PROXY_URL,
-        approvalController,
-        transactionValidation
+        environment: isDev ? Environment.DEV : Environment.PRODUCTION,
+        approvalController
       }),
       new BitcoinModule(),
       new AVMModule(),

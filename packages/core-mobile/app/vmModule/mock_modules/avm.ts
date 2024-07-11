@@ -7,7 +7,8 @@ import {
   RpcRequest,
   RpcResponse,
   TransactionHistoryResponse,
-  parseManifest
+  parseManifest,
+  Network
 } from '@avalabs/vm-module-types'
 import {
   JsonRpcError,
@@ -39,7 +40,7 @@ export class AVMModule implements Module {
   getAddress(): Promise<string> {
     return Promise.resolve('AVM address')
   }
-  getTokens(_: number): Promise<NetworkContractToken[]> {
+  getTokens(_: Network): Promise<NetworkContractToken[]> {
     return Promise.resolve([])
   }
   onRpcRequest(
