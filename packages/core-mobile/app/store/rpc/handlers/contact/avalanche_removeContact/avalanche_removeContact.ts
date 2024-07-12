@@ -1,5 +1,5 @@
 import { AppListenerEffectAPI } from 'store'
-import { ethErrors } from 'eth-rpc-errors'
+import { rpcErrors } from '@metamask/rpc-errors'
 import { removeContact, selectContacts } from 'store/addressBook'
 import * as Navigation from 'utils/Navigation'
 import AppNavigation from 'navigation/AppNavigation'
@@ -34,9 +34,7 @@ class AvalancheRemoveContactHandler
       Logger.error('invalid params', result.error)
       return {
         success: false,
-        error: ethErrors.rpc.invalidParams({
-          message: 'Contact ID is invalid'
-        })
+        error: rpcErrors.invalidParams('Contact ID is invalid')
       }
     }
     const contactId = result.data[0].id
@@ -47,9 +45,7 @@ class AvalancheRemoveContactHandler
     if (!existingContact) {
       return {
         success: false,
-        error: ethErrors.rpc.resourceNotFound({
-          message: 'Contact does not exist'
-        })
+        error: rpcErrors.resourceNotFound('Contact does not exist')
       }
     }
 
@@ -79,7 +75,7 @@ class AvalancheRemoveContactHandler
     if (!result.success) {
       return {
         success: false,
-        error: ethErrors.rpc.internal('Invalid approve data')
+        error: rpcErrors.internal('Invalid approve data')
       }
     }
 

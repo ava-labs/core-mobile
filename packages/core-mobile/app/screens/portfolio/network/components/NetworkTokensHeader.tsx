@@ -6,7 +6,7 @@ import {
   selectBalanceTotalInCurrencyForNetworkAndAccount,
   selectIsLoadingBalances,
   selectIsRefetchingBalances
-} from 'store/balance'
+} from 'store/balance/slice'
 import { ActivityIndicator } from 'components/ActivityIndicator'
 import { NetworkLogo } from 'screens/network/NetworkLogo'
 import { selectActiveAccount } from 'store/account'

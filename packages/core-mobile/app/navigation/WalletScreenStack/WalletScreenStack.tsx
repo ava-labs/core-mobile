@@ -79,6 +79,7 @@ import { BridgeProvider } from 'contexts/BridgeContext'
 import { BridgeStackParamList } from '../wallet/BridgeScreenStack'
 import {
   AddEthereumChainV2Params,
+  ApprovalPopupParams,
   AvalancheSendTransactionV2Params,
   AvalancheSetDeveloperModeParams,
   AvalancheSignMessageParams,
@@ -94,7 +95,6 @@ import {
   SelectAccountV2Params,
   SessionProposalV2Params,
   SignMessageV2Params,
-  SignTransactionV2Params,
   SwitchEthereumChainV2Params,
   TokenSelectParams,
   UpdateContactV2Params,
@@ -171,7 +171,7 @@ export type WalletScreenStackParams = {
   [AppNavigation.Modal.AddEthereumChainV2]: AddEthereumChainV2Params
   [AppNavigation.Modal.SwitchEthereumChainV2]: SwitchEthereumChainV2Params
   [AppNavigation.Modal.BridgeAssetV2]: BridgeAssetV2Params
-  [AppNavigation.Modal.SignTransactionV2]: SignTransactionV2Params
+  [AppNavigation.Modal.ApprovalPopup]: ApprovalPopupParams
   [AppNavigation.Modal
     .AvalancheSendTransactionV2]: AvalancheSendTransactionV2Params
   [AppNavigation.Modal

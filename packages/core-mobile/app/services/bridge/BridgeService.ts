@@ -16,7 +16,6 @@ import {
   TransferAssetEVMParams,
   WrapStatus
 } from '@avalabs/bridge-sdk'
-import { bigIntToHex } from '@ethereumjs/util'
 import Big from 'big.js'
 import { Account } from 'store/account/types'
 import { Network } from '@avalabs/chains-sdk'
@@ -27,10 +26,10 @@ import {
 import { Networks } from 'store/network/types'
 import { getBtcBalance } from 'screens/bridge/hooks/getBtcBalance'
 import { blockchainToNetwork } from 'screens/bridge/utils/bridgeUtils'
-import { TransactionParams } from 'store/rpc/handlers/eth_sendTransaction/utils'
 import { Request } from 'store/rpc/utils/createInAppRequest'
 import { RpcMethod } from 'store/rpc/types'
 import { bnToBig, noop, stringToBN } from '@avalabs/utils-sdk'
+import { transactionRequestToTransactionParams } from 'store/rpc/utils/transactionRequestToTransactionParams'
 
 type TransferBTCParams = {
   amount: string
@@ -194,31 +193,12 @@ export class BridgeService {
     }
 
     const signAndSendEVM: TransferAssetEVMParams['signAndSendEVM'] =
-      async txData => {
-        if (typeof txData.gasLimit !== 'bigint')
-          throw new Error('invalid gasLimit field')
-
-        if (typeof txData.from !== 'string')
-          throw new Error('invalid from field')
-
-        if (typeof txData.to !== 'string') throw new Error('invalid to field')
-
-        const txParams: [TransactionParams] = [
-          {
-            from: txData.from,
-            to: txData.to,
-            gas: bigIntToHex(txData.gasLimit),
-            data: txData.data ?? undefined,
-            value:
-              typeof txData.value === 'bigint'
-                ? bigIntToHex(txData.value)
-                : undefined
-          }
-        ]
+      async txRequest => {
+        const txParams = transactionRequestToTransactionParams(txRequest)
 
         return request({
           method: RpcMethod.ETH_SEND_TRANSACTION,
-          params: txParams,
+          params: [txParams],
           chainId: blockchainNetwork.chainId.toString()
         })
       }

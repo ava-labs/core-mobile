@@ -1,4 +1,4 @@
-import { LocalTokenWithBalance } from 'store/balance'
+import { LocalTokenWithBalance } from 'store/balance/types'
 import { MarketToken } from 'store/watchlist'
 import { useWatchlist } from '../watchlist/useWatchlist'
 

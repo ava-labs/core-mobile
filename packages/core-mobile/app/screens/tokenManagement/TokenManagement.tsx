@@ -13,7 +13,7 @@ import SearchBar from 'components/SearchBar'
 import { useNavigation } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
 import { WalletScreenProps } from 'navigation/types'
-import { LocalTokenWithBalance, TokenType } from 'store/balance'
+import { LocalTokenWithBalance, TokenType } from 'store/balance/types'
 import ZeroState from 'components/ZeroState'
 
 type NavigationProp = WalletScreenProps<

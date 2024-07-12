@@ -1,6 +1,6 @@
 import { RpcMethod, RpcProvider } from 'store/rpc/types'
 import mockSession from 'tests/fixtures/walletConnect/session.json'
-import { ethErrors } from 'eth-rpc-errors'
+import { rpcErrors } from '@metamask/rpc-errors'
 import WalletService from 'services/wallet/WalletService'
 import { avalancheGetAddressesInRangeHandler } from './avalanche_getAddressesInRange'
 import { AvalancheGetAddressesInRangeRpcRequest } from './types'
@@ -58,9 +58,9 @@ describe('avalanche_getAddressesInRange.ts', () => {
         )
         expect(result).toEqual({
           success: false,
-          error: ethErrors.rpc.invalidParams({
-            message: 'avalanche_getAddressesInRange param is invalid'
-          })
+          error: rpcErrors.invalidParams(
+            'avalanche_getAddressesInRange param is invalid'
+          )
         })
       }
     })

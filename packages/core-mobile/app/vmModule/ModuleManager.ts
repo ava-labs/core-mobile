@@ -4,33 +4,49 @@ import { CoreEthModule } from 'vmModule/mock_modules/coreEth'
 import { EvmModule } from '@avalabs/evm-module'
 import { PVMModule } from 'vmModule/mock_modules/pvm'
 import Logger from 'utils/Logger'
-import { Module } from '@avalabs/vm-module-types'
+import { Environment, Module } from '@avalabs/vm-module-types'
 import { NetworkVMType, Network } from '@avalabs/chains-sdk'
-import Config from 'react-native-config'
+import { assertNotUndefined } from 'utils/assertions'
 import { ModuleErrors, VmModuleErrors } from './errors'
+import { approvalController } from './ApprovalController'
 
-if (!Config.GLACIER_URL) throw Error('GLACIER_URL ENV is missing')
-if (!Config.PROXY_URL) throw Error('PROXY_URL is missing')
-
-const GLACIER_URL = Config.GLACIER_URL
-const GLACIER_API_KEY = Config.GLACIER_API_KEY
-
-const modules: Module[] = [
-  new EvmModule({
-    glacierApiUrl: GLACIER_URL,
-    glacierApiKey: GLACIER_API_KEY,
-    proxyApiUrl: Config.PROXY_URL
-  }),
-  new BitcoinModule(),
-  new AVMModule(),
-  new CoreEthModule(),
-  new PVMModule()
-]
 // https://github.com/ChainAgnostic/CAIPs/blob/main/CAIPs/caip-2.md
 // Syntax for namespace is defined in CAIP-2
 const NAMESPACE_REGEX = new RegExp('[-a-z0-9]{3,8}')
 
+const isDev = typeof __DEV__ === 'boolean' && __DEV__
+
 class ModuleManager {
+  #modules: Module[] | undefined
+
+  constructor() {
+    this.init()
+  }
+
+  private get modules(): Module[] {
+    assertNotUndefined(this.#modules, 'modules are not initialized')
+    return this.#modules
+  }
+
+  private set modules(modules: Module[]) {
+    this.#modules = modules
+  }
+
+  init = async (): Promise<void> => {
+    if (this.#modules !== undefined) return
+
+    this.modules = [
+      new EvmModule({
+        environment: isDev ? Environment.DEV : Environment.PRODUCTION,
+        approvalController
+      }),
+      new BitcoinModule(),
+      new AVMModule(),
+      new CoreEthModule(),
+      new PVMModule()
+    ]
+  }
+
   loadModule = async (chainId: string, method?: string): Promise<Module> => {
     const module = await this.getModule(chainId)
     if (module === undefined) {
@@ -69,6 +85,7 @@ class ModuleManager {
       case NetworkVMType.AVM:
         return `avax:${chainId}`
       case NetworkVMType.EVM:
+      case NetworkVMType.CoreEth:
         return `eip155:${chainId}`
       default:
         throw new Error('Unsupported network')
@@ -93,7 +110,7 @@ class ModuleManager {
   private getModuleByChainId = async (
     chainId: string
   ): Promise<Module | undefined> => {
-    return modules.find(module =>
+    return this.modules.find(module =>
       module.getManifest()?.network.chainIds.includes(chainId)
     )
   }
@@ -101,7 +118,7 @@ class ModuleManager {
   private getModuleByNamespace = async (
     namespace: string
   ): Promise<Module | undefined> => {
-    return modules.find(module =>
+    return this.modules.find(module =>
       module.getManifest()?.network.namespaces.includes(namespace)
     )
   }

@@ -10,12 +10,11 @@ import {
   ValidateStateAndCalculateFeesParams
 } from 'services/send/types'
 import { Network } from '@avalabs/chains-sdk'
-import { bigIntToHex } from '@ethereumjs/util'
 import {
   NftTokenWithBalance,
   TokenType,
   TokenWithBalanceERC20
-} from 'store/balance'
+} from 'store/balance/types'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import Logger from 'utils/Logger'
 import {
@@ -130,7 +129,7 @@ export class SendServiceEVM implements SendServiceHelper {
       .setContext('svc.send.evm.get_trx_request')
       .executeAsync(async () => {
         const unsignedTx = await this.getUnsignedTx(sendState)
-        const chainId = this.activeNetwork.chainId
+        const chainId = this.activeNetwork.chainId.toString()
         const gasLimit = await this.getGasLimit(sendState)
 
         return {
@@ -201,7 +200,7 @@ export class SendServiceEVM implements SendServiceHelper {
     return {
       from: this.fromAddress,
       to: sendState.address,
-      value: bigIntToHex(BigInt(sendState.amount?.toString() || 0n))
+      value: BigInt(sendState.amount?.toString() || 0n)
     }
   }
 

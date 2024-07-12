@@ -11,11 +11,11 @@ import { Account, setAccountTitle as setAccountTitleStore } from 'store/account'
 import { useDispatch, useSelector } from 'react-redux'
 import {
   fetchBalanceForAccount,
-  QueryStatus,
   selectBalanceStatus,
   selectBalanceTotalInCurrencyForAccount,
   selectIsBalanceLoadedForAddress
-} from 'store/balance'
+} from 'store/balance/slice'
+import { QueryStatus } from 'store/balance/types'
 import ReloadSVG from 'components/svg/ReloadSVG'
 import { ActivityIndicator } from 'components/ActivityIndicator'
 import AnalyticsService from 'services/analytics/AnalyticsService'

@@ -16,7 +16,7 @@ import SentryWrapper from 'services/sentry/SentryWrapper'
 import { Transaction } from '@sentry/types'
 import { avaxSerial } from '@avalabs/avalanchejs'
 import { TransactionResponse } from 'ethers'
-import { Networks } from 'store/network'
+import { Networks } from 'store/network/types'
 import Config from 'react-native-config'
 import { getBitcoinProvider, getEvmProvider } from './utils/providerUtils'
 

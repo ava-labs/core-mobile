@@ -1,7 +1,7 @@
-import { EthereumProviderError, EthereumRpcError } from 'eth-rpc-errors'
 import { v4 as uuidv4 } from 'uuid'
 import { WCSessionProposal } from 'store/walletConnectV2/types'
 import { AppListenerEffectAPI } from 'store'
+import { RpcError } from '@avalabs/vm-module-types'
 
 export interface PeerMeta {
   name: string
@@ -84,8 +84,6 @@ export const CORE_ONLY_METHODS = [
   RpcMethod.BITCOIN_SEND_TRANSACTION,
   RpcMethod.AVALANCHE_SIGN_MESSAGE
 ]
-
-export type RpcError = EthereumRpcError<string> | EthereumProviderError<string>
 
 export type ConfirmationReceiptStatus = 'Reverted' | 'Success' | 'Pending'
 

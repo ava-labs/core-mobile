@@ -1,4 +1,4 @@
-import { ethErrors } from 'eth-rpc-errors'
+import { rpcErrors } from '@metamask/rpc-errors'
 import { AppListenerEffectAPI } from 'store'
 import { selectActiveNetwork } from 'store/network'
 import { RpcMethod, RpcRequest } from '../../../types'
@@ -22,9 +22,7 @@ class WalletGetEthereumChainHandler
     if (!activeNetwork) {
       return {
         success: false,
-        error: ethErrors.rpc.resourceUnavailable({
-          message: 'no active network'
-        })
+        error: rpcErrors.resourceUnavailable('no active network')
       }
     }
     const response = networkToGetEthChainResponse(activeNetwork)

@@ -1,6 +1,6 @@
 import * as Sentry from '@sentry/react-native'
 import { AppListenerEffectAPI } from 'store'
-import { ethErrors } from 'eth-rpc-errors'
+import { rpcErrors } from '@metamask/rpc-errors'
 import BridgeService from 'services/bridge/BridgeService'
 import { noop } from '@avalabs/utils-sdk'
 import { selectActiveAccount } from 'store/account/slice'
@@ -37,9 +37,7 @@ class AvalancheBridgeAssetHandler
       Logger.error('invalid params', result.error)
       return {
         success: false,
-        error: ethErrors.rpc.invalidParams({
-          message: 'Params are invalid'
-        })
+        error: rpcErrors.invalidParams('Params are invalid')
       }
     }
 
@@ -70,7 +68,7 @@ class AvalancheBridgeAssetHandler
     if (!result.success) {
       return {
         success: false,
-        error: ethErrors.rpc.internal('Invalid approve data')
+        error: rpcErrors.internal('Invalid approve data')
       }
     }
 
@@ -86,21 +84,21 @@ class AvalancheBridgeAssetHandler
     if (!activeAccount) {
       return {
         success: false,
-        error: ethErrors.rpc.internal('No active account')
+        error: rpcErrors.internal('No active account')
       }
     }
 
     if (!bridgeAppConfig) {
       return {
         success: false,
-        error: ethErrors.rpc.internal('Invalid bridge config')
+        error: rpcErrors.internal('Invalid bridge config')
       }
     }
 
     if (currentBlockchain === Blockchain.UNKNOWN) {
       return {
         success: false,
-        error: ethErrors.rpc.internal('Invalid blockchain')
+        error: rpcErrors.internal('Invalid blockchain')
       }
     }
 
@@ -135,7 +133,7 @@ class AvalancheBridgeAssetHandler
     } catch (e) {
       Logger.error('Unable to transfer asset', e)
 
-      const error = ethErrors.rpc.internal<string>('Unable to transfer asset')
+      const error = rpcErrors.internal('Unable to transfer asset')
 
       Sentry.captureException(e, { tags: { dapps: 'bridgeAssetV2' } })
 
