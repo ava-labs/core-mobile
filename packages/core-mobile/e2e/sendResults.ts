@@ -186,7 +186,6 @@ async function generatePlatformResults(
     const alreadyposted = resultObject.alreadyposted
 
     try {
-      console.log('The result object is ' + JSON.stringify(resultObject))
       const resultResp = await api.addResultForCase(
         runId,
         resultObject.case_id,
@@ -195,7 +194,6 @@ async function generatePlatformResults(
           comment: comment
         }
       )
-      console.log('The result id is ' + JSON.stringify(resultResp))
       const resultID = resultResp.id
       if (statusId === 5 && !alreadyposted) {
         const failedScreenshot = path.resolve(
@@ -209,7 +207,7 @@ async function generatePlatformResults(
         await api.addAttachmentToResult(resultID, failedPayload)
       }
     } catch (TestRailException) {
-      console.log(TestRailException + 'this is the error')
+      console.log(TestRailException + ' this is the error')
     }
   }
 }
