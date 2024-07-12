@@ -230,7 +230,12 @@ class StakePage {
   }
 
   async tapStakeButton() {
-    await Actions.tapElementAtIndex(this.stakeSecondaryButton, 0)
+    try {
+      await Actions.tapElementAtIndex(this.stakeSecondaryButton, 0)
+    } catch {
+      console.log('there is no claim button, tap primary button')
+      await Actions.tapElementAtIndex(this.stakePrimaryButton, 0)
+    }
   }
 
   async tapStakeNow() {
