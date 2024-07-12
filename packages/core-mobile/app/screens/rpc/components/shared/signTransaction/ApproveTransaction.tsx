@@ -12,10 +12,11 @@ import { useSelector } from 'react-redux'
 import { selectAccountByAddress } from 'store/account'
 import { Limit, SpendLimit } from 'components/EditSpendLimit'
 import { selectSelectedCurrency } from 'store/settings/currency'
-import { UNLIMITED_SPEND_LIMIT_LABEL } from 'screens/rpc/hooks/useExplainTransactionShared'
 import { balanceToDisplayValue, bnToBig } from '@avalabs/utils-sdk'
 import { formatLargeCurrency } from 'utils/Utils'
 import { sharedStyles } from './styles'
+
+const UNLIMITED_SPEND_LIMIT_LABEL = 'Unlimited'
 
 export function ApproveTransaction({
   site,

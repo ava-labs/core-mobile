@@ -207,9 +207,7 @@ const NetworkFeeSelector = ({
             }
             position={'right'}
             style={{ width: 200 }}>
-            <Text variant="body2" sx={{ color: '$neutral50' }}>
-              Maximum Network Fee
-            </Text>
+            <Text variant="buttonMedium">Maximum Network Fee</Text>
           </Tooltip>
         )}
         {!isPVM && !isAVM && (

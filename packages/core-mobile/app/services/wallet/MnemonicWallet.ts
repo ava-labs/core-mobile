@@ -176,7 +176,11 @@ export class MnemonicWallet implements Wallet {
       }
       case RpcMethod.ETH_SIGN:
       case RpcMethod.PERSONAL_SIGN: {
-        const key = await this.getSigningKey(accountIndex, network, provider)
+        const key = await this.getSigningKey({
+          accountIndex,
+          network,
+          provider
+        })
         return personalSign({ privateKey: key, data })
       }
       case RpcMethod.SIGN_TYPED_DATA:
@@ -185,7 +189,11 @@ export class MnemonicWallet implements Wallet {
         // however, payload was V4
         const isV4 =
           typeof data === 'object' && 'types' in data && 'primaryType' in data
-        const key = await this.getSigningKey(accountIndex, network, provider)
+        const key = await this.getSigningKey({
+          accountIndex,
+          network,
+          provider
+        })
         return signTypedData({
           privateKey: key,
           data,
@@ -193,7 +201,11 @@ export class MnemonicWallet implements Wallet {
         })
       }
       case RpcMethod.SIGN_TYPED_DATA_V3: {
-        const key = await this.getSigningKey(accountIndex, network, provider)
+        const key = await this.getSigningKey({
+          accountIndex,
+          network,
+          provider
+        })
         return signTypedData({
           privateKey: key,
           data,
@@ -201,7 +213,11 @@ export class MnemonicWallet implements Wallet {
         })
       }
       case RpcMethod.SIGN_TYPED_DATA_V4: {
-        const key = await this.getSigningKey(accountIndex, network, provider)
+        const key = await this.getSigningKey({
+          accountIndex,
+          network,
+          provider
+        })
         return signTypedData({
           privateKey: key,
           data,
@@ -213,11 +229,15 @@ export class MnemonicWallet implements Wallet {
     }
   }
 
-  private async getSigningKey(
-    accountIndex: number,
-    network: Network,
+  private async getSigningKey({
+    accountIndex,
+    network,
+    provider
+  }: {
+    accountIndex: number
+    network: Network
     provider: JsonRpcBatchInternal
-  ): Promise<Buffer> {
+  }): Promise<Buffer> {
     const signer = await this.getSigner({
       accountIndex,
       network,
@@ -301,7 +321,11 @@ export class MnemonicWallet implements Wallet {
     network: Network
     provider: JsonRpcBatchInternal
   }): Promise<string> {
-    const signer = await this.getSigner({ accountIndex, network, provider })
+    const signer = await this.getSigner({
+      accountIndex,
+      network,
+      provider
+    })
 
     if (!(signer instanceof BaseWallet)) {
       throw new Error('Unable to sign evm transaction: invalid signer')

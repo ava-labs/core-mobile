@@ -1,5 +1,5 @@
 import { Network, NetworkVMType } from '@avalabs/chains-sdk'
-import { ethErrors } from 'eth-rpc-errors'
+import { rpcErrors } from '@metamask/rpc-errors'
 import { isValidRPCUrl } from 'services/network/utils/isValidRpcUrl'
 import { AppListenerEffectAPI } from 'store'
 import {
@@ -44,9 +44,7 @@ class WalletAddEthereumChainHandler
       Logger.error('invalid params', result.error)
       return {
         success: false,
-        error: ethErrors.rpc.invalidParams({
-          message: 'Chain info is invalid'
-        })
+        error: rpcErrors.invalidParams('Chain info is invalid')
       }
     }
 
@@ -69,18 +67,16 @@ class WalletAddEthereumChainHandler
     if (!rpcUrl) {
       return {
         success: false,
-        error: ethErrors.rpc.invalidParams({
-          message: 'RPC url is missing'
-        })
+        error: rpcErrors.invalidParams('RPC url is missing')
       }
     }
 
     if (!requestedChain.nativeCurrency) {
       return {
         success: false,
-        error: ethErrors.rpc.invalidParams({
-          message: 'Expected nativeCurrency param to be defined'
-        })
+        error: rpcErrors.invalidParams(
+          'Expected nativeCurrency param to be defined'
+        )
       }
     }
 
@@ -136,9 +132,7 @@ class WalletAddEthereumChainHandler
     if (!isValid) {
       return {
         success: false,
-        error: ethErrors.rpc.invalidParams({
-          message: 'ChainID does not match the rpc url'
-        })
+        error: rpcErrors.invalidParams('ChainID does not match the rpc url')
       }
     }
 
@@ -164,7 +158,7 @@ class WalletAddEthereumChainHandler
     if (!result.success) {
       return {
         success: false,
-        error: ethErrors.rpc.internal('Invalid approve data')
+        error: rpcErrors.internal('Invalid approve data')
       }
     }
 

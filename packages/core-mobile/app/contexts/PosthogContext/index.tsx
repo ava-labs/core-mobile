@@ -21,7 +21,7 @@ import {
   selectIsSendNftBlockediOS,
   selectSentrySampleRate,
   toggleAnalytics
-} from 'store/posthog'
+} from 'store/posthog/slice'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { commonStorage } from 'utils/mmkv'
 

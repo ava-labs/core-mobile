@@ -8,7 +8,7 @@ import { useSelector } from 'react-redux'
 import {
   selectBalanceTotalInCurrencyForNetworkAndAccount,
   selectTokensWithBalanceByNetwork
-} from 'store/balance'
+} from 'store/balance/slice'
 import { NetworkLogo } from 'screens/network/NetworkLogo'
 import { selectActiveAccount } from 'store/account'
 import usePendingBridgeTransactions from 'screens/bridge/hooks/usePendingBridgeTransactions'

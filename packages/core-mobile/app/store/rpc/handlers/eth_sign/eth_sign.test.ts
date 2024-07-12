@@ -1,4 +1,4 @@
-import { ethErrors } from 'eth-rpc-errors'
+import { rpcErrors, providerErrors } from '@metamask/rpc-errors'
 import { RpcMethod, RpcProvider, RpcRequest } from 'store/rpc/types'
 import mockSession from 'tests/fixtures/walletConnect/session.json'
 import mockAccounts from 'tests/fixtures/accounts.json'
@@ -9,7 +9,7 @@ import AppNavigation from 'navigation/AppNavigation'
 import * as Navigation from 'utils/Navigation'
 import * as Sentry from '@sentry/react-native'
 import WalletConnectService from 'services/walletconnectv2/WalletConnectService'
-import { selectIsBlockaidTransactionValidationBlocked } from 'store/posthog'
+import { selectIsBlockaidTransactionValidationBlocked } from 'store/posthog/slice'
 import { TransactionScanResponse } from 'services/blockaid/types'
 import BlockaidService from 'services/blockaid/BlockaidService'
 import { ethSignHandler as handler } from './eth_sign'
@@ -24,8 +24,8 @@ jest.mock('store/account/slice', () => {
 })
 
 const mockSelectNetwork = jest.fn()
-jest.mock('store/network', () => {
-  const actual = jest.requireActual('store/network')
+jest.mock('store/network/slice', () => {
+  const actual = jest.requireActual('store/network/slice')
   return {
     ...actual,
     selectNetwork: () => mockSelectNetwork
@@ -33,8 +33,8 @@ jest.mock('store/network', () => {
 })
 mockSelectNetwork.mockImplementation(() => mockNetworks[43114])
 
-jest.mock('store/posthog', () => {
-  const actual = jest.requireActual('store/posthog')
+jest.mock('store/posthog/slice', () => {
+  const actual = jest.requireActual('store/posthog/slice')
   return {
     ...actual,
     selectIsBlockaidTransactionValidationBlocked: jest.fn()
@@ -121,7 +121,7 @@ describe('eth_sign handler', () => {
 
         expect(result).toEqual({
           success: false,
-          error: ethErrors.rpc.invalidParams('Invalid message params')
+          error: rpcErrors.invalidParams('Invalid message params')
         })
       })
 
@@ -139,7 +139,7 @@ describe('eth_sign handler', () => {
 
         expect(result).toEqual({
           success: false,
-          error: ethErrors.rpc.internal('Session not found')
+          error: rpcErrors.internal('Session not found')
         })
       })
 
@@ -155,7 +155,7 @@ describe('eth_sign handler', () => {
 
         expect(result).toEqual({
           success: false,
-          error: ethErrors.provider.unauthorized(
+          error: providerErrors.unauthorized(
             'Requested address is not authorized'
           )
         })
@@ -172,7 +172,7 @@ describe('eth_sign handler', () => {
 
         expect(result).toEqual({
           success: false,
-          error: ethErrors.rpc.resourceNotFound('Network does not exist')
+          error: rpcErrors.resourceNotFound('Network does not exist')
         })
       })
 
@@ -187,7 +187,7 @@ describe('eth_sign handler', () => {
 
         expect(result).toEqual({
           success: false,
-          error: ethErrors.rpc.resourceNotFound('Account does not exist')
+          error: rpcErrors.resourceNotFound('Account does not exist')
         })
       })
 
@@ -245,9 +245,11 @@ describe('eth_sign handler', () => {
           params: {
             screen: AppNavigation.Modal.MaliciousActivityWarning,
             params: {
-              activityType: 'Transaction',
-              request: testRequest,
-              onProceed: expect.any(Function)
+              title: 'Scam Transaction',
+              subTitle: 'This transaction is malicious, do not proceed.',
+              rejectButtonTitle: 'Reject Transaction',
+              onProceed: expect.any(Function),
+              onReject: expect.any(Function)
             }
           }
         })
@@ -298,7 +300,7 @@ describe('eth_sign handler', () => {
 
         expect(result).toEqual({
           success: false,
-          error: ethErrors.rpc.invalidParams('Invalid message params')
+          error: rpcErrors.invalidParams('Invalid message params')
         })
       })
 
@@ -316,7 +318,7 @@ describe('eth_sign handler', () => {
 
         expect(result).not.toEqual({
           success: false,
-          error: ethErrors.rpc.internal('Session not found')
+          error: rpcErrors.internal('Session not found')
         })
       })
 
@@ -332,7 +334,7 @@ describe('eth_sign handler', () => {
 
         expect(result).not.toEqual({
           success: false,
-          error: ethErrors.provider.unauthorized(
+          error: providerErrors.unauthorized(
             'Requested address is not authorized'
           )
         })
@@ -349,7 +351,7 @@ describe('eth_sign handler', () => {
 
         expect(result).toEqual({
           success: false,
-          error: ethErrors.rpc.resourceNotFound('Network does not exist')
+          error: rpcErrors.resourceNotFound('Network does not exist')
         })
       })
 
@@ -364,7 +366,7 @@ describe('eth_sign handler', () => {
 
         expect(result).toEqual({
           success: false,
-          error: ethErrors.rpc.resourceNotFound('Account does not exist')
+          error: rpcErrors.resourceNotFound('Account does not exist')
         })
       })
 
@@ -408,7 +410,7 @@ describe('eth_sign handler', () => {
 
       expect(result).toEqual({
         success: false,
-        error: ethErrors.rpc.internal('Invalid approve data')
+        error: rpcErrors.internal('Invalid approve data')
       })
     })
 
@@ -475,7 +477,7 @@ describe('eth_sign handler', () => {
 
       expect(result).toEqual({
         success: false,
-        error: ethErrors.rpc.internal('Unable to sign message')
+        error: rpcErrors.internal('Unable to sign message')
       })
     })
   })

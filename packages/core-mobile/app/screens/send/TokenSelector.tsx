@@ -12,7 +12,7 @@ import PortfolioListItem from 'components/PortfolioListItem'
 import { Space } from 'components/Space'
 import SearchBar from 'components/SearchBar'
 import { BottomSheetFlatList } from '@gorhom/bottom-sheet'
-import { LocalTokenWithBalance, TokenWithBalance } from 'store/balance'
+import { LocalTokenWithBalance, TokenWithBalance } from 'store/balance/types'
 
 const DEFAULT_HORIZONTAL_MARGIN = 16
 
@@ -27,7 +27,7 @@ function TokenSelector({
   onTokenSelected,
   hideZeroBalance = false,
   horizontalMargin = DEFAULT_HORIZONTAL_MARGIN
-}: TokenSelectorProps) {
+}: TokenSelectorProps): React.JSX.Element {
   const { filteredTokenList, searchText, setSearchText } =
     useSearchableTokenList(hideZeroBalance, false)
   const textInputRef = useRef() as RefObject<TextInput>
@@ -40,7 +40,9 @@ function TokenSelector({
     })
   }, [textInputRef])
 
-  const renderItem = (item: ListRenderItemInfo<TokenWithBalance>) => {
+  const renderItem = (
+    item: ListRenderItemInfo<TokenWithBalance>
+  ): React.JSX.Element => {
     const token = item.item
     return (
       <PortfolioListItem
@@ -57,11 +59,11 @@ function TokenSelector({
     )
   }
 
-  const handleSearch = (text: string) => {
+  const handleSearch = (text: string): void => {
     setSearchText(text)
   }
 
-  function getNoResultsText() {
+  function getNoResultsText(): string | undefined {
     if (
       !filteredTokenList ||
       (filteredTokenList &&

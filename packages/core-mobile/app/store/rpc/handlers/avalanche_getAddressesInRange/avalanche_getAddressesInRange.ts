@@ -1,5 +1,5 @@
 import { AppListenerEffectAPI } from 'store'
-import { ethErrors } from 'eth-rpc-errors'
+import { rpcErrors } from '@metamask/rpc-errors'
 import { RpcMethod } from 'store/rpc/types'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import WalletService from 'services/wallet/WalletService'
@@ -26,9 +26,9 @@ class AvalancheGetAddressesInRangeHandler
       Logger.error('Invalid param', result.error)
       return {
         success: false,
-        error: ethErrors.rpc.invalidParams({
-          message: 'avalanche_getAddressesInRange param is invalid'
-        })
+        error: rpcErrors.invalidParams(
+          'avalanche_getAddressesInRange param is invalid'
+        )
       }
     }
 
@@ -73,9 +73,7 @@ class AvalancheGetAddressesInRangeHandler
     } catch (e) {
       return {
         success: false,
-        error: ethErrors.rpc.internal({
-          message: (e as Error).message
-        })
+        error: rpcErrors.internal((e as Error).message)
       }
     }
 

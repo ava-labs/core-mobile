@@ -9,10 +9,8 @@ import React, {
   useState
 } from 'react'
 import { InteractionManager } from 'react-native'
-import {
-  selectNativeTokenBalanceForNetworkAndAccount,
-  TokenWithBalance
-} from 'store/balance'
+import { selectNativeTokenBalanceForNetworkAndAccount } from 'store/balance/slice'
+import { TokenWithBalance } from 'store/balance/types'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import sendService from 'services/send/SendService'

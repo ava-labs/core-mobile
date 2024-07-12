@@ -1,5 +1,5 @@
 import BN from 'bn.js'
-import { TokenWithBalance } from 'store/balance'
+import { TokenWithBalance } from 'store/balance/types'
 import { SignTransactionRequest } from 'services/wallet/types'
 import { Transaction } from '@sentry/types'
 import { Network } from '@avalabs/chains-sdk'

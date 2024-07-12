@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid'
 import { AppListenerEffectAPI } from 'store'
-import { ethErrors } from 'eth-rpc-errors'
+import { rpcErrors } from '@metamask/rpc-errors'
 import { addContact } from 'store/addressBook'
 import * as Navigation from 'utils/Navigation'
 import AppNavigation from 'navigation/AppNavigation'
@@ -31,9 +31,7 @@ class AvalancheCreateContactHandler
       Logger.error('invalid params', result.error)
       return {
         success: false,
-        error: ethErrors.rpc.invalidParams({
-          message: 'Contact is invalid'
-        })
+        error: rpcErrors.invalidParams('Contact is invalid')
       }
     }
 
@@ -70,7 +68,7 @@ class AvalancheCreateContactHandler
     if (!result.success) {
       return {
         success: false,
-        error: ethErrors.rpc.internal('Invalid approve data')
+        error: rpcErrors.internal('Invalid approve data')
       }
     }
 

@@ -1,6 +1,6 @@
 import { RpcMethod, RpcProvider } from 'store/rpc/types'
 import mockSession from 'tests/fixtures/walletConnect/session.json'
-import { ethErrors } from 'eth-rpc-errors'
+import { rpcErrors } from '@metamask/rpc-errors'
 import * as Navigation from 'utils/Navigation'
 import { DEFERRED_RESULT } from '../types'
 import { avalancheSetDeveloperModeHandler } from './avalanche_setDeveloperMode'
@@ -48,9 +48,9 @@ describe('avalanche_setDeveloperMode.ts', () => {
       )
       expect(result).toEqual({
         success: false,
-        error: ethErrors.rpc.invalidParams({
-          message: 'avalanche_setDeveloperMode param is invalid'
-        })
+        error: rpcErrors.invalidParams(
+          'avalanche_setDeveloperMode param is invalid'
+        )
       })
       expect(mockNavigate).not.toHaveBeenCalled()
     })

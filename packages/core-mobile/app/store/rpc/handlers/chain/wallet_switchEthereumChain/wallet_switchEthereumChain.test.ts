@@ -1,4 +1,4 @@
-import { ethErrors } from 'eth-rpc-errors'
+import { rpcErrors, providerErrors } from '@metamask/rpc-errors'
 import { RpcMethod, RpcProvider, RpcRequest } from 'store/rpc/types'
 import mockSession from 'tests/fixtures/walletConnect/session.json'
 import mockNetworks from 'tests/fixtures/networks.json'
@@ -70,9 +70,7 @@ const testHandleInvalidParams = async (params: unknown) => {
 
   expect(result).toEqual({
     success: false,
-    error: ethErrors.rpc.invalidParams({
-      message: 'Chain ID is invalid'
-    })
+    error: rpcErrors.invalidParams('Chain ID is invalid')
   })
 }
 
@@ -86,7 +84,7 @@ const testApproveInvalidData = async (data: unknown) => {
 
   expect(result).toEqual({
     success: false,
-    error: ethErrors.rpc.internal('Invalid approve data')
+    error: rpcErrors.internal('Invalid approve data')
   })
 }
 
@@ -153,7 +151,7 @@ describe('wallet_switchEthereumChain handler', () => {
 
       expect(result).toEqual({
         success: false,
-        error: ethErrors.provider.custom({
+        error: providerErrors.custom({
           code: 4902,
           message: `Unrecognized chain ID "${Number(
             // eslint-disable-next-line @typescript-eslint/no-loss-of-precision

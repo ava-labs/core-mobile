@@ -7,7 +7,7 @@ import {
 import { AcceptedTypes, TokenBaseUnit } from 'types/TokenBaseUnit'
 import ModuleManager from 'vmModule/ModuleManager'
 import { NetworkFee } from 'services/networkFee/types'
-import { chainIdToCaip } from 'utils/data/caip'
+import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 
 class NetworkFeeService {
   async getNetworkFee<T extends TokenBaseUnit<T>>(
@@ -18,13 +18,9 @@ class NetworkFeeService {
       case NetworkVMType.EVM: {
         //TODO: use the same logic for all networks once we implement modules for other VMs
         const evmModule = await ModuleManager.loadModuleByNetwork(network)
-        const networkFees = await evmModule.getNetworkFee({
-          chainId: chainIdToCaip(network.chainId),
-          chainName: network.chainName,
-          rpcUrl: network.rpcUrl,
-          isTestnet: network.isTestnet,
-          multiContractAddress: network.utilityAddresses?.multicall
-        })
+        const networkFees = await evmModule.getNetworkFee(
+          mapToVmNetwork(network)
+        )
         return {
           baseFee: tokenUnitCreator(networkFees.baseFee),
           low: {

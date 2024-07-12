@@ -11,20 +11,25 @@ import {
 } from 'store/rpc/handlers/eth_sign/schemas/ethSignTypedData'
 import { Account } from 'store/account'
 import { EthSignRpcRequest } from 'store/rpc/handlers/eth_sign/eth_sign'
-import { getChainIdFromRequest } from '../../eth_sendTransaction/utils'
+import { getChainIdFromRequest } from 'store/rpc/utils/getChainIdFromRequest/getChainIdFromRequest'
+import { onRequestRejected } from 'store/rpc/slice'
+import { providerErrors } from '@metamask/rpc-errors'
+import { AnyAction, Dispatch } from '@reduxjs/toolkit'
 
 export const scanAndSignMessage = async ({
   request,
   network,
   account,
   data,
-  address
+  address,
+  dispatch
 }: {
   request: EthSignRpcRequest
   network: Network
   account: Account
   data: string | TypedData | OldTypedData
   address: string
+  dispatch: Dispatch<AnyAction>
 }): Promise<void> => {
   try {
     const chainId = getChainIdFromRequest(request)
@@ -35,14 +40,25 @@ export const scanAndSignMessage = async ({
       domain: request.peerMeta.url
     })
 
+    const onReject = (): void => {
+      dispatch(
+        onRequestRejected({
+          request,
+          error: providerErrors.userRejectedRequest()
+        })
+      )
+    }
+
     if (scanResponse?.validation?.result_type === 'Malicious') {
       Navigation.navigate({
         name: AppNavigation.Root.Wallet,
         params: {
           screen: AppNavigation.Modal.MaliciousActivityWarning,
           params: {
-            activityType: 'Transaction',
-            request,
+            title: 'Scam Transaction',
+            subTitle: 'This transaction is malicious, do not proceed.',
+            rejectButtonTitle: 'Reject Transaction',
+            onReject,
             onProceed: () => {
               navigateToSignMessage({
                 request,

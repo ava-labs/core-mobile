@@ -5,7 +5,7 @@ import { retry } from 'utils/js/retry'
 import Logger from 'utils/Logger'
 import { calculatePChainFee } from 'services/earn/calculateCrossChainFees'
 import WalletService from 'services/wallet/WalletService'
-import { Account } from 'store/account'
+import { Account } from 'store/account/types'
 import { AvalancheTransactionRequest } from 'services/wallet/types'
 import { UnsignedTx } from '@avalabs/avalanchejs'
 import NetworkService from 'services/network/NetworkService'
@@ -59,11 +59,11 @@ export async function exportC({
     destinationAddress: activeAccount.addressPVM
   })
 
-  const signedTxWithFeeJson = await WalletService.sign(
-    { tx: unsignedTxWithFee } as AvalancheTransactionRequest,
-    activeAccount.index,
-    avaxXPNetwork
-  )
+  const signedTxWithFeeJson = await WalletService.sign({
+    transaction: { tx: unsignedTxWithFee } as AvalancheTransactionRequest,
+    accountIndex: activeAccount.index,
+    network: avaxXPNetwork
+  })
   const signedTxWithFee = UnsignedTx.fromJSON(signedTxWithFeeJson).getSignedTx()
 
   const txID = await NetworkService.sendTransaction({

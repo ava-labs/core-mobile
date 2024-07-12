@@ -10,7 +10,7 @@ import {
   Signer
 } from '@avalabs/bridge-unified'
 import { Network } from '@avalabs/chains-sdk'
-import { ethErrors } from 'eth-rpc-errors'
+import { rpcErrors } from '@metamask/rpc-errors'
 import { chainIdToCaip } from 'utils/data/caip'
 import { Account } from 'store/account/types'
 import { isBitcoinNetwork } from 'utils/network/isBitcoinNetwork'
@@ -20,9 +20,9 @@ import { bigToBigInt, noop } from '@avalabs/utils-sdk'
 import { isUnifiedBridgeAsset } from 'screens/bridge/utils/bridgeUtils'
 import { Asset } from '@avalabs/bridge-sdk'
 import Big from 'big.js'
-import { TransactionParams } from 'store/rpc/handlers/eth_sendTransaction/utils'
 import { Request } from 'store/rpc/utils/createInAppRequest'
 import { RpcMethod } from 'store/rpc/types'
+import { TransactionParams } from '@avalabs/evm-module'
 
 type BridgeService = ReturnType<typeof createUnifiedBridgeService>
 
@@ -95,7 +95,7 @@ export class UnifiedBridgeService {
     const fee = asset.address && feeMap[asset.address]
 
     if (!fee) {
-      throw ethErrors.rpc.invalidRequest({
+      throw rpcErrors.invalidRequest({
         data: {
           reason: 'invalid fee'
         }
@@ -123,7 +123,7 @@ export class UnifiedBridgeService {
     request: Request
   }): Promise<BridgeTransfer> {
     if (isBitcoinNetwork(activeNetwork)) {
-      throw ethErrors.rpc.invalidParams({
+      throw rpcErrors.invalidParams({
         data: {
           reason: 'unsupported network'
         }
@@ -198,7 +198,7 @@ export class UnifiedBridgeService {
     }
 
     if (isBitcoinNetwork(sourceNetwork)) {
-      throw ethErrors.rpc.invalidParams({
+      throw rpcErrors.invalidParams({
         data: {
           reason: 'unsupported network'
         }

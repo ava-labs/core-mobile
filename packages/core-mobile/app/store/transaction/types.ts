@@ -4,7 +4,7 @@ import {
   PChainTransactionType,
   XChainTransactionType
 } from '@avalabs/glacier-sdk'
-import { Account } from 'store/account'
+import { Account } from 'store/account/types'
 import {
   TransactionType,
   Transaction as InternalTransaction

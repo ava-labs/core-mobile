@@ -1,6 +1,9 @@
 import balanceService from 'services/balance/BalanceService'
 import { BITCOIN_NETWORK, BITCOIN_TEST_NETWORK } from '@avalabs/chains-sdk'
-import { NetworkTokenWithBalance, TokenWithBalanceERC20 } from 'store/balance'
+import {
+  NetworkTokenWithBalance,
+  TokenWithBalanceERC20
+} from 'store/balance/types'
 
 export async function getBtcBalance(
   isMainnet: boolean,

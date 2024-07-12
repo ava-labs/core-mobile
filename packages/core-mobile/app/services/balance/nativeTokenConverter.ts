@@ -1,5 +1,5 @@
 import { NativeTokenBalance } from '@avalabs/glacier-sdk'
-import { NetworkTokenWithBalance, TokenType } from 'store/balance'
+import { NetworkTokenWithBalance, TokenType } from 'store/balance/types'
 import { BN } from 'bn.js'
 import { balanceToDisplayValue, bnToBig } from '@avalabs/utils-sdk'
 
