@@ -10,7 +10,6 @@ import {
   ValidateStateAndCalculateFeesParams
 } from 'services/send/types'
 import { Network } from '@avalabs/chains-sdk'
-import { bigIntToHex } from '@ethereumjs/util'
 import {
   NftTokenWithBalance,
   TokenType,
@@ -201,7 +200,7 @@ export class SendServiceEVM implements SendServiceHelper {
     return {
       from: this.fromAddress,
       to: sendState.address,
-      value: bigIntToHex(BigInt(sendState.amount?.toString() || 0n))
+      value: BigInt(sendState.amount?.toString() || 0n)
     }
   }
 
