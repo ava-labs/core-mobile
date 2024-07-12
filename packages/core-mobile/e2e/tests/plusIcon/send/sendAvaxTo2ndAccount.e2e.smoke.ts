@@ -32,7 +32,7 @@ describe('Send Avax to another account', () => {
   it('Should receive AVAX on second account', async () => {
     // Change default account to the 2nd.
     await Actions.waitForElementNotVisible(
-      ReviewAndSendPage.sendSuccessfulToastMsg
+      ReviewAndSendPage.transactionSuccessfulToastMsg
     )
     await bottomTabsPage.tapPortfolioTab()
     await AccountManagePage.tapAccountDropdownTitle(0)
