@@ -48,18 +48,20 @@ const MaliciousActivityWarningScreen = (): JSX.Element => {
             fontWeight: '600',
             textAlign: 'center'
           }}>
-          {params.title}
+          {params.warningDetails.title}
         </Text>
         <Text variant="body2" sx={{ textAlign: 'center' }}>
-          {params.subTitle}
+          {params.warningDetails.description}
         </Text>
       </View>
       <View sx={{ gap: 16, padding: 16 }}>
         <Button type="primary" size="xlarge" onPress={handleReject}>
-          {params.rejectButtonTitle}
+          {params.warningDetails.actionTitles?.reject}
         </Button>
         <Button type="tertiary" size="xlarge" onPress={handleProceed}>
-          <Text variant="buttonLarge">Proceed Anyway</Text>
+          <Text variant="buttonLarge">
+            {params.warningDetails.actionTitles?.proceed}
+          </Text>
         </Button>
       </View>
     </Sheet>

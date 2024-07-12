@@ -39,7 +39,6 @@ try {
 
 const getStories = () => {
   return {
-    "./storybook/stories/ApproveTransactionView.stories.tsx": require("../storybook/stories/ApproveTransactionView.stories.tsx"),
     "./storybook/stories/AvaListItem.stories.tsx": require("../storybook/stories/AvaListItem.stories.tsx"),
     "./storybook/stories/AvaText.stories.tsx": require("../storybook/stories/AvaText.stories.tsx"),
     "./storybook/stories/BottomSheet.stories.tsx": require("../storybook/stories/BottomSheet.stories.tsx"),

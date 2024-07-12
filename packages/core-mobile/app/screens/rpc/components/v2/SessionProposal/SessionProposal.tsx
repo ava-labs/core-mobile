@@ -16,6 +16,7 @@ import { useSelector } from 'react-redux'
 import { selectAccounts, selectActiveAccount } from 'store/account'
 import { Button, Text } from '@avalabs/k2-mobile'
 import { isSiteScanResponseMalicious } from 'store/rpc/handlers/wc_sessionRequest/utils'
+import { TransactionValidationResultType } from '@avalabs/vm-module-types'
 import RpcRequestBottomSheet from '../../shared/RpcRequestBottomSheet'
 import MaliciousActivityWarning from '../MaliciousActivityWarning'
 import SelectAccounts from './SelectAccounts'
@@ -79,9 +80,9 @@ const SessionProposal = (): JSX.Element => {
             <>
               <Space y={32} />
               <MaliciousActivityWarning
-                result="malicious"
+                resultType={TransactionValidationResultType.MALICIOUS}
                 title="Scam Application"
-                subTitle="This application is malicious, do not proceed."
+                description="This application is malicious, do not proceed."
               />
             </>
           )}

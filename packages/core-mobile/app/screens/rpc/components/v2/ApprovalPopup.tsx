@@ -29,8 +29,11 @@ import OvalTagBg from 'components/OvalTagBg'
 import Avatar from 'components/Avatar'
 import { Banner } from 'components/Banner'
 import GlobeSVG from 'components/svg/GlobeSVG'
+import { useSpendLimits } from 'hooks/useSpendLimits'
 import RpcRequestBottomSheet from '../shared/RpcRequestBottomSheet'
-// import MaliciousActivityWarning from './MaliciousActivityWarning'
+import BalanceChange from '../shared/signTransaction/BalanceChange'
+import { SpendLimits } from '../shared/signTransaction/SpendLimits'
+import MaliciousActivityWarning from './MaliciousActivityWarning'
 
 type ApprovalPopupScreenProps = WalletScreenProps<
   typeof AppNavigation.Modal.ApprovalPopup
@@ -38,7 +41,8 @@ type ApprovalPopupScreenProps = WalletScreenProps<
 
 const ApprovalPopup = (): JSX.Element => {
   const isSeedlessSigningBlocked = useSelector(selectIsSeedlessSigningBlocked)
-  const { goBack } = useNavigation<ApprovalPopupScreenProps['navigation']>()
+  const { goBack, navigate } =
+    useNavigation<ApprovalPopupScreenProps['navigation']>()
   const { request, displayData, signingData, onApprove, onReject } =
     useRoute<ApprovalPopupScreenProps['route']>().params
   const { getNetwork } = useNetworks()
@@ -94,6 +98,9 @@ const ApprovalPopup = (): JSX.Element => {
     }
   }, [rejectAndClose, request, signingData.account, signingData.type])
 
+  const { spendLimits, canEdit, updateSpendLimit, hashedCustomSpend } =
+    useSpendLimits(displayData.transactionSimulation?.exposures ?? [])
+
   const handleFeesChange = useCallback(
     (fees: Eip1559Fees<NetworkTokenUnit>) => {
       setMaxFeePerGas(fees.maxFeePerGas.toSubUnit())
@@ -145,7 +152,8 @@ const ApprovalPopup = (): JSX.Element => {
       network,
       account,
       maxFeePerGas,
-      maxPriorityFeePerGas
+      maxPriorityFeePerGas,
+      overrideData: hashedCustomSpend
     })
       .catch(Logger.error)
       .finally(() => {
@@ -343,6 +351,24 @@ const ApprovalPopup = (): JSX.Element => {
     )
   }
 
+  const handleEditSpendLimit = (): void => {
+    const spendLimit = spendLimits[0]
+
+    if (!updateSpendLimit || !spendLimit) return
+
+    navigate(AppNavigation.Modal.EditSpendLimit, {
+      spendLimit,
+      onClose: goBack,
+      updateSpendLimit,
+      dAppName: request.dappInfo.name
+    })
+  }
+
+  const transactionValidation = displayData.transactionValidation
+  const assetDiffs = displayData.transactionSimulation?.assetDiffs
+  const hasAssetDiffs =
+    assetDiffs && (assetDiffs.ins.length > 0 || assetDiffs.outs.length > 0)
+
   return (
     <>
       <RpcRequestBottomSheet
@@ -354,30 +380,28 @@ const ApprovalPopup = (): JSX.Element => {
             {renderBanner()}
             <Text variant="heading4">{displayData.title}</Text>
             <Space y={12} />
-            {/* {displayData.transactionValidation && (
-              <MaliciousActivityWarning
-                style={{ marginTop: 12, marginBottom: 12 }}
-                result={displayData.transactionValidation?.resultType}
-                title={displayData.transactionValidation?.title ?? ''}
-                subTitle={displayData.transactionValidation?.description ?? ''}
-              />
-            )} */}
+            {transactionValidation?.warningDetails !== undefined && (
+              <View sx={{ marginVertical: 12 }}>
+                <MaliciousActivityWarning
+                  resultType={transactionValidation.resultType}
+                  title={transactionValidation.warningDetails.title}
+                  description={transactionValidation.warningDetails.description}
+                />
+              </View>
+            )}
             <Space y={12} />
             {renderDappInfo()}
             {renderNetwork()}
             {renderAccount()}
             {renderMessageDetails()}
             {renderTransactionDetails()}
-            {/* TODO re-add transaction simulation 
-             https://ava-labs.atlassian.net/browse/CP-8870
-            <BalanceChange
-              displayData={displayData}
-              transactionSimulation={
-                scanResponse?.simulation?.status === 'Success'
-                  ? scanResponse?.simulation
-                  : undefined
-              }
-            /> */}
+            {spendLimits.length > 0 && !hasAssetDiffs && (
+              <SpendLimits
+                spendLimits={spendLimits}
+                onEdit={canEdit ? handleEditSpendLimit : undefined}
+              />
+            )}
+            {hasAssetDiffs && <BalanceChange assetDiffs={assetDiffs} />}
           </View>
           {showNetworkFeeSelector && (
             <NetworkFeeSelector

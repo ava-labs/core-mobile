@@ -33,6 +33,7 @@ import { UseWalletConnectModal } from 'screens/browser/UseWalletConnectModal'
 import BitcoinSendTransaction from 'screens/rpc/components/v2/BitcoinSendTransaction'
 import { AvalancheSignMessage } from 'screens/rpc/components/v2/AvalancheSignMessage'
 import MaliciousActivityWarningScreen from 'screens/rpc/components/v2/MaliciousActivityWarningScreen'
+import EditSpendLimit from 'components/EditSpendLimit'
 import { SignOutModalScreen, WalletScreenSType } from './WalletScreenStack'
 
 export const createModals = (WalletScreenS: WalletScreenSType): JSX.Element => {
@@ -75,6 +76,10 @@ export const createModals = (WalletScreenS: WalletScreenSType): JSX.Element => {
       <WalletScreenS.Screen
         name={AppNavigation.Modal.ApprovalPopup}
         component={ApprovalPopup}
+      />
+      <WalletScreenS.Screen
+        name={AppNavigation.Modal.EditSpendLimit}
+        component={EditSpendLimit}
       />
       <WalletScreenS.Screen
         name={AppNavigation.Modal.AvalancheSendTransactionV2}

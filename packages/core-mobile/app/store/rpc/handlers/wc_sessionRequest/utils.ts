@@ -115,9 +115,14 @@ export const scanAndSessionProposal = async ({
         params: {
           screen: AppNavigation.Modal.MaliciousActivityWarning,
           params: {
-            title: 'Scam\nApplication',
-            subTitle: 'This application is malicious, do not proceed.',
-            rejectButtonTitle: 'Reject Connection',
+            warningDetails: {
+              title: 'Scam\nApplication',
+              description: 'This application is malicious, do not proceed.',
+              actionTitles: {
+                reject: 'Reject Connection',
+                proceed: 'Proceed Anyway'
+              }
+            },
             onReject: (): void => {
               dispatch(
                 onRequestRejected({

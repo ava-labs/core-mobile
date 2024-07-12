@@ -1,6 +1,5 @@
 import Blockaid from '@blockaid/client'
 import Config from 'react-native-config'
-import { TransactionParams } from '@avalabs/evm-module'
 import Logger from 'utils/Logger'
 import {
   JsonRpcRequestData,
@@ -21,27 +20,6 @@ const blockaid = new Blockaid({
 class BlockaidService {
   static scanSite = async (url: string): Promise<SiteScanResponse> =>
     blockaid.site.scan({ url })
-
-  static scanTransaction = async (
-    chainId: number,
-    params: TransactionParams,
-    domain?: string
-  ): Promise<TransactionScanResponse> =>
-    blockaid.evm.transaction.scan({
-      account_address: params.from,
-      chain: chainId.toString(),
-      options: ['validation', 'simulation'],
-      data: {
-        from: params.from,
-        to: params.to,
-        data: params.data,
-        value: params.value,
-        gas: params.gas,
-        gas_price: params.gasPrice
-      },
-      // @ts-ignore
-      metadata: domain && domain.length > 0 ? { domain } : { non_dapp: true }
-    })
 
   static scanJsonRpc = async ({
     chainId,

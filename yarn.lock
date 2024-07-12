@@ -29,18 +29,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/avalanche-module@npm:0.0.16":
-  version: 0.0.16
-  resolution: "@avalabs/avalanche-module@npm:0.0.16"
+"@avalabs/avalanche-module@npm:0.0.0-CP-8870-20240717150839":
+  version: 0.0.0-CP-8870-20240717150839
+  resolution: "@avalabs/avalanche-module@npm:0.0.0-CP-8870-20240717150839"
   dependencies:
     "@avalabs/etherscan-sdk": v2.8.0-alpha.193
     "@avalabs/glacier-sdk": v2.8.0-alpha.193
     "@avalabs/utils-sdk": v2.8.0-alpha.193
-    "@avalabs/vm-module-types": 0.0.16
+    "@avalabs/vm-module-types": 0.0.0-CP-8870-20240717150839
     "@avalabs/wallets-sdk": v2.8.0-alpha.193
     "@metamask/rpc-errors": 6.3.0
     big.js: 6.2.1
-  checksum: 4fb99c180bee7491dd3a552b1dabdd4fb5649104be99384c81424de10ae04e6d0974b2e8bbedc24161dfea03ef8d87ec176874def7f8fc0af4600b6b88ec9955
+  checksum: 1148138397435c4e7b851e0f31a01199bd4df9f003b46ed9a7d282ae4ee08b595e1f8378d970af3abde455a6e564deca67fd59c7eee4a30cd2e9fd012a82204f
   languageName: node
   linkType: hard
 
@@ -125,7 +125,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@avalabs/core-mobile@workspace:packages/core-mobile"
   dependencies:
-    "@avalabs/avalanche-module": 0.0.16
+    "@avalabs/avalanche-module": 0.0.0-CP-8870-20240717150839
     "@avalabs/avalanchejs": 4.0.5
     "@avalabs/bridge-sdk": v2.8.0-alpha.187
     "@avalabs/bridge-unified": 2.1.1
@@ -133,7 +133,7 @@ __metadata:
     "@avalabs/coingecko-sdk": v2.8.0-alpha.187
     "@avalabs/covalent-sdk": v2.8.0-alpha.187
     "@avalabs/etherscan-sdk": v2.8.0-alpha.187
-    "@avalabs/evm-module": 0.0.16
+    "@avalabs/evm-module": 0.0.0-CP-8870-20240717150839
     "@avalabs/glacier-sdk": v2.8.0-alpha.187
     "@avalabs/k2-mobile": "workspace:*"
     "@avalabs/paraswap-sdk": v2.8.0-alpha.187
@@ -142,7 +142,7 @@ __metadata:
     "@avalabs/tsconfig-mobile": "workspace:*"
     "@avalabs/types": v2.8.0-alpha.187
     "@avalabs/utils-sdk": v2.8.0-alpha.187
-    "@avalabs/vm-module-types": 0.0.16
+    "@avalabs/vm-module-types": 0.0.0-CP-8870-20240717150839
     "@avalabs/wallets-sdk": v2.8.0-alpha.187
     "@babel/core": 7.24.0
     "@babel/plugin-proposal-nullish-coalescing-operator": 7.18.6
@@ -376,24 +376,27 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/evm-module@npm:0.0.16":
-  version: 0.0.16
-  resolution: "@avalabs/evm-module@npm:0.0.16"
+"@avalabs/evm-module@npm:0.0.0-CP-8870-20240717150839":
+  version: 0.0.0-CP-8870-20240717150839
+  resolution: "@avalabs/evm-module@npm:0.0.0-CP-8870-20240717150839"
   dependencies:
     "@avalabs/coingecko-sdk": v2.8.0-alpha.193
     "@avalabs/etherscan-sdk": v2.8.0-alpha.193
     "@avalabs/glacier-sdk": v2.8.0-alpha.193
     "@avalabs/utils-sdk": 2.8.0-alpha.193
-    "@avalabs/vm-module-types": 0.0.16
+    "@avalabs/vm-module-types": 0.0.0-CP-8870-20240717150839
     "@avalabs/wallets-sdk": v2.8.0-alpha.193
+    "@blockaid/client": 0.11.0
     "@metamask/rpc-errors": 6.3.0
+    "@openzeppelin/contracts": 4.9.3
     "@zodios/core": 10.9.6
     bn.js: 5.2.1
+    ethers: 6.8.1
     lodash.startcase: 4.4.0
     zod: 3.23.8
   peerDependencies:
     ethers: ^6.8.1
-  checksum: 6df96ae654b6b783073ea139f136909a30730b9b5713b6fc3b36e141db0a5329f175ed33a02fa8a106c740107626b149d030b96a003f457416c2646995291ac3
+  checksum: dd3cc9c38679874184764ce7cd7e19a5b99a2d78926fb460dec1c813f324a6b1e397564d5c55f1afcf753217983f5939dfb312b125ee62d5ec365f95c40f0852
   languageName: node
   linkType: hard
 
@@ -564,16 +567,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/vm-module-types@npm:0.0.16":
-  version: 0.0.16
-  resolution: "@avalabs/vm-module-types@npm:0.0.16"
+"@avalabs/vm-module-types@npm:0.0.0-CP-8870-20240717150839":
+  version: 0.0.0-CP-8870-20240717150839
+  resolution: "@avalabs/vm-module-types@npm:0.0.0-CP-8870-20240717150839"
   dependencies:
     "@metamask/rpc-errors": 6.3.0
     ethers: 6.8.1
     zod: 3.23.8
   peerDependencies:
     ethers: ^6.8.1
-  checksum: 3466a09d475b0f551c7c5dd07366e2cad7fc363f6d5b81fe3390a8ba619dded988aecd7adb270e1d20cdf15ca838004cee4a75c00c2eea3c9f720f344c342030
+  checksum: e0221951193f856cdf4ed5059f2cf47e5cbbcf19e3ed89d74689a7f8028c69ba817a3d412b6e154407dfe7ef6a9a6ddb476c4f6ce40b2f13bc233bab4cb6ad87
   languageName: node
   linkType: hard
 
@@ -2782,6 +2785,22 @@ __metadata:
     node-fetch: ^2.6.7
     web-streams-polyfill: ^3.2.1
   checksum: 3fbf655591727da8dc669e656d7ec1184271121ad6fd6493d1821807c1022feab273a25fce6f2755ad89630561311072cdf7dc8ec66954d3d1c87b5c97b4a58a
+  languageName: node
+  linkType: hard
+
+"@blockaid/client@npm:0.11.0":
+  version: 0.11.0
+  resolution: "@blockaid/client@npm:0.11.0"
+  dependencies:
+    "@types/node": ^18.11.18
+    "@types/node-fetch": ^2.6.4
+    abort-controller: ^3.0.0
+    agentkeepalive: ^4.2.1
+    form-data-encoder: 1.7.2
+    formdata-node: ^4.3.2
+    node-fetch: ^2.6.7
+    web-streams-polyfill: ^3.2.1
+  checksum: 0f5808759036106876b491ec19dacde8c40bb692e9f2cc57f80d2724a47e5a01863d7aaea4e15ec812d38b728623fceb3b26425d0a46b3c35a3465fe9c71e9f6
   languageName: node
   linkType: hard
 

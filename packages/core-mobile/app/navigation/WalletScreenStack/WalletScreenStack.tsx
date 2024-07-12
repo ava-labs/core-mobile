@@ -90,6 +90,7 @@ import {
   BuyCarefullyParams,
   CreateRemoveContactV2Params,
   EditGasLimitParams,
+  EditSpendLimitParams,
   MaliciousActivityWarningParams,
   QRCodeParams,
   SelectAccountV2Params,
@@ -159,6 +160,7 @@ export type WalletScreenStackParams = {
   [AppNavigation.Modal.SignOut]: undefined
   [AppNavigation.Modal.SelectToken]: TokenSelectParams
   [AppNavigation.Modal.EditGasLimit]: EditGasLimitParams
+  [AppNavigation.Modal.EditSpendLimit]: EditSpendLimitParams
   [AppNavigation.Modal.BuyCarefully]: BuyCarefullyParams
   // rpc prompts for wallet connect v2
   [AppNavigation.Modal.AvalancheSignMessage]: AvalancheSignMessageParams
