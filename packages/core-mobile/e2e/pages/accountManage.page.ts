@@ -94,6 +94,24 @@ class AccountManagePage {
     return result
   }
 
+  async createNthAccountAndSwitchToNth(account: number) {
+    await this.tapAccountDropdownTitle()
+    await this.tapAddEditAccounts()
+    for (let i = 0; i < account; i++) {
+      await this.tapAddAccountButton()
+    }
+    await this.tapNthAccount(account)
+    await this.tapDoneButton()
+  }
+
+  async tapNthAccount(account: number) {
+    try {
+      await Action.tap(by.text(`Account ${account}`))
+    } catch (e) {
+      console.log('Unable to tap Nth account')
+    }
+  }
+
   async switchToSecondAccount() {
     await this.tapAccountDropdownTitle()
     await this.tapSecondAccount()

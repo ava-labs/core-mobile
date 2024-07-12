@@ -1,5 +1,6 @@
 import Actions from '../../helpers/actions'
 import Assert from '../../helpers/assertions'
+import AccountManagePage from '../../pages/accountManage.page'
 import AdvancedPage from '../../pages/burgerMenu/advanced.page'
 import ConfirmStakingPage from '../../pages/Stake/confirmStaking.page'
 import BottomTabsPage from '../../pages/bottomTabs.page'
@@ -54,5 +55,12 @@ describe('Stake: testnet flow', () => {
 
   it('should verify active staking items', async () => {
     await StakePage.verifyActiveTabItems()
+  })
+
+  it('should verify no active stakes screen', async () => {
+    await BottomTabsPage.tapPortfolioTab()
+    await AccountManagePage.createNthAccountAndSwitchToNth(3)
+    await BottomTabsPage.tapStakeTab()
+    await StakePage.verifyNoActiveStakesScreenItems()
   })
 })
