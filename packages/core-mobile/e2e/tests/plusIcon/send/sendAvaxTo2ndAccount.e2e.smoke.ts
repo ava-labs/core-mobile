@@ -1,10 +1,12 @@
 import AccountManagePage from '../../../pages/accountManage.page'
 import ActivityTabPage from '../../../pages/activityTab.page'
 import PortfolioPage from '../../../pages/portfolio.page'
+import ReviewAndSendPage from '../../../pages/reviewAndSend.page'
 import SendPage from '../../../pages/send.page'
 import sendLoc from '../../../locators/send.loc'
 import { warmup } from '../../../helpers/warmup'
-import commonElsPage from '../../../pages/commonEls.page'
+import bottomTabsPage from '../../../pages/bottomTabs.page'
+import Actions from '../../../helpers/actions'
 
 describe('Send Avax to another account', () => {
   beforeAll(async () => {
@@ -29,7 +31,10 @@ describe('Send Avax to another account', () => {
 
   it('Should receive AVAX on second account', async () => {
     // Change default account to the 2nd.
-    await commonElsPage.tapBackButton()
+    await Actions.waitForElementNotVisible(
+      ReviewAndSendPage.transactionSuccessfulToastMsg
+    )
+    await bottomTabsPage.tapPortfolioTab()
     await AccountManagePage.tapAccountDropdownTitle(0)
     await AccountManagePage.tapSecondAccount()
 

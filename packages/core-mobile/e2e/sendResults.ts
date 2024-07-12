@@ -183,28 +183,31 @@ async function generatePlatformResults(
     const statusId = Number(resultObject?.status_id)
     const comment = `Test case result for ${resultObject?.case_id} and has a status of ${statusId} for ${platform}`
     const screenshot = resultObject?.screenshot
-    const alreadyPosted = resultObject.already_posted
+    const alreadyposted = resultObject.alreadyposted
 
-    const resultResp = await api.addResultForCase(runId, resultObject.case_id, {
-      status_id: statusId,
-      comment: comment
-    })
-
-    const resultID = resultResp.id
-    if (statusId === 5 && !alreadyPosted) {
-      const failedScreenshot = path.resolve(
-        `./e2e/artifacts/${platform}/${screenshot}`
+    try {
+      const resultResp = await api.addResultForCase(
+        runId,
+        resultObject.case_id,
+        {
+          status_id: statusId,
+          comment: comment
+        }
       )
-      const failedPayload = {
-        name: 'failed.png',
-        value: fs.createReadStream(failedScreenshot)
+      const resultID = resultResp.id
+      if (statusId === 5 && !alreadyposted) {
+        const failedScreenshot = path.resolve(
+          `./e2e/artifacts/${platform}/${screenshot}`
+        )
+        const failedPayload = {
+          name: 'failed.png',
+          value: fs.createReadStream(failedScreenshot)
+        }
+        // Attaches the screenshot to the corressponding case in the test run
+        await api.addAttachmentToResult(resultID, failedPayload)
       }
-      // Attaches the screenshot to the corressponding case in the test run
-      const failedResult = await api.addAttachmentToResult(
-        resultID,
-        failedPayload
-      )
-      console.log('The failed result is ' + JSON.stringify(failedResult))
+    } catch (TestRailException) {
+      console.log(TestRailException + ' this is the error')
     }
   }
 }
