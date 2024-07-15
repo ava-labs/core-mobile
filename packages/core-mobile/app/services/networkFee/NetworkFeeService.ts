@@ -26,19 +26,19 @@ class NetworkFeeService {
           low: {
             maxFeePerGas: tokenUnitCreator(networkFees.low.maxFeePerGas),
             maxPriorityFeePerGas: tokenUnitCreator(
-              networkFees.low.maxPriorityFeePerGas
+              networkFees.low.maxPriorityFeePerGas ?? 0
             )
           },
           medium: {
             maxFeePerGas: tokenUnitCreator(networkFees.medium.maxFeePerGas),
             maxPriorityFeePerGas: tokenUnitCreator(
-              networkFees.medium.maxPriorityFeePerGas
+              networkFees.medium.maxPriorityFeePerGas ?? 0
             )
           },
           high: {
             maxFeePerGas: tokenUnitCreator(networkFees.high.maxFeePerGas),
             maxPriorityFeePerGas: tokenUnitCreator(
-              networkFees.high.maxPriorityFeePerGas
+              networkFees.high.maxPriorityFeePerGas ?? 0
             )
           },
           isFixedFee: false

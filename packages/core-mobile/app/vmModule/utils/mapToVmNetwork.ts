@@ -7,7 +7,7 @@ export const mapToVmNetwork = (network: ChainsSDKNetwork): VmModuleNetwork => ({
   rpcUrl: network.rpcUrl,
   networkToken: network.networkToken,
   utilityAddresses: network.utilityAddresses,
-  logoUrl: network.logoUri,
+  logoUri: network.logoUri,
   isTestnet: network.isTestnet,
   explorerUrl: network.explorerUrl
 })

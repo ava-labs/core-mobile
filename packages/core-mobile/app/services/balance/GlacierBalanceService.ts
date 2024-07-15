@@ -52,9 +52,11 @@ export class GlacierBalanceService implements BalanceServiceProvider {
             let results: (PTokenWithBalance | XTokenWithBalance)[] = []
             if (pChainBalance.status === 'fulfilled') {
               results = [...results, pChainBalance.value]
+              GlacierService.setGlacierToUnhealthy()
             }
             if (xChainBalance.status === 'fulfilled') {
               results = [...results, xChainBalance.value]
+              GlacierService.setGlacierToUnhealthy()
             }
             return results
           })

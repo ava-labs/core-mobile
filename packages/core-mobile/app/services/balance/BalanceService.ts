@@ -12,13 +12,12 @@ import type {
   NetworkTokenWithBalance,
   TokenWithBalanceERC20
 } from '@avalabs/vm-module-types'
+import ModuleManager from 'vmModule/ModuleManager'
 import BtcBalanceService from './BtcBalanceService'
-import EvmBalanceService from './EvmBalanceService'
 
 const balanceProviders: BalanceServiceProvider[] = [
   GlacierBalanceProvider,
-  BtcBalanceService,
-  EvmBalanceService
+  BtcBalanceService
 ]
 
 export type BalancesForAccount = {
@@ -51,6 +50,28 @@ export class BalanceService {
       .setContext('svc.balance.get_for_account')
       .executeAsync(async () => {
         const accountAddress = getAddressByNetwork(account, network)
+
+        if (network.vmName === 'EVM') {
+          const module = await ModuleManager.loadModuleByNetwork(network)
+          const balancesResponse = await SentryWrapper.createSpanFor(sentryTrx)
+            .setContext('svc.balance.get')
+            .executeAsync(async () => {
+              return await module.getBalances({
+                customTokens,
+                addresses: [accountAddress],
+                currency,
+                network
+              })
+            })
+          const balances = balancesResponse[accountAddress] ?? {}
+          return {
+            accountIndex: account.index,
+            chainId: network.chainId,
+            tokens: Object.values(balances),
+            accountAddress
+          }
+        }
+
         const balanceProvider = await findAsyncSequential(
           balanceProviders,
           value => value.isProviderFor(network)
