@@ -1,4 +1,4 @@
-import { ethErrors } from 'eth-rpc-errors'
+import { rpcErrors } from '@metamask/rpc-errors'
 import { RpcMethod, RpcProvider, RpcRequest } from 'store/rpc/types'
 import mockSession from 'tests/fixtures/walletConnect/session.json'
 import AppNavigation from 'navigation/AppNavigation'
@@ -49,9 +49,7 @@ const testHandleInvalidParams = async (params: unknown) => {
 
   expect(result).toEqual({
     success: false,
-    error: ethErrors.rpc.invalidParams({
-      message: 'Contact is invalid'
-    })
+    error: rpcErrors.invalidParams('Contact is invalid')
   })
 }
 
@@ -71,7 +69,7 @@ const testApproveInvalidData = async (data: unknown) => {
 
   expect(result).toEqual({
     success: false,
-    error: ethErrors.rpc.internal('Invalid approve data')
+    error: rpcErrors.internal('Invalid approve data')
   })
 }
 

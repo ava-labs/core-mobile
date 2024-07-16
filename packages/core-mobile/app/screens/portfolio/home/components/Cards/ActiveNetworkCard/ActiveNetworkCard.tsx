@@ -1,6 +1,6 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
-import { selectBalanceTotalInCurrencyForNetworkAndAccount } from 'store/balance'
+import { selectBalanceTotalInCurrencyForNetworkAndAccount } from 'store/balance/slice'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import Separator from 'components/Separator'
 import AppNavigation from 'navigation/AppNavigation'
@@ -24,8 +24,11 @@ import PriceChangeIndicator from 'screens/watchlist/components/PriceChangeIndica
 import { useTokenPortfolioPriceChange } from 'hooks/balance/useTokenPortfolioPriceChange'
 import { Space } from 'components/Space'
 import { useNetworks } from 'hooks/networks/useNetworks'
+import { isAvmNetwork, isPvmNetwork } from 'utils/network/isAvalancheNetwork'
 import ZeroState from './ZeroState'
 import Tokens from './Tokens'
+import { PChainAssetList } from './PChainAssetList'
+import { XChainAssetList } from './XChainAssetList'
 
 type NavigationProp = PortfolioScreenProps<
   typeof AppNavigation.Portfolio.Portfolio
@@ -136,6 +139,20 @@ const ActiveNetworkCard = (): JSX.Element => {
   const renderContent = (): JSX.Element => {
     if (tokens.length === 0) return <ZeroState />
 
+    if (isPvmNetwork(activeNetwork)) {
+      return (
+        <PChainAssetList
+          scrollEnabled={false}
+          ItemSeparator={ItemSeparator}
+          limit={4}
+        />
+      )
+    }
+    if (isAvmNetwork(activeNetwork)) {
+      return (
+        <XChainAssetList scrollEnabled={false} ItemSeparator={ItemSeparator} />
+      )
+    }
     return <Tokens />
   }
 
@@ -154,3 +171,7 @@ const ActiveNetworkCard = (): JSX.Element => {
 }
 
 export default ActiveNetworkCard
+
+const ItemSeparator = (): React.JSX.Element => {
+  return <Space y={16} />
+}

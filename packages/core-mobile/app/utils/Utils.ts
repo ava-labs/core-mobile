@@ -1,6 +1,6 @@
 import Big from 'big.js'
 import { bigToBN, bnToBig, stringToBN } from '@avalabs/utils-sdk'
-import { TokenType, TokenWithBalance } from 'store/balance'
+import { TokenType, TokenWithBalance } from 'store/balance/types'
 import { APIError } from 'paraswap'
 import BN from 'bn.js'
 import { TokenBaseUnit } from 'types/TokenBaseUnit'
@@ -146,7 +146,7 @@ export function calculateGasAndFees<T extends TokenBaseUnit<T>>({
     maxPriorityFeePerGas,
     gasLimit,
     maxTotalFee,
-    maxTotalFeeInCurrency: maxTotalFee.mul(tokenPrice).toFixed(2)
+    maxTotalFeeInCurrency: maxTotalFee.mul(tokenPrice).toFixed()
   }
 }
 

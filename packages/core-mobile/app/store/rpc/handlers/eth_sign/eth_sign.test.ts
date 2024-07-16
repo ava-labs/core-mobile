@@ -1,4 +1,4 @@
-import { ethErrors } from 'eth-rpc-errors'
+import { rpcErrors, providerErrors } from '@metamask/rpc-errors'
 import { RpcMethod, RpcProvider, RpcRequest } from 'store/rpc/types'
 import mockSession from 'tests/fixtures/walletConnect/session.json'
 import mockAccounts from 'tests/fixtures/accounts.json'
@@ -9,6 +9,9 @@ import AppNavigation from 'navigation/AppNavigation'
 import * as Navigation from 'utils/Navigation'
 import * as Sentry from '@sentry/react-native'
 import WalletConnectService from 'services/walletconnectv2/WalletConnectService'
+import { selectIsBlockaidTransactionValidationBlocked } from 'store/posthog/slice'
+import { TransactionScanResponse } from 'services/blockaid/types'
+import BlockaidService from 'services/blockaid/BlockaidService'
 import { ethSignHandler as handler } from './eth_sign'
 
 const mockSelectAccountByAddress = jest.fn()
@@ -21,14 +24,27 @@ jest.mock('store/account/slice', () => {
 })
 
 const mockSelectNetwork = jest.fn()
-jest.mock('store/network', () => {
-  const actual = jest.requireActual('store/network')
+jest.mock('store/network/slice', () => {
+  const actual = jest.requireActual('store/network/slice')
   return {
     ...actual,
     selectNetwork: () => mockSelectNetwork
   }
 })
 mockSelectNetwork.mockImplementation(() => mockNetworks[43114])
+
+jest.mock('store/posthog/slice', () => {
+  const actual = jest.requireActual('store/posthog/slice')
+  return {
+    ...actual,
+    selectIsBlockaidTransactionValidationBlocked: jest.fn()
+  }
+})
+
+const mockIsBlockaidTransactionValidationBlocked =
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  selectIsBlockaidTransactionValidationBlocked as jest.MockedFunction<any>
+mockIsBlockaidTransactionValidationBlocked.mockReturnValue(true)
 
 const mockSignMessage = jest.fn()
 jest.spyOn(WalletService, 'signMessage').mockImplementation(mockSignMessage)
@@ -105,7 +121,7 @@ describe('eth_sign handler', () => {
 
         expect(result).toEqual({
           success: false,
-          error: ethErrors.rpc.invalidParams('Invalid message params')
+          error: rpcErrors.invalidParams('Invalid message params')
         })
       })
 
@@ -123,7 +139,7 @@ describe('eth_sign handler', () => {
 
         expect(result).toEqual({
           success: false,
-          error: ethErrors.rpc.internal('Session not found')
+          error: rpcErrors.internal('Session not found')
         })
       })
 
@@ -139,7 +155,7 @@ describe('eth_sign handler', () => {
 
         expect(result).toEqual({
           success: false,
-          error: ethErrors.provider.unauthorized(
+          error: providerErrors.unauthorized(
             'Requested address is not authorized'
           )
         })
@@ -156,7 +172,7 @@ describe('eth_sign handler', () => {
 
         expect(result).toEqual({
           success: false,
-          error: ethErrors.rpc.resourceNotFound('Network does not exist')
+          error: rpcErrors.resourceNotFound('Network does not exist')
         })
       })
 
@@ -171,11 +187,12 @@ describe('eth_sign handler', () => {
 
         expect(result).toEqual({
           success: false,
-          error: ethErrors.rpc.resourceNotFound('Account does not exist')
+          error: rpcErrors.resourceNotFound('Account does not exist')
         })
       })
 
       it('should display prompt and return success', async () => {
+        mockIsBlockaidTransactionValidationBlocked.mockReturnValue(true)
         mockSelectAccountByAddress.mockImplementationOnce(() => mockAccounts[1])
 
         const testParams = [approvedAddress, typedData]
@@ -199,6 +216,80 @@ describe('eth_sign handler', () => {
 
         expect(result).toEqual({ success: true, value: expect.any(Symbol) })
       })
+
+      it('should navigate to malicious activity warning screen if transaction validation result is malicious', async () => {
+        mockIsBlockaidTransactionValidationBlocked.mockReturnValue(false)
+        mockSelectAccountByAddress.mockImplementationOnce(() => mockAccounts[1])
+
+        const scanResponse: TransactionScanResponse = {
+          validation: {
+            result_type: 'Malicious',
+            features: [],
+            status: 'Success'
+          },
+          block: '0x123',
+          chain: 'ethereum'
+        }
+        jest
+          .spyOn(BlockaidService, 'scanJsonRpc')
+          .mockResolvedValue(scanResponse)
+
+        const testParams = [approvedAddress, typedData]
+
+        const testRequest = createRequest(testParams)
+
+        await handler.handle(testRequest, mockListenerApi)
+
+        expect(mockNavigate).toHaveBeenCalledWith({
+          name: AppNavigation.Root.Wallet,
+          params: {
+            screen: AppNavigation.Modal.MaliciousActivityWarning,
+            params: {
+              title: 'Scam Transaction',
+              subTitle: 'This transaction is malicious, do not proceed.',
+              rejectButtonTitle: 'Reject Transaction',
+              onProceed: expect.any(Function),
+              onReject: expect.any(Function)
+            }
+          }
+        })
+      })
+    })
+
+    it('should navigate to sign message screen if transaction validation result is not malicious', async () => {
+      mockIsBlockaidTransactionValidationBlocked.mockReturnValue(false)
+      mockSelectAccountByAddress.mockImplementationOnce(() => mockAccounts[1])
+
+      const scanResponse: TransactionScanResponse = {
+        validation: {
+          result_type: 'Benign',
+          features: [],
+          status: 'Success'
+        },
+        block: '0x123',
+        chain: 'ethereum'
+      }
+      jest.spyOn(BlockaidService, 'scanJsonRpc').mockResolvedValue(scanResponse)
+
+      const testParams = [approvedAddress, typedData]
+
+      const testRequest = createRequest(testParams)
+
+      await handler.handle(testRequest, mockListenerApi)
+
+      expect(mockNavigate).toHaveBeenCalledWith({
+        name: AppNavigation.Root.Wallet,
+        params: {
+          screen: AppNavigation.Modal.SignMessageV2,
+          params: {
+            request: testRequest,
+            data: typedData,
+            network: mockNetworks[43114],
+            account: mockAccounts[1],
+            scanResponse
+          }
+        }
+      })
     })
 
     describe('non wallet connect request', () => {
@@ -209,7 +300,7 @@ describe('eth_sign handler', () => {
 
         expect(result).toEqual({
           success: false,
-          error: ethErrors.rpc.invalidParams('Invalid message params')
+          error: rpcErrors.invalidParams('Invalid message params')
         })
       })
 
@@ -227,7 +318,7 @@ describe('eth_sign handler', () => {
 
         expect(result).not.toEqual({
           success: false,
-          error: ethErrors.rpc.internal('Session not found')
+          error: rpcErrors.internal('Session not found')
         })
       })
 
@@ -243,7 +334,7 @@ describe('eth_sign handler', () => {
 
         expect(result).not.toEqual({
           success: false,
-          error: ethErrors.provider.unauthorized(
+          error: providerErrors.unauthorized(
             'Requested address is not authorized'
           )
         })
@@ -260,7 +351,7 @@ describe('eth_sign handler', () => {
 
         expect(result).toEqual({
           success: false,
-          error: ethErrors.rpc.resourceNotFound('Network does not exist')
+          error: rpcErrors.resourceNotFound('Network does not exist')
         })
       })
 
@@ -275,11 +366,12 @@ describe('eth_sign handler', () => {
 
         expect(result).toEqual({
           success: false,
-          error: ethErrors.rpc.resourceNotFound('Account does not exist')
+          error: rpcErrors.resourceNotFound('Account does not exist')
         })
       })
 
       it('should display prompt and return success', async () => {
+        mockIsBlockaidTransactionValidationBlocked.mockReturnValue(true)
         mockSelectAccountByAddress.mockImplementationOnce(() => mockAccounts[1])
 
         const testParams = [approvedAddress, typedData]
@@ -318,7 +410,7 @@ describe('eth_sign handler', () => {
 
       expect(result).toEqual({
         success: false,
-        error: ethErrors.rpc.internal('Invalid approve data')
+        error: rpcErrors.internal('Invalid approve data')
       })
     })
 
@@ -385,7 +477,7 @@ describe('eth_sign handler', () => {
 
       expect(result).toEqual({
         success: false,
-        error: ethErrors.rpc.internal('Unable to sign message')
+        error: rpcErrors.internal('Unable to sign message')
       })
     })
   })

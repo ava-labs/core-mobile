@@ -92,7 +92,7 @@ const BaseTxView = ({ tx }: { tx: Avalanche.BaseTx }): JSX.Element => {
       <Space y={16} />
       <TxFee txFee={txFee} />
       <Space y={16} />
-      {chain !== PVM && (
+      {chain !== PVM && !!memo && (
         <>
           <AvaText.Body2 color={theme.colorText1}>Memo</AvaText.Body2>
           <Space y={8} />

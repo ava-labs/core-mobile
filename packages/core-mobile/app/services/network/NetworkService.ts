@@ -9,7 +9,6 @@ import {
   BITCOIN_NETWORK,
   BITCOIN_TEST_NETWORK,
   ChainId,
-  getChainsAndTokens,
   Network,
   NetworkVMType
 } from '@avalabs/chains-sdk'
@@ -17,11 +16,15 @@ import SentryWrapper from 'services/sentry/SentryWrapper'
 import { Transaction } from '@sentry/types'
 import { avaxSerial } from '@avalabs/avalanchejs'
 import { TransactionResponse } from 'ethers'
+import { Networks } from 'store/network/types'
+import Config from 'react-native-config'
 import { getBitcoinProvider, getEvmProvider } from './utils/providerUtils'
 
+if (!Config.PROXY_URL) throw Error('PROXY_URL is missing')
+
 class NetworkService {
-  async getNetworks(): Promise<{ [chainId: number]: Network }> {
-    const erc20Networks = await getChainsAndTokens(!__DEV__)
+  async getNetworks(): Promise<Networks> {
+    const erc20Networks = await this.fetchERC20Networks()
 
     delete erc20Networks[ChainId.AVALANCHE_LOCAL_ID]
 
@@ -120,28 +123,30 @@ class NetworkService {
       chainId: -AVALANCHE_XP_NETWORK.chainId,
       isTestnet: false,
       vmName: NetworkVMType.PVM,
-      chainName: 'Avalanche (P-chain)',
+      chainName: 'Avalanche (P-Chain)',
       logoUri:
         'https://images.ctfassets.net/gcj8jwzm6086/42aMwoCLblHOklt6Msi6tm/1e64aa637a8cead39b2db96fe3225c18/pchain-square.svg',
       networkToken: {
         ...AVALANCHE_XP_NETWORK.networkToken,
         logoUri:
           'https://glacier-api.avax.network/proxy/chain-assets/cb14a1f/chains/43114/token-logo.png'
-      }
+      },
+      explorerUrl: 'https://subnets.avax.network/p-chain'
     } as Network
     const pChainTest = {
       ...AVALANCHE_XP_TEST_NETWORK,
       chainId: -AVALANCHE_XP_TEST_NETWORK.chainId,
       isTestnet: true,
       vmName: NetworkVMType.PVM,
-      chainName: 'Avalanche (P-chain)',
+      chainName: 'Avalanche (P-Chain)',
       logoUri:
         'https://images.ctfassets.net/gcj8jwzm6086/42aMwoCLblHOklt6Msi6tm/1e64aa637a8cead39b2db96fe3225c18/pchain-square.svg',
       networkToken: {
         ...AVALANCHE_XP_TEST_NETWORK.networkToken,
         logoUri:
           'https://glacier-api.avax.network/proxy/chain-assets/cb14a1f/chains/43114/token-logo.png'
-      }
+      },
+      explorerUrl: 'https://subnets-test.avax.network/p-chain'
     } as Network
     return isDeveloperMode ? pChainTest : pChain
   }
@@ -152,15 +157,17 @@ class NetworkService {
   getAvalancheNetworkX(isDeveloperMode: boolean): Network {
     const xChain = {
       ...AVALANCHE_XP_NETWORK,
-      chainName: 'Avalanche (X-chain)',
+      chainName: 'Avalanche (X-Chain)',
       logoUri:
-        'https://images.ctfassets.net/gcj8jwzm6086/5xiGm7IBR6G44eeVlaWrxi/1b253c4744a3ad21a278091e3119feba/xchain-square.svg'
+        'https://images.ctfassets.net/gcj8jwzm6086/5xiGm7IBR6G44eeVlaWrxi/1b253c4744a3ad21a278091e3119feba/xchain-square.svg',
+      explorerUrl: 'https://subnets.avax.network/x-chain'
     } as Network
     const xChainTest = {
       ...AVALANCHE_XP_TEST_NETWORK,
-      chainName: 'Avalanche (X-chain)',
+      chainName: 'Avalanche (X-Chain)',
       logoUri:
-        'https://images.ctfassets.net/gcj8jwzm6086/5xiGm7IBR6G44eeVlaWrxi/1b253c4744a3ad21a278091e3119feba/xchain-square.svg'
+        'https://images.ctfassets.net/gcj8jwzm6086/5xiGm7IBR6G44eeVlaWrxi/1b253c4744a3ad21a278091e3119feba/xchain-square.svg',
+      explorerUrl: 'https://subnets-test.avax.network/x-chain'
     } as Network
     return isDeveloperMode ? xChainTest : xChain
   }
@@ -171,6 +178,16 @@ class NetworkService {
   getAvalancheProviderXP(isDeveloperMode: boolean): Avalanche.JsonRpcProvider {
     const network = this.getAvalancheNetworkX(isDeveloperMode)
     return this.getProviderForNetwork(network) as Avalanche.JsonRpcProvider
+  }
+
+  private async fetchERC20Networks(): Promise<Networks> {
+    const response = await fetch(`${Config.PROXY_URL}/networks`)
+    const networks: Network[] = await response.json()
+
+    return networks.reduce((acc, network) => {
+      acc[network.chainId] = network
+      return acc
+    }, {} as Networks)
   }
 }
 

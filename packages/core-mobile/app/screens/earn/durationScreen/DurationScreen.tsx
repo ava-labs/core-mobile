@@ -182,6 +182,7 @@ export const StakingDuration = (): JSX.Element => {
       </View>
       <Space y={12} />
       <AvaButton.PrimaryLarge
+        testID="next_btn"
         disabled={isNextDisabled}
         onPress={() => navigateToNodeSearch()}>
         Next

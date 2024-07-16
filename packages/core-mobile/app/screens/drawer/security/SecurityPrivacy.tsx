@@ -105,7 +105,7 @@ function SecurityPrivacy({
         />
       )}
       <AvaListItem.Base
-        title={'Participate in CoreAnalytics'}
+        title={'Participate in Core Analytics'}
         background={theme.background}
         rightComponent={
           <Switch

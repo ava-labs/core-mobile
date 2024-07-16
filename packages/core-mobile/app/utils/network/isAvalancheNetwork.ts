@@ -20,3 +20,14 @@ export function isXPChain(chainId: number): boolean {
 export function absoluteChain(chainId: number): number {
   return chainId < 0 ? chainId * -1 : chainId
 }
+
+// todo: update below functions to use the new X/P chain IDs in this CP-8677
+export function isPChain(chainId: number): boolean {
+  return [ChainId.AVALANCHE_XP * -1, ChainId.AVALANCHE_TEST_XP * -1].includes(
+    chainId
+  )
+}
+
+export function isXChain(chainId: number): boolean {
+  return [ChainId.AVALANCHE_XP, ChainId.AVALANCHE_TEST_XP].includes(chainId)
+}

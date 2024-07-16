@@ -8,10 +8,11 @@ export default {
   myAccounts: 'My Accounts',
   nextBtn: 'Next',
   sendTitle: 'Send',
-  testInputField: 'input_text',
+  amountToSend: 'universal_token_selector__amount_field',
   tokenDropdown: 'send_token__token_dropdown',
   usdcToken: 'USDC',
   wethToken: 'WETH.e',
   approveBtn: 'approve_button',
-  rejectBtn: 'Reject'
+  rejectBtn: 'Reject',
+  addressField: 'end_token__send_field'
 }

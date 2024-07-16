@@ -15,6 +15,10 @@ import { WCSessionProposal } from 'store/walletConnectV2/types'
 import Logger from 'utils/Logger'
 import BlockaidService from 'services/blockaid/BlockaidService'
 import { SessionProposalV2Params } from 'navigation/types'
+import { SiteScanResponse } from 'services/blockaid/types'
+import { providerErrors } from '@metamask/rpc-errors'
+import { onRequestRejected } from 'store/rpc/slice'
+import { AnyAction, Dispatch } from '@reduxjs/toolkit'
 
 const CORE_WEB_HOSTNAMES = [
   'localhost',
@@ -91,22 +95,37 @@ export const parseApproveData: (data: unknown) =>
   return approveDataSchema.safeParse(data)
 }
 
-export const scanAndSessionProposal = async (
-  dappUrl: string,
-  request: WCSessionProposal,
+export const scanAndSessionProposal = async ({
+  dappUrl,
+  request,
+  chainIds,
+  dispatch
+}: {
+  dappUrl: string
+  request: WCSessionProposal
   chainIds: number[]
-): Promise<void> => {
+  dispatch: Dispatch<AnyAction>
+}): Promise<void> => {
   try {
-    const scanResponse = await BlockaidService.scanSite('klmining.net')
+    const scanResponse = await BlockaidService.scanSite(dappUrl)
 
-    if (scanResponse.status === 'hit' && scanResponse.is_malicious) {
+    if (isSiteScanResponseMalicious(scanResponse)) {
       Navigation.navigate({
         name: AppNavigation.Root.Wallet,
         params: {
           screen: AppNavigation.Modal.MaliciousActivityWarning,
           params: {
-            activityType: 'SessionProposal',
-            request,
+            title: 'Scam\nApplication',
+            subTitle: 'This application is malicious, do not proceed.',
+            rejectButtonTitle: 'Reject Connection',
+            onReject: (): void => {
+              dispatch(
+                onRequestRejected({
+                  request,
+                  error: providerErrors.userRejectedRequest()
+                })
+              )
+            },
             onProceed: () => {
               navigateToSessionProposal({ request, chainIds, scanResponse })
             }
@@ -117,7 +136,7 @@ export const scanAndSessionProposal = async (
       navigateToSessionProposal({ request, chainIds, scanResponse })
     }
   } catch (error) {
-    Logger.error('[Blockaid]Failed to validate transaction', error)
+    Logger.error('[Blockaid] Failed to scan dApp', error)
 
     navigateToSessionProposal({ request, chainIds })
   }
@@ -134,3 +153,7 @@ export const navigateToSessionProposal = (
     }
   })
 }
+
+export const isSiteScanResponseMalicious = (
+  scanResponse: SiteScanResponse
+): boolean => scanResponse.status === 'hit' && scanResponse.is_malicious

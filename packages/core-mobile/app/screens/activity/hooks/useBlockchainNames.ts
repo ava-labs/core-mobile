@@ -41,7 +41,7 @@ export function useBlockchainNames(
     }
   }
 
-  const symbol = (tx.token?.symbol ?? '').split('.')[0] ?? ''
+  const symbol = (tx.tokens[0]?.symbol ?? '').split('.')[0] ?? ''
 
   const txBlockchain = avalancheAssets[symbol]?.nativeNetwork
   const isBridgeToAvalanche = isAvalancheNetwork(activeNetwork)

@@ -1,5 +1,5 @@
 import { Erc20TokenBalance } from '@avalabs/glacier-sdk'
-import { TokenType, TokenWithBalanceERC20 } from 'store/balance'
+import { TokenType, TokenWithBalanceERC20 } from 'store/balance/types'
 import { BN } from 'bn.js'
 import { balanceToDisplayValue, bnToBig } from '@avalabs/utils-sdk'
 import { Network } from '@avalabs/chains-sdk'

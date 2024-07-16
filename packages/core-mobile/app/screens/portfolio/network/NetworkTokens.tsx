@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { FlatList, ListRenderItemInfo, View } from 'react-native'
+import { FlatList, ListRenderItemInfo } from 'react-native'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList'
 import AppNavigation from 'navigation/AppNavigation'
@@ -11,17 +11,20 @@ import {
   PortfolioScreenProps
 } from 'navigation/types'
 import { UI, useIsUIDisabled } from 'hooks/useIsUIDisabled'
-import { LocalTokenWithBalance } from 'store/balance'
+import { LocalTokenWithBalance } from 'store/balance/types'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { getSelectedToken } from 'utils/getSelectedToken'
 import TabViewAva from 'components/TabViewAva'
 import AvaText from 'components/AvaText'
 import ActivityList from 'screens/shared/ActivityList/ActivityList'
-import { Transaction } from 'store/transaction'
 import usePendingBridgeTransactions from 'screens/bridge/hooks/usePendingBridgeTransactions'
 import TopRightBadge from 'components/TopRightBadge'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { useNetworks } from 'hooks/networks/useNetworks'
+import { isAvmNetwork, isPvmNetwork } from 'utils/network/isAvalancheNetwork'
+import { View } from '@avalabs/k2-mobile'
+import { XChainAssetList } from '../home/components/Cards/ActiveNetworkCard/XChainAssetList'
+import { PChainAssetList } from '../home/components/Cards/ActiveNetworkCard/PChainAssetList'
 import NetworkTokensHeader from './components/NetworkTokensHeader'
 
 type NavigationProp = PortfolioScreenProps<
@@ -59,6 +62,7 @@ const NetworkTokens = (): JSX.Element => {
 
   const selectToken = (token: LocalTokenWithBalance): void => {
     navigate(AppNavigation.Wallet.OwnedTokenDetail, {
+      chainId: activeNetwork.chainId,
       tokenId: token.localId
     })
 
@@ -73,12 +77,6 @@ const NetworkTokens = (): JSX.Element => {
 
   const manageTokens = (): void => {
     navigate(AppNavigation.Wallet.TokenManagement)
-  }
-
-  const openTransactionDetails = (item: Transaction): void => {
-    navigate(AppNavigation.Wallet.ActivityDetail, {
-      tx: item
-    })
   }
 
   const openTransactionStatus = (
@@ -179,16 +177,39 @@ const NetworkTokens = (): JSX.Element => {
   const renderTokenTab = (): JSX.Element => {
     if (tokenList.length === 0) return renderZeroState()
 
+    if (isPvmNetwork(activeNetwork)) {
+      return (
+        <PChainAssetList
+          scrollEnabled
+          sx={{
+            marginTop: 16,
+            marginHorizontal: 16,
+            padding: 16,
+            borderRadius: 8
+          }}
+        />
+      )
+    }
+    if (isAvmNetwork(activeNetwork)) {
+      return (
+        <XChainAssetList
+          scrollEnabled
+          sx={{
+            marginBottom: 0,
+            marginTop: 16,
+            marginHorizontal: 16,
+            padding: 16,
+            borderRadius: 8
+          }}
+        />
+      )
+    }
+
     return renderTokens()
   }
 
   const renderActivityTab = (): JSX.Element => {
-    return (
-      <ActivityList
-        openTransactionDetails={openTransactionDetails}
-        openTransactionStatus={openTransactionStatus}
-      />
-    )
+    return <ActivityList openTransactionStatus={openTransactionStatus} />
   }
 
   return (

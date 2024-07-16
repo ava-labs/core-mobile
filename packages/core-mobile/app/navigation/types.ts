@@ -2,22 +2,22 @@ import type { CompositeScreenProps } from '@react-navigation/native'
 import { StackScreenProps } from '@react-navigation/stack'
 import { BottomTabScreenProps } from '@react-navigation/bottom-tabs'
 import { DrawerScreenProps as RNDrawerScreenProps } from '@react-navigation/drawer'
-import { TokenWithBalance } from 'store/balance'
+import { DisplayData, SigningData } from '@avalabs/vm-module-types'
+import { RpcRequest } from '@avalabs/vm-module-types'
+import { TokenWithBalance } from 'store/balance/types'
 import { AdvancedStackParamList } from 'navigation/wallet/AdvancedStackScreen'
 import { AvalancheCreateContactRequest as AvalancheCreateContactRequestV2 } from 'store/rpc/handlers/contact/avalanche_createContact/avalanche_createContact'
 import { AvalancheRemoveContactRequest as AvalancheRemoveContactRequestV2 } from 'store/rpc/handlers/contact/avalanche_removeContact/avalanche_removeContact'
-import { Contact as SharedContact } from '@avalabs/types'
+import { CorePrimaryAccount, Contact as SharedContact } from '@avalabs/types'
 import { AvalancheUpdateContactRequest as AvalancheUpdateContactRequestV2 } from 'store/rpc/handlers/contact/avalanche_updateContact/avalanche_updateContact'
 import { AvalancheSelectAccountRequest as AvalancheSelectAccountRequestV2 } from 'store/rpc/handlers/account/avalanche_selectAccount/avalanche_selectAccount'
 import { Account } from 'store/account'
-import { EthSendTransactionRpcRequest as EthSendTransactionRpcRequestV2 } from 'store/rpc/handlers/eth_sendTransaction/eth_sendTransaction'
 import { AvalancheBridgeAssetRequest as AvalancheBridgeAssetRequestV2 } from 'store/rpc/handlers/avalanche_bridgeAsset/avalanche_bridgeAsset'
 import { Asset, Blockchain } from '@avalabs/bridge-sdk'
 import { EthSignRpcRequest as EthSignRpcRequestV2 } from 'store/rpc/handlers/eth_sign/eth_sign'
 import { WalletAddEthereumChainRpcRequest as WalletAddEthereumChainRpcRequestV2 } from 'store/rpc/handlers/chain/wallet_addEthereumChain/wallet_addEthereumChain'
 import { Network } from '@avalabs/chains-sdk'
 import { WalletSwitchEthereumChainRpcRequest as WalletSwitchEthereumChainRpcRequestV2 } from 'store/rpc/handlers/chain/wallet_switchEthereumChain/wallet_switchEthereumChain'
-import { TransactionParams } from 'store/rpc/handlers/eth_sendTransaction/utils'
 import {
   OldTypedData,
   TypedData
@@ -48,11 +48,9 @@ import {
 } from 'store/rpc/handlers/bitcoin_sendTransaction/bitcoin_sendTransaction'
 import { AvalancheSignMessageRpcRequest } from 'store/rpc/handlers/avalanche_signMessage/types'
 import {
-  MaliciousActivityType,
   SiteScanResponse,
   TransactionScanResponse
 } from 'services/blockaid/types'
-import { Request } from 'store/rpc/types'
 import { RootScreenStackParamList } from './RootScreenStack'
 import { OnboardingScreenStackParamList } from './OnboardScreenStack'
 import { WelcomeScreenStackParamList } from './onboarding/WelcomeScreenStack'
@@ -121,10 +119,22 @@ export type BuyCarefullyParams = {
   tokenType: string
 }
 
-export type SignTransactionV2Params = {
-  request: EthSendTransactionRpcRequestV2
-  transaction: TransactionParams
-  scanResponse?: TransactionScanResponse
+export type ApprovalPopupParams = {
+  request: RpcRequest
+  displayData: DisplayData
+  signingData: SigningData
+  onApprove: ({
+    network,
+    account,
+    maxFeePerGas,
+    maxPriorityFeePerGas
+  }: {
+    network: Network
+    account: CorePrimaryAccount
+    maxFeePerGas: bigint
+    maxPriorityFeePerGas: bigint
+  }) => Promise<void>
+  onReject: (message?: string) => void
 }
 
 export type AvalancheSendTransactionV2Params = {
@@ -152,6 +162,7 @@ export type SignMessageV2Params = {
   network: Network
   account: Account
   data: string | TypedData | OldTypedData
+  scanResponse?: TransactionScanResponse
 }
 
 export type AvalancheSignMessageParams = {
@@ -183,9 +194,11 @@ export type GetEthereumChainParams = {
 }
 
 export type MaliciousActivityWarningParams = {
-  activityType: MaliciousActivityType
-  request: Request
+  title: string
+  subTitle: string
+  rejectButtonTitle: string
   onProceed: () => void
+  onReject: () => void
 }
 
 export type QRCodeParams = {

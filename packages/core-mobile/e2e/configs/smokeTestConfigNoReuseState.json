@@ -1,0 +1,30 @@
+{
+  "maxWorkers": 1,
+  "testEnvironment": "detox/runners/jest/testEnvironment",
+  "testRunner": "jest-circus/runner",
+  "testTimeout": 120000,
+  "rootDir": "..",
+  "testMatch": ["<rootDir>/tests/**/*.e2e.smoke.ts"],
+  "reporters": ["detox/runners/jest/reporter"],
+  "verbose": true,
+  "globalTeardown": "<rootDir>/sendResultsTeardown.ts",
+  "globalSetup": "detox/runners/jest/globalSetup",
+  "transformIgnorePatterns": [
+    "node_modules/(?!(jest-)?react-native|@react-native-community|@react-native|@react-navigation)"
+  ],
+  "transform": {
+    "^.+\\.tsx?$": [
+      "ts-jest",
+      {
+        "babelConfig": "babel.config.js"
+      }
+    ]
+  },
+  "testPathIgnorePatterns": [
+    "./e2e/tests/plusIcon/send/sendSepoliaEthTo2ndAccount.e2e.ts",
+    "./e2e/tests/plusIcon/send/sendEthTo2ndAccount.e2e.ts",
+    "./e2e/tests/network/addCustomNetwork.e2e.smoke.ts",
+    "./e2e/tests/network/addCustomToken.e2e.smoke.ts",
+    "./e2e/tests/stake/claimTestnet.e2e.smoke.ts"
+  ]
+}

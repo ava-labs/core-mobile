@@ -1,5 +1,5 @@
 import { AppListenerEffectAPI } from 'store'
-import { ethErrors } from 'eth-rpc-errors'
+import { rpcErrors } from '@metamask/rpc-errors'
 import {
   selectAccounts,
   selectActiveAccount,
@@ -38,32 +38,29 @@ class AvalancheSelectAccountHandler
       Logger.error('invalid params', result.error)
       return {
         success: false,
-        error: ethErrors.rpc.invalidParams({
-          message: 'Account index is invalid'
-        })
+        error: rpcErrors.invalidParams('Account id is invalid')
       }
     }
 
-    const accountIndex = result.data[0]
+    const accountId = result.data[0]
 
     const activeAccount = selectActiveAccount(getState())
     const accounts = selectAccounts(getState())
 
-    const accountAlreadyActive =
-      activeAccount && activeAccount.index === accountIndex
+    const accountAlreadyActive = activeAccount && activeAccount.id === accountId
 
     if (accountAlreadyActive) {
       return { success: true, value: null }
     }
 
-    const requestedAccount = accounts[accountIndex]
+    const requestedAccount = Object.values(accounts).find(
+      account => account.id === accountId
+    )
 
     if (requestedAccount === undefined) {
       return {
         success: false,
-        error: ethErrors.rpc.resourceNotFound({
-          message: 'Requested account does not exist'
-        })
+        error: rpcErrors.resourceNotFound('Requested account does not exist')
       }
     }
 
@@ -91,7 +88,7 @@ class AvalancheSelectAccountHandler
     if (!result.success) {
       return {
         success: false,
-        error: ethErrors.rpc.internal('Invalid approve data')
+        error: rpcErrors.internal('Invalid approve data')
       }
     }
 

@@ -1,10 +1,4 @@
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState
-} from 'react'
+import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { ScrollView } from 'react-native-gesture-handler'
 import { ApplicationContext } from 'contexts/ApplicationContext'
 import AvaText from 'components/AvaText'
@@ -18,19 +12,10 @@ import { useDappConnectionV2 } from 'hooks/useDappConnectionV2'
 import { useSelector } from 'react-redux'
 import { selectIsSeedlessSigningBlocked } from 'store/posthog'
 import FeatureBlocked from 'screens/posthog/FeatureBlocked'
-import NetworkFeeSelector from 'components/NetworkFeeSelector'
-import { Eip1559Fees } from 'utils/Utils'
 import { NetworkTokenUnit } from 'types'
-import BridgeService from 'services/bridge/BridgeService'
-import Big from 'big.js'
-import { selectActiveAccount } from 'store/account'
-import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { selectBridgeAppConfig } from 'store/bridge'
-import { selectSelectedCurrency } from 'store/settings/currency'
-import Logger from 'utils/Logger'
 import { View } from '@avalabs/k2-mobile'
 import { useNetworks } from 'hooks/networks/useNetworks'
-import { getTargetChainId } from 'screens/bridge/hooks/useUnifiedBridge/utils'
+import { useNetworkFee } from 'hooks/useNetworkFee'
 import SimplePrompt from '../shared/SimplePrompt'
 
 type BridgeAssetScreenProps = WalletScreenProps<
@@ -40,31 +25,26 @@ type BridgeAssetScreenProps = WalletScreenProps<
 const BridgeAsset = (): JSX.Element => {
   const isSeedlessSigningBlocked = useSelector(selectIsSeedlessSigningBlocked)
   const { goBack } = useNavigation<BridgeAssetScreenProps['navigation']>()
-  const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const { request, asset, amountStr, currentBlockchain } =
     useRoute<BridgeAssetScreenProps['route']>().params
 
-  const targetChainId = useMemo(
-    () => getTargetChainId(isDeveloperMode, currentBlockchain),
-    [isDeveloperMode, currentBlockchain]
-  )
-
   const { onUserApproved: onApprove, onUserRejected: onReject } =
     useDappConnectionV2()
-  const { activeNetwork, networks } = useNetworks()
-  const activeAccount = useSelector(selectActiveAccount)
-  const isTestnet = useSelector(selectIsDeveloperMode)
-  const config = useSelector(selectBridgeAppConfig)
-  const currency = useSelector(selectSelectedCurrency)
-
-  const [fees, setFees] = useState<Eip1559Fees<NetworkTokenUnit>>({
-    gasLimit: 0,
-    maxFeePerGas: NetworkTokenUnit.fromNetwork(activeNetwork),
-    maxPriorityFeePerGas: NetworkTokenUnit.fromNetwork(activeNetwork)
-  })
-  const [gasLimit, setGasLimit] = useState(0)
+  const { activeNetwork } = useNetworks()
 
   const theme = useContext(ApplicationContext).theme
+
+  const { data: networkFee } = useNetworkFee(activeNetwork)
+
+  const [maxFeePerGas, setMaxFeePerGas] = useState<NetworkTokenUnit>(
+    NetworkTokenUnit.fromNetwork(activeNetwork)
+  )
+
+  useEffect(() => {
+    if (!networkFee) return
+    setMaxFeePerGas(networkFee.low.maxFeePerGas)
+  }, [networkFee])
+
   const peerMeta = request.peerMeta
   const symbol = asset.symbol
 
@@ -84,17 +64,18 @@ const BridgeAsset = (): JSX.Element => {
       currentBlockchain,
       amountStr,
       asset,
-      maxFeePerGas: fees.maxFeePerGas.toSubUnit(),
-      maxPriorityFeePerGas: fees.maxPriorityFeePerGas.toSubUnit()
+      maxFeePerGas: maxFeePerGas.toSubUnit()
     })
     goBack()
-  }, [amountStr, asset, currentBlockchain, fees, goBack, onApprove, request])
-
-  const handleFeesChange = (
-    eip1559Fees: Eip1559Fees<NetworkTokenUnit>
-  ): void => {
-    setFees(eip1559Fees)
-  }
+  }, [
+    amountStr,
+    asset,
+    currentBlockchain,
+    goBack,
+    maxFeePerGas,
+    onApprove,
+    request
+  ])
 
   const renderIcon = (): JSX.Element => (
     <Avatar.Custom
@@ -103,36 +84,6 @@ const BridgeAsset = (): JSX.Element => {
       logoUri={peerMeta?.icons[0]}
     />
   )
-
-  useEffect(() => {
-    const getEstimatedGasLimit = async (): Promise<void> => {
-      const estimatedGasLimit = await BridgeService.estimateGas({
-        currentBlockchain,
-        amount: Big(amountStr),
-        asset,
-        allNetworks: networks,
-        activeNetwork,
-        activeAccount,
-        isTestnet,
-        config,
-        currency
-      })
-      estimatedGasLimit && setGasLimit(Number(estimatedGasLimit))
-    }
-    getEstimatedGasLimit().catch(e => {
-      Logger.error('Failed to estimate gas limit', e)
-    })
-  }, [
-    activeAccount,
-    activeNetwork,
-    networks,
-    amountStr,
-    asset,
-    config,
-    currency,
-    currentBlockchain,
-    isTestnet
-  ])
 
   const renderContent = (): JSX.Element => {
     return (
@@ -157,12 +108,6 @@ const BridgeAsset = (): JSX.Element => {
           )} Network`}</AvaText.Body1>
         </View>
         <Space y={12} />
-        <NetworkFeeSelector
-          gasLimit={gasLimit}
-          onFeesChange={handleFeesChange}
-          isGasLimitEditable={false}
-          chainId={targetChainId}
-        />
       </ScrollView>
     )
   }

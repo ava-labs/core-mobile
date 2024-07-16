@@ -41,7 +41,6 @@ describe('Change Network', () => {
     await PortfolioPage.tapNetworksDropdown()
     await PortfolioPage.tapNetworksDropdownAVAX() ////?????
     await Assert.isVisible(PortfolioPage.avaxNetwork)
-    await Assert.isVisible(PortfolioPage.avaxNetwork)
   })
 
   it('should remove BTC network from favorites', async () => {

@@ -10,7 +10,9 @@ describe('Add custom token', () => {
   })
 
   it('should add custom token', async () => {
-    await PortfolioPage.tapAvaxNetwork()
+    await PortfolioPage.tapNetworksDropdown()
+    await PortfolioPage.tapEthNetwork()
+    await PortfolioPage.tapEthNetwork()
     await Actions.waitForElement(PortfolioPage.manageTokens)
     await PortfolioPage.tapManageTokens()
     await Actions.waitForElement(ManageTokensPage.addcustomToken)

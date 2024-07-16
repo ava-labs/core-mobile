@@ -6,7 +6,7 @@ import {
   ValidateStateAndCalculateFeesParams
 } from 'services/send/types'
 import { Network } from '@avalabs/chains-sdk'
-import { TokenType } from 'store/balance'
+import { TokenType } from 'store/balance/types'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import WalletService from 'services/wallet/WalletService'
 import { Avax } from 'types'
@@ -24,74 +24,85 @@ export class SendServiceAVM {
     params: ValidateStateAndCalculateFeesParams
   ): Promise<SendState> {
     const { sendState, nativeTokenBalance, sentryTrx } = params
-    return SentryWrapper.createSpanFor(sentryTrx)
-      .setContext('svc.send.avm.validate_and_calc_fees')
-      .executeAsync(async () => {
-        const { amount, address, defaultMaxFeePerGas, token } = sendState
+    return (
+      SentryWrapper.createSpanFor(sentryTrx)
+        .setContext('svc.send.avm.validate_and_calc_fees')
+        // eslint-disable-next-line sonarjs/cognitive-complexity
+        .executeAsync(async () => {
+          const { amount, address, defaultMaxFeePerGas, token } = sendState
 
-        // Set canSubmit to false if token is not set
-        if (!token) return SendServiceAVM.getErrorState(sendState, '')
+          // Set canSubmit to false if token is not set
+          if (!token) return SendServiceAVM.getErrorState(sendState, '')
 
-        const gasLimit = GAS_LIMIT_FOR_XP_CHAIN
-        const sendFee = defaultMaxFeePerGas
-          ? new BN(gasLimit).mul(new BN(defaultMaxFeePerGas.toString()))
-          : undefined
-        const maxAmount = token.balance.sub(sendFee || new BN(0))
+          const gasLimit = GAS_LIMIT_FOR_XP_CHAIN
+          const sendFee = defaultMaxFeePerGas
+            ? new BN(gasLimit).mul(new BN(defaultMaxFeePerGas.toString()))
+            : undefined
+          let maxAmount = token.balance.sub(sendFee || new BN(0))
+          maxAmount = BN.max(maxAmount, new BN(0))
 
-        const newState: SendState = {
-          ...sendState,
-          canSubmit: true,
-          error: undefined,
-          gasLimit,
-          maxAmount,
-          sendFee
-        }
+          const newState: SendState = {
+            ...sendState,
+            canSubmit: true,
+            error: undefined,
+            gasLimit,
+            maxAmount,
+            sendFee
+          }
 
-        if (!address)
-          return SendServiceAVM.getErrorState(
-            newState,
-            SendErrorMessage.ADDRESS_REQUIRED
+          if (!address)
+            return SendServiceAVM.getErrorState(
+              newState,
+              SendErrorMessage.ADDRESS_REQUIRED
+            )
+
+          if (
+            !Avalanche.isBech32Address(address, false) &&
+            !Avalanche.isBech32Address(address, true)
           )
+            return SendServiceAVM.getErrorState(
+              newState,
+              SendErrorMessage.INVALID_ADDRESS
+            )
 
-        if (
-          !Avalanche.isBech32Address(address, false) &&
-          !Avalanche.isBech32Address(address, true)
-        )
-          return SendServiceAVM.getErrorState(
-            newState,
-            SendErrorMessage.INVALID_ADDRESS
+          if (!defaultMaxFeePerGas || defaultMaxFeePerGas === 0n)
+            return SendServiceAVM.getErrorState(
+              newState,
+              SendErrorMessage.INVALID_NETWORK_FEE
+            )
+
+          if (maxAmount.isZero())
+            return SendServiceAVM.getErrorState(
+              newState,
+              SendErrorMessage.INSUFFICIENT_BALANCE
+            )
+
+          if (!amount || amount.isZero())
+            return SendServiceAVM.getErrorState(
+              newState,
+              SendErrorMessage.AMOUNT_REQUIRED
+            )
+
+          if (amount?.gt(maxAmount))
+            return SendServiceAVM.getErrorState(
+              newState,
+              SendErrorMessage.INSUFFICIENT_BALANCE
+            )
+
+          if (
+            sendFee &&
+            ((token.type !== TokenType.NATIVE &&
+              nativeTokenBalance?.lt(sendFee)) ||
+              (token.type === TokenType.NATIVE && token.balance.lt(sendFee)))
           )
+            return SendServiceAVM.getErrorState(
+              newState,
+              SendErrorMessage.INSUFFICIENT_BALANCE_FOR_FEE
+            )
 
-        if (!defaultMaxFeePerGas || defaultMaxFeePerGas === 0n)
-          return SendServiceAVM.getErrorState(
-            newState,
-            SendErrorMessage.INVALID_NETWORK_FEE
-          )
-
-        if (!amount || amount.isZero())
-          return SendServiceAVM.getErrorState(
-            newState,
-            SendErrorMessage.AMOUNT_REQUIRED
-          )
-
-        if (amount?.gt(maxAmount))
-          return SendServiceAVM.getErrorState(
-            newState,
-            SendErrorMessage.INSUFFICIENT_BALANCE
-          )
-
-        if (
-          token.type !== TokenType.NATIVE &&
-          sendFee &&
-          nativeTokenBalance?.lt(sendFee)
-        )
-          return SendServiceAVM.getErrorState(
-            newState,
-            SendErrorMessage.INSUFFICIENT_BALANCE_FOR_FEE
-          )
-
-        return newState
-      })
+          return newState
+        })
+    )
   }
 
   async getTransactionRequest({

@@ -1,29 +1,6 @@
-import { isAnyOf } from '@reduxjs/toolkit'
-import { useCallback } from 'react'
+import { useMemo } from 'react'
 import { useDispatch } from 'react-redux'
-import { addAppListener } from 'store/middleware/listener'
-import { RpcMethod } from 'store/rpc/types'
-import {
-  onInAppRequestFailed,
-  onInAppRequestSucceeded,
-  onRequest
-} from 'store/rpc/slice'
-import { createInAppRequest } from 'store/rpc/utils'
-
-const EVENTS_TO_SUBSCRIBE = isAnyOf(
-  onInAppRequestSucceeded,
-  onInAppRequestFailed
-)
-
-export type Request = ({
-  method,
-  params,
-  chainId
-}: {
-  method: RpcMethod
-  params: unknown
-  chainId?: string
-}) => Promise<string>
+import { createInAppRequest, Request } from 'store/rpc/utils/createInAppRequest'
 
 /**
  * A hook to execute an in-app rpc request and wait for the response.
@@ -50,36 +27,7 @@ export type Request = ({
 export const useInAppRequest = (): { request: Request } => {
   const dispatch = useDispatch()
 
-  const request: Request = useCallback(
-    ({ method, params, chainId }) => {
-      return new Promise((resolve, reject) => {
-        // create and dispatch the request
-        const inAppRequest = createInAppRequest({ method, params, chainId })
-        dispatch(onRequest(inAppRequest))
-
-        // wait for the success/fail action and resolve/reject accordingly
-        const unsubscribe = dispatch(
-          addAppListener({
-            matcher: EVENTS_TO_SUBSCRIBE,
-            effect: action => {
-              if (action.payload.requestId === inAppRequest.data.id) {
-                if (onInAppRequestSucceeded.match(action)) {
-                  // @ts-ignore unsubcribe is a valid function
-                  unsubscribe()
-                  resolve(action.payload.txHash)
-                } else if (onInAppRequestFailed.match(action)) {
-                  // @ts-ignore unsubcribe is a valid function
-                  unsubscribe()
-                  reject(action.payload.error)
-                }
-              }
-            }
-          })
-        )
-      })
-    },
-    [dispatch]
-  )
+  const request = useMemo(() => createInAppRequest(dispatch), [dispatch])
 
   return { request }
 }

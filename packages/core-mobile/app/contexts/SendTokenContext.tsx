@@ -9,7 +9,8 @@ import React, {
   useState
 } from 'react'
 import { InteractionManager } from 'react-native'
-import { TokenWithBalance } from 'store/balance'
+import { selectNativeTokenBalanceForNetworkAndAccount } from 'store/balance/slice'
+import { TokenWithBalance } from 'store/balance/types'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import sendService from 'services/send/SendService'
@@ -24,6 +25,8 @@ import { NetworkTokenUnit, Amount } from 'types'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { useNetworkFee } from 'hooks/useNetworkFee'
 import { useInAppRequest } from 'hooks/useInAppRequest'
+import { RootState } from 'store'
+import { audioFeedback, Audios } from 'utils/AudioFeedback'
 
 export type SendStatus = 'Idle' | 'Sending' | 'Success' | 'Fail'
 
@@ -57,6 +60,13 @@ export const SendTokenContextProvider = ({
   const { activeNetwork } = useNetworks()
   const activeAccount = useSelector(selectActiveAccount)
   const selectedCurrency = useSelector(selectSelectedCurrency)
+  const nativeTokenBalance = useSelector((state: RootState) =>
+    selectNativeTokenBalanceForNetworkAndAccount(
+      state,
+      activeNetwork.chainId,
+      activeAccount?.index
+    )
+  )
 
   const [sendToken, setSendToken] = useState<TokenWithBalance | undefined>()
   const [maxAmount, setMaxAmount] = useState<Amount>(ZERO_AMOUNT)
@@ -93,7 +103,8 @@ export const SendTokenContextProvider = ({
     sendAmount,
     sendToAddress,
     sendToken,
-    defaultMaxFeePerGas
+    defaultMaxFeePerGas,
+    nativeTokenBalance
   ])
 
   const setSendTokenAndResetAmount = useCallback(
@@ -147,10 +158,12 @@ export const SendTokenContextProvider = ({
             chainId: activeNetwork.chainId,
             txHash
           })
+
+          audioFeedback(Audios.Send)
         })
         .catch(reason => {
           setSendStatus('Fail')
-
+          setError(reason.message)
           AnalyticsService.capture('SendTransactionFailed', {
             errorMessage: reason.message,
             chainId: activeNetwork.chainId
@@ -189,7 +202,8 @@ export const SendTokenContextProvider = ({
         sendState,
         activeNetwork,
         activeAccount,
-        selectedCurrency
+        selectedCurrency,
+        nativeTokenBalance
       )
       .then(state => {
         setGasLimit(state.gasLimit ?? 0)
@@ -202,7 +216,10 @@ export const SendTokenContextProvider = ({
         setError(state.error ? state.error.message : undefined)
         setCanSubmit(state.canSubmit ?? false)
       })
-      .catch(Logger.error)
+      .catch(e => {
+        setError(e.message)
+        Logger.error(e)
+      })
   }
 
   const state: SendTokenContextState = {

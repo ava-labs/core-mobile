@@ -16,7 +16,7 @@ describe('formatUriImageToPng function', () => {
       1
     )
     expect(result).toBe(
-      'https://images.ctfassets.net/logo.svg?fm=png&w=25&h=25'
+      'https://images.ctfassets.net/logo.svg?fm=png&w=25&h=25&fit=scale'
     )
   })
 
@@ -27,7 +27,7 @@ describe('formatUriImageToPng function', () => {
       2
     )
     expect(result).toBe(
-      'https://images.ctfassets.net/logo.svg?fm=png&w=50&h=50'
+      'https://images.ctfassets.net/logo.svg?fm=png&w=50&h=50&fit=scale'
     )
   })
 })

@@ -6,8 +6,8 @@ import { Space } from 'components/Space'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { StyleSheet, View } from 'react-native'
 import { useSelector } from 'react-redux'
-import { selectAvaxPrice } from 'store/balance'
-import { selectSelectedCurrency } from 'store/settings/currency'
+import { selectAvaxPrice } from 'store/balance/slice'
+import { selectSelectedCurrency } from 'store/settings/currency/slice'
 import { Text } from '@avalabs/k2-mobile'
 
 export const TxFee = ({ txFee }: { txFee: bigint }): JSX.Element => {

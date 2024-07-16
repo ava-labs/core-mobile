@@ -127,18 +127,23 @@ export function useInjectedJavascript(): InjectedJavascripts {
 
   const coreConnectInterceptor = `(async function(){     
     setTimeout(() => {
-      const request = function (json) {
-        const message = {
-          method: 'window_ethereum_used'
-        };
-        window.ReactNativeWebView.postMessage(JSON.stringify(message));
+      let notified = false;
+      const request = async function (json) {
+        if (!notified) {
+          const message = {
+            method: 'window_ethereum_used',
+            payload: json
+          };
+          window.ReactNativeWebView.postMessage(JSON.stringify(message));
+          notified = true;
+        }
+        return Promise.reject(new Error('not implemented'));
       };
       if (!window.ethereum) {
         window.ethereum = {};
       }
       window.ethereum.request = request;
       window.ethereum.enable = request;
-      window.ethereum.networkVersion = '43114'
       window.ethereum.on = function (eventName, f){ return true; }
       const message = {
         method: 'log',

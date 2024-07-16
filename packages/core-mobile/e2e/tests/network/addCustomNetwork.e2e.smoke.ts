@@ -30,7 +30,7 @@ describe('Add custom network', () => {
     await PortfolioPage.tapManageNetworks()
     //Should Check manage Networks element for Favorites screen
     await NetworksManagePage.tapAddNetwork()
-    await Actions.waitForElement(NetworksManagePage.networkRpcUrl)
+    await Actions.waitForElement(NetworksManagePage.networkRpcUrl, 10000, 0)
 
     await NetworksManagePage.inputNetworkRpcUrl(
       NetworksManageLoc.arbCustomRpcUrl
@@ -50,7 +50,6 @@ describe('Add custom network', () => {
     await NetworksManagePage.inputExplorerUrl(
       NetworksManageLoc.arbCustomExplorerUrl
     )
-    await NetworksManagePage.swipeUp()
     await NetworksManagePage.tapSaveButton()
     await NetworksManagePage.tapCustomTab()
     await Assert.isVisible(NetworksManagePage.arbWrongCustomNetworkName)

@@ -2,11 +2,9 @@ import React from 'react'
 
 import { StakeCard } from 'screens/earn/components/StakeCard'
 import { StakeStatus } from 'types/earn'
-import { withProviders } from '../../decorators/withProviders'
 
 export default {
-  title: 'Earn/StakeCard',
-  decorators: [withProviders]
+  title: 'Earn/StakeCard'
 }
 
 export const Ongoing = () => (

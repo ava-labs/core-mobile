@@ -2,16 +2,16 @@ import React, { useState } from 'react'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { useSelector } from 'react-redux'
 import {
+  selectBalanceTotalInCurrencyForAccount,
   selectIsLoadingBalances,
   selectIsRefetchingBalances,
   selectTokensWithBalanceForAccount
-} from 'store/balance'
+} from 'store/balance/slice'
 import { selectActiveAccount } from 'store/account'
 import { ActivityIndicator } from 'components/ActivityIndicator'
 import PriceChangeIndicator from 'screens/watchlist/components/PriceChangeIndicator'
 import { Text, View } from '@avalabs/k2-mobile'
 import { useTokenPortfolioPriceChange } from 'hooks/balance/useTokenPortfolioPriceChange'
-import { useBalanceTotalInCurrencyForAccount } from 'hooks/balance/useBalanceTotalInCurrencyForAccount'
 import { PortfolioHeaderLoader } from './Loaders/PortfolioHeaderLoader'
 
 function PortfolioHeader(): JSX.Element {
@@ -19,8 +19,8 @@ function PortfolioHeader(): JSX.Element {
   const activeAccount = useSelector(selectActiveAccount)
   const isBalanceLoading = useSelector(selectIsLoadingBalances)
   const isRefetchingBalance = useSelector(selectIsRefetchingBalances)
-  const balanceTotalInCurrency = useBalanceTotalInCurrencyForAccount(
-    activeAccount?.index ?? 0
+  const balanceTotalInCurrency = useSelector(
+    selectBalanceTotalInCurrencyForAccount(activeAccount?.index ?? 0)
   )
   const { selectedCurrency, currencyFormatter } = context.appHook
   const currencyBalance = currencyFormatter(balanceTotalInCurrency)
@@ -31,7 +31,7 @@ function PortfolioHeader(): JSX.Element {
   const [contentHeight, setContentHeight] = useState(0)
 
   const renderContent = (): JSX.Element => {
-    if (isBalanceLoading) return <PortfolioHeaderLoader />
+    if (isBalanceLoading || !activeAccount) return <PortfolioHeaderLoader />
 
     if (isRefetchingBalance)
       return (

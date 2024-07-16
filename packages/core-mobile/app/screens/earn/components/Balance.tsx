@@ -100,7 +100,7 @@ export const Balance = (): JSX.Element | null => {
   }
 
   const renderStakeButton = (): JSX.Element => (
-    <AvaButton.PrimaryLarge onPress={goToGetStarted}>
+    <AvaButton.PrimaryLarge testID="stake_btn" onPress={goToGetStarted}>
       Stake
     </AvaButton.PrimaryLarge>
   )
@@ -111,7 +111,10 @@ export const Balance = (): JSX.Element | null => {
         flexDirection: 'row',
         justifyContent: 'space-between'
       }}>
-      <AvaButton.SecondaryLarge style={{ flex: 1 }} onPress={goToGetStarted}>
+      <AvaButton.SecondaryLarge
+        testID="stake_btn_secondary"
+        style={{ flex: 1 }}
+        onPress={goToGetStarted}>
         Stake
       </AvaButton.SecondaryLarge>
       <Space x={16} />

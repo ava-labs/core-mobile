@@ -1,11 +1,10 @@
-import { TransactionParams } from 'store/rpc/handlers/eth_sendTransaction/utils'
-import { ChainId } from '@avalabs/chains-sdk'
 import Blockaid from '@blockaid/client'
 import Config from 'react-native-config'
+import { TransactionParams } from '@avalabs/evm-module'
 import {
+  JsonRpcRequestData,
   SiteScanResponse,
-  TransactionScanResponse,
-  TransactionScanSupportedChain
+  TransactionScanResponse
 } from './types'
 
 if (!Config.PROXY_URL) throw Error('PROXY_URL is missing')
@@ -18,18 +17,17 @@ const blockaid = new Blockaid({
 })
 
 class BlockaidService {
-  static scanSite = async (url: string): Promise<SiteScanResponse> => {
-    return await blockaid.site.scan({ url })
-  }
+  static scanSite = async (url: string): Promise<SiteScanResponse> =>
+    blockaid.site.scan({ url })
 
   static scanTransaction = async (
     chainId: number,
     params: TransactionParams,
     domain?: string
-  ): Promise<TransactionScanResponse> => {
-    return await blockaid.evm.transaction.scan({
+  ): Promise<TransactionScanResponse> =>
+    blockaid.evm.transaction.scan({
       account_address: params.from,
-      chain: BlockaidService.getNetworkPath(chainId),
+      chain: chainId.toString(),
       options: ['validation', 'simulation'],
       data: {
         from: params.from,
@@ -42,20 +40,26 @@ class BlockaidService {
       // @ts-ignore
       metadata: domain && domain.length > 0 ? { domain } : { non_dapp: true }
     })
-  }
 
-  private static getNetworkPath = (
+  static scanJsonRpc = async ({
+    chainId,
+    accountAddress,
+    data,
+    domain
+  }: {
     chainId: number
-  ): TransactionScanSupportedChain => {
-    switch (chainId) {
-      case ChainId.ETHEREUM_HOMESTEAD:
-        return 'ethereum'
-      case ChainId.AVALANCHE_MAINNET_ID:
-        return 'avalanche'
-      default:
-        throw new Error(`[Blockaid] Unsupported chainId: ${chainId}`)
-    }
-  }
+    accountAddress: string
+    data: JsonRpcRequestData
+    domain?: string
+  }): Promise<TransactionScanResponse> =>
+    blockaid.evm.jsonRpc.scan({
+      chain: chainId.toString(),
+      options: ['validation', 'simulation'],
+      account_address: accountAddress,
+      data: data,
+      // @ts-ignore
+      metadata: domain && domain.length > 0 ? { domain } : { non_dapp: true }
+    })
 }
 
 export default BlockaidService

@@ -1,10 +1,11 @@
 import {
   NetworkTokenWithBalance,
   TokenWithBalanceERC20,
-  PTokenWithBalance
-} from 'store/balance'
+  PTokenWithBalance,
+  XTokenWithBalance
+} from 'store/balance/types'
 import { Network } from '@avalabs/chains-sdk'
-import { Account } from 'store/account'
+import { Account } from 'store/account/types'
 import { getAddressByNetwork } from 'store/account/utils'
 import GlacierBalanceProvider from 'services/balance/GlacierBalanceService'
 import { BalanceServiceProvider } from 'services/balance/types'
@@ -28,6 +29,7 @@ export type BalancesForAccount = {
     | NetworkTokenWithBalance
     | TokenWithBalanceERC20
     | PTokenWithBalance
+    | XTokenWithBalance
   )[]
 }
 
@@ -84,7 +86,12 @@ export class BalanceService {
     currency: string
     sentryTrx?: Transaction
   }): Promise<
-    (NetworkTokenWithBalance | TokenWithBalanceERC20 | PTokenWithBalance)[]
+    (
+      | NetworkTokenWithBalance
+      | TokenWithBalanceERC20
+      | PTokenWithBalance
+      | XTokenWithBalance
+    )[]
   > {
     return SentryWrapper.createSpanFor(sentryTrx)
       .setContext('svc.balance.get_for_address')

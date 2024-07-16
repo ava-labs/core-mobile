@@ -1,5 +1,4 @@
 import React, { useCallback, useMemo, useState } from 'react'
-import { Image } from 'react-native'
 import { Space } from 'components/Space'
 import { ScrollView } from 'react-native-gesture-handler'
 import { WalletScreenProps } from 'navigation/types'
@@ -10,24 +9,25 @@ import RpcRequestBottomSheet from 'screens/rpc/components/shared/RpcRequestBotto
 import FeatureBlocked from 'screens/posthog/FeatureBlocked'
 import { useSelector } from 'react-redux'
 import { selectIsSeedlessSigningBlocked } from 'store/posthog'
-import { selectActiveAccount } from 'store/account'
+import { selectAccounts, selectActiveAccount } from 'store/account/slice'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import DotSVG from 'components/svg/DotSVG'
-import { formatUriImageToPng } from 'utils/Contentful'
 import { Row } from 'components/Row'
 import { Eip1559Fees } from 'utils/Utils'
 import SendRow from 'components/SendRow'
-import { Text, View, useTheme } from '@avalabs/k2-mobile'
+import { Text, View } from '@avalabs/k2-mobile'
 import NetworkFeeSelector from 'components/NetworkFeeSelector'
 import { NetworkTokenUnit } from 'types'
 import { getBitcoinNetwork } from 'services/network/utils/providerUtils'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { TokenBaseUnit } from 'types/TokenBaseUnit'
 import { BN } from 'bn.js'
-import { selectTokensWithBalanceByNetwork } from 'store/balance'
+import { selectTokensWithBalanceByNetwork } from 'store/balance/slice'
 import { mustNumber } from 'utils/JsTools'
 import { BitcoinSendTransactionApproveData } from 'store/rpc/handlers/bitcoin_sendTransaction/bitcoin_sendTransaction'
 import { SendState } from 'services/send/types'
+import { NetworkLogo } from 'screens/network/NetworkLogo'
+import { selectBridgeCriticalConfig } from 'store/bridge'
+import { isBtcBridge } from 'utils/isBtcBridge'
 
 type BitcoinSendTransactionScreenProps = WalletScreenProps<
   typeof AppNavigation.Modal.BitcoinSendTransaction
@@ -39,9 +39,6 @@ const BitcoinSendTransaction = (): JSX.Element => {
   const {
     appHook: { tokenInCurrencyFormatter }
   } = useApplicationContext()
-  const {
-    theme: { colors }
-  } = useTheme()
   const { goBack } =
     useNavigation<BitcoinSendTransactionScreenProps['navigation']>()
   const { request, data } =
@@ -50,8 +47,12 @@ const BitcoinSendTransaction = (): JSX.Element => {
     useDappConnectionV2()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const btcNetwork = getBitcoinNetwork(isDeveloperMode)
-
   const { sendState } = data
+  const bridgeConfig = useSelector(selectBridgeCriticalConfig)
+  const allAccounts = useSelector(selectAccounts)
+  const toAccountName =
+    Object.values(allAccounts).find(a => a.addressBTC === sendState.address)
+      ?.name ?? 'Address'
 
   const [maxFeePerGas, setMaxFeePerGas] = useState<
     TokenBaseUnit<NetworkTokenUnit>
@@ -113,6 +114,35 @@ const BitcoinSendTransaction = (): JSX.Element => {
     [setMaxFeePerGas]
   )
 
+  const title = useMemo(() => {
+    return sendState.address && isBtcBridge(sendState.address, bridgeConfig)
+      ? 'Confirm Bridge'
+      : 'Approve Transaction'
+  }, [bridgeConfig, sendState.address])
+
+  const renderNetwork = (): JSX.Element | undefined => {
+    return (
+      <View
+        sx={{
+          width: '100%'
+        }}>
+        <Row style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+          <Text variant="body2">Network:</Text>
+          <Row style={{ alignItems: 'center' }}>
+            <NetworkLogo
+              key={btcNetwork.chainId.toString()}
+              logoUri={btcNetwork.logoUri}
+              size={24}
+              style={{ marginRight: 8 }}
+            />
+            <Text variant="buttonMedium">{btcNetwork.chainName}</Text>
+          </Row>
+        </Row>
+        <Space y={16} />
+      </View>
+    )
+  }
+
   return (
     <>
       <RpcRequestBottomSheet
@@ -121,37 +151,17 @@ const BitcoinSendTransaction = (): JSX.Element => {
         onApprove={onHandleApprove}
         onReject={rejectAndClose}>
         <ScrollView contentContainerStyle={{ minHeight: '100%' }}>
-          <Text variant="heading3" sx={{ marginHorizontal: 16, fontSize: 36 }}>
-            Send
-          </Text>
-          <View
-            sx={{
-              width: '100%',
-              alignItems: 'center',
-              justifyContent: 'center',
-              marginBottom: -36,
-              zIndex: 2
-            }}>
-            <View sx={{ position: 'absolute' }}>
-              <DotSVG fillColor={colors.$black} size={72} />
-            </View>
-            <Image
-              style={{ width: 57, height: 57 }}
-              source={{
-                uri: formatUriImageToPng(btcNetwork.networkToken.logoUri, 57)
-              }}
-            />
-          </View>
           <View
             sx={{
               backgroundColor: '$neutral900',
-              paddingTop: 48,
-              paddingHorizontal: 16,
-              paddingBottom: 16,
+              padding: 16,
               flex: 1,
               borderTopLeftRadius: 8,
               borderTopRightRadius: 8
             }}>
+            <Text variant="heading4">{title}</Text>
+            <Space y={32} />
+            {renderNetwork()}
             <Row
               style={{ justifyContent: 'space-between', alignItems: 'center' }}>
               <Text
@@ -159,10 +169,8 @@ const BitcoinSendTransaction = (): JSX.Element => {
                 sx={{ textAlign: 'center', color: '$neutral400' }}>
                 Amount
               </Text>
-              <Row style={{ alignItems: 'baseline' }}>
-                <Text variant="heading4" sx={{ lineHeight: 29 }}>
-                  {Number(amountInBtc)}
-                </Text>
+              <Row style={{ alignItems: 'center' }}>
+                <Text variant="subtitle1">{Number(amountInBtc)}</Text>
                 <Space x={4} />
                 <Text
                   variant="subtitle1"
@@ -186,7 +194,7 @@ const BitcoinSendTransaction = (): JSX.Element => {
             />
             <SendRow
               label={'To'}
-              title={'Address'}
+              title={toAccountName}
               address={sendState.address ?? ''}
             />
             <Space y={8} />

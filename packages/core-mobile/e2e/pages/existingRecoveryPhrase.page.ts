@@ -46,8 +46,20 @@ class ExistingRecoveryPhrasePage {
     return by.text(recoveryPhraseLoc.alreadyHaveAWalletBtn)
   }
 
+  get accessExistingWalletBtn() {
+    return by.text(recoveryPhraseLoc.accessExistingWalletBtn)
+  }
+
   get recoveryPhrase() {
     return by.text(recoveryPhraseLoc.recoveryPhrase)
+  }
+
+  get manuallyCreateNewWalletBtn() {
+    return by.id(recoveryPhraseLoc.manuallyCreateNewWalletBtn)
+  }
+
+  async tapManuallyCreateNewWallet() {
+    await Action.tap(this.manuallyCreateNewWalletBtn)
   }
 
   async tapContinueBtn() {
@@ -64,6 +76,10 @@ class ExistingRecoveryPhrasePage {
 
   async tapAlreadyHaveAWalletBtn() {
     await Action.tap(this.alreadyHaveAWalletBtn)
+  }
+
+  async tapAccessExistingWallet() {
+    await Action.tap(this.accessExistingWalletBtn)
   }
 
   async tapSignInWithRecoveryPhraseBtn() {
@@ -86,13 +102,10 @@ class ExistingRecoveryPhrasePage {
   }
 
   async recoverMnemonicWallet(recoveryPhrase: string) {
-    // await this.tapForgotPinBtn()
-    //await this.tapSignInWithRecoveryPhraseBtn()
-    await this.tapAlreadyHaveAWalletBtn()
+    await this.tapAccessExistingWallet()
     await this.tapRecoveryPhraseBtn()
     await AnalyticsConsentPage.tapNoThanksBtn()
     await Action.waitForElement(this.recoveryPhraseTextInput)
-    // await this.verifyExistingRecoveryPhrasePage()
     await this.enterRecoveryPhrase(recoveryPhrase)
     await this.tapSignInBtn()
     await nameWalletPage.enterWalletName('testWallet1\n')

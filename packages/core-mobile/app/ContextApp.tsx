@@ -11,14 +11,12 @@ import JailMonkey from 'jail-monkey'
 import { RootSiblingParent } from 'react-native-root-siblings'
 import { K2ThemeProvider } from '@avalabs/k2-mobile'
 import JailbrokenWarning from 'screens/onboarding/JailbrokenWarning'
-import { BridgeProvider } from 'contexts/BridgeContext'
 import { PosthogContextProvider } from 'contexts/PosthogContext'
 import { StatusBar, View } from 'react-native'
 import { DeeplinkContextProvider } from 'contexts/DeeplinkContext/DeeplinkContext'
 import { EncryptedStoreProvider } from 'contexts/EncryptedStoreProvider'
 import { TopLevelErrorFallback } from 'components/TopLevelErrorFallback'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
-import FlipperAsyncStorage from 'rn-flipper-async-storage-advanced'
 import { ReactQueryProvider } from 'contexts/ReactQueryProvider'
 import SentryService from 'services/sentry/SentryService'
 import CoreSplash from 'assets/icons/core_splash.svg'
@@ -37,9 +35,7 @@ const ContextProviders: FC<PropsWithChildren> = ({ children }) => (
       <PosthogContextProvider>
         <K2ThemeProvider>
           <ApplicationContextProvider>
-            <DeeplinkContextProvider>
-              <BridgeProvider>{children}</BridgeProvider>
-            </DeeplinkContextProvider>
+            <DeeplinkContextProvider>{children}</DeeplinkContextProvider>
           </ApplicationContextProvider>
         </K2ThemeProvider>
       </PosthogContextProvider>
@@ -53,7 +49,6 @@ const ContextApp = (): JSX.Element => {
   return (
     <Sentry.ErrorBoundary fallback={<TopLevelErrorFallback />}>
       <StatusBar barStyle={'light-content'} backgroundColor="black" />
-      {__DEV__ && <FlipperAsyncStorage />}
       {hasMigrated ? (
         <ContextProviders>
           <JailBrokenCheck>

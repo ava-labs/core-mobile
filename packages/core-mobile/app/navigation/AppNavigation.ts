@@ -11,7 +11,7 @@ enum Root {
 
 enum OnboardScreens {
   Signup = 'OnboardScreens.Signup',
-  Signin = 'OnboardScreens.Signin',
+  AccessMnemonicWallet = 'AccessMnemonicWallet',
   Welcome = 'OnboardScreens.Welcome',
   AnalyticsConsent = 'OnboardScreens.AnalyticsConsent',
   CreateWalletStack = 'OnboardScreens.CreateWalletStack',
@@ -68,7 +68,6 @@ enum WalletScreens {
   NFTManage = 'WalletScreens.NFTManage',
   TokenDetail = 'WalletScreens.TokenDetail',
   OwnedTokenDetail = 'WalletScreens.OwnedTokenDetail',
-  ActivityDetail = 'WalletScreens.ActivityDetail',
   Bridge = 'WalletScreens.Bridge',
   QRCode = 'WalletScreens.QRCode',
   Earn = 'WalletScreens.Earn',
@@ -92,8 +91,7 @@ enum EarnScreens {
   ClaimRewards = 'EarnScreens.ClaimRewards',
   FeeUnavailable = 'EarnScreens.FeeUnavailable',
   EarnNotificationsPrompt = 'EarnScreens.EarnNotificationsPrompt',
-  FundsStuck = 'EarnScreens.FundsStuck',
-  WrongNetwork = 'EarnScrens.WrongNetwork'
+  FundsStuck = 'EarnScreens.FundsStuck'
 }
 
 enum BrowserScreens {
@@ -192,6 +190,7 @@ enum ModalScreens {
   SwitchEthereumChainV2 = 'ModalScreens.SwitchEthereumChainV2',
   BridgeAssetV2 = 'ModalScreens.BridgeAssetV2',
   SignTransactionV2 = 'ModalScreens.SignTransactionV2',
+  ApprovalPopup = 'ModalScreens.ApprovalPopup',
   AvalancheSendTransactionV2 = 'ModalScreens.AvalancheSendTransactionV2',
   AvalancheSignTransactionV2 = 'ModalScreens.AvalancheSignTransactionV2',
   BitcoinSendTransaction = 'ModalScreens.BitcoinSendTransaction',

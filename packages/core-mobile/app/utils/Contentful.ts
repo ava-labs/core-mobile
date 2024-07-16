@@ -9,7 +9,7 @@ export const formatUriImageToPng = (
     const sizeInPixel = Math.floor(size * pixelRatio)
 
     return uri?.endsWith('.svg')
-      ? `${uri}?fm=png&w=${sizeInPixel}&h=${sizeInPixel}`
+      ? `${uri}?fm=png&w=${sizeInPixel}&h=${sizeInPixel}&fit=scale`
       : uri
   }
   return uri

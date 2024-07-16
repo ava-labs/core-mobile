@@ -10,8 +10,8 @@ class SendPage {
     return by.id(Send.addressBook)
   }
 
-  get textInputField() {
-    return by.id(Send.testInputField)
+  get amountToSendInput() {
+    return by.id(Send.amountToSend)
   }
 
   get tokenDropdown() {
@@ -46,6 +46,10 @@ class SendPage {
     return by.text(Send.rejectBtn)
   }
 
+  get addressField() {
+    return by.id(Send.addressField)
+  }
+
   async tapAddressBook() {
     await Actions.tap(this.addressBook)
   }
@@ -67,7 +71,7 @@ class SendPage {
   }
 
   async tapSendField() {
-    await Actions.tap(this.textInputField)
+    await Actions.tap(this.amountToSendInput)
   }
 
   async tapTokenDropdown() {
@@ -83,7 +87,7 @@ class SendPage {
   }
 
   async enterWalletAddress(address: string) {
-    await Actions.setInputText(this.textInputField, address, 0)
+    await Actions.setInputText(this.addressField, address, 0)
   }
 
   async selectToken(tokenName: string, index = 0) {
@@ -94,16 +98,13 @@ class SendPage {
   }
 
   async enterAmount(amount: string) {
-    await Actions.setInputText(this.textInputField, amount, 1)
+    await Actions.setInputText(this.amountToSendInput, amount, 0)
   }
 
   async sendTokenTo2ndAccount(token: string, sendingAmmount: string) {
     await Actions.waitForElement(BottomTabsPage.plusIcon)
     await BottomTabsPage.tapPlusIcon()
-    await Actions.waitForElement(PlusMenuPage.sendButton)
     await PlusMenuPage.tapSendButton()
-    await Actions.waitForElement(this.addressBook)
-
     await this.tapAddressBook()
     await this.tapMyAccounts()
     await AccountManagePage.tapSecondAccountMenu()
@@ -113,7 +114,6 @@ class SendPage {
     await this.tapSendTitle()
     await this.tapNextButton()
     await this.tapApproveButton()
-    // await Actions.waitForElement(ReviewAndSend.sendSuccessfulToastMsg)
   }
 }
 

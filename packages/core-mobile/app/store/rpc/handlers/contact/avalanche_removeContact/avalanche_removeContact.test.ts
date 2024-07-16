@@ -1,4 +1,4 @@
-import { ethErrors } from 'eth-rpc-errors'
+import { rpcErrors } from '@metamask/rpc-errors'
 import { RpcMethod, RpcProvider, RpcRequest } from 'store/rpc/types'
 import mockSession from 'tests/fixtures/walletConnect/session.json'
 import mockContacts from 'tests/fixtures/contacts.json'
@@ -55,9 +55,7 @@ const testHandleInvalidParams = async (params: unknown) => {
 
   expect(result).toEqual({
     success: false,
-    error: ethErrors.rpc.invalidParams({
-      message: 'Contact ID is invalid'
-    })
+    error: rpcErrors.invalidParams('Contact ID is invalid')
   })
 }
 
@@ -73,7 +71,7 @@ const testApproveInvalidData = async (data: unknown) => {
 
   expect(result).toEqual({
     success: false,
-    error: ethErrors.rpc.internal('Invalid approve data')
+    error: rpcErrors.internal('Invalid approve data')
   })
 }
 
@@ -98,9 +96,7 @@ describe('avalanche_removeContact handler', () => {
 
       expect(result).toEqual({
         success: false,
-        error: ethErrors.rpc.resourceNotFound({
-          message: 'Contact does not exist'
-        })
+        error: rpcErrors.resourceNotFound('Contact does not exist')
       })
     })
 

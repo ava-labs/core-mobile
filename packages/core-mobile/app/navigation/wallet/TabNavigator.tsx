@@ -11,7 +11,6 @@ import TopNavigationHeader from 'navigation/TopNavigationHeader'
 import { getCommonBottomTabOptions, TabButton } from 'navigation/NavUtils'
 import EarnSVG from 'components/svg/EarnSVG'
 import { usePosthogContext } from 'contexts/PosthogContext'
-import { useIsAvalancheNetwork } from 'hooks/useIsAvalancheNetwork'
 import { useIsEarnDashboardEnabled } from 'hooks/earn/useIsEarnDashboardEnabled'
 import BrowserSVG from 'components/svg/BrowserSVG'
 import BrowserScreenStack from 'navigation/wallet/BrowserScreenStack'
@@ -36,7 +35,6 @@ const TabNavigator: () => JSX.Element = () => {
   const theme = useApplicationContext().theme
   const { earnBlocked, browserBlocked } = usePosthogContext()
   const { isEarnDashboardEnabled } = useIsEarnDashboardEnabled()
-  const isAvalancheNetwork = useIsAvalancheNetwork()
   const [showFab, setShowFab] = useState(true)
   const allTabs = useSelector(selectAllTabs)
 
@@ -61,14 +59,6 @@ const TabNavigator: () => JSX.Element = () => {
             setShowFab(true)
           },
           tabPress: e => {
-            if (!isAvalancheNetwork) {
-              e.preventDefault()
-              navigation.navigate(AppNavigation.Wallet.Earn, {
-                screen: AppNavigation.Earn.WrongNetwork
-              })
-              return
-            }
-
             AnalyticsService.capture('StakeOpened')
             if (!isEarnDashboardEnabled) {
               e.preventDefault()

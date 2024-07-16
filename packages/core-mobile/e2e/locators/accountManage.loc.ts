@@ -11,5 +11,6 @@ export default {
   accountOne: 'Account 1',
   secondAccount: 'Account 2',
   fourthaccount: 'Account 4',
-  accountDropdownTitle: 'account_dropdown_title'
+  accountDropdownTitle: 'account_dropdown_title',
+  accountsDropdown: 'accounts_dropdown'
 }

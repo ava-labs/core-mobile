@@ -1,7 +1,7 @@
 import { AppListenerEffectAPI } from 'store'
 import * as Navigation from 'utils/Navigation'
 import AppNavigation from 'navigation/AppNavigation'
-import { ethErrors } from 'eth-rpc-errors'
+import { rpcErrors } from '@metamask/rpc-errors'
 import { selectActiveAccount } from 'store/account'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { RpcMethod, RpcRequest } from 'store/rpc/types'
@@ -25,7 +25,7 @@ import {
   HandleResponse,
   RpcRequestHandler
 } from '../types'
-import { isDAppTransactionParams, parseRequestParams } from './utils'
+import { parseRequestParams } from './utils'
 
 export type BitcoinSendTransactionApproveData = {
   sendState: SendState
@@ -58,69 +58,53 @@ class BitcoinSendTransactionHandler
     if (!parseResult.success) {
       return {
         success: false,
-        error: ethErrors.rpc.invalidParams({
-          message: 'Missing mandatory param(s)'
-        })
+        error: rpcErrors.invalidParams('Missing mandatory param(s)')
       }
     }
 
-    let verifiedState: SendState
+    const [address, amountSatoshi, feeRate] = parseResult.data
 
-    if (isDAppTransactionParams(parseResult.data)) {
-      const [address, amountSatoshi, feeRate] = parseResult.data
-
-      // If destination address is not valid, return error
-      if (!isBtcAddress(address ?? '', !isDeveloperMode)) {
-        return {
-          success: false,
-          error: ethErrors.rpc.invalidParams({
-            message: 'Not a valid address.'
-          })
-        }
+    // If destination address is not valid, return error
+    if (!isBtcAddress(address ?? '', !isDeveloperMode)) {
+      return {
+        success: false,
+        error: rpcErrors.invalidParams('Not a valid address.')
       }
-
-      if (!activeAccount) {
-        return {
-          success: false,
-          error: ethErrors.rpc.invalidRequest({
-            message: 'No active account found'
-          })
-        }
-      }
-
-      if (!activeAccount.addressBTC) {
-        return {
-          success: false,
-          error: ethErrors.rpc.invalidRequest({
-            message: 'The active account does not support BTC transactions'
-          })
-        }
-      }
-
-      const sendState: SendState = {
-        address,
-        amount: new BN(amountSatoshi),
-        defaultMaxFeePerGas: BigInt(feeRate)
-      }
-
-      verifiedState = await SendServiceBTC.validateStateAndCalculateFees({
-        sendState,
-        isMainnet: !isDeveloperMode,
-        fromAddress: activeAccount.addressBTC
-      })
-    } else {
-      // for in-app request, we already have everything we need so no need to call validateStateAndCalculateFees
-      // to get the full sendState data
-      verifiedState = parseResult.data
     }
+
+    if (!activeAccount) {
+      return {
+        success: false,
+        error: rpcErrors.invalidRequest('No active account found')
+      }
+    }
+
+    if (!activeAccount.addressBTC) {
+      return {
+        success: false,
+        error: rpcErrors.invalidRequest(
+          'The active account does not support BTC transactions'
+        )
+      }
+    }
+
+    const sendState: SendState = {
+      address,
+      amount: new BN(amountSatoshi),
+      defaultMaxFeePerGas: BigInt(feeRate)
+    }
+
+    const verifiedState = await SendServiceBTC.validateStateAndCalculateFees({
+      sendState,
+      isMainnet: !isDeveloperMode,
+      fromAddress: activeAccount.addressBTC
+    })
 
     // If we cant construct the transaction return error
     if (verifiedState.error?.error) {
       return {
         success: false,
-        error: ethErrors.rpc.transactionRejected({
-          message: verifiedState.error.message
-        })
+        error: rpcErrors.transactionRejected(verifiedState.error.message)
       }
     }
 
@@ -128,9 +112,7 @@ class BitcoinSendTransactionHandler
     if (!verifiedState.canSubmit) {
       return {
         success: false,
-        error: ethErrors.rpc.invalidParams({
-          message: 'Unable to construct the transaction.'
-        })
+        error: rpcErrors.invalidParams('Unable to construct the transaction.')
       }
     }
 
@@ -179,11 +161,11 @@ class BitcoinSendTransactionHandler
         currency
       })
 
-      const result = await WalletService.sign(
-        txRequest,
-        activeAccount.index,
-        btcNetwork
-      )
+      const result = await WalletService.sign({
+        transaction: txRequest,
+        accountIndex: activeAccount.index,
+        network: btcNetwork
+      })
 
       const txHash = await NetworkService.sendTransaction({
         signedTx: result,
@@ -218,9 +200,7 @@ class BitcoinSendTransactionHandler
 
       return {
         success: false,
-        error: ethErrors.rpc.internal({
-          message
-        })
+        error: rpcErrors.internal(message)
       }
     }
   }

@@ -1,13 +1,12 @@
-import { ethErrors } from 'eth-rpc-errors'
+import { rpcErrors, providerErrors } from '@metamask/rpc-errors'
 import WalletService from 'services/wallet/WalletService'
 import { AppListenerEffectAPI } from 'store'
-import * as Navigation from 'utils/Navigation'
-import AppNavigation from 'navigation/AppNavigation'
 import Logger from 'utils/Logger'
 import * as Sentry from '@sentry/react-native'
-import { selectAccountByAddress } from 'store/account'
+import { selectAccountByAddress } from 'store/account/slice'
 import WalletConnectService from 'services/walletconnectv2/WalletConnectService'
-import { selectNetwork } from 'store/network'
+import { selectNetwork } from 'store/network/slice'
+import { selectIsBlockaidTransactionValidationBlocked } from 'store/posthog/slice'
 import { RpcMethod, RpcProvider, RpcRequest } from '../../types'
 import {
   ApproveResponse,
@@ -18,6 +17,10 @@ import {
 import { parseRequestParams } from './utils/parseRequestParams'
 import { parseApproveData } from './utils/parseApproveData'
 import { isAddressApproved } from './utils/isAddressApproved'
+import {
+  navigateToSignMessage,
+  scanAndSignMessage
+} from './utils/scanAndSignMessage'
 
 export type EthSignRpcRequest = RpcRequest<
   | RpcMethod.ETH_SIGN
@@ -51,7 +54,7 @@ class EthSignHandler implements RpcRequestHandler<EthSignRpcRequest> {
       Logger.error('invalid message params', result.error)
       return {
         success: false,
-        error: ethErrors.rpc.invalidParams('Invalid message params')
+        error: rpcErrors.invalidParams('Invalid message params')
       }
     }
 
@@ -65,7 +68,7 @@ class EthSignHandler implements RpcRequestHandler<EthSignRpcRequest> {
       if (!session) {
         return {
           success: false,
-          error: ethErrors.rpc.internal('Session not found')
+          error: rpcErrors.internal('Session not found')
         }
       }
 
@@ -74,7 +77,7 @@ class EthSignHandler implements RpcRequestHandler<EthSignRpcRequest> {
       if (!isAddressApproved(requestedAddress, session.namespaces)) {
         return {
           success: false,
-          error: ethErrors.provider.unauthorized(
+          error: providerErrors.unauthorized(
             'Requested address is not authorized'
           )
         }
@@ -86,7 +89,7 @@ class EthSignHandler implements RpcRequestHandler<EthSignRpcRequest> {
     if (!network)
       return {
         success: false,
-        error: ethErrors.rpc.resourceNotFound('Network does not exist')
+        error: rpcErrors.resourceNotFound('Network does not exist')
       }
 
     const account = selectAccountByAddress(result.data.address)(state)
@@ -94,21 +97,30 @@ class EthSignHandler implements RpcRequestHandler<EthSignRpcRequest> {
     if (!account)
       return {
         success: false,
-        error: ethErrors.rpc.resourceNotFound('Account does not exist')
+        error: rpcErrors.resourceNotFound('Account does not exist')
       }
 
-    Navigation.navigate({
-      name: AppNavigation.Root.Wallet,
-      params: {
-        screen: AppNavigation.Modal.SignMessageV2,
-        params: {
-          request,
-          data: result.data.data,
-          network,
-          account
-        }
-      }
-    })
+    const isValidationDisabled =
+      selectIsBlockaidTransactionValidationBlocked(state)
+
+    // TODO CP-4894 decode transaction data here instead of in SignTransaction component/useExplainTransaction hook
+    if (isValidationDisabled) {
+      navigateToSignMessage({
+        request,
+        data: result.data.data,
+        network,
+        account
+      })
+    } else {
+      scanAndSignMessage({
+        request,
+        data: result.data.data,
+        network,
+        account,
+        address: result.data.address,
+        dispatch: listenerApi.dispatch
+      })
+    }
 
     return { success: true, value: DEFERRED_RESULT }
   }
@@ -124,7 +136,7 @@ class EthSignHandler implements RpcRequestHandler<EthSignRpcRequest> {
     if (!result.success) {
       return {
         success: false,
-        error: ethErrors.rpc.internal('Invalid approve data')
+        error: rpcErrors.internal('Invalid approve data')
       }
     }
 
@@ -142,7 +154,7 @@ class EthSignHandler implements RpcRequestHandler<EthSignRpcRequest> {
     } catch (e) {
       Logger.error('Unable to sign message', e)
 
-      const error = ethErrors.rpc.internal<string>('Unable to sign message')
+      const error = rpcErrors.internal('Unable to sign message')
 
       Sentry.captureException(e, { tags: { dapps: 'signMessageV2' } })
 

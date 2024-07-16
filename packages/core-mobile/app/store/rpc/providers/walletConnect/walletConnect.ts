@@ -1,4 +1,4 @@
-import { ethErrors } from 'eth-rpc-errors'
+import { rpcErrors } from '@metamask/rpc-errors'
 import Logger from 'utils/Logger'
 import { selectNetwork } from 'store/network'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
@@ -9,7 +9,7 @@ import { selectActiveAccount } from 'store/account'
 import { selectActiveNetwork } from 'store/network'
 import { UPDATE_SESSION_DELAY } from 'consts/walletConnect'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { getChainIdFromRequest } from 'store/rpc/handlers/eth_sendTransaction/utils'
+import { getChainIdFromRequest } from 'store/rpc/utils/getChainIdFromRequest/getChainIdFromRequest'
 import { AgnosticRpcProvider, RpcMethod, RpcProvider } from '../../types'
 import { isSessionProposal, isUserRejectedError } from './utils'
 
@@ -55,7 +55,7 @@ class WalletConnectProvider implements AgnosticRpcProvider {
         await WalletConnectService.rejectRequest(
           topic,
           requestId,
-          error ?? ethErrors.rpc.internal()
+          error ?? rpcErrors.internal()
         )
       } catch (e) {
         Logger.error('Unable to reject request', e)
@@ -162,9 +162,7 @@ class WalletConnectProvider implements AgnosticRpcProvider {
         ? 'Invalid environment. Please turn off developer mode and try again'
         : 'Invalid environment. Please turn on developer mode and try again'
 
-      throw ethErrors.rpc.internal({
-        message
-      })
+      throw rpcErrors.internal(message)
     }
   }
 }

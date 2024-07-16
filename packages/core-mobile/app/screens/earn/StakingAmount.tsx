@@ -141,6 +141,7 @@ export default function StakingAmount(): JSX.Element {
       <FlexSpacer />
       {inputValid && (
         <AvaButton.PrimaryLarge
+          testID="next_btn"
           onPress={() => {
             AnalyticsService.capture('StakeOpenDurationSelect')
             navigate(AppNavigation.StakeSetup.StakingDuration, {

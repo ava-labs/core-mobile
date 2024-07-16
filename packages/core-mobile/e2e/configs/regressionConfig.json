@@ -1,0 +1,35 @@
+{
+  "maxWorkers": 1,
+  "testEnvironment": "detox/runners/jest/testEnvironment",
+  "testRunner": "jest-circus/runner",
+  "testTimeout": 120000,
+  "rootDir": "..",
+  "testMatch": [
+    "<rootDir>/tests/**/*.e2e.ts",
+    "<rootDir>/tests/**/*.e2e.smoke.ts"
+  ],
+  "reporters": ["detox/runners/jest/reporter"],
+  "verbose": true,
+  "globalTeardown": "<rootDir>/sendResultsTeardown.ts",
+  "globalSetup": "detox/runners/jest/globalSetup",
+  "transformIgnorePatterns": [
+    "node_modules/(?!(jest-)?react-native|@react-native-community|@react-native|@react-navigation)"
+  ],
+  "transform": {
+    "^.+\\.tsx?$": [
+      "ts-jest",
+      {
+        "babelConfig": "babel.config.js"
+      }
+    ]
+  },
+  "testPathIgnorePatterns": [
+    "<rootDir>/tests/plusIcon/walletConnect/traderjoe.e2e.ts",
+    "<rootDir>/tests/network/addCustomToken.smoke.e2e.ts",
+    "<rootDir>/tests/plusIcon/walletConnect/dappEthIntegrations.e2e.ts",
+    "<rootDir>/tests/plusIcon/walletConnect/dappIntegrations.e2e.dapp.ts",
+    "<rootDir>/tests/network/addCustomNetwork.e2e.smoke.ts",
+    "<rootDir>/tests/coreWebWCIntegration.e2e.smoke.ts",
+    "<rootDir>/tests/network/addCustomToken.e2e.smoke.ts"
+  ]
+}

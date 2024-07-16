@@ -7,7 +7,10 @@ import loginRecoverWallet from './loginRecoverWallet'
 
 export const warmup = async () => {
   await device.launchApp({
-    permissions: { notifications: 'YES', camera: 'YES' }
+    permissions: { notifications: 'YES', camera: 'YES' },
+    launchArgs: {
+      detoxURLBlacklistRegex: ['.*cloudflare-ipfs.*']
+    }
   })
 
   // if we are running Android e2e on Bitrise, we also need to handle the Jailbroken overlay

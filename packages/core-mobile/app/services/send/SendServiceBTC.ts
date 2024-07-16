@@ -19,6 +19,7 @@ import { getBitcoinProvider } from 'services/network/utils/providerUtils'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { Transaction } from '@sentry/types'
 import { isBtcAddress } from 'utils/isBtcAddress'
+import { NetworkTokenWithBalance } from 'store/balance/types'
 
 class SendServiceBTC implements SendServiceHelper {
   async getTransactionRequest(
@@ -157,12 +158,12 @@ class SendServiceBTC implements SendServiceHelper {
     utxos: BitcoinInputUTXO[]
   }> {
     const provider = getBitcoinProvider(!isMainnet)
-    const token = await balanceService.getBalancesForAddress({
+    const token = (await balanceService.getBalancesForAddress({
       network: isMainnet ? BITCOIN_NETWORK : BITCOIN_TEST_NETWORK,
       address,
       currency,
       sentryTrx
-    })
+    })) as NetworkTokenWithBalance[]
 
     const utxosWithScripts = await provider.getScriptsForUtxos(
       token?.[0]?.utxos || []

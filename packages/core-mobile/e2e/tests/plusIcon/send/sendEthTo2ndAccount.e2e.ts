@@ -1,6 +1,5 @@
 import AccountManagePage from '../../../pages/accountManage.page'
 import ActivityTabPage from '../../../pages/activityTab.page'
-import ActivityTabLoc from '../../../locators/activityTab.loc'
 import PortfolioPage from '../../../pages/portfolio.page'
 import SendPage from '../../../pages/send.page'
 import sendLoc from '../../../locators/send.loc'
@@ -16,7 +15,7 @@ describe('Send Eth to another account', () => {
 
   afterAll(async () => {
     if (process.env.PLATFORM === 'android') {
-      await commonElsPage.tapBackButton2()
+      await commonElsPage.tapBackButton()
     } else {
       await bottomTabsPage.tapPortfolioTab()
     }
@@ -34,17 +33,16 @@ describe('Send Eth to another account', () => {
     )
     await PortfolioPage.tapEthNetwork()
     await PortfolioPage.tapActivityTab()
-    await ActivityTabPage.verifyOutgoingTransaction(
-      60000,
-      secondAccountAddress,
-      ActivityTabLoc.ethOutgoingTransactionDetail
-    )
+    await ActivityTabPage.verifyOutgoingTransaction(60000, secondAccountAddress)
   })
 
   it('Should receive Eth on second account', async () => {
-    await ActivityTabPage.tapHeaderBack()
-    await ActivityTabPage.verifyIncomingTransaction(
-      ActivityTabLoc.ethIncomingTransactionDetail
-    )
+    // Change default account to the 2nd.
+    await AccountManagePage.tapAccountDropdownTitle()
+    await AccountManagePage.tapSecondAccount()
+
+    // verify receive event
+    const newRow = await ActivityTabPage.getLatestActivityRow()
+    await ActivityTabPage.verifyActivityRow(newRow, 'Receive')
   })
 })

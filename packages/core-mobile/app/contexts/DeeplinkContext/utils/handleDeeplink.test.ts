@@ -1,8 +1,18 @@
 import crypto from 'crypto'
 import * as utils from 'services/earn/utils'
-import { ProcessedFeatureFlags } from 'store/posthog'
+import { ProcessedFeatureFlags } from 'store/posthog/types'
+import * as Toast from 'utils/toast'
 import { DeepLink } from '../types'
 import { handleDeeplink } from './handleDeeplink'
+
+const mockShowTransactionSuccessToast = jest.fn()
+const mockShowTransactionErrorToast = jest.fn()
+jest
+  .spyOn(Toast, 'showTransactionSuccessToast')
+  .mockImplementation(mockShowTransactionSuccessToast)
+jest
+  .spyOn(Toast, 'showTransactionErrorToast')
+  .mockImplementation(mockShowTransactionErrorToast)
 
 const mockDispatch = jest.fn()
 const mockNavigateToClaimRewards = jest.fn()

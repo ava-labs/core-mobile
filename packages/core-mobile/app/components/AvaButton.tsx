@@ -107,7 +107,13 @@ const TextWithIcon: FC<
   )
 }
 
-const BtnPrimary: FC<BaseProps> = ({ onPress, disabled, children, style }) => {
+const BtnPrimary: FC<BaseProps> = ({
+  onPress,
+  disabled,
+  children,
+  style,
+  testID
+}) => {
   const theme = useApplicationContext().theme
   return (
     <AvaButtonBase
@@ -123,7 +129,7 @@ const BtnPrimary: FC<BaseProps> = ({ onPress, disabled, children, style }) => {
         },
         style
       ]}
-      testID="btnPrimary">
+      testID={testID}>
       {children}
     </AvaButtonBase>
   )
@@ -133,7 +139,8 @@ const BtnSecondary: FC<BaseProps> = ({
   onPress,
   disabled,
   children,
-  style
+  style,
+  testID
 }) => {
   const theme = useApplicationContext().theme
   return (
@@ -149,7 +156,7 @@ const BtnSecondary: FC<BaseProps> = ({
         },
         style
       ]}
-      testID="btnSecondary">
+      testID={testID}>
       {children}
     </AvaButtonBase>
   )
@@ -180,11 +187,13 @@ const BtnPrimaryLarge: FC<BaseProps> = ({
   disabled,
   children,
   style,
-  textColor
+  textColor,
+  testID
 }) => {
   const theme = useApplicationContext().theme
   return (
     <BtnPrimary
+      testID={testID}
       disabled={disabled}
       onPress={onPress}
       style={[styles.btnPrimaryLarge, style]}>
@@ -226,11 +235,13 @@ const BtnSecondaryLarge: FC<BaseProps> = ({
   onPress,
   disabled,
   children,
-  style
+  style,
+  testID
 }) => {
   const theme = useApplicationContext().theme
   return (
     <BtnSecondary
+      testID={testID}
       onPress={onPress}
       disabled={disabled}
       style={[styles.btnSecondaryLarge, style]}>

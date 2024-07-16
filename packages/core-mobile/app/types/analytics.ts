@@ -9,7 +9,7 @@ export type AnalyticsEvents = {
   AddContactClicked: undefined
   AddContactFailed: undefined
   AddContactSucceeded: undefined
-  AlreadyHaveAWalletClicked: undefined
+  AccessExistingWalletClicked: undefined
   AnalyticsEnabled: undefined
   AnalyticsDisabled: undefined
   ApplicationLaunched: { FontScale: number }
@@ -75,6 +75,7 @@ export type AnalyticsEvents = {
   NetworkDetailsClicked: { chainId: number }
   NetworkFavoriteAdded: { networkChainId: string; isCustom: boolean }
   NetworkFavoriteRemoved: { networkChainId: string; isCustom: boolean }
+  DefaultWatchlistFavoritesAdded: undefined
   NetworkSwitcherOpened: undefined
   NftSendFailed: { errorMessage: string; chainId: number }
   NftSendSucceeded: { chainId: number }
@@ -153,6 +154,8 @@ export type AnalyticsEvents = {
   TokenListTokenSelected: { selectedToken: string }
   TokenReceiveClicked: { chainId: number }
   TokenSendClicked: { chainId: number }
+  TokenSwapClicked: { chainId: number }
+  TokenBridgeClicked: { chainId: number }
   TotpValidationFailed: { error: string }
   TotpValidationSuccess: undefined
   WalletConnectSessionApprovedV2: {

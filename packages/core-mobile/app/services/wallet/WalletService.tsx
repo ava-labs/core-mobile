@@ -18,7 +18,7 @@ import NetworkService from 'services/network/NetworkService'
 import { Network, NetworkVMType } from '@avalabs/chains-sdk'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { Transaction as SentryTransaction } from '@sentry/types'
-import { Account } from 'store/account'
+import { Account } from 'store/account/types'
 import { RpcMethod } from 'store/rpc/types'
 import Logger from 'utils/Logger'
 import { UnsignedTx, utils } from '@avalabs/avalanchejs'
@@ -45,10 +45,8 @@ const EVM_FEE_TOLERANCE = 50
 // We increase C chain base fee by 20% for instant speed
 const BASE_FEE_MULTIPLIER = 0.2
 
-const MAINNET_AVAX_ASSET_ID =
-  'FvwEAhmxKfeiG8SnEvq42hc6whRyY3EFYAvebMqDNDGCgxN5Z'
-const TESTNET_AVAX_ASSET_ID =
-  'U8iRqJoiJm8xZHAacmvYyZVwqQx6uDNtQeP3CQ6fcgQk3JqnK'
+const MAINNET_AVAX_ASSET_ID = Avalanche.MainnetContext.avaxAssetID
+const TESTNET_AVAX_ASSET_ID = Avalanche.FujiContext.avaxAssetID
 
 class WalletService {
   #walletType: WalletType = WalletType.UNSET
@@ -69,13 +67,17 @@ class WalletService {
     this.walletType = walletType
   }
 
-  // eslint-disable-next-line max-params
-  public async sign(
-    transaction: SignTransactionRequest,
-    accountIndex: number,
-    network: Network,
+  public async sign({
+    transaction,
+    accountIndex,
+    network,
+    sentryTrx
+  }: {
+    transaction: SignTransactionRequest
+    accountIndex: number
+    network: Network
     sentryTrx?: SentryTransaction
-  ): Promise<string> {
+  }): Promise<string> {
     return SentryWrapper.createSpanFor(sentryTrx)
       .setContext('svc.wallet.sign')
       .executeAsync(async () => {

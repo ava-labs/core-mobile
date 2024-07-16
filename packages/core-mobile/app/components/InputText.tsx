@@ -122,17 +122,14 @@ const InputText = forwardRef<TextInput, InputTextProps>(
       inputTextContainerStyle,
       onLayout,
       clearBtnContainerSx,
-      borderColor = 'transparent'
+      borderColor = 'transparent',
+      testID
     },
     ref
   ) => {
     const [showInput, setShowInput] = useState(false)
     const [toggleShowText, setToggleShowText] = useState('Show')
     const [isFocused, setIsFocused] = useState(false)
-
-    const [selection, setSelection] = useState<{ start: number } | undefined>({
-      start: 0
-    })
 
     useEffect(() => {
       const sub1 = Keyboard.addListener('keyboardWillShow', _ => {
@@ -163,7 +160,6 @@ const InputText = forwardRef<TextInput, InputTextProps>(
 
     const handleBlur = useCallback(
       (args: NativeSyntheticEvent<TextInputFocusEventData>) => {
-        setSelection({ start: 0 })
         onBlur?.(args)
         setIsFocused(false)
       },
@@ -172,16 +168,11 @@ const InputText = forwardRef<TextInput, InputTextProps>(
 
     const handleFocus = useCallback(
       (args: NativeSyntheticEvent<TextInputFocusEventData>) => {
-        // set cursor at end of text
-        setSelection({ start: text.length })
-
-        // disable selection so that user can position cursor on its own
-        setTimeout(() => setSelection(undefined), 100)
         setIsFocused(true)
 
         onFocus?.(args)
       },
-      [onFocus, text.length]
+      [onFocus]
     )
     const {
       theme: { colors }
@@ -225,7 +216,7 @@ const InputText = forwardRef<TextInput, InputTextProps>(
             onLayout={onLayout}
             selectionColor={colors.$neutral50}
             maxLength={maxLength}
-            testID="input_text"
+            testID={testID}
             keyboardAppearance={Appearance.getColorScheme() || 'default'}
             ref={ref}
             autoCorrect={autoCorrect}
@@ -265,7 +256,6 @@ const InputText = forwardRef<TextInput, InputTextProps>(
             ]}
             onBlur={handleBlur}
             onFocus={handleFocus}
-            selection={selection}
             onChangeText={onTextChanged}
             value={text}
           />

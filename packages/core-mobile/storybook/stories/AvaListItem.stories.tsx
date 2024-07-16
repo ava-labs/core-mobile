@@ -7,7 +7,6 @@ import TokenAddress from 'components/TokenAddress'
 import { Space } from 'components/Space'
 import { Row } from 'components/Row'
 import MarketMovement from 'screens/watchlist/components/MarketMovement'
-import { withProviders } from '../decorators/withProviders'
 
 const styles = StyleSheet.create({
   container: {
@@ -199,8 +198,7 @@ const BaseDemo = (): JSX.Element => {
 }
 
 export default {
-  title: 'AvaListItem',
-  decorators: [withProviders]
+  title: 'AvaListItem'
 }
 
 export const BaseExamples = BaseDemo

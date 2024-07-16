@@ -1,4 +1,4 @@
-import { ethErrors } from 'eth-rpc-errors'
+import { rpcErrors } from '@metamask/rpc-errors'
 import { RpcMethod, RpcProvider, RpcRequest } from 'store/rpc/types'
 import mockSession from 'tests/fixtures/walletConnect/session.json'
 import mockAccounts from 'tests/fixtures/accounts.json'
@@ -8,7 +8,6 @@ import AppNavigation from 'navigation/AppNavigation'
 import * as Navigation from 'utils/Navigation'
 import BridgeService from 'services/bridge/BridgeService'
 import * as Sentry from '@sentry/react-native'
-import { bnToBig, stringToBN } from '@avalabs/utils-sdk'
 import {
   BitcoinDynamicFeeConfigAsset,
   BitcoinStaticFeeConfigAsset,
@@ -16,20 +15,33 @@ import {
   EthereumDynamicFeeAssetConfig,
   EthereumStaticFeeAssetConfig
 } from '@avalabs/bridge-sdk'
-import { VsCurrencyType } from '@avalabs/coingecko-sdk'
 import { avalancheBridgeAssetHandler as handler } from './avalanche_bridgeAsset'
 
+const mockNoop = jest.fn()
+jest.mock('@avalabs/utils-sdk', () => {
+  const actual = jest.requireActual('@avalabs/utils-sdk')
+  return {
+    ...actual,
+    noop: mockNoop
+  }
+})
+
+const mockRequest = jest.fn()
+jest.mock('store/rpc/utils/createInAppRequest', () => ({
+  createInAppRequest: () => mockRequest
+}))
+
 const mockActiveAccount = mockAccounts[0]
-jest.mock('store/account', () => {
-  const actual = jest.requireActual('store/account')
+jest.mock('store/account/slice', () => {
+  const actual = jest.requireActual('store/account/slice')
   return {
     ...actual,
     selectActiveAccount: () => mockActiveAccount
   }
 })
 
-jest.mock('store/network', () => {
-  const actual = jest.requireActual('store/network')
+jest.mock('store/network/slice', () => {
+  const actual = jest.requireActual('store/network/slice')
   return {
     ...actual,
     selectNetworks: () => mockNetworks
@@ -37,19 +49,11 @@ jest.mock('store/network', () => {
 })
 
 const mockIsDeveloperMode = true
-jest.mock('store/settings/advanced', () => {
-  const actual = jest.requireActual('store/settings/advanced')
+jest.mock('store/settings/advanced/slice', () => {
+  const actual = jest.requireActual('store/settings/advanced/slice')
   return {
     ...actual,
     selectIsDeveloperMode: () => mockIsDeveloperMode
-  }
-})
-
-jest.mock('store/settings/currency', () => {
-  const actual = jest.requireActual('store/settings/currency')
-  return {
-    ...actual,
-    selectSelectedCurrency: () => 'usd' as VsCurrencyType
   }
 })
 
@@ -61,17 +65,19 @@ jest.mock('store/bridge/slice', () => {
   }
 })
 
-const mockTx = { a: 1 }
-const mockTransferAsset = jest.fn()
-const mockTransferBtcAsset = jest.fn()
+const mockTxHash = '0x123323'
+const mockTransferEVMAsset = jest.fn()
+const mockTransferBTCAsset = jest.fn()
 
-jest.spyOn(BridgeService, 'transferAsset').mockImplementation(mockTransferAsset)
 jest
-  .spyOn(BridgeService, 'transferBtcAsset')
-  .mockImplementation(mockTransferBtcAsset)
+  .spyOn(BridgeService, 'transferEVM')
+  .mockImplementation(mockTransferEVMAsset)
+jest
+  .spyOn(BridgeService, 'transferBTC')
+  .mockImplementation(mockTransferBTCAsset)
 
-mockTransferAsset.mockResolvedValue(mockTx)
-mockTransferBtcAsset.mockResolvedValue(mockTx)
+mockTransferEVMAsset.mockResolvedValue(mockTxHash)
+mockTransferBTCAsset.mockResolvedValue(mockTxHash)
 
 const mockCaptureException = jest.fn()
 jest.spyOn(Sentry, 'captureException').mockImplementation(mockCaptureException)
@@ -238,9 +244,7 @@ const testHandleInvalidParams = async (params: unknown) => {
 
   expect(result).toEqual({
     success: false,
-    error: ethErrors.rpc.invalidParams({
-      message: 'Params are invalid'
-    })
+    error: rpcErrors.invalidParams('Params are invalid')
   })
 }
 
@@ -275,7 +279,7 @@ const testApproveInvalidData = async (data: unknown) => {
 
   expect(result).toEqual({
     success: false,
-    error: ethErrors.rpc.internal('Invalid approve data')
+    error: rpcErrors.internal('Invalid approve data')
   })
 }
 
@@ -361,26 +365,26 @@ describe('avalanche_bridgeAsset handler', () => {
             amountStr: '0.01',
             asset: testNativeAsset,
             currentBlockchain: 'avalanche',
-            maxFeePerGas: 100n,
-            maxPriorityFeePerGas: 100n
+            maxFeePerGas: 100n
           }
         },
         mockListenerApi
       )
 
-      expect(mockTransferAsset).toHaveBeenCalledWith({
+      expect(mockTransferEVMAsset).toHaveBeenCalledWith({
         currentBlockchain: 'avalanche',
-        amount: bnToBig(stringToBN('0.01', 18), 18),
+        amount: '0.01',
         asset: testNativeAsset,
         config: mockBridgeConfig,
         activeAccount: mockActiveAccount,
         allNetworks: mockNetworks,
         isTestnet: mockIsDeveloperMode,
-        maxFeePerGas: 100n,
-        maxPriorityFeePerGas: 100n
+        onStatusChange: undefined,
+        onTxHashChange: undefined,
+        request: mockRequest
       })
 
-      expect(result).toEqual({ success: true, value: mockTx })
+      expect(result).toEqual({ success: true, value: { hash: mockTxHash } })
     })
 
     it('should transfer btc asset and return success with transaction', async () => {
@@ -393,20 +397,19 @@ describe('avalanche_bridgeAsset handler', () => {
             amountStr: '0.01',
             asset: testBtcDynamicFeeAsset,
             currentBlockchain: 'bitcoin',
-            maxFeePerGas: 100n,
-            maxPriorityFeePerGas: 100n
+            maxFeePerGas: 100n
           }
         },
         mockListenerApi
       )
 
-      expect(mockTransferBtcAsset).toHaveBeenCalled()
-      expect(result).toEqual({ success: true, value: mockTx })
+      expect(mockTransferBTCAsset).toHaveBeenCalled()
+      expect(result).toEqual({ success: true, value: { hash: mockTxHash } })
     })
 
     it('should return error when failed to transfer asset', async () => {
       const testError = Error('test error')
-      mockTransferAsset.mockImplementationOnce(() => {
+      mockTransferEVMAsset.mockImplementationOnce(() => {
         throw testError
       })
 
@@ -425,16 +428,17 @@ describe('avalanche_bridgeAsset handler', () => {
         mockListenerApi
       )
 
-      expect(mockTransferAsset).toHaveBeenCalledWith({
+      expect(mockTransferEVMAsset).toHaveBeenCalledWith({
         currentBlockchain: 'avalanche',
-        amount: bnToBig(stringToBN('0.01', 18), 18),
+        amount: '0.01',
         asset: testNativeAsset,
         config: mockBridgeConfig,
         activeAccount: mockActiveAccount,
         allNetworks: mockNetworks,
         isTestnet: mockIsDeveloperMode,
-        maxFeePerGas: 100n,
-        maxPriorityFeePerGas: undefined
+        onStatusChange: undefined,
+        onTxHashChange: undefined,
+        request: mockRequest
       })
 
       expect(mockCaptureException).toHaveBeenCalledWith(testError, {
@@ -443,7 +447,7 @@ describe('avalanche_bridgeAsset handler', () => {
 
       expect(result).toEqual({
         success: false,
-        error: ethErrors.rpc.internal('Unable to transfer asset')
+        error: rpcErrors.internal('Unable to transfer asset')
       })
     })
   })

@@ -1,6 +1,14 @@
 import { CriticalConfig } from '@avalabs/bridge-sdk'
 import { Network } from '@avalabs/chains-sdk'
-import { Account } from 'store/account'
+import {
+  PChainTransactionType,
+  XChainTransactionType
+} from '@avalabs/glacier-sdk'
+import { Account } from 'store/account/types'
+import {
+  TransactionType,
+  Transaction as InternalTransaction
+} from '@avalabs/vm-module-types'
 
 export type GetTransactionsArgs = {
   nextPageToken?: string
@@ -15,23 +23,14 @@ export type GetRecentTransactionsArgs = {
   criticalConfig: CriticalConfig | undefined
 }
 
-export type Transaction = {
+export type Transaction = Omit<InternalTransaction, 'txType'> & {
+  txType: ActivityTransactionType
   isBridge: boolean
-  isContractCall: boolean
-  isIncoming: boolean
-  isOutgoing: boolean
-  isSender: boolean
-  timestamp: number
-  hash: string
-  amount: string
-  from: string
-  to: string
-  token?: {
-    decimal: string
-    name: string
-    symbol: string
-  }
-  explorerLink: string
-  fee: string
-  testID?: string
 }
+
+export type ActivityTransactionType =
+  | TransactionType
+  | PChainTransactionType
+  | XChainTransactionType
+  | 'CreateAssetTx'
+  | 'OperationTx'

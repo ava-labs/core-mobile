@@ -22,8 +22,7 @@ describe('Create new wallet', () => {
   })
 
   it('should view proper page title and action icons', async () => {
-    // await existingRecoveryPhrasePage.tapSignInWithRecoveryPhraseBtn()
-    await existingRecoveryPhrasePage.tapRecoveryPhraseBtn()
+    await existingRecoveryPhrasePage.tapManuallyCreateNewWallet()
     await Actions.waitForElement(AnalyticsConsentPage.noThanksBtn)
     await AnalyticsConsentPage.tapNoThanksBtn()
     await Actions.waitForElement(NewRecoveryPhrasePage.iWroteItDownBtn)

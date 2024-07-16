@@ -10,11 +10,11 @@ import AccountBottomSheet from 'screens/portfolio/account/AccountBottomSheet'
 import CreateRemoveContactV2 from 'screens/rpc/components/v2/CreateRemoveContact'
 import UpdateContactV2 from 'screens/rpc/components/v2/UpdateContact/UpdateContact'
 import SelectAccountV2 from 'screens/rpc/components/v2/SelectAccount'
-import SignTransactionV2 from 'screens/rpc/components/v2/SignTransaction'
 import BridgeAssetV2 from 'screens/rpc/components/v2/BridgeAsset'
 import SignMessageV2 from 'screens/rpc/components/v2/SignMessage'
 import AddEthereumChainV2 from 'screens/rpc/components/v2/AddEthereumChain'
 import SwitchEthereumChainV2 from 'screens/rpc/components/v2/SwitchEthereumChain'
+import ApprovalPopup from 'screens/rpc/components/v2/ApprovalPopup'
 import BuyCarefully from 'screens/rpc/buy/BuyCarefully'
 import AvalancheSendTransactionV2 from 'screens/rpc/components/v2/AvalancheSendTransaction'
 import { DisclaimerBottomSheet } from 'screens/earn/components/DisclaimerBottomSheet'
@@ -78,8 +78,8 @@ export const createModals = (WalletScreenS: WalletScreenSType): JSX.Element => {
         component={BridgeAssetV2}
       />
       <WalletScreenS.Screen
-        name={AppNavigation.Modal.SignTransactionV2}
-        component={SignTransactionV2}
+        name={AppNavigation.Modal.ApprovalPopup}
+        component={ApprovalPopup}
       />
       <WalletScreenS.Screen
         name={AppNavigation.Modal.AvalancheSendTransactionV2}
@@ -292,7 +292,7 @@ const CoreIntroModal = (): JSX.Element => {
   const descriptions = [
     { icon: <SearchIcon />, text: 'Explore the Avalanche ecosystem' },
     {
-      icon: <Swap />,
+      icon: <Swap color={'white'} style={{ marginTop: 5 }} />,
       text: 'Interact with assets across multiple chains'
     },
     {

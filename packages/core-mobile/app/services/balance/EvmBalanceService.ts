@@ -5,12 +5,8 @@ import {
   NetworkTokenWithBalance,
   TokenType,
   TokenWithBalanceERC20
-} from 'store/balance'
-import {
-  Network,
-  NetworkContractToken,
-  NetworkVMType
-} from '@avalabs/chains-sdk'
+} from 'store/balance/types'
+import { Network, NetworkVMType } from '@avalabs/chains-sdk'
 import {
   SimpleTokenPriceResponse,
   VsCurrencyType
@@ -24,6 +20,8 @@ import SentryWrapper from 'services/sentry/SentryWrapper'
 import ERC20 from '@openzeppelin/contracts/build/contracts/ERC20.json'
 import { bigintToBig } from 'utils/bigNumbers/bigintToBig'
 import TokenService from 'services/token/TokenService'
+import { getNetworkContractTokens } from 'hooks/networks/utils/getNetworkContractTokens'
+import { NetworkContractToken } from '@avalabs/vm-module-types'
 
 type Provider = JsonRpcBatchInternal | InfuraProvider
 
@@ -45,7 +43,8 @@ export class EvmBalanceService implements BalanceServiceProvider {
     return SentryWrapper.createSpanFor(sentryTrx)
       .setContext('svc.balance.evm.get')
       .executeAsync(async () => {
-        const activeTokenList = network.tokens ?? []
+        // todo: use getTokens function directly when getBalances is implemented in the vm module
+        const activeTokenList = await getNetworkContractTokens(network)
         const tokenAddresses = activeTokenList.map(token => token.address)
         const provider = NetworkService.getProviderForNetwork(
           network

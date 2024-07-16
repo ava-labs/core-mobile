@@ -3,7 +3,6 @@ import Action from '../helpers/actions'
 import accountManage from '../locators/accountManage.loc'
 import { Platform } from '../helpers/constants'
 import Assert from '../helpers/assertions'
-import actions from '../helpers/actions'
 
 class AccountManagePage {
   get account() {
@@ -16,6 +15,10 @@ class AccountManagePage {
 
   get accountDropdownTitle() {
     return by.id(accountManage.accountDropdownTitle)
+  }
+
+  get accountsDropdown() {
+    return by.id(accountManage.accountsDropdown)
   }
 
   get editedAccount() {
@@ -58,8 +61,16 @@ class AccountManagePage {
     return by.text(accountManage.fourthaccount)
   }
 
-  async tapAccountDropdownTitle() {
-    await Action.tapElementAtIndex(this.accountDropdownTitle, 0)
+  async tapAccountDropdownTitle(index = 0) {
+    await Action.tapElementAtIndex(this.accountDropdownTitle, index)
+  }
+
+  async switchToReceivedAccount(accountNumber: string) {
+    if (accountNumber === 'second') {
+      await this.tapFirstAccount()
+    } else {
+      await this.tapSecondAccount()
+    }
   }
 
   async tapFourthAccount() {
@@ -74,21 +85,30 @@ class AccountManagePage {
   }
 
   async createSecondAccount() {
-    if (!(await actions.expectToBeVisible(this.secondAccount))) {
-      await this.tapAccountDropdownTitle()
-      await this.tapAddEditAccounts()
+    await this.tapAccountDropdownTitle()
+    await this.tapAddEditAccounts()
+    await this.tapAddAccountButton()
+    const result = await this.getSecondAvaxAddress()
+    await this.tapFirstAccount()
+    await this.tapDoneButton()
+    return result
+  }
+
+  async createNthAccountAndSwitchToNth(account: number) {
+    await this.tapAccountDropdownTitle()
+    await this.tapAddEditAccounts()
+    for (let i = 0; i < account; i++) {
       await this.tapAddAccountButton()
-      const result = await this.getSecondAvaxAddress()
-      await this.tapFirstAccount()
-      await this.tapDoneButton()
-      return result
-    } else {
-      const result = await this.getSecondAvaxAddress()
-      await this.tapFirstAccount()
-      if (Action.platform() === 'ios') {
-        await this.tapCarrotSVG()
-      }
-      return result
+    }
+    await this.tapNthAccount(account)
+    await this.tapDoneButton()
+  }
+
+  async tapNthAccount(account: number) {
+    try {
+      await Action.tap(by.text(`Account ${account}`))
+    } catch (e) {
+      console.log('Unable to tap Nth account')
     }
   }
 
@@ -117,6 +137,10 @@ class AccountManagePage {
     } else {
       return result.elements[0].text.toLowerCase()
     }
+  }
+
+  async tapAccountsDropDown() {
+    await Action.tap(this.accountsDropdown)
   }
 
   async getSecondAvaxAddress() {

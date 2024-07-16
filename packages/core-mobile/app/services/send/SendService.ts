@@ -3,17 +3,17 @@ import { resolve } from '@avalabs/utils-sdk'
 import { Account } from 'store/account'
 import { SendServiceEVM } from 'services/send/SendServiceEVM'
 import { NFTItemData } from 'store/nft'
-import { NftTokenWithBalance, TokenType } from 'store/balance'
+import { NftTokenWithBalance, TokenType } from 'store/balance/types'
 import BN from 'bn.js'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { isErc721 } from 'services/nft/utils'
 import { SendServicePVM } from 'services/send/SendServicePVM'
 import { RpcMethod } from 'store/rpc'
 import { getAddressByNetwork } from 'store/account/utils'
-import { InAppTransactionParams as BtcTransactionParams } from 'store/rpc/handlers/bitcoin_sendTransaction/utils'
-import { TransactionParams as EvmTransactionParams } from 'store/rpc/handlers/eth_sendTransaction/utils'
+import { TransactionParams as BtcTransactionParams } from 'store/rpc/handlers/bitcoin_sendTransaction/utils'
 import { TransactionParams as AvalancheTransactionParams } from 'store/rpc/handlers/avalanche_sendTransaction/utils'
 import { SendServiceAVM } from 'services/send/SendServiceAVM'
+import { transactionRequestToTransactionParams } from 'store/rpc/utils/transactionRequestToTransactionParams'
 import sendServiceBTC from './SendServiceBTC'
 import {
   isValidSendState,
@@ -39,14 +39,14 @@ class SendService {
           throw new Error('Source address not set')
         }
         const service = this.getService(network, fromAddress)
-        const params = {
+
+        sendState = await service.validateStateAndCalculateFees({
           sendState,
           isMainnet: !network.isTestnet,
           fromAddress,
           currency,
           sentryTrx
-        }
-        sendState = await service.validateStateAndCalculateFees(params)
+        })
 
         if (sendState.error?.error) {
           throw new Error(sendState.error.message)
@@ -59,10 +59,16 @@ class SendService {
         let txHash, txError
 
         if (network.vmName === NetworkVMType.BITCOIN) {
+          const params: BtcTransactionParams = [
+            sendState.address ?? '',
+            sendState.amount?.toString() ?? '',
+            Number(sendState.defaultMaxFeePerGas ?? 0)
+          ]
+
           ;[txHash, txError] = await resolve(
             request({
               method: RpcMethod.BITCOIN_SEND_TRANSACTION,
-              params: sendState as BtcTransactionParams
+              params
             })
           )
         }
@@ -118,10 +124,12 @@ class SendService {
             sentryTrx
           })
 
+          const txParams = transactionRequestToTransactionParams(txRequest)
+
           ;[txHash, txError] = await resolve(
             request({
               method: RpcMethod.ETH_SEND_TRANSACTION,
-              params: [txRequest] as [EvmTransactionParams],
+              params: [txParams],
               chainId: network.chainId.toString()
             })
           )
@@ -131,8 +139,8 @@ class SendService {
           throw txError
         }
 
-        if (!txHash) {
-          throw new Error('Tx hash empty')
+        if (!txHash || typeof txHash !== 'string') {
+          throw new Error('invalid transaction hash')
         }
 
         return txHash

@@ -36,7 +36,9 @@ export const ZeroState = ({
       {!!onExploreEcosystem && (
         <>
           <Space y={24} />
-          <AvaButton.PrimaryLarge onPress={onExploreEcosystem}>
+          <AvaButton.PrimaryLarge
+            onPress={onExploreEcosystem}
+            testID="explore_ecosystem_btn">
             <LinkSVG color={theme.logoColor} />
             <Space x={8} />
             Explore Ecosystem
