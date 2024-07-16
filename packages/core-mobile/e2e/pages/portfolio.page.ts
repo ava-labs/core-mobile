@@ -180,11 +180,7 @@ class PortfolioPage {
   }
 
   async tapNetworksDropdown() {
-    try {
-      await Action.tapElementAtIndex(this.networksDropdown, 0)
-    } catch (error) {
-      console.log('Networks dropdown not found or is already tapped')
-    }
+    await Action.tapElementAtIndex(this.networksDropdown, 0)
   }
 
   async tapNetworksDropdownBTC() {

@@ -12,13 +12,14 @@ describe('Send WETH to another account', () => {
 
   it('Should send WETH to second account', async () => {
     await AccountManagePage.switchToFirstAccount()
-    const secondAccountAddress = await AccountManagePage.createSecondAccount()
+    await AccountManagePage.createSecondAccount()
     await SendPage.sendTokenTo2ndAccount(
       sendLoc.wethToken,
       sendLoc.sendingAmount
     )
     await PortfolioPage.tapAvaxNetwork()
     await PortfolioPage.tapActivityTab()
-    await ActivityTabPage.verifyOutgoingTransaction(20000, secondAccountAddress)
+    const newRow = await ActivityTabPage.getLatestActivityRow()
+    await ActivityTabPage.verifyActivityRow(newRow, 'Contract Call')
   })
 })

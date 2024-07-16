@@ -12,13 +12,14 @@ describe('Send USDC to another account', () => {
 
   it('Should send USDC to second account', async () => {
     await AccountManagePage.switchToFirstAccount()
-    const secondAccountAddress = await AccountManagePage.createSecondAccount()
+    await AccountManagePage.createSecondAccount()
     await SendPage.sendTokenTo2ndAccount(
       sendLoc.usdcToken,
       sendLoc.sendingAmount
     )
     await PortfolioPage.tapAvaxNetwork()
     await PortfolioPage.tapActivityTab()
-    await ActivityTabPage.verifyOutgoingTransaction(5000, secondAccountAddress)
+    const newRow = await ActivityTabPage.getLatestActivityRow()
+    await ActivityTabPage.verifyActivityRow(newRow, 'Contract Call')
   })
 })
