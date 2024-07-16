@@ -10,7 +10,7 @@ import {
   utils,
   VM
 } from '@avalabs/avalanchejs'
-import { ethErrors } from 'eth-rpc-errors'
+import { rpcErrors } from '@metamask/rpc-errors'
 import { selectActiveAccount } from 'store/account/slice'
 import networkService from 'services/network/NetworkService'
 import { selectIsDeveloperMode } from 'store/settings/advanced/slice'
@@ -75,9 +75,7 @@ class AvalancheSendTransactionHandler
     if (!result.success) {
       return {
         success: false,
-        error: ethErrors.rpc.invalidParams({
-          message: 'Missing mandatory param(s)'
-        })
+        error: rpcErrors.invalidParams('Missing mandatory param(s)')
       }
     }
 
@@ -99,9 +97,7 @@ class AvalancheSendTransactionHandler
     if (!currentAddress) {
       return {
         success: false,
-        error: ethErrors.rpc.invalidRequest({
-          message: 'No active account found'
-        })
+        error: rpcErrors.invalidRequest('No active account found')
       }
     }
 
@@ -170,9 +166,9 @@ class AvalancheSendTransactionHandler
     if (txData.type === 'unknown') {
       return {
         success: false,
-        error: ethErrors.rpc.internal({
-          message: 'Unable to parse transaction data. Unsupported tx type'
-        })
+        error: rpcErrors.internal(
+          'Unable to parse transaction data. Unsupported tx type'
+        )
       }
     }
 
@@ -239,16 +235,16 @@ class AvalancheSendTransactionHandler
       if (!activeAccount) {
         throw new Error('Unable to submit transaction, no active account.')
       }
-      const signedTransactionJson = await walletService.sign(
-        {
+      const signedTransactionJson = await walletService.sign({
+        // Must tell it is avalanche network
+        network: networkService.getAvalancheNetworkXP(isDevMode),
+        transaction: {
           tx: unsignedTx,
           externalIndices,
           internalIndices
         },
-        activeAccount.index,
-        // Must tell it is avalanche network
-        networkService.getAvalancheNetworkXP(isDevMode)
-      )
+        accountIndex: activeAccount.index
+      })
 
       const signedTransaction =
         vm === EVM
@@ -291,9 +287,7 @@ class AvalancheSendTransactionHandler
       })
       return {
         success: false,
-        error: ethErrors.rpc.internal({
-          message
-        })
+        error: rpcErrors.internal(message)
       }
     }
   }

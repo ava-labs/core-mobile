@@ -1,19 +1,8 @@
 import BN from 'bn.js'
-import { NetworkTokenWithBalance, TokenWithBalance } from 'store/balance'
-import { Network } from '@avalabs/chains-sdk'
-import { FindToken } from 'contracts/contractParsers/utils/useFindToken'
-import { TransactionParams } from 'store/rpc/handlers/eth_sendTransaction/utils'
+import { TokenWithBalance } from 'store/balance/types'
 import { TransactionDescription } from 'ethers'
 import { NetworkTokenUnit } from 'types'
 import { PeerMeta } from 'store/rpc/types'
-
-export interface DisplayValueParserProps {
-  maxFeePerGas: NetworkTokenUnit
-  maxPriorityFeePerGas: NetworkTokenUnit
-  token: NetworkTokenWithBalance
-  tokenPrice: number
-  site?: PeerMeta | null | undefined
-}
 
 export interface TransactionDisplayValues {
   fromAddress?: string
@@ -32,11 +21,6 @@ export interface TransactionDisplayValues {
   [key: string]: any // eslint-disable-line @typescript-eslint/no-explicit-any
 }
 
-export interface Transaction {
-  txParams: TransactionParams
-  displayValues: TransactionDisplayValues
-}
-
 export enum ContractCall {
   APPROVE = 'approve',
   SWAP_EXACT_TOKENS_FOR_TOKENS = 'swapExactTokensForTokens',
@@ -49,16 +33,6 @@ export enum ContractCall {
   ADD_LIQUIDITY_AVAX = 'addLiquidityAVAX',
   UNKNOWN = 'UNKNOWN'
 }
-
-export type ContractParserHandler = (
-  findToken: FindToken,
-  network: Network,
-  request: TransactionParams,
-  data: any, // eslint-disable-line @typescript-eslint/no-explicit-any
-  props: DisplayValueParserProps,
-  txDetails?: TransactionDescription
-) => Promise<TransactionDisplayValues>
-export type ContractParser = [ContractCall, ContractParserHandler]
 
 export type BNWithDisplay = { bn: BN; value: string }
 export type erc20PathToken = TokenWithBalance & {

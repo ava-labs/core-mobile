@@ -10,7 +10,7 @@ import React, {
 import { getSwapRate, getTokenAddress } from 'swap/getSwapRate'
 import { SwapSide } from 'paraswap'
 import { OptimalRate } from 'paraswap-core'
-import { TokenWithBalance } from 'store/balance'
+import { TokenWithBalance } from 'store/balance/types'
 import Logger from 'utils/Logger'
 import { resolve } from '@avalabs/utils-sdk'
 import { Amount } from 'types'

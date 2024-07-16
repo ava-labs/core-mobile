@@ -5,11 +5,8 @@ import { Space } from 'components/Space'
 import SwapNarrowSVG from 'components/svg/SwapNarrowSVG'
 import AvaButton from 'components/AvaButton'
 import { useSwapContext } from 'contexts/SwapContext/SwapContext'
-import {
-  selectTokensWithZeroBalance,
-  TokenType,
-  TokenWithBalance
-} from 'store/balance'
+import { TokenType, TokenWithBalance } from 'store/balance/types'
+import { selectTokensWithZeroBalance } from 'store/balance/slice'
 import { useSelector } from 'react-redux'
 import { SwapSide } from 'paraswap-core'
 import UniversalTokenSelector from 'components/UniversalTokenSelector'

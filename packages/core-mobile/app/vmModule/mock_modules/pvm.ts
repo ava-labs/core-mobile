@@ -7,8 +7,13 @@ import {
   RpcRequest,
   RpcResponse,
   TransactionHistoryResponse,
-  parseManifest
+  parseManifest,
+  Network
 } from '@avalabs/vm-module-types'
+import {
+  JsonRpcError,
+  OptionalDataWithOptionalCause
+} from '@metamask/rpc-errors'
 import manifest from './pvm.manifest.json'
 
 export class PVMModule implements Module {
@@ -35,10 +40,14 @@ export class PVMModule implements Module {
   getAddress(): Promise<string> {
     return Promise.resolve('PVM address')
   }
-  getTokens(_: number): Promise<NetworkContractToken[]> {
+  getTokens(_: Network): Promise<NetworkContractToken[]> {
     return Promise.resolve([])
   }
-  onRpcRequest(request: RpcRequest): Promise<RpcResponse<unknown, Error>> {
+  onRpcRequest(
+    request: RpcRequest
+  ): Promise<
+    RpcResponse<unknown, JsonRpcError<OptionalDataWithOptionalCause>>
+  > {
     throw new Error(`Method not implemented: ${request.method}`)
   }
 }

@@ -3,7 +3,7 @@ import { resolve } from '@avalabs/utils-sdk'
 import { Account } from 'store/account'
 import { SendServiceEVM } from 'services/send/SendServiceEVM'
 import { NFTItemData } from 'store/nft'
-import { NftTokenWithBalance, TokenType } from 'store/balance'
+import { NftTokenWithBalance, TokenType } from 'store/balance/types'
 import BN from 'bn.js'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { isErc721 } from 'services/nft/utils'
@@ -11,9 +11,9 @@ import { SendServicePVM } from 'services/send/SendServicePVM'
 import { RpcMethod } from 'store/rpc'
 import { getAddressByNetwork } from 'store/account/utils'
 import { TransactionParams as BtcTransactionParams } from 'store/rpc/handlers/bitcoin_sendTransaction/utils'
-import { TransactionParams as EvmTransactionParams } from 'store/rpc/handlers/eth_sendTransaction/utils'
 import { TransactionParams as AvalancheTransactionParams } from 'store/rpc/handlers/avalanche_sendTransaction/utils'
 import { SendServiceAVM } from 'services/send/SendServiceAVM'
+import { transactionRequestToTransactionParams } from 'store/rpc/utils/transactionRequestToTransactionParams'
 import sendServiceBTC from './SendServiceBTC'
 import {
   isValidSendState,
@@ -124,10 +124,12 @@ class SendService {
             sentryTrx
           })
 
+          const txParams = transactionRequestToTransactionParams(txRequest)
+
           ;[txHash, txError] = await resolve(
             request({
               method: RpcMethod.ETH_SEND_TRANSACTION,
-              params: [txRequest] as [EvmTransactionParams],
+              params: [txParams],
               chainId: network.chainId.toString()
             })
           )

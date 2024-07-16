@@ -15,7 +15,7 @@ import {
   WalletScreenProps
 } from 'navigation/types'
 import ActivityList from 'screens/shared/ActivityList/ActivityList'
-import { TokenWithBalance } from 'store/balance'
+import { TokenWithBalance } from 'store/balance/types'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { Text, View } from '@avalabs/k2-mobile'
 import { useApplicationContext } from 'contexts/ApplicationContext'

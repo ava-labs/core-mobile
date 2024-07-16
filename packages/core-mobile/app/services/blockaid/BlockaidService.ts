@@ -1,6 +1,6 @@
-import { TransactionParams } from 'store/rpc/handlers/eth_sendTransaction/utils'
 import Blockaid from '@blockaid/client'
 import Config from 'react-native-config'
+import { TransactionParams } from '@avalabs/evm-module'
 import {
   JsonRpcRequestData,
   SiteScanResponse,

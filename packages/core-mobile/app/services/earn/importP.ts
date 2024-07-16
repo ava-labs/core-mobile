@@ -36,11 +36,12 @@ export async function importP({
     destinationAddress: activeAccount.addressPVM
   })
 
-  const signedTxJson = await WalletService.sign(
-    { tx: unsignedTx } as AvalancheTransactionRequest,
-    activeAccount.index,
-    avaxPNetwork
-  )
+  const signedTxJson = await WalletService.sign({
+    transaction: { tx: unsignedTx } as AvalancheTransactionRequest,
+    accountIndex: activeAccount.index,
+    network: avaxPNetwork
+  })
+
   const signedTx = UnsignedTx.fromJSON(signedTxJson).getSignedTx()
 
   let txID: string

@@ -1,6 +1,7 @@
 import { Network, NetworkVMType } from '@avalabs/chains-sdk'
 import { getAddressByNetwork } from 'store/account/utils'
 import ModuleManager from 'vmModule/ModuleManager'
+import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 import Logger from 'utils/Logger'
 import BtcActivityService from './BtcActivityService'
 import PrimaryActivityService from './PrimaryActivityService'
@@ -52,10 +53,7 @@ export class ActivityService {
       // todo: remove if statement once all modules are implmeneted
       if (module.getManifest()?.network.chainIds.includes(caip2ChainId)) {
         const rawTxHistory = await module.getTransactionHistory({
-          chainId: network.chainId,
-          networkToken: network.networkToken,
-          isTestnet: network.isTestnet ?? false,
-          explorerUrl: network.explorerUrl ?? '',
+          network: mapToVmNetwork(network),
           address,
           nextPageToken,
           offset: pageSize

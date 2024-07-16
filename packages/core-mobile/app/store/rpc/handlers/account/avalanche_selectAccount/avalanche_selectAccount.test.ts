@@ -1,4 +1,4 @@
-import { ethErrors } from 'eth-rpc-errors'
+import { rpcErrors } from '@metamask/rpc-errors'
 import { RpcMethod, RpcProvider, RpcRequest } from 'store/rpc/types'
 import mockSession from 'tests/fixtures/walletConnect/session.json'
 import mockAccounts from 'tests/fixtures/accounts.json'
@@ -56,9 +56,7 @@ const testHandleInvalidParams = async (params: unknown) => {
 
   expect(result).toEqual({
     success: false,
-    error: ethErrors.rpc.invalidParams({
-      message: 'Account id is invalid'
-    })
+    error: rpcErrors.invalidParams('Account id is invalid')
   })
 }
 
@@ -72,7 +70,7 @@ const testApproveInvalidData = async (data: unknown) => {
 
   expect(result).toEqual({
     success: false,
-    error: ethErrors.rpc.internal('Invalid approve data')
+    error: rpcErrors.internal('Invalid approve data')
   })
 }
 
@@ -105,9 +103,7 @@ describe('avalanche_selectAccount handler', () => {
 
       expect(result).toEqual({
         success: false,
-        error: ethErrors.rpc.resourceNotFound({
-          message: 'Requested account does not exist'
-        })
+        error: rpcErrors.resourceNotFound('Requested account does not exist')
       })
     })
 

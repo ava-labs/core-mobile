@@ -6,7 +6,7 @@ import {
   selectIsLoadingBalances,
   selectIsRefetchingBalances,
   selectTokensWithBalanceForAccount
-} from 'store/balance'
+} from 'store/balance/slice'
 import { selectActiveAccount } from 'store/account'
 import { ActivityIndicator } from 'components/ActivityIndicator'
 import PriceChangeIndicator from 'screens/watchlist/components/PriceChangeIndicator'

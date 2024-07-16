@@ -1,7 +1,7 @@
 import { useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import EarnService from 'services/earn/EarnService'
-import { selectAvaxPrice } from 'store/balance'
+import { selectAvaxPrice } from 'store/balance/slice'
 import { UseQueryResult, useQuery } from '@tanstack/react-query'
 import { pvm } from '@avalabs/avalanchejs'
 import { Seconds } from 'types/siUnits'

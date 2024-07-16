@@ -5,7 +5,7 @@ import {
   TokenType,
   TokenWithBalance,
   TokenWithBalanceERC20
-} from 'store/balance'
+} from 'store/balance/types'
 import { bnToBig } from '@avalabs/utils-sdk'
 import { isUnifiedBridgeAsset } from '../utils/bridgeUtils'
 
