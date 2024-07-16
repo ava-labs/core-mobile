@@ -9,5 +9,6 @@ export default {
   lastMnemonicWord: 'embark',
   signInWithRecoveryPhraseBtn: 'btnTextMedium',
   fingerprint: 'Fingerprint',
-  skipBtn: 'Skip'
+  skipBtn: 'Skip',
+  modalTitle: 'Terms and Condition'
 }

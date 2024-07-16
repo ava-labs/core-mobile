@@ -1,9 +1,18 @@
 import newRecoveryPhraseLoc from '../locators/newRecoveryPhrase.loc'
 import Action from '../helpers/actions'
+import Assert from '../helpers/assertions'
 
 class NewRecoveryPhrasePage {
   mnemonicNumber(num: string) {
     return by.id(num)
+  }
+
+  get newRecoveryPhraseTitle() {
+    return by.text(newRecoveryPhraseLoc.newRecoveryPhraseContent)
+  }
+
+  get newRecoveryPhraseContent() {
+    return by.text(newRecoveryPhraseLoc.newRecoveryPhraseContent)
   }
 
   get mnemonicWord() {
@@ -38,12 +47,36 @@ class NewRecoveryPhrasePage {
     return by.id(newRecoveryPhraseLoc.warningModalMessage)
   }
 
+  get securityWarningTitle() {
+    return by.text(newRecoveryPhraseLoc.securityWarningTitle)
+  }
+
+  get securityWarningContent() {
+    return by.text(newRecoveryPhraseLoc.securityWarningContent)
+  }
+
+  get copyAnyway() {
+    return by.text(newRecoveryPhraseLoc.copyAnyway)
+  }
+
+  get cancel() {
+    return by.text(newRecoveryPhraseLoc.cancel)
+  }
+
+  get copied() {
+    return by.text(newRecoveryPhraseLoc.copied)
+  }
+
   async tapIWroteItDownBtn() {
     return Action.tap(this.iWroteItDownBtn)
   }
 
   async tapIUnderstandBtn() {
     return Action.tap(this.iUnderstandBtn)
+  }
+
+  async tapCopyPhrase() {
+    return Action.tap(this.copyPhraseBtn)
   }
 
   async getAndroidWordsObject() {
@@ -94,6 +127,32 @@ class NewRecoveryPhrasePage {
       [item.mnemonicNum]: item.mnemonicWord
     }))
     return Object.assign({}, ...mnemonicMapped)
+  }
+
+  async verifyNewRecoveryPhrasePage() {
+    await Assert.isVisible(this.newRecoveryPhraseTitle)
+    await Assert.isVisible(this.newRecoveryPhraseContent)
+    await Assert.isVisible(this.iWroteItDownBtn)
+  }
+
+  async verifyCopyPhraseModal() {
+    await this.tapCopyPhrase()
+    await Assert.isVisible(this.securityWarningTitle)
+    await Assert.isVisible(this.securityWarningContent)
+    await Action.tap(this.copyAnyway)
+    await Assert.isVisible(this.copied)
+
+    await this.tapCopyPhrase()
+    await Action.tap(this.cancel)
+    await Assert.isNotVisible(this.copied)
+  }
+
+  async verifyProtectYourFundsModal() {
+    await Action.waitForElement(this.iUnderstandBtn)
+    await Assert.isVisible(this.protectFundsModalBackBtn)
+    await Assert.isVisible(this.protectFundsModalMsg)
+    await Assert.isVisible(this.protectFundsModalTitle)
+    await this.tapIUnderstandBtn()
   }
 }
 export default new NewRecoveryPhrasePage()

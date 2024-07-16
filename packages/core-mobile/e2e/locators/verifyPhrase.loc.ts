@@ -5,5 +5,6 @@ export default {
   secondWord: 'check_mnemonic__second_word',
   thirdWord: 'check_mnemonic__third_word',
   instructions: 'check_mnemonic__instructions',
-  title: 'check_mnemonic__title'
+  title: 'check_mnemonic__title',
+  selectAllWords: 'Select all words'
 }
