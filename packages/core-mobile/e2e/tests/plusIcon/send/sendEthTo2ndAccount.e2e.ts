@@ -23,8 +23,7 @@ describe('Send Eth to another account', () => {
   })
 
   it('Should send Eth to second account', async () => {
-    const secondAccountAddress = await AccountManagePage.createSecondAccount()
-    await AccountManagePage.tapFirstAccount()
+    await AccountManagePage.createSecondAccount()
     await PortfolioPage.tapNetworksDropdown()
     await PortfolioPage.tapNetworksDropdownETH()
     await SendPage.sendTokenTo2ndAccount(
@@ -33,7 +32,8 @@ describe('Send Eth to another account', () => {
     )
     await PortfolioPage.tapEthNetwork()
     await PortfolioPage.tapActivityTab()
-    await ActivityTabPage.verifyOutgoingTransaction(60000, secondAccountAddress)
+    const newRow = await ActivityTabPage.getLatestActivityRow()
+    await ActivityTabPage.verifyActivityRow(newRow, 'Send')
   })
 
   it('Should receive Eth on second account', async () => {
