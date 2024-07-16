@@ -43,6 +43,10 @@ class WatchListPage {
     return by.id(watchlist.enterWalletBtn)
   }
 
+  get searchBar() {
+    return by.id(watchlist.searchBar)
+  }
+
   async tapAlreadyHaveAWalletBtn() {
     await Action.tap(this.alreadyHaveAWalletBtn)
   }
@@ -88,6 +92,21 @@ class WatchListPage {
   async verifyWatchlistElements() {
     await device.captureViewHierarchy()
     await Assert.isVisible(this.recoverWalletBtn)
+  }
+
+  async verifyFavorites(tokens: string[]) {
+    for (const token of tokens) {
+      await Assert.isVisible(by.id(`watchlist_item__${token.toLowerCase()}`))
+    }
+  }
+
+  async setWatchListToken(tokenSymbol: string) {
+    await Action.setInputText(this.searchBar, tokenSymbol)
+  }
+
+  async clearSearchBar() {
+    await Action.tap(this.searchBar)
+    await Action.tap(by.text('Cancel'))
   }
 }
 
