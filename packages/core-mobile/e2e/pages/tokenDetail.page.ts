@@ -75,7 +75,7 @@ class TokenDetailsPage {
   }
 
   async tapFavorite() {
-    await Action.tapElementAtIndex(this.favorite, 1)
+    await Action.tapElementAtIndex(this.favorite, 0)
   }
 
   async tapBackButton() {

@@ -55,7 +55,7 @@ const AnalyticsConsent = ({ title, onDone }: Props): JSX.Element => {
           </>
         )}
         <Space y={24} />
-        <Text variant="body1">
+        <Text testID="anlaysticsContent" variant="body1">
           As a Core user, you have the option to opt-in for{' '}
           <Text variant="body1" sx={{ fontWeight: '700' }}>
             airdrop rewards
@@ -64,7 +64,7 @@ const AnalyticsConsent = ({ title, onDone }: Props): JSX.Element => {
           interaction data to power this feature.
         </Text>
         <Space y={16} />
-        <Text variant="body1">
+        <Text testID="anlaysticsContent" variant="body1">
           Core is committed to protecting your privacy. We will{' '}
           <Text variant="body1" sx={{ fontWeight: '700' }}>
             never

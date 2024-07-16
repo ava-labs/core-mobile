@@ -43,6 +43,7 @@ const WatchlistCarousel: FC<Props> = () => {
     const token = item.item
     return (
       <CarouselItem
+        testID={`watchlist_carousel__${token.symbol}`}
         token={token}
         onPress={() => {
           navigation.navigate(AppNavigation.Wallet.TokenDetail, {
@@ -101,9 +102,10 @@ const Separator = (): JSX.Element => <View style={{ margin: 4 }} />
 interface CarouselItemProps {
   token: MarketToken
   onPress: () => void
+  testID: string
 }
 
-const CarouselItem: FC<CarouselItemProps> = ({ token, onPress }) => {
+const CarouselItem: FC<CarouselItemProps> = ({ token, onPress, testID }) => {
   const { theme } = useTheme()
 
   return (
@@ -118,7 +120,9 @@ const CarouselItem: FC<CarouselItemProps> = ({ token, onPress }) => {
         size={24}
       />
       <Space y={4} />
-      <Text variant="buttonSmall">{token?.symbol?.toUpperCase()}</Text>
+      <Text variant="buttonSmall" testID={testID}>
+        {token?.symbol?.toUpperCase()}
+      </Text>
       <Space y={8} />
       <PriceChangeIndicator
         price={token?.currentPrice ?? 0}
