@@ -1,4 +1,6 @@
 export default {
   noThanksBtn: 'No Thanks',
-  iAgreeBtn: 'I Agree'
+  unlockBtn: 'Unlock',
+  analysticsTitle: 'Unlock Airdrops',
+  analysticsContentId: 'anlaysticsContent'
 }
