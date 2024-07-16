@@ -5,7 +5,7 @@ import {
   NetworkTokenWithBalance,
   TokenType,
   TokenWithBalanceERC20
-} from 'store/balance'
+} from 'store/balance/types'
 import { Network, NetworkVMType } from '@avalabs/chains-sdk'
 import {
   SimpleTokenPriceResponse,

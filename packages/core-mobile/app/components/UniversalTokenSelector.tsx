@@ -1,6 +1,6 @@
 import React, { FC, useCallback, useMemo } from 'react'
 import { Pressable, StyleSheet, View } from 'react-native'
-import { TokenWithBalance } from 'store/balance'
+import { TokenWithBalance } from 'store/balance/types'
 import { AssetBalance } from 'screens/bridge/utils/types'
 import BN from 'bn.js'
 import { bnToBig } from '@avalabs/utils-sdk'

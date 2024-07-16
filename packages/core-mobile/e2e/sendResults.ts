@@ -1,11 +1,11 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 // @ts-nocheck comment at the top of the file
 /* eslint-disable no-var */
 // import * as fs from 'fs'
 import {
   getTestCaseId,
   api,
-  createNewTestSectionsAndCases
+  createNewTestSectionsAndCases,
+  getTestCasesFromRun
 } from './generateTestrailObjects'
 import getTestLogs, { isResultPresent } from './getResultsFromLogs'
 const fs = require('fs')
@@ -150,78 +150,64 @@ export async function isResultExistsInTestrail(runID: number, caseId: number) {
 // Updates the results for an existing test run or an empty test run
 // eslint-disable-next-line max-params
 async function generatePlatformResults(
-  testCasesToSend: any,
+  testCasesToSend: [],
   resultsToSendToTestrail: [],
   platform: string,
   runId?: number
 ) {
   try {
     var resultArray = resultsToSendToTestrail
-    // Gets the existing test cases in the test run
-    // const existingTestCases = await getTestCasesFromRun(runId)
-    // Adds the existing test case results to the results array so they are not overwritten in testrail when using the updateRun endpoint
-    // resultArray = resultArray.concat(existingTestCases)
-    // Add already existing test cases to the testCasesToSend array
-    // Takes the array of test cases and adds them to the test run
+    if (platform === 'android') {
+      // Gets the existing test cases in the test run
+      const existingTestCases = await getTestCasesFromRun(runId)
+      // Adds the existing test case results to the results array so they are not overwritten in testrail when using the updateRun endpoint
+      resultArray = resultArray.concat(existingTestCases)
+      resultArray.forEach(testCase => {
+        testCasesToSend.case_ids.push(testCase.case_id)
+      })
+    }
+    console.log('The test cases to send are ' + JSON.stringify(testCasesToSend))
     await api.updateRun(Number(runId), testCasesToSend)
   } catch (TestRailException) {
     console.log(
       'Invalid test case ids found in ' +
         testCasesToSend.case_ids +
         ' with run id ' +
-        Number(runId)
+        Number(runId) +
+        TestRailException
     )
   }
 
-  const testResults = []
-  const failedTests = []
   for (let i = 0; i < resultArray.length; i++) {
     const resultObject = resultArray[i]
     const statusId = Number(resultObject?.status_id)
     const comment = `Test case result for ${resultObject?.case_id} and has a status of ${statusId} for ${platform}`
-    const testName = resultObject?.test_name
     const screenshot = resultObject?.screenshot
+    const alreadyposted = resultObject.alreadyposted
 
-    const failedTest = {
-      case_id: resultObject?.case_id,
-      status_id: statusId,
-      comment: comment,
-      test_name: testName,
-      screenshot: screenshot
-    }
-
-    if (statusId === 5) {
-      failedTests.push(failedTest)
-    }
-
-    const testResult = {
-      case_id: resultObject?.case_id,
-      status_id: statusId,
-      comment: comment
-    }
-    testResults.push(testResult)
-  }
-
-  // Send the results to testrail
-  await api.addResultsForCases(Number(runId), {
-    results: testResults
-  })
-
-  // Adds the screenshot to the test case in testrail if the test failed
-  for (let i = 0; i < failedTests.length; i++) {
-    if (failedTests[i].status_id === 5 && failedTests[i].screenshot) {
-      // This is the path to the screenshot for when the test fails
-      const failScreenshot = path.resolve(
-        `./e2e/artifacts/${platform}/${failedTests[i].screenshot}`
+    try {
+      const resultResp = await api.addResultForCase(
+        runId,
+        resultObject.case_id,
+        {
+          status_id: statusId,
+          comment: comment
+        }
       )
-      if (failScreenshot) {
+      const resultID = resultResp.id
+      if (statusId === 5 && !alreadyposted) {
+        const failedScreenshot = path.resolve(
+          `./e2e/artifacts/${platform}/${screenshot}`
+        )
         const failedPayload = {
           name: 'failed.png',
-          value: await fs.createReadStream(failScreenshot)
+          value: fs.createReadStream(failedScreenshot)
         }
         // Attaches the screenshot to the corressponding case in the test run
-        await api.addAttachmentToCase(failedTests[i].case_id, failedPayload)
+        await api.addAttachmentToResult(resultID, failedPayload)
       }
+    } catch (TestRailException) {
+      console.log(TestRailException + ' this is the error')
     }
   }
 }

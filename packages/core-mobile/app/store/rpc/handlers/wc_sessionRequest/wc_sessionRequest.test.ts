@@ -1,17 +1,17 @@
-import { ethErrors } from 'eth-rpc-errors'
+import { rpcErrors } from '@metamask/rpc-errors'
 import { RpcMethod, RpcProvider } from 'store/rpc/types'
 import mockNetworks from 'tests/fixtures/networks.json'
 import AppNavigation from 'navigation/AppNavigation'
 import * as Navigation from 'utils/Navigation'
 import { ProposalTypes } from '@walletconnect/types'
 import { WCSessionProposal } from 'store/walletConnectV2/types'
-import { selectIsBlockaidDappScanBlocked } from 'store/posthog'
+import { selectIsBlockaidDappScanBlocked } from 'store/posthog/slice'
 import BlockaidService from 'services/blockaid/BlockaidService'
 import { SiteScanResponse } from 'services/blockaid/types'
 import { wcSessionRequestHandler as handler } from './wc_sessionRequest'
 
-jest.mock('store/network', () => {
-  const actual = jest.requireActual('store/network')
+jest.mock('store/network/slice', () => {
+  const actual = jest.requireActual('store/network/slice')
   return {
     ...actual,
     selectAllNetworks: () => mockNetworks,
@@ -20,8 +20,8 @@ jest.mock('store/network', () => {
   }
 })
 
-jest.mock('store/posthog', () => {
-  const actual = jest.requireActual('store/posthog')
+jest.mock('store/posthog/slice', () => {
+  const actual = jest.requireActual('store/posthog/slice')
   return {
     ...actual,
     selectIsBlockaidDappScanBlocked: jest.fn()
@@ -135,7 +135,7 @@ const testApproveInvalidData = async (data: unknown) => {
 
   expect(result).toEqual({
     success: false,
-    error: ethErrors.rpc.internal('Invalid approve data')
+    error: rpcErrors.internal('Invalid approve data')
   })
 }
 
@@ -164,9 +164,7 @@ describe('session_request handler', () => {
 
       expect(result).toEqual({
         success: false,
-        error: ethErrors.rpc.invalidParams({
-          message: 'Only eip155 namespace is supported'
-        })
+        error: rpcErrors.invalidParams('Only eip155 namespace is supported')
       })
     })
 
@@ -184,9 +182,7 @@ describe('session_request handler', () => {
 
       expect(result).toEqual({
         success: false,
-        error: ethErrors.rpc.invalidParams({
-          message: `Networks not specified`
-        })
+        error: rpcErrors.invalidParams('Networks not specified')
       })
     })
 
@@ -204,9 +200,9 @@ describe('session_request handler', () => {
 
       expect(result).toEqual({
         success: false,
-        error: ethErrors.rpc.invalidParams({
-          message: 'Requested network eip155:4311322 is not supported'
-        })
+        error: rpcErrors.invalidParams(
+          'Requested network eip155:4311322 is not supported'
+        )
       })
     })
 
@@ -224,9 +220,9 @@ describe('session_request handler', () => {
 
       expect(result).toEqual({
         success: false,
-        error: ethErrors.rpc.invalidParams({
-          message: 'Requested network eip155:4503599627370475 is not supported'
-        })
+        error: rpcErrors.invalidParams(
+          'Requested network eip155:4503599627370475 is not supported'
+        )
       })
     })
 
@@ -241,7 +237,7 @@ describe('session_request handler', () => {
       const testRequest = createRequest(testRequiredNamespaces)
 
       jest
-        .spyOn(require('store/network'), 'selectActiveNetwork')
+        .spyOn(require('store/network/slice'), 'selectActiveNetwork')
         .mockReturnValueOnce(mockNetworks[4503599627370475])
 
       const mockRequest = jest.fn().mockResolvedValue({})
@@ -284,9 +280,7 @@ describe('session_request handler', () => {
 
       expect(result).toEqual({
         success: false,
-        error: ethErrors.rpc.invalidParams({
-          message: `Requested method is not authorized`
-        })
+        error: rpcErrors.invalidParams('Requested method is not authorized')
       })
     })
 
@@ -306,7 +300,7 @@ describe('session_request handler', () => {
       expect(result).toEqual({ success: true, value: expect.any(Symbol) })
     })
 
-    it('should navigate to malicious activity warning screen when dApp scan result is malicous', async () => {
+    it('should navigate to malicious activity warning screen when dApp scan result is malicious', async () => {
       mockIsBlockaidDappScanBlocked.mockReturnValue(false)
       jest
         .spyOn(BlockaidService, 'scanSite')
@@ -321,15 +315,17 @@ describe('session_request handler', () => {
         params: {
           screen: AppNavigation.Modal.MaliciousActivityWarning,
           params: {
-            activityType: 'SessionProposal',
-            request: testRequest,
-            onProceed: expect.any(Function)
+            title: 'Scam\nApplication',
+            subTitle: 'This application is malicious, do not proceed.',
+            rejectButtonTitle: 'Reject Connection',
+            onProceed: expect.any(Function),
+            onReject: expect.any(Function)
           }
         }
       })
     })
 
-    it('should navigate to session proposal screen when dApp scan result is not malicous', async () => {
+    it('should navigate to session proposal screen when dApp scan result is not malicious', async () => {
       mockIsBlockaidDappScanBlocked.mockReturnValue(false)
       const scanResponse = {
         ...scanDappMaliciousResponse,

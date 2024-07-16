@@ -5,5 +5,6 @@ export default {
   amount: 'review_and_send__amount',
   sendTokenPending: 'Send Pending...',
   sendSuccessful: 'Send Successful',
+  transactionSuccessful: 'Transaction Successful',
   sendFailed: 'send_token_context__send_failed_toast'
 }

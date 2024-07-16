@@ -11,7 +11,7 @@ import {
   PortfolioScreenProps
 } from 'navigation/types'
 import { UI, useIsUIDisabled } from 'hooks/useIsUIDisabled'
-import { LocalTokenWithBalance } from 'store/balance'
+import { LocalTokenWithBalance } from 'store/balance/types'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { getSelectedToken } from 'utils/getSelectedToken'
 import TabViewAva from 'components/TabViewAva'

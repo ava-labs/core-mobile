@@ -1,6 +1,7 @@
+import { RpcError } from '@avalabs/vm-module-types'
 import { AppListenerEffectAPI } from 'store'
 import { Result } from 'types/result'
-import { Request, RpcMethod, RpcError } from '../types'
+import { Request, RpcMethod } from '../types'
 
 export type HandleResponse<Response = unknown> = Promise<
   Result<symbol | Response, RpcError>

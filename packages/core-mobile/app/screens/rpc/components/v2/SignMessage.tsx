@@ -143,13 +143,24 @@ const SignMessage = (): JSX.Element | null => {
         onReject={rejectAndClose}>
         <ScrollView contentContainerStyle={styles.scrollView}>
           <AvaText.LargeTitleBold>Sign Message</AvaText.LargeTitleBold>
-          {(validationResultType === 'Malicious' ||
-            validationResultType === 'Warning') && (
+          {/*TODO remove the hard coded logic and use the validation result from evm module*/}
+          {validationResultType === 'Malicious' && (
             <>
               <Space y={30} />
               <MaliciousActivityWarning
-                activity={'Transaction'}
-                result={validationResultType}
+                result={'malicious'}
+                title={'Scam Transaction'}
+                subTitle={'This transaction is malicious, do not proceed.'}
+              />
+            </>
+          )}
+          {validationResultType === 'Warning' && (
+            <>
+              <Space y={30} />
+              <MaliciousActivityWarning
+                result={'warning'}
+                title={'Suspicious Transaction'}
+                subTitle={'Use caution, this transaction may be malicious.'}
               />
             </>
           )}

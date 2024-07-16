@@ -2,7 +2,7 @@ import { AppListenerEffectAPI } from 'store/index'
 import { RpcMethod } from 'store/rpc/types'
 import * as Navigation from 'utils/Navigation'
 import AppNavigation from 'navigation/AppNavigation'
-import { ethErrors } from 'eth-rpc-errors'
+import { rpcErrors } from '@metamask/rpc-errors'
 import Logger from 'utils/Logger'
 import WalletService from 'services/wallet/WalletService'
 import * as Sentry from '@sentry/react-native'
@@ -11,9 +11,9 @@ import {
   AvalancheSignMessageResult,
   AvalancheSignMessageRpcRequest
 } from 'store/rpc/handlers/avalanche_signMessage/types'
-import { selectActiveAccount } from 'store/account'
+import { selectActiveAccount } from 'store/account/slice'
 import NetworkService from 'services/network/NetworkService'
-import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { selectIsDeveloperMode } from 'store/settings/advanced/slice'
 import {
   ApproveResponse,
   DEFERRED_RESULT,
@@ -46,9 +46,7 @@ class AvalancheSignMessageHandler
     if (!parseResult.success) {
       return {
         success: false,
-        error: ethErrors.rpc.invalidParams({
-          message: 'avalanche_signMessage param is invalid'
-        })
+        error: rpcErrors.invalidParams('avalanche_signMessage param is invalid')
       }
     }
     const [message, accountIndex] = parseResult.data
@@ -100,7 +98,7 @@ class AvalancheSignMessageHandler
       return { success: true, value: encodedMessage }
     } catch (e) {
       Logger.error('Failed to sign message', e)
-      const error = ethErrors.rpc.internal<string>('Unable to sign message')
+      const error = rpcErrors.internal('Unable to sign message')
       Sentry.captureException(e, { tags: { dapps: 'avalancheSignMessage' } })
       return {
         success: false,

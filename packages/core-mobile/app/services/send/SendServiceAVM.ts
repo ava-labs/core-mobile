@@ -6,7 +6,7 @@ import {
   ValidateStateAndCalculateFeesParams
 } from 'services/send/types'
 import { Network } from '@avalabs/chains-sdk'
-import { TokenType } from 'store/balance'
+import { TokenType } from 'store/balance/types'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import WalletService from 'services/wallet/WalletService'
 import { Avax } from 'types'

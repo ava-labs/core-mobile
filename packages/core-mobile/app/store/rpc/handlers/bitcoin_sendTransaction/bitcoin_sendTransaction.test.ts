@@ -1,4 +1,4 @@
-import { ethErrors } from 'eth-rpc-errors'
+import { rpcErrors } from '@metamask/rpc-errors'
 import { RpcMethod, RpcProvider, RpcRequest } from 'store/rpc/types'
 import mockSession from 'tests/fixtures/walletConnect/session.json'
 import mockAccounts from 'tests/fixtures/accounts.json'
@@ -138,9 +138,7 @@ const testHandleInvalidParams = async (params: unknown) => {
 
   expect(result).toEqual({
     success: false,
-    error: ethErrors.rpc.invalidParams({
-      message: 'Missing mandatory param(s)'
-    })
+    error: rpcErrors.invalidParams('Missing mandatory param(s)')
   })
 }
 
@@ -220,7 +218,7 @@ describe('bitcoin_sendTransaction', () => {
       const result = await handler.handle(testRequest, mockListenerApi)
       expect(result).toEqual({
         success: false,
-        error: ethErrors.rpc.internal('Not a valid address.')
+        error: rpcErrors.internal('Not a valid address.')
       })
     })
 
@@ -230,7 +228,7 @@ describe('bitcoin_sendTransaction', () => {
       const result = await handler.handle(testRequest, mockListenerApi)
       expect(result).toEqual({
         success: false,
-        error: ethErrors.rpc.internal('No active account found')
+        error: rpcErrors.internal('No active account found')
       })
     })
     it('should return error if no btc address', async () => {
@@ -239,7 +237,7 @@ describe('bitcoin_sendTransaction', () => {
       const result = await handler.handle(testRequest, mockListenerApi)
       expect(result).toEqual({
         success: false,
-        error: ethErrors.rpc.internal(
+        error: rpcErrors.internal(
           'The active account does not support BTC transactions'
         )
       })
@@ -255,7 +253,7 @@ describe('bitcoin_sendTransaction', () => {
       const result = await handler.handle(testRequest, mockListenerApi)
       expect(result).toEqual({
         success: false,
-        error: ethErrors.rpc.internal('Transaction rejected.')
+        error: rpcErrors.internal('Transaction rejected.')
       })
     })
     it('should return error if canSubmit is false ', async () => {
@@ -266,7 +264,7 @@ describe('bitcoin_sendTransaction', () => {
       const result = await handler.handle(testRequest, mockListenerApi)
       expect(result).toEqual({
         success: false,
-        error: ethErrors.rpc.internal('Unable to construct the transaction.')
+        error: rpcErrors.internal('Unable to construct the transaction.')
       })
     })
   })
@@ -311,7 +309,7 @@ describe('bitcoin_sendTransaction', () => {
 
       expect(result).toEqual({
         success: false,
-        error: ethErrors.rpc.internal(
+        error: rpcErrors.internal(
           'The active account does not support BTC transactions'
         )
       })
@@ -332,7 +330,7 @@ describe('bitcoin_sendTransaction', () => {
 
       expect(result).toEqual({
         success: false,
-        error: ethErrors.rpc.internal('error')
+        error: rpcErrors.internal('error')
       })
     })
 
@@ -351,7 +349,7 @@ describe('bitcoin_sendTransaction', () => {
 
       expect(result).toEqual({
         success: false,
-        error: ethErrors.rpc.internal('error')
+        error: rpcErrors.internal('error')
       })
     })
 
@@ -370,7 +368,7 @@ describe('bitcoin_sendTransaction', () => {
 
       expect(result).toEqual({
         success: false,
-        error: ethErrors.rpc.internal('error')
+        error: rpcErrors.internal('error')
       })
     })
   })

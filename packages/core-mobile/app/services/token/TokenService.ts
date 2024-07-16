@@ -20,7 +20,7 @@ import {
   NetworkVMType
 } from '@avalabs/chains-sdk'
 import NetworkService from 'services/network/NetworkService'
-import { MarketToken } from 'store/watchlist'
+import { MarketToken } from 'store/watchlist/types'
 import xss from 'xss'
 import promiseWithTimeout, { TimeoutError } from 'utils/js/promiseWithTimeout'
 import { coingeckoProxyClient } from 'services/token/coingeckoProxyClient'

@@ -1,6 +1,6 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
-import { selectBalanceTotalInCurrencyForNetworkAndAccount } from 'store/balance'
+import { selectBalanceTotalInCurrencyForNetworkAndAccount } from 'store/balance/slice'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import Separator from 'components/Separator'
 import AppNavigation from 'navigation/AppNavigation'

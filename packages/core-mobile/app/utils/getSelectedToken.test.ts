@@ -1,5 +1,5 @@
 import mockTokenWithBalance from 'tests/fixtures/tokenWithBalance.json'
-import { LocalTokenWithBalance } from 'store/balance'
+import { LocalTokenWithBalance } from 'store/balance/types'
 import { getSelectedToken } from './getSelectedToken'
 
 describe('getSelectedToken function', () => {

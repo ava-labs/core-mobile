@@ -54,8 +54,8 @@ const mockSelectIsDeveloperMode = selectIsDeveloperMode as jest.Mock<
 >
 
 const mockSelectNetwork = jest.fn()
-jest.mock('store/network', () => {
-  const actual = jest.requireActual('store/network')
+jest.mock('store/network/slice', () => {
+  const actual = jest.requireActual('store/network/slice')
   return {
     ...actual,
     selectNetwork: () => mockSelectNetwork

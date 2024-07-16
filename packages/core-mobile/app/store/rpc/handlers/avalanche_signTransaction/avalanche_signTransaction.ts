@@ -9,10 +9,10 @@ import {
   utils,
   VM
 } from '@avalabs/avalanchejs'
-import { ethErrors } from 'eth-rpc-errors'
-import { selectActiveAccount } from 'store/account'
+import { rpcErrors } from '@metamask/rpc-errors'
+import { selectActiveAccount } from 'store/account/slice'
 import networkService from 'services/network/NetworkService'
-import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { selectIsDeveloperMode } from 'store/settings/advanced/slice'
 import walletService from 'services/wallet/WalletService'
 import { RpcMethod, RpcRequest } from 'store/rpc/types'
 import * as Sentry from '@sentry/react-native'
@@ -69,9 +69,7 @@ class AvalancheSignTransactionHandler
     if (!parseResult.success) {
       return {
         success: false,
-        error: ethErrors.rpc.invalidParams({
-          message: 'Missing mandatory param(s)'
-        })
+        error: rpcErrors.invalidParams('Missing mandatory param(s)')
       }
     }
     const { transactionHex, chainAlias } = parseResult.data
@@ -87,9 +85,7 @@ class AvalancheSignTransactionHandler
     if (!currentAddress) {
       return {
         success: false,
-        error: ethErrors.rpc.invalidRequest({
-          message: 'No active account found'
-        })
+        error: rpcErrors.invalidRequest('No active account found')
       }
     }
 
@@ -147,9 +143,7 @@ class AvalancheSignTransactionHandler
     if (!signerAddress) {
       return {
         success: false,
-        error: ethErrors.rpc.invalidRequest({
-          message: 'Missing signer address'
-        })
+        error: rpcErrors.invalidRequest('Missing signer address')
       }
     }
 
@@ -159,9 +153,7 @@ class AvalancheSignTransactionHandler
     if (!ownSignatureIndices) {
       return {
         success: false,
-        error: ethErrors.rpc.invalidRequest({
-          message: 'This account has nothing to sign'
-        })
+        error: rpcErrors.invalidRequest('This account has nothing to sign')
       }
     }
 
@@ -173,9 +165,7 @@ class AvalancheSignTransactionHandler
     if (!needsToSign) {
       return {
         success: false,
-        error: ethErrors.rpc.invalidRequest({
-          message: 'This account has nothing to sign'
-        })
+        error: rpcErrors.invalidRequest('This account has nothing to sign')
       }
     }
 
@@ -189,9 +179,9 @@ class AvalancheSignTransactionHandler
     if (txData.type === 'unknown') {
       return {
         success: false,
-        error: ethErrors.rpc.invalidParams({
-          message: 'Unable to parse transaction data. Unsupported tx type'
-        })
+        error: rpcErrors.invalidParams(
+          'Unable to parse transaction data. Unsupported tx type'
+        )
       }
     }
 
@@ -234,13 +224,13 @@ class AvalancheSignTransactionHandler
       }
 
       const unsignedTx = UnsignedTx.fromJSON(unsignedTxJson)
-      const signedTransactionJson = await walletService.sign(
-        {
+      const signedTransactionJson = await walletService.sign({
+        transaction: {
           tx: unsignedTx
         },
-        activeAccount.index,
-        networkService.getAvalancheNetworkXP(isDevMode)
-      )
+        accountIndex: activeAccount.index,
+        network: networkService.getAvalancheNetworkXP(isDevMode)
+      })
 
       const signedTransaction = UnsignedTx.fromJSON(signedTransactionJson)
       const credentials = signedTransaction.getCredentials()
@@ -317,9 +307,7 @@ class AvalancheSignTransactionHandler
 
       return {
         success: false,
-        error: ethErrors.rpc.internal({
-          message
-        })
+        error: rpcErrors.internal(message)
       }
     }
   }

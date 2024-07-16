@@ -1,4 +1,4 @@
-import { ethErrors } from 'eth-rpc-errors'
+import { rpcErrors } from '@metamask/rpc-errors'
 import {
   UnsignedTx,
   EVMUnsignedTx,
@@ -144,9 +144,7 @@ describe('app/store/walletConnectV2/handlers/avalanche_sendTransaction/avalanche
 
       expect(result).toEqual({
         success: false,
-        error: ethErrors.rpc.invalidParams({
-          message: 'Missing mandatory param(s)'
-        })
+        error: rpcErrors.invalidParams('Missing mandatory param(s)')
       })
     })
 
@@ -163,9 +161,7 @@ describe('app/store/walletConnectV2/handlers/avalanche_sendTransaction/avalanche
 
       expect(result).toEqual({
         success: false,
-        error: ethErrors.rpc.invalidParams({
-          message: 'Missing mandatory param(s)'
-        })
+        error: rpcErrors.invalidParams('Missing mandatory param(s)')
       })
     })
 
@@ -179,9 +175,7 @@ describe('app/store/walletConnectV2/handlers/avalanche_sendTransaction/avalanche
 
       expect(result).toEqual({
         success: false,
-        error: ethErrors.rpc.invalidRequest({
-          message: 'No active account found'
-        })
+        error: rpcErrors.invalidRequest('No active account found')
       })
     })
 
@@ -202,9 +196,9 @@ describe('app/store/walletConnectV2/handlers/avalanche_sendTransaction/avalanche
 
       expect(result).toEqual({
         success: false,
-        error: ethErrors.rpc.invalidParams({
-          message: 'Unable to parse transaction data. Unsupported tx type'
-        })
+        error: rpcErrors.invalidParams(
+          'Unable to parse transaction data. Unsupported tx type'
+        )
       })
     })
 
@@ -405,15 +399,15 @@ describe('app/store/walletConnectV2/handlers/avalanche_sendTransaction/avalanche
         },
         mockListenerApi
       )
-      expect(walletService.sign).toHaveBeenCalledWith(
-        {
+      expect(walletService.sign).toHaveBeenCalledWith({
+        network: 'network',
+        accountIndex: 0,
+        transaction: {
           tx: unsignedTxMock,
           externalIndices: undefined,
           internalIndices: undefined
-        },
-        0,
-        'network'
-      )
+        }
+      })
       expect(EVMUnsignedTx.fromJSON).toHaveBeenCalledWith(
         payloadMock.data.unsignedTxJson
       )
@@ -433,15 +427,15 @@ describe('app/store/walletConnectV2/handlers/avalanche_sendTransaction/avalanche
         payloadMock,
         mockListenerApi
       )
-      expect(walletService.sign).toHaveBeenCalledWith(
-        {
+      expect(walletService.sign).toHaveBeenCalledWith({
+        network: 'network',
+        accountIndex: 0,
+        transaction: {
           tx: unsignedTxMock,
           externalIndices: undefined,
           internalIndices: undefined
-        },
-        0,
-        'network'
-      )
+        }
+      })
       expect(UnsignedTx.fromJSON).toHaveBeenCalledWith(
         payloadMock.data.unsignedTxJson
       )
@@ -471,15 +465,15 @@ describe('app/store/walletConnectV2/handlers/avalanche_sendTransaction/avalanche
         mockListenerApi
       )
 
-      expect(walletService.sign).toHaveBeenCalledWith(
-        {
+      expect(walletService.sign).toHaveBeenCalledWith({
+        network: 'network',
+        accountIndex: 0,
+        transaction: {
           tx: unsignedTxMock,
           externalIndices: [0, 1],
           internalIndices: [2, 3]
-        },
-        0,
-        'network'
-      )
+        }
+      })
       expect(UnsignedTx.fromJSON).toHaveBeenCalledWith(
         payloadMock.data.unsignedTxJson
       )

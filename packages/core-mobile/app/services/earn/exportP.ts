@@ -38,11 +38,11 @@ export async function exportP({
     destinationAddress: activeAccount.addressCoreEth
   })
 
-  const signedTxJson = await WalletService.sign(
-    { tx: unsignedTx } as AvalancheTransactionRequest,
-    activeAccount.index,
-    avaxXPNetwork
-  )
+  const signedTxJson = await WalletService.sign({
+    transaction: { tx: unsignedTx } as AvalancheTransactionRequest,
+    accountIndex: activeAccount.index,
+    network: avaxXPNetwork
+  })
   const signedTx = UnsignedTx.fromJSON(signedTxJson).getSignedTx()
 
   const txID = await NetworkService.sendTransaction({

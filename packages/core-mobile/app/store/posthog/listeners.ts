@@ -1,6 +1,6 @@
 import { Action, isAnyOf } from '@reduxjs/toolkit'
 import { AppStartListening } from 'store/middleware/listener'
-import { onLogIn, onLogOut, onRehydrationComplete } from 'store/app'
+import { onLogIn, onLogOut, onRehydrationComplete } from 'store/app/slice'
 import {
   regenerateUserId,
   selectDistinctID,
@@ -70,7 +70,6 @@ const onSetFeatureFlags = async (
   const state = listenerApi.getState()
 
   const isLogErrorsWithSentryBlocked = selectIsLogErrorsWithSentryBlocked(state)
-
   Logger.setShouldLogErrorToSentry(!isLogErrorsWithSentryBlocked)
 }
 

@@ -18,7 +18,7 @@ import {
   getMaxTransferAmount
 } from '@avalabs/wallets-sdk'
 import { useSelector } from 'react-redux'
-import { selectTokensWithBalanceByNetwork } from 'store/balance'
+import { selectTokensWithBalanceByNetwork } from 'store/balance/slice'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { VsCurrencyType } from '@avalabs/coingecko-sdk'
 import Logger from 'utils/Logger'

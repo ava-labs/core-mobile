@@ -1,8 +1,7 @@
 import { createAction, createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { RpcError } from '@avalabs/vm-module-types'
 import { RootState } from 'store/index'
-import { TransactionResponse } from 'ethers'
-import { Network } from '@avalabs/chains-sdk'
-import { Request, RequestStatus, RpcState, RpcError } from './types'
+import { Request, RequestStatus, RpcState } from './types'
 
 export const reducerName = 'rpc'
 
@@ -49,12 +48,6 @@ export const onRequestRejected = createAction<{
   request: Request
   error: RpcError
 }>(`${reducerName}/onRequestRejected`)
-
-export const waitForTransactionReceipt = createAction<{
-  txResponse: TransactionResponse
-  requestId: number
-  requestedNetwork?: Network
-}>(`${reducerName}/waitForTransactionReceipt`)
 
 export const onInAppRequestSucceeded = createAction<{
   requestId: number
