@@ -1,4 +1,4 @@
-import { ethErrors } from 'eth-rpc-errors'
+import { rpcErrors } from '@metamask/rpc-errors'
 import { RpcMethod, RpcProvider, RpcRequest } from 'store/rpc/types'
 import mockSession from 'tests/fixtures/walletConnect/session.json'
 import mockNetworks from 'tests/fixtures/networks.json'
@@ -46,9 +46,7 @@ describe('wallet_getEthereumChain handler', () => {
 
       expect(result).toEqual({
         success: false,
-        error: ethErrors.rpc.resourceUnavailable({
-          message: 'no active network'
-        })
+        error: rpcErrors.resourceUnavailable('no active network')
       })
     })
     it('should return success with response', async () => {

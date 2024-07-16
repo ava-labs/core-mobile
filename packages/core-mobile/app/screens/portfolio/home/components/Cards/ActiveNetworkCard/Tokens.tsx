@@ -1,5 +1,5 @@
 import React from 'react'
-import { TokenWithBalance } from 'store/balance'
+import { TokenWithBalance } from 'store/balance/types'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList'
 import Avatar from 'components/Avatar'

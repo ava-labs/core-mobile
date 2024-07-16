@@ -13,11 +13,11 @@ import { useDispatch, useSelector } from 'react-redux'
 import { Account } from 'store/account'
 import {
   fetchBalanceForAccount,
-  QueryStatus,
   selectBalanceStatus,
   selectBalanceTotalInCurrencyForAccount,
   selectIsBalanceLoadedForAddress
-} from 'store/balance'
+} from 'store/balance/slice'
+import { QueryStatus } from 'store/balance/types'
 import { truncateAddress } from 'utils/Utils'
 
 type Props = {

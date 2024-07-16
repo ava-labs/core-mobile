@@ -1,16 +1,9 @@
-import { AnyAction, isAnyOf } from '@reduxjs/toolkit'
+import { AnyAction } from '@reduxjs/toolkit'
 import { AppListenerEffectAPI } from 'store'
-import {
-  EthereumProviderError,
-  EthereumRpcError,
-  ethErrors
-} from 'eth-rpc-errors'
 import Logger from 'utils/Logger'
-import { onAppUnlocked, selectWalletState, WalletState } from 'store/app'
-import { onRequest, onRequestApproved, onRequestRejected } from '../slice'
-import { DEFERRED_RESULT } from '../handlers/types'
-import handlerMap from '../handlers'
-import providerMap from '../providers'
+import { DEFERRED_RESULT, RpcRequestHandler } from '../../handlers/types'
+import { AgnosticRpcProvider, Request } from '../../types'
+import { onRequestApproved, onRequestRejected } from '../../slice'
 
 // check if request is either onRequestApproved or onRequestRejected
 // and also if the request is the one we are waiting for
@@ -23,65 +16,19 @@ const isRequestApprovedOrRejected =
     return false
   }
 
-export const processRequest = async (
-  addRequestAction: ReturnType<typeof onRequest>,
+export const handleRequestInternally = async ({
+  rpcProvider,
+  request,
+  handler,
+  listenerApi
+}: {
+  rpcProvider: AgnosticRpcProvider
+  request: Request
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  handler: RpcRequestHandler<any, any, any, any>
   listenerApi: AppListenerEffectAPI
-): Promise<void> => {
-  const { take, condition } = listenerApi
-  const request = addRequestAction.payload
-  const method = request.method
-  const requestId = request.data.id
-  const handler = handlerMap.get(method)
-  const rpcProvider = providerMap.get(request.provider)
-  const state = listenerApi.getState()
-
-  if (selectWalletState(state) === WalletState.INACTIVE) {
-    // wait until app is unlocked
-    await condition(isAnyOf(onAppUnlocked))
-  }
-
-  Logger.info('processing request', {
-    method: request.method,
-    data: request.data
-  })
-
-  if (!rpcProvider) {
-    Logger.error(`RPC Provider ${request.provider} not supported`)
-
-    return
-  }
-
-  if (!handler) {
-    Logger.error(`RPC method ${method} not supported`)
-
-    rpcProvider.onError({
-      request,
-      error: ethErrors.rpc.methodNotSupported(),
-      listenerApi
-    })
-
-    return
-  }
-
-  try {
-    rpcProvider.validateRequest(request, listenerApi)
-  } catch (error) {
-    Logger.error('rpc request is invalid', error)
-
-    if (
-      error instanceof EthereumRpcError ||
-      error instanceof EthereumProviderError
-    ) {
-      rpcProvider.onError({
-        request,
-        error,
-        listenerApi
-      })
-
-      return
-    }
-  }
-
+}): Promise<void> => {
+  const { take } = listenerApi
   const handleResponse = await handler.handle(request, listenerApi)
 
   if (!handleResponse.success) {
@@ -105,6 +52,8 @@ export const processRequest = async (
   // result is DEFERRED_RESULT
   // this means we are displaying a prompt and are waiting for the user to approve
   Logger.info('asking user to approve request', request)
+
+  const requestId = request.data.id
   const [action] = await take(isRequestApprovedOrRejected(requestId))
 
   if (onRequestRejected.match(action)) {

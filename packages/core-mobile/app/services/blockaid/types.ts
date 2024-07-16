@@ -13,5 +13,4 @@ export type Asset =
 export type AssetDiff = Blockaid.AssetDiff
 export type GeneralAssetDiff = Blockaid.GeneralAssetDiff
 export type SiteScanResponse = Blockaid.SiteScanResponse
-export type MaliciousActivityType = 'Transaction' | 'SessionProposal'
 export type JsonRpcRequestData = Blockaid.Evm.JsonRpcScanParams.Data

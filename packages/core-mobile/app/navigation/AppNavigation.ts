@@ -190,6 +190,7 @@ enum ModalScreens {
   SwitchEthereumChainV2 = 'ModalScreens.SwitchEthereumChainV2',
   BridgeAssetV2 = 'ModalScreens.BridgeAssetV2',
   SignTransactionV2 = 'ModalScreens.SignTransactionV2',
+  ApprovalPopup = 'ModalScreens.ApprovalPopup',
   AvalancheSendTransactionV2 = 'ModalScreens.AvalancheSendTransactionV2',
   AvalancheSignTransactionV2 = 'ModalScreens.AvalancheSignTransactionV2',
   BitcoinSendTransaction = 'ModalScreens.BitcoinSendTransaction',

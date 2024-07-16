@@ -1,11 +1,14 @@
 import { useDispatch, useSelector } from 'react-redux'
 import { useIsFocused } from '@react-navigation/native'
 import { useState, useCallback } from 'react'
-import { selectActiveAccount } from 'store/account'
+import { selectActiveAccount } from 'store/account/slice'
 import { isAnyOf } from '@reduxjs/toolkit'
 import { addAppListener } from 'store/middleware/listener'
 import { useFocusEffect } from '@react-navigation/native'
-import { popBridgeTransaction, selectBridgeCriticalConfig } from 'store/bridge'
+import {
+  popBridgeTransaction,
+  selectBridgeCriticalConfig
+} from 'store/bridge/slice'
 import { selectIsLocked } from 'store/app/slice'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { useGetRecentsTransactionsQuery } from '../api'

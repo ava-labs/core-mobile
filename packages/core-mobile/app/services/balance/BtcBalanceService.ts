@@ -1,6 +1,6 @@
 import { satoshiToBtc } from '@avalabs/bridge-sdk'
 import { balanceToDisplayValue, bigToBN } from '@avalabs/utils-sdk'
-import { NetworkTokenWithBalance, TokenType } from 'store/balance'
+import { NetworkTokenWithBalance, TokenType } from 'store/balance/types'
 import { Network, NetworkVMType } from '@avalabs/chains-sdk'
 import { VsCurrencyType } from '@avalabs/coingecko-sdk'
 import {

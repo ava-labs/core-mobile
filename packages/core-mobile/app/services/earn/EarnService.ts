@@ -1,5 +1,5 @@
 import { getPvmApi } from 'utils/network/pvm'
-import { Account, AccountCollection } from 'store/account'
+import { Account, AccountCollection } from 'store/account/types'
 import { exportC } from 'services/earn/exportC'
 import { importP, importPWithBalanceCheck } from 'services/earn/importP'
 import Big from 'big.js'
@@ -236,11 +236,11 @@ class EarnService {
       isDevMode
     } as AddDelegatorProps)
 
-    const signedTxJson = await WalletService.sign(
-      { tx: unsignedTx } as AvalancheTransactionRequest,
-      activeAccount.index,
-      avaxXPNetwork
-    )
+    const signedTxJson = await WalletService.sign({
+      transaction: { tx: unsignedTx } as AvalancheTransactionRequest,
+      accountIndex: activeAccount.index,
+      network: avaxXPNetwork
+    })
     const signedTx = UnsignedTx.fromJSON(signedTxJson).getSignedTx()
 
     const txID = await NetworkService.sendTransaction({

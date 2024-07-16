@@ -5,7 +5,7 @@ import { BridgeTransactionStatusParams } from 'navigation/types'
 import { Row } from 'components/Row'
 import DropDown, { OptionsItemInfo } from 'components/Dropdown'
 import { Space } from 'components/Space'
-import { useGetRecentTransactions } from 'store/transaction'
+import { useGetRecentTransactions } from 'store/transaction/hooks'
 import { ActivityLoader } from './ActivityLoader'
 import Transactions from './Transactions'
 

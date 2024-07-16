@@ -3,9 +3,9 @@ import {
   TokenWithBalanceERC20,
   PTokenWithBalance,
   XTokenWithBalance
-} from 'store/balance'
+} from 'store/balance/types'
 import { Network } from '@avalabs/chains-sdk'
-import { Account } from 'store/account'
+import { Account } from 'store/account/types'
 import { getAddressByNetwork } from 'store/account/utils'
 import GlacierBalanceProvider from 'services/balance/GlacierBalanceService'
 import { BalanceServiceProvider } from 'services/balance/types'

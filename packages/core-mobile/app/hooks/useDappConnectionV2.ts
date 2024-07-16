@@ -1,4 +1,4 @@
-import { ethErrors } from 'eth-rpc-errors'
+import { rpcErrors, providerErrors } from '@metamask/rpc-errors'
 import { useCallback } from 'react'
 import { useDispatch } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
@@ -41,8 +41,8 @@ export const useDappConnectionV2 = (): {
         onRequestRejected({
           request,
           error: message
-            ? ethErrors.rpc.internal(message)
-            : ethErrors.provider.userRejectedRequest()
+            ? rpcErrors.internal(message)
+            : providerErrors.userRejectedRequest()
         })
       )
     },

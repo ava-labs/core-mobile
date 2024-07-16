@@ -31,6 +31,5 @@
     "<rootDir>/tests/network/addCustomNetwork.e2e.smoke.ts",
     "<rootDir>/tests/coreWebWCIntegration.e2e.smoke.ts",
     "<rootDir>/tests/network/addCustomToken.e2e.smoke.ts"
-
   ]
 }

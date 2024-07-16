@@ -1,4 +1,4 @@
-import { ethErrors } from 'eth-rpc-errors'
+import { rpcErrors, providerErrors } from '@metamask/rpc-errors'
 import { AppListenerEffectAPI } from 'store'
 import {
   selectActiveNetwork,
@@ -42,9 +42,7 @@ class WalletSwitchEthereumChainHandler
       Logger.error('invalid params', result.error)
       return {
         success: false,
-        error: ethErrors.rpc.invalidParams({
-          message: 'Chain ID is invalid'
-        })
+        error: rpcErrors.invalidParams('Chain ID is invalid')
       }
     }
 
@@ -77,7 +75,7 @@ class WalletSwitchEthereumChainHandler
     } else {
       return {
         success: false,
-        error: ethErrors.provider.custom({
+        error: providerErrors.custom({
           code: 4902, // To-be-standardized "unrecognized chain ID" error
           message: `Unrecognized chain ID "${targetChainID}". Try adding the chain using ${RpcMethod.WALLET_ADD_ETHEREUM_CHAIN} first.`
         })
@@ -99,7 +97,7 @@ class WalletSwitchEthereumChainHandler
     if (!result.success) {
       return {
         success: false,
-        error: ethErrors.rpc.internal('Invalid approve data')
+        error: rpcErrors.internal('Invalid approve data')
       }
     }
 

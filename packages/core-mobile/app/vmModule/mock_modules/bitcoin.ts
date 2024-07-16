@@ -2,6 +2,7 @@ import {
   GetTransactionHistory,
   Manifest,
   Module,
+  Network,
   NetworkContractToken,
   NetworkFees,
   RpcRequest,
@@ -9,6 +10,10 @@ import {
   TransactionHistoryResponse,
   parseManifest
 } from '@avalabs/vm-module-types'
+import {
+  JsonRpcError,
+  OptionalDataWithOptionalCause
+} from '@metamask/rpc-errors'
 import manifest from './bitcoin.manifest.json'
 
 export class BitcoinModule implements Module {
@@ -35,10 +40,14 @@ export class BitcoinModule implements Module {
   getAddress(): Promise<string> {
     return Promise.resolve('Bitcoin address')
   }
-  getTokens(_: number): Promise<NetworkContractToken[]> {
+  getTokens(_: Network): Promise<NetworkContractToken[]> {
     return Promise.resolve([])
   }
-  onRpcRequest(request: RpcRequest): Promise<RpcResponse<unknown, Error>> {
+  onRpcRequest(
+    request: RpcRequest
+  ): Promise<
+    RpcResponse<unknown, JsonRpcError<OptionalDataWithOptionalCause>>
+  > {
     throw new Error(`Method not implemented: ${request.method}`)
   }
 }

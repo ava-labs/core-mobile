@@ -8,8 +8,7 @@ import {
 import { BitcoinProvider, JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
 import { Network as EthersNetwork } from 'ethers'
 import Config from 'react-native-config'
-import { PollingConfig } from 'store/balance'
-import { Networks } from 'store/network'
+import { Networks } from 'store/network/types'
 import { addGlacierAPIKeyIfNeeded } from 'utils/network/glacier'
 
 const BITCOIN_NODE_PROXY_URL = `${Config.PROXY_URL}/proxy/nownodes/btc`
@@ -39,7 +38,7 @@ export function getEvmProvider(network: Network): JsonRpcBatchInternal {
     new EthersNetwork(network.chainName, network.chainId)
   )
 
-  provider.pollingInterval = PollingConfig.activeNetwork
+  provider.pollingInterval = 2000
 
   return provider
 }
