@@ -20,6 +20,7 @@
     "gen:glacierApi": "npx openapi-zod-client 'https://glacier-api-dev.avax.network/api-json' -o './app/utils/network/glacierApi.client.ts'"
   },
   "dependencies": {
+    "@avalabs/avalanche-module": "0.0.0-fixInternalDependencies-20240716212101",
     "@avalabs/avalanchejs": "4.0.5",
     "@avalabs/bridge-sdk": "v2.8.0-alpha.187",
     "@avalabs/bridge-unified": "2.1.1",
@@ -27,7 +28,7 @@
     "@avalabs/coingecko-sdk": "v2.8.0-alpha.187",
     "@avalabs/covalent-sdk": "v2.8.0-alpha.187",
     "@avalabs/etherscan-sdk": "v2.8.0-alpha.187",
-    "@avalabs/evm-module": "0.0.12",
+    "@avalabs/evm-module": "0.0.0-fixInternalDependencies-20240716212101",
     "@avalabs/glacier-sdk": "v2.8.0-alpha.187",
     "@avalabs/k2-mobile": "workspace:*",
     "@avalabs/paraswap-sdk": "v2.8.0-alpha.187",
@@ -35,7 +36,7 @@
     "@avalabs/token-prices-sdk": "v2.8.0-alpha.187",
     "@avalabs/types": "v2.8.0-alpha.187",
     "@avalabs/utils-sdk": "v2.8.0-alpha.187",
-    "@avalabs/vm-module-types": "0.0.12",
+    "@avalabs/vm-module-types": "0.0.0-fixInternalDependencies-20240716212101",
     "@avalabs/wallets-sdk": "v2.8.0-alpha.187",
     "@blockaid/client": "0.10.0",
     "@coinbase/cbpay-js": "1.6.0",
@@ -292,7 +293,10 @@
       "viem>ws>bufferutil": false,
       "viem>ws>utf-8-validate": false,
       "react-native-bootsplash>sharp": false,
-      "sharp": false
+      "sharp": false,
+      "@avalabs/evm-module": false,
+      "@avalabs/avalanche-module": false,
+      "@avalabs/vm-module-types": false
     }
   },
   "react-native": {
