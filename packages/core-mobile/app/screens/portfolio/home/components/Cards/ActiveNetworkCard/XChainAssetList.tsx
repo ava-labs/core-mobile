@@ -1,4 +1,3 @@
-import { XChainBalances } from '@avalabs/glacier-sdk'
 import { FlatList, Sx, Text, View } from '@avalabs/k2-mobile'
 import { Space } from 'components/Space'
 import { useApplicationContext } from 'contexts/ApplicationContext'
@@ -22,7 +21,7 @@ export const XChainAssetList = ({
   const { filteredTokenList: tokens } = useSearchableTokenList()
 
   const token = tokens.find(
-    t => 'unlocked' in (t.utxos as XChainBalances)
+    t => 'unlocked' in (t as XTokenWithBalance).utxos
   ) as XTokenWithBalance
 
   const tokenPrice = token.priceInCurrency
