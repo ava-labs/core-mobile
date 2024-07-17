@@ -46,9 +46,7 @@ describe('ModuleManager', () => {
           param.chainId,
           param.method
         )
-        expect(module?.getManifest()?.name.toLowerCase()).toContain(
-          param.name.toLowerCase()
-        )
+        expect(module?.getManifest()?.network.chainIds).toContain(param.chainId)
       })
     })
     it('should have thrown with incorrect chainId', async () => {

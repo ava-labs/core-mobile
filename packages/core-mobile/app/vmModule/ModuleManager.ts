@@ -1,8 +1,7 @@
-import { AVMModule } from 'vmModule/mock_modules/avm'
 import { BitcoinModule } from 'vmModule/mock_modules/bitcoin'
 import { CoreEthModule } from 'vmModule/mock_modules/coreEth'
 import { EvmModule } from '@avalabs/evm-module'
-import { PVMModule } from 'vmModule/mock_modules/pvm'
+import { AvalancheModule } from '@avalabs/avalanche-module'
 import Logger from 'utils/Logger'
 import { Environment, Module } from '@avalabs/vm-module-types'
 import { NetworkVMType, Network } from '@avalabs/chains-sdk'
@@ -35,15 +34,18 @@ class ModuleManager {
   init = async (): Promise<void> => {
     if (this.#modules !== undefined) return
 
+    const environment = isDev ? Environment.DEV : Environment.PRODUCTION
+
     this.modules = [
       new EvmModule({
-        environment: isDev ? Environment.DEV : Environment.PRODUCTION,
+        environment,
         approvalController
       }),
       new BitcoinModule(),
-      new AVMModule(),
-      new CoreEthModule(),
-      new PVMModule()
+      new AvalancheModule({
+        environment
+      }),
+      new CoreEthModule()
     ]
   }
 

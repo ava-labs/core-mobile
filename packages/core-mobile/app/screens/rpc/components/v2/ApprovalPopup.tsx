@@ -147,7 +147,7 @@ const ApprovalPopup = (): JSX.Element => {
   }
 
   const renderNetwork = (): JSX.Element => {
-    const { name, logoUrl } = displayData.network
+    const { name, logoUri } = displayData.network
 
     return (
       <View style={styles.fullWidthContainer}>
@@ -155,7 +155,7 @@ const ApprovalPopup = (): JSX.Element => {
           <Text variant="buttonMedium">Network:</Text>
           <Row style={{ alignItems: 'center' }}>
             <NetworkLogo
-              logoUri={logoUrl}
+              logoUri={logoUri}
               size={24}
               style={{ marginRight: 8 }}
             />

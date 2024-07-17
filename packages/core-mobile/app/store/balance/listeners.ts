@@ -11,9 +11,9 @@ import {
   selectActiveAccount,
   setAccounts,
   setActiveAccountIndex
-} from 'store/account/slice'
-import { onAppLocked, onAppUnlocked, onLogOut } from 'store/app/slice'
-import { addCustomToken } from 'store/customToken/slice'
+} from 'store/account'
+import { onAppLocked, onAppUnlocked, onLogOut } from 'store/app'
+import { addCustomToken, selectAllCustomTokens } from 'store/customToken'
 import { AppStartListening } from 'store/middleware/listener'
 import {
   onNetworksFetched,
@@ -162,16 +162,19 @@ const onBalanceUpdateCore = async ({
 
   // fetch all other network balances
   if (restNetworks.length > 0) {
+    const customTokens = selectAllCustomTokens(state)
     const inactiveNetworkPromises: Promise<BalancesForAccount>[] = []
 
     for (const n of restNetworks) {
       inactiveNetworkPromises.push(
         ...accounts.map(account => {
+          const customTokensByChainId = customTokens[n.chainId.toString()] ?? []
           return BalanceService.getBalancesForAccount({
             network: n,
             account,
             currency,
-            sentryTrx
+            sentryTrx,
+            customTokens: customTokensByChainId
           })
         })
       )
