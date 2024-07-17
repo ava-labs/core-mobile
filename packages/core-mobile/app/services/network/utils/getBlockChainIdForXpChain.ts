@@ -5,7 +5,7 @@ import { hashBlockchainId } from 'utils/hashBlockchainId'
 export function getBlockChainIdForXpChain(
   vmName: NetworkVMType,
   isTestnet?: boolean
-): string | undefined {
+): string {
   if (vmName === NetworkVMType.AVM) {
     return isTestnet
       ? hashBlockchainId({
@@ -18,11 +18,8 @@ export function getBlockChainIdForXpChain(
             BlockchainId._2O_YMBNV4E_NHYQK2FJJ_V5N_VQLDBTM_NJZQ5S3QS3LO6FTN_C6FBY_M
         })
   }
-  if (vmName === NetworkVMType.PVM) {
-    return hashBlockchainId({
-      blockchainId: BlockchainId._11111111111111111111111111111111LPO_YY,
-      isTestnet
-    })
-  }
-  return undefined
+  return hashBlockchainId({
+    blockchainId: BlockchainId._11111111111111111111111111111111LPO_YY,
+    isTestnet
+  })
 }
