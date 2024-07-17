@@ -5,7 +5,7 @@ import { Environment, Module } from '@avalabs/vm-module-types'
 import { NetworkVMType, Network } from '@avalabs/chains-sdk'
 import { assertNotUndefined } from 'utils/assertions'
 import { AvalancheModule } from '@avalabs/avalanche-module'
-import { getBlockChainIdForXpChain } from 'services/network/utils/getBlockChainIdForXpChain'
+import { BlockchainId } from '@avalabs/glacier-sdk'
 import { ModuleErrors, VmModuleErrors } from './errors'
 import { approvalController } from './ApprovalController'
 import { CoreEthModule } from './mock_modules/coreEth'
@@ -83,13 +83,29 @@ class ModuleManager {
         return `bip122:${network.chainId}`
       case NetworkVMType.PVM:
       case NetworkVMType.AVM:
-        return getBlockChainIdForXpChain(network.vmName, network.isTestnet)
+        return AvalancheModule.getHashedBlockchainId({
+          blockchainId: this.getBlockchainId(network.vmName, network.isTestnet),
+          isTestnet: network.isTestnet
+        })
       case NetworkVMType.EVM:
       case NetworkVMType.CoreEth:
         return `eip155:${network.chainId}`
       default:
         throw new Error('Unsupported network')
     }
+  }
+
+  // todo: remove this function once we have blockchainId in Network
+  private getBlockchainId = (
+    vmName: NetworkVMType,
+    isTestnet?: boolean
+  ): string => {
+    if (vmName === NetworkVMType.AVM) {
+      return isTestnet
+        ? BlockchainId._2JVSBOINJ9C2J33VNTVZ_YT_VJNZD_N2NKIWW_KJCUM_HUWEB5DB_BRM
+        : BlockchainId._2O_YMBNV4E_NHYQK2FJJ_V5N_VQLDBTM_NJZQ5S3QS3LO6FTN_C6FBY_M
+    }
+    return BlockchainId._11111111111111111111111111111111LPO_YY
   }
 
   private getModule = async (chainId: string): Promise<Module | undefined> => {

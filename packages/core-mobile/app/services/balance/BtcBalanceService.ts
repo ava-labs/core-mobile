@@ -17,7 +17,7 @@ import {
 
 export class BtcBalanceService implements BalanceServiceProvider {
   async isProviderFor(network: Network): Promise<boolean> {
-    return network.vmName.toLowerCase() === NetworkVMType.BITCOIN.toLowerCase()
+    return network.vmName === NetworkVMType.BITCOIN
   }
 
   async getBalances({
