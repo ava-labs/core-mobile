@@ -4,7 +4,7 @@ import Web3 from 'web3'
 import ERC20 from '@openzeppelin/contracts/build/contracts/ERC20.json'
 import { MaxUint256 } from 'ethers'
 import { AssetExposure, TokenType } from '@avalabs/vm-module-types'
-import BN from 'bn.js'
+import type BN from 'bn.js'
 
 export const useSpendLimits = (
   exposures: AssetExposure[]
