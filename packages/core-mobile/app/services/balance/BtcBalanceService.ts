@@ -1,6 +1,5 @@
 import { satoshiToBtc } from '@avalabs/bridge-sdk'
 import { balanceToDisplayValue, bigToBN } from '@avalabs/utils-sdk'
-import { NetworkTokenWithBalance, TokenType } from 'store/balance/types'
 import { Network, NetworkVMType } from '@avalabs/chains-sdk'
 import { VsCurrencyType } from '@avalabs/coingecko-sdk'
 import {
@@ -11,6 +10,10 @@ import NetworkService from 'services/network/NetworkService'
 import { BitcoinProvider, JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import TokenService from 'services/token/TokenService'
+import {
+  type NetworkTokenWithBalance,
+  TokenType
+} from '@avalabs/vm-module-types'
 
 export class BtcBalanceService implements BalanceServiceProvider {
   async isProviderFor(network: Network): Promise<boolean> {

@@ -16,7 +16,7 @@ export type OpName =
   | 'svc.balance.get_for_account'
   | 'svc.balance.get_for_address'
   | 'svc.balance.btc.get'
-  | 'svc.balance.evm.get'
+  | 'svc.balance.get'
   | 'svc.balance.glacier.get'
   | 'svc.network.send_transaction'
   | 'svc.nft.get_provider'

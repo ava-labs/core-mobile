@@ -10,11 +10,7 @@ import {
   ValidateStateAndCalculateFeesParams
 } from 'services/send/types'
 import { Network } from '@avalabs/chains-sdk'
-import {
-  NftTokenWithBalance,
-  TokenType,
-  TokenWithBalanceERC20
-} from 'store/balance/types'
+import { NftTokenWithBalance } from 'store/balance'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import Logger from 'utils/Logger'
 import {
@@ -23,6 +19,7 @@ import {
   ERC721__factory
 } from 'contracts/openzeppelin'
 import { getEvmProvider } from 'services/network/utils/providerUtils'
+import { TokenType, TokenWithBalanceERC20 } from '@avalabs/vm-module-types'
 
 export class SendServiceEVM implements SendServiceHelper {
   private readonly networkProvider: JsonRpcBatchInternal

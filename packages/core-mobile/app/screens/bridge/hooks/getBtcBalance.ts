@@ -1,15 +1,12 @@
 import balanceService from 'services/balance/BalanceService'
 import { BITCOIN_NETWORK, BITCOIN_TEST_NETWORK } from '@avalabs/chains-sdk'
-import {
-  NetworkTokenWithBalance,
-  TokenWithBalanceERC20
-} from 'store/balance/types'
+import type { TokenWithBalanceBTC } from '@avalabs/vm-module-types'
 
 export async function getBtcBalance(
   isMainnet: boolean,
   address: string,
   currency: string
-): Promise<NetworkTokenWithBalance | TokenWithBalanceERC20> {
+): Promise<TokenWithBalanceBTC> {
   const token = await balanceService.getBalancesForAddress({
     network: isMainnet ? BITCOIN_NETWORK : BITCOIN_TEST_NETWORK,
     address,
@@ -20,5 +17,5 @@ export async function getBtcBalance(
     return Promise.reject('No balances for address')
   }
 
-  return token[0] as NetworkTokenWithBalance | TokenWithBalanceERC20
+  return token[0] as TokenWithBalanceBTC
 }

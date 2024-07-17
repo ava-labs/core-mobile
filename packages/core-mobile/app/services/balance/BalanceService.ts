@@ -1,9 +1,4 @@
-import {
-  NetworkTokenWithBalance,
-  TokenWithBalanceERC20,
-  PTokenWithBalance,
-  XTokenWithBalance
-} from 'store/balance/types'
+import { PTokenWithBalance, XTokenWithBalance } from 'store/balance/types'
 import { Network } from '@avalabs/chains-sdk'
 import { Account } from 'store/account/types'
 import { getAddressByNetwork } from 'store/account/utils'
@@ -12,13 +7,17 @@ import { BalanceServiceProvider } from 'services/balance/types'
 import { findAsyncSequential } from 'utils/Utils'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { Transaction } from '@sentry/types'
+import type {
+  NetworkContractToken,
+  NetworkTokenWithBalance,
+  TokenWithBalanceERC20
+} from '@avalabs/vm-module-types'
+import ModuleManager from 'vmModule/ModuleManager'
 import BtcBalanceService from './BtcBalanceService'
-import EvmBalanceService from './EvmBalanceService'
 
 const balanceProviders: BalanceServiceProvider[] = [
   GlacierBalanceProvider,
-  BtcBalanceService,
-  EvmBalanceService
+  BtcBalanceService
 ]
 
 export type BalancesForAccount = {
@@ -38,17 +37,41 @@ export class BalanceService {
     network,
     account,
     currency,
-    sentryTrx
+    sentryTrx,
+    customTokens
   }: {
     network: Network
     account: Account
     currency: string
+    customTokens?: NetworkContractToken[]
     sentryTrx?: Transaction
   }): Promise<BalancesForAccount> {
     return SentryWrapper.createSpanFor(sentryTrx)
       .setContext('svc.balance.get_for_account')
       .executeAsync(async () => {
         const accountAddress = getAddressByNetwork(account, network)
+
+        if (network.vmName === 'EVM') {
+          const module = await ModuleManager.loadModuleByNetwork(network)
+          const balancesResponse = await SentryWrapper.createSpanFor(sentryTrx)
+            .setContext('svc.balance.get')
+            .executeAsync(async () => {
+              return await module.getBalances({
+                customTokens,
+                addresses: [accountAddress],
+                currency,
+                network
+              })
+            })
+          const balances = balancesResponse[accountAddress] ?? {}
+          return {
+            accountIndex: account.index,
+            chainId: network.chainId,
+            tokens: Object.values(balances),
+            accountAddress
+          }
+        }
+
         const balanceProvider = await findAsyncSequential(
           balanceProviders,
           value => value.isProviderFor(network)
@@ -63,7 +86,8 @@ export class BalanceService {
           network,
           accountAddress,
           currency,
-          sentryTrx
+          sentryTrx,
+          customTokens
         })
 
         return {

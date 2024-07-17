@@ -1,11 +1,11 @@
 import { Network } from '@avalabs/chains-sdk'
-import {
-  NetworkTokenWithBalance,
-  TokenWithBalanceERC20,
-  PTokenWithBalance,
-  XTokenWithBalance
-} from 'store/balance/types'
+import { PTokenWithBalance, XTokenWithBalance } from 'store/balance/types'
 import { Transaction } from '@sentry/types'
+import {
+  NetworkContractToken,
+  NetworkTokenWithBalance,
+  TokenWithBalanceERC20
+} from '@avalabs/vm-module-types'
 
 export type TokenAddress = string
 
@@ -13,6 +13,7 @@ export type GetBalancesParams = {
   network: Network
   accountAddress: string
   currency: string
+  customTokens?: NetworkContractToken[]
   sentryTrx?: Transaction
 }
 
@@ -23,7 +24,8 @@ export interface BalanceServiceProvider {
     network,
     accountAddress,
     currency,
-    sentryTrx
+    sentryTrx,
+    customTokens
   }: GetBalancesParams): Promise<
     (
       | NetworkTokenWithBalance

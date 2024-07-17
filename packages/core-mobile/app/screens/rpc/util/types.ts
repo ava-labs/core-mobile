@@ -1,8 +1,8 @@
 import BN from 'bn.js'
-import { TokenWithBalance } from 'store/balance/types'
 import { TransactionDescription } from 'ethers'
 import { NetworkTokenUnit } from 'types'
 import { PeerMeta } from 'store/rpc/types'
+import type { TokenWithBalance } from '@avalabs/vm-module-types'
 
 export interface TransactionDisplayValues {
   fromAddress?: string

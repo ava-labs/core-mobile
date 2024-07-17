@@ -6,11 +6,11 @@ import React, { useState } from 'react'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import FlexSpacer from 'components/FlexSpacer'
 import { Row } from 'components/Row'
-import { TokenWithBalanceERC20 } from 'store/balance/types'
 import { Checkbox } from 'components/Checkbox'
 import { BNInput } from 'components/BNInput'
 import BN from 'bn.js'
 import { PeerMeta } from 'store/rpc/types'
+import { TokenWithBalanceERC20 } from '@avalabs/vm-module-types'
 
 export enum Limit {
   DEFAULT = 'DEFAULT',

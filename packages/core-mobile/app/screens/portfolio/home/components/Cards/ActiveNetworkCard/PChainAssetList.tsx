@@ -1,4 +1,3 @@
-import { PChainBalance } from '@avalabs/glacier-sdk'
 import { FlatList, Sx, Text, View } from '@avalabs/k2-mobile'
 import { Space } from 'components/Space'
 import { useApplicationContext } from 'contexts/ApplicationContext'
@@ -24,7 +23,7 @@ export const PChainAssetList = ({
   const { filteredTokenList: tokens } = useSearchableTokenList()
 
   const token = tokens.find(
-    t => 'unlockedUnstaked' in (t.utxos as PChainBalance)
+    t => 'unlockedUnstaked' in (t as PTokenWithBalance).utxos
   ) as PTokenWithBalance
 
   const assetTypes = useMemo(() => {
