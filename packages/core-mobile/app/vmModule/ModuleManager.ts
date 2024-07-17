@@ -78,20 +78,15 @@ class ModuleManager {
   }
 
   convertChainIdToCaip2 = (network: Network): string => {
-    const xpBlockChainId = getBlockChainIdForXpChain(
-      network.vmName,
-      network.isTestnet ?? false
-    )
-    const chainId = xpBlockChainId ?? network.chainId
     switch (network.vmName) {
       case NetworkVMType.BITCOIN:
-        return `bip122:${chainId}`
+        return `bip122:${network.chainId}`
       case NetworkVMType.PVM:
       case NetworkVMType.AVM:
-        return network.isTestnet ? `avaxfuji:${chainId}` : `avax:${chainId}`
+        return getBlockChainIdForXpChain(network.vmName, network.isTestnet)
       case NetworkVMType.EVM:
       case NetworkVMType.CoreEth:
-        return `eip155:${chainId}`
+        return `eip155:${network.chainId}`
       default:
         throw new Error('Unsupported network')
     }
