@@ -18,7 +18,6 @@ export const formatUriImageToPng = (
 
 export const isContentfulImageUri = (uri: string): boolean => {
   const allowedHosts = ['images.ctfassets.net']
-  const allowedUrl = 'https://images.ctfassets.net'
   const host = url.parse(uri, false).host
-  return !!host && allowedHosts.includes(host) && uri.startsWith(allowedUrl)
+  return !!host && allowedHosts.includes(host)
 }
