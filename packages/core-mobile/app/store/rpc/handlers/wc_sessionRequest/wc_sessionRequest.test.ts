@@ -315,9 +315,14 @@ describe('session_request handler', () => {
         params: {
           screen: AppNavigation.Modal.MaliciousActivityWarning,
           params: {
-            title: 'Scam\nApplication',
-            subTitle: 'This application is malicious, do not proceed.',
-            rejectButtonTitle: 'Reject Connection',
+            warningDetails: {
+              title: 'Scam\nApplication',
+              description: 'This application is malicious, do not proceed.',
+              actionTitles: {
+                proceed: 'Proceed Anyway',
+                reject: 'Reject Connection'
+              }
+            },
             onProceed: expect.any(Function),
             onReject: expect.any(Function)
           }
