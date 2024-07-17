@@ -46,11 +46,7 @@ export class ActivityService {
     criticalConfig
   }: GetActivitiesForAccountParams): Promise<ActivityResponse> {
     const address = getAddressByNetwork(account, network)
-    if (
-      network.vmName === NetworkVMType.EVM ||
-      network.vmName === NetworkVMType.PVM ||
-      network.vmName === NetworkVMType.AVM
-    ) {
+    if (network.vmName === NetworkVMType.EVM) {
       try {
         const module = await ModuleManager.loadModuleByNetwork(network)
         // todo: remove if statement once all modules are implmeneted
