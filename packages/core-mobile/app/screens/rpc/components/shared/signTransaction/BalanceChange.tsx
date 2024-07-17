@@ -18,35 +18,23 @@ const BalanceChange = ({
           backgroundColor: '$neutral800',
           gap: 10
         }}>
-        <TransactionSimulationResultBalanceChangeContent
-          assetDiffs={assetDiffs}
-        />
+        <>
+          {assetDiffs.outs.map((assetDiff, index) => (
+            <AssetDiffGroup
+              key={index.toString()}
+              assetDiff={assetDiff}
+              isOut={true}
+            />
+          ))}
+          {assetDiffs.ins.map((assetDiff, index) => (
+            <AssetDiffGroup
+              key={index.toString()}
+              assetDiff={assetDiff}
+              isOut={false}
+            />
+          ))}
+        </>
       </View>
-    </>
-  )
-}
-
-const TransactionSimulationResultBalanceChangeContent = ({
-  assetDiffs
-}: {
-  assetDiffs: AssetDiffs
-}): JSX.Element => {
-  return (
-    <>
-      {assetDiffs.outs.map((assetDiff, index) => (
-        <AssetDiffGroup
-          key={index.toString()}
-          assetDiff={assetDiff}
-          isOut={true}
-        />
-      ))}
-      {assetDiffs.ins.map((assetDiff, index) => (
-        <AssetDiffGroup
-          key={index.toString()}
-          assetDiff={assetDiff}
-          isOut={false}
-        />
-      ))}
     </>
   )
 }
