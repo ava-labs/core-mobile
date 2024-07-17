@@ -34,7 +34,7 @@ describe('Unlock app with recovery phrase', () => {
     await CreatePinPage.tapNumpadZero()
     await CreatePinPage.tapAgreeAndContinueBtn()
     await commonElsPage.tapGetStartedButton()
-    await analyticsConsentPage.tapIAgreeBtn()
+    await analyticsConsentPage.tapUnlockBtn()
     await PortfolioPage.verifyPorfolioScreen()
     await BottomTabsPage.verifyBottomTabs()
   })
