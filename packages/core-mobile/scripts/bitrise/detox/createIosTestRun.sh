@@ -33,6 +33,6 @@ TEST_RUN_DETAILS=$(curl -H "Content-Type: application/json" \
 # Extract the test run id from the details and store in TESTRAIL_RUN_ID
 TESTRAIL_RUN_ID=$(jq -r ".id" <<< "$TEST_RUN_DETAILS")
 
-echo "Test run id: $IOS_TESTRAIL_RUN_ID"
+echo "Test run id: $TESTRAIL_RUN_ID"
 
 envman add --key TESTRAIL_RUN_ID --value "$TESTRAIL_RUN_ID"
