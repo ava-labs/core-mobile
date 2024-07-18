@@ -29,18 +29,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/avalanche-module@npm:0.0.0-CP-8870-20240718200504":
-  version: 0.0.0-CP-8870-20240718200504
-  resolution: "@avalabs/avalanche-module@npm:0.0.0-CP-8870-20240718200504"
+"@avalabs/avalanche-module@npm:0.0.0-CP-8870-20240718205833":
+  version: 0.0.0-CP-8870-20240718205833
+  resolution: "@avalabs/avalanche-module@npm:0.0.0-CP-8870-20240718205833"
   dependencies:
     "@avalabs/etherscan-sdk": v2.8.0-alpha.193
     "@avalabs/glacier-sdk": v2.8.0-alpha.193
     "@avalabs/utils-sdk": v2.8.0-alpha.193
-    "@avalabs/vm-module-types": 0.0.0-CP-8870-20240718200504
+    "@avalabs/vm-module-types": 0.0.0-CP-8870-20240718205833
     "@avalabs/wallets-sdk": v2.8.0-alpha.193
     "@metamask/rpc-errors": 6.3.0
     big.js: 6.2.1
-  checksum: e4b7d003c38b5d32bc3fcf8a048f3a367117e0e9b5e729f0ae5720a8235af66da06a796a9d40580554f311ab11c577cfcbb5af2d1b3aa7dae45e445529d98e11
+  checksum: cb052e85ff0169c4442d93b8e70c5fe3690c970d69045ca23d48708a6f2baf80472b615d5f77cc69d118ff5e758669cbee67d7ec231443637d45c62c8e83fbfe
   languageName: node
   linkType: hard
 
@@ -125,7 +125,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@avalabs/core-mobile@workspace:packages/core-mobile"
   dependencies:
-    "@avalabs/avalanche-module": 0.0.0-CP-8870-20240718200504
+    "@avalabs/avalanche-module": 0.0.0-CP-8870-20240718205833
     "@avalabs/avalanchejs": 4.0.5
     "@avalabs/bridge-sdk": v2.8.0-alpha.187
     "@avalabs/bridge-unified": 2.1.1
@@ -133,7 +133,7 @@ __metadata:
     "@avalabs/coingecko-sdk": v2.8.0-alpha.187
     "@avalabs/covalent-sdk": v2.8.0-alpha.187
     "@avalabs/etherscan-sdk": v2.8.0-alpha.187
-    "@avalabs/evm-module": 0.0.0-CP-8870-20240718200504
+    "@avalabs/evm-module": 0.0.0-CP-8870-20240718205833
     "@avalabs/glacier-sdk": v2.8.0-alpha.187
     "@avalabs/k2-mobile": "workspace:*"
     "@avalabs/paraswap-sdk": v2.8.0-alpha.187
@@ -142,7 +142,7 @@ __metadata:
     "@avalabs/tsconfig-mobile": "workspace:*"
     "@avalabs/types": v2.8.0-alpha.187
     "@avalabs/utils-sdk": v2.8.0-alpha.187
-    "@avalabs/vm-module-types": 0.0.0-CP-8870-20240718200504
+    "@avalabs/vm-module-types": 0.0.0-CP-8870-20240718205833
     "@avalabs/wallets-sdk": v2.8.0-alpha.187
     "@babel/core": 7.24.0
     "@babel/plugin-proposal-nullish-coalescing-operator": 7.18.6
@@ -376,15 +376,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/evm-module@npm:0.0.0-CP-8870-20240718200504":
-  version: 0.0.0-CP-8870-20240718200504
-  resolution: "@avalabs/evm-module@npm:0.0.0-CP-8870-20240718200504"
+"@avalabs/evm-module@npm:0.0.0-CP-8870-20240718205833":
+  version: 0.0.0-CP-8870-20240718205833
+  resolution: "@avalabs/evm-module@npm:0.0.0-CP-8870-20240718205833"
   dependencies:
     "@avalabs/coingecko-sdk": v2.8.0-alpha.193
     "@avalabs/etherscan-sdk": v2.8.0-alpha.193
     "@avalabs/glacier-sdk": v2.8.0-alpha.193
     "@avalabs/utils-sdk": 2.8.0-alpha.193
-    "@avalabs/vm-module-types": 0.0.0-CP-8870-20240718200504
+    "@avalabs/vm-module-types": 0.0.0-CP-8870-20240718205833
     "@avalabs/wallets-sdk": v2.8.0-alpha.193
     "@blockaid/client": 0.11.0
     "@metamask/rpc-errors": 6.3.0
@@ -394,7 +394,7 @@ __metadata:
     zod: 3.23.8
   peerDependencies:
     ethers: ^6.8.1
-  checksum: 4ee4167c82ccec3c2a80f5e1dea0503c53e1130203f5cc9ede68a13d0caf650435bd71b1e9e4f0cb91dc05fddc603b3e0cdfe70624737d4bff72df84d1765e23
+  checksum: c3387fa00991b61e1eabaf49c925e4001cca90c4d2d33f18b17dc6f26b14d65000e4991cd2eb0cc64b5e888b0445382adaa680b2680ab8ac521272c94dbe2b98
   languageName: node
   linkType: hard
 
@@ -565,16 +565,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/vm-module-types@npm:0.0.0-CP-8870-20240718200504":
-  version: 0.0.0-CP-8870-20240718200504
-  resolution: "@avalabs/vm-module-types@npm:0.0.0-CP-8870-20240718200504"
+"@avalabs/vm-module-types@npm:0.0.0-CP-8870-20240718205833":
+  version: 0.0.0-CP-8870-20240718205833
+  resolution: "@avalabs/vm-module-types@npm:0.0.0-CP-8870-20240718205833"
   dependencies:
     "@metamask/rpc-errors": 6.3.0
     ethers: 6.8.1
     zod: 3.23.8
   peerDependencies:
     ethers: ^6.8.1
-  checksum: f6734faaced87db80c8b1b11f5556c64aae1252dc2acdca04dfa0d1caeecd718d1ba36f7453be78dea5f6e641e1a43d9729fe7b41a4223436b6b01c7081cffbf
+  checksum: 2283e6691f6fe84e7588fd00eb372d6ee28900c165b30b3d3ad810c917b3e33cdf1b19fbc45943686579eb0431c254275cad50bb67a9f73a04051176bfe4414b
   languageName: node
   linkType: hard
 
