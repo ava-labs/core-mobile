@@ -26,12 +26,22 @@ describe('ModuleManager', () => {
           name: NetworkVMType.BITCOIN
         },
         {
-          chainId: 'avax:2oYMBNV4eNHyqk2fjjV5nVQLDbtmNJzq5s3qs3Lo6ftnC6FByM',
+          chainId: 'avax:imji8papUf2EhV3le337w1vgFauqkJg-',
           method: 'avalanche_randomMethod',
           name: NetworkVMType.AVM
         },
         {
-          chainId: 'avax:11111111111111111111111111111111LpoYY',
+          chainId: 'avax:Rr9hnPVPxuUvrdCul-vjEsU1zmqKqRDo',
+          method: 'avalanche_randomMethod',
+          name: NetworkVMType.PVM
+        },
+        {
+          chainId: 'avax:Sj7NVE3jXTbJvwFAiu7OEUo_8g8ctXMG',
+          method: 'avalanche_randomMethod',
+          name: NetworkVMType.AVM
+        },
+        {
+          chainId: 'avax:8AJTpRj3SAqv1e80Mtl9em08LhvKEbkl',
           method: 'avalanche_randomMethod',
           name: NetworkVMType.PVM
         },

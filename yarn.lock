@@ -29,18 +29,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/avalanche-module@npm:0.0.0-fixInternalDependencies-20240716212101":
-  version: 0.0.0-fixInternalDependencies-20240716212101
-  resolution: "@avalabs/avalanche-module@npm:0.0.0-fixInternalDependencies-20240716212101"
+"@avalabs/avalanche-module@npm:0.0.0-updateManifestJson-20240717165208":
+  version: 0.0.0-updateManifestJson-20240717165208
+  resolution: "@avalabs/avalanche-module@npm:0.0.0-updateManifestJson-20240717165208"
   dependencies:
     "@avalabs/etherscan-sdk": v2.8.0-alpha.193
     "@avalabs/glacier-sdk": v2.8.0-alpha.193
     "@avalabs/utils-sdk": v2.8.0-alpha.193
-    "@avalabs/vm-module-types": 0.0.0-fixInternalDependencies-20240716212101
+    "@avalabs/vm-module-types": 0.0.0-updateManifestJson-20240717165208
     "@avalabs/wallets-sdk": v2.8.0-alpha.193
     "@metamask/rpc-errors": 6.3.0
     big.js: 6.2.1
-  checksum: c4dd048da2b36c50ffc407455617e0ecc1206b56bf85d0c0bba6c26d56ac1f9207ce6ca6c200b79d4940bc1960c9579663bc182e0f0daafe535ac86199d0d73d
+  checksum: 9e0f0a36d2886badf77fb8554d9adf1a0d0d3bcf2146d1bfea2de9bbf94916508e7ce7c4b9dbe417aa6dce1286c9e371edf83a2597b5dc7a881de02486ba8f83
   languageName: node
   linkType: hard
 
@@ -125,7 +125,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@avalabs/core-mobile@workspace:packages/core-mobile"
   dependencies:
-    "@avalabs/avalanche-module": 0.0.0-fixInternalDependencies-20240716212101
+    "@avalabs/avalanche-module": 0.0.0-updateManifestJson-20240717165208
     "@avalabs/avalanchejs": 4.0.5
     "@avalabs/bridge-sdk": v2.8.0-alpha.187
     "@avalabs/bridge-unified": 2.1.1
@@ -133,7 +133,7 @@ __metadata:
     "@avalabs/coingecko-sdk": v2.8.0-alpha.187
     "@avalabs/covalent-sdk": v2.8.0-alpha.187
     "@avalabs/etherscan-sdk": v2.8.0-alpha.187
-    "@avalabs/evm-module": 0.0.0-fixInternalDependencies-20240716212101
+    "@avalabs/evm-module": 0.0.0-updateManifestJson-20240717165208
     "@avalabs/glacier-sdk": v2.8.0-alpha.187
     "@avalabs/k2-mobile": "workspace:*"
     "@avalabs/paraswap-sdk": v2.8.0-alpha.187
@@ -142,7 +142,7 @@ __metadata:
     "@avalabs/tsconfig-mobile": "workspace:*"
     "@avalabs/types": v2.8.0-alpha.187
     "@avalabs/utils-sdk": v2.8.0-alpha.187
-    "@avalabs/vm-module-types": 0.0.0-fixInternalDependencies-20240716212101
+    "@avalabs/vm-module-types": 0.0.0-updateManifestJson-20240717165208
     "@avalabs/wallets-sdk": v2.8.0-alpha.187
     "@babel/core": 7.24.0
     "@babel/plugin-proposal-nullish-coalescing-operator": 7.18.6
@@ -376,15 +376,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/evm-module@npm:0.0.0-fixInternalDependencies-20240716212101":
-  version: 0.0.0-fixInternalDependencies-20240716212101
-  resolution: "@avalabs/evm-module@npm:0.0.0-fixInternalDependencies-20240716212101"
+"@avalabs/evm-module@npm:0.0.0-updateManifestJson-20240717165208":
+  version: 0.0.0-updateManifestJson-20240717165208
+  resolution: "@avalabs/evm-module@npm:0.0.0-updateManifestJson-20240717165208"
   dependencies:
     "@avalabs/coingecko-sdk": v2.8.0-alpha.193
     "@avalabs/etherscan-sdk": v2.8.0-alpha.193
     "@avalabs/glacier-sdk": v2.8.0-alpha.193
     "@avalabs/utils-sdk": 2.8.0-alpha.193
-    "@avalabs/vm-module-types": 0.0.0-fixInternalDependencies-20240716212101
+    "@avalabs/vm-module-types": 0.0.0-updateManifestJson-20240717165208
     "@avalabs/wallets-sdk": v2.8.0-alpha.193
     "@metamask/rpc-errors": 6.3.0
     "@zodios/core": 10.9.6
@@ -393,7 +393,7 @@ __metadata:
     zod: 3.23.8
   peerDependencies:
     ethers: ^6.8.1
-  checksum: 0702b4fd3d638dec433332b9dc870efe987c87b30e55a97c8b468833ad32e951d15fe6b376b1b12bd7710973028f3ffc5a6d67e7c9b4f0b2701a87f2e4f3a6b2
+  checksum: 44ed415c5f338961965b563f8a8d3bc8ca25198efe35ab887ead9e29035cfbd37a1899db6eeca2162b51dac6a4cf101904131fe3ade6e53344e9f0df24a5982f
   languageName: node
   linkType: hard
 
@@ -564,16 +564,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/vm-module-types@npm:0.0.0-fixInternalDependencies-20240716212101":
-  version: 0.0.0-fixInternalDependencies-20240716212101
-  resolution: "@avalabs/vm-module-types@npm:0.0.0-fixInternalDependencies-20240716212101"
+"@avalabs/vm-module-types@npm:0.0.0-updateManifestJson-20240717165208":
+  version: 0.0.0-updateManifestJson-20240717165208
+  resolution: "@avalabs/vm-module-types@npm:0.0.0-updateManifestJson-20240717165208"
   dependencies:
     "@metamask/rpc-errors": 6.3.0
     ethers: 6.8.1
     zod: 3.23.8
   peerDependencies:
     ethers: ^6.8.1
-  checksum: 6e2554ae83b907b4a7d7876244adec13fdd3b5619e37fbe0939b382e02b6cc090b62591b749ab4cc9c399a4357c02bd087e1e16974046595475c00a0800e63cd
+  checksum: fa28cbe9d0b75f2bc7b695fb4888bc3158537bdf4b4a4094c338bc7aa04dee9dbca1b5282c87df86a92706b270b39e9c839a72db19e44056c9f4c253a0bd3b7d
   languageName: node
   linkType: hard
 
