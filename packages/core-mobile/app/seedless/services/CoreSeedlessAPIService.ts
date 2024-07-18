@@ -7,7 +7,7 @@ if (!Config.SEEDLESS_URL) {
 }
 
 if (!Config.SEEDLESS_API_KEY) {
-  throw Error('SEEDLESS_API_KEY is missing. Please check your env file.')
+  Logger.warn('SEEDLESS_API_KEY is missing. Seedless is disabled.')
 }
 
 export enum SeedlessUserRegistrationResult {
@@ -24,6 +24,9 @@ class CoreSeedlessAPIService {
   async register(
     identityProof: IdentityProof
   ): Promise<SeedlessUserRegistrationResult> {
+    if (!Config.SEEDLESS_API_KEY) {
+      return SeedlessUserRegistrationResult.ERROR
+    }
     try {
       const response = await fetch(
         Config.SEEDLESS_URL + '/v1/register?mfa-required=false',

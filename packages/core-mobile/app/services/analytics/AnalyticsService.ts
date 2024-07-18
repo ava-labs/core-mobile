@@ -2,12 +2,11 @@ import PostHogService from 'services/posthog/PostHogService'
 import { AnalyticsEvents } from 'types/analytics'
 import Config from 'react-native-config'
 import { encrypt } from 'utils/hpke'
+import Logger from 'utils/Logger'
 import { AnalyticsEventName, CaptureEventProperties } from './types'
 
 if (!Config.ANALYTICS_ENCRYPTION_KEY) {
-  throw Error(
-    'ANALYTICS_ENCRYPTION_KEY is missing. Please check your env file.'
-  )
+  Logger.warn('ANALYTICS_ENCRYPTION_KEY is missing. Analytics are disabled.')
 }
 
 if (!Config.ANALYTICS_ENCRYPTION_KEY_ID) {
@@ -42,7 +41,7 @@ class AnalyticsService {
     eventName: E,
     properties: AnalyticsEvents[E]
   ): Promise<void> {
-    if (!this.isEnabled) {
+    if (!this.isEnabled || !ANALYTICS_ENCRYPTION_KEY) {
       return
     }
 

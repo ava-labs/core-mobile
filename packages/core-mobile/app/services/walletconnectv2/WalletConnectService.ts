@@ -23,8 +23,8 @@ const UPDATE_SESSION_TIMEOUT = 15000
 const LOG_LEVEL = __DEV__ ? 'error' : 'silent'
 
 if (!Config.WALLET_CONNECT_PROJECT_ID) {
-  throw Error(
-    'WALLET_CONNECT_PROJECT_ID is missing. Please check your env file.'
+  Logger.warn(
+    'WALLET_CONNECT_PROJECT_ID is missing. Wallet connect is disabled.'
   )
 }
 
@@ -41,6 +41,9 @@ class WalletConnectService {
   }
 
   init = async (callbacks: WalletConnectCallbacks): Promise<void> => {
+    if (!Config.WALLET_CONNECT_PROJECT_ID) {
+      return
+    }
     if (this.#client !== undefined) {
       Logger.info('WC already initialized')
       return

@@ -29,6 +29,10 @@ class PostHogService {
   }
 
   async capture(eventName: string, properties?: JsonMap): Promise<void> {
+    if (!Config.POSTHOG_ANALYTICS_KEY) {
+      return
+    }
+
     if (!this.isConfigured) {
       throw new Error(
         'PostHogService not configured. please call configure() first'
@@ -69,6 +73,9 @@ class PostHogService {
   }
 
   async identifyUser(distinctId: string): Promise<void> {
+    if (!Config.POSTHOG_FEATURE_FLAGS_KEY) {
+      return
+    }
     const PostHogIdentifyFetchOptions = {
       method: 'POST',
       headers: {
@@ -102,6 +109,10 @@ class PostHogService {
   ): Promise<
     Partial<Record<FeatureGates | FeatureVars, string | boolean>> | undefined
   > {
+    if (!Config.POSTHOG_FEATURE_FLAGS_KEY) {
+      return undefined
+    }
+
     const appVersion = DeviceInfoService.getAppVersion()
 
     const fetchWithPosthogFallback =
