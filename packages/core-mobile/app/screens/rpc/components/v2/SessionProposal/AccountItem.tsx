@@ -101,6 +101,7 @@ const AccountItem = ({ account, onSelect, selected }: Props): JSX.Element => {
         )}
       </View>
       <Checkbox
+        testID="account_check_box"
         selected={selected}
         onPress={() => {
           onSelect(account.addressC)

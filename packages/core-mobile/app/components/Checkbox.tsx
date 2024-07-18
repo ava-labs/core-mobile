@@ -6,10 +6,11 @@ import React from 'react'
 interface Props {
   selected: boolean
   onPress?: () => void
+  testID?: string
 }
-export function Checkbox({ selected, onPress }: Props) {
+export function Checkbox({ selected, onPress, testID }: Props): JSX.Element {
   return (
-    <AvaButton.Icon onPress={onPress}>
+    <AvaButton.Icon onPress={onPress} testID={testID}>
       {selected ? <CheckBoxSVG /> : <CheckBoxEmptySVG />}
     </AvaButton.Icon>
   )
