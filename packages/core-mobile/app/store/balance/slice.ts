@@ -10,13 +10,13 @@ import BN from 'bn.js'
 import { selectActiveNetwork, selectIsTestnet } from 'store/network'
 import { Network } from '@avalabs/chains-sdk'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { TokenType } from '@avalabs/vm-module-types'
 import {
   Balance,
   Balances,
   BalanceState,
   LocalTokenWithBalance,
-  QueryStatus,
-  TokenType
+  QueryStatus
 } from './types'
 
 const BN_ZERO = new BN(0)

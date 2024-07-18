@@ -569,7 +569,7 @@ describe('rpc - listeners', () => {
             chainName: mockNetworks[43114].chainName,
             isTestnet: mockNetworks[43114].isTestnet,
             rpcUrl: mockNetworks[43114].rpcUrl,
-            logoUrl: mockNetworks[43114].logoUri,
+            logoUri: mockNetworks[43114].logoUri,
             explorerUrl: mockNetworks[43114].explorerUrl,
             utilityAddresses: mockNetworks[43114].utilityAddresses,
             networkToken: mockNetworks[43114].networkToken

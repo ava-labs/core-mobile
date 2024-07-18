@@ -3,11 +3,9 @@ import Action from '../helpers/actions'
 import AccountManagePage from '../pages/accountManage.page'
 import Assert from '../helpers/assertions'
 import activityTab from '../locators/activityTab.loc'
-import delay from '../helpers/waits'
 import { Platform } from '../helpers/constants'
 import ReviewAndSend from '../pages/reviewAndSend.page'
 import PortfolioPage from '../pages/portfolio.page'
-import TransactionDetailsPage from '../pages/transactionDetails.page'
 import loginRecoverWallet from '../helpers/loginRecoverWallet'
 import BottomsTabsPage from '../pages/bottomTabs.page'
 
@@ -120,18 +118,6 @@ class ActivityTabPage {
 
   async tapBridgeIcon() {
     await Action.tapElementAtIndex(this.bridgeSVG, 1)
-  }
-
-  async verifyOutgoingTransaction(
-    waitTime: number,
-    secondAccountAddress: string
-  ) {
-    await Action.waitForElementNotVisible(ReviewAndSend.sendSuccessfulToastMsg)
-    await delay(waitTime)
-    await this.refreshActivityPage()
-    await this.tapArrowIcon(0)
-    await TransactionDetailsPage.isDateTextOlderThan(300)
-    await Assert.hasText(this.address, secondAccountAddress)
   }
 
   async verifyActivityRow(

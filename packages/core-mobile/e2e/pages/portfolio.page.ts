@@ -6,12 +6,7 @@ import networksManagePage from './networksManage.page'
 import ActivityTabPage from './activityTab.page'
 
 const platformIndex = Action.platform() === Platform.iOS ? 1 : 0
-const platformIndex2 = Action.platform() === Platform.iOS ? 0 : 1
 class PortfolioPage {
-  get addToWatchlist() {
-    return by.id(portfolio.addToWatchlist)
-  }
-
   get avaxNetwork() {
     return by.text(portfolio.avaxNetwork)
   }
@@ -143,10 +138,6 @@ class PortfolioPage {
     await Action.tapElementAtIndex(this.activityTab, 0)
   }
 
-  async tapAddToWatchlist() {
-    await Action.tapElementAtIndex(this.addToWatchlist, platformIndex2)
-  }
-
   async tapArbitrumNetwork() {
     await Action.tapElementAtIndex(this.arbitrumNetwork, 1)
   }
@@ -157,6 +148,13 @@ class PortfolioPage {
 
   async tapBtcFavoriteToken() {
     await Action.tapElementAtIndex(this.btcTokenItem, 0)
+  }
+
+  async tapFavoriteToken(token: string) {
+    await Action.tapElementAtIndex(
+      by.id(`watchlist_carousel__${token.toLowerCase()}`),
+      0
+    )
   }
 
   async tapCollectiblesTab() {
@@ -180,11 +178,7 @@ class PortfolioPage {
   }
 
   async tapNetworksDropdown() {
-    try {
-      await Action.tapElementAtIndex(this.networksDropdown, 0)
-    } catch (error) {
-      console.log('Networks dropdown not found or is already tapped')
-    }
+    await Action.tapElementAtIndex(this.networksDropdown, 0)
   }
 
   async tapNetworksDropdownBTC() {
@@ -216,6 +210,14 @@ class PortfolioPage {
 
   async tapPolygonNetwork() {
     await Action.tapElementAtIndex(this.polygonNetwork, 1)
+  }
+
+  async verifyWatchListCarousel(tokens: string[]) {
+    for (const token of tokens) {
+      await Assert.isVisible(
+        by.id(`watchlist_carousel__${token.toLowerCase()}`)
+      )
+    }
   }
 }
 

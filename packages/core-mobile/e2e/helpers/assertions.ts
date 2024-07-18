@@ -45,7 +45,26 @@ const count = async (item: Detox.NativeMatcher, value: number) => {
   if ('elements' in eles) {
     curr = eles.elements.length
   }
-  assert(curr === value, `currCount(${curr}) != expectedCount${value} `)
+  assert(curr === value, `currCount(${curr}) != expectedCount(${value})`)
+}
+
+const isEqualToTextArray = async (
+  item: Detox.NativeMatcher,
+  expectedTextArray: Array<string>
+) => {
+  const eles = await element(item).getAttributes()
+  const currTextArray = []
+  if ('elements' in eles) {
+    eles.elements.forEach(ele => {
+      currTextArray.push(ele.text)
+    })
+  } else {
+    currTextArray.push(eles.text)
+  }
+  assert(
+    currTextArray.sort().toString() === expectedTextArray.sort().toString(),
+    `currTextArray(${currTextArray}) != expectedTextArray(${expectedTextArray})`
+  )
 }
 
 export default {
@@ -54,5 +73,6 @@ export default {
   isNotVisible,
   hasText,
   hasValue,
-  count
+  count,
+  isEqualToTextArray
 }

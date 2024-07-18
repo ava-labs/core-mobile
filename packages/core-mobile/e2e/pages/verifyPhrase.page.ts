@@ -1,6 +1,8 @@
 import Action from '../helpers/actions'
+import Assert from '../helpers/assertions'
 import verifyPhraseLoc from '../locators/verifyPhrase.loc'
 import delay from '../helpers/waits'
+import nameWalletPage from './nameWallet.page'
 
 class VerifyPhrasePage {
   get selectWord() {
@@ -29,6 +31,10 @@ class VerifyPhrasePage {
 
   get title() {
     return by.id(verifyPhraseLoc.title)
+  }
+
+  get selectAllWords() {
+    return by.text(verifyPhraseLoc.selectAllWords)
   }
 
   async getAndroidWordNumbers() {
@@ -105,6 +111,14 @@ class VerifyPhrasePage {
 
   async tapVerifyPhraseBtn() {
     return Action.tap(this.verifyPhraseBtn)
+  }
+
+  async verifySelectPhrasePage() {
+    await Assert.isVisible(this.title)
+    await Assert.isVisible(this.instructions)
+    await Action.tap(this.verifyPhraseBtn)
+    await Assert.isVisible(this.selectAllWords)
+    await Assert.isNotVisible(nameWalletPage.title)
   }
 }
 

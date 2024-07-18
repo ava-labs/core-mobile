@@ -1,3 +1,4 @@
+import url from 'url'
 import { PixelRatio } from 'react-native'
 
 export const formatUriImageToPng = (
@@ -16,7 +17,7 @@ export const formatUriImageToPng = (
 }
 
 export const isContentfulImageUri = (uri: string): boolean => {
-  const allowedUrl = 'https://images.ctfassets.net'
-
-  return uri.startsWith(allowedUrl)
+  const allowedHosts = ['images.ctfassets.net']
+  const host = url.parse(uri, false).host
+  return !!host && allowedHosts.includes(host)
 }

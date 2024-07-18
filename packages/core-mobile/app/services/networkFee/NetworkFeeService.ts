@@ -15,6 +15,8 @@ class NetworkFeeService {
     tokenUnitCreator: (value: AcceptedTypes) => T
   ): Promise<NetworkFee<T> | undefined> {
     switch (network.vmName) {
+      case NetworkVMType.AVM:
+      case NetworkVMType.PVM:
       case NetworkVMType.EVM: {
         //TODO: use the same logic for all networks once we implement modules for other VMs
         const evmModule = await ModuleManager.loadModuleByNetwork(network)
@@ -26,29 +28,26 @@ class NetworkFeeService {
           low: {
             maxFeePerGas: tokenUnitCreator(networkFees.low.maxFeePerGas),
             maxPriorityFeePerGas: tokenUnitCreator(
-              networkFees.low.maxPriorityFeePerGas
+              networkFees.low.maxPriorityFeePerGas ?? 0
             )
           },
           medium: {
             maxFeePerGas: tokenUnitCreator(networkFees.medium.maxFeePerGas),
             maxPriorityFeePerGas: tokenUnitCreator(
-              networkFees.medium.maxPriorityFeePerGas
+              networkFees.medium.maxPriorityFeePerGas ?? 0
             )
           },
           high: {
             maxFeePerGas: tokenUnitCreator(networkFees.high.maxFeePerGas),
             maxPriorityFeePerGas: tokenUnitCreator(
-              networkFees.high.maxPriorityFeePerGas
+              networkFees.high.maxPriorityFeePerGas ?? 0
             )
           },
-          isFixedFee: false
+          isFixedFee: networkFees.isFixedFee
         }
       }
       case NetworkVMType.BITCOIN:
         return await this.getFeesForBtc(network, tokenUnitCreator)
-      case NetworkVMType.PVM:
-      case NetworkVMType.AVM:
-        return await this.getFeesForPVM(tokenUnitCreator)
       default:
         return undefined
     }
@@ -71,27 +70,6 @@ class NetworkFeeService {
         maxFeePerGas: tokenCreator(rates.high)
       },
       isFixedFee: false
-    }
-  }
-
-  private async getFeesForPVM<T extends TokenBaseUnit<T>>(
-    tokenUnitCreator: (value: AcceptedTypes) => T
-  ): Promise<NetworkFee<T> | undefined> {
-    // this is 0.001 Avax denominated in nAvax, taken from https://docs.avax.network/reference/standards/guides/txn-fees#fee-schedule
-    const baseFeePerGasInUnit = tokenUnitCreator(0.001 * 10 ** 9)
-
-    return {
-      baseFee: baseFeePerGasInUnit,
-      low: {
-        maxFeePerGas: baseFeePerGasInUnit
-      },
-      medium: {
-        maxFeePerGas: baseFeePerGasInUnit
-      },
-      high: {
-        maxFeePerGas: baseFeePerGasInUnit
-      },
-      isFixedFee: true
     }
   }
 
