@@ -21,7 +21,7 @@ export const findHandlerOrModule = async (
   // if no handler is found, try to find a module
   try {
     const caip2ChainId = request.data.params.chainId
-    return ModuleManager.loadModule(caip2ChainId, request.method)
+    return await ModuleManager.loadModule(caip2ChainId, request.method)
   } catch (e) {
     Logger.error('Failed to load module', e)
   }
