@@ -37,7 +37,7 @@ export class BitcoinModule implements Module {
       medium: { maxPriorityFeePerGas: 0n, maxFeePerGas: 0n },
       high: { maxPriorityFeePerGas: 0n, maxFeePerGas: 0n },
       baseFee: 0n,
-      isFixedFee: true
+      isFixedFee: false
     })
   }
   getAddress(): Promise<string> {
