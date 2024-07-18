@@ -7,7 +7,6 @@ import BottomTabsPage from '../../pages/bottomTabs.page'
 import actions from '../../helpers/actions'
 import browserPage from '../../pages/browser.page'
 import commonElsPage from '../../pages/commonEls.page'
-import delay from '../../helpers/waits'
 import securityAndPrivacyPage from '../../pages/burgerMenu/securityAndPrivacy.page'
 import connectedSitesPage from '../../pages/connectedSites.page'
 
@@ -22,16 +21,15 @@ describe('Connect to dApp using WalletConnect', () => {
     await commonElsPage.tapGetStartedButton()
     await browserPage.tapSearchBar()
     await browserPage.enterBrowserSearchQuery('core.app')
+    await browserPage.verifyInAppBrowserLoaded('https://core.app/')
   })
 
   it('should connect dApp in InAppBrowser', async () => {
-    await delay(5000)
     await browserPage.tapAccept()
     await browserPage.tapConnectWallet()
     await browserPage.tapWalletConnect()
     await browserPage.connectTermAndContinue()
     await browserPage.connectCore()
-    await delay(5000)
     await browserPage.selectAccountAndconnect()
     await browserPage.verifyDappConnected()
   })

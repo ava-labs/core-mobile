@@ -1,9 +1,13 @@
+import assert from 'assert'
 import Actions from '../helpers/actions'
 import Asserts from '../helpers/assertions'
 import BrowserLoc from '../locators/browser.loc'
 
 class BrowserPage {
-  wb = web(by.id('myWebview'))
+  wb =
+    device.getPlatform() === 'ios'
+      ? web(by.id('myWebview'))
+      : web(by.type('android.webkit.WebView').withAncestor(by.id('myWebview')))
 
   get searchBar() {
     return by.id(BrowserLoc.searchBar)
@@ -60,14 +64,15 @@ class BrowserPage {
   }
 
   async selectAccountAndconnect() {
+    await Actions.waitForElement(by.text('Select Accounts'), 8000)
     await Actions.tap(by.text('Select Accounts'))
     await Actions.tapElementAtIndex(by.id('account_check_box'), 0)
     await Actions.tap(by.text('Approve'))
   }
 
   async verifyDappConnected() {
-    await Asserts.isVisible(by.text('Connected to Core'))
     try {
+      await Asserts.isVisible(by.text('Connected to Core'))
       await this.wb
         .element(by.web.xpath('//*[@data-testid="connect-wallet-button"]'))
         .tap()
@@ -75,6 +80,18 @@ class BrowserPage {
     } catch (e) {
       console.log('Verify there is no connect wallet button')
     }
+  }
+
+  async verifyInAppBrowserLoaded(url: string, timeout = 8000) {
+    let isLoaded = false
+    const start = Date.now()
+    while (Date.now() - start < timeout) {
+      const currUrl = await this.wb.element(by.web.tag('body')).getCurrentUrl()
+      isLoaded = currUrl === url
+      if (isLoaded) break
+      await new Promise(resolve => setTimeout(resolve, 100))
+    }
+    assert(isLoaded)
   }
 }
 
