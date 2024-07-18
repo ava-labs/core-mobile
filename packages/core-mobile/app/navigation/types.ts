@@ -131,8 +131,8 @@ export type ApprovalPopupParams = {
   }: {
     network: Network
     account: CorePrimaryAccount
-    maxFeePerGas: bigint
-    maxPriorityFeePerGas: bigint
+    maxFeePerGas?: bigint
+    maxPriorityFeePerGas?: bigint
   }) => Promise<void>
   onReject: (message?: string) => void
 }
