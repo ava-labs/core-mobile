@@ -1,14 +1,14 @@
-import { AVMModule } from 'vmModule/mock_modules/avm'
 import { BitcoinModule } from 'vmModule/mock_modules/bitcoin'
-import { CoreEthModule } from 'vmModule/mock_modules/coreEth'
 import { EvmModule } from '@avalabs/evm-module'
-import { PVMModule } from 'vmModule/mock_modules/pvm'
 import Logger from 'utils/Logger'
 import { Environment, Module } from '@avalabs/vm-module-types'
 import { NetworkVMType, Network } from '@avalabs/chains-sdk'
 import { assertNotUndefined } from 'utils/assertions'
+import { AvalancheModule } from '@avalabs/avalanche-module'
+import { BlockchainId } from '@avalabs/glacier-sdk'
 import { ModuleErrors, VmModuleErrors } from './errors'
 import { approvalController } from './ApprovalController'
+import { CoreEthModule } from './mock_modules/coreEth'
 
 // https://github.com/ChainAgnostic/CAIPs/blob/main/CAIPs/caip-2.md
 // Syntax for namespace is defined in CAIP-2
@@ -35,15 +35,16 @@ class ModuleManager {
   init = async (): Promise<void> => {
     if (this.#modules !== undefined) return
 
+    const environment = isDev ? Environment.DEV : Environment.PRODUCTION
+
     this.modules = [
       new EvmModule({
-        environment: isDev ? Environment.DEV : Environment.PRODUCTION,
+        environment,
         approvalController
       }),
       new BitcoinModule(),
-      new AVMModule(),
-      new CoreEthModule(),
-      new PVMModule()
+      new AvalancheModule({ environment }),
+      new CoreEthModule()
     ]
   }
 
@@ -77,19 +78,34 @@ class ModuleManager {
   }
 
   convertChainIdToCaip2 = (network: Network): string => {
-    const chainId = network.chainId
     switch (network.vmName) {
       case NetworkVMType.BITCOIN:
-        return `bip122:${chainId}`
+        return `bip122:${network.chainId}`
       case NetworkVMType.PVM:
       case NetworkVMType.AVM:
-        return `avax:${chainId}`
+        return AvalancheModule.getHashedBlockchainId({
+          blockchainId: this.getBlockchainId(network.vmName, network.isTestnet),
+          isTestnet: network.isTestnet
+        })
       case NetworkVMType.EVM:
       case NetworkVMType.CoreEth:
-        return `eip155:${chainId}`
+        return `eip155:${network.chainId}`
       default:
         throw new Error('Unsupported network')
     }
+  }
+
+  // todo: remove this function once we have blockchainId in Network
+  private getBlockchainId = (
+    vmName: NetworkVMType,
+    isTestnet?: boolean
+  ): string => {
+    if (vmName === NetworkVMType.AVM) {
+      return isTestnet
+        ? BlockchainId._2JVSBOINJ9C2J33VNTVZ_YT_VJNZD_N2NKIWW_KJCUM_HUWEB5DB_BRM
+        : BlockchainId._2O_YMBNV4E_NHYQK2FJJ_V5N_VQLDBTM_NJZQ5S3QS3LO6FTN_C6FBY_M
+    }
+    return BlockchainId._11111111111111111111111111111111LPO_YY
   }
 
   private getModule = async (chainId: string): Promise<Module | undefined> => {

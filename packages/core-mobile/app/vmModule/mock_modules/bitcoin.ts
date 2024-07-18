@@ -1,4 +1,6 @@
 import {
+  GetBalancesParams,
+  GetBalancesResponse,
   GetTransactionHistory,
   Manifest,
   Module,
@@ -21,8 +23,8 @@ export class BitcoinModule implements Module {
     const result = parseManifest(manifest)
     return result.success ? result.data : undefined
   }
-  getBalances(): Promise<string> {
-    return Promise.resolve('Bitcoin balances')
+  getBalances(_: GetBalancesParams): Promise<GetBalancesResponse> {
+    return Promise.resolve({})
   }
   getTransactionHistory(
     _: GetTransactionHistory
@@ -34,7 +36,8 @@ export class BitcoinModule implements Module {
       low: { maxPriorityFeePerGas: 0n, maxFeePerGas: 0n },
       medium: { maxPriorityFeePerGas: 0n, maxFeePerGas: 0n },
       high: { maxPriorityFeePerGas: 0n, maxFeePerGas: 0n },
-      baseFee: 0n
+      baseFee: 0n,
+      isFixedFee: false
     })
   }
   getAddress(): Promise<string> {

@@ -3,7 +3,7 @@ import { resolve } from '@avalabs/utils-sdk'
 import { Account } from 'store/account'
 import { SendServiceEVM } from 'services/send/SendServiceEVM'
 import { NFTItemData } from 'store/nft'
-import { NftTokenWithBalance, TokenType } from 'store/balance/types'
+import type { NftTokenWithBalance } from 'store/balance/types'
 import BN from 'bn.js'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { isErc721 } from 'services/nft/utils'
@@ -14,6 +14,7 @@ import { TransactionParams as BtcTransactionParams } from 'store/rpc/handlers/bi
 import { TransactionParams as AvalancheTransactionParams } from 'store/rpc/handlers/avalanche_sendTransaction/utils'
 import { SendServiceAVM } from 'services/send/SendServiceAVM'
 import { transactionRequestToTransactionParams } from 'store/rpc/utils/transactionRequestToTransactionParams'
+import { TokenType } from '@avalabs/vm-module-types'
 import sendServiceBTC from './SendServiceBTC'
 import {
   isValidSendState,

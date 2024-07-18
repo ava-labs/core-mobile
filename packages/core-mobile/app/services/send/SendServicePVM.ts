@@ -6,7 +6,6 @@ import {
   ValidateStateAndCalculateFeesParams
 } from 'services/send/types'
 import { Network } from '@avalabs/chains-sdk'
-import { TokenType } from 'store/balance/types'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import WalletService from 'services/wallet/WalletService'
 import { Avax } from 'types'
@@ -16,6 +15,7 @@ import { getInternalExternalAddrs } from 'services/send/utils'
 import { AvalancheTxParams } from 'store/rpc/handlers/avalanche_sendTransaction/avalanche_sendTransaction'
 import { GAS_LIMIT_FOR_XP_CHAIN } from 'consts/fees'
 import { stripChainAddress } from 'store/account/utils'
+import { TokenType } from '@avalabs/vm-module-types'
 
 export class SendServicePVM {
   constructor(private activeNetwork: Network) {}

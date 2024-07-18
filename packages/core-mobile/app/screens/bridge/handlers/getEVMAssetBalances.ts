@@ -1,12 +1,9 @@
 import { Asset, BIG_ZERO, isBtcAsset, isNativeAsset } from '@avalabs/bridge-sdk'
 import { BridgeAsset } from '@avalabs/bridge-unified'
 import { AssetBalance } from 'screens/bridge/utils/types'
-import {
-  TokenType,
-  TokenWithBalance,
-  TokenWithBalanceERC20
-} from 'store/balance/types'
+import { TokenWithBalance } from 'store/balance/types'
 import { bnToBig } from '@avalabs/utils-sdk'
+import { TokenType, type TokenWithBalanceERC20 } from '@avalabs/vm-module-types'
 import { isUnifiedBridgeAsset } from '../utils/bridgeUtils'
 
 /**
