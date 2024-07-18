@@ -978,12 +978,16 @@ workflows:
     - IS_REGRESSION_RUN: "true"
       opts:
         is_expand: false
+    - TESTRAIL_RUN_ID: $IOS_TESTRAIL_RUN_ID
+      opts:
+        is_expand: false
     steps:
     - share-pipeline-variable@1:
         no_output_timeout: 300
         inputs:
         - variables: |-
             IS_REGRESSION_RUN=$IS_REGRESSION_RUN
+            TESTRAIL_RUN_ID=$TESTRAIL_RUN_ID
   ios-internal-e2e-regression-run:
       before_run:
       - _install-and-set-env
@@ -1032,5 +1036,11 @@ workflows:
           no_output_timeout: 300
           inputs:
           - file_path: scripts/bitrise/detox/iosInternalRegressionRunner.sh
+      - share-pipeline-variable@1:
+          no_output_timeout: 300
+          inputs:
+          - variables: |-
+              IS_REGRESSION_RUN=$IS_REGRESSION_RUN
+              TESTRAIL_RUN_ID=$TESTRAIL_RUN_ID
 
       
