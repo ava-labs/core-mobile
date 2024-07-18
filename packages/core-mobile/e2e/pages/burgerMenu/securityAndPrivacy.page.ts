@@ -1,5 +1,6 @@
 import Actions from '../../helpers/actions'
 import securityAndPrivacyLoc from '../../locators/burgerMenu/securityAndPrivacy.loc'
+import burgerMenuPage from './burgerMenu.page'
 
 class SecurityAndPrivacy {
   get changePin() {
@@ -44,6 +45,16 @@ class SecurityAndPrivacy {
 
   async tapIWroteItDownButton() {
     await Actions.tapElementAtIndex(this.iWroteItDownButton, 0)
+  }
+
+  async tapConnectedSites() {
+    await Actions.tapElementAtIndex(this.connectedSites, 0)
+  }
+
+  async goToConnectedSites() {
+    await burgerMenuPage.tapBurgerMenuButton()
+    await burgerMenuPage.tapSecurityAndPrivacy()
+    await this.tapConnectedSites()
   }
 }
 
