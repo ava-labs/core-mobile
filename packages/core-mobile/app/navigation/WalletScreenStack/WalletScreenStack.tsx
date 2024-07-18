@@ -94,7 +94,6 @@ import {
   QRCodeParams,
   SelectAccountV2Params,
   SessionProposalV2Params,
-  SignMessageV2Params,
   SwitchEthereumChainV2Params,
   TokenSelectParams,
   UpdateContactV2Params,
@@ -164,7 +163,6 @@ export type WalletScreenStackParams = {
   // rpc prompts for wallet connect v2
   [AppNavigation.Modal.AvalancheSignMessage]: AvalancheSignMessageParams
   [AppNavigation.Modal.SessionProposalV2]: SessionProposalV2Params
-  [AppNavigation.Modal.SignMessageV2]: SignMessageV2Params
   [AppNavigation.Modal.CreateRemoveContactV2]: CreateRemoveContactV2Params
   [AppNavigation.Modal.UpdateContactV2]: UpdateContactV2Params
   [AppNavigation.Modal.SelectAccountV2]: SelectAccountV2Params

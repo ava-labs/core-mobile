@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import React, { useCallback, useContext } from 'react'
 import { StyleSheet } from 'react-native'
 import { Space } from 'components/Space'
 import OvalTagBg from 'components/OvalTagBg'
@@ -14,7 +14,9 @@ import { selectIsSeedlessSigningBlocked } from 'store/posthog'
 import FeatureBlocked from 'screens/posthog/FeatureBlocked'
 import { Button, Text, useTheme, View } from '@avalabs/k2-mobile'
 import { Sheet } from 'components/Sheet'
-import PersonalSign from '../shared/signMessage/PersonalSign'
+import AvaText from 'components/AvaText'
+import { ApplicationContext } from 'contexts/ApplicationContext'
+import { toUtf8 } from 'ethereumjs-util'
 
 type AvalancheSignMessageScreenProps = WalletScreenProps<
   typeof AppNavigation.Modal.AvalancheSignMessage
@@ -104,6 +106,26 @@ export const AvalancheSignMessage = (): JSX.Element | null => {
         />
       )}
     </>
+  )
+}
+
+const PersonalSign = ({ message }: { message: string }): JSX.Element => {
+  const theme = useContext(ApplicationContext).theme
+
+  return (
+    <View style={{ flex: 1, width: '100%' }}>
+      <AvaText.Heading3>Message:</AvaText.Heading3>
+      <Space y={8} />
+      <ScrollView
+        style={{
+          maxHeight: 250,
+          backgroundColor: theme.colorBg3,
+          borderRadius: 8,
+          padding: 8
+        }}>
+        <AvaText.Body1>{toUtf8(message)}</AvaText.Body1>
+      </ScrollView>
+    </View>
   )
 }
 
