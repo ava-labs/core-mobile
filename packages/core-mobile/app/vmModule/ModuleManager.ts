@@ -7,8 +7,8 @@ import { assertNotUndefined } from 'utils/assertions'
 import { AvalancheModule } from '@avalabs/avalanche-module'
 import { BlockchainId } from '@avalabs/glacier-sdk'
 import { ModuleErrors, VmModuleErrors } from './errors'
-import { approvalController } from './ApprovalController'
 import { CoreEthModule } from './mock_modules/coreEth'
+import { approvalController } from './ApprovalController/ApprovalController'
 
 // https://github.com/ChainAgnostic/CAIPs/blob/main/CAIPs/caip-2.md
 // Syntax for namespace is defined in CAIP-2
