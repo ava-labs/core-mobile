@@ -2,11 +2,7 @@ import type { CompositeScreenProps } from '@react-navigation/native'
 import { StackScreenProps } from '@react-navigation/stack'
 import { BottomTabScreenProps } from '@react-navigation/bottom-tabs'
 import { DrawerScreenProps as RNDrawerScreenProps } from '@react-navigation/drawer'
-import {
-  DisplayData,
-  SigningData,
-  TransactionValidationWarningDetails
-} from '@avalabs/vm-module-types'
+import { Alert, DisplayData, SigningData } from '@avalabs/vm-module-types'
 import { RpcRequest } from '@avalabs/vm-module-types'
 import { TokenWithBalance } from 'store/balance/types'
 import { AdvancedStackParamList } from 'navigation/wallet/AdvancedStackScreen'
@@ -94,6 +90,10 @@ export type EditSpendLimitParams = {
   updateSpendLimit(limitData: SpendLimit): void
   onClose(): void
   spendLimit: SpendLimit
+  editingToken: {
+    defaultValue: string
+    decimals: number
+  }
   dAppName?: string
 }
 
@@ -192,7 +192,7 @@ export type GetEthereumChainParams = {
 }
 
 export type MaliciousActivityWarningParams = {
-  warningDetails: TransactionValidationWarningDetails
+  alert: Alert
   onProceed: () => void
   onReject: () => void
 }

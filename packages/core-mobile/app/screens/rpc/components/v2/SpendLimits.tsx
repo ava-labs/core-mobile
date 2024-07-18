@@ -38,7 +38,7 @@ export const SpendLimits = ({
           gap: 16
         }}>
         {spendLimits.map((spendLimit, index) => {
-          const token = spendLimit.exposure.token
+          const token = spendLimit.tokenApproval.token
           let displayValue: string | undefined
 
           if (token.decimals && token.contractType === TokenType.ERC20) {
@@ -68,7 +68,7 @@ export const SpendLimits = ({
                 <Avatar.Token
                   name={token.name}
                   symbol={token.symbol}
-                  logoUri={spendLimit.exposure.logoUri}
+                  logoUri={spendLimit.tokenApproval.logoUri}
                   size={32}
                 />
                 <Text variant="body1">{token.name}</Text>
@@ -83,10 +83,10 @@ export const SpendLimits = ({
                 {displayValue !== undefined && (
                   <Text variant="body1">{displayValue}</Text>
                 )}
-                {spendLimit.exposure.usdPrice !== undefined &&
+                {spendLimit.tokenApproval.usdPrice !== undefined &&
                   spendLimit.limitType === Limit.DEFAULT && (
                     <Text variant="body2">
-                      {currencyFormatter(spendLimit.exposure.usdPrice)}
+                      {currencyFormatter(spendLimit.tokenApproval.usdPrice)}
                     </Text>
                   )}
               </View>

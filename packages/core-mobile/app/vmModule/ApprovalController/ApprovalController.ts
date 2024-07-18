@@ -5,8 +5,8 @@ import {
   ApprovalController as VmModuleApprovalController,
   ApprovalParams,
   ApprovalResponse,
-  RpcMethod
-  TransactionValidationResultType
+  RpcMethod,
+  AlertType
 } from '@avalabs/vm-module-types'
 import AppNavigation from 'navigation/AppNavigation'
 import * as Navigation from 'utils/Navigation'
@@ -98,18 +98,13 @@ class ApprovalController implements VmModuleApprovalController {
         })
       }
 
-      const transactionValidation = displayData.transactionValidation
-      if (
-        transactionValidation?.resultType ===
-          TransactionValidationResultType.MALICIOUS &&
-        transactionValidation.warningDetails
-      ) {
+      if (displayData.alert?.type === AlertType.DANGER) {
         Navigation.navigate({
           name: AppNavigation.Root.Wallet,
           params: {
             screen: AppNavigation.Modal.MaliciousActivityWarning,
             params: {
-              warningDetails: transactionValidation.warningDetails,
+              alert: displayData.alert,
               onReject,
               onProceed: () => {
                 Navigation.navigate({

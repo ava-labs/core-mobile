@@ -5,22 +5,22 @@ import Avatar from 'components/Avatar'
 import CarrotSVG from 'components/svg/CarrotSVG'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 import {
-  AssetDiff,
-  AssetDiffItem,
   NetworkContractToken,
-  NetworkToken
+  NetworkToken,
+  TokenDiff,
+  TokenDiffItem
 } from '@avalabs/vm-module-types'
 
-export const AssetDiffGroup = ({
-  assetDiff,
+export const TokenDiffGroup = ({
+  tokenDiff,
   isOut
 }: {
-  assetDiff: AssetDiff
+  tokenDiff: TokenDiff
   isOut: boolean
 }): JSX.Element => {
-  const token = assetDiff.token
+  const token = tokenDiff.token
 
-  const diffItems = assetDiff.items
+  const diffItems = tokenDiff.items
 
   const [expanded, setExpanded] = useState(diffItems.length === 1)
 
@@ -62,7 +62,7 @@ export const AssetDiffGroup = ({
       )}
       {expanded &&
         diffItems.map((diffItem, i) => (
-          <AssetDiffItemComponent
+          <TokenDiffItemComponent
             token={token}
             diffItem={diffItem}
             isOut={isOut}
@@ -73,20 +73,18 @@ export const AssetDiffGroup = ({
   )
 }
 
-const AssetDiffItemComponent = ({
+const TokenDiffItemComponent = ({
   token,
   diffItem,
   isOut
 }: {
   token: NetworkToken | NetworkContractToken
-  diffItem: AssetDiffItem
+  diffItem: TokenDiffItem
   isOut: boolean
 }): JSX.Element => {
   const { currencyFormatter } = useApplicationContext().appHook
 
-  const displayValue = diffItem.value
-
-  const assetDiffColor = isOut ? '$dangerLight' : '$successLight'
+  const tokenDiffColor = isOut ? '$dangerLight' : '$successLight'
 
   return (
     <View
@@ -117,19 +115,22 @@ const AssetDiffItemComponent = ({
         </Text>
       </View>
       <View sx={{ alignItems: 'flex-end' }}>
-        {displayValue !== undefined && (
-          <Text variant="body2" sx={{ color: assetDiffColor }}>
+        {diffItem.displayValue !== undefined && (
+          <Text variant="body2" sx={{ color: tokenDiffColor }}>
             {isOut ? '-' : ''}
-            {displayValue} {token.symbol}
+            {diffItem.displayValue} {token.symbol}
           </Text>
         )}
         {diffItem.usdPrice !== undefined && (
           <Text
             variant="body2"
             sx={{
-              color: displayValue !== undefined ? '$neutral400' : assetDiffColor
+              color:
+                diffItem.displayValue !== undefined
+                  ? '$neutral400'
+                  : tokenDiffColor
             }}>
-            {displayValue === undefined && (isOut ? '-' : '')}
+            {diffItem.displayValue === undefined && (isOut ? '-' : '')}
             {currencyFormatter(Number(diffItem.usdPrice))}
           </Text>
         )}

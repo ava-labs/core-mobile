@@ -31,8 +31,8 @@ import { Banner } from 'components/Banner'
 import GlobeSVG from 'components/svg/GlobeSVG'
 import { useSpendLimits } from 'hooks/useSpendLimits'
 import RpcRequestBottomSheet from '../shared/RpcRequestBottomSheet'
-import BalanceChange from '../shared/signTransaction/BalanceChange'
-import { SpendLimits } from '../shared/signTransaction/SpendLimits'
+import BalanceChange from './BalanceChange'
+import { SpendLimits } from './SpendLimits'
 import MaliciousActivityWarning from './MaliciousActivityWarning'
 
 type ApprovalPopupScreenProps = WalletScreenProps<
@@ -99,7 +99,7 @@ const ApprovalPopup = (): JSX.Element => {
   }, [rejectAndClose, request, signingData.account, signingData.type])
 
   const { spendLimits, canEdit, updateSpendLimit, hashedCustomSpend } =
-    useSpendLimits(displayData.transactionSimulation?.exposures ?? [])
+    useSpendLimits(displayData.tokenApprovals)
 
   const handleFeesChange = useCallback(
     (fees: Eip1559Fees<NetworkTokenUnit>) => {
@@ -232,6 +232,29 @@ const ApprovalPopup = (): JSX.Element => {
     )
   }
 
+  const handleEditSpendLimit = (): void => {
+    const spendLimit = spendLimits[0]
+
+    if (
+      !updateSpendLimit ||
+      !spendLimit ||
+      !spendLimit.tokenApproval.value ||
+      !spendLimit.tokenApproval.token.decimals
+    )
+      return
+
+    navigate(AppNavigation.Modal.EditSpendLimit, {
+      spendLimit,
+      onClose: goBack,
+      updateSpendLimit,
+      dAppName: request.dappInfo.name,
+      editingToken: {
+        defaultValue: spendLimit.tokenApproval.value,
+        decimals: spendLimit.tokenApproval.token.decimals
+      }
+    })
+  }
+
   const renderAccount = (): JSX.Element | null => {
     if (!displayData.account) return null
 
@@ -351,23 +374,28 @@ const ApprovalPopup = (): JSX.Element => {
     )
   }
 
-  const handleEditSpendLimit = (): void => {
-    const spendLimit = spendLimits[0]
+  const balanceChange = displayData.balanceChange
+  const hasBalanceChange =
+    balanceChange &&
+    (balanceChange.ins.length > 0 || balanceChange.outs.length > 0)
 
-    if (!updateSpendLimit || !spendLimit) return
-
-    navigate(AppNavigation.Modal.EditSpendLimit, {
-      spendLimit,
-      onClose: goBack,
-      updateSpendLimit,
-      dAppName: request.dappInfo.name
-    })
+  const renderSpendLimits = (): JSX.Element | null => {
+    if (spendLimits.length === 0 || hasBalanceChange) {
+      return null
+    }
+    return (
+      <SpendLimits
+        spendLimits={spendLimits}
+        onEdit={canEdit ? handleEditSpendLimit : undefined}
+      />
+    )
   }
 
-  const transactionValidation = displayData.transactionValidation
-  const assetDiffs = displayData.transactionSimulation?.assetDiffs
-  const hasAssetDiffs =
-    assetDiffs && (assetDiffs.ins.length > 0 || assetDiffs.outs.length > 0)
+  const renderBalanceChange = (): JSX.Element | null => {
+    if (!hasBalanceChange) return null
+
+    return <BalanceChange balanceChange={balanceChange} />
+  }
 
   return (
     <>
@@ -380,13 +408,9 @@ const ApprovalPopup = (): JSX.Element => {
             {renderBanner()}
             <Text variant="heading4">{displayData.title}</Text>
             <Space y={12} />
-            {transactionValidation?.warningDetails !== undefined && (
+            {displayData.alert !== undefined && (
               <View sx={{ marginVertical: 12 }}>
-                <MaliciousActivityWarning
-                  resultType={transactionValidation.resultType}
-                  title={transactionValidation.warningDetails.title}
-                  description={transactionValidation.warningDetails.description}
-                />
+                <MaliciousActivityWarning alert={displayData.alert} />
               </View>
             )}
             <Space y={12} />
@@ -395,13 +419,8 @@ const ApprovalPopup = (): JSX.Element => {
             {renderAccount()}
             {renderMessageDetails()}
             {renderTransactionDetails()}
-            {spendLimits.length > 0 && !hasAssetDiffs && (
-              <SpendLimits
-                spendLimits={spendLimits}
-                onEdit={canEdit ? handleEditSpendLimit : undefined}
-              />
-            )}
-            {hasAssetDiffs && <BalanceChange assetDiffs={assetDiffs} />}
+            {renderSpendLimits()}
+            {renderBalanceChange()}
           </View>
           {showNetworkFeeSelector && (
             <NetworkFeeSelector

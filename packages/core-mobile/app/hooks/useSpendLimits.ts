@@ -3,11 +3,11 @@ import { useCallback, useEffect, useState } from 'react'
 import Web3 from 'web3'
 import ERC20 from '@openzeppelin/contracts/build/contracts/ERC20.json'
 import { MaxUint256 } from 'ethers'
-import { AssetExposure, TokenType } from '@avalabs/vm-module-types'
+import { TokenApproval, TokenType } from '@avalabs/vm-module-types'
 import type BN from 'bn.js'
 
 export const useSpendLimits = (
-  exposures: AssetExposure[]
+  tokenApprovals: TokenApproval[]
 ): {
   spendLimits: SpendLimit[]
   canEdit: boolean
@@ -19,43 +19,43 @@ export const useSpendLimits = (
   const [hashedCustomSpend, setHashedCustomSpend] = useState<string>()
 
   useEffect(() => {
-    if (exposures.length === 0) {
+    if (tokenApprovals.length === 0) {
       return
     }
 
     const _spendLimits: SpendLimit[] = []
 
-    for (const exposure of exposures) {
-      const token = exposure.token
-      if (token.contractType === TokenType.ERC20 && exposure.value) {
-        const defaultLimitBN = hexToBN(exposure.value)
+    for (const tokenApproval of tokenApprovals) {
+      const token = tokenApproval.token
+      if (token.contractType === TokenType.ERC20 && tokenApproval.value) {
+        const defaultLimitBN = hexToBN(tokenApproval.value)
         _spendLimits.push({
           limitType: Limit.DEFAULT,
           value: {
             bn: defaultLimitBN,
             amount: bnToLocaleString(defaultLimitBN, token.decimals)
           },
-          exposure
+          tokenApproval
         })
       } else {
         _spendLimits.push({
           limitType: Limit.DEFAULT,
-          exposure
+          tokenApproval
         })
       }
     }
 
     setSpendLimits(_spendLimits)
-  }, [exposures])
+  }, [tokenApprovals])
 
   const canEdit =
     spendLimits.length === 1 &&
-    spendLimits[0]?.exposure.token.contractType === TokenType.ERC20
+    spendLimits[0]?.tokenApproval.token.contractType === TokenType.ERC20
 
   const updateSpendLimit = useCallback(
     (newSpendData: SpendLimit) => {
       const spendLimit = spendLimits[0]
-      if (!canEdit || !spendLimit || !spendLimit.exposure.value) {
+      if (!canEdit || !spendLimit || !spendLimit.tokenApproval.value) {
         return
       }
       let limitAmount: string | undefined
@@ -69,14 +69,17 @@ export const useSpendLimits = (
         ])
         limitAmount = `0x${MaxUint256.toString(16)}`
       } else if (newSpendData.limitType === Limit.DEFAULT) {
-        const bn = hexToBN(spendLimit.exposure.value)
+        const bn = hexToBN(spendLimit.tokenApproval.value)
         setSpendLimits([
           {
             ...spendLimit,
             limitType: Limit.DEFAULT,
             value: {
               bn,
-              amount: bnToLocaleString(bn, spendLimit.exposure.token.decimals)
+              amount: bnToLocaleString(
+                bn,
+                spendLimit.tokenApproval.token.decimals
+              )
             }
           }
         ])
@@ -91,13 +94,13 @@ export const useSpendLimits = (
 
       const contract = new web3.eth.Contract(
         ERC20.abi as any, // eslint-disable-line @typescript-eslint/no-explicit-any
-        spendLimit?.exposure.token.address
+        spendLimit?.tokenApproval.token.address
       )
 
       const hashed =
         limitAmount &&
         contract.methods
-          .approve(spendLimit.exposure.spenderAddress, limitAmount)
+          .approve(spendLimit.tokenApproval.spenderAddress, limitAmount)
           .encodeABI()
 
       setHashedCustomSpend(hashed)
@@ -125,5 +128,5 @@ export interface SpendLimit {
     bn: BN
     amount: string
   }
-  exposure: AssetExposure
+  tokenApproval: TokenApproval
 }

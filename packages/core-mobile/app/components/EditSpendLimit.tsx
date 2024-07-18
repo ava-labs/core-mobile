@@ -1,8 +1,5 @@
-import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
-import AvaButton from 'components/AvaButton'
 import React, { useState } from 'react'
-import { useApplicationContext } from 'contexts/ApplicationContext'
 import FlexSpacer from 'components/FlexSpacer'
 import { Row } from 'components/Row'
 import { Checkbox } from 'components/Checkbox'
@@ -11,14 +8,13 @@ import { useRoute } from '@react-navigation/native'
 import { WalletScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
 import RpcRequestBottomSheet from 'screens/rpc/components/shared/RpcRequestBottomSheet'
-import { View } from '@avalabs/k2-mobile'
+import { View, Text, Button } from '@avalabs/k2-mobile'
 import { Limit, SpendLimit } from 'hooks/useSpendLimits'
 import { hexToBN } from '@avalabs/utils-sdk'
 
-const EditSpendLimit = (): JSX.Element => {
-  const { spendLimit, onClose, updateSpendLimit, dAppName } =
+const EditSpendLimit = (): JSX.Element | null => {
+  const { spendLimit, onClose, updateSpendLimit, dAppName, editingToken } =
     useRoute<EditSpendLimitScreenProps['route']>().params
-  const { theme } = useApplicationContext()
   const [customSpendLimit, setCustomSpendLimit] = useState<SpendLimit>({
     ...spendLimit
   })
@@ -26,13 +22,6 @@ const EditSpendLimit = (): JSX.Element => {
   const handleOnSave = (): void => {
     updateSpendLimit(customSpendLimit)
     onClose()
-  }
-
-  if (
-    spendLimit.exposure.value === undefined ||
-    spendLimit.exposure.token.decimals === undefined
-  ) {
-    throw new Error('exposure value for Spend Limit is undefined')
   }
 
   return (
@@ -43,13 +32,13 @@ const EditSpendLimit = (): JSX.Element => {
           paddingBottom: 16,
           paddingHorizontal: 16
         }}>
-        <AvaText.LargeTitleBold>Edit Spend Limit</AvaText.LargeTitleBold>
+        <Text variant="heading3">Edit Spend Limit</Text>
         <Space y={24} />
-        <AvaText.Body2 color={theme.colorText1}>Spending Limit</AvaText.Body2>
+        <Text variant="body2">Spending Limit</Text>
         <Space y={8} />
-        <AvaText.Body2 color={theme.colorText2}>
+        <Text variant="body2" sx={{ color: '$neutral400' }}>
           Set a limit that you will allow {dAppName} to withdraw and spend.
-        </AvaText.Body2>
+        </Text>
         <Space y={26} />
         <Row style={{ alignItems: 'center' }}>
           <Checkbox
@@ -62,7 +51,7 @@ const EditSpendLimit = (): JSX.Element => {
             }}
           />
           <Space x={18} />
-          <AvaText.Heading2>Unlimited</AvaText.Heading2>
+          <Text variant="buttonLarge">Unlimited</Text>
         </Row>
         <Space y={8} />
         <Row style={{ alignItems: 'flex-start' }}>
@@ -77,13 +66,12 @@ const EditSpendLimit = (): JSX.Element => {
           />
           <Space x={18} />
           <View>
-            <AvaText.Heading2 textStyle={{ marginTop: 14 }}>
+            <Text variant="buttonLarge" sx={{ marginTop: 14 }}>
               Default
-            </AvaText.Heading2>
-
+            </Text>
             <BNInput
-              value={hexToBN(spendLimit.exposure.value)}
-              denomination={spendLimit.exposure.token.decimals}
+              value={hexToBN(editingToken.defaultValue)}
+              denomination={editingToken.decimals}
               editable={false}
               selectTextOnFocus={false}
               style={{ maxWidth: 300 }}
@@ -101,10 +89,10 @@ const EditSpendLimit = (): JSX.Element => {
               })
             }}
           />
-          <View style={{ alignItems: 'flex-start', paddingTop: 13 }}>
-            <AvaText.Heading2 textStyle={{ paddingStart: 16 }}>
+          <View sx={{ alignItems: 'flex-start', paddingTop: 13 }}>
+            <Text variant="buttonLarge" sx={{ paddingStart: 16 }}>
               Custom Spend Limit
-            </AvaText.Heading2>
+            </Text>
             <BNInput
               value={customSpendLimit?.value?.bn}
               placeholder={'Custom Limit'}
@@ -115,16 +103,18 @@ const EditSpendLimit = (): JSX.Element => {
                   limitType: Limit.CUSTOM
                 })
               }}
-              denomination={spendLimit.exposure.token.decimals}
+              denomination={editingToken.decimals}
             />
           </View>
         </Row>
         <FlexSpacer />
-        <AvaButton.PrimaryLarge
+        <Button
+          type="primary"
+          size="xlarge"
           style={{ marginHorizontal: 12 }}
           onPress={handleOnSave}>
           Save
-        </AvaButton.PrimaryLarge>
+        </Button>
       </View>
     </RpcRequestBottomSheet>
   )
