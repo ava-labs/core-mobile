@@ -263,18 +263,21 @@ workflows:
     steps:
     - script-runner@0:
         title: Detox
+        no_output_timeout: 300
         inputs:
         - file_path: scripts/bitrise/detox/androidInternalE2e.sh
   _run_android_core_web_tests:
     steps:
     - script-runner@0:
         title: Detox
+        no_output_timeout: 300
         inputs:
         - file_path: e2e/tests/plusIcon/walletConnect/android_core_web_test_runner.sh
   _run_android_tests_reuse_app_state:
     steps:
     - script-runner@0:
         title: Detox
+        no_output_timeout: 300
         inputs:
         - file_path: scripts/bitrise/detox/androidInternalE2eReuseAppState.sh
   _send-notification-slack:
@@ -891,6 +894,7 @@ workflows:
     steps:
     - script-runner@0:
         title: Detox
+        no_output_timeout: 300
         inputs:
         - file_path: scripts/bitrise/detox/iosInternalE2e.sh
   ios-internal-e2e-core-web-test:
@@ -935,6 +939,7 @@ workflows:
       steps:
       - script-runner@0:
           title: Detox
+          no_output_timeout: 300
           inputs:
           - file_path: scripts/bitrise/detox/iosCoreWebTestRunner.sh
   ios-internal-e2e-regression:
@@ -975,6 +980,7 @@ workflows:
         is_expand: false
     steps:
     - share-pipeline-variable@1:
+        no_output_timeout: 300
         inputs:
         - variables: |-
             IS_REGRESSION_RUN=$IS_REGRESSION_RUN
@@ -1023,6 +1029,7 @@ workflows:
       steps:
       - script-runner@0:
           title: Detox
+          no_output_timeout: 300
           inputs:
           - file_path: scripts/bitrise/detox/iosInternalRegressionRunner.sh
 
