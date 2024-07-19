@@ -14,11 +14,7 @@ import { JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
 import ERC20 from '@openzeppelin/contracts/build/contracts/ERC20.json'
 import { getCache, setCache } from 'utils/InMemoryCache'
 import { arrayHash } from 'utils/Utils'
-import {
-  Network,
-  NetworkContractToken,
-  NetworkVMType
-} from '@avalabs/chains-sdk'
+import { Network, NetworkVMType } from '@avalabs/chains-sdk'
 import NetworkService from 'services/network/NetworkService'
 import { MarketToken } from 'store/watchlist/types'
 import xss from 'xss'
@@ -26,6 +22,7 @@ import promiseWithTimeout, { TimeoutError } from 'utils/js/promiseWithTimeout'
 import { coingeckoProxyClient } from 'services/token/coingeckoProxyClient'
 import { watchListCacheClient } from 'services/watchlist/watchListCacheClient'
 import Logger from 'utils/Logger'
+import { NetworkContractToken, TokenType } from '@avalabs/vm-module-types'
 import {
   ChartData,
   CoinMarket,
@@ -95,7 +92,7 @@ export class TokenService {
       symbol,
       decimals,
       address,
-      contractType: 'ERC-20',
+      type: TokenType.ERC20,
       chainId: network.chainId
     }
   }

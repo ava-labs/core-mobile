@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { ActivityIndicator, StyleSheet, ScrollView } from 'react-native'
-import { RpcMethod } from '@avalabs/vm-module-types'
+import { RpcMethod, TokenType } from '@avalabs/vm-module-types'
 import { Space } from 'components/Space'
 import AvaButton from 'components/AvaButton'
 import { Row } from 'components/Row'
@@ -99,7 +99,7 @@ const ApprovalPopup = (): JSX.Element => {
   }, [rejectAndClose, request, signingData.account, signingData.type])
 
   const { spendLimits, canEdit, updateSpendLimit, hashedCustomSpend } =
-    useSpendLimits(displayData.tokenApprovals)
+    useSpendLimits(displayData.tokenApprovals ?? [])
 
   const handleFeesChange = useCallback(
     (fees: Eip1559Fees<NetworkTokenUnit>) => {
@@ -239,7 +239,7 @@ const ApprovalPopup = (): JSX.Element => {
       !updateSpendLimit ||
       !spendLimit ||
       !spendLimit.tokenApproval.value ||
-      !spendLimit.tokenApproval.token.decimals
+      spendLimit.tokenApproval.token.type !== TokenType.ERC20
     )
       return
 

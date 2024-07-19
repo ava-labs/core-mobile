@@ -27,7 +27,7 @@ export const useSpendLimits = (
 
     for (const tokenApproval of tokenApprovals) {
       const token = tokenApproval.token
-      if (token.contractType === TokenType.ERC20 && tokenApproval.value) {
+      if (token.type === TokenType.ERC20 && tokenApproval.value) {
         const defaultLimitBN = hexToBN(tokenApproval.value)
         _spendLimits.push({
           limitType: Limit.DEFAULT,
@@ -50,12 +50,17 @@ export const useSpendLimits = (
 
   const canEdit =
     spendLimits.length === 1 &&
-    spendLimits[0]?.tokenApproval.token.contractType === TokenType.ERC20
+    spendLimits[0]?.tokenApproval.token.type === TokenType.ERC20
 
   const updateSpendLimit = useCallback(
     (newSpendData: SpendLimit) => {
       const spendLimit = spendLimits[0]
-      if (!canEdit || !spendLimit || !spendLimit.tokenApproval.value) {
+      if (
+        !canEdit ||
+        !spendLimit ||
+        !spendLimit.tokenApproval.value ||
+        spendLimit.tokenApproval.token.type !== TokenType.ERC20
+      ) {
         return
       }
       let limitAmount: string | undefined

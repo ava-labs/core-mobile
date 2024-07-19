@@ -41,7 +41,7 @@ export const SpendLimits = ({
           const token = spendLimit.tokenApproval.token
           let displayValue: string | undefined
 
-          if (token.decimals && token.contractType === TokenType.ERC20) {
+          if (token.type === TokenType.ERC20) {
             let limitValueAmount = '0'
             if (spendLimit?.value?.bn) {
               limitValueAmount = balanceToDisplayValue(
@@ -65,12 +65,14 @@ export const SpendLimits = ({
                 alignItems: 'center'
               }}>
               <Row style={{ alignItems: 'center', gap: 10 }}>
-                <Avatar.Token
-                  name={token.name}
-                  symbol={token.symbol}
-                  logoUri={spendLimit.tokenApproval.logoUri}
-                  size={32}
-                />
+                {token.name && token.symbol && (
+                  <Avatar.Token
+                    name={token.name}
+                    symbol={token.symbol}
+                    logoUri={spendLimit.tokenApproval.logoUri}
+                    size={32}
+                  />
+                )}
                 <Text variant="body1">{token.name}</Text>
               </Row>
               <View
