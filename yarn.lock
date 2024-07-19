@@ -29,18 +29,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/avalanche-module@npm:0.0.0-eth-sign-20240718134126":
-  version: 0.0.0-eth-sign-20240718134126
-  resolution: "@avalabs/avalanche-module@npm:0.0.0-eth-sign-20240718134126"
+"@avalabs/avalanche-module@npm:0.0.16":
+  version: 0.0.16
+  resolution: "@avalabs/avalanche-module@npm:0.0.16"
   dependencies:
     "@avalabs/etherscan-sdk": v2.8.0-alpha.193
     "@avalabs/glacier-sdk": v2.8.0-alpha.193
     "@avalabs/utils-sdk": v2.8.0-alpha.193
-    "@avalabs/vm-module-types": 0.0.0-eth-sign-20240718134126
+    "@avalabs/vm-module-types": 0.0.16
     "@avalabs/wallets-sdk": v2.8.0-alpha.193
     "@metamask/rpc-errors": 6.3.0
     big.js: 6.2.1
-  checksum: b6042a67b794ca73afd1792c2de7cd9cace48546b12030778a2a6230fe4d3aa13392a9122690a636bcffc038cae2fecb97d9e62bf33cd6a90d54d8420334bb7a
+  checksum: 4fb99c180bee7491dd3a552b1dabdd4fb5649104be99384c81424de10ae04e6d0974b2e8bbedc24161dfea03ef8d87ec176874def7f8fc0af4600b6b88ec9955
   languageName: node
   linkType: hard
 
@@ -125,7 +125,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@avalabs/core-mobile@workspace:packages/core-mobile"
   dependencies:
-    "@avalabs/avalanche-module": 0.0.0-eth-sign-20240718134126
+    "@avalabs/avalanche-module": 0.0.16
     "@avalabs/avalanchejs": 4.0.5
     "@avalabs/bridge-sdk": v2.8.0-alpha.187
     "@avalabs/bridge-unified": 2.1.1
@@ -133,7 +133,7 @@ __metadata:
     "@avalabs/coingecko-sdk": v2.8.0-alpha.187
     "@avalabs/covalent-sdk": v2.8.0-alpha.187
     "@avalabs/etherscan-sdk": v2.8.0-alpha.187
-    "@avalabs/evm-module": 0.0.0-eth-sign-20240718134126
+    "@avalabs/evm-module": 0.0.16
     "@avalabs/glacier-sdk": v2.8.0-alpha.187
     "@avalabs/k2-mobile": "workspace:*"
     "@avalabs/paraswap-sdk": v2.8.0-alpha.187
@@ -142,7 +142,7 @@ __metadata:
     "@avalabs/tsconfig-mobile": "workspace:*"
     "@avalabs/types": v2.8.0-alpha.187
     "@avalabs/utils-sdk": v2.8.0-alpha.187
-    "@avalabs/vm-module-types": 0.0.0-eth-sign-20240718134126
+    "@avalabs/vm-module-types": 0.0.16
     "@avalabs/wallets-sdk": v2.8.0-alpha.187
     "@babel/core": 7.24.0
     "@babel/plugin-proposal-nullish-coalescing-operator": 7.18.6
@@ -376,25 +376,24 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/evm-module@npm:0.0.0-eth-sign-20240718134126":
-  version: 0.0.0-eth-sign-20240718134126
-  resolution: "@avalabs/evm-module@npm:0.0.0-eth-sign-20240718134126"
+"@avalabs/evm-module@npm:0.0.16":
+  version: 0.0.16
+  resolution: "@avalabs/evm-module@npm:0.0.16"
   dependencies:
     "@avalabs/coingecko-sdk": v2.8.0-alpha.193
     "@avalabs/etherscan-sdk": v2.8.0-alpha.193
     "@avalabs/glacier-sdk": v2.8.0-alpha.193
     "@avalabs/utils-sdk": 2.8.0-alpha.193
-    "@avalabs/vm-module-types": 0.0.0-eth-sign-20240718134126
+    "@avalabs/vm-module-types": 0.0.16
     "@avalabs/wallets-sdk": v2.8.0-alpha.193
     "@metamask/rpc-errors": 6.3.0
     "@zodios/core": 10.9.6
     bn.js: 5.2.1
-    ethereumjs-util: 7.1.5
     lodash.startcase: 4.4.0
     zod: 3.23.8
   peerDependencies:
     ethers: ^6.8.1
-  checksum: cb6e40919d5b787749ab973b08f6156c4133b0caf345367a1c519e66b9f8f8521f8964fc1ca0a9ce4a38aa1528f53656b5f00969016eef07714d1c53955542e4
+  checksum: 6df96ae654b6b783073ea139f136909a30730b9b5713b6fc3b36e141db0a5329f175ed33a02fa8a106c740107626b149d030b96a003f457416c2646995291ac3
   languageName: node
   linkType: hard
 
@@ -565,16 +564,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/vm-module-types@npm:0.0.0-eth-sign-20240718134126":
-  version: 0.0.0-eth-sign-20240718134126
-  resolution: "@avalabs/vm-module-types@npm:0.0.0-eth-sign-20240718134126"
+"@avalabs/vm-module-types@npm:0.0.16":
+  version: 0.0.16
+  resolution: "@avalabs/vm-module-types@npm:0.0.16"
   dependencies:
     "@metamask/rpc-errors": 6.3.0
     ethers: 6.8.1
     zod: 3.23.8
   peerDependencies:
     ethers: ^6.8.1
-  checksum: 33ff7294833459b3fbdecd38b0a1d5fe9cb92befb69ecb418422ccfdd3cd1bb9acf16a326a2cd236560bc04a638fe3e9a466049ebbc20cfa045dd563e5565ef7
+  checksum: 3466a09d475b0f551c7c5dd07366e2cad7fc363f6d5b81fe3390a8ba619dded988aecd7adb270e1d20cdf15ca838004cee4a75c00c2eea3c9f720f344c342030
   languageName: node
   linkType: hard
 
@@ -13670,7 +13669,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ethereumjs-util@npm:7.1.5, ethereumjs-util@npm:^7.0.10, ethereumjs-util@npm:^7.1.0, ethereumjs-util@npm:^7.1.3, ethereumjs-util@npm:^7.1.5":
+"ethereumjs-util@npm:^7.0.10, ethereumjs-util@npm:^7.1.0, ethereumjs-util@npm:^7.1.3, ethereumjs-util@npm:^7.1.5":
   version: 7.1.5
   resolution: "ethereumjs-util@npm:7.1.5"
   dependencies:
