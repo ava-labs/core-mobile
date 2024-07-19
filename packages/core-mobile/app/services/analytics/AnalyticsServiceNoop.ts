@@ -1,4 +1,4 @@
-export class AnalyticsServiceDisabled {
+export class AnalyticsServiceNoop {
   setEnabled(): void {
     //noop
   }

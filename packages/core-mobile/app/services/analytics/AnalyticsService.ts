@@ -1,10 +1,9 @@
-import assert from 'assert'
 import PostHogService from 'services/posthog/PostHogService'
 import { AnalyticsEvents } from 'types/analytics'
 import Config from 'react-native-config'
 import { encrypt } from 'utils/hpke'
 import Logger from 'utils/Logger'
-import { AnalyticsServiceDisabled } from 'services/analytics/AnalyticsServiceDisabled'
+import { AnalyticsServiceNoop } from 'services/analytics/AnalyticsServiceNoop'
 import { AnalyticsEventName, CaptureEventProperties } from './types'
 
 if (!Config.ANALYTICS_ENCRYPTION_KEY) {
@@ -20,10 +19,11 @@ if (!Config.ANALYTICS_ENCRYPTION_KEY_ID) {
 }
 
 const ANALYTICS_ENCRYPTION_KEY = Config.ANALYTICS_ENCRYPTION_KEY
-
 const ANALYTICS_ENCRYPTION_KEY_ID = Config.ANALYTICS_ENCRYPTION_KEY_ID
 
 class AnalyticsService {
+  constructor(private analyticsEncryptionKey: string) {}
+
   private isEnabled: boolean | undefined
 
   setEnabled(isEnabled: boolean): void {
@@ -50,13 +50,9 @@ class AnalyticsService {
     }
 
     const stringifiedProperties = JSON.stringify(properties)
-    assert(
-      ANALYTICS_ENCRYPTION_KEY,
-      'ANALYTICS_ENCRYPTION_KEY expected to exist, check why AnalyticsServiceDisabled is not instantiated'
-    )
     const { encrypted, enc, keyID } = await encrypt(
       stringifiedProperties,
-      ANALYTICS_ENCRYPTION_KEY,
+      this.analyticsEncryptionKey,
       ANALYTICS_ENCRYPTION_KEY_ID
     )
 
@@ -69,5 +65,5 @@ class AnalyticsService {
 }
 
 export default ANALYTICS_ENCRYPTION_KEY
-  ? new AnalyticsService()
-  : new AnalyticsServiceDisabled()
+  ? new AnalyticsService(ANALYTICS_ENCRYPTION_KEY)
+  : new AnalyticsServiceNoop()
