@@ -2,13 +2,15 @@ import Assert from '../helpers/assertions'
 import Action from '../helpers/actions'
 import portfolio from '../locators/portfolio.loc'
 import { Platform } from '../helpers/constants'
+import actions from '../helpers/actions'
+import delay from '../helpers/waits'
 import networksManagePage from './networksManage.page'
 import ActivityTabPage from './activityTab.page'
 
 const platformIndex = Action.platform() === Platform.iOS ? 1 : 0
 class PortfolioPage {
   get avaxNetwork() {
-    return by.text(portfolio.avaxNetwork)
+    return by.id(portfolio.avaxNetwork)
   }
 
   get arbitrumNetwork() {
@@ -128,8 +130,12 @@ class PortfolioPage {
   }
 
   async goToActivityTab() {
+    await actions.waitForElement(this.avaxNetwork)
+    await delay(1000)
     await this.tapAvaxNetwork()
+    await actions.waitForElement(this.activityTab)
     await this.tapActivityTab()
+    await delay(3000)
     await ActivityTabPage.refreshActivityPage()
   }
 
@@ -143,7 +149,7 @@ class PortfolioPage {
   }
 
   async tapAvaxNetwork() {
-    await Action.tapElementAtIndex(this.avaxNetwork, 1)
+    await Action.tapElementAtIndex(this.avaxNetwork, 0)
   }
 
   async tapBtcFavoriteToken() {

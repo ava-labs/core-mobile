@@ -24,6 +24,7 @@ type Props = {
   onPress: (network: Network) => void
   onContentLayout?: (event: LayoutChangeEvent) => void
   height?: number
+  testID?: string
 }
 
 const InactiveNetworkCard: FC<Props> = ({
@@ -82,6 +83,7 @@ const InactiveNetworkCard: FC<Props> = ({
         <Space y={8} />
         <View>
           <Text
+            testID={`inactive-network-${network.chainName}`}
             variant="buttonLarge"
             ellipsizeMode={'tail'}
             numberOfLines={2}
