@@ -22,11 +22,11 @@ if (!Config.ANALYTICS_ENCRYPTION_KEY_ID) {
   )
 }
 
-const ANALYTICS_ENCRYPTION_KEY = Config.ANALYTICS_ENCRYPTION_KEY
-const ANALYTICS_ENCRYPTION_KEY_ID = Config.ANALYTICS_ENCRYPTION_KEY_ID
-
 class AnalyticsService implements AnalyticsServiceInterface {
-  constructor(private analyticsEncryptionKey: string) {}
+  constructor(
+    private analyticsEncryptionKey: string,
+    private analyticsEncryptionKeyId: string
+  ) {}
 
   private isEnabled: boolean | undefined
 
@@ -57,7 +57,7 @@ class AnalyticsService implements AnalyticsServiceInterface {
     const { encrypted, enc, keyID } = await encrypt(
       stringifiedProperties,
       this.analyticsEncryptionKey,
-      ANALYTICS_ENCRYPTION_KEY_ID
+      this.analyticsEncryptionKeyId
     )
 
     return PostHogService.capture(eventName, {
@@ -68,6 +68,10 @@ class AnalyticsService implements AnalyticsServiceInterface {
   }
 }
 
-export default ANALYTICS_ENCRYPTION_KEY
-  ? new AnalyticsService(ANALYTICS_ENCRYPTION_KEY)
+export default Config.ANALYTICS_ENCRYPTION_KEY &&
+Config.ANALYTICS_ENCRYPTION_KEY_ID
+  ? new AnalyticsService(
+      Config.ANALYTICS_ENCRYPTION_KEY,
+      Config.ANALYTICS_ENCRYPTION_KEY_ID
+    )
   : new AnalyticsServiceNoop()
