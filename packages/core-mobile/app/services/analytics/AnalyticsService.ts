@@ -4,7 +4,11 @@ import Config from 'react-native-config'
 import { encrypt } from 'utils/hpke'
 import Logger from 'utils/Logger'
 import { AnalyticsServiceNoop } from 'services/analytics/AnalyticsServiceNoop'
-import { AnalyticsEventName, CaptureEventProperties } from './types'
+import {
+  AnalyticsEventName,
+  AnalyticsServiceInterface,
+  CaptureEventProperties
+} from './types'
 
 if (!Config.ANALYTICS_ENCRYPTION_KEY) {
   Logger.info(
@@ -21,7 +25,7 @@ if (!Config.ANALYTICS_ENCRYPTION_KEY_ID) {
 const ANALYTICS_ENCRYPTION_KEY = Config.ANALYTICS_ENCRYPTION_KEY
 const ANALYTICS_ENCRYPTION_KEY_ID = Config.ANALYTICS_ENCRYPTION_KEY_ID
 
-class AnalyticsService {
+class AnalyticsService implements AnalyticsServiceInterface {
   constructor(private analyticsEncryptionKey: string) {}
 
   private isEnabled: boolean | undefined

@@ -1,4 +1,6 @@
-export class AnalyticsServiceNoop {
+import { AnalyticsServiceInterface } from 'services/analytics/types'
+
+export class AnalyticsServiceNoop implements AnalyticsServiceInterface {
   setEnabled(): void {
     //noop
   }
