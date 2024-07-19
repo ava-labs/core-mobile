@@ -3,13 +3,21 @@ import Logger from 'utils/Logger'
 import DeviceInfoService from 'services/deviceInfo/DeviceInfoService'
 import { JsonMap } from 'store/posthog'
 import { applyTempChainIdConversion } from 'temp/caip2ChainIds'
+import { PostHogServiceNoop } from 'services/posthog/PostHogServiceNoop'
 import { sanitizeFeatureFlags } from './sanitizeFeatureFlags'
-import { FeatureGates, FeatureVars, PostHogDecideResponse } from './types'
+import {
+  FeatureGates,
+  FeatureVars,
+  PostHogDecideResponse,
+  PostHogServiceInterface
+} from './types'
 import { getPosthogDeviceInfo } from './utils'
 
 const PostHogCaptureUrl = `${Config.POSTHOG_URL}/capture/`
 
-class PostHogService {
+class PostHogService implements PostHogServiceInterface {
+  constructor(private posthogAnalyticsKey: string) {}
+
   distinctId: string | undefined
   userId: string | undefined
 
@@ -29,10 +37,6 @@ class PostHogService {
   }
 
   async capture(eventName: string, properties?: JsonMap): Promise<void> {
-    if (!Config.POSTHOG_ANALYTICS_KEY) {
-      return
-    }
-
     if (!this.isConfigured) {
       throw new Error(
         'PostHogService not configured. please call configure() first'
@@ -48,7 +52,7 @@ class PostHogService {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        api_key: Config.POSTHOG_ANALYTICS_KEY,
+        api_key: this.posthogAnalyticsKey,
         event: eventName,
         timestamp: Date.now().toString(),
         ip: '',
@@ -73,9 +77,6 @@ class PostHogService {
   }
 
   async identifyUser(distinctId: string): Promise<void> {
-    if (!Config.POSTHOG_FEATURE_FLAGS_KEY) {
-      return
-    }
     const PostHogIdentifyFetchOptions = {
       method: 'POST',
       headers: {
@@ -109,10 +110,6 @@ class PostHogService {
   ): Promise<
     Partial<Record<FeatureGates | FeatureVars, string | boolean>> | undefined
   > {
-    if (!Config.POSTHOG_FEATURE_FLAGS_KEY) {
-      return undefined
-    }
-
     const appVersion = DeviceInfoService.getAppVersion()
 
     const fetchWithPosthogFallback =
@@ -171,4 +168,6 @@ class PostHogService {
   }
 }
 
-export default new PostHogService()
+export default Config.POSTHOG_ANALYTICS_KEY
+  ? new PostHogService(Config.POSTHOG_ANALYTICS_KEY)
+  : new PostHogServiceNoop()
