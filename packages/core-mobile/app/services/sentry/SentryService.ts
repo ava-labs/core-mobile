@@ -5,8 +5,10 @@ import { scrub } from 'utils/data/scrubber'
 import DevDebuggingConfig from 'utils/debugging/DevDebuggingConfig'
 import { Event } from '@sentry/types/types/event'
 
-if (Config.SENTRY_DSN === undefined)
-  throw new Error('SENTRY_DSN is not defined')
+if (!Config.SENTRY_DSN)
+  // (require cycle)
+  // eslint-disable-next-line no-console
+  console.warn('SENTRY_DSN is not defined. Sentry is disabled.')
 
 // if development then only enable if spotlight is enabled
 // otherwise enable if not development

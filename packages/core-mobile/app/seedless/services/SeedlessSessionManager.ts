@@ -33,7 +33,7 @@ if (!Config.SEEDLESS_ORG_ID) {
 }
 
 if (!Config.SEEDLESS_ENVIRONMENT) {
-  throw Error('SEEDLESS_ENVIRONMENT is missing. Please check your env file.')
+  Logger.warn('SEEDLESS_ENVIRONMENT is missing. Please check your env file.')
 }
 
 const SEEDLESS_ORG_ID = Config.SEEDLESS_ORG_ID ?? ''

@@ -13,10 +13,11 @@ import {
   PasskeyServiceInterface
 } from 'services/passkey/types'
 import { base64UrlToBuffer, bufferToBase64Url } from 'utils/data/base64'
+import Logger from 'utils/Logger'
 import { FIDO_CALLBACK_URL, RP_ID } from './consts'
 
 if (!Config.SEEDLESS_ENVIRONMENT) {
-  throw Error('SEEDLESS_ENVIRONMENT is missing. Please check your env file.')
+  Logger.warn('SEEDLESS_ENVIRONMENT is missing. Please check your env file.')
 }
 
 const BROWSER_OPTIONS = {
