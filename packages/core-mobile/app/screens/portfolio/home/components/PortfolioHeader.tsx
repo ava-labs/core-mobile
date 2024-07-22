@@ -32,7 +32,9 @@ function PortfolioHeader(): JSX.Element {
     selectBalanceForAccountIsAccurate(activeAccount?.index ?? 0)
   )
   const { selectedCurrency, currencyFormatter } = context.appHook
-  const currencyBalance = currencyFormatter(balanceTotalInCurrency)
+  const currencyBalance = balanceAccurate
+    ? currencyFormatter(balanceTotalInCurrency)
+    : '-'
   const tokens = useSelector(
     selectTokensWithBalanceForAccount(activeAccount?.index)
   )
