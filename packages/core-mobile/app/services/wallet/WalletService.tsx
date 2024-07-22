@@ -29,6 +29,7 @@ import { bnToBigint } from 'utils/bigNumbers/bnToBigint'
 import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKeysStorage'
 import SeedlessWallet from 'seedless/services/wallet/SeedlessWallet'
 import { PChainId } from '@avalabs/glacier-sdk'
+import { MessageTypes, TypedData, TypedDataV1 } from '@avalabs/vm-module-types'
 import { isAvalancheTransactionRequest, isBtcTransactionRequest } from './utils'
 import WalletInitializer from './WalletInitializer'
 import WalletFactory from './WalletFactory'
@@ -136,7 +137,7 @@ class WalletService {
     network
   }: {
     rpcMethod: RpcMethod
-    data: string | unknown
+    data: string | TypedDataV1 | TypedData<MessageTypes>
     accountIndex: number
     network: Network
   }): Promise<string> {

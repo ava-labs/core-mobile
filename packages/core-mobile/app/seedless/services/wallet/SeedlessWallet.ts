@@ -21,16 +21,15 @@ import {
 import { sha256 } from '@noble/hashes/sha256'
 import { EVM, utils } from '@avalabs/avalanchejs'
 import {
-  MessageTypes,
   SignTypedDataVersion,
   TypedDataUtils,
-  TypedMessage,
   typedSignatureHash
 } from '@metamask/eth-sig-util'
 import { RpcMethod } from 'store/rpc/types'
 import { toUtf8 } from 'ethereumjs-util'
 import { getChainAliasFromNetwork } from 'services/network/utils/getChainAliasFromNetwork'
-import { TypedDataV1Field } from '@metamask/eth-sig-util/dist/sign-typed-data'
+import { TypedData, TypedDataV1, MessageTypes } from '@avalabs/vm-module-types'
+import { isTypedData, isTypedDataV1 } from '@avalabs/evm-module'
 import { stripChainAddress } from 'store/account/utils'
 import CoreSeedlessAPIService from '../CoreSeedlessAPIService'
 import { SeedlessBtcSigner } from './SeedlessBtcSigner'
@@ -143,7 +142,7 @@ export default class SeedlessWallet implements Wallet {
     provider
   }: {
     rpcMethod: RpcMethod
-    data: string | unknown
+    data: string | TypedDataV1 | TypedData<MessageTypes>
     accountIndex: number
     network: Network
     provider: JsonRpcBatchInternal | Avalanche.JsonRpcProvider
@@ -154,8 +153,8 @@ export default class SeedlessWallet implements Wallet {
 
     switch (rpcMethod) {
       case RpcMethod.AVALANCHE_SIGN_MESSAGE: {
-        if (typeof data !== 'string')
-          throw new Error(`Invalid message type ${typeof data}`)
+        if (typeof data !== 'string') throw new Error('Data must be string')
+
         const chainAlias = getChainAliasFromNetwork(network)
         if (!chainAlias)
           throw new Error(`Unsupported network ${network.vmName}`)
@@ -174,23 +173,25 @@ export default class SeedlessWallet implements Wallet {
       case RpcMethod.PERSONAL_SIGN:
         if (typeof data !== 'string')
           throw new Error(`Invalid message type ${typeof data}`)
+
         return this.signBlob(
           addressEVM,
           hashMessage(Uint8Array.from(Buffer.from(strip0x(data), 'hex')))
         )
       case RpcMethod.SIGN_TYPED_DATA:
       case RpcMethod.SIGN_TYPED_DATA_V1:
-        return this.signBlob(
-          addressEVM,
-          typedSignatureHash(data as TypedDataV1Field[])
-        )
+        if (!isTypedDataV1(data)) throw new Error('Invalid typed data v1')
+
+        return this.signBlob(addressEVM, typedSignatureHash(data))
       case RpcMethod.SIGN_TYPED_DATA_V3:
       case RpcMethod.SIGN_TYPED_DATA_V4: {
+        if (!isTypedData(data)) throw new Error('Invalid typed data')
+
         // Not using cs.ethers.Signer.signTypedData due to the strict type verification in Ethers
         // dApps in many cases have requests with extra unused types. In these cases ethers throws an error, rightfully.
         // However since MM supports these malformed messages, we have to as well. Otherwise Core would look broken.
         const hash = TypedDataUtils.eip712Hash(
-          data as TypedMessage<MessageTypes>,
+          data,
           rpcMethod === RpcMethod.SIGN_TYPED_DATA_V3
             ? SignTypedDataVersion.V3
             : SignTypedDataVersion.V4
