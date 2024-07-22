@@ -220,6 +220,9 @@ class PortfolioPage {
 
   async verifyWatchListCarousel(tokens: string[]) {
     for (const token of tokens) {
+      await Action.waitForElement(
+        by.id(`watchlist_carousel__${token.toLowerCase()}`)
+      )
       await Assert.isVisible(
         by.id(`watchlist_carousel__${token.toLowerCase()}`)
       )
