@@ -30,6 +30,7 @@ class AnalyticsConsentPage {
   }
 
   async verifyAnalysticsContentPage() {
+    await Action.waitForElement(this.noThanksBtn)
     await Assert.isVisible(this.analysticsTitle)
     await Assert.isVisible(this.analysticsContent)
     await Assert.isVisible(this.unlockBtn)
