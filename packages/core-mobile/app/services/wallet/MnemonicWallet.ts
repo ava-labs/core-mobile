@@ -31,6 +31,8 @@ import { assertNotUndefined } from 'utils/assertions'
 import { utils } from '@avalabs/avalanchejs'
 import { toUtf8 } from 'ethereumjs-util'
 import { getChainAliasFromNetwork } from 'services/network/utils/getChainAliasFromNetwork'
+import { TypedDataV1, TypedData, MessageTypes } from '@avalabs/vm-module-types'
+import { isTypedData } from '@avalabs/evm-module'
 
 export class MnemonicWallet implements Wallet {
   #mnemonic?: string
@@ -158,24 +160,22 @@ export class MnemonicWallet implements Wallet {
     provider
   }: {
     rpcMethod: RpcMethod
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    data: any
+    data: string | TypedDataV1 | TypedData<MessageTypes>
     accountIndex: number
     network: Network
     provider: JsonRpcBatchInternal
   }): Promise<string> {
-    if (!data) {
-      throw new Error('no message to sign')
-    }
-
     switch (rpcMethod) {
       case RpcMethod.AVALANCHE_SIGN_MESSAGE: {
         const chainAlias = getChainAliasFromNetwork(network)
         if (!chainAlias) throw new Error('invalid chain alias')
+
         return await this.signAvalancheMessage(accountIndex, data, chainAlias)
       }
       case RpcMethod.ETH_SIGN:
       case RpcMethod.PERSONAL_SIGN: {
+        if (typeof data !== 'string') throw new Error('data must be string')
+
         const key = await this.getSigningKey({
           accountIndex,
           network,
@@ -185,10 +185,12 @@ export class MnemonicWallet implements Wallet {
       }
       case RpcMethod.SIGN_TYPED_DATA:
       case RpcMethod.SIGN_TYPED_DATA_V1: {
+        if (typeof data === 'string') throw new Error('data cannot be string')
+
         // instances were observed where method was eth_signTypedData or eth_signTypedData_v1,
         // however, payload was V4
-        const isV4 =
-          typeof data === 'object' && 'types' in data && 'primaryType' in data
+        const isV4 = isTypedData(data)
+
         const key = await this.getSigningKey({
           accountIndex,
           network,
@@ -201,6 +203,8 @@ export class MnemonicWallet implements Wallet {
         })
       }
       case RpcMethod.SIGN_TYPED_DATA_V3: {
+        if (!isTypedData(data)) throw new Error('invalid typed data')
+
         const key = await this.getSigningKey({
           accountIndex,
           network,
@@ -213,6 +217,8 @@ export class MnemonicWallet implements Wallet {
         })
       }
       case RpcMethod.SIGN_TYPED_DATA_V4: {
+        if (!isTypedData(data)) throw new Error('invalid typed data')
+
         const key = await this.getSigningKey({
           accountIndex,
           network,
