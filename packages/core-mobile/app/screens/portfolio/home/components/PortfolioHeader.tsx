@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { useSelector } from 'react-redux'
 import {
+  selectBalanceForAccountIsAccurate,
   selectBalanceTotalInCurrencyForAccount,
   selectIsLoadingBalances,
   selectIsRefetchingBalances,
@@ -10,17 +11,25 @@ import {
 import { selectActiveAccount } from 'store/account'
 import { ActivityIndicator } from 'components/ActivityIndicator'
 import PriceChangeIndicator from 'screens/watchlist/components/PriceChangeIndicator'
-import { Text, View } from '@avalabs/k2-mobile'
+import { Icons, Text, useTheme, View } from '@avalabs/k2-mobile'
 import { useTokenPortfolioPriceChange } from 'hooks/balance/useTokenPortfolioPriceChange'
+import { Tooltip } from 'components/Tooltip'
+import { Space } from 'components/Space'
 import { PortfolioHeaderLoader } from './Loaders/PortfolioHeaderLoader'
 
 function PortfolioHeader(): JSX.Element {
+  const {
+    theme: { colors }
+  } = useTheme()
   const context = useApplicationContext()
   const activeAccount = useSelector(selectActiveAccount)
   const isBalanceLoading = useSelector(selectIsLoadingBalances)
   const isRefetchingBalance = useSelector(selectIsRefetchingBalances)
   const balanceTotalInCurrency = useSelector(
     selectBalanceTotalInCurrencyForAccount(activeAccount?.index ?? 0)
+  )
+  const balanceAccurate = useSelector(
+    selectBalanceForAccountIsAccurate(activeAccount?.index ?? 0)
   )
   const { selectedCurrency, currencyFormatter } = context.appHook
   const currencyBalance = currencyFormatter(balanceTotalInCurrency)
@@ -49,11 +58,30 @@ function PortfolioHeader(): JSX.Element {
         }}>
         <View
           sx={{
-            alignItems: 'flex-end',
+            alignItems: 'center',
             justifyContent: 'center',
             flexDirection: 'row',
             height: 44
           }}>
+          {!balanceAccurate && (
+            <>
+              <Tooltip
+                content={
+                  'The prices of some tokens are missing. The balance might not be accurate currently.'
+                }
+                position={'top'}
+                style={{ width: 250 }}
+                isLabelPopable>
+                <Icons.Alert.IconWarningAmber
+                  color={colors.$warningLight}
+                  width={24}
+                  height={24}
+                  style={{ alignSelf: 'center' }}
+                />
+              </Tooltip>
+              <Space x={6} />
+            </>
+          )}
           <Text variant="heading3">
             {currencyBalance.replace(selectedCurrency, '')}
           </Text>
@@ -62,7 +90,8 @@ function PortfolioHeader(): JSX.Element {
             sx={{
               paddingBottom: 4,
               marginLeft: 4,
-              color: '$neutral400'
+              color: '$neutral400',
+              alignSelf: 'flex-end'
             }}>
             {selectedCurrency}
           </Text>
