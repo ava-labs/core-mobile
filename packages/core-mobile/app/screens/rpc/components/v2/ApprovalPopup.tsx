@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { ActivityIndicator, StyleSheet, ScrollView } from 'react-native'
-import { RpcMethod, TokenType } from '@avalabs/vm-module-types'
+import { AlertType, RpcMethod, TokenType } from '@avalabs/vm-module-types'
 import { Space } from 'components/Space'
 import AvaButton from 'components/AvaButton'
 import { Row } from 'components/Row'
@@ -162,12 +162,18 @@ const ApprovalPopup = (): JSX.Element => {
       })
   }
 
-  const renderBanner = (): JSX.Element | null => {
-    if (!displayData.banner) return null
+  const renderAlert = (): JSX.Element | null => {
+    if (!displayData.alert) return null
 
-    const { title, description } = displayData.banner
+    if (displayData.alert.type === AlertType.DANGER) {
+      return <Banner {...displayData.alert.details} />
+    }
 
-    return <Banner title={title} description={description} />
+    return (
+      <View sx={{ marginVertical: 12 }}>
+        <MaliciousActivityWarning alert={displayData.alert} />
+      </View>
+    )
   }
 
   const renderDappInfo = (): JSX.Element | null => {
@@ -276,7 +282,7 @@ const ApprovalPopup = (): JSX.Element => {
       <View>
         <Text variant="buttonMedium">Message:</Text>
         <View sx={styles.details}>
-          <Text>{displayData.messageDetails}</Text>
+          <Text variant="body1">{displayData.messageDetails}</Text>
         </View>
       </View>
     )
@@ -405,14 +411,9 @@ const ApprovalPopup = (): JSX.Element => {
         }}>
         <ScrollView contentContainerStyle={styles.scrollView}>
           <View>
-            {renderBanner()}
             <Text variant="heading4">{displayData.title}</Text>
             <Space y={12} />
-            {displayData.alert !== undefined && (
-              <View sx={{ marginVertical: 12 }}>
-                <MaliciousActivityWarning alert={displayData.alert} />
-              </View>
-            )}
+            {renderAlert()}
             <Space y={12} />
             {renderDappInfo()}
             {renderNetwork()}

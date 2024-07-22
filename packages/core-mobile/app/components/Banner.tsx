@@ -1,6 +1,5 @@
 import React from 'react'
 import { View, Text, alpha, useTheme } from '@avalabs/k2-mobile'
-import { Space } from './Space'
 import InfoSVG from './svg/InfoSVG'
 
 export const Banner = ({
@@ -24,10 +23,10 @@ export const Banner = ({
         padding: 16,
         backgroundColor: alpha(colors.$warningDark, 0.1),
         alignItems: 'center',
-        marginBottom: 16
+        marginBottom: 16,
+        gap: 12
       }}>
       <InfoSVG color={colors.$warningLight} size={24} />
-      <Space x={12} />
       <View sx={{ flex: 1 }}>
         <Text variant="alertTitle">{title}</Text>
         <Text variant="alertDescription">{description}</Text>
