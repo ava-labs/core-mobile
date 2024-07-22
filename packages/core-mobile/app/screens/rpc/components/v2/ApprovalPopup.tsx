@@ -165,7 +165,7 @@ const ApprovalPopup = (): JSX.Element => {
   const renderAlert = (): JSX.Element | null => {
     if (!displayData.alert) return null
 
-    if (displayData.alert.type === AlertType.DANGER) {
+    if (displayData.alert.type === AlertType.INFO) {
       return <Banner {...displayData.alert.details} />
     }
 
