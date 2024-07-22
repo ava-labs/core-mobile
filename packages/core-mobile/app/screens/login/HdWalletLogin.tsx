@@ -26,7 +26,7 @@ export default function HdWalletLogin(props: Props): JSX.Element {
   }
 
   const onEnterWallet = (mnemonic: string): void => {
-    const trimmed = mnemonic.trim()
+    const trimmed = mnemonic.toLowerCase().trim()
     const isValid = bip39.validateMnemonic(trimmed)
     try {
       if (isValid) {
