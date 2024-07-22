@@ -188,8 +188,8 @@ export const selectBalanceForAccountIsAccurate =
   (accountIndex: number | undefined) => (state: RootState) => {
     if (accountIndex === undefined) return true
 
-    return Object.values(state.balance.balances).some(
-      balance => balance.dataAccurate
+    return !Object.values(state.balance.balances).some(
+      balance => !balance.dataAccurate
     )
   }
 
