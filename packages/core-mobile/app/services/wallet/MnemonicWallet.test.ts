@@ -5,6 +5,57 @@ import { RpcMethod } from 'store/rpc/types'
 import * as ethSignUtil from '@metamask/eth-sig-util'
 import MnemonicWallet from './MnemonicWallet'
 
+const TYPED_DATA = {
+  types: {
+    EIP712Domain: [
+      { name: 'name', type: 'string' },
+      { name: 'version', type: 'string' },
+      { name: 'chainId', type: 'uint256' },
+      { name: 'verifyingContract', type: 'address' }
+    ],
+    Group: [
+      { name: 'name', type: 'string' },
+      { name: 'members', type: 'Person[]' }
+    ],
+    Mail: [
+      { name: 'from', type: 'Person' },
+      { name: 'to', type: 'Person[]' },
+      { name: 'contents', type: 'string' }
+    ],
+    Person: [
+      { name: 'name', type: 'string' },
+      { name: 'wallets', type: 'address[]' }
+    ]
+  },
+  primaryType: 'Mail',
+  domain: {
+    chainId: 43113,
+    name: 'Ether Mail',
+    verifyingContract: '0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC',
+    version: '1'
+  },
+  message: {
+    contents: 'Hello, Bob!',
+    from: {
+      name: 'Cow',
+      wallets: [
+        '0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826',
+        '0xDeaDbeefdEAdbeefdEadbEEFdeadbeEFdEaDbeeF'
+      ]
+    },
+    to: [
+      {
+        name: 'Bob',
+        wallets: [
+          '0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB',
+          '0xB0BdaBea57B0BDABeA57b0bdABEA57b0BDabEa57',
+          '0xB0B0b0b0b0b0B000000000000000000000000000'
+        ]
+      }
+    ]
+  }
+}
+
 const MOCK_MENMONIC =
   'seed horn heart blood noble total foster paddle welcome mother hospital tilt orphan someone defy blossom mercy execute visit journey layer north horn dinner'
 const MOCK_XPUB = 'MOCK_XPUB'
@@ -164,11 +215,11 @@ describe('MnemonicWallet', () => {
         provider: {}
       })
     }
-    it('should have returned error no message to sign', async () => {
+    it('should have returned error data must be string', async () => {
       try {
         await signMessage({})
       } catch (e) {
-        expect((e as Error).message).toBe('no message to sign')
+        expect((e as Error).message).toBe('data must be string')
       }
     })
     it('should have called personalSign', async () => {
@@ -177,11 +228,11 @@ describe('MnemonicWallet', () => {
     })
     it('should have called signTypedData with version V1', async () => {
       await signMessage({
-        data: 'test',
+        data: [{ name: 'test', type: 'string', value: 'test' }],
         rpcMethod: RpcMethod.SIGN_TYPED_DATA_V1
       })
       expect(ethSignUtil.signTypedData).toHaveBeenCalledWith({
-        data: 'test',
+        data: [{ name: 'test', type: 'string', value: 'test' }],
         version: 'V1',
         privateKey: expect.any(Buffer)
       })
@@ -189,31 +240,22 @@ describe('MnemonicWallet', () => {
 
     it('should have called signTypedData with version V4', async () => {
       await signMessage({
-        data: { primaryType: 'test', types: {} },
+        data: TYPED_DATA,
         rpcMethod: RpcMethod.SIGN_TYPED_DATA_V1
       })
       expect(ethSignUtil.signTypedData).toHaveBeenCalledWith({
-        data: { primaryType: 'test', types: {} },
-        version: 'V4',
-        privateKey: expect.any(Buffer)
-      })
-      await signMessage({
-        data: { primaryType: 'test', types: {} },
-        rpcMethod: RpcMethod.SIGN_TYPED_DATA_V4
-      })
-      expect(ethSignUtil.signTypedData).toHaveBeenCalledWith({
-        data: { primaryType: 'test', types: {} },
+        data: TYPED_DATA,
         version: 'V4',
         privateKey: expect.any(Buffer)
       })
     })
     it('should have called signTypedData with version V3', async () => {
       await signMessage({
-        data: { primaryType: 'test', types: {} },
+        data: TYPED_DATA,
         rpcMethod: RpcMethod.SIGN_TYPED_DATA_V3
       })
       expect(ethSignUtil.signTypedData).toHaveBeenCalledWith({
-        data: { primaryType: 'test', types: {} },
+        data: TYPED_DATA,
         version: 'V3',
         privateKey: expect.any(Buffer)
       })
