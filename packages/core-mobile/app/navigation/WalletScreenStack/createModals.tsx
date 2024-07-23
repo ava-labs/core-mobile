@@ -11,7 +11,6 @@ import CreateRemoveContactV2 from 'screens/rpc/components/v2/CreateRemoveContact
 import UpdateContactV2 from 'screens/rpc/components/v2/UpdateContact/UpdateContact'
 import SelectAccountV2 from 'screens/rpc/components/v2/SelectAccount'
 import BridgeAssetV2 from 'screens/rpc/components/v2/BridgeAsset'
-import SignMessageV2 from 'screens/rpc/components/v2/SignMessage'
 import AddEthereumChainV2 from 'screens/rpc/components/v2/AddEthereumChain'
 import SwitchEthereumChainV2 from 'screens/rpc/components/v2/SwitchEthereumChain'
 import ApprovalPopup from 'screens/rpc/components/v2/ApprovalPopup'
@@ -44,10 +43,6 @@ export const createModals = (WalletScreenS: WalletScreenSType): JSX.Element => {
       <WalletScreenS.Screen
         name={AppNavigation.Modal.SessionProposalV2}
         component={SessionProposalV2}
-      />
-      <WalletScreenS.Screen
-        name={AppNavigation.Modal.SignMessageV2}
-        component={SignMessageV2}
       />
       <WalletScreenS.Screen
         name={AppNavigation.Modal.AvalancheSignMessage}

@@ -5,16 +5,17 @@ import {
   ApprovalController as VmModuleApprovalController,
   ApprovalParams,
   ApprovalResponse,
-  SigningDataType
+  RpcMethod
 } from '@avalabs/vm-module-types'
 import AppNavigation from 'navigation/AppNavigation'
-import WalletService from 'services/wallet/WalletService'
 import * as Navigation from 'utils/Navigation'
 import { providerErrors, rpcErrors } from '@metamask/rpc-errors'
 import {
   showTransactionErrorToast,
   showTransactionSuccessToast
 } from 'utils/toast'
+import { handleEthSendTransaction } from './handleEthSendTransaction'
+import { handleEthSign } from './handleEthSign'
 
 class ApprovalController implements VmModuleApprovalController {
   onTransactionConfirmed(txHash: Hex): void {
@@ -42,47 +43,38 @@ class ApprovalController implements VmModuleApprovalController {
       }: {
         network: Network
         account: CorePrimaryAccount
-        maxFeePerGas: bigint
-        maxPriorityFeePerGas: bigint
+        maxFeePerGas?: bigint
+        maxPriorityFeePerGas?: bigint
       }): Promise<void> => {
         switch (signingData.type) {
-          case SigningDataType.EVM_TRANSACTION: {
-            const { gasLimit, type, nonce, data, from, to, value } =
-              signingData.data
-
-            const transaction = {
-              nonce,
-              type,
-              chainId: network.chainId,
+          case RpcMethod.ETH_SEND_TRANSACTION: {
+            handleEthSendTransaction({
+              transactionRequest: signingData.data,
+              network,
+              account,
               maxFeePerGas,
               maxPriorityFeePerGas,
-              gasLimit,
-              data,
-              from,
-              to,
-              value
-            }
-
-            try {
-              const signedTx = await WalletService.sign({
-                transaction,
-                accountIndex: account.index,
-                network
-              })
-
-              resolve({
-                result: signedTx as `0x${string}`
-              })
-            } catch (error) {
-              resolve({
-                error: rpcErrors.internal('failed to sign transaction')
-              })
-            }
+              resolve
+            })
 
             break
           }
+          case RpcMethod.PERSONAL_SIGN:
+          case RpcMethod.ETH_SIGN:
+          case RpcMethod.SIGN_TYPED_DATA:
+          case RpcMethod.SIGN_TYPED_DATA_V1:
+          case RpcMethod.SIGN_TYPED_DATA_V3:
+          case RpcMethod.SIGN_TYPED_DATA_V4: {
+            handleEthSign({
+              method: signingData.type,
+              data: signingData.data,
+              account,
+              network,
+              resolve
+            })
 
-          case SigningDataType.EVM_MESSAGE_ETH_SIGN: // to be implemented
+            break
+          }
           default:
             resolve({
               error: providerErrors.unsupportedMethod(

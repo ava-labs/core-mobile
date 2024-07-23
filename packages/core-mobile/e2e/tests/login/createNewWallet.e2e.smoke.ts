@@ -39,6 +39,7 @@ describe('Create new wallet', () => {
   it('should view proper page title and action icons', async () => {
     // Start with `Manually Create New Wallet` flow
     await device.launchApp({ newInstance: true })
+    await handleJailbrokenWarning()
     await onboardingPage.verifyOnboardingPage()
     await onboardingPage.tapManuallyCreateNewWallet()
     await analyticsConsentPage.verifyAnalysticsContentPage()

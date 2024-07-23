@@ -24,7 +24,7 @@ class NetworkFeeService {
           mapToVmNetwork(network)
         )
         return {
-          baseFee: tokenUnitCreator(networkFees.baseFee),
+          baseFee: tokenUnitCreator(networkFees.baseFee ?? 0),
           low: {
             maxFeePerGas: tokenUnitCreator(networkFees.low.maxFeePerGas),
             maxPriorityFeePerGas: tokenUnitCreator(
