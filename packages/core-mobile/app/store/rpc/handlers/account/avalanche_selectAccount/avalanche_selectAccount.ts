@@ -4,7 +4,7 @@ import {
   selectAccounts,
   selectActiveAccount,
   setActiveAccountIndex
-} from 'store/account'
+} from 'store/account/slice'
 import * as Navigation from 'utils/Navigation'
 import AppNavigation from 'navigation/AppNavigation'
 import Logger from 'utils/Logger'
