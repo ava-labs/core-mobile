@@ -134,7 +134,9 @@ const onBalanceUpdateCore = async ({
 
   if (
     queryStatus === QueryStatus.POLLING &&
-    currentStatus !== QueryStatus.IDLE
+    [QueryStatus.LOADING, QueryStatus.REFETCHING, QueryStatus.POLLING].includes(
+      currentStatus
+    )
   ) {
     Logger.info('a balance query is already in flight')
     return
@@ -151,38 +153,47 @@ const onBalanceUpdateCore = async ({
   // fetch the first network balances first
   if (firstNetwork === undefined) return
 
-  const promises = accounts.map(account => {
-    return BalanceService.getBalancesForAccount({
-      network: firstNetwork,
-      account,
-      currency,
-      sentryTrx
-    })
+  const balanceKeyedPromises = accounts.map(account => {
+    return {
+      key: getKey(firstNetwork.chainId, account.index),
+      promise: BalanceService.getBalancesForAccount({
+        network: firstNetwork,
+        account,
+        currency,
+        sentryTrx
+      })
+    }
   })
-  const balances = await fetchBalanceForAccounts(promises)
+  const balances = await fetchBalanceForAccounts(balanceKeyedPromises)
 
   dispatch(setBalances(balances))
 
   // fetch all other network balances
   if (restNetworks.length > 0) {
-    const inactiveNetworkPromises: Promise<BalancesForAccount>[] = []
+    const inactiveNetworkPromises: {
+      key: string
+      promise: Promise<BalancesForAccount>
+    }[] = []
 
     for (const n of restNetworks) {
       inactiveNetworkPromises.push(
         ...accounts.map(account => {
-          return BalanceService.getBalancesForAccount({
-            network: n,
-            account,
-            currency,
-            sentryTrx
-          })
+          return {
+            key: getKey(n.chainId, account.index),
+            promise: BalanceService.getBalancesForAccount({
+              network: n,
+              account,
+              currency,
+              sentryTrx
+            })
+          }
         })
       )
     }
-    const inactiveNetworkbalances = await fetchBalanceForAccounts(
+    const inactiveNetworkBalances = await fetchBalanceForAccounts(
       inactiveNetworkPromises
     )
-    dispatch(setBalances(inactiveNetworkbalances))
+    dispatch(setBalances(inactiveNetworkBalances))
   }
 
   dispatch(setStatus(QueryStatus.IDLE))
@@ -214,7 +225,7 @@ const fetchBalancePeriodically = async (
           fetchActiveOnly = true
         }
 
-        // cancellation-aware wait for the balande update to be done
+        // cancellation-aware wait for the balance update to be done
         await forkApi.pause(
           onBalanceUpdate(QueryStatus.POLLING, listenerApi, fetchActiveOnly)
         )
@@ -261,41 +272,47 @@ const handleFetchBalanceForAccount = async (
 }
 
 const fetchBalanceForAccounts = async (
-  promises: Promise<BalancesForAccount>[]
+  keyedPromises: { promise: Promise<BalancesForAccount>; key: string }[]
 ): Promise<Balances> => {
-  return (await Promise.allSettled(promises)).reduce<Balances>(
-    (acc, result) => {
-      if (result.status === 'rejected') {
-        Logger.warn('failed to get balance', result.reason)
-        return acc
+  const keys = keyedPromises.map(value => value.key)
+  return (
+    await Promise.allSettled(keyedPromises.map(value => value.promise))
+  ).reduce<Balances>((acc, result, i) => {
+    if (result.status === 'rejected') {
+      Logger.warn('failed to get balance', result.reason)
+      const key: string = keys[i] ?? ''
+      acc[key] = {
+        dataAccurate: false,
+        accountIndex: -1,
+        chainId: 0,
+        tokens: []
       }
+      return acc
+    }
 
-      const { accountIndex, chainId, tokens } = result.value
+    const { accountIndex, chainId, tokens } = result.value
 
-      const tokensWithBalance = tokens.map(token => {
-        if (isPChain(chainId)) {
-          return convertToBalancePchain(token as PTokenWithBalance)
-        }
-        if (isXChain(chainId)) {
-          return convertToBalanceXchain(token as XTokenWithBalance)
-        }
-        return {
-          ...token,
-          localId: getLocalTokenId(token)
-        }
-      })
-
+    const tokensWithBalance = tokens.map(token => {
+      if (isPChain(chainId)) {
+        return convertToBalancePchain(token as PTokenWithBalance)
+      }
+      if (isXChain(chainId)) {
+        return convertToBalanceXchain(token as XTokenWithBalance)
+      }
       return {
-        ...acc,
-        [getKey(chainId, accountIndex)]: {
-          accountIndex,
-          chainId,
-          tokens: tokensWithBalance
-        }
+        ...token,
+        localId: getLocalTokenId(token)
       }
-    },
-    {}
-  )
+    })
+
+    acc[getKey(chainId, accountIndex)] = {
+      dataAccurate: true,
+      accountIndex,
+      chainId,
+      tokens: tokensWithBalance
+    }
+    return acc
+  }, {})
 }
 
 const addPChainToFavoritesIfNeeded = async (

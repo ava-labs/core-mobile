@@ -184,6 +184,14 @@ export const selectBalanceTotalInCurrencyForAccount =
       return total
     }, 0)
   }
+export const selectBalanceForAccountIsAccurate =
+  (accountIndex: number | undefined) => (state: RootState) => {
+    if (accountIndex === undefined) return true
+
+    return !Object.values(state.balance.balances).some(
+      balance => !balance.dataAccurate
+    )
+  }
 
 export const selectBalanceTotalInCurrencyForNetworkAndAccount =
   (chainId: number, accountIndex: number | undefined) => (state: RootState) => {
