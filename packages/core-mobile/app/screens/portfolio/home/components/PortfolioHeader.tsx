@@ -99,10 +99,12 @@ function PortfolioHeader(): JSX.Element {
             {selectedCurrency}
           </Text>
         </View>
-        <PriceChangeIndicator
-          price={tokenPortfolioPriceChange}
-          textVariant="buttonSmall"
-        />
+        {balanceAccurate && (
+          <PriceChangeIndicator
+            price={tokenPortfolioPriceChange}
+            textVariant="buttonSmall"
+          />
+        )}
       </View>
     )
   }
