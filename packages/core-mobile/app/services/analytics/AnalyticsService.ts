@@ -11,13 +11,15 @@ import {
 } from './types'
 
 if (!Config.ANALYTICS_ENCRYPTION_KEY) {
-  Logger.warn(
+  Logger.warnOrThrow(
+    !__DEV__,
     'ANALYTICS_ENCRYPTION_KEY is missing in env file. Analytics are disabled.'
   )
 }
 
 if (!Config.ANALYTICS_ENCRYPTION_KEY_ID) {
-  Logger.warn(
+  Logger.warnOrThrow(
+    !__DEV__,
     'ANALYTICS_ENCRYPTION_KEY_ID is missing in env file. Analytics are disabled.'
   )
 }

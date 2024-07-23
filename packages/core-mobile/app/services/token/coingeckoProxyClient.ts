@@ -12,7 +12,10 @@ import { boolean, number, string } from 'zod'
 import Logger from 'utils/Logger'
 
 if (!Config.PROXY_URL)
-  Logger.warn('PROXY_URL is missing in env file. Coin prices are disabled.')
+  Logger.warnOrThrow(
+    !__DEV__,
+    'PROXY_URL is missing in env file. Coin prices are disabled.'
+  )
 
 const baseUrl = Config.PROXY_URL + '/proxy/coingecko'
 

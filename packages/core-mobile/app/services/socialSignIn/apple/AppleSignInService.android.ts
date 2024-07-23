@@ -6,11 +6,15 @@ import { OidcPayload } from 'seedless/types'
 import { AppleSigninServiceInterface } from './types'
 
 if (!Config.APPLE_OAUTH_CLIENT_ID) {
-  Logger.warn('APPLE_OAUTH_CLIENT_ID is missing. Please check your env file.')
+  Logger.warnOrThrow(
+    !__DEV__,
+    'APPLE_OAUTH_CLIENT_ID is missing. Please check your env file.'
+  )
 }
 
 if (!Config.APPLE_OAUTH_REDIRECT_URL) {
-  Logger.warn(
+  Logger.warnOrThrow(
+    !__DEV__,
     'APPLE_OAUTH_REDIRECT_URL is missing. Please check your env file.'
   )
 }

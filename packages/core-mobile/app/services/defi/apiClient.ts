@@ -9,7 +9,11 @@ import {
 } from './debankTypes'
 import { ExchangeRateSchema } from './types'
 
-if (!Config.PROXY_URL) Logger.warn('PROXY_URL is missing. Defi disabled.')
+if (!Config.PROXY_URL)
+  Logger.warnOrThrow(
+    !__DEV__,
+    'PROXY_URL is missing in env file. Defi disabled.'
+  )
 
 const baseUrl = Config.PROXY_URL + '/proxy/debank/v1'
 

@@ -133,6 +133,14 @@ class Logger {
   setShouldLogErrorToSentry = (shouldLogErrorToSentry: boolean): void => {
     this.shouldLogErrorToSentry = shouldLogErrorToSentry
   }
+
+  warnOrThrow(shouldThrow: boolean, message: string): void {
+    shouldThrow
+      ? (() => {
+          throw new Error(message)
+        })()
+      : this.warn(message)
+  }
 }
 
 export default new Logger()

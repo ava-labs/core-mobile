@@ -24,7 +24,8 @@ import { ChainId } from '@avalabs/chains-sdk'
 import Logger from 'utils/Logger'
 
 if (!Config.GLACIER_URL)
-  Logger.warn(
+  Logger.warnOrThrow(
+    !__DEV__,
     'GLACIER_URL ENV is missing in env file. Glacier service disabled.'
   )
 

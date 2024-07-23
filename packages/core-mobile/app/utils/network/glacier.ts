@@ -2,7 +2,8 @@ import Config from 'react-native-config'
 import Logger from 'utils/Logger'
 import { createApiClient, createNoopApiClient } from './glacierApi.client'
 
-if (!Config.GLACIER_URL) Logger.warn('GLACIER_URL ENV is missing')
+if (!Config.GLACIER_URL)
+  Logger.warnOrThrow(!__DEV__, 'GLACIER_URL ENV is missing')
 
 export const GLACIER_URL = Config.GLACIER_URL
 

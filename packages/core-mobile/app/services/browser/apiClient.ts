@@ -4,7 +4,8 @@ import { z } from 'zod'
 import Logger from 'utils/Logger'
 import { DeFiProtocolInformationSchema } from './debankTypes'
 
-if (!Config.PROXY_URL) Logger.warn('PROXY_URL is missing')
+if (!Config.PROXY_URL)
+  Logger.warnOrThrow(!__DEV__, 'PROXY_URL is missing in env file.')
 
 const baseUrl = Config.PROXY_URL + '/proxy/debank/v1'
 

@@ -5,11 +5,17 @@ import { CoreSeedlessAPIServiceNoop } from 'seedless/services/CoreSeedlessAPISer
 import { CoreSeedlessApiInterface } from 'seedless/services/types'
 
 if (!Config.SEEDLESS_URL) {
-  Logger.warn('SEEDLESS_URL is missing in env file. Seedless is disabled.')
+  Logger.warnOrThrow(
+    !__DEV__,
+    'SEEDLESS_URL is missing in env file. Seedless is disabled.'
+  )
 }
 
 if (!Config.SEEDLESS_API_KEY) {
-  Logger.warn('SEEDLESS_API_KEY is missing in env file. Seedless is disabled.')
+  Logger.warnOrThrow(
+    !__DEV__,
+    'SEEDLESS_API_KEY is missing in env file. Seedless is disabled.'
+  )
 }
 
 export enum SeedlessUserRegistrationResult {
