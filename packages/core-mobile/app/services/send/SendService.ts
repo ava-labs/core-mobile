@@ -3,7 +3,6 @@ import { resolve } from '@avalabs/utils-sdk'
 import { Account } from 'store/account'
 import { SendServiceEVM } from 'services/send/SendServiceEVM'
 import { NFTItemData } from 'store/nft'
-import type { NftTokenWithBalance } from 'store/balance/types'
 import BN from 'bn.js'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { isErc721 } from 'services/nft/utils'
@@ -14,7 +13,7 @@ import { TransactionParams as BtcTransactionParams } from 'store/rpc/handlers/bi
 import { TransactionParams as AvalancheTransactionParams } from 'store/rpc/handlers/avalanche_sendTransaction/utils'
 import { SendServiceAVM } from 'services/send/SendServiceAVM'
 import { transactionRequestToTransactionParams } from 'store/rpc/utils/transactionRequestToTransactionParams'
-import { TokenType } from '@avalabs/vm-module-types'
+import { type NftTokenWithBalance, TokenType } from '@avalabs/vm-module-types'
 import sendServiceBTC from './SendServiceBTC'
 import {
   isValidSendState,
@@ -191,7 +190,11 @@ class SendService {
       marketCap: 0,
       change24: 0,
       vol24: 0,
-      balance: new BN(0)
+      balance: new BN(0),
+      logoSmall: '',
+      attributes: [],
+      collectionName: isErc721(nft) ? nft.name : nft.metadata.name ?? 'Unknown',
+      coingeckoId: ''
     }
   }
 

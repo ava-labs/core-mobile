@@ -13,9 +13,12 @@ import { Avax } from 'types/Avax'
 import { calculateAmountForCrossChainTransfer } from 'hooks/earn/useGetAmountForCrossChainTransfer'
 import Logger from 'utils/Logger'
 import { FundsStuckError } from 'hooks/earn/errors'
-import GlacierBalanceService from 'services/balance/GlacierBalanceService'
 import { assertNotUndefined } from 'utils/assertions'
 import NetworkService from 'services/network/NetworkService'
+import ModuleManager from 'vmModule/ModuleManager'
+import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
+import * as inMemoryCache from 'utils/InMemoryCache'
+import { TokenWithBalancePVM } from '@avalabs/vm-module-types'
 import { useCChainBalance } from './useCChainBalance'
 
 export const useIssueDelegation = (
@@ -65,13 +68,24 @@ export const useIssueDelegation = (
       Logger.trace('getPChainBalance...')
       assertNotUndefined(pAddress)
 
-      const pChainBalance = await GlacierBalanceService.getPChainBalance({
-        network: NetworkService.getAvalancheNetworkP(isDeveloperMode),
+      const network = NetworkService.getAvalancheNetworkP(isDeveloperMode)
+      const module = await ModuleManager.loadModuleByNetwork(network)
+      const balancesResponse = await module.getBalances({
         addresses: [pAddress],
-        currency: selectedCurrency
+        currency: selectedCurrency,
+        network: mapToVmNetwork(network),
+        storage: {
+          get: inMemoryCache.getCache,
+          set: inMemoryCache.setCache
+        }
       })
-      const pChainBalanceNAvax = pChainBalance.unlockedUnstaked[0]?.amount
-      const claimableBalance = Avax.fromNanoAvax(pChainBalanceNAvax ?? 0)
+
+      const pChainBalance = balancesResponse[pAddress]?.[
+        network.networkToken.symbol
+      ] as TokenWithBalancePVM
+      const claimableBalance = Avax.fromBase(
+        pChainBalance.balancePerType?.unlockedUnstaked
+      )
       Logger.trace('getPChainBalance: ', claimableBalance.toDisplay())
       const cChainRequiredAmount = calculateAmountForCrossChainTransfer(
         data.stakingAmount,

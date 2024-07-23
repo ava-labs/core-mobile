@@ -1,11 +1,10 @@
 import { APIError, SwapSide } from 'paraswap'
 import { Network } from '@avalabs/chains-sdk'
-import { TokenWithBalance } from 'store/balance/types'
 import { Account } from 'store/account'
 import { resolve } from '@avalabs/utils-sdk'
 import swapService from 'services/swap/SwapService'
 import { OptimalRate } from 'paraswap-core'
-import { TokenType } from '@avalabs/vm-module-types'
+import { TokenType, TokenWithBalance } from '@avalabs/vm-module-types'
 
 export const getTokenAddress = (token?: TokenWithBalance): string => {
   if (!token) {

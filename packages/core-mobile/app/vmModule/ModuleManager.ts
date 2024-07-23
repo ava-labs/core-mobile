@@ -82,11 +82,16 @@ class ModuleManager {
       case NetworkVMType.BITCOIN:
         return `bip122:${network.chainId}`
       case NetworkVMType.PVM:
-      case NetworkVMType.AVM:
+      case NetworkVMType.AVM: {
+        const blockchainId = this.getBlockchainId(
+          network.vmName,
+          network.isTestnet
+        )
         return AvalancheModule.getHashedBlockchainId({
-          blockchainId: this.getBlockchainId(network.vmName, network.isTestnet),
+          blockchainId,
           isTestnet: network.isTestnet
         })
+      }
       case NetworkVMType.EVM:
       case NetworkVMType.CoreEth:
         return `eip155:${network.chainId}`

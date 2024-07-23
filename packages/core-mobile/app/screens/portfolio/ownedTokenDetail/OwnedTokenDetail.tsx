@@ -15,7 +15,6 @@ import {
   WalletScreenProps
 } from 'navigation/types'
 import ActivityList from 'screens/shared/ActivityList/ActivityList'
-import { TokenWithBalance } from 'store/balance/types'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { Text, View } from '@avalabs/k2-mobile'
 import { useApplicationContext } from 'contexts/ApplicationContext'
@@ -25,6 +24,7 @@ import Separator from 'components/Separator'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { UI, useIsUIDisabled } from 'hooks/useIsUIDisabled'
 import useBridge from 'screens/bridge/hooks/useBridge'
+import { TokenWithBalance } from '@avalabs/vm-module-types'
 import OwnedTokenActionButtons from './components/OwnedTokenActionButtons'
 
 type ScreenProps = WalletScreenProps<

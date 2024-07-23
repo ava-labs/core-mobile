@@ -46,8 +46,8 @@ export const useClaimRewards = (
         throw Error('unable to calculate fees')
       }
 
-      const totalClaimable = Avax.fromNanoAvax(
-        pChainBalance?.data?.unlockedUnstaked[0]?.amount ?? 0
+      const totalClaimable = Avax.fromBase(
+        pChainBalance?.data?.balancePerType.unlockedUnstaked ?? 0
       )
 
       if (totalFees.gt(totalClaimable)) {

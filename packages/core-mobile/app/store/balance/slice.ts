@@ -136,7 +136,8 @@ export const selectAvaxPrice = (state: RootState): number => {
         'type' in token &&
         'symbol' in token &&
         token.type === TokenType.NATIVE &&
-        token.symbol.toLowerCase() === 'avax'
+        token.symbol.toLowerCase() === 'avax' &&
+        token.priceInCurrency
       ) {
         return token.priceInCurrency
       }

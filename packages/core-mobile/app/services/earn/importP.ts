@@ -7,8 +7,12 @@ import { Account } from 'store/account'
 import { AvalancheTransactionRequest } from 'services/wallet/types'
 import { UnsignedTx } from '@avalabs/avalanchejs'
 import { FundsStuckError } from 'hooks/earn/errors'
-import GlacierBalanceService from 'services/balance/GlacierBalanceService'
 import { assertNotUndefined } from 'utils/assertions'
+import ModuleManager from 'vmModule/ModuleManager'
+import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
+import * as inMemoryCache from 'utils/InMemoryCache'
+import { TokenWithBalancePVM } from '@avalabs/vm-module-types'
+import { Network } from '@avalabs/chains-sdk'
 import {
   maxBalanceCheckRetries,
   maxTransactionCreationRetries,
@@ -84,6 +88,32 @@ export async function importP({
   Logger.info('importing P finished')
 }
 
+const getUnlockedUnstakedAmount = async ({
+  network,
+  addressPVM,
+  selectedCurrency
+}: {
+  network: Network
+  addressPVM: string
+  selectedCurrency: string
+}): Promise<number | undefined> => {
+  const module = await ModuleManager.loadModuleByNetwork(network)
+  const balancesResponse = await module.getBalances({
+    addresses: [addressPVM],
+    currency: selectedCurrency,
+    network: mapToVmNetwork(network),
+    storage: {
+      get: inMemoryCache.getCache,
+      set: inMemoryCache.setCache
+    }
+  })
+  return (
+    balancesResponse[addressPVM]?.[
+      network.networkToken.symbol
+    ] as TokenWithBalancePVM
+  ).balancePerType.unlockedUnstaked
+}
+
 /**
  * Makes import P with check if P chain balance changed thus ensuring imported balance is immediately available.
  */
@@ -95,16 +125,15 @@ export async function importPWithBalanceCheck({
   //get P balance now then compare it later to check if balance changed after import
   const addressPVM = activeAccount.addressPVM
   assertNotUndefined(addressPVM)
+  const network = NetworkService.getAvalancheNetworkP(isDevMode)
 
-  const balanceBeforeImport = (
-    await GlacierBalanceService.getPChainBalance({
-      network: NetworkService.getAvalancheNetworkP(isDevMode),
-      addresses: [addressPVM],
-      currency: selectedCurrency
-    })
-  ).unlockedUnstaked[0]?.amount
+  const unlockedUnstakedBeforeImport = await getUnlockedUnstakedAmount({
+    network,
+    addressPVM,
+    selectedCurrency
+  })
 
-  Logger.trace('balanceBeforeImport', balanceBeforeImport)
+  Logger.trace('balanceBeforeImport', unlockedUnstakedBeforeImport)
 
   await importP({
     activeAccount,
@@ -114,14 +143,13 @@ export async function importPWithBalanceCheck({
 
   await retry({
     operation: async () =>
-      GlacierBalanceService.getPChainBalance({
-        network: NetworkService.getAvalancheNetworkP(isDevMode),
-        addresses: [addressPVM],
-        currency: selectedCurrency
+      getUnlockedUnstakedAmount({
+        network,
+        addressPVM,
+        selectedCurrency
       }),
-    isSuccess: pChainBalance => {
-      const balanceAfterImport = pChainBalance.unlockedUnstaked[0]?.amount
-      return balanceAfterImport !== balanceBeforeImport
+    isSuccess: unlockedUnstakedAfterImport => {
+      return unlockedUnstakedAfterImport !== unlockedUnstakedBeforeImport
     },
     maxRetries: maxBalanceCheckRetries,
     backoffPolicy: RetryBackoffPolicy.constant(1)
