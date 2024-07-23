@@ -280,15 +280,13 @@ const fetchBalanceForAccounts = async (
     if (result.status === 'rejected') {
       Logger.warn('failed to get balance', result.reason)
       const key: string = keys[i] ?? ''
-      return {
-        ...acc,
-        [key]: {
-          dataAccurate: false,
-          accountIndex: -1,
-          chainId: 0,
-          tokens: []
-        }
+      acc[key] = {
+        dataAccurate: false,
+        accountIndex: -1,
+        chainId: 0,
+        tokens: []
       }
+      return acc
     }
 
     const { accountIndex, chainId, tokens } = result.value
@@ -306,15 +304,13 @@ const fetchBalanceForAccounts = async (
       }
     })
 
-    return {
-      ...acc,
-      [getKey(chainId, accountIndex)]: {
-        dataAccurate: true,
-        accountIndex,
-        chainId,
-        tokens: tokensWithBalance
-      }
+    acc[getKey(chainId, accountIndex)] = {
+      dataAccurate: true,
+      accountIndex,
+      chainId,
+      tokens: tokensWithBalance
     }
+    return acc
   }, {})
 }
 
