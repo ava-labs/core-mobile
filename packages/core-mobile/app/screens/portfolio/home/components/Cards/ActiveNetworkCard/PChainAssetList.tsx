@@ -1,10 +1,14 @@
+import { PChainBalance } from '@avalabs/glacier-sdk'
 import { FlatList, Sx, Text, View } from '@avalabs/k2-mobile'
+import { TokenWithBalancePVM } from '@avalabs/vm-module-types'
 import { Space } from 'components/Space'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import React, { useMemo } from 'react'
 import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList'
-import { PTokenWithBalance, assetPDisplayNames } from 'store/balance/types'
+import { assetPDisplayNames } from 'store/balance/types'
 import { Avax } from 'types'
+
+type ChainBalanceType = keyof PChainBalance
 
 export const PChainAssetList = ({
   limit,
@@ -23,19 +27,23 @@ export const PChainAssetList = ({
   const { filteredTokenList: tokens } = useSearchableTokenList()
 
   const token = tokens.find(
-    t => 'unlockedUnstaked' in (t as PTokenWithBalance).utxos
-  ) as PTokenWithBalance
+    t => 'unlockedUnstaked' in (t as TokenWithBalancePVM).balancePerType
+  ) as TokenWithBalancePVM
 
   const assetTypes = useMemo(() => {
-    return Object.keys(token.utxoBalances)
-      .sort((a, b) =>
-        Number(
-          Avax.fromNanoAvax(token.utxoBalances[b] ?? '0')?.sub(
-            Avax.fromNanoAvax(token.utxoBalances[a] ?? '0')
+    return Object.keys(token.balancePerType)
+      .sort((a, b) => {
+        return Number(
+          Avax.fromBase(
+            token.balancePerType[b as ChainBalanceType] ?? '0'
+          )?.sub(
+            Avax.fromBase(token.balancePerType[a as ChainBalanceType] ?? '0')
           )
         )
+      })
+      .filter(k =>
+        Avax.fromBase(token.balancePerType[k as ChainBalanceType] ?? '0')?.gt(0)
       )
-      .filter(k => Avax.fromNanoAvax(token.utxoBalances[k] ?? '0')?.gt(0))
   }, [token])
 
   const shouldLimitAssets = limit && assetTypes.length > limit
@@ -43,11 +51,11 @@ export const PChainAssetList = ({
   const tokenPrice = token.priceInCurrency
 
   const rednerItem = (assetType: string): JSX.Element => {
-    const balance = token.utxoBalances[assetType] ?? 0
-    const balanceInAvax = Avax.fromNanoAvax(balance.toString()).toDisplay()
-    const balanceInCurrency = Avax.fromNanoAvax(balance.toString())
-      .mul(tokenPrice)
-      .toDisplay(2)
+    const balance = token.balancePerType[assetType as ChainBalanceType] ?? 0
+    const balanceInAvax = Avax.fromBase(balance.toString()).toDisplay()
+    const balanceInCurrency = tokenPrice
+      ? Avax.fromBase(balance.toString()).mul(tokenPrice).toDisplay(2)
+      : '-'
 
     const formattedBalance = currencyFormatter(balanceInCurrency)
     const assetName = assetPDisplayNames[assetType]

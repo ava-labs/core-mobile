@@ -2,9 +2,13 @@ import type { CompositeScreenProps } from '@react-navigation/native'
 import { StackScreenProps } from '@react-navigation/stack'
 import { BottomTabScreenProps } from '@react-navigation/bottom-tabs'
 import { DrawerScreenProps as RNDrawerScreenProps } from '@react-navigation/drawer'
-import { Alert, DisplayData, SigningData } from '@avalabs/vm-module-types'
+import {
+  Alert,
+  DisplayData,
+  SigningData,
+  TokenWithBalance
+} from '@avalabs/vm-module-types'
 import { RpcRequest } from '@avalabs/vm-module-types'
-import { TokenWithBalance } from 'store/balance/types'
 import { AdvancedStackParamList } from 'navigation/wallet/AdvancedStackScreen'
 import { AvalancheCreateContactRequest as AvalancheCreateContactRequestV2 } from 'store/rpc/handlers/contact/avalanche_createContact/avalanche_createContact'
 import { AvalancheRemoveContactRequest as AvalancheRemoveContactRequestV2 } from 'store/rpc/handlers/contact/avalanche_removeContact/avalanche_removeContact'

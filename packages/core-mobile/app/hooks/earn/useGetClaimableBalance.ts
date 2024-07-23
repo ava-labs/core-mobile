@@ -4,14 +4,14 @@ import { Avax } from 'types/Avax'
 
 export const useGetClaimableBalance = (): Avax | undefined => {
   const pChainBalance = usePChainBalance()
-  const pChainBalanceNAvax = pChainBalance.data?.unlockedUnstaked[0]?.amount
+  const pChainBalanceAvax = pChainBalance.data?.balancePerType.unlockedUnstaked
   const hasErrors = pChainBalance.error || !pChainBalance.data
   const dataReady = !pChainBalance.isLoading && !hasErrors
 
   return useMemo(() => {
     if (dataReady) {
-      return Avax.fromNanoAvax(pChainBalanceNAvax || 0)
+      return Avax.fromBase(pChainBalanceAvax || 0)
     }
     return undefined
-  }, [dataReady, pChainBalanceNAvax])
+  }, [dataReady, pChainBalanceAvax])
 }

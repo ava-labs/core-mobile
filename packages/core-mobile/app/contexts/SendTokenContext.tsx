@@ -10,7 +10,6 @@ import React, {
 } from 'react'
 import { InteractionManager } from 'react-native'
 import { selectNativeTokenBalanceForNetworkAndAccount } from 'store/balance/slice'
-import { TokenWithBalance } from 'store/balance/types'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import sendService from 'services/send/SendService'
@@ -27,6 +26,7 @@ import { useNetworkFee } from 'hooks/useNetworkFee'
 import { useInAppRequest } from 'hooks/useInAppRequest'
 import { RootState } from 'store'
 import { audioFeedback, Audios } from 'utils/AudioFeedback'
+import { TokenWithBalance } from '@avalabs/vm-module-types'
 
 export type SendStatus = 'Idle' | 'Sending' | 'Success' | 'Fail'
 
