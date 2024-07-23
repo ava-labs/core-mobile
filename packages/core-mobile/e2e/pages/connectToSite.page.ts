@@ -19,6 +19,18 @@ class ConnectToSite {
     return by.id(connectToSiteLoc.plusButton)
   }
 
+  get signMessage() {
+    return by.text(connectToSiteLoc.signMessage)
+  }
+
+  get accountCheckBox() {
+    return by.id(connectToSiteLoc.accountCheckBox)
+  }
+
+  get selectAccounts() {
+    return by.text(connectToSiteLoc.selectAccounts)
+  }
+
   async tapPlusIcon() {
     if (Action.platform() === 'ios') {
       await Action.tapElementAtIndex(this.plusIcon, 1)
@@ -39,20 +51,28 @@ class ConnectToSite {
     await Action.tapElementAtIndex(this.selectAccountsDropdown, 0)
   }
 
+  async tapAccountCheckBox(index = 0) {
+    await Action.tapElementAtIndex(this.accountCheckBox, index)
+  }
+
+  async tapSelectAccounts() {
+    await Action.tapElementAtIndex(this.selectAccounts, 0)
+  }
+
   async selectAccountAndconnect(toastMessage: string) {
-    await Action.waitForElement(by.text('Select Accounts'), 8000)
-    await Action.tap(by.text('Select Accounts'))
-    await Action.tapElementAtIndex(by.id('account_check_box'), 0)
-    await Action.tap(by.text('Approve'))
+    await Action.waitForElement(this.selectAccounts, 8000)
+    await this.tapSelectAccounts()
+    await this.tapAccountCheckBox()
+    await this.tapApproveBtn()
     await Action.waitForElementNoSync(by.text(`Connected to ${toastMessage}`))
   }
 
   async approveSignMessage(dapp: string) {
-    await Action.waitForElement(by.text('Sign Message'), 5000)
+    await Action.waitForElement(this.signMessage, 5000)
     await Assert.isVisible(
       by.text(`${dapp} requests you to sign the following message`)
     )
-    await Action.tap(by.text('Approve'))
+    await this.tapApproveBtn()
   }
 }
 

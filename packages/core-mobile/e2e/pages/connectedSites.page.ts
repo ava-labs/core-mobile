@@ -54,7 +54,7 @@ class ConnectedSites {
 
   async verifyDapp(dapp: string) {
     await Asserts.isVisible(this.dappAvatar)
-    await Actions.waitForElementWithText(dapp)
+    await Actions.waitForElement(by.text(dapp))
   }
 
   async disconnectDapp(dApp: string) {

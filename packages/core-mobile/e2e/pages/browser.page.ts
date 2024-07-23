@@ -18,22 +18,6 @@ class BrowserPage {
     return by.id(BrowserLoc.browserBackBtn)
   }
 
-  get connectWallet() {
-    return by.text(BrowserLoc.connectWallet)
-  }
-
-  get wcmWalletUri() {
-    return by.id(BrowserLoc.wcmUri)
-  }
-
-  get walletConnect() {
-    return by.text(BrowserLoc.walletConnectBtn)
-  }
-
-  get wuiQrCode() {
-    return by.id(BrowserLoc.wuiQrCode)
-  }
-
   async tapSearchBar() {
     await Actions.tapElementAtIndex(this.searchBar, 0)
   }
@@ -181,7 +165,7 @@ class BrowserPage {
     try {
       await this.tapBrowserBackBtn()
     } catch (e) {
-      console.log('Dismiss the previous web browser search')
+      console.log('There is no web browser history to go back')
     }
     await this.tapSearchBar()
     await this.enterBrowserSearchQuery(dapp)

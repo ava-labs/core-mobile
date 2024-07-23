@@ -91,16 +91,6 @@ const expectToBeVisible = async (item: Detox.NativeMatcher, index = 0) => {
   }
 }
 
-const waitForElementWithText = async (
-  text: string,
-  timeout = 2000,
-  index = 0
-) => {
-  await waitFor(element(by.text(text)).atIndex(index))
-    .toBeVisible()
-    .withTimeout(timeout)
-}
-
 // waitForElementNoSync function can be used to handle idle timeout error for Android devices, should be used only if Idle timeout error presents
 
 const waitForElementNoSync = async (
@@ -238,7 +228,6 @@ export default {
   multiTap,
   longPress,
   waitForElement,
-  waitForElementWithText,
   waitForElementNoSync,
   waitForElementNotVisible,
   tapElementAtIndex,
