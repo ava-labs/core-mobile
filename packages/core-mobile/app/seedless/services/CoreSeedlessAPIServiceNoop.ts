@@ -7,6 +7,6 @@ export class CoreSeedlessAPIServiceNoop implements CoreSeedlessApiInterface {
   }
 
   async addAccount(): Promise<void> {
-    throw new Error('Adding new account failed')
+    //noop
   }
 }
