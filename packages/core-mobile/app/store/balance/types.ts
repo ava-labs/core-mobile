@@ -71,6 +71,7 @@ export type TokenWithBalance =
   | XTokenWithBalance
 
 export type Balance = {
+  dataAccurate: boolean
   accountIndex: number
   chainId: number
   tokens: LocalTokenWithBalance[]
