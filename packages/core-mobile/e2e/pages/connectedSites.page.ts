@@ -1,6 +1,7 @@
 import Actions from '../helpers/actions'
 import Asserts from '../helpers/assertions'
 import connectedSitesLoc from '../locators/connectedSites.loc'
+import burgerMenuPage from './burgerMenu/burgerMenu.page'
 
 class ConnectedSites {
   get dappAvatar() {
@@ -19,10 +20,6 @@ class ConnectedSites {
     return by.text(connectedSitesLoc.deleteBtn)
   }
 
-  get coreDapp() {
-    return by.id(connectedSitesLoc.coreDapp)
-  }
-
   get noConnectedSitesText() {
     return by.text(connectedSitesLoc.noConnectedSites)
   }
@@ -39,6 +36,10 @@ class ConnectedSites {
     return by.text(connectedSitesLoc.addNewConnection)
   }
 
+  get backBtn() {
+    return by.id(connectedSitesLoc.backBtn)
+  }
+
   async tapManageBtn() {
     await Actions.tapElementAtIndex(this.manageBtn, 0)
   }
@@ -51,9 +52,9 @@ class ConnectedSites {
     await Actions.tapElementAtIndex(this.deleteBtn, 0)
   }
 
-  async verifyCoreDapp() {
-    await Asserts.isVisible(this.coreDapp)
+  async verifyDapp(dapp: string) {
     await Asserts.isVisible(this.dappAvatar)
+    await Actions.waitForElementWithText(dapp)
   }
 
   async disconnectDapp(dApp: string) {
@@ -65,6 +66,12 @@ class ConnectedSites {
     await Asserts.isVisible(this.noConnectedSitesText)
     await Asserts.isVisible(this.noConnectedSitesContent)
     await Asserts.isVisible(this.addNewConnection)
+  }
+
+  async goBackToPortfolio() {
+    await burgerMenuPage.tapBackbutton()
+    await burgerMenuPage.tapBackbutton()
+    await burgerMenuPage.swipeLeft()
   }
 }
 

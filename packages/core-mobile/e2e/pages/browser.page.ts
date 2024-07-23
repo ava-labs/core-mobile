@@ -1,8 +1,9 @@
 import assert from 'assert'
 import Actions from '../helpers/actions'
-import Asserts from '../helpers/assertions'
 import BrowserLoc from '../locators/browser.loc'
-
+import delay from '../helpers/waits'
+import commonElsPage from './commonEls.page'
+import bottomTabsPage from './bottomTabs.page'
 class BrowserPage {
   wb =
     device.getPlatform() === 'ios'
@@ -11,6 +12,26 @@ class BrowserPage {
 
   get searchBar() {
     return by.id(BrowserLoc.searchBar)
+  }
+
+  get browserBackBtn() {
+    return by.id(BrowserLoc.browserBackBtn)
+  }
+
+  get connectWallet() {
+    return by.text(BrowserLoc.connectWallet)
+  }
+
+  get wcmWalletUri() {
+    return by.id(BrowserLoc.wcmUri)
+  }
+
+  get walletConnect() {
+    return by.text(BrowserLoc.walletConnectBtn)
+  }
+
+  get wuiQrCode() {
+    return by.id(BrowserLoc.wuiQrCode)
   }
 
   async tapSearchBar() {
@@ -26,19 +47,9 @@ class BrowserPage {
     await this.wb.element(by.web.xpath('//*[text()="Accept"]')).tap()
   }
 
-  async tapConnectWallet() {
+  async tapCoreConnectWallet() {
     await this.wb
       .element(by.web.xpath('//*[@data-testid="connect-wallet-button"]'))
-      .tap()
-  }
-
-  async tapWalletConnect() {
-    await this.wb
-      .element(
-        by.web.xpath(
-          '//*[@data-testid="connect-wallet-connect-button"]//p[text()="WalletConnect"]'
-        )
-      )
       .tap()
   }
 
@@ -63,25 +74,6 @@ class BrowserPage {
       })
   }
 
-  async selectAccountAndconnect() {
-    await Actions.waitForElement(by.text('Select Accounts'), 8000)
-    await Actions.tap(by.text('Select Accounts'))
-    await Actions.tapElementAtIndex(by.id('account_check_box'), 0)
-    await Actions.tap(by.text('Approve'))
-  }
-
-  async verifyDappConnected() {
-    try {
-      await Asserts.isVisible(by.text('Connected to Core'))
-      await this.wb
-        .element(by.web.xpath('//*[@data-testid="connect-wallet-button"]'))
-        .tap()
-      fail('We should not have connect wallet button after connected')
-    } catch (e) {
-      console.log('Verify there is no connect wallet button')
-    }
-  }
-
   async verifyInAppBrowserLoaded(url: string, timeout = 8000) {
     let isLoaded = false
     const start = Date.now()
@@ -92,6 +84,112 @@ class BrowserPage {
       await new Promise(resolve => setTimeout(resolve, 100))
     }
     assert(isLoaded)
+  }
+
+  async tapConnectWallet(dapp = 'Core') {
+    let xpath = ''
+    switch (dapp) {
+      case 'https://app.aave.com/': // Aave
+        xpath = '//*[text()="Connect wallet"]'
+        break
+      case 'https://traderjoexyz.com/avalanche': // TraderJoe
+        xpath = '//button[@aria-label="connect-wallet"]'
+        break
+      case 'https://opensea.io/': // OpenSea
+        xpath = '//button[@data-id="UnstyledButton"]//div[text()="Login"]'
+        break
+      default: // core app
+        xpath =
+          '//*[@data-testid="connect-wallet-connect-button"]//p[text()="WalletConnect"]'
+    }
+    await this.wb.element(by.web.xpath(xpath)).tap()
+  }
+
+  async tapWalletConnect() {
+    await this.wb.element(by.web.xpath(`//*[text()="WalletConnect"]`)).tap()
+  }
+
+  async tapCopyQrCode() {
+    await this.wb.element(by.web.xpath(`//*[@class='wcm-action-btn']`)).tap()
+  }
+
+  async tapBrowserBackBtn() {
+    await Actions.tap(this.browserBackBtn)
+  }
+
+  async getQrUri() {
+    await delay(2000)
+    if (device.getPlatform() === 'android') {
+      await this.wb
+        .element(by.web.tag('wcm-modal'))
+        .runScript(function (element) {
+          element.shadowRoot
+            .querySelector('wcm-modal-router')
+            .shadowRoot.querySelector('wcm-connect-wallet-view')
+            .shadowRoot.querySelector('wcm-android-wallet-selection')
+            .shadowRoot.querySelector('wcm-modal-header')
+            .shadowRoot.querySelector('button')
+            .click()
+        })
+    } else {
+      await this.wb
+        .element(by.web.tag('wcm-modal'))
+        .runScript(function (element) {
+          element.shadowRoot
+            .querySelector('wcm-modal-router')
+            .shadowRoot.querySelector('wcm-connect-wallet-view')
+            .shadowRoot.querySelector('wcm-mobile-wallet-selection')
+            .shadowRoot.querySelector('wcm-modal-header')
+            .shadowRoot.querySelector('button')
+            .click()
+        })
+    }
+    await delay(2000)
+    const output = await this.wb
+      .element(by.web.tag('wcm-modal'))
+      .runScript(function (element) {
+        return element.shadowRoot
+          .querySelector('wcm-modal-router')
+          .shadowRoot.querySelector('wcm-qrcode-view')
+          .shadowRoot.querySelector('wcm-walletconnect-qr')
+          .shadowRoot.querySelector('wcm-qrcode')
+          .getAttribute('uri')
+      })
+    console.log(`QR URI - ${output}`)
+    return output
+  }
+
+  async dismissConnectWalletModal() {
+    await delay(5000)
+    if (device.getPlatform() === 'android') {
+      await device.pressBack()
+    } else {
+      await Actions.waitForElement(by.id('warning_modal__i_understand_button'))
+      await Actions.tap(by.id('warning_modal__i_understand_button'))
+    }
+    await delay(2000)
+  }
+
+  async connectTo(dapp: string, showModal = false) {
+    await Actions.waitForElement(bottomTabsPage.plusIcon)
+    await bottomTabsPage.tapBrowserTab()
+    try {
+      await commonElsPage.tapGetStartedButton()
+    } catch (e) {
+      console.log('The Get Started Button is not displayed')
+    }
+    try {
+      await this.tapBrowserBackBtn()
+    } catch (e) {
+      console.log('Dismiss the previous web browser search')
+    }
+    await this.tapSearchBar()
+    await this.enterBrowserSearchQuery(dapp)
+    if (showModal) {
+      await this.dismissConnectWalletModal()
+    }
+    await this.tapConnectWallet(dapp)
+    await this.tapWalletConnect()
   }
 }
 

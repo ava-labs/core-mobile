@@ -9,6 +9,7 @@ import browserPage from '../../pages/browser.page'
 import commonElsPage from '../../pages/commonEls.page'
 import securityAndPrivacyPage from '../../pages/burgerMenu/securityAndPrivacy.page'
 import connectedSitesPage from '../../pages/connectedSites.page'
+import connectToSitePage from '../../pages/connectToSite.page'
 
 describe('Connect to dApp using WalletConnect', () => {
   beforeAll(async () => {
@@ -24,22 +25,21 @@ describe('Connect to dApp using WalletConnect', () => {
     await browserPage.verifyInAppBrowserLoaded('https://core.app/')
   })
 
-  it('should connect dApp in InAppBrowser', async () => {
+  it('should connect Core dApp in InAppBrowser', async () => {
     await browserPage.tapAccept()
+    await browserPage.tapCoreConnectWallet()
     await browserPage.tapConnectWallet()
-    await browserPage.tapWalletConnect()
     await browserPage.connectTermAndContinue()
     await browserPage.connectCore()
-    await browserPage.selectAccountAndconnect()
-    await browserPage.verifyDappConnected()
+    await connectToSitePage.selectAccountAndconnect('Core')
   })
 
-  it('should show up connected ', async () => {
+  it('should show up Core dApp connected ', async () => {
     await securityAndPrivacyPage.goToConnectedSites()
-    await connectedSitesPage.verifyCoreDapp()
+    await connectedSitesPage.verifyDapp('Core')
   })
 
-  it('should disconnect core.app', async () => {
+  it('should disconnect Core dApp', async () => {
     await connectedSitesPage.disconnectDapp('Core')
     await connectedSitesPage.verifyEmtpyConnectedSites()
   })

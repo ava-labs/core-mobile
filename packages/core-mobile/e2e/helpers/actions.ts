@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+/*eslint max-params: ["error", 4]*/
 
 import { element, waitFor } from 'detox'
 import { Page } from '@playwright/test'
@@ -88,6 +89,16 @@ const expectToBeVisible = async (item: Detox.NativeMatcher, index = 0) => {
     console.log('Element is not visible ' + e)
     return false
   }
+}
+
+const waitForElementWithText = async (
+  text: string,
+  timeout = 2000,
+  index = 0
+) => {
+  await waitFor(element(by.text(text)).atIndex(index))
+    .toBeVisible()
+    .withTimeout(timeout)
 }
 
 // waitForElementNoSync function can be used to handle idle timeout error for Android devices, should be used only if Idle timeout error presents
@@ -227,6 +238,7 @@ export default {
   multiTap,
   longPress,
   waitForElement,
+  waitForElementWithText,
   waitForElementNoSync,
   waitForElementNotVisible,
   tapElementAtIndex,
