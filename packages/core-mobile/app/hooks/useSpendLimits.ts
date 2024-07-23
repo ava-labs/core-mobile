@@ -23,13 +23,13 @@ export const useSpendLimits = (
   const [hashedCustomSpend, setHashedCustomSpend] = useState<string>()
 
   useEffect(() => {
-    if (!tokenApprovals || tokenApprovals.tokens.length === 0) {
+    if (!tokenApprovals || tokenApprovals.approvals.length === 0) {
       return
     }
 
     const _spendLimits: SpendLimit[] = []
 
-    for (const tokenApproval of tokenApprovals.tokens) {
+    for (const tokenApproval of tokenApprovals.approvals) {
       const token = tokenApproval.token
       if (token.type === TokenType.ERC20 && tokenApproval.value) {
         const defaultLimitBN = hexToBN(tokenApproval.value)
