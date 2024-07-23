@@ -11,7 +11,7 @@ import {
 } from './types'
 
 if (!Config.ANALYTICS_ENCRYPTION_KEY) {
-  Logger.info(
+  Logger.warn(
     'ANALYTICS_ENCRYPTION_KEY is missing in env file. Analytics are disabled.'
   )
 }
