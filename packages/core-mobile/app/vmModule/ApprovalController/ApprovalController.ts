@@ -102,7 +102,7 @@ class ApprovalController implements VmModuleApprovalController {
         Navigation.navigate({
           name: AppNavigation.Root.Wallet,
           params: {
-            screen: AppNavigation.Modal.MaliciousActivityWarning,
+            screen: AppNavigation.Modal.AlertScreen,
             params: {
               alert: displayData.alert,
               onReject,

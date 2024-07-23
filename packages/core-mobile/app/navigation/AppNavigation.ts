@@ -203,7 +203,7 @@ enum ModalScreens {
   AnalyticsConsentSheet = 'ModalScreens.AnalyticsConsentSheet',
   UseWalletConnect = 'ModalScreens.UseWalletConnect',
   AvalancheSignMessage = 'ModalScreens.AvalancheSignMessage',
-  MaliciousActivityWarning = 'ModalScreens.MaliciousActivityWarning'
+  AlertScreen = 'ModalScreens.AlertScreen'
 }
 
 enum SendScreens {

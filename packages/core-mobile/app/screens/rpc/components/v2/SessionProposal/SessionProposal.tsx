@@ -18,7 +18,7 @@ import { Button, Text } from '@avalabs/k2-mobile'
 import { isSiteScanResponseMalicious } from 'store/rpc/handlers/wc_sessionRequest/utils'
 import { AlertType } from '@avalabs/vm-module-types'
 import RpcRequestBottomSheet from '../../shared/RpcRequestBottomSheet'
-import MaliciousActivityWarning from '../MaliciousActivityWarning'
+import AlertBanner from '../AlertBanner'
 import SelectAccounts from './SelectAccounts'
 import Networks from './Networks'
 
@@ -79,7 +79,7 @@ const SessionProposal = (): JSX.Element => {
           {scanResponse && isSiteScanResponseMalicious(scanResponse) && (
             <>
               <Space y={32} />
-              <MaliciousActivityWarning
+              <AlertBanner
                 alert={{
                   type: AlertType.DANGER,
                   details: {

@@ -5,10 +5,9 @@ import { useNavigation, useRoute } from '@react-navigation/native'
 import { WalletScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
 
-const MaliciousActivityWarningScreen = (): JSX.Element => {
-  const { params } = useRoute<MaliciousActivityWarningScreenProps['route']>()
-  const navigation =
-    useNavigation<MaliciousActivityWarningScreenProps['navigation']>()
+const AlertScreen = (): JSX.Element => {
+  const { params } = useRoute<AlertScreenProps['route']>()
+  const navigation = useNavigation<AlertScreenProps['navigation']>()
   const {
     theme: { colors }
   } = useTheme()
@@ -68,8 +67,8 @@ const MaliciousActivityWarningScreen = (): JSX.Element => {
   )
 }
 
-type MaliciousActivityWarningScreenProps = WalletScreenProps<
-  typeof AppNavigation.Modal.MaliciousActivityWarning
+type AlertScreenProps = WalletScreenProps<
+  typeof AppNavigation.Modal.AlertScreen
 >
 
-export default MaliciousActivityWarningScreen
+export default AlertScreen

@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { ActivityIndicator, StyleSheet, ScrollView } from 'react-native'
-import { AlertType, RpcMethod, TokenType } from '@avalabs/vm-module-types'
+import { RpcMethod, TokenType } from '@avalabs/vm-module-types'
 import { Space } from 'components/Space'
 import AvaButton from 'components/AvaButton'
 import { Row } from 'components/Row'
@@ -27,13 +27,12 @@ import { isInAppRequest } from 'store/rpc/utils/isInAppRequest'
 import { isAddressApproved } from 'store/rpc/utils/isAddressApproved/isAddressApproved'
 import OvalTagBg from 'components/OvalTagBg'
 import Avatar from 'components/Avatar'
-import { Banner } from 'components/Banner'
 import GlobeSVG from 'components/svg/GlobeSVG'
 import { useSpendLimits } from 'hooks/useSpendLimits'
 import RpcRequestBottomSheet from '../shared/RpcRequestBottomSheet'
 import BalanceChange from './BalanceChange'
 import { SpendLimits } from './SpendLimits'
-import MaliciousActivityWarning from './MaliciousActivityWarning'
+import AlertBanner from './AlertBanner'
 
 type ApprovalPopupScreenProps = WalletScreenProps<
   typeof AppNavigation.Modal.ApprovalPopup
@@ -99,7 +98,7 @@ const ApprovalPopup = (): JSX.Element => {
   }, [rejectAndClose, request, signingData.account, signingData.type])
 
   const { spendLimits, canEdit, updateSpendLimit, hashedCustomSpend } =
-    useSpendLimits(displayData.tokenApprovals ?? [])
+    useSpendLimits(displayData.tokenApprovals)
 
   const handleFeesChange = useCallback(
     (fees: Eip1559Fees<NetworkTokenUnit>) => {
@@ -165,13 +164,9 @@ const ApprovalPopup = (): JSX.Element => {
   const renderAlert = (): JSX.Element | null => {
     if (!displayData.alert) return null
 
-    if (displayData.alert.type === AlertType.INFO) {
-      return <Banner {...displayData.alert.details} />
-    }
-
     return (
       <View sx={{ marginVertical: 12 }}>
-        <MaliciousActivityWarning alert={displayData.alert} />
+        <AlertBanner alert={displayData.alert} />
       </View>
     )
   }

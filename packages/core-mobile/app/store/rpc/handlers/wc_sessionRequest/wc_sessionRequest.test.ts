@@ -314,7 +314,7 @@ describe('session_request handler', () => {
       expect(mockNavigate).toHaveBeenCalledWith({
         name: AppNavigation.Root.Wallet,
         params: {
-          screen: AppNavigation.Modal.MaliciousActivityWarning,
+          screen: AppNavigation.Modal.AlertScreen,
           params: {
             alert: {
               type: AlertType.DANGER,

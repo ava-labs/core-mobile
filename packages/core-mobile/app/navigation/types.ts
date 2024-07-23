@@ -191,7 +191,7 @@ export type GetEthereumChainParams = {
   network: Network
 }
 
-export type MaliciousActivityWarningParams = {
+export type AlertScreenParams = {
   alert: Alert
   onProceed: () => void
   onReject: () => void

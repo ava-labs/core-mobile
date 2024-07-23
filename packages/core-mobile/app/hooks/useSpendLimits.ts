@@ -3,11 +3,15 @@ import { useCallback, useEffect, useState } from 'react'
 import Web3 from 'web3'
 import ERC20 from '@openzeppelin/contracts/build/contracts/ERC20.json'
 import { MaxUint256 } from 'ethers'
-import { TokenApproval, TokenType } from '@avalabs/vm-module-types'
+import {
+  TokenApproval,
+  TokenType,
+  TokenApprovals
+} from '@avalabs/vm-module-types'
 import type BN from 'bn.js'
 
 export const useSpendLimits = (
-  tokenApprovals: TokenApproval[]
+  tokenApprovals: TokenApprovals | undefined
 ): {
   spendLimits: SpendLimit[]
   canEdit: boolean
@@ -19,13 +23,13 @@ export const useSpendLimits = (
   const [hashedCustomSpend, setHashedCustomSpend] = useState<string>()
 
   useEffect(() => {
-    if (tokenApprovals.length === 0) {
+    if (!tokenApprovals || tokenApprovals.tokens.length === 0) {
       return
     }
 
     const _spendLimits: SpendLimit[] = []
 
-    for (const tokenApproval of tokenApprovals) {
+    for (const tokenApproval of tokenApprovals.tokens) {
       const token = tokenApproval.token
       if (token.type === TokenType.ERC20 && tokenApproval.value) {
         const defaultLimitBN = hexToBN(tokenApproval.value)
@@ -48,9 +52,7 @@ export const useSpendLimits = (
     setSpendLimits(_spendLimits)
   }, [tokenApprovals])
 
-  const canEdit =
-    spendLimits.length === 1 &&
-    spendLimits[0]?.tokenApproval.token.type === TokenType.ERC20
+  const canEdit = tokenApprovals !== undefined && tokenApprovals.isEditable
 
   const updateSpendLimit = useCallback(
     (newSpendData: SpendLimit) => {
