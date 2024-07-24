@@ -5,10 +5,10 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { refetchIntervals } from 'consts/earn'
 import NetworkService from 'services/network/NetworkService'
 import { selectSelectedCurrency } from 'store/settings/currency'
-import * as inMemoryCache from 'utils/InMemoryCache'
 import ModuleManager from 'vmModule/ModuleManager'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 import { TokenWithBalancePVM } from '@avalabs/vm-module-types'
+import { coingeckoInMemoryCache } from 'utils/coingeckoInMemoryCache'
 
 export const usePChainBalance = (): UseQueryResult<
   TokenWithBalancePVM | undefined,
@@ -33,10 +33,7 @@ export const usePChainBalance = (): UseQueryResult<
         addresses: [addressPVM],
         currency: selectedCurrency,
         network: mapToVmNetwork(network),
-        storage: {
-          get: inMemoryCache.getCache,
-          set: inMemoryCache.setCache
-        }
+        storage: coingeckoInMemoryCache
       })
       return balancesResponse[addressPVM]?.[network.networkToken.symbol]
     }

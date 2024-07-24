@@ -11,7 +11,7 @@ import type {
 } from '@avalabs/vm-module-types'
 import ModuleManager from 'vmModule/ModuleManager'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
-import * as inMemoryCache from 'utils/InMemoryCache'
+import { coingeckoInMemoryCache } from 'utils/coingeckoInMemoryCache'
 import BtcBalanceService from './BtcBalanceService'
 
 const balanceProviders: BalanceServiceProvider[] = [BtcBalanceService]
@@ -53,10 +53,7 @@ export class BalanceService {
             addresses: [accountAddress],
             currency,
             network: mapToVmNetwork(network),
-            storage: {
-              get: inMemoryCache.getCache,
-              set: inMemoryCache.setCache
-            }
+            storage: coingeckoInMemoryCache
           })
           const balances = balancesResponse[accountAddress] ?? {}
 

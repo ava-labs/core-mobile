@@ -6,10 +6,10 @@ import { selectSelectedCurrency } from 'store/settings/currency'
 import { refetchIntervals } from 'consts/earn'
 import ModuleManager from 'vmModule/ModuleManager'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
-import * as inMemoryCache from 'utils/InMemoryCache'
 import { TokenWithBalanceEVM } from '@avalabs/vm-module-types'
 import { isBitcoinChainId } from 'utils/network/isBitcoinNetwork'
 import { isXPChain } from 'utils/network/isAvalancheNetwork'
+import { coingeckoInMemoryCache } from 'utils/coingeckoInMemoryCache'
 import useCChainNetwork from './useCChainNetwork'
 
 export const useCChainBalance = (): UseQueryResult<
@@ -42,10 +42,7 @@ export const useCChainBalance = (): UseQueryResult<
         addresses: [addressC],
         currency: selectedCurrency,
         network: mapToVmNetwork(network),
-        storage: {
-          get: inMemoryCache.getCache,
-          set: inMemoryCache.setCache
-        }
+        storage: coingeckoInMemoryCache
       })
       return balancesResponse[addressC]?.[network.networkToken.symbol]
     }

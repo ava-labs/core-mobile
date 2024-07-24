@@ -50,7 +50,7 @@ export const PChainAssetList = ({
 
   const tokenPrice = token.priceInCurrency
 
-  const rednerItem = (assetType: string): JSX.Element => {
+  const renderItem = (assetType: string): JSX.Element => {
     const balance = token.balancePerType[assetType as ChainBalanceType] ?? 0
     const balanceInAvax = Avax.fromBase(balance.toString()).toDisplay()
     const balanceInCurrency = tokenPrice
@@ -128,7 +128,7 @@ export const PChainAssetList = ({
         scrollEnabled={scrollEnabled}
         data={shouldLimitAssets ? assetTypes.slice(0, limit) : assetTypes}
         keyExtractor={(_, index) => index.toString()}
-        renderItem={item => rednerItem(item.item as string)}
+        renderItem={item => renderItem(item.item as string)}
         ItemSeparatorComponent={ItemSeparator}
       />
       {renderMoreText()}
