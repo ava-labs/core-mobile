@@ -84,9 +84,11 @@ class WatchListPage {
   }
 
   async tapWatchListToken(tokenSymbol: string, index = 0) {
-    await element(by.id(`watchlist_item__${tokenSymbol}`))
-      .atIndex(index)
-      .tap()
+    await Action.waitForElement(by.id(`watchlist_item__${tokenSymbol}`))
+    await Action.tapElementAtIndex(
+      by.id(`watchlist_item__${tokenSymbol}`),
+      index
+    )
   }
 
   async verifyWatchlistElements() {
@@ -96,6 +98,9 @@ class WatchListPage {
 
   async verifyFavorites(tokens: string[]) {
     for (const token of tokens) {
+      await Action.waitForElement(
+        by.id(`watchlist_item__${token.toLowerCase()}`)
+      )
       await Assert.isVisible(by.id(`watchlist_item__${token.toLowerCase()}`))
     }
   }

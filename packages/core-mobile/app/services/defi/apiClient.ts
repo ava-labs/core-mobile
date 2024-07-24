@@ -1,6 +1,7 @@
 import { Zodios } from '@zodios/core'
 import Config from 'react-native-config'
 import { z } from 'zod'
+import Logger from 'utils/Logger'
 import {
   DeFiChainSchema,
   DeFiProtocolSchema,
@@ -8,7 +9,7 @@ import {
 } from './debankTypes'
 import { ExchangeRateSchema } from './types'
 
-if (!Config.PROXY_URL) throw Error('PROXY_URL is missing')
+if (!Config.PROXY_URL) Logger.warn('PROXY_URL is missing. Defi disabled.')
 
 const baseUrl = Config.PROXY_URL + '/proxy/debank/v1'
 

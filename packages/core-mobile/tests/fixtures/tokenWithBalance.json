@@ -5,7 +5,6 @@
       "name": "Winco",
       "symbol": "WCO",
       "decimals": 8,
-      "contractType": "ERC-20",
       "logoUri": "https://assets.coingecko.com/coins/images/3628/thumb/Webp.net-resizeimage_%281%29.png?1547038550",
       "color": "#e18e00",
       "type": "ERC20"
@@ -16,7 +15,6 @@
       "name": "Winco",
       "symbol": "WCO",
       "decimals": 8,
-      "contractType": "NATIVE",
       "logoUri": "https://assets.coingecko.com/coins/images/3628/thumb/Webp.net-resizeimage_%281%29.png?1547038550",
       "color": "#e18e00",
       "type": "NATIVE"

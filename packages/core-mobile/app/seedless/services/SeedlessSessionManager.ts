@@ -29,14 +29,14 @@ import Logger from 'utils/Logger'
 import { RetryBackoffPolicy, retry } from 'utils/js/retry'
 
 if (!Config.SEEDLESS_ORG_ID) {
-  throw Error('SEEDLESS_ORG_ID is missing. Please check your env file.')
+  Logger.warn('SEEDLESS_ORG_ID is missing. Seedless is disabled.')
 }
 
 if (!Config.SEEDLESS_ENVIRONMENT) {
-  throw Error('SEEDLESS_ENVIRONMENT is missing. Please check your env file.')
+  Logger.warn('SEEDLESS_ENVIRONMENT is missing. Please check your env file.')
 }
 
-const SEEDLESS_ORG_ID = Config.SEEDLESS_ORG_ID
+const SEEDLESS_ORG_ID = Config.SEEDLESS_ORG_ID ?? ''
 
 const SEEDLESS_ENVIRONMENT = Config.SEEDLESS_ENVIRONMENT
 

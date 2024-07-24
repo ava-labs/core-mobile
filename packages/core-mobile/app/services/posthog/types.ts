@@ -1,3 +1,5 @@
+import { JsonMap } from 'store/posthog'
+
 export enum FeatureGates {
   EVERYTHING = 'everything',
   EVENTS = 'events',
@@ -54,4 +56,26 @@ export type PosthogDeviceInfo = {
   $os_name: string
   $os_version: string
   $timezone: string
+}
+
+export interface PostHogServiceInterface {
+  configure({
+    distinctId,
+    userId
+  }: {
+    distinctId: string
+    userId: string
+  }): void
+
+  get isConfigured(): boolean
+
+  capture(eventName: string, properties?: JsonMap): Promise<void>
+
+  identifyUser(distinctId: string): Promise<void>
+
+  fetchFeatureFlags(
+    distinctId: string
+  ): Promise<
+    Partial<Record<FeatureGates | FeatureVars, string | boolean>> | undefined
+  >
 }

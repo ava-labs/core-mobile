@@ -1,3 +1,4 @@
 {
-  "name": "@avalabs/tsconfig-mobile"
+  "name": "@avalabs/tsconfig-mobile",
+  "license": "Limited Ecosystem License"
 }

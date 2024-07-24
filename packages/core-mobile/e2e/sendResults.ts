@@ -119,7 +119,7 @@ export default async function sendResults() {
       )
     }
     if (await isResultPresent('ios')) {
-      const runID = Number(process.env.IOS_TESTRAIL_RUN_ID)
+      const runID = Number(process.env.TESTRAIL_RUN_ID)
       console.log('The run id is ' + runID)
       await generatePlatformResults(
         testCasesToSend,

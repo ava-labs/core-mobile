@@ -9,8 +9,10 @@ import {
   SimplePriceResponseSchema
 } from 'services/token/types'
 import { boolean, number, string } from 'zod'
+import Logger from 'utils/Logger'
 
-if (!Config.PROXY_URL) throw Error('PROXY_URL is missing')
+if (!Config.PROXY_URL)
+  Logger.warn('PROXY_URL is missing in env file. Coin prices are disabled.')
 
 const baseUrl = Config.PROXY_URL + '/proxy/coingecko'
 

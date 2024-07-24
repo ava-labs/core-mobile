@@ -3,13 +3,25 @@ import Logger from 'utils/Logger'
 import DeviceInfoService from 'services/deviceInfo/DeviceInfoService'
 import { JsonMap } from 'store/posthog'
 import { applyTempChainIdConversion } from 'temp/caip2ChainIds'
+import { PostHogServiceNoop } from 'services/posthog/PostHogServiceNoop'
 import { sanitizeFeatureFlags } from './sanitizeFeatureFlags'
-import { FeatureGates, FeatureVars, PostHogDecideResponse } from './types'
+import {
+  FeatureGates,
+  FeatureVars,
+  PostHogDecideResponse,
+  PostHogServiceInterface
+} from './types'
 import { getPosthogDeviceInfo } from './utils'
 
-const PostHogCaptureUrl = `${Config.POSTHOG_URL}/capture/`
+class PostHogService implements PostHogServiceInterface {
+  constructor(
+    private posthogAnalyticsKey: string,
+    private posthogUrl: string,
+    private posthogFeatureFlagsKey: string
+  ) {}
 
-class PostHogService {
+  #posthogCaptureUrl = `${this.posthogUrl}/capture/`
+
   distinctId: string | undefined
   userId: string | undefined
 
@@ -44,7 +56,7 @@ class PostHogService {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        api_key: Config.POSTHOG_ANALYTICS_KEY,
+        api_key: this.posthogAnalyticsKey,
         event: eventName,
         timestamp: Date.now().toString(),
         ip: '',
@@ -56,7 +68,7 @@ class PostHogService {
         }
       })
     }
-    fetch(PostHogCaptureUrl, PostHogCaptureFetchOptions)
+    fetch(this.#posthogCaptureUrl, PostHogCaptureFetchOptions)
       .then(response => {
         if (response.ok) {
           return response.json()
@@ -75,7 +87,7 @@ class PostHogService {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        api_key: Config.POSTHOG_FEATURE_FLAGS_KEY,
+        api_key: this.posthogFeatureFlagsKey,
         event: '$identify',
         timestamp: Date.now().toString(),
         ip: '',
@@ -85,7 +97,7 @@ class PostHogService {
         }
       })
     }
-    fetch(PostHogCaptureUrl, PostHogIdentifyFetchOptions)
+    fetch(this.#posthogCaptureUrl, PostHogIdentifyFetchOptions)
       .then(response => {
         if (response.ok) {
           return response.json()
@@ -116,7 +128,7 @@ class PostHogService {
 
           const data = Buffer.from(
             JSON.stringify({
-              token: Config.POSTHOG_FEATURE_FLAGS_KEY,
+              token: this.posthogFeatureFlagsKey,
               distinct_id: distinctId,
               groups: {}
             })
@@ -142,11 +154,11 @@ class PostHogService {
 
           return response
         } catch (e) {
-          if (!Config.POSTHOG_URL) {
+          if (!this.posthogUrl) {
             throw new Error('Invalid Posthog URL')
           }
 
-          return await fetcher(Config.POSTHOG_URL)
+          return await fetcher(this.posthogUrl)
         }
       }
 
@@ -160,4 +172,12 @@ class PostHogService {
   }
 }
 
-export default new PostHogService()
+export default Config.POSTHOG_ANALYTICS_KEY &&
+Config.POSTHOG_URL &&
+Config.POSTHOG_FEATURE_FLAGS_KEY
+  ? new PostHogService(
+      Config.POSTHOG_ANALYTICS_KEY,
+      Config.POSTHOG_URL,
+      Config.POSTHOG_FEATURE_FLAGS_KEY
+    )
+  : new PostHogServiceNoop()

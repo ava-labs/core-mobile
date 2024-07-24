@@ -8,6 +8,7 @@ import { WCSessionProposal } from 'store/walletConnectV2/types'
 import { selectIsBlockaidDappScanBlocked } from 'store/posthog/slice'
 import BlockaidService from 'services/blockaid/BlockaidService'
 import { SiteScanResponse } from 'services/blockaid/types'
+import { AlertType } from '@avalabs/vm-module-types'
 import { wcSessionRequestHandler as handler } from './wc_sessionRequest'
 
 jest.mock('store/network/slice', () => {
@@ -313,11 +314,19 @@ describe('session_request handler', () => {
       expect(mockNavigate).toHaveBeenCalledWith({
         name: AppNavigation.Root.Wallet,
         params: {
-          screen: AppNavigation.Modal.MaliciousActivityWarning,
+          screen: AppNavigation.Modal.AlertScreen,
           params: {
-            title: 'Scam\nApplication',
-            subTitle: 'This application is malicious, do not proceed.',
-            rejectButtonTitle: 'Reject Connection',
+            alert: {
+              type: AlertType.DANGER,
+              details: {
+                title: 'Scam\nApplication',
+                description: 'This application is malicious, do not proceed.',
+                actionTitles: {
+                  proceed: 'Proceed Anyway',
+                  reject: 'Reject Connection'
+                }
+              }
+            },
             onProceed: expect.any(Function),
             onReject: expect.any(Function)
           }

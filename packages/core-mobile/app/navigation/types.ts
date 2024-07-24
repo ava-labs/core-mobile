@@ -2,7 +2,7 @@ import type { CompositeScreenProps } from '@react-navigation/native'
 import { StackScreenProps } from '@react-navigation/stack'
 import { BottomTabScreenProps } from '@react-navigation/bottom-tabs'
 import { DrawerScreenProps as RNDrawerScreenProps } from '@react-navigation/drawer'
-import { DisplayData, SigningData } from '@avalabs/vm-module-types'
+import { Alert, DisplayData, SigningData } from '@avalabs/vm-module-types'
 import { RpcRequest } from '@avalabs/vm-module-types'
 import { TokenWithBalance } from 'store/balance/types'
 import { AdvancedStackParamList } from 'navigation/wallet/AdvancedStackScreen'
@@ -14,14 +14,9 @@ import { AvalancheSelectAccountRequest as AvalancheSelectAccountRequestV2 } from
 import { Account } from 'store/account'
 import { AvalancheBridgeAssetRequest as AvalancheBridgeAssetRequestV2 } from 'store/rpc/handlers/avalanche_bridgeAsset/avalanche_bridgeAsset'
 import { Asset, Blockchain } from '@avalabs/bridge-sdk'
-import { EthSignRpcRequest as EthSignRpcRequestV2 } from 'store/rpc/handlers/eth_sign/eth_sign'
 import { WalletAddEthereumChainRpcRequest as WalletAddEthereumChainRpcRequestV2 } from 'store/rpc/handlers/chain/wallet_addEthereumChain/wallet_addEthereumChain'
 import { Network } from '@avalabs/chains-sdk'
 import { WalletSwitchEthereumChainRpcRequest as WalletSwitchEthereumChainRpcRequestV2 } from 'store/rpc/handlers/chain/wallet_switchEthereumChain/wallet_switchEthereumChain'
-import {
-  OldTypedData,
-  TypedData
-} from 'store/rpc/handlers/eth_sign/schemas/ethSignTypedData'
 import {
   SendTransactionApproveData,
   AvalancheSendTransactionRpcRequest as AvalancheSendTransactionRpcRequestV2
@@ -47,10 +42,8 @@ import {
   BitcoinSendTransactionRpcRequest
 } from 'store/rpc/handlers/bitcoin_sendTransaction/bitcoin_sendTransaction'
 import { AvalancheSignMessageRpcRequest } from 'store/rpc/handlers/avalanche_signMessage/types'
-import {
-  SiteScanResponse,
-  TransactionScanResponse
-} from 'services/blockaid/types'
+import { SiteScanResponse } from 'services/blockaid/types'
+import { SpendLimit } from 'hooks/useSpendLimits'
 import { RootScreenStackParamList } from './RootScreenStack'
 import { OnboardingScreenStackParamList } from './OnboardScreenStack'
 import { WelcomeScreenStackParamList } from './onboarding/WelcomeScreenStack'
@@ -93,6 +86,17 @@ export type EditGasLimitParams = {
   noGasLimitError?: string
 } & Eip1559Fees<NetworkTokenUnit>
 
+export type EditSpendLimitParams = {
+  updateSpendLimit(limitData: SpendLimit): void
+  onClose(): void
+  spendLimit: SpendLimit
+  editingToken: {
+    defaultValue: string
+    decimals: number
+  }
+  dAppName?: string
+}
+
 export type SessionProposalV2Params = {
   request: WCSessionProposal
   chainIds: number[]
@@ -127,12 +131,14 @@ export type ApprovalPopupParams = {
     network,
     account,
     maxFeePerGas,
-    maxPriorityFeePerGas
+    maxPriorityFeePerGas,
+    overrideData
   }: {
     network: Network
     account: CorePrimaryAccount
-    maxFeePerGas: bigint
-    maxPriorityFeePerGas: bigint
+    maxFeePerGas?: bigint
+    maxPriorityFeePerGas?: bigint
+    overrideData?: string
   }) => Promise<void>
   onReject: (message?: string) => void
 }
@@ -155,14 +161,6 @@ export type AvalancheSetDeveloperModeParams = {
 export type BitcoinSendTransactionParams = {
   request: BitcoinSendTransactionRpcRequest
   data: BitcoinSendTransactionApproveData
-}
-
-export type SignMessageV2Params = {
-  request: EthSignRpcRequestV2
-  network: Network
-  account: Account
-  data: string | TypedData | OldTypedData
-  scanResponse?: TransactionScanResponse
 }
 
 export type AvalancheSignMessageParams = {
@@ -193,10 +191,8 @@ export type GetEthereumChainParams = {
   network: Network
 }
 
-export type MaliciousActivityWarningParams = {
-  title: string
-  subTitle: string
-  rejectButtonTitle: string
+export type AlertScreenParams = {
+  alert: Alert
   onProceed: () => void
   onReject: () => void
 }

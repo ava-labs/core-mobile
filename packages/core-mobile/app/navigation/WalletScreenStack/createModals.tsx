@@ -11,7 +11,6 @@ import CreateRemoveContactV2 from 'screens/rpc/components/v2/CreateRemoveContact
 import UpdateContactV2 from 'screens/rpc/components/v2/UpdateContact/UpdateContact'
 import SelectAccountV2 from 'screens/rpc/components/v2/SelectAccount'
 import BridgeAssetV2 from 'screens/rpc/components/v2/BridgeAsset'
-import SignMessageV2 from 'screens/rpc/components/v2/SignMessage'
 import AddEthereumChainV2 from 'screens/rpc/components/v2/AddEthereumChain'
 import SwitchEthereumChainV2 from 'screens/rpc/components/v2/SwitchEthereumChain'
 import ApprovalPopup from 'screens/rpc/components/v2/ApprovalPopup'
@@ -33,7 +32,8 @@ import { AvalancheSetDeveloperMode } from 'screens/rpc/components/v2/AvalancheSe
 import { UseWalletConnectModal } from 'screens/browser/UseWalletConnectModal'
 import BitcoinSendTransaction from 'screens/rpc/components/v2/BitcoinSendTransaction'
 import { AvalancheSignMessage } from 'screens/rpc/components/v2/AvalancheSignMessage'
-import MaliciousActivityWarningScreen from 'screens/rpc/components/v2/MaliciousActivityWarningScreen'
+import AlertScreen from 'screens/rpc/components/v2/AlertScreen'
+import EditSpendLimit from 'components/EditSpendLimit'
 import { SignOutModalScreen, WalletScreenSType } from './WalletScreenStack'
 
 export const createModals = (WalletScreenS: WalletScreenSType): JSX.Element => {
@@ -44,10 +44,6 @@ export const createModals = (WalletScreenS: WalletScreenSType): JSX.Element => {
       <WalletScreenS.Screen
         name={AppNavigation.Modal.SessionProposalV2}
         component={SessionProposalV2}
-      />
-      <WalletScreenS.Screen
-        name={AppNavigation.Modal.SignMessageV2}
-        component={SignMessageV2}
       />
       <WalletScreenS.Screen
         name={AppNavigation.Modal.AvalancheSignMessage}
@@ -82,6 +78,10 @@ export const createModals = (WalletScreenS: WalletScreenSType): JSX.Element => {
         component={ApprovalPopup}
       />
       <WalletScreenS.Screen
+        name={AppNavigation.Modal.EditSpendLimit}
+        component={EditSpendLimit}
+      />
+      <WalletScreenS.Screen
         name={AppNavigation.Modal.AvalancheSendTransactionV2}
         component={AvalancheSendTransactionV2}
       />
@@ -98,8 +98,8 @@ export const createModals = (WalletScreenS: WalletScreenSType): JSX.Element => {
         component={AvalancheSetDeveloperMode}
       />
       <WalletScreenS.Screen
-        name={AppNavigation.Modal.MaliciousActivityWarning}
-        component={MaliciousActivityWarningScreen}
+        name={AppNavigation.Modal.AlertScreen}
+        component={AlertScreen}
       />
       <WalletScreenS.Group
         screenOptions={{

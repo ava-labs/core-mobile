@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { ActivityIndicator, StyleSheet, ScrollView } from 'react-native'
-import { SigningDataType } from '@avalabs/vm-module-types'
+import { RpcMethod, TokenType } from '@avalabs/vm-module-types'
 import { Space } from 'components/Space'
 import AvaButton from 'components/AvaButton'
 import { Row } from 'components/Row'
@@ -17,7 +17,6 @@ import { selectIsSeedlessSigningBlocked } from 'store/posthog'
 import FeatureBlocked from 'screens/posthog/FeatureBlocked'
 import { NetworkTokenUnit } from 'types'
 import { Eip1559Fees } from 'utils/Utils'
-import { isAddressApproved } from 'store/rpc/handlers/eth_sign/utils/isAddressApproved'
 import WalletConnectService from 'services/walletconnectv2/WalletConnectService'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { selectAccountByAddress } from 'store/account'
@@ -25,8 +24,15 @@ import Logger from 'utils/Logger'
 import TokenAddress from 'components/TokenAddress'
 import { humanize } from 'utils/string/humanize'
 import { isInAppRequest } from 'store/rpc/utils/isInAppRequest'
+import { isAddressApproved } from 'store/rpc/utils/isAddressApproved/isAddressApproved'
+import OvalTagBg from 'components/OvalTagBg'
+import Avatar from 'components/Avatar'
+import GlobeSVG from 'components/svg/GlobeSVG'
+import { useSpendLimits } from 'hooks/useSpendLimits'
 import RpcRequestBottomSheet from '../shared/RpcRequestBottomSheet'
-// import MaliciousActivityWarning from './MaliciousActivityWarning'
+import BalanceChange from './BalanceChange'
+import { SpendLimits } from './SpendLimits'
+import AlertBanner from './AlertBanner'
 
 type ApprovalPopupScreenProps = WalletScreenProps<
   typeof AppNavigation.Modal.ApprovalPopup
@@ -34,7 +40,8 @@ type ApprovalPopupScreenProps = WalletScreenProps<
 
 const ApprovalPopup = (): JSX.Element => {
   const isSeedlessSigningBlocked = useSelector(selectIsSeedlessSigningBlocked)
-  const { goBack } = useNavigation<ApprovalPopupScreenProps['navigation']>()
+  const { goBack, navigate } =
+    useNavigation<ApprovalPopupScreenProps['navigation']>()
   const { request, displayData, signingData, onApprove, onReject } =
     useRoute<ApprovalPopupScreenProps['route']>().params
   const { getNetwork } = useNetworks()
@@ -53,11 +60,15 @@ const ApprovalPopup = (): JSX.Element => {
   >()
 
   const approveDisabled =
-    !network || !account || !maxFeePerGas || !maxPriorityFeePerGas || submitting
+    !network ||
+    !account ||
+    (displayData.networkFeeSelector && !maxFeePerGas) ||
+    (displayData.networkFeeSelector && !maxPriorityFeePerGas) ||
+    submitting
 
   const showNetworkFeeSelector =
     displayData.networkFeeSelector &&
-    signingData.type === SigningDataType.EVM_TRANSACTION
+    signingData.type === RpcMethod.ETH_SEND_TRANSACTION
 
   const rejectAndClose = useCallback(
     (message?: string) => {
@@ -85,6 +96,9 @@ const ApprovalPopup = (): JSX.Element => {
       rejectAndClose('Requested address is not authorized')
     }
   }, [rejectAndClose, request, signingData.account, signingData.type])
+
+  const { spendLimits, canEdit, updateSpendLimit, hashedCustomSpend } =
+    useSpendLimits(displayData.tokenApprovals)
 
   const handleFeesChange = useCallback(
     (fees: Eip1559Fees<NetworkTokenUnit>) => {
@@ -137,7 +151,8 @@ const ApprovalPopup = (): JSX.Element => {
       network,
       account,
       maxFeePerGas,
-      maxPriorityFeePerGas
+      maxPriorityFeePerGas,
+      overrideData: hashedCustomSpend
     })
       .catch(Logger.error)
       .finally(() => {
@@ -146,7 +161,58 @@ const ApprovalPopup = (): JSX.Element => {
       })
   }
 
-  const renderNetwork = (): JSX.Element => {
+  const renderAlert = (): JSX.Element | null => {
+    if (!displayData.alert) return null
+
+    return (
+      <View sx={{ marginVertical: 12 }}>
+        <AlertBanner alert={displayData.alert} />
+      </View>
+    )
+  }
+
+  const renderDappInfo = (): JSX.Element | null => {
+    if (!displayData.dAppInfo) return null
+
+    const { name, action, logoUri } = displayData.dAppInfo
+
+    return (
+      <View style={{ justifyContent: 'center', alignItems: 'center' }}>
+        <OvalTagBg
+          style={{
+            height: 65,
+            width: 65,
+            backgroundColor: colors.$neutral800
+          }}>
+          {logoUri ? (
+            <Avatar.Basic
+              title={name}
+              logoUri={logoUri}
+              size={48}
+              backgroundColor={colors.$neutral600}
+            />
+          ) : (
+            <GlobeSVG height={'100%'} />
+          )}
+        </OvalTagBg>
+        <View
+          style={{
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginTop: 10,
+            marginBottom: 16
+          }}>
+          <Text variant="caption" style={{ textAlign: 'center' }}>
+            {action}
+          </Text>
+        </View>
+      </View>
+    )
+  }
+
+  const renderNetwork = (): JSX.Element | null => {
+    if (!displayData.network) return null
+
     const { name, logoUri } = displayData.network
 
     return (
@@ -167,6 +233,55 @@ const ApprovalPopup = (): JSX.Element => {
     )
   }
 
+  const handleEditSpendLimit = (): void => {
+    const spendLimit = spendLimits[0]
+
+    if (
+      !updateSpendLimit ||
+      !spendLimit ||
+      !spendLimit.tokenApproval.value ||
+      spendLimit.tokenApproval.token.type !== TokenType.ERC20
+    )
+      return
+
+    navigate(AppNavigation.Modal.EditSpendLimit, {
+      spendLimit,
+      onClose: goBack,
+      updateSpendLimit,
+      dAppName: request.dappInfo.name,
+      editingToken: {
+        defaultValue: spendLimit.tokenApproval.value,
+        decimals: spendLimit.tokenApproval.token.decimals
+      }
+    })
+  }
+
+  const renderAccount = (): JSX.Element | null => {
+    if (!displayData.account) return null
+
+    return (
+      <View style={styles.fullWidthContainer}>
+        <Row style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+          <Text variant="buttonMedium">Account:</Text>
+          <TokenAddress address={displayData.account} textType="ButtonMedium" />
+        </Row>
+        <Space y={16} />
+      </View>
+    )
+  }
+
+  const renderMessageDetails = (): JSX.Element | null => {
+    if (!displayData.messageDetails) return null
+
+    return (
+      <View>
+        <Text variant="buttonMedium">Message:</Text>
+        <View sx={styles.details}>
+          <Text variant="body1">{displayData.messageDetails}</Text>
+        </View>
+      </View>
+    )
+  }
   const renderTransactionDetails = (): JSX.Element | null => {
     if (!displayData.transactionDetails) return null
 
@@ -217,19 +332,22 @@ const ApprovalPopup = (): JSX.Element => {
             </AvaButton.Base>
           )}
         </Row>
-        <View
-          sx={{
-            justifyContent: 'space-between',
-            marginTop: 8,
-            borderRadius: 8,
-            padding: 16,
-            marginBottom: 16,
-            backgroundColor: '$neutral800',
-            gap: 8
-          }}>
-          {detailsToDisplay}
-        </View>
+        <View sx={styles.details}>{detailsToDisplay}</View>
       </>
+    )
+  }
+
+  const renderDisclaimer = (): JSX.Element | null => {
+    if (!displayData.disclaimer) return null
+
+    return (
+      <View sx={{ marginHorizontal: 16 }}>
+        <Text
+          sx={{ color: '$warningMain', textAlign: 'center' }}
+          variant="body2">
+          {displayData.disclaimer}
+        </Text>
+      </View>
     )
   }
 
@@ -257,6 +375,29 @@ const ApprovalPopup = (): JSX.Element => {
     )
   }
 
+  const balanceChange = displayData.balanceChange
+  const hasBalanceChange =
+    balanceChange &&
+    (balanceChange.ins.length > 0 || balanceChange.outs.length > 0)
+
+  const renderSpendLimits = (): JSX.Element | null => {
+    if (spendLimits.length === 0 || hasBalanceChange) {
+      return null
+    }
+    return (
+      <SpendLimits
+        spendLimits={spendLimits}
+        onEdit={canEdit ? handleEditSpendLimit : undefined}
+      />
+    )
+  }
+
+  const renderBalanceChange = (): JSX.Element | null => {
+    if (!hasBalanceChange) return null
+
+    return <BalanceChange balanceChange={balanceChange} />
+  }
+
   return (
     <>
       <RpcRequestBottomSheet
@@ -267,27 +408,15 @@ const ApprovalPopup = (): JSX.Element => {
           <View>
             <Text variant="heading4">{displayData.title}</Text>
             <Space y={12} />
-            {/* {displayData.transactionValidation && (
-              <MaliciousActivityWarning
-                style={{ marginTop: 12, marginBottom: 12 }}
-                result={displayData.transactionValidation?.resultType}
-                title={displayData.transactionValidation?.title ?? ''}
-                subTitle={displayData.transactionValidation?.description ?? ''}
-              />
-            )} */}
+            {renderAlert()}
             <Space y={12} />
+            {renderDappInfo()}
             {renderNetwork()}
+            {renderAccount()}
+            {renderMessageDetails()}
             {renderTransactionDetails()}
-            {/* TODO re-add transaction simulation 
-             https://ava-labs.atlassian.net/browse/CP-8870
-            <BalanceChange
-              displayData={displayData}
-              transactionSimulation={
-                scanResponse?.simulation?.status === 'Success'
-                  ? scanResponse?.simulation
-                  : undefined
-              }
-            /> */}
+            {renderSpendLimits()}
+            {renderBalanceChange()}
           </View>
           {showNetworkFeeSelector && (
             <NetworkFeeSelector
@@ -301,6 +430,7 @@ const ApprovalPopup = (): JSX.Element => {
             />
           )}
         </ScrollView>
+        {renderDisclaimer()}
         {renderApproveRejectButtons()}
       </RpcRequestBottomSheet>
       {isSeedlessSigningBlocked && (
@@ -324,6 +454,14 @@ export const styles = StyleSheet.create({
   },
   fullWidthContainer: {
     width: '100%'
+  },
+  details: {
+    justifyContent: 'space-between',
+    marginTop: 16,
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 16,
+    backgroundColor: '$neutral800'
   }
 })
 

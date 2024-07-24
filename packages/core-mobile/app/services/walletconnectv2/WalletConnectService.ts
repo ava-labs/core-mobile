@@ -10,7 +10,12 @@ import Logger from 'utils/Logger'
 import promiseWithTimeout from 'utils/js/promiseWithTimeout'
 import { isBitcoinChainId } from 'utils/network/isBitcoinNetwork'
 import { isXPChain } from 'utils/network/isAvalancheNetwork'
-import { CLIENT_METADATA, WalletConnectCallbacks } from './types'
+import { WalletConnectServiceNoop } from 'services/walletconnectv2/WalletConnectServiceNoop'
+import {
+  CLIENT_METADATA,
+  WalletConnectCallbacks,
+  WalletConnectServiceInterface
+} from './types'
 import {
   addNamespaceToAddress,
   addNamespaceToChain,
@@ -23,12 +28,14 @@ const UPDATE_SESSION_TIMEOUT = 15000
 const LOG_LEVEL = __DEV__ ? 'error' : 'silent'
 
 if (!Config.WALLET_CONNECT_PROJECT_ID) {
-  throw Error(
-    'WALLET_CONNECT_PROJECT_ID is missing. Please check your env file.'
+  Logger.warn(
+    'WALLET_CONNECT_PROJECT_ID is missing in env file. Wallet connect is disabled.'
   )
 }
 
-class WalletConnectService {
+class WalletConnectService implements WalletConnectServiceInterface {
+  constructor(private walletConnectProjectId: string) {}
+
   #client: IWeb3Wallet | undefined
 
   private get client(): IWeb3Wallet {
@@ -48,7 +55,7 @@ class WalletConnectService {
     // after init, WC will auto restore sessions
     const core = new Core({
       logger: LOG_LEVEL,
-      projectId: Config.WALLET_CONNECT_PROJECT_ID
+      projectId: this.walletConnectProjectId
     })
 
     this.client = await Web3Wallet.init({
@@ -301,4 +308,6 @@ class WalletConnectService {
   }
 }
 
-export default new WalletConnectService()
+export default Config.WALLET_CONNECT_PROJECT_ID
+  ? new WalletConnectService(Config.WALLET_CONNECT_PROJECT_ID)
+  : new WalletConnectServiceNoop()

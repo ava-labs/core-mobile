@@ -1,12 +1,13 @@
-import { Button, Text, View, alpha, useTheme } from '@avalabs/k2-mobile'
+import { Button, Text, View } from '@avalabs/k2-mobile'
 import React from 'react'
 import { Space } from 'components/Space'
-import InfoSVG from 'components/svg/InfoSVG'
 import {
   getDelayInstruction,
   getDelayWarningDescription,
   getDelayWarningTitle
 } from 'seedless/hooks/useSeedlessMnemonicExport'
+import AlertBanner from 'screens/rpc/components/v2/AlertBanner'
+import { AlertType } from '@avalabs/vm-module-types'
 
 interface Props {
   onNext: () => void
@@ -19,9 +20,6 @@ const STEPS = [
 ]
 
 export const SeedlessExportInstructions = ({ onNext }: Props): JSX.Element => {
-  const {
-    theme: { colors }
-  } = useTheme()
   return (
     <View
       sx={{ marginHorizontal: 16, flex: 1, justifyContent: 'space-between' }}>
@@ -56,26 +54,15 @@ export const SeedlessExportInstructions = ({ onNext }: Props): JSX.Element => {
         <View
           sx={{ marginVertical: 32, height: 1, backgroundColor: '$neutral800' }}
         />
-
-        <View
-          sx={{
-            flexDirection: 'row',
-            borderColor: '$warningLight',
-            borderRadius: 8,
-            borderWidth: 1,
-            padding: 16,
-            backgroundColor: alpha(colors.$warningDark, 0.1),
-            alignItems: 'center'
-          }}>
-          <InfoSVG color={colors.$warningLight} size={24} />
-          <Space x={8} />
-          <View sx={{ flex: 1 }}>
-            <Text variant="alertTitle">{getDelayWarningTitle()}</Text>
-            <Text variant="alertDescription">
-              {getDelayWarningDescription()}
-            </Text>
-          </View>
-        </View>
+        <AlertBanner
+          alert={{
+            type: AlertType.WARNING,
+            details: {
+              title: getDelayWarningTitle(),
+              description: getDelayWarningDescription()
+            }
+          }}
+        />
       </View>
       <Button
         type="primary"

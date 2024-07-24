@@ -6,11 +6,11 @@ import { OidcPayload } from 'seedless/types'
 import { AppleSigninServiceInterface } from './types'
 
 if (!Config.APPLE_OAUTH_CLIENT_ID) {
-  throw Error('APPLE_OAUTH_CLIENT_ID is missing. Please check your env file.')
+  Logger.warn('APPLE_OAUTH_CLIENT_ID is missing. Please check your env file.')
 }
 
 if (!Config.APPLE_OAUTH_REDIRECT_URL) {
-  throw Error(
+  Logger.warn(
     'APPLE_OAUTH_REDIRECT_URL is missing. Please check your env file.'
   )
 }
@@ -18,13 +18,15 @@ if (!Config.APPLE_OAUTH_REDIRECT_URL) {
 const clientId = Config.APPLE_OAUTH_CLIENT_ID
 const redirectUri = Config.APPLE_OAUTH_REDIRECT_URL
 
-appleAuthAndroid.configure({
-  clientId,
-  redirectUri,
-  scope: appleAuthAndroid.Scope.EMAIL,
-  responseType: appleAuthAndroid.ResponseType.ALL,
-  state: DeviceInfoService.getAppNameSpace()
-})
+if (clientId && redirectUri) {
+  appleAuthAndroid.configure({
+    clientId,
+    redirectUri,
+    scope: appleAuthAndroid.Scope.EMAIL,
+    responseType: appleAuthAndroid.ResponseType.ALL,
+    state: DeviceInfoService.getAppNameSpace()
+  })
+}
 
 class AppleSigninService implements AppleSigninServiceInterface {
   isSupported(): boolean {

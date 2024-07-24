@@ -31,7 +31,7 @@ export class BitcoinModule implements Module {
   ): Promise<TransactionHistoryResponse> {
     return Promise.resolve({ transactions: [], nextPageToken: '' })
   }
-  getNetworkFee(): Promise<NetworkFees> {
+  getNetworkFee(_: Network): Promise<NetworkFees> {
     return Promise.resolve({
       low: { maxPriorityFeePerGas: 0n, maxFeePerGas: 0n },
       medium: { maxPriorityFeePerGas: 0n, maxFeePerGas: 0n },
