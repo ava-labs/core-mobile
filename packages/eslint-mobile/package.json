@@ -1,6 +1,7 @@
 {
   "name": "eslint-plugin-avalabs-mobile",
   "main": "index.js",
+  "license": "Limited Ecosystem License",
   "scripts": {
     "setup": "yarn allow-scripts",
     "lint": "eslint .",

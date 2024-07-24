@@ -1,6 +1,7 @@
 {
   "name": "mobile-monorepo",
   "private": true,
+  "license": "Limited Ecosystem License",
   "version": "1.0.0",
   "workspaces": [
     "packages/*"
