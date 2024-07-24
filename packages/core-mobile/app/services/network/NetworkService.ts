@@ -18,9 +18,11 @@ import { avaxSerial } from '@avalabs/avalanchejs'
 import { TransactionResponse } from 'ethers'
 import { Networks } from 'store/network/types'
 import Config from 'react-native-config'
+import Logger from 'utils/Logger'
 import { getBitcoinProvider, getEvmProvider } from './utils/providerUtils'
 
-if (!Config.PROXY_URL) throw Error('PROXY_URL is missing')
+if (!Config.PROXY_URL)
+  Logger.warn('PROXY_URL is missing in env file. Network service is disabled.')
 
 class NetworkService {
   async getNetworks(): Promise<Networks> {

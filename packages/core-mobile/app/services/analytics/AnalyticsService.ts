@@ -2,25 +2,32 @@ import PostHogService from 'services/posthog/PostHogService'
 import { AnalyticsEvents } from 'types/analytics'
 import Config from 'react-native-config'
 import { encrypt } from 'utils/hpke'
-import { AnalyticsEventName, CaptureEventProperties } from './types'
+import Logger from 'utils/Logger'
+import { AnalyticsServiceNoop } from 'services/analytics/AnalyticsServiceNoop'
+import {
+  AnalyticsEventName,
+  AnalyticsServiceInterface,
+  CaptureEventProperties
+} from './types'
 
 if (!Config.ANALYTICS_ENCRYPTION_KEY) {
-  throw Error(
-    'ANALYTICS_ENCRYPTION_KEY is missing. Please check your env file.'
+  Logger.warn(
+    'ANALYTICS_ENCRYPTION_KEY is missing in env file. Analytics are disabled.'
   )
 }
 
 if (!Config.ANALYTICS_ENCRYPTION_KEY_ID) {
-  throw Error(
-    'ANALYTICS_ENCRYPTION_KEY_ID is missing. Please check your env file.'
+  Logger.warn(
+    'ANALYTICS_ENCRYPTION_KEY_ID is missing in env file. Analytics are disabled.'
   )
 }
 
-const ANALYTICS_ENCRYPTION_KEY = Config.ANALYTICS_ENCRYPTION_KEY
+class AnalyticsService implements AnalyticsServiceInterface {
+  constructor(
+    private analyticsEncryptionKey: string,
+    private analyticsEncryptionKeyId: string
+  ) {}
 
-const ANALYTICS_ENCRYPTION_KEY_ID = Config.ANALYTICS_ENCRYPTION_KEY_ID
-
-class AnalyticsService {
   private isEnabled: boolean | undefined
 
   setEnabled(isEnabled: boolean): void {
@@ -49,8 +56,8 @@ class AnalyticsService {
     const stringifiedProperties = JSON.stringify(properties)
     const { encrypted, enc, keyID } = await encrypt(
       stringifiedProperties,
-      ANALYTICS_ENCRYPTION_KEY,
-      ANALYTICS_ENCRYPTION_KEY_ID
+      this.analyticsEncryptionKey,
+      this.analyticsEncryptionKeyId
     )
 
     return PostHogService.capture(eventName, {
@@ -61,4 +68,10 @@ class AnalyticsService {
   }
 }
 
-export default new AnalyticsService()
+export default Config.ANALYTICS_ENCRYPTION_KEY &&
+Config.ANALYTICS_ENCRYPTION_KEY_ID
+  ? new AnalyticsService(
+      Config.ANALYTICS_ENCRYPTION_KEY,
+      Config.ANALYTICS_ENCRYPTION_KEY_ID
+    )
+  : new AnalyticsServiceNoop()
