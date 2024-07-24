@@ -5,7 +5,8 @@ import {
   ApprovalController as VmModuleApprovalController,
   ApprovalParams,
   ApprovalResponse,
-  RpcMethod
+  RpcMethod,
+  AlertType
 } from '@avalabs/vm-module-types'
 import AppNavigation from 'navigation/AppNavigation'
 import * as Navigation from 'utils/Navigation'
@@ -39,12 +40,14 @@ class ApprovalController implements VmModuleApprovalController {
         network,
         account,
         maxFeePerGas,
-        maxPriorityFeePerGas
+        maxPriorityFeePerGas,
+        overrideData
       }: {
         network: Network
         account: CorePrimaryAccount
         maxFeePerGas?: bigint
         maxPriorityFeePerGas?: bigint
+        overrideData?: string
       }): Promise<void> => {
         switch (signingData.type) {
           case RpcMethod.ETH_SEND_TRANSACTION: {
@@ -54,6 +57,7 @@ class ApprovalController implements VmModuleApprovalController {
               account,
               maxFeePerGas,
               maxPriorityFeePerGas,
+              overrideData,
               resolve
             })
 
@@ -94,51 +98,47 @@ class ApprovalController implements VmModuleApprovalController {
         })
       }
 
-      // TODO: use the correct fields for validation
-      // if (displayData.transactionValidation) {
-      //   Navigation.navigate({
-      //     name: AppNavigation.Root.Wallet,
-      //     params: {
-      //       screen: AppNavigation.Modal.MaliciousActivityWarning,
-      //       params: {
-      //         title: displayData.transactionValidation.title,
-      //         subTitle: displayData.transactionValidation.description,
-      //         rejectButtonTitle:
-      //           displayData.transactionValidation.rejectButtonTitle,
-      //         onReject,
-      //         onProceed: () => {
-      //           Navigation.navigate({
-      //             name: AppNavigation.Root.Wallet,
-      //             params: {
-      //               screen: AppNavigation.Modal.ApprovalPopup,
-      //               params: {
-      //                 request,
-      //                 displayData: displayData,
-      //                 signingData: signingData,
-      //                 onApprove,
-      //                 onReject
-      //               }
-      //             }
-      //           })
-      //         }
-      //       }
-      //     }
-      //   })
-      // } else {
-      Navigation.navigate({
-        name: AppNavigation.Root.Wallet,
-        params: {
-          screen: AppNavigation.Modal.ApprovalPopup,
+      if (displayData.alert?.type === AlertType.DANGER) {
+        Navigation.navigate({
+          name: AppNavigation.Root.Wallet,
           params: {
-            request,
-            displayData: displayData,
-            signingData: signingData,
-            onApprove,
-            onReject
+            screen: AppNavigation.Modal.AlertScreen,
+            params: {
+              alert: displayData.alert,
+              onReject,
+              onProceed: () => {
+                Navigation.navigate({
+                  name: AppNavigation.Root.Wallet,
+                  params: {
+                    screen: AppNavigation.Modal.ApprovalPopup,
+                    params: {
+                      request,
+                      displayData,
+                      signingData,
+                      onApprove,
+                      onReject
+                    }
+                  }
+                })
+              }
+            }
           }
-        }
-      })
-      // }
+        })
+      } else {
+        Navigation.navigate({
+          name: AppNavigation.Root.Wallet,
+          params: {
+            screen: AppNavigation.Modal.ApprovalPopup,
+            params: {
+              request,
+              displayData,
+              signingData,
+              onApprove,
+              onReject
+            }
+          }
+        })
+      }
     })
   }
 }

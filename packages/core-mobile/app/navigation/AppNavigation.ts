@@ -191,6 +191,7 @@ enum ModalScreens {
   BridgeAssetV2 = 'ModalScreens.BridgeAssetV2',
   SignTransactionV2 = 'ModalScreens.SignTransactionV2',
   ApprovalPopup = 'ModalScreens.ApprovalPopup',
+  EditSpendLimit = 'ModalScreens.EditSpendLimit',
   AvalancheSendTransactionV2 = 'ModalScreens.AvalancheSendTransactionV2',
   AvalancheSignTransactionV2 = 'ModalScreens.AvalancheSignTransactionV2',
   BitcoinSendTransaction = 'ModalScreens.BitcoinSendTransaction',
@@ -202,7 +203,7 @@ enum ModalScreens {
   AnalyticsConsentSheet = 'ModalScreens.AnalyticsConsentSheet',
   UseWalletConnect = 'ModalScreens.UseWalletConnect',
   AvalancheSignMessage = 'ModalScreens.AvalancheSignMessage',
-  MaliciousActivityWarning = 'ModalScreens.MaliciousActivityWarning'
+  AlertScreen = 'ModalScreens.AlertScreen'
 }
 
 enum SendScreens {

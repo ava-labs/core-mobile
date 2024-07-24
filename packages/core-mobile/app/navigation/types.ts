@@ -2,7 +2,7 @@ import type { CompositeScreenProps } from '@react-navigation/native'
 import { StackScreenProps } from '@react-navigation/stack'
 import { BottomTabScreenProps } from '@react-navigation/bottom-tabs'
 import { DrawerScreenProps as RNDrawerScreenProps } from '@react-navigation/drawer'
-import { DisplayData, SigningData } from '@avalabs/vm-module-types'
+import { Alert, DisplayData, SigningData } from '@avalabs/vm-module-types'
 import { RpcRequest } from '@avalabs/vm-module-types'
 import { TokenWithBalance } from 'store/balance/types'
 import { AdvancedStackParamList } from 'navigation/wallet/AdvancedStackScreen'
@@ -43,6 +43,7 @@ import {
 } from 'store/rpc/handlers/bitcoin_sendTransaction/bitcoin_sendTransaction'
 import { AvalancheSignMessageRpcRequest } from 'store/rpc/handlers/avalanche_signMessage/types'
 import { SiteScanResponse } from 'services/blockaid/types'
+import { SpendLimit } from 'hooks/useSpendLimits'
 import { RootScreenStackParamList } from './RootScreenStack'
 import { OnboardingScreenStackParamList } from './OnboardScreenStack'
 import { WelcomeScreenStackParamList } from './onboarding/WelcomeScreenStack'
@@ -85,6 +86,17 @@ export type EditGasLimitParams = {
   noGasLimitError?: string
 } & Eip1559Fees<NetworkTokenUnit>
 
+export type EditSpendLimitParams = {
+  updateSpendLimit(limitData: SpendLimit): void
+  onClose(): void
+  spendLimit: SpendLimit
+  editingToken: {
+    defaultValue: string
+    decimals: number
+  }
+  dAppName?: string
+}
+
 export type SessionProposalV2Params = {
   request: WCSessionProposal
   chainIds: number[]
@@ -119,12 +131,14 @@ export type ApprovalPopupParams = {
     network,
     account,
     maxFeePerGas,
-    maxPriorityFeePerGas
+    maxPriorityFeePerGas,
+    overrideData
   }: {
     network: Network
     account: CorePrimaryAccount
     maxFeePerGas?: bigint
     maxPriorityFeePerGas?: bigint
+    overrideData?: string
   }) => Promise<void>
   onReject: (message?: string) => void
 }
@@ -177,10 +191,8 @@ export type GetEthereumChainParams = {
   network: Network
 }
 
-export type MaliciousActivityWarningParams = {
-  title: string
-  subTitle: string
-  rejectButtonTitle: string
+export type AlertScreenParams = {
+  alert: Alert
   onProceed: () => void
   onReject: () => void
 }

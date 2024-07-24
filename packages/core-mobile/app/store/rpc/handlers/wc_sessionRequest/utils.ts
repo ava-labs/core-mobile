@@ -19,6 +19,7 @@ import { SiteScanResponse } from 'services/blockaid/types'
 import { providerErrors } from '@metamask/rpc-errors'
 import { onRequestRejected } from 'store/rpc/slice'
 import { AnyAction, Dispatch } from '@reduxjs/toolkit'
+import { AlertType } from '@avalabs/vm-module-types'
 
 const CORE_WEB_HOSTNAMES = [
   'localhost',
@@ -113,11 +114,19 @@ export const scanAndSessionProposal = async ({
       Navigation.navigate({
         name: AppNavigation.Root.Wallet,
         params: {
-          screen: AppNavigation.Modal.MaliciousActivityWarning,
+          screen: AppNavigation.Modal.AlertScreen,
           params: {
-            title: 'Scam\nApplication',
-            subTitle: 'This application is malicious, do not proceed.',
-            rejectButtonTitle: 'Reject Connection',
+            alert: {
+              type: AlertType.DANGER,
+              details: {
+                title: 'Scam\nApplication',
+                description: 'This application is malicious, do not proceed.',
+                actionTitles: {
+                  reject: 'Reject Connection',
+                  proceed: 'Proceed Anyway'
+                }
+              }
+            },
             onReject: (): void => {
               dispatch(
                 onRequestRejected({
