@@ -24,14 +24,14 @@ export const DappItem = ({
   onSelect,
   onClear,
   selected
-}: Props) => {
+}: Props): JSX.Element => {
   const theme = useApplicationContext().theme
 
   const peerMeta = useMemo(() => {
     return item.dapp.peer.metadata
   }, [item])
 
-  const getIconUrl = () => {
+  const getIconUrl = (): string | undefined => {
     const icons = peerMeta.icons
     const iconCount = icons.length
 
@@ -67,7 +67,9 @@ export const DappItem = ({
       testID={peerMeta.name}
       rightComponent={
         isEditing ? null : (
-          <AvaButton.Base onPress={() => onClear(item)}>
+          <AvaButton.Base
+            onPress={() => onClear(item)}
+            testID={`x_btn__${peerMeta.name}`}>
             <ClearSVG color={theme.white} backgroundColor={theme.background} />
           </AvaButton.Base>
         )

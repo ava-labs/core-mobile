@@ -196,11 +196,11 @@ workflows:
         inputs:
         - file_path: scripts/bitrise/detox/createIosTestRun.sh
         - variables:
-          - IOS_TESTRAIL_RUN_ID=$IOS_TESTRAIL_RUN_ID
+          - TESTRAIL_RUN_ID=$TESTRAIL_RUN_ID
     - share-pipeline-variable@1:
         inputs:
         - variables: |-
-            IOS_TESTRAIL_RUN_ID=$IOS_TESTRAIL_RUN_ID
+            TESTRAIL_RUN_ID=$TESTRAIL_RUN_ID
     - deploy-to-bitrise-io@2:
         inputs:
         - pipeline_intermediate_files: $BITRISE_APP_DIR_PATH:BITRISE_APP_DIR_PATH
@@ -263,18 +263,21 @@ workflows:
     steps:
     - script-runner@0:
         title: Detox
+        no_output_timeout: 300
         inputs:
         - file_path: scripts/bitrise/detox/androidInternalE2e.sh
   _run_android_core_web_tests:
     steps:
     - script-runner@0:
         title: Detox
+        no_output_timeout: 300
         inputs:
         - file_path: e2e/tests/plusIcon/walletConnect/android_core_web_test_runner.sh
   _run_android_tests_reuse_app_state:
     steps:
     - script-runner@0:
         title: Detox
+        no_output_timeout: 300
         inputs:
         - file_path: scripts/bitrise/detox/androidInternalE2eReuseAppState.sh
   _send-notification-slack:
@@ -885,12 +888,10 @@ workflows:
     - POST_TO_TESTRAIL: "true"
       opts:
         is_expand: false 
-    - TESTRAIL_RUN_ID: $IOS_TESTRAIL_RUN_ID
-      opts:
-        is_expand: false
     steps:
     - script-runner@0:
         title: Detox
+        no_output_timeout: 300
         inputs:
         - file_path: scripts/bitrise/detox/iosInternalE2e.sh
   ios-internal-e2e-core-web-test:
@@ -929,12 +930,10 @@ workflows:
       - POST_TO_TESTRAIL: "true"
         opts:
           is_expand: false 
-      - TESTRAIL_RUN_ID: $IOS_TESTRAIL_RUN_ID
-        opts:
-          is_expand: false
       steps:
       - script-runner@0:
           title: Detox
+          no_output_timeout: 300
           inputs:
           - file_path: scripts/bitrise/detox/iosCoreWebTestRunner.sh
   ios-internal-e2e-regression:
@@ -975,9 +974,11 @@ workflows:
         is_expand: false
     steps:
     - share-pipeline-variable@1:
+        no_output_timeout: 300
         inputs:
         - variables: |-
             IS_REGRESSION_RUN=$IS_REGRESSION_RUN
+            TESTRAIL_RUN_ID=$TESTRAIL_RUN_ID
   ios-internal-e2e-regression-run:
       before_run:
       - _install-and-set-env
@@ -1014,16 +1015,20 @@ workflows:
       - POST_TO_TESTRAIL: "true"
         opts:
           is_expand: false 
-      - TESTRAIL_RUN_ID: $IOS_TESTRAIL_RUN_ID
-        opts:
-          is_expand: false
       - IS_REGRESSION_RUN: "true"
         opts:
           is_expand: false
       steps:
       - script-runner@0:
           title: Detox
+          no_output_timeout: 300
           inputs:
           - file_path: scripts/bitrise/detox/iosInternalRegressionRunner.sh
+      - share-pipeline-variable@1:
+          no_output_timeout: 300
+          inputs:
+          - variables: |-
+              IS_REGRESSION_RUN=$IS_REGRESSION_RUN
+              TESTRAIL_RUN_ID=$TESTRAIL_RUN_ID
 
       

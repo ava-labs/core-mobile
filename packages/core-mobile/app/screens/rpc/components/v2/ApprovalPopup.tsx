@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { ActivityIndicator, StyleSheet, ScrollView } from 'react-native'
-import { SigningDataType } from '@avalabs/vm-module-types'
+import { RpcMethod } from '@avalabs/vm-module-types'
 import { Space } from 'components/Space'
 import AvaButton from 'components/AvaButton'
 import { Row } from 'components/Row'
@@ -17,7 +17,6 @@ import { selectIsSeedlessSigningBlocked } from 'store/posthog'
 import FeatureBlocked from 'screens/posthog/FeatureBlocked'
 import { NetworkTokenUnit } from 'types'
 import { Eip1559Fees } from 'utils/Utils'
-import { isAddressApproved } from 'store/rpc/handlers/eth_sign/utils/isAddressApproved'
 import WalletConnectService from 'services/walletconnectv2/WalletConnectService'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { selectAccountByAddress } from 'store/account'
@@ -25,6 +24,11 @@ import Logger from 'utils/Logger'
 import TokenAddress from 'components/TokenAddress'
 import { humanize } from 'utils/string/humanize'
 import { isInAppRequest } from 'store/rpc/utils/isInAppRequest'
+import { isAddressApproved } from 'store/rpc/utils/isAddressApproved/isAddressApproved'
+import OvalTagBg from 'components/OvalTagBg'
+import Avatar from 'components/Avatar'
+import { Banner } from 'components/Banner'
+import GlobeSVG from 'components/svg/GlobeSVG'
 import RpcRequestBottomSheet from '../shared/RpcRequestBottomSheet'
 // import MaliciousActivityWarning from './MaliciousActivityWarning'
 
@@ -53,11 +57,15 @@ const ApprovalPopup = (): JSX.Element => {
   >()
 
   const approveDisabled =
-    !network || !account || !maxFeePerGas || !maxPriorityFeePerGas || submitting
+    !network ||
+    !account ||
+    (displayData.networkFeeSelector && !maxFeePerGas) ||
+    (displayData.networkFeeSelector && !maxPriorityFeePerGas) ||
+    submitting
 
   const showNetworkFeeSelector =
     displayData.networkFeeSelector &&
-    signingData.type === SigningDataType.EVM_TRANSACTION
+    signingData.type === RpcMethod.ETH_SEND_TRANSACTION
 
   const rejectAndClose = useCallback(
     (message?: string) => {
@@ -146,7 +154,56 @@ const ApprovalPopup = (): JSX.Element => {
       })
   }
 
-  const renderNetwork = (): JSX.Element => {
+  const renderBanner = (): JSX.Element | null => {
+    if (!displayData.banner) return null
+
+    const { title, description } = displayData.banner
+
+    return <Banner title={title} description={description} />
+  }
+
+  const renderDappInfo = (): JSX.Element | null => {
+    if (!displayData.dAppInfo) return null
+
+    const { name, action, logoUri } = displayData.dAppInfo
+
+    return (
+      <View style={{ justifyContent: 'center', alignItems: 'center' }}>
+        <OvalTagBg
+          style={{
+            height: 65,
+            width: 65,
+            backgroundColor: colors.$neutral800
+          }}>
+          {logoUri ? (
+            <Avatar.Basic
+              title={name}
+              logoUri={logoUri}
+              size={48}
+              backgroundColor={colors.$neutral600}
+            />
+          ) : (
+            <GlobeSVG height={'100%'} />
+          )}
+        </OvalTagBg>
+        <View
+          style={{
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginTop: 10,
+            marginBottom: 16
+          }}>
+          <Text variant="caption" style={{ textAlign: 'center' }}>
+            {action}
+          </Text>
+        </View>
+      </View>
+    )
+  }
+
+  const renderNetwork = (): JSX.Element | null => {
+    if (!displayData.network) return null
+
     const { name, logoUri } = displayData.network
 
     return (
@@ -167,6 +224,32 @@ const ApprovalPopup = (): JSX.Element => {
     )
   }
 
+  const renderAccount = (): JSX.Element | null => {
+    if (!displayData.account) return null
+
+    return (
+      <View style={styles.fullWidthContainer}>
+        <Row style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+          <Text variant="buttonMedium">Account:</Text>
+          <TokenAddress address={displayData.account} textType="ButtonMedium" />
+        </Row>
+        <Space y={16} />
+      </View>
+    )
+  }
+
+  const renderMessageDetails = (): JSX.Element | null => {
+    if (!displayData.messageDetails) return null
+
+    return (
+      <View>
+        <Text variant="buttonMedium">Message:</Text>
+        <View sx={styles.details}>
+          <Text>{displayData.messageDetails}</Text>
+        </View>
+      </View>
+    )
+  }
   const renderTransactionDetails = (): JSX.Element | null => {
     if (!displayData.transactionDetails) return null
 
@@ -217,19 +300,22 @@ const ApprovalPopup = (): JSX.Element => {
             </AvaButton.Base>
           )}
         </Row>
-        <View
-          sx={{
-            justifyContent: 'space-between',
-            marginTop: 8,
-            borderRadius: 8,
-            padding: 16,
-            marginBottom: 16,
-            backgroundColor: '$neutral800',
-            gap: 8
-          }}>
-          {detailsToDisplay}
-        </View>
+        <View sx={styles.details}>{detailsToDisplay}</View>
       </>
+    )
+  }
+
+  const renderDisclaimer = (): JSX.Element | null => {
+    if (!displayData.disclaimer) return null
+
+    return (
+      <View sx={{ marginHorizontal: 16 }}>
+        <Text
+          sx={{ color: '$warningMain', textAlign: 'center' }}
+          variant="body2">
+          {displayData.disclaimer}
+        </Text>
+      </View>
     )
   }
 
@@ -265,6 +351,7 @@ const ApprovalPopup = (): JSX.Element => {
         }}>
         <ScrollView contentContainerStyle={styles.scrollView}>
           <View>
+            {renderBanner()}
             <Text variant="heading4">{displayData.title}</Text>
             <Space y={12} />
             {/* {displayData.transactionValidation && (
@@ -276,7 +363,10 @@ const ApprovalPopup = (): JSX.Element => {
               />
             )} */}
             <Space y={12} />
+            {renderDappInfo()}
             {renderNetwork()}
+            {renderAccount()}
+            {renderMessageDetails()}
             {renderTransactionDetails()}
             {/* TODO re-add transaction simulation 
              https://ava-labs.atlassian.net/browse/CP-8870
@@ -301,6 +391,7 @@ const ApprovalPopup = (): JSX.Element => {
             />
           )}
         </ScrollView>
+        {renderDisclaimer()}
         {renderApproveRejectButtons()}
       </RpcRequestBottomSheet>
       {isSeedlessSigningBlocked && (
@@ -324,6 +415,14 @@ export const styles = StyleSheet.create({
   },
   fullWidthContainer: {
     width: '100%'
+  },
+  details: {
+    justifyContent: 'space-between',
+    marginTop: 16,
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 16,
+    backgroundColor: '$neutral800'
   }
 })
 

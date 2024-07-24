@@ -14,14 +14,9 @@ import { AvalancheSelectAccountRequest as AvalancheSelectAccountRequestV2 } from
 import { Account } from 'store/account'
 import { AvalancheBridgeAssetRequest as AvalancheBridgeAssetRequestV2 } from 'store/rpc/handlers/avalanche_bridgeAsset/avalanche_bridgeAsset'
 import { Asset, Blockchain } from '@avalabs/bridge-sdk'
-import { EthSignRpcRequest as EthSignRpcRequestV2 } from 'store/rpc/handlers/eth_sign/eth_sign'
 import { WalletAddEthereumChainRpcRequest as WalletAddEthereumChainRpcRequestV2 } from 'store/rpc/handlers/chain/wallet_addEthereumChain/wallet_addEthereumChain'
 import { Network } from '@avalabs/chains-sdk'
 import { WalletSwitchEthereumChainRpcRequest as WalletSwitchEthereumChainRpcRequestV2 } from 'store/rpc/handlers/chain/wallet_switchEthereumChain/wallet_switchEthereumChain'
-import {
-  OldTypedData,
-  TypedData
-} from 'store/rpc/handlers/eth_sign/schemas/ethSignTypedData'
 import {
   SendTransactionApproveData,
   AvalancheSendTransactionRpcRequest as AvalancheSendTransactionRpcRequestV2
@@ -47,10 +42,7 @@ import {
   BitcoinSendTransactionRpcRequest
 } from 'store/rpc/handlers/bitcoin_sendTransaction/bitcoin_sendTransaction'
 import { AvalancheSignMessageRpcRequest } from 'store/rpc/handlers/avalanche_signMessage/types'
-import {
-  SiteScanResponse,
-  TransactionScanResponse
-} from 'services/blockaid/types'
+import { SiteScanResponse } from 'services/blockaid/types'
 import { RootScreenStackParamList } from './RootScreenStack'
 import { OnboardingScreenStackParamList } from './OnboardScreenStack'
 import { WelcomeScreenStackParamList } from './onboarding/WelcomeScreenStack'
@@ -131,8 +123,8 @@ export type ApprovalPopupParams = {
   }: {
     network: Network
     account: CorePrimaryAccount
-    maxFeePerGas: bigint
-    maxPriorityFeePerGas: bigint
+    maxFeePerGas?: bigint
+    maxPriorityFeePerGas?: bigint
   }) => Promise<void>
   onReject: (message?: string) => void
 }
@@ -155,14 +147,6 @@ export type AvalancheSetDeveloperModeParams = {
 export type BitcoinSendTransactionParams = {
   request: BitcoinSendTransactionRpcRequest
   data: BitcoinSendTransactionApproveData
-}
-
-export type SignMessageV2Params = {
-  request: EthSignRpcRequestV2
-  network: Network
-  account: Account
-  data: string | TypedData | OldTypedData
-  scanResponse?: TransactionScanResponse
 }
 
 export type AvalancheSignMessageParams = {

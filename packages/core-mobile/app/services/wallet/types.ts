@@ -10,6 +10,7 @@ import { UnsignedTx } from '@avalabs/avalanchejs'
 import { Network, NetworkVMType } from '@avalabs/chains-sdk'
 import { Avax } from 'types/Avax'
 import { RpcMethod } from 'store/rpc/types'
+import { MessageTypes, TypedData, TypedDataV1 } from '@avalabs/vm-module-types'
 
 export type SignTransactionRequest =
   | TransactionRequest
@@ -116,7 +117,7 @@ export interface Wallet {
     provider
   }: {
     rpcMethod: RpcMethod
-    data: string | unknown
+    data: string | TypedDataV1 | TypedData<MessageTypes>
     accountIndex: number
     network: Network
     provider: JsonRpcBatchInternal | Avalanche.JsonRpcProvider

@@ -52,10 +52,12 @@ const AvaButtonIcon: FC<BaseProps> = ({
   style,
   disabled,
   onPress,
-  children
+  children,
+  testID
 }) => {
   return (
     <AvaButtonBase
+      testID={testID}
       disabled={disabled}
       onPress={onPress}
       rippleBorderless={true}
